@@ -1,0 +1,823 @@
+# Templated polymerisation: the declared equations
+
+*Status: proposed, 20 November 2026, by the gene-regulation lane (D235), for the lead's review and
+the tag `gr1-sheet-<date>`. Nothing here is registered.*
+
+**What this sheet is.**
+- **Its laws.** It states option A's laws in physical terms only. A code-blind agent can write G2's
+  references from it alone, with no code and no engine output.
+- **Its forms.** The built form is the neutral reduction (GENE_REGULATION_DESIGN §7.4). The charged
+  form is stated once beside it, and §3.2 shows the reduction is exact while pH and free Mg²⁺ are
+  held.
+- **Its potentials.** It is symbolic in the fuel's potentials and names no potential-set version.
+  The registration names that source (§3.3).
+- **Its check.** `validation/gene_regulation/sheet_check.py`.
+
+**Basis.**
+- GENE_REGULATION_DESIGN §7: the arms, the non-claims and the build plan, as D235 chose.
+- The kinds owner's answers on §7.5's desk question (20 November 2026), which confirm per-residue
+  terms (§4.2).
+
+**Words used.**
+- **Declared:** a value or form this sheet sets. **Declared, uncited:** a declared value with no
+  source; it is ours.
+- **Cited:** read in a source. §8 says how each was read: the abstract, a curated record, or a
+  secondary statement.
+- **Derived:** computed here from declared and cited values. The check recomputes every derived
+  value the sheet types.
+- **Row:** an amount of the cell that other mechanisms may read. **Pool:** an amount the operator
+  owns, which no other mechanism reads.
+- **Move:** one unit of progress of a law. It is a residue added, a chain released, a molecule
+  degraded or a recharging turnover.
+- **Limit:** a closed form's value with its factors frozen at the initial state, and with machines
+  abundant where §5 says so. A limit is compared within a declared bound (§5).
+
+## 0. Conventions
+
+**The cell.**
+- One cell: a node of fixed volume V, with no growth, no division and no water flux.
+- Its other rows (background ions, the cell's charge) are the world's. No law here reads or moves
+  them.
+
+**Units.**
+- Amounts n are in fmol per cell. Concentrations c = n/V are in mM, since 1 fmol/pL = 1 mM.
+- One molecule is 10¹⁵/N_A fmol. c₁ = 10¹⁵/(N_A V) mM is one copy's concentration (V in pL).
+- Rates are in s⁻¹, fluxes J in fmol/s and time t in s, from 0.
+- Free energies are in kJ/mol per unit of progress. An amount times a free energy is in pJ:
+  1 fmol × 1 kJ/mol = 1 pJ.
+
+**Constants.**
+- N_A = 6.02214076 × 10²³ mol⁻¹ and k_B = 1.380649 × 10⁻²³ J/K, both exact (SI 2019); R = N_A k_B.
+- T = 310.15 K (declared). So RT = 2.57873058 kJ/mol.
+
+**Potentials and free energy.**
+- The standard state is c° = 1 M for every potential and entry in this sheet. Activity a = c/c°,
+  with c in M (mM/1000).
+- μ_s = μ°_s + RT ln a_s per molecule of row s.
+- A world at another standard concentration c₀ (mM) moves each row's μ°/RT by ln(c₀/1000 mM),
+  once per molecule. It moves an entry by (Σν) ln(c₀/1000 mM).
+- A move's ΔG = Σ ν_s μ_s, with ν signed and products positive. x = ΔG/RT.
+- Water is at unit activity and is omitted from every stoichiometry.
+- Heat is H = −ΔG per unit of progress. The second law is J·ΔG ≤ 0.
+
+**pH and magnesium.**
+- h = 10^(−pH) M is the free proton concentration; m is free Mg²⁺ in M.
+- The neutral form holds both, at **pH 7.0 and m = 1.0 mM** (declared; pMg 3). These are the
+  conditions of the recharging entry (§3.3).
+
+## 1. Rows, pools and forms
+
+### 1.1 The neutral rows (A's built form)
+
+| Row | Stands for | Valence | Who writes and reads it |
+| --- | --- | --- | --- |
+| `X` | The regulator: an inducer or transcription factor, lumped | 0 | D150's turnover writes it. B1′'s factor reads it (§4.6) |
+| `ATP`, `ADP`, `Pi` | The fuel, as neutral formula units: each anion with its bound counter-cations | 0 | Translation and recharging |
+| `N` | The four NTPs as one lump: transcription's monomer and its own fuel | 0 | Transcription and recharging |
+| `M` | The four NMPs as one lump | 0 | mRNA degradation and recharging |
+| `A` | The twenty amino acids as one lump | 0 | Translation and protein degradation |
+| `R` (`R_g` for gene g) | One mRNA molecule of L_R residues | 0 | Transcription releases it; translation reads it as template; degradation removes it |
+| `P` (`P_g`) | One protein molecule of L_P residues | 0 | Translation releases it; degradation removes it |
+
+Every row is strictly positive. An absent product starts at a declared trace (§5).
+
+### 1.2 The operator's pools
+
+- **Machines.** F_q is the free machines of pool q, in fmol: q = pol for the RNA polymerases, and
+  q = rib for the ribosomes. M_q is the pool's declared total.
+- **Complexes.** C_ρ,j is the complexes in stage j = 1, …, m_ρ of route ρ, in fmol.
+  - Each complex holds one engaged machine and (j − 1) r_ρ residues of its growing chain.
+  - The routes are tx_g (transcription of gene g) and tl_g (translation of its mRNA).
+- **Residues in transit.** `R_res` and `P_res` are one residue in a growing mRNA or protein.
+  W_ρ = r_ρ Σ_j (j − 1) C_ρ,j is the residues in transit on route ρ, in fmol.
+- **Templates.** For transcription, the template is the gene's copies T_g: an integer, declared
+  data, never a moved amount. For translation, it is the mRNA row.
+- **Free energy.** Machines and templates carry none. A residue in transit carries its per-residue
+  standard potential and no concentration term (§3.1).
+
+### 1.3 The charged form, stated once
+
+These are the same rows with their real charges.
+- Each row's base form is its least-protonated, Mg-free form.
+- The row holds the total over its forms, which are at equilibrium with free H⁺ and Mg²⁺ (seam C's
+  convention).
+
+| Row | Base form | z_base | Forms |
+| --- | --- | --- | --- |
+| `ATP` | ATP⁴⁻ | −4 | The named source's, for example Mg·ATP |
+| `ADP` | ADP³⁻ | −3 | The source's |
+| `Pi` | HPO₄²⁻ | −2 | The source's, for example H·Pi |
+| `N` | NTP⁴⁻ | −4 | The charged arm's declaration |
+| `M` | NMP²⁻ | −2 | The charged arm's declaration |
+| `A` | The amino acid, as a zwitterion | 0 | None |
+| `R` | The mRNA, one charge per residue | −L_R | None |
+| `P` | The protein, backbone only | 0 | None |
+| `R_res` | An mRNA residue in transit | −1 | None |
+| `P_res` | A protein residue in transit | 0 | None |
+| `H⁺` | The free proton | +1 | — |
+| `Mg²⁺` | Free magnesium | +2 | — |
+| `X` | The regulator | 0 | None |
+
+**A row's forms.**
+- A form f carries n_H,f protons and n_Mg,f magnesium ions on the base.
+- Its dissociation constant is K_f = [base] h^(n_H,f) m^(n_Mg,f)/[f], in M^(n_H,f + n_Mg,f).
+- Its standard potential is μ°_f = μ°_base + n_H,f μ°_H + n_Mg,f μ°_Mg + RT ln K_f, at 1 M.
+- The binding polynomial is P(h, m) = 1 + Σ_f h^(n_H,f) m^(n_Mg,f)/K_f. The base form's
+  concentration is c_tot/P.
+
+**Declared reductions of the charged form.**
+- Each RNA residue carries one phosphate and one charge. The chain's ends (the 5′ triphosphate and
+  the terminal charges) are not counted.
+- The amino-acid and protein lumps carry no side-chain charge.
+- The polymers bind no Mg²⁺.
+
+**The residues in transit carry their charge.** In the charged form, the node's charge must count
+W_tx's −1 per residue, so the operator's pools are part of the node's charge. This is a requirement
+on the charged arm, not on A.
+
+### 1.4 Moieties
+
+<!-- moieties -->
+| Moiety | `N` | `M` | `A` | `ATP` | `ADP` | `Pi` | `R` | `P` | `R_res` | `P_res` |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| adenine | | | | 1 | 1 | | | | | |
+| phosphorus | 3 | 1 | | 3 | 2 | 1 | L_R | | 1 | |
+| nucleoside | 1 | 1 | | | | | L_R | | 1 | |
+| amino acid | | | 1 | | | | | L_P | | 1 |
+<!-- /moieties -->
+
+- A weight is per molecule of the row, and per residue for `R_res` and `P_res`. Each moiety's
+  total counts the residues in transit.
+- Water and the proton carry no moiety here. Charge conservation covers the proton (§2).
+- Magnesium is a moiety of the charged form only, and no base-form move carries Mg²⁺.
+- The machines are conserved by pool: F_q + Σ over the routes on q of Σ_j C_ρ,j = M_q.
+
+## 2. The moves
+
+<!-- moves -->
+| Species | z, charged | `tx` | `tl` | `rel_R` | `rel_P` | `deg_R` | `deg_P` | `rc` |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `N` | −4 | −1 | | | | | | +1 |
+| `M` | −2 | | | | | +L_R | | −1 |
+| `A` | 0 | | −1 | | | | +L_P | |
+| `ATP` | −4 | | −4 | | | | | −2 |
+| `ADP` | −3 | | +4 | | | | | +2 |
+| `Pi` | −2 | +2 | +4 | | | | | |
+| `R` | −L_R | | | +1 | | −1 | | |
+| `P` | 0 | | | | +1 | | −1 | |
+| `R_res` | −1 | +1 | | −L_R | | | | |
+| `P_res` | 0 | | +1 | | −L_P | | | |
+| `H` (H⁺, the charged form only) | +1 | +1 | +4 | | | +L_R | | |
+<!-- /moves -->
+
+**Each column is one unit of progress.**
+- `tx`: one residue added to a growing mRNA.
+  - An NTP becomes a residue in transit.
+  - Its pyrophosphate is hydrolysed at once to two phosphates.
+- `tl`: one residue added to a growing protein.
+  - An amino acid becomes a residue in transit, and four ATP become ADP and Pi.
+  - Two of the four are aminoacylation, ATP → AMP + PPi, with adenylate kinase folded in
+    (AMP + ATP → 2 ADP).
+  - The other two are the elongation factors' two GTP, counted as ATP.
+- `rel_R`, `rel_P`: release of one finished chain. L residues in transit become one molecule of the
+  product row, and the machine returns to its pool.
+- `deg_R`: one mRNA molecule hydrolysed to L_R NMPs. `deg_P`: one protein molecule hydrolysed to
+  L_P amino acids.
+- `rc`: one recharging turnover, NMP + 2 ATP → NTP + 2 ADP. It is two phosphoryl transfers, an NMP
+  kinase and a nucleoside-diphosphate kinase, lumped.
+- **Initiation moves no row.** A free machine becomes a stage-1 complex: F_q → C_ρ,1.
+
+**A route's stages.**
+- Route ρ has m_ρ stages and r_ρ = L_ρ/m_ρ residues per stage. r_ρ is an integer: m_ρ divides L_ρ.
+- A complex leaving stage j < m_ρ makes r_ρ `tx` (or `tl`) moves and enters stage j + 1.
+- A complex leaving stage m_ρ makes r_ρ moves and then one release.
+- So one passage makes L_ρ residue moves and one release.
+
+**Charge (the charged form).**
+- Every column's Σ ν z is zero, with the residues in transit counted. So no move changes a node's
+  charge, and the field sees no difference between the forms.
+- The protons released are one per residue in transcription, four per residue in translation, and
+  L_R per mRNA degraded.
+
+**Declared reductions, in both forms.**
+- One NTP lump, one NMP lump and one amino-acid lump.
+- PPi is hydrolysed at once. GTP is counted as ATP. AMP is folded by adenylate kinase.
+- Initiation's own costs (promoter opening, the initiation factors) are not drawn.
+- A chain's L residue moves stand for its L − 1 bonds and its ends.
+
+## 3. Free energies
+
+### 3.1 The potentials, symbolic
+
+- Each row's standard potential is a symbol: μ°_s for the charged base form, μ′°_s for the neutral
+  row.
+- A polymer's potential is per residue: μ°_R = L_R μ°_R,res and μ°_P = L_P μ°_P,res, at c° = 1 M.
+- A residue in transit is at μ°_R,res or μ°_P,res, with no concentration term. It sits in one
+  chain, not in solution.
+- Only the moves' ΔG enter the laws, and every move conserves every moiety (§1.4). So each
+  moiety's reference is a convention, and it cancels.
+
+### 3.2 The reduction: neutral potentials from charged ones
+
+At free proton h and free Mg²⁺ m, each neutral row's standard potential is its charged base
+form's, transformed:
+
+  μ′°_s(h, m) = μ°_s − RT ln P_s(h, m) − z_s μ_H(h), with μ_H(h) = μ°_H + RT ln(h/c°).
+
+- **Its terms.** The first two are the row's free base form at equilibrium with its forms. The third
+  is its proton term.
+- **It is Alberty's transformed potential** (named from memory, not read):
+  - the form is −RT ln Σ_f exp(−(μ°_f − N_H(f) μ_H − N_Mg(f) μ_Mg)/RT), the sum over the row's
+    forms, the base included;
+  - each form's proton content is counted from the base form's charge, N_H(f) = z_base + n_H,f, and
+    N_Mg(f) = n_Mg,f;
+  - Alberty counts every hydrogen atom instead, and the two differ by a constant per row, which
+    cancels in every balanced move.
+- **Why the reduction is exact.** It rests on two facts:
+  - every move conserves charge, so a base-form move's protons are ν_H = −Σ ν_s z_s (§2);
+  - no base-form move carries Mg²⁺.
+
+  So, for any totals c_s and the same (h, m):
+
+      ΔG_charged = Σ ν_s [μ°_s + RT ln(c_s/(P_s c°))] + ν_H μ_H(h)
+                 = Σ ν_s [μ′°_s + RT ln(c_s/c°)] = ΔG_neutral.
+
+- **Held.** The identity needs the neutral potentials at the state's own h and m.
+  - The neutral form holds both.
+  - The charged form lets them drift, and that drift is the charged arm's content (GENE_REGULATION
+    §7.4).
+- **Rate laws.**
+  - A law written on totals sees the same totals and the same ΔG, so it gives the same flux.
+  - A law written on a free form f equals one on totals with its constant K replaced by K/θ_f. Here
+    θ_f = [f]/c_tot, which is fixed while h and m are held.
+- **What the check shows** (sheet_check.py, part 1). Each part has a planted error that it must
+  catch:
+  - (a) the transform equals the pseudoisomer sum, for every row;
+  - (b) every move's ΔG is equal in both forms, over random states;
+  - (c) every charged move conserves charge;
+  - (d) the laws on totals give the same flux, and the free-form rule holds.
+
+### 3.3 The entries, and where each potential comes from
+
+**From the source the registration names.**
+- These are ATP, ADP and Pi with their forms, and μ°_H. The neutral form needs only their
+  transformed potentials at pH 7.0 and m = 1 mM.
+- Through every move they enter as one symbol, ATP hydrolysis:
+  ΔG′°_ATP = μ′°_ADP + μ′°_Pi − μ′°_ATP.
+
+**The world's own rows.**
+- Two references: μ°_M = 0 and μ°_A = 0 (base forms, 1 M).
+- Three cited entries, solved in order: E_rc fixes `N`, E_pd fixes the RNA residue, and E_pep fixes
+  the protein residue.
+
+<!-- entries -->
+| Entry | Reaction, on neutral rows | Cited value | Basis | ΔG°′/RT at 310.15 K | Source |
+| --- | --- | --- | --- | --- | --- |
+| `E_rc` | M + 2 ATP → N + 2 ADP | K_obs = 1.05 for 2 ADP → AMP + ATP, on totals, at pH 7.0 and 1 mM free Mg²⁺, 38 °C | ln K_obs, carried in RT units: temperature-free (dG_RT) | +0.04879016 | Lawson and Veech 1979. The NTP and NMP lumps take adenylate kinase's constant; the diphosphate kinase step is at K = 1 (declared) |
+| `E_pd` | R_res → M, per residue (the chain shortened by one, an NMP released) | −5.3 kcal/mol at 25 °C and pH 7 | kJ/mol, temperature-independent | −8.59926980 | Dickson et al. 2000: a DNA phosphodiester bond's, taken for the RNA lump (declared) |
+| `E_pep` | P_res → A, per residue | −3.6 kcal/mol | kJ/mol, temperature-independent | −5.84101345 | Martin 1998, glycylglycine's overall hydrolysis, read through BioNumbers. Its conditions are not stated there |
+| `G_ATP` | ATP → ADP + Pi | The named source's, transformed at registration. −32 kJ/mol in the test instance only | kJ/mol | −12.40920639 | The test instance: Wiseman et al. 2023, at pH 7, pMg 3 and 37 °C |
+<!-- /entries -->
+
+**The cited values' conditions.**
+- Each is taken at the world's pH 7.0 and m = 1 mM. Where a source's conditions differ or are not
+  stated, that is a declared approximation.
+- The engine's solutions are ideal: an ionic strength in a source is not carried.
+- kcal is the thermochemical one, 4.184 kJ.
+
+**The neutral form's entries, as FreeEnergyEntry.** Each is on neutral rows, at integer
+stoichiometry per molecule, with c₀ = 1000 mM:
+- (M −1, ATP −2, N +1, ADP +2), with dG_RT = ln 1.05;
+- (R −1, M +L_R), with dG_kJ_mol = L_R E_pd, the temperature-independent basis and offset 0;
+- (P −1, A +L_P), with dG_kJ_mol = L_P E_pep.
+
+At another c₀, an entry moves by (Σν) ln(c₀/1000 mM): L_R − 1 and L_P − 1 for the hydrolyses.
+
+**The charged form's entries.**
+- They have the same values, over base forms with their protons (`deg_R` has ν_H = L_R per
+  molecule).
+- Each carries dG_RT_offset = −ν_H ln(h/c°) + Σ_s ν_s ln P_s(h, m), at pH 7 and m = 1 mM. μ°_H
+  cancels.
+- The check's `entry_offset` computes it.
+
+**Transcription and translation follow** (ΔG°′ of each move):
+- ΔG°′_tx = 2 ΔG′°_ATP − E_pd − E_rc per residue;
+- ΔG°′_tl = 4 ΔG′°_ATP − E_pep per residue;
+- ΔG°′_deg,R = L_R E_pd and ΔG°′_deg,P = L_P E_pep per molecule;
+- ΔG°′_rc = E_rc.
+
+**The registration's tool.** `world_potentials` in the check takes a named source's base
+potentials and forms. It returns the neutral world's potentials at the world's c₀ for ATP, ADP, Pi,
+N, M, A, R and P. The world's own forms for N and M do not change the neutral result; the check's
+part 3 shows it.
+
+**The numeric test instance** (for the references, §6).
+- It sets ΔG′°_ATP = −32 kJ/mol, and μ′°/RT = 0 at 1 M for ADP, Pi, M and A.
+- The other potentials follow; §5.3 types them (`mu_ATP`, `mu_N`, `mu_R_res`, `mu_P_res`).
+
+**Ranges.** Every reference is a function of the four symbols and holds for every value in these
+ranges:
+- ΔG′°_ATP in [−40, −25] kJ/mol;
+- E_pd in [−30, −15] kJ/mol;
+- E_pep in [−25, 0] kJ/mol;
+- E_rc/RT in [−1, 1].
+
+### 3.4 Each move's ΔG, and the account as a state function
+
+G(state) = Σ_rows n_s [μ°_s + RT (ln a_s − 1)] + Σ_ρ μ°_ρ,res W_ρ   (pJ: n in fmol, μ in kJ/mol)
+
+**Its scope.**
+- G sums over the operator's rows (N, M, A, ATP, ADP, Pi, each R_g and each P_g) and the residues in
+  transit.
+- X and the cell's background are not in it.
+- ∂G/∂n_s = μ_s. So each move's ΔG is G's change per unit of progress.
+
+**Each move's ΔG:**
+- per `tx` residue: ΔG_tx = μ°_R,res + 2 μ_Pi − μ_N;
+- per `tl` residue: ΔG_tl = μ°_P,res + 4 μ_ADP + 4 μ_Pi − μ_A − 4 μ_ATP;
+- per release: ΔG_rel,R = μ_R − L_R μ°_R,res = RT ln a_R, and likewise for P;
+- per degradation: ΔG_deg,R = L_R μ_M − μ_R and ΔG_deg,P = L_P μ_A − μ_P;
+- per recharging turnover: ΔG_rc = μ_N + 2 μ_ADP − μ_M − 2 μ_ATP.
+
+**The stages.**
+- A stage exit j < m books r ΔG_tx. The last books r ΔG_tx + ΔG_rel.
+- One passage telescopes: L_R ΔG_tx + ΔG_rel,R = μ_R + 2 L_R μ_Pi − L_R μ_N, the net move's ΔG.
+  The same holds for translation.
+
+**The identity.** No work is done on these rows: there is no regenerator and no driven route. So
+G(t) − G(0) + Σ_k H_k(t) = 0, with H_k(t) = ∫₀ᵗ J_k (−ΔG_k) dt ≥ 0 for each move class k.
+
+### 3.5 The domain
+
+- **One-sided.** Each residue move and each degradation runs forward only:
+  - x_tx ≤ x_dom and x_tl ≤ x_dom per residue;
+  - ΔG_deg/(L RT) ≤ x_dom;
+  - with x_dom = −1 (declared, uncited).
+
+  A state outside the domain is refused, never repaired (GENE_REGULATION §7.5).
+- **The release.** ΔG_rel ≤ 0, so c_R and c_P stay at or below c° = 1 M.
+- **Recharging is two-sided.** It reverses where ΔG_rc > 0.
+- **A's arms sit far inside the domain.** At A1's start, x_tx ≈ −20.6 and x_tl ≈ −68.0 per residue;
+  the degradations are at −18.5 and −12.0 per residue (§5.3).
+
+## 4. Rate laws
+
+### 4.1 Initiation
+
+  J^I_ρ = u_ρ(t) k_I,ρ c_T,ρ F_q   (fmol/s)
+
+It is mass action in free machines and template.
+- **The template's concentration.** For transcription it is c_T = T_g c₁, from the gene's copies.
+  For translation it is c_T = c_R,g, the mRNA's concentration.
+- **k_I,ρ** (mM⁻¹ s⁻¹) is the scheduled maximum, piecewise constant. It is the routable control
+  `initiation_rate` (B1′).
+- **u_ρ in [b, 1]** is the coupling's factor (§4.6). It is 1 where no coupling is declared.
+- **λ_ρ = u_ρ k_I,ρ c_T,ρ** (s⁻¹) is one free machine's initiation rate on the route.
+- **Initiation moves no row and books nothing** (declared). The free energy of promoter binding and
+  of the initiation factors is outside the model, as is the machinery's other cost (seam E's fuel
+  block).
+
+### 4.2 Elongation: the stages, with per-residue terms
+
+  J_ρ,j = κ_ρ C_ρ,j φ_ρ,  κ_ρ = v_ρ/r_ρ,  φ_ρ = Π_{d in D_ρ} [c_d/(K_ρ,d + c_d)] × (1 − e^(x_ρ))
+
+**Its terms.**
+- **The draws.** D_tx = {N}, and D_tl = {A, ATP}. Each draw saturates in its row, so a draw slows as
+  the row runs short.
+- **x_ρ** is the per-residue affinity: ΔG_tx/RT or ΔG_tl/RT (§3.4).
+  - The release's term is not in the factor. It is booked with the last stage.
+- **v_ρ** is the speed in residues per second, at saturating draws and far from equilibrium.
+
+**Why a per-residue factor.**
+- One residue added is the elementary step, with forward rate w⁺ and backward rate w⁻ = w⁺ e^(x).
+  A walk of such steps has mean velocity w⁺ (1 − e^(x)) (S).
+- So a stage of r residues runs at κ φ. It carries the factor (1 − e^(x)), not (1 − e^(r x)).
+- This equals the monomial form's affinity share at n = r.
+- The kinds owner confirmed on 20 November that per-residue terms are the form for expression, at
+  shares of 10²–10³. The share cap of 8 stays, and no closed geometric form is wanted.
+
+**The chain's timing.**
+- All stages read the same rows, so they share one rate.
+- So the dwell in the chain is Erlang(m, κφ), with mean τ = L/(v φ) and variance τ²/m.
+
+### 4.3 Release
+
+At J_ρ,m:
+- one product molecule enters its row (+J_ρ,m);
+- one machine returns to F_q.
+
+A machine is returned at every release.
+
+### 4.4 Degradation
+
+  J^D_s = k_s n_s (1 − e^(ΔG_deg,s/(L_s RT)))   (fmol/s), for s = R_g and P_g
+
+- It is first order, with the per-residue factor, and returns L_s monomers.
+- It draws no fuel (declared). The proteasome's ATP is a cost of the machinery, for seam E's fuel
+  block.
+- It does not depend on ribosome load. A complex on a degraded mRNA still finishes its chain
+  (declared: no premature termination).
+- k_s is scheduled and piecewise constant.
+
+### 4.5 Recharging
+
+  J^C = V V_C [c_M/(K_C,M + c_M)] [c_ATP/(K_C,ATP + c_ATP)] (1 − e^(ΔG_rc/(2 RT)))   (fmol/s)
+
+- **It is the operator's own route** (GENE_REGULATION §7.5), so the operator is the one writer of N
+  and M.
+- **Its share is 2:** the elementary step is one of the two phosphoryl transfers.
+- **It is two-sided.**
+- **There is no ADP-to-ATP regeneration.** It is not the operator's, and A's worlds declare none.
+  So ATP, ADP and Pi are finite pools, written only by translation and recharging.
+
+### 4.6 The regulator and its factor
+
+- **X follows D150's law,** `scheduled_species_turnover@1`:
+  - dn_X/dt = P_X(t) − k_X(t) n_X;
+  - production P_X is in fmol/s and clearance k_X in s⁻¹, both piecewise constant.
+- **The factor is B1′'s** `hill_activation`, through a rate route on `initiation_rate`:
+  - u(t) = b + (1 − b) c_X^n/(K_X^n + c_X^n);
+  - b is the basal level, K_X the half-saturation in mM, and n the Hill coefficient;
+  - the scheduled k_I is the maximum.
+- **The loop is open.** No product enters any factor.
+
+### 4.7 The equations of motion
+
+For genes g, with the sums over j = 1, …, m:
+
+- dF_pol/dt = −Σ_g J^I_tx,g + Σ_g J_tx,g,m
+- dF_rib/dt = −Σ_g J^I_tl,g + Σ_g J_tl,g,m
+- dC_ρ,1/dt = J^I_ρ − J_ρ,1, and dC_ρ,j/dt = J_ρ,j−1 − J_ρ,j for j ≥ 2
+- dn_R,g/dt = J_tx,g,m − J^D_R,g
+- dn_P,g/dt = J_tl,g,m − J^D_P,g
+- dn_N/dt = −Σ_g r_tx,g Σ_j J_tx,g,j + J^C
+- dn_M/dt = Σ_g L_R,g J^D_R,g − J^C
+- dn_A/dt = −Σ_g r_tl,g Σ_j J_tl,g,j + Σ_g L_P,g J^D_P,g
+- dn_ATP/dt = −4 Σ_g r_tl,g Σ_j J_tl,g,j − 2 J^C
+- dn_ADP/dt = +4 Σ_g r_tl,g Σ_j J_tl,g,j + 2 J^C
+- dn_Pi/dt = 2 Σ_g r_tx,g Σ_j J_tx,g,j + 4 Σ_g r_tl,g Σ_j J_tl,g,j
+- dn_X/dt = P_X − k_X n_X
+
+### 4.8 The identities
+
+- **Machines:** F_q + Σ over the routes on q of Σ_j C_ρ,j = M_q.
+- **Residues, per route:** r_ρ S_ρ(t) = W_ρ(t) + L_ρ Q_ρ(t).
+  - S_ρ is the cumulative stage exits, over all stages.
+  - Q_ρ is the cumulative releases.
+- **Products:** n_prod(t) = n_prod(0) + Q(t) − D(t), with D the cumulative degradations.
+- **Moieties:** each total over the rows and the residues in transit is constant.
+- **Energy:** §3.4's identity.
+
+## 5. The arms
+
+### 5.1 A1, the expression unit
+
+One gene, open loop, in a cell with no channels. The regulator comes from D150's turnover, through
+B1′. A1's rows are X, N, M, A, ATP, ADP, Pi, R and P.
+
+<!-- a1 -->
+| Symbol | Value | Unit | What | Basis |
+| --- | --- | --- | --- | --- |
+| `V` | 1.0 | pL | The cell's volume | Declared, uncited |
+| `T_copies` | 1 | copies | Gene copies, T | Declared |
+| `L_R` | 1200 | nt | The mRNA's length | Declared, uncited |
+| `m_tx` | 8 | 1 | Transcription's stages (r_tx = 150) | Declared, uncited |
+| `v_tx` | 50 | nt/s | The polymerase's speed | Declared, within GENE_REGULATION §1.1's 40–55 nt/s |
+| `L_P` | 400 | aa | The protein's length | Declared, uncited |
+| `m_tl` | 8 | 1 | Translation's stages (r_tl = 50) | Declared, uncited |
+| `v_tl` | 16 | aa/s | The ribosome's speed | Declared, within §1.1's 12–21 aa/s |
+| `M_pol` | 1e4 | copies | RNA polymerases | Declared, uncited |
+| `M_rib` | 1e6 | copies | Ribosomes | Declared, uncited |
+| `k_I_tx` | 1.2e4 | mM⁻¹ s⁻¹ | Transcription's initiation, the scheduled maximum | Declared, uncited |
+| `k_I_tl` | 120 | mM⁻¹ s⁻¹ | Translation's initiation | Declared, uncited |
+| `K_N_tx` | 0.02 | mM | Transcription's NTP saturation | Declared, uncited |
+| `K_A_tl` | 0.02 | mM | Translation's amino-acid saturation | Declared, uncited |
+| `K_ATP_tl` | 0.02 | mM | Translation's ATP saturation | Declared, uncited |
+| `V_C` | 0.01 | mM/s | Recharging's capacity | Declared, uncited |
+| `K_M_rc` | 0.1 | mM | Recharging's NMP saturation | Declared, uncited |
+| `K_ATP_rc` | 0.1 | mM | Recharging's ATP saturation | Declared, uncited |
+| `k_R` | 3.0e-3 | s⁻¹ | mRNA degradation (lifetime 333 s) | Declared, uncited |
+| `k_P` | 5.0e-4 | s⁻¹ | Protein degradation (lifetime 2000 s) | Declared, uncited |
+| `K_X` | 1.0e-3 | mM | The factor's half-saturation | Declared, uncited |
+| `n_X` | 2 | 1 | The factor's Hill coefficient | Declared, uncited |
+| `b_X` | 0.02 | 1 | The factor's basal level | Declared, uncited |
+| `P_on` | 2.0e-6 | fmol/s | X's production in phase 1 | Declared, uncited |
+| `k_X` | 2.0e-3 | s⁻¹ | X's clearance, both phases | Declared, uncited |
+| `t_off` | 10800 | s | Phase 2 starts: P_X = 0 from here | Declared |
+| `t_end` | 21600 | s | The horizon | Declared |
+| `c_N` | 2.0 | mM | Initial NTP | Declared, uncited |
+| `c_M` | 0.05 | mM | Initial NMP | Declared, uncited |
+| `c_A` | 2.0 | mM | Initial amino acid | Declared, uncited |
+| `c_ATP` | 5.0 | mM | Initial ATP | Declared, uncited |
+| `c_ADP` | 0.5 | mM | Initial ADP | Declared, uncited |
+| `c_Pi` | 5.0 | mM | Initial Pi | Declared, uncited |
+| `c_X` | 1.0e-3 | mM | Initial X: P_on/(k_X V), its phase-1 steady state | Declared |
+| `c_R` | 1.0e-12 | mM | Initial mRNA, a trace | Declared |
+| `c_P` | 1.0e-12 | mM | Initial protein, a trace | Declared |
+<!-- /a1 -->
+
+**The initial state.**
+- Every machine is free: F_pol = M_pol and F_rib = M_rib, as amounts (copies × 10¹⁵/N_A fmol).
+- There are no complexes and no residues in transit.
+- The rows start at the table's concentrations, as amounts c V.
+
+**The schedule.**
+- k_I_tx, k_I_tl, k_R and k_P are constant over the run.
+- Phase 1, 0 ≤ t < t_off:
+  - P_X = P_on, so X holds at K_X and u = u₁ = 0.51;
+  - c_X = K_X makes the Hill term exactly ½ for any n_X;
+  - u₁ is far from 1, so a factor applied twice is visible (§5.4).
+- Phase 2, t_off ≤ t ≤ t_end:
+  - P_X = 0, so c_X = K_X e^(−k_X (t − t_off));
+  - u(t) = b + (1 − b)/(1 + e^(2 k_X (t − t_off))) exactly, since n_X = 2.
+
+**The horizon.** 21,600 s. The outputs are every 60 s, at 0, 60, …, 21,600 s.
+
+**R-chain's closed forms: phase 1, the frozen and abundant limit.**
+- **The limit's assumptions.**
+  - Each factor is frozen at its initial value: φ_tx, φ_tl, and the degradations' per-residue
+    factors, so k₀_R and k₀_P (§5.3).
+  - The machines are abundant: F_q ≈ M_q.
+  - So κ₀ = κ φ and τ₀ = L/(v φ).
+- **Under it, phase 1 is linear with constant coefficients:**
+  - transcription initiates at J^I_tx = λ_tx M_pol (fmol/s), with M_pol as an amount;
+  - translation initiates at J^I_tl = β n_R, with β = k_I_tl M_rib c₁ (s⁻¹; `beta_tl` in §5.3).
+- **The mRNA** (κ₀ > k₀_R), with P(j, y) = 1 − e^(−y) Σ_{i<j} y^i/i!, the regularized lower
+  incomplete gamma function at integer j:
+
+      n_R(t) = n_R(0) e^(−k₀_R t)
+               + (J^I_tx/k₀_R) [P(m, κ₀ t) − e^(−k₀_R t) (κ₀/(κ₀ − k₀_R))^m P(m, (κ₀ − k₀_R) t)]
+
+- **The engaged polymerases:** E_tx(t) = (J^I_tx/κ₀) Σ_{j=1}^{m} P(j, κ₀ t).
+- **The whole state.** The protein and the ribosomes' stages follow from the same linear system,
+  ẏ = A y + b. Its exact solution is y(t) = e^(At)(y(0) + A⁻¹b) − A⁻¹b.
+- **The steady state:**
+  - n_R* = J^I_tx/k₀_R;
+  - n_P* = β n_R*/k₀_P;
+  - E_tx* = J^I_tx τ₀_tx and E_tl* = β n_R* τ₀_tl.
+- **The bound.**
+  - Each closed form is compared with A1's full ODE on [0, t_off), within ε_A1 = 5 × 10⁻³ of its
+    phase-1 plateau.
+  - The bound covers the pools' drift, the machines engaged (about 3 × 10⁻⁴ of each pool) and the
+    factors' change from their frozen values.
+  - The references report the actual gap. A gap above the bound resizes the world before
+    registration.
+- **What judges the dynamics.** A1's full ODE, with both phases, finite pools and every factor live.
+
+### 5.2 A1-M, the machine-limited arm
+
+Machines are scarce against templates. Monomers and fuel are in excess, so the chain's time stays at
+its initial value. There is no regulator (u = 1). Every value not in this table is A1's.
+
+<!-- a1m -->
+| Symbol | Value | Unit | What |
+| --- | --- | --- | --- |
+| `M_pol` | 100 | copies | RNA polymerases, in the polymerase-limited worlds |
+| `k_I_tx` | 2.5e6 | mM⁻¹ s⁻¹ | Transcription's initiation |
+| `L_2` | 2400 | nt | Gene 2's length in the two-gene world (m = 8, so r = 300) |
+| `T_1` | 10 | copies | Gene 1's copies in the two-gene world |
+| `T_2` | 5 | copies | Gene 2's copies in the two-gene world |
+| `c_N` | 5.0 | mM | Initial NTP, in the polymerase-limited worlds |
+| `M_rib` | 1000 | copies | Ribosomes, in the ribosome-limited worlds |
+| `k_I_tl` | 2.4e6 | mM⁻¹ s⁻¹ | Translation's initiation |
+| `c_A` | 5.0 | mM | Initial amino acid, in the ribosome-limited worlds |
+| `t_end_pol` | 3600 | s | The polymerase-limited horizon |
+| `t_end_rib` | 600 | s | The ribosome-limited horizon |
+| `window_pol` | 600 | s | The final window for the release rate, polymerase-limited |
+| `window_rib` | 120 | s | The final window, ribosome-limited |
+<!-- /a1m -->
+
+**Polymerase-limited first: one world per copy number.**
+- The copy numbers are T = <!-- sweep -->1, 2, 5, 10, 20, 50, 100<!-- /sweep -->.
+- **Rows:** R, N, M, ATP, ADP and Pi. The routes are transcription, mRNA degradation and recharging;
+  there is no translation.
+- **Initial state:** N 5.0 mM. M, ATP, ADP and Pi are as A1's, R at A1's trace, and every
+  polymerase is free.
+- **Outputs:** every 30 s, from 0 to 3,600 s.
+- **The sweep's span.** λ₁τ₀ = 0.1000 per copy (`M_lambda_tau_1`), so the sweep runs from 0.1 to 10
+  and reaches the saturated end.
+
+**The two-gene world.**
+- Gene 1 has T_1 = 10 copies of L_R = 1200 nt. Gene 2 has T_2 = 5 copies of L_2 = 2400 nt.
+- Both have m = 8, v = 50 nt/s and k_I_tx, and they share the 100 polymerases.
+- Its rows are R_1, R_2, N, M, ATP, ADP and Pi.
+
+**Ribosome-limited second: one world per mRNA amount.**
+- The mRNA is held at n_R = 1, 2, 5, 10, 20, 50 or 100 copies. Nothing writes it: there is no
+  transcription and no mRNA degradation.
+- **Rows:** R, P, A, ATP, ADP and Pi. The routes are translation and protein degradation (k_P).
+- **Initial state:** A 5.0 mM, ATP, ADP and Pi as A1's, P at A1's trace, and every ribosome free.
+- **Outputs:** every 10 s, from 0 to 600 s.
+
+**R-machine's closed forms: the steady state, a limit with τ₀ frozen at the start.**
+- **One gene:** J* = λ M/(1 + λ τ₀).
+  - λ = k_I c₁ T for transcription, and k_I c₁ n_R for translation.
+  - It follows from three facts: Little's law, E = J τ₀; the free machines, F = M − E; and
+    initiation, J = λ F.
+  - J* rises linearly at small T and saturates at M/τ₀.
+- **Two genes:** J*_g = λ_g M/(1 + Σ_h λ_h τ₀,h). Each gene takes its share of one budget.
+- **The engaged and free machines:** E*_g = J*_g τ₀,g, and F* = M/(1 + Σ_h λ_h τ₀,h).
+- **The readout.** J̄ is the release rate over the final window: J̄ = (Q(t_end) − Q(t_end − window))
+  / window.
+- **The bound.** J̄, E and F at t_end are compared with the closed forms within ε_M = 5 × 10⁻⁴,
+  relative. The bound covers the draws' drift, which is about 10⁻⁵ at these sizes.
+- **The transient** comes from R-share's ODE.
+
+**Its two plants.** Each must fail one of the arm's judged items.
+1. **Initiation reads the total machines, not the free ones.**
+   - J = λ M, with no saturation.
+   - At T = 100 it is about 11 times J*. So it fails the J–T curve at its saturated end.
+   - It also drives F below zero.
+2. **A machine is not returned at release.**
+   - The pool drains, and J̄ falls to about 0.
+   - So it fails F + E = M in every world, and the J–T curve.
+
+### 5.3 Derived values
+
+They are at the numeric test instance (§3.3) and the arms' initial states. The check recomputes
+each one, and each is typed to its last digit.
+
+<!-- derived -->
+| Symbol | Value | Definition |
+| --- | --- | --- |
+| `RT_kJ_mol` | 2.578730581 | RT at 310.15 K, kJ/mol |
+| `c_1` | 1.660539067e-9 | One copy's concentration in 1 pL, mM |
+| `mu_ATP` | 12.40920639 | μ′°_ATP/RT at 1 M, the test instance |
+| `mu_N` | 24.86720294 | μ′°_N/RT at 1 M, the test instance |
+| `mu_R_res` | 8.599269797 | μ′°_R,res/RT at 1 M, the test instance |
+| `mu_P_res` | 5.841013447 | μ′°_P,res/RT at 1 M, the test instance |
+| `r_tx` | 150 | L_R/m_tx |
+| `r_tl` | 50 | L_P/m_tl |
+| `kappa_tx` | 0.3333333333 | v_tx/r_tx, s⁻¹ |
+| `kappa_tl` | 0.32 | v_tl/r_tl, s⁻¹ |
+| `x_tx` | −20.64995978 | ΔG_tx/RT per residue, at A1's start |
+| `x_tl` | −67.98481385 | ΔG_tl/RT per residue, at A1's start |
+| `y_R` | −18.473975036 | ΔG_deg,R/(L_R RT), at A1's start |
+| `y_P` | −11.969274604 | ΔG_deg,P/(L_P RT), at A1's start |
+| `x_rc` | −0.8675005677 | ΔG_rc/RT, at A1's start: recharging runs forward |
+| `phi_tx` | 0.9900990088 | φ_tx at A1's start |
+| `phi_tl` | 0.9861543923 | φ_tl at A1's start |
+| `tau_tx` | 24.240000026 | τ₀_tx = L_R/(v_tx φ_tx), s |
+| `tau_tl` | 25.35100000 | τ₀_tl, s |
+| `k0_R` | 0.0029999999716 | k_R (1 − e^(y_R)), s⁻¹ |
+| `k0_P` | 0.0004999968320 | k_P (1 − e^(y_P)), s⁻¹ |
+| `u_1` | 0.51 | u in phase 1 |
+| `lambda_tx` | 1.016249909e-5 | u₁ k_I_tx c₁ T, s⁻¹ |
+| `beta_tl` | 0.1992646881 | k_I_tl M_rib c₁, s⁻¹ |
+| `M_phi_tx` | 0.9960159358 | φ_tx at A1-M's polymerase-limited start (N 5 mM) |
+| `M_tau_1` | 24.09600001 | τ₀ of a 1200-nt gene there, s |
+| `M_tau_2` | 48.19200002 | τ₀ of the 2400-nt gene, s |
+| `M_lambda_1` | 0.004151347668 | k_I_tx c₁, per copy, s⁻¹ |
+| `M_lambda_tau_1` | 0.10003087345 | λ₁ τ₀ per copy, the 1200-nt gene |
+| `M_phi_tl` | 0.9920477453 | φ_tl at A1-M's ribosome-limited start |
+| `M_tau_rib` | 25.20040000 | τ₀_tl there, s |
+| `M_lambda_rib` | 0.003985293761 | k_I_tl c₁, per mRNA copy, s⁻¹ |
+| `M_lambda_tau_rib` | 0.1004309969 | λ τ₀ per mRNA copy |
+<!-- /derived -->
+
+### 5.4 A1's plants
+
+These are the plants of GENE_REGULATION §4.1. Each is a variant of A1, and each must fail a judged
+item. The references run each plant and report the largest change in each readout, so that the
+protocol can register which item each one fails.
+1. **A wrong stage count:** m_tx = 6, so r = 200. It fails the engaged polymerases E_tx(t), the
+   stage occupancies and n_R's rise.
+2. **A wrong speed:** v_tx = 40. τ₀ is 25 % longer, so it fails E_tx's plateau and n_R's delay.
+3. **A dropped fuel term:** translation draws no ATP. It fails ATP, ADP and Pi.
+4. **A machine not returned:** it fails F + E = M.
+5. **A factor applied twice:** u² in place of u, 0.26 against 0.51 in phase 1. It halves n_R and
+   n_P.
+6. **A wrong residue count:** the product receives L_P residues while 49 per stage are drawn. It
+   fails the residue identity and A.
+
+### 5.5 A2, the coupling to Vm (development, not judged)
+
+- **What it is.** The protein becomes FR-7's precursor, at 1 ms with synthetic lifetimes.
+- **What it waits on.**
+  - the producer admitting a precursor that the operator writes;
+  - FR-7's own protocol.
+- **What this sheet gives it.** No references and no judged item. A2 is development.
+
+## 6. What the references compute
+
+Every reference reads this sheet alone. Each is a function of the four symbols in §3.3, and of
+every declared value. The numeric test instance is the one that is run.
+
+**The readouts, per world** (exact definitions, in the units of §0):
+- every row's amount n_s(t), and X's in A1;
+- per pool, F_q(t). Per route, every stage's C_ρ,j(t), and E_ρ(t) = Σ_j C_ρ,j(t);
+- the cumulative extents from t = 0:
+  - initiations I_ρ;
+  - stage exits S_ρ;
+  - releases Q_ρ;
+  - degradations D_s;
+  - the recharging extent Ξ, signed;
+- the residues in transit W_ρ(t);
+- G(t) − G(0) and each move class's heat H_k(t), in pJ (§3.4);
+- the residuals of every identity in §4.8;
+- A1-M's window rate J̄.
+
+**The references:**
+- **R-chain:**
+  - §5.1's closed forms over phase 1, with their gap to the ODE;
+  - A1's full stiff ODE over both phases. This is the judge of A1's trajectories.
+- **R-account:**
+  - every identity of §4.8;
+  - each move's ΔG at the outputs, from §3.4's formulas;
+  - each move class's heat, which is non-negative and non-decreasing;
+  - G's identity.
+- **R-share:**
+  - the full ODE of the two-gene world and of every sweep world. This is the judge of their
+    trajectories;
+  - the engine's order is measured against it at several steps when the protocol runs (G6).
+- **R-machine:** §5.2's closed forms, with their gap to R-share's ODE at t_end.
+- **R-noise** (reported, not judged): an exact stochastic simulation, in counts.
+  - **The worlds:**
+    - A1's phase 1, frozen as in §5.1's limit, over [0, 10,800 s];
+    - the polymerase-limited world at T = 10, over its horizon. This one is a control: its system is
+      linear in counts, so its mean must equal the deterministic one.
+  - **The counts:** the free machines, the complexes per stage, and the mRNA and protein molecules.
+  - **The propensities, per second:**
+    - transcription's initiation, λ_tx f_pol;
+    - translation's initiation, k_I_tl c₁ N_R f_rib;
+    - a stage exit, κ₀ c_j;
+    - a degradation, k₀ N.
+  - **The rest:** monomer and fuel rows are not counted; their factors are frozen.
+  - **The size:** 1,000 replicate cells each, with independent seeds. It reports the sample mean
+    and its standard error beside the deterministic mean, at the outputs.
+
+**The tolerances the references must reach.**
+- **ODE trajectories.** A second solve, with tolerances 100 times tighter, changes no readout by
+  more than 10⁻⁹ of its scale. The scale is the readout's largest magnitude over the horizon.
+- **Closed forms:** evaluated to 10⁻¹² relative.
+- **Identities:** residuals within 10⁻¹² of the conserved total.
+- **The limits:** the gap is reported, against ε_A1 and ε_M (§5.1, §5.2).
+- **R-noise:** no tolerance. Its standard errors are reported.
+
+## 7. What A does not claim
+
+Registered with A's protocol (GENE_REGULATION §7.9), so that no reader takes these as tested:
+1. **No biological claim.** Every judged item is numerical, against exact references. No dataset is
+   compared, since none passes (GENE_REGULATION §4.1).
+2. **Means only.** No distribution, noise or burst is judged. R-noise's mean-field gap is reported,
+   not judged.
+3. **Open loop only.**
+   - No feedback and no cascade: no product regulates any gene.
+   - Occupancy is a given Hill factor.
+   - No transcription factor is sequestered.
+4. **No machine physics beyond capacity.** It has no inactivation (the cell-free stall of
+   GENE_REGULATION §4.1), no traffic or queuing on a template, no polysomes, no premature
+   termination, and no proofreading beyond the declared stoichiometry.
+5. **No processing.** Splicing, capping, export and folding are not modelled. A delay for any of
+   them would be a declared stage, and labelled.
+6. **No growth, dilution or division.**
+7. **No organism.** Rates, lengths and copy numbers are declared, or cited as orders of magnitude.
+   Nothing is claimed for any species.
+8. **The lumps are reductions:** one NTP row, one amino-acid row, GTP as ATP equivalents, AMP folded
+   by adenylate kinase, and PPi hydrolysed at once. There is no claim per nucleotide, amino acid or
+   tRNA.
+9. **Charge.**
+   - The neutral reduction claims no electrical or pH effect of expression.
+   - The charged form claims no Mg²⁺ or pH dependence of elongation beyond its declared kinetics.
+10. **A2 is development.** It makes no claim on FR-7's loop, on Vm or on FR-8's timescales.
+11. **No gene-network layer.** No regulatory network is judged, and D218's door is not exercised.
+
+## 8. Sources
+
+**Read for this sheet on 20 November 2026,** through Europe PMC's records, BioNumbers and a
+summariser of the pages. The publisher pages were not opened.
+
+- **Dickson KS, Burns CM, Richardson JP (2000).** Determination of the free-energy change for repair
+  of a DNA phosphodiester bond. *J Biol Chem* 275(21):15828–15831, doi:10.1074/jbc.M910044199.
+  CC BY, per Europe PMC's record.
+  - Read: the abstract.
+  - From the T4 DNA ligase equilibrium, K_eq = 3.89 × 10⁴ M at 25 °C and pH 7, so ΔG°′ = −6.3
+    kcal/mol for ligation.
+  - The hydrolysis of a DNA phosphodiester bond is −5.3 kcal/mol. The source derives it by
+    subtracting its value for ATP → AMP + PPi; that value was not read.
+- **Lawson JW, Veech RL (1979).** Effects of pH and free Mg²⁺ on the Keq of the creatine kinase
+  reaction and other phosphate hydrolyses and phosphate transfer reactions. *J Biol Chem*
+  254(14):6528–6537, doi:10.1016/s0021-9258(18)50400-2. CC BY, per Europe PMC's record.
+  - Read: the abstract, through a summariser.
+  - The myokinase reaction is written 2 ΣADP ⇌ ΣAMP + ΣATP, on totals.
+  - K_obs is 0.391 at free Mg²⁺ = 0 and 1.05 at 1 mM, at 38 °C, pH 7.0 and ionic strength 0.25.
+- **Martin RB (1998).** Free energies and equilibria of peptide bond hydrolysis and formation.
+  *Biopolymers* 45:351–353.
+  - Not read. Its Table I's overall free energy of hydrolysis of glycylglycine, −3.6 kcal/mol, was
+    read through BioNumbers entry 114386, which states no temperature or pH.
+- **Spirin AS (1999).** *Ribosomes*, p. 198.
+  - Not read. About −0.5 kcal/mol for a peptide bond in a polypeptide of infinite length, read
+    through BioNumbers entry 109649.
+  - Not used: it is the alternative for E_pep.
+- **Wiseman RW et al. (2023).** Creatine kinase equilibration and ΔG_ATP over an extended range of
+  physiological conditions. *Int J Mol Sci* 24(17):13244, doi:10.3390/ijms241713244. CC BY 4.0.
+  - Read: through a summariser of its PMC page.
+  - ATP hydrolysis is −32 kJ/mol at pH 7, pMg 3 and 37 °C, which it attributes to Lawson and Veech.
+  - Used for the test instance and the range only.
+- **Rates as orders of magnitude:** GENE_REGULATION §1.1's table (Bremer and Dennis, and Dennis et
+  al., through BioNumbers).
+
+**Named from memory, not read:**
+- Alberty's transformed potentials (Alberty, *Thermodynamics of Biochemical Reactions*, 2003);
+- the mean velocity of a biased walk of elementary steps;
+- the linear chain trick (MacDonald 1978, as FR-7's producer cites it).
