@@ -78,6 +78,14 @@ def fresh_vector(world, schedule, capacity):
     return out
 
 
+def replaced_pool(world, schedule, pool):
+    """The pool after a transfer or a replacement (replacement.py): its finite places take the
+    schedule's composition, its held places stay."""
+    finite = np.zeros(pool.size, dtype=bool)
+    finite[[i for i, p in enumerate(world.places) if p.phase == "pool" and not p.held]] = True
+    return np.where(finite, fresh_vector(world, schedule, pool.size), pool)
+
+
 def sample(base_key, schedule, counter, living, keep):
     """(kept slots, draws [(index, counter, u, "transfer", nan)], the next counter): one uniform
     per living slot, in slot order, each its own draw; the `keep` smallest, ties by slot."""

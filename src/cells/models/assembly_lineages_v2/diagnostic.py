@@ -316,4 +316,6 @@ def build_population(spec, layout, ctx, draws, committed, codes, values, after_e
         "environment": environment(),
         "uniforms": "the world's draws are the device's own, checked against their addresses",
     }
+    if ctx.replacements:  # FR-20: each pool replacement, when declared (it draws nothing)
+        body["replacement_events"] = ctx.replacements
     return body, arrays

@@ -108,6 +108,12 @@ references. Both sides cite this subsection.
 - **The catalysing phase.** In OL1 only the assembly's condensed phase catalyses. A dilute catalysing
   phase is refused until a declared meaning exists, since its fraction would have to include the
   solvent.
+  - **A catalysed step touches the membrane** (the lead's ruling of 20 November 2026). A factor on a
+    step that lies wholly in the pool or wholly in the lumen is refused until a meaning is declared.
+    A single lineage would scale such a step by the membrane's fractions, while a population
+    evaluates the pool's steps at an empty vesicle, where g = 1. No registered world is affected:
+    the one refusal world that declares such a factor is refused earlier, for its dilute catalysing
+    phase.
 - **The measure** (D215, which amends U6(a)):
   - the GARD limit uses `multinomial_less_one` with `extinct`, which reproduces G1's rates exactly;
   - physical worlds use `multinomial` with `kept`.

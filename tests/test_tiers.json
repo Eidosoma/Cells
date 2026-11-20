@@ -275,7 +275,8 @@
   "/mnt/workspaces/Cells/turnover-net-20261120/tiers/measured-4b39f285/measured.json",
   "/mnt/workspaces/Cells/operators-fr23-20261120/gate-e7a54539/tiers/measure/measured.json",
   "/mnt/workspaces/Cells/exchange-depletion-20261120/tiers/measured-dee83958/measured.json",
-  "/mnt/workspaces/Cells/core-pass-kinds-20261118/gate-e0dc3cfd/tiers/measure/measured.json"
+  "/mnt/workspaces/Cells/core-pass-kinds-20261118/gate-e0dc3cfd/tiers/measure/measured.json",
+  "/mnt/workspaces/Cells/ol3-engine-20261119/measure-e3bb05c1/measured.json"
  ],
  "measured_provenance": [
   {
@@ -2326,6 +2327,13 @@
    "root": "/mnt/workspaces/Cells/core-pass-kinds-20261118/snapshot-e0dc3cfd",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-20T20:55:16+00:00"
+  },
+  {
+   "git_revision": "e3bb05c1cae112db68a89023eb39d1bd1b452b18",
+   "dirty": false,
+   "root": "/mnt/workspaces/Cells/ol3-engine-20261119/tree-e3bb05c1",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-20T20:28:16+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -2696,7 +2704,7 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_v2_spec.py",
-    "seconds": 2.02,
+    "seconds": 2.47,
     "exit_code": 0,
     "counts": {
      "passed": 17
@@ -6069,6 +6077,14 @@
     "exit_code": 0,
     "counts": {
      "passed": 10
+    }
+   },
+   {
+    "file": "tests/unit/test_assembly_lineages_v2_replacement.py",
+    "seconds": 54.82,
+    "exit_code": 0,
+    "counts": {
+     "passed": 13
     }
    },
    {
