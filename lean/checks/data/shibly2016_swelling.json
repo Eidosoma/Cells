@@ -1,0 +1,15 @@
+{
+  "dataset_id": "shibly2016_dopc_swelling@1",
+  "doi": "10.1016/j.bpj.2016.09.043",
+  "source": "https://pmc.ncbi.nlm.nih.gov/articles/PMC5112947/",
+  "locator": "Figure 2B and its accompanying results on individual vesicle transfers",
+  "preparation": "DOPC giant unilamellar vesicles containing sucrose, initially in an isotonic glucose solution, held at a micropipette during transfer to a glucose bath.",
+  "temperature_C": 25,
+  "temperature_spread_C": 1,
+  "initial_sucrose_mM": 98,
+  "baseline": "No significant volume change in the 98 mM glucose control over 20 minutes.",
+  "fit": {"bath_glucose_mM": 96, "mean_swelling_percent": 1.7, "reported_plus_minus_percent_points": 0.1, "n": 14},
+  "evaluation": {"bath_glucose_mM": 95, "mean_swelling_percent": 2.6, "reported_plus_minus_percent_points": 0.1, "n": 17},
+  "uncertainty": "The statistic for the reported ± on the volume means is unspecified. Concentrations are nominal for the single-vesicle transfer of Figure 2.",
+  "mapping": "Set Vref to the isotonic volume, take equal initial hydrostatic pressures and treat the bath as held. Infer one effective volume modulus from the first swelling. Its use at the second swelling assumes the same effective modulus across vesicles. The paper models membrane geometry and tension separately."
+}

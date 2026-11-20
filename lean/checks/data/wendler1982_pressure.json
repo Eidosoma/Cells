@@ -1,0 +1,12 @@
+{
+  "dataset_id": "wendler1982_chara_pressure@1",
+  "doi": "10.1104/pp.69.5.998",
+  "source": "https://pmc.ncbi.nlm.nih.gov/articles/PMC426346/",
+  "locator": "Figure 2A and results, cell 12 in Tables I and II",
+  "preparation": "Single Chara corallina internode in artificial pond water. Turgor steps were applied with a pressure probe at 23 ± 2 °C. The initial volume rates were fitted to the first 40 s of each clamp.",
+  "fit": {"pressure_change_bar": -0.370, "inward_flow_nL_s": 5.1},
+  "evaluation": {"pressure_change_bar": 0.350, "inward_flow_nL_s": -5.3},
+  "second_baseline_minus_first_bar": -0.060,
+  "uncertainty": "The paper gives no uncertainty for these two individual flow estimates. Elasticity measured separately by opposite pressure pulses on this cell gave a local volume modulus of 207 bar.",
+  "mapping": "The two initial flow responses are compared assuming constant conductance and initial osmolarities fixed during each pressure step. The second step is relative to the new equilibrium baseline."
+}

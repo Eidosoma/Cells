@@ -1,5 +1,32 @@
 # Cells proof comparisons
 
+## 20 November 2026 · Osmotic water and potassium–anion transport
+
+**The earlier wrong-direction step is now refused.** On engine revision `93fc8c2cd217dbac9c2f6381d201f5acdb020265`, the original 10 ms fixed-volume reproducer gave a potassium–anion step bound of 3.761 against the limit of 1. The same step with water enabled was also refused by the cotransporter. The earlier bound was 0.221. The 32- and 64-step controls completed in both worlds. The separate component check still produced infinite affinity and heat at the extreme 2⁻⁵¹⁰ mM input, with finite 60-digit reference values. [Original comparison](#19-november-2026--potassium-and-anion-cotransport) · [Current finite-outside bound and its scope](../src/cells/operators/k_anion_symport.py#L173) · [Fixed-volume reproducer](checks/potassium_anion_symport.py)
+
+**Water proofs.** At fixed solute amounts, differentiating the mixing and elastic free energy in pJ with respect to volume in pL gives the water potential in Pa divided by 1,000. Its pressure slope is K/Vref + RT N/V². The outward flow dissipates nonnegative heat, and for a held bath the remaining energy rate equals its supplied-water work. For one finite membrane, the Lean proof gives the exact Heun transfer using the pressure changes between the starting and predictor volumes. If the initial volume at each end is at most four times its positive predictor volume, the engine's 0.05 relaxation bound preserves the initial flow direction over that half-step. The default 0.5–2 Vref window satisfies this condition. The proof also gives the osmometric equilibrium and the effect of one outward 1:1 cotransport cycle on the two osmotic pressures. These 15 theorems use the standard Lean axioms. [Proofs](CellsProofs/Transport/OsmoticWater.lean) · [Water step](../src/cells/operators/osmotic_water.py#L211) · [Endpoint ledgers](../src/cells/operators/osmotic_water.py#L255)
+
+**Changing-volume comparison.** The CPU float64 runner for `resolved_pump_composite@1` used its `resolved_pump_tissue@3` inner model, one finite cell, one finite outside compartment, and the water and K–anion operators. An independent ODE advances two signed transfers. Each outward cycle removes two cell osmoles and adds two outside. Water changes both concentrations and the carrier's activation. DOP853 and Radau agreed to 5 × 10⁻¹⁰ relative plus 5 × 10⁻¹⁵ absolute for the two transfers and two heats. Halving the engine step reduced the errors in all four quantities by factors of 4.00–4.11. [Driver and inputs](checks/osmotic_water.py) · [Water rate](../src/cells/operators/osmotic_water.py#L148) · [Carrier rate](../src/cells/laws/routes/k_anion_symport.py#L66)
+
+| Case | Steps and elapsed time | Engine / reference outward water (pL) | Engine / reference outward K–anion cycles (fmol) |
+| --- | --- | ---: | ---: |
+| Ordinary pair | 32 over 200 ms | −0.006454647 / −0.006454635 | 0.7260321 / 0.7260354 |
+| Near carrier stall | 64 over 10 ms | 0.0002123253952 / 0.0002123253953 | 0.00007233328 / 0.00007235229 |
+| Water alone | 32 over 200 ms | −0.006870671 / −0.006870672 | 0 / 0 |
+
+All five accepted runs preserved the two ion inventories and charge to the reported global precision. The largest global water residual was 2.17 × 10⁻¹⁹ pL. A separate water-only input gave dt × water rate = 0.0870 and was refused against the 0.05 limit. The coupled check took 32 s on four CPU cores. The 56 existing water component and integration tests and 82 repository guard tests passed. Before and after test discovery recorded identical sets of 20,555 test IDs and the same five collection errors from unavailable archived run inputs. [Water component tests](../tests/unit/test_osmotic_water.py) · [Held-bath osmometer and ledger tests](../tests/unit/test_surface_pump_water.py#L199)
+
+**Biological measurements from Search.** These are retrospective comparisons. Each preparation has its own calibration. The two equilibrium studies probe the water potential, while a pressure clamp probes the initial flow. [Reproduce the comparisons](checks/osmometry.py)
+
+| Preparation and calibration | Measurement held out from calibration | Cells prediction |
+| --- | --- | --- |
+| DOPC vesicles, 25 ± 1 °C. The 1.7% swelling at 96 mM external glucose sets an effective K of 52.8 kPa. | 2.6 ± 0.1% swelling at 95 mM (17 vesicles) | 2.568%. Zero stiffness gives 3.158%. The paper leaves the statistic for ±0.1 unspecified. [Shibly et al., Fig. 2B](https://doi.org/10.1016/j.bpj.2016.09.043) · [Inputs](checks/data/shibly2016_swelling.json) |
+| Resealed human red-cell ghosts, 37 °C. The 126 mOsm/L measurement and 1.5 fL inactive volume set 20.223 fmol of trapped osmoles. | 109.0 ± 1.0 fL at 184 mOsm/L and 95.2 ± 0.9 fL at 211 mOsm/L (SD) | 111.41 and 97.34 fL. The ideal law overpredicted each of the five held-out means by 0.70–2.41 fL. [Kwant and Seeman, Table II](https://doi.org/10.1085/jgp.55.2.208) · [Inputs](checks/data/kwant1970_osmometry.json) |
+| Intact human red cells, 33 fL inactive volume and a separate 333 mOsm/L calibration. | 111.5 ± 1.2 fL at 184 mOsm/L (SD) | 122.58 fL. The zero-stiffness ideal-water model overpredicted swelling here by 11.08 fL. [Kwant and Seeman, Table I](https://doi.org/10.1085/jgp.55.2.208) |
+| One *Chara* internode, 23 ± 2 °C. A −0.370 bar step and +5.1 nL/s inward flow set the conductance. | −5.3 nL/s inward after a +0.350 bar step | −4.82 nL/s. The second baseline was 0.060 bar lower. The individual slope uncertainties are unavailable. [Wendler and Zimmermann, Fig. 2A](https://doi.org/10.1104/pp.69.5.998) · [Inputs](checks/data/wendler1982_pressure.json) |
+
+The vesicle fit applies to small strains over this concentration interval. The intact-cell volume discrepancy leaves room for mechanics, nonideal solutes and uncertainty in inactive volume. Simultaneous water and K–anion measurements in one preparation would test their coupling.
+
 ## 19 November 2026 · Potassium and anion cotransport
 
 **Engine finding for the operators owner.** The `k_anion_symport_mass_action@1` step-size check can admit a step that transports both ions in the wrong direction. The normal CPU float64 runner for `resolved_pump_composite@1` completed a 10 ms step with 2.141 × 10⁻⁶ fmol **inward**. The exact trajectory gives 0.867 × 10⁻⁶ fmol **outward**. The reported global material and charge errors were both zero. [Reproducer](checks/potassium_anion_symport.py) · [Operator step check](../src/cells/operators/k_anion_symport.py#L252) · [Proof](CellsProofs/Transport/PotassiumAnionSymport.lean)
