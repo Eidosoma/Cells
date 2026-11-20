@@ -483,15 +483,14 @@ def test_the_free_log_sensitivity_meets_central_differences(name, monkeypatch):
     every row. An emptied binder leaves D finite and the rest of the block unchanged. Planted: the
     dual's Hessian without the binders' covariance (the unbuffered slope) misses by far more."""
     ligands, binders, volume, net, tl, tb, held, u, valid = solve(name)
-    keep = valid & np.all(np.where(held, tl > 0, True), axis=0) & np.all(tb > 0, axis=0)
     d, marked = sensitivity(u, tl, tb, net, held, volume)
     assert bool(np.all(marked))
     _, a_l = kernel.residual(u, np.zeros_like(u), tb, net["log_beta"], net["counts"],
                              net["present"], held, xp=np)
     own = np.concatenate((a_l, tb), axis=0)
     (coarse, fine), ok = central_block(tl, tb, net, volume, (1e-4 * own, 5e-5 * own))
-    keep &= ok
-    assert np.any(keep)
+    keep = valid & ok  # Every valid state, a held total at or below zero included (S4, S7).
+    assert np.array_equal(keep, valid), name
     fd = (4 * fine - coarse) / 3
     floor = 1e-6 * np.abs(fd) + 1e-9 * np.max(np.abs(fd), axis=(0, 1))
     error = np.abs(d - fd) - floor
