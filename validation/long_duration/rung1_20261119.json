@@ -821,6 +821,39 @@
     "windows ended by settling thresholds (the composite readout gap): a later version",
     "C with N2: its own dated entry after N2 lands"
    ]
+  },
+  {
+   "entry": "10.11",
+   "entry_utc": "2026-11-20T12:22Z",
+   "title": "the new ID's builder's entry (section 9), before I3 or any registered reading",
+   "author": "the @3 owner, N2's builder (D235); committed unedited by the FR-8 owner",
+   "final_id": "imex_ars222_implicit_conductances@1",
+   "development_id": "imex_ars222_implicit_conductances_n2_alone@0",
+   "n2_alone_head": "badc86ace01f16fa66042f2debe6c1446d494e52",
+   "branch": "core-pass-at3-n2",
+   "from_main": "93fc8c2c"
+  },
+  {
+   "entry": "10.12",
+   "entry_utc": "2026-11-20T12:35Z",
+   "title": "I3's cap control replaced for N2, before I3",
+   "world": "fr18-fig5net100:16",
+   "cap": 1e-13,
+   "cap_source": "X2's own constants: a counted step in band has |a| >= (4/3)(3.5 - 1) x 1000 eps M ~ 7.4e-13 M and F <= M, so the cap's comparison fires at the first counted step for k up to about 1,150",
+   "passes": "refused with 'exceeds the registration's cap' at the first counted step, within 1,000 steps from t = 0",
+   "untested": "no counted step within the horizon: an instrument failure (section 5)",
+   "nature": "a mechanism control: checks the cap's comparison fires under N2, not that N2 reaches a realistic error; no number measured under N2 enters the rule",
+   "original_row": "cap 2e-3, refused at step 1: run beside, information only",
+   "plant_row": "unchanged"
+  },
+  {
+   "entry": "10.13",
+   "entry_utc": "2026-11-20T12:35Z",
+   "title": "N2 alone at 200 ms after a 100 ms start-up, a development run, written before it runs (information)",
+   "source": "a frozen snapshot of badc86ac, development ID imex_ars222_implicit_conductances_n2_alone@0, X2 on at the registered cap",
+   "grid": "H2 from t = 0 to 1790 s: 100 ms over [0, 20] s, then 200 ms, on section 10.9's no-op-entry grid",
+   "why": "the 200 ms refusal at 0.4-0.6 s from t = 0 is a real wrong-signed Na transfer through nav_0 (the @3 owner), likely NaV's opening changing within a step whose slope is frozen at the operator time; the dissipation check acts as the wrong-sign detector",
+   "records": "/mnt/workspaces/Cells/fr8-rung1-20261119/n2-startup/"
   }
  ]
 }
