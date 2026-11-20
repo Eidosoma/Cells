@@ -18,6 +18,78 @@
     "cells.shared_pool@1": "molecular-assembly"
   },
   "comparisons": {
+    "bilayer-footprint": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@2"
+      ],
+      "laws": [
+        "cells.bilayer_geometry@1",
+        "cells.osmotic_lumen@1",
+        "cells.ideal_mixing@1",
+        "cells.phase_exchange@1",
+        "cells.membrane_permeation@1"
+      ],
+      "operators": [],
+      "engine_revision": "9d03bd2bd907a3c48bb43679b8e05c392df9adac",
+      "record_revision": "b2dea374a2d2bcba5c6eb860dd7e42bd263e628c",
+      "sources": {
+        "Molecular areas in integer quanta": "src/cells/models/assembly_lineages_v2/geometry.py#L123",
+        "Physical bilayer area": "src/cells/models/assembly_lineages_v2/geometry.py#L245",
+        "Compiled count-weighted footprint": "src/cells/models/assembly_lineages_v2/kernel.py#L322",
+        "Saved footprint at each row": "src/cells/models/assembly_lineages_v2/runner.py#L635"
+      },
+      "driver": "lean/checks/vesicle.py",
+      "record": "lean/PROGRESS.md#bilayer-footprint"
+    },
+    "osmotic-vesicle-volume": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@2"
+      ],
+      "laws": [
+        "cells.bilayer_geometry@1",
+        "cells.osmotic_lumen@1",
+        "cells.ideal_mixing@1",
+        "cells.phase_exchange@1",
+        "cells.membrane_permeation@1"
+      ],
+      "operators": [],
+      "engine_revision": "9d03bd2bd907a3c48bb43679b8e05c392df9adac",
+      "record_revision": "b2dea374a2d2bcba5c6eb860dd7e42bd263e628c",
+      "sources": {
+        "Spherical and osmotic volume constants": "src/cells/models/assembly_lineages_v2/lumen.py#L86",
+        "Equilibrium volume and free energy": "src/cells/models/assembly_lineages_v2/lumen.py#L114",
+        "Tension from the pressure difference": "src/cells/models/assembly_lineages_v2/lumen.py#L164",
+        "Volume and tension in the run record": "src/cells/models/assembly_lineages_v2/runner.py#L649"
+      },
+      "driver": "lean/checks/vesicle.py",
+      "record": "lean/PROGRESS.md#osmotic-vesicle-volume"
+    },
+    "vesicle-lysis-threshold": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@2"
+      ],
+      "laws": [
+        "cells.bilayer_geometry@1",
+        "cells.osmotic_lumen@1",
+        "cells.ideal_mixing@1",
+        "cells.phase_exchange@1"
+      ],
+      "operators": [],
+      "engine_revision": "9d03bd2bd907a3c48bb43679b8e05c392df9adac",
+      "record_revision": "b2dea374a2d2bcba5c6eb860dd7e42bd263e628c",
+      "sources": {
+        "Logarithmic spherical volume coefficient": "src/cells/models/assembly_lineages_v2/lumen.py#L86",
+        "Pressure and tension from the logarithmic sphere volume": "src/cells/models/assembly_lineages_v2/lumen.py#L164",
+        "Strict compiled lysis test": "src/cells/models/assembly_lineages_v2/kernel.py#L340",
+        "Lifecycle decision after the event": "src/cells/models/assembly_lineages_v2/kernel.py#L516",
+        "Material release and energy booking": "src/cells/models/assembly_lineages_v2/runner.py#L472"
+      },
+      "driver": "lean/checks/vesicle.py",
+      "record": "lean/PROGRESS.md#vesicle-lysis-threshold"
+    },
     "cleft-bath-fill": {
       "kind": "engine",
       "models": [
@@ -843,6 +915,197 @@
     }
   },
   "claims": [
+    {
+      "id": "bilayer-footprint",
+      "category": "molecular-assembly",
+      "title": "Bilayer area is half the sum of the molecular footprints in its two leaflets",
+      "statement": "The integer footprint adds across lipid inventories. Refining the area unit preserves the physical area. A common per-lipid error bound gives a bilayer area bound of half the total lipid count times that error. The area-equivalent sphere gives the same volume from its radius and its area.",
+      "assumptions": [
+        "Each membrane species has a fixed footprint expressed in integer quanta. Both leaflets contribute to the counted lipid inventory.",
+        "When the quantum is refined by a positive integer factor, every lipid’s integer weight and the integer floor scale by that factor. The physical quantum scales inversely.",
+        "The geometric reference is the sphere at the given area. A deflated vesicle can have a different shape and a smaller enclosed volume."
+      ],
+      "uses": [],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.bilayer_geometry@1"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.Vesicle.footprint_add": "lean/CellsProofs/Chemistry/Vesicle.lean",
+          "CellsProofs.Chemistry.Vesicle.footprint_refine": "lean/CellsProofs/Chemistry/Vesicle.lean",
+          "CellsProofs.Chemistry.Vesicle.area_refine": "lean/CellsProofs/Chemistry/Vesicle.lean",
+          "CellsProofs.Chemistry.Vesicle.area_error_bound": "lean/CellsProofs/Chemistry/Vesicle.lean",
+          "CellsProofs.Chemistry.Vesicle.radius_area": "lean/CellsProofs/Chemistry/Vesicle.lean",
+          "CellsProofs.Chemistry.Vesicle.sphere_radius": "lean/CellsProofs/Chemistry/Vesicle.lean",
+          "CellsProofs.Chemistry.Vesicle.sphere_area": "lean/CellsProofs/Chemistry/Vesicle.lean"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "bilayer-footprint"
+        ],
+        "result": "A 64-lipid control calibrated to fluid POPC at 30 °C gave 20.576 nm² and an empty lumen. In two compiled 96-event trajectories with different molecular weights for two lipids, every recorded integer footprint matched the independent count sum. A 32-fold refinement preserved the molecule counts across all 98 records."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Area per lipid at known composition and temperature, and total bilayer area in a vesicle with independently determined lipid counts.",
+        "unit": "nm² per lipid",
+        "evidence": [
+          {
+            "dataset_id": "kucerka2011_popc@1",
+            "manifest": "lean/checks/data/kucerka2011_popc.json",
+            "citation": "Kučerka, Nieh and Katsaras (2011), Table 1",
+            "doi": "10.1016/j.bbamem.2011.07.022",
+            "locator": "The POPC row at 30 °C supplies the per-lipid area. Equation 2 explains the uncertainty.",
+            "context": "Fluid phosphatidylcholine bilayers characterized by joint small-angle neutron and X-ray scattering.",
+            "role": "calibration",
+            "fit": [
+              "Fluid POPC molecular footprint at 30 °C"
+            ],
+            "observed": 0.643,
+            "uncertainty": "The reported uncertainty is ±0.013 nm² per lipid.",
+            "assessment": "This calibrates the area of each lipid. An independent whole-vesicle check would require both its total lipid count and its measured membrane area.",
+            "report": "lean/PROGRESS.md#bilayer-footprint"
+          }
+        ]
+      }
+    },
+    {
+      "id": "osmotic-vesicle-volume",
+      "category": "membrane-transport",
+      "title": "Membrane area caps the volume that minimizes a vesicle’s osmotic free energy",
+      "statement": "At fixed solute count, area and bath osmolarity, the equilibrium volume is the smaller of the ideal osmotic volume and the spherical volume allowed by the membrane. Tension vanishes below the cap. Once the cap is reached, further bath dilution raises tension while volume stays fixed.",
+      "assumptions": [
+        "The bath is held, internal osmoles are conserved during equilibration, temperature is fixed, and water equilibrates rapidly. The minimum over positive volumes requires positive solute count, bath density, molecular standard and spherical capacity. The empty lumen is assigned zero volume and zero osmotic energy.",
+        "The membrane has fixed area within a bath comparison. Reduced volume divides by the spherical volume at that area. The ideal osmotic term uses particle density.",
+        "For the POPC transfer test, the first observation fixes the effective trapped solute per spherical volume. For the DOPC swelling transfer, the first group fixes a common volume reserve. The separate tension estimate uses an initially spherical inextensible membrane at the reported radius."
+      ],
+      "uses": [
+        "bilayer-footprint",
+        "osmotic-water"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.osmotic_lumen@1"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.Vesicle.energy_strict_min": "lean/CellsProofs/Chemistry/Vesicle.lean",
+          "CellsProofs.Chemistry.Vesicle.empty_lumen": "lean/CellsProofs/Chemistry/Vesicle.lean",
+          "CellsProofs.Chemistry.Vesicle.slack_stall": "lean/CellsProofs/Chemistry/Vesicle.lean",
+          "CellsProofs.Chemistry.Vesicle.slack_tension": "lean/CellsProofs/Chemistry/Vesicle.lean",
+          "CellsProofs.Chemistry.Vesicle.laplace": "lean/CellsProofs/Chemistry/Vesicle.lean",
+          "CellsProofs.Chemistry.Vesicle.reduced_volume": "lean/CellsProofs/Chemistry/Vesicle.lean",
+          "CellsProofs.Chemistry.Vesicle.tension_at_density": "lean/CellsProofs/Chemistry/Vesicle.lean",
+          "CellsProofs.Chemistry.Vesicle.capped_bath_change": "lean/CellsProofs/Chemistry/Vesicle.lean"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "osmotic-vesicle-volume"
+        ],
+        "result": "Two compiled trajectories each crossed between 34 slack and 64 tense records. Across both runs the relative volume error stayed below 1.07 × 10⁻¹⁴, tension error below 2.24 × 10⁻¹⁷ N/m, and osmotic energy error below 2.54 × 10⁻¹⁴ k_BT against a 70-digit reference. Separate 64-osmole worlds reproduce the macroscopic reduced-volume and tension-per-radius predictions at matched density."
+      },
+      "biology": {
+        "status": "disagrees",
+        "observable": "Equilibrium volume after a bath osmolarity change, measured relative to the same vesicle’s spherical capacity or its initial volume, as specified for each study.",
+        "unit": "volume ratio",
+        "evidence": [
+          {
+            "dataset_id": "wolfisberg2025_deflation@1",
+            "manifest": "lean/checks/data/wolfisberg2025_vesicle.json",
+            "citation": "Wolfisberg et al. (2025), Fig. 2B",
+            "doi": "10.1021/jacs.5c13925",
+            "locator": "Five paired osmolarity and reduced-volume labels printed below the confocal reconstructions.",
+            "context": "One POPC vesicle weakly adhered by 0.4% PEG was tracked through sequential hypertonic bath changes. The prepared lumen contained 25 mM sucrose.",
+            "role": "held_out_from_fitting",
+            "fit": [
+              "26 mOsm/L, measured reduced volume 0.98"
+            ],
+            "evaluation": [
+              "32, 46, 58 and 83 mOsm/L on the same vesicle"
+            ],
+            "observed": 0.3,
+            "predicted": 0.4393,
+            "uncertainty": "At 58 mOsm/L the label reads 0.30. Label rounding is ±0.005 and reported bath precision is ±2 mOsm/L. The paper gives no point-specific geometry uncertainty for Figure 2B.",
+            "assessment": "The displayed pair is the 58 mOsm/L step after calibration at the first observation. All four later volumes were lower than predicted. Using prepared sucrose with no fit gave 0.431 at this step.",
+            "report": "lean/PROGRESS.md#osmotic-vesicle-volume"
+          },
+          {
+            "dataset_id": "shibly2016_dopc_swelling@1",
+            "manifest": "lean/checks/data/shibly2016_swelling.json",
+            "citation": "Shibly et al. (2016), Fig. 2B",
+            "doi": "10.1016/j.bpj.2016.09.043",
+            "locator": "The volume-increase measurements accompany Fig. 2B.",
+            "context": "Micropipette-held giant DOPC vesicles were transferred from an isotonic 98 mM bath to 96 or 95 mM glucose. Volumes here are relative to each group’s initial volume.",
+            "role": "held_out_from_fitting",
+            "fit": [
+              "96 mM group, 1.7% swelling"
+            ],
+            "evaluation": [
+              "95 mM group, 2.6% swelling"
+            ],
+            "observed": 1.026,
+            "predicted": 1.017,
+            "uncertainty": "Reported swelling was 1.7 ± 0.1% (14 vesicles) and 2.6 ± 0.1% (17 vesicles). The statistic for ±0.1 was unspecified. Transferring one area reserve across groups is an additional assumption.",
+            "assessment": "The fixed-area model reaches its fitted limit at the first dilution and underestimates swelling at the second. An initially full sphere predicts zero swelling in both baths.",
+            "report": "lean/PROGRESS.md#osmotic-vesicle-volume"
+          },
+          {
+            "dataset_id": "shibly2016_osmotic_tension@1",
+            "manifest": "lean/checks/data/shibly2016_swelling.json",
+            "citation": "Shibly et al. (2016), Table 1",
+            "doi": "10.1016/j.bpj.2016.09.043",
+            "locator": "Table 1 estimates the osmotic tension by matching rupture rates to isotonic aspiration controls.",
+            "context": "A separate DOPC experiment at an initial osmotic difference of 1.9 mM and radius of 13.4 µm.",
+            "role": "descriptive",
+            "uncertainty": "The reported osmotic tension was 2.6 ± 0.1 mN/m and initial radius 13.4 ± 0.2 µm. Tension was inferred from the rate measurements.",
+            "assessment": "The initially spherical fixed-area model predicts 31.56 mN/m at that radius. Swelling and aspirated geometry limit this application of the spherical cap.",
+            "report": "lean/PROGRESS.md#osmotic-vesicle-volume"
+          }
+        ]
+      }
+    },
+    {
+      "id": "vesicle-lysis-threshold",
+      "category": "molecular-assembly",
+      "title": "Changing molecular area units preserves the exact vesicle rupture decision",
+      "statement": "When molecular areas and the physical floor are preserved, two choices of area quantum give identical physical area, capped volume, tension and strict rupture verdict for the same post-event counts.",
+      "assumptions": [
+        "Only the area unit and all associated integer weights and floor are rescaled. Solute count, temperature, bath, physical area and rupture threshold remain fixed.",
+        "The synthetic founder has five membrane lipids and four trapped osmoles. The only possible first event detaches one lipid. The comparison observes the outcome of that event."
+      ],
+      "uses": [
+        "bilayer-footprint",
+        "osmotic-vesicle-volume"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.bilayer_geometry@1",
+          "cells.osmotic_lumen@1"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.Vesicle.refinement_outcome": "lean/CellsProofs/Chemistry/Vesicle.lean"
+        }
+      },
+      "numerical": {
+        "status": "failed",
+        "comparisons": [
+          "vesicle-lysis-threshold"
+        ],
+        "result": "The first event has reference tension 0.0008412963098275772 N/m. At thresholds about 3 × 10⁻¹⁸ N/m below and above it, the 60-quanta representation ruptured both times and the equivalent 1,920-quanta representation remained intact both times. Both matched the reference at thresholds 1% away. Computing physical area first recovered both close decisions in float64."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Rupture at known membrane area, trapped solute and bath conditions. The dependence on the numerical area unit is assessed by rerunning an identical physical state.",
+        "unit": "N/m",
+        "evidence": []
+      }
+    },
     {
       "id": "cleft-bath-fill",
       "category": "tissue-and-conservation",
