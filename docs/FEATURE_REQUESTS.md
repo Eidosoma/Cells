@@ -34,6 +34,11 @@ and a general feature, never one built for one study (D144).
 | [FR-26](#fr-26--owned-state-when-a-cell-is-replaced) | Owned state when a cell is replaced: the incoming cell from its template, environment-owned material kept, departing material recorded | **High** (user, 20 November 2026; D239) | Design decided (D244): W, a replacement writer for site populations, unless L is ruled first | After FR-24, by the operators owner. L is compared in FR-7's division note |
 | [FR-27](#fr-27--a-timed-partial-wash-of-a-finite-compartment) | A timed partial wash of a finite compartment: collect a fraction of its liquid into a recorded sample, refill with a declared buffer, leave bound material in place | **High** (decided by the lead with the advisor under the user's delegation, 20 November 2026; D245) | Requested; not scoped | A short design note by the operators owner, its semantics stated against FR-20's pool replacement |
 | [FR-28](#fr-28--binding-sites-owned-by-a-compartments-surface) | Binding sites owned by a compartment's own surface, such as a vessel wall, with no cell | Normal (D245) | Requested; not scoped | After FR-26 on `site_occupancy.py`: a new owner kind |
+| [FR-29](#fr-29--an-optional-proton-return-mode-for-atp-driven-proton-pumps) | An optional proton-return mode for ATP-driven proton pumps, tested on the yeast vacuolar pump | Normal, started first of D248's four (D248) | Requested; a design note first | The kinds owner, after the mitochondria laws' second head |
+| [FR-30](#fr-30--homotypic-cx43-junctions-with-two-relaxation-times) | Homotypic Cx43 junctions with two relaxation times | Normal (D248) | Requested; a design note first | After N2 lands (the junction gate's file); needs a voltage series |
+| [FR-31](#fr-31--vesicle-rupture-during-a-steady-tension-hold) | Vesicle rupture during a steady tension hold: an optional rupture event competing in time | Low (D230, D248); the note before OL9 registers | Requested; a design note first | Blocked on rupture rates against tension, and on OL6 |
+| [FR-32](#fr-32--a-dopc-swelling-validation-record-for-the-water-operator) | A DOPC swelling validation record for the water operator | Low (D248) | Requested | Folded into the next water-operator landing |
+| [FR-33](#fr-33--regional-labelled-protein-readouts-redistribution-against-degradation) | Regional labelled-protein readouts: inside a measured region, outside it and across the whole cell | High (D228, D248) | Requested; a desk check of the export fields first | The FR-7 lane, after its current work |
 
 ## FR-1 — A closed internal compartment on the shared inventory
 
@@ -980,6 +985,13 @@ explored.
     that link erases the difference;
   - after new starts are switched off, chains already in progress finish another 2.46 expected
     copies in the next minute.
+- **Backlog: the protein version (a study's request, relayed by the user on 20 November 2026;
+  D248).** A short protein-production export from A1: time, protein amount, cumulative protein
+  completions and cumulative degradation, with units. Also, how to recover the protein made during
+  a chosen window that survives to sampling, as a pulse label measures it. In the references,
+  protein completed during minutes 60–90 was 7.46 times the net increase. The engine's development
+  export (revision f96a9606) already carries these columns. A documented calculation of the
+  surviving cohort from them is the first answer.
 
 ## FR-26 — Owned state when a cell is replaced
 
@@ -1017,3 +1029,63 @@ explored.
   wall's sites on an inert stand-in cell that exchanges nothing; the numbers are unaffected.
 - **Where it stands:** a new owner kind for `site_occupancy@1`, a change to parse and layout only.
   It queues after FR-26 on `site_occupancy.py`.
+
+## FR-29 — An optional proton-return mode for ATP-driven proton pumps
+
+- **The request (the Lean project's biological review, relayed by the user, 20 November 2026;
+  D248).** Kettner et al. (2003, doi:10.1016/S0006-3495(03)74789-4), Table 2: moving the yeast
+  vacuole's pH from 4.1 to 6.0 moved the ATP-dependent current's reversal by −13.0 mV. The proton
+  equilibrium shifts by −112.5 mV, and `proton_pump` predicts −112.40 mV at every supported ratio
+  of protons per ATP; a tightly coupled pump cannot do otherwise (run by the lead at main).
+- **The proposal:** one law, with an optional mode, off by default, in which protons return down
+  their gradient while the pump is energized, each mode booking its own movement and dissipation.
+  Yeast values are population parameters (D144). The note says which worlds run `proton_pump` today.
+- **The test:** the table has five resolved reversals (three vacuolar pH values at cytosolic pH
+  7.5, and two other cytosolic pH values). Fit two and predict the rest under the same subtraction.
+- **The competing explanation:** other forms of variable coupling. Independent ATP-consumption or
+  proton-flux data would distinguish them.
+
+## FR-30 — Homotypic Cx43 junctions with two relaxation times
+
+- **The request (the same review; D248).** The generic `junction_voltage_relaxation@1` relaxes once,
+  in 50.0 ms at −100 mV. Sahu and Bera (doi:10.1371/journal.pone.0060506) measured 70 ± 5 and 931 ± 54
+  ms in the same decay, in Cx43 cell pairs. Moreno et al. (doi:10.1161/hh0402.105667) found 0.25 and
+  3.18 s at 60 mV.
+- **Where it sits:** the Cx43 variant already planned in PROTEIN_CATALOGUE_PLAN.md, as a new
+  versioned law or parameter set with cited values.
+- **The test's limit:** the two preparations differ in voltage. A fit at one voltage leaves the
+  voltage dependence free, so a prediction needs a voltage series. Tracer transfer is tested
+  separately, since electrical coupling and dye transfer can differ.
+- **After N2,** which is changing the gate's file.
+
+## FR-31 — Vesicle rupture during a steady tension hold
+
+- **The request (the same review; D248).** The assembly model tests rupture only at a state change.
+  In a DOPC cohort (Shibly et al. 2016, doi:10.1016/j.bpj.2016.09.043) 8 of 19 vesicles survived 40 s
+  and 2 of 19 survived 110 s under a held tension; a constant rate fitted to the first count predicts
+  1.76. Karal and Yamazaki (doi:10.1063/1.4930108) report rates at one tension and two temperatures.
+- **The proposal:** an optional rupture event, off by default, that competes in physical time when
+  chemistry is idle, using the existing release and energy accounting. OL5's registered lysis rule
+  stands.
+- **What it needs:** rupture rates at more than one tension, and the deterministic representation
+  (OL6), since giant vesicles are far beyond exact-event sizes. It interacts with FR-20's same-time
+  rule, FR-22's checkpoints and F12's extinction, so a design note comes first, before OL9 registers.
+
+## FR-32 — A DOPC swelling validation record for the water operator
+
+- **The request (the same review; D248).** The tissue water operator's compliance, fitted to one
+  dilution's swelling, predicted 2.57% at a second, against 2.6 ± 0.1% measured (Shibly et al. 2016,
+  Fig. 2B). It is one fitted value and one held-out point, specific to that preparation.
+
+## FR-33 — Regional labelled-protein readouts: redistribution against degradation
+
+- **The request (a study's request, relayed by the user, 20 November 2026; D248).** A reported
+  48-hour decline of a synaptic protein traces to one imaging study, whose measurements a later
+  paper reused, so it is one source. A separate lab observed the protein moving between synapses.
+  So redistribution is a competing explanation.
+- **What Cells reports:** labelled protein inside the measured region, outside it and across the
+  whole cell, from existing components.
+  - **Pure redistribution predicts** a compensating gain elsewhere and a stable total.
+  - **Degradation predicts** a falling total.
+- **The first step:** identify any missing export field, so the study can freeze both predictions
+  before fresh measurements are scored.
