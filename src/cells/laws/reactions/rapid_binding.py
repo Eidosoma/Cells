@@ -429,6 +429,52 @@ def booked_change_pJ(u, u_start, ligand_start, ligand_increment, binder_start, b
     return -rt * (dual + totals + xp.sum(ideal, axis=0)), xp.all(positive, axis=0)
 
 
+def free_log_sensitivity_block(u, base_free, log_beta, counts, present, held, member, volume_pL,
+                               rows, n_species, *, xp):
+    """(D [S, S, ...] in 1/fmol, held [S, ...]) at a stage's read: D[i, k] = d ln c_i / d n_k,
+    c_i the free form the read writes into species row i (a free ligand, or a binder's free base
+    form) and n_k the stored total of row k, the other totals at the node held fixed (the kinds
+    owner's K3b, its material term's step bound). The implicit-function derivative of the
+    closure's mass balances at the read's free values, per node, in the totals' concentrations:
+      - d u / d T_L = H^-1 and d u / d T_B = -H^-1 <n>_B, H the dual's Hessian diag(x) +
+        sum_B T_B Cov_B(n) (one block per connected ligand set);
+      - ln c_base,B = ln T_B - ln P_B(u), so d ln c_base,B / d T_L = -<n>_B.H^-1 e_L and
+        d ln c_base,B / d T_B' = delta_BB' / T_B + <n>_B.H^-1 <n>_B';
+      - each divided by the node's volume, for amounts.
+    u [L, ...] is ln x (mM) at the held ligands, base_free [B, ...] the free base forms (mM) at the
+    held binders (member), whose totals are base_free P_B(u); rows [L + B] the closure's species
+    indices, ligands then binders. D is exactly 0 wherever row i or row k is not a closure row at
+    the node; held marks the closure's rows on the species axis. The domain is a valid read's: a
+    finite u at every held ligand. An empty binder (T_B = 0 at a member node) keeps its row and
+    column, whose cross terms are finite, but its own 1/T_B, unbounded there, is left out, as a
+    kind's material term leaves out an empty row's own 1/n; D stays finite."""
+    n_l = u.shape[0]
+    u = xp.where(held, u, 0.0)
+    _, log_p, p = _forms(u, log_beta, counts, present, xp=xp)
+    total_b = xp.where(member, base_free * xp.exp(log_p), 0.0)
+    hess = _hessian(u, total_b, log_beta, counts, present, held, xp=xp)
+    eye = xp.eye(n_l).reshape((n_l, n_l) + (1,) * (u.ndim - 1))
+    inverse = _spd_solve(hess, eye * xp.ones_like(hess), xp=xp)  # One factorization, n columns.
+    keep = held[:, None] & held[None, :]
+    inverse = xp.where(keep, inverse, 0.0)
+    mean, _, _ = _moments(p, counts, xp=xp)  # [B, L, ...]
+    mean = xp.where(member[:, None] & held[None, :], mean, 0.0)
+    a = xp.einsum("lm...,bm...->lb...", inverse, mean)  # H^-1 <n>_B
+    filled = member & (total_b > 0)
+    diag = xp.where(filled, 1.0 / xp.where(filled, total_b, 1.0), 0.0)
+    n_b = base_free.shape[0]
+    beye = xp.eye(n_b).reshape((n_b, n_b) + (1,) * (u.ndim - 1))
+    bb = xp.einsum("bl...,lc...->bc...", mean, a) + beye * diag[:, None]
+    top = xp.concatenate((inverse, -a), axis=1)
+    bottom = xp.concatenate((-xp.einsum("lb...->bl...", a), bb), axis=1)
+    block = xp.concatenate((top, bottom), axis=0) / volume_pL  # [L + B, L + B, ...], 1/fmol
+    hold = xp.concatenate((held, member), axis=0)
+    block = xp.where(hold[:, None] & hold[None, :], block, 0.0)
+    onehot = (rows[:, None] == xp.arange(n_species)[None, :]).astype(float)  # [L + B, S]
+    d = xp.einsum("is,ij...,jt->st...", onehot, block, onehot)
+    return d, xp.einsum("is,i...->s...", onehot, hold.astype(float)) > 0
+
+
 def lag_first_order(u, forms, total_binder, drive_ligand, drive_binder, log_beta, counts, present,
                     held, step_matrix, step_from, step_ligand, step_kon, conservation, *, xp):
     """delta ln x_L [L, ...]: the closure's first-order lag behind the binding network (module

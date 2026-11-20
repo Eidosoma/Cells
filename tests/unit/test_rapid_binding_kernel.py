@@ -20,6 +20,10 @@ values at the tolerances frozen before any read of the values
   the bulk difference within its rounding at a 1e-3 change, and S_c's first-order change within
   second order and rounding at the change's own scale at 1e-9 and 1e-13 (S1, S3, S7). Planted:
   the bulk difference booked whole misses the 1e-13 change by far more;
+- K3b's derivative d ln c_free / d n_total (free_log_sensitivity_block) meets central differences
+  of the solve at every registered state of S1-S7 (each row stepped at its own scale,
+  Richardson-extrapolated), within 1e-6 relative per entry, and stays finite at an emptied
+  binder. Planted: the dual's Hessian without the binders' covariance misses;
 - the registered law declares the general form (seam F's fields), its free_energy G*;
 - P1's nodes: the free amount, the admissible floor and the ladder's equilibrated free amounts,
   where today's predictor turns negative past n_free;
@@ -426,6 +430,98 @@ def test_the_booked_change_is_formed_at_its_own_scale(name, scale):
         assert np.all(error <= allowed), (name, scale, np.max(error / allowed))
     if scale == CHANGE_SCALES[-1]:  # Planted: the bulk difference, booked whole.
         assert np.max(np.abs(bulk - reference)[keep]) > 1e3 * np.max(error)
+
+
+def log_free(u, tb, net):
+    """ln of every closure row's free form [L + B, ...]: ln x, then each binder's free base form."""
+    _, log_p, _ = kernel._forms(u, net["log_beta"], net["counts"], net["present"], xp=np)
+    return np.concatenate((u, np.log(tb) - log_p), axis=0)
+
+
+def sensitivity(u, tl, tb, net, held, volume):
+    """free_log_sensitivity_block on the closure's own rows (ligands, then binders)."""
+    x, forms = kernel.speciation(u, tb, net["log_beta"], net["counts"], net["present"], xp=np)
+    member = tb > 0
+    rows = np.arange(tl.shape[0] + tb.shape[0])
+    return kernel.free_log_sensitivity_block(
+        u, forms[:, 0], net["log_beta"], net["counts"], net["present"], held, member,
+        np.full(tl.shape[1], volume), rows, rows.size, xp=np,
+    )  # fmt: skip
+
+
+def central_block(tl, tb, net, volume, steps):
+    """Central differences of the closure's ln free forms by each row's total (1/fmol), every other
+    total held, for each step [L + B, states] (mM) in `steps`, every moved total solved in one
+    batch: ([len(steps), L + B, L + B, states], valid [states] where every moved solve is)."""
+    totals = np.concatenate((tl, tb), axis=0)
+    n_rows, n_states = totals.shape
+    n_l = tl.shape[0]
+    moved = []
+    for step in steps:
+        for k in range(n_rows):
+            for sign in (1.0, -1.0):
+                one = totals.copy()
+                one[k] = one[k] + sign * step[k]
+                moved.append(one)
+    batch = np.concatenate(moved, axis=1)
+    held, comp_l, comp_b = masks(net, batch.shape[1])
+    u, ok = kernel.free_ligands(batch[:n_l], batch[n_l:], net["log_beta"], net["counts"],
+                                net["present"], held, comp_l, comp_b, xp=np)
+    ln = log_free(u, batch[n_l:], net).reshape(n_rows, len(steps), n_rows, 2, n_states)
+    out = (ln[:, :, :, 0] - ln[:, :, :, 1]) / (2 * np.stack(steps)[None] * volume)
+    return np.moveaxis(out, 1, 0), np.all(ok.reshape(-1, n_states), axis=0)
+
+
+@pytest.mark.parametrize("name", SYSTEMS)
+def test_the_free_log_sensitivity_meets_central_differences(name, monkeypatch):
+    """K3b's derivative (free_log_sensitivity_block): d ln c_i / d n_k over the closure's rows at
+    every registered state, against central differences of the solve, every other total held. Each
+    row moves by 1e-4 of its own scale (a ligand's residual scale A_L, since its total can sit far
+    below its free and bound parts where forms release it; a binder's total), and the differences
+    are Richardson-extrapolated from that step and half of it. They agree within 1e-6 relative per
+    entry (the kinds owner's need) and a floor of 1e-9 of the block's largest entry; held marks
+    every row. An emptied binder leaves D finite and the rest of the block unchanged. Planted: the
+    dual's Hessian without the binders' covariance (the unbuffered slope) misses by far more."""
+    ligands, binders, volume, net, tl, tb, held, u, valid = solve(name)
+    keep = valid & np.all(np.where(held, tl > 0, True), axis=0) & np.all(tb > 0, axis=0)
+    d, marked = sensitivity(u, tl, tb, net, held, volume)
+    assert bool(np.all(marked))
+    _, a_l = kernel.residual(u, np.zeros_like(u), tb, net["log_beta"], net["counts"],
+                             net["present"], held, xp=np)
+    own = np.concatenate((a_l, tb), axis=0)
+    (coarse, fine), ok = central_block(tl, tb, net, volume, (1e-4 * own, 5e-5 * own))
+    keep &= ok
+    assert np.any(keep)
+    fd = (4 * fine - coarse) / 3
+    floor = 1e-6 * np.abs(fd) + 1e-9 * np.max(np.abs(fd), axis=(0, 1))
+    error = np.abs(d - fd) - floor
+    assert np.all(error[..., keep] <= 0), (name, np.max(error[..., keep]))
+    # An empty binder (T_B = 0, still a member): D stays finite, and off its own row and column it
+    # is the block without the binder; its own 1/T_B, unbounded there, is left out.
+    _, forms = kernel.speciation(u, tb, net["log_beta"], net["counts"], net["present"], xp=np)
+    base = forms[:, 0].copy()
+    base[0] = 0.0
+    rows = np.arange(tl.shape[0] + tb.shape[0])
+    member = np.ones(tb.shape, dtype=bool)
+    block = [
+        kernel.free_log_sensitivity_block(
+            u, base, net["log_beta"], net["counts"], net["present"], held, kept, np.full(
+                tl.shape[1], volume), rows, rows.size, xp=np,
+        )[0] for kept in (member, member & (np.arange(tb.shape[0]) > 0)[:, None])
+    ]  # fmt: skip
+    other = rows != tl.shape[0]  # Off the emptied binder's row and column.
+    empty, absent = (b[other][:, other][..., valid] for b in block)
+    assert np.all(np.isfinite(block[0][..., valid])), name
+    assert np.allclose(empty, absent, rtol=1e-14, atol=0), name
+    # Planted: the Hessian without the binders' covariance.
+    original = kernel._hessian
+
+    def unbuffered(u, total_binder, *args, **kwargs):
+        return original(u, 0.0 * total_binder, *args, **kwargs)
+
+    monkeypatch.setattr(kernel, "_hessian", unbuffered)
+    planted, _ = sensitivity(u, tl, tb, net, held, volume)
+    assert np.max((np.abs(planted - fd) - floor)[..., keep]) > 0, name
 
 
 def p1_network(node):
