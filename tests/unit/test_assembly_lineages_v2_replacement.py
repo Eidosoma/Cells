@@ -389,6 +389,9 @@ def site_wash_spec():
 
 
 def test_a_site_bound_ligand_stays_through_a_wash_and_a_released_one_rebinds():
+    """FR-21's acceptance (module docstring). The release after the wash is certain, since binding
+    cannot fire without a free X. The rebinding that follows is seed-specific: the binding's
+    constants make it about 0.996 likely before a second release, and this seed's trace shows it."""
     spec = site_wash_spec()
     names = [p.name for p in spec.model.world.places]
     structure = model.structure(spec)
