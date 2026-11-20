@@ -29,12 +29,24 @@ any other:
 **The checks on every future,** from its saved bundle:
 - its start row is the landmark's count in every finite place;
 - the kernel's full rate table at the future's start equals the natural world's at the landmark
-  row, to rounding (kernel.rates on the host, both directions of every channel). This is the check
-  that the future starts in the same physical state under the same laws;
+  row, to rounding (kernel.rates on the host, both directions of every channel);
 - its first attempt is at the natural run's next shear time less the landmark's (declared times).
-A landmark whose future the parser refuses (for example a finite pool whose solutes drifted above
-c_ext, which the natural run only reports) is recorded with the parser's message, counted and never
-replaced or adjusted.
+
+**What the rate-table check shows, and what it does not.** Both tables are host evaluations of
+kernel.rates, each with the factor and mixing states recomputed exactly from the counts. Given the
+definition's check and the start row, they agree by construction: the largest relative difference
+is 0. So the check guards the future's construction and the parser's reading of its world (a
+dropped place, a changed datum), and nothing more. It does not see the natural run's device state
+at the landmark: its incremental factor state and its rates there, which the bundle does not save.
+A device-side check, with the post-split rates saved in records.py, is on the first builder's queue
+after FR-21 (the lead's ruling of 20 November 2026). The independent check of a landmark is
+landmarks() against the fission table.
+
+**Refused landmarks** are recorded with their reason, counted, and never replaced or adjusted:
+- a state the parser refuses (for example a finite pool whose solutes drifted above c_ext, which
+  the natural run only reports);
+- a landmark with no declared shear time after it (LandmarkRefused);
+- a followed daughter that lysed at birth (no state to restore).
 
 The index (futures.json) lists each landmark (its split, time, counts and parent's counts) and its
 futures (word, bundle), and the refused landmarks. f12.futures() and
@@ -59,6 +71,10 @@ ALLOWED = (
 )
 RTOL = 1e-12
 WORD = 2**32
+
+
+class LandmarkRefused(ValueError):
+    """A landmark with no future to run: a declared shear schedule has no time after it."""
 
 
 def _differs(a, b, prefix=""):
@@ -139,7 +155,9 @@ def definition(natural, landmark, branch):
         if "times_s" in schedule:
             schedule["times_s"] = [t - t0 for t in schedule["times_s"] if t > t0]
             if not schedule["times_s"]:
-                raise ValueError(f"Schedule {schedule['index']} has no time after the landmark")
+                raise LandmarkRefused(
+                    f"Schedule {schedule['index']} has no time after the landmark"
+                )
     out["experiment"]["time_horizon_s"] = natural["experiment"]["time_horizon_s"] - t0
     out["experiment"]["observation_times_s"] = [
         t - t0 for t in natural["experiment"]["observation_times_s"] if t > t0
@@ -212,7 +230,7 @@ def run(natural_dir, out, *, splits, per_landmark, lanes=16, provenance=None):
             for f in range(per_landmark):
                 w = word(split, f, per_landmark, natural["execution"]["stream"]["branch"])
                 specs.append((w, parse_spec(definition(natural, landmark, w))))
-        except ConfigError as error:  # the parser refuses the landmark's state: recorded
+        except (ConfigError, LandmarkRefused) as error:  # recorded, never replaced
             index["refused"].append({"split": split, "reason": str(error)})
             continue
         index["landmarks"].append(entry)

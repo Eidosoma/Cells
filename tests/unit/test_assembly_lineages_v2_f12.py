@@ -13,15 +13,19 @@ Each claim with a planted error it must catch (D187):
   membrane and a set that disagrees with the bundle's are refused (planted: a block species in
   the membrane is not read);
 - F4: a future's definition changes only its founder, schedules, horizon, observations and branch
-  word; its word is unique per (landmark, future); the rate tables agree at the landmark (planted:
-  a changed potential is refused; a dropped pool changes the rate table);
+  word; its word is unique per (landmark, future); a landmark with no shear time after it is
+  refused; the rate tables agree at the landmark (planted: a changed potential is refused; a
+  dropped pool changes the rate table);
 - F5: on saved bundles, a natural lineage of a held-amphiphile world with catalysed joins reads
   under both readings, its post-fission landmarks match its fission table, and its futures run,
-  pass their checks and are counted (planted: a parent whose counts no longer sum is refused).
+  pass their checks and are counted, while its last landmark, with no shear time after it, is
+  recorded as refused (planted: a parent whose counts no longer sum is refused).
 
 World-compiling cost: one program (a natural lineage and two futures of one structure, one lane),
-measured on the timed lane at landing. Reason: the reader's contract is the saved bundle's format,
-and the futures' checks are the runs' own.
+61-69 s for the whole file, local and unmeasured: on CPU 23 at a machine load near 34, not on the
+timed lane. Most of it is the osmotic verdict that every osmotic world pays once per process.
+Reason: the reader's contract is the saved bundle's format, and the futures' checks are the runs'
+own.
 """
 
 import copy
@@ -131,6 +135,8 @@ def test_a_future_changes_only_what_the_rule_allows():
     assert len({futures.word(s, f, 4) for s in range(6) for f in range(4)}) == 24
     with pytest.raises(ValueError, match="natural run"):
         futures.word(0, 0, 4, natural_branch=1)
+    with pytest.raises(futures.LandmarkRefused, match="no time after the landmark"):
+        futures.definition(natural, {"time": 4.0, "counts": counts.tolist()}, 1)
     planted = copy.deepcopy(future)  # Planted: a changed potential is refused.
     planted["model"]["world"]["species"][0]["standard_mu_RT"]["bilayer"] = -2.5
     with pytest.raises(ValueError, match="changes only"):
@@ -159,9 +165,13 @@ def test_a_lineage_its_readers_and_its_futures_on_saved_bundles(tmp_path):
     record, arrays, lives, _ = f12.read(tmp_path / "natural")
     marks = futures.landmarks(tmp_path / "natural")
     assert [m["split"] for m in marks] == [s["row"] for s in f12.boundaries(record, arrays, lives)]
-    index = futures.run(tmp_path / "natural", tmp_path / "futures", splits=[marks[0]["split"]],
+    last = marks[-1]
+    splits = [marks[0]["split"]] + ([last["split"]] if last["time"] >= 3.0 else [])
+    index = futures.run(tmp_path / "natural", tmp_path / "futures", splits=splits,
                         per_landmark=2, lanes=1)  # fmt: skip
-    assert index["refused"] == [] and len(index["landmarks"][0]["futures"]) == 2
+    assert len(index["landmarks"]) == 1 and len(index["landmarks"][0]["futures"]) == 2
+    refused = [r["split"] for r in index["refused"] if "no time after" in r["reason"]]
+    assert refused == splits[1:]  # the last landmark has no shear time after it
     for f in index["landmarks"][0]["futures"]:
         assert f["rates_largest_relative_difference"] <= futures.RTOL
         provenance = json.loads((Path(f["bundle"]) / "manifest.json").read_text())["provenance"]
