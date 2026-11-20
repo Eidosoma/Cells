@@ -7691,3 +7691,53 @@ assigned: the agent seats are at the cap.
 
 FR-20 builds on the vesicle-population accounting of the ol3-engine branch, which D230 lands last, so
 the order of that landing is put to the user.
+
+## D238: N2's registered target kept; FR-7 lifts the producer's refusal for division; the origin-of-life stack lands now
+
+2026-11-20, about 15:13 UTC. The user, on the lead's and the advisor's five recommendations:
+"1. agreed 2. agreed 3. agreed 4. agreed. 5. agreed — sounds good".
+
+1. **FR-8, N2's step: the registered target stays a gain of 10** (200 ms against 20 ms). §6 reads
+   N2 alone against it and records the miss if N2 alone reaches 5 (100 ms).
+   - **The development evidence:**
+     - X2 passes N2 at 20, 100 and 125 ms (§10.14). At 200 ms its order band refuses late in the
+       calm stretch, a second-order method leaving its asymptotic range (4 − q ∝ dt).
+     - The integration error stays at least 25 times inside the cap.
+   - **N2 with C** is registered as a new dated arm before it runs.
+   - **125 ms is not offered as a rung:** it was seen passing, so it would be tuned.
+   - **The two priced remedies** (stage-wise slopes, a gate-change bound) address start-up, not the
+     band, and are not built now.
+   - **The "95 times fewer steps" for N2 with C** is a desk count: against C alone, N2 adds about
+     4.8 times in steps, at a per-step cost not yet measured.
+2. **The gap-junction cancer replication:** a desk note prices FR-15's remainder (junction
+   hosting of the charged route), FR-16 and FR-17 when a seat frees, saying which table each
+   unlocks:
+   - Table 2 (2D, 626 nodes) needs FR-15's remainder and FR-16;
+   - Table 1 (3D) also needs FR-17;
+   - Table 3 needs a mechanism the preprint does not give.
+   Seats are decided on those prices. FR-15 to FR-17 stay scheduled after FR-2's retrieval and FR-7
+   (D222).
+3. **FR-7: D232's simulation-wide refusal of the unit producer is lifted for division only.** It
+   takes effect only with three things:
+   - a design note fixing how the producer's pools and history accounts split at division;
+   - a code-blind division reference, registered first;
+   - worlds without division bitwise unchanged.
+
+   Insertion and recycling stay refused until FR-2's ownership design. The cost is 5–8 agent-days
+   across the FR-7 lane, the operators owner and a references agent.
+4. **FR-7's measured response (D151):** one channel's abundance against membrane voltage. It is
+   conditional on a desk scan finding an open dataset with sourced lifetimes and a usable licence.
+   Coupling against conduction waits for U1. The judged run likely needs FR-8's real time scales.
+5. **The origin-of-life stack (ol3-engine at 09f4cb58, landing-ready) lands at the next free lane,
+   ahead of D230's order.** FR-20 and FR-22 (D237) build on it. Further origin-of-life building
+   stays behind core and FR work (D230).
+
+**The order for seats as they free:**
+1. the stack's landing;
+2. the mitochondria law modules (the kinds owner, after K3b);
+3. FR-7's division step;
+4. FR-20's design note and FR-22's short controls;
+5. gene regulation's G2 references;
+6. the gap-junction pricing note;
+7. FR-21's design note;
+8. further origin-of-life building.
