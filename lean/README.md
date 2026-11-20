@@ -6,11 +6,11 @@ Browse Cells engine laws by scientific topic. Each claim links its Lean proofs, 
 
 <!-- generated: claims-index -->
 
-Direct Lean claims cover [32 of 32 laws](COVERAGE.md#registered-laws) and [7 of 24 operators](COVERAGE.md#registered-operators).
+Direct Lean claims cover [32 of 32 laws](COVERAGE.md#registered-laws) and [8 of 24 operators](COVERAGE.md#registered-operators).
 
 | Category | Registered laws with proof | Claims with proof | Numerical checks | Claims with biological evidence |
 | --- | ---: | ---: | --- | ---: |
-| [Membrane transport and osmosis](COVERAGE.md#category-membrane-transport) | 3 of 3 | 5 of 5 | 5 checked | 5 |
+| [Membrane transport and osmosis](COVERAGE.md#category-membrane-transport) | 3 of 3 | 6 of 6 | 6 checked | 6 |
 | [Ion channels and junctions](COVERAGE.md#category-channels-and-junctions) | 14 of 14 | 8 of 8 | 8 checked | 8 |
 | [Pumps and cotransport](COVERAGE.md#category-pumps-and-cotransport) | 6 of 6 | 5 of 5 | 3 checked · 2 failed | 5 |
 | [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 1 of 1 | 4 of 4 | 4 checked | 3 |
@@ -125,6 +125,12 @@ cells_python=${CELLS_PYTHON:-python}
 
 <details>
 <summary>Commands for individual comparisons</summary>
+
+For saturable uptake, compare the finite extracellular pool and both recipient cells against an independent solution, then test the concentration response against human red-cell measurements. [Proof and measured rates](claims/saturable-species-exchange.md)
+
+```bash
+"$cells_python" -B checks/species_exchange.py
+```
 
 The site driver follows two binding populations and their shared free ligand. The electrode driver compares both pulse polarities with independent charge and work calculations. The mixed-ion driver resolves the three currents at zero total current and reconstructs three measured squid-axon voltage shifts. [Site occupancy](claims/site-occupancy-stages.md) · [Electrode pulses](claims/electrode-pulses.md) · [Mixed membrane](claims/mixed-ion-reversal.md)
 
