@@ -165,8 +165,8 @@ def abundance(state, p, *, xp):
     of -2.2e-18 fmol/s through an empty population, and a refused observation after a retrieval
     emptied a surface (lean/PROGRESS.md "empty-surface-flow" and "trafficking-empty-surface", 20
     November 2026). The select reads the count only, so every nonzero count keeps the two-term
-    value bit for bit; no registered world reaches N = 0 (60 worlds run; the eggs by their writers,
-    which only add or share units; 20 November 2026)."""
+    value bit for bit; no registered world reaches N = 0 (60 worlds run; the 11 eggs declare no
+    channel slots; 20 November 2026)."""
     patch = p.channel_membranes
     a = area(state, p, xp=xp)[patch]
     value = p.channel_abundance * (p.membrane_area[patch] / a) + (
