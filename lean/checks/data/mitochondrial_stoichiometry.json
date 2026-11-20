@@ -1,0 +1,28 @@
+{
+  "galkin1999_complex_i@1": {
+    "doi": "10.1016/S0014-5793(99)00575-X",
+    "locator": "Figure 2, right panel, and equation 3",
+    "preparation": "Inside-out bovine heart submitochondrial particles, NADH to ubiquinone-1",
+    "observable": "Vectorial protons per NADH oxidized, equivalent to protons per two electrons",
+    "value": 4.0,
+    "reported_error": 0.05,
+    "limits": "Initial proton uptake and NADH oxidation rates were used. One proton consumed in quinone reduction is subtracted. The quoted error is recorded as reported."
+  },
+  "jones2017_complex_i@1": {
+    "doi": "10.1074/jbc.M116.771899",
+    "locator": "Table 3 and Figure 3, bovine preparation",
+    "preparation": "Four independent preparations of bovine heart submitochondrial particles",
+    "columns": ["protons_per_two_electrons", "propagated_error"],
+    "paired_rate_estimates": [[4.21, 0.15], [4.10, 0.17], [4.02, 0.19]],
+    "limits": "Three comparisons share the same four preparations. Matching ATP synthesis rates was used to approximate equal proton leak."
+  },
+  "watt2010_bovine_rotor@1": {
+    "doi": "10.1073/pnas.1011099107",
+    "locator": "Figure 1 and stoichiometric interpretation in Discussion",
+    "preparation": "Bovine mitochondrial F1–c-ring complex",
+    "structure_resolution_angstrom": 3.5,
+    "c_subunits": 8,
+    "ATP_per_tight_rotation": 3,
+    "limits": "The structure resolves the ring count. Eight protons per rotation, 8/3 per matrix ATP and 11/3 proton equivalents per delivered ATP assume tight coupling and the specified carrier bookkeeping. ATP production or delivery under load was not measured in this structure."
+  }
+}
