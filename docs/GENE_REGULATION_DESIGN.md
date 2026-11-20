@@ -62,7 +62,8 @@ seats free. §7 gives its plan:
 - **The mitochondria pattern** (§7.7): an equation sheet, symbolic in the potentials and tagged;
   code-blind references from the sheet alone, tagged; registration; then engine output.
 - **A machine-limited arm** with its own plants (§7.8), and **the non-claims, registered** (§7.9).
-- **About 10.5–15.5 agent-days** for A; the charged arm about 4–6 more (§7.10).
+- **About 10.5–15.5 agent-days** for A; the charged arm about 7.5–11.5 more, with its own
+  references; sharing a cell with mitochondria also needs the 16-row cap raised (§7.2, §7.10).
 
 The rest of §0 is the note as written before D235.
 
@@ -497,6 +498,9 @@ argues for its states (INVENTORY_COUPLING §1.4).
   exact ΔG of its own move, and refuses a non-positive amount (`population_unit_turnover.py`:13–17).
 - **That ruling would need extending** to a D152 network beside the new operator, with a measured
   splitting check. That is D152's door "turnover on reacting rows" (its §7.3).
+- **Settled for A after D235 (§7.5):** recharging is the operator's own route, and A's worlds
+  declare no fuel regenerator. So A needs no two-writer ruling. The question returns only for a
+  world that adds a regenerator.
 
 **Idleness.** An undeclared operator is absent from every program, so crossrev stays identical
 (ARCHITECTURE, "Undeclared mechanisms are absent from the traced program"). A declared one with zero
@@ -717,7 +721,8 @@ applies.*
 - One row in the coupling module's routable targets.
 - Registry entries as definition data: lumped monomers, polymers with per-residue potentials, and
   the fuel rows.
-- The two-writer ruling for D152's recharging (§2.4), with its splitting check.
+- The two-writer ruling for D152's recharging (§2.4), with its splitting check. *After D235 this
+  is not needed: §7.5 puts recharging in the operator.*
 - For A2, the producer must admit a precursor that the new operator writes. Today it refuses every
   author but turnover (`population_unit_turnover.py`:77–79), so that is an edit for the producer's
   owner.
@@ -1078,7 +1083,8 @@ question 5 has a better answer in §7.2. The others stay open.
      the layer once it is lifted.
 4. **Fuel.**
    - Finite fuel rows written as the polymerisation's own stoichiometry from the first milestone.
-     This needs the two-writer ruling (§2.4), and it gains from `finite-fuel-v1`.
+     This needs the two-writer ruling (§2.4), and it gains from `finite-fuel-v1`. *After D235:
+     §7.5 puts recharging in the operator and declares no regenerator for A, so A needs no ruling.*
    - The machinery's non-stoichiometric costs, and a regulatory state's maintenance, wait for seam
      E's fuel block. That covers the coupling note's §6.4 Q6, D150's question 11 and D152's
      question 10 in one design (D217).
@@ -1165,16 +1171,33 @@ adenine over ATP, ADP and AMP; phosphorus over Pi, AMP, ADP and ATP, at 1, 1, 2 
 | World | Ions | The set's rows | The world's rows | Total |
 | --- | --- | --- | --- | --- |
 | A1, one gene, adenylate kinase folded | The heredity cell's four: Na⁺, K⁺, M⁻, P⁻ | H⁺, Mg²⁺, ATP, ADP, Pi | The regulator, mRNA, protein, NTP, NMP, amino acid | 15 |
-| A1, one gene, AMP declared (beside mitochondria's IMS kinase) | Four | The same, and AMP | Six | **16, at the cap** |
+| A1, one gene, AMP declared | Four | The same, and AMP | Six | **16, at the cap** |
 | A1-M polymerase-limited: two templates, transcription only | Four | H⁺, Mg²⁺, ATP, ADP, Pi | mRNA₁, mRNA₂, NTP, NMP | 13 |
 | A1-M ribosome-limited: one mRNA held, swept over amounts | Four | H⁺, Mg²⁺, ATP, ADP, Pi | mRNA, protein, amino acid | 12 |
 
-- **So the charged build still fits, with no spare row once AMP is declared.** Any further row then
-  goes over: PPi kept as a row, GTP and GDP, or a second gene with its protein.
+- **A proton buffer, with no extra row.** The charged form releases H⁺ into the set's H⁺ row: four
+  per residue in translation, one per residue in transcription, and more where degradation leaves
+  phosphate monoesters to ionise. So the cell needs a buffer.
+  - `proton_buffers` may name a declared row outside the set that declares no potential or forms
+    (`species_registry.py`:1043–1071).
+  - The heredity cell's anions declare neither (`validation/tissue/surface_pump_v3_fixtures.py`:259),
+    so P⁻ can be the buffer.
+- **So the charged expression cell still fits, with no spare row once AMP is declared.** Any further
+  row then goes over: PPi kept as a row, GTP and GDP, or a second gene with its protein.
 - **What changes where a world needs more:** the expression cell carries two background ions (K⁺ and
   one impermeant anion), not the heredity cell's four. A cell with no channels holds its ions only
-  as inert background. That frees two rows. Otherwise a row must leave, or the cap rises by a D148
-  change with its guard world (D165).
+  as inert background. That frees two rows, and its one anion is then the buffer. Otherwise a row
+  must leave, or the cap rises by a D148 change with its guard world (D165).
+- **A cell that also holds mitochondria does not fit.**
+  - The set alone has 15 rows, and 16 with AMP.
+  - Host P's world needs about 14–16 (CORE_LAWS_ROADMAP §2.2), and the expression rows add six.
+  - That is past 20 rows once A's operator applies the cap.
+  - So composing expression with mitochondria needs a third piece: the cap raised, a D148 change
+    with its guard world (D165).
+- **The world the charged arm would register:** an expression-only cell applying the set. That is
+  the table's first row, with P⁻ as the buffer: 15 rows. It tests charge, and the drift of pH and
+  free Mg²⁺ under the buffer. It does not test composition with mitochondria, which strengthens
+  §7.4's (i).
 - The neutral build needs 13 (§2.1).
 
 **AMP's recycling.** If expression made AMP, something in the cell would have to run adenylate
@@ -1182,7 +1205,8 @@ kinase: chemistry at a node. D152 cannot name ATP once it has forms, and the cyc
 patches (§7.3). So expression folds adenylate kinase into its own stoichiometry: a declared
 reduction, exact in net stoichiometry. AMP stays mitochondria's row.
 
-**What it needs: two pieces, as under @1.**
+**What it needs: two pieces for the charged expression cell, as under @1.** A third, the cap
+raised, comes only when expression shares a cell with mitochondria (above).
 1. **An admission for operators at the closure's rows.**
    - The set's ATP, ADP and Pi carry forms, so a closure holds them. The registry refuses every
      operator that names such a row (`check_two_form_rows`, `species_registry.py`:1392–1432), and
@@ -1209,30 +1233,51 @@ is fixed is §7.4's question.
 ### 7.3 Why an operator, not a kind
 
 Kinds are now admitted at a closure's rows: K1's moved fuel, and the binder-form deferral, under
-base-form laws that read the closure. Could the cycle kind host templated polymerisation, or its
-fuel-consuming part, and so remove G5's first piece? **Not as the kind stands at e0b1d3b8.**
-1. **State.** A population holds no cycle state. Its lumped forms give a steady-state flux,
-   J = k a S (1 − e^x) per population: "It holds no cycle states" (MOLECULAR_MACHINES §1.2).
-   Templated polymerisation needs state: engaged machines and residues in transit through m stages,
-   whose delay is A's first observable.
-2. **Machine identity.** A population's capacity is a declared k, in fmol of cycles per second,
-   times its scheduled availability (`kinds/transporter.py`:16–28, :64). It is not a conserved pool
-   that complexes draw on and return to. So free plus engaged equals total, and A1-M's saturation
-   J = kTM/(1 + kTτ), cannot be written.
-3. **Transit pools.** Monomers consumed but not yet in a product must be held, with a ledger,
-   between steps. A kind moves rows within the stage it acts in, and holds nothing between steps.
-4. **Hosts.** "This pass's limits on the axis: hosts are membrane patches" (`kinds/transporter.py`:12).
-   A soluble polymerase or ribosome needs a node host (MOLECULAR_MACHINES's N2), which is not built.
-   K3 brings chemistry at P, still on a patch.
-5. **The fuel draw alone.** Splitting the fuel chemistry off into a kind breaks the per-residue
-   coupling. Four ATP per residue is stoichiometry. A kind's rate comes from its own kinetics, and
-   it cannot read the operator's elongation flux, which lives in the operator's half-steps.
-   - Stateless node chemistry that is not tied to each residue could become a kind's on a node host:
-     adenylate kinase, say.
-   - That would not remove the operator's own per-residue draw.
+base-form laws that read the closure. §5.2's admission is not the transporter's alone. So the
+question is whether *a kind*, a new one with its own state axes, could host templated
+polymerisation, or its fuel-consuming part, and so remove G5's first piece.
 
-**So G5's first piece stays.** A node host for seam A (N2; 0.5–1 day in MOLECULAR_MACHINES §7) is
-worth naming as a later piece for stateless node chemistry, not as a replacement.
+**The cycle kind as it stands cannot.** Its populations hold no cycle state ("It holds no cycle
+states", MOLECULAR_MACHINES §1.2). A population's capacity is a declared k times its scheduled
+availability (`kinds/transporter.py`:16–28, :64), not a pool of machines that complexes draw on and
+return to.
+
+**A new kind meets five constraints of the kind contract (code and MODULE_SYSTEM at e0b1d3b8).**
+Kinds do carry state between steps, such as accumulators and patch damage, so state alone is not the
+bar.
+1. **No material held outside the inventory: rule (c).** "Material moves land in the shared
+   inventory, and only own accumulators stay apart" (MODULE_SYSTEM_DESIGN §1, its version-1 limits).
+   Residues in transit through the m stages are material. An operator holds such pools, as the
+   producer's maturation pools are held. MODULE_SYSTEM §7 rates lifting rule (c) "moderate".
+2. **No ledger of its own: rule (a).** A kind's ledgers fold into today's ten by role. The module
+   note says of a new conserved count: "Operators already declare own ledgers ..., so such a module
+   can be an operator". The machine identity (free plus engaged equals total) and the conversion
+   ledger are such counts. MODULE_SYSTEM §7 rates lifting rule (a) "moderate" too.
+3. **Hosts are patches and junctions.** `HOST_KINDS = ("patch", "junction")`
+   (`models/surface_pump_v3.py`:2029). A soluble polymerase or ribosome needs a node host
+   (MOLECULAR_MACHINES's N2), which is not built. K3 brings chemistry at P, still on a patch.
+4. **In-step rates, not exact half-steps.** A kind's rates are evaluated at every stage of @3's step,
+   as changes into the shared inventory (`registry/kind_registry.py`:256–262). The chain's exact
+   uniformization half-steps, the producer's `exact_unit_chain_half_steps@1`, belong to an
+   operator's split part.
+5. **The door into production.** B1′'s rate routes reach an operator's `ROUTABLE_CONTROLS`. A kind's
+   rates are reached through the kinds' routing door (`kind_registry.py`:246–254), which is a
+   different mechanism. D218 names B1′ as the one door for state-mediated production feedback, so
+   a kind's initiation would need the user to widen D218.
+
+**The fuel draw alone** is no better. Four ATP per residue is stoichiometry. A kind's rate comes from
+its own kinetics, and it cannot read the operator's elongation flux, which lives in the operator's
+half-steps. Stateless node chemistry that is not tied to each residue, such as adenylate kinase,
+could become a kind's on a node host. That would not remove the operator's own per-residue draw.
+
+**Which constraint decides it: rule (c).** The residues in transit are material, and a kind may not
+hold material outside the inventory.
+- A kind could host the polymerisation only with rule (c) lifted, the machine ledger admitted under
+  rule (a), a node host built, and D218 widened by the user.
+- That is four changes, two of them to the kind contract, against G5's one admission. So G5's first
+  piece stays.
+- A node host for seam A (N2, 0.5–1 day in MOLECULAR_MACHINES §7) is still worth naming, as a later
+  piece for stateless node chemistry.
 
 ### 7.4 The built form is fixed at the sheet's tag
 
@@ -1242,15 +1287,15 @@ the sheet is tagged, not when G4 starts. Two orders:
 | | (i) A registers the neutral reduction; the charged form is a later arm, registered on its own | (ii) A waits for G5 and `beard2005@2`, and is built charged |
 | --- | --- | --- |
 | Starts | When two seats are free | After G5's two pieces and @2 land. They are the binding owner's, on MT-1's path (D234, D235), with no date |
-| References | Written once from the sheet, for both forms, at G2's tag | The same |
-| Registrations | Two: A now, the charged arm later, against G2's tagged references | One |
+| References | G2: the neutral form's, and the sheet check's proof that the two forms agree while pH and free Mg²⁺ are held. The charged arm's own come later, from the same sheet, tagged before its engine output, since its content is the drift those hold fixed | The charged form's, at G2 |
+| Registrations | Two: A now, and the charged arm later, against its own references | One |
 | What A's judged items test | The chain, the account and machine sharing. None depends on charge while pH and free Mg²⁺ are held | The same, plus what the charged world lets drift |
 | Composes with mitochondria's worlds | From the charged arm on | From the start |
 | Its risk | The charged arm may find what the neutral form cannot see: pH or Mg²⁺ drift, or a valence of −L | It waits on pieces with no date, for judged items that gain nothing from charge |
 
 **Recommended: (i).** A's judged claims are numerical, and none depends on charge under its declared
-conditions. So waiting buys none of A's claims. The charged arm's content, drift and composition
-with mitochondria, is what (i) registers later, against the same references.
+conditions. So waiting buys none of A's claims. The charged arm's content, the drift of pH and free Mg²⁺, is
+what (i) registers later, with its own references from the same sheet.
 
 **Either way, the sheet's check shows the reduction is exact (S).**
 - **The potentials.** Each neutral row's standard potential is its charged base form's, transformed
@@ -1366,8 +1411,8 @@ tag before the next starts.
    - the two choices of §7.5: recharging as the operator's own route, and per-residue terms.
 
    **It is symbolic in the potentials.** It writes each row's μ° as a symbol and each cited reaction
-   energy with its source, and it names no set version. A world names `beard2005@1` or `@2` only at
-   registration, so G1 does not wait for the user's repairs ruling.
+   energy with its source, and it names no set version. A world names its source of potentials only
+   at registration, so G1 does not wait for the user's repairs ruling.
 
    Its own check, `validation/gene_regulation/sheet_check.py` (new), does what `appendix_check.py`
    does for MT-1:
@@ -1378,13 +1423,20 @@ tag before the next starts.
 
    **Tag:** `gr1-sheet-<date>`.
 2. **The code-blind references,** by a fresh agent that reads the sheet alone: no code, no model file
-   and no engine output. They are R-chain, R-account, R-share, R-machine (§7.8) and R-noise, for both
-   forms, in `validation/gene_regulation/references/` (new). **Tag:** `gr1-references-<date>`,
-   before any engine output.
+   and no engine output. They are R-chain, R-account, R-share, R-machine (§7.8) and R-noise, for the
+   neutral form, in `validation/gene_regulation/references/` (new). **Tag:**
+   `gr1-references-<date>`, before any engine output.
 3. **Registration** of A's protocol (`validation/gene_regulation/protocols/`, new), in the neutral
    form (§7.4): its judged items and tolerances, its arms and plants, and its non-claims (§7.9). It is
-   registered and tagged before the engine runs any of its worlds. The charged arm registers later,
-   against the same tagged references.
+   registered and tagged before the engine runs any of its worlds.
+   - **What it names for its potentials.** The neutral form cannot apply a set:
+     `with_potential_set` refuses a valence unlike the set's, and the set's ATP is −4 where the lump's
+     is 0. So the neutral world declares its own potentials, transformed at the declared pH and free
+     Mg²⁺ by the sheet's check from a named source, and the registration names that source.
+   - **With adenylate kinase folded, A needs only ATP, ADP and Pi from the set.** `beard2005@1` holds
+     them, so A does not wait for @2.
+   - **The charged arm** registers later. It has its own references, written by the same rule from
+     the same sheet, and tagged before its engine output (§7.4).
 4. **The engine work** lands as development, compared against the references in every gate.
 5. **The judged run,** once, from a clean snapshot.
 
@@ -1395,6 +1447,10 @@ tag before the next starts.
 - The regulator comes from D150's turnover, through B1′.
 - Lifetimes are real or declared, at second-scale steps.
 - It is judged against R-chain and R-account, with §4.1's plants.
+- **What judges the dynamics.** A1's pools are finite, with no regenerator (§7.5), so the draws
+  drift a little over the horizon. The independent stiff ODE, from the same sheet, judges the
+  trajectories. The closed forms (R-chain's, and R-machine's below) are limits, compared within a
+  declared bound that the pools' drift over the horizon sets.
 
 **A1-M, the machine-limited arm** (D235). Machines are scarce against templates.
 - **Polymerase-limited first.** Gene copies are declared data, so a sweep over copies is a
@@ -1455,6 +1511,7 @@ The protocol's scope lists these as non-claims, so that no reader takes them as 
 | G3. The moiety hook | The operators owner; the binding owner for `check_moieties` | `operators/contract.py`; `registry/species_registry.py` | 0.5–1 |
 | G4. The operator and its laws | The lane agent | `operators/templated_polymerisation.py` (new). Law modules under `laws/` (new); the F owner says whether they take an interface of their own. One row in `operators/species_regulated_availability.py`, a recorded exception naming the operators owner, as F3's was | 5–7 |
 | G5. For the later charged arm: operators admitted at the closure's rows, and the set's phosphorus moiety reaching the world's rows | The binding owner; the operators owner | `registry/species_registry.py`; `operators/contract.py` | 3–4.5 |
+| The charged arm's references, and the operator's charged-form work (later) | A references agent, from the sheet alone; the lane agent | `validation/gene_regulation/references/`; the operator | 3.5–5.5 |
 | G6. Worlds, the protocol with its non-claims, registration, and the judged run | The lane agent; the lead registers | `validation/gene_regulation/` (new) | 1.5–2.5, plus CPU minutes |
 | A2's producer edit (development) | The operators owner, who carries FR-7 (D234) | `operators/population_unit_turnover.py` | About 0.5 |
 
@@ -1466,8 +1523,14 @@ The protocol's scope lists these as non-claims, so that no reader takes them as 
   references, then its judged run.
 
 **In all:**
-- **Effort:** about 10.5–15.5 agent-days for A. The charged arm adds G5 and its own registration and
-  run, about 4–6 more (estimate).
+- **Effort:** about 10.5–15.5 agent-days for A.
+- **The charged arm adds about 7.5–11.5 more** (estimate):
+  - G5's two pieces, 3–4.5;
+  - its own references, from the same sheet, 1.5–2.5;
+  - the operator's charged-form work, 2–3: closure reads at the half-steps, base-form moves, H⁺
+    moves, and a valence of −L. G5 covers only the registry and the contract;
+  - its registration and judged run, 1–1.5.
+- **Composing with mitochondria** adds the cap's raising (§7.2), which is not estimated here.
 - **Elapsed:** about 6–9 working days for A with two new seats (estimate).
 
 **Seats.** Two new seats: the lane agent (substantial coding) and the fresh references agent. The
