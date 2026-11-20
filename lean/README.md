@@ -6,14 +6,14 @@ Browse Cells engine laws by scientific topic. Each claim links its Lean proofs, 
 
 <!-- generated: claims-index -->
 
-Direct Lean claims cover [32 of 32 laws](COVERAGE.md#registered-laws) and [8 of 24 operators](COVERAGE.md#registered-operators).
+Direct Lean claims cover [32 of 32 laws](COVERAGE.md#registered-laws) and [9 of 24 operators](COVERAGE.md#registered-operators).
 
 | Category | Registered laws with proof | Claims with proof | Numerical checks | Claims with biological evidence |
 | --- | ---: | ---: | --- | ---: |
 | [Membrane transport and osmosis](COVERAGE.md#category-membrane-transport) | 3 of 3 | 6 of 6 | 6 checked | 6 |
 | [Ion channels and junctions](COVERAGE.md#category-channels-and-junctions) | 14 of 14 | 8 of 8 | 8 checked | 8 |
 | [Pumps and cotransport](COVERAGE.md#category-pumps-and-cotransport) | 6 of 6 | 5 of 5 | 3 checked · 2 failed | 5 |
-| [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 1 of 1 | 4 of 4 | 4 checked | 3 |
+| [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 1 of 1 | 5 of 5 | 4 checked · 1 failed | 4 |
 | [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 7 of 7 | 8 of 8 | 6 checked · 2 failed | 6 |
 | [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 1 of 1 | 7 of 7 | 6 checked · 1 failed | 6 |
 | [Cell physiology](COVERAGE.md#category-cell-physiology) | — | 0 of 1 | 1 checked | 1 |
@@ -125,6 +125,13 @@ cells_python=${CELLS_PYTHON:-python}
 
 <details>
 <summary>Commands for individual comparisons</summary>
+
+For scheduled turnover, the driver checks production, clearance and chemical work, then compares a neuronal protein chase and a chamber with independently metered flow. The full run exits with status 1 when the extreme-rate world loses a 1 fmol pool change. The second command runs the ordinary controls. [Proof, measurements and engine finding](claims/scheduled-species-turnover.md)
+
+```bash
+"$cells_python" -B checks/species_turnover.py
+"$cells_python" -B checks/species_turnover.py --controls-only
+```
 
 For saturable uptake, compare the finite extracellular pool and both recipient cells against an independent solution, then test the concentration response against human red-cell measurements. [Proof and measured rates](claims/saturable-species-exchange.md)
 

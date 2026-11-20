@@ -11,6 +11,25 @@
     "cell-physiology": "Cell physiology"
   },
   "comparisons": {
+    "scheduled-species-turnover": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [],
+      "operators": ["cells.scheduled_species_turnover@1"],
+      "engine_revision": "54cb31957d48f488bddefcce7399ca4739dfbcea",
+      "record_revision": "13aaabb568e7f5c47a8571f35e1f4ae4b110595c",
+      "sources": {
+        "Production and clearance bookings": "src/cells/operators/species_turnover.py#L246",
+        "Net pool movement and signed work": "src/cells/operators/species_turnover.py#L256",
+        "Summed cell and outside route rates": "src/cells/operators/species_turnover.py#L279",
+        "Material and energy ledger integration": "src/cells/operators/species_turnover.py#L568"
+      },
+      "driver": "lean/checks/species_turnover.py",
+      "record": "lean/PROGRESS.md#scheduled-species-turnover"
+    },
     "saturable-species-exchange": {
       "kind": "engine",
       "models": ["resolved_pump_composite@1", "resolved_pump_tissue@3"],
@@ -669,6 +688,68 @@
     }
   },
   "claims": [
+    {
+      "id": "scheduled-species-turnover",
+      "category": "reactions-and-binding",
+      "title": "Production and first-order clearance preserve a positive pool and account for gross turnover",
+      "statement": "At constant rates, the local pool solves dn/dt = P − kn. Production and clearance are separately nonnegative, their difference is the pool change, and subdivision preserves both the endpoint and the cumulative clearance. A balanced pool can have strictly positive production and clearance.",
+      "assumptions": [
+        "The neutral species starts at a positive amount in a well-mixed node of fixed volume. Each schedule interval has nonnegative constant production P and first-order clearance k. Clearance rates for the same pool add. Only cells can have production in this operator.",
+        "The interval identities use exact real arithmetic. The numerical test also follows both gross bookings, the stored float64 amount and the signed chemical work when production and clearance are nearly equal.",
+        "The protein chase uses a signal proportional to the retained pulse-labeled cohort, with zero new labeled input and a constant clearance rate per protein. A second fit fixes the signal background to the measured control. The assay tests the decay curve and leaves the protein’s charge, molar amount and chemical work unmeasured."
+      ],
+      "formal": {
+        "status": "proved",
+        "about": ["cells.scheduled_species_turnover@1"],
+        "theorems": {
+          "CellsProofs.Chemistry.SpeciesTurnover.initial_amount": "lean/CellsProofs/Chemistry/SpeciesTurnover.lean",
+          "CellsProofs.Chemistry.SpeciesTurnover.zero_clearance": "lean/CellsProofs/Chemistry/SpeciesTurnover.lean",
+          "CellsProofs.Chemistry.SpeciesTurnover.exposure_bounds": "lean/CellsProofs/Chemistry/SpeciesTurnover.lean",
+          "CellsProofs.Chemistry.SpeciesTurnover.amount_pos": "lean/CellsProofs/Chemistry/SpeciesTurnover.lean",
+          "CellsProofs.Chemistry.SpeciesTurnover.gross_nonneg": "lean/CellsProofs/Chemistry/SpeciesTurnover.lean",
+          "CellsProofs.Chemistry.SpeciesTurnover.gross_balance": "lean/CellsProofs/Chemistry/SpeciesTurnover.lean",
+          "CellsProofs.Chemistry.SpeciesTurnover.net_change": "lean/CellsProofs/Chemistry/SpeciesTurnover.lean",
+          "CellsProofs.Chemistry.SpeciesTurnover.equilibrium_offset": "lean/CellsProofs/Chemistry/SpeciesTurnover.lean",
+          "CellsProofs.Chemistry.SpeciesTurnover.amount_derivative": "lean/CellsProofs/Chemistry/SpeciesTurnover.lean",
+          "CellsProofs.Chemistry.SpeciesTurnover.steady_turnover": "lean/CellsProofs/Chemistry/SpeciesTurnover.lean",
+          "CellsProofs.Chemistry.SpeciesTurnover.compose_stages": "lean/CellsProofs/Chemistry/SpeciesTurnover.lean",
+          "CellsProofs.Chemistry.SpeciesTurnover.cohort_survival": "lean/CellsProofs/Chemistry/SpeciesTurnover.lean",
+          "CellsProofs.Chemistry.SpeciesTurnover.half_life": "lean/CellsProofs/Chemistry/SpeciesTurnover.lean"
+        }
+      },
+      "numerical": {
+        "status": "failed",
+        "comparisons": ["scheduled-species-turnover"],
+        "result": "144 scalar cases per backend and two ordinary four-phase schedules matched the 60-digit reference. A one-second compiled run at extreme production and clearance accepted 1 fmol and zero work against a reference of 2 fmol and 0.995667 pJ. The two rounded gross bookings erased the net movement. Halving both rates recovered the correct result. A mixing-chamber check used metered input and exhaust without fitting the outlet measurements. At 120 minutes it predicted 0.387 vol% CO₂ against 0.318 ± 0.034 across four chambers (mean ± SD). [Riveros Lizana et al., Fig. 4](https://doi.org/10.3390/ani13162675)"
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Mean labeled-protein puncta per neuron after the label is removed. Absolute production and clearance of the total protein pool remain open.",
+        "unit": "puncta per neuron",
+        "evidence": [
+          {
+            "dataset_id": "dorrbaum2018_protein_chase@1",
+            "manifest": "lean/checks/data/dorrbaum2018_protein_chase.json",
+            "citation": "Dörrbaum et al. (2018), Figure 2B, source data 1",
+            "doi": "10.7554/eLife.34202.008",
+            "locator": "GM130 and Lamin B1 counts for individual cells, including methionine-only background controls.",
+            "context": "Primary rat hippocampal neurons after a two-hour pulse. Each protein’s day 0 signal sets its scale, and its day 1 signal sets its decay rate.",
+            "role": "held_out_from_fitting",
+            "fit": ["Day 0 and day 1 for each protein"],
+            "evaluation": [
+              "GM130 days 2 and 3",
+              "Lamin B1 days 3 and 7"
+            ],
+            "excluded": ["Unlabeled production and total protein amount"],
+            "observed": 11.62,
+            "predicted": 5.07,
+            "uncertainty": "The displayed Lamin B1 day 7 mean is 11.62 ± 3.22 puncta per neuron (SD across 21 cells). The four late groups have 13–32 cells each. These SDs describe cell scatter. The holdouts are retrospective within one study.",
+            "assessment": "For GM130 the early fit predicted 4.99 and 3.85 against means of 4.00 and 3.31 on days 2 and 3. For Lamin B1 it predicted 16.58 against 18.20 on day 3 and 5.07 against 11.62 on day 7. Including measured background raised the day 7 prediction to 5.97. The assay measures retention of labeled protein.",
+            "report": "lean/PROGRESS.md#scheduled-species-turnover"
+          }
+        ]
+      }
+    },
     {
       "id": "saturable-species-exchange",
       "category": "membrane-transport",
