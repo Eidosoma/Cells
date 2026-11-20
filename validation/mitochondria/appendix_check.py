@@ -12,7 +12,13 @@ each turnover's equilibrium:
   the appendix's closed form at every state, not constant, and runs against its own free energy
   at some states;
 - two planted errors are caught: complex I's charge with the wrong sign, and the exchanger's
-  voltage shares not summing to one.
+  voltage shares not summing to one;
+- every turnover's integer counts conserve charge with the declared valences and move the charge
+  q the appendix states (planted: one count changed);
+- each law's S in the family proposed for the engine's form, anchored on the turnover's own
+  affinity (and, for every law with a standard free energy, on its forward term), equals the
+  declared S at every state. The affinity-anchored form agrees only because the free energies here
+  use Table 2's values: with other standard potentials it keeps the backward term instead.
 
 Run: PYTHONPATH=src:. python validation/mitochondria/appendix_check.py [--out FILE]. Seconds.
 """
@@ -48,11 +54,17 @@ def rt_units(kj_mol):
     return D(str(kj_mol)) * 1000 / D(repr(source.RT_J_mol()))
 
 
-F_OVER_RT_PER_MV = D(repr(source.DECLARED["faraday_C_mol"])) / (
-    D(repr(source.DECLARED["gas_constant_J_mol_K"])) * D(repr(source.DECLARED["temperature_K"]))
-) / 1000
+F_OVER_RT_PER_MV = (
+    D(repr(source.DECLARED["faraday_C_mol"]))
+    / (D(repr(source.DECLARED["gas_constant_J_mol_K"])) * D(repr(source.DECLARED["temperature_K"])))
+    / 1000
+)
 
-P = {name: D(repr(source.parameter(name))) for name in source.TABLE_1 if source.parameter(name) is not None}
+P = {
+    name: D(repr(source.parameter(name)))
+    for name in source.TABLE_1
+    if source.parameter(name) is not None
+}
 MM = D("1e-3")  # mM -> M
 G_PH7 = {name: rt_units(r.dG0_kJ_mol) for name, r in source.TABLE_2.items()}
 G_1M = {name: G_PH7[name] + r.scalar_protons * LN1E7 for name, r in source.TABLE_2.items()}
@@ -70,7 +82,11 @@ def c1(s, *, charge_sign=1):
     x = (G_1M["C1"] + ln(s["NAD"] * s["QH2"] / (s["NADH"] * s["Q"])) - ln(hn)
          + 4 * ln(hp / hn) + charge_sign * 4 * u)  # fmt: skip
     dgh = u + ln(hp / hn)
-    a = P["X_C1"] * exp(-(G_PH7["C1"] + 4 * dgh - ln(hn / D("1e-7")) - ln(s["Q"] / s["QH2"]))) * s["NADH"]
+    a = (
+        P["X_C1"]
+        * exp(-(G_PH7["C1"] + 4 * dgh - ln(hn / D("1e-7")) - ln(s["Q"] / s["QH2"])))
+        * s["NADH"]
+    )
     b = P["X_C1"] * s["NAD"]
     return a - b, a * (ONE - exp(x)), x, ONE, a, b
 
@@ -139,7 +155,10 @@ def f1(s, *, own_frame=False):
     return a - b, a * (ONE - exp(x)), x, ONE, a, b
 
 
-def ant(s, *, shares=(D("0.35"), D("0.65"))):
+SHARES = (D("0.35"), D("0.65"))  # Eq. 14's theta_P and theta_N
+
+
+def ant(s, *, shares=SHARES):
     """The nucleotide exchanger, Eq. 14 (Mg-free ATP4- and ADP3-)."""
     u, (sp, sn) = s["u"], shares
     x = ln(s["ATP_P"] * s["ADP_N"] / (s["ATP_N"] * s["ADP_P"])) - u
@@ -195,6 +214,100 @@ FAILING = {"F1 (Eq. 11)": (f1, d_eq11, "H_N"), "PiHt (Eq. 16)": (piht, d_eq16, "
            "C3 (Eq. 24)": (c3_eq24, d_eq24, "H_N")}  # fmt: skip
 
 
+# ------------------------------------------------------------------ the turnovers' counts
+
+# The appendix's turnovers: {law: ({(species, end): nu}, q)}, water left out (neutral). F1 at the
+# source's n_A = 3; complex IV per O2.
+TURNOVERS = {
+    "C1": ({("NADH", "N"): -1, ("Q", "N"): -1, ("NAD", "N"): 1, ("QH2", "N"): 1, ("H", "N"): -5,
+            ("H", "P"): 4}, 4),
+    "C3": ({("QH2", "N"): -1, ("Q", "N"): 1, ("cytc_ox", "P"): -2, ("cytc_red", "P"): 2,
+            ("H", "N"): -2, ("H", "P"): 4}, 2),
+    "C4": ({("O2", "N"): -1, ("cytc_red", "P"): -4, ("cytc_ox", "P"): 4, ("H", "N"): -8,
+            ("H", "P"): 4}, 8),
+    "QO": ({("QH2", "N"): -2, ("Q", "N"): 2, ("O2", "N"): -1, ("H", "N"): -12, ("H", "P"): 12}, 12),
+    "F1": ({("ADP", "N"): -1, ("HPO4", "N"): -1, ("ATP", "N"): 1, ("H", "N"): N_A - 1,
+            ("H", "P"): -N_A}, -N_A),
+    "ANT": ({("ATP", "N"): -1, ("ATP", "P"): 1, ("ADP", "P"): -1, ("ADP", "N"): 1}, -1),
+    "PiHt": ({("HPO4", "P"): -1, ("HPO4", "N"): 1, ("H", "P"): -2, ("H", "N"): 2}, 0),
+    "KH": ({("K", "P"): -1, ("K", "N"): 1, ("H", "N"): -1, ("H", "P"): 1}, 0),
+    "DH": ({("NAD", "N"): -1, ("NADH", "N"): 1, ("H", "N"): 1}, 0),
+}  # fmt: skip
+
+
+def turnover_errors(turnovers=TURNOVERS):
+    """Each turnover's charge sum (zero) and its charge moved N to P (the appendix's q)."""
+    z, out = source.DECLARED["valence"], []
+    for law, (nu, q) in turnovers.items():
+        total = sum(n * z[s] for (s, _), n in nu.items())
+        moved = sum(n * z[s] for (s, end), n in nu.items() if end == "P")
+        if total != 0 or moved != q:
+            out.append(f"{law}: charge sum {total}, charge moved {moved} (appendix q = {q})")
+    return out
+
+
+# ------------------------------------------------------------------ the engine form's instances
+
+
+def _logistic(z):
+    return ONE / (ONE + z)
+
+
+def _share(x, n):
+    """The affinity-share factor 1 / sum_{i<n} e^(i x / n): (1 - e^(x/n)) / (1 - e^x)."""
+    return ONE / sum(exp(D(i) * x / n) for i in range(n))
+
+
+def instances(s):
+    """{law: (declared S, [S of each instance])}: the proposed family's instances of each law,
+    S = k prod c^o e^(zeta u) prod (1 + K prod c^q e^(eta u))^(-s) e^(-theta x) / sum_{i<n}
+    e^(i x/n), the affinity-anchored one first, then the forward-anchored one where it differs."""
+    u, hn, hp = s["u"], s["H_N"], s["H_P"]
+    out = {}
+    _, _, x, _, a, _ = c1(s)
+    fwd = (P["X_C1"] * exp(-G_PH7["C1"]) * D(10) ** 7 * s["NADH"] * s["Q"] / s["QH2"]
+           * hn**5 / hp**4 * exp(-4 * u))  # fmt: skip
+    out["C1"] = (a, [P["X_C1"] * s["NAD"] * exp(-x), fwd])
+    _, _, x, _, a, _ = c3_eq7(s)
+    fwd = (P["X_C3"] * exp(-G_PH7["C3"] / 2) * D("1e-7") * s["cox"] * hn / hp**2
+           * (s["QH2"] / s["Q"]).sqrt() * exp(-u))  # fmt: skip
+    out["C3 (Eq. 7)"] = (a * _share(x, 2), [P["X_C3"] * s["cred"] * exp(-x / 2) * _share(x, 2),
+                                            fwd * _share(x, 2)])  # fmt: skip
+    _, _, x, _, a, _ = c3_eq24(s)
+    pi_tot = s["HPO4_N"] * (ONE + hn / K_DH)
+    act = (ONE + pi_tot / (P["k_Pi3"] * MM)) * _logistic(pi_tot / (P["k_Pi4"] * MM))
+    out["C3 (Eq. 24, balanced)"] = (
+        a * _share(x, 2),
+        [P["X_C3"] * act * s["cred"] * hn * D(10) ** 7 * exp(-x / 2) * _share(x, 2)],
+    )
+    _, _, x, _, a, _ = c4(s)
+    sat = _logistic(P["k_O2"] / s["O2"]) * _logistic(s["cox"] / s["cred"])
+    fwd = (P["X_C4"] * sat * exp(-G_PH7["C4"] / 2) * D(10) ** 7 * s["cred"] * hn**2 / hp
+           * s["O2"] ** D("0.25") * exp(-u))  # fmt: skip
+    out["C4 (per O2)"] = (a / 2 * _share(x, 4),
+                          [P["X_C4"] / 2 * sat * s["cox"] * exp(u) * exp(-x / 4) * _share(x, 4),
+                           fwd / 2 * _share(x, 4)])  # fmt: skip
+    _, _, x, _, a, _ = f1(s)
+    mg_atp, mg_adp = _mg(s)
+    pi_tot = s["HPO4_N"] * (ONE + hn / K_DH)
+    anchored = (P["X_F1"] * mg_atp * D("1e-7") / hn * (ONE + hn / K_DH)
+                / (ONE + D("1e-7") / K_DH) * exp(-x))  # fmt: skip
+    fwd = (P["X_F1"] * exp(-G_PH7["ATP"]) * P["K_MgADP"] / P["K_MgATP"] * mg_adp * pi_tot
+           * (hp / hn) ** N_A * exp(N_A * u))  # fmt: skip
+    out["F1 (balanced)"] = (a, [anchored, fwd])
+    _, _, x, _, a, _ = ant(s)
+    th_p, th_n = D("0.35"), D("0.65")
+    out["ANT"] = (a, [P["X_ANT"] * _logistic(P["k_mADP"] / s["ADP_P"])
+                      * _logistic(s["ATP_P"] / s["ADP_P"] * exp(-th_p * u))
+                      * _logistic(s["ADP_N"] / s["ATP_N"] * exp(-th_n * u))])  # fmt: skip
+    _, _, x, _, a, _ = piht(s)
+    h2_p = hp * s["HPO4_P"] / K_DH
+    out["PiHt (balanced)"] = (a, [P["X_PiHt"] * hn * _logistic(P["k_PiHt"] * MM / h2_p)])
+    _, _, x, _, a, _ = kh(s)
+    out["KH"] = (a, [P["X_KH"] * s["K_P"] * hn])
+    return out
+
+
 # ------------------------------------------------------------------ the grid
 
 
@@ -205,6 +318,7 @@ def _log_uniform(rng, low, high):
 def state(rng):
     """One random state (concentrations in M, u = F dPsi / RT) over the screen's domain
     (docs/CORE_SEAMS_STEP0.md §1.2's Beard ranges)."""
+
     def fraction():
         return D(repr(0.01 + 0.98 * rng.random()))
 
@@ -262,8 +376,12 @@ def check(n_states=400, seed=20261120):
                 at_zero = max(at_zero, abs(declared) / max(abs(a), abs(b)))
             if printed * x > 0 and abs(x) > D("1e-9"):
                 wrong_printed += 1
-        entry = dict(states=len(grid), declared_wrong_sign=str(worst_sign),
-                     declared_at_zero=f"{at_zero:.3e}", printed_wrong_sign_states=wrong_printed)  # fmt: skip
+        entry = dict(
+            states=len(grid),
+            declared_wrong_sign=str(worst_sign),
+            declared_at_zero=f"{at_zero:.3e}",
+            printed_wrong_sign_states=wrong_printed,
+        )
         ok &= worst_sign == 0 and at_zero < TOLERANCE
         if name in PASSING:  # Relative to the one-way fluxes, so no cancellation near x = 0.
             worst = max(abs(p - d) / max(abs(a), abs(b))
@@ -289,13 +407,30 @@ def check(n_states=400, seed=20261120):
     # Planted errors, each must be caught.
     planted_c1 = max(abs(p - d) / max(abs(a), abs(b))
                      for p, d, _, _, a, b in (c1(s, charge_sign=-1) for s in states))  # fmt: skip
+    bad = (D("0.35"), D("0.60"))
     planted_ant = max(abs(p - d) / max(abs(a), abs(b))
-                      for p, d, _, _, a, b in (ant(s, shares=(D("0.35"), D("0.60"))) for s in states))  # fmt: skip
-    report["planted"] = dict(c1_charge_sign=f"{planted_c1:.3e}", ant_shares_0_95=f"{planted_ant:.3e}")
+                      for p, d, _, _, a, b in (ant(s, shares=bad) for s in states))  # fmt: skip
+    report["planted"] = dict(
+        c1_charge_sign=f"{planted_c1:.3e}", ant_shares_0_95=f"{planted_ant:.3e}"
+    )
     ok &= planted_c1 > D("1e-3") and planted_ant > D("1e-3")
     errors = appendix_errors()
     report["appendix_numbers"] = errors or "agree"
     ok &= not errors
+    errors = turnover_errors()
+    planted = dict(TURNOVERS)
+    planted["F1"] = ({**TURNOVERS["F1"][0], ("H", "N"): N_A}, -N_A)  # the consumed proton dropped
+    report["turnovers"] = errors or "every count conserves charge and moves the appendix's q"
+    report["turnovers_planted"] = turnover_errors(planted) or "NOT CAUGHT"
+    ok &= not errors and bool(turnover_errors(planted))
+    worst = {}
+    for st in states:
+        for law, (declared, forms) in instances(st).items():
+            for k, value in enumerate(forms):
+                key = f"{law}, instance {k + 1}"
+                worst[key] = max(worst.get(key, D(0)), abs(value - declared) / declared)
+    report["engine_form_instances"] = {k: f"{v:.3e}" for k, v in worst.items()}
+    ok &= all(v < TOLERANCE for v in worst.values())
     report["entries_RT"] = {
         "C1 per NADH, 1 M": f"{G_1M['C1']:.6f}", "C3 per QH2, 1 M": f"{G_1M['C3']:.6f}",
         "C4 per O2, 1 M": f"{2 * G_1M['C4']:.6f}", "F1 base forms per ATP, 1 M": f"{G_F_BASE:.6f}",
@@ -327,7 +462,9 @@ def appendix_errors(path=APPENDIX):
     computed = {"per NADH": G_1M["C1"], "per QH₂": G_1M["C3"], "§1.3, per O₂": 2 * G_1M["C4"],
                 "§1.4, per O₂": 2 * (G_PH7["C3"] + G_PH7["C4"]), "per ATP": G_F_BASE}  # fmt: skip
     for key, value in computed.items():
-        line = next((ln_ for ln_ in text.splitlines() if ln_.startswith("| §") and key in ln_), None)
+        line = next(
+            (ln_ for ln_ in text.splitlines() if ln_.startswith("| §") and key in ln_), None
+        )
         if line is None:
             out.append(f"the free-energy table has no row {key!r}")
             continue

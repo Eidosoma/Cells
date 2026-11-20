@@ -352,9 +352,7 @@ with the world.
 ## 7. Parameters and free-energy entries
 
 **Table 1 values** (the 2006 correction; units as printed). "With Pi control" is the source's
-final model, under Eq. 24. "Without" is Eq. 7's. The organism file
-`validation/mitochondria/beard2005_cardiac.py` holds the same numbers, and its check compares the
-two.
+final model, under Eq. 24. "Without" is Eq. 7's.
 
 <!-- parameters -->
 | Name | Law | With Pi control | Without | Unit | Source |

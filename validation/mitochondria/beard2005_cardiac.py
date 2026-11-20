@@ -13,8 +13,8 @@ Sources (both CC BY; read from the PDFs of record on 19-20 November 2026):
   a corrected Table 1, nothing else.
 
 Only bare numbers with their place in the source are kept (D186, D227); the descriptions are ours.
-The PDFs and our renders stay in the workspace (mito-lane-20261119/sources and render), never in
-the repository.
+The PDFs, their identities and our renders stay in the workspace (mito-lane-20261119: sources,
+render and out/sources.json), never in the repository.
 
 Reading notes (each checked at the typeset image, not a text layer):
 - Table 1 in the 2005 PDF is the uncorrected table. The 2006 correction changes nine values
@@ -49,7 +49,6 @@ SOURCES = {
         journal="PLoS Comput Biol 1(4):e36",
         doi="10.1371/journal.pcbi.0010036",
         licence="CC BY (as printed on the article)",
-        pdf_sha256="4b38c30d9fa453573ed999fac36e9d374cefcc042839a54560e4cdc505adbd08",
     ),
     "beard2006": dict(
         authors=("Beard DA",),
@@ -59,7 +58,6 @@ SOURCES = {
         journal="PLoS Comput Biol 2(1):e8",
         doi="10.1371/journal.pcbi.0020008",
         licence="CC BY (as printed on the article)",
-        pdf_sha256="c7602905435a654b81a05b8aab356ade5a71d711daac902e5afa153468e78e70",
     ),
 }
 
@@ -147,7 +145,8 @@ TEXT_SIGN_SLIP = {"ATP": -36.03}  # The text under Eq. 11 (p. 0255); see the mod
 
 # Stoichiometric facts the source prints (Eqs. 2, 6, 8, 10 and 22, and the text beside them).
 PUMPED_PROTONS = {"C1": 4, "C3": 4, "C4": 2}  # Delta H+ per turnover of Table 2's reaction.
-CHARGES_MOVED = {"C1": 4, "C3": 2, "C4": 4, "F1": -3, "ANT": -1, "Hle": -1, "K": -1}  # dPsi/dt, Eq. 22
+# Charges moved N to P per printed turnover, from dPsi/dt in Eq. 22.
+CHARGES_MOVED = {"C1": 4, "C3": 2, "C4": 4, "F1": -3, "ANT": -1, "Hle": -1, "K": -1}
 VOLTAGE_SHARES_ANT = (0.35, 0.65)  # Eq. 14: the exponents' shares on the IMS and matrix sides.
 BUFFER_PER_M = 100.0  # Eq. 22's text: 1/r_buff = (100 M^-1) [H+]_x.
 
@@ -174,8 +173,23 @@ DECLARED = dict(
     standard_concentration_M=1.0,  # every activity a = c / 1 M, H+ included
     # Valences (net charge at pH 7 of the forms the source names; only differences enter a law).
     valence=dict(
-        H=1, K=1, Mg=2, ATP=-4, MgATP=-2, ADP=-3, MgADP=-1, AMP=-2, HPO4=-2, H2PO4=-1,
-        NAD=-1, NADH=-2, Q=0, QH2=0, O2=0, cytc_ox=3, cytc_red=2,
+        H=1,
+        K=1,
+        Mg=2,
+        ATP=-4,
+        MgATP=-2,
+        ADP=-3,
+        MgADP=-1,
+        AMP=-2,
+        HPO4=-2,
+        H2PO4=-1,
+        NAD=-1,
+        NADH=-2,
+        Q=0,
+        QH2=0,
+        O2=0,
+        cytc_ox=3,
+        cytc_red=2,
     ),  # fmt: skip
 )
 
@@ -203,8 +217,8 @@ def synthesis_base_form_1M_kJ_mol(temperature_K=None):
     reference pH 7 with the source's own k_dH: dG°(base) = dG°_ATP + RT ln(1e-7) -
     RT ln(1 + 1e-7 M / k_dH). A declared conversion (the appendix, law 2)."""
     rt = RT_J_mol(temperature_K)
-    k = parameter("k_dH")
-    return (TABLE_2["ATP"].dG0_kJ_mol * 1e3 + rt * math.log(1e-7) - rt * math.log1p(1e-7 / k)) * 1e-3
+    matched = rt * math.log(1e-7) - rt * math.log1p(1e-7 / parameter("k_dH"))
+    return (TABLE_2["ATP"].dG0_kJ_mol * 1e3 + matched) * 1e-3
 
 
 def per_oxygen_1M_kJ_mol(temperature_K=None):
