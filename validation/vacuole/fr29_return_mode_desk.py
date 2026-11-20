@@ -213,13 +213,91 @@ def predict(out_path):
         print(f"  bound {b['pair']} {b['relation']} {b['bound_mV']}: {rev}, met {met}")
 
 
+REVERSALS = HERE / "kettner2003_fig3_reversals.csv"
+SHAPE_RANGE_MV = (-75.0, 20.0)  # The registered shape window: no trace end, no channel limb.
+SE_TABLE2 = {"8.5/5.0": 5.0, "7.5/5.0": 4.0, "6.0/5.0": 3.0}
+
+
+def score(prediction_path, out_path):
+    """Panel A's rows read only now, and the prediction scored by the rules it carries."""
+    record = json.loads(Path(prediction_path).read_text())
+    grid = dict(zip(record["grid_mV"], range(len(record["grid_mV"])), strict=True))
+    readings = rows("A", PANEL_A)
+    read_reversals = {}
+    with REVERSALS.open() as f:
+        for r in csv.DictReader(f):
+            if r["panel"] == "A":
+                key = f"{float(r['pH_cyt'])}/{float(r['pH_vac'])}"
+                read_reversals[key] = dict(
+                    read=float(r["read_reversal_mV"]) if r["read_reversal_mV"] else None,
+                    table2=r["table2_reversal_mV"],
+                )
+    curves = {}
+    for ph_c, ph_v in PANEL_A:
+        key = f"{ph_c}/{ph_v}"
+        predicted = record["panel_A"][key]
+        window, ambiguous = [], 0
+        for pair, v, i, flags, identity in readings:
+            if pair != (ph_c, ph_v) or not SHAPE_RANGE_MV[0] <= v <= SHAPE_RANGE_MV[1]:
+                continue
+            if "ambiguous" in identity or "ambiguous" in flags:
+                ambiguous += 1
+                continue
+            window.append((v, i, predicted["I_mA_per_m2"][grid[v]]))
+        residual = np.array([p - i for _, i, p in window])
+        rms = float(np.sqrt(np.mean(residual**2)))
+        bound_rms = 2.0 * record["in_sample_rms_mA_per_m2"]
+        reversal_score = None
+        read = read_reversals.get(key, {}).get("read")
+        if read is not None and predicted["reversal_mV"] is not None:
+            miss = predicted["reversal_mV"] - read
+            reversal_score = dict(
+                predicted=predicted["reversal_mV"], read=read, miss=miss,
+                table2=read_reversals[key]["table2"], tolerance=2.0 * SE_TABLE2[key],
+                passed=abs(miss) <= 2.0 * SE_TABLE2[key],
+            )  # fmt: skip
+        curves[key] = dict(
+            shape=dict(rms=rms, rows=len(window), ambiguous_left_out=ambiguous,
+                       threshold=bound_rms, passed=rms <= bound_rms,
+                       max_abs=float(np.max(np.abs(residual))),
+                       mean_signed=float(np.mean(residual))),
+            reversal=reversal_score,
+        )  # fmt: skip
+    result = dict(
+        kind="cells.fr29_desk_score@1",
+        written_utc=datetime.now(UTC).isoformat(timespec="seconds"),
+        revision=head(),
+        prediction=dict(path=str(prediction_path), sha256=hashlib.sha256(
+            Path(prediction_path).read_bytes()).hexdigest()),
+        curves=curves,
+        bounds=record["bounds"],
+    )  # fmt: skip
+    Path(out_path).write_text(json.dumps(result, indent=1) + "\n")
+    for key, c in curves.items():
+        s, r = c["shape"], c["reversal"]
+        rev = "no crossing" if r is None else (
+            f"reversal {r['predicted']:.1f} vs read {r['read']:.1f} (Table 2 {r['table2']}): "
+            f"miss {r['miss']:+.1f}, passed {r['passed']}"
+        )  # fmt: skip
+        print(f"{key}: shape RMS {s['rms']:.2f} (threshold {s['threshold']:.2f}, "
+              f"max {s['max_abs']:.2f}, mean {s['mean_signed']:+.2f}, rows {s['rows']}, "
+              f"ambiguous out {s['ambiguous_left_out']}) passed {s['passed']}; {rev}")  # fmt: skip
+    for b in record["bounds"]:
+        print(f"bound {b['pair']} {b['relation']} {b['bound_mV']}: met {b['met']}")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     sub = parser.add_subparsers(dest="step", required=True)
     sub.add_parser("predict").add_argument("out")
+    scoring = sub.add_parser("score")
+    scoring.add_argument("prediction")
+    scoring.add_argument("out")
     args = parser.parse_args()
     if args.step == "predict":
         predict(args.out)
+    elif args.step == "score":
+        score(args.prediction, args.out)
 
 
 if __name__ == "__main__":
