@@ -7809,3 +7809,68 @@ for the data handoff", with the results.
   measured trigger-clearance time.
 
 This gives FR-7's channel target a public-data path ahead of its junction stage (U1).
+
+## D242: Origin of life takes the lipid route, through fuel; the Lean repairs land now
+
+2026-11-20, about 18:25 UTC. Asked how close a break-and-renew run is, the lead gave two routes:
+1. GARD on `cells.assembly_lineages@1`, whose G3 and G4 have never run;
+2. the lipid simulation D212 asked for. Four pieces are missing:
+   - a world that combines catalysis with vesicles, division and the pool;
+   - F12's restored futures on @2;
+   - an F12 reader for @2's records;
+   - the paused Lean repairs.
+
+The lead added a caveat. @2's catalysis keeps detailed balance, so without a drive the vesicles may
+relax to one composition and the result could be null; fuel may be needed.
+
+The user: "2. and yes lets get everything working inclduing Fuel", then "and lets get lean repears
+done".
+
+- **The route:** the lipid simulation. GARD's G3 and G4 stay unscheduled.
+- **The scope, as the lead reads it:**
+  - the four missing pieces;
+  - then the parts of the official version the lead named in the message the user answered: OL4
+    (energy, with fuel), OL6 (the GARD limit and the deterministic representation), OL8
+    (oligomers) and OL9 (the first experiment, registered before any judged run).
+  - This answers D199's U8 (OL0–OL9 as one programme) as far as these parts go. OL8 cannot start
+    before OL4 lands.
+- **Fuel starts as a desk note.**
+  - It says what of ORIGIN_OF_LIFE_ENGINE_DESIGN §3 already exists in the version-2 family.
+  - It gives options for which step fuel pays for. Fuel answers the caveat only if fuel-driven
+    steps make or unmake membrane species, as in anchor A5, with member catalysis acting on those
+    steps. The options go to the user.
+  - It says how its files sit beside the origin-of-life builder's.
+  - No fueled world runs before OL5's references for it are registered.
+- **The Lean repairs land now:**
+  - the three on `ol-lean-repairs`: GARD's pair-consistent leave, the transition-state factor, and
+    the lumen's tension formed from the physical area;
+  - the declared-lumen crash (`ol-pool-declared-lumen`);
+  - the @1 ledger docstring's sink sign. It reached the lead the same evening, and the docstring
+    should read ΔΦ = −W + S;
+  - `species_exchange`'s depletion remainder, in the robustness batch.
+
+  The origin-of-life repairs gate as one stack, and D230's lane rule is lifted for that stack only.
+  A repair is done when the Lean project's own reproducers pass at the landed head.
+- **Priority:** D230 stands until the user answers one question: whether origin of life now queues
+  on equal terms with the core and feature-request work.
+
+## D243: Origin of life gets one more agent; the rest is the lead's call
+
+2026-11-20, about 18:29 UTC. The lead asked whether origin of life should now compete for agents
+and test lanes on equal terms with the core and feature-request work. The user: "just add one more
+agent", "then as you see fit".
+
+- **One more agent works on origin of life:** a second builder, beside the first builder and the
+  fuel desk agent (D242).
+- **The second builder's work** is the break-and-renew development pieces in files that no open
+  origin-of-life head touches:
+  - the F12 reader for @2's records;
+  - the world that combines catalysis with vesicles, division and the pool;
+  - F12's restored futures, through a single-lineage checkpoint (rung S) and a branch rule.
+
+  It starts with the plan and price the lead had asked of the first builder. After the fuel note is
+  ruled, it builds OL4.
+- **The first builder keeps** FR-20 and the Lean repairs, then slice 5, the population runs and
+  OL5's probe roles, then OL6.
+- **Everything else is the lead's call,** within D230 and D242. Core and feature requests keep
+  their claim on seats and lanes, and origin of life may get more as seats free.

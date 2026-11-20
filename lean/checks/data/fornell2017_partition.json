@@ -1,0 +1,27 @@
+{
+  "citation": "Fornell et al. (2017), An intra-droplet particle switch for droplet microfluidics using bulk acoustic waves",
+  "doi": "10.1063/1.4984131",
+  "figure": "2c, printed page 031101-3, ultrasound switched off",
+  "source": "https://uu.diva-portal.org/smash/get/diva2:1109652/FULLTEXT01.pdf#page=4",
+  "vector_pdf": "https://pdfs.semanticscholar.org/4fce/d00941cb5717b9cf22bdbdfb05477586d2f3.pdf",
+  "observable": "Count of 10 µm polystyrene beads in the center daughter against the sum across all three daughters, with the two side daughters pooled.",
+  "geometry": "Three approximately equal-volume daughter droplets, about 6 nL each. The comparison sets the independent center probability to one third from this nominal geometry.",
+  "splits_plotted": 180,
+  "zero_center": 0,
+  "zero_both_sides": 0,
+  "parent_count_frequency": {
+    "7": 7, "8": 5, "9": 12, "10": 7, "11": 9, "12": 7, "13": 9, "14": 10,
+    "15": 12, "16": 9, "17": 7, "18": 4, "19": 8, "20": 2, "22": 2, "23": 3,
+    "24": 3, "25": 3, "26": 1, "27": 1, "29": 2, "31": 1, "32": 1, "33": 1,
+    "34": 1, "35": 1, "36": 2, "37": 3, "39": 5, "40": 1, "41": 4, "42": 2,
+    "43": 6, "44": 5, "45": 5, "46": 3, "47": 3, "48": 1, "49": 3, "50": 3,
+    "51": 1, "52": 1, "53": 1, "54": 1, "56": 1, "60": 1
+  },
+  "center_counts_by_parent": {
+    "7": [2, 3, 3, 4, 4, 4, 5],
+    "9": [2, 3, 3, 3, 3, 3, 4, 4, 5, 5, 6, 7],
+    "12": [2, 2, 3, 3, 4, 5, 8]
+  },
+  "digitization": "Read the center of each pale-blue four-curve vector marker once, including coincident markers, against the 0 and 60 bead ticks and the 0 and 100 percent ticks. Round the horizontal reading and then its product with the plotted center fraction to the nearest bead. The driver can compare the extraction against an SVG exported from the linked four-page PDF.",
+  "limits": "The low-count examples give sample variances with small denominators. The horizontal total is reconstructed from daughters. Empty side daughters cannot be resolved individually. Keeping track of solvent-filled droplets with zero beads and keeping track of assemblies with zero molecules are distinct observations."
+}

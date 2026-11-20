@@ -265,6 +265,10 @@
   "/mnt/workspaces/Cells/core-pass-binding-20261118/gate-c562be5f/tiers/measure/measured.json",
   "/mnt/workspaces/Cells/fr7-loop-20261119/u2-compartment/gate-1ec77911/tiers/measure/measured.json",
   "/mnt/workspaces/Cells/ol3-engine-20261119/measure-99770fce/measured.json",
+  "/mnt/workspaces/Cells/bath-recipe-20261120/tiers/measured-ba8743ad/measured.json",
+  "/mnt/workspaces/Cells/kcc-overflow-log-20261120/tiers/measured-89a69efa/measured.json",
+  "/mnt/workspaces/Cells/ol3-engine-20261119/measure-e2caf966/measured.json",
+  "/mnt/workspaces/Cells/ol3-engine-20261119/measure-aaee2582/measured-changed.json",
   "/mnt/workspaces/Cells/ol3-engine-20261119/measure-4254ccb2/measured-changed.json"
  ],
  "measured_provenance": [
@@ -2236,6 +2240,34 @@
    "utc": "2026-11-20T16:53:02+00:00"
   },
   {
+   "git_revision": "ba8743ad0e649a116e81bf8beb977fbba944a7a3",
+   "dirty": false,
+   "root": ".claude/worktrees/bath-recipe-order",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-20T18:27:05+00:00"
+  },
+  {
+   "git_revision": "89a69efabe312431344772c7a6d59188356513d1",
+   "dirty": false,
+   "root": ".claude/worktrees/kcc-overflow-log",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-20T18:27:13+00:00"
+  },
+  {
+   "git_revision": "e2caf9668457b08b6b4736e0ed1388a73db56cfe",
+   "dirty": false,
+   "root": "/mnt/workspaces/Cells/ol3-engine-20261119/tree-e2caf966",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-20T17:54:44+00:00"
+  },
+  {
+   "git_revision": "aaee25826be6f9ce7485fd6ebb4f06af7ef860af",
+   "dirty": false,
+   "root": "/mnt/workspaces/Cells/ol3-engine-20261119/tree-aaee2582",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-20T19:01:36+00:00"
+  },
+  {
    "git_revision": "4254ccb2c2666cf2464b261720e317b846a69b2f",
    "dirty": false,
    "root": "/mnt/workspaces/Cells/ol3-engine-20261119/tree-4254ccb2",
@@ -2659,10 +2691,10 @@
    },
    {
     "file": "tests/unit/test_bath_schedule.py",
-    "seconds": 4.43,
+    "seconds": 4.38,
     "exit_code": 0,
     "counts": {
-     "passed": 36
+     "passed": 44
     }
    },
    {
@@ -3996,10 +4028,10 @@
    },
    {
     "file": "tests/unit/test_k_anion_symport.py",
-    "seconds": 4.42,
+    "seconds": 13.51,
     "exit_code": 0,
     "counts": {
-     "passed": 10
+     "passed": 14
     }
    },
    {
@@ -5940,7 +5972,7 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_v2_geometry.py",
-    "seconds": 28.85,
+    "seconds": 43.92,
     "exit_code": 0,
     "counts": {
      "passed": 20
@@ -5948,7 +5980,7 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_v2_kernel.py",
-    "seconds": 43.32,
+    "seconds": 55.26,
     "exit_code": 0,
     "counts": {
      "passed": 9

@@ -874,12 +874,14 @@ def _assemble(spec, structure, layout, m, verdict, start, state, ctx, events, dr
     quanta = geometry.place_quanta(world, structure.places)
     slot_counts = np.stack([r[3].slots[:, :places] for r in rows])
     alive = np.stack([r[3].alive for r in rows])
-    V = np.zeros(alive.shape)
-    sigma = np.zeros(alive.shape)
-    for r, row in enumerate(rows):
-        for k in np.flatnonzero(row[3].alive):
-            c = (row[3].pool + row[3].slots[k])[:places]
-            V[r, k], sigma[r, k] = lumen.host_volume_L(world, c), lumen.host_tension(world, c)
+    osmotic = world.conventions.lumen_volume == "osmotic"
+    if osmotic:  # the lumen's volume and tension rows, as the single lineage records them
+        V = np.zeros(alive.shape)
+        sigma = np.zeros(alive.shape)
+        for r, row in enumerate(rows):
+            for k in np.flatnonzero(row[3].alive):
+                c = (row[3].pool + row[3].slots[k])[:places]
+                V[r, k], sigma[r, k] = lumen.host_volume_L(world, c), lumen.host_tension(world, c)
     row_arrays = {
         "row_time": np.asarray([r[2] for r in rows]),
         "row_event": np.asarray([r[1] for r in rows], dtype=np.int64),
@@ -893,9 +895,9 @@ def _assemble(spec, structure, layout, m, verdict, start, state, ctx, events, dr
         "free_energy_kT": f,
         "ledger_residual_kT": residual,
         "membrane_footprint_quanta": np.where(alive, slot_counts @ quanta[:places], 0),
-        "lumen_volume_L": V,
-        "tension_N_per_m": sigma,
     }
+    if osmotic:  # a declared lumen's volume is the world's constant, and it has no tension
+        row_arrays |= {"lumen_volume_L": V, "tension_N_per_m": sigma}
     if ctx.columns:
         row_arrays |= {"schedule_work_kT": columns, "shear_work_kT": extra[:, E_SHEAR],
                        "discarded_free_energy_kT": extra[:, E_SINK]}  # fmt: skip
