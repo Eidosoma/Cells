@@ -20,7 +20,8 @@ Contract (operators/contract.py):
 * requires the water operator before it: the route's step bound reads the
   declared maximum volume;
 * refusal: the route's explicit rate at the maximum volume above the family's
-  bound, an availability outside [0, 1] and the law's own domain.
+  bound (its cell's and, at a finite outside node, that node's concentrations and
+  volume; route_rate), an availability outside [0, 1] and the law's own domain.
 """
 
 from bisect import bisect_right
@@ -149,9 +150,27 @@ def bind(spec, declaration):
 # ------------------------------------------------------------------ the operator
 
 
+def outside_term(state, p, k, a):
+    """[membrane] (K_o + A_o) / V_o (mM/pL) of each patch's outside node at the declared state, or
+    zero where that node is a held bath (its concentrations are held) or inactive."""
+    finite = np.asarray(p.outside_active & ~p.reservoir)
+    volume = np.where(finite, p.extracellular_volume, 1.0)
+    co = (p.extracellular_amount_reference + state.extracellular_amount_increment) / volume
+    term = np.where(finite, (co[k] + co[a]) / volume, 0.0)
+    return term[np.asarray(p.membrane_outside)]
+
+
 def route_rate(spec, model):
-    """The largest route relaxation rate, k f (K_i + A_i) / V at the declared state with the
-    volume factor at the declared maximum volume (the symport's step bound, read once)."""
+    """The largest route relaxation rate at the declared state, with the volume factor at the
+    declared maximum volume (the symport's step bound, read once).
+
+    A route's outward extent q (fmol) moves its product difference D = K_i A_i - K_o A_o at the
+    linear rate (K_i + A_i) / V_i + (K_o + A_o) / V_o per fmol, each volume its own (the independent
+    Lean project's finite_volume_drive, lean/CellsProofs/Transport/PotassiumAnionSymport.lean). So
+    D relaxes at k f [(K_i + A_i) / V_i + (K_o + A_o) / V_o], and above h x rate = 2 the explicit
+    ARS(2,2,2) stages book the step against D (its explicit_step and step_points_inward). A held
+    bath keeps its concentrations: its term is zero, and the rate is k f (K_i + A_i) / V_i bit for
+    bit, as before the outside term was added (19 November 2026's finding)."""
     state, p = model.initial_values(spec)
     cells = np.asarray(p.membrane_cell)
     k, a = int(p.symport_potassium_species), int(p.symport_anion_species)
@@ -161,6 +180,7 @@ def route_rate(spec, model):
         (vmax - p.symport_set_volume_pL) / (p.symport_steepness * p.symport_set_volume_pL)
     )
     rate = p.symport_capacity_fmol_s_mM2 * factor * (ci[k, cells] + ci[a, cells]) / p.volume[cells]
+    rate = rate + p.symport_capacity_fmol_s_mM2 * factor * outside_term(state, p, k, a)
     return np.max(np.where(p.symport_route & p.membrane_active, rate, 0.0), initial=0.0)
 
 
@@ -243,10 +263,11 @@ class KAnionSymport(Operator):
         return (padded,)
 
     def check_steps(self, spec, declaration, schedule, steps, controls, model):
-        """The route bound: the relaxation rate of a route's concentration product,
-        k f (K_i + A_i) / V at the declared state with the volume factor at the
-        declared maximum volume (the routes are electroneutral, so they add no
-        membrane conductance to @3's explicit-stage bound)."""
+        """The route bound: the relaxation rate of a route's product difference,
+        k f [(K_i + A_i) / V_i + (K_o + A_o) / V_o] at the declared state (the outside
+        term zero at a held bath) with the volume factor at the declared maximum volume
+        (route_rate; the routes are electroneutral, so they add no membrane conductance
+        to @3's explicit-stage bound)."""
         self.bind_check_steps(spec, declaration, schedule, model)(steps)
 
     def bind_check_steps(self, spec, declaration, schedule, model):
