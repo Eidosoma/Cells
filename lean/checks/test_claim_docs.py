@@ -225,6 +225,13 @@ class ClaimDocsTests(unittest.TestCase):
         self.assertIn("| Open | [run]", rows[2])
         self.assertIn("1 of 2 registered laws", page)
         self.assertIn("0 of 1 registered operators", page)
+        target = "(claims/first.md#numerical-comparison)"
+        for verdict in ("failed", "checked", "open"):
+            self.claim["numerical"]["status"] = verdict
+            page, _ = coverage(
+                inventory, {"first": self.claim}, {"run": check}, self.lane.parent, []
+            )
+            self.assertEqual(target in page, verdict == "failed")
         check["laws"].append("balance@1")
         with self.assertRaisesRegex(ValueError, "wrong registry type"):
             coverage(inventory, {"first": self.claim}, {"run": check}, self.lane.parent, [])

@@ -4,6 +4,14 @@
 
 Choose a claim for its assumptions, theorems, numerical results and sources. Partial evidence covers a measured part of a claim. A result marked not assessable has too much uncertainty for a verdict. [Topic overview](README.md#proof-index) · [Registered laws](#registered-laws) · [Registered operators](#registered-operators)
 
+## Failing numerical checks
+
+- [An empty surface population has zero abundance and channel flow](claims/empty-surface-flow.md#numerical-comparison)
+- [Mixing two solutions of unequal positive concentration releases heat in the cleft](claims/cleft-mixing-heat.md#numerical-comparison)
+- [Regulated turnover rates stay bounded and a changing regulator can give first-order production](claims/regulated-turnover-routing.md#numerical-comparison)
+- [Uncharged membrane insertion dissipates nonnegative capacitor heat](claims/membrane-insertion-heat.md#numerical-comparison)
+- [Pair-consistent catalysis preserves the heat of a reversible transfer](claims/gard-pair-heat.md#numerical-comparison)
+
 <a name="category-membrane-transport"></a>
 
 ## Membrane transport and osmosis

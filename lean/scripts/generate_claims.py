@@ -322,6 +322,11 @@ def coverage(inventory, claims, comparisons, repo, category_sections):
     active = set(inventory["law"]) | set(inventory["operator"])
     if unknown := direct.keys() - active - exercised.keys():
         raise ValueError(f"unrecognized direct proof subjects: {', '.join(sorted(unknown))}")
+    failing = [
+        f"- [{c['title']}](claims/{c['id']}.md#numerical-comparison)"
+        for c in claims.values()
+        if c["numerical"]["status"] == "failed"
+    ]
     parts = [
         COVERAGE_NOTE,
         "# Proof and evidence catalog",
@@ -329,6 +334,8 @@ def coverage(inventory, claims, comparisons, repo, category_sections):
         "Partial evidence covers a measured part of a claim. A result marked not assessable "
         "has too much uncertainty for a verdict. [Topic overview](README.md#proof-index) · "
         "[Registered laws](#registered-laws) · [Registered operators](#registered-operators)",
+        "## Failing numerical checks",
+        "\n".join(failing) or "The register lists zero numerical failures.",
         *category_sections,
     ]
     overview = []

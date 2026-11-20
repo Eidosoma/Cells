@@ -1,6 +1,6 @@
 # Cells proofs
 
-Browse Cells engine laws by scientific topic. Each claim links its Lean proofs, tested engine code and biological measurements. [Current law and operator coverage](COVERAGE.md) · [Latest comparisons and engine findings](PROGRESS.md)
+Browse Cells engine laws by scientific topic. Each claim links its Lean proofs, tested engine code and biological measurements. [Current law and operator coverage](COVERAGE.md) · [Failing numerical checks](COVERAGE.md#failing-numerical-checks) · [Latest comparisons and engine findings](PROGRESS.md)
 
 ## Proof index
 
@@ -21,6 +21,8 @@ Direct Lean claims cover [44 of 44 laws](COVERAGE.md#registered-laws) and [26 of
 <!-- /generated -->
 
 Each category opens its detailed claim table on GitHub, including registered laws still awaiting a proof. A single claim can cover several laws. The last column counts claims with a recorded measurement or literature finding, including partial evidence. Each numerical result applies to the cases in its linked record. [All registered laws](COVERAGE.md#registered-laws) · [Design notes](ENGINE_LAW_VERIFICATION.md) · [Voltage pilot closeout](../reports/BIO003_PILOT_CLOSEOUT.md)
+
+The failure list updates from the claims register. The 20 November review records which failures stop a run, which affect its accuracy, and which fixes passed on development branches. [Repair status and replay results](PROGRESS.md#remaining-numerical-findings)
 
 ## Biological evidence
 
