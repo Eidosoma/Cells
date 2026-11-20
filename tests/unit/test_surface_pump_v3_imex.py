@@ -21,7 +21,8 @@ from cells.registry.models import get_model
 from validation.tissue import surface_pump_v3_fixtures as fixtures
 
 BACKEND = os.environ.get("CELLS_COMPONENT_BACKEND", "cpu")
-SOLVERS = (imex.EULER_ID, imex.ARS222_ID)
+N2 = imex.IMPLICIT_CONDUCTANCES_N2_ALONE_ID  # FR-8 rung 1 (D235); it runs only beside X2.
+SOLVERS = (imex.EULER_ID, imex.ARS222_ID, N2)
 CHANNEL_FIELDS = ("channel_gate", "channel_transferred", "channel_dissipated_energy_pJ")
 CHANNEL_OBSERVATIONS = (
     *CHANNEL_FIELDS,
@@ -43,6 +44,15 @@ def scaled_difference(a, b):
     return 0.0 if scale == 0 else float(np.max(np.abs(a - b)) / scale)
 
 
+def selected(raw):
+    """N2 runs only with X2 selected (its guard); the other schemes as they are."""
+    if raw["execution"]["solver"] == N2:
+        raw["execution"]["energy_check"] = dict(
+            check="step_doubled_energy@1", integration_error_cap=2e-3
+        )
+    return raw
+
+
 def initial(raw):
     spec = parse_spec(raw)
     state, layout = get_model(spec.model).initial_values(spec)
@@ -61,7 +71,9 @@ def clear_compiled_programs():
 @pytest.fixture(scope="module")
 def imex_runs():
     runs = {
-        (arm, solver): run(parse_spec(fixtures.definition(arm, solver=solver, backend=BACKEND)))
+        (arm, solver): run(
+            parse_spec(selected(fixtures.definition(arm, solver=solver, backend=BACKEND)))
+        )
         for arm in ("closed", "release")
         for solver in SOLVERS
     }
@@ -70,7 +82,7 @@ def imex_runs():
     runs["clamped", "rk4"] = run(parse_spec(reference))
     for solver in SOLVERS:
         runs["clamped", solver] = run(
-            parse_spec(fixtures.definition("clamped", solver=solver, backend=BACKEND))
+            parse_spec(selected(fixtures.definition("clamped", solver=solver, backend=BACKEND)))
         )
     return runs
 
@@ -111,7 +123,9 @@ def test_imex_ledgers_constraints_and_channel_transfer(arm, solver, imex_runs):
         assert np.all(value.observations.channel_availability[0] == 0)
 
 
-@pytest.mark.parametrize("solver, tolerance", [(imex.EULER_ID, 2e-2), (imex.ARS222_ID, 1e-3)])
+@pytest.mark.parametrize(
+    "solver, tolerance", [(imex.EULER_ID, 2e-2), (imex.ARS222_ID, 1e-3), (N2, 1e-3)]
+)
 def test_imex_dissipation_and_work_ledgers_track_rk4(solver, tolerance, imex_runs):
     value, reference = imex_runs["clamped", solver], imex_runs["clamped", "rk4"]
     for key in surface_pump_v3.STATE_TYPE._fields:
@@ -122,14 +136,15 @@ def test_imex_dissipation_and_work_ledgers_track_rk4(solver, tolerance, imex_run
 
 
 def test_imex_observed_order_against_rk4_with_channels(imex_runs):
-    """Euler first and ARS(2,2,2) second order in Vm, channel flux and energy residual."""
+    """Euler first and ARS(2,2,2) second order in Vm, channel flux and energy residual; N2, on
+    ARS(2,2,2)'s tableau, second order too."""
     reference = imex_runs["clamped", "rk4"].observations
-    for solver, order in ((imex.EULER_ID, 1), (imex.ARS222_ID, 2)):
+    for solver, order in ((imex.EULER_ID, 1), (imex.ARS222_ID, 2), (N2, 2)):
         errors, energy = [[], []], []
         for dt in (1e-4, 5e-5, 2.5e-5):
             raw = fixtures.definition("clamped", solver=solver, backend=BACKEND)
             raw["execution"]["dt"] = dt
-            value = imex_runs["clamped", solver] if dt == 1e-4 else run(parse_spec(raw))
+            value = imex_runs["clamped", solver] if dt == 1e-4 else run(parse_spec(selected(raw)))
             assert value.spec.execution.dt == dt
             for row, key in zip(errors, ("membrane_voltage_V", "channel_flux_fmol_s"), strict=True):
                 observed, expected = getattr(value.observations, key), getattr(reference, key)

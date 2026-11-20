@@ -75,12 +75,13 @@ from cells.definitions.surface_pump_v3_spec import (
 )
 from cells.execution.errors import NumericalError
 from cells.laws.channels import sodium_channels, voltage_gates
-from cells.laws.electrochemistry import CHARGE_PER_FMOL, F, R
+from cells.laws.electrochemistry import CHARGE_PER_FMOL, MOL_PER_FMOL, F, R
 from cells.laws.junctions import junction_gate
 from cells.laws.junctions.selective import selective_flux
 from cells.laws.pumps import calcium_atpase
 from cells.laws.pumps import kinetic_pump as pump
 from cells.laws.pumps import kinetic_pump_binding as pumps
+from cells.laws.routes import patch_electrodiffusion as constant_field_route
 from cells.models import inner_laws
 from cells.models import surface_kinetic as kinetic
 from cells.models import surface_pump as first
@@ -110,11 +111,14 @@ STATE_TYPE = NamedTuple("SurfacePumpChannelState", [(k, object) for k in STATE_A
 # @3 layout carries it (empty by default); the state layout (STATE_TYPE) is unchanged,
 # and @3 checkpoints from source before this field do not load (snapshots already
 # refuse a source change).
+# implicit_conductances: one element under an N2 solver (surface_imex.IMPLICIT_CONDUCTANCE_IDS,
+# D235), none otherwise; a static switch by shape, as junction_heat_trapezoid's.
 CHANNEL_LAYOUT_FIELDS = (
     "channel_laws",
     "channel_relative_permeability",
     "channel_gate_active",
     "junction_heat_trapezoid",
+    "implicit_conductances",
 )
 LAYOUT_TYPE = NamedTuple(
     "SurfacePumpChannelLayout",
@@ -281,6 +285,7 @@ def _todays_initial_values(spec):
         channel_relative_permeability=np.zeros((s, nc)),
         channel_gate_active=np.zeros((2, nc), dtype=bool),
         junction_heat_trapezoid=np.zeros(int(m.junction_heat_booking == TRAPEZOID_JUNCTION_HEAT)),
+        implicit_conductances=np.zeros(int(spec.execution.solver in imex.IMPLICIT_CONDUCTANCE_IDS)),
     )
     gate, mids = np.zeros((2, nc)), [p.id for p in m.membranes]
     codes = law_codes()  # The registry's codes (today's five keep theirs, 0-4).
@@ -1078,12 +1083,25 @@ def control_domain_valid(state, control, p, active, *, xp=jnp, structure=None):
 domain_valid.with_control = control_domain_valid
 
 
-def explicit_rates(state, potential, control, p, *, xp=jnp, membrane_process=None, structure=None):
+def explicit_rates(
+    state,
+    potential,
+    control,
+    p,
+    *,
+    xp=jnp,
+    membrane_process=None,
+    structure=None,
+    conductances=None,
+):
     """surface_pump_v2.explicit_rates with the channel currents at the same potentials.
 
     The gate rate is zero here: IMEX steps set gates by the exponential update.
     With a membrane_process (opt-in) its flux joins the explicit membrane terms
     and the call returns (rates, valid, MembraneProcess); otherwise (rates, valid).
+    Under N2 (conductances, the step's frozen ConductanceWeights) the rates are the remainder:
+    the routes' linear parts W dv leave them (explicit_remainder), after the kinds' stage checks,
+    which read the whole node rates.
     """
     s, n = tissue.field_layout(p).surface, p.active.size
     kinds = _kinds(structure)
@@ -1194,6 +1212,8 @@ def explicit_rates(state, potential, control, p, *, xp=jnp, membrane_process=Non
     )
     if kinds:
         rates = _with_kind_derivatives(rates, kind_rates, structure, state, xp=xp)
+    if conductances is not None:  # N2 (static): the remainder, J - W dv, at these potentials.
+        rates = explicit_remainder(rates, conductances, potential, r, p, xp=xp)
     valid = r.valid
     if kinds:  # A failed stage read, a kind's domain or a stage check refuses the step.
         outside_rate = xp.where(p.reservoir, 0.0, inflow)
@@ -1231,8 +1251,12 @@ def explicit_rates(state, potential, control, p, *, xp=jnp, membrane_process=Non
     return rates, valid
 
 
-def implicit_rates(weight, potential, state, p, *, xp=jnp):
-    """Face electromigration rates with frozen face weights; zero elsewhere."""
+def implicit_rates(weight, potential, state, p, *, xp=jnp, conductances=None):
+    """Face electromigration rates with frozen face weights; zero elsewhere.
+
+    Under N2 (conductances, the step's frozen ConductanceWeights) the membranes', channels' and
+    junctions' linear parts at the same potentials join them (linear_route_fluxes), with their
+    amounts on both sides; their heat is set at the stage (implicit_route_heat)."""
     s, n = tissue.field_layout(p).surface, p.active.size
     flux = imex.drift_flux(weight, potential[n:], s, xp=xp)
     zero = xp.zeros_like(state.extracellular_amount_increment)
@@ -1240,11 +1264,330 @@ def implicit_rates(weight, potential, state, p, *, xp=jnp):
         flux, zero, (p.face_sender,), xp=xp
     )
     rates = type(state)(*(xp.zeros_like(v) for v in state))  # The state's own type (schema A).
+    if conductances is None:
+        return rates._replace(
+            extracellular_amount_increment=xp.where(p.reservoir, 0.0, inflow),
+            face_transferred=flux,
+            reservoir_supplied=xp.where(p.reservoir, -inflow, 0.0),
+        )
+    membrane, channel, junction = linear_route_fluxes(conductances, potential, p, xp=xp)
+    cells, outside = route_amount_rates(membrane, channel, junction, p, xp=xp)
+    inflow = inflow + outside
     return rates._replace(
+        amount_increment=xp.where(p.active, cells, 0.0),
         extracellular_amount_increment=xp.where(p.reservoir, 0.0, inflow),
+        membrane_transferred=membrane,
+        junction_transferred=junction,
         face_transferred=flux,
         reservoir_supplied=xp.where(p.reservoir, -inflow, 0.0),
+        channel_transferred=channel,
     )
+
+
+# --- N2 (FR-8 rung 1, D235): membranes' and junctions' slope conductances in the operator ------
+#
+# Each constant-field route (a membrane's passive permeabilities, a channel population, a
+# junction) is split as J(dv) = W dv + [J(dv) - W dv], W = dJ/d(dv) frozen for the step at the
+# tableau's operator time (the face weights' time). The first part is implicit: its charge
+# current is G dv, G = CHARGE_PER_FMOL sum_s z_s W_s >= 0 (S), a Laplacian block beside the faces'
+# in (C + a dt L) phi = q, so one factorization still serves the step and the matrix stays SPD.
+# The species move in flux form with the same W, so material and charge stay exact. The second
+# part, the remainder, stays among the explicit rates; its derivative in dv vanishes at the
+# operator time. Each part's heat, J x its electrochemical difference, is booked with its own
+# weights of the tableau (the remainder at the explicit stages, the linear part at the implicit
+# ones), so the heat accumulators integrate as the state does. The pieces are FR45's frozen-
+# weight constant-field split (laws/routes/patch_electrodiffusion.py), in this file's sender ->
+# receiver sign (cell -> outside for patches).
+#
+# What stays explicit, and its checks. The stage rule (membrane_rate, explicit_only) counts the
+# declared kinds' terms; the definition-time bound (implicit_conductance_rate_bound) counts face
+# diffusion and every species' material relaxation; the calcium, kind and junction-gate bounds
+# stay. A known gap, guarded by X2: the pumps' electrogenic currents stay explicit and no rule
+# counts their slope, as today's never did. Their charge relaxation through dI/dV is
+# 1.2e-4 per s on H2 and 4.8e-4 per s on W0 at the declared states (20 November 2026, a central
+# difference of the pump law), against 1/(10 x 200 ms) = 0.5 per s.
+
+
+class ConductanceWeights(NamedTuple):
+    """N2's frozen slopes dJ/d(dv) (fmol/s per V, sender -> receiver flux)."""
+
+    membrane: object  # [species, membrane]: the patches' own constant-field permeabilities
+    channel: object  # [species, channel]: each population at its patch's voltage
+    junction: object  # [species, junction]
+
+
+def implicit_conductances(p):
+    """Whether the layout's solver is an N2 ID (static: its field's shape)."""
+    flag = getattr(p, "implicit_conductances", None)
+    return flag is not None and flag.shape[0] > 0
+
+
+def route_slope(c_from, c_to, dv, valence, temperature, area, permeability, available, *, xp):
+    """dJ/d(dv) of selective_flux's constant-field flux (sender -> receiver, fmol/s per V):
+    J = A P a/MOL (c_from B(-x) - c_to B(x)), x = z F dv/RT, so dJ/d(dv) = A P a/MOL (zF/RT)
+    (-c_from B'(-x) - c_to B'(x)); B' < 0, so z dJ/d(dv) >= 0."""
+    k = valence * F / (R * temperature)
+    x = k * dv
+    prefactor = area * permeability * available / MOL_PER_FMOL
+    slope = constant_field_route.bernoulli_slope
+    return prefactor * k * (-c_from * slope(-x, xp=xp) - c_to * slope(x, xp=xp))
+
+
+def conductance_weights(state, read, potential, control, p, *, xp=jnp, structure=None):
+    """N2's ConductanceWeights at a state (its read's concentrations, the given node potentials,
+    its gates) under the step's controls, as transport and channel_rates form the fluxes."""
+    n = p.active.size
+    ci, co = physical_amounts(read, p)
+    ci = xp.where(p.active, ci / p.volume, 1.0)
+    co = xp.where(p.outside_active, co / p.extracellular_volume, 1.0)
+    dv = xp.where(
+        p.membrane_active, potential[p.membrane_cell] - potential[n + p.membrane_outside], 0.0
+    )
+    left, right = ci[:, p.membrane_cell], co[:, p.membrane_outside]
+    membrane = route_slope(
+        xp.where(p.membrane_active, left, 1.0),
+        xp.where(p.membrane_active, right, 1.0),
+        dv,
+        p.valence,
+        p.temperature,
+        p.membrane_area,
+        p.membrane_permeability,
+        control.membrane,
+        xp=xp,
+    )
+    patch = p.channel_membranes
+    opening = channel_opening(state.channel_gate, p.channel_laws, xp=xp, structure=structure)
+    channel = route_slope(
+        left[:, patch],
+        right[:, patch],
+        channel_voltage(dv, p, xp=xp),
+        p.valence,
+        p.temperature,
+        p.membrane_area[patch],
+        p.channel_permeability * p.channel_relative_permeability,
+        p.channel_abundance * opening * control.channel,
+        xp=xp,
+    )
+    sender, receiver = ci[:, p.junction_sender], ci[:, p.junction_receiver]
+    junction = route_slope(
+        xp.where(p.junction_active, sender, 1.0),
+        xp.where(p.junction_active, receiver, 1.0),
+        xp.where(
+            p.junction_active,
+            potential[p.junction_sender] - potential[p.junction_receiver],
+            0.0,
+        ),
+        p.valence,
+        p.temperature,
+        p.junction_area,
+        p.junction_permeability,
+        control.junction * state.junction_gate,
+        xp=xp,
+    )
+    return ConductanceWeights(
+        xp.where(p.membrane_active, membrane, 0.0),
+        xp.where(p.channel_active, channel, 0.0),
+        xp.where(p.junction_active, junction, 0.0),
+    )
+
+
+def conductance_laplacian(weights, p, *, xp=jnp):
+    """N2's node-space Laplacian (S): each patch's G (its own and its channels') between its cell
+    and outside node, each junction's between its two cells."""
+    n, o = p.active.size, p.outside_active.size
+    g_patch = CHARGE_PER_FMOL * species_sum(p.valence * weights.membrane, xp=xp)
+    g_patch = g_patch + channel_to_membrane_sum(
+        CHARGE_PER_FMOL * species_sum(p.valence * weights.channel, xp=xp), p, xp=xp
+    )
+    g_junction = CHARGE_PER_FMOL * species_sum(p.valence * weights.junction, xp=xp)
+    zero = xp.zeros((n + o, n + o), dtype=g_patch.dtype)
+
+    def block(g, a, b):
+        return (
+            scatter(g, zero, (a, a), xp=xp)
+            + scatter(g, zero, (b, b), xp=xp)
+            - scatter(g, zero, (a, b), xp=xp)
+            - scatter(g, zero, (b, a), xp=xp)
+        )
+
+    return block(g_patch, p.membrane_cell, n + p.membrane_outside) + block(
+        g_junction, p.junction_sender, p.junction_receiver
+    )
+
+
+def channel_to_membrane_sum(value, p, *, xp=jnp):
+    """Sum a per-channel value [channel] into its patch [membrane]."""
+    return scatter(value, xp.zeros_like(p.membrane_area), (p.channel_membranes,), xp=xp)
+
+
+def linear_route_fluxes(weights, potential, p, *, xp=jnp):
+    """(membrane [species, membrane], channel [species, channel], junction [species, junction]):
+    N2's implicit parts W dv at the given node potentials (sender -> receiver)."""
+    n = p.active.size
+    dv = xp.where(
+        p.membrane_active, potential[p.membrane_cell] - potential[n + p.membrane_outside], 0.0
+    )
+    dj = xp.where(
+        p.junction_active, potential[p.junction_sender] - potential[p.junction_receiver], 0.0
+    )
+    return (
+        weights.membrane * dv,
+        weights.channel * channel_voltage(dv, p, xp=xp),
+        (weights.junction * dj),
+    )
+
+
+def route_amount_rates(membrane, channel, junction, p, *, xp=jnp):
+    """(cells [species, cell], outside [species, outside]): the amount rates of route fluxes
+    (sender -> receiver; a channel's on its patch)."""
+    patches = membrane + channel_to_membrane(channel, p, xp=xp)
+    zero_cells = xp.zeros((patches.shape[0], p.active.size), dtype=patches.dtype)
+    zero_outside = xp.zeros((patches.shape[0], p.outside_active.size), dtype=patches.dtype)
+    cells = (
+        scatter(junction, zero_cells, (p.junction_receiver,), xp=xp)
+        - scatter(junction, zero_cells, (p.junction_sender,), xp=xp)
+        - scatter(patches, zero_cells, (p.membrane_cell,), xp=xp)
+    )
+    return cells, scatter(patches, zero_outside, (p.membrane_outside,), xp=xp)
+
+
+def route_delta_mu(read, potential, p, *, xp=jnp):
+    """(membrane, junction) electrochemical differences (J/mol, sender minus receiver) at a
+    state's read concentrations and the given node potentials, as transport forms them."""
+    n = p.active.size
+    ci, co = physical_amounts(read, p)
+    ci = xp.where(p.active, ci / p.volume, 1.0)
+    co = xp.where(p.outside_active, co / p.extracellular_volume, 1.0)
+    rt, z = R * p.temperature, p.valence
+    out = []
+    for active, left, right, dv in (
+        (
+            p.membrane_active,
+            ci[:, p.membrane_cell],
+            co[:, p.membrane_outside],
+            potential[p.membrane_cell] - potential[n + p.membrane_outside],
+        ),
+        (
+            p.junction_active,
+            ci[:, p.junction_sender],
+            ci[:, p.junction_receiver],
+            potential[p.junction_sender] - potential[p.junction_receiver],
+        ),
+    ):
+        left, right = xp.where(active, left, 1.0), xp.where(active, right, 1.0)
+        dv = xp.where(active, dv, 0.0)
+        out.append(xp.where(active, rt * (xp.log(left) - xp.log(right)) + z * F * dv, 0.0))
+    return tuple(out)
+
+
+def route_heat_rates(membrane, channel, junction, mu_membrane, mu_junction, p, *, xp=jnp):
+    """The heat rates (pJ/s) of route fluxes against their electrochemical differences:
+    (membrane [membrane], channel [species, channel], junction [junction]), in the accumulators'
+    shapes (transport's dissipation and channel_rates' heat)."""
+    return (
+        1e-3 * species_sum(membrane * mu_membrane, xp=xp),
+        1e-3 * channel * mu_membrane[:, p.channel_membranes],
+        1e-3 * species_sum(junction * mu_junction, xp=xp),
+    )
+
+
+def explicit_remainder(rates, weights, potential, r, p, *, xp=jnp):
+    """N2's explicit rates: today's at a stage less the linear parts W dv at the stage's
+    potentials, in the amounts, the transfers and the heat (r: the stage's transport values)."""
+    membrane, channel, junction = linear_route_fluxes(weights, potential, p, xp=xp)
+    cells, outside = route_amount_rates(membrane, channel, junction, p, xp=xp)
+    heat_m, heat_c, heat_j = route_heat_rates(
+        membrane, channel, junction, r.membrane_delta_mu_J_mol, r.junction_delta_mu_J_mol, p, xp=xp
+    )
+    return rates._replace(
+        amount_increment=rates.amount_increment - xp.where(p.active, cells, 0.0),
+        extracellular_amount_increment=rates.extracellular_amount_increment
+        - xp.where(p.reservoir, 0.0, outside),
+        reservoir_supplied=rates.reservoir_supplied - xp.where(p.reservoir, -outside, 0.0),
+        membrane_transferred=rates.membrane_transferred - membrane,
+        junction_transferred=rates.junction_transferred - junction,
+        channel_transferred=rates.channel_transferred - channel,
+        membrane_dissipated_energy_pJ=rates.membrane_dissipated_energy_pJ - heat_m,
+        junction_dissipated_energy_pJ=rates.junction_dissipated_energy_pJ - heat_j,
+        channel_dissipated_energy_pJ=rates.channel_dissipated_energy_pJ - heat_c,
+    )
+
+
+def implicit_route_heat(drift, stage, weights, potential, p, *, xp=jnp, kinds=()):
+    """N2: the implicit rates at a stage with their routes' heat, the linear parts against the
+    stage's electrochemical differences (its read concentrations, its potentials), and the stage's
+    validity of that read."""
+    read, ok = _stage_read(stage, p, kinds, xp=xp) if kinds else (stage, True)
+    mu_membrane, mu_junction = route_delta_mu(read, potential, p, xp=xp)
+    heat_m, heat_c, heat_j = route_heat_rates(
+        drift.membrane_transferred,
+        drift.channel_transferred,
+        drift.junction_transferred,
+        mu_membrane,
+        mu_junction,
+        p,
+        xp=xp,
+    )
+    drift = drift._replace(
+        membrane_dissipated_energy_pJ=heat_m,
+        junction_dissipated_energy_pJ=heat_j,
+        channel_dissipated_energy_pJ=heat_c,
+    )
+    return drift, ok
+
+
+def operator_time_conductances(start, control, p, dt, *, xp=jnp, kinds=(), structure=None):
+    """(N2's ConductanceWeights frozen for the step, the prediction's validity), from the step's
+    start (`start`: readouts at the state) at the tableau's operator time where that is stable:
+    - the amounts advanced over operator_time x dt by the start derivative, the face weights'
+      prediction, here for cells too (a step's charge moves a tiny fraction of an amount);
+    - the channel gates by their exponential update over that time at the start kinetics;
+    - the junction gates likewise, at the start's junction voltages (their law's relaxation);
+    - the node potentials of the start itself. The charge mode is the stiff one N2 puts in the
+      operator, so an explicit prediction of it would overshoot at the steps N2 is for. The
+      split's order does not depend on where its slopes are frozen.
+    The prediction must keep every concentration positive and every slope finite."""
+    state, derivative, potential = start.state, start.values.derivative, start.potential
+    theta = p.imex_operator_time * dt
+    gate = gates.advance(
+        state.channel_gate,
+        start.values.channel_targets,
+        start.values.channel_tau_s,
+        start.values.channel_targets,
+        start.values.channel_tau_s,
+        theta,
+        xp=xp,
+    )
+    junction_voltage = xp.where(
+        p.junction_active, potential[p.junction_sender] - potential[p.junction_receiver], 0.0
+    )
+    rates = junction_gate.kinetics(junction_voltage, kinetic.junction_parameters(p), xp=xp)
+    junction = state.junction_gate + (rates.target - state.junction_gate) * -xp.expm1(
+        -rates.relaxation_per_s * theta
+    )
+    ahead = state._replace(
+        amount_increment=state.amount_increment + theta * derivative.amount_increment,
+        extracellular_amount_increment=state.extracellular_amount_increment
+        + theta * derivative.extracellular_amount_increment,
+        channel_gate=xp.where(p.channel_gate_active, gate, state.channel_gate),
+        junction_gate=xp.where(p.junction_active, junction, state.junction_gate),
+    )
+    read, valid = _stage_read(ahead, p, kinds, xp=xp) if kinds else (ahead, True)
+    ci, co = physical_amounts(read, p)
+    valid = valid & xp.all(xp.where(p.active, xp.isfinite(ci) & (ci > 0), True))
+    valid = valid & xp.all(xp.where(p.outside_active, xp.isfinite(co) & (co > 0), True))
+    weights = conductance_weights(ahead, read, potential, control, p, xp=xp, structure=structure)
+    for value in weights:
+        valid = valid & xp.all(xp.isfinite(value))
+    return weights, valid
+
+
+class StepStart(NamedTuple):
+    """The step's start, as operator_time_conductances reads it."""
+
+    state: object
+    values: object  # readouts at the state (Values)
+    potential: object  # the start's node potentials
 
 
 def potential_kinetics(potential, p, *, xp=jnp, structure=None):
@@ -1310,8 +1653,23 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
     predicted = xp.where(p.outside_active, predicted / p.extracellular_volume, 1.0)
     valid &= xp.all(xp.isfinite(predicted) & (predicted > 0))
     weight, _ = imex.face_weights(xp.where(predicted > 0, predicted, 1.0), s, xp=xp)
+    laplacian = imex.face_laplacian(weight, s, xp=xp)
+    n2 = implicit_conductances(p)  # N2 (D235, static): the routes' slopes join the operator.
+    if n2:
+        conductances, ok = operator_time_conductances(
+            StepStart(state, first_values, start),
+            control,
+            p,
+            dt,
+            xp=xp,
+            kinds=kinds,
+            structure=structure,
+        )
+        valid &= ok
+        laplacian = laplacian + conductance_laplacian(conductances, p, xp=xp)
+        hook["conductances"] = conductances
     operator, ok = imex.factor_operator(
-        implicit_matrix[-1, -1] * dt, imex.face_laplacian(weight, s, xp=xp), p.boundary_V, f, xp=xp
+        implicit_matrix[-1, -1] * dt, laplacian, p.boundary_V, f, xp=xp
     )
     valid &= ok
     rates, ok, *process = explicit_rates(state, start, control, p, xp=xp, **hook)
@@ -1319,9 +1677,10 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
     explicit, implicit, valid = [rates], [None], valid & ok
     explicit_states = [state]  # Each explicit stage's state (gap 7's per-stage values).
     # Channel currents are explicit: refuse the step where their actual
-    # conductance at an explicit stage exceeds the family's stability bound.
+    # conductance at an explicit stage exceeds the family's stability bound. Under N2 the
+    # patches' and channels' slopes are implicit, so the rule counts the kinds' terms alone.
     valid &= dt * membrane_rate(
-        state, control, p, xp=xp, structure=structure, potentials=start
+        state, control, p, xp=xp, structure=structure, potentials=start, explicit_only=n2
     ) <= (EXPLICIT_STEP_BOUND)
     material = material_rate(state, control, p, xp=xp, structure=structure, potentials=start)
     if material is not None:  # D4: a kind's material slope joins the same per-stage bound.
@@ -1341,7 +1700,15 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
         scale = xp.maximum(xp.abs(charge), xp.abs(operator.matrix @ potential))
         valid &= xp.all(xp.isfinite(potential))
         valid &= xp.all(xp.abs(residual) <= field.CHARGE_ATOL_C + field.CHARGE_RTOL * scale)
-        drift = implicit_rates(weight, potential, state, p, xp=xp)
+        if n2:  # The routes' linear parts join the faces', their heat at the stage's state.
+            drift = implicit_rates(weight, potential, state, p, xp=xp, conductances=conductances)
+            stage = first._combine(known, dt, [(implicit_matrix[i, i], drift)])
+            drift, ok = implicit_route_heat(
+                drift, stage, conductances, potential, p, xp=xp, kinds=kinds
+            )
+            valid &= ok
+        else:
+            drift = implicit_rates(weight, potential, state, p, xp=xp)
         implicit.append(drift)
         stage = first._combine(known, dt, [(implicit_matrix[i, i], drift)])
         gate, ok = stage_gates(
@@ -1361,7 +1728,15 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
             explicit_states.append(stage)
             valid &= ok & (
                 dt
-                * membrane_rate(stage, control, p, xp=xp, structure=structure, potentials=potential)
+                * membrane_rate(
+                    stage,
+                    control,
+                    p,
+                    xp=xp,
+                    structure=structure,
+                    potentials=potential,
+                    explicit_only=n2,
+                )
                 <= EXPLICIT_STEP_BOUND
             )
             material = material_rate(
@@ -1404,9 +1779,15 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
         # of one sign); the end state's at its last-stage potentials, which satisfy
         # C phi = its charges. Only this ledger changes: the state is the default's.
         end_power = junction_heat_rate(stage, potential, control, p, xp=xp)
+        # Under N2 stage 0's explicit rates hold the remainder alone: the start's whole power.
+        start_power = (
+            junction_heat_rate(state, start, control, p, xp=xp)
+            if n2
+            else explicit[0].junction_dissipated_energy_pJ
+        )
         stage = stage._replace(
             junction_dissipated_energy_pJ=state.junction_dissipated_energy_pJ
-            + 0.5 * dt * (explicit[0].junction_dissipated_energy_pJ + end_power)
+            + 0.5 * dt * (start_power + end_power)
         )
     booked = trapezoid_fields(structure)  # Seam D (§6.2): static; () by default.
     if booked:
@@ -1414,11 +1795,16 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
         # last-stage potentials, with the stage read and the routing door (explicit_rates, as at
         # every explicit stage), averaged with stage 0's. Only those heat fields change; the
         # state is the tableau's. Junctions keep their own switch above.
-        end_rates, end_ok, *_ = explicit_rates(stage, potential, control, p, xp=xp, **hook)
+        whole = {k: v for k, v in hook.items() if k != "conductances"}  # N2: whole heat rates.
+        end_rates, end_ok, *_ = explicit_rates(stage, potential, control, p, xp=xp, **whole)
         valid &= end_ok
+        start_rates = explicit[0]
+        if n2:  # Stage 0's explicit rates hold the remainder alone: the start's whole rates.
+            start_rates, start_ok, *_ = explicit_rates(state, start, control, p, xp=xp, **whole)
+            valid &= start_ok
         stage = stage._replace(
             **{
-                k: getattr(state, k) + 0.5 * dt * (getattr(explicit[0], k) + getattr(end_rates, k))
+                k: getattr(state, k) + 0.5 * dt * (getattr(start_rates, k) + getattr(end_rates, k))
                 for k in booked
             }
         )
@@ -1904,7 +2290,9 @@ def _check_routes(spec, structure, kinds, state, p, control):
             )
 
 
-def membrane_rate(state, control, p, *, xp=jnp, structure=None, potentials=None):
+def membrane_rate(
+    state, control, p, *, xp=jnp, structure=None, potentials=None, explicit_only=False
+):
     """Gershgorin rate (1/s) of membrane charge relaxation at a stage's actual openings.
 
     @1's membrane term, max_i sum_m G_m / C_i, with each population's open
@@ -1915,6 +2303,8 @@ def membrane_rate(state, control, p, *, xp=jnp, structure=None, potentials=None)
     A channel population that the routing door factors (B1, docs/CORE_SEAMS_DESIGN.md §4.3) enters
     at its held availability: its factors are at most 1, so the held value bounds the routed one
     (conservative), and the door's order here stays the kinds' (after this term).
+    explicit_only (N2, D235): the patches' and channels' terms are left out, since their slopes
+    sit in the operator; the declared kinds' terms remain, and without kinds the rate is 0.
     """
     ci, co = physical_amounts(state, p)
     ci = xp.where(p.active, ci / p.volume, 0.0)
@@ -1936,6 +2326,8 @@ def membrane_rate(state, control, p, *, xp=jnp, structure=None, potentials=None)
     ) * (open_fraction * control.channel)
     membrane = xp.where(p.membrane_active, passive * p.membrane_area, 0.0)
     membrane += scatter(channel * p.membrane_area[patch], membrane, (patch,), xp=xp)
+    if explicit_only:  # N2 (static): the patches' and channels' slopes are implicit.
+        membrane = xp.zeros_like(membrane)
     total = slope * scatter(membrane, xp.zeros(n), (p.membrane_cell,), xp=xp)
     capacitance = scatter(p.membrane_capacitance, xp.zeros(n), (p.membrane_cell,), xp=xp)
     kinds = _kinds(structure)
@@ -2169,6 +2561,48 @@ def check_steps(spec, steps, controls):
     bind_step_checks(spec)(steps)
 
 
+def implicit_conductance_rate_bound(spec):
+    """N2's definition-time explicit-rate bound (1/s, D235): surface_pump.explicit_rate_bound's
+    terms for what stays explicit when the patches' and junctions' slopes sit in the operator.
+    - The face-diffusion term stays as it is.
+    - The membrane and junction charge terms, and the face-free node's (B7), leave: those charge
+      modes are implicit.
+    - Every species' material relaxation through patches and junctions stays explicit, since the
+      remainder J - W dv carries the concentrations: neutral_material_rate's form, taken over
+      every species, each patch's side weighted by its constant-field factor (B(-x) on the cell's,
+      B(x) on the outside's, x = z F V/RT at the declared patch voltage). Junctions join cells
+      near one potential and take the neutral factor 1. For a charged species this term is
+      smaller than its charge term by about F^2 c V/(RT C) (about 10^4 in a cell)."""
+    from cells.laws.electrochemistry import bernoulli
+
+    _, p = kinetic.initial_values(spec)
+    volume = np.where(p.outside_active & ~p.reservoir, p.extracellular_volume * 1e-15, np.inf)
+    zero = np.zeros((len(p.valence), p.outside_active.size))
+    rows = scatter(p.face_factor, zero, (p.face_sender,), xp=np)
+    rows += scatter(p.face_factor, zero, (p.face_receiver,), xp=np)
+    face = 2 * np.max(rows / volume, initial=0.0)
+    species = np.asarray(p.valence).reshape(-1).size
+    cell_volume = np.where(p.active, p.volume * 1e-15, np.inf)
+    x = (
+        np.asarray(p.valence).reshape(-1, 1)
+        * F
+        * np.where(p.membrane_active, p.initial_membrane_voltage_V, 0.0)
+        / (R * p.temperature)
+    )
+    pm = p.membrane_permeability * np.where(p.membrane_active, p.membrane_area, 0.0)
+    pj = p.junction_permeability * np.where(p.junction_active, p.junction_area, 0.0)
+    cells = scatter(pm * bernoulli(-x, xp=np), np.zeros((species, p.active.size)),
+                    (p.membrane_cell,), xp=np)  # fmt: skip
+    cells += scatter(pj, np.zeros((species, p.active.size)), (p.junction_sender,), xp=np)
+    cells += scatter(pj, np.zeros((species, p.active.size)), (p.junction_receiver,), xp=np)
+    outside = scatter(pm * bernoulli(x, xp=np), np.zeros((species, p.outside_active.size)),
+                      (p.membrane_outside,), xp=np)  # fmt: skip
+    material = 2 * float(
+        np.max(np.concatenate((cells / cell_volume, outside / volume), axis=1), initial=0.0)
+    )
+    return max(face, material)
+
+
 def bind_step_checks(spec):
     """check_steps bound to one definition, for every chunk of its clock (StepChecks)."""
     return StepChecks(spec)
@@ -2191,6 +2625,8 @@ class StepChecks(first.StepChecks):
 
     @cached_property
     def explicit_rate(self):
+        if self.spec.execution.solver in imex.IMPLICIT_CONDUCTANCE_IDS:  # N2: what stays explicit.
+            return implicit_conductance_rate_bound(self.base)
         return first.explicit_rate_bound(self.base)
 
     @cached_property
@@ -2238,6 +2674,14 @@ class StepChecks(first.StepChecks):
                     f"{bound[0] * 1e6:g} us"
                 )
         else:
+            if (
+                spec.execution.solver in imex.IMPLICIT_CONDUCTANCE_IDS
+                and getattr(spec, "energy_check", None) is None
+            ):  # N2's guard (RUNG1 §2, D235): no coarse step runs without X2.
+                raise ConfigError(
+                    f"{spec.execution.solver} runs only with execution.energy_check "
+                    "step_doubled_energy@1 selected"
+                )
             self.require_accepted_observations()
             if step * self.explicit_rate > EXPLICIT_STEP_BOUND:
                 raise ConfigError("IMEX step exceeds the explicit-rate stability bound")

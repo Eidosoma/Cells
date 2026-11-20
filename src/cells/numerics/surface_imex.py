@@ -34,6 +34,11 @@ from cells.numerics.extracellular_field import logmean, scatter
 
 EULER_ID = "imex_euler_face_electromigration@1"
 ARS222_ID = "imex_ars222_face_electromigration@1"
+# N2 (FR-8 rung 1, D235): ARS(2,2,2) with each membrane's and junction's slope conductance in the
+# operator beside the faces', frozen for the step; @3 implements it (models/surface_pump_v3.py) and
+# @3's parse alone admits it. This development ID carries N2 alone and never lands (RUNG1 §6).
+IMPLICIT_CONDUCTANCES_N2_ALONE_ID = "imex_ars222_implicit_conductances_n2_alone@0"
+IMPLICIT_CONDUCTANCE_IDS = (IMPLICIT_CONDUCTANCES_N2_ALONE_ID,)
 _GAMMA = 1.0 - 1.0 / math.sqrt(2.0)
 _DELTA = 1.0 - 1.0 / (2.0 * _GAMMA)
 
@@ -55,6 +60,8 @@ TABLEAUX = {
         np.asarray(0.5),
     ),
 }
+for _id in IMPLICIT_CONDUCTANCE_IDS:  # N2 runs on ARS(2,2,2)'s own arrays.
+    TABLEAUX[_id] = TABLEAUX[ARS222_ID]
 
 
 class Operator(NamedTuple):

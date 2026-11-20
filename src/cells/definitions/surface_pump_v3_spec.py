@@ -60,6 +60,7 @@ from cells.definitions import surface_pump_spec as first
 from cells.definitions import surface_pump_v2_spec as second
 from cells.definitions.spec_values import fraction, identifier
 from cells.definitions.specs import ConfigError, _fields, _integer, _number
+from cells.numerics import surface_imex as imex
 from cells.registry import kind_registry
 from cells.registry import species_registry as registry
 
@@ -471,6 +472,11 @@ def parse(data):
             )
         given.setdefault(kind_registry.qualified(kind.kind_id), {})[key] = e.pop(key)
     m["id"] = second.MODEL_ID
+    # N2 (D235): @3 alone admits the implicit-conductance IDs. @2's parse validates ARS(2,2,2),
+    # their tableau, and the ID returns to the execution below; @1 and @2 refuse it themselves.
+    solver = x.get("solver")
+    if solver in imex.IMPLICIT_CONDUCTANCE_IDS:
+        x["solver"] = imex.ARS222_ID
     base = second.parse(raw)
     ids, z = base.model.species_ids, base.model.valence
     parsed = tuple(parse_channel(c, ids, z, {p.id for p in base.model.membranes}) for c in channels)
@@ -530,6 +536,8 @@ def parse(data):
         base.execution,
         channel_capacity=_integer(capacity, "channel_capacity", minimum=len(parsed)),
     )
+    if solver in imex.IMPLICIT_CONDUCTANCE_IDS:
+        execution = replace(execution, solver=solver)
     spec = replace(base, model=model, experiment=experiment, execution=execution)
     from cells.models.surface_pump_v3 import check_definition, structure
 
