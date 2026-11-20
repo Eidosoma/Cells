@@ -99,8 +99,22 @@
      1.2
     ],
     "decimal_places": 3
+   },
+   "3G": {
+    "file": "ddu20103.jpg",
+    "y_px": [
+     271,
+     484
+    ],
+    "tick_values": [
+     0,
+     -25
+    ],
+    "decimal_places": 1,
+    "reader": "second_reader"
    }
-  }
+  },
+  "second_reader": "Fig. 3G's two rows (reader second_reader in the CSV) were read by the FR-7 lane on 20 November 2026 by the same method, from the same JPEG (its SHA-256 checked against this manifest), with no other source: each mean is a bar's bottom edge (the bars hang down from 0), each SEM tip its error-bar cap, and the ticks are the axis's 0 and -25 marks. The rows marked first_reader are the user's (D241)."
  },
  "attribution": [
   "Figure readings adapted from Ambrosini et al. (2014), Hum. Mol. Genet., doi:10.1093/hmg/ddu201, (c) the authors, CC BY 4.0.",
