@@ -39,6 +39,7 @@ and a general feature, never one built for one study (D144).
 | [FR-31](#fr-31--vesicle-rupture-during-a-steady-tension-hold) | Vesicle rupture during a steady tension hold: an optional rupture event competing in time | Low (D230, D248); the note before OL9 registers | Requested; a design note first | Blocked on rupture rates against tension, and on OL6 |
 | [FR-32](#fr-32--a-dopc-swelling-validation-record-for-the-water-operator) | A DOPC swelling validation record for the water operator | Low (D248) | Requested | Folded into the next water-operator landing |
 | [FR-33](#fr-33--regional-labelled-protein-readouts-redistribution-against-degradation) | Regional labelled-protein readouts: inside a measured region, outside it and across the whole cell | High (D228, D248) | Requested; a desk check of the export fields first | The FR-7 lane, after its current work |
+| [FR-34](#fr-34--channel-population-readouts-count-availability-and-signed-current) | Channel population readouts: surface count, availability and signed current at a declared voltage, with units and sign convention | **High** (user, 20 November 2026; D251) | Requested | The FR-7 lane: name the fields, then a maintained example with the halving control |
 
 ## FR-1 — A closed internal compartment on the shared inventory
 
@@ -992,6 +993,14 @@ explored.
   protein completed during minutes 60–90 was 7.46 times the net increase. The engine's development
   export (revision f96a9606) already carries these columns. A documented calculation of the
   surviving cohort from them is the first answer.
+- **High-priority follow-ups (a reviewer, relayed by the user on 20 November 2026; D251).**
+  - **A restart example with a rate change at the join.** It shows which interval owns the event, and
+    whether the joined counters reproduce the uninterrupted run.
+  - **Age- or region-selective loss.** The native counters recover the surviving cohort for one
+    well-mixed pool with age-independent loss. The reviewer reproduced it: in minutes 60–90,
+    2.01673e-5 fmol completed and 1.32977e-5 fmol survived, while the pool grew by 2.70386e-6 fmol.
+    No field today identifies which population lost material under age- or region-selective loss.
+    That needs labelled cohorts or regions (FR-33).
 
 ## FR-26 — Owned state when a cell is replaced
 
@@ -1089,3 +1098,20 @@ explored.
   - **Degradation predicts** a falling total.
 - **The first step:** identify any missing export field, so the study can freeze both predictions
   before fresh measurements are scored.
+- **High-priority follow-ups (a reviewer, relayed by the user on 20 November 2026; D251).**
+  - **A maintained compartment-transfer example** that exports the donor, the receiver and the
+    cumulative loss together.
+  - **The control:** the same fading donor signal under transfer and under local destruction, with
+    only transfer increasing the receiver.
+  - **A field** that names the population that lost material under region-selective loss.
+
+## FR-34 — Channel population readouts: count, availability and signed current
+
+- **The request (a reviewer, relayed by the user on 20 November 2026; D251).** For membrane
+  channels, name the fields that report surface count, availability and signed current at a
+  declared voltage, with the current's sign convention and units.
+- **The control:** with count and driving force fixed, halving availability halves the population
+  current.
+- **Where it starts:** the FR-7 lane names today's fields (membrane state's units and abundance, the
+  routes' availability and their current records). It then builds the smallest maintained example
+  with the control, and records any missing field as engine work.

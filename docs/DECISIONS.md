@@ -8143,3 +8143,25 @@ user: "lets go with your and adivsor recommendatoin for the Kir".
   for a discrepancy above about 2.9-fold.
 - **The judged run stays pending** on the protein-to-surface-unit mapping and FR-8's timing (D241).
   A steady-state start, with the engine run as a drift check, avoids the latter.
+
+## D251: A reviewer's protein and channel readout requests join the high-priority list
+
+2026-11-20, about 21:37 UTC. The user relayed a reviewer's checks with "please review and add to
+the high priority list (with all the other high priority items)".
+
+- **What the reviewer reproduced:**
+  - **The turnover repair** at b4273772: 2 fmol and +0.9956673 pJ, with its six ordinary-rate controls
+    unchanged. The lead's own run agrees, and the request is closed (D249).
+  - **The development A1 export** (f96a9606): protein-balance errors below 1e-18 fmol over 360
+    intervals.
+  - **The window survivors** for one well-mixed pool.
+- **High priority, under the requests they extend:**
+  - **FR-25:** a restart example with a rate change at the join, showing which interval owns the
+    event and whether the joined counters reproduce the uninterrupted run. Also, a field identifying
+    the population that lost material under age- or region-selective loss. Today none exists.
+  - **FR-33:** a maintained compartment-transfer example exporting the donor, the receiver and the
+    cumulative loss together. Its control gives the same fading donor signal under transfer and under
+    local destruction, with only transfer increasing the receiver.
+  - **FR-34 (new):** channel population readouts, meaning surface count, availability and signed
+    current at a declared voltage, with sign convention and units. Its control halves availability at
+    fixed count and driving force, which must halve the current.
