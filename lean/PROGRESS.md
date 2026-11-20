@@ -1,5 +1,33 @@
 # Cells proof comparisons
 
+## 20 November 2026 · Eight-state sodium–anion cotransport
+
+**Engine finding for the transporter owner.** On revision `b9da010327ce52327feb86e07e76d823e2202d96`, the diagnostic probe overreported both edge turnover and reverse cycle flux by a factor of 100 at a positive capacity of 10⁻³⁰² fmol/s and full availability. The mode rate and the anion row agreed with the independent 50-digit master equation. The probe floors capacity × availability at 10⁻³⁰⁰ when counting carriers for these two diagnostic fields. The mode evaluator takes the logs of both positive factors separately. The discrepancy reproduced in NumPy and compiled CPU float64, with all four reported rates above the smallest normal float64 value. This affected the readout at an extreme capacity. [Probe normalization](../src/cells/kinds/transporter.py#L2288) · [Mode normalization](../src/cells/kinds/transporter.py#L1776) · [Reproducer](checks/sodium_anion_diagram.py#L227)
+
+| Declared capacity (fmol/s) | Material cycle flux (fmol/s) | First edge flux in probe (fmol/s) | Probe consistency |
+| ---: | ---: | ---: | --- |
+| 10⁻²⁹⁹ | 7.09691 × 10⁻³⁰² | 7.09691 × 10⁻³⁰² | Passed |
+| 10⁻³⁰⁰ | 7.09691 × 10⁻³⁰³ | 7.09691 × 10⁻³⁰³ | Passed |
+| 10⁻³⁰² | 7.09691 × 10⁻³⁰⁵ | 7.09691 × 10⁻³⁰³ | Failed |
+| 0 | 0 | 0 | Passed |
+
+**Lean proofs.** On a ring, deleting any one transition leaves a tree directed towards a chosen carrier state. Normalizing the sums of tree weights gives positive state occupancies that sum to one. Every edge carries the same net flux. With exact detailed balance, the eight-state flux equals the host’s thermodynamic cycle rate and has the same stall voltage as the two-sodium factored carrier. The proof also gives the residual when declared rates satisfy detailed balance only to a tolerance. At stall the slope of net flux with respect to dimensionless voltage is minus the forward one-way flux. The 12 new theorems use the standard Lean axioms. [Proofs](CellsProofs/Transport/SodiumAnionDiagram.lean) · [Eight ordered transitions](../src/cells/laws/cycles/na2_anion_symport_diagram.py#L67) · [Earlier two-sodium result](claims/sodium-anion-symport.md)
+
+**Engine comparison.** Sixty compiled CPU cases covered two allocations of the electrical work, both membrane orientations, five voltages around stall and three route availabilities. Against a 50-digit stationary master equation, the maximum absolute occupancy error was 1.22 × 10⁻¹⁵ and the maximum relative stall-slope error was 3.33 × 10⁻¹⁵. Eighteen further dose cases at −50 and −150 mV spanned both sides of half-saturation and matched the proven response within 6.3 × 10⁻¹⁵ relative. A two-step `resolved_pump_tissue@3` run imported 7.38045 × 10⁻¹⁰ fmol of sodium and 3.69022 × 10⁻¹⁰ fmol of anion, booked 4.29798 × 10⁻⁹ pJ of heat, and reported zero global charge residual. [Driver and inputs](checks/sodium_anion_diagram.py) · [Independent master-equation solve](../tests/unit/test_cycle_forms.py#L314)
+
+**Biological dose response from Search.** Only one forward transition binds external anion. For the detailed-balanced cycle at fixed voltage, sodium and internal substrate, subtracting the zero-substrate limiting current gives exactly `A x / (K + x)` for positive external substrate concentration x. In a representative human SMCT1 oocyte recording, we used the 100 and 1,000 µM propionate points at −50 mV to fit A = 395.5 nA and K = 129.9 µM. The paper reports 127 ± 14 µM. These are effective parameters of a concentration curve. The microscopic rate constants remain undetermined. [Miyauchi et al., Fig. 2A](https://doi.org/10.1074/jbc.C400059200) · [Original figure](https://ars.els-cdn.com/content/image/1-s2.0-S0021925819639839-gr2.jpg) · [Digitized inputs](checks/data/miyauchi2004_propionate.json)
+
+| Held-out propionate (µM) | Observed inward magnitude (nA) | Predicted (nA) | Prediction range from reading the two calibration points to ±5 nA |
+| ---: | ---: | ---: | ---: |
+| 50 | 97 | 109.9 | 105.1–114.9 |
+| 250 | 278 | 260.2 | 254.6–265.9 |
+| 500 | 324 | 313.9 | 308.5–319.3 |
+| 2,500 | 371 | 375.9 | 368.3–383.8 |
+
+At 250 µM the 17.8 nA discrepancy exceeded the estimated reading precision even after varying both calibration points. The series represents one oocyte with no pointwise biological uncertainties. A separate lactate experiment gave about −0.68 and −1.40 µA at −50 and −150 mV after subtraction of the substrate-free trace. Its 2.06-fold change is a reference for voltage kinetics. The internal activities and transition parameters needed for a preparation-specific prediction remain open. [Coady et al., Fig. 5](https://pmc.ncbi.nlm.nih.gov/articles/PMC1965447/#fig5) · [Voltage inputs](checks/data/coady2007_lactate_voltage.json)
+
+The full comparison took 19 seconds on four CPU cores and exits with status 1 for the diagnostic discrepancy. Its ordinary controls passed separately. The 35 diagram, cycle-form and law-registry tests and the 82 repository guard tests passed. Before and after collection returned the same 20,555 test IDs and the same five errors from unavailable archived inputs.
+
 ## 20 November 2026 · Charged constant-field permeation
 
 **Lean and engine.** Nine theorems cover the signed-valence Nernst reversal and nonnegative heat for the analytic flux, the exact change in flux when either compartment gains material at fixed voltage, and the voltage response of the engine’s two-branch evaluator. With equal concentrations its electrical current is linear in voltage. With unequal concentrations its slope lies between the lower and higher concentrations times the common factor APm(zF)²/(RT). The derivative proof excludes the two branch-switch voltages. The finite-interval bound applies when the interval stays within one branch. All nine theorems use the standard Lean axioms. [Proofs](CellsProofs/Transport/ChargedPermeation.lean) · [Engine law](../src/cells/laws/routes/constant_field_permeation.py#L56) · [Earlier near-reversal analysis](claims/proton-leak.md)

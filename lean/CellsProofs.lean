@@ -20,3 +20,4 @@ import CellsProofs.Transport.OsmoticWater
 import CellsProofs.Transport.PotassiumAnionSymport
 import CellsProofs.Transport.ProtonLeak
 import CellsProofs.Transport.SodiumAnionSymport
+import CellsProofs.Transport.SodiumAnionDiagram
