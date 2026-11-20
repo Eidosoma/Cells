@@ -10,7 +10,10 @@ Each claim with a planted error it must catch (D187):
   (planted: a molecule floor would zero the dimerisation);
 - the kernel identity on the geometry probe and on a run's own world, and the ledger closes;
 - a geometry run's bundle is written and read back with its geometry records, and the host oracle
-  replays its trace from the saved uniforms (planted: a reverse weight changes the replay);
+  replays its trace from the saved uniforms (planted: a reverse weight changes the replay); a
+  one-slot population with that declared lumen records its one event and writes a bundle without
+  the osmotic volume and tension, which need an outside osmolarity it does not have (the Lean
+  proofs project's finding at 5011ed3d, whose run returned no records);
 - OL1's worlds carry no geometry: no layout leaf, no key written, OL1's verdict;
 - every refusal of §0.2b-§0.2c that this version owns.
 
@@ -33,6 +36,7 @@ from cells.models.assembly_lineages_v2 import (
     MASS_ACTION,
     MEMBRANE_PERMEATION,
     PHASE_EXCHANGE,
+    SHARED_POOL,
     balance,
     kernel,
     model,
@@ -316,6 +320,22 @@ def test_a_geometry_bundle_reads_back_and_the_host_oracle_replays_its_trace(tmp_
     # Planted: every reverse rate weighted before the draw, which the replay must not match.
     planted, _ = reference.replay(s, arrays["event_uniforms"], reverse_weight=1.5)
     assert not np.array_equal(planted, arrays["event_channel"])
+    # A one-slot population with this declared lumen (the Lean proofs project's reproducer): its
+    # one event, S's entry, is recorded, with no osmotic volume or tension rows.
+    raw = lipid_world(lumen=True)
+    raw["steps"] = [step for step in raw["steps"] if step["id"] == "entry"]
+    raw["founder"] = {"L@pool": 0, "S@pool": 1, "L@membrane": 0, "P@membrane": 0, "S@lumen": 0}
+    founder = {"L@membrane": 0, "P@membrane": 4, "S@lumen": 0}
+    raw["population"] = {"structure": SHARED_POOL, "slots": 1, "founders": [founder]}
+    d = definition(raw, molecules=16, horizon=1e7, event_limit=1, row_every=1)
+    d["execution"]["mode"] = "population"
+    pop = runner.run(parse_spec(d)).check()
+    inside = pop.spec.model.world.place_index("S@lumen")
+    assert pop.rows["slot_count"][-1, 0, inside] == 1
+    records.write_run(tmp_path / "population", pop)
+    _, saved_run, saved = records.read(tmp_path / "population")
+    assert not {"lumen_volume_L", "tension_N_per_m"} & (set(saved) | set(saved_run["records"]))
+    assert np.array_equal(saved["slot_count"], pop.rows["slot_count"])
 
 
 def test_ol1_worlds_carry_no_geometry():
