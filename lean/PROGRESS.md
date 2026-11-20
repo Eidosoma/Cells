@@ -1,5 +1,28 @@
 # Cells proof comparisons
 
+## 20 November 2026 · Filling a restricted cleft from a held bath
+
+<a id="cleft-bath-fill"></a>
+
+When a membrane grows into a cleft of fixed width, both versions of `cells.restricted_cleft_lumen` fill the extra space with fluid from a held bath. Lean proves that the new concentration is between the two starting concentrations. The difference from bath concentration shrinks by exactly the fraction of original fluid in the final volume. Two successive fills from the same bath give the same concentration as one combined fill. In version 2, redistributing a parent patch and its original area between two daughters preserves the volume when both use the same split fraction. [Lean proofs](CellsProofs/Tissue/RestrictedLumen.lean#L18) · [Single-patch target](../src/cells/operators/restricted_lumen.py#L229) · [Sum over live patches](../src/cells/operators/restricted_lumen_v2.py#L201)
+
+Five compiled CPU controls on engine `d16976560e255eba8ff600068a326a0946e22f62` ran `resolved_pump_composite@1` around `resolved_pump_tissue@3`. Each used an isolated neutral tracer, a 2 µm gap and seven observations. With 4 mM tracer in the cleft and 1 mM in the bath, doubling the observed volume from 0.010 to 0.020 pL brought the tracer to **2.5 mM**. Version 1, version 2 and version 2 with a 60:40 patch split at 3 ms agreed. At 6 ms the observer includes the final half-step of growth. The material and energy accounts cover the 0.009 pL already filled. The driver checks both volumes and the amount supplied by the bath at every saved row. It also checks enrichment from a 4 mM bath and an equal-composition control. Over all controls, the largest concentration difference was 4.45 × 10⁻¹⁶ mM and the largest cumulative heat difference from the 75-digit reference was 1.05 × 10⁻¹⁷ pJ. [Fixtures and comparisons](checks/restricted_lumen.py#L31) · [Independent endpoint energy](checks/restricted_lumen.py#L70)
+
+**What tissue measurements constrain.** Spring and Hope reconstructed live mudpuppy gallbladder epithelium and assigned about 2,080 µm³ of shared intercellular space per cell. Combining this with the optically resolved lateral area of 3,540 ± 150 µm² per cell gives an effective full gap width of **1.18 µm** under the same half-volume convention as Cells. Dividing the reported 41.1 µm³/µm of interspace per border length by the mean epithelial height of 34.6 µm gives 1.19 µm. Both estimates use the same optical data and calibrate a resting width. [Spring and Hope, Tables I and III](https://doi.org/10.1085/jgp.73.3.287) · [Measurements and preparation](checks/data/cleft_measurements.json)
+
+In live CT26 spheroids, Dolega et al. measured a 0.9 ± 0.1 µm intercellular layer across 132 profiles. Tracers of 4.4 and 5.8 nm radius entered it, while tracers above 14.8 nm were largely excluded. In gallbladder, Ikonomov et al. detected no reliable differences between local ion concentrations and the bath under their measurement conditions. Neither study pairs changing cleft volume with a tracer dilution time series. The mixing time in a growing cleft and the heat released per fill remain open biological measurements. [Dolega et al., Appendix 1, Figs. 3–4](https://doi.org/10.7554/eLife.63258) · [Ikonomov et al., direct ion measurements](https://doi.org/10.1007/BF00583604)
+
+<a id="cleft-mixing-heat"></a>
+
+**Engine finding for the restricted-cleft owner.** Both versions refuse a valid first fill with a positive trace concentration. Lean proves that ideal mixing heat is strictly positive for unequal positive concentrations and equals chemical supply work plus pressure work minus the cleft's free-energy change. The engine evaluates a term using the fractional deviation from the mixed concentration. At extreme dilution the deviation rounds to exactly −1, so evaluating `(1 + e) * log1p(e)` produces NaN. The finite-heat guard then refuses the step at 1–2 ms. [Heat identity and sign](CellsProofs/Tissue/RestrictedLumen.lean#L90) · [Shared heat evaluator](../src/cells/operators/restricted_lumen.py#L242) · [Version 1 guard](../src/cells/operators/restricted_lumen.py#L329) · [Version 2 guard](../src/cells/operators/restricted_lumen_v2.py#L261)
+
+| Initial cleft tracer (mM) | Bath tracer (mM) | Small positive concentration ratio in the first fill | Reference heat in the first 0.001 pL fill (pJ) | Production result |
+| ---: | ---: | ---: | ---: | --- |
+| 1 | 2⁻⁶⁰ | 9.54 × 10⁻¹⁹ | 0.0024566041 | Both versions refused |
+| 2⁻⁶⁰ | 1 | 9.54 × 10⁻¹⁸ | 0.0061805353 | Both versions refused |
+
+For diagnosis, the driver reruns the same four definitions and substitutes heat only where production returned a nonfinite value. Computing the entropy term from the small positive concentration ratio let all four runs finish with their normal guards. Cumulative heat agreed with the independent reference to within 2.09 × 10⁻¹⁷ pJ. The concentrations are synthetic stress inputs. The full driver exits with status 1 while these refusals reproduce. Passing `--controls-only` runs the five ordinary cases. All 13 registered theorem declarations passed the axiom check. The 160 selected engine, reference and repository guard tests passed. [Reproducer and diagnostic](checks/restricted_lumen.py#L152)
+
 ## 20 November 2026 · Changing the composition of a held bath
 
 <a id="scheduled-bath-exchange"></a>

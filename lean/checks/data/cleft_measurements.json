@@ -1,0 +1,39 @@
+{
+  "spring1979": {
+    "citation": "Spring and Hope (1979), Journal of General Physiology 73, 287–305",
+    "doi": "10.1085/jgp.73.3.287",
+    "locator": "Table I and the control measurements on pp. 291–292. Pooled control interspace volume per border length is from Table III.",
+    "preparation": "Optical sections of living Necturus gallbladder epithelium, with NaCl Ringer on both sides. The lateral area follows the optically resolved cell border and omits fine membrane folds. The authors assign half the shared lateral space to each cell.",
+    "lateral_area_per_cell_um2": 3540,
+    "lateral_area_sem_um2": 150,
+    "height_um": 34.6,
+    "height_sem_um": 1.4,
+    "cells": 32,
+    "assigned_interspace_volume_per_cell_um3": 2080,
+    "control_interspace_volume_per_border_length_um3_per_um": 41.1,
+    "control_interspace_volume_per_border_length_sem_um3_per_um": 4.7,
+    "control_spaces": 19
+  },
+  "dolega2021": {
+    "citation": "Dolega et al. (2021), eLife 10, e63258",
+    "doi": "10.7554/eLife.63258",
+    "locator": "Appendix 1, sections C.1–C.2 and figures 3–4",
+    "preparation": "Living CT26 spheroids. Confocal sulforhodamine-B profiles across neighbouring cells were corrected for optical resolution. Fluorescent tracers in the medium separately tested matrix access.",
+    "intercellular_width_um": 0.9,
+    "reported_plus_minus_um": 0.1,
+    "profiles": 132,
+    "optical_resolution_um": 0.27,
+    "permeating_tracer_radii_nm": [
+      4.4,
+      5.8
+    ],
+    "largely_excluded_above_radius_nm": 14.8
+  },
+  "ikonomov1985": {
+    "citation": "Ikonomov, Simon and Frömter (1985), Pflügers Archiv 403, 301–307",
+    "doi": "10.1007/BF00583604",
+    "locator": "Abstract",
+    "preparation": "Double-barrelled ion-selective microelectrodes in lateral spaces of Necturus gallbladder. The authors could resolve no reliable concentration difference from the bathing fluid under control conditions, after bath dilution or during applied direct current.",
+    "scope": "The experiment supplies no paired cleft volumes and tracer time series for a fill."
+  }
+}

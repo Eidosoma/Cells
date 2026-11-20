@@ -11,6 +11,7 @@ import CellsProofs.Tissue.BathSchedule
 import CellsProofs.Tissue.CurrentInjection
 import CellsProofs.Tissue.MembraneInsertion
 import CellsProofs.Tissue.ReactionTransport
+import CellsProofs.Tissue.RestrictedLumen
 import CellsProofs.Transport.ATPCycle
 import CellsProofs.Transport.ChargedPermeation
 import CellsProofs.Transport.ConstantField
