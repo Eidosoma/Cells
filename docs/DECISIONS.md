@@ -8244,6 +8244,6 @@ check, not a test. Nothing is tagged.
      background measured in Ambrosini's own solutions; Fig. S2B's outward hump read as numbers; and
      the configuration of Fig. 3F's recordings.
    - **If it becomes a test,** the route is the passive rectifier with the kinds owner's factor
-     source, whose hump relative to E_K matches Fig. S2B; 's outward plateau does not.
-   - Ratto's values join  as bare cited numbers, with their comparability
+     source, whose hump relative to E_K matches Fig. S2B; `kir2p1_mh2@1`'s outward plateau does not.
+   - Ratto's values join `validation/fr7/data/` as bare cited numbers, with their comparability
      caveats.
