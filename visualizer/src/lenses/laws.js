@@ -284,10 +284,15 @@ export class LawsLens {
       if (frame.block) blocks.push({ ...frame.block, z: frame.z + 0.03, d: 0.18, frame: frame.id, id: pageId(frame.block.id) });
       for (const row of frame.rows) {
         const all = [...row.slots, ...(row.next ? [row.next] : []), ...(row.none || [])];
-        if (all.length) {
-          const left = Math.min(...all.map((slot) => slot.x - slot.w / 2)) - 0.08, right = Math.max(...all.map((slot) => slot.x + slot.w / 2)) + 0.08;
-          // A rail under the slots of each row of the inner model; the operators' cards hang on one rail each in their column.
-          if (frame.kind === "inner model") rails.push({ x: (left + right) / 2, y: row.y - all[0].h / 2 - 0.05, z: frame.z + 0.02, w: right - left, h: 0.05, d: 0.22, id });
+        if (all.length && frame.kind === "inner model") {
+          // A rail under the slots of each line of a row of the inner model (a long row stands on several lines, laws_layout.js);
+          // the operators' cards hang on one rail each in their column.
+          const lines = new Map();
+          for (const slot of all) lines.set(slot.y, [...(lines.get(slot.y) || []), slot]);
+          for (const line of lines.values()) {
+            const left = Math.min(...line.map((slot) => slot.x - slot.w / 2)) - 0.08, right = Math.max(...line.map((slot) => slot.x + slot.w / 2)) + 0.08;
+            rails.push({ x: (left + right) / 2, y: line[0].y - line[0].h / 2 - 0.05, z: frame.z + 0.02, w: right - left, h: 0.05, d: 0.22, id });
+          }
         }
         for (const slot of row.slots) {
           sockets.push({ x: slot.x, y: slot.y, z: frame.z - 0.04, w: slot.w + 0.08, h: slot.h + 0.07, d: 0.08 });

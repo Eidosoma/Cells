@@ -408,8 +408,8 @@ test("every species' shelves name the proteins their atlas lists with a unit onl
 });
 
 test("the atlas's words stand on the law inventory: a unit, protein or family is listed in it or with one of its units, never one Cells has a law for", async () => {
-  // Since 18 November 2026 (D211's inventory): what Cells has laws for is not said, for the laws of 38 of the 48 units are
-  // implemented in older code only. The sources of the atlas's words, and the species files they read.
+  // Since 18 November 2026 (D211's inventory): what Cells has laws for is not said, for the laws of most of the 48 units are
+  // implemented in older code only (38 of them then; 33 at main 1ca5eada, after the Kv1 port). The sources of the atlas's words, and the species files they read.
   const files = ["src/lenses/proteins.js", "src/lenses/protein_shelves.js", "src/ui/viewer.js", ...["ecoli", "fruitfly", "mouse", "xenopus", "thalecress", "human", "planarian", "syn3a", "mpneumoniae"].map((id) => `data/species/${id}.json`)];
   for (const file of files) {
     if (!existsSync(path.join(ROOT, file))) continue;

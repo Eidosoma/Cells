@@ -1248,7 +1248,11 @@ def _population_initial(spec, declaration):
     valence = dict(zip(m.species_ids, m.valence, strict=True))
     hosted = hosted_laws()
     laws = [hosted[t.law] for t in declaration]
-    all_forms = [law.cycle for law in laws]
+    # Each population's form, its named rates resolved with its own values (forms.resolved).
+    all_forms = [
+        forms.resolved(law.cycle, dict(t.parameters))
+        for law, t in zip(laws, declaration, strict=True)
+    ]
     P = len(declaration)
     K = max(len(f.rows) for f in all_forms)
     M = max(len(f.modes) for f in all_forms)
@@ -1818,7 +1822,8 @@ def cycle_checks(spec):
     valence = dict(zip(spec.model.species_ids, spec.model.valence, strict=True))
     out = []
     for t in declaration:
-        form, roles = cycle_form(t.law), dict(t.roles)
+        form = forms.resolved(cycle_form(t.law), dict(t.parameters))  # Its declared rates.
+        roles = dict(t.roles)
         counts = _counts(form, dict(t.parameters))
         for mm, ((mode, _), row_counts) in enumerate(zip(form.modes, counts, strict=True)):
             charge = sum(valence[roles[r]] * int(n) for (r, _), n in zip(form.rows, row_counts))
@@ -1874,13 +1879,18 @@ def _check_population_axis(spec, declaration):
                     "is moved in the step: finite fuel at a node with a dynamic proton row is refused "
                     "(§5.2's boundary)"
                 )
+    laws = {t.id: t.law for t in declaration}
     for check in cycle_checks(spec):
         if not check.admitted:
-            w = check.wegscheider
+            w, law = check.wegscheider, laws[check.population]
+            form = cycle_form(law)
+            _, signed = form.diagram.cycles[[m for m, _ in form.modes].index(check.mode)]
+            edges = ", ".join(e for e, _ in signed)
             raise ConfigError(
-                f"transporter {check.population!r}: mode {check.mode} fails Wegscheider's condition at "
-                f"the registry's potentials (coefficients {w.coefficients}, psi {float(w.psi):.3e} "
-                f"against {float(w.psi_band):.3e}, constant {float(w.constant):.3e} against "
+                f"transporter {check.population!r} ({law}): mode {check.mode}, its cycle through "
+                f"{edges}, fails Wegscheider's condition at the registry's potentials and its "
+                f"declared rates (coefficients {w.coefficients}, psi {float(w.psi):.3e} against "
+                f"{float(w.psi_band):.3e}, constant {float(w.constant):.3e} against "
                 f"{float(w.band):.3e}): refused, never repaired (§16)"
             )
 
@@ -2296,7 +2306,7 @@ def standard_free_energies(declaration):
         return ()
     hosted, out = hosted_laws(), []
     for t in declaration:
-        form = hosted[t.law].cycle
+        form = forms.resolved(hosted[t.law].cycle, dict(t.parameters))  # Its declared rates.
         if form.kinetics != "diagram":
             continue
         roles = dict(t.roles)

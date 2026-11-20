@@ -1,0 +1,15 @@
+{
+  "dataset_id": "lauf1996_sheep_kcc_reversal@1",
+  "citation": "Lauf and Adragna, Journal of General Physiology 108 (1996), 341–350",
+  "doi": "10.1085/jgp.108.4.341",
+  "source": "https://pmc.ncbi.nlm.nih.gov/articles/PMC2229324/",
+  "preparation": "Low-potassium sheep red cells with intracellular pH and volume clamped. Potassium efflux and rubidium influx were measured separately. Chloride-minus-nitrate subtraction isolated the chloride-dependent component.",
+  "observable": "Slope of normalized extracellular rubidium at zero net flux (external Rb / internal K) against internal Cl / external Cl. Both coordinates are dimensionless.",
+  "locator": "Figures 5–7 determine reversal from a fitted zero of net flux. Figure 8 compares normalized reversal with the chloride ratio.",
+  "fig8_fits": [
+    {"internal_magnesium": "normal", "slope": 1.12, "correlation": 0.912, "n": 8},
+    {"internal_magnesium": "low", "slope": 1.08, "correlation": 0.976, "n": 10}
+  ],
+  "uncertainty": "No uncertainty for either fitted slope was reported. The correlations describe the fits. Rubidium substitutes for external potassium in the comparison.",
+  "model_prediction": "Unit slope follows from equal concentration products for a single 1:1 carrier when effective activities follow the measured concentrations. No capacity or volume parameter is fitted."
+}

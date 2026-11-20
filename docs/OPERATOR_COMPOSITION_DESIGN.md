@@ -834,7 +834,12 @@ Both are in `/mnt/workspaces/Cells/composition-design-20261116/`. The matrix's w
   refuses a field read at several stages. The contract's public names are unchanged.
 - **A declared stage is one of the operator's parts':** a read or change at `event` needs the event
   map, at `split` the split part (a part-less owner may change at `split`, its default), and a read
-  at `inner` the in-step process.
+  at `inner` the in-step process, or (R2, 19 November 2026) a control factor. A factor operator's
+  current read at `inner` is its read at the control view. The control view is the state the inner
+  step starts from, where its `control_factors`, `factor_valid` and `factor_record` are evaluated.
+  The composite passes those hooks `view=`, a function of state giving C4's reader view of the read
+  fields (`contract.factor_reads`). It does so only where such a read is declared, so no other
+  call changes.
 - **Fixed reads, tightened** (the lead's ruling on M1's hand-back): a fixed read is refused beside
   another operator's closer whose closure reaches the field, not only one that closes it by name
   (door S's rule 4). No sequence is newly refused or admitted; the composition matrix gains eleven

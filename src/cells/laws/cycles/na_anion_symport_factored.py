@@ -1,6 +1,6 @@
 """na_anion_symport_factored@1: a fuel-free, electrogenic cotransporter of n Na+ and one monovalent
 anion, in the cycle kind's factored form (seam A's general form, docs/CORE_SEAMS_DESIGN.md §3;
-D228 item 3; an SLC5-type monocarboxylate carrier's coupling).
+D228 item 1; an SLC5-type monocarboxylate carrier's coupling).
 
 Per forward cycle it moves n Na+ and one anion B- from the population's P end to its N end, so a
 population whose N is its cell (orientation {"N": "a"}) imports, carrying n - 1 charges inward. It

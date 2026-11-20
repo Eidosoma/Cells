@@ -9,13 +9,16 @@ engine's manifest (`cells.declarations@2`, its format the engine's page
 `docs/library/DECLARATIONS_FORMAT.md`) is the whole truth of what the engine declares, the lead
 ruled that day; what no active registry declares came off the wall. The list is made from that
 file alone (`tools/extract_laws.py`, `data/engine/declarations.json`), and its contract is
-`schema/LAWS_LIBRARY.md`. At main 4dda2285 the wall holds 47 pieces (21 laws, 5 kinds, 21
+`schema/LAWS_LIBRARY.md`. At main 1ca5eada the wall holds 55 pieces (28 laws, 5 kinds, 22
 operators), seven racks and four model families with no rows, with the 13 laws design notes name
 apart; the 154 pieces of the code's reading at fa19d80c, the counts below, the engine's file
 paths below (read before the engine's two source moves of D188) and the sketches' lists are this
 note's record of 16 November, not the wall's. The wall is shelved by interface, the operators by
 their part of the step, and a model family's own laws and operators each on a shelf of their
 own, on one band (the stills weighed are kept with the hand-over of that round).
+In the inner model's rack a row too long for a line goes on under it, six slots to a line, and the
+rack's height is shared by lines: since main 1ca5eada its eleven channel laws and the free socket
+stand on two lines (`src/lenses/laws_layout.js`; a test holds every slot inside its rack at thirty).
 
 **What a unit of the Protein atlas says of a law no active model declares (18 November 2026).**
 On 17 November 2026 the project decided to port tested older laws to the active engine (D211),
@@ -27,9 +30,10 @@ viewer's table of it, `data/laws/law_port.json`, is made from the inventory by
 tests' class, with the inventory's kind, date and head. A unit's panel says, in one line for each
 mark and with no door, the mark's words after the laws' names (`src/lenses/law_port.js`): 47 laws
 are marked "port as is", 5 "fold into an owner's planned law" (all five the cardiac lane's), and 2
-"not a port", each of those two with words of its own. A door still opens only a declared piece. The 15 laws on the atlas's units
-that the inventory has no row for, all on the ten units that open a declared piece, keep the
-earlier words: the engine's declarations do not list them.
+"not a port", each of those two with words of its own. A door still opens only a declared piece, whatever the table says: since main 1ca5eada five of
+its rows' laws, the Kv1 laws of U05 to U08 and U10, are declared, and those units open them. The
+14 laws on the atlas's units that the inventory has no row for, all on seven of the 15 units that
+open a declared piece, keep the earlier words: the engine's declarations do not list them.
 
 The user, 15 November 2026: "one idea for the backlog not now: for the Engine shelfs maybe we need
 to make the Laws shelf clickable into a cool 3D library :)", because "there will be so many". And on

@@ -228,12 +228,24 @@ CLASS_KEYS = ("voltage", "concentration", "gate", "nav_m", "nav_h", "kir_m", "ki
 
 
 def load_arm(root, window, k):
+    """One arm's run record and rows. The readings pair the arms' rows by position, so an arm is
+    refused unless its record names this registration, window and k at dt_k, and, once complete,
+    its rows are the window's registered 1 ms grid, every time exactly (the fourth review's
+    finding 3)."""
+    reg = registration()
     directory = Path(root) / window / f"k{k}"
     record = json.loads((directory / "run.json").read_text())
+    expected = dict(registration=reg["registration"], window=window, k=k, dt_s=dt_of(k))
+    found = {x: record.get(x) for x in expected}
+    if found != expected:
+        raise ValueError(f"{directory}: its record names {found}, not {expected}")
     if record["status"] != "complete":
         return record, None, None
     with np.load(directory / "rows.npz") as archive:
         rows = {f: archive[f] for f in archive.files}
+    w = reg["windows"][window]
+    if not np.array_equal(rows["times"], millisecond_rows(w["start_ms"], w["end_ms"])):
+        raise ValueError(f"{directory}: its rows are not {window}'s registered 1 ms grid")
     return record, rows["times"], rows
 
 

@@ -9,10 +9,12 @@
   read as declared by one operator and provided by another, two providers of one
   view field, two in-step processes, an undeclared experiment key; operator
   classes that break the declarations (heat or work suffixes, RK4 modes, entity
-  writes without accumulators).
+  writes without accumulators, B1′'s rate-route declarations); rate routes when a
+  composition is built and at the definition (an undeclared control, a source after its target).
 """
 
 import copy
+from types import MappingProxyType
 
 import jax
 import pytest
@@ -30,7 +32,7 @@ from cells.models import (
 )
 from cells.models import pump_composite_adapter as pump3
 from cells.operators import OPERATORS
-from cells.operators.contract import Operator, check_declarations
+from cells.operators.contract import Operator, Read, check_declarations, factor_reads
 from cells.registry.models import get_model
 from validation.tissue import cell_replacement_fixtures as rfx
 from validation.tissue import pump_water_fixtures as wfx
@@ -38,6 +40,8 @@ from validation.tissue import pump_water_fixtures as wfx
 WATER = "ideal_osmosis_linear_compliance_water@1"
 SYMPORT = "k_anion_symport_mass_action@1"
 REPLACEMENT = "scheduled_cell_replacement@1"
+TURNOVER = "scheduled_species_turnover@1"
+REACTIONS = "local_species_reactions@1"
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -247,6 +251,131 @@ def test_operator_declarations_are_checked():
             check_declarations(bad)
     for op in OPERATORS.values():
         check_declarations(type(op))
+    # B1′'s declarations (contract._check_routes), each planted and refused by its words.
+    planted = (
+        (dict(ROUTABLE_CONTROLS={"not_mine": "rate"}), "maps its own control fields"),
+        (dict(ROUTABLE_CONTROLS={"rate_x": "event"}), "maps its own control fields"),
+        (dict(RK4="coupled"), "read in exact half-steps only"),
+        (dict(PROCESS=True), "read in exact half-steps only"),
+        (dict(ROUTABLE_CONTROLS={}, RATE_ROUTES=[(TURNOVER, "turnover_rate")]), "distinct"),
+        (dict(ROUTABLE_CONTROLS={}, RATE_ROUTES=((TURNOVER, "x"),) * 2), "distinct"),
+        (dict(ROUTABLE_CONTROLS={}, RATE_ROUTES=(("routed@1", "rate_x"),)), "its own controls"),
+        (dict(ROUTABLE_CONTROLS={}, RATE_ROUTES=((TURNOVER, "turnover_rate"),)), "rate_factors"),
+        (dict(FACTOR_RECORD="nowhere"), "FACTOR_RECORD is an owned state field"),
+        (dict(STATE_AXES={"rec": ["one"]}, FACTOR_RECORD="rec"), "with factor_record"),
+    )
+    for changes, words in planted:
+        bad = type("Routed", (Routed,), changes)
+        with pytest.raises(ValueError, match=words):
+            check_declarations(bad)
+    elementless = {
+        k: v for k, v in vars(Routed).items() if not k.startswith("__") and k != "routable_elements"
+    }
+    elementless["LAW_ID"] = "elementless@1"
+    with pytest.raises(ValueError, match="defines routable_elements"):
+        check_declarations(type("Elementless", (Operator,), elementless))
+    check_declarations(Routed)
+    check_declarations(RateSource)
+    # R2's control-view reads (contract._check_scopes), planted on the coupling's @2: a reader
+    # whose three control-view hooks take view=None is admitted; refused by their words, an
+    # inner-stage read with no factor and no in-step process, and a hook without view=None.
+    reader = dict(
+        SCOPED_READS=MappingProxyType({"channel_abundance": Read("current", "inner")}),
+        VIEW_READS=("channel_abundance",),
+        control_factors=lambda self, state, p, *, xp, view=None: {},
+        factor_valid=lambda self, state, p, *, xp, view=None: None,
+        factor_record=lambda self, state, p, target, field, *, xp, view=None: None,
+    )
+    coupling = type(OPERATORS["species_regulated_availability@2"])
+    check_declarations(type("Reader", (coupling,), reader))
+    # The one registered reader: @2's population source (FR-7's part (b)).
+    assert [op.LAW_ID for op in OPERATORS.values() if factor_reads(op)] == [
+        "species_regulated_availability@2"
+    ]
+    for changes, words in (
+        (dict(reader, CONTROL_FACTORS=()), "which none of its parts runs at"),
+        (
+            dict(reader, control_factors=lambda self, state, p, *, xp: {}),
+            "its control_factors takes view=None",
+        ),
+        (
+            dict(reader, factor_record=lambda self, state, p, target, field, *, xp, view: None),
+            "its factor_record takes view=None",
+        ),
+    ):
+        with pytest.raises(ValueError, match=words):
+            check_declarations(type("Reader", (coupling,), changes))
+    assert dict(OPERATORS[TURNOVER].ROUTABLE_CONTROLS) == {"turnover_rate": "rate"}
+    assert dict(OPERATORS[REACTIONS].ROUTABLE_CONTROLS) == {"reaction_multiplier": "rate"}
+
+
+class Routed(Operator):
+    """A planted routable target (B1′): its own control rate_x, read in exact half-steps."""
+
+    LAW_ID = "routed@1"
+    SPLIT = True
+    RK4 = "split"
+    CONTROL_FIELDS = ("rate_x",)
+    ROUTABLE_CONTROLS = MappingProxyType({"rate_x": "rate"})
+
+    def routable_elements(self, declaration, field):
+        return ()
+
+
+class RateSource(Operator):
+    """A planted rate-route source (B1′) on the turnover's rates: a definition's declaration is
+    the tuple of routes it declares."""
+
+    LAW_ID = "rate_source@1"
+    SPLIT = True
+    RK4 = "split"
+    RATE_ROUTES = (("scheduled_species_turnover@1", "turnover_rate"),)
+
+    def half_step(self, state, h, control, p, *, xp):
+        return state, None
+
+    def rate_factors(self, state, p, target, field, *, xp):
+        return None
+
+    def declared_rate_routes(self, declaration):
+        return declaration
+
+
+def test_rate_routes_are_checked_when_a_composition_is_built():
+    """B1′ (docs/INVENTORY_COUPLING_DESIGN.md §2.1): a source's routes go to routable controls of
+    their targets, and the composite wires each target's routes in declared order. A route the
+    definition declares has its source before its target, in the composition. Planted, each
+    refused: a route to a control the target does not declare routable (at the structure); and a
+    declared route to a target before its source, to a law the composition lacks, and outside the
+    source's routes (at the definition). A source that declares no route keeps any order."""
+    turnover, source = OPERATORS[TURNOVER], RateSource()
+    assert pump_composite.structure_errors(pump3, (source, turnover)) == []
+    assert pump_composite.rate_routes((source, turnover)) == {
+        turnover: ((source, "turnover_rate"),)
+    }
+    assert pump_composite.rate_routes((turnover,)) == {}
+    assert pump_composite.structure_errors(pump3, (source,)) == []  # No target: idle.
+    assert pump_composite.structure_errors(pump3, (turnover, source)) == []  # Nothing declared.
+    stray = type("Stray", (RateSource,), dict(LAW_ID="stray@1", RATE_ROUTES=((TURNOVER, "x"),)))
+    (error,) = pump_composite.structure_errors(pump3, (stray(), turnover))
+    assert error == (
+        f"stray@1 routes a rate factor to {TURNOVER}'s x, which is not one of its routable "
+        "controls (ROUTABLE_CONTROLS)"
+    )
+    route = ((TURNOVER, "turnover_rate"),)
+    check = pump_composite.rate_route_definition_errors
+    assert check([(source, route), (turnover, None)]) == []
+    assert check([(turnover, None), (source, ())]) == []
+    assert check([(turnover, None), (source, route)]) == [
+        f"rate_source@1 routes a rate factor to {TURNOVER}, which precedes it: a route's source "
+        "runs before its target, so the split's halves are symmetric about it"
+    ]
+    assert check([(source, route)]) == [
+        f"rate_source@1 routes a rate factor to {TURNOVER}, which the composition does not hold"
+    ]
+    assert check([(source, ((TURNOVER, "x"),)), (turnover, None)]) == [
+        f"rate_source@1 declares a route to {TURNOVER}'s x, not one it routes"
+    ]
 
 
 def test_event_times_off_the_dt_grid_are_refused_for_any_event_operator():

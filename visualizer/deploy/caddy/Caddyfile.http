@@ -1,0 +1,15 @@
+# The viewer's site in plain HTTP, behind a proxy on the same machine that terminates HTTPS for cells.eidosoma.ai
+# (deploy/README.md). compose.yaml publishes this port on the machine's loopback address only.
+{
+	admin off
+	persist_config off
+	auto_https off
+	servers {
+		# The proxy's forwarded address is the visitor's ({client_ip}: the request limit's key and the logs).
+		trusted_proxies static private_ranges
+	}
+}
+
+:80 {
+	import site.caddy
+}

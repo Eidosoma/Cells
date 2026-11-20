@@ -38,6 +38,7 @@ from cells.definitions import pump_composite_spec as cs
 from cells.definitions.specs import parse_spec
 from cells.execution.errors import NumericalError
 from cells.execution.runner import run
+from cells.laws.electrochemistry import CHARGE_PER_FMOL
 from cells.operators import species_reactions as sr
 from cells.registry.models import get_model
 from validation.tissue import species_reactions_fixtures as rfx
@@ -331,3 +332,39 @@ def test_the_device_row_checks_refuse_misbookings_at_the_species_scale():
         assert flags[name], (name, flags)
         with pytest.raises(NumericalError):
             model.check_values(bad, spec, [steps])
+
+
+def test_a_charge_neutral_source_keeps_each_node_neutral_to_the_floor():
+    """FR-15 S1 (the lead's rulings of 19 November 2026): the charge-neutral source 0 -> X + K
+    (X: z = -1, K its counter-ion) through the runner, every host and device check passing, so the
+    capacitor ledger's band (COMPONENT_STEP_ROUNDING eps x steps x the stored increments) holds
+    the rounding; X and K move by one extent. The operator's own half-step from planted stored
+    increments moves cell_0's charge by at most the accepted floor, (eps/2) F sum_s |z_s| (|d_s'| +
+    |dn_s|) per half-step (nu = 1, so nu dxi is exact). One compile, about 20 s."""
+    spec = parse_spec(rfx.charge_neutral_source(observation_times=[0.0, 0.005, 0.01]))
+    result = run(spec)
+    ids = list(spec.model.species_ids)
+    x, k = ids.index("X"), ids.index("K")
+    extent = np.asarray(result.history.reaction_extent_fmol)[-1]
+    assert extent[0] > 0
+    model = get_model(spec.model)
+    state, p = model.initial_values(spec)
+    op = next(o for o in model.operators if o.LAW_ID == sr.LAW_ID)
+    increment = np.asarray(state.amount_increment).copy()
+    increment[x, 0], increment[k, 0] = -3.1e-4, 0.37  # Planted: both rows round when written.
+    start = state._replace(amount_increment=increment)
+    control = SimpleNamespace(reaction_multiplier=np.ones(1))
+    moved, ok = op.half_step(start, 0.5 * spec.execution.dt, control, p, xp=np)
+    assert bool(ok)
+    after = np.asarray(moved.amount_increment)[:, 0]
+    dn = after - increment[:, 0]
+    z = np.asarray(p.valence).reshape(-1)
+    charge = CHARGE_PER_FMOL * float(np.sum(z * dn))  # The node's charge change (C).
+    floor = (
+        0.5
+        * np.finfo(float).eps
+        * CHARGE_PER_FMOL
+        * float(np.sum(np.abs(z) * (np.abs(after) + np.abs(dn))))
+    )
+    assert dn[x] > 0 and dn[k] > 0  # Both rows written (made with the counter-ion).
+    assert abs(charge) <= floor

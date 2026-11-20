@@ -88,13 +88,13 @@ variable [DecidableEq Species]
 
 def addOne (n : Species → ℕ) (i j : Species) : ℕ := n j + if j = i then 1 else 0
 
-private theorem size_addOne (n : Species → ℕ) (i : Species) :
+theorem size_addOne (n : Species → ℕ) (i : Species) :
     size (addOne n i) = size n + 1 := by
   simp [size, addOne, Finset.sum_add_distrib]
 
-private def logFactorial (n : ℕ) : ℝ := Real.log (n.factorial : ℝ)
+def logFactorial (n : ℕ) : ℝ := Real.log (n.factorial : ℝ)
 
-private theorem logFactorial_succ (n : ℕ) :
+theorem logFactorial_succ (n : ℕ) :
     logFactorial (n + 1) = Real.log ((n : ℝ) + 1) + logFactorial n := by
   simp only [logFactorial, Nat.factorial_succ, Nat.cast_mul, Nat.cast_add_one]
   exact Real.log_mul (by positivity) (Nat.cast_ne_zero.mpr (Nat.factorial_ne_zero n))

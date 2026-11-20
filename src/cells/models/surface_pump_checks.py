@@ -153,14 +153,31 @@ def row_checks(
         magnitudes=magnitudes(row, p, xp=jnp),
         xp=jnp,
     )
+    # The step-doubled energy check (execution/energy_check.py; FR-18's X2, D224), a static switch
+    # read from the constants' type: under its StepDoubledConstants today's energy bound is no
+    # verdict and no margin, while the energy ledger is still evaluated, held finite and reported.
+    apply_energy = getattr(type(constants), "APPLY_ENERGY_BOUND", True)
     values, ratios = [], []
-    for value, bound in zip(b.values(), bounds, strict=True):
+    for (name, value), bound in zip(b.items(), bounds, strict=True):
         magnitude = jnp.abs(value)
-        failed.append(~jnp.all(jnp.isfinite(value)) | jnp.any(magnitude > bound))
+        bounded = apply_energy or name != "energy"
+        if bounded:
+            # Compared, not validated (the fourth review's finding 2, option (b)): a kind's own
+            # bound that is not finite arrives as -inf (_kind_ledger_limits) and fails. The gap
+            # left: an operator's own_bounds or @1's own-ledger bounds, each a finite floor plus
+            # rounding on the row's magnitudes, charges or flows (so binding cannot refuse them),
+            # pass when not finite: +inf on a window the device decides, NaN too where no margin
+            # hands the window to the host (vector windows, projective bursts). Option (a), every
+            # bound validated here, changes every device-check program: the crossrev renewal's.
+            failed.append(~jnp.all(jnp.isfinite(value)) | jnp.any(magnitude > bound))
+        else:
+            failed.append(~jnp.all(jnp.isfinite(value)))
         values.append(jnp.max(magnitude, initial=0.0))
-        if margins:
+        if margins and bounded:
             ratio = jnp.where(magnitude == 0, 0.0, magnitude / bound)
             ratios.append(jnp.max(jnp.where(jnp.isnan(ratio), jnp.inf, ratio), initial=0.0))
+        elif margins:
+            ratios.append(jnp.asarray(0.0))
     values.append(jnp.abs(b["energy"]) / jnp.maximum(flows, tissue.ENERGY_ATOL_PJ))
     values.append(jnp.abs(b["global_charge"]) / bounds[charge])
     decreasing = jnp.asarray(False)

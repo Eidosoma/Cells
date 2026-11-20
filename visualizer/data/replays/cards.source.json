@@ -2,7 +2,7 @@
   "format": "cells.visualizer.experiment_cards_source@1",
   "note": "What the Experiments landing's cards type by hand: each card's title, what it asks, its band and kind, and which map part, catalogue entry, verdict file and PROGRESS.md entry it reads. Nothing here is a standing, a count or a date: tools/build_cards.py reads those from the Engine map's overlay, the catalogue's overlay, the model-system entries and the record (schema/EXPERIMENT_CARDS.md). The landing was decided on 18 November 2026. An evidence folder is a folder's name and `within` its folders one by one, never a path.",
   "record": {
-    "revision": "4dda2285ad39a74c160b74de2d70542360115d37",
+    "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565",
     "says": "PROGRESS.md, the docs and the verdict files are read at this revision of main and in the saved run folders; the readings are kept in data/replays/cards.readings.json."
   },
   "bands": [
@@ -375,7 +375,7 @@
       "band": "judged",
       "kind": "standing",
       "title": "Cell division",
-      "asks": "Can the engine carry the early frog egg through prescribed division, stage by stage, against references written apart from it?",
+      "asks": "Can the engine carry an egg-scale cell through prescribed division, from one cell to four, stage by stage, against references written apart from it?",
       "map": "exp.division",
       "record": [
         { "progress": {"entry": "S5a is qualified: every judged item passed", "scope": "What this qualifies:"},
@@ -586,6 +586,30 @@
       "rerun": null
     },
     {
+      "id": "fr2",
+      "band": "development",
+      "kind": "standing",
+      "title": "FR-2: membrane retrieval and recycling",
+      "asks": "Can membrane move from a cell's surface into a pool inside the cell and back, with its charge following it?",
+      "map": "op.scheduled_membrane_trafficking@1",
+      "record": [
+        { "progress": { "entry": "FR-2 version 1 against its code-blind references" } }
+      ],
+      "rerun": null
+    },
+    {
+      "id": "fr8-rung0",
+      "band": "development",
+      "kind": "standing",
+      "title": "FR-8 rung 0: order through a switch",
+      "asks": "Why does the fine engine's order of accuracy drop when a cue switches a cell for good?",
+      "map": "val.long_duration",
+      "record": [
+        { "progress": { "entry": "FR-8 rung 0: the fine engine's order through a switch" } }
+      ],
+      "rerun": null
+    },
+    {
       "id": "w1",
       "band": "development",
       "kind": "standing",
@@ -629,6 +653,8 @@
     }
   ],
   "entries_left_out": [
+    { "entry": "The core-seams pass's morning landings", "why": "Landings of code and their gates; its lead's \"pass\" names the core-seams pass. No judged run or registered qualification is reported in it: FR-2's registered comparison, which it names, has an entry and a card of its own." },
+    { "entry": "The core-seams pass's next landings", "why": "Landings of code and their gates; its lead's \"pass\" names the core-seams pass. No judged run or registered qualification is reported in it: FR-8's stage 0, which it names, makes no qualification claim, and rung 0 has an entry and a card of its own." },
     { "entry": "The core-seams pass's first landings", "why": "Landings of code and their gates; its lead's \"pass\" names the core-seams pass. No judged run or registered qualification is reported." },
     { "entry": "FR-4's and FR-5's protocols registered", "why": "The protocols' registration, before any judged run; their judged runs are on the FR-4 and FR-5 cards." },
     { "entry": "FR-4's and FR-5's rehearsals pass", "why": "Rehearsals on registered dry-run copies, not judged runs; the judged runs are on the FR-4 and FR-5 cards." },
@@ -658,6 +684,7 @@
     { "part": "exp.e07v2", "why": "Designed, not run." },
     { "part": "exp.e15", "why": "Planned, not run." },
     { "part": "exp.fep", "why": "Planned, not run." },
-    { "part": "exp.self_replicator", "why": "Designed: a replication note whose criteria were registered before any run; what ran is the authors' own model, as a reference outside the engine." }
+    { "part": "exp.self_replicator", "why": "Designed: a replication note whose criteria were registered before any run; what ran is the authors' own model, as a reference outside the engine." },
+    { "part": "exp.xenopus_lane", "why": "A lane decided on 19 November 2026 (D225, D226): the record holds no run entry for it, and the map states no level for it." }
   ]
 }

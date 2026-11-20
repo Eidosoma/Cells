@@ -32,6 +32,7 @@ import path from "node:path";
 import { createServer } from "./serve.mjs";
 import { acquireBrowser } from "./lib/browser_lock.mjs";
 import { DEFAULT_RUNS, DEFAULT_SCENE } from "./lib/build_page.mjs";
+import { within } from "./lib/measures.mjs";
 
 const outDir = process.argv[2] ? path.resolve(process.argv[2]) : null;
 if (outDir) await mkdir(outDir, { recursive: true });
@@ -254,7 +255,7 @@ try {
         renderer: (() => { const gl = stage.renderer.getContext(), info = gl.getExtension("WEBGL_debug_renderer_info"); return String(info ? gl.getParameter(info.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER)); })() };
     })()`);
     note(`${WIDTH} by ${HEIGHT}: ${JSON.stringify(cost)} (milliseconds, the median)`);
-    check(`${WIDTH} by ${HEIGHT}: the view's work, its labels and the draw leave room at 60 frames a second`, cost.update + cost.labels + cost.draw < 16.7, JSON.stringify(cost));
+    check(`${WIDTH} by ${HEIGHT}: the view's work, its labels and the draw leave room at 60 frames a second`, within(`${WIDTH} by ${HEIGHT}: the view's update, its labels and the draw on a frame (the medians, summed)`, cost.update + cost.labels + cost.draw, 16.7), JSON.stringify(cost));
     check("a frame draws within the ceiling the tests hold (40 draws, 40,000 triangles)", cost.cost.draws <= 40 && cost.cost.triangles <= 40000, JSON.stringify(cost.cost));
     // While a card rises (with motion), each frame's update of the view, timed.
     const rising = await evaluate(`(() => {
@@ -268,7 +269,7 @@ try {
       return { frames: times.length, median: Math.round(times[Math.floor(times.length / 2)] * 100) / 100, most: Math.round(times.at(-1) * 100) / 100 };
     })()`);
     note(`while a card rises: ${JSON.stringify(rising)} (milliseconds of the view's update for each frame)`);
-    check(`${WIDTH} by ${HEIGHT}: while a chosen card rises, the view's update on each frame leaves room at 60 frames a second`, rising.frames > 1 && rising.most < 8, JSON.stringify(rising));
+    check(`${WIDTH} by ${HEIGHT}: while a chosen card rises, the view's update on each frame leaves room at 60 frames a second`, rising.frames > 1 && within(`${WIDTH} by ${HEIGHT}: the most of the view's update on a frame while a chosen card rises`, rising.most, 8), JSON.stringify(rising));
     // Another species: the thale cress, its 80S drawn at the human's measure and its ER calcium pump at the human SERCA2b's.
     await evaluate(`${V}.setSpecies("thalecress")`);
     await sleep(1500);
@@ -351,7 +352,7 @@ try {
       return { update: time(() => lens.update(16)), labels: time(() => v.labels.layout()), draw: time(() => { stage.renderer.render(stage.scene, stage.camera); stage.renderer.getContext().finish(); }, 12), cost: lens.cost() };
     })()`);
     note(`${WIDTH} by ${HEIGHT}: ${JSON.stringify(cost)} (milliseconds, the median)`);
-    check(`${WIDTH} by ${HEIGHT}: the planarian's bench within the ceiling the tests hold (40 draws, 40,000 triangles), and a frame leaves room at 60 a second`, cost.cost.draws <= 40 && cost.cost.triangles <= 40000 && cost.update + cost.labels + cost.draw < 16.7, JSON.stringify(cost));
+    check(`${WIDTH} by ${HEIGHT}: the planarian's bench within the ceiling the tests hold (40 draws, 40,000 triangles), and a frame leaves room at 60 a second`, cost.cost.draws <= 40 && cost.cost.triangles <= 40000 && within(`${WIDTH} by ${HEIGHT}: the planarian's bench, the view's update, its labels and the draw on a frame (the medians, summed)`, cost.update + cost.labels + cost.draw, 16.7), JSON.stringify(cost));
     await shot(`${NAME}-rest`);
     // By address: a part of a unit, before the unit is drawn with its parts, opens on Machines with its own panel.
     check("the page opens on lens=machines&entry=planarian&select=unit.U39:alpha", await open("lens=machines&entry=planarian&select=unit.U39:alpha", 3500));

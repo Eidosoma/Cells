@@ -11,8 +11,9 @@ population sits on one membrane patch. In every cycle it splits one ATP into ADP
 the cell's side, and moves a fixed number of its cargo to the other side. A pump runs forward only
 while the energy freed by ATP exceeds the energy its cargo needs to move; otherwise it stalls or
 runs backward. The kind keeps the books, counting cycles, heat and the work drawn from the fuel, so
-that matter and energy add up at every step. It hosts three laws today: an uncharged cargo's
-pump, the proton pump that acidifies a compartment, and a cotransporter of sodium and an anion.
+that matter and energy add up at every step. It hosts four laws today: an uncharged cargo's
+pump, the proton pump that acidifies a compartment, and two forms of a sodium and anion
+cotransporter.
 
 ## Seen from each field
 
@@ -34,7 +35,7 @@ pump, the proton pump that acidifies a compartment, and a cotransporter of sodiu
 | Piece | Kind, interface `cells.kind@1` ([its fields](../../DECLARATIONS_FORMAT.md#kinds)) |
 | ID | `cells.transporter@1`; definitions write `cells.transporter@1` |
 | Runs in | `cells.resolved_pump_tissue@3`, its host, which definitions write `resolved_pump_tissue@3`. Definitions of `cells.resolved_pump_composite@1` and `cells.resolved_pump_tissue@3` can declare it, under the key `transporters` |
-| Laws it hosts | `cells.atp_driven_transporter_mass_action_positive@1`, `cells.na_anion_symport_factored@1` and `cells.proton_atp_mass_action_positive@1` |
+| Laws it hosts | `cells.atp_driven_transporter_mass_action_positive@1`, `cells.na2_anion_symport_diagram@1`, `cells.na_anion_symport_factored@1` and `cells.proton_atp_mass_action_positive@1` |
 | Provenance | Not yet extracted: the kind contract has no provenance field yet |
 
 <!-- /generated -->
@@ -141,7 +142,7 @@ Not stated: no record states a level for this piece.
 <!-- generated: links -->
 
 - Declared in [`src/cells/kinds/transporter.py`](../../../../src/cells/kinds/transporter.py) (`cells.kinds.transporter`).
-- Hosts `cells.atp_driven_transporter_mass_action_positive@1`, `cells.na_anion_symport_factored@1` and `cells.proton_atp_mass_action_positive@1`.
+- Hosts `cells.atp_driven_transporter_mass_action_positive@1`, `cells.na2_anion_symport_diagram@1`, `cells.na_anion_symport_factored@1` and `cells.proton_atp_mass_action_positive@1`.
 - Runs in `cells.resolved_pump_tissue@3`.
 - Manifest entry: (kind, `cells.transporter@1`), from `python -m cells declarations --out FILE` ([the format](../../DECLARATIONS_FORMAT.md)).
 - In the Laws library: `select=laws:cells.transporter@1`.

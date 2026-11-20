@@ -19,7 +19,9 @@ with a species-scale material floor and a pre-formed (resolved) profile where th
   passive_relaxation, enzyme_recipe (probe 2d's share case; resolved for the class switch),
   crossing (probe 2e's quadrature case), reversal_onset (probe 2g's known limit, at the first step
   or a mid-run switch-on); mixed_chain, C2's heredity chain with a reacting pair; and
-  several_sites, reactions at several sites of unequal volumes with their own multipliers.
+  several_sites, reactions at several sites of unequal volumes with their own multipliers;
+* FR-15 S1's charged rows: with_charged_trace (a charged inventory row, each node's anchor keeping
+  it electroneutral) and charge_neutral_source (0 -> X + K, K the declared counter-ion).
 """
 
 import copy
@@ -389,6 +391,38 @@ def several_sites(*, end=0.5, dt=0.025, switch=0.25):
         ("removal", "ecs_2", [(0.0, 1.0), (switch, 0.3)]),
     ]
     return with_reactions(raw, enzyme_species(), reactions, controls)
+
+
+def with_charged_trace(raw, name, valence, *, trace_mM=TRACE_mM, concentrations_mM=None):
+    """raw with species `name` of `valence` declared as the engine's helper declares an inventory
+    row (impermeant on every patch and junction, D_SPECIES on faces), each node's fixed charge
+    anchor taking its charge so every node stays electroneutral (FR-15 S1's charged rows)."""
+    out = add_inventory_species(
+        raw,
+        name,
+        trace_mM=trace_mM,
+        diffusivity_m2_per_s=D_SPECIES,
+        floor_fmol=FLOOR_FMOL,
+        concentrations_mM=concentrations_mM,
+    )
+    m = out["model"]
+    next(s for s in m["species"] if s["id"] == name)["valence"] = valence
+    for node in (*m["cells"], *m["extracellular"]):
+        node["fixed_charge_equivalent_fmol"] -= valence * node["initial_amount_fmol"][name]
+    return out
+
+
+def charge_neutral_source(*, rate=1e-4, counter="K", end=0.01, dt=1e-3, **kw):
+    """FR-15 S1's charge-neutral source in the face-free world: a trace anion X (z = -1, 1 uM in
+    cell_0) made in cell_0 with its counter-ion, 0 -> X + K (zeroth order, `rate` mM/s). K is made
+    permeant on cell_0's first patch (1e-9 m/s), so @3 carries it, and is flagged as the
+    counter-ion: one of @3's ions, which its explicit-rate bound covers there."""
+    raw = species_world((), faces=False, end=end, dt=dt, **kw)
+    raw = with_charged_trace(raw, "X", -1, concentrations_mM=dict(cell_0=1e-3))
+    raw["model"]["membranes"][0]["permeability_m_per_s"][counter] = 1e-9  # @3 carries the counter.
+    listed = [species("X"), dict(species(counter), counter_ion=True)]
+    reactions = [mass_action("make", {"cells": ["cell_0"]}, {}, {"X": 1, counter: 1}, rate)]
+    return with_reactions(raw, listed, reactions, [("make", None, [(0.0, 1.0)])])
 
 
 def reference_multipliers(raw):

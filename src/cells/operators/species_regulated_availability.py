@@ -59,18 +59,62 @@ later switch change off the dt grid or outside 0 < t < end; a write off the dt g
 time a non-finite or out-of-range state or factor refuses the step (domain_valid, on every step's
 end state; also rate_checks, wherever the composite evaluates readouts), as does a stale write
 count (in the event map, as replacement's stale generation does).
+
+**species_regulated_availability@2** (B1′; docs/INVENTORY_COUPLING_DESIGN.md §2.1; the lead's
+ruling C of 19 November 2026; development, not judged) is @1 plus operator targets, rate routes
+to another operator's routable control (contract ROUTABLE_CONTROLS). @1 is unchanged, its
+programs included. Every @2 target declares its evaluation:
+* an inner target is "step_view", as @1's: held through @3's step.
+* an operator target {operator, control, ids, evaluation: "target_half_steps",
+  operating_range: [low, high]} names a target law and control of RATE_ROUTES (the turnover's
+  turnover_rate by route ID; the reactions' reaction_multiplier by reaction ID, every site).
+  Its factor, the same F = b + (1 - b) f, is evaluated at the start of each of the target's
+  half-steps, from the state that half-step receives (pump_composite._half_step), and multiplies
+  the scheduled rate, which is the maximum. Its source, a concentration (mM) or a state's
+  fraction, is held to the declared range at every evaluation of an enabled coupling: a value
+  outside refuses the half-step and is never clipped.
+The target's elements and their cells come from its declaration (routable_elements), bound
+against it. Refused at the binding: an operator target the definition does not declare; an
+unknown element; an outside-node element (version 2 routes cell-side elements only, since its
+source is read in the element's cell); a state source not declared in an element's cell; and an
+element on a replaced slot. The definition refuses a route to a target declared before the
+coupling (pump_composite.rate_route_definition_errors).
+
+**@2's population source** (FR-7's part (b); docs/ABUNDANCE_TO_FUNCTION_DESIGN.md §6.2; D218;
+development, not judged): a coupling's source may be {"population": channel id}, the population's
+absolute density rho = N/A in units per µm² (the lead's ruling: a density, never a count), through
+hill_activation or hill_inhibition with half_saturation_per_um2 and hill_coefficient. At the read
+rho = a rho_ref: a is @3's current channel_abundance in the coupling's reader view at the control
+view (contract R2: a current read at stage inner), and rho_ref is the population's reference density
+declared in membrane_entity_state@1, bound host side. Its target is an inner channel target
+("step_view"), and its operating range [low, high] is in units per µm², checked where the factor is
+evaluated. Units and area change only in writers' half-steps and event maps, so the held factor is
+the exact one; an in-step process that writes either is refused. Refused at parsing: a self-source
+(the population is one of the target's elements: @3 already scales its conductance by a, so a
+factor would count its abundance twice; D218); a count or any half-saturation other than
+half_saturation_per_um2; a source population outside the target's cell; a junction target (side
+"both" needs a population per endpoint; later, with U1); an operator target (its half-steps receive
+no view); an unknown population; a law other than a Hill law. Refused at binding: a population
+source without membrane_entity_state@1. A source no declared writer of units or area changes is
+reported, not refused: "constant source: the factor cannot vary in this run" (the summary). A
+population route's law code is its Hill kind plus POPULATION_OFFSET, so @1's kernels give it
+exactly f = 1 (padding); only version 2's population kernel evaluates it, and only from a view.
 """
 
+from contextlib import contextmanager
 from dataclasses import dataclass
+from types import MappingProxyType, SimpleNamespace
 
 import numpy as np
 
+from cells.definitions import pump_composite_spec as composite_spec
 from cells.definitions.spec_values import identifier
 from cells.definitions.specs import ConfigError, _fields, _number
 from cells.laws.reactions import hill_factors
 from cells.numerics.species_sums import entity_sum
+from cells.operators import membrane_state
 from cells.operators import species_common as common
-from cells.operators.contract import Operator
+from cells.operators.contract import Operator, Read
 from cells.registry import species_registry
 
 LAW_ID = "species_regulated_availability@1"
@@ -83,6 +127,10 @@ SIDES = ("first", "second", "both")
 SPECIES_LAWS = hill_factors.KINDS  # hill_activation 1, hill_inhibition 2.
 STATE_FRACTION, STATE_COMPLEMENT = 3, 4
 STATE_FACTOR_LAWS = {"state_fraction": STATE_FRACTION, "state_complement": STATE_COMPLEMENT}
+# Version 2's population source (FR-7's part (b)): a route's law code is its Hill kind plus the
+# offset, which @1's kernels treat as padding (f = 1).
+POPULATION_OFFSET = 4
+POPULATION_LAWS = {name: kind + POPULATION_OFFSET for name, kind in SPECIES_LAWS.items()}
 FROM_SPECIES, FROM_STATE = 1, 2
 CONTROLS_KEY, WRITES_KEY = "coupling_controls", "regulatory_writes"
 
@@ -105,7 +153,7 @@ LAYOUT_FIELDS = (
     "regulatory_input_kind",  # [slot, input] int64: 1 activation, 2 inhibition, 0 padding
     "regulatory_input_half_saturation_mM",  # [slot, input] (1 on padding)
     "regulatory_input_coefficient",  # [slot, input] (1 on padding)
-    "coupling_route_law",  # [route] int64: 1, 2 (species), 3, 4 (state)
+    "coupling_route_law",  # [route] int64: 1, 2 (species), 3, 4 (state), 5, 6 (population; @2)
     "coupling_route_row",  # [route] int64 species row (0 for a state route)
     "coupling_route_cell",  # [route] int64 the cell the route reads
     "coupling_route_slot",  # [route] int64 state slot (0 for a species route)
@@ -117,6 +165,37 @@ LAYOUT_FIELDS = (
     "coupling_channel_routes",  # [channel capacity, width] int64 route per element (-1 pads)
 )
 TARGET_TABLES = {"junction": "coupling_junction_routes", "channel": "coupling_channel_routes"}
+
+# Version 2 (the module docstring): the routable controls it routes to, each with its element
+# table ([elements, width] int64 route per element, -1 pads), and every route's operating range
+# ([route] low and high; -inf and inf on an inner target's route).
+LAW_ID_V2 = "species_regulated_availability@2"
+EVALUATIONS = MappingProxyType({"inner": "step_view", "operator": "target_half_steps"})
+OPERATOR_TABLES = MappingProxyType(
+    {
+        ("scheduled_species_turnover@1", "turnover_rate"): "coupling_turnover_rate_routes",
+        ("local_species_reactions@1", "reaction_multiplier"): "coupling_reaction_multiplier_routes",
+    }
+)
+LAYOUT_FIELDS_V2 = (
+    *LAYOUT_FIELDS,
+    *OPERATOR_TABLES.values(),
+    "coupling_route_low",
+    "coupling_route_high",
+    # The population source (FR-7's part (b)): each route's population route (-1: none), and
+    # each population route's source channel slot, reference density and half-saturation
+    # (units per µm²). Their shape is static: no population route, no read of the view.
+    "coupling_route_population",
+    "coupling_population_channel",
+    "coupling_population_reference_density_per_um2",
+    "coupling_population_half_saturation_per_um2",
+)
+MEMBRANE_STATE = membrane_state.LAW_ID  # Its declaration holds each reference density.
+UNIT_FIELDS = ("population_abundance_increment", "membrane_area_increment_m2")  # rho = N / A.
+CONSTANT_SOURCE = "constant source: the factor cannot vary in this run"
+# Version 2's exact record (contract FACTOR_RECORD): each route's factor where it was last applied,
+# at the control view (a step_view route) or at its target's half-step (an operator route).
+STATE_AXES_V2 = {**STATE_AXES, "coupling_applied_factor": ["coupling_route"]}
 
 
 # ------------------------------------------------------------------ declaration
@@ -151,6 +230,28 @@ class Target:
 
 
 @dataclass(frozen=True)
+class RangedTarget(Target):
+    """Version 2's inner target: @1's, with its evaluation ("step_view") and its source's
+    operating range declared, which the control view enforces (the module docstring)."""
+
+    evaluation: str = "step_view"
+    operating_range: tuple = ()  # (low, high), as an operator target's.
+
+
+@dataclass(frozen=True)
+class OperatorTarget:
+    """Version 2's operator target (the module docstring): a routable control of another
+    operator, by its elements' IDs, evaluated in that operator's half-steps."""
+
+    operator: str
+    control: str
+    ids: tuple
+    evaluation: str  # "target_half_steps".
+    operating_range: tuple  # (low, high): the source's concentration (mM) or state fraction.
+    side: None = None  # An operator target takes no side.
+
+
+@dataclass(frozen=True)
 class Coupling:
     id: str
     target: Target
@@ -160,6 +261,15 @@ class Coupling:
     half_saturation_mM: float | None
     hill_coefficient: float | None
     basal: float
+
+
+@dataclass(frozen=True)
+class PopulationCoupling(Coupling):
+    """Version 2's population source (FR-7's part (b)): a Hill law of the source population's
+    absolute density N/A in units per µm² (the lead's ruling), with K in the same unit.
+    half_saturation_mM is None; source_kind is "population" and source the channel population."""
+
+    half_saturation_per_um2: float
 
 
 @dataclass(frozen=True)
@@ -298,7 +408,148 @@ def _target_cells(model, target, element):
     }[target.side]
 
 
-def _parse_couplings(raw, base, listed, states):
+def _operating_range(raw, name):
+    """Version 2: an operator target's [low, high], finite with low < high (the source kind's
+    own bounds are checked with the source)."""
+    if type(raw) is not list or len(raw) != 2:
+        raise ConfigError(f"{LAW_ID_V2}: coupling {name}'s operating_range is [low, high]")
+    low, high = (_number(v, f"{LAW_ID_V2}: coupling {name}'s operating_range bound") for v in raw)
+    if not low < high:
+        raise ConfigError(f"{LAW_ID_V2}: coupling {name}'s operating_range has low < high")
+    return (low, high)
+
+
+def _operator_target(raw, name):
+    """Version 2's operator target (the module docstring), its elements bound at binding."""
+    t = _fields(
+        raw,
+        {"operator", "control", "ids", "evaluation", "operating_range"},
+        f"{LAW_ID_V2} target",
+    )
+    if (t["operator"], t["control"]) not in OPERATOR_TABLES:
+        raise ConfigError(
+            f"{LAW_ID_V2}: coupling {name} targets {t['operator']!r}'s {t['control']!r}; "
+            "routable targets: " + ", ".join(f"{law}'s {field}" for law, field in OPERATOR_TABLES)
+        )
+    if t["evaluation"] != EVALUATIONS["operator"]:
+        raise ConfigError(
+            f"{LAW_ID_V2}: coupling {name}'s operator target is evaluated at "
+            f"{EVALUATIONS['operator']!r}: the start of each of its target's half-steps"
+        )
+    ids = _id_list(t["ids"], f"coupling {name}'s target ids")
+    return OperatorTarget(
+        t["operator"],
+        t["control"],
+        ids,
+        t["evaluation"],
+        _operating_range(t["operating_range"], name),
+    )
+
+
+def _inner_target(raw, name, elements, version):
+    """An inner target (@1's, unchanged; version 2 also declares its evaluation, "step_view", and
+    its source's operating range)."""
+    keys = {"operator", "control", "ids", "side"}
+    if version == 2:
+        keys |= {"evaluation", "operating_range"}
+    t = _fields(raw, keys, f"{LAW_ID} target")
+    if t["operator"] != "inner":
+        raise ConfigError(
+            f"{LAW_ID}: coupling {name} targets {t['operator']!r}; version 1 targets the inner "
+            "model's controls only (routes to other operators' controls are a later door, §2)"
+        )
+    if version == 2 and t["evaluation"] != EVALUATIONS["inner"]:
+        raise ConfigError(
+            f"{LAW_ID_V2}: coupling {name}'s inner target is evaluated at "
+            f"{EVALUATIONS['inner']!r}: once per step, held through @3's step"
+        )
+    if t["control"] not in TARGET_CONTROLS:
+        raise ConfigError(
+            f"{LAW_ID}: coupling {name} targets {t['control']!r}; admitted targets: "
+            + ", ".join(TARGET_CONTROLS)
+        )
+    ids = _id_list(t["ids"], f"coupling {name}'s target ids")
+    unknown = [i for i in ids if i not in elements[t["control"]]]
+    if unknown:
+        raise ConfigError(
+            f"{LAW_ID}: coupling {name} names an unknown {t['control']} {unknown[0]!r}"
+        )
+    if t["control"] == "junction":
+        if t["side"] not in SIDES:
+            raise ConfigError(f"{LAW_ID}: a junction's side is one of " + ", ".join(SIDES))
+    elif t["side"] is not None:
+        raise ConfigError(f"{LAW_ID}: a {t['control']} target takes no side")
+    if version == 2:
+        return RangedTarget(
+            "inner",
+            t["control"],
+            ids,
+            t["side"],
+            t["evaluation"],
+            _operating_range(t["operating_range"], name),
+        )
+    return Target("inner", t["control"], ids, t["side"])
+
+
+def _population_coupling(entry, m, elements):
+    """Version 2's population source (the module docstring): a Hill law of the source
+    population's density (units per µm²) on @3's channel targets in its own cell."""
+    name = identifier(entry.get("id"))
+    origin = identifier(entry["source"]["population"])
+    for key in entry:
+        if key.startswith("half_saturation_") and key != "half_saturation_per_um2":
+            raise ConfigError(
+                f"{LAW_ID_V2}: coupling {name} reads population {origin!r} through {key}; a "
+                "population source is its density, half_saturation_per_um2 (units per µm²): a "
+                "count would make the factor depend on the host's size"
+            )
+    keys = {"id", "target", "source", "law", "basal", "half_saturation_per_um2", "hill_coefficient"}
+    _fields(entry, keys, f"{LAW_ID_V2} coupling")
+    law = entry["law"]
+    if law not in SPECIES_LAWS:
+        raise ConfigError(
+            f"{LAW_ID_V2}: coupling {name} reads a population through a Hill law: "
+            + ", ".join(SPECIES_LAWS)
+        )
+    raw_target = entry["target"]
+    if isinstance(raw_target, dict) and raw_target.get("operator") != "inner":
+        raise ConfigError(
+            f"{LAW_ID_V2}: coupling {name} reads a population onto an operator target; a "
+            "population is read at the control view, which an operator target's half-steps do "
+            "not receive, so its targets are @3's channels"
+        )
+    target = _inner_target(raw_target, name, elements, 2)
+    if target.control != "channel":
+        raise ConfigError(
+            f"{LAW_ID_V2}: coupling {name} reads a population onto a junction; a population "
+            "source targets @3's channels (a junction's side both needs a population per "
+            "endpoint: later, with U1)"
+        )
+    channels = {c.id: c for c in m.channels}
+    if origin not in channels:
+        raise ConfigError(f"{LAW_ID_V2}: coupling {name} reads an unknown population {origin!r}")
+    if origin in target.ids:
+        raise ConfigError(
+            f"{LAW_ID_V2}: coupling {name} reads population {origin}'s own abundance onto its "
+            "availability; @3 already scales its conductance by that abundance, so a factor "
+            "would count it twice (D218)"
+        )
+    membranes = {p.id: p for p in m.membranes}
+    home = membranes[channels[origin].membrane_id].inside
+    for element in target.ids:
+        (cell,) = _target_cells(m, target, element)
+        if cell != home:
+            raise ConfigError(
+                f"{LAW_ID_V2}: coupling {name} reads population {origin}, in {home}, onto "
+                f"{element}, in {cell}; a population source is read in its target's cell"
+            )
+    k = _positive(entry["half_saturation_per_um2"], f"coupling {name}'s half_saturation_per_um2")
+    n = _positive(entry["hill_coefficient"], f"coupling {name}'s hill_coefficient")
+    basal = _fraction(entry["basal"], f"coupling {name}'s basal level", upper_open=True)
+    return PopulationCoupling(name, target, "population", origin, law, None, n, basal, k)
+
+
+def _parse_couplings(raw, base, listed, states, *, version=1):
     if type(raw) is not list:
         raise ConfigError(f"{LAW_ID} declares its couplings in an explicit list")
     m = base.model
@@ -309,6 +560,10 @@ def _parse_couplings(raw, base, listed, states):
     for entry in raw:
         if not isinstance(entry, dict):
             raise ConfigError(f"{LAW_ID}: a coupling is an object")
+        source = entry.get("source")
+        if version == 2 and isinstance(source, dict) and set(source) == {"population"}:
+            couplings.append(_population_coupling(entry, m, elements))
+            continue
         law = entry.get("law")
         keys = {"id", "target", "source", "law", "basal"}
         if law in SPECIES_LAWS:
@@ -320,29 +575,11 @@ def _parse_couplings(raw, base, listed, states):
             )
         _fields(entry, keys, f"{LAW_ID} coupling")
         name = identifier(entry["id"])
-        t = _fields(entry["target"], {"operator", "control", "ids", "side"}, f"{LAW_ID} target")
-        if t["operator"] != "inner":
-            raise ConfigError(
-                f"{LAW_ID}: coupling {name} targets {t['operator']!r}; version 1 targets the inner "
-                "model's controls only (routes to other operators' controls are a later door, §2)"
-            )
-        if t["control"] not in TARGET_CONTROLS:
-            raise ConfigError(
-                f"{LAW_ID}: coupling {name} targets {t['control']!r}; admitted targets: "
-                + ", ".join(TARGET_CONTROLS)
-            )
-        ids = _id_list(t["ids"], f"coupling {name}'s target ids")
-        unknown = [i for i in ids if i not in elements[t["control"]]]
-        if unknown:
-            raise ConfigError(
-                f"{LAW_ID}: coupling {name} names an unknown {t['control']} {unknown[0]!r}"
-            )
-        if t["control"] == "junction":
-            if t["side"] not in SIDES:
-                raise ConfigError(f"{LAW_ID}: a junction's side is one of " + ", ".join(SIDES))
-        elif t["side"] is not None:
-            raise ConfigError(f"{LAW_ID}: a {t['control']} target takes no side")
-        target = Target("inner", t["control"], ids, t["side"])
+        raw_target = entry["target"]
+        if version == 2 and isinstance(raw_target, dict) and raw_target.get("operator") != "inner":
+            target = _operator_target(raw_target, name)
+        else:
+            target = _inner_target(raw_target, name, elements, version)
         source = entry["source"]
         if (
             not isinstance(source, dict)
@@ -376,13 +613,20 @@ def _parse_couplings(raw, base, listed, states):
             if origin not in by_state:
                 raise ConfigError(f"{LAW_ID}: coupling {name} reads an undeclared state {origin!r}")
             k = n = None
-            for element in ids:
+            for element in target.ids if isinstance(target, Target) else ():  # Operator: binding.
                 for cell in _target_cells(m, target, element):
                     if cell not in by_state[origin].cells:
                         raise ConfigError(
                             f"{LAW_ID}: coupling {name} reads state {origin} in {cell}, where it "
                             "is not declared"
                         )
+        if isinstance(target, (OperatorTarget, RangedTarget)):
+            low, high = target.operating_range
+            if low < 0 or (kind == "state" and high > 1):
+                raise ConfigError(
+                    f"{LAW_ID_V2}: coupling {name}'s operating_range lies in "
+                    + ("[0, 1], its state's fraction" if kind == "state" else "[0, inf) mM")
+                )
         basal = _fraction(entry["basal"], f"coupling {name}'s basal level", upper_open=True)
         couplings.append(Coupling(name, target, kind, origin, law, k, n, basal))
     if len({c.id for c in couplings}) != len(couplings):
@@ -390,15 +634,38 @@ def _parse_couplings(raw, base, listed, states):
     return tuple(couplings)
 
 
-def parse_declaration(raw, base):
+def parse_declaration(raw, base, *, version=1):
+    law = LAW_ID if version == 1 else LAW_ID_V2
     _fields(raw, {"law", "species", "states", "couplings"}, "species-regulated availability")
-    if raw["law"] != LAW_ID:
-        raise ConfigError("Species-regulated availability requires law " + LAW_ID)
-    species = common.parse_read_species(raw["species"], base, LAW_ID)
+    if raw["law"] != law:
+        raise ConfigError("Species-regulated availability requires law " + law)
+    species = common.parse_read_species(raw["species"], base, law)
     listed = {s.id for s in species}
     states = _parse_states(raw["states"], base, listed)
-    couplings = _parse_couplings(raw["couplings"], base, listed, states)
-    return Declaration(LAW_ID, species, states, couplings)
+    couplings = _parse_couplings(raw["couplings"], base, listed, states, version=version)
+    return Declaration(law, species, states, couplings)
+
+
+def _target_to_dict(target, law):
+    """A target's declaration: @1's form; version 2 adds an inner target's evaluation, and an
+    operator target is its own form."""
+    if type(target) is OperatorTarget:
+        return dict(
+            operator=target.operator,
+            control=target.control,
+            ids=list(target.ids),
+            evaluation=target.evaluation,
+            operating_range=list(target.operating_range),
+        )
+    out = dict(
+        operator=target.operator,
+        control=target.control,
+        ids=list(target.ids),
+        side=target.side,
+    )
+    if type(target) is RangedTarget:
+        out.update(evaluation=target.evaluation, operating_range=list(target.operating_range))
+    return out
 
 
 def _initial_to_dict(state):
@@ -446,12 +713,7 @@ def declaration_to_dict(declaration):
         couplings=[
             dict(
                 id=c.id,
-                target=dict(
-                    operator=c.target.operator,
-                    control=c.target.control,
-                    ids=list(c.target.ids),
-                    side=c.target.side,
-                ),
+                target=_target_to_dict(c.target, declaration.law),
                 source={c.source_kind: c.source},
                 law=c.law,
                 basal=c.basal,
@@ -460,6 +722,11 @@ def declaration_to_dict(declaration):
                         half_saturation_mM=c.half_saturation_mM, hill_coefficient=c.hill_coefficient
                     )
                     if c.source_kind == "species"
+                    else dict(
+                        half_saturation_per_um2=c.half_saturation_per_um2,
+                        hill_coefficient=c.hill_coefficient,
+                    )
+                    if c.source_kind == "population"
                     else {}
                 ),
             )
@@ -575,6 +842,129 @@ def _writes_at(entries, time):
 # ------------------------------------------------------------------ binding
 
 
+def reference_densities(spec):
+    """Version 2: {population: its reference density (units/m^2)} from the definition's
+    membrane_entity_state@1 declaration (FR-7's Q5 (a)); refused without one."""
+    for op, block, _ in composite_spec.entries(spec):
+        if op.LAW_ID == MEMBRANE_STATE:
+            return {p.channel_id: p.reference_density_per_m2 for p in block.populations}
+    raise ConfigError(
+        f"{LAW_ID_V2}: a population source needs {MEMBRANE_STATE}, whose declared reference "
+        "density turns @3's abundance into the source's density"
+    )
+
+
+def _population_layout(spec, declaration, routes):
+    """Version 2: each population route's law code set (its Hill kind plus POPULATION_OFFSET,
+    so @1's kernels give it f = 1), and its arrays: the route map ([route], -1 elsewhere), and
+    per population route its source's channel slot, reference density and half-saturation (per
+    µm²). Refused here, where the binding first reads it: a population source without
+    membrane_entity_state@1."""
+    index = -np.ones(len(routes), dtype=np.int64)
+    population = [
+        i
+        for i, r in enumerate(routes)
+        if type(declaration.couplings[r["coupling"]]) is PopulationCoupling
+    ]
+    couplings = [declaration.couplings[routes[i]["coupling"]] for i in population]
+    density = reference_densities(spec) if population else {}
+    channels = [c.id for c in spec.model.channels]
+    for j, (i, coupling) in enumerate(zip(population, couplings, strict=True)):
+        routes[i]["law"] = POPULATION_LAWS[coupling.law]
+        index[i] = j
+    return dict(
+        coupling_route_population=index,
+        coupling_population_channel=np.asarray(
+            [channels.index(c.source) for c in couplings], dtype=np.int64
+        ),
+        coupling_population_reference_density_per_um2=np.asarray(
+            [density[c.source] * 1e-12 for c in couplings], dtype=float
+        ),
+        coupling_population_half_saturation_per_um2=np.asarray(
+            [c.half_saturation_per_um2 for c in couplings], dtype=float
+        ),
+    )
+
+
+def _operator_routes(spec, declaration, routes, slot_keys):
+    """Version 2: each operator target's routes, appended to `routes` after the inner ones, and
+    ({table field: [elements, width] route per element, -1 pads}, [(low, high) per appended
+    route]). The elements and their cells are the target's (routable_elements), bound against its
+    declaration. Refused here: a target the definition does not declare, an unknown element, an
+    outside-node element (its source is read in the element's cell), and a state source not
+    declared in an element's cell."""
+    m = spec.model
+    species, cells = list(m.species_ids), [c.id for c in m.cells]
+    declared = {op.LAW_ID: (op, d) for op, d, _ in composite_spec.entries(spec)}
+    by_state = {s.id: s for s in declaration.states}
+    on_element = {key: {} for key in OPERATOR_TABLES}
+    sizes = {
+        key: len(declared[key[0]][0].routable_elements(declared[key[0]][1], key[1]))
+        if key[0] in declared
+        else 0
+        for key in OPERATOR_TABLES
+    }
+    ranges = []
+    for c_index, coupling in enumerate(declaration.couplings):
+        target = coupling.target
+        if type(target) is not OperatorTarget:
+            continue
+        if target.operator not in declared:
+            raise ConfigError(
+                f"{LAW_ID_V2}: coupling {coupling.id} targets {target.operator}, which the "
+                "definition does not declare"
+            )
+        op, target_declaration = declared[target.operator]
+        elements = op.routable_elements(target_declaration, target.control)
+        named = {element for element, _ in elements}
+        unknown = [i for i in target.ids if i not in named]
+        if unknown:
+            raise ConfigError(
+                f"{LAW_ID_V2}: coupling {coupling.id} names {target.operator}'s unknown element "
+                f"{unknown[0]!r}"
+            )
+        law = (SPECIES_LAWS | STATE_FACTOR_LAWS)[coupling.law]
+        from_state = coupling.source_kind == "state"
+        for index, (element, cell) in enumerate(elements):
+            if element not in target.ids:
+                continue
+            if cell is None:
+                raise ConfigError(
+                    f"{LAW_ID_V2}: coupling {coupling.id} routes {target.operator}'s {element} at "
+                    "an outside node; version 2 routes cell-side elements only, since its source "
+                    "is read in the element's cell"
+                )
+            if from_state and cell not in by_state[coupling.source].cells:
+                raise ConfigError(
+                    f"{LAW_ID_V2}: coupling {coupling.id} reads state {coupling.source} in {cell}, "
+                    "where it is not declared"
+                )
+            key = (target.operator, target.control)
+            on_element[key].setdefault(index, []).append(len(routes))
+            routes.append(
+                dict(
+                    law=law,
+                    row=0 if from_state else species.index(coupling.source),
+                    cell=cells.index(cell),
+                    slot=slot_keys.index((coupling.source, cell)) if from_state else 0,
+                    half=1.0 if from_state else coupling.half_saturation_mM,
+                    coefficient=1.0 if from_state else coupling.hill_coefficient,
+                    basal=coupling.basal,
+                    coupling=c_index,
+                )
+            )
+            ranges.append(target.operating_range)
+    tables = {}
+    for key, field in OPERATOR_TABLES.items():
+        depth = max((len(v) for v in on_element[key].values()), default=0)
+        table = -np.ones((sizes[key], depth), dtype=np.int64)
+        for index, members in on_element[key].items():
+            table[index, : len(members)] = members
+        tables[field] = table
+    tables.update(_population_layout(spec, declaration, routes))  # FR-7's part (b).
+    return tables, ranges
+
+
 def bind(spec, declaration, schedule):
     m, x = spec.model, spec.execution
     species = list(m.species_ids)
@@ -612,16 +1002,19 @@ def bind(spec, declaration, schedule):
             layout["regulatory_input_coefficient"][i, j] = item.hill_coefficient
     routes, on_element = [], {name: {} for name in TARGET_TABLES}
     for c_index, coupling in enumerate(declaration.couplings):
+        if type(coupling.target) is OperatorTarget:
+            continue  # Version 2's, after every inner route (_operator_routes).
         law = (SPECIES_LAWS | STATE_FACTOR_LAWS)[coupling.law]
         for element in coupling.target.ids:
             for cell in _target_cells(m, coupling.target, element):
                 from_state = coupling.source_kind == "state"
+                padded = from_state or coupling.source_kind == "population"  # Version 2's.
                 route = dict(
                     law=law,
-                    row=0 if from_state else species.index(coupling.source),
+                    row=0 if padded else species.index(coupling.source),
                     cell=cells.index(cell),
                     slot=slot_keys.index((coupling.source, cell)) if from_state else 0,
-                    half=1.0 if from_state else coupling.half_saturation_mM,
+                    half=1.0 if padded else coupling.half_saturation_mM,
                     coefficient=1.0 if from_state else coupling.hill_coefficient,
                     basal=coupling.basal,
                     coupling=c_index,
@@ -631,6 +1024,9 @@ def bind(spec, declaration, schedule):
                 )
                 on_element[coupling.target.control].setdefault(index, []).append(len(routes))
                 routes.append(route)
+    operator = None
+    if declaration.law == LAW_ID_V2:
+        operator = _operator_routes(spec, declaration, routes, slot_keys)
     layout.update(
         coupling_route_law=np.asarray([r["law"] for r in routes], dtype=np.int64),
         coupling_route_row=np.asarray([r["row"] for r in routes], dtype=np.int64),
@@ -648,6 +1044,14 @@ def bind(spec, declaration, schedule):
         for index, members in on_element[name].items():
             table[index, : len(members)] = members
         layout[field] = table
+    if operator is not None:  # Version 2: its element tables and every route's declared range.
+        tables, _ = operator
+        layout.update(tables)
+        bounds = np.asarray(
+            [declaration.couplings[r["coupling"]].target.operating_range for r in routes],
+            dtype=float,
+        ).reshape(len(routes), 2)
+        layout.update(coupling_route_low=bounds[:, 0], coupling_route_high=bounds[:, 1])
     switches = np.asarray([changes[0][1] for _, changes in schedule.switches], dtype=float)
     state = dict(
         regulatory_state=np.asarray(
@@ -764,6 +1168,84 @@ def factors_valid(state, p, *, xp):
     return xp.all(xp.isfinite(f) & (f >= 0) & (f <= 1))
 
 
+def used_routes(tables, count, *, xp):
+    """Version 2: [route] whether a route stands in any of `tables` ([element, width] route
+    indices, -1 pads): the routes evaluated where those tables' factors are."""
+    index = xp.arange(count)
+    used = xp.zeros(count, dtype=bool)
+    for table in tables:
+        if table.size:  # Static.
+            used = used | xp.any(index[:, None] == xp.reshape(table, (1, -1)), axis=1)
+    return used
+
+
+def range_valid(state, p, used, *, xp, density=None):
+    """Version 2: every enabled route of `used` inside its declared operating range at `state`,
+    where its factor is evaluated: a species route's concentration (mM, in its cell at the
+    declared volume), a state route's fraction, or a population route's density (units per µm²;
+    `density` [population route], given at the control view, its one point of evaluation, and
+    elsewhere None, which leaves those routes out). A switched-off coupling's routes are skipped
+    (its factor is exactly 1)."""
+    law = p.coupling_route_law
+    rows, cells = p.coupling_route_row, p.coupling_route_cell
+    amount = p.amount_reference[rows, cells] + state.amount_increment[rows, cells]
+    source = amount / p.volume[cells]
+    if p.regulatory_slot_cell.shape[0] > 0:  # Static: states declared.
+        s = state.regulatory_state[p.coupling_route_slot]
+        source = xp.where(law >= STATE_FRACTION, s, source)
+    if has_population(p):  # Static (FR-7's part (b)).
+        population = p.coupling_route_population >= 0
+        if density is None:
+            used = used & ~population
+        else:
+            source = xp.where(
+                population, density[xp.maximum(p.coupling_route_population, 0)], source
+            )
+    inside = (source >= p.coupling_route_low) & (source <= p.coupling_route_high)
+    on = state.coupling_enabled[p.coupling_route_coupling] > 0
+    return xp.all(inside | ~on | ~used)
+
+
+def has_population(p):
+    """Version 2: whether any route reads a population (static, by shape)."""
+    return p.coupling_population_channel.shape[0] > 0
+
+
+def _required(view):
+    """Version 2: the reader view a population route is evaluated from (R2), refused if none."""
+    if view is None:
+        raise ValueError(
+            f"{LAW_ID_V2}: a population route is evaluated at the control view, from the reader "
+            "view the composite passes there (R2), and none was passed"
+        )
+    return view
+
+
+def population_densities(view, p, *, xp):
+    """Version 2: [population route] its source's density (units per µm²) in a view: rho =
+    a rho_ref, from @3's current channel_abundance (FR-7's part (b))."""
+    a = view.channel_abundance[p.coupling_population_channel]
+    return a * p.coupling_population_reference_density_per_um2
+
+
+def with_population_factors(values, state, p, density, *, xp):
+    """Version 2: [route] `values` with each population route's F = b + (1 - b) f, f its Hill
+    law of the source's density (`density`, [population route]); exactly 1 for a switched-off
+    coupling, as every route's."""
+    index = p.coupling_route_population
+    j = xp.maximum(index, 0)
+    hill = hill_factors.factor(
+        xp.log(density[j]),
+        p.coupling_population_half_saturation_per_um2[j],
+        p.coupling_route_coefficient,
+        p.coupling_route_law - POPULATION_OFFSET,
+        xp=xp,
+    )
+    basal = p.coupling_route_basal
+    on = state.coupling_enabled[p.coupling_route_coupling] > 0
+    return xp.where((index >= 0) & on, basal + (1.0 - basal) * hill, values)
+
+
 def own_valid(state, *, xp):
     s, total = state.regulatory_state, state.regulatory_input_integral
     valid = xp.all(xp.isfinite(s) & (s >= 0) & (s <= 1))
@@ -818,6 +1300,8 @@ def check_replaced_slots(spec, declaration):
                 "version 1)"
             )
     for coupling in declaration.couplings:
+        if type(coupling.target) is OperatorTarget:
+            continue  # Version 2: check_replaced_operator_elements.
         for element in coupling.target.ids:
             if coupling.target.control == "junction":
                 junction = next(j for j in m.junctions if j.id == element)
@@ -831,6 +1315,80 @@ def check_replaced_slots(spec, declaration):
                     f"{sorted(hit)[0]}, a slot "
                     f"{common.REPLACEMENT_LAW} replaces (refused in version 1)"
                 )
+
+
+def route_keys(spec, declaration):
+    """Version 2: (coupling id, element id, cell id) of each route, in the binding's order: every
+    inner target's routes, coupling by coupling, then every operator target's (host side)."""
+    m = spec.model
+    keys = [
+        (c.id, element, cell)
+        for c in declaration.couplings
+        if type(c.target) is not OperatorTarget
+        for element in c.target.ids
+        for cell in _target_cells(m, c.target, element)
+    ]
+    declared = {op.LAW_ID: (op, d) for op, d, _ in composite_spec.entries(spec)}
+    for c in declaration.couplings:
+        if type(c.target) is not OperatorTarget or c.target.operator not in declared:
+            continue
+        op, target_declaration = declared[c.target.operator]
+        keys += [
+            (c.id, element, cell)
+            for element, cell in op.routable_elements(target_declaration, c.target.control)
+            if element in c.target.ids
+        ]
+    return tuple(keys)
+
+
+def check_replaced_operator_elements(spec, declaration):
+    """Version 2: refuse an operator target's element on a slot replacement@1 replaces (its source
+    is read in that cell, which a newcomer would take over)."""
+    _, events = common.replacement_of(spec)
+    replaced = {v.slot for v in events}
+    if not replaced:
+        return
+    declared = {op.LAW_ID: (op, d) for op, d, _ in composite_spec.entries(spec)}
+    for coupling in declaration.couplings:
+        target = coupling.target
+        if type(target) is not OperatorTarget or target.operator not in declared:
+            continue
+        op, target_declaration = declared[target.operator]
+        for element, cell in op.routable_elements(target_declaration, target.control):
+            if element in target.ids and cell in replaced:
+                raise ConfigError(
+                    f"{LAW_ID_V2}: coupling {coupling.id} targets {target.operator}'s {element}, "
+                    f"on {cell}, a slot {common.REPLACEMENT_LAW} replaces (refused in version 2)"
+                )
+
+
+def check_population_sources(spec, declaration):
+    """Version 2: a population source needs membrane_entity_state@1 (reference_densities), and
+    no in-step process may write population units or membrane area: its factor is held through
+    @3's step, which is exact only while both change in half-steps and event maps."""
+    readers = [c for c in declaration.couplings if type(c) is PopulationCoupling]
+    if not readers:
+        return
+    reference_densities(spec)
+    for op, _, _ in composite_spec.entries(spec):
+        written = [field for field in UNIT_FIELDS if field in op.ENTITY_WRITES]
+        if op.PROCESS and written:
+            raise ConfigError(
+                f"{LAW_ID_V2}: coupling {readers[0].id} holds a population's density through @3's "
+                f"step, but {op.LAW_ID}'s in-step process writes {written[0]}: the held factor "
+                "would lag it (first order)"
+            )
+
+
+def unit_writers(spec):
+    """Version 2: the definition's operators that declare a write of population units or
+    membrane area (ENTITY_WRITES; class level), in declared order: those that could change a
+    population source's density, rho = N / A."""
+    return [
+        op.LAW_ID
+        for op, _, _ in composite_spec.entries(spec)
+        if any(field in op.ENTITY_WRITES for field in UNIT_FIELDS)
+    ]
 
 
 def check_rate_limit(spec, declaration):
@@ -1039,4 +1597,262 @@ class SpeciesRegulatedAvailability(Operator):
             columns["coupling_factor"] = np.asarray(route_factors(state, p, xp=np))
         else:
             columns["coupling_factor"] = np.zeros(0)
+        return columns
+
+
+# ------------------------------------------------------------------ version 2
+
+
+@contextmanager
+def _named_v2():
+    """Version 2's refusals from the helpers it shares with @1, which name @1, name version 2."""
+    try:
+        yield
+    except ConfigError as error:
+        raise ConfigError(str(error).replace(LAW_ID, LAW_ID_V2)) from None
+
+
+class SpeciesRegulatedAvailabilityV2(SpeciesRegulatedAvailability):
+    """species_regulated_availability@2: @1 plus operator targets (the module docstring; B1′,
+    docs/INVENTORY_COUPLING_DESIGN.md §2.1) and the population source (FR-7's part (b)). It
+    shares @1's laws, states, events and inner targets; its layout adds the operator targets'
+    element tables, every route's operating range and the population routes' arrays. A
+    population route is evaluated from its reader view of channel_abundance where the composite
+    passes it (R2): control_factors, factor_valid and factor_record at the control view, and
+    observe from the row's view. Elsewhere (@1's rate_checks and domain_valid, and the target
+    half-steps' factor_record, where it stands in no table) its factor is @1's padding, exactly
+    1; at a step's end membrane state's domain (finite units, at least 0, positive area) keeps
+    its density finite and nonnegative, so its factor lies in [b, 1]. Development, not judged."""
+
+    LAW_ID = LAW_ID_V2
+    LAYOUT_FIELDS = LAYOUT_FIELDS_V2
+    STATE_AXES = STATE_AXES_V2
+    FACTOR_RECORD = "coupling_applied_factor"
+    RATE_ROUTES = tuple(OPERATOR_TABLES)
+    # R2 (step 0 of FR-7's part (b)): the populations' abundance read at the control view.
+    VIEW_READS = ("channel_abundance",)
+    SCOPED_READS = MappingProxyType({"channel_abundance": Read("current", "inner")})
+    # Its run view (the contract; an operator registered after the run view declares it).
+    VIEW_LAYERS = (
+        {
+            "id": "regulation",
+            "label": "Regulated availability and rates",
+            "representation": "modelled",
+        },
+    )
+    UNITS = {
+        "regulatory_state": "1",
+        "regulatory_input_integral": "s",
+        "regulatory_crossing_step": "1",
+        "regulatory_writes_applied": "1",
+        "coupling_enabled": "1",
+        "coupling_step_count": "1",
+        "coupling_factor": "1",
+        "coupling_applied_factor": "1",
+    }
+    RECORD_KINDS = {
+        "regulatory_state": "level",
+        "regulatory_input_integral": "cumulative",
+        "regulatory_crossing_step": "level",
+        "regulatory_writes_applied": "cumulative",
+        "coupling_enabled": "level",
+        "coupling_step_count": "cumulative",
+        "coupling_applied_factor": "level",
+    }
+
+    def view_sets(self, spec, declaration):
+        """The run view's sets of its own axes: each regulatory slot (a state in a cell), each
+        coupling with its target, and the one step counter."""
+        keys = slots(declaration)
+        return {
+            "regulatory_slot": {
+                "id": "regulatory_slot",
+                "ids": tuple(f"{state}:{cell}" for state, cell in keys),
+                "holds": "regulatory state in a cell",
+                "at": tuple({"cell": cell} for _, cell in keys),
+            },
+            "coupling": {
+                "id": "coupling",
+                "ids": tuple(c.id for c in declaration.couplings),
+                "holds": "coupling",
+                "kinds": tuple(
+                    f"{c.target.operator}: {c.target.control}" for c in declaration.couplings
+                ),
+            },
+            "one": {"id": "regulation_step_counter", "ids": ("steps",), "holds": "step counter"},
+            "coupling_route": {
+                "id": "coupling_route",
+                "ids": tuple(
+                    f"{c}:{element}:{cell}" for c, element, cell in route_keys(spec, declaration)
+                ),
+                "holds": "coupling route (a coupling's factor read in one cell, on one element)",
+                "at": tuple({"cell": cell} for _, _, cell in route_keys(spec, declaration)),
+            },
+        }
+
+    def view_events(self, spec, declaration, schedule):
+        """Its events in the run view: each coupling's switch changes after the start, and each
+        regulatory write, at its cell."""
+        layer = self.VIEW_LAYERS[0]["id"]
+        events = [
+            dict(
+                time=float(t),
+                kind="switch",
+                layer=layer,
+                at={"coupling": coupling},
+                label=f"coupling {coupling} {'on' if value else 'off'}",
+            )
+            for coupling, changes in schedule.switches
+            for t, value in changes
+            if t > 0
+        ]
+        events += [
+            dict(
+                time=float(t),
+                kind="write",
+                layer=layer,
+                at={"cell": cell},
+                label=f"regulatory state {state} in {cell} written to {value!r}",
+            )
+            for (state, cell), entries in schedule.writes
+            for t, value in entries
+        ]
+        return tuple(sorted(events, key=lambda e: (e["time"], e["label"])))
+
+    def parse(self, raw, base, inner_model):
+        with _named_v2():
+            return parse_declaration(raw, base, version=2)
+
+    def parse_schedule(self, raw, base, declaration):
+        with _named_v2():
+            return parse_schedule(raw, base, declaration)
+
+    def check_definition(self, spec, declaration, schedule, model):
+        with _named_v2():
+            common.check_species_cap(spec, LAW_ID_V2)
+            common.check_identities(spec, LAW_ID_V2, declaration.species)
+            check_unmoved_sources(declaration, species_registry.moved_in_step(spec))
+            check_replaced_slots(spec, declaration)
+            check_replaced_operator_elements(spec, declaration)
+            check_population_sources(spec, declaration)
+            check_rate_limit(spec, declaration)
+
+    def batch_signature(self, declaration):
+        return (LAW_ID_V2, *super().batch_signature(declaration)[1:])
+
+    def summary(self, spec, declaration, schedule, history):
+        out = super().summary(spec, declaration, schedule, history)
+        out["coupling_law"] = LAW_ID_V2
+        for c in declaration.couplings:
+            if type(c.target) is OperatorTarget:
+                out["coupling_targets"][c.id].update(
+                    operator=c.target.operator,
+                    evaluation=c.target.evaluation,
+                    operating_range=list(c.target.operating_range),
+                )
+        population = [c for c in declaration.couplings if type(c) is PopulationCoupling]
+        if population:  # FR-7's part (b): its K and range per µm², and the constant source.
+            writers = unit_writers(spec)
+            for c in population:
+                entry = out["coupling_targets"][c.id]
+                del entry["half_saturation_mM"]
+                entry.update(
+                    half_saturation_per_um2=c.half_saturation_per_um2,
+                    evaluation=c.target.evaluation,
+                    operating_range_per_um2=list(c.target.operating_range),
+                    source_writers=writers,
+                )
+            # Class level (ENTITY_WRITES): a declared writer may leave this population alone.
+            out["coupling_constant_sources"] = (
+                {} if writers else {c.id: CONSTANT_SOURCE for c in population}
+            )
+        return out
+
+    def initial_values(self, spec, declaration, schedule, inner_state, inner_layout):
+        """@1's binding plus @2's tables and ranges, and the record's start: each route's factor
+        at the bound state (no factor has been applied yet)."""
+        with _named_v2():
+            state, layout = bind(spec, declaration, schedule)
+        read = SimpleNamespace(**inner_state._asdict(), **state)
+        bound = SimpleNamespace(**inner_layout._asdict(), **layout)
+        values = route_factors(read, bound, xp=np)
+        if has_population(bound):  # The declared abundance: no increment at the bound state.
+            density = population_densities(bound, bound, xp=np)
+            values = with_population_factors(values, read, bound, density, xp=np)
+        state["coupling_applied_factor"] = np.asarray(values, float)
+        return state, layout
+
+    def _values(self, state, p, view, *, xp):
+        """[route] every route's factor at `state`, a population route's from `view` (its reader
+        view, R2), which is called only with a population route (static)."""
+        values = route_factors(state, p, xp=xp)
+        if not has_population(p):
+            return values
+        density = population_densities(_required(view)(state), p, xp=xp)
+        return with_population_factors(values, state, p, density, xp=xp)
+
+    def control_factors(self, state, p, *, xp, view=None):
+        """@1's factors, with each population route's from `view` (static: without a population
+        route, @1's call)."""
+        if not has_population(p):
+            return super().control_factors(state, p, xp=xp)
+        values = self._values(state, p, view, xp=xp)
+        return {
+            name: element_product(values, getattr(p, TARGET_TABLES[name]), xp=xp)
+            for name in self.CONTROL_FACTORS
+            if getattr(p, TARGET_TABLES[name]).shape[1]
+        }
+
+    def factor_valid(self, state, p, *, xp, view=None):
+        """Its step_view routes' sources inside their declared ranges at the control view, where
+        their factors are evaluated (enabled routes only), a population's density from `view`;
+        None without one (static)."""
+        tables = [getattr(p, field) for field in TARGET_TABLES.values()]
+        if not any(table.shape[1] for table in tables):
+            return None
+        used = used_routes(tables, p.coupling_route_law.shape[0], xp=xp)
+        density = None
+        if has_population(p):  # Static.
+            density = population_densities(_required(view)(state), p, xp=xp)
+        return range_valid(state, p, used, xp=xp, density=density)
+
+    def factor_record(self, state, p, target, field, *, xp, view=None):
+        """(each route's factor at `state`, the routes evaluated there): the step_view routes at
+        the control view (target None), or one operator target's at its half-step."""
+        if target is None:
+            tables = [getattr(p, name) for name in TARGET_TABLES.values()]
+            values = self._values(state, p, view, xp=xp)
+        else:  # No population route stands in an operator table.
+            tables = [getattr(p, OPERATOR_TABLES[(target, field)])]
+            values = route_factors(state, p, xp=xp)
+        used = used_routes(tables, p.coupling_route_law.shape[0], xp=xp)
+        return values, used
+
+    def declared_rate_routes(self, declaration):
+        return tuple(
+            dict.fromkeys(
+                (c.target.operator, c.target.control)
+                for c in declaration.couplings
+                if type(c.target) is OperatorTarget
+            )
+        )
+
+    def rate_factors(self, state, p, target, field, *, xp):
+        """(the product of the routes on each element of the target's control, every enabled
+        route's source in its range) from the state the target's half-step receives; None
+        without a route on that control (static, by its table's shape)."""
+        table = getattr(p, OPERATOR_TABLES[(target, field)])
+        if table.shape[1] == 0:
+            return None
+        values = route_factors(state, p, xp=xp)
+        used = used_routes((table,), values.shape[0], xp=xp)
+        return element_product(values, table, xp=xp), range_valid(state, p, used, xp=xp)
+
+    def observe(self, row, state, control, p, view, model, spec):
+        """@1's columns; a population route's coupling_factor from the row's view."""
+        columns = super().observe(row, state, control, p, view, model, spec)
+        if has_population(p):
+            density = population_densities(view, p, xp=np)
+            factor = with_population_factors(columns["coupling_factor"], state, p, density, xp=np)
+            columns["coupling_factor"] = np.asarray(factor)
         return columns

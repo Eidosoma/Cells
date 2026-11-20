@@ -16,9 +16,8 @@ Operators register the way kinds do, each claim with a planted error it must cat
   operator that breaks the contract, a module that fails to import, a subpackage, and a FIRST
   naming a class the package does not define);
 - an operator's standard free energies (seam E) are checked as a kind's are, and name no law,
-  since an operator hosts none; today's operators declare none, and today's 3-tuples still read,
-  transitionally (planted, each refused: an entry naming a registered cycle law, a list, and a
-  zero c0).
+  since an operator hosts none; today's operators declare none (planted, each refused: an entry
+  naming a registered cycle law, a list, a bare 3-tuple, and a zero c0).
 """
 
 import importlib
@@ -220,12 +219,11 @@ def test_an_operator_s_standard_free_energies_are_checked_and_name_no_law():
     assert operators.operator_standard_free_energies(PlantedReaction((reaction,)), None) == (
         reaction,
     )
-    legacy = PlantedReaction(((reaction.stoichiometry, -2.0, 1000.0),))  # Transitional.
-    assert operators.operator_standard_free_energies(legacy, None) == (reaction,)
     law = law_registry.active().laws(law_registry.CYCLE_LAW, "cells.transporter@1")[0]
     for entries, words in (
         ((reaction._replace(law_id=law.law_id, mode="coupled"),), "is not a cycle law it hosts"),
         ([reaction], "returns a tuple of FreeEnergyEntry"),
+        (((reaction.stoichiometry, -2.0, 1000.0),), "returns a tuple of FreeEnergyEntry"),
         ((reaction._replace(c0=0.0),), "its c0 is finite and positive"),
     ):
         with pytest.raises(ValueError, match=re.escape(words)):

@@ -88,6 +88,77 @@
       "driver": "lean/checks/reservoir_exchange.py",
       "record": "lean/PROGRESS.md#19-november-2026--assembly-reservoir-exchange"
     },
+    "assembly-mixing": {
+      "kind": "engine",
+      "models": ["cells.assembly_lineages@2"],
+      "laws": ["cells.ideal_mixing@1", "cells.regular_mixing@1", "cells.stochastic_mass_action@1", "cells.transition_state_factor@1"],
+      "engine_revision": "1e77a8876cc28e23e9ffed443e62c465b6f8fe3c",
+      "record_revision": "2c18459cbac3a33f58551194340afe2b2c565b5a",
+      "sources": {
+        "Ideal free energy and step increment": "src/cells/models/assembly_lineages_v2/ideal_mixing.py#L64",
+        "Cached pair-energy update": "src/cells/models/assembly_lineages_v2/regular_mixing.py#L95",
+        "Reverse-rate composition": "src/cells/models/assembly_lineages_v2/kernel.py#L254",
+        "Registered seven-step world": "validation/ool/references/designs/ol1_wa.world.json",
+        "Exact reference weight and energy": "validation/ool/references/laws.py#L168",
+        "Independent edge identity": "validation/ool/references/detailed_balance.py#L155",
+        "Independent event ledger": "validation/ool/references/ledger.py#L85"
+      },
+      "driver": "lean/checks/assembly_mixing.py",
+      "record": "lean/PROGRESS.md#19-november-2026--ideal-and-regular-assembly-mixing"
+    },
+    "assembly-kinetics": {
+      "kind": "engine",
+      "models": ["cells.assembly_lineages@2"],
+      "laws": ["cells.stochastic_mass_action@1", "cells.transition_state_factor@1", "cells.ideal_mixing@1", "cells.regular_mixing@1"],
+      "engine_revision": "e584c79bfe74ef14085479e7d55b8a3975970656",
+      "record_revision": "cb4194144bdccd3c4ce4fc24c28979d91a3943a8",
+      "sources": {
+        "Ordered draws and cancelled membrane denominator": "src/cells/models/assembly_lineages_v2/mass_action.py#L76",
+        "Rate factor on the common state": "src/cells/models/assembly_lineages_v2/transition_state.py#L130",
+        "Forward and reverse rate assembly": "src/cells/models/assembly_lineages_v2/kernel.py#L254",
+        "Inert status for zero total propensity": "src/cells/models/assembly_lineages_v2/kernel.py#L463",
+        "World balance probe": "src/cells/models/assembly_lineages_v2/balance.py#L74",
+        "Independent rational draw and factor": "validation/ool/references/laws.py#L222",
+        "Independent rate tolerance": "validation/ool/references/detailed_balance.py#L191",
+        "Registered boundary world": "validation/ool/references/designs/ol1_boundary.world.json"
+      },
+      "driver": "lean/checks/assembly_kinetics.py",
+      "record": "lean/PROGRESS.md#19-november-2026--stochastic-encounters-and-transition-state-catalysis"
+    },
+    "confined-binding": {
+      "kind": "engine",
+      "models": ["cells.assembly_lineages@2"],
+      "laws": ["cells.stochastic_mass_action@1", "cells.ideal_mixing@1"],
+      "engine_revision": "e584c79bfe74ef14085479e7d55b8a3975970656",
+      "record_revision": "cb4194144bdccd3c4ce4fc24c28979d91a3943a8",
+      "sources": {
+        "Pool encounters": "src/cells/models/assembly_lineages_v2/mass_action.py#L102",
+        "Concentration extent": "src/cells/models/assembly_lineages_v2/model.py#L51",
+        "Pool standard potential and factorial": "src/cells/models/assembly_lineages_v2/ideal_mixing.py#L64"
+      },
+      "driver": "lean/checks/confined_binding.py",
+      "record": "lean/PROGRESS.md#19-november-2026--stochastic-encounters-and-transition-state-catalysis"
+    },
+    "gard-catalysis": {
+      "kind": "engine",
+      "models": ["cells.assembly_lineages@1"],
+      "laws": ["cells.reservoir_exchange@1", "cells.gard_catalysis_pair_consistent@1", "cells.gard_catalysis_single_event@1"],
+      "operators": ["cells.size_threshold_fission@1", "cells.daughter_continuation@1"],
+      "engine_revision": "f7767ad79edf2f972b78999e64b40f0c294bcf88",
+      "record_revision": "f382628833be3f23b53cd95ac0a52ec15a76e6ca",
+      "sources": {
+        "Single-event factor": "src/cells/models/assembly_lineages/gard.py#L137",
+        "Pair-consistent reverse and terminal factors": "src/cells/models/assembly_lineages/gard.py#L143",
+        "Event heat using reverse rates at arrival": "src/cells/models/assembly_lineages/kernel.py#L299",
+        "Passive ledger refusal": "src/cells/models/assembly_lineages/runner.py#L894",
+        "Compiled rate probe": "validation/assembly_lineages/probes.py#L210",
+        "Independent rational propensities": "validation/gard/references/kernels.py#L279",
+        "Rate products around a square": "validation/gard/references/detailed_balance.py#L132",
+        "Rank-one condition in the finite-reservoir reference": "validation/gard/references/closed_world.py#L202"
+      },
+      "driver": "lean/checks/gard_catalysis.py",
+      "record": "lean/PROGRESS.md#19-november-2026--gard-catalysis-on-reversible-transfers"
+    },
     "closed-enzyme": {
       "kind": "engine",
       "models": ["resolved_pump_composite@1"],
@@ -120,6 +191,71 @@
       },
       "driver": "lean/checks/membrane_insertion.py",
       "record": "lean/PROGRESS.md#19-november-2026--membrane-insertion-heat"
+    },
+    "inward-rectifier": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [
+        "cells.inward_rectifier_linear_driving_force@1"
+      ],
+      "engine_revision": "ced58d2a1edc59e25d8f6e62bd79cc51b2f5d984",
+      "sources": {
+        "Law and Nernst potential": "src/cells/laws/routes/inward_rectifier_linear_driving_force.py#L49",
+        "Conductance scaling": "src/cells/laws/routes/inward_rectifier_linear_driving_force.py#L71",
+        "Voltage-free slope bound": "src/cells/laws/routes/inward_rectifier_linear_driving_force.py#L107",
+        "Passive tissue rates": "src/cells/kinds/passive_routes.py#L512",
+        "Tissue admission": "src/cells/models/surface_pump_v3.py#L1558",
+        "Independent derivatives": "validation/core_seams/references/exact.py#L88",
+        "Closed tissue pair": "tests/unit/test_inward_rectifier_route.py#L53"
+      },
+      "driver": "lean/checks/inward_rectifier.py",
+      "record_revision": "40dfe4de2a04559196bddef7e32c01cffc056e7b",
+      "record": "lean/PROGRESS.md#19-november-2026--inward-rectification-and-sodium-anion-symport"
+    },
+    "sodium-anion-symport": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [
+        "cells.na_anion_symport_factored@1"
+      ],
+      "engine_revision": "ced58d2a1edc59e25d8f6e62bd79cc51b2f5d984",
+      "sources": {
+        "Carrier rows and source saturations": "src/cells/laws/cycles/na_anion_symport_factored.py#L42",
+        "Host state and free energy": "src/cells/kinds/transporter.py#L1407",
+        "Numerically stable factored rate": "src/cells/laws/cycles/forms.py#L923",
+        "Charge and heat readout": "src/cells/kinds/transporter.py#L1877",
+        "Decimal constants": "validation/core_seams/references/exact.py#L44",
+        "Roundoff floors": "validation/core_seams/references/design.py#L39",
+        "Tissue carrier fixture": "tests/unit/test_na_anion_symport_factored.py#L44"
+      },
+      "driver": "lean/checks/sodium_anion_symport.py",
+      "record_revision": "40dfe4de2a04559196bddef7e32c01cffc056e7b",
+      "record": "lean/PROGRESS.md#19-november-2026--inward-rectification-and-sodium-anion-symport"
+    },
+    "potassium-anion-symport": {
+      "kind": "engine",
+      "models": ["resolved_pump_composite@1", "resolved_pump_tissue@3"],
+      "laws": [],
+      "operators": ["k_anion_symport_mass_action@1"],
+      "engine_revision": "d6532edeb1bb06127ddf398adb23ab41b2f396c7",
+      "record_revision": "7cc89e34c5f761a9ca801a34ab423e1cc6629746",
+      "sources": {
+        "Cycles, affinity and heat": "src/cells/laws/routes/k_anion_symport.py#L66",
+        "Component domain": "src/cells/laws/routes/k_anion_symport.py#L89",
+        "Equal flux in the two ion rows": "src/cells/operators/k_anion_symport.py#L92",
+        "Route rate used for the step bound": "src/cells/operators/k_anion_symport.py#L152",
+        "Step admission": "src/cells/operators/k_anion_symport.py#L252",
+        "Explicit tableau": "src/cells/numerics/surface_imex.py#L52",
+        "Applied transfer and heat": "src/cells/models/surface_pump_v3.py#L1436",
+        "Cycle and heat booking": "src/cells/operators/k_anion_symport.py#L297",
+        "One-cell validation fixture": "validation/tissue/pump_water_fixtures.py#L177"
+      },
+      "driver": "lean/checks/potassium_anion_symport.py",
+      "record": "lean/PROGRESS.md#19-november-2026--potassium-and-anion-cotransport"
     },
     "regional-chain": {
       "kind": "engine",
@@ -517,7 +653,7 @@
         "CellsProofs.Chemistry.inventory_after_reactions": "lean/CellsProofs/Chemistry/Stoichiometry.lean"
       }},
       "numerical": {"status": "checked", "comparisons": ["closed-enzyme"], "result": "The enzyme example compared four stored species changes with the declared coefficients and two nonzero extents across one CPU half-step."},
-      "biology": {"status": "open", "observable": "Amount of a specified conserved chemical group across all its species at a closed site.", "finding": "The measured G6P + F6P pool fell 0.613357 mM (7.31%) in the first of five time courses. The raw acquisition lists 0.950 mL and different timing from the workbook. Volumes, shared calibration and unobserved pools limit the amount balance. [Eicher et al., Fig. 5](https://www.mdpi.com/2218-1989/2/4/818) · [Publisher’s workbook](https://mdpi-res.com/metabolites/metabolites-02-00818/article_deploy/metabolites-02-00818-s001.zip)", "unit": "fmol", "evidence": []}
+      "biology": {"status": "open", "observable": "Amount of a specified conserved chemical group across all its species at a closed site.", "finding": "The measured G6P + F6P pool fell 0.613357 mM (7.31%) in the first of five time courses. The raw acquisition lists 0.950 mL and different timing from the workbook. Volumes, shared calibration and unobserved pools limit the amount balance. [Eicher et al., Fig. 5](https://www.mdpi.com/2218-1989/2/4/818) · [Publisher’s workbook](https://mdpi-res.com/metabolites/metabolites-02-00818/article_deploy/metabolites-02-00818-s001.zip)", "unit": "fmol for the target inventory, mM for the measured soluble pool", "evidence": []}
     },
     {
       "id": "enzyme-inventories",
@@ -596,6 +732,461 @@
       }},
       "numerical": {"status": "checked", "comparisons": ["assembly-exchange"], "result": "Across 357 reversible pairs the largest difference from the independent log-weight change was 4.53 × 10⁻¹⁶ kBT. Two seeded lineages exercised three divisions and a terminal exit. Their saved log weight, heat, fission work and discarded free energy agreed with the independent calculation within 1.78 × 10⁻¹⁵ kBT."},
       "biology": {"status": "open", "observable": "Single-molecule entry and reverse exit rates at known neighboring compositions, with an independent transfer free-energy difference under the same conditions.", "unit": "kBT", "evidence": []}
+    },
+    {
+      "id": "gard-pair-heat",
+      "title": "Pair-consistent catalysis preserves the heat of a reversible transfer",
+      "statement": "A molecule entering an assembly sees the same catalytic multiplier as its reverse exit when the moving molecule is excluded from both catalyst counts. The log ratio of the two rates then equals the base exchange log-weight change. A singleton’s exit has multiplier one.",
+      "assumptions": ["The species set is finite. The counts are nonnegative integers and the catalytic matrix β has nonnegative entries. The assembly exchanges one molecule at a time, with positive rate and transfer constants and fixed positive reservoir activities.", "The reversible transfer connects two nonempty compositions. The singleton’s exit into the empty state is a separate boundary case. Lean evaluates the sums in exact arithmetic."],
+      "uses": ["assembly-exchange-heat"],
+      "formal": {"status": "proved", "about": ["cells.gard_catalysis_pair_consistent@1"], "theorems": {
+        "CellsProofs.Chemistry.GardCatalysis.weighted_addOne": "lean/CellsProofs/Chemistry/GardCatalysis.lean",
+        "CellsProofs.Chemistry.GardCatalysis.factor_pos": "lean/CellsProofs/Chemistry/GardCatalysis.lean",
+        "CellsProofs.Chemistry.GardCatalysis.pair_reverse_factor": "lean/CellsProofs/Chemistry/GardCatalysis.lean",
+        "CellsProofs.Chemistry.GardCatalysis.singleton_factors": "lean/CellsProofs/Chemistry/GardCatalysis.lean",
+        "CellsProofs.Chemistry.GardCatalysis.pair_heat": "lean/CellsProofs/Chemistry/GardCatalysis.lean"
+      }},
+      "numerical": {"status": "failed", "comparisons": ["gard-catalysis"], "result": "The 210 ordinary transfer pairs agreed with the base heat within 5.00 × 10⁻¹⁶ kBT. Two admitted one-event runs with a large diagonal coefficient lost the remaining catalyst in the reverse sum. The passive ledger refused both, booking 2.33 × 10⁻¹⁰ and 0.693147 kBT where the exact heat is zero. Both one-event controls passed. The lead accepted these false refusals and assigned the repair to the builder after its current test run. The recorded failure applies to the pinned engine revision."},
+      "biology": {"status": "open", "observable": "Entry, reverse exit and independent affinity for the same lipid as the surrounding membrane composition changes.", "unit": "M⁻¹ s⁻¹ per molar vesicles for entry, s⁻¹ for exit", "finding": "For the same lipid tracer at 308 K, changing pure POPC vesicles to 1:1 POPC/cholesterol halved the fitted entry constant. Exit estimates were 25 ± 2 and 27 ± 2 s⁻¹. Independent titrations gave association constants of 1.3 × 10⁹ and 6.1 × 10⁸ M⁻¹. A shared catalytic multiplier at fixed affinity cannot explain the change. The fit used the equilibrium measurement, and molecular neighbor counts remain unknown. [Sampaio et al., Table 1](https://doi.org/10.1529/biophysj.104.054007)", "evidence": []}
+    },
+    {
+      "id": "gard-single-cycle",
+      "title": "Single-event catalysis can give different forward and reverse cycle rate products",
+      "statement": "The single-event rule evaluates the moving species’ multiplier at each event’s departure state. This adds the log ratio of two composition-dependent multipliers to the base heat. A rank-one β with only β_AA = 1 gives a four-transfer cycle ratio of 81/80. If adding one to every entry of β gives a positive rank-one matrix, the extra heat is a difference of state values and sums to zero around closed paths.",
+      "assumptions": ["The assembly exchanges with a held reservoir and each reversible edge joins nonempty states. Base propensities and multipliers are positive on the edges in the cycle.", "The explicit square starts with one molecule each of A and B and follows +A, +B, −A, −B. The sufficient rank-one condition is 1 + βᵢⱼ = uᵢvⱼ. Then the correction to the base log weight is −ln(Σⱼ vⱼnⱼ / N)."],
+      "uses": ["assembly-exchange-heat"],
+      "formal": {"status": "proved", "about": ["cells.gard_catalysis_single_event@1"], "theorems": {
+        "CellsProofs.Chemistry.GardCatalysis.single_heat": "lean/CellsProofs/Chemistry/GardCatalysis.lean",
+        "CellsProofs.Chemistry.GardCatalysis.shifted_factor": "lean/CellsProofs/Chemistry/GardCatalysis.lean",
+        "CellsProofs.Chemistry.GardCatalysis.shifted_heat": "lean/CellsProofs/Chemistry/GardCatalysis.lean",
+        "CellsProofs.Chemistry.GardCatalysis.raw_rank_one_square": "lean/CellsProofs/Chemistry/GardCatalysis.lean"
+      }},
+      "numerical": {"status": "checked", "comparisons": ["gard-catalysis"], "result": "The CPU agreed with rational forward and reverse rate products on 81 four-step cycles across three matrices. The rank-one β example gave 81/80. With a rank-one entrywise shift, all 27 cycles had ratio one in the exact reference and all 70 CPU edges matched the corrected log weight within 4.45 × 10⁻¹⁶ kBT. The lead corrected the design and assigned the matching code wording to the builder. [Design correction](https://github.com/Eidosoma/Cells/blob/0b564f2d99f70995c741456d7f55a515d049dd4d/docs/GARD_DESIGN.md#L320)"},
+      "biology": {"status": "open", "observable": "Forward and reverse transition rates around the same four known lipid compositions under a fixed reservoir, including the identity of the moving lipid.", "unit": "dimensionless ratio of rate products", "evidence": []}
+    },
+    {
+      "id": "assembly-ideal-mixing",
+      "title": "Whole-molecule counts set the ideal mixing cost of membrane entry",
+      "statement": "For a membrane with N molecules and a molecules of the incoming species, the activity for adding one molecule relative to its standard state is (a + 1)/(N + 1 − c). A finite source pool also contributes its count and standard concentration to the transfer energy.",
+      "assumptions": [
+        "The ideal term uses log factorials of integer counts. The measure offset c is 0 or 1. For N ≥ c the activity formula applies directly. The first insertion into an empty membrane has only the entering species’ standard energy.",
+        "The equilibrium experiment measures bulk activity relative to cholesterol crystals. The ideal bulk curve is A = s x with one fitted reference-state scale s and cholesterol mole fraction x."
+      ],
+      "formal": {
+        "status": "proved",
+        "theorems": {
+          "CellsProofs.Chemistry.AssemblyMixing.site_add": "lean/CellsProofs/Chemistry/AssemblyMixing.lean",
+          "CellsProofs.Chemistry.AssemblyMixing.measure_shift": "lean/CellsProofs/Chemistry/AssemblyMixing.lean",
+          "CellsProofs.Chemistry.AssemblyMixing.ideal_insert": "lean/CellsProofs/Chemistry/AssemblyMixing.lean",
+          "CellsProofs.Chemistry.AssemblyMixing.ideal_insertion_activity": "lean/CellsProofs/Chemistry/AssemblyMixing.lean",
+          "CellsProofs.Chemistry.AssemblyMixing.ideal_activity_error": "lean/CellsProofs/Chemistry/AssemblyMixing.lean",
+          "CellsProofs.Chemistry.AssemblyMixing.first_insertion": "lean/CellsProofs/Chemistry/AssemblyMixing.lean",
+          "CellsProofs.Chemistry.AssemblyMixing.ideal_transfer": "lean/CellsProofs/Chemistry/AssemblyMixing.lean"
+        },
+        "about": ["cells.ideal_mixing@1"]
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": ["assembly-mixing"],
+        "result": "Both registered measures agreed with exact-factorial state weights on 592 compositions in the ideal-only world, within 2.14 × 10⁻¹⁴ kBT. Reference rates and independent ledger replay passed. At equal A and B counts with N = 6 the insertion activities were 4/7 and 4/6."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Equilibrium cholesterol activity as a function of membrane mole fraction.",
+        "unit": "dimensionless activity relative to crystalline cholesterol",
+        "evidence": [
+          {
+            "dataset_id": "shaw2023_dopc_cholesterol_activity@1",
+            "manifest": "lean/checks/data/shaw2023_dopc.json",
+            "citation": "Shaw et al. (2023), Fig. 2A and Table S1",
+            "doi": "10.1016/j.bpj.2023.02.009",
+            "locator": "Table S1, printed page 13, gives the 25 DOPC readings and both 68% confidence half-widths.",
+            "context": "Protein-free DOPC/cholesterol large unilamellar vesicles equilibrated with methyl-beta-cyclodextrin at room temperature. Activity 1 refers to crystalline cholesterol.",
+            "role": "descriptive",
+            "evaluation": ["Hold out each of the 23 distinct composition values printed in Table S1, keeping rows with the same value together."],
+            "uncertainty": "Activity and mole fraction come from the same fit and share a calibration across samples. The published marginal intervals omit their covariance. The comparison also reports sensitivity to weighting by both intervals.",
+            "report": "lean/PROGRESS.md#19-november-2026--ideal-and-regular-assembly-mixing",
+            "assessment": "Holding out each composition in turn gave a root-mean-square activity error of 0.0953. At 45.6 mol% the ideal prediction was 0.791 and the measured activity was 0.45 ± 0.02. This bulk series leaves the finite-count convention open."
+          },
+          {
+            "dataset_id": "parker2004_dopc_crystal_onset@1",
+            "manifest": "lean/checks/data/parker2004_dopc_saturation.json",
+            "citation": "Parker et al. (2004), Fig. 3",
+            "doi": "10.1016/S0006-3495(04)74221-6",
+            "locator": "Figure 3 and its accompanying microscopy results give a crystal-onset mole fraction of 0.66 ± 0.02 across three series.",
+            "context": "Optical microscopy detected cholesterol monohydrate in hydrated DOPC/cholesterol samples. The microscopy equilibration and stage temperatures are unspecified.",
+            "role": "held_out_from_fitting",
+            "fit": ["Shaw Table S1 DOPC activity curve"],
+            "evaluation": ["Parker Fig. 3 crystal-onset composition"],
+            "uncertainty": "The ±0.02 in composition has no stated confidence level. At equilibrium with the same solid chemical potential, onset corresponds to activity 1. Shaw did not characterize its crystal polymorph.",
+            "report": "lean/PROGRESS.md#19-november-2026--ideal-and-regular-assembly-mixing",
+            "assessment": "Extrapolating from the highest fitted composition (45.6 mol%) to the independently measured crystal onset (66 ± 2 mol%) gives activity 1.119. The expected value is 1 if the crystal references match."
+          }
+        ]
+      }
+    },
+    {
+      "id": "assembly-regular-mixing",
+      "title": "Pair interactions change the energy of membrane entry with composition",
+      "statement": "Updating the symmetric pair energy equals recomputing it from all membrane counts. For A entering a binary membrane with b molecules of B and total N, the excess insertion energy is χb²/[N(N + 1)] and the bulk excess chemical potential is χ(b/N)².",
+      "assumptions": [
+        "The pair matrix is symmetric and counts remain in their physical domain. For the binary result the diagonal is zero, χ is the unlike-pair energy in kBT and N is positive.",
+        "The bulk comparison treats the cholesterol/DOPC membrane as a homogeneous binary mixture at fixed temperature. It uses one composition-independent χ and a fitted scale for the cholesterol crystal reference."
+      ],
+      "uses": ["assembly-ideal-mixing"],
+      "formal": {
+        "status": "proved",
+        "theorems": {
+          "CellsProofs.Chemistry.AssemblyMixing.quadratic_update": "lean/CellsProofs/Chemistry/AssemblyMixing.lean",
+          "CellsProofs.Chemistry.AssemblyMixing.regular_change": "lean/CellsProofs/Chemistry/AssemblyMixing.lean",
+          "CellsProofs.Chemistry.AssemblyMixing.binary_specialization": "lean/CellsProofs/Chemistry/AssemblyMixing.lean",
+          "CellsProofs.Chemistry.AssemblyMixing.binary_insert": "lean/CellsProofs/Chemistry/AssemblyMixing.lean",
+          "CellsProofs.Chemistry.AssemblyMixing.binary_chemical_potential": "lean/CellsProofs/Chemistry/AssemblyMixing.lean"
+        },
+        "about": ["cells.regular_mixing@1"],
+        "sources": {
+          "Imported Mathlib dot-product and matrix-vector identity": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Data/Matrix/Mul.lean#L662"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": ["assembly-mixing"],
+        "result": "Under both measures, the signed pair matrix matched the reference energy within 2.14 × 10⁻¹⁴ kBT. The reversible edge identities passed. With equal counts and χ = 1, adding A cost an extra 0.214286 kBT at N = 6 and 0.245902 at N = 60."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Equilibrium cholesterol activity as a function of membrane mole fraction under a binary interaction model.",
+        "unit": "dimensionless activity relative to crystalline cholesterol",
+        "evidence": [
+          {
+            "dataset_id": "shaw2023_dopc_cholesterol_activity@1",
+            "manifest": "lean/checks/data/shaw2023_dopc.json",
+            "citation": "Shaw et al. (2023), Fig. 2A and Table S1",
+            "doi": "10.1016/j.bpj.2023.02.009",
+            "locator": "Table S1, printed page 13, gives the 25 DOPC readings and both 68% confidence half-widths.",
+            "context": "Protein-free DOPC/cholesterol large unilamellar vesicles equilibrated with methyl-beta-cyclodextrin at room temperature. Activity 1 refers to crystalline cholesterol.",
+            "role": "descriptive",
+            "evaluation": ["Hold out each of the 23 distinct composition values printed in Table S1, keeping rows with the same value together."],
+            "uncertainty": "Activity and mole fraction come from the same fit and share a calibration across samples. The published marginal intervals omit their covariance. The comparison also reports sensitivity to weighting by both intervals.",
+            "report": "lean/PROGRESS.md#19-november-2026--ideal-and-regular-assembly-mixing",
+            "assessment": "The interaction term lowered the held-composition activity error from 0.0953 to 0.0782. At 45.6 mol% it predicted 0.677 against 0.45 ± 0.02. Weighting by both measured uncertainties shifted the fitted interaction from 0.75 to 1.02 kBT."
+          },
+          {
+            "dataset_id": "parker2004_dopc_crystal_onset@1",
+            "manifest": "lean/checks/data/parker2004_dopc_saturation.json",
+            "citation": "Parker et al. (2004), Fig. 3",
+            "doi": "10.1016/S0006-3495(04)74221-6",
+            "locator": "Figure 3 and its accompanying microscopy results give a crystal-onset mole fraction of 0.66 ± 0.02 across three series.",
+            "context": "Optical microscopy detected cholesterol monohydrate in hydrated DOPC/cholesterol samples. The microscopy equilibration and stage temperatures are unspecified.",
+            "role": "held_out_from_fitting",
+            "fit": ["Shaw Table S1 DOPC activity curve"],
+            "evaluation": ["Parker Fig. 3 crystal-onset composition"],
+            "uncertainty": "The ±0.02 in composition has no stated confidence level. At equilibrium with the same solid chemical potential, onset corresponds to activity 1. Shaw did not characterize its crystal polymorph.",
+            "report": "lean/PROGRESS.md#19-november-2026--ideal-and-regular-assembly-mixing",
+            "assessment": "Extrapolating from 45.6 mol% to the independently measured crystal onset (66 ± 2 mol%) gives activity 0.804. The ideal prediction, 1.119, is closer to the expected activity of 1 if the crystal references match."
+          }
+        ]
+      }
+    },
+    {
+      "id": "assembly-stochastic-encounter",
+      "title": "Finite molecule counts set stochastic encounter rates and paired event heat",
+      "statement": "A molecular encounter draws from the available counts without replacement. For a regular, finite two-way edge with a common locus extent and catalyst factor, log(forward rate / reverse rate) equals minus the free-energy change plus held-reservoir work. At full membrane consumption the declared cancellation determines the boundary rate.",
+      "assumptions": [
+        "Counts and reaction coefficients are natural numbers. The engine admits at most three reactants or products per side. The factorial identity holds for any finite integer order.",
+        "For the regular pair identity the residual membrane count after drawing all reactants is at least the measure offset. At offset one, full consumption without a shared participant uses the cancelled denominator. Overlap at full order can give a singular rate. The kept, extinct and reversible tokens govern which boundary events can fire.",
+        "The occupancy specialization uses one R molecule, distinct G partners, an ideal dilute pool and two reversible states at fixed volume."
+      ],
+      "uses": ["assembly-ideal-mixing", "single-site-binding"],
+      "formal": {
+        "status": "proved",
+        "theorems": {
+          "CellsProofs.Chemistry.AssemblyKinetics.repeated_pair": "lean/CellsProofs/Chemistry/AssemblyKinetics.lean",
+          "CellsProofs.Chemistry.AssemblyKinetics.log_draw": "lean/CellsProofs/Chemistry/AssemblyKinetics.lean",
+          "CellsProofs.Chemistry.AssemblyKinetics.encounter_energy": "lean/CellsProofs/Chemistry/AssemblyKinetics.lean",
+          "CellsProofs.Chemistry.AssemblyKinetics.pair_heat": "lean/CellsProofs/Chemistry/AssemblyKinetics.lean",
+          "CellsProofs.Chemistry.AssemblyKinetics.membrane_cancel": "lean/CellsProofs/Chemistry/AssemblyKinetics.lean",
+          "CellsProofs.Chemistry.AssemblyKinetics.last_draw": "lean/CellsProofs/Chemistry/AssemblyKinetics.lean",
+          "CellsProofs.Chemistry.AssemblyKinetics.boundary_encounter_energy": "lean/CellsProofs/Chemistry/AssemblyKinetics.lean",
+          "CellsProofs.Chemistry.AssemblyKinetics.singular_draw": "lean/CellsProofs/Chemistry/AssemblyKinetics.lean",
+          "CellsProofs.Chemistry.AssemblyKinetics.occupancy_by_count": "lean/CellsProofs/Chemistry/AssemblyKinetics.lean"
+        },
+        "about": ["cells.stochastic_mass_action@1"],
+        "sources": {
+          "Imported Mathlib falling-factorial identity": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Data/Nat/Factorial/Basic.lean#L368"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": ["assembly-kinetics", "confined-binding"],
+        "result": "The reference and engine agreed on ordinary rates and zero and singular patterns across 594 compositions under both count measures. Three boundary conventions were checked on six additional states. The pool kernel reproduced the two-state occupancy formula at one, two and three partners."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Bound probability for one molecule as the integer count of its distinct partner changes, and association events for identical reactants at known counts.",
+        "unit": "probability",
+        "finding": "For identical membrane partners, live-cell homodimer imaging measured a 91 ± 16 ms lifetime. It reported surface densities, leaving the repeated-reactant draw at fixed small counts open. [Kasai et al., Figs. 4–6](https://doi.org/10.1083/jcb.201009128)",
+        "evidence": [
+          {
+            "dataset_id": "shon2012_confined_binding@1",
+            "manifest": "lean/checks/data/shon2012_confined_binding.json",
+            "citation": "Shon and Cohen (2012), Fig. 4f",
+            "doi": "10.1021/ja3062425",
+            "locator": "Experimental grey bars for one dimer in the three classes with one red strand, at 250 nm radius. Table 1 and Fig. S8 provide the kinetic and independent bulk estimates.",
+            "context": "Red- and green-labelled complementary strands confined in sealed dimples. Each class fixes the counts of the two distinct partners.",
+            "role": "held_out_from_fitting",
+            "fit": ["One red molecule and one green partner"],
+            "evaluation": ["One red molecule and two green partners", "One red molecule and three green partners"],
+            "uncertainty": "The figure shows error bars without tabulated uncertainties for individual bars. We calibrated on the one-partner class and evaluated the other classes from the same experiment. This cancels the common chamber volume. The authors fitted their confined dissociation constant using all classes. A separate calculation using bulk Kd depends appreciably on the volume estimate.",
+            "assessment": "From one partner’s measured 0.48 bound probability, Cells predicted 0.649 and 0.735 with two and three partners. The figure gives about 0.64 and 0.67, respectively.",
+            "report": "lean/PROGRESS.md#19-november-2026--stochastic-encounters-and-transition-state-catalysis"
+          }
+        ]
+      }
+    },
+    {
+      "id": "assembly-transition-state-factor",
+      "title": "A common catalyst factor preserves reversible rate ratios and equilibrium weights",
+      "statement": "On a positive reversible edge, catalysis preserves the forward-to-reverse rate ratio exactly when both rates receive the same multiplier. The transition-state law assigns a positive factor from the molecules common to both endpoints. The same equilibrium weights then balance the edge.",
+      "assumptions": [
+        "The stabilizations are finite, dimensionless contact energies in kBT. A nonempty common membrane uses its molecular fractions. An empty common membrane has factor 1.",
+        "The rate-ratio identity refers to an available two-way transition. The equilibrium statement assumes the original rates and weights obey detailed balance on each edge."
+      ],
+      "uses": ["assembly-stochastic-encounter"],
+      "formal": {
+        "status": "proved",
+        "theorems": {
+          "CellsProofs.Chemistry.AssemblyKinetics.common_residual": "lean/CellsProofs/Chemistry/AssemblyKinetics.lean",
+          "CellsProofs.Chemistry.AssemblyKinetics.common_weight": "lean/CellsProofs/Chemistry/AssemblyKinetics.lean",
+          "CellsProofs.Chemistry.AssemblyKinetics.empty_factor": "lean/CellsProofs/Chemistry/AssemblyKinetics.lean",
+          "CellsProofs.Chemistry.AssemblyKinetics.catalyst_mean": "lean/CellsProofs/Chemistry/AssemblyKinetics.lean",
+          "CellsProofs.Chemistry.AssemblyKinetics.catalyst_pos": "lean/CellsProofs/Chemistry/AssemblyKinetics.lean",
+          "CellsProofs.Chemistry.AssemblyKinetics.single_contact": "lean/CellsProofs/Chemistry/AssemblyKinetics.lean",
+          "CellsProofs.Chemistry.AssemblyKinetics.shared_ratio": "lean/CellsProofs/Chemistry/AssemblyKinetics.lean",
+          "CellsProofs.Chemistry.AssemblyKinetics.ratio_iff": "lean/CellsProofs/Chemistry/AssemblyKinetics.lean",
+          "CellsProofs.Chemistry.AssemblyKinetics.equilibrium_flow_iff": "lean/CellsProofs/Chemistry/AssemblyKinetics.lean"
+        },
+        "about": ["cells.transition_state_factor@1"]
+      },
+      "numerical": {
+        "status": "failed",
+        "comparisons": ["assembly-kinetics"],
+        "result": "Both directional multipliers agreed with the exact common-state value on 1,925 ordinary reversible edges. In an admitted two-molecule world with +20 kBT moving contacts and −20 kBT for the stationary molecule, float64 gives both rates as zero instead of 2.0611536224/s. The compiled run returns inert with a passing ledger. The equivalent constant-rate control fires at 0.3459699807 s on the same draw. With neutral movers and the same stationary contact, the clock runs with a 2.00 × 10⁻⁸ relative rate error."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Forward and reverse molecular transfer rates and an independently measured equilibrium partition under matched temperature and catalyst concentration.",
+        "unit": "s⁻¹ for each direction, dimensionless equilibrium partition",
+        "finding": "At 37 °C, cholesterol exchange between vesicles sped up about 57-fold with 1 mM β-cyclodextrin. Half-times were 195 ± 13 and about 3.4 minutes. A separate 0.5 mM equilibrium series gave a partition coefficient of 0.91 ± 0.06. Equal scaling of the two directional rates remains unmeasured. This transfer catalyst is in solution. [Leventis and Silvius, Figs. 1–2 and Table 1](https://doi.org/10.1016/S0006-3495(01)75873-0)",
+        "evidence": []
+      }
+    },
+    {
+      "id": "inward-rectifier",
+      "title": "Potassium rectification sets reversal, dissipation and a bound on slope conductance",
+      "statement": "On an open route the outward current changes sign at the Nernst potential and dissipates nonnegative heat. At fixed drive it scales with the square root of external concentration. The voltage derivative obeys the host’s upper bound even when the differential conductance is negative.",
+      "assumptions": [
+        "The route carries a monovalent cation. Concentrations, absolute temperature, reference concentration and slope parameter are positive. The gain includes nonnegative area, availability and reference conductance. Reversal and sign require positive gain.",
+        "The derivative holds concentrations and route parameters fixed. The biological matched-drive comparison uses constant availability, rectification parameters and number of contributing channels across the potassium series."
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.inward_rectifier_linear_driving_force@1"
+        ],
+        "theorems": {
+          "CellsProofs.Transport.InwardRectifier.reversal_shift": "lean/CellsProofs/Transport/InwardRectifier.lean",
+          "CellsProofs.Transport.InwardRectifier.sqrt_scaling": "lean/CellsProofs/Transport/InwardRectifier.lean",
+          "CellsProofs.Transport.InwardRectifier.matched_drive": "lean/CellsProofs/Transport/InwardRectifier.lean",
+          "CellsProofs.Transport.InwardRectifier.reference_invariance": "lean/CellsProofs/Transport/InwardRectifier.lean",
+          "CellsProofs.Transport.InwardRectifier.gate_bounds": "lean/CellsProofs/Transport/InwardRectifier.lean",
+          "CellsProofs.Transport.InwardRectifier.gate_branches": "lean/CellsProofs/Transport/InwardRectifier.lean",
+          "CellsProofs.Transport.InwardRectifier.reversal_iff": "lean/CellsProofs/Transport/InwardRectifier.lean",
+          "CellsProofs.Transport.InwardRectifier.outward_iff": "lean/CellsProofs/Transport/InwardRectifier.lean",
+          "CellsProofs.Transport.InwardRectifier.dissipation": "lean/CellsProofs/Transport/InwardRectifier.lean",
+          "CellsProofs.Transport.InwardRectifier.current_derivative": "lean/CellsProofs/Transport/InwardRectifier.lean",
+          "CellsProofs.Transport.InwardRectifier.negative_slope_iff": "lean/CellsProofs/Transport/InwardRectifier.lean",
+          "CellsProofs.Transport.InwardRectifier.slope_bound": "lean/CellsProofs/Transport/InwardRectifier.lean"
+        },
+        "sources": {
+          "Mathlib’s lower bound on the hyperbolic sine": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/SpecialFunctions/Trigonometric/Deriv.lean#L636"
+        }
+      },
+      "numerical": {
+        "status": "failed",
+        "comparisons": [
+          "inward-rectifier"
+        ],
+        "result": "A 360-state compiled panel passed against 60-digit currents and derivatives. Two equivalent reference settings produced identical one-step transfer and heat. A third, also finite, had the same 0.5520533 pA reference current but overflowed in c_out/K_ref and was refused during definition validation."
+      },
+      "biology": {
+        "status": "mixed",
+        "observable": "Kir4.1 unitary current 60 mV below each measured reversal potential as external potassium changes.",
+        "unit": "pA",
+        "evidence": [
+          {
+            "dataset_id": "tada1998_kir41@1",
+            "manifest": "lean/checks/data/tada1998_kir41.json",
+            "citation": "Tada et al. (1998), Fig. 4B–D",
+            "doi": "10.2170/jjphysiol.48.71",
+            "locator": "Panel C gives reversal, B(b) gives unitary currents and D fits the inward slope conductances from the same patch series.",
+            "context": "Cloned rat Kir4.1 in HEK293T cell-attached patches at about 25 °C, three patches per concentration.",
+            "role": "held_out_from_fitting",
+            "fit": [
+              "153 mM current amplitude"
+            ],
+            "evaluation": [
+              "15, 21, 35 and 63 mM at a common −60 mV drive"
+            ],
+            "excluded": [
+              "Rabbit Müller cell series"
+            ],
+            "uncertainty": "Currents are approximate graph readings interpolated after reading the reversal for each series. Some reversal markers overlap. Per-point numerical uncertainties are unavailable.",
+            "assessment": "At 15 mM external K the current magnitude fell less than the model predicted, as it did at the other three held-out concentrations. The model’s −59.67 mV shift in reversal agreed with the approximately −60 mV measured.",
+            "report": "lean/PROGRESS.md#19-november-2026--inward-rectification-and-sodium-anion-symport",
+            "observed": -0.59,
+            "predicted": -0.385
+          }
+        ]
+      }
+    },
+    {
+      "id": "sodium-anion-symport",
+      "title": "Sodium coupling sets net charge and the stall voltage of an anion carrier",
+      "statement": "A forward cycle imports n sodium ions and one monovalent anion. The two source-side saturations and capacity scale the net rate. With n > 1 the carrier imports below its unique stall voltage. With n = 1 its rate is independent of voltage.",
+      "assumptions": [
+        "Positive concentrations at N and P and a forward cycle from P to N. Both roles use the same standard state at their two ends. The engine admits n = 1, 2, 3 or 4. Capacity, availability and both saturations are positive in the active-stall theorem.",
+        "Equal-fraction external sodium and substrate changes assume fixed internal activities. Measured whole-cell voltage shifts yield the isolated shift ratio if both changes carry the same nonzero conductance weighting."
+      ],
+      "uses": [
+        "atp-cycle"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.na_anion_symport_factored@1"
+        ],
+        "theorems": {
+          "CellsProofs.Transport.SodiumAnionSymport.source_rate": "lean/CellsProofs/Transport/SodiumAnionSymport.lean",
+          "CellsProofs.Transport.SodiumAnionSymport.transported_rows": "lean/CellsProofs/Transport/SodiumAnionSymport.lean",
+          "CellsProofs.Transport.SodiumAnionSymport.electrical_work": "lean/CellsProofs/Transport/SodiumAnionSymport.lean",
+          "CellsProofs.Transport.SodiumAnionSymport.energy_relative_to_stall": "lean/CellsProofs/Transport/SodiumAnionSymport.lean",
+          "CellsProofs.Transport.SodiumAnionSymport.symport_stall_iff": "lean/CellsProofs/Transport/SodiumAnionSymport.lean",
+          "CellsProofs.Transport.SodiumAnionSymport.import_iff": "lean/CellsProofs/Transport/SodiumAnionSymport.lean",
+          "CellsProofs.Transport.SodiumAnionSymport.export_iff": "lean/CellsProofs/Transport/SodiumAnionSymport.lean",
+          "CellsProofs.Transport.SodiumAnionSymport.neutral_rate": "lean/CellsProofs/Transport/SodiumAnionSymport.lean",
+          "CellsProofs.Transport.SodiumAnionSymport.capacity_scaling": "lean/CellsProofs/Transport/SodiumAnionSymport.lean",
+          "CellsProofs.Transport.SodiumAnionSymport.external_shift_ratio": "lean/CellsProofs/Transport/SodiumAnionSymport.lean"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "sodium-anion-symport"
+        ],
+        "result": "All 120 stages agreed with independent 60-digit free energies, saturation, rates and heat. The panel covered both orientations, all four sodium counts and twelve active stalls. The two-step tissue run gained exactly the lactate amount recorded as transported cycles and reported zero global charge error."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Charge per lactate, particles per charge and the ratio of voltage shifts with external sodium and substrate halving in human SMCT1.",
+        "unit": "net positive charges per lactate",
+        "evidence": [
+          {
+            "dataset_id": "coady2007_smct1@1",
+            "manifest": "lean/checks/data/coady2007_smct1.json",
+            "citation": "Coady et al. (2007), Figs. 1, 2 and 4",
+            "doi": "10.1529/biophysj.107.108555",
+            "locator": "Fig. 1 compares lactate uptake with current, and Fig. 2 compares volume with current. Fig. 4 uses both 96 to 48 mM and 48 to 24 mM sodium steps, each paired with substrate halving.",
+            "context": "Human SMCT1 in Xenopus oocytes. The Cells declaration cites this study for the two-sodium coupling.",
+            "role": "descriptive",
+            "evaluation": [
+              "Lactate charge and particle ratios",
+              "Lactate and propionate zero-current shift ratios"
+            ],
+            "excluded": [
+              "Mixed inhibitor-sensitive clamp reversal",
+              "Propionate tracer uptake"
+            ],
+            "observed": 1.04,
+            "predicted": 1,
+            "uncertainty": "The reported charge uncertainty was ±0.07 across five batch slopes. The volume/current and shift ratios are reported as mean ± SE.",
+            "assessment": "The two-sodium carrier also predicted 3 osmolytes per charge versus 3.1 ± 0.1 measured. It predicted a shift ratio of 2 for both sodium halvings. The experimental means were 2.2 ± 0.2 for lactate and 2.3 ± 0.3 for propionate. Absolute stall and Hill kinetics remain open.",
+            "report": "lean/PROGRESS.md#19-november-2026--law-and-evidence-review"
+          },
+          {
+            "dataset_id": "gopal2004_lactate@1",
+            "manifest": "lean/checks/data/gopal2004_lactate.json",
+            "citation": "Gopal et al. (2004), Fig. 9A",
+            "doi": "10.1074/jbc.M405365200",
+            "locator": "Human series, square symbols. The x axis is integrated charge and the y axis is radiolactate uptake.",
+            "context": "An independent laboratory measured human SMCT in Xenopus oocytes. The coupling was fixed from the Coady study.",
+            "role": "held_out_from_fitting",
+            "fit": [
+              "Coupling n = 2 from Coady et al."
+            ],
+            "evaluation": [
+              "Four distinguishable human lactate uptake/current pairs"
+            ],
+            "excluded": [
+              "Mouse series and propionate"
+            ],
+            "uncertainty": "Approximate figure readings rounded to 5 pmol. Individual experimental uncertainties are unavailable.",
+            "assessment": "Measured net charge exceeded the prediction at all four human points by approximately 65–85 pmol. At 370 pmol lactate, Cells predicted 370 pmol net charge and the figure gives about 450 pmol.",
+            "report": "lean/PROGRESS.md#19-november-2026--inward-rectification-and-sodium-anion-symport"
+          }
+        ]
+      }
+    },
+    {
+      "id": "potassium-anion-symport",
+      "title": "Potassium–anion cotransport follows the concentration products in a closed pair",
+      "statement": "The active 1:1 route moves outward when the inside concentration product is larger, stalls at equality and dissipates nonnegative heat. Equal amounts of the two ions move together. With equal fixed volumes, the exact trajectory approaches equilibrium monotonically. An explicit ARS(2,2,2) step can move in the opposite direction if it is too large for the closed pair.",
+      "assumptions": [
+        "Potassium has valence +1 and its partner −1. Concentrations and temperature are positive. The rate scale is capacity times availability times the exponential volume factor. Strict direction and stall require a positive scale.",
+        "The closed-pair trajectory assumes one route, equal fixed finite volumes, constant availability and no other transfers. The explicit stage calculation uses the ARS(2,2,2) order condition. All formal operations are in real arithmetic."
+      ],
+      "formal": {
+        "status": "proved",
+        "about": ["cells.k_anion_symport_mass_action@1"],
+        "theorems": {
+          "CellsProofs.Transport.PotassiumAnionSymport.fractional_volume_response": "lean/CellsProofs/Transport/PotassiumAnionSymport.lean",
+          "CellsProofs.Transport.PotassiumAnionSymport.outward_iff": "lean/CellsProofs/Transport/PotassiumAnionSymport.lean",
+          "CellsProofs.Transport.PotassiumAnionSymport.stall_iff": "lean/CellsProofs/Transport/PotassiumAnionSymport.lean",
+          "CellsProofs.Transport.PotassiumAnionSymport.normalized_reversal": "lean/CellsProofs/Transport/PotassiumAnionSymport.lean",
+          "CellsProofs.Transport.PotassiumAnionSymport.electrochemical_sum": "lean/CellsProofs/Transport/PotassiumAnionSymport.lean",
+          "CellsProofs.Transport.PotassiumAnionSymport.heat_nonneg": "lean/CellsProofs/Transport/PotassiumAnionSymport.lean",
+          "CellsProofs.Transport.PotassiumAnionSymport.pair_inventories": "lean/CellsProofs/Transport/PotassiumAnionSymport.lean",
+          "CellsProofs.Transport.PotassiumAnionSymport.finite_volume_drive": "lean/CellsProofs/Transport/PotassiumAnionSymport.lean",
+          "CellsProofs.Transport.PotassiumAnionSymport.equal_volume_drive": "lean/CellsProofs/Transport/PotassiumAnionSymport.lean",
+          "CellsProofs.Transport.PotassiumAnionSymport.change_initial": "lean/CellsProofs/Transport/PotassiumAnionSymport.lean",
+          "CellsProofs.Transport.PotassiumAnionSymport.change_outward": "lean/CellsProofs/Transport/PotassiumAnionSymport.lean",
+          "CellsProofs.Transport.PotassiumAnionSymport.change_solves_rate": "lean/CellsProofs/Transport/PotassiumAnionSymport.lean",
+          "CellsProofs.Transport.PotassiumAnionSymport.explicit_step": "lean/CellsProofs/Transport/PotassiumAnionSymport.lean",
+          "CellsProofs.Transport.PotassiumAnionSymport.step_points_inward": "lean/CellsProofs/Transport/PotassiumAnionSymport.lean"
+        }
+      },
+      "numerical": {
+        "status": "failed", "comparisons": ["potassium-anion-symport"],
+        "result": "All 27 ordinary component cases passed. The closed two-compartment world accepted a 10 ms step and booked 2.141 × 10⁻⁶ fmol inward against an exact 8.669 × 10⁻⁷ fmol outward. The same interval split into 32 or 64 steps gave outward flow. Separately, a component-level extreme concentration ratio produced infinite affinity and heat with finite references."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "External cation concentration at reversal normalized by internal potassium, plotted against the inside/outside chloride ratio.",
+        "unit": "dimensionless normalized reversal slope",
+        "finding": "Rabbit red cells gave an outward K:Cl flux ratio of 1.12 ± 0.26 (SD, five preparations), consistent with the model’s 1:1 stoichiometry. The investigators measured rubidium as a potassium tracer and calibrated its relative flux. [Jennings and Adame, Fig. 5](https://pubmed.ncbi.nlm.nih.gov/11502559/)",
+        "evidence": [{
+          "dataset_id": "lauf1996_sheep_kcc_reversal@1",
+          "manifest": "lean/checks/data/lauf1996_kcc_reversal.json",
+          "citation": "Lauf and Adragna (1996), Fig. 8", "doi": "10.1085/jgp.108.4.341",
+          "locator": "Figures 5–7 estimate the reversal point from zero net flux. Figure 8 fits normalized reversal against the chloride ratio.",
+          "context": "Low-potassium sheep red cells with pH and volume clamped. The assay compared outward K and inward Rb flux after chloride-minus-nitrate subtraction.",
+          "role": "descriptive",
+          "evaluation": ["Normal and low internal magnesium"],
+          "uncertainty": "Eight points contributed to the normal-magnesium fit and ten to the low-magnesium fit. The paper gives correlations of 0.912 and 0.976. It gives no uncertainty for either slope.",
+          "assessment": "The ideal product rule predicts a slope of 1. The measured slopes were 1.12 at normal magnesium and 1.08 at low magnesium. Rubidium substitutes for external potassium. The volume dependence of net flux remains open.",
+          "report": "lean/PROGRESS.md#19-november-2026--potassium-and-anion-cotransport"
+        }]
+      }
     },
     {
       "id": "regional-reaction-transport",
