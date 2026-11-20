@@ -279,6 +279,8 @@ export const DEFAULT_LAWS = path.join(ROOT, "data", "laws", "pieces.json");
 export const DEFAULT_LAW_PORT = path.join(ROOT, "data", "laws", "law_port.json");
 /** The Machines catalogue (schema/MACHINE_CATALOGUE.md), carried in the scene as `catalogue`: the view is offered only with it. */
 export const DEFAULT_CATALOGUE = path.join(ROOT, "data", "catalogue", "catalogue.json");
+/** The About words (cells.visualizer.about@1, src/ui/about.js), carried in the scene as `about`: the page's About and first-visit line, and the site's words (tools/stage_site.mjs). */
+export const DEFAULT_ABOUT = path.join(ROOT, "data", "site", "about.json");
 
 // The catalogue's overlay, where an experiment's entry may say that the parts of each of its runs are published together
 // (`parts_together`, read by the export: packageParts).
@@ -442,12 +444,13 @@ export function publishedReplays(index, scene, listing = null) {
  * `replays` is the catalogue the page carries where the caller has made it (the export, which packages the parts first:
  * packageParts); else it is read from `runsDir`, as `published` says.
  */
-export async function buildPage({ scenePath = DEFAULT_SCENE, three = THREE_CDN, runsDir = DEFAULT_RUNS, inlineRuns = false, published = false, hideExperiments = false, proteinsDir = DEFAULT_PROTEINS, membersDir = DEFAULT_MEMBERS, machinesDir = DEFAULT_MACHINES, lawsPath = DEFAULT_LAWS, lawPortPath = DEFAULT_LAW_PORT, cataloguePath = DEFAULT_CATALOGUE, cardsPath = DEFAULT_CARDS, stillsDir = DEFAULT_STILLS, replays: made = undefined } = {}) {
+export async function buildPage({ scenePath = DEFAULT_SCENE, three = THREE_CDN, runsDir = DEFAULT_RUNS, inlineRuns = false, published = false, hideExperiments = false, proteinsDir = DEFAULT_PROTEINS, membersDir = DEFAULT_MEMBERS, machinesDir = DEFAULT_MACHINES, lawsPath = DEFAULT_LAWS, lawPortPath = DEFAULT_LAW_PORT, cataloguePath = DEFAULT_CATALOGUE, aboutPath = DEFAULT_ABOUT, cardsPath = DEFAULT_CARDS, stillsDir = DEFAULT_STILLS, replays: made = undefined } = {}) {
   const script = await bundle(path.join(ROOT, "src", "main.js"), { three });
   const data = JSON.parse(await readFile(scenePath, "utf8"));
   if (lawsPath && !data.laws && (await modified(lawsPath)) !== null) data.laws = JSON.parse(await readFile(lawsPath, "utf8"));
   if (lawPortPath && !data.law_port && (await modified(lawPortPath)) !== null) data.law_port = JSON.parse(await readFile(lawPortPath, "utf8"));
   if (cataloguePath && !data.catalogue && (await modified(cataloguePath)) !== null) data.catalogue = JSON.parse(await readFile(cataloguePath, "utf8"));
+  if (aboutPath && !data.about && (await modified(aboutPath)) !== null) data.about = JSON.parse(await readFile(aboutPath, "utf8"));
   const replays = made !== undefined ? made : published ? publishedReplays(await readReplays(runsDir), data, (await readCards(cardsPath))?.listing) : await readReplays(runsDir);
   // A page without the Experiments view (hideExperiments) keeps its replays and says the view is hidden: the cell view's flux
   // finds a species' looping run among them.
@@ -490,10 +493,13 @@ export async function buildPage({ scenePath = DEFAULT_SCENE, three = THREE_CDN, 
     .replace("/*__BUNDLE__*/", () => script.trim());
 }
 
-/** The page as a complete document, for a file on disk, the local server or the site's release (`lang`, tools/stage_site.mjs). */
-export function wrap(content, { theme = null, head = "", lang = null } = {}) {
+/**
+ * The page as a complete document, for a file on disk, the local server or the site's release (`lang`, and `before`, what
+ * stands in the body ahead of the page: the site's text without script, tools/stage_site.mjs).
+ */
+export function wrap(content, { theme = null, head = "", lang = null, before = "" } = {}) {
   const attribute = `${lang ? ` lang="${lang}"` : ""}${theme ? ` data-theme="${theme}"` : ""}`;
-  return `<!doctype html><html${attribute}><head>${SKELETON_HEAD}${head}</head><body>\n${content}\n</body></html>\n`;
+  return `<!doctype html><html${attribute}><head>${SKELETON_HEAD}${head}</head><body>\n${before ? `${before}\n` : ""}${content}\n</body></html>\n`;
 }
 
 /** A Content-Security-Policy close to the artifact frame's, so a blocked load shows up locally. */

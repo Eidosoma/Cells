@@ -17,8 +17,18 @@
 //   - the viewer read its host profile, and its base address is the release's folder;
 //   - a press on another tab keeps the address where it was (the root at the root, not inside the release's folder);
 // and the bytes as sent stand beside the raw bytes, and beside what brotli's and gzip's copies would send, for each first
-// visit. The browser's own request for /favicon.ico (no page asks for it) is said apart. --id is the release the pointer
-// on disk names unless given. Into DIR (out/check-site unless given) goes site-check.json.
+// visit. What the site says of itself is held too, on both pages:
+//   - the head: the title and description of the About words, the site's address as canonical and as og:url, the share
+//     picture as og:image (the release's own, a JPEG of 1200 by 630 within 200 kB), the large-image card, and structured
+//     data for the site and its source code with no author and no publisher;
+//   - the text without script: with script switched off, the About words stand whole as HTML (a heading, the paragraphs,
+//     the source code in a new tab, each view a link), and nothing is fetched from another host; with script, the page puts
+//     them away once it has drawn;
+//   - the root files, served as --release will put them at the root (the release's own, before the pointer moves):
+//     robots.txt lets every reader read everything and never closes /r/, and names the sitemap; the sitemap lists the
+//     root; llms.txt names the release's files, its cards, the contracts and the source.
+// The browser's own request for /favicon.ico (no page asks for it) is said apart. --id is the release the pointer on disk
+// names unless given. Into DIR (out/check-site unless given) goes site-check.json.
 //
 // One browser: it takes a place of the lock in tools/lib/browser_lock.mjs. Start Chrome through tools/chrome_gpu.sh
 // (CHROME=$PWD/tools/chrome_gpu.sh), as every browser run here; the first page of the fresh browser is not judged.
@@ -31,27 +41,27 @@ import path from "node:path";
 import zlib from "node:zlib";
 import { acquireBrowser } from "./lib/browser_lock.mjs";
 import { ROOT } from "./lib/build_page.mjs";
-import { COMPRESSIBLE, contentType, sitePolicy } from "./stage_site.mjs";
+import { COMPRESSIBLE, ROOT_FILES, SHARE, SHARE_SIZE, SITE, contentType, jpegSize, sitePolicy } from "./stage_site.mjs";
 
 const args = process.argv.slice(2);
 const value = (name, fallback) => (args.includes(name) ? args[args.indexOf(name) + 1] : fallback);
-const SITE = value("--site") ? path.resolve(value("--site")) : null;
-if (!SITE || !existsSync(path.join(SITE, "r"))) {
+const SITE_DIR = value("--site") ? path.resolve(value("--site")) : null;
+if (!SITE_DIR || !existsSync(path.join(SITE_DIR, "r"))) {
   console.error("usage: node tools/check_site.mjs --site SITE [--id ID] [--out DIR]  (SITE holds r/<id>/, and index.html once a pointer is moved)");
   process.exit(2);
 }
 const OUT = path.resolve(value("--out", path.join(ROOT, "out", "check-site")));
-const pointer = existsSync(path.join(SITE, "index.html")) ? /<script type="application\/json" id="cells-host">([\s\S]*?)<\/script>/.exec(await readFile(path.join(SITE, "index.html"), "utf8"))?.[1] : undefined;
+const pointer = existsSync(path.join(SITE_DIR, "index.html")) ? /<script type="application\/json" id="cells-host">([\s\S]*?)<\/script>/.exec(await readFile(path.join(SITE_DIR, "index.html"), "utf8"))?.[1] : undefined;
 const pointed = pointer ? JSON.parse(pointer).release ?? null : pointer === undefined ? undefined : null;
 const ID = value("--id", pointed ?? null);
-if (!ID || !existsSync(path.join(SITE, "r", ID, "release.json"))) {
+if (!ID || !existsSync(path.join(SITE_DIR, "r", ID, "release.json"))) {
   console.error(`no release ${ID} in the site's r/ (give --id)`);
   process.exit(2);
 }
 // The root page is checked as it will stand once the pointer names this release: its root.html, which --release copies
 // over SITE/index.html byte for byte, sent as its compressed copy where the release has one. So a release is checked before
 // the pointer moves to it, and the pointer on disk, whatever it names, is not read.
-const ROOT_PAGE = path.join(SITE, "r", ID, "root.html");
+const ROOT_PAGE = path.join(SITE_DIR, "r", ID, "root.html");
 const WIDTH = 1280, HEIGHT = 720;
 const QUIET_MS = 3000, LEAST_MS = 4000; // as tools/check_fetches.mjs: settled when nothing more is asked for this long
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -79,7 +89,8 @@ const server = http.createServer(async (request, response) => {
   if (name.split("/").some((part) => part === ".." || part.startsWith(".")) || name.includes("\0")) return response.writeHead(404).end();
   if (name.endsWith("/")) name += "index.html";
   const isPointer = name === "/index.html";
-  const file = isPointer ? ROOT_PAGE : path.join(SITE, name);
+  // The root files as --release will put them beside the pointer: the release's own.
+  const file = isPointer ? ROOT_PAGE : ROOT_FILES.includes(name.slice(1)) ? path.join(SITE_DIR, "r", ID, name.slice(1)) : path.join(SITE_DIR, name);
   const found = await stat(file).catch(() => null);
   const row = { path: url.pathname, query: url.search, status: 404, raw: 0, sent: 0, encoding: null, br: null, gz: null };
   asked.push(row);
@@ -123,8 +134,45 @@ const server = http.createServer(async (request, response) => {
 });
 await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
 const origin = `http://127.0.0.1:${server.address().port}`;
-note(`serving ${path.basename(SITE)} at ${origin}/ (release ${ID}), until the check ends`);
+note(`serving ${path.basename(SITE_DIR)} at ${origin}/ (release ${ID}), until the check ends`);
 note(`the root page is r/${ID}/root.html, as --release would copy it; the pointer on disk ${pointed === undefined ? "is not there yet" : pointed === ID ? `names ${ID} already` : `names ${pointed ?? "no release"}, and is not read`}`);
+
+// ---------------------------------------------------------------- what the site says of itself, as served (no browser)
+const said = { pages: {}, root: {} };
+const attribute = (html, key, name) => new RegExp(`<meta ${key}="${name.replace(/[.:]/g, "\\$&")}" content="([^"]*)">`).exec(html)?.[1] ?? null;
+const unescape = (text) => String(text ?? "").replace(/&quot;/g, '"').replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
+const releaseFiles = JSON.parse(await readFile(path.join(SITE_DIR, "r", ID, "release.json"), "utf8"));
+for (const [which, at] of [["the root page", "/"], ["the release's page", `/r/${ID}/`]]) {
+  const html = await (await fetch(`${origin}${at}`)).text();
+  const head = html.slice(0, html.indexOf("</head>"));
+  const image = attribute(head, "property", "og:image");
+  const picture = await readFile(path.join(SITE_DIR, "r", ID, SHARE)).catch(() => null);
+  let data = null;
+  try {
+    data = JSON.parse(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/.exec(head)?.[1] || "null");
+  } catch {}
+  const graph = data?.["@graph"] || [];
+  const site = graph.find((item) => item["@type"] === "WebSite"), code = graph.find((item) => item["@type"] === "SoftwareSourceCode");
+  const title = /<title>([^<]*)<\/title>/.exec(head)?.[1] ?? null, description = attribute(head, "name", "description");
+  check(`${which}: its head has a title and a description, and the site's address as canonical and og:url`, title && description && head.includes(`<link rel="canonical" href="${SITE}">`) && attribute(head, "property", "og:url") === SITE && attribute(head, "property", "og:title") === title && attribute(head, "property", "og:description") === description, JSON.stringify({ title, canonical: /<link rel="canonical" href="([^"]*)">/.exec(head)?.[1] }));
+  check(`${which}: its link preview is the large-image card with the release's own picture, ${SHARE_SIZE.width} by ${SHARE_SIZE.height}, within ${SHARE_SIZE.most / 1000} kB`, image === `${SITE}r/${ID}/${SHARE}` && attribute(head, "name", "twitter:card") === "summary_large_image" && picture && picture.length <= SHARE_SIZE.most && JSON.stringify(jpegSize(picture)) === JSON.stringify({ width: SHARE_SIZE.width, height: SHARE_SIZE.height }) && attribute(head, "property", "og:image:width") === String(SHARE_SIZE.width) && attribute(head, "property", "og:image:height") === String(SHARE_SIZE.height) && !/twitter:(site|creator)/.test(head), JSON.stringify({ image, bytes: picture?.length, size: picture && jpegSize(picture) }));
+  check(`${which}: its structured data names the site and its source code (name, description, repository, licence, address), and no author or publisher`, site?.name && site.url === SITE && unescape(site.description) === unescape(description) && code?.name && code.description && /^https:\/\//.test(code.codeRepository || "") && /\/LICENSE$/.test(code.license || "") && !/"(author|publisher|creator|copyrightHolder|maintainer|contributor|funder|sponsor)"/.test(JSON.stringify(data)), JSON.stringify({ types: graph.map((item) => item["@type"]), license: code?.license }));
+  said.pages[at] = { title, description, image, data };
+}
+const served = {};
+for (const name of ["robots.txt", "sitemap.xml", "llms.txt"]) {
+  const answer = await fetch(`${origin}/${name}`);
+  served[name] = { status: answer.status, type: answer.headers.get("content-type"), text: answer.status === 200 ? await answer.text() : "" };
+}
+const robots = served["robots.txt"].text;
+check("robots.txt: every reader may read everything, /r/ is never closed, and the sitemap is named", served["robots.txt"].status === 200 && /^text\/plain/.test(served["robots.txt"].type || "") && /^User-agent: \*$/m.test(robots) && !/^Disallow:\s*\S/m.test(robots) && robots.includes(`Sitemap: ${SITE}sitemap.xml`), JSON.stringify({ status: served["robots.txt"].status, type: served["robots.txt"].type, lines: robots.split("\n").filter((line) => line && !line.startsWith("#")) }));
+check("sitemap.xml: it lists the root", served["sitemap.xml"].status === 200 && /xml/.test(served["sitemap.xml"].type || "") && served["sitemap.xml"].text.includes(`<loc>${SITE}</loc>`), served["sitemap.xml"].type || String(served["sitemap.xml"].status));
+const llms = served["llms.txt"].text;
+const releaseCards = await readFile(path.join(SITE_DIR, "r", ID, "cards.json"), "utf8").then(JSON.parse, () => null);
+const titles = (releaseCards?.cards || []).map((card) => card.title).filter(Boolean);
+check("llms.txt: the About words, the views, every card's title, the release's files and contracts, and the source", served["llms.txt"].status === 200 && llms.startsWith("# Cells\n") && llms.includes(`${SITE}r/${ID}/release.json`) && llms.includes(`${SITE}?lens=`) && titles.every((title) => llms.includes(title)) && /\]\(https:\/\/github\.com\/[^)]*\/schema\/[A-Z_]+\.md\)/.test(llms) && llms.includes("## Source"), JSON.stringify({ status: served["llms.txt"].status, bytes: llms.length, cards: titles.length, missing: titles.filter((title) => !llms.includes(title)).slice(0, 3) }));
+said.root = Object.fromEntries(Object.entries(served).map(([name, item]) => [name, { status: item.status, type: item.type, bytes: Buffer.byteLength(item.text) }]));
+note(`the release's files: ${releaseFiles.files.length}; the root files as served: ${JSON.stringify(said.root)}`);
 
 // ---------------------------------------------------------------- the browser
 const release = await acquireBrowser({ wait: Number(process.env.WAIT_MINUTES || 30) * 60 * 1000 });
@@ -133,7 +181,7 @@ const chrome = spawn(
   ["--headless=new", `--user-data-dir=${release.profile}`, "--disable-breakpad", "--no-first-run", "--no-sandbox", "--mute-audio", "--hide-scrollbars", "--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader", `--window-size=${WIDTH},${HEIGHT}`, "--remote-debugging-port=0", "about:blank"],
   { stdio: ["ignore", "ignore", "pipe"] }
 );
-const record = { format: "cells.visualizer.site_check@1", site: path.basename(SITE), release: ID, policy: sitePolicy(), visits: [] };
+const record = { format: "cells.visualizer.site_check@1", site: path.basename(SITE_DIR), release: ID, policy: sitePolicy(), said, visits: [], text: [] };
 let failed = null, socket = null;
 try {
   const endpoint = await new Promise((resolve, reject) => {
@@ -263,6 +311,23 @@ try {
       for (const row of files) note(`    ${row.status} ${row.path}${row.query}  raw ${row.raw}, sent ${row.sent}${row.encoding ? ` (${row.encoding})` : ""}`);
       record.visits.push({ page: which, address, ready, hosts: byHost, outside, errors: errors.slice(0, 20), totals, files: files.map((row) => [row.path, row.status, row.raw, row.sent, row.encoding]), fonts, host: state.host, press: { tab: tabName, address: now } });
     }
+  }
+  // The text a reader with no script gets: whole, as HTML, with nothing fetched from another host; and with script, put away once the page has drawn.
+  for (const [which, at] of pages) {
+    await tab("Emulation.setScriptExecutionDisabled", { value: true });
+    await tab("Page.navigate", { url: "about:blank" });
+    await sleep(300);
+    for (const list of [asked, hosts, outside, errors]) list.length = 0;
+    await tab("Page.navigate", { url: `${origin}${at}` });
+    await sleep(2500);
+    const text = await evaluate(`(() => { const t = document.getElementById("cells-text"); if (!t) return null; const r = t.getBoundingClientRect(), style = getComputedStyle(t); const links = [...t.querySelectorAll("a")]; return { shown: style.display !== "none" && style.visibility !== "hidden" && r.width > 0 && r.height > 0, heading: t.querySelector("h1")?.textContent || null, paragraphs: t.querySelectorAll("p").length, words: t.textContent.length, source: links.filter((a) => a.textContent.trim() === "Source code").map((a) => ({ href: a.href, target: a.target, rel: a.rel })), views: links.filter((a) => /[?]lens=/.test(a.getAttribute("href"))).map((a) => a.textContent), scrolls: t.scrollHeight > t.clientHeight ? getComputedStyle(t).overflowY : "fits" }; })()`).catch((error) => ({ error: error.message }));
+    check(`${which}, with script switched off: the About words stand as HTML, a heading, the paragraphs, the source code in a new tab, each view a link`, text?.shown && text.heading === "Cells" && text.paragraphs >= 5 && text.source.length === 1 && text.source[0].target === "_blank" && text.source[0].rel === "noopener noreferrer" && text.views.length === 6 && ["auto", "scroll", "fits"].includes(text.scrolls), JSON.stringify(text));
+    check(`${which}, with script switched off: no request to any host but the site's own`, !outside.length, outside.slice(0, 3).join(", ") || `${hosts.length} requests`);
+    await tab("Emulation.setScriptExecutionDisabled", { value: false });
+    const ready = await open(at);
+    const away = await evaluate(`(() => { const t = document.getElementById("cells-text"); return { present: Boolean(t), hidden: t ? getComputedStyle(t).display === "none" : null, drawn: Boolean(document.querySelector("cells-viewer")?.model) }; })()`).catch((error) => ({ error: error.message }));
+    check(`${which}, with script: the page put the text away once it had drawn`, ready && away.present && away.hidden && away.drawn, JSON.stringify(away));
+    record.text.push({ page: which, address: at, without_script: text, with_script: away });
   }
   record.accept_encoding = [...encodings];
   note(`the browser asked with Accept-Encoding: ${[...encodings].join(" | ")}`);
