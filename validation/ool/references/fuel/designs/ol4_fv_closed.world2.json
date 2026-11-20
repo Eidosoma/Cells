@@ -3,7 +3,7 @@
  "id": "ol4_fv_closed",
  "registered": "2026-11-20",
  "source": "docs/ORIGIN_OF_LIFE_FUEL_DESIGN.md at tag ol4-fuel-note-2026-11-20",
- "description": "Closed vesicle at zero drive (V1, row OL4-5): mu_F = mu_W; 8 block molecules in membrane and pool; two impermeant lumen molecules put the kink between tense and floppy at W = 5; it cannot lyse (sigma_max 1e3 N/m).",
+ "description": "Closed vesicle at zero drive (V1, row OL4-5): mu_F = mu_W; 8 block molecules in membrane and pool; two impermeant lumen molecules put the kink between tense and floppy at W = 5.478; it cannot lyse (sigma_max 1e3 N/m).",
  "units": {
   "q": "m^2",
   "concentration": "mol/L (held places: mM)",
@@ -25,7 +25,7 @@
  "geometry": {
   "interface": "cells.assembly_geometry@1",
   "model": "cells.bilayer_geometry@1",
-  "area_quantum_m2": 9.608361658167243e-18,
+  "area_quantum_m2": 8.77e-18,
   "vesicle_floor_quanta": 2,
   "sigma_max_N_per_m": 1000.0,
   "sigma_max_source": "a declared test parameter, unsourced",

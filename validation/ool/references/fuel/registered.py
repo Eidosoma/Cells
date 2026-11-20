@@ -194,6 +194,7 @@ def registered_world(wid: str):
 # ---------------------------------------------------------------------------- V1: vesicle worlds
 
 VQ = 3e-17                    # the area quantum of the kernel world (m^2), as OL2's
+Q_CLOSED = 8.77e-18           # the closed vesicle's area quantum (m^2): its kink at W = 5.478
 VC0, VCEXT, VT = 1e-3, 0.3, 298.15
 V_SEED = 2026112003
 V_BASES = 12
@@ -235,11 +236,10 @@ def v_worlds() -> dict:
         description="Fuel kernel probe in a vesicle (V1): option (d)'s chemistry with bilayer geometry, an osmotic "
                     "lumen with one impermeant solute, insertion_area joins, held fuel and waste (drive "
                     "mu_F - mu_W = 2.5 + ln 3), the catalysed core steps, the floor and lysis.")
-    # the closed vesicle: the kink between tense and floppy at W = 5 (two impermeant molecules)
+    # the closed vesicle: two impermeant molecules put the kink between tense and floppy at
+    # W = 2 A_kink/q = 5.478, between the integers 5 and 6 (``closed_kink`` checks it)
     l_closed = 2
-    V_osm = l_closed / (N_A * VCEXT) * 1e-3          # m^3
-    A_kink = (6 * math.sqrt(math.pi) * V_osm) ** (2 / 3)
-    q_closed = 2 * A_kink / 5
+    q_closed = Q_CLOSED
     closed = V.FuelWorld2(
         name="ol4_fv_closed", q_m2=q_closed, c0_M=VC0, c_ext_M=VCEXT, T=VT, V_pool_L=v_pool_L(4.0), membrane=mem,
         lumen=[("X", 0.0)], pool_finite=[("B", 0.5), ("S", -1.5), ("L1", 1.0), ("L2", 1.0), ("X", 0.0)],
@@ -251,9 +251,15 @@ def v_worlds() -> dict:
         catalysts={"a1": [("L1", 8.0)], "a2": [("L2", 8.0)]},
         founder=dict(n=(1, 1, 2, 2), l=(l_closed,), p=(1, 1, 0, 0, 0)),
         description="Closed vesicle at zero drive (V1, row OL4-5): mu_F = mu_W; 8 block molecules in membrane and "
-                    "pool; two impermeant lumen molecules put the kink between tense and floppy at W = 5; it "
+                    "pool; two impermeant lumen molecules put the kink between tense and floppy at W = 5.478; it "
                     "cannot lyse (sigma_max 1e3 N/m).")
     return {"ol4_fv_kernel": kern, "ol4_fv_closed": closed}
+
+
+def closed_kink() -> float:
+    """W at which V_sph(A) = V_osm in ``ol4_fv_closed`` (two impermeant molecules)."""
+    V_osm = 2 / (N_A * VCEXT) * 1e-3
+    return 2 * (6 * math.sqrt(math.pi) * V_osm) ** (2 / 3) / Q_CLOSED
 
 
 def v_documents() -> dict:

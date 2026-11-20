@@ -195,18 +195,24 @@ def row_equilibrium(root: Path) -> list:
 
 
 def row_driven(root: Path, cache: dict) -> list:
+    """OL4-6's and OL4-7's checks on the driven tables, computed once per harness run."""
+    if "driven_checks" in cache:
+        return cache["driven_checks"]
     out = []
     for wid in DS.DRIVEN_WORLDS:
+        start = DS.SWITCH_START.get(wid)
+        if start is None:
+            raise MissingRecord(f"the design registers no switching start for {wid}; OL4-7 would pass vacuously")
         states = DS.closed_inputs(wid)
         arr = _probe(root, "tables", wid, states)
         law = FuelLaw(R.registered_world(wid))
-        ref = cache.setdefault(wid, ST.reference_solution(law, states))
-        drive = DS.drive(wid)
-        start = DS.SWITCH_START.get(wid)
-        res = ST.check_driven(law, states, arr["a_plus"], arr["a_minus"], ref, drive, start=start)
+        if wid not in cache:
+            cache[wid] = ST.reference_solution(law, states)
+        res = ST.check_driven(law, states, arr["a_plus"], arr["a_minus"], cache[wid], DS.drive(wid), start=start)
         for name, c in res.items():
             c.detail["world"] = wid
             out.append((name, c))
+    cache["driven_checks"] = out
     return out
 
 
@@ -227,7 +233,9 @@ def row_long_run(root: Path, cache: dict) -> list:
     _registered_run(meta, rec, w, spec, f"runs/{spec['id']}")
     law = FuelLaw(w)
     states = DS.closed_inputs(wid)
-    ref = cache.setdefault(wid, ST.reference_solution(law, states))
+    if wid not in cache:
+        cache[wid] = ST.reference_solution(law, states)
+    ref = cache[wid]
     table = ChannelTable.from_declared(meta["channels"], law)
     return [(k, c) for k, c in DS.long_run_checks(law, states, ref, table, w.state_from(meta["initial_state"]),
                                                    rec).items()]

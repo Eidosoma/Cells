@@ -315,3 +315,95 @@ def test_the_closed_vesicle_relaxes_to_exp_minus_F():
     assert res.passed and res.detail["tense_states"] > 0 and res.detail["connected"]
     bad = V.check_closed(law, states, V.table(V.FuelLaw2(w, planted="at_state_factor"), states))["stationary_law"]
     assert not bad.passed
+
+
+# ---------------------------------------------------------------------------- OL4-6's long run, small
+
+def _chain(w, states, law):
+    """The exact chain of a small world: per state, cumulative rates, targets and fuel signs."""
+    t = ST.float_table(law, states)
+    e = ST.edges(w, states, t["a_plus"], t["a_minus"])
+    r = ST.fuel_step_index(w)
+    S = len(states)
+    out = [[[], [], []] for _ in range(S)]
+    for s_, d_, v_, st_, sg_ in zip(*e):
+        out[s_][0].append(v_)
+        out[s_][1].append(d_)
+        out[s_][2].append(sg_ if st_ == r else 0)
+    return [(np.cumsum(a), np.array(b), np.array(c)) for a, b, c in out], t, e
+
+
+def _count_run(chain, k0, E, rng):
+    """E events of the exact chain from state k0: (net and forward fuel counts, the time)."""
+    k, t, n_f, n_r = k0, 0.0, 0, 0
+    for _ in range(E):
+        cum, dst, fs = chain[k]
+        t += -math.log(1.0 - rng.random()) / cum[-1]
+        j = int(np.searchsorted(cum, rng.random() * cum[-1], side="right"))
+        n_f += fs[j] > 0
+        n_r += fs[j] < 0
+        k = int(dst[j])
+    return n_f - n_r, n_f, t
+
+
+def test_the_long_run_z_is_calibrated_and_the_forward_only_reader_fails():
+    """z over 120 seeds of the exact chain (fixed event count, from the registered kind of start):
+    mean near 0 and sd near 1, so the start bias's sign and the stopping rule are right; the
+    forward-only count is far off."""
+    w, states = _small("ol4_fd_ness", 4)
+    law = FuelLaw(w)
+    ref = ST.reference_solution(law, states)
+    chain, _, _ = _chain(w, states, law)
+    idx = {tuple(int(v) for v in s): k for k, s in enumerate(states)}
+    k0 = idx[w.state_from(w.initial_state)]
+    bias = float(ref["u"][k0] - ref["pi"] @ ref["u"])
+    rng = np.random.default_rng(2026112004)
+    z, zf = [], []
+    for _ in range(120):
+        n_net, n_f, t = _count_run(chain, k0, 1500, rng)
+        z.append((n_net - ref["J"] * t - bias) / math.sqrt(ref["D"] * t))
+        zf.append((n_f - ref["J"] * t - bias) / math.sqrt(ref["D"] * t))
+    z = np.array(z)
+    assert abs(z.mean()) < 3.5 / math.sqrt(len(z)) and 0.75 < z.std() < 1.3, (z.mean(), z.std())
+    assert np.median(np.abs(zf)) > 10
+
+
+def test_the_long_run_checks_on_a_host_run():
+    w, states = _small("ol4_fd_ness", 4)
+    law = FuelLaw(w)
+    ref = ST.reference_solution(law, states)
+    spec = dict(world="ol4_fd_ness", max_events=1500, row_every=500, t_end=1e12, seed=11)
+    h = SI.host_run("ol4_fd_ness", spec, world=w)
+    rec = dict(event_channel=h["run"]["event_channel"], event_time=h["run"]["event_time"], row_event=h["rows"],
+               counts=h["counts"], heat_kT=h["heat"], work_kT=h["work"])
+    n0 = w.state_from(w.initial_state)
+    honest = DS.long_run_checks(law, states, ref, h["table"], n0, rec)
+    assert all(c.passed for c in honest.values()), {k: c.detail for k, c in honest.items()}
+    reader = DS.long_run_checks(law, states, ref, h["table"], n0, rec, reader="forward_only")
+    assert not reader["heat_identity"].passed and not reader["flux"].passed
+
+
+# ---------------------------------------------------------------------------- the harness's own paths
+
+def test_the_harness_exit_codes_and_its_registered_run_guard(tmp_path, monkeypatch):
+    from validation.ool.references.fuel import harness as H
+
+    SI.write_refusals(tmp_path / "ok" / "refusals")
+    assert H.exit_status(H.run_rows(tmp_path / "ok", ["OL4-9"])) == 0
+    SI.write_refusals(tmp_path / "bad" / "refusals", accept=("refuse_factor_on_pool_step",))
+    assert H.exit_status(H.run_rows(tmp_path / "bad", ["OL4-9"])) == 1
+    assert H.exit_status(H.run_rows(tmp_path / "none", ["OL4-9"])) == 2
+    monkeypatch.setattr(H, "row_refusals", lambda root: (_ for _ in ()).throw(ValueError("planted")))
+    rep = H.run_rows(tmp_path / "ok", ["OL4-9"])
+    assert H.exit_status(rep) == 1 and "planted" in rep["OL4-9"]["error"]
+    w = R.registered_world("ol4_fd_kernel")
+    spec = DS.LEDGER_RUNS["ol4_run_fuel_held"]
+    E = spec["max_events"]
+    good = dict(event_channel=np.zeros(E), row_event=np.array(sorted(set(range(0, E + 1, 100)) | {E})))
+    meta = dict(initial_state=w.initial_state)
+    H._registered_run(meta, good, w, spec, "x")
+    for bad_meta, bad_rec in ((dict(initial_state={"B@pool": 1}), good),
+                              (meta, dict(good, event_channel=np.zeros(E - 1))),
+                              (meta, dict(good, row_event=good["row_event"][:-1]))):
+        with pytest.raises(RecordFormatError):
+            H._registered_run(bad_meta, bad_rec, w, spec, "x")

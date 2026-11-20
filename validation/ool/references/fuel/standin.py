@@ -92,10 +92,13 @@ def write_vprobe(out: Path, wid: str, states, planted: str | None = None) -> Pat
     return out
 
 
-def host_run(wid: str, spec: dict, planted: str | None = None) -> dict:
-    """A host run of a registered world with its booking, as an engine with ``planted`` would book it."""
-    law = _law(wid, planted)
-    honest = _law(wid, None)
+def host_run(wid: str, spec: dict, planted: str | None = None, world=None) -> dict:
+    """A host run of a registered world (or of ``world``) with its booking, as an engine with
+    ``planted`` would book it."""
+    if world is None:
+        law, honest = _law(wid, planted), _law(wid, None)
+    else:
+        law, honest = FuelLaw(world, PHYSICAL, planted=planted), FuelLaw(world, PHYSICAL)
     w = law.world
     rates = FloatRates(honest) if planted is None else LawRates(law)
     table = ChannelTable.default(honest)
