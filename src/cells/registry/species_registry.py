@@ -820,8 +820,8 @@ class SetMatch(NamedTuple):
     row's binding polynomial over the set's own forms at the free ligand m. The buffer holds its
     rows at the given totals (M); one of them is the ligand that the others' forms bind, and m
     solves its mass balance with the set's own dissociation constants (the state-3 buffer's free
-    Mg2+, 3.8086 mM, for the kinase). `cited`: where the constant on totals is printed and why the
-    buffer is the one declared."""
+    Mg2+, 3.808553529 mM, for the kinase). `cited`: where the constant on totals is printed and why
+    the buffer is the one declared."""
 
     constant_on_totals: float
     buffer_M: tuple  # ((row, total in M), ...)
@@ -947,15 +947,15 @@ BEARD_2005_V2 = BEARD_2005._replace(
         SetReaction(
             "AMP", (("ADP", -2), ("ATP", 1), ("AMP", 1)), None, 1, None, (),
             f"{_BEARD_2005}, Eqs. 17 and 18 (adenylate kinase, 2 ADP -> ATP + AMP), in base forms "
-            f"(D236; {_APPENDIX}, section 7): K_base 0.38896",
+            f"(D236; {_APPENDIX}, section 7): K_base 0.388964538, derived from the match",
             match=SetMatch(
                 0.4331, (("Mg", 5.0e-3), ("ADP", 1.3e-3)),
                 f"{_BEARD_2005}, Table 1: K_AK, unchanged by the correction, on totals (Eq. 18; "
                 "footnote c: from Alberty 2003's tables, at conditions the source does not "
                 "print). Converted with the set's own K_MgADP and K_MgATP at the free Mg2+ of the "
                 "source's state-3 buffer, 5.0 mM total Mg2+ and 1.3 mM ADP, with no ATP or AMP "
-                "(p. 0258; Figs. 2-5): 3.8086 mM. The source never states the IMS's free Mg2+, so "
-                "the match is declared (D236)",
+                "(p. 0258; Figs. 2-5): 3.808553529 mM. The source never states the IMS's free "
+                "Mg2+, so the match is declared (D236)",
             ),
         ),
     ),  # fmt: skip

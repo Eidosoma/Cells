@@ -33,11 +33,11 @@ Each claim with its plant (D187), in one table whose every row parses a definiti
   fixed by adenylate kinase's constant in base forms, which carries no temperature. The set
   derives it from K_AK 0.4331 on totals at the free Mg2+ of the source's state-3 buffer, and
   applied at 298.15 K every potential is the lane's appendix's to its nine decimals, the match
-  written out independently (3.8086 mM, K_base 0.38896). Planted: the buffer's Mg2+ read as free,
-  and the constant left on totals, each move AMP off the appendix; the contract refuses a buffer
-  with a second ligand and a matched constant at a pH basis. AMP joins adenine and phosphorus at
-  1, required as the set's moieties are (planted, AMP at 2 in phosphorus is refused); the
-  kinase's entry beside the set is admitted in base forms and refused on totals;
+  written out independently (3.808553529 mM, K_base 0.388964538). Planted: the buffer's Mg2+ read
+  as free, and the constant left on totals, each move AMP off the appendix; the contract refuses
+  a buffer with a second ligand and a matched constant at a pH basis. AMP joins adenine and
+  phosphorus at 1, required as the set's moieties are (planted, AMP at 2 in phosphorus is
+  refused); the kinase's entry beside the set is admitted in base forms and refused on totals;
 - an entry in kJ/mol (F's kJ form, D234's option (b)) is converted at the world's declared
   temperature: the honest pump entry given in kJ/mol is admitted, and the same entry in a world
   3 K warmer is refused, its dG°/RT moved by 1 %. Table 2's four reactions as source-derived
@@ -393,12 +393,13 @@ def a_second_version(monkeypatch):
 def the_second_version_as_the_appendix_prints_it(monkeypatch):
     """beard2005@2 applied in a world at 298.15 K: every set row's and form's mu°/RT, as the world
     declares it, is the lane's appendix's to its nine decimals, AMP's included, and the match is
-    the appendix's (free Mg2+ 3.8086 mM, K_base 0.38896, written out independently). Planted, each
+    the appendix's (free Mg2+ 3.808553529 mM, K_base 0.388964538, written out independently; its
+    section 7 declares no rounded constant). Planted, each
     moving AMP off the appendix: the buffer's total Mg2+ read as free (no ADP in the buffer:
     K_base 0.491) and the constant on totals left unconverted (a buffer of negligible Mg2+). The
     contract refuses a buffer with a second ligand and a matched constant at a pH basis."""
     m, k_base = state_3_match()
-    assert (f"{m * 1e3:.4f}", f"{k_base:.5f}") == ("3.8086", "0.38896")
+    assert (f"{m * 1e3:.9f}", f"{k_base:.9f}") == ("3.808553529", "0.388964538")
     raw = species_registry.with_potential_set(set_world(298.15, SECOND), SECOND.name)
     assert raw["model"]["standard_concentration_mM"] == 1000.0  # The appendix's 1 M basis.
     declared = {e["id"]: e for e in raw["model"]["species"]}
