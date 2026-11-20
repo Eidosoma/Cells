@@ -97,6 +97,54 @@ and their plotted standard errors, read from published figures.
 - **Use:** item 4 stays a consistency check (D254). These values do not make a link able to fail;
   D254 lists what would.
 
+**Many variants: Ross et al. (2025), bare values (CC BY 4.0):**
+- **The files:** three of the article's supplementary tables, value for value as printed:
+  - `kir21_ross_2025_table_s1.csv` (Table S1), wild type and 71 variants:
+    - surface expression by flow cytometry, % of wild type, mean ± SD (n experiments), for 70
+      variants, each co-expressed with wild type;
+    - "variant only" surface expression for 10 variants, each expressed alone;
+    - yeast growth, densitometry relative to wild type, for 20 variants;
+    - the authors' surface fitness, the log2 of the surface value;
+    - two columns from deep mutational scans: surface fitness scores (MAVEDB, MacDonald et al.
+      2023) and function labels the authors read from Coyote-Maestas et al. (2022).
+  - `kir21_ross_2025_table_s2.csv` (Table S2): 28 variants in gnomAD v4.1, with ClinVar class,
+    frequency and allele count.
+  - `kir21_ross_2025_table_s6.csv` (Table S6): current density at -50 and -100 mV, pA/pF,
+    mean ± SD (n), for wild type and 13 variants.
+- **Surface expression is in Table S1,** and Table S2 holds only gnomAD frequencies. Table S4 (total
+  expression by flow cytometry and western blot, and Tagg) is not extracted.
+- **The composition mismatch:**
+  - the currents come from stable HEK293 lines that each express one variant, so their channels
+    are homomeric (the article's Methods as the lead read them; this extraction read only the
+    tables);
+  - S1's surface column is the variant co-expressed with wild type, so its channels can be
+    heteromeric;
+  - only D71Y has both a variant-only surface value and a current;
+  - across the 10 variants with both surface columns, variant-only over co-expressed runs from
+    0.55 (H110Y) to 1.31 (D71Y). Composition moves the surface value by up to about a factor of
+    two in this set.
+  - **So the co-expressed value is not the abundance of the channels whose current was
+    recorded.** A current divided by it mixes composition with per-channel activity.
+- **Kept as printed, not corrected:**
+  - four surface fitness values are not the log2 of their surface values: R67F and D78G (78 %,
+    printed -0.09), N190I (94 %, 0.60) and V295A (78 %, -0.26). The other 65 of the 69 rows with
+    both values agree to two decimals. The column's header reads "(% of WT)", and wild type's row
+    reads 100;
+  - T75R's yeast cell is printed "2.4 ± 0.8 ± (3)*" and D78Y's "1.8 0.8 (3)". Both are recorded
+    as SD 0.8 and n 3, with the printed text in the note column;
+  - T400M's yeast value is 1 ± 2 (n 3);
+  - ClinVar labels differ between S1 and S6 for V123G, S136F, T192I, G206S, P351S and T400M. Each
+    file keeps its own table's label;
+  - superscript marks have their own columns. W81V's scan score carries a dagger that the caption
+    doesn't explain.
+- **Not stated in the tables:**
+  - the yeast readout's direction. The variants with clear currents read lowest (P351S 0.7, T400M
+    1, G206S 1.2), and the near-null ones 1.7 to 2.3. Don't read it as more growth, more function;
+  - what S6's n counts;
+  - whether S4's totals were measured with the variant alone or co-expressed.
+- **Use:** bare values for the user's choice on item 4 (D256). Every value has been seen, so any
+  test built on them is retrospective.
+
 **Attribution:**
 - Figure readings adapted from Ambrosini et al. (2014), Hum. Mol. Genet.,
   doi:10.1093/hmg/ddu201, (c) the authors, CC BY 4.0
@@ -104,4 +152,6 @@ and their plotted standard errors, read from published figures.
 - Qile et al. (2019), Front. Physiol., doi:10.3389/fphys.2019.00863, (c) the authors, CC BY 4.0.
 - Ratto et al. (2019/2020), Cell Mol Neurobiol, doi:10.1007/s10571-019-00776-3, (c) Springer, no CC
   licence: bare cited numbers only.
-- No figure images are committed.
+- Values from Ross et al. (2025), J. Biol. Chem. 302(1):110985, doi:10.1016/j.jbc.2025.110985,
+  supplementary Tables S1, S2 and S6, (c) the authors, CC BY 4.0.
+- No figure images, table images or PDFs are committed.
