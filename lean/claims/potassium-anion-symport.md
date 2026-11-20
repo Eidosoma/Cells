@@ -32,7 +32,47 @@ Direct proof subject `cells.k_anion_symport_mass_action@1`
 
 ## Numerical comparison
 
-**Failed.** All 27 ordinary component cases passed. The closed two-compartment world accepted a 10 ms step and booked 2.141 × 10⁻⁶ fmol inward against an exact 8.669 × 10⁻⁷ fmol outward. The same interval split into 32 or 64 steps gave outward flow. Separately, a component-level extreme concentration ratio produced infinite affinity and heat with finite references.
+**Checked.** After the product-ratio fix, both extreme concentration cases gave finite affinity and heat matching the independent references. At 2⁻⁵¹⁰ mM outside they were 1,836,599.47 J/mol and 4,701.69 pJ/s. All 27 ordinary controls passed. With fixed and moving water, the original 10 ms step was refused and the 32- and 64-step refinements passed. The previous failed cases remain in the earlier checkpoints.
+
+**Engine** `resolved_pump_composite@1`, `resolved_pump_tissue@3`
+
+**Operators** `cells.k_anion_symport_mass_action@1`
+
+[Product ratio and fallback at extreme concentrations](https://github.com/Eidosoma/Cells/blob/5fa7a8b88de7a3cc65ef3b975e7bc3c1a374da93/src/cells/laws/routes/k_anion_symport.py#L75) · [Affinity, cycles and dissipation](https://github.com/Eidosoma/Cells/blob/5fa7a8b88de7a3cc65ef3b975e7bc3c1a374da93/src/cells/laws/routes/k_anion_symport.py#L123) · [Tissue step admission](https://github.com/Eidosoma/Cells/blob/5fa7a8b88de7a3cc65ef3b975e7bc3c1a374da93/src/cells/operators/k_anion_symport.py#L252) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/1d906702344fec456f231db786b5771a187998d9/lean/checks/potassium_anion_symport.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/1d906702344fec456f231db786b5771a187998d9/lean/PROGRESS.md#potassium-affinity-repair)
+
+[Tested engine 5fa7a8b88de7](https://github.com/Eidosoma/Cells/commit/5fa7a8b88de7a3cc65ef3b975e7bc3c1a374da93) · [Evidence checkpoint 1d906702344f](https://github.com/Eidosoma/Cells/commit/1d906702344fec456f231db786b5771a187998d9)
+
+**Engine** `resolved_pump_composite@1`, `resolved_pump_tissue@3`
+
+**Operators** `cells.ideal_osmosis_linear_compliance_water@1`, `cells.k_anion_symport_mass_action@1`
+
+[Coupled water half-step](https://github.com/Eidosoma/Cells/blob/5fa7a8b88de7a3cc65ef3b975e7bc3c1a374da93/src/cells/operators/osmotic_water.py#L213) · [Potassium–anion route bound](https://github.com/Eidosoma/Cells/blob/5fa7a8b88de7a3cc65ef3b975e7bc3c1a374da93/src/cells/operators/k_anion_symport.py#L152) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/1d906702344fec456f231db786b5771a187998d9/lean/checks/osmotic_water.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/1d906702344fec456f231db786b5771a187998d9/lean/PROGRESS.md#potassium-affinity-repair)
+
+[Tested engine 5fa7a8b88de7](https://github.com/Eidosoma/Cells/commit/5fa7a8b88de7a3cc65ef3b975e7bc3c1a374da93) · [Evidence checkpoint 1d906702344f](https://github.com/Eidosoma/Cells/commit/1d906702344fec456f231db786b5771a187998d9)
+
+**Engine** `resolved_pump_composite@1`, `resolved_pump_tissue@3`
+
+**Operators** `k_anion_symport_mass_action@1`
+
+[Concentration products and chemical affinity](https://github.com/Eidosoma/Cells/blob/b9d6452dff1cd0a1d5d3664e0a81b00ce988bfbc/src/cells/laws/routes/k_anion_symport.py#L66) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/b4353f85b18d489a277818bfe43e20c8416b6066/lean/checks/potassium_anion_symport.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/b4353f85b18d489a277818bfe43e20c8416b6066/lean/PROGRESS.md#six-numerical-retests)
+
+[Tested engine b9d6452dff1c](https://github.com/Eidosoma/Cells/commit/b9d6452dff1cd0a1d5d3664e0a81b00ce988bfbc) · [Evidence checkpoint b4353f85b18d](https://github.com/Eidosoma/Cells/commit/b4353f85b18d489a277818bfe43e20c8416b6066)
+
+**Engine** `resolved_pump_composite@1`, `resolved_pump_tissue@3`
+
+**Operators** `k_anion_symport_mass_action@1`
+
+[Finite outside and shared-node step bound](https://github.com/Eidosoma/Cells/blob/93fc8c2cd217dbac9c2f6381d201f5acdb020265/src/cells/operators/k_anion_symport.py#L173) · [Step admission](https://github.com/Eidosoma/Cells/blob/93fc8c2cd217dbac9c2f6381d201f5acdb020265/src/cells/operators/k_anion_symport.py#L286) · [Concentration-product affinity](https://github.com/Eidosoma/Cells/blob/93fc8c2cd217dbac9c2f6381d201f5acdb020265/src/cells/laws/routes/k_anion_symport.py#L66) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/ec0c89db3342a07a8b4cfc4f48bd598b0bb77743/lean/checks/potassium_anion_symport.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/ec0c89db3342a07a8b4cfc4f48bd598b0bb77743/lean/PROGRESS.md#20-november-2026--osmotic-water-and-potassiumanion-transport)
+
+[Tested engine 93fc8c2cd217](https://github.com/Eidosoma/Cells/commit/93fc8c2cd217dbac9c2f6381d201f5acdb020265) · [Evidence checkpoint ec0c89db3342](https://github.com/Eidosoma/Cells/commit/ec0c89db3342a07a8b4cfc4f48bd598b0bb77743)
+
+**Engine** `resolved_pump_composite@1`, `resolved_pump_tissue@3`
+
+**Operators** `ideal_osmosis_linear_compliance_water@1`, `k_anion_symport_mass_action@1`
+
+[Water potential, flow and heat](https://github.com/Eidosoma/Cells/blob/93fc8c2cd217dbac9c2f6381d201f5acdb020265/src/cells/numerics/osmotic_water.py#L193) · [Start-of-half-step rate bound](https://github.com/Eidosoma/Cells/blob/93fc8c2cd217dbac9c2f6381d201f5acdb020265/src/cells/operators/osmotic_water.py#L148) · [Heun predictor and corrector](https://github.com/Eidosoma/Cells/blob/93fc8c2cd217dbac9c2f6381d201f5acdb020265/src/cells/operators/osmotic_water.py#L211) · [Finite and held-bath water ledgers](https://github.com/Eidosoma/Cells/blob/93fc8c2cd217dbac9c2f6381d201f5acdb020265/src/cells/operators/osmotic_water.py#L255) · [Independent held-bath trajectory](https://github.com/Eidosoma/Cells/blob/93fc8c2cd217dbac9c2f6381d201f5acdb020265/tests/unit/test_surface_pump_water.py#L214) · [Cotransporter step bound](https://github.com/Eidosoma/Cells/blob/93fc8c2cd217dbac9c2f6381d201f5acdb020265/src/cells/operators/k_anion_symport.py#L173) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/ec0c89db3342a07a8b4cfc4f48bd598b0bb77743/lean/checks/osmotic_water.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/ec0c89db3342a07a8b4cfc4f48bd598b0bb77743/lean/PROGRESS.md#20-november-2026--osmotic-water-and-potassiumanion-transport)
+
+[Tested engine 93fc8c2cd217](https://github.com/Eidosoma/Cells/commit/93fc8c2cd217dbac9c2f6381d201f5acdb020265) · [Evidence checkpoint ec0c89db3342](https://github.com/Eidosoma/Cells/commit/ec0c89db3342a07a8b4cfc4f48bd598b0bb77743)
 
 **Engine** `resolved_pump_composite@1`, `resolved_pump_tissue@3`
 

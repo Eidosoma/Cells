@@ -229,9 +229,27 @@ def _tags():
             "Replacement@2 reads the declared areas and capacitances (DECLARED_LAYOUT_VIEWS)",
             (),
         ),
-        ("reads", EXCHANGE, STATE, "membrane_area"): (
+        # Exchange reads the patch areas current at its split part (D191; the lead's ruling of 20
+        # November 2026), so a change of them at split must precede it (C2's order rule).
+        ("order", EXCHANGE, STATE, "membrane_area"): (
+            NOMINAL,
+            "Exchange's split part reads the patch areas, which membrane state never changes "
+            "alone: its view is the declared area plus an increment only its writers write "
+            "(membrane_state.area), so declared after membrane state it is admitted",
+            (OPS + "membrane_state.py::area",),
+        ),
+        ("order", EXCHANGE, INSERTION_1, "membrane_area"): (
             REAL,
-            "Exchange binds each route's declared patch area (uptake per area)",
+            "Exchange's split part reads the patch areas before insertion's split part writes "
+            "them through membrane state, a read lagged by half a step (C2's order rule); "
+            "exchange also reads the masks insertion provides as declared",
+            (),
+        ),
+        ("order", EXCHANGE, TRAFFICKING, "membrane_area"): (
+            REAL,
+            "Exchange's split part reads the patch areas before trafficking's split part moves "
+            "area between a plasma patch and a pool's, a read lagged by half a step (C2's order "
+            "rule); trafficking's definition refuses exchange too (membrane_trafficking.REFUSED)",
             (),
         ),
         ("reads", INJECTION, WATER, "volume"): (
@@ -270,6 +288,9 @@ def _tags():
     ]
     tags[("providers", REPLACEMENT_2, STATE, "channel_abundance")] = tags[
         ("providers", REPLACEMENT_1, STATE, "channel_abundance")
+    ]
+    tags[("order", EXCHANGE, INSERTION_2, "membrane_area")] = tags[
+        ("order", EXCHANGE, INSERTION_1, "membrane_area")
     ]
     for pair in ((INSERTION_1, INSERTION_2), (LUMEN_1, LUMEN_2), (COUPLING, COUPLING_2)):
         tags[("versions", *pair, None)] = tags[("versions", REPLACEMENT_1, REPLACEMENT_2, None)]
@@ -715,6 +736,12 @@ def _tags():
             + unit_writer,
             producer_code,
         )
+    tags[("order", EXCHANGE, PRODUCER, "membrane_area")] = (
+        NOMINAL,
+        "Exchange's split part reads the patch areas (D191), which no producer changes: "
+        + unit_writer,
+        producer_code,
+    )
     for insertion in (INSERTION_1, INSERTION_2):
         tags[("order", insertion, PRODUCER, "membrane_capacitance")] = (
             NOMINAL,
@@ -1088,7 +1115,8 @@ RULES = (
         marks=_COMPARTMENTS_FIRST,
     ),
     dict(
-        rule="membrane state beside a compartment only together with trafficking",
+        rule="membrane state beside a compartment only together with its admitted writers, "
+        "trafficking or the unit producer",
         laws=(COMPARTMENTS, STATE),
         level="law",
         check=OPS + "compartments.py::check_definition",
@@ -1097,8 +1125,9 @@ RULES = (
         tag=REAL,
         why="The membrane-state wall's door (the closed-compartment design §4; FR-2, D217): the "
         "declaration reads the areas and capacitances as references, and membrane state, which "
-        "provides them, composes with it only beside scheduled_membrane_trafficking@1, the one "
-        "writer of them on its admitted list",
+        "provides them, composes with it only beside scheduled_membrane_trafficking@1 or "
+        "population_unit_turnover@1, which writes units only (the lead's ruling of 20 November "
+        "2026), and only where every writer of its fields is one of them",
         marks=((COMPARTMENTS, STATE), (STATE, COMPARTMENTS)),
     ),
     dict(

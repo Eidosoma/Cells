@@ -170,6 +170,9 @@ def test_cgroup_readers_on_a_fake_tree(lb, tmp_path):
     (unit / "sub" / "cgroup.procs").write_text("13\n")
     assert sorted(lb.cgroup_pids("/cells.slice/cells-a.service", root=tmp_path)) == [11, 12, 13]
     assert lb.cgroup_pids("/cells.slice/gone.service", root=tmp_path) == []
+    # A unit without a control group (a .timer) has no processes, not the whole tree's.
+    assert lb.cgroup_pids("", root=tmp_path) == []
+    assert lb.cgroup_pids("/", root=tmp_path) == []
 
 
 def test_own_unit_from_the_cgroup_path(lb, tmp_path):

@@ -10,7 +10,7 @@ from cells.definitions.specs import ConfigError, SimulationSpec, _integer, _numb
 from cells.execution import blas_threads, row_checks
 from cells.execution import energy_check as energy
 from cells.execution.devices import execution_device
-from cells.execution.grid import EventGrid, checked_grid
+from cells.execution.grid import EventGrid, checked_grid, require_scalar_path
 from cells.execution.resources import trace_bytes
 from cells.execution.runner import (
     CheckedRunResult,
@@ -81,6 +81,7 @@ def _plan_windows_metadata(spec, policy=DEFAULT_POLICY, checkpoint=None, *, ener
             "execution.energy_check runs only through cells.execution.runner.run and the "
             "scalar windows (refused on this path)"
         )
+    require_scalar_path(spec, energy_check)  # Declared fine windows take the same rule.
     if type(policy) is not WindowPolicy:
         raise ConfigError("Expected a WindowPolicy")
     policy = WindowPolicy(**policy.to_dict())
@@ -279,6 +280,8 @@ def _consume_windows(plan, checkpoint, sink, *, started, preparation_seconds):
     checked = {} if report is None else {"row_checks": report}
     if final.energy_check is not None:  # The step-doubled energy check's run-level summary.
         checked = checked | {"energy_check": energy.summary(final.energy_check)}
+    if plan.grid.spans:  # Declared fine windows, as the clock runs them (provenance).
+        checked = checked | {"fine_windows": plan.grid.fine_window_record()}
     return WindowedResult(
         plan.spec,
         plan.policy,

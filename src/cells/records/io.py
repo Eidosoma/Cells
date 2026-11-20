@@ -21,6 +21,7 @@ from cells.definitions.specs import ConfigError, SimulationSpec, digest, parse_s
 from cells.execution import blas_threads
 from cells.execution import continuity as _continuity
 from cells.execution.devices import execution_device
+from cells.execution.grid import manifest_numerics
 from cells.execution.runner import RunResult, validate_checkpoint, with_energy_record
 from cells.execution.state import Checkpoint, initialise
 from cells.records import run_view, source_layout
@@ -336,7 +337,9 @@ def write_run(
             "sampling": getattr(model, "OBSERVATION_SAMPLING", "read_only_linear_interpolation"),
         },
         "numerics": {
-            "grid": "zero_anchored_event_split",
+            # The clock's name, and declared fine windows' method (C, the lead's grant of
+            # 20 November 2026 for this key in this file and records/window_io.py).
+            **manifest_numerics(result.spec),
             "jit": result.spec.execution.jit,
             **(
                 {"stage_domain": model.STAGE_DOMAIN_ID} if hasattr(model, "STAGE_DOMAIN_ID") else {}

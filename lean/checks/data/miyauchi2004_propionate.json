@@ -1,0 +1,17 @@
+{
+  "dataset_id": "miyauchi2004_propionate@1",
+  "doi": "10.1074/jbc.C400059200",
+  "source": "https://ars.els-cdn.com/content/image/1-s2.0-S0021925819639839-gr2.jpg",
+  "locator": "Fig. 2A, filled symbols in the main panel",
+  "preparation": "Human SLC5A8 expressed in a Xenopus oocyte under two-electrode voltage clamp. External sodium was 100 mM and pH was 7.5. The figure gives no numerical temperature.",
+  "voltage_mV": -50,
+  "external_sodium_mM": 100,
+  "external_propionate_uM": [50, 100, 250, 500, 1000, 2500],
+  "inward_current_magnitude_nA": [97, 172, 278, 324, 350, 371],
+  "fit_uM": [100, 1000],
+  "evaluation_uM": [50, 250, 500, 2500],
+  "reading_precision_nA": 5,
+  "reported_half_saturation_uM": 127,
+  "reported_plus_minus_uM": 14,
+  "mapping": "Positive ordinate values are inward current magnitudes obtained by subtracting the substrate-free steady current at the same voltage. Fig. 2A is a representative oocyte. Three more oocytes were described as similar. The panel has no individual error bars. The point-reading precision is our estimate. The article gives 127 ± 14 µM for half-saturation without specifying how the ±14 was obtained for this panel."
+}

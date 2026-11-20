@@ -1,0 +1,68 @@
+<!-- Generated from lean/claims.json by scripts/generate_claims.py. -->
+
+# Vesicles withdrawing from a finite shared bath conserve each species across the population
+
+Each passive transfer changes one vesicle and the single bath by opposite integer counts. The inventory is conserved over every finite history of such transfers. Each live vesicle sees the same remaining bath density, and a permutation of the slots preserves the exact total rate.
+
+## Assumptions
+
+- Follow one conserved species at a time with a finite common bath. The count proof covers passive uptake and release. Chemical conversion, fission, lysis, bath replacement and external supply need their own accounting.
+- A slot's uptake coefficient includes its own membrane geometry. The uptake-rate decrement in another slot assumes that slot's coefficient and the bath volume stay fixed. A relabelling carries occupancy and the full vesicle state together.
+- For the experimental area comparison, both populations start with equal lipid amounts and share an area per molecule. A 25% donor loss predicts a 25% recipient gain conditional on zero net change of free lipid in the bath.
+
+## Lean proof
+
+**Proved**
+
+- [CellsProofs.Chemistry.SharedPool.event_inventory](../CellsProofs/Chemistry/SharedPool.lean#L24)
+- [CellsProofs.Chemistry.SharedPool.history_inventory](../CellsProofs/Chemistry/SharedPool.lean#L29)
+- [CellsProofs.Chemistry.SharedPool.population_uptake](../CellsProofs/Chemistry/SharedPool.lean#L40)
+- [CellsProofs.Chemistry.SharedPool.depletion](../CellsProofs/Chemistry/SharedPool.lean#L46)
+- [CellsProofs.Chemistry.SharedPool.relabel_rate](../CellsProofs/Chemistry/SharedPool.lean#L53)
+- [CellsProofs.Chemistry.SharedPool.fractional_gain](../CellsProofs/Chemistry/SharedPool.lean#L58)
+
+Direct proof subject `cells.shared_pool@1`
+
+Uses [Lipid insertion scales with membrane area and diffusion-limited capture scales with radius](vesicle-phase-exchange.md) · [Neutral solute entry scales with area and spherical washout with inverse radius](vesicle-permeation.md)
+
+## Numerical comparison
+
+**Failed.** Two 96-event osmotic populations conserved exactly one lipid and one solute across every stored row. All six slot permutations preserved the corresponding rates. The fixed-volume case failed during reporting. A parsed one-slot, one-event population raised TypeError when the reporter requested an osmotic volume for its declared lumen.
+
+**Engine** `cells.assembly_lineages@2`, `cells.shared_pool@1`, `cells.phase_exchange@1`, `cells.membrane_permeation@1`, `cells.bilayer_geometry@1`, `cells.ideal_mixing@1`
+
+[Shared-pool output assembly](https://github.com/Eidosoma/Cells/blob/2ae89b5e2cd19fdcd4727eb16a4d33cc20339007/src/cells/models/assembly_lineages_v2/population.py#L735) · [Osmotic volume parameters](https://github.com/Eidosoma/Cells/blob/2ae89b5e2cd19fdcd4727eb16a4d33cc20339007/src/cells/models/assembly_lineages_v2/lumen.py#L86) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/84e3078e3fa0f2a010192e4459abc72eee120b92/lean/checks/shared_pool.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/84e3078e3fa0f2a010192e4459abc72eee120b92/lean/PROGRESS.md#vesicle-threshold-hold)
+
+[Tested engine 2ae89b5e2cd1](https://github.com/Eidosoma/Cells/commit/2ae89b5e2cd19fdcd4727eb16a4d33cc20339007) · [Evidence checkpoint 84e3078e3fa0](https://github.com/Eidosoma/Cells/commit/84e3078e3fa0f2a010192e4459abc72eee120b92)
+
+**Engine** `cells.assembly_lineages@2`, `cells.shared_pool@1`, `cells.phase_exchange@1`, `cells.membrane_permeation@1`, `cells.stochastic_mass_action@1`, `cells.osmotic_lumen@1`, `cells.bilayer_geometry@1`, `cells.ideal_mixing@1`
+
+[Pool and live-slot rates](https://github.com/Eidosoma/Cells/blob/3d3d9641932a52852727df7e4722e15ded245766/src/cells/models/assembly_lineages_v2/population.py#L187) · [One pool and one slot updated per event](https://github.com/Eidosoma/Cells/blob/3d3d9641932a52852727df7e4722e15ded245766/src/cells/models/assembly_lineages_v2/population.py#L220) · [Counts saved and checked against the device endpoint](https://github.com/Eidosoma/Cells/blob/3d3d9641932a52852727df7e4722e15ded245766/src/cells/models/assembly_lineages_v2/population.py#L669) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/19de00d9a76a27fd064f1e643be28db630d48423/lean/checks/shared_pool.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/19de00d9a76a27fd064f1e643be28db630d48423/lean/PROGRESS.md#shared-pool-inventory)
+
+[Tested engine 3d3d9641932a](https://github.com/Eidosoma/Cells/commit/3d3d9641932a52852727df7e4722e15ded245766) · [Evidence checkpoint 19de00d9a76a](https://github.com/Eidosoma/Cells/commit/19de00d9a76a27fd064f1e643be28db630d48423)
+
+**Engine** `cells.assembly_lineages@2`, `cells.shared_pool@1`, `cells.membrane_permeation@1`, `cells.bilayer_geometry@1`, `cells.ideal_mixing@1`
+
+[Accepted population inputs](https://github.com/Eidosoma/Cells/blob/3d3d9641932a52852727df7e4722e15ded245766/src/cells/models/assembly_lineages_v2/population.py#L54) · [Dispatch by execution mode](https://github.com/Eidosoma/Cells/blob/3d3d9641932a52852727df7e4722e15ded245766/src/cells/models/assembly_lineages_v2/runner.py#L343) · [Volume reported for every live slot](https://github.com/Eidosoma/Cells/blob/3d3d9641932a52852727df7e4722e15ded245766/src/cells/models/assembly_lineages_v2/population.py#L717) · [Outside osmolarity used by the volume calculation](https://github.com/Eidosoma/Cells/blob/3d3d9641932a52852727df7e4722e15ded245766/src/cells/models/assembly_lineages_v2/lumen.py#L86) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/19de00d9a76a27fd064f1e643be28db630d48423/lean/checks/shared_pool.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/19de00d9a76a27fd064f1e643be28db630d48423/lean/PROGRESS.md#shared-pool-declared-volume)
+
+[Tested engine 3d3d9641932a](https://github.com/Eidosoma/Cells/commit/3d3d9641932a52852727df7e4722e15ded245766) · [Evidence checkpoint 19de00d9a76a](https://github.com/Eidosoma/Cells/commit/19de00d9a76a27fd064f1e643be28db630d48423)
+
+## Biological evidence
+
+**Open.** Paired changes in donor and recipient membrane area during passive competition, with independent measurement of material left in the common bath.
+
+**Unit** % recipient area change
+
+### chen2004_oleate_competition@1
+
+Matched experiments label either the isotonic donor or the osmotically swollen recipient population of oleate vesicles. Figures 1B and 1D and the accompanying 1:1 mixing result on page 1475. [Chen, Roberts and Szostak (2004), Figs. 1B and 1D](https://doi.org/10.1126/science.1100757)
+
+- **Evidence role** descriptive
+- **Observed** 25 % recipient area change
+- **Predicted** 25 % recipient area change
+
+Both area changes are approximate. Figure 1 gives no endpoint uncertainty. Fluorescence reports area and the free lipid pool was unmeasured.
+
+The measured donor loss gives the conditional recipient gain shown. The experiment supports redistribution between populations. An empirical test of molecule closure still needs independent counts for donor, recipient and bath. [Dataset manifest](../checks/data/vesicle_exchange_measurements.json) · [Comparison verdict](../PROGRESS.md#shared-pool-inventory)
+
+[Claim index](../README.md#proof-index) · [Editable register](../claims.json)

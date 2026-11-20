@@ -64,6 +64,7 @@ measured region (MEASURED_POINTS: §7's staircase probe and milestone 2's probes
 through stairs inside the region.
 """
 
+import math
 from bisect import bisect_right
 from dataclasses import dataclass, replace
 
@@ -227,12 +228,22 @@ def declaration_to_dict(declaration):
 
 
 def unit_change(declaration, offsets, species_ids):
-    """[species] the concentration change sum_f a_f nu_f (mM) of one event's offsets."""
+    """[species] the concentration change sum_f a_f nu_f (mM) of one event's offsets.
+
+    Each species' terms a_f nu_f are summed by math.fsum, correctly rounded, so the change does not
+    depend on the order of the recipe's entries. A left-to-right running total lost a small term
+    between a large one and its negative: with +A, +d and -A it gave A + d = A, then 0, and the
+    dose was erased (the independent Lean project's finding, lean/PROGRESS.md "Bath recipe order",
+    20 November 2026). With two terms or fewer per species the two sums are equal bit for bit, as
+    in every registered world (45 worlds, 87 sums, 20 November 2026)."""
     counts = {u.name: dict(u.counts) for u in declaration.formula_units}
-    change = np.zeros(len(species_ids))
+    terms = {}
     for unit, amount in offsets:
         for species, count in counts[unit].items():
-            change[species_ids.index(species)] += count * amount
+            terms.setdefault(species, []).append(count * amount)
+    change = np.zeros(len(species_ids))
+    for species, values in terms.items():
+        change[species_ids.index(species)] = math.fsum(values)
     return change
 
 

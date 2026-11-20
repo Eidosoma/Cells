@@ -7625,3 +7625,501 @@ probably both in the end", "2. Same get adviser and you choose but we're not in 
      registration before any engine output. A also registers what it does not claim, and includes a
      machine-limited arm with its own plant.
    - **The note's other questions remain open.**
+- **Erratum (lead, 20 November 2026, about 11:12 UTC), from the @3 owner's measurement on the N2
+  development head.** Item 1's "H2's ceiling under N2 ... 292 ms" is wrong.
+  - **292 ms is M1's M term:** the passive patches' membrane charge relaxation at definition,
+    3.42 per s. That is a slope conductance, which N2 moves into the operator; M1's ladder says "N2
+    alone removes J, M and Mc".
+  - **Measured under `imex_ars222_implicit_conductances_n2_alone@0`:** the explicit rate is 2.3e-4
+    per s, which admits about 4,384 s. It is set by each species' material relaxation through patches
+    and junctions, which N2 adds to its bound.
+  - **What binds H2 under N2:** X2's cap and order condition, the accuracy budgets and the step's
+    domain checks. None is a definition-time ceiling.
+  - **The stage rule:** under N2 it counts the kinds' terms. Today's rule never counted the pumps'
+    electrogenic currents, and N2 keeps that.
+  - **The choice to build N2 stands.**
+
+## D236: Beard's repairs (frame B, Eq. 24 as run, the balanced supply); FR-7's development chains stopped
+
+2026-11-20, about 12:13 UTC. The user, on the lead's two questions: "1. yes as you suggtest", "2. yes as
+you suggst".
+
+1. **FR-7's three development chains are stopped** (cells-fr7-chain-a, -b and -c). Their first worlds
+   have maturation stages (m = 3), which compiled and stepped 6–10 times slower than they should
+   before the FR-7 lane's fix (fr7-perf 395b80a4). The three queued judged units had already been
+   stopped before they started. F3's judged comparison runs from main once the fix lands: about 2–3
+   hours on CPUs 6, 22 and 23. The chains' partial outputs are kept.
+2. **Beard 2005's repairs (D209's departure), the consistent set in frame B:**
+   - **Phosphate:** the appendix's balanced Eqs. 11 and 16, with Eq. 22's proton row counting the
+     protons on phosphate.
+   - **Eq. 24 restored,** φ_Pi × Eq. 7: the model as the paper ran it.
+   - **Eq. 1:** the balanced NADH supply with a held neutral reductant pair, at reference matrix pH
+     7.10.
+   - **Conditions:** 298.15 K and matrix Mg²⁺ total 5 mM, as already ruled.
+   - **The lead's ruling on adenylate kinase,** reported for MT-2: Eq. 18 is written in base forms and
+     matched at 3.81 mM free Mg²⁺ (K_base 0.389). That is derived from the paper's active-state
+     buffer, 5 mM Mg and 1.3 mM ADP; the paper never states the IMS's free Mg²⁺.
+   - **Its cost,** MR1's `host_p_question_arm_ak_base`:
+     - rms z 3.72 against the published curves, against 1.40 for the published arm;
+     - largest departures at the 12 reported states: ΔΨ 1.31 mV, matrix pH 0.014, NADH's reduced
+       fraction 0.020, cytochrome c's 0.004, O₂ flux 2.1%;
+     - dissipation non-negative for every process, at the reported states and at 2,000 random states
+       with binding at equilibrium;
+     - steady states exist and are unique.
+
+     The base-form kinase changes nothing at the reported states.
+   - **Next:**
+     - the lane retags the appendix with the chosen forms;
+     - the component references and MR1 register against that tag;
+     - the binding owner adds AMP in beard2005@2;
+     - the kinds owner writes the law modules after K3 and K3b.
+
+## D237: FR-20 to FR-22 join the high-priority feature requests
+
+2026-11-20, about 12:52 UTC. The user pasted three requests and said: "then add this to the high
+priority list of feature requests". They are logged in docs/FEATURE_REQUESTS.md at **high priority**,
+beside core and FR-1 to FR-10 (D222):
+- **FR-20, a pulse and washout:** an assembly population's exterior replaced at a declared time, with
+  a finite wash bath and the material and energy exchanged recorded;
+- **FR-21, a prescribed shell** that owns a lumen and an exchange conductance, independent of the
+  membrane's inventory and its binding-site count;
+- **FR-22, checkpoint and resume** for the version-2 stochastic assembly runner, qualified around a
+  wash.
+
+Each becomes a design note before code (D142), and a general feature (D144). They are listed, not yet
+assigned: the agent seats are at the cap.
+
+FR-20 builds on the vesicle-population accounting of the ol3-engine branch, which D230 lands last, so
+the order of that landing is put to the user.
+
+## D238: N2's registered target kept; FR-7 lifts the producer's refusal for division; the origin-of-life stack lands now
+
+2026-11-20, about 15:13 UTC. The user, on the lead's and the advisor's five recommendations:
+"1. agreed 2. agreed 3. agreed 4. agreed. 5. agreed — sounds good".
+
+1. **FR-8, N2's step: the registered target stays a gain of 10** (200 ms against 20 ms). §6 reads
+   N2 alone against it and records the miss if N2 alone reaches 5 (100 ms).
+   - **The development evidence:**
+     - X2 passes N2 at 20, 100 and 125 ms (§10.14). At 200 ms its order band refuses late in the
+       calm stretch, a second-order method leaving its asymptotic range (4 − q ∝ dt).
+     - The integration error stays at least 25 times inside the cap.
+   - **N2 with C** is registered as a new dated arm before it runs.
+   - **125 ms is not offered as a rung:** it was seen passing, so it would be tuned.
+   - **The two priced remedies** (stage-wise slopes, a gate-change bound) address start-up, not the
+     band, and are not built now.
+   - **The "95 times fewer steps" for N2 with C** is a desk count: against C alone, N2 adds about
+     4.8 times in steps, at a per-step cost not yet measured.
+2. **The gap-junction cancer replication:** a desk note prices FR-15's remainder (junction
+   hosting of the charged route), FR-16 and FR-17 when a seat frees, saying which table each
+   unlocks:
+   - Table 2 (2D, 626 nodes) needs FR-15's remainder and FR-16;
+   - Table 1 (3D) also needs FR-17;
+   - Table 3 needs a mechanism the preprint does not give.
+   Seats are decided on those prices. FR-15 to FR-17 stay scheduled after FR-2's retrieval and FR-7
+   (D222).
+3. **FR-7: D232's simulation-wide refusal of the unit producer is lifted for division only.** It
+   takes effect only with three things:
+   - a design note fixing how the producer's pools and history accounts split at division;
+   - a code-blind division reference, registered first;
+   - worlds without division bitwise unchanged.
+
+   Insertion and recycling stay refused until FR-2's ownership design. The cost is 5–8 agent-days
+   across the FR-7 lane, the operators owner and a references agent.
+4. **FR-7's measured response (D151):** one channel's abundance against membrane voltage. It is
+   conditional on a desk scan finding an open dataset with sourced lifetimes and a usable licence.
+   Coupling against conduction waits for U1. The judged run likely needs FR-8's real time scales.
+5. **The origin-of-life stack (ol3-engine at 09f4cb58, landing-ready) lands at the next free lane,
+   ahead of D230's order.** FR-20 and FR-22 (D237) build on it. Further origin-of-life building
+   stays behind core and FR work (D230).
+
+**The order for seats as they free:**
+1. the stack's landing;
+2. the mitochondria law modules (the kinds owner, after K3b);
+3. FR-7's division step;
+4. FR-20's design note and FR-22's short controls;
+5. gene regulation's G2 references;
+6. the gap-junction pricing note;
+7. FR-21's design note;
+8. further origin-of-life building.
+
+## D239: FR-23 to FR-26 join the high-priority feature requests; the bath recipe's six-order regression
+
+2026-11-20, about 17:24 UTC. The user pasted a verified bug report and four feature requests, and
+said "high priority feature request".
+
+**The bug:** `scheduled_bath_composition@1`'s per-species running sum loses a small dose between
+large opposite contributions, so its result depends on order. In a 1 pL bath, "+24, −24, +2⁻⁴⁹ mM"
+records 2⁻⁴⁹ fmol, but "+24, +2⁻⁴⁹, −24" records 0.
+- **The fix**, already in hand (`math.fsum` per species, D148 in place; no registered world
+  changes), gains the user's regression test: all six orders give the exact expected target and
+  dose.
+
+**The requests** are logged in docs/FEATURE_REQUESTS.md at high priority, beside FR-20 to FR-22
+(D237):
+- **FR-23:** timed bath changes beside binding sites on distinct finite nodes;
+- **FR-24:** binding-site occupancy as an input to reaction rates;
+- **FR-25:** a reusable one-gene expression unit, folded into gene regulation's option A (D235);
+- **FR-26:** owned state when a cell is replaced.
+
+Each becomes a design note before code (D142) and a general feature (D144).
+
+## D240: FR-20's design approved; the user runs FR-7's data search
+
+2026-11-20, about 17:37 UTC. The user, on the lead's two questions: "1. Small new operator as you
+suggest", "2. I'm doing the search myself".
+
+1. **FR-20, the pulse and washout: the design note's recommendation is approved**
+   (docs/ASSEMBLY_WASHOUT_DESIGN.md). A new operator, `cells.pool_replacement@1`: a host stop that
+   draws nothing, keeps every assembly as it stands, and replaces the pool from a declared source. It
+   records the old pool to the sink and the fresh pool from its source, with their free energies,
+   and gives relations a pool node. The note's five answers:
+   - **Q1:** the wash bath has the pool's own volume.
+   - **Q2:** a pulse is a replacement with tracer-containing solution, not an addition.
+   - **Q3:** a held tracer concentration is refused.
+   - **Q4:** the transfer's osmotic refusal is kept as it is.
+   - **Q5:** the name is `cells.pool_replacement@1`.
+
+   The cost is about 2–2.5 agent-days. The origin-of-life builder builds it now, ahead of its own
+   repairs (D237's priority). An exposed site that binds in one step is FR-21's ground.
+2. **FR-7's measured response (D238 item 4): the user does the search for an openly licensed
+   dataset of measured channel lifetimes.** The agents' search was stopped by a safeguard and is
+   not retried by any route. FR-7's item 4 waits for the user's source.
+
+## D241: FR-7's measured response gets a public source: Kir2.1 in U251MG cells, for a retrospective comparison
+
+2026-11-20, about 17:59 UTC. The user, after doing the search themselves (D240): "Use option (a)
+for the data handoff", with the results.
+- **The source:** Ambrosini et al. (2014, doi:10.1093/hmg/ddu201, CC BY 4.0) measured Kir2.1
+  membrane-fraction abundance, resting voltage and total-protein decay in the same human U251MG
+  model, for wild type and K346T. The variant has more channel protein in the membrane fraction and
+  a resting voltage about 6 mV more negative.
+- **The second study:** Qile et al. (2019, CC BY 4.0) give a 2.6 h half-life for wild-type human
+  Kir2.1 protein in HEK293T cells.
+- **The readings:** 12 group means with their plotted SEMs and a sanitized manifest, in
+  validation/fr7/data/ (bare cited numbers with attribution; no figure images).
+
+**The scope, in the user's terms:**
+- **A retrospective group comparison only.**
+  - Record which protein pool each model state represents.
+  - Fix the abundance-to-conductance conversion independently of the two voltage means.
+  - Compare the predicted K346T-minus-wild-type voltage contrast with the published one.
+- **The judged run stays pending** until the mapping from measured protein to functional surface
+  units and FR-8's timing are decided.
+- **No claim about persistence after a trigger.** It would need voltage through recovery and a
+  measured trigger-clearance time.
+
+This gives FR-7's channel target a public-data path ahead of its junction stage (U1).
+
+## D242: Origin of life takes the lipid route, through fuel; the Lean repairs land now
+
+2026-11-20, about 18:25 UTC. Asked how close a break-and-renew run is, the lead gave two routes:
+1. GARD on `cells.assembly_lineages@1`, whose G3 and G4 have never run;
+2. the lipid simulation D212 asked for. Four pieces are missing:
+   - a world that combines catalysis with vesicles, division and the pool;
+   - F12's restored futures on @2;
+   - an F12 reader for @2's records;
+   - the paused Lean repairs.
+
+The lead added a caveat. @2's catalysis keeps detailed balance, so without a drive the vesicles may
+relax to one composition and the result could be null; fuel may be needed.
+
+The user: "2. and yes lets get everything working inclduing Fuel", then "and lets get lean repears
+done".
+
+- **The route:** the lipid simulation. GARD's G3 and G4 stay unscheduled.
+- **The scope, as the lead reads it:**
+  - the four missing pieces;
+  - then the parts of the official version the lead named in the message the user answered: OL4
+    (energy, with fuel), OL6 (the GARD limit and the deterministic representation), OL8
+    (oligomers) and OL9 (the first experiment, registered before any judged run).
+  - This answers D199's U8 (OL0–OL9 as one programme) as far as these parts go. OL8 cannot start
+    before OL4 lands.
+- **Fuel starts as a desk note.**
+  - It says what of ORIGIN_OF_LIFE_ENGINE_DESIGN §3 already exists in the version-2 family.
+  - It gives options for which step fuel pays for. Fuel answers the caveat only if fuel-driven
+    steps make or unmake membrane species, as in anchor A5, with member catalysis acting on those
+    steps. The options go to the user.
+  - It says how its files sit beside the origin-of-life builder's.
+  - No fueled world runs before OL5's references for it are registered.
+- **The Lean repairs land now:**
+  - the three on `ol-lean-repairs`: GARD's pair-consistent leave, the transition-state factor, and
+    the lumen's tension formed from the physical area;
+  - the declared-lumen crash (`ol-pool-declared-lumen`);
+  - the @1 ledger docstring's sink sign. It reached the lead the same evening, and the docstring
+    should read ΔΦ = −W + S;
+  - `species_exchange`'s depletion remainder, in the robustness batch.
+
+  The origin-of-life repairs gate as one stack, and D230's lane rule is lifted for that stack only.
+  A repair is done when the Lean project's own reproducers pass at the landed head.
+- **Priority:** D230 stands until the user answers one question: whether origin of life now queues
+  on equal terms with the core and feature-request work.
+
+## D243: Origin of life gets one more agent; the rest is the lead's call
+
+2026-11-20, about 18:29 UTC. The lead asked whether origin of life should now compete for agents
+and test lanes on equal terms with the core and feature-request work. The user: "just add one more
+agent", "then as you see fit".
+
+- **One more agent works on origin of life:** a second builder, beside the first builder and the
+  fuel desk agent (D242).
+- **The second builder's work** is the break-and-renew development pieces in files that no open
+  origin-of-life head touches:
+  - the F12 reader for @2's records;
+  - the world that combines catalysis with vesicles, division and the pool;
+  - F12's restored futures, through a single-lineage checkpoint (rung S) and a branch rule.
+
+  It starts with the plan and price the lead had asked of the first builder. After the fuel note is
+  ruled, it builds OL4.
+- **The first builder keeps** FR-20 and the Lean repairs, then slice 5, the population runs and
+  OL5's probe roles, then OL6.
+- **Everything else is the lead's call,** within D230 and D242. Core and feature requests keep
+  their claim on seats and lanes, and origin of life may get more as seats free.
+
+## D244: FR-21, FR-23, FR-24 and FR-26 decided by the lead with the advisor; two corrections
+
+2026-11-20, about 19:07 UTC. The operators owner's design notes were merged the same evening:
+[OPERATOR_FEATURES_FR23_24_26_DESIGN.md](OPERATOR_FEATURES_FR23_24_26_DESIGN.md) and
+[ASSEMBLY_SHELL_DESIGN.md](ASSEMBLY_SHELL_DESIGN.md). The lead put five questions to the user. The
+user: "lets go and all the FR question as you and adviser see fit check in with them again". So
+the lead decided all five with the advisor, under that delegation.
+
+The advisor saw the options, prices and questions, FR-21's §4.1 and rule 3, but not the notes'
+bitwise, test or acceptance sections. The operators owner's own advisor reviewed the notes up to
+1952f141. Nobody reviewed the W-or-L comparison.
+
+1. **FR-23: option A.**
+   - The site operator's reads are scoped to the outside nodes its populations face, and a
+     scheduled dose may not set a ligand below its trace.
+   - "Distinct finite nodes" is the lead's reading: a held bath is dosed, and the sites face other,
+     finite nodes. The bath schedule can dose held baths only.
+   - **Not covered:** a dose into a finite compartment, such as a wash of a well. An outside review
+     request is that case, and its gap is being named.
+   - The evidence is development evidence, with no judged protocol.
+2. **FR-24: the occupied fraction, and amounts as concentrations in the cell (mM),** read through
+   quantities the site operator declares in the contract (the note's R3).
+   - Coupling @2's programs gain empty site-route arrays.
+   - So FR-24 lands after FR-7's judged verdicts are tagged, with a D148 statement and a short A/B of
+     FR-7's C2 and C5 worlds on main showing their values bitwise.
+3. **FR-26: W, a replacement writer for site populations, unless L is ruled first.**
+   - L is one lifecycle for cell replacement and cell division. It is compared in FR-7's division
+     note, which D238 already owes, and as a new system it goes to the user.
+   - If L is ruled before FR-26's turn, it replaces W. FR-26 waits behind FR-23 and FR-24 on
+     `site_occupancy.py`.
+   - **Included:** part C′, a linked reaction in a replaced cell.
+   - **Not in version 1:**
+     - part C, the coupling's states;
+     - contact populations, which stay refused;
+     - donor copies, which come in version 1.1;
+     - templates that change capacity or constants.
+4. **Multipliers follow the occupant** (D150). This is a version-1 limit: a newcomer's multipliers
+   are constant, so a timed intervention does not reach replaced cells.
+5. **FR-21: all of it, sites first.**
+   - **Rule 3 is amended** to admit exactly the binding shape (one pool molecule and one declared site
+     forming one complex in the wall) under the existing `cells.stochastic_mass_action@1` with
+     `count_on_m`. A named law with the same rates would be a second law for one mechanism (D175,
+     D210). A named encounter law comes only with a diffusion-limited form.
+   - **The shell starts only after the site step lands,** since that step has never run with a
+     geometry or in a population.
+   - **The shell's own design:**
+     - its own entry law, `cells.shell_permeation@1`, with P_s times the declared area;
+     - a prescribed wall;
+     - one shell type per world;
+     - a gated shell gets the gate factor over the gate's own forms, or is refused in version 1.
+   - **Sites on bilayer vesicles take area.**
+   - **Who builds it:** the first origin-of-life builder, after FR-20.
+
+**Corrections:**
+- **D242:** GARD's pair-consistent leave did not land. The in-place repair moved registered @1 bits:
+  part 1's `binomial_second.0` and the kernel probe's leave arrays. It was reverted (3dc3b7aa), and
+  the revert's message corrects the original commit's claim.
+  - The accurate leave becomes `cells.gard_catalysis_pair_consistent@2`, with @1 untouched. Its
+    design is a double-double cache, O(C) per event, priced at 1.5–2 agent-days.
+  - It is the one Lean finding still open. The first builder builds it after FR-20, while FR-20's
+    gates run, and before FR-21.
+- **D243:** on the first builder, FR-21 (and GARD's version 2) come before slice 5, the population
+  runs, OL5's probe roles and OL6.
+
+## D245: Fuel option (d), a second inheritance reading beside F12, and the review's two gaps; the break-and-renew rulings
+
+2026-11-20, about 19:42 UTC. The user: "Then get adviser with you to decide on the options three
+decisions based on the requirements". The lead decided all three with the advisor, under that
+delegation. The advisor saw the hand-backs and the fuel note's §2.3, §2.4, §9, §10 and option
+(d); the note's desk probe had not reported.
+
+1. **Fuel: option (d), conditional on the desk probe confirming §2.3's condition.**
+   - **The chemistry:**
+     - fuel recharges a spent building block in the pool (F + S → B + W);
+     - the block joins membranes;
+     - in the membrane B + L_i → 2 L_i, catalysed by L_i through the transition-state factor;
+     - L_i decays to S, uncatalysed.
+   - **It runs on today's laws** in worlds declared `condensed_measure: multinomial`, the physical
+     worlds' measure (D215). The autocatalytic step is refused under `multinomial_less_one` outside
+     probe worlds.
+   - **It is registered with its own nulls,** zero drive and β = 0, in the same world. If the probe
+     refutes the condition, the choice returns to the user.
+   - **Order:**
+     1. the fuel agent's fixes and probe;
+     2. the note merged and tagged;
+     3. OL5's references written from the tag alone;
+     4. then the build.
+   - Fuel reacting at the membrane (b1) waits for later. Two papers, A9 and A10, join §7.4 as
+     reported comparisons once their numbers are checked against the papers.
+2. **The measure: (ii).**
+   - F12 is kept as the preprint defines it. A second reading, each parent against the next parent
+     on the same path, gets its own name and registration and is never called F12. GARD_DESIGN §8's
+     readout 4 already asks for it.
+   - The species set for H is declared per experiment: the amphiphiles only, without the block or
+     the spent form.
+   - **Why:** a split breaks only near four or fewer molecules per species, so F12 cannot see a
+     vesicle of real size switch composition between fissions.
+   - The probe adds how the switching time scales with the molecule count. "No spontaneous break at
+     real size" is a possible result, and is recorded as one.
+3. **The review's two gaps** (an outside user's tracer-wash request, D244):
+   - **FR-27, a timed partial wash of a finite compartment: high.** It is the finite case D244 set
+     aside from FR-23. It starts as a short design note by the operators owner, its semantics
+     stated against FR-20's pool replacement (D175, D210).
+   - **FR-28, binding sites owned by a compartment's surface: normal.** A stand-in gives the same
+     numbers today. It queues after FR-26 on `site_occupancy.py`.
+
+**The lead's rulings the same evening, on the second builder's plan:**
+- **D243 corrected: restored futures are fresh runs founded from post-fission landmarks.**
+  - Single lineages first, with a check of the kernel's rate table at the landmark.
+  - The single-lineage checkpoint (rung S) stays for long runs that must survive a stop.
+- **D242's fuel line: a step that consumes a held species to make something that enters the
+  membrane is fuel.**
+  - A held amphiphile exchanging with its own membrane place is OL2's physics, and stays allowed.
+  - Development probes of fuel-driven worlds ran before the line was drawn. They count as prior
+    exposure for OL9's registration, which uses fresh matrices and seeds, and their results are not
+    used.
+
+## D246: FR-27's design, GARD's version 2 and FR-21's admission key (the lead's rulings)
+
+2026-11-20, about 19:50 UTC. These are the lead's rulings. FR-27's design questions fall under
+the user's delegation for FR questions (D244), as the lead reads it, and were decided with the
+advisor. The others are the lead's own calls on the builders' questions. None is the user's
+approval.
+
+1. **FR-27, the wash of a finite compartment** ([note](COMPARTMENT_WASH_DESIGN.md) on its branch):
+   - **One mechanism, two executions.** A liquid exchange at constant volume:
+     - a fraction f of the well-mixed liquid leaves as a recorded sample;
+     - the same volume of a declared buffer enters;
+     - everything not dissolved stays.
+
+     FR-20's pool replacement is its whole-exchange execution in exact counts, if FR-20's builder
+     confirms the f = 1 booking against `replacement.py` as built.
+   - **Ions are declared, never silently left:** version 1 requires `same_as_compartment` ions. The
+     sample and supply records list every species.
+   - **The mixing heat is computed** in the cleft fix's small-ratio form, not taken as the ledger's
+     remainder. A host check holds it non-negative at every event.
+   - **The buffer sits at the species' trace.** Faces at an exchanged node stay refused until they
+     are measured.
+   - **The name is `scheduled_compartment_wash@1`.**
+2. **GARD's version 2,** `cells.gard_catalysis_pair_consistent@2` (D244's correction):
+   - **The cache:** a double-word cache of βn, exact within a proven 106-bit budget.
+   - **Refused at parse** when a world's fission size needs more, through an optional `domain`
+     field on rate-factor laws. @1's bits stay unchanged.
+   - **Experiments that draw matrices** record each refused draw, and never fall back silently to
+     @1.
+   - **The Lean project's own driver stays on @1** until that project points it at @2.
+3. **FR-21's site binding** is admitted only for a declared site species and a declared complex
+   species, never by stoichiometry alone. OL5's registered refusal worlds therefore stay refused.
+   OL5's reference parser needs its own amendment before an FR-21 world is registered.
+
+## D247: Breaks both induced and spontaneous; the blocked timing measurement may run; the fuel note is merged
+
+2026-11-20, about 19:58 UTC. The lead asked two questions. The user: "both - yes the agent can run
+the timing measurments".
+
+1. **How OL9 tests break and renew: both ways.**
+   - The fuel note's desk probe found that a vesicle of real size never switches composition on its
+     own. The mean switching time grows exponentially with the amphiphile count.
+   - **So at realistic sizes, breaks are induced,** for example by a pulse of the other amphiphile
+     through FR-20's pool replacement, and the lineage is then followed for renewal.
+   - **In small vesicles of a few tens of amphiphiles, breaks are spontaneous,** as a comparison
+     with GARD's regime.
+2. **The blocked timing measurement may run.** It is the second origin-of-life builder's tier
+   measurement on the timed lane, which a guard refused as "[Unauthorized Access]". If the guard
+   refuses it again, the agent stops and reports. It never routes around a refusal.
+3. **The fuel note** ([ORIGIN_OF_LIFE_FUEL_DESIGN.md](ORIGIN_OF_LIFE_FUEL_DESIGN.md)) is merged with
+   the lead's rulings written into it:
+   - (d)'s dividing null;
+   - D245's fuel line covering (d0) and held-block worlds;
+   - the generational reading's name;
+   - this U5 answer.
+
+   OL5's fuel references are written from the note at tag `ol4-fuel-note-2026-11-20` alone.
+
+## D248: Missed wet-lab comparisons are investigated, not tuned away; FR-29 to FR-33
+
+2026-11-20, about 21:10 UTC. The lead checked the Lean project's biological review: its four
+drivers, run at main, reproduce its numbers. The user: "all go on the list but you decide with
+adviser on the priority". Then, with three requests, the user gave a rule for every comparison with
+wet-lab data, and added "add this to your lists".
+
+**The rule, in the user's words:**
+- "Use every missed wet-lab comparison to investigate the simulator, the biological model and the
+  measurement. Preserve the original prediction, comparator, units, threshold and score. Record
+  what the investigation established, who owns the open question and which observation could
+  resolve it."
+- "One experimental source is enough to propose and prototype a missing mechanism. State what the
+  mechanism predicts, give a competing explanation, and identify a fresh measurement on which they
+  would differ."
+- "Call an observation corroborated when at least two independently collected datasets agree on
+  the same quantity under comparable conditions. A paper, its supplement and a later paper reusing
+  its samples count as one source. Even independent studies can share an assay bias."
+
+**The list.** The priorities were set by the lead with the advisor. Each item starts as a design
+note by an existing owner, with no new agent.
+- **FR-29, an optional proton-return mode for ATP-driven proton pumps: normal, started first.**
+  - It has the strongest evidence: −13.0 mV measured against −112.40 mV predicted.
+  - A held-out test exists in the same table.
+  - It goes to the kinds owner after the mitochondria laws' second head.
+- **FR-30, Cx43 junctions with two relaxation times: normal, after N2.**
+  - The gap-junction replication's gate models Cx45, not Cx43, so it is not raised under D225.
+  - A prediction needs a voltage series.
+- **FR-31, vesicle rupture during a steady tension hold: low (D230).**
+  - Its note comes before OL9 registers, since a rupture is extinction in both readings.
+  - It is blocked on rupture rates against tension, and on OL6.
+- **FR-32, a DOPC swelling validation record for the water operator: low.** It is folded into the
+  next water-operator landing.
+- **FR-33, regional labelled-protein readouts: high (D228).** A study is waiting on it. Its first
+  step is identifying any missing export field.
+- **Not listed:** two signals the review itself called easy to overfit.
+
+**The other two requests:**
+- **The turnover defect** is repaired and landed (b4273772). The Lean project's reproducer and its
+  six controls at biological rates are being run at main.
+- **The protein export for A1** joins FR-25's backlog, beside the RNA readout, with how to recover
+  protein made in a chosen window that survives to sampling. The references record that protein
+  completed in minutes 60–90 was 7.46 times the net increase.
+
+## D249: The lead finds the Kir2.1 data with the advisor; the turnover request closed; FR-30 raised
+
+2026-11-20, about 21:15 UTC. The lead asked the user for Kir2.1 inputs for FR-7 item 4. The user:
+"you have to find data with advsier I dont have it". This lifts D240's hold on the search, for the
+lead with the advisor.
+
+1. **What the source already given holds** (Ambrosini et al. 2014, read verbatim; the article and its
+   supplement count as one source, D248):
+   - **Recording solutions,** for HEK293 and U251MG together:
+     - bath 4.8 mM KCl (NaCl 135, CaCl2 1.8, MgCl2 1, glucose 10, HEPES 5);
+     - pipette about 149 mM K+ (KAsp 130, KCl 15, K2-ATP 2, MgCl2 1, HEPES 5);
+     - at room temperature.
+   - **Barium-sensitive currents** (1 mM BaCl2), with a 15 mV junction-potential adjustment.
+   - **Fig. 3G,** the current density at −100 mV, n = 6, as bars only.
+   - **Fig. S2B,** a representative current density against voltage, one cell per variant.
+   - **Not stated:** the configuration, the temperature as a number, capacitance, and any non-Kir
+     conductance.
+2. **The plan:**
+   - **First, the test that needs no voltage.** Fig. 3E's membrane-fraction ratio against Fig. 3G's
+     current ratio separates abundance from channel activity. It uses ratios, since the driving force
+     at −100 mV (about 13 mV) is below the junction adjustment.
+   - **The voltage contrast still needs the Kir share of resting conductance,** which a
+     barium-sensitive current excludes. It is either a registered band over the share, or a background
+     calibrated on wild type's voltage. That second route spends one of the two means, departs from
+     D241, and is the user's call.
+3. **The turnover defect is closed.** At main b4273772 the Lean project's reproducer exits 0: 2.0 fmol
+   stored and 0.9956673077917628 pJ booked, exactly as expected, with its controls passing.
+4. **FR-30 is raised to high.** FR-16's connexin catalogue (F3 of the gap-junction cancer replication)
+   names per-connexin constants, homotypic and heterotypic, and the preprint turns on heterotypic
+   Cx43/Cx45, so FR-30 inherits D225 as part of FR-16. D248 is corrected accordingly.

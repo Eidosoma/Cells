@@ -1,10 +1,11 @@
-"""Generate claim notes, the README index and coverage of registered engine laws and operators."""
+"""Generate claim notes, the README overview and the proof and evidence catalog."""
 
 import argparse
 import json
 import os
 import re
 import sys
+from collections import Counter
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from urllib.parse import quote
@@ -15,6 +16,7 @@ BEGIN = "<!-- generated: claims-index -->"
 END = "<!-- /generated -->"
 NOTE = "<!-- Generated from lean/claims.json by scripts/generate_claims.py. -->"
 COVERAGE_NOTE = "<!-- Generated from lean/registry.json and lean/claims.json. -->"
+CLAIM_HEADER = "| Claim | Lean proof | Numerical check | Biological measurements and limits |"
 
 
 def unique_keys(pairs):
@@ -217,7 +219,7 @@ def live_inventory(lane):
     }
 
 
-def coverage(inventory, claims, comparisons, repo):
+def coverage(inventory, claims, comparisons, repo, category_sections):
     direct, exercised = {}, {}
     for claim in claims.values():
         for piece in claim["formal"].get("about", []):
@@ -240,21 +242,24 @@ def coverage(inventory, claims, comparisons, repo):
         raise ValueError(f"unrecognized direct proof subjects: {', '.join(sorted(unknown))}")
     parts = [
         COVERAGE_NOTE,
-        "# Engine law coverage",
-        "Each row links to a Cells registry declaration. The proof column lists named claims "
-        "about that piece. The comparison column links to runs that exercised it, including "
-        "runs checking another property. Open means the Cells claim register has no entry "
-        "in that column. [Proof index](README.md#proof-index) · "
-        "[Registry inventory](registry.json)",
+        "# Proof and evidence catalog",
+        "Choose a claim for its assumptions, theorems, numerical results and sources. "
+        "Partial evidence covers a measured part of a claim. A result marked not assessable "
+        "has too much uncertainty for a verdict. [Topic overview](README.md#proof-index) · "
+        "[Registered laws](#registered-laws) · [Registered operators](#registered-operators)",
+        *category_sections,
     ]
+    overview = []
     for kind in ("law", "operator"):
         rows = inventory[kind]
         n_direct = sum(key in direct for key in rows)
         n_checked = sum(key in exercised for key in rows)
+        overview.append(f"[{n_direct} of {len(rows)} {kind}s](COVERAGE.md#registered-{kind}s)")
         parts += [
             f"## Registered {kind}s",
             f"Direct Lean claims cover {n_direct} of {len(rows)} registered {kind}s. "
-            f"Recorded numerical comparisons exercise {n_checked}.",
+            f"Recorded numerical comparisons exercise {n_checked}. Each linked record names "
+            "the property tested.",
         ]
         table = [
             f"| {kind.title()} | Direct Lean claims | Recorded comparisons |",
@@ -266,7 +271,7 @@ def coverage(inventory, claims, comparisons, repo):
             runs = " · ".join(exercised.get(piece, [])) or "Open"
             table.append(f"| {label} | {proofs} | {runs} |")
         parts.append("\n".join(table))
-    return "\n\n".join(parts) + "\n"
+    return "\n\n".join(parts) + "\n", "Direct Lean claims cover " + " and ".join(overview) + "."
 
 
 def render(lane, live_registry=False):
@@ -288,28 +293,97 @@ def render(lane, live_registry=False):
         if live_registry
         else json.loads(inventory_path.read_text(encoding="utf-8"), object_pairs_hook=unique_keys)
     )
-    outputs = {
-        lane / "COVERAGE.md": coverage(inventory, claims, register["comparisons"], lane.parent)
-    }
+    # A version-one register written before categories were introduced still renders.
+    categories = register.get("categories", {"all": "All claims"})
+    if not categories or any(
+        not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", key) for key in categories
+    ):
+        raise ValueError("category IDs must be nonempty, stable link fragments")
+    groups = {key: [] for key in categories}
+    proof_topics = {law: set() for law in inventory["law"]}
+    outputs = {}
     if live_registry:
         outputs[inventory_path] = json.dumps(inventory, indent=2, sort_keys=True) + "\n"
-    rows = [
-        "| Claim | Lean proof | Numerical check | Biological measurements and limits |",
-        "| --- | --- | --- | --- |",
-    ]
     for key, claim in claims.items():
         try:
             note, row = render_claim(claim, claims, comparisons, lane.parent)
         except (KeyError, ValueError, TypeError) as error:
             raise ValueError(f"claim {key!r}: {error}") from error
         outputs[lane / "claims" / f"{key}.md"] = note
-        rows.append(row)
+        category = claim.get("category", "all")
+        if category not in groups:
+            raise ValueError(f"claim {key!r} needs a category from the register")
+        groups[category].append((claim, row))
+        for subject in claim["formal"].get("about", []):
+            if subject in proof_topics:
+                proof_topics[subject].add(category)
+
+    # A law usually gets its topic from its first direct proof. An explicit topic also
+    # lets an open law appear here before there is a claim or biological measurement.
+    assigned = register.get("law_categories", {})
+    if assigned.keys() - proof_topics.keys() or set(assigned.values()) - groups.keys():
+        raise ValueError("law_categories must name registered laws and existing categories")
+    laws_by_topic = {}
+    for law, topics in proof_topics.items():
+        if law not in assigned and len(topics) > 1:
+            raise ValueError(f"assign {law} a primary category in law_categories")
+        topic = assigned.get(law) or next(iter(topics), None)
+        groups.setdefault(topic, [])
+        laws_by_topic.setdefault(topic, {})[law] = bool(topics)
+
+    overview = [
+        "| Category | Registered laws with proof | Claims with proof | Numerical checks "
+        "| Claims with biological evidence |",
+        "| --- | ---: | ---: | --- | ---: |",
+    ]
+    sections = []
+    for key, group in groups.items():
+        laws = laws_by_topic.get(key, {})
+        if not (group or laws):
+            continue
+        title = categories[key] if key is not None else "Laws awaiting a category"
+        anchor = "category-" + key if key is not None else "uncategorized-laws"
+        counts = Counter(c["numerical"]["status"] for c, _ in group)
+        checks = " · ".join(f"{counts[s]} {s}" for s in ("checked", "failed", "open") if counts[s])
+        proved = sum(c["formal"]["status"] == "proved" for c, _ in group)
+        measured = sum(
+            bool(c["biology"].get("finding") or c["biology"]["evidence"]) for c, _ in group
+        )
+        law_count = f"{sum(laws.values())} of {len(laws)}" if laws else "—"
+        claim_count = f"{proved} of {len(group)}" if group else "—"
+        overview.append(
+            f"| [{title}](COVERAGE.md#{anchor}) | {law_count} | {claim_count} "
+            f"| {checks or '—'} | {measured} |"
+        )
+        sections.extend([f'<a name="{anchor}"></a>', f"## {title}"])
+        pending = [
+            local_link(f"`{law}`", inventory["law"][law], lane.parent, from_dir="lean")
+            for law in sorted(laws)
+            if not laws[law]
+        ]
+        if pending:
+            sections.append("**Awaiting a direct Lean proof** " + " · ".join(pending))
+        if group:
+            sections.append(
+                "\n".join(
+                    [
+                        CLAIM_HEADER,
+                        "| --- | --- | --- | --- |",
+                        *(row for _, row in group),
+                    ]
+                )
+            )
+    outputs[lane / "COVERAGE.md"], registry_summary = coverage(
+        inventory, claims, register["comparisons"], lane.parent, sections
+    )
     readme = lane / "README.md"
     before, start, rest = readme.read_text(encoding="utf-8").partition(BEGIN)
     body, end, after = rest.partition(END)
     if not start or not end or BEGIN in rest or "<!-- generated:" in body:
         raise ValueError("expected one claims-index block in the Lean README")
-    outputs[readme] = before + BEGIN + "\n\n" + "\n".join(rows) + "\n\n" + END + after
+    outputs[readme] = (
+        before + "\n\n".join([BEGIN, registry_summary, "\n".join(overview), END]) + after
+    )
     return outputs
 
 

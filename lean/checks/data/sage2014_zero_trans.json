@@ -1,0 +1,24 @@
+{
+  "dataset_id": "sage2014_zero_trans@1",
+  "doi": "10.1152/ajpcell.00044.2014",
+  "source": "https://cdn.ncbi.nlm.nih.gov/pmc/blobs/e148/4024712/0ccab68c1842/zh00091474890002.jpg",
+  "locator": "Figure 2A, filled circles for 3-O-methylglucose",
+  "preparation": "Initially sugar-depleted intact human erythrocytes, 30 s uptake on ice. Concentration is in mM. Rates and their SE are in µmol/L/min as in the caption. The caption does not specify the volume denominator.",
+  "points": [
+    {"external_mM": 0.1, "rate": 11, "se": null},
+    {"external_mM": 0.4, "rate": 38, "se": 3},
+    {"external_mM": 0.8, "rate": 60, "se": 4},
+    {"external_mM": 1.0, "rate": 60, "se": 8},
+    {"external_mM": 3.0, "rate": 117, "se": 5},
+    {"external_mM": 5.0, "rate": 122, "se": 8}
+  ],
+  "fit_mM": [0.4, 5.0],
+  "held_out_mM": [0.1, 0.8, 1.0, 3.0],
+  "reading_precision_mM": 0.02,
+  "reading_precision_rate": 1,
+  "reported_km_mM": 1.4,
+  "reported_km_plus_minus_mM": 0.2,
+  "reported_vmax_rate": 161,
+  "reported_vmax_plus_minus_rate": 10,
+  "mapping": "The bars are standard errors from three independent experiments in triplicate. The first bar is unresolved. The plotted rates reflect early zero-trans net entry. The operator predicts a one-way instantaneous rate in a common empirical scale. The study also measured later equilibration and faster tracer exchange after sugar preloading. The fit supplies no physical patch area or bath-depletion time course."
+}

@@ -1,0 +1,24 @@
+{
+  "dataset_id": "kwant1970_red_cell_osmometry@1",
+  "doi": "10.1085/jgp.55.2.208",
+  "source": "https://pmc.ncbi.nlm.nih.gov/articles/PMC2202997/",
+  "observable": "Total volume in fL by Coulter sizing against bath osmolarity in mOsm/L. The inferred aqueous volume is total volume less the study's estimate of osmotically inactive volume.",
+  "columns": ["bath_mOsm_L", "mean_total_volume_fL", "reported_SD_fL"],
+  "ghosts": {
+    "locator": "Table II, series prepared by hemolysis at 126 mOsm/L",
+    "preparation": "Fresh human erythrocyte ghosts resealed at 37 °C, sized in a thermostated probe and vial at 37 °C. The study gives 12–15 determinations per mean.",
+    "temperature_C": 37,
+    "inactive_fL": 1.5,
+    "fit": [126, 162.0, 1.8],
+    "evaluation": [[132, 154.0, 1.5], [143, 142.0, 1.0], [163, 124.0, 0.8], [184, 109.0, 1.0], [211, 95.2, 0.9]]
+  },
+  "intact": {
+    "locator": "Table I, Coulter counter column",
+    "preparation": "Intact human erythrocytes. The temperature of the intact-cell sizing is unspecified.",
+    "temperature_C": null,
+    "inactive_fL": 33,
+    "fit": [333, 82.5, 0.7],
+    "evaluation": [[184, 111.5, 1.2]]
+  },
+  "mapping": "Each preparation supplies its own trapped amount from the first listed measurement. Use equal hydrostatic pressures and zero stiffness. Reported SDs refer to volume determinations. The input osmolarities and inactive-volume estimates also carry uncertainty."
+}

@@ -98,6 +98,33 @@ def test_the_general_read_gives_version_1s_free_h_within_the_criterion():
     first = impl1.readouts(state1, control1, p1, xp=np).field.potential_V
     second = impl2.readouts(state2, control2, p2, xp=np).field.potential_V
     assert np.array_equal(np.asarray(first), np.asarray(second))  # Charge from the totals only.
+    # K3b's derivative from the read: version 1's layout gives None; the general one, at the
+    # buffered cell, the one site's closed forms on the species axis, with H = h + T_B f (1 - f)
+    # and f the bound fraction: d ln h / d n_H = 1 / (V H), d ln h / d n_B = d ln c_base / d n_H
+    # = -f / (V H) and d ln c_base / d n_B = (1 / T_B + f^2 / H) / V.
+    assert proton_buffer.free_log_sensitivity(read1, p1, xp=np) is None
+    d, held = proton_buffer.free_log_sensitivity(read2, p2, xp=np)
+    volume = float(p2.volume[0])
+    total_b = amounts(state2, p2)[b, 0] / volume
+    bound = 1 - amounts(read2, p2)[b, 0] / amounts(state2, p2)[b, 0]
+    slope = free2[0] / volume + total_b * bound * (1 - bound)
+    closed = {
+        (h, h): 1 / (volume * slope),
+        (h, b): -bound / (volume * slope),
+        (b, h): -bound / (volume * slope),
+        (b, b): (1 / total_b + bound**2 / slope) / volume,
+    }
+    assert all(abs(d[i, k, 0] / value - 1) <= 1e-9 for (i, k), value in closed.items())
+    assert bool(held[h, 0]) and bool(held[b, 0]) and np.count_nonzero(held) == 2
+    assert np.count_nonzero(d) == 4  # Nothing off the closure's rows or nodes.
+    # Under jit, as the kinds' material term calls it: the same block.
+    import jax
+    import jax.numpy as jnp
+
+    compiled = jax.jit(lambda r, q: proton_buffer.free_log_sensitivity(r, q, xp=jnp))
+    d_jit, held_jit = compiled(read2, p2)
+    assert np.allclose(np.asarray(d_jit), d, rtol=1e-12, atol=0.0)
+    assert np.array_equal(np.asarray(held_jit), held)
     # Planted: a read at another binder potential (its form 1% stronger) moves free h beyond it.
     raw = general(buffered_world())
     form = next(e for e in raw["model"]["species"] if e["id"] == "B")["forms"][0]

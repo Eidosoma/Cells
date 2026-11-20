@@ -25,6 +25,20 @@ and a general feature, never one built for one study (D144).
 | [FR-17](#fr-17--field-solves-beyond-2048-nodes) | Field solves beyond 2048 nodes | Not stated (the same) | Requested; awaits the user's go | The preprint's 3D table, and mitochondria (D210) unless condensing compartment nodes serves them |
 | [FR-18](#fr-18--the-composites-energy-check-at-moderate-step-sizes) | The composite's energy check at moderate step sizes (a finding for the core) | Not stated (the same) | Reported to the core; the check is not loosened for one experiment | The core reviews the check's tolerance or its step-size advice |
 | [FR-19](#fr-19--the-passive-routes-heat-share-sign-test-at-rounding-level) | The passive routes' heat-share sign test refuses rounding-level shares (a finding for the core) | Not stated (found by the gap-junction replication, D207; 17 November 2026) | Fixed on main (merge 49494e49): the raw-sum check's rounding floor; previously admitted steps bitwise unchanged. The band near 1 mM is closed too, landed by merge a7122a43 (18 November): the floor's scale is (\|μ̄_in\| + \|μ̄_out\| + 2)·\|m\|, and crossrev's kinds record was renewed at the landing (9 of 9) | None: closed |
+| [FR-20](#fr-20--a-pulse-and-washout-for-assembly-populations) | A pulse and washout: replace an assembly population's exterior at a declared time, with the material and energy exchanged recorded | **High** (user, 20 November 2026; D237) | **Design approved** (D240; [note](ASSEMBLY_WASHOUT_DESIGN.md)): `cells.pool_replacement@1` | Building, by the origin-of-life builder, on the landed stack (d1697656) |
+| [FR-21](#fr-21--a-prescribed-shell-that-owns-a-lumen-and-an-exchange-conductance) | A prescribed shell that owns a lumen and an exchange conductance, independent of membrane inventory and binding-site count | **High** (user, 20 November 2026; D237) | Design decided (D244; [note](ASSEMBLY_SHELL_DESIGN.md)): one-step site binding first, then the prescribed shell | Built by the first origin-of-life builder after FR-20 lands |
+| [FR-22](#fr-22--checkpoint-and-resume-for-the-stochastic-assembly-runner) | Checkpoint and resume for the stochastic assembly runner, qualified around a wash | **High** (user, 20 November 2026; D237) | Requested; short controls can proceed now | A restart qualification: an interrupted run reproduces the uninterrupted event trace, molecule counts and energy ledger |
+| [FR-23](#fr-23--timed-bath-changes-beside-binding-sites-on-distinct-finite-nodes) | Timed bath changes beside binding sites on distinct finite nodes | **High** (user, 20 November 2026; D239) | Design decided (D244; [note](OPERATOR_FEATURES_FR23_24_26_DESIGN.md)): option A, a held bath dosed beside sites facing other nodes | Building next, by the operators owner. A dose into a finite compartment is not covered |
+| [FR-24](#fr-24--binding-site-occupancy-as-an-input-to-reaction-rates) | Binding-site occupancy as an input to reaction rates | **High** (user, 20 November 2026; D239) | Design decided (D244): the occupied fraction and amounts in mM, through declared readable quantities | After FR-23, by the operators owner; lands after FR-7's judged verdicts are tagged |
+| [FR-25](#fr-25--a-reusable-one-gene-expression-unit) | A reusable one-gene expression unit, verified against independent references | **High** (user, 20 November 2026; D239) | Folded into gene regulation's option A (D235): equation sheet tagged, references under way | G4's operator exposes the unit as a reusable component |
+| [FR-26](#fr-26--owned-state-when-a-cell-is-replaced) | Owned state when a cell is replaced: the incoming cell from its template, environment-owned material kept, departing material recorded | **High** (user, 20 November 2026; D239) | Design decided (D244): W, a replacement writer for site populations, unless L is ruled first | After FR-24, by the operators owner. L is compared in FR-7's division note |
+| [FR-27](#fr-27--a-timed-partial-wash-of-a-finite-compartment) | A timed partial wash of a finite compartment: collect a fraction of its liquid into a recorded sample, refill with a declared buffer, leave bound material in place | **High** (decided by the lead with the advisor under the user's delegation, 20 November 2026; D245) | Requested; not scoped | A short design note by the operators owner, its semantics stated against FR-20's pool replacement |
+| [FR-28](#fr-28--binding-sites-owned-by-a-compartments-surface) | Binding sites owned by a compartment's own surface, such as a vessel wall, with no cell | Normal (D245) | Requested; not scoped | After FR-26 on `site_occupancy.py`: a new owner kind |
+| [FR-29](#fr-29--an-optional-proton-return-mode-for-atp-driven-proton-pumps) | An optional proton-return mode for ATP-driven proton pumps, tested on the yeast vacuolar pump | Normal, started first of D248's four (D248) | Requested; a design note first | The kinds owner, after the mitochondria laws' second head |
+| [FR-30](#fr-30--homotypic-cx43-junctions-with-two-relaxation-times) | Homotypic Cx43 junctions with two relaxation times | **High,** inherited from FR-16's connexin catalogue (D225, D249) | Requested; a design note first | Part of FR-16's per-connexin constants; after N2 lands (the junction gate's file); needs a voltage series |
+| [FR-31](#fr-31--vesicle-rupture-during-a-steady-tension-hold) | Vesicle rupture during a steady tension hold: an optional rupture event competing in time | Low (D230, D248); the note before OL9 registers | Requested; a design note first | Blocked on rupture rates against tension, and on OL6 |
+| [FR-32](#fr-32--a-dopc-swelling-validation-record-for-the-water-operator) | A DOPC swelling validation record for the water operator | Low (D248) | Requested | Folded into the next water-operator landing |
+| [FR-33](#fr-33--regional-labelled-protein-readouts-redistribution-against-degradation) | Regional labelled-protein readouts: inside a measured region, outside it and across the whole cell | High (D228, D248) | Requested; a desk check of the export fields first | The FR-7 lane, after its current work |
 
 ## FR-1 — A closed internal compartment on the shared inventory
 
@@ -863,3 +877,215 @@ explored.
     apply, and crossrev's kinds record is renewed again at its landing.
   - The replication never reaches the band, since its concentrations stay at or below 0.1 mM.
 
+
+## FR-20 — A pulse and washout for assembly populations
+
+- **The request (user, 20 November 2026; D237).** At a declared time, replace the exterior of an
+  assembly population (vesicles or shell-bounded particles in their medium) with fresh, tracer-free
+  solution.
+- **What is kept:** each assembly, its gate state and its bound tracer, including tracer held at an
+  exposed-site control.
+- **What is recorded:** the material and the energy exchanged by the replacement.
+- **The wash bath is finite,** so released tracer can re-enter.
+- **What exists:** the vesicle-population accounting on the ol3-engine branch (OL2 milestone 3)
+  already covers much of it. That branch has not landed; D230 orders its landing behind core and
+  FR-1 to FR-10.
+- **Next:** a design note (D142), as a general feature (D144).
+
+## FR-21 — A prescribed shell that owns a lumen and an exchange conductance
+
+- **The request (user, 20 November 2026; D237).** Let a prescribed protein shell own a lumen and an
+  exchange conductance, independent of the membrane's inventory and of its binding-site count.
+- **Why:** to attribute a result to area or to permeability. Today every cross-phase reaction routes
+  through the membrane phase. The existing two-state gate is enough to test kinetics, but not to
+  separate those two causes.
+- **Concrete exposed-site case (Vaults, 20 November 2026; D240).** One particle has one occupied
+  site (one bound tracer), three vacant sites, and five free tracers in the finite exterior pool.
+  Both vacant sites and occupied complexes belong to the particle, independent of its membrane
+  inventory. Direct reversible binding consumes an exterior tracer and a vacant particle site;
+  release restores that site and returns the tracer to the finite exterior pool. The current
+  geometry parser refuses this interfacial reaction without a declared geometric encounter law;
+  this is a required FR-21 capability, not an already supported configuration.
+- **Requested control:** immediately after a tracer-free wash, exterior tracer is zero, the
+  particle still has one occupied and three vacant sites, and the removal ledger contains five
+  tracers. Total site count stays four; retained tracer plus removed tracer stays six. Subsequent
+  release and rebinding use the finite bath. A proposed alternative representation must reproduce
+  the declared direct binding and release time courses, not only an endpoint or equilibrium.
+  Placing sites in the replaceable pool does not preserve their ownership; an intermediate
+  membrane-join step is not presumed kinetically equivalent. FR-20's timed replacement can proceed
+  independently, preserving every slot-owned place as designed.
+- **Next:** a design note before any code (D142).
+- **The site step's acceptance (the requester, relayed by the user on 20 November 2026; D244,
+  D246).** In `cells.assembly_lineages@2`, a particle with geometry supports X@pool + S@membrane ⇌
+  XS@membrane through `cells.stochastic_mass_action@1`. It is admitted only when the site and the
+  complex are declared, and undeclared pairs stay refused. Built from the one-particle fixture of
+  `tests/unit/test_assembly_lineages_v2_population.py`, with FR-20's timed wash:
+  1. Immediately before the wash: 8 free X in the pool, 4 vacant sites and 2 occupied sites.
+  2. After replacing the pool with an equal volume of X-free liquid:
+     - the removal record holds 8 X;
+     - the fresh pool holds 0 X;
+     - the particle keeps 4 vacant and 2 occupied sites.
+  3. One release gives 1 free X, 5 vacant sites and 1 occupied site. A rebinding restores the
+     post-wash counts.
+
+## FR-22 — Checkpoint and resume for the stochastic assembly runner
+
+- **The request (user, 20 November 2026; D237).** Add checkpoint and resume to the version-2
+  stochastic assembly runner.
+- **The qualification:** a run interrupted around a wash (FR-20) reproduces the uninterrupted run's
+  event trace, molecule counts and energy ledger exactly.
+- **Short controls can proceed now,** before FR-20 exists.
+
+## FR-23 — Timed bath changes beside binding sites on distinct finite nodes
+
+- **The request (user, 20 November 2026; D239).** Allow a timed bath change and binding sites in
+  one world when they act on distinct finite nodes.
+- **What refuses today:** each operator parses on its own, but together they fail, because both
+  reference `extracellular_amount_reference`, even when they access different nodes (the
+  composition contract, docs/PUMP_COMPOSITE.md).
+- **Acceptance:** at the event boundary, the bath records the dose, and occupied sites keep their
+  bound material.
+
+## FR-24 — Binding-site occupancy as an input to reaction rates
+
+- **The request (user, 20 November 2026; D239).** Let a reaction read a named site population's
+  occupied amount, accessible capacity, or occupied fraction as a rate input (the coupling
+  operator's sources, `species_regulated_availability`).
+- **Acceptance:** changing occupancy changes the linked rate, and disabling the link leaves the
+  binding dynamics unchanged.
+
+## FR-25 — A reusable one-gene expression unit
+
+- **The request (user, 20 November 2026; D239).** Make the planned one-gene expression unit
+  reusable. It exposes RNA and protein amounts over time, with precursor consumption and energy
+  accounting. Its induction and decay are verified against independent references, so other
+  models can use it as a component.
+- **Where it stands:** this is gene regulation's option A (D235). The equation sheet is tagged
+  (`gr1-sheet-2026-11-20`), and its code-blind references are under way. G4's operator is built
+  as this reusable component.
+- **Backlog: per-cell readouts of new RNA (a reviewer's follow-up, relayed by the user on 20
+  November 2026).** A runnable example that reports, for each cell and gene, total RNA and the
+  transcripts started, completed and degraded. For a chosen time window, it also reports how many
+  transcripts completed in that window are still present when sampled, like a pulse label. Raw
+  per-cell values are kept, so each assay can apply its own detection rule. A documented
+  calculation from existing outputs is enough. It names its Cells revision, units and sampling
+  times. Two controls make the readout checkable:
+  1. **RNA turnover.** Start with 100 unlabelled copies, a one-hour half-life and steady
+     production of 100·ln 2 copies per hour. Mark every transcript completed in the first hour,
+     then continue production unmarked.
+     - Total RNA stays at 100.
+     - Of the 69.31 copies expected in the marked hour, 50 remain at its end and 25 an hour later.
+  2. **Responding cells.** Two groups make [0, 0, 20, 20] and [10, 10, 10, 10] new copies per cell.
+     - Both average 10.
+     - At a threshold of one new copy, 50% against 100% of cells are positive.
+     - The positive cells average 20 against 10 copies.
+
+  The development build already shows two effects:
+  - a gene's initial regulatory state changes its output under identical input, and disabling
+    that link erases the difference;
+  - after new starts are switched off, chains already in progress finish another 2.46 expected
+    copies in the next minute.
+- **Backlog: the protein version (a study's request, relayed by the user on 20 November 2026;
+  D248).** A short protein-production export from A1: time, protein amount, cumulative protein
+  completions and cumulative degradation, with units. Also, how to recover the protein made during
+  a chosen window that survives to sampling, as a pulse label measures it. In the references,
+  protein completed during minutes 60–90 was 7.46 times the net increase. The engine's development
+  export (revision f96a9606) already carries these columns. A documented calculation of the
+  surviving cohort from them is the first answer.
+
+## FR-26 — Owned state when a cell is replaced
+
+- **The request (user, 20 November 2026; D239).** Define what happens to owned state when a cell
+  is replaced:
+  - the incoming cell is initialised from its template;
+  - environment-owned material is preserved;
+  - what leaves with the departing cell is recorded.
+
+  Today the site-occupancy operator guards against replacement.
+- **Minimal acceptance:** the material balance closes across one replacement, with occupied sites
+  and active reactions.
+
+## FR-27 — A timed partial wash of a finite compartment
+
+- **The request (another Cells user's review, relayed by the user, 20 November 2026; D245).** At a
+  declared time, collect a fraction f of a finite compartment's well-mixed liquid into a recorded
+  sample, refill the same volume with a declared buffer, and leave bound material in place. The
+  removal, the supply and the free-energy change are booked exactly at the event.
+- **Why:** a falling tracer signal can mean release from a specimen, binding to the vessel wall or
+  recovery by a detector. Keeping those amounts apart across a wash needs the wash to be one
+  operation with its own books. Today the bath schedule doses held baths only (FR-10), and FR-23
+  keeps finite compartments out. FR-20's pool replacement works in the assembly family only, with
+  a whole pool replaced by a declared composition.
+- **Where it stands:** everything else in the review's example runs today. In the review's run the
+  wash was applied between two runs on the host, so each run kept its own books. The design note
+  states the operator's semantics against FR-20's replacement, so the two are not two laws for
+  one mechanism (D175, D210).
+
+## FR-28 — Binding sites owned by a compartment's surface
+
+- **The request (the same review; D245).** Let a binding-site population belong to the surface of
+  a finite outside node, such as a vessel wall, facing that node, with binding only.
+- **Today:** a site population's owner must be a cell's patch or a contact. The review placed the
+  wall's sites on an inert stand-in cell that exchanges nothing; the numbers are unaffected.
+- **Where it stands:** a new owner kind for `site_occupancy@1`, a change to parse and layout only.
+  It queues after FR-26 on `site_occupancy.py`.
+
+## FR-29 — An optional proton-return mode for ATP-driven proton pumps
+
+- **The request (the Lean project's biological review, relayed by the user, 20 November 2026;
+  D248).** Kettner et al. (2003, doi:10.1016/S0006-3495(03)74789-4), Table 2: moving the yeast
+  vacuole's pH from 4.1 to 6.0 moved the ATP-dependent current's reversal by −13.0 mV. The proton
+  equilibrium shifts by −112.5 mV, and `proton_pump` predicts −112.40 mV at every supported ratio
+  of protons per ATP; a tightly coupled pump cannot do otherwise (run by the lead at main).
+- **The proposal:** one law, with an optional mode, off by default, in which protons return down
+  their gradient while the pump is energized, each mode booking its own movement and dissipation.
+  Yeast values are population parameters (D144). The note says which worlds run `proton_pump` today.
+- **The test:** the table has five resolved reversals (three vacuolar pH values at cytosolic pH
+  7.5, and two other cytosolic pH values). Fit two and predict the rest under the same subtraction.
+- **The competing explanation:** other forms of variable coupling. Independent ATP-consumption or
+  proton-flux data would distinguish them.
+
+## FR-30 — Homotypic Cx43 junctions with two relaxation times
+
+- **The request (the same review; D248).** The generic `junction_voltage_relaxation@1` relaxes once,
+  in 50.0 ms at −100 mV. Sahu and Bera (doi:10.1371/journal.pone.0060506) measured 70 ± 5 and 931 ± 54
+  ms in the same decay, in Cx43 cell pairs. Moreno et al. (doi:10.1161/hh0402.105667) found 0.25 and
+  3.18 s at 60 mV.
+- **Where it sits:** the Cx43 variant already planned in PROTEIN_CATALOGUE_PLAN.md, as a new
+  versioned law or parameter set with cited values.
+- **The test's limit:** the two preparations differ in voltage. A fit at one voltage leaves the
+  voltage dependence free, so a prediction needs a voltage series. Tracer transfer is tested
+  separately, since electrical coupling and dye transfer can differ.
+- **After N2,** which is changing the gate's file.
+
+## FR-31 — Vesicle rupture during a steady tension hold
+
+- **The request (the same review; D248).** The assembly model tests rupture only at a state change.
+  In a DOPC cohort (Shibly et al. 2016, doi:10.1016/j.bpj.2016.09.043) 8 of 19 vesicles survived 40 s
+  and 2 of 19 survived 110 s under a held tension; a constant rate fitted to the first count predicts
+  1.76. Karal and Yamazaki (doi:10.1063/1.4930108) report rates at one tension and two temperatures.
+- **The proposal:** an optional rupture event, off by default, that competes in physical time when
+  chemistry is idle, using the existing release and energy accounting. OL5's registered lysis rule
+  stands.
+- **What it needs:** rupture rates at more than one tension, and the deterministic representation
+  (OL6), since giant vesicles are far beyond exact-event sizes. It interacts with FR-20's same-time
+  rule, FR-22's checkpoints and F12's extinction, so a design note comes first, before OL9 registers.
+
+## FR-32 — A DOPC swelling validation record for the water operator
+
+- **The request (the same review; D248).** The tissue water operator's compliance, fitted to one
+  dilution's swelling, predicted 2.57% at a second, against 2.6 ± 0.1% measured (Shibly et al. 2016,
+  Fig. 2B). It is one fitted value and one held-out point, specific to that preparation.
+
+## FR-33 — Regional labelled-protein readouts: redistribution against degradation
+
+- **The request (a study's request, relayed by the user, 20 November 2026; D248).** A reported
+  48-hour decline of a synaptic protein traces to one imaging study, whose measurements a later
+  paper reused, so it is one source. A separate lab observed the protein moving between synapses.
+  So redistribution is a competing explanation.
+- **What Cells reports:** labelled protein inside the measured region, outside it and across the
+  whole cell, from existing components.
+  - **Pure redistribution predicts** a compensating gain elsewhere and a stable total.
+  - **Degradation predicts** a falling total.
+- **The first step:** identify any missing export field, so the study can freeze both predictions
+  before fresh measurements are scored.

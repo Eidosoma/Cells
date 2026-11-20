@@ -1,0 +1,30 @@
+{
+  "karal2015_dopc_hold@1": {
+    "doi": "10.1063/1.4930108",
+    "locator": "Fig. 1a, p. 081103-2",
+    "preparation": "Pure DOPC giant unilamellar vesicles with equal sugar concentrations on both sides, under fixed aspiration tension",
+    "applied_tension_mN_m": 8.0,
+    "time_origin": "Start of the constant-tension hold after the loading ramp",
+    "columns": ["elapsed_s", "intact_fraction"],
+    "series": [
+      {"temperature_C": 12, "published_fit_per_s": 0.0073, "points": [[92, 0.500], [149, 0.312], [268, 0.125]]},
+      {"temperature_C": 32, "published_fit_per_s": 0.024, "points": [[33, 0.500], [70, 0.222], [125, 0.111]]}
+    ],
+    "extraction": "Approximate centers of circles (12 °C) and squares (32 °C) on the survival plot. Fractions retain plot precision.",
+    "uncertainty": "The text reports 20 vesicles at each temperature. The plotted step sizes do not match increments of 1/20. Pointwise denominators and survival error bars are unresolved."
+  },
+  "shibly2016_dopc_hold@1": {
+    "doi": "10.1016/j.bpj.2016.09.043",
+    "locator": "Fig. 1B, open circles and accompanying results",
+    "preparation": "DOPC giant unilamellar vesicles after equilibration with an initial osmolarity difference of 2.8 mM",
+    "temperature_C": 25,
+    "temperature_spread_C": 1,
+    "applied_tension_mN_m": 4.3,
+    "time_origin": "Start of the steady applied-tension hold",
+    "vesicles": 19,
+    "columns": ["elapsed_s", "vesicles_intact"],
+    "points": [[40, 8], [110, 2]],
+    "extraction": "Read the most recent post-rupture marker at or before each time, and use the reported cohort size of 19 to recover the count.",
+    "uncertainty": "The two observations are from the same cohort. Fig. 1B gives no pointwise error bars. Applied tension was held by aspiration. The additional osmotic contribution to total tension was inferred."
+  }
+}

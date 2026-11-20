@@ -1,0 +1,16 @@
+{
+  "citation": "Randle, Oliet and Renaud (1991), British Journal of Pharmacology 103, 1795–1801",
+  "doi": "10.1111/j.1476-5381.1991.tb09865.x",
+  "locator": "Methods on pp. 1795–1796 and Results on p. 1796, group means plotted in Fig. 3a.",
+  "observable": "Reversal of the current induced by 100 µM cromakalim in whole-cell recordings from adult guinea-pig ventricular myocytes. Group means include cells with a clear reversal. Errors are SEM.",
+  "bath_temperature_C": [33, 35],
+  "reference_salts_mM": {"KCl": 2.5, "NaCl": 143},
+  "exchange": "KCl replaces NaCl mole for mole. Other bath constituents were fixed, including MgCl₂ 1, CaCl₂ 1.8, NaH₂PO₄ 0.33, HEPES 10 and glucose 10 mM. Bath pH was 7.35. The paper reports at most 1 mV junction-potential variation with solution changes.",
+  "intracellular": "Pipette KCl was 140 mM with about 3 mM KOH added for pH. The prediction for a voltage difference cancels the fixed intracellular K activity.",
+  "conditions": [
+    {"KCl_mM": 1, "mean_mV": -131.5, "sem_mV": 1.8, "n_reversed": 4, "n_recorded": 9},
+    {"KCl_mM": 2.5, "mean_mV": -104.6, "sem_mV": 6.9, "n_reversed": 9, "n_recorded": 18},
+    {"KCl_mM": 5.4, "mean_mV": -87.2, "sem_mV": 1.9, "n_reversed": 12, "n_recorded": 14},
+    {"KCl_mM": 12, "mean_mV": -65.8, "sem_mV": 2.2, "n_reversed": 7, "n_recorded": 9}
+  ]
+}

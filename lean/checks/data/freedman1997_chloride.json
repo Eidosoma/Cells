@@ -1,0 +1,16 @@
+{
+  "dataset_id": "freedman1997_chloride@1",
+  "doi": "10.1085/jgp.109.2.201",
+  "source": "https://doi.org/10.1085/jgp.109.2.201",
+  "locator": "Fig. 6A lower chloride points and Fig. 6C voltage points at the same external K, Fig. 5 and Table I",
+  "preparation": "DIDS-treated human red cells, pH 7.5. Five donor series pooled three valinomycin and two gramicidin experiments.",
+  "temperature_K": 296.15,
+  "inside_Cl_mM": 101,
+  "outside_Cl_mM": 150,
+  "cell_water_L_per_g_Hb": 0.00211,
+  "fit": {"outside_K_mM": 1, "voltage_mV": -103, "voltage_SD_mV": 6, "current_mA_per_g_Hb": -3.60, "current_SD_mA_per_g_Hb": 0.37},
+  "evaluation": {"outside_K_mM": 10, "voltage_mV": -59, "voltage_SD_mV": 8, "current_mA_per_g_Hb": -1.17, "current_SD_mA_per_g_Hb": 0.13},
+  "figure_reading_precision": {"voltage_mV": 1.5, "current_mA_per_g_Hb": 0.05},
+  "slope_conductance_S_per_g_Hb": {"near_reversal": 0.015, "near_reversal_SD": 0.005, "hyperpolarized": 0.055, "hyperpolarized_SD": 0.005},
+  "mapping": "Negative electrical current denotes outward chloride transfer. Internal chloride is inferred from the Donnan ratio. Voltage estimates come from a parallel pH assay. Chloride current is inferred from shrinkage under the assumption of equal net K and Cl efflux. Read the symbols for voltage, independently of the fitted curve. The plotted SD describes the five series. Donor-level covariance is unavailable."
+}
