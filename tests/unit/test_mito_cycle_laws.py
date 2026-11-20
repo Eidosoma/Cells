@@ -138,6 +138,20 @@ def evaluation(impl, state, p, control):
     return read, volts, transporter._evaluate(read, volts, control, p, xp=np)
 
 
+def free_molar(spec, p, read):
+    """{name: free concentration in M} of a stage read at the matrix (N) and the lumen (P), named
+    as the harness names its inputs (cc.SET_INPUT)."""
+    ids = list(spec.model.species_ids)
+    lumen = [x.id for x in spec.model.extracellular].index("lumen_0")
+    amounts = {
+        "N": (p.amount_reference + read.amount_increment)[:, 0] / p.volume[0],
+        "P": (p.extracellular_amount_reference + read.extracellular_amount_increment)[:, lumen]
+        / p.extracellular_volume[lumen],
+    }
+    return {f"{cc.SET_INPUT.get(s, s)}_{end}": float(amounts[end][ids.index(s)]) / 1000.0
+            for end in ("N", "P") for s in ids}  # fmt: skip
+
+
 def test_the_seven_laws_register_as_monomial_forms_of_the_kind_in_base_forms():
     for law, _, _ in LAWS.values():
         found = law_registry.active().lookup(f"cells.{law}")
@@ -165,8 +179,10 @@ def test_the_supply_runs_on_its_held_pair_only():
 def test_a_host_p_world_admits_every_law_and_books_its_entries_and_steps():
     """Every population parses at the closures' rows, two steps close every ledger, and the cited
     constants' entries are §9's x° at 298.15 K. The synthase emits none, and its x does not move
-    with its RateConstant (40 for 36.03 kJ/mol: S moves by exactly that). Planted: the same constant
-    as a CitedConstant, refused by the registry's check; a RateConstant as a factor's K, refused."""
+    with its RateConstant (40 for 36.03 kJ/mol: S moves by exactly that). The supply cites none,
+    and its held-row work is its pair's upkeep, its heat plus the work it delivers. Planted: the
+    synthase's constant as a CitedConstant, refused by the registry's check; a RateConstant as a
+    factor's K, refused."""
     with mito_scoped():
         spec, impl, state, p, control = start(host_p_world())
         states = [state]
@@ -176,7 +192,25 @@ def test_a_host_p_world_admits_every_law_and_books_its_entries_and_steps():
             states.append(state)
         history = impl.STATE_TYPE(*(np.stack(v) for v in zip(*states, strict=True)))
         impl.check_values(history, spec, steps=np.arange(len(states)))  # Every ledger closes.
-        _, _, e1 = evaluation(impl, states[0], p, control)
+        read, volts, e1 = evaluation(impl, states[0], p, control)
+        rates = transporter._population_rates(read, volts, control, p, xp=np)
+    # The supply's books (§6), each side from the registry's potentials and the read: its held-row
+    # work is the pair's upkeep, -J (mu_S_ox - mu_S_red), and equals its heat plus the work
+    # delivered to the NAD pool, J (mu_NADH + mu_H - mu_NAD) (one node, so no charge term).
+    free = free_molar(spec, p, read)
+    mu0 = species_registry.potential_set_values(
+        "beard2005@1", temperature_K=T_K, standard_concentration_mM=species_registry.SET_C0_MM
+    )
+    mu = {row: mu0[row] + math.log(free[f"{cc.SET_INPUT.get(row, row)}_N"]) for row in mu0
+          if f"{cc.SET_INPUT.get(row, row)}_N" in free}  # fmt: skip
+    dh = list(ALL).index("dh")
+    pj = float(e1.j[0, dh]) * 1e-3 * R * T_K  # pJ/s per unit of mu/RT
+    upkeep = -pj * (mu["S_ox"] - mu["S_red"])
+    delivered = pj * (mu["NADH"] + mu["H"] - mu["NAD"])
+    work = float(rates.derivatives["cycle_metabolic_work_pJ"][dh])
+    heat = float(rates.derivatives["cycle_dissipated_energy_pJ"][dh])
+    assert pj != 0.0 and work == pytest.approx(upkeep, rel=1e-9, abs=0.0)  # pJ/s near 1e-15
+    assert work == pytest.approx(heat + delivered, rel=1e-9, abs=0.0)
     entries = transporter.standard_free_energies(dict(spec.model.kinds)[transporter.KIND_ID])
     x0 = {e.law_id: e.dG_kJ_mol * 1000 / (R * T_K) + e.dG_RT_offset for e in entries}
     expected = {"c1": -44.1016, "c3": 19.1137, "c4": -163.6593}  # §9's free-energy entries.
@@ -227,16 +261,9 @@ def test_the_harness_adapter_evaluates_each_law_as_the_kind_does():
     with mito_scoped():
         spec, impl, state, p, control = start(host_p_world())
         read, volts, e = evaluation(impl, state, p, control)
-    ids = list(spec.model.species_ids)
     n = len(spec.model.cells)
     lumen = [x.id for x in spec.model.extracellular].index("lumen_0")
-    amounts = {
-        "N": (p.amount_reference + read.amount_increment)[:, 0] / p.volume[0],
-        "P": (p.extracellular_amount_reference + read.extracellular_amount_increment)[:, lumen]
-        / p.extracellular_volume[lumen],
-    }
-    free = {f"{cc.SET_INPUT.get(s, s)}_{end}": float(amounts[end][ids.index(s)]) / 1000.0
-            for end in ("N", "P") for s in ids}  # fmt: skip
+    free = free_molar(spec, p, read)
     values = {"dpsi_mV": 1000.0 * float(volts[n + lumen] - volts[0])}
     inputs = dict(
         constants=dict(T_K=str(T_K), F_RT_per_mV=str(96485.33212331001 / (R * T_K) / 1000.0)),
