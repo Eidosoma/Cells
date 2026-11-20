@@ -6,7 +6,8 @@ with a planted error it must catch (D187):
   registration (planted, each refused: an unknown role, a non-bool monotone, a heat-suffixed field
   declared work, a stray field, the tableau's unversioned ID, a repeated booking, a structural role
   without a fill, an intensive one with a fill, a non-finite fill, ledgers without their bounds);
-  today's built-in kinds declare none and register as before;
+  today's built-in kinds declare none, but the transporter, which admits the trapezoid booking
+  (K2), and register as before;
 - an undeclared state field takes today's suffix rule, a declaration overrides it (planted: a
   heat field declared non-monotone reads non-monotone; an unsuffixed field books no energy);
 - a kind's missing partition roles are its state, layout and control fields with none, on a bound
@@ -151,10 +152,13 @@ def test_seam_declarations_are_checked_at_registration():
         assert kind_registry.declaration_errors(kind), name
         with pytest.raises(ValueError, match=PLANTED_ID):
             kind_registry.KindRegistry().register(kind)
-    # Today's built-in kinds declare none, and register on BUILTIN as before.
+    # Today's built-in kinds declare none, but the transporter, which admits the trapezoid booking
+    # (K2), and register on BUILTIN as before.
+    bookings = {"cells.transporter@1": ("trapezoid_nonnegative@1",)}  # K2, D234's Option 2.
     for kind in kind_registry.active().model_keys().values():
         assert kind_registry.declaration_errors(kind) == [], kind.kind_id
-        assert kind.energy_roles == {} and kind.heat_bookings == () and kind.ledgers is None
+        assert kind.heat_bookings == bookings.get(kind.kind_id, ()), kind.kind_id
+        assert kind.energy_roles == {} and kind.ledgers is None, kind.kind_id
 
 
 def test_an_undeclared_field_takes_the_suffix_rule_and_a_declaration_overrides_it():

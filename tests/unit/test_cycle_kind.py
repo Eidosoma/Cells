@@ -50,6 +50,7 @@ import pytest
 
 from cells.definitions.specs import ConfigError, parse_spec
 from cells.definitions.surface_pump_v3_spec import control_values
+from cells.execution.errors import NumericalError
 from cells.kinds import transporter
 from cells.laws.electrochemistry import CHARGE_PER_FMOL, F, R
 from cells.laws.cycles import forms
@@ -307,6 +308,8 @@ def test_the_general_form_and_both_diversions_take_the_population_axis_and_write
         (dict(held_rows=[["ATP", "P"]]), "held_rows lists distinct rows"),
         (dict(held_rows=[["ATP", "N"]]), "held together or moved together"),
         (dict(law="cells.proton_atp_mass_action_positive@1"), "roles binds each of proton"),
+        (dict(proton_readout="Y"), "proton_readout names the model's free-proton species row"),
+        (dict(proton_readout="nowhere"), "proton_readout names the model's free-proton"),
     ],
 )
 def test_the_general_parse_refuses_with_its_reason(over, reason):
@@ -1054,6 +1057,337 @@ def test_a_cited_dg_is_the_laws_seam_e_entry_and_builds_its_k_from_one_value():
     with mono_scoped(hydrolysis(-35.0, "seamtest.monomial_off@1")):
         with pytest.raises(ConfigError, match="monomial_off"):
             parse_spec(hydrolysis_world("seamtest.monomial_off@1"))
+
+
+# ------------------------------------------------------- the trapezoid heat booking (K2)
+
+
+def trapezoid_booked(raw):
+    raw = copy.deepcopy(raw)
+    raw["model"]["heat_bookings"] = {transporter.KIND_ID: transporter.TRAPEZOID_BOOKING}
+    return raw
+
+
+@pytest.mark.parametrize("layout", ("version 1", "population axis"))
+def test_the_trapezoid_books_the_kinds_heat_and_leaves_every_other_field(layout):
+    """Seam D's trapezoid_nonnegative@1, picked for the kind: four steps under the tableau and
+    under the trapezoid give every field but the heat bitwise equal, the heat non-decreasing, and
+    every ledger closed (the energy ledger with the trapezoid's heat)."""
+    raw = tk.held_world() if layout == "version 1" else tk.held_world(general(tk.population()))
+    heat = "transporter_dissipated_energy_pJ"
+    if layout != "version 1":
+        heat = "cycle_dissipated_energy_pJ"
+    ends = {}
+    for name, world in (("tableau", raw), ("trapezoid", trapezoid_booked(raw))):
+        with scoped():
+            spec = parse_spec(copy.deepcopy(world))
+            impl = get_model(spec.model)
+            state, p = impl.initial_values(spec)
+            control = impl.Control(*(v[0] for v in control_values(spec, [0.0])))
+            states = [state]
+            for _ in range(4):
+                state, valid = impl.imex_step(state, spec.execution.dt, control, p, xp=np)
+                assert bool(valid)
+                states.append(state)
+            history = impl.STATE_TYPE(*(np.stack(v) for v in zip(*states, strict=True)))
+            impl.check_values(history, spec, steps=np.arange(len(states)))  # Every ledger closes.
+            ends[name] = (spec, states)
+    (_, tableau), (booked, trapezoid) = ends["tableau"], ends["trapezoid"]
+    assert booked.model.heat_bookings == ((transporter.KIND_ID, transporter.TRAPEZOID_BOOKING),)
+    for name in type(tableau[-1])._fields:
+        if name != heat:
+            assert np.array_equal(getattr(tableau[-1], name), getattr(trapezoid[-1], name)), name
+    assert not np.array_equal(getattr(tableau[-1], heat), getattr(trapezoid[-1], heat))
+    assert np.all(np.diff(np.stack([getattr(s, heat) for s in trapezoid]), axis=0) >= 0)
+
+
+def test_the_trapezoid_pick_is_refused_for_a_net_flow_population_and_an_unadmitting_kind():
+    """A net-flow population's heat is non-negative only within its guard's allowance, so the
+    pick is refused where one is declared; planted: the kind without the declaration refuses it."""
+    with scoped(), pytest.raises(ConfigError, match="only within its guard's allowance"):
+        parse_spec(trapezoid_booked(exchange_world(exchanger(law="seamtest.net_exchange@1"))))
+    plain = dataclasses.replace(transporter.TRANSPORTER, heat_bookings=())
+    with tk.scoped(plain), pytest.raises(ConfigError, match="admits no heat booking"):
+        parse_spec(trapezoid_booked(tk.held_world()))
+
+
+# ----------------------------------------------------------------- the proton readouts (K4)
+
+UNIPORT = law_registry.CycleLaw(
+    "seamtest.proton_uniport@1",
+    (),
+    (),
+    None,
+    None,
+    cycle=CycleForm(
+        kinetics="net_flow",
+        roles=(("H", 1),),
+        rows=(("H", "N"), ("H", "P")),
+        modes=(("uniport", (-2, 2)),),
+        flux_terms=((FluxTerm(1.0, (-2, 2)),),),
+    ),
+    host=transporter.KIND_ID,
+    provenance="calibrated",
+    source="a test-only law moving two protons from N to P and nothing else, never shipped",
+)
+
+
+def proton_world():
+    """held_world with H+ at pH 7.2 in the cell and 7.0 in the bath, and three proton uniports:
+    two naming H for the proton readouts, N the cell for one and the bath for the other, and one
+    naming none."""
+
+    def uniport(name, n_end, **over):
+        return dict(
+            id=name,
+            host="membrane_0",
+            law=UNIPORT.law_id,
+            orientation={"N": n_end},
+            capacity_fmol_s=0.01,
+            roles={"H": "H"},
+            parameters={},
+            held_rows=[],
+            **over,
+        )
+
+    raw = tk.held_world(
+        uniport("u_a", "a", proton_readout="H"),
+        uniport("u_b", "b", proton_readout="H"),
+        uniport("u_0", "a"),
+    )
+    return add_species(raw, "H", 1, 0.0, {"cell_0": 10.0**-4.2, "bath_0": 10.0**-4.0})
+
+
+def test_the_proton_readouts_tie_delta_p_to_a_pure_proton_modes_x_with_beards_sign():
+    """K4: delta psi = phi_P - phi_N and delta p = delta psi + (RT/F) ln(h_P / h_N) per asking
+    population, so a mode moving two protons from N to P alone has RT x = 2 F delta p, at set
+    potentials and through the core's observations (the stage read, the field's potentials).
+    Turning N to the other end flips both; a population naming no row reads 0, and a definition
+    without the key keeps today's entry, fields and columns. Planted: either sign flipped (delta
+    psi as phi_N - phi_P, or ln(h_N / h_P)) breaks the tie. The run view states both as
+    differences P less N, and the counts' N-to-P orientation."""
+    from cells.execution.state import initialise
+    from cells.records import run_view
+
+    raw = proton_world()
+    with mono_scoped(UNIPORT):
+        spec = parse_spec(copy.deepcopy(raw))
+        structure, state, p, control = start(spec)
+        impl = get_model(spec.model)
+        history = impl.STATE_TYPE(*(np.asarray(v)[None] for v in state))
+        observed = impl.observe_history(np.zeros(1), history, p, [0.0], spec)
+        plan = run_view.prepare(spec, run_view.Request(), layout=initialise(spec).layout)
+        view = plan.view(run_view.single_file_bases([0.0], [0.0]), "write_run")
+        for entry in raw["model"]["transporters"]:  # The same world without the key.
+            entry.pop("proton_readout", None)
+        bare = surface_pump_v3.structure(parse_spec(raw).model).kinds
+    declaration = dict(spec.model.kinds)[transporter.KIND_ID]
+    assert transporter.to_dict(declaration) == proton_world()["model"]["transporters"]
+    ((_, entry),) = structure.kinds
+    assert entry == transporter.CycleAxis((UNIPORT.law_id,), True)
+    bound = kind_registry.bound(transporter.TRANSPORTER, entry)
+    assert bound.readout_columns[-2:] == transporter.PROTON_READOUT_COLUMNS
+    assert set(transporter.PROTON_READOUT_FIELDS) <= set(type(p)._fields)
+    ((_, entry),) = bare  # Without the key: today's entry, fields and columns.
+    assert entry == transporter.CycleAxis((UNIPORT.law_id,))
+    bound = kind_registry.bound(transporter.TRANSPORTER, entry)
+    assert bound.readout_columns == transporter.GENERAL_READOUT_COLUMNS
+    assert not set(transporter.PROTON_READOUT_FIELDS) & set(bound.layout_fields)
+
+    def ties(rt_x, delta_p):
+        return np.allclose(rt_x, 2.0 * F * delta_p, rtol=1e-12, atol=0.0)
+
+    potentials = potentials_for(p, -0.15, 0.0)
+    _, rt_x, _, dpsi, dp = transporter.readouts(state, state, potentials, control, p, xp=np)
+    observed_dp = observed.cycle_proton_motive_force_V[0]
+    observed_rt_x = observed.cycle_free_energy_J_mol[0]
+    assert dpsi[0] == 0.15 and dpsi[1] == -0.15 and dp[1] == -dp[0]  # N at the bath: flipped.
+    log_ratio = 0.2 * math.log(10.0)  # ln(h_bath / h_cell)
+    expected = 0.15 + R * spec.model.temperature_K / F * log_ratio
+    assert dp[0] == pytest.approx(expected, rel=1e-12)
+    assert ties(rt_x[0, :2], dp[:2]) and ties(observed_rt_x[0, :2], observed_dp[:2])
+    assert observed_dp[0] != 0 and observed_dp[1] == -observed_dp[0]
+    assert dpsi[2] == dp[2] == 0 and rt_x[0, 2] != 0  # Naming no row: 0, its x read as before.
+    assert observed.cycle_membrane_potential_V[0][2] == observed_dp[2] == 0
+    chem = dp - dpsi
+    for planted in (chem - dpsi, dpsi - chem):  # Planted: each sign flipped.
+        assert not ties(rt_x[0, :2], planted[:2])
+    records = {r["field"]: r for r in view["records"]}
+    for column in transporter.PROTON_READOUT_COLUMNS:
+        record = records[column]
+        assert record["unit"] == "V" and record["kind"] == "level", record
+        assert (record["difference"]["plus"], record["difference"]["minus"]) == ("P", "N")
+    count = records["cycle_count"]["sign"]
+    assert (count["from"], count["to"]) == ("N", "P")
+    run_view.validate(view)
+
+
+# ------------------------------------------------------- moved fuel at a closure node (K1)
+
+CLOSURE_HYDROLYSIS = law_registry.CycleLaw(
+    "seamtest.closure_hydrolysis@1",
+    (),
+    (transporter.FINITE,),
+    None,
+    None,
+    reads=("rapid_binding@1",),
+    forms="base",
+    cycle=CycleForm(
+        kinetics="net_flow",
+        roles=(("ATP", -4), ("ADP", -3), ("Pi", -2), ("H", 1)),
+        rows=(("ATP", "N"), ("ADP", "N"), ("Pi", "N"), ("H", "N")),
+        modes=(("hydrolysis", (-1, 1, 1, 1)),),
+        flux_terms=((FluxTerm(1.0, (-1, 1, 1, 1)),),),
+        fuel_roles=("ATP", "ADP", "Pi"),
+    ),
+    host=transporter.KIND_ID,
+    provenance="calibrated",
+    source="a test-only base-form hydrolysis on finite fuel releasing its proton at N (K1), never "
+    "shipped",
+)
+
+
+MU_H_SHIFT = 5.0  # H's mu°/RT off 0, so its standard part is not invisible to the ledger.
+
+
+@contextlib.contextmanager
+def closure_scoped():
+    """The transporter and the binding closure's kind, the test laws and CLOSURE_HYDROLYSIS."""
+    laws = law_registry.BUILTIN.extended(*TEST_LAWS, CLOSURE_HYDROLYSIS)
+    with tk.scoped(*tk.CHARGED_KINDS), law_registry.scope(laws):
+        yield
+
+
+def closure_fuel_world(closure="general", n_end="a", lumped=False):
+    """The binding owner's buffered cell (B binds H at the cell; every route, channel and pump at
+    availability 0) with ATP4-, ADP3- and Pi2- rows, and one population hydrolysing ATP at the cell
+    on finite fuel, its proton released into the cell's H row: fuel moving where protons move.
+    H's potential is moved off 0 (and HB's with it, so B's binding constant is kept), so that a
+    proton's standard part counted twice would show in the energy ledger. The fuel rows have no
+    forms: the species registry refuses every mover of a row with forms (check_two_form_rows), a
+    closure's binder included. closure: "general", rapid_binding@1 holding H at the cell;
+    "version 1", rapid_proton_buffer@1 there; or "no proton row", the general closure declaring
+    none. n_end "b" puts the population's N, and so its fuel and H, at the bath. lumped adds the
+    built-in neutral law on finite fuel at the cell (transformed potentials: no base forms), its
+    role Y and its lumped fuel nATP, nADP and nPi neutral rows that no closure holds."""
+    from cells.kinds import proton_buffer
+    from tests.unit.test_proton_buffer_kind import buffered_world
+    from tests.unit.test_rapid_binding_world import general as closed
+
+    raw = buffered_world(quiet=True)
+    rows = {e["id"]: e for e in raw["model"]["species"]}
+    rows["H"]["standard_mu_RT"] += MU_H_SHIFT
+    rows["B"]["protonated_standard_mu_RT"] += MU_H_SHIFT
+    if closure != "version 1":
+        raw = closed(raw)
+    m = raw["model"]
+    if closure == "no proton row":
+        del m[proton_buffer.MODEL_KEY][0]["proton_row"]
+    cell, bath = m["cells"][0]["id"], m["extracellular"][0]["id"]
+    fuel = (("ATP", -4, 0.0, 2.0), ("ADP", -3, -9.0, 0.2), ("Pi", -2, -6.0, 1.0))
+    for sid, z, mu_RT, mM in fuel:
+        add_species(raw, sid, z, mu_RT, {cell: mM, bath: mM})
+    m[transporter.MODEL_KEY] = [
+        dict(
+            id="hydrolysis_0",
+            host=m["membranes"][0]["id"],
+            law=CLOSURE_HYDROLYSIS.law_id,
+            orientation={"N": n_end},
+            capacity_fmol_s=0.05,
+            roles={"ATP": "ATP", "ADP": "ADP", "Pi": "Pi", "H": "H"},
+            parameters={},
+            held_rows=[],
+        )
+    ]
+    if lumped:
+        neutral = (("Y", 0.0, 1.0), ("nATP", 0.0, 2.0), ("nADP", -6.0, 0.2), ("nPi", -6.0, 1.0))
+        for sid, mu_RT, mM in neutral:
+            add_species(raw, sid, 0, mu_RT, {cell: mM, bath: mM})
+        m[transporter.MODEL_KEY].append(
+            dict(
+                id="lumped_0",
+                host=m["membranes"][0]["id"],
+                law=transporter.NEUTRAL_LAW,
+                orientation={"N": "a"},
+                capacity_fmol_s=0.01,
+                roles={"role": "Y", "ATP": "nATP", "ADP": "nADP", "Pi": "nPi"},
+                parameters=dict(stoichiometry=1, km_role_mM=1.0, km_atp_mM=0.1),
+                held_rows=[],
+            )
+        )
+    return raw
+
+
+def test_moved_fuel_at_a_general_closures_proton_row_runs_and_its_energy_closes():
+    """K1, §5.2's one exception: fuel may move at a node whose proton row moves where a general
+    binding closure holds that row. Four steps of a population hydrolysing ATP at the cell, whose
+    H the general closure holds: the cycles run, the cell's ATP, ADP, Pi and H totals change by
+    their counts, and every ledger closes, the energy ledger with the population's standard part,
+    the closure's S_c and @3's ideal terms (the binding owner's split). Planted, each refused at
+    the definition by §5.2's boundary: version 1's buffer at the cell; a general closure that
+    declares no proton row; the population's N at the bath, where the closure holds nothing; and
+    the built-in neutral law on lumped finite fuel at the cell (no base forms). Planted too,
+    stepped once: the population's g° shifted by 1 (its heat then booked from a wrong x, RT per
+    cycle, a fifth of a proton's standard part counted twice), which the energy ledger refuses.
+    The population names H for K4's readouts: at the buffered cell, delta p's proton term is
+    (RT/F) ln(h_bath / h_cell) of the closure's free h, about -12 mV, not of the stored totals,
+    about -357 mV (@3's observations at the start)."""
+
+    def run(spec, impl, p, steps=4):
+        state, _ = impl.initial_values(spec)
+        control = impl.Control(*(v[0] for v in control_values(spec, [0.0])))
+        states = [state]
+        for _ in range(steps):
+            state, valid = impl.imex_step(state, spec.execution.dt, control, p, xp=np)
+            assert bool(valid)
+            states.append(state)
+        history = impl.STATE_TYPE(*(np.stack(v) for v in zip(*states, strict=True)))
+        impl.check_values(history, spec, steps=np.arange(len(states)))  # Every ledger closes.
+        return states
+
+    from cells.kinds import proton_buffer
+
+    raw = closure_fuel_world()
+    raw["model"][transporter.MODEL_KEY][0]["proton_readout"] = "H"  # K4's readouts too.
+    with closure_scoped():
+        spec = parse_spec(raw)
+        impl = get_model(spec.model)
+        _, p = impl.initial_values(spec)
+        states = run(spec, impl, p)
+        history = impl.STATE_TYPE(*(np.asarray(v)[None] for v in states[0]))
+        observed = impl.observe_history(np.zeros(1), history, p, [0.0], spec)
+        read, read_ok = proton_buffer.stage_read(states[0], p, xp=np)
+        shifted = p._replace(cycle_standard_RT=p.cycle_standard_RT + 1.0)
+        with pytest.raises(NumericalError, match="energy"):  # Planted: the ledger sees it.
+            run(spec, impl, shifted, steps=1)
+        for planted in (
+            dict(closure="version 1"),
+            dict(closure="no proton row"),
+            dict(n_end="b"),  # The fuel and H at the bath, where the closure holds nothing.
+            dict(lumped=True),  # A law without base forms at the closure's node.
+        ):
+            with pytest.raises(ConfigError, match="§5.2's boundary"):
+                parse_spec(closure_fuel_world(**planted))
+    cycles = float(states[-1].cycle_count[0, 0])
+    assert cycles > 0
+    ids = list(spec.model.species_ids)
+    moved = states[-1].amount_increment[:, 0] - states[0].amount_increment[:, 0]
+    for species, n in (("ATP", -1), ("ADP", 1), ("Pi", 1), ("H", 1)):
+        assert moved[ids.index(species)] == pytest.approx(n * cycles, rel=1e-9), species
+
+    def h_ratio(s):  # h at the bath over h at the cell, of state s's H rows.
+        h = ids.index("H")
+        cell = (p.amount_reference + s.amount_increment)[h, 0] / p.volume[0]
+        bath = (p.extracellular_amount_reference + s.extracellular_amount_increment)[h, 0]
+        return bath / p.extracellular_volume[0] / cell
+
+    assert bool(read_ok)
+    delta_p = observed.cycle_proton_motive_force_V[0][0]
+    term = float(delta_p - observed.cycle_membrane_potential_V[0][0])
+    rt_f = R * spec.model.temperature_K / F
+    assert term == pytest.approx(rt_f * math.log(h_ratio(read)), rel=1e-9)  # Free h.
+    assert term - rt_f * math.log(h_ratio(states[0])) > 0.3  # Not the stored totals' (planted).
+
 
 # ------------------------------------------------------------------ M2 on this device (amendment 2)
 

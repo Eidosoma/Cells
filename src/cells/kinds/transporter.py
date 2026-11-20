@@ -28,6 +28,16 @@ kind declares no schedule (parse_schedule returns None, the lead's ruling (A) of
 so a definition keeps its change records, by value and type, and its availability is 1 as before.
 Version 1's layout holds each patch's availability at 1 and refuses the key.
 
+**The proton readouts on the population axis** (K4): a population may name its free-proton species
+row under the optional key `proton_readout` ("proton_readout": "H"). Each such population then
+reads out, per stage, cycle_membrane_potential_V (delta psi = phi_P - phi_N, Beard's sign) and
+cycle_proton_motive_force_V (delta p = delta psi + (RT/F) ln(h_P / h_N), h the stage read's free
+concentration at each end), both 0 for a population that names none. The fields and columns
+exist only where a population names one, so a definition without the key keeps its fields, its
+columns and its records (the lead's ruling (b), 20 November 2026). The N-to-P flows are the
+counts' own orientation: a positive cycle_count changes each row by its per_cycle (the population
+set's) from the N end towards the P end.
+
 Version 1's layout:
 
 docs/INNER_MODEL_V4_DESIGN.md §7.4 (g) 2 and (k); docs/COMPARTMENT_PH_TRANSFER_DESIGN.md §5–6
@@ -382,7 +392,8 @@ def to_dict(declaration):
 def structure_entry(declaration):
     """Value-free: the declared laws and fuel kinds, sorted; on the population axis, CycleAxis."""
     if isinstance(declaration, PopulationAxis):
-        return CycleAxis(tuple(sorted({t.law for t in declaration})))
+        asks = any(t.proton_readout is not None for t in declaration)
+        return CycleAxis(tuple(sorted({t.law for t in declaration})), asks)
     return (
         tuple(sorted({t.law for t in declaration})),
         tuple(sorted({t.fuel_kind for t in declaration})),
@@ -885,6 +896,9 @@ GENERAL_FIELDS = (
 )
 ENDS = ("a", "b")  # A host's ends: a patch's cell (a) and its outside node (b).
 FORM_CODES = MappingProxyType({"factored": 0, "diagram": 1, "net_flow": 2, "monomial": 3})
+# Seam D's non-negative heat booking (CORE_SEAMS §6.1), which the kind admits beyond the tableau
+# (K2): the core books a picked kind's heat fields as dt (q_start + q_end) / 2.
+TRAPEZOID_BOOKING = "trapezoid_nonnegative@1"
 MAX_ABS_AFFINITY_OVER_RT = 80.0  # Per mode, as version 1's laws (§3.2).
 # Version 1's keys read on the population axis (statement 1, §1): the role's name in each law's form.
 VERSION_1_ROLE = MappingProxyType({PROTON_LAW: "proton", NEUTRAL_LAW: "role"})
@@ -972,6 +986,20 @@ GENERAL_READOUT_COLUMNS = (
     "cycle_free_energy_J_mol",
     "cycle_held_drive_J_mol",
 )
+# K4, the proton readouts: each asking population's potential difference and proton-motive force
+# across its host, P less N. A population asks with its optional proton_readout key, naming its
+# free-proton species row, and these fields and columns exist only where one does
+# (declared_fields), so a definition without the key keeps today's fields, columns and records
+# (the lead's ruling (b), 20 November 2026).
+PROTON_READOUT_KEY = "proton_readout"
+PROTON_READOUT_FIELDS = (
+    "cycle_pmf_species",  # [P]: the population's free-proton species row
+    "cycle_pmf_present",  # [P]: the population asks for the readouts
+)
+PROTON_READOUT_COLUMNS = (
+    "cycle_membrane_potential_V",  # [P]: delta psi = phi_P - phi_N
+    "cycle_proton_motive_force_V",  # [P]: delta p = delta psi + (RT/F) ln(h_P / h_N)
+)
 # The hooks only the population axis has: absent for version 1's entry, so its programs stay
 # today's (KindFields.without; @3's material_rate adds a check when any kind declares one).
 POPULATION_HOOKS = ("material_term", "view_sets", "standard_free_energies")
@@ -980,9 +1008,11 @@ LN_PH_STANDARD = math.log(1000.0)  # pH = -log10(c / 1000 mM)
 
 
 class CycleAxis(NamedTuple):
-    """The population axis's structure entry: its declared laws, sorted (value-free)."""
+    """The population axis's structure entry: its declared laws, sorted (value-free), and whether a
+    population asks for the proton readouts (K4)."""
 
     laws: tuple
+    proton_readout: bool = False
 
 
 class CyclePopulation(NamedTuple):
@@ -999,6 +1029,7 @@ class CyclePopulation(NamedTuple):
     inside: str  # the host patch's cell (end a)
     outside: str  # its outside node (end b)
     source: object = None  # the version-1 Population an entry in today's keys was read from
+    proton_readout: object = None  # K4: its free-proton species row, where it asks (else None)
 
 
 class PopulationAxis(tuple):
@@ -1071,7 +1102,8 @@ def _counts(form, values):
 
 def _parse_general(raw, base, patches, valence, taken):
     """One entry in the general form (statement 1, §1)."""
-    require_fields(raw, set(GENERAL_FIELDS), "a transporter population")
+    optional = {PROTON_READOUT_KEY} & set(raw) if isinstance(raw, dict) else set()
+    require_fields(raw, set(GENERAL_FIELDS) | optional, "a transporter population")
     name = raw["id"]
     if not isinstance(name, str) or not name or name in taken:
         raise ConfigError(f"transporter ID {name!r} must be unique among the model's IDs")
@@ -1119,6 +1151,13 @@ def _parse_general(raw, base, patches, valence, taken):
     ):
         raise ConfigError(f"{where}: held_rows lists distinct rows of the law, each [role, N or P]")
     held = tuple(tuple(r) for r in held)
+    proton = raw.get(PROTON_READOUT_KEY)
+    if optional and not (isinstance(proton, str) and valence.get(proton) == 1):
+        raise ConfigError(
+            f"{where}: {PROTON_READOUT_KEY} names the model's free-proton species row (valence "
+            "+1), whose concentrations at the N and P ends give the population's proton-motive "
+            "force"
+        )
     population = CyclePopulation(
         name,
         patch.id,
@@ -1130,6 +1169,7 @@ def _parse_general(raw, base, patches, valence, taken):
         held,
         patch.inside,
         patch.outside,
+        proton_readout=proton,
     )
     _check_population(population, form, hosted[law], valence, where)
     return population
@@ -1227,7 +1267,7 @@ def _rows(t, *, held):
 def _population_dict(t):
     if t.source is not None:  # Declared in today's keys: written back in them.
         return to_dict((t.source,))[0]
-    return dict(
+    out = dict(
         id=t.id,
         host=t.host,
         law=t.law,
@@ -1237,6 +1277,9 @@ def _population_dict(t):
         parameters=dict(t.parameters),
         held_rows=[list(row) for row in t.held_rows],
     )
+    if t.proton_readout is not None:  # K4: omitted at its default, so a fingerprint is kept.
+        out[PROTON_READOUT_KEY] = t.proton_readout
+    return out
 
 
 def declared_fields(entry):
@@ -1244,9 +1287,10 @@ def declared_fields(entry):
     the population axis's own hooks absent; the population axis's for CycleAxis."""
     if isinstance(entry, CycleAxis):
         layout = GENERAL_LAYOUT_FIELDS + (MONOMIAL_FIELDS if _declares_monomial(entry) else ())
-        return KindFields(
-            GENERAL_STATE_AXES, layout, GENERAL_CONTROL_FIELDS, GENERAL_READOUT_COLUMNS
-        )
+        columns = GENERAL_READOUT_COLUMNS
+        if entry.proton_readout:  # K4: only where a population asks.
+            layout, columns = layout + PROTON_READOUT_FIELDS, columns + PROTON_READOUT_COLUMNS
+        return KindFields(GENERAL_STATE_AXES, layout, GENERAL_CONTROL_FIELDS, columns)
     return KindFields(STATE_AXES, LAYOUT_FIELDS, CONTROL_FIELDS, READOUT_COLUMNS, POPULATION_HOOKS)
 
 
@@ -1375,6 +1419,12 @@ def _population_initial(spec, declaration):
     v |= _net_flow_layout(spec, declaration, all_forms, K, M)
     if any(f.kinetics == "monomial" for f in all_forms):  # declared_fields' test (K6).
         v |= _monomial_layout(spec, declaration, all_forms, v, M)
+    if any(t.proton_readout is not None for t in declaration):  # Its test (K4).
+        v["cycle_pmf_species"] = np.array(
+            [0 if t.proton_readout is None else ids.index(t.proton_readout) for t in declaration],
+            dtype=np.int64,
+        )
+        v["cycle_pmf_present"] = np.array([t.proton_readout is not None for t in declaration])
     state = dict(
         cycle_count=np.zeros((M, P)),
         cycle_dissipated_energy_pJ=np.zeros(P),
@@ -1895,11 +1945,41 @@ def _population_readouts(read, potentials, control, p, *, xp):
     e = _evaluate(read, potentials, control, p, xp=xp)
     rt = R * p.temperature
     modes = p.cycle_mode_present & e.active[None, :]  # An absent population reads zero (Q2).
-    return (
+    out = (
         xp.where(modes, e.j, 0.0),
         xp.where(modes, rt * e.x, 0.0),
         xp.where(modes, rt * e.held_x, 0.0),
     )
+    if "cycle_pmf_species" in type(p)._fields:  # Static: a population asks (K4).
+        out += _proton_readouts(read, potentials, e, p, xp=xp)
+    return out
+
+
+def _proton_readouts(read, potentials, e, p, *, xp):
+    """K4: [P] each asking population's delta psi = phi_P - phi_N and its proton-motive force
+    delta p = delta psi + (RT/F) ln(h_P / h_N) (V), h the free concentration of its proton row at
+    each end: the stage read's, which its rows' x reads too, so a mode moving n protons from N to P
+    alone has x = n F delta p / RT. Zero where a population does not ask or is absent (Q2); without
+    potentials (a bare call) delta psi is 0, as x's psi is."""
+    from cells.modules import host_table, node_concentrations
+
+    table = host_table(p, xp=xp)
+    host = p.cycle_host
+    a_node, b_node = table.end_a[host], table.end_b[host]
+    n_node = xp.where(p.cycle_n_at_b, b_node, a_node)
+    p_node = xp.where(p.cycle_n_at_b, a_node, b_node)
+    conc = node_concentrations(read, p, xp=xp)
+    h_n, h_p = conc[p.cycle_pmf_species, n_node], conc[p.cycle_pmf_species, p_node]
+    asks = e.active & p.cycle_pmf_present
+    # Positive at every valid state (@3's domain holds each active node's amounts positive).
+    ok = asks & xp.isfinite(h_n) & (h_n > 0) & xp.isfinite(h_p) & (h_p > 0)
+    ln_ratio = xp.log(xp.where(ok, h_p, 1.0)) - xp.log(xp.where(ok, h_n, 1.0))
+    if potentials is None:
+        v_pn = xp.zeros(host.shape)
+    else:
+        v_pn = potentials[p_node] - potentials[n_node]
+    delta_p = v_pn + (R * p.temperature / F) * ln_ratio
+    return xp.where(asks, v_pn, 0.0), xp.where(asks, delta_p, 0.0)
 
 
 def _conductance(e, p, *, xp):
@@ -2072,9 +2152,11 @@ def cycle_checks(spec):
 
 def _check_population_axis(spec, declaration):
     """The population axis's refusals at the definition: a registry potential for every species a
-    mode converts, the form's temperature domain, §5.2's boundary for moved fuel, Wegscheider's
-    condition on every diagram cycle (statement 1, §5.1), and every monomial reference resolving
-    under the binding owner's three conditions (K6), each naming the population."""
+    mode converts, the form's temperature domain, §5.2's boundary for moved fuel (with its one
+    exception, a law in base forms at a node where a general binding closure holds the proton
+    row: K1, _general_closure_nodes), Wegscheider's condition on every diagram cycle (statement 1,
+    §5.1), and every monomial reference resolving under the binding owner's three conditions (K6),
+    each naming the population."""
     m = spec.model
     from cells.modules import moved_nodes
 
@@ -2084,6 +2166,16 @@ def _check_population_axis(spec, declaration):
     proton = getattr(closure, "proton", None)  # The closure's declared proton row, if any; else
     if proton is None:  # the row named H, as in a world with no closure (never skipped).
         proton = "H" if "H" in m.species_ids else None
+    held_protons = _general_closure_nodes(m, proton)  # §5.2's one exception, by row (K1).
+    picked = dict(getattr(m, "heat_bookings", ())).get(KIND_ID)
+    if picked == TRAPEZOID_BOOKING:  # K2: the booking's contract, a non-negative power per state.
+        for t in declaration:
+            if cycle_form(t.law).kinetics == "net_flow":
+                raise ConfigError(
+                    f"transporter {t.id!r}: {TRAPEZOID_BOOKING} books a non-negative power at each "
+                    "state, which a net-flow population keeps only within its guard's allowance: "
+                    "refused (its heat stays on the tableau's booking)"
+                )
     for t in declaration:
         where = f"transporter {t.id!r}"
         form, roles = cycle_form(t.law), dict(t.roles)
@@ -2106,13 +2198,18 @@ def _check_population_axis(spec, declaration):
             if not low <= m.temperature_K <= high:
                 raise ConfigError(f"{where}: {t.law} runs between {low} and {high} K")
         fuel = [row for row in form.rows if row[0] in form.fuel_roles and row not in t.held_rows]
+        # K1: the exception holds only for a law whose moves are in base forms (no transformed
+        # potential), at a node whose proton row a general closure holds; any other stays refused.
+        base = getattr(hosted_laws().get(t.law), "forms", None) == "base"
         for role, end in fuel:
             node = _end_node(t, end)
-            if proton is not None and movers.get((proton, node)) and node not in _general_closure_nodes(m):
+            excepted = base and node in held_protons
+            if proton is not None and movers.get((proton, node)) and not excepted:
                 raise ConfigError(
                     f"{where}: its fuel row {roles[role]} moves at {node}, whose proton row {proton} "
                     "is moved in the step: finite fuel at a node with a dynamic proton row is refused "
-                    "(§5.2's boundary)"
+                    "(§5.2's boundary), unless a general binding closure holds that proton row "
+                    "there and the law declares its moves in base forms"
                 )
     laws = {t.id: t.law for t in declaration}
     for check in cycle_checks(spec):
@@ -2130,10 +2227,26 @@ def _check_population_axis(spec, declaration):
             )
 
 
-def _general_closure_nodes(model):
-    """The nodes a general binding closure holds (seam C, none yet): §5.2's one exception."""
-    del model
-    return ()
+def _general_closure_nodes(model, proton):
+    """The nodes where a general binding closure (rapid_binding@1) holds `proton` as its declared
+    proton row, among its closure_rows: §5.2's one exception (K1; CORE_SEAMS §3.4), where finite
+    fuel may move while protons move, for a population whose law declares its moves in base forms
+    (forms "base"; the check's caller asks it). There the closure's read gives free h and each
+    binder's free base form, and the species registry admits a mover of its rows only under base
+    forms with every ligand written out (check_closure_rows), so no transformed potential is used
+    (MITOCHONDRIA_DESIGN §1.3). The population then books its moved rows' standard part, the
+    closure its speciation term S_c and @3 the rows' ideal terms, which together are the change in
+    the closure's G* (the binding owner, 20 November 2026). Version 1's buffer declares no
+    closure_rows and a closure that declares no proton row holds none, so neither admits a node."""
+    if proton is None:
+        return frozenset()
+    return frozenset(
+        node
+        for _, declaration in getattr(model, "kinds", ())
+        if getattr(declaration, "proton", None) == proton
+        for species, node in getattr(declaration, "closure_rows", ())
+        if species == proton
+    )
 
 
 # ---------------------------------------------------------------------------- the probe (§19 item 1)
@@ -2311,10 +2424,9 @@ def view_sets(spec, declaration):
             "orientation": [{"N": t.n_end} for t in populations],
             "per_cycle": per_cycle,
         },
-        "cycle_mode": {
+        "cycle_mode": {  # No ends, so no roles: the view's writer refuses an empty roles map.
             "id": "cycle_mode",
             "ids": [f"mode_{k}" for k in range(modes)],
-            "roles": {},
         },
     }
 
@@ -2341,6 +2453,27 @@ _MODES = MappingProxyType(
         "held rows' maintenance restores them (cycle_supplied_fmol)",
     }
 )
+# K4's readouts are differences on the population set's roles, P less N.
+_POTENTIAL_DIFFERENCE = MappingProxyType(
+    {
+        "plus": "P",
+        "minus": "N",
+        "says": "the potential of the population's P end less that of its N end (delta psi = "
+        "phi_P - phi_N); 0 where the population names no proton_readout",
+    }
+)
+_PROTON_MOTIVE_FORCE = MappingProxyType(
+    {
+        "plus": "P",
+        "minus": "N",
+        "says": "the proton-motive force, delta psi + (RT/F) ln(h_P / h_N): the electrochemical "
+        "potential of the population's proton_readout row at its P end less that at its N end, "
+        "per unit charge, h each end's free concentration (the stage read's, as the kinetics read "
+        "their rows); a mode that moves n protons from N to P and nothing else has a free energy "
+        "of n F times it (cycle_free_energy_J_mol); 0 where the population names no "
+        "proton_readout",
+    }
+)
 VIEW = KindView(
     units=MappingProxyType(
         {
@@ -2359,11 +2492,14 @@ VIEW = KindView(
             "cycle_rate_fmol_s": "fmol/s",
             "cycle_free_energy_J_mol": "J/mol",
             "cycle_held_drive_J_mol": "J/mol",
+            "cycle_membrane_potential_V": "V",
+            "cycle_proton_motive_force_V": "V",
         }
     ),
     observation_axes=MappingProxyType(
         {c: ("membrane_slot",) for c in READOUT_COLUMNS}
         | {c: ("cycle_mode", "cycle_population") for c in GENERAL_READOUT_COLUMNS}
+        | {c: ("cycle_population",) for c in PROTON_READOUT_COLUMNS}
     ),
     record_kinds=MappingProxyType(
         {
@@ -2381,14 +2517,18 @@ VIEW = KindView(
             "cycle_rate_fmol_s": "rate",
             "cycle_free_energy_J_mol": "level",
             "cycle_held_drive_J_mol": "level",
+            "cycle_membrane_potential_V": "level",
+            "cycle_proton_motive_force_V": "level",
         }
     ),
     orientation=MappingProxyType(
         {
             "transporter_cycles": _CYCLES,
             "transporter_cycle_rate_fmol_s": _CYCLES,
-            "cycle_count": _MODES,
+            "cycle_count": _MODES,  # The N-to-P flows (K4): each row's per_cycle times the count.
             "cycle_rate_fmol_s": _MODES,
+            "cycle_membrane_potential_V": _POTENTIAL_DIFFERENCE,
+            "cycle_proton_motive_force_V": _PROTON_MOTIVE_FORCE,
         }
     ),
     record_layers=MappingProxyType(
@@ -2398,6 +2538,7 @@ VIEW = KindView(
                 *READOUT_COLUMNS,
                 *(f for f, _ in GENERAL_STATE_AXES),
                 *GENERAL_READOUT_COLUMNS,
+                *PROTON_READOUT_COLUMNS,
             ),
             "pumps",
         )
@@ -2455,11 +2596,13 @@ _STRUCTURAL = {
     "cycle_mono_slot_is_row": False,
     "cycle_mono_term_present": False,
     "cycle_mono_share": 1,
+    "cycle_pmf_species": 0,
+    "cycle_pmf_present": False,
 }
 _EXTENSIVE = ("transporter_capacity_fmol_s", "cycle_capacity_fmol_s")
 _PER_ENTITY = (
     *LAYOUT_FIELDS, *CONTROL_FIELDS, *GENERAL_LAYOUT_FIELDS, *MONOMIAL_FIELDS,
-    *GENERAL_CONTROL_FIELDS,
+    *PROTON_READOUT_FIELDS, *GENERAL_CONTROL_FIELDS,
 )  # fmt: skip
 PARTITION_ROLES = MappingProxyType(
     {
@@ -2519,6 +2662,7 @@ _SHAPES = {
     "cycle_mono_zeta": "MP", "cycle_mono_power": "MQP", "cycle_mono_term_log_k": "MQGP",
     "cycle_mono_term_q": "MQGRP", "cycle_mono_term_eta": "MQGP", "cycle_mono_term_present": "MQGP",
     "cycle_mono_share": "MP", "cycle_mono_ln_standard": "P",
+    "cycle_pmf_species": "P", "cycle_pmf_present": "P",
 }  # fmt: skip
 FIELD_AXES = MappingProxyType(
     {
@@ -2637,5 +2781,8 @@ TRANSPORTER = BUILTIN.register(
         # Version 1's per-law masks: full on the patches, or empty where their law is undeclared
         # (the static dispatch), which F's array-axes check admits for these alone.
         dispatch_masks=("transporter_neutral", "transporter_proton"),
+        # Seam D (K2): the core's trapezoid books this kind's heat fields where a definition picks
+        # it ({"cells.transporter@1": "trapezoid_nonnegative@1"} under heat_bookings).
+        heat_bookings=(TRAPEZOID_BOOKING,),
     )
 )
