@@ -22,7 +22,15 @@ Uses [A held bath can return to its original composition after supplying solute 
 
 ## Numerical comparison
 
-**Failed.** With ordinary offsets both orders booked 0.00048828125 fmol. With large opposing terms, one order delivered that amount and the other delivered zero. At trace concentration, ordinary opposing terms of ±24 mM likewise gave either the full trace dose or zero. All six worlds were accepted. The discrepancy was already present in the parsed target and carried through to the final held amount and dose record.
+**Checked.** After the accurate-sum fix, both orders delivered the intended dose in all six checked worlds. Opposing contributions of ±24 mM preserved the 1.7763568394002505 × 10⁻¹⁵ fmol trace dose. The all-six-order regression passed. The earlier checkpoint records the ordering that erased the dose.
+
+**Engine** `resolved_pump_composite@1`, `resolved_pump_tissue@3`
+
+**Operators** `cells.scheduled_bath_composition@1`
+
+[Sum of each species' formula-unit contributions](https://github.com/Eidosoma/Cells/blob/5fa7a8b88de7a3cc65ef3b975e7bc3c1a374da93/src/cells/operators/bath_schedule.py#L230) · [All six trace-recipe orders](https://github.com/Eidosoma/Cells/blob/5fa7a8b88de7a3cc65ef3b975e7bc3c1a374da93/tests/unit/test_bath_schedule.py#L404) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/1d906702344fec456f231db786b5771a187998d9/lean/checks/bath_schedule.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/1d906702344fec456f231db786b5771a187998d9/lean/PROGRESS.md#bath-order-repair)
+
+[Tested engine 5fa7a8b88de7](https://github.com/Eidosoma/Cells/commit/5fa7a8b88de7a3cc65ef3b975e7bc3c1a374da93) · [Evidence checkpoint 1d906702344f](https://github.com/Eidosoma/Cells/commit/1d906702344fec456f231db786b5771a187998d9)
 
 **Engine** `resolved_pump_composite@1`, `resolved_pump_tissue@3`
 

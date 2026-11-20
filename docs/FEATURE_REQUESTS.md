@@ -26,12 +26,14 @@ and a general feature, never one built for one study (D144).
 | [FR-18](#fr-18--the-composites-energy-check-at-moderate-step-sizes) | The composite's energy check at moderate step sizes (a finding for the core) | Not stated (the same) | Reported to the core; the check is not loosened for one experiment | The core reviews the check's tolerance or its step-size advice |
 | [FR-19](#fr-19--the-passive-routes-heat-share-sign-test-at-rounding-level) | The passive routes' heat-share sign test refuses rounding-level shares (a finding for the core) | Not stated (found by the gap-junction replication, D207; 17 November 2026) | Fixed on main (merge 49494e49): the raw-sum check's rounding floor; previously admitted steps bitwise unchanged. The band near 1 mM is closed too, landed by merge a7122a43 (18 November): the floor's scale is (\|μ̄_in\| + \|μ̄_out\| + 2)·\|m\|, and crossrev's kinds record was renewed at the landing (9 of 9) | None: closed |
 | [FR-20](#fr-20--a-pulse-and-washout-for-assembly-populations) | A pulse and washout: replace an assembly population's exterior at a declared time, with the material and energy exchanged recorded | **High** (user, 20 November 2026; D237) | **Design approved** (D240; [note](ASSEMBLY_WASHOUT_DESIGN.md)): `cells.pool_replacement@1` | Building, by the origin-of-life builder, on the landed stack (d1697656) |
-| [FR-21](#fr-21--a-prescribed-shell-that-owns-a-lumen-and-an-exchange-conductance) | A prescribed shell that owns a lumen and an exchange conductance, independent of membrane inventory and binding-site count | **High** (user, 20 November 2026; D237) | Requested; not scoped | A design note before code: today every cross-phase reaction routes through the membrane phase |
+| [FR-21](#fr-21--a-prescribed-shell-that-owns-a-lumen-and-an-exchange-conductance) | A prescribed shell that owns a lumen and an exchange conductance, independent of membrane inventory and binding-site count | **High** (user, 20 November 2026; D237) | Design decided (D244; [note](ASSEMBLY_SHELL_DESIGN.md)): one-step site binding first, then the prescribed shell | Built by the first origin-of-life builder after FR-20 lands |
 | [FR-22](#fr-22--checkpoint-and-resume-for-the-stochastic-assembly-runner) | Checkpoint and resume for the stochastic assembly runner, qualified around a wash | **High** (user, 20 November 2026; D237) | Requested; short controls can proceed now | A restart qualification: an interrupted run reproduces the uninterrupted event trace, molecule counts and energy ledger |
-| [FR-23](#fr-23--timed-bath-changes-beside-binding-sites-on-distinct-finite-nodes) | Timed bath changes beside binding sites on distinct finite nodes | **High** (user, 20 November 2026; D239) | Requested; not scoped | A design note: today both operators reference `extracellular_amount_reference`, so the composition contract refuses them together even on different nodes |
-| [FR-24](#fr-24--binding-site-occupancy-as-an-input-to-reaction-rates) | Binding-site occupancy as an input to reaction rates | **High** (user, 20 November 2026; D239) | Requested; not scoped | A design note on the coupling operator's sources |
+| [FR-23](#fr-23--timed-bath-changes-beside-binding-sites-on-distinct-finite-nodes) | Timed bath changes beside binding sites on distinct finite nodes | **High** (user, 20 November 2026; D239) | Design decided (D244; [note](OPERATOR_FEATURES_FR23_24_26_DESIGN.md)): option A, a held bath dosed beside sites facing other nodes | Building next, by the operators owner. A dose into a finite compartment is not covered |
+| [FR-24](#fr-24--binding-site-occupancy-as-an-input-to-reaction-rates) | Binding-site occupancy as an input to reaction rates | **High** (user, 20 November 2026; D239) | Design decided (D244): the occupied fraction and amounts in mM, through declared readable quantities | After FR-23, by the operators owner; lands after FR-7's judged verdicts are tagged |
 | [FR-25](#fr-25--a-reusable-one-gene-expression-unit) | A reusable one-gene expression unit, verified against independent references | **High** (user, 20 November 2026; D239) | Folded into gene regulation's option A (D235): equation sheet tagged, references under way | G4's operator exposes the unit as a reusable component |
-| [FR-26](#fr-26--owned-state-when-a-cell-is-replaced) | Owned state when a cell is replaced: the incoming cell from its template, environment-owned material kept, departing material recorded | **High** (user, 20 November 2026; D239) | Requested; not scoped | A design note on replacement across the operators that own cell state |
+| [FR-26](#fr-26--owned-state-when-a-cell-is-replaced) | Owned state when a cell is replaced: the incoming cell from its template, environment-owned material kept, departing material recorded | **High** (user, 20 November 2026; D239) | Design decided (D244): W, a replacement writer for site populations, unless L is ruled first | After FR-24, by the operators owner. L is compared in FR-7's division note |
+| [FR-27](#fr-27--a-timed-partial-wash-of-a-finite-compartment) | A timed partial wash of a finite compartment: collect a fraction of its liquid into a recorded sample, refill with a declared buffer, leave bound material in place | **High** (decided by the lead with the advisor under the user's delegation, 20 November 2026; D245) | Requested; not scoped | A short design note by the operators owner, its semantics stated against FR-20's pool replacement |
+| [FR-28](#fr-28--binding-sites-owned-by-a-compartments-surface) | Binding sites owned by a compartment's own surface, such as a vessel wall, with no cell | Normal (D245) | Requested; not scoped | After FR-26 on `site_occupancy.py`: a new owner kind |
 
 ## FR-1 — A closed internal compartment on the shared inventory
 
@@ -892,6 +894,21 @@ explored.
 - **Why:** to attribute a result to area or to permeability. Today every cross-phase reaction routes
   through the membrane phase. The existing two-state gate is enough to test kinetics, but not to
   separate those two causes.
+- **Concrete exposed-site case (Vaults, 20 November 2026; D240).** One particle has one occupied
+  site (one bound tracer), three vacant sites, and five free tracers in the finite exterior pool.
+  Both vacant sites and occupied complexes belong to the particle, independent of its membrane
+  inventory. Direct reversible binding consumes an exterior tracer and a vacant particle site;
+  release restores that site and returns the tracer to the finite exterior pool. The current
+  geometry parser refuses this interfacial reaction without a declared geometric encounter law;
+  this is a required FR-21 capability, not an already supported configuration.
+- **Requested control:** immediately after a tracer-free wash, exterior tracer is zero, the
+  particle still has one occupied and three vacant sites, and the removal ledger contains five
+  tracers. Total site count stays four; retained tracer plus removed tracer stays six. Subsequent
+  release and rebinding use the finite bath. A proposed alternative representation must reproduce
+  the declared direct binding and release time courses, not only an endpoint or equilibrium.
+  Placing sites in the replaceable pool does not preserve their ownership; an intermediate
+  membrane-join step is not presumed kinetically equivalent. FR-20's timed replacement can proceed
+  independently, preserving every slot-owned place as designed.
 - **Next:** a design note before any code (D142).
 
 ## FR-22 — Checkpoint and resume for the stochastic assembly runner
@@ -941,3 +958,28 @@ explored.
   Today the site-occupancy operator guards against replacement.
 - **Minimal acceptance:** the material balance closes across one replacement, with occupied sites
   and active reactions.
+
+## FR-27 — A timed partial wash of a finite compartment
+
+- **The request (another Cells user's review, relayed by the user, 20 November 2026; D245).** At a
+  declared time, collect a fraction f of a finite compartment's well-mixed liquid into a recorded
+  sample, refill the same volume with a declared buffer, and leave bound material in place. The
+  removal, the supply and the free-energy change are booked exactly at the event.
+- **Why:** a falling tracer signal can mean release from a specimen, binding to the vessel wall or
+  recovery by a detector. Keeping those amounts apart across a wash needs the wash to be one
+  operation with its own books. Today the bath schedule doses held baths only (FR-10), and FR-23
+  keeps finite compartments out. FR-20's pool replacement works in the assembly family only, with
+  a whole pool replaced by a declared composition.
+- **Where it stands:** everything else in the review's example runs today. In the review's run the
+  wash was applied between two runs on the host, so each run kept its own books. The design note
+  states the operator's semantics against FR-20's replacement, so the two are not two laws for
+  one mechanism (D175, D210).
+
+## FR-28 — Binding sites owned by a compartment's surface
+
+- **The request (the same review; D245).** Let a binding-site population belong to the surface of
+  a finite outside node, such as a vessel wall, facing that node, with binding only.
+- **Today:** a site population's owner must be a cell's patch or a contact. The review placed the
+  wall's sites on an inert stand-in cell that exchanges nothing; the numbers are unaffected.
+- **Where it stands:** a new owner kind for `site_occupancy@1`, a change to parse and layout only.
+  It queues after FR-26 on `site_occupancy.py`.

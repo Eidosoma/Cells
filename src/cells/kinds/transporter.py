@@ -1568,9 +1568,10 @@ def _diagram_layout(declaration, all_forms, K, M):
 
 
 def cited_offset(constant):
-    """A CitedConstant's temperature-free part in RT units, its scalar protons' nu_H ln 10^7: the
-    seam-E entry's dG_RT_offset."""
-    return constant.protons * math.log(1e7)
+    """A CitedConstant's temperature-free part in RT units, its scalar protons' nu_H ln 10^7 and its
+    rt_term: the seam-E entry's dG_RT_offset. A RateConstant's, its protons' alone (it has no
+    entry)."""
+    return constant.protons * math.log(1e7) + getattr(constant, "rt_term", 0.0)
 
 
 def cited_dg_RT(spec, constant):
@@ -1583,8 +1584,9 @@ def cited_dg_RT(spec, constant):
 
 def cited_log_k(spec, constant):
     """A CitedConstant's log k at the world's temperature: offset - scale dG°/RT, its dG°/RT the
-    seam-E entry's (cited_dg_RT). A number is its own log k."""
-    if not isinstance(constant, forms.CitedConstant):
+    seam-E entry's (cited_dg_RT); a RateConstant's alike, though it has no entry. A number is its
+    own log k."""
+    if not isinstance(constant, (forms.CitedConstant, forms.RateConstant)):
         return float(constant)
     return constant.offset - constant.scale * cited_dg_RT(spec, constant)
 
@@ -2819,7 +2821,7 @@ def standard_free_energies(declaration):
             for (mode, _), rate, row_counts in zip(
                 form.modes, form.monomial.rates, counts, strict=True
             ):
-                if not isinstance(rate.log_k, forms.CitedConstant):
+                if not isinstance(rate.log_k, forms.CitedConstant):  # A RateConstant: no entry.
                     continue
                 net = {}
                 for (role, _), n in zip(form.rows, row_counts, strict=True):

@@ -94,6 +94,15 @@ MODELS = MappingProxyType(
                 "cells.laws.pumps.proton_pump",
                 "cells.laws.cycles.na_anion_symport_factored",  # The kinds owner's (D228 item 1).
                 "cells.laws.cycles.na2_anion_symport_diagram",  # Its version 2, the same item.
+                # The mitochondria's cycle laws (the kinds owner's, from the appendix at tag
+                # mito-laws-appendix-2026-11-20b; the lead's rulings of 20 November 2026).
+                "cells.laws.cycles.nadh_ubiquinone_proton_cycle",
+                "cells.laws.cycles.ubiquinol_cytochrome_c_proton_cycle",
+                "cells.laws.cycles.cytochrome_c_oxygen_proton_cycle",
+                "cells.laws.cycles.proton_coupled_atp_synthesis_cycle",
+                "cells.laws.cycles.electrogenic_nucleotide_exchange",
+                "cells.laws.cycles.phosphate_proton_symport",
+                "cells.laws.cycles.potassium_proton_exchange",
                 # The general binding closure (rapid_binding@1), seam C's: the binding owner's
                 # line, a recorded exception (the lead, 18 November 2026).
                 "cells.laws.reactions.rapid_binding",
