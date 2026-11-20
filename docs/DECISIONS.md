@@ -8092,3 +8092,34 @@ note by an existing owner, with no new agent.
 - **The protein export for A1** joins FR-25's backlog, beside the RNA readout, with how to recover
   protein made in a chosen window that survives to sampling. The references record that protein
   completed in minutes 60–90 was 7.46 times the net increase.
+
+## D249: The lead finds the Kir2.1 data with the advisor; the turnover request closed; FR-30 raised
+
+2026-11-20, about 21:15 UTC. The lead asked the user for Kir2.1 inputs for FR-7 item 4. The user:
+"you have to find data with advsier I dont have it". This lifts D240's hold on the search, for the
+lead with the advisor.
+
+1. **What the source already given holds** (Ambrosini et al. 2014, read verbatim; the article and its
+   supplement count as one source, D248):
+   - **Recording solutions,** for HEK293 and U251MG together:
+     - bath 4.8 mM KCl (NaCl 135, CaCl2 1.8, MgCl2 1, glucose 10, HEPES 5);
+     - pipette about 149 mM K+ (KAsp 130, KCl 15, K2-ATP 2, MgCl2 1, HEPES 5);
+     - at room temperature.
+   - **Barium-sensitive currents** (1 mM BaCl2), with a 15 mV junction-potential adjustment.
+   - **Fig. 3G,** the current density at −100 mV, n = 6, as bars only.
+   - **Fig. S2B,** a representative current density against voltage, one cell per variant.
+   - **Not stated:** the configuration, the temperature as a number, capacitance, and any non-Kir
+     conductance.
+2. **The plan:**
+   - **First, the test that needs no voltage.** Fig. 3E's membrane-fraction ratio against Fig. 3G's
+     current ratio separates abundance from channel activity. It uses ratios, since the driving force
+     at −100 mV (about 13 mV) is below the junction adjustment.
+   - **The voltage contrast still needs the Kir share of resting conductance,** which a
+     barium-sensitive current excludes. It is either a registered band over the share, or a background
+     calibrated on wild type's voltage. That second route spends one of the two means, departs from
+     D241, and is the user's call.
+3. **The turnover defect is closed.** At main b4273772 the Lean project's reproducer exits 0: 2.0 fmol
+   stored and 0.9956673077917628 pJ booked, exactly as expected, with its controls passing.
+4. **FR-30 is raised to high.** FR-16's connexin catalogue (F3 of the gap-junction cancer replication)
+   names per-connexin constants, homotypic and heterotypic, and the preprint turns on heterotypic
+   Cx43/Cx45, so FR-30 inherits D225 as part of FR-16. D248 is corrected accordingly.
