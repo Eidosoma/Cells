@@ -19,13 +19,18 @@ In NumPy (no compile), on the species-only dose leg (validation/tissue/bath_sche
 * the view presents the held content at the bath and the declared array elsewhere, bit for bit;
 * the reservoir-work ledger of a row whose supply is booked at each epoch's potential, as @3 books
   it, closes with the operator's term and fails without it (the negative control);
-* the operator's own ledgers close after an event, and the step checks see the worst composition.
+* the operator's own ledgers close after an event, and the step checks see the worst composition;
+* a recipe's target does not depend on the order of its entries (one table, each row a claim with
+  its plant, the left-to-right running total; the independent Lean project's finding of
+  20 November 2026, lean/PROGRESS.md "Bath recipe order").
 
 These are the operator's own bookings checked against their definitions. The independent references
 of record come from a separate agent (D169).
 """
 
+import contextlib
 import copy
+import itertools
 from decimal import Decimal, getcontext
 from types import SimpleNamespace
 
@@ -38,6 +43,7 @@ from cells.laws.electrochemistry import R
 from cells.models import pump_composite
 from cells.models import pump_composite_adapter as adapter
 from cells.operators import OPERATORS
+from cells.operators import bath_schedule as schedule
 from cells.registry.models import get_model
 from validation.tissue import bath_schedule_fixtures as bfx
 from validation.tissue import secreted_species_fixtures as fx
@@ -304,3 +310,62 @@ def test_the_composites_structure_check_admits_what_version_1_composes_with(laws
     for order in ((*laws, bfx.LAW), (bfx.LAW, *laws)):
         errors = pump_composite.structure_errors(adapter, tuple(OPERATORS[k] for k in order))
         assert errors == [], (order, errors)
+
+
+# ------------------------------------------------------------ the recipe's order
+
+ORDER_DT = 2.0**-10
+ORDER_UNITS = {"single": {fx.SPECIES: 1}, "pair": {fx.SPECIES: 2}, "triple": {fx.SPECIES: 3}}
+# (bath S mM, intended change d mM, opposing terms A mM): the three units give +d, +A and -A, every
+# input and product a float64, so the 1 pL bath's target is S + d fmol in every order.
+ORDER_CASES = {
+    "opposing_extremes": (2.0**-10, 2.0**-11, 24.0 * 2.0**39),  # An ordinary dose.
+    "trace_doubled": (2.0**-49, 2.0**-49, 24.0),  # Ordinary +-24 mM terms double a trace.
+}
+
+
+def running_sum(declaration, offsets, species_ids):  # Planted: the left-to-right running total.
+    counts = {u.name: dict(u.counts) for u in declaration.formula_units}
+    change = np.zeros(len(species_ids))
+    for unit, amount in offsets:
+        for species, count in counts[unit].items():
+            change[species_ids.index(species)] += count * amount
+    return change
+
+
+@contextlib.contextmanager
+def summed_by(function):
+    """The operator's unit_change replaced for the block (a plant)."""
+    saved = schedule.unit_change
+    schedule.unit_change = function
+    try:
+        yield
+    finally:
+        schedule.unit_change = saved
+
+
+def order_failures(case):
+    """The recipe's six orders whose parsed target is not S + d, with the operator as it stands."""
+    anchor, d, a = ORDER_CASES[case]
+    offsets = {"single": d, "pair": a / 2, "triple": -a / 3}
+    raw = fx.world(nodes=(), contacts=(), faces=(), dt=ORDER_DT, end=4 * ORDER_DT, trace_mM=anchor)
+    out = []
+    for names in itertools.permutations(offsets):
+        recipe = {name: offsets[name] for name in names}
+        events = [(ORDER_DT, ["bath"], recipe)]
+        spec = parse_spec(bfx.with_bath_schedule(raw, ["bath"], ORDER_UNITS, events))
+        row = list(spec.model.species_ids).index(fx.SPECIES)
+        j = [c.id for c in spec.model.extracellular].index("bath")
+        node = spec.model.extracellular[j]
+        expected = node.initial_amount_fmol[row] + node.volume_pL * d
+        target = target_at(spec, ORDER_DT)[row, j]
+        if not (node.volume_pL == 1.0 and target == expected == anchor + d):
+            out.append(f"{' '.join(names)}: {target!r} fmol against {anchor + d!r}")
+    return out
+
+
+@pytest.mark.parametrize("case", sorted(ORDER_CASES))
+def test_a_recipes_target_does_not_depend_on_the_order_of_its_entries(case):
+    assert order_failures(case) == []
+    with summed_by(running_sum):
+        assert order_failures(case) != []
