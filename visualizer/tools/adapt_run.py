@@ -1910,7 +1910,7 @@ STATED_PREFIX = "stated."
 def stated_files(root, name, entry=None):
     """The files the run folder's index says stand beside a package (`packages[].sidecar`, one name or a list); in a run
     folder with no index, the file the experiment's overlay entry names beside every package (`sidecar`); none where neither says one.
-    A run folder with a manifest (package.json) names them itself, in place of both (`packages[].sidecars`)."""
+    A run folder with a manifest (experiment_package.json) names them itself, in place of both (`packages[].sidecars`)."""
     manifest = package_manifest(root)
     if manifest is not None:
         return list(manifest["sidecars"].get(name, []))
@@ -3193,11 +3193,11 @@ def experiments_of(selection):
 
 
 REFUSED_FILE = "REFUSED.json"  # a folder of a pick an engine check refused: its record up to the refusal, and no view
-# A run folder's manifest (schema/EXPERIMENT_PACKAGE.md; the names are proposals until the engine's lead accepts them). Where a
+# A run folder's manifest (schema/EXPERIMENT_PACKAGE.md; its names are the engine's lead's, of 20 November 2026). Where a
 # run folder holds one, its packages are the arms, with the sidecars each names, and its refused picks are those it lists: in
 # place of index.json, of the overlay's `sidecar`, and of the search for folders that hold a view or REFUSED.json. Nothing
 # else of it is read here: the experiment's words still come from the overlay. tools/check_package.py checks the whole of it.
-MANIFEST_FILE = "package.json"
+MANIFEST_FILE = "experiment_package.json"
 MANIFEST_FORMAT = "cells.experiment_package@1"
 MANIFEST_NOTES = set()
 
@@ -3252,7 +3252,7 @@ def package_manifest(root):
 def runs_in_index(folder):
     """The runs a run folder's own index.json chooses (`selected`, else every package whose view was written): so that
     arms added to the folder later are data alone. A run folder with no index: every package in it that holds the
-    engine's view (view.json), by name. A run folder with a manifest (package.json): its packages, in its order."""
+    engine's view (view.json), by name. A run folder with a manifest (experiment_package.json): its packages, in its order."""
     manifest = package_manifest(folder)
     if manifest is not None:
         if not manifest["arms"]:

@@ -1,8 +1,8 @@
 {
  "$schema": "https://json-schema.org/draft/2020-12/schema",
  "title": "cells.experiment_package@1: the manifest of an experiment's source package",
- "$comment": "Written by tools/check_package.py --schema from its field table; do not edit by hand. The field names are proposals until the engine's lead accepts them. A reader ignores a field it does not know (within a major). schema/EXPERIMENT_PACKAGE.md is the contract, and the validator holds what no schema says.",
- "description": "The manifest of an experiment's source package (package.json at the run folder's top).",
+ "$comment": "Written by tools/check_package.py --schema from its field table; do not edit by hand. The field names are those of the engine's lead, who keeps the specification (20 November 2026). A reader ignores a field it does not know (within a major). schema/EXPERIMENT_PACKAGE.md is the contract, and the validator holds what no schema says.",
+ "description": "The manifest of an experiment's source package (experiment_package.json at the run folder's top).",
  "type": "object",
  "required": [
   "format",
@@ -32,7 +32,13 @@
    ],
    "properties": {
     "id": {
-     "description": "The experiment's id: what other files point at. A run's id is <experiment id>--<arm>.",
+     "description": "The experiment's id, one for each source package: the public id, and what other files point at. A run's id is <experiment id>--<arm>, with the seed where there is one.",
+     "type": "string",
+     "minLength": 1,
+     "pattern": "^[a-z0-9]+([.-][a-z0-9]+)*$"
+    },
+    "group": {
+     "description": "The id under which a catalogue gathers this package with the other source packages of one experiment (its sweeps, each a package with an id of its own).",
      "type": "string",
      "minLength": 1,
      "pattern": "^[a-z0-9]+([.-][a-z0-9]+)*$"
@@ -102,32 +108,23 @@
    }
   },
   "engine": {
-   "description": "The engine's provenance, copied from the runs' own files; the manifest adds no digest of its own. Where given, each run view must agree with it.",
+   "description": "The engine's provenance, copied from the runs' own records: its revision, its snapshot and whether its tree was clean, and no more. The manifest adds no digest of its own. Where given, each run's view must agree with it, and so must its run.json where it has one.",
    "type": "object",
    "properties": {
     "revision": {
-     "description": "The engine's revision that ran: each view's run.source.revision (a short form of the same is the same).",
+     "description": "The engine's revision that ran: each view's run.source.revision and each run.json's revision (a short form of the same is the same).",
      "type": "string",
      "minLength": 1,
      "pattern": "^[0-9a-f]{7,40}$"
     },
     "snapshot": {
-     "description": "The execution snapshot it ran from, by name.",
+     "description": "The execution snapshot it ran from, by name: each run.json's snapshot.",
      "type": "string",
      "minLength": 1
     },
     "clean": {
-     "description": "Whether the engine's tree was clean: each view's run.source.dirty is its opposite.",
+     "description": "Whether the engine's tree was clean: each run.json's clean, and the opposite of each view's run.source.dirty.",
      "type": "boolean"
-    },
-    "models": {
-     "description": "The engine models the packages run: every model a view names (run.engine_models) is one of them.",
-     "type": "array",
-     "items": {
-      "description": "One engine model's id.",
-      "type": "string",
-      "minLength": 1
-     }
     }
    }
   },
@@ -175,7 +172,7 @@
       "pattern": "^[a-z0-9]+([.-][a-z0-9]+)*$"
      },
      "kind": {
-      "description": "How the package is read: cells.run_view@1 (a folder that holds the engine's view.json and the arrays it names). A reader that does not know a kind names the package and reads the rest.",
+      "description": "How the package is read: cells.run_view@1 (a folder that holds the engine's view.json and the arrays it names), or cells.assembly_view@1 (the assembly's, written by its model's own writer). A reader names a package of a kind it does not read and reads the rest.",
       "type": "string",
       "minLength": 1
      },
@@ -186,7 +183,7 @@
       "pattern": "^(?!\\.\\.?(/|$))(?!.*/\\.\\.?(/|$))[A-Za-z0-9._-]+(/[A-Za-z0-9._-]+)*$"
      },
      "sidecars": {
-      "description": "The quantities the experiment's driver states beside the run (cells.experiment_quantity@1, cells.experiment_criterion@1), each by its plain file name in the package's folder, in the order a reader reads them.",
+      "description": "The quantities the experiment's driver states beside the run (cells.experiment_quantity@1, cells.experiment_criterion@1), each by its plain file name in the package's folder, in the order they are played. Where the run's own run.json lists its sidecars, these are the same names, each once.",
       "type": "array",
       "items": {
        "description": "One sidecar's plain file name: lower-case letters, digits, underscores and hyphens, then .json.",

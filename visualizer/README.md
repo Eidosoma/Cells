@@ -481,21 +481,24 @@ A replay draws what a run saved, and nothing else.
   out as the hexagonal lattice its junctions define: the replay is marked as derived and
   lists each derived piece, and rotation and handedness are arbitrary.
 - **Checking an experiment package** (19 November 2026; `docs/EXPERIMENT_PACKAGE.md`, decided
-  by the owner that day; round one of two). `python3 -I tools/check_package.py FOLDER` checks a
-  run folder before the viewer reads it: its manifest (`package.json`,
-  `cells.experiment_package@1`; the contract is `schema/EXPERIMENT_PACKAGE.md`, the schema file
-  `schema/experiment_package.schema.json`, written by the tool), every package's view and the
-  arrays it names, the sidecars, refused picks and summary, and then the adapter's own reading
-  of each package. It writes nothing; exit 0 means the adapter reads it, 1 lists every problem
-  with its code, 2 is a wrong call (`--json` for the report as JSON, `--codes` for every code).
-  A folder with no manifest, as every folder written so far, is read as the adapter reads one
-  today, and the report gives the manifest it would need. Where a run folder holds
-  `package.json`, `npm run adapt:runs` takes its arms, sidecars and refused picks from it, and
-  packages the folder to the same bytes as without one. The manifest's names are proposals
-  until the engine's lead has read them. The adapter's own reading stays inside a run's
-  folder too: a name that leaves it, and a link, are refused. Not yet: the adapter does not
-  run the whole check itself before it packages, nothing acts on a package's visibility or
-  licence, and the portable play package is the next round.
+  by the owner that day; round one of two). `python3 -I tools/check_package.py FOLDER` checks
+  a run folder before the viewer reads it: its manifest (`experiment_package.json`,
+  `cells.experiment_package@1`; the contract is `schema/EXPERIMENT_PACKAGE.md`, the schema
+  file `schema/experiment_package.schema.json`, written by the tool), every package's view and
+  the arrays it names, the sidecars, refused picks and summary, and then the adapter's own
+  reading of each package. It writes nothing; exit 0 means the adapter reads it, 1 lists every
+  problem with its code, 2 is a wrong call (`--json` for the report as JSON, `--codes` for
+  every code). A folder with no manifest, as every folder written so far, is read as the
+  adapter reads one today, and the report gives the manifest it would need. Where a run folder
+  holds `experiment_package.json`, `npm run adapt:runs` takes its arms, sidecars and refused
+  picks from it, and packages the folder to the same bytes as without one. The manifest's
+  names and rules are as the engine's lead, who keeps the specification, settled them on 20
+  November 2026: among them, the manifest's copies of the engine's revision, snapshot and
+  clean tree are held to each view and to each run's own `run.json`, and sidecars are named in
+  the order they are played. The adapter's own reading stays inside a run's folder too: a name
+  that leaves it, and a link, are refused. Not yet: the adapter does not run the whole check
+  itself before it packages, nothing acts on a package's visibility or licence, and the
+  portable play package is the next round.
 - **Run data is not in git.** `tools/adapt_run.py` reads the frozen run folders and writes
   one file per run under `out/runs/` (0.2 to 0.9 MB each), which is git-ignored.
   Only the adapter, the labels in `data/replays/` and a small synthetic fixture are committed

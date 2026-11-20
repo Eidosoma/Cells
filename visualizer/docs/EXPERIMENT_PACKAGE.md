@@ -104,7 +104,8 @@ catalogue entry with its words, its run files and their parts, and nothing of th
 (no checkpoints, no definitions). It is today's `runs/` folder cut to one experiment. A viewer
 plays it with no engine files at hand.
 
-**The manifest** (`package.json` in both levels; a proposal, `cells.experiment_package@1`):
+**The manifest** (`experiment_package.json` in both levels, `cells.experiment_package@1`; shown with the
+names the engine's lead settled on 20 November 2026, section 6):
 
 ```json
 {
@@ -117,7 +118,7 @@ plays it with no engine files at hand.
     "sources": [{ "path": "docs/…", "where": "…" }],
     "citation": { "text": "…", "doi": "…" }
   },
-  "engine": { "revision": "…", "snapshot": "…", "clean": true, "models": ["resolved_pump_tissue@3"] },
+  "engine": { "revision": "…", "snapshot": "…", "clean": true },
   "made": "2026-11-17",
   "visibility": "public",
   "licence": "CC-BY-4.0",
@@ -133,9 +134,9 @@ plays it with no engine files at hand.
 Its rules:
 
 - **Paths are relative to the manifest, never absolute,** and name files inside the folder only.
-- **`kind` says how a package is read.** `cells.run_view@1` today; the assembly's kind beside it;
-  a new kind of view is a new kind here, and a viewer that does not know a kind says so and
-  plays the rest.
+- **`kind` says how a package is read.** `cells.run_view@1` today; the assembly's kind,
+  `cells.assembly_view@1`, beside it; a new kind of view is a new kind here, and a viewer that
+  does not know a kind says so and plays the rest.
 - **`experiment.status` is the owner's own words for the run's standing.** For an experiment
   of the public record the page goes on reading its standing from the Engine map and the
   record, as the cards do, and shows the package's words only where the record has none.
@@ -144,9 +145,12 @@ Its rules:
   from a source keep that source's terms.
 - **Identity:** a run's id is `<experiment id>--<arm>` with the seed where there is one, as
   today. Ids are what other files point at: a card, an address, and a life stage's span that a
-  saved run fills (`schema/SPECIES_STAGES.md`).
+  saved run fills (`schema/SPECIES_STAGES.md`). An experiment's id is one for each source
+  package; the sweeps of one experiment are each a package, gathered by `experiment.group`.
 - **Provenance stays the engine's:** the revision, the snapshot and whether its tree was clean,
   as each run's own files state them. The manifest copies them; it adds no digest of its own.
+  The models a run ran are its view's own statement, and are not copied.
+- **Sidecars are named in the order they are played,** and a reader follows that order.
 - **Versions:** within a major, a reader ignores what it does not know. A change that an older
   reader would misread is a new major.
 
@@ -186,10 +190,9 @@ The last column is what the owner accepted on 19 November 2026.
 ### What is built (round one)
 
 - **The contract** of the source package and its manifest: `schema/EXPERIMENT_PACKAGE.md`, with the
-  manifest's schema file `schema/experiment_package.schema.json`. The field names are still the
-  proposals of section 3 until the engine's lead accepts them; the contract says what it settled where
-  the proposal could not work as written (a sidecar and a refusal's file are named in their arm's
-  folder; a package's `path` is the folder named as its arm).
+  manifest's schema file `schema/experiment_package.schema.json`. The field names and rules are as
+  the engine's lead settled them on 20 November 2026 (section 6); the contract's last section says what
+  that changed from the proposal of section 3.
 - **The validator**, `python3 -I tools/check_package.py FOLDER [--json]` (Python, standard library
   only, in place of the `tools/check_package.mjs` named above): it reads a folder with a manifest, or
   one without as the adapter reads it today, writes nothing, and exits 0 when the package can be read,
@@ -199,7 +202,7 @@ The last column is what the owner accepted on 19 November 2026.
 - **The conformance set**: small packages built by `tests/check_package.test.mjs` from the fixtures
   under `tests/engine-views/`; each breach gives its own code. The same test holds that the schema file
   is what the validator writes and that the contract names exactly its codes and fields.
-- **The adapter reads a manifest** where a run folder has one (`package.json`): its arms, their sidecars
+- **The adapter reads a manifest** where a run folder has one (`experiment_package.json`): its arms, their sidecars
   and its refused picks, in place of `index.json`, the overlay's `sidecar` and the search of the folder.
   A folder with a manifest is packaged to the same bytes as without one. Nothing else moved: the
   experiment's words still come from the overlay, and no folder written so far has a manifest.
@@ -209,11 +212,55 @@ The last column is what the owner accepted on 19 November 2026.
 - **How a package is checked:** run the validator on the run folder before the viewer reads it. On a
   folder with no manifest it says so in a note and gives the manifest the folder would need, with `null`
   where the folder does not say (its title, visibility and licence).
+- **The manifest's copies are held to the runs' own records.** Where the manifest gives the engine's
+  revision, its snapshot or whether its tree was clean, each view must agree, and so must each arm's
+  `run.json` where it has one. Where a `run.json` lists its sidecars, the manifest names the same ones.
+- **Tried on copies of real run folders** (20 November 2026). Copies of the linear networks' and the
+  tissue line's run folders were each given a manifest under the settled names (section 6), the tissue
+  line's sidecars in the order they are played. The validator found no problem in either, and the
+  adapter packaged them to the same 154 run files, byte for byte, as it does from the folders
+  themselves. The folders themselves were not written into.
 
-## 6. Open points for the engine's lead
+## 6. What the engine's lead settled (20 November 2026)
 
-- Whether the manifest is written by the run view's writer or by a tool beside it.
-- Whether `run.json`'s fields move into the manifest, or stay and are pointed at.
-- The assembly family's run output as a second `kind`, or a view of its own written by its model.
-- Which of a run's files a play package may carry when a run is judged (the verdict's own count
-  and day, as the cards read them today).
+This note left four points open for the engine's lead, who keeps the specification (decision 7). The
+lead settled them, and the names of section 3, on 20 November 2026. `schema/EXPERIMENT_PACKAGE.md` is
+written to that, and its last section lists what changed from the proposal.
+
+**The four points:**
+
+- **Who writes the manifest:** a tool beside the run view's writer, called by each driver at the end
+  of its run. The experiment's words, its licence and its visibility are the driver's to give; the run
+  view's writer stays one run's.
+- **`run.json`:** it stays the run's own record, and is pointed at. The manifest copies its revision,
+  its snapshot and whether the tree was clean, and the validator holds the copies to it. New drivers
+  write `clean` for a clean tree; the linear networks' older `snapshot_clean` is read as the same.
+- **The assembly family:** a second kind, `cells.assembly_view@1`, written by its model's own writer.
+  The viewer's reader names such a package and leaves it aside until that writer exists.
+- **A judged run's play package:** it carries the verdict's summary (its count, its day, its tag), as
+  the cards read it, and no evidence files. This is the next round's.
+
+**The ids.** An experiment's id is one for each source package, and it is the public id. Where the
+engine's names differed from the viewer's, the viewer's ids stand, and the drivers take them up in
+their manifests:
+
+| Run folder | `experiment.id` | `experiment.group` |
+| --- | --- | --- |
+| The linear networks (`dev-06`) | `gap-junction-linear-network` | |
+| The tissue line (`dense-01`) | `gap-junction-tissue-line` | `gap-junction-tissue` |
+| The tissue line's ladder (`ladder-01`) | `gap-junction-tissue-ladder` | `gap-junction-tissue` |
+| The tissue sheet (`sheet-01`) | `gap-junction-tissue-sheet` | `gap-junction-tissue` |
+| The picks (`picks-01`: three runs, and two picks an engine check refused), which the viewer does not play | `gap-junction-tissue-picks` | `gap-junction-tissue` |
+| The planarian loop | `planarian-loop` | |
+
+These folders are frozen evidence and are given no manifest: the ids are what each driver writes from
+its next run.
+
+**What follows, and whose it is:**
+
+- **The engine side's** (the lead's, after the viewer's second round): the tool that writes the
+  manifest; the linear networks' `index.json` written with relative paths; the drivers taking up the
+  manifest, one at a time.
+- **The viewer's second round:** the play package and its manifest, with the experiment's words moving
+  into it; schema files for the three played formats; the adapter running the whole check before it
+  packages; the staging tools' refusal of a private or unlicensed package.

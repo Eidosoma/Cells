@@ -5,7 +5,7 @@
     python3 -I tools/check_package.py --schema
     python3 -I tools/check_package.py --codes
 
-FOLDER is a run folder: one with a manifest (package.json, cells.experiment_package@1), or one without, read as the
+FOLDER is a run folder: one with a manifest (experiment_package.json, cells.experiment_package@1), or one without, read as the
 run adapter reads a folder today (its index.json, or else every folder in it that holds a view.json). A folder that
 holds a view.json itself is one package, read as an arm of the folder around it.
 
@@ -21,6 +21,9 @@ What it keeps to:
     reading (tools/adapt_run.py, adapt_engine_view), so that "valid" means "the adapter reads it".
   * A package is untrusted input: every file is capped in size before it is read, no link is followed, and no path
     leads outside the folder.
+  * The manifest's copies are held to the runs' own statements: the engine's revision, snapshot and clean tree to each
+    view and to each run's own record (run.json) where there is one, and a package's sidecars to the names that record
+    lists. The order of the sidecars is the manifest's: the order they are played.
   * It judges no science: it says whether a package can be read, never whether a run is right.
 
 Standard library only.
@@ -57,10 +60,11 @@ KINDS = (VIEW_FORMAT,)  # the kinds of package this reader reads; another kind i
 LEVELS = ("source",)  # the play level comes in the next round
 VISIBILITIES = ("public", "private")
 # Caps: a package is untrusted input, and nothing past these is read.
-MANIFEST_LIMIT = 1 << 20  # package.json
+MANIFEST_LIMIT = 1 << 20  # experiment_package.json
 JSON_LIMIT = 32 << 20  # a view, a sidecar, a summary, an index, a REFUSED.json
 ARRAY_LIMIT = 1 << 30  # one array a view names, as its header gives its size
 ENTRY_LIMIT = 200_000  # files and folders walked in one check
+SENTENCE_LIMIT = 2_000  # characters of one problem's or note's sentence
 # Patterns, written once for this reader (re.fullmatch) and for the schema file (JSON Schema's ECMA patterns).
 ID_PATTERN = r"^[a-z0-9]+([.-][a-z0-9]+)*$"
 PATH_PATTERN = r"^(?!\.\.?(/|$))(?!.*/\.\.?(/|$))[A-Za-z0-9._-]+(/[A-Za-z0-9._-]+)*$"
@@ -73,7 +77,9 @@ PART = re.compile(r"[A-Za-z0-9._-]+")
 # string of the manifest after JSON's escapes are undone, so that a drive letter's one backslash is found.
 MACHINE = re.compile(r"(?<![\w.-])/(?:home|mnt|Users|tmp|var|root|opt|srv)/|(?<![A-Za-z0-9])[A-Za-z]:[\\/]")
 # Files of an arm's folder that are the run's own, not sidecars, whatever they say of themselves.
-RUN_FILES = {VIEW_FILE, "summary.json", "run.json", "manifest.json", "resolved_config.json", REFUSED_FILE, "index.json", MANIFEST_FILE}
+RUN_RECORD = "run.json"  # a run's own provenance record, where its driver wrote one; the manifest's copies are held to it
+ASSEMBLY_KIND = "cells.assembly_view@1"  # the assembly's kind, named by the specification; this reader does not read it yet
+RUN_FILES = {VIEW_FILE, "summary.json", RUN_RECORD, "manifest.json", "resolved_config.json", REFUSED_FILE, "index.json", MANIFEST_FILE}
 
 
 # ---------------------------------------------------------------- the manifest's fields
@@ -88,11 +94,12 @@ class Field:
         self.pattern = pattern or {"id": ID_PATTERN, "path": PATH_PATTERN, "name": NAME_PATTERN, "sidecar": SIDECAR_PATTERN, "revision": REVISION_PATTERN, "date": DATE_PATTERN}.get(kind)
 
 
-MANIFEST = Field("object", True, "The manifest of an experiment's source package (package.json at the run folder's top).", fields={
+MANIFEST = Field("object", True, "The manifest of an experiment's source package (experiment_package.json at the run folder's top).", fields={
     "format": Field("const", True, "The manifest's format and major version. A reader of @1 reads @1 only.", code="manifest.format", values=(MANIFEST_FORMAT,)),
     "level": Field("enum", True, "Which level of package this is: source, the run folder as the engine writes it. The play level comes in the next round.", code="manifest.level", values=LEVELS),
     "experiment": Field("object", True, "The experiment the packages are runs of, in its own words.", fields={
-        "id": Field("id", True, "The experiment's id: what other files point at. A run's id is <experiment id>--<arm>.", code="manifest.id"),
+        "id": Field("id", True, "The experiment's id, one for each source package: the public id, and what other files point at. A run's id is <experiment id>--<arm>, with the seed where there is one.", code="manifest.id"),
+        "group": Field("id", False, "The id under which a catalogue gathers this package with the other source packages of one experiment (its sweeps, each a package with an id of its own).", code="manifest.id"),
         "title": Field("text", True, "The experiment's name, in a few words."),
         "asks": Field("text", False, "What the experiment asks, in one sentence."),
         "plain": Field("text", False, "What it does, in plain sentences."),
@@ -106,11 +113,10 @@ MANIFEST = Field("object", True, "The manifest of an experiment's source package
             "doi": Field("text", False, "Its DOI."),
         }),
     }),
-    "engine": Field("object", False, "The engine's provenance, copied from the runs' own files; the manifest adds no digest of its own. Where given, each run view must agree with it.", fields={
-        "revision": Field("revision", False, "The engine's revision that ran: each view's run.source.revision (a short form of the same is the same)."),
-        "snapshot": Field("text", False, "The execution snapshot it ran from, by name."),
-        "clean": Field("boolean", False, "Whether the engine's tree was clean: each view's run.source.dirty is its opposite."),
-        "models": Field("list", False, "The engine models the packages run: every model a view names (run.engine_models) is one of them.", item=Field("text", True, "One engine model's id.")),
+    "engine": Field("object", False, "The engine's provenance, copied from the runs' own records: its revision, its snapshot and whether its tree was clean, and no more. The manifest adds no digest of its own. Where given, each run's view must agree with it, and so must its run.json where it has one.", fields={
+        "revision": Field("revision", False, "The engine's revision that ran: each view's run.source.revision and each run.json's revision (a short form of the same is the same)."),
+        "snapshot": Field("text", False, "The execution snapshot it ran from, by name: each run.json's snapshot."),
+        "clean": Field("boolean", False, "Whether the engine's tree was clean: each run.json's clean, and the opposite of each view's run.source.dirty."),
     }),
     "made": Field("date", False, "The day the package was written (YYYY-MM-DD)."),
     "visibility": Field("enum", True, "Who may see the package: public, or private. A tool that stages a page, a site or an API refuses a private package (the next round).", code="manifest.visibility", values=VISIBILITIES),
@@ -118,9 +124,9 @@ MANIFEST = Field("object", True, "The manifest of an experiment's source package
     "summary": Field("path", False, "The experiment's summary of its sweeps (cells.experiment_summary@1), by its path relative to the manifest."),
     "packages": Field("list", True, "The packages, one for each arm, in the order a reader lists them.", at_least=1, item=Field("object", True, "One package.", fields={
         "arm": Field("id", True, "The arm's id. One arm once, in packages and refused together.", code="manifest.id"),
-        "kind": Field("text", True, "How the package is read: cells.run_view@1 (a folder that holds the engine's view.json and the arrays it names). A reader that does not know a kind names the package and reads the rest."),
+        "kind": Field("text", True, "How the package is read: cells.run_view@1 (a folder that holds the engine's view.json and the arrays it names), or cells.assembly_view@1 (the assembly's, written by its model's own writer). A reader names a package of a kind it does not read and reads the rest."),
         "path": Field("path", True, "The package's folder, relative to the manifest. In @1 it is the folder named as its arm, directly in the run folder."),
-        "sidecars": Field("list", False, "The quantities the experiment's driver states beside the run (cells.experiment_quantity@1, cells.experiment_criterion@1), each by its plain file name in the package's folder, in the order a reader reads them.", item=Field("sidecar", True, "One sidecar's plain file name: lower-case letters, digits, underscores and hyphens, then .json.", code="sidecar.name")),
+        "sidecars": Field("list", False, "The quantities the experiment's driver states beside the run (cells.experiment_quantity@1, cells.experiment_criterion@1), each by its plain file name in the package's folder, in the order they are played. Where the run's own run.json lists its sidecars, these are the same names, each once.", item=Field("sidecar", True, "One sidecar's plain file name: lower-case letters, digits, underscores and hyphens, then .json.", code="sidecar.name")),
         "label": Field("text", False, "The arm's name in words."),
     })),
     "refused": Field("list", False, "Picks an engine check refused: each a folder named as its arm, holding REFUSED.json and no view.", item=Field("object", True, "One refused pick.", fields={
@@ -163,7 +169,7 @@ def schema():
     return {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "title": f"{MANIFEST_FORMAT}: the manifest of an experiment's source package",
-        "$comment": "Written by tools/check_package.py --schema from its field table; do not edit by hand. The field names are proposals until the engine's lead accepts them. A reader ignores a field it does not know (within a major). schema/EXPERIMENT_PACKAGE.md is the contract, and the validator holds what no schema says.",
+        "$comment": "Written by tools/check_package.py --schema from its field table; do not edit by hand. The field names are those of the engine's lead, who keeps the specification (20 November 2026). A reader ignores a field it does not know (within a major). schema/EXPERIMENT_PACKAGE.md is the contract, and the validator holds what no schema says.",
         **schema_of(MANIFEST),
     }
 
@@ -172,10 +178,10 @@ def schema():
 
 CODES = {
     # notes: said, and the package is still read
-    "manifest.none": ("note", "The folder has no package.json: it is read as the adapter reads a folder today (its index.json, or else every folder in it that holds a view.json), and the report gives what a manifest would state."),
+    "manifest.none": ("note", "The folder has no experiment_package.json: it is read as the adapter reads a folder today (its index.json, or else every folder in it that holds a view.json), and the report gives what a manifest would state."),
     "folder.one-package": ("note", "The folder holds a view.json itself: it is read as one package, the arm named as the folder, of the folder around it; a source package is that folder, with its manifest."),
     "manifest.unknown-field": ("note", "The manifest gives a field this reader does not know: it is left aside (within a major, a reader ignores what it does not know)."),
-    "package.kind-unknown": ("note", "A package is of a kind this reader does not know: it is named and not read, and the rest is read."),
+    "package.kind-unknown": ("note", "A package is of a kind this reader does not read (one it does not know, or the assembly's, cells.assembly_view@1, which it does not read yet): it is named and not read, and the rest is read."),
     "package.not-listed": ("note", "A folder holds a view.json and is not one of the folder's packages: a reader leaves it aside."),
     "package.no-view": ("note", "A folder holds a run of the engine's shared output path and no view.json: the adapter derives its view from tables of its own, and a source package holds the engine's own view."),
     "sidecar.unnamed": ("note", "A file beside a view says it is a sidecar, and nothing names it: a reader does not read it; a manifest names the sidecars to read, in their order."),
@@ -184,14 +190,14 @@ CODES = {
     # problems: the package cannot be read as it is
     "json.invalid": ("problem", "A file that must be JSON is not (or is not UTF-8)."),
     "size.cap": ("problem", "A file, an array or the folder is larger than this reader's cap: a package is untrusted input, and nothing past the cap is read."),
-    "manifest.format": ("problem", "package.json is not a JSON object whose format is cells.experiment_package@1."),
-    "manifest.level": ("problem", "package.json's level is not source: this round reads the source level only."),
-    "manifest.missing": ("problem", "package.json lacks a required field."),
-    "manifest.type": ("problem", "A field of package.json is not of its type (text, a list, an object, a revision, a date or true or false)."),
+    "manifest.format": ("problem", "experiment_package.json is not a JSON object whose format is cells.experiment_package@1."),
+    "manifest.level": ("problem", "experiment_package.json's level is not source: this round reads the source level only."),
+    "manifest.missing": ("problem", "experiment_package.json lacks a required field."),
+    "manifest.type": ("problem", "A field of experiment_package.json is not of its type (text, a list, an object, a revision, a date or true or false)."),
     "manifest.id": ("problem", "An id (the experiment's, or an arm's) is not lower-case letters and digits, joined by single dots or hyphens."),
-    "manifest.visibility": ("problem", "package.json gives no visibility, or one that is not public or private."),
-    "manifest.licence": ("problem", "package.json gives no licence."),
-    "manifest.machine-path": ("problem", "package.json carries a path of a machine (/home/, /mnt/, /Users/ and the like, or a drive letter)."),
+    "manifest.visibility": ("problem", "experiment_package.json gives no visibility, or one that is not public or private."),
+    "manifest.licence": ("problem", "experiment_package.json gives no licence."),
+    "manifest.machine-path": ("problem", "experiment_package.json carries a path of a machine (/home/, /mnt/, /Users/ and the like, or a drive letter)."),
     "path.absolute": ("problem", "A path is absolute: every path of a package is relative to the manifest (a sidecar or a refusal's file, to its arm's folder)."),
     "path.outside": ("problem", "A path leaves the folder (..)."),
     "path.form": ("problem", "A path is not file names joined by /, each of letters, digits, dots, underscores and hyphens."),
@@ -215,13 +221,14 @@ CODES = {
     "sidecar.format": ("problem", "A sidecar is not of a sidecar's format (cells.experiment_quantity@1, cells.experiment_criterion@1)."),
     "sidecar.cells": ("problem", "A sidecar's cells are not the view's cells, each once."),
     "sidecar.times": ("problem", "A sidecar has no row at a time the replay steps through: a sidecar is never resampled."),
+    "sidecar.listed": ("problem", "A package's sidecars are not the ones its run's own record lists (run.json, sidecars): the same names, each once and no other. Their order is the manifest's, the order they are played."),
     "summary.format": ("problem", "The experiment's summary is not cells.experiment_summary@1."),
     "summary.content": ("problem", "The experiment's summary does not state what a reader of its sweeps reads (the adapter's own reading refuses it)."),
     "refused.format": ("problem", "A REFUSED.json does not name its own arm with the status refused."),
     "refused.has-view": ("problem", "A refused pick's folder holds a view.json: a refused pick has no view."),
     "refused.sweep": ("problem", "Refused picks are placed by the one sweep of the experiment's summary, and there is no summary, or it states several sweeps."),
     "refused.parameter": ("problem", "A REFUSED.json gives no finite value of its sweep's parameter."),
-    "engine.provenance": ("problem", "The manifest's engine provenance (revision, clean, models) is not what a run's own view states."),
+    "engine.provenance": ("problem", "The manifest's engine provenance (revision, snapshot, clean) is not what a run's own view states, or its run.json where it has one."),
     "adapter.refused": ("problem", "The adapter's own reading of the package refuses it, with its reason."),
     "adapter.error": ("problem", "The adapter's own reading of the package fails on it (an error of the adapter, or input it cannot read)."),
     "adapter.machine-path": ("problem", "The view the adapter would package carries a path of a machine."),
@@ -240,6 +247,8 @@ class Report:
 
     def add(self, code, says, file=None, field=None):
         kind = CODES[code][0]
+        if len(says) > SENTENCE_LIMIT:  # a sentence may quote what a package says of itself: never at any length
+            says = says[:SENTENCE_LIMIT] + " ..."
         item = {"code": code, "file": file, "field": field, "says": says}
         (self.problems if kind == "problem" else self.notes).append(item)
 
@@ -298,26 +307,28 @@ class Reader:
         except (FileNotFoundError, NotADirectoryError):
             return None
 
-    def json_file(self, path, limit, *, file=None, field=None, missing="path.missing", strict=False):
-        """A JSON file, read only where it is a plain file under the cap; None where it is not (with the problem said)."""
+    def json_file(self, path, limit, *, file=None, field=None, missing="path.missing", strict=False, quiet=False):
+        """A JSON file, read only where it is a plain file under the cap; None where it is not (with the problem said,
+        unless `quiet`: for a file a folder need not hold and no reader of the play reads)."""
         file = file or self.shown(path)
+        add = (lambda *said: None) if quiet else self.report.add
         st = self.lstat(path)
         if st is None:
-            self.report.add(missing, f"{file} is not there.", file, field)
+            add(missing, f"{file} is not there.", file, field)
             return None
         if stat.S_ISLNK(st.st_mode):
-            self.report.add("path.link", f"{file} is a link: a package holds its files itself, and a reader follows no link.", file, field)
+            add("path.link", f"{file} is a link: a package holds its files itself, and a reader follows no link.", file, field)
             return None
         if not stat.S_ISREG(st.st_mode):
-            self.report.add("path.kind", f"{file} is not a file.", file, field)
+            add("path.kind", f"{file} is not a file.", file, field)
             return None
         if st.st_size > limit:
-            self.report.add("size.cap", f"{file} is {st.st_size:,} bytes, over this reader's cap of {limit:,}: it is not read.", file, field)
+            add("size.cap", f"{file} is {st.st_size:,} bytes, over this reader's cap of {limit:,}: it is not read.", file, field)
             return None
         with open(path, "rb") as stream:
             raw = stream.read(limit + 1)
         if len(raw) > limit:
-            self.report.add("size.cap", f"{file} grew past this reader's cap of {limit:,} bytes while it was read: it is not read.", file, field)
+            add("size.cap", f"{file} grew past this reader's cap of {limit:,} bytes while it was read: it is not read.", file, field)
             return None
 
         def refuse(constant):
@@ -326,9 +337,9 @@ class Reader:
         try:
             return json.loads(raw.decode("utf-8"), **({"parse_constant": refuse} if strict else {}))
         except UnicodeDecodeError:
-            self.report.add("json.invalid", f"{file} is not UTF-8 text.", file, field)
+            add("json.invalid", f"{file} is not UTF-8 text.", file, field)
         except (ValueError, RecursionError) as error:
-            self.report.add("json.invalid", f"{file} is not JSON ({str(error).splitlines()[0][:120]}).", file, field)
+            add("json.invalid", f"{file} is not JSON ({str(error).splitlines()[0][:120]}).", file, field)
         return None
 
     def locate(self, base, text, *, file, field, want="file", missing="path.missing", plain=False, plain_code="path.form", pattern=None):
@@ -414,23 +425,23 @@ def check_fields(reader, data, field, at):
     report = reader.report
     if field.kind == "object":
         if not isinstance(data, dict):
-            report.add(field.code, f"package.json: {at or 'the manifest'} is not an object.", MANIFEST_FILE, at or None)
+            report.add(field.code, f"experiment_package.json: {at or 'the manifest'} is not an object.", MANIFEST_FILE, at or None)
             return
         for name, item in field.fields.items():
             where = f"{at}.{name}" if at else name
             if name not in data or data[name] is None:
                 if item.required:
                     code = item.code if item.code in ("manifest.visibility", "manifest.licence") else "manifest.missing"
-                    report.add(code, f"package.json gives no {where}: {item.says}", MANIFEST_FILE, where)
+                    report.add(code, f"experiment_package.json gives no {where}: {item.says}", MANIFEST_FILE, where)
                 continue
             check_fields(reader, data[name], item, where)
         for name in sorted(set(data) - set(field.fields)):
             where = f"{at}.{name}" if at else name
-            report.add("manifest.unknown-field", f"package.json gives {where}, which is not a field of {MANIFEST_FORMAT} that this reader knows: it is left aside.", MANIFEST_FILE, where)
+            report.add("manifest.unknown-field", f"experiment_package.json gives {where}, which is not a field of {MANIFEST_FORMAT} that this reader knows: it is left aside.", MANIFEST_FILE, where)
         return
     if field.kind == "list":
         if not isinstance(data, list) or len(data) < field.at_least:
-            report.add(field.code, f"package.json: {at} is not a list{f' of {field.at_least} or more' if field.at_least else ''}.", MANIFEST_FILE, at)
+            report.add(field.code, f"experiment_package.json: {at} is not a list{f' of {field.at_least} or more' if field.at_least else ''}.", MANIFEST_FILE, at)
             return
         for k, value in enumerate(data):
             check_fields(reader, value, field.item, f"{at}[{k}]")
@@ -455,7 +466,7 @@ def check_fields(reader, data, field, at):
             "revision": "a revision (7 to 40 hexadecimal digits)",
             "date": "a day (YYYY-MM-DD)",
         }[field.kind]
-        report.add(field.code, f"package.json: {at} is {json.dumps(data)[:80]}, not {wants}.", MANIFEST_FILE, at)
+        report.add(field.code, f"experiment_package.json: {at} is {json.dumps(data)[:80]}, not {wants}.", MANIFEST_FILE, at)
 
 
 def read_manifest(reader):
@@ -466,14 +477,14 @@ def read_manifest(reader):
         return None, False
     if not isinstance(manifest, dict) or manifest.get("format") != MANIFEST_FORMAT:
         said = manifest.get("format") if isinstance(manifest, dict) else None
-        report.add("manifest.format", f"package.json is {'not a JSON object' if not isinstance(manifest, dict) else f'of the format {json.dumps(said)}'}, not {MANIFEST_FORMAT}: a reader of @1 does not read it.", MANIFEST_FILE, "format")
+        report.add("manifest.format", f"experiment_package.json is {'not a JSON object' if not isinstance(manifest, dict) else f'of the format {json.dumps(said)}'}, not {MANIFEST_FORMAT}: a reader of @1 does not read it.", MANIFEST_FILE, "format")
         return manifest, False
     if manifest.get("level") not in LEVELS:
-        report.add("manifest.level", f"package.json's level is {json.dumps(manifest.get('level'))}: this round reads the source level only ({', '.join(LEVELS)}).", MANIFEST_FILE, "level")
+        report.add("manifest.level", f"experiment_package.json's level is {json.dumps(manifest.get('level'))}: this round reads the source level only ({', '.join(LEVELS)}).", MANIFEST_FILE, "level")
         return manifest, False
     check_fields(reader, manifest, MANIFEST, "")
     for where, hit in machine_paths(manifest):
-        report.add("manifest.machine-path", f"package.json carries a path of a machine at {where} ({hit}...): a package names its files relative to its manifest, and nothing of the machine that wrote it.", MANIFEST_FILE, where)
+        report.add("manifest.machine-path", f"experiment_package.json carries a path of a machine at {where} ({hit}...): a package names its files relative to its manifest, and nothing of the machine that wrote it.", MANIFEST_FILE, where)
     return manifest, True
 
 
@@ -634,6 +645,50 @@ def check_sidecar(reader, arm, folder, name, field, cells, times):
             return
 
 
+def run_record(reader, folder, *, say):
+    """The run's own record (run.json) where its folder holds one: what it states of the four things a manifest copies or
+    names, each None where it does not state it; None where the folder holds none. Its format is its driver's own. A
+    clean tree is `clean`; `snapshot_clean`, as the linear networks' driver wrote it before the manifest, is read as the
+    same where `clean` is not given. With `say`, a record that is there and cannot be read is a problem by its own code
+    (a link is said by the walk of the folder); without, it states nothing."""
+    path = folder / RUN_RECORD
+    st = reader.lstat(path)
+    if st is None or stat.S_ISLNK(st.st_mode):
+        return None
+    data = reader.json_file(path, JSON_LIMIT, quiet=not say)
+    if not isinstance(data, dict):
+        return None
+    text = lambda key: data[key] if isinstance(data.get(key), str) and data[key] else None  # noqa: E731
+    key = "clean" if isinstance(data.get("clean"), bool) else "snapshot_clean"
+    clean = data.get(key) if isinstance(data.get(key), bool) else None
+    return {"revision": text("revision"), "snapshot": text("snapshot"), "clean": clean, "clean_key": key, "sidecars": data["sidecars"] if isinstance(data.get("sidecars"), list) else None}
+
+
+def check_run_record(reader, folder, declared, where, engine):
+    """The manifest's copies against the run's own record, where the arm's folder holds one (a run.json is not required):
+    the engine's revision, snapshot and clean tree, and the names of the package's sidecars: the same names, each once
+    and no other. Their order is the manifest's, the order they are played, whatever the record's."""
+    report = reader.report
+    record = run_record(reader, folder, say=True)
+    if record is None:
+        return
+    file = reader.shown(folder / RUN_RECORD)
+    if engine:
+        revision, snapshot, clean = engine.get("revision"), engine.get("snapshot"), engine.get("clean")
+        if isinstance(revision, str) and revision and record["revision"] and not (record["revision"].startswith(revision) or revision.startswith(record["revision"])):
+            report.add("engine.provenance", f"{MANIFEST_FILE} gives the engine's revision {revision} (engine.revision), and {file} states {record['revision']} (revision).", MANIFEST_FILE, "engine.revision")
+        if isinstance(snapshot, str) and snapshot and record["snapshot"] and snapshot != record["snapshot"]:
+            report.add("engine.provenance", f"{MANIFEST_FILE} names the snapshot {snapshot} (engine.snapshot), and {file} names {record['snapshot']} (snapshot).", MANIFEST_FILE, "engine.snapshot")
+        if isinstance(clean, bool) and record["clean"] is not None and clean != record["clean"]:
+            report.add("engine.provenance", f"{MANIFEST_FILE} says the engine's tree was {'clean' if clean else 'dirty'} (engine.clean), and {file} says it was {'clean' if record['clean'] else 'dirty'} ({record['clean_key']}).", MANIFEST_FILE, "engine.clean")
+    listed = record["sidecars"]
+    if listed is None or not all(isinstance(name, str) and re.fullmatch(SIDECAR_PATTERN, name) for name in declared):
+        return  # the record lists none to hold the manifest to; a name that is no sidecar's plain name is said by its own code
+    if not all(isinstance(name, str) for name in listed) or sorted(listed) != sorted(declared):
+        shown = lambda names: ", ".join(str(name) for name in names) or "none"  # noqa: E731
+        report.add("sidecar.listed", f"{MANIFEST_FILE}: {where} names {shown(declared)}, and {file} lists {shown(listed)} (sidecars): the same names are wanted, each once and no other, in the order they are played.", MANIFEST_FILE, where)
+
+
 def check_package(reader, arm, folder, sidecars, *, root, experiment, sidecar_fields, engine=None):
     """One package of the kind cells.run_view@1: its links, its view and arrays, its sidecars, then the adapter's own
     reading of it. Returns what the report says of it."""
@@ -676,15 +731,11 @@ def check_package(reader, arm, folder, sidecars, *, root, experiment, sidecar_fi
     out["engine"] = {"revision": (source or {}).get("revision"), "dirty": (source or {}).get("dirty"), "models": [model for model in stated_run.get("engine_models") or [] if isinstance(model, str)]}
     if engine:
         file = reader.shown(folder / VIEW_FILE)
-        revision, clean, models = engine.get("revision"), engine.get("clean"), engine.get("models")
+        revision, clean = engine.get("revision"), engine.get("clean")
         if isinstance(revision, str) and source and isinstance(source.get("revision"), str) and not (source["revision"].startswith(revision) or revision.startswith(source["revision"])):
-            report.add("engine.provenance", f"package.json gives the engine's revision {revision} (engine.revision), and {file} states {source['revision']} (run.source.revision).", MANIFEST_FILE, "engine.revision")
+            report.add("engine.provenance", f"experiment_package.json gives the engine's revision {revision} (engine.revision), and {file} states {source['revision']} (run.source.revision).", MANIFEST_FILE, "engine.revision")
         if isinstance(clean, bool) and source and isinstance(source.get("dirty"), bool) and clean == source["dirty"]:
-            report.add("engine.provenance", f"package.json says the engine's tree was {'clean' if clean else 'dirty'} (engine.clean), and {file} says it was {'dirty' if source['dirty'] else 'clean'} (run.source.dirty).", MANIFEST_FILE, "engine.clean")
-        if isinstance(models, list):
-            others = [model for model in out["engine"]["models"] if model not in models]
-            if others:
-                report.add("engine.provenance", f"{file} runs {', '.join(others)} (run.engine_models), which package.json's engine.models does not name.", MANIFEST_FILE, "engine.models")
+            report.add("engine.provenance", f"experiment_package.json says the engine's tree was {'clean' if clean else 'dirty'} (engine.clean), and {file} says it was {'dirty' if source['dirty'] else 'clean'} (run.source.dirty).", MANIFEST_FILE, "engine.clean")
     return out
 
 
@@ -762,7 +813,7 @@ def check_manifest_folder(reader, manifest, result):
     report, root = reader.report, reader.root
     experiment = manifest.get("experiment") if isinstance(manifest.get("experiment"), dict) else {}
     identifier = experiment.get("id") if isinstance(experiment.get("id"), str) and re.fullmatch(ID_PATTERN, experiment["id"]) else "package"
-    result.update({"experiment": {key: experiment.get(key) for key in ("id", "title", "status") if isinstance(experiment.get(key), str)}, "visibility": manifest.get("visibility"), "licence": manifest.get("licence")})
+    result.update({"experiment": {key: experiment.get(key) for key in ("id", "group", "title", "status") if isinstance(experiment.get(key), str)}, "visibility": manifest.get("visibility"), "licence": manifest.get("licence")})
     engine = manifest.get("engine") if isinstance(manifest.get("engine"), dict) else None
     packages = manifest.get("packages") if isinstance(manifest.get("packages"), list) else []
     refused = manifest.get("refused") if isinstance(manifest.get("refused"), list) else []
@@ -773,7 +824,7 @@ def check_manifest_folder(reader, manifest, result):
         arm, where = item.get("arm"), f"packages[{k}]"
         if isinstance(arm, str):
             if arm in seen:
-                report.add("package.arm-twice", f"package.json names the arm {arm} twice ({seen[arm]} and {where}): one arm once.", MANIFEST_FILE, f"{where}.arm")
+                report.add("package.arm-twice", f"experiment_package.json names the arm {arm} twice ({seen[arm]} and {where}): one arm once.", MANIFEST_FILE, f"{where}.arm")
                 continue
             seen[arm] = where
         if not (isinstance(arm, str) and re.fullmatch(ID_PATTERN, arm)):
@@ -786,15 +837,17 @@ def check_manifest_folder(reader, manifest, result):
             continue
         listed.add(folder.name)
         if path != arm:
-            report.add("package.path", f"package.json: {where}.path ({path}) is not the folder named as its arm ({arm}): readers of @1 read a package from the folder named as its arm, directly in the run folder.", MANIFEST_FILE, f"{where}.path")
+            report.add("package.path", f"experiment_package.json: {where}.path ({path}) is not the folder named as its arm ({arm}): readers of @1 read a package from the folder named as its arm, directly in the run folder.", MANIFEST_FILE, f"{where}.path")
             continue
         kind = item.get("kind")
         if kind not in KINDS:
             if isinstance(kind, str) and kind:
-                report.add("package.kind-unknown", f"package.json: {where} ({arm}) is of the kind {kind}, which this reader does not know: it is named and not read, and the rest is read.", MANIFEST_FILE, f"{where}.kind")
+                why = "the assembly's, which this reader does not read yet" if kind == ASSEMBLY_KIND else "which this reader does not know"
+                report.add("package.kind-unknown", f"experiment_package.json: {where} ({arm}) is of the kind {kind}, {why}: it is named and not read, and the rest is read.", MANIFEST_FILE, f"{where}.kind")
                 result["packages"].append({"arm": arm, "kind": kind, "path": path, "read": False})
             continue
         sidecars = item.get("sidecars") if isinstance(item.get("sidecars"), list) else []
+        check_run_record(reader, folder, sidecars, f"{where}.sidecars", engine)
         names, fields = [], []
         for j, name in enumerate(sidecars):
             field = f"{where}.sidecars[{j}]"
@@ -811,7 +864,7 @@ def check_manifest_folder(reader, manifest, result):
         arm, name, where = item.get("arm"), item.get("file"), f"refused[{k}]"
         if isinstance(arm, str):
             if arm in seen:
-                report.add("package.arm-twice", f"package.json names the arm {arm} twice ({seen[arm]} and {where}): one arm once.", MANIFEST_FILE, f"{where}.arm")
+                report.add("package.arm-twice", f"experiment_package.json names the arm {arm} twice ({seen[arm]} and {where}): one arm once.", MANIFEST_FILE, f"{where}.arm")
                 continue
             seen[arm] = where
         if not (isinstance(arm, str) and re.fullmatch(ID_PATTERN, arm) and isinstance(name, str) and name):
@@ -860,13 +913,13 @@ def check_manifest_folder(reader, manifest, result):
         result["refused"].append({"arm": arm, "file": name})
     # A summary that is named and cannot be read is said by its own code; here only one that is not named, or that states several sweeps.
     if picks and ("summary" not in manifest or (sweeps is not None and len(sweeps) != 1)):
-        why = "package.json names no summary" if "summary" not in manifest else f"its summary states {len(sweeps)} sweeps"
-        report.add("refused.sweep", f"package.json lists {len(picks)} refused pick(s), which a reader places by the one sweep of the experiment's summary, and {why}.", MANIFEST_FILE, "refused")
+        why = "experiment_package.json names no summary" if "summary" not in manifest else f"its summary states {len(sweeps)} sweeps"
+        report.add("refused.sweep", f"experiment_package.json lists {len(picks)} refused pick(s), which a reader places by the one sweep of the experiment's summary, and {why}.", MANIFEST_FILE, "refused")
     order = {item.get("arm"): k for k, item in enumerate(packages) if isinstance(item, dict)}
     result["packages"].sort(key=lambda item: order.get(item["arm"], len(order)))
     for item in sorted(os.scandir(root), key=lambda entry: entry.name):
         if item.is_dir(follow_symlinks=False) and item.name not in listed and reader.lstat(Path(item.path) / VIEW_FILE) is not None:
-            report.add("package.not-listed", f"{reader.shown(Path(item.path))}/ holds a {VIEW_FILE} and is not one of package.json's packages: a reader leaves it aside.", reader.shown(Path(item.path)), None)
+            report.add("package.not-listed", f"{reader.shown(Path(item.path))}/ holds a {VIEW_FILE} and is not one of experiment_package.json's packages: a reader leaves it aside.", reader.shown(Path(item.path)), None)
 
 
 def sidecars_found(reader, folder, named):
@@ -917,7 +970,7 @@ def check_bare_folder(reader, result):
             report.add("index.content", f"{root.name}/index.json: {said}", rel(root.name, "index.json"), "selected, packages")
         return
     chosen = set(arms)
-    packages, would, models, revisions, cleans = [], [], [], set(), set()
+    packages, would, revisions, cleans, snapshots = [], [], set(), set(), set()
     for arm in arms:
         folder = reader.locate(root, arm, file=rel(root.name, "index.json") if index is not None else root.name, field="selected" if index is not None else "a package's folder", want="dir")
         if folder is None:
@@ -939,7 +992,9 @@ def check_bare_folder(reader, result):
             revisions.add(engine["revision"])
         if isinstance(engine.get("dirty"), bool):
             cleans.add(not engine["dirty"])
-        models += [model for model in engine.get("models") or [] if model not in models]
+        record = run_record(reader, folder, say=False) or {}
+        if record.get("snapshot"):
+            snapshots.add(record["snapshot"])
         if not re.fullmatch(ID_PATTERN, arm):
             report.add("package.not-id", f"{reader.shown(folder)}/: its name ({arm}) is not an id, as a manifest's arm must be (lower-case letters and digits, joined by single dots or hyphens).", reader.shown(folder), None)
     result["packages"] = packages
@@ -970,7 +1025,7 @@ def check_bare_folder(reader, result):
         "format": MANIFEST_FORMAT,
         "level": "source",
         "experiment": {"id": named if named and re.fullmatch(ID_PATTERN, named) else None, "title": None},
-        **({"engine": {"revision": next(iter(revisions)), **({"clean": next(iter(cleans))} if len(cleans) == 1 else {}), "models": models}} if len(revisions) == 1 else {}),
+        **({"engine": {"revision": next(iter(revisions)), **({"snapshot": next(iter(snapshots))} if len(snapshots) == 1 else {}), **({"clean": next(iter(cleans))} if len(cleans) == 1 else {})}} if len(revisions) == 1 else {}),
         "visibility": None,
         "licence": None,
         **({"summary": "summary.json"} if result["summary"] else {}),
@@ -999,11 +1054,12 @@ def check_one_package(reader, result):
     for name, format_ in found:
         report.add("sidecar.unnamed", f"{arm}/{name} is a {format_} that nothing names: a reader does not read it; a manifest names it in its package's sidecars.", f"{arm}/{name}", None)
     engine = said.get("engine") or {}
+    snapshot = (run_record(reader, root, say=False) or {}).get("snapshot")
     result["would_state"] = {
         "format": MANIFEST_FORMAT,
         "level": "source",
         "experiment": {"id": None, "title": None},
-        **({"engine": {"revision": engine["revision"], **({"clean": not engine["dirty"]} if isinstance(engine.get("dirty"), bool) else {}), "models": engine.get("models") or []}} if engine.get("revision") else {}),
+        **({"engine": {"revision": engine["revision"], **({"snapshot": snapshot} if snapshot else {}), **({"clean": not engine["dirty"]} if isinstance(engine.get("dirty"), bool) else {})}} if engine.get("revision") else {}),
         "visibility": None,
         "licence": None,
         "packages": [{"arm": arm, "kind": VIEW_FORMAT, "path": arm, **({"sidecars": [name for name, _ in found]} if found else {})}],
@@ -1019,7 +1075,7 @@ def text_of(result):
     lines.append(head)
     experiment = result.get("experiment") or {}
     if experiment:
-        lines.append(f"  experiment: {experiment.get('id')}" + (f" ({experiment['title']})" if experiment.get("title") else "") + (f"; status: {experiment['status']}" if experiment.get("status") else ""))
+        lines.append(f"  experiment: {experiment.get('id')}" + (f" ({experiment['title']})" if experiment.get("title") else "") + (f"; group: {experiment['group']}" if experiment.get("group") else "") + (f"; status: {experiment['status']}" if experiment.get("status") else ""))
     if result["manifest"]:
         lines.append(f"  visibility: {result.get('visibility') or 'not given'}; licence: {result.get('licence') or 'not given'}")
     packages = result.get("packages") or []

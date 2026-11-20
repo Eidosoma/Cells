@@ -1,7 +1,7 @@
 // The experiment package's validator (tools/check_package.py; schema/EXPERIMENT_PACKAGE.md) on its conformance set, and
 // the run adapter reading a manifest. The packages are built here, in the test's own scratch folder, from the fixtures
 // tracked under tests/engine-views/: a world the engine's run-view writer wrote is copied as two arms, given a sidecar
-// each, a refused pick, a summary of one sweep and a manifest (all made up, and said to be). Each breach of the contract
+// and a run's own record each, a refused pick, a summary of one sweep and a manifest (all made up, and said to be). Each breach of the contract
 // breaks one thing of a copy and must give its own code; the sound packages must pass, and an unmanifested fixture
 // folder passes with its note. The adapter must package a run folder with a manifest to the same bytes as the same
 // folder without one. The schema file must be what the validator writes, and the contract must name exactly its codes
@@ -59,15 +59,19 @@ const codes = (report, key = "problems") => [...new Set(report[key].map((item) =
 const shape = JSON.parse(
   spawnSync("python3", ["-I", "-"], {
     encoding: "utf8",
-    input: `import json, sys\nsys.path.insert(0, ${JSON.stringify(path.join(ROOT, "tools"))})\nimport adapt_run as a\nfrom pathlib import Path\nfolder = Path(${JSON.stringify(WORLD)})\nview = json.load(open(folder / "view.json"))\nbases = {b["id"]: b for b in view["time"]["bases"]}\nline = next(i for i in ("observation", "accepted") if i in bases and bases[i].get("files"))\n_, times, _ = a.view_rows("w", folder, bases[line], bases[line].get("array"))\ncells = [c for c in next(s for s in view["sets"] if s["id"] == "cell")["ids"] if c is not None]\nprint(json.dumps({"times": list(times), "cells": cells, "models": view["run"]["engine_models"]}))\n`,
+    input: `import json, sys\nsys.path.insert(0, ${JSON.stringify(path.join(ROOT, "tools"))})\nimport adapt_run as a\nfrom pathlib import Path\nfolder = Path(${JSON.stringify(WORLD)})\nview = json.load(open(folder / "view.json"))\nbases = {b["id"]: b for b in view["time"]["bases"]}\nline = next(i for i in ("observation", "accepted") if i in bases and bases[i].get("files"))\n_, times, _ = a.view_rows("w", folder, bases[line], bases[line].get("array"))\ncells = [c for c in next(s for s in view["sets"] if s["id"] == "cell")["ids"] if c is not None]\nprint(json.dumps({"times": list(times), "cells": cells}))\n`,
   }).stdout,
 );
 
+// Made-up provenance: what the manifest copies, and what each arm's own record (run.json) states.
+const REVISION = "0123456789abcdef0123456789abcdef01234567";
+const ELSEWHERE = "89abcdef".repeat(5);
+const SNAPSHOT = "snapshot-made-up";
 const MANIFEST = {
   format: "cells.experiment_package@1",
   level: "source",
-  experiment: { id: EXPERIMENT, title: "A made-up package (test fixture)", status: "Made up for a test: not a run of any experiment" },
-  engine: { models: shape.models },
+  experiment: { id: EXPERIMENT, group: "made-up-group", title: "A made-up package (test fixture)", status: "Made up for a test: not a run of any experiment" },
+  engine: { revision: REVISION, snapshot: SNAPSHOT, clean: true },
   visibility: "public",
   licence: "CC-BY-4.0",
   summary: "summary.json",
@@ -78,7 +82,7 @@ const MANIFEST = {
   refused: [{ arm: "gamma", file: "REFUSED.json" }],
 };
 
-/** A run folder as the engine side writes one, with no manifest: two arms of one world, a sidecar beside each, a refused pick and a summary. */
+/** A run folder as the engine side writes one, with no manifest: two arms of one world, a sidecar and the run's own record beside each, a refused pick and a summary. */
 function bare(name) {
   const folder = path.join(scratch, name);
   mkdirSync(folder, { recursive: true });
@@ -91,6 +95,7 @@ function bare(name) {
       cells: shape.cells,
       values: shape.times.map((_, row) => shape.cells.map((_, k) => row + k + shift)),
     });
+    writeJson(path.join(folder, arm, "run.json"), { format: "made_up.run@1", note: "Made up for a test: a run's own record, in its driver's own format.", arm, sidecars: ["concentration.json"], revision: REVISION, snapshot: SNAPSHOT, clean: true });
   }
   mkdirSync(path.join(folder, "gamma"));
   writeJson(path.join(folder, "gamma", "REFUSED.json"), { arm: "gamma", g: 4, status: "refused", error: "a made-up refusal", note: "Made up for a test." });
@@ -107,7 +112,7 @@ function sound(name, change = () => {}) {
   const folder = bare(name);
   const manifest = structuredClone(MANIFEST);
   change(manifest);
-  writeJson(path.join(folder, "package.json"), manifest);
+  writeJson(path.join(folder, "experiment_package.json"), manifest);
   return folder;
 }
 
@@ -116,28 +121,29 @@ function sound(name, change = () => {}) {
 const same = (manifest) => manifest; // the sound manifest, as written
 // Each breach: what it breaks, how, and the problem codes it must give (and nothing else). A note's case gives its note and passes.
 const BREACHES = [
-  ["the manifest is not JSON", (f) => writeFileSync(path.join(f, "package.json"), "{ not json"), ["json.invalid"]],
-  ["the manifest is over the cap", (f) => edit(path.join(f, "package.json"), (m) => (m.experiment.plain = "x".repeat(1100000))), ["size.cap"]],
-  ["another format", (f) => edit(path.join(f, "package.json"), (m) => (m.format = "cells.experiment_package@2")), ["manifest.format"]],
-  ["the play level", (f) => edit(path.join(f, "package.json"), (m) => (m.level = "play")), ["manifest.level"]],
-  ["no experiment id", (f) => edit(path.join(f, "package.json"), (m) => delete m.experiment.id), ["manifest.missing"]],
-  ["packages not a list", (f) => edit(path.join(f, "package.json"), (m) => (m.packages = "alpha")), ["manifest.type"]],
-  ["a date that is not a day", (f) => edit(path.join(f, "package.json"), (m) => (m.made = "yesterday")), ["manifest.type"]],
-  ["an arm that is not an id", (f) => edit(path.join(f, "package.json"), (m) => Object.assign(m.packages[1], { arm: "Beta_2", path: "Beta_2" })), ["manifest.id"]],
-  ["no visibility", (f) => edit(path.join(f, "package.json"), (m) => delete m.visibility), ["manifest.visibility"]],
-  ["a visibility of no known word", (f) => edit(path.join(f, "package.json"), (m) => (m.visibility = "secret")), ["manifest.visibility"]],
-  ["no licence", (f) => edit(path.join(f, "package.json"), (m) => delete m.licence), ["manifest.licence"]],
-  ["a home folder in the manifest", (f) => edit(path.join(f, "package.json"), (m) => (m.experiment.plain = "Written in /home/made-up/runs.")), ["manifest.machine-path"]],
-  ["a drive letter in the manifest", (f) => edit(path.join(f, "package.json"), (m) => (m.experiment.sources = [{ path: "C:\\made-up\\runs\\note.md" }])), ["manifest.machine-path"]],
-  ["an absolute path", (f) => edit(path.join(f, "package.json"), (m) => (m.packages[0].path = "/alpha")), ["path.absolute"]],
-  ["a path that leaves the folder", (f) => edit(path.join(f, "package.json"), (m) => (m.packages[0].path = "../alpha")), ["path.outside"]],
-  ["a path of no file name", (f) => edit(path.join(f, "package.json"), (m) => (m.packages[0].path = "al pha")), ["path.form"]],
-  ["a path that names nothing", (f) => edit(path.join(f, "package.json"), (m) => (m.summary = "summaries.json")), ["path.missing"]],
-  ["a folder where a file is wanted", (f) => edit(path.join(f, "package.json"), (m) => (m.summary = "alpha")), ["path.kind"]],
+  ["the manifest is not JSON", (f) => writeFileSync(path.join(f, "experiment_package.json"), "{ not json"), ["json.invalid"]],
+  ["the manifest is over the cap", (f) => edit(path.join(f, "experiment_package.json"), (m) => (m.experiment.plain = "x".repeat(1100000))), ["size.cap"]],
+  ["another format", (f) => edit(path.join(f, "experiment_package.json"), (m) => (m.format = "cells.experiment_package@2")), ["manifest.format"]],
+  ["the play level", (f) => edit(path.join(f, "experiment_package.json"), (m) => (m.level = "play")), ["manifest.level"]],
+  ["no experiment id", (f) => edit(path.join(f, "experiment_package.json"), (m) => delete m.experiment.id), ["manifest.missing"]],
+  ["packages not a list", (f) => edit(path.join(f, "experiment_package.json"), (m) => (m.packages = "alpha")), ["manifest.type"]],
+  ["a date that is not a day", (f) => edit(path.join(f, "experiment_package.json"), (m) => (m.made = "yesterday")), ["manifest.type"]],
+  ["an arm that is not an id", (f) => edit(path.join(f, "experiment_package.json"), (m) => Object.assign(m.packages[1], { arm: "Beta_2", path: "Beta_2" })), ["manifest.id"]],
+  ["a group that is not an id", (f) => edit(path.join(f, "experiment_package.json"), (m) => (m.experiment.group = "Made Up")), ["manifest.id"]],
+  ["no visibility", (f) => edit(path.join(f, "experiment_package.json"), (m) => delete m.visibility), ["manifest.visibility"]],
+  ["a visibility of no known word", (f) => edit(path.join(f, "experiment_package.json"), (m) => (m.visibility = "secret")), ["manifest.visibility"]],
+  ["no licence", (f) => edit(path.join(f, "experiment_package.json"), (m) => delete m.licence), ["manifest.licence"]],
+  ["a home folder in the manifest", (f) => edit(path.join(f, "experiment_package.json"), (m) => (m.experiment.plain = "Written in /home/made-up/runs.")), ["manifest.machine-path"]],
+  ["a drive letter in the manifest", (f) => edit(path.join(f, "experiment_package.json"), (m) => (m.experiment.sources = [{ path: "C:\\made-up\\runs\\note.md" }])), ["manifest.machine-path"]],
+  ["an absolute path", (f) => edit(path.join(f, "experiment_package.json"), (m) => (m.packages[0].path = "/alpha")), ["path.absolute"]],
+  ["a path that leaves the folder", (f) => edit(path.join(f, "experiment_package.json"), (m) => (m.packages[0].path = "../alpha")), ["path.outside"]],
+  ["a path of no file name", (f) => edit(path.join(f, "experiment_package.json"), (m) => (m.packages[0].path = "al pha")), ["path.form"]],
+  ["a path that names nothing", (f) => edit(path.join(f, "experiment_package.json"), (m) => (m.summary = "summaries.json")), ["path.missing"]],
+  ["a folder where a file is wanted", (f) => edit(path.join(f, "experiment_package.json"), (m) => (m.summary = "alpha")), ["path.kind"]],
   ["a link inside a package", (f) => symlinkSync("../summary.json", path.join(f, "alpha", "linked.json")), ["path.link"]],
-  ["an arm twice", (f) => edit(path.join(f, "package.json"), (m) => m.packages.push({ ...m.packages[0] })), ["package.arm-twice"]],
-  ["an arm both a package and refused", (f) => edit(path.join(f, "package.json"), (m) => (m.refused[0].arm = "alpha")), ["package.arm-twice"]],
-  ["a path that is not its arm's folder", (f) => edit(path.join(f, "package.json"), (m) => (m.packages[0].path = "beta")), ["package.path"]],
+  ["an arm twice", (f) => edit(path.join(f, "experiment_package.json"), (m) => m.packages.push({ ...m.packages[0] })), ["package.arm-twice"]],
+  ["an arm both a package and refused", (f) => edit(path.join(f, "experiment_package.json"), (m) => (m.refused[0].arm = "alpha")), ["package.arm-twice"]],
+  ["a path that is not its arm's folder", (f) => edit(path.join(f, "experiment_package.json"), (m) => (m.packages[0].path = "beta")), ["package.path"]],
   ["no view", (f) => unlinkSync(path.join(f, "alpha", "view.json")), ["view.missing"]],
   ["a view of another format", (f) => edit(path.join(f, "alpha", "view.json"), (v) => (v.format = "cells.run_view@2")), ["view.format"]],
   ["a view that is not JSON", (f) => writeFileSync(path.join(f, "alpha", "view.json"), "[1, 2"), ["json.invalid"]],
@@ -148,25 +154,42 @@ const BREACHES = [
   ["a record's array not in its file", (f) => edit(path.join(f, "alpha", "view.json"), (v) => (v.records.find((r) => r.id === "observed_membrane_transferred").array = "no_such_array")), ["view.array-missing"]],
   ["a record on no time base", (f) => edit(path.join(f, "alpha", "view.json"), (v) => (v.records[0].base = "elsewhen")), ["view.record"]],
   ["a record whose shape does not fit its axes", (f) => edit(path.join(f, "alpha", "view.json"), (v) => (v.records.find((r) => r.id === "electrode_charge_transferred_C").axes = ["time", "cell"])), ["view.shape"]],
-  ["a sidecar not of a plain name", (f) => edit(path.join(f, "package.json"), (m) => (m.packages[0].sidecars = ["Concentration.JSON"])), ["sidecar.name"]],
-  ["a sidecar outside its arm's folder", (f) => edit(path.join(f, "package.json"), (m) => (m.packages[0].sidecars = ["../summary.json"])), ["path.outside"]],
+  ["a sidecar not of a plain name", (f) => edit(path.join(f, "experiment_package.json"), (m) => (m.packages[0].sidecars = ["Concentration.JSON"])), ["sidecar.name"]],
+  ["a sidecar outside its arm's folder", (f) => edit(path.join(f, "experiment_package.json"), (m) => (m.packages[0].sidecars = ["../summary.json"])), ["path.outside"]],
   ["a sidecar of another format", (f) => edit(path.join(f, "alpha", "concentration.json"), (s) => (s.format = "cells.experiment_quantity@2")), ["sidecar.format"]],
   ["a sidecar of other cells", (f) => edit(path.join(f, "alpha", "concentration.json"), (s) => (s.cells = ["elsewhere"])), ["sidecar.cells"]],
   ["a sidecar of other times", (f) => edit(path.join(f, "alpha", "concentration.json"), (s) => (s.times_s = s.times_s.map((t) => t + 0.25))), ["sidecar.times"]],
   ["a refusal that is not one", (f) => edit(path.join(f, "gamma", "REFUSED.json"), (r) => (r.status = "complete")), ["refused.format"]],
   ["a refused pick with a view", (f) => cpSync(path.join(WORLD, "view.json"), path.join(f, "gamma", "view.json")), ["refused.has-view"]],
   ["a refusal with no value of the parameter", (f) => edit(path.join(f, "gamma", "REFUSED.json"), (r) => delete r.g), ["refused.parameter"]],
-  ["refused picks with no summary", (f) => edit(path.join(f, "package.json"), (m) => delete m.summary), ["refused.sweep"]],
+  ["refused picks with no summary", (f) => edit(path.join(f, "experiment_package.json"), (m) => delete m.summary), ["refused.sweep"]],
   ["a summary of another format", (f) => edit(path.join(f, "summary.json"), (s) => (s.format = "cells.experiment_summary@2")), ["summary.format"]],
   ["a summary the adapter refuses", (f) => edit(path.join(f, "summary.json"), (s) => s.sweeps[0].arms.pop()), ["summary.content"]],
-  ["provenance the views do not state", (f) => edit(path.join(f, "package.json"), (m) => (m.engine.models = ["resolved_pump_tissue@3"])), ["engine.provenance"]],
+  ["a revision a view does not state", (f) => edit(path.join(f, "alpha", "view.json"), (v) => { v.run.source = { revision: v.run.revision.padEnd(40, "0"), dirty: false, from: "made up for a test" }; v.unstated = v.unstated.filter((item) => item.id !== "source"); }), ["engine.provenance"]],
+  ["a revision the run's own record does not state", (f) => edit(path.join(f, "alpha", "run.json"), (r) => (r.revision = ELSEWHERE)), ["engine.provenance"]],
+  ["a snapshot the run's own record does not name", (f) => edit(path.join(f, "beta", "run.json"), (r) => (r.snapshot = "snapshot-elsewhere")), ["engine.provenance"]],
+  ["a clean tree the run's own record calls dirty, under its older key", (f) => edit(path.join(f, "alpha", "run.json"), (r) => { delete r.clean; r.snapshot_clean = false; }), ["engine.provenance"]],
+  ["sidecars the run's own record does not list", (f) => edit(path.join(f, "alpha", "run.json"), (r) => r.sidecars.push("criterion.json")), ["sidecar.listed"]],
+  ["a run's own record that is not JSON", (f) => writeFileSync(path.join(f, "alpha", "run.json"), "{ not json"), ["json.invalid"]],
   ["a view the adapter refuses", (f) => edit(path.join(f, "alpha", "view.json"), (v) => (v.records.find((r) => r.id === "membrane_transferred").sign.from = "elsewhere")), ["adapter.refused"]],
   ["a machine path the adapter would package", (f) => edit(path.join(f, "alpha", "view.json"), (v) => (v.constants.find((c) => c.id === "temperature").from = "/Users/made-up/definition.json")), ["adapter.machine-path"]],
 ];
 const NOTES = [
-  ["a field the reader does not know", (f) => edit(path.join(f, "package.json"), (m) => (m.colour = "made up")), "manifest.unknown-field"],
-  ["a kind the reader does not know", (f) => edit(path.join(f, "package.json"), (m) => (m.packages[1].kind = "cells.made_up_kind@1")), "package.kind-unknown"],
+  ["a field the reader does not know", (f) => edit(path.join(f, "experiment_package.json"), (m) => (m.colour = "made up")), "manifest.unknown-field"],
+  ["a kind the reader does not know", (f) => edit(path.join(f, "experiment_package.json"), (m) => (m.packages[1].kind = "cells.made_up_kind@1")), "package.kind-unknown"],
+  ["the assembly's kind, which the reader does not read yet", (f) => edit(path.join(f, "experiment_package.json"), (m) => (m.packages[1].kind = "cells.assembly_view@1")), "package.kind-unknown"],
   ["a folder with a view that is not listed", (f) => cpSync(WORLD, path.join(f, "delta"), { recursive: true }), "package.not-listed"],
+];
+// Still sound, with no note: the manifest's sidecars in the order they are played while the run's own record lists the
+// same names in another, a clean tree under the record's older key, a short form of the revision, and an arm with no record.
+const STILL_SOUND = [
+  ["a record in another order and under its older key, a short revision, and an arm with no record", (f) => {
+    const second = readJson(path.join(f, "alpha", "concentration.json"));
+    writeJson(path.join(f, "alpha", "criterion.json"), { ...second, quantity: { id: "criterion", label: "A made-up criterion in each cell", unit: "1" } });
+    edit(path.join(f, "alpha", "run.json"), (r) => { r.sidecars = ["concentration.json", "criterion.json"]; delete r.clean; r.snapshot_clean = true; });
+    unlinkSync(path.join(f, "beta", "run.json"));
+    edit(path.join(f, "experiment_package.json"), (m) => { m.packages[0].sidecars = ["criterion.json", "concentration.json"]; m.engine.revision = REVISION.slice(0, 8); });
+  }],
 ];
 
 test("the sound packages pass: the made-up package, the eight worlds and the windowed loop, each with a manifest; and the check writes nothing", async () => {
@@ -176,7 +199,7 @@ test("the sound packages pass: the made-up package, the eight worlds and the win
   cpSync(path.join(VIEWS, "loop-b08af640"), loop, { recursive: true });
   for (const folder of [views, loop]) {
     const arms = readdirSync(folder).filter((name) => existsSync(path.join(folder, name, "view.json"))).sort();
-    writeJson(path.join(folder, "package.json"), { format: "cells.experiment_package@1", level: "source", experiment: { id: "engine-views", title: "Worlds the engine's run-view writer wrote (test fixture)" }, visibility: "public", licence: "MIT", packages: arms.map((arm) => ({ arm, kind: "cells.run_view@1", path: arm })) });
+    writeJson(path.join(folder, "experiment_package.json"), { format: "cells.experiment_package@1", level: "source", experiment: { id: "engine-views", title: "Worlds the engine's run-view writer wrote (test fixture)" }, visibility: "public", licence: "MIT", packages: arms.map((arm) => ({ arm, kind: "cells.run_view@1", path: arm })) });
   }
   const made = sound("sound");
   const before = readdirSync(made, { recursive: true }).sort().map((name) => [name, statSync(path.join(made, name)).mtimeMs]);
@@ -191,6 +214,7 @@ test("the sound packages pass: the made-up package, the eight worlds and the win
   assert.deepEqual(report.packages.map((item) => [item.arm, item.run, item.sidecars]), [["alpha", `${EXPERIMENT}--alpha`, ["concentration.json"]], ["beta", `${EXPERIMENT}--beta`, ["concentration.json"]]]);
   assert.deepEqual(report.refused, [{ arm: "gamma", file: "REFUSED.json" }]);
   assert.deepEqual([report.visibility, report.licence, report.summary], ["public", "CC-BY-4.0", { file: "summary.json", sweeps: 1 }]);
+  assert.deepEqual([report.experiment.id, report.experiment.group], [EXPERIMENT, "made-up-group"], "the experiment's id and the group a catalogue gathers it under");
   assert.equal(results[1].report.packages.length, 8, "the eight worlds");
   assert.deepEqual(readdirSync(made, { recursive: true }).sort().map((name) => [name, statSync(path.join(made, name)).mtimeMs]), before, "the check wrote nothing into the package");
 });
@@ -236,7 +260,7 @@ test("an unmanifested fixture folder passes with its note, and says what a manif
 });
 
 test("each breach of the contract gives its own code, and a note is said and the rest still read", async () => {
-  const cases = [...BREACHES.map(([label, change, expected]) => ({ label, change, expected, status: 1 })), ...NOTES.map(([label, change, note]) => ({ label, change, expected: [], note, status: 0 }))];
+  const cases = [...BREACHES.map(([label, change, expected]) => ({ label, change, expected, status: 1 })), ...NOTES.map(([label, change, note]) => ({ label, change, expected: [], note, status: 0 })), ...STILL_SOUND.map(([label, change]) => ({ label, change, expected: [], status: 0, sound: true }))];
   const folders = cases.map(({ change }, k) => {
     const folder = sound(`case-${String(k).padStart(2, "0")}`, same);
     change(folder);
@@ -244,12 +268,13 @@ test("each breach of the contract gives its own code, and a note is said and the
   });
   const results = [];
   for (let start = 0; start < folders.length; start += 6) results.push(...(await Promise.all(folders.slice(start, start + 6).map(check))));
-  cases.forEach(({ label, expected, note, status }, k) => {
+  cases.forEach(({ label, expected, note, status, sound: noNote }, k) => {
     const { status: got, report, stderr } = results[k];
     assert.ok(report, `${label}: no report (${stderr})`);
     assert.equal(got, status, `${label}: exit ${got}; ${JSON.stringify(report.problems)}`);
     assert.deepEqual(codes(report), expected, `${label}: ${JSON.stringify(report.problems.map((item) => item.says))}`);
     if (note) assert.ok(codes(report, "notes").includes(note), `${label}: the note ${note}`);
+    if (noNote) assert.deepEqual([codes(report, "notes"), report.packages.map((item) => item.read)], [[], [true, true]], `${label}: sound, with no note, and every package read`);
     for (const item of report.problems) assert.ok(item.says && item.file, `${label}: a problem names its file and says it in a sentence`);
   });
   // A kind the reader does not know: named, not read, and the rest read.
@@ -346,7 +371,7 @@ test("where a folder holds a manifest, the adapter takes its arms, sidecars and 
     ["a view's file that leaves the folder", (folder) => edit(path.join(folder, "alpha", "view.json"), (view) => { for (const base of view.time.bases) for (const part of base.files) part.file = `../beta/${part.file}`; }), /alpha: its view names a file of the time base \w+ that is not in the run's folder/],
     ["a link in a package", (folder) => symlinkSync(path.join(folder, "beta", "summary.json"), path.join(folder, "alpha", "kept-elsewhere.json")), /alpha holds a link \(kept-elsewhere\.json\): a run folder holds its files itself, and no link is followed/],
     ["a sidecar that is a link", (folder) => { unlinkSync(path.join(folder, "alpha", "concentration.json")); symlinkSync(path.join(folder, "beta", "concentration.json"), path.join(folder, "alpha", "concentration.json")); }, /alpha holds a link \(concentration\.json\)/],
-    ["a manifest that is a link", (folder) => { const kept = path.join(scratch, "kept-manifest.json"); writeFileSync(kept, readFileSync(path.join(folder, "package.json"))); unlinkSync(path.join(folder, "package.json")); symlinkSync(kept, path.join(folder, "package.json")); }, /[\w-]+\/package\.json is a link: a file is read where it stands, and no link is followed/],
+    ["a manifest that is a link", (folder) => { const kept = path.join(scratch, "kept-manifest.json"); writeFileSync(kept, readFileSync(path.join(folder, "experiment_package.json"))); unlinkSync(path.join(folder, "experiment_package.json")); symlinkSync(kept, path.join(folder, "experiment_package.json")); }, /[\w-]+\/experiment_package\.json is a link: a file is read where it stands, and no link is followed/],
   ]) {
     const name = `adapt-outside-${label.replace(/\W+/g, "-")}`;
     const folder = sound(name);
