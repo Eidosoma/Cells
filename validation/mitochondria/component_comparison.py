@@ -165,21 +165,51 @@ class EngineSpec(NamedTuple):
     parameters: tuple = ()  # ((law parameter, inputs.json parameter or a number), ...)
     roles: tuple = ()  # ((role, the potential set's row), ...)
     potential_set: str = "beard2005@1"
+    # ((input, value), ...): inputs the law reads that the references' rows do not give, where its
+    # value is independent of them (complex III's Eq. 7: k_Pi3 = k_Pi4, so phi_Pi = 1 at any Pi).
+    fixed: tuple = ()
 
 
 # The planned laws (the coordinator, 20 November 2026): complexes I, III and IV as three laws; the
 # synthase, the exchange, the phosphate carrier, K+/H+; held_reductant_supply@1 and the kinase;
 # the per-form face later. The kinds owner's first head fills the IDs, modes, capacities,
 # parameters and role bindings; until then each entry is not built.
+# Filled by the kinds owner's first head (a recorded exception in the lane's file, by the lead's
+# leave, 20 November 2026): complexes I, III and IV, the synthase and the three carriers.
+_C3_ROLES = (("QH2", "QH2"), ("Q", "Q"), ("c_ox", "cytc_ox"), ("c_red", "cytc_red"), ("H", "H"),
+             ("Pi", "Pi"))  # fmt: skip
 ENGINE = {
-    "complex_I": EngineSpec(None, capacity="X_C1"),
-    "complex_III_eq7": EngineSpec(None, capacity="X_C3_without"),
-    "complex_III_eq24": EngineSpec(None, capacity="X_C3"),
-    "complex_IV": EngineSpec(None, capacity="X_C4"),
-    "atp_synthase": EngineSpec("cells.proton_coupled_atp_synthesis_cycle@1", capacity="X_F1"),
-    "nucleotide_exchange": EngineSpec("cells.electrogenic_nucleotide_exchange@1", capacity="X_ANT"),
-    "phosphate_carrier": EngineSpec("cells.phosphate_proton_symport@1", capacity="X_PiHt"),
-    "k_h_exchange": EngineSpec("cells.potassium_proton_exchange@1", capacity="X_KH"),
+    "complex_I": EngineSpec(
+        "cells.nadh_ubiquinone_proton_cycle@1", "oxidation", "X_C1",
+        roles=(("NADH", "NADH"), ("Q", "Q"), ("NAD", "NAD"), ("QH2", "QH2"), ("H", "H")),
+    ),
+    "complex_III_eq7": EngineSpec(  # Eq. 7 is the law with k_Pi3 = k_Pi4 (the lead's ruling 2).
+        "cells.ubiquinol_cytochrome_c_proton_cycle@1", "oxidation", "X_C3_without",
+        parameters=(("k_Pi3", 1.0), ("k_Pi4", 1.0)), roles=_C3_ROLES, fixed=(("HPO4_N", 1e-3),),
+    ),
+    "complex_III_eq24": EngineSpec(
+        "cells.ubiquinol_cytochrome_c_proton_cycle@1", "oxidation", "X_C3",
+        parameters=(("k_Pi3", "k_Pi3_mM"), ("k_Pi4", "k_Pi4_mM")), roles=_C3_ROLES,
+    ),
+    "complex_IV": EngineSpec(
+        "cells.cytochrome_c_oxygen_proton_cycle@1", "reduction", "X_C4",
+        roles=(("O2", "O2"), ("c_red", "cytc_red"), ("c_ox", "cytc_ox"), ("H", "H")),
+    ),
+    "atp_synthase": EngineSpec(
+        "cells.proton_coupled_atp_synthesis_cycle@1", "synthesis", "X_F1",
+        roles=(("ADP", "ADP"), ("Pi", "Pi"), ("ATP", "ATP"), ("H", "H")),
+    ),
+    "nucleotide_exchange": EngineSpec(
+        "cells.electrogenic_nucleotide_exchange@1", "exchange", "X_ANT",
+        parameters=(("theta_P", "theta_P"),), roles=(("ATP", "ATP"), ("ADP", "ADP")),
+    ),
+    "phosphate_carrier": EngineSpec(
+        "cells.phosphate_proton_symport@1", "import", "X_PiHt",
+        parameters=(("k_PiHt", "k_PiHt_mM"),), roles=(("Pi", "Pi"), ("H", "H")),
+    ),
+    "k_h_exchange": EngineSpec(
+        "cells.potassium_proton_exchange@1", "exchange", "X_KH", roles=(("K", "K"), ("H", "H")),
+    ),
     "nadh_supply": EngineSpec("cells.held_reductant_supply@1", capacity="X_DH"),
     "adenylate_kinase": EngineSpec(None, capacity="X_AK", potential_set="beard2005@2"),
 }
@@ -248,9 +278,12 @@ class MonomialAdapter:
         return (self._form_monomial(self.form_by_id[reference.form], reference.end),)
 
     def _log_k(self, rate):
+        """As the kind builds it (kinds/transporter.cited_log_k): a CitedConstant's or a
+        RateConstant's log k at T, with a CitedConstant's rt_term; a number as given."""
         k = rate.log_k
-        if isinstance(k, self.forms.CitedConstant):
-            return k.offset - k.scale * (1000.0 * k.dg_kj_mol / self.rt + k.protons * math.log(1e7))
+        if isinstance(k, (self.forms.CitedConstant, self.forms.RateConstant)):
+            terms = k.protons * math.log(1e7) + getattr(k, "rt_term", 0.0)
+            return k.offset - k.scale * (1000.0 * k.dg_kj_mol / self.rt + terms)
         return float(k)
 
     def rate(self, plant=None):
@@ -267,6 +300,7 @@ class MonomialAdapter:
     def evaluate(self, values, free, plant=None):
         """x, S, J, J- and the slopes over the free coordinates and u, at one row."""
         f, np_ = self.forms, np
+        free = {**dict(self.spec.fixed), **free}
         u = values["dpsi_mV"] * float(self.inputs["constants"]["F_RT_per_mV"])
         rate = self.rate(plant)
         expanded = f.expand_rate(rate, self.read, self._log_k(rate))
