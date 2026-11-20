@@ -5,7 +5,7 @@
 
 /**
  * The reasons `viewer` (the `cells-viewer` element) is not at rest: the scene not yet in; a view loading, a run or a
- * layer's records on their way, a family of the shelves opening; the landing's cards on their way; the camera in
+ * layer's records on their way, a family of the shelves opening; the landing's cards or their details on their way; the camera in
  * flight; a frame owed (asked for and not yet drawn); a view of the page's own still moving (a frame asked for the
  * next by the one before).
  */
@@ -18,6 +18,7 @@ export function busyReasons(viewer) {
   if (lens?.fetching?.size) reasons.push("a layer's records are on their way");
   if (lens?.mounted?.opening) reasons.push("a family is opening");
   if (viewer?.landingView?.fetching) reasons.push("the landing's cards are on their way");
+  if (viewer?.landingView?.detailsFetching) reasons.push("the cards' details are on their way");
   const stage = viewer?.stage;
   if (stage) {
     if (stage.rig?.flight) reasons.push("the camera is in flight");

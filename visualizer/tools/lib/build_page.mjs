@@ -378,9 +378,11 @@ export async function packageParts(replays, { runsDir = DEFAULT_RUNS, together =
   return { replays: { ...replays, runs }, files };
 }
 
-// The Experiments landing's cards (schema/EXPERIMENT_CARDS.md) and their stills, published beside the page as cards.json and
-// stills/<name>, and fetched when the landing first opens. The cards' `listing` is what the page lists and publishes.
+// The Experiments landing's cards (schema/EXPERIMENT_CARDS.md) and their stills, published beside the page as cards.json (the
+// cards' faces, fetched when the landing first opens), cards.details.json (each card whole, fetched the first time a card's
+// detail is asked for) and stills/<name>. The cards' `listing` is what the page lists and publishes.
 export const DEFAULT_CARDS = path.join(ROOT, "data", "replays", "cards.json");
+export const CARD_DETAILS = "cards.details.json"; // beside the cards, in the data folder as beside the page
 export const DEFAULT_STILLS = path.join(ROOT, "data", "replays", "stills");
 const STILL_PATH = /^stills\/([a-z0-9][a-z0-9._-]*\.(jpg|jpeg|png|webp))$/;
 
@@ -394,14 +396,18 @@ export async function readCards(cardsPath = DEFAULT_CARDS) {
 }
 
 /**
- * The landing's files beside the page: the cards, and every still a card names (for each theme). Returns
- * { files: [{ path, source }], problems: [text] }; a still whose file is not there is left out and said (its card then
- * stands without a picture).
+ * The landing's files beside the page: the cards' faces, their details (the file beside the faces that they name), and every
+ * still a card names (for each theme). Returns { files: [{ path, source }], problems: [text] }; a still whose file is not there
+ * is left out and said (its card then stands without a picture), and so are details that are not there (a card's detail
+ * then says what its face says, and that its detail could not be fetched).
  */
 export async function landingFiles({ cardsPath = DEFAULT_CARDS, stillsDir = DEFAULT_STILLS } = {}) {
   const cards = await readCards(cardsPath);
   if (!cards) return { files: [], problems: [`${path.relative(ROOT, cardsPath)} could not be read: the landing says so and offers to try again`] };
   const files = [{ path: "cards.json", source: cardsPath }], problems = [], named = new Set();
+  const details = path.join(path.dirname(cardsPath), CARD_DETAILS);
+  if ((await modified(details)) !== null) files.push({ path: CARD_DETAILS, source: details });
+  else problems.push(`${path.relative(ROOT, details)} is not there: a card's detail then says what its face says`);
   for (const card of cards.cards || []) {
     const still = card?.replay?.still;
     if (!still || typeof still !== "object") continue;

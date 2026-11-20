@@ -113,7 +113,8 @@ The page is fetched at every address. Beside it:
 | Address | Fetched beside the page | Raw | gzip / brotli | Basis |
 | --- | --- | ---: | ---: | --- |
 | Scope, the site's first entry | the planarian's looping run and the parts its flux draws, about 5 files | about 120 KB (bound 133,000) | about 33 KB / 27 KB | the fetch budget, and the five files the flux draws, from the code |
-| Experiments landing (`lens=experiments`) | `cards.json` and the first band's two stills | 263,102 (3 files; bound 289,000) | 101,738 / 96,459 | measured by the gate, 20 November 2026, with its thirtieth card; the cards are 189,140 of it raw, and 27,776 / 22,497 compressed |
+| Experiments landing (`lens=experiments`) | `cards.json` (the cards' faces) and the first band's two stills | 141,289 (3 files; bound 156,000) | 89,777 / 87,175 | raw measured by `fetches`, 20 November 2026, the cards split into faces and details; compressed, summed from a staged release's `.gz` and `.br` copies, the stills sent as they are; the faces are 67,327 of it raw, and 15,815 / 13,213 compressed (the cards whole were 189,140 the same morning) |
+| A card's detail (`select=card:fr1`) | the faces, `cards.details.json` (every card whole, once) and the stills near the screen | 347,697 (5 files; bound 383,000) | 136,632 / 128,950 | raw measured by `fetches`, 20 November 2026; compressed, summed the same way; the details are 186,709 raw, and 27,156 / 22,076 compressed |
 | The tumour tissue's card (`part=gap-junction-tissue-sheet`) | the sheet's and the line's runs and parts | 2,817,063 (10 files) | not measured | measured by the gate |
 | The assembly (`example=gard`) | its two files | 275,894 | 102,181 / 86,765 | the fetch budget, and file sizes |
 | A single run of the networks | its own file | under 40,000 | | the fetch budget |
@@ -464,7 +465,8 @@ Nobody outside is known to be waiting for an API today; that is the owner's to s
 Every published file already names its format, which is versioned: `cells.visualizer.replay@1`,
 `replay_part@1`, `replay_parts@1`, `species_proteins@1`, `species_protein_members@1`,
 `species_protein_names@1`, `machine_bench@1`, `machine@1`, `machine-shape@1`, `assembly_run@1`,
-`experiment_cards@1`; inside a replay, the engine's own `cells.run_view@1`. Each has a contract
+`experiment_cards@1` (since 20 November 2026 `experiment_cards@2`, the cards' faces, and `experiment_card_details@1`,
+each card whole, fetched the first time a card's detail is asked for); inside a replay, the engine's own `cells.run_view@1`. Each has a contract
 under `schema/`. What is missing is what makes files an interface:
 
 | Needed | Proposal |

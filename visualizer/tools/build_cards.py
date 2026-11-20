@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
-"""Builds the Experiments landing's cards (schema/EXPERIMENT_CARDS.md): data/replays/cards.json.
+"""Builds the Experiments landing's cards (schema/EXPERIMENT_CARDS.md): data/replays/cards.json and cards.details.json.
+
+The landing draws its cards from their faces (cards.json: each card's title, question, level, verdict lines, scope lines,
+still and runs, what the List and the search read), fetched as the landing opens; each card's detail (the card whole: its
+standing with its sources, the record's items, the rows' references, the folder and revision lines) stands in one second
+file, cards.details.json, fetched the first time a card's detail is asked for. Both are written from the same build: a
+card's face is its whole card with every field the face does not read left out (face_of).
 
 A card's typed parts (its title, what it asks, its band and kind, and which map part, catalogue entry,
 verdict file and PROGRESS.md entry it reads) are in data/replays/cards.source.json. Everything a card
@@ -18,8 +24,8 @@ says of a standing is read:
 So the cards are built from tracked files alone, and the gathering is the only step that reads the
 record:
 
-    python3 tools/build_cards.py                    # writes data/replays/cards.json
-    python3 tools/build_cards.py --check            # fails if cards.json is not what it would write
+    python3 tools/build_cards.py                    # writes data/replays/cards.json and cards.details.json
+    python3 tools/build_cards.py --check            # fails if either is not what it would write
     python3 tools/build_cards.py --gather --evidence DIR --repo DIR
                                                     # reads the record, writes the readings and the cards
     python3 tools/build_cards.py --check --evidence DIR --repo DIR
@@ -47,12 +53,15 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 TOOLS = ROOT / "tools"
-FORMAT = "cells.visualizer.experiment_cards@1"
+FORMAT = "cells.visualizer.experiment_cards@2"
+DETAILS_FORMAT = "cells.visualizer.experiment_card_details@1"
+DETAILS_NAME = "cards.details.json"
 SOURCE_FORMAT = "cells.visualizer.experiment_cards_source@1"
 READINGS_FORMAT = "cells.visualizer.experiment_cards_readings@1"
 SOURCE = ROOT / "data" / "replays" / "cards.source.json"
 READINGS = ROOT / "data" / "replays" / "cards.readings.json"
 OUT = ROOT / "data" / "replays" / "cards.json"
+DETAILS = ROOT / "data" / "replays" / DETAILS_NAME
 CATALOGUE = ROOT / "data" / "replays" / "overlay.json"
 SELECTION = ROOT / "data" / "replays" / "selection.json"
 MAP = ROOT / "data" / "architecture" / "overlay.json"
@@ -1090,6 +1099,55 @@ def build(source, readings, tracked: Tracked):
     }
 
 
+# --------------------------------------------------------------------------- the two files: faces and details
+
+
+def face_of(card):
+    """A card's face: what the landing draws on it and what the List and the search read (src/replay/landing.js, faceOf and
+    the landing's sections), the card's own values, every other field left out. The whole card is its detail."""
+    face = {key: card[key] for key in ("id", "band", "kind", "title", "asks", "shows") if key in card}
+    standing = card.get("standing") or {}
+    face["standing"] = {key: standing[key] for key in ("first", "says", "none", "status", "level", "part") if key in standing}
+    record = []
+    for entry in card.get("record") or []:
+        verdict = (entry or {}).get("verdict")
+        if not isinstance(verdict, dict):
+            continue
+        count = verdict.get("count") if isinstance(verdict.get("count"), dict) else None
+        line = {"says": entry["says"]} if "says" in entry else {}
+        line["verdict"] = {"passed": verdict.get("passed")}
+        if count is not None:
+            line["verdict"]["count"] = {key: count[key] for key in ("passed", "of", "unit", "not_evaluable") if key in count}
+        if isinstance(verdict.get("day"), dict) and "date" in verdict["day"]:
+            line["verdict"]["day"] = {"date": verdict["day"]["date"]}
+        if isinstance(entry.get("scope"), dict) and "says" in entry["scope"]:
+            line["scope"] = {"says": entry["scope"]["says"]}
+        record.append(line)
+    face["record"] = record
+    if isinstance(card.get("answer"), dict):
+        face["answer"] = {key: card["answer"][key] for key in ("answer", "label", "text") if key in card["answer"]}
+    if "replay" in card:
+        face["replay"] = card["replay"]
+    if isinstance(card.get("rows"), list):
+        face["rows"] = [{key: row[key] for key in ("id", "passed") if key in row} for row in card["rows"]]
+    return face
+
+
+def split(built):
+    """The cards' two files from one build: the faces (cards.json, the landing's) and the details (cards.details.json, each
+    card whole, in the same order)."""
+    faces = {key: value for key, value in built.items() if key != "cards"}
+    faces["details"] = DETAILS_NAME
+    faces["cards"] = [face_of(card) for card in built["cards"]]
+    details = {
+        "format": DETAILS_FORMAT,
+        "note": "Each card of the Experiments landing whole, as tools/build_cards.py builds it: its detail (the standing with its sources, the record's items, the rows, the folder and revision lines). The landing draws its cards from cards.json, their faces, and fetches this file the first time a card's detail is asked for. Not edited by hand: schema/EXPERIMENT_CARDS.md.",
+        "built_from": built["built_from"],
+        "cards": built["cards"],
+    }
+    return faces, details
+
+
 # --------------------------------------------------------------------------- the command
 
 
@@ -1097,7 +1155,8 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("--source", type=Path, default=SOURCE)
     parser.add_argument("--readings", type=Path, default=READINGS)
-    parser.add_argument("--out", default=str(OUT), help="where the cards are written ('-' for standard output)")
+    parser.add_argument("--out", default=str(OUT), help="where the cards' faces are written ('-' for standard output)")
+    parser.add_argument("--details", help=f"where the cards' details are written (default: {DETAILS_NAME} beside --out)")
     parser.add_argument("--check", action="store_true", help="fail if the cards (and, with --evidence and --repo, the readings) are stale")
     parser.add_argument("--gather", action="store_true", help="read the record and write the readings, then the cards")
     parser.add_argument("--evidence", type=Path, help="the folder of saved run folders (read only)")
@@ -1140,19 +1199,23 @@ def main(argv=None):
             if not arguments.readings.is_file():
                 raise Breach(f"no readings at {arguments.readings}: gather first")
             readings = read_json(arguments.readings)
-        cards = dumps(build(source, readings, tracked))
+        faces, details = split(build(source, readings, tracked))
+        cards, detailed = dumps(faces), dumps(details)
+        details_path = Path(arguments.details) if arguments.details else (Path(arguments.out).with_name(DETAILS_NAME) if arguments.out != "-" else None)
         if arguments.check:
-            target = Path(arguments.out)
-            if not target.is_file() or target.read_text(encoding="utf-8") != cards:
+            stale = [target for target, text in ((Path(arguments.out), cards), (details_path, detailed)) if target is not None and (not target.is_file() or target.read_text(encoding="utf-8") != text)]
+            for target in stale:
                 print(f"{target} is stale: run python3 tools/build_cards.py", file=sys.stderr)
+            if stale:
                 return 1
-            print(f"{target.name} is up to date ({len(json.loads(cards)['cards'])} cards)")
+            print(f"{Path(arguments.out).name} and {DETAILS_NAME} are up to date ({len(faces['cards'])} cards; faces {len(cards.encode())} bytes, details {len(detailed.encode())} bytes)")
             return 0
         if arguments.out == "-":
             sys.stdout.write(cards)
         else:
             Path(arguments.out).write_text(cards, encoding="utf-8")
-            print(f"wrote {arguments.out}: {len(json.loads(cards)['cards'])} cards")
+            details_path.write_text(detailed, encoding="utf-8")
+            print(f"wrote {arguments.out} ({len(cards.encode())} bytes) and {details_path} ({len(detailed.encode())} bytes): {len(faces['cards'])} cards")
         return 0
     except Breach as breach:
         print(f"build_cards: {breach}", file=sys.stderr)

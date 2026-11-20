@@ -85,6 +85,7 @@ const PUBLISHED = [
   /^catalogue\/[a-z0-9][a-z0-9_-]*\.json$/,
   /^models\/[a-z0-9-]+\/[a-z0-9_.-]+\.json$/,
   /^cards\.json$/,
+  /^cards\.details\.json$/,
   /^stills\/[a-z0-9][a-z0-9._-]*\.(?:jpg|jpeg|png|webp)$/,
 ];
 const ID = /^[a-z0-9][a-z0-9.-]{0,63}$/;
@@ -371,7 +372,8 @@ export function llmsText(id, words, { cards = null, files = [], schemas = [] } =
   lines.push(`- Address: ${SITE} (the views below are addresses of it)`, "");
   lines.push("## Views", "", ...views.map((view) => `- [${view.label}](${viewAddress(view.id)}): ${md(about.views.find((item) => item.id === view.id).text)}`), "");
   if (cards) {
-    lines.push("## Experiments", "", `The ${views.find((view) => view.id === "experiments")?.label || "Experiments"} view's cards, band by band, as this release's [cards.json](${at("cards.json")}) has them: each card's title, its level from the Engine map where the file states one, what it found, and its verdicts.`, "");
+    const whole = files.some((file) => file.path === "cards.details.json") ? ` Each card whole (its standing's sources, the record's items, the rows' references) is in [cards.details.json](${at("cards.details.json")}).` : "";
+    lines.push("## Experiments", "", `The ${views.find((view) => view.id === "experiments")?.label || "Experiments"} view's cards, band by band, as this release's [cards.json](${at("cards.json")}) has them: each card's title, its level from the Engine map where the file states one, what it found, and its verdicts.${whole}`, "");
     for (const band of landingOf(cards).bands) {
       lines.push(`### ${md(band.label)}`, "");
       if (band.says) lines.push(md(band.says), "");

@@ -476,9 +476,13 @@ in one line, a press away from it.
   directly; a published artifact's frame passes only `#name`, so a detail has no shareable
   link there. Every address that worked before (`run=`, `select=run:`, `part=`,
   `example=`) opens its view without the landing.
-- **What each address fetches.** The landing fetches `cards.json` and, as it opens, the
-  two examples' stills; a later band's stills only once it is shown and they come near
-  the screen: no run and no model. The site's first entry fetches nothing of the landing's. A
+- **What each address fetches.** The landing fetches `cards.json`, the cards' faces (what
+  a card's face says, and what the List and the search read), and, as it opens, the two
+  examples' stills; a later band's stills only once it is shown and they come near the
+  screen: no run and no model. The cards whole (`cards.details.json`, one file for every
+  card, written by `tools/build_cards.py` beside the faces) are fetched the first time a
+  card's detail is asked for, and once (20 November 2026: the faces are 67 kB, the whole
+  187 kB). The site's first entry fetches nothing of the landing's. A
   card's view fetches its own run and the parts its opening view shows, and no other run.
   `fetches` (`tools/check_fetches.mjs`) holds each address to
   `tools/references/fetches.json`, with a bound in bytes.

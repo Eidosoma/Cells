@@ -43,13 +43,14 @@ const LENSES = (views = VIEWS) => `var LENSES = [\n${views.map(([id, label]) => 
 const PAGE = (scene = SCENE(), link = FONTS_LINK, lenses = LENSES()) =>
   `<title>Cells</title>\n<meta name="claude:viewport-fit-sides" content="cover">\n${link}\n<style>\nbody { margin: 0 }\n</style>\n\n<cells-viewer id="cells-viewer">\n  <p class="boot" id="cells-boot">Loading…</p>\n  <script type="application/json">${scene}</script>\n</cells-viewer>\n\n<script>\n  setTimeout(function () {}, 9000);\n</script>\n<script type="module">\nimport * as three_star from "${THREE_CDN}";\nimport {\n  Vector3\n} from "${THREE_CDN}";\n${lenses}customElements.define("cells-viewer", class extends HTMLElement {});\n</script>\n`;
 // One card in one band, with a level and a verdict, as the landing reads it (src/replay/landing.js).
-const CARDS = JSON.stringify({ format: "cells.visualizer.experiment_cards@1", bands: [{ id: "judged", label: "Judged", cards: ["c1"] }], cards: [{ id: "c1", band: "judged", kind: "standing", title: "FR-1: a closed compartment", standing: { status: "qualified", level: { label: "Qualified or judged", says: "…" } }, record: [{ says: "…", verdict: { passed: true, count: { passed: 44, of: 44, unit: "judged criteria" }, day: { date: "2026-11-18" } } }] }] });
+const CARDS = JSON.stringify({ format: "cells.visualizer.experiment_cards@2", bands: [{ id: "judged", label: "Judged", cards: ["c1"] }], details: "cards.details.json", cards: [{ id: "c1", band: "judged", kind: "standing", title: "FR-1: a closed compartment", standing: { status: "qualified", level: { label: "Qualified or judged", says: "…" } }, record: [{ says: "…", verdict: { passed: true, count: { passed: 44, of: 44, unit: "judged criteria" }, day: { date: "2026-11-18" } } }] }] });
 
 const BESIDE = {
   "runs/sheet--a.json": '{"format":"cells.visualizer.replay@1","run":"sheet--a"}',
   "runs/sheet--a.parts.json": '{"format":"cells.visualizer.replay_parts@1","parts":[]}',
   "proteins/worm/shelves.json": '{"format":"cells.visualizer.species_proteins@1"}',
   "cards.json": CARDS,
+  "cards.details.json": '{"format":"cells.visualizer.experiment_card_details@1","cards":[]}',
   "stills/sheet.jpg": Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0, 1, 2, 3, 0xff, 0xd9]),
 };
 
@@ -159,7 +160,7 @@ test("a release holds the staged page but for the declared insertions and the tw
     assert.equal(await readFile(path.join(release, "sitemap.xml"), "utf8"), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url><loc>${SITE}</loc><lastmod>2026-11-19</lastmod></url>\n</urlset>\n`);
     const llms = await readFile(path.join(release, "llms.txt"), "utf8");
     assert.ok(llms.startsWith(`# Cells\n\n> ${DESCRIPTION}\n`));
-    for (const line of [`- [Scope](${SITE}?lens=cell): `, `[release.json](${SITE}r/v1/release.json)`, `[cards.json](${SITE}r/v1/cards.json)`, "- FR-1: a closed compartment. Level: Qualified or judged. Verdict: passed, 44 of 44 judged criteria, 18 Nov 2026.", `- cells.visualizer.replay@1: [runs/sheet--a.json](${SITE}r/v1/runs/sheet--a.json)`, "- [EXPERIMENT_CARDS.md](https://github.com/Eidosoma/Cells/blob/visualizer/visualizer/schema/EXPERIMENT_CARDS.md)", "- [Source code](https://github.com/Eidosoma/Cells), under the MIT licence", `\n${ABOUT.credit.text}\n`]) assert.ok(llms.includes(line), line);
+    for (const line of [`- [Scope](${SITE}?lens=cell): `, `[release.json](${SITE}r/v1/release.json)`, `[cards.json](${SITE}r/v1/cards.json)`, `Each card whole (its standing's sources, the record's items, the rows' references) is in [cards.details.json](${SITE}r/v1/cards.details.json).`, "- FR-1: a closed compartment. Level: Qualified or judged. Verdict: passed, 44 of 44 judged criteria, 18 Nov 2026.", `- cells.visualizer.replay@1: [runs/sheet--a.json](${SITE}r/v1/runs/sheet--a.json)`, "- [EXPERIMENT_CARDS.md](https://github.com/Eidosoma/Cells/blob/visualizer/visualizer/schema/EXPERIMENT_CARDS.md)", "- [Source code](https://github.com/Eidosoma/Cells), under the MIT licence", `\n${ABOUT.credit.text}\n`]) assert.ok(llms.includes(line), line);
     // The staged folder is only read, and no path of the machine stands in any file written.
     assert.deepEqual(await snapshot(staged), before);
     const places = [folder, ROOT, os.homedir(), "/home/", "/mnt/", "/Users/"];

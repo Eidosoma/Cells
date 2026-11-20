@@ -11,7 +11,8 @@
 // Each size case, in the light theme and in the dark one (THEMES, "light,dark" unless set): the site's first entry fetches
 // nothing of the landing. As the landing opens (nothing kept from an earlier visit) only the first band's cards stand;
 // each later band shows its head (its label, its words), its count and its control (a button with aria-expanded and
-// aria-controls, in the file's words), and nothing of it is drawn or fetched; the landing fetches the cards once and only
+// aria-controls, in the file's words), and nothing of it is drawn or fetched; the landing fetches the cards' faces once
+// (never their details) and only
 // the stills near the screen, and no run and no model; the not-run line and the cards' revisions stand at the foot, under
 // the folded bands. A real press on each control shows its cards under its head (their stills fetched only near the
 // screen), a second press folds them and a third shows them again (nothing fetched twice). Then, with every band open:
@@ -25,7 +26,8 @@
 // one place in every view, clear of the view's other controls, and returns to the landing with the same bands open, where
 // it was scrolled, with the keyboard on the card it left; a card asked for by its detail's address, from the List, and by
 // the way back opens its band first, the other bands staying folded; the List lists every card, folded or not; a
-// standing's detail opens by a press, with its own address, and by that address; the rows' card lists its rows; the
+// standing's detail opens by a press, with its own address, and by that address, and the cards' details are fetched the
+// first time a detail is asked for and once; the rows' card lists its rows; the
 // not-run line opens the view it names. Last, at each size, About and the first-visit line (src/ui/about.js), on a first
 // visit as every run of a check is: where the line stands (the site's first view, the landing) it covers nothing the
 // page put over the picture and no name the view shows, else it waits out of sight (always on a phone); the bar's About
@@ -72,7 +74,8 @@ const check = (name, ok, detail = "") => {
   console.log(`${ok ? "pass" : "FAIL"}  ${name}${detail ? `  (${String(detail).slice(0, 400)})` : ""}`);
 };
 const note = (text) => console.log(`note  ${text}`);
-const cards = JSON.parse(readFileSync(path.join(ROOT, "data", "replays", "cards.json"), "utf8"));
+const cards = JSON.parse(readFileSync(path.join(ROOT, "data", "replays", "cards.json"), "utf8")); // the cards' faces
+const wholeCards = new Map(JSON.parse(readFileSync(path.join(ROOT, "data", "replays", "cards.details.json"), "utf8")).cards.map((card) => [card.id, card])); // each card whole
 const ABOUT_WORDS = JSON.parse(readFileSync(path.join(ROOT, "data", "site", "about.json"), "utf8")); // the About words (src/ui/about.js)
 // The landing as its model reads the file: the first band stands open, every later band folds behind its control.
 const landing = landingOf(cards);
@@ -398,7 +401,7 @@ try {
       check(`${theme}: as the landing opens only the first band's ${FIRST.cards.length} cards stand, and each later band shows its head, its count and its control, folded, none of its cards made`, drawn && standAs(opening, new Set()) && opening.slice(1).every((band) => band.made === 0) && (await shownCards()).length === FIRST.cards.length, describeBands(opening));
       check(`${theme}: each band's head says its label and its words, as the file gives them`, opening.every((band, n) => band.label === landing.bands[n].label && band.says === landing.bands[n].says), JSON.stringify(opening.map((band) => [band.label, band.says?.slice(0, 30)])));
       const got = beside(from);
-      check(`${theme}: it fetched the cards once, and no run and no model`, got.filter((one) => one === "/cards.json").length === 1 && !got.some((one) => one.startsWith("/runs/") || one.startsWith("/models/")), got.join(", "));
+      check(`${theme}: it fetched the cards' faces once, not their details, and no run and no model`, got.filter((one) => one === "/cards.json").length === 1 && !got.includes("/cards.details.json") && !got.some((one) => one.startsWith("/runs/") || one.startsWith("/models/")), got.join(", "));
       // The stills fetched are those near the screen of the first band's cards: none of a folded band's, none far below.
       const stills = await stillsNow();
       const firstIds = new Set(FIRST.cards.map((card) => card.id));
@@ -679,6 +682,7 @@ try {
         await until(FIRST_DRAWN, 30000);
         await pressControl(bandHolding(landing, standing.id).id, true);
         await bring(`${cardEl(standing.id)}?.querySelector(".landing-open")`);
+        const detailFrom = asked.length;
         await press(`${cardEl(standing.id)}.querySelector(".landing-open")`);
         await until(`!${R}.querySelector("cells-panel").hidden && ${R}.querySelector("cells-panel h2")?.textContent === ${JSON.stringify(standing.title)} && new URL(location.href).searchParams.get("select") === ${JSON.stringify(CARD + standing.id)}`, 10000);
         const panel = await evaluate(`(() => { const p = ${R}.querySelector("cells-panel"); return { title: p.querySelector("h2")?.textContent || "", text: p.textContent, links: [...p.querySelectorAll("a")].map((a) => a.href).filter((href) => /\\/blob\\/[0-9a-f]{40}\\//.test(href)).length, doors: [...p.querySelectorAll(".panel-door button")].map((b) => b.textContent), select: new URL(location.href).searchParams.get("select") }; })()`);
@@ -687,6 +691,17 @@ try {
         await picture(`detail-${standing.id}`);
         await key("Escape", "Escape", 27);
         check("Escape closes the detail, and the address no longer names it", await until(`${R}.querySelector("cells-panel").hidden && !new URL(location.href).searchParams.get("select")`, 10000));
+        // The cards' details are fetched the first time a detail is asked for, and once: a second detail asks for nothing more.
+        const other = landing.bands.flatMap((band) => band.cards).find((card) => card.id !== standing.id && bandHolding(landing, card.id) === FIRST);
+        if (other) {
+          await bring(`${cardEl(other.id)}?.querySelector(".landing-more")`);
+          await press(`${cardEl(other.id)}.querySelector(".landing-more")`);
+          await until(`${R}.querySelector("cells-panel h2")?.textContent === ${JSON.stringify(other.title)}`, 10000);
+          await key("Escape", "Escape", 27);
+          await until(`${R}.querySelector("cells-panel").hidden`, 10000);
+        }
+        const detailsAsked = asked.slice(detailFrom).filter((one) => one === "/cards.details.json").length;
+        check(`a card's detail fetches the cards' details the first time one is asked for, and once (${other ? `two details opened: ${standing.id}, ${other.id}` : "one detail opened"})`, detailsAsked === 1, `${detailsAsked} times`);
         await fresh(`lens=experiments&select=${CARD}${standing.id}`);
         const byAddress = await until(`${R}.querySelector("cells-panel h2")?.textContent === ${JSON.stringify(standing.title)}`, 30000);
         check(`and by its address (select=${CARD}${standing.id})`, byAddress && (await evaluate(`${V}.state.landing`)));
@@ -710,7 +725,7 @@ try {
         const reloaded = await evaluate(`${V}.state.lens`);
         check("the tab left, the address keeps no card's detail and no lens= of the landing's, and a reload opens the tab pressed", new URLSearchParams(named).get("select") === CARD + standing.id && !/[?&](lens|select)=/.test(left.search) && left.hash === "#cell" && reloaded === "cell", JSON.stringify({ named, ...left, reloaded }));
       }
-      const rowsCard = cards.cards.find((card) => card.kind === "rows");
+      const rowsCard = wholeCards.get(cards.cards.find((card) => card.kind === "rows")?.id); // its rows' references are in its detail
       if (rowsCard) {
         await fresh(`lens=experiments&select=${CARD}${rowsCard.id}`);
         await until(`${R}.querySelector("cells-panel h2")?.textContent === ${JSON.stringify(rowsCard.title)}`, 30000);
