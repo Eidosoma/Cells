@@ -376,12 +376,17 @@ NAD in the matrix (D236). There is no membrane leg.
 - Charge moved: q = 0. z(NAD) = z(NADH) + z(H⁺).
 
 **Free energy:**
-  ΔG = ΔG°_S + RT ln([S_ox][NADH]/([S_red][NAD])) + RT ln(h_N/10⁻⁷ M),
-with ΔG°_S = 0 at pH 7 (declared, uncited).
-- **The held pair's ratio (declared, D236):** [S_ox]/[S_red] = 10^{(7.10 − 7)}/r. That is 0.27483
-  with Table 1's r = 4.5807 (with Pi control), or 0.29601 with r = 4.2530 (without).
-- It makes the supply's equilibrium the source's [NADH]/[NAD] = r at the reference matrix pH 7.10.
-  So ΔG/RT = ln([NADH]/(r [NAD])) + ln(h_N/10^{−7.10} M).
+  ΔG = ΔG°_S + RT ln([S_ox][NADH]/([S_red][NAD])) + RT ln(h_N/10⁻⁷ M).
+- **The anchor (the lead's ruling, option A):** ΔG°_S = 0 at pH 7 (+16.1181 RT at 1 M, §9). This
+  is the named set's own anchor (declared, uncited).
+- **The held pair's ratio (declared, D236),** in both directions:
+  - S_red/S_ox = 10^{−0.10} r = 0.794328 r. That is 3.63858 with Table 1's r = 4.5807 (with Pi
+    control), or 3.37828 with r = 4.2530 (without).
+  - S_ox/S_red = 10^{0.10}/r: 0.274833 or 0.296009.
+- With this anchor and ratio, the supply's equilibrium is the source's [NADH]/[NAD] = r at the
+  reference matrix pH 7.10. So ΔG/RT = ln([NADH]/(r [NAD])) + ln(h_N/10^{−7.10} M).
+- **A planted control:** a world that holds S_red/S_ox = r, without the factor 10^{−0.10}, puts
+  that equilibrium at pH_N 7.00 instead. Its x is smaller by 0.10 ln 10 = 0.2303 at every state.
 
 **Printed (Eq. 1):**
   J = X_DH φ_DH (r [NAD] − [NADH]), with φ_DH = (1 + [Pi]_N/k_Pi,1)/(1 + [Pi]_N/k_Pi,2).

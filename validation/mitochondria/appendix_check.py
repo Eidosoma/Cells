@@ -505,6 +505,19 @@ def check(n_states=400, seed=20261120):
     gap = max(abs(entries[k] - direct[k]) for k in entries)
     report["entries_convention_vs_source"] = f"{gap:.3e}"
     ok &= gap < D("1e-9")
+    # The supply's anchor (option A): with the convention's potentials (doubles) and the held ratio
+    # S_red/S_ox = 10^-0.10 r, x equals the reduced form; holding the printed r shifts it.
+    mu, x_gap, x_shift = potentials(t_world), D(0), set()
+    held = D(repr(source.held_pair_ratio()))  # S_ox/S_red
+    for st in states:
+        nu = ENTRIES["§6, per NADH"]
+        base = sum(n * mu[sp] for sp, n in nu.items()) + ln(st["NADH"] / st["NAD"]) + ln(st["H_N"])
+        x_gap = max(x_gap, abs(base + ln(held) - supply(st)[2]))
+        x_shift.add(f"{base + ln(ONE / P['r']) - supply(st)[2]:.12f}")
+    report["supply_anchor"] = dict(
+        x_vs_reduced_form=f"{x_gap:.3e}", planted_r_shift=sorted(x_shift)
+    )
+    ok &= x_gap < D("1e-12") and x_shift == {f"{-D('0.1') * D(10).ln():.12f}"}
     mu310 = potentials(310.15)
     gap = max(abs(mu310[k] - D(v)) for k, v in CONVENTION_310.items())
     report["convention_file_at_310.15_K"] = f"{gap:.3e}"
