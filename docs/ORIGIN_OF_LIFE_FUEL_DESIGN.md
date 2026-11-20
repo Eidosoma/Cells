@@ -1,10 +1,28 @@
 # Fuel for the assembly engine (OL4): design note
 
-**Status: proposed, 20 November 2026, for the lead and then the user (D242).** This note is desk
-work only: options, a recommendation, files, tests and a price (D142). It contains no engine code,
-and no world was run. A result marked **S** is this note's own derivation, done by hand and not run.
-"From memory" marks standard theory that was cited without being read for this note. Line numbers
-are at main ecc7c131. The branch is `ol4-fuel-design`.
+**Status: option (d) chosen (D245), conditional on the desk probe, which confirmed §2.3's
+condition (20 November 2026).** This note is desk work: options, a recommendation, files, tests and
+a price (D142).
+- It contains no engine code, and no engine or fueled world was run.
+- A result marked **S** is this note's own derivation, done by hand. §2.3 says what the lead's
+  host-only desk probe then checked.
+- "Cited from memory, not verified" marks standard theory that was neither read nor checked for
+  this note.
+- Line numbers are at main ecc7c131. The branch is `ol4-fuel-design`.
+
+**The decisions, 20 November 2026** (D245, and the lead's rulings on §10's questions):
+- **U1:** option (d) was chosen, conditional on the desk probe confirming §2.3's condition. The
+  probe confirmed it (§2.3, C1).
+- **U4:** F12 is kept as the preprint defines it. A second reading, each parent against the next
+  parent, gets its own name and registration. H's species set is declared per experiment: for (d),
+  the amphiphiles only.
+- **U2:** fuel reacting at the membrane, option (b1), comes later.
+- **U3:** A9 and A10 join §7.4 as reported comparisons only, after their numbers were checked
+  (done: §3, Sources).
+- **L1:** the refusal of a factor on a pool-only step goes to the first builder.
+- **L3:** A5 stays reported. No other host is tried for its Supplementary Information.
+- **L4:** the desk probe of §2.3 was approved, host only. It has run; its results are in §2.3.
+- **L5:** no per-species transfer record for now. The fuel reader uses the diagnostic record.
 
 **The request.** D212 sets the user's target: a first-principles lipid simulation in which
 vesicles take lipids and chemicals in and out, grow and divide, so that "break and renew" of
@@ -55,30 +73,42 @@ Option (b1) would add one new reaction law (§3).
      refuses it);
    - a consistent meaning for members catalysing a pool-only step;
    - per-species records across a transfer;
-   - a step in a held concentration at a declared time. The recommended option does not need it.
-2. **The crux (S, §2).** Fuel lets catalysis set the composition: the steady state of a driven
-   cycle depends on its rates, while an equilibrium does not. But fuel alone gives *one* stable
-   composition per environment. Two or more need three things together:
+   - a step in a held concentration at a declared time. Option (d) does not need it.
+2. **The crux (S, §2; checked by the desk probe).** Fuel lets catalysis set the composition: the
+   steady state of a driven cycle depends on its rates, while an equilibrium does not. But fuel
+   alone gives *one* stable composition per environment. Two or more need three things together:
    - the step that makes a membrane species is autocatalytic in its stoichiometry (the member is
      both a reactant and a product);
    - members catalyse that step through the factor;
-   - the drive is above a threshold.
+   - a drive above a threshold.
 
-   Today's feed-driven worlds (option 0) and options (a) and (c) lack the autocatalytic
-   stoichiometry, so each has one stable composition. Vasas, Szathmáry and Santos 2010 found one
-   dominant steady state for GARD's deterministic dynamics, which agrees.
-3. **Recommended: option (d)**, a full fuel-to-waste cycle with the activation catalysed and the
+   **What the probe found:**
+   - The threshold condition held exactly, across 4,000 random parameter sets.
+   - No lineage of real size switches between the two compositions on its own. The switching time
+     grows exponentially with the amphiphile count (C8).
+   - The drive can be a fuel's cycle affinity, which works even in vesicles that do not grow.
+   - Or it can be a feed's supersaturation with no fuel at all, which works only while the
+     vesicles grow. That is a no-fuel variant, (d0).
+   - Option 0, (a) and (c) lack the autocatalytic stoichiometry. They give one stable composition
+     in any vesicle that grows or holds its size; two appeared only in shrinking, dissolving ones.
+   - Vasas, Szathmáry and Santos 2010 found one dominant steady state for GARD's deterministic
+     dynamics, which agrees.
+3. **Chosen: option (d)** (D245), a full fuel-to-waste cycle with the activation catalysed and the
    deactivation uncatalysed (§4).
    - It is built first with the fuel recharging a building block in the pool, which the membranes
      then turn into amphiphiles.
-   - It needs no new law, token or record, only one refusal.
-   - It costs about 4.25–5.25 agent-days, OL5's references included.
-   - Fuel reacting at the membrane, option (b1), is a new law at about +2–3 agent-days. The user
-     decides.
-4. **A risk outside OL4 (S, §2.4).** F12 scores each fission by comparing the parent with its
-   daughter at the split. From about a hundred molecules up, with a few species, every split is
-   inherited for every option, so F12 alone cannot show what fuel adds. That is a question for the
-   user (U4).
+   - It is registered with its own nulls, true equilibrium and β = 0, in the same world. Its no-fuel
+     variant (d0) can run beside it as a further control.
+   - It needs no new law, token or record. The one refusal it relies on is the first builder's (L1).
+   - It costs about 4.75–5.75 agent-days, OL5's references included; (d) alone, 4–5.
+   - Fuel reacting at the membrane, option (b1), comes later (U2).
+4. **A risk outside OL4 (S, §2.4; C8).**
+   - F12 scores each fission by comparing the parent with its daughter at the split. From about a
+     hundred molecules up, with a few species, every split is inherited for every option.
+   - The generational reading (D245) can see a switch between fissions. But no lineage of real size
+     switches on its own (C8).
+   - So OL9's breaks must be induced, or its vesicles kept to a few tens of amphiphiles. That is a
+     new question for the user (U5).
 
 ## 1. What of §3 exists in the version-2 family
 
@@ -130,7 +160,7 @@ Members can catalyse each join through the factor. So "driven" is not the test.
   vesicles relax toward one composition. A closed world relaxes to exp(−F) whatever the catalysts
   (§0.1).
   With ideal mixing, that law has one most likely composition for each set of conserved totals
-  (Horn and Jackson 1972, from memory).
+  (Horn and Jackson 1972, cited from memory, not verified).
 - **During growth** the composition is kinetic, and catalysed joins shape it. But a join is first
   order in the joining species and the factor is linear in the fractions, so one composition is
   stable (§2.3).
@@ -142,7 +172,19 @@ Members can catalyse each join through the factor. So "driven" is not the test.
   it is no substitute (S, not run). One lumped membrane cannot hold two domains, so two minima of
   its F would be an artefact of the lumping: real lipids at that strength split into domains.
 
-### 2.3 When more than one composition can be stable (S)
+### 2.3 When more than one composition can be stable (S; checked by the desk probe)
+
+This section is a derivation by hand, checked by the lead's approved desk probe (L4).
+- **The probe** is host-only: no engine import and no fueled world. C1–C7 are deterministic and
+  mean-field. C8 is one small stochastic chain.
+- **Its files:** `/mnt/workspaces/Cells/ol4-fuel-design-20261120/probe/`. They are `README.md`, with
+  the criteria written before each run; `probe.py`, `results.json` and `run.log`; and
+  `probe_switching.py`, `switching.json` and `switching.log` for C8.
+- **References below:** "C1"–"C8" are the probe's criteria.
+- **The outcome.**
+  - C1–C3 passed, and so did C8's implementation check.
+  - C6 and C7 failed as written, for the reasons given below.
+  - Nothing refutes (d)'s condition.
 
 **The test.** Let r_i be the net rate, per molecule, at which amphiphile i is made in a membrane:
 its making per molecule minus its unmaking per molecule. With two amphiphiles at fractions x_1 and
@@ -150,25 +192,31 @@ x_2 (T = x_1 + x_2), the share f = x_1/T changes as
 
     df/dt = f(1 − f)(r_1 − r_2).
 
-An even mixture is stable when the minority's r is the larger. Two compositions are stable when the
-majority's is.
+The membrane's fractions sum to one, so growth dilutes them all alike. An even mixture is stable
+when the minority's r is the larger. Two compositions are stable when the majority's is.
 
 - **Uptake by a catalysed join** (option 0, (a)). Making per molecule is proportional to
-  (1 + β x_i)/x_i. Its 1/x_i favours the minority. The leave, catalysed by the same g, favours the
-  minority too. **One composition.**
+  (1 + β x_i)/x_i, and its 1/x_i favours the minority.
+  - With catalysis (β > 0), the leave favours the minority too. **One composition.**
+  - With inhibition (β < 0), the leave favours the majority. The probe found two stable
+    compositions in 270 of 4,000 random sets. Every one was in a membrane that shrinks: the growth
+    rate γ was below zero at every stable state (C7).
+  - A shrinking vesicle is dissolving. It cannot carry a dividing lineage.
 - **Catalysis of, or protection against, unmaking** ((c)). Unmaking per molecule is
-  h(1 + β x_i), against a supply s/x_i per molecule that members do not catalyse.
-  - Two unequal steady states need x_1(1 + β x_1) = x_2(1 + β x_2), that is x_1 + x_2 = −1/β.
-  - That sum is negative for catalysis (β > 0), and above 1 for protection (β in (−1, 0)). No
-    membrane holds either. **One composition.**
-  - Protection is bounded: g > 0, so β > −1. Catalysis is not bounded.
+  h(1 + β x_i), against a supply that members do not catalyse.
+  - With catalysis (β > 0): **one composition.**
+  - With protection (β in (−1, 0)): two stable compositions in 298 of 4,000 sets. Again, all were in
+    shrinking membranes (C7).
+  - **A correction.** This note's first version claimed one composition for every β. That
+    derivation assumed a membrane that neither grows nor shrinks, and so missed these cases.
 - **Autocatalytic making** ((b), (d)). In the step B + L_i → 2 L_i, catalysed by L_i
   (g_i = 1 + β x_i), making per molecule is k1 x_B (1 + β x_i). It grows with x_i, so it favours
   the majority.
 
 **(d)'s condition, in a reduced model.**
 - **The model.** One membrane holds the activated block B and the spent form S at fractions x_B and
-  x_S, set by fast exchange with the pool. It also holds two amphiphiles L_1 and L_2.
+  x_S, set by fast exchange with the pool. It also holds two amphiphiles L_1 and L_2, and
+  optionally an inert lipid.
 - **The steps.**
   - B + L_i ⇌ 2 L_i: forward constant k1, catalysed by L_i with β > 0.
   - L_i ⇌ S: forward constant k2, uncatalysed.
@@ -179,27 +227,103 @@ majority's is.
 
       β·x_B > e^Δ1·(1 + β·T) + 4·(k2/k1)·e^Δ2·x_S/T².
 
-- **At zero drive** (x_B = e^(Δ1+Δ2)·x_S, every step at equilibrium) the left side is the smaller
-  for every β. One composition, as §0.1 requires.
-- **At β = 0** the left side is 0. One composition: the factor is necessary.
-- **The condition holds** when B is held far above its equilibrium level (a strong drive) and the
-  decay's reverse is small.
-- **The model's limits.** It is a reduced model, worked by hand. It takes T as given, although in a
-  real membrane T follows from x_B and x_S. In a finite vesicle, a lineage switches between the two
-  states at a rate that falls with the vesicle's size. That rate has to be measured.
+- **Confirmed (C1).**
+  - The sample: 4,000 random parameter sets, each converted exactly to fractions.
+  - Against an independent count of stable states from the raw fluxes, the inequality's sign was
+    right in every set (1,024 of them bistable).
+  - Exact rational brackets confirmed every predicted state's position and stability.
+  - 1,200 RK4 integrations ended on the predicted states. Σx = 1 held to 3 × 10⁻¹³, and halving the
+    step changed nothing beyond 2 × 10⁻¹³.
+
+**The two drives.** Write A = ln(x_B/x_S) − (Δ1 + Δ2) for the cycle's drive, its affinity in k_BT
+per turn. Write ρ = T/T_eq for the supersaturation, where T_eq = 2·e^Δ2·x_S is the amphiphiles'
+fraction at equilibrium with S. The inequality then reads
+
+    A > A* = ln[2ρ + 2/(β·T_eq) + 4·(k2/k1)/(β·e^Δ1·ρ²·T_eq²)].
+
+- **At true equilibrium (A = 0 and ρ = 1): never** (C2: 0 of 4,000 sets). For ρ ≥ ½, A* exceeds
+  ln 2ρ ≥ 0, so zero affinity never suffices there (C2: 0 of 4,000 at ρ from ½ to 4).
+- **At β = 0: never** (C3: 0 of 4,000). The factor is necessary.
+- **A fuel's affinity works without growth.**
+  - 121 of the 1,024 bistable sets had γ ≤ 0 at their stable states, so their vesicles did not
+    grow. All were at A ≥ 3.5 k_BT (C1).
+  - In C4b, a fuel-driven set's even mixture neither grows nor shrinks (γ = 0 exactly).
+- **A feed's supersaturation works without fuel, but only while the vesicle grows.**
+  - At zero affinity and ρ < ½, two compositions appear once β is large enough.
+  - The trial set is C4: Δ1 = Δ2 = 0, x_B = x_S = 0.45, T = 0.1 (ρ = 1/9), k2/k1 = 0.01 and β = 20.
+    It is bistable, at f = 0.082 and 0.918, and it grows at γ ≈ 1.06 per unit time.
+  - So the drive can be the feed as well as fuel. At zero affinity it needs growth, which a finite
+    pool loses as it runs down between transfers.
+- **The map (C5).** In a strongly downhill regime (e^Δ1 = e^Δ2 = 1/8, x_S = 1/20, k2/k1 = 1/10,
+  T_eq = 1/80):
+  - Where the threshold fits in the membrane, A* falls from 6.6 to 3.4 k_BT as β rises from 2 to
+    64, for ρ between 4 and 64.
+  - At ρ ≤ 1 the threshold needs more block than the membrane can hold, except at β ≥ 32 and
+    ρ = 1 (A* = 6.5 and 5.8 k_BT).
+  - The closed form for A* matched the exact threshold to rounding in every cell.
+  - On the zero-affinity line, two compositions need ρ = ¼ and β ≥ 6.6 × 10⁵ there
+    (ΔΔG‡ ≥ 13.4 k_BT).
+  - In the feed regime (Δ1 = Δ2 = 0, x_S = 0.45, k2/k1 = 0.01) they need only β ≥ 8
+    (ΔΔG‡ ≥ 2.2 k_BT), at ρ = 1/9.
+- **When T follows x_B and x_S.** 
+  - **With no inert lipid** (T = 1 − x_B − x_S; C5b):
+    - for every β from 1 to 64 there is one window of x_B, from about 0.11–0.22 (A ≈ 4.9–5.6 k_BT)
+      up to about 0.89–0.94 (A ≈ 7.0–7.1 k_BT);
+    - above the window the amphiphiles are too dilute (T below 0.06) to hold two states.
+  - **With finite exchange** (Tier F: B, S and the inert lipid join and leave at rate κ; C6):
+    - The two compositions persist while exchange outpaces the block's use: at κ = 100 and 10 for
+      both bistable sets, and at κ = 1 for the fuel set.
+    - They merge into one when supply is slow: κ = 0.1 for the fuel set, κ ≤ 1 for the feed set.
+      There the block is drawn down; at κ = 0.1 the fuel set holds x_B = 0.04 against the pool's
+      0.1.
+    - At every κ the Tier F state satisfies Tier P's formula at its own x_B, x_S and T, to 10⁻¹³.
+  - **C6 fails as written.** At κ = 100 the feed set's state lies at f = 0.931, against Tier P's
+    0.918 at the pool's values. Its fast growth (γ ≈ 1.08) moves x_B and T about 1% off them.
+- **Switching against size (C8, added at the lead's request).**
+  - **The chain:** §2.3's reduced model as exact events, with growth, and a hypergeometric halving
+    at each fission. The followed daughter starts with M_0 amphiphiles.
+  - **The scaling.** The mean time to switch from the L_1-rich to the L_2-rich state grows
+    exponentially with M_0:
+
+    | Set | ln τ per amphiphile | Generations to a switch |
+    | --- | --- | --- |
+    | F1 (fuel, A = 4.85 k_BT) | 0.234 | 137 at M_0 = 4; 1.2 × 10⁸ at M_0 = 64 |
+    | C4b (fuel, an even mixture that does not grow) | 0.134 | 21 at M_0 = 4; 1.5 × 10⁸ at M_0 = 128 |
+    | C4 (feed, zero affinity) | 0.071 | 46 at M_0 = 4; 4.4 × 10⁹ at M_0 = 256 |
+
+  - **Extrapolated:**
+    - to 10³ amphiphiles, 10³³ to 10¹⁰³ generations;
+    - to 10⁴, 10³¹¹ to 10¹⁰¹⁸;
+    - to 10⁵, beyond 10³⁰⁰⁰. A 100 nm vesicle holds about 2 × 10⁵ molecules (§1.2).
+  - **No spontaneous break at real size.** In this model a lineage of real size never switches on
+    its own.
+    - A switch within twelve fissions has a chance above 5% only up to about 6 (F1), 16 (C4) or 24
+      (C4b) amphiphiles at birth.
+    - At real size a break must be induced, for example by a pulse of the other amphiphile through
+      FR-20's replacement. The renewal is then the lineage's settling into a state.
+  - **The checks.** A host SSA of the same chain matched the exact times within 3 standard errors at
+    two small sizes per set (C8a). The exact solves are used only up to τ ≈ 10¹², where τ·λ_min
+    lies within 0.1% of 1. The extrapolation assumes the exponential scaling continues beyond
+    M_0 = 64–256.
+- **The limits.**
+  - The model is reduced: B and S are pinned, and the amphiphiles never leave the membrane.
+  - The stochastic part is this one chain. The engine's own events, and the stationary law's two
+    modes, are OL5's to compute (§5).
 
 **So three things are needed together:**
 - autocatalytic stoichiometry in the making of a membrane species;
-- the factor on that step;
-- a drive above threshold.
+- the factor on that step (β > 0);
+- a state away from equilibrium with enough drive. That is either a fuel's cycle affinity, which
+  works without growth, or a feed's supersaturation, which works only while the vesicles grow.
 
-Remove any one and one composition is stable.
+At true equilibrium, or at β = 0, one composition is stable.
 
 ### 2.4 What F12 can see (S)
 
 `inheritance.py` scores each fission by H, the cosine between the parent's counts just before the
 split and the followed daughter's counts just after it (`lineage_marks`, `inheritance.py:92–99`).
-The fission is inherited if H > 0.9, and a break otherwise.
+The fission is inherited if H > 0.9, and a break otherwise. For (d), H is taken over the amphiphiles
+only, the L_i, never the block B or the spent form S (D245).
 - **H sees the split's sampling, not a change of state between fissions.**
   - Take two species at equal shares. For H ≤ 0.9, a daughter's share must differ from the parent's
     by 0.24, since H = 1/√(1 + 4δ²).
@@ -218,9 +342,14 @@ The fission is inherited if H > 0.9, and a break otherwise.
     faithfully.
   - It changes what follows a break: a noisy split can send a daughter across to the other state.
   - A switch between fissions leaves no mark.
-- **So from about a hundred molecules up, F12's marks cannot tell (d) from option 0.** The species
-  set of the F12 reader for @2's records (D243's second builder) also matters. This note does not
-  change F12; it asks the user (U4).
+- **So from about a hundred molecules up, F12's marks cannot tell (d) from option 0.** F12 stays
+  as the preprint defines it (D245).
+- **A second reading** (D245) compares each parent at its fission with the next parent on the same
+  path.
+  - It has its own name and registration, and is never called F12. This note proposes "the
+    generational reading", with H_gen its similarity.
+  - It would see a switch between fissions as one low H_gen.
+  - But by C8, a lineage of real size does not switch on its own (§2.3).
 
 ## 3. Options
 
@@ -232,13 +361,14 @@ fuel that releases more goes through an intermediate, as A5's O-acylisourea does
 No source was read for the potentials of A5's fuel (EDC) or its urea, so a world declares them
 unsourced (§0.2e rule 3) until one is read. §5 lists the checks OL5 writes for every option.
 
-| Option | The step fuel pays for | More than one stable composition? | New law? | Anchor | Agent-days, builder + OL5 |
+| Option | The step fuel pays for | More than one stable composition? | New law? | Anchor | Agent-days, builders + OL5 |
 | --- | --- | --- | --- | --- | --- |
 | 0 | None (the feed drives growth) | No | No | A1, A4 as planned | 0 |
-| **(a)** | Making an amphiphile from a pool precursor; members catalyse its join | No | No | A5, reported | 1.75 + 1.5–2 |
-| **(b)** | Activation or synthesis of membrane species at the membrane, catalysed by members | Only with autocatalytic stoichiometry | (b1) yes; (b2) no | None in §7.4 | (b1) 3.5–4.5 + 2.5–3.5; (b2) as (d) |
-| **(c)** | Destruction (turnover) of membrane species; members protect or catalyse | No: it selects one | No (spontaneous destruction) | A5; candidate A9 | 1.75 + 1.5–2 |
-| **(d)** | A full cycle: activation catalysed (autocatalytic), deactivation uncatalysed | **Yes, above a drive threshold** | No (fuel upstream) | Candidate A10; A8's definitions | 2.25 + 2–3 |
+| **(a)** | Making an amphiphile from a pool precursor; members catalyse its join | No (only in a shrinking vesicle, with inhibition) | No | A5, reported | 1.75 + 1.5–2 (builders + OL5) |
+| **(b)** | Activation or synthesis of membrane species at the membrane, catalysed by members | Only with autocatalytic stoichiometry | (b1) yes; (b2) no | None in §7.4 | (b1, later) 3.5–4.5 + 2.5–3.5; (b2) as (d) |
+| **(c)** | Destruction (turnover) of membrane species; members protect or catalyse | No: it selects one (two only in a shrinking vesicle, with protection) | No (spontaneous destruction) | A5; A9, reported | 1.75 + 1.5–2 |
+| **(d)** | A full cycle: activation catalysed (autocatalytic), deactivation uncatalysed | **Yes, above a drive threshold, with or without growth** | No (fuel upstream) | A10, reported; A8's definitions | 2 + 2–3 |
+| (d0) | None: (d)'s autocatalytic step driven by the feed's supersaturation | Yes, but only while the vesicles grow | No | As (d) | 2 + 2–2.5; beside (d), +0.25 + 0.5 |
 
 ### (a) Making an amphiphile from a pool precursor
 
@@ -253,14 +383,15 @@ unsourced (§0.2e rule 3) until one is read. §5 lists the checks OL5 writes for
   - With decay in the membrane, membranes turn over. Their composition is then a steady state in
     which catalysed joins matter.
   - The join is first order and the factor linear, so there is **one composition** per environment
-    (§2.3). Against option 0, (a) adds realism (fuel, waste, lifetime), not alternatives.
+    (§2.3). The exception is inhibition (β < 0) in a shrinking, dissolving vesicle (C7). Against
+    option 0, (a) adds realism (fuel, waste, lifetime), not alternatives.
 - **What the engine needs.** Every step exists today:
   - the pool step (mass action, in any world);
   - the join (phase exchange);
   - the decay as an all-membrane step (`count_on_m`, admitted in vesicle worlds);
   - the factor on the join.
 
-  Beyond the shared refusal (§6) it needs nothing.
+  Nothing else is new. The first builder's refusal (§6, L1) guards it.
 - **The anchor: A5.** Tena-Solsona et al. 2017, CC BY 4.0; numbers as read through the fetch
   tool:
   - anhydride hydrolysis 3.8 × 10⁻² s⁻¹ (Fmoc-AVD) to 3.8 × 10⁻⁴ s⁻¹ (Fmoc-D), at pH 6.0 in 200 mM
@@ -279,10 +410,12 @@ unsourced (§0.2e rule 3) until one is read. §5 lists the checks OL5 writes for
     arithmetic).
   - Role: reported, as D199 set it. A judged anchor would need Supplementary Table 1's
     activation constants, which were not read (§11).
-- **OL5's references.** The shared checks (§5). The batch ODE of the cycle with a finite fuel, as
-  the large-volume limit of the engine's mean (Kurtz 1972, from memory). The time the assembling
-  species stays above a declared threshold.
-- **Price.** Builder 1.5 shared + 0.25 for its worlds. OL5 1.5–2.
+- **OL5's references.**
+  - The shared checks (§5).
+  - The batch ODE of the cycle with a finite fuel, as the large-volume limit of the engine's mean
+    (Kurtz 1972, cited from memory, not verified).
+  - The time the assembling species stays above a declared threshold.
+- **Price.** Second builder 1.25 shared + 0.25 for its worlds; first builder 0.25 (L1). OL5 1.5–2.
 
 ### (b) Activation or synthesis of membrane species at the membrane
 
@@ -319,7 +452,8 @@ unsourced (§0.2e rule 3) until one is read. §5 lists the checks OL5 writes for
 - **OL5's references.** The shared checks. For (b1), the law's closed form at random states and its
   refusals. For autocatalytic stoichiometry, (d)'s checks.
 - **Price.**
-  - (b1): builder 1.5 shared + 0.5 worlds + 1.5–2.5 for the law, so 3.5–4.5. OL5 2.5–3.5.
+  - (b1), later (U2): second builder 1.25 shared + 0.5 worlds + 1.5–2.5 for the law, so
+    3.25–4.25; first builder 0.25. OL5 2.5–3.5.
   - (b2): as (d).
 
 ### (c) Fuel-driven turnover: the destruction step
@@ -331,8 +465,9 @@ unsourced (§0.2e rule 3) until one is read. §5 lists the checks OL5 writes for
   - Turnover gives each membrane species a finite lifetime. The composition is renewed constantly,
     as a steady state of making against unmaking.
   - Protection selects the species that protects itself, as A5's Fmoc-E and A9's droplets show.
-  - Inhibition is bounded, so protection cannot outweigh a supply that favours the minority:
-    **one composition** (§2.3). It selects; it does not hold alternatives.
+  - In a vesicle that grows or holds its size, protection cannot outweigh a supply that favours the
+    minority: **one composition** (§2.3). It selects; it does not hold alternatives. Two
+    compositions appeared only in shrinking, dissolving membranes (C7).
 - **What the engine needs.**
   - Spontaneous destruction inside the membrane needs nothing new: hydrolysis is an all-membrane
     step, with the factor.
@@ -340,8 +475,9 @@ unsourced (§0.2e rule 3) until one is read. §5 lists the checks OL5 writes for
 - **Anchors.**
   - **A5:** assemblies slow their own hydrolysis. Fmoc-E's assembled anhydride hydrolyses at a
     zero-order 1.5 × 10⁻⁶ M s⁻¹.
-  - **Candidate A9:** Tena-Solsona et al. 2018, *Nat Commun* 9:2044, PMC5966463, CC BY 4.0; numbers
-    as read through the fetch tool. EDC-fuelled anhydrides of C3–C6 acids:
+  - **Candidate A9:** Tena-Solsona et al. 2018, *Nat Commun* 9:2044, PMC5966463, CC BY 4.0. Every
+    number below was confirmed by a second targeted reading through the fetch tool, which returned
+    the paper's own sentences. EDC-fuelled anhydrides of C3–C6 acids:
     - anhydrides that form droplets persist, with persistence factors 1.0 (C3), 1.26 (C4), 18.4
       (C5) and 118 (C6);
     - solubilities of 11 mM (C4C4), 1.0 mM (C5C5) and 0.05 mM (C6C6);
@@ -351,7 +487,7 @@ unsourced (§0.2e rule 3) until one is read. §5 lists the checks OL5 writes for
     The outcome is one winner, which fits (c)'s single composition. Its assemblies are droplets.
 - **OL5's references.** The shared checks. The protected steady state in closed form. One winner in
   a two-species world.
-- **Price.** Builder 1.75. OL5 1.5–2.
+- **Price.** Second builder 1.5; first builder 0.25. OL5 1.5–2.
 
 ### (d) A full fuel-to-waste cycle: activation catalysed, deactivation uncatalysed
 
@@ -371,31 +507,45 @@ unsourced (§0.2e rule 3) until one is read. §5 lists the checks OL5 writes for
     threshold.
   - Turnover renews the composition. A lineage keeps its state across fissions while switches stay
     rare.
-  - At zero drive, or at β = 0, it has one composition. Those are the control arms, in the same
-    world.
+  - At true equilibrium, or at β = 0, it has one composition. Those are the control arms, in the
+    same world.
   - In a population, vesicles of the two kinds compete for the shared B, which gives selection at
     each transfer. Exchange of L through the pool couples them, weakly when L's CAC is low.
+- **Registration** (D245). (d) is registered with its own nulls, zero drive and β = 0, in the same
+  world, and H is taken over the amphiphiles only.
+  - The probe makes "zero drive" precise: it must mean true equilibrium, with the cycle's affinity
+    zero *and* the feed at its aggregation threshold (ρ = 1, no growth).
+  - At zero affinity a supersaturated feed can still split the mixture (C4).
 - **What the engine needs.**
   - Every step exists today: the pool step, the joins and two all-membrane steps, with the factor
     on the autocatalytic step.
   - That step has a membrane place on both sides. It is admitted under `multinomial`, the physical
     worlds' measure (D215). Outside probe worlds it is refused under `multinomial_less_one`
     (`spec.py:390–401`; §0.2b rule 8).
-  - Beyond that, only the shared refusal (§6) is new.
+  - Nothing else is new. The first builder adds the refusal it relies on (§6, L1).
   - A held B, §3.1's "activated monomers, held", is the simplest first world and needs no fuel
     species. Finite fuel can be refilled by each transfer's `fresh_pool`.
   - For fuel reacting at the membrane instead of upstream, add (b1) or (b2).
+- **A no-fuel variant, (d0)** (found by the probe, §2.3).
+  - The same autocatalytic step and factor, driven by the feed's supersaturation instead of fuel:
+    the building block is held, or refreshed at each transfer, above its equilibrium level.
+  - It needs no fuel species, and it holds two compositions only while the vesicles grow. A finite
+    pool runs down toward equilibrium between transfers, so its compositions last only while the
+    feed is renewed. Fuel's affinity also holds them in a vesicle that does not grow.
+  - Beside (d), it is the natural control arm: the same world, without the fuel.
 - **The drive.** μ_F − μ_W per turn, or μ_B − μ_S with a held block. It must exceed the threshold
   of §2.3.
 - **Anchors.**
   - **Candidate A10:** Morrow, Colomer and Fletcher 2019, *Nat Commun* 10:1011, PMC6397266, CC BY
-    4.0; as read through the fetch tool.
+    4.0. Every number below was confirmed by a second targeted reading through the fetch tool,
+    which returned the paper's own sentences.
     - A surfactant forms from octanethiol and a disulfide, and its micelles catalyse its own
       formation.
     - Its breakdown, a slower exchange with excess thiol, is not accelerated by micelles.
-    - Hydrogen peroxide, the fuel, supplied slowly at 1.2 M, regenerates the building block from
-      the waste in water.
-    - The CMC is about 0.2 mM (500 mM Tris, pH 7.5), and the micelles measure 15–20 nm.
+    - Hydrogen peroxide, the fuel, slowly added at 1.2 M, regenerates the building block from the
+      waste in water. The text read does not say whether 1.2 M is the stock's concentration.
+    - The CMC is about 0.2 mM (ring tensiometry, 500 mM Tris, pH 7.5). The micelles' hydrodynamic
+      diameter is 15–20 nm (dynamic light scattering).
     - Without fuel the surfactant is consumed.
     - The main text gives no kinetic model and no steady-state number, so A10 is qualitative and
       reported.
@@ -407,29 +557,36 @@ unsourced (§0.2e rule 3) until one is read. §5 lists the checks OL5 writes for
 - **OL5's references.**
   - The shared checks.
   - The deterministic steady states and their stability: the inequality of §2.3 and its threshold.
-  - In small exact worlds, the stationary law: unimodal at zero drive and at β = 0, bimodal above
-    the threshold.
+  - In small exact worlds, the stationary law: unimodal at true equilibrium and at β = 0, bimodal
+    above the threshold.
   - The mean switching time between the two states, by an exact first-passage solve, against the
     engine's.
-- **Price.** Builder 1.5 shared + 0.5 worlds + 0.25 for the desk probe (L4), so 2.25. OL5 2–3.
+- **Price.** Second builder 1.25 shared + 0.5 worlds, so 1.75; first builder 0.25; the desk probe
+  is done. OL5 2–3. With (d0) beside it as its control arm: +0.25 builder, +0.5 OL5.
 
 ## 4. Recommendation
 
-**Option (d), with the fuel recharging the building block in the pool.**
-- It is the only option that can hold two stable compositions (S, §2.3), and it carries its own
-  control arms: zero drive and β = 0.
-- It runs on today's laws. It needs one refusal, no new law, no token and no record.
+**Option (d), with the fuel recharging the building block in the pool, and (d0) beside it.** The
+user chose (d) through the lead and the advisor (D245); the probe confirmed it.
+- It is the only option that holds two stable compositions in vesicles that grow or hold their
+  size (§2.3, checked by the desk probe).
+- It carries its own control arms: true equilibrium, β = 0, and (d0), the same world without fuel.
+  - (d0) holds the two compositions only while its vesicles grow.
+  - So comparing (d) with (d0) shows what fuel adds: compositions held without growth.
+- It runs on today's laws: no new law, token or record. The one refusal it relies on is the first
+  builder's (L1).
 - Its structure is A10's, a fuelled surfactant that catalyses its own formation.
 - **Then (b1)**, only if the user wants fuel to react at the membrane.
 - **(a) and (c)** come almost free in the same machinery, as rungs of OL9's ladder, with A5 and A9
   reported.
 
 **Two cautions.**
-- **The recommendation rests on a derivation by hand (S).** A 0.25-day desk probe (L4) checks it
-  before any world is built. It solves §2.3's reduced model for its steady states and their
-  stability, in exact arithmetic where it can, with no engine run. OL5's closed forms check it as
-  well.
-- **F12's marks may not show what (d) adds** from about a hundred molecules up (§2.4, U4).
+- **The probe checked a reduced model, not the engine.**
+  - C1–C7 are deterministic; C8 is one stochastic chain with growth and fission.
+  - OL5's references (§5) and the engine's own runs, after registration, are still to come.
+- **F12's marks may not show what (d) adds** from about a hundred molecules up (§2.4). The
+  generational reading would. But no lineage of real size switches on its own (C8), so a break at
+  real size must be induced, or the vesicles kept to a few tens of amphiphiles.
 
 ## 5. The checks OL5 writes, for every option
 
@@ -444,9 +601,12 @@ Each check below is followed by its planted error, which it must catch (D187).
      it is 0.
    - Kolmogorov's test then fails by exactly the drive.
    - Planted: a drive of the wrong sign.
-4. **The zero-drive control.**
-   - With μ_F − μ_W equal to the cycle's standard balance, the stationary law is exp(−F)/Z, and
-     the factor does not change it.
+4. **The zero-drive control: true equilibrium.**
+   - Take μ_F − μ_W equal to the cycle's standard balance, with the pool at its aggregation
+     threshold, so no vesicle grows. The stationary law is then exp(−F)/Z, and the factor does not
+     change it.
+   - A zero affinity with a supersaturated pool is not this control; it can split the mixture
+     (§2.3, C4).
    - Planted: the factor at each direction's own state (OL1's E1), which moves it.
 5. **Moieties.** For the building block's moiety and the fuel's (fuel plus waste),
    Σ_s M_s·n_s(t) − Σ_held M_s·supplied_s(t) is constant at every row.
@@ -454,7 +614,8 @@ Each check below is followed by its planted error, which it must catch (D187).
    - In a population across a transfer, the check reads the diagnostic record, or a per-species
      transfer record (§1).
 6. **Heat at stationarity.** With held fuel, the mean heat rate equals the cycle's flux times its
-   drive (Schnakenberg 1976, from memory). Planted: the flux counted without its reverse events.
+   drive (Schnakenberg 1976, cited from memory, not verified). Planted: the flux counted without
+   its reverse events.
 
 **The order** (D242): no fueled world runs before OL5's references for it are registered.
 1. The user rules.
@@ -483,14 +644,16 @@ Each check below is followed by its planted error, which it must catch (D187).
 **OL4 is built by the second builder** after this note is ruled (D243). That builder's own
 break-and-renew branch, `ol-break-renew`, is still empty.
 
-**What OL4 touches, under the recommended route (and under (a) and (c)):**
-- **`src/cells/models/assembly_lineages_v2/transition_state.py`:** in `parse_data`, the one new
+**The refusal, the first builder's (L1):**
+- **`src/cells/models/assembly_lineages_v2/transition_state.py`:** in `parse_data`, one new
   refusal. It refuses an entry on a step whose places all lie in the pool, as a second pass over
-  the entries after every existing check. Placed there, no existing message moves (§7). It lands
-  **after the Lean repair stack**, which rewrites this file's layout, state and factor (not
+  the entries after every existing check. Placed there, no existing message moves (§7). The file is
+  already the first builder's: the Lean repair stack rewrites its layout, state and factor (not
   `parse_data`).
 - **`tests/unit/test_assembly_lineages_v2_spec.py`:** rows in
   `test_the_rate_factor_is_refused_out_of_its_scope`.
+
+**What OL4 touches (the second builder), under the recommended route and under (a) and (c):**
 - **`tests/assembly_lineage_v2_fixtures.py`:** a `fuel=` switch, off by default, so every existing
   call is unchanged. It is shared by every v2 test file, so the change is announced; no open head
   edits it.
@@ -576,17 +739,18 @@ seconds are estimates, to be measured at landing:
 
 | Part | Agent-days |
 | --- | --- |
-| Shared: the refusal and its parse rows | 0.25 |
-| Shared: the fuel ledger reader in `validation/` | 0.5 |
-| Shared: the rows that run a world, after registration | 0.25 |
-| Shared: comparison with OL5's references, landing, invariance gate | 0.5 |
-| Worlds for registration: (a) 0.25, (b) 0.5, (c) 0.25, (d) 0.5 | 0.25–0.5 |
-| (d): the desk probe of §2.3 (L4) | 0.25 |
-| (b1): the new law, its rules, shapes and rows | 1.5–2.5 |
-| **Builder: (a) 1.75; (b1) 3.5–4.5; (c) 1.75; (d) 2.25** | |
-| **OL5's references (its own line): (a) 1.5–2; (b1) 2.5–3.5; (c) 1.5–2; (d) 2–3** | |
-| **Recommended (d), in all** | **4.25–5.25** |
-| (d) with the fuel at the membrane, adding (b1) and its references | +2–3 |
+| The first builder (L1): the refusal and its parse rows, for any option | 0.25 |
+| Second builder, shared: the fuel ledger reader in `validation/` | 0.5 |
+| Second builder, shared: the rows that run a world, after registration | 0.25 |
+| Second builder, shared: comparison with OL5's references, landing, invariance gate | 0.5 |
+| Second builder, worlds for registration: (a) 0.25, (b) 0.5, (c) 0.25, (d) 0.5, (d0) 0.5; (d0) beside (d) +0.25 | 0.25–0.75 |
+| (b1), later (U2): the new law, its rules, shapes and rows | 1.5–2.5 |
+| The desk probe of §2.3 (L4): done | (0.25, spent) |
+| **Second builder: (a) 1.5; (b1) 3.25–4.25; (c) 1.5; (d) 1.75; (d0) 1.75; (d) with (d0) 2** | |
+| **OL5's references (its own line): (a) 1.5–2; (b1) 2.5–3.5; (c) 1.5–2; (d) 2–3; (d0) 2–2.5; (d) with (d0) 2.5–3.5** | |
+| **Recommended, (d) with (d0) as its control arm, in all** | **4.75–5.75** |
+| (d) alone, in all | 4–5 |
+| (d) with the fuel at the membrane, adding (b1) and its references (later) | +2–3 |
 | Optional: a step in held concentration, after the washout note's Q3 | +1 |
 | Optional: a fuel dose that adds without replacing the pool (washout Q2 (b)) | +0.5 |
 
@@ -596,40 +760,40 @@ were 4–6 there.
 ## 10. Questions
 
 **For the user** (each can be answered in a word):
-- **U1. Which step should fuel pay for:** (a), (b), (c) or (d)? Recommended: (d), with the fuel
-  recharging a building block in the pool. It costs about 4.25–5.25 agent-days with OL5's
-  references.
-- **U2. Should fuel also react at the membrane itself?** That is option (b1), a new law, about +2–3
-  agent-days. Now, later, or never?
-- **U3. Anchors (D138).** May two papers join §7.4 as reported comparisons, never judged? Both are
-  CC BY 4.0:
-  - A9, Tena-Solsona et al. 2018: selection by protection;
-  - A10, Morrow et al. 2019: a fuelled surfactant that catalyses its own formation.
-- **U4. F12.** F12 compares a parent with its daughter at each split. From about a hundred
-  molecules up, with a few species, every split counts as inherited for every option, so F12
-  cannot see a vesicle switch composition between fissions. For OL9, should we:
-  - (i) keep F12 as it is and use small vesicles;
-  - (ii) also register a second reading, each parent against the next parent;
-  - or (iii) decide at OL9?
+- **U1 (decided: (d), D245, conditional on the probe, which confirmed it).** Which step fuel pays
+  for. (d0), the no-fuel variant the probe found, can run beside (d) as a further control. That
+  costs about +0.25 builder and +0.5 OL5 agent-days.
+- **U2 (ruled: later).** Fuel reacting at the membrane itself, option (b1), a new law, about +2–3
+  agent-days.
+- **U3 (ruled: reported comparisons only, after the numbers were checked; done).** A9,
+  Tena-Solsona et al. 2018 (selection by protection), and A10, Morrow et al. 2019 (a fuelled
+  surfactant that catalyses its own formation). Both are CC BY 4.0.
+- **U4 (decided: (ii), D245).** F12 is kept, and a second reading, each parent against the next
+  parent, is registered under its own name. This note proposes "the generational reading" (§2.4).
+- **U5 (new, for the user).** By the probe (C8), no lineage of real size switches between the two
+  compositions on its own. Should OL9's break be:
+  - (i) induced, for example a pulse of the other amphiphile through FR-20's replacement;
+  - (ii) spontaneous, in vesicles of a few tens of amphiphiles;
+  - or (iii) both, as separate arms?
 
 **For the lead:**
-- **L1.** Confirm the refusal of a factor entry on a pool-only step. Should a lumen-only step's
-  factor also need a declared meaning?
-- **L2.** If U2 is yes, name (b1)'s law and its rate key, and confirm its three rules (§3 (b)).
-- **L3.** A5's Supplementary Information was not read. On PMC its PDF returned a browser check, and
-  nature.com redirected to a login. The line was stopped, and no other host was tried. Should it be
-  read another way, for example from a copy the user downloads?
-- **L4.** Approve the 0.25-day desk probe of §2.3 before OL5 registers, or let OL5's closed forms
-  be the check.
-- **L5.** Should a transfer record its removed and supplied counts per species, as FR-20's
-  replacement does? It is the first builder's file. Until then, the fuel reader closes the moiety
-  books across a transfer from the diagnostic record.
+- **L1 (ruled: the first builder).** The refusal of a factor entry on a pool-only step. Still
+  open: should a lumen-only step's factor also need a declared meaning?
+- **L2 (open when (b1) is taken up).** Name (b1)'s law and its rate key, and confirm its three rules
+  (§3 (b)).
+- **L3 (ruled: A5 stays reported).** Its Supplementary Information was not read: on PMC the PDF
+  returned a browser check, and nature.com redirected to a login. No other host was tried.
+- **L4 (ruled: approved, host only; done).** The desk probe of §2.3.
+- **L5 (ruled: not now).** A per-species transfer record. The fuel reader closes the moiety books
+  across a transfer from the diagnostic record.
 
 ## 11. What this note could not verify
 
 - **A5's activation constants** (Supplementary Table 1). Not read (L3), so A5 stays reported.
-- **§2.3's results:** (d)'s inequality, and the single composition of option 0, (a) and (c). They
-  are derivations by hand, not run.
+- **§2.3's results** were checked by the desk probe, not by the engine.
+  - The probe is a reduced model: B and S are pinned, and the amphiphiles stay in the membrane.
+  - C6 and C7 failed as written, as §2.3 explains.
+  - C8's extrapolation to real sizes assumes the exponential scaling holds beyond M_0 = 64–256.
 - **The factor in vesicle and population worlds:** that it passes the kernel's check there, and that
   the two modes disagree on a pool-only step. Both come from reading the code
   (`kernel.py:289–290`, `population.py:205`), not from running it. No test or registered world
@@ -641,9 +805,13 @@ were 4–6 there.
 - **FR-20's later slices touching `runner.py`, `spec.py` and `world.py`.** That is the lead's list;
   those files are not yet on the branch.
 - **The potentials of A5's fuel and its urea.** No source was read.
-- **The A9, A10 and Vasas numbers and findings.** They were read through the fetch tool's
-  summaries, not as full text read directly.
-- **Theory cited from memory:** Horn and Jackson 1972, Schnakenberg 1976 and Kurtz 1972.
+- **The sources' numbers.** All were read through the fetch tool, which summarises a page against
+  a prompt.
+  - A9's and A10's numbers were confirmed by a second targeted reading, asking for the exact
+    sentences.
+  - A5's numbers and Vasas's findings had one reading only.
+- **Theory cited from memory, not verified:** Horn and Jackson 1972, Schnakenberg 1976 and Kurtz
+  1972.
 
 ## Sources
 
@@ -653,12 +821,12 @@ the fetched text stated them (D186, D201, D227). Nothing was copied into the rep
 
 | Source | Result |
 | --- | --- |
-| Tena-Solsona M et al. (2017), *Nat Commun* 8:15895, PMC5520059 (A5) | Main text read. CC BY 4.0. Supplementary Information not read: PMC returned a browser check, and nature.com redirected to a login (L3) |
-| Tena-Solsona M, Wanzke C, Riess B, Bausch AR, Boekhoven J (2018), *Nat Commun* 9:2044, PMC5966463 (candidate A9) | Main text and methods read. CC BY 4.0 |
-| Morrow SM, Colomer I, Fletcher SP (2019), *Nat Commun* 10:1011, PMC6397266 (candidate A10) | Main text and methods read. CC BY 4.0. No kinetic model or steady-state number in the main text |
+| Tena-Solsona M et al. (2017), *Nat Commun* 8:15895, PMC5520059 (A5) | Main text read once; its numbers here had that one reading. CC BY 4.0. Supplementary Information not read: PMC returned a browser check, and nature.com redirected to a login (L3) |
+| Tena-Solsona M, Wanzke C, Riess B, Bausch AR, Boekhoven J (2018), *Nat Commun* 9:2044, PMC5966463 (candidate A9) | Main text and methods read. Every number quoted confirmed by a second targeted reading of the paper's own sentences. CC BY 4.0 |
+| Morrow SM, Colomer I, Fletcher SP (2019), *Nat Commun* 10:1011, PMC6397266 (candidate A10) | Main text and methods read. Every number quoted confirmed by a second targeted reading of the paper's own sentences; whether 1.2 M is the stock's concentration is not stated. CC BY 4.0. No kinetic model or steady-state number in the main text |
 | Vasas V, Szathmáry E, Santos M (2010), *PNAS* 107:1470, PMC2824406 | Read. No reuse licence stated (PNAS, free to read); used under D201 for its findings only |
 
-**Cited from memory, not read for this note:**
+**Cited from memory, not verified (not read for this note):**
 - Horn and Jackson 1972: one equilibrium per conservation class for complex-balanced mass action;
 - Schnakenberg 1976: network theory of stationary states and their entropy production;
 - Kurtz 1972: the large-system limit.
