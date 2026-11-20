@@ -108,6 +108,32 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **FR-7's first closed loop, F4 against R-loop: judged, passed (20 November 2026).**
+  - **The run:** from a frozen snapshot of main 90392025 (tag `fr7-rloop-judged-2026-11-20`), with
+    main's registered interface (`fr7-references-landed-2026-11-20`; R-loop registered under D233 at
+    d55e39b4 before any engine output).
+  - **The arms:** both, closed and clamped. Every compared row is within its band; the clamped arm's
+    largest is s at 0.42 of a band.
+  - **The cut:** F*_engine is within its registered bound, -1.36e-7 against 2.82e-7.
+  - **Clearance:** the clearance row equals the registered 260 s.
+  - **Persistence:** all 30 rows pass; the rise in units at 560 s is 93.390 against 93.389.
+  - **The pump rate,** read from the engine's own readouts, matches the cumulative pump_cycles
+    ledger to 5.6e-9.
+  - **Records:** /mnt/workspaces/Cells/fr7-loop-20261119/judged-90392025/f4/ (RUN.txt, f4_comparison.json).
+  - **Still to come:** F3's six-world comparison against R-chain and R-clear is queued from the same
+    snapshot.
+- **Also landed this morning:**
+  - `kinds-k124-landed-2026-11-20` (206d5c7b): K2's trapezoid, K4's proton readouts, and K1's moved
+    fuel at closure nodes. The binder acceptance on main closes every ledger with a moved ATP
+    binder row.
+  - `binding-defer-landed-2026-11-20` (4ca478b8): a base-form move of a closure-held row with forms
+    is judged by the closure's section 5.2 admission.
+  - `fr7-comparisons-landed-2026-11-20` (90392025): FR-7's chain and loop mappers and comparisons.
+  - `gate-tooling-landed-2026-11-20` (7c87943c): the fail-fast gate, stacked gates, the no-src scope
+    map, the cache qualifier and the nightly tiers. The nightly timer is installed and runs at 02:30
+    UTC.
+  - Decision D235: FR-8 builds N2, then C; mitochondria on host P; gene regulation's option A.
+
 - **The mitochondria engine groundwork and the X2 floor fix (20 November 2026, early morning).** Each
   was gated in full and passed the lead's merged check.
   - `monomial-kernel-landed-2026-11-20` (d9342fcf): the cycle kind's fourth kinetic form, `monomial`
