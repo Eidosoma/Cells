@@ -389,6 +389,19 @@ def test_the_binding_layout():
     assert list(np.asarray(p.site_facing_node)) == [outside.index("ecs_0"), 0]
     assert list(np.asarray(p.site_internalises)) == [True, False]
     assert list(np.asarray(p.site_internalisation_rate)) == [0.2, 0.0]
+    # R3's readable quantities (FR-24) at the bound state, and theta at saturation: exactly 1 though
+    # B exceeds S by rounding there (B + R is S to the moiety's rounding).
+    op = OPERATORS[so.LAW_ID]
+    state, _ = get_model(spec.model).initial_values(spec)
+    q = op.quantities(state, p, xp=np)
+    b = np.asarray(p.site_bound_anchor_fmol)
+    assert list(q["site_occupied_fraction"]) == list(b / (b + np.asarray(p.site_free_anchor_fmol)))
+    assert q["site_occupied_fmol"].tobytes() == b.tobytes() and q["site_capacity_fmol"] is s
+    full = state._replace(
+        site_free_increment_fmol=-np.asarray(p.site_free_anchor_fmol),
+        site_bound_increment_fmol=np.asarray(p.site_free_anchor_fmol) * (1 + 1e-15),
+    )
+    assert list(op.quantities(full, p, xp=np)["site_occupied_fraction"]) == [1.0, 1.0]
 
 
 def test_a_contact_population_faces_the_cell_on_its_side():

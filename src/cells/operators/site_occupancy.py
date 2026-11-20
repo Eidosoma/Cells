@@ -22,7 +22,10 @@ copies and sites per copy are not scheduled.
 Ownership (§1.3, option O; ARCHITECTURE.md's modular core, D174): this operator owns every site
 population of a composition and provides no view, mask or capacitance, so it is no field input and
 an occupancy-only composition does not refresh the field (ownership is separate from solver
-invalidation). It accepts later writers on its two pools (ACCEPTS_WRITES). Species identity follows
+invalidation). It accepts later writers on its two pools (ACCEPTS_WRITES). Its readable
+quantities (R3, FR-24) are each population's occupied fraction theta = B / (B + R), occupied amount
+B and accessible capacity S, computed from its own state (quantities), which a reader such as the
+coupling operator reads through the composite. Species identity follows
 the coupling operator's pattern until D172 consolidates it: ligands are parsed by
 species_common.parse_species, with a declared trace_mM (§4.3), and their identities are checked
 against D150's and D152's declarations by this operator, in either order, with no shared change.
@@ -45,6 +48,7 @@ bath, is admitted beside it. The stationary analysis refuses the composite by it
 
 import math
 from dataclasses import dataclass
+from types import MappingProxyType
 from typing import NamedTuple
 
 import jax.numpy as jnp
@@ -226,6 +230,15 @@ def facing_node(m, population):
         return CELL, patch.inside
     junction = next(j for j in m.junctions if j.id == population.owner_id)
     return CELL, junction.sender if population.facing == "first" else junction.receiver
+
+
+def population_cell(m, population):
+    """The cell a population belongs to: its patch's own cell, whichever face it binds from, or
+    the cell on its side of a contact (R3's locality, FR-24)."""
+    if population.owner_kind == "patch":
+        return next(p for p in m.membranes if p.id == population.owner_id).inside
+    junction = next(j for j in m.junctions if j.id == population.owner_id)
+    return junction.sender if population.facing == "first" else junction.receiver
 
 
 def receiving_cell(m, population):
@@ -1228,6 +1241,15 @@ class SiteOccupancy(Operator):
     LAYOUT_FIELDS = LAYOUT_FIELDS
     CONTROL_FIELDS = CONTROL_FIELDS
     EXPERIMENT_KEYS = (CONTROLS_KEY,)
+    # R3 (FR-24; docs/OPERATOR_FEATURES_FR23_24_26_DESIGN.md §3.3): its readable quantities per
+    # population, from its own state (quantities).
+    QUANTITIES = MappingProxyType(
+        {
+            "site_occupied_fraction": ("site_population", "1"),
+            "site_occupied_fmol": ("site_population", "fmol"),
+            "site_capacity_fmol": ("site_population", "fmol"),
+        }
+    )
     # D150's static-tissue list and D152's addition (§1.5): the half-step reads the declared
     # volumes, masks and outside anchors.
     CONFLICTS_VIEW = (
@@ -1371,6 +1393,19 @@ class SiteOccupancy(Operator):
     def domain_valid(self, state, p, valid, *, xp):
         own = site_domain_valid(state, p, xp=xp)
         return own if valid is None else valid & own
+
+    def quantities(self, state, p, *, xp):
+        """R3: per population its occupied fraction theta = B / (B + R), which the domain's B >= 0
+        and R >= 0 keep in [0, 1] exactly (B + R is S to the moiety's rounding); its occupied amount
+        B; and its accessible capacity S (fmol)."""
+        free = p.site_free_anchor_fmol + state.site_free_increment_fmol
+        bound = p.site_bound_anchor_fmol + state.site_bound_increment_fmol
+        total = free + bound
+        return dict(
+            site_occupied_fraction=bound / xp.where(total > 0, total, 1.0),
+            site_occupied_fmol=bound,
+            site_capacity_fmol=p.site_capacity_fmol,
+        )
 
     # ------------------------------------------------------------ ledgers
 
