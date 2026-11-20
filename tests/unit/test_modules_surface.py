@@ -90,6 +90,7 @@ HOMES = {  # Each name's own module: where it is defined.
         "host_index",
         "moved_nodes",
     ),
+    "cells.kinds.proton_buffer": ("free_log_sensitivity",),
 }
 # What the kinds import today, from @3's module: the same objects as the surface's.
 VIA_INNER_MODEL = ("KindRates", "EXPLICIT_STEP_BOUND", "physical_amounts")
