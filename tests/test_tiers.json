@@ -267,7 +267,8 @@
   "/mnt/workspaces/Cells/ol3-engine-20261119/measure-99770fce/measured.json",
   "/mnt/workspaces/Cells/bath-recipe-20261120/tiers/measured-ba8743ad/measured.json",
   "/mnt/workspaces/Cells/kcc-overflow-log-20261120/tiers/measured-89a69efa/measured.json",
-  "/mnt/workspaces/Cells/ol3-engine-20261119/measure-e2caf966/measured.json"
+  "/mnt/workspaces/Cells/ol3-engine-20261119/measure-e2caf966/measured.json",
+  "/mnt/workspaces/Cells/ol3-engine-20261119/measure-aaee2582/measured-changed.json"
  ],
  "measured_provenance": [
   {
@@ -2257,6 +2258,13 @@
    "root": "/mnt/workspaces/Cells/ol3-engine-20261119/tree-e2caf966",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-20T17:54:44+00:00"
+  },
+  {
+   "git_revision": "aaee25826be6f9ce7485fd6ebb4f06af7ef860af",
+   "dirty": false,
+   "root": "/mnt/workspaces/Cells/ol3-engine-20261119/tree-aaee2582",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-20T19:01:36+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -5964,7 +5972,7 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_v2_kernel.py",
-    "seconds": 43.32,
+    "seconds": 55.26,
     "exit_code": 0,
     "counts": {
      "passed": 9
