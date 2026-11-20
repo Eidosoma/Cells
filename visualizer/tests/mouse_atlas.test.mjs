@@ -98,7 +98,8 @@ test("the species file says what it is: an animal whose generic cell and sheet C
   assert.match(organ.note, /no ear is modelled, and the ear's own cells are not modelled/);
   // Beside the whole mouse the sheet could not be seen: its ring says it is not to scale.
   assert.match(organism.sheet_mark.note, /not to scale/);
-  assert.deepEqual(species.cell.parts, { membranes: 1, wall: false, nucleus: true, organelles: ["er", "golgi", "mitochondria"] });
+  // `shelf`: an organelle the Cell view does not draw, on the Machines view's shelf alone (20 November 2026, step D).
+  assert.deepEqual(species.cell.parts, { membranes: 1, wall: false, nucleus: true, organelles: ["er", "golgi", "mitochondria"], shelf: ["autophagosome"] });
   for (const fact of species.cell.facts) assert.ok(fact.sources.every((key) => species.sources[key]?.class === "permissive"), fact.label);
   for (const text of [JSON.stringify(species), JSON.stringify(atlas), shelvesText, readme]) assert.ok(!/\b(is|are|was|were) modelled\b(?! \.)|Cells models (the mouse|this animal|Mus\b)/i.test(text.replace(/no ear is modelled/g, "").replace(/own cells are not modelled/g, "")));
 });
@@ -194,7 +195,7 @@ test("the atlas holds found to a family that makes the machine itself; its produ
 test("every source states its terms and its class; the tools behind UniProt's statements are named, read through UniProt and counted", () => {
   assert.deepEqual(shelves.sources.map((source) => [source.name, source.class, source.through ?? null]), SHELF_SOURCES);
   for (const source of shelves.sources.filter((item) => item.through)) assert.match(source.holds, /^Nothing was downloaded from it/, source.name);
-  assert.deepEqual(Object.entries(species.sources).map(([key, source]) => [key, source.class]), [["uniprot", "permissive"], ["islam2021", "permissive"]]);
+  assert.deepEqual(Object.entries(species.sources).map(([key, source]) => [key, source.class]), [["uniprot", "permissive"], ["islam2021", "permissive"], ["muller2020", "permissive"], ["martinezalonso2013", "permissive"], ["wikipedia-autophagosome", "permissive"]]);
   const section = note.slice(note.indexOf("## What rests on non-commercial or unlicensed sources"));
   for (const name of ["PROSITE", "TMHMM", "Phobius", "SignalP", "TargetP", "Memsat", "Predotar", "big-PI", "MGI"]) assert.ok(section.includes(name), name);
 });

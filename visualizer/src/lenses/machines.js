@@ -25,7 +25,7 @@ import { catalogueOf, describe as describeItem, describePart, sections as listSe
 import { h } from "../ui/dom.js";
 import { loadShape, buildShape } from "./machine_shape.js";
 import { layoutOf, bodiesAt, membraneOf, partOfChain, shelfOf, CARD, TRAY, BENCH, UNIT_NM, SHELF } from "./machines_layout.js";
-import { organelleModels, placeModel, scaleFor, drawnSize, paintModel, MODELS as SHELF_MODELS, PLAIN } from "./machines_shelf.js";
+import { organelleModels, simpleModel, placeModel, scaleFor, drawnSize, paintModel, MODELS as SHELF_MODELS, SIMPLE } from "./machines_shelf.js";
 
 /** The look this view asks of the stage (core/look.js), as the Laws library's: natural colours under filmic light. */
 export const MACHINES_LOOK = { rich: true, filmic: true, exposure: 1.04, contact: true, reach: 0.5, shade: 0.55 };
@@ -55,7 +55,7 @@ export const MARKS = [
   { id: SWATCH.sized, label: "A shape: drawn to scale from a size in hand", description: "A simple shape at a size in hand, every one at the same scale (the scale bar on the bench is 100 nm): a size a paper or a species' file gives, or the viewer's own measure from a structure of the Protein Data Bank. Shapes, not structures.", when: (lens) => lens.counts.sized > 0 },
   { id: SWATCH.card, label: "A card: no size in hand, not to scale", description: "A machine whose size no source in hand gives: a card with its name, the same size for all. It is a label, not a shape.", when: (lens) => lens.counts.cards > 0 },
   { id: "mach-found", label: "Forward: found; faint: not found", description: "While a search is set, the machines it finds stand as they are and the rest fade.", when: (lens) => Boolean(lens.query) },
-  { id: SWATCH.organelle, label: "On the shelf: organelles, at the same scale", description: "Above the bench, the cell's organelles at the bench's one scale: each drawn as the Cell view draws it, at a size a paper gives for one cell type, which its panel names. The rail at the side travels between the bench and the shelf.", when: (lens) => (lens.organelles?.length || 0) > 0 },
+  { id: SWATCH.organelle, label: "On the shelf: organelles, at the same scale", description: "Behind the bench, the cell's organelles at the bench's one scale, the small ones on a plank of their own: each drawn with the Cell view's model of it where there is one, else with a simple model, an illustration, at a size its panel gives with its source (a measurement in one cell type, or a general figure); one with no size in hand is a card. The rail at the side travels between the bench and the shelf.", when: (lens) => (lens.organelles?.length || 0) > 0 },
   { id: SWATCH.chosen, label: "Blue light: your choice", description: "The machine you chose rises from its tray and is lit; a part or a chain you chose in it is lit the same blue.", when: () => true },
 ];
 export const MACHINES_NOTE = "The bench, the trays and the scale bar's line are the room, and stand for nothing; a tray's colour is the group's.";
@@ -321,7 +321,8 @@ export class MachinesLens {
 
   /**
    * The shelf, made when first wanted: each organelle the Cell view's own model of it (machines_shelf.js, built by its
-   * builders from the species' cell), set at the size its species' file states; one with no size, or no model, a card.
+   * builders from the species' cell), or a simple model of its own where the Cell view has none, set at the size its species'
+   * file states; one with no size a card. The small ones stand on a plank of their own (shelfOf).
    */
   ensureShelf() {
     if (this.shelf || !this.organelles.length || !this.layout) return this.shelf;
@@ -337,15 +338,11 @@ export class MachinesLens {
     }
     const placed = [], made = new Map();
     for (const item of this.organelles) {
-      const model = models.get(item.kind.id), scale = model ? scaleFor(model, drawnSize(item.size)) : null;
-      // No model in the Cell view, a size in hand: a plain shape at that size (a sphere, or a capsule where it has a length).
-      const plain = !model && item.size ? drawnSize(item.size) : null;
-      if (plain?.across) {
-        const long = plain.long || plain.across;
-        made.set(item.id, { plain: { across: plain.across, long } });
-        placed.push({ id: item.id, item, w: long, d: plain.across, h: plain.across });
-        continue;
-      }
+      const drawn = drawnSize(item.size);
+      // No model in the Cell view, a size in hand: a simple model of its own (machines_shelf.js, SIMPLE), an illustration; a kind
+      // with none there, a plain sphere, or a capsule where its size gives a length.
+      const model = models.get(item.kind.id) || (drawn?.across && !SHELF_MODELS[item.kind.id] ? simpleModel(item.kind.id, { long: drawn.long ? drawn.long / drawn.across : 1 }) : null);
+      const scale = model ? scaleFor(model, drawn) : null;
       if (!scale) {
         placed.push({ id: item.id, item });
         continue;
@@ -357,24 +354,17 @@ export class MachinesLens {
     const layout = shelfOf(placed, this.layout.bounds);
     const root = new THREE.Group();
     root.userData.keep = true;
-    const plank = new THREE.Mesh(new THREE.BoxGeometry(layout.plank.w, SHELF.h, layout.plank.d), this.materials.bench);
-    plank.position.set(layout.plank.x, -SHELF.h / 2, layout.plank.z);
-    plank.userData.unpickable = true;
-    root.add(plank);
+    // The shelf's plank, and the small organelles' own plank between it and the bench.
+    for (const board of [layout.plank, layout.small?.plank].filter(Boolean)) {
+      const plank = new THREE.Mesh(new THREE.BoxGeometry(board.w, SHELF.h, board.d), this.materials.bench);
+      plank.position.set(board.x, -SHELF.h / 2, board.z);
+      plank.userData.unpickable = true;
+      root.add(plank);
+    }
     const holders = new Map();
     for (const entry of layout.items) {
       const own = made.get(entry.id);
-      if (own?.plain) {
-        const { across, long } = own.plain;
-        const geometry = long > across ? new THREE.CapsuleGeometry(across / 2, long - across, 8, 24).rotateZ(Math.PI / 2) : new THREE.SphereGeometry(across / 2, 32, 20);
-        const mesh = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ roughness: 0.42, metalness: 0.05 }));
-        mesh.material.userData = { own: true, plain: true, hue: PLAIN[entry.item.kind.id] || "ghost" };
-        (this.shelfCards ??= new Set()).add(mesh.material);
-        mesh.position.set(entry.x, across / 2, entry.z);
-        mesh.userData.pick = entry.id;
-        root.add(mesh);
-        holders.set(entry.id, { holder: mesh });
-      } else if (own) {
+      if (own) {
         const { holder } = placeModel(own.model, { scale: own.scale, turn: FACING[entry.item.kind.id] || 0, at: new THREE.Vector3(entry.x, 0, entry.z) });
         holder.userData.pick = entry.id;
         paintModel(own.model, this.stage.palette || {});
@@ -424,24 +414,31 @@ export class MachinesLens {
     this.shelf.root.visible = this.organelles.length > 0 && distance !== undefined && (distance > 1.6 * this.benchView().distance || Boolean(this.travel && this.travel.to.distance > this.travel.from.distance) || Boolean(organelleKind(this.selected)) || this.lookingAtShelf());
   }
 
-  /** Whether the camera looks at the shelf: its target lies behind the bench's back edge, where the shelf stands. */
+  /** Whether the camera looks at the shelf or the small organelles' plank: its target lies behind the bench's back edge, where they stand. */
   lookingAtShelf() {
     const target = this.stage.rig?.target;
-    return Boolean(this.shelf && this.layout && target && target.z < this.layout.bounds.minZ - SHELF.gap / 2);
+    return Boolean(this.shelf && this.layout && target && target.z < this.layout.bounds.minZ - (this.shelf.layout.small ? SHELF.small.gap : SHELF.gap) / 2);
   }
 
-  /** The views of the bench's and the shelf's stops, for the screen as it is (kept until the insets, the size or the layout change). */
+  /**
+   * The views of the bench's, the small organelles' and the shelf's stops, for the screen as it is (kept until the insets, the
+   * size or the layout change). The small organelles' stop is where they stand on a plank of their own, if there are any.
+   */
   stopViews() {
     const key = `${JSON.stringify(this.stage.insets || {})}|${this.stage.width}x${this.stage.height}|${this.layout?.bounds.minZ}|${Boolean(this.shelf)}`;
     if (this.views?.key === key) return this.views;
     const bench = this.benchHome();
-    let shelf = null;
+    let shelf = null, small = null;
     if (this.organelles.length && this.ensureShelf()) {
-      const b = this.shelf.layout.bounds;
+      const b = this.shelf.layout.bounds, near = this.layout.bounds.maxZ;
       // The whole shelf, and the bench before it: at the shelf's stop the bench is a small marked tray.
-      shelf = this.fitOnScreen(new THREE.Box3(new THREE.Vector3(b.minX, 0, b.minZ), new THREE.Vector3(b.maxX, b.maxY, this.layout.bounds.maxZ)), 0.04);
+      shelf = this.fitOnScreen(new THREE.Box3(new THREE.Vector3(b.minX, 0, b.minZ), new THREE.Vector3(b.maxX, b.maxY, near)), 0.04);
+      // The small organelles' plank, the bench before it: between the two.
+      const s = this.shelf.layout.small?.bounds;
+      if (s) small = this.fitOnScreen(new THREE.Box3(new THREE.Vector3(s.minX, 0, s.minZ), new THREE.Vector3(s.maxX, s.maxY, near)), 0.04);
+      if (small && !(small.distance > bench.distance && small.distance < shelf.distance)) small = null; // a stop only where it stands between the two
     }
-    this.views = { key, bench, shelf };
+    this.views = { key, bench, small, shelf };
     return this.views;
   }
 
@@ -459,14 +456,16 @@ export class MachinesLens {
    * Nearer than the bench's stop it looks at what is chosen on the bench, or the bench's middle.
    */
   pathView(distance) {
-    const { bench, shelf } = this.stopViews();
+    const { bench, small, shelf } = this.stopViews();
     if (!shelf || distance <= bench.distance) {
       const chosen = this.layout?.items.find((item) => item.id === this.selected);
       const target = distance < bench.distance && chosen ? new THREE.Vector3(chosen.x, chosen.y + chosen.h / 2, chosen.z) : bench.target.clone();
       return { ...bench, target, distance };
     }
-    const along = Math.min(1, (distance - bench.distance) / Math.max(1e-6, shelf.distance - bench.distance));
-    return { ...bench, target: bench.target.clone().lerp(shelf.target, along), distance };
+    // From one stop to the next: the bench, the small organelles' plank where there is one, the shelf.
+    const [from, to] = small && distance < small.distance ? [bench, small] : small ? [small, shelf] : [bench, shelf];
+    const along = Math.min(1, (distance - from.distance) / Math.max(1e-6, to.distance - from.distance));
+    return { ...bench, target: from.target.clone().lerp(to.target, along), distance };
   }
 
   /** The page's scale bar at a camera distance, by the page's own rule (ui/viewer.js, updateScaleBar): its length, in nanometres. */
@@ -490,8 +489,8 @@ export class MachinesLens {
    * at its own size.
    */
   stops() {
-    const { bench, shelf } = this.stopViews();
-    const named = [{ id: "bench", distance: bench.distance, name: "The bench" }, ...(shelf ? [{ id: "shelf", distance: shelf.distance, name: "The shelf" }] : [])].map((stop) => ({ ...stop, bar: this.barAt(stop.distance) }));
+    const { bench, small, shelf } = this.stopViews();
+    const named = [{ id: "bench", distance: bench.distance, name: "The bench" }, ...(small ? [{ id: "small", distance: small.distance, name: "Small organelles" }] : []), ...(shelf ? [{ id: "shelf", distance: shelf.distance, name: "The shelf" }] : [])].map((stop) => ({ ...stop, bar: this.barAt(stop.distance) }));
     const powers = POWERS.map((nm) => ({ id: `nm${nm}`, distance: this.distanceForBar(nm), bar: nm })).filter((stop) => !named.some((other) => other.bar === stop.bar));
     const chosen = this.chosenStop();
     return [...named, ...powers, ...(chosen ? [chosen] : [])].sort((a, b) => b.distance - a.distance);
@@ -525,7 +524,7 @@ export class MachinesLens {
     return this.stops().map((stop) => ({
       id: stop.id,
       label: stop.name ? `${stop.name} · ${lengthWords(stop.size ?? stop.bar)}` : lengthWords(stop.bar),
-      title: stop.id === "chosen" ? `Travel to what you chose, at its own size (${lengthWords(stop.size)} at its longest)` : stop.id === "shelf" ? `Travel up to the shelf of organelles, where the scale bar reads ${lengthWords(stop.bar)}` : stop.id === "bench" ? `Travel to the bench of machines, where the scale bar reads ${lengthWords(stop.bar)}` : `Travel to where the scale bar reads ${lengthWords(stop.bar)}`,
+      title: stop.id === "chosen" ? `Travel to what you chose, at its own size (${lengthWords(stop.size)} at its longest)` : stop.id === "shelf" ? `Travel up to the shelf of organelles, where the scale bar reads ${lengthWords(stop.bar)}` : stop.id === "small" ? `Travel to the small organelles on their own plank, where the scale bar reads ${lengthWords(stop.bar)}` : stop.id === "bench" ? `Travel to the bench of machines, where the scale bar reads ${lengthWords(stop.bar)}` : `Travel to where the scale bar reads ${lengthWords(stop.bar)}`,
     }));
   }
 
@@ -535,7 +534,7 @@ export class MachinesLens {
       if (this.selected) this.focus(this.selected);
       return;
     }
-    if (!["bench", "shelf"].includes(id) && !/^nm\d+$/.test(id || "")) return;
+    if (!["bench", "small", "shelf"].includes(id) && !/^nm\d+$/.test(id || "")) return;
     this.endLoupe(); // a stop of the rail leaves the loupe
     this.focused = null; // and supersedes a framing still waiting on a panel's insets (a phone's sheet closing after a choice)
     this.stop = id;
@@ -590,8 +589,14 @@ export class MachinesLens {
     const distance = this.stage.rig?.distance || 0;
     this.lastDistance = distance;
     this.placeShelfVisibility();
-    const { bench, shelf } = this.layout ? this.stopViews() : {};
-    const band = shelf && (distance > Math.sqrt(bench.distance * shelf.distance) || this.lookingAtShelf()) ? "shelf" : "bench";
+    const { bench, small, shelf } = this.layout ? this.stopViews() : {};
+    // Which stop's names the picture shows: the one whose distance is nearest on a scale of powers of ten; with the loupe held, or
+    // an organelle chosen and looked at, its own plank's; looking at the shelf's plank, the shelf's; looking at the small organelles'
+    // plank from nearer than its stop, theirs (a small organelle framed close brings the camera as near as the bench's stop).
+    const looked = shelf && this.lookingAtShelf() ? this.lookedPlank() : null;
+    const closest = (...stops) => stops.filter(Boolean).sort((a, b) => Math.abs(Math.log(distance / a[1])) - Math.abs(Math.log(distance / b[1])))[0]?.[0];
+    const held = this.loupe ? "shelf" : looked && organelleKind(this.selected) ? this.plankOf(this.selected) : null;
+    const band = !shelf ? "bench" : held || (looked === "shelf" && !this.travel ? "shelf" : looked === "small" && distance < (small || shelf).distance ? "small" : closest(["bench", bench.distance], small && ["small", small.distance], ["shelf", shelf.distance]));
     if (band !== this.band) {
       this.band = band;
       this.buildLabels();
@@ -601,6 +606,12 @@ export class MachinesLens {
       this.railActive = nearest;
       this.onChrome?.();
     }
+  }
+
+  /** The plank the camera looks at, by its target: the small organelles' (from the bench's back edge to their plank's back), else the shelf's. */
+  lookedPlank() {
+    const target = this.stage.rig?.target, small = this.shelf?.layout.small;
+    return small && target && target.z >= small.bounds.minZ - SHELF.gap / 2 ? "small" : "shelf";
   }
 
   /** The view that frames an organelle on the shelf, with the loupe beside it where one is held there. */
@@ -1045,17 +1056,26 @@ export class MachinesLens {
 
   /** How an organelle is drawn, in words: the Cell view's own model of it, and which of its widths the paper's size sets. */
   drawnWords(id) {
-    const item = this.item(id), model = SHELF_MODELS[item?.kind?.id];
-    if (!model && item?.size) return `A plain ${item.size.long_um ? "capsule" : "sphere"} at the size above: the Cell view has no model of it. An illustration, at the bench's one scale.`;
-    if (!model) return item ? "No model of it in the Cell view: a card on the shelf, not to scale." : null;
+    const item = this.item(id), model = SHELF_MODELS[item?.kind?.id], simple = SIMPLE[item?.kind?.id];
+    const plank = item?.size && this.plankOf(id) === "small" ? " It stands on the small organelles' own plank, between the bench and the shelf." : "";
+    // The Cell view has no model of it: a simple model of its own (machines_shelf.js), whose every part but the size is the picture's choice.
+    if (!model && simple && item?.size) return `${simple.words.charAt(0).toUpperCase()}${simple.words.slice(1)}, at the size above: a simple model of its own, since the Cell view has none; ${simple.choice}. An illustration, at the bench's one scale.${plank}`;
+    if (!model && item?.size) return `A plain ${item.size.long_um ? "capsule" : "sphere"} at the size above: the Cell view has no model of it. An illustration, at the bench's one scale.${plank}`;
+    if (!model) return item ? (simple ? `No size in hand: a card on the shelf, not to scale. With a size it would stand as ${simple.words}, a simple model of its own, since the Cell view has none.` : "No model of it in the Cell view: a card on the shelf, not to scale.") : null;
     if (!item.size) return `No size in hand: a card on the shelf, not to scale. The Cell view draws it as ${model.words}.`;
     const sets = {
       across: "scaled as a whole so that it is as wide as the size above; its parts within it keep the Cell view's proportions, which are the picture's choice",
       thick: "scaled as a whole so that its sheets are as thick as the size above; how many sheets, how tall, how far apart and how they fold are the picture's choice",
       cisterna: "scaled as a whole so that its widest cisterna is as wide as the size above; the number of stacks and of cisternae, and the vesicles, are the picture's choice",
       capsule: "stretched so that it is as wide and as long as the size above; its folds and how it is cut open are the picture's choice",
+      barrel: "stretched so that its barrel is as wide and as long as the size above; its nine rods' thickness, and that it lies on its side, are the picture's choice",
     }[model.sets];
-    return `${model.words.charAt(0).toUpperCase()}${model.words.slice(1)}; built by the Cell view's own builders and ${sets}. An illustration, at the bench's one scale.`;
+    return `${model.words.charAt(0).toUpperCase()}${model.words.slice(1)}; built by the Cell view's own builders and ${sets}. An illustration, at the bench's one scale.${plank}`;
+  }
+
+  /** The plank an organelle stands on: "small" for the small organelles' own, else "shelf". */
+  plankOf(id) {
+    return this.ensureShelf()?.layout.items.find((item) => item.id === id)?.plank === "small" ? "small" : "shelf";
   }
 
   /** What is chosen on the bench, if anything: the bench itself as a stop, or an organelle on the shelf, leave the bench as it is. */
@@ -1085,7 +1105,9 @@ export class MachinesLens {
    */
   loupeDoors(id) {
     const doors = [];
-    const sized = this.organelles.filter((item) => item.sized);
+    // Only beside an organelle on the shelf's plank: the lens lies on the shelf before it (the small organelles' plank stands just
+    // behind the bench, with no room for a lens before it).
+    const sized = this.organelles.some((item) => item.sized) ? this.organelles.filter((item) => item.sized && this.plankOf(item.id) === "shelf") : [];
     if (!sized.length) return doors;
     if (organelleKind(id)) {
       const machine = this.lastMachine && this.layout?.items.find((item) => item.id === this.lastMachine && item.type === "shape");
@@ -1135,7 +1157,7 @@ export class MachinesLens {
       return;
     }
     const [machine, organelle] = String(spec).split("@");
-    if (!this.layout?.items.some((item) => item.id === machine && item.type === "shape") || !this.item(organelle)?.sized) return;
+    if (!this.layout?.items.some((item) => item.id === machine && item.type === "shape") || !this.item(organelle)?.sized || this.plankOf(organelle) !== "shelf") return;
     this.loupe = { machine, organelle };
     this.lastMachine = machine;
     this.lastOrganelle = organelle;
@@ -1263,7 +1285,7 @@ export class MachinesLens {
         // A species whose dossier looks by family: how many machines its own records name, and how many are candidates by family.
         stats: counts.family || counts.none ? [[counts.named, "named by its own records"], [counts.family, "candidates by family"], [counts.laws, "in the law inventory"]] : [[counts.machines, "machines"], [counts.sized, "drawn to scale"], [counts.laws, "in the law inventory"]],
         own: () => this.cardNoneFound(),
-        text: `Illustration: simple shapes at a size in hand (a paper's, a species file's, or the viewer's own measure from a structure), not structures, and cards where no size is in hand. No machine here is in the engine.${counts.laws ? " The membrane machines in the tray of moving ions are units of the law inventory; each panel says what the inventory states of its laws, and which of them an active model declares." : ""}${this.organelles.length ? ` Behind the bench, a shelf holds ${label}'s organelles at the same scale, each as the Cell view draws it at a size a paper gives for one cell type; the rail travels between them.` : ""}`,
+        text: `Illustration: simple shapes at a size in hand (a paper's, a species file's, or the viewer's own measure from a structure), not structures, and cards where no size is in hand. No machine here is in the engine.${counts.laws ? " The membrane machines in the tray of moving ions are units of the law inventory; each panel says what the inventory states of its laws, and which of them an active model declares." : ""}${this.organelles.length ? ` Behind the bench, a shelf holds ${label}'s organelles at the same scale, the small ones on a plank of their own: each drawn with the Cell view's model of it where there is one, else with a simple model, an illustration, at a size its panel gives with its source (a measurement in one cell type, or a general figure); one with no size in hand is a card. The rail travels between them.` : ""}`,
         sources: [
           { name: "The species' files and their own proteins", holds: "which machines each species has, how many, and the proteins its data marks with each (tools/build_catalogue.py)", licence: "each source's own, named in each panel; the files are the project's own, MIT" },
           { name: "Sizes", holds: "from the species' files, each with its sources (the attachment organelle's length); from the flagellar motor's own file; and the viewer's own measures from entries of the Protein Data Bank (the ribosome), each naming its entry, its definition and its tool", licence: "each source's own, named in each panel; the Protein Data Bank's entries CC0 1.0" },
@@ -1377,6 +1399,7 @@ export class MachinesLens {
   /** The view of the stop the view stands at: the bench's opening view, the shelf's, or a power of ten on the way between. */
   homeView() {
     if (this.stop === "shelf" && this.organelles.length) return this.shelfView() || this.benchView();
+    if (this.stop === "small" && this.organelles.length) return this.stopViews().small || this.shelfView() || this.benchView();
     const power = /^nm(\d+)$/.exec(this.stop || "");
     if (power && this.layout) return this.pathView(this.distanceForBar(Number(power[1])));
     return this.layout ? this.benchView() : this.benchHome();
@@ -1405,10 +1428,21 @@ export class MachinesLens {
     const width = stage.width || 1600, height = stage.height || 1000, fov = stage.camera?.fov || 34;
     // On a wide window the scale rail stands at the right of the picture (beside a panel too): what is framed keeps clear of it.
     // (With a panel open the rail folds behind the page's button beside it, and takes no room from the picture.)
-    const right = (stage.insets?.right || 0) + (this.organelles?.length && width >= 761 && !stage.insets?.right ? 230 : 0);
+    const rail = this.organelles?.length && width >= 761 && !stage.insets?.right ? 230 : 0;
+    const right = (stage.insets?.right || 0) + rail;
     const seen = Math.max(0.2, (height - bottom) / height);
     const narrowed = (2 * Math.atan(Math.tan((fov * Math.PI) / 360) * seen) * 180) / Math.PI;
-    return fitView(box, { fov: narrowed, aspect: Math.max(0.3, (width - right - left) / Math.max(1, height - bottom)), ...VIEW, margin });
+    const view = fitView(box, { fov: narrowed, aspect: Math.max(0.3, (width - right - left) / Math.max(1, height - bottom)), ...VIEW, margin });
+    // The page centres the picture between its insets, where the rail is none: the target moves right by half the rail's width (in
+    // the scene's units at its distance), so that what is framed stands in the middle of the room the rail leaves (20 November 2026:
+    // the bench and the small organelles' plank stood under the rail at their stops).
+    if (rail) view.target.addScaledVector(new THREE.Vector3(Math.cos(view.azimuth), 0, -Math.sin(view.azimuth)), ((rail / 2) * 2 * view.distance * Math.tan((fov * Math.PI) / 360)) / height);
+    return view;
+  }
+
+  /** The direction across the screen at a view (its camera's right): a line along it stands level on the picture. */
+  across(view) {
+    return new THREE.Vector3(Math.cos(view.azimuth), 0, -Math.sin(view.azimuth));
   }
 
   /** Each shape drawn to scale has its name on the picture; a card's is written on it. The chosen machine's too. */
@@ -1416,10 +1450,18 @@ export class MachinesLens {
     const labels = this.labels;
     if (!labels || !this.active) return;
     labels.clear();
-    // At the shelf's stop: the organelles' names, the bench as a small marked tray, the loupe's words. At the bench's: the
-    // bench's names as before, and the shelf named above it, each organelle with how many scale bars wide it is.
+    this.reserved = []; // the boxes the names of a stop take, as the stop shows them (nameRows, plankNames, benchMark)
+    this.namesFor = this.screenKey(); // the screen they were laid out for: laid out again when it changes (update)
+    this.namesView = this.viewKey(this.restingView()); // and the camera's view where it rests: laid out again where it comes to rest elsewhere
+    // At the shelf's stop: the organelles' names, the small organelles' and the bench's marks, the loupe's words. At the small
+    // organelles' stop: their names, the shelf's above them and the bench's mark. At the bench's: the bench's names as before, and
+    // every organelle named above it. Each name of an organelle is a way to it.
     if (this.band === "shelf" && this.shelf) {
       this.shelfLabels(labels);
+      return;
+    }
+    if (this.band === "small" && this.shelf?.layout.small) {
+      this.smallLabels(labels);
       return;
     }
     this.shelfAbove(labels);
@@ -1449,12 +1491,149 @@ export class MachinesLens {
     return "";
   }
 
-  /** At the bench's stop: the shelf named above the bench's back edge, each name a way up to its organelle. */
+  /** An organelle's size in a few words, for its name at a stop: its width, or its width and length, a cisterna's, or a sheet's. */
+  sizeShort(item) {
+    const size = item.size;
+    if (!size) return "a card";
+    const middle = (values) => (values.length > 1 ? (values[0] + values[values.length - 1]) / 2 : values[0]);
+    const um = (value) => `${Number(value.toPrecision(3))} µm`;
+    if (size.shape === "capsule") return `${Number(middle(size.across_um).toPrecision(3))} by ${um(middle(size.long_um))}`;
+    if (size.shape === "stack") return `cisternae ${um(middle(size.across_um))}`;
+    if (size.shape === "sheet") return `sheets ${Number(middle(size.thick_nm).toPrecision(3))} nm`;
+    return um(middle(size.across_um));
+  }
+
+  /** The organelles in the order the shelf shows them: the shelf's plank first, then the small organelles' (the catalogue's order in each). */
+  shelfOrder() {
+    const plank = new Map((this.ensureShelf()?.layout.items || []).map((entry) => [entry.id, entry.plank]));
+    return [...this.organelles.filter((item) => plank.get(item.id) !== "small"), ...this.organelles.filter((item) => plank.get(item.id) === "small")];
+  }
+
+  /** How many pixels apart two points of the scene stand at a stop's view (the page's camera: the insets shift the picture, never scale it). */
+  pixelsAt(view, a, b) {
+    return Math.abs(this.screenAt(view, b).x - this.screenAt(view, a).x);
+  }
+
+  /** Where a point of the scene stands on the screen at a stop's view, in pixels from the picture's middle (the page's camera). */
+  screenAt(view, point) {
+    // Where the camera rests at that view, the page's own projection (exactly where the label layer will put the point); on a
+    // phone a camera of the page's measure alone put the small organelles' names a few pixels off, and two met (20 November 2026).
+    if (view?.live && this.stage.project && this.stage.camera) {
+      const { left = 0, right = 0, bottom = 0 } = this.stage.insets || {};
+      const at = this.stage.project(point, point.clone());
+      return { x: at.x - (this.stage.width || 1600) / 2 + (right - left) / 2, y: at.y - (this.stage.height || 1000) / 2 + bottom / 2 };
+    }
+    const camera = (this.measuring ??= new THREE.PerspectiveCamera(34, 1, 0.5, 1e7));
+    camera.fov = this.stage.camera?.fov || 34;
+    camera.aspect = (this.stage.width || 1600) / (this.stage.height || 1000);
+    const sin = Math.sin(view.polar);
+    camera.position.set(view.target.x + view.distance * sin * Math.sin(view.azimuth), view.target.y + view.distance * Math.cos(view.polar), view.target.z + view.distance * sin * Math.cos(view.azimuth));
+    camera.lookAt(view.target);
+    camera.updateMatrixWorld();
+    camera.updateProjectionMatrix();
+    const p = point.clone().project(camera);
+    return { x: (p.x / 2) * (this.stage.width || 1600), y: (-p.y / 2) * (this.stage.height || 1000) };
+  }
+
+  /**
+   * A name added to the picture and measured as the page draws it (the label layer measures each name it adds); where nothing
+   * measures it (the tests' stand-in), its width estimated from its words. Returns the label and its box's width and height.
+   */
+  addName(labels, spec) {
+    const label = labels.add(spec);
+    const width = label?.width || spec.text.length * 7 + 14, height = label?.height || 18;
+    // Its size and where a press goes, in its tooltip and for a reader of the screen (the name itself stays short).
+    if (spec.title) {
+      label?.element?.setAttribute?.("title", spec.title);
+      label?.element?.setAttribute?.("aria-label", spec.title);
+    }
+    // The box the label layer gives it (3 px each side, 2 above and below), and a margin, so that names never meet.
+    return { label, w: width + 12, h: height + 6 };
+  }
+
+  /**
+   * The box a name takes on the screen, from its point (`at`, in pixels from the picture's middle), its width and height with their
+   * margins, and its lift: moved along to stay inside the window, as the label layer moves a name near its edge (4 px), so that a
+   * name at the edge is counted where it will stand (20 November 2026: on a phone the COPI vesicle's name, moved in from the right
+   * edge, met the peroxisome's).
+   */
+  nameBox(at, w, h, lift) {
+    const width = this.stage.width || 1600, { left = 0, right = 0 } = this.stage.insets || {}, shift = width / 2 - (right - left) / 2;
+    const real = w - 12, middle = at.x + shift, edge = 4;
+    const start = width > edge * 2 + real ? Math.max(edge, Math.min(middle - real / 2, width - edge - real)) : middle - real / 2;
+    return { left: start - 6 - shift, right: start + real + 6 - shift, top: at.y - lift - h, bottom: at.y - lift };
+  }
+
+  /** Whether two boxes on the screen meet. */
+  static meets(one, other) {
+    return one.left < other.right && one.right > other.left && one.top < other.bottom && one.bottom > other.top;
+  }
+
+  /**
+   * Names in rows across the picture, about a point of the scene (`centre`, as the stop's `view` shows it), `fill` pixels wide: each
+   * row holds as many as fit across it, each anchored where its words have room, each row at the lift nearest its own where none of
+   * its names meets another name of the stop, so that no name gives way to a neighbour. The rows run along the camera's own right,
+   * so that at the stop they stand level. Each name is measured as the page draws it.
+   */
+  nameRows(labels, entries, centre, view, { lift = 6, priority = 720, fill = 600 } = {}) {
+    const span = Math.max(60, fill);
+    const made = entries.map((entry) => ({ entry, ...this.addName(labels, { id: entry.id, text: entry.text, title: entry.title, anchor: centre.clone(), priority, kind: "part", lift }) }));
+    const step = Math.max(26, ...made.map((value) => value.h + 2));
+    const rows = [];
+    for (const value of made) {
+      const row = rows.at(-1);
+      if (!row || row.used + value.w > span) rows.push({ items: [value], used: value.w });
+      else {
+        row.items.push(value);
+        row.used += value.w;
+      }
+    }
+    // The top row stays below the page's bar (the label layer puts off a name whose top is above it, 56 px): where the rows would
+    // reach above 62 px at the stop, their point moves toward the camera along the floor, lower on the picture, until they fit
+    // (20 November 2026: on a 720 px window about 90 px stand between the bar and the bench's back edge).
+    const height = this.stage.height || 1000, bottom = this.stage.insets?.bottom || 0;
+    const screenY = (point) => height / 2 + this.screenAt(view, point).y - bottom / 2;
+    const need = lift + (rows.length - 1) * step + step, toward = new THREE.Vector3(Math.sin(view.azimuth), 0, Math.cos(view.azimuth));
+    let point = centre.clone();
+    if (screenY(point) - need < 62) {
+      let low = 0, high = view.distance * 0.5;
+      for (let round = 0; round < 30; round++) {
+        const middle = (low + high) / 2;
+        if (screenY(centre.clone().addScaledVector(toward, middle)) - need < 62) low = middle;
+        else high = middle;
+      }
+      point = centre.clone().addScaledVector(toward, high);
+    }
+    const way = this.across(view), perUnit = Math.max(1e-6, this.pixelsAt(view, point, point.clone().add(way)));
+    const a = point.clone().addScaledVector(way, -span / 2 / perUnit), b = point.clone().addScaledVector(way, span / 2 / perUnit);
+    // Each row at the lift nearest its own (upward first, then below) where none of its names meets a box another name of the stop
+    // takes (the planks' names, the bench's mark, the rows before it), within the picture: below the bar, above the hint line.
+    const reserved = (this.reserved ??= []);
+    const inside = (box) => box.top >= 62 - height / 2 + bottom / 2 && box.bottom <= height / 2 - bottom / 2 - 40;
+    rows.forEach((row, index) => {
+      let at = Math.max(0, (span - row.used) / 2);
+      const placed = row.items.map((value) => {
+        const anchor = a.clone().lerp(b, Math.min(1, (at + value.w / 2) / span));
+        at += value.w;
+        return { ...value, anchor, screen: this.screenAt(view, anchor) };
+      });
+      const boxesAt = (rowLift) => placed.map(({ w, h, screen }) => this.nameBox(screen, w, h, rowLift));
+      const tries = [0, 1, 2, 3, 4, 5, 6, 7, 8, -1, -2, -3, -4, -5, -6].map((k) => lift + (index + k) * step);
+      const rowLift = tries.find((value) => boxesAt(value).every((box) => inside(box) && !reserved.some((other) => MachinesLens.meets(box, other)))) ?? lift + index * step;
+      reserved.push(...boxesAt(rowLift));
+      for (const { label, anchor } of placed) {
+        if (!label) continue;
+        label.anchor = anchor;
+        label.lift = rowLift;
+      }
+    });
+  }
+
+  /** At the bench's stop: every organelle named above the bench's back edge, the shelf's first, each name a way up to it. */
   shelfAbove(labels) {
     const items = this.organelles, bounds = this.layout?.bounds;
     // While a machine is chosen only its name is on the picture, as the bench's own rule has it: the shelf's names wait.
     if (!items.length || !bounds || this.benchChoice()) return;
-    const width = bounds.maxX - bounds.minX - 8;
     // On a phone the bench's back edge stands under the bar: one name only, at the bench's front, within reach of a thumb,
     // the first organelle with how many more stand on the shelf.
     if ((this.stage.width || 1600) < 760) {
@@ -1462,18 +1641,78 @@ export class MachinesLens {
       labels.add({ id: first.id, text: `↑ The shelf: ${first.label}, ${this.barsWords(first).split(",")[0]}${items.length > 1 ? `, and ${items.length - 1} more` : ""}`, anchor: new THREE.Vector3(0, 0, bounds.maxZ - 1), priority: 720, kind: "part", lift: 6 });
       return;
     }
-    items.forEach((item, index) => {
-      const x = bounds.minX + 4 + (width * (index + 0.5)) / items.length;
-      // In steps, one row each, so that neighbours' names do not hide each other.
-      labels.add({ id: item.id, text: `↑ ${item.label}: ${this.barsWords(item)}`, anchor: new THREE.Vector3(x, 0, bounds.minZ - 10), priority: 720, kind: "part", lift: 6 + index * 30 });
-    });
+    // Short names in level rows above the back edge, as many to a row as the picture's free width holds, each with its size in its
+    // tooltip; one press on a name travels to its organelle (20 November 2026: a dozen long names, one a row, stood above the bar).
+    const entries = this.shelfOrder().map((item) => ({ id: item.id, text: `↑ ${item.label}`, title: `${item.label}, ${this.sizeShort(item)}: travel up to it` }));
+    this.nameRows(labels, entries, new THREE.Vector3((bounds.minX + bounds.maxX) / 2, 0, bounds.minZ - 10), this.viewFor(this.benchView()), { fill: 0.86 * this.freeWidth() });
   }
 
-  /** At the shelf's stop: each organelle's name, the bench as a small marked tray (a way down), and the loupe's words. */
-  shelfLabels(labels) {
-    this.shelf.layout.items.forEach((entry, index) => labels.add({ id: entry.id, text: entry.item.label, anchor: new THREE.Vector3(entry.x, entry.h + 8, entry.z + (entry.type === "card" ? 0 : entry.d * 0.1)), priority: 800, kind: "part", lift: 6 + (index % 2) * 28 }));
+  /** The picture's free width in pixels: the screen less the cards and the panel beside it, and the rail on a wide window. */
+  freeWidth() {
+    const { left = 0, right = 0 } = this.stage.insets || {}, width = this.stage.width || 1600;
+    return Math.max(120, width - left - right - (width >= 761 && !right ? 230 : 0));
+  }
+
+  /** The bench as a small marked tray, at the shelf's stop and the small organelles': a way down to it. */
+  benchMark(labels, lift, view = null) {
     const range = this.benchRange(), bounds = this.layout.bounds;
-    labels.add({ id: BENCH_ID, text: `↓ The bench: ${this.counts.machines.toLocaleString("en-US")} machines${range ? `, ${lengthWords(range[0])} to ${lengthWords(range[1])}` : ""}`, anchor: new THREE.Vector3(0, 4, (bounds.minZ + bounds.maxZ) / 2), priority: 900, kind: "part", lift: (this.stage.width || 1600) >= 761 ? 44 : 6 }); // on a wide window lifted clear of the hint line at the picture's foot; on a phone low, where it would cover the small organelles above the bench
+    const text = `↓ The bench: ${this.counts.machines.toLocaleString("en-US")} machines${range ? `, ${lengthWords(range[0])} to ${lengthWords(range[1])}` : ""}`, anchor = new THREE.Vector3(0, 4, (bounds.minZ + bounds.maxZ) / 2);
+    const { w, h } = this.addName(labels, { id: BENCH_ID, text, anchor, priority: 900, kind: "part", lift });
+    if (view) {
+      const at = this.screenAt(view, anchor);
+      (this.reserved ??= []).push(this.nameBox(at, w, h, lift));
+    }
+  }
+
+  /**
+   * Each organelle of a plank named at its top, at the plank's stop: from left to right, each at the lowest lift where its box (as
+   * the stop shows it, its width as the page draws it) meets no box before it, so that no name gives way to a neighbour.
+   */
+  plankNames(labels, plank, view) {
+    const entries = this.shelf.layout.items.filter((entry) => entry.plank === plank).map((entry) => {
+      const anchor = new THREE.Vector3(entry.x, entry.h + (plank === "small" ? 2 : 8), entry.z + (entry.type === "card" ? 0 : entry.d * 0.1));
+      return { entry, anchor, at: view ? this.screenAt(view, anchor) : { x: entry.x, y: 0 }, ...this.addName(labels, { id: entry.id, text: entry.item.label, anchor, priority: 800, kind: "part", lift: 6 }) };
+    }).sort((a, b) => a.at.x - b.at.x);
+    const boxes = [];
+    for (const { label, at, w, h } of entries) {
+      let lift = 6;
+      for (let row = 0; row < 8; row++, lift += h + 2) {
+        const box = this.nameBox(at, w, h, lift);
+        if (!boxes.some((other) => MachinesLens.meets(box, other))) {
+          boxes.push(box);
+          if (view) (this.reserved ??= []).push(box);
+          break;
+        }
+      }
+      if (label) label.lift = lift;
+    }
+  }
+
+  /** At the small organelles' stop: each named on its plank, the shelf's named above them (a way up), and the bench's mark (a way down). */
+  smallLabels(labels) {
+    const small = this.shelf.layout.small, phone = (this.stage.width || 1600) < 760;
+    this.plankNames(labels, "small", this.viewFor(this.stopViews().small));
+    const large = this.shelfOrder().filter((item) => this.plankOf(item.id) === "shelf");
+    // The shelf's names above the small organelles' plank, at its back edge and as high as its tallest, clear of their names.
+    const b = small.bounds, top = new THREE.Vector3(0, b.maxY, b.minZ - 10);
+    this.benchMark(labels, phone ? 6 : 44, this.viewFor(this.stopViews().small));
+    // On a phone, one name (the first of the shelf's, with how many more), set where it meets no other name, as the rows are.
+    if (phone && large.length) this.nameRows(labels, [{ id: large[0].id, text: `↑ The shelf: ${large[0].label}${large.length > 1 ? `, and ${large.length - 1} more` : ""}` }], top, this.viewFor(this.stopViews().small), { lift: 40, fill: 0.92 * this.freeWidth() });
+    else if (large.length) this.nameRows(labels, large.map((item) => ({ id: item.id, text: `↑ ${item.label}`, title: `${item.label}, ${this.sizeShort(item)}: travel up to it on the shelf` })), top, this.viewFor(this.stopViews().small), { lift: 40, fill: 0.86 * this.freeWidth() });
+  }
+
+  /** At the shelf's stop: each organelle's name, the small organelles named before it (a way down to each), the bench's mark, and the loupe's words. */
+  shelfLabels(labels) {
+    const phone = (this.stage.width || 1600) < 760, layout = this.shelf.layout;
+    this.plankNames(labels, "shelf", this.viewFor(this.shelfView()));
+    this.benchMark(labels, phone ? 6 : 44, this.viewFor(this.shelfView())); // on a wide window lifted clear of the hint line at the picture's foot; on a phone low, where it would cover the small organelles above the bench
+    const small = this.shelfOrder().filter((item) => this.plankOf(item.id) === "small");
+    if (small.length) {
+      // In the free strip before the shelf's organelles, across the shelf's width: on a phone one name, with how many more.
+      const z = layout.front + SHELF.front * 0.35, b = layout.bounds;
+      if (phone) this.nameRows(labels, [{ id: small[0].id, text: `↓ Small organelles: ${small[0].label}${small.length > 1 ? `, and ${small.length - 1} more` : ""}` }], new THREE.Vector3((b.minX + b.maxX) / 2, 0, z), this.viewFor(this.shelfView()), { priority: 760, fill: 0.92 * this.freeWidth() });
+      else this.nameRows(labels, small.map((item) => ({ id: item.id, text: `↓ ${item.label}`, title: `${item.label}, ${this.sizeShort(item)}: travel to it on the small organelles' plank` })), new THREE.Vector3((b.minX + b.maxX) / 2, 0, z), this.viewFor(this.shelfView()), { priority: 760, fill: 0.86 * this.freeWidth() });
+    }
     const info = this.loupeInfo;
     if (info && this.loupeGroup) {
       labels.add({ id: info.entry.id, text: `${info.entry.item.label}, at its true size`, anchor: info.speckAt.clone().setY(info.entry.h + 2), priority: 1200, kind: "part", lift: 10 });
@@ -1695,7 +1934,7 @@ export class MachinesLens {
     this.materials.bench.color.copy(tone(palette.dark ? palette.bg : palette.plate, "#eef2f5"));
     this.materials.scale.color.copy(tone(palette.fg, "#12283a"));
     // A shelf's card: the organelle's own colour of the Cell view, light, so that it stands out on the shelf and reads as no shape.
-    for (const material of this.shelfCards || []) material.color.copy(tone(palette[material.userData.hue] || palette.ghost)).lerp(tone(palette.bg, "#ffffff"), material.userData.plain ? 0 : 0.45);
+    for (const material of this.shelfCards || []) material.color.copy(tone(palette[material.userData.hue] || palette.ghost)).lerp(tone(palette.bg, "#ffffff"), 0.45);
     if (this.loupeInfo) this.materials.loupeBody.color.copy(tone(palette[GROUP_HUE[this.loupeInfo.entry.group]] || palette.ghost));
     this.materials.loupeFrame?.color.copy(tone(palette.fg, "#12283a"));
     this.materials.loupeGlass?.color.copy(tone(palette.accent, "#1f6fd0"));
@@ -1715,7 +1954,7 @@ export class MachinesLens {
         this.focused = { id, box: null };
         return;
       }
-      this.stop = "shelf";
+      this.stop = this.plankOf(id);
       this.travelTo(this.organelleView(id));
       this.focused = { id, organelle: true, insets: JSON.stringify(this.stage.insets || {}), until: now() + 1600 };
       return;
@@ -1753,7 +1992,50 @@ export class MachinesLens {
     this.focused = { id, box: box.clone(), insets: JSON.stringify(stage.insets || {}), until: now() + 1600 };
   }
 
+  /** The camera's view where it rests (no travel, no flight, no spin), else null. */
+  restingView() {
+    const rig = this.stage.rig, spin = rig?.velocity;
+    if (this.travel || rig?.flight || !rig?.view || (spin && Math.abs(spin.azimuth) + Math.abs(spin.polar) > 1e-5)) return null;
+    return rig.view();
+  }
+
+  /**
+   * The view a stop's names are laid out for: the camera's own where it rests (a panel opened and closed, a choice framed, the
+   * visitor's own turn or zoom), else the stop's (while the camera travels to it). 20 November 2026: names laid out for the stop's
+   * view met where the camera rested a little farther out after the bench's panel closed.
+   */
+  viewFor(view) {
+    const resting = this.restingView();
+    return resting ? { ...resting, live: true } : view;
+  }
+
+  /** A view in a few numbers, to tell whether the camera rests where the names were laid out for. */
+  viewKey(view) {
+    return view ? [Math.round(Math.log(view.distance) * 100), Math.round(view.target.x), Math.round(view.target.y), Math.round(view.target.z), Math.round(view.azimuth * 100), Math.round(view.polar * 100)].join(",") : "";
+  }
+
+  /** The screen the stops' views and names are laid out for: its size and the room the page's cards and panel leave. */
+  screenKey() {
+    return `${JSON.stringify(this.stage.insets || {})}|${this.stage.width}x${this.stage.height}`;
+  }
+
   update(dt = 16) {
+    // The names are laid out in pixels for the screen as it was: a new size, or cards and a panel that settle after they were laid
+    // out (a first visit), lays them out again.
+    if (this.active && this.organelles.length && this.namesFor && this.namesFor !== this.screenKey()) this.buildLabels();
+    // Where the camera comes to rest elsewhere than the names were laid out for (a quarter of a second at rest), they are laid out again.
+    const resting = this.active && this.organelles.length ? this.viewKey(this.restingView()) : "";
+    if (resting !== this.restingKey) this.restingSince = now();
+    this.restingKey = resting;
+    // The page draws only when something moves: until they are laid out again, the view asks for frames (20 November 2026: on a first
+    // visit the camera was re-aimed as the cards settled, after the names were laid out, and no frame came to lay them out again).
+    let waiting = false;
+    if (resting && this.namesFor && resting !== this.namesView) {
+      if (now() - this.restingSince > 250) {
+        this.buildLabels();
+        this.stage.invalidate?.();
+      } else waiting = true;
+    }
     if (this.stage.width && this.stage.height && columnsFor(this.stage) !== this.columns) {
       this.columns = columnsFor(this.stage);
       this.build();
@@ -1799,7 +2081,7 @@ export class MachinesLens {
       else cards = true;
     }
     if (cards) this.placeCards();
-    return moving || travelling;
+    return moving || travelling || waiting;
   }
 
   applyPalette(palette) {

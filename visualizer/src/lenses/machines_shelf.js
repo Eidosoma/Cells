@@ -28,17 +28,32 @@ const UP = new THREE.Vector3(0, 1, 0);
 export const MODELS = {
   nucleus: { part: "nucleus", hue: "bioNucleus", mode: "real", sets: "across", model: () => 2 * STYLE.real.nucleusRadius, words: "the nucleus as the Cell view draws it to scale: its double envelope opened by a wedge, its pores as dots, its nucleolus and its chromatin" },
   "endoplasmic-reticulum": { part: "er", hue: "bioEr", mode: "real", sets: "thick", model: () => STYLE.real.er.thickness, lines: false, words: "the rough endoplasmic reticulum as the Cell view draws it to scale: sheets folded to and fro in two arms, without the tubules it draws through the cell" },
-  "golgi-apparatus": { part: "golgi", hue: "bioGolgi", mode: "real", sets: "cisterna", model: () => Math.max(...CISTERNAE.real), words: "the Golgi apparatus as the Cell view draws it to scale in an animal cell: a ribbon of stacks of curved cisternae, with vesicles budding from their rims" },
+  "golgi-apparatus": { part: "golgi", hue: "bioGolgi", mode: "real", sets: "cisterna", model: () => Math.max(...CISTERNAE.real), words: `the Golgi apparatus as the Cell view draws it to scale in an animal cell: a ribbon of stacks, each of ${STYLE.real.golgi.count} curved cisternae, with vesicles budding from their rims` },
   // A plant cell's chloroplast: one of the lens-shaped bodies the Cell view's scenery builder lines the cell with (cell_scenery.js).
   chloroplast: { part: "scenery:chloroplasts", hue: "bioChloroplast", mode: "real", sets: "across", instance: true, words: "a chloroplast as the Cell view draws it in a plant cell: a lens-shaped body, a little flatter than it is wide" },
   mitochondrion: { part: "mitochondria", hue: "bioMito", mode: "schematic", sets: "capsule", one: true, words: "one mitochondrion as the Cell view draws those cut open at the cell's surface: its outer membrane opened from above, its matrix and the folds of its inner membrane" },
+  // A centriole: one of the two barrels of the centrosome that the Cell view draws as scenery beside an animal cell's nucleus, built
+  // with its structures (cell_structures.js) and handed to the context's scenery hook; the upright barrel, laid on its side.
+  centriole: { part: "scenery:centrosome", hue: "edge", recolour: true, mode: "real", sets: "barrel", barrel: true, words: "one centriole as the Cell view draws each of the two in an animal cell's centrosome: a short barrel of nine rods, laid on its side" },
 };
+/** The Cell view's scenery that its structures' builder hands on (not the scenery part module): an animal cell's centrosome. */
+const OF_STRUCTURES = new Set(["scenery:centrosome"]);
 
 /**
- * An organelle the Cell view has no model of stands as a plain shape at its size (a sphere, or a capsule where its size gives a
- * length), as a machine with a size and no structure does: an illustration. Its colour, a token of the page's palette.
+ * The organelles the Cell view has no model of: a simple model of each, built here (an illustration), at one unit across, its
+ * measure the whole's width (`across`), or the body's where it carries tubules. Asked for on 20 November 2026: the rest of the
+ * organelles as 3D models, not flat cards. Each claims no structure beyond what its plain line and its source give; `choice` is
+ * what the panel says is the picture's. `make`: `shell`, a sphere of `layers` membranes cut open over a darker lumen; `coat`, a
+ * sphere studded with knobs for its coat; `tubules`, a sphere with short tubules; `ball`, a plain sphere.
  */
-export const PLAIN = { lysosome: "bioSignal", "copi-vesicle": "bioGolgi", peroxisome: "bioFuel", "early-endosome": "bioWound", centriole: "edge" };
+export const SIMPLE = {
+  lysosome: { make: "shell", layers: 1, hue: "bioSignal", words: "a sphere of one membrane, cut open over its darker lumen", choice: "the membrane's thickness, the lumen's shade and where it is cut open are the picture's choice" },
+  peroxisome: { make: "shell", layers: 1, hue: "bioFuel", words: "a sphere of one membrane, cut open over its darker lumen", choice: "the membrane's thickness, the lumen's shade and where it is cut open are the picture's choice" },
+  autophagosome: { make: "shell", layers: 2, hue: "bioPump", words: "a sphere of two membranes, cut open over its darker lumen", choice: "its cargo is not drawn, and the membranes' thickness and the gap between them, the lumen's shade and where it is cut open are the picture's choice" },
+  "copi-vesicle": { make: "coat", hue: "bioGolgi", words: "a small sphere of membrane studded with knobs that stand for its coat", choice: "the size above is the whole's, coat included, and how many knobs, how large and how thick the coat is are the picture's choice" },
+  "endocytic-vesicle": { make: "tubules", hue: "bioWater", words: "a small sphere with short tubules, for the vesicles and tubules its source measured", choice: "the size above is the sphere's, and how many tubules, how long and how wide are the picture's choice" },
+  "lipid-droplet": { make: "ball", hue: "bioFuel", shade: 0.35, words: "a plain sphere", choice: "its surface and shade are the picture's choice" },
+};
 
 /** The size an organelle is drawn at, in the view's units (one is ten nanometres), from its catalogue entry's size; null where none is in hand. */
 export function drawnSize(size) {
@@ -109,7 +124,8 @@ export function organelleModels(cell, kinds) {
     const own = contextFor(names), ignored = contextFor([]);
     // The structures (nucleus, ER, Golgi) from their own stream of chance; the mitochondria from the layout's, as the Cell view's
     // builder calls them, so that each model is the one its own builder draws.
-    const modules = [...(names.some((name) => name !== "mitochondria" && !name.startsWith("scenery:")) ? [structures] : []), ...(names.includes("mitochondria") ? [mitochondria] : []), ...(names.some((name) => name.startsWith("scenery:")) ? [scenery] : [])];
+    const ofScenery = (name) => name.startsWith("scenery:") && !OF_STRUCTURES.has(name); // drawn by the scenery part module
+    const modules = [...(names.some((name) => name !== "mitochondria" && !ofScenery(name)) ? [structures] : []), ...(names.includes("mitochondria") ? [mitochondria] : []), ...(names.some(ofScenery) ? [scenery] : [])];
     const handles = buildCell(own.ctx, ignored.ctx, mode, cell, modules);
     const u = handles.frame.u;
     for (const kind of wanted) {
@@ -131,6 +147,26 @@ export function organelleModels(cell, kinds) {
         const one = new THREE.Mesh(many.geometry, many.material);
         one.scale.copy(size);
         objects = [one];
+      }
+      if (spec.barrel) {
+        // One centriole: the rods of the centrosome's upright barrel (each rod's own axis upright; the other barrel lies across it),
+        // told apart by their direction, not by the order they were made in; the cloud round both is left out. Laid on its side.
+        const rods = objects.flatMap((object) => (object.isInstancedMesh ? [object] : object.children.filter((child) => child.isInstancedMesh)))[0];
+        if (!rods) continue;
+        const matrix = new THREE.Matrix4(), axis = new THREE.Vector3(), upright = [];
+        for (let index = 0; index < rods.count; index++) {
+          rods.getMatrixAt(index, matrix);
+          if (axis.setFromMatrixColumn(matrix, 1).normalize().y > 0.9) upright.push(matrix.clone());
+        }
+        if (!upright.length) continue;
+        const one = new THREE.InstancedMesh(rods.geometry, rods.material, upright.length);
+        upright.forEach((value, index) => one.setMatrixAt(index, value));
+        one.computeBoundingSphere();
+        if (spec.recolour && rods.material.userData?.look) rods.material.userData.look = { ...rods.material.userData.look, hue: spec.hue };
+        const lying = new THREE.Group();
+        lying.rotation.z = -Math.PI / 2;
+        lying.add(one);
+        objects = [lying];
       }
       if (spec.lines === false) objects = objects.filter((object) => !object.isLine && !object.isLineSegments && !object.isPoints);
       if (!objects.length) continue;
@@ -161,12 +197,69 @@ export function organelleModels(cell, kinds) {
       }
       if (cutUsed) planes.push({ plane: cut, scale: 1 });
       const box = boxOf(root);
-      // The model's own measure: given by its builder's constants, or, for a mitochondrion, its body's width and length as built.
-      const measure = spec.model ? { [spec.sets]: spec.model() } : spec.sets === "across" ? { across: Math.max(box.max.x - box.min.x, box.max.z - box.min.z) } : capsuleOf(root);
+      // The model's own measure: given by its builder's constants, or, for a mitochondrion, its body's width and length as built,
+      // or, for a centriole's barrel, its length (along x, as it lies) and its width as built.
+      const measure = spec.model ? { [spec.sets]: spec.model() } : spec.sets === "across" ? { across: Math.max(box.max.x - box.min.x, box.max.z - box.min.z) } : spec.barrel ? { long: box.max.x - box.min.x, across: Math.max(box.max.y - box.min.y, box.max.z - box.min.z) } : capsuleOf(root);
       out.set(kind, { kind, root, box, measure, planes, materials: [...materials], words: spec.words, mode });
     }
   }
   return out;
+}
+
+/**
+ * A simple model of an organelle the Cell view has no model of (SIMPLE), at one unit across, in the shape `placeModel` and
+ * `paintModel` take: { kind, root, box, measure, planes, materials, words }. A kind with no entry there stands as a plain
+ * sphere, or a capsule where its size gives a length. Every material carries its hue and shade (`look`), so a change of
+ * theme repaints it. Its cut is made in the geometry (a sphere with a wedge left out toward the camera), not by clipping.
+ */
+export function simpleModel(kind, { long = 1 } = {}) {
+  const spec = SIMPLE[kind] || { make: long > 1 ? "capsule" : "ball", hue: "ghost", words: long > 1 ? "a plain capsule" : "a plain sphere", choice: "" };
+  const materials = [];
+  const material = (shade = 0, { side = THREE.FrontSide, roughness = 0.42 } = {}) => {
+    const made = new THREE.MeshStandardMaterial({ roughness, metalness: 0.03, side });
+    made.userData.look = { hue: spec.hue, shade: (spec.shade || 0) + shade };
+    materials.push(made);
+    return made;
+  };
+  const root = new THREE.Group();
+  // The wedge left out of a shell faces the bench's camera (toward +z, a little to one side, as the nucleus's is opened).
+  const wedge = 1.9, open = { start: Math.PI / 2 + wedge / 2 + 0.25, length: Math.PI * 2 - wedge };
+  const shell = (radius, shade) => new THREE.Mesh(new THREE.SphereGeometry(radius, 36, 20, open.start, open.length), material(shade, { side: THREE.DoubleSide }));
+  if (spec.make === "shell") {
+    // Each membrane a thin shell (its outer and inner faces), the lumen a darker sphere inside, seen through the opening.
+    const step = 0.075, layers = spec.layers || 1;
+    for (let layer = 0; layer < layers; layer++) {
+      const outer = 0.5 - layer * 2.2 * step;
+      root.add(shell(outer, 0.08), shell(outer - step * 0.55, -0.05));
+    }
+    root.add(new THREE.Mesh(new THREE.SphereGeometry(0.5 - layers * 2.2 * step + step * 0.6, 28, 18), material(-0.45, { roughness: 0.7 })));
+  } else if (spec.make === "coat") {
+    // The vesicle's membrane, and knobs spread evenly over it (a Fibonacci lattice), reaching half a unit from its middle.
+    root.add(new THREE.Mesh(new THREE.SphereGeometry(0.37, 32, 22), material(0.15)));
+    const count = 72, knobs = new THREE.InstancedMesh(new THREE.SphereGeometry(0.1, 8, 6), material(-0.12), count), place = new THREE.Object3D();
+    for (let index = 0; index < count; index++) {
+      const y = 1 - (2 * (index + 0.5)) / count, ring = Math.sqrt(1 - y * y), turn = index * Math.PI * (3 - Math.sqrt(5));
+      place.position.set(Math.cos(turn) * ring, y, Math.sin(turn) * ring).multiplyScalar(0.4);
+      place.updateMatrix();
+      knobs.setMatrixAt(index, place.matrix);
+    }
+    knobs.computeBoundingSphere();
+    root.add(knobs);
+  } else if (spec.make === "tubules") {
+    // The sphere, a unit across, and three short tubules leaving it.
+    root.add(new THREE.Mesh(new THREE.SphereGeometry(0.5, 36, 24), material(0)));
+    for (const [x, y, z] of [[1, 0.25, -0.2], [-0.7, 0.1, -0.75], [-0.35, 0.35, 0.85]]) {
+      const way = new THREE.Vector3(x, y, z).normalize(), tube = new THREE.Mesh(new THREE.CapsuleGeometry(0.12, 0.42, 4, 14), material(0.1));
+      tube.quaternion.setFromUnitVectors(UP, way);
+      tube.position.copy(way).multiplyScalar(0.62);
+      root.add(tube);
+    }
+  } else if (spec.make === "capsule") {
+    root.add(new THREE.Mesh(new THREE.CapsuleGeometry(0.5, long - 1, 8, 24).rotateZ(Math.PI / 2), material(0)));
+  } else root.add(new THREE.Mesh(new THREE.SphereGeometry(0.5, 40, 28), material(0, { roughness: 0.3 })));
+  const box = boxOf(root);
+  const measure = spec.make === "capsule" ? { across: 1, long } : { across: 1 };
+  return { kind, root, box, measure, planes: [], materials, words: spec.words, choice: spec.choice, simple: true };
 }
 
 /** The extent of a group's drawn objects, each copy of an instanced shape placed. */

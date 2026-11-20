@@ -516,6 +516,51 @@
    ]
   },
   {
+   "id": "lipid-droplet",
+   "label": "Lipid droplet",
+   "group": "organelles",
+   "drawn_at": "lipid droplet",
+   "plain": "A store of fat in the cytoplasm: neutral lipids wrapped in a single layer of phospholipids, from which the cell draws fatty acids and sterols.",
+   "records": [],
+   "species": [
+    "human"
+   ]
+  },
+  {
+   "id": "autophagosome",
+   "label": "Autophagosome",
+   "group": "organelles",
+   "drawn_at": "autophagosome",
+   "plain": "A sphere of two membranes that closes round worn parts of the cell and other cargo and carries them to a lysosome, where they are broken down (autophagy).",
+   "records": [],
+   "species": [
+    "human",
+    "mouse"
+   ]
+  },
+  {
+   "id": "centriole",
+   "label": "Centriole",
+   "group": "organelles",
+   "drawn_at": "centriole",
+   "plain": "A short barrel of nine triplets of microtubules. Two of them at right angles, in a cloud of protein, make the centrosome, which organises the cell's microtubules.",
+   "records": [],
+   "species": [
+    "human"
+   ]
+  },
+  {
+   "id": "endocytic-vesicle",
+   "label": "Endocytic vesicle",
+   "group": "organelles",
+   "drawn_at": "endocytic vesicle",
+   "plain": "A small vesicle or short tubule of membrane taken in from the cell's surface and marked by the protein Rab5: among the first stations of the way in (endocytosis), before the early endosome.",
+   "records": [],
+   "species": [
+    "human"
+   ]
+  },
+  {
    "id": "tat-translocase",
    "label": "Tat translocase",
    "group": "membranes",
@@ -4266,10 +4311,24 @@
    "class": "permissive",
    "accessed": "2026-11-20"
   },
+  "human:martinezalonso2013": {
+   "text": "Martínez-Alonso, Tomás and Martínez-Menárguez (2013) Morpho-Functional Architecture of the Golgi Complex of Neuroendocrine Cells. Frontiers in Endocrinology 4:41. Section “Morphology of the Golgi Ribbon”, on mammalian cells; it cites Weidman and others for the cisternae's diameter and Rambourg and Clermont for their number. Read as Europe PMC full text PMC3610015.",
+   "doi": "10.3389/fendo.2013.00041",
+   "licence": "CC BY, as the article states (“distributed under the terms of the Creative Commons Attribution License”)",
+   "class": "permissive",
+   "accessed": "2026-11-20"
+  },
   "human:pellett2013": {
    "text": "Pellett PA and others (2013) Inter-Golgi transport mediated by COPI-containing vesicles carrying small cargoes. eLife 2:e01296. Results, “Inter-Golgi transport intermediates are the size of COPI vesicles and contain coatomer”; Methods, “Size measurement method”. Read as Europe PMC full text PMC3787390.",
    "doi": "10.7554/eLife.01296",
    "licence": "CC BY, as the article states (“distributed under the terms of the Creative Commons Attribution License”)",
+   "class": "permissive",
+   "accessed": "2026-11-20"
+  },
+  "human:perkins2021": {
+   "text": "Perkins and Allan (2021) Intertwined and Finely Balanced: Endoplasmic Reticulum Morphology, Dynamics, Function, and Diseases. Cells 10(9):2341. Section 2, “Morphology”: a review's general statement, which names no species or cell type there. Read as Europe PMC full text PMC8472773.",
+   "doi": "10.3390/cells10092341",
+   "licence": "CC BY, as the article states (“distributed under the terms and conditions of the Creative Commons Attribution (CC BY) license”)",
    "class": "permissive",
    "accessed": "2026-11-20"
   },
@@ -4280,9 +4339,44 @@
    "class": "permissive",
    "accessed": "2026-11-20"
   },
+  "human:wikipedia-autophagosome": {
+   "text": "Wikipedia, the article “Autophagosome”, its first section: an encyclopedia's general range; the sentence that gives it carries no note of its own, and its paragraph cites Mizushima, Ohsumi and Yoshimori, Cell Structure and Function 27(6):421–429, 2002. Read on en.wikipedia.org (the page as last edited on 4 October 2026).",
+   "url": "https://en.wikipedia.org/wiki/Autophagosome",
+   "licence": "CC BY-SA 4.0, share-alike, as the page's footer states (“Text is available under the Creative Commons Attribution-ShareAlike 4.0 License”)",
+   "class": "permissive",
+   "accessed": "2026-11-20"
+  },
+  "human:wikipedia-lipid-droplet": {
+   "text": "Wikipedia, the article “Lipid droplet”, its first section: an encyclopedia's general range, which cites Fujimoto and Parton, Cold Spring Harbor Perspectives in Biology 3(3):a004838, 2011. Read on en.wikipedia.org (the page as last edited on 27 September 2026).",
+   "url": "https://en.wikipedia.org/wiki/Lipid_droplet",
+   "licence": "CC BY-SA 4.0, share-alike, as the page's footer states (“Text is available under the Creative Commons Attribution-ShareAlike 4.0 License”)",
+   "class": "permissive",
+   "accessed": "2026-11-20"
+  },
   "human:wikipedia-peroxisome": {
    "text": "Wikipedia, the article “Peroxisome”, its first section: an encyclopedia's general range. Read on en.wikipedia.org.",
    "url": "https://en.wikipedia.org/wiki/Peroxisome",
+   "licence": "CC BY-SA 4.0, share-alike, as the page's footer states (“Text is available under the Creative Commons Attribution-ShareAlike 4.0 License”)",
+   "class": "permissive",
+   "accessed": "2026-11-20"
+  },
+  "mouse:martinezalonso2013": {
+   "text": "Martínez-Alonso, Tomás and Martínez-Menárguez (2013) Morpho-Functional Architecture of the Golgi Complex of Neuroendocrine Cells. Frontiers in Endocrinology 4:41. Section “Morphology of the Golgi Ribbon”, on mammalian cells; it cites Weidman and others for the cisternae's diameter and Rambourg and Clermont for their number. Read as Europe PMC full text PMC3610015.",
+   "doi": "10.3389/fendo.2013.00041",
+   "licence": "CC BY, as the article states (“distributed under the terms of the Creative Commons Attribution License”)",
+   "class": "permissive",
+   "accessed": "2026-11-20"
+  },
+  "mouse:muller2020": {
+   "text": "Müller and others (2020) 3D FIB-SEM reconstruction of microtubule–organelle interaction in whole primary mouse β cells. Journal of Cell Biology 220(2):e202010039. Section “Organelle fractions are heterogeneous across cells” and its Table 1. Read as Europe PMC full text PMC7748794.",
+   "doi": "10.1083/jcb.202010039",
+   "licence": "CC BY 4.0, as the article states (“available under a Creative Commons License (Attribution 4.0 International”)",
+   "class": "permissive",
+   "accessed": "2026-11-20"
+  },
+  "mouse:wikipedia-autophagosome": {
+   "text": "Wikipedia, the article “Autophagosome”, its first section: an encyclopedia's general range; the sentence that gives it carries no note of its own, and its paragraph cites Mizushima, Ohsumi and Yoshimori, Cell Structure and Function 27(6):421–429, 2002. Read on en.wikipedia.org (the page as last edited on 4 October 2026).",
+   "url": "https://en.wikipedia.org/wiki/Autophagosome",
    "licence": "CC BY-SA 4.0, share-alike, as the page's footer states (“Text is available under the Creative Commons Attribution-ShareAlike 4.0 License”)",
    "class": "permissive",
    "accessed": "2026-11-20"
@@ -4406,12 +4500,12 @@
   "human": {
    "file": "catalogue/human.json",
    "machines": 33,
-   "organelles": 7
+   "organelles": 11
   },
   "mouse": {
    "file": "catalogue/mouse.json",
    "machines": 33,
-   "organelles": 4
+   "organelles": 5
   },
   "planarian": {
    "file": "catalogue/planarian.json",

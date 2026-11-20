@@ -20,7 +20,8 @@
 //   tabs     the six tabs on a phone of 360, 390 and 400 px, with the page's font and the stand-in,
 //            for a species and for a model system: one row, each button at least 44 px, the List
 //            whole, and every tab pressed in turn in sight.
-//   shelf    the human's shelf of organelles and the scale rail: real presses travel up and down, the loupe, less motion, scale=shelf, E. coli with none.
+//   shelf    the human's shelf of organelles and the scale rail: real presses travel up and down, the loupe, less motion, scale=shelf, E. coli with none;
+//            the small organelles' plank and its stop, every organelle named at each stop, and each model drawn, in the frame, at its size.
 //
 //   node tools/check_catalogue.mjs [OUT_DIR]
 //
@@ -824,6 +825,11 @@ try {
     let s = await at();
     const opening = { rail: await shown(".rail"), toggle: await shown(".rail-toggle"), bar: await shown(".scalebar-text"), cost: await evaluate(`${L}.cost()`), names: await shelfNames() };
     check(`at the bench's stop: the scale rail ${narrow ? "folded behind its button" : "at the side"}, the page's scale bar, the shelf not drawn, and the frame what the bench alone draws (under 40 draws and 40,000 triangles)`, s.stop === "bench" && (narrow ? opening.toggle && !opening.rail : opening.rail && !opening.toggle) && opening.bar && Boolean(s.bar) && s.drawn === false && opening.cost.draws < 40 && opening.cost.triangles < 40000, JSON.stringify({ ...opening, s }));
+    // On a first visit (the page as it opens, the first-visit line standing), every organelle is named above the bench and pressable.
+    if (!narrow) {
+      const first = await evaluate(`(() => { const root = ${V}.shadowRoot, ids = ${L}.organelles.map((item) => item.id); const ok = new Set([...root.querySelectorAll('.labels .label[data-label^="organelle:"]')].filter((el) => { const r = el.getBoundingClientRect(), top = root.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return !el.classList.contains("is-off") && top && (top === el || el.contains(top)); }).map((el) => el.dataset.label)); return { off: ids.filter((id) => !ok.has(id)), line: Boolean(root.querySelector(".intro-close")?.getClientRects().length) }; })()`);
+      check("on a first visit, at the bench's stop, every organelle is named above the bench and its name can be pressed", first.off.length === 0, JSON.stringify(first));
+    }
     await shot(`${NAME}-bench`);
     // 2. A real press on the rail's shelf stop: a travel whose time is the same for each power of ten.
     const low = await at();
@@ -840,12 +846,59 @@ try {
     check(`a real press on the rail's shelf stop${narrow ? " (its folded button pressed first)" : ""} travels up in about ${PER_POWER} ms for each power of ten (within 35 per cent), to the shelf's distance (within 2 per cent); the scale bar's words change, and the shelf is drawn`, Boolean(stopAt) && took !== null && took >= 0.65 * expected && timely && s.stop === "shelf" && !s.travel && Math.abs(s.d - s.shelf) <= 0.02 * s.shelf && Boolean(s.bar) && s.bar !== low.bar && s.drawn === true, JSON.stringify({ stopAt, took, expected, low, s }));
     await settle();
     await shot(`${NAME}-shelf`);
+    // 2b. Every organelle named at the shelf's stop (step D, 20 November 2026: names gave way to their neighbours at 1440 by 900): its
+    // own plank's at their tops, the small organelles' before it; each shown on the picture. On a phone, the shelf's own and one mark.
+    const organelleIds = await evaluate(`${L}.organelles.map((item) => item.id)`);
+    const namesAt = async (stop) => {
+      const names = await shelfNames();
+      // Shown and pressable: not put off, and its middle reaches the name itself (nothing lies over it, the first-visit line included).
+      const pressable = await evaluate(`[...${V}.shadowRoot.querySelectorAll('.labels .label[data-label^="organelle:"]')].filter((el) => { const r = el.getBoundingClientRect(), top = ${V}.shadowRoot.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return !el.classList.contains("is-off") && top && (top === el || el.contains(top)); }).map((el) => el.dataset.label)`);
+      const on = new Set(names.filter(([id, state]) => state === "on" && pressable.includes(id)).map(([id]) => id));
+      const own = await evaluate(`${L}.organelles.filter((item) => ${JSON.stringify(stop)} === "bench" || ${L}.plankOf(item.id) === ${JSON.stringify(stop)}).map((item) => item.id)`);
+      return { stop, band: (await at()).band, all: organelleIds.every((id) => on.has(id)), own: own.every((id) => on.has(id)), off: organelleIds.filter((id) => !on.has(id)) };
+    };
+    const atShelf = await namesAt("shelf");
+    check(`at the shelf's stop ${narrow ? "the shelf's organelles are" : "every organelle is"} named on the picture, none giving way to a neighbour`, atShelf.band === "shelf" && (narrow ? atShelf.own : atShelf.all), JSON.stringify(atShelf));
     // 3. At the shelf's stop, a real press on the bench's mark: the bench chosen, the camera down to it, its names not faint.
     const high = await at();
     const benchMark = await press('[data-label="machines:bench"]', 900);
     await settle();
     s = await at();
     check("at the shelf's stop a real press on the bench's mark chooses the bench and travels down to it; the bench is not faint", Boolean(benchMark) && s.selected === "machines:bench" && s.stop === "bench" && s.d < high.d / 3 && Math.abs(s.d - s.bench) <= 0.25 * s.bench && s.names === 1, JSON.stringify({ benchMark: benchMark || (await why('[data-label="machines:bench"]')), high, s }));
+    if (!narrow) {
+      await evaluate(`${V}.select(null)`);
+      await settle();
+      const atBench = await namesAt("bench");
+      check("at the bench's stop every organelle is named above the bench, in rows, none giving way to a neighbour", atBench.band === "bench" && atBench.all, JSON.stringify(atBench));
+    }
+    // 3b. The small organelles' stop (step D): a real press on its rail stop travels there, each power of ten in the same time; each
+    // small organelle is named on its plank, the shelf's above them; a real press on the centriole's name chooses it and frames it.
+    await evaluate(`${V}.select(null)`);
+    await evaluate(`${V}.current.goToScale("bench", true)`);
+    await sleep(900);
+    const lowSmall = await at();
+    await watch();
+    if (narrow) await press(".rail-toggle", 700);
+    const smallAt = await press('.rail button[data-stop="small"]', 0);
+    await until(`window.__travelSeen?.end != null`, 160);
+    await settle();
+    s = await at();
+    const smallSeen = await evaluate(`window.__travelSeen`);
+    const smallView = await evaluate(`${L}.stopViews().small?.distance ?? null`);
+    const smallTook = smallSeen.any && smallSeen.end !== null ? Math.round(smallSeen.end - smallSeen.start) : null;
+    const smallExpected = Math.round(PER_POWER * Math.abs(Math.log10((smallView || 1) / lowSmall.d)));
+    const atSmall = await namesAt("small");
+    check(`a real press on the rail's stop of the small organelles travels there in about ${PER_POWER} ms for each power of ten (within 35 per cent), to its distance (within 2 per cent), between the bench's and the shelf's; ${narrow ? "their" : "every organelle's"} names are shown`, Boolean(smallAt) && smallTook !== null && smallTook >= 0.65 * smallExpected && smallTook <= 1.35 * smallExpected && s.stop === "small" && Math.abs(s.d - smallView) <= 0.02 * smallView && smallView > s.bench && smallView < s.shelf && s.drawn === true && atSmall.band === "small" && (narrow ? atSmall.own : atSmall.all), JSON.stringify({ smallAt, smallTook, smallExpected, s, atSmall }));
+    await shot(`${NAME}-small`);
+    const centriole = await press('[data-label="organelle:centriole"]', 900);
+    await settle();
+    s = await at();
+    const centriolePanel = (await state()).panel;
+    check("at the small organelles' stop a real press on the centriole's name chooses it; its panel says how it is drawn (one barrel of the Cell view's centrosome) and that its size is held", Boolean(centriole) && s.selected === "organelle:centriole" && /centrosome/.test(centriolePanel) && /this page does not show/.test(centriolePanel), JSON.stringify({ centriole: centriole || (await why('[data-label="organelle:centriole"]')), s }));
+    await shot(`${NAME}-centriole`);
+    // Back to the bench chosen at its stop, as step 3 left it, for the steps after.
+    await evaluate(`${V}.select("machines:bench", { fly: true })`);
+    await settle();
     // 4. A real press on a name above the bench: the nucleus chosen, the camera up to it, its panel.
     let nucleus = await press('[data-label="organelle:nucleus"]', 900), sheet = null;
     if (!nucleus && narrow) {
@@ -916,25 +969,63 @@ try {
     // 6c. A chosen organelle stays drawn and in the frame (the owner's finding of 20 November 2026: the mitochondrion, chosen, vanished,
     // since the shelf was drawn by the camera's distance alone): by its name above the bench, the List, the address and a press on it at
     // the shelf; at once, three seconds later, and after the panel is closed.
-    const drawnAt = (id) => evaluate(`(() => { const v = ${V}, lens = v.current, h = lens.shelf?.holders.get(${JSON.stringify(id)})?.holder; if (!h) return { drawn: false };
+    const drawnAt = (id) => evaluate(`(() => { const v = ${V}, lens = v.current, held = lens.shelf?.holders.get(${JSON.stringify(id)}), h = held?.holder; if (!h) return { drawn: false };
+      // At its stated size: the model's own measure, as scaled, against the middle of the numbers its size states.
+      const size = lens.item(${JSON.stringify(id)})?.size, mid = (values) => (values.length > 1 ? (values[0] + values[values.length - 1]) / 2 : values[0]), m = held.model?.measure || {};
+      const want = size?.shape === "sheet" ? [[m.thick * h.scale.x, mid(size.thick_nm) / 10]] : size?.shape === "stack" ? [[m.cisterna * h.scale.x, mid(size.across_um) * 100]] : size?.long_um ? [[m.long * h.scale.x, mid(size.long_um) * 100], [m.across * h.scale.y, mid(size.across_um) * 100]] : [[m.across * h.scale.x, mid(size.across_um) * 100]];
+      const sized = want.every(([drawn, stated]) => Math.abs(drawn - stated) <= 0.01 * stated);
       let shown = true; for (let n = h; n; n = n.parent) if (!n.visible) shown = false;
       const b = { min: [Infinity, Infinity], max: [-Infinity, -Infinity] }, p = lens.root.position.clone();
       const e = lens.shelf.layout.items.find((item) => item.id === ${JSON.stringify(id)});
       for (const x of [e.x - e.w / 2, e.x + e.w / 2]) for (const y of [0, e.h]) for (const z of [e.z - e.d / 2, e.z + e.d / 2]) { const q = v.stage.project(p.set(x, y, z), p.clone()); b.min = [Math.min(b.min[0], q.x), Math.min(b.min[1], q.y)]; b.max = [Math.max(b.max[0], q.x), Math.max(b.max[1], q.y)]; }
       const { left = 0, right = 0, bottom = 0 } = v.stage.insets || {};
-      return { drawn: shown, inside: b.min[0] >= left - 2 && b.max[0] <= v.stage.width - right + 2 && b.min[1] >= 0 && b.max[1] <= v.stage.height - bottom + 2, box: b.min.concat(b.max).map(Math.round) }; })()`);
-    const twice = async (id) => { const now = await drawnAt(id); await sleep(3000); const later = await drawnAt(id); return { now, later, ok: now.drawn && now.inside && later.drawn && later.inside }; };
+      return { drawn: shown, sized, inside: b.min[0] >= left - 2 && b.max[0] <= v.stage.width - right + 2 && b.min[1] >= 0 && b.max[1] <= v.stage.height - bottom + 2, box: b.min.concat(b.max).map(Math.round) }; })()`);
+    // Where a press reaches an organelle at its stop: the first of a few points over it that the stage's own pick says is it (a reticulum's
+    // sheets leave room between them).
+    const spotOf = (id) => evaluate(`(() => { const v = ${V}, e = v.current.shelf.layout.items.find((i) => i.id === ${JSON.stringify(id)}), r = v.canvas.getBoundingClientRect(); let first = null;
+      const tries = [[0, 0.5, 0.4], [0, 0.5, 0], [0, 0.9, 0]];
+      for (let i = -3; i <= 3; i++) for (let k = -3; k <= 3; k++) tries.push([i * 0.14, 0.5, k * 0.14]);
+      for (const [fx, fy, fz] of tries) {
+        const p = v.current.root.position.clone().set(e.x + fx * e.w, e.h * fy, e.z + fz * e.d), q = v.stage.project(p, p.clone()), spot = { x: r.left + q.x, y: r.top + q.y, id: v.stage.pick(r.left + q.x, r.top + q.y, v.current.pickRoots)?.id || null };
+        // A name lying over the picture there would take the press: the point must reach the canvas itself.
+        const top = v.shadowRoot.elementFromPoint(spot.x, spot.y);
+        first ??= spot; if (spot.id === ${JSON.stringify(id)} && top?.tagName === "CANVAS") return spot; }
+      return { ...first, id: null, nothing: "no point over it reached the canvas and picked it" }; })()`);
+    const twice = async (id) => { const now = await drawnAt(id); await sleep(3000); const later = await drawnAt(id); return { now, later, ok: now.drawn && now.inside && now.sized && later.drawn && later.inside }; };
     const ways = {};
-    for (const id of ["organelle:mitochondrion", "organelle:lysosome"]) {
+    // Every way for four (two on the small organelles' plank, the centriole among them, and the reticulum on the shelf's); by the List
+    // and by a press at its own plank's stop for each of the others.
+    const every = ["organelle:mitochondrion", "organelle:lysosome", "organelle:centriole", "organelle:endoplasmic-reticulum"];
+    const others = organelleIds.filter((id) => !every.includes(id) && id !== "organelle:nucleus");
+    for (const id of others) {
+      await evaluate(`${V}.select(null)`);
+      await evaluate(`${V}.current.goToScale("bench", true)`);
+      await sleep(600);
+      await evaluate(`${V}.select(${JSON.stringify(id)}, { fly: true })`);
+      await settle();
+      ways[`${id} by the List`] = await twice(id);
+      await evaluate(`${V}.select(null)`);
+      await evaluate(`${V}.current.goToScale(${V}.current.plankOf(${JSON.stringify(id)}), true)`);
+      await sleep(900);
+      const spot = await spotOf(id);
+      if (spot.id === id) await click(spot.x, spot.y, 900);
+      await settle();
+      const pressedOne = await twice(id);
+      ways[`${id} by a press at its stop`] = { ...pressedOne, pressed: spot.id, ok: pressedOne.ok && spot.id === id };
+    }
+    for (const id of every) {
       // By its name above the bench (a wide window shows every name; a phone only the first, so there the List's way stands in).
       await evaluate(`${V}.select(null)`);
       await evaluate(`${V}.current.goToScale("bench", true)`);
       await sleep(900);
+      // No silent fall-back on a wide window (20 November 2026: a name not shown above the bench went unseen): its name must be there
+      // to press, and the press must choose it. A phone shows one name at the bench's stop; there the List's way stands in.
       const name = narrow ? null : await placeOf(`root.querySelector('[data-label="${id}"]')`);
       if (name?.x) await click(name.x, name.y, 900);
       else await evaluate(`${V}.select(${JSON.stringify(id)}, { fly: true })`);
       await settle();
-      ways[`${id} by its name`] = await twice(id);
+      const byName = await twice(id), chose = (await at()).selected === id;
+      ways[`${id} by its name`] = { ...byName, named: Boolean(name?.x), ok: byName.ok && (narrow || (Boolean(name?.x) && chose)) };
       await evaluate(`${V}.select(null)`);
       await sleep(900);
       ways[`${id} after the panel closed`] = await twice(id);
@@ -944,20 +1035,25 @@ try {
       await evaluate(`${V}.select(${JSON.stringify(id)}, { fly: true })`);
       await settle();
       ways[`${id} by the List`] = await twice(id);
-      // By a real press on it at the shelf's stop.
+      // By a real press on it at its own plank's stop.
       await evaluate(`${V}.select(null)`);
-      await evaluate(`${V}.current.goToScale("shelf", true)`);
+      await evaluate(`${V}.current.goToScale(${V}.current.plankOf(${JSON.stringify(id)}), true)`);
       await sleep(900);
-      const spot = await evaluate(`(() => { const v = ${V}, e = v.current.shelf.layout.items.find((i) => i.id === ${JSON.stringify(id)}); const p = v.current.root.position.clone().set(e.x, e.h / 2, e.z + e.d * 0.4); const q = v.stage.project(p, p.clone()); const r = v.canvas.getBoundingClientRect(); return { x: r.left + q.x, y: r.top + q.y, id: v.stage.pick(r.left + q.x, r.top + q.y, v.current.pickRoots)?.id || null }; })()`);
+      const spot = await spotOf(id);
       if (spot.id === id) await click(spot.x, spot.y, 900);
       await settle();
-      ways[`${id} by a press at the shelf`] = { ...(await twice(id)), pressed: spot.id };
+      const pressedOne = await twice(id);
+      ways[`${id} by a press at its stop`] = { ...pressedOne, pressed: spot.id, ok: pressedOne.ok && spot.id === id };
     }
     // By the address.
     await open("lens=machines&entry=human&select=organelle:mitochondrion");
     await settle();
     ways["organelle:mitochondrion by the address"] = await twice("organelle:mitochondrion");
-    check("a chosen organelle stays drawn and inside the picture's free area, at once and three seconds later, chosen by its name above the bench, by the List, by a press on it at the shelf (and after its panel is closed), and by the address: the mitochondrion and the lysosome", Object.values(ways).every((way) => way.ok), JSON.stringify(ways));
+    await open("lens=machines&entry=human&select=organelle:centriole");
+    await settle();
+    ways["organelle:centriole by the address"] = await twice("organelle:centriole");
+    const failing = Object.entries(ways).filter(([, way]) => !way.ok);
+    check(`every organelle of the shelf, chosen, stays drawn, at its stated size and inside the picture's free area, at once and three seconds later: by its name above the bench, by the List, by a press on it at its own plank's stop (and after its panel is closed), and by the address (${Object.keys(ways).length} ways)`, failing.length === 0, JSON.stringify(failing.length ? Object.fromEntries(failing) : Object.keys(ways)));
     // 6d. A group frames its tray (asked for on 20 November 2026): from the shelf's stop, a real press on a group's row of the legend (else
     // the card's Group) travels down and ends with that tray inside the picture's free area at the bench's scale; All groups, the bench.
     await evaluate(`${V}.select(null)`);
@@ -998,6 +1094,12 @@ try {
     await until(`(() => { const lens = ${L}, d = ${V}.stage.rig.distance, shelf = lens.stopViews().shelf?.distance; return lens.stop === "shelf" && !lens.travel && Boolean(shelf) && Math.abs(d - shelf) <= 0.02 * shelf; })()`, 60);
     s = await at();
     check("the address scale=shelf opens, once the bench is read, at the shelf's stop and distance (within 2 per cent)", came && s.stop === "shelf" && Math.abs(s.d - s.shelf) <= 0.02 * s.shelf, JSON.stringify(s));
+    await open("lens=machines&entry=human&scale=small", 1500);
+    const cameSmall = await until(read, 160);
+    await until(`(() => { const lens = ${L}, d = ${V}.stage.rig.distance, small = lens.stopViews().small?.distance; return lens.stop === "small" && !lens.travel && Boolean(small) && Math.abs(d - small) <= 0.02 * small; })()`, 60);
+    s = await at();
+    const smallD = await evaluate(`${L}.stopViews().small?.distance ?? null`);
+    check("the address scale=small opens, once the bench is read, at the small organelles' stop and distance (within 2 per cent)", cameSmall && s.stop === "small" && Boolean(smallD) && Math.abs(s.d - smallD) <= 0.02 * smallD, JSON.stringify({ s, smallD }));
     // 9. A species with no organelle: no shelf, no rail, no page scale bar from this view.
     await open("lens=machines&entry=ecoli", 2500);
     await until(`Boolean(${L}?.layout && !${L}.ready)`, 160);

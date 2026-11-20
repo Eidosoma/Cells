@@ -24,6 +24,47 @@
      "class": "non-commercial",
      "accessed": "2026-11-20"
     }
+   },
+   "centriole": {
+    "shape": "capsule",
+    "drawn_um": [0.2],
+    "drawn_long_um": [0.4],
+    "page_words": "near the size of a centriole in the bone marrow cells of healthy people",
+    "read": {
+     "by": "the visualizer's shelf agent",
+     "on": "2026-11-20",
+     "as": "Europe PMC full text PMC9701608",
+     "results": "Section 2.2, on CD138-negative bone marrow mononuclear cells of three healthy donors: “the median length of centrioles (368 nm, range: 190–753 nm) was normal in these cells” and “their median diameter (204 nm, range: 182–226 nm) was slightly reduced”, of 205 completely pictured centrioles",
+     "method": "A screen by transmission electron microscopy, then serial electron tomography of each centriole found (its Results and STAR Methods)"
+    },
+    "working": "Ours, not the paper's: the two medians rounded to one figure each, drawn about 0.2 µm across and 0.4 µm long (decided on 20 November 2026: a held number is not shown in the page, and the length's median to two figures would have been).",
+    "source": {
+     "text": "Dittrich and others (2022) A high-throughput electron tomography workflow reveals over-elongated centrioles in relapsed/refractory multiple myeloma. Cell Reports Methods 2(11):100322. Read as Europe PMC full text PMC9701608 on 20 November 2026.",
+     "doi": "10.1016/j.crmeth.2022.100322",
+     "licence": "“an open access article under the CC BY-NC-ND license”, as the article states",
+     "class": "non-commercial",
+     "accessed": "2026-11-20"
+    }
+   },
+   "endocytic-vesicle": {
+    "shape": "sphere",
+    "drawn_um": [0.15],
+    "page_words": "near the size of the small vesicles and tubules that carry Rab5 in HeLa cells",
+    "read": {
+     "by": "the visualizer's shelf agent",
+     "on": "2026-11-20",
+     "as": "Europe PMC full text PMC8624803",
+     "results": "Results, “CLEM of Rab5 and Rab7 reveals differential distributions over early to late endolysosomal compartments”: “The Rab5-positive vesicle-tubules were 100–200 nm in diameter and often found near the plasma membrane.” Methods, “Definition of endolysosomes by EM morphology”: early endosomes are defined “as irregularly shaped electron-lucent vacuoles containing fewer than six ILVs”, with no size",
+     "method": "HeLa cells; correlative light and electron microscopy on sections (immunofluorescence on cryosections, then transmission electron microscopy of the same sections)"
+    },
+    "working": "Ours, not the paper's: drawn at the middle of the range, 0.15 µm across. The paper gives no size of an early endosome, so what it measured stands on the shelf as an endocytic vesicle, not as an early endosome.",
+    "source": {
+     "text": "van der Beek and others (2021) Quantitative correlative microscopy reveals the ultrastructural distribution of endogenous endosomal proteins. Journal of Cell Biology 221(1):e202106044. Read as Europe PMC full text PMC8624803 on 20 November 2026.",
+     "doi": "10.1083/jcb.202106044",
+     "licence": "“Attribution–Noncommercial–Share Alike 4.0 International license”, after six months under a licence with no mirror sites, as the article states",
+     "class": "non-commercial",
+     "accessed": "2026-11-20"
+    }
    }
   }
  }

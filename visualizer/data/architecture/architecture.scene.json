@@ -5,7 +5,7 @@
  "caveat": "Capabilities vary by model, and whole-cell integration is ongoing. No single run uses every part drawn here.",
  "meta": {
   "as_of": "2026-11-20",
-  "generated_at": "2026-11-20T18:31:37Z",
+  "generated_at": "2026-11-20T22:03:14Z",
   "revision": "93fc8c2c",
   "revision_date": "2026-11-20",
   "dirty": false,
@@ -4189,6 +4189,34 @@
       "sources": [
        "wikipedia-peroxisome"
       ]
+     },
+     {
+      "label": "Endoplasmic reticulum",
+      "value": "a review's general figure, not a measurement in one cell type: the reticulum's membrane “is formed into sheets and tubules of roughly 80–100 nm diameter”, and “The sheets are flat, with a bilayer separation of 30–50 nm”, the distance between a sheet's two membranes; the review names no species or cell type there",
+      "sources": [
+       "perkins2021"
+      ]
+     },
+     {
+      "label": "Golgi apparatus",
+      "value": "a review's general figure for mammalian cells, not a measurement in one cell type: “In mammalian cells, this organelle consists of a pile of flat, disk-like membranes, the cisternae”; “The diameter of the cisternae is also cell type-dependent, and is usually 0.5–1 μm”, and the cisternae of a stack are “usually numbering between 3 and 11”",
+      "sources": [
+       "martinezalonso2013"
+      ]
+     },
+     {
+      "label": "Lipid droplet",
+      "value": "an encyclopedia's general range, not a measurement in one cell type: “the diameter of lipid droplets ranges from 0.1–5 μm in non-adipocyte cells, but increases to over 100 μm in white adipocytes”",
+      "sources": [
+       "wikipedia-lipid-droplet"
+      ]
+     },
+     {
+      "label": "Autophagosome",
+      "value": "an encyclopedia's general range for mammalian cells, not a measurement in one cell type: “An autophagosome is a spherical structure with double layer membranes.” “Yeast autophagosomes are about 500-900 nm, while mammalian autophagosomes are larger (500-1500 nm).” The mammalian range is 0.5–1.5 µm; the sentence carries no reference of its own",
+      "sources": [
+       "wikipedia-autophagosome"
+      ]
      }
     ],
     "parts": {
@@ -4203,7 +4231,11 @@
      "shelf": [
       "lysosome",
       "copi-vesicle",
-      "peroxisome"
+      "peroxisome",
+      "lipid-droplet",
+      "autophagosome",
+      "centriole",
+      "endocytic-vesicle"
      ]
     },
     "capabilities": {}
@@ -4254,6 +4286,34 @@
     "wikipedia-peroxisome": {
      "text": "Wikipedia, the article “Peroxisome”, its first section: an encyclopedia's general range. Read on en.wikipedia.org.",
      "url": "https://en.wikipedia.org/wiki/Peroxisome",
+     "licence": "CC BY-SA 4.0, share-alike, as the page's footer states (“Text is available under the Creative Commons Attribution-ShareAlike 4.0 License”)",
+     "class": "permissive",
+     "accessed": "2026-11-20"
+    },
+    "perkins2021": {
+     "text": "Perkins and Allan (2021) Intertwined and Finely Balanced: Endoplasmic Reticulum Morphology, Dynamics, Function, and Diseases. Cells 10(9):2341. Section 2, “Morphology”: a review's general statement, which names no species or cell type there. Read as Europe PMC full text PMC8472773.",
+     "doi": "10.3390/cells10092341",
+     "licence": "CC BY, as the article states (“distributed under the terms and conditions of the Creative Commons Attribution (CC BY) license”)",
+     "class": "permissive",
+     "accessed": "2026-11-20"
+    },
+    "martinezalonso2013": {
+     "text": "Martínez-Alonso, Tomás and Martínez-Menárguez (2013) Morpho-Functional Architecture of the Golgi Complex of Neuroendocrine Cells. Frontiers in Endocrinology 4:41. Section “Morphology of the Golgi Ribbon”, on mammalian cells; it cites Weidman and others for the cisternae's diameter and Rambourg and Clermont for their number. Read as Europe PMC full text PMC3610015.",
+     "doi": "10.3389/fendo.2013.00041",
+     "licence": "CC BY, as the article states (“distributed under the terms of the Creative Commons Attribution License”)",
+     "class": "permissive",
+     "accessed": "2026-11-20"
+    },
+    "wikipedia-lipid-droplet": {
+     "text": "Wikipedia, the article “Lipid droplet”, its first section: an encyclopedia's general range, which cites Fujimoto and Parton, Cold Spring Harbor Perspectives in Biology 3(3):a004838, 2011. Read on en.wikipedia.org (the page as last edited on 27 September 2026).",
+     "url": "https://en.wikipedia.org/wiki/Lipid_droplet",
+     "licence": "CC BY-SA 4.0, share-alike, as the page's footer states (“Text is available under the Creative Commons Attribution-ShareAlike 4.0 License”)",
+     "class": "permissive",
+     "accessed": "2026-11-20"
+    },
+    "wikipedia-autophagosome": {
+     "text": "Wikipedia, the article “Autophagosome”, its first section: an encyclopedia's general range; the sentence that gives it carries no note of its own, and its paragraph cites Mizushima, Ohsumi and Yoshimori, Cell Structure and Function 27(6):421–429, 2002. Read on en.wikipedia.org (the page as last edited on 4 October 2026).",
+     "url": "https://en.wikipedia.org/wiki/Autophagosome",
      "licence": "CC BY-SA 4.0, share-alike, as the page's footer states (“Text is available under the Creative Commons Attribution-ShareAlike 4.0 License”)",
      "class": "permissive",
      "accessed": "2026-11-20"
@@ -4349,7 +4409,11 @@
       "shelf": [
        "lysosome",
        "copi-vesicle",
-       "peroxisome"
+       "peroxisome",
+       "lipid-droplet",
+       "autophagosome",
+       "centriole",
+       "endocytic-vesicle"
       ]
      },
      "capabilities": {},
@@ -4387,6 +4451,34 @@
        "value": "an encyclopedia's general range, not a measurement in one cell type: “Peroxisomes are small (0.1–1 μm diameter) organelles”",
        "sources": [
         "wikipedia-peroxisome"
+       ]
+      },
+      {
+       "label": "Endoplasmic reticulum",
+       "value": "a review's general figure, not a measurement in one cell type: the reticulum's membrane “is formed into sheets and tubules of roughly 80–100 nm diameter”, and “The sheets are flat, with a bilayer separation of 30–50 nm”, the distance between a sheet's two membranes; the review names no species or cell type there",
+       "sources": [
+        "perkins2021"
+       ]
+      },
+      {
+       "label": "Golgi apparatus",
+       "value": "a review's general figure for mammalian cells, not a measurement in one cell type: “In mammalian cells, this organelle consists of a pile of flat, disk-like membranes, the cisternae”; “The diameter of the cisternae is also cell type-dependent, and is usually 0.5–1 μm”, and the cisternae of a stack are “usually numbering between 3 and 11”",
+       "sources": [
+        "martinezalonso2013"
+       ]
+      },
+      {
+       "label": "Lipid droplet",
+       "value": "an encyclopedia's general range, not a measurement in one cell type: “the diameter of lipid droplets ranges from 0.1–5 μm in non-adipocyte cells, but increases to over 100 μm in white adipocytes”",
+       "sources": [
+        "wikipedia-lipid-droplet"
+       ]
+      },
+      {
+       "label": "Autophagosome",
+       "value": "an encyclopedia's general range for mammalian cells, not a measurement in one cell type: “An autophagosome is a spherical structure with double layer membranes.” “Yeast autophagosomes are about 500-900 nm, while mammalian autophagosomes are larger (500-1500 nm).” The mammalian range is 0.5–1.5 µm; the sentence carries no reference of its own",
+       "sources": [
+        "wikipedia-autophagosome"
        ]
       }
      ],
@@ -4569,6 +4661,27 @@
       "sources": [
        "islam2021"
       ]
+     },
+     {
+      "label": "Nucleus",
+      "value": "whole primary beta cells of pancreatic islets isolated from 9-week-old mice, reconstructed in three dimensions by FIB-SEM: “The volume of the nuclei ranged from 102 to 150 µm³ in the six cells containing complete nuclei”. Ours, not the paper's: a sphere of the range's middle, 126 µm³, is 6.2 µm across",
+      "sources": [
+       "muller2020"
+      ]
+     },
+     {
+      "label": "Golgi apparatus",
+      "value": "a review's general figure for mammalian cells, not a measurement in one cell type: “In mammalian cells, this organelle consists of a pile of flat, disk-like membranes, the cisternae”; “The diameter of the cisternae is also cell type-dependent, and is usually 0.5–1 μm”, and the cisternae of a stack are “usually numbering between 3 and 11”",
+      "sources": [
+       "martinezalonso2013"
+      ]
+     },
+     {
+      "label": "Autophagosome",
+      "value": "an encyclopedia's general range for mammalian cells, not a measurement in one cell type: “An autophagosome is a spherical structure with double layer membranes.” “Yeast autophagosomes are about 500-900 nm, while mammalian autophagosomes are larger (500-1500 nm).” The mammalian range is 0.5–1.5 µm; the sentence carries no reference of its own",
+      "sources": [
+       "wikipedia-autophagosome"
+      ]
      }
     ],
     "parts": {
@@ -4579,6 +4692,9 @@
       "er",
       "golgi",
       "mitochondria"
+     ],
+     "shelf": [
+      "autophagosome"
      ]
     },
     "capabilities": {}
@@ -4597,6 +4713,27 @@
      "licence": "CC BY",
      "class": "permissive",
      "accessed": "2026-11-16"
+    },
+    "muller2020": {
+     "text": "Müller and others (2020) 3D FIB-SEM reconstruction of microtubule–organelle interaction in whole primary mouse β cells. Journal of Cell Biology 220(2):e202010039. Section “Organelle fractions are heterogeneous across cells” and its Table 1. Read as Europe PMC full text PMC7748794.",
+     "doi": "10.1083/jcb.202010039",
+     "licence": "CC BY 4.0, as the article states (“available under a Creative Commons License (Attribution 4.0 International”)",
+     "class": "permissive",
+     "accessed": "2026-11-20"
+    },
+    "martinezalonso2013": {
+     "text": "Martínez-Alonso, Tomás and Martínez-Menárguez (2013) Morpho-Functional Architecture of the Golgi Complex of Neuroendocrine Cells. Frontiers in Endocrinology 4:41. Section “Morphology of the Golgi Ribbon”, on mammalian cells; it cites Weidman and others for the cisternae's diameter and Rambourg and Clermont for their number. Read as Europe PMC full text PMC3610015.",
+     "doi": "10.3389/fendo.2013.00041",
+     "licence": "CC BY, as the article states (“distributed under the terms of the Creative Commons Attribution License”)",
+     "class": "permissive",
+     "accessed": "2026-11-20"
+    },
+    "wikipedia-autophagosome": {
+     "text": "Wikipedia, the article “Autophagosome”, its first section: an encyclopedia's general range; the sentence that gives it carries no note of its own, and its paragraph cites Mizushima, Ohsumi and Yoshimori, Cell Structure and Function 27(6):421–429, 2002. Read on en.wikipedia.org (the page as last edited on 4 October 2026).",
+     "url": "https://en.wikipedia.org/wiki/Autophagosome",
+     "licence": "CC BY-SA 4.0, share-alike, as the page's footer states (“Text is available under the Creative Commons Attribution-ShareAlike 4.0 License”)",
+     "class": "permissive",
+     "accessed": "2026-11-20"
     }
    },
    "cell_types": [
@@ -4675,6 +4812,9 @@
        "er",
        "golgi",
        "mitochondria"
+      ],
+      "shelf": [
+       "autophagosome"
       ]
      },
      "capabilities": {},
@@ -4698,6 +4838,27 @@
        "value": "head and body 78.5 mm, tail 85.3 mm, ear 13.3 mm: the means of four house mice trapped in Qatar, wild and not laboratory mice",
        "sources": [
         "islam2021"
+       ]
+      },
+      {
+       "label": "Nucleus",
+       "value": "whole primary beta cells of pancreatic islets isolated from 9-week-old mice, reconstructed in three dimensions by FIB-SEM: “The volume of the nuclei ranged from 102 to 150 µm³ in the six cells containing complete nuclei”. Ours, not the paper's: a sphere of the range's middle, 126 µm³, is 6.2 µm across",
+       "sources": [
+        "muller2020"
+       ]
+      },
+      {
+       "label": "Golgi apparatus",
+       "value": "a review's general figure for mammalian cells, not a measurement in one cell type: “In mammalian cells, this organelle consists of a pile of flat, disk-like membranes, the cisternae”; “The diameter of the cisternae is also cell type-dependent, and is usually 0.5–1 μm”, and the cisternae of a stack are “usually numbering between 3 and 11”",
+       "sources": [
+        "martinezalonso2013"
+       ]
+      },
+      {
+       "label": "Autophagosome",
+       "value": "an encyclopedia's general range for mammalian cells, not a measurement in one cell type: “An autophagosome is a spherical structure with double layer membranes.” “Yeast autophagosomes are about 500-900 nm, while mammalian autophagosomes are larger (500-1500 nm).” The mammalian range is 0.5–1.5 µm; the sentence carries no reference of its own",
+       "sources": [
+        "wikipedia-autophagosome"
        ]
       }
      ],
@@ -5411,7 +5572,7 @@
     "facts": [
      {
       "label": "Nucleus",
-      "value": "in planarian cells dissociated from the animal, by imaging flow cytometry with a nuclear stain (Draq5), “the nuclear diameters for all cells were generally constant at ∼3–4 µm”; the paper discusses whether some stained spots are nuclear foci rather than whole nuclei",
+      "value": "in planarian cells dissociated from the animal, by imaging flow cytometry with a nuclear stain (Draq5), “the nuclear diameters for all cells were generally constant at ~3–4 µm”; the paper discusses whether some stained spots are nuclear foci rather than whole nuclei",
       "sources": [
        "dutta2025"
       ]
@@ -5534,7 +5695,7 @@
      "facts": [
       {
        "label": "Nucleus",
-       "value": "in planarian cells dissociated from the animal, by imaging flow cytometry with a nuclear stain (Draq5), “the nuclear diameters for all cells were generally constant at ∼3–4 µm”; the paper discusses whether some stained spots are nuclear foci rather than whole nuclei",
+       "value": "in planarian cells dissociated from the animal, by imaging flow cytometry with a nuclear stain (Draq5), “the nuclear diameters for all cells were generally constant at ~3–4 µm”; the paper discusses whether some stained spots are nuclear foci rather than whole nuclei",
        "sources": [
         "dutta2025"
        ]

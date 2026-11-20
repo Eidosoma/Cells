@@ -96,8 +96,9 @@ test("every number stands on a permissive source the entry names, and a size is 
       assert.match(entry.size.says, /viewer's own measure|viewer's own/, "the size says it is the viewer's measure");
     }
   }
-  // The overlay holds no size of its own: a size is read from a species' fact or from a part of its cell.
-  for (const list of Object.values(overlay.species)) for (const item of list) if (item.size) assert.ok(item.size.part || item.size.fact || overlay.measures[item.size.measure], JSON.stringify(item.size));
+  // The overlay holds no size of its own: a size is read from a species' fact, from a part of its cell, or from the held file (a paper
+  // under a non-commercial licence, which the tool checks the drawn size against: data/catalogue/held_sizes.json).
+  for (const list of Object.values(overlay.species)) for (const item of list) if (item.size) assert.ok(item.size.part || item.size.fact || item.size.held || overlay.measures[item.size.measure], JSON.stringify(item.size));
   assert.ok(!JSON.stringify(overlay).includes("across_nm"), "no width is written in the overlay");
 });
 
@@ -1065,10 +1066,10 @@ test("a kind's forms stand in its panel and are no machines; the vault says each
 // About 0.2 s: it builds the human's organelles once with the Cell view's own builders (no WebGL), to hold their sizes.
 test("the organelles on the shelf: no machines, sized by their species' file's facts, drawn by the Cell view's models, and said with the map's status", () => {
   const shelf = catalogue.organellesOf("human");
-  assert.deepEqual(shelf.map((item) => item.id), ["organelle:nucleus", "organelle:lysosome", "organelle:copi-vesicle", "organelle:peroxisome", "organelle:endoplasmic-reticulum", "organelle:golgi-apparatus", "organelle:mitochondrion"]);
+  assert.deepEqual(shelf.map((item) => item.id), ["nucleus", "endoplasmic-reticulum", "golgi-apparatus", "lipid-droplet", "mitochondrion", "autophagosome", "lysosome", "peroxisome", "centriole", "endocytic-vesicle", "copi-vesicle"].map((kind) => `organelle:${kind}`));
   assert.ok(catalogue.of("human").every((item) => !item.organelle) && catalogue.counts("human").machines === catalogue.of("human").length, "no organelle is a machine or in a count of machines");
   const human = read("data/species/human.json");
-  for (const item of shelf.filter((value) => value.size)) {
+  for (const item of shelf.filter((value) => value.size && !(value.size.held && !value.size.text))) {
     const fact = human.cell.facts.find((value) => value.label === item.size.label);
     assert.equal(item.size.text, fact.value, `${item.id}: its size is its species' file's fact, whole`);
     for (const key of fact.sources) assert.equal(human.sources[key].class, "permissive", `${item.id}: ${key}`);
@@ -1097,14 +1098,60 @@ test("the organelles on the shelf: no machines, sized by their species' file's f
   assert.ok(/Drawn about 10 µm across, near the size of a HeLa nucleus inside the cell, on a published measurement that the project's files cite and this page does not show/.test(nucleusPanel) && /visualizer\/data\/catalogue\/held_sizes.json/.test(nucleusPanel));
   for (const word of [held.source.doi, "Iida", "510 ± 121", "non-commercial"]) assert.ok(!nucleusPanel.includes(word), word);
   assert.ok(Math.abs(at("organelle:mitochondrion").w - 118) < 1 && Math.abs(at("organelle:mitochondrion").h - 55) < 1, "the mitochondrion 1.18 µm long and 0.55 µm wide");
-  assert.deepEqual(drawn.filter((entry) => entry.type === "card").map((entry) => entry.id), ["organelle:endoplasmic-reticulum", "organelle:golgi-apparatus"]);
+  assert.deepEqual(drawn.filter((entry) => entry.type === "card").map((entry) => entry.id), [], "every organelle of the human's shelf is drawn (20 November 2026, step D)");
   assert.ok(lens.shelf.root.visible === false && lens.cost().triangles < 40000, "at the bench's stop the shelf is not drawn, and the bench costs what it did");
-  assert.deepEqual(lens.railOf().map((stop) => stop.id).filter((id) => !id.startsWith("nm")), ["shelf", "bench"]);
+  assert.deepEqual(lens.railOf().map((stop) => stop.id).filter((id) => !id.startsWith("nm")), ["shelf", "small", "bench"]);
+  // Step D (20 November 2026): the rest as 3D models. The reticulum and the Golgi by the Cell view's models, at a general figure's
+  // sheet and cisterna; a centriole as one barrel of the Cell view's centrosome; the others simple models of their own; the small
+  // ones on a plank of their own, with a stop of their own between the bench's and the shelf's.
+  const model = (id) => lens.shelf.holders.get(id);
+  const scaled = (id, key) => model(id).model.measure[key] * model(id).holder.scale.x;
+  assert.ok(Math.abs(scaled("organelle:endoplasmic-reticulum", "thick") - 4) < 0.01, "the reticulum's sheets 40 nm thick, the middle of 30 to 50 nm");
+  assert.ok(Math.abs(scaled("organelle:golgi-apparatus", "cisterna") - 75) < 0.01, "the Golgi's widest cisterna 0.75 µm, the middle of 0.5 to 1 µm");
+  assert.ok(Math.abs(at("organelle:centriole").w - 40) < 0.5 && Math.abs(Math.max(at("organelle:centriole").h, at("organelle:centriole").d) - 20) < 0.5, "a centriole about 0.4 µm long and 0.2 µm across, held (one figure each)");
+  assert.ok(Math.abs(at("organelle:endocytic-vesicle").h - 15) < 0.5 && Math.abs(at("organelle:copi-vesicle").w - 12.6) < 0.2 && Math.abs(at("organelle:autophagosome").h - 100) < 0.5 && Math.abs(at("organelle:lipid-droplet").w - 255) < 0.5);
+  for (const id of ["organelle:lysosome", "organelle:peroxisome", "organelle:autophagosome", "organelle:copi-vesicle", "organelle:endocytic-vesicle", "organelle:lipid-droplet"]) {
+    assert.ok(model(id).model.simple && model(id).model.materials.every((material) => material.userData.look?.hue), `${id}: a simple model, every material painted from the page's palette`);
+    assert.match(lens.drawnWords(id), /a simple model of its own, since the Cell view has none; .*the picture's choice\. An illustration/, id);
+  }
+  assert.deepEqual(drawn.filter((entry) => entry.plank === "small").map((entry) => entry.id), ["mitochondrion", "autophagosome", "lysosome", "peroxisome", "centriole", "endocytic-vesicle", "copi-vesicle"].map((kind) => `organelle:${kind}`));
+  const views = lens.stopViews();
+  assert.ok(views.bench.distance < views.small.distance && views.small.distance < views.shelf.distance, "the small organelles' stop between the bench's and the shelf's");
+  // Every organelle named at each stop, each name a way to it (on a wide window), and the frame's cost at the planks' stops.
+  const { shown } = lensFor("human");
+  const named = (stop) => {
+    lens.labels = { add: (spec) => (shown.push(spec), spec), clear: () => shown.splice(0), remove() {} };
+    lens.goToScale(stop, true);
+    lens.stage.rig.distance = lens.homeView().distance;
+    lens.stage.rig.target = lens.homeView().target;
+    lens.band = null;
+    lens.afterMove();
+    return new Set(shown.map((spec) => spec.id).filter((id) => String(id).startsWith("organelle:")));
+  };
+  for (const stop of ["bench", "small", "shelf"]) {
+    assert.deepEqual([...named(stop)].sort(), shelf.map((item) => item.id).sort(), `at the ${stop}'s stop every organelle is named`);
+    assert.equal(lens.band, stop);
+  }
+  const heavy = lens.cost();
+  console.log(`# the human's shelf's stop: ${JSON.stringify(heavy)}`);
+  assert.ok(heavy.draws <= 64 && heavy.triangles <= 240000, `at the shelf's stop: ${JSON.stringify(heavy)}`);
+  // The held sizes say only the size drawn and its basis in words.
+  for (const id of ["organelle:centriole", "organelle:endocytic-vesicle"]) {
+    const text = JSON.stringify(describe(catalogue, "human", id, { scene }));
+    assert.match(text, /on a published measurement that the project's files cite and this page does not show/, id);
+    const entry = read("data/catalogue/held_sizes.json").species.human[id.slice("organelle:".length)];
+    for (const word of [entry.source.doi, entry.source.text.split(" and others")[0], "non-commercial", ...(entry.read.results.match(/\d+(?:[–-]\d+)? nm/g) || [])]) assert.ok(!text.includes(word), `${id}: ${word}`);
+  }
+  // A general figure says it is one, and stands only as far as its reference's qualifier reaches (the narrow reading).
+  for (const label of ["Endoplasmic reticulum", "Golgi apparatus", "Lipid droplet", "Autophagosome"]) assert.match(human.cell.facts.find((fact) => fact.label === label).value, /general (figure|range)/, label);
+  const mouse = read("data/species/mouse.json");
+  assert.deepEqual(mouse.cell.facts.filter((fact) => /general (figure|range)/.test(fact.value)).map((fact) => fact.label), ["Golgi apparatus", "Autophagosome"], "for mammalian cells only");
+  assert.ok(Math.abs(lensFor("mouse").lens.ensureShelf().layout.items.find((entry) => entry.id === "organelle:nucleus").w - 620) < 2, "the mouse's nucleus 6.2 µm across, a sphere of 126 µm³ (ours)");
   // Every bench, a row each (20 November 2026, round 2): the organelles its species' cell holds, sized where a permissive number was read,
   // else a card that says what was looked for; a species whose cell holds none has no shelf, no rail and no page scale bar.
   const ROWS = {
-    human: ["nucleus", "lysosome", "copi-vesicle", "peroxisome", "endoplasmic-reticulum", "golgi-apparatus", "mitochondrion"],
-    mouse: ["nucleus", "endoplasmic-reticulum", "golgi-apparatus", "mitochondrion"],
+    human: ["nucleus", "endoplasmic-reticulum", "golgi-apparatus", "lipid-droplet", "mitochondrion", "autophagosome", "lysosome", "peroxisome", "centriole", "endocytic-vesicle", "copi-vesicle"],
+    mouse: ["nucleus", "endoplasmic-reticulum", "golgi-apparatus", "mitochondrion", "autophagosome"],
     fruitfly: ["nucleus", "endoplasmic-reticulum", "golgi-apparatus", "mitochondrion"],
     planarian: ["nucleus", "endoplasmic-reticulum", "golgi-apparatus", "mitochondrion"],
     thalecress: ["nucleus", "endoplasmic-reticulum", "golgi-apparatus", "mitochondrion", "chloroplast", "vacuole"],

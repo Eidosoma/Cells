@@ -218,7 +218,7 @@
   "facts": [
    {
     "label": "Nucleus",
-    "value": "in planarian cells dissociated from the animal, by imaging flow cytometry with a nuclear stain (Draq5), “the nuclear diameters for all cells were generally constant at ∼3–4 µm”; the paper discusses whether some stained spots are nuclear foci rather than whole nuclei",
+    "value": "in planarian cells dissociated from the animal, by imaging flow cytometry with a nuclear stain (Draq5), “the nuclear diameters for all cells were generally constant at ~3–4 µm”; the paper discusses whether some stained spots are nuclear foci rather than whole nuclei",
     "sources": [
      "dutta2025"
     ]

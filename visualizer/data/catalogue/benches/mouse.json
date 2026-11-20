@@ -14725,7 +14725,17 @@
     "part": "nucleus",
     "file": "data/species/mouse.json"
    },
-   "no_size": "Looked for on 20 November 2026: a nucleus of whole primary mouse beta cells was read (102 to 150 µm³, Müller and others, J Cell Biol 220:e202010039, CC BY 4.0), but the mouse's species file is built by its own tool, which does not yet carry it; until it does, a card, not a shape."
+   "size": {
+    "shape": "sphere",
+    "across_um": [
+     6.2
+    ],
+    "label": "Nucleus",
+    "text": "whole primary beta cells of pancreatic islets isolated from 9-week-old mice, reconstructed in three dimensions by FIB-SEM: “The volume of the nuclei ranged from 102 to 150 µm³ in the six cells containing complete nuclei”. Ours, not the paper's: a sphere of the range's middle, 126 µm³, is 6.2 µm across",
+    "sources": [
+     "mouse:muller2020"
+    ]
+   }
   },
   {
    "id": "endoplasmic-reticulum",
@@ -14736,7 +14746,7 @@
     "part": "er",
     "file": "data/species/mouse.json"
    },
-   "no_size": "Looked for on 20 November 2026, in one search: a size of a sheet of the endoplasmic reticulum (its thickness) in a cell of the mouse, in papers whose terms allow commercial use. None was read, so it stands on the shelf as a card, not a shape."
+   "no_size": "Looked for on 20 November 2026, in one search: a size of a sheet of the endoplasmic reticulum (its thickness) in a cell of the mouse, in papers whose terms allow commercial use. None was read, so it stands on the shelf as a card, not a shape. On 20 November 2026 a review's general figure for the sheets was read (Perkins and Allan 2021); it names no species, and by the narrow reading of how far a general figure reaches it stands on the human's shelf alone."
   },
   {
    "id": "golgi-apparatus",
@@ -14747,7 +14757,19 @@
     "part": "golgi",
     "file": "data/species/mouse.json"
    },
-   "no_size": "Looked for on 20 November 2026, in one search: a size of a Golgi cisterna or stack (its width) in a cell of the mouse, in papers whose terms allow commercial use. None was read, so it stands on the shelf as a card, not a shape."
+   "size": {
+    "shape": "stack",
+    "across_um": [
+     0.5,
+     1
+    ],
+    "label": "Golgi apparatus",
+    "text": "a review's general figure for mammalian cells, not a measurement in one cell type: “In mammalian cells, this organelle consists of a pile of flat, disk-like membranes, the cisternae”; “The diameter of the cisternae is also cell type-dependent, and is usually 0.5–1 μm”, and the cisternae of a stack are “usually numbering between 3 and 11”",
+    "sources": [
+     "mouse:martinezalonso2013"
+    ],
+    "what": "the review's diameter of the cisternae, drawn as the widest cisterna's"
+   }
   },
   {
    "id": "mitochondrion",
@@ -14759,6 +14781,28 @@
     "file": "data/species/mouse.json"
    },
    "no_size": "Looked for on 20 November 2026, in one search: a size of a mitochondrion (its width and length) in a cell of the mouse, in papers whose terms allow commercial use. None was read, so it stands on the shelf as a card, not a shape."
+  },
+  {
+   "id": "autophagosome",
+   "species": "mouse",
+   "label": "Autophagosome",
+   "named": {
+    "text": "Mouse's species file: its cell holds autophagosomes.",
+    "part": "autophagosome",
+    "file": "data/species/mouse.json"
+   },
+   "size": {
+    "shape": "sphere",
+    "across_um": [
+     0.5,
+     1.5
+    ],
+    "label": "Autophagosome",
+    "text": "an encyclopedia's general range for mammalian cells, not a measurement in one cell type: “An autophagosome is a spherical structure with double layer membranes.” “Yeast autophagosomes are about 500-900 nm, while mammalian autophagosomes are larger (500-1500 nm).” The mammalian range is 0.5–1.5 µm; the sentence carries no reference of its own",
+    "sources": [
+     "mouse:wikipedia-autophagosome"
+    ]
+   }
   }
  ]
 }

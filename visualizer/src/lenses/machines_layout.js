@@ -230,22 +230,42 @@ export function layoutOf(items, groups, { columns = 3, measured = {}, ions = "io
  * scale, its organelles standing on it side by side with their fronts in one line, in the catalogue's order. Each organelle
  * comes with the room it takes (`w` across, `d` deep, `h` tall, in the view's units); one with no size in hand is a card of the
  * shelf's own size, the same for all, not to scale. Before the organelles a strip is left free: the loupe stands there.
+ *
+ * The small ones (`SHELF.small.um` at their longest, or less: a mitochondrion, a lysosome, a vesicle) stand on a plank of their
+ * own between the bench and the shelf, nearer the bench, where a stop of their own frames them (asked for on 20 November 2026:
+ * on the shelf beside a nucleus they were a few pixels across). Each item says which plank it stands on (`plank`).
  */
-export const SHELF = { gap: 80, front: 420, between: 160, side: 160, back: 120, h: 12, card: { w: 300, d: 90, h: 6 } };
+export const SHELF = { gap: 80, front: 420, between: 160, side: 160, back: 120, h: 12, card: { w: 300, d: 90, h: 6 }, small: { um: 1.5, gap: 50, front: 60, between: 42, side: 40, back: 60 } };
+/** Whether an organelle with its room stands on the small plank: it has a size, and is no longer than `SHELF.small.um` at its longest. */
+export const isSmall = (organelle) => organelle.w > 0 && Math.max(organelle.w, organelle.h, organelle.d) * UNIT_NM <= SHELF.small.um * 1000;
 export function shelfOf(organelles, bounds) {
-  const plankFront = bounds.minZ - SHELF.gap, front = plankFront - SHELF.front;
-  const items = [];
-  let x = 0;
-  for (const organelle of organelles) {
-    const card = !(organelle.w > 0);
-    const w = card ? SHELF.card.w : organelle.w, d = card ? SHELF.card.d : organelle.d, h = card ? SHELF.card.h : organelle.h;
-    items.push({ ...organelle, type: card ? "card" : "shape", w, d, h, x: x + w / 2, z: front - d / 2, y: 0 });
-    x += w + SHELF.between;
+  // One plank's organelles side by side, centred across, their fronts on the line `front`.
+  const row = (list, front, between, plank) => {
+    const items = [];
+    let x = 0;
+    for (const organelle of list) {
+      const card = !(organelle.w > 0);
+      const w = card ? SHELF.card.w : organelle.w, d = card ? SHELF.card.d : organelle.d, h = card ? SHELF.card.h : organelle.h;
+      items.push({ ...organelle, type: card ? "card" : "shape", plank, w, d, h, x: x + w / 2, z: front - d / 2, y: 0 });
+      x += w + between;
+    }
+    const width = Math.max(0, x - between);
+    for (const item of items) item.x -= width / 2;
+    return { items, width, deepest: Math.max(0, ...items.map((item) => item.d)), tallest: Math.max(1, ...items.map((item) => item.h)) };
+  };
+  const smallList = organelles.filter(isSmall), largeList = organelles.filter((organelle) => !isSmall(organelle));
+  let small = null, behind = bounds.minZ;
+  if (smallList.length) {
+    const s = SHELF.small, plankFront = bounds.minZ - s.gap, front = plankFront - s.front;
+    const made = row(smallList, front, s.between, "small");
+    const minZ = front - made.deepest - s.back;
+    const plank = { x: 0, z: (plankFront + minZ) / 2, w: made.width + 2 * s.side, d: plankFront - minZ };
+    small = { items: made.items, plank, front, bounds: { minX: -plank.w / 2, maxX: plank.w / 2, minZ, maxZ: plankFront, maxY: made.tallest } };
+    behind = minZ;
   }
-  const width = Math.max(0, x - SHELF.between);
-  for (const item of items) item.x -= width / 2;
-  const deepest = Math.max(0, ...items.map((item) => item.d));
-  const minZ = front - deepest - SHELF.back;
-  const plank = { x: 0, z: (plankFront + minZ) / 2, w: width + 2 * SHELF.side, d: plankFront - minZ };
-  return { items, plank, front, bounds: { minX: -plank.w / 2, maxX: plank.w / 2, minZ, maxZ: plankFront, maxY: Math.max(1, ...items.map((item) => item.h)) } };
+  const plankFront = behind - SHELF.gap, front = plankFront - SHELF.front;
+  const made = row(largeList, front, SHELF.between, "shelf");
+  const minZ = front - made.deepest - SHELF.back;
+  const plank = { x: 0, z: (plankFront + minZ) / 2, w: made.width + 2 * SHELF.side, d: plankFront - minZ };
+  return { items: [...made.items, ...(small?.items || [])], plank, front, small, bounds: { minX: -plank.w / 2, maxX: plank.w / 2, minZ, maxZ: plankFront, maxY: made.tallest } };
 }

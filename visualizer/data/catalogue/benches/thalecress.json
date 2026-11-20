@@ -11606,7 +11606,7 @@
     "part": "er",
     "file": "data/species/thalecress.json"
    },
-   "no_size": "Looked for on 20 November 2026, in one search: a size of a sheet of the endoplasmic reticulum (its thickness) in a leaf cell of the thale cress, in papers whose terms allow commercial use. None was read, so it stands on the shelf as a card, not a shape."
+   "no_size": "Looked for on 20 November 2026, in one search: a size of a sheet of the endoplasmic reticulum (its thickness) in a leaf cell of the thale cress, in papers whose terms allow commercial use. None was read, so it stands on the shelf as a card, not a shape. On 20 November 2026 a review's general figure for the sheets was read (Perkins and Allan 2021); it names no species, and by the narrow reading of how far a general figure reaches it stands on the human's shelf alone."
   },
   {
    "id": "golgi-apparatus",
@@ -11617,7 +11617,7 @@
     "part": "golgi",
     "file": "data/species/thalecress.json"
    },
-   "no_size": "Looked for on 20 November 2026, in one search: a size of a Golgi cisterna or stack (its width) in a leaf cell of the thale cress, in papers whose terms allow commercial use. None was read, so it stands on the shelf as a card, not a shape."
+   "no_size": "Looked for on 20 November 2026, in one search: a size of a Golgi cisterna or stack (its width) in a leaf cell of the thale cress, in papers whose terms allow commercial use. None was read, so it stands on the shelf as a card, not a shape. On 20 November 2026 a review's general figure for mammalian cells was read (Martínez-Alonso and others 2013); it does not reach this species."
   },
   {
    "id": "mitochondrion",
@@ -11660,7 +11660,7 @@
     "part": "vacuole",
     "file": "data/species/thalecress.json"
    },
-   "no_size": "Looked for on 20 November 2026: its species' file gives the vacuole's share of the leaf's cellular volume (84%), not a size of its own, so it stands on the shelf as a card, not a shape."
+   "no_size": "Looked for on 20 November 2026: its species' file gives the vacuole's share of the leaf's cellular volume (84%), not a size of its own. Its paper, read again that day, gives that share for the leaf's skin and mesophyll cells together, with the vacuole taken as what remains of their volume, and no share for the palisade cell whose volume the file states; so no width can honestly be worked from it, and it stands on the shelf as a card, not a shape."
   }
  ]
 }

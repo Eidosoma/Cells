@@ -202,11 +202,13 @@ def organelle_entry(item, entry, species, species_file, species_path, where, cit
             raise Breach(f"{rel(held_path)} is not cells.visualizer.held_sizes@1")
         entry_held = ((held_file.get("species") or {}).get(species) or {}).get(size["held"])
         keys = ORGANELLE_SIZES.get(size.get("shape"))
-        if not entry_held or not keys or entry_held.get("shape") != size["shape"] or size.get("across_um") != entry_held.get("drawn_um"):
+        # A sphere's width, or a capsule's width and length (a centriole's barrel): each as the held file draws it.
+        long = size.get("long_um") != entry_held.get("drawn_long_um") if entry_held and size.get("shape") == "capsule" else False
+        if not entry_held or not keys or entry_held.get("shape") != size["shape"] or size.get("across_um") != entry_held.get("drawn_um") or long:
             raise Breach(f"{where}: the held file gives no size {size['held']!r} of this shape drawn at {size.get('across_um')}")
         if (entry_held.get("source") or {}).get("class") != "non-commercial":
             raise Breach(f"{where}: a held size rests on a non-commercial source; a permissive one belongs in the species' file")
-        out["size"] = {"shape": size["shape"], "across_um": size["across_um"], "held": True, "words": entry_held["page_words"], "file": rel(held_path)}
+        out["size"] = {"shape": size["shape"], "across_um": size["across_um"], **({"long_um": size["long_um"]} if size["shape"] == "capsule" else {}), "held": True, "words": entry_held["page_words"], "file": rel(held_path)}
         if size.get("fact"):
             found = fact(species_file, size["fact"], where)
             out["size"].update({"label": found["label"], "text": found["value"], "sources": cite(species, found["sources"], species_file, where), **({"why": size["fact_why"]} if size.get("fact_why") else {})})
@@ -226,7 +228,11 @@ def organelle_entry(item, entry, species, species_file, species_path, where, cit
             for number in size[key]:
                 if not re.search(rf"(^|[^\d.]){re.escape(str(number))}([^\d]|$)", found["value"]):
                     raise Breach(f"{where}: the fact {size['fact']!r} does not give {number}")
-        out["size"] = {"shape": size["shape"], **{key: size[key] for key in keys}, "label": found["label"], "text": found["value"], "sources": cite(species, found["sources"], species_file, where)}
+        # `what`: words for what the fact's number is, where the model's measure takes it as another (a sheet's bilayer
+        # separation drawn as its thickness); words only, never a number.
+        if re.search(r"\d", size.get("what", "")):
+            raise Breach(f"{where}: a size's `what` is words, with no number")
+        out["size"] = {"shape": size["shape"], **{key: size[key] for key in keys}, "label": found["label"], "text": found["value"], "sources": cite(species, found["sources"], species_file, where), **({"what": size["what"]} if size.get("what") else {})}
     elif item.get("no_size"):
         out["no_size"] = item["no_size"]
     return out

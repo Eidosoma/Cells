@@ -224,14 +224,22 @@ catalogue never says their count.
     cell (`size: { part, shape }`, `cell.parts.organelle_sizes`); the shape one of `sphere` and `lens` (`across_um`), `stack`
     (`across_um`, a cisterna), `capsule` (`across_um`, `long_um`) and `sheet` (`thick_nm`). Every number stands in the fact's words
     (the tool stops otherwise); a fact says the cell type and species the paper measured in its own words. A range is drawn at its
-    middle and says so. No size: `no_size`, a dated line of what was looked for, and a card on the shelf.
+    middle and says so. `what` (words, no number) says what the number is where the model takes it as another measure (a sheet's
+    bilayer separation drawn as its thickness). No size: `no_size`, a dated line of what was looked for, and a card on the shelf.
+  - *A general figure* (since 20 November 2026): where no measurement in a named cell type is in hand, a general figure from an open
+    reference (a review, an encyclopedia) may stand as a fact, said plainly as general (whose words, which reference, what it cites),
+    never as a measurement of that species' cell. It stands on a species' shelf only as far as its reference's own qualifier reaches:
+    "in mammalian cells" serves the human and the mouse; a figure that names no species stands on the human's shelf alone (the
+    narrow reading); a figure for one cell type serves only that species. A card that no figure reaches says so.
   - *What Cells models of it*: a record `{ map: <the map's part> }`, read from the scene at run time (its status, the map's own words
     in quotation marks, the files it rests on); the kind's `map_part` names that part, its door into the Cell view and the Cell view's
     door back ("Show it on the Machines shelf"). An organelle the Cell view draws as scenery (the chloroplast, the vacuole) has no
     record, and its panel says so.
-  - *How it is drawn*: the Cell view's own model of it, built by the Cell view's builders (`src/lenses/machines_shelf.js`, `MODELS`)
-    and scaled so that the one measure its size sets (a width, a sheet's thickness, a cisterna's width) is the paper's; every other
-    proportion is the Cell view's, and the panel says so. An illustration.
+  - *How it is drawn*: the Cell view's own model of it where there is one, built by the Cell view's builders
+    (`src/lenses/machines_shelf.js`, `MODELS`: the nucleus, the reticulum, the Golgi, a mitochondrion, the chloroplast, and a centriole,
+    one barrel of the centrosome the Cell view draws as scenery) and scaled so that the one measure its size sets (a width, a sheet's
+    thickness, a cisterna's width, a barrel's width and length) is the source's; every other proportion is the Cell view's, and the
+    panel says so. An illustration.
   - *A held size* (the owner's ruling of 20 November 2026: numbers from papers under non-commercial licences may be cited in the
     project's files and may set how a thing is drawn, and are not shown in the page). `size: { held, shape, across_um, fact?, fact_why? }`
     names an entry of `data/catalogue/held_sizes.json` (`cells.visualizer.held_sizes@1`: the paper's number as read, by whom and
@@ -239,10 +247,16 @@ catalogue never says their count.
     it and writes into the bench only the size drawn, the held file's words for its basis and its path; the panel says "Drawn about
     … across, <words>, on a published measurement that the project's files cite and this page does not show", links the held file at
     the viewer's revision, and gives a permissive source's own measure where the entry names a `fact`, with why the picture differs.
-    No file the page carries holds the held paper's numbers, name or source (`tests/licence_classes.test.mjs`).
-  - *A plain shape*: an organelle the Cell view has no model of (the lysosome, a COPI vesicle, the peroxisome) is named by the species'
-    file's `cell.parts.shelf`, a list the Cell view does not read, and stands as a sphere (or a capsule where its size gives a length)
-    at its size, as a machine with a size and no structure does: an illustration, and its panel says so.
+    No file the page carries holds the held paper's numbers, name or source (`tests/licence_classes.test.mjs`). A held capsule (a
+    centriole) gives its length too (`long_um`, the held file's `drawn_long_um`).
+  - *A simple model*: an organelle the Cell view has no model of is named by the species' file's `cell.parts.shelf`, a list the Cell
+    view does not read, and stands as a simple model of its own (`SIMPLE`, asked for on 20 November 2026: no flat cards), at its
+    size: a sphere of one or two membranes cut open over a darker lumen (a lysosome, a peroxisome, an autophagosome), a sphere with
+    knobs for its coat (a COPI vesicle), a sphere with short tubules (an endocytic vesicle), a plain sphere (a lipid droplet). It
+    claims no structure beyond its plain line and its source; the panel says which part is the source's size and which the
+    picture's choice. A kind with none there stands as a plain sphere, or a capsule where its size gives a length.
+  - *The small organelles' plank*: an organelle no longer than 1.5 µm at its longest (`SHELF.small`) stands on a plank of its own
+    between the bench and the shelf, with a stop of its own; the loupe is offered beside the shelf's organelles only.
   - *Where machines sit in it*: not stated. The catalogue states no `where` for a machine, so no organelle lists machines.
 - **Its shape** (`size.surface`, `schema/MACHINE_SHAPES.md`). Where a shape file is published for a
   measured size (`data/catalogue/shapes/<the measure's file name>`, the species' own, or for a size
@@ -354,15 +368,21 @@ catalogue never says their count.
   species have it.
 - **Elsewhere.** The Cell view's ribosomes, a machine's closer view and a unit of the atlas that the
   species has each offer "Show it in the Machines catalogue".
-- **The shelf and travel between scales.** Behind a bench whose species has organelles stands a shelf at the bench's one scale. The
-  page's rail gives the stops, largest first: the shelf and the bench by name, each with what the page's scale bar reads there, the
-  powers of ten from 10 µm to 10 nm, and a mark for what is chosen at its own size. A stop is travelled to in the same time for
-  each power of ten (`PER_POWER`), the camera's target moving in step with its distance; with less motion the view changes at once.
-  At the bench's stop the shelf is not drawn and is named above the bench (each name a way up, with its size and how many of the
-  bench's 100 nm bars it makes); at the shelf's stop the bench is a small marked tray (a way down). On a wide window the rail
+- **The shelf and travel between scales.** Behind a bench whose species has organelles stands a shelf at the bench's one scale, the
+  small organelles on a plank of their own between the two. The page's rail gives the stops, largest first: the shelf, the small
+  organelles and the bench by name, each with what the page's scale bar reads there, the powers of ten from 10 µm to 10 nm, and a
+  mark for what is chosen at its own size. A stop is travelled to in the same time for each power of ten (`PER_POWER`), the camera's
+  target moving in step with its distance from one stop to the next; with less motion the view changes at once. Every organelle is
+  named at each stop, and a press on its name travels to it (since 20 November 2026, step D1: on every laptop window, with twelve
+  organelles as with seven). At the bench's stop the planks are not drawn and every organelle has a short name above the bench
+  ("↑ Nucleus", its size in its tooltip), in level rows as many to a row as the picture's free width holds, the top row below the
+  page's bar; at the small organelles' stop each is named on its plank, the shelf's above them, and the bench is a marked tray; at
+  the shelf's stop its organelles are named, the small ones named before it (each a way down to it), and the bench is a marked tray.
+  Each name is measured as the page draws it and set where its box meets no other name of the stop; the names are laid out again
+  when the window or the room the cards leave changes. A phone shows one name at each stop and the List for the rest. On a wide window the rail
   folds behind the page's button while a panel is open. The page's own scale bar shows on such a bench. A sized machine's panel
   offers a loupe: the machine beside an organelle at its true size, and in a framed lens magnified by a round factor, written on
-  the frame. `scale=` in the address names a stop (`scale=shelf`). A species with no organelle has no shelf and no rail.
+  the frame. `scale=` in the address names a stop (`scale=shelf`, `scale=small`). A species with no organelle has no shelf and no rail.
 - **The list, the search and the text page.** The List gives the groups with their machines; the
   card's search finds a machine by its name, a gene or an identifier of its proteins; with no 3D the
   List and the panels stand alone.

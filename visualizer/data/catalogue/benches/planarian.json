@@ -20431,7 +20431,7 @@
      4
     ],
     "label": "Nucleus",
-    "text": "in planarian cells dissociated from the animal, by imaging flow cytometry with a nuclear stain (Draq5), “the nuclear diameters for all cells were generally constant at ∼3–4 µm”; the paper discusses whether some stained spots are nuclear foci rather than whole nuclei",
+    "text": "in planarian cells dissociated from the animal, by imaging flow cytometry with a nuclear stain (Draq5), “the nuclear diameters for all cells were generally constant at ~3–4 µm”; the paper discusses whether some stained spots are nuclear foci rather than whole nuclei",
     "sources": [
      "planarian:dutta2025"
     ]
@@ -20446,7 +20446,7 @@
     "part": "er",
     "file": "data/species/planarian.json"
    },
-   "no_size": "Looked for on 20 November 2026, in one search: a size of a sheet of the endoplasmic reticulum (its thickness) in a cell of the planarian, in papers whose terms allow commercial use. None was read, so it stands on the shelf as a card, not a shape."
+   "no_size": "Looked for on 20 November 2026, in one search: a size of a sheet of the endoplasmic reticulum (its thickness) in a cell of the planarian, in papers whose terms allow commercial use. None was read, so it stands on the shelf as a card, not a shape. On 20 November 2026 a review's general figure for the sheets was read (Perkins and Allan 2021); it names no species, and by the narrow reading of how far a general figure reaches it stands on the human's shelf alone."
   },
   {
    "id": "golgi-apparatus",
@@ -20457,7 +20457,7 @@
     "part": "golgi",
     "file": "data/species/planarian.json"
    },
-   "no_size": "Looked for on 20 November 2026, in one search: a size of a Golgi cisterna or stack (its width) in a cell of the planarian, in papers whose terms allow commercial use. None was read, so it stands on the shelf as a card, not a shape."
+   "no_size": "Looked for on 20 November 2026, in one search: a size of a Golgi cisterna or stack (its width) in a cell of the planarian, in papers whose terms allow commercial use. None was read, so it stands on the shelf as a card, not a shape. On 20 November 2026 a review's general figure for mammalian cells was read (Martínez-Alonso and others 2013); it does not reach this species."
   },
   {
    "id": "mitochondrion",

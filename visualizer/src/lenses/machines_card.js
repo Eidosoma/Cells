@@ -5,7 +5,7 @@
 // for the membrane units of the law inventory, the Protein atlas's own panel of the unit.
 
 import { Catalogue, IONS, PREFIX, ORGANELLE, FAMILY, byFamily, kindOf, organelleKind, citeShort } from "./machines_data.js";
-import { membraneOf, partsByChains, partOfChain as partOfChainIn } from "./machines_layout.js";
+import { membraneOf, partsByChains, partOfChain as partOfChainIn, SHELF } from "./machines_layout.js";
 import { inSpecies } from "./proteins.js";
 
 /** A swatch for each kind of mark the view draws (machines_styles.js), and one for each group. */
@@ -431,14 +431,16 @@ export function organelleSizeWords(catalogue, size) {
   const middle = (values) => (values.length > 1 ? (values[0] + values[values.length - 1]) / 2 : values[0]);
   const range = (values) => (values.length > 1 ? ", the middle of the range" : "");
   const um = (value) => `${Number(value.toPrecision(3))} µm`;
-  const drawn = size.shape === "sphere" || size.shape === "lens" ? `Drawn ${um(middle(size.across_um))} across${range(size.across_um)}.`
-    : size.shape === "sheet" ? `Its sheets are drawn ${Number(middle(size.thick_nm).toPrecision(3))} nm thick${range(size.thick_nm)}.`
-    : size.shape === "stack" ? `Its widest cisterna is drawn ${um(middle(size.across_um))} across${range(size.across_um)}.`
-    : size.shape === "capsule" ? `Drawn ${um(middle(size.across_um))} across${range(size.across_um)} and ${um(middle(size.long_um))} long${range(size.long_um)}.`
+  // What the number is, where the model takes it as another measure (a sheet's bilayer separation drawn as its thickness).
+  const what = size.what ? `: ${size.what}` : "";
+  const drawn = size.shape === "sphere" || size.shape === "lens" ? `Drawn ${um(middle(size.across_um))} across${range(size.across_um)}${what}.`
+    : size.shape === "sheet" ? `Its sheets are drawn ${Number(middle(size.thick_nm).toPrecision(3))} nm thick${range(size.thick_nm)}${what}.`
+    : size.shape === "stack" ? `Its widest cisterna is drawn ${um(middle(size.across_um))} across${range(size.across_um)}${what}.`
+    : size.shape === "capsule" ? `Drawn ${um(middle(size.across_um))} across${range(size.across_um)} and ${um(middle(size.long_um))} long${range(size.long_um)}${what}.`
     : "";
   // A size held in the project's files (a paper under a non-commercial licence: the owner's ruling of 20 November 2026): the page says
   // the size drawn and its basis in words, never the paper's numbers or name; a permissive source's measure, where there is one, beside it.
-  if (size.held) return [`Drawn about ${um(middle(size.across_um))} across, ${size.words}, on a published measurement that the project's files cite and this page does not show.`, size.text ? `What a permissive source says: ${size.text} (${source}).` : "", size.why || ""].filter(Boolean).join(" ");
+  if (size.held) return [`Drawn about ${um(middle(size.across_um))} across${size.long_um ? ` and ${um(middle(size.long_um))} long` : ""}, ${size.words}, on a published measurement that the project's files cite and this page does not show.`, size.text ? `What a permissive source says: ${size.text} (${source}).` : "", size.why || ""].filter(Boolean).join(" ");
   return `${size.text.charAt(0).toUpperCase()}${size.text.slice(1)} (${source}). ${drawn}`.trim();
 }
 
@@ -462,7 +464,7 @@ function describeOrganelle(catalogue, species, item, scene, { drawn = null } = {
     kind: "organelle",
     eyebrow: `${group?.label || "Organelles"} · ${where}`,
     swatch: item.sized ? SWATCH.organelle : SWATCH.card,
-    chips: [{ label: "Illustration", title: "The Cell view's own model of it, at a size a paper gives: not a structure, and not a run" }, { label: item.sized ? "Drawn to scale" : "No size in hand" }],
+    chips: [{ label: "Illustration", title: item.sized ? "The Cell view's model of it where there is one, else a simple model of its own, at a size this panel gives with its source (a measurement in one cell type, or a general figure): not a structure, and not a run" : "A card on the shelf: no size in hand, so not to scale; not a structure, and not a run" }, { label: item.sized ? "Drawn to scale" : "No size in hand" }],
     plain: kind.plain,
     note: records.length ? `What Cells models of it: ${records.map((line) => `${line.label}: ${line.detail}`).join("; ")}.` : "No part of the map stands at it, so nothing is said here of what Cells models of it.",
     facts,
@@ -657,10 +659,22 @@ export function shelfNote(shelf) {
     const size = item.size;
     if (!size) return `${item.label}: a card, no size in hand`;
     if (size.across_um && size.long_um) return `${item.label}: ${middle(size.across_um)} µm across and ${middle(size.long_um)} µm long`;
+    if (size.shape === "stack") return `${item.label}: its cisternae ${middle(size.across_um)} µm across`;
     if (size.across_um) return `${item.label}: ${middle(size.across_um)} µm across`;
-    return `${item.label}: ${middle(size.thick_nm)} nm thick`;
+    return `${item.label}: its sheets ${middle(size.thick_nm)} nm thick`;
   });
-  return `On a shelf behind the bench, at the bench's one scale (one unit, ten nanometres): ${sizes.join("; ")}. Each panel says whose cell the size is of. The view's rail travels from the bench's stop (its bar reads about 100 nm) to the shelf's (about 5 µm), through the powers of ten between, each in the same time.`;
+  // The small ones (SHELF.small.um at their longest, or less) stand on a plank of their own, with a stop of their own.
+  const small = shelf.filter((item) => longestUm(item.size) !== null && longestUm(item.size) <= SHELF.small.um);
+  const plank = small.length ? ` The small ones (${small.map((item) => item.label).join(", ")}) stand on a plank of their own between the bench and the shelf.` : "";
+  return `On a shelf behind the bench, at the bench's one scale (one unit, ten nanometres): ${sizes.join("; ")}. Each panel says whose cell the size is of, or that it is a general figure.${plank} The view's rail travels from the bench's stop (its bar reads about 100 nm)${small.length ? " by the small organelles' stop" : ""} to the shelf's (some micrometres), through the powers of ten between, each in the same time.`;
+}
+
+/** An organelle's size at its longest, in micrometres, by what its size states (a sheet's thickness says nothing of its length: null). */
+function longestUm(size) {
+  if (!size?.across_um) return null;
+  if (size.shape === "stack") return null; // a cisterna's width: the ribbon of stacks is wider
+  const middle = (values) => (values.length > 1 ? (values[0] + values[values.length - 1]) / 2 : values[0]);
+  return Math.max(middle(size.across_um), size.long_um ? middle(size.long_um) : 0);
 }
 
 /** The list that stands in where 3D cannot be drawn, and the keyboard's way in: each group with its machines. */

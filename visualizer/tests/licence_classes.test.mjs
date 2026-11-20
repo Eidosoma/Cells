@@ -583,7 +583,9 @@ test("a size held from a paper under a non-commercial licence stays in the held 
   const carried = ["data/catalogue/catalogue.json", "data/architecture/architecture.scene.json", ...readdirSync(path.join(ROOT, "data/catalogue/benches")).map((name) => `data/catalogue/benches/${name}`)];
   for (const file of carried) {
     const text = read(file);
-    for (const entry of entries) for (const word of [entry.source.doi, entry.source.text.split(" ")[0], ...(entry.read.results.match(/\d+ ± \d+/g) || [])]) assert.ok(!text.includes(word), `${file} carries ${word}`);
+    // The paper's DOI, its first author's whole surname ("van der Beek", not "van"), and its numbers as read, with or without their units.
+    const surname = (entry) => entry.source.text.split(" and others")[0].replace(/ [A-Z]{1,3}$/, "");
+    for (const entry of entries) for (const word of [entry.source.doi, surname(entry), ...(entry.read.results.match(/\d+ ± \d+|\d+(?:[–-]\d+)? ?(?:nm|µm|μm)/g) || [])]) assert.ok(!text.includes(word), `${file} carries ${word}`);
     assert.ok(!/"class": ?"non-commercial"/.test(text) || file.endsWith("scene.json"), `${file} carries a non-commercial source`);
   }
 });
