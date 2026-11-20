@@ -1,5 +1,29 @@
 # Cells proof comparisons
 
+## 20 November 2026 · Serial transfer and shear fission
+
+<a id="vesicle-serial-transfer"></a>
+
+**Serial transfer.** A wash replaces the finite bath and keeps the contents of each sampled vesicle. For every species, the old inventory plus the fresh bath equals the new inventory plus the spent bath and removed vesicles. Lean proves this for any realized sample. For two consecutive transfers, a slot keeps its original cargo exactly when it survives both. The corresponding signed free-energy change equals fresh-bath work minus the outgoing free energy. [Proofs](CellsProofs/Chemistry/VesiclePopulation.lean#L27) · [Sampling rule](../src/cells/models/assembly_lineages_v2/transfer.py#L81) · [Transfer booking](../src/cells/models/assembly_lineages_v2/population.py#L588)
+
+Three scheduled transfers in a compiled `cells.assembly_lineages@2` population preserved the integer balance for lipid, permeant solute and impermeant tracer. The first two transfers shared a time and ran in schedule-index order. The driver checked the selected slots against the recorded draws, their keys and contents against the pre-transfer row, and every work and sink entry against independent closed-form energies. The largest energy difference was 1.42 × 10⁻¹⁴ k_BT. Both operator comparisons used engine `5011ed3d6bb64721abc5acfb9f3c834fa12c97ce` on CPU with 64-bit arithmetic. [Runnable comparison](checks/vesicle_population.py#L42)
+
+| Time (s) | Vesicles kept | Tracer in spent bath | Tracer in fresh bath | Tracer in retained vesicles | Tracer exported in bath and removed vesicles |
+| ---: | ---: | ---: | ---: | ---: | ---: |
+| 1 | 3 of 3 | 5 | 0 | 6 | 5 |
+| 1 | 1 of 3 | 0 | 4 | 3 | 3 |
+| 2 | 1 of 1 | 4 | 0 | 3 | 4 |
+
+Fayolle et al. washed calcein-loaded DOPC/DOPA vesicles three times. The lumen-to-exterior fluorescence ratios were 39, 89 and 137 (reported uncertainty ±20%). The retained samples contained 40%, 26% and 16% of the starting lipid. The later exterior signals reached the microscope’s detection floor. These measurements support exterior clearance with appreciable material loss. Exact tracer closure would require independent amounts in the retained and discarded fractions. Lipid recovery alone does not determine how many vesicles survived. [Fayolle et al., Table 1 and Fig. 3](https://doi.org/10.1371/journal.pone.0192975) · [Measurement inputs](checks/data/vesicle_population_measurements.json)
+
+<a id="vesicle-shear-fission"></a>
+
+**Shear fission.** Assigning every membrane and lumen molecule to one daughter preserves each species count and the total membrane footprint. A parent with less membrane than the combined daughter minima must fail the floor test for every possible partition. Lean also proves the spherical volume gate and the free-energy identities for retaining all daughters or following one and booking its siblings as a sink. [Partition and floor proofs](CellsProofs/Chemistry/VesiclePopulation.lean#L57) · [Energy and volume proofs](CellsProofs/Chemistry/VesiclePopulation.lean#L99) · [Engine attempt](../src/cells/models/assembly_lineages_v2/division.py#L380)
+
+The compiled single lineage divided three times. Later parents with six and four lipids were each refused intact because two viable daughters required at least eight lipids. A separate population kept both daughters from each of two divisions and stopped before another draw when its slots filled. All five accepted divisions conserved the three species, kept the common bath unchanged and matched the independent work and sibling-sink calculations within 7.11 × 10⁻¹⁵ k_BT. Controls also exercised pre-draw stress and volume refusals and 48 heterogeneous partitions into two, three or four daughters. Across all three compiled worlds the largest ledger residual was 3.91 × 10⁻¹⁴ k_BT. The two engine test files and eight repository guards passed all 105 tests. [Compiled comparisons](checks/vesicle_population.py#L124) · [Partition and admission controls](checks/vesicle_population.py#L216)
+
+Deshpande et al. measured a slope of **0.87 ± 0.01** (reported SD, R² = 0.94) for combined daughter fluorescence against parent fluorescence in 78 successful mechanical divisions of giant liposomes. With the same linear calibration and zero background, a conservative split predicts **1.00**. The five Cells splits gave 1.00 for impermeant tracer counts. The authors estimated about 13% leakage at division. The optical assay did not independently recover that amount in the exterior, and the engine does not model the splitter optics. The discrepancy applies to the ideal signal prediction in this assay. [Deshpande et al., Fig. 4a](https://doi.org/10.1021/acsnano.7b08411) · [Signal proof](CellsProofs/Chemistry/VesiclePopulation.lean#L93) · [Measurement inputs](checks/data/vesicle_population_measurements.json)
+
 ## 20 November 2026 · Exchange between vesicles and their bath
 
 <a id="vesicle-phase-exchange"></a>

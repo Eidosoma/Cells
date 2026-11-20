@@ -6,7 +6,7 @@ Browse Cells engine laws by scientific topic. Each claim links its Lean proofs, 
 
 <!-- generated: claims-index -->
 
-Direct Lean claims cover [37 of 37 laws](COVERAGE.md#registered-laws) and [14 of 26 operators](COVERAGE.md#registered-operators).
+Direct Lean claims cover [37 of 37 laws](COVERAGE.md#registered-laws) and [16 of 26 operators](COVERAGE.md#registered-operators).
 
 | Category | Registered laws with proof | Claims with proof | Numerical checks | Claims with biological evidence |
 | --- | ---: | ---: | --- | ---: |
@@ -14,7 +14,7 @@ Direct Lean claims cover [37 of 37 laws](COVERAGE.md#registered-laws) and [14 of
 | [Ion channels and junctions](COVERAGE.md#category-channels-and-junctions) | 14 of 14 | 9 of 9 | 9 checked | 9 |
 | [Pumps and cotransport](COVERAGE.md#category-pumps-and-cotransport) | 6 of 6 | 5 of 5 | 3 checked · 2 failed | 5 |
 | [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 1 of 1 | 6 of 6 | 4 checked · 2 failed | 4 |
-| [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 10 of 10 | 12 of 12 | 8 checked · 4 failed | 9 |
+| [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 10 of 10 | 14 of 14 | 10 checked · 4 failed | 11 |
 | [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 1 of 1 | 11 of 11 | 8 checked · 3 failed | 8 |
 | [Cell physiology](COVERAGE.md#category-cell-physiology) | — | 0 of 1 | 1 checked | 1 |
 
@@ -126,6 +126,12 @@ cells_python=${CELLS_PYTHON:-python}
 
 <details>
 <summary>Commands for individual comparisons</summary>
+
+For serial transfer and shear fission, follow an impermeant tracer through successive washes and from each parent to its daughters. The driver also checks discarded material, signed free energy and refused splits. The biological records include measured wash recovery and paired parent–daughter fluorescence. [Transfer results](PROGRESS.md#vesicle-serial-transfer) · [Division results](PROGRESS.md#vesicle-shear-fission)
+
+```bash
+"$cells_python" -B checks/vesicle_population.py
+```
 
 For vesicle exchange, compare lipid insertion and neutral solute permeation against their rate equations and measured washout and swelling. The shared-pool controls follow one lipid and one solute between two vesicles. Its one-event fixed-volume reproducer exits with status 1 on the recorded engine revision. [Measurements and engine results](PROGRESS.md#vesicle-permeation) · [Shared-pool counts](PROGRESS.md#shared-pool-inventory) · [Fixed-volume reporting failure](PROGRESS.md#shared-pool-declared-volume)
 

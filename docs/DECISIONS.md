@@ -7784,3 +7784,28 @@ suggest", "2. I'm doing the search myself".
 2. **FR-7's measured response (D238 item 4): the user does the search for an openly licensed
    dataset of measured channel lifetimes.** The agents' search was stopped by a safeguard and is
    not retried by any route. FR-7's item 4 waits for the user's source.
+
+## D241: FR-7's measured response gets a public source: Kir2.1 in U251MG cells, for a retrospective comparison
+
+2026-11-20, about 17:59 UTC. The user, after doing the search themselves (D240): "Use option (a)
+for the data handoff", with the results.
+- **The source:** Ambrosini et al. (2014, doi:10.1093/hmg/ddu201, CC BY 4.0) measured Kir2.1
+  membrane-fraction abundance, resting voltage and total-protein decay in the same human U251MG
+  model, for wild type and K346T. The variant has more channel protein in the membrane fraction and
+  a resting voltage about 6 mV more negative.
+- **The second study:** Qile et al. (2019, CC BY 4.0) give a 2.6 h half-life for wild-type human
+  Kir2.1 protein in HEK293T cells.
+- **The readings:** 12 group means with their plotted SEMs and a sanitized manifest, in
+  validation/fr7/data/ (bare cited numbers with attribution; no figure images).
+
+**The scope, in the user's terms:**
+- **A retrospective group comparison only.**
+  - Record which protein pool each model state represents.
+  - Fix the abundance-to-conductance conversion independently of the two voltage means.
+  - Compare the predicted K346T-minus-wild-type voltage contrast with the published one.
+- **The judged run stays pending** until the mapping from measured protein to functional surface
+  units and FR-8's timing are decided.
+- **No claim about persistence after a trigger.** It would need voltage through recovery and a
+  measured trigger-clearance time.
+
+This gives FR-7's channel target a public-data path ahead of its junction stage (U1).

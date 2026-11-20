@@ -18,6 +18,59 @@
     "cells.shared_pool@1": "molecular-assembly"
   },
   "comparisons": {
+    "vesicle-serial-transfer": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@2"
+      ],
+      "laws": [
+        "cells.shared_pool@1",
+        "cells.bilayer_geometry@1",
+        "cells.osmotic_lumen@1",
+        "cells.ideal_mixing@1",
+        "cells.phase_exchange@1",
+        "cells.membrane_permeation@1"
+      ],
+      "operators": [
+        "cells.serial_transfer@1"
+      ],
+      "engine_revision": "5011ed3d6bb64721abc5acfb9f3c834fa12c97ce",
+      "record_revision": "8b72a3ed05b95e5b4f4f13305b608f17cefbf0a3",
+      "sources": {
+        "Rank the living slots by their draws": "src/cells/models/assembly_lineages_v2/transfer.py#L81",
+        "Apply the sample, replace the bath and book work and sink": "src/cells/models/assembly_lineages_v2/population.py#L588"
+      },
+      "driver": "lean/checks/vesicle_population.py",
+      "record": "lean/PROGRESS.md#vesicle-serial-transfer"
+    },
+    "vesicle-shear-fission": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@2"
+      ],
+      "laws": [
+        "cells.shared_pool@1",
+        "cells.bilayer_geometry@1",
+        "cells.osmotic_lumen@1",
+        "cells.ideal_mixing@1",
+        "cells.phase_exchange@1",
+        "cells.membrane_permeation@1"
+      ],
+      "operators": [
+        "cells.shear_fission@1"
+      ],
+      "engine_revision": "5011ed3d6bb64721abc5acfb9f3c834fa12c97ce",
+      "record_revision": "8b72a3ed05b95e5b4f4f13305b608f17cefbf0a3",
+      "sources": {
+        "Membrane and lumen partition": "src/cells/models/assembly_lineages_v2/division.py#L226",
+        "Volume gate and division attempt": "src/cells/models/assembly_lineages_v2/division.py#L283",
+        "Acceptance, shear work and sibling sink": "src/cells/models/assembly_lineages_v2/division.py#L380",
+        "Follow one daughter": "src/cells/models/assembly_lineages_v2/runner.py#L257",
+        "Keep all daughters in the shared pool": "src/cells/models/assembly_lineages_v2/population.py#L497"
+      },
+      "driver": "lean/checks/vesicle_population.py",
+      "record": "lean/PROGRESS.md#vesicle-shear-fission"
+    },
     "vesicle-exchange-rates": {
       "kind": "engine",
       "models": [
@@ -1006,6 +1059,117 @@
     }
   },
   "claims": [
+    {
+      "id": "vesicle-serial-transfer",
+      "category": "molecular-assembly",
+      "title": "Serial transfer accounts for the spent bath and the vesicles removed",
+      "statement": "For each species, the new world plus the spent bath and removed vesicles contains the old world plus the fresh bath. Across consecutive washes, each slot retains its original cargo exactly when it is kept both times. The change in world free energy equals fresh-bath work minus the free energy exported.",
+      "assumptions": [
+        "A transfer is instantaneous. It replaces the finite bath with declared counts and keeps each sampled vesicle intact. The proof conditions on the selected slots.",
+        "World free energy is the signed sum of the bath and individual live-vesicle free energies. Consecutive-wash composition assumes no intervening reaction or transport event."
+      ],
+      "uses": [
+        "shared-pool-inventory"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.serial_transfer@1"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.VesiclePopulation.partition_slots": "lean/CellsProofs/Chemistry/VesiclePopulation.lean",
+          "CellsProofs.Chemistry.VesiclePopulation.transfer_inventory": "lean/CellsProofs/Chemistry/VesiclePopulation.lean",
+          "CellsProofs.Chemistry.VesiclePopulation.successive_transfers": "lean/CellsProofs/Chemistry/VesiclePopulation.lean",
+          "CellsProofs.Chemistry.VesiclePopulation.transfer_free_energy": "lean/CellsProofs/Chemistry/VesiclePopulation.lean"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "vesicle-serial-transfer"
+        ],
+        "result": "Three compiled washes kept three of three, one of three, and one of one vesicles. All three species balanced exactly, including across two same-time schedules. The largest difference from independently calculated work, sink or world-energy change was 1.42 × 10⁻¹⁴ k_BT."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Tracer recovered in retained vesicles, the spent bath and removed vesicles across a wash, relative to the initial tracer and any fresh input.",
+        "unit": "fraction of tracer input",
+        "evidence": [
+          {
+            "dataset_id": "fayolle2018_serial_wash@1",
+            "manifest": "lean/checks/data/vesicle_population_measurements.json",
+            "citation": "Fayolle et al. (2018), Table 1 and Fig. 3",
+            "doi": "10.1371/journal.pone.0192975",
+            "locator": "Table 1 reports three successive retentates. Figure 3A–E shows calcein fluorescence inside and outside vesicles.",
+            "context": "Calcein-loaded DOPC/DOPA giant vesicles underwent successive dilution and microfiltration. The authors measured lipid in each retained fraction independently.",
+            "role": "descriptive",
+            "uncertainty": "The signal ratios have a reported ±20% uncertainty. Later exterior signals reached the detector floor. The table gives no lipid error bars.",
+            "assessment": "Exterior clearance raised the lumen-to-exterior signal ratio to 39, 89 and 137. Cumulative lipid recoveries were 40%, 26% and 16%. The individual tracer amounts in the retained and discarded fractions remain unresolved.",
+            "report": "lean/PROGRESS.md#vesicle-serial-transfer"
+          }
+        ]
+      }
+    },
+    {
+      "id": "vesicle-shear-fission",
+      "category": "molecular-assembly",
+      "title": "Shear fission partitions the parent among all daughters and books discarded siblings",
+      "statement": "Assigning each molecule to one daughter preserves per-species inventories and the membrane footprint. If the total footprint cannot cover all daughter minima, every assignment fails. Shear work includes every daughter’s free energy. Following one daughter exports its siblings’ free energy.",
+      "assumptions": [
+        "Counts are nonnegative integers, each molecule has one daughter, and each membrane species has a fixed footprint. The partition is evaluated before any daughter lysis.",
+        "The geometric admission formula assumes a nonnegative area and volume, a positive daughter count and consistent length units. The spherical capacity is computed from the available membrane area.",
+        "Each live daughter pays the same per-vesicle closure cost. The tracer signal comparison assumes a common linear calibration, zero background and no tracer leakage during the split."
+      ],
+      "uses": [
+        "bilayer-footprint",
+        "osmotic-vesicle-volume",
+        "shared-pool-inventory"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.shear_fission@1"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.VesiclePopulation.split_inventory": "lean/CellsProofs/Chemistry/VesiclePopulation.lean",
+          "CellsProofs.Chemistry.VesiclePopulation.followed_and_siblings": "lean/CellsProofs/Chemistry/VesiclePopulation.lean",
+          "CellsProofs.Chemistry.VesiclePopulation.split_footprint": "lean/CellsProofs/Chemistry/VesiclePopulation.lean",
+          "CellsProofs.Chemistry.VesiclePopulation.insufficient_footprint": "lean/CellsProofs/Chemistry/VesiclePopulation.lean",
+          "CellsProofs.Chemistry.VesiclePopulation.split_signal": "lean/CellsProofs/Chemistry/VesiclePopulation.lean",
+          "CellsProofs.Chemistry.VesiclePopulation.followed_free_energy": "lean/CellsProofs/Chemistry/VesiclePopulation.lean",
+          "CellsProofs.Chemistry.VesiclePopulation.closure_work": "lean/CellsProofs/Chemistry/VesiclePopulation.lean",
+          "CellsProofs.Chemistry.VesiclePopulation.volume_gate": "lean/CellsProofs/Chemistry/VesiclePopulation.lean"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "vesicle-shear-fission"
+        ],
+        "result": "Five accepted divisions conserved lipid and both solutes. Independent work and sibling-sink errors were at most 7.11 × 10⁻¹⁵ k_BT. Two parents below the combined daughter minimum stayed intact. The population stopped before drawing when its slots filled. Controls checked stress and volume refusals and 48 heterogeneous partitions."
+      },
+      "biology": {
+        "status": "disagrees",
+        "observable": "Slope of the two daughters’ summed tracer signal against their parent’s signal in successful divisions.",
+        "unit": "daughter-to-parent signal slope",
+        "evidence": [
+          {
+            "dataset_id": "deshpande2018_fission_signal@1",
+            "manifest": "lean/checks/data/vesicle_population_measurements.json",
+            "citation": "Deshpande et al. (2018), Fig. 4a",
+            "doi": "10.1021/acsnano.7b08411",
+            "locator": "Figure 4a pairs total daughter and parent fluorescence for 78 divisions. The accompanying text describes the geometry and optical corrections.",
+            "context": "DOPC-based giant liposomes divided at a microfluidic Y-junction. Each plotted parent produced two observable daughters.",
+            "role": "descriptive",
+            "observed": 0.87,
+            "predicted": 1,
+            "uncertainty": "The authors report slope 0.87 ± 0.01 (SD) and R² = 0.94. The estimated geometry and optical corrections approximately cancel.",
+            "assessment": "The combined optical signal fell about 13% below perfect recovery. This disagrees with the conservative split under a common linear signal calibration. The escaped dye amount was not independently recovered.",
+            "report": "lean/PROGRESS.md#vesicle-shear-fission"
+          }
+        ]
+      }
+    },
     {
       "id": "vesicle-phase-exchange",
       "category": "molecular-assembly",
