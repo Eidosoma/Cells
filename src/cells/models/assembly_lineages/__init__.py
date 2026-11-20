@@ -37,6 +37,8 @@ CONTINUATION = "cells.daughter_continuation@1"
 # GARD's law set, for comparison only (gard.py).
 GARD_SINGLE_EVENT = "cells.gard_catalysis_single_event@1"
 GARD_PAIR_CONSISTENT = "cells.gard_catalysis_pair_consistent@1"
+# The pair-consistent form with its cache of beta n held exactly (D244, D246); @1 keeps its bits.
+GARD_PAIR_CONSISTENT_V2 = "cells.gard_catalysis_pair_consistent@2"
 
 # The family's interfaces, declared in its row of the static model table
 # (registry/model_table.py). The `cells` namespace is Cells' own (MODULE_SYSTEM_DESIGN §2.3), and

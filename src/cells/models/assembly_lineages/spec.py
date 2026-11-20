@@ -300,6 +300,8 @@ def parse_model(raw):
             raise ConfigError(
                 f"{law_id} reads law_data {sorted(law.data)}; the world holds {sorted(world.data)}"
             )
+        if law.domain is not None:
+            law.domain(world)  # The declared law's own numerical domain (D246).
     elif world.law_data:
         raise ConfigError("world: law_data is given but no rate-factor law reads it")
     return LineageModel(world, law_id)

@@ -31,6 +31,7 @@ from cells.models.assembly_lineages import (
     EXCHANGE_LAW,
     FISSION,
     GARD_PAIR_CONSISTENT,
+    GARD_PAIR_CONSISTENT_V2,
     GARD_SINGLE_EVENT,
     MODEL_ID,
     OPERATOR_INTERFACE,
@@ -48,7 +49,7 @@ from cells.registry import operators as operator_registry
 from tests.assembly_lineage_fixtures import definition, world
 
 LAWS = {EXCHANGE_LAW: EXCHANGE_INTERFACE} | dict.fromkeys(
-    (GARD_SINGLE_EVENT, GARD_PAIR_CONSISTENT), RATE_FACTOR_INTERFACE
+    (GARD_SINGLE_EVENT, GARD_PAIR_CONSISTENT, GARD_PAIR_CONSISTENT_V2), RATE_FACTOR_INTERFACE
 )
 OPERATORS = {FISSION: fission, CONTINUATION: continuation}
 ROOT = Path(__file__).resolve().parents[2]

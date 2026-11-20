@@ -19,6 +19,7 @@ import pytest
 from cells.definitions.specs import ConfigError
 from cells.models.assembly_lineages import (
     GARD_PAIR_CONSISTENT,
+    GARD_PAIR_CONSISTENT_V2,
     GARD_SINGLE_EVENT,
     balance,
     gard,
@@ -77,6 +78,7 @@ def test_p1_anchors(b):
 
 def test_the_check_admits_pair_consistent_as_passive_and_refuses_single_event_as_passive():
     assert balance.verdict(GARD_PAIR_CONSISTENT)["local_detailed_balance"] == "holds"
+    assert balance.verdict(GARD_PAIR_CONSISTENT_V2)["local_detailed_balance"] == "holds"
     assert balance.verdict(None)["local_detailed_balance"] == "holds"  # Exchange alone.
     single = balance.verdict(GARD_SINGLE_EVENT)
     assert single["local_detailed_balance"] == "fails" and single["admitted_as"] == "driven"
