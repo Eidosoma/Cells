@@ -1,0 +1,76 @@
+{
+ "kind": "cells.fr7_reference_loop_calibration@1",
+ "registered": "2026-11-19",
+ "steps_s": [
+  0.1,
+  0.05
+ ],
+ "dt_s": 0.001,
+ "quantities": {
+  "n_T_fmol": {
+   "order": null,
+   "max_band_fraction_at_dt": 0.0
+  },
+  "F_T": {
+   "order": null,
+   "max_band_fraction_at_dt": 0.0
+  },
+  "s": {
+   "order": 2.0006750135988964,
+   "max_band_fraction_at_dt": 0.019779080831735876
+  },
+  "n_P_fmol": {
+   "order": null,
+   "max_band_fraction_at_dt": 1.2933423111380377e-05
+  },
+  "N_units": {
+   "order": 1.997978651909425,
+   "max_band_fraction_at_dt": 0.00042894438351525916
+  },
+  "PA_units_m3_s": {
+   "order": 1.9979786515926394,
+   "max_band_fraction_at_dt": 0.0004289443835517512
+  },
+  "W_fmol": {
+   "order": 1.9977840722156386,
+   "max_band_fraction_at_dt": 0.0007928192049930094
+  },
+  "R_units": {
+   "order": 1.9978115048923262,
+   "max_band_fraction_at_dt": 0.0003653046933662843
+  },
+  "C_P_fmol": {
+   "order": null,
+   "max_band_fraction_at_dt": 9.2127203914974e-06
+  },
+  "total_fmol": {
+   "order": null,
+   "max_band_fraction_at_dt": 2.752455047941947e-05
+  },
+  "V_V": {
+   "order": 1.9657555577163106,
+   "max_band_fraction_at_dt": 0.00018382281984265353
+  },
+  "pump_fmol_per_s": {
+   "order": 1.998142432323425,
+   "max_band_fraction_at_dt": 0.0006896474424621624
+  },
+  "Na_fmol": {
+   "order": 1.9981538888641368,
+   "max_band_fraction_at_dt": 0.0004044757872131213
+  },
+  "K_fmol": {
+   "order": 1.9265199258679593,
+   "max_band_fraction_at_dt": 1.81926319225708e-05
+  },
+  "M_fmol": {
+   "order": 2.0032872655429133,
+   "max_band_fraction_at_dt": 1.487068770088731e-05
+  },
+  "D": {
+   "order": null,
+   "max_band_fraction_at_dt": 0.0
+  }
+ },
+ "note": "a Strang split of the regulator, precursor, producer and units around the ions and the pump, each sub-flow integrated at rtol 1e-10; its errors at the two steps give the order, and e(dt) = e(0.05 s) (dt/0.05 s)^2 the error at 1 ms, as a fraction of the closed arm's band at the worst row. Computed once at registration; --check does not regenerate it (its cost)"
+}
