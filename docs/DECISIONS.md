@@ -7938,3 +7938,56 @@ bitwise, test or acceptance sections. The operators owner's own advisor reviewed
     gates run, and before FR-21.
 - **D243:** on the first builder, FR-21 (and GARD's version 2) come before slice 5, the population
   runs, OL5's probe roles and OL6.
+
+## D245: Fuel option (d), a second inheritance reading beside F12, and the review's two gaps; the break-and-renew rulings
+
+2026-11-20, about 19:42 UTC. The user: "Then get adviser with you to decide on the options three
+decisions based on the requirements". The lead decided all three with the advisor, under that
+delegation. The advisor saw the hand-backs and the fuel note's §2.3, §2.4, §9, §10 and option
+(d); the note's desk probe had not reported.
+
+1. **Fuel: option (d), conditional on the desk probe confirming §2.3's condition.**
+   - **The chemistry:**
+     - fuel recharges a spent building block in the pool (F + S → B + W);
+     - the block joins membranes;
+     - in the membrane B + L_i → 2 L_i, catalysed by L_i through the transition-state factor;
+     - L_i decays to S, uncatalysed.
+   - **It runs on today's laws** in worlds declared `condensed_measure: multinomial`, the physical
+     worlds' measure (D215). The autocatalytic step is refused under `multinomial_less_one` outside
+     probe worlds.
+   - **It is registered with its own nulls,** zero drive and β = 0, in the same world. If the probe
+     refutes the condition, the choice returns to the user.
+   - **Order:**
+     1. the fuel agent's fixes and probe;
+     2. the note merged and tagged;
+     3. OL5's references written from the tag alone;
+     4. then the build.
+   - Fuel reacting at the membrane (b1) waits for later. Two papers, A9 and A10, join §7.4 as
+     reported comparisons once their numbers are checked against the papers.
+2. **The measure: (ii).**
+   - F12 is kept as the preprint defines it. A second reading, each parent against the next parent
+     on the same path, gets its own name and registration and is never called F12. GARD_DESIGN §8's
+     readout 4 already asks for it.
+   - The species set for H is declared per experiment: the amphiphiles only, without the block or
+     the spent form.
+   - **Why:** a split breaks only near four or fewer molecules per species, so F12 cannot see a
+     vesicle of real size switch composition between fissions.
+   - The probe adds how the switching time scales with the molecule count. "No spontaneous break at
+     real size" is a possible result, and is recorded as one.
+3. **The review's two gaps** (an outside user's tracer-wash request, D244):
+   - **FR-27, a timed partial wash of a finite compartment: high.** It is the finite case D244 set
+     aside from FR-23. It starts as a short design note by the operators owner, its semantics
+     stated against FR-20's pool replacement (D175, D210).
+   - **FR-28, binding sites owned by a compartment's surface: normal.** A stand-in gives the same
+     numbers today. It queues after FR-26 on `site_occupancy.py`.
+
+**The lead's rulings the same evening, on the second builder's plan:**
+- **D243 corrected: restored futures are fresh runs founded from post-fission landmarks.**
+  - Single lineages first, with a check of the kernel's rate table at the landmark.
+  - The single-lineage checkpoint (rung S) stays for long runs that must survive a stop.
+- **D242's fuel line: a step that consumes a held species to make something that enters the
+  membrane is fuel.**
+  - A held amphiphile exchanging with its own membrane place is OL2's physics, and stays allowed.
+  - Development probes of fuel-driven worlds ran before the line was drawn. They count as prior
+    exposure for OL9's registration, which uses fresh matrices and seeds, and their results are not
+    used.
