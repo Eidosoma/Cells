@@ -960,6 +960,30 @@
    ],
    "runner": "the @3 owner, from a frozen badc86ac, the ID set as in section 10.16",
    "gate": "section 6 opens only once both rows pass; a failure goes to the lead first"
+  },
+  {
+   "entry": "10.18",
+   "entry_utc": "2026-11-20T16:47Z",
+   "title": "section 10.17's rows pass under N2 alone, with one deviation",
+   "records": "/mnt/workspaces/Cells/core-pass-at3-20261118/n2/s1017/out-badc86ac/",
+   "rows": {
+    "W1_P4 at 1 ms": {
+     "k_star": 2,
+     "k_r": 2,
+     "sum_abs_a_pJ": 4.969e-09,
+     "cap_side_pJ": 6.98e-15,
+     "note": "step 1 counted at q = 3.4825, out of band, held"
+    },
+    "s3 cleft_egg": {
+     "k_star": 1,
+     "k_r": 1,
+     "sum_abs_a_pJ": 1.775e-09,
+     "cap_side_pJ": 1.47e-13
+    }
+   },
+   "verdict": "both pass: refused with the cap's message at k_r <= k*, no earlier refusal of another kind",
+   "deviation": "I3's 200-step windows, not one 1,000-step window, to keep the cleft egg clear of the trace-budget preflight; the refusal step does not depend on the window's width",
+   "then": "I3 complete under N2 alone; section 6 opens"
   }
  ]
 }

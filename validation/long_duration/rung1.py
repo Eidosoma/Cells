@@ -33,6 +33,9 @@ plant STEP_MS OUTPUT         FR-3's plant at another step (§10.1; a cross-check
 calm-run STEP_MS SOURCE_DIR OUT_DIR   §10.8's calm probe at a step (development).
 step-change OUT_DIR [--no-window]     §10.9's step change, 20 ms to 1 ms and back (development).
 c-run OUT_DIR                         §10.10: C's registered arm.
+run ARM OUT_DIR --solver=ID           an arm under another time integrator (§6, set after the
+                                      definition is built).
+stage-a-read OUTPUT ARM_DIR CONTROL   §6's reading: N2 alone on the slow phase against R3.
 c-timed OUT_DIR REF_DIR               §10.10 (c): its timed re-run, rows checked bitwise.
 c-judge OUTPUT C_DIR [FULL1_COST C_COST]  §10.10's verdict on C's arm.
 calm-read OUTPUT ROOT SOURCE_DIR       its reading (development, information).
@@ -326,7 +329,7 @@ def definition(arm, x2=True, development=None):
 # ------------------------------------------------------------------ one arm
 
 
-def run(arm, out_dir, x2=True, development=None):
+def run(arm, out_dir, x2=True, development=None, solver=None):
     import jax
 
     jax.config.update("jax_enable_x64", True)
@@ -364,6 +367,9 @@ def run(arm, out_dir, x2=True, development=None):
     keeper = None
     try:
         raw, extra = definition(arm, x2, development)
+        if solver is not None:  # §6 and §10.15-10.17: the new ID set after the definition.
+            raw["execution"]["solver"] = solver
+            record["integrator"] = solver
         record.update(extra)
         (out / "definition.json").write_text(json.dumps(raw, indent=1) + "\n")
         spec = parse_spec(raw)
@@ -1848,6 +1854,37 @@ def c_judge(output, c_dir, full1_cost=None, c_cost=None):
     return 0
 
 
+# ------------------------------------------------------------- §6: N2 alone past 5 ms
+
+
+def stage_a_read(output, arm_dir, control_dir):
+    """§6's reading: the N2-alone arm on H2's slow phase (0-1790 s at 100 ms, X2 on) against R3
+    at R3's 10 s rows, under both bars, with what binds; today's ID at the same step beside it."""
+    import jax
+
+    jax.config.update("jax_enable_x64", True)
+    stage0 = stage0_ladder()
+    arm = Series(arm_dir, None, 0, 1.0 / 100)
+    out = dict(study="FR-8 rung 1, §6: N2 alone past 5 ms on the slow phase",
+               arm=arm.record.get("arm"), integrator=arm.record.get("integrator"),
+               x2=x2_of(arm))  # fmt: skip
+    if arm.complete and arm.c is not None:
+        ms = arm.ms
+        table = compare(arm, [(stage0, np.ones(len(ms), bool), None)], ms)
+        out["readings"] = {bar: verdict_rows(table, ms, bar) for bar in BARS}
+        out["largest_deltas"] = {k: float(np.nanmax(v["delta"])) for k, v in table.items()}
+        out["rows"] = len(ms)
+    else:
+        out["readings"] = {bar: refusal_of(arm.record) for bar in BARS}
+    control = json.loads((Path(control_dir) / "run.json").read_text())
+    out["control"] = dict(arm=control.get("arm"), integrator=control.get("integrator"),
+                          status=control.get("status"), error=control.get("error"),
+                          snapshot=control.get("snapshot_revision"))  # fmt: skip
+    Path(output).write_text(json.dumps(out, indent=1, default=float) + "\n")
+    print(json.dumps({k: out.get(k) for k in ("readings", "largest_deltas")}, default=float)[:900])
+    return 0
+
+
 SMOKES = (  # Development only: no registered window, horizon or row.
     ("H2-WA-k0", dict(span=(600_000, 600_050))),
     ("H2-WA-k3", dict(span=(600_000, 600_050))),
@@ -1867,7 +1904,10 @@ def smoke(out_dir):
 
 def main(argv):
     if len(argv) >= 3 and argv[0] == "run":
-        return run(argv[1], argv[2], x2="--x2-off" not in argv[3:])
+        solver = next((a.split("=", 1)[1] for a in argv[3:] if a.startswith("--solver=")), None)
+        return run(argv[1], argv[2], x2="--x2-off" not in argv[3:], solver=solver)
+    if len(argv) == 4 and argv[0] == "stage-a-read":
+        return stage_a_read(argv[1], argv[2], argv[3])
     if len(argv) == 2 and argv[0] == "smoke":
         return smoke(argv[1])
     if len(argv) == 3 and argv[0] == "instrument":
