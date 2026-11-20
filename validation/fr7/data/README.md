@@ -10,7 +10,9 @@ and their plotted standard errors, read from published figures.
   - Fig. 3E, the membrane-fraction signal;
   - Fig. 3F, the resting membrane voltage;
   - Fig. 3G, the barium-sensitive current density at -100 mV (n = 6);
-  - Fig. 4B, total protein remaining at 0, 3, 6 and 12 h of a chase.
+  - Fig. 4B, total protein remaining at 0, 3, 6 and 12 h of a chase;
+  - Supplementary Fig. S2B, the steady-state current density at -140 to -30 mV in 10 mV steps, for
+    each variant (a second reader's rows, D254).
 
   The pixel positions of every mean and error-bar tip are kept. The `reader` column marks who read
   each row: `first_reader` for the user's 12 rows (D241), and `second_reader` for Fig. 3G's two,
@@ -24,6 +26,16 @@ and their plotted standard errors, read from published figures.
   in Fig. 3G, and 0.0023 of the control signal in Fig. 4B;
 - a reread of the voltage bars in the journal PDF moved no mean by more than 0.13 mV;
 - the authors report a voltage contrast of about -6 mV; the bar edges read -5.45 mV.
+
+**Supplementary Fig. S2B, read from the PDF's embedded image** (page 9, extracted, not rendered):
+- **The points sit on the drawn axis at -140 to -30 mV,** exactly the legend's command steps. The
+  axis shows no 15 mV junction offset, and the figure doesn't say whether it carries the
+  adjustment.
+- **Its -100 mV points equal Fig. 3G's means and SEMs,** so its rows are the six-cell means despite
+  the legend's "representative"; their n is given as 3G's.
+- **Gaps:**
+  - wild type at -80 mV is hidden behind K346T's marker and is read from its connecting line;
+  - several error bars end inside their markers, and those SEMs are left empty.
 
 **The recording conditions (the article's Methods, for the HEK293 and U251MG patch clamp):**
 - bath, mmol/l: NaCl 135, KCl 4.8, CaCl2 1.8, MgCl2 1, glucose 10, HEPES 5; pH 7.4 with NaOH;
