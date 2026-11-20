@@ -215,6 +215,24 @@ catalogue never says their count.
   side. A bioRxiv preprint (not peer reviewed) on prokaryotic vaults is named in one passage of its card, each number with its
   place in the preprint; no prokaryotic vault stands on any bench, and nothing of the preprint's figures is drawn. Each protein
   of the vault leads to its line in the Protein atlas and back.
+- **Organelles** (since 20 November 2026). A kind of a group that `stands: "shelf"` (the overlay's `organelles`, "Organelles") is an
+  organelle and no machine: its species' entry goes to the bench's own list `organelles`, beside `entries`, never into a tray or a
+  count of machines (the core's index gives `organelles: n` beside `machines`); its page id is `organelle:<kind>`.
+  - *What names it*: `named: { part, words }`, a part its species' file's `cell.parts` holds (`nucleus`, or one of `organelles`);
+    the tool stops otherwise.
+  - *Its size*: a fact of the species' file, whole (`size: { fact, shape, ... }`), or the size the file states for that part of its
+    cell (`size: { part, shape }`, `cell.parts.organelle_sizes`); the shape one of `sphere` and `lens` (`across_um`), `stack`
+    (`across_um`, a cisterna), `capsule` (`across_um`, `long_um`) and `sheet` (`thick_nm`). Every number stands in the fact's words
+    (the tool stops otherwise); a fact says the cell type and species the paper measured in its own words. A range is drawn at its
+    middle and says so. No size: `no_size`, a dated line of what was looked for, and a card on the shelf.
+  - *What Cells models of it*: a record `{ map: <the map's part> }`, read from the scene at run time (its status, the map's own words
+    in quotation marks, the files it rests on); the kind's `map_part` names that part, its door into the Cell view and the Cell view's
+    door back ("Show it on the Machines shelf"). An organelle the Cell view draws as scenery (the chloroplast, the vacuole) has no
+    record, and its panel says so.
+  - *How it is drawn*: the Cell view's own model of it, built by the Cell view's builders (`src/lenses/machines_shelf.js`, `MODELS`)
+    and scaled so that the one measure its size sets (a width, a sheet's thickness, a cisterna's width) is the paper's; every other
+    proportion is the Cell view's, and the panel says so. An illustration.
+  - *Where machines sit in it*: not stated. The catalogue states no `where` for a machine, so no organelle lists machines.
 - **Its shape** (`size.surface`, `schema/MACHINE_SHAPES.md`). Where a shape file is published for a
   measured size (`data/catalogue/shapes/<the measure's file name>`, the species' own, or for a size
   a species' file draws at another's measure, the shape of that same entry: Syn3A's and M.
@@ -325,6 +343,15 @@ catalogue never says their count.
   species have it.
 - **Elsewhere.** The Cell view's ribosomes, a machine's closer view and a unit of the atlas that the
   species has each offer "Show it in the Machines catalogue".
+- **The shelf and travel between scales.** Behind a bench whose species has organelles stands a shelf at the bench's one scale. The
+  page's rail gives the stops, largest first: the shelf and the bench by name, each with what the page's scale bar reads there, the
+  powers of ten from 10 µm to 10 nm, and a mark for what is chosen at its own size. A stop is travelled to in the same time for
+  each power of ten (`PER_POWER`), the camera's target moving in step with its distance; with less motion the view changes at once.
+  At the bench's stop the shelf is not drawn and is named above the bench (each name a way up, with its size and how many of the
+  bench's 100 nm bars it makes); at the shelf's stop the bench is a small marked tray (a way down). On a wide window the rail
+  folds behind the page's button while a panel is open. The page's own scale bar shows on such a bench. A sized machine's panel
+  offers a loupe: the machine beside an organelle at its true size, and in a framed lens magnified by a round factor, written on
+  the frame. `scale=` in the address names a stop (`scale=shelf`). A species with no organelle has no shelf and no rail.
 - **The list, the search and the text page.** The List gives the groups with their machines; the
   card's search finds a machine by its name, a gene or an identifier of its proteins; with no 3D the
   List and the panels stand alone.

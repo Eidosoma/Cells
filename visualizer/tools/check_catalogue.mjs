@@ -20,6 +20,7 @@
 //   tabs     the six tabs on a phone of 360, 390 and 400 px, with the page's font and the stand-in,
 //            for a species and for a model system: one row, each button at least 44 px, the List
 //            whole, and every tab pressed in turn in sight.
+//   shelf    the human's shelf of organelles and the scale rail: real presses travel up and down, the loupe, less motion, scale=shelf, E. coli with none.
 //
 //   node tools/check_catalogue.mjs [OUT_DIR]
 //
@@ -486,8 +487,8 @@ try {
     check("the page opens on lens=machines with the planarian", await open("lens=machines&entry=planarian", 3500));
     const benchIn = (species) => until(`${L}.catalogue.hasBench(${JSON.stringify(species)}) && ${L}.layout.items.some((item) => !item.item.unit)`, 80);
     check("its bench is read from beside the page (catalogue/planarian.json), and no other species' bench is", (await benchIn("planarian")) && (await evaluate(`(() => { const read = performance.getEntriesByType("resource").map((entry) => entry.name).filter((name) => /\\/catalogue\\/[a-z0-9]+\\.json$/.test(name)); return read.length === 1 && read[0].endsWith("/catalogue/planarian.json"); })()`)), JSON.stringify(await evaluate(`performance.getEntriesByType("resource").map((entry) => entry.name).filter((name) => /catalogue/.test(name))`)));
-    const bench = await evaluate(`(() => { const lens = ${L}, counts = lens.catalogue.counts("planarian"); return { trays: lens.layout.trays.length, groups: counts.groups, machines: counts.machines, cost: lens.cost(), sections: ${V}.sections().length, apart: lens.catalogue.noneFound("planarian").length ? 1 : 0 }; })()`);
-    check("the planarian's bench: a tray for each group, its machines and units, the List by group (and what was looked for and not found, apart), within the ceiling", bench.trays === bench.groups && bench.machines >= 60 && bench.sections === bench.groups + bench.apart && bench.cost.draws <= 40 && bench.cost.triangles <= 40000, JSON.stringify(bench));
+    const bench = await evaluate(`(() => { const lens = ${L}, counts = lens.catalogue.counts("planarian"); return { trays: lens.layout.trays.length, groups: counts.groups, machines: counts.machines, cost: lens.cost(), sections: ${V}.sections().length, apart: (lens.catalogue.noneFound("planarian").length ? 1 : 0) + (lens.catalogue.organellesOf("planarian").length ? 1 : 0) }; })()`);
+    check("the planarian's bench: a tray for each group, its machines and units, the List by group (and what was looked for and not found, and its organelles, apart), within the ceiling", bench.trays === bench.groups && bench.machines >= 60 && bench.sections === bench.groups + bench.apart && bench.cost.draws <= 40 && bench.cost.triangles <= 40000, JSON.stringify(bench));
     const edges = await evaluate(`(() => { const v = ${V}, lens = v.current, r = v.canvas.getBoundingClientRect(), out = [];
       for (const tray of lens.layout.trays) for (const [dx, dz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) {
         const p = lens.root.position.clone().set(tray.x + dx * tray.w / 2, 0, tray.z + dz * tray.d / 2); const q = v.stage.project(p, p.clone());
@@ -775,6 +776,137 @@ try {
     await sleep(1200);
     const away = await state();
     check("E. coli's panel for the vault says what was looked for and that a signature not found is not an absence", /What was looked for/.test(away.panel) && /not an absence/.test(away.panel), away.panel.slice(0, 200));
+    await errorsAtEnd();
+  } else if (CASE === "shelf") {
+    // ---------------------------------------------------------- the shelf of organelles behind the human's bench, and the scale rail
+    // The time a travel takes for each power of ten, as the view sets it; every size and distance is read from the view.
+    const { PER_POWER } = await import("../src/lenses/machines.js");
+    const narrow = WIDTH < 760; // a phone: the rail folds behind its button, and a panel opens as a sheet
+    const theme = process.env.THEME === "dark" ? "dark" : "light";
+    const read = `Boolean(${L}?.layout && !${L}.ready && ${L}.organelles?.length)`;
+    const shown = (selector) => evaluate(`(() => { const el = ${V}.shadowRoot.querySelector(${JSON.stringify(selector)}); return Boolean(el) && !el.hidden && el.getClientRects().length > 0; })()`);
+    const at = () =>
+      evaluate(`(() => { const v = ${V}, lens = v.current, root = v.shadowRoot, views = lens.stopViews();
+        return { stop: lens.stop, band: lens.band, selected: v.state.selected, d: v.stage.rig.distance, bench: views.bench.distance, shelf: views.shelf?.distance ?? null, travel: Boolean(lens.travel), drawn: lens.shelf ? lens.shelf.root.visible : null,
+          bar: root.querySelector(".scalebar").hidden ? null : root.querySelector(".scalebar-text").textContent || null, names: lens.flatNames?.material.opacity ?? null }; })()`);
+    const settle = async () => {
+      await until(`!${L}.travel`, 160);
+      await sleep(1000);
+      await until(`!${L}.travel`, 80); // a panel that opened meanwhile frames it again
+      await sleep(400);
+    };
+    // Each frame, while a travel is under way: when it began and ended, what it was set to, and the longest gap between frames.
+    const watch = () =>
+      evaluate(`(() => { const lens = ${L}, seen = (window.__travelSeen = { any: false, start: null, end: null, frames: 0, gap: 0, from: null, to: null, duration: null }), t0 = performance.now(); let last = t0;
+        const look = () => { const t = performance.now();
+          if (lens.travel) { if (!seen.any) Object.assign(seen, { any: true, start: t, from: lens.travel.from.distance, to: lens.travel.to.distance, duration: lens.travel.duration }); else seen.gap = Math.max(seen.gap, Math.round(t - last)); seen.frames++; }
+          else if (seen.any) { seen.end = t; return; }
+          last = t;
+          if (t - t0 < 30000) requestAnimationFrame(look); };
+        requestAnimationFrame(look); return true; })()`);
+    // Why a press found nothing to press: not on the page, its label switched off, or what lies over it.
+    const why = (selector) =>
+      evaluate(`(() => { const root = ${V}.shadowRoot, el = root.querySelector(${JSON.stringify(selector)}); if (!el) return "not on the page"; const r = el.getBoundingClientRect(), top = root.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return { off: el.classList.contains("is-off"), at: [r.left, r.top, r.width, r.height].map(Math.round), over: top ? top.tagName.toLowerCase() + "." + String(top.className).split(" ")[0] : null }; })()`);
+    // The shelf's names above the bench: each shown on the picture or not, and how far from the top.
+    const shelfNames = () => evaluate(`[...${V}.shadowRoot.querySelectorAll('.labels .label[data-label^="organelle:"]')].map((el) => { const r = el.getBoundingClientRect(); return [el.dataset.label, el.classList.contains("is-off") ? "off" : "on", Math.round(r.top)]; })`);
+    const pressStop = async (wait) => {
+      if (narrow) await press(".rail-toggle", 700);
+      return press('.rail button[data-stop="shelf"]', wait);
+    };
+    // A warm-up page first: the first page of a fresh browser is never pictured.
+    await open("lens=machines&entry=human", 1000);
+    await until(read, 160);
+    await sleep(6000);
+    check("the page opens on lens=machines with the human", await open("lens=machines&entry=human", 2500));
+    check("the human's bench is read, with the organelles of its shelf", await until(read, 160));
+    await sleep(1500);
+    // 1. The bench's stop.
+    let s = await at();
+    const opening = { rail: await shown(".rail"), toggle: await shown(".rail-toggle"), bar: await shown(".scalebar-text"), cost: await evaluate(`${L}.cost()`), names: await shelfNames() };
+    check(`at the bench's stop: the scale rail ${narrow ? "folded behind its button" : "at the side"}, the page's scale bar, the shelf not drawn, and the frame what the bench alone draws (under 40 draws and 40,000 triangles)`, s.stop === "bench" && (narrow ? opening.toggle && !opening.rail : opening.rail && !opening.toggle) && opening.bar && Boolean(s.bar) && s.drawn === false && opening.cost.draws < 40 && opening.cost.triangles < 40000, JSON.stringify({ ...opening, s }));
+    await shot(`${NAME}-bench`);
+    // 2. A real press on the rail's shelf stop: a travel whose time is the same for each power of ten.
+    const low = await at();
+    await watch();
+    const stopAt = await pressStop(0);
+    await until(`window.__travelSeen?.end != null`, 160);
+    await sleep(600);
+    s = await at();
+    const seen = await evaluate(`window.__travelSeen`);
+    const took = seen.any && seen.end !== null ? Math.round(seen.end - seen.start) : null;
+    const expected = Math.round(PER_POWER * Math.abs(Math.log10(s.shelf / low.d)));
+    note(`the travel up: ${took} ms; ${PER_POWER} ms for each power of ten makes ${expected} ms (${JSON.stringify(seen)})`);
+    const timely = within(`${WIDTH} by ${HEIGHT}: the travel from the bench up to the shelf, in milliseconds (at most 1.35 times ${PER_POWER} ms for each power of ten)`, took, 1.35 * expected, { most: true });
+    check(`a real press on the rail's shelf stop${narrow ? " (its folded button pressed first)" : ""} travels up in about ${PER_POWER} ms for each power of ten (within 35 per cent), to the shelf's distance (within 2 per cent); the scale bar's words change, and the shelf is drawn`, Boolean(stopAt) && took !== null && took >= 0.65 * expected && timely && s.stop === "shelf" && !s.travel && Math.abs(s.d - s.shelf) <= 0.02 * s.shelf && Boolean(s.bar) && s.bar !== low.bar && s.drawn === true, JSON.stringify({ stopAt, took, expected, low, s }));
+    await settle();
+    await shot(`${NAME}-shelf`);
+    // 3. At the shelf's stop, a real press on the bench's mark: the bench chosen, the camera down to it, its names not faint.
+    const high = await at();
+    const benchMark = await press('[data-label="machines:bench"]', 900);
+    await settle();
+    s = await at();
+    check("at the shelf's stop a real press on the bench's mark chooses the bench and travels down to it; the bench is not faint", Boolean(benchMark) && s.selected === "machines:bench" && s.stop === "bench" && s.d < high.d / 3 && Math.abs(s.d - s.bench) <= 0.25 * s.bench && s.names === 1, JSON.stringify({ benchMark: benchMark || (await why('[data-label="machines:bench"]')), high, s }));
+    // 4. A real press on a name above the bench: the nucleus chosen, the camera up to it, its panel.
+    let nucleus = await press('[data-label="organelle:nucleus"]', 900), sheet = null;
+    if (!nucleus && narrow) {
+      // On a phone the bench's sheet leaves the picture only its upper part: the names above the bench are said, and the sheet closed by its own button.
+      sheet = { names: await shelfNames(), name: await why('[data-label="organelle:nucleus"]'), close: await press('cells-panel button[aria-label="Close"]', 1200) };
+      sheet.after = await shelfNames();
+      note(`on a phone with the bench's sheet open the nucleus's name could not be pressed: ${JSON.stringify(sheet)}`);
+      nucleus = await press('[data-label="organelle:nucleus"]', 900);
+    }
+    await settle();
+    s = await at();
+    const panel = await evaluate(`(() => { const p = ${V}.shadowRoot.querySelector("cells-panel"); return p && !p.hidden ? { eyebrow: p.querySelector(".eyebrow")?.textContent || "", sections: [...p.querySelectorAll("h4")].map((el) => el.textContent) } : null; })()`);
+    check(`a real press on the nucleus's name above the bench${sheet ? " (on a phone, once the bench's sheet is closed by its button)" : ""} chooses it and travels up (more than 10 times the bench's distance); its panel's eyebrow says Organelles, and it has a section What Cells models of it`, Boolean(nucleus) && (!sheet || Boolean(sheet.close)) && s.selected === "organelle:nucleus" && s.d > 10 * s.bench && /Organelles/.test(panel?.eyebrow || "") && (panel?.sections || []).some((title) => title.startsWith("What Cells models of it")), JSON.stringify({ nucleus: nucleus || (await why('[data-label="organelle:nucleus"]')), sheet, s, panel }));
+    // 5. With the panel open the rail folds behind its button beside the panel (a phone's sheet hides both).
+    const folded = { rail: await shown(".rail"), toggle: await shown(".rail-toggle") };
+    await shot(`${NAME}-nucleus`);
+    if (!narrow) {
+      const toggleAt = await press(".rail-toggle", 700);
+      const opened = { rail: await shown(".rail"), open: await evaluate(`${V}.shadowRoot.querySelector(".frame").classList.contains("rail-open")`) };
+      check("with the panel open the rail is folded behind its button beside the panel; a real press on the button shows the rail", !folded.rail && folded.toggle && Boolean(toggleAt) && opened.rail && opened.open, JSON.stringify({ folded, toggleAt, opened }));
+      await press(".rail-toggle", 700); // folded again
+    } else check("on a phone, with the panel open as a sheet, neither the rail nor its button is shown", !folded.rail && !folded.toggle, JSON.stringify(folded));
+    // 6. The loupe, by its door on a machine drawn to scale: held beside the organelle last chosen, the camera at the shelf.
+    await evaluate(`${V}.select("machine:proteasome", { fly: true })`);
+    await settle();
+    const door = await placeOf(`[...root.querySelectorAll("cells-panel .panel-door button")].find((button) => button.textContent.startsWith("Hold it beside the"))`);
+    const doors = (await state()).doors;
+    if (door) await click(door.x, door.y, 900);
+    await settle();
+    s = await at();
+    const loupe = await evaluate(`(() => { const v = ${V}, lens = v.current, labels = [...v.shadowRoot.querySelectorAll(".labels .label")].filter((el) => !el.classList.contains("is-off")).map((el) => el.textContent);
+      return { loupe: lens.loupe, label: lens.loupe ? lens.item(lens.loupe.organelle)?.label || null : null, view: lens.loupe ? lens.organelleView(lens.loupe.organelle).distance : null, magnified: labels.find((text) => /magnified/.test(text)) || null, actual: labels.find((text) => /at its true size/.test(text)) || null }; })()`);
+    check("a real press on the proteasome's door Hold it beside the nucleus holds it in a loupe beside the nucleus; the travel ends at the shelf, where it is named at its true size and magnified", Boolean(door) && loupe.loupe?.machine === "machine:proteasome" && loupe.loupe?.organelle === "organelle:nucleus" && Boolean(loupe.label) && door.words.toLowerCase().includes(loupe.label.toLowerCase()) && s.stop === "shelf" && s.band === "shelf" && !s.travel && Math.abs(s.d - loupe.view) <= 0.02 * loupe.view && Boolean(loupe.magnified) && Boolean(loupe.actual), JSON.stringify({ door, doors, loupe, s }));
+    await shot(`${NAME}-loupe`);
+    // 7. Less motion: the rail's stop is reached at once, with no travel.
+    await media([{ name: "prefers-color-scheme", value: theme }, { name: "prefers-reduced-motion", value: "reduce" }]);
+    await open("lens=machines&entry=human", 2500);
+    await until(read, 160);
+    await sleep(1500);
+    const still = await at();
+    await watch();
+    const stillAt = await pressStop(0);
+    await evaluate(`new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)))`);
+    s = await at();
+    const stillSeen = await evaluate(`window.__travelSeen`);
+    await until(`(${V}.shadowRoot.querySelector(".scalebar-text").textContent || null) !== ${JSON.stringify(still.bar)}`, 20);
+    const stillBar = (await at()).bar;
+    check("with less motion a real press on the rail's shelf stop goes there at once: no travel after two frames, the shelf's distance (within 2 per cent), and the scale bar's words change", Boolean(stillAt) && (await evaluate(`${V}.stage.reducedMotion`)) === true && !s.travel && !stillSeen.any && s.stop === "shelf" && Math.abs(s.d - s.shelf) <= 0.02 * s.shelf && Boolean(stillBar) && stillBar !== still.bar, JSON.stringify({ stillAt, still, s, stillSeen, stillBar }));
+    await media([{ name: "prefers-color-scheme", value: theme }, { name: "prefers-reduced-motion", value: "no-preference" }]);
+    // 8. The address: scale=shelf opens at the shelf's stop once the bench is read.
+    await open("lens=machines&entry=human&scale=shelf", 1500);
+    const came = await until(read, 160);
+    await until(`(() => { const lens = ${L}, d = ${V}.stage.rig.distance, shelf = lens.stopViews().shelf?.distance; return lens.stop === "shelf" && !lens.travel && Boolean(shelf) && Math.abs(d - shelf) <= 0.02 * shelf; })()`, 60);
+    s = await at();
+    check("the address scale=shelf opens, once the bench is read, at the shelf's stop and distance (within 2 per cent)", came && s.stop === "shelf" && Math.abs(s.d - s.shelf) <= 0.02 * s.shelf, JSON.stringify(s));
+    // 9. A species with no organelle: no shelf, no rail, no page scale bar from this view.
+    await open("lens=machines&entry=ecoli", 2500);
+    await until(`Boolean(${L}?.layout && !${L}.ready)`, 160);
+    await sleep(1000);
+    const none = await evaluate(`(() => { const v = ${V}, root = v.shadowRoot, lens = v.current, seen = (el) => Boolean(el) && !el.hidden && el.getClientRects().length > 0; return { species: v.state.species, organelles: lens.organelles.length, scale: lens.scaleInfo(), rail: seen(root.querySelector(".rail")), toggle: seen(root.querySelector(".rail-toggle")), bar: !root.querySelector(".scalebar").hidden }; })()`);
+    check("E. coli, a species with no organelle: no shelf, no rail and no button for it, and no page scale bar from this view", none.species === "ecoli" && none.organelles === 0 && none.scale === null && !none.rail && !none.toggle && !none.bar, JSON.stringify(none));
     await errorsAtEnd();
   } else throw new Error(`no case ${CASE}`);
 } catch (error) {

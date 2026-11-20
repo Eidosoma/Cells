@@ -14714,5 +14714,51 @@
     "part by keyword"
    ]
   ]
- }
+ },
+ "organelles": [
+  {
+   "id": "nucleus",
+   "species": "mouse",
+   "label": "Nucleus",
+   "named": {
+    "text": "Mouse's species file: its cell holds a nucleus.",
+    "part": "nucleus",
+    "file": "data/species/mouse.json"
+   },
+   "no_size": "Looked for on 20 November 2026, in one search: a size of the nucleus in a cell of the mouse, in papers whose terms allow commercial use. None was read, so it stands on the shelf as a card, not a shape."
+  },
+  {
+   "id": "endoplasmic-reticulum",
+   "species": "mouse",
+   "label": "Endoplasmic reticulum",
+   "named": {
+    "text": "Mouse's species file: its cell holds an endoplasmic reticulum.",
+    "part": "er",
+    "file": "data/species/mouse.json"
+   },
+   "no_size": "Looked for on 20 November 2026, in one search: a size of a sheet of the endoplasmic reticulum (its thickness) in a cell of the mouse, in papers whose terms allow commercial use. None was read, so it stands on the shelf as a card, not a shape."
+  },
+  {
+   "id": "golgi-apparatus",
+   "species": "mouse",
+   "label": "Golgi apparatus",
+   "named": {
+    "text": "Mouse's species file: its cell holds a Golgi apparatus.",
+    "part": "golgi",
+    "file": "data/species/mouse.json"
+   },
+   "no_size": "Looked for on 20 November 2026, in one search: a size of a Golgi cisterna or stack (its width) in a cell of the mouse, in papers whose terms allow commercial use. None was read, so it stands on the shelf as a card, not a shape."
+  },
+  {
+   "id": "mitochondrion",
+   "species": "mouse",
+   "label": "Mitochondrion",
+   "named": {
+    "text": "Mouse's species file: its cell holds mitochondria.",
+    "part": "mitochondria",
+    "file": "data/species/mouse.json"
+   },
+   "no_size": "Looked for on 20 November 2026, in one search: a size of a mitochondrion (its width and length) in a cell of the mouse, in papers whose terms allow commercial use. None was read, so it stands on the shelf as a card, not a shape."
+  }
+ ]
 }

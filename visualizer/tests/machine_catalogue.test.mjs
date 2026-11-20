@@ -20,7 +20,7 @@ const read = (file) => JSON.parse(readFileSync(path.join(ROOT, file), "utf8"));
 // The catalogue's core (what the page carries) and its species' benches (read beside the page), read together here.
 const core = read("data/catalogue/catalogue.json");
 const benchOf = (species) => read(`data/catalogue/benches/${species}.json`);
-const raw = { ...core, entries: Object.keys(core.benches).flatMap((species) => benchOf(species).entries), by_protein: Object.fromEntries(Object.keys(core.benches).map((species) => [species, benchOf(species).by_protein])), none_found: Object.fromEntries(Object.keys(core.benches).map((species) => [species, benchOf(species).none_found || []])) };
+const raw = { ...core, entries: Object.keys(core.benches).flatMap((species) => benchOf(species).entries), by_protein: Object.fromEntries(Object.keys(core.benches).map((species) => [species, benchOf(species).by_protein])), none_found: Object.fromEntries(Object.keys(core.benches).map((species) => [species, benchOf(species).none_found || []])), organelles: Object.keys(core.benches).flatMap((species) => benchOf(species).organelles || []) };
 const overlay = read("data/catalogue/overlay.json");
 const scene = { ...read("data/architecture/architecture.scene.json"), catalogue: raw };
 const motor = read("data/machines/ecoli.flagellar-motor.json");
@@ -139,8 +139,10 @@ test("a species' machines: its own entries, and the law inventory's units its at
   assert.deepEqual(catalogue.of("thalecress").filter((item) => item.sized).map((item) => item.id).sort(), ["machine:ribosome", "unit.U41"]);
   // The list and the text page: every machine once, by group (what was looked for by family and not found, apart).
   for (const species of SPECIES) {
-    const listed = sections(catalogue, species).filter((section) => section.label !== "Looked for by family, no candidate found").flatMap((section) => section.entities.map((entity) => entity.id));
+    const listed = sections(catalogue, species).filter((section) => section.label !== "Looked for by family, no candidate found" && section.label !== "Organelles").flatMap((section) => section.entities.map((entity) => entity.id));
     assert.deepEqual(listed.sort(), catalogue.of(species).map((item) => item.id).sort(), species);
+    // Its organelles, on the shelf, under their own heading and in no group of machines (20 November 2026).
+    assert.deepEqual(sections(catalogue, species).find((section) => section.label === "Organelles")?.entities.map((entity) => entity.id) || [], catalogue.organellesOf(species).map((item) => item.id), `${species}: its organelles, apart`);
     assert.deepEqual(textSections(scene, species), sections(catalogue, species));
   }
 });
@@ -650,7 +652,7 @@ test("the page carries the catalogue's core; each species' bench is read beside 
   const benches = Object.keys(core.benches).reduce((sum, species) => sum + size(benchOf(species)), 0);
   console.log(`# the core ${size(core)} bytes; the eight benches ${benches} bytes together`);
   assert.ok(size(core) < benches / 5);
-  for (const kind of core.kinds) assert.deepEqual(kind.species, [...new Set(raw.entries.filter((entry) => entry.id === kind.id).map((entry) => entry.species))], kind.id);
+  for (const kind of core.kinds) assert.deepEqual(kind.species, [...new Set([...raw.entries, ...raw.organelles].filter((entry) => entry.id === kind.id).map((entry) => entry.species))], kind.id);
   // Before its bench is read a species has its units alone, and its machines once it is in.
   const coreScene = { ...scene, catalogue: core };
   const shown = new Catalogue(core, coreScene);
@@ -1057,4 +1059,55 @@ test("a kind's forms stand in its panel and are no machines; the vault says each
   assert.equal(catalogue.item("human", "machine:vault").size.entry, "9MXV-assembly1");
   assert.equal(catalogue.kinds.get("vault").group, "unknown");
   assert.ok(catalogue.groupById.get("unknown") && catalogue.kinds.get("vault").identified_by === "vault");
+});
+
+// About 0.2 s: it builds the human's organelles once with the Cell view's own builders (no WebGL), to hold their sizes.
+test("the organelles on the shelf: no machines, sized by their species' file's facts, drawn by the Cell view's models, and said with the map's status", () => {
+  const shelf = catalogue.organellesOf("human");
+  assert.deepEqual(shelf.map((item) => item.id), ["organelle:nucleus", "organelle:endoplasmic-reticulum", "organelle:golgi-apparatus", "organelle:mitochondrion"]);
+  assert.ok(catalogue.of("human").every((item) => !item.organelle) && catalogue.counts("human").machines === catalogue.of("human").length, "no organelle is a machine or in a count of machines");
+  const human = read("data/species/human.json");
+  for (const item of shelf.filter((value) => value.size)) {
+    const fact = human.cell.facts.find((value) => value.label === item.size.label);
+    assert.equal(item.size.text, fact.value, `${item.id}: its size is its species' file's fact, whole`);
+    for (const key of fact.sources) assert.equal(human.sources[key].class, "permissive", `${item.id}: ${key}`);
+  }
+  assert.ok(shelf.filter((value) => !value.size).every((item) => /^Looked for on \d+ [A-Z][a-z]+ \d{4}: /.test(item.entry.no_size)), "one with no size says what was looked for");
+  for (const item of shelf) {
+    const panel = describe(catalogue, "human", item.id, { scene });
+    const map = scene.entities.find((entity) => entity.id === item.kind.map_part), status = scene.statuses.find((value) => value.id === map.status);
+    assert.equal(panel.sections[0].items[0].detail, status.label, `${item.id}: the map's own status of its part, read from the scene`);
+    // The map's own words are quoted as the map's; the files it rests on are named as they are, headings and all.
+    const words = JSON.stringify({ ...panel, sources: [] }).replace(/In the map's own words: “[^”]*”/g, "");
+    assert.ok(!CLAIMED.test(words), `${item.id}: ${words.match(CLAIMED)?.[0]}`);
+  }
+  const { lens } = lensFor("human");
+  const drawn = lens.ensureShelf().layout.items;
+  const at = (id) => drawn.find((entry) => entry.id === id);
+  assert.ok(Math.abs(at("organelle:nucleus").w - 1718) < 2, `the nucleus 17.18 µm across: ${at("organelle:nucleus").w}`);
+  assert.ok(Math.abs(at("organelle:mitochondrion").w - 118) < 1 && Math.abs(at("organelle:mitochondrion").h - 55) < 1, "the mitochondrion 1.18 µm long and 0.55 µm wide");
+  assert.deepEqual(drawn.filter((entry) => entry.type === "card").map((entry) => entry.id), ["organelle:endoplasmic-reticulum", "organelle:golgi-apparatus"]);
+  assert.ok(lens.shelf.root.visible === false && lens.cost().triangles < 40000, "at the bench's stop the shelf is not drawn, and the bench costs what it did");
+  assert.deepEqual(lens.railOf().map((stop) => stop.id).filter((id) => !id.startsWith("nm")), ["shelf", "bench"]);
+  // Every bench, a row each (20 November 2026, round 2): the organelles its species' cell holds, sized where a permissive number was read,
+  // else a card that says what was looked for; a species whose cell holds none has no shelf, no rail and no page scale bar.
+  const ROWS = {
+    human: ["nucleus", "endoplasmic-reticulum", "golgi-apparatus", "mitochondrion"],
+    mouse: ["nucleus", "endoplasmic-reticulum", "golgi-apparatus", "mitochondrion"],
+    fruitfly: ["nucleus", "endoplasmic-reticulum", "golgi-apparatus", "mitochondrion"],
+    planarian: ["nucleus", "endoplasmic-reticulum", "golgi-apparatus", "mitochondrion"],
+    thalecress: ["nucleus", "endoplasmic-reticulum", "golgi-apparatus", "mitochondrion", "chloroplast", "vacuole"],
+    ecoli: [], syn3a: [], mpneumoniae: [], xenopus: [], // the frog: no bench gathered yet, so no shelf
+  };
+  assert.deepEqual(Object.keys(ROWS).sort(), [...SPECIES].sort());
+  for (const [species, kinds] of Object.entries(ROWS)) {
+    const items = catalogue.organellesOf(species);
+    assert.deepEqual(items.map((item) => item.id), kinds.map((kind) => `organelle:${kind}`), species);
+    for (const item of items) assert.ok(item.size || /^Looked for on /.test(item.entry.no_size), `${species} ${item.id}: a size, or what was looked for`);
+    const shown = lensFor(species).lens;
+    assert.equal(Boolean(shown.chrome().rail), kinds.length > 0, `${species}: a rail only with a shelf`);
+    assert.equal(shown.scaleInfo() === null, kinds.length === 0, `${species}: the page's scale bar only with a shelf`);
+  }
+  const plant = lensFor("thalecress").lens.ensureShelf().layout.items.find((entry) => entry.id === "organelle:chloroplast");
+  assert.ok(plant.type === "shape" && Math.abs(plant.w - 560) < 2, `the chloroplast as its file states it, 5.6 µm across: ${plant.w}`);
 });

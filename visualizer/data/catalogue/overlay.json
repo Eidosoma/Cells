@@ -14,7 +14,8 @@
     { "id": "breaking", "label": "Breaking proteins down", "plain": "Proteases that unfold proteins and cut them, using ATP." },
     { "id": "moving", "label": "Moving, sensing and attaching", "plain": "Machines that move the cell, steer it, or hold it to a surface." },
     { "id": "traffic", "label": "Carrying cargo", "plain": "Motors that walk along the cell's filaments, carrying cargo from place to place." },
-    { "id": "unknown", "label": "Particles whose job is not known", "plain": "Large particles whose function has not been found.", "stands": "behind", "stands_why": "Decided 19 November 2026: this group's tray stands at the back of the bench, behind the tray of the law inventory's units. Its one particle, the vault, is the largest shape on a bench; in the row before that tray it stood in front of the units' small shapes at the opening view and hid them." }
+    { "id": "unknown", "label": "Particles whose job is not known", "plain": "Large particles whose function has not been found.", "stands": "behind", "stands_why": "Decided 19 November 2026: this group's tray stands at the back of the bench, behind the tray of the law inventory's units. Its one particle, the vault, is the largest shape on a bench; in the row before that tray it stood in front of the units' small shapes at the opening view and hid them." },
+    { "id": "organelles", "label": "Organelles", "plain": "The cell's own compartments, each far larger than any machine: they stand on a shelf behind the bench, at the bench's one scale.", "stands": "shelf", "stands_why": "Asked for on 20 November 2026: the organelles stand in the Machines view as the machines do, on a shelf above the bench, drawn with the Cell view's own models at the bench's one scale, and travelled to. They are no machines: in no tray and no count of machines." }
   ],
   "records": {
     "fr13": {
@@ -36,7 +37,11 @@
       "path": "visualizer/docs/CELL_STRUCTURES.md",
       "where": "What each status rests on: Ribosomes",
       "entity": "cap.ribosomes"
-    }
+    },
+    "map-nucleus": { "label": "The map's status of the Cell view's nucleus", "map": "cap.nucleus" },
+    "map-er": { "label": "The map's status of the part drawn at the endoplasmic reticulum", "map": "cap.calcium" },
+    "map-golgi": { "label": "The map's status of the Cell view's Golgi apparatus", "map": "cap.golgi" },
+    "map-mitochondria": { "label": "The map's status of the Cell view's mitochondria", "map": "cap.mitochondria" }
   },
   "units_left_out": {
     "note": "Units of the law inventory that the catalogue does not hold, because they are not protein assemblies: a leak, a permeability, a lumped conductance, or a law that names no protein. The Protein atlas keeps all its units.",
@@ -105,6 +110,36 @@
       "id": "attachment-organelle", "label": "Attachment organelle", "group": "moving", "absent_as": "attachment organelle",
       "plain": "A membrane protrusion at one pole with an internal core: it carries the adhesins that hold the cell to a surface, and leads the cell when it glides.",
       "records": ["fr13"]
+    },
+    {
+      "id": "nucleus", "label": "Nucleus", "group": "organelles", "map_part": "cap.nucleus", "drawn_at": "nucleus",
+      "plain": "Holds the cell's DNA inside a double membrane, the nuclear envelope, whose pores let molecules in and out; the nucleolus inside it is where ribosomes are put together.",
+      "records": ["map-nucleus"]
+    },
+    {
+      "id": "endoplasmic-reticulum", "label": "Endoplasmic reticulum", "group": "organelles", "map_part": "cap.calcium", "drawn_at": "endoplasmic reticulum",
+      "plain": "A network of membrane sheets and tubes that runs on from the nuclear envelope: the rough sheets, studded with ribosomes, make proteins for membranes and for export, and the network stores calcium.",
+      "records": ["map-er"]
+    },
+    {
+      "id": "golgi-apparatus", "label": "Golgi apparatus", "group": "organelles", "map_part": "cap.golgi", "drawn_at": "Golgi apparatus",
+      "plain": "Stacks of flattened sacs, the cisternae, where proteins made at the endoplasmic reticulum are modified, sorted and sent on in vesicles.",
+      "records": ["map-golgi"]
+    },
+    {
+      "id": "mitochondrion", "label": "Mitochondrion", "group": "organelles", "map_part": "cap.mitochondria", "drawn_at": "mitochondria",
+      "plain": "An organelle of two membranes, the inner one folded into cristae, where most of a cell's ATP is made.",
+      "records": ["map-mitochondria"]
+    },
+    {
+      "id": "chloroplast", "label": "Chloroplast", "group": "organelles", "drawn_at": "chloroplasts",
+      "plain": "A plant cell's organelle of light: two envelope membranes round stacks of membrane discs, where photosynthesis captures light and fixes carbon dioxide.",
+      "records": []
+    },
+    {
+      "id": "vacuole", "label": "Vacuole", "group": "organelles", "drawn_at": "vacuole",
+      "plain": "A plant cell's large sac of water and solutes, bounded by one membrane: it fills most of the cell and holds it taut against its wall.",
+      "records": []
     }
   ],
   "species": {
@@ -147,12 +182,16 @@
       { "kind": "mitochondrial-ribosome", "size": { "measure": "human-mitochondrial-ribosome" } },
       { "kind": "cmg-helicase", "size": { "measure": "human-cmg-helicase" } },
       { "kind": "nuclear-pore", "no_size": "Decided 17 November 2026: the nuclear pore stays a card. Its entry, 9AAV, is an integrative model that holds about a third of the proteins its dossier seeks, so no size is drawn from it." },
-      { "kind": "vault", "size": { "measure": "human-vault" } }
+      { "kind": "vault", "size": { "measure": "human-vault" } },
+      { "kind": "nucleus", "named": { "part": "nucleus", "words": "a nucleus" }, "size": { "fact": "Nucleus", "shape": "sphere", "across_um": [17.18] } },
+      { "kind": "endoplasmic-reticulum", "named": { "part": "er", "words": "an endoplasmic reticulum" }, "no_size": "Looked for on 20 November 2026: the thickness of a sheet of the endoplasmic reticulum in a human cell, the width the Cell view's model of it is drawn by, in papers whose terms allow commercial use. None was found, so it stands on the shelf as a card, not a shape." },
+      { "kind": "golgi-apparatus", "named": { "part": "golgi", "words": "a Golgi apparatus" }, "no_size": "Looked for on 20 November 2026: the width of a cisterna or of a stack of the Golgi apparatus in a human cell, the width the Cell view's model of it is drawn by, in papers whose terms allow commercial use. None was found, so it stands on the shelf as a card, not a shape." },
+      { "kind": "mitochondrion", "named": { "part": "mitochondria", "words": "mitochondria" }, "size": { "fact": "Mitochondrion", "shape": "capsule", "across_um": [0.55], "long_um": [1.18] } }
     ],
-    "mouse": [{ "kind": "ribosome", "named": { "record": "cell-structures", "word": "every cell has ribosomes" }, "size": { "measure": "animals-ribosome" } }, { "kind": "vault", "size": { "measure": "human-vault" } }],
-    "planarian": [{ "kind": "ribosome", "named": { "record": "cell-structures", "word": "every cell has ribosomes" }, "size": { "measure": "animals-ribosome" } }, { "kind": "vault", "size": { "measure": "human-vault" } }],
-    "fruitfly": [{ "kind": "ribosome", "named": { "record": "cell-structures", "word": "every cell has ribosomes" }, "size": { "measure": "animals-ribosome" } }],
-    "thalecress": [{ "kind": "ribosome", "named": { "record": "cell-structures", "word": "every cell has ribosomes" }, "size": { "measure": "animals-ribosome" } }]
+    "mouse": [{ "kind": "ribosome", "named": { "record": "cell-structures", "word": "every cell has ribosomes" }, "size": { "measure": "animals-ribosome" } }, { "kind": "vault", "size": { "measure": "human-vault" } }, {"kind": "nucleus", "named": {"part": "nucleus", "words": "a nucleus"}, "no_size": "Looked for on 20 November 2026, in one search: a size of the nucleus in a cell of the mouse, in papers whose terms allow commercial use. None was read, so it stands on the shelf as a card, not a shape."}, {"kind": "endoplasmic-reticulum", "named": {"part": "er", "words": "an endoplasmic reticulum"}, "no_size": "Looked for on 20 November 2026, in one search: a size of a sheet of the endoplasmic reticulum (its thickness) in a cell of the mouse, in papers whose terms allow commercial use. None was read, so it stands on the shelf as a card, not a shape."}, {"kind": "golgi-apparatus", "named": {"part": "golgi", "words": "a Golgi apparatus"}, "no_size": "Looked for on 20 November 2026, in one search: a size of a Golgi cisterna or stack (its width) in a cell of the mouse, in papers whose terms allow commercial use. None was read, so it stands on the shelf as a card, not a shape."}, {"kind": "mitochondrion", "named": {"part": "mitochondria", "words": "mitochondria"}, "no_size": "Looked for on 20 November 2026, in one search: a size of a mitochondrion (its width and length) in a cell of the mouse, in papers whose terms allow commercial use. None was read, so it stands on the shelf as a card, not a shape."}],
+    "planarian": [{ "kind": "ribosome", "named": { "record": "cell-structures", "word": "every cell has ribosomes" }, "size": { "measure": "animals-ribosome" } }, { "kind": "vault", "size": { "measure": "human-vault" } }, {"kind": "nucleus", "named": {"part": "nucleus", "words": "a nucleus"}, "no_size": "Looked for on 20 November 2026, in one search: a size of the nucleus in a cell of the planarian, in papers whose terms allow commercial use. None was read, so it stands on the shelf as a card, not a shape."}, {"kind": "endoplasmic-reticulum", "named": {"part": "er", "words": "an endoplasmic reticulum"}, "no_size": "Looked for on 20 November 2026, in one search: a size of a sheet of the endoplasmic reticulum (its thickness) in a cell of the planarian, in papers whose terms allow commercial use. None was read, so it stands on the shelf as a card, not a shape."}, {"kind": "golgi-apparatus", "named": {"part": "golgi", "words": "a Golgi apparatus"}, "no_size": "Looked for on 20 November 2026, in one search: a size of a Golgi cisterna or stack (its width) in a cell of the planarian, in papers whose terms allow commercial use. None was read, so it stands on the shelf as a card, not a shape."}, {"kind": "mitochondrion", "named": {"part": "mitochondria", "words": "mitochondria"}, "no_size": "Looked for on 20 November 2026, in one search: a size of a mitochondrion (its width and length) in a cell of the planarian, in papers whose terms allow commercial use. None was read, so it stands on the shelf as a card, not a shape."}],
+    "fruitfly": [{ "kind": "ribosome", "named": { "record": "cell-structures", "word": "every cell has ribosomes" }, "size": { "measure": "animals-ribosome" } }, {"kind": "nucleus", "named": {"part": "nucleus", "words": "a nucleus"}, "no_size": "Looked for on 20 November 2026, in one search: a size of the nucleus in a cell of the fruit fly, in papers whose terms allow commercial use. None was read, so it stands on the shelf as a card, not a shape."}, {"kind": "endoplasmic-reticulum", "named": {"part": "er", "words": "an endoplasmic reticulum"}, "no_size": "Looked for on 20 November 2026, in one search: a size of a sheet of the endoplasmic reticulum (its thickness) in a cell of the fruit fly, in papers whose terms allow commercial use. None was read, so it stands on the shelf as a card, not a shape."}, {"kind": "golgi-apparatus", "named": {"part": "golgi", "words": "a Golgi apparatus"}, "no_size": "Looked for on 20 November 2026, in one search: a size of a Golgi cisterna or stack (its width) in a cell of the fruit fly, in papers whose terms allow commercial use. None was read, so it stands on the shelf as a card, not a shape."}, {"kind": "mitochondrion", "named": {"part": "mitochondria", "words": "mitochondria"}, "no_size": "Looked for on 20 November 2026, in one search: a size of a mitochondrion (its width and length) in a cell of the fruit fly, in papers whose terms allow commercial use. None was read, so it stands on the shelf as a card, not a shape."}],
+    "thalecress": [{ "kind": "ribosome", "named": { "record": "cell-structures", "word": "every cell has ribosomes" }, "size": { "measure": "animals-ribosome" } }, {"kind": "nucleus", "named": {"part": "nucleus", "words": "a nucleus"}, "no_size": "Looked for on 20 November 2026, in one search: a size of the nucleus in a leaf cell of the thale cress, in papers whose terms allow commercial use. None was read, so it stands on the shelf as a card, not a shape."}, {"kind": "endoplasmic-reticulum", "named": {"part": "er", "words": "an endoplasmic reticulum"}, "no_size": "Looked for on 20 November 2026, in one search: a size of a sheet of the endoplasmic reticulum (its thickness) in a leaf cell of the thale cress, in papers whose terms allow commercial use. None was read, so it stands on the shelf as a card, not a shape."}, {"kind": "golgi-apparatus", "named": {"part": "golgi", "words": "a Golgi apparatus"}, "no_size": "Looked for on 20 November 2026, in one search: a size of a Golgi cisterna or stack (its width) in a leaf cell of the thale cress, in papers whose terms allow commercial use. None was read, so it stands on the shelf as a card, not a shape."}, {"kind": "mitochondrion", "named": {"part": "mitochondria", "words": "mitochondria"}, "no_size": "Looked for on 20 November 2026, in one search: a size of a mitochondrion (its width and length) in a leaf cell of the thale cress, in papers whose terms allow commercial use. None was read, so it stands on the shelf as a card, not a shape."}, {"kind": "chloroplast", "named": {"part": "chloroplasts", "words": "chloroplasts"}, "size": {"part": "chloroplasts", "shape": "lens"}}, {"kind": "vacuole", "named": {"part": "vacuole", "words": "a vacuole"}, "no_size": "Looked for on 20 November 2026: its species' file gives the vacuole's share of the leaf's cellular volume (84%), not a size of its own, so it stands on the shelf as a card, not a shape."}]
   },
   "measures": {
     "note": "Sizes measured by the viewer from a Protein Data Bank entry's coordinates with tools/measure_particle.py: the tool's own output, kept here as written. A species' file that states a part's size of its own (cell.parts.ribosome) is read first, and the measure here is then not used. The Protein Data Bank states no size: each number is the viewer's own.",

@@ -4,12 +4,12 @@
 // record says it: a line of the engine's feature requests, the map's own status of a part, or,
 // for the membrane units of the law inventory, the Protein atlas's own panel of the unit.
 
-import { Catalogue, IONS, PREFIX, FAMILY, byFamily, kindOf, citeShort } from "./machines_data.js";
+import { Catalogue, IONS, PREFIX, ORGANELLE, FAMILY, byFamily, kindOf, organelleKind, citeShort } from "./machines_data.js";
 import { membraneOf, partsByChains, partOfChain as partOfChainIn } from "./machines_layout.js";
 import { inSpecies } from "./proteins.js";
 
 /** A swatch for each kind of mark the view draws (machines_styles.js), and one for each group. */
-export const SWATCH = { sized: "mach-sized", card: "mach-card", chosen: "mach-chosen", none: "mach-none" };
+export const SWATCH = { sized: "mach-sized", card: "mach-card", chosen: "mach-chosen", none: "mach-none", organelle: "mach-organelle" };
 export const groupSwatch = (group) => `mach-g-${group}`;
 /** UniProt's accession numbers, which link to UniProt; a genome's own locus tag does not. */
 const ACCESSION = /^([OPQ][0-9][A-Z0-9]{3}[0-9]|[A-NR-Z][0-9]([A-Z][A-Z0-9]{2}[0-9]){1,2})$/;
@@ -152,6 +152,16 @@ export function recordLines(catalogue, item, scene) {
       lines.push({ label: record.label, detail: own.status, lines: [own.says], source: { path: record.path, where: record.where, revision: record.revision }, own: true });
       continue;
     }
+    if (record.map) {
+      // The map's own status of the part of the Cell view the organelle is drawn at, read from the scene as it is: its label,
+      // its status and its own words, and the files it rests on. Nothing more is said of it here.
+      const part = (scene?.entities || []).find((entity) => entity.id === record.map);
+      if (!part) continue;
+      const status = (scene.statuses || []).find((value) => value.id === part.status);
+      const at = item.kind?.drawn_at || item.label.toLowerCase();
+      lines.push({ label: `The map: ${part.label}`, detail: status?.label || part.status || "no status", lines: [`The map's own status for “${part.label}”, the part of the Cell view drawn at the ${at}${part.as_of ? `, as of ${part.as_of}` : ""}: ${status?.label || part.status || "no status"}.`, ...(part.plain ? [`In the map's own words: “${part.plain}”`] : [])], sources: (part.sources || []).map((source) => ({ path: source.path, where: source.where || "" })) });
+      continue;
+    }
     if (record.entity) {
       const part = (scene?.entities || []).find((entity) => entity.id === record.entity);
       if (!part) continue;
@@ -173,6 +183,11 @@ export function recordLines(catalogue, item, scene) {
 /** The doors from a machine into the other views: the Protein atlas on its proteins, the Cell view where it sits, its closer view. */
 export function doorsOf(item, scene, species) {
   const doors = [];
+  if (item.organelle) {
+    // (The Cell view's panel of the part offers the way back: doorsFor.)
+    const part = item.kind?.map_part && (scene?.entities || []).find((entity) => entity.id === item.kind.map_part);
+    return part ? [{ label: "Show where it is drawn in the cell", lens: "cell", select: part.id }] : [];
+  }
   if (item.unit) {
     doors.push({ label: "Show it in the Protein atlas", lens: "proteins", show: "units", select: item.unit.id });
     return doors;
@@ -406,11 +421,65 @@ function describeVault(catalogue, species, item, scene, level) {
   };
 }
 
+/**
+ * What an organelle's size says, in words: the fact of its species' file whole (which names the cell type and species the
+ * paper measured), its source, and the width the shelf draws it at. A range is drawn at its middle, and says so.
+ */
+export function organelleSizeWords(catalogue, size) {
+  if (!size) return null;
+  const source = size.sources?.map((key) => citeShort(catalogue.source(key))).join(", ");
+  const middle = (values) => (values.length > 1 ? (values[0] + values[values.length - 1]) / 2 : values[0]);
+  const range = (values) => (values.length > 1 ? ", the middle of the range" : "");
+  const um = (value) => `${Number(value.toPrecision(3))} µm`;
+  const drawn = size.shape === "sphere" || size.shape === "lens" ? `Drawn ${um(middle(size.across_um))} across${range(size.across_um)}.`
+    : size.shape === "sheet" ? `Its sheets are drawn ${Number(middle(size.thick_nm).toPrecision(3))} nm thick${range(size.thick_nm)}.`
+    : size.shape === "stack" ? `Its widest cisterna is drawn ${um(middle(size.across_um))} across${range(size.across_um)}.`
+    : size.shape === "capsule" ? `Drawn ${um(middle(size.across_um))} across${range(size.across_um)} and ${um(middle(size.long_um))} long${range(size.long_um)}.`
+    : "";
+  return `${size.text.charAt(0).toUpperCase()}${size.text.slice(1)} (${source}). ${drawn}`.trim();
+}
+
+/**
+ * The panel of an organelle on the shelf (schema/MACHINE_CATALOGUE.md, "Organelles"): what it is, what names it in the
+ * species' file, how big (the file's fact whole, with the cell type the paper measured), how it is drawn (the Cell view's
+ * own model, at that size: `drawn`, from the view), what the map says Cells models of it, and its door into the cell.
+ */
+function describeOrganelle(catalogue, species, item, scene, { drawn = null } = {}) {
+  const entry = item.entry, kind = item.kind, where = speciesLabel(scene, species);
+  const group = catalogue.groupById.get(item.group);
+  const records = recordLines(catalogue, item, scene);
+  const facts = [];
+  if (entry.named?.text) facts.push(["Named by", entry.named.text]);
+  facts.push(["How big", organelleSizeWords(catalogue, item.size) || entry.no_size || "No size in hand: it stands on the shelf as a card, not a shape"]);
+  if (drawn) facts.push(["How it is drawn", drawn]);
+  const sources = [...(item.size?.sources || [])].filter((key, index, all) => all.indexOf(key) === index);
+  return {
+    id: item.id,
+    label: item.label,
+    kind: "organelle",
+    eyebrow: `${group?.label || "Organelles"} · ${where}`,
+    swatch: item.sized ? SWATCH.organelle : SWATCH.card,
+    chips: [{ label: "Illustration", title: "The Cell view's own model of it, at a size a paper gives: not a structure, and not a run" }, { label: item.sized ? "Drawn to scale" : "No size in hand" }],
+    plain: kind.plain,
+    note: records.length ? `What Cells models of it: ${records.map((line) => `${line.label}: ${line.detail}`).join("; ")}.` : "The Cell view draws it as scenery: no part of the map stands at it, so nothing is said here of what Cells models of it.",
+    facts,
+    sections: [
+      { title: "What Cells models of it", note: "Only what the map says of the part of the Cell view it is drawn at.", items: records.map(({ label, detail, lines }) => ({ label, detail, lines })) },
+      { title: "Sources and licences", items: sources.map((key) => catalogue.source(key)).filter(Boolean).map(sourceItem) },
+    ].filter((section) => section.items.length),
+    doors: doorsOf(item, scene, species),
+    sources: [...records.flatMap((line) => line.sources || []), entry.named?.file ? { path: `visualizer/${entry.named.file}`, where: "cell.parts" } : null, { path: "visualizer/data/catalogue/catalogue.json", where: "generated by visualizer/tools/build_catalogue.py" }].filter(Boolean),
+    keywords: [kind.plain, group?.label].filter(Boolean).join(" "),
+  };
+}
+
 /** The panel of a machine of the species shown, by its page id; null for an id the catalogue does not hold. */
-export function describe(catalogue, species, id, { scene = catalogue?.scene, level = null } = {}) {
+export function describe(catalogue, species, id, { scene = catalogue?.scene, level = null, drawn = null } = {}) {
   if (!catalogue || !id) return null;
   const item = catalogue.item(species, id);
+  if (!item && organelleKind(id)) return null;
   if (!item) return elsewhere(catalogue, species, id, scene);
+  if (item.organelle) return describeOrganelle(catalogue, species, item, scene, { drawn });
   const group = catalogue.groupById.get(item.group);
   const where = speciesLabel(scene, species);
   if (item.unit) {
@@ -575,11 +644,30 @@ function elsewhere(catalogue, species, id, scene) {
   };
 }
 
+/**
+ * The shelf and its stops in words, for the List and the text page: each organelle's size (or that it is a card), at the one scale
+ * the view draws the bench and the shelf at, and the stops the view's rail travels between.
+ */
+export function shelfNote(shelf) {
+  const middle = (values) => (values.length > 1 ? (values[0] + values[values.length - 1]) / 2 : values[0]);
+  const sizes = shelf.map((item) => {
+    const size = item.size;
+    if (!size) return `${item.label}: a card, no size in hand`;
+    if (size.across_um && size.long_um) return `${item.label}: ${middle(size.across_um)} µm across and ${middle(size.long_um)} µm long`;
+    if (size.across_um) return `${item.label}: ${middle(size.across_um)} µm across`;
+    return `${item.label}: ${middle(size.thick_nm)} nm thick`;
+  });
+  return `On a shelf behind the bench, at the bench's one scale (one unit, ten nanometres): ${sizes.join("; ")}. Each panel says whose cell the size is of. The view's rail travels from the bench's stop (its bar reads about 100 nm) to the shelf's (about 5 µm), through the powers of ten between, each in the same time.`;
+}
+
 /** The list that stands in where 3D cannot be drawn, and the keyboard's way in: each group with its machines. */
 export function sections(catalogue, species) {
   if (!catalogue) return [];
   const where = speciesLabel(catalogue.scene, species), none = catalogue.noneFound(species);
+  const shelf = catalogue.organellesOf(species), shelfGroup = catalogue.groups.find((group) => group.stands === "shelf");
   return [
+    // The organelles on the shelf, under their own group: no machines, and first, as the shelf stands above the bench.
+    ...(shelf.length ? [{ label: shelfGroup?.label || "Organelles", note: shelfNote(shelf), entities: shelf.map((item) => ({ id: item.id, label: item.label, swatch: item.sized ? SWATCH.organelle : SWATCH.card, keywords: [shelfGroup?.label, item.kind?.plain].filter(Boolean).join(" ") })) }] : []),
     ...catalogue.groups
       .map((group) => ({
         label: group.label,
@@ -626,6 +714,12 @@ export function doorsFor(entity, scene, { species = null } = {}) {
   // A protein of the species' own in the Protein atlas: the machines its dossier makes it a part of, or names it with.
   const own = /^own:([^:]+):p(?:@[^:]*)?:(.+)$/.exec(entity.id);
   const kind = own ? null : [...catalogue.kinds.values()].find((value) => value.cell_part === entity.id);
+  // The Cell view's part an organelle of the shelf is drawn at (its kind's `map_part`): a door to it on the shelf, where the species has it.
+  const shelfKind = own || kind ? null : [...catalogue.kinds.values()].find((value) => value.map_part === entity.id);
+  if (shelfKind) {
+    if (!catalogue.benchState(species)) catalogue.loadBench(species);
+    return catalogue.item(species, `${ORGANELLE}${shelfKind.id}`) ? [{ label: "Show it on the Machines shelf", lens: "machines", value: `${ORGANELLE}${shelfKind.id}` }] : [];
+  }
   // A part none of the doors below can open (a run of the Experiments view, a cell of a run) reads no bench: an address fetches
   // what it draws (until 18 November 2026 a run chosen by the address fetched the species' bench too).
   if (!own && !kind && !(entity.kind === "unit" && entity.group === "proteins") && !(entity.id.startsWith(PREFIX) && !entity.id.slice(PREFIX.length).includes(":"))) return [];
@@ -661,5 +755,5 @@ const wanting = (scene, species) => {
 };
 export const textSections = (scene, species) => sections(wanting(scene, species), species);
 export const textDescribe = (scene, id, species) => describe(wanting(scene, species), species, id, { scene });
-export const owns = (id) => typeof id === "string" && id.startsWith(PREFIX);
+export const owns = (id) => typeof id === "string" && (id.startsWith(PREFIX) || id.startsWith(ORGANELLE));
 export { IONS };

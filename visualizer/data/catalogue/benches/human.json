@@ -29904,5 +29904,74 @@
     "part"
    ]
   ]
- }
+ },
+ "organelles": [
+  {
+   "id": "nucleus",
+   "species": "human",
+   "label": "Nucleus",
+   "named": {
+    "text": "Human's species file: its cell holds a nucleus.",
+    "part": "nucleus",
+    "file": "data/species/human.json"
+   },
+   "size": {
+    "shape": "sphere",
+    "across_um": [
+     17.18
+    ],
+    "label": "Nucleus",
+    "text": "nuclei isolated from HeLa cells, a human cell line, in the paper's column “HeLa (fresh)”, were 17.18 ± 0.39 µm wide (the mean of their long and short axes, by light microscopy) and 16.20 ± 0.48 µm high (by atomic force microscopy), mean ± s.e.m. of 21 nuclei; the same table's column “HeLa” gives 12.73 ± 0.54 µm wide and 10.91 ± 0.59 µm high (23 nuclei). These are nuclei taken out of the cell, not nuclei measured in an intact cell",
+    "sources": [
+     "human:lherbette2017"
+    ]
+   }
+  },
+  {
+   "id": "endoplasmic-reticulum",
+   "species": "human",
+   "label": "Endoplasmic reticulum",
+   "named": {
+    "text": "Human's species file: its cell holds an endoplasmic reticulum.",
+    "part": "er",
+    "file": "data/species/human.json"
+   },
+   "no_size": "Looked for on 20 November 2026: the thickness of a sheet of the endoplasmic reticulum in a human cell, the width the Cell view's model of it is drawn by, in papers whose terms allow commercial use. None was found, so it stands on the shelf as a card, not a shape."
+  },
+  {
+   "id": "golgi-apparatus",
+   "species": "human",
+   "label": "Golgi apparatus",
+   "named": {
+    "text": "Human's species file: its cell holds a Golgi apparatus.",
+    "part": "golgi",
+    "file": "data/species/human.json"
+   },
+   "no_size": "Looked for on 20 November 2026: the width of a cisterna or of a stack of the Golgi apparatus in a human cell, the width the Cell view's model of it is drawn by, in papers whose terms allow commercial use. None was found, so it stands on the shelf as a card, not a shape."
+  },
+  {
+   "id": "mitochondrion",
+   "species": "human",
+   "label": "Mitochondrion",
+   "named": {
+    "text": "Human's species file: its cell holds mitochondria.",
+    "part": "mitochondria",
+    "file": "data/species/human.json"
+   },
+   "size": {
+    "shape": "capsule",
+    "across_um": [
+     0.55
+    ],
+    "long_um": [
+     1.18
+    ],
+    "label": "Mitochondrion",
+    "text": "the paper's normal mitochondria, beside the giant ones it studies, in the liver of people with non-alcoholic fatty liver disease, measured in three dimensions, were 0.55 ± 0.15 µm wide and 1.18 ± 0.59 µm long, total means ± S.D. combining the measurements from each patient (four cells from each patient, 16 cells in all); its giant mitochondria were 0.64 ± 0.24 µm wide and 3.99 ± 1.68 µm long",
+    "sources": [
+     "human:shami2021"
+    ]
+   }
+  }
+ ]
 }

@@ -12,6 +12,8 @@ export const MACHINES_CSS = `
 .swatch-mach-chosen { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
 /* A machine looked for by family and not found: in the List only, never on the bench; a plain, empty mark. */
 .swatch-mach-none { background: transparent; box-shadow: inset 0 0 0 1px var(--plate-edge); border-radius: 50%; }
+/* An organelle on the shelf: drawn as the Cell view draws it, in its own colour; the swatch is the nucleus's tone, a large round body. */
+.swatch-mach-organelle { background: radial-gradient(circle at 35% 35%, color-mix(in srgb, var(--bio-nucleus) 45%, var(--bg)), var(--bio-nucleus) 75%); border-radius: 50%; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--bio-nucleus) 60%, var(--bg)); }
 .swatch-mach-room { background: var(--plate); box-shadow: inset 0 0 0 1px var(--plate-edge); }
 ${Object.entries(GROUPS).map(([group, token]) => `.swatch-mach-g-${group} { background: var(${token}); }`).join("\n")}
 `;

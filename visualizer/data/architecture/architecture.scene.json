@@ -5,7 +5,7 @@
  "caveat": "Capabilities vary by model, and whole-cell integration is ongoing. No single run uses every part drawn here.",
  "meta": {
   "as_of": "2026-11-20",
-  "generated_at": "2026-11-20T12:28:49Z",
+  "generated_at": "2026-11-20T16:19:57Z",
   "revision": "93fc8c2c",
   "revision_date": "2026-11-20",
   "dirty": false,
@@ -4154,7 +4154,22 @@
     }
    ],
    "cell": {
-    "facts": [],
+    "facts": [
+     {
+      "label": "Nucleus",
+      "value": "nuclei isolated from HeLa cells, a human cell line, in the paper's column “HeLa (fresh)”, were 17.18 ± 0.39 µm wide (the mean of their long and short axes, by light microscopy) and 16.20 ± 0.48 µm high (by atomic force microscopy), mean ± s.e.m. of 21 nuclei; the same table's column “HeLa” gives 12.73 ± 0.54 µm wide and 10.91 ± 0.59 µm high (23 nuclei). These are nuclei taken out of the cell, not nuclei measured in an intact cell",
+      "sources": [
+       "lherbette2017"
+      ]
+     },
+     {
+      "label": "Mitochondrion",
+      "value": "the paper's normal mitochondria, beside the giant ones it studies, in the liver of people with non-alcoholic fatty liver disease, measured in three dimensions, were 0.55 ± 0.15 µm wide and 1.18 ± 0.59 µm long, total means ± S.D. combining the measurements from each patient (four cells from each patient, 16 cells in all); its giant mitochondria were 0.64 ± 0.24 µm wide and 3.99 ± 1.68 µm long",
+      "sources": [
+       "shami2021"
+      ]
+     }
+    ],
     "parts": {
      "membranes": 1,
      "wall": false,
@@ -4181,6 +4196,20 @@
      "licence": "CC BY 4.0",
      "class": "permissive",
      "accessed": "2026-11-15"
+    },
+    "lherbette2017": {
+     "text": "Lherbette M and others (2017) Atomic Force Microscopy micro-rheology reveals large structural inhomogeneities in single cell-nuclei. Scientific Reports 7:8116. Table 1, the columns “HeLa (fresh)” and “HeLa” (mean ± s.e.m.; the width by light microscopy as the mean of the long and short axes, the height by atomic force microscopy), and the Methods on how the width was measured. Read on the journal's page.",
+     "doi": "10.1038/s41598-017-08517-6",
+     "licence": "CC BY 4.0, as the article's Rights and permissions section states",
+     "class": "permissive",
+     "accessed": "2026-11-20"
+    },
+    "shami2021": {
+     "text": "Shami GJ and others (2021) Three-dimensional ultrastructure of giant mitochondria in human non-alcoholic fatty liver disease. Scientific Reports 11:3319. Results, the sentence that begins “On average GM were 3.5 × longer”, which gives the widths and lengths of the giant (GM) and normal (NM) mitochondria; the Methods give the data as total means ± S.D. combining the measurements from each patient, four cells from each (16 cells in total). Read on the journal's page.",
+     "doi": "10.1038/s41598-021-82884-z",
+     "licence": "CC BY 4.0, as the article's Rights and permissions section states",
+     "class": "permissive",
+     "accessed": "2026-11-20"
     }
    },
    "cell_types": [
@@ -4272,7 +4301,22 @@
       ]
      },
      "capabilities": {},
-     "facts": [],
+     "facts": [
+      {
+       "label": "Nucleus",
+       "value": "nuclei isolated from HeLa cells, a human cell line, in the paper's column “HeLa (fresh)”, were 17.18 ± 0.39 µm wide (the mean of their long and short axes, by light microscopy) and 16.20 ± 0.48 µm high (by atomic force microscopy), mean ± s.e.m. of 21 nuclei; the same table's column “HeLa” gives 12.73 ± 0.54 µm wide and 10.91 ± 0.59 µm high (23 nuclei). These are nuclei taken out of the cell, not nuclei measured in an intact cell",
+       "sources": [
+        "lherbette2017"
+       ]
+      },
+      {
+       "label": "Mitochondrion",
+       "value": "the paper's normal mitochondria, beside the giant ones it studies, in the liver of people with non-alcoholic fatty liver disease, measured in three dimensions, were 0.55 ± 0.15 µm wide and 1.18 ± 0.59 µm long, total means ± S.D. combining the measurements from each patient (four cells from each patient, 16 cells in all); its giant mitochondria were 0.64 ± 0.24 µm wide and 3.99 ± 1.68 µm long",
+       "sources": [
+        "shami2021"
+       ]
+      }
+     ],
      "loop": null
     }
    ],

@@ -1015,6 +1015,7 @@ class CellsViewer extends HTMLElement {
       );
     }
     this.rail.hidden = this.railToggle.hidden = !chrome.rail;
+    this.frame.classList.toggle("rail-beside-panel", Boolean(chrome.rail && chrome.railBesidePanel)); // the rail stays beside an open panel (styles.js)
     if (!chrome.rail) this.toggleRail(false);
     if (chrome.rail) {
       this.rail.replaceChildren(
