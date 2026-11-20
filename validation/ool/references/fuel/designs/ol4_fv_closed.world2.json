@@ -1,0 +1,351 @@
+{
+ "format": "ool_references.world2@1",
+ "id": "ol4_fv_closed",
+ "registered": "2026-11-20",
+ "source": "docs/ORIGIN_OF_LIFE_FUEL_DESIGN.md at tag ol4-fuel-note-2026-11-20",
+ "description": "Closed vesicle at zero drive (V1, row OL4-5): mu_F = mu_W; 8 block molecules in membrane and pool; two impermeant lumen molecules put the kink between tense and floppy at W = 5; it cannot lyse (sigma_max 1e3 N/m).",
+ "units": {
+  "q": "m^2",
+  "concentration": "mol/L (held places: mM)",
+  "volume": "L",
+  "k_ins": "m/s",
+  "sigma_max": "N/m",
+  "energy": "k_BT",
+  "time": "s"
+ },
+ "conventions": {
+  "free_energy_form": "discrete",
+  "condensed_measure": "multinomial",
+  "membrane_kinetics": "count_on_m",
+  "lumen_volume": "osmotic",
+  "empty_catalyst_phase": "uncatalysed",
+  "last_molecule": "kept",
+  "exchange_encounter": "insertion_area"
+ },
+ "geometry": {
+  "interface": "cells.assembly_geometry@1",
+  "model": "cells.bilayer_geometry@1",
+  "area_quantum_m2": 9.608361658167243e-18,
+  "vesicle_floor_quanta": 2,
+  "sigma_max_N_per_m": 1000.0,
+  "sigma_max_source": "a declared test parameter, unsourced",
+  "kappa_kT": 10.0,
+  "kappa_bar_kT": -10.0,
+  "closure_cost_kT": "8 pi kappa + 4 pi kappa_bar"
+ },
+ "temperature_K": 298.15,
+ "standard_concentration_M": 0.001,
+ "outside_osmolarity_M": 0.3,
+ "pool_volume_L": 6.642156268695387e-21,
+ "species": [
+  {
+   "id": "B",
+   "moieties": {
+    "block": 1
+   },
+   "standard_mu_kT": {
+    "bilayer": -1.0,
+    "solution": 0.5
+   }
+  },
+  {
+   "id": "F",
+   "moieties": {
+    "fuel": 1
+   },
+   "standard_mu_kT": {
+    "solution": 1.0
+   }
+  },
+  {
+   "id": "L1",
+   "moieties": {
+    "block": 1
+   },
+   "standard_mu_kT": {
+    "bilayer": -2.0,
+    "solution": 1.0
+   }
+  },
+  {
+   "id": "L2",
+   "moieties": {
+    "block": 1
+   },
+   "standard_mu_kT": {
+    "bilayer": -2.0,
+    "solution": 1.0
+   }
+  },
+  {
+   "id": "S",
+   "moieties": {
+    "block": 1
+   },
+   "standard_mu_kT": {
+    "bilayer": -2.5,
+    "solution": -1.5
+   }
+  },
+  {
+   "id": "W",
+   "moieties": {
+    "fuel": 1
+   },
+   "standard_mu_kT": {
+    "solution": 1.0
+   }
+  },
+  {
+   "id": "X",
+   "moieties": {
+    "x": 1
+   },
+   "standard_mu_kT": {
+    "solution": 0.0
+   }
+  }
+ ],
+ "membrane": [
+  {
+   "species": "B",
+   "area_quanta": 1
+  },
+  {
+   "species": "S",
+   "area_quanta": 1
+  },
+  {
+   "species": "L1",
+   "area_quanta": 1
+  },
+  {
+   "species": "L2",
+   "area_quanta": 1
+  }
+ ],
+ "lumen": [
+  {
+   "species": "X"
+  }
+ ],
+ "pool": {
+  "finite": [
+   "B",
+   "S",
+   "L1",
+   "L2",
+   "X"
+  ],
+  "held_mM": {
+   "F": 1.0,
+   "W": 1.0
+  }
+ },
+ "steps": [
+  {
+   "id": "f1",
+   "kind": "pool",
+   "locus": "pool",
+   "law": "cells.stochastic_mass_action@1",
+   "reactants": [
+    {
+     "phase": "pool",
+     "species": "F",
+     "count": 1,
+     "held": true
+    },
+    {
+     "phase": "pool",
+     "species": "S",
+     "count": 1
+    }
+   ],
+   "products": [
+    {
+     "phase": "pool",
+     "species": "B",
+     "count": 1
+    },
+    {
+     "phase": "pool",
+     "species": "W",
+     "count": 1,
+     "held": true
+    }
+   ],
+   "forward_rate_constant_per_s": 0.5
+  },
+  {
+   "id": "jB",
+   "kind": "join",
+   "species": "B",
+   "direction": "pool_to_membrane",
+   "encounter": "insertion_area",
+   "constant": "k_ins_m_per_s",
+   "value": 1e-10
+  },
+  {
+   "id": "jS",
+   "kind": "join",
+   "species": "S",
+   "direction": "pool_to_membrane",
+   "encounter": "insertion_area",
+   "constant": "k_ins_m_per_s",
+   "value": 8e-11
+  },
+  {
+   "id": "jL1",
+   "kind": "join",
+   "species": "L1",
+   "direction": "pool_to_membrane",
+   "encounter": "insertion_area",
+   "constant": "k_ins_m_per_s",
+   "value": 2e-11
+  },
+  {
+   "id": "jL2",
+   "kind": "join",
+   "species": "L2",
+   "direction": "pool_to_membrane",
+   "encounter": "insertion_area",
+   "constant": "k_ins_m_per_s",
+   "value": 2e-11
+  },
+  {
+   "id": "a1",
+   "kind": "membrane",
+   "locus": "membrane",
+   "law": "cells.stochastic_mass_action@1",
+   "membrane_kinetics": "count_on_m",
+   "reactants": [
+    {
+     "phase": "membrane",
+     "species": "B",
+     "count": 1
+    },
+    {
+     "phase": "membrane",
+     "species": "L1",
+     "count": 1
+    }
+   ],
+   "products": [
+    {
+     "phase": "membrane",
+     "species": "L1",
+     "count": 2
+    }
+   ],
+   "forward_rate_constant_per_s": 2.0,
+   "transition_state_factor": [
+    {
+     "catalyst": "L1",
+     "phase": "membrane",
+     "beta": 8.0,
+     "ddG_kT": 2.1972245773362196
+    }
+   ]
+  },
+  {
+   "id": "a2",
+   "kind": "membrane",
+   "locus": "membrane",
+   "law": "cells.stochastic_mass_action@1",
+   "membrane_kinetics": "count_on_m",
+   "reactants": [
+    {
+     "phase": "membrane",
+     "species": "B",
+     "count": 1
+    },
+    {
+     "phase": "membrane",
+     "species": "L2",
+     "count": 1
+    }
+   ],
+   "products": [
+    {
+     "phase": "membrane",
+     "species": "L2",
+     "count": 2
+    }
+   ],
+   "forward_rate_constant_per_s": 2.0,
+   "transition_state_factor": [
+    {
+     "catalyst": "L2",
+     "phase": "membrane",
+     "beta": 8.0,
+     "ddG_kT": 2.1972245773362196
+    }
+   ]
+  },
+  {
+   "id": "d1",
+   "kind": "membrane",
+   "locus": "membrane",
+   "law": "cells.stochastic_mass_action@1",
+   "membrane_kinetics": "count_on_m",
+   "reactants": [
+    {
+     "phase": "membrane",
+     "species": "L1",
+     "count": 1
+    }
+   ],
+   "products": [
+    {
+     "phase": "membrane",
+     "species": "S",
+     "count": 1
+    }
+   ],
+   "forward_rate_constant_per_s": 0.3,
+   "transition_state_factor": []
+  },
+  {
+   "id": "d2",
+   "kind": "membrane",
+   "locus": "membrane",
+   "law": "cells.stochastic_mass_action@1",
+   "membrane_kinetics": "count_on_m",
+   "reactants": [
+    {
+     "phase": "membrane",
+     "species": "L2",
+     "count": 1
+    }
+   ],
+   "products": [
+    {
+     "phase": "membrane",
+     "species": "S",
+     "count": 1
+    }
+   ],
+   "forward_rate_constant_per_s": 0.3,
+   "transition_state_factor": []
+  }
+ ],
+ "founder": {
+  "n": [
+   1,
+   1,
+   2,
+   2
+  ],
+  "l": [
+   2
+  ],
+  "p": [
+   1,
+   1,
+   0,
+   0,
+   0
+  ]
+ },
+ "provenance": "unsourced: every value is a declared test parameter of OL5's fuel references"
+}
