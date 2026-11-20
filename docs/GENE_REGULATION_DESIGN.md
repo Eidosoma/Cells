@@ -176,8 +176,9 @@ Sources.
 
 **At equilibrium: the thermodynamic model.**
 - A promoter's states s have statistical weights w_s = Π_L (c_L/K_{L,s})^{n_L,s}. The fraction of
-  time in the active states is Σ_active w_s / Σ_s w_s (Shea and Ackers 1985; Bintu et al. 2005;
-  named from memory, not read).
+  time in the active states is Σ_active w_s / Σ_s w_s. Shea and Ackers 1985 couple such
+  statistical-thermodynamic probabilities to synthesis in phage λ's O_R system **(checked**,
+  abstract); Bintu et al. 2005 generalise the form (named from memory, not read).
 - **`rapid_binding@1` computes exactly this.** Its binding polynomial,
   P_B = Σ_f exp(ln β'_f + Σ_L n_{L,f} ln x_L), is that partition function. The registry declares
   each form's standard potential, from which β follows (`laws/reactions/rapid_binding.py`:11–17;
@@ -522,7 +523,9 @@ nodes or a stochastic treatment."
 
 **When the deterministic form is exact.**
 - **A first-order network with given inputs.** The rate equations are then the exact mean of the
-  chemical master equation (Jahnke and Huisinga 2007, named from memory, not read).
+  chemical master equation. For monomolecular systems the distribution is a convolution of
+  multinomial and product Poisson distributions whose parameters follow the reaction-rate equations
+  (Jahnke and Huisinga 2007, **(checked**, abstract).
 - **Independent, identical sites in a given environment.** Occupancy is exact in expectation
   (MOLECULAR_MACHINES §3.1, point 1).
 - **So an open-loop expression chain is exact in the mean at any copy number,** when the regulator
@@ -1024,7 +1027,10 @@ client; publisher pages for Science, Nature, ASM and PNAS refused automated acce
   Bacteriol* 191:3740–3746: their rates were read only through BioNumbers entries, not in the
   sources.
 
-**Named from memory, not read:** Shea and Ackers 1985; Bintu et al. 2005; Jahnke and Huisinga
-2007; Peccoud and Ycart 1995; Shahrezaei and Swain 2008; Munsky and Khammash 2006; Anderson 2007;
-Haseltine and Rawlings 2002; Salis and Kaznessis 2005; Cai 2007; Barrio et al. 2006; MacDonald
-1978, as the producer cites it.
+**Also checked, abstracts only (Europe PMC):** Shea MA, Ackers GK (1985) *J Mol Biol* 181:211–230,
+doi:10.1016/0022-2836(85)90086-5; Jahnke T, Huisinga W (2007) *J Math Biol* 54:1–26,
+doi:10.1007/s00285-006-0034-x.
+
+**Named from memory, not read:** Bintu et al. 2005; Peccoud and Ycart 1995; Shahrezaei and Swain
+2008; Munsky and Khammash 2006; Anderson 2007; Haseltine and Rawlings 2002; Salis and Kaznessis
+2005; Cai 2007; Barrio et al. 2006; MacDonald 1978, as the producer cites it.
