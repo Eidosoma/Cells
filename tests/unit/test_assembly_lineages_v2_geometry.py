@@ -18,7 +18,8 @@ Each claim with a planted error it must catch (D187):
 - every refusal of §0.2b-§0.2c that this version owns.
 
 World-compiling cost: two runs of the lumen world at 128 molecules (the ledger's, and the
-bundle's with its uniforms recorded), 31.62 s for the whole file on the timed lane; the rate
+bundle's with its uniforms recorded), and one run of the declared-lumen population, 43.92 s for
+the whole file on the timed lane; the rate
 tables, the probe and the refusals are host arithmetic. Reason: the ledger's closure and the
 oracle's replay need the device's run.
 """
