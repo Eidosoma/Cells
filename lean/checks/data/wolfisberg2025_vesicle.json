@@ -1,0 +1,19 @@
+{
+  "dataset_id": "wolfisberg2025_deflation@1",
+  "doi": "10.1021/jacs.5c13925",
+  "locator": "Figure 2B, bottom two printed rows, journal p. 38721. Figure 3A gives the nominal osmometer precision.",
+  "preparation": "One POPC giant unilamellar vesicle weakly adhered to a supported bilayer by 0.4% PEG. Successive bath steps reached equilibrium in approximately one hour each. Reduced volume is enclosed volume divided by the spherical volume at the measured membrane area.",
+  "initial_lumen_sucrose_mM": 25,
+  "initial_bath_mOsm_L": 25,
+  "bath_precision_mOsm_L": 2,
+  "label_rounding_reduced_volume": 0.005,
+  "points": [
+    {"bath_mOsm_L": 26, "reduced_volume": 0.98},
+    {"bath_mOsm_L": 32, "reduced_volume": 0.69},
+    {"bath_mOsm_L": 46, "reduced_volume": 0.42},
+    {"bath_mOsm_L": 58, "reduced_volume": 0.30},
+    {"bath_mOsm_L": 83, "reduced_volume": 0.21}
+  ],
+  "mapping": "Use the prepared 25 mM sucrose as 25 mOsm/L and take the reference vesicle to be isotonic and spherical. A second prediction uses only the first measured pair to set the effective trapped solute per spherical volume. The four later measurements are withheld from that estimate.",
+  "uncertainty": "The labels report one vesicle and are rounded to two decimals in reduced volume. The paper supplies no point-specific geometry uncertainty for this series. The 21-vesicle analysis in Figure 3 is a separate aggregate context."
+}
