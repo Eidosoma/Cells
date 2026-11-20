@@ -7762,3 +7762,25 @@ records 2⁻⁴⁹ fmol, but "+24, +2⁻⁴⁹, −24" records 0.
 - **FR-26:** owned state when a cell is replaced.
 
 Each becomes a design note before code (D142) and a general feature (D144).
+
+## D240: FR-20's design approved; the user runs FR-7's data search
+
+2026-11-20, about 17:37 UTC. The user, on the lead's two questions: "1. Small new operator as you
+suggest", "2. I'm doing the search myself".
+
+1. **FR-20, the pulse and washout: the design note's recommendation is approved**
+   (docs/ASSEMBLY_WASHOUT_DESIGN.md). A new operator, `cells.pool_replacement@1`: a host stop that
+   draws nothing, keeps every assembly as it stands, and replaces the pool from a declared source. It
+   records the old pool to the sink and the fresh pool from its source, with their free energies,
+   and gives relations a pool node. The note's five answers:
+   - **Q1:** the wash bath has the pool's own volume.
+   - **Q2:** a pulse is a replacement with tracer-containing solution, not an addition.
+   - **Q3:** a held tracer concentration is refused.
+   - **Q4:** the transfer's osmotic refusal is kept as it is.
+   - **Q5:** the name is `cells.pool_replacement@1`.
+
+   The cost is about 2–2.5 agent-days. The origin-of-life builder builds it now, ahead of its own
+   repairs (D237's priority). An exposed site that binds in one step is FR-21's ground.
+2. **FR-7's measured response (D238 item 4): the user does the search for an openly licensed
+   dataset of measured channel lifetimes.** The agents' search was stopped by a safeguard and is
+   not retried by any route. FR-7's item 4 waits for the user's source.
