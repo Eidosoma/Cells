@@ -38,6 +38,21 @@ DIGITS = 20
 # "base_form_restored"; Eq. 16 "subscripts_swapped".
 FORMS = {law.key: tuple(law.FORMS) for law in laws.CYCLE_LAWS}
 FORMS["nadh_supply"] = ("declared",)
+
+# The registered subset (the lead, 20 November): None while proposed, so every form has rows.
+# At registration this becomes {law key: (chosen forms)} for the failing laws, a reviewed code
+# change. The unchosen failing forms then lose their rows and plants, but their stall rows stay
+# as states of the law, labelled "registered": false.
+REGISTERED_FORMS: dict | None = None
+
+
+def registered_forms(key):
+    if REGISTERED_FORMS is None or key not in REGISTERED_FORMS:
+        return FORMS[key]
+    chosen = tuple(f for f in FORMS[key] if f in REGISTERED_FORMS[key])
+    if not chosen:
+        raise ValueError(f"no registered form for {key}")
+    return chosen
 INPUT_KEYS = {
     "complex_I": ("dpsi_mV", "h_N", "h_P", "NADH_N", "NAD_N", "Q_N", "QH2_N"),
     "complex_III_eq7": ("dpsi_mV", "h_N", "h_P", "QH2_N", "Q_N", "c3_P", "c2_P"),
@@ -89,8 +104,10 @@ def law_states(law):
             for bname, base in bases:
                 s0 = states.full_state(P, base)
                 d = law.form_d_closed(form, DEC, P, C, s0)
-                out.append((f"stall:{form}:{bname}", "stall",
-                            {"form": form, "target_x": hp.fmt(-d, 20)},
+                meta = {"form": form, "target_x": hp.fmt(-d, 20)}
+                if form not in registered_forms(law.key):
+                    meta["registered"] = False
+                out.append((f"stall:{form}:{bname}", "stall", meta,
                             checks.place_at_x(law, P, C, s0, -d)))
         spec = {"pH_N": "7.2", "pH_P": "7.2"} if law.key == "phosphate_carrier" else {"pH_N": "7.0"}
         s0 = states.full_state(P, spec)
@@ -250,12 +267,12 @@ def build_rows():
         out_rows[law.key] = {}
         refs[law.key] = {}
         worst_own = Decimal(0)
-        for form in FORMS[law.key]:
+        for form in registered_forms(law.key):
             rows = []
             refs[law.key][form] = []
             for sid, kind, meta, s_exact in sts:
                 fl, s = row_state(law, s_exact)
-                if form == FORMS[law.key][0]:
+                if form == registered_forms(law.key)[0]:
                     out_states[law.key].append({"id": sid, "kind": kind, **meta, "inputs": fl})
                 with precision():
                     ref = reference(law, P, C, s, form)
@@ -456,6 +473,8 @@ def measure_plants(refs):
                 "by_quantity": {k: {"caught": c, "max_margin": hp.fmt(mx, 3)}
                                 for k, (c, mx) in sorted(by_q.items())},
             }
+        if not entry["by_form"]:
+            continue  # every form it would be measured against is unregistered
         entry["caught"] = all(f["caught"] > 0 for f in entry["by_form"].values())
         out[pl.pid] = entry
     return out
@@ -480,7 +499,7 @@ def run_checks(exact, refs):
                 grid = [(sid, s) for sid, k, _m, s in exact[law.key] if k in ("corner", "interior", "center")]
                 res["violation"] = {f: checks.printed_violation(law, grid, bases, f)
                                     for f in FORMS[law.key] if law.form_kind(f) == "two_term"}
-        form0 = FORMS[law.key][0]
+        form0 = registered_forms(law.key)[0]
         xs = [r[2]["x"] for r in refs[law.key][form0]]
         grid_x = [r[2]["x"] for r, (sid, k, _m, _s) in zip(refs[law.key][form0], exact[law.key])
                   if k in ("corner", "center", "interior")]
@@ -527,7 +546,7 @@ def law_meta():
                 "forms": {f: {"kind": law.form_kind(f),
                               "balanced": True if f == "declared" else law.form_balanced(f),
                               "reads": law.form_reads(f)}
-                          for f in FORMS[law.key]},
+                          for f in registered_forms(law.key)},
             }
             meta[law.key] = m
         sp = laws.SUPPLY

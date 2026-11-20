@@ -35,7 +35,7 @@ def test_interface_parses_and_rows_match_states():
     for key, forms in rows["laws"].items():
         ids = [st["id"] for st in inputs["states"][key]]
         assert len(ids) == len(set(ids))
-        assert tuple(forms) == design.FORMS[key]
+        assert tuple(forms) == design.registered_forms(key)
         for form, rs in forms.items():
             assert [r["id"] for r in rs] == ids
             for r in rs:
@@ -79,7 +79,7 @@ def test_physics_at_a_few_exact_states():
             if not law.has_flux:
                 continue
             x0 = law.x(DEC, P, C, s0)
-            for form in design.FORMS[law.key]:
+            for form in design.FORMS[law.key]:  # every form, registered or not
                 A_l, B_l = law.literal_terms(form, DEC, P, C, s0)
                 d = law.kappa_inv * (B_l / A_l).ln() - x0
                 if law.form_kind(form) == "two_term":
@@ -120,7 +120,9 @@ def test_recorded_verdicts():
     assert chk["supply"]["passes"]
     assert all(v["passes"] for v in chk["form_identities"].values())
     assert all(e["caught"] for e in pl["plants"].values())
-    assert set(pl["plants"]) == {p.pid for p in plants.PLANTS}
+    assert set(pl["plants"]) <= {p.pid for p in plants.PLANTS}
+    if design.REGISTERED_FORMS is None:
+        assert set(pl["plants"]) == {p.pid for p in plants.PLANTS}
 
 
 def test_nothing_imports_cells():
