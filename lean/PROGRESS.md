@@ -42,7 +42,7 @@ At fixed 8.0 mN/m aspiration tension, the intact fraction of pure DOPC vesicles 
 
 The compiled lysis reproducer still gave opposite material outcomes for two equivalent area units at both close thresholds. Both representations agreed with the reference for thresholds 1% away. The shared-pool reporting failure also persists. The two 96-event osmotic populations conserved inventory, but the one-slot fixed-volume case (10⁻²² L) raised a TypeError while assembling the output. [Lysis cases](checks/vesicle.py#L244) · [Shared-pool reproducer](checks/shared_pool.py) · [Earlier fixed-volume finding](#shared-pool-declared-volume)
 
-The engine comparisons used CPU float64 at `2ae89b5e2cd19fdcd4727eb16a4d33cc20339007`. Lean 4.19.0 checked the 16 new public theorems with standard axioms. [Mitochondrial comparison](checks/mitochondrial_cycles.py) · [Voltage comparison](checks/conditioned_voltage.py) · [Vesicle comparison](checks/vesicle.py)
+The engine comparisons used CPU float64 at `2ae89b5e2cd19fdcd4727eb16a4d33cc20339007`. The three numerical retests cover the earlier failures whose referenced engine files had changed at the start of this pass. Lean 4.19.0 checked the 16 new public theorems with standard axioms. The seven relevant engine and reference test files plus eight repository guards passed 194 tests. The five catalog tests also passed. [Mitochondrial comparison](checks/mitochondrial_cycles.py) · [Voltage comparison](checks/conditioned_voltage.py) · [Vesicle comparison](checks/vesicle.py)
 
 ## 20 November 2026 · Cell compartments, membrane trafficking and division
 
