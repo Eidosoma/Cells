@@ -562,6 +562,45 @@ are not the user's approval.
    - on the one-particle fixture, a bound ligand stays through FR-20's wash;
    - a released one rebinds.
 
+### 0.2g The lead's rulings for FR-21's prescribed shell (20 November 2026; D244, D246)
+
+The design is [ASSEMBLY_SHELL_DESIGN.md](ASSEMBLY_SHELL_DESIGN.md) §4.2–§4.3, built to the
+requester's acceptance (docs/FEATURE_REQUESTS.md, FR-21).
+
+1. **`cells.prescribed_shell@1` is a geometry kind beside the bilayer.**
+   - It declares `area_m2` (value, provenance), and its lumen is `lumen_volume: declared` with
+     `phases.lumen.volume_L`.
+   - The wall is the membrane phase, and its species carry no area quanta. So the wall's counts,
+     binding sites included, set neither the area nor the lumen.
+2. **It has its own entry law, `cells.shell_permeation@1`:** a⁺ = P_s·A_sh·ρ0·θ⁺, with the exit
+   the same law applied to the products.
+   - The extent is a constant of the world, so G_s = P_s·A_sh. The run reports G_s per permeant,
+     in world.json's `derived.shell`.
+   - `cells.membrane_permeation@1`'s text is unchanged (D147).
+3. **The gate factor, `cells.gate_factor@1` (the note's G2).** Its fractions are over the gate's
+   declared forms only: g = Σ m_j e^ΔΔG‡ / Σ m_j over the gate.
+   - So the site count cannot dilute a gated entry, which the transition-state factor's
+     whole-wall fractions would do.
+   - It is evaluated on the common state m, as that factor is, so detailed balance is kept.
+   - A gated shell is therefore built, not refused.
+4. **A shell refuses,** at the parse and each with its reason:
+   - a join (phase exchange);
+   - the bilayer's permeation;
+   - an osmotic lumen;
+   - `exchange_encounter`;
+   - the bilayer's keys: area quanta, a floor, a closure cost, a lysis tension;
+   - a missing lumen;
+   - division and shear.
+
+   A bilayer refuses the shell's permeation.
+5. **One shell type per world** in version 1, with its area and lumen as world constants.
+   - Population mode admits it: a prescribed wall cannot empty.
+   - FR-22's checkpoints carry over, since the state stays integer counts.
+6. **Dispatch is static, by the geometry's ID,** so every bilayer and OL1 program traces as
+   before. Every existing world stays bitwise, which the invariance gate checks.
+7. **The run's verdict** on a shell world is the shell probe's (`balance.shell_verdict`). The other
+   verdicts are unchanged, so no other run's record moves.
+
 ### 0.3 Estimate, order and questions
 
 - **The estimate** (§8): about 33–51 agent-days in ten milestones, plus 3–5 if templating is chosen.

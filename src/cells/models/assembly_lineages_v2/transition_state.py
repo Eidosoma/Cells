@@ -117,11 +117,11 @@ def parse_data(raw, world):
                 "refused, §2.4)"
             )
         out.append((catalyst, step, float(value)))
-    _refuse_steps_off_the_membrane(out, world)  # after every earlier check, whose messages stand
+    refuse_steps_off_the_membrane(out, world)  # after every earlier check, whose messages stand
     return {"catalysing_phase": raw["catalysing_phase"], "entries": tuple(out)}
 
 
-def _refuse_steps_off_the_membrane(entries, world):
+def refuse_steps_off_the_membrane(entries, world):
     """A factor on a step that lies wholly in the pool or wholly in the lumen has no declared
     meaning: a single lineage would scale it by the membrane's fractions, while a population
     evaluates the pool's steps at an empty vesicle, where g = 1 (the lead's ruling of 20 November,

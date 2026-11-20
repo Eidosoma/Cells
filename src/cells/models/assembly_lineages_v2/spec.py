@@ -60,8 +60,10 @@ from cells.models.assembly_lineages_v2 import (
     MODES,
     PHASE_EXCHANGE,
     POPULATION,
+    PRESCRIBED_SHELL,
     RATE_FACTOR_INTERFACE,
     REACTION_INTERFACE,
+    SHELL_PERMEATION,
     streams,
 )
 from cells.models.assembly_lineages_v2 import conventions as conventions_rules
@@ -192,7 +194,10 @@ def parse_terms(raw, world):
 def parse_world(raw):
     _keys(raw, world_rules.WORLD_KEYS, world_rules.WORLD_REQUIRED, "world")
     units = world_rules.parse_units(raw["units"])
-    conventions = conventions_rules.parse(raw["conventions"], geometry="geometry" in raw)
+    shell = _declares_shell(raw)
+    conventions = conventions_rules.parse(
+        raw["conventions"], geometry="geometry" in raw and not shell
+    )
     species = world_rules.parse_species(raw["species"])
     osmotic = conventions.lumen_volume == conventions_rules.OSMOTIC
     places, volumes = world_rules.parse_phases(raw["phases"], species, osmotic=osmotic)
@@ -327,6 +332,29 @@ def _osmotic_refusals(world):
         )
 
 
+def _declares_shell(raw):
+    """FR-21: whether the world's geometry is a prescribed shell, refusing first the conventions a
+    shell cannot have, with their reasons (a bilayer's conventions are parsed as before)."""
+    block = raw.get("geometry")
+    if not (isinstance(block, dict) and block.get("law") == PRESCRIBED_SHELL):
+        return False
+    tokens = raw["conventions"] if isinstance(raw["conventions"], dict) else {}
+    if tokens.get("lumen_volume") == conventions_rules.OSMOTIC:
+        raise ConfigError(
+            "world: a prescribed shell's lumen is declared, not osmotic: the wall does not swell "
+            "(FR-21)"
+        )
+    if conventions_rules.ENCOUNTER in tokens:
+        raise ConfigError(
+            f"world: a prescribed shell declares no {conventions_rules.ENCOUNTER}: it takes up no "
+            "amphiphiles, so no join is declared (FR-21)"
+        )
+    for step in raw["steps"] if isinstance(raw["steps"], list) else ():
+        if isinstance(step, dict) and step.get("law") in (PHASE_EXCHANGE, MEMBRANE_PERMEATION):
+            _refuse_other_kind(step.get("id"), step["law"], PRESCRIBED_SHELL)
+    return True
+
+
 def _declared_binding(step, world, by_name):
     """FR-21 (§0.2f): exactly one pool molecule and one declared site forming the site's declared
     complex, X@pool + site@membrane -> complex@membrane, declared in that direction, under
@@ -365,6 +393,8 @@ def _geometry_refusals(world):
                     "and the world declares none (§0.2c rule 3)"
                 )
             continue
+        if world.geometry is not None:  # FR-21: each geometric law belongs to its geometry kind.
+            _refuse_other_kind(step.id, step.law, world.geometry[0])
         if not geometric:
             if step.locus == world_rules.MEMBRANE and len(phases) > 1:
                 if _declared_binding(step, world, by_name):
@@ -386,6 +416,8 @@ def _geometry_refusals(world):
             "world: a geometry's vesicle floor requires last_molecule kept (§0.2c rule 5), not "
             f"{world.conventions.last_molecule!r}"
         )
+    if world.geometry[0] == PRESCRIBED_SHELL:
+        return  # FR-21: a prescribed wall has no floor; nothing removes it
     from cells.models.assembly_lineages_v2 import geometry as geometry_rules
 
     quanta = geometry_rules.place_quanta(world, len(world.places))
@@ -397,9 +429,28 @@ def _geometry_refusals(world):
         )
 
 
+def _refuse_other_kind(step_id, law_id, geometry):
+    """FR-21: a shell world takes cells.shell_permeation@1 and refuses joins and the bilayer's
+    permeation; a bilayer world refuses the shell's permeation."""
+    if geometry == PRESCRIBED_SHELL and law_id in (PHASE_EXCHANGE, MEMBRANE_PERMEATION):
+        reason = (
+            "a prescribed shell takes up no amphiphiles, so it has no join"
+            if law_id == PHASE_EXCHANGE
+            else f"a shell's entry takes {SHELL_PERMEATION}, at its declared area"
+        )
+        raise ConfigError(f"world: step {step_id}'s law {law_id} is refused: {reason} (FR-21)")
+    if geometry != PRESCRIBED_SHELL and law_id == SHELL_PERMEATION:
+        raise ConfigError(
+            f"world: step {step_id}'s law {SHELL_PERMEATION} is a prescribed shell's; a bilayer's "
+            f"entry takes {MEMBRANE_PERMEATION} (FR-21)"
+        )
+
+
 def _geometric_shape(step, law, by_name):
-    """Phase exchange is a join and permeation an entry, one molecule of one species (rule 2)."""
-    want = {PHASE_EXCHANGE: "membrane", MEMBRANE_PERMEATION: "lumen"}.get(law.law_id)
+    """Phase exchange is a join and permeation an entry, one molecule of one species (rule 2); so
+    is the shell's permeation (FR-21)."""
+    want = {PHASE_EXCHANGE: "membrane", MEMBRANE_PERMEATION: "lumen",
+            SHELL_PERMEATION: "lumen"}.get(law.law_id)  # fmt: skip
     ok = want is not None and len(step.reactants) == len(step.products) == 1
     if ok:
         (r, a), (p, b) = step.reactants[0], step.products[0]

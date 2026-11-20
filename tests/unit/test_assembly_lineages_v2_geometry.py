@@ -15,13 +15,18 @@ Each claim with a planted error it must catch (D187):
   the osmotic volume and tension, which need an outside osmolarity it does not have (the Lean
   proofs project's finding at 5011ed3d, whose run returned no records);
 - OL1's worlds carry no geometry: no layout leaf, no key written, OL1's verdict;
-- every refusal of §0.2b-§0.2c that this version owns.
+- every refusal of §0.2b-§0.2c that this version owns;
+- FR-21's site step (§0.2f): a declared binding's closed-form rates and the identity, and the
+  shapes rule 3 still refuses;
+- FR-21's shell (§0.2g), the requester's acceptance: a tracer's entry and exit follow the declared
+  conductance P_s A_sh alone (planted: the transition-state factor over every wall molecule, under
+  which the site count moves the gated rate); the shell probe keeps the identity, a short run
+  closes its books, and every refusal of a shell.
 
 World-compiling cost: two runs of the lumen world at 128 molecules (the ledger's, and the
-bundle's with its uniforms recorded), and one run of the declared-lumen population, 43.92 s for
-the whole file on the timed lane; the rate
-tables, the probe and the refusals are host arithmetic. Reason: the ledger's closure and the
-oracle's replay need the device's run.
+bundle's with its uniforms recorded), one run of the declared-lumen population, and FR-21's one
+short shell run; the rate tables, the probes and the refusals are host arithmetic. Reason: the
+ledger's closure and the oracle's replay need the device's run.
 """
 
 import copy
@@ -33,11 +38,16 @@ import pytest
 from cells.definitions.specs import ConfigError, parse_spec
 from cells.models.assembly_lineages_v2 import (
     BILAYER_GEOMETRY,
+    GATE_FACTOR,
     IDEAL_MIXING,
     MASS_ACTION,
     MEMBRANE_PERMEATION,
     PHASE_EXCHANGE,
+    PRESCRIBED_SHELL,
     SHARED_POOL,
+    SHEAR_FISSION,
+    SHELL_PERMEATION,
+    TRANSITION_STATE,
     balance,
     kernel,
     model,
@@ -482,6 +492,135 @@ def test_a_declared_site_binding_has_its_closed_form_rates_and_keeps_the_identit
     for quanta in (None, 90):  # the complex's area equal to the site's, then larger
         found = balance.deviations(vesicle(quanta), np.random.default_rng(5), states=200)
         assert found.size > 400 and np.max(np.abs(found)) <= balance.ATOL
+
+
+def shell_world(*, area=1e-15, P=2e-7, B=3, R=4, XR=2, out=6, inside=2, factor=GATE_FACTOR):
+    """FR-21's shell: a wall of gate forms G and H (one each, no flip: a fixed gate state), sites R
+    and their complexes XR (a ligand X binds in one step), and a subunit B; a tracer S at fixed
+    counts outside and inside; its entry by the shell's permeation, gated over the gate's forms."""
+    u = "unsourced; test"
+    gate = [{"form": "G", "step": "entry", "ddG_kT": 2.0},
+            {"form": "H", "step": "entry", "ddG_kT": -2.0}]  # fmt: skip
+    rate_factor = {"law": GATE_FACTOR, "forms": ["G", "H"], "entries": gate}
+    if factor == TRANSITION_STATE:  # the planted factor: fractions over every wall molecule
+        rate_factor = {"law": TRANSITION_STATE, "catalysing_phase": "membrane",
+                       "entries": [{"catalyst": e["form"], "step": "entry",
+                                    "ddG_kT": e["ddG_kT"]} for e in gate]}  # fmt: skip
+    return {
+        "units": {"time": "s", "temperature_K": 296.15, "standard_concentration_mM": C0_MM},
+        "conventions": {"free_energy_form": "discrete", "condensed_measure": "multinomial",
+                        "membrane_kinetics": "count_on_m", "lumen_volume": "declared",
+                        "empty_catalyst_phase": "uncatalysed", "last_molecule": "kept"},
+        "species": [species("S", {"s": 1}, solution=0.0), species("X", {"x": 1}, solution=0.0),
+                    species("G", {"g": 1}, bilayer=-1.0), species("H", {"g": 1}, bilayer=-1.5),
+                    species("R", {"r": 1}, bilayer=-2.0),
+                    species("XR", {"x": 1, "r": 1}, bilayer=-6.0),
+                    species("B", {"b": 1}, bilayer=-3.0)],
+        "phases": {"pool": {"volume_L": 1e-21, "species": [{"id": "S", "kind": "finite"},
+                                                            {"id": "X", "kind": "finite"}]},
+                   "membrane": {"species": ["G", "H", "R", "XR", "B"]},
+                   "lumen": {"volume_L": 1e-22, "species": ["S"]}},
+        "steps": [{"id": "entry", "locus": "membrane", "reactants": {"S@pool": 1},
+                   "products": {"S@lumen": 1}, "law": SHELL_PERMEATION,
+                   "permeability_m_per_s": {"value": P, "provenance": u}},
+                  {"id": "bind", "locus": "membrane", "reactants": {"X@pool": 1, "R@membrane": 1},
+                   "products": {"XR@membrane": 1}, "law": MASS_ACTION,
+                   "forward_rate_per_s": 3.0}],
+        "free_energy": [{"law": IDEAL_MIXING}],
+        "rate_factor": rate_factor,
+        "sites": [{"site": "R", "complex": "XR"}],
+        "founder": {"S@pool": out, "X@pool": 5, "S@lumen": inside, "G@membrane": 1,
+                    "H@membrane": 1, "R@membrane": R, "XR@membrane": XR, "B@membrane": B},
+        "geometry": {"law": PRESCRIBED_SHELL, "area_m2": {"value": area, "provenance": u}},
+    }  # fmt: skip
+
+
+def test_a_shell_s_rates_follow_its_declared_conductance_alone():
+    """FR-21's shell, the requester's acceptance (docs/FEATURE_REQUESTS.md, FR-21), on the host:
+    with the tracer's counts and the gate's forms fixed, (1) doubling A_sh while halving P_s keeps
+    the entry and the exit rate to rounding; (2) doubling P_s alone doubles both, exactly (k_f
+    scales the rate after the exponential); (3) changing only the wall's inventory or the site
+    count keeps both rates bit for bit, and the declared lumen volume. The entry is
+    P_s A_sh rho0 theta+ g, with g = (e^2 + e^-2)/2 over the gate's forms."""
+
+    def rates(**kw):
+        s = spec_of(shell_world(**kw))
+        structure, layout = model.structure(s), model.layout(s)
+        c = model.founder(s)
+        totals = kernel.totals_of(c, layout, np)
+        f, t = kernel.states(c, totals, layout, structure, np)
+        a = kernel.rates(c, totals, f, t, layout, structure, np)
+        r = [st.id for st in s.model.world.steps].index("entry")
+        return float(a[r]), float(a[structure.steps + r]), s.model.world.volume("lumen")
+
+    base = rates()
+    X_pool = RHO0 * 1e-21 * 1e-3  # N_A V c0: the pool's molecules at unit activity
+    g = (math.exp(2.0) + math.exp(-2.0)) / 2.0
+    assert base[0] == pytest.approx(2e-7 * 1e-15 * RHO0 * (6 / X_pool) * g, rel=1e-13, abs=0)
+    entry, exit_, volume = rates(area=2e-15, P=1e-7)  # (1)
+    assert entry == pytest.approx(base[0], rel=1e-14) and exit_ == pytest.approx(base[1], rel=1e-14)
+    assert rates(P=4e-7)[:2] == (2.0 * base[0], 2.0 * base[1])  # (2)
+    assert rates(B=11) == base and rates(R=9, XR=0) == base  # (3), the lumen volume included
+    # Planted: the transition-state factor's fractions over every wall molecule move the gated
+    # rate with the site count, which the gate factor's own forms do not.
+    planted = rates(factor=TRANSITION_STATE)
+    assert rates(factor=TRANSITION_STATE, R=9, XR=0)[0] != planted[0]
+    verdict = balance.shell_verdict()
+    assert verdict["holds"] and verdict["probe"]["max_abs_deviation_ln"] <= balance.ATOL
+    d = definition(shell_world(), molecules=64, horizon=0.5, event_limit=500)
+    run = runner.run(parse_spec(d)).check()
+    assert run.closure["holds"] and run.verdict == verdict
+
+
+SHELL_REFUSALS = {
+    "a join on a shell": (
+        lambda w: w["steps"].append({"id": "join", "locus": "membrane",
+                                     "reactants": {"X@pool": 1}, "products": {"X@membrane": 1},
+                                     "law": PHASE_EXCHANGE,
+                                     "insertion_velocity_m_per_s": {"value": 1e-9,
+                                                                    "provenance": "t"}}),
+        "has no join"),
+    "the bilayer's permeation on a shell": (
+        lambda w: w["steps"][0].update(law=MEMBRANE_PERMEATION), "a shell's entry takes"),
+    "an osmotic shell": (
+        lambda w: w["conventions"].update(lumen_volume="osmotic"), "does not swell"),
+    "an exchange encounter on a shell": (
+        lambda w: w["conventions"].update(exchange_encounter="insertion_area"),
+        "declares no exchange_encounter"),
+    "area quanta on a shell": (
+        lambda w: w["geometry"].update(area_per_leaflet={}), "declares no area_per_leaflet"),
+    "a floor on a shell": (
+        lambda w: w["geometry"].update(vesicle_floor={"quanta": 1, "provenance": "t"}),
+        "declares no vesicle_floor"),
+    "a lysis tension on a shell": (
+        lambda w: w["geometry"].update(sigma_max_N_per_m={"value": 1.0, "provenance": "t"}),
+        "declares no sigma_max_N_per_m"),
+    "a shell without its lumen": (
+        lambda w: (w["phases"].pop("lumen"), w["founder"].pop("S@lumen"), w["steps"].pop(0),
+                   w.pop("rate_factor")), "owns a lumen"),
+    "a shell's division": (
+        lambda w: w.update(division={"law": SHEAR_FISSION}), "needs a geometry and an osmotic"),
+    "a gate form that is not in the wall": (
+        lambda w: w["rate_factor"].update(forms=["G", "S"]), "not a membrane species"),
+    "the shell's permeation on a bilayer": (
+        lambda w: w.clear() or w.update(_bilayer_with_shell_entry()), "is a prescribed shell's"),
+}  # fmt: skip
+
+
+def _bilayer_with_shell_entry():
+    w = lipid_world(lumen=True)
+    entry = next(s for s in w["steps"] if s["id"] == "entry")
+    entry["law"] = SHELL_PERMEATION
+    return w
+
+
+@pytest.mark.parametrize("case", sorted(SHELL_REFUSALS))
+def test_every_refusal_of_a_shell(case):
+    edit, message = SHELL_REFUSALS[case]
+    w = shell_world()
+    edit(w)
+    with pytest.raises(ConfigError, match=message):
+        spec_of(w)
 
 
 def test_a_geometric_law_without_a_geometry_is_refused():
