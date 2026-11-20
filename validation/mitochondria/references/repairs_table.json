@@ -1724,6 +1724,169 @@
     "cytc_red_frac": 0.004910648322346306,
     "O2_flux_rel": 0.026906862653161
    }
+  },
+  {
+   "equation": "combined",
+   "candidate": "host_p_question_arm",
+   "form": "the arm for the user's repairs question (host P, D235): frame B (the appendix's balanced Eqs. 11 and 16, the protons on phosphate counted), Eq. 24 restored (phi_Pi x Eq. 7), the balanced NADH supply at reference pH 7.10; 298.15 K, matrix Mg2+ 5 mM",
+   "switch": {
+    "J_F1": "eq11_appendix_balanced",
+    "J_PiHt": "eq16_appendix_balanced",
+    "H_x_row": "pi_protons_counted",
+    "J_DH": "eq1_balanced_supply",
+    "h_ref_DH": 7.943282347242822e-08
+   },
+   "fit_rms_z_mg5": 3.71779670748186,
+   "departure_from_published_arm_mg5": {
+    "dPsi_mV": 1.3074478564791718,
+    "pH_x": 0.014154865810086292,
+    "NADH_frac": 0.01970102862538642,
+    "cytc_red_frac": 0.003967922223448245,
+    "O2_flux_rel": 0.021154220114531164
+   },
+   "full_check": {
+    "existence": {
+     "max_integration_vs_newton_rel": 4.748784202683634e-13,
+     "max_newton_residual": 2.8893333333333334e-43
+    },
+    "uniqueness_state3_Pi3": {
+     "max_relative_spread": 2.0797630162040085e-13,
+     "max_relative_rate_at_end_per_s": 7.2600390161039254e-12
+    },
+    "dissipation_reported_states": {
+     "least_W_per_l": {
+      "J_C1": 0.4837429378215134,
+      "J_C3": 0.6297247407362552,
+      "J_C4": 9.277925588237428,
+      "J_KH": -0.0,
+      "J_Hle": 48.190010464731515,
+      "J_K": 0.0,
+      "J_MgADPx": -0.0,
+      "J_DH": 0.3007548978954092,
+      "J_F1": -1.3952669112305544e-27,
+      "J_PiHt": -0.0,
+      "J_Pit": -0.0,
+      "J_MgATPx": -0.0,
+      "J_ANT": 0.0006657814601385832,
+      "J_AK": 355.45576236707774,
+      "J_ADPt": 421.7350940507611,
+      "J_MgATPi": 9.106249950547183e-31,
+      "J_MgADPi": -0.0
+     },
+     "negative_states": {},
+     "states_counted": {
+      "J_C1": 12,
+      "J_C3": 12,
+      "J_C4": 12,
+      "J_KH": 12,
+      "J_Hle": 12,
+      "J_K": 12,
+      "J_MgADPx": 12,
+      "J_DH": 12,
+      "J_F1": 11,
+      "J_PiHt": 11,
+      "J_Pit": 10,
+      "J_MgATPx": 11,
+      "J_ANT": 6,
+      "J_AK": 6,
+      "J_ADPt": 6,
+      "J_MgATPi": 6,
+      "J_MgADPi": 6
+     }
+    },
+    "dissipation_random_states_binding_at_equilibrium": {
+     "least_W_per_l": {
+      "J_C1": 0.004775825605842166,
+      "J_C3": 8.239106383163014e-07,
+      "J_C4": 8.586161192783894e-05,
+      "J_F1": 0.21832674412589761,
+      "J_ANT": 3.9358724085636875e-06,
+      "J_PiHt": 3.0386974160948733e-05,
+      "J_KH": 1.543375806348271e-05,
+      "J_Hle": 2.5840553319645742e-08,
+      "J_K": 0.0,
+      "J_AK": 0.00025028943126642063,
+      "J_ATPt": 2.156219913518673e-05,
+      "J_ADPt": 1.346312376713603e-06,
+      "J_Pit": 0.030840028803768793,
+      "J_MgATPx": -0.0,
+      "J_MgADPx": -0.0,
+      "J_DH": 1.9557308314846993e-07,
+      "J_MgATPi": -0.0,
+      "J_MgADPi": -0.0,
+      "J_AMPt": 0.0019516321147541875
+     },
+     "negative_states": {},
+     "states_counted": {
+      "J_C1": 2000,
+      "J_C3": 2000,
+      "J_C4": 2000,
+      "J_F1": 2000,
+      "J_ANT": 2000,
+      "J_PiHt": 2000,
+      "J_KH": 2000,
+      "J_Hle": 2000,
+      "J_K": 2000,
+      "J_AK": 2000,
+      "J_ATPt": 2000,
+      "J_ADPt": 2000,
+      "J_Pit": 2000,
+      "J_MgATPx": 2000,
+      "J_MgADPx": 2000,
+      "J_DH": 2000,
+      "J_MgATPi": 2000,
+      "J_MgADPi": 2000,
+      "J_AMPt": 2000
+     }
+    },
+    "dissipation_random_states_binding_random": {
+     "least_W_per_l": {
+      "J_C1": 0.004775825605842166,
+      "J_C3": 8.239106383163014e-07,
+      "J_C4": 8.586161192783894e-05,
+      "J_F1": -197269.24281575304,
+      "J_ANT": 7.55109086911741e-09,
+      "J_PiHt": 3.0386974160948733e-05,
+      "J_KH": 1.543375806348271e-05,
+      "J_Hle": 2.5840553319645742e-08,
+      "J_K": 0.0,
+      "J_AK": 0.00025028943126642063,
+      "J_ATPt": 2.156219913518673e-05,
+      "J_ADPt": 1.346312376713603e-06,
+      "J_Pit": 0.030840028803768793,
+      "J_MgATPx": 0.0004636395197366992,
+      "J_MgADPx": 0.04015087017310302,
+      "J_DH": 1.9557308314846993e-07,
+      "J_MgATPi": 0.03119572751272506,
+      "J_MgADPi": 0.00022669895406020533,
+      "J_AMPt": 0.0019516321147541875
+     },
+     "negative_states": {
+      "J_F1": 146
+     },
+     "states_counted": {
+      "J_C1": 2000,
+      "J_C3": 2000,
+      "J_C4": 2000,
+      "J_F1": 2000,
+      "J_ANT": 2000,
+      "J_PiHt": 2000,
+      "J_KH": 2000,
+      "J_Hle": 2000,
+      "J_K": 2000,
+      "J_AK": 2000,
+      "J_ATPt": 2000,
+      "J_ADPt": 2000,
+      "J_Pit": 2000,
+      "J_MgATPx": 2000,
+      "J_MgADPx": 2000,
+      "J_DH": 2000,
+      "J_MgATPi": 2000,
+      "J_MgADPi": 2000,
+      "J_AMPt": 2000
+     }
+    }
+   }
   }
  ]
 }

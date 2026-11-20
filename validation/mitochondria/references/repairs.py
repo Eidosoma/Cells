@@ -422,10 +422,14 @@ def table(runs: Path, out: Path):
             rows.append(row)
     for key, (sw, ov, desc) in COMBINED.items():
         f = json.loads((runs / f"{key}.json").read_text()) if (runs / f"{key}.json").exists() else {}
-        row = {"equation": "combined", "candidate": key, "form": desc, "switch": sw}
+        row = {"equation": "combined", "candidate": key, "form": desc, "switch": {**sw, **ov}}
         if "sweeps" in f:
             row["fit_rms_z_mg5"] = f["rms_z"]
             row["departure_from_published_arm_mg5"] = departure(f, base)
+        for k in ("existence", "uniqueness_state3_Pi3", "dissipation_reported_states",
+                  "dissipation_random_states_binding_at_equilibrium", "dissipation_random_states_binding_random"):
+            if k in f:
+                row.setdefault("full_check", {})[k] = f[k]
         rows.append(row)
     doc = {"kind": "cells.validation.mito_reference_repairs@1",
            "base": "MR1's published arm (2006 Table 1; Eq. 24 restored; Eqs. 11 and 16 printed; 298.15 K) at the recommended matrix Mg2+ total, 5 mM; matrix charge anchored to Fig. 4D's pH at [Pi]e = 0",
@@ -496,6 +500,28 @@ def render_markdown(doc) -> str:
                  f"{100 * dep['O2_flux_rel']:.1f}%") if dep else "—"
             lines.append(f"| `{r['candidate']}` | {r.get('role', '—')} | {r['form']} | {same} | {zz} | {rnd} | {rep} | {fit} | {d} |")
         lines.append("")
+    for r in doc["rows"]:
+        fc = r.get("full_check")
+        if not fc:
+            continue
+        neg = lambda k: fc[k]["negative_states"] or "none"
+        n_proc = len(fc["dissipation_reported_states"]["states_counted"])
+        n_rand = len(fc["dissipation_random_states_binding_at_equilibrium"]["states_counted"])
+        lines += [f"### Full check: `{r['candidate']}`", "",
+                  f"- **Exists:** every reported point integrated, against the 50-digit Newton solve within "
+                  f"{fc['existence']['max_integration_vs_newton_rel']:.1e} relative; Newton residual "
+                  f"{fc['existence']['max_newton_residual']:.1e}.",
+                  f"- **Unique:** three far-apart starts with equal inventories (state 3, [Pi]e 3 mM) within "
+                  f"{fc['uniqueness_state3_Pi3']['max_relative_spread']:.1e}.",
+                  f"- **Dissipation, every process, frame B:** {n_proc} processes have a defined dG at the reported states. "
+                  f"The ATP and AMP effluxes into a buffer held at zero are unbounded and skipped there; {n_rand} processes "
+                  "are counted over random states.",
+                  f"  - at the 12 reported states, negative: {neg('dissipation_reported_states')};",
+                  f"  - over 2000 random states with Mg2+ binding at equilibrium, negative: "
+                  f"{neg('dissipation_random_states_binding_at_equilibrium')};",
+                  f"  - with random binding, negative: {neg('dissipation_random_states_binding_random')}. This is Q15: "
+                  "Eq. 11 reads the Mg-bound forms while Eq. 22 books its turnover on the free forms, and the rapid "
+                  "binding closure (D1) removes it.", ""]
     return "\n".join(lines) + "\n"
 
 
