@@ -2,7 +2,7 @@
  "band_rule": {
   "eps64": "2.2204460492503131E-16",
   "factor": "16",
-  "own_rel": "1E-24",
+  "own_rel": "1E-19",
   "power_margin": "3",
   "statement": "band = factor * eps64 * scale + own_rel * |value|; the scales are in README.md and design.bands_cycle"
  },
@@ -22,13 +22,27 @@
  "kind": "cells.mito_component_reference_inputs@1",
  "laws": {
   "atp_synthase": {
-   "dG0_1M_J_per_mol": "-6.684807727309946204448251E+3",
-   "dG0_1M_in_RT": "-2.592286211095858187534302E+0",
+   "dG0_1M_J_per_mol": "-6.6848077273099462044E+3",
+   "dG0_1M_in_RT": "-2.5922862110958581875E+0",
    "dG0_pH7_J_per_mol": "3.60300000000E+4",
-   "forms": [
-    "balanced",
-    "printed"
-   ],
+   "forms": {
+    "balanced": {
+     "balanced": true,
+     "kind": "kappa"
+    },
+    "base_form_restored": {
+     "balanced": true,
+     "kind": "kappa"
+    },
+    "printed": {
+     "balanced": false,
+     "kind": "two_term"
+    },
+    "proton_restored": {
+     "balanced": false,
+     "kind": "two_term"
+    }
+   },
    "has_flux": true,
    "kappa": "1/1",
    "law": "proton_coupled_atp_synthesis_cycle@1",
@@ -92,12 +106,15 @@
    "title": "ATP synthesis, per ATP (Eqs. 10, 11)"
   },
   "complex_I": {
-   "dG0_1M_J_per_mol": "-1.109342261629353481363347E+5",
-   "dG0_1M_in_RT": "-4.301892837484645615516136E+1",
+   "dG0_1M_J_per_mol": "-1.1093422616293534814E+5",
+   "dG0_1M_in_RT": "-4.3018928374846456155E+1",
    "dG0_pH7_J_per_mol": "-6.93700000000E+4",
-   "forms": [
-    "declared"
-   ],
+   "forms": {
+    "declared": {
+     "balanced": true,
+     "kind": "kappa"
+    }
+   },
    "has_flux": true,
    "kappa": "1/1",
    "law": "redox_driven_proton_cycle@1",
@@ -164,13 +181,23 @@
    "title": "Complex I, per NADH (Eqs. 2-5)"
   },
   "complex_III_eq24": {
-   "dG0_1M_J_per_mol": "5.059845232587069627266932E+4",
-   "dG0_1M_in_RT": "1.962145743269246376509919E+1",
+   "dG0_1M_J_per_mol": "5.0598452325870696273E+4",
+   "dG0_1M_in_RT": "1.9621457432692463765E+1",
    "dG0_pH7_J_per_mol": "-3.25300000000E+4",
-   "forms": [
-    "balanced",
-    "printed"
-   ],
+   "forms": {
+    "balanced": {
+     "balanced": true,
+     "kind": "kappa"
+    },
+    "printed": {
+     "balanced": false,
+     "kind": "two_term"
+    },
+    "restored": {
+     "balanced": true,
+     "kind": "kappa"
+    }
+   },
    "has_flux": true,
    "kappa": "1/2",
    "law": "redox_driven_proton_cycle@1",
@@ -238,12 +265,15 @@
    "title": "Complex III with phosphate control, per QH2 (Eq. 24)"
   },
   "complex_III_eq7": {
-   "dG0_1M_J_per_mol": "5.059845232587069627266932E+4",
-   "dG0_1M_in_RT": "1.962145743269246376509919E+1",
+   "dG0_1M_J_per_mol": "5.0598452325870696273E+4",
+   "dG0_1M_in_RT": "1.9621457432692463765E+1",
    "dG0_pH7_J_per_mol": "-3.25300000000E+4",
-   "forms": [
-    "declared"
-   ],
+   "forms": {
+    "declared": {
+     "balanced": true,
+     "kind": "kappa"
+    }
+   },
    "has_flux": true,
    "kappa": "1/2",
    "law": "redox_driven_proton_cycle@1",
@@ -310,12 +340,15 @@
    "title": "Complex III without phosphate control, per QH2 (Eqs. 6, 7)"
   },
   "complex_IV": {
-   "dG0_1M_J_per_mol": "-4.121369046517413925453386E+5",
-   "dG0_1M_in_RT": "-1.598216221908249898332976E+2",
+   "dG0_1M_J_per_mol": "-4.1213690465174139255E+5",
+   "dG0_1M_in_RT": "-1.5982162219082498983E+2",
    "dG0_pH7_J_per_mol": "-2.45880000000E+5",
-   "forms": [
-    "declared"
-   ],
+   "forms": {
+    "declared": {
+     "balanced": true,
+     "kind": "kappa"
+    }
+   },
    "has_flux": true,
    "kappa": "1/4",
    "law": "redox_driven_proton_cycle@1",
@@ -383,9 +416,12 @@
    "dG0_1M_J_per_mol": "0",
    "dG0_1M_in_RT": "0",
    "dG0_pH7_J_per_mol": "0",
-   "forms": [
-    "declared"
-   ],
+   "forms": {
+    "declared": {
+     "balanced": true,
+     "kind": "kappa"
+    }
+   },
    "has_flux": true,
    "kappa": "1/1",
    "law": "potassium_proton_exchange@1",
@@ -436,12 +472,15 @@
    "title": "K+/H+ exchange, one K+ into N (Eq. 21)"
   },
   "lumped_QO": {
-   "dG0_1M_J_per_mol": "-3.109400000000000000000000E+5",
-   "dG0_1M_in_RT": "-1.205787073254400623030992E+2",
+   "dG0_1M_J_per_mol": "-3.1094000000000000000E+5",
+   "dG0_1M_in_RT": "-1.2057870732544006230E+2",
    "dG0_pH7_J_per_mol": "-3.10940000000E+5",
-   "forms": [
-    "declared"
-   ],
+   "forms": {
+    "declared": {
+     "balanced": true,
+     "kind": "kappa"
+    }
+   },
    "has_flux": false,
    "kappa": "1/1",
    "law": "redox_driven_proton_cycle@1",
@@ -541,9 +580,12 @@
    "dG0_1M_J_per_mol": "0",
    "dG0_1M_in_RT": "0",
    "dG0_pH7_J_per_mol": "0",
-   "forms": [
-    "declared"
-   ],
+   "forms": {
+    "declared": {
+     "balanced": true,
+     "kind": "kappa"
+    }
+   },
    "has_flux": true,
    "kappa": "1/1",
    "law": "electrogenic_nucleotide_exchange@1",
@@ -597,10 +639,20 @@
    "dG0_1M_J_per_mol": "0",
    "dG0_1M_in_RT": "0",
    "dG0_pH7_J_per_mol": "0",
-   "forms": [
-    "balanced",
-    "printed"
-   ],
+   "forms": {
+    "balanced": {
+     "balanced": true,
+     "kind": "kappa"
+    },
+    "printed": {
+     "balanced": false,
+     "kind": "two_term"
+    },
+    "subscripts_swapped": {
+     "balanced": true,
+     "kind": "kappa"
+    }
+   },
    "has_flux": true,
    "kappa": "1/1",
    "law": "phosphate_proton_symport@1",
@@ -915,8 +967,8 @@
    {"id":"near_eq:B:x=0.1","inputs":{"Pi_N":0.01,"QH2_N":0.000945,"Q_N":0.000405,"c2_P":0.00135,"c3_P":0.00135,"dpsi_mV":193.5419808270246,"h_N":1.5848931924611136e-07,"h_P":1e-07},"kind":"near_eq","target_x":"0.1"},
    {"id":"near_eq:B:x=1","inputs":{"Pi_N":0.01,"QH2_N":0.000945,"Q_N":0.000405,"c2_P":0.00135,"c3_P":0.00135,"dpsi_mV":205.56897742766904,"h_N":1.5848931924611136e-07,"h_P":1e-07},"kind":"near_eq","target_x":"1"},
    {"id":"near_eq:B:x=3","inputs":{"Pi_N":0.01,"QH2_N":0.000945,"Q_N":0.000405,"c2_P":0.00135,"c3_P":0.00135,"dpsi_mV":232.2956365402123,"h_N":1.5848931924611136e-07,"h_P":1e-07},"kind":"near_eq","target_x":"3"},
-   {"id":"stall:A","inputs":{"Pi_N":0.005,"QH2_N":0.00054,"Q_N":0.00081,"c2_P":0.00135,"c3_P":0.00135,"dpsi_mV":126.23223798104019,"h_N":3.981071705534972e-08,"h_P":7.943282347242815e-08},"kind":"printed_stall","target_x":"-1.8420680743952365472E+0"},
-   {"id":"stall:B","inputs":{"Pi_N":0.01,"QH2_N":0.000945,"Q_N":0.000405,"c2_P":0.00135,"c3_P":0.00135,"dpsi_mV":204.51372924301253,"h_N":1.5848931924611136e-07,"h_P":1e-07},"kind":"printed_stall","target_x":"9.2103403719761827361E-1"},
+   {"form":"printed","id":"stall:printed:A","inputs":{"Pi_N":0.005,"QH2_N":0.00054,"Q_N":0.00081,"c2_P":0.00135,"c3_P":0.00135,"dpsi_mV":126.23223798104019,"h_N":3.981071705534972e-08,"h_P":7.943282347242815e-08},"kind":"stall","target_x":"-1.8420680743952365472E+0"},
+   {"form":"printed","id":"stall:printed:B","inputs":{"Pi_N":0.01,"QH2_N":0.000945,"Q_N":0.000405,"c2_P":0.00135,"c3_P":0.00135,"dpsi_mV":204.51372924301253,"h_N":1.5848931924611136e-07,"h_P":1e-07},"kind":"stall","target_x":"9.2103403719761827361E-1"},
    {"id":"coincidence:x=-0.5","inputs":{"Pi_N":0.005,"QH2_N":0.00054,"Q_N":0.00081,"c2_P":0.00081,"c3_P":0.00189,"dpsi_mV":191.42833977072092,"h_N":1e-07,"h_P":7.943282347242815e-08},"kind":"coincidence","pH_N":"7.0","target_x":"-0.5"},
    {"id":"coincidence:x=0.5","inputs":{"Pi_N":0.005,"QH2_N":0.00054,"Q_N":0.00081,"c2_P":0.00081,"c3_P":0.00189,"dpsi_mV":204.79166932699255,"h_N":1e-07,"h_P":7.943282347242815e-08},"kind":"coincidence","pH_N":"7.0","target_x":"0.5"}
   ],
@@ -1140,8 +1192,10 @@
    {"id":"near_eq:B:x=0.1","inputs":{"ADP3_N":0.0027312081857536405,"ADPtot_N":0.006666666666666667,"ATP4_N":0.00015267175572519084,"ATPtot_N":0.0033333333333333335,"H2PO4_N":0.004712465510496952,"HPO4_N":0.005287534489503048,"MgADP_N":0.003935458480913027,"MgATP_N":0.0031806615776081423,"Mg_N":0.0005,"Pi_N":0.01,"dpsi_mV":148.8232815231936,"h_N":1.5848931924611136e-07,"h_P":1e-07},"kind":"near_eq","target_x":"0.1"},
    {"id":"near_eq:B:x=1","inputs":{"ADP3_N":0.0027312081857536405,"ADPtot_N":0.006666666666666667,"ATP4_N":0.00015267175572519084,"ATPtot_N":0.0033333333333333335,"H2PO4_N":0.004712465510496952,"HPO4_N":0.005287534489503048,"MgADP_N":0.003935458480913027,"MgATP_N":0.0031806615776081423,"Mg_N":0.0005,"Pi_N":0.01,"dpsi_mV":140.80528378943063,"h_N":1.5848931924611136e-07,"h_P":1e-07},"kind":"near_eq","target_x":"1"},
    {"id":"near_eq:B:x=3","inputs":{"ADP3_N":0.0027312081857536405,"ADPtot_N":0.006666666666666667,"ATP4_N":0.00015267175572519084,"ATPtot_N":0.0033333333333333335,"H2PO4_N":0.004712465510496952,"HPO4_N":0.005287534489503048,"MgADP_N":0.003935458480913027,"MgATP_N":0.0031806615776081423,"Mg_N":0.0005,"Pi_N":0.01,"dpsi_mV":122.98751104773511,"h_N":1.5848931924611136e-07,"h_P":1e-07},"kind":"near_eq","target_x":"3"},
-   {"id":"stall:A","inputs":{"ADP3_N":0.0006440237564959169,"ADPtot_N":0.0025,"ATP4_N":0.00017578125,"ATPtot_N":0.0075,"H2PO4_N":0.0009145971763460324,"HPO4_N":0.004085402823653967,"MgADP_N":0.001855976243504083,"MgATP_N":0.00732421875,"Mg_N":0.001,"Pi_N":0.005,"dpsi_mV":141.6467168967927,"h_N":3.981071705534972e-08,"h_P":7.943282347242815e-08},"kind":"printed_stall","target_x":"6.7687023764511662412E-1"},
-   {"id":"stall:B","inputs":{"ADP3_N":0.0027312081857536405,"ADPtot_N":0.006666666666666667,"ATP4_N":0.00015267175572519084,"ATPtot_N":0.0033333333333333335,"H2PO4_N":0.004712465510496952,"HPO4_N":0.005287534489503048,"MgADP_N":0.003935458480913027,"MgATP_N":0.0031806615776081423,"Mg_N":0.0005,"Pi_N":0.01,"dpsi_mV":152.11480653039845,"h_N":1.5848931924611136e-07,"h_P":1e-07},"kind":"printed_stall","target_x":"-2.6946537088806015113E-1"},
+   {"form":"printed","id":"stall:printed:A","inputs":{"ADP3_N":0.0006440237564959169,"ADPtot_N":0.0025,"ATP4_N":0.00017578125,"ATPtot_N":0.0075,"H2PO4_N":0.0009145971763460324,"HPO4_N":0.004085402823653967,"MgADP_N":0.001855976243504083,"MgATP_N":0.00732421875,"Mg_N":0.001,"Pi_N":0.005,"dpsi_mV":141.6467168967927,"h_N":3.981071705534972e-08,"h_P":7.943282347242815e-08},"kind":"stall","target_x":"6.7687023764511662412E-1"},
+   {"form":"printed","id":"stall:printed:B","inputs":{"ADP3_N":0.0027312081857536405,"ADPtot_N":0.006666666666666667,"ATP4_N":0.00015267175572519084,"ATPtot_N":0.0033333333333333335,"H2PO4_N":0.004712465510496952,"HPO4_N":0.005287534489503048,"MgADP_N":0.003935458480913027,"MgATP_N":0.0031806615776081423,"Mg_N":0.0005,"Pi_N":0.01,"dpsi_mV":152.11480653039845,"h_N":1.5848931924611136e-07,"h_P":1e-07},"kind":"stall","target_x":"-2.6946537088806015113E-1"},
+   {"form":"proton_restored","id":"stall:proton_restored:A","inputs":{"ADP3_N":0.0006440237564959169,"ADPtot_N":0.0025,"ATP4_N":0.00017578125,"ATPtot_N":0.0075,"H2PO4_N":0.0009145971763460324,"HPO4_N":0.004085402823653967,"MgADP_N":0.001855976243504083,"MgATP_N":0.00732421875,"Mg_N":0.001,"Pi_N":0.005,"dpsi_mV":149.85210447786943,"h_N":3.981071705534972e-08,"h_P":7.943282347242815e-08},"kind":"stall","target_x":"-2.4416379955250164949E-1"},
+   {"form":"proton_restored","id":"stall:proton_restored:B","inputs":{"ADP3_N":0.0027312081857536405,"ADPtot_N":0.006666666666666667,"ATP4_N":0.00015267175572519084,"ATPtot_N":0.0033333333333333335,"H2PO4_N":0.004712465510496952,"HPO4_N":0.005287534489503048,"MgADP_N":0.003935458480913027,"MgATP_N":0.0031806615776081423,"Mg_N":0.0005,"Pi_N":0.01,"dpsi_mV":148.01211273986007,"h_N":1.5848931924611136e-07,"h_P":1e-07},"kind":"stall","target_x":"1.9105164771074898567E-1"},
    {"id":"coincidence:x=-0.5","inputs":{"ADP3_N":0.0006440237564959169,"ADPtot_N":0.0025,"ATP4_N":0.00017578125,"ATPtot_N":0.0075,"H2PO4_N":0.0017996616636072418,"HPO4_N":0.0032003383363927583,"MgADP_N":0.001855976243504083,"MgATP_N":0.00732421875,"Mg_N":0.001,"Pi_N":0.005,"dpsi_mV":170.71732282544681,"h_N":1e-07,"h_P":7.943282347242815e-08},"kind":"coincidence","pH_N":"7.0","target_x":"-0.5"},
    {"id":"coincidence:x=0.5","inputs":{"ADP3_N":0.0006440237564959169,"ADPtot_N":0.0025,"ATP4_N":0.00017578125,"ATPtot_N":0.0075,"H2PO4_N":0.0017996616636072418,"HPO4_N":0.0032003383363927583,"MgADP_N":0.001855976243504083,"MgATP_N":0.00732421875,"Mg_N":0.001,"Pi_N":0.005,"dpsi_mV":161.80843645459905,"h_N":1e-07,"h_P":7.943282347242815e-08},"kind":"coincidence","pH_N":"7.0","target_x":"0.5"}
   ],
@@ -1254,8 +1308,8 @@
    {"id":"near_eq:B:x=0.1","inputs":{"H2PO4_N":0.0010875500357196738,"H2PO4_P":0.0015596236019983381,"HPO4_N":0.001220265338837808,"HPO4_P":0.0027734786514336447,"Pi_N":0.0023078153745574818,"Pi_P":0.004333102253431983,"dpsi_mV":160.0,"h_N":1.5848931924611136e-07,"h_P":1e-07},"kind":"near_eq","target_x":"0.1"},
    {"id":"near_eq:B:x=1","inputs":{"H2PO4_N":0.0017056179733494327,"H2PO4_P":0.0009944599145678926,"HPO4_N":0.0019137570004306242,"HPO4_P":0.0017684480660760833,"Pi_N":0.003619374973780057,"Pi_P":0.002762907980643976,"dpsi_mV":160.0,"h_N":1.5848931924611136e-07,"h_P":1e-07},"kind":"near_eq","target_x":"1"},
    {"id":"near_eq:B:x=3","inputs":{"H2PO4_N":0.004636350343248908,"H2PO4_P":0.0003658413576386366,"HPO4_N":0.005202130878356854,"HPO4_P":0.0006505756862887874,"Pi_N":0.009838481221605761,"Pi_P":0.0010164170439274241,"dpsi_mV":160.0,"h_N":1.5848931924611136e-07,"h_P":1e-07},"kind":"near_eq","target_x":"3"},
-   {"id":"stall:A","inputs":{"H2PO4_N":0.000532036478308597,"H2PO4_P":0.0010615523353579013,"HPO4_N":0.002376547169599497,"HPO4_P":0.002376547169599497,"Pi_N":0.0029085836479080937,"Pi_P":0.003438099504957398,"dpsi_mV":160.0,"h_N":3.981071705534972e-08,"h_P":7.943282347242815e-08},"kind":"printed_stall","target_x":"-1.3815510557964274104E+0"},
-   {"id":"stall:B","inputs":{"H2PO4_N":0.0016395872140067167,"H2PO4_P":0.0010345095945933562,"HPO4_N":0.0018396684120653654,"HPO4_P":0.0018396684120653654,"Pi_N":0.0034792556260720823,"Pi_P":0.0028741780066587216,"dpsi_mV":160.0,"h_N":1.5848931924611136e-07,"h_P":1e-07},"kind":"printed_stall","target_x":"9.2103403719761827361E-1"},
+   {"form":"printed","id":"stall:printed:A","inputs":{"H2PO4_N":0.000532036478308597,"H2PO4_P":0.0010615523353579013,"HPO4_N":0.002376547169599497,"HPO4_P":0.002376547169599497,"Pi_N":0.0029085836479080937,"Pi_P":0.003438099504957398,"dpsi_mV":160.0,"h_N":3.981071705534972e-08,"h_P":7.943282347242815e-08},"kind":"stall","target_x":"-1.3815510557964274104E+0"},
+   {"form":"printed","id":"stall:printed:B","inputs":{"H2PO4_N":0.0016395872140067167,"H2PO4_P":0.0010345095945933562,"HPO4_N":0.0018396684120653654,"HPO4_P":0.0018396684120653654,"Pi_N":0.0034792556260720823,"Pi_P":0.0028741780066587216,"dpsi_mV":160.0,"h_N":1.5848931924611136e-07,"h_P":1e-07},"kind":"stall","target_x":"9.2103403719761827361E-1"},
    {"id":"coincidence:x=-0.5","inputs":{"H2PO4_N":0.000644975455565495,"H2PO4_P":0.001063384752670337,"HPO4_N":0.0018178088624628487,"HPO4_P":0.0029970601376097025,"Pi_N":0.0024627843180283437,"Pi_P":0.00406044489028004,"dpsi_mV":160.0,"h_N":6.309573444801932e-08,"h_P":6.309573444801932e-08},"kind":"coincidence","pH_N":"7.2","pH_P":"7.2","target_x":"-0.5"},
    {"id":"coincidence:x=0.5","inputs":{"H2PO4_N":0.001063384752670337,"H2PO4_P":0.000644975455565495,"HPO4_N":0.0029970601376097025,"HPO4_P":0.0018178088624628487,"Pi_N":0.00406044489028004,"Pi_P":0.0024627843180283437,"dpsi_mV":160.0,"h_N":6.309573444801932e-08,"h_P":6.309573444801932e-08},"kind":"coincidence","pH_N":"7.2","pH_P":"7.2","target_x":"0.5"}
   ],

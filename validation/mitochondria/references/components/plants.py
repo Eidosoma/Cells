@@ -19,23 +19,37 @@ def _u(C, s):
 
 class Plant:
     def __init__(self, pid, law_key, description, kind, make, named=False, forms=None,
-                 exclude=()):
+                 cross_form=False):
         self.pid = pid
-        self.forms = forms  # the reference forms it is measured against (None: all)
-        self.exclude = tuple(exclude)  # quantity families not compared (a naming difference)
         self.law_key = law_key
         self.description = description
         self.kind = kind
         self._make = make  # ref_form -> (law object, P, C, form)
         self.named = named
+        self.forms = forms  # the reference forms it is measured against (None: all)
+        self.cross_form = cross_form  # a law's other form, run as the kernel under test
+
+    def exclude_for(self, ref_form):
+        """Quantity families not compared at ``ref_form``'s rows. With kappa = 1/2, a two-term
+        form's S and J- (its own two terms) and a kappa form's S and J- (the declared one-way
+        fluxes) are different quantities, so they are not compared across the two kinds."""
+        if not self.cross_form:
+            return ()
+        law = laws.LAWS_BY_KEY[self.law_key]
+        cand = self._make(ref_form)[3]
+        if law.kappa_inv != 1 and law.form_kind(cand) != law.form_kind(ref_form):
+            return ("S", "J_minus", "slopes_lnS")
+        return ()
 
     def values(self, s, ref_form):
         law_obj, P, C, form = self._make(ref_form)
         if law_obj.key == "nadh_supply":
             return law_obj.evaluate(DEC, P, C, s)
         v = laws.evaluate(law_obj, DEC, P, C, s, form)
-        if form == "printed" and ref_form != "printed":
-            # A printed-structure kernel's forward term is its S, its backward term its J-.
+        ref_law = laws.LAWS_BY_KEY[self.law_key]
+        ref_kind = "two_term" if ref_form == "printed" else ref_law.form_kind(ref_form)
+        if law_obj.form_kind(form) == "two_term" and ref_kind == "kappa":
+            # A two-term kernel's forward term is its S, its backward term its J-.
             v["slopes_lnS"] = v.pop("slopes_lnA")
             v.pop("slopes_lnB", None)
             v.pop("lnB_over_A", None)
@@ -271,16 +285,25 @@ def _mM_activity(base_cls):
 
 
 # --- The list ------------------------------------------------------------------------------------
-def _other_form(law):
-    return _same_form(law, form_map={"balanced": "printed", "printed": "balanced"})
-
-
 L = laws.LAWS_BY_KEY
 PLANTS = []
 
 
-def _add(pid, law_key, desc, kind, make, named=False, forms=None, exclude=()):
-    PLANTS.append(Plant(pid, law_key, desc, kind, make, named, forms, exclude))
+def _add(pid, law_key, desc, kind, make, named=False, forms=None, cross_form=False):
+    PLANTS.append(Plant(pid, law_key, desc, kind, make, named, forms, cross_form))
+
+
+FORM_PREFIX = {"complex_III_eq24": "C3_eq24", "atp_synthase": "F1", "phosphate_carrier": "PiHt"}
+
+
+def _add_cross_forms(law):
+    """Each form of a failing law, run as the kernel under test against every other form's rows
+    (whichever form the user's ruling selects, the others are then its plants)."""
+    for cand in law.FORMS:
+        others = tuple(f for f in law.FORMS if f != cand)
+        _add(f"{FORM_PREFIX[law.key]}_as_{cand}", law.key,
+             f"the {cand} form judged against the law's other forms", "form",
+             _same_form(law, form_map={f: cand for f in others}), forms=others, cross_form=True)
 
 
 _add("C1_q_reversed", "complex_I", "Section 8: complex I with -4u in place of +4u (q = -4)",
@@ -293,16 +316,12 @@ _add("C1_dG0_display", "complex_I", "dG0 at 1 M as section 7 displays it, -110.9
 _add("C3_eq7_dG0_display", "complex_III_eq7",
      "dG0 at 1 M as section 7 displays it, +50.599 kJ/mol", "free-energy entry",
      _same_form(_rounded_dG0(laws.ComplexIIIEq7, "50599")))
-# With kappa = 1/2, the printed S and J- (Eq. 24's own two terms) and the balanced S and J- (the
-# declared one-way fluxes) are different quantities: they are not compared across the forms.
-_add("C3_eq24_other_form", "complex_III_eq24",
-     "Eq. 24 printed judged against balanced, or balanced against printed", "printed vs balanced",
-     _other_form(L["complex_III_eq24"]), exclude=("S", "J_minus", "slopes_lnS"))
+_add_cross_forms(L["complex_III_eq24"])
 _add("C3_eq24_dG0_display", "complex_III_eq24",
      "dG0 at 1 M as section 7 displays it, +50.599 kJ/mol", "free-energy entry",
      _same_form(_rounded_dG0(laws.ComplexIIIEq24, "50599")))
 _add("C3_eq24_kappa_one", "complex_III_eq24", "J = A (1 - e^x) in place of A (1 - e^{x/2})",
-     "kinetic", _same_form(C3KappaOne()), forms=("balanced",))
+     "kinetic", _same_form(C3KappaOne()), forms=("balanced", "restored"))
 _add("C3_eq24_phi_inverted", "complex_III_eq24",
      "phosphate control inverted: (1 + Pi/k_Pi4)/(1 + Pi/k_Pi3)", "kinetic",
      _same_form(C3PhiInverted()))
@@ -315,9 +334,7 @@ _add("C4_kappa_half", "complex_IV", "kappa = 1/2 per O2 in place of 1/4", "kinet
 _add("C4_ctot_parameter", "complex_IV",
      "c_tot = Table 1's cytC_tot in place of the clamped [c3+] + [c2+]", "kinetic",
      _same_form(C4CtotParameter()))
-_add("F1_other_form", "atp_synthase",
-     "Eq. 11 printed judged against balanced, or balanced against printed", "printed vs balanced",
-     _other_form(L["atp_synthase"]))
+_add_cross_forms(L["atp_synthase"])
 _add("F1_dG0_display", "atp_synthase", "dG0_F at 1 M as section 2 displays it, -6.685 kJ/mol",
      "free-energy entry", _same_form(_rounded_dG0(laws.ATPSynthase, "-6685")))
 _add("F1_dG0_ATP_text_sign", "atp_synthase",
@@ -342,9 +359,7 @@ _add("ANT_shares_swapped", "nucleotide_exchange",
                 form_map={"declared": "printed"}))
 _add("ANT_totals", "nucleotide_exchange", "total ATP and ADP in place of the Mg-free forms",
      "binding", _same_form(ANTTotals()))
-_add("PiHt_other_form", "phosphate_carrier",
-     "Eq. 16 printed judged against balanced, or balanced against printed", "printed vs balanced",
-     _other_form(L["phosphate_carrier"]))
+_add_cross_forms(L["phosphate_carrier"])
 _add("PiHt_k_in_M", "phosphate_carrier", "k_PiHt read in M (0.45082 M), not mM", "unit",
      _same_form(L["phosphate_carrier"], P=_P(L["phosphate_carrier"], k_PiHt_mM="450.82")))
 _add("PiHt_one_proton", "phosphate_carrier", "one proton in place of two with HPO4(2-)",

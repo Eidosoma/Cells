@@ -96,6 +96,45 @@ class Law:
     def x(self, B, P, C, s):
         return _sum(v for _k, v in self.x_terms(B, P, C, s))
 
+    # --- forms ------------------------------------------------------------------------------
+    # form -> (kind, balanced). "kappa": J = A (1 - e^{kappa x}) with S = A / sum_j e^{j kappa x};
+    # "two_term": J = A - B with both terms as written (a form that fails the check).
+    FORMS = {"declared": ("kappa", True)}
+
+    def form_kind(self, form):
+        if form == "printed":
+            return "two_term"
+        return self.FORMS[form][0]
+
+    def form_balanced(self, form):
+        return self.FORMS.get(form, ("two_term", False))[1] if form != "printed" else (
+            not self.printed_fails)
+
+    def form_forward(self, form, B, P, C, s):
+        """A kappa form's forward term A (computed from the printed terms, so that a plant's
+        override of ``printed`` reaches every form)."""
+        return self.printed(B, P, C, s)[0]
+
+    def form_terms(self, form, B, P, C, s):
+        """A two-term form's (A, B)."""
+        return self.printed(B, P, C, s)
+
+    def form_slopes_A(self, form, B, P, C, s):
+        return self.slopes_lnA(B, P, C, s)
+
+    def form_slopes_B(self, form, B, P, C, s):
+        return self.slopes_lnB(B, P, C, s)
+
+    def literal_terms(self, form, B, P, C, s):
+        """The form's two terms transcribed literally from the appendix (an independent path)."""
+        return self.printed(B, P, C, s)
+
+    def form_d_closed(self, form, B, P, C, s):
+        """A failing two-term form's mismatch d = kappa^-1 ln(B/A) - x, in closed form."""
+        if form == "printed":
+            return self.d_closed(B, P, C, s)
+        raise ValueError(form)
+
     # --- the rest is per law ------------------------------------------------------------------
     def printed(self, B, P, C, s):
         raise NotImplementedError
@@ -260,6 +299,39 @@ class ComplexIIIEq24(_ComplexIII):
     reads_x = ("QH2_N", "Q_N", "c3_P", "c2_P", "h_N", "h_P")
     printed_eq = "Eq. 24"
     printed_fails = True
+    # "restored": Eq. 24 with its dropped term +2RT ln(h_N/1e-7) put back, i.e. phi_Pi times
+    # Eq. 7 at the With column's X_C3 (the lead, 20 November). It keeps the printed backward term.
+    FORMS = {"balanced": ("kappa", True), "printed": ("two_term", False),
+             "restored": ("kappa", True)}
+
+    def form_forward(self, form, B, P, C, s):
+        A, _ = self.printed(B, P, C, s)
+        if form == "restored":
+            return A * B.n(TEN_M7) / s["h_N"]
+        return A
+
+    def form_slopes_A(self, form, B, P, C, s):
+        d = dict(self.slopes_lnA(B, P, C, s))
+        if form == "restored":
+            d["h_N"] = d["h_N"] - 1
+        return d
+
+    def literal_terms(self, form, B, P, C, s):
+        if form == "restored":
+            RT = C["RT"]
+            Fdpsi = RT * _u(C, s)
+            expo = -(
+                B.n(P["dG0_C3_pH7"])
+                + 4 * self._dGH(B, C, s)
+                + 2 * RT * B.ln(s["h_N"] / B.n(TEN_M7))
+                - 2 * Fdpsi
+                + RT * B.ln(s["Q_N"] / s["QH2_N"])
+            ) / (2 * RT)
+            Xphi = B.n(P["X_C3"]) * self.phi(B, P, s)
+            return Xphi * B.exp(expo) * s["c3_P"], Xphi * s["c2_P"]
+        if form == "balanced":
+            return self.printed(B, P, C, s)[0], self.backward_closed(B, P, C, s)
+        return self.printed(B, P, C, s)
 
     @staticmethod
     def phi(B, P, s):
@@ -437,6 +509,59 @@ class ATPSynthase(Law):
     reads_x = ("ATP4_N", "ADP3_N", "HPO4_N", "h_N", "h_P")
     printed_eq = "Eq. 11"
     printed_fails = True
+    # "proton_restored": the matrix proton that Eq. 10 consumes put back into Eq. 11's exponent
+    # (forward term times h_N/1e-7). It balances in the source's frame (total Pi as one species)
+    # but not in the declared base forms, where it still fails by
+    # -ln[(1 + h_N/k_dH)/(1 + 1e-7/k_dH)].
+    # "base_form_restored": the forward term reads HPO4(2-) and the consumed proton, normalized
+    # at pH 7. It keeps the printed backward term and balances in the declared frame.
+    FORMS = {"balanced": ("kappa", True), "printed": ("two_term", False),
+             "proton_restored": ("two_term", False), "base_form_restored": ("kappa", True)}
+
+    def form_terms(self, form, B, P, C, s):
+        A, Bp = self.printed(B, P, C, s)
+        if form == "proton_restored":
+            return A * s["h_N"] / B.n(TEN_M7), Bp
+        return A, Bp
+
+    def form_forward(self, form, B, P, C, s):
+        A, _ = self.printed(B, P, C, s)
+        if form == "base_form_restored":
+            t = B.n(TEN_M7)
+            return A * (s["h_N"] / t) * (1 + t / B.n(P["k_dH"])) * s["HPO4_N"] / s["Pi_N"]
+        return A
+
+    def form_slopes_A(self, form, B, P, C, s):
+        d = dict(self.slopes_lnA(B, P, C, s))
+        if form in ("proton_restored", "base_form_restored"):
+            d["h_N"] = d["h_N"] + 1
+        if form == "base_form_restored":
+            d["Pi_N"] = d["Pi_N"] - 1
+            d["HPO4_N"] = d["HPO4_N"] + 1
+        return d
+
+    def literal_terms(self, form, B, P, C, s):
+        RT = C["RT"]
+        nA = B.n(int(P["n_A"]))
+        X = B.n(P["X_F1"])
+        ratio = B.n(P["K_MgADP"]) / B.n(P["K_MgATP"])
+        expo_r = -(B.n(P["dG0_ATP_pH7"]) - nA * self._dGH(B, C, s)
+                   - RT * B.ln(s["h_N"] / B.n(TEN_M7))) / RT
+        if form == "proton_restored":
+            return X * B.exp(expo_r) * ratio * s["MgADP_N"] * s["Pi_N"], X * s["MgATP_N"]
+        if form == "base_form_restored":
+            norm = 1 + B.n(TEN_M7) / B.n(P["k_dH"])
+            return X * B.exp(expo_r) * ratio * s["MgADP_N"] * s["HPO4_N"] * norm, X * s["MgATP_N"]
+        if form == "balanced":
+            return self.printed(B, P, C, s)[0], self.backward_closed(B, P, C, s)
+        return self.printed(B, P, C, s)
+
+    def form_d_closed(self, form, B, P, C, s):
+        if form == "proton_restored":
+            t = B.n(TEN_M7)
+            k = B.n(P["k_dH"])
+            return -B.ln((1 + s["h_N"] / k) / (1 + t / k))
+        return super().form_d_closed(form, B, P, C, s)
 
     def legs_(self, P):
         nA = int(P["n_A"])
@@ -621,6 +746,32 @@ class PhosphateCarrier(Law):
     reads_x = ("HPO4_N", "HPO4_P", "h_N", "h_P")
     printed_eq = "Eq. 16"
     printed_fails = True
+    # "subscripts_swapped": the stated co-transport, the IMS proton in the forward term and the
+    # matrix proton in the backward term. It balances.
+    FORMS = {"balanced": ("kappa", True), "printed": ("two_term", False),
+             "subscripts_swapped": ("kappa", True)}
+
+    def form_forward(self, form, B, P, C, s):
+        A, _ = self.printed(B, P, C, s)
+        if form == "subscripts_swapped":
+            return A * s["h_P"] / s["h_N"]
+        return A
+
+    def form_slopes_A(self, form, B, P, C, s):
+        d = dict(self.slopes_lnA(B, P, C, s))
+        if form == "subscripts_swapped":
+            d["h_N"] = d["h_N"] - 1
+            d["h_P"] = d["h_P"] + 1
+        return d
+
+    def literal_terms(self, form, B, P, C, s):
+        if form == "subscripts_swapped":
+            X = B.n(P["X_PiHt"])
+            den = s["H2PO4_P"] + self._k(B, P)
+            return X * s["H2PO4_P"] * s["h_P"] / den, X * s["H2PO4_N"] * s["h_N"] / den
+        if form == "balanced":
+            return self.printed(B, P, C, s)[0], self.backward_closed(B, P, C, s)
+        return self.printed(B, P, C, s)
 
     def dG0_pH7(self, B, P):
         return B.n(0)
@@ -785,8 +936,9 @@ def evaluate(law, B, P, C, s, form="declared"):
     """All compared quantities of ``law`` at state ``s`` in ``form``.
 
     ``form`` is "declared" (the law passes as printed; declared = printed), "balanced" (the
-    declared replacement of a failing printed equation) or "printed" (the failing equation as
-    printed). Slopes are d ln(.)/d ln(input) for concentrations and h, and d/du for u.
+    declared replacement of a failing printed equation, keeping its forward term), "printed"
+    (the failing equation as printed) or one of a failing law's alternative repairs in its
+    ``FORMS``. Slopes are d ln(.)/d ln(input) for concentrations and h, and d/du for u.
     """
     out = {}
     xt = law.x_terms(B, P, C, s)
@@ -801,13 +953,13 @@ def evaluate(law, B, P, C, s, form="declared"):
         out["static_head_mV"] = s["dpsi_mV"] - x / (B.n(q) * FRT)
     if not law.has_flux:
         return out
-    A, Bp = law.printed(B, P, C, s)
     n = law.kappa_inv
     nu = law.nu(P)
-    sA = law.slopes_lnA(B, P, C, s)
+    sA = law.form_slopes_A(form, B, P, C, s)
     reads = list(law.reads()) + ["u"]
-    if form == "printed":
-        sB = law.slopes_lnB(B, P, C, s)
+    if law.form_kind(form) == "two_term":
+        A, Bp = law.form_terms(form, B, P, C, s)
+        sB = law.form_slopes_B(form, B, P, C, s)
         J = A - Bp
         # The printed terms may read forms outside "Reads" (Eq. 11's MgATP, Eq. 16's H2PO4 at N).
         reads_pr = reads + [k for k in list(sA) + list(sB) if k not in reads]
@@ -817,6 +969,7 @@ def evaluate(law, B, P, C, s, form="declared"):
         out["slopes_lnB"] = {v: sB.get(v, B.n(0)) for v in reads_pr}
         dJ = {v: A * sA.get(v, B.n(0)) - Bp * sB.get(v, B.n(0)) for v in reads_pr}
     else:
+        A = law.form_forward(form, B, P, C, s)
         E, Z, w, _dw = kappa_parts(B, n, x)
         S = A / Z
         Jm = S * B.exp(x)

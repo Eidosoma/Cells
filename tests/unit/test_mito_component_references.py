@@ -78,24 +78,28 @@ def test_physics_at_a_few_exact_states():
             assert abs(law.x(DEC, P, C, s0) - law.dG_appendix(DEC, P, C, s0) / C["RT"]) < checks.TOL_EXACT
             if not law.has_flux:
                 continue
-            form = "balanced" if law.printed_fails else "declared"
-            at0 = laws.evaluate(law, DEC, P, C, checks.place_at_x(law, P, C, s0, 0), form)
-            assert abs(at0["J"] / at0["S"]) < checks.TOL_EXACT
-            for t in ("-1e-3", "2"):
-                r = laws.evaluate(law, DEC, P, C, checks.place_at_x(law, P, C, s0, Decimal(t)), form)
-                assert (r["J"] > 0) == (r["x"] < 0) and r["dissipation_W_per_L"] > 0
-            A, Bp = law.printed(DEC, P, C, s0)
-            d = law.kappa_inv * (Bp / A).ln() - law.x(DEC, P, C, s0)
-            if law.printed_fails:
-                assert abs(d - law.d_closed(DEC, P, C, s0)) < checks.TOL_EXACT and abs(d) > 0.1
-                bal = laws.evaluate(law, DEC, P, C, s0, "balanced")
-                assert abs(law.backward_closed(DEC, P, C, s0) / bal["B_term"] - 1) < checks.TOL_EXACT
-            else:
+            x0 = law.x(DEC, P, C, s0)
+            for form in design.FORMS[law.key]:
+                A_l, B_l = law.literal_terms(form, DEC, P, C, s0)
+                d = law.kappa_inv * (B_l / A_l).ln() - x0
+                if law.form_kind(form) == "two_term":
+                    # A failing form: its mismatch is the appendix's closed form, and not small.
+                    assert abs(d - law.form_d_closed(form, DEC, P, C, s0)) < checks.TOL_EXACT
+                    assert abs(d) > Decimal("0.1")
+                    continue
+                # A balanced form: d = 0, J = 0 at x = 0 and reverses past it, slopes check out.
                 assert abs(d) < checks.TOL_EXACT
-            assert abs(law.S_closed(DEC, P, C, s0) / laws.evaluate(law, DEC, P, C, s0, form)["S"] - 1) < checks.TOL_EXACT
-            num = checks.numeric_slopes(law, P, C, s0, "S")
-            sl = laws.evaluate(law, DEC, P, C, s0, form)["slopes_lnS"]
-            assert max(abs(num[v] - sl[v]) for v in num) < checks.TOL_FD
+                r0 = laws.evaluate(law, DEC, P, C, s0, form)
+                assert abs(r0["A_term"] / A_l - 1) < checks.TOL_EXACT
+                at0 = laws.evaluate(law, DEC, P, C, checks.place_at_x(law, P, C, s0, 0), form)
+                assert abs(at0["J"] / at0["S"]) < checks.TOL_EXACT
+                for t in ("-1e-3", "2"):
+                    r = laws.evaluate(law, DEC, P, C, checks.place_at_x(law, P, C, s0, Decimal(t)), form)
+                    assert (r["J"] > 0) == (r["x"] < 0) and r["dissipation_W_per_L"] > 0
+                num = checks.numeric_slopes(law, P, C, s0, "S", form)
+                assert max(abs(num[v] - r0["slopes_lnS"][v]) for v in num) < checks.TOL_FD
+            form0 = design.FORMS[law.key][0]
+            assert abs(law.S_closed(DEC, P, C, s0) / laws.evaluate(law, DEC, P, C, s0, form0)["S"] - 1) < checks.TOL_EXACT
         # Section 8's two planted controls fail the equilibrium check.
         for pid in ("C1_q_reversed", "ANT_shares_0.35_0.60"):
             pl = plants.PLANTS_BY_ID[pid]
@@ -109,7 +113,7 @@ def test_physics_at_a_few_exact_states():
 def test_recorded_verdicts():
     chk, pl = _load("checks.json"), _load("plants.json")
     assert all(r["passes"] for r in chk["laws"].values())
-    assert all(r["equilibrium"]["passes"] for r in chk["laws"].values() if "equilibrium" in r)
+    assert all(e["passes"] for r in chk["laws"].values() for e in r.get("equilibrium", {}).values())
     assert all(v["refused"] for v in chk["planted_controls"].values())
     assert chk["float64_calibration"]["passes"]
     assert chk["lumped_identity"]["passes"] and chk["binding_chain"]["passes"]

@@ -28,22 +28,16 @@ IFACE = HERE / "interface"
 
 CB = Decimal(16)  # the band factor, in units of eps64 times each quantity's scale
 EPS = Decimal(hp.EPS64)
-OWN_REL = Decimal("1e-24")  # the references' own error: 25-digit storage (computation < 1e-50)
+OWN_REL = Decimal("1e-19")  # the references' own error: 20-digit storage (computation < 1e-50)
 POWER = Decimal(3)  # a plant is caught at a row when some quantity misses by 3 bands or more
-DIGITS = 25
+DIGITS = 20
 
-FORMS = {
-    "complex_I": ("declared",),
-    "complex_III_eq7": ("declared",),
-    "complex_III_eq24": ("balanced", "printed"),
-    "complex_IV": ("declared",),
-    "lumped_QO": ("declared",),
-    "atp_synthase": ("balanced", "printed"),
-    "nucleotide_exchange": ("declared",),
-    "phosphate_carrier": ("balanced", "printed"),
-    "k_h_exchange": ("declared",),
-    "nadh_supply": ("declared",),
-}
+# Each law's forms, from its FORMS: "declared" where the printed law passes; for Eqs. 11, 16 and
+# 24, "balanced" (the appendix's, keeping the printed forward term), "printed", and the
+# alternative repairs (the lead, 20 November): Eq. 24 "restored"; Eq. 11 "proton_restored" and
+# "base_form_restored"; Eq. 16 "subscripts_swapped".
+FORMS = {law.key: tuple(law.FORMS) for law in laws.CYCLE_LAWS}
+FORMS["nadh_supply"] = ("declared",)
 INPUT_KEYS = {
     "complex_I": ("dpsi_mV", "h_N", "h_P", "NADH_N", "NAD_N", "Q_N", "QH2_N"),
     "complex_III_eq7": ("dpsi_mV", "h_N", "h_P", "QH2_N", "Q_N", "c3_P", "c2_P"),
@@ -90,11 +84,14 @@ def law_states(law):
             out.append((f"near_eq:{bname}:x={t}", "near_eq", {"target_x": t},
                         checks.place_at_x(law, P, C, s0, Decimal(t))))
     if law.printed_fails:
-        for bname, base in bases:
-            s0 = states.full_state(P, base)
-            d = law.d_closed(DEC, P, C, s0)
-            out.append((f"stall:{bname}", "printed_stall", {"target_x": hp.fmt(-d, 20)},
-                        checks.place_at_x(law, P, C, s0, -d)))
+        failing = [f for f in FORMS[law.key] if law.form_kind(f) == "two_term"]
+        for form in failing:
+            for bname, base in bases:
+                s0 = states.full_state(P, base)
+                d = law.form_d_closed(form, DEC, P, C, s0)
+                out.append((f"stall:{form}:{bname}", "stall",
+                            {"form": form, "target_x": hp.fmt(-d, 20)},
+                            checks.place_at_x(law, P, C, s0, -d)))
         spec = {"pH_N": "7.2", "pH_P": "7.2"} if law.key == "phosphate_carrier" else {"pH_N": "7.0"}
         s0 = states.full_state(P, spec)
         for t in ("-0.5", "0.5"):
@@ -157,11 +154,11 @@ def bands_cycle(law, P, C, s, form, ref, extra_scale_x=Decimal(0)):
         b["static_head_mV"] = dx / (abs(q) * C["F_RT_per_mV"]) + CB * EPS * abs(s["dpsi_mV"])
     if law.has_flux:
         u = C["F_RT_per_mV"] * s["dpsi_mV"]
-        sA = law.slopes_lnA(DEC, P, C, s)
+        sA = law.form_slopes_A(form, DEC, P, C, s)
         dlnA = CB * EPS * _scale_ln(ref["A_term"], sA, s, u)
         J = ref["J"]
-        if form == "printed":
-            sB = law.slopes_lnB(DEC, P, C, s)
+        if law.form_kind(form) == "two_term":
+            sB = law.form_slopes_B(form, DEC, P, C, s)
             dlnB = CB * EPS * _scale_ln(ref["B_term"], sB, s, u)
             bA, bB = ref["A_term"] * dlnA, ref["B_term"] * dlnB
             b.update(S=bA, A_term=bA, J_minus=bB, B_term=bB, J=bA + bB, lnB_over_A=dlnA + dlnB)
@@ -333,17 +330,18 @@ def _f64_orders(law, P, fl, form):
         res["reversed_sum"] = {"x": x2}
         res["appendix_dG"] = {"x": law.dG_appendix(F64, P, C64, s) / C64["RT"]}
         return res
-    if form == "printed":
-        if hasattr(law, "printed_literal"):
-            res["literal"] = {"J": law.printed_literal(F64, P, C64, s)}
+    if law.form_kind(form) == "two_term":
+        A_l, B_l = law.literal_terms(form, F64, P, C64, s)
+        res["literal"] = {"J": A_l - B_l, "A_term": A_l, "B_term": B_l}
         return res
-    x = law.dG_appendix(F64, P, C64, s) / C64["RT"]
-    S = law.S_closed(F64, P, C64, s)
-    res["closed"] = {"x": x, "S": S, "J": S * (1.0 - math.exp(x)), "J_minus": S * math.exp(x)}
+    if form in ("declared", "balanced"):
+        x = law.dG_appendix(F64, P, C64, s) / C64["RT"]
+        S = law.S_closed(F64, P, C64, s)
+        res["closed"] = {"x": x, "S": S, "J": S * (1.0 - math.exp(x)), "J_minus": S * math.exp(x)}
     x2 = 0.0
     for _k, v in reversed(law.x_terms(F64, P, C64, s)):
         x2 += v
-    A, _ = law.printed(F64, P, C64, s)
+    A = law.literal_terms(form, F64, P, C64, s)[0]
     n = law.kappa_inv
     Bt = A * math.exp(x2 / n)
     Z = sum(math.exp(j * x2 / n) for j in range(n))
@@ -421,7 +419,8 @@ def measure_plants(refs):
                 with precision():
                     v = pl.values(s, form)
                     m = _margins(v, ref, band)
-                m = {k: val for k, val in m.items() if k.split(".")[0] not in pl.exclude}
+                excl = pl.exclude_for(form)
+                m = {k: val for k, val in m.items() if k.split(".")[0] not in excl}
                 n += 1
                 if "J" in m:
                     if m["J"] >= POWER:
@@ -450,7 +449,7 @@ def measure_plants(refs):
                 "zero_power_values_only": zero_values,
                 "caught_by_J_alone": caught_J if law.has_flux else None,
                 "no_power_on_J": no_J if law.has_flux else None,
-                "excluded_quantities": list(pl.exclude),
+                "excluded_quantities": list(pl.exclude_for(form)),
                 "max_margin": hp.fmt(best[0], 3), "max_at": best[1], "max_quantity": best[2],
                 "min_margin_where_caught": None if min_caught is None else hp.fmt(min_caught[0], 3),
                 "min_at": None if min_caught is None else min_caught[1],
@@ -475,10 +474,12 @@ def run_checks(exact, refs):
             nb = states.NEAR_EQ_BASE.get(law.key, {})
             bases = [("A", states.full_state(P, {**states.BASE, **nb})),
                      ("B", states.full_state(P, {**states.BASE_B, **nb}))]
-            res["equilibrium"] = checks.equilibrium_checks(law, bases)
+            res["equilibrium"] = {f: checks.equilibrium_checks(law, bases, f)
+                                  for f in FORMS[law.key] if law.form_kind(f) == "kappa"}
             if law.printed_fails:
                 grid = [(sid, s) for sid, k, _m, s in exact[law.key] if k in ("corner", "interior", "center")]
-                res["printed_violation"] = checks.printed_violation(law, grid, bases)
+                res["violation"] = {f: checks.printed_violation(law, grid, bases, f)
+                                    for f in FORMS[law.key] if law.form_kind(f) == "two_term"}
         form0 = FORMS[law.key][0]
         xs = [r[2]["x"] for r in refs[law.key][form0]]
         grid_x = [r[2]["x"] for r, (sid, k, _m, _s) in zip(refs[law.key][form0], exact[law.key])
@@ -523,7 +524,9 @@ def law_meta():
                 "reads_S": list(law.reads_S), "reads_x": list(law.reads_x),
                 "has_flux": law.has_flux, "kappa": f"1/{law.kappa_inv}",
                 "printed": law.printed_eq, "printed_fails": law.printed_fails,
-                "forms": list(FORMS[law.key]),
+                "forms": {f: {"kind": law.form_kind(f),
+                              "balanced": True if f == "declared" else law.form_balanced(f)}
+                          for f in FORMS[law.key]},
             }
             meta[law.key] = m
         sp = laws.SUPPLY

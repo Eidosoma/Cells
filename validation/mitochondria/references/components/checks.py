@@ -113,24 +113,25 @@ def _leaves(d):
 
 # --------------------------------------------------------------------------------------------
 def numeric_slopes(law, P, C, s, which, form="declared"):
-    """Central differences of ln S (declared) or ln A / ln B (printed terms) in ln(input), u."""
+    """Central differences of ln S (a kappa form) or of ln A / ln B (a two-term form's terms),
+    in ln(input) and in u, from paths 1 and 2 only."""
 
     def lnval(t):
         if which == "S":
             x = law.x(DEC, P, C, t)
-            A, _ = law.printed(DEC, P, C, t)
+            A = law.form_forward(form, DEC, P, C, t)
             _E, Z, _w, _dw = laws.kappa_parts(DEC, law.kappa_inv, x)
             return (A / Z).ln()
-        A, Bp = law.printed(DEC, P, C, t)
+        A, Bp = law.form_terms(form, DEC, P, C, t)
         return A.ln() if which == "A" else Bp.ln()
 
-    out = {}
     keys = set(law.reads())
     if which == "A":
-        keys |= set(law.slopes_lnA(DEC, P, C, s))
+        keys |= set(law.form_slopes_A(form, DEC, P, C, s))
     if which == "B":
-        keys |= set(law.slopes_lnB(DEC, P, C, s))
+        keys |= set(law.form_slopes_B(form, DEC, P, C, s))
     keys.discard("u")
+    out = {}
     for v in sorted(keys):
         hp_ = dict(s)
         hm = dict(s)
@@ -147,10 +148,11 @@ def numeric_J_slopes(law, P, C, s, form, keys):
     """Central differences of J in ln(input) and in u, computed from paths 1 and 2 only."""
 
     def J_of(t):
-        x = law.x(DEC, P, C, t)
-        A, Bp = law.printed(DEC, P, C, t)
-        if form == "printed":
+        if law.form_kind(form) == "two_term":
+            A, Bp = law.form_terms(form, DEC, P, C, t)
             return A - Bp
+        x = law.x(DEC, P, C, t)
+        A = law.form_forward(form, DEC, P, C, t)
         _E, Z, _w, _dw = laws.kappa_parts(DEC, law.kappa_inv, x)
         return -(A / Z) * DEC.expm1(x)
 
@@ -200,7 +202,7 @@ def supply_checks(exact_states):
 
 
 def law_checks(law, exact_states):
-    """Every check of one cycle law over a list of (id, exact state)."""
+    """Every check of one cycle law, form by form, over a list of (id, exact state)."""
     P = params_for(law)
     res = {}
     with precision():
@@ -213,93 +215,96 @@ def law_checks(law, exact_states):
             "q_N": law.q_N(P),
             "conserved": sum(nu * z for _k, _s, nu, z in legs) == 0 and law.q_N(P) == -q,
         }
-        worst = {k: Decimal(0) for k in ("x_vs_appendix_dG", "S_closed_rel", "printed_vs_declared",
-                                         "d_vs_closed", "backward_closed_rel", "slopes_S",
-                                         "slopes_A", "slopes_B", "slopes_J", "dI_ddpsi_rel",
-                                         "static_head_x")}
-        min_diss = None
-        min_S = None
-        n_states = 0
-        for sid, s in exact_states:
-            n_states += 1
+        common = {"x_vs_appendix_dG": Decimal(0), "static_head_x": Decimal(0)}
+        for _sid, s in exact_states:
             x = law.x(DEC, P, C, s)
-            worst["x_vs_appendix_dG"] = max(worst["x_vs_appendix_dG"],
-                                            abs(x - law.dG_appendix(DEC, P, C, s) / C["RT"]))
+            common["x_vs_appendix_dG"] = max(common["x_vs_appendix_dG"],
+                                             abs(x - law.dG_appendix(DEC, P, C, s) / C["RT"]))
             if q != 0:
                 sh = law.x(DEC, P, C, dict(s, dpsi_mV=s["dpsi_mV"] - x / (q * C["F_RT_per_mV"])))
-                worst["static_head_x"] = max(worst["static_head_x"], abs(sh))
-            if not law.has_flux:
-                continue
-            form = "balanced" if law.printed_fails else "declared"
-            ref = laws.evaluate(law, DEC, P, C, s, form)
-            S = ref["S"]
-            worst["S_closed_rel"] = max(worst["S_closed_rel"], abs(law.S_closed(DEC, P, C, s) / S - 1))
-            A, Bp = law.printed(DEC, P, C, s)
-            d = law.kappa_inv * (Bp / A).ln() - x
-            if law.printed_fails:
-                worst["d_vs_closed"] = max(worst["d_vs_closed"], abs(d - law.d_closed(DEC, P, C, s)))
-                bc = law.backward_closed(DEC, P, C, s)
-                worst["backward_closed_rel"] = max(worst["backward_closed_rel"],
-                                                   abs(bc / ref["B_term"] - 1))
-            else:
-                worst["d_vs_closed"] = max(worst["d_vs_closed"], abs(d))
-                worst["printed_vs_declared"] = max(worst["printed_vs_declared"],
-                                                   abs((A - Bp) - ref["J"]) / (A + Bp))
-            diss = ref["dissipation_W_per_L"]
-            min_diss = diss if min_diss is None else min(min_diss, diss)
-            min_S = S if min_S is None else min(min_S, S)
-            forms = ("balanced", "printed") if law.printed_fails else ("declared",)
-            for fm in forms:
-                r_fm = ref if fm == form else laws.evaluate(law, DEC, P, C, s, fm)
-                numJ = numeric_J_slopes(law, P, C, s, fm, r_fm["slopes_J"])
-                scale = r_fm["A_term"] + r_fm["B_term"]
-                worst["slopes_J"] = max(worst["slopes_J"],
-                                        max(abs(numJ[v] - r_fm["slopes_J"][v]) for v in numJ) / scale)
-            num = numeric_slopes(law, P, C, s, "S")
-            worst["slopes_S"] = max(worst["slopes_S"],
-                                    max(abs(num[v] - ref["slopes_lnS"][v]) for v in num))
-            if law.printed_fails:
-                pr = laws.evaluate(law, DEC, P, C, s, "printed")
-                for which, key in (("A", "slopes_lnA"), ("B", "slopes_lnB")):
-                    numw = numeric_slopes(law, P, C, s, which)
-                    worst[f"slopes_{which}"] = max(worst[f"slopes_{which}"],
-                                                   max(abs(numw[v] - pr[key].get(v, Decimal(0)))
-                                                       for v in numw))
-            if q != 0:
-                h = FD_STEP
-                Ip = laws.evaluate(law, DEC, P, C, dict(s, dpsi_mV=s["dpsi_mV"] + h), form)["I_A_per_L"]
-                Im = laws.evaluate(law, DEC, P, C, dict(s, dpsi_mV=s["dpsi_mV"] - h), form)["I_A_per_L"]
-                fd = (Ip - Im) / (2 * h)
-                scale = abs(ref["dI_ddpsi_A_per_L_per_mV"]) + abs(q) * C["F"] * C["F_RT_per_mV"] * (
-                    abs(ref["J"]) + ref["J_minus"])
-                worst["dI_ddpsi_rel"] = max(worst["dI_ddpsi_rel"],
-                                            abs(fd - ref["dI_ddpsi_A_per_L_per_mV"]) / scale)
-        res["n_states"] = n_states
-        res["worst"] = {k: _f(v, 3) for k, v in worst.items()}
+                common["static_head_x"] = max(common["static_head_x"], abs(sh))
+        res["n_states"] = len(exact_states)
+        res["worst_common"] = {k: _f(v, 3) for k, v in common.items()}
+        ok = bool(res["charge"]["conserved"]) and all(v <= TOL_EXACT for v in common.values())
+        res["forms"] = {}
         if law.has_flux:
-            res["min_dissipation_W_per_L"] = _f(min_diss, 6)
-            res["min_S"] = _f(min_S, 6)
-        tol_ok = {
-            "x_vs_appendix_dG": TOL_EXACT, "S_closed_rel": TOL_EXACT,
-            "printed_vs_declared": TOL_EXACT, "d_vs_closed": TOL_EXACT,
-            "backward_closed_rel": TOL_EXACT, "slopes_S": TOL_FD, "slopes_A": TOL_FD,
-            "slopes_B": TOL_FD, "slopes_J": TOL_FD, "dI_ddpsi_rel": TOL_FD,
-            "static_head_x": TOL_EXACT,
-        }
-        # The dissipation -J dG is checked raw (W per L), with S > 0 checked separately.
-        res["passes"] = bool(res["charge"]["conserved"]) and all(worst[k] <= tol_ok[k] for k in worst) and (
-            min_diss is None or (min_diss >= 0 and min_S > 0))
+            forms = [f for f in law.FORMS] if law.printed_fails else ["declared"]
+            for form in forms:
+                fr = _form_checks(law, P, C, form, exact_states)
+                res["forms"][form] = fr
+                ok = ok and fr["passes"]
+        res["passes"] = ok
     return res
 
 
-def equilibrium_checks(law, base_states):
-    """J = 0 at x = 0, reversal past it, and J dG <= 0, at exact states placed next to x = 0."""
+def _form_checks(law, P, C, form, exact_states):
+    """One form: its terms against their literal transcription, its balance (d = 0) or its
+    closed-form mismatch, S's closed form, the slopes, J's slopes, q F dJ/dpsi, and (balanced
+    forms) S > 0 and -J dG >= 0."""
+    kind = law.form_kind(form)
+    balanced = law.form_balanced(form) if form != "declared" else True
+    w = {k: Decimal(0) for k in ("terms_vs_literal_rel", "d", "S_closed_rel", "slopes_S",
+                                 "slopes_A", "slopes_B", "slopes_J", "dI_ddpsi_rel")}
+    min_diss = min_S = None
+    q = law.q(P)
+    for _sid, s in exact_states:
+        x = law.x(DEC, P, C, s)
+        ref = laws.evaluate(law, DEC, P, C, s, form)
+        A_l, B_l = law.literal_terms(form, DEC, P, C, s)
+        if kind == "two_term":
+            A, Bp = law.form_terms(form, DEC, P, C, s)
+        else:
+            A = law.form_forward(form, DEC, P, C, s)
+            Bp = A * (x / law.kappa_inv).exp()
+        w["terms_vs_literal_rel"] = max(w["terms_vs_literal_rel"], abs(A / A_l - 1), abs(Bp / B_l - 1))
+        d = law.kappa_inv * (B_l / A_l).ln() - x
+        if balanced:
+            w["d"] = max(w["d"], abs(d))
+        else:
+            w["d"] = max(w["d"], abs(d - law.form_d_closed(form, DEC, P, C, s)))
+        if form in ("declared", "balanced"):
+            w["S_closed_rel"] = max(w["S_closed_rel"], abs(law.S_closed(DEC, P, C, s) / ref["S"] - 1))
+        if kind == "kappa":
+            num = numeric_slopes(law, P, C, s, "S", form)
+            w["slopes_S"] = max(w["slopes_S"], max(abs(num[v] - ref["slopes_lnS"][v]) for v in num))
+            min_diss = ref["dissipation_W_per_L"] if min_diss is None else min(min_diss, ref["dissipation_W_per_L"])
+            min_S = ref["S"] if min_S is None else min(min_S, ref["S"])
+        else:
+            for which, key in (("A", "slopes_lnA"), ("B", "slopes_lnB")):
+                numw = numeric_slopes(law, P, C, s, which, form)
+                w[f"slopes_{which}"] = max(w[f"slopes_{which}"],
+                                           max(abs(numw[v] - ref[key].get(v, Decimal(0))) for v in numw))
+        numJ = numeric_J_slopes(law, P, C, s, form, ref["slopes_J"])
+        w["slopes_J"] = max(w["slopes_J"], max(abs(numJ[v] - ref["slopes_J"][v]) for v in numJ)
+                            / (ref["A_term"] + ref["B_term"]))
+        if q != 0:
+            h = FD_STEP
+            Ip = laws.evaluate(law, DEC, P, C, dict(s, dpsi_mV=s["dpsi_mV"] + h), form)["I_A_per_L"]
+            Im = laws.evaluate(law, DEC, P, C, dict(s, dpsi_mV=s["dpsi_mV"] - h), form)["I_A_per_L"]
+            fd = (Ip - Im) / (2 * h)
+            scale = abs(ref["dI_ddpsi_A_per_L_per_mV"]) + abs(q) * C["F"] * C["F_RT_per_mV"] * (
+                ref["A_term"] + ref["B_term"])
+            w["dI_ddpsi_rel"] = max(w["dI_ddpsi_rel"], abs(fd - ref["dI_ddpsi_A_per_L_per_mV"]) / scale)
+    tol = {"terms_vs_literal_rel": TOL_EXACT, "d": TOL_EXACT, "S_closed_rel": TOL_EXACT,
+           "slopes_S": TOL_FD, "slopes_A": TOL_FD, "slopes_B": TOL_FD, "slopes_J": TOL_FD,
+           "dI_ddpsi_rel": TOL_FD}
+    out = {"kind": kind, "balanced": balanced, "worst": {k: _f(v, 3) for k, v in w.items()}}
+    ok = all(w[k] <= tol[k] for k in w)
+    if kind == "kappa":
+        out["min_S"] = _f(min_S, 6)
+        out["min_dissipation_W_per_L"] = _f(min_diss, 6)
+        ok = ok and min_S > 0 and min_diss >= 0
+    out["passes"] = ok
+    return out
+
+
+def equilibrium_checks(law, base_states, form):
+    """J = 0 at x = 0, reversal past it, and -J dG > 0, at exact states placed next to x = 0."""
     P = params_for(law)
     out = {"rows": []}
     ok = True
     with precision():
         C = hp.constants(DEC)
-        form = "balanced" if law.printed_fails else "declared"
         for bname, s0 in base_states:
             for t in ("-3", "-1", "-1e-3", "-1e-9", "0", "1e-9", "1e-3", "1", "3"):
                 s = place_at_x(law, P, C, s0, Decimal(t))
@@ -317,8 +322,8 @@ def equilibrium_checks(law, base_states):
     return out
 
 
-def printed_violation(law, grid_states, base_states):
-    """Quantify a failing printed form: its mismatch d, where it stalls, and its uphill band."""
+def printed_violation(law, grid_states, base_states, form="printed"):
+    """Quantify a failing two-term form: its mismatch d, where it stalls, and its uphill band."""
     P = params_for(law)
     out = {}
     with precision():
@@ -329,8 +334,8 @@ def printed_violation(law, grid_states, base_states):
         worst_rel = None
         d_min = d_max = None
         for sid, s in grid_states:
-            pr = laws.evaluate(law, DEC, P, C, s, "printed")
-            d = law.d_closed(DEC, P, C, s)
+            pr = laws.evaluate(law, DEC, P, C, s, form)
+            d = law.form_d_closed(form, DEC, P, C, s)
             d_min = d if d_min is None else min(d_min, d)
             d_max = d if d_max is None else max(d_max, d)
             n += 1
@@ -348,24 +353,24 @@ def printed_violation(law, grid_states, base_states):
                        "at": None if worst is None else worst[1],
                        "most_negative_dissipation_over_Jplus_RT": None if worst_rel is None else _f(worst_rel[0]),
                        "at_rel": None if worst_rel is None else worst_rel[1]}
-        # In the band between the printed zero (x = -d) and equilibrium, J_printed dG > 0.
+        # In the band between the form's zero (x = -d) and equilibrium, J dG > 0.
         rows = []
         for bname, s0 in base_states:
-            d = law.d_closed(DEC, P, C, s0)
+            d = law.form_d_closed(form, DEC, P, C, s0)
             for frac in ("0", "0.25", "0.5", "0.75", "1"):
                 xt = -d * Decimal(frac)
                 s = place_at_x(law, P, C, s0, xt)
-                pr = laws.evaluate(law, DEC, P, C, s, "printed")
+                pr = laws.evaluate(law, DEC, P, C, s, form)
                 bal = laws.evaluate(law, DEC, P, C, s, "balanced")
                 rows.append({
                     "base": bname, "d": _f(d), "x": _f(pr["x"], 6),
-                    "J_printed_over_Jplus": _f(pr["J"] / pr["S"], 6),
+                    "J_form_over_Jplus": _f(pr["J"] / pr["S"], 6),
                     "J_balanced_over_Jplus": _f(bal["J"] / bal["S"], 6),
-                    "dissipation_printed_W_per_L": _f(pr["dissipation_W_per_L"], 6),
+                    "dissipation_form_W_per_L": _f(pr["dissipation_W_per_L"], 6),
                     "dissipation_balanced_W_per_L": _f(bal["dissipation_W_per_L"], 6),
-                    "backward_ratio_printed_over_balanced": _f(pr["B_term"] / bal["B_term"], 8),
+                    "backward_ratio_form_over_balanced": _f(pr["B_term"] / bal["B_term"], 8),
                 })
-        out["band_between_printed_zero_and_equilibrium"] = rows
+        out["band_between_zero_and_equilibrium"] = rows
     return out
 
 
@@ -437,6 +442,21 @@ def form_identities(exact_states_by_law):
             w = max(w, abs(d_src - f1.d_closed_source_frame(DEC, P, C, s)))
         out["eq11_source_frame_mismatch_is_ln_h_N_over_1e-7"] = {"worst_abs": _f(w, 3),
                                                                  "passes": w <= TOL_EXACT}
+        # Eq. 24 restored is phi_Pi times Eq. 7 (Eq. 7's own class at the With column's X_C3),
+        # and its J is the balanced J times 1e-7/h_N.
+        c24 = laws.LAWS_BY_KEY["complex_III_eq24"]
+        c7 = laws.ComplexIIIEq7()
+        w1 = w2 = Decimal(0)
+        for _sid, s in exact_states_by_law["complex_III_eq24"]:
+            phi = c24.phi(DEC, P, s)
+            A7, B7 = c7.printed(DEC, P, C, s)
+            r = laws.evaluate(c24, DEC, P, C, s, "restored")
+            b = laws.evaluate(c24, DEC, P, C, s, "balanced")
+            w1 = max(w1, abs(phi * (A7 - B7) - r["J"]) / (phi * (A7 + B7)))
+            w2 = max(w2, abs(r["J"] - b["J"] * Decimal("1e-7") / s["h_N"]) / (r["A_term"] + r["B_term"]))
+        out["eq24_restored_is_phi_times_eq7"] = {"worst_rel": _f(w1, 3), "passes": w1 <= TOL_EXACT}
+        out["eq24_restored_is_balanced_times_1e-7_over_h_N"] = {"worst_rel": _f(w2, 3),
+                                                               "passes": w2 <= TOL_EXACT}
     return out
 
 
