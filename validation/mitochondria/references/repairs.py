@@ -135,9 +135,14 @@ COMBINED = {
                                         {"h_ref_DH": 10.0 ** -7.10, "K_base_AK": 0.38896},
                                         "the same with Eq. 18 exactly as the appendix writes it (6df4ac67, section 7): "
                                         "X_AK (K_base [ADP3-]^2 - [AMP2-][ATP4-]) on the free forms, K_base = 0.38896"),
+    "mr1_mt2": ({"J_F1": "eq11_appendix_balanced", "J_PiHt": "eq16_appendix_balanced",
+                 "H_x_row": "pi_protons_counted", "J_DH": "eq1_balanced_supply", "J_AK": "eq18_base_forms"},
+                {"h_ref_DH": 10.0 ** -7.10, "K_base_AK": 0.388964538},
+                "MR1, MT-2's model-level reference (D236, appendix tag mito-laws-appendix-2026-11-20b): "
+                "host_p_question_arm_ak_base with K_base = 0.388964538 at m = 3.808553529 mM"),
 }
 
-FULL_CHECK = ("host_p_question_arm", "host_p_question_arm_ak_base", "host_p_question_arm_ak_appendix")
+FULL_CHECK = ("host_p_question_arm", "host_p_question_arm_ak_base", "host_p_question_arm_ak_appendix", "mr1_mt2")
 
 
 def process_dgs(comp, y, h):
