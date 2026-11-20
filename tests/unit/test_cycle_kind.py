@@ -334,9 +334,9 @@ def test_the_general_parse_refuses_a_charged_held_row_chemistry_at_p_and_moved_p
         dict(id="p_0", host="membrane_0", law="seamtest.chemistry_at_p@1", orientation={"N": "a"},
              capacity_fmol_s=0.1, roles={"Z": "Y", "W": "ATP"}, parameters={}, held_rows=[])
     )  # fmt: skip
-    with scoped():  # Chemistry at P (Q3's refusal until K3) is admitted, and flagged.
-        ((_, entry),) = surface_pump_v3.structure(parse_spec(raw).model).kinds
-    assert entry == transporter.CycleAxis(("seamtest.chemistry_at_p@1",), False, True)
+    with scoped():  # Chemistry at P (Q3's refusal until K3) is admitted; its rows are neutral,
+        ((_, entry),) = surface_pump_v3.structure(parse_spec(raw).model).kinds  # so no K3b field.
+    assert entry == transporter.CycleAxis(("seamtest.chemistry_at_p@1",))
     with scoped(), pytest.raises(ConfigError, match="must be unique"):
         parse_spec(tk.held_world(general(tk.population()), general(tk.population())))
 
@@ -1269,15 +1269,44 @@ CLOSURE_HYDROLYSIS = law_registry.CycleLaw(
 MU_H_SHIFT = 5.0  # H's mu°/RT off 0, so its standard part is not invisible to the ledger.
 
 
+INHIBITED_HYDROLYSIS = law_registry.CycleLaw(
+    "seamtest.inhibited_hydrolysis@1",
+    (),
+    (transporter.FINITE,),
+    None,
+    None,
+    reads=("rapid_binding@1",),
+    forms="base",
+    cycle=CycleForm(
+        kinetics="monomial",
+        roles=(("ATP", -4), ("ADP", -3), ("Pi", -2), ("H", 1)),
+        rows=(("ATP", "N"), ("ADP", "N"), ("Pi", "N"), ("H", "N")),
+        modes=(("hydrolysis", (-1, 1, 1, 1)),),
+        fuel_roles=("ATP", "ADP", "Pi"),
+        monomial=forms.MonomialForm((
+            forms.MonomialRate(
+                log_k=-12.0,
+                orders=((forms.Reference("ATP", "N"), 1.0), (forms.Reference("H", "N"), -1.0)),
+            ),
+        )),
+    ),
+    host=transporter.KIND_ID,
+    provenance="calibrated",
+    source="a test-only hydrolysis first order in free ATP and inhibited by free h (K3b), never "
+    "shipped",
+)  # fmt: skip
+
+
 @contextlib.contextmanager
 def closure_scoped():
-    """The transporter and the binding closure's kind, the test laws and CLOSURE_HYDROLYSIS."""
-    laws = law_registry.BUILTIN.extended(*TEST_LAWS, CLOSURE_HYDROLYSIS)
+    """The transporter and the binding closure's kind, the test laws, CLOSURE_HYDROLYSIS and the
+    inhibited hydrolysis."""
+    laws = law_registry.BUILTIN.extended(*TEST_LAWS, CLOSURE_HYDROLYSIS, INHIBITED_HYDROLYSIS)
     with tk.scoped(*tk.CHARGED_KINDS), law_registry.scope(laws):
         yield
 
 
-def closure_fuel_world(closure="general", n_end="a", lumped=False):
+def closure_fuel_world(closure="general", n_end="a", lumped=False, binder=False):
     """The binding owner's buffered cell (B binds H at the cell; every route, channel and pump at
     availability 0) with ATP4-, ADP3- and Pi2- rows, and one population hydrolysing ATP at the cell
     on finite fuel, its proton released into the cell's H row: fuel moving where protons move.
@@ -1288,7 +1317,9 @@ def closure_fuel_world(closure="general", n_end="a", lumped=False):
     "version 1", rapid_proton_buffer@1 there; or "no proton row", the general closure declaring
     none. n_end "b" puts the population's N, and so its fuel and H, at the bath. lumped adds the
     built-in neutral law on finite fuel at the cell (transformed potentials: no base forms), its
-    role Y and its lumped fuel nATP, nADP and nPi neutral rows that no closure holds."""
+    role Y and its lumped fuel nATP, nADP and nPi neutral rows that no closure holds. binder makes
+    ATP a binder of the general closure at the cell (its form HATP, pK 7.8; the registry defers its
+    base-form move to the closure's admission) and runs the inhibited hydrolysis on it."""
     from cells.kinds import proton_buffer
     from tests.unit.test_proton_buffer_kind import buffered_world
     from tests.unit.test_rapid_binding_world import general as closed
@@ -1306,11 +1337,18 @@ def closure_fuel_world(closure="general", n_end="a", lumped=False):
     fuel = (("ATP", -4, 0.0, 2.0), ("ADP", -3, -9.0, 0.2), ("Pi", -2, -6.0, 1.0))
     for sid, z, mu_RT, mM in fuel:
         add_species(raw, sid, z, mu_RT, {cell: mM, bath: mM})
+    if binder:
+        atp = next(e for e in m["species"] if e["id"] == "ATP")
+        hatp = atp["standard_mu_RT"] + rows["H"]["standard_mu_RT"] - 7.8 * math.log(10.0)
+        atp["forms"] = [dict(id="HATP", counts={"H": 1}, standard_mu_RT=hatp)]
+        (read,) = m[proton_buffer.MODEL_KEY]
+        read["binders"][cell] = sorted([*read["binders"][cell], "ATP"])
+        read["k_on_per_mM_s"]["ATP"] = {"H": 1e7}
     m[transporter.MODEL_KEY] = [
         dict(
             id="hydrolysis_0",
             host=m["membranes"][0]["id"],
-            law=CLOSURE_HYDROLYSIS.law_id,
+            law=(INHIBITED_HYDROLYSIS if binder else CLOSURE_HYDROLYSIS).law_id,
             orientation={"N": n_end},
             capacity_fmol_s=0.05,
             roles={"ATP": "ATP", "ADP": "ADP", "Pi": "Pi", "H": "H"},
@@ -1406,6 +1444,45 @@ def test_moved_fuel_at_a_general_closures_proton_row_runs_and_its_energy_closes(
     rt_f = R * spec.model.temperature_K / F
     assert term == pytest.approx(rt_f * math.log(h_ratio(read)), rel=1e-9)  # Free h.
     assert term - rt_f * math.log(h_ratio(states[0])) > 0.3  # Not the stored totals' (planted).
+    # K3b, at the start (no step): with ATP a binder of the closure, ATP's material slope runs
+    # through the closure's derivative, its own D and free h's through the inhibition, and bounds
+    # the central difference of its rate against its stored total; planted: through the free
+    # amount instead (too tight by total over free) and through D's diagonal alone (too loose).
+    with closure_scoped():
+        spec = parse_spec(closure_fuel_world(binder=True))
+        impl = get_model(spec.model)
+        state, p = impl.initial_values(spec)
+        control = impl.Control(*(v[0] for v in control_values(spec, [0.0])))
+        volts = potentials_for(p, 0.0, 0.0)
+
+        def flux(s):
+            read, ok = proton_buffer.stage_read(s, p, xp=np)
+            assert bool(ok)
+            return float(transporter._evaluate(read, volts, control, p, xp=np).j[0, 0]), read
+
+        j, read = flux(state)
+        slopes, _ = transporter._material_slopes(read, volts, control, p, xp=np)
+        e = transporter._evaluate(read, volts, control, p, xp=np)
+        d, held = proton_buffer.free_log_sensitivity(read, p, xp=np)
+    ids = list(spec.model.species_ids)
+    a, h = ids.index("ATP"), ids.index("H")
+    assert bool(held[a, 0]) and bool(held[h, 0]) and j > 0
+    total = float((p.amount_reference + state.amount_increment)[a, 0])
+    delta = 1e-4 * total  # Its curvature error ~1e-8; the closure's solve noise far below.
+    moved = {}
+    for sign in (1, -1):
+        shifted = state.amount_increment.copy()
+        shifted[a, 0] += sign * delta
+        moved[sign], _ = flux(state._replace(amount_increment=shifted))
+    central = abs(moved[1] - moved[-1]) / (2 * delta)  # |dJ/dn_ATP| at the cell (1/s)
+    k = 0  # Row 0 is ATP at N, the cell.
+    g = np.abs(e.d_j_d_ln_c[0, :, 0])  # Rows ATP, ADP, Pi, H.
+    through = g[0] * abs(d[a, a, 0]) + g[3] * abs(d[h, a, 0])  # ATP's own term and free h's.
+    assert float(slopes[k, 0]) == pytest.approx(through, rel=1e-12)
+    assert float(slopes[k, 0]) == pytest.approx(central, rel=1e-5)  # The terms add: exact here.
+    free = float((p.amount_reference + read.amount_increment)[a, 0])
+    assert g[0] / free > 2.0 * central  # Planted: through the free amount, too tight.
+    assert g[0] * abs(d[a, a, 0]) < 0.97 * central  # Planted: D's diagonal alone, too loose.
 
 
 # ------------------------------------------------------------------- chemistry at P (K3)
@@ -1529,7 +1606,7 @@ def test_a_mode_converting_cytochrome_c_at_p_moves_bounds_and_books_it_there():
         with pytest.raises(NumericalError, match="accounting failed: local"):
             get_model(spec.model).check_values(history, spec, steps=np.arange(len(states)))
     entry = dict(impl.structure.kinds)[transporter.KIND_ID]
-    assert entry.p_chemistry and "cycle_row_p_chemistry" in type(p)._fields
+    assert entry.end_chemistry and "cycle_row_end_chemistry" in type(p)._fields
     ids, k = list(spec.model.species_ids), 2  # Row 2 is Cox at P.
     potentials = potentials_for(p, 0.0, 0.0)
     read, read_ok = proton_buffer.stage_read(states[0], p, xp=np)  # Free h at the cell.
@@ -1539,7 +1616,7 @@ def test_a_mode_converting_cytochrome_c_at_p_moves_bounds_and_books_it_there():
     slope = abs(2.0 * float(e.d_j_d_ln_c[0, k, 0])) / float(amount)
     term = transporter.material_term(read, potentials, control, p, xp=np)
     assert float(term[0]) == pytest.approx(slope, rel=1e-12)  # The cell's term is Cox's slope.
-    without = p._replace(cycle_row_p_chemistry=np.zeros_like(p.cycle_row_p_chemistry))
+    without = p._replace(cycle_row_end_chemistry=np.zeros_like(p.cycle_row_end_chemistry))
     assert float(transporter.material_term(read, potentials, control, without, xp=np)[0]) < (
         1e-3 * slope
     )
@@ -1551,6 +1628,111 @@ def test_a_mode_converting_cytochrome_c_at_p_moves_bounds_and_books_it_there():
     moved = states[-1].amount_increment[:, 0] - states[0].amount_increment[:, 0]
     for species, n in (("Cox", -2), ("Cred", 2), ("H", 4)):
         assert moved[ids.index(species)] == pytest.approx(n * cycles, rel=1e-9), species
+
+
+# ------------------------------------------------------ P at a finite outside node (K3b)
+
+P_ACID = law_registry.CycleLaw(
+    "seamtest.p_side_acid@1",
+    (),
+    (),
+    None,
+    None,
+    reads=("rapid_binding@1",),
+    forms="base",
+    cycle=CycleForm(
+        kinetics="factored",
+        roles=(("HA", 0), ("A", -1), ("H", 1)),
+        rows=(("HA", "P"), ("A", "P"), ("H", "P")),
+        modes=(("release", (-1, 1, 1)),),
+        saturation=((Saturation(("HA", "P"), 1.0, 1),),),
+    ),
+    host=transporter.KIND_ID,
+    provenance="calibrated",
+    source="a test-only acid releasing its proton at P only (K3b), never shipped",
+)
+
+
+def lumen_acid_world(closure_at_lumen):
+    """FR-4's development world under the general closure (the binding owner's lumen_general), its
+    lumen a finite outside node, with an acid HA and its base A- at every node and one population
+    on the bounding patch, N at the cell and P at the lumen (host P's orientation), releasing H+
+    from HA at P only. Without the closure at the lumen, the closure holds the cell's rows alone
+    and B_L is a plain row."""
+    from tests.unit.test_rapid_binding_world import fr, lumen_general
+
+    raw = lumen_general()
+    m = raw["model"]
+    if not closure_at_lumen:
+        (read,) = m["stage_reads"]
+        read["binders"] = {fr.CELL: ["B_c"]}
+        read["k_on_per_mM_s"] = {"B_c": {"H": 1e7}}
+        del next(e for e in m["species"] if e["id"] == "B_L")["forms"]
+    nodes = [node["id"] for node in (*m["cells"], *m["extracellular"])]
+    for sid, z, mu_RT, mM in (("HA", 0, 0.0, 1.0), ("A", -1, -2.0, 0.1)):
+        add_species(raw, sid, z, mu_RT, dict.fromkeys(nodes, mM))
+    m[transporter.MODEL_KEY] = [
+        dict(
+            id="acid_0",
+            host="bounding_0",
+            law=P_ACID.law_id,
+            orientation={"N": "a"},
+            capacity_fmol_s=0.01,
+            roles={"HA": "HA", "A": "A", "H": "H"},
+            parameters={},
+            held_rows=[],
+        )
+    ]
+    return raw
+
+
+@pytest.mark.parametrize("closure_at_lumen", (True, False))
+def test_p_at_a_finite_outside_node_books_and_bounds_with_and_without_a_closure(closure_at_lumen):
+    """K3b (b), host P's orientation: N at the cell, P at FR-4's lumen, a finite outside node. Two
+    steps of an acid releasing H+ at P only: the lumen's rows move by their counts and every ledger
+    closes. The H row it changes at P only is bounded through the closure's derivative where the
+    closure holds the lumen's H, by sum_i |dJ/d ln c_i| |D_iH| and far below its free amount's
+    slope (the buffer's capacity), and through the free amount where it does not."""
+    from cells.kinds import proton_buffer
+
+    laws = law_registry.BUILTIN.extended(*TEST_LAWS, P_ACID)
+    with tk.scoped(*tk.CHARGED_KINDS), law_registry.scope(laws):
+        spec = parse_spec(lumen_acid_world(closure_at_lumen))
+        impl = get_model(spec.model)
+        state, p = impl.initial_values(spec)
+        control = impl.Control(*(v[0] for v in control_values(spec, [0.0])))
+        states = [state]
+        for _ in range(2):
+            state, valid = impl.imex_step(state, spec.execution.dt, control, p, xp=np)
+            assert bool(valid)
+            states.append(state)
+        history = impl.STATE_TYPE(*(np.stack(v) for v in zip(*states, strict=True)))
+        impl.check_values(history, spec, steps=np.arange(len(states)))  # Every ledger closes.
+        read, read_ok = proton_buffer.stage_read(states[0], p, xp=np)
+        volts = potentials_for(p, 0.0, 0.0)
+        slopes, row_node = transporter._material_slopes(read, volts, control, p, xp=np)
+        e = transporter._evaluate(read, volts, control, p, xp=np)
+        d, held = proton_buffer.free_log_sensitivity(read, p, xp=np)
+    ids = list(spec.model.species_ids)
+    n = len(spec.model.cells)
+    o = [x.id for x in spec.model.extracellular].index("lumen_0")
+    cycles = float(states[-1].cycle_count[0, 0])
+    before, after = (s.extracellular_amount_increment[:, o] for s in (states[0], states[-1]))
+    assert bool(read_ok) and cycles > 0
+    for species, count in (("HA", -1), ("A", 1), ("H", 1)):
+        moved = after[ids.index(species)] - before[ids.index(species)]
+        assert moved == pytest.approx(count * cycles, rel=1e-9), species
+    k, h = 2, ids.index("H")  # Row 2 is H at P, the lumen.
+    assert int(row_node[k, 0]) == n + o and bool(held[h, n + o]) == closure_at_lumen
+    g = np.abs(e.d_j_d_ln_c[0, :, 0])
+    free_h = float((p.extracellular_amount_reference + read.extracellular_amount_increment)[h, o])
+    by_amount = g[k] / free_h
+    slope = float(slopes[k, 0])
+    if closure_at_lumen:
+        through = sum(g[i] * abs(d[ids.index(s), h, n + o]) for i, s in enumerate(("HA", "A", "H")))
+        assert slope == pytest.approx(through, rel=1e-12) and 0 < slope < 1e-2 * by_amount
+    else:
+        assert slope == pytest.approx(by_amount, rel=1e-12) and slope > 0
 
 
 # ------------------------------------------------------------------ M2 on this device (amendment 2)

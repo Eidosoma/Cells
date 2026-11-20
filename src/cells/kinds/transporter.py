@@ -15,15 +15,22 @@ held rows are neutral (charged held rows, seam C's ATP4- with forms included, ar
 **Chemistry at P** (K3; D235, host P): a mode may change a species at P without changing it at N,
 as complexes III and IV convert cytochrome c on the P side. Its rows move at P's node, so its
 charge there enters the field as charge at N does, and its standard part joins the population's
-booking. Where a population declares such a mode, the material term also bounds the charged rows a
-mode changes at P only (the field cycle_row_p_chemistry, which exists only there); proton rows
-changed at both ends stay on the charge rule. A proton row changed at P only (a P-side consumer
-releasing H+) is among the bounded rows: at a buffered node its slope divides by free h, so its
-bound is tighter than the buffered row needs, by the buffer's capacity (fail-closed). The membrane
+booking. The membrane
 flux reads every P-side change as a crossing, so the patch's current stays F q J, the charge the
 field sees: a conversion at P appears as its forms crossing in opposite directions, the electron's
 charge written in them, and is no transport (the lead's convention for MT-1; a charge-only term is
 a recorded follow-up).
+
+**The material term's charged rows** (K3b): where a population declares a mode that changes a
+charged species at one end only (at N, K1's ATP4-, ADP3- and Pi2-; at P, oxidised cytochrome c),
+the material term bounds those rows too (the field cycle_row_end_chemistry, which exists only
+there; a population's charged roles are recorded at the parse). A redox pool or a fuel row turns
+over without a crossing charge, so the charge rule does not bound it; proton rows changed at both
+ends stay on the charge rule. Where a general binding closure holds a bounded row, its slope runs
+through the closure's derivative (cells.modules.free_log_sensitivity, the read's ln c_free by the
+stored totals at the node), summed over the population's rows and a monomial form's other free
+slots there, sum_m |nu_mk| sum_i |dJ_m/d ln c_i| |D_ik|: not through the free amount, which is too
+tight by about total over free (10^5 for a buffered proton row).
 
 **Availability schedules on the population axis** (D228 item 5; the core's gap-6 schedules, §7.4
 (l)): the experiment key `transporter_controls`, optional, each population at most once, an
@@ -405,8 +412,8 @@ def structure_entry(declaration):
     """Value-free: the declared laws and fuel kinds, sorted; on the population axis, CycleAxis."""
     if isinstance(declaration, PopulationAxis):
         asks = any(t.proton_readout is not None for t in declaration)
-        at_p = any(_p_chemistry_rows(t).any() for t in declaration)
-        return CycleAxis(tuple(sorted({t.law for t in declaration})), asks, at_p)
+        ends = any(_end_chemistry_rows(t).any() for t in declaration)
+        return CycleAxis(tuple(sorted({t.law for t in declaration})), asks, ends)
     return (
         tuple(sorted({t.law for t in declaration})),
         tuple(sorted({t.fuel_kind for t in declaration})),
@@ -884,7 +891,8 @@ def domain(state, p, *, xp):
 #     J+ = k a S,   J = J+ (1 - e^x) (sign-exact),   J- = J+ e^x.
 # This pass's limits (the lead's conditions on statement 1): hosts are membrane patches; held rows
 # are neutral, so a charged held row (seam C's ATP4- with forms included) is out of scope. Chemistry
-# at P, a mode changing a species at P without changing it at N, is admitted (K3; module docstring).
+# at P, a mode changing a species at P without changing it at N, is admitted (K3), and a charged
+# row changed at one end only is bounded by the material term (K3b; module docstring).
 # The monomial form (K6, the lead's rulings of 20 November 2026; forms.py) runs on the same axis:
 # - its fields (MONOMIAL_FIELDS) exist only where a declared law runs it, so every other world keeps
 #   its fields and programs;
@@ -1008,10 +1016,10 @@ PROTON_READOUT_FIELDS = (
     "cycle_pmf_species",  # [P]: the population's free-proton species row
     "cycle_pmf_present",  # [P]: the population asks for the readouts
 )
-# K3: the rows a mode changes at P without changing their species at N (chemistry at P), moved,
-# only where a population declares such a mode (declared_fields): the material term bounds them
-# though charged.
-P_CHEMISTRY_FIELDS = ("cycle_row_p_chemistry",)  # [K, P]
+# K3b: the moved charged rows a mode changes at one end without changing their species at the
+# other (chemistry at that end), only where a population declares such a mode (declared_fields):
+# the material term bounds them though charged.
+END_CHEMISTRY_FIELDS = ("cycle_row_end_chemistry",)  # [K, P]
 PROTON_READOUT_COLUMNS = (
     "cycle_membrane_potential_V",  # [P]: delta psi = phi_P - phi_N
     "cycle_proton_motive_force_V",  # [P]: delta p = delta psi + (RT/F) ln(h_P / h_N)
@@ -1025,12 +1033,12 @@ LN_PH_STANDARD = math.log(1000.0)  # pH = -log10(c / 1000 mM)
 
 class CycleAxis(NamedTuple):
     """The population axis's structure entry: its declared laws, sorted (value-free), whether a
-    population asks for the proton readouts (K4), and whether a mode changes a species at P without
-    changing it at N (K3)."""
+    population asks for the proton readouts (K4), and whether a mode changes a charged species at
+    one end without changing it at the other (K3b)."""
 
     laws: tuple
     proton_readout: bool = False
-    p_chemistry: bool = False
+    end_chemistry: bool = False
 
 
 class CyclePopulation(NamedTuple):
@@ -1048,6 +1056,7 @@ class CyclePopulation(NamedTuple):
     outside: str  # its outside node (end b)
     source: object = None  # the version-1 Population an entry in today's keys was read from
     proton_readout: object = None  # K4: its free-proton species row, where it asks (else None)
+    charged_roles: tuple = ()  # K3b: its roles whose species is charged, recorded at the parse
 
 
 class PopulationAxis(tuple):
@@ -1188,6 +1197,7 @@ def _parse_general(raw, base, patches, valence, taken):
         patch.inside,
         patch.outside,
         proton_readout=proton,
+        charged_roles=tuple(role for role in named if valence[roles[role]] != 0),
     )
     _check_population(population, form, hosted[law], valence, where)
     return population
@@ -1301,21 +1311,26 @@ def declared_fields(entry):
         columns = GENERAL_READOUT_COLUMNS
         if entry.proton_readout:  # K4: only where a population asks.
             layout, columns = layout + PROTON_READOUT_FIELDS, columns + PROTON_READOUT_COLUMNS
-        if entry.p_chemistry:  # K3: only where a mode changes a species at P alone.
-            layout = layout + P_CHEMISTRY_FIELDS
+        if entry.end_chemistry:  # K3b: only where a mode changes a charged species at one end.
+            layout = layout + END_CHEMISTRY_FIELDS
         return KindFields(GENERAL_STATE_AXES, layout, GENERAL_CONTROL_FIELDS, columns)
     return KindFields(STATE_AXES, LAYOUT_FIELDS, CONTROL_FIELDS, READOUT_COLUMNS, POPULATION_HOOKS)
 
 
-def _p_chemistry_rows(t):
-    """K3: [rows] whether each of population t's law's rows is at P, moved, and changed by a mode
-    that does not change its role at N (chemistry at P; each role binds one species, Q8)."""
+def _end_chemistry_rows(t):
+    """K3b: [rows] whether each of population t's law's rows is moved, binds a charged species, and
+    is changed by a mode that does not change its role at the other end (chemistry at that end;
+    each role binds one species, Q8)."""
     form = cycle_form(t.law)
     out = np.zeros(len(form.rows), dtype=bool)
+    charged = set(t.charged_roles)
     for row_counts in _counts(form, dict(t.parameters)):
-        at_n = {r for (r, e), n in zip(form.rows, row_counts) if e == "N" and n}
+        ends = {}
+        for (role, end), n in zip(form.rows, row_counts):
+            if n:
+                ends.setdefault(role, set()).add(end)
         for k, ((role, end), n) in enumerate(zip(form.rows, row_counts)):
-            if end == "P" and n and role not in at_n and (role, end) not in t.held_rows:
+            if n and ends[role] == {end} and role in charged and (role, end) not in t.held_rows:
                 out[k] = True
     return out
 
@@ -1445,11 +1460,11 @@ def _population_initial(spec, declaration):
     v |= _net_flow_layout(spec, declaration, all_forms, K, M)
     if any(f.kinetics == "monomial" for f in all_forms):  # declared_fields' test (K6).
         v |= _monomial_layout(spec, declaration, all_forms, v, M)
-    if any(_p_chemistry_rows(t).any() for t in declaration):  # structure_entry's test (K3).
-        v["cycle_row_p_chemistry"] = np.zeros((K, P), dtype=bool)
+    if any(_end_chemistry_rows(t).any() for t in declaration):  # structure_entry's test (K3b).
+        v["cycle_row_end_chemistry"] = np.zeros((K, P), dtype=bool)
         for j, t in enumerate(declaration):
-            rows = _p_chemistry_rows(t)
-            v["cycle_row_p_chemistry"][: rows.size, j] = rows
+            rows = _end_chemistry_rows(t)
+            v["cycle_row_end_chemistry"][: rows.size, j] = rows
     if any(t.proton_readout is not None for t in declaration):  # Its test (K4).
         v["cycle_pmf_species"] = np.array(
             [0 if t.proton_readout is None else ids.index(t.proton_readout) for t in declaration],
@@ -1763,6 +1778,9 @@ class Evaluation(NamedTuple):
     valid: object  # [P]: the domain at the stage
     guard: object  # [P]: G = sum_m J x (RT fmol/s)
     allowance: object  # [P]: A (statement 1, §5.2, amendment 2)
+    # K3b: a monomial form's slopes over its free slots [M, R, P] and each slot's node [R, P], for
+    # the closure's derivative through slots that are no row; None without a monomial form.
+    mono_slots: object = None
 
 
 def _evaluate(read, potentials, control, p, *, xp):
@@ -1825,6 +1843,7 @@ def _evaluate(read, potentials, control, p, *, xp):
         d_log_s = xp.where(is_diagram[:, None, :], diagram.d_log_s_d_ln_c, d_log_s)
         d_log_s_psi = xp.where(is_diagram, diagram.d_log_s_d_psi, d_log_s_psi)
     slots_ok = True
+    mono_slots = None
     if _mono(p):  # Static: a monomial form is declared (K6).
         slot_node = xp.where(p.cycle_mono_slot_at_n, n_node[None, :], p_node[None, :])
         c_slot = conc[p.cycle_mono_slot_species, slot_node]  # [R, P], free (the stage's read)
@@ -1844,6 +1863,7 @@ def _evaluate(read, potentials, control, p, *, xp):
         d_log_s = xp.where(is_mono[:, None, :], on_rows + mono.d_x[:, None, :] * nu, d_log_s)
         d_log_s_psi = xp.where(is_mono, mono.d_psi - q * mono.d_x, d_log_s_psi)  # dx/dpsi = -q
         slots_ok = xp.all(xp.where(live, slot_positive, True), axis=0)
+        mono_slots = (mono.d_ln_a, slot_node)
     on = modes & enabled[None, :]
     log_plus = log_ka[None, :] + log_s
     j_fd = xp.where(on, forms.sign_exact_flux(log_plus, x, xp=xp), 0.0)
@@ -1922,7 +1942,7 @@ def _evaluate(read, potentials, control, p, *, xp):
     valid = valid & xp.where(active, guard <= allowance, True)
     return Evaluation(
         ln_c, c, row_node, psi, x, x_terms, held_x, log_s, j_plus, j_minus, j, scale, y_terms,
-        d_j_d_psi, d_j_d_ln_c, diagram, active, enabled, valid, guard, allowance,
+        d_j_d_psi, d_j_d_ln_c, diagram, active, enabled, valid, guard, allowance, mono_slots,
     )  # fmt: skip
 
 
@@ -2043,24 +2063,64 @@ def _population_stage_term(read, potentials, control, p, *, xp):
 def material_term(read, potentials, control, p, *, xp):
     """[cells, then outside nodes] the kind's material slope (1/s; D4): per node, the largest over
     the neutral moved rows there of sum over populations and modes of |nu dJ/dn| (statement 1, §2:
-    an upper bound of the row's own slope even where modes add). Where a mode changes a species at
-    P alone (K3), its rows there count though charged: a redox pool at P turns over without a
-    crossing charge, so the charge rule does not bound it. Version 1's entry has none."""
-    e = _evaluate(read, potentials, control, p, xp=xp)
+    an upper bound of the row's own slope even where modes add). Where a mode changes a charged
+    species at one end only (K3b), its rows count too: a redox pool or a fuel row turns over
+    without a crossing charge, so the charge rule does not bound it; where a general closure holds
+    such a row, its slope runs through the closure's derivative (module docstring). Version 1's
+    entry has none."""
+    slope, row_node = _material_slopes(read, potentials, control, p, xp=xp)
     n, o = p.active.size, p.outside_active.size
+    species = read.amount_increment.shape[0]
+    nodes = _flat_scatter(slope, p.cycle_row_species, row_node, (species, n + o), xp=xp)
+    return xp.max(nodes, axis=0)
+
+
+def _material_slopes(read, potentials, control, p, *, xp):
+    """material_term's [K, P] slope of each row (1/s) and the rows' nodes [K, P]."""
+    e = _evaluate(read, potentials, control, p, xp=xp)
     volume = xp.concatenate((xp.where(p.active, p.volume, 1.0), xp.where(p.outside_active, p.extracellular_volume, 1.0)))
     amount = e.c * volume[e.row_node]  # [K, P] fmol
     neutral = p.cycle_row_present & ~p.cycle_row_held & ~p.cycle_row_charged
-    if P_CHEMISTRY_FIELDS[0] in type(p)._fields:  # Static (K3): only where such a mode is declared.
-        neutral = neutral | p.cycle_row_p_chemistry
+    ends = END_CHEMISTRY_FIELDS[0] in type(p)._fields  # Static (K3b): only where declared.
+    if ends:
+        neutral = neutral | p.cycle_row_end_chemistry
     per_row = entity_sum(xp.abs(p.cycle_nu * e.d_j_d_ln_c), axis=0, xp=xp)  # [K, P] fmol/s per ln c
     slope = xp.where(neutral & (amount > 0), per_row / xp.where(amount > 0, amount, 1.0), 0.0)
+    if ends:
+        from cells.modules import free_log_sensitivity
+
+        sensitivity = free_log_sensitivity(read, p, xp=xp)
+        if sensitivity is not None:  # Static: a general closure is declared (K3b).
+            held_slope, on_closure = _closure_slopes(e, sensitivity, p, xp=xp)
+            slope = xp.where(neutral & on_closure, held_slope, slope)
     if potentials is None and _mono(p):  # Static (K6): S reads psi, so no bound without it.
         bare = (p.cycle_form == FORM_CODES["monomial"])[None, :] & neutral & e.active[None, :]
         slope = xp.where(bare, xp.inf, slope)
-    species = read.amount_increment.shape[0]
-    nodes = _flat_scatter(slope, p.cycle_row_species, e.row_node, (species, n + o), xp=xp)
-    return xp.max(nodes, axis=0)
+    return slope, e.row_node
+
+
+def _closure_slopes(e, sensitivity, p, *, xp):
+    """K3b: [K, P] each row's slope through a general closure's derivative D (1/fmol; the read's
+    ln c_free by the stored totals at one node), sum_m |nu_mk| sum_i |dJ_m/d ln c_i| |D_ik| over the
+    population's rows i and, for a monomial form, its free slots that are no row, at row k's node;
+    and [K, P] whether the closure holds row k."""
+    d, held = sensitivity
+    species, node, present = p.cycle_row_species, e.row_node, p.cycle_row_present
+    on_closure = held[species, node] & present
+    cross = xp.abs(d[species[:, None, :], species[None, :, :], node[None, :, :]])  # [K_i, K_k, P]
+    same = (node[:, None, :] == node[None, :, :]) & present[:, None, :] & present[None, :, :]
+    cross = xp.where(same, cross, 0.0)
+    through = xp.sum(xp.abs(e.d_j_d_ln_c)[:, :, None, :] * cross[None], axis=1)  # [M, K_k, P]
+    if e.mono_slots is not None:  # Static (K6): slots no row holds move with the totals too.
+        d_ln_a, slot_node = e.mono_slots
+        off_row = p.cycle_mono_slot_present & ~p.cycle_mono_slot_is_row  # [R, P]
+        slopes = xp.abs(e.j[:, None, :] * d_ln_a)  # [M, R, P]: dJ/d ln a = J d log S / d ln a
+        slot_species = p.cycle_mono_slot_species
+        slot_cross = xp.abs(d[slot_species[:, None, :], species[None, :, :], node[None, :, :]])
+        at_node = (slot_node[:, None, :] == node[None, :, :]) & off_row[:, None, :]
+        slot_cross = xp.where(at_node, slot_cross, 0.0)  # [R, K_k, P]
+        through = through + xp.sum(slopes[:, :, None, :] * slot_cross[None], axis=1)
+    return entity_sum(xp.abs(p.cycle_nu) * through, axis=0, xp=xp), on_closure
 
 
 def _population_ledger_terms(state, p, *, xp):
@@ -2644,12 +2704,12 @@ _STRUCTURAL = {
     "cycle_mono_share": 1,
     "cycle_pmf_species": 0,
     "cycle_pmf_present": False,
-    "cycle_row_p_chemistry": False,
+    "cycle_row_end_chemistry": False,
 }
 _EXTENSIVE = ("transporter_capacity_fmol_s", "cycle_capacity_fmol_s")
 _PER_ENTITY = (
     *LAYOUT_FIELDS, *CONTROL_FIELDS, *GENERAL_LAYOUT_FIELDS, *MONOMIAL_FIELDS,
-    *PROTON_READOUT_FIELDS, *P_CHEMISTRY_FIELDS, *GENERAL_CONTROL_FIELDS,
+    *PROTON_READOUT_FIELDS, *END_CHEMISTRY_FIELDS, *GENERAL_CONTROL_FIELDS,
 )  # fmt: skip
 PARTITION_ROLES = MappingProxyType(
     {
@@ -2709,7 +2769,7 @@ _SHAPES = {
     "cycle_mono_zeta": "MP", "cycle_mono_power": "MQP", "cycle_mono_term_log_k": "MQGP",
     "cycle_mono_term_q": "MQGRP", "cycle_mono_term_eta": "MQGP", "cycle_mono_term_present": "MQGP",
     "cycle_mono_share": "MP", "cycle_mono_ln_standard": "P",
-    "cycle_pmf_species": "P", "cycle_pmf_present": "P", "cycle_row_p_chemistry": "KP",
+    "cycle_pmf_species": "P", "cycle_pmf_present": "P", "cycle_row_end_chemistry": "KP",
 }  # fmt: skip
 FIELD_AXES = MappingProxyType(
     {
