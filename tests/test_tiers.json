@@ -265,7 +265,8 @@
   "/mnt/workspaces/Cells/core-pass-binding-20261118/gate-c562be5f/tiers/measure/measured.json",
   "/mnt/workspaces/Cells/fr7-loop-20261119/u2-compartment/gate-1ec77911/tiers/measure/measured.json",
   "/mnt/workspaces/Cells/ol3-engine-20261119/measure-99770fce/measured.json",
-  "/mnt/workspaces/Cells/bath-recipe-20261120/tiers/measured-ba8743ad/measured.json"
+  "/mnt/workspaces/Cells/bath-recipe-20261120/tiers/measured-ba8743ad/measured.json",
+  "/mnt/workspaces/Cells/kcc-overflow-log-20261120/tiers/measured-89a69efa/measured.json"
  ],
  "measured_provenance": [
   {
@@ -2241,6 +2242,13 @@
    "root": ".claude/worktrees/bath-recipe-order",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-20T18:27:05+00:00"
+  },
+  {
+   "git_revision": "89a69efabe312431344772c7a6d59188356513d1",
+   "dirty": false,
+   "root": ".claude/worktrees/kcc-overflow-log",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-20T18:27:13+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -3996,10 +4004,10 @@
    },
    {
     "file": "tests/unit/test_k_anion_symport.py",
-    "seconds": 4.42,
+    "seconds": 13.51,
     "exit_code": 0,
     "counts": {
-     "passed": 10
+     "passed": 14
     }
    },
    {
