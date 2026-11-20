@@ -65,7 +65,14 @@ def unit_cgroup(unit):
 
 
 def cgroup_pids(cgroup, root=CGROUP_ROOT):
-    """Every process in the cgroup and its descendants."""
+    """Every process in the cgroup and its descendants.
+
+    A unit without a control group of its own (a .timer, say) reports an empty ControlGroup; it
+    has no processes. Without this guard the empty path named the whole cgroup tree, and the
+    nightly timer was charged with every process on the machine (20 November 2026).
+    """
+    if not cgroup.strip().strip("/"):
+        return []
     pids, base = [], root / cgroup.lstrip("/")
     for procs in sorted(base.rglob("cgroup.procs")) if base.is_dir() else []:
         try:
