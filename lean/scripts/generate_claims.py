@@ -258,8 +258,8 @@ def coverage(inventory, claims, comparisons, repo, category_sections):
         parts += [
             f"## Registered {kind}s",
             f"Direct Lean claims cover {n_direct} of {len(rows)} registered {kind}s. "
-            f"Recorded numerical comparisons exercise {n_checked}. A run can exercise a "
-            f"{kind} while checking a different property.",
+            f"Recorded numerical comparisons exercise {n_checked}. Each linked record names "
+            "the property tested.",
         ]
         table = [
             f"| {kind.title()} | Direct Lean claims | Recorded comparisons |",
@@ -300,6 +300,7 @@ def render(lane, live_registry=False):
     ):
         raise ValueError("category IDs must be nonempty, stable link fragments")
     groups = {key: [] for key in categories}
+    proof_topics = {law: set() for law in inventory["law"]}
     outputs = {}
     if live_registry:
         outputs[inventory_path] = json.dumps(inventory, indent=2, sort_keys=True) + "\n"
@@ -313,39 +314,65 @@ def render(lane, live_registry=False):
         if category not in groups:
             raise ValueError(f"claim {key!r} needs a category from the register")
         groups[category].append((claim, row))
+        for subject in claim["formal"].get("about", []):
+            if subject in proof_topics:
+                proof_topics[subject].add(category)
+
+    # A law usually gets its topic from its first direct proof. An explicit topic also
+    # lets an open law appear here before there is a claim or biological measurement.
+    assigned = register.get("law_categories", {})
+    if assigned.keys() - proof_topics.keys() or set(assigned.values()) - groups.keys():
+        raise ValueError("law_categories must name registered laws and existing categories")
+    laws_by_topic = {}
+    for law, topics in proof_topics.items():
+        if law not in assigned and len(topics) > 1:
+            raise ValueError(f"assign {law} a primary category in law_categories")
+        topic = assigned.get(law) or next(iter(topics), None)
+        groups.setdefault(topic, [])
+        laws_by_topic.setdefault(topic, {})[law] = bool(topics)
 
     overview = [
-        "| Category | Claims | Lean proved | Numerical checks | Claims with biological evidence |",
+        "| Category | Registered laws with proof | Claims with proof | Numerical checks "
+        "| Claims with biological evidence |",
         "| --- | ---: | ---: | --- | ---: |",
     ]
     sections = []
     for key, group in groups.items():
-        if not group:
+        laws = laws_by_topic.get(key, {})
+        if not (group or laws):
             continue
-        title = categories[key]
-        anchor = "category-" + key
+        title = categories[key] if key is not None else "Laws awaiting a category"
+        anchor = "category-" + key if key is not None else "uncategorized-laws"
         counts = Counter(c["numerical"]["status"] for c, _ in group)
         checks = " · ".join(f"{counts[s]} {s}" for s in ("checked", "failed", "open") if counts[s])
         proved = sum(c["formal"]["status"] == "proved" for c, _ in group)
         measured = sum(
             bool(c["biology"].get("finding") or c["biology"]["evidence"]) for c, _ in group
         )
+        law_count = f"{sum(laws.values())} of {len(laws)}" if laws else "—"
+        claim_count = f"{proved} of {len(group)}" if group else "—"
         overview.append(
-            f"| [{title}](COVERAGE.md#{anchor}) | {len(group)} | {proved} | {checks} | {measured} |"
+            f"| [{title}](COVERAGE.md#{anchor}) | {law_count} | {claim_count} "
+            f"| {checks or '—'} | {measured} |"
         )
-        sections.extend(
-            [
-                f'<a name="{anchor}"></a>',
-                f"## {title}",
+        sections.extend([f'<a name="{anchor}"></a>', f"## {title}"])
+        pending = [
+            local_link(f"`{law}`", inventory["law"][law], lane.parent, from_dir="lean")
+            for law in sorted(laws)
+            if not laws[law]
+        ]
+        if pending:
+            sections.append("**Awaiting a direct Lean proof** " + " · ".join(pending))
+        if group:
+            sections.append(
                 "\n".join(
                     [
                         CLAIM_HEADER,
                         "| --- | --- | --- | --- |",
                         *(row for _, row in group),
                     ]
-                ),
-            ]
-        )
+                )
+            )
     outputs[lane / "COVERAGE.md"], registry_summary = coverage(
         inventory, claims, register["comparisons"], lane.parent, sections
     )

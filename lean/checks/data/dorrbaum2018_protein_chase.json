@@ -1,0 +1,29 @@
+{
+  "citation": "Dörrbaum et al. (2018), eLife 7:e34202, Figure 2B and Figure 2 source data 1",
+  "doi": "10.7554/eLife.34202",
+  "workbook": "https://cdn.elifesciences.org/articles/34202/elife-34202-fig2-data1-v1.xlsx",
+  "locator": "Sheet1, columns D–E for GM130 and A–B for Lamin B1. Group cells by the chase or control heading above their counts. Day zero is the pulse group.",
+  "observable": "Labeled puncta per neuron after a two-hour pulse in primary rat hippocampal cultures. The methionine-only control estimates background signal.",
+  "fit_days": [0, 1],
+  "aggregation": "Each group records the number of cells, sum of puncta counts and sum of squared counts. These give the mean and sample SD across cells. Later days are retrospective holdouts within the same experiment.",
+  "series": {
+    "GM130": {
+      "background": {"cells": 13, "sum": 12, "sum_squares": 18},
+      "chase": [
+        {"day": 0, "cells": 21, "sum": 176, "sum_squares": 1570},
+        {"day": 1, "cells": 15, "sum": 97, "sum_squares": 701},
+        {"day": 2, "cells": 13, "sum": 52, "sum_squares": 234},
+        {"day": 3, "cells": 32, "sum": 106, "sum_squares": 414}
+      ]
+    },
+    "Lamin B1": {
+      "background": {"cells": 11, "sum": 17, "sum_squares": 47},
+      "chase": [
+        {"day": 0, "cells": 37, "sum": 1493, "sum_squares": 76821},
+        {"day": 1, "cells": 20, "sum": 600, "sum_squares": 19880},
+        {"day": 3, "cells": 15, "sum": 273, "sum_squares": 5535},
+        {"day": 7, "cells": 21, "sum": 244, "sum_squares": 3042}
+      ]
+    }
+  }
+}

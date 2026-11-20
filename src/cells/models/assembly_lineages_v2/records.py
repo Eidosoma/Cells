@@ -28,7 +28,15 @@ from pathlib import Path
 import numpy as np
 
 from cells.definitions.specs import ConfigError, digest
-from cells.models.assembly_lineages_v2 import MODEL_ID, kernel, ledger, model, runner
+from cells.models.assembly_lineages_v2 import (
+    MODEL_ID,
+    diagnostic,
+    division,
+    kernel,
+    ledger,
+    model,
+    runner,
+)
 from cells.models.assembly_lineages_v2 import spec as world_spec
 from cells.models.assembly_lineages_v2 import world as world_rules
 from cells.registry import laws as law_registry
@@ -107,6 +115,129 @@ RECORDS = {
 }
 
 
+# OL2's records, written only by a world that declares a geometry (OL1's bundles are unchanged).
+GEOMETRY_RECORDS = {
+    "lumen_volume_L": _record(
+        "row", ["row"], "L", "level", "V(n) = min(V_osm, V_sph(A)), the osmotic lumen's volume"
+    ),
+    "tension_N_per_m": _record(
+        "row", ["row"], "N/m", "level", "sigma = max(0, dp R / 2), the membrane's tension"
+    ),
+    "membrane_footprint_quanta": _record(
+        "row",
+        ["row"],
+        "quanta",
+        "level",
+        "W(n) = sum_i n_i k_i, the membrane's footprint at the row; the bilayer's area is q W / 2",
+    ),
+}
+
+
+# OL3's records, written only by a world that declares division (every other bundle is unchanged).
+_F = "fission"
+DIVISION_BASE = (
+    "one row per attempt at a shear event, in order: split, or refused (the stress or v test: no "
+    "draw; the floor test: drawn, the parent kept). Times: fission_time"
+)
+DIVISION_RECORDS = {
+    "shear_work_kT": _record(
+        "row", ["row"], "k_BT", "cumulative",
+        "the shear work done on the lineage, sum_j F_v(d_j) - F_v(parent) per split (§0.2d item 7)",
+    ),
+    "discarded_free_energy_kT": _record(
+        "row", ["row"], "k_BT", "cumulative",
+        "the unfollowed daughters' F_v, taken to the declared sink (sink:discard)",
+    ),
+    "fission_time": _record(_F, [_F], "s", "level", "the shear event's time"),
+    "fission_schedule": _record(_F, [_F], "1", "level", "the schedule's declared index"),
+    "fission_k": _record(_F, [_F], "1", "level", "the schedule's k"),
+    "fission_parent": _record(_F, [_F], "carrier key", "level", "the assembly attempted"),
+    "fission_parent_generation": _record(_F, [_F], "1", "level", "its generation"),
+    "fission_counter": _record(
+        _F, [_F], "1", "level",
+        "the parent's fission counter at its draw (domain 2, its key); -1: not admitted, no draw",
+    ),
+    "fission_outcome": _record(
+        _F, [_F], "1", "level", "the attempt's outcome",
+        legend={str(i): o for i, o in enumerate(division.OUTCOMES)},
+    ),
+    "fission_followed": _record(
+        _F, [_F], "1", "level", "the daughter followed (an index into fission_daughters); -1: none",
+    ),
+    "fission_parent_counts": _record(
+        _F, [_F, "place"], "molecules", "level", "the parent's counts",
+    ),
+    "fission_daughters": _record(
+        _F, [_F, "daughter"], "carrier key", "level",
+        "each daughter's key, in daughter order; -1 pads",
+    ),
+    "fission_daughter_counts": _record(
+        _F, [_F, "daughter", "place"], "molecules", "level",
+        "each daughter's vesicle with the pool as it was (rules 9 and 10's split)",
+    ),
+    "fission_lysed_at_birth": _record(
+        _F, [_F, "daughter"], "1", "level", "the daughter was born beyond sigma_max (§0.2d 10.3)",
+    ),
+    "fission_shear_work_kT": _record(_F, [_F], "k_BT", "level", "the split's shear work"),
+    "fission_discarded_kT": _record(_F, [_F], "k_BT", "level", "the unfollowed daughters' F_v"),
+}  # fmt: skip
+DIVISION_BASES = {
+    **BASES,
+    "row": BASES["row"] + "; a division world adds a shear row (row_kind shear) after each split, "
+    "at its schedule time",
+    "fission": DIVISION_BASE,
+}
+SCHEDULED_DRAW = (
+    "two uniforms per draw, (u1, u2), from the occupant's event stream (domain 1, its carrier "
+    "key) at counter = the occupant's draws since its birth: each committed event's, and the draw "
+    "that crossed a schedule time, which is discarded (its wait is redrawn from the schedule time "
+    "at the next counter; §0.2d item 6). A daughter's counter starts at 0 at its birth (item 10.6)"
+)
+
+
+def _division_record(run):
+    """run.json's `division` block (division worlds only)."""
+    spec = run.spec
+    fissions = run.division["fissions"]
+    outcomes = fissions["fission_outcome"].tolist()
+    return {
+        "operator": division.DECLARATION,
+        "declared": division.data_to_dict(spec.model.world.division),
+        "schedules": division.schedule_to_dict(spec.experiment.schedules),
+        "attempts": len(outcomes),
+        "outcomes": {o: outcomes.count(i) for i, o in enumerate(division.OUTCOMES)},
+        "relations": "cells.relations@2 (relations.json, relations.npz): the lives, each split's "
+        "event paid by its schedule's source (source:shear/<index>), the unfollowed daughters' "
+        "material to sink:discard, and a lysis's event",
+        "unstated": "an unfollowed daughter beyond sigma_max leaves for the sink as born (its flag "
+        "is recorded); the rulings do not state it",
+    }
+
+
+def _geometry_derived(world):
+    """The geometry's derived constants (world.json's `derived`), only when it is declared."""
+    if world.geometry is None:
+        return {}
+    from cells.models.assembly_lineages_v2 import geometry
+
+    c_area, c_radius = geometry.log_constants(world)
+    return {
+        "geometry": {
+            "rho0_per_m3": geometry.rho0(world),
+            "log_area_constant": c_area,
+            "log_radius_constant": c_radius,
+            "floor_quanta": geometry.floor_quanta(world),
+            "closure_kT": geometry.closure_kT(world),
+            "closure_form": world.geometry[1]["closure"]["form"],
+            **(
+                {"closure_law": geometry.CLOSURE_LAW}
+                if world.geometry[1]["closure"]["form"] == "moduli"
+                else {}
+            ),
+        }
+    }
+
+
 def world_record(world):
     body = world_spec.world_to_dict(world)
     return {
@@ -118,6 +249,7 @@ def world_record(world):
             "offset": world.conventions.offset,
             "kT_J": world.units.kT_J,
             "log_extent": {p: model.log_extent(world, p) for p, _ in world.volumes},
+            **_geometry_derived(world),
         },
     }
 
@@ -184,14 +316,16 @@ def run_record(run, world_id):
         "model": MODEL_ID,
         "engine_models": components,
         "definition_sha256": spec.fingerprint,
-        "run": {"qualifier": run.qualifier, "start": "fresh"},
+        "run": {"qualifier": run.qualifier, "start": run.start},
         "conventions": world_spec.conventions_rules.to_dict(world.conventions),
         "laws": [_law(law_id) for law_id in components["laws"]],
         "check": {"probe": run.verdict, "world": run.world_report},
         "mode": spec.execution.mode,
         "stream": world_spec.stream_identity(spec),
-        "ssa": kernel.SSA_CONVENTION,
-        "lifecycle": kernel.LIFECYCLE,
+        "ssa": kernel.SSA_CONVENTION
+        if run.division is None
+        else {**kernel.SSA_CONVENTION, "draw": SCHEDULED_DRAW},
+        "lifecycle": _lifecycle(run),
         "ledger": {**ledger.CONVENTIONS, "closure": run.closure},
         "source": _source(),
         "end": {
@@ -204,20 +338,232 @@ def run_record(run, world_id):
             "temperature_K": world.units.temperature_K,
             "kT_J": world.units.kT_J,
             "horizon_s": spec.experiment.time_horizon_s,
-            "bases": BASES,
+            "bases": BASES if run.division is None else DIVISION_BASES,
         },
         "places": places_table(world),
         "channels": kernel.channel_table(world),
-        "records": {name: {"file": ARRAYS, "array": name, **RECORDS[name]} for name in arrays},
-        "diagnostics": {"uniforms": spec.experiment.uniforms},
+        "records": {
+            name: {"file": ARRAYS, "array": name, **_declared(run, name)} for name in arrays
+        },
+        "diagnostics": {
+            "uniforms": spec.experiment.uniforms,
+            **({"record": ["diagnostic.json", "diagnostic.npz"]} if run.diagnostic else {}),
+        },
+        **({"osmotic": run.osmotic} if run.osmotic is not None else {}),
+        **({"division": _division_record(run)} if run.division is not None else {}),
+        **({"population": _population_record(run)} if run.population is not None else {}),
     }
+
+
+_S = "row"
+POPULATION_RECORDS = {
+    "pool_count": _record(_S, ["row", "place"], "molecules", "level", "the pool's places' counts "
+                          "(every vesicle place 0)"),
+    "slot_count": _record(_S, ["row", "slot", "place"], "molecules", "level",
+                          "each slot's vesicle places' counts (every pool place 0; 0 when empty)"),
+    "slot_key": _record(_S, ["row", "slot"], "carrier key", "level",
+                        "the slot's assembly; -1 empty"),
+    "membrane_footprint_quanta": _record(_S, ["row", "slot"], "quanta", "level",
+                                         "each slot's W(n); 0 when empty"),
+    "lumen_volume_L": _record(_S, ["row", "slot"], "L", "level", "each slot's V(n); 0 when empty"),
+    "tension_N_per_m": _record(_S, ["row", "slot"], "N/m", "level", "each slot's sigma"),
+    "schedule_work_kT": _record(_S, ["row", "schedule"], "k_BT", "cumulative",
+                                "each declared schedule's work (run.json population."
+                                "schedule_columns names the columns' schedules)"),
+    "fission_slot": _record("fission", ["fission"], "1", "level", "the parent's slot"),
+    "fission_daughter_slots": _record("fission", ["fission", "daughter"], "1", "level",
+                                      "each daughter's slot (daughter 0 the parent's); -1 pads"),
+    "event_group": _record("event", ["event"], "1", "level",
+                           "the event's group: 0 the pool, 1 + k slot k"),
+    "event_uniforms": _record("event", ["event", "draw"], "1", "level",
+                              "diagnostic: the event's three uniforms (u1 tau, u2 the group, u3 "
+                              "the channel), from the world's stream (domain 5)"),
+}  # fmt: skip
+
+
+def _lifecycle(run):
+    if run.population is not None:  # a population ends slots_full too; a lysis frees one slot
+        statuses = {**kernel.LIFECYCLE_OSMOTIC["statuses"]}
+        statuses["lysed"] = ("never a population's end: a lysis frees its slot, books one row, "
+                             "and the world goes on")  # fmt: skip
+        statuses["slots_full"] = (
+            "a division found fewer than k - 1 free slots: the run stopped before its draw, every "
+            "life censored (§0.2c rule 13)"
+        )
+        statuses["stopped"] = (
+            "the run's own stop, an exact event count (a run argument, FR-22): it stopped after "
+            "that event and its own host action, before the next draw, every life censored, its "
+            "state kept for a checkpoint (checkpoints.py)"
+        )
+        return {**kernel.LIFECYCLE_OSMOTIC, "statuses": statuses}
+    return kernel.LIFECYCLE_OSMOTIC if run.osmotic is not None else kernel.LIFECYCLE
+
+
+def _population_record(run):
+    """run.json's `population` block (population runs only): the report less its tables."""
+    report = run.population
+    out = {k: report[k] for k in ("slots", "founders", "lyses", "draws", "schedule_columns",
+                                  "transfers", "reads")}  # fmt: skip
+    fissions = report["fissions"]
+    if fissions is not None:
+        outcomes = fissions["fission_outcome"].tolist()
+        out["outcomes"] = {o: outcomes.count(i) for i, o in enumerate(division.POPULATION_OUTCOMES)}
+    out["schedule_draws"] = [  # (index, counter, uniform, use, a gap's time or null)
+        [*d[:4], None if d[4] != d[4] else d[4]] for d in report["schedule_draws"]
+    ]
+    out["payers"] = (
+        "schedule_work_kT's column c is paid by the schedule whose declared index is "
+        "schedule_columns[c] (source:shear/<index> or source:transfer/<index>); shear_work_kT is "
+        "the shears' total, and at every row the columns sum to it plus the transfers' work"
+    )
+    return out
+
+
+def _declared(run, name):
+    table = {**RECORDS, **GEOMETRY_RECORDS}
+    if run.population is not None:
+        from cells.models.assembly_lineages_v2 import population
+
+        if name == "row_kind":
+            legend = {str(i): kind for i, kind in enumerate(population.ROW_KINDS)}
+            return {**table[name], "legend": legend}
+        if name == "fission_outcome":
+            legend = {str(i): o for i, o in enumerate(division.POPULATION_OUTCOMES)}
+            return {**DIVISION_RECORDS[name], "legend": legend}
+        return {**table, **DIVISION_RECORDS, **POPULATION_RECORDS}[name]
+    if run.division is None:
+        return table[name]
+    if name == "row_kind":  # A division world's rows include its shear rows.
+        legend = {str(i): kind for i, kind in enumerate(runner.DIVISION_ROW_KINDS)}
+        return {**table[name], "legend": legend}
+    return {**table, **DIVISION_RECORDS}[name]
 
 
 def _arrays(run):
     out = dict(run.rows)
     out.update(run.trace)
     out.update(run.diagnostics)
+    if run.division is not None:
+        out.update(run.division["fissions"])
+    if run.population is not None and run.population["fissions"] is not None:
+        out.update(run.population["fissions"])
     return out
+
+
+def population_tables(directory, run):
+    """cells.relations@2's tables of a population run: its lives (population.lives), one event per
+    split (kind fission, by the shear fission, scheduled, paid by its schedule's source) and per
+    lysis (kind lysis, by the osmotic lumen), its slots, and its schedules' sources."""
+    from cells.models.assembly_lineages import keys
+    from cells.models.assembly_lineages_v2 import (
+        OSMOTIC_LUMEN,
+        SHARED_POOL,
+        SHEAR_FISSION,
+        population,
+    )
+    from cells.records import relations as rel
+
+    lives = [rel.Life(**row) for row in population.lives(run)]
+    fissions = run.population["fissions"]
+    before = run.population.get("numbering", {}).get("attempts", 0)  # a resumed run's offset
+    events = []
+    if fissions is not None:
+        events = [
+            rel.Event(f"event:fission/{before + r}", float(fissions["fission_time"][r]), "fission",
+                      SHEAR_FISSION, scheduled=True, step=-1,
+                      at=keys.carrier_id(int(fissions["fission_parent"][r])),
+                      source=f"source:shear/{int(fissions['fission_schedule'][r])}")
+            for r in np.flatnonzero(fissions["fission_outcome"] == 0)
+        ]  # fmt: skip
+    from cells.models.assembly_lineages_v2.transfer import SERIAL_TRANSFER
+
+    events += [
+        rel.Event(t["id"], t["time_s"], "transfer", SERIAL_TRANSFER, scheduled=True, step=-1,
+                  source=f"source:transfer/{t['schedule']}")
+        for t in run.population["transfers"]
+    ]  # fmt: skip
+    events += [
+        rel.Event(life.end_event, life.end_time, "lysis", OSMOTIC_LUMEN, scheduled=False, step=-1,
+                  at=life.id, source="")
+        for life in lives
+        if life.end_reason == "lysed"
+    ]  # fmt: skip
+    slots = run.population["slots"]
+    nodes = [rel.Node(f"slot:{k}", "slot", SHARED_POOL) for k in range(slots)]
+    sources, records = [], {}
+    if run.population["schedule_columns"]:
+        sources = [
+            rel.Source(f"source:{s.kind}/{s.index}", "schedule",
+                       "energy" if s.kind == "shear" else "substrate",
+                       SHEAR_FISSION if s.kind == "shear" else SERIAL_TRANSFER,
+                       payer_of="schedule_work_kT")
+            for s in run.spec.experiment.schedules
+        ]  # fmt: skip
+        records = rel.records_in(directory, [ARRAYS], {"schedule_work_kT": "cumulative"},
+                                 times="row_time")  # fmt: skip
+    return {"lives": lives, "events": events, "nodes": nodes, "sources": sources,
+            "records": records}  # fmt: skip
+
+
+SINK = "sink:discard"
+SLOT = "slot:0"
+
+
+def relation_tables(directory, run):
+    """cells.relations@2's tables of a division run whose records.npz is in `directory`: the lives
+    (division.lives), one event per split (kind fission, by the shear fission, scheduled, paid by
+    its schedule's source) and one per lysis (kind lysis, by the osmotic lumen), the slot and the
+    sink, and each unfollowed daughter's molecules to the sink, per species, at its split."""
+    from cells.models.assembly_lineages import keys
+    from cells.models.assembly_lineages_v2 import OSMOTIC_LUMEN, SHEAR_FISSION
+    from cells.records import relations as rel
+
+    world = run.spec.model.world
+    fissions = run.division["fissions"]
+    lives = [rel.Life(**row) for row in run.division["lives"]]
+    events = [
+        rel.Event(f"event:fission/{r}", float(fissions["fission_time"][r]), "fission",
+                  SHEAR_FISSION, scheduled=True, step=-1,
+                  at=keys.carrier_id(int(fissions["fission_parent"][r])),
+                  source=f"source:shear/{int(fissions['fission_schedule'][r])}")
+        for r in np.flatnonzero(fissions["fission_outcome"] == 0)
+    ]  # fmt: skip
+    events += [
+        rel.Event(life.end_event, life.end_time, "lysis", OSMOTIC_LUMEN, scheduled=False, step=-1,
+                  at=life.id, source="")
+        for life in lives
+        if life.end_reason == "lysed"
+    ]  # fmt: skip
+    nodes = [rel.Node(SLOT, "slot", MODEL_ID), rel.Node(SINK, "sink", SHEAR_FISSION)]
+    edges = []
+    for life in lives:
+        if life.end_reason != "not_followed":
+            continue
+        r = int(life.end_event.rsplit("/", 1)[1])
+        j = fissions["fission_daughters"][r].tolist().index(life.key)
+        by_species = {}
+        for i, count in enumerate(fissions["fission_daughter_counts"][r, j].tolist()):
+            place = world.places[i]
+            if count and place.phase in ("membrane", "lumen"):
+                by_species[place.species] = by_species.get(place.species, 0) + count
+        edges += [
+            rel.Edge("removes_to", life.id, SINK, SHEAR_FISSION, event=life.end_event,
+                     species=species, weight=float(count), mode="event")
+            for species, count in sorted(by_species.items())
+        ]  # fmt: skip
+    sources = [
+        rel.Source(f"source:shear/{index}", "schedule", "energy", SHEAR_FISSION,
+                   payer_of="shear_work_kT")
+        for index in (s.index for s in run.spec.experiment.schedules)
+    ]  # fmt: skip
+    records = rel.records_in(
+        directory,
+        [ARRAYS],
+        {"shear_work_kT": "cumulative", "discarded_free_energy_kT": "cumulative"},
+        times="row_time",
+    )
+    return {"lives": lives, "events": events, "nodes": nodes, "sources": sources,
+            "edges": edges, "records": records}  # fmt: skip
 
 
 def _write_json(path, value):
@@ -240,6 +586,15 @@ def write_run(directory, run, *, provenance=None):
     _write_json(directory / "world.json", world)
     _write_json(directory / "run.json", record)
     _write_json(directory / "resolved_config.json", run.spec.to_dict())
+    if run.diagnostic is not None:  # §0.2d item 10.5, declared (diagnostic.py)
+        np.savez(directory / "diagnostic.npz", **run.diagnostic["arrays"])
+        _write_json(directory / "diagnostic.json", run.diagnostic["body"])
+    if run.division is not None or run.population is not None:  # the relationship tables
+        from cells.records import relations as rel
+
+        tables = population_tables(directory, run) if run.population is not None else (
+            relation_tables(directory, run))  # fmt: skip
+        rel.write(directory, world=run.qualifier, version=rel.FORMAT_V2, **tables)
     summary = {
         "status": run.status,
         "qualifier": run.qualifier,
@@ -256,7 +611,10 @@ def write_run(directory, run, *, provenance=None):
         "status": run.status,
         "created_utc": datetime.now(timezone.utc).isoformat(),
         "definition_sha256": run.spec.fingerprint,
-        "runtime": runtime_identity(backend),
+        "runtime": {  # the environment record, with §0.2d item 9's flag
+            **runtime_identity(backend),
+            "jax_threefry_partitionable": diagnostic.partitionable(),
+        },
         "source_hashes": source_hashes(),
         "device": str(execution_device(backend)),
         "cpu_affinity": sorted(os.sched_getaffinity(0))

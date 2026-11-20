@@ -108,6 +108,48 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **FR-8 rung 1: C, the fine-window executor, judged and passed (20 November 2026).** Under RUNG1
+  §10.10, on H2 from 0 to 3600 s at 20 ms with a 1 ms window over [1799.98, 1802.0] s and X2 on
+  (tag `fr8-c-judged-2026-11-20`; C landed at 54cb3195, the driver at fr8-rung1 e48c14b1).
+  - **(a) Intervention reading:** H2's reading under the parity caps, with the event criteria,
+    passes on all 3,831 rows.
+    - Largest |ΔVm| 3.3 µV against 20 µV; |Δc|/c 1.4 × 10⁻⁶ against 2 × 10⁻⁴.
+    - The peak is within 0.80 µV of the 74 µV criterion's reference, and the crossing within 2.2 µs.
+  - **(b) X2:** passes with no refusal. 230 counted steps, median ratio 4.016, 2 held of 8.
+  - **(c) Gain:** 19.8 in steps over 1 ms throughout (181,919 against 3.6 × 10⁶). The timed cost
+    ratio, 13.6, is reported beside it.
+  - **N2:** I3 passed by its rules on N2 alone (badc86ac). Its plant and cap controls never reach
+    N2's implicit path, so §10.15 adds charged-world controls on H2 and W0, registered before §6 is
+    read. D238 keeps the registered gain of 10.
+  - **Records:** /mnt/workspaces/Cells/fr8-rung1-20261119/c-arm/.
+
+- **FR-7's six chain worlds, F3 against R-chain and R-clear: judged, passed (20 November 2026).**
+  From a frozen snapshot of main b9d6452d (tag `fr7-chains-judged-2026-11-20`), with main's own
+  references interface.
+  - **Every world passed:** 4,614 compared rows, none failed. The largest margin is 0.0055 of a band
+    (W5's V at 20 s).
+  - **Clearance:** every clearance row equals the registered row (260, 280, or 0 without a template),
+    computed in the run.
+  - **The references' power context holds:** no core row lacks a plant in any world.
+  - **Records:** /mnt/workspaces/Cells/fr7-loop-20261119/judged-f3-b9d6452d/ (RUN.txt, VERDICT.json).
+  - **Run time:** the worlds with maturation stages (m = 3) ran in 2,500–4,000 s on one shared light
+    CPU after the optimization-barrier fix (`fr7-perf-landed-2026-11-20`). Without it, each had run
+    past 9 CPU-hours unfinished.
+  - **With F4's closed loop** (`fr7-rloop-judged-2026-11-20`), FR-7's first judged comparisons are
+    complete.
+- **Also landed today, after the morning entry:**
+  - K3, chemistry at P (`kinds-k3-landed-2026-11-20`);
+  - FR-7's optimization barrier (`fr7-perf-landed-2026-11-20`);
+  - the lane check's fix for a unit without a control group (6affa4d2);
+  - C, the fine-window executor (`fine-window-landed-2026-11-20`).
+- **Registered today, before any engine output:**
+  - the mitochondria appendix's second tag (`mito-laws-appendix-2026-11-20b`, D236's repairs);
+  - MR1-MT2, the model-level reference (`mito-mr1-mt2-registration-2026-11-20`);
+  - the component references (`mito-components-registration-2026-11-20`);
+  - gene regulation's equation sheet (`gr1-sheet-2026-11-20`, option A).
+- **Decisions:** D236 (Beard's repairs; FR-7's development chains stopped) and D237 (FR-20 to
+  FR-22 at high priority).
+
 - **FR-7's first closed loop, F4 against R-loop: judged, passed (20 November 2026).**
   - **The run:** from a frozen snapshot of main 90392025 (tag `fr7-rloop-judged-2026-11-20`), with
     main's registered interface (`fr7-references-landed-2026-11-20`; R-loop registered under D233 at

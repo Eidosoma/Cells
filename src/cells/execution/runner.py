@@ -17,7 +17,12 @@ from cells.execution import blas_threads, phases
 from cells.execution import energy_check as energy
 from cells.execution.devices import execution_device
 from cells.execution.errors import NumericalError as NumericalError
-from cells.execution.grid import EventGrid, checked_grid, require_refinement_model
+from cells.execution.grid import (
+    EventGrid,
+    checked_grid,
+    require_refinement_model,
+    require_scalar_path,
+)
 from cells.execution.resources import trace_bytes
 from cells.execution.schedule import control_values
 from cells.execution.schedule import event_index as event_index
@@ -43,13 +48,15 @@ def _refuse_projective(spec: SimulationSpec) -> None:
 def timeline(spec: SimulationSpec, *, energy_check=False) -> np.ndarray:
     """The shared exact grid, with storage admission before allocating a trace. energy_check: the
     caller runs the step-doubled energy check (run); a definition selecting it is refused on
-    every other path (the batch paths among them), fail-closed."""
+    every other path (the batch paths among them), fail-closed. Declared fine windows
+    (execution.fine_windows) take the same rule."""
     _refuse_projective(spec)
     if energy.selected(spec) and not energy_check:
         raise ConfigError(
             "execution.energy_check runs only through cells.execution.runner.run and the "
             "scalar windows (refused on this path)"
         )
+    require_scalar_path(spec, energy_check)
     require_refinement_model(spec)
     grid = EventGrid(spec)
     _trace_budget(spec, len(grid) - 1)
@@ -165,6 +172,7 @@ def branch_checkpoint(
         or original.execution != changed.execution
         or getattr(original, "projective", None) != getattr(changed, "projective", None)
         or getattr(original, "energy_check", None) != getattr(changed, "energy_check", None)
+        or getattr(original, "fine_windows", None) != getattr(changed, "fine_windows", None)
     ):
         raise ConfigError("A branch may not change model or execution settings")
     past_original = tuple(p for p in original.experiment.changes if p.time < checkpoint.time)

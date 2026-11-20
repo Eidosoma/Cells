@@ -32,7 +32,31 @@ Direct proof subject `cells.k_anion_symport_mass_action@1`
 
 ## Numerical comparison
 
-**Failed.** The 20 November retest refused the 10 ms step that previously ran in the wrong direction. Its updated bound was 3.761 against a limit of 1, with water fixed or moving. The 32- and 64-step runs completed and converged in each case. All 27 ordinary component checks passed. The remaining failure is at component level, where an extreme concentration ratio still produces infinite affinity and heat against finite references.
+**Checked.** After the product-ratio fix, both extreme concentration cases gave finite affinity and heat matching the independent references. At 2⁻⁵¹⁰ mM outside they were 1,836,599.47 J/mol and 4,701.69 pJ/s. All 27 ordinary controls passed. With fixed and moving water, the original 10 ms step was refused and the 32- and 64-step refinements passed. The previous failed cases remain in the earlier checkpoints.
+
+**Engine** `resolved_pump_composite@1`, `resolved_pump_tissue@3`
+
+**Operators** `cells.k_anion_symport_mass_action@1`
+
+[Product ratio and fallback at extreme concentrations](https://github.com/Eidosoma/Cells/blob/5fa7a8b88de7a3cc65ef3b975e7bc3c1a374da93/src/cells/laws/routes/k_anion_symport.py#L75) · [Affinity, cycles and dissipation](https://github.com/Eidosoma/Cells/blob/5fa7a8b88de7a3cc65ef3b975e7bc3c1a374da93/src/cells/laws/routes/k_anion_symport.py#L123) · [Tissue step admission](https://github.com/Eidosoma/Cells/blob/5fa7a8b88de7a3cc65ef3b975e7bc3c1a374da93/src/cells/operators/k_anion_symport.py#L252) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/1d906702344fec456f231db786b5771a187998d9/lean/checks/potassium_anion_symport.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/1d906702344fec456f231db786b5771a187998d9/lean/PROGRESS.md#potassium-affinity-repair)
+
+[Tested engine 5fa7a8b88de7](https://github.com/Eidosoma/Cells/commit/5fa7a8b88de7a3cc65ef3b975e7bc3c1a374da93) · [Evidence checkpoint 1d906702344f](https://github.com/Eidosoma/Cells/commit/1d906702344fec456f231db786b5771a187998d9)
+
+**Engine** `resolved_pump_composite@1`, `resolved_pump_tissue@3`
+
+**Operators** `cells.ideal_osmosis_linear_compliance_water@1`, `cells.k_anion_symport_mass_action@1`
+
+[Coupled water half-step](https://github.com/Eidosoma/Cells/blob/5fa7a8b88de7a3cc65ef3b975e7bc3c1a374da93/src/cells/operators/osmotic_water.py#L213) · [Potassium–anion route bound](https://github.com/Eidosoma/Cells/blob/5fa7a8b88de7a3cc65ef3b975e7bc3c1a374da93/src/cells/operators/k_anion_symport.py#L152) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/1d906702344fec456f231db786b5771a187998d9/lean/checks/osmotic_water.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/1d906702344fec456f231db786b5771a187998d9/lean/PROGRESS.md#potassium-affinity-repair)
+
+[Tested engine 5fa7a8b88de7](https://github.com/Eidosoma/Cells/commit/5fa7a8b88de7a3cc65ef3b975e7bc3c1a374da93) · [Evidence checkpoint 1d906702344f](https://github.com/Eidosoma/Cells/commit/1d906702344fec456f231db786b5771a187998d9)
+
+**Engine** `resolved_pump_composite@1`, `resolved_pump_tissue@3`
+
+**Operators** `k_anion_symport_mass_action@1`
+
+[Concentration products and chemical affinity](https://github.com/Eidosoma/Cells/blob/b9d6452dff1cd0a1d5d3664e0a81b00ce988bfbc/src/cells/laws/routes/k_anion_symport.py#L66) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/b4353f85b18d489a277818bfe43e20c8416b6066/lean/checks/potassium_anion_symport.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/b4353f85b18d489a277818bfe43e20c8416b6066/lean/PROGRESS.md#six-numerical-retests)
+
+[Tested engine b9d6452dff1c](https://github.com/Eidosoma/Cells/commit/b9d6452dff1cd0a1d5d3664e0a81b00ce988bfbc) · [Evidence checkpoint b4353f85b18d](https://github.com/Eidosoma/Cells/commit/b4353f85b18d489a277818bfe43e20c8416b6066)
 
 **Engine** `resolved_pump_composite@1`, `resolved_pump_tissue@3`
 

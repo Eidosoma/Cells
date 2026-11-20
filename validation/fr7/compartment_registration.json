@@ -1,0 +1,89 @@
+{
+ "kind": "cells.fr7_compartment_registration@1",
+ "registered": "2026-11-20",
+ "status": "registered before any engine output of C2 or C5 (no stepped run of either, smoke runs included)",
+ "synthetic": "every value is synthetic and labelled so (D217)",
+ "purpose": "D217's clause 4 in a U2 world: every compartment that can still release template counts toward the template's clearance. R-clear's compartment plants had power on no engine run, since no U2 world admitted a compartment before 20 November 2026 (FR-7's handoff, item 3)",
+ "authority": "the lead's rulings of 20 November 2026: Q1, membrane state beside a compartment with trafficking or the unit producer; Q2 (a), exchange's current-area read (D191); Q3, the engine changes by the lead's grant; Q4, W2 as the base world. At registration the engine head is 1ec77911 (branch fr7-u2-engine), not yet landed; the judged run is from a frozen snapshot of main once the engine head and this registration's code have landed there",
+ "references": {
+  "interface": "validation/fr7/references/interface/",
+  "registered": "R-clear, registered code-blind at tag fr7-references-registered-2026-11-19, amended at fr7-references-amendment1-2026-11-19, landed at fr7-references-landed-2026-11-20",
+  "read": "the interface only: inputs.json's clearance_cases and clearance; clearance.json's synthetic_cases; clearance.hill_drive(c, K, n) and clearance.t_clear(rows_s, D, epsilon) by the call forms REFERENCES_USAGE.md gives. clearance.c_star and clearance.can_release are not called or read",
+  "cases": {
+   "C2": "RC2_releasing_compartment",
+   "C5": "RC5_compartment_stops_releasing"
+  }
+ },
+ "worlds": {
+  "base": "W2_dose_m3_t60 of inputs.json, by chain_mapper: the cell, the K population at N0 = 1e4, the template's dose and clearance, the Hill factor routed onto the unit producer's assembly rate by species_regulated_availability@2, the finite precursor, three maturation stages at 0.1/s and removal at ln 2/60 per second on all of N",
+  "base_equals_case": "compartment_mapper.check_base refuses a world unless W2's template (dose 0.2 fmol, production [[0, 0]], clearance ln 2/20 per second), its factor (Hill activation, K 0.01 mM, n 2, basal 0.02) and the cell's volume (2 pL) equal the clearance cases' cytosol block",
+  "C2": {
+   "case": "RC2_releasing_compartment",
+   "compartment": "endosome",
+   "n0_fmol": 0.2,
+   "release_per_s": [[0.0, 0.013862943611198907]],
+   "degradation_per_s": 0.0
+  },
+  "C5": {
+   "case": "RC5_compartment_stops_releasing",
+   "compartment": "vesicle",
+   "n0_fmol": 0.2,
+   "release_per_s": [[0.0, 0.006931471805599453], [300.0, 0.0]],
+   "degradation_per_s": 0.0
+  },
+  "compartment": "cell_owned_compartments@1: a finite outside node of the cell, bounded by one patch that no species crosses, holding the case's template amount, the precursor at the trace (1e-15 mM) and the owner's starting ion concentrations, its content neutral at a zero charge anchor (unit_turnover_fixtures.with_compartment)",
+  "release": "scheduled_species_exchange@1's first-order import on the bounding patch, whose rate constant out of the node is kappa = k_u A 1e15 / V_o; k_u = kappa V_o / (A 1e15) from the case's release schedule (unit_turnover_fixtures.release_velocity). It reads the patch area current (D191); nothing changes the area here, so it reads the declared area bit for bit",
+  "layout_not_physics": {
+   "compartment_volume_pL": 0.02,
+   "bounding_area_m2": 1e-11,
+   "bounding_capacitance_F": 1e-13,
+   "note": "the release depends on them only through kappa, which is the case's, and no ion crosses the bounding patch"
+  },
+  "operators_in_declared_order": [
+   "membrane_entity_state@1",
+   "scheduled_species_turnover@1",
+   "species_regulated_availability@2",
+   "population_unit_turnover@1",
+   "cell_owned_compartments@1",
+   "scheduled_species_exchange@1"
+  ],
+  "step_s": 0.001,
+  "rows_s": "the clearance cases' rows: every 10 s from 0 to 1000 s (101 rows)",
+  "horizon_s": 1000.0,
+  "runner": "the windowed runner (execution.windows.iter_windows), every step checked, the rows kept"
+ },
+ "c_star": {
+  "clause_2": "c* at a row = (the cell's n_T + the compartment's n_T where it counts) / V, V = 2 pL",
+  "clause_4": "the compartment counts at row t when its declared release rate is positive on some interval starting at or after t: the rate in force at t (the last change at or before t) or any later change's rate; the schedule is read from the world's definition (its exchange_controls)",
+  "drive": "D = clearance.hill_drive(c*, K, n), K 0.01 mM and n 2",
+  "rule": "t_clear = clearance.t_clear(rows_s, D, epsilon), epsilon 2e-6"
+ },
+ "judged": {
+  "J1": "t_clear from the engine's c* rows equals the case's registered t_clear: C2 680 s, C5 460 s",
+  "J2": "the compartment plant with power in each case, applied to the engine's rows, gives its registered outcome: in C2, compartment_left_out (c* from the cell alone) 620 s; in C5, sealed_compartment_counted (the compartment counted at every row) not cleared",
+  "verdict": "passed when J1 and J2 hold in both worlds, each run to 1000 s at dt = 1 ms by compartment_comparison.py from a frozen snapshot of main"
+ },
+ "coarseness": "J1 and J2 are outcome equalities, coarse in D: a row moves only for an error of about 10% in D at C2's crossing (registered D/epsilon 0.90 at 680 s and 1.19 at 670 s) and about a third at C5's (0.75 at 460 s and 1.49 at 450 s). Near the crossing D is about (c*/K)^2 and C2's c* decays at the release rate, so C2's crossing moves for an error of about 0.5% in that rate",
+ "information": [
+  "the other compartment plant's outcome against its registered one (no power in its case): in C2, sealed_compartment_counted 680 s; in C5, compartment_left_out 460 s",
+  "c* and D against the cases' exact rows: the largest relative deviation and its row",
+  "the bracket (D/epsilon at t_clear and at the row before) against the registered bracket",
+  "the chain's rows (N, PA, V, M_j, n_P, W, R, C_P, the material total, F_T, Na, K, Cl): no registered reference covers a chain fed by a compartment, so none is judged",
+  "the template's account over the cell and the compartment: the cell's change, the release's moved amount and turnover's cleared amount, and the compartment's change against the release",
+  "steps and wall time"
+ ],
+ "not_evaluated": "R-clear's other plants (the first crossing, the threshold on the factor, the strict inequality and the end time), which need no compartment; R-clear's own cases cover them",
+ "stop_rule": [
+  "a refusal or exception during a run is that run's recorded outcome, and its readings are not met",
+  "a failed reading is kept as a finding; there is no rerun with changed criteria or inputs without the lead's word",
+  "smoke and development runs (a shorter horizon, or a tree other than main's frozen snapshot) are never judged",
+  "an amendment to this registration is dated, says why, and comes before any engine output it would govern"
+ ],
+ "pre_registration_checks": "no stepped run of C2 or C5. Host only, at 1ec77911 with this branch's mapper: both worlds parse and bind; exchange is the composition's one view reader; kappa from the declared k_u equals the case's to one ulp. The comparison's c*, clause 4 and plants reproduce R-clear's registered t_clear, plant outcomes and bracket, and its c* and D rows to 7e-15 relative, on the cases' two-node closed form (/mnt/workspaces/Cells/fr7-loop-20261119/u2-compartment/checks/closed_form_check.py). Compiled, from 1ec77911's frozen snapshot, on two other worlds (/mnt/workspaces/Cells/fr7-loop-20261119/u2-compartment/probes/compiled_view_probe.py): a miniature of FR-7's world with a releasing compartment ran 300 valid steps with the compartment's template on n0 exp(-kappa t) to 2e-16; and an import world ran bitwise equal, in its species rows and exchange's records, with and without membrane state (exchange a view reader only with it)",
+ "code": {
+  "mapper": "validation/fr7/compartment_mapper.py",
+  "comparison": "validation/fr7/compartment_comparison.py",
+  "fixtures": "validation/fr7/unit_turnover_fixtures.py (with_compartment, with_release, release_velocity)"
+ },
+ "cost": "unmeasured at registration: about 70 minutes per world expected at W2's 4.2 ms per step, plus the compartment's and the release's share"
+}

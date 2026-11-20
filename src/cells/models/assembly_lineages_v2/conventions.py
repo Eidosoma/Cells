@@ -55,6 +55,9 @@ RESERVED = MappingProxyType(
     }
 )
 OFFSET = MappingProxyType({"multinomial": 0, "multinomial_less_one": 1})
+ENCOUNTER = "exchange_encounter"  # OL2's conditional token (§0.2b rule 1).
+OSMOTIC = "osmotic"  # OL2's lumen_volume value, only with a geometry (§0.2b rule 2).
+ENCOUNTERS = ("insertion_area", "diffusion_radius")
 LAST_MOLECULE_MEASURES = MappingProxyType(
     {
         "kept": ("multinomial", "multinomial_less_one"),
@@ -72,6 +75,9 @@ class Conventions:
     lumen_volume: str
     empty_catalyst_phase: str
     last_molecule: str
+    # OL2 (§0.2b rule 1, §0.2c rule 1): declared exactly when the world declares a geometry; absent
+    # (None) otherwise, and then never written, so OL1's worlds and their ids do not move.
+    exchange_encounter: str | None = None
 
     @property
     def offset(self):
@@ -79,9 +85,16 @@ class Conventions:
         return OFFSET[self.condensed_measure]
 
 
-def parse(raw):
+def parse(raw, *, geometry=False):
     if not isinstance(raw, dict):
         raise ConfigError("world: conventions is an object of named tokens")
+    if raw.get("lumen_volume") == OSMOTIC and not geometry:
+        raise ConfigError(
+            "world: conventions: lumen_volume osmotic takes the lumen's volume from the "
+            "membrane's area, so the world declares a geometry (§0.2b rule 2)"
+        )
+    if geometry or ENCOUNTER in raw:
+        return _parse_with_encounter(raw, geometry)
     missing, unknown = sorted(set(TOKENS) - set(raw)), sorted(set(raw) - set(TOKENS))
     if missing or unknown:
         raise ConfigError(
@@ -106,5 +119,36 @@ def parse(raw):
     return out
 
 
+def _parse_with_encounter(raw, geometry):
+    """The six tokens and `exchange_encounter`, which only a world with a geometry declares."""
+    if not geometry:
+        raise ConfigError(
+            f"world: conventions: {ENCOUNTER} is declared only by a world that declares a "
+            "geometry (§0.2c rule 1)"
+        )
+    if ENCOUNTER not in raw:
+        raise ConfigError(
+            f"world: conventions: a world that declares a geometry declares {ENCOUNTER}, one of "
+            f"{', '.join(ENCOUNTERS)}, with no default (§0.2b rule 1)"
+        )
+    value = raw[ENCOUNTER]
+    if value not in ENCOUNTERS:
+        raise ConfigError(
+            f"world: conventions: {ENCOUNTER} is one of {', '.join(ENCOUNTERS)}, not {value!r}"
+        )
+    inner = {key: v for key, v in raw.items() if key != ENCOUNTER}
+    osmotic = inner.get("lumen_volume") == OSMOTIC
+    if osmotic:  # Validated as OL1's six, then set: OL1's own refusal text is unchanged.
+        inner["lumen_volume"] = "declared"
+    out = parse(inner)
+    fields = {key: getattr(out, key) for key in TOKENS}
+    if osmotic:
+        fields["lumen_volume"] = OSMOTIC
+    return Conventions(**fields, exchange_encounter=value)
+
+
 def to_dict(conventions):
-    return {key: getattr(conventions, key) for key in TOKENS}
+    out = {key: getattr(conventions, key) for key in TOKENS}
+    if conventions.exchange_encounter is not None:
+        out[ENCOUNTER] = conventions.exchange_encounter
+    return out

@@ -1,7 +1,24 @@
-"""An indexed event-split clock without horizon-length arrays."""
+"""An indexed event-split clock without horizon-length arrays.
+
+The clock (EventGrid) is the coarse lattice i * dt from 0 to its last point before the end, the end
+itself, and the events: schedule changes (doses, writes and operators' schedules among them) and
+numerical refinement times. An event equal to a lattice point is that point; any other splits the
+step it falls in, at its own time.
+
+Fine windows (execution.fine_windows, definitions/fine_window_spec.py; C, D235;
+docs/LONG_DURATION_MODE_DESIGN.md §4.2) refine the lattice inside each declared window. Between
+each pair of neighbouring coarse points i * dt and (i + 1) * dt in a window the clock adds the
+m - 1 fine points (m * i + r) * h, r = 1, ..., m - 1, where h is the fine dt and m = dt / h a whole
+number. Every coarse point stays a boundary, bit for bit, so a window adds boundaries and moves
+none: an event or an observation on the coarse grid keeps its exact time inside a window. A
+window's ends are coarse points exactly, so the steps beside it are whole coarse steps, and the
+fine steps are h to within the rounding of the products: no window makes a tiny step. An event
+within that rounding of a fine point it does not equal is refused, naming the point (an event
+there would leave a step of a few ulps). The clock keeps one entry per window and per event.
+"""
 
 import math
-from bisect import bisect_left
+from bisect import bisect_left, bisect_right
 from collections.abc import Sequence
 from dataclasses import dataclass
 
@@ -11,6 +28,109 @@ from cells.definitions.specs import ConfigError, _integer
 from cells.execution.resources import trace_bytes
 from cells.execution.schedule import control_values
 from cells.registry.models import get_model
+
+# Two times are one instant to within the rounding of two products of declared steps (each
+# product and each step's binary value round by half an ulp; 4 ulps holds them with margin).
+ROUNDING_ULPS = 4
+
+
+def same_instant(a, b):
+    """Whether a and b differ by at most ROUNDING_ULPS ulps of the larger."""
+    return abs(a - b) <= ROUNDING_ULPS * math.ulp(max(abs(a), abs(b)))
+
+
+GRID_ID = "zero_anchored_event_split"  # The run manifests' name for this clock.
+
+
+def manifest_numerics(spec):
+    """The clock's entries in a run manifest's numerics (records/io.py and records/window_io.py):
+    its name, and with declared fine windows their method (numerics.fine_windows), so a manifest
+    without the block keeps its bytes."""
+    entries = {"grid": GRID_ID}
+    windows = getattr(spec, "fine_windows", None)
+    if windows is not None:
+        entries["fine_windows"] = windows.method
+    return entries
+
+
+def require_scalar_path(spec, admitted):
+    """Refuse declared fine windows off the scalar runner and its windows. admitted: the caller is
+    that path (runner.timeline and windows._plan_windows_metadata pass the flag with which they
+    admit the step-doubled energy check). The batch and vector paths size their work from
+    end / dt, so version 1 refuses them, fail-closed."""
+    if getattr(spec, "fine_windows", None) is not None and not admitted:
+        raise ConfigError(
+            "execution.fine_windows runs only through cells.execution.runner.run and the scalar "
+            "windows (refused on this path)"
+        )
+
+
+@dataclass(frozen=True)
+class FineSpan:
+    """One declared fine window on the clock: the coarse steps that start at the coarse points
+    first <= i < stop, each divided into `subdivision` fine steps of `fine_dt` (module docstring).
+    `position` is the coarse point first's place among the lattice points; `shift` counts the fine
+    points this window and every earlier one add."""
+
+    first: int
+    stop: int
+    subdivision: int
+    fine_dt: float
+    position: int
+    shift: int
+
+    @property
+    def size(self):
+        """Its lattice points: the coarse point first and every point before the coarse point
+        stop."""
+        return self.subdivision * (self.stop - self.first)
+
+
+def _coarse_point(time, dt, last, what):
+    """The coarse index i <= last with i * dt == time exactly, or ConfigError naming the nearest."""
+    lo, hi = 0, last + 1
+    while lo < hi:
+        mid = (lo + hi) // 2
+        if mid * dt < time:
+            lo = mid + 1
+        else:
+            hi = mid
+    if lo <= last and lo * dt == time:
+        return lo
+    near = [repr(i * dt) for i in (lo - 1, lo) if 0 <= i <= last]
+    raise ConfigError(
+        f"execution.fine_windows: {what} {time!r} is not a point of the coarse grid, i x "
+        f"execution.dt exactly (the nearest: {' and '.join(near)})"
+    )
+
+
+def fine_spans(spec, dt, end, last):
+    """The definition's fine windows as FineSpans on its coarse lattice (last: the last coarse
+    index before the end), or ConfigError; () without the block."""
+    block = getattr(spec, "fine_windows", None)
+    if block is None:
+        return ()
+    h = block.dt
+    m = round(dt / h)
+    if m < 2 or not same_instant(m * h, dt):
+        raise ConfigError(
+            "execution.fine_windows dt must divide execution.dt into a whole number of fine "
+            f"steps, at least 2 (execution.dt / dt = {dt / h!r})"
+        )
+    spans, shift, previous = [], 0, 0
+    for window in block.windows:
+        first = _coarse_point(window.start_time, dt, last, "a window's start")
+        if window.end_time == end and (last + 1) * dt == end:
+            stop = last + 1  # The run's end, itself a coarse point.
+        else:
+            stop = _coarse_point(window.end_time, dt, last, "a window's end")
+        if not previous <= first < stop:
+            raise ConfigError("execution.fine_windows windows must increase and not overlap")
+        position = first + shift
+        shift += (m - 1) * (stop - first)
+        spans.append(FineSpan(first, stop, m, h, position, shift))
+        previous = stop
+    return tuple(spans)
 
 
 def refinement_times(spec):
@@ -40,12 +160,15 @@ def require_refinement_model(spec):
 
 @dataclass(frozen=True, init=False)
 class EventGrid(Sequence):
-    """Exact union of float i*dt, events, numerical refinement, zero and end.
+    """Exact union of float i*dt, declared fine windows, events, numerical refinement, zero and end.
 
-    Only off-nominal boundaries and their global indices are stored. Binary searches
-    compare actual products rather than rounding a time/dt quotient.
-    Internal model projections may use this clock during inherited validation;
-    public execution additionally calls require_refinement_model().
+    The nominal points are the lattice (module docstring): the coarse products i*dt and, inside a
+    declared fine window, the fine products between them. Only the windows (spans, one FineSpan
+    each), off-nominal boundaries (extras) and their global indices are stored. Binary searches
+    compare actual products rather than rounding a time/dt quotient. Without fine windows a
+    nominal point n is n*dt and last_nominal the last coarse index, as before; with them
+    last_nominal is the last lattice point's place. Internal model projections may use this clock
+    during inherited validation; public execution additionally calls require_refinement_model().
     """
 
     dt: float
@@ -53,6 +176,8 @@ class EventGrid(Sequence):
     last_nominal: int
     extras: tuple[float, ...]
     extra_indices: tuple[int, ...]
+    spans: tuple[FineSpan, ...] = ()
+    span_positions: tuple[int, ...] = ()
 
     def __init__(self, spec):
         end, dt = spec.experiment.end_time, spec.execution.dt
@@ -62,32 +187,40 @@ class EventGrid(Sequence):
         last = max(0, math.ceil(count) - 1)
         while last > 0 and last * dt >= end:
             last -= 1
+        spans = fine_spans(spec, dt, end, last)
+        nominal = last + 1 + (spans[-1].shift if spans else 0)  # Lattice points before the end.
+        if spans and nominal > spec.execution.max_steps:
+            raise ConfigError("Fine-windowed integration grid exceeds max_steps")
+        for key, value in (
+            ("dt", dt),
+            ("end", end),
+            ("last_nominal", nominal - 1),
+            ("spans", spans),
+            ("span_positions", tuple(s.position for s in spans)),
+        ):
+            object.__setattr__(self, key, value)
         extras, indices = [], []
         points = sorted({*(c.time for c in spec.experiment.changes), *refinement_times(spec)})
         for t in points:
             if t == 0 or t == end:
                 continue
-            lo, hi = 0, last + 1
+            lo, hi = 0, nominal
             while lo < hi:
                 mid = (lo + hi) // 2
-                if mid * dt < t:
+                if self._nominal(mid) < t:
                     lo = mid + 1
                 else:
                     hi = mid
-            if lo <= last and lo * dt == t:
+            if lo < nominal and self._nominal(lo) == t:
                 continue
+            if spans:
+                self._refuse_near_fine_point(t, lo)
             indices.append(lo + len(extras))
             extras.append(t)
-        if last + 1 + len(extras) > spec.execution.max_steps:
+        if nominal + len(extras) > spec.execution.max_steps:
             raise ConfigError("Event-split integration grid exceeds max_steps")
-        for key, value in (
-            ("dt", dt),
-            ("end", end),
-            ("last_nominal", last),
-            ("extras", tuple(extras)),
-            ("extra_indices", tuple(indices)),
-        ):
-            object.__setattr__(self, key, value)
+        object.__setattr__(self, "extras", tuple(extras))
+        object.__setattr__(self, "extra_indices", tuple(indices))
 
     def __len__(self):
         return self.last_nominal + 2 + len(self.extras)
@@ -103,7 +236,59 @@ class EventGrid(Sequence):
         if extra < len(self.extras) and self.extra_indices[extra] == index:
             return self.extras[extra]
         nominal = index - extra
-        return self.end if nominal == self.last_nominal + 1 else nominal * self.dt
+        if nominal == self.last_nominal + 1:
+            return self.end
+        return self._windowed(nominal)[0] if self.spans else nominal * self.dt
+
+    def _nominal(self, n):
+        """Nominal point n, 0 <= n <= last_nominal."""
+        return self._windowed(n)[0] if self.spans else n * self.dt
+
+    def _windowed(self, n):
+        """(nominal point n, whether it is a fine point) on a clock with fine windows."""
+        k = bisect_right(self.span_positions, n) - 1
+        if k >= 0:
+            span = self.spans[k]
+            offset = n - span.position
+            if offset < span.size:
+                q, r = divmod(offset, span.subdivision)
+                i = span.first + q
+                if r:
+                    return (span.subdivision * i + r) * span.fine_dt, True
+                return i * self.dt, False
+            n -= span.shift  # A coarse point after window k: its coarse index.
+        return n * self.dt, False
+
+    def _refuse_near_fine_point(self, t, lo):
+        """Refuse an event within rounding of a fine point it does not equal (the points either
+        side of it, lo - 1 and lo), naming the point: it would leave a step of a few ulps."""
+        for n in (lo - 1, lo):
+            if 0 <= n <= self.last_nominal:
+                point, fine = self._windowed(n)
+                if fine and same_instant(point, t):
+                    raise ConfigError(
+                        f"execution.fine_windows: an event at {t!r} lies within rounding of the "
+                        f"fine boundary {point!r} without equalling it; declare it at {point!r}"
+                    )
+
+    def fine_window_record(self):
+        """The declared fine windows as this clock runs them (a windowed run's resources): each
+        window's start and end, its fine dt and subdivision, and the steps inside it, events
+        included; and the clock's fine and coarse step totals."""
+        rows = []
+        for span in self.spans:
+            start, stop = span.first * self.dt, span.stop * self.dt
+            rows.append(
+                dict(
+                    start_time=start,
+                    end_time=stop,
+                    dt=span.fine_dt,
+                    subdivision=span.subdivision,
+                    steps=self.exact_index(stop) - self.exact_index(start),
+                )
+            )
+        fine = sum(row["steps"] for row in rows)
+        return dict(windows=rows, fine_steps=fine, coarse_steps=len(self) - 1 - fine)
 
     def exact_index(self, time):
         index = bisect_left(self, time)

@@ -1,0 +1,10 @@
+{
+  "dataset_id": "kucerka2011_popc@1",
+  "doi": "10.1016/j.bbamem.2011.07.022",
+  "locator": "Table 1, POPC, area per lipid at 30 °C. Equation 2 describes the uncertainty.",
+  "observable": "Area per POPC molecule in a fluid bilayer inferred by simultaneous small-angle neutron and X-ray scattering.",
+  "temperature_C": 30,
+  "area_A2": 64.3,
+  "reported_uncertainty_A2": 1.3,
+  "mapping": "One leaflet footprint per lipid. The total bilayer area is half the sum over all lipid molecules. The structural measurement supplies the engine's input."
+}

@@ -1,0 +1,12 @@
+{
+  "dataset_id": "coady2007_lactate_voltage@1",
+  "doi": "10.1529/biophysj.107.108555",
+  "source": "https://pmc.ncbi.nlm.nih.gov/articles/PMC1965447/",
+  "locator": "Fig. 5, ibuprofen-sensitive currents with 1 mM lactate and without lactate, at negative voltages",
+  "preparation": "Human SMCT1 expressed in a Xenopus oocyte, 96 mM external sodium, approximately 24 °C, pH 7.6. The two plotted series come from one representative voltage-clamp experiment.",
+  "external_lactate_mM": 1,
+  "voltage_mV": [-50, -150],
+  "lactate_induced_current_uA": [-0.68, -1.40],
+  "reading_precision_uA": 0.03,
+  "mapping": "At each voltage subtract the ibuprofen-sensitive substrate-free current from the ibuprofen-sensitive current with lactate. Inward electrical current is negative. The reading precision is approximate. The figure supplies no per-point biological uncertainty. Intracellular activities and the microscopic rate and charge assignments are not measured in this experiment."
+}

@@ -1,5 +1,534 @@
 # Cells proof comparisons
 
+## 20 November 2026 · Mitochondrial cycles, voltage prediction and numerical retests
+
+<a id="mitochondrial-cycle-accounting"></a>
+
+**Seven mitochondrial laws in one membrane.** Lean gives the charge on each side of every registered cycle in the engine's base ionic forms. N is the matrix and P the intermembrane space. Oxidizing or reducing cytochrome c on P changes its charge, so counting only explicit protons would give the wrong electrical current for complexes III and IV. [Stoichiometry and valences](CellsProofs/Chemistry/MitochondrialCycles.lean#L25) · [Engine conventions](../src/cells/laws/cycles/mitochondria_source.py)
+
+| Forward cycle, normalized as declared | Free H⁺ added on P | Net charge added on P (elementary-charge equivalents) |
+| --- | ---: | ---: |
+| Complex I per NADH | +4 | +4 |
+| Complex III per QH₂ | +4 | +2 |
+| Complex IV per O₂ | +4 | +8 |
+| ATP synthase per matrix ATP | −3 | −3 |
+| ATP/ADP exchange per ATP exported | 0 | −1 |
+| Phosphate import per HPO₄²⁻ | −2 | 0 |
+| K⁺/H⁺ exchange per K⁺ imported | +1 | 0 |
+
+Restoring the quinone and cytochrome c pools fixes turnover of complexes I, III and IV in the ratio **2:2:1**. The chain consumes two NADH and one O₂, removes 22 free protons from N and adds 20 on P. Synthesis and delivery of one ATP, including nucleotide exchange and phosphate import, returns four net charge equivalents. In this seven-path model with a three-proton synthase, balanced carrier pools and zero net charge transfer imply five delivered ATP per O₂. This is a conditional charge balance. Actual fluxes and yields depend on the operating state and other currents. [Respiratory chain](CellsProofs/Chemistry/MitochondrialCycles.lean#L72) · [ATP delivery and charge balance](CellsProofs/Chemistry/MitochondrialCycles.lean#L95)
+
+In two checked 1 ms steps of `resolved_pump_tissue@3`, all seven populations moved. Their compiled stoichiometric columns matched the independent material calculation for each individual cycle. The combined material ledger matched at both observation times. The largest discrepancy in the ten separately checked redox, adenine and phosphate species across both compartments was 8.28 × 10⁻²⁵ fmol. The global charge discrepancy was below 1.0 × 10⁻³³ C. The extents in this transient were unequal. The engine's separate component comparison passed 534 registered reference rows across eight settings of the seven laws, including both complex III formulations. [Checked world and material balances](checks/mitochondrial_cycles.py#L43) · [Registered component references](../validation/mitochondria/component_comparison.py)
+
+In bovine heart preparations, Galkin et al. reported **4.00 ± 0.05 pumped protons per NADH** for complex I after subtracting one proton consumed by quinone reduction. Jones et al. obtained 4.21 ± 0.15, 4.10 ± 0.17 and 4.02 ± 0.19 protons per two electrons from three comparisons on four preparations. These measurements test the complex I count. For ATP synthase, the resolved bovine rotor has eight c-subunits. Tight coupling would give 8/3 protons per matrix ATP and 11/3 proton equivalents per delivered ATP. Cells explicitly fixes three and four respectively in this version. The structure measures the ring count. Testing the combined yield under load would require a flux experiment. [Galkin et al., Fig. 2 and Eq. 3](https://doi.org/10.1016/S0014-5793%2899%2900575-X) · [Jones et al., Table 3](https://doi.org/10.1074/jbc.M116.771899) · [Watt et al., Fig. 1](https://doi.org/10.1073/pnas.1011099107) · [Measurement records](checks/data/mitochondrial_stoichiometry.json)
+
+<a id="conditioned-voltage-bounds"></a>
+
+**What the two kidney-cell voltage readings determine.** At zero total passive current, with external Na + K and external Cl fixed, the exponentiated voltage is an affine function of external K. Two distinct doses determine its two coefficients. At C3 the extrapolation weight is exactly two. Lean proves which two corners of the C1/C2 figure-reading box bound every predicted voltage and its change from the same C1 baseline. It also bounds the signed error against any C3 reading in its assigned interval. The proof bounds the exact expressions. The decimal values below are rounded. [Model reduction](CellsProofs/Transport/ConditionedVoltage.lean#L27) · [C3 bounds](CellsProofs/Transport/ConditionedVoltage.lean#L93)
+
+The frozen protocol predicted **−14.59 mV** against a figure reading near **−18 mV**. With each source reading allowed to vary by ±2 mV, the predicted C3 voltage spans −18.32 to −11.20 mV, the predicted change from C1 spans +18.68 to +29.80 mV, and the signed error spans −2.32 to +8.80 mV. All 81 numerical reading pairs lay inside the bounds. The 12 original 60-digit arithmetic checks agreed within 7.11 × 10⁻¹⁵ mV. The ±2 mV describes figure reading. The biological verdict remains **not assessable** because experiment-level uncertainty and the recording boundary remain unresolved. [Frozen endpoint calculation](../reports/BIO002_CONDITIONED_VOLTAGE.md) · [Bonzanni et al., Fig. 3C](https://doi.org/10.1242/bio.048553) · [Curation closeout](../reports/BIO003_PILOT_CLOSEOUT.md)
+
+We tested the reduction independently on three synthetic Na/K/Cl membranes with rising, flat and falling voltage responses. For each, the currents at 10 and 40 mM external K supplied the fit and 70 mM supplied the third dose. Predicted reversal voltages were −19.188, −5.567 and +4.065 mV, each within 2.05 × 10⁻¹⁴ mV of the independently located engine zero. Checked runs at those voltages carried opposing individual ion currents. Their net magnitude was at most 5.43 × 10⁻¹⁶ of the sum of the individual magnitudes. [Engine and reference comparison](checks/conditioned_voltage.py#L16)
+
+<a id="sodium-anion-capacity-repair"></a>
+
+**Sodium–anion diagnostic repair confirmed.** At capacity 10⁻³⁰² fmol/s, the edge and cycle both gave 7.09691 × 10⁻³⁰⁵ fmol/s and the two reverse readouts gave 2.67423 × 10⁻³⁰⁷ fmol/s. The earlier 100-fold error is gone. All four capacities including zero passed on NumPy and compiled CPU, together with 60 master-equation cases, 18 dose points and the two-step tissue run. [Reproducer](checks/sodium_anion_diagram.py#L227) · [Repaired carrier normalization](../src/cells/kinds/transporter.py#L2385) · [Original failed comparison](#six-numerical-retests)
+
+<a id="vesicle-threshold-hold"></a>
+
+**Vesicle rupture during a steady hold.** Lean proves that a vesicle which survives a threshold check cannot cross the same threshold at a later check while its tension stays at or below its original value. This applies even if each vesicle has its own fixed threshold. Any constant surviving fraction must miss at least one of two readings by half their observed fall. [Threshold proof and error bound](CellsProofs/Chemistry/Vesicle.lean#L178) · [Engine decision](../src/cells/models/assembly_lineages_v2/kernel.py#L340)
+
+At fixed 8.0 mN/m aspiration tension, the intact fraction of pure DOPC vesicles at 12 °C fell from about 0.50 at 92 s to 0.125 at 268 s. At 32 °C it fell from about 0.50 at 33 s to 0.111 at 125 s. A time-independent predicted fraction would miss at least one endpoint by about 19 percentage points at either temperature. The plotted fractions have no pointwise error bars. In a separate osmotically preloaded cohort under a 4.3 mN/m applied hold, 8 of 19 were intact at 40 s and 2 of 19 at 110 s. Six of the eight surviving vesicles ruptured during the next 70 s. These measurements limit a fixed threshold as a model of rupture timing. They leave the numerical area-unit comparison to the engine reproducer. [Karal and Yamazaki, Fig. 1a](https://doi.org/10.1063/1.4930108) · [Shibly et al., Fig. 1B](https://doi.org/10.1016/j.bpj.2016.09.043) · [Times, counts and uncertainties](checks/data/vesicle_rupture_holds.json)
+
+The compiled lysis reproducer still gave opposite material outcomes for two equivalent area units at both close thresholds. Both representations agreed with the reference for thresholds 1% away. The shared-pool reporting failure also persists. The two 96-event osmotic populations conserved inventory, but the one-slot fixed-volume case (10⁻²² L) raised a TypeError while assembling the output. [Lysis cases](checks/vesicle.py#L244) · [Shared-pool reproducer](checks/shared_pool.py) · [Earlier fixed-volume finding](#shared-pool-declared-volume)
+
+The engine comparisons used CPU float64 at `2ae89b5e2cd19fdcd4727eb16a4d33cc20339007`. The three numerical retests cover the earlier failures whose referenced engine files had changed at the start of this pass. Lean 4.19.0 checked the 16 new public theorems with standard axioms. The seven relevant engine and reference test files plus eight repository guards passed 194 tests. The five catalog tests also passed. [Mitochondrial comparison](checks/mitochondrial_cycles.py) · [Voltage comparison](checks/conditioned_voltage.py) · [Vesicle comparison](checks/vesicle.py)
+
+## 20 November 2026 · Cell compartments, membrane trafficking and division
+
+<a id="owned-compartment-inventory"></a>
+
+**Which cell owns the material and voltage.** Lean proves that summing cytosol and owned compartments over all cells counts each compartment once. For a lumen bounded by a single capacitor, its potential relative to its owner is its free charge divided by that capacitance. In a two-cell world, each cytosol and its lumen balanced each species against its own bath to within 4.34 × 10⁻¹⁹ fmol. During retrieval the first lumen reached +29.83 mV relative to its owner. The second cell had no trafficking and its lumen stayed at the owner potential. The largest error against the charge calculation was 1.39 × 10⁻¹⁷ V. [Proofs](CellsProofs/Tissue/MembraneTrafficking.lean#L18) · [Owner and storage map](../src/cells/operators/compartments.py#L605) · [Checked world](checks/compartment_trafficking.py#L22)
+
+Search located a resting lysosomal voltage of **+56 ± 7 mV** (lumen minus cytosol, mean ± SD) in intact HEK293 cells, or −56 mV in the engine's owner-minus-lumen convention. The study pooled 106 lysosome regions over seven experiments and inferred zero voltage from optical calibration. The Cells fixture lacks the native lysosomal transport needed to predict this resting value. [Matamala et al., Fig. 4i](https://doi.org/10.1038/s42003-021-01916-6)
+
+<a id="membrane-retrieval-recycling"></a>
+
+**Membrane area returns before all its cargo does.** A transfer of area carries the source's specific capacitance. For a population with enrichment `e`, the source retains its starting count times the remaining area fraction raised to `e`. Lean proves the composition of successive withdrawals and the stock left inside after a round trip with uniform mixing. In the checked world, 30% of the plasma area went to a pool seeded with 25% of that area, then exactly the retrieved area came back. **444.72 of the initial 3,261.27 Kir units stayed inside** (13.64%). The pool started with twice the plasma's capacitance per area, so the plasma gained 2.224 pF over the cycle. The largest error in the checked population comparisons was 3.42 × 10⁻¹³ units. [Round-trip identity](CellsProofs/Tissue/MembraneTrafficking.lean#L68) · [Engine transfer](../src/cells/operators/membrane_trafficking.py#L627) · [Two-population comparison](checks/compartment_trafficking.py#L22)
+
+In resting cultured hippocampal neurons, Ojima et al. found 90.4 ± 0.6% of labelled AMPA receptors at the surface and 10.3 ± 1.7% inside. A separate 15-minute chase found resurfacing equal to 12.5 ± 2.8% of the reference **surface** signal (each mean ± SEM, three biological replicates). The chase lacks an ending intracellular stock. At the calyx of Held, 60 s after stimulation the excess capacitance fell to 0.33 ± 0.06 of its peak and the synaptotagmin-2 signal to 0.47 ± 0.07 of its own peak (SEM). These measurements distinguish net membrane retrieval from cargo recovery. The fluorescence also depends on vesicle re-acidification. Neither assay determines the Cells enrichment parameter. [Ojima et al., Fig. 5c–e](https://doi.org/10.1038/s41467-021-21082-x) · [Okamoto et al., Fig. 1C–E](https://doi.org/10.7554/eLife.14643) · [Measurement records](checks/data/trafficking_division_measurements.json)
+
+<a id="trafficking-empty-surface"></a>
+
+**Engine finding for the membrane-state owner.** Scheduled retrieval can reach the zero-count readout previously seen in prepared states. Starting from exactly 3,072 Kir units, this stress case removed 30% of patch area over four 1 ms steps with a declared enrichment of 1,024. At 4 ms the retention formula predicts about 7.38 × 10⁻¹⁵⁶ units. The compiled step accepted the state with a stored count of zero. The two-term abundance readout gave **−2.22045 × 10⁻¹⁶** and a potassium flux of **−5.58157 × 10⁻¹⁹ fmol/s**. The host readout was invalid and the unmodified runner refused the observation. The same schedule at enrichment 1 finished. A process-local diagnostic returning exactly zero abundance for empty active populations also let the high-enrichment run finish. This establishes a rounding-induced refusal for this trajectory. Physiological relevance of that enrichment remains open. [Original controlled states](#empty-surface-flow) · [Count and abundance](../src/cells/operators/membrane_state.py#L151) · [Observation check](../src/cells/models/surface_pump_v3.py#L2870) · [Reproducer and diagnostic control](checks/compartment_trafficking.py#L145)
+
+<a id="isopotential-division"></a>
+
+**Charge and work at division.** If a daughter receives a different share of membrane area and cytosol volume, the patch charges determine how much extra charge its carriers must take. The Lean identities preserve each species and each patch voltage and give nonnegative ideal unmixing work for positive daughter amounts. In a checked run the first daughter took 75% of the volume and 60% of the membrane. At the division event, the K and counterion offsets were +0.001008 and −0.001008 fmol. The daughter species sums matched the parent exactly in float64 and the largest voltage discrepancy was 1.39 × 10⁻¹⁷ V. The engine booked 1.37419902277 × 10⁻⁶ pJ of work, within 1.69 × 10⁻¹⁷ pJ of a separate 65-digit calculation. [Division proofs](CellsProofs/Tissue/DivisionBridge.lean#L12) · [Implemented event](../src/cells/operators/partition.py#L879) · [Event from the solver's pre-division state](checks/division_bridge.py#L44)
+
+Eleven imaged mouse epidermal divisions give mean parent volume 770 µm³ and mean combined daughter volume 677 µm³ in the **next image 12 h later**. The pairs constrain volume change across that interval. An instantaneous split, carrier allocation and daughter voltage require other measurements. [Xie and Skotheim, Fig. S2L](https://doi.org/10.1016/j.cub.2019.12.062) · [Paired measurements](checks/data/cell_replacement_measurements.json)
+
+<a id="daughter-bridge-closure"></a>
+
+**Bridge aperture and transport after division.** Lean proves that successive closure intervals compose. Linear closure reaches zero at the declared deadline. Exponential closure remains positive for any finite time from a positive initial aperture. The fraction of open aperture scales each species' permeability–area product to `2 a D`. Both laws ran for eight steps through the checked division. At the 3 ms closure time, the linear bridge carried zero flux and the exponential bridge retained 36.79% of its initial aperture. Each measured species flux matched the predicted fraction of its fully open, same-state flux within 5.09 × 10⁻²¹ fmol/s. [Closure proofs](CellsProofs/Tissue/DivisionBridge.lean#L52) · [Engine aperture](../src/cells/operators/bridge_closure.py#L246) · [Flux comparison](checks/division_bridge.py#L99)
+
+Fitting only the first two points of one zebrafish microtubule-stalk trace gives the following diameter predictions at later times. Both constant-rate models miss the measured plateau. Stalk diameter is a proxy for membrane aperture. The plotted bridge has no pointwise error bars, and membrane continuity can outlast the visible stalk. A separate C. elegans assay found that normalized 10 kDa dextran exchange between daughters fell from about 0.0108/s at 30 s after furrow ingression to a value consistent with zero at 260 s. The tracer measures connectivity and leaves ionic conductance open. [Adar-Levor et al., Fig. 1D–E](https://doi.org/10.1073/pnas.2021210118) · [Green et al., Fig. 4D–E](https://doi.org/10.1083/jcb.201306036) · [All readings and uncertainties](checks/data/trafficking_division_measurements.json)
+
+| Time from first image (min) | Measured stalk diameter (µm) | Linear (µm) | Exponential (µm) |
+| ---: | ---: | ---: | ---: |
+| 10 | 1.60 | 0.70 | 1.02 |
+| 15 | 1.60 | 0.00 | 0.66 |
+| 20 | 1.00 | 0.00 | 0.42 |
+| 23 | 0.55 | 0.00 | 0.32 |
+| 24 | 0.25 | 0.00 | 0.29 |
+
+Search also found direct electrical measurements on 15 HeLa sister pairs with visible midbody bridges. The reported mean conductance was **32 ± 6 nS**, ranging from below 1 to 70 nS. The authors report original recordings in section 5 of their review and leave the error statistic unspecified. The recording times follow the voltage ramp. In a starfish embryo, electrodes left in place across the first cleavage detected coupling during partial cleavage and lost it after completion. Search found no verified series pairing radius and electrical conductance over time in the same normally dividing bridge. [Antanavičiūtė et al., Fig. 2A–D](https://pmc.ncbi.nlm.nih.gov/articles/PMC6174351/#medicina-54-00053-f002) · [Tupper et al., Figs. 2–3](https://doi.org/10.1083/jcb.46.1.187)
+
+The comparisons used `resolved_pump_composite@1` with `resolved_pump_tissue@3` on CPU float64 at engine revision `b30e3298523e49bd6c33bba01aa11561f8fba449`. Lean 4.19.0 checked all 20 new theorems with the three standard axioms. The five relevant engine test files and eight repository guards passed 372 tests. The strict trafficking reproducer exits 1 on the recorded engine. [Compartment and trafficking driver](checks/compartment_trafficking.py) · [Division and bridge driver](checks/division_bridge.py)
+
+## 20 November 2026 · Surface channel populations
+
+<a id="surface-population-turnover"></a>
+
+**From precursor to surface.** Lean proves that routes on the same precursor share its first-order consumption, including when they need different numbers of molecules to make one unit. For any number of maturation pools, every unit assembled or initially in transit ends up in a pool, on the membrane or in the removal ledger. An initially filled pair of identical sequential pools has cumulative arrival `U [1 − (1 + kt) exp(−kt)]`. Its initial arrival rate is zero and some units have arrived at any positive time. [Chain balance](CellsProofs/Chemistry/PopulationUnits.lean#L34) · [Pulse solution](CellsProofs/Chemistry/PopulationUnits.lean#L76) · [Engine half-step](../src/cells/operators/population_unit_turnover.py#L636)
+
+In an eight-step checked `resolved_pump_composite@1` world, one route inserted units directly at two molecules per unit and another used three maturation pools at seven molecules per unit. They consumed **3.11278 × 10⁻⁶** and **5.18797 × 10⁻⁶ fmol** in the scheduled 12:20 rate ratio. At every observed step the largest discrepancy from the independent 50-digit matrix exponential was 4.55 × 10⁻¹³ units (tolerance 2 × 10⁻¹⁰). The largest weighted chain imbalance was 9.10 × 10⁻¹³ molecules. The model represents functional units continuously. In a separate pulse, **10.82448 of 120 units** reached the membrane in 12.5 ms with two 40/s stages and no new precursor consumption. [Checked world and pulse](checks/population_units.py#L34) · [Matrix-exponential reference](../tests/unit/test_population_unit_turnover.py#L60)
+
+Search found a slow acetylcholine-receptor cohort in ten innervated mouse hindlimbs. Fitting first-order loss to the day-7 baseline and the reading seven days later gave **0.05721/day**. With assembly off, the compiled loss operator gave the following predictions at times excluded from the fit. The last reading lies above the predicted retention. The mice and normalization are shared, and the caption and methods disagree over whether the bars denote SD or SEM. [Strack et al., Fig. 3D](https://doi.org/10.1371/journal.pone.0020524.g003) · [Measurements and fit](checks/data/surface_population_measurements.json) · [Compiled cohort](checks/population_units.py#L198)
+
+| Days after baseline | Measured retention (% of baseline) | Plotted bar (%) | Predicted retention (%) |
+| ---: | ---: | ---: | ---: |
+| 14 | 48 | 43–52 | 44.89 |
+| 16 | 43 | 37–49 | 40.04 |
+| 18 | 42 | 39–46 | 35.71 |
+
+In cultured chick muscle, few labelled receptors appeared at the surface during the first three hours. By 3.5 hours nearly all receptors entering the membrane carried the label. This supports a maturation delay. Pool count, individual transit times and precursor stoichiometry remain open. [Devreotes et al., p. 365](https://doi.org/10.1016/0092-8674(77)90023-X)
+
+<a id="membrane-population-flow"></a>
+
+**What an active membrane population contributes.** At fixed gating, voltage, concentrations and reference density, Lean proves that whole-patch flow is proportional to the surface unit count. Area changes affect density. In a one-patch model with 3,072 and 1,536 declared units, changing area to 1.4 or 1.8 times its initial value preserved each populated channel's potassium flow. Halving each count halved its flow. NumPy and compiled CPU readouts agreed with those predictions to 4.45 × 10⁻¹⁶ relative. The comparison held capacitance fixed to isolate the abundance readout. [Abundance proof](CellsProofs/Chemistry/PopulationUnits.lean#L126) · [Cells membrane state](../src/cells/operators/membrane_state.py#L151) · [Channel flux comparison](checks/population_units.py#L145)
+
+At lizard muscle endplates, the control had 18,000 available receptor sites/µm² and a 7.5 nA mean miniature current. Scaling the control current by available site density predicted **3.42 and 2.88 nA** in two other conditions. The measured amplitudes were **4.0 ± 0.7 and 2.5 ± 0.5 nA**. These comparisons assume comparable effective area and drive. The study reports binding-site density and a synaptic peak current, so it cannot establish a functional unit count or the response to changing area at fixed count. [Land et al., Table 1](https://people.ece.cornell.edu/land/Papers/PNAS1980.pdf#page=2) · [Measurements and uncertainties](checks/data/surface_population_measurements.json)
+
+<a id="empty-surface-flow"></a>
+
+**Engine finding for the membrane-state owner.** Withdrawing exactly all 3,072 units leaves a count of exactly zero on both backends. The abundance calculation adds two separately rounded terms. In a domain-admissible state with area scaled by 1.4 it returned **−1.11022 × 10⁻¹⁶** and a potassium flux of **−2.19124 × 10⁻¹⁸ fmol/s** through the empty channel population. At 1.8 times the area the residual changed sign, giving +2.81730 × 10⁻¹⁸ fmol/s. At the reference area both quantities were zero. The full composite rate readout accepted all three states. This is a rounding-level residual measured in controlled states. The [subsequent scheduled uptake comparison](#trafficking-empty-surface) reached a zero-count state and isolated its effect on observation. The exact-zero reproducer returns status 1 on this revision. [Exact zero](CellsProofs/Chemistry/PopulationUnits.lean#L143) · [Two-term abundance](../src/cells/operators/membrane_state.py#L158) · [Reproducer](checks/population_units.py#L145)
+
+The comparisons ran on CPU float64 with clean engine and test sources at `5fa7a8b88de7a3cc65ef3b975e7bc3c1a374da93`. Lean 4.19.0 checked the eleven new theorems with the standard axioms. The four relevant engine test files and eight repository guards passed **199 tests**. An existing invalid-input potassium test emitted one divide-by-zero warning. [Comparison driver](checks/population_units.py) · [Engine tests](../tests/unit/test_population_unit_turnover.py)
+
+<a id="bath-order-repair"></a>
+
+**Bath recipe finding closed on the tested cases.** The original six checked worlds all delivered the intended doses. Two entry orders both booked 0.00048828125 fmol with large opposing contributions. At a trace concentration both booked 1.7763568394002505 × 10⁻¹⁵ fmol even with opposing contributions of ±24 mM. The engine's regression also checks all six permutations of the trace recipe. The earlier failed record remains pinned to its engine revision. [Original reproducer](checks/bath_schedule.py#L118) · [Accurate per-species sum](../src/cells/operators/bath_schedule.py#L230) · [Six-order regression](../tests/unit/test_bath_schedule.py#L404) · [Original failure](#bath-recipe-order)
+
+<a id="potassium-affinity-repair"></a>
+
+**Potassium–anion overflow finding closed on the tested cases.** At an outside concentration of 2⁻⁵¹⁰ mM for each ion, the compiled route returned finite affinity and heat agreeing with independent references of **1,836,599.47 J/mol** and **4,701.69 pJ/s**. Both extreme ratios and all 27 ordinary component controls passed. The checked closed-volume world still refused the original 10 ms wrong-direction step at its declared bound of 3.761. Dividing the interval into 32 then 64 steps reduced the extent error by a factor of 4.17. The moving-water comparison also refused the coarse step and passed both refinements. [Moving-water reference](checks/osmotic_water.py#L129) · [Overflow-safe affinity](../src/cells/laws/routes/k_anion_symport.py#L75) · [Reference and compiled cases](checks/potassium_anion_symport.py#L44) · [Earlier retest](#six-numerical-retests)
+
+## 20 November 2026 · Scheduled cell replacement
+
+<a id="scheduled-cell-replacement"></a>
+
+**Material, charge and electrical work.** Both operator versions replace the contents of a fixed tissue site from a template or a donor. Lean proves that the tissue's change in each species equals gross supply minus gross removal, and that valence-weighting gives the signed charge. All donors are read before any replacement at that time. The field-energy change less electrode work is shared among the due sites and enters the total exactly once. [Proofs](CellsProofs/Tissue/CellReplacement.lean#L29) · [Engine event and electrical booking](../src/cells/operators/cell_replacement.py#L245)
+
+In a seven-cell sheet, A copied B while B received a template at the same timestamp. The compiled events supplied A with B's old amounts, removed each site's own amounts, and left every replacement ledger unchanged on replay. A held bath at 0.01 V and two small ionic charge changes made both electrical terms measurable. The field changed by −0.00154843 pJ and the largest individual electrode work was 0.000289456 pJ in magnitude. Across the two due sites and five undisturbed sites, v1's largest energy discrepancy from a calculation using physical amounts and capacitor charges was 2.21 × 10⁻¹³ pJ (rounded up). The tolerance was 2 × 10⁻¹¹ pJ. [Comparison and fixture](checks/cell_replacement.py#L24)
+
+Search located a time-resolved example of ordinary epithelial turnover. In two mouse epidermal fields, 524 divisions and 529 differentiations gave a fitted time scale of **1.8 days** for coordination of neighboring fates. Cells supplies its replacement times as inputs. The measurement constrains interpreting an instantaneous exchange as a whole tissue-turnover event. The paper does not identify an incoming carrier's species inventory at the same site. [Mesa et al., Fig. 3C](https://doi.org/10.1016/j.stem.2018.09.005) · [Measurement records](checks/data/cell_replacement_measurements.json)
+
+<a id="cell-replacement-water"></a>
+
+**Water volume and free energy.** Version 2 books the old and arriving volumes. Lean proves that copying a donor's volume increment recovers its physical volume exactly when both sites have the same volume reference. The change in water free energy contains a composition term as well as the volume and elastic terms. In the compiled example A stayed at **0.788048 pL** and gained **1.1003 fmol** of tracked osmoles. Its water booking was **−0.138369 pJ**. At B, the template changed both volume and composition. The largest v2 discrepancy for the combined chemical, water and electrical booking was 4.32 × 10⁻¹³ pJ against 2 × 10⁻¹¹ pJ. [Endpoint and jump proofs](CellsProofs/Tissue/CellReplacement.lean#L83) · [Engine water booking](../src/cells/operators/cell_replacement_v2.py#L99) · [Independent energy calculation](checks/cell_replacement.py#L41)
+
+Two measurements describe parts of the volume change. In living mouse epidermis, 11 measured mitotic parents averaged **770 µm³** and their two daughters together averaged **677 µm³** in the next image, 12 hours later. The paired change was **−94 ± 100 µm³** (sample SD), with decreases in 9 of 11 divisions. Search recovered the paired coordinates and the comparison reproduces the statistics from the supplement. In a separate MDCKII assay under 20% hypertonic shock, cells later extruded lost **20 ± 3%** of their baseline volume and cells that stayed lost **11 ± 2.5%** (SEM, figure caption n = 5). Neither study measured immediate one-for-one incoming volume, species transfer or replacement work. The biological comparison for v2 remains open. [Xie and Skotheim, Fig. S2L](https://doi.org/10.1016/j.cub.2019.12.062) · [Mitchell et al., Fig. 1l](https://doi.org/10.1038/s41586-025-09514-w) · [Figure readings and extraction method](checks/data/cell_replacement_measurements.json)
+
+Both versions also passed three steps of the normal checked solver on `resolved_pump_composite@1`. Its histories recorded a single generation change per due site and the expected gross supplies and removals. The targeted engine tests and eight repository guards passed **94 tests**. Lean 4.19.0 checked the ten theorems using only standard axioms. The CPU float64 comparison used engine `4638694ac13bedae5f93aa56d77cf8820e687ec1`. [Driver](checks/cell_replacement.py) · [Existing water and rollback tests](../tests/unit/test_cell_replacement_v2_runs.py)
+
+<a id="cell-replacement-volume-boundary"></a>
+
+**Engine finding for the operators owner.** A v2 template strictly inside its declared water-volume interval can be refused during definition checking. At a reference volume of 0.7505222518670602 pL, storing `target − reference` and adding the reference back rounds the first admissible target down to the excluded lower bound. With water flow disabled and all other inputs fixed, the following controls isolate the refusal. [Exact-volume identity](CellsProofs/Tissue/CellReplacement.lean#L64) · [Template admission](../src/cells/operators/cell_replacement_v2.py#L186) · [Offset storage](../src/cells/operators/cell_replacement_v2.py#L107) · [Strict water domain](../src/cells/numerics/osmotic_water.py#L96)
+
+| Declared lower bound (pL) | Declared target (pL) | Reconstructed volume (pL) | Definition admission |
+| ---: | ---: | ---: | --- |
+| 0.18763056296676506 | 0.18763056296676506 | 0.18763056296676506 | Refused at the declared bound |
+| 0.18763056296676506 | 0.18763056296676509 | 0.18763056296676506 | **Refused inside the interval** |
+| 0.18763056296676506 | 0.18763056296676510 | 0.18763056296676517 | Admitted |
+| 0.18763056296676503 | 0.18763056296676509 | 0.18763056296676506 | Admitted |
+
+The one-step interior target is 2.78 × 10⁻¹⁷ pL above the limit. This is a refusal before simulation. The driver prints all four outcomes. With `--boundary-only --require-interior` it exits with status 1 on the tested revision. [Four-case reproducer](checks/cell_replacement.py#L176)
+
+## 20 November 2026 · Size-triggered fission and daughter continuation
+
+<a id="size-threshold-fission"></a>
+
+**Partition at the size threshold.** In `cells.assembly_lineages@1`, each growth event moves one molecule and a split assigns each occupied place to one daughter. Lean proves that such a history stays within the threshold and that each species balances across the two daughters. With an exact quota of `k`, precisely the first `k` occupied ranks go to the first daughter. With independent assignment probability `p`, a named daughter receives none of `r` marked molecules with probability `(1 − p)ʳ`. At fixed `r`, its mean marked count is `rp` and its variance is `rp(1 − p)`. [Threshold and count proofs](CellsProofs/Chemistry/LineageFission.lean#L23) · [Independent assignment proofs](CellsProofs/Chemistry/LineageFission.lean#L78) · [Engine partition](../src/cells/models/assembly_lineages/fission.py#L120)
+
+For a four-molecule parent with two marked molecules, a fixed half split leaves the first daughter without a marker in **4 of 24** possible rank orders. Independent fair assignment gives **4 of 16** possible assignments. The compiled partition matched each case, including the engine’s rules for padding, tied ranks and draws exactly at the probability boundary. The quota uses the floored float64 product. At size ten, `0.3` gives three molecules and its immediate float64 predecessor gives two. [Exhaustive controls](checks/lineage_fission.py#L28)
+
+**Measured bead partition.** Fornell et al. counted 10 µm polystyrene beads after water droplets split into three approximately equal-volume daughters with ultrasound off. We used the 180 plotted splits and compared the center against both sides pooled. The nominal volumes give `p = 1/3` without fitting to the counts. In the three bins below the engine’s enumerated assignment variances equal the Lean formula. The measurements show variation at fixed total count. The small bins and possible volume and flow differences leave the independent-assignment assumption open. [Fornell et al., Fig. 2c](https://doi.org/10.1063/1.4984131) · [Figure readings and extraction method](checks/data/fornell2017_partition.json) · [Variance calculation](checks/lineage_fission.py#L83)
+
+| Reconstructed total beads | Plotted splits | Measured center variance (beads²) | Independent assignment (beads²) |
+| ---: | ---: | ---: | ---: |
+| 7 | 7 | 0.95 | 1.56 |
+| 9 | 12 | 2.18 | 2.00 |
+| 12 | 7 | 4.48 | 2.67 |
+
+Across the observed totals of 7–60 beads, the model expects 1.33 empty centers. Under independent splits the probability of seeing none is 0.258. The figure shows none. A bead-free droplet still contains liquid, and the two pooled sides hide any individual empty side. This assay does not measure lineage extinction or a decision to follow a sibling. [Primary figure, printed page 031101-3](https://uu.diva-portal.org/smash/get/diva2:1109652/FULLTEXT01.pdf#page=4) · [Denominators and readings](checks/data/fornell2017_partition.json)
+
+<a id="lineage-daughter-continuation"></a>
+
+**Empty daughters and immediate division.** For a positive parent, switching an empty initial pick to its sibling always retains a nonempty daughter. This changes the sampled lineage. Across all 16 fair assignments of four molecules and both initial picks, retaining the original pick averaged **2.00** molecules at birth and gave two empty picks out of 32. Switching to the sibling averaged **2.25** molecules and gave zero empty picks. Lean proves the mean difference for each realized partition. [Selection proof](CellsProofs/Chemistry/LineageFission.lean#L125) · [Engine selection](../src/cells/models/assembly_lineages/continuation.py#L98)
+
+The same edge case occurs with a fixed fraction. At threshold four and fraction one eighth, the first daughter always has zero molecules. Selecting that daughter under `extinct` ended the lineage on its first split. Switching to the full sibling or selecting it from the start gave six fissions at one timestamp, reaching the declared limit with five immediate re-splits and no intervening chemistry. Recording every descendant through four generations gave four empty births and four full births at one timestamp, even when the initially selected branch ended. A separate binomial lineage had six immediate re-splits in twelve divisions. Across the six CPU worlds on engine `ea073ff872ec64b34346fb01fdc40bb38c8f2861`, the largest ledger residual was 3.55 × 10⁻¹⁵ k_BT. The four engine test files and eight repository guards passed 111 tests. [Single-lineage replay](checks/lineage_fission.py#L164) · [Every-descendant check](checks/lineage_fission.py#L251)
+
+<a id="lineage-fission-sink-sign"></a>
+
+**Documentation finding for the assembly owner.** Line 38 of the version-1 ledger docstring gives the sink the wrong sign. With split work `W = Φ(parent) − Φ(kept) − Φ(sibling)` and outgoing free energy `S = −Φ(sibling)`, the followed daughter’s log-weight change is **−W + S**. In the one-species control at unit activity, four molecules split two and two. The exact work is zero and both the sink and the log-weight change are **+ln 2**. The compiled booking and the closure equation on line 34 both agree with Lean. Only the derivation on line 38 needs correcting. [Ledger derivation](../src/cells/models/assembly_lineages/ledger.py#L38) · [Sign proof](CellsProofs/Chemistry/LineageFission.lean#L148) · [Reproducer](checks/lineage_fission.py#L279)
+
+## 20 November 2026 · Serial transfer and shear fission
+
+<a id="vesicle-serial-transfer"></a>
+
+**Serial transfer.** A wash replaces the finite bath and keeps the contents of each sampled vesicle. For every species, the old inventory plus the fresh bath equals the new inventory plus the spent bath and removed vesicles. Lean proves this for any realized sample. For two consecutive transfers, a slot keeps its original cargo exactly when it survives both. The corresponding signed free-energy change equals fresh-bath work minus the outgoing free energy. [Proofs](CellsProofs/Chemistry/VesiclePopulation.lean#L27) · [Sampling rule](../src/cells/models/assembly_lineages_v2/transfer.py#L81) · [Transfer booking](../src/cells/models/assembly_lineages_v2/population.py#L588)
+
+Three scheduled transfers in a compiled `cells.assembly_lineages@2` population preserved the integer balance for lipid, permeant solute and impermeant tracer. The first two transfers shared a time and ran in schedule-index order. The driver checked the selected slots against the recorded draws, their keys and contents against the pre-transfer row, and every work and sink entry against independent closed-form energies. The largest energy difference was 1.42 × 10⁻¹⁴ k_BT. Both operator comparisons used engine `5011ed3d6bb64721abc5acfb9f3c834fa12c97ce` on CPU with 64-bit arithmetic. [Runnable comparison](checks/vesicle_population.py#L42)
+
+| Time (s) | Vesicles kept | Tracer in spent bath | Tracer in fresh bath | Tracer in retained vesicles | Tracer exported in bath and removed vesicles |
+| ---: | ---: | ---: | ---: | ---: | ---: |
+| 1 | 3 of 3 | 5 | 0 | 6 | 5 |
+| 1 | 1 of 3 | 0 | 4 | 3 | 3 |
+| 2 | 1 of 1 | 4 | 0 | 3 | 4 |
+
+Fayolle et al. washed calcein-loaded DOPC/DOPA vesicles three times. The lumen-to-exterior fluorescence ratios were 39, 89 and 137 (reported uncertainty ±20%). The retained samples contained 40%, 26% and 16% of the starting lipid. The later exterior signals reached the microscope’s detection floor. These measurements support exterior clearance with appreciable material loss. Exact tracer closure would require independent amounts in the retained and discarded fractions. Lipid recovery alone does not determine how many vesicles survived. [Fayolle et al., Table 1 and Fig. 3](https://doi.org/10.1371/journal.pone.0192975) · [Measurement inputs](checks/data/vesicle_population_measurements.json)
+
+<a id="vesicle-shear-fission"></a>
+
+**Shear fission.** Assigning every membrane and lumen molecule to one daughter preserves each species count and the total membrane footprint. A parent with less membrane than the combined daughter minima must fail the floor test for every possible partition. Lean also proves the spherical volume gate and the free-energy identities for retaining all daughters or following one and booking its siblings as a sink. [Partition and floor proofs](CellsProofs/Chemistry/VesiclePopulation.lean#L57) · [Energy and volume proofs](CellsProofs/Chemistry/VesiclePopulation.lean#L99) · [Engine attempt](../src/cells/models/assembly_lineages_v2/division.py#L380)
+
+The compiled single lineage divided three times. Later parents with six and four lipids were each refused intact because two viable daughters required at least eight lipids. A separate population kept both daughters from each of two divisions and stopped before another draw when its slots filled. All five accepted divisions conserved the three species, kept the common bath unchanged and matched the independent work and sibling-sink calculations within 7.11 × 10⁻¹⁵ k_BT. Controls also exercised pre-draw stress and volume refusals and 48 heterogeneous partitions into two, three or four daughters. Across all three compiled worlds the largest ledger residual was 3.91 × 10⁻¹⁴ k_BT. The two engine test files and eight repository guards passed all 105 tests. [Compiled comparisons](checks/vesicle_population.py#L124) · [Partition and admission controls](checks/vesicle_population.py#L216)
+
+Deshpande et al. measured a slope of **0.87 ± 0.01** (reported SD, R² = 0.94) for combined daughter fluorescence against parent fluorescence in 78 successful mechanical divisions of giant liposomes. With the same linear calibration and zero background, a conservative split predicts **1.00**. The five Cells splits gave 1.00 for impermeant tracer counts. The authors estimated about 13% leakage at division. The optical assay did not independently recover that amount in the exterior, and the engine does not model the splitter optics. The discrepancy applies to the ideal signal prediction in this assay. [Deshpande et al., Fig. 4a](https://doi.org/10.1021/acsnano.7b08411) · [Signal proof](CellsProofs/Chemistry/VesiclePopulation.lean#L93) · [Measurement inputs](checks/data/vesicle_population_measurements.json)
+
+## 20 November 2026 · Exchange between vesicles and their bath
+
+<a id="vesicle-phase-exchange"></a>
+
+**Insertion and capture.** In `cells.assembly_lineages@2`, a lipid moves from the solution to the membrane. At fixed external number density, insertion velocity times area gives the area-limited rate coefficient. For diffusion-limited capture the coefficient is diffusivity times `4πR`. Doubling the area-equivalent radius therefore multiplies entry by **4** or **2**, respectively. For the reverse event the membrane footprint excludes the lipid about to leave. Lean proves that exchanging the two endpoints gives the same footprint. On an enabled pair the common geometry cancels, giving the forward-to-reverse rate ratio `exp(−ΔF + w)` with free energy and reservoir work in units of k_BT. [Size and common-footprint proofs](CellsProofs/Chemistry/VesicleExchange.lean#L23) · [Detailed balance](CellsProofs/Chemistry/VesicleExchange.lean#L60) · [Engine encounter calculation](../src/cells/models/assembly_lineages_v2/kernel.py#L327)
+
+On engine `3d3d9641932a52852727df7e4722e15ded245766`, eight compiled CPU configurations combined both encounter laws, both membrane counting conventions and either a finite or a held bath. We checked both directions against independent count, area and volume formulas. The largest relative rate error was 1.07 × 10⁻¹⁴. All 40 disabled directions had zero rate. Permeation could still fire below the membrane floor, where membrane-changing steps were blocked. Across 64 active forward/reverse pairs, the largest difference from the independently calculated free-energy change and reservoir work was 1.43 × 10⁻¹⁴ k_BT. Two 48-event finite trajectories exercised all four directions and conserved the lipid and solute counts at every saved row. [Compiled comparisons and reference formulas](checks/vesicle_exchange.py#L70)
+
+For PAzePC supplied as soluble monomers to POPC vesicles, Jin and Baumgart estimated an association constant of **0.0027 ± 0.0005 µM⁻¹ s⁻¹**, a release rate of **0.02 ± 0.01 s⁻¹**, and a leaflet-crossing rate of **0.0017 ± 0.0004 s⁻¹** (mean ± SEM, 11 vesicles). These are fractional membrane kinetics pooled across vesicles. Hentrich and Szostak measured faster filament elongation in larger oleate vesicles under the same micellar flow. Filament width affects how many lipids each micrometre of growth requires, and the data permit both linear and quadratic diameter dependence. Selecting an encounter law needs molecular uptake rates by radius at matched free-monomer concentration. [Jin and Baumgart, Table 1](https://doi.org/10.1039/D1SM00652E) · [Hentrich and Szostak, Fig. 2A](https://doi.org/10.1021/la503933x)
+
+<a id="vesicle-permeation"></a>
+
+**Neutral solute entry and washout.** Permeation into the lumen uses membrane area under either lipid-encounter convention. With a fixed ideal lumen and equal solution standard potentials, the exit rate per molecule is `P × area / volume`. A sphere using the same radius for area and volume gives `3P/r`. The associated well-mixed washout equation has an exponential solution. These fixed-volume assumptions matter for interpreting washout in a vesicle whose volume can change. [Drift and washout proofs](CellsProofs/Chemistry/VesicleExchange.lean#L80) · [Permeation law](../src/cells/models/assembly_lineages_v2/permeation.py#L8)
+
+Brändén et al. measured glycerol washout from tethered POPC liposomes at 22 °C. At 71 nm outer diameter the rate **1.75 ± 0.02 s⁻¹** fixes `P = 1.8375 × 10⁻⁸ m/s` using the authors' 4 nm bilayer thickness and 31.5 nm inner radius. Applying that permeability to the 93 nm liposomes (42.5 nm inner radius) predicts **1.297 s⁻¹** against **1.46 s⁻¹** measured. The compiled exit propensity per molecule gave the same result at lumen counts 1, 7 and 14 with an initially empty finite bath. This compares the predicted first-order coefficient. The larger preparation has no published uncertainty or trace. [Brändén et al., Fig. 3 and passive-diffusion results](https://doi.org/10.1016/j.bpj.2010.03.059) · [Calibration and held-out calculation](checks/vesicle_exchange.py#L227)
+
+Peterlin et al. measured radii of individual POPC vesicles in a 0.1 M urea bath. We digitized three pre-rupture traces from 20 to 80 seconds after each radius minimum. Multiplying the spherical volume gain per second by bath concentration estimates net urea entry if water equilibrates rapidly and trapped sucrose stays inside. The Cells column gives the forward-area prediction for equal exterior density, normalized to the smallest vesicle. Compiled controls used a common 1:1,000 length scale, which cancels in the ratios. The reading ranges move each endpoint by ±0.10 µm in opposite directions and are distinct from experimental confidence intervals. The bath temperature and per-trace uncertainty were unreported. [Peterlin et al., Fig. 2a](https://doi.org/10.1039/C1SM06670F) · [Digitized endpoints and assay conditions](checks/data/vesicle_exchange_measurements.json) · [Volume and rate calculation](checks/vesicle_exchange.py#L253)
+
+| Radius at minimum (µm) | Inferred uptake (fmol/s) | Figure-reading range (fmol/s) | Uptake ratio | Cells area ratio |
+| ---: | ---: | ---: | ---: | ---: |
+| 31.80 | 15.1 | 10.7–19.5 | 1.00 | 1.00 |
+| 43.66 | 24.0 | 15.9–32.1 | 1.59 | 1.89 |
+| 50.44 | 36.4 | 25.6–47.3 | 2.41 | 2.52 |
+
+<a id="shared-pool-inventory"></a>
+
+**Finite shared pool.** For any number of vesicles, Lean proves that a transfer between one vesicle and the common bath preserves the integer inventory of that species. The result extends to every finite sequence of transfers. When one vesicle takes the last available molecule, the other vesicles' uptake rates for that species fall to zero. Relabelling the slots preserves the exact sum of the rates with the pool-only reactions counted once. A fixed seed can select different individual events after a relabelling. [Count and rate proofs](CellsProofs/Chemistry/SharedPool.lean#L24) · [Population rates and count updates](../src/cells/models/assembly_lineages_v2/population.py#L187)
+
+Two compiled 96-event populations on the same engine revision each started with one exchangeable lipid and one permeant solute in a single bath, two vesicles and one empty slot. Before uptake the vesicles' lipid entry rates were 0.24 and 0.96 s⁻¹. Both fell to zero when the first vesicle took the lipid. All six slot permutations preserved the individual rates under relabelling and the 0.20 s⁻¹ pool-only reaction. We independently tracked both molecules through the signed event records. Both visited both vesicles, the unused slot stayed empty, and every row had exactly one copy of each molecule across the whole world. The largest energy closure residual was 1.07 × 10⁻¹⁴ k_BT. [Rate controls and trace reconstruction](checks/shared_pool.py#L49)
+
+Chen, Roberts and Szostak mixed equal amounts of lipid in osmotically swollen and isotonic oleate vesicles. Parallel runs with opposite fluorescent labels gave approximately **25% area gain** in the swollen population and **25% loss** in the isotonic population. With equal starting lipid inventories, a common area per lipid and zero net change of free lipid in solution, the donor loss predicts a 25% recipient gain. The experiment leaves the free lipid inventory unmeasured and gives no endpoint uncertainty. This is evidence of redistribution. Exact molecule closure is checked in Cells against its event counts. [Chen et al., Figs. 1B and 1D](https://doi.org/10.1126/science.1100757) · [Two-population balance](CellsProofs/Chemistry/SharedPool.lean#L58)
+
+<a id="shared-pool-declared-volume"></a>
+
+**Engine finding for the assembly owner.** A single shared-pool vesicle with a declared lumen of 10⁻²² L, one solute molecule in the bath, four structural lipids and a one-event limit passes parsing. Its sole possible first event is solute entry. When the population runner assembles the output rows it calls the osmotic volume and tension routines for each live slot unconditionally. The volume routine requests an external osmolarity and raises a `TypeError` because this fixed-volume world has none. The caller receives no records. The same fixed-volume permeation mode returns records in the single-lineage controls above. The isolated reproducer is `checks/shared_pool.py --declared-only` and exits with status 1 on the tested revision. [Reproducer](checks/shared_pool.py#L137) · [Population recorder](../src/cells/models/assembly_lineages_v2/population.py#L717) · [Osmotic constants](../src/cells/models/assembly_lineages_v2/lumen.py#L86)
+
+All 14 new theorems built with the standard Lean axioms. The 125 selected engine geometry, lumen, population and repository guard tests passed. The two drivers emit JSON. The shared-pool driver runs the ordinary controls with `--controls-only` and includes the fixed-volume failure by default.
+
+## 20 November 2026 · Bilayer area and osmotic vesicle volume
+
+<a id="bilayer-footprint"></a>
+
+`cells.bilayer_geometry@1` adds the area occupied by every lipid molecule and divides by two for the two leaflets. Lean proves that changing the size of the area unit while preserving each lipid’s footprint preserves the membrane area. It also bounds the area error from uncertain molecular footprints. For example, Kučerka et al. inferred **0.643 ± 0.013 nm² per POPC molecule at 30 °C** from neutron and X-ray scattering. With that measurement as input, a compiled 64-lipid control recorded 41,152 area quanta of 0.001 nm². The resulting bilayer area was 20.576 nm², with 0.416 nm² propagated uncertainty if all lipids share the reported footprint error. Its empty lumen had zero volume and tension. This calibrates the molecular input. [Area proofs](CellsProofs/Chemistry/Vesicle.lean#L25) · [Compiled calibration](checks/vesicle.py#L141) · [Kučerka et al., Table 1](https://doi.org/10.1016/j.bbamem.2011.07.022)
+
+<a id="osmotic-vesicle-volume"></a>
+
+For `cells.osmotic_lumen@1`, the volume is the smaller of the ideal osmotic volume and the volume of a sphere with the available membrane area. Lean proves this is the unique free-energy minimum for positive trapped solute and positive feasible volumes. Membrane tension is zero while surplus area is available. Once the vesicle reaches the cap, a further reduction of bath osmolarity keeps volume fixed and increases tension according to Laplace’s law. The proof reuses the existing ideal water-flow equilibrium. [Volume and tension proofs](CellsProofs/Chemistry/Vesicle.lean#L95) · [Engine volume and energy](../src/cells/models/assembly_lineages_v2/lumen.py#L114)
+
+On engine `9d03bd2bd907a3c48bb43679b8e05c392df9adac`, two compiled `cells.assembly_lineages@2` runs followed the same two-lipid vesicle for 96 events with one encoding using 32 times as many quanta. The molecule counts matched at all 98 stored rows in each run. Each trajectory visited six footprints, with 34 rows below the volume cap and 64 under tension. The largest relative volume error against a 70-digit radius-based calculation was 1.07 × 10⁻¹⁴. The largest tension error was 2.24 × 10⁻¹⁷ N/m and the largest osmotic free-energy error was 2.54 × 10⁻¹⁴ k_BT. [Full-world comparison and reference](checks/vesicle.py#L22)
+
+**Volume in measured vesicles.** Wolfisberg et al. labelled five successive observations of the same POPC vesicle during osmotic deflation. Reduced volume is the enclosed volume divided by the spherical volume at the measured area. We ran small fixed-count worlds at the corresponding solute densities, using the prepared 25 mM sucrose and, separately, using only the first observation to set the effective trapped solute. Under this model the reduced volumes transfer between sizes. [Figure 2B, printed labels](https://doi.org/10.1021/jacs.5c13925) · [Measurements and precision](checks/data/wolfisberg2025_vesicle.json) · [Compiled bath comparisons](checks/vesicle.py#L117)
+
+| Bath (mOsm/L) | Measured reduced volume | Cells from prepared sucrose | Cells calibrated at 26 mOsm/L |
+| ---: | ---: | ---: | ---: |
+| 26 | 0.98 | 0.962 | 0.980 (calibration) |
+| 32 | 0.69 | 0.781 | 0.796 |
+| 46 | 0.42 | 0.543 | 0.554 |
+| 58 | 0.30 | 0.431 | 0.439 |
+| 83 | 0.21 | 0.301 | 0.307 |
+
+The model predicts the direction of deflation and overestimates the volume at all four later steps, even after the initial calibration. The osmometer precision was ±2 mOsm/L. Figure 2B gives no reconstruction uncertainty for each point. The vesicle adhered weakly to a supported bilayer in 0.4% PEG. These five measurements describe a single vesicle in the study’s 21-vesicle analysis. [Wolfisberg et al., Figs. 2–3](https://doi.org/10.1021/jacs.5c13925)
+
+For swelling, Shibly et al. transferred aspirated DOPC vesicles from 98 mM into 96 and 95 mM glucose. A vesicle starting at its fixed-area cap predicts zero swelling. Using the first group’s measured 1.7% swelling to set a common volume reserve predicts **1.7%** in the second group, which swelled **2.6 ± 0.1%** (17 vesicles). This tests the assumption of a common reserve across groups. A separate rupture-rate experiment estimated **2.6 ± 0.1 mN/m** osmotic tension at an initial 1.9 mM difference. For an initially spherical inextensible membrane, the compiled calculation scaled to the reported 13.4 µm radius gives **31.56 mN/m**. Stretch and the aspirated geometry matter when applying the spherical cap to these experiments. The existing compliant-water comparison uses its own measured stiffness calibration. [Shibly et al., Fig. 2B and Table 1](https://doi.org/10.1016/j.bpj.2016.09.043) · [Experimental inputs](checks/data/shibly2016_swelling.json) · [Compliant-water result](claims/osmotic-water.md)
+
+<a id="vesicle-lysis-threshold"></a>
+
+**Engine finding for the assembly owner.** The choice of area unit can change whether a vesicle ruptures. The two worlds use the same lipid area, temperature, osmolarity, initial counts, seed, physical floor and lysis threshold. One uses 60 quanta of 10⁻¹⁹ m² per lipid. The other uses 1,920 quanta of 10⁻¹⁹/32 m² per lipid. The only possible first event removes one membrane lipid, leaving four membrane lipids and four trapped osmoles immediately before the rupture check. The 70-digit reference tension is **0.0008412963098275772 N/m**. Lean proves that both encodings give the same strict threshold decision. [Unit-invariance proof](CellsProofs/Chemistry/Vesicle.lean#L165) · [Log-space tension calculation](../src/cells/models/assembly_lineages_v2/lumen.py#L164) · [Compiled decision](../src/cells/models/assembly_lineages_v2/kernel.py#L340)
+
+| Threshold (N/m) | Reference | Engine, 60 quanta/lipid | Engine, 1,920 quanta/lipid |
+| ---: | --- | --- | --- |
+| 0.0008412963098275742 | Rupture | Ruptured | **Remained intact** |
+| 0.0008412963098275802 | Remain intact | **Ruptured** | Remained intact |
+
+The engine forms the spherical volume from separate logarithms of the quantum size and footprint. Its reported tensions differ by 1.45 × 10⁻¹⁷ N/m. The strict comparison turns that rounding difference into a different material outcome. Rupture releases the four lipids and four osmoles to the pool. Both encodings decided correctly with thresholds 1% above and below the reference. Computing physical area first and using the radius to obtain spherical volume gave the reference decision at both close thresholds in float64. The full driver exits with status 1 when a compiled outcome disagrees. With `--controls-only` it runs the trajectories, biological comparisons and the wider thresholds. [Reproducer](checks/vesicle.py#L222)
+
+All 16 new theorem declarations built with the standard axioms. The 121 selected geometry, lumen, registration and repository guard tests passed. [Lean module](CellsProofs/Chemistry/Vesicle.lean)
+
+## 20 November 2026 · Filling a restricted cleft from a held bath
+
+<a id="cleft-bath-fill"></a>
+
+When a membrane grows into a cleft of fixed width, both versions of `cells.restricted_cleft_lumen` fill the extra space with fluid from a held bath. Lean proves that the new concentration is between the two starting concentrations. The difference from bath concentration shrinks by exactly the fraction of original fluid in the final volume. Two successive fills from the same bath give the same concentration as one combined fill. In version 2, redistributing a parent patch and its original area between two daughters preserves the volume when both use the same split fraction. [Lean proofs](CellsProofs/Tissue/RestrictedLumen.lean#L18) · [Single-patch target](../src/cells/operators/restricted_lumen.py#L229) · [Sum over live patches](../src/cells/operators/restricted_lumen_v2.py#L201)
+
+Five compiled CPU controls on engine `d16976560e255eba8ff600068a326a0946e22f62` ran `resolved_pump_composite@1` around `resolved_pump_tissue@3`. Each used an isolated neutral tracer, a 2 µm gap and seven observations. With 4 mM tracer in the cleft and 1 mM in the bath, doubling the observed volume from 0.010 to 0.020 pL brought the tracer to **2.5 mM**. Version 1, version 2 and version 2 with a 60:40 patch split at 3 ms agreed. At 6 ms the observer includes the final half-step of growth. The material and energy accounts cover the 0.009 pL already filled. The driver checks both volumes and the amount supplied by the bath at every saved row. It also checks enrichment from a 4 mM bath and an equal-composition control. Over all controls, the largest concentration difference was 4.45 × 10⁻¹⁶ mM and the largest cumulative heat difference from the 75-digit reference was 1.05 × 10⁻¹⁷ pJ. [Fixtures and comparisons](checks/restricted_lumen.py#L31) · [Independent endpoint energy](checks/restricted_lumen.py#L70)
+
+**What tissue measurements constrain.** Spring and Hope reconstructed live mudpuppy gallbladder epithelium and assigned about 2,080 µm³ of shared intercellular space per cell. Combining this with the optically resolved lateral area of 3,540 ± 150 µm² per cell gives an effective full gap width of **1.18 µm** under the same half-volume convention as Cells. Dividing the reported 41.1 µm³/µm of interspace per border length by the mean epithelial height of 34.6 µm gives 1.19 µm. Both estimates use the same optical data and calibrate a resting width. [Spring and Hope, Tables I and III](https://doi.org/10.1085/jgp.73.3.287) · [Measurements and preparation](checks/data/cleft_measurements.json)
+
+In live CT26 spheroids, Dolega et al. measured a 0.9 ± 0.1 µm intercellular layer across 132 profiles. Tracers of 4.4 and 5.8 nm radius entered it, while tracers above 14.8 nm were largely excluded. In gallbladder, Ikonomov et al. detected no reliable differences between local ion concentrations and the bath under their measurement conditions. Neither study pairs changing cleft volume with a tracer dilution time series. The mixing time in a growing cleft and the heat released per fill remain open biological measurements. [Dolega et al., Appendix 1, Figs. 3–4](https://doi.org/10.7554/eLife.63258) · [Ikonomov et al., direct ion measurements](https://doi.org/10.1007/BF00583604)
+
+<a id="cleft-mixing-heat"></a>
+
+**Engine finding for the restricted-cleft owner.** Both versions refuse a valid first fill with a positive trace concentration. Lean proves that ideal mixing heat is strictly positive for unequal positive concentrations and equals chemical supply work plus pressure work minus the cleft's free-energy change. The engine evaluates a term using the fractional deviation from the mixed concentration. At extreme dilution the deviation rounds to exactly −1, so evaluating `(1 + e) * log1p(e)` produces NaN. The finite-heat guard then refuses the step at 1–2 ms. [Heat identity and sign](CellsProofs/Tissue/RestrictedLumen.lean#L90) · [Shared heat evaluator](../src/cells/operators/restricted_lumen.py#L242) · [Version 1 guard](../src/cells/operators/restricted_lumen.py#L329) · [Version 2 guard](../src/cells/operators/restricted_lumen_v2.py#L261)
+
+| Initial cleft tracer (mM) | Bath tracer (mM) | Small positive concentration ratio in the first fill | Reference heat in the first 0.001 pL fill (pJ) | Production result |
+| ---: | ---: | ---: | ---: | --- |
+| 1 | 2⁻⁶⁰ | 9.54 × 10⁻¹⁹ | 0.0024566041 | Both versions refused |
+| 2⁻⁶⁰ | 1 | 9.54 × 10⁻¹⁸ | 0.0061805353 | Both versions refused |
+
+For diagnosis, the driver reruns the same four definitions and substitutes heat only where production returned a nonfinite value. Computing the entropy term from the small positive concentration ratio let all four runs finish with their normal guards. Cumulative heat agreed with the independent reference to within 2.09 × 10⁻¹⁷ pJ. The concentrations are synthetic stress inputs. The full driver exits with status 1 while these refusals reproduce. Passing `--controls-only` runs the five ordinary cases. All 13 registered theorem declarations passed the axiom check. The 160 selected engine, reference and repository guard tests passed. [Reproducer and diagnostic](checks/restricted_lumen.py#L152)
+
+## 20 November 2026 · Changing the composition of a held bath
+
+<a id="scheduled-bath-exchange"></a>
+
+**A dose to the bath and a supply to the tissue measure different transfers.** In `cells.scheduled_bath_composition@1` each recipe sets a target relative to the original bath. Lean reuses the integer stoichiometry proof to show that any signed mixture of neutral formula units preserves the bath’s charge. For an equal KCl-for-NaCl swap it also proves that chloride and total ideal particle concentration stay fixed. For a sequence of events, the cumulative dose and the bath’s free-energy change each telescope to the difference between the final and initial states. Work delivered to tissue depends on *when* solute crosses. Lean proves that updating the work record at each change of bath potential gives the same result as summing signed supply at each interval’s own potential. [Lean proofs](CellsProofs/Tissue/BathSchedule.lean) · [Engine event map](../src/cells/operators/bath_schedule.py#L456) · [Reservoir work correction](../src/cells/operators/bath_schedule.py#L498)
+
+On engine `94327ec434ee49f543d2b2e046c6ddb2eaa5e902`, two compiled `resolved_pump_composite@1` worlds around `resolved_pump_tissue@3` connected a 1 pL held bath to a 1 pL finite pool. A neutral solute began at 0.9765625 µM in the bath and at 75% of that in the pool. Every 15.625 ms the bath switched to 2, 0.5, 1.5 and finally 1 times its starting concentration. Flow reversed during the schedule. At the end the net dose added to the bath was exactly zero. Its recorded energy change was within 5.21 × 10⁻¹⁸ pJ of zero. The tissue had received **1.3955 × 10⁻⁴ fmol**, and the reservoir work correction was **2.5987 × 10⁻⁴ pJ**. Omitting that work when the original bath returns would lose the contribution from supply at the intermediate concentrations. [Pulse and independent comparisons](checks/bath_schedule.py#L24)
+
+| Solver and step | Maximum finite-pool error (fmol) | Maximum work-correction error using the engine’s supply (pJ) | Maximum work-correction error using continuous reference supply (pJ) |
+| --- | ---: | ---: | ---: |
+| ARS(2,2,2), 0.977 ms | 4.46 × 10⁻¹⁰ | 1.70 × 10⁻²¹ | 1.03 × 10⁻⁹ |
+| RK4, 0.0610 ms | 2.17 × 10⁻¹⁹ | 5.43 × 10⁻²⁰ | 1.36 × 10⁻¹⁹ |
+
+The comparisons use 14 observations per solver, including the boundary and the first accepted row after each switch. The independent face solution predicts how much solute reaches the finite pool. A separate 50-digit calculation evaluates the dose energy and sums work by interval. [Face solution](../validation/fr10/references/faces.py#L150) · [Independent event records and work](../validation/fr10/references/records.py#L140)
+
+**A measured response to a potassium bath change.** Search verified the reversal voltages of the cromakalim-induced current in adult guinea-pig ventricular myocytes. Randle et al. replaced NaCl with an equal amount of KCl and measured reversal at four bath concentrations. A compiled Cells schedule reached all four concentrations. At each one we found the voltage giving zero flux through the engine’s K-selective membrane law at fixed intracellular K. The reported 33–35 °C range fixes the temperature scale. Using its midpoint, 34 °C, requires no fitted voltages. [Measured means and Fig. 3a](https://doi.org/10.1111/j.1476-5381.1991.tb09865.x) · [Experimental inputs and group sizes](checks/data/randle1991_potassium.json) · [Engine voltage scan](checks/bath_schedule.py#L148)
+
+| Extracellular K⁺ change (mM) | Observed reversal means (mV, ± SEM) | Difference of group means (mV) | Predicted shift (mV) |
+| --- | --- | ---: | ---: |
+| 1 → 2.5 | −131.5 ± 1.8 → −104.6 ± 6.9 | +26.9 | +24.25 |
+| 2.5 → 5.4 | −104.6 ± 6.9 → −87.2 ± 1.9 | +17.4 | +20.38 |
+| 5.4 → 12 | −87.2 ± 1.9 → −65.8 ± 2.2 | +21.4 | +21.14 |
+
+The four means include 4/9, 9/18, 12/14 and 7/9 recorded cells with clear reversal. These are differences between group means. For the 5.4 → 12 mM swap the prediction spans +21.07 to +21.20 mV across the reported temperature range. This tests the steady voltage response to the prepared solution. The experiment supplies no local bath exchange time or reservoir-work measurement. In a separate apparatus, Koh et al. measured about 30 ms between 10% and 90% of the local concentration change with a tracer electrode 200 µm from the manifold. The Cells boundary changes at the scheduled time. [Randle et al., methods and results](https://pmc.ncbi.nlm.nih.gov/articles/PMC1907795/) · [Koh et al., Fig. 5](https://doi.org/10.1016/j.jneumeth.2011.04.023)
+
+<a id="bath-recipe-order"></a>
+
+**Engine finding for the bath-schedule owner.** The order of entries in one `formula_units_mM` object can change a valid dose from its requested amount to zero. The host adds each unit’s per-species contribution to a float64 running total. If a small positive term falls between a large positive term and its exact negative, it can round away before the target is built. Both orders pass the definition checks and run to completion. The compiled event then faithfully applies the rounded target. Lean proves order independence for arbitrary permutations over the reals. [Target construction](../src/cells/operators/bath_schedule.py#L229) · [Order and residual proofs](CellsProofs/Tissue/BathSchedule.lean#L42) · [Full-world reproducer](checks/bath_schedule.py#L118)
+
+Each test uses three neutral formula units containing one, two or three copies of the same solute. In a 1 pL bath their contributions are `+A`, `+d` and `−A` in mM. Each input and product is exactly representable in float64. The expected dose is `d` fmol in either order.
+
+| Starting bath (mM) | Opposing terms ±A (mM) | Intended dose d (fmol) | Booked as +A, −A, +d (fmol) | Booked as +A, +d, −A (fmol) |
+| ---: | ---: | ---: | ---: | ---: |
+| 0.0009765625 | 24 | 0.00048828125 | 0.00048828125 | 0.00048828125 |
+| 0.0009765625 | 13,194,139,533,312 | 0.00048828125 | 0.00048828125 | **0** |
+| 2⁻⁴⁹ | 24 | 2⁻⁴⁹ | 2⁻⁴⁹ | **0** |
+
+The second row uses extreme cancelling inputs for an ordinary net dose. The third uses ±24 mM contributions to double a trace concentration. The exact rational sum and `math.fsum` both recover the intended result for these three-product examples. The full driver exits with status 1 on the ordering discrepancy. With `--controls-only` it checks the ordinary recipe, the four-switch bath and the K⁺ voltage shifts. All 12 new Lean theorem declarations built with the standard axioms. The 217 selected bath, reference and repository guard tests passed. [Reproducer](checks/bath_schedule.py)
+
+## 20 November 2026 · Regulated channel availability and turnover rates
+
+<a id="regulated-state-response"></a>
+
+**A channel under a ligand pulse.** Both versions of `cells.species_regulated_availability` use the same regulatory state. At a held input, the state opens at rate `a = k_on × input` and closes at rate `b = k_off`. Lean proves that it stays in [0, 1], approaches its plateau without overshoot, and gives the same endpoint when a constant dose is subdivided. After complete washout it decays exponentially. With a positive closing rate, the rise time constant at any held dose equals the washout time constant times one minus the plateau. The optional Hill check uses the upstream activation and inhibition monotonicity theorems to show that adding basal availability preserves both response directions. [State and timing proofs](CellsProofs/Transport/RegulatedAvailability.lean#L25) · [Optional upstream check](checks/hill/Response.lean#L46) · [Engine state update](../src/cells/operators/species_regulated_availability.py#L1121)
+
+Six compiled CPU runs on engine `e297e05feab76f1ef8295c83996b70de2ea09fa1` exercised `resolved_pump_composite@1` around `resolved_pump_tissue@3`. A neutral ligand started at 1 µM in a 1 pL cell, rose to 6.438 µM and washed down to 0.871 µM. Its regulatory state controlled a conducting K⁺ channel. At full step sizes of 1/512, 1/1024 and 1/2048 s, both versions followed the specified split update within 4.45 × 10⁻¹⁶ in state fraction. Against an independent continuous solution the maximum errors were 7.41 × 10⁻⁴, 1.83 × 10⁻⁴ and 4.55 × 10⁻⁵. Each halving cut the gate error about fourfold. The two versions also agreed on the final K⁺ transfer. In version 2 the recorded channel factor matched the state used for the inner step, and the public observation matched the refreshed state at the end. [Pulse, schedules and checks](checks/regulated_availability.py#L55) · [Independent integration](../validation/coupling/state_reference.py#L427)
+
+**Calcium-dependent opening of rat SK2.** Hirschberg et al. measured absolute open probability at four calcium doses in one excised patch from a Xenopus oocyte. Search checked the figure readings. A Hill curve fitted to 0.6, 0.8 and 5 µM gave a ceiling of 0.816, apparent half-saturation of 0.728 µM and exponent 2.58. At the held-out 1 µM dose it predicted **0.566** against a measured **0.526**. Moving each of the three training readings by ±0.01 gave 0.543–0.589 across the eight corner fits. This range describes sensitivity to reading the figure. The 5 µM solution also shifted the recording voltage by about 11 mV. [Hirschberg et al., Fig. 1B](https://pmc.ncbi.nlm.nih.gov/articles/PMC2217120/#F1) · [Digitized values and calibration](checks/data/hirschberg1998_sk2.json)
+
+In separate macropatches from the same expression system, six calcium jumps in two patches gave a washout time of **57.3 ± 11.1 ms** and a rise time of **4.1 ± 0.6 ms** (mean ± SD). We used the washout mean to fix the closing rate and held out the rise at 9.5 µM. If regulatory state equals absolute open probability and the patches share rates, the fitted plateau at that dose (0.815) requires a **10.63 ms** rise. The eight corner fits gave 9.76–11.34 ms at the same washout mean. Two Ca²⁺-buffered engine cells reproduced the calculated rise and washout to rounding, with a positive trace calcium concentration for the washout limit. The held-out rise is faster than this one-state prediction. Matched dose and timing measurements from the same patch would test the assumption that the parameters transfer. [Hirschberg et al., Fig. 13A](https://pmc.ncbi.nlm.nih.gov/articles/PMC2217120/#F13) · [Engine clamps and held-out predictions](checks/regulated_availability.py#L283)
+
+<a id="regulated-turnover-routing"></a>
+
+**Engine finding for the coupling and turnover owners.** Version 2 reads a routed production factor at the start of each target half-step. In the pulse run the second factor was recorded directly and both could be recovered from the reporter’s gross production. Reusing the first factor for the whole step missed up to 1.46 × 10⁻⁵ fmol at 1/512 s. Reading twice still gives first-order total production when the same turnover operator changes the regulator during each half-step. Both design notes describe these rate routes as second order. [How the composite supplies the rate](../src/cells/models/pump_composite.py#L1499) · [Turnover booking](../src/cells/operators/species_turnover.py#L246) · [Coupling design](../docs/INVENTORY_COUPLING_DESIGN.md#L690) · [Abundance design](../docs/ABUNDANCE_TO_FUNCTION_DESIGN.md#L254)
+
+The counterexample uses ordinary rates. A 1 pL cell starts at 1 mM regulator and produces it at 1 fmol/s for one second. The same operator produces a second species at a scheduled 1 fmol/s, multiplied by the activating Hill factor with exponent 1, half-saturation 1 mM and zero basal activity. The instantaneous reporter rate is `(1 + t)/(2 + t)` fmol/s with time in seconds. Its exact one-second gain is `1 − log(3/2) = 0.5945348919` fmol. All four runs were accepted. Each stored gain agreed with its gross booking and matched the sum of the two left-endpoint samples per step within 1.12 × 10⁻¹⁶ fmol. [Exact reference and refinement proof](CellsProofs/Transport/RegulatedAvailability.lean#L138) · [Four compiled worlds](checks/regulated_availability.py#L215)
+
+| Full step (s) | Reporter gain (fmol) | Absolute error (fmol) | Order from previous step size |
+| ---: | ---: | ---: | ---: |
+| 1/8 | 0.58928135 | 0.00525354 | — |
+| 1/16 | 0.59191942 | 0.00261547 | 1.006 |
+| 1/32 | 0.59322998 | 0.00130491 | 1.003 |
+| 1/64 | 0.59388314 | 0.00065175 | 1.002 |
+
+For target half-step width `h` over this one-second interval, Lean proves that halving every half-step increases the accumulated gain by **at least `h/36`** in the example’s units. That bound on successive grids rules out global second-order accuracy for this route. The design claim needs a qualification for sources changed by the target itself, or a centered evaluation for that case. The full driver emits the four gains and exits with status 1 on this revision. Its `--controls-only` run passes the pulse, factor timing and SK2 calculation. All 15 new core theorem declarations and the optional upstream check built on Lean 4.19. The 202 selected engine and guard tests passed. [Refinement bound](CellsProofs/Transport/RegulatedAvailability.lean#L160) · [Reproduce both comparisons](checks/regulated_availability.py)
+
+## 20 November 2026 · Production and first-order clearance
+
+<a id="scheduled-species-turnover"></a>
+
+`cells.scheduled_species_turnover@1` admits constant production `P` (fmol/s) in a cell and first-order clearance `k` (s⁻¹) in a cell or finite outside pool. Lean proves that the step solves `dn/dt = P − kn`, preserves a positive pool, and books nonnegative production and clearance. At steady state, the pool stays fixed while both gross totals increase by `P × time`. Subdividing an interval with unchanged rates gives the same final amount and total clearance in exact arithmetic. [Lean theorems](CellsProofs/Chemistry/SpeciesTurnover.lean) · [Engine bookings](../src/cells/operators/species_turnover.py#L246)
+
+**Ordinary rates.** On engine `54cb31957d48f488bddefcce7399ca4739dfbcea`, 144 cases on each of NumPy and compiled CPU agreed with a 60-digit calculation within 2.23 × 10⁻¹⁶ of the larger of the starting pool and gross production. Two `resolved_pump_composite@1` runs around `resolved_pump_tissue@3` used a 1 fmol cell and a 0.5 fmol finite outside pool. The cell spent half a second each at steady turnover, production alone, clearance alone and mixed rates. Two simultaneous cell clearances added. At the first switch the cell still held 1 fmol and had both produced and cleared 0.1875 fmol. Across all 26 stored rows at step sizes of 0.25 and 0.125 s, the largest error in any amount or gross booking was 1.12 × 10⁻¹⁶ fmol. Signed turnover work agreed with the change in ideal chemical free energy within 2.14 × 10⁻¹⁶ pJ. [Schedules and independent reference](checks/species_turnover.py#L62)
+
+**Engine finding for the turnover owner.** A one-second run began at 1 fmol with a target of 2 fmol and two half-steps. At `k = 2⁵³ s⁻¹` and `P = 2k` in the corresponding fmol/s units, the runner accepted 2 fmol and booked 0.995667 pJ. Doubling both rates left the target unchanged. The runner then accepted **1 fmol and zero work**. The exact endpoint is `2 − exp(−k × 1 s)` fmol, which rounds to 2 in both cases. At the higher rate, each half-step's rounded gross production and clearance are equal and the engine uses their difference to move the pool. The net identity `(P/k − n) × (1 − exp(−kh))` recovers the 1 fmol change in the same float64 format. The stress case uses extreme turnover rates and a well-resolved pool. The full comparison exits with status 1 on this discrepancy. The ordinary controls pass with `--controls-only`. [State update](../src/cells/operators/species_turnover.py#L256) · [Net-change proof](CellsProofs/Chemistry/SpeciesTurnover.lean#L63) · [Reproducer](checks/species_turnover.py#L150)
+
+**Measured protein clearance.** Dörrbaum et al. followed pulse-labeled GM130 and Lamin B1 in primary rat hippocampal neurons. We fitted each protein's day 0 and day 1 mean puncta count and held out the later dates from the same experiment. During the chase new labeled input is zero. The signal is a proxy for the surviving labeled cohort. These measurements leave total protein production and absolute pool size open. [Figure 2B and source workbook](https://elifesciences.org/articles/34202/figures#fig2) · [Per-group counts and provenance](checks/data/dorrbaum2018_protein_chase.json)
+
+| Protein and chase day | Observed puncta per neuron, mean ± cell SD | Predicted from days 0 and 1 | With measured background |
+| --- | ---: | ---: | ---: |
+| GM130, day 2 | 4.00 ± 1.47 | 4.99 | 5.04 |
+| GM130, day 3 | 3.31 ± 1.42 | 3.85 | 3.99 |
+| Lamin B1, day 3 | 18.20 ± 6.36 | 16.58 | 16.84 |
+| Lamin B1, day 7 | 11.62 ± 3.22 | 5.07 | 5.97 |
+
+The raw early fits give `k = 0.2593 day⁻¹` for GM130 and `0.2964 day⁻¹` for Lamin B1. Fixing the background to the methionine-only control and refitting the same two days still underpredicts late Lamin B1. The SDs describe the spread across individual cells at each time. The comparison uses a proportional readout for the labeled cohort and supplies no calibration from puncta to fmol. [Reproduce the two fits](checks/species_turnover.py#L192)
+
+**Independent physical check with positive input.** Riveros Lizana et al. metered CO₂ into four empty 980 L chambers for 60 minutes, then followed washout. The stated 20 L/min exhaust fixes `k = 20/980 min⁻¹`. The injected mixture and incoming air supply 0.33475 L CO₂/min during injection and 0.010 L/min afterward. These parameters and the 0.05 vol% baseline determine the predicted curve without fitting the outlet measurements. At the four actual sampling times nearest 30, 60, 90 and 120 minutes, the predicted mean outlet percentages were 0.793, 1.194, 0.672 and 0.387. The measured means were 0.826, 1.143, 0.644 and 0.318 vol%, with between-chamber SDs of 0.022, 0.033, 0.061 and 0.034. The calculation assumes that outlet concentration represents the well-mixed chamber. This calibration tests positive input and washout with known flow. The neuronal assay supplies the biological comparison. [Paper, Table 1 and Fig. 4](https://doi.org/10.3390/ani13162675) · [Measured outlet values and workbook locator](checks/data/lizana2023_chamber_recovery.json) · [Calculation at each chamber’s sampling time](checks/species_turnover.py#L222)
+
+## 20 November 2026 · Saturable uptake from a finite extracellular pool
+
+<a id="saturable-species-exchange"></a>
+
+The import route of `cells.scheduled_species_exchange@1` moves neutral solute from a finite extracellular pool into its receiving cell. For starting amount `n`, remaining amount `q`, saturation amount `b = K_M × volume` and dose `d = area × V_max × time`, the integrated equation is `b log(n/q) + n − q = d`. Lean proves it has one positive solution for positive `n` and `b` and nonnegative dose. The cell gains exactly what the pool loses. The engine’s Newton initializer and every real-arithmetic iterate stay on the same side of the root. The absolute equation residual in fmol bounds the error in the remaining amount. [Lean proofs](CellsProofs/Transport/SpeciesExchange.lean) · [Engine solver](../src/cells/operators/species_exchange.py#L305)
+
+On engine `b09b53f8583524a7c0b5526f3cd11ad4c33695ad`, 48 component cases on each of NumPy and compiled CPU covered three pool sizes, four saturation amounts per pool and four doses, including zero. The largest remaining-amount error against the 50-digit reference was 1.12 × 10⁻¹⁶ of the starting pool. In a separate near-depletion example with `b/n = 10⁻⁵` and `d/n = 0.9999`, the single eight-iteration solve refused. Dividing the same dose into 32 steps satisfied the guard and left 9.29514 × 10⁻⁸ fmol, within 2.75 × 10⁻¹⁷ fmol of the reference. [Reproduce all comparisons](checks/species_exchange.py) · [Independent Wright omega and high-precision reference](../validation/fr1/references/forms.py#L107)
+
+**Two cells drawing on one pool.** With the same `K_M`, the exact continuous model allocates uptake in proportion to the two route capacities. Each successive exact route also depletes the shared pool by its own dose. The engine’s symmetric route ordering introduces a finite-step error in how much goes to each cell. Six `resolved_pump_composite@1` runs around `resolved_pump_tissue@3` used a 1 fmol initial pool and a 1:3 capacity ratio. After 0.5 s the exact pool was 0.16153054 fmol and cell 0’s exact gain was 0.20961737 fmol. Both route orders reproduced the pool within 1.39 × 10⁻¹⁶ fmol across all stored rows. Summed route work agreed with the endpoint chemical energy change to 1.06 × 10⁻¹⁵ pJ. [Ranked route stages](../src/cells/operators/species_exchange.py#L399)
+
+| Steps over 0.5 s | Cell 0 gain error when its route runs first (fmol) | Cell 0 gain error when its route runs second (fmol) |
+| ---: | ---: | ---: |
+| 2 | −3.47 × 10⁻⁴ | +2.49 × 10⁻⁴ |
+| 4 | −8.59 × 10⁻⁵ | +6.14 × 10⁻⁵ |
+| 8 | −2.14 × 10⁻⁵ | +1.53 × 10⁻⁵ |
+
+**Float64 at extreme depletion.** A one-step closed-pair test started with 1 fmol outside and progressively increased the dose. At a target of 6.3051 × 10⁻¹⁶ fmol remaining, the accepted world stored 6.6613 × 10⁻¹⁶ fmol. That is 5.65% high relative to the remainder and 3.56 × 10⁻¹⁷ fmol high in absolute terms. At a target of 3.1391 × 10⁻¹⁷ fmol both scalar half-step solves converged. The stored trial rounded to zero and the runner refused it. Near exhaustion, adjacent representable changes to this 1 fmol anchor are 1.1102 × 10⁻¹⁶ fmol apart. The scalar solver checks its logarithmic residual and the operator separately checks positivity after booking. [Stored amount and guard](../src/cells/operators/species_exchange.py#L363)
+
+**Measured initial uptake.** Search located the zero-trans 3-O-methylglucose series in initially sugar-depleted human red cells. Using the 0.4 and 5 mM points for calibration gave `K_M = 1.19 mM` and a maximum rate of 151.0 µmol/L/min. The paper’s all-dose estimates were 1.4 ± 0.2 mM and 161 ± 10 µmol/L/min. The predictions below are the zero-duration rate of the actual Cells uptake kernel. The experiment used 30 s uptake on ice. [Sage and Carruthers, Fig. 2A](https://doi.org/10.1152/ajpcell.00044.2014) · [Primary figure](https://cdn.ncbi.nlm.nih.gov/pmc/blobs/e148/4024712/0ccab68c1842/zh00091474890002.jpg) · [Digitized inputs](checks/data/sage2014_zero_trans.json)
+
+| Held-out concentration (mM) | Measured rate ± SE (µmol/L/min) | Predicted rate (µmol/L/min) |
+| ---: | ---: | ---: |
+| 0.1 | 11, error bar unresolved | 11.7 |
+| 0.8 | 60 ± 4 | 60.7 |
+| 1.0 | 60 ± 8 | 69.0 |
+| 3.0 | 117 ± 5 | 108.1 |
+
+The four points were held out of this two-point fit within one study. The error bars are from three independent experiments performed in triplicate. Figure-reading precision is about ±1 µmol/L/min and ±0.02 mM. At 3 mM, varying both calibration rates by one plotted SE gives predictions from 100.8 to 115.5 µmol/L/min. This is a calibration sensitivity range. The volume underlying the published rate unit is unspecified. The series tests initial concentration dependence. Later red-cell equilibration, reverse transport and a measured finite-bath depletion trajectory remain outside this comparison.
+
+All 12 new theorem declarations build with the standard Lean axioms. The 106 exchange and repository guard tests passed. Test collection returned the same 20,556 IDs and the same five errors from unavailable archived inputs before and after this change.
+
+## 20 November 2026 · Site occupancy, electrode pulses and mixed-ion reversal
+
+The comparisons below ran on CPU in float64 with Cells main at `b9d6452dff1cd0a1d5d3664e0a81b00ce988bfbc`. The two operators ran in `resolved_pump_composite@1` around `resolved_pump_tissue@3`. The mixed-ion membrane ran in `resolved_pump_tissue@3`.
+
+<a id="site-occupancy-stages"></a>
+
+**Two populations sharing a finite ligand pool.** Each site is free or bound. Binding consumes free ligand, release returns it, and internalisation delivers cargo to the cell and frees the site. Lean proves that an admitted SSPRK(3,3) half-step preserves each population’s capacity and keeps both counts nonnegative. The stage limit is ½ on the total fractional loss from each site or pool. In exact arithmetic a pool starting at `y > 0` retains at least `29y/48` at the end of the half-step. The proof allows gains to depend on the other pools and sites. [Lean proof](CellsProofs/Chemistry/SiteOccupancy.lean) · [Engine stages and guard](../src/cells/operators/site_occupancy.py#L812) · [Reproduce](checks/site_occupancy.py)
+
+In a 40 ms `resolved_pump_composite@1` run, both populations gained bound ligand while the first also delivered cargo into the cell. Free plus bound matched capacity on every stored row, and the largest discrepancy in total ligand across the outside pool, sites and cell was 2.17 × 10⁻¹⁹ fmol. Halving the step from 5 to 2.5 ms reduced maximum final error against an independent DOP853 solution from 5.59 × 10⁻⁹ to 6.77 × 10⁻¹⁰ fmol, a factor of 8.26. In a separate competition case, each population alone passed with a load of 0.300. Together they reached 0.600 and the operator refused that half-step.
+
+<a id="electrode-pulse-ledgers"></a>
+
+**Electrode charge and work.** An electrode delivers charge `Ih × Σf`, where the carrier fractions are `f`. Lean proves equality to `Ih` at exact normalization and bounds the relative discrepancy by the fraction-sum tolerance for either polarity. In a one-cell, one-patch world held against a +25 mV bath, the test applies +1 pA for 2 ms followed by −1 pA for 2 ms, with passive current and pumps closed. It checks each supplied and removed species, the opposite image charge on the clamp, and the source and clamp work against a 60-digit ideal-solution and capacitor calculation. For the nominal 0.4912/0.5088 mixture, the booked charge was +2 fC on the first pulse, clamp work was −5.0000 × 10⁻⁵ pJ and source work was −3.34077 × 10⁻⁵ pJ. The reverse pulse undid the signed work and charge. The half-and-half control also passed. [Lean proof](CellsProofs/Tissue/CurrentInjection.lean) · [Engine booking](../src/cells/operators/current_injection.py#L168) · [Reproduce](checks/current_injection.py)
+
+**Engine contract detail for review.** The parser admits a fraction sum within 10⁻⁹ of one and uses the declared values directly. With 0.4912 and 0.5088000005 the runner accepted the pulse and booked 2.000000001 fC for the nominal 2 fC. The ion and work ledgers agreed with the actual delivery. The exact-charge wording in the module would be accurate with an explicit normalization condition. [Definition check](../src/cells/operators/current_injection.py#L107)
+
+<a id="mixed-membrane-reversal"></a>
+
+**One Na⁺/K⁺/Cl⁻ membrane.** For fixed concentrations and permeabilities, Lean factors the sum of the three signed currents and proves that its unique analytic zero is the GHK voltage. Chloride contributes its inside concentration to the numerator and its outside concentration to the denominator. The existing single-ion proof supplies the Bernoulli identity. The engine’s real-arithmetic evaluator agrees at zero and outside its near-zero polynomial interval. The table includes a numerical test inside that interval. Outward electrical current is positive. [Lean proof](CellsProofs/Transport/MixedMembrane.lean) · [Cells membrane-current sum](../src/cells/models/surface_pump_v3.py#L874) · [Driver and independent current calculation](checks/mixed_membrane.py)
+
+| Relative permeabilities Na/K/Cl | Analytic reversal (mV) | Outward Na (pA) | Outward K (pA) | Outward Cl (pA) |
+| --- | ---: | ---: | ---: | ---: |
+| 0.1 / 1 / 0.4 | −47.168248 | −0.557437 | +0.491856 | +0.065581 |
+| 4 / 1 / 0.5 | +20.168659 | −5.327922 | +3.505212 | +1.822710 |
+| 2 / 1 / 1 | 0 | −4.672666 | +2.336333 | +2.336333 |
+| 2.00002 / 1 / 1 | +0.000210 | −4.672690 | +2.336344 | +2.336346 |
+
+The roots of the actual `resolved_pump_tissue@3` current agreed with the formula within 2 × 10⁻¹⁵ V. The maximum absolute total at the four analytic roots was 1.68 × 10⁻²⁷ A. All three currents were also checked at ±5 mV around each root. In the first case their signed material transfers through two compiled steps agreed with the initial directions and magnitudes.
+
+Search verified resting squid-axon measurements against the original scan of Hodgkin and Katz. For two potassium-enriched artificial seawater solutions (B and C) and a diluted seawater solution (E), the Cells reversals shifted by **+2.10, +4.03 and −1.58 mV**. The observed mean shifts were **+2, +4 and −2 mV**, converted to inside-minus-outside. We used the authors’ resting permeability ratios and a temperature of 21 °C from their Table 3. Table 7 gives rounded mean shifts without row-specific temperatures or uncertainties. The authors selected those ratios using their observations. This reconstructs a measured voltage response and leaves the three separate biological currents open. [Original Table 7](https://cdn.ncbi.nlm.nih.gov/pmc/blobs/5941/1392331/376be7ea1f34/jphysiol01475-0080.png) · [Hodgkin and Katz](https://doi.org/10.1113/jphysiol.1949.sp004310) · [Inputs and sign convention](checks/data/hodgkin_katz1949_rest.json)
+
+<a id="smct1-independent-propionate"></a>
+
+**Independent human SMCT1 dose response.** Search found a second propionate-current series at −50 mV. Using the same two nominal calibration doses (100 and 1,000 µM) on Paroder’s own current scale gives an amplitude of 38.20 nA and half-saturation of 140.2 µM. At the nearest measured dose to 250 µM, nominally 200 µM, the prediction was **22.45 nA** and the symbol read **22.6 nA**. Varying the two calibration readings by ±0.6 nA gave 21.77–23.13 nA at fixed nominal doses. The horizontal reading uncertainty at low doses is about ±15 µM. The figure caption gives n = 3 for the kinetic analysis. How the symbols aggregate the recordings and the pointwise uncertainty are unspecified. Paroder reports half-saturation of 162 ± 26 µM. Separately, Coady reports 128 ± 4 µM (SEM, n = 9) at −50 mV. These measurements support saturation on a similar concentration scale. A direct replication of Miyauchi’s 17.8 nA residual requires a measured 250 µM point with biological uncertainty. [Paroder et al., Fig. 3C](https://doi.org/10.1073/pnas.0602365103) · [Digitized symbols](checks/data/paroder2006_propionate.json) · [Coady et al., Fig. 3A](https://doi.org/10.1113/jphysiol.2004.063859) · [Miyauchi et al., Fig. 2A](https://doi.org/10.1074/jbc.C400059200)
+
+<a id="six-numerical-retests"></a>
+
+**Retest of the six recorded numerical failures on main.** The original inputs and earlier results remain in their pinned claim records. Each row below includes the ordinary controls and the original stress case.
+
+| Claim | Controls | Stress case on main |
+| --- | --- | --- |
+| [Inward rectifier](checks/inward_rectifier.py) | 360 current and derivative comparisons passed | **Passed.** All three equivalent normalizations delivered 0.5520533 pA and the same one-step transfer and heat after the [owner’s fix](https://github.com/Eidosoma/Cells/commit/21592c3b). NumPy emitted an overflow warning when testing which evaluation branch to use. |
+| [Membrane insertion, both versions](checks/membrane_insertion.py) | Six ordinary capacitance ratios passed per version | At ΔC/C = 1.7 × 10¹⁶ both refused. The expected heat was +0.0516031 pJ and the booking gave −0.0430370 pJ. Substituting heat alone still failed the electrode ledger. Substituting heat and image charge passed. |
+| [GARD pair heat](checks/gard_catalysis.py) | Ordinary rate and replay controls passed | Both high-contrast self-catalysis cases still refused. The larger reported 0.693147 kT for an exact zero heat. |
+| [Assembly transition state](checks/assembly_kinetics.py) | Both ordinary clocks passed | Opposed contacts still gave zero events at an expected rate of 2.06115 s⁻¹. The other stress case kept four events with a relative rate error of 2.00 × 10⁻⁸. |
+| [Potassium–anion symport](checks/potassium_anion_symport.py) | Ordinary refinement and finite-product controls passed | The earlier wrong-direction step remained guarded. At the 2⁻⁵¹⁰ outside scale, affinity and heat still overflowed. |
+| [Eight-state sodium–anion transporter](checks/sodium_anion_diagram.py) | The stationary solve, dose and tissue checks passed | At 10⁻³⁰² fmol/s capacity, edge and reverse diagnostics remained 100 times their reference values in NumPy and compiled CPU. The material rate agreed. |
+
+The 12 new public theorems build with warnings as errors. The operator, passive-route and repository guard tests passed (165 tests). Collection on the shared checkout rose from 20,555 to 20,556 tests when the engine lane landed its cytochrome-c test. Both collections reported the same five missing archived inputs.
+
+## 20 November 2026 · Eight-state sodium–anion cotransport
+
+**Engine finding for the transporter owner.** On revision `b9da010327ce52327feb86e07e76d823e2202d96`, the diagnostic probe overreported both edge turnover and reverse cycle flux by a factor of 100 at a positive capacity of 10⁻³⁰² fmol/s and full availability. The mode rate and the anion row agreed with the independent 50-digit master equation. The probe floors capacity × availability at 10⁻³⁰⁰ when counting carriers for these two diagnostic fields. The mode evaluator takes the logs of both positive factors separately. The discrepancy reproduced in NumPy and compiled CPU float64, with all four reported rates above the smallest normal float64 value. This affected the readout at an extreme capacity. [Probe normalization](../src/cells/kinds/transporter.py#L2288) · [Mode normalization](../src/cells/kinds/transporter.py#L1776) · [Reproducer](checks/sodium_anion_diagram.py#L227)
+
+| Declared capacity (fmol/s) | Material cycle flux (fmol/s) | First edge flux in probe (fmol/s) | Probe consistency |
+| ---: | ---: | ---: | --- |
+| 10⁻²⁹⁹ | 7.09691 × 10⁻³⁰² | 7.09691 × 10⁻³⁰² | Passed |
+| 10⁻³⁰⁰ | 7.09691 × 10⁻³⁰³ | 7.09691 × 10⁻³⁰³ | Passed |
+| 10⁻³⁰² | 7.09691 × 10⁻³⁰⁵ | 7.09691 × 10⁻³⁰³ | Failed |
+| 0 | 0 | 0 | Passed |
+
+**Lean proofs.** On a ring, deleting any one transition leaves a tree directed towards a chosen carrier state. Normalizing the sums of tree weights gives positive state occupancies that sum to one. Every edge carries the same net flux. With exact detailed balance, the eight-state flux equals the host’s thermodynamic cycle rate and has the same stall voltage as the two-sodium factored carrier. The proof also gives the residual when declared rates satisfy detailed balance only to a tolerance. At stall the slope of net flux with respect to dimensionless voltage is minus the forward one-way flux. The 12 new theorems use the standard Lean axioms. [Proofs](CellsProofs/Transport/SodiumAnionDiagram.lean) · [Eight ordered transitions](../src/cells/laws/cycles/na2_anion_symport_diagram.py#L67) · [Earlier two-sodium result](claims/sodium-anion-symport.md)
+
+**Engine comparison.** Sixty compiled CPU cases covered two allocations of the electrical work, both membrane orientations, five voltages around stall and three route availabilities. Against a 50-digit stationary master equation, the maximum absolute occupancy error was 1.22 × 10⁻¹⁵ and the maximum relative stall-slope error was 3.33 × 10⁻¹⁵. Eighteen further dose cases at −50 and −150 mV spanned both sides of half-saturation and matched the proven response within 6.3 × 10⁻¹⁵ relative. A two-step `resolved_pump_tissue@3` run imported 7.38045 × 10⁻¹⁰ fmol of sodium and 3.69022 × 10⁻¹⁰ fmol of anion, booked 4.29798 × 10⁻⁹ pJ of heat, and reported zero global charge residual. [Driver and inputs](checks/sodium_anion_diagram.py) · [Independent master-equation solve](../tests/unit/test_cycle_forms.py#L314)
+
+**Biological dose response from Search.** Only one forward transition binds external anion. For the detailed-balanced cycle at fixed voltage, sodium and internal substrate, subtracting the zero-substrate limiting current gives exactly `A x / (K + x)` for positive external substrate concentration x. In a representative human SMCT1 oocyte recording, we used the 100 and 1,000 µM propionate points at −50 mV to fit A = 395.5 nA and K = 129.9 µM. The paper reports 127 ± 14 µM. These are effective parameters of a concentration curve. The microscopic rate constants remain undetermined. [Miyauchi et al., Fig. 2A](https://doi.org/10.1074/jbc.C400059200) · [Original figure](https://ars.els-cdn.com/content/image/1-s2.0-S0021925819639839-gr2.jpg) · [Digitized inputs](checks/data/miyauchi2004_propionate.json)
+
+| Held-out propionate (µM) | Observed inward magnitude (nA) | Predicted (nA) | Prediction range from reading the two calibration points to ±5 nA |
+| ---: | ---: | ---: | ---: |
+| 50 | 97 | 109.9 | 105.1–114.9 |
+| 250 | 278 | 260.2 | 254.6–265.9 |
+| 500 | 324 | 313.9 | 308.5–319.3 |
+| 2,500 | 371 | 375.9 | 368.3–383.8 |
+
+At 250 µM the 17.8 nA discrepancy exceeded the estimated reading precision even after varying both calibration points. The series represents one oocyte with no pointwise biological uncertainties. A separate lactate experiment gave about −0.68 and −1.40 µA at −50 and −150 mV after subtraction of the substrate-free trace. Its 2.06-fold change is a reference for voltage kinetics. The internal activities and transition parameters needed for a preparation-specific prediction remain open. [Coady et al., Fig. 5](https://pmc.ncbi.nlm.nih.gov/articles/PMC1965447/#fig5) · [Voltage inputs](checks/data/coady2007_lactate_voltage.json)
+
+The full comparison took 19 seconds on four CPU cores and exits with status 1 for the diagnostic discrepancy. Its ordinary controls passed separately. The 35 diagram, cycle-form and law-registry tests and the 82 repository guard tests passed. Before and after collection returned the same 20,555 test IDs and the same five errors from unavailable archived inputs.
+
+## 20 November 2026 · Charged constant-field permeation
+
+**Lean and engine.** Nine theorems cover the signed-valence Nernst reversal and nonnegative heat for the analytic flux, the exact change in flux when either compartment gains material at fixed voltage, and the voltage response of the engine’s two-branch evaluator. With equal concentrations its electrical current is linear in voltage. With unequal concentrations its slope lies between the lower and higher concentrations times the common factor APm(zF)²/(RT). The derivative proof excludes the two branch-switch voltages. The finite-interval bound applies when the interval stays within one branch. All nine theorems use the standard Lean axioms. [Proofs](CellsProofs/Transport/ChargedPermeation.lean) · [Engine law](../src/cells/laws/routes/constant_field_permeation.py#L56) · [Earlier near-reversal analysis](claims/proton-leak.md)
+
+At engine revision `239ab8cd23ecd41048fb89404bd5ba17e89c35c4`, 360 CPU float64 component evaluations covered valences −2, −1, +1 and +2, closed and partly open routes, both sides of reversal and both sides of the Bernoulli switch. Against 60-digit flux, heat and derivatives, maximum absolute errors were 1.14 × 10⁻¹³ fmol/s, 3.64 × 10⁻¹² pJ/s and 3.02 × 10⁻¹⁸ S in differential conductance. The engine’s maximum-concentration conductance and its two fixed-voltage material coefficients also matched the reference. [Driver and inputs](checks/charged_permeation.py) · [Host stage terms](../src/cells/kinds/passive_routes.py#L780)
+
+**Tissue comparison.** A single permeable contact joined a finite cell and outside compartment in `resolved_pump_tissue@3`. One signed transfer changes both amounts and the capacitor voltage. DOP853 and Radau integrated this independent two-variable system for transfer and heat. In an initial 32-step anion run the heat error was 0.0543% against a 0.05% comparison tolerance. At 64 and 128 steps the original tolerance passed for both valences. Halving the step reduced the errors in transfer, heat and final voltage by factors of 4.03–4.05. Both amount ledgers matched the signed transfer, and the largest reported global charge residual was 4.34 × 10⁻³¹ C. The four-run comparison took 26 seconds on four CPU cores. [Finite-pair fixture](../tests/unit/test_passive_routes_kind.py#L294) · [Reference and ledger checks](checks/charged_permeation.py)
+
+| Ion valence | Inward transfer at 8 ms, engine / reference (fmol) | Heat, engine / reference (pJ) | Final voltage, engine / reference (mV) |
+| --- | ---: | ---: | ---: |
+| −1 | −9.43689 × 10⁻⁶ / −9.43696 × 10⁻⁶ | 4.23061 × 10⁻⁵ / 4.23075 × 10⁻⁵ | −40.87419 / −40.87412 |
+| +2 | 6.43988 × 10⁻⁶ / 6.43997 × 10⁻⁶ | 3.33351 × 10⁻⁵ / 3.33371 × 10⁻⁵ | −37.55232 / −37.55215 |
+
+**Biological measurements from Search.** We fitted one permeability per preparation at one voltage, then evaluated the same law at a second voltage. These are retrospective checks within each experiment.
+
+| Preparation | Calibration | Held-out observation | Cells prediction |
+| --- | --- | --- | --- |
+| DIDS-treated human red cells, chloride, 23 °C | −3.60 ± 0.37 mA/g Hb at −103 ± 6 mV. The fitted rate was 4.38 × 10⁻⁵ s⁻¹ per unit cell-water volume. | −1.17 ± 0.13 mA/g Hb at −59 ± 8 mV (mean ± plotted SD, five donor series) | −1.97 mA/g Hb. Varying the digitized input means by their reading precision gave −2.09 to −1.86 mA/g Hb. [Freedman and Novak, Figs. 5–6 and Table I](https://doi.org/10.1085/jgp.109.2.201) · [Inputs](checks/data/freedman1997_chloride.json) |
+| Voltage-clamped planar bilayer, potassium, 150/15 mM KCl, same light state | +44.5 nA at +110 mV | Approximately −13.5 nA at −110 mV. Interpolated reversal −59.8 mV. | −3.84 nA and −59.16 mV at an assumed 25 °C. At 20–30 °C the predicted current spans −3.88 to −3.80 nA. [Pfeffermann et al., Fig. 2c](https://doi.org/10.1039/D5NR04234H) · [Inputs](checks/data/pfeffermann2026_potassium.json) |
+
+The red-cell current was inferred from shrinkage and the voltage from a parallel pH assay. The concentration ratio 150/101 limits the constant-permeability local slope ratio to 1.49 in the smooth branches. The ratio of the authors’ reported mean slope conductances was 3.67. Donor-level covariance is unavailable. The bilayer used commanded voltages and recorded currents directly. We estimate a figure-reading precision of about 1 nA. The measurement temperature and point uncertainties are unspecified. The potassium reversal agrees closely, while both held-out current magnitudes differ from the fixed-permeability predictions. Neither study measures the route heat. [Chloride study](https://doi.org/10.1085/jgp.109.2.201) · [Potassium study](https://doi.org/10.1039/D5NR04234H)
+
+All 26 passive-route and law-registry tests and 82 repository guard tests passed. Before and after collection returned the same 20,555 test IDs and the same five errors from unavailable archived inputs.
+
 ## 20 November 2026 · Osmotic water and potassium–anion transport
 
 **The earlier wrong-direction step is now refused.** On engine revision `93fc8c2cd217dbac9c2f6381d201f5acdb020265`, the original 10 ms fixed-volume reproducer gave a potassium–anion step bound of 3.761 against the limit of 1. The same step with water enabled was also refused by the cotransporter. The earlier bound was 0.221. The 32- and 64-step controls completed in both worlds. The separate component check still produced infinite affinity and heat at the extreme 2⁻⁵¹⁰ mM input, with finite 60-digit reference values. [Original comparison](#19-november-2026--potassium-and-anion-cotransport) · [Current finite-outside bound and its scope](../src/cells/operators/k_anion_symport.py#L173) · [Fixed-volume reproducer](checks/potassium_anion_symport.py)

@@ -1,26 +1,26 @@
 # Cells proofs
 
-Browse Cells engine laws by scientific topic. Each claim links its Lean proofs, tested engine code and biological measurements. [Current law and operator coverage](COVERAGE.md) · [November 19 review of 30 laws and their biological evidence](PROGRESS.md#19-november-2026--law-and-evidence-review)
+Browse Cells engine laws by scientific topic. Each claim links its Lean proofs, tested engine code and biological measurements. [Current law and operator coverage](COVERAGE.md) · [Latest comparisons and engine findings](PROGRESS.md)
 
 ## Proof index
 
 <!-- generated: claims-index -->
 
-Direct Lean claims cover [30 of 32 laws](COVERAGE.md#registered-laws) and [5 of 24 operators](COVERAGE.md#registered-operators).
+Direct Lean claims cover [44 of 44 laws](COVERAGE.md#registered-laws) and [26 of 26 operators](COVERAGE.md#registered-operators).
 
-| Category | Claims | Lean proved | Numerical checks | Claims with biological evidence |
+| Category | Registered laws with proof | Claims with proof | Numerical checks | Claims with biological evidence |
 | --- | ---: | ---: | --- | ---: |
-| [Membrane transport and osmosis](COVERAGE.md#category-membrane-transport) | 3 | 3 | 3 checked | 3 |
-| [Ion channels and junctions](COVERAGE.md#category-channels-and-junctions) | 8 | 8 | 7 checked · 1 failed | 8 |
-| [Pumps and cotransport](COVERAGE.md#category-pumps-and-cotransport) | 4 | 4 | 3 checked · 1 failed | 4 |
-| [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 3 | 3 | 3 checked | 3 |
-| [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 8 | 8 | 6 checked · 2 failed | 6 |
-| [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 6 | 6 | 5 checked · 1 failed | 6 |
-| [Cell physiology](COVERAGE.md#category-cell-physiology) | 1 | 0 | 1 checked | 1 |
+| [Membrane transport and osmosis](COVERAGE.md#category-membrane-transport) | 5 of 5 | 8 of 8 | 8 checked | 8 |
+| [Ion channels and junctions](COVERAGE.md#category-channels-and-junctions) | 14 of 14 | 11 of 11 | 10 checked · 1 failed | 10 |
+| [Pumps and cotransport](COVERAGE.md#category-pumps-and-cotransport) | 13 of 13 | 7 of 7 | 7 checked | 7 |
+| [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 1 of 1 | 6 of 6 | 4 checked · 2 failed | 4 |
+| [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 10 of 10 | 16 of 16 | 12 checked · 4 failed | 14 |
+| [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 1 of 1 | 17 of 17 | 14 checked · 3 failed | 13 |
+| [Cell physiology](COVERAGE.md#category-cell-physiology) | — | 3 of 3 | 3 checked | 3 |
 
 <!-- /generated -->
 
-Each category opens its detailed claim table on GitHub. The last column above counts claims with a recorded measurement or literature finding, including partial evidence. Each numerical result applies to the cases in its linked record. [Engine law coverage](COVERAGE.md) · [Design notes](ENGINE_LAW_VERIFICATION.md) · [Voltage pilot closeout](../reports/BIO003_PILOT_CLOSEOUT.md)
+Each category opens its detailed claim table on GitHub, including registered laws still awaiting a proof. A single claim can cover several laws. The last column counts claims with a recorded measurement or literature finding, including partial evidence. Each numerical result applies to the cases in its linked record. [All registered laws](COVERAGE.md#registered-laws) · [Design notes](ENGINE_LAW_VERIFICATION.md) · [Voltage pilot closeout](../reports/BIO003_PILOT_CLOSEOUT.md)
 
 ## Biological evidence
 
@@ -29,6 +29,8 @@ The catalog gives each measurement, its primary source and the part of the law i
 ## Maintaining the claims
 
 Edit the claims register. A stable `id` gives each claim its note under `claims/`. Set `category` to a key from the register’s `categories` map. The key keeps the section link stable when its display title changes. In `formal.theorems`, map fully qualified Lean names to their source files. Use `uses` to link claims that build on earlier proofs. [Editable register](claims.json) · [JSON Schema](claims.schema.json)
+
+Laws inherit the topic of their direct proofs. Use `law_categories` to put a law awaiting its first proof in the right section, or to choose its primary topic when proofs span several categories. Newly registered laws awaiting classification appear together in the overview.
 
 In `formal.about`, list the canonical registry IDs whose law or operator property the theorem establishes. General composition and accounting theorems can leave this empty. In `numerical.comparisons`, list the comparison IDs for the claim. Each comparison names the models, laws and operators it exercised. For engine runs, `engine_revision` identifies the code that ran. The `record_revision` pins the comparison driver and the published result. For a reference calculation it also pins the implementation. File paths in the register start at the checkout root.
 
@@ -62,7 +64,7 @@ jq -r --arg law 'logmean_electrodiffusion@1' '
 
 Keep the Cells theorem beside the mechanism it explains. Import a narrow upstream module when it fits our pinned Lean version. For a short result from another Lean version, a local derivation can be simpler. When copying licensed source, keep the original attribution, license and required notices with the copy. Give the claim a `formal.sources` entry for the upstream theorem at a fixed revision and label how we used it. The binding claim shows a local Lean 4 derivation. The face-power claim links an optional external import. [Binding example](claims/single-site-binding.md) · [Face-power example](claims/extracellular-face-dissipation.md)
 
-Two monotonicity proofs from `grn-lean` also apply directly to the scalar Hill factors in Cells. The optional check compiles the pinned definition and both upstream proofs, then verifies the equivalence with our log-space evaluation. The chemistry review records which reaction-network results apply to the closed enzyme fixture. [Hill specialization](checks/hill/Response.lean) · [Chemistry libraries tested against Cells](ENGINE_LAW_VERIFICATION.md#chemistry-libraries-tested-against-cells)
+Two monotonicity proofs from `grn-lean` also apply directly to the scalar Hill factors in Cells. The optional check compiles the pinned definition and both upstream proofs, verifies the equivalence with our log-space evaluation, and shows that basal channel availability preserves the activating and inhibiting dose responses. The chemistry review records which reaction-network results apply to the closed enzyme fixture. [Hill specialization](checks/hill/Response.lean) · [Regulated channel proof](claims/regulated-state-response.md) · [Chemistry libraries tested against Cells](ENGINE_LAW_VERIFICATION.md#chemistry-libraries-tested-against-cells)
 
 ## Build
 
@@ -86,6 +88,10 @@ lake exe cache get Mathlib.Data.Complex.Exponential \
   Mathlib.Analysis.SpecialFunctions.Log.Basic Mathlib.Algebra.Order.BigOperators.Group.Finset \
   Mathlib.Analysis.Calculus.Deriv.Add Mathlib.Analysis.Calculus.Deriv.Inv \
   Mathlib.Data.Nat.Factorial.Basic Mathlib.Data.Matrix.Mul Mathlib.Tactic.Positivity \
+  Mathlib.Analysis.Calculus.Deriv.MeanValue Mathlib.Analysis.Calculus.Deriv.Pow \
+  Mathlib.Analysis.SpecialFunctions.ExpDeriv \
+  Mathlib.Algebra.BigOperators.Fin Mathlib.Algebra.BigOperators.Field Mathlib.Data.List.Rotate \
+  Mathlib.Algebra.Order.BigOperators.GroupWithZero.List \
   Mathlib.Tactic.FieldSimp Mathlib.Tactic.Linarith Mathlib.Tactic.Ring \
   Mathlib.Algebra.BigOperators.Group.Finset.Piecewise \
   Mathlib.Algebra.BigOperators.Group.Finset.Sigma \
@@ -114,11 +120,120 @@ mkdir -p .lake/tmp .lake/cache
 export TMPDIR="$PWD/.lake/tmp" XDG_CACHE_HOME="$PWD/.lake/cache"
 export PYTHONPATH="../src:.." PYTHONDONTWRITEBYTECODE=1
 export JAX_PLATFORMS=cpu JAX_ENABLE_X64=1 JAX_ENABLE_COMPILATION_CACHE=0
+export OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1
 cells_python=${CELLS_PYTHON:-python}
 ```
 
 <details>
 <summary>Commands for individual comparisons</summary>
+
+For mitochondrial respiration and ATP delivery, check the seven reaction columns, charge on each side and the material booked in a world with a finite matrix and intermembrane space. The results link complex I proton measurements and a bovine ATP synthase structure to the counts the model assumes. [Mitochondrial balance and measurements](PROGRESS.md#mitochondrial-cycle-accounting)
+
+```bash
+"$cells_python" -B checks/mitochondrial_cycles.py
+```
+
+For the conditioned kidney-cell voltage, check the two-dose extrapolation on three synthetic Na/K/Cl membranes and reproduce the fixed C3 prediction and its figure-reading bounds. [C3 results](PROGRESS.md#conditioned-voltage-bounds)
+
+```bash
+"$cells_python" -B checks/conditioned_voltage.py
+```
+
+For cell compartments and membrane recycling, follow each owner's species and lumen voltage, then compare how much membrane area and channel cargo return. The strict command checks whether an engine run can observe a nearly depleted channel population. It exits 1 on the recorded engine revision. [Compartment and recycling results](PROGRESS.md#owned-compartment-inventory) · [Reachable zero-count refusal](PROGRESS.md#trafficking-empty-surface)
+
+```bash
+"$cells_python" -B checks/compartment_trafficking.py
+"$cells_python" -B checks/compartment_trafficking.py --require-trajectory
+```
+
+For division, compare the daughter amounts, voltage and booked work to the event equations. The same driver follows linear and exponential bridge closure, checks the resulting species fluxes, and compares both aperture curves with held-out points from a zebrafish bridge. [Division event](PROGRESS.md#isopotential-division) · [Bridge closure and measured diameters](PROGRESS.md#daughter-bridge-closure)
+
+```bash
+"$cells_python" -B checks/division_bridge.py
+```
+
+For membrane populations, follow precursor into maturing, active and removed units, then read the potassium flow at several patch areas. The driver also evaluates published receptor retention and endplate currents. The second command isolates the recorded rounding residual at exactly zero units. [Turnover and maturation](PROGRESS.md#surface-population-turnover) · [Current and surface count](PROGRESS.md#membrane-population-flow) · [Empty-population finding](PROGRESS.md#empty-surface-flow)
+
+```bash
+"$cells_python" -B checks/population_units.py
+"$cells_python" -B checks/population_units.py --require-empty
+```
+
+For scheduled cell replacement, compare simultaneous donor and template arrivals, including a volume-preserving copy with nonzero water free energy. The optional second command isolates the v2 definition that refuses a strictly interior volume and returns a failure while the refusal persists. [Material and charge](PROGRESS.md#scheduled-cell-replacement) · [Water and measured cell volumes](PROGRESS.md#cell-replacement-water) · [Boundary reproducer](PROGRESS.md#cell-replacement-volume-boundary)
+
+```bash
+"$cells_python" -B checks/cell_replacement.py
+"$cells_python" -B checks/cell_replacement.py --boundary-only --require-interior
+```
+
+For size-triggered fission and daughter continuation, compare fixed-quota and independent partitions, then follow empty and full daughters through the engine. The driver also compares measured bead-count variance with the probability model. To verify the figure readings, run `pdftocairo -f 3 -l 3 -svg article.pdf figure.svg` on the four-page PDF listed as `vector_pdf` and pass `--figure-svg figure.svg` to the driver. [Partition results and measurements](PROGRESS.md#size-threshold-fission) · [Daughter selection](PROGRESS.md#lineage-daughter-continuation) · [Ledger documentation finding](PROGRESS.md#lineage-fission-sink-sign) · [Figure source](checks/data/fornell2017_partition.json)
+
+```bash
+"$cells_python" -B checks/lineage_fission.py
+```
+
+For serial transfer and shear fission, follow an impermeant tracer through successive washes and from each parent to its daughters. The driver also checks discarded material, signed free energy and refused splits. The biological records include measured wash recovery and paired parent–daughter fluorescence. [Transfer results](PROGRESS.md#vesicle-serial-transfer) · [Division results](PROGRESS.md#vesicle-shear-fission)
+
+```bash
+"$cells_python" -B checks/vesicle_population.py
+```
+
+For vesicle exchange, compare lipid insertion and neutral solute permeation against their rate equations and measured washout and swelling. The shared-pool controls follow one lipid and one solute between two vesicles. Its one-event fixed-volume reproducer exits with status 1 on the recorded engine revision. [Measurements and engine results](PROGRESS.md#vesicle-permeation) · [Shared-pool counts](PROGRESS.md#shared-pool-inventory) · [Fixed-volume reporting failure](PROGRESS.md#shared-pool-declared-volume)
+
+```bash
+"$cells_python" -B checks/vesicle_exchange.py
+"$cells_python" -B checks/shared_pool.py --controls-only
+"$cells_python" -B checks/shared_pool.py --declared-only
+```
+
+For bilayer vesicles, the driver compares two molecular area units, the osmotic volume and membrane tension with a 70-digit reference. It also reports measured deflation, swelling and survival during fixed-tension holds. The full run exits with status 1 if either near-threshold rupture decision disagrees with the reference. [Physical results](PROGRESS.md#bilayer-footprint) · [Rupture timing and numerical retest](PROGRESS.md#vesicle-threshold-hold)
+
+```bash
+"$cells_python" -B checks/vesicle.py --controls-only
+"$cells_python" -B checks/vesicle.py
+```
+
+For a restricted cleft, the controls follow tracer dilution and mixing heat through membrane growth and a 60:40 patch split. The full comparison also tests a positive trace concentration on each side. It exits with status 1 when the engine refuses a valid fill. [Geometry, tracer measurements and heat finding](PROGRESS.md#cleft-bath-fill)
+
+```bash
+"$cells_python" -B checks/restricted_lumen.py --controls-only
+"$cells_python" -B checks/restricted_lumen.py
+```
+
+For the held bath, follow the controller’s dose and the tissue’s supply through four solution changes, then compare potassium reversal shifts with measured cardiac currents. The full comparison verifies that both entry orders preserve an intended trace dose. The second command runs the ordinary controls. [Bath accounting and biological evidence](claims/scheduled-bath-exchange.md) · [Recipe-order repair and retest](PROGRESS.md#bath-order-repair)
+
+```bash
+"$cells_python" -B checks/bath_schedule.py
+"$cells_python" -B checks/bath_schedule.py --controls-only
+```
+
+For regulated availability, pulse and wash out a ligand in both operator versions and compare the channel response with rat SK2 dose and timing measurements. The full driver also checks the order of reporter production when turnover changes its own regulator. It exits with status 1 on the recorded first-order result. The controls-only run checks the pulse, both rate samples and the SK2 calculation. [Channel proof and biological measurements](claims/regulated-state-response.md) · [Turnover finding and reproducer](claims/regulated-turnover-routing.md)
+
+```bash
+"$cells_python" -B checks/regulated_availability.py
+"$cells_python" -B checks/regulated_availability.py --controls-only
+```
+
+For scheduled turnover, the driver checks production, clearance and chemical work, then compares a neuronal protein chase and a chamber with independently metered flow. The full run exits with status 1 when the extreme-rate world loses a 1 fmol pool change. The second command runs the ordinary controls. [Proof, measurements and engine finding](claims/scheduled-species-turnover.md)
+
+```bash
+"$cells_python" -B checks/species_turnover.py
+"$cells_python" -B checks/species_turnover.py --controls-only
+```
+
+For saturable uptake, compare the finite extracellular pool and both recipient cells against an independent solution, then test the concentration response against human red-cell measurements. [Proof and measured rates](claims/saturable-species-exchange.md)
+
+```bash
+"$cells_python" -B checks/species_exchange.py
+```
+
+The site driver follows two binding populations and their shared free ligand. The electrode driver compares both pulse polarities with independent charge and work calculations. The mixed-ion driver resolves the three currents at zero total current and reconstructs three measured squid-axon voltage shifts. [Site occupancy](claims/site-occupancy-stages.md) · [Electrode pulses](claims/electrode-pulses.md) · [Mixed membrane](claims/mixed-ion-reversal.md)
+
+```bash
+"$cells_python" -B checks/site_occupancy.py
+"$cells_python" -B checks/current_injection.py
+"$cells_python" -B checks/mixed_membrane.py
+```
 
 For membrane insertion, compare both operators with a one-patch fixed-charge solution. The first command reports the engine result and exits with status 1 if any case fails. The two optional controls rerun the stress case with known single-patch heat and image-charge values substituted in memory. At the recorded revision the original and heat-only runs fail, and the heat-and-charge control completes. [Driver](checks/membrane_insertion.py) · [Results](PROGRESS.md#19-november-2026--membrane-insertion-heat)
 
@@ -168,6 +283,12 @@ For neutral permeation, compare the compiled inward flux and the final amounts i
 
 ```bash
 "$cells_python" -B checks/neutral_permeation.py
+```
+
+For charged permeation, compare the CPU flux, heat and slopes with 60-digit arithmetic, follow charge through a finite tissue pair, and reproduce the two experimental current–voltage comparisons. [Charged-route driver](checks/charged_permeation.py)
+
+```bash
+"$cells_python" -B checks/charged_permeation.py
 ```
 
 For proton leak, check the reversal voltage, instantaneous heat, the small-voltage branch and the free H⁺ read in a buffered tissue cell. The driver also resolves the polynomial’s reversal ratio at 80-digit precision. [Proton driver](checks/proton_leak.py) · [Flux reference](../validation/betse/junction_transport/check.py#L10)
@@ -232,7 +353,7 @@ For stochastic encounters and transition-state catalysis, compare the two direct
 "$cells_python" -B checks/confined_binding.py
 ```
 
-The inward-rectifier driver checks the bound on the current–voltage slope, a change of reference concentration, and Kir4.1 currents at matched driving voltage. Its full comparison exits with status 1 if an equivalent reference setting fails. The symport driver checks all four sodium counts and compares the two-sodium carrier with measured charge, particle flux and voltage shifts. [Experimental comparisons and engine finding](PROGRESS.md#19-november-2026--inward-rectification-and-sodium-anion-symport)
+The inward-rectifier driver checks the current–voltage slope, equivalent concentration normalizations and Kir4.1 currents at matched driving voltage. All three normalizations now produce the same current, transfer and heat. The symport driver checks all four sodium counts and compares the two-sodium carrier with measured charge, particle flux and voltage shifts. [Original experimental comparisons](PROGRESS.md#19-november-2026--inward-rectification-and-sodium-anion-symport) · [Retest of all six numerical findings](PROGRESS.md#six-numerical-retests)
 
 ```bash
 "$cells_python" -B checks/inward_rectifier.py
@@ -240,7 +361,14 @@ The inward-rectifier driver checks the bound on the current–voltage slope, a c
 "$cells_python" -B checks/sodium_anion_symport.py
 ```
 
-For the potassium–anion operator, the driver compares a closed two-compartment run with the exact concentration trajectory. The latest retest confirmed that the engine refuses the earlier wrong-direction step. The full comparison still reports the extreme concentration-ratio overflow. The controls use smaller steps and finite product ratios. [Original result](PROGRESS.md#19-november-2026--potassium-and-anion-cotransport) · [Retest](PROGRESS.md#20-november-2026--osmotic-water-and-potassiumanion-transport)
+For the eight-state two-sodium carrier, compare each edge with an independent stationary master equation and test the predicted dose response against measured propionate currents. The full run also checks whether the diagnostic flux agrees with the material flux down to 10⁻³⁰² fmol/s capacity and at zero. The original extreme-capacity case passes on the repaired engine. [Proof and biological comparison](claims/sodium-anion-diagram.md) · [Repair verification](PROGRESS.md#sodium-anion-capacity-repair)
+
+```bash
+"$cells_python" -B checks/sodium_anion_diagram.py
+"$cells_python" -B checks/sodium_anion_diagram.py --controls-only
+```
+
+For the potassium–anion operator, compare a closed two-compartment run with the exact concentration trajectory. The full comparison checks admission of the coarse step and finite chemical affinity and heat at extreme concentration ratios. The second command runs the smaller-step controls. [Original result](PROGRESS.md#19-november-2026--potassium-and-anion-cotransport) · [Overflow repair and retest](PROGRESS.md#potassium-affinity-repair)
 
 ```bash
 "$cells_python" -B checks/potassium_anion_symport.py

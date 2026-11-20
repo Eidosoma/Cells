@@ -74,6 +74,10 @@ from pathlib import Path, PurePosixPath
 import numpy as np
 
 FORMAT = "cells.relations@1"
+# The next version (§0.2e item 1): @1's tables with one more end reason, `lysed`, for the
+# assembly family's lysis. It is chosen by the writer's `version`; @1's writers keep @1, so their
+# bytes are unchanged.
+FORMAT_V2 = "cells.relations@2"
 ARRAYS = "relations.npz"
 DESCRIPTOR = "relations.json"
 
@@ -105,6 +109,7 @@ END_REASONS = (
     "transplanted_out",
     "censored",
 )
+VOCABULARY = {FORMAT: END_REASONS, FORMAT_V2: (*END_REASONS, "lysed")}  # end reasons, by version
 DESCENT = ("parent_of", "precedes_in_slot", "copied_from", "occupies")  # Derived from lives.
 MATERIAL = ("supplies", "removes_to", "moves_to", "contains")
 FLOWS = ("supplies", "removes_to", "moves_to")  # Each states its mode.
@@ -646,7 +651,7 @@ def _derive(lives, sources, labels):
     return nodes, edges
 
 
-def _check_life(life, by_id, events, vertices, children, successors, problems):
+def _check_life(life, by_id, events, vertices, children, successors, problems, reasons=None):
     """§1.2's rules for one life: its kinds, times, events, origin and end."""
     where = f"lives {life.id}"
     if not problems.check(_id_kind(life.id) == "carrier", f"{where}: its id is carrier:<name>"):
@@ -658,7 +663,8 @@ def _check_life(life, by_id, events, vertices, children, successors, problems):
     ):
         return
     if not problems.check(
-        reason in END_REASONS, f"{where}: end_reason {reason!r} is in the vocabulary"
+        reason in (END_REASONS if reasons is None else reasons),
+        f"{where}: end_reason {reason!r} is in the vocabulary",
     ):
         return
     if not problems.check(
@@ -690,7 +696,8 @@ def _check_life(life, by_id, events, vertices, children, successors, problems):
         f"{where}: a birth event unless a founder or continued",
     )
     problems.check(
-        bool(life.end_event) == (reason in ENDS_AT_EVENT) or reason == "extinct",
+        bool(life.end_event) == (reason in ENDS_AT_EVENT or reason == "lysed")
+        or reason == "extinct",
         f"{where}: an end event exactly when it ended at one ({', '.join(ENDS_AT_EVENT)}; "
         "extinct: either)",
     )
@@ -995,7 +1002,7 @@ def _unique(table, rows, problems):
         seen.add(row.id)
 
 
-def _problems(world, rows, records):
+def _problems(world, rows, records, reasons=None):
     """Every problem of a world's complete tables (rows: {table: [row]}, derived rows included)."""
     problems = _Problems()
     problems.check(
@@ -1026,7 +1033,7 @@ def _problems(world, rows, records):
             successors.setdefault(life.predecessor, []).append(life)
     _check_nodes(rows["nodes"], problems)
     for life in rows["lives"]:
-        _check_life(life, by_id, events, vertices, children, successors, problems)
+        _check_life(life, by_id, events, vertices, children, successors, problems, reasons)
     if not problems:  # The world-wide rules read every life's own as already checked.
         _check_slots(rows["lives"], problems)
         _check_keys(rows["lives"], by_id, problems)
@@ -1090,7 +1097,7 @@ def _decode(table, arrays):
     ]
 
 
-def _descriptor(world, arrays, records):
+def _descriptor(world, arrays, records, version=FORMAT):
     out_tables = {}
     for table, (key_column, _, columns) in TABLES.items():
         out_tables[table] = {
@@ -1108,7 +1115,7 @@ def _descriptor(world, arrays, records):
             ],
         }
     return {
-        "format": FORMAT,
+        "format": version,
         "world": world,
         "arrays": ARRAYS,
         "tables": out_tables,
@@ -1127,7 +1134,7 @@ def _descriptor(world, arrays, records):
         "vocabulary": {
             "node_kinds": list(NODE_KINDS),
             "birth_kinds": list(BIRTH_KINDS),
-            "end_reasons": list(END_REASONS),
+            "end_reasons": list(VOCABULARY[version]),
             "relations": list(RELATIONS),
             "modes": list(MODES),
             "source_kinds": list(SOURCE_KINDS),
@@ -1164,7 +1171,18 @@ def _descriptor(world, arrays, records):
     }
 
 
-def tables(*, world, lives=(), events=(), nodes=(), sources=(), labels=(), edges=(), records=None):
+def tables(
+    *,
+    world,
+    lives=(),
+    events=(),
+    nodes=(),
+    sources=(),
+    labels=(),
+    edges=(),
+    records=None,
+    version=FORMAT,
+):
     """(descriptor, arrays) of a world's tables, checked: refused (RelationsRefused, every problem
     listed) before anything is built. Callers give lives, events, sources and labels, and the nodes
     and edges that are not derived (module docstring). records: {name: {"array", "times", "kind",
@@ -1197,13 +1215,13 @@ def tables(*, world, lives=(), events=(), nodes=(), sources=(), labels=(), edges
     if not problems:
         nodes, edges = _derive(given["lives"], given["sources"], given["labels"])
         rows = dict(given, nodes=given["nodes"] + nodes, edges=given["edges"] + edges)
-        problems += _problems(world, rows, records)
+        problems += _problems(world, rows, records, VOCABULARY[version])
     if problems:
         raise RelationsRefused(f"{len(problems)} problem(s) in the tables: " + "; ".join(problems))
     arrays = {}
     for table in TABLES:
         arrays.update(_encode(table, rows[table], world))
-    return _descriptor(world, arrays, records), arrays
+    return _descriptor(world, arrays, records, version), arrays
 
 
 def dumps(descriptor):
@@ -1337,16 +1355,19 @@ def write(
     labels=(),
     edges=(),
     records=None,
+    version=FORMAT,
 ):
     """Write a world's tables into `directory`, beside the run's files: relations.npz, then
-    relations.json. The keywords are tables()'s. Refused, with nothing written, if either file
-    exists, if a row is malformed (tables()), or if a declared record is not in its file with its
-    shape. Returns the descriptor."""
+    relations.json. The keywords are tables()'s, and `version` is FORMAT, or FORMAT_V2 for a
+    writer whose lives may end lysed. Refused, with nothing written, if either file exists, if a
+    row is malformed (tables()), or if a declared record is not in its file with its shape.
+    Returns the descriptor."""
     directory = Path(directory)
     records = {} if records is None else records
     lives, events, nodes = list(lives), list(events), list(nodes)
     sources, labels, edges = list(sources), list(labels), list(edges)
     descriptor, arrays = tables(
+        version=version,
         world=world,
         lives=lives,
         events=events,
@@ -1431,8 +1452,8 @@ def validate(descriptor, arrays, directory=None):
     declared shape."""
     problems = _Problems()
     if not problems.check(
-        isinstance(descriptor, dict) and descriptor.get("format") == FORMAT,
-        f"its format is {FORMAT}",
+        isinstance(descriptor, dict) and descriptor.get("format") in VOCABULARY,
+        f"its format is {FORMAT} or {FORMAT_V2}",
     ):
         raise RelationsInvalid("; ".join(problems))
     _check_arrays(descriptor, arrays, problems)
@@ -1445,7 +1466,8 @@ def validate(descriptor, arrays, directory=None):
             all(str(w) == world for w in arrays[array_name(table, "world")].tolist()),
             f"{table}: each row's world is the descriptor's",
         )
-    problems += _problems(world, rows, records)
+    version = descriptor["format"]
+    problems += _problems(world, rows, records, VOCABULARY[version])
     if not problems:
         nodes, edges = _derive(rows["lives"], rows["sources"], rows["labels"])
         saved_nodes = [n for n in rows["nodes"] if n.kind in DERIVED_NODE_KINDS]
@@ -1459,7 +1481,7 @@ def validate(descriptor, arrays, directory=None):
             "the descent edges are those the lives give",
         )
         problems.check(
-            _machine(descriptor) == _machine(_descriptor(world, arrays, records)),
+            _machine(descriptor) == _machine(_descriptor(world, arrays, records, version)),
             "the descriptor's machine fields are the writer's for these tables",
         )
     if directory is not None and not problems:

@@ -2,9 +2,10 @@
 
 Structural only for version 2 (no rate of its laws is computed). Each claim with a planted error it
 must catch (D187):
-- OL1's four laws are declarations of the family's three interfaces, hosted by @2, cited with their
-  works, registered from the homes the static model table lists, each by one direct call with a
-  literal ID that the declarations manifest reads (planted: a manifest without them);
+- OL1's four laws, and OL2's three (the bilayer geometry, phase exchange and permeation), are
+  declarations of the family's interfaces, hosted by @2, cited with their works, registered from
+  the homes the static model table lists, each by one direct call with a literal ID that the
+  declarations manifest reads (planted: a manifest without them);
 - parse_spec and get_model dispatch @2 to its own spec and model, and @1 to @1's (planted: an
   unknown major is refused);
 - U2 (D199) holds structurally in @2: a declaration that is driven, or names a source, or claims a
@@ -26,18 +27,34 @@ from cells.models.assembly_lineages import GARD_SINGLE_EVENT, factors, gard
 from cells.models.assembly_lineages import runner as v1_runner
 from cells.models.assembly_lineages.spec import LineageModel
 from cells.models.assembly_lineages_v2 import (
+    BILAYER_GEOMETRY,
     FREE_ENERGY_INTERFACE,
+    GEOMETRY_INTERFACE,
     IDEAL_MIXING,
     MASS_ACTION,
+    MEMBRANE_PERMEATION,
     MODEL_ID,
+    OPERATOR_INTERFACE,
+    OSMOTIC_LUMEN,
+    PHASE_EXCHANGE,
+    POPULATION_INTERFACE,
     RATE_FACTOR_INTERFACE,
     REACTION_INTERFACE,
     REGULAR_MIXING,
+    SHARED_POOL,
+    SHEAR_FISSION,
     TRANSITION_STATE,
+    division,
+    exchange,
+    geometry,
     ideal_mixing,
     interfaces,
+    lumen,
     mass_action,
+    permeation,
+    population,
     regular_mixing,
+    transfer,
     transition_state,
 )
 from cells.models.assembly_lineages_v2 import model as v2_model
@@ -58,7 +75,19 @@ HOMES = {
     REGULAR_MIXING: (
         regular_mixing, interfaces.FreeEnergyTerm, FREE_ENERGY_INTERFACE, "10.1021/ja01376a009"
     ),
+    # OL2's three (milestone 1, geometry worlds).
+    BILAYER_GEOMETRY: (geometry, interfaces.GeometryLaw, GEOMETRY_INTERFACE, None),
+    PHASE_EXCHANGE: (exchange, interfaces.ReactionLaw, REACTION_INTERFACE, None),
+    MEMBRANE_PERMEATION: (permeation, interfaces.ReactionLaw, REACTION_INTERFACE, None),
+    # OL2 milestone 2.
+    OSMOTIC_LUMEN: (lumen, interfaces.FreeEnergyTerm, FREE_ENERGY_INTERFACE, None),
+    # OL2 milestone 3.
+    SHARED_POOL: (population, interfaces.PopulationStructure, POPULATION_INTERFACE, None),
 }  # fmt: skip
+OPERATORS = {  # OL3 milestone 1, then OL2 milestone 3
+    SHEAR_FISSION: (division, interfaces.AssemblyOperator, OPERATOR_INTERFACE),
+    "cells.serial_transfer@1": (transfer, interfaces.AssemblyOperator, OPERATOR_INTERFACE),
+}
 
 
 def test_the_four_laws_are_template_declarations_of_the_family_s_interfaces():
@@ -67,7 +96,15 @@ def test_the_four_laws_are_template_declarations_of_the_family_s_interfaces():
     assert row.type == "family" and row.module == "cells.models.assembly_lineages_v2.spec"
     assert row.runner == v2_model.RUNNER
     assert set(row.law_homes) == {home.__name__ for home, *_ in HOMES.values()}
-    assert set(row.interfaces) == {interface for *_, interface, _ in HOMES.values()}
+    assert set(row.interfaces) == {interface for *_, interface, _ in HOMES.values()} | {
+        interface for *_, interface in OPERATORS.values()
+    }
+    assert set(row.operator_homes) == {home.__name__ for home, *_ in OPERATORS.values()}
+    for operator_id, (home, kind, interface) in OPERATORS.items():
+        operator = home.OPERATOR
+        assert isinstance(operator, kind) and operator.errors() == []
+        assert operator.operator_id == operator_id and operator.interface == interface
+        assert interface in law_registry.FAMILY_INTERFACES and operator.host == MODEL_ID
     for law_id, (home, kind, interface, doi) in HOMES.items():
         law = registry.lookup(law_id)
         assert isinstance(law, kind) and law.errors() == [] and law.interface == interface
@@ -75,7 +112,11 @@ def test_the_four_laws_are_template_declarations_of_the_family_s_interfaces():
         assert law.provenance == "cited" and law.test and registry.module(law_id) == home.__name__
         works = [w.doi for w in law.source.works]
         assert works == ([] if doi is None else [doi])
-    assert {law.law_id for law in registry.laws(REACTION_INTERFACE, MODEL_ID)} == {MASS_ACTION}
+    assert {law.law_id for law in registry.laws(REACTION_INTERFACE, MODEL_ID)} == {
+        MASS_ACTION,
+        PHASE_EXCHANGE,
+        MEMBRANE_PERMEATION,
+    }
     # @1's rate factors are unchanged by @2's registrations.
     assert set(factors.registered()) == {law.law_id for law in gard.LAWS}
 
@@ -90,7 +131,7 @@ def test_the_manifest_lists_each_law_at_its_one_direct_call():
         assert entry["host"] == MODEL_ID and entry["line"] > 0
         assert entry["module_path"] == "src/" + home.__name__.replace(".", "/") + ".py"
     model = next(m for m in doc["models"] if m["id"] == MODEL_ID)
-    assert {r["id"] for r in model["rows"]} == set(HOMES)
+    assert {r["id"] for r in model["rows"]} == set(HOMES) | set(OPERATORS)
     # Planted: a manifest without them is caught by the coverage check.
     planted = dict(doc, pieces=[p for p in doc["pieces"] if p["id"] not in HOMES])
     assert len(declarations.coverage_errors(planted)) == len(HOMES)
