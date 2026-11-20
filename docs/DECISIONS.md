@@ -7673,3 +7673,21 @@ you suggst".
      - the component references and MR1 register against that tag;
      - the binding owner adds AMP in beard2005@2;
      - the kinds owner writes the law modules after K3 and K3b.
+
+## D237: FR-20 to FR-22 join the high-priority feature requests
+
+2026-11-20, about 12:52 UTC. The user pasted three requests and said: "then add this to the high
+priority list of feature requests". They are logged in docs/FEATURE_REQUESTS.md at **high priority**,
+beside core and FR-1 to FR-10 (D222):
+- **FR-20, a pulse and washout:** an assembly population's exterior replaced at a declared time, with
+  a finite wash bath and the material and energy exchanged recorded;
+- **FR-21, a prescribed shell** that owns a lumen and an exchange conductance, independent of the
+  membrane's inventory and its binding-site count;
+- **FR-22, checkpoint and resume** for the version-2 stochastic assembly runner, qualified around a
+  wash.
+
+Each becomes a design note before code (D142), and a general feature (D144). They are listed, not yet
+assigned: the agent seats are at the cap.
+
+FR-20 builds on the vesicle-population accounting of the ol3-engine branch, which D230 lands last, so
+the order of that landing is put to the user.

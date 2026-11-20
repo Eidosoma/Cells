@@ -25,6 +25,9 @@ and a general feature, never one built for one study (D144).
 | [FR-17](#fr-17--field-solves-beyond-2048-nodes) | Field solves beyond 2048 nodes | Not stated (the same) | Requested; awaits the user's go | The preprint's 3D table, and mitochondria (D210) unless condensing compartment nodes serves them |
 | [FR-18](#fr-18--the-composites-energy-check-at-moderate-step-sizes) | The composite's energy check at moderate step sizes (a finding for the core) | Not stated (the same) | Reported to the core; the check is not loosened for one experiment | The core reviews the check's tolerance or its step-size advice |
 | [FR-19](#fr-19--the-passive-routes-heat-share-sign-test-at-rounding-level) | The passive routes' heat-share sign test refuses rounding-level shares (a finding for the core) | Not stated (found by the gap-junction replication, D207; 17 November 2026) | Fixed on main (merge 49494e49): the raw-sum check's rounding floor; previously admitted steps bitwise unchanged. The band near 1 mM is closed too, landed by merge a7122a43 (18 November): the floor's scale is (\|μ̄_in\| + \|μ̄_out\| + 2)·\|m\|, and crossrev's kinds record was renewed at the landing (9 of 9) | None: closed |
+| [FR-20](#fr-20--a-pulse-and-washout-for-assembly-populations) | A pulse and washout: replace an assembly population's exterior at a declared time, with the material and energy exchanged recorded | **High** (user, 20 November 2026; D237) | Requested; not scoped | A design note, building on the vesicle-population accounting of the unlanded ol3-engine branch (D230 orders that branch's landing) |
+| [FR-21](#fr-21--a-prescribed-shell-that-owns-a-lumen-and-an-exchange-conductance) | A prescribed shell that owns a lumen and an exchange conductance, independent of membrane inventory and binding-site count | **High** (user, 20 November 2026; D237) | Requested; not scoped | A design note before code: today every cross-phase reaction routes through the membrane phase |
+| [FR-22](#fr-22--checkpoint-and-resume-for-the-stochastic-assembly-runner) | Checkpoint and resume for the stochastic assembly runner, qualified around a wash | **High** (user, 20 November 2026; D237) | Requested; short controls can proceed now | A restart qualification: an interrupted run reproduces the uninterrupted event trace, molecule counts and energy ledger |
 
 ## FR-1 — A closed internal compartment on the shared inventory
 
@@ -863,3 +866,34 @@ explored.
     apply, and crossrev's kinds record is renewed again at its landing.
   - The replication never reaches the band, since its concentrations stay at or below 0.1 mM.
 
+
+## FR-20 — A pulse and washout for assembly populations
+
+- **The request (user, 20 November 2026; D237).** At a declared time, replace the exterior of an
+  assembly population (vesicles or shell-bounded particles in their medium) with fresh, tracer-free
+  solution.
+- **What is kept:** each assembly, its gate state and its bound tracer, including tracer held at an
+  exposed-site control.
+- **What is recorded:** the material and the energy exchanged by the replacement.
+- **The wash bath is finite,** so released tracer can re-enter.
+- **What exists:** the vesicle-population accounting on the ol3-engine branch (OL2 milestone 3)
+  already covers much of it. That branch has not landed; D230 orders its landing behind core and
+  FR-1 to FR-10.
+- **Next:** a design note (D142), as a general feature (D144).
+
+## FR-21 — A prescribed shell that owns a lumen and an exchange conductance
+
+- **The request (user, 20 November 2026; D237).** Let a prescribed protein shell own a lumen and an
+  exchange conductance, independent of the membrane's inventory and of its binding-site count.
+- **Why:** to attribute a result to area or to permeability. Today every cross-phase reaction routes
+  through the membrane phase. The existing two-state gate is enough to test kinetics, but not to
+  separate those two causes.
+- **Next:** a design note before any code (D142).
+
+## FR-22 — Checkpoint and resume for the stochastic assembly runner
+
+- **The request (user, 20 November 2026; D237).** Add checkpoint and resume to the version-2
+  stochastic assembly runner.
+- **The qualification:** a run interrupted around a wash (FR-20) reproduces the uninterrupted run's
+  event trace, molecule counts and energy ledger exactly.
+- **Short controls can proceed now,** before FR-20 exists.
