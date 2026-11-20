@@ -910,6 +910,18 @@ explored.
   membrane-join step is not presumed kinetically equivalent. FR-20's timed replacement can proceed
   independently, preserving every slot-owned place as designed.
 - **Next:** a design note before any code (D142).
+- **The site step's acceptance (the requester, relayed by the user on 20 November 2026; D244,
+  D246).** In `cells.assembly_lineages@2`, a particle with geometry supports X@pool + S@membrane ⇌
+  XS@membrane through `cells.stochastic_mass_action@1`. It is admitted only when the site and the
+  complex are declared, and undeclared pairs stay refused. Built from the one-particle fixture of
+  `tests/unit/test_assembly_lineages_v2_population.py`, with FR-20's timed wash:
+  1. Immediately before the wash: 8 free X in the pool, 4 vacant sites and 2 occupied sites.
+  2. After replacing the pool with an equal volume of X-free liquid:
+     - the removal record holds 8 X;
+     - the fresh pool holds 0 X;
+     - the particle keeps 4 vacant and 2 occupied sites.
+  3. One release gives 1 free X, 5 vacant sites and 1 occupied site. A rebinding restores the
+     post-wash counts.
 
 ## FR-22 — Checkpoint and resume for the stochastic assembly runner
 
