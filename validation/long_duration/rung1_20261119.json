@@ -854,6 +854,51 @@
    "grid": "H2 from t = 0 to 1790 s: 100 ms over [0, 20] s, then 200 ms, on section 10.9's no-op-entry grid",
    "why": "the 200 ms refusal at 0.4-0.6 s from t = 0 is a real wrong-signed Na transfer through nav_0 (the @3 owner), likely NaV's opening changing within a step whose slope is frozen at the operator time; the dissipation check acts as the wrong-sign detector",
    "records": "/mnt/workspaces/Cells/fr8-rung1-20261119/n2-startup/"
+  },
+  {
+   "entry": "10.14",
+   "entry_utc": "2026-11-20T12:50Z",
+   "title": "the step ratio's deficit under N2 alone, development runs, written before they run (information)",
+   "records": "/mnt/workspaces/Cells/fr8-rung1-20261119/q-deficit/"
+  },
+  {
+   "entry": "10.15",
+   "entry_utc": "2026-11-20T15:52Z",
+   "title": "I3 on charged worlds under N2 alone, before section 6 is read and before anything is measured",
+   "gap": "I3's plant and cap rows run on worlds with no charged species or ion permeabilities, where N2's slopes are exactly zero and the rows are bitwise ARS",
+   "runner": "the @3 owner, under imex_ars222_implicit_conductances_n2_alone@0 from a frozen badc86ac, once this entry is committed",
+   "plant": {
+    "procedure": "section 10.7",
+    "edit": "pump_dissipated_energy_pJ at membrane slot 0 x (1 + 1e-6)",
+    "arms": {
+     "H2": {
+      "step_ms": 100,
+      "horizon_s": [
+       0,
+       1790
+      ],
+      "T_s": 1000
+     },
+     "W0": {
+      "step_ms": 5,
+      "horizon_s": [
+       0,
+       60
+      ],
+      "T_s": 10
+     }
+    },
+    "rule": "the binding refuses the planted checkpoint with X2's binding message and the control resumes; the in-step eps* reported; cannot-run is a result, not caught"
+   },
+   "cap_control": {
+    "rule": "section 10.12",
+    "cap": 1e-13,
+    "arms": "H2 at 100 ms and W0 at 5 ms under N2 alone from t = 0",
+    "passes": "refused with 'exceeds the registration's cap' at its first counted step, within 1,000 steps",
+    "untested": "an instrument failure",
+    "nature": "a mechanism control on a world where N2's implicit path is active"
+   },
+   "order": "section 6 is read only after both rows pass on both worlds; a failure goes to the lead first"
   }
  ]
 }
