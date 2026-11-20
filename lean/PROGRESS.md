@@ -1,5 +1,33 @@
 # Cells proof comparisons
 
+<a id="mitochondrial-stall-heat"></a>
+
+## 20 November 2026 · Mitochondrial stall, reversal and heat
+
+For all seven mitochondrial cycles, Lean proves that an enabled cycle runs forward when its full-turn free energy ΔG is negative, stalls at zero and runs in reverse when ΔG is positive. For positive RT, the engine's instantaneous dissipated power is positive in either direction and zero at stall or when the population is off. The proof reuses the reversible ATP-cycle flux and Mathlib's geometric sum to show why the half-turn exponent of complex III and the quarter-turn exponent of complex IV preserve the full-turn stall. [Direction and affinity shares](CellsProofs/Chemistry/MitochondrialStall.lean#L37) · [Dissipated power](CellsProofs/Chemistry/MitochondrialStall.lean#L89)
+
+At fixed free activities, five cycles stall when the dimensionless N-minus-P voltage equals the chemical part of ΔG/(RT) divided by the signed charge per turnover. The two neutral carriers stall at an activity ratio. Phosphate requires `Pi_P/Pi_N = (H_N/H_P)²` and K⁺/H⁺ exchange requires `K_P/K_N = H_P/H_N`. The following thresholds apply to the 298.15 K matrix/lumen fixture. Its phosphate row is free HPO₄²⁻. [Stall conditions](CellsProofs/Chemistry/MitochondrialStall.lean#L60) · [Fixture](../tests/unit/test_mito_cycle_laws.py#L64)
+
+| Cycle | Independently calculated stall setting |
+| --- | ---: |
+| Complex I | −186.33 mV, matrix minus lumen |
+| Complex III, with phosphate control | −201.35 mV |
+| Complex IV | −283.51 mV |
+| ATP synthase | −184.50 mV |
+| ATP/ADP exchange | 0.00 mV |
+| Phosphate uptake | 8.34976 mM free lumen phosphate |
+| K⁺/H⁺ exchange | 94.22882 mM free lumen K⁺ |
+
+At engine revision `e4b9588f`, NumPy and compiled CPU JAX each checked seven settings per law at ΔG/(RT) targets of 0, ±2⁻⁴⁰, ±2⁻²⁴ and ±1. The driver clamps the voltage or one free lumen substrate after the binding closure, then calls both the production rate hook and the probe. All 98 backend/setting pairs passed against the independent 50-digit component equations. The largest flux error was 3.91 × 10⁻¹⁴ of the reference forward rate. The largest power error was 6.53 × 10⁻¹⁴ in units of RT times that rate converted to pJ/s. The two paths agreed on the instantaneous heat and the derivative entered in the heat ledger. This comparison covers these clamped states. [Engine comparison](checks/mitochondrial_stall.py#L47) · [Independent equations](../validation/mitochondria/appendix_check.py#L86)
+
+Rounding a physical stall setting left at most 2.85 × 10⁻¹⁴ in ΔG/(RT). With exactly supplied drives of zero and ±2⁻⁶⁰, the production flux kernel returned zero and both expected signs at every population's rate scale. Zero availability stopped every cycle at an otherwise nonzero drive. Shifting the voltage by 100 mV left both neutral carriers' flux and heat unchanged at the tested substrate clamp. The separate registered comparison passed all 534 component rows in eight settings, including both complex III formulations. [Float64 and off controls](checks/mitochondrial_stall.py#L129) · [Registered comparisons](../validation/mitochondria/component_comparison.py#L606)
+
+**Biological evidence is partial.** Petersen et al. measured ATP synthesis and hydrolysis in reconstituted yeast mitochondrial ATP synthase. At 60 mV and an ATP/(ADP·Pi) quotient of 5.79, fitted initial ATP turnover was −0.04 s⁻¹ at ΔpH 1.49 and +0.11 s⁻¹ at 1.68. The interpolated stall was 1.57 ± 0.04 pH units, or 1.53 ± 0.04 after correction for uncoupled hydrolysis. Their overall estimate of 2.9 ± 0.2 H⁺/ATP is consistent with the model's three. The experiment measured ATP turnover. [Petersen et al., Figs. 1–4 and Table S4](https://doi.org/10.1073/pnas.1202799109)
+
+At fixed voltage and catalytic-side pH, the three-proton law predicts a stall shift of one third of the change in log₁₀ of the free ATP/(ADP·Pi) quotient. Treating the assay's concentration quotient as proportional to that free quotient, the model predicts a shift of 0.745 pH units between the lowest and highest loads, against 0.74 observed. Using the corrected stall at 5.79 to set the absolute offset, five of the other nine Table S4 rows fall within the sum of the two reported interpolation limits. Four fall outside, at quotients of 0.718, 1.87 (two measurements) and 3.06. Those limits describe the interpolation only. The experimental stall can constrain the model's load dependence without establishing its absolute voltage or turnover rate. [Lean load-shift identity](CellsProofs/Chemistry/MitochondrialStall.lean#L81) · [All ten measurements](checks/data/mitochondrial_stall.json) · [Comparison](checks/mitochondrial_stall.py#L183)
+
+Nakamura and Matsuoka measured a bulk heat pulse in rat liver mitochondria after oxygen exhaustion and estimated an apparent enthalpy of −29 ± 7 kJ per mole of previously added ADP. They attributed it to hydrolysis of ATP made earlier in the preparation. This integrated measurement leaves the individual cycles' instantaneous dissipated power at a known drive open. [Nakamura and Matsuoka, Figs. 5b and 6](https://doi.org/10.1093/oxfordjournals.jbchem.a132117)
+
 ## 20 November 2026 · Mitochondrial cycles, voltage prediction and numerical retests
 
 <a id="mitochondrial-cycle-accounting"></a>

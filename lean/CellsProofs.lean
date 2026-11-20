@@ -5,6 +5,7 @@ import CellsProofs.Chemistry.Enzyme
 import CellsProofs.Chemistry.GardCatalysis
 import CellsProofs.Chemistry.LineageFission
 import CellsProofs.Chemistry.MitochondrialCycles
+import CellsProofs.Chemistry.MitochondrialStall
 import CellsProofs.Chemistry.PopulationUnits
 import CellsProofs.Chemistry.ReservoirExchange
 import CellsProofs.Chemistry.SharedPool
