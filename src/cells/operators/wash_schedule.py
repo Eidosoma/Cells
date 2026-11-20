@@ -344,7 +344,18 @@ def apply_events(state, control, p, *, xp=jnp):
     heat_node = species_sum(xp.where(on, heat, 0.0), xp=xp)
     sample_energy = species_sum(xp.where(on, f_sample, 0.0), xp=xp)
     buffer_energy = species_sum(xp.where(on, f_buffer, 0.0), xp=xp)
-    magnitude = species_sum(xp.where(on, xp.abs(f_sample) + xp.abs(f_buffer) + heat, 0.0), xp=xp)
+    # The magnitude: the bookings' absolute terms, and the stored amounts at the new level. @3
+    # holds the new amount as anchor plus increment, rounded at about eps times the stored amounts,
+    # and that rounding is booked at the new level's potential, RT |ln c_after| per fmol: a whole
+    # wash of a large node to a deep trace needs it at the event's own step.
+    exchanged = on & ~p.wash_ion[:, None]
+    stored = xp.abs(p.extracellular_amount_reference) + xp.abs(n) + xp.abs(supply)
+    level = xp.abs(xp.log(xp.where(exchanged & (after > 0), after, 1.0) / volume)) + 1.0
+    rt = 1e-3 * R * p.temperature
+    terms = (
+        xp.abs(f_sample) + xp.abs(f_buffer) + heat + xp.where(exchanged, rt * stored * level, 0.0)
+    )
+    magnitude = species_sum(xp.where(on, terms, 0.0), xp=xp)
     valid = xp.all(due | (count == applied) | ~node)  # A stale count refuses the step.
     valid &= xp.all(xp.where(on, xp.isfinite(after) & (after > 0), True))
     valid &= xp.all(xp.isfinite(heat_node) & (heat_node >= 0))  # H_mix >= 0 at every event.

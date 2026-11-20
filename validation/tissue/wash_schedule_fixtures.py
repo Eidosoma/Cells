@@ -58,15 +58,16 @@ def well(
     specimen=30.0,
     wall=10.0,
     sites=True,
+    volume=V_WELL,
     dt=0.01,
     end=2.0,
     observation_times=None,
 ):
-    """The well with `free` fmol of S and, with `sites`, the two populations at `specimen` and
-    `wall` fmol bound; S at its trace elsewhere."""
+    """The well (`volume` pL) with `free` fmol of S and, with `sites`, the two populations at
+    `specimen` and `wall` fmol bound; S at its trace elsewhere."""
     raw = fx.world(
         cells=(("specimen", 1.0), ("wall_surface", 1.0)),
-        nodes=(("well", V_WELL),),
+        nodes=(("well", volume),),
         baths=("bath",),
         contacts=(("specimen_face", "specimen", "well"), ("wall_face", "wall_surface", "well")),
         faces=(),
@@ -74,7 +75,7 @@ def well(
         end=end,
         observation_times=observation_times,
         trace_mM=TRACE_mM,
-        concentrations_mM={"well": free / V_WELL},
+        concentrations_mM={"well": free / volume},
     )
     if not sites:
         return raw

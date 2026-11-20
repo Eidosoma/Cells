@@ -187,6 +187,11 @@ the series' threshold, at most about 4·10⁻¹² relative.
   - The records carry no heat or work suffix, so none enters the IMEX flow bound, as the bath
     schedule's dose records do not (BATH_SCHEDULE_DESIGN.md §2.2). Their magnitudes enter the
     energy ledger's rounding allowance.
+  - That allowance also holds the stored amounts at the new level: RT (|a| + |n| + f·V·c_buf)
+    (|ln c_after| + 1) per exchanged species, with a the node's anchor. The new amount is the anchor
+    plus an increment, rounded at about eps times the stored amounts, and that rounding is booked
+    at the new level's potential. Without this term, whole washes of a 10 mL well at 1 mM to
+    10⁻¹² and 10⁻¹⁴ mM exceeded the energy bound at their own step, by 1.3 and 4.8 times.
 - **Its own ledger:** each ion's sample against its supply at each node, zero bit for bit.
 - **At every event:** the event refuses the step unless every washed amount stays positive and
   finite, and the event's H_mix is finite and ≥ 0.
@@ -265,7 +270,7 @@ At the definition, each with its reason:
 ## 7. Tests (D224)
 
 - **`tests/unit/test_wash_schedule.py`,** in NumPy and a compiled kernel, with no world compiled,
-  about 10 s:
+  about 8 s:
   - the refusal table, 18 rows, each with its reason;
   - admitted beside the bath schedule's dose at a held bath and the sites, the read slots, the
     round trip;
@@ -273,8 +278,11 @@ At the definition, each with its reason:
     the ions bit for bit; @3's ledgers at the event; without the wash's energy term the energy
     ledger fails by about 4·10¹⁰ times its bound; a second application idle, bit for bit; a stale
     count refused;
-  - f = 1 as FR-20's booking, and the trace limit of §4.5;
-  - the domain check of each wash's heat;
+  - f = 1 as FR-20's booking, with @3's energy ledger closed at the event's own step for 1 µL and
+    10 mL wells, and the trace limit of §4.5;
+  - the host's row check (`check_values`) refusing a negative heat at the latest wash, though the
+    cumulative record stays positive;
+  - two washes of one node, each with its own fraction and buffer, the records summed;
   - the mixing heat against a 50-digit reference, in four rows (ordinary, the buffer at the trace,
     the node at the trace, the edge below 2⁻⁴⁰), each with a plant that breaks it (the e-form alone,
     the ratio form everywhere);
@@ -315,6 +323,14 @@ passed, and one clause of criterion 5 failed as written.
 **So the wash reproduces the review's two-run result in one run,** with one set of books. The engine
 now keeps the sample, the supply and the free-energy split itself, where the host kept them before.
 
+**After the run,** the energy allowance's term for the stored amounts (§4.4) was added. It changes
+no state value, only the energy ledger's bound, so the run's amounts and records stand.
+
+**Checked without a criterion** (`/mnt/workspaces/Cells/operators-fr27-20261120/`): the run view
+of a washed well is written and passes the reader's check, with one wash layer and the wash as an
+event at its node. A well with sites has no view today, since `site_occupancy@1` declares no layers.
+And φ equals the cleft fix's `mixing(e, ratio)` bit for bit, in NumPy and compiled.
+
 ## 9. Price (as proposed, S)
 
 | Part | Agent-days |
@@ -350,4 +366,6 @@ now keeps the sample, the supply and the free-energy split itself, where the hos
 - the wash beside `cell_owned_compartments@1`, which its admitted list refuses (§4.7);
 - the refusal of a neutral species crossing a facing membrane, our extension of ruling 5 (§4.6),
   which opens with a measurement, as faces do;
-- one shared φ once 28c4e7ff lands, the cleft's owner's choice (§4.3).
+- one shared φ once 28c4e7ff lands, the cleft's owner's choice (§4.3). The two agree bit for bit.
+
+**Not exercised:** a restart from a checkpoint across a wash, and batched windows.
