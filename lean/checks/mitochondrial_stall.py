@@ -15,7 +15,7 @@ from cells.kinds import transporter
 from cells.laws.cycles import forms
 from cells.laws.electrochemistry import R
 from cells.modules import node_concentrations
-from lean.checks.mitochondrial_cycles import CYCLES, P_CHARGE
+from lean.checks.mitochondrial_cycles import CYCLES, P_CHARGE, seven_cycle_world
 from tests.unit import test_mito_cycle_laws as fx
 from validation.mitochondria import component_comparison as cc
 
@@ -216,7 +216,7 @@ def yeast_synthase(protons_per_atp):
 
 def run():
     assert jax.default_backend() == "cpu" and jax.config.x64_enabled
-    raw = fx.host_p_world()
+    raw = seven_cycle_world()
     spec, impl, state, p, control = fx.start(raw)
     read, volts, _ = fx.evaluation(impl, state, p, control)
     assert tuple(r["id"] for r in raw["model"][transporter.MODEL_KEY]) == CYCLES

@@ -13,6 +13,10 @@ CYCLES = ("c1", "c3", "c4", "f1", "ant", "pic", "khe")
 P_CHARGE = np.array([4, 2, 8, -3, -1, 0, 0])
 
 
+def seven_cycle_world():
+    return fx.host_p_world({name: fx.LAWS[name] for name in CYCLES})
+
+
 def net_rows(extents, species):
     """Independent N (matrix) and P (intermembrane) changes for arbitrary signed extents."""
     i, iii, iv, synthase, nucleotide, phosphate, potassium = extents
@@ -41,7 +45,7 @@ def net_rows(extents, species):
 
 
 def checked_world():
-    raw = fx.host_p_world()
+    raw = seven_cycle_world()
     dt = raw["execution"]["dt"]
     raw["experiment"].update(end_time=2 * dt, observation_times=[0, dt, 2 * dt])
     spec, _, _, p, _ = fx.start(raw)
