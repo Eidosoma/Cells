@@ -166,12 +166,15 @@ def identity_levels(name: str, w: dict, ro: dict, moieties: dict) -> dict:
     return {k: float(v) for k, v in lv.items()}
 
 
-def check_identities(data: dict, tol: float = sheet.TOL_IDENTITY) -> dict:
+def check_identities(data: dict, tol: float = sheet.TOL_IDENTITY, only=None) -> dict:
+    """`only`: an optional collection of (set, world) pairs to check, e.g. {("0", "A1")}."""
     worlds = _worlds(data)
     moieties = data["inputs"]["declared"]["moieties"]
     out = {}
     for i, full in data["trajectories_test_instances"]["sets"].items():
         for name, rec in full["worlds"].items():
+            if only is not None and (i, name) not in only:
+                continue
             lv = identity_levels(name, worlds[name], rec["readouts"], moieties)
             for k, v in lv.items():
                 require(v <= tol, f"set {i} {name}: identity {k} at {v:.3e} > {tol:g}")
@@ -242,9 +245,11 @@ def machine_closed(data: dict, p: dict, name: str) -> dict:
     return out
 
 
-def check_machine(data: dict, rel: float = 1e-12) -> None:
+def check_machine(data: dict, rel: float = 1e-12, only_sets=None) -> None:
     sets = data["inputs"]["potential_sets"]
     for row in data["r_machine"]["sets"]:
+        if only_sets is not None and row["set"] not in only_sets:
+            continue
         p = sets[row["set"]]
         for name, d in row["worlds"].items():
             mine = machine_closed(data, p, name)
