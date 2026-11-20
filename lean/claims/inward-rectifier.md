@@ -32,7 +32,13 @@ Proof sources [Mathlib’s lower bound on the hyperbolic sine](https://github.co
 
 ## Numerical comparison
 
-**Failed.** A 360-state compiled panel passed against 60-digit currents and derivatives. Two equivalent reference settings produced identical one-step transfer and heat. A third, also finite, had the same 0.5520533 pA reference current but overflowed in c_out/K_ref and was refused during definition validation.
+**Checked.** The original stress case passed on main after the owner’s overflow-safe concentration factor landed. All three equivalent normalizations produced 0.5520533 pA and identical transfer and heat. The 360-state control panel passed. The original failure is recorded at the earlier engine revision.
+
+**Engine** `resolved_pump_tissue@3`, `cells.inward_rectifier_linear_driving_force@1`
+
+[Overflow-safe concentration factor](https://github.com/Eidosoma/Cells/blob/b9d6452dff1cd0a1d5d3664e0a81b00ce988bfbc/src/cells/laws/routes/inward_rectifier_linear_driving_force.py#L69) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/b4353f85b18d489a277818bfe43e20c8416b6066/lean/checks/inward_rectifier.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/b4353f85b18d489a277818bfe43e20c8416b6066/lean/PROGRESS.md#six-numerical-retests)
+
+[Tested engine b9d6452dff1c](https://github.com/Eidosoma/Cells/commit/b9d6452dff1cd0a1d5d3664e0a81b00ce988bfbc) · [Evidence checkpoint b4353f85b18d](https://github.com/Eidosoma/Cells/commit/b4353f85b18d489a277818bfe43e20c8416b6066)
 
 **Engine** `resolved_pump_tissue@3`, `cells.inward_rectifier_linear_driving_force@1`
 

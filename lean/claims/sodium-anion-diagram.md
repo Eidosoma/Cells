@@ -37,6 +37,12 @@ Uses [Sodium coupling sets net charge and the stall voltage of an anion carrier]
 
 **Engine** `resolved_pump_tissue@3`, `na2_anion_symport_diagram@1`
 
+[Diagnostic carrier normalization](https://github.com/Eidosoma/Cells/blob/b9d6452dff1cd0a1d5d3664e0a81b00ce988bfbc/src/cells/kinds/transporter.py#L2323) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/b4353f85b18d489a277818bfe43e20c8416b6066/lean/checks/sodium_anion_diagram.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/b4353f85b18d489a277818bfe43e20c8416b6066/lean/PROGRESS.md#six-numerical-retests)
+
+[Tested engine b9d6452dff1c](https://github.com/Eidosoma/Cells/commit/b9d6452dff1cd0a1d5d3664e0a81b00ce988bfbc) · [Evidence checkpoint b4353f85b18d](https://github.com/Eidosoma/Cells/commit/b4353f85b18d489a277818bfe43e20c8416b6066)
+
+**Engine** `resolved_pump_tissue@3`, `na2_anion_symport_diagram@1`
+
 [Declared cycle and rate assignments](https://github.com/Eidosoma/Cells/blob/b9da010327ce52327feb86e07e76d823e2202d96/src/cells/laws/cycles/na2_anion_symport_diagram.py#L67) · [Detailed-balance check](https://github.com/Eidosoma/Cells/blob/b9da010327ce52327feb86e07e76d823e2202d96/src/cells/laws/cycles/forms.py#L923) · [Stationary occupancies and rates](https://github.com/Eidosoma/Cells/blob/b9da010327ce52327feb86e07e76d823e2202d96/src/cells/laws/cycles/forms.py#L1346) · [Capacity in the mode evaluator](https://github.com/Eidosoma/Cells/blob/b9da010327ce52327feb86e07e76d823e2202d96/src/cells/kinds/transporter.py#L1776) · [Capacity in the edge probe](https://github.com/Eidosoma/Cells/blob/b9da010327ce52327feb86e07e76d823e2202d96/src/cells/kinds/transporter.py#L2288) · [Independent 50-digit master equation](https://github.com/Eidosoma/Cells/blob/b9da010327ce52327feb86e07e76d823e2202d96/tests/unit/test_cycle_forms.py#L314) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/ba3d6091cf5ac501099949b6a36a81d261c1dd72/lean/checks/sodium_anion_diagram.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/ba3d6091cf5ac501099949b6a36a81d261c1dd72/lean/PROGRESS.md#20-november-2026--eight-state-sodiumanion-cotransport)
 
 [Tested engine b9da010327ce](https://github.com/Eidosoma/Cells/commit/b9da010327ce52327feb86e07e76d823e2202d96) · [Evidence checkpoint ba3d6091cf5a](https://github.com/Eidosoma/Cells/commit/ba3d6091cf5ac501099949b6a36a81d261c1dd72)
@@ -44,6 +50,8 @@ Uses [Sodium coupling sets net charge and the stall voltage of an anion carrier]
 ## Biological evidence
 
 **Open.** Baseline-subtracted steady current as external monocarboxylate concentration or clamped voltage changes. The dose series tests the functional form. A biological assignment for the individual transition rates and voltage coefficients remains open.
+
+In an independent human SMCT oocyte series at −50 mV, the propionate half-saturation concentration was 128 ± 4 µM (SEM, n = 9). This pooled estimate constrains affinity. [Coady et al., Fig. 3A](https://doi.org/10.1113/jphysiol.2004.063859)
 
 **Unit** nA inward magnitude (propionate), µA signed current (lactate)
 
@@ -70,5 +78,20 @@ Human SMCT1 in a Xenopus oocyte, 96 mM external sodium, approximately 24 °C and
 One representative experiment, approximate reading precision ±0.03 µA. Intracellular activities and kinetic parameters for this preparation are unavailable.
 
 The inward current rose from about 0.68 to 1.40 µA in magnitude between −50 and −150 mV. Predicting that voltage dependence requires the transition kinetics. [Dataset manifest](../checks/data/coady2007_lactate_voltage.json) · [Comparison verdict](../PROGRESS.md#20-november-2026--eight-state-sodiumanion-cotransport)
+
+### paroder2006_propionate@1
+
+Independent human SMCT oocyte series. The same two nominal calibration doses were used on this experiment’s current scale. Filled symbols of the human propionate dose response at −50 mV. [Paroder et al. (2006), Fig. 3C](https://doi.org/10.1073/pnas.0602365103)
+
+- **Evidence role** held out from fitting
+- **Fit** 100 µM and 1,000 µM points
+- **Evaluation** 50, 200, 500, 2,000 and 4,000 µM points
+- **Excluded** Zero-substrate baseline, 250 µM, absent from the series
+- **Observed** 22.6 nA inward magnitude (propionate), µA signed current (lactate)
+- **Predicted** 22.45 nA inward magnitude (propionate), µA signed current (lactate)
+
+The caption gives n = 3 for the kinetic analysis. Pointwise biological errors and how the symbols aggregate the recordings are unspecified. Estimated figure precision is ±0.6 nA and about ±15 µM at low dose.
+
+At nominal 200 µM, 22.6 nA was observed and 22.45 nA predicted. The two-point fit gave half-saturation of 140.2 µM and the paper reports 162 ± 26 µM. The original 250 µM residual remains untested in this independent series. [Dataset manifest](../checks/data/paroder2006_propionate.json) · [Comparison verdict](../PROGRESS.md#smct1-independent-propionate)
 
 [Claim index](../README.md#proof-index) · [Editable register](../claims.json)
