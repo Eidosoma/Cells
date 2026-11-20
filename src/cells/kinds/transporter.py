@@ -2152,9 +2152,11 @@ def cycle_checks(spec):
 
 def _check_population_axis(spec, declaration):
     """The population axis's refusals at the definition: a registry potential for every species a
-    mode converts, the form's temperature domain, §5.2's boundary for moved fuel, Wegscheider's
-    condition on every diagram cycle (statement 1, §5.1), and every monomial reference resolving
-    under the binding owner's three conditions (K6), each naming the population."""
+    mode converts, the form's temperature domain, §5.2's boundary for moved fuel (with its one
+    exception, a law in base forms at a node where a general binding closure holds the proton
+    row: K1, _general_closure_nodes), Wegscheider's condition on every diagram cycle (statement 1,
+    §5.1), and every monomial reference resolving under the binding owner's three conditions (K6),
+    each naming the population."""
     m = spec.model
     from cells.modules import moved_nodes
 
@@ -2164,6 +2166,7 @@ def _check_population_axis(spec, declaration):
     proton = getattr(closure, "proton", None)  # The closure's declared proton row, if any; else
     if proton is None:  # the row named H, as in a world with no closure (never skipped).
         proton = "H" if "H" in m.species_ids else None
+    held_protons = _general_closure_nodes(m, proton)  # §5.2's one exception, by row (K1).
     picked = dict(getattr(m, "heat_bookings", ())).get(KIND_ID)
     if picked == TRAPEZOID_BOOKING:  # K2: the booking's contract, a non-negative power per state.
         for t in declaration:
@@ -2195,13 +2198,18 @@ def _check_population_axis(spec, declaration):
             if not low <= m.temperature_K <= high:
                 raise ConfigError(f"{where}: {t.law} runs between {low} and {high} K")
         fuel = [row for row in form.rows if row[0] in form.fuel_roles and row not in t.held_rows]
+        # K1: the exception holds only for a law whose moves are in base forms (no transformed
+        # potential), at a node whose proton row a general closure holds; any other stays refused.
+        base = getattr(hosted_laws().get(t.law), "forms", None) == "base"
         for role, end in fuel:
             node = _end_node(t, end)
-            if proton is not None and movers.get((proton, node)) and node not in _general_closure_nodes(m):
+            excepted = base and node in held_protons
+            if proton is not None and movers.get((proton, node)) and not excepted:
                 raise ConfigError(
                     f"{where}: its fuel row {roles[role]} moves at {node}, whose proton row {proton} "
                     "is moved in the step: finite fuel at a node with a dynamic proton row is refused "
-                    "(§5.2's boundary)"
+                    "(§5.2's boundary), unless a general binding closure holds that proton row "
+                    "there and the law declares its moves in base forms"
                 )
     laws = {t.id: t.law for t in declaration}
     for check in cycle_checks(spec):
@@ -2219,10 +2227,26 @@ def _check_population_axis(spec, declaration):
             )
 
 
-def _general_closure_nodes(model):
-    """The nodes a general binding closure holds (seam C, none yet): §5.2's one exception."""
-    del model
-    return ()
+def _general_closure_nodes(model, proton):
+    """The nodes where a general binding closure (rapid_binding@1) holds `proton` as its declared
+    proton row, among its closure_rows: §5.2's one exception (K1; CORE_SEAMS §3.4), where finite
+    fuel may move while protons move, for a population whose law declares its moves in base forms
+    (forms "base"; the check's caller asks it). There the closure's read gives free h and each
+    binder's free base form, and the species registry admits a mover of its rows only under base
+    forms with every ligand written out (check_closure_rows), so no transformed potential is used
+    (MITOCHONDRIA_DESIGN §1.3). The population then books its moved rows' standard part, the
+    closure its speciation term S_c and @3 the rows' ideal terms, which together are the change in
+    the closure's G* (the binding owner, 20 November 2026). Version 1's buffer declares no
+    closure_rows and a closure that declares no proton row holds none, so neither admits a node."""
+    if proton is None:
+        return frozenset()
+    return frozenset(
+        node
+        for _, declaration in getattr(model, "kinds", ())
+        if getattr(declaration, "proton", None) == proton
+        for species, node in getattr(declaration, "closure_rows", ())
+        if species == proton
+    )
 
 
 # ---------------------------------------------------------------------------- the probe (§19 item 1)

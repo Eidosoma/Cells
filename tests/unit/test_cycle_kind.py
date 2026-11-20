@@ -50,6 +50,7 @@ import pytest
 
 from cells.definitions.specs import ConfigError, parse_spec
 from cells.definitions.surface_pump_v3_spec import control_values
+from cells.execution.errors import NumericalError
 from cells.kinds import transporter
 from cells.laws.electrochemistry import CHARGE_PER_FMOL, F, R
 from cells.laws.cycles import forms
@@ -1219,6 +1220,150 @@ def test_the_proton_readouts_tie_delta_p_to_a_pure_proton_modes_x_with_beards_si
     count = records["cycle_count"]["sign"]
     assert (count["from"], count["to"]) == ("N", "P")
     run_view.validate(view)
+
+
+# ------------------------------------------------------- moved fuel at a closure node (K1)
+
+CLOSURE_HYDROLYSIS = law_registry.CycleLaw(
+    "seamtest.closure_hydrolysis@1",
+    (),
+    (transporter.FINITE,),
+    None,
+    None,
+    reads=("rapid_binding@1",),
+    forms="base",
+    cycle=CycleForm(
+        kinetics="net_flow",
+        roles=(("ATP", -4), ("ADP", -3), ("Pi", -2), ("H", 1)),
+        rows=(("ATP", "N"), ("ADP", "N"), ("Pi", "N"), ("H", "N")),
+        modes=(("hydrolysis", (-1, 1, 1, 1)),),
+        flux_terms=((FluxTerm(1.0, (-1, 1, 1, 1)),),),
+        fuel_roles=("ATP", "ADP", "Pi"),
+    ),
+    host=transporter.KIND_ID,
+    provenance="calibrated",
+    source="a test-only base-form hydrolysis on finite fuel releasing its proton at N (K1), never "
+    "shipped",
+)
+
+
+MU_H_SHIFT = 5.0  # H's mu°/RT off 0, so its standard part is not invisible to the ledger.
+
+
+@contextlib.contextmanager
+def closure_scoped():
+    """The transporter and the binding closure's kind, the test laws and CLOSURE_HYDROLYSIS."""
+    laws = law_registry.BUILTIN.extended(*TEST_LAWS, CLOSURE_HYDROLYSIS)
+    with tk.scoped(*tk.CHARGED_KINDS), law_registry.scope(laws):
+        yield
+
+
+def closure_fuel_world(closure="general", n_end="a", lumped=False):
+    """The binding owner's buffered cell (B binds H at the cell; every route, channel and pump at
+    availability 0) with ATP4-, ADP3- and Pi2- rows, and one population hydrolysing ATP at the cell
+    on finite fuel, its proton released into the cell's H row: fuel moving where protons move.
+    H's potential is moved off 0 (and HB's with it, so B's binding constant is kept), so that a
+    proton's standard part counted twice would show in the energy ledger. The fuel rows have no
+    forms: the species registry refuses every mover of a row with forms (check_two_form_rows), a
+    closure's binder included. closure: "general", rapid_binding@1 holding H at the cell;
+    "version 1", rapid_proton_buffer@1 there; or "no proton row", the general closure declaring
+    none. n_end "b" puts the population's N, and so its fuel and H, at the bath. lumped adds the
+    built-in neutral law on finite fuel at the cell (transformed potentials: no base forms), its
+    role Y and its lumped fuel nATP, nADP and nPi neutral rows that no closure holds."""
+    from cells.kinds import proton_buffer
+    from tests.unit.test_proton_buffer_kind import buffered_world
+    from tests.unit.test_rapid_binding_world import general as closed
+
+    raw = buffered_world(quiet=True)
+    rows = {e["id"]: e for e in raw["model"]["species"]}
+    rows["H"]["standard_mu_RT"] += MU_H_SHIFT
+    rows["B"]["protonated_standard_mu_RT"] += MU_H_SHIFT
+    if closure != "version 1":
+        raw = closed(raw)
+    m = raw["model"]
+    if closure == "no proton row":
+        del m[proton_buffer.MODEL_KEY][0]["proton_row"]
+    cell, bath = m["cells"][0]["id"], m["extracellular"][0]["id"]
+    fuel = (("ATP", -4, 0.0, 2.0), ("ADP", -3, -9.0, 0.2), ("Pi", -2, -6.0, 1.0))
+    for sid, z, mu_RT, mM in fuel:
+        add_species(raw, sid, z, mu_RT, {cell: mM, bath: mM})
+    m[transporter.MODEL_KEY] = [
+        dict(
+            id="hydrolysis_0",
+            host=m["membranes"][0]["id"],
+            law=CLOSURE_HYDROLYSIS.law_id,
+            orientation={"N": n_end},
+            capacity_fmol_s=0.05,
+            roles={"ATP": "ATP", "ADP": "ADP", "Pi": "Pi", "H": "H"},
+            parameters={},
+            held_rows=[],
+        )
+    ]
+    if lumped:
+        neutral = (("Y", 0.0, 1.0), ("nATP", 0.0, 2.0), ("nADP", -6.0, 0.2), ("nPi", -6.0, 1.0))
+        for sid, mu_RT, mM in neutral:
+            add_species(raw, sid, 0, mu_RT, {cell: mM, bath: mM})
+        m[transporter.MODEL_KEY].append(
+            dict(
+                id="lumped_0",
+                host=m["membranes"][0]["id"],
+                law=transporter.NEUTRAL_LAW,
+                orientation={"N": "a"},
+                capacity_fmol_s=0.01,
+                roles={"role": "Y", "ATP": "nATP", "ADP": "nADP", "Pi": "nPi"},
+                parameters=dict(stoichiometry=1, km_role_mM=1.0, km_atp_mM=0.1),
+                held_rows=[],
+            )
+        )
+    return raw
+
+
+def test_moved_fuel_at_a_general_closures_proton_row_runs_and_its_energy_closes():
+    """K1, §5.2's one exception: fuel may move at a node whose proton row moves where a general
+    binding closure holds that row. Four steps of a population hydrolysing ATP at the cell, whose
+    H the general closure holds: the cycles run, the cell's ATP, ADP, Pi and H totals change by
+    their counts, and every ledger closes, the energy ledger with the population's standard part,
+    the closure's S_c and @3's ideal terms (the binding owner's split). Planted, each refused at
+    the definition by §5.2's boundary: version 1's buffer at the cell; a general closure that
+    declares no proton row; the population's N at the bath, where the closure holds nothing; and
+    the built-in neutral law on lumped finite fuel at the cell (no base forms). Planted too,
+    stepped once: the population's g° shifted by 1 (its heat then booked from a wrong x, RT per
+    cycle, a fifth of a proton's standard part counted twice), which the energy ledger refuses."""
+
+    def run(spec, impl, p, steps=4):
+        state, _ = impl.initial_values(spec)
+        control = impl.Control(*(v[0] for v in control_values(spec, [0.0])))
+        states = [state]
+        for _ in range(steps):
+            state, valid = impl.imex_step(state, spec.execution.dt, control, p, xp=np)
+            assert bool(valid)
+            states.append(state)
+        history = impl.STATE_TYPE(*(np.stack(v) for v in zip(*states, strict=True)))
+        impl.check_values(history, spec, steps=np.arange(len(states)))  # Every ledger closes.
+        return states
+
+    with closure_scoped():
+        spec = parse_spec(closure_fuel_world())
+        impl = get_model(spec.model)
+        _, p = impl.initial_values(spec)
+        states = run(spec, impl, p)
+        shifted = p._replace(cycle_standard_RT=p.cycle_standard_RT + 1.0)
+        with pytest.raises(NumericalError, match="energy"):  # Planted: the ledger sees it.
+            run(spec, impl, shifted, steps=1)
+        for planted in (
+            dict(closure="version 1"),
+            dict(closure="no proton row"),
+            dict(n_end="b"),  # The fuel and H at the bath, where the closure holds nothing.
+            dict(lumped=True),  # A law without base forms at the closure's node.
+        ):
+            with pytest.raises(ConfigError, match="§5.2's boundary"):
+                parse_spec(closure_fuel_world(**planted))
+    cycles = float(states[-1].cycle_count[0, 0])
+    assert cycles > 0
+    ids = list(spec.model.species_ids)
+    moved = states[-1].amount_increment[:, 0] - states[0].amount_increment[:, 0]
+    for species, n in (("ATP", -1), ("ADP", 1), ("Pi", 1), ("H", 1)):
+        assert moved[ids.index(species)] == pytest.approx(n * cycles, rel=1e-9), species
 
 
 # ------------------------------------------------------------------ M2 on this device (amendment 2)
