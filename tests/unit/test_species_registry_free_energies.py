@@ -29,7 +29,10 @@ Each claim with its plant (D187), in one table whose every row parses a definiti
   elsewhere, and a second set;
 - an entry in kJ/mol (F's kJ form, D234's option (b)) is converted at the world's declared
   temperature: the honest pump entry given in kJ/mol is admitted, and the same entry in a world
-  3 K warmer is refused, its dG°/RT moved by 1 %;
+  3 K warmer is refused, its dG°/RT moved by 1 %. Table 2's four reactions as source-derived
+  entries (the cited pH 7 value with its temperature-free offset, the lead's ruling (A)) are
+  admitted beside the applied set at 310.15 K and at 298.15 K; planted, the same entries on the 1 M
+  basis (converted at 310.15 K and held) are refused at 298.15 K;
 - the moieties (B2): a moiety naming no row is refused; the ATP-driven law's fuel mode conserves
   phosphorus and adenine, and §7.3's planted error, the same mode with Pi +2, is refused naming the
   moiety, as is an entry with Pi +2.
@@ -362,6 +365,43 @@ def a_kJ_entry_at_another_temperature(monkeypatch):
     return raw, kind_scope((planted,))
 
 
+def table_2_entries(one_molar_at=None):
+    """Table 2's four reactions as source-derived entries (F's kJ form, TEMPERATURE_INDEPENDENT),
+    as a law citing Table 2 writes them (the lead's ruling (A)): the cited pH 7 value in kJ/mol
+    with the temperature-free offset nu_H ln 1e7, and -ln(1 + 1e-7 M / k_dH) for synthesis's total
+    phosphate. one_molar_at: the plant, the 1 M basis instead, the value converted to 1 M at that
+    temperature and held constant, with no offset."""
+    out = []
+    for name, (value, stoichiometry) in TABLE_2.items():
+        offset = dict(stoichiometry)["H"] * math.log(1e7)
+        offset -= math.log1p(1e-7 / 1.7783e-7) if name == "F" else 0.0
+        if one_molar_at is not None:
+            value, offset = value + offset * GAS * one_molar_at / 1000.0, 0.0
+        out.append(
+            FreeEnergyEntry(
+                stoichiometry, c0=1000.0, dG_kJ_mol=value, dG_basis=TEMPERATURE_INDEPENDENT,
+                dG_RT_offset=offset,
+            )
+        )  # fmt: skip
+    return tuple(out)
+
+
+def entries_beside_the_set(temperature_K, *, one_molar_at=None):
+    """The set applied in a world at temperature_K, with Table 2's entries declared beside it (a
+    planted declarer: no shipped law is charge-balanced on the set's rows yet)."""
+
+    def setup(monkeypatch):
+        raw = species_registry.with_potential_set(set_world(temperature_K), BEARD)
+        planted = ((TABLE_2_LAWS, table_2_entries(one_molar_at)),)
+        monkeypatch.setattr(species_registry, "declared_free_energies", lambda spec: planted)
+        return raw, contextlib.nullcontext()
+
+    return setup
+
+
+TABLE_2_LAWS = "Table 2's laws' standard_free_energies"
+
+
 def an_entry_naming_water(monkeypatch):
     planted = entry()._replace(stoichiometry=(*HYDROLYSIS, ("H2O", -1)))
     return pump_world(), kind_scope((planted,))
@@ -436,6 +476,13 @@ TABLE = {  # name: (definition and scope, None (admitted) or the refusal's patte
         a_kJ_entry_at_another_temperature,
         rf"{KIND} \(seamtest\.diagram_pump@1's cycle, mode pump\): dG° .* kJ/mol \(dG°/RT .* at "
         r"313\.0 K\) .* beyond its law's form's band",
+    ),
+    "Table 2's reactions beside the set at 310.15 K": (entries_beside_the_set(310.15), None),
+    "Table 2's reactions beside the set at 298.15 K": (entries_beside_the_set(298.15), None),
+    "Table 2's reactions on the 1 M basis at 298.15 K": (
+        entries_beside_the_set(298.15, one_molar_at=310.15),
+        rf"{TABLE_2_LAWS}, entry 0: dG° .* kJ/mol \(dG°/RT .* at 298\.15 K\) .* beyond the "
+        "rounding bound",
     ),
     "an entry with Pi off by one": (
         an_entry_off_by_one,

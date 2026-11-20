@@ -86,9 +86,12 @@ than its band, naming the declarer and the entry:
   check_potentials' rounding: POTENTIAL_ULPS ulps of sum |nu mu°/RT| + |dG°/RT| + |(sum nu)
   ln(c0_registry / c0)|, to which a species' potential at nu = 1 reduces.
 An entry may give dG° in kJ/mol with its basis instead (F's FreeEnergyEntry, D234's option (b)): a
-law writes no temperature, so the registry converts it at the world's, dG°/RT = 1000 dG° / (R T)
-with R laws/electrochemistry's (the one conversion; TEMPERATURE_INDEPENDENT is today's one basis),
-and the entry's band gains one ulp of the converted value, the conversion's own rounding.
+law writes no temperature, so the registry converts it at the world's, dG°/RT = 1000 dG° / (R T) +
+dG_RT_offset with R laws/electrochemistry's (the one conversion; TEMPERATURE_INDEPENDENT is today's
+one basis). The kJ part is held constant and the offset carries no temperature (the lead's ruling
+(A)): a law citing a value at pH 7 writes it with the offset nu_H ln 1e7, and nu ln P(1e-7 M) for a
+total, the split a named set makes, so the two agree at every temperature. The entry's band gains
+one ulp of the converted value, the conversion's own rounding.
 The residual is evaluated at FREE_ENERGY_DIGITS digits from the declared doubles, so its verdict
 does not depend on the order of its terms. An entry naming a species that is not a row of the model
 is refused: water, at unit activity, is omitted, never named. An entry with a row the registry gives
@@ -678,8 +681,8 @@ def check_free_energies(spec):
     cycle law whose form gives one is that form's for its mode: Wegscheider's B_W plus one ulp of
     the mode's implied dG°/RT, the entry's one rounding, so every law Wegscheider's condition
     admits, this check admits. Any other entry's is check_potentials' rounding. An entry in kJ/mol
-    is converted first, dG°/RT = 1000 dG° / (R T) at the model's temperature (its basis,
-    TEMPERATURE_INDEPENDENT, the one today), and its band gains one ulp of that value, the
+    is converted first, dG°/RT = 1000 dG° / (R T) + dG_RT_offset at the model's temperature (its
+    basis, TEMPERATURE_INDEPENDENT, the one today), and its band gains one ulp of that value, the
     conversion's own rounding. Every declared entry is read through F's checks, in a world without
     a registry too; an entry with a species the registry gives no potential is not compared."""
     model = _inner_model(spec)
@@ -729,16 +732,23 @@ def check_free_energies(spec):
 
 def _entry_dG_RT(entry, temperature_K, at, law):
     """(dG°/RT as a Decimal, its words for a refusal) of a free-energy entry: its dG_RT, or its
-    dG_kJ_mol converted at the model's temperature, 1000 dG° / (R T), R laws/electrochemistry's.
-    A basis this conversion does not know is refused (F's reader admits only DG_BASES')."""
+    dG_kJ_mol converted at the model's temperature plus its offset, 1000 dG° / (R T) +
+    dG_RT_offset, R laws/electrochemistry's (the lead's ruling (A): the kJ part is held constant,
+    the offset, its basis's logarithms, carries no temperature). A basis this conversion does not
+    know is refused (F's reader admits only DG_BASES')."""
     from cells.registry.kind_registry import TEMPERATURE_INDEPENDENT
 
     if entry.dG_kJ_mol is None:
         return Decimal(entry.dG_RT), f"dG°/RT {entry.dG_RT!r}"
     if entry.dG_basis != TEMPERATURE_INDEPENDENT:
         raise ConfigError(f"{at}{law}: the registry converts no dG_basis {entry.dG_basis!r}")
+    offset = entry.dG_RT_offset or 0.0
     value = Decimal(entry.dG_kJ_mol) * 1000 / (_gas_constant() * Decimal(temperature_K))
-    return value, f"dG° {entry.dG_kJ_mol!r} kJ/mol (dG°/RT {float(value)!r} at {temperature_K!r} K)"
+    value += Decimal(offset)
+    plus = f" + {offset!r} RT" if offset else ""
+    return value, (
+        f"dG° {entry.dG_kJ_mol!r} kJ/mol{plus} (dG°/RT {float(value)!r} at {temperature_K!r} K)"
+    )
 
 
 # ------------------------------------------------------------------ named potential sets (B1)
