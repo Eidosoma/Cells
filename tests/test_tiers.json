@@ -265,7 +265,8 @@
   "/mnt/workspaces/Cells/ol3-engine-20261119/measure-f3ee6976/measured.json",
   "/mnt/workspaces/Cells/ol3-engine-20261119/measure-e5f57c71/measured.json",
   "/mnt/workspaces/Cells/ol3-engine-20261119/measure-26743c0d/measured.json",
-  "/mnt/workspaces/Cells/ol3-engine-20261119/measure-9f3991ae/measured.json"
+  "/mnt/workspaces/Cells/ol3-engine-20261119/measure-9f3991ae/measured.json",
+  "/mnt/workspaces/Cells/ol3-engine-20261119/measure-590e8789/measured.json"
  ],
  "measured_provenance": [
   {
@@ -2235,6 +2236,13 @@
    "root": "/mnt/workspaces/Cells/ol3-engine-20261119/tree-9f3991ae",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-20T02:19:43+00:00"
+  },
+  {
+   "git_revision": "590e87894449a710df61623698ce3abc410780ba",
+   "dirty": false,
+   "root": "/mnt/workspaces/Cells/ol3-engine-20261119/tree-590e8789",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-20T12:09:34+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -2597,7 +2605,7 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_v2_registration.py",
-    "seconds": 9.16,
+    "seconds": 8.34,
     "exit_code": 0,
     "counts": {
      "passed": 6
@@ -5918,7 +5926,7 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_v2_division.py",
-    "seconds": 39.88,
+    "seconds": 37.64,
     "exit_code": 0,
     "counts": {
      "passed": 13
@@ -5926,7 +5934,7 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_v2_geometry.py",
-    "seconds": 30.34,
+    "seconds": 31.62,
     "exit_code": 0,
     "counts": {
      "passed": 20
@@ -5950,7 +5958,7 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_v2_lumen.py",
-    "seconds": 29.14,
+    "seconds": 30.11,
     "exit_code": 0,
     "counts": {
      "passed": 13
@@ -5958,7 +5966,7 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_v2_population.py",
-    "seconds": 69.96,
+    "seconds": 77.23,
     "exit_code": 0,
     "counts": {
      "passed": 10
