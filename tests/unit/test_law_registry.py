@@ -54,6 +54,7 @@ from cells.laws.channels import (
 from cells.laws.cycles import (
     cytochrome_c_oxygen_proton_cycle,
     electrogenic_nucleotide_exchange,
+    held_reductant_supply,
     nadh_ubiquinone_proton_cycle,
     phosphate_proton_symport,
     potassium_proton_exchange,
@@ -276,6 +277,7 @@ def test_kinds_and_the_inner_model_find_their_laws_by_interface_and_host():
                 electrogenic_nucleotide_exchange,
                 phosphate_proton_symport,
                 potassium_proton_exchange,
+                held_reductant_supply,  # The matrix's NADH supply (the second head).
             )
         },
     }
