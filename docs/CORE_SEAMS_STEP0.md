@@ -1596,3 +1596,91 @@ unchanged.
     - If this world is also refused before its first step's result, a hundredth is run instead,
       confirmed by a tenfold fall.
 - **What does not change:** part A's other runs and their readings, and part B.
+
+### 9.4 Results of §9.3 (20 November 2026)
+
+**The runs.** All ran detached on light CPUs at nice 10, 04:27–04:45 UTC, and each finished at its
+first attempt. The evidence is in `/mnt/workspaces/Cells/core-pass-at3-20261118/p1prime/`:
+`out-face-10259262/` (part B), `floor-10259262/` and `floor2-0d3c845e/` (part A's split, controls
+and rounding probe), and `w0-10259262/` (the FR-8 arm). Each run's log records its scripts' hashes,
+and `SHA256SUMS` holds the final versions.
+
+**A. The floor's source: the closure's stored term, a bulk value rounded at its own scale.**
+- **The split** (§9.3) sums to R within 3.5 × 10⁻¹⁸ pJ on (P-b). Its removal rule picks nothing, as
+  amendment 1 states.
+- **The control confirms the source.**
+  - (P-b)'s world at 5 µV keeps the floor: median |e| 8.0 × 10⁻¹³ pJ, against 9.0 × 10⁻¹³ at 5 mV.
+    So the floor does not scale with the motion.
+  - With both binders at a thousandth, the median |e| is 4.6 × 10⁻¹⁹ pJ: a fall of 1.7 million
+    times, against the hundredfold the criterion asks.
+- **The term-by-term probe does not meet amendment 1's rule as written.**
+  - On the device and on the host, the closure's stored term is computed with the same operations.
+    The two agree to 8.9 × 10⁻¹⁶ pJ at the median, a thousandth of the floor.
+  - They disagree at a few states, by up to 3.2 × 10⁻¹² pJ.
+  - It is still the only term whose evaluations ever differ by more than 5 × 10⁻¹⁸ pJ.
+- **The mechanism.**
+  - The closure's ledger term is S_c(now) − S_c(start). S_c is the binding free energy of the bound
+    protons: −3,583 pJ at the cell under the general closure, and −7,312 pJ under version 1's
+    buffer.
+  - It is evaluated whole and then the start is subtracted. So R carries S_c rounded to its own
+    unit in the last place: 4.5 × 10⁻¹³ pJ at 3,583 pJ, and 9.1 × 10⁻¹³ pJ at 7,312 pJ.
+  - Whenever the state moves, that rounding is drawn afresh at each step. The floor is about two
+    such units under the general closure (9 × 10⁻¹³ pJ) and about three under version 1's
+    (3 × 10⁻¹² pJ).
+  - X2's M counts the term's change, |S_c(now) − S_c(start)|, not its size. So X2's count threshold
+    (1000 eps M, about 2 × 10⁻¹⁴ pJ here) lies 40 times below the floor.
+- **FR-8's worlds do not hit it.**
+  - W0-1 from the frozen snapshot of d03ca463 reproduces its registered summary exactly: 745
+    counted steps, median 4.0057.
+  - All 745 counted steps fall in its first second. Through the 59 calm seconds, the dose at 20 s
+    and the write at 40 s included, no step is counted.
+  - There, e is 4 × 10⁻¹⁶ to 1.5 × 10⁻¹⁴ pJ: about 0.27 eps M, 3,700 times under the count
+    threshold. That is rounding at M's own scale, which is X2's design assumption. W0 has no binding
+    closure.
+  - All 66 FR-8 rung-1 arms that ran to completion passed X2, and none of the refused arms was
+    refused by it. In 48 the median lies in 4.00–4.13; in 18 no step was counted.
+- **The thousandth control at 5 µV would still fail the order condition.** Its median |e|,
+  4.6 × 10⁻¹⁹ pJ, is about 800 eps M and near its threshold (5.7 × 10⁻¹⁹), and its signal is
+  smaller still. The general point: X2's count rule assumes R rounds at about eps M, and it fails
+  wherever one of R's terms is evaluated at a scale far above M.
+- **The fix's shape.** Nothing is changed.
+  1. **At the source, the binding owner's** (`kinds/proton_buffer.py`'s ledger terms,
+     `laws/reactions/rapid_binding.py`'s booked term).
+     - Book the closure's term as a change formed from increments, as the tissue's chemical term
+       does for stored rows ("stable changes avoid subtracting bulk energies").
+     - One way: the forms' changes from the free ligands' log-changes, not as differences of bulk
+       amounts. Another: an integral of the closure's free potentials over the totals' increments.
+     - R then rounds at the change's scale, and X2 works as registered. This is the binding owner's
+       design; an estimate is 1–2 days with its tests.
+  2. **In X2, the user's call, since the rule is registered.**
+     - M counts each kind's bulk terms as evaluated, |S_c(now)| and |S_c(start)|. The count
+       threshold and the row floor then follow R's real rounding.
+     - The cost: in a buffered world, at fine steps, few or no steps are counted. Here the count
+       threshold would be about 10⁻⁹ pJ, above every step's doubled difference at rung 0.01, so the
+       order condition is not applied there. X2's row floor grows to about 2.5 eps k × 7,000 pJ:
+       about 8 × 10⁻⁹ pJ over 2,115 steps, or 6 × 10⁻⁷ of the flows.
+  - **Recommended: the first.** It keeps X2's sensitivity in buffered worlds, which MT-1 is (its
+    H⁺ and Mg²⁺ on the adenylates and Pi, and a matrix buffer). The second is the fallback if the
+    first cannot reach the change's scale.
+
+**B. Host P's face in MT-1's case: second order, no cost in accuracy.** Arm (P-c) is (P-a)'s face,
+at 1.5 × 10⁴ /s, with the lumen at the bath's composition.
+
+| Rung | (a) | Error / offset | Ledger, relative |
+| --- | --- | --- | --- |
+| 0.0025, 0.005 | admitted (references) | — | 4.4 × 10⁻⁷, 6.6 × 10⁻⁷ |
+| 0.01 | admitted | 3.8 × 10⁻⁶ | 1.3 × 10⁻⁶ |
+| 0.02 | admitted | 1.6 × 10⁻⁵ | 4.0 × 10⁻⁶ |
+| 0.05 | admitted | 1.1 × 10⁻⁴ | 2.3 × 10⁻⁵ |
+
+- **Second order:** 4.4 times per doubling, and 6.6 times for 2.5. The reference's bound is
+  7.1 × 10⁻⁷ of the offset. There are no refusals, and L_err ≥ 0.05.
+- **So (P-a)'s first-order error came from its start gradient,** FR-4's lumen against the bath,
+  and not from a fast face. (P-c)'s face is as fast as (P-a)'s and lies between the source's
+  outer-membrane rates for adenylates and Pi.
+- **For MT-1's host P** with the IMS starting at the bath, the outer membrane costs no accuracy up
+  to rung 0.05. Its costs are the closure rows across it (§9.2's options) and the face's step bound
+  (rung 0.108 here; about 18 µs at the source's p_Pi, by the @3 owner's reading of Eq. 13).
+- A first-order error is to be expected only where the bath changes during a run, as at a dose
+  step. MT-1's plan avoids those with separate held-buffer worlds.
+- **This removes the third of §9.2's host-P costs** for MT-1's case.
