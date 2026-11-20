@@ -25,6 +25,17 @@ population axis), so the kind can run any declared cycle with one generic progra
     the term's own stoichiometry (the fallback of §3.2; it exposes no one-way flux, D202). A weight
     is signed and nonzero, so a mode may be booked as a signed combination of cycle fluxes, as a
     cycle basis gives it (J_B - J_C for C = A - B; each term is dissipative alone);
+  - `monomial` (K6, the kinds owner's design note as ruled, 20 November 2026): per mode, in log
+    space,
+        log S = log k + sum_r o_r ln a_r + zeta psi
+                - sum_f s_f log(1 + sum_g K_fg prod_r a_r^q_fgr e^(eta_fg psi))
+                - log sum_{i<n} e^(i x / n),
+    with a_r = c_r/c° the activity at a reference r and n the mode's affinity share (1: none). A
+    reference names a role's species at an end in a form: "free", a species-registry form ID, or
+    "total"; read roles are roles the kinetics read and never move. k is a number or a cited
+    constant (CitedConstant: a standard free energy at pH 7, built at parse at the world's
+    temperature); an exponent is a number or an Affine of a parameter (never a count). The kind's
+    domain for it is one-sided, x <= 80 (complex IV's affinity falls far below -80);
 - its **pH bands** (a row's pH within a declared band, the proton law's fuel band, §5.2) and its
   temperature domain, if it has one.
 
@@ -76,7 +87,9 @@ import jax.numpy as jnp
 import numpy as np
 
 ENDS = ("N", "P")
-KINETICS = ("factored", "diagram", "net_flow")
+KINETICS = ("factored", "diagram", "net_flow", "monomial")
+MAX_SHARE = 8  # A monomial mode's affinity share n: S over sum_{i<n} e^(i x / n).
+FORMS = ("free", "total")  # A reference's forms beside a registry form's ID.
 MAX_EDGES = 16  # A diagram's edges; its simple cycles are enumerated over every edge subset.
 MAX_STATES = 10
 EPS = np.finfo(float).eps  # 2^-52
@@ -159,6 +172,72 @@ class FluxTerm(NamedTuple):
     shift: float = 0.0
 
 
+class Affine(NamedTuple):
+    """A real exponent written from one population parameter: scale p + offset. Exponents only,
+    never counts (the lead's ruling of 20 November 2026)."""
+
+    parameter: str
+    scale: float = 1.0
+    offset: float = 0.0
+
+
+class Reference(NamedTuple):
+    """A concentration a monomial form reads: its role's species at an end (N or P), in a form:
+    "free" (the default), "total", or a species-registry form's ID. The kind resolves it at parse
+    into monomials of free concentrations (the binding owner's three conditions)."""
+
+    role: str
+    end: str
+    form: str = "free"
+
+
+class CitedConstant(NamedTuple):
+    """A rate constant's log built at parse from a cited standard free energy at pH 7 (kJ/mol)
+    and its scalar protons' offset to the 1 M basis, at the world's temperature T (the lead's
+    ruling 7): log k = offset - scale (1000 dg_kj_mol / (R T) + protons ln 1e7)."""
+
+    dg_kj_mol: float
+    protons: int = 0
+    scale: float = 1.0
+    offset: float = 0.0
+
+
+class MonomialTerm(NamedTuple):
+    """One term of a monomial factor's sum: K prod a_r^q e^(eta psi), K a positive number or a
+    positive parameter's name, each q and eta a number or an Affine."""
+
+    k: object
+    orders: tuple = ()  # ((Reference, q), ...)
+    eta: object = 0.0
+
+
+class MonomialFactor(NamedTuple):
+    """(1 + sum_g term_g)^(-power): its power a number or an Affine (either sign), its terms one
+    or more MonomialTerms."""
+
+    power: object
+    terms: tuple
+
+
+class MonomialRate(NamedTuple):
+    """One mode's S (module docstring): log k (a number or a CitedConstant), the orders ((Reference,
+    o), ...), zeta, the factors and the affinity share n."""
+
+    log_k: object = 0.0
+    orders: tuple = ()
+    zeta: object = 0.0
+    factors: tuple = ()
+    share: int = 1
+
+
+class MonomialForm(NamedTuple):
+    """The monomial kinetics' data: one MonomialRate per mode, in the modes' order, and its read
+    roles ((role, valence or None), ...): roles its references may name that have no row."""
+
+    rates: tuple
+    read_roles: tuple = ()
+
+
 def _named(value):
     return isinstance(value, str) and bool(value)
 
@@ -237,6 +316,7 @@ class CycleForm(NamedTuple):
     flux_terms: tuple = ()
     ph_bands: tuple = ()
     temperature_K: tuple | None = None  # (low, high) in K, or None: no domain of its own
+    monomial: MonomialForm | None = None  # The monomial kinetics' data (K6).
 
     @property
     def role_names(self):
@@ -377,6 +457,7 @@ class CycleForm(NamedTuple):
             "factored": bool(self.saturation),
             "diagram": self.diagram is not None,
             "net_flow": bool(self.flux_terms),
+            "monomial": self.monomial is not None,
         }
         stray = sorted(k for k, v in given.items() if v and k != self.kinetics)
         if stray:
@@ -385,6 +466,8 @@ class CycleForm(NamedTuple):
             out += self._saturation_errors(by_name)
         elif self.kinetics == "diagram":
             out += diagram_errors(self)
+        elif self.kinetics == "monomial":
+            out += monomial_errors(self)
         else:
             out += self._flux_term_errors()
         return out
@@ -467,6 +550,8 @@ def resolved(form, values):
     replaced by its value (a k0 by its parameter's, a zeta by its parameter's, negated where it
     names "-name"). The form itself where it names none, so a numeric form, and every world that
     runs one, is unchanged; a form of another kinetics is returned as it is."""
+    if form.kinetics == "monomial":
+        return _resolved_monomial(form, values)
     d = form.diagram
     if form.kinetics != "diagram" or not _named_rates(d):
         return form
@@ -483,6 +568,42 @@ def resolved(form, values):
 
     edges = tuple(e._replace(forward=rate(e.forward), backward=rate(e.backward)) for e in d.edges)
     return form._replace(diagram=d._replace(edges=edges))
+
+
+def _resolved_monomial(form, values):
+    """resolved()'s monomial part: each Affine exponent and each named K replaced by its value for
+    one population (a CitedConstant stays: the kind builds it at the world's temperature). The form
+    itself where it names none."""
+    named = []
+
+    def number(value):
+        if isinstance(value, Affine):
+            named.append(value)
+            return value.scale * float(values[value.parameter]) + value.offset
+        return value
+
+    def constant(value):
+        if _named(value):
+            named.append(value)
+            return float(values[value])
+        return value
+
+    def orders(pairs):
+        return tuple((reference, number(e)) for reference, e in pairs)
+
+    def term(x):
+        return x._replace(k=constant(x.k), orders=orders(x.orders), eta=number(x.eta))
+
+    def factor(f):
+        return f._replace(power=number(f.power), terms=tuple(map(term, f.terms)))
+
+    rates = tuple(
+        r._replace(
+            orders=orders(r.orders), zeta=number(r.zeta), factors=tuple(map(factor, r.factors))
+        )
+        for r in form.monomial.rates
+    )
+    return form._replace(monomial=form.monomial._replace(rates=rates)) if named else form
 
 
 def parameter_errors(form, values):
@@ -886,6 +1007,220 @@ def implied_free_energy(form, mode_index):
     return {role: n for role, n in net.items() if n != 0}, value, d.standard_state_mM
 
 
+# ------------------------------------------------------------------ the monomial form (K6)
+
+
+def monomial_errors(form):
+    """Why a monomial form breaks its contract (CycleForm.errors's monomial part)."""
+    m = form.monomial
+    if not isinstance(m, MonomialForm):
+        return ["a monomial form gives a MonomialForm"]
+    reads = m.read_roles
+    if not (
+        isinstance(reads, tuple)
+        and all(
+            isinstance(r, tuple) and len(r) == 2 and _named(r[0]) and (r[1] is None or _int(r[1]))
+            for r in reads
+        )
+        and len({r[0] for r in reads}) == len(reads)
+    ):
+        return ["its read roles are distinct (role, valence or None) pairs"]
+    out = []
+    names, read_names = set(form.role_names), {r[0] for r in reads}
+    if read_names & names:
+        out.append(f"read roles {sorted(read_names & names)} are also its rows' roles")
+    if not (isinstance(m.rates, tuple) and len(m.rates) == len(form.modes)):
+        return out + ["a monomial form gives one MonomialRate per mode, in the modes' order"]
+    by_name = {p.name: p for p in form.parameters}
+    known = names | read_names
+
+    def exponent_ok(value):
+        if _finite(value):
+            return True
+        return (
+            isinstance(value, Affine)
+            and value.parameter in by_name
+            and _finite(value.scale)
+            and _finite(value.offset)
+        )
+
+    def orders_ok(pairs):
+        return (
+            isinstance(pairs, tuple)
+            and all(
+                isinstance(o, tuple)
+                and len(o) == 2
+                and isinstance(o[0], Reference)
+                and o[0].role in known
+                and o[0].end in ENDS
+                and _named(o[0].form)
+                and exponent_ok(o[1])
+                for o in pairs
+            )
+            and len({o[0] for o in pairs}) == len(pairs)
+        )
+
+    def cited_ok(k):
+        return (
+            isinstance(k, CitedConstant)
+            and all(map(_finite, (k.dg_kj_mol, k.scale, k.offset)))
+            and _int(k.protons)
+        )
+
+    def term_ok(x):
+        if not isinstance(x, MonomialTerm):
+            return False
+        k = by_name.get(x.k) if _named(x.k) else None
+        positive = (_finite(x.k) and x.k > 0) or (k is not None and k.positive)
+        return positive and orders_ok(x.orders) and exponent_ok(x.eta)
+
+    for (mode_id, _), rate in zip(form.modes, m.rates, strict=True):
+        where = f"mode {mode_id}"
+        if not isinstance(rate, MonomialRate):
+            out.append(f"{where}'s rate is a MonomialRate")
+            continue
+        if not (_finite(rate.log_k) or cited_ok(rate.log_k)):
+            out.append(f"{where}: log k is a finite number or a CitedConstant")
+        if not orders_ok(rate.orders):
+            out.append(
+                f"{where}: its orders are distinct (Reference, exponent) pairs on its roles and "
+                "read roles, each exponent a finite number or an Affine of a parameter"
+            )
+        if not exponent_ok(rate.zeta):
+            out.append(f"{where}: zeta is a finite number or an Affine of a parameter")
+        if not (_int(rate.share) and 1 <= rate.share <= MAX_SHARE):
+            out.append(f"{where}: its share is an integer from 1 to {MAX_SHARE}")
+        factors = rate.factors if isinstance(rate.factors, tuple) else (None,)
+        for f in factors:
+            if not (
+                isinstance(f, MonomialFactor)
+                and exponent_ok(f.power)
+                and isinstance(f.terms, tuple)
+                and f.terms
+                and all(map(term_ok, f.terms))
+            ):
+                out.append(
+                    f"{where}: each factor is a MonomialFactor, its power a number or an Affine "
+                    "and its terms one or more MonomialTerms (K positive, a number or a positive "
+                    "parameter; distinct orders on its roles; eta a number or an Affine)"
+                )
+    return out
+
+
+class Monomial(NamedTuple):
+    """A monomial of a population's free-concentration slots: its log constant and its
+    ((slot, coefficient), ...): exp(log_c) prod a_slot^coefficient."""
+
+    log_c: float
+    coefficients: tuple = ()
+
+
+class ExpandedRate(NamedTuple):
+    """One mode's S over a population's free slots, in numbers: log k, orders {slot: o}, zeta, its
+    factors ((power, ((log K, {slot: q}, eta), ...)), ...) and its share."""
+
+    log_k: float
+    orders: dict
+    zeta: float
+    factors: tuple
+    share: int
+
+
+def _add(target, coefficients, scale):
+    for slot, value in coefficients:
+        target[slot] = target.get(slot, 0.0) + scale * value
+
+
+def expand_rate(rate, read, log_k):
+    """One resolved MonomialRate (resolved(): numbers) over a population's free slots.
+    read(reference) -> (Monomial, ...): the reference's activity as a sum of monomials of free
+    slots, its base first (one for "free" and a registry form, base then each form for "total").
+    log_k: the mode's log k, a number (the kind builds a CitedConstant at the world's T).
+    - A total in the orders, a_tot^o = m_0^o (1 + sum_j m_j/m_0)^o: m_0^o joins the orders and a
+      factor of power -o holds the ratios.
+    - A total inside a factor term expands the term into one term per form; it has order 1 and is
+      the term's only total, refused otherwise (ValueError, the kind's parse turns it into a
+      refusal)."""
+    orders, factors = {}, []
+    for reference, o in rate.orders:
+        found = read(reference)
+        base = found[0]
+        log_k += o * base.log_c
+        _add(orders, base.coefficients, o)
+        if len(found) > 1:  # A total: the forms over the base, as a factor of power -o.
+            ratios = []
+            for m in found[1:]:
+                q = {}
+                _add(q, m.coefficients, 1.0)
+                _add(q, base.coefficients, -1.0)
+                ratios.append((m.log_c - base.log_c, q, 0.0))
+            factors.append((-o, tuple(ratios)))
+    for f in rate.factors:
+        terms = []
+        for term in f.terms:
+            log_term, q, total = math.log(term.k), {}, None
+            for reference, e in term.orders:
+                found = read(reference)
+                if len(found) == 1:
+                    log_term += e * found[0].log_c
+                    _add(q, found[0].coefficients, e)
+                elif total is None and e == 1:
+                    total = found
+                else:
+                    raise ValueError(
+                        f"a total inside a factor term has order 1 and is its term's only total "
+                        f"({reference.role}@{reference.end})"
+                    )
+            if total is None:
+                terms.append((log_term, q, term.eta))
+            else:
+                for m in total:
+                    qm = dict(q)
+                    _add(qm, m.coefficients, 1.0)
+                    terms.append((log_term + m.log_c, qm, term.eta))
+        factors.append((f.power, tuple(terms)))
+    return ExpandedRate(log_k, orders, rate.zeta, tuple(factors), rate.share)
+
+
+class MonomialTables(NamedTuple):
+    """One population's monomial tables (NumPy, unpadded but for its own maxima): [M], [M, R],
+    [M], [M, F], [M, F, G], [M, F, G, R], [M, F, G], [M, F, G] and [M]."""
+
+    log_k: np.ndarray
+    orders: np.ndarray
+    zeta: np.ndarray
+    power: np.ndarray
+    term_log_k: np.ndarray
+    term_q: np.ndarray
+    term_eta: np.ndarray
+    term_present: np.ndarray
+    share: np.ndarray
+
+
+def monomial_tables(expanded, n_slots):
+    """The tables of one population's expanded rates (ExpandedRate per mode) over n_slots slots."""
+    m = len(expanded)
+    f_n = max((len(e.factors) for e in expanded), default=0)
+    g_n = max((len(terms) for e in expanded for _, terms in e.factors), default=0)
+    out = MonomialTables(
+        np.zeros(m), np.zeros((m, n_slots)), np.zeros(m), np.zeros((m, f_n)),
+        np.zeros((m, f_n, g_n)), np.zeros((m, f_n, g_n, n_slots)), np.zeros((m, f_n, g_n)),
+        np.zeros((m, f_n, g_n), dtype=bool), np.ones(m, dtype=np.int64),
+    )  # fmt: skip
+    for i, e in enumerate(expanded):
+        out.log_k[i], out.zeta[i], out.share[i] = e.log_k, e.zeta, e.share
+        for slot, o in e.orders.items():
+            out.orders[i, slot] = o
+        for f, (power, terms) in enumerate(e.factors):
+            out.power[i, f] = power
+            for g, (log_term, q, eta) in enumerate(terms):
+                out.term_log_k[i, f, g], out.term_eta[i, f, g] = log_term, eta
+                out.term_present[i, f, g] = True
+                for slot, value in q.items():
+                    out.term_q[i, f, g, slot] = value
+    return out
+
+
 # ------------------------------------------------------------------ a diagram's tables
 
 
@@ -1036,6 +1371,52 @@ def diagram_logs(t, ln_c, psi, *, xp=jnp):
     log_d = logsumexp(xp.broadcast_to(terms[None], rooted.shape), rooted, 1, xp=xp)  # [S, P]
     occupancy = xp.where(t.state_present, xp.exp(log_d - log_sigma[None, :]), 0.0)
     return DiagramLogs(log_s, d_ln_c, d_psi, log_plus, log_minus, log_share, log_rates, occupancy)
+
+
+class MonomialLogs(NamedTuple):
+    """A monomial form's log S [M, P] and its exact slopes: d log S / d ln a over the free slots
+    [M, R, P], d log S / d psi [M, P] and d log S / d x [M, P] (the share's)."""
+
+    log_s: object
+    d_ln_a: object
+    d_psi: object
+    d_x: object
+
+
+def monomial_logs(t, ln_a, psi, x, *, xp=jnp):
+    """The monomial form's log S and its exact slopes (module docstring), per mode and population:
+    t's fields log_k [M, P], orders [M, R, P], zeta [M, P], power [M, F, P], term_log_k
+    [M, F, G, P], term_q [M, F, G, R, P], term_eta [M, F, G, P], term_present [M, F, G, P] and
+    share [M, P] (n);
+    ln a [R, P] at the free slots, psi [P] and x [M, P]. Each factor's log(1 + sum_g e^z_g) is a
+    logsumexp with the 1 as a zero term, and its weights sigma_g a softmax over the same terms."""
+    z = (
+        t.term_log_k
+        + xp.sum(t.term_q * ln_a[None, None, None], axis=3)
+        + t.term_eta * psi[None, None, None]
+    )  # [M, F, G, P]
+    one = xp.zeros(z.shape[:2] + (1,) + z.shape[3:])
+    values = xp.concatenate((one, z), axis=2)
+    mask = xp.concatenate((xp.ones(one.shape, dtype=bool), t.term_present), axis=2)
+    soft = logsumexp(values, mask, 2, xp=xp)  # [M, F, P]: log(1 + sum_g e^z_g)
+    sigma = softmax(values, mask, 2, xp=xp)[:, :, 1:]  # [M, F, G, P]
+    weight = t.power[:, :, None] * sigma  # s_f sigma_fg
+    n = t.share
+    i = xp.arange(MAX_SHARE)[None, :, None]  # [1, I, 1]
+    within = i < n[:, None, :]
+    shares = xp.where(within, i * x[:, None, :] / n[:, None, :], 0.0)
+    log_s = (
+        t.log_k
+        + xp.sum(t.orders * ln_a[None], axis=1)
+        + t.zeta * psi[None]
+        - xp.sum(t.power * soft, axis=1)
+        - logsumexp(shares, within, 1, xp=xp)
+    )
+    w = softmax(shares, within, 1, xp=xp)  # [M, I, P]
+    d_x = -xp.sum(w * i / n[:, None, :], axis=1)
+    d_ln_a = t.orders - xp.sum(weight[:, :, :, None] * t.term_q, axis=(1, 2))
+    d_psi = t.zeta - xp.sum(weight * t.term_eta, axis=(1, 2))
+    return MonomialLogs(log_s, d_ln_a, d_psi, d_x)
 
 
 def sign_exact_flux(log_plus, x, *, xp=jnp):
