@@ -158,6 +158,7 @@ MODELS = MappingProxyType(
             operator_homes=(
                 "cells.models.assembly_lineages_v2.division",
                 "cells.models.assembly_lineages_v2.transfer",
+                "cells.models.assembly_lineages_v2.replacement",  # FR-20 (D240)
             ),
             interfaces=(
                 "cells.reaction_law@1",

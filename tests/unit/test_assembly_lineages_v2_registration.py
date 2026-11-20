@@ -54,6 +54,7 @@ from cells.models.assembly_lineages_v2 import (
     permeation,
     population,
     regular_mixing,
+    replacement,
     transfer,
     transition_state,
 )
@@ -87,6 +88,7 @@ HOMES = {
 OPERATORS = {  # OL3 milestone 1, then OL2 milestone 3
     SHEAR_FISSION: (division, interfaces.AssemblyOperator, OPERATOR_INTERFACE),
     "cells.serial_transfer@1": (transfer, interfaces.AssemblyOperator, OPERATOR_INTERFACE),
+    "cells.pool_replacement@1": (replacement, interfaces.AssemblyOperator, OPERATOR_INTERFACE),
 }
 
 
