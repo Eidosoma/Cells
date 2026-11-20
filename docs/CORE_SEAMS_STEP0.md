@@ -1220,3 +1220,34 @@ stopped.
   - the windows are 128 steps wide;
   - (P-b) runs before (P-a), since it isolates the ΔΨ mode.
 - **What does not change:** the worlds, the ladder, the readings and the rules.
+
+**Amendment 4 to §9.1 (20 November 2026), committed before its arm runs: the source's own
+activity.** This is the lead's request, from the mitochondria lane's appendix (branch mito-lane,
+1eaf2310, `docs/MITOCHONDRIA_LAWS_APPENDIX.md`).
+- **Why.** The appendix estimates, at the source's X_F1, a desk estimate and not a measurement:
+  - the synthase's one-way flux J⁺: 1.4–3.4 mol s⁻¹ (L mito)⁻¹ at 150 mV, and 39–98 at 180 mV;
+  - q²F²J⁺/(RT·C_IM): 7 × 10⁴–1.7 × 10⁵ /s at 150 mV, and 2–5 × 10⁶ /s at 180 mV.
+
+  MITOCHONDRIA_DESIGN §2.3's table stops at 0.1 mol s⁻¹ L⁻¹. The ladder's rungs are dimensionless,
+  so this arm checks what changes with scale: the closure's envelope, the predictor, the absolute
+  floors.
+- **Arm S** is (P-b)'s world, with the pump's capacity raised by f so that ΣG/C at the start is
+  1.7 × 10⁵ /s (S150) or 5 × 10⁶ /s (S180). Those are the upper ends of the two estimates, taken
+  over the cell's capacitance as the rungs are.
+  - **The offset falls** so that the start's net flux is (P-b)'s: e^a − 1 = (e^{a₀} − 1)/f. The
+    closure's envelope reads the stage's net transport, so it sees what (P-b)'s sees. ΣG/C follows
+    the one-way flux, so it takes the source's value.
+  - **The values:** f = 108 with an offset of 68 µV (S150); f = 3,214 with an offset of 2.3 µV
+    (S180).
+  - **Its runs:** rungs 0.01, 0.05 and 0.28 in reading (b), MT-1's configuration, and the 0.0025
+    reference arm in reading (a).
+  - **Its reading:** by the same rules, each limit converted to an absolute step,
+    dt = rung/(ΣG/C).
+  - It runs beside the ladder, on another light CPU at nice 10, from the same snapshot. The probe is
+    `p1p_scale.py`, which leaves the others unchanged.
+- **Host P's outer membrane, the lead's second question.** This is a statement, not a change. P1′'s
+  host-P arms assume a face that moves no row the IMS's closure holds.
+  - The face moves Na, K, Cl and the trace rows; H and the binder stay.
+  - `check_closure_rows` refuses a face at a row the closure holds. MT-1's host P needs ATP, ADP
+    and Pi to cross the outer membrane, and in the IMS they are closure rows.
+  - The options and their costs are reported with the results.
