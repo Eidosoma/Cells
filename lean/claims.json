@@ -11,6 +11,53 @@
     "cell-physiology": "Cell physiology"
   },
   "comparisons": {
+    "scheduled-bath-exchange": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [
+        "cells.constant_field@1",
+        "cells.logmean_electrodiffusion@1"
+      ],
+      "operators": [
+        "cells.scheduled_bath_composition@1"
+      ],
+      "engine_revision": "94327ec434ee49f543d2b2e046c6ddb2eaa5e902",
+      "record_revision": "22c5bb1c30b6eb79bdcf179392853755259a57e7",
+      "sources": {
+        "Bath event, dose, charge and energy": "src/cells/operators/bath_schedule.py#L456",
+        "Reservoir work correction": "src/cells/operators/bath_schedule.py#L498",
+        "Constant-field membrane flux": "src/cells/laws/junctions/selective.py#L19",
+        "Independent continuous finite-pool solution": "validation/fr10/references/faces.py#L150",
+        "Independent dose and free-energy records": "validation/fr10/references/records.py#L140",
+        "Independent sum of reservoir work over each interval": "validation/fr10/references/records.py#L230"
+      },
+      "driver": "lean/checks/bath_schedule.py",
+      "record": "lean/PROGRESS.md#scheduled-bath-exchange"
+    },
+    "bath-recipe-order": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [],
+      "operators": [
+        "cells.scheduled_bath_composition@1"
+      ],
+      "engine_revision": "94327ec434ee49f543d2b2e046c6ddb2eaa5e902",
+      "record_revision": "22c5bb1c30b6eb79bdcf179392853755259a57e7",
+      "sources": {
+        "Integer charge check on formula units": "src/cells/operators/bath_schedule.py#L164",
+        "Accumulation of the per-species offsets": "src/cells/operators/bath_schedule.py#L229",
+        "Absolute target construction": "src/cells/operators/bath_schedule.py#L286",
+        "Application and booking of the target": "src/cells/operators/bath_schedule.py#L456"
+      },
+      "driver": "lean/checks/bath_schedule.py",
+      "record": "lean/PROGRESS.md#bath-recipe-order"
+    },
     "regulated-state-response": {
       "kind": "engine",
       "models": [
@@ -736,6 +783,111 @@
     }
   },
   "claims": [
+    {
+      "id": "scheduled-bath-exchange",
+      "category": "tissue-and-conservation",
+      "title": "A held bath can return to its original composition after supplying solute and work to tissue",
+      "statement": "Neutral formula units preserve bath charge. Across any sequence of solution changes, net controller dose and the bath’s ideal free-energy change depend only on the endpoints. The work delivered to tissue is the sum of the signed material supplied at each interval’s bath potential. A K-selective membrane at fixed intracellular K has a reversal shift set by the ratio of the two external K concentrations.",
+      "assumptions": [
+        "The bath is held at fixed volume, temperature and electrical potential. Each formula unit has integer counts and zero net valence. Signed offsets specify absolute targets against the initial composition. Every resulting species concentration is positive.",
+        "Work is per species with positive supply into the tissue. The comparison uses ideal chemical potentials and the same held electrode potential before and after each switch.",
+        "For the voltage comparison K⁺ is the only permeant ion. Intracellular K activity stays fixed during the voltage scan and the ratio of external concentrations represents the activity ratio. The biological comparison uses differences between group means at steady bath levels."
+      ],
+      "uses": [
+        "reaction-inventory",
+        "charged-permeation"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.scheduled_bath_composition@1"
+        ],
+        "theorems": {
+          "CellsProofs.Tissue.BathSchedule.target_charge": "lean/CellsProofs/Tissue/BathSchedule.lean",
+          "CellsProofs.Tissue.BathSchedule.neutral_event": "lean/CellsProofs/Tissue/BathSchedule.lean",
+          "CellsProofs.Tissue.BathSchedule.salt_swap": "lean/CellsProofs/Tissue/BathSchedule.lean",
+          "CellsProofs.Tissue.BathSchedule.changes_telescope": "lean/CellsProofs/Tissue/BathSchedule.lean",
+          "CellsProofs.Tissue.BathSchedule.energy_booking": "lean/CellsProofs/Tissue/BathSchedule.lean",
+          "CellsProofs.Tissue.BathSchedule.potential_change": "lean/CellsProofs/Tissue/BathSchedule.lean",
+          "CellsProofs.Tissue.BathSchedule.switch_continuous": "lean/CellsProofs/Tissue/BathSchedule.lean",
+          "CellsProofs.Tissue.BathSchedule.supply_work": "lean/CellsProofs/Tissue/BathSchedule.lean",
+          "CellsProofs.Tissue.BathSchedule.epoch_sum": "lean/CellsProofs/Tissue/BathSchedule.lean",
+          "CellsProofs.Tissue.BathSchedule.reversal_shift": "lean/CellsProofs/Tissue/BathSchedule.lean"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "scheduled-bath-exchange"
+        ],
+        "result": "Four neutral switches under ARS(2,2,2) and RK4 returned the bath’s net dose to zero, with 1.3955 × 10⁻⁴ fmol supplied to a finite pool. The work correction retained 2.5987 × 10⁻⁴ pJ. A separate 50-digit interval sum using each solver’s actual supply agreed within 5.43 × 10⁻²⁰ pJ at all 28 observations. The continuous finite-pool reference also checked the delivered amount. A compiled salt schedule reached all four experimental K concentrations."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Shift of the K-selective current reversal when extracellular KCl replaces NaCl in equal molar amounts. Local exchange time and the bath’s chemical work are separate observables.",
+        "unit": "mV",
+        "evidence": [
+          {
+            "dataset_id": "randle1991_potassium@1",
+            "manifest": "lean/checks/data/randle1991_potassium.json",
+            "citation": "Randle, Oliet and Renaud (1991), p. 1796 and Fig. 3a",
+            "doi": "10.1111/j.1476-5381.1991.tb09865.x",
+            "locator": "Mean reversal potentials at 1, 2.5, 5.4 and 12 mM extracellular K⁺ from the Results. The Methods give equimolar NaCl replacement and 33–35 °C.",
+            "context": "Whole-cell recordings in adult guinea-pig ventricular myocytes. Each endpoint is the reversal of the current induced by 100 µM cromakalim. The Cells comparison uses the midpoint temperature of 34 °C.",
+            "role": "descriptive",
+            "fit": [],
+            "evaluation": [
+              "All three adjacent concentration shifts, with no fitted voltages"
+            ],
+            "excluded": [
+              "Rb and Cs substitutions",
+              "Current amplitude and conductance"
+            ],
+            "observed": 21.4,
+            "predicted": 21.14,
+            "uncertainty": "At the four doses, reported means ± SEM were −131.5 ± 1.8, −104.6 ± 6.9, −87.2 ± 1.9 and −65.8 ± 2.2 mV. Clear reversals occurred in 4/9, 9/18, 12/14 and 7/9 recorded cells. The shifts compare group means. The temperature range gives +21.07 to +21.20 mV for 5.4 → 12 mM.",
+            "assessment": "The displayed comparison is the 5.4 → 12 mM K⁺ step. For 1 → 2.5 and 2.5 → 5.4 mM the predicted shifts were +24.25 and +20.38 mV, against observed shifts of +26.9 and +17.4 mV. This checks the equilibrium membrane response. Bath exchange timing and reservoir work remain unmeasured in these cells.",
+            "report": "lean/PROGRESS.md#scheduled-bath-exchange"
+          }
+        ]
+      }
+    },
+    {
+      "id": "bath-recipe-order",
+      "category": "tissue-and-conservation",
+      "title": "Permuting the formula units of a bath recipe preserves its exact dose",
+      "statement": "Each species’ target is the original amount plus the fixed bath volume times the signed sum of its contributions from the formula units. Permuting those contributions preserves the exact target, including a small residual after cancellation.",
+      "assumptions": [
+        "The two definitions contain the same formula-unit counts, offsets, starting amount and bath volume. Only the order of the entries changes.",
+        "In the tests, the solute is neutral, the bath volume is 1 pL, and every input and count-times-offset product is exactly representable in float64. The independently calculated net dose is a binary fraction."
+      ],
+      "uses": [
+        "scheduled-bath-exchange"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.scheduled_bath_composition@1"
+        ],
+        "theorems": {
+          "CellsProofs.Tissue.BathSchedule.recipe_order": "lean/CellsProofs/Tissue/BathSchedule.lean",
+          "CellsProofs.Tissue.BathSchedule.recipe_residual": "lean/CellsProofs/Tissue/BathSchedule.lean"
+        }
+      },
+      "numerical": {
+        "status": "failed",
+        "comparisons": [
+          "bath-recipe-order"
+        ],
+        "result": "With ordinary offsets both orders booked 0.00048828125 fmol. With large opposing terms, one order delivered that amount and the other delivered zero. At trace concentration, ordinary opposing terms of ±24 mM likewise gave either the full trace dose or zero. All six worlds were accepted. The discrepancy was already present in the parsed target and carried through to the final held amount and dose record."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Independently assayed final solute concentration after preparing equivalent mixtures. Sensitivity to the order of entries in an engine input can be tested directly with the same recipe.",
+        "unit": "mM",
+        "evidence": []
+      }
+    },
     {
       "id": "regulated-state-response",
       "category": "channels-and-junctions",
