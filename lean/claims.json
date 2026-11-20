@@ -10,9 +10,6 @@
     "tissue-and-conservation": "Tissue transport and conservation",
     "cell-physiology": "Cell physiology"
   },
-  "law_categories": {
-    "cells.na2_anion_symport_diagram@1": "pumps-and-cotransport"
-  },
   "comparisons": {
     "junction": {
       "kind": "engine",
@@ -225,6 +222,23 @@
       "driver": "lean/checks/inward_rectifier.py",
       "record_revision": "40dfe4de2a04559196bddef7e32c01cffc056e7b",
       "record": "lean/PROGRESS.md#19-november-2026--inward-rectification-and-sodium-anion-symport"
+    },
+    "sodium-anion-diagram": {
+      "kind": "engine",
+      "models": ["resolved_pump_tissue@3"],
+      "laws": ["na2_anion_symport_diagram@1"],
+      "engine_revision": "b9da010327ce52327feb86e07e76d823e2202d96",
+      "record_revision": "ba3d6091cf5ac501099949b6a36a81d261c1dd72",
+      "sources": {
+        "Declared cycle and rate assignments": "src/cells/laws/cycles/na2_anion_symport_diagram.py#L67",
+        "Detailed-balance check": "src/cells/laws/cycles/forms.py#L923",
+        "Stationary occupancies and rates": "src/cells/laws/cycles/forms.py#L1346",
+        "Capacity in the mode evaluator": "src/cells/kinds/transporter.py#L1776",
+        "Capacity in the edge probe": "src/cells/kinds/transporter.py#L2288",
+        "Independent 50-digit master equation": "tests/unit/test_cycle_forms.py#L314"
+      },
+      "driver": "lean/checks/sodium_anion_diagram.py",
+      "record": "lean/PROGRESS.md#20-november-2026--eight-state-sodiumanion-cotransport"
     },
     "sodium-anion-symport": {
       "kind": "engine",
@@ -1214,6 +1228,76 @@
             "report": "lean/PROGRESS.md#19-november-2026--inward-rectification-and-sodium-anion-symport",
             "observed": -0.59,
             "predicted": -0.385
+          }
+        ]
+      }
+    },
+    {
+      "id": "sodium-anion-diagram",
+      "category": "pumps-and-cotransport",
+      "title": "The eight-state sodium–anion carrier shares a cycle flux and saturates with external substrate",
+      "statement": "Each edge of a steady ring carries the same net flux. For the declared two-sodium, one-anion cycle, exact detailed balance gives the host’s thermodynamic turnover and stall. For an active population at fixed voltage, sodium and internal substrate, the increase in inward current over its zero-substrate limit has the form A x / (K + x) for positive A and K.",
+      "assumptions": [
+        "The carrier is at steady state on the single eight-edge ring with positive microscopic rates. Its forward and backward directions each bind the two sodium ions and the anion in the declared order. One net positive charge enters per forward cycle.",
+        "Equality with the thermodynamic rate assumes equal products of the base rate constants and a net electrical coefficient of −1 in the forward direction. A separate theorem retains the constant and voltage residuals for populations admitted within the engine’s detailed-balance tolerance.",
+        "The current comparison requires positive capacity and availability. The saturation result holds at fixed temperature, voltage, availability, all other activities and rate parameters. External substrate changes only its one forward binding rate. The reference current at zero substrate is the boundary value of the mass-action expression. The observed current is the measured steady current after subtracting its substrate-free baseline."
+      ],
+      "uses": ["sodium-anion-symport"],
+      "formal": {
+        "status": "proved",
+        "about": ["cells.na2_anion_symport_diagram@1"],
+        "theorems": {
+          "CellsProofs.Transport.SodiumAnionDiagram.stationary_edge": "lean/CellsProofs/Transport/SodiumAnionDiagram.lean",
+          "CellsProofs.Transport.SodiumAnionDiagram.denominator_pos": "lean/CellsProofs/Transport/SodiumAnionDiagram.lean",
+          "CellsProofs.Transport.SodiumAnionDiagram.occupancy_normalized": "lean/CellsProofs/Transport/SodiumAnionDiagram.lean",
+          "CellsProofs.Transport.SodiumAnionDiagram.denominator_affine": "lean/CellsProofs/Transport/SodiumAnionDiagram.lean",
+          "CellsProofs.Transport.SodiumAnionDiagram.denominator_slope_pos": "lean/CellsProofs/Transport/SodiumAnionDiagram.lean",
+          "CellsProofs.Transport.SodiumAnionDiagram.substrate_response": "lean/CellsProofs/Transport/SodiumAnionDiagram.lean",
+          "CellsProofs.Transport.SodiumAnionDiagram.ordered_substrate_edge": "lean/CellsProofs/Transport/SodiumAnionDiagram.lean",
+          "CellsProofs.Transport.SodiumAnionDiagram.ordered_dose_response": "lean/CellsProofs/Transport/SodiumAnionDiagram.lean",
+          "CellsProofs.Transport.SodiumAnionDiagram.product_with_residual": "lean/CellsProofs/Transport/SodiumAnionDiagram.lean",
+          "CellsProofs.Transport.SodiumAnionDiagram.cycle_flux_eq_host": "lean/CellsProofs/Transport/SodiumAnionDiagram.lean",
+          "CellsProofs.Transport.SodiumAnionDiagram.cycle_stall": "lean/CellsProofs/Transport/SodiumAnionDiagram.lean",
+          "CellsProofs.Transport.SodiumAnionDiagram.stall_slope": "lean/CellsProofs/Transport/SodiumAnionDiagram.lean"
+        }
+      },
+      "numerical": {
+        "status": "failed",
+        "comparisons": ["sodium-anion-diagram"],
+        "result": "At 10⁻³⁰² fmol/s capacity, the diagnostic edge and reverse fluxes were 100 times their correct values in NumPy and compiled CPU float64. The mode and material rates matched the independent master equation. The 60 ordinary cases, 18 dose points and the tissue booking check passed."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Baseline-subtracted steady current as external monocarboxylate concentration or clamped voltage changes. The dose series tests the functional form. A biological assignment for the individual transition rates and voltage coefficients remains open.",
+        "unit": "nA inward magnitude (propionate), µA signed current (lactate)",
+        "evidence": [
+          {
+            "dataset_id": "miyauchi2004_propionate@1",
+            "manifest": "lean/checks/data/miyauchi2004_propionate.json",
+            "doi": "10.1074/jbc.C400059200",
+            "citation": "Miyauchi et al., Fig. 2A",
+            "locator": "The data are the six filled symbols in the main propionate panel.",
+            "context": "Human SLC5A8 in one representative Xenopus oocyte at −50 mV, 100 mM external sodium and pH 7.5. The inward current is measured relative to the substrate-free baseline.",
+            "role": "held_out_from_fitting",
+            "fit": ["100 µM propionate", "1,000 µM propionate"],
+            "evaluation": ["50 µM propionate", "250 µM propionate", "500 µM propionate", "2,500 µM propionate"],
+            "uncertainty": "The approximate graph-reading precision is ±5 nA. Per-point biological uncertainties and the measurement temperature are unspecified. The paper reports similar results from three additional oocytes.",
+            "assessment": "Two calibration points gave K = 130 µM. At 250 µM the proven curve predicted 260 nA against 278 nA measured. At 2,500 µM it predicted 376 nA against 371 nA. The figure provides too little biological uncertainty for a population verdict.",
+            "report": "lean/PROGRESS.md#20-november-2026--eight-state-sodiumanion-cotransport"
+          },
+          {
+            "dataset_id": "coady2007_lactate_voltage@1",
+            "manifest": "lean/checks/data/coady2007_lactate_voltage.json",
+            "doi": "10.1529/biophysj.107.108555",
+            "citation": "Coady et al., Fig. 5",
+            "locator": "Subtract the substrate-free ibuprofen-sensitive trace from the 1 mM lactate trace at each negative voltage.",
+            "context": "Human SMCT1 in a Xenopus oocyte, 96 mM external sodium, approximately 24 °C and pH 7.6.",
+            "role": "descriptive",
+            "evaluation": ["−50 mV with 1 mM lactate", "−150 mV with 1 mM lactate"],
+            "excluded": ["Positive-voltage currents dominated by an anion leak"],
+            "uncertainty": "One representative experiment, approximate reading precision ±0.03 µA. Intracellular activities and kinetic parameters for this preparation are unavailable.",
+            "assessment": "The inward current rose from about 0.68 to 1.40 µA in magnitude between −50 and −150 mV. Predicting that voltage dependence requires the transition kinetics.",
+            "report": "lean/PROGRESS.md#20-november-2026--eight-state-sodiumanion-cotransport"
           }
         ]
       }
