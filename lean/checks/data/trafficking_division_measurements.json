@@ -1,0 +1,66 @@
+{
+  "matamala2021_lysosome_voltage@1": {
+    "doi": "10.1038/s42003-021-01916-6",
+    "figure": "4i and its calibration results",
+    "preparation": "Resting lysosomes in intact cultured HEK293 cells",
+    "sign": "lumen minus cytosol",
+    "mean_mV": 56,
+    "sd_mV": 7,
+    "independent_experiments": 7,
+    "lysosomal_regions": 106,
+    "limits": "The optical calibration uses an inferred zero-potential endpoint. The reported range for quantitative measurements is about −10 to +110 mV. The result is preparation-specific."
+  },
+  "ojima2021_ampar_recycling@1": {
+    "doi": "10.1038/s41467-021-21082-x",
+    "figure": "5c–e",
+    "preparation": "Resting primary hippocampal neuronal cultures, endogenous AMPA receptors",
+    "snapshot_label_h": 10,
+    "snapshot_percent_whole_label": {"surface_mean": 90.4, "surface_sem": 0.6, "intracellular_mean": 10.3, "intracellular_sem": 1.7},
+    "chase_min": 15,
+    "resurfaced_percent_reference_surface": {"mean": 12.5, "sem": 2.8},
+    "biological_replicates_each": 3,
+    "limits": "The chase uses reference surface signal as its denominator. Remaining intracellular label at the end of the chase was unmeasured. The separate snapshot cannot supply that missing endpoint."
+  },
+  "okamoto2016_retrieved_membrane@1": {
+    "doi": "10.7554/eLife.14643",
+    "figure": "1C–E",
+    "preparation": "Stimulated calyx-of-Held terminals in brainstem slices at room temperature",
+    "peak_capacitance_jump_pF": {"mean": 1.52, "sem": 0.21, "terminals": 7},
+    "elapsed_s": 60,
+    "remaining_fraction_of_own_peak": {
+      "capacitance": {"mean": 0.33, "sem": 0.06, "terminals": 7},
+      "synaptotagmin2_fluorescence": {"mean": 0.47, "sem": 0.07, "terminals": 10}
+    },
+    "limits": "Seven terminals had simultaneous readings. Capacitance measures net surface membrane retrieval and the fluorescence also depends on vesicle re-acidification."
+  },
+  "adarlevor2021_bridge_stalk@1": {
+    "doi": "10.1073/pnas.2021210118",
+    "figure": "1D, with the membrane continuity comparison in 1E",
+    "preparation": "Developing zebrafish embryos",
+    "observable": "Microtubule-stalk diameter at the midbody rim in one representative bridge",
+    "columns": ["elapsed_min", "diameter_um"],
+    "fit": [[0, 2.5], [5, 1.6]],
+    "evaluation": [[10, 1.6], [15, 1.6], [20, 1.0], [23, 0.55], [24, 0.25]],
+    "extraction": "Approximate centers read from the published single-bridge trace. Time is relative to the first plotted frame; use diameter ratios for normalized radius.",
+    "limits": "The caption gives 18 bridges in five embryos. This representative series has no pointwise error bars. Membrane continuity can persist for minutes after tubulin disappears. The stalk is a proxy for aperture."
+  },
+  "antanaviciute2018_bridge_conductance@1": {
+    "doi": "10.3390/medicina54040053",
+    "figure": "2A–D, original recordings reported in section 5",
+    "preparation": "Dividing HeLa sisters connected by visible midbody-containing bridges",
+    "observable": "Electrical conductance between the two daughters",
+    "bridges": 15,
+    "conductance_nS": {"mean": 32, "reported_error": 6, "lowest_below": 1, "highest": 70},
+    "limits": "The authors do not identify the error statistic. Conductance is reported across bridges. The time in the illustrative recording is relative to the voltage ramp. Paired bridge radius over time and age since furrowing were unreported."
+  },
+  "green2013_daughter_isolation@1": {
+    "doi": "10.1083/jcb.201306036",
+    "figure": "1A and 4D–E",
+    "preparation": "First division of C. elegans embryos, control condition",
+    "observable": "Normalized inter-daughter exchange slope of 10 kDa dextran",
+    "time_origin": "Start of furrow ingression",
+    "columns": ["elapsed_s", "slope_per_1000_s", "lower_90_percent", "upper_90_percent"],
+    "exchange": [[30, 10.8, 8.5, 13.0], [100, 7.0, 5.4, 8.6], [230, 1.8, 0.7, 2.9], [260, -0.4, -1.9, 1.1]],
+    "limits": "Graph readings are approximate. The slope denominator is the initial fluorescence difference between daughters. Each time bin has about ten slope estimates on average with partly overlapping windows. The last interval includes zero. The tracer is a macromolecule, and these data do not measure ionic conductance."
+  }
+}

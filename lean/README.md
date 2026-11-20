@@ -6,7 +6,7 @@ Browse Cells engine laws by scientific topic. Each claim links its Lean proofs, 
 
 <!-- generated: claims-index -->
 
-Direct Lean claims cover [37 of 37 laws](COVERAGE.md#registered-laws) and [22 of 26 operators](COVERAGE.md#registered-operators).
+Direct Lean claims cover [37 of 37 laws](COVERAGE.md#registered-laws) and [26 of 26 operators](COVERAGE.md#registered-operators).
 
 | Category | Registered laws with proof | Claims with proof | Numerical checks | Claims with biological evidence |
 | --- | ---: | ---: | --- | ---: |
@@ -15,8 +15,8 @@ Direct Lean claims cover [37 of 37 laws](COVERAGE.md#registered-laws) and [22 of
 | [Pumps and cotransport](COVERAGE.md#category-pumps-and-cotransport) | 6 of 6 | 5 of 5 | 4 checked · 1 failed | 5 |
 | [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 1 of 1 | 6 of 6 | 4 checked · 2 failed | 4 |
 | [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 10 of 10 | 16 of 16 | 12 checked · 4 failed | 13 |
-| [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 1 of 1 | 14 of 14 | 11 checked · 3 failed | 10 |
-| [Cell physiology](COVERAGE.md#category-cell-physiology) | — | 1 of 2 | 2 checked | 2 |
+| [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 1 of 1 | 17 of 17 | 14 checked · 3 failed | 13 |
+| [Cell physiology](COVERAGE.md#category-cell-physiology) | — | 2 of 3 | 3 checked | 3 |
 
 <!-- /generated -->
 
@@ -126,6 +126,19 @@ cells_python=${CELLS_PYTHON:-python}
 
 <details>
 <summary>Commands for individual comparisons</summary>
+
+For cell compartments and membrane recycling, follow each owner's species and lumen voltage, then compare how much membrane area and channel cargo return. The strict command checks whether an engine run can observe a nearly depleted channel population. It exits 1 on the recorded engine revision. [Compartment and recycling results](PROGRESS.md#owned-compartment-inventory) · [Reachable zero-count refusal](PROGRESS.md#trafficking-empty-surface)
+
+```bash
+"$cells_python" -B checks/compartment_trafficking.py
+"$cells_python" -B checks/compartment_trafficking.py --require-trajectory
+```
+
+For division, compare the daughter amounts, voltage and booked work to the event equations. The same driver follows linear and exponential bridge closure, checks the resulting species fluxes, and compares both aperture curves with held-out points from a zebrafish bridge. [Division event](PROGRESS.md#isopotential-division) · [Bridge closure and measured diameters](PROGRESS.md#daughter-bridge-closure)
+
+```bash
+"$cells_python" -B checks/division_bridge.py
+```
 
 For membrane populations, follow precursor into maturing, active and removed units, then read the potassium flow at several patch areas. The driver also evaluates published receptor retention and endplate currents. The second command isolates the recorded rounding residual at exactly zero units. [Turnover and maturation](PROGRESS.md#surface-population-turnover) · [Current and surface count](PROGRESS.md#membrane-population-flow) · [Empty-population finding](PROGRESS.md#empty-surface-flow)
 
