@@ -1126,14 +1126,15 @@ class TemplatedPolymerisation(Operator):
         )
 
     def working_size(self, spec):
-        """Bytes per step, as D152's: its rows at every cell, and each route's arrays over its
-        listed species (a chain's over its stages too)."""
+        """Values per step (execution/resources.trace_bytes multiplies by 8 bytes): its rows at
+        every cell, and each route's arrays over its listed species (a chain's over its stages
+        too)."""
         x, s = spec.execution, len(spec.model.species_ids)
         (d,) = (d for op, d, _ in composite_spec.entries(spec) if op.LAW_ID == LAW_ID)
         k, depth = len(d.species), max((c.stages for c in d.chains), default=0)
         routes = len(d.chains) * (depth + 4) + len(d.pools) + len(d.degradations)
         routes += len(d.transfers)
-        return 8 * ((6 * s + 8) * x.capacity + routes * (6 * k + 16))
+        return (6 * s + 8) * x.capacity + routes * (6 * k + 16)
 
     def summary(self, spec, declaration, schedule, history):
         return {
