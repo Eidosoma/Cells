@@ -95,13 +95,14 @@ class Schedule:
     its times: declared (times), or a Poisson process of rate `rate` (1/s) drawn per run."""
 
     index: int
-    kind: str  # "shear" or "transfer"
+    kind: str  # "shear", "transfer" or "replacement" (FR-20)
     k: int | None
     times: tuple | None
     rate: float | None
     stress: float | None
     keep: int | None = None  # a transfer's K_keep
-    fresh: tuple | None = None  # a transfer's fresh pool: one count per finite pool place
+    fresh: tuple | None = None  # a transfer's fresh pool, or a replacement's pool: one count per
+    # finite pool place
 
 
 def parse_schedules(raw, world):
@@ -111,10 +112,11 @@ def parse_schedules(raw, world):
     critical = None if world.division is None else world.division["critical_stress_Pa"]
     out, seen = [], set()
     for entry in raw:
-        if isinstance(entry, dict) and entry.get("kind") == "transfer":
-            from cells.models.assembly_lineages_v2 import transfer
+        if isinstance(entry, dict) and entry.get("kind") in ("transfer", "replacement"):
+            from cells.models.assembly_lineages_v2 import replacement, transfer
 
-            schedule = transfer.parse(entry, world)
+            module = transfer if entry["kind"] == "transfer" else replacement
+            schedule = module.parse(entry, world)
             if schedule.index in seen:
                 raise ConfigError("experiment: schedule indices are unique")
             seen.add(schedule.index)
@@ -122,8 +124,9 @@ def parse_schedules(raw, world):
             continue
         if not isinstance(entry, dict) or entry.get("kind") != "shear":
             raise ConfigError(
-                "experiment: a schedule is {index, kind: shear, k, times_s, ...} or "
-                "{index, kind: transfer, times_s, K_keep, fresh_pool}"
+                "experiment: a schedule is {index, kind: shear, k, times_s, ...}, "
+                "{index, kind: transfer, times_s, K_keep, fresh_pool} or "
+                "{index, kind: replacement, times_s, pool}"
             )
         if world.division is None:
             raise ConfigError("experiment: a shear schedule needs the world's division block")
@@ -159,6 +162,19 @@ def parse_schedules(raw, world):
             stress = finite_number(entry["stress_Pa"], "experiment: schedule stress_Pa")
         out.append(Schedule(index, "shear", k, times, rate, stress))
     out.sort(key=lambda s: s.index)
+    # FR-20: a replacement never shares a declared time with another stop, since cells.relations
+    # has no order between same-time events (the lead's condition of 20 November).
+    for s in out:
+        if s.kind != "replacement":
+            continue
+        for other in out:
+            shared = set(s.times) & set(other.times or ()) if other is not s else set()
+            if shared:
+                raise ConfigError(
+                    f"experiment: replacement {s.index} shares the time {min(shared)} s with "
+                    f"schedule {other.index} ({other.kind}); relations have no order between "
+                    "same-time events, so a replacement stands alone in time"
+                )
     first = {}  # Two shear schedules never share a time: each attempt has one payer (19 November).
     for s in out:
         index = s.index
@@ -178,6 +194,10 @@ def schedule_to_dict(schedules):
         if s.kind == "transfer":
             out.append({"index": s.index, "kind": s.kind, "times_s": list(s.times),
                         "K_keep": s.keep, "fresh_pool": list(s.fresh)})  # fmt: skip
+            continue
+        if s.kind == "replacement":
+            out.append({"index": s.index, "kind": s.kind, "times_s": list(s.times),
+                        "pool": list(s.fresh)})  # fmt: skip
             continue
         entry = {"index": s.index, "kind": s.kind, "k": s.k}
         if s.times is not None:

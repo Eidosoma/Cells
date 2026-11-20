@@ -296,3 +296,35 @@ The record is written when the experiment declares `diagnostic: true`, as `diagn
     it;
   - in relations@2, the lives alive at the cut are `continued`.
 - **The joining rule** for the two segments' records is `checkpoints.py`'s module docstring.
+
+## FR-20: a pool replacement, a pulse or a washout (`cells.pool_replacement@1`)
+
+- **The declaration:** `{index, kind: replacement, times_s, pool}`, beside the shear and transfer
+  schedules. `pool` gives one count per finite pool place, in place order, as a transfer's
+  `fresh_pool` does.
+- **At each time, a host stop:**
+  - it draws nothing;
+  - every slot is kept as it stands;
+  - the pool's finite places take `pool`;
+  - the held places, c_ext and the pool's volume are unchanged.
+- **Refused:**
+  - a replacement without a population;
+  - a `pool` of the wrong length;
+  - fresh solutes above c_ext;
+  - a held pool species that also has a membrane or lumen place, since it could not be washed out.
+- **Booking:** the sink takes F of the old pool, and the schedule's column `schedule_work_kT` takes
+  F of the fresh pool. `shear_work_kT` plus the transfers' and replacements' work equals the
+  columns' sum at every row.
+- **Records:**
+  - `row_kind` adds `replacement`;
+  - `run.json`'s `population.replacements` lists each replacement: its `id`, `time_s`, `schedule`,
+    `removed` and `supplied` (`{place: count}` over the finite pool places), `sink_kT` and
+    `work_kT`;
+  - the diagnostic record's `replacement_events` holds the same;
+  - relations@2 adds the event `event:replacement/<n>` (kind `replacement`, at `node:pool`), the
+    source `source:replacement/<index>` (schedule, substrate, the payer of its column), the nodes
+    `node:pool` and `sink:discard`, and, per species with a count, a `removes_to` edge from
+    `node:pool` to the sink and a `supplies` edge from the source to `node:pool`, each weighed by
+    its count at the event (mode `event`);
+  - a world without a replacement writes none of these, but for the `row_kind` legend in
+    `run.json`, which lists `replacement` for every population.
