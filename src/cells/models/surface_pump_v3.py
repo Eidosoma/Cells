@@ -2631,6 +2631,14 @@ def _difference(plus, minus, says):
 _OUTWARD = _flow(
     "inside", "outside", "a positive amount leaves the patch's cell for its outside node"
 )
+_MEMBRANE_FLUX = _flow(
+    "inside",
+    "outside",
+    "a positive amount leaves the patch's cell for its outside node; a declared kind's conversion "
+    "at P (cells.transporter@1, chemistry at P) appears as its forms crossing in opposite "
+    "directions, the electron's charge written in them, so the patch's current is the charge the "
+    "field sees",
+)
 _CHANNEL_OUTWARD = _flow(
     "inside",
     "outside",
@@ -2706,7 +2714,13 @@ _VIEW_TABLE = {
     "extracellular_potential_V": ("V", "level", "membrane", ("extracellular_slot",), None),
     "membrane_voltage_V": ("V", "level", "membrane", ("membrane_slot",), _MEMBRANE_VOLTAGE),
     "junction_voltage_V": ("V", "level", "membrane", ("edge_slot",), _JUNCTION_VOLTAGE),
-    "membrane_flux_fmol_s": ("fmol/s", "rate", "membrane", ("species", "membrane_slot"), _OUTWARD),
+    "membrane_flux_fmol_s": (
+        "fmol/s",
+        "rate",
+        "membrane",
+        ("species", "membrane_slot"),
+        _MEMBRANE_FLUX,
+    ),
     "junction_flux_fmol_s": (
         "fmol/s",
         "rate",
