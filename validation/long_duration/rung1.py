@@ -30,6 +30,8 @@ instrument OUTPUT ROOT       I1a and I4 (§5, §10.5), read before any reading.
 analyse OUTPUT ROOT INSTR    the readings (§4, §5, §10); refuses unless INSTR validated.
 timed ARM OUT_DIR REF_DIR    the cost re-run (§10.1): its rows against REF_DIR's, bitwise.
 plant STEP_MS OUTPUT         FR-3's plant at another step (§10.1; a cross-check under §10.6).
+calm-run STEP_MS SOURCE_DIR OUT_DIR   §10.8's calm probe at a step (development).
+calm-read OUTPUT ROOT SOURCE_DIR       its reading (development, information).
 inworld-plant ARM OUTPUT [AT_MS]
                              §10.7's plant in the arm's world at its step (AT_MS: development).
 """
@@ -1403,6 +1405,148 @@ def plant(step_text, output):
     return 0
 
 
+# ------------------------------------------------------------- §10.8's calm probe (development)
+
+CALM_FROM_MS, CALM_TO_MS = (
+    1_000_000,
+    1_790_000,
+)  # Well past H2's start-up transient; before the cue.
+CALM_STEPS = ("20", "50", "100", "200", "250")  # Up to the 292 ms explicit-rate bound.
+
+
+def calm_start(source_dir, step_text):
+    """Rule (b), development only (§10.8): H2 at the step from CALM_FROM_MS to CALM_TO_MS, whose
+    declared initial values are the source arm's saved state at CALM_FROM_MS (the control's
+    H2-slow-1); the source's sha256 and identity are recorded."""
+    import jax
+
+    jax.config.update("jax_enable_x64", True)
+    from cells.definitions.specs import parse_spec
+    from cells.registry.models import get_model
+    from validation.long_duration import worlds
+    from validation.tissue.excitable_import import CONTROL_GROUPS, carry_amounts
+
+    source_dir = Path(source_dir)
+    record = json.loads((source_dir / "run.json").read_text())
+    rows_path = source_dir / "rows.npz"
+    provenance = dict(
+        rows=str(rows_path),
+        rows_sha256=sha256(rows_path),
+        arm=record.get("arm"),
+        revision=record.get("snapshot_revision"),
+        dt_s=record.get("dt_s"),
+    )
+    source_raw = json.loads((source_dir / "definition.json").read_text())
+    model = get_model(parse_spec(source_raw).model)
+    _, p0 = model.initial_values(parse_spec(source_raw))
+    with np.load(rows_path) as archive:
+        found = np.flatnonzero(np.round(archive["times"] * 1000).astype(np.int64) == CALM_FROM_MS)
+        if len(found) != 1:
+            raise ImportRefused(f"the source has no row at {CALM_FROM_MS} ms")
+        row = model.STATE_TYPE(*(np.array(archive[f][found[0]]) for f in model.STATE_TYPE._fields))
+    ci, co = (np.asarray(v) for v in model.physical_amounts(row, p0))
+    step_ms, dt = step_of(step_text)
+    raw = worlds.h2(dt)
+    m, e, x = raw["model"], raw["experiment"], raw["execution"]
+    species = [s["id"] for s in m["species"]]
+    valence = [s["valence"] for s in m["species"]]
+    carry_amounts(m["cells"], ci[:, : len(m["cells"])], np.zeros_like(ci), species, valence)
+    carry_amounts(m["extracellular"], co[:, : len(m["extracellular"])], np.zeros_like(co),
+                  species, valence)  # fmt: skip
+    gates = np.asarray(row.channel_gate)
+    for j, c in enumerate(m["channels"]):
+        c["initial_gate"] = [float(g) for g in gates[: len(c["initial_gate"]), j]]
+    for group, _ in (*CONTROL_GROUPS, ("junction_controls", "junction_id")):
+        for control in e.get(group, []):
+            control["schedule"] = retimed(
+                control["schedule"], CALM_FROM_MS, CALM_TO_MS, step_ms, dt
+            )
+    length = CALM_TO_MS - CALM_FROM_MS
+    e["end_time"] = grid_time(length, step_ms, dt)
+    e["observation_times"] = [grid_time(i, step_ms, dt) for i in range(0, length + 1, 10_000)]
+    x["max_steps"] = int(Fraction(length) / step_ms) + 8
+    x["energy_check"] = x2_block()
+    return raw, dict(rule="(b), development only (§10.8)", source=provenance, from_ms=CALM_FROM_MS,
+                     to_ms=CALM_TO_MS)  # fmt: skip
+
+
+def calm_run(step_text, source_dir, out_dir):
+    """One step of §10.8's calm probe: the re-based run with X2 on, its rows every 10 s."""
+    import jax
+
+    jax.config.update("jax_enable_x64", True)
+    from cells.definitions.specs import parse_spec
+    from cells.execution.windows import WindowPolicy, run_windowed
+    from validation.long_duration import harness
+
+    out = Path(out_dir)
+    out.mkdir(parents=True, exist_ok=False)
+    record = dict(study="FR-8 rung 1, §10.8's calm probe (development, not a registered verdict)",
+                  step_ms=step_text, energy_check=x2_block(), snapshot_revision=
+                  harness.snapshot_revision(), cpu_affinity=sorted(os.sched_getaffinity(0)),
+                  started_utc=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()))  # fmt: skip
+    started, keeper = time.perf_counter(), None
+    try:
+        raw, record["import"] = calm_start(source_dir, step_text)
+        (out / "definition.json").write_text(json.dumps(raw, indent=1) + "\n")
+        spec = parse_spec(raw)
+        keeper = harness.Keeper(spec.experiment.observation_times)
+        policy = WindowPolicy(window_steps=registration()["window_steps"], row_checks="device")
+        result = run_windowed(spec, policy, sink=keeper)
+        record.update(status="complete", steps=int(result.resources["executed_steps"]),
+                      energy_check_summary=result.resources.get("energy_check"),
+                      timings={k: float(v) for k, v in result.timings.items()})  # fmt: skip
+    except Exception as error:  # A refusal is a result, kept.
+        record.update(status="refused", error_type=type(error).__name__, error=str(error))
+    record["seconds"] = time.perf_counter() - started
+    if keeper is not None and keeper.rows:
+        times = np.asarray(sorted(keeper.rows))
+        columns = list(zip(*(keeper.rows[t] for t in times), strict=True))
+        rows = {name: np.stack(v) for name, v in zip(keeper.fields, columns, strict=True)}
+        np.savez_compressed(out / "rows.npz", times=times, **rows)
+        record.update(rows_kept=len(times), last_row_s=float(times[-1]))
+    (out / "run.json").write_text(json.dumps(record, indent=1, default=str) + "\n")
+    print(json.dumps({k: record.get(k) for k in ("step_ms", "status", "steps", "error")}))
+    return 0
+
+
+def calm_read(output, root, source_dir):
+    """§10.8's reading: per step, its status and refusal kind, X2's summary, and its rows against
+    R3 (with R1-R3's bounds, under both bars) and against the source arm, over the calm window."""
+    import jax
+
+    jax.config.update("jax_enable_x64", True)
+    stage0 = stage0_ladder()
+    source = Series(source_dir, None, 0, 1.0)
+    out = dict(study="§10.8's calm probe (development, information)", steps={})
+    ladder = []
+    for step in CALM_STEPS:
+        d = Path(root) / f"calm-{step}"
+        arm = Series(d, None, CALM_FROM_MS, 1.0 / float(Fraction(step)))
+        entry = dict(x2=x2_of(arm))
+        if arm.complete and arm.c is not None:
+            ms = arm.ms
+            table = compare(arm, [(stage0, np.ones(len(ms), bool), None)], ms)
+            entry["readings"] = {bar: verdict_rows(table, ms, bar) for bar in BARS}
+            entry["largest_vs_R3"] = {k: float(np.nanmax(v["delta"])) for k, v in table.items()}
+            i_s = source.at(ms)
+            entry["largest_vs_source"] = {
+                key: float(np.max(difference(arm.c[key][arm.at(ms)], source.c[key][i_s], key)))
+                for key in CLASS_KEYS
+            }
+        else:
+            r = refusal_of(arm.record)
+            entry["readings"] = {bar: r for bar in BARS}
+        out["steps"][step] = entry
+        ladder.append((float(Fraction(step)), entry["readings"]))
+    for bar in BARS:
+        rungs = [(s, r[bar]["verdict"], r[bar].get("cause")) for s, r in ladder]
+        out[f"largest_{bar}"] = dt_star(rungs)
+    Path(output).write_text(json.dumps(out, indent=1, default=float) + "\n")
+    print(json.dumps({bar: out[f"largest_{bar}"] for bar in BARS}, default=float)[:1500])
+    return 0
+
+
 SMOKES = (  # Development only: no registered window, horizon or row.
     ("H2-WA-k0", dict(span=(600_000, 600_050))),
     ("H2-WA-k3", dict(span=(600_000, 600_050))),
@@ -1435,6 +1579,10 @@ def main(argv):
         return plant(argv[1], argv[2])
     if len(argv) in (3, 4) and argv[0] == "inworld-plant":
         return inworld_plant(argv[1], argv[2], *argv[3:])
+    if len(argv) == 4 and argv[0] == "calm-run":
+        return calm_run(argv[1], argv[2], argv[3])
+    if len(argv) == 4 and argv[0] == "calm-read":
+        return calm_read(argv[1], argv[2], argv[3])
     if argv == ["arms"]:
         print("\n".join(control_arms()))
         return 0
