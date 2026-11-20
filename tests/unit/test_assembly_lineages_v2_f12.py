@@ -22,10 +22,9 @@ Each claim with a planted error it must catch (D187):
   recorded as refused (planted: a parent whose counts no longer sum is refused).
 
 World-compiling cost: one program (a natural lineage and two futures of one structure, one lane),
-61-69 s for the whole file, local and unmeasured: on CPU 23 at a machine load near 34, not on the
-timed lane. Most of it is the osmotic verdict that every osmotic world pays once per process.
-Reason: the reader's contract is the saved bundle's format, and the futures' checks are the runs'
-own.
+40.25 s for the whole file on the timed lane (CPUs 4 and 5 under the timed lock, at 225b1926).
+Most of it is the osmotic verdict that every osmotic world pays once per process. Reason: the
+reader's contract is the saved bundle's format, and the futures' checks are the runs' own.
 """
 
 import copy
