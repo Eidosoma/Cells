@@ -50,9 +50,46 @@ and their plotted standard errors, read from published figures.
 - **The judged run stays pending** until two things are decided: the mapping from measured
   protein to functional surface units, and FR-8's timing.
 
+**The U251 background: Ratto et al. (2019/2020), bare values (D253, D254):**
+- **The file:** `u251_background_ratto_2020_values.csv`. It holds the cited numbers the lead read
+  from the paper:
+  - resting voltage in the IN and OUT cells after a wound assay;
+  - membrane resistance and capacitance of the cells with constitutive currents;
+  - the capacitance of the cells without currents;
+  - the barium-sensitive Kir4.1 maximum conductance and reversal;
+  - the junction potential.
+
+  The recording solutions are in the manifest's study entry.
+- **Licence:** © Springer, with no CC licence, so only bare cited numbers are recorded. No text or
+  figure is reproduced (D227).
+- **Not corroboration** of Ambrosini et al. under D248: it comes from a different lab.
+- **Comparability with Ambrosini et al.'s recordings:**
+  - **Configuration:** whole-cell perforated patch with nystatin, against Ambrosini's presumed
+    dialysed whole cell.
+    - Nystatin pores pass monovalent ions, chloride included. So Ratto's cytosol moves toward the
+      pipette's KCl 140 / NaCl 4 mM, with chloride near 144 mM.
+    - Ambrosini's dialysed cytosol has chloride 17 mM and no sodium.
+    - **The OUT cells' -34.7 mV is the background's reversal in Ratto's conditions, not in
+      Ambrosini's.** A Goldman-Hodgkin-Katz desk estimate (D254) fitted to -34.7 mV puts the same
+      background at about -37 mV in Ambrosini's conditions if its non-potassium part is sodium,
+      and about -76 mV if it is chloride.
+  - **Conductance:** the membrane resistance and capacitance of the cells with constitutive
+    currents give a total resting conductance of about 0.046 nS/pF (0.073 at two SEMs).
+    - That is an upper bound on the background, since those cells carry Kir4.1 and other currents.
+    - There is no lower bound: no membrane resistance is given for the cells without currents.
+  - **Other differences:**
+    - the cells were polarised by a wound assay;
+    - the junction corrections differ, 8.8 mV against 15 mV;
+    - both temperatures are unstated;
+    - the bath potassium is 5 mM against 4.8 mM.
+- **Use:** item 4 stays a consistency check (D254). These values do not make a link able to fail;
+  D254 lists what would.
+
 **Attribution:**
 - Figure readings adapted from Ambrosini et al. (2014), Hum. Mol. Genet.,
   doi:10.1093/hmg/ddu201, (c) the authors, CC BY 4.0
   (https://creativecommons.org/licenses/by/4.0/).
 - Qile et al. (2019), Front. Physiol., doi:10.3389/fphys.2019.00863, (c) the authors, CC BY 4.0.
+- Ratto et al. (2019/2020), Cell Mol Neurobiol, doi:10.1007/s10571-019-00776-3, (c) Springer, no CC
+  licence: bare cited numbers only.
 - No figure images are committed.
