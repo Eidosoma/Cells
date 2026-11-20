@@ -51,6 +51,7 @@ from cells.laws.channels import (
     kv1p4_mh,
     kv1p6_mh,
 )
+from cells.laws.cycles import na2_anion_symport_diagram as symport2
 from cells.laws.cycles import na_anion_symport_factored as symport
 from cells.laws.routes import passive_permeation
 from cells.laws.transport import proton_leak
@@ -253,6 +254,7 @@ def test_kinds_and_the_inner_model_find_their_laws_by_interface_and_host():
         transporter.NEUTRAL_LAW: transporter.NEUTRAL,
         transporter.PROTON_LAW: transporter.PROTON,
         symport.DECLARED_ID: symport.LAW,
+        symport2.DECLARED_ID: symport2.LAW,
     }
     assert passive_routes.hosted_laws() == {
         passive_routes.LAW_ID: passive_routes.NEUTRAL,

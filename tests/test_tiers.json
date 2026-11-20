@@ -239,7 +239,8 @@
   "/mnt/workspaces/Cells/review4-20261119/tiers-5d97148e/measure/measured.json",
   "/mnt/workspaces/Cells/fr7-loop-20261119/tiers-f2/measured-de65d033/measured.json",
   "/mnt/workspaces/Cells/fr7-references-20261119-01/measure/measured.json",
-  "/mnt/workspaces/Cells/fr7-references-20261119-01/measure-loop/measured.json"
+  "/mnt/workspaces/Cells/fr7-references-20261119-01/measure-loop/measured.json",
+  "/mnt/workspaces/Cells/core-pass-kinds-20261118/gate-967922e6/tiers/measure/measured.json"
  ],
  "measured_provenance": [
   {
@@ -2015,6 +2016,14 @@
    "root": "/mnt/workspaces/Cells/fr7-references-20261119-01/snapshot-40150069",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-19T23:20:54+00:00"
+  },
+  {
+   "git_revision": "967922e65bab852aa062f05bc4e44b708c284fea",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/core-pass-kinds-20261118/snapshot-967922e6",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-19T18:57:04+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -2703,7 +2712,7 @@
    },
    {
     "file": "tests/unit/test_cell_owned_compartments.py",
-    "seconds": 9.94,
+    "seconds": 9.74,
     "exit_code": 0,
     "counts": {
      "passed": 191
@@ -2984,7 +2993,7 @@
    },
    {
     "file": "tests/unit/test_cycle_forms.py",
-    "seconds": 1.42,
+    "seconds": 1.37,
     "exit_code": 0,
     "counts": {
      "passed": 16
@@ -4121,8 +4130,16 @@
     }
    },
    {
+    "file": "tests/unit/test_na2_anion_symport_diagram.py",
+    "seconds": 3.32,
+    "exit_code": 0,
+    "counts": {
+     "passed": 5
+    }
+   },
+   {
     "file": "tests/unit/test_na_anion_symport_factored.py",
-    "seconds": 3.97,
+    "seconds": 3.32,
     "exit_code": 0,
     "counts": {
      "passed": 4
@@ -6152,7 +6169,7 @@
    },
    {
     "file": "tests/unit/test_law_registry.py",
-    "seconds": 22.58,
+    "seconds": 21.92,
     "exit_code": 0,
     "counts": {
      "passed": 9
