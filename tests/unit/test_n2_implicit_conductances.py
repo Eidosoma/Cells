@@ -2,7 +2,8 @@
 
 Host-only rows, no world compiled (about 2 s): the frozen slope against a central difference of the
 constant-field flux; the operator block's symmetry, zero row sums and non-negative conductances;
-the N2 ID admitted by @3's parse alone, with its static layout switch; X2's guard at the step
+the N2 ID admitted by @3's parse (wherever the ionic step is @3's), with its static layout switch;
+X2's guard at the step
 checks; and the definition-time bound, which drops the charge terms N2 makes implicit (H2's 292 ms
 term) and keeps every species' material relaxation. The stepped rows (ledgers, heat against RK4,
 second order) are N2's rows in test_surface_pump_v3_imex.py.

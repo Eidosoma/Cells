@@ -472,8 +472,10 @@ def parse(data):
             )
         given.setdefault(kind_registry.qualified(kind.kind_id), {})[key] = e.pop(key)
     m["id"] = second.MODEL_ID
-    # N2 (D235): @3 alone admits the implicit-conductance IDs. @2's parse validates ARS(2,2,2),
-    # their tableau, and the ID returns to the execution below; @1 and @2 refuse it themselves.
+    # N2 (D235): the implicit-conductance IDs are admitted wherever the ionic step is @3's, so by
+    # this parse: @3 itself and the models that parse through it (water@1, the composite), the
+    # intended scope. @2's parse validates ARS(2,2,2), their tableau, and the ID returns to the
+    # execution below; @1 and @2 refuse it themselves.
     solver = x.get("solver")
     if solver in imex.IMPLICIT_CONDUCTANCE_IDS:
         x["solver"] = imex.ARS222_ID
