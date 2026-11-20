@@ -307,6 +307,8 @@ def test_the_general_form_and_both_diversions_take_the_population_axis_and_write
         (dict(held_rows=[["ATP", "P"]]), "held_rows lists distinct rows"),
         (dict(held_rows=[["ATP", "N"]]), "held together or moved together"),
         (dict(law="cells.proton_atp_mass_action_positive@1"), "roles binds each of proton"),
+        (dict(proton_readout="Y"), "proton_readout names the model's free-proton species row"),
+        (dict(proton_readout="nowhere"), "proton_readout names the model's free-proton"),
     ],
 )
 def test_the_general_parse_refuses_with_its_reason(over, reason):
@@ -1106,6 +1108,117 @@ def test_the_trapezoid_pick_is_refused_for_a_net_flow_population_and_an_unadmitt
     plain = dataclasses.replace(transporter.TRANSPORTER, heat_bookings=())
     with tk.scoped(plain), pytest.raises(ConfigError, match="admits no heat booking"):
         parse_spec(trapezoid_booked(tk.held_world()))
+
+
+# ----------------------------------------------------------------- the proton readouts (K4)
+
+UNIPORT = law_registry.CycleLaw(
+    "seamtest.proton_uniport@1",
+    (),
+    (),
+    None,
+    None,
+    cycle=CycleForm(
+        kinetics="net_flow",
+        roles=(("H", 1),),
+        rows=(("H", "N"), ("H", "P")),
+        modes=(("uniport", (-2, 2)),),
+        flux_terms=((FluxTerm(1.0, (-2, 2)),),),
+    ),
+    host=transporter.KIND_ID,
+    provenance="calibrated",
+    source="a test-only law moving two protons from N to P and nothing else, never shipped",
+)
+
+
+def proton_world():
+    """held_world with H+ at pH 7.2 in the cell and 7.0 in the bath, and three proton uniports:
+    two naming H for the proton readouts, N the cell for one and the bath for the other, and one
+    naming none."""
+
+    def uniport(name, n_end, **over):
+        return dict(
+            id=name,
+            host="membrane_0",
+            law=UNIPORT.law_id,
+            orientation={"N": n_end},
+            capacity_fmol_s=0.01,
+            roles={"H": "H"},
+            parameters={},
+            held_rows=[],
+            **over,
+        )
+
+    raw = tk.held_world(
+        uniport("u_a", "a", proton_readout="H"),
+        uniport("u_b", "b", proton_readout="H"),
+        uniport("u_0", "a"),
+    )
+    return add_species(raw, "H", 1, 0.0, {"cell_0": 10.0**-4.2, "bath_0": 10.0**-4.0})
+
+
+def test_the_proton_readouts_tie_delta_p_to_a_pure_proton_modes_x_with_beards_sign():
+    """K4: delta psi = phi_P - phi_N and delta p = delta psi + (RT/F) ln(h_P / h_N) per asking
+    population, so a mode moving two protons from N to P alone has RT x = 2 F delta p, at set
+    potentials and through the core's observations (the stage read, the field's potentials).
+    Turning N to the other end flips both; a population naming no row reads 0, and a definition
+    without the key keeps today's entry, fields and columns. Planted: either sign flipped (delta
+    psi as phi_N - phi_P, or ln(h_N / h_P)) breaks the tie. The run view states both as
+    differences P less N, and the counts' N-to-P orientation."""
+    from cells.execution.state import initialise
+    from cells.records import run_view
+
+    raw = proton_world()
+    with mono_scoped(UNIPORT):
+        spec = parse_spec(copy.deepcopy(raw))
+        structure, state, p, control = start(spec)
+        impl = get_model(spec.model)
+        history = impl.STATE_TYPE(*(np.asarray(v)[None] for v in state))
+        observed = impl.observe_history(np.zeros(1), history, p, [0.0], spec)
+        plan = run_view.prepare(spec, run_view.Request(), layout=initialise(spec).layout)
+        view = plan.view(run_view.single_file_bases([0.0], [0.0]), "write_run")
+        for entry in raw["model"]["transporters"]:  # The same world without the key.
+            entry.pop("proton_readout", None)
+        bare = surface_pump_v3.structure(parse_spec(raw).model).kinds
+    declaration = dict(spec.model.kinds)[transporter.KIND_ID]
+    assert transporter.to_dict(declaration) == proton_world()["model"]["transporters"]
+    ((_, entry),) = structure.kinds
+    assert entry == transporter.CycleAxis((UNIPORT.law_id,), True)
+    bound = kind_registry.bound(transporter.TRANSPORTER, entry)
+    assert bound.readout_columns[-2:] == transporter.PROTON_READOUT_COLUMNS
+    assert set(transporter.PROTON_READOUT_FIELDS) <= set(type(p)._fields)
+    ((_, entry),) = bare  # Without the key: today's entry, fields and columns.
+    assert entry == transporter.CycleAxis((UNIPORT.law_id,))
+    bound = kind_registry.bound(transporter.TRANSPORTER, entry)
+    assert bound.readout_columns == transporter.GENERAL_READOUT_COLUMNS
+    assert not set(transporter.PROTON_READOUT_FIELDS) & set(bound.layout_fields)
+
+    def ties(rt_x, delta_p):
+        return np.allclose(rt_x, 2.0 * F * delta_p, rtol=1e-12, atol=0.0)
+
+    potentials = potentials_for(p, -0.15, 0.0)
+    _, rt_x, _, dpsi, dp = transporter.readouts(state, state, potentials, control, p, xp=np)
+    observed_dp = observed.cycle_proton_motive_force_V[0]
+    observed_rt_x = observed.cycle_free_energy_J_mol[0]
+    assert dpsi[0] == 0.15 and dpsi[1] == -0.15 and dp[1] == -dp[0]  # N at the bath: flipped.
+    log_ratio = 0.2 * math.log(10.0)  # ln(h_bath / h_cell)
+    expected = 0.15 + R * spec.model.temperature_K / F * log_ratio
+    assert dp[0] == pytest.approx(expected, rel=1e-12)
+    assert ties(rt_x[0, :2], dp[:2]) and ties(observed_rt_x[0, :2], observed_dp[:2])
+    assert observed_dp[0] != 0 and observed_dp[1] == -observed_dp[0]
+    assert dpsi[2] == dp[2] == 0 and rt_x[0, 2] != 0  # Naming no row: 0, its x read as before.
+    assert observed.cycle_membrane_potential_V[0][2] == observed_dp[2] == 0
+    chem = dp - dpsi
+    for planted in (chem - dpsi, dpsi - chem):  # Planted: each sign flipped.
+        assert not ties(rt_x[0, :2], planted[:2])
+    records = {r["field"]: r for r in view["records"]}
+    for column in transporter.PROTON_READOUT_COLUMNS:
+        record = records[column]
+        assert record["unit"] == "V" and record["kind"] == "level", record
+        assert (record["difference"]["plus"], record["difference"]["minus"]) == ("P", "N")
+    count = records["cycle_count"]["sign"]
+    assert (count["from"], count["to"]) == ("N", "P")
+    run_view.validate(view)
 
 
 # ------------------------------------------------------------------ M2 on this device (amendment 2)
