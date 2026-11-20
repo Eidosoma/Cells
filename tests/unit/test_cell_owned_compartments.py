@@ -743,6 +743,19 @@ def test_the_built_in_kinds_hold_the_step_terms_their_laws_declare():
         # Declares no step term: refused at a compartment's node (fail-closed).
         "cells.na_anion_symport_factored@1": (),
         "cells.na2_anion_symport_diagram@1": (),  # Version 2: likewise, no step term.
+        # The mitochondrion's inner-membrane laws: likewise.
+        **dict.fromkeys(
+            (
+                "cells.nadh_ubiquinone_proton_cycle@1",
+                "cells.ubiquinol_cytochrome_c_proton_cycle@1",
+                "cells.cytochrome_c_oxygen_proton_cycle@1",
+                "cells.proton_coupled_atp_synthesis_cycle@1",
+                "cells.electrogenic_nucleotide_exchange@1",
+                "cells.phosphate_proton_symport@1",
+                "cells.potassium_proton_exchange@1",
+            ),
+            (),
+        ),
     }
     assert comp.held_terms(pump, NEUTRAL_PUMP)[1] == "declares no step term"
     from validation.compartment_ph_engine import definitions as defs
