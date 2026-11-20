@@ -719,9 +719,15 @@ def check_free_energies(spec):
 
 # ------------------------------------------------------------------ named potential sets (B1)
 
-# The gas constant, J/(mol K): N_A k_B, exact in SI, at the digits the sets are derived at.
-GAS_CONSTANT_J_MOL_K = Decimal("6.02214076e23") * Decimal("1.380649e-23")
 SET_C0_MM = 1000.0  # A set's own standard state: every species at 1 M.
+
+
+def _gas_constant():
+    """R in J/(mol K) as a Decimal: laws/electrochemistry's, the one authority (N_A k_B in SI),
+    imported here only when a set or an entry in kJ/mol needs it."""
+    from cells.laws.electrochemistry import R
+
+    return Decimal(R)
 
 
 class SetForm(NamedTuple):
@@ -904,7 +910,7 @@ def potential_set_values(name, *, temperature_K, standard_concentration_mM):
         raise ValueError(f"Potential set {name}: " + "; ".join(problems))
     with localcontext() as ctx:
         ctx.prec = FREE_ENERGY_DIGITS
-        rt = GAS_CONSTANT_J_MOL_K * Decimal(temperature_K) / 1000  # kJ/mol
+        rt = _gas_constant() * Decimal(temperature_K) / 1000  # kJ/mol
         shift = (Decimal(standard_concentration_mM) / Decimal(SET_C0_MM)).ln()
         polynomial = {}
         for f in s.forms:
