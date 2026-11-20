@@ -176,7 +176,7 @@ class EngineSpec(NamedTuple):
 # parameters and role bindings; until then each entry is not built.
 # Filled by the kinds owner's first head (a recorded exception in the lane's file, by the lead's
 # leave, 20 November 2026): complexes I, III and IV, the synthase and the three carriers; and by
-# its second, under the same leave: the supply.
+# its second, under the same leave: the supply and the kinase.
 _C3_ROLES = (("QH2", "QH2"), ("Q", "Q"), ("c_ox", "cytc_ox"), ("c_red", "cytc_red"), ("H", "H"),
              ("Pi", "Pi"))  # fmt: skip
 ENGINE = {
@@ -249,7 +249,14 @@ ENGINE = {
             ("Pi", "Pi"),
         ),
     ),
-    "adenylate_kinase": EngineSpec(None, capacity="X_AK", potential_set="beard2005@2"),
+    "adenylate_kinase": EngineSpec(
+        "cells.adenylate_kinase@1",
+        "phosphotransfer",
+        "X_AK",
+        parameters=(("K_MgATP", "K_MgATP"),),
+        roles=(("ADP", "ADP"), ("ATP", "ATP"), ("AMP", "AMP"), ("Mg", "Mg")),
+        potential_set="beard2005@2",
+    ),
 }
 
 # The potential set's rows and forms as the references name their inputs.
