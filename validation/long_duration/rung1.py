@@ -32,6 +32,9 @@ timed ARM OUT_DIR REF_DIR    the cost re-run (§10.1): its rows against REF_DIR'
 plant STEP_MS OUTPUT         FR-3's plant at another step (§10.1; a cross-check under §10.6).
 calm-run STEP_MS SOURCE_DIR OUT_DIR   §10.8's calm probe at a step (development).
 step-change OUT_DIR [--no-window]     §10.9's step change, 20 ms to 1 ms and back (development).
+c-run OUT_DIR                         §10.10: C's registered arm.
+c-timed OUT_DIR REF_DIR               §10.10 (c): its timed re-run, rows checked bitwise.
+c-judge OUTPUT C_DIR [FULL1_COST C_COST]  §10.10's verdict on C's arm.
 calm-read OUTPUT ROOT SOURCE_DIR       its reading (development, information).
 inworld-plant ARM OUTPUT [AT_MS]
                              §10.7's plant in the arm's world at its step (AT_MS: development).
@@ -1668,6 +1671,181 @@ def step_switches(a, before=5, after=12):
     return out
 
 
+# ------------------------------------------------------------- §10.10: C's registered arm
+
+C_COARSE_MS, C_FINE = 20, 1e-3
+C_WINDOW = dict(start_time=1799.98, end_time=1802.0)
+C_END_MS, C_ALL_FINE_STEPS = 3_600_000, 3_600_000  # Today's dt*(I), 1 ms, over the arm's horizon.
+
+
+def c_definition():
+    """§10.10's arm: H2 from 0 to 3600 s on today's integrator at 20 ms, with 1 ms inside
+    [1799.98, 1802.00] s (execution.fine_windows), X2 on. Its rows are R3's kept rows that are
+    points of its own clock, read off EventGrid(spec); the cue's edges are checked to be points."""
+    from cells.definitions.specs import ConfigError, parse_spec
+    from cells.execution.grid import EventGrid
+    from validation.long_duration import worlds
+
+    dt = float(f"{C_COARSE_MS}e-3")
+    n_end = C_END_MS // C_COARSE_MS
+    raw = worlds.h2(dt)
+    e, x = raw["experiment"], raw["execution"]
+    e["end_time"] = n_end * dt
+    e["observation_times"] = [0.0, n_end * dt]
+    x["max_steps"] = 181_919 + 8
+    x["energy_check"] = x2_block()
+    x["fine_windows"] = dict(method="fixed_fine_windows@1", dt=C_FINE, windows=[dict(C_WINDOW)])
+    grid = EventGrid(parse_spec(raw))
+    points = {grid[i] for i in range(len(grid))}
+    cue = [c["time"] for g in e["channel_controls"] if g["channel_id"] == "cue_0"
+           for c in g["schedule"]]  # fmt: skip
+    if any(t not in points for t in cue):
+        raise ConfigError(f"a cue edge is not a point of the clock: {cue}")
+    r3 = worlds.harness_observation_times()
+    rows = sorted(t for t in r3 if t in points)
+    e["observation_times"] = rows
+    return raw, dict(clock_points=len(grid), rows=len(rows), cue_s=cue)
+
+
+def c_run(out_dir):
+    """C's arm, recorded as the control's arms are (definition, rows, run record)."""
+    import jax
+
+    jax.config.update("jax_enable_x64", True)
+    from cells.definitions.specs import parse_spec
+    from cells.execution import blas_threads
+    from cells.execution.windows import WindowPolicy, run_windowed
+    from validation.long_duration import harness
+
+    out = Path(out_dir)
+    out.mkdir(parents=True, exist_ok=False)
+    record = dict(study="FR-8 rung 1, C's registered arm (§10.10)", arm="H2-C",
+                  integrator=TODAY, energy_check=x2_block(),
+                  snapshot_revision=harness.snapshot_revision(),
+                  cpu_affinity=sorted(os.sched_getaffinity(0)), nice=os.nice(0),
+                  started_utc=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()))  # fmt: skip
+    started, keeper = time.perf_counter(), None
+    try:
+        raw, extra = c_definition()
+        record.update(extra, fine_windows=raw["execution"]["fine_windows"])
+        (out / "definition.json").write_text(json.dumps(raw, indent=1) + "\n")
+        spec = parse_spec(raw)
+        keeper = harness.Keeper(spec.experiment.observation_times)
+        policy = WindowPolicy(window_steps=registration()["window_steps"], row_checks="device")
+        result = run_windowed(spec, policy, sink=keeper)
+        record.update(
+            status="complete",
+            steps=int(result.resources["executed_steps"]),
+            off_nominal_boundaries=int(result.resources["resident_off_nominal_events"]),
+            fine_windows_record=json.loads(json.dumps(result.resources.get("fine_windows"),
+                                                      default=str)),
+            energy_check_summary=result.resources.get("energy_check"),
+            timings={k: float(v) for k, v in result.timings.items()},
+            blas=blas_threads.libraries(),
+        )  # fmt: skip
+    except Exception as error:  # A refusal is a result, kept.
+        record.update(status="refused", error_type=type(error).__name__, error=str(error))
+    record["seconds"] = time.perf_counter() - started
+    if keeper is not None and keeper.rows:
+        times = np.asarray(sorted(keeper.rows))
+        columns = list(zip(*(keeper.rows[t] for t in times), strict=True))
+        rows = {name: np.stack(v) for name, v in zip(keeper.fields, columns, strict=True)}
+        np.savez_compressed(out / "rows.npz", times=times, **rows)
+        record.update(rows_kept=len(times), last_row_s=float(times[-1]))
+    (out / "run.json").write_text(json.dumps(record, indent=1, default=str) + "\n")
+    print(json.dumps({k: record.get(k) for k in ("status", "steps", "seconds", "error")}))
+    return 0
+
+
+def c_timed(out_dir, reference_dir):
+    """§10.10 (c)'s cost: C's arm re-run (on the timed lane, by its runner script), its rows
+    against the arm's, bitwise; seconds per simulated second from its record."""
+    c_run(out_dir)
+    record = json.loads((Path(out_dir) / "run.json").read_text())
+    _, mine = load_rows(out_dir)
+    _, theirs = load_rows(reference_dir)
+    same = mine is not None and theirs is not None and set(mine) == set(theirs) and all(
+        np.array_equal(mine[f], theirs[f]) for f in mine)  # fmt: skip
+    t = record.get("timings", {})
+    fixed = t.get("preflight_seconds", 0.0) + t.get("window_compile_or_cache_seconds", 0.0)
+    simulated = float(record.get("last_row_s") or 0.0)
+    per = (t.get("total_run_seconds", 0.0) - fixed) / simulated if simulated else None
+    cost = dict(
+        rows_bitwise_equal=bool(same),
+        simulated_s=simulated,
+        total_seconds=t.get("total_run_seconds"),
+        preflight_and_compile_seconds=fixed,
+        seconds_per_simulated_second=per,
+        cpu_affinity=record.get("cpu_affinity"),
+        void=not same,
+    )
+    (Path(out_dir) / "cost.json").write_text(json.dumps(cost, indent=1) + "\n")
+    print(json.dumps(cost))
+    return 0
+
+
+def c_judge(output, c_dir, full1_cost=None, c_cost=None):
+    """§10.10's verdict on C's arm: (a) the (I) reading under B_P with the event criteria (B_A
+    reported), on all of its rows and on the 100 ms common rows; (b) X2's decision and kind; (c)
+    the step-count gain over 1 ms, with the timed cost ratio beside it when given."""
+    import jax
+
+    jax.config.update("jax_enable_x64", True)
+    arm = Series(c_dir, None, 0, 1.0)
+    out = dict(study="FR-8 rung 1, C's arm judged under §10.10", arm="H2-C")
+    stage0 = stage0_ladder()
+    wa = rung0_ladder("WA")
+    wa_events = ladder_events(wa)
+    wa_events["recovery_s"] = series_events(stage0.finest)["recovery_s"]
+
+    def parts(ms):
+        span = (ms >= WA_SPAN_MS[0]) & (ms <= WA_SPAN_MS[1])
+        return [(wa, span, None), (stage0, ~span, None)]
+
+    record = arm.record
+    if not arm.complete or arm.c is None:
+        out["verdict"] = dict(a="fail", b="fail", c=None, cause=refusal_of(record))
+    else:
+        ev = judge_events(series_events(arm), wa_events)
+        sets = dict(own=arm.ms, common=arm.ms[arm.ms % 100 == 0])
+        verdicts, tables = arm_reading(arm, parts, sets, [("events", ev["verdict"])])
+        save_retention(Path(output).with_suffix(""), "H2-C", tables)
+        out["events"] = ev
+        out["readings"] = verdicts
+        out["largest_deltas"] = {s: {k: float(np.nanmax(v["delta"])) for k, v in tbl[1].items()}
+                                 for s, tbl in tables.items()}  # fmt: skip
+        out["histories"] = histories(arm, parts(arm.ms), arm.ms)
+        a_pass = all(verdicts["B_P"][s]["verdict"] == "pass" for s in sets)
+        summary = record.get("energy_check_summary") or {}
+        steps = int(record.get("steps") or 0)
+        gain = C_ALL_FINE_STEPS / steps if steps else None
+        cost = None
+        if full1_cost and c_cost:
+            f = json.loads(Path(full1_cost).read_text())
+            c = json.loads(Path(c_cost).read_text())
+            if not c.get("void") and c.get("seconds_per_simulated_second"):
+                cost = f["seconds_per_simulated_second"] / c["seconds_per_simulated_second"]
+            out["cost"] = dict(today_1ms=f, C=c, ratio=cost)
+        out["x2"] = dict(decision="passes" if arm.complete else "refused", summary=summary,
+                         sensitivity="shown at 20 ms by H2's plant (§10.7; "
+                         "records-d03ca463/plants/H2-slow-20.json)")  # fmt: skip
+        out["gain"] = dict(steps=steps, all_fine_steps=C_ALL_FINE_STEPS, step_gain=gain,
+                           cost_ratio=cost, threshold=10)  # fmt: skip
+        out["verdict"] = dict(
+            a="pass" if a_pass else worst([verdicts["B_P"][s]["verdict"] for s in sets]),
+            b="pass" if arm.complete else "fail",
+            c="pass" if gain is not None and gain >= 10 else "fail",
+        )
+        out["verdict"]["C"] = (
+            "passes §10.10"
+            if all(out["verdict"][k] == "pass" for k in ("a", "b", "c"))
+            else "does not pass §10.10"
+        )
+    Path(output).write_text(json.dumps(out, indent=1, default=float) + "\n")
+    print(json.dumps(out.get("verdict"), default=float))
+    return 0
+
+
 SMOKES = (  # Development only: no registered window, horizon or row.
     ("H2-WA-k0", dict(span=(600_000, 600_050))),
     ("H2-WA-k3", dict(span=(600_000, 600_050))),
@@ -1706,6 +1884,12 @@ def main(argv):
         return calm_read(argv[1], argv[2], argv[3])
     if len(argv) in (2, 3) and argv[0] == "step-change":
         return step_change(argv[1], window="--no-window" not in argv[2:])
+    if len(argv) == 2 and argv[0] == "c-run":
+        return c_run(argv[1])
+    if len(argv) == 3 and argv[0] == "c-timed":
+        return c_timed(argv[1], argv[2])
+    if len(argv) in (3, 5) and argv[0] == "c-judge":
+        return c_judge(argv[1], argv[2], *argv[3:])
     if argv == ["arms"]:
         print("\n".join(control_arms()))
         return 0
