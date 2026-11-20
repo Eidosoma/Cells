@@ -25,9 +25,13 @@ and a general feature, never one built for one study (D144).
 | [FR-17](#fr-17--field-solves-beyond-2048-nodes) | Field solves beyond 2048 nodes | Not stated (the same) | Requested; awaits the user's go | The preprint's 3D table, and mitochondria (D210) unless condensing compartment nodes serves them |
 | [FR-18](#fr-18--the-composites-energy-check-at-moderate-step-sizes) | The composite's energy check at moderate step sizes (a finding for the core) | Not stated (the same) | Reported to the core; the check is not loosened for one experiment | The core reviews the check's tolerance or its step-size advice |
 | [FR-19](#fr-19--the-passive-routes-heat-share-sign-test-at-rounding-level) | The passive routes' heat-share sign test refuses rounding-level shares (a finding for the core) | Not stated (found by the gap-junction replication, D207; 17 November 2026) | Fixed on main (merge 49494e49): the raw-sum check's rounding floor; previously admitted steps bitwise unchanged. The band near 1 mM is closed too, landed by merge a7122a43 (18 November): the floor's scale is (\|μ̄_in\| + \|μ̄_out\| + 2)·\|m\|, and crossrev's kinds record was renewed at the landing (9 of 9) | None: closed |
-| [FR-20](#fr-20--a-pulse-and-washout-for-assembly-populations) | A pulse and washout: replace an assembly population's exterior at a declared time, with the material and energy exchanged recorded | **High** (user, 20 November 2026; D237) | Requested; not scoped | A design note, building on the vesicle-population accounting of the unlanded ol3-engine branch (D230 orders that branch's landing) |
+| [FR-20](#fr-20--a-pulse-and-washout-for-assembly-populations) | A pulse and washout: replace an assembly population's exterior at a declared time, with the material and energy exchanged recorded | **High** (user, 20 November 2026; D237) | **Design approved** (D240; [note](ASSEMBLY_WASHOUT_DESIGN.md)): `cells.pool_replacement@1` | Building, by the origin-of-life builder, on the landed stack (d1697656) |
 | [FR-21](#fr-21--a-prescribed-shell-that-owns-a-lumen-and-an-exchange-conductance) | A prescribed shell that owns a lumen and an exchange conductance, independent of membrane inventory and binding-site count | **High** (user, 20 November 2026; D237) | Requested; not scoped | A design note before code: today every cross-phase reaction routes through the membrane phase |
 | [FR-22](#fr-22--checkpoint-and-resume-for-the-stochastic-assembly-runner) | Checkpoint and resume for the stochastic assembly runner, qualified around a wash | **High** (user, 20 November 2026; D237) | Requested; short controls can proceed now | A restart qualification: an interrupted run reproduces the uninterrupted event trace, molecule counts and energy ledger |
+| [FR-23](#fr-23--timed-bath-changes-beside-binding-sites-on-distinct-finite-nodes) | Timed bath changes beside binding sites on distinct finite nodes | **High** (user, 20 November 2026; D239) | Requested; not scoped | A design note: today both operators reference `extracellular_amount_reference`, so the composition contract refuses them together even on different nodes |
+| [FR-24](#fr-24--binding-site-occupancy-as-an-input-to-reaction-rates) | Binding-site occupancy as an input to reaction rates | **High** (user, 20 November 2026; D239) | Requested; not scoped | A design note on the coupling operator's sources |
+| [FR-25](#fr-25--a-reusable-one-gene-expression-unit) | A reusable one-gene expression unit, verified against independent references | **High** (user, 20 November 2026; D239) | Folded into gene regulation's option A (D235): equation sheet tagged, references under way | G4's operator exposes the unit as a reusable component |
+| [FR-26](#fr-26--owned-state-when-a-cell-is-replaced) | Owned state when a cell is replaced: the incoming cell from its template, environment-owned material kept, departing material recorded | **High** (user, 20 November 2026; D239) | Requested; not scoped | A design note on replacement across the operators that own cell state |
 
 ## FR-1 — A closed internal compartment on the shared inventory
 
@@ -897,3 +901,43 @@ explored.
 - **The qualification:** a run interrupted around a wash (FR-20) reproduces the uninterrupted run's
   event trace, molecule counts and energy ledger exactly.
 - **Short controls can proceed now,** before FR-20 exists.
+
+## FR-23 — Timed bath changes beside binding sites on distinct finite nodes
+
+- **The request (user, 20 November 2026; D239).** Allow a timed bath change and binding sites in
+  one world when they act on distinct finite nodes.
+- **What refuses today:** each operator parses on its own, but together they fail, because both
+  reference `extracellular_amount_reference`, even when they access different nodes (the
+  composition contract, docs/PUMP_COMPOSITE.md).
+- **Acceptance:** at the event boundary, the bath records the dose, and occupied sites keep their
+  bound material.
+
+## FR-24 — Binding-site occupancy as an input to reaction rates
+
+- **The request (user, 20 November 2026; D239).** Let a reaction read a named site population's
+  occupied amount, accessible capacity, or occupied fraction as a rate input (the coupling
+  operator's sources, `species_regulated_availability`).
+- **Acceptance:** changing occupancy changes the linked rate, and disabling the link leaves the
+  binding dynamics unchanged.
+
+## FR-25 — A reusable one-gene expression unit
+
+- **The request (user, 20 November 2026; D239).** Make the planned one-gene expression unit
+  reusable. It exposes RNA and protein amounts over time, with precursor consumption and energy
+  accounting. Its induction and decay are verified against independent references, so other
+  models can use it as a component.
+- **Where it stands:** this is gene regulation's option A (D235). The equation sheet is tagged
+  (`gr1-sheet-2026-11-20`), and its code-blind references are under way. G4's operator is built
+  as this reusable component.
+
+## FR-26 — Owned state when a cell is replaced
+
+- **The request (user, 20 November 2026; D239).** Define what happens to owned state when a cell
+  is replaced:
+  - the incoming cell is initialised from its template;
+  - environment-owned material is preserved;
+  - what leaves with the departing cell is recorded.
+
+  Today the site-occupancy operator guards against replacement.
+- **Minimal acceptance:** the material balance closes across one replacement, with occupied sites
+  and active reactions.

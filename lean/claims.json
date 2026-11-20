@@ -18,6 +18,97 @@
     "cells.shared_pool@1": "molecular-assembly"
   },
   "comparisons": {
+    "vesicle-exchange-rates": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@2"
+      ],
+      "laws": [
+        "cells.phase_exchange@1",
+        "cells.membrane_permeation@1",
+        "cells.bilayer_geometry@1",
+        "cells.ideal_mixing@1"
+      ],
+      "operators": [],
+      "engine_revision": "3d3d9641932a52852727df7e4722e15ded245766",
+      "record_revision": "19de00d9a76a27fd064f1e643be28db630d48423",
+      "sources": {
+        "Directional activities and geometric factor": "src/cells/models/assembly_lineages_v2/exchange.py#L42",
+        "Area or radius on the common footprint": "src/cells/models/assembly_lineages_v2/kernel.py#L327",
+        "Bidirectional engine rates": "src/cells/models/assembly_lineages_v2/kernel.py#L367"
+      },
+      "driver": "lean/checks/vesicle_exchange.py",
+      "record": "lean/PROGRESS.md#vesicle-phase-exchange"
+    },
+    "vesicle-permeation-size": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@2"
+      ],
+      "laws": [
+        "cells.membrane_permeation@1",
+        "cells.bilayer_geometry@1",
+        "cells.ideal_mixing@1"
+      ],
+      "operators": [],
+      "engine_revision": "3d3d9641932a52852727df7e4722e15ded245766",
+      "record_revision": "19de00d9a76a27fd064f1e643be28db630d48423",
+      "sources": {
+        "Permeation into the lumen": "src/cells/models/assembly_lineages_v2/permeation.py#L8",
+        "Reverse propensity and energy adjustment": "src/cells/models/assembly_lineages_v2/kernel.py#L289",
+        "Physical area of the bilayer": "src/cells/models/assembly_lineages_v2/geometry.py#L245"
+      },
+      "driver": "lean/checks/vesicle_exchange.py",
+      "record": "lean/PROGRESS.md#vesicle-permeation"
+    },
+    "shared-pool-inventory": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@2"
+      ],
+      "laws": [
+        "cells.shared_pool@1",
+        "cells.phase_exchange@1",
+        "cells.membrane_permeation@1",
+        "cells.stochastic_mass_action@1",
+        "cells.osmotic_lumen@1",
+        "cells.bilayer_geometry@1",
+        "cells.ideal_mixing@1"
+      ],
+      "operators": [],
+      "engine_revision": "3d3d9641932a52852727df7e4722e15ded245766",
+      "record_revision": "19de00d9a76a27fd064f1e643be28db630d48423",
+      "sources": {
+        "Pool and live-slot rates": "src/cells/models/assembly_lineages_v2/population.py#L187",
+        "One pool and one slot updated per event": "src/cells/models/assembly_lineages_v2/population.py#L220",
+        "Counts saved and checked against the device endpoint": "src/cells/models/assembly_lineages_v2/population.py#L669"
+      },
+      "driver": "lean/checks/shared_pool.py",
+      "record": "lean/PROGRESS.md#shared-pool-inventory"
+    },
+    "shared-pool-declared-volume": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@2"
+      ],
+      "laws": [
+        "cells.shared_pool@1",
+        "cells.membrane_permeation@1",
+        "cells.bilayer_geometry@1",
+        "cells.ideal_mixing@1"
+      ],
+      "operators": [],
+      "engine_revision": "3d3d9641932a52852727df7e4722e15ded245766",
+      "record_revision": "19de00d9a76a27fd064f1e643be28db630d48423",
+      "sources": {
+        "Accepted population inputs": "src/cells/models/assembly_lineages_v2/population.py#L54",
+        "Dispatch by execution mode": "src/cells/models/assembly_lineages_v2/runner.py#L343",
+        "Volume reported for every live slot": "src/cells/models/assembly_lineages_v2/population.py#L717",
+        "Outside osmolarity used by the volume calculation": "src/cells/models/assembly_lineages_v2/lumen.py#L86"
+      },
+      "driver": "lean/checks/shared_pool.py",
+      "record": "lean/PROGRESS.md#shared-pool-declared-volume"
+    },
     "bilayer-footprint": {
       "kind": "engine",
       "models": [
@@ -915,6 +1006,206 @@
     }
   },
   "claims": [
+    {
+      "id": "vesicle-phase-exchange",
+      "category": "molecular-assembly",
+      "title": "Lipid insertion scales with membrane area and diffusion-limited capture scales with radius",
+      "statement": "At fixed external number density, scaling the area-equivalent radius by s scales area-limited insertion by s² and diffusion-limited capture by s. A join and its reverse share the footprint before insertion. Their rate ratio is the exponential of reservoir work minus free-energy change in thermal units.",
+      "assumptions": [
+        "The same species transfers between the pool and the bilayer. Each comparison holds its kinetic coefficient and external number density fixed.",
+        "The rate-ratio statement applies to an enabled two-way edge with a positive common coefficient, sufficient reactants and a defined discrete membrane counting measure. The endpoint energies include the declared excess terms.",
+        "The spherical diffusion-capture approximation uses the area-equivalent radius. The two encounter conventions describe different limiting mechanisms."
+      ],
+      "uses": [
+        "bilayer-footprint",
+        "assembly-stochastic-encounter"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.phase_exchange@1"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.VesicleExchange.size_scaling": "lean/CellsProofs/Chemistry/VesicleExchange.lean",
+          "CellsProofs.Chemistry.VesicleExchange.common_footprint_swap": "lean/CellsProofs/Chemistry/VesicleExchange.lean",
+          "CellsProofs.Chemistry.VesicleExchange.transfer_footprint": "lean/CellsProofs/Chemistry/VesicleExchange.lean",
+          "CellsProofs.Chemistry.VesicleExchange.pair_balance": "lean/CellsProofs/Chemistry/VesicleExchange.lean"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "vesicle-exchange-rates"
+        ],
+        "result": "Doubling radius gave 4× area-limited insertion and 2× diffusion-limited capture. Across both transport steps, eight compiled configurations tested finite and held baths and both counting measures. All 40 blocked directions had zero rate. Across 64 active pairs the largest free-energy residual was 1.43 × 10⁻¹⁴ k_BT."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Lipid molecules inserted per vesicle per second at measured radius and matched free-monomer concentration, composition and temperature.",
+        "unit": "molecules/s per vesicle",
+        "evidence": [
+          {
+            "dataset_id": "jin2021_pazepc_insertion@1",
+            "manifest": "lean/checks/data/vesicle_exchange_measurements.json",
+            "citation": "Jin and Baumgart (2021), Table 1",
+            "doi": "10.1039/D1SM00652E",
+            "locator": "Table 1 gives the PAzePC row. Equation 2 fits the area response.",
+            "context": "Soluble PAzePC monomers at 0.5–1 µM were supplied to aspirated POPC vesicles under flow.",
+            "role": "descriptive",
+            "uncertainty": "Mean ± SEM across 11 vesicles for the fitted PAzePC rates.",
+            "assessment": "The measured association constant was 0.0027 ± 0.0005 µM⁻¹ s⁻¹. Release and movement between leaflets had separate rates. The pooled fractional area kinetics leave molecule flux by radius unresolved.",
+            "report": "lean/PROGRESS.md#vesicle-phase-exchange"
+          },
+          {
+            "dataset_id": "hentrich2014_oleate_growth@1",
+            "manifest": "lean/checks/data/vesicle_exchange_measurements.json",
+            "citation": "Hentrich and Szostak (2014), Fig. 2A",
+            "doi": "10.1021/la503933x",
+            "locator": "Figure 2A plots initial filament elongation against starting vesicle diameter.",
+            "context": "Multilamellar oleate vesicles grew under flow with 0.8 mM oleate micelles.",
+            "role": "descriptive",
+            "uncertainty": "There is substantial scatter at each diameter. Filament width and free monomer concentration are additional uncertainties in a conversion to molecular flux.",
+            "assessment": "Larger vesicles generally elongated faster. The authors could resolve neither a linear nor a quadratic dependence uniquely from this length readout.",
+            "report": "lean/PROGRESS.md#vesicle-phase-exchange"
+          }
+        ]
+      }
+    },
+    {
+      "id": "vesicle-permeation",
+      "category": "membrane-transport",
+      "title": "Neutral solute entry scales with area and spherical washout with inverse radius",
+      "statement": "The inward molecular rate equals permeability times area times outside number density. In an ideal lumen of fixed volume the exit rate per molecule is permeability times area divided by volume. On a sphere this predicts the first-order washout rate at a second radius from one calibration.",
+      "assumptions": [
+        "External density and permeability are fixed for the forward-area comparison. A neutral molecule crosses between the bath and lumen without changing the footprint.",
+        "The outward concentration law assumes equal solution standard potentials, a well-mixed fixed volume and ideal solute with no extra energy change. A maintained solute-free exterior gives the exponential washout equation for the mean count.",
+        "For the liposome assay, use the study’s inner radius for both area and volume, a 4 nm bilayer thickness and a common permeability between sizes. The compiled readout is the initial exit rate divided by molecule count."
+      ],
+      "uses": [
+        "vesicle-phase-exchange",
+        "bilayer-footprint",
+        "scheduled-species-turnover"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.membrane_permeation@1"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.VesicleExchange.size_scaling": "lean/CellsProofs/Chemistry/VesicleExchange.lean",
+          "CellsProofs.Chemistry.VesicleExchange.pair_balance": "lean/CellsProofs/Chemistry/VesicleExchange.lean",
+          "CellsProofs.Chemistry.VesicleExchange.fixed_volume_drift": "lean/CellsProofs/Chemistry/VesicleExchange.lean",
+          "CellsProofs.Chemistry.VesicleExchange.spherical_clearance": "lean/CellsProofs/Chemistry/VesicleExchange.lean",
+          "CellsProofs.Chemistry.VesicleExchange.transfer_clearance": "lean/CellsProofs/Chemistry/VesicleExchange.lean",
+          "CellsProofs.Chemistry.VesicleExchange.washout_derivative": "lean/CellsProofs/Chemistry/VesicleExchange.lean"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "vesicle-exchange-rates",
+          "vesicle-permeation-size"
+        ],
+        "result": "Doubling radius quadrupled molecular entry under both lipid-encounter conventions. The compiled exit rate per molecule at counts 1, 7 and 14 was 1.7500 s⁻¹ at the calibration radius and 1.2971 s⁻¹ at the second radius. All rate controls agreed with their independent calculations within 2 × 10⁻¹³ relative error."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Neutral-solute washout rate in fixed-size liposomes, and inward molecular uptake as a function of membrane area.",
+        "unit": "s⁻¹",
+        "evidence": [
+          {
+            "dataset_id": "branden2010_glycerol_radius@1",
+            "manifest": "lean/checks/data/vesicle_exchange_measurements.json",
+            "citation": "Brändén et al. (2010), Fig. 3A and passive diffusion results",
+            "doi": "10.1016/j.bpj.2010.03.059",
+            "locator": "Figure 3A and the accompanying results report the size-specific rates and the bilayer thickness.",
+            "context": "Glycerol washed out of tethered POPC liposomes at 22 °C. Surface plasmon resonance tracked the change of internal concentration.",
+            "role": "held_out_from_fitting",
+            "fit": [
+              "71 nm outer diameter, washout 1.75 ± 0.02 s⁻¹"
+            ],
+            "evaluation": [
+              "93 nm outer diameter"
+            ],
+            "observed": 1.46,
+            "predicted": 1.2971,
+            "uncertainty": "The smaller group reports ±0.02 s⁻¹ (n = 7). The 93 nm repeat has no published uncertainty or trace. Its exact concentration series is unspecified.",
+            "assessment": "The larger liposomes emptied more slowly. Calibration at the smaller size underpredicts their rate by 0.163 s⁻¹. The uncertainty of the size transfer remains open.",
+            "report": "lean/PROGRESS.md#vesicle-permeation"
+          },
+          {
+            "dataset_id": "peterlin2012_urea_size@1",
+            "manifest": "lean/checks/data/vesicle_exchange_measurements.json",
+            "citation": "Peterlin et al. (2012), Fig. 2a",
+            "doi": "10.1039/C1SM06670F",
+            "locator": "Three unarrowed traces in Figure 2a, from 20 to 80 s after each radius minimum.",
+            "context": "Individual POPC vesicles stretched in the same 0.1 M urea bath. Swelling estimates net entry if water equilibrates rapidly and trapped sucrose is retained.",
+            "role": "descriptive",
+            "uncertainty": "Moving either radius reading by ±0.10 µm gives ranges of 10.7–19.5, 15.9–32.1 and 25.6–47.3 fmol/s from smallest to largest. These describe figure resolution. Temperature and per-trace uncertainty were unreported.",
+            "assessment": "For radii 31.80, 43.66 and 50.44 µm, inferred uptake was 15.1, 24.0 and 36.4 fmol/s. The largest/smallest uptake ratio was 2.41 and the compiled forward-area ratio was 2.52. The measured optical quantity was radius.",
+            "report": "lean/PROGRESS.md#vesicle-permeation"
+          }
+        ]
+      }
+    },
+    {
+      "id": "shared-pool-inventory",
+      "category": "molecular-assembly",
+      "title": "Vesicles withdrawing from a finite shared bath conserve each species across the population",
+      "statement": "Each passive transfer changes one vesicle and the single bath by opposite integer counts. The inventory is conserved over every finite history of such transfers. Each live vesicle sees the same remaining bath density, and a permutation of the slots preserves the exact total rate.",
+      "assumptions": [
+        "Follow one conserved species at a time with a finite common bath. The count proof covers passive uptake and release. Chemical conversion, fission, lysis, bath replacement and external supply need their own accounting.",
+        "A slot's uptake coefficient includes its own membrane geometry. The uptake-rate decrement in another slot assumes that slot's coefficient and the bath volume stay fixed. A relabelling carries occupancy and the full vesicle state together.",
+        "For the experimental area comparison, both populations start with equal lipid amounts and share an area per molecule. A 25% donor loss predicts a 25% recipient gain conditional on zero net change of free lipid in the bath."
+      ],
+      "uses": [
+        "vesicle-phase-exchange",
+        "vesicle-permeation"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.shared_pool@1"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.SharedPool.event_inventory": "lean/CellsProofs/Chemistry/SharedPool.lean",
+          "CellsProofs.Chemistry.SharedPool.history_inventory": "lean/CellsProofs/Chemistry/SharedPool.lean",
+          "CellsProofs.Chemistry.SharedPool.population_uptake": "lean/CellsProofs/Chemistry/SharedPool.lean",
+          "CellsProofs.Chemistry.SharedPool.depletion": "lean/CellsProofs/Chemistry/SharedPool.lean",
+          "CellsProofs.Chemistry.SharedPool.relabel_rate": "lean/CellsProofs/Chemistry/SharedPool.lean",
+          "CellsProofs.Chemistry.SharedPool.fractional_gain": "lean/CellsProofs/Chemistry/SharedPool.lean"
+        }
+      },
+      "numerical": {
+        "status": "failed",
+        "comparisons": [
+          "shared-pool-inventory",
+          "shared-pool-declared-volume"
+        ],
+        "result": "Two 96-event osmotic populations conserved exactly one lipid and one solute across every stored row. All six slot permutations preserved the corresponding rates. The fixed-volume case failed during reporting. A parsed one-slot, one-event population raised TypeError when the reporter requested an osmotic volume for its declared lumen."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Paired changes in donor and recipient membrane area during passive competition, with independent measurement of material left in the common bath.",
+        "unit": "% recipient area change",
+        "evidence": [
+          {
+            "dataset_id": "chen2004_oleate_competition@1",
+            "manifest": "lean/checks/data/vesicle_exchange_measurements.json",
+            "citation": "Chen, Roberts and Szostak (2004), Figs. 1B and 1D",
+            "doi": "10.1126/science.1100757",
+            "locator": "Figures 1B and 1D and the accompanying 1:1 mixing result on page 1475.",
+            "context": "Matched experiments label either the isotonic donor or the osmotically swollen recipient population of oleate vesicles.",
+            "role": "descriptive",
+            "observed": 25,
+            "predicted": 25,
+            "uncertainty": "Both area changes are approximate. Figure 1 gives no endpoint uncertainty. Fluorescence reports area and the free lipid pool was unmeasured.",
+            "assessment": "The measured donor loss gives the conditional recipient gain shown. The experiment supports redistribution between populations. An empirical test of molecule closure still needs independent counts for donor, recipient and bath.",
+            "report": "lean/PROGRESS.md#shared-pool-inventory"
+          }
+        ]
+      }
+    },
     {
       "id": "bilayer-footprint",
       "category": "molecular-assembly",

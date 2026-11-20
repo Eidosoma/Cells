@@ -1,0 +1,64 @@
+{
+  "branden2010": {
+    "doi": "10.1016/j.bpj.2010.03.059",
+    "locator": "Figure 3A and the adjoining text under Passive diffusion",
+    "observable": "First-order glycerol washout from tethered POPC liposomes by surface plasmon resonance.",
+    "temperature_C": 22,
+    "bilayer_thickness_nm": 4,
+    "calibration": {"outer_diameter_nm": 71, "rate_per_s": 1.75, "reported_plus_minus_per_s": 0.02, "n": 7},
+    "evaluation": {"outer_diameter_nm": 93, "rate_per_s": 1.46},
+    "scope": "The authors use the inner radius for the spherical area-to-volume ratio. The 93 nm repeat has no published trace or uncertainty. The exact matched concentration series for that repeat is unspecified."
+  },
+  "peterlin2012": {
+    "doi": "10.1039/C1SM06670F",
+    "locator": "Figure 2a, black, blue and lower violet curves without arrows",
+    "observable": "Optical radius of individual POPC vesicles during swelling in a urea bath, before the first rupture.",
+    "bath_mol_L": 0.1,
+    "window_s_after_radius_minimum": [20, 80],
+    "radius_reading_allowance_um": 0.1,
+    "traces": [
+      {"curve": "black", "radius_min_um": 50.44, "start_um": 50.62, "end_um": 51.29},
+      {"curve": "blue", "radius_min_um": 43.66, "start_um": 43.77, "end_um": 44.36},
+      {"curve": "violet", "radius_min_um": 31.80, "start_um": 31.97, "end_um": 32.66}
+    ],
+    "scope": "Figure readings from three selected traces. Bath concentration times the volume increase estimates net urea entry if water equilibrates rapidly, the vesicle is spherical during stretching, and trapped sucrose is retained. Temperature and per-trace uncertainty were not reported. The reading allowance measures resolution only."
+  },
+  "jin2021": {
+    "doi": "10.1039/D1SM00652E",
+    "locator": "Table 1, PAzePC row, and Equation 2",
+    "observable": "Association, desorption and movement between leaflets inferred from area changes in aspirated POPC vesicles under flow.",
+    "monomer_uM_range": [0.5, 1.0],
+    "replicates": 11,
+    "k_on_per_uM_s": 0.0027,
+    "k_on_sem_per_uM_s": 0.0005,
+    "k_off_per_s": 0.02,
+    "k_off_sem_per_s": 0.01,
+    "k_flip_per_s": 0.0017,
+    "k_flip_sem_per_s": 0.0004,
+    "scope": "Below the critical micelle concentration, monomers came from solution. Table 1 pools replicates. The fitted association constant uses a fractional membrane occupancy convention. Absolute molecule flux at each radius was not reported."
+  },
+  "chen2004": {
+    "doi": "10.1126/science.1100757",
+    "locator": "Figures 1B and 1D, page 1475",
+    "observable": "Relative membrane area of isotonic and osmotically swollen oleate vesicles mixed in equal molar proportions. The two stopped-flow measurements label different populations.",
+    "bicine_M": 0.2,
+    "pH": 8.5,
+    "initial_donor_to_recipient_lipid_ratio": 1,
+    "approximate_isotonic_area_change_percent": -25,
+    "approximate_swollen_area_change_percent": 25,
+    "isotonic_fit_per_s": 0.09,
+    "swollen_fit_per_s": 0.08,
+    "scope": "Fluorescence energy transfer reports a change in surface area. Figure 1 gives no endpoint uncertainty. Neither the free monomer pool nor molecular inventories of both populations were independently measured in the same run."
+  },
+  "hentrich2014": {
+    "doi": "10.1021/la503933x",
+    "locator": "Figure 2A and the accompanying interpretation",
+    "observable": "Initial filament elongation velocity versus diameter of immobilized multilamellar oleate vesicles.",
+    "oleate_micelles_mM": 0.8,
+    "NaCl_mM": 75,
+    "bicine_mM": 50,
+    "pH": 8.5,
+    "flow_uL_min": 20,
+    "scope": "Larger vesicles generally grew faster. Filament width, the number of lamellae and the supply of free monomers prevent conversion to molecules inserted per second. The scatter permits both linear and quadratic diameter dependence of the length readout."
+  }
+}

@@ -189,15 +189,17 @@ def test_version_1_refuses_volume_providers_area_providers_and_mask_providers():
     )
     with pytest.raises(ConfigError, match="reads outside_active as declared"):
         parse_spec(with_insertion)
-    with_state = mfx.with_operators(mfx.cleft_cell())  # The membrane state alone.
-    with_state = add_inventory_species(
-        with_state, "S", trace_mM=1e-9, diffusivity_m2_per_s=1e-10, floor_fmol=1e-20
+    # The third case, amended on 20 November 2026 and disclosed (docs/OPERATOR_COMPOSITION_DESIGN.md
+    # §16.1's rule for Q5): exchange beside membrane state alone, refused in version 1 on its fixed
+    # area read, is admitted by D191's current-area read (the lead's ruling for FR-7's releasing
+    # compartment). Without a writer of the areas they stay the declared values bit for bit; the
+    # admission is tested outside Q5's list (test_cell_owned_compartments.py). In the static-tissue
+    # scope the writers of the areas stay refused beside exchange: insertion, through the masks.
+    with_writer = fx.with_exchange(
+        cleft, [("sec", "furrow", "export", "first_order")], [("sec", cell, [(0.0, 0.1)])]
     )
-    with_state = fx.with_exchange(
-        with_state, [("sec", "furrow", "export", "first_order")], [("sec", cell, [(0.0, 0.1)])]
-    )
-    with pytest.raises(ConfigError, match="reads membrane_area as declared"):
-        parse_spec(with_state)
+    with pytest.raises(ConfigError, match=r"scheduled_species_exchange@1 reads \w+_active as"):
+        parse_spec(with_writer)
 
 
 def test_the_stationary_analysis_does_not_admit_the_composite():
