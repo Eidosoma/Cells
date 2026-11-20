@@ -420,9 +420,11 @@ A₁ = X_DH φ_DH r [NAD]:
 standard-state term enters.
 
 **The constant (declared; the lead's ruling, D236).**
-- K_base = K_AK (1 + m/K_MgADP)²/(1 + m/K_MgATP) = 0.38896, with Table 1's K_AK = 0.4331.
-- m = 3.8086 mM is the free Mg²⁺ of the source's state-3 buffer: 5.0 mM total Mg²⁺ and 1.3 mM ADP,
-  with no ATP or AMP (p. 0258; Figs. 2–5).
+- K_base = K_AK (1 + m/K_MgADP)²/(1 + m/K_MgATP) = **0.388964538**, with Table 1's K_AK = 0.4331.
+  It is derived from the match below at full precision; a rounded value (0.38896 or 0.389) is not
+  the declared constant.
+- m = 3.808553529 mM is the free Mg²⁺ of the source's state-3 buffer: 5.0 mM total Mg²⁺ and
+  1.3 mM ADP, with no ATP or AMP (p. 0258; Figs. 2–5).
   - It is the positive root of m² + (K_MgADP + 1.3 − 5.0) m − 5.0 K_MgADP = 0, in mM. In that
     buffer only ADP binds Mg²⁺.
 - The source states no IMS free Mg²⁺, so the match is declared.
@@ -503,7 +505,8 @@ final model, under Eq. 24. "Without" is Eq. 7's.
 - **Declared (D236):**
   - T = 298.15 K;
   - the supply's reference matrix pH 7.10 and ΔG°_S = 0 at pH 7;
-  - adenylate kinase matched at the free Mg²⁺ m = 3.8086 mM, giving K_base 0.38896;
+  - adenylate kinase matched at the state-3 buffer (5.0 mM total Mg²⁺, 1.3 mM ADP), whose free
+    Mg²⁺ m = 3.808553529 mM gives K_base = 0.388964538 (§7);
   - matrix Mg²⁺ total 5 mM.
 - **Units in ratios:** a ratio such as [Pi]_N/k_Pi,3 or [H₂PO₄⁻]_P + k_PiHt needs both terms in
   one unit; the k's printed in mM enter as 10⁻³ k in M.

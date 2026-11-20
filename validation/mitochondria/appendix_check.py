@@ -615,6 +615,22 @@ def appendix_errors(path=APPENDIX):
         typed = _number(line.rstrip(" |").rsplit("|", 1)[1].strip())
         if abs(typed - float(value)) > 5e-5:
             out.append(f"free energy {key}: appendix {typed} RT, computed {float(value):.4f}")
+    # The kinase's constant and its match (D236): printed in section 7 and section 9, each to 9
+    # decimals or more, and equal to the derived one to its printed digits.
+    for name, derived in (("K_base", K_BASE), ("m", D(repr(source.ak_match_free_Mg_mM())))):
+        pattern = {
+            "K_base": r"(?:K_base|K_MgATP\)) = \**([0-9]\.[0-9]+)",  # also "...K_MgATP) = **K**"
+            "m": r"\bm = ([0-9]\.[0-9]+) mM",
+        }[name]
+        typed_values = re.findall(pattern, text)
+        if len(typed_values) < 2:
+            out.append(f"the appendix prints {name} {len(typed_values)} time(s), not in §7 and §9")
+        short = [v for v in typed_values if len(v.split(".")[1]) < 9]
+        if short:  # The binding owner's seam-E check admits only the derived value, not a rounding.
+            out.append(f"the appendix prints {name} to fewer than 9 decimals: {short}")
+        for v in typed_values:
+            if abs(D(v) - derived) > D(5) * D(10) ** -(len(v.split(".")[1]) + 1):
+                out.append(f"{name}: the appendix prints {v}, derived {derived}")
     if "<!-- potentials -->" in text:
         block = text.split("<!-- potentials -->")[1].split("<!-- /potentials -->")[0]
         typed_mu = dict(re.findall(r"^\| `(\w+)` \| ([^|]+) \|", block, re.M))

@@ -40,7 +40,9 @@ Reading notes (each checked at the typeset image, not a text layer):
   AMP2-; no proton in the reaction) under the source's binding set it is K_AK (1 + [Mg]_i/K_MgADP)^2
   / (1 + [Mg]_i/K_MgATP), which depends on the free Mg2+ it is matched at: 0.153 at 1 mM, 0.389 at
   3.81 mM (a 5 mM Mg, 1.3 mM ADP buffer), 0.491 at 5 mM. The lead's ruling (D236) matches it at
-  the state-3 buffer's free Mg2+, 3.8086 mM (ak_match_free_Mg_mM), so K_base = 0.38896.
+  the state-3 buffer's free Mg2+, 3.808553529 mM (ak_match_free_Mg_mM), so K_base = 0.388964538
+  (ak_base_constant), used at full precision: the binding owner's seam-E check admits that derived
+  value only, not a rounded one.
 - No temperature, gas constant or Faraday constant is printed. DECLARED below holds ours. The
   temperature is 298.15 K by the lead's ruling of 20 November 2026 (isolated-organelle worlds):
   the code-blind whole-organelle reference (MR1) reproduces the source's published curves at
