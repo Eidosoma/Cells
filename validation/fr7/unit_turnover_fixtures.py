@@ -10,7 +10,10 @@ loaded in the cell at a resolved level and at a trace elsewhere.
 * route, with_producer: a route entry, and the operator's block with its schedule;
 * with_supply: D150's turnover supplying the precursor in the cell, the second writer of its row;
 * with_template_route: a template species in the cell, and species_regulated_availability@2
-  routing a Hill factor of it onto the producer's assembly rate (B1′), declared before it.
+  routing a Hill factor of it onto the producer's assembly rate (B1′), declared before it;
+* with_compartment, with_release: a compartment of the cell (cell_owned_compartments@1), and an
+  exchange route releasing a neutral species from it into the cell at first order (FR-7's U2
+  world with a releasing compartment; D217's clause on releasing compartments).
 """
 
 import copy
@@ -204,4 +207,112 @@ def with_template_route(
         dict(coupling_id="c_template", schedule=[dict(time=0.0, enabled=enabled)])
     ]
     out["experiment"]["regulatory_writes"] = []
+    return out
+
+
+COMPARTMENT_LAW = "cell_owned_compartments@1"
+EXCHANGE = "scheduled_species_exchange@1"
+COMPARTMENT = "endosome"  # The compartment's own ID.
+NODE, BOUNDING = "endo_0", "endo_patch"  # Its storage (an outside node) and its bounding patch.
+RELEASE = "release"
+# Layout choices, synthetic: no physics depends on them beyond the content's amounts and the
+# release's rate constant kappa = k_u A / V_o, which with_release declares through k_u.
+NODE_pL, BOUNDING_m2, BOUNDING_F = 0.02, 1e-11, 1e-13  # 20 fL; 10 um^2 at 0.01 F/m^2.
+
+
+def with_compartment(
+    raw,
+    *,
+    owner=CELL,
+    node=NODE,
+    patch=BOUNDING,
+    cid=COMPARTMENT,
+    volume_pL=NODE_pL,
+    area_m2=BOUNDING_m2,
+    capacitance_F=BOUNDING_F,
+    amounts_fmol=None,
+    label="synthetic endosome",
+):
+    """raw (every species declared) with a compartment of `owner`: the finite outside node `node`
+    at the owner's concentrations of every species, `amounts_fmol` replacing some, its fixed
+    charge making its content neutral at a zero charge anchor (refusal 5), bounded by the one patch
+    `patch`, which no species crosses (refusal 4), on the owner's side; and the
+    cell_owned_compartments@1 declaration, appended."""
+    out = copy.deepcopy(raw)
+    m, e, x = out["model"], out["experiment"], out["execution"]
+    cell = next(c for c in m["cells"] if c["id"] == owner)
+    valence = {s["id"]: s["valence"] for s in m["species"]}
+    amounts = {
+        s: cell["initial_amount_fmol"][s] / cell["volume_pL"] * volume_pL for s in valence
+    } | dict(amounts_fmol or {})
+    charge = sum(valence[s] * n for s, n in amounts.items())
+    m["extracellular"].append(
+        dict(
+            id=node,
+            volume_pL=volume_pL,
+            initial_amount_fmol=amounts,
+            fixed_charge_equivalent_fmol=-charge,
+            initial_charge_C=0.0,
+            reservoir=False,
+            boundary_potential_V=0.0,
+        )
+    )
+    m["membranes"].append(
+        dict(
+            id=patch,
+            inside=owner,
+            outside=node,
+            area_m2=area_m2,
+            capacitance_F=capacitance_F,
+            permeability_m_per_s=dict.fromkeys(valence, 0.0),
+            law="constant_field@1",
+            pump=None,
+            calcium_pump=None,
+        )
+    )
+    e["membrane_controls"].append(
+        dict(membrane_id=patch, schedule=[dict(time=0.0, availability=1.0)])
+    )
+    x["extracellular_capacity"] = len(m["extracellular"])
+    x["membrane_capacity"] = len(m["membranes"])
+    m["operators"].append(
+        dict(
+            law=COMPARTMENT_LAW,
+            compartments=[
+                dict(id=cid, node=node, patch=patch, owner=owner, label=label, reference=None)
+            ],
+        )
+    )
+    return out
+
+
+def release_velocity(kappa_per_s, *, volume_pL=NODE_pL, area_m2=BOUNDING_m2):
+    """The uptake velocity k_u (m/s) of an exchange import whose rate constant out of the node is
+    kappa = k_u A 1e15 / V_o (V_o in pL; scheduled_species_exchange@1's first-order import)."""
+    return kappa_per_s * volume_pL / (area_m2 * 1e15)
+
+
+def with_release(raw, changes, *, species=TEMPLATE, owner=CELL, patch=BOUNDING, name=RELEASE):
+    """raw with scheduled_species_exchange@1 releasing `species` from the compartment behind
+    `patch` into `owner` at first order: an import route, changes [(time, k_u in m/s), ...]
+    keyed by the owner. Appended last, after every writer of membrane state's fields, since its
+    current read of the areas follows their changes at stage split (C2)."""
+    out = copy.deepcopy(raw)
+    out["model"]["operators"].append(
+        dict(
+            law=EXCHANGE,
+            species=identity(species),
+            routes=[
+                dict(id=name, species=species, patch=patch, direction="import", law="first_order")
+            ],
+            templates=[],
+        )
+    )
+    out["experiment"]["exchange_controls"] = [
+        dict(
+            route_id=name,
+            carrier_id=owner,
+            schedule=[dict(time=t, rate=v) for t, v in changes],
+        )
+    ]
     return out
