@@ -8247,3 +8247,29 @@ check, not a test. Nothing is tagged.
      source, whose hump relative to E_K matches Fig. S2B; `kir2p1_mh2@1`'s outward plateau does not.
    - Ratto's values join `validation/fr7/data/` as bare cited numbers, with their comparability
      caveats.
+
+## D255: Origin of life and gene regulation pause until tomorrow; their agents turn to core and FR work
+
+2026-11-20, about 22:07 UTC. The user: "I would like to deprioritze origin of life until tomorrow
+and also gene regulation - do not stop any tests or such - then use the agents for core / FR work
+from all the user/reviewer reqeuest today".
+
+- **No test, gate or run is stopped.** Heads whose gates pass still land. The paused lanes' work
+  resumes tomorrow:
+  - origin of life: break-and-renew, the fuel references, GARD's version 2;
+  - gene regulation: G4 and FR-25's reviewer follow-ups.
+- **FR-20 and FR-21 count as FR work** (D237, with the requester's acceptance given today). The first
+  origin-of-life builder continues them: FR-20's landing, FR-21's site step, then its shell.
+- **The freed agents take today's core and FR requests:**
+  - **the second origin-of-life builder:** FR-30's design note (Cx43's two relaxation times, within
+    FR-16's catalogue), built after N2 lands; then one of FR-34's engine items;
+  - **the gene-regulation agent:** FR-33 (the regional labelled-protein readouts: which export fields
+    exist and which are missing, and the transfer-against-destruction example), taken over from the
+    FR-7 lane;
+  - **the fuel references agent** stops at a clean point and keeps its code-blindness for tomorrow.
+- **Unchanged:**
+  - N2 for FR-8, first;
+  - FR-24, then FR-26 and FR-28, by the operators owner;
+  - FR-29's design note, by the kinds owner after its second mitochondria head;
+  - FR-34, Kir2.1 and the Ratto data, by the FR-7 lane;
+  - the robustness fixes.
