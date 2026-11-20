@@ -111,7 +111,79 @@ COMBINED = {
     "appendix_all_pi_protons": ({"J_F1": "eq11_appendix_balanced", "J_PiHt": "eq16_appendix_balanced",
                                  "J_C3": "eq24_appendix_balanced", "H_x_row": "pi_protons_counted"}, {},
                                 "the appendix's balanced Eqs. 11, 16 and 24 with frame B's proton row"),
+    "host_p_question_arm": ({"J_F1": "eq11_appendix_balanced", "J_PiHt": "eq16_appendix_balanced",
+                             "H_x_row": "pi_protons_counted", "J_DH": "eq1_balanced_supply"},
+                            {"h_ref_DH": 10.0 ** -7.10},
+                            "the arm for the user's repairs question (host P, D235): frame B (the appendix's balanced Eqs. 11 and 16, "
+                            "the protons on phosphate counted), Eq. 24 restored (phi_Pi x Eq. 7), the balanced NADH supply at "
+                            "reference pH 7.10; 298.15 K, matrix Mg2+ 5 mM"),
 }
+
+FULL_CHECK = ("host_p_question_arm",)
+
+
+def process_dgs(comp, y, h):
+    """Every process's Gibbs energy per turnover (kJ/mol), frame B, for the full check."""
+    S = dict(zip(STATES, np.asarray(y, float)))
+    p = comp.params
+    RT = p["R"] * p["T"]
+    dg = dict(A.delta_g(comp, y, h))
+    dg["J_F1"] = frames(comp, y, h, "J_F1")[1]
+    dg["J_PiHt"] = frames(comp, y, h, "J_PiHt")[1]
+    dg["J_DH"] = frames(comp, y, h, "J_DH")[1]
+    dg.pop("J_F1_Mg", None)
+    fATP_i, fADP_i = S["ATP_i"] - S["mATP_i"], S["ADP_i"] - S["mADP_i"]
+    ln = lambda v: math.log(v) if v > 0 else float("nan")
+    dg["J_MgATPi"] = RT * ln(S["mATP_i"] * p["K_MgATP"] / (fATP_i * h["Mg_i"])) if min(S["mATP_i"], fATP_i) > 0 else float("nan")
+    dg["J_MgADPi"] = RT * ln(S["mADP_i"] * p["K_MgADP"] / (fADP_i * h["Mg_i"])) if min(S["mADP_i"], fADP_i) > 0 else float("nan")
+    dg["J_AMPt"] = RT * ln(S["AMP_i"] / h["AMP_e"]) if S["AMP_i"] > 0 and h["AMP_e"] > 0 else float("nan")
+    return dg
+
+
+def dissipation_check(comp, states, tol=1e-12):
+    """For (y, h) pairs: per process, the least -J dG (W per l mito) and the number of
+    states where it is below -tol. Processes whose dG is undefined at a state (a zero
+    concentration, an efflux into a buffer held at zero) are skipped there."""
+    worst, bad, counted = {}, {}, {}
+    for y, h in states:
+        fl = comp.fluxes(y, h)
+        for k, g in process_dgs(comp, y, h).items():
+            if g is None or not np.isfinite(g) or k not in fl:
+                continue
+            d = -fl[k] * g * 1e3
+            worst[k] = min(worst.get(k, d), d)
+            counted[k] = counted.get(k, 0) + 1
+            if d < -tol:
+                bad[k] = bad.get(k, 0) + 1
+    return {"least_W_per_l": worst, "negative_states": bad, "states_counted": counted}
+
+
+def full_check(name, out: Path, n_random=2000):
+    """Fit with integration at every point, uniqueness, and every process's dissipation."""
+    from .xf1_scaling import uniqueness
+    arm = all_arms()[name]
+    res = R.run_arm(arm, mg_x_total=MG_RECOMMENDED, low_oxygen=False, check_every=True)
+    rows = [r for st in res["sweeps"].values() for r in st]
+    res["existence"] = {"max_integration_vs_newton_rel": max(r["integration_vs_newton_rel"] for r in rows),
+                        "max_newton_residual": max(r["newton_residual"] for r in rows)}
+    run_ = R.Runner(arm, mg_x_total=MG_RECOMMENDED, charge=res["charge_inventory_mol_per_l"])
+    res["uniqueness_state3_Pi3"] = uniqueness(run_, res["charge_inventory_mol_per_l"])
+    comp = run_.comp
+    reported = []
+    for st, adp in (("state4", 0.0), ("state3", 1.3e-3)):
+        for r in res["sweeps"][st]:
+            reported.append((np.array(r["y"]), run_.held(ADP_e=adp, Pi_e=r["Pi_e_mM"] * 1e-3)))
+    res["dissipation_reported_states"] = dissipation_check(comp, reported)
+    rng = np.random.default_rng(13)
+    ys, hs = A.random_states(comp, n_random, rng)
+    for h in hs:
+        h["h_ref_DH"] = comp.params.get("h_ref_DH")
+    res["dissipation_random_states_binding_at_equilibrium"] = dissipation_check(
+        comp, [(equilibrium_binding(comp, y, h), h) for y, h in zip(ys, hs)])
+    res["dissipation_random_states_binding_random"] = dissipation_check(comp, list(zip(ys, hs)))
+    (out / f"{name}.json").write_text(json.dumps(res, indent=1, default=float))
+    print(name, res["rms_z"], res["existence"], res["uniqueness_state3_Pi3"], flush=True)
+    return res
 
 
 def arm_of(field, value, overrides):
@@ -264,6 +336,9 @@ def run(names, out: Path):
     arms = all_arms()
     for name in names:
         arm = arms[name]
+        if name in FULL_CHECK:
+            full_check(name, out)
+            continue
         try:
             res = R.run_arm(arm, mg_x_total=MG_RECOMMENDED, low_oxygen=False, check_every=False)
         except Exception as exc:   # recorded, not hidden
