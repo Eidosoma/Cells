@@ -1328,7 +1328,10 @@ def test_moved_fuel_at_a_general_closures_proton_row_runs_and_its_energy_closes(
     declares no proton row; the population's N at the bath, where the closure holds nothing; and
     the built-in neutral law on lumped finite fuel at the cell (no base forms). Planted too,
     stepped once: the population's g° shifted by 1 (its heat then booked from a wrong x, RT per
-    cycle, a fifth of a proton's standard part counted twice), which the energy ledger refuses."""
+    cycle, a fifth of a proton's standard part counted twice), which the energy ledger refuses.
+    The population names H for K4's readouts: at the buffered cell, delta p's proton term is
+    (RT/F) ln(h_bath / h_cell) of the closure's free h, about -12 mV, not of the stored totals,
+    about -357 mV (@3's observations at the start)."""
 
     def run(spec, impl, p, steps=4):
         state, _ = impl.initial_values(spec)
@@ -1342,11 +1345,18 @@ def test_moved_fuel_at_a_general_closures_proton_row_runs_and_its_energy_closes(
         impl.check_values(history, spec, steps=np.arange(len(states)))  # Every ledger closes.
         return states
 
+    from cells.kinds import proton_buffer
+
+    raw = closure_fuel_world()
+    raw["model"][transporter.MODEL_KEY][0]["proton_readout"] = "H"  # K4's readouts too.
     with closure_scoped():
-        spec = parse_spec(closure_fuel_world())
+        spec = parse_spec(raw)
         impl = get_model(spec.model)
         _, p = impl.initial_values(spec)
         states = run(spec, impl, p)
+        history = impl.STATE_TYPE(*(np.asarray(v)[None] for v in states[0]))
+        observed = impl.observe_history(np.zeros(1), history, p, [0.0], spec)
+        read, read_ok = proton_buffer.stage_read(states[0], p, xp=np)
         shifted = p._replace(cycle_standard_RT=p.cycle_standard_RT + 1.0)
         with pytest.raises(NumericalError, match="energy"):  # Planted: the ledger sees it.
             run(spec, impl, shifted, steps=1)
@@ -1364,6 +1374,19 @@ def test_moved_fuel_at_a_general_closures_proton_row_runs_and_its_energy_closes(
     moved = states[-1].amount_increment[:, 0] - states[0].amount_increment[:, 0]
     for species, n in (("ATP", -1), ("ADP", 1), ("Pi", 1), ("H", 1)):
         assert moved[ids.index(species)] == pytest.approx(n * cycles, rel=1e-9), species
+
+    def h_ratio(s):  # h at the bath over h at the cell, of state s's H rows.
+        h = ids.index("H")
+        cell = (p.amount_reference + s.amount_increment)[h, 0] / p.volume[0]
+        bath = (p.extracellular_amount_reference + s.extracellular_amount_increment)[h, 0]
+        return bath / p.extracellular_volume[0] / cell
+
+    assert bool(read_ok)
+    delta_p = observed.cycle_proton_motive_force_V[0][0]
+    term = float(delta_p - observed.cycle_membrane_potential_V[0][0])
+    rt_f = R * spec.model.temperature_K / F
+    assert term == pytest.approx(rt_f * math.log(h_ratio(read)), rel=1e-9)  # Free h.
+    assert term - rt_f * math.log(h_ratio(states[0])) > 0.3  # Not the stored totals' (planted).
 
 
 # ------------------------------------------------------------------ M2 on this device (amendment 2)
