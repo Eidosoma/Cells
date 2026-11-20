@@ -1,5 +1,6 @@
 """Seam E's check of reaction-level standard free energies (docs/CORE_SEAMS_DESIGN.md §7.1; the
-lead's ruling (d) of 19 November 2026; registry/species_registry.check_free_energies).
+lead's ruling (d) of 19 November 2026; registry/species_registry.check_free_energies), with the
+named potential sets and the moieties it rests on (§7.3; D234's B1 and B2).
 
 Each claim with its plant (D187), in one table whose every row parses a definition:
 - a kind's entries are read at the definition, through F's checks, and an entry that names its
@@ -17,7 +18,18 @@ Each claim with its plant (D187), in one table whose every row parses a definiti
   the operator's, so a missing conversion or one of the wrong sign is refused. The honest entry is
   admitted, so is one off by half the rounding bound, and one off by twice it is refused; an entry
   naming a law is refused (an operator hosts none);
-- an entry with a species the registry gives no potential is not compared.
+- an entry with a species the registry gives no potential is not compared, and one naming a species
+  that is not a row of the model (water, which entries omit) is refused;
+- a named potential set (B1, the lead's rulings of 20 November 2026): beard2005@1 keeps its own
+  contract, and applied whole (with a matrix buffer) it parses and writes back as declared. Every
+  reaction's sum of nu mu°/RT equals the cited value written out here independently, at the
+  world's temperature and at 310.15 K (the lane's appendix's column), and a form's ln K_d carries
+  no temperature. Planted: a set row edited after the set was applied, and the world's temperature
+  changed, are each refused at the definition; the helper refuses a row whose potential comes from
+  elsewhere, and a second set;
+- the moieties (B2): a moiety naming no row is refused; the ATP-driven law's fuel mode conserves
+  phosphorus and adenine, and §7.3's planted error, the same mode with Pi +2, is refused naming the
+  moiety, as is an entry with Pi +2.
 The pump's rows use the kinds owner's diagram pump world (tests/unit/test_kinds_lifecycle_
 declarations.py); the operator's, the reactions fixture's enzyme network at a registry c0 of
 1000 mM (as tests/unit/test_species_potentials.py).
@@ -32,6 +44,7 @@ from decimal import Decimal, localcontext
 import pytest
 
 from cells.definitions.specs import ConfigError, parse_spec
+from cells.definitions.surface_pump_v3_spec import to_dict
 from cells.kinds import transporter
 from cells.laws.cycles import forms
 from cells.operators.species_reactions import LocalSpeciesReactions
@@ -42,6 +55,7 @@ from tests.unit import test_cycle_forms as tf
 from tests.unit import test_cycle_kind as ck
 from tests.unit import test_kinds_lifecycle_declarations as kl
 from tests.unit import test_transporter_kind as tk
+from validation.tissue import pump_water_fixtures as water
 from validation.tissue import species_reactions_fixtures as rfx
 
 # ------------------------------------------------------------------ a kind's: the diagram pump
@@ -198,6 +212,136 @@ def reactions(entries, declared=tuple(MU)):
 
 
 BOUND = operator_rounding()
+
+
+# ------------------------------------------------------------------ a named set and the moieties
+
+BEARD = species_registry.BEARD_2005.name
+GAS = 6.02214076e23 * 1.380649e-23  # J/(mol K), as the source's declared constants.
+TABLE_2 = {  # The source's cited values, kJ/mol at pH 7, and their turnovers (stoichiometry).
+    "C4": (-122.94 * 2, (("O2", -1), ("cytc_red", -4), ("H", -4), ("cytc_ox", 4))),
+    "C3": (-32.53, (("QH2", -1), ("cytc_ox", -2), ("Q", 1), ("cytc_red", 2), ("H", 2))),
+    "C1": (-69.37, (("NADH", -1), ("Q", -1), ("H", -1), ("NAD", 1), ("QH2", 1))),
+    "F": (36.03, (("ADP", -1), ("Pi", -1), ("H", -1), ("ATP", 1))),
+}
+IN_RT_310_15 = dict(C4=-159.8216, C3=19.6215, C1=-43.0189, F=-2.5923)  # The lane's appendix, §7.
+
+
+def expected_RT(name, temperature_K):
+    """A cited reaction's dG°/RT on the 1 M basis, written out here, independently of the
+    registry: the value at the world's temperature, plus nu_H ln 1e7 for its scalar protons and,
+    for synthesis, -ln(1 + 1e-7 M / k_dH) for its total phosphate."""
+    value, stoichiometry = TABLE_2[name]
+    x = value * 1e3 / (GAS * temperature_K) + dict(stoichiometry)["H"] * math.log(1e7)
+    return x - (math.log1p(1e-7 / 1.7783e-7) if name == "F" else 0.0)
+
+
+def set_world(temperature_K=None):
+    """Heredity cell D (its Na, K, M and P) with every other row of the set and a declared matrix
+    buffer, Buf (valence -1), impermeant, at 1 mM (H at 1e-4 mM), no potentials of their own."""
+    raw = water.heredity_cell("D", end_time=0.002)
+    if temperature_K is not None:
+        raw["model"]["temperature_K"] = temperature_K
+    declared = {e["id"] for e in raw["model"]["species"]}
+    for row, z in (*species_registry.BEARD_2005.rows, ("Buf", -1)):
+        if row not in declared:
+            mM = 1e-4 if row == "H" else 1.0
+            ck.add_species(raw, row, z, 0.0, {"cell_0": mM, "bath_0": mM})
+            del next(e for e in raw["model"]["species"] if e["id"] == row)["standard_mu_RT"]
+    return raw
+
+
+def a_named_set(monkeypatch):
+    """beard2005@1 applied whole, with a matrix buffer at pK 7.4. Its preconditions: the set keeps
+    its own contract; every reaction's sum of nu mu°/RT is the cited value at the world's
+    temperature (written out independently, expected_RT), and at 310.15 K the lane's appendix's
+    column; each form's ln K_d carries no temperature; the definition writes back as declared."""
+    assert species_registry.potential_set_errors(species_registry.BEARD_2005) == []
+    raw = species_registry.with_potential_set(set_world(), BEARD, proton_buffers={"Buf": 7.4})
+    for temperature, column in ((raw["model"]["temperature_K"], None), (310.15, IN_RT_310_15)):
+        mu = species_registry.potential_set_values(
+            BEARD, temperature_K=temperature, standard_concentration_mM=1000.0
+        )
+        for name, (_, stoichiometry) in TABLE_2.items():
+            got = sum(n * mu[row] for row, n in stoichiometry)
+            assert abs(got - expected_RT(name, temperature)) <= 1e-12, (name, temperature)
+            if column is not None:
+                assert round(got, 4) == column[name], name
+        assert mu["MgATP"] - mu["ATP"] - mu["Mg"] == pytest.approx(math.log(24.0e-6), abs=1e-14)
+    spec = parse_spec(raw)
+    again = parse_spec(to_dict(spec))
+    assert species_registry.declared(again) == species_registry.declared(spec)
+    assert species_registry.declared(spec).potential_set == BEARD
+    return raw, contextlib.nullcontext()
+
+
+def a_set_row_edited(monkeypatch):
+    """ATP's potential edited after the set was applied. The helper's own refusals stand beside
+    it: a set row whose potential comes from elsewhere, and a second set."""
+    raw = species_registry.with_potential_set(set_world(), BEARD)
+    mixed = set_world()
+    next(e for e in mixed["model"]["species"] if e["id"] == "ATP")["standard_mu_RT"] = -2.5
+    with pytest.raises(ValueError, match="take their potentials from it alone"):
+        species_registry.with_potential_set(mixed, BEARD)
+    with pytest.raises(ValueError, match="already names the potential set"):
+        species_registry.with_potential_set(raw, BEARD)
+    next(e for e in raw["model"]["species"] if e["id"] == "ATP")["standard_mu_RT"] = -2.5
+    return raw, contextlib.nullcontext()
+
+
+def a_set_re_tempered(monkeypatch):
+    raw = species_registry.with_potential_set(set_world(), BEARD)
+    raw["model"]["temperature_K"] += 1.0
+    return raw, contextlib.nullcontext()
+
+
+def with_moieties(raw, *weights):
+    raw["model"]["moieties"] = [dict(id=name, weights=dict(w)) for name, w in weights]
+    return raw
+
+
+PHOSPHORUS = ("phosphorus", (("Pi", 1), ("ADP", 2), ("ATP", 3)))
+ADENINE = ("adenine", (("ATP", 1), ("ADP", 1)))
+
+
+def an_unknown_moiety_row(monkeypatch):
+    return with_moieties(pump_world(), ("glucose", (("Glc", 1),))), kind_scope()
+
+
+def fuel_world(law_id):
+    """Held world D with one finite-fuel population of the ATP-driven law's general form (its
+    fuel moves: ATP -1, ADP +1, Pi +1 per cycle) under `law_id`, phosphorus and adenine declared."""
+    population = dict(ck.FINITE_POP, law=law_id)
+    return with_moieties(tk.held_world(population), PHOSPHORUS, ADENINE)
+
+
+def off_by_one():
+    """§7.3's planted error: the ATP-driven law's form with Pi +2 per cycle."""
+    law = law_registry.BUILTIN.lookup("cells.atp_driven_transporter_mass_action_positive@1")
+    (mode, counts), = law.cycle.modes
+    cycle = law.cycle._replace(modes=((mode, (*counts[:4], 2)),))
+    return dataclasses.replace(law, law_id="seamtest.atp_pi_off_by_one@1", cycle=cycle)
+
+
+def a_balanced_fuel_mode(monkeypatch):
+    return fuel_world("cells.atp_driven_transporter_mass_action_positive@1"), kind_scope()
+
+
+def a_fuel_mode_off_by_one(monkeypatch):
+    laws = law_registry.BUILTIN.extended(off_by_one())
+    return fuel_world("seamtest.atp_pi_off_by_one@1"), law_registry.scope(laws)
+
+
+def an_entry_off_by_one(monkeypatch):
+    planted = entry()._replace(stoichiometry=(("ATP", -1), ("ADP", 1), ("Pi", 2)))
+    return with_moieties(pump_world(), PHOSPHORUS), kind_scope((planted,))
+
+
+def an_entry_naming_water(monkeypatch):
+    planted = entry()._replace(stoichiometry=(*HYDROLYSIS, ("H2O", -1)))
+    return pump_world(), kind_scope((planted,))
+
+
 TABLE = {  # name: (definition and scope, None (admitted) or the refusal's pattern)
     "an honest pump near the edge of its form band": (at_the_edge, None),
     "the same entry naming no law": (
@@ -240,6 +384,31 @@ TABLE = {  # name: (definition and scope, None (admitted) or the refusal's patte
     "a species with no registry potential": (
         reactions((FreeEnergyEntry(BINDING, DG + 1.0, 1.0),), declared=("S", "E", "P")),
         None,
+    ),
+    "an entry naming a species that is not a row": (
+        an_entry_naming_water,
+        rf"{KIND} \(seamtest\.diagram_pump@1's cycle, mode pump\): it names 'H2O', which is not "
+        "a species of the model",
+    ),
+    "a named set applied whole": (a_named_set, None),
+    "a named set's row edited": (
+        a_set_row_edited,
+        r"species ATP \(potential set beard2005@1\): its potentials .* are not the set's",
+    ),
+    "a named set at another temperature": (
+        a_set_re_tempered,
+        r"species NADH \(potential set beard2005@1\): .* at 311\.0 K",
+    ),
+    "a moiety naming no row": (an_unknown_moiety_row, r"moiety glucose: 'Glc' is not a species"),
+    "a fuel mode that conserves every moiety": (a_balanced_fuel_mode, None),
+    "a fuel mode with Pi off by one": (
+        a_fuel_mode_off_by_one,
+        r"Kind cells\.transporter@1's move under seamtest\.atp_pi_off_by_one@1, mode cycle: it "
+        r"changes moiety phosphorus by \+1 per turnover",
+    ),
+    "an entry with Pi off by one": (
+        an_entry_off_by_one,
+        rf"{KIND}: it changes moiety phosphorus by \+1 per turnover",
     ),
 }
 

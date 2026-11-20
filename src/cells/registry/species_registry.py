@@ -86,9 +86,53 @@ than its band, naming the declarer and the entry:
   check_potentials' rounding: POTENTIAL_ULPS ulps of sum |nu mu°/RT| + |dG°/RT| + |(sum nu)
   ln(c0_registry / c0)|, to which a species' potential at nu = 1 reduces.
 The residual is evaluated at FREE_ENERGY_DIGITS digits from the declared doubles, so its verdict
-does not depend on the order of its terms. An entry with a species the registry gives no potential
-is not compared. Its power is for energies no parse-time Wegscheider check covers: where one does
-(the transporter's diagram cycles), it holds the same band, and its refusal comes first.
+does not depend on the order of its terms. An entry naming a species that is not a row of the model
+is refused: water, at unit activity, is omitted, never named. An entry with a row the registry gives
+no potential is not compared. Its power is for energies no parse-time Wegscheider check covers:
+where one does (the transporter's diagram cycles), it holds the same band, and its refusal comes
+first.
+
+Named potential sets (POTENTIAL_SETS, with_potential_set, check_potential_set)
+-----------------------------------------------------------------------------
+A source that cites reaction-level standard free energies, not species potentials, fixes the
+potentials only up to one reference per conserved quantity. A named set (PotentialSet; the lead's
+rulings of 20 November 2026, D234's B1) states its references and derives every other potential
+from its values, so its potentials hold together only as a whole:
+* **References:** mu°/RT = 0 at 1 M for one row per conserved quantity (beard2005@1: H+, K+, Mg2+,
+  O2, NAD, Q, cytochrome c oxidised, ADP3-, HPO4 2- and the substrate's oxidised form). Water is
+  never a row: it stands at unit activity with mu = 0 and is omitted from every stoichiometry, so
+  each dG° is at unit water activity.
+* **Derived:** a form's potential from its dissociation constant (mu°_f = mu°_base + sum n mu°_L +
+  ln K_d, with no temperature), and each other row's from one reaction, solved in order: dG°/RT at
+  the world's temperature, plus its basis's logarithms, which carry none (a reaction cited at pH 7
+  adds nu_H ln(1 M / 1e-7 M) for its scalar protons and nu ln P(1e-7 M) for each total over proton
+  forms, P the row's binding polynomial). dG° is treated as independent of temperature, since no
+  dH° is cited: an approximation. Every value is moved to the world's c0 by ln(c0 / 1 M), evaluated
+  at FREE_ENERGY_DIGITS digits and rounded once.
+* **The limit:** a dG° computed from these potentials is meaningful only for a reaction that
+  conserves every reference quantity. check_moieties holds every declared moiety to that.
+* **No mixing:** with_potential_set applies a set whole to a raw definition, every row of it the
+  definition declares, refusing a row whose potential or forms come from elsewhere, and names it
+  under ``potential_set``. check_potential_set then refuses, at the definition, a named set's row
+  whose valence, potential or forms differ from the set's at the world's temperature and c0: a hand
+  edit, a mixed value, or a temperature changed after the set was applied. Rows the set does not
+  name are the world's. A declared one-site proton buffer takes the set's proton reference through
+  with_potential_set (proton_buffers {row: pK}): its base at 0, its protonated form at
+  -pK ln 10 + mu°_H/RT, at 1 M.
+* **Not potentials:** a closure's binding rates (k_on) are the world's, declared in its block; the
+  source's X_MgA is class C, set large. Each set's notes say what its sources leave to it.
+
+Moieties (moieties, check_moieties)
+-----------------------------------
+The model may declare its conserved moieties, ``moieties``: [{id, weights: {row: nonzero
+integer}}, ...], each weight per unit of the row's total. A row with forms holds every form, so Mg
+bound in MgATP counts in the Mg row's total where a closure holds it, and a form needs no weights
+of its own. The registry is their one authority for kinds and entries (the lead's Q7 ruling):
+check_moieties refuses any kind mode, resolved through its role_species (entity_modes), and any
+declared free-energy entry that changes a moiety, naming it (CORE_SEAMS §3.2 and §7.3). Transport
+keeps a species' identity, so a mode's net change over both ends is its chemistry. A model that
+declares none is not checked. An operator's own moieties (D152's reactions) stay its own until an
+operator-contract hook reports them (the operators owner's follow-up).
 
 Moved by the step (moved_in_step)
 ---------------------------------
@@ -102,9 +146,13 @@ instantaneous regulation reads only rows that nothing moves inside the step, sin
 held through the step: a moved row would make it lag (docs/INVENTORY_COUPLING_DESIGN.md §1.4).
 """
 
+import copy
 import math
 from dataclasses import dataclass
 from decimal import Decimal, localcontext
+from fractions import Fraction
+from types import MappingProxyType
+from typing import NamedTuple
 
 from cells.definitions.specs import ConfigError, _fields
 
@@ -167,13 +215,26 @@ class Entry:
 
 @dataclass(frozen=True)
 class Declared:
-    """The registry the model declares: its entries, in the model's species order."""
+    """The registry the model declares: its entries, in the model's species order; its moieties
+    (Moiety, ...), in declared order; and the named potential set its potentials come from, or
+    None (module docstring)."""
 
     entries: tuple
     standard_concentration_mM: float | None
+    moieties: tuple = ()
+    potential_set: str | None = None
 
     def entry(self, species):
         return next((e for e in self.entries if e.id == species), None)
+
+
+@dataclass(frozen=True)
+class Moiety:
+    """A conserved moiety (module docstring, ``moieties``): its ID and its weights, ((row, w), ...)
+    in declared order, each w a nonzero integer per unit of the row's total."""
+
+    id: str
+    weights: tuple
 
 
 # ------------------------------------------------------------------ parsing
@@ -213,6 +274,9 @@ def _positive(value, what):
 
 REGISTRY_KEYS = ("identity", "standard_mu_RT", "protonated_standard_mu_RT", "background", "forms")
 MODEL_KEY = "standard_concentration_mM"
+MOIETIES_KEY = "moieties"  # The model's conserved moieties (module docstring), optional.
+SET_KEY = "potential_set"  # The named potential set the model's potentials come from, optional.
+MOIETY_KEYS = ("id", "weights")
 FORM_KEYS = ("id", "counts", "standard_mu_RT")  # A form's required keys; "valence" is optional.
 
 
@@ -320,9 +384,35 @@ def _check_forms(entries):
             seen.add(composition)
 
 
-def build(raw_entries, standard_concentration_mM=None):
+def _parse_moieties(raw, rows):
+    """The model's moieties, [{id, weights: {row: nonzero integer}}, ...], each ID named once and
+    each row one of the model's (`rows`), as (Moiety, ...) in declared order (module docstring)."""
+    if type(raw) is not list or not raw:
+        raise ConfigError(f"The model's {MOIETIES_KEY} is a non-empty list of {{id, weights}}")
+    out, seen = [], set()
+    for item in raw:
+        if not isinstance(item, dict):
+            raise ConfigError(f"Each of the model's {MOIETIES_KEY} is an object {{id, weights}}")
+        _fields(item, set(MOIETY_KEYS), "a moiety")
+        name, weights = item["id"], item["weights"]
+        if type(name) is not str or not name or name in seen:
+            raise ConfigError(f"A moiety's id is a non-empty string, each named once: {name!r}")
+        seen.add(name)
+        if not isinstance(weights, dict) or not weights:
+            raise ConfigError(f"moiety {name}: its weights map each row to a nonzero integer")
+        for row, w in weights.items():
+            if row not in rows:
+                raise ConfigError(f"moiety {name}: {row!r} is not a species of the model")
+            if type(w) is not int or w == 0:
+                raise ConfigError(f"moiety {name}: the weight of {row} is a nonzero integer")
+        out.append(Moiety(name, tuple(weights.items())))
+    return tuple(out)
+
+
+def build(raw_entries, standard_concentration_mM=None, moieties=None, potential_set=None):
     """The registry of entries {id, any of REGISTRY_KEYS}, in the model's species order, at c0
-    (mM; required when an entry declares a potential)."""
+    (mM; required when an entry declares a potential), with the model's moieties and named
+    potential set where it declares them (module docstring)."""
     entries = []
     for raw in raw_entries:
         name = raw["id"]
@@ -363,24 +453,36 @@ def build(raw_entries, standard_concentration_mM=None):
         standard_concentration_mM = _positive(standard_concentration_mM, MODEL_KEY)
     if len({e.id for e in entries}) != len(entries):
         raise ConfigError("The model lists a species twice")
-    return Declared(tuple(entries), standard_concentration_mM)
+    if moieties is not None:
+        moieties = _parse_moieties(moieties, {e.id for e in entries})
+    if potential_set is not None and potential_set not in POTENTIAL_SETS:
+        raise ConfigError(
+            f"The model's {SET_KEY} {potential_set!r} is not a named potential set: one of "
+            f"{sorted(POTENTIAL_SETS)}"
+        )
+    return Declared(tuple(entries), standard_concentration_mM, moieties or (), potential_set)
 
 
 def parse_entries(raw_model):
     """The core parser's hook (docs/INNER_MODEL_V4_DESIGN.md §7.4 (f) 7): pops REGISTRY_KEYS from
     each species entry of raw_model, the parser's deep copy, and the model's
-    standard_concentration_mM, so the strict species parse that follows sees only id and valence.
-    Returns the registry, or None when the model declares none (its fingerprint is unchanged)."""
+    standard_concentration_mM, moieties and potential_set, so the strict species parse that
+    follows sees only id and valence. Returns the registry, or None when the model declares none
+    (its fingerprint is unchanged)."""
     popped = []
     for raw in raw_model.get("species") or ():
         keys = {k: raw.pop(k) for k in REGISTRY_KEYS if k in raw} if isinstance(raw, dict) else {}
         popped.append((raw, keys))
     c0 = raw_model.pop(MODEL_KEY, None)
-    if c0 is None and not any(keys for _, keys in popped):
+    moieties = raw_model.pop(MOIETIES_KEY, None)
+    named = raw_model.pop(SET_KEY, None)
+    if c0 is None and moieties is None and named is None and not any(k for _, k in popped):
         return None
     return build(
         [dict(id=raw.get("id") if isinstance(raw, dict) else None, **keys) for raw, keys in popped],
         c0,
+        moieties,
+        named,
     )
 
 
@@ -415,7 +517,14 @@ def to_entries(declared_registry):
         if keys:
             species[e.id] = keys
     c0 = declared_registry.standard_concentration_mM
-    return species, ({} if c0 is None else {MODEL_KEY: c0})
+    keys = {} if c0 is None else {MODEL_KEY: c0}
+    if declared_registry.moieties:
+        keys[MOIETIES_KEY] = [
+            dict(id=m.id, weights=dict(m.weights)) for m in declared_registry.moieties
+        ]
+    if declared_registry.potential_set is not None:
+        keys[SET_KEY] = declared_registry.potential_set
+    return species, keys
 
 
 # ------------------------------------------------------------------ resolution
@@ -567,8 +676,18 @@ def check_free_energies(spec):
     admits, this check admits. Any other entry's is check_potentials' rounding. Every declared
     entry is read through F's checks, in a world without a registry too; an entry with a species
     the registry gives no potential is not compared."""
+    rows = set(_inner_model(spec).species_ids)
     for where, entries in declared_free_energies(spec):
         for index, entry in enumerate(entries):
+            at = f"{where}, entry {index}"
+            law = "" if entry.law_id is None else f" ({entry.law_id}'s cycle, mode {entry.mode})"
+            stray = [species for species, _ in entry.stoichiometry if species not in rows]
+            if stray:
+                raise ConfigError(
+                    f"{at}{law}: it names {stray[0]!r}, which is not a species of the model: an "
+                    "entry's stoichiometry names the model's rows only (water, at unit activity, "
+                    "is omitted)"
+                )
             found = [standard_potential(spec, species) for species, _ in entry.stoichiometry]
             if any(item is None for item in found):
                 continue  # Not compared, as check_potentials.
@@ -576,8 +695,6 @@ def check_free_energies(spec):
             terms = tuple(
                 (nu, mu) for (_, nu), (mu, _) in zip(entry.stoichiometry, found, strict=True)
             )
-            at = f"{where}, entry {index}"
-            law = "" if entry.law_id is None else f" ({entry.law_id}'s cycle, mode {entry.mode})"
             with localcontext() as ctx:
                 ctx.prec = FREE_ENERGY_DIGITS
                 net = sum(Decimal(nu) for nu, _ in terms)
@@ -598,6 +715,381 @@ def check_free_energies(spec):
                 f"mu°/RT gives {float(registry_sum)!r}: {float(residual):.3e} apart, beyond "
                 f"{source} {float(band):.3e}: one authority for each standard free energy"
             )
+
+
+# ------------------------------------------------------------------ named potential sets (B1)
+
+# The gas constant, J/(mol K): N_A k_B, exact in SI, at the digits the sets are derived at.
+GAS_CONSTANT_J_MOL_K = Decimal("6.02214076e23") * Decimal("1.380649e-23")
+SET_C0_MM = 1000.0  # A set's own standard state: every species at 1 M.
+
+
+class SetForm(NamedTuple):
+    """A non-base form of a set's row from its dissociation constant K_d = [base] prod [L]^n /
+    [form] at equilibrium, in M^(sum n): mu°_form/RT = mu°_base/RT + sum n mu°_L/RT + ln K_d at
+    1 M, with no temperature (the lead's Q4 ruling); `cited`, where the constant is printed."""
+
+    row: str
+    id: str
+    counts: tuple  # ((ligand row, n), ...)
+    dissociation_M: float
+    cited: str
+
+
+class SetReaction(NamedTuple):
+    """A reaction-level standard free energy that fixes the potential of the one row it
+    `determines`: its stoichiometry over base rows, ((row, nu), ...), products positive and water
+    omitted (unit activity); its value in kJ/mol, `multiple` times over where the set's turnover is
+    a multiple of the cited one; its basis, the set's proton row at proton_reference_M (pH 7:
+    1e-7 M) or at 1 M (None), and the rows it counts as totals over their proton forms at that
+    reference (`totals`); and `cited`, where it is printed, or why it is declared."""
+
+    determines: str
+    stoichiometry: tuple
+    dG_kJ_mol: float
+    multiple: int
+    proton_reference_M: float | None
+    totals: tuple
+    cited: str
+
+
+class PotentialSet(NamedTuple):
+    """A named set of standard potentials (module docstring, "Named potential sets")."""
+
+    name: str
+    sources: tuple  # Each work cited, as its reference string.
+    proton: str  # Its proton row: the scalar proton of a reaction cited at a reference pH.
+    rows: tuple  # ((row, valence of its base form), ...)
+    references: tuple  # Rows at mu°/RT = 0 at 1 M, one per conserved quantity.
+    forms: tuple  # SetForm, ...
+    reactions: tuple  # SetReaction, ..., solved in order.
+    moieties: tuple  # ((moiety ID, ((row, weight), ...)), ...)
+    notes: tuple  # What its sources leave to it: departures, declared values and limits.
+
+
+_BEARD_2005 = "Beard 2005, PLoS Comput Biol 1(4):e36"
+_BEARD_2006 = "Beard 2006 (correction), PLoS Comput Biol 2(1):e8"
+BEARD_2005 = PotentialSet(
+    name="beard2005@1",
+    sources=(
+        "Beard DA (2005), A biophysical model of the mitochondrial respiratory system and "
+        "oxidative phosphorylation, PLoS Comput Biol 1(4):e36, doi:10.1371/journal.pcbi.0010036 "
+        "(CC BY)",
+        "Beard DA (2006), Correction, PLoS Comput Biol 2(1):e8, doi:10.1371/journal.pcbi.0020008 "
+        "(CC BY): Table 1's corrected values",
+    ),
+    proton="H",
+    rows=(
+        ("H", 1), ("K", 1), ("Mg", 2), ("O2", 0), ("NAD", -1), ("NADH", -2), ("Q", 0),
+        ("QH2", 0), ("cytc_ox", 3), ("cytc_red", 2), ("ADP", -3), ("ATP", -4), ("Pi", -2),
+        ("S_ox", 0), ("S_red", 0),
+    ),  # fmt: skip
+    references=("H", "K", "Mg", "O2", "NAD", "Q", "cytc_ox", "ADP", "Pi", "S_ox"),
+    forms=(
+        SetForm("ATP", "MgATP", (("Mg", 1),), 24.0e-6, f"{_BEARD_2006}, Table 1: K_MgATP"),
+        SetForm("ADP", "MgADP", (("Mg", 1),), 347.0e-6, f"{_BEARD_2006}, Table 1: K_MgADP"),
+        SetForm("Pi", "H2PO4", (("H", 1),), 1.7783e-7, f"{_BEARD_2006}, Table 1: k_dH"),
+    ),
+    reactions=(
+        SetReaction(
+            "cytc_red", (("O2", -1), ("cytc_red", -4), ("H", -4), ("cytc_ox", 4)), -122.94, 2,
+            1e-7, (), f"{_BEARD_2005}, Table 2: complex IV, per 1/2 O2 at pH 7 (here per O2)",
+        ),
+        SetReaction(
+            "QH2", (("QH2", -1), ("cytc_ox", -2), ("Q", 1), ("cytc_red", 2), ("H", 2)), -32.53, 1,
+            1e-7, (), f"{_BEARD_2005}, Table 2: complex III, at pH 7",
+        ),
+        SetReaction(
+            "NADH", (("NADH", -1), ("Q", -1), ("H", -1), ("NAD", 1), ("QH2", 1)), -69.37, 1, 1e-7,
+            (), f"{_BEARD_2005}, Table 2: complex I, at pH 7",
+        ),
+        SetReaction(
+            "ATP", (("ADP", -1), ("Pi", -1), ("H", -1), ("ATP", 1)), 36.03, 1, 1e-7, ("Pi",),
+            f"{_BEARD_2005}, Table 2: ATP synthesis at pH 7, Pi its total (+36.03 kJ/mol; the "
+            "text under Eq. 11 prints -36.03, a sign slip)",
+        ),
+        SetReaction(
+            "S_red", (("S_red", -1), ("NAD", -1), ("S_ox", 1), ("NADH", 1), ("H", 1)), 0.0, 1,
+            1e-7, (), "declared, uncited: the lumped dehydrogenase substrate the NADH supply "
+            "oxidises, which the source does not print; a world sets the supply's drive through "
+            "its held pair's ratio",
+        ),
+    ),  # fmt: skip
+    moieties=(
+        ("adenine", (("ATP", 1), ("ADP", 1))),
+        ("NAD", (("NAD", 1), ("NADH", 1))),
+        ("quinone", (("Q", 1), ("QH2", 1))),
+        ("cytochrome_c", (("cytc_ox", 1), ("cytc_red", 1))),
+        ("phosphorus", (("Pi", 1), ("ADP", 2), ("ATP", 3))),
+        ("magnesium", (("Mg", 1),)),
+        ("substrate", (("S_red", 1), ("S_ox", 1))),
+    ),
+    notes=(
+        "Table 2's values are reaction-level only; the references fix the rest (module "
+        "docstring), and water is omitted at unit activity.",
+        "dG° is treated as independent of temperature, since the source cites no dH°; it prints "
+        "no temperature either, so the world declares its own.",
+        "The source binds no H+ to the nucleotides and no Mg2+ to phosphate; AMP waits for an "
+        "adenylate kinase law (the lead's Q3 ruling).",
+        "Binding rates are not potentials: a closure's k_on is the world's, declared in its block. "
+        "The source's X_MgA (Table 1) is class C, set large.",
+    ),
+)
+POTENTIAL_SETS = MappingProxyType({BEARD_2005.name: BEARD_2005})
+
+
+def potential_set_errors(potential_set):
+    """Why a named set breaks its own contract (empty: it keeps it): its rows, references, forms,
+    reactions and moieties well formed; each reaction solvable for the one row it determines, in
+    order, every other row of it known by then; every non-reference row determined exactly once;
+    every reaction conserving charge and every moiety of the set; and a reaction's totals only
+    over rows whose forms bind the proton alone."""
+    s, out = potential_set, []
+    valence = dict(s.rows)
+    if len(valence) != len(s.rows):
+        out.append("its rows are distinct")
+    if valence.get(s.proton) != 1:
+        out.append(f"its proton row {s.proton} is one of its rows, at valence +1")
+    if not set(s.references) <= set(valence):
+        out.append("its references are rows of it")
+    form_ids = [f.id for f in s.forms]
+    if len(set(form_ids)) != len(form_ids) or set(form_ids) & set(valence):
+        out.append("its forms' IDs are distinct, and no row's")
+    for f in s.forms:
+        if f.row not in valence or not all(
+            ligand in valence and type(n) is int and n != 0 for ligand, n in f.counts
+        ):
+            out.append(f"form {f.id}: its row and ligands are rows of the set, its counts nonzero")
+        if not (math.isfinite(f.dissociation_M) and f.dissociation_M > 0):
+            out.append(f"form {f.id}: its dissociation constant is finite and positive")
+    proton_only = {f.row for f in s.forms if [ligand for ligand, _ in f.counts] == [s.proton]}
+    other = {f.row for f in s.forms} - proton_only
+    known = set(s.references)
+    for r in s.reactions:
+        nu = dict(r.stoichiometry)
+        if not (set(nu) <= set(valence) and all(type(n) is int and n for n in nu.values())):
+            out.append(f"reaction for {r.determines}: its rows are the set's, its counts nonzero")
+            continue
+        if r.determines in known or r.determines not in nu:
+            out.append(f"reaction for {r.determines}: it determines a row of it not yet known")
+        elif not set(nu) - {r.determines} <= known:
+            out.append(f"reaction for {r.determines}: its other rows are known before it")
+        known.add(r.determines)
+        if sum(valence[row] * n for row, n in nu.items()) != 0:
+            out.append(f"reaction for {r.determines}: it conserves charge")
+        for moiety, weights in s.moieties:
+            if sum(w * nu.get(row, 0) for row, w in weights) != 0:
+                out.append(f"reaction for {r.determines}: it conserves moiety {moiety}")
+        if not (type(r.multiple) is int and r.multiple > 0):
+            out.append(f"reaction for {r.determines}: its multiple is a positive integer")
+        if r.totals and (r.proton_reference_M is None or not set(r.totals) <= proton_only - other):
+            out.append(f"reaction for {r.determines}: its totals are over proton forms at a pH")
+    if known != set(valence):
+        out.append(f"its rows {sorted(set(valence) - known)} have no potential")
+    for moiety, weights in s.moieties:
+        if not all(row in valence and type(w) is int and w != 0 for row, w in weights):
+            out.append(f"moiety {moiety}: its weights are nonzero integers on the set's rows")
+    return out
+
+
+def potential_set_values(name, *, temperature_K, standard_concentration_mM):
+    """{row or form ID: mu°/RT} of the named set at a world's temperature (K) and c0 (mM), each
+    evaluated at FREE_ENERGY_DIGITS digits and rounded once (module docstring): a reaction's
+    dG°/RT at temperature_K with its basis's logarithms (the scalar protons' nu_H ln(1 M / h_ref),
+    and each total's nu ln P(h_ref), P the row's proton binding polynomial), a form's ln K_d, and
+    every value moved to c0 by ln(c0 / 1 M)."""
+    s = POTENTIAL_SETS[name]
+    problems = potential_set_errors(s)
+    if problems:
+        raise ValueError(f"Potential set {name}: " + "; ".join(problems))
+    with localcontext() as ctx:
+        ctx.prec = FREE_ENERGY_DIGITS
+        rt = GAS_CONSTANT_J_MOL_K * Decimal(temperature_K) / 1000  # kJ/mol
+        shift = (Decimal(standard_concentration_mM) / Decimal(SET_C0_MM)).ln()
+        polynomial = {}
+        for f in s.forms:
+            if [ligand for ligand, _ in f.counts] == [s.proton]:
+                polynomial.setdefault(f.row, []).append((f.counts[0][1], Decimal(f.dissociation_M)))
+        mu = {row: Decimal(0) for row in s.references}
+        for r in s.reactions:
+            nu = dict(r.stoichiometry)
+            x = Decimal(r.dG_kJ_mol) * r.multiple / rt
+            if r.proton_reference_M is not None:
+                h = Decimal(r.proton_reference_M)
+                x += nu.get(s.proton, 0) * (1 / h).ln()
+                for row in r.totals:
+                    x += nu[row] * (1 + sum(h**n / k for n, k in polynomial[row])).ln()
+            known = sum(Decimal(n) * mu[row] for row, n in nu.items() if row != r.determines)
+            mu[r.determines] = (x - known) / nu[r.determines]
+        for f in s.forms:
+            ligands = sum(Decimal(n) * mu[ligand] for ligand, n in f.counts)
+            mu[f.id] = mu[f.row] + ligands + Decimal(f.dissociation_M).ln()
+        return {key: float(value + shift) for key, value in mu.items()}
+
+
+def _set_forms(s, row, values):
+    valence = dict(s.rows)
+    return [
+        dict(
+            id=f.id,
+            counts=dict(f.counts),
+            standard_mu_RT=values[f.id],
+            valence=valence[f.row] + sum(n * valence[ligand] for ligand, n in f.counts),
+        )
+        for f in s.forms
+        if f.row == row
+    ]
+
+
+def with_potential_set(raw, name, *, proton_buffers=None):
+    """A copy of a raw @3 or composite definition with the named set applied whole (module
+    docstring): every species the definition declares that the set names takes the set's valence
+    check, potential and forms at the model's temperature_K and c0 (1000 mM where it declares
+    none), the model declares the set's moieties over the rows it has, and potential_set names the
+    set. Refused (ValueError): an unknown set, a definition that already names one, a row of the set
+    that already declares a potential or forms (no mixing), a valence unlike the set's, and a moiety
+    ID the definition already uses. proton_buffers {row: pK}: each a declared row outside the set,
+    given the set's proton reference: its base at 0 and its protonated form, H<row>, at
+    -pK ln 10 + mu°_H/RT (at 1 M, then moved to c0)."""
+    if name not in POTENTIAL_SETS:
+        raise ValueError(f"No potential set {name!r}: one of {sorted(POTENTIAL_SETS)}")
+    s, out = POTENTIAL_SETS[name], copy.deepcopy(raw)
+    m = out["model"]
+    if m.get(SET_KEY) is not None:
+        raise ValueError(f"The definition already names the potential set {m[SET_KEY]!r}")
+    c0 = m.setdefault(MODEL_KEY, SET_C0_MM)
+    values = potential_set_values(
+        name, temperature_K=m["temperature_K"], standard_concentration_mM=c0
+    )
+    declared = {e["id"]: e for e in m["species"]}
+    valence = dict(s.rows)
+    buffers = dict(proton_buffers or {})
+    for row in [r for r in declared if r in valence] + list(buffers):
+        entry = declared[row]
+        taken = [k for k in ("standard_mu_RT", "protonated_standard_mu_RT", "forms") if k in entry]
+        if taken:
+            raise ValueError(
+                f"species {row} already declares {', '.join(taken)}: the rows of potential set "
+                f"{name} take their potentials from it alone"
+            )
+    for row, entry in declared.items():
+        if row not in valence:
+            continue
+        if entry.get("valence") != valence[row]:
+            raise ValueError(
+                f"species {row} has valence {entry.get('valence')!r}; {name} gives it "
+                f"{valence[row]}"
+            )
+        entry["standard_mu_RT"] = values[row]
+        forms = _set_forms(s, row, values)
+        if forms:
+            entry["forms"] = forms
+    shift = math.log(c0 / SET_C0_MM)
+    for row, pk in buffers.items():
+        if row in valence or row not in declared:
+            raise ValueError(
+                f"proton buffer {row}: a declared species outside potential set {name}"
+            )
+        entry, proton = declared[row], values[s.proton] - shift
+        entry["standard_mu_RT"] = shift
+        entry["forms"] = [
+            dict(id=f"H{row}", counts={s.proton: 1},
+                 standard_mu_RT=proton - pk * math.log(10.0) + shift, valence=entry["valence"] + 1)
+        ]  # fmt: skip
+    moieties = list(m.get(MOIETIES_KEY) or [])
+    taken = {item.get("id") for item in moieties if isinstance(item, dict)}
+    for moiety, weights in s.moieties:
+        present = {row: w for row, w in weights if row in declared}
+        if not present:
+            continue
+        if moiety in taken:
+            raise ValueError(f"The definition already declares a moiety {moiety!r}")
+        moieties.append(dict(id=moiety, weights=present))
+    if moieties:
+        m[MOIETIES_KEY] = moieties
+    m[SET_KEY] = name
+    return out
+
+
+def check_potential_set(spec):
+    """Refuse a definition naming a potential set whose rows depart from it (module docstring):
+    each species of the model that the set names has the set's valence, and the set's potential
+    and forms at the model's temperature and c0, exactly (a hand edit, a value from elsewhere, or
+    a temperature changed after the set was applied). Rows the set does not name are the world's."""
+    model = declared(spec)
+    if model is None or model.potential_set is None:
+        return
+    s, m = POTENTIAL_SETS[model.potential_set], _inner_model(spec)
+    c0 = model.standard_concentration_mM
+    if c0 is None:
+        raise ConfigError(f"potential set {s.name}: the model declares no standard concentration")
+    values = potential_set_values(
+        s.name, temperature_K=m.temperature_K, standard_concentration_mM=c0
+    )
+    valence, ids = dict(s.rows), dict(zip(m.species_ids, m.valence, strict=True))
+    for row in m.species_ids:
+        if row not in valence:
+            continue
+        entry, where = model.entry(row), f"species {row} (potential set {s.name})"
+        if ids[row] != valence[row]:
+            raise ConfigError(f"{where}: its valence is {ids[row]}, not the set's {valence[row]}")
+        given = (
+            entry.standard_mu_RT,
+            entry.protonated_standard_mu_RT,
+            [(f.id, dict(f.counts), f.standard_mu_RT, f.valence) for f in entry.forms],
+        )
+        wanted = (
+            values[row],
+            None,
+            [(f["id"], f["counts"], f["standard_mu_RT"], f["valence"])
+             for f in _set_forms(s, row, values)],
+        )  # fmt: skip
+        if given != wanted:
+            raise ConfigError(
+                f"{where}: its potentials {given} are not the set's {wanted} at "
+                f"{m.temperature_K!r} K and {c0!r} mM: a named set's rows take their potentials "
+                "from it alone, at the world's temperature"
+            )
+
+
+# ------------------------------------------------------------------ moieties (B2)
+
+
+def check_moieties(spec):
+    """Refuse a kind mode or a declared free-energy entry that changes a declared moiety (module
+    docstring, "Moieties"): each mode resolved through its kind's role_species (entity_modes),
+    its net change over both ends being its chemistry, and each entry's stoichiometry, sum w nu = 0
+    exactly for every moiety; naming the mover, the mode or entry, the moiety and its change. A
+    model without moieties is not checked."""
+    model = declared(spec)
+    if model is None or not model.moieties:
+        return
+    from cells.registry import kind_registry
+
+    def changes(net, where):
+        for moiety in model.moieties:
+            change = sum(Fraction(w) * Fraction(net.get(row, 0)) for row, w in moiety.weights)
+            if change:
+                raise ConfigError(
+                    f"{where}: it changes moiety {moiety.id} by {float(change):+g} per turnover; "
+                    "every declared moiety is conserved (the registry's moieties)"
+                )
+
+    m, registry = _inner_model(spec), kind_registry.active()
+    try:
+        for kind_id, declaration in getattr(m, "kinds", ()):
+            resolved = entity_modes(registry.lookup(kind_id), declaration)
+            for law_id, _, modes in resolved or ():
+                for mode, rows in sorted(modes.items(), key=lambda item: str(item[0])):
+                    net = {}
+                    for species, _, count in rows:
+                        net[species] = net.get(species, 0) + Fraction(count)
+                    changes(net, f"Kind {kind_id}'s move under {law_id}, mode {mode}")
+    except ValueError as error:
+        raise ConfigError(str(error)) from error
+    for where, entries in declared_free_energies(spec):
+        for index, entry in enumerate(entries):
+            changes(dict(entry.stoichiometry), f"{where}, entry {index}")
 
 
 def standard_potential(spec, species):
@@ -838,9 +1330,10 @@ def _entity_ends(m):
 
 
 def mode_errors(valence, form_ids, rows, declares_base_forms):
-    """§5.2's admission of one mover mode at a general closure's rows, its charge half (the
-    moieties wait for item 6's registry moieties): the reasons the mode is refused, or () when it
-    is admitted. rows are ((species, node, count), ...), resolved: each count a number per forward
+    """§5.2's admission of one mover mode at a general closure's rows, its charge half; the moiety
+    half is check_moieties', which check_definition runs ahead of the closure rows for every mode,
+    a closure's movers included: the reasons the mode is refused, or () when it is admitted. rows
+    are ((species, node, count), ...), resolved: each count a number per forward
     cycle, inward-positive, at its node. valence is {species: z} over the model's rows, and
     form_ids are every binder form's ID.
     - A mover whose law declares no base forms (its forms is not "base") is refused by name.
@@ -1138,13 +1631,15 @@ def check_amount_reading_routes(spec):
 
 def check_definition(spec):
     """The registry's definition-time checks, for the core's hook to call ahead of the inner
-    model's own: absent rows and backgrounds, two-form and multi-form rows, the forms' valences,
-    the movers at a general closure's rows, the operators beside a stage read, the amount-reading
-    route laws at a closure's rows, then operators' potentials and the reaction-level standard free
-    energies of operators and kinds."""
+    model's own: absent rows and backgrounds, two-form and multi-form rows, the forms' valences, a
+    named potential set's rows, the moieties, the movers at a general closure's rows, the
+    operators beside a stage read, the amount-reading route laws at a closure's rows, then
+    operators' potentials and the reaction-level standard free energies of operators and kinds."""
     check_background(spec)
     check_two_form_rows(spec)
     check_forms(spec)
+    check_potential_set(spec)
+    check_moieties(spec)
     check_closure_rows(spec)
     check_stage_read_rows(spec)
     check_amount_reading_routes(spec)
