@@ -44,6 +44,15 @@
     "extraction": "Approximate centers read from the published single-bridge trace. Time is relative to the first plotted frame; use diameter ratios for normalized radius.",
     "limits": "The caption gives 18 bridges in five embryos. This representative series has no pointwise error bars. Membrane continuity can persist for minutes after tubulin disappears. The stalk is a proxy for aperture."
   },
+  "antanaviciute2018_bridge_conductance@1": {
+    "doi": "10.3390/medicina54040053",
+    "figure": "2A–D, original recordings reported in section 5",
+    "preparation": "Dividing HeLa sisters connected by visible midbody-containing bridges",
+    "observable": "Electrical conductance between the two daughters",
+    "bridges": 15,
+    "conductance_nS": {"mean": 32, "reported_error": 6, "lowest_below": 1, "highest": 70},
+    "limits": "The authors do not identify the error statistic. Conductance is reported across bridges. The time in the illustrative recording is relative to the voltage ramp. Paired bridge radius over time and age since furrowing were unreported."
+  },
   "green2013_daughter_isolation@1": {
     "doi": "10.1083/jcb.201306036",
     "figure": "1A and 4D–E",

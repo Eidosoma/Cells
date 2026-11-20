@@ -18,6 +18,238 @@
     "cells.shared_pool@1": "molecular-assembly"
   },
   "comparisons": {
+    "mitochondrial-cycle-accounting": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [
+        "cells.nadh_ubiquinone_proton_cycle@1",
+        "cells.ubiquinol_cytochrome_c_proton_cycle@1",
+        "cells.cytochrome_c_oxygen_proton_cycle@1",
+        "cells.proton_coupled_atp_synthesis_cycle@1",
+        "cells.electrogenic_nucleotide_exchange@1",
+        "cells.phosphate_proton_symport@1",
+        "cells.potassium_proton_exchange@1",
+        "cells.rapid_binding@1"
+      ],
+      "engine_revision": "2ae89b5e2cd19fdcd4727eb16a4d33cc20339007",
+      "record_revision": "84e3078e3fa0f2a010192e4459abc72eee120b92",
+      "sources": {
+        "Complex I": "src/cells/laws/cycles/nadh_ubiquinone_proton_cycle.py#L20",
+        "Complex III": "src/cells/laws/cycles/ubiquinol_cytochrome_c_proton_cycle.py#L35",
+        "Complex IV": "src/cells/laws/cycles/cytochrome_c_oxygen_proton_cycle.py#L37",
+        "ATP synthesis": "src/cells/laws/cycles/proton_coupled_atp_synthesis_cycle.py#L35",
+        "Nucleotide exchange": "src/cells/laws/cycles/electrogenic_nucleotide_exchange.py#L34",
+        "Phosphate import": "src/cells/laws/cycles/phosphate_proton_symport.py#L28",
+        "Potassium–proton exchange": "src/cells/laws/cycles/potassium_proton_exchange.py#L16",
+        "Material ledger by species and side": "src/cells/kinds/transporter.py#L2128",
+        "Matrix and lumen fixture": "tests/unit/test_mito_cycle_laws.py#L63",
+        "Independent registered component comparisons": "validation/mitochondria/component_comparison.py#L1"
+      },
+      "driver": "lean/checks/mitochondrial_cycles.py",
+      "record": "lean/PROGRESS.md#mitochondrial-cycle-accounting"
+    },
+    "conditioned-voltage-series": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [
+        "cells.passive_constant_field_permeation@1"
+      ],
+      "engine_revision": "2ae89b5e2cd19fdcd4727eb16a4d33cc20339007",
+      "record_revision": "84e3078e3fa0f2a010192e4459abc72eee120b92",
+      "sources": {
+        "Individual passive fluxes": "src/cells/laws/routes/constant_field_permeation.py#L56",
+        "Summed membrane current": "src/cells/kinds/passive_routes.py#L550",
+        "Two-dose fit and reading corners": "tests/reference_conditioned_voltage.py#L76",
+        "Fixture for the passive membrane routes": "tests/unit/test_passive_routes_kind.py#L286"
+      },
+      "driver": "lean/checks/conditioned_voltage.py",
+      "record": "lean/PROGRESS.md#conditioned-voltage-bounds"
+    },
+    "sodium-anion-capacity-repair": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [
+        "cells.na2_anion_symport_diagram@1"
+      ],
+      "engine_revision": "2ae89b5e2cd19fdcd4727eb16a4d33cc20339007",
+      "record_revision": "84e3078e3fa0f2a010192e4459abc72eee120b92",
+      "sources": {
+        "Diagnostic carrier count at normal, small and zero capacity": "src/cells/kinds/transporter.py#L2385",
+        "Eight-state carrier declaration": "src/cells/laws/cycles/na2_anion_symport_diagram.py#L95"
+      },
+      "driver": "lean/checks/sodium_anion_diagram.py",
+      "record": "lean/PROGRESS.md#sodium-anion-capacity-repair"
+    },
+    "vesicle-lysis-hold-recheck": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@2"
+      ],
+      "laws": [
+        "cells.bilayer_geometry@1",
+        "cells.osmotic_lumen@1",
+        "cells.ideal_mixing@1",
+        "cells.phase_exchange@1"
+      ],
+      "engine_revision": "2ae89b5e2cd19fdcd4727eb16a4d33cc20339007",
+      "record_revision": "84e3078e3fa0f2a010192e4459abc72eee120b92",
+      "sources": {
+        "Tension from the capped lumen": "src/cells/models/assembly_lineages_v2/lumen.py#L164",
+        "Strict rupture test at a state": "src/cells/models/assembly_lineages_v2/kernel.py#L340"
+      },
+      "driver": "lean/checks/vesicle.py",
+      "record": "lean/PROGRESS.md#vesicle-threshold-hold"
+    },
+    "shared-pool-report-recheck": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@2"
+      ],
+      "laws": [
+        "cells.shared_pool@1",
+        "cells.phase_exchange@1",
+        "cells.membrane_permeation@1",
+        "cells.bilayer_geometry@1",
+        "cells.ideal_mixing@1"
+      ],
+      "engine_revision": "2ae89b5e2cd19fdcd4727eb16a4d33cc20339007",
+      "record_revision": "84e3078e3fa0f2a010192e4459abc72eee120b92",
+      "sources": {
+        "Shared-pool output assembly": "src/cells/models/assembly_lineages_v2/population.py#L735",
+        "Osmotic volume parameters": "src/cells/models/assembly_lineages_v2/lumen.py#L86"
+      },
+      "driver": "lean/checks/shared_pool.py",
+      "record": "lean/PROGRESS.md#vesicle-threshold-hold"
+    },
+    "owned-compartment-inventory": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [
+        "cells.kir2p1_mh2@1",
+        "cells.nav1p2_m3h_regularized@1"
+      ],
+      "operators": [
+        "cells.cell_owned_compartments@1",
+        "cells.scheduled_membrane_trafficking@1",
+        "cells.membrane_entity_state@1"
+      ],
+      "engine_revision": "b30e3298523e49bd6c33bba01aa11561f8fba449",
+      "record_revision": "bad3c2a2f8b69d739c8f60a2f6e334e0bd187bd5",
+      "sources": {
+        "Owner, bounding membrane and storage slots": "src/cells/operators/compartments.py#L605",
+        "Lumen charge under a single bounding membrane": "src/cells/operators/compartments.py#L370",
+        "Carrier transfer at the two outside nodes": "src/cells/operators/membrane_trafficking.py#L665"
+      },
+      "driver": "lean/checks/compartment_trafficking.py",
+      "record": "lean/PROGRESS.md#owned-compartment-inventory"
+    },
+    "membrane-retrieval-recycling": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [
+        "cells.kir2p1_mh2@1",
+        "cells.nav1p2_m3h_regularized@1"
+      ],
+      "operators": [
+        "cells.scheduled_membrane_trafficking@1",
+        "cells.cell_owned_compartments@1",
+        "cells.membrane_entity_state@1"
+      ],
+      "engine_revision": "b30e3298523e49bd6c33bba01aa11561f8fba449",
+      "record_revision": "bad3c2a2f8b69d739c8f60a2f6e334e0bd187bd5",
+      "sources": {
+        "Transferred area, capacitance and enriched cargo": "src/cells/operators/membrane_trafficking.py#L627",
+        "Population and patch ledgers": "src/cells/operators/membrane_trafficking.py#L804",
+        "Declared surface stock": "src/cells/operators/membrane_state.py#L151"
+      },
+      "driver": "lean/checks/compartment_trafficking.py",
+      "record": "lean/PROGRESS.md#membrane-retrieval-recycling"
+    },
+    "trafficking-empty-surface": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [
+        "cells.kir2p1_mh2@1",
+        "cells.nav1p2_m3h_regularized@1"
+      ],
+      "operators": [
+        "cells.scheduled_membrane_trafficking@1",
+        "cells.cell_owned_compartments@1",
+        "cells.membrane_entity_state@1"
+      ],
+      "engine_revision": "b30e3298523e49bd6c33bba01aa11561f8fba449",
+      "record_revision": "bad3c2a2f8b69d739c8f60a2f6e334e0bd187bd5",
+      "sources": {
+        "Fraction withdrawn during retrieval": "src/cells/operators/membrane_trafficking.py#L646",
+        "Unit count and two-term abundance": "src/cells/operators/membrane_state.py#L151",
+        "Host observation refusal": "src/cells/models/surface_pump_v3.py#L2870"
+      },
+      "driver": "lean/checks/compartment_trafficking.py",
+      "record": "lean/PROGRESS.md#trafficking-empty-surface"
+    },
+    "isopotential-division": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [
+        "cells.constant_field@1"
+      ],
+      "operators": [
+        "cells.isopotential_partition@1",
+        "cells.cytoplasmic_bridge_closure@1",
+        "cells.membrane_entity_state@1"
+      ],
+      "engine_revision": "b30e3298523e49bd6c33bba01aa11561f8fba449",
+      "record_revision": "bad3c2a2f8b69d739c8f60a2f6e334e0bd187bd5",
+      "sources": {
+        "Daughter references and shares": "src/cells/definitions/partition_spec.py#L1",
+        "Carrier correction and species split": "src/cells/operators/partition.py#L879",
+        "Daughter potentials, chemical and capacitor work": "src/cells/operators/partition.py#L994"
+      },
+      "driver": "lean/checks/division_bridge.py",
+      "record": "lean/PROGRESS.md#isopotential-division"
+    },
+    "daughter-bridge-closure": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [
+        "cells.constant_field@1"
+      ],
+      "operators": [
+        "cells.cytoplasmic_bridge_closure@1",
+        "cells.isopotential_partition@1",
+        "cells.membrane_entity_state@1"
+      ],
+      "engine_revision": "b30e3298523e49bd6c33bba01aa11561f8fba449",
+      "record_revision": "bad3c2a2f8b69d739c8f60a2f6e334e0bd187bd5",
+      "sources": {
+        "Open bridge geometry and permeability": "src/cells/definitions/partition_spec.py#L46",
+        "Time update and aperture fraction": "src/cells/operators/bridge_closure.py#L246",
+        "Division opens the daughter bridge": "src/cells/operators/partition.py#L994"
+      },
+      "driver": "lean/checks/division_bridge.py",
+      "record": "lean/PROGRESS.md#daughter-bridge-closure"
+    },
     "surface-population-turnover": {
       "kind": "engine",
       "models": [
@@ -1292,6 +1524,383 @@
   },
   "claims": [
     {
+      "id": "mitochondrial-respiratory-balance",
+      "category": "pumps-and-cotransport",
+      "title": "Restoring both respiratory carriers fixes the turnover ratio and outward charge",
+      "statement": "For signed extents of mitochondrial complexes I, III and IV, restoring reduced quinone and reduced cytochrome c fixes their turnover in the ratio 2:2:1. Two NADH and one oxygen then give twenty outward charge equivalents, with every intermediate redox carrier restored.",
+      "assumptions": [
+        "N is the matrix and P the intermembrane space. The tracked species use the registered base forms, with explicit protons. Water is implicit.",
+        "The complete-chain ratio assumes no other source or sink for the two intermediate carriers. The per-cycle identities hold for arbitrary signed extents, including a transient."
+      ],
+      "uses": [
+        "reaction-inventory"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.nadh_ubiquinone_proton_cycle@1",
+          "cells.ubiquinol_cytochrome_c_proton_cycle@1",
+          "cells.cytochrome_c_oxygen_proton_cycle@1"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.MitochondrialCycles.charge_on_each_side": "lean/CellsProofs/Chemistry/MitochondrialCycles.lean",
+          "CellsProofs.Chemistry.MitochondrialCycles.carrier_balance_iff": "lean/CellsProofs/Chemistry/MitochondrialCycles.lean",
+          "CellsProofs.Chemistry.MitochondrialCycles.respiratory_net": "lean/CellsProofs/Chemistry/MitochondrialCycles.lean"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "mitochondrial-cycle-accounting"
+        ],
+        "result": "All seven registered columns were checked against independently written material balances. Per forward turnover the respiratory complexes added 4, 2 and 8 net charges on P, while each added four explicit P protons. In two checked steps of a finite-matrix/lumen world, the redox, adenine and phosphate changes matched predictions from the measured extents within 8.28 × 10⁻²⁵ fmol."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Protons transported per NADH, including correction for proton consumption by quinone reduction, and net charge transport during a carrier-balanced respiratory sequence.",
+        "unit": "H⁺ per NADH or two electrons, charge equivalents per O₂",
+        "evidence": [
+          {
+            "dataset_id": "galkin1999_complex_i@1",
+            "manifest": "lean/checks/data/mitochondrial_stoichiometry.json",
+            "citation": "Galkin et al. (1999), Fig. 2 and Eq. 3",
+            "doi": "10.1016/S0014-5793(99)00575-X",
+            "locator": "Fig. 2, right panel, and the scalar-proton correction in Eq. 3.",
+            "context": "NADH-driven quinone reduction in inside-out bovine heart submitochondrial particles.",
+            "role": "descriptive",
+            "uncertainty": "The authors report 4.00 ± 0.05, estimated from initial rates after correcting for one proton consumed by quinone reduction.",
+            "assessment": "The observed 4.00 ± 0.05 transported protons per two electrons agrees with the four on P per forward complex I turnover. The full three-complex charge balance needs additional measurements.",
+            "report": "lean/PROGRESS.md#mitochondrial-cycle-accounting"
+          },
+          {
+            "dataset_id": "jones2017_complex_i@1",
+            "manifest": "lean/checks/data/mitochondrial_stoichiometry.json",
+            "citation": "Jones et al. (2017), Table 3 and Fig. 3",
+            "doi": "10.1074/jbc.M116.771899",
+            "locator": "Bovine estimates in Table 3 derived from the paired flux measurements in Fig. 3.",
+            "context": "Four bovine heart submitochondrial preparations. The three comparisons match ATP synthesis rates to approximate equal proton leak.",
+            "role": "descriptive",
+            "uncertainty": "Reported propagated errors. All three comparisons use the same four preparations.",
+            "assessment": "The estimates were 4.21 ± 0.15, 4.10 ± 0.17 and 4.02 ± 0.19 H⁺/2e⁻. They support a value near four for complex I. They do not directly measure the three-complex net charge.",
+            "report": "lean/PROGRESS.md#mitochondrial-cycle-accounting"
+          }
+        ]
+      }
+    },
+    {
+      "id": "mitochondrial-atp-delivery",
+      "category": "pumps-and-cotransport",
+      "title": "ATP synthesis and delivery return four charge equivalents in the declared three-proton model",
+      "statement": "One ATP synthesis, nucleotide exchange and phosphate import restore the matrix ATP, ADP and phosphate rows and deliver one ATP on P. Their net P-side charge is −4. Potassium–proton exchange swaps one K for one H with zero net charge. At balanced respiratory carriers and zero net charge transfer the seven paths imply five ATP deliveries per oxygen.",
+      "assumptions": [
+        "The registered synthase has three translocated protons per matrix ATP. Nucleotides and phosphate use the declared base forms and all proton rows are explicit.",
+        "The five-per-O₂ identity assumes matched turnovers of synthesis, ATP export and phosphate import, and no additional electrogenic paths. It is an ideal stoichiometric ratio."
+      ],
+      "uses": [
+        "mitochondrial-respiratory-balance",
+        "electrogenic-pump-charge"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.proton_coupled_atp_synthesis_cycle@1",
+          "cells.electrogenic_nucleotide_exchange@1",
+          "cells.phosphate_proton_symport@1",
+          "cells.potassium_proton_exchange@1"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.MitochondrialCycles.charge_on_each_side": "lean/CellsProofs/Chemistry/MitochondrialCycles.lean",
+          "CellsProofs.Chemistry.MitochondrialCycles.delivery_net": "lean/CellsProofs/Chemistry/MitochondrialCycles.lean",
+          "CellsProofs.Chemistry.MitochondrialCycles.delivered_charge": "lean/CellsProofs/Chemistry/MitochondrialCycles.lean",
+          "CellsProofs.Chemistry.MitochondrialCycles.potassium_proton_swap": "lean/CellsProofs/Chemistry/MitochondrialCycles.lean",
+          "CellsProofs.Chemistry.MitochondrialCycles.charge_balance_iff": "lean/CellsProofs/Chemistry/MitochondrialCycles.lean"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "mitochondrial-cycle-accounting"
+        ],
+        "result": "The synthesized ATP, nucleotide exchange, phosphate import and K/H exchange carry −3, −1, 0 and 0 net charge equivalents on P per turn. All seven populations carried nonzero extents in two checked 1 ms steps. The independently calculated combined material postings matched the engine ledger. Global charge error stayed below 1.0 × 10⁻³³ C."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Rotor proton count and ATP turnover for synthesis, plus the energetic cost of delivering ATP across the mitochondrial inner membrane.",
+        "unit": "c-subunits per rotor, H⁺ per matrix ATP, charge equivalents per delivered ATP",
+        "evidence": [
+          {
+            "dataset_id": "watt2010_bovine_rotor@1",
+            "manifest": "lean/checks/data/mitochondrial_stoichiometry.json",
+            "citation": "Watt et al. (2010), Fig. 1 and Discussion",
+            "doi": "10.1073/pnas.1011099107",
+            "locator": "The bovine c-ring in Fig. 1 and the authors' coupling interpretation.",
+            "context": "Structure of the bovine mitochondrial F1–c-ring complex.",
+            "role": "descriptive",
+            "uncertainty": "The 3.5 Å structure resolves eight c-subunits. The stoichiometric interpretation assumes tight coupling and three ATP per full rotation.",
+            "assessment": "The bovine structure implies 8/3 H⁺ per matrix ATP under tight coupling, and the authors infer 11/3 proton equivalents per delivered ATP. The current Cells model fixes 3 and 4. The structural result identifies a preparation-specific limit of that choice. It does not measure ATP flux under load.",
+            "report": "lean/PROGRESS.md#mitochondrial-cycle-accounting"
+          }
+        ]
+      }
+    },
+    {
+      "id": "owned-compartment-inventory",
+      "category": "tissue-and-conservation",
+      "title": "Each compartment belongs to one cell and its charge sets its lumen voltage",
+      "statement": "Summing each cell's cytosol with the compartments it owns counts every species amount once. A lumen with a single bounding capacitor sits above its owner's potential by its net free charge divided by that capacitance.",
+      "assumptions": [
+        "Each finite lumen has exactly one owner and positive bounding capacitance. The voltage formula assumes that its bounding membrane supplies its only capacitor plate.",
+        "In the numerical comparison each cell and lumen exchange material externally only with their own held bath."
+      ],
+      "uses": [
+        "transfer-inventory"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.cell_owned_compartments@1"
+        ],
+        "theorems": {
+          "CellsProofs.Tissue.MembraneTrafficking.sum_owners": "lean/CellsProofs/Tissue/MembraneTrafficking.lean",
+          "CellsProofs.Tissue.MembraneTrafficking.lumen_potential": "lean/CellsProofs/Tissue/MembraneTrafficking.lean",
+          "CellsProofs.Tissue.MembraneTrafficking.lumen_above_owner": "lean/CellsProofs/Tissue/MembraneTrafficking.lean"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "owned-compartment-inventory"
+        ],
+        "result": "Two cells and their private lumens balanced every species against the corresponding bath within 4.34 × 10⁻¹⁹ fmol. The trafficking lumen reached +29.83 mV relative to its owner at the end of retrieval. The largest discrepancy from charge divided by capacitance across both lumens was 1.39 × 10⁻¹⁷ V."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Lumen voltage relative to its own cytosol, with whole-compartment free charge and capacitance in the same preparation.",
+        "unit": "mV, C, F",
+        "evidence": [
+          {
+            "dataset_id": "matamala2021_lysosome_voltage@1",
+            "manifest": "lean/checks/data/trafficking_division_measurements.json",
+            "citation": "Matamala et al. (2021), Fig. 4i",
+            "doi": "10.1038/s42003-021-01916-6",
+            "locator": "Resting lysosome measurements in Fig. 4i and the optical calibration in Fig. 4.",
+            "context": "Intact HEK293 cells. The experimental convention is lumen minus cytosol. The Cells bounding patch uses the opposite orientation.",
+            "role": "descriptive",
+            "uncertainty": "Mean ± SD across seven independent experiments with 106 lysosome regions. The calibration estimates its zero-potential endpoint.",
+            "assessment": "Resting lumen potential was +56 ± 7 mV relative to cytosol. This locates the resting voltage in this preparation. The experiment supplies neither net free charge nor capacitance, and the checked generic lumen has no calibrated native transport.",
+            "report": "lean/PROGRESS.md#owned-compartment-inventory"
+          }
+        ]
+      }
+    },
+    {
+      "id": "membrane-retrieval-recycling",
+      "category": "cell-physiology",
+      "title": "Returning membrane area can leave some of its channels in the receiving pool",
+      "statement": "Retrieval carries away source-specific capacitance and leaves each population proportional to the remaining area fraction raised to its enrichment. Transfers conserve area, capacitance and each channel population. Returning the same area from a seeded, uniformly mixed pool leaves a positive share of the retrieved cohort inside.",
+      "assumptions": [
+        "A positive source area remains after each transfer. Enrichments are nonnegative, constant over the compared stages and refer to the population at its source patch.",
+        "The round-trip formula uses uniform retrieval and recycling for the tracked cohort, a positive seed area, no initial internal cohort and no production or removal during the cycle."
+      ],
+      "uses": [
+        "owned-compartment-inventory",
+        "membrane-population-flow"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.scheduled_membrane_trafficking@1"
+        ],
+        "theorems": {
+          "CellsProofs.Tissue.MembraneTrafficking.patch_balance": "lean/CellsProofs/Tissue/MembraneTrafficking.lean",
+          "CellsProofs.Tissue.MembraneTrafficking.remaining_specific_capacitance": "lean/CellsProofs/Tissue/MembraneTrafficking.lean",
+          "CellsProofs.Tissue.MembraneTrafficking.retained_bounds": "lean/CellsProofs/Tissue/MembraneTrafficking.lean",
+          "CellsProofs.Tissue.MembraneTrafficking.same_direction_stages": "lean/CellsProofs/Tissue/MembraneTrafficking.lean",
+          "CellsProofs.Tissue.MembraneTrafficking.surface_and_pool": "lean/CellsProofs/Tissue/MembraneTrafficking.lean",
+          "CellsProofs.Tissue.MembraneTrafficking.round_trip_pool": "lean/CellsProofs/Tissue/MembraneTrafficking.lean",
+          "CellsProofs.Tissue.MembraneTrafficking.round_trip_pool_pos": "lean/CellsProofs/Tissue/MembraneTrafficking.lean"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "membrane-retrieval-recycling"
+        ],
+        "result": "A four-step cycle recovered all retrieved area. Of the initial 3,261.27 Kir units, 444.72 (13.64%) stayed in the pool. Two populations followed independent enrichment and recycling predictions within 3.42 × 10⁻¹³ units. The plasma gained 2.224 pF from mixing with a pool of higher specific capacitance. A separate extreme depletion comparison is recorded under empty-surface-flow."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Time-resolved membrane area or capacitance, internal cargo, and surface cargo of the same cohort during retrieval and recycling.",
+        "unit": "pF and fraction of labelled cargo",
+        "evidence": [
+          {
+            "dataset_id": "ojima2021_ampar_recycling@1",
+            "manifest": "lean/checks/data/trafficking_division_measurements.json",
+            "citation": "Ojima et al. (2021), Fig. 5c–e",
+            "doi": "10.1038/s41467-021-21082-x",
+            "locator": "Fig. 5c–d for the snapshot and Fig. 5e for recycling in a separate chase.",
+            "context": "Endogenous AMPA receptors in basal primary hippocampal neuronal cultures. The snapshot uses whole-cell label. The chase uses a reference surface signal.",
+            "role": "descriptive",
+            "uncertainty": "Mean ± SEM, three biological replicates for each measurement.",
+            "assessment": "After 10 h of labelling, 90.4 ± 0.6% of the label was at the surface and 10.3 ± 1.7% was internal. In the 15 min chase, resurfaced label was 12.5 ± 2.8% of the reference surface signal. The missing terminal internal stock prevents a closed recycling balance.",
+            "report": "lean/PROGRESS.md#membrane-retrieval-recycling"
+          },
+          {
+            "dataset_id": "okamoto2016_retrieved_membrane@1",
+            "manifest": "lean/checks/data/trafficking_division_measurements.json",
+            "citation": "Okamoto et al. (2016), Fig. 1C–E",
+            "doi": "10.7554/eLife.14643",
+            "locator": "Fig. 1C–E, peak capacitance and the fractions of capacitance and synaptotagmin-2 fluorescence remaining 60 s after stimulation.",
+            "context": "Stimulated calyces of Held in brainstem slices at room temperature. Each readout is normalized to its own peak excess.",
+            "role": "descriptive",
+            "uncertainty": "Mean ± SEM across seven capacitance and ten fluorescence recordings. Seven were simultaneous. Fluorescence depends on vesicle re-acidification.",
+            "assessment": "After a 1.52 ± 0.21 pF capacitance rise, 0.33 ± 0.06 of peak excess capacitance and 0.47 ± 0.07 of peak fluorescence remained at 60 s. These measurements constrain net retrieval and cargo recovery separately. Absolute internal channel counts remain open.",
+            "report": "lean/PROGRESS.md#membrane-retrieval-recycling"
+          }
+        ]
+      }
+    },
+    {
+      "id": "isopotential-division",
+      "category": "tissue-and-conservation",
+      "title": "Charge carriers reconcile daughter volume and membrane shares at division",
+      "statement": "Each species balances across the daughters when charge carriers compensate for the difference between volume-weighted and area-weighted parent charge. Splitting each capacitor and its charge in the same proportion preserves patch voltage. Positive daughter amounts have nonnegative ideal unmixing cost.",
+      "assumptions": [
+        "Volume and active patch shares lie strictly between zero and one. Capacitors are positive. Compensating carrier charge fractions sum to one and each carrier has nonzero valence.",
+        "Both daughters have positive amounts and proportional reference volumes. The independent work calculation uses the single-parent fixture with one membrane against a held bath."
+      ],
+      "uses": [
+        "transfer-inventory"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.isopotential_partition@1"
+        ],
+        "theorems": {
+          "CellsProofs.Tissue.DivisionBridge.daughter_charges": "lean/CellsProofs/Tissue/DivisionBridge.lean",
+          "CellsProofs.Tissue.DivisionBridge.carrier_charge": "lean/CellsProofs/Tissue/DivisionBridge.lean",
+          "CellsProofs.Tissue.DivisionBridge.species_balance": "lean/CellsProofs/Tissue/DivisionBridge.lean",
+          "CellsProofs.Tissue.DivisionBridge.patch_voltage": "lean/CellsProofs/Tissue/DivisionBridge.lean",
+          "CellsProofs.Tissue.DivisionBridge.unmixing_nonneg": "lean/CellsProofs/Tissue/DivisionBridge.lean"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "isopotential-division"
+        ],
+        "result": "For a 75% volume share and a 60% membrane share, K and counterion offsets of +0.001008 and −0.001008 fmol supplied the 1.94515 × 10⁻¹³ C mismatch. At the event, each daughter pair summed to the parent's amount exactly in float64. Daughter voltages agreed with the parent's within 1.39 × 10⁻¹⁷ V. Booked work agreed with a 65-digit unmixing calculation within 1.69 × 10⁻¹⁷ pJ."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Parent and both daughter volumes, ionic amounts, patch areas and potentials immediately across division.",
+        "unit": "µm³, fmol, µm², mV",
+        "evidence": [
+          {
+            "dataset_id": "xie2020_paired_epidermal_volumes@1",
+            "manifest": "lean/checks/data/cell_replacement_measurements.json",
+            "citation": "Xie and Skotheim (2020), Fig. S2L",
+            "doi": "10.1016/j.cub.2019.12.062",
+            "locator": "Supplement p. 4, panel labelled S2L and cited as S2L in the main text.",
+            "context": "Eleven paired mouse basal epidermal divisions in vivo. The next image after the mitotic parent gives the sum of both daughters.",
+            "role": "descriptive",
+            "uncertainty": "The imaging interval was 12 h. Mean repeat-segmentation difference across the study was 9.1 ± 8.6%.",
+            "assessment": "The mean parent volume was 770 µm³ and the mean summed daughter volume in the next image was 677 µm³. The interval includes growth and mitotic volume changes. Instantaneous volume, carrier charge and voltage partition remain open.",
+            "report": "lean/PROGRESS.md#isopotential-division"
+          }
+        ]
+      }
+    },
+    {
+      "id": "daughter-bridge-closure",
+      "category": "tissue-and-conservation",
+      "title": "A closing daughter bridge scales flux by its remaining aperture",
+      "statement": "Successive intervals compose for capped linear and exponential aperture closure. Linear closure reaches zero at its declared deadline. Exponential closure stays positive at every finite time from a positive starting aperture. The remaining aperture scales the fully open bridge's permeability–area product.",
+      "assumptions": [
+        "Closure is continuously enabled over the tested intervals, with a positive initial aperture and a fixed positive closure time.",
+        "The flux comparison evaluates the same concentrations, potentials and gate before and after changing only bridge availability. The single-stalk biological comparison assumes proportionality between stalk diameter and aperture."
+      ],
+      "uses": [
+        "isopotential-division",
+        "junction-flux-reversal"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.cytoplasmic_bridge_closure@1"
+        ],
+        "theorems": {
+          "CellsProofs.Tissue.DivisionBridge.linear_steps": "lean/CellsProofs/Tissue/DivisionBridge.lean",
+          "CellsProofs.Tissue.DivisionBridge.linear_closed": "lean/CellsProofs/Tissue/DivisionBridge.lean",
+          "CellsProofs.Tissue.DivisionBridge.exponential_steps": "lean/CellsProofs/Tissue/DivisionBridge.lean",
+          "CellsProofs.Tissue.DivisionBridge.exponential_positive": "lean/CellsProofs/Tissue/DivisionBridge.lean",
+          "CellsProofs.Tissue.DivisionBridge.aperture_factor": "lean/CellsProofs/Tissue/DivisionBridge.lean"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "daughter-bridge-closure"
+        ],
+        "result": "After the checked division, both eight-step worlds matched the corresponding analytic aperture. At the 3 ms deadline availability was 0 for linear closure and 0.367879 for exponential closure. Species fluxes agreed with the same-state open flux scaled by analytic aperture within 5.09 × 10⁻²¹ fmol/s."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Bridge diameter and inter-daughter transport during late cytokinesis in the same bridge, including the time and conditions of isolation.",
+        "unit": "µm, s, nS, normalized tracer exchange per second",
+        "evidence": [
+          {
+            "dataset_id": "adarlevor2021_bridge_stalk@1",
+            "manifest": "lean/checks/data/trafficking_division_measurements.json",
+            "citation": "Adar-Levor et al. (2021), Fig. 1D–E",
+            "doi": "10.1073/pnas.2021210118",
+            "locator": "Fig. 1D, microtubule-stalk diameter at the midbody rim in one representative bridge. Fig. 1E relates microtubule loss to membrane closure.",
+            "context": "Developing zebrafish embryos. The first plotted frame sets elapsed time. Diameter ratios equal aperture ratios under the proxy assumption.",
+            "role": "held_out_from_fitting",
+            "fit": [
+              "0 min, 2.5 µm",
+              "5 min, 1.6 µm"
+            ],
+            "evaluation": [
+              "10 min",
+              "15 min",
+              "20 min",
+              "23 min",
+              "24 min"
+            ],
+            "uncertainty": "The plotted series has no pointwise error bars. The overall series comprised 18 bridges in five embryos. Membrane continuity can outlast tubulin visibility.",
+            "assessment": "The held-out diameter at 15 min was about 1.6 µm. The first two readings predicted 0 µm for linear closure and 0.655 µm for exponential closure. Both miss the plateau in this bridge. Actual ionic aperture and variability among bridges remain open.",
+            "report": "lean/PROGRESS.md#daughter-bridge-closure"
+          },
+          {
+            "dataset_id": "antanaviciute2018_bridge_conductance@1",
+            "manifest": "lean/checks/data/trafficking_division_measurements.json",
+            "citation": "Antanavičiūtė et al. (2018), Fig. 2A–D",
+            "doi": "10.3390/medicina54040053",
+            "locator": "Original measurements in section 5. Fig. 2A shows the midbody and 2C reports the conductance distribution.",
+            "context": "Dividing HeLa sister pairs with a visible midbody bridge. Conductance was measured across the two daughters.",
+            "role": "descriptive",
+            "uncertainty": "Fifteen bridges, with a reported mean of 32 ± 6 nS. The authors do not identify the error statistic. Elapsed time in Fig. 2B follows a recording, and bridge age since furrowing was unreported.",
+            "assessment": "Conductance ranged from below 1 to 70 nS. This supplies an electrical scale. The study lacks simultaneous repeated radii for testing conductance as a function of aperture.",
+            "report": "lean/PROGRESS.md#daughter-bridge-closure"
+          },
+          {
+            "dataset_id": "green2013_daughter_isolation@1",
+            "manifest": "lean/checks/data/trafficking_division_measurements.json",
+            "citation": "Green et al. (2013), Fig. 4D–E",
+            "doi": "10.1083/jcb.201306036",
+            "locator": "Fig. 4D–E, control dextran exchange slopes, with time measured from furrow ingression.",
+            "context": "First division of C. elegans embryos. The observable is 10 kDa dextran exchange normalized by the initial inter-daughter fluorescence difference.",
+            "role": "descriptive",
+            "uncertainty": "Approximate graph readings with 90% intervals, about ten slopes per bin and partially overlapping windows.",
+            "assessment": "The exchange slope fell from 0.0108/s (0.0085–0.0130) at 30 s to −0.0004/s (−0.0019–0.0011) at 260 s. The late interval includes zero. This establishes loss of measurable tracer exchange without fixing the ionic conductance or its time law.",
+            "report": "lean/PROGRESS.md#daughter-bridge-closure"
+          }
+        ]
+      }
+    },
+    {
       "id": "surface-population-turnover",
       "category": "cell-physiology",
       "title": "Precursor molecules balance across maturation, surface insertion and removal",
@@ -1429,7 +2038,7 @@
       "statement": "Removing the full declared number of functional units sets both the normalized abundance and the channel's contribution to zero for any positive patch area. The two-term float64 readout can retain a signed residue.",
       "assumptions": [
         "The two initial channel counts are exactly representable, and the state subtracts those counts exactly. The engine accepts the controlled state at each tested area.",
-        "The area changes isolate membrane abundance at fixed capacitance and drive. The comparison measures the rate readout of the prepared state. Reachability and accumulation in a complete trajectory remain open."
+        "The controlled states isolate abundance at fixed capacitance and drive. A second comparison follows a scheduled four-step retrieval from the declared initial state of 3,072 Kir units, with synthetic enrichment 1,024 and a total area decrease of 30%."
       ],
       "uses": [
         "membrane-population-flow"
@@ -1447,9 +2056,10 @@
       "numerical": {
         "status": "failed",
         "comparisons": [
-          "empty-surface-flow"
+          "empty-surface-flow",
+          "trafficking-empty-surface"
         ],
-        "result": "At 1.4 times declared area, zero units still produced abundance −1.11022 × 10⁻¹⁶ and potassium flux −2.19124 × 10⁻¹⁸ fmol/s. At 1.8 times the area the same zero-unit state produced +2.81730 × 10⁻¹⁸ fmol/s. NumPy and compiled CPU showed both signs. At the reference area both outputs were exactly zero."
+        "result": "Prepared zero-unit states gave potassium flux of −2.19124 × 10⁻¹⁸ and +2.81730 × 10⁻¹⁸ fmol/s at 1.4 and 1.8 times declared area. Scheduled retrieval reached a zero Kir count at 70% of the starting area. At 4 ms its abundance was −2.22045 × 10⁻¹⁶, its potassium flux was −5.58157 × 10⁻¹⁹ fmol/s and the engine refused the observation. The ordinary enrichment and the diagnostic that set abundance to zero at zero count both completed."
       },
       "biology": {
         "status": "open",
@@ -1990,6 +2600,7 @@
       "numerical": {
         "status": "failed",
         "comparisons": [
+          "shared-pool-report-recheck",
           "shared-pool-inventory",
           "shared-pool-declared-volume"
         ],
@@ -2175,10 +2786,11 @@
       "id": "vesicle-lysis-threshold",
       "category": "molecular-assembly",
       "title": "Changing molecular area units preserves the exact vesicle rupture decision",
-      "statement": "When molecular areas and the physical floor are preserved, two choices of area quantum give identical physical area, capped volume, tension and strict rupture verdict for the same post-event counts.",
+      "statement": "When molecular areas and the physical floor are preserved, two choices of area quantum give identical physical area, capped volume, tension and strict rupture verdict for the same post-event counts. A vesicle that has survived a fixed threshold stays intact under that rule while every subsequent check sees no higher tension.",
       "assumptions": [
         "Only the area unit and all associated integer weights and floor are rescaled. Solute count, temperature, bath, physical area and rupture threshold remain fixed.",
-        "The synthetic founder has five membrane lipids and four trapped osmoles. The only possible first event detaches one lipid. The comparison observes the outcome of that event."
+        "The synthetic founder has five membrane lipids and four trapped osmoles. The only possible first event detaches one lipid. The comparison observes the outcome of that event.",
+        "The hold argument fixes each vesicle's threshold through time. The survival measurements track the same cohort after an applied tension is established."
       ],
       "uses": [
         "bilayer-footprint",
@@ -2191,21 +2803,49 @@
           "cells.osmotic_lumen@1"
         ],
         "theorems": {
-          "CellsProofs.Chemistry.Vesicle.refinement_outcome": "lean/CellsProofs/Chemistry/Vesicle.lean"
+          "CellsProofs.Chemistry.Vesicle.refinement_outcome": "lean/CellsProofs/Chemistry/Vesicle.lean",
+          "CellsProofs.Chemistry.Vesicle.no_new_rupture": "lean/CellsProofs/Chemistry/Vesicle.lean",
+          "CellsProofs.Chemistry.Vesicle.fixed_survival_error": "lean/CellsProofs/Chemistry/Vesicle.lean"
         }
       },
       "numerical": {
         "status": "failed",
         "comparisons": [
+          "vesicle-lysis-hold-recheck",
           "vesicle-lysis-threshold"
         ],
         "result": "The first event has reference tension 0.0008412963098275772 N/m. At thresholds about 3 × 10⁻¹⁸ N/m below and above it, the 60-quanta representation ruptured both times and the equivalent 1,920-quanta representation remained intact both times. Both matched the reference at thresholds 1% away. Computing physical area first recovered both close decisions in float64."
       },
       "biology": {
         "status": "open",
-        "observable": "Rupture at known membrane area, trapped solute and bath conditions. The dependence on the numerical area unit is assessed by rerunning an identical physical state.",
-        "unit": "N/m",
-        "evidence": []
+        "observable": "Intact fraction of a vesicle cohort over time at known tension. The numerical area-unit invariance is tested on identical physical states in the engine.",
+        "unit": "mN/m, seconds and fraction intact",
+        "evidence": [
+          {
+            "dataset_id": "karal2015_dopc_hold@1",
+            "manifest": "lean/checks/data/vesicle_rupture_holds.json",
+            "citation": "Karal and Yamazaki (2015), Fig. 1a",
+            "doi": "10.1063/1.4930108",
+            "locator": "Fig. 1a, open circles at 12 °C and open squares at 32 °C.",
+            "context": "Pure DOPC giant unilamellar vesicles with matched sugar concentrations under a constant 8.0 mN/m aspiration tension. Time starts at the hold.",
+            "role": "descriptive",
+            "uncertainty": "The published series reports 20 vesicles per temperature, but the plotted steps do not resolve those denominators. Fractions and times are approximate, and no pointwise errors are given.",
+            "assessment": "At 12 °C survival fell from 0.50 at 92 s to 0.125 at 268 s. At 32 °C it fell from 0.50 at 33 s to 0.111 at 125 s. An instantaneous, fixed threshold acting alone cannot explain the continuing declines at constant tension.",
+            "report": "lean/PROGRESS.md#vesicle-threshold-hold"
+          },
+          {
+            "dataset_id": "shibly2016_dopc_hold@1",
+            "manifest": "lean/checks/data/vesicle_rupture_holds.json",
+            "citation": "Shibly et al. (2016), Fig. 1B",
+            "doi": "10.1016/j.bpj.2016.09.043",
+            "locator": "Open circles in Fig. 1B at the 4.3 mN/m aspiration setting. The results give n = 19.",
+            "context": "Pure DOPC vesicles at 25 ± 1 °C with an initial osmolarity difference of 2.8 mM, followed after osmotic equilibration.",
+            "role": "descriptive",
+            "uncertainty": "Two time points in the same cohort, read from the plotted steps. Fig. 1B has no pointwise error bars. Osmotic tension was inferred in addition to the applied aspiration tension.",
+            "assessment": "Of 19 starting vesicles, 8 remained at 40 s and 2 at 110 s. Six of eight early survivors ruptured during the next 70 s. Any constant survival fraction misses at least one reading by 3/19, or 15.8 percentage points. The measured hold supplies no choice between numerical area quanta.",
+            "report": "lean/PROGRESS.md#vesicle-threshold-hold"
+          }
+        ]
       }
     },
     {
@@ -3607,12 +4247,13 @@
         }
       },
       "numerical": {
-        "status": "failed",
+        "status": "checked",
         "comparisons": [
+          "sodium-anion-capacity-repair",
           "sodium-anion-diagram-nov20",
           "sodium-anion-diagram"
         ],
-        "result": "At 10⁻³⁰² fmol/s capacity, the diagnostic edge and reverse fluxes were 100 times their correct values in NumPy and compiled CPU float64. The mode and material rates matched the independent master equation. The 60 ordinary cases, 18 dose points and the tissue booking check passed."
+        "result": "The capacity repair passed the original controls and all four extreme/zero capacity cases on NumPy and compiled CPU. At 10⁻³⁰² fmol/s the net readouts both gave 7.09691 × 10⁻³⁰⁵ fmol/s and reverse readouts gave 2.67423 × 10⁻³⁰⁷ fmol/s. The previous 100-fold diagnostic error remains recorded at its tested revision."
       },
       "biology": {
         "status": "open",
@@ -3959,10 +4600,33 @@
       "id": "rptec-voltage-c3",
       "category": "cell-physiology",
       "title": "Membrane voltage in kidney epithelial cells under condition C3",
-      "statement": "Fit a conditioned voltage equation on C1 and C2 and predict the membrane voltage under the higher-potassium C3 solution.",
-      "assumptions": ["The reference calculation assumes fixed intracellular ion concentrations and relative permeabilities across conditions, at zero applied current and 25 °C. It omits pump and intercellular currents."],
-      "formal": {"status": "open", "theorems": {}},
-      "numerical": {"status": "checked", "comparisons": ["bio002-endpoint"], "result": "The conditioned reference calculation agreed with an independent 60-digit calculation within 7.11 × 10⁻¹⁵ mV across twelve scalar checks."},
+      "statement": "In the fixed Na/K substitution series, two passive reversal voltages determine the higher-potassium C3 prediction. The assigned figure-reading intervals bound the prediction, its change from the shared C1 baseline and the signed error.",
+      "assumptions": [
+        "The reference calculation assumes fixed intracellular ion concentrations and relative permeabilities across conditions, at zero applied current and 25 °C. It omits pump and intercellular currents.",
+        "External Na plus K and external Cl stay fixed. The two fitting doses are distinct. The exact C3 extrapolation has weight two, with a positive log argument throughout the assigned reading box."
+      ],
+      "uses": ["mixed-ion-reversal"],
+      "formal": {
+        "status": "proved",
+        "about": [],
+        "theorems": {
+          "CellsProofs.Transport.ConditionedVoltage.bath_affine": "lean/CellsProofs/Transport/ConditionedVoltage.lean",
+          "CellsProofs.Transport.ConditionedVoltage.reversal_iff_affine": "lean/CellsProofs/Transport/ConditionedVoltage.lean",
+          "CellsProofs.Transport.ConditionedVoltage.two_point_fit": "lean/CellsProofs/Transport/ConditionedVoltage.lean",
+          "CellsProofs.Transport.ConditionedVoltage.coefficients_unique": "lean/CellsProofs/Transport/ConditionedVoltage.lean",
+          "CellsProofs.Transport.ConditionedVoltage.argument_pos_of_rising": "lean/CellsProofs/Transport/ConditionedVoltage.lean",
+          "CellsProofs.Transport.ConditionedVoltage.extrapolation_bounds": "lean/CellsProofs/Transport/ConditionedVoltage.lean",
+          "CellsProofs.Transport.ConditionedVoltage.c3_reading_bounds": "lean/CellsProofs/Transport/ConditionedVoltage.lean"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "bio002-endpoint",
+          "conditioned-voltage-series"
+        ],
+        "result": "The fixed reference predicted −14.59 mV. All 81 sampled fit-reading pairs respected the proved corner bounds and twelve 60-digit crosschecks agreed within 7.11 × 10⁻¹⁵ mV. On three synthetic membranes with rising, flat and falling responses, the third-dose predictions agreed with the independent engine reversal within 2.05 × 10⁻¹⁴ mV."
+      },
       "biology": {
         "status": "not_assessable", "observable": "Whole-cell resting membrane voltage after application of extracellular solution C3.", "unit": "mV",
         "evidence": [{

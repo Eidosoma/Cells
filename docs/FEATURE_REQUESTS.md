@@ -32,6 +32,8 @@ and a general feature, never one built for one study (D144).
 | [FR-24](#fr-24--binding-site-occupancy-as-an-input-to-reaction-rates) | Binding-site occupancy as an input to reaction rates | **High** (user, 20 November 2026; D239) | Design decided (D244): the occupied fraction and amounts in mM, through declared readable quantities | After FR-23, by the operators owner; lands after FR-7's judged verdicts are tagged |
 | [FR-25](#fr-25--a-reusable-one-gene-expression-unit) | A reusable one-gene expression unit, verified against independent references | **High** (user, 20 November 2026; D239) | Folded into gene regulation's option A (D235): equation sheet tagged, references under way | G4's operator exposes the unit as a reusable component |
 | [FR-26](#fr-26--owned-state-when-a-cell-is-replaced) | Owned state when a cell is replaced: the incoming cell from its template, environment-owned material kept, departing material recorded | **High** (user, 20 November 2026; D239) | Design decided (D244): W, a replacement writer for site populations, unless L is ruled first | After FR-24, by the operators owner. L is compared in FR-7's division note |
+| [FR-27](#fr-27--a-timed-partial-wash-of-a-finite-compartment) | A timed partial wash of a finite compartment: collect a fraction of its liquid into a recorded sample, refill with a declared buffer, leave bound material in place | **High** (decided by the lead with the advisor under the user's delegation, 20 November 2026; D245) | Requested; not scoped | A short design note by the operators owner, its semantics stated against FR-20's pool replacement |
+| [FR-28](#fr-28--binding-sites-owned-by-a-compartments-surface) | Binding sites owned by a compartment's own surface, such as a vessel wall, with no cell | Normal (D245) | Requested; not scoped | After FR-26 on `site_occupancy.py`: a new owner kind |
 
 ## FR-1 — A closed internal compartment on the shared inventory
 
@@ -956,3 +958,28 @@ explored.
   Today the site-occupancy operator guards against replacement.
 - **Minimal acceptance:** the material balance closes across one replacement, with occupied sites
   and active reactions.
+
+## FR-27 — A timed partial wash of a finite compartment
+
+- **The request (another Cells user's review, relayed by the user, 20 November 2026; D245).** At a
+  declared time, collect a fraction f of a finite compartment's well-mixed liquid into a recorded
+  sample, refill the same volume with a declared buffer, and leave bound material in place. The
+  removal, the supply and the free-energy change are booked exactly at the event.
+- **Why:** a falling tracer signal can mean release from a specimen, binding to the vessel wall or
+  recovery by a detector. Keeping those amounts apart across a wash needs the wash to be one
+  operation with its own books. Today the bath schedule doses held baths only (FR-10), and FR-23
+  keeps finite compartments out. FR-20's pool replacement works in the assembly family only, with
+  a whole pool replaced by a declared composition.
+- **Where it stands:** everything else in the review's example runs today. In the review's run the
+  wash was applied between two runs on the host, so each run kept its own books. The design note
+  states the operator's semantics against FR-20's replacement, so the two are not two laws for
+  one mechanism (D175, D210).
+
+## FR-28 — Binding sites owned by a compartment's surface
+
+- **The request (the same review; D245).** Let a binding-site population belong to the surface of
+  a finite outside node, such as a vessel wall, facing that node, with binding only.
+- **Today:** a site population's owner must be a cell's patch or a contact. The review placed the
+  wall's sites on an inert stand-in cell that exchanges nothing; the numbers are unaffected.
+- **Where it stands:** a new owner kind for `site_occupancy@1`, a change to parse and layout only.
+  It queues after FR-26 on `site_occupancy.py`.

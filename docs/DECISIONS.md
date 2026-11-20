@@ -7938,3 +7938,113 @@ bitwise, test or acceptance sections. The operators owner's own advisor reviewed
     gates run, and before FR-21.
 - **D243:** on the first builder, FR-21 (and GARD's version 2) come before slice 5, the population
   runs, OL5's probe roles and OL6.
+
+## D245: Fuel option (d), a second inheritance reading beside F12, and the review's two gaps; the break-and-renew rulings
+
+2026-11-20, about 19:42 UTC. The user: "Then get adviser with you to decide on the options three
+decisions based on the requirements". The lead decided all three with the advisor, under that
+delegation. The advisor saw the hand-backs and the fuel note's §2.3, §2.4, §9, §10 and option
+(d); the note's desk probe had not reported.
+
+1. **Fuel: option (d), conditional on the desk probe confirming §2.3's condition.**
+   - **The chemistry:**
+     - fuel recharges a spent building block in the pool (F + S → B + W);
+     - the block joins membranes;
+     - in the membrane B + L_i → 2 L_i, catalysed by L_i through the transition-state factor;
+     - L_i decays to S, uncatalysed.
+   - **It runs on today's laws** in worlds declared `condensed_measure: multinomial`, the physical
+     worlds' measure (D215). The autocatalytic step is refused under `multinomial_less_one` outside
+     probe worlds.
+   - **It is registered with its own nulls,** zero drive and β = 0, in the same world. If the probe
+     refutes the condition, the choice returns to the user.
+   - **Order:**
+     1. the fuel agent's fixes and probe;
+     2. the note merged and tagged;
+     3. OL5's references written from the tag alone;
+     4. then the build.
+   - Fuel reacting at the membrane (b1) waits for later. Two papers, A9 and A10, join §7.4 as
+     reported comparisons once their numbers are checked against the papers.
+2. **The measure: (ii).**
+   - F12 is kept as the preprint defines it. A second reading, each parent against the next parent
+     on the same path, gets its own name and registration and is never called F12. GARD_DESIGN §8's
+     readout 4 already asks for it.
+   - The species set for H is declared per experiment: the amphiphiles only, without the block or
+     the spent form.
+   - **Why:** a split breaks only near four or fewer molecules per species, so F12 cannot see a
+     vesicle of real size switch composition between fissions.
+   - The probe adds how the switching time scales with the molecule count. "No spontaneous break at
+     real size" is a possible result, and is recorded as one.
+3. **The review's two gaps** (an outside user's tracer-wash request, D244):
+   - **FR-27, a timed partial wash of a finite compartment: high.** It is the finite case D244 set
+     aside from FR-23. It starts as a short design note by the operators owner, its semantics
+     stated against FR-20's pool replacement (D175, D210).
+   - **FR-28, binding sites owned by a compartment's surface: normal.** A stand-in gives the same
+     numbers today. It queues after FR-26 on `site_occupancy.py`.
+
+**The lead's rulings the same evening, on the second builder's plan:**
+- **D243 corrected: restored futures are fresh runs founded from post-fission landmarks.**
+  - Single lineages first, with a check of the kernel's rate table at the landmark.
+  - The single-lineage checkpoint (rung S) stays for long runs that must survive a stop.
+- **D242's fuel line: a step that consumes a held species to make something that enters the
+  membrane is fuel.**
+  - A held amphiphile exchanging with its own membrane place is OL2's physics, and stays allowed.
+  - Development probes of fuel-driven worlds ran before the line was drawn. They count as prior
+    exposure for OL9's registration, which uses fresh matrices and seeds, and their results are not
+    used.
+
+## D246: FR-27's design, GARD's version 2 and FR-21's admission key (the lead's rulings)
+
+2026-11-20, about 19:50 UTC. These are the lead's rulings. FR-27's design questions fall under
+the user's delegation for FR questions (D244), as the lead reads it, and were decided with the
+advisor. The others are the lead's own calls on the builders' questions. None is the user's
+approval.
+
+1. **FR-27, the wash of a finite compartment** ([note](COMPARTMENT_WASH_DESIGN.md) on its branch):
+   - **One mechanism, two executions.** A liquid exchange at constant volume:
+     - a fraction f of the well-mixed liquid leaves as a recorded sample;
+     - the same volume of a declared buffer enters;
+     - everything not dissolved stays.
+
+     FR-20's pool replacement is its whole-exchange execution in exact counts, if FR-20's builder
+     confirms the f = 1 booking against `replacement.py` as built.
+   - **Ions are declared, never silently left:** version 1 requires `same_as_compartment` ions. The
+     sample and supply records list every species.
+   - **The mixing heat is computed** in the cleft fix's small-ratio form, not taken as the ledger's
+     remainder. A host check holds it non-negative at every event.
+   - **The buffer sits at the species' trace.** Faces at an exchanged node stay refused until they
+     are measured.
+   - **The name is `scheduled_compartment_wash@1`.**
+2. **GARD's version 2,** `cells.gard_catalysis_pair_consistent@2` (D244's correction):
+   - **The cache:** a double-word cache of βn, exact within a proven 106-bit budget.
+   - **Refused at parse** when a world's fission size needs more, through an optional `domain`
+     field on rate-factor laws. @1's bits stay unchanged.
+   - **Experiments that draw matrices** record each refused draw, and never fall back silently to
+     @1.
+   - **The Lean project's own driver stays on @1** until that project points it at @2.
+3. **FR-21's site binding** is admitted only for a declared site species and a declared complex
+   species, never by stoichiometry alone. OL5's registered refusal worlds therefore stay refused.
+   OL5's reference parser needs its own amendment before an FR-21 world is registered.
+
+## D247: Breaks both induced and spontaneous; the blocked timing measurement may run; the fuel note is merged
+
+2026-11-20, about 19:58 UTC. The lead asked two questions. The user: "both - yes the agent can run
+the timing measurments".
+
+1. **How OL9 tests break and renew: both ways.**
+   - The fuel note's desk probe found that a vesicle of real size never switches composition on its
+     own. The mean switching time grows exponentially with the amphiphile count.
+   - **So at realistic sizes, breaks are induced,** for example by a pulse of the other amphiphile
+     through FR-20's pool replacement, and the lineage is then followed for renewal.
+   - **In small vesicles of a few tens of amphiphiles, breaks are spontaneous,** as a comparison
+     with GARD's regime.
+2. **The blocked timing measurement may run.** It is the second origin-of-life builder's tier
+   measurement on the timed lane, which a guard refused as "[Unauthorized Access]". If the guard
+   refuses it again, the agent stops and reports. It never routes around a refusal.
+3. **The fuel note** ([ORIGIN_OF_LIFE_FUEL_DESIGN.md](ORIGIN_OF_LIFE_FUEL_DESIGN.md)) is merged with
+   the lead's rulings written into it:
+   - (d)'s dividing null;
+   - D245's fuel line covering (d0) and held-block worlds;
+   - the generational reading's name;
+   - this U5 answer.
+
+   OL5's fuel references are written from the note at tag `ol4-fuel-note-2026-11-20` alone.
