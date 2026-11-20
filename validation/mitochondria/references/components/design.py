@@ -37,13 +37,23 @@ DIGITS = 20
 # alternative repairs (the lead, 20 November): Eq. 24 "restored"; Eq. 11 "proton_restored" and
 # "base_form_restored"; Eq. 16 "subscripts_swapped".
 FORMS = {law.key: tuple(law.FORMS) for law in laws.CYCLE_LAWS}
-FORMS["nadh_supply"] = ("declared",)
+FORMS["outer_membrane"] = ("declared",)
 
 # The registered subset (the lead, 20 November): None while proposed, so every form has rows.
 # At registration this becomes {law key: (chosen forms)} for the failing laws, a reviewed code
 # change. The unchosen failing forms then lose their rows and plants, but their stall rows stay
 # as states of the law, labelled "registered": false.
-REGISTERED_FORMS: dict | None = None
+REGISTERED_FORMS: dict | None = {
+    # The user's ruling (D236), in mito-laws-appendix-2026-11-20b: frame B.
+    "complex_III_eq24": ("restored",),
+    "atp_synthase": ("balanced",),
+    "phosphate_carrier": ("balanced",),
+    "nadh_supply": ("balanced",),
+    "adenylate_kinase": ("balanced",),
+}
+# Section 1.4's lumped cycle is not used in MT-1 or MT-2 (host P, D235): its x-only rows stay,
+# marked unused.
+UNUSED_LAWS = ("lumped_QO",)
 
 
 def registered_forms(key):
@@ -67,14 +77,16 @@ INPUT_KEYS = {
     "phosphate_carrier": ("dpsi_mV", "h_N", "h_P", "HPO4_N", "HPO4_P", "H2PO4_N", "H2PO4_P",
                           "Pi_N", "Pi_P"),
     "k_h_exchange": ("dpsi_mV", "h_N", "h_P", "K_N", "K_P"),
-    "nadh_supply": ("NAD_N", "NADH_N", "Pi_N", "h_N"),
+    "nadh_supply": ("dpsi_mV", "h_N", "NAD_N", "NADH_N", "Pi_N", "S_red_N", "S_ox_N"),
+    "adenylate_kinase": ("dpsi_mV", "ATP4_P", "ADP3_P", "AMP_P", "Mg_P", "MgATP_P", "MgADP_P",
+                         "ATPtot_P", "ADPtot_P"),
+    "outer_membrane": tuple(f"{k}_{side}" for side in ("E", "P")
+                            for k in ("ATP4", "MgATP", "ADP3", "MgADP", "AMP", "HPO4", "H2PO4",
+                                      "ATPtot", "ADPtot", "Pi", "Mg", "h")),
 }
 BINDING_SIDES = {"atp_synthase": ("N",), "nucleotide_exchange": ("N", "P"),
-                 "phosphate_carrier": ("N", "P")}
-SCALARS = ("x", "dG_J_per_mol", "affinity_J_per_mol", "static_head_mV", "S", "J_minus", "J",
-           "A_term", "B_term", "lnB_over_A", "I_A_per_L", "dissipation_W_per_L",
-           "dI_ddpsi_A_per_L_per_mV", "J_plus", "dG_conc_J_per_mol")
-DICTS = ("slopes_lnS", "slopes_lnA", "slopes_lnB", "slopes_J")
+                 "phosphate_carrier": ("N", "P"), "adenylate_kinase": ("P",),
+                 "outer_membrane": ("E", "P")}
 
 
 # ============================================================================================
@@ -89,7 +101,15 @@ def law_states(law):
         out.append((sid, "corner", {}, states.full_state(P, spec)))
     for sid, spec in states.interior_specs(law.key):
         out.append((sid, "interior", {}, states.full_state(P, spec)))
-    if law.key == "nadh_supply":
+    if law.key == "outer_membrane":
+        # Next to equilibrium: the IMS side equal to the external side (the same Mg2+ and pH),
+        # scaled by e^{-d}, so every form has x_f = -d.
+        for bname, base in (("A", states.BASE), ("B", states.BASE_B)):
+            s0 = states.full_state(P, base)
+            same = dict(s0, **{k[:-2] + "_P": v for k, v in s0.items() if k.endswith("_E")})
+            for t_ in states.NEAR_EQ_TARGETS:
+                out.append((f"near_eq:{bname}:x={t_}", "near_eq", {"target_x_every_form": t_},
+                            states.scale_side(P, same, "P", DEC.n(t_).exp())))
         return out
     nb = states.NEAR_EQ_BASE.get(law.key, {})
     bases = (("A", {**states.BASE, **nb}), ("B", {**states.BASE_B, **nb}))
@@ -109,7 +129,14 @@ def law_states(law):
                     meta["registered"] = False
                 out.append((f"stall:{form}:{bname}", "stall", meta,
                             checks.place_at_x(law, P, C, s0, -d)))
-        spec = {"pH_N": "7.2", "pH_P": "7.2"} if law.key == "phosphate_carrier" else {"pH_N": "7.0"}
+        if law.key == "phosphate_carrier":
+            spec = {"pH_N": "7.2", "pH_P": "7.2"}
+        elif law.key == "nadh_supply":
+            spec = {"pH_N": P["pH_ref_supply"]}
+        elif law.key == "adenylate_kinase":
+            spec = {"Mg_P": str(hp.ak_match(DEC, P)[0] / 1000)}
+        else:
+            spec = {"pH_N": "7.0"}
         s0 = states.full_state(P, spec)
         for t in ("-0.5", "0.5"):
             out.append((f"coincidence:x={t}", "coincidence", {"target_x": t, **spec},
@@ -157,9 +184,11 @@ def _scale_ln(term, slopes, s, u):
     return abs(term.ln() - lin) + tot + 1
 
 
-def bands_cycle(law, P, C, s, form, ref, extra_scale_x=Decimal(0)):
-    """The bands of one row. ``extra_scale_x`` (M, default 0) widens x's scale for a kernel that
-    builds dG0 by summing species potentials: M = sum |nu_s mu0_s|/RT over its legs."""
+def bands_cycle(law, P, C, s, form, ref, extra_scale_x=None):
+    """The bands of one row. ``extra_scale_x`` is section 10's M, the scale of x in rounding from
+    the species' potentials (default: computed from section 9's potentials)."""
+    if extra_scale_x is None:
+        extra_scale_x = hp.band_M(DEC, law.legs_(P), hp.potentials(DEC, P, C), C)
     nu = law.nu(P)
     q = law.q(P)
     xt = law.x_terms(DEC, P, C, s)
@@ -210,21 +239,39 @@ def bands_cycle(law, P, C, s, form, ref, extra_scale_x=Decimal(0)):
     return _add_own(b, ref)
 
 
-def bands_supply(P, C, s, ref):
-    ops = Decimal(8)
-    bJp = CB * EPS * ops * ref["J_plus"]
-    bJm = CB * EPS * ops * ref["J_minus"]
-    k1 = DEC.n(P["k_Pi1_mM"]) / 1000
-    k2 = DEC.n(P["k_Pi2_mM"]) / 1000
-    Pi = s["Pi_N"]
-    sl = abs(Pi / (k1 + Pi) - Pi / (k2 + Pi))
-    b = {
-        "J": bJp + bJm, "J_plus": bJp, "J_minus": bJm,
-        "dG_conc_J_per_mol": C["RT"] * CB * EPS * (abs(s["NADH_N"].ln()) + abs(s["h_N"].ln())
-                                                   + abs(s["NAD_N"].ln()) + 1),
-        "slopes_J": {"NAD_N": bJp, "NADH_N": bJm,
-                     "Pi_N": sl * (bJp + bJm) + abs(ref["J"]) * CB * EPS * ops},
-    }
+def bands_om(P, C, s, ref):
+    """The outer membrane's bands: each form's J = gamma p ([f]_e - [f]_P) in either
+    arrangement (two terms, or S (1 - e^x)), with x's scale including section 10's M for the
+    form's two rows; the sums carry their members' bands."""
+    om = laws.OUTER
+    mu = hp.potentials(DEC, P, C)
+    ln1000 = 3 * C["ln10"]
+    b = {q: {} for q in ("J", "S", "J_minus", "x", "dG_J_per_mol", "dissipation_W_per_L")}
+    b["slopes_J"] = {}
+    for f, cls, _z in om.OM_FORMS:
+        lk = abs(om.k(DEC, P, cls).ln())
+        cE, cP = s[f"{f}_E"], s[f"{f}_P"]
+        M_f = 2 * (abs(mu[hp.species_of(f + "_E")]) + ln1000)
+        dx = CB * EPS * (abs(cE.ln()) + abs(cP.ln()) + 3 + M_f)
+        bS = ref["S"][f] * CB * EPS * (lk + abs(cE.ln()) + 3)
+        bJm = ref["J_minus"][f] * CB * EPS * (lk + abs(cP.ln()) + 3)
+        J = ref["J"][f]
+        bJ = bS + bJm + abs(J) * CB * EPS * (lk + abs(cE.ln()) + 3) + ref["J_minus"][f] * dx
+        x = ref["x"][f]
+        b["J"][f], b["S"][f], b["J_minus"][f], b["x"][f] = bJ, bS, bJm, dx
+        b["dG_J_per_mol"][f] = C["RT"] * dx
+        b["dissipation_W_per_L"][f] = C["RT"] * (abs(x) * bJ + abs(J) * dx + bJ * dx)
+        b["slopes_J"][f"{f}_E"] = bS
+        b["slopes_J"][f"{f}_P"] = bJm
+    b["class_J"] = {c: sum((b["J"][f] for f in forms), Decimal(0))
+                    for c, (forms, _tot) in om.CLASS_TOTALS.items()}
+    b["eq13_J"] = {}
+    for c, (_forms, tot) in om.CLASS_TOTALS.items():
+        k = om.k(DEC, P, "Pi" if c == "Pi" else "A")
+        b["eq13_J"][c] = CB * EPS * 4 * k * (s[f"{tot}_E"] + s[f"{tot}_P"])
+    b["ligand_J"] = {L_: sum((b["J"][f] for f in forms), Decimal(0))
+                     for L_, forms in om.LIGANDS.items()}
+    b["dissipation_total_W_per_L"] = sum(b["dissipation_W_per_L"].values(), Decimal(0))
     return _add_own(b, ref)
 
 
@@ -242,9 +289,15 @@ def _add_own(b, ref):
 # Rows
 # ============================================================================================
 def reference(law, P, C, s, form):
-    if law.key == "nadh_supply":
+    if law.key == "outer_membrane":
         return law.evaluate(DEC, P, C, s)
     return laws.evaluate(law, DEC, P, C, s, form)
+
+
+def bands_for(law, P, C, s, form, ref):
+    if law.key == "outer_membrane":
+        return bands_om(P, C, s, ref)
+    return bands_cycle(law, P, C, s, form, ref)
 
 
 def _ser(v):
@@ -257,7 +310,7 @@ def build_rows():
     """Every law's states and rows at PREC, with the PREC_CHECK re-run's largest differences."""
     out_states, out_rows, exact, refs = {}, {}, {}, {}
     own = {}
-    for law in list(laws.CYCLE_LAWS) + [laws.SUPPLY]:
+    for law in list(laws.CYCLE_LAWS) + [laws.OUTER]:
         P = hp.parameters(law.column)
         with precision():
             C = hp.constants(DEC)
@@ -276,8 +329,7 @@ def build_rows():
                     out_states[law.key].append({"id": sid, "kind": kind, **meta, "inputs": fl})
                 with precision():
                     ref = reference(law, P, C, s, form)
-                    band = (bands_supply(P, C, s, ref) if law.key == "nadh_supply"
-                            else bands_cycle(law, P, C, s, form, ref))
+                    band = bands_for(law, P, C, s, form, ref)
                 with precision(hp.PREC_CHECK):
                     C80 = hp.constants(DEC)
                     ref80 = reference(law, P, C80, s, form)
@@ -289,10 +341,15 @@ def build_rows():
                         else:
                             worst_own = max(worst_own, _ratio(v - ref80[k], band[k]))
                 flags = []
-                if "J" in ref and abs(ref["J"]) <= band["J"]:
-                    flags.append("sign_not_judged")
-                if "x" in ref and ref["x"] < -80:
-                    flags.append("x_below_minus_80")
+                if isinstance(ref.get("J"), dict):  # the outer membrane: per form
+                    flags += [f"sign_not_judged:{f}" for f, v in ref["J"].items()
+                              if abs(v) <= band["J"][f]]
+                    flags += [f"x_below_minus_80:{f}" for f, v in ref["x"].items() if v < -80]
+                else:
+                    if "J" in ref and abs(ref["J"]) <= band["J"]:
+                        flags.append("sign_not_judged")
+                    if "x" in ref and ref["x"] < -80:
+                        flags.append("x_below_minus_80")
                 row = {"id": sid, "ref": {k: _ser(v) for k, v in ref.items()},
                        "band": {k: ({kk: _up(vv) for kk, vv in v.items()} if isinstance(v, dict)
                                     else _up(v)) for k, v in band.items()}}
@@ -337,7 +394,7 @@ def s_binding(law, s):
 def _f64_orders(law, P, fl, form):
     C64 = hp.constants(F64)
     s = dict(fl)
-    if law.key == "nadh_supply":
+    if law.key == "outer_membrane":
         return {"generic": law.evaluate(F64, P, C64, s)}
     res = {"generic": laws.evaluate(law, F64, P, C64, s, form)}
     if not law.has_flux:
@@ -405,14 +462,15 @@ def calibrate(refs):
 # ============================================================================================
 def _margins(v, ref, band):
     m = {}
-    for k in SCALARS:
-        if k in ref and k in v:
-            m[k] = _ratio(v[k] - ref[k], band[k])
-    for dk in DICTS:
-        if dk in ref and dk in v:
-            for var, rv in ref[dk].items():
-                if var in v[dk]:
-                    m[f"{dk}.{var}"] = _ratio(v[dk][var] - rv, band[dk][var])
+    for k, rv in ref.items():
+        if k not in v:
+            continue
+        if isinstance(rv, dict):
+            for kk, rvv in rv.items():
+                if kk in v[k]:
+                    m[f"{k}.{kk}"] = _ratio(v[k][kk] - rvv, band[k][kk])
+        else:
+            m[k] = _ratio(v[k] - rv, band[k])
     return m
 
 
@@ -439,10 +497,11 @@ def measure_plants(refs):
                 excl = pl.exclude_for(form)
                 m = {k: val for k, val in m.items() if k.split(".")[0] not in excl}
                 n += 1
-                if "J" in m:
-                    if m["J"] >= POWER:
+                jm = [val for k, val in m.items() if k == "J" or k.startswith("J.")]
+                if jm:
+                    if max(jm) >= POWER:
                         caught_J += 1
-                    if m["J"] < 1:
+                    if max(jm) < 1:
                         no_J.append(sid)
                 top_q, top = max(m.items(), key=lambda kv: kv[1])
                 for k, val in m.items():
@@ -511,6 +570,11 @@ def run_checks(exact, refs):
             law, [(sid, s) for (sid, s, _r, _b) in refs[law.key][form0]])
         out["laws"][law.key] = res
     out["supply"] = checks.supply_checks([(sid, s) for sid, _k, _m, s in exact["nadh_supply"]])
+    out["kinase"] = checks.kinase_checks([(sid, s) for sid, _k, _m, s in exact["adenylate_kinase"]])
+    out["outer_membrane"] = checks.outer_membrane_checks(
+        [(sid, s) for sid, _k, _m, s in exact["outer_membrane"]])
+    om_x = [v for (sid, s, ref, _b) in refs["outer_membrane"]["declared"] for v in ref["x"].values()]
+    out["outer_membrane"]["x_range_rows"] = {"min": hp.fmt(min(om_x), 6), "max": hp.fmt(max(om_x), 6)}
     out["planted_controls"] = checks.planted_controls()
     qo_states = [(sid, s) for sid, _k, _m, s in exact["lumped_QO"]]
     out["lumped_identity"] = checks.lumped_identity(qo_states)
@@ -536,7 +600,8 @@ def law_meta():
                 "legs": [{"species": k or "H2O", "side": side, "nu": nu, "z": z}
                          for k, side, nu, z in law.legs_(P)],
                 "q": law.q(P),
-                "dG0_pH7_J_per_mol": hp.fmt(law.dG0_pH7(DEC, P), 12),
+                "dG0_pH7_J_per_mol": (None if law.key == "adenylate_kinase"
+                                      else hp.fmt(law.dG0_pH7(DEC, P), 12)),
                 "scalar_protons": law.scalar_protons,
                 "dG0_1M_J_per_mol": hp.fmt(law.dG0_1M(DEC, P, C), DIGITS),
                 "dG0_1M_in_RT": hp.fmt(law.dG0_1M(DEC, P, C) / C["RT"], DIGITS),
@@ -547,17 +612,40 @@ def law_meta():
                               "balanced": True if f == "declared" else law.form_balanced(f),
                               "reads": law.form_reads(f)}
                           for f in registered_forms(law.key)},
+                "band_M": hp.fmt(hp.band_M(DEC, law.legs_(P), hp.potentials(DEC, P, C), C), DIGITS),
             }
+            if law.key in UNUSED_LAWS:
+                m["used_in_MT1_MT2"] = False
             meta[law.key] = m
-        sp = laws.SUPPLY
-        meta[sp.key] = {"law": sp.law_id, "section": sp.section, "title": sp.title,
-                        "parameter_column": sp.column,
-                        "legs": [{"species": k, "side": side, "nu": nu, "z": z}
-                                 for k, side, nu, z in sp.legs],
-                        "q": sp.q(None), "reads": list(sp.reads), "has_flux": True,
-                        "printed": sp.printed_eq, "forms": ["declared"],
-                        "work": "W = J (dG0_DH + RT ln(NADH h_N/NAD)); dG0_DH is the world's input"}
+        om = laws.OUTER
+        P = hp.parameters(om.column)
+        mu = hp.potentials(DEC, P, C)
+        meta[om.key] = {
+            "law": om.law_id, "section": om.section, "title": om.title,
+            "parameter_column": om.column,
+            "forms_crossing": {f: {"class": c, "z": z, "legs": [f"{f}_E", f"{f}_P"],
+                                   "rate_per_s": hp.fmt(om.k(DEC, P, c), 12),
+                                   "band_M": hp.fmt(hp.band_M(DEC, om.legs_of(f), mu, C), DIGITS)}
+                               for f, c, z in om.OM_FORMS},
+            "class_totals": {c: {"forms": list(fs), "total": tot}
+                             for c, (fs, tot) in om.CLASS_TOTALS.items()},
+            "ligands_carried": {L_: list(fs) for L_, fs in om.LIGANDS.items()},
+            "reading": "no potential across the outer membrane: dG_f = RT ln([f]_P/[f]_e)",
+            "forms": {"declared": {"kind": "per-form Fick", "balanced": True}},
+        }
     return meta
+
+
+def _potentials_doc():
+    with precision():
+        C = hp.constants(DEC)
+        return {k: hp.fmt(v, DIGITS) for k, v in hp.potentials(DEC, hp.parameters("with"), C).items()}
+
+
+def _ak_doc():
+    with precision():
+        m, K_base = hp.ak_match(DEC, hp.parameters("with"))
+        return {"m_mM": hp.fmt(m, DIGITS), "K_base": hp.fmt(K_base, DIGITS)}
 
 
 def inputs_doc(st):
@@ -567,7 +655,13 @@ def inputs_doc(st):
     return {
         "kind": "cells.mito_component_reference_inputs@1",
         "status": "proposed, not registered",
-        "source": "docs/MITOCHONDRIA_LAWS_APPENDIX.md at tag mito-laws-appendix-2026-11-20",
+        "source": "docs/MITOCHONDRIA_LAWS_APPENDIX.md at tag mito-laws-appendix-2026-11-20b",
+        "registered_forms": REGISTERED_FORMS,
+        "readings_of_the_tag": [
+            "no potential across the outer membrane: dG_f = RT ln([f]_P/[f]_e)",
+            "the external side uses pH_P's range, 6.5-7.6; Mg2+ and the adenylates vary at each end",
+            "the held pair: S_ox = 1 mM and S_red = 10^-0.10 r S_ox, both listed as inputs",
+        ],
         "units": {"concentrations": "M (h_N, h_P free H+)", "dpsi": "mV, phi_P - phi_N",
                   "J": "mol s-1 (L mito)-1", "dG": "J mol-1", "I": "A (L mito)-1",
                   "dissipation": "W (L mito)-1"},
@@ -575,6 +669,8 @@ def inputs_doc(st):
                       **consts},
         "parameters": {"with_pi_control": hp.parameters("with"),
                        "without_pi_control_X_C3": hp.PARAMS_WITHOUT_PI_CONTROL["X_C3"]},
+        "potentials_mu0_over_RT_1M": _potentials_doc(),
+        "adenylate_kinase_match": _ak_doc(),
         "band_rule": {
             "eps64": hp.fmt(EPS, 17), "factor": str(CB), "own_rel": str(OWN_REL),
             "power_margin": str(POWER),

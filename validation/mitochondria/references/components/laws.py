@@ -21,6 +21,8 @@ S = A / sum_{j<n} e^{j x/n}. A balanced law keeps the printed forward term A.
 """
 from __future__ import annotations
 
+from . import hp
+
 TEN_M7 = "1e-7"  # the source's pH-7 proton concentration, M
 
 
@@ -879,24 +881,30 @@ class PotassiumProtonExchange(Law):
 
 
 # ============================================================================================
-# Section 6: driven_redox_supply@1 (not a cycle)
+# Section 6: held_reductant_supply@1 (the balanced supply on a held pair, D236)
 # ============================================================================================
-class NADHSupply:
+class HeldReductantSupply(Law):
     key = "nadh_supply"
-    law_id = "driven_redox_supply@1"
+    law_id = "held_reductant_supply@1"
     section = "6"
-    title = "NADH supply, driven (Eq. 1)"
-    legs = (("NAD_N", "N", -1, -1), ("NADH_N", "N", 1, -2), ("h_N", "N", 1, 1))
-    reads = ("NAD_N", "NADH_N", "Pi_N")
-    column = "with"
-    has_flux = True
+    title = "NADH supply on a held neutral reductant pair, per NADH (Eq. 1)"
+    legs = (
+        ("S_red_N", "N", -1, 0),
+        ("NAD_N", "N", -1, -1),
+        ("S_ox_N", "N", 1, 0),
+        ("NADH_N", "N", 1, -2),
+        ("h_N", "N", 1, 1),
+    )
+    scalar_protons = 1
+    reads_S = ("NAD_N", "Pi_N")
+    reads_x = ("NAD_N", "NADH_N", "h_N", "S_red_N", "S_ox_N")
     printed_eq = "Eq. 1"
+    printed_fails = True
+    FORMS = {"balanced": ("kappa", True), "printed": ("two_term", False)}
+    FORM_READS = {"printed": {"A": ("NAD_N", "Pi_N"), "B": ("NADH_N", "Pi_N")}}
 
-    def q(self, P):
-        return sum(nu * z for _k, side, nu, z in self.legs if side == "P")
-
-    def charge_sum(self):
-        return sum(nu * z for _k, _side, nu, z in self.legs)
+    def dG0_pH7(self, B, P):
+        return B.n(P["dG0_S_pH7"])
 
     @staticmethod
     def phi(B, P, s):
@@ -904,24 +912,198 @@ class NADHSupply:
         k2 = B.n(P["k_Pi2_mM"]) / 1000
         return (1 + s["Pi_N"] / k1) / (1 + s["Pi_N"] / k2)
 
-    def evaluate(self, B, P, C, s):
-        X = B.n(P["X_DH"])
-        phi = self.phi(B, P, s)
-        r = B.n(P["r"])
-        Jp = X * phi * r * s["NAD_N"]
-        Jm = X * phi * s["NADH_N"]
-        J = X * phi * (r * s["NAD_N"] - s["NADH_N"])
+    def _phi_slope(self, B, P, s):
         k1 = B.n(P["k_Pi1_mM"]) / 1000
         k2 = B.n(P["k_Pi2_mM"]) / 1000
         Pi = s["Pi_N"]
-        phi_slope = Pi / (k1 + Pi) - Pi / (k2 + Pi)
-        return {
-            "J": J,
-            "J_plus": Jp,
-            "J_minus": Jm,
-            "dG_conc_J_per_mol": C["RT"] * B.ln(s["NADH_N"] * s["h_N"] / s["NAD_N"]),
-            "slopes_J": {"NAD_N": Jp, "NADH_N": -Jm, "Pi_N": J * phi_slope},
-        }
+        return Pi / (k1 + Pi) - Pi / (k2 + Pi)
+
+    @staticmethod
+    def h_ref(B, P):
+        return B.exp(-B.n(P["pH_ref_supply"]) * B.ln(B.n(10)))
+
+    def printed(self, B, P, C, s):
+        Xphi = B.n(P["X_DH"]) * self.phi(B, P, s)
+        return Xphi * B.n(P["r"]) * s["NAD_N"], Xphi * s["NADH_N"]
+
+    def dG_appendix(self, B, P, C, s):
+        RT = C["RT"]
+        return (B.n(P["dG0_S_pH7"])
+                + RT * B.ln(s["S_ox_N"] * s["NADH_N"] / (s["S_red_N"] * s["NAD_N"]))
+                + RT * B.ln(s["h_N"] / B.n(TEN_M7)))
+
+    def S_closed(self, B, P, C, s):
+        return B.n(P["X_DH"]) * self.phi(B, P, s) * B.n(P["r"]) * s["NAD_N"]
+
+    def backward_closed(self, B, P, C, s):
+        """X_DH phi [NADH] h_N/10^-7.10: at the declared held ratio."""
+        return B.n(P["X_DH"]) * self.phi(B, P, s) * s["NADH_N"] * s["h_N"] / self.h_ref(B, P)
+
+    def d_closed(self, B, P, C, s):
+        """Eq. 1's mismatch in frame B at the declared held ratio: -ln(h_N/10^-7.10)."""
+        return -B.ln(s["h_N"] / self.h_ref(B, P))
+
+    def literal_terms(self, form, B, P, C, s):
+        if form == "balanced":
+            return self.printed(B, P, C, s)[0], self.backward_closed(B, P, C, s)
+        return self.printed(B, P, C, s)
+
+    def slopes_lnA(self, B, P, C, s):
+        z = B.n(0)
+        return {"NAD_N": B.n(1), "Pi_N": self._phi_slope(B, P, s), "NADH_N": z, "h_N": z,
+                "S_red_N": z, "S_ox_N": z, "u": z}
+
+    def slopes_lnB(self, B, P, C, s):
+        z = B.n(0)
+        return {"NADH_N": B.n(1), "Pi_N": self._phi_slope(B, P, s), "NAD_N": z, "h_N": z,
+                "S_red_N": z, "S_ox_N": z, "u": z}
+
+
+# ============================================================================================
+# Section 7: adenylate kinase in the IMS (Eqs. 17, 18), in base forms with the source's rate
+# ============================================================================================
+class AdenylateKinase(Law):
+    key = "adenylate_kinase"
+    law_id = "adenylate_kinase (section 7)"
+    section = "7"
+    title = "Adenylate kinase in the IMS, per 2 ADP (Eqs. 17, 18)"
+    legs = (("ADP3_P", "P", -2, -3), ("ATP4_P", "P", 1, -4), ("AMP_P", "P", 1, -2))
+    reads_S = ("ADP3_P", "Mg_P")
+    reads_x = ("ATP4_P", "ADP3_P", "AMP_P")
+    printed_eq = "Eq. 18"
+    printed_fails = True
+    FORMS = {"balanced": ("kappa", True), "printed": ("two_term", False)}
+    FORM_READS = {"printed": {"A": ("ADPtot_P",), "B": ("AMP_P", "ATPtot_P")}}
+
+    def dG0_pH7(self, B, P):
+        raise ValueError("adenylate kinase has no pH-7 basis")
+
+    def dG0_1M(self, B, P, C):
+        _m, K_base = hp.ak_match(B, P)
+        return -C["RT"] * B.ln(K_base)
+
+    def _pref(self, B, P, s):
+        """The source's rate: the ratio of total to Mg-free ATP at the IMS's free Mg2+."""
+        return 1 + s["Mg_P"] / B.n(P["K_MgATP"])
+
+    def printed(self, B, P, C, s):
+        """Eq. 18 on totals: X_AK (K_AK [ADP]^2 - [AMP][ATP])."""
+        X = B.n(P["X_AK"])
+        return X * B.n(P["K_AK"]) * s["ADPtot_P"] ** 2, X * s["AMP_P"] * s["ATPtot_P"]
+
+    def form_forward(self, form, B, P, C, s):
+        if form == "balanced":
+            _m, K_base = hp.ak_match(B, P)
+            return B.n(P["X_AK"]) * self._pref(B, P, s) * K_base * s["ADP3_P"] ** 2
+        return self.printed(B, P, C, s)[0]
+
+    def form_slopes_A(self, form, B, P, C, s):
+        if form == "balanced":
+            z = B.n(0)
+            Mg, K = s["Mg_P"], B.n(P["K_MgATP"])
+            return {"ADP3_P": B.n(2), "Mg_P": Mg / (Mg + K), "ATP4_P": z, "AMP_P": z, "u": z}
+        return self.slopes_lnA(B, P, C, s)
+
+    def literal_terms(self, form, B, P, C, s):
+        if form == "balanced":
+            _m, K_base = hp.ak_match(B, P)
+            Xp = B.n(P["X_AK"]) * self._pref(B, P, s)
+            return Xp * K_base * s["ADP3_P"] ** 2, Xp * s["AMP_P"] * s["ATP4_P"]
+        return self.printed(B, P, C, s)
+
+    def dG_appendix(self, B, P, C, s):
+        _m, K_base = hp.ak_match(B, P)
+        RT = C["RT"]
+        return -RT * B.ln(K_base) + RT * B.ln(s["ATP4_P"] * s["AMP_P"] / s["ADP3_P"] ** 2)
+
+    def S_closed(self, B, P, C, s):
+        return self.form_forward("balanced", B, P, C, s)
+
+    def d_closed(self, B, P, C, s):
+        """Eq. 18's mismatch in frame B: ln[(1 + m/K_MgATP)/(1 + m/K_MgADP)^2] + ln(K_base/K_AK),
+        with m the IMS's free Mg2+; zero at the matched m."""
+        _m, K_base = hp.ak_match(B, P)
+        Mg = s["Mg_P"]
+        return (B.ln((1 + Mg / B.n(P["K_MgATP"])) / (1 + Mg / B.n(P["K_MgADP"])) ** 2)
+                + B.ln(K_base / B.n(P["K_AK"])))
+
+    def K_tot(self, B, P, Mg):
+        """The same law on totals: K_tot = K_base (1 + m/K_MgATP)/(1 + m/K_MgADP)^2."""
+        _m, K_base = hp.ak_match(B, P)
+        return K_base * (1 + Mg / B.n(P["K_MgATP"])) / (1 + Mg / B.n(P["K_MgADP"])) ** 2
+
+    def slopes_lnA(self, B, P, C, s):
+        z = B.n(0)
+        return {"ADPtot_P": B.n(2), "ATP4_P": z, "ADP3_P": z, "AMP_P": z, "Mg_P": z, "u": z}
+
+    def slopes_lnB(self, B, P, C, s):
+        z = B.n(0)
+        return {"AMP_P": B.n(1), "ATPtot_P": B.n(1), "ATP4_P": z, "ADP3_P": z, "Mg_P": z, "u": z}
+
+
+# ============================================================================================
+# Section 8: the outer membrane, a Fick flux for each form (the lead's design)
+# ============================================================================================
+class OuterMembrane:
+    """J_f = gamma p_class ([f]_e - [f]_P) for each form; one permeability per class. The
+    references read no potential across the outer membrane: dG_f = RT ln([f]_P/[f]_e) (a reading
+    of the tag, accepted by the lead). In the declared form, S_f = gamma p [f]_e and
+    x_f = ln([f]_P/[f]_e). Sides: E (the external buffer) and P (the IMS)."""
+
+    key = "outer_membrane"
+    law_id = "outer_membrane (section 8)"
+    section = "8"
+    title = "The outer membrane, a Fick flux per form (Eq. 13)"
+    printed_eq = "Eq. 13"
+    has_flux = True
+    column = "with"
+    OM_FORMS = (("ATP4", "A", -4), ("MgATP", "A", -2), ("ADP3", "A", -3), ("MgADP", "A", -1),
+                ("AMP", "A", -2), ("HPO4", "Pi", -2), ("H2PO4", "Pi", -1))
+    CLASS_TOTALS = {"ATP": (("ATP4", "MgATP"), "ATPtot"), "ADP": (("ADP3", "MgADP"), "ADPtot"),
+                    "AMP": (("AMP",), "AMP"), "Pi": (("HPO4", "H2PO4"), "Pi")}
+    LIGANDS = {"Mg": ("MgATP", "MgADP"), "H": ("H2PO4",)}
+    FORMS = {"declared": ("kappa", True)}
+
+    def form_kind(self, form):
+        return "kappa"
+
+    def k(self, B, P, cls):
+        p = P["p_A_um_per_s"] if cls == "A" else P["p_Pi_um_per_s"]
+        return B.n(P["gamma_per_um"]) * B.n(p)
+
+    def legs_of(self, f):
+        z = dict((ff, zz) for ff, _c, zz in self.OM_FORMS)[f]
+        return ((f"{f}_E", "E", -1, z), (f"{f}_P", "P", 1, z))
+
+    def form_terms(self, B, P, C, s, f, cls):
+        k = self.k(B, P, cls)
+        return k * s[f"{f}_E"], k * s[f"{f}_P"]
+
+    def evaluate(self, B, P, C, s, form="declared"):
+        RT = C["RT"]
+        out = {k: {} for k in ("J", "S", "J_minus", "x", "dG_J_per_mol", "dissipation_W_per_L")}
+        out["slopes_J"] = {}
+        for f, cls, _z in self.OM_FORMS:
+            S, Jm = self.form_terms(B, P, C, s, f, cls)
+            x = B.ln(s[f"{f}_P"] / s[f"{f}_E"])
+            J = S - Jm
+            out["J"][f] = J
+            out["S"][f] = S
+            out["J_minus"][f] = Jm
+            out["x"][f] = x
+            out["dG_J_per_mol"][f] = RT * x
+            out["dissipation_W_per_L"][f] = -J * RT * x
+            out["slopes_J"][f"{f}_E"] = S
+            out["slopes_J"][f"{f}_P"] = -Jm
+        out["class_J"] = {c: _sum(out["J"][f] for f in forms)
+                          for c, (forms, _tot) in self.CLASS_TOTALS.items()}
+        out["eq13_J"] = {}
+        for c, (_forms, tot) in self.CLASS_TOTALS.items():
+            cls = "Pi" if c == "Pi" else "A"
+            out["eq13_J"][c] = self.k(B, P, cls) * (s[f"{tot}_E"] - s[f"{tot}_P"])
+        out["ligand_J"] = {L: _sum(out["J"][f] for f in forms) for L, forms in self.LIGANDS.items()}
+        out["dissipation_total_W_per_L"] = _sum(out["dissipation_W_per_L"].values())
+        return out
 
 
 CYCLE_LAWS = (
@@ -934,10 +1116,12 @@ CYCLE_LAWS = (
     NucleotideExchange(),
     PhosphateCarrier(),
     PotassiumProtonExchange(),
+    HeldReductantSupply(),
+    AdenylateKinase(),
 )
-SUPPLY = NADHSupply()
+OUTER = OuterMembrane()
 LAWS_BY_KEY = {law.key: law for law in CYCLE_LAWS}
-LAWS_BY_KEY[SUPPLY.key] = SUPPLY
+LAWS_BY_KEY[OUTER.key] = OUTER
 
 
 # ============================================================================================

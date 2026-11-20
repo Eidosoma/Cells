@@ -55,6 +55,10 @@ class DecimalBackend:
         return x.ln()
 
     @staticmethod
+    def sqrt(x: Decimal) -> Decimal:
+        return x.sqrt()
+
+    @staticmethod
     def expm1(x: Decimal) -> Decimal:
         if abs(x) < Decimal("1e-6"):
             # Taylor series: exp(x) - 1 loses |log10 x| digits to cancellation.
@@ -84,6 +88,7 @@ class FloatBackend:
 
     exp = staticmethod(math.exp)
     ln = staticmethod(math.log)
+    sqrt = staticmethod(math.sqrt)
     expm1 = staticmethod(math.expm1)
 
     @staticmethod
@@ -99,7 +104,7 @@ F64 = FloatBackend()
 N_A = "6.02214076e23"
 K_B = "1.380649e-23"
 E_CHARGE = "1.602176634e-19"
-T_KELVIN = "310.15"
+T_KELVIN = "298.15"  # the lead's ruling (D236); the first tag had 310.15 K
 
 
 def constants(B, T: str = T_KELVIN, overrides: dict | None = None) -> dict:
@@ -161,6 +166,21 @@ PARAMS_WITH_PI_CONTROL = {
     "dG0_C3_pH7": "-32530",
     "dG0_C4_pH7_half_O2": "-122940",
     "dG0_ATP_pH7": "36030",
+    # Section 7, adenylate kinase (Table 1, 2006).
+    "K_AK": "0.4331",
+    "X_AK": "1.0e6",
+    # Section 8, the outer membrane (Table 1, 2006): gamma in per um, p in um per s.
+    "p_A_um_per_s": "85.0",
+    "p_Pi_um_per_s": "327",
+    "gamma_per_um": "5.99",
+    # Declared (D236): the supply's reference matrix pH and its dG0 at pH 7, and the kinase's
+    # match at the source's state-3 buffer (5.0 mM total Mg2+, 1.3 mM ADP).
+    "pH_ref_supply": "7.10",
+    "dG0_S_pH7": "0",
+    "AK_match_Mg_total_mM": "5.0",
+    "AK_match_ADP_mM": "1.3",
+    # Ours (only the held pair's ratio enters, section 6): the oxidized member's concentration.
+    "S_ox_held": "1e-3",
 }
 
 # The "Without" column, where it differs. Only X_C3 is used (the Eq. 7 rows).
@@ -178,6 +198,83 @@ PARAMS_WITHOUT_PI_CONTROL = {
     "k_Pi1_mM": "0.13890",
     "k_Pi2_mM": "0.62396",
 }
+
+
+def ak_match(B, P: dict):
+    """Section 7: the state-3 buffer's free Mg2+ m (mM), the positive root of
+    m^2 + (K_MgADP + ADP - Mg_tot) m - Mg_tot K_MgADP = 0, and
+    K_base = K_AK (1 + m/K_MgADP)^2/(1 + m/K_MgATP), at full precision.
+    A parameter dict may carry "K_base" to override it (plants only)."""
+    kadp = B.n(P["K_MgADP"]) * 1000
+    katp = B.n(P["K_MgATP"]) * 1000
+    mg = B.n(P["AK_match_Mg_total_mM"])
+    adp = B.n(P["AK_match_ADP_mM"])
+    a = kadp + adp - mg
+    c = -mg * kadp
+    m = (-a + B.sqrt(a * a - 4 * c)) / 2
+    K_base = B.n(P["K_AK"]) * (1 + m / kadp) ** 2 / (1 + m / katp)
+    if "K_base" in P:
+        K_base = B.n(P["K_base"])
+    return m, K_base
+
+
+# Section 9's potential convention: mu0/RT at 1 M. The zero references, then each reaction fixes
+# one species in the stated order; forms add ln K_d (K_d in M).
+ZERO_REFERENCES = ("H", "K", "Mg", "O2", "NAD", "Q", "cytc_ox", "ADP", "HPO4", "S_ox")
+
+
+def potentials(B, P: dict, C: dict) -> dict:
+    RT = C["RT"]
+    ln1e7 = B.n(7) * C["ln10"]
+    mu = {k: B.n(0) for k in ZERO_REFERENCES}
+    # 1. Complex IV per O2: O2 + 4 c2+ + 4 H+ -> 4 c3+ + 2 H2O, x0 = -4 mu(c2+).
+    x4 = 2 * B.n(P["dG0_C4_pH7_half_O2"]) / RT - 4 * ln1e7
+    mu["cytc_red"] = -x4 / 4
+    # 2. Complex III: QH2 + 2 c3+ -> Q + 2 c2+ + 2 H+, x0 = 2 mu(c2+) - mu(QH2).
+    x3 = B.n(P["dG0_C3_pH7"]) / RT + 2 * ln1e7
+    mu["QH2"] = 2 * mu["cytc_red"] - x3
+    # 3. Complex I: NADH + Q + H+ -> NAD + QH2, x0 = mu(QH2) - mu(NADH).
+    x1 = B.n(P["dG0_C1_pH7"]) / RT - ln1e7
+    mu["NADH"] = mu["QH2"] - x1
+    # 4. Synthesis: ADP3- + HPO4(2-) + H+ -> ATP4- + H2O, with total Pi's term.
+    t = B.n("1e-7")
+    mu["ATP"] = B.n(P["dG0_ATP_pH7"]) / RT + B.ln(t) - B.ln(1 + t / B.n(P["k_dH"]))
+    # 5. The supply: S_red + NAD -> S_ox + NADH + H+, dG0_S = 0 at pH 7 (nu_H = +1).
+    xs = B.n(P["dG0_S_pH7"]) / RT + ln1e7
+    mu["S_red"] = mu["NADH"] - xs
+    # 6. Adenylate kinase: 2 ADP3- -> ATP4- + AMP2-, x0 = -ln K_base.
+    _m, K_base = ak_match(B, P)
+    mu["AMP"] = -B.ln(K_base) - mu["ATP"]
+    # Forms: mu0_f = mu0_base + sum n mu0_L + ln K_d.
+    mu["MgATP"] = mu["ATP"] + mu["Mg"] + B.ln(B.n(P["K_MgATP"]))
+    mu["MgADP"] = mu["ADP"] + mu["Mg"] + B.ln(B.n(P["K_MgADP"]))
+    mu["H2PO4"] = mu["HPO4"] + mu["H"] + B.ln(B.n(P["k_dH"]))
+    return mu
+
+
+# A state key's species in section 9's table (the side suffix dropped).
+SPECIES_OF = {"NADH": "NADH", "NAD": "NAD", "Q": "Q", "QH2": "QH2", "h": "H", "c2": "cytc_red",
+              "c3": "cytc_ox", "O2": "O2", "ATP4": "ATP", "ADP3": "ADP", "HPO4": "HPO4",
+              "H2PO4": "H2PO4", "MgATP": "MgATP", "MgADP": "MgADP", "AMP": "AMP", "K": "K",
+              "Mg": "Mg", "S_red": "S_red", "S_ox": "S_ox", "ATPtot": "ATP", "ADPtot": "ADP",
+              "Pi": "HPO4"}
+
+
+def species_of(state_key: str) -> str:
+    base = state_key.rsplit("_", 1)[0] if state_key[-2:] in ("_N", "_P", "_E") else state_key
+    return SPECIES_OF[base]
+
+
+def band_M(B, legs, mu: dict, C: dict):
+    """Section 10's M = sum over the turnover's rows of |nu| (|mu0|/RT + ln 1000), each row
+    counted at each end; water is never a row."""
+    ln1000 = 3 * C["ln10"]
+    total = B.n(0)
+    for k, _side, nu, _z in legs:
+        if k is None:
+            continue
+        total += abs(B.n(nu)) * (abs(mu[species_of(k)]) + ln1000)
+    return total
 
 
 def parameters(column: str = "with") -> dict:

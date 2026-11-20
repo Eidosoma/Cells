@@ -1,4 +1,5 @@
-"""MT-1's code-blind component references for the mitochondrial laws: the fast check.
+"""MT-1's code-blind component references for the mitochondrial laws (the appendix at tag
+mito-laws-appendix-2026-11-20b): the fast check.
 
 The interface files parse and agree with their generator at a few rows; the physics checks pass
 at a few exact states; the recorded verdicts hold; and nothing imports ``cells``. The full
@@ -59,8 +60,7 @@ def test_rows_regenerate_at_a_few_states():
                 with precision():
                     C = hp.constants(DEC)
                     ref = design.reference(law, P, C, s, form)
-                    band = (design.bands_supply(P, C, s, ref) if key == "nadh_supply"
-                            else design.bands_cycle(law, P, C, s, form, ref))
+                    band = design.bands_for(law, P, C, s, form, ref)
                 assert {k: design._ser(v) for k, v in ref.items()} == r["ref"], (key, form, r["id"])
                 got = {k: ({kk: design._up(vv) for kk, vv in v.items()} if isinstance(v, dict)
                            else design._up(v)) for k, v in band.items()}
@@ -100,7 +100,17 @@ def test_physics_at_a_few_exact_states():
                 assert max(abs(num[v] - r0["slopes_lnS"][v]) for v in num) < checks.TOL_FD
             form0 = design.FORMS[law.key][0]
             assert abs(law.S_closed(DEC, P, C, s0) / laws.evaluate(law, DEC, P, C, s0, form0)["S"] - 1) < checks.TOL_EXACT
-        # Section 8's two planted controls fail the equilibrium check.
+        # Section 8: the outer membrane's class sums equal Eq. 13; equal sides carry nothing.
+        om = laws.OUTER
+        P = hp.parameters(om.column)
+        s0 = states.full_state(P, {})
+        r = om.evaluate(DEC, P, C, s0)
+        for c in om.CLASS_TOTALS:
+            assert abs(r["class_J"][c] - r["eq13_J"][c]) <= checks.TOL_EXACT * abs(r["eq13_J"][c])
+        assert all(v > 0 for v in r["dissipation_W_per_L"].values())
+        same = dict(s0, **{k[:-2] + "_P": v for k, v in s0.items() if k.endswith("_E")})
+        assert all(v == 0 for v in om.evaluate(DEC, P, C, same)["J"].values())
+        # Section 10's two planted controls fail the equilibrium check.
         for pid in ("C1_q_reversed", "ANT_shares_0.35_0.60"):
             pl = plants.PLANTS_BY_ID[pid]
             law = laws.LAWS_BY_KEY[pl.law_key]
@@ -117,7 +127,8 @@ def test_recorded_verdicts():
     assert all(v["refused"] for v in chk["planted_controls"].values())
     assert chk["float64_calibration"]["passes"]
     assert chk["lumped_identity"]["passes"] and chk["binding_chain"]["passes"]
-    assert chk["supply"]["passes"]
+    assert chk["supply"]["passes"] and chk["kinase"]["passes"] and chk["outer_membrane"]["passes"]
+    assert chk["appendix_numbers"]["all_agree"]
     assert all(v["passes"] for v in chk["form_identities"].values())
     assert all(e["caught"] for e in pl["plants"].values())
     assert set(pl["plants"]) <= {p.pid for p in plants.PLANTS}

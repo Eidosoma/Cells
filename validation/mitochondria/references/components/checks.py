@@ -38,12 +38,22 @@ def place_at_x(law, P, C, s, x_target):
         return states.set_phosphate(P, t, "P", s["HPO4_P"] / half)
     if law.key == "k_h_exchange":
         return dict(s, K_N=s["K_N"] * half, K_P=s["K_P"] / half)
+    if law.key == "nadh_supply":
+        # Move [NADH]/[NAD] at the fixed pool: x changes by ln of the ratio's factor.
+        rho = s["NADH_N"] / s["NAD_N"] * (half * half)
+        tot = s["NADH_N"] + s["NAD_N"]
+        return dict(s, NADH_N=tot * rho / (1 + rho), NAD_N=tot / (1 + rho))
+    if law.key == "adenylate_kinase":
+        # Split between AMP and the Mg-free ATP (both nu = +1), binding kept.
+        t = states.set_atp_free(P, s, "P", s["ATP4_P"] * half)
+        t["AMP_P"] = s["AMP_P"] * half
+        return t
     raise ValueError(law.key)
 
 
 # --------------------------------------------------------------------------------------------
 def appendix_numbers():
-    """Reproduce the appendix's own numbers and compare each to its printed rounding."""
+    """Reproduce the second tag's own numbers and compare each to its printed rounding."""
     out = {}
     with precision():
         C = hp.constants(DEC)
@@ -54,15 +64,17 @@ def appendix_numbers():
             return {"display": display, "exact": _f(value, 12), "rounded": str(v),
                     "agrees": str(v) == display}
 
-        out["RT_J_per_mol"] = at("2578.7306", C["RT"], "0.0001")
-        out["F_over_RT_per_mV"] = at("0.0374158", C["F_RT_per_mV"], "0.0000001")
-        out["RT_ln_1e7_kJ_per_mol"] = at("41.5642", C["RT_ln_1e7"] / 1000, "0.0001")
+        out["RT_J_per_mol"] = at("2478.9570", C["RT"], "0.0001")
+        out["F_over_RT_per_mV"] = at("0.0389217", C["F_RT_per_mV"], "0.0000001")
+        out["RT_ln_1e7_kJ_per_mol"] = at("39.9561", C["RT_ln_1e7"] / 1000, "0.0001")
         entries = {
-            "complex_I": ("-110.934", "-43.0189"),
-            "complex_III_eq24": ("50.599", "19.6215"),
-            "complex_IV": ("-412.137", "-159.8216"),
-            "lumped_QO": ("-310.940", "-120.5787"),
-            "atp_synthase": ("-6.685", "-2.5923"),
+            "complex_I": ("-109.326", "-44.1016"),
+            "complex_III_eq24": ("47.382", "19.1137"),
+            "complex_IV": ("-405.704", "-163.6593"),
+            "lumped_QO": ("-310.940", "-125.4318"),
+            "atp_synthase": ("-5.032", "-2.0299"),
+            "nadh_supply": ("39.956", "16.1181"),
+            "adenylate_kinase": ("2.341", "0.9443"),
         }
         fe = {}
         for key, (kj, inrt) in entries.items():
@@ -71,7 +83,11 @@ def appendix_numbers():
             fe[key] = {"kJ_per_mol": at(kj, g / 1000, "0.001"),
                        "in_RT": at(inrt, g / C["RT"], "0.0001")}
         out["free_energy_entries_1M"] = fe
-        # Stalls of the printed forms and the slope of Eq. 11's mismatch, at the appendix's pHs.
+        # The first tag's complex III entry at 310.15 K, corrected (+50.598452).
+        C310 = hp.constants(DEC, T="310.15")
+        out["complex_III_at_310.15K_kJ_per_mol"] = at(
+            "50.598452", laws.LAWS_BY_KEY["complex_III_eq24"].dG0_1M(DEC, P, C310) / 1000, "0.000001")
+        # Stalls and slopes: dimensionless, unchanged by the temperature.
         ln10 = Decimal(10).ln()
         h74 = (-Decimal("7.4") * ln10).exp()
         h71 = (-Decimal("7.1") * ln10).exp()
@@ -86,19 +102,44 @@ def appendix_numbers():
             "0.92", -f1.d_closed_source_frame(DEC, P, C, s), "0.01")
         out["eq11_mismatch_slope_in_ln_h_N_at_7.4"] = at("0.82", k / (k + h74), "0.01")
         out["eq16_stall_x_at_pH_P_7.1_pH_N_7.4"] = at("-1.38", -pc.d_closed(DEC, P, C, s), "0.01")
-        out["eq24_mismatch_range_over_section8_pH_N"] = {
-            "pH_N_6.8": _f(-2 * (Decimal("0.2") * ln10)),
-            "pH_N_8.2": _f(-2 * (Decimal("-1.2") * ln10)),
-        }
-        dvals = {}
-        for pH in ("6.8", "7.0", "7.4", "8.2"):
-            h = (-Decimal(pH) * ln10).exp()
-            dvals[f"pH_N_{pH}"] = _f(f1.d_closed(DEC, P, C, {"h_N": h}))
-        out["eq11_mismatch_over_section8_pH_N"] = dvals
-        out["eq16_mismatch_range_over_section8"] = {
-            "min_pH_N_6.8_pH_P_7.6": _f(2 * (Decimal("6.8") - Decimal("7.6")) * ln10),
-            "max_pH_N_8.2_pH_P_6.5": _f(2 * (Decimal("8.2") - Decimal("6.5")) * ln10),
-        }
+        # Section 6: the held ratio and the planted control's shift.
+        r_with, r_without = DEC.n(P["r"]), DEC.n(hp.parameters("without")["r"])
+        f01 = (-Decimal("0.10") * ln10).exp()
+        out["supply_held_ratio_factor"] = at("0.794328", f01, "0.000001")
+        out["supply_S_red_over_S_ox_with"] = at("3.63858", f01 * r_with, "0.00001")
+        out["supply_S_red_over_S_ox_without"] = at("3.37828", f01 * r_without, "0.00001")
+        out["supply_S_ox_over_S_red_with"] = at("0.274833", 1 / (f01 * r_with), "0.000001")
+        out["supply_S_ox_over_S_red_without"] = at("0.296009", 1 / (f01 * r_without), "0.000001")
+        out["supply_planted_x_shift"] = at("0.2303", Decimal("0.10") * ln10, "0.0001")
+        # Section 7: the match.
+        m, K_base = hp.ak_match(DEC, P)
+        out["ak_m_mM"] = at("3.808553529", m, "0.000000001")
+        out["ak_K_base"] = at("0.388964538", K_base, "0.000000001")
+        out["ak_prefactor_at_matched_m"] = at("159.69", 1 + m / (DEC.n(P["K_MgATP"]) * 1000), "0.01")
+        ak = laws.LAWS_BY_KEY["adenylate_kinase"]
+        out["ak_K_tot_at_matched_m"] = at("0.4331", ak.K_tot(DEC, P, m / 1000), "0.0001")
+        # Section 9's potentials (9 decimals) and section 10's M (3 decimals).
+        mu = hp.potentials(DEC, P, C)
+        table = {"cytc_red": "40.914814298", "QH2": "62.715891459", "NADH": "106.817529855",
+                 "ATP": "-2.029938769", "S_red": "90.699434204", "AMP": "2.974205870",
+                 "MgATP": "-12.667395497", "MgADP": "-7.966185778", "H2PO4": "-15.542437799"}
+        out["potentials"] = {k: at(v, mu[k], "0.000000001") for k, v in table.items()}
+        mt = {"complex_I": "259.334", "complex_III_eq24": "227.439", "complex_IV": "308.722",
+              "lumped_QO": "325.757", "atp_synthase": "57.292", "nucleotide_exchange": "31.691",
+              "phosphate_carrier": "41.447", "k_h_exchange": "27.631", "nadh_supply": "232.056",
+              "adenylate_kinase": "32.635"}
+        out["band_M"] = {}
+        for key, disp in mt.items():
+            law = laws.LAWS_BY_KEY[key]
+            out["band_M"][key] = at(disp, hp.band_M(DEC, law.legs_(P), mu, C), "0.001")
+        # Each law's entry equals sum nu mu0/RT over the potentials.
+        w = Decimal(0)
+        for law in laws.CYCLE_LAWS:
+            Pl = hp.parameters(law.column)
+            mu_l = hp.potentials(DEC, Pl, C)
+            g = sum(DEC.n(nu) * mu_l[hp.species_of(k)] for k, _sd, nu, _z in law.legs_(Pl) if k is not None)
+            w = max(w, abs(g - law.dG0_1M(DEC, Pl, C) / C["RT"]))
+        out["entries_equal_sum_nu_mu0"] = {"worst_abs": _f(w, 3), "agrees": w <= TOL_EXACT}
     out["all_agree"] = all(v.get("agrees", True) for v in _leaves(out))
     return out
 
@@ -169,36 +210,105 @@ def numeric_J_slopes(law, P, C, s, form, keys):
 
 
 def supply_checks(exact_states):
-    """Section 6, the driven supply: charge, J+ - J- = J, its slopes against central
-    differences, and J = 0 at [NADH] = r[NAD] with the sign change across it."""
-    sp = laws.SUPPLY
+    """Section 6: the held ratio puts the supply's equilibrium at [NADH]/[NAD] = r at pH_N 7.10;
+    the balanced J is X_DH phi (r[NAD] - [NADH] h_N/10^-7.10); it equals Eq. 1 at pH_N 7.10."""
+    sp = laws.LAWS_BY_KEY["nadh_supply"]
     P = hp.parameters(sp.column)
-    out = {"charge": {"q": sp.q(P), "sum_nu_z": sp.charge_sum()}}
-    worst_slope = worst_split = Decimal(0)
+    out = {}
+    w_closed = w_eq1 = Decimal(0)
+    with precision():
+        C = hp.constants(DEC)
+        r = DEC.n(P["r"])
+        for _sid, s in exact_states:
+            ref = laws.evaluate(sp, DEC, P, C, s, "balanced")
+            Xphi = DEC.n(P["X_DH"]) * sp.phi(DEC, P, s)
+            closed = Xphi * (r * s["NAD_N"] - s["NADH_N"] * s["h_N"] / sp.h_ref(DEC, P))
+            w_closed = max(w_closed, abs(ref["J"] - closed) / (ref["A_term"] + ref["B_term"]))
+        # At pH_N 7.10 and [NADH] = r[NAD]: x = 0, and the balanced J equals Eq. 1's.
+        s0 = states.full_state(P, {"h_N": sp.h_ref(DEC, P)})
+        tot = s0["NADH_N"] + s0["NAD_N"]
+        at = dict(s0, NADH_N=tot * r / (1 + r), NAD_N=tot / (1 + r))
+        x_at = sp.x(DEC, P, C, at)
+        for frac in ("0.3", "0.5", "0.9"):
+            t_ = dict(s0, NADH_N=tot * DEC.n(frac), NAD_N=tot * (1 - DEC.n(frac)))
+            A, Bp = sp.printed(DEC, P, C, t_)
+            b = laws.evaluate(sp, DEC, P, C, t_, "balanced")
+            w_eq1 = max(w_eq1, abs(b["J"] - (A - Bp)) / (A + Bp))
+    out["balanced_J_closed_form_rel"] = _f(w_closed, 3)
+    out["x_at_r_and_pH_7.10"] = _f(x_at, 3)
+    out["balanced_equals_eq1_at_pH_7.10_rel"] = _f(w_eq1, 3)
+    out["passes"] = w_closed <= TOL_EXACT and abs(x_at) <= TOL_EXACT and w_eq1 <= TOL_EXACT
+    return out
+
+
+def kinase_checks(exact_states):
+    """Section 7: the balanced law equals the source's form on totals with
+    K_tot = K_base (1 + m/K_MgATP)/(1 + m/K_MgADP)^2 at the IMS's free Mg2+; at the matched m,
+    K_tot = K_AK and the printed Eq. 18 passes; the prefactor is the ratio of total to free ATP."""
+    ak = laws.LAWS_BY_KEY["adenylate_kinase"]
+    P = hp.parameters(ak.column)
+    w_tot = w_pref = Decimal(0)
+    with precision():
+        C = hp.constants(DEC)
+        X = DEC.n(P["X_AK"])
+        for _sid, s in exact_states:
+            b = laws.evaluate(ak, DEC, P, C, s, "balanced")
+            Kt = ak.K_tot(DEC, P, s["Mg_P"])
+            tot_form = X * (Kt * s["ADPtot_P"] ** 2 - s["AMP_P"] * s["ATPtot_P"])
+            w_tot = max(w_tot, abs(b["J"] - tot_form) / (b["A_term"] + b["B_term"]))
+            # The prefactor: the forward term over the no-prefactor form's is total/free ATP.
+            no_pref_forward = X * hp.ak_match(DEC, P)[1] * s["ADP3_P"] ** 2
+            w_pref = max(w_pref, abs(b["S"] / no_pref_forward / (s["ATPtot_P"] / s["ATP4_P"]) - 1))
+        m, _K = hp.ak_match(DEC, P)
+        s0 = states.full_state(P, {"Mg_P": m / 1000})
+        d_m = ak.d_closed(DEC, P, C, s0)
+    return {"balanced_equals_totals_form_rel": _f(w_tot, 3),
+            "prefactor_is_total_over_free_ATP_rel": _f(w_pref, 3),
+            "eq18_mismatch_at_matched_m": _f(d_m, 3),
+            "passes": w_tot <= TOL_EXACT and w_pref <= TOL_EXACT and abs(d_m) <= TOL_EXACT}
+
+
+def outer_membrane_checks(exact_states):
+    """Section 8: each form's J dG <= 0, J = 0 where the form is equal on both sides and reverses
+    past it; the class sums equal Eq. 13 on totals; the slopes against central differences."""
+    om = laws.OUTER
+    P = hp.parameters(om.column)
+    w_sum = w_slope = Decimal(0)
+    min_diss = None
+    ok_rev = True
     with precision():
         C = hp.constants(DEC)
         for _sid, s in exact_states:
-            ref = sp.evaluate(DEC, P, C, s)
-            scale = ref["J_plus"] + ref["J_minus"]
-            worst_split = max(worst_split, abs(ref["J_plus"] - ref["J_minus"] - ref["J"]) / scale)
-            for v in ("NAD_N", "NADH_N", "Pi_N"):
-                fd = (sp.evaluate(DEC, P, C, dict(s, **{v: s[v] * FD_STEP.exp()}))["J"]
-                      - sp.evaluate(DEC, P, C, dict(s, **{v: s[v] * (-FD_STEP).exp()}))["J"]) / (2 * FD_STEP)
-                worst_slope = max(worst_slope, abs(fd - ref["slopes_J"][v]) / scale)
-        r = DEC.n(P["r"])
-        signs = []
-        for _sid, s in exact_states[:4]:
-            at = dict(s, NADH_N=r * s["NAD_N"])
-            J0 = sp.evaluate(DEC, P, C, at)["J"]
-            lo = sp.evaluate(DEC, P, C, dict(at, NADH_N=at["NADH_N"] * Decimal("0.999")))["J"]
-            hi = sp.evaluate(DEC, P, C, dict(at, NADH_N=at["NADH_N"] * Decimal("1.001")))["J"]
-            signs.append(abs(J0) <= TOL_EXACT * sp.evaluate(DEC, P, C, at)["J_plus"] and lo > 0 > hi)
-    out["worst_split_rel"] = _f(worst_split, 3)
-    out["worst_slopes_J"] = _f(worst_slope, 3)
-    out["zero_at_r_and_reverses"] = all(signs)
-    out["passes"] = (out["charge"]["q"] == 0 and out["charge"]["sum_nu_z"] == 0
-                     and worst_split <= TOL_EXACT and worst_slope <= TOL_FD and all(signs))
-    return out
+            r = om.evaluate(DEC, P, C, s)
+            for f, _c, _z in om.OM_FORMS:
+                d = r["dissipation_W_per_L"][f]
+                min_diss = d if min_diss is None else min(min_diss, d)
+                for side, sign in (("E", 1), ("P", -1)):
+                    key = f"{f}_{side}"
+                    up = om.evaluate(DEC, P, C, dict(s, **{key: s[key] * FD_STEP.exp()}))["J"][f]
+                    dn = om.evaluate(DEC, P, C, dict(s, **{key: s[key] * (-FD_STEP).exp()}))["J"][f]
+                    fd = (up - dn) / (2 * FD_STEP)
+                    w_slope = max(w_slope, abs(fd - r["slopes_J"][key]) / (r["S"][f] + r["J_minus"][f]))
+            for c in om.CLASS_TOTALS:
+                scale = om.k(DEC, P, "Pi" if c == "Pi" else "A") * (
+                    s[f"{om.CLASS_TOTALS[c][1]}_E"] + s[f"{om.CLASS_TOTALS[c][1]}_P"])
+                w_sum = max(w_sum, abs(r["class_J"][c] - r["eq13_J"][c]) / scale)
+        # Equal on both sides: every J = 0; scaled by e^{+-d}: each J reverses with the sign of d.
+        s0 = states.full_state(P, {})
+        same = states.scale_side(P, dict(s0, **{k.replace("_E", "_P"): v for k, v in s0.items()
+                                               if k.endswith("_E")}), "P", Decimal(1))
+        r0 = om.evaluate(DEC, P, C, same)
+        zero = max(abs(v) for v in r0["J"].values())
+        for dlt in ("-1e-3", "1e-3", "1"):
+            t_ = states.scale_side(P, same, "P", DEC.n(dlt).exp())
+            rr = om.evaluate(DEC, P, C, t_)
+            for f, _c, _z in om.OM_FORMS:
+                ok_rev = ok_rev and ((rr["J"][f] < 0) == (DEC.n(dlt) > 0)) and rr["dissipation_W_per_L"][f] > 0
+    return {"class_sum_vs_eq13_rel": _f(w_sum, 3), "slopes_J_rel": _f(w_slope, 3),
+            "min_dissipation_W_per_L": _f(min_diss, 6), "J_at_equal_sides": _f(zero, 3),
+            "reversal": ok_rev,
+            "passes": (w_sum <= TOL_EXACT and w_slope <= TOL_FD and min_diss >= 0
+                       and zero <= TOL_EXACT and ok_rev)}
 
 
 def law_checks(law, exact_states):
@@ -375,30 +485,53 @@ def printed_violation(law, grid_states, base_states, form="printed"):
 
 
 def planted_controls():
-    """Section 8's two planted controls; the thermodynamic check must refuse both."""
+    """Section 10's two planted controls (refused by the equilibrium check), and those sections 6
+    and 7 name: the held ratio r (x smaller by 0.10 ln 10 at every state) and the kinase without
+    its prefactor (the right equilibrium, a rate smaller by 1 + [Mg2+]_P/K_MgATP)."""
     from . import plants
 
     out = {}
     with precision():
+        C = hp.constants(DEC)
         for pid in ("C1_q_reversed", "ANT_shares_0.35_0.60"):
             pl = plants.PLANTS_BY_ID[pid]
             law = laws.LAWS_BY_KEY[pl.law_key]
             P = params_for(law)
-            C = hp.constants(DEC)
             rows = []
             refused = False
             for bname, spec in (("A", states.BASE), ("B", states.BASE_B)):
                 s0 = states.full_state(P, spec)
-                for t in ("-1", "0", "1"):
-                    s = place_at_x(law, P, C, s0, Decimal(t))
+                for t_ in ("-1", "0", "1"):
+                    s = place_at_x(law, P, C, s0, Decimal(t_))
                     v = pl.values(s, "declared")
                     x_true = law.x(DEC, P, C, s)
                     J_over_S = v["J"] / v["S"]
-                    wrong = (abs(J_over_S) > TOL_EXACT) if t == "0" else ((J_over_S > 0) != (x_true < 0))
+                    wrong = (abs(J_over_S) > TOL_EXACT) if t_ == "0" else ((J_over_S > 0) != (x_true < 0))
                     refused = refused or wrong
                     rows.append({"base": bname, "x_true": _f(x_true, 4), "J_over_S": _f(J_over_S, 6),
                                  "violates": wrong})
             out[pid] = {"refused": refused, "rows": rows}
+        sp = laws.LAWS_BY_KEY["nadh_supply"]
+        P = params_for(sp)
+        pl = plants.PLANTS_BY_ID["supply_held_ratio_r"]
+        w = Decimal(0)
+        for spec in (states.BASE, states.BASE_B, {"pH_N": "7.1"}):
+            s = states.full_state(P, spec)
+            w = max(w, abs(pl.values(s, "balanced")["x"] - sp.x(DEC, P, C, s) + Decimal("0.10") * Decimal(10).ln()))
+        out["supply_held_ratio_r"] = {"x_shift_is_minus_0.10_ln10_worst": _f(w, 3),
+                                      "refused": w <= TOL_EXACT}
+        ak = laws.LAWS_BY_KEY["adenylate_kinase"]
+        P = params_for(ak)
+        pl = plants.PLANTS_BY_ID["AK_no_prefactor"]
+        w = Decimal(0)
+        for spec in (states.BASE, states.BASE_B):
+            s = states.full_state(P, spec)
+            ref = laws.evaluate(ak, DEC, P, C, s, "balanced")
+            v = pl.values(s, "balanced")
+            w = max(w, abs(ref["J"] / v["J"] / (1 + s["Mg_P"] / DEC.n(P["K_MgATP"])) - 1),
+                    abs(v["x"] - ref["x"]))
+        out["AK_no_prefactor"] = {"rate_ratio_is_1_plus_Mg_over_K_MgATP_worst": _f(w, 3),
+                                  "refused": w <= TOL_EXACT}
     return out
 
 

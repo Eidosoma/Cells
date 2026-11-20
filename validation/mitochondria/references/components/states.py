@@ -35,26 +35,38 @@ RANGES = {
     "Mg_P": ("1e-4", "5e-3", "log"),
     "K_N": ("1e-2", "2e-1", "log"),
     "K_P": ("1e-2", "2e-1", "log"),
+    # Section 10 of the second tag: AMP 1e-3 to 1 mM; free Mg2+ at each end. The external side
+    # (E) takes the IMS's ranges, pH_P's 6.5-7.6 included (a reading of the tag, accepted).
+    "AMP_P": ("1e-6", "1e-3", "log"),
+    "AMP_E": ("1e-6", "1e-3", "log"),
+    "R_E": ("1e-3", "1e3", "log"),
+    "Pi_E": ("1e-4", "2e-2", "log"),
+    "Mg_E": ("1e-4", "5e-3", "log"),
+    "pH_E": ("6.5", "7.6", "lin"),
 }
 # Pool totals: Table 1's (M) at the corners; varied at interior points so that, for example,
 # [c2+] + [c3+] differs from cytC_tot.
 POOLS = {"NAD_tot": "2.97e-3", "Q_tot": "1.35e-3", "c_tot": "2.70e-3", "A_tot_N": "10e-3",
-         "A_tot_P": "10e-3"}
+         "A_tot_P": "10e-3", "A_tot_E": "10e-3"}
 POOL_RANGES = {
     "NAD_tot": ("1e-3", "5e-3", "log"),
     "Q_tot": ("0.5e-3", "3e-3", "log"),
     "c_tot": ("1e-3", "5e-3", "log"),
     "A_tot_N": ("2e-3", "15e-3", "log"),
     "A_tot_P": ("2e-3", "15e-3", "log"),
+    "A_tot_E": ("2e-3", "15e-3", "log"),
 }
 
 BASE = {"dpsi_mV": "160", "pH_N": "7.4", "pH_P": "7.1", "f_NAD": "0.3", "f_Q": "0.4",
         "f_c": "0.3", "R_N": "3", "R_P": "30", "Pi_N": "5e-3", "Pi_P": "2e-3", "O2": "2.6e-5",
-        "Mg_N": "1e-3", "Mg_P": "1e-3", "K_N": "0.13", "K_P": "0.14", **POOLS}
+        "Mg_N": "1e-3", "Mg_P": "1e-3", "K_N": "0.13", "K_P": "0.14",
+        "AMP_P": "1e-4", "AMP_E": "1e-5", "R_E": "10", "Pi_E": "5e-3", "Mg_E": "2e-3",
+        "pH_E": "7.2", **POOLS}
 # A second base with an acid matrix against the IMS, so the printed forms fail the other way.
 BASE_B = {**BASE, "pH_N": "6.8", "pH_P": "7.0", "f_NAD": "0.6", "f_Q": "0.7", "f_c": "0.15",
           "R_N": "0.5", "R_P": "5", "Mg_N": "0.5e-3", "Mg_P": "2e-3", "Pi_N": "10e-3",
-          "Pi_P": "1e-3", "O2": "1e-4", "K_N": "0.05", "K_P": "0.15"}
+          "Pi_P": "1e-3", "O2": "1e-4", "K_N": "0.05", "K_P": "0.15", "AMP_P": "3e-4",
+          "AMP_E": "3e-6", "R_E": "1", "Pi_E": "1e-2", "Mg_E": "0.3e-3", "pH_E": "7.5"}
 # Per-law changes to the bases of the states next to equilibrium, so that Delta-psi there
 # stays near the physiological range (complex III with half-reduced cytochrome c, complex IV
 # with mostly oxidized).
@@ -72,6 +84,8 @@ CORNER_VARS = {
     "phosphate_carrier": ("pH_N", "pH_P", "Pi_N", "Pi_P"),
     "k_h_exchange": ("pH_N", "pH_P", "K_N", "K_P"),
     "nadh_supply": ("Pi_N", "f_NAD", "pH_N"),
+    "adenylate_kinase": ("R_P", "AMP_P", "Mg_P"),
+    "outer_membrane": ("Mg_E", "Mg_P", "pH_E", "pH_P", "R_E", "R_P"),
 }
 INTERIOR_POOLS = {
     "complex_I": ("NAD_tot", "Q_tot"),
@@ -84,10 +98,12 @@ INTERIOR_POOLS = {
     "phosphate_carrier": (),
     "k_h_exchange": (),
     "nadh_supply": ("NAD_tot",),
+    "adenylate_kinase": ("A_tot_P",),
+    "outer_membrane": ("A_tot_E", "A_tot_P", "AMP_E", "AMP_P", "Pi_E", "Pi_P"),
 }
 N_INTERIOR = 6
 NEAR_EQ_TARGETS = ("-3", "-1", "-0.1", "-1e-3", "-1e-6", "0", "1e-6", "1e-3", "0.1", "1", "3")
-PRIMES = (2, 3, 5, 7, 11, 13, 17, 19, 23, 29)
+PRIMES = (2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37)
 
 
 def _halton(i: int, p: int) -> Decimal:
@@ -108,12 +124,13 @@ def _place(lo: str, hi: str, kind: str, t: Decimal) -> Decimal:
 
 
 def full_state(P: dict, spec: dict) -> dict:
-    """An exact state (Decimals) with every form, from a spec of strings or Decimals."""
+    """An exact state (Decimals) with every form, from a spec of strings or Decimals. Sides N
+    (matrix), P (IMS) and E (the external buffer, for the outer membrane)."""
     n = DEC.n
     sp = {**BASE, **spec}
     s = {"dpsi_mV": n(sp["dpsi_mV"])}
     ln10 = n(10).ln()
-    for side in ("N", "P"):
+    for side in ("N", "P", "E"):
         s[f"h_{side}"] = n(sp[f"h_{side}"]) if f"h_{side}" in spec else (-n(sp[f"pH_{side}"]) * ln10).exp()
     NAD_tot, Q_tot, c_tot = n(sp["NAD_tot"]), n(sp["Q_tot"]), n(sp["c_tot"])
     s["NADH_N"] = n(sp["f_NAD"]) * NAD_tot
@@ -123,8 +140,11 @@ def full_state(P: dict, spec: dict) -> dict:
     s["c2_P"] = n(sp["f_c"]) * c_tot
     s["c3_P"] = c_tot - s["c2_P"]
     s["O2_N"] = n(sp["O2"])
+    # The supply's held pair (section 6): S_ox held at P's S_ox_held, S_red = 10^-0.10 r S_ox.
+    s["S_ox_N"] = n(P["S_ox_held"])
+    s["S_red_N"] = (-n("0.10") * ln10).exp() * n(P["r"]) * s["S_ox_N"]
     KATP, KADP, kdH = n(P["K_MgATP"]), n(P["K_MgADP"]), n(P["k_dH"])
-    for side in ("N", "P"):
+    for side in ("N", "P", "E"):
         R = n(sp[f"R_{side}"])
         Atot = n(sp[f"A_tot_{side}"])
         Mg = n(sp[f"Mg_{side}"])
@@ -140,8 +160,31 @@ def full_state(P: dict, spec: dict) -> dict:
         s[f"Pi_{side}"] = Pi
         s[f"HPO4_{side}"] = Pi * kdH / (kdH + h)
         s[f"H2PO4_{side}"] = Pi * h / (kdH + h)
-        s[f"K_{side}"] = n(sp[f"K_{side}"])
+        if side != "E":
+            s[f"K_{side}"] = n(sp[f"K_{side}"])
+        if side != "N":
+            s[f"AMP_{side}"] = n(sp[f"AMP_{side}"])
     return s
+
+
+def set_atp_free(P: dict, s: dict, side: str, atp4: Decimal) -> dict:
+    """Return a copy of ``s`` with one side's Mg-free ATP set, its Mg-bound form and total kept
+    at binding equilibrium."""
+    KATP = DEC.n(P["K_MgATP"])
+    t = dict(s)
+    t[f"ATP4_{side}"] = atp4
+    t[f"MgATP_{side}"] = atp4 * s[f"Mg_{side}"] / KATP
+    t[f"ATPtot_{side}"] = t[f"ATP4_{side}"] + t[f"MgATP_{side}"]
+    return t
+
+
+def scale_side(P: dict, s: dict, side: str, factor: Decimal) -> dict:
+    """Scale every adenylate and phosphate form and total on one side by ``factor``, binding kept
+    (the same free Mg2+ and h)."""
+    t = dict(s)
+    for k in ("ATPtot", "ADPtot", "ATP4", "MgATP", "ADP3", "MgADP", "AMP", "Pi", "HPO4", "H2PO4"):
+        t[f"{k}_{side}"] = s[f"{k}_{side}"] * factor
+    return t
 
 
 def set_phosphate(P: dict, s: dict, side: str, hpo4: Decimal) -> dict:
@@ -172,7 +215,9 @@ def binding_sensitivities(P: dict, s: dict) -> dict:
     n = DEC.n
     KATP, KADP, kdH = n(P["K_MgATP"]), n(P["K_MgADP"]), n(P["k_dH"])
     out = {}
-    for side in ("N", "P"):
+    for side in ("N", "P", "E"):
+        if f"Mg_{side}" not in s or f"h_{side}" not in s:
+            continue
         Mg, h = s[f"Mg_{side}"], s[f"h_{side}"]
         out[side] = {
             f"dln_ATP4_{side}/dln_ATPtot_{side}": n(1),
