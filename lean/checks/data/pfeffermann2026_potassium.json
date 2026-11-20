@@ -1,0 +1,16 @@
+{
+  "dataset_id": "pfeffermann2026_potassium@1",
+  "doi": "10.1039/D5NR04234H",
+  "source": "https://pmc.ncbi.nlm.nih.gov/articles/PMC12694728/",
+  "locator": "Fig. 2c, open magenta squares for the asymmetric solution during the UV interval, and the accompanying reported interpolated reversals",
+  "preparation": "Voltage-clamped planar lipid bilayer with valinomycin. Both plotted current readings use the same light state.",
+  "inside_K_mM": 150,
+  "outside_K_mM": 15,
+  "temperature_K_assumed": 298.15,
+  "temperature_K_sensitivity": [293.15, 303.15],
+  "fit": {"voltage_mV": 110, "current_nA": 44.5},
+  "evaluation": {"voltage_mV": -110, "current_nA": -13.5},
+  "reading_precision_nA": 1,
+  "reported_reversal_mV": {"cis": -59.8, "trans": -56.5},
+  "mapping": "Use side 1 (150 mM KCl) as inside and side 2 (15 mM) as outside. Voltages are commanded and currents recorded directly. The current values are figure readings with approximate digitization precision. Fig. 2c gives no uncertainty on these points or temperature for the run. The two reported reversal potentials are interpolations from the I–V curves."
+}

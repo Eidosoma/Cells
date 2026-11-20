@@ -1,5 +1,29 @@
 # Cells proof comparisons
 
+## 20 November 2026 · Charged constant-field permeation
+
+**Lean and engine.** Nine theorems cover the signed-valence Nernst reversal and nonnegative heat for the analytic flux, the exact change in flux when either compartment gains material at fixed voltage, and the voltage response of the engine’s two-branch evaluator. With equal concentrations its electrical current is linear in voltage. With unequal concentrations its slope lies between the lower and higher concentrations times the common factor APm(zF)²/(RT). The derivative proof excludes the two branch-switch voltages. The finite-interval bound applies when the interval stays within one branch. All nine theorems use the standard Lean axioms. [Proofs](CellsProofs/Transport/ChargedPermeation.lean) · [Engine law](../src/cells/laws/routes/constant_field_permeation.py#L56) · [Earlier near-reversal analysis](claims/proton-leak.md)
+
+At engine revision `239ab8cd23ecd41048fb89404bd5ba17e89c35c4`, 360 CPU float64 component evaluations covered valences −2, −1, +1 and +2, closed and partly open routes, both sides of reversal and both sides of the Bernoulli switch. Against 60-digit flux, heat and derivatives, maximum absolute errors were 1.14 × 10⁻¹³ fmol/s, 3.64 × 10⁻¹² pJ/s and 3.02 × 10⁻¹⁸ S in differential conductance. The engine’s maximum-concentration conductance and its two fixed-voltage material coefficients also matched the reference. [Driver and inputs](checks/charged_permeation.py) · [Host stage terms](../src/cells/kinds/passive_routes.py#L780)
+
+**Tissue comparison.** A single permeable contact joined a finite cell and outside compartment in `resolved_pump_tissue@3`. One signed transfer changes both amounts and the capacitor voltage. DOP853 and Radau integrated this independent two-variable system for transfer and heat. In an initial 32-step anion run the heat error was 0.0543% against a 0.05% comparison tolerance. At 64 and 128 steps the original tolerance passed for both valences. Halving the step reduced the errors in transfer, heat and final voltage by factors of 4.03–4.05. Both amount ledgers matched the signed transfer, and the largest reported global charge residual was 4.34 × 10⁻³¹ C. The four-run comparison took 26 seconds on four CPU cores. [Finite-pair fixture](../tests/unit/test_passive_routes_kind.py#L294) · [Reference and ledger checks](checks/charged_permeation.py)
+
+| Ion valence | Inward transfer at 8 ms, engine / reference (fmol) | Heat, engine / reference (pJ) | Final voltage, engine / reference (mV) |
+| --- | ---: | ---: | ---: |
+| −1 | −9.43689 × 10⁻⁶ / −9.43696 × 10⁻⁶ | 4.23061 × 10⁻⁵ / 4.23075 × 10⁻⁵ | −40.87419 / −40.87412 |
+| +2 | 6.43988 × 10⁻⁶ / 6.43997 × 10⁻⁶ | 3.33351 × 10⁻⁵ / 3.33371 × 10⁻⁵ | −37.55232 / −37.55215 |
+
+**Biological measurements from Search.** We fitted one permeability per preparation at one voltage, then evaluated the same law at a second voltage. These are retrospective checks within each experiment.
+
+| Preparation | Calibration | Held-out observation | Cells prediction |
+| --- | --- | --- | --- |
+| DIDS-treated human red cells, chloride, 23 °C | −3.60 ± 0.37 mA/g Hb at −103 ± 6 mV. The fitted rate was 4.38 × 10⁻⁵ s⁻¹ per unit cell-water volume. | −1.17 ± 0.13 mA/g Hb at −59 ± 8 mV (mean ± plotted SD, five donor series) | −1.97 mA/g Hb. Varying the digitized input means by their reading precision gave −2.09 to −1.86 mA/g Hb. [Freedman and Novak, Figs. 5–6 and Table I](https://doi.org/10.1085/jgp.109.2.201) · [Inputs](checks/data/freedman1997_chloride.json) |
+| Voltage-clamped planar bilayer, potassium, 150/15 mM KCl, same light state | +44.5 nA at +110 mV | Approximately −13.5 nA at −110 mV. Interpolated reversal −59.8 mV. | −3.84 nA and −59.16 mV at an assumed 25 °C. At 20–30 °C the predicted current spans −3.88 to −3.80 nA. [Pfeffermann et al., Fig. 2c](https://doi.org/10.1039/D5NR04234H) · [Inputs](checks/data/pfeffermann2026_potassium.json) |
+
+The red-cell current was inferred from shrinkage and the voltage from a parallel pH assay. The concentration ratio 150/101 limits the constant-permeability local slope ratio to 1.49 in the smooth branches. The ratio of the authors’ reported mean slope conductances was 3.67. Donor-level covariance is unavailable. The bilayer used commanded voltages and recorded currents directly. We estimate a figure-reading precision of about 1 nA. The measurement temperature and point uncertainties are unspecified. The potassium reversal agrees closely, while both held-out current magnitudes differ from the fixed-permeability predictions. Neither study measures the route heat. [Chloride study](https://doi.org/10.1085/jgp.109.2.201) · [Potassium study](https://doi.org/10.1039/D5NR04234H)
+
+All 26 passive-route and law-registry tests and 82 repository guard tests passed. Before and after collection returned the same 20,555 test IDs and the same five errors from unavailable archived inputs.
+
 ## 20 November 2026 · Osmotic water and potassium–anion transport
 
 **The earlier wrong-direction step is now refused.** On engine revision `93fc8c2cd217dbac9c2f6381d201f5acdb020265`, the original 10 ms fixed-volume reproducer gave a potassium–anion step bound of 3.761 against the limit of 1. The same step with water enabled was also refused by the cotransporter. The earlier bound was 0.221. The 32- and 64-step controls completed in both worlds. The separate component check still produced infinite affinity and heat at the extreme 2⁻⁵¹⁰ mM input, with finite 60-digit reference values. [Original comparison](#19-november-2026--potassium-and-anion-cotransport) · [Current finite-outside bound and its scope](../src/cells/operators/k_anion_symport.py#L173) · [Fixed-volume reproducer](checks/potassium_anion_symport.py)

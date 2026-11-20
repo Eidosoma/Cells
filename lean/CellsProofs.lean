@@ -8,6 +8,7 @@ import CellsProofs.Chemistry.SingleSiteBinding
 import CellsProofs.Tissue.MembraneInsertion
 import CellsProofs.Tissue.ReactionTransport
 import CellsProofs.Transport.ATPCycle
+import CellsProofs.Transport.ChargedPermeation
 import CellsProofs.Transport.ConstantField
 import CellsProofs.Transport.ElectrogenicPumps
 import CellsProofs.Transport.InwardRectifier
