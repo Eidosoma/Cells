@@ -1,5 +1,21 @@
 # Cells proof comparisons
 
+<a id="pool-replacement"></a>
+
+## 20 November 2026 · Tracer and energy at a finite-pool wash
+
+At an isolated `cells.pool_replacement@1` stop, the fresh pool enters, the spent pool leaves and each living assembly retains its contents. Lean proves the per-species inventory, the inventory of a conserved tracer through subsequent exchanges, and the free-energy change when the finite bath and retained assemblies have additive energies. Work and the sink entry can each be signed. [Proofs](CellsProofs/Chemistry/VesiclePopulation.lean#L127) · [Registered operator](../src/cells/models/assembly_lineages_v2/replacement.py#L98)
+
+The CPU `cells.assembly_lineages@2` comparison at engine `a69f38ab` ran two vesicles. The pulse supplied 12 tracer molecules at 1 s. At 2 s the wash removed the six in the bath, keeping six in the vesicles, including three in bound complexes. The first release into the fresh bath occurred at 2.000848 s and the first subsequent uptake at 2.001470 s. Each slot and key matched immediately across both stops, and the tracer inventory closed in integer counts at all 856 saved rows. The reread relations bundle carried all six nonzero material edges at the two stops. Both independent bath energies, their schedule entries and the change in total free energy agreed within 2.85 × 10⁻¹⁴ kBT. [CPU comparison](checks/pool_replacement.py) · [Finite-pool record](../src/cells/models/assembly_lineages_v2/records.py#L511)
+
+Zhao et al. washed trapped giant vesicles with inflow free of fluorescent dextran. After 40 min at 1 µL/min, about ten chamber volumes, exterior signal was approximately 0.1 fluorescence units. Surviving vesicles retained fluorescent contents, and some vesicles were lost. This supports the spatial separation of a wash endpoint. Its duration and the fraction of cargo retained matter when comparing an actual wash with the instantaneous model. Sumi et al. measured redistribution of a fluorescent lipid between donor and acceptor liposomes. With twice as much acceptor material, the signal reached about 48% of total fluorescence at 3.8 min. The Cells fixture uses synthetic tracer kinetics. These experiments give neither its return time nor the identity of the recaptured molecules. [Zhao et al., Fig. S3a–c](https://www.mpikg.mpg.de/th/people/dimova/publications/Zhao%20AdvMat%2021.pdf#page=17) · [Sumi et al., Fig. 7A](https://pmc.ncbi.nlm.nih.gov/articles/PMC5460167/#Fig7) · [Measurements and uncertainty](checks/data/pool_replacement_measurements.json)
+
+<a id="pool-replacement-capacity"></a>
+
+**An accepted fresh pool can have incorrect work.** With `molecule_capacity=32`, a fresh bath containing 33 molecules of one finite species passed admission. Both pool replacement and serial transfer completed, saved all 33 molecules, and passed their internal energy check. Each booked **−53.676961 kBT**. The discrete ideal-mixture energy is **−50.180454 kBT**. Changing only capacity to 64 recovered the reference; 32 molecules at capacity 32 also passed. The accepted bath was below the osmotic limit. [Capacity cases](checks/pool_replacement.py) · [Ideal bath energy](../src/cells/models/assembly_lineages_v2/ideal_mixing.py#L64)
+
+The energy calculation clipped the log-factorial index to 32 while its linear term used 33 molecules. Lean proves that the first count beyond capacity misses exactly **ln(capacity + 1)**, here **3.496508 kBT**. The ledger used the same clipped energy on both sides and could still close. The assembly owner can check each declared fresh count against the execution capacity for both schedule kinds before applying a stop. A count equal to capacity is valid. The owner can also align the operator's published trigger text with the implemented refusal of simultaneous schedules. [Gap theorem](CellsProofs/Chemistry/VesiclePopulation.lean#L153) · [Clipped table lookup](../src/cells/models/assembly_lineages_v2/mass_action.py#L66) · [Published trigger](../src/cells/models/assembly_lineages_v2/replacement.py#L88) · [Schedule admission](../src/cells/models/assembly_lineages_v2/division.py#L165)
+
 <a id="mitochondrial-kinase-supply"></a>
 
 ## 20 November 2026 · Adenylate kinase and the held reductant supply
