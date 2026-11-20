@@ -13,6 +13,9 @@ each turnover's equilibrium:
   at some states;
 - two planted errors are caught: complex I's charge with the wrong sign, and the exchanger's
   voltage shares not summing to one;
+- the appendix's typed parameters equal the organism file's, and its free-energy table equals
+  the entries at the temperature the appendix states; the entries at the organism file's
+  temperature are reported, for the appendix's next tag;
 - every turnover's integer counts conserve charge with the declared valences and move the charge
   q the appendix states (planted: one count changed);
 - each law's S in the family proposed for the engine's form, anchored on the turnover's own
@@ -431,11 +434,10 @@ def check(n_states=400, seed=20261120):
                 worst[key] = max(worst.get(key, D(0)), abs(value - declared) / declared)
     report["engine_form_instances"] = {k: f"{v:.3e}" for k, v in worst.items()}
     ok &= all(v < TOLERANCE for v in worst.values())
-    report["entries_RT"] = {
-        "C1 per NADH, 1 M": f"{G_1M['C1']:.6f}", "C3 per QH2, 1 M": f"{G_1M['C3']:.6f}",
-        "C4 per O2, 1 M": f"{2 * G_1M['C4']:.6f}", "F1 base forms per ATP, 1 M": f"{G_F_BASE:.6f}",
-        "quinol:O2 per O2": f"{2 * (G_PH7['C3'] + G_PH7['C4']):.6f}",
-    }  # fmt: skip
+    t_world, t_appendix = source.DECLARED["temperature_K"], appendix_temperature_K()
+    report["temperatures_K"] = dict(organism_file=t_world, appendix=t_appendix)
+    entries = entries_RT(t_world)
+    report[f"entries_RT_at_{t_world}_K"] = {k: f"{v:.6f}" for k, v in entries.items()}
     return ok, report
 
 
@@ -443,9 +445,25 @@ def _number(text):
     return float(text.replace("\u2212", "-").replace("+", "").replace("\u2014", "nan"))
 
 
+def entries_RT(temperature_K):
+    """The appendix's free-energy entries (its §7 table, in RT) at a temperature in K."""
+    rt = D(repr(source.DECLARED["gas_constant_J_mol_K"])) * D(repr(temperature_K))
+    g = {name: D(str(r.dG0_kJ_mol)) * 1000 / rt for name, r in source.TABLE_2.items()}
+    g1 = {name: g[name] + r.scalar_protons * LN1E7 for name, r in source.TABLE_2.items()}
+    return {"per NADH": g1["C1"], "per QH₂": g1["C3"], "§1.3, per O₂": 2 * g1["C4"],
+            "§1.4, per O₂": 2 * (g["C3"] + g["C4"]),
+            "per ATP": g["ATP"] - LN1E7 - (ONE + D("1e-7") / K_DH).ln()}  # fmt: skip
+
+
+def appendix_temperature_K(path=APPENDIX):
+    """The temperature the appendix states (its §0: "T = ... K")."""
+    return float(re.search(r"^- T = ([0-9.]+) K\.", path.read_text(), re.M).group(1))
+
+
 def appendix_errors(path=APPENDIX):
     """The appendix's typed numbers against this check's and the organism file's: every row of
-    its parameter table (both columns) and the RT column of its free-energy table."""
+    its parameter table (both columns), and the RT column of its free-energy table at the
+    temperature the appendix itself states (the organism file's may differ until its next tag)."""
     text, out = path.read_text(), []
     block = text.split("<!-- parameters -->")[1].split("<!-- /parameters -->")[0]
     rows = re.findall(r"^\| `(\w+)` \| [^|]+ \| ([^|]+) \| ([^|]+) \|", block, re.M)
@@ -459,9 +477,7 @@ def appendix_errors(path=APPENDIX):
                 out.append(f"{name} (pi_control={column}): appendix {typed}, organism file {value}")
     if len(rows) < 20:
         out.append(f"the parameter table has {len(rows)} rows")
-    computed = {"per NADH": G_1M["C1"], "per QH₂": G_1M["C3"], "§1.3, per O₂": 2 * G_1M["C4"],
-                "§1.4, per O₂": 2 * (G_PH7["C3"] + G_PH7["C4"]), "per ATP": G_F_BASE}  # fmt: skip
-    for key, value in computed.items():
+    for key, value in entries_RT(appendix_temperature_K(path)).items():
         line = next(
             (ln_ for ln_ in text.splitlines() if ln_.startswith("| §") and key in ln_), None
         )

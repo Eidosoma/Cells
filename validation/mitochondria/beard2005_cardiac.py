@@ -30,7 +30,12 @@ Reading notes (each checked at the typeset image, not a text layer):
   printed coefficients are the ones that agree with the reactions.
 - Table 1 describes V_i as a fraction "per total cell volume"; with footnote f (matrix 90%, IMS 10%
   of the water) and V_x = 0.6435 it reads as per total mitochondrial volume.
-- No temperature, gas constant or Faraday constant is printed. DECLARED below holds ours.
+- No temperature, gas constant or Faraday constant is printed. DECLARED below holds ours. The
+  temperature is 298.15 K by the lead's ruling of 20 November 2026 (isolated-organelle worlds):
+  the code-blind whole-organelle reference (MR1) reproduces the source's published curves at
+  298.15 K (rms z 1.98) and not at 310.15 K (rms z 25.9). The appendix at tag
+  mito-laws-appendix-2026-11-20 states 310.15 K; its next tag takes 298.15 K (its constants, its
+  1 M conversions and its free-energy table change; its laws, mismatches and stall points do not).
 
 Units are the source's: concentrations in M (mol per litre of the compartment's water) unless a
 row says mM; fluxes in mol s^-1 per litre of total mitochondrial volume; potentials in mV with
@@ -167,7 +172,9 @@ PROTOCOL = dict(
 
 # Declared, uncited: what the equations need and the source does not print.
 DECLARED = dict(
-    temperature_K=310.15,  # not printed in the source; physiological, our choice
+    # Not printed in the source. The lead's ruling (20 November 2026): 298.15 K, where the
+    # code-blind reference reproduces the published curves (rms z 1.98; 25.9 at 310.15 K).
+    temperature_K=298.15,
     gas_constant_J_mol_K=6.02214076e23 * 1.380649e-23,  # exact SI (N_A k_B)
     faraday_C_mol=6.02214076e23 * 1.602176634e-19,  # exact SI (N_A e)
     standard_concentration_M=1.0,  # every activity a = c / 1 M, H+ included
