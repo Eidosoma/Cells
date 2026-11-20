@@ -1,6 +1,6 @@
 {
  "format": "cells.visualizer.share@1",
- "note": "The picture of a link to the site shared elsewhere (og:image; tools/stage_site.mjs copies it into each release as share.jpg). The page's own 3D scene and nothing else: no words, no control, no label, the scene's painted marks put away. Made by tools/make_share.mjs; the first of four candidates, the site's picture until the owner chooses another (20 November 2026). Make it again: node tools/make_share.mjs --plan PLAN --out DIR, with PLAN holding this address and theme.",
+ "note": "The picture of a link to the site shared elsewhere (og:image; tools/stage_site.mjs copies it into each release as share.jpg). The page's own 3D scene and nothing else: no words, no control, no label, the scene's painted marks put away. Made by tools/make_share.mjs; the owner chose it, the first of four candidates, as the site's picture on 20 November 2026. Make it again: node tools/make_share.mjs --plan PLAN --out DIR, with PLAN holding this address and theme.",
  "alt": "One cell opened by a flat cut, its parts drawn in 3D: the Scope view of the Cells map.",
  "address": "?lens=cell&azimuth=0.52&polar=0.88&distance=37",
  "theme": "light",

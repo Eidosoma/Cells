@@ -46,8 +46,8 @@
   },
   {
    "id": "machines",
-   "text": "A catalogue of the molecular machines of the species shown, in trays on a bench by what they do. All of it is illustration.",
-   "from": "the viewer's README, the table of views, Machines (its first and last sentences)"
+   "text": "A catalogue of the molecular machines of the species shown, in trays on a bench by what they do. Behind each bench of a species whose cell has organelles stands a shelf of them at the same one scale. All of it is illustration.",
+   "from": "the viewer's README, the table of views, Machines: its first sentence, its sentence on the shelf behind each bench (its first words, to the scale), and its last"
   },
   {
    "id": "proteins",

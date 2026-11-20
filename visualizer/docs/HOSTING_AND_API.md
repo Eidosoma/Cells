@@ -919,10 +919,20 @@ certificates or accounts.
   address is stated); link-preview tags with the release's own `share.jpg` (1200 by 630, the page's scene with no words);
   structured data for the site and its source code, whose one name is Eidosoma, an organisation, as the site's publisher
   and the code's author; and the About text as HTML ahead of the page for a reader with no script (the source code linked,
-  its licence not), put away once the page has drawn. Each release holds `robots.txt` (everything allowed, `/r/` never
+  its licence not). While the page loads, a visitor with script sees none of it (the owner's choice, 20 November 2026,
+  after the text was measured covering the window for some 2 seconds on a good line and 4 to 5 on a slow one): a cover
+  in the page's own background (`siteStyle`, its colours read from the page's own sheet, light or dark from the first
+  paint, as the sheet's own rules) with one ring in the window's middle, still and slowly fading where less motion is
+  asked for, and a status in the page's own loading words; the text is hidden, out of the keyboard's reach. The page
+  puts both away once it has drawn (`src/ui/about.js`). If it has not drawn 20 seconds after the cover's first paint, the
+  cover lets the About words through by its sheet alone (`COVER_WAIT`), and the page puts them away if it draws after
+  all. A reader with no script gets the words at once and no cover (`<noscript>` in the head holds a style), and a
+  reader of the raw HTML finds them as text; the site adds no script that runs, so the release's inline-script hashes
+  are the page's own. A visitor whose script is blocked by a policy (an extension's) rather than switched off gets the
+  cover, then the words after 20 seconds. Each release holds `robots.txt` (everything allowed, `/r/` never
   closed, the sitemap named), `sitemap.xml` (the root) and `llms.txt` (the site for an agent); `--release` writes those three
   at the site's root before the pointer, each beside and moved into place, and removes them where a release has none.
-  `tools/check_site.mjs` holds each of them, on both pages.
+  `tools/check_site.mjs` holds each of them, on both pages, the cover on a slow line by the browser's own throttling.
 - **`deploy/`** is an example container (Caddy with a rate-limit module, in two forms: behind a proxy, or with its own
   certificate). It has not been validated or started.
 - **`tests/stage_site.test.mjs`** runs in `npm test`, in about a second.

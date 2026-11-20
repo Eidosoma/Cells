@@ -10,9 +10,12 @@
 // beside under another name and moved into place whole, so it is there complete or not at all. In it:
 //   index.html    the staged page wrapped in a document (build_page.mjs, wrap), with a head for a site (lang, a title,
 //                 a description, the site's address as canonical, link-preview tags with the share picture, structured
-//                 data for the site and its source code, and the style of the text below), the host profile
+//                 data for the site and its source code, the style of the text and the cover below, in the page's own
+//                 light and dark colours, and what a reader with no script gets in place of the cover), the host profile
 //                 (src/core/host.js), the text a reader with no script gets (the About words as HTML, ahead of the
-//                 page in the body, put away by the page once it has drawn: src/ui/about.js), and two rewrites, each
+//                 page in the body), the cover a visitor with script sees while the page loads (the page's background
+//                 and one turning ring; the About words let through after 20 seconds if the page has not drawn), both
+//                 put away by the page once it has drawn (src/ui/about.js), and two rewrites, each
 //                 counted: every occurrence of three.js's cdnjs address becomes the release's own copy, and the one
 //                 Google Fonts link becomes the release's own sheet. Nothing else of the page changes.
 //                 The words are the page's own: the About words its scene carries (data/site/about.json, which they
@@ -49,7 +52,7 @@ import { promisify } from "node:util";
 import zlib from "node:zlib";
 import { ROOT, wrap } from "./lib/build_page.mjs";
 import { changedLines } from "./lib/git_state.mjs";
-import { aboutOf, licenceUrl, pageFacts, NEW_TAB, TEXT_ELEMENT } from "../src/ui/about.js";
+import { aboutOf, licenceUrl, pageFacts, NEW_TAB, TEXT_ELEMENT, COVER_ELEMENT } from "../src/ui/about.js";
 import { landingOf, levelOf, verdictsOf, answerOf, standingWords } from "../src/replay/landing.js";
 import { formatDate } from "../src/ui/dom.js";
 
@@ -244,7 +247,27 @@ export function pageWords(content, { tracked = TRACKED } = {}) {
   const meta = scene.meta || {};
   const licence = licenceUrl(about, meta);
   if (about.source.licence && !licence) fail(`the page's scene gives no source base inside ${about.source.url}: its licence cannot be linked at the map's revision`);
-  return { about, raw: scene.about, views: views.filter((view) => about.views.some((item) => item.id === view.id)), meta, licence };
+  const loading = /<p class="boot" id="cells-boot">([^<]+)<\/p>/.exec(content)?.[1]?.trim();
+  if (!loading) fail("the page says nothing while it loads (its #cells-boot): the cover's words for a screen reader are the page's own");
+  return { about, raw: scene.about, views: views.filter((view) => about.views.some((item) => item.id === view.id)), meta, licence, colours: pageColours(content), loading };
+}
+
+/**
+ * The colours of the page's first paint, read from the page's own sheet (src/page.css: the first style that sets the
+ * page's tokens, in a staged page or in a release's page alike): light (its :root) and dark (its :root[data-theme="dark"]).
+ */
+export const COLOUR_TOKENS = ["bg", "fg", "muted", "accent"];
+export function pageColours(content) {
+  const sheet = [...content.matchAll(/<style>([\s\S]*?)<\/style>/g)].map((match) => match[1]).find((text) => text.includes("--bg:")) || "";
+  const block = (selector) => {
+    const at = sheet.indexOf(`${selector} {`);
+    return at < 0 ? "" : sheet.slice(at, sheet.indexOf("}", at));
+  };
+  const read = (text) => Object.fromEntries(COLOUR_TOKENS.map((token) => [token, new RegExp(`--${token}:\\s*(#[0-9a-f]{6})\\s*;`, "i").exec(text)?.[1]?.toLowerCase() || null]));
+  const colours = { light: read(block(":root")), dark: read(block(':root[data-theme="dark"]')) };
+  const lacking = Object.entries(colours).flatMap(([theme, values]) => COLOUR_TOKENS.filter((token) => !values[token]).map((token) => `${theme} --${token}`));
+  if (lacking.length) fail(`the page's own sheet gives no ${lacking.join(", ")}: the site's first paint is in the page's own colours`);
+  return colours;
 }
 
 /** The width and height a JPEG states in its frame header; null where the bytes are not a JPEG. */
@@ -290,8 +313,38 @@ export function structuredData(words) {
   return { "@context": "https://schema.org", "@graph": graph };
 }
 
-/** The look of the text without script: the page's own tokens, with their light values where the page's sheet is not yet read. */
-const TEXT_STYLE = `#${TEXT_ELEMENT}{position:fixed;inset:0;z-index:10;overflow:auto;box-sizing:border-box;padding:28px max(20px,env(safe-area-inset-right,0px)) 48px max(20px,env(safe-area-inset-left,0px));background:var(--bg,#eef2f6);color:var(--fg,#12283a);font:15px/1.55 var(--font-body,system-ui,-apple-system,"Segoe UI",sans-serif)}#${TEXT_ELEMENT}>*{max-width:42rem;margin:0 auto 12px}#${TEXT_ELEMENT} h1{font:700 30px/1.2 var(--font-display,system-ui,sans-serif);margin-bottom:14px}#${TEXT_ELEMENT} h2{font:600 13px/1.3 var(--font-display,system-ui,sans-serif);letter-spacing:.07em;text-transform:uppercase;color:var(--muted,#566878);margin-top:28px;margin-bottom:8px}#${TEXT_ELEMENT} ul{padding-left:1.2em}#${TEXT_ELEMENT} li{margin-bottom:8px}#${TEXT_ELEMENT} a{color:var(--accent,#1f6fd0)}#${TEXT_ELEMENT} .lead{font-size:17px}#${TEXT_ELEMENT} .quiet{color:var(--muted,#566878)}`;
+/** How long the cover waits for the page before it lets the About words through, without script (seconds). */
+export const COVER_WAIT = 20;
+
+/**
+ * The look of the text without script and of the cover, in the page's own colours (pageColours) from the first paint:
+ * light, or dark where the visitor's system asks for it, and as the page's own sheet has it where a host names a theme
+ * on the root (data-theme). The text is hidden (not seen, not reached by the keyboard) while the cover stands; the cover
+ * holds the page's background and one big ring in its accent (a sixth of the window's shorter side, between 96 and 160 px:
+ * the owner asked for a big one on 20 November 2026), which turns (a slow fade where less motion is asked for). After
+ * COVER_WAIT seconds the cover goes and the text stands, by the sheet alone; the page puts both away once it has drawn.
+ */
+export function siteStyle({ light, dark }) {
+  const tokens = (values) => `--site-bg:${values.bg};--site-fg:${values.fg};--site-muted:${values.muted};--site-accent:${values.accent};--site-track:${values.accent}33`;
+  const T = `#${TEXT_ELEMENT}`, C = `#${COVER_ELEMENT}`;
+  return [
+    `:root{${tokens(light)}}`,
+    `@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){${tokens(dark)};color-scheme:dark}}`,
+    `:root[data-theme="dark"]{${tokens(dark)};color-scheme:dark}`,
+    `body{background:var(--site-bg);color:var(--site-fg)}`,
+    `${T}{position:fixed;top:0;right:0;bottom:0;left:0;z-index:10;overflow:auto;box-sizing:border-box;padding:28px max(20px,env(safe-area-inset-right,0px)) 48px max(20px,env(safe-area-inset-left,0px));background:var(--site-bg);color:var(--site-fg);font:15px/1.55 var(--font-body,system-ui,-apple-system,"Segoe UI",sans-serif);visibility:hidden;animation:cells-site-through 0s ${COVER_WAIT}s forwards}`,
+    `${T}>*{max-width:42rem;margin:0 auto 12px}${T} h1{font:700 30px/1.2 var(--font-display,system-ui,sans-serif);margin-bottom:14px}${T} h2{font:600 13px/1.3 var(--font-display,system-ui,sans-serif);letter-spacing:.07em;text-transform:uppercase;color:var(--site-muted);margin-top:28px;margin-bottom:8px}${T} ul{padding-left:1.2em}${T} li{margin-bottom:8px}${T} a{color:var(--site-accent)}${T} .lead{font-size:17px}${T} .quiet{color:var(--site-muted)}`,
+    `${C}{position:fixed;top:0;right:0;bottom:0;left:0;z-index:11;display:grid;place-items:center;background:var(--site-bg);animation:cells-site-gone 0s ${COVER_WAIT}s forwards}`,
+    `${C} .cells-ring{box-sizing:border-box;width:clamp(96px,16vmin,160px);height:clamp(96px,16vmin,160px);border-radius:50%;border:clamp(8px,1.3vmin,13px) solid var(--site-track);border-top-color:var(--site-accent);animation:cells-site-turn 1.1s linear infinite}`,
+    `${C} .cells-words{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0}`,
+    `@media (prefers-reduced-motion:reduce){${C} .cells-ring{border-color:var(--site-accent);animation:cells-site-fade 2.4s ease-in-out infinite alternate}}`,
+    `@keyframes cells-site-turn{to{transform:rotate(360deg)}}@keyframes cells-site-fade{to{opacity:.35}}`,
+    `@keyframes cells-site-through{to{visibility:visible}}@keyframes cells-site-gone{to{visibility:hidden}}`,
+  ].join("");
+}
+
+/** What a reader with no script gets in place of the cover (a style inside <noscript>, read only where script is off): the text at once, no cover. */
+export const NOSCRIPT_STYLE = `#${TEXT_ELEMENT}{visibility:visible;animation:none}#${COVER_ELEMENT}{display:none}`;
 
 /** What the site's staging puts in a page's head, in this order; the root page has its base address first. */
 export function siteHead(id, words, { root = false, share } = {}) {
@@ -318,7 +371,8 @@ export function siteHead(id, words, { root = false, share } = {}) {
     meta("property", "og:image:alt", share.alt),
     meta("name", "twitter:card", "summary_large_image"),
     `<script type="application/ld+json">${data}</script>`,
-    `<style>${TEXT_STYLE}</style>`,
+    `<style>${siteStyle(words.colours)}</style>`,
+    `<noscript><style>${NOSCRIPT_STYLE}</style></noscript>`,
     `<script type="application/json" id="cells-host">${profile}</script>`,
   ].join("");
 }
@@ -347,8 +401,15 @@ export function siteText(id, words) {
   ].join("");
 }
 
+/**
+ * What a visitor with script sees while the page loads (siteStyle): the page's background and one ring in its middle, and
+ * a status that says in the page's own words (its #cells-boot) that the 3D map is loading. No word of the About text.
+ */
+export const siteCover = (words) =>
+  `<div id="${COVER_ELEMENT}" role="status" aria-labelledby="${COVER_ELEMENT}-words"><div class="cells-ring" aria-hidden="true"></div><span class="cells-words" id="${COVER_ELEMENT}-words">${escapeHtml(words.loading)}</span></div>`;
+
 /** The release's page (index.html) or its root page (root.html), from the rewritten page. */
-export const sitePage = (text, id, words, { root = false, share } = {}) => wrap(text, { lang: "en", head: siteHead(id, words, { root, share }), before: siteText(id, words) });
+export const sitePage = (text, id, words, { root = false, share } = {}) => wrap(text, { lang: "en", head: siteHead(id, words, { root, share }), before: `${siteText(id, words)}\n${siteCover(words)}` });
 
 /** robots.txt: every reader may read everything (the release folders under /r/ hold the page's own files), and where the sitemap is. */
 export const robotsText = (id) => `# The site of the Cells viewer, release ${id} (written by tools/stage_site.mjs). Every reader may read everything:\n# the page's own files stand under /r/.\nUser-agent: *\nAllow: /\n\nSitemap: ${SITE}sitemap.xml\n`;

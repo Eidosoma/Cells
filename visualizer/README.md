@@ -1207,8 +1207,14 @@ site's address), link-preview tags with `share.jpg` (the tracked `data/site/shar
 page's own scene with no words, made by `tools/make_share.mjs`), and structured data for the
 site and its source code, whose one name is the credit's organisation (the site's
 publisher, the code's author). Ahead of the page stands the About text as HTML for a reader
-with no script (the source code linked, its licence not), put away once the page has
-drawn. Each release also holds `robots.txt` (every reader may read everything; `/r/` is
+with no script (the source code linked, its licence not). A visitor with script does not
+see it while the page loads (the owner's choice, 20 November 2026): a cover of the page's
+own background, light or dark from the first paint, holds one ring in the window's middle
+(still, slowly fading, where less motion is asked for) and a status that says the 3D map is
+loading; the page puts the cover and the text away once it has drawn. If it has not drawn
+in 20 seconds, the cover lets the About words through by its sheet alone, and the page
+still puts them away when it draws. A reader with no script gets the words at once and no
+cover (a style inside `<noscript>`); the site adds no script. Each release also holds `robots.txt` (every reader may read everything; `/r/` is
 never closed), `sitemap.xml` and `llms.txt` (the site for an agent: the words, the views,
 the cards with their levels and verdicts, the release's files by format, the contracts,
 the source), which `--release` puts at the site's root with the pointer. The staging

@@ -22,7 +22,7 @@ import test from "node:test";
 import { fileURLToPath } from "node:url";
 import zlib from "node:zlib";
 import { THREE_CDN, wrap } from "../tools/lib/build_page.mjs";
-import { DESCRIPTION, ROOT_FILES, SHARE, SITE, TITLE, jpegSize, movePointerTo, pageWords, retain, sharePicture, siteHead, sitePolicy, siteText, stageRelease, structuredData } from "../tools/stage_site.mjs";
+import { COVER_WAIT, DESCRIPTION, NOSCRIPT_STYLE, ROOT_FILES, SHARE, SITE, TITLE, inlineScripts, jpegSize, movePointerTo, pageColours, pageWords, retain, sharePicture, siteCover, siteHead, sitePolicy, siteStyle, siteText, stageRelease, structuredData } from "../tools/stage_site.mjs";
 import { HOST_DEFAULTS, hostProfile, readHost } from "../src/core/host.js";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -30,6 +30,8 @@ const quiet = () => {};
 const sha = (bytes) => createHash("sha256").update(bytes).digest("hex");
 // The real page's link to Google Fonts, as src/page.html writes it.
 const FONTS_LINK = readFileSync(path.join(ROOT, "src", "page.html"), "utf8").split("\n").find((line) => line.includes("fonts.googleapis.com"));
+// The page's own sheet (src/page.css), its first style: the site's first paint takes its colours from it.
+const PAGE_CSS = readFileSync(path.join(ROOT, "src", "page.css"), "utf8");
 const LOCAL_THREE = "./vendor/three/0.170.0/three.module.min.js";
 // The tracked About words, which a staged page's scene must carry, and a scene that carries them with the map's own record.
 const ABOUT = JSON.parse(readFileSync(path.join(ROOT, "data", "site", "about.json"), "utf8"));
@@ -41,7 +43,7 @@ const LENSES = (views = VIEWS) => `var LENSES = [\n${views.map(([id, label]) => 
 
 /** A page as the export writes it (no document of its own), whose module script imports three.js twice. */
 const PAGE = (scene = SCENE(), link = FONTS_LINK, lenses = LENSES()) =>
-  `<title>Cells</title>\n<meta name="claude:viewport-fit-sides" content="cover">\n${link}\n<style>\nbody { margin: 0 }\n</style>\n\n<cells-viewer id="cells-viewer">\n  <p class="boot" id="cells-boot">Loading…</p>\n  <script type="application/json">${scene}</script>\n</cells-viewer>\n\n<script>\n  setTimeout(function () {}, 9000);\n</script>\n<script type="module">\nimport * as three_star from "${THREE_CDN}";\nimport {\n  Vector3\n} from "${THREE_CDN}";\n${lenses}customElements.define("cells-viewer", class extends HTMLElement {});\n</script>\n`;
+  `<title>Cells</title>\n<meta name="claude:viewport-fit-sides" content="cover">\n${link}\n<style>\n${PAGE_CSS}\n</style>\n\n<cells-viewer id="cells-viewer">\n  <p class="boot" id="cells-boot">Loading…</p>\n  <script type="application/json">${scene}</script>\n</cells-viewer>\n\n<script>\n  setTimeout(function () {}, 9000);\n</script>\n<script type="module">\nimport * as three_star from "${THREE_CDN}";\nimport {\n  Vector3\n} from "${THREE_CDN}";\n${lenses}customElements.define("cells-viewer", class extends HTMLElement {});\n</script>\n`;
 // One card in one band, with a level and a verdict, as the landing reads it (src/replay/landing.js).
 const CARDS = JSON.stringify({ format: "cells.visualizer.experiment_cards@2", bands: [{ id: "judged", label: "Judged", cards: ["c1"] }], details: "cards.details.json", cards: [{ id: "c1", band: "judged", kind: "standing", title: "FR-1: a closed compartment", standing: { status: "qualified", level: { label: "Qualified or judged", says: "…" } }, record: [{ says: "…", verdict: { passed: true, count: { passed: 44, of: 44, unit: "judged criteria" }, day: { date: "2026-11-18" } } }] }] });
 
@@ -95,10 +97,10 @@ test("a release holds the staged page but for the declared insertions and the tw
     const body = page.replaceAll(THREE_CDN, LOCAL_THREE).replace(FONTS_LINK, '<link rel="stylesheet" href="vendor/fonts/fonts.css">');
     const words = pageWords(page), share = await sharePicture();
     const head = siteHead("v1", words, { share }), text = siteText("v1", words);
-    assert.equal(index, wrap(body, { lang: "en", head, before: text }), "the page is wrapped as the artifact host wraps it, with lang, the site's head, the text without script ahead of it, and nothing else");
+    assert.equal(index, wrap(body, { lang: "en", head, before: `${text}\n${siteCover(words)}` }), "the page is wrapped as the artifact host wraps it, with lang, the site's head, the text without script and the cover ahead of it, and nothing else");
     // The head, in its order: the title, the description, the site's address as canonical, a link's preview (its picture the
     // release's own, 1200 by 630, no words over it), the structured data, the text's style, the host profile.
-    assert.deepEqual([...head.matchAll(/<(title|meta|link|script|style)\b([^>]*)>/g)].map((match) => (/(?:name|property|rel|type)="([^"]+)"/.exec(match[2])?.[1] || match[1])), ["title", "description", "canonical", "og:type", "og:site_name", "og:title", "og:description", "og:url", "og:image", "og:image:type", "og:image:width", "og:image:height", "og:image:alt", "twitter:card", "application/ld+json", "style", "application/json"]);
+    assert.deepEqual([...head.matchAll(/<(title|meta|link|script|style)\b([^>]*)>/g)].map((match) => (/(?:name|property|rel|type)="([^"]+)"/.exec(match[2])?.[1] || match[1])), ["title", "description", "canonical", "og:type", "og:site_name", "og:title", "og:description", "og:url", "og:image", "og:image:type", "og:image:width", "og:image:height", "og:image:alt", "twitter:card", "application/ld+json", "style", "style", "application/json"]);
     assert.ok(head.startsWith(`<title>${TITLE}</title><meta name="description" content="${DESCRIPTION}"><link rel="canonical" href="${SITE}">`));
     for (const [name, value] of [["og:url", SITE], ["og:image", `${SITE}r/v1/${SHARE}`], ["og:image:width", "1200"], ["og:image:height", "630"], ["og:title", TITLE], ["twitter:card", "summary_large_image"]]) assert.ok(head.includes(`="${name}" content="${value}"`), name);
     assert.ok(!/twitter:(site|creator)/.test(head), "no account is named");
@@ -122,6 +124,23 @@ test("a release holds the staged page but for the declared insertions and the tw
     assert.deepEqual([...text.matchAll(/<a href="https:\/\/cells\.eidosoma\.ai\/\?lens=([a-z]+)">([^<]+)<\/a>/g)].map((match) => [match[1], match[2]]), VIEWS);
     assert.ok(text.includes("Map: As of 19 Nov 2026 · main abc12345. Release: v1."), "what the page knows of itself");
     assert.ok(!/<script/.test(text), "the text runs nothing");
+    // While the page loads (20 November 2026, the owner's choice): with script, a cover of the page's background with one
+    // ring and a status in the page's own words; no word of the About text seen or reached until the page has drawn, or
+    // until the cover's wait is over, by the sheet alone; without script, the text at once and no cover. The colours of the
+    // first paint are the page's own, light and dark, by the same rules as its sheet. The site adds no script that runs.
+    const cover = siteCover(words);
+    assert.equal(cover, '<div id="cells-cover" role="status" aria-labelledby="cells-cover-words"><div class="cells-ring" aria-hidden="true"></div><span class="cells-words" id="cells-cover-words">Loading…</span></div>');
+    assert.ok(!ABOUT.lead.some((words_) => cover.includes(words_)) && !/<a\b|<script/.test(cover), "no word of the About text, no link and no script in the cover");
+    const colours = { light: { bg: "#eef2f6", fg: "#12283a", muted: "#566878", accent: "#1f6fd0" }, dark: { bg: "#0b151e", fg: "#e6edf3", muted: "#95a6b7", accent: "#5b9dee" } };
+    assert.deepEqual(pageColours(page), colours, "src/page.css's own values (its :root and its dark theme)");
+    const style = siteStyle(colours);
+    assert.ok(head.includes(`<style>${style}</style><noscript><style>${NOSCRIPT_STYLE}</style></noscript>`), "the style, then what a reader with no script gets in its place, in the head");
+    for (const part of [':root{--site-bg:#eef2f6;--site-fg:#12283a;--site-muted:#566878;--site-accent:#1f6fd0;', '@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--site-bg:#0b151e;--site-fg:#e6edf3;--site-muted:#95a6b7;--site-accent:#5b9dee;', ':root[data-theme="dark"]{--site-bg:#0b151e;', "body{background:var(--site-bg);color:var(--site-fg)}", "visibility:hidden;animation:cells-site-through 0s 20s forwards", "animation:cells-site-gone 0s 20s forwards", "@media (prefers-reduced-motion:reduce){#cells-cover .cells-ring{border-color:var(--site-accent);animation:cells-site-fade", "@keyframes cells-site-through{to{visibility:visible}}@keyframes cells-site-gone{to{visibility:hidden}}"]) assert.ok(style.includes(part), part);
+    assert.equal(COVER_WAIT, 20);
+    assert.ok(!/#[0-9a-f]{3,8}(?![0-9a-f])/i.test(style.replace(/--site-[a-z]+:#[0-9a-f]{6}(33)?/g, "")), "no colour but the page's own");
+    assert.equal(NOSCRIPT_STYLE, "#cells-text{visibility:visible;animation:none}#cells-cover{display:none}");
+    assert.ok(PAGE_CSS.includes(':root:not([data-theme="light"]) {\n    --bg: #0b151e;') && PAGE_CSS.includes(':root[data-theme="dark"] {\n  --bg: #0b151e;'), "the page's sheet has the dark values under both rules, as the site's style does");
+    assert.deepEqual(inlineScripts(index), inlineScripts(body), "the site adds no script that runs (the content policy's hashes are the page's own)");
     assert.equal(index.split(LOCAL_THREE).length - 1, 2);
     assert.ok(!/cdnjs\.cloudflare\.com|fonts\.googleapis\.com|fonts\.gstatic\.com/.test(index), "no address of the two other parties is left");
     assert.deepEqual(record.rewrites.map((item) => [item.what, item.count, item.to]), [["three.js", 2, LOCAL_THREE], ["fonts", 1, "vendor/fonts/fonts.css"]]);
@@ -262,6 +281,9 @@ test("a page, a folder or node_modules other than expected stops the staging, an
     // A page whose script does not list its views once, or lacks a view the words name.
     [{ page: PAGE(undefined, undefined, "") }, /lists its views 0 times/],
     [{ page: PAGE(undefined, undefined, LENSES(VIEWS.slice(0, 5))) }, /name the view experiments, and the page's script lists no such view/],
+    // A page whose sheet gives no dark theme, or which says nothing while it loads: the cover has no colours or words of its own.
+    [{ page: PAGE().replace(':root[data-theme="dark"] {', ":root.dark {") }, /gives no dark --bg, dark --fg, dark --muted, dark --accent/],
+    [{ page: PAGE().replace('<p class="boot" id="cells-boot">Loading…</p>', "") }, /says nothing while it loads/],
   ];
   for (const [given, refusal] of cases) {
     const { folder, staged, three, site } = await setUp(given);

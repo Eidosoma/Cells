@@ -14,7 +14,8 @@
 //   shows (placeIntro): it yields to them, never they to it, so every view draws what it drew without it. It stands under
 //   every card and every name, and waits out of sight where no band is free, on a window narrower than 760 px (a phone
 //   has no such band under its bar), where no 3D is drawn, and while a panel or a sheet is open.
-// - **The site's text without script** (tools/stage_site.mjs, the element `cells-text`) is put away once the page has drawn.
+// - **The site's text without script** (tools/stage_site.mjs, the element `cells-text`) and **its cover** (`cells-cover`,
+//   what a visitor with script sees while the page loads) are put away once the page has drawn.
 //
 // What the page knows of itself it says: the map's date and the engine revision of its stamp, and on the site the
 // release its host profile names (src/core/host.js). Nothing else.
@@ -28,6 +29,8 @@ export const ABOUT = "about";
 export const INTRO_KEY = "cells-visualizer.intro.closed";
 /** The site's text without script (tools/stage_site.mjs writes it), put away once the page has drawn. */
 export const TEXT_ELEMENT = "cells-text";
+/** The site's cover while the page loads (tools/stage_site.mjs writes it, after the text), put away with the text. */
+export const COVER_ELEMENT = "cells-cover";
 /** A link that opens a new tab, safely: the page it opens gets no hold on this one, and no address of it. */
 export const NEW_TAB = Object.freeze({ target: "_blank", rel: "noopener noreferrer" });
 
@@ -150,8 +153,11 @@ export class AboutPart {
     const viewer = this.viewer;
     this.about = aboutOf(viewer.model?.raw);
     const document_ = viewer.ownerDocument;
-    const putAway = () => document_?.getElementById?.(TEXT_ELEMENT)?.setAttribute("hidden", "");
-    // The site's text stands until the page has drawn: its first frame, or at once where no 3D can be drawn.
+    const putAway = () => {
+      for (const id of [TEXT_ELEMENT, COVER_ELEMENT]) document_?.getElementById?.(id)?.setAttribute("hidden", "");
+    };
+    // The site's cover (and, after its wait, the text) stands until the page has drawn: its first frame, or at once where
+    // no 3D can be drawn. On the artifact's page neither element is there, and nothing is done.
     if (viewer.stage) {
       const once = () => {
         putAway();
