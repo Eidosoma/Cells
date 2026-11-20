@@ -113,6 +113,7 @@ def test_recorded_verdicts():
     assert all(v["refused"] for v in chk["planted_controls"].values())
     assert chk["float64_calibration"]["passes"]
     assert chk["lumped_identity"]["passes"] and chk["binding_chain"]["passes"]
+    assert chk["supply"]["passes"]
     assert all(v["passes"] for v in chk["form_identities"].values())
     assert all(e["caught"] for e in pl["plants"].values())
     assert set(pl["plants"]) == {p.pid for p in plants.PLANTS}

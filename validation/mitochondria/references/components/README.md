@@ -141,6 +141,12 @@ Eq. 16.
 
 **Inputs** are float64 values. Each reference is evaluated at the exact value of those doubles,
 so input rounding never enters a comparison.
+- **Forms and totals:** each form in a row is rounded separately, so the forms agree with their
+  totals and their binding relations to about one ulp. The references use the forms as given,
+  which are the Reads. A kernel that recomputes forms from totals differs by that ulp, well
+  inside the bands.
+- **Section 8's box:** the states next to equilibrium may leave it. Δψ reaches 271 mV
+  (complex IV), K⁺ 0.85 M and Pi 26 mM.
 
 **Quantities.**
 
@@ -213,74 +219,105 @@ more.
 Each plant is a candidate kernel with one deliberate error. Section 8 names two of them; the rest
 are proposed here.
 - **Columns:**
-  - *caught*: rows with a margin ≥ 3, out of the rows;
+  - *caught*: rows where some quantity misses by 3 bands or more, out of the rows;
+  - *by J alone*: rows where the flux J by itself misses by 3 bands or more;
   - *min margin*: the smallest top margin among the rows that catch;
-  - *zero power*: rows with no quantity at a margin of 1 or more.
+  - *zero power*: rows where no quantity misses by one band.
+- **Two forms:** a plant on a law with two forms has one entry for its balanced rows and one for
+  its printed rows.
 - **The "other form" plants** run each failing law's printed form against its balanced rows, and
   the reverse.
+- **More in `plants.json`:** the zero-power rows, the rows without power on J
+  (`no_power_on_J`), the rows caught only by slopes (`zero_power_values_only`), and the power on
+  each quantity.
 
-| Plant | Law | Kind | Caught | Min margin | Zero power |
-| --- | --- | --- | --- | --- | --- |
-| `C1_q_reversed` (section 8) | complex_I | thermodynamic | 61/61 | 4.5e14 | 0 |
-| `C1_scalar_proton_dropped` | complex_I | thermodynamic | 61/61 | 1.1e11 | 0 |
-| `C1_dG0_display` (−110.934) | complex_I | free-energy entry | 61/61 | 8.3e7 | 0 |
-| `C3_eq7_dG0_display` (+50.599) | complex_III_eq7 | free-energy entry | 61/61 | 2.8e8 | 0 |
-| `C3_eq24_other_form`, each way | complex_III_eq24 | printed against balanced | 97/97 and 97/97 | 3.5e12 | 0 |
-| `C3_eq24_dG0_display`, both forms | complex_III_eq24 | free-energy entry | 97/97 | 2.8e8 | 0 |
-| `C3_eq24_kappa_one` | complex_III_eq24 | kinetic | 97/97 | 1.3e12 | 0 |
-| `C3_eq24_phi_inverted`, both forms | complex_III_eq24 | kinetic | 97/97 | 1.4e14 | 0 |
-| `C4_dG0_display` (−412.137) | complex_IV | free-energy entry | 61/61 | 1.8e7 | 0 |
-| `C4_per_half_O2` | complex_IV | stoichiometry | 61/61 | 1.8e12 | 0 |
-| `C4_kappa_half` | complex_IV | kinetic | 61/61 | 7.8e11 | 0 |
-| `C4_ctot_parameter` | complex_IV | kinetic | 61/61 | 1.6e12 | 0 (55 by values) |
-| `F1_other_form`, each way | atp_synthase | printed against balanced | 97/97 and 97/97 | 2.7e11 | 0 (2 by values) |
-| `F1_dG0_display` (−6.685), both forms | atp_synthase | free-energy entry | 97/97 | 1.3e8 | 0 |
-| `F1_dG0_ATP_text_sign` (−36.03), both forms | atp_synthase | free-energy entry | 97/97 | 2.3e24 | 0 |
-| `F1_q_reversed`, both forms | atp_synthase | thermodynamic | 97/97 | 4.2e14 | 0 |
-| `F1_totals_in_dG`, both forms | atp_synthase | binding | 97/97 | 2.4e12 | 0 |
-| `F1_total_Pi_in_dG`, both forms | atp_synthase | binding | 97/97 | 5.9e10 | 0 |
-| `ANT_shares_0.35_0.60` (section 8) | nucleotide_exchange | thermodynamic | 61/61 | 5.6e10 | 0 |
-| `ANT_shares_swapped` (0.65, 0.35) | nucleotide_exchange | kinetic | 61/61 | 4.0e10 | 0 (4 by values) |
-| `ANT_totals` | nucleotide_exchange | binding | 61/61 | 1.3e11 | 0 |
-| `PiHt_other_form`, each way | phosphate_carrier | printed against balanced | 49/49 and 49/49 | 2.0e12 | 0 (2 by values) |
-| `PiHt_k_in_M` | phosphate_carrier | unit | 49/49 | 5.3e12 | 0 |
-| `PiHt_one_proton`, balanced and printed | phosphate_carrier | stoichiometry | 49/49 and 47/49 | 1.1e11 | 0 and 2 |
-| `KH_proton_sides_swapped` | k_h_exchange | stoichiometry | 45/45 | 2.8e14 | 0 |
-| `DH_phi_inverted` | nadh_supply | kinetic | 15/15 | 2.0e13 | 0 |
-| `DH_r_on_NADH` | nadh_supply | kinetic | 15/15 | 1.3e14 | 0 |
-| `FRT_display/*` (0.0374158 per mV), the 7 charged laws | all | constant | 693/693 | 3.9e5 | 0 |
-| `RT_display/*` (2578.7306) | 9 laws | constant | 818/836 | 24 | 18 |
-| `T_298/*` (298.15 K) | 9 laws | constant | 830/836 | 1.3e5 | 6 |
-| `activity_mM/*` (c/1 mM) | the 6 laws whose Σν ≠ 0 | unit | 632/632 | 2.6e12 | 0 |
+| Plant | Law | Kind | Caught | By J alone | Min margin | Zero power |
+| --- | --- | --- | --- | --- | --- | --- |
+| `C1_q_reversed` (section 8) | complex_I | thermodynamic | 61/61 | 45 | 4.5e14 | 0 |
+| `C1_scalar_proton_dropped` | complex_I | thermodynamic | 61/61 | 56 | 1.1e11 | 0 |
+| `C1_dG0_display` (−110.934) | complex_I | free-energy entry | 61/61 | 49 | 8.3e7 | 0 |
+| `C3_eq7_dG0_display` (+50.599) | complex_III_eq7 | free-energy entry | 61/61 | 61 | 2.8e8 | 0 |
+| `C3_eq24_other_form` (balanced, printed) | complex_III_eq24 | printed vs balanced | 97/97 and 97/97 | 95 and 95 | 3.4e11 | 0 and 0 |
+| `C3_eq24_dG0_display` (balanced, printed) | complex_III_eq24 | free-energy entry | 97/97 and 97/97 | 97 and 0 | 2.8e8 | 0 and 0 |
+| `C3_eq24_kappa_one` (balanced) | complex_III_eq24 | kinetic | 97/97 | 95 | 1.3e12 | 0 |
+| `C3_eq24_phi_inverted` (balanced, printed) | complex_III_eq24 | kinetic | 97/97 and 97/97 | 95 and 95 | 1.4e14 | 0 and 0 |
+| `C4_dG0_display` (−412.137) | complex_IV | free-energy entry | 61/61 | 49 | 1.8e7 | 0 |
+| `C4_per_half_O2` | complex_IV | stoichiometry | 61/61 | 59 | 1.8e12 | 0 |
+| `C4_kappa_half` | complex_IV | kinetic | 61/61 | 58 | 7.8e11 | 0 |
+| `C4_ctot_parameter` | complex_IV | kinetic | 61/61 | 6 | 1.6e12 | 0 |
+| `F1_other_form` (balanced, printed) | atp_synthase | printed vs balanced | 97/97 and 97/97 | 93 and 93 | 2.7e11 | 0 and 0 |
+| `F1_dG0_display` (−6.685; balanced, printed) | atp_synthase | free-energy entry | 97/97 and 97/97 | 89 and 0 | 1.3e8 | 0 and 0 |
+| `F1_dG0_ATP_text_sign` (−36.03; balanced, printed) | atp_synthase | free-energy entry | 97/97 and 97/97 | 97 and 97 | 2.3e24 | 0 and 0 |
+| `F1_q_reversed` (balanced, printed) | atp_synthase | thermodynamic | 97/97 and 97/97 | 65 and 65 | 4.2e14 | 0 and 0 |
+| `F1_totals_in_dG` (balanced, printed) | atp_synthase | binding | 97/97 and 97/97 | 97 and 0 | 2.4e12 | 0 and 0 |
+| `F1_total_Pi_in_dG` (balanced, printed) | atp_synthase | binding | 97/97 and 97/97 | 94 and 0 | 5.9e10 | 0 and 0 |
+| `ANT_shares_0.35_0.60` (section 8) | nucleotide_exchange | thermodynamic | 61/61 | 45 | 5.6e10 | 0 |
+| `ANT_shares_swapped` (0.65, 0.35) | nucleotide_exchange | kinetic | 61/61 | 43 | 4.0e10 | 0 |
+| `ANT_totals` | nucleotide_exchange | binding | 61/61 | 56 | 1.3e11 | 0 |
+| `PiHt_other_form` (balanced, printed) | phosphate_carrier | printed vs balanced | 49/49 and 49/49 | 47 and 47 | 2.0e12 | 0 and 0 |
+| `PiHt_k_in_M` (balanced, printed) | phosphate_carrier | unit | 49/49 and 49/49 | 47 and 47 | 5.3e12 | 0 and 0 |
+| `PiHt_one_proton` (balanced, printed) | phosphate_carrier | stoichiometry | 49/49 and 47/49 | 47 and 0 | 1.1e11 | 0 and 2 |
+| `KH_proton_sides_swapped` | k_h_exchange | stoichiometry | 45/45 | 45 | 2.8e14 | 0 |
+| `DH_phi_inverted` | nadh_supply | kinetic | 15/15 | 15 | 2.0e13 | 0 |
+| `DH_r_on_NADH` | nadh_supply | kinetic | 15/15 | 15 | 1.3e14 | 0 |
+| `FRT_display/*` (0.0374158 per mV), the 7 charged laws | all | constant | 693/693 | 426/632 | 3.9e5 | 0 |
+| `RT_display/*` (2578.7306) | 9 laws | constant | 818/836 | 540/775 | 24 | 18 |
+| `T_298/*` (298.15 K) | 9 laws | constant | 830/836 | 602/775 | 1.3e5 | 6 |
+| `activity_mM/*` (c/1 mM) | the 6 laws whose Σν ≠ 0 | unit | 632/632 | 369/571 | 2.6e12 | 0 |
 
-**Notes on the plants:**
-- **Zero power:**
-  - The RT and T plants have none at the neutral laws' rows within 10⁻⁶ of equilibrium. Their x
-    has no RT in it, and ΔG = RT x ≈ 0 there.
-  - The one-proton plant has none on the printed Eq. 16 at h_N = h_P, where the slip vanishes.
-- **"By values":** rows where only the slopes catch the plant.
-  - The c_tot plant changes only S's dependence on c³⁺ wherever [c²⁺] + [c³⁺] equals Table 1's
-    2.70 mM. Only the six interior rows catch it by values.
-  - At the coincidence rows, the printed and balanced J, x and backward terms agree to 10⁻⁴ of
-    a band, but their h-slopes differ, because d's derivative is not zero there.
+**Read "caught" with the J column.** The slopes, the charge current and its Δψ slope carry
+much of the catch.
+
+**Where J alone has no power:**
+- **Section 8's two controls:** none at the 16 corners with Δψ = 0, where a reversed q or a wrong
+  share leaves J unchanged. Only the u-slopes catch them there.
+- **On the printed rows:** none for any plant that changes only ΔG (the free-energy entries, the
+  binding of ΔG's forms, the activity unit, the one-proton slip). The printed J never reads x;
+  its x, ΔG and dissipation catch those plants.
+- **The c_tot plant:** none except at the 6 interior rows, where [c²⁺] + [c³⁺] differs from
+  Table 1's 2.70 mM. Elsewhere it changes only S's slope in c³⁺.
+- **At the coincidence rows,** the printed and balanced J, x and backward terms agree to 10⁻⁴ of
+  a band. Their h-slopes differ, because d's derivative is not zero there.
+- **Far from equilibrium,** J separates the forms only while J⁻ is not negligible. For Eq. 11 and
+  Eq. 16 (κ = 1), the backward term J⁻ (and `B_term`) separates them at any x.
+
+**Zero power:**
+- The RT and T plants have none at the neutral laws' rows within 10⁻⁶ of equilibrium. Their x
+  has no RT in it, and ΔG = RT x ≈ 0 there.
+- The one-proton plant has none on the printed Eq. 16 at h_N = h_P, where the slip vanishes.
+
+**Choices behind the plants:**
+- **Complex III across the forms:** S, J⁻ and the slopes of ln S are not compared
+  (`excluded_quantities`). With κ = 1/2, the printed S and J⁻ are Eq. 24's own terms, and the
+  balanced S and J⁻ are the declared one-way fluxes: different quantities, not the failure.
+  `B_term` and J carry that comparison.
+- **The two stoichiometry plants** on the neutral laws keep the declared q = 0.
 - **Activities in mM:** the exchange, the phosphate carrier and the K⁺/H⁺ exchange (Σν = 0) are
   invariant to the activity unit, so that plant is not listed for them.
 
 ## Checks and measured violations (`checks.json`)
 
-**Every law passes,** at 61 to 97 exact states each (`laws.<key>.worst`):
+**Every cycle law passes,** at 45 to 97 exact states each (`laws.<key>.worst`):
 - x from the table agrees with each section's ΔG to 2·10⁻⁵⁷;
 - the closed forms of S agree to 2·10⁻⁵⁸;
 - each passing printed equation equals its declared form to 4·10⁻⁵⁸ of A + B, with |d| below
   2·10⁻⁵⁷;
 - each failing one's mismatch equals its closed form to 2·10⁻⁵⁸;
-- the slopes agree with central differences to 3·10⁻³⁸;
+- the slopes of S, and of the printed terms A and B, agree with central differences to
+  3·10⁻³⁸;
+- the slopes of J agree with central differences, over every input and u, to 10⁻³⁸ of A + B;
 - q F ∂J/∂Δψ agrees with a finite difference to 4·10⁻³⁷;
 - the charge balance holds: Σ ν z = 0 and q_N = −q;
 - J = 0 at x = 0 (|J/S| below 10⁻⁴⁵), and J reverses past it;
-- the dissipation is never negative;
+- S > 0 and the dissipation −J ΔG ≥ 0 (in W per L) at every state;
 - the lumped cycle's x = 2 x_III + x_IV to 3·10⁻⁵⁷;
 - the balanced backward terms equal their stated closed forms to 2·10⁻⁵⁸.
+
+**The supply (section 6) passes** (`checks.json → supply`):
+- q = 0 and Σ ν z = 0;
+- J⁺ − J⁻ = J;
+- its slopes agree with central differences to 5·10⁻⁴⁰;
+- J = 0 at [NADH] = r [NAD], with the sign changing across it.
 
 **The section 8 planted controls are refused:**
 - complex I with q = −4 runs forward at x = 0 and uphill at x = +1 (J/S = 1.0);

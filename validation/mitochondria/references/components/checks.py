@@ -143,6 +143,62 @@ def numeric_slopes(law, P, C, s, which, form="declared"):
     return out
 
 
+def numeric_J_slopes(law, P, C, s, form, keys):
+    """Central differences of J in ln(input) and in u, computed from paths 1 and 2 only."""
+
+    def J_of(t):
+        x = law.x(DEC, P, C, t)
+        A, Bp = law.printed(DEC, P, C, t)
+        if form == "printed":
+            return A - Bp
+        _E, Z, _w, _dw = laws.kappa_parts(DEC, law.kappa_inv, x)
+        return -(A / Z) * DEC.expm1(x)
+
+    out = {}
+    for v in keys:
+        if v == "u":
+            du = FD_STEP / C["F_RT_per_mV"]
+            out[v] = (J_of(dict(s, dpsi_mV=s["dpsi_mV"] + du))
+                      - J_of(dict(s, dpsi_mV=s["dpsi_mV"] - du))) / (2 * FD_STEP)
+        else:
+            out[v] = (J_of(dict(s, **{v: s[v] * FD_STEP.exp()}))
+                      - J_of(dict(s, **{v: s[v] * (-FD_STEP).exp()}))) / (2 * FD_STEP)
+    return out
+
+
+def supply_checks(exact_states):
+    """Section 6, the driven supply: charge, J+ - J- = J, its slopes against central
+    differences, and J = 0 at [NADH] = r[NAD] with the sign change across it."""
+    sp = laws.SUPPLY
+    P = hp.parameters(sp.column)
+    out = {"charge": {"q": sp.q(P), "sum_nu_z": sp.charge_sum()}}
+    worst_slope = worst_split = Decimal(0)
+    with precision():
+        C = hp.constants(DEC)
+        for _sid, s in exact_states:
+            ref = sp.evaluate(DEC, P, C, s)
+            scale = ref["J_plus"] + ref["J_minus"]
+            worst_split = max(worst_split, abs(ref["J_plus"] - ref["J_minus"] - ref["J"]) / scale)
+            for v in ("NAD_N", "NADH_N", "Pi_N"):
+                fd = (sp.evaluate(DEC, P, C, dict(s, **{v: s[v] * FD_STEP.exp()}))["J"]
+                      - sp.evaluate(DEC, P, C, dict(s, **{v: s[v] * (-FD_STEP).exp()}))["J"]) / (2 * FD_STEP)
+                worst_slope = max(worst_slope, abs(fd - ref["slopes_J"][v]) / scale)
+        r = DEC.n(P["r"])
+        signs = []
+        for _sid, s in exact_states[:4]:
+            at = dict(s, NADH_N=r * s["NAD_N"])
+            J0 = sp.evaluate(DEC, P, C, at)["J"]
+            lo = sp.evaluate(DEC, P, C, dict(at, NADH_N=at["NADH_N"] * Decimal("0.999")))["J"]
+            hi = sp.evaluate(DEC, P, C, dict(at, NADH_N=at["NADH_N"] * Decimal("1.001")))["J"]
+            signs.append(abs(J0) <= TOL_EXACT * sp.evaluate(DEC, P, C, at)["J_plus"] and lo > 0 > hi)
+    out["worst_split_rel"] = _f(worst_split, 3)
+    out["worst_slopes_J"] = _f(worst_slope, 3)
+    out["zero_at_r_and_reverses"] = all(signs)
+    out["passes"] = (out["charge"]["q"] == 0 and out["charge"]["sum_nu_z"] == 0
+                     and worst_split <= TOL_EXACT and worst_slope <= TOL_FD and all(signs))
+    return out
+
+
 def law_checks(law, exact_states):
     """Every check of one cycle law over a list of (id, exact state)."""
     P = params_for(law)
@@ -159,8 +215,10 @@ def law_checks(law, exact_states):
         }
         worst = {k: Decimal(0) for k in ("x_vs_appendix_dG", "S_closed_rel", "printed_vs_declared",
                                          "d_vs_closed", "backward_closed_rel", "slopes_S",
-                                         "slopes_A", "slopes_B", "dI_ddpsi_rel", "static_head_x")}
+                                         "slopes_A", "slopes_B", "slopes_J", "dI_ddpsi_rel",
+                                         "static_head_x")}
         min_diss = None
+        min_S = None
         n_states = 0
         for sid, s in exact_states:
             n_states += 1
@@ -187,8 +245,16 @@ def law_checks(law, exact_states):
                 worst["d_vs_closed"] = max(worst["d_vs_closed"], abs(d))
                 worst["printed_vs_declared"] = max(worst["printed_vs_declared"],
                                                    abs((A - Bp) - ref["J"]) / (A + Bp))
-            diss = ref["dissipation_W_per_L"] / (S * C["RT"])
+            diss = ref["dissipation_W_per_L"]
             min_diss = diss if min_diss is None else min(min_diss, diss)
+            min_S = S if min_S is None else min(min_S, S)
+            forms = ("balanced", "printed") if law.printed_fails else ("declared",)
+            for fm in forms:
+                r_fm = ref if fm == form else laws.evaluate(law, DEC, P, C, s, fm)
+                numJ = numeric_J_slopes(law, P, C, s, fm, r_fm["slopes_J"])
+                scale = r_fm["A_term"] + r_fm["B_term"]
+                worst["slopes_J"] = max(worst["slopes_J"],
+                                        max(abs(numJ[v] - r_fm["slopes_J"][v]) for v in numJ) / scale)
             num = numeric_slopes(law, P, C, s, "S")
             worst["slopes_S"] = max(worst["slopes_S"],
                                     max(abs(num[v] - ref["slopes_lnS"][v]) for v in num))
@@ -211,15 +277,18 @@ def law_checks(law, exact_states):
         res["n_states"] = n_states
         res["worst"] = {k: _f(v, 3) for k, v in worst.items()}
         if law.has_flux:
-            res["min_dissipation_over_S_RT"] = _f(min_diss, 6)
+            res["min_dissipation_W_per_L"] = _f(min_diss, 6)
+            res["min_S"] = _f(min_S, 6)
         tol_ok = {
             "x_vs_appendix_dG": TOL_EXACT, "S_closed_rel": TOL_EXACT,
             "printed_vs_declared": TOL_EXACT, "d_vs_closed": TOL_EXACT,
             "backward_closed_rel": TOL_EXACT, "slopes_S": TOL_FD, "slopes_A": TOL_FD,
-            "slopes_B": TOL_FD, "dI_ddpsi_rel": TOL_FD, "static_head_x": TOL_EXACT,
+            "slopes_B": TOL_FD, "slopes_J": TOL_FD, "dI_ddpsi_rel": TOL_FD,
+            "static_head_x": TOL_EXACT,
         }
+        # The dissipation -J dG is checked raw (W per L), with S > 0 checked separately.
         res["passes"] = bool(res["charge"]["conserved"]) and all(worst[k] <= tol_ok[k] for k in worst) and (
-            min_diss is None or min_diss >= -TOL_EXACT)
+            min_diss is None or (min_diss >= 0 and min_S > 0))
     return res
 
 

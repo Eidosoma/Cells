@@ -410,9 +410,10 @@ def measure_plants(refs):
         for form, rows in refs[pl.law_key].items():
             if pl.forms is not None and form not in pl.forms:
                 continue
-            n = caught = 0
+            n = caught = caught_J = 0
             zero = []
             zero_values = []
+            no_J = []
             best = None
             min_caught = None
             by_q = {}
@@ -420,7 +421,13 @@ def measure_plants(refs):
                 with precision():
                     v = pl.values(s, form)
                     m = _margins(v, ref, band)
+                m = {k: val for k, val in m.items() if k.split(".")[0] not in pl.exclude}
                 n += 1
+                if "J" in m:
+                    if m["J"] >= POWER:
+                        caught_J += 1
+                    if m["J"] < 1:
+                        no_J.append(sid)
                 top_q, top = max(m.items(), key=lambda kv: kv[1])
                 for k, val in m.items():
                     fam = k.split(".")[0]
@@ -441,6 +448,9 @@ def measure_plants(refs):
             entry["by_form"][form] = {
                 "rows": n, "caught": caught, "zero_power": zero,
                 "zero_power_values_only": zero_values,
+                "caught_by_J_alone": caught_J if law.has_flux else None,
+                "no_power_on_J": no_J if law.has_flux else None,
+                "excluded_quantities": list(pl.exclude),
                 "max_margin": hp.fmt(best[0], 3), "max_at": best[1], "max_quantity": best[2],
                 "min_margin_where_caught": None if min_caught is None else hp.fmt(min_caught[0], 3),
                 "min_at": None if min_caught is None else min_caught[1],
@@ -480,6 +490,7 @@ def run_checks(exact, refs):
         res["extremes_x_below_minus_80"] = checks.extremes(
             law, [(sid, s) for (sid, s, _r, _b) in refs[law.key][form0]])
         out["laws"][law.key] = res
+    out["supply"] = checks.supply_checks([(sid, s) for sid, _k, _m, s in exact["nadh_supply"]])
     out["planted_controls"] = checks.planted_controls()
     qo_states = [(sid, s) for sid, _k, _m, s in exact["lumped_QO"]]
     out["lumped_identity"] = checks.lumped_identity(qo_states)

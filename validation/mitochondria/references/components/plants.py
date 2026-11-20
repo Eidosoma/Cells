@@ -18,9 +18,11 @@ def _u(C, s):
 
 
 class Plant:
-    def __init__(self, pid, law_key, description, kind, make, named=False, forms=None):
+    def __init__(self, pid, law_key, description, kind, make, named=False, forms=None,
+                 exclude=()):
         self.pid = pid
         self.forms = forms  # the reference forms it is measured against (None: all)
+        self.exclude = tuple(exclude)  # quantity families not compared (a naming difference)
         self.law_key = law_key
         self.description = description
         self.kind = kind
@@ -277,8 +279,8 @@ L = laws.LAWS_BY_KEY
 PLANTS = []
 
 
-def _add(pid, law_key, desc, kind, make, named=False, forms=None):
-    PLANTS.append(Plant(pid, law_key, desc, kind, make, named, forms))
+def _add(pid, law_key, desc, kind, make, named=False, forms=None, exclude=()):
+    PLANTS.append(Plant(pid, law_key, desc, kind, make, named, forms, exclude))
 
 
 _add("C1_q_reversed", "complex_I", "Section 8: complex I with -4u in place of +4u (q = -4)",
@@ -291,9 +293,11 @@ _add("C1_dG0_display", "complex_I", "dG0 at 1 M as section 7 displays it, -110.9
 _add("C3_eq7_dG0_display", "complex_III_eq7",
      "dG0 at 1 M as section 7 displays it, +50.599 kJ/mol", "free-energy entry",
      _same_form(_rounded_dG0(laws.ComplexIIIEq7, "50599")))
+# With kappa = 1/2, the printed S and J- (Eq. 24's own two terms) and the balanced S and J- (the
+# declared one-way fluxes) are different quantities: they are not compared across the forms.
 _add("C3_eq24_other_form", "complex_III_eq24",
      "Eq. 24 printed judged against balanced, or balanced against printed", "printed vs balanced",
-     _other_form(L["complex_III_eq24"]))
+     _other_form(L["complex_III_eq24"]), exclude=("S", "J_minus", "slopes_lnS"))
 _add("C3_eq24_dG0_display", "complex_III_eq24",
      "dG0 at 1 M as section 7 displays it, +50.599 kJ/mol", "free-energy entry",
      _same_form(_rounded_dG0(laws.ComplexIIIEq24, "50599")))

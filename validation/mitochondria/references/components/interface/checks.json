@@ -599,7 +599,8 @@
     "passes": true,
     "worst_rel": "0"
    },
-   "min_dissipation_over_S_RT": "0",
+   "min_S": "1.66033E-15",
+   "min_dissipation_W_per_L": "0",
    "n_states": 97,
    "passes": true,
    "printed_violation": {
@@ -725,6 +726,7 @@
     "printed_vs_declared": "0",
     "slopes_A": "6.58E-39",
     "slopes_B": "5.00E-40",
+    "slopes_J": "6.08E-39",
     "slopes_S": "6.58E-39",
     "static_head_x": "1.20E-58",
     "x_vs_appendix_dG": "2.00E-58"
@@ -881,7 +883,8 @@
     "passes": true,
     "worst_rel": "0"
    },
-   "min_dissipation_over_S_RT": "0",
+   "min_S": "3.00480E-20",
+   "min_dissipation_W_per_L": "0",
    "n_states": 61,
    "passes": true,
    "rows_below_x_minus_80": [],
@@ -893,6 +896,7 @@
     "printed_vs_declared": "2.55E-58",
     "slopes_A": "0",
     "slopes_B": "0",
+    "slopes_J": "8.42E-39",
     "slopes_S": "1.00E-38",
     "static_head_x": "3.00E-58",
     "x_vs_appendix_dG": "3.20E-58"
@@ -1049,7 +1053,8 @@
     "passes": true,
     "worst_rel": "0"
    },
-   "min_dissipation_over_S_RT": "0",
+   "min_S": "2.17265E-18",
+   "min_dissipation_W_per_L": "0",
    "n_states": 97,
    "passes": true,
    "printed_violation": {
@@ -1175,6 +1180,7 @@
     "printed_vs_declared": "0",
     "slopes_A": "5.00E-39",
     "slopes_B": "1.13E-39",
+    "slopes_J": "4.99E-39",
     "slopes_S": "6.79E-39",
     "static_head_x": "1.00E-58",
     "x_vs_appendix_dG": "2.10E-58"
@@ -1331,7 +1337,8 @@
     "passes": true,
     "worst_rel": "0"
    },
-   "min_dissipation_over_S_RT": "0",
+   "min_S": "3.58689E-17",
+   "min_dissipation_W_per_L": "0",
    "n_states": 61,
    "passes": true,
    "rows_below_x_minus_80": [],
@@ -1343,6 +1350,7 @@
     "printed_vs_declared": "1.29E-58",
     "slopes_A": "0",
     "slopes_B": "0",
+    "slopes_J": "4.58E-39",
     "slopes_S": "6.29E-39",
     "static_head_x": "1.00E-58",
     "x_vs_appendix_dG": "2.10E-58"
@@ -1499,7 +1507,8 @@
     "passes": true,
     "worst_rel": "2.50E-58"
    },
-   "min_dissipation_over_S_RT": "1.00000E-116",
+   "min_S": "8.90486E-27",
+   "min_dissipation_W_per_L": "9.84931E-120",
    "n_states": 61,
    "passes": true,
    "rows_below_x_minus_80": [
@@ -1518,6 +1527,7 @@
     "printed_vs_declared": "3.44E-58",
     "slopes_A": "0",
     "slopes_B": "0",
+    "slopes_J": "5.31E-39",
     "slopes_S": "2.84E-38",
     "static_head_x": "5.00E-58",
     "x_vs_appendix_dG": "1.80E-57"
@@ -1674,7 +1684,8 @@
     "passes": true,
     "worst_rel": "0"
    },
-   "min_dissipation_over_S_RT": "0",
+   "min_S": "1.88038E-3",
+   "min_dissipation_W_per_L": "0",
    "n_states": 45,
    "passes": true,
    "rows_below_x_minus_80": [],
@@ -1686,6 +1697,7 @@
     "printed_vs_declared": "2.35E-59",
     "slopes_A": "0",
     "slopes_B": "0",
+    "slopes_J": "1.89E-39",
     "slopes_S": "5.00E-40",
     "static_head_x": "0",
     "x_vs_appendix_dG": "5.00E-59"
@@ -1734,6 +1746,7 @@
     "printed_vs_declared": "0",
     "slopes_A": "0",
     "slopes_B": "0",
+    "slopes_J": "0",
     "slopes_S": "0",
     "static_head_x": "5.00E-58",
     "x_vs_appendix_dG": "1.50E-57"
@@ -1890,7 +1903,8 @@
     "passes": true,
     "worst_rel": "0"
    },
-   "min_dissipation_over_S_RT": "0",
+   "min_S": "1.22115E-9",
+   "min_dissipation_W_per_L": "0",
    "n_states": 61,
    "passes": true,
    "rows_below_x_minus_80": [],
@@ -1902,6 +1916,7 @@
     "printed_vs_declared": "1.15E-58",
     "slopes_A": "0",
     "slopes_B": "0",
+    "slopes_J": "7.63E-40",
     "slopes_S": "4.29E-39",
     "static_head_x": "7.00E-59",
     "x_vs_appendix_dG": "1.00E-58"
@@ -2058,7 +2073,8 @@
     "passes": true,
     "worst_rel": "0"
    },
-   "min_dissipation_over_S_RT": "0",
+   "min_S": "5.72266E-5",
+   "min_dissipation_W_per_L": "0",
    "n_states": 49,
    "passes": true,
    "printed_violation": {
@@ -2184,6 +2200,7 @@
     "printed_vs_declared": "0",
     "slopes_A": "8.02E-40",
     "slopes_B": "1.87E-39",
+    "slopes_J": "4.79E-39",
     "slopes_S": "8.02E-40",
     "static_head_x": "0",
     "x_vs_appendix_dG": "5.00E-59"
@@ -2297,5 +2314,15 @@
     }
    ]
   }
+ },
+ "supply": {
+  "charge": {
+   "q": 0,
+   "sum_nu_z": 0
+  },
+  "passes": true,
+  "worst_slopes_J": "4.95E-40",
+  "worst_split_rel": "5.30E-60",
+  "zero_at_r_and_reverses": true
  }
 }
