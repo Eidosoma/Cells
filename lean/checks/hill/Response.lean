@@ -1,4 +1,5 @@
 import HillSelection
+import CellsProofs.Transport.RegulatedAvailability
 import Mathlib.Tactic.FieldSimp
 
 /-! Response of a Cells activating or inhibiting Hill factor in exact real
@@ -40,5 +41,17 @@ theorem ordered_factors {K n x y : ℝ} (hK : 0 < K) (hn : 0 < n) (hx : 0 < x) (
 
 #print axioms factors_eq_hill
 #print axioms ordered_factors
+
+/-- A basal availability and the coupling's switch preserve each upstream dose ordering. -/
+theorem ordered_availabilities (enabled : Bool) {basal K n x y : ℝ} (hb : basal ≤ 1)
+    (hK : 0 < K) (hn : 0 < n) (hx : 0 < x) (hxy : x ≤ y) :
+    let F := Transport.RegulatedAvailability.route enabled basal
+    F (factor true K n x) ≤ F (factor true K n y) ∧
+      F (factor false K n y) ≤ F (factor false K n x) := by
+  obtain ⟨activation, inhibition⟩ := ordered_factors hK hn hx hxy
+  exact ⟨Transport.RegulatedAvailability.route_mono enabled hb activation,
+    Transport.RegulatedAvailability.route_mono enabled hb inhibition⟩
+
+#print axioms ordered_availabilities
 
 end CellsProofs.Checks.Hill

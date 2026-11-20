@@ -1,0 +1,20 @@
+{
+  "citation": "Hirschberg et al. (1998), Journal of General Physiology 111, 565–581, Figures 1B and 13A",
+  "doi": "10.1085/jgp.111.4.565",
+  "figure_1": "https://cdn.ncbi.nlm.nih.gov/pmc/blobs/7974/2217120/c187189051b6/JGP7624.f1.jpg",
+  "dose_context": "Absolute single-channel open probability over 30–60 s in one inside-out patch from a Xenopus oocyte expressing rat SK2, nominally −80 mV. The 5 µM solution shifted the voltage by about 11 mV.",
+  "digitization": "Figure 1B, 720 × 899 raster, pixel origin at top left. Horizontal calibration x = 157.91 + 64.125 × free calcium in µM. Vertical calibration y = 846.57 − 253.14 × open probability. Approximate marker centers (196.6,768.6), (209.6,730.8), (222.2,713.5), (478.0,641.5). The authors give the nominal doses. Two readings agreed within 0.01 in open probability.",
+  "dose_uM": [0.6, 0.8, 1.0, 5.0],
+  "open_probability": [0.308, 0.457, 0.526, 0.810],
+  "fit_uM": [0.6, 0.8, 5.0],
+  "held_out_uM": 1.0,
+  "reading_precision_probability": 0.01,
+  "jump_context": "Macroscopic current in separate inside-out patches from the same expression system at −80 mV. Six calcium jumps in two patches. The pooled times are mean ± SD. The rise and washout in Figure 13A are experimental; the model traces in Figure 13B are excluded.",
+  "jump_uM": 9.5,
+  "fit_washout_ms": 57.3,
+  "washout_sd_ms": 11.1,
+  "held_out_activation_ms": 4.1,
+  "activation_sd_ms": 0.6,
+  "example_activation_ms": 4.9,
+  "example_washout_ms": 58
+}
