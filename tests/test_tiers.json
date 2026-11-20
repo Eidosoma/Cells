@@ -242,7 +242,8 @@
   "/mnt/workspaces/Cells/fr7-references-20261119-01/measure-loop/measured.json",
   "/mnt/workspaces/Cells/core-pass-kinds-20261118/gate-967922e6/tiers/measure/measured.json",
   "/mnt/workspaces/Cells/mito-references-20261119/gate-a9aac583/tiers/measure/measured.json",
-  "/mnt/workspaces/Cells/fr7-loop-20261119/tiers-f3/measured-cf7145ad/measured.json"
+  "/mnt/workspaces/Cells/fr7-loop-20261119/tiers-f3/measured-cf7145ad/measured.json",
+  "/mnt/workspaces/Cells/kir-ratio-20261119/tiers/measured-79aa4ec4/measured.json"
  ],
  "measured_provenance": [
   {
@@ -2041,6 +2042,13 @@
    "root": ".claude/worktrees/fr7-f3",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-19T19:52:34+00:00"
+  },
+  {
+   "git_revision": "79aa4ec4acd0e879798273973661070e149b8a53",
+   "dirty": false,
+   "root": ".claude/worktrees/kir-ratio",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-20T00:10:21+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -3728,14 +3736,6 @@
     "exit_code": 0,
     "counts": {
      "passed": 4
-    }
-   },
-   {
-    "file": "tests/unit/test_inward_rectifier_route.py",
-    "seconds": 19.92,
-    "exit_code": 0,
-    "counts": {
-     "passed": 5
     }
    },
    {
@@ -6127,6 +6127,14 @@
     "exit_code": 0,
     "counts": {
      "passed": 1
+    }
+   },
+   {
+    "file": "tests/unit/test_inward_rectifier_route.py",
+    "seconds": 26.17,
+    "exit_code": 0,
+    "counts": {
+     "passed": 10
     }
    },
    {
