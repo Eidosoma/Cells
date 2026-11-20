@@ -39,7 +39,8 @@ outside Python's standard library, and it names no potential set. What it shows:
      identities column by column. Plants 3, 4 and 6 of §5.4 (and A1-M's second), as edits of that
      table, must each break the identity they name;
    - its entries in RT units;
-   - each arm's parameters, and the derived values at the numeric test instance.
+   - each arm's parameters, and the derived values at the numeric test instance;
+   - §5.6's published interior points, exactly, against interior_sample().
 
 7. With --bounds (NumPy, a few CPU-minutes), §5.6's measurement:
    - the full system of §4.7, by RK4 at 0.5 s, checked against a second pass at 1 s over the 18
@@ -1215,7 +1216,7 @@ def check():
         passed, entry = part()
         report[name] = dict(passed=bool(passed), **entry)
         ok &= passed
-    errors = sheet_errors() + bounds_consistency()
+    errors = sheet_errors() + bounds_consistency() + interior_errors()
     report["6_sheet_numbers"] = errors or "agree"
     ok &= not errors
     plants = {}
@@ -1627,6 +1628,21 @@ def bounds_consistency(path=SHEET):
     if values.get("x_max", 0) > -1:
         out.append(f"the domain's largest affinity {values.get('x_max')} is above x_dom = -1")
     return out
+
+
+def interior_errors(path=SHEET):
+    """§5.6's published interior points against interior_sample(), exactly: the sheet writes each
+    value as Python's repr of the float, which round-trips."""
+    block = _marked(path.read_text(), "interior")
+    if block is None:
+        return ["the sheet has no marked interior sample"]
+    _, rows = _table(block)
+    names = [name for name, _, _, _ in RANGES]
+    typed = [[float(_number(cell)) for cell in row[1:5]] for row in rows]
+    drawn = [[point[name] for name in names] for point in interior_sample()]
+    if typed != drawn:
+        return [f"the published interior points differ from interior_sample() ({len(typed)} rows)"]
+    return []
 
 
 def bounds_report():

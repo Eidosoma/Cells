@@ -384,6 +384,7 @@ G(state) = Σ_rows n_s [μ°_s + RT (ln a_s − 1)] + Σ_ρ μ°_ρ,res W_ρ   (
 - **H_tl:** the same for translation, with ΔG_tl and ΔG_rel,P.
 - **H_deg,R, H_deg,P and H_rc:** each flux times its −ΔG.
 - Initiation books none. So a release's heat is in its route's class.
+- In the two-gene world each class sums over the genes.
 
 **The identity.** No work is done on these rows: there is no regenerator and no driven route. So
 G(t) − G(0) + H_tx + H_tl + H_deg,R + H_deg,P + H_rc = 0, and each class is non-negative and
@@ -414,6 +415,8 @@ It is mass action in free machines and template.
 - **k_I,ρ** (mM⁻¹ s⁻¹) is the scheduled maximum, piecewise constant. It is the routable control
   `initiation_rate` (B1′).
 - **u_ρ in [b, 1]** is the coupling's factor (§4.6). It is 1 where no coupling is declared.
+  - In A1 only transcription's initiation carries u. Translation's carries none: §5.3's λ_tx
+    includes u₁, and β_tl does not.
 - **λ_ρ = u_ρ k_I,ρ c_T,ρ** (s⁻¹) is one free machine's initiation rate on the route.
 - **Initiation moves no row and books nothing** (declared). The free energy of promoter binding and
   of the initiation factors is outside the model, as is the machinery's other cost (seam E's fuel
@@ -688,6 +691,8 @@ its initial value. There is no regulator (u = 1). Every value not in this table 
 **Ribosome-limited second: one world per mRNA amount.**
 - The mRNA is held at n_R = 1, 2, 5, 10, 20, 50 or 100 copies. Nothing writes it: there is no
   transcription and no mRNA degradation.
+- The held mRNA has A1's L_R = 1200. Only its constant contribution to the phosphorus and
+  nucleoside totals depends on that.
 - **Rows:** R, P, A, ATP, ADP and Pi. The routes are translation and protein degradation (k_P).
 - **Initial state:** A 5.0 mM, ATP, ADP and Pi as A1's, P at A1's trace, and every ribosome free.
 - **Outputs:** every 10 s, from 0 to 600 s.
@@ -724,8 +729,10 @@ form is in fmol: M is the pool as an amount (copies × 10¹⁵/N_A), and J* is i
    - The edit, in every world:
      - the `Q_tx` column's `F_pol` entry is 0 (§4.7) in the polymerase-limited and two-gene worlds;
      - the `Q_tl` column's `F_rib` entry is 0 in the ribosome-limited worlds.
-   - The pool drains and J̄ falls to about 0. So it fails F + E = M in every world, and the J–T
-     curve.
+   - The free pool drains as F = M e^(−λt), since no machine returns, and J̄ falls far below J*.
+     It is about 14 % of J* in the ribosome-limited world at n_R = 1, where λ t_end ≈ 2.4, and
+     near zero where λ t_end is large.
+   - It fails F + E = M in every world, and J̄ by wide margins.
 
 ### 5.3 Derived values
 
@@ -777,7 +784,12 @@ judged item. The references run each plant and report the largest change in each
 the protocol can register which item each one fails.
 1. **A wrong stage count.**
    - The edit: m_tx = 6, so r_tx = 200 and κ_tx = v_tx/200; everything else is unchanged.
-   - It fails the engaged polymerases E_tx(t), the stage occupancies and n_R's rise.
+   - It fails the stage occupancies C_tx,j: six stages, each holding a third more complexes at
+     steady state. They are its detector, judged against A1's ODE.
+   - E_tx and n_R move only about 10⁻³ and 10⁻⁴ of their scales, since the mean dwell L/v is
+     unchanged and only its variance τ²/m differs.
+   - So E_tx and n_R fail only where G6's judged tolerance against the ODE is tighter than those
+     sizes, and never against ε_A1.
 2. **A wrong speed.**
    - The edit: v_tx = 40.
    - τ₀ is 25 % longer, so it fails E_tx's plateau and n_R's delay.
@@ -794,7 +806,10 @@ the protocol can register which item each one fails.
 6. **A wrong residue count.**
    - The edit: the `S_tl` column's `A` entry is −49, while `W_tl` gains 50 per exit and each
      release delivers L_P = 400.
-   - It fails the amino-acid moiety, the residue identity and A.
+   - It fails the amino-acid moiety, A's trajectory and G's identity: the column's free energy is
+     no longer 50 ΔG_tl, and differs by μ_A per exit.
+   - The residue identity r ∫S = W + L ∫Q still holds, since the edit leaves W's coefficients as
+     they are.
 
 The check confirms that edits 3, 4 and 6 break the identity each names (part 6). The other three
 need the dynamics, so the references show them.
@@ -822,13 +837,52 @@ it):
   - the test instance with Spirin's E_pep, −0.5 kcal/mol;
   - the 16 corners of §3.3's ranges, ΔG′°_ATP ∈ {−40, −25} kJ/mol, E_pd ∈ {−30, −15} kJ/mol,
     E_pep ∈ {−25, 0} kJ/mol and E_rc/RT ∈ {−1, 1}.
-- **The interior sample:** 32 points inside the ranges, a Latin hypercube with seed 20261120
-  (Python's `random.Random`).
-  - For each symbol in the order ΔG′°_ATP, E_pd, E_pep, E_rc/RT, its range is cut into 32 equal
-    strata and the strata are shuffled.
-  - Point k is placed uniformly in the k-th shuffled stratum, with one `random()` draw each, in
-    order.
-  - So each symbol has exactly one point per stratum.
+- **The interior sample:** 32 points inside the ranges, a Latin hypercube. Its points are the table
+  below, so it depends on no library's shuffle.
+  - They were drawn with `rng = random.Random(20261120)` (Python 3.13.5).
+  - For each symbol in the order ΔG′°_ATP, E_pd, E_pep, E_rc/RT: `strata = list(range(32))`, then
+    `rng.shuffle(strata)`, then, for k = 1, …, 32, value_k = low + (high − low)(strata[k − 1] +
+    `rng.random()`)/32.
+  - Each symbol's shuffle is followed by its 32 draws before the next symbol's shuffle. So each
+    symbol has exactly one point per stratum.
+
+<!-- interior -->
+| k | ΔG′°_ATP (kJ/mol) | E_pd (kJ/mol) | E_pep (kJ/mol) | E_rc/RT |
+| --- | --- | --- | --- | --- |
+| 1 | -35.13975773013145 | -21.721949644970767 | -6.154455150921102 | -0.29785693923454026 |
+| 2 | -36.54127768116361 | -26.752050614913355 | -15.197128815613524 | 0.5456089236861184 |
+| 3 | -29.98419545462147 | -20.656194681587557 | -6.782608085493223 | 0.9393137990220466 |
+| 4 | -26.398980868598375 | -21.326376034149895 | -13.478648954242942 | -0.688328604169324 |
+| 5 | -25.211948032063084 | -23.175481305342956 | -16.80498535207805 | 0.10842504676560472 |
+| 6 | -39.88709082470815 | -27.785810270606127 | -10.71569076922908 | 0.727052062493216 |
+| 7 | -34.73576105048531 | -22.817912967000144 | -8.128742634437494 | -0.7916963763870569 |
+| 8 | -39.29915819880178 | -28.376709917662065 | -1.8194409658777353 | -0.5317967578851917 |
+| 9 | -25.59576104713534 | -25.263634971808226 | -10.132243337711985 | 0.18150837066666048 |
+| 10 | -36.07783946658932 | -18.02855044451871 | -13.068053766947019 | -0.9985757018290943 |
+| 11 | -31.74396992590819 | -23.449109197608358 | -2.460262579232918 | 0.7990221973996057 |
+| 12 | -38.818770011919256 | -22.327651941235295 | -22.944583228712624 | 0.4746375231928559 |
+| 13 | -32.82077768062364 | -17.134477571023673 | -21.772811175283096 | -0.4900775794837112 |
+| 14 | -30.400201190056915 | -18.636233571472065 | -18.567601058254592 | 0.34821280337454374 |
+| 15 | -37.43184843454623 | -20.4695435165393 | -22.206065865922973 | -0.6748820516763837 |
+| 16 | -33.25801364400164 | -24.47955610443804 | -19.806640451691738 | 0.5704747759389279 |
+| 17 | -28.09256306160669 | -19.7619482049993 | -14.547349991861914 | -0.23171275311098538 |
+| 18 | -27.170068074471352 | -25.368608603832833 | -11.844509675397777 | 0.2586117856991028 |
+| 19 | -30.747896716082963 | -26.368168209455785 | -0.3556963607514625 | -0.588487148316746 |
+| 20 | -27.470216284367794 | -24.143964711197057 | -24.51826611085221 | 0.0592439110223304 |
+| 21 | -28.53471717317919 | -16.67803759935929 | -3.4090880819360905 | -0.9353098140538937 |
+| 22 | -38.35167277031334 | -29.110295557211266 | -1.1631102525479484 | -0.3848106094725603 |
+| 23 | -33.59534129521289 | -17.39332708252359 | -8.62823037904996 | 0.6496385903969242 |
+| 24 | -38.075303566164216 | -16.102721391158607 | -16.271493601001797 | 0.9052006162180397 |
+| 25 | -29.41599242096839 | -19.054950641189638 | -11.07503804975437 | 0.1986293134764361 |
+| 26 | -36.83510315549935 | -27.439181310865084 | -5.354535364562921 | -0.02873635914040973 |
+| 27 | -29.18931382421533 | -28.80683628037275 | -24.049319235054217 | -0.8447099262415746 |
+| 28 | -35.37327110026198 | -19.48297004996434 | -7.18538087186074 | 0.41859168638357036 |
+| 29 | -34.22076360340182 | -15.796891350326643 | -17.520477441658237 | -0.10759392115213473 |
+| 30 | -32.162445234122806 | -29.556871512499367 | -19.142178300059634 | -0.18518655548867136 |
+| 31 | -31.361965190864055 | -25.93441643556984 | -20.718454318927154 | -0.36842791551530396 |
+| 32 | -26.863928361401182 | -15.001445037212326 | -4.151703340667915 | 0.8652775587762509 |
+<!-- /interior -->
+
 - **A1's gaps:** the closed forms' phase-1 limit (§5.1), integrated beside the full system, at the
   outputs every 60 s on [0, t_off). Each gap is relative to the limit's steady state.
 - **A1-M's gaps:** J̄ over the final window, and E and F at t_end, each against its closed form
@@ -875,7 +929,8 @@ it):
 ## 6. What the references compute
 
 Every reference reads this sheet alone. Each is a function of the four symbols in §3.3, and of
-every declared value. The numeric test instance is the one that is run.
+every declared value. Two test instances are run with full trajectories: the numeric test
+instance, and the same with Spirin's E_pep (§5.6).
 
 **The readouts, per world** (exact definitions, in the units of §0):
 - every row's amount n_s(t), and X's in A1;
@@ -901,8 +956,8 @@ every declared value. The numeric test instance is the one that is run.
   - each move class's heat, which is non-negative and non-decreasing;
   - G's identity.
 - **R-share:**
-  - the full ODE of the two-gene world and of every sweep world. This is the judge of their
-    trajectories;
+  - the full ODE of the two-gene world and of every sweep world, polymerase- and ribosome-limited
+    (R-machine needs both). This is the judge of their trajectories;
   - the engine's order is measured against it at several steps when the protocol runs (G6).
 - **R-machine:** §5.2's closed forms, with their gap to R-share's ODE at t_end.
 - **R-noise:** an exact stochastic simulation, in counts. A1's mean-field gap is reported and not
@@ -911,7 +966,8 @@ every declared value. The numeric test instance is the one that is run.
     - A1's phase 1 over [0, 10,800 s], with the factors frozen as in §5.1's limit. The machines are
       counted, not taken as abundant;
     - the polymerase-limited world at T = 10, over its horizon. This one is a control: its system is
-      linear in counts, so its mean must equal the deterministic one.
+      linear in counts, so its mean must equal the deterministic one. Its factors are frozen at its
+      own start: κ₀ = κ_tx φ_tx at N 5 mM, and k₀_R at M 0.05 mM and the trace;
   - **The counts:** the free machines, the complexes per stage, and the mRNA and protein molecules.
   - **The propensities, per second:**
     - transcription's initiation, λ f_pol. In A1, λ = λ_tx (§5.3). At T = 10, λ = 10 k_I_tx c₁ with
@@ -920,6 +976,8 @@ every declared value. The numeric test instance is the one that is run.
     - a stage exit, κ₀ c_j;
     - a degradation, k₀ N.
   - **The rest:** monomer and fuel rows are not counted; their factors are frozen.
+  - **The seed:** master seed 20261120. Each replicate draws from its own stream, and the references
+    record how the streams are derived from it.
   - **The initial counts:** every machine free (10⁴ polymerases and 10⁶ ribosomes in A1; 100
     polymerases at T = 10), no complexes, and no mRNA or protein. The traces are below one
     molecule.
@@ -951,7 +1009,17 @@ every declared value. The numeric test instance is the one that is run.
 - **ODE trajectories.** A second solve, with tolerances 100 times tighter, changes no readout by
   more than 10⁻⁹ of its scale. The scale is the readout's largest magnitude over the horizon.
 - **Closed forms:** evaluated to 10⁻¹² relative.
-- **Identities:** residuals within 10⁻¹² of the conserved total.
+- **Identities:** residuals within 10⁻¹² of each identity's scale.
+  - The machines: M_q. The moieties: their totals, with the residues in transit counted.
+  - The residues, per route: r ∫S at t_end. A product: n(0) + ∫Q at t_end.
+  - G's identity: ΣH = H_tx + H_tl + H_deg,R + H_deg,P + H_rc at t_end. G(0) scales nothing, since
+    it depends on the moiety references that §3.1 cancels.
+  - Each accumulating scale is taken at t_end, not at t. Early on, r ∫S, ∫Q and ΣH are near zero
+    while rounding is not.
+  - **The solve they are judged on.** The 10⁻¹² tolerances are judged on a solve that conserves
+    linear invariants to rounding, that is, an explicit Runge–Kutta solve. On an implicit solve,
+    each identity's tolerance is tied to the solve's nonlinear tolerance, which is stated beside
+    it.
 - **The limits:** the gap is reported, against ε_A1 and ε_M (§5.1, §5.2).
 - **R-noise:** the sampling band above. The T = 10 control is held to it; A1's gap is reported
   against it.
