@@ -702,6 +702,11 @@ def checked_rows(
     diagnostics["max_global_charge_bound_ratio"] = 0.0
     rtol = ledgers.ENERGY_RTOL[spec.execution.solver]
     tol = np.asarray(spec.execution.material_balance_atol_fmol)
+    # The step-doubled energy check (execution/energy_check.py; FR-18's X2, D224), a static
+    # switch: where the definition selects it, today's energy bound is no verdict, while the
+    # energy ledger is still evaluated, held finite and reported. Added by the @3 owner at the
+    # lead's word (a recorded exception in this file).
+    unbound = "energy" if getattr(spec, "energy_check", None) is not None else None
     with np.errstate(all="ignore"):
         for row, count in zip(rows, steps, strict=True):
             if not domain(row, p, p.active, xp=np):
@@ -713,7 +718,12 @@ def checked_rows(
             for (name, value), key, bound in zip(
                 b.items(), ledgers.LEDGER_DIAGNOSTICS, limits, strict=True
             ):
-                if not np.isfinite(value).all() or np.any(np.abs(value) > bound):
+                # A bound that is not finite would admit any residual (|r| > NaN or +inf is
+                # false), so where it is used, it fails its ledger (the fourth review's finding 2).
+                if not np.isfinite(value).all() or (
+                    name != unbound
+                    and (not np.isfinite(bound).all() or np.any(np.abs(value) > bound))
+                ):
                     raise NumericalError(LEDGER_MESSAGE + name)
                 key = "max_" + key
                 diagnostics[key] = max(diagnostics[key], float(np.max(np.abs(value), initial=0)))

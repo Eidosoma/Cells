@@ -34,6 +34,6 @@ Direct proof subject `cells.local_species_reactions@1`
 
 The measured G6P + F6P pool fell 0.613357 mM (7.31%) in the first of five time courses. The raw acquisition lists 0.950 mL and different timing from the workbook. Volumes, shared calibration and unobserved pools limit the amount balance. [Eicher et al., Fig. 5](https://www.mdpi.com/2218-1989/2/4/818) · [Publisher’s workbook](https://mdpi-res.com/metabolites/metabolites-02-00818/article_deploy/metabolites-02-00818-s001.zip)
 
-**Unit** fmol
+**Unit** fmol for the target inventory, mM for the measured soluble pool
 
 [Claim index](../README.md#proof-index) · [Editable register](../claims.json)

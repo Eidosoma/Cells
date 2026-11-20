@@ -1,11 +1,14 @@
 """Shared checks of the scalar windows' device row checks (WindowPolicy row_checks="device").
 
 docs/WINDOW_DEVICE_CHECKS_DESIGN.md §9.5: between the modes, times, histories, observations and
-checkpoints are bitwise; diagnostics agree to rounding, under the host's keys in its order.
+checkpoints are bitwise; diagnostics agree to rounding, under the host's keys in its order. A
+step-doubled run's (FR-18's X2) energy records are bitwise too, and its own diagnostics equal:
+the host decides them in both modes, from the same rollout values.
 """
 
 import numpy as np
 
+from cells.execution import energy_check
 from cells.execution.windows import WindowPolicy, iter_windows
 from cells.models import surface_pump
 from cells.operators import osmotic_water as water
@@ -48,6 +51,9 @@ def assert_same_windows(host, device):
         for k, x in vars(a.observations).items():
             assert np.asarray(x).tobytes() == np.asarray(getattr(b.observations, k)).tobytes(), k
         assert (a.final.time, a.final.step_index) == (b.final.time, b.final.step_index)
+        assert (a.final.energy_check is None) is (b.final.energy_check is None)
+        if a.final.energy_check is not None:
+            assert a.final.energy_check.same(b.final.energy_check)
         assert list(a.diagnostics) == list(b.diagnostics)
 
 
@@ -62,6 +68,8 @@ def agrees(key, host, device, tol):
         return abs(device - host) <= 0.02 * FLOORS[key]
     if key in ENERGY:
         return abs(device - host) <= 1e-9 * abs(host) + 1e-15
+    if key in energy_check.DIAGNOSTICS:  # The same host code on the same values.
+        return device == host
     raise AssertionError(f"No agreement criterion for the diagnostic {key}")
 
 

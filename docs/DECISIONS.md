@@ -7460,3 +7460,168 @@ This lifts D222's hold on OL2 and OL3, at low priority.
   OL2 milestone 1 as built (ol2-engine 9190ae78); then, on one branch, OL2 milestone 2 (the osmotic
   lumen and lysis), OL3 milestone 1 (single-lineage division), OL2 milestone 3 (the shared pool and
   serial transfer, labels and the diagnostic record), and OL5's probe roles.
+
+## D231: FR-7's first closed loop and FR-8 rung 1's three choices
+
+2026-11-19, about 20:50 UTC. The user, on the two open questions: "Get adviser on the two questions
+then I go with what yuo guyes think". The lead took the advisor's review, and records these rulings
+under that delegation, which covers these two questions only.
+
+1. **FR-7's closed loop (the lane's Q10): (b), the Na/K pump with Na-leak units**
+   (`naleak_always_open@1` populations), with a declared synthetic time scale.
+   - **Gated on one engine probe before R-loop is briefed.** The probe runs in the world to be
+     registered: real population units through membrane state, the pump, and the whole F4
+     composition admitted at definition, including the regulator sourced on Na. It measures the
+     loop's gain. The stand-in's 0.37 scaled a patch's Na leak rather than population units, and
+     the engine's K-unit result was below 0.01.
+   - **The synthetic time scale** is one declared geometric number, volume per area, labelled
+     synthetic (D217). The probe also checks that the gain is unchanged, that 1 ms is admitted,
+     and what a run costs. The real-time-scale world, FR-8's consumer, is the same world.
+   - **Fallback, declared now:** if the closed and cut arms cannot differ by more than the
+     comparison band, the question returns to the user. The lane does not move to (c), the held
+     injection, whose only evidence is NumPy.
+   - **Power:** F4's registration has the code-blind references show, blind, that |closed − cut|
+     exceeds the comparison band by a stated margin.
+   - **Reference inputs** declare the pump's fuel pools and standard state from the start.
+   - **F3 does not wait:** its readings are units and conductance. R-chain's and R-clear's
+     references are briefed now; only R-loop waits for the probe.
+2. **FR-8 rung 1** (validation/long_duration/RUNG1_20261119.md, registered at a28616ba):
+   - **The accuracy bar:** the parity caps (|ΔVm| ≤ 20 µV, |Δc|/c ≤ 2 × 10⁻⁴) judge the method,
+     and stage 0's adequacy budgets (2 µV, 2 × 10⁻⁵, 10⁻⁵) judge the reference. Stage 0's
+     registration defined 2 µV as a tenth of the voltage cap, so these roles were on record before
+     rung 0's numbers. Both are reported. Before any new-ID run, the owner checks that the
+     intervention reading carries stage 0's peak-response and crossing-time criteria (D217), and
+     adds them as a dated §10 entry if it does not.
+   - **The threshold:** a step gain of 10, as registered. The cost per simulated second of both
+     IDs at dt* is added as a reported reading (D217 lists measured cost).
+   - **The energy check:** X2 (`step_doubled_energy@1`) at the registered cap of 2 × 10⁻³, never
+     raised. Rung 1 builds no exact booking.
+     - **Trigger, recorded now:** if an X2 cap refusal is what binds dt* in Stage A or on either
+       reading, seam D's branch X (the exact booking, 2–3 agent-days, the @3 owner's) is built
+       before rung 2.
+     - It is deferred because on the intervention reading the predicted limit is NaV resolution,
+       which an exact booking would not lift.
+     - I3 runs X2's plant at the largest step claimed, not only at 1 ms.
+
+## D232: FR-7's scoped exception to D177, and FR-8 measures before it builds
+
+2026-11-19, about 21:25 UTC. The user, choosing among the lead's options (after the advisor's
+review):
+
+1. **FR-7: option 2.** The first test proceeds as built.
+   - **A scoped exception to D177** covers both surface insertion and irreversible removal: FR-7's
+     unit producer (`population_unit_turnover@1`, landed at 7fb27a92) inserts its units and removes
+     them itself.
+   - **The declared lifetime applies to every unit in a routed population,** including units present
+     initially.
+   - **The producer's refusal stays simulation-wide.** It excludes recycling (FR-2's trafficking),
+     membrane insertion and division even on other populations, and this is documented.
+   - **References:** the independent chain and clearance references proceed now. The closed-loop
+     reference stays behind the agreed gain probe (D231).
+   - **For the later FR-2 design:** specify who owns insertion, and give each population one owner
+     for terminal removal, so that a retrieved unit can either return or be destroyed and its loss
+     is counted once.
+   - Whether recycling prolongs the response remains an open question.
+2. **FR-8: option B first.** Run rung 1's registered control, today's time integrator with X2
+   enabled, before building anything.
+   - **Report:** the largest passing step, what stops the next rung, and wall time per simulated
+     second. The roughly 71 ms figure is a predicted charge-stability ceiling.
+   - **In parallel,** check whether fine steps around events can run on today's integrator.
+   - **Then, by these rules:**
+     - if charge stability limits the calm stretch and the proposed method (N2) addresses that
+       limit, proceed to A (build N2, then rung 1 as registered);
+     - if today's integrator already gives adequate calm-stretch performance and event windows can
+       use it, prioritise C (the fine-window executor);
+     - if X2's cap binds today's integrator, report the evidence and keep the exact-accounting build
+       on hold. The registered build trigger (D231) applies to Stage A or the new integrator's
+       limiting rung; a refusal on today's integrator alone does not trigger it.
+   - **Rung 0's official verdict stays inconclusive.** The follow-up supports a transient in this
+     case. The 3.3 µV figure is the difference from the finest saved trace through one switch.
+   - **The 1 ms rule** governs the spacing of the samples bracketing the threshold crossing.
+   - **For later downstream use,** the per-arm errors and the reference refinement are retained, so
+     that 6.25 µV per arm and 25 µV across four arms can be checked separately from FR-8's 20 µV
+     per-trace criterion.
+
+## D233: FR-7's closed-loop world scales its template five-fold
+
+2026-11-19, about 23:02 UTC. The user, choosing among the lead's options after the advisor's review
+and the references' measurement: "lets do option 2".
+
+- **F4, R-loop's world (D231), scales the template's half-saturation K and its dose together, ×5:**
+  K 0.05 mM and dose 0.5 mM. n 2, the 20 s half-life, basal b_T 0.2 and ε 2 × 10⁻⁶ are unchanged.
+  Only c/K drives the cell, so F_T(t), t_clear (260 s) and every non-template row are unchanged. The
+  references show that identity before they register.
+- **Why:** in F4's 7.5 fL cell, R-chain's template falls under D150 §1.3's mean-field floor (about
+  10² molecules per cell) at 243 s, before the cut at t_d = 260 s. Clearance (D ≤ ε) then comes at
+  about 64 molecules. The references measured how far replacing that sub-floor tail (set to zero, or
+  held at 10² molecules) moves the judged effect, the closed arm minus the cut arm:
+  - up to 9.5% at ×1 (R, 10 s after the cut);
+  - at most 6 × 10⁻⁵ at ×5. There the floor comes at 289 s, after the cut, clearance comes at about
+    320 molecules, and the cut's applied factor F* no longer depends on the tail.
+- **The tail is registered as a bounded term.** Both sides run the same mean-field tail, and neither
+  applies a floor. The comparison would detect a different treatment: even at ×5, up to about 10
+  bands on s at late rows. R-loop registers the ×5 floor table with its rows.
+- **The lead's earlier rule is withdrawn.** "1% of the tightest band" was the wrong yardstick: the
+  bands measure numerical agreement between two codes running the same equations. The judged effect
+  is the yardstick.
+
+## D234: Option 2 of the core-laws roadmap, and gene regulation's design begins
+
+2026-11-19, about 23:29 UTC. The user, choosing among the lead's options after the advisor's review
+of the core-laws roadmap (branch core-laws-roadmap): "option 2 as you suggest, lets start gene
+regulation as well".
+
+1. **Option 2.** The energy groundwork and mitochondria go to the kinds and binding owners and a new
+   mitochondria lane. The operators, F and @3 owners keep D222's order for FR-1 to FR-10 and the
+   Xenopus lane (D225).
+   - **Kinds owner:** land symporter version 2 and the schedules, and the net-flow step-bound
+     follow-up. Then: moved fuel at closure nodes, the cycle kind's trapezoid booking, the Δp readout
+     and, for host P's per-complex respiration, chemistry at P.
+   - **Binding owner:** registry entries for the nucleotides and the respiratory carriers, then the
+     registry moieties.
+   - **A new mitochondria lane** writes the mitochondrial laws (new files under `laws/cycles/`, D209)
+     and `validation/mitochondria/`. Its first milestone, MT-1, is one isolated cardiac mitochondrion,
+     lumped, on @3.
+   - **References:** the code-blind Beard 2005 reference, already running, serves MT-2. Fresh
+     code-blind agents write the component references, from the laws' appendix of declared
+     equations.
+   - **Agents stay within the cap of seven.** New origin-of-life work waits for a free seat (D230).
+2. **Gene regulation begins with a design note.** D145's hold is lifted for the design: transcription
+   and translation as physics, regulatory networks as declared laws, and how they are verified. Its
+   options come to the user before any engine code is written. D218's door is unchanged until then.
+
+## D235: FR-8 builds N2 then C; mitochondria on host P; gene regulation's option A
+
+2026-11-20, about 10:53 UTC. The user, on the lead's morning brief: "1. decide with adviser but
+probably both in the end", "2. Same get adviser and you choose but we're not in a hurry per se",
+"3. yes, get adviser also on this". The lead's choices, after the advisor's review:
+
+1. **FR-8: N2 first, then C, both built.** D232's rule 1 holds: charge stability limits H2's calm
+   stretch above 20 ms, also from the calm state at 1000 s (§10.8's probe), and the @3 owner confirmed
+   that N2 removes that refusal.
+   - **N2 is rung 1 as registered.** The @3 owner builds it. H2's ceiling under N2 is the explicit-rate
+     bound on what stays explicit, 292 ms, against 200 ms for the registered gain of 10.
+   - **C is required, not optional.** N2 alone is predicted to gain about 1 on FR-8's acceptance
+     reading through the cue, which the location rule caps at 1 ms. C, the fine-window executor,
+     starts once three things are settled: its files' owner, disjoint from @3's step; X2 across a
+     step change, measured; and a dated registration entry.
+2. **Mitochondria: host P for MT-1 and MT-2,** as MITOCHONDRIA_DESIGN §3.6, §5.2 and §7 recommend.
+   P1′ found no accuracy reason to leave it.
+   - **MT-1** runs on today's solver at declared activities.
+   - **MT-2 at Beard's synthase activity** adds the cycles and faces to N2's operator later.
+   - **The outer membrane and the IMS kinase stay in host P's world.** The code-blind reference
+     found a 577 µM outer-membrane ADP gradient and the IMS kinase at 44 times respiration.
+   - **K3**, chemistry at P, starts now. Host C, with the three complexes, stays the in-cell host
+     (M6).
+   - **Still the user's:** the Beard repairs (D209), put as one question with one combined arm's
+     numbers.
+3. **Gene regulation: option A,** one gene, open loop, deterministic, expression as templated
+   polymerisation with its ATP cost. It is judged against exact references only, and starts when seats
+   free.
+   - **First,** the design note is refreshed against main: the charged ATP set, moieties and moved fuel
+     at closure nodes.
+   - **The operator's moiety hook** lands with it.
+   - **The mitochondria pattern applies:** an equation sheet, a tag, code-blind references, and
+     registration before any engine output. A also registers what it does not claim, and includes a
+     machine-limited arm with its own plant.
+   - **The note's other questions remain open.**

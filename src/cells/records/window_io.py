@@ -7,7 +7,7 @@ import numpy as np
 
 from cells.definitions.specs import ConfigError, _number, canonical_json
 from cells.execution.devices import execution_device
-from cells.execution.runner import validate_checkpoint
+from cells.execution.runner import validate_checkpoint, with_energy_record
 from cells.execution.state import initialise
 from cells.execution.windows import DEFAULT_POLICY, _consume_windows, plan_windows
 from cells.records import run_view
@@ -95,7 +95,12 @@ def write_windowed_run(
             raise ConfigError("Requested checkpoint precedes the continuation")
         plan.grid.exact_index(time)
     checkpoint = initialise(spec) if checkpoint is None else checkpoint
-    validate_checkpoint(spec, checkpoint, plan.grid)
+    # The step-doubled energy check (execution/energy_check.py; FR-18's X2, D224), which
+    # registered and judged runs select: the run's first record, and its checkpoints' records
+    # through every snapshot below. Without it the checkpoint is today's. Added by the @3 owner at
+    # the lead's word (a recorded exception in this file).
+    checkpoint = with_energy_record(spec, checkpoint)
+    validate_checkpoint(spec, checkpoint, plan.grid, energy_check=True)
     shown = None if view is None else run_view.prepare(spec, view, layout=checkpoint.layout)
     keep = None if shown is None else shown.keeper()
     preflight_seconds = perf_counter() - started

@@ -51,6 +51,8 @@ from cells.laws.channels import (
     kv1p4_mh,
     kv1p6_mh,
 )
+from cells.laws.cycles import na2_anion_symport_diagram as symport2
+from cells.laws.cycles import na_anion_symport_factored as symport
 from cells.laws.routes import passive_permeation
 from cells.laws.transport import proton_leak
 from cells.models import inner_laws, surface_pump_v3
@@ -217,6 +219,9 @@ def test_cycle_and_route_laws_name_their_step_terms():
     assert declared == {
         (passive_routes.LEAK_LAW_ID, "stage_term"): "conductance_S",
         (passive_routes.LAW_ID, "material_bound"): "bound_rate_per_s",
+        (passive_routes.RECTIFIER_LAW_ID, "stage_term"): "slope_conductance_S",
+        (passive_routes.CHARGED_LAW_ID, "stage_term"): "conductance_S",  # FR-15 P2.
+        (passive_routes.CHARGED_LAW_ID, "material_term"): "material_slope_per_s",
         (transporter.PROTON.law_id, "stage_term"): "electrogenic_conductance_S",  # The kind's.
     }
 
@@ -250,16 +255,21 @@ def test_kinds_and_the_inner_model_find_their_laws_by_interface_and_host():
     assert transporter.hosted_laws() == {
         transporter.NEUTRAL_LAW: transporter.NEUTRAL,
         transporter.PROTON_LAW: transporter.PROTON,
+        symport.DECLARED_ID: symport.LAW,
+        symport2.DECLARED_ID: symport2.LAW,
     }
     assert passive_routes.hosted_laws() == {
         passive_routes.LAW_ID: passive_routes.NEUTRAL,
         passive_routes.LEAK_LAW_ID: passive_routes.LEAK,
+        passive_routes.RECTIFIER_LAW_ID: passive_routes.RECTIFIER,
+        passive_routes.CHARGED_LAW_ID: passive_routes.CHARGED,  # FR-15 P2.
     }
+    builtin = list(transporter.hosted_laws())  # Before the planted scope.
     planted = planted_laws()
     elsewhere = dataclasses.replace(planted[1], law_id="tests.elsewhere@1", host=HOST)
     with laws.scope(laws.BUILTIN.extended(*planted, elsewhere)):
         hosted = transporter.hosted_laws()  # Found with no edit to the kind: interface and host.
-        assert list(hosted) == [*transporter.VERSION_1_LAWS, "tests.planted_cycle@1"]
+        assert list(hosted) == sorted([*builtin, "tests.planted_cycle@1"])  # Canonical: sorted IDs.
         assert "tests.planted_route@1" in passive_routes.hosted_laws()
         # Version 1 dispatches its two laws by name: another law of its own is refused, never run
         # as the proton law.
@@ -274,8 +284,9 @@ def test_kinds_and_the_inner_model_find_their_laws_by_interface_and_host():
     with laws.scope(without(transporter.PROTON_LAW)):
         with pytest.raises(ConfigError, match="law is one of cells.atp_driven"):
             parse_spec(held_world(proton))
+    rest = [law for law in passive_routes.hosted_laws() if law != passive_routes.LAW_ID]  # Bare.
     with laws.scope(without(passive_routes.LAW_ID)):
-        with pytest.raises(ConfigError, match="law must be one of proton_constant_field_leak@1$"):
+        with pytest.raises(ConfigError, match=f"law must be one of {re.escape(', '.join(rest))}$"):
             parse_spec(closed_pair())
     parse_spec(closed_pair())  # Both admitted under BUILTIN.
     structure = surface_pump_v3.structure(parse_spec(water_fixtures.heredity_cell("D")).model)

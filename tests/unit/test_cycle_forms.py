@@ -21,6 +21,7 @@ Each claim is checked against an independent computation, with a planted error i
 
 import math
 import re
+import types
 from decimal import Decimal, localcontext
 from fractions import Fraction
 
@@ -178,6 +179,49 @@ def test_a_form_that_keeps_its_contract_is_admitted_and_planted_breaches_are_ref
     for w in (0.0, 0, math.inf, -math.inf, math.nan):  # A weight of 0, or not finite.
         found = "; ".join(weighted(w).errors())
         assert re.search("a finite nonzero weight", found), (w, found)
+    # Named rates (D228 item 1, version 2): a cycle that converts nothing may leave a k0 and a
+    # zeta to each population; resolved() gives one population's form, and the form itself where
+    # it names none; the numeric consumers refuse a named rate.
+    slip = slip_form()
+    load, swap = slip.diagram.edges[:2]
+    params = (Parameter("k_load", "1/s", positive=True), Parameter("z_swap", "1"))
+    named = slip._replace(
+        parameters=params,
+        diagram=slip.diagram._replace(
+            edges=(
+                load._replace(forward=load.forward._replace(k0_per_s="k_load")),
+                swap._replace(backward=swap.backward._replace(zeta="-z_swap")),  # -(0.5).
+                *slip.diagram.edges[2:],
+            )
+        ),
+    )
+    assert named.errors() == []
+    values = {"k_load": load.forward.k0_per_s, "z_swap": -swap.backward.zeta}
+    assert forms.resolved(named, values).diagram == slip.diagram
+    assert forms.resolved(slip, values) is slip and forms.resolved(factored, {}) is factored
+    for consumer in (forms.diagram_tables, lambda f: forms.wegscheider(f, 0, {}, {}, 1000.0)):
+        with pytest.raises(ValueError, match="resolve the form for one population first"):
+            consumer(named)
+    pump = pump_form()
+    bind = pump.diagram.edges[0]
+    fuelled = pump._replace(
+        parameters=(Parameter("k_bind", "1/s", positive=True),),
+        diagram=pump.diagram._replace(
+            edges=(bind._replace(forward=bind.forward._replace(k0_per_s="k_bind")),
+                   *pump.diagram.edges[1:]),
+        ),
+    )  # fmt: skip
+    named_plants = (
+        ("each rate has a positive k0", named._replace(
+            parameters=(params[0]._replace(positive=False), params[1]))),  # k0 not positive.
+        ("each rate has a positive k0", named._replace(parameters=params[:1])),  # -z_swap: none.
+        ("a cycle that converts a species gives every k0 on its edges as a number", fuelled),  # E3.
+    )  # fmt: skip
+    for reason, form in named_plants:
+        found = "; ".join(form.errors())
+        assert re.search(reason, found), (reason, found)
+    with pytest.raises(ValueError, match="resolve the form for one population first"):
+        forms.implied_free_energy(fuelled, 0)  # A named k0: seam E's constants refuse it too.
 
 
 # ------------------------------------------------------------------ the topology
@@ -429,3 +473,161 @@ def test_logsumexp_and_softmax_count_only_the_masked_in_terms():
     np.testing.assert_allclose(w.sum(axis=0), 1.0)
     assert w[1, 0] == 0.0 and w[2, 1] == 0.0
     assert forms.logsumexp(v, np.zeros_like(mask), 0, xp=np)[0] == -np.inf
+
+
+# ------------------------------------------------------------------ the monomial form (K6)
+
+MONO_ROWS = (("A", "N"), ("A", "P"), ("B", "N"), ("B", "P"))
+MONO_SLOTS = {("A", "N"): 0, ("A", "P"): 1, ("B", "N"): 2, ("B", "P"): 3, ("L", "N"): 4}
+LIGAND_SLOT, LOG_BETA = 5, 1.7  # The total of L at N: L + beta L H, with H's free slot 5.
+
+
+def monomial_form(**over):
+    """A monomial law with every feature: a read role L, an Affine zeta and eta, a named K, a
+    total in a factor, and a share of 4."""
+    rate = forms.MonomialRate(
+        log_k=0.3,
+        orders=(
+            (forms.Reference("A", "P"), 1.0),
+            (forms.Reference("B", "N"), -0.5),
+            (forms.Reference("L", "N"), 2.0),
+        ),
+        zeta=forms.Affine("theta", -1.0, 1.0),
+        factors=(
+            forms.MonomialFactor(1.0, (
+                forms.MonomialTerm(
+                    "K1", ((forms.Reference("A", "P"), 1.0),), forms.Affine("theta")
+                ),
+                forms.MonomialTerm(0.2, ((forms.Reference("B", "P"), -1.0),), 0.0),
+            )),
+            forms.MonomialFactor(-1.0, (
+                forms.MonomialTerm(3.0, ((forms.Reference("L", "N", "total"), 1.0),)),
+            )),
+        ),
+        share=4,
+    )  # fmt: skip
+    base = CycleForm(
+        kinetics="monomial",
+        roles=(("A", 0), ("B", 1)),
+        rows=MONO_ROWS,
+        modes=(("m", (-1, 1, 1, -1)),),
+        parameters=(Parameter("theta", "1"), Parameter("K1", "1", positive=True)),
+        monomial=forms.MonomialForm((rate,), (("L", None),)),
+    )
+    return base._replace(**over)
+
+
+def mono_read(reference):
+    """The test's slots: free references one slot each; L's total at N, base then one form."""
+    slot = MONO_SLOTS[(reference.role, reference.end)]
+    if reference.form == "total":
+        return (
+            forms.Monomial(0.0, ((slot, 1.0),)),
+            forms.Monomial(LOG_BETA, ((slot, 1.0), (LIGAND_SLOT, 1.0))),
+        )
+    return (forms.Monomial(0.0, ((slot, 1.0),)),)
+
+
+def mono_tables(form, values=None):
+    resolved = forms.resolved(form, values or {"theta": 0.35, "K1": 2.5})
+    (rate,) = resolved.monomial.rates
+    tables = forms.monomial_tables([forms.expand_rate(rate, mono_read, rate.log_k)], 6)
+    return types.SimpleNamespace(**{k: v[..., None] for k, v in tables._asdict().items()})
+
+
+def mono_exact(ln_a, psi, x):
+    """log S at 60 digits, straight from the law as written (no expansion), at the doubles."""
+    with localcontext() as ctx:
+        ctx.prec = 60
+        return _exact_decimal(
+            [Decimal(float(v)) for v in ln_a], Decimal(float(psi)), Decimal(float(x))
+        )
+
+
+def test_a_monomial_form_keeps_its_contract_and_refuses_its_plants_by_name():
+    form = monomial_form()
+    assert form.errors() == []
+    (rate,) = form.monomial.rates
+    bad_ref = rate._replace(orders=((forms.Reference("Q", "N"), 1.0),))
+    bad_k = rate._replace(factors=(forms.MonomialFactor(1.0, (forms.MonomialTerm(0.0),)),))
+    plants = {
+        "share is an integer from 1 to 8": rate._replace(share=9),
+        "its orders are distinct": bad_ref,
+        "each factor is a MonomialFactor": bad_k,
+        "zeta is a finite number or an Affine": rate._replace(zeta=forms.Affine("nobody")),
+        "log k is a finite number or a CitedConstant": rate._replace(log_k=math.inf),
+    }
+    for reason, plant in plants.items():
+        found = "; ".join(form._replace(monomial=form.monomial._replace(rates=(plant,))).errors())
+        assert reason in found, (reason, found)
+    overlap = form._replace(monomial=form.monomial._replace(read_roles=(("A", 0),)))
+    assert "also its rows' roles" in "; ".join(overlap.errors())
+    affine_count = form._replace(modes=(("m", (-1, 1, forms.Affine("theta"), -1)),))
+    assert "is an integer or an integer parameter's name" in "; ".join(affine_count.errors())
+    # resolved(): the identity on a numeric form; Affine and named K replaced by their values.
+    numeric = forms.resolved(form, {"theta": 0.35, "K1": 2.5})
+    assert forms.resolved(numeric, {}) is numeric and numeric.errors() == []
+    (r,) = numeric.monomial.rates
+    assert r.zeta == pytest.approx(0.65) and r.factors[0].terms[0].k == 2.5
+
+
+@pytest.mark.parametrize("seed", range(4))
+def test_the_monomial_log_s_and_its_slopes_are_exact(seed):
+    rng = np.random.default_rng(seed)
+    ln_a = rng.uniform(-9.0, 1.0, 6)
+    psi, x = rng.uniform(-8.0, 8.0), rng.uniform(-100.0, 80.0)
+    t = mono_tables(monomial_form())
+    m = forms.monomial_logs(t, ln_a[:, None], np.array([psi]), np.array([[x]]), xp=np)
+    exact = mono_exact(ln_a, psi, x)
+    log_s = float(m.log_s[0, 0])
+    assert log_s == pytest.approx(float(exact), rel=0, abs=64 * EPS * (abs(float(exact)) + 40))
+    # The slopes against 60-digit central differences of the law as written.
+    h = Decimal("1e-25")
+    with localcontext() as ctx:
+        ctx.prec = 60
+
+        def diff(f):
+            return float((f(h) - f(-h)) / (2 * h))
+
+        for r in range(6):
+            numeric = diff(lambda d, r=r: _shifted(ln_a, r, d, psi, x))
+            assert float(m.d_ln_a[0, r, 0]) == pytest.approx(numeric, rel=1e-12, abs=1e-12), r
+        numeric = diff(lambda d: _shifted(ln_a, None, d, psi, x, on="psi"))
+        assert float(m.d_psi[0, 0]) == pytest.approx(numeric, rel=1e-12, abs=1e-12)
+        numeric = diff(lambda d: _shifted(ln_a, None, d, psi, x, on="x"))
+        assert float(m.d_x[0, 0]) == pytest.approx(numeric, rel=1e-12, abs=1e-12)
+    # Planted: a total expanded without its ligand's coefficient misses the ligand's slope.
+    def dropped(reference):
+        found = mono_read(reference)
+        return tuple(forms.Monomial(f.log_c, f.coefficients[:1]) for f in found)
+
+    rate = forms.resolved(monomial_form(), {"theta": 0.35, "K1": 2.5}).monomial.rates[0]
+    plain = forms.monomial_tables([forms.expand_rate(rate, dropped, rate.log_k)], 6)
+    t2 = types.SimpleNamespace(**{k: v[..., None] for k, v in plain._asdict().items()})
+    m2 = forms.monomial_logs(t2, ln_a[:, None], np.array([psi]), np.array([[x]]), xp=np)
+    assert abs(float(m2.d_ln_a[0, LIGAND_SLOT, 0]) - float(m.d_ln_a[0, LIGAND_SLOT, 0])) > 1e-6
+
+
+def _shifted(ln_a, r, d, psi, x, *, on="ln_a"):
+    """mono_exact with one input moved by the Decimal d, the others at their doubles."""
+    with localcontext() as ctx:
+        ctx.prec = 60
+        a = [Decimal(float(v)) for v in ln_a]
+        p, y = Decimal(float(psi)), Decimal(float(x))
+        if on == "ln_a":
+            a[r] += d
+        elif on == "psi":
+            p += d
+        else:
+            y += d
+        return _exact_decimal(a, p, y)
+
+
+def _exact_decimal(ln_a, psi, x, theta=Decimal("0.35"), k1=Decimal("2.5")):
+    a = [v.exp() for v in ln_a]
+    total = a[4] * (1 + Decimal(LOG_BETA).exp() * a[5])
+    f1 = 1 + k1 * a[1] * (theta * psi).exp() + Decimal("0.2") / a[3]
+    f2 = 1 + 3 * total
+    share = sum((Decimal(i) * x / 4).exp() for i in range(4))
+    s = Decimal("0.3").exp() * a[1] / a[2].sqrt() * a[4] ** 2 * ((1 - theta) * psi).exp() / f1 * f2
+    return (s / share).ln()
