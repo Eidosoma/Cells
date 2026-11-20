@@ -69,9 +69,17 @@ declaration:
   free amount and each binder's free base form into the rows. The envelope bounds the network's
   first-order lag at the stage's transport (1e-3 in log10 units). The ledger books phase 1's S_c,
   NaN where a held total is <= 0 so that the ledger refuses, beside @3's ideal terms on the rows
-  (CORE_SEAMS §19 as amended). One ligand takes the Newton too: a structure entry sees only the
-  declaration, not the registry's forms, so B4's path cannot be chosen statically here (the
-  kernel's tests show the two agree).
+  (CORE_SEAMS §19 as amended). Its change since the start is formed from the stored increments
+  (rapid_binding.booked_change_pJ: the dual's split, the start's free ligands in the layout's
+  binding_initial_u), so it rounds at the change's scale, not at S_c's (the @3 owner's finding
+  under X2, CORE_SEAMS_STEP0 §9.4; a recorded D148 note on this ledger term alone, the states
+  unchanged). It holds each node's declared volume constant, as the closure's read does: an
+  operator that changes a closure node's volume is refused (today the water law and the lumen's
+  fill, by name in species_registry.check_stage_read_rows, and every closer, which this kind's
+  undeclared partition roles refuse), and a new volume-changing operator must be refused there
+  too before it runs beside a closure. One ligand takes the Newton too: a structure entry sees
+  only the declaration, not the registry's forms, so B4's path cannot be chosen statically here
+  (the kernel's tests show the two agree).
 - The read is valid only where the joint margin t* > 0, the exact joint condition (amendment C4),
   as well as converged. While every held total must be positive (@3's stored rows, and S_c's
   logarithms), t* >= min T_L > 0 always, since the all-base speciation keeps every free ligand at
@@ -504,8 +512,7 @@ def ledger_terms(state, p, *, xp):
     """The declared term's change since the start, as stored free energy (rule (a)). The general
     closure books phase 1's S_c (CORE_SEAMS §19 as amended), @3 its ideal terms on the rows."""
     if _is_general(p):
-        terms = _general_terms(p, _amounts(state, p, xp), xp)
-        return dict(stored_pJ=terms - p.binding_initial_pJ)
+        return dict(stored_pJ=_general_change(state, p, xp))
     return dict(
         stored_pJ=_declared_terms(p, _amounts(state, p, xp), xp=xp) - p.proton_buffer_initial_pJ
     )
@@ -723,6 +730,24 @@ def _general_terms(p, amounts, xp):
     return xp.where(xp.any(held, axis=0), xp.where(defined, s_c, xp.nan), 0.0)
 
 
+def _general_change(state, p, xp):
+    """Phase 1's booked term's change since the start per node (pJ), formed from the stored
+    increments (rapid_binding.booked_change_pJ), so it rounds at the change's scale: NaN where a
+    held total is <= 0, so the ledger refuses, and 0 where the closure holds nothing."""
+    u, _, _, _, held, member, safe_v = _general_solve(_amounts(state, p, xp), p, xp)
+    nl, rows = held.shape[0], p.binding_rows
+    reference = xp.concatenate((p.amount_reference, p.extracellular_amount_reference), axis=1)
+    increment = xp.concatenate(
+        (state.amount_increment, state.extracellular_amount_increment), axis=1
+    )
+    change, defined = binding.booked_change_pJ(
+        u, p.binding_initial_u, reference[rows[:nl]], increment[rows[:nl]],
+        reference[rows[nl:]], increment[rows[nl:]], p.binding_log_beta, p.binding_counts,
+        p.binding_present, held, member, safe_v, p.temperature, xp=xp,
+    )  # fmt: skip
+    return xp.where(xp.any(held, axis=0), xp.where(defined, change, xp.nan), 0.0)
+
+
 def _general_read(state, p, xp):
     """The stage's read: each held ligand row holds its free ligand x V, each held binder row its
     free base form c_base V, for the rates; every other row as stored."""
@@ -816,6 +841,7 @@ def _general_initial(spec, declaration, layout):
         binding_conservation=net["conservation"],
         binding_mu0p=np.asarray(mu0p),
         binding_initial_pJ=np.zeros(n + o),
+        binding_initial_u=np.zeros((len(declaration.ligands), n + o)),
     )
     start = SimpleNamespace(**(dict(layout) | own))
     amounts = np.concatenate((start.amount_reference, start.extracellular_amount_reference), axis=1)
@@ -832,6 +858,7 @@ def _general_initial(spec, declaration, layout):
             "where phase 1 books @3's ideal terms on the closure's rows"
         )
     own["binding_initial_pJ"] = terms
+    own["binding_initial_u"] = u
     _, active = _nodes(start, np)
     px = np.where(held & active[None, :], -np.log10(np.exp(u) / closure.PH_REFERENCE_mM), 0.0)
     state = dict(
@@ -910,6 +937,7 @@ GENERAL_LAYOUT_FIELDS = (
     "binding_conservation",  # [L + B, species]
     "binding_mu0p",  # [L + B]: each row's mu°/RT - ln c0 (@3's 1 mM frame).
     "binding_initial_pJ",  # [node]: the booked term at the start.
+    "binding_initial_u",  # [L, node]: the free ligands' ln x (mM) at the start.
 )
 GENERAL_COLUMNS = ("free_ligand_mM",)
 
