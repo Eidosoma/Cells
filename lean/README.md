@@ -12,7 +12,7 @@ Direct Lean claims cover [44 of 44 laws](COVERAGE.md#registered-laws) and [26 of
 | --- | ---: | ---: | --- | ---: |
 | [Membrane transport and osmosis](COVERAGE.md#category-membrane-transport) | 5 of 5 | 8 of 8 | 8 checked | 8 |
 | [Ion channels and junctions](COVERAGE.md#category-channels-and-junctions) | 14 of 14 | 11 of 11 | 10 checked · 1 failed | 10 |
-| [Pumps and cotransport](COVERAGE.md#category-pumps-and-cotransport) | 13 of 13 | 7 of 7 | 7 checked | 7 |
+| [Pumps and cotransport](COVERAGE.md#category-pumps-and-cotransport) | 13 of 13 | 8 of 8 | 8 checked | 8 |
 | [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 1 of 1 | 6 of 6 | 4 checked · 2 failed | 4 |
 | [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 10 of 10 | 16 of 16 | 12 checked · 4 failed | 14 |
 | [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 1 of 1 | 17 of 17 | 14 checked · 3 failed | 13 |
@@ -23,6 +23,8 @@ Direct Lean claims cover [44 of 44 laws](COVERAGE.md#registered-laws) and [26 of
 Each category opens its detailed claim table on GitHub, including registered laws still awaiting a proof. A single claim can cover several laws. The last column counts claims with a recorded measurement or literature finding, including partial evidence. Each numerical result applies to the cases in its linked record. [All registered laws](COVERAGE.md#registered-laws) · [Design notes](ENGINE_LAW_VERIFICATION.md) · [Voltage pilot closeout](../reports/BIO003_PILOT_CLOSEOUT.md)
 
 ## Biological evidence
+
+Yeast mitochondrial ATP synthase provides a measured example of reversal. The enzyme switched from hydrolysis to synthesis as the proton gradient increased. Cells captures the shift between the lowest and highest ATP loads. The comparison also records the four intermediate measurements outside the combined interpolation limits. [Mitochondrial stall and biological evidence](claims/mitochondrial-stall-heat.md#biological-evidence)
 
 The catalog gives each measurement, its primary source and the part of the law it tests. **Partial evidence** means the literature measures a relevant part of the claim and a full biological verdict remains open. **Not assessable** means a recorded comparison has too much uncertainty for a verdict. The studies and their figures are linked in each row. [Literature review](claims/incoming/biological-evidence.md) · [Pump flux, charge and ATP measurements](claims/incoming/pump-charge-evidence.md) · [PGI worksheet audit](claims/incoming/pgi-evidence.md) · [Publisher’s PGI workbook and spectra](https://mdpi-res.com/metabolites/metabolites-02-00818/article_deploy/metabolites-02-00818-s001.zip)
 
@@ -131,6 +133,12 @@ For mitochondrial respiration and ATP delivery, check the seven reaction columns
 
 ```bash
 "$cells_python" -B checks/mitochondrial_cycles.py
+```
+
+Check the stall conditions of all seven cycles, compare instantaneous heat and flux with the independent component equations on both CPU backends, and reproduce the yeast synthase load comparison. [Thresholds, measurements and limits](PROGRESS.md#mitochondrial-stall-heat)
+
+```bash
+"$cells_python" -B checks/mitochondrial_stall.py
 ```
 
 For the conditioned kidney-cell voltage, check the two-dose extrapolation on three synthetic Na/K/Cl membranes and reproduce the fixed C3 prediction and its figure-reading bounds. [C3 results](PROGRESS.md#conditioned-voltage-bounds)

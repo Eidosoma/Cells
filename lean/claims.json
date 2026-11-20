@@ -18,6 +18,35 @@
     "cells.shared_pool@1": "molecular-assembly"
   },
   "comparisons": {
+    "mitochondrial-stall-heat": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [
+        "cells.nadh_ubiquinone_proton_cycle@1",
+        "cells.ubiquinol_cytochrome_c_proton_cycle@1",
+        "cells.cytochrome_c_oxygen_proton_cycle@1",
+        "cells.proton_coupled_atp_synthesis_cycle@1",
+        "cells.electrogenic_nucleotide_exchange@1",
+        "cells.phosphate_proton_symport@1",
+        "cells.potassium_proton_exchange@1",
+        "cells.rapid_binding@1"
+      ],
+      "engine_revision": "e4b9588fdc80aa8e764e09c70a39a5b2f2db64cf",
+      "record_revision": "f0783ad9cb9c9f1ca581dfacee23ac8b5411268e",
+      "sources": {
+        "Full-turn affinity from free concentrations and voltage": "src/cells/kinds/transporter.py#L1809",
+        "Monomial affinity shares": "src/cells/laws/cycles/forms.py#L1468",
+        "Reversible rate near stall": "src/cells/laws/cycles/forms.py#L1512",
+        "Heat and cycle derivatives": "src/cells/kinds/transporter.py#L1966",
+        "Public cycle probe": "src/cells/kinds/transporter.py#L2362",
+        "Matrix and lumen fixture": "tests/unit/test_mito_cycle_laws.py#L64",
+        "Independent decimal component equations": "validation/mitochondria/appendix_check.py#L87"
+      },
+      "driver": "lean/checks/mitochondrial_stall.py",
+      "record": "lean/PROGRESS.md#mitochondrial-stall-heat"
+    },
     "mitochondrial-cycle-accounting": {
       "kind": "engine",
       "models": [
@@ -1523,6 +1552,85 @@
     }
   },
   "claims": [
+    {
+      "id": "mitochondrial-stall-heat",
+      "category": "pumps-and-cotransport",
+      "title": "Mitochondrial cycles reverse at zero free energy and dissipate power in either direction",
+      "statement": "Each enabled mitochondrial cycle runs forward at negative full-turn ΔG, reverses at positive ΔG and stalls at zero. The five electrogenic cycles have a stall voltage set by free activities. Phosphate uptake and K⁺/H⁺ exchange have voltage-independent stall ratios. At positive temperature, instantaneous dissipated power is positive in either direction and vanishes exactly at stall or when the population is off.",
+      "assumptions": [
+        "Each reaction uses the declared free species and signed charge, with N the matrix and P the intermembrane space. Free activities are positive. The dimensionless voltage is F(φ_N − φ_P)/(RT).",
+        "An enabled population has a positive finite forward kinetic prefactor. Complex III uses a half-turn exponent and complex IV a quarter-turn exponent. ΔG refers to a full turnover in both cases.",
+        "Heat here is the model's instantaneous chemical free-energy dissipation. Flux is in fmol/s and RT in J/mol. An assay of integrated whole-mitochondrion enthalpy measures a different observable."
+      ],
+      "uses": [
+        "atp-cycle",
+        "mitochondrial-respiratory-balance",
+        "mitochondrial-atp-delivery"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.nadh_ubiquinone_proton_cycle@1",
+          "cells.ubiquinol_cytochrome_c_proton_cycle@1",
+          "cells.cytochrome_c_oxygen_proton_cycle@1",
+          "cells.proton_coupled_atp_synthesis_cycle@1",
+          "cells.electrogenic_nucleotide_exchange@1",
+          "cells.phosphate_proton_symport@1",
+          "cells.potassium_proton_exchange@1"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.MitochondrialStall.rate_disabled": "lean/CellsProofs/Chemistry/MitochondrialStall.lean",
+          "CellsProofs.Chemistry.MitochondrialStall.rate_eq_fractional": "lean/CellsProofs/Chemistry/MitochondrialStall.lean",
+          "CellsProofs.Chemistry.MitochondrialStall.direction": "lean/CellsProofs/Chemistry/MitochondrialStall.lean",
+          "CellsProofs.Chemistry.MitochondrialStall.voltage_stall": "lean/CellsProofs/Chemistry/MitochondrialStall.lean",
+          "CellsProofs.Chemistry.MitochondrialStall.neutral_carrier_stalls": "lean/CellsProofs/Chemistry/MitochondrialStall.lean",
+          "CellsProofs.Chemistry.MitochondrialStall.synthase_load_shift": "lean/CellsProofs/Chemistry/MitochondrialStall.lean",
+          "CellsProofs.Chemistry.MitochondrialStall.heat_nonneg": "lean/CellsProofs/Chemistry/MitochondrialStall.lean",
+          "CellsProofs.Chemistry.MitochondrialStall.heat_zero_iff": "lean/CellsProofs/Chemistry/MitochondrialStall.lean"
+        },
+        "sources": {
+          "Mathlib geometric sum used to recover the fractional exponent": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/GeomSum.lean#L239"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "mitochondrial-stall-heat"
+        ],
+        "result": "All 49 physical settings agreed with the independent component equations on NumPy and compiled CPU JAX, including both sides of stall for all seven laws. The worst net-flux error was 3.91 × 10⁻¹⁴ of the reference forward rate. The worst residual ΔG/(RT) at a calculated stall was 2.85 × 10⁻¹⁴. The rate kernel also preserved the signs at ±2⁻⁶⁰ and returned zero at an exact zero input. The probe and the stage agreed on flux and instantaneous dissipated power."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Net turnover on either side of a measured mitochondrial stall, the shift in ATP synthase stall with phosphorylation load, and dissipated power at known cycle affinity.",
+        "unit": "turnovers per enzyme per second, pH units, H⁺/ATP, pJ/s per population",
+        "evidence": [
+          {
+            "dataset_id": "petersen2012_yeast_stall@1",
+            "manifest": "lean/checks/data/mitochondrial_stall.json",
+            "citation": "Petersen et al. (2012), Figs. 1–4 and Tables S2 and S4",
+            "doi": "10.1073/pnas.1202799109",
+            "locator": "Yeast traces in Fig. 1, corrected stall in Fig. 2, fitted coupling in Fig. 4 and all ten corrected stall entries in Table S4.",
+            "context": "Purified yeast mitochondrial ATP synthase in proteoliposomes at an imposed 60 mV.",
+            "role": "descriptive",
+            "uncertainty": "The example rates are fitted initial slopes. The equilibrium ΔpH was interpolated. One measured stall sets the offset for comparing shifts at the other loads. The comparison adds the reported interpolation limits and assumes the assay's concentration quotient is proportional to the free activity quotient.",
+            "assessment": "ATP turnover changed sign across stall, and the inferred coupling was 2.9 ± 0.2 H⁺/ATP. The model's three protons predict a 0.745 pH-unit endpoint shift against 0.74 observed. Five of nine other entries are within the combined interpolation limits using the stall at Q = 5.79 as the reference. Four intermediate entries fall outside.",
+            "report": "lean/PROGRESS.md#mitochondrial-stall-heat"
+          },
+          {
+            "dataset_id": "nakamura1978_mitochondrial_heat@1",
+            "manifest": "lean/checks/data/mitochondrial_stall.json",
+            "citation": "Nakamura and Matsuoka (1978), Figs. 5b and 6",
+            "doi": "10.1093/oxfordjournals.jbchem.a132117",
+            "locator": "The anaerobic bulk heat pulse in Fig. 5b and its dependence on the initial ADP in Fig. 6.",
+            "context": "Rat liver mitochondria following aerobic ATP production and oxygen exhaustion.",
+            "role": "descriptive",
+            "uncertainty": "The apparent enthalpy was −29 ± 7 kJ per mole of previously added ADP. The authors inferred an ATP hydrolysis contribution.",
+            "assessment": "Bulk calorimetry integrates heat from the preparation. The instantaneous dissipated power of each individual mitochondrial cycle remains experimentally open.",
+            "report": "lean/PROGRESS.md#mitochondrial-stall-heat"
+          }
+        ]
+      }
+    },
     {
       "id": "mitochondrial-respiratory-balance",
       "category": "pumps-and-cotransport",
