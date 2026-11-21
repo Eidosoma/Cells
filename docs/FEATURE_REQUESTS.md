@@ -582,6 +582,18 @@ download of the PDF and Supporting Material.
     factor is switchable regulation of availability.
   - **A pass** supports the premise as written.
 
+**Item 4's extraction, recorded before the fitter starts (21 November 2026, 23:00 UTC).** The extractor
+read Maverick and Tamkun 2022's Fig. 7C (YFP-Kv1.5: whole-cell conductance against whole-cell gating
+charge) exactly from the figure's vector drawing, and cross-checked it against Fig. 8A. There are 19 cells
+with per-cell pairs, so none of the registration's "not assessable" conditions holds. The count is the
+gating charge over the paper's 4.23 e0 per channel. 13 cells are in the fit set and the top 6 by count are
+held out; the held-out median count is 2.43 times the fit set's. The TIRF count is never paired with
+conductance in the paper, so the information-only secondary test cannot run. The files are in the
+workspace, outside the repository. SHA-256: held_out_conductance.json (sealed)
+815f7b9b800f4b6de56fa76c16bd3067fc99b9f0c5184ada934aefd1ccd70046; fit.json 6839555bee4adc5ff154003f81b6356ca82c185b3a983590f06dd00df3698947; held_out_counts.json
+5465e3b20da3c94339eb624ccd26b530ec9216a00f0cb0fd51d876281c0ff20d. The fitter sees only the fit rows, the held-out counts, the protocol
+and the notes, and records its predictions before the checker unseals.
+
 
 ## FR-8 — A qualified long-duration mode
 
