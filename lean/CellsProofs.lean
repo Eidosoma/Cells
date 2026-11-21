@@ -10,6 +10,7 @@ import CellsProofs.Chemistry.Enzyme
 import CellsProofs.Chemistry.GardCatalysis
 import CellsProofs.Chemistry.LineageFission
 import CellsProofs.Chemistry.PoolWithdrawal
+import CellsProofs.Chemistry.PoolWithdrawalEnergy
 import CellsProofs.Chemistry.MitochondrialCycles
 import CellsProofs.Chemistry.MitochondrialReactions
 import CellsProofs.Chemistry.MitochondrialStall

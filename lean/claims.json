@@ -20,6 +20,38 @@
     "cells.shared_pool@1": "molecular-assembly"
   },
   "comparisons": {
+    "pool-withdrawal-energy": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@2"
+      ],
+      "laws": [
+        "cells.ideal_mixing@1"
+      ],
+      "operators": [
+        "cells.pool_withdrawal@1"
+      ],
+      "engine_revision": "695f8cdd974e130f25b021df8efeabe4cac8a515",
+      "record_revision": "59f5bba6d8773a907706db8333ac8e9ca6d29cea",
+      "sources": {
+        "Per-place sample and five signed energy fields": "src/cells/models/assembly_lineages_v2/withdrawal.py#L140-L188",
+        "Host receipt, work column, sink and heat": "src/cells/models/assembly_lineages_v2/population.py#L785-L825",
+        "Discrete free energy in the finite pool": "src/cells/models/assembly_lineages_v2/ideal_mixing.py#L64-L78",
+        "Host free energy and table guard": "src/cells/models/assembly_lineages_v2/ledger.py#L46-L81",
+        "Word addresses for each sampled place": "src/cells/models/assembly_lineages_v2/streams.py#L49-L66",
+        "Conversion to a uniform midpoint": "src/cells/models/assembly_lineages/streams.py#L120-L128",
+        "Acceptance world and independent withdrawal booking tests": "tests/unit/test_assembly_lineages_v2_replacement.py#L594-L735"
+      },
+      "record_inputs": {
+        "Exact energy and word-weighted heat proof": "lean/CellsProofs/Chemistry/PoolWithdrawalEnergy.lean",
+        "Finite-word counting law": "lean/CellsProofs/Chemistry/PoolWithdrawal.lean",
+        "Discrete site energy": "lean/CellsProofs/Chemistry/AssemblyMixing.lean",
+        "Binomial expectation on finite trials": "lean/CellsProofs/Chemistry/LineageFission.lean",
+        "Shared exact word indices and thresholds": "lean/checks/pool_withdrawal.py"
+      },
+      "driver": "lean/checks/pool_withdrawal_energy.py",
+      "record": "lean/PROGRESS.md#fr35-withdrawal-energy"
+    },
     "pool-withdrawal": {
       "kind": "engine",
       "models": [
@@ -2472,6 +2504,60 @@
     }
   },
   "claims": [
+    {
+      "id": "pool-withdrawal-energy",
+      "category": "molecular-assembly",
+      "title": "Partial withdrawal closes the energy balance and releases nonnegative mixing heat",
+      "statement": "For every count split and supplied buffer, the change of pool free energy equals buffer work minus pool loss minus mixing heat. The loss equals sample free energy minus the physical binomial split score. Both the split score and the mixing heat are nonnegative. For a tracer-free buffer the mean heat per initial tracer is −(1−q) ln(1−f), where q is the effective withdrawal probability and f is the physical volume fraction.",
+      "assumptions": [
+        "The pool has finitely many places with nonnegative integer counts. Its discrete ideal free energy is additive over finite species and includes the log factorial of each count. The buffer fills the withdrawn volume and the full pool volume is restored.",
+        "The physical fraction f lies strictly between zero and one. Work, sink and heat use Cells’ withdrawal convention in units of k_BT. Closure and signs hold for each realized split.",
+        "Sampler probabilities and mean heats assume independent, uniformly distributed word indices. Cells compares each midpoint from 2⁵² bins strictly to f. The split-score comparison uses outcomes with positive sampler probability."
+      ],
+      "uses": [
+        "pool-withdrawal",
+        "assembly-ideal-mixing"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.pool_withdrawal@1"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.PoolWithdrawalEnergy.binomial_mass": "lean/CellsProofs/Chemistry/PoolWithdrawalEnergy.lean",
+          "CellsProofs.Chemistry.PoolWithdrawalEnergy.partition_cost": "lean/CellsProofs/Chemistry/PoolWithdrawalEnergy.lean",
+          "CellsProofs.Chemistry.PoolWithdrawalEnergy.energy_balance": "lean/CellsProofs/Chemistry/PoolWithdrawalEnergy.lean",
+          "CellsProofs.Chemistry.PoolWithdrawalEnergy.binomial_bookings": "lean/CellsProofs/Chemistry/PoolWithdrawalEnergy.lean",
+          "CellsProofs.Chemistry.PoolWithdrawalEnergy.nonnegative_heat_and_split": "lean/CellsProofs/Chemistry/PoolWithdrawalEnergy.lean",
+          "CellsProofs.Chemistry.PoolWithdrawalEnergy.tracer_free_heat": "lean/CellsProofs/Chemistry/PoolWithdrawalEnergy.lean",
+          "CellsProofs.Chemistry.PoolWithdrawalEnergy.mean_tracer_free_heat": "lean/CellsProofs/Chemistry/PoolWithdrawalEnergy.lean",
+          "CellsProofs.Chemistry.PoolWithdrawalEnergy.sampled_count_mass": "lean/CellsProofs/Chemistry/PoolWithdrawalEnergy.lean",
+          "CellsProofs.Chemistry.PoolWithdrawalEnergy.sampled_score_gap": "lean/CellsProofs/Chemistry/PoolWithdrawalEnergy.lean",
+          "CellsProofs.Chemistry.PoolWithdrawalEnergy.last_midpoint_mean_heat": "lean/CellsProofs/Chemistry/PoolWithdrawalEnergy.lean",
+          "CellsProofs.Chemistry.PoolWithdrawalEnergy.last_midpoint_gap": "lean/CellsProofs/Chemistry/PoolWithdrawalEnergy.lean"
+        },
+        "sources": {
+          "Mathlib binomial distribution and its point mass, imported and specialized": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Probability/ProbabilityMassFunction/Binomial.lean#L25-L44",
+          "Mathlib bound on the mass of a single outcome, imported": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Probability/ProbabilityMassFunction/Basic.lean#L115",
+          "Mathlib binomial coefficient and factorial identity, imported": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Data/Nat/Choose/Basic.lean#L174",
+          "Cells proof of the midpoint sampler’s count law": "lean/CellsProofs/Chemistry/PoolWithdrawal.lean#L91-L125",
+          "Discrete energy and expected heat convention in the withdrawal design": "docs/ASSEMBLY_WITHDRAWAL_DESIGN.md#L101-L175"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "pool-withdrawal-energy"
+        ],
+        "result": "Three complete worlds and 1,080 small-count cases matched an 88-digit independent reference. The largest balance error was 6.21 × 10⁻¹⁴ k_BT. All booked heats were nonnegative. At f = 1−2⁻⁵³ the last word retains one tracer, the split score exceeds its sampler score by ln 2, and the word-weighted tracer-free mean is 8.1572 × 10⁻¹⁵ k_BT against an ideal-volume mean of 4.0786 × 10⁻¹⁵ k_BT."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Independent energy budget for a measured partial withdrawal with known tracer counts, buffer content, liquid volumes and work during resupply.",
+        "unit": "k_BT per withdrawal",
+        "evidence": []
+      }
+    },
     {
       "id": "pool-withdrawal",
       "category": "molecular-assembly",
