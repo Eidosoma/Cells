@@ -8809,3 +8809,30 @@ predicted blind (fr7-item4-predictions-2026-11-21) and scored by the second buil
     data not used here: other cells, another paper, or the same paper's Kv1.4 family if it is
     independent. Under D273's hold it waits.
 
+## D276: FR-30's benchmark on Lin 2003 is undetermined by its registered rule; the fallbacks are registered before they are read; fix (A) goes ahead
+
+2026-11-21, about 23:13 UTC, with the advisor.
+- **Lin, Crye and Veenstra 2003 reports single-exponential decays only.** That meets the
+  registration's "undetermined" condition: fewer than two held-out voltages carry both relaxation
+  times. The checker confirms it. Lin's held-out file stays sealed, and nothing is reinterpreted
+  after the fact.
+- **The fallbacks:** the @3 owner amends section 13 before anyone opens them. The same split, judged
+  observables and pass rule apply in a fixed order: Desplantez et al. 2004, then Moreno et al. 2002,
+  then Snipas et al. 2020. Each is extracted only if the one before is undetermined. The amendment is
+  tagged before any extraction.
+- **Fix (A) goes ahead** (amends D273). Its price is about 2.5 agent-days with charged kind routes
+  refused on crossing junctions in version 1; including them adds about a day, when FR-15 needs it.
+  - D273's two-day threshold is withdrawn. It assumed the parse-time refusal was a cheap route to the
+    same guarantee. Facts 2 and 3 show it is not: it would refuse the @3 conducting fixtures and
+    FR-30's development host, and it would have to evaluate replacement_padded's formation lag at
+    parse.
+  - **The three gating facts:**
+    - no tier verdict depends on the moved values; the one changed test counted the prototype's extra
+      solves;
+    - "never conducts" is declared;
+    - FR-30's development host is affected, and FR-15's planned hosts are not.
+  - **Added stop checks:** every frozen bitwise baseline (gate.sh, FR's landing set, the OL
+    invariance gate) is shown unmoved or renewed; the kinds refusal's reach is scanned first;
+    test_field_floor_held passes unedited, and existing test bodies stay as they are.
+  - The second builder reproduces the orders at base and head.
+
