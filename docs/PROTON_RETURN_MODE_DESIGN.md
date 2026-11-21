@@ -471,10 +471,17 @@ That is **4–5 agent-days,** gates excluded. Digitizing Fig. 3, if ruled (§7, 
 ## 8. The desk evaluation against Fig. 3 (D258, 20–21 November 2026)
 
 This section reports what the lead's desk evaluation established on the curves. It is a closed-form
-computation in `validation/vacuole/fr29_return_mode_desk.py`, not the engine, run on the FR-7
-lane's reading of Fig. 3.
-- **Records:** `fr29_desk_prediction.json` (the prediction), `fr29_desk_score.json` and
-  `fr29_desk_variants.json`, all in `validation/vacuole/`.
+computation, not the engine, run on the FR-7 lane's reading of Fig. 3
+(`validation/vacuole/kettner2003_fig3_readings.csv`).
+- **Records:** frozen as evidence in `/mnt/workspaces/Cells/core-pass-kinds-20261118/fr29/evidence/`
+  (README and SHA256SUMS). The lead ruled them out of `validation/`, since a closed-form return mode
+  is physics the engine lacks. They were registered in git on branch core-pass-kinds-18:
+  - the prediction, `fr29_desk_prediction.json`, at 4531d06d (tagged
+    `fr29-prediction-registered-2026-11-20`);
+  - the score, `fr29_desk_score.json`, at de8cfe16;
+  - the joint fits, `fr29_desk_variants.json`, made by e91541b3's code.
+
+  Each is beside the script at its revision.
 - **Rulings applied:** δ_r and ψ_s were fitted on Fig. 3 (ruling 1), and the ATP-free baseline is
   read as zero (ruling 4).
 
@@ -513,7 +520,7 @@ neither can any of three minimal changes.
   ambiguous rows, and panel B below −5 mV, with the −80 mV ends left out.
 - **Each model** is fitted from the same 24 starts, free and then with the bound imposed (the
   current at +40 mV at pH 3.1 held at or below 0).
-- **The run:** e91541b3; the record is `fr29_desk_variants.json`.
+- **The run:** e91541b3's code; the record is the evidence folder's `fr29_desk_variants.json`.
 - **Scoring:** each fit's seven reversals are scored against the curves' read crossings, within
   2 Table 2 SE (±2 mV for 7.5/4.1, ±6 for 6.0/5.0). The two zero-gradient curves must not cross
   above −80 mV.
