@@ -18,6 +18,7 @@ The compiled guards are test_membrane_insertion_runs.py.
 
 import copy
 import math
+from fractions import Fraction
 from types import SimpleNamespace
 
 import jax
@@ -195,6 +196,48 @@ def test_two_clamps_image_charge_and_energy():
     u0, _ = capacitor_energy(state, p)
     u1, _ = capacitor_energy(new, p)
     assert heat > 0 and u1 - u0 == pytest.approx(work - heat, rel=1e-12)  # dU = W - H.
+    history = type(state)(*(np.stack([a, b]) for a, b in zip(state, new, strict=True)))
+    diagnostics = model.check_values(history, spec, steps=[0, 1])
+    assert diagnostics["max_electrode_charge_error_C"] < 1e-26
+    assert diagnostics["max_energy_balance_error_pJ"] < 1e-15
+
+    # dC/C = 1.7e16 in one half-step (charge_change's exact branch), against exact rationals. On
+    # the patch facing the 0 V bath, beside the 20 mV clamp, the images, work and heat are exact
+    # and the ledgers close; on the patch facing the clamp the step is refused, since the host's
+    # ledgers cannot read that clamp's plate charge (the parent booked 1.46e-12 C, exact 1.08e-12).
+    def stress(k):
+        patch = ("membrane_0", "membrane_b")[k]
+        raw = fx.with_operators(fx.two_clamps(potential_V=0.02), {patch: ({}, None, [(0.0, 0.0)])})
+        spec, model, state, p = bind(raw)
+        rates = np.zeros(2)
+        rates[k] = 1.7e16 * p.membrane_capacitance[k] / fx.SPECIFIC_CAPACITANCE / (fx.DT / 2)
+        return spec, model, state, p, rates
+
+    spec, model, state, p, rates = stress(1)
+    _, ok = half_step(model, state, p, rates)
+    control = SimpleNamespace(insertion_rate_m2_s=rates, insertion_open=np.ones(2))
+    op = model.operators[1]
+    _, jitted = jax.jit(lambda s: op.half_step(s, fx.DT / 2, control, p, xp=jax.numpy))(state)
+    assert not ok and not jitted
+    spec, model, state, p, rates = stress(0)
+    new, ok = half_step(model, state, p, rates)
+    assert ok
+    q = Fraction(float(p.initial_cell_charge_C[0]))
+    phi = [Fraction(float(x)) for x in p.boundary_V]
+    c0 = [Fraction(float(x)) for x in p.membrane_capacitance]
+    c1 = [c0[j] + Fraction(float(new.membrane_capacitance_increment_F[j])) for j in (0, 1)]
+    before = (q + sum(a * b for a, b in zip(c0, phi, strict=True))) / sum(c0)
+    after = (q + sum(a * b for a, b in zip(c1, phi, strict=True))) / sum(c1)
+    image = [c1[j] * (phi[j] - after) - c0[j] * (phi[j] - before) for j in (0, 1)]
+    u0 = sum(c0[j] * (before - phi[j]) ** 2 for j in (0, 1)) / 2
+    u1 = sum(c1[j] * (after - phi[j]) ** 2 for j in (0, 1)) / 2
+    work = sum(phi[j] * image[j] for j in (0, 1))
+    np.testing.assert_allclose(
+        new.electrode_charge_transferred_C, [float(x) for x in image], rtol=1e-12
+    )
+    assert float(np.sum(new.electrode_work_pJ)) == pytest.approx(float(work * 10**12), rel=1e-12)
+    heat = float(np.sum(new.insertion_dissipated_energy_pJ))
+    assert heat == pytest.approx(float((work - u1 + u0) * 10**12), rel=1e-12)
     history = type(state)(*(np.stack([a, b]) for a, b in zip(state, new, strict=True)))
     diagnostics = model.check_values(history, spec, steps=[0, 1])
     assert diagnostics["max_electrode_charge_error_C"] < 1e-26

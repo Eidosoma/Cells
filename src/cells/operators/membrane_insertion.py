@@ -59,6 +59,7 @@ from bisect import bisect_right
 from dataclasses import dataclass, replace
 from functools import cached_property
 
+import jax
 import jax.numpy as jnp
 import numpy as np
 
@@ -68,6 +69,8 @@ from cells.definitions.spec_values import identifier, signed_number
 from cells.definitions.specs import ConfigError, _fields, _number
 from cells.models import pump_composite_adapter as adapter
 from cells.models import surface_pump as first
+from cells.models import surface_tissue as tissue
+from cells.numerics import surface_field as field
 from cells.numerics.extracellular_field import scatter
 from cells.numerics.species_sums import entity_sum
 from cells.operators import membrane_state
@@ -411,26 +414,41 @@ def capacitor_view(state, p, *, xp):
 
 
 def charge_change(state, q, dc, bound, *, xp):
-    """adapter.fixed_charge_change's seven values, with the heat and the image charges formed
-    without cancellation where a free node gains more than RATIO_ABOVE times its own capacitance
-    (the diagonal of q's capacitor matrix) in this half-step.
+    """(adapter.fixed_charge_change's seven values, ok), with the heat and the image charges
+    formed without cancellation where a free node gains more than RATIO_ABOVE times its own
+    capacitance (the diagonal of q's capacitor matrix) in this half-step (_exact_change).
 
     There fixed_charge_change's H = first + second subtracts two terms of order dc V^2 that
     nearly cancel, and its image charges K' delta + dK phi two of order dc V. The independent
     Lean project found a one-patch cell at dC/C = 1.7e16 booking -0.043037 pJ against +0.051603
     pJ, and its held bath an image charge of -3.6e-12 C against 0 (lean/PROGRESS.md "Membrane
-    insertion heat", 19 November 2026), so both versions refused the step. There:
-    * H is the sum of squares 1/2 sum [C (V' - V)^2 + dc V'^2] >= 0 (Lean's heat_eq_squares),
-      with V' from a solve at the new capacitances and the same charges, shared among the patches
-      in proportion to their first-order terms as before; first_order is then each patch's share
-      and second 0, so the rounding allowance follows the terms actually summed;
-    * each held node's image charge is its plate charge at that solve less its plate charge
-      before. With a held node at phi_b != 0 its rounding is about eps C' |phi_b|.
-    Elsewhere every value is fixed_charge_change's, bit for bit: below RATIO_ABOVE its heat keeps
-    about eps (1 + dC/C) of H. The choice reads dc and the free nodes' capacitances only."""
+    insertion heat", 19 November 2026), so both versions refused the step.
+
+    Elsewhere the values are fixed_charge_change's and ok is True. Compiled, the exact branch is
+    a lax.cond whose operands are this function's raw inputs and the first- and second-order
+    terms, so the ordinary path is fixed_charge_change's program: the compiler cannot share the
+    branch's work (a second field refresh and solves) with it, which moved the image charges'
+    rounding when it could. In NumPy the branch is a Python one. Batched runs turn the cond into
+    a select. Below RATIO_ABOVE the heat keeps about eps (1 + dC/C) of H. The choice reads dc,
+    the patches' nodes, the capacitor diagonal and the held mask only."""
     q1, image, heat, first, second, v, after = adapter.fixed_charge_change(
         state, q, dc, bound, xp=xp
     )
+    kept = (image, heat, first, second, after, xp.asarray(True))
+    extreme = xp.any(~q.field_fixed & _gains_above(q, dc, xp=xp))
+    operands = (state, q, dc, bound, first, second, kept)
+    if xp is np:
+        values = _exact_change(operands[:-1], xp=np) if extreme else kept
+    else:
+        values = jax.lax.cond(
+            extreme, lambda a: _exact_change(a[:-1], xp=jnp), lambda a: a[-1], operands
+        )
+    image, heat, first, second, after, ok = values
+    return q1, image, heat, first, second, v, after, ok
+
+
+def _gains_above(q, dc, *, xp):
+    """[node] whether the node gains more than RATIO_ABOVE times its own capacitance."""
     n, o = q.active.size, q.outside_active.size
     added = xp.where(q.membrane_active, dc, 0.0)
     gain = xp.concatenate(
@@ -439,25 +457,48 @@ def charge_change(state, q, dc, bound, *, xp):
             scatter(added, xp.zeros(o), (q.membrane_outside,), xp=xp),
         )
     )
-    own = xp.diagonal(q.field_capacitor_matrix)
-    extreme = xp.any(~q.field_fixed & (gain > RATIO_ABOVE * own))
-    phi = adapter.node_potentials(state, q, xp=xp)
-    phi1 = adapter.node_potentials(state, q1, xp=xp)
+    return gain > RATIO_ABOVE * xp.diagonal(q.field_capacitor_matrix)
+
+
+def _exact_change(operands, *, xp):
+    """charge_change's exact branch: (image, heat, first_order, second, after, ok).
+
+    * Potentials are solved before and after the change at the same charges, with the held
+      nodes at their potentials and the free nodes' offsets 0, so a node pinned near 0 V by a
+      large capacitance gets its small potential to rounding.
+    * H is the sum of squares 1/2 sum [C (V' - V)^2 + dc V'^2] >= 0 (Lean's heat_eq_squares),
+      shared among the patches in proportion to their first-order terms as before; first_order
+      is then each patch's share and second 0, so the rounding allowance follows the terms summed.
+    * Each held node's image charge is its plate charge after, the sum over its patches of
+      C' (phi_b - phi_cell), less before.
+    * ok is False where a held node at a nonzero potential gains more than RATIO_ABOVE times its
+      own capacitance. Its image here is exact, but the host's ledgers read its plate charge as
+      C' phi_b - C' phi_cell, which so large a C' cancels: a patch facing a 20 mV clamp at dC/C =
+      1.7e16 books 1.0822668659647e-12 C, the exact image, and the electrode ledger refuses it (the
+      parent booked 1.46e-12 C). So the step is refused, not admitted for the ledgers to reject."""
+    state, q, dc, bound, first, second = operands
+    n, o = q.active.size, q.outside_active.size
+    added = xp.where(q.membrane_active, dc, 0.0)
+    q1 = adapter.refresh_field(
+        q._replace(membrane_capacitance=q.membrane_capacitance + dc), bound, xp=xp
+    )
+    held = q.field_fixed[n:] & bound.reservoir
+    ok = xp.all(xp.where(held & _gains_above(q, dc, xp=xp)[n:], q.boundary_V == 0, True))
+    charge = xp.concatenate((q.initial_cell_charge_C, q.initial_outside_charge_C))
+    charge = charge + tissue.charge_increment(state, q, xp=xp)
+    held_at = xp.where(q.field_fixed, xp.concatenate((xp.zeros(n), q.boundary_V)), 0.0)
+    phi0 = field._capacitor_solve(charge, held_at, tissue.field_layout(q), xp=xp)
+    phi1 = field._capacitor_solve(charge, held_at, tissue.field_layout(q1), xp=xp)
+    v0 = adapter.patch_voltages(phi0, q, xp=xp)
     v1 = adapter.patch_voltages(phi1, q1, xp=xp)
     c = xp.where(q.membrane_active, q.membrane_capacitance, 0.0)
-    squares = 0.5e12 * xp.sum(c * (v1 - v) ** 2 + added * v1**2)
-    total = xp.sum(first)
+    squares = 0.5e12 * entity_sum(c * (v1 - v0) ** 2 + added * v1**2, axis=None, xp=xp)
+    total = entity_sum(first, axis=None, xp=xp)
     shared = first * (squares / xp.where(total > 0, total, 1.0))
-    plates = (q1.field_capacitor_matrix @ phi1 - q.field_capacitor_matrix @ phi)[n:]
-    return (
-        q1,
-        xp.where(extreme, xp.where(bound.reservoir, plates, 0.0), image),
-        xp.where(extreme, shared, heat),
-        xp.where(extreme, shared, first),
-        xp.where(extreme, 0.0, second),
-        v,
-        xp.where(extreme, v1, after),
-    )
+    plates0 = scatter(-c * v0, xp.zeros(o), (q.membrane_outside,), xp=xp)
+    plates1 = scatter(-(c + added) * v1, xp.zeros(o), (q.membrane_outside,), xp=xp)
+    image = xp.where(held, plates1 - plates0, 0.0)
+    return image, shared, shared, xp.zeros_like(second), v1, ok
 
 
 def inserted(state, h, control, p, *, xp=jnp):
@@ -470,12 +511,12 @@ def inserted(state, h, control, p, *, xp=jnp):
     dc = p.insertion_specific_capacitance * area
     units = xp.where(p.channel_active, p.insertion_density * area[p.channel_membranes], 0.0)
     q, bound = capacitor_view(state, p, xp=xp)
-    _, image, heat, first_order, second, _, _ = charge_change(state, q, dc, bound, xp=xp)
+    _, image, heat, first_order, second, _, _, exact = charge_change(state, q, dc, bound, xp=xp)
     work = 1e12 * p.boundary_V * image
     moving = area > 0
     count = xp.maximum(entity_sum(moving, axis=None, xp=xp), 1)
     spread = (xp.abs(second) + entity_sum(xp.abs(work), axis=None, xp=xp)) / count
-    valid &= xp.all(xp.isfinite(image)) & xp.all(xp.isfinite(heat)) & xp.all(heat >= 0)
+    valid &= xp.all(xp.isfinite(image)) & xp.all(xp.isfinite(heat)) & xp.all(heat >= 0) & exact
     new = state._replace(
         membrane_area_increment_m2=state.membrane_area_increment_m2 + area,
         membrane_capacitance_increment_F=state.membrane_capacitance_increment_F + dc,

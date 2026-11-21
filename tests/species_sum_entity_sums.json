@@ -328,6 +328,16 @@
   ],
   [
    "operators/membrane_insertion.py",
+   "_exact_change",
+   "entity_sum(c * (v1 - v0) ** 2 + added * v1 ** 2, axis=None, xp=xp)"
+  ],
+  [
+   "operators/membrane_insertion.py",
+   "_exact_change",
+   "entity_sum(first, axis=None, xp=xp)"
+  ],
+  [
+   "operators/membrane_insertion.py",
    "inserted",
    "entity_sum(moving, axis=None, xp=xp)"
   ],
