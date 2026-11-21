@@ -811,24 +811,24 @@ def fluxes(n, free, complexes, controls, p, volume, *, xp):
     c_chain = p.poly_chain_cell @ c.T  # [chain, k]
     mu_chain = p.poly_chain_cell @ mu.T
     sat = _product(c_chain / (p.poly_chain_K_mM + c_chain), p.poly_chain_saturates, xp=xp)
-    x_chain = p.poly_chain_residue_mu_RT + xp.sum(p.poly_chain_net * mu_chain, axis=1)
+    x_chain = p.poly_chain_residue_mu_RT + species_sum((p.poly_chain_net * mu_chain).T, xp=xp)
     phi = sat * -xp.expm1(x_chain)
     stage = p.poly_chain_kappa * phi  # [chain] the stage rate.
     j_stage = xp.where(p.poly_chain_present, stage[:, None] * complexes, 0.0)
     v_chain = p.poly_chain_cell @ volume
     gene = p.poly_chain_copies * COPY_FMOL / xp.where(v_chain > 0, v_chain, 1.0)
-    template = xp.sum(p.poly_chain_template * c_chain, axis=1) + gene  # mM
+    template = species_sum((p.poly_chain_template * c_chain).T, xp=xp) + gene  # mM
     lam = init_rate * template  # [chain] 1/s per free machine.
     pool_free = p.poly_chain_pool @ free  # [chain] its pool's free machines.
     j_init = lam * pool_free
-    product = xp.sum(p.poly_chain_product * c_chain, axis=1)
+    product = species_sum((p.poly_chain_product * c_chain).T, xp=xp)
     # Degradations.
     n_deg = p.poly_deg_cell @ n.T  # [deg, k]
     mu_deg = p.poly_deg_cell @ mu.T
-    polymer = xp.sum(p.poly_deg_polymer * n_deg, axis=1)
+    polymer = species_sum((p.poly_deg_polymer * n_deg).T, xp=xp)
     y = (
-        p.poly_deg_length * xp.sum(p.poly_deg_monomers * mu_deg, axis=1)
-        - xp.sum(p.poly_deg_polymer * mu_deg, axis=1)
+        p.poly_deg_length * species_sum((p.poly_deg_monomers * mu_deg).T, xp=xp)
+        - species_sum((p.poly_deg_polymer * mu_deg).T, xp=xp)
     ) / p.poly_deg_length
     j_deg = deg_rate * polymer * -xp.expm1(y)
     # Transfers.
@@ -836,15 +836,15 @@ def fluxes(n, free, complexes, controls, p, volume, *, xp):
     mu_tr = p.poly_tr_cell @ mu.T
     v_tr = p.poly_tr_cell @ volume
     forward = v_tr * tr_cap * _product(c_tr / (p.poly_tr_K_mM + c_tr), p.poly_tr_saturates, xp=xp)
-    x_tr = xp.sum(p.poly_tr_nu * mu_tr, axis=1)
+    x_tr = species_sum((p.poly_tr_nu * mu_tr).T, xp=xp)
     j_tr = forward * -xp.expm1(x_tr / p.poly_tr_share)
     backward = forward * xp.exp(x_tr / p.poly_tr_share)
     # The one-sided domains, at the routes in use.
-    in_use = (xp.sum(complexes, axis=1) > 0) | (j_init > 0)
+    in_use = (entity_sum(complexes, axis=1, xp=xp) > 0) | (j_init > 0)
     ok = xp.all(xp.where(in_use, (x_chain <= X_DOM) & (product <= STANDARD_MM), True))
     ok &= xp.all(xp.where((deg_rate > 0) & (polymer > 0), y <= X_DOM, True))
     # Unidirectional consumption per (row, cell), the stage condition's rates.
-    s_total = xp.sum(j_stage, axis=1)  # [chain] every stage's exits.
+    s_total = entity_sum(j_stage, axis=1, xp=xp)  # [chain] every stage's exits.
     draw = (p.poly_chain_r * s_total)[:, None] * p.poly_chain_draws  # [chain, k]
     used = draw.T @ p.poly_chain_cell + (p.poly_deg_polymer * j_deg[:, None]).T @ p.poly_deg_cell
     used += (
@@ -862,8 +862,8 @@ def fluxes(n, free, complexes, controls, p, volume, *, xp):
 def changes(j_init, j_stage, j_deg, j_tr, p, *, xp):
     """(dn [k, cell], d free [pool], d complexes [chain, stage], produced, consumed) of fluxes or
     their extents: A J, every move's stoichiometry (the sheet's §4.7)."""
-    s_total = xp.sum(j_stage, axis=1)
-    released = xp.sum(xp.where(p.poly_chain_last, j_stage, 0.0), axis=1)
+    s_total = entity_sum(j_stage, axis=1, xp=xp)
+    released = entity_sum(xp.where(p.poly_chain_last, j_stage, 0.0), axis=1, xp=xp)
     r = p.poly_chain_r[:, None]
     chain_made = r * s_total[:, None] * p.poly_chain_releases + released[:, None] * (
         p.poly_chain_product
@@ -907,20 +907,20 @@ def route_heats(n0, dn, d_transit, extents, volume, active, p, rt, *, xp):
     j_init, j_stage, j_deg, j_tr = extents
     mu_bar = divided_potential(n0, dn, volume, p, rt, xp=xp)  # [k, cell]
     on = xp.where(active, 1.0, 0.0)
-    s_total = xp.sum(j_stage, axis=1)
-    released = xp.sum(xp.where(p.poly_chain_last, j_stage, 0.0), axis=1)
+    s_total = entity_sum(j_stage, axis=1, xp=xp)
+    released = entity_sum(xp.where(p.poly_chain_last, j_stage, 0.0), axis=1, xp=xp)
     mu_chain = p.poly_chain_cell @ mu_bar.T  # [chain, k]
     chain = -(
-        p.poly_chain_r * s_total * xp.sum(p.poly_chain_net * mu_chain, axis=1)
-        + released * xp.sum(p.poly_chain_product * mu_chain, axis=1)
+        p.poly_chain_r * s_total * species_sum((p.poly_chain_net * mu_chain).T, xp=xp)
+        + released * species_sum((p.poly_chain_product * mu_chain).T, xp=xp)
         + rt * p.poly_chain_residue_mu_RT * d_transit
     )
     mu_deg = p.poly_deg_cell @ mu_bar.T
     degradation = -j_deg * (
-        p.poly_deg_length * xp.sum(p.poly_deg_monomers * mu_deg, axis=1)
-        - xp.sum(p.poly_deg_polymer * mu_deg, axis=1)
+        p.poly_deg_length * species_sum((p.poly_deg_monomers * mu_deg).T, xp=xp)
+        - species_sum((p.poly_deg_polymer * mu_deg).T, xp=xp)
     )
-    transfer = -j_tr * xp.sum(p.poly_tr_nu * (p.poly_tr_cell @ mu_bar.T), axis=1)
+    transfer = -j_tr * species_sum((p.poly_tr_nu * (p.poly_tr_cell @ mu_bar.T)).T, xp=xp)
     return (
         xp.where(p.poly_chain_cell @ on > 0, chain, 0.0),
         xp.where(p.poly_deg_cell @ on > 0, degradation, 0.0),
@@ -969,7 +969,9 @@ def poly_half_step(state, controls, h, p, *, xp=jnp):
         xp=xp,
     )
     std_terms = rt * (p.poly_mu_RT - xp.log(p.poly_c0_mM))[:, None] * dn
-    d_transit = xp.sum(p.poly_chain_held * d_complexes, axis=1)  # dW: j r residues per complex.
+    d_transit = entity_sum(
+        p.poly_chain_held * d_complexes, axis=1, xp=xp
+    )  # dW: j r residues per complex.
     transit = (rt * p.poly_chain_residue_mu_RT * d_transit) @ p.poly_chain_cell
     standard = species_sum(std_terms, xp=xp) + transit
     heat = -(chem + standard)
@@ -992,9 +994,9 @@ def poly_half_step(state, controls, h, p, *, xp=jnp):
         poly_free_machines_fmol=free1,
         poly_complexes_fmol=complexes1,
         poly_initiated_fmol=state.poly_initiated_fmol + j_init,
-        poly_stage_exits_fmol=state.poly_stage_exits_fmol + xp.sum(j_stage, axis=1),
+        poly_stage_exits_fmol=state.poly_stage_exits_fmol + entity_sum(j_stage, axis=1, xp=xp),
         poly_released_fmol=state.poly_released_fmol
-        + xp.sum(xp.where(p.poly_chain_last, j_stage, 0.0), axis=1),
+        + entity_sum(xp.where(p.poly_chain_last, j_stage, 0.0), axis=1, xp=xp),
         poly_degraded_fmol=state.poly_degraded_fmol + j_deg,
         poly_transferred_fmol=state.poly_transferred_fmol + j_tr,
         poly_produced_fmol=state.poly_produced_fmol + _on_species(full, rows, produced, xp=xp),
@@ -1373,8 +1375,8 @@ class TemplatedPolymerisation(Operator):
 
     def own_ledgers(self, row, p, *, xp):
         """The machines per pool (F + engaged - M) and the residues per chain (r ∫S - W - L ∫Q)."""
-        engaged = xp.sum(row.poly_complexes_fmol, axis=1) @ p.poly_chain_pool
-        transit = xp.sum(p.poly_chain_held * row.poly_complexes_fmol, axis=1)
+        engaged = entity_sum(row.poly_complexes_fmol, axis=1, xp=xp) @ p.poly_chain_pool
+        transit = entity_sum(p.poly_chain_held * row.poly_complexes_fmol, axis=1, xp=xp)
         return dict(
             poly_machines=row.poly_free_machines_fmol + engaged - p.poly_pool_total_fmol,
             poly_residues=p.poly_chain_r * row.poly_stage_exits_fmol
@@ -1383,8 +1385,8 @@ class TemplatedPolymerisation(Operator):
         )
 
     def own_magnitudes(self, row, p, *, xp):
-        engaged = xp.sum(xp.abs(row.poly_complexes_fmol), axis=1) @ p.poly_chain_pool
-        transit = xp.sum(p.poly_chain_held * xp.abs(row.poly_complexes_fmol), axis=1)
+        engaged = entity_sum(xp.abs(row.poly_complexes_fmol), axis=1, xp=xp) @ p.poly_chain_pool
+        transit = entity_sum(p.poly_chain_held * xp.abs(row.poly_complexes_fmol), axis=1, xp=xp)
         return (
             xp.abs(row.poly_free_machines_fmol) + engaged + p.poly_pool_total_fmol,
             p.poly_chain_r * xp.abs(row.poly_stage_exits_fmol)

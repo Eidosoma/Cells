@@ -1035,6 +1035,96 @@
    "operators/wash_schedule.py",
    "magnitude_terms",
    "entity_sum(row.wash_energy_magnitude_pJ, axis=None, xp=xp)"
+  ],
+  [
+   "operators/templated_polymerisation.py",
+   "fluxes",
+   "entity_sum(j_stage, axis=1, xp=xp)"
+  ],
+  [
+   "operators/templated_polymerisation.py",
+   "changes",
+   "entity_sum(j_stage, axis=1, xp=xp)"
+  ],
+  [
+   "operators/templated_polymerisation.py",
+   "changes",
+   "entity_sum(xp.where(p.poly_chain_last, j_stage, 0.0), axis=1, xp=xp)"
+  ],
+  [
+   "operators/templated_polymerisation.py",
+   "route_heats",
+   "entity_sum(j_stage, axis=1, xp=xp)"
+  ],
+  [
+   "operators/templated_polymerisation.py",
+   "route_heats",
+   "entity_sum(xp.where(p.poly_chain_last, j_stage, 0.0), axis=1, xp=xp)"
+  ],
+  [
+   "operators/templated_polymerisation.py",
+   "poly_half_step",
+   "entity_sum(p.poly_chain_held * d_complexes, axis=1, xp=xp)"
+  ],
+  [
+   "operators/templated_polymerisation.py",
+   "magnitude_terms",
+   "entity_sum(row.poly_energy_magnitude_pJ, axis=None, xp=xp)"
+  ],
+  [
+   "operators/templated_polymerisation.py",
+   "own_ledgers",
+   "entity_sum(p.poly_chain_held * row.poly_complexes_fmol, axis=1, xp=xp)"
+  ],
+  [
+   "operators/templated_polymerisation.py",
+   "own_magnitudes",
+   "entity_sum(p.poly_chain_held * xp.abs(row.poly_complexes_fmol), axis=1, xp=xp)"
+  ],
+  [
+   "operators/templated_polymerisation.py",
+   "fluxes",
+   "entity_sum(complexes, axis=1, xp=xp)"
+  ],
+  [
+   "operators/templated_polymerisation.py",
+   "ledger_terms",
+   "entity_sum(cell, axis=1, xp=xp)"
+  ],
+  [
+   "operators/templated_polymerisation.py",
+   "ledger_terms",
+   "entity_sum(row.poly_dissipated_energy_pJ, axis=None, xp=xp)"
+  ],
+  [
+   "operators/templated_polymerisation.py",
+   "magnitude_terms",
+   "entity_sum(cell, axis=1, xp=xp)"
+  ],
+  [
+   "operators/templated_polymerisation.py",
+   "own_ledgers",
+   "entity_sum(row.poly_complexes_fmol, axis=1, xp=xp)"
+  ],
+  [
+   "operators/templated_polymerisation.py",
+   "own_magnitudes",
+   "entity_sum(xp.abs(row.poly_complexes_fmol), axis=1, xp=xp)"
+  ],
+  [
+   "operators/templated_polymerisation.py",
+   "poly_half_step",
+   "entity_sum(j_stage, axis=1, xp=xp)"
+  ],
+  [
+   "operators/templated_polymerisation.py",
+   "poly_half_step",
+   "entity_sum(xp.where(p.poly_chain_last, j_stage, 0.0), axis=1, xp=xp)"
+  ],
+  [
+   "operators/templated_polymerisation.py",
+   "ledger_terms",
+   "entity_sum(row.poly_standard_energy_pJ, axis=None, xp=xp)"
   ]
  ]
 }
