@@ -52,8 +52,10 @@ from cells.laws.channels import (
     kv1p6_mh,
 )
 from cells.laws.cycles import (
+    adenylate_kinase,
     cytochrome_c_oxygen_proton_cycle,
     electrogenic_nucleotide_exchange,
+    held_reductant_supply,
     nadh_ubiquinone_proton_cycle,
     phosphate_proton_symport,
     potassium_proton_exchange,
@@ -276,6 +278,8 @@ def test_kinds_and_the_inner_model_find_their_laws_by_interface_and_host():
                 electrogenic_nucleotide_exchange,
                 phosphate_proton_symport,
                 potassium_proton_exchange,
+                held_reductant_supply,  # The matrix's NADH supply (the second head).
+                adenylate_kinase,  # The intermembrane space's kinase (the second head).
             )
         },
     }
@@ -303,7 +307,8 @@ def test_kinds_and_the_inner_model_find_their_laws_by_interface_and_host():
     # The planted errors a module tuple would miss: each law is admitted only while registered.
     proton = population(law=transporter.PROTON_LAW, role="H")
     with laws.scope(without(transporter.PROTON_LAW)):
-        with pytest.raises(ConfigError, match="law is one of cells.atp_driven"):
+        rest = ", ".join(transporter.hosted_laws())  # Sorted, without the proton law.
+        with pytest.raises(ConfigError, match=f"law is one of {re.escape(rest)}$"):
             parse_spec(held_world(proton))
     rest = [law for law in passive_routes.hosted_laws() if law != passive_routes.LAW_ID]  # Bare.
     with laws.scope(without(passive_routes.LAW_ID)):

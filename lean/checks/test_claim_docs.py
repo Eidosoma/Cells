@@ -2,13 +2,22 @@
 
 import io
 import json
+import subprocess
 import unittest
 from contextlib import redirect_stderr
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
-from scripts.generate_claims import BEGIN, END, LANE, coverage, experiment_text, generate
+from scripts.generate_claims import (
+    BEGIN,
+    END,
+    LANE,
+    check_sources,
+    coverage,
+    experiment_text,
+    generate,
+)
 
 
 class ClaimDocsTests(unittest.TestCase):
@@ -125,6 +134,77 @@ class ClaimDocsTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "held-out evaluation"):
             experiment_text(evidence, "mV", LANE.parent)
 
+    def test_source_review_compares_disk_to_the_engine_and_driver_pins(self):
+        repo = self.lane.parent
+
+        def git(*args):
+            return subprocess.run(
+                [
+                    "git",
+                    "-C",
+                    str(repo),
+                    "-c",
+                    "user.name=Fixture",
+                    "-c",
+                    "user.email=fixture",
+                    "-c",
+                    "commit.gpgSign=false",
+                    *args,
+                ],
+                check=True,
+                capture_output=True,
+                text=True,
+            ).stdout.strip()
+
+        git("init", "-q")
+        engine, driver = repo / "law.py", self.lane / "run.py"
+        engine.write_text("first version")
+        git("add", "--", "law.py")
+        git("commit", "-qm", "law", "--", "law.py")
+        first = git("rev-parse", "HEAD")
+        driver.write_text("driver")
+        git("add", "--", "lean/run.py")
+        git("commit", "-qm", "driver", "--", "lean/run.py")
+        second = git("rev-parse", "HEAD")
+        engine_record = dict(
+            kind="engine",
+            sources={"law": "law.py#L1"},
+            driver="lean/run.py",
+            engine_revision=first,
+            record_revision=second,
+        )
+        reference = dict(
+            kind="reference",
+            sources={"input": "lean/run.py"},
+            driver="lean/run.py",
+            record_revision=second,
+        )
+        comparisons = {"engine": engine_record, "reference": reference}
+        self.claim["numerical"]["comparisons"] = list(comparisons)
+        self.save([self.claim], comparisons=comparisons)
+
+        self.assertEqual(check_sources(self.lane)["changed_claims"], [])
+        self.assertEqual(
+            check_sources(self.lane, first)["changed_comparisons"],
+            {"engine": ["lean/run.py"], "reference": ["lean/run.py"]},
+        )
+        engine.write_text("staged")
+        git("add", "--", "law.py")
+        engine.write_text("first version")
+        self.assertEqual(check_sources(self.lane)["changed_claims"], [])
+        engine.write_text("edited")
+        driver.rename(self.lane / "renamed.py")
+        report = check_sources(self.lane)
+        self.assertEqual(report["changed_claims"], ["first"])
+        self.assertEqual(
+            report["changed_comparisons"],
+            {"engine": ["law.py", "lean/run.py"], "reference": ["lean/run.py"]},
+        )
+        engine_record["record_revision"] = first
+        self.save([self.claim], comparisons=comparisons)
+        with self.assertRaisesRegex(ValueError, "missing cited file lean/run.py"):
+            check_sources(self.lane)
+
     def test_direct_theorems_and_exercised_operators_are_counted_separately(self):
         inventory = {
             "law": {"cells.flux@1": "lean/README.md", "cells.other@1": "lean/README.md"},
@@ -145,6 +225,13 @@ class ClaimDocsTests(unittest.TestCase):
         self.assertIn("| Open | [run]", rows[2])
         self.assertIn("1 of 2 registered laws", page)
         self.assertIn("0 of 1 registered operators", page)
+        target = "(claims/first.md#numerical-comparison)"
+        for verdict in ("failed", "checked", "open"):
+            self.claim["numerical"]["status"] = verdict
+            page, _ = coverage(
+                inventory, {"first": self.claim}, {"run": check}, self.lane.parent, []
+            )
+            self.assertEqual(target in page, verdict == "failed")
         check["laws"].append("balance@1")
         with self.assertRaisesRegex(ValueError, "wrong registry type"):
             coverage(inventory, {"first": self.claim}, {"run": check}, self.lane.parent, [])

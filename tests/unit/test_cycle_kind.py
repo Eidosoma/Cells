@@ -1241,6 +1241,79 @@ def test_the_proton_readouts_tie_delta_p_to_a_pure_proton_modes_x_with_beards_si
     run_view.validate(view)
 
 
+def test_an_asking_population_reads_out_its_share_of_the_current_and_clamped_rates_agree():
+    """FR-34 (D251, D252): cycle_current_A is each asking population's current through its host in
+    A, outward-positive (end a to end b, the cell to the bath here): e times the charge its modes
+    move N to P, turned where N is end b. A population that does not ask reads 0, and the H row's
+    share of the patch's own outward flux is the three uniports' currents. clamped_rates at the
+    row's own voltage gives the readouts' J and current exactly, and FR-34's control holds to
+    rounding: half the availability, half the current. Without the key the world keeps its entry,
+    fields and columns. The key round-trips, a non-boolean is refused, and the run view states the
+    column's unit, kind and sign. Planted: the current left in the counts' N-to-P orientation
+    misses u_b's, whose N is the bath. Parses and observes one world, without stepping: about 3 s."""
+    from cells.execution.state import initialise
+    from cells.records import run_view
+
+    raw = proton_world()
+    for entry in raw["model"]["transporters"][:2]:  # u_a (N the cell) and u_b (N the bath).
+        entry[transporter.CURRENT_READOUT_KEY] = True
+    with mono_scoped(UNIPORT):
+        spec = parse_spec(copy.deepcopy(raw))
+        structure, state, p, control = start(spec)
+        impl = get_model(spec.model)
+        history = impl.STATE_TYPE(*(np.asarray(v)[None] for v in state))
+        observed = impl.observe_history(np.zeros(1), history, p, [0.0], spec)
+        plan = run_view.prepare(spec, run_view.Request(), layout=initialise(spec).layout)
+        view = plan.view(run_view.single_file_bases([0.0], [0.0]), "write_run")
+        field = surface_pump_v3.readouts(state, control, p, xp=np, structure=structure).field
+        bare_raw = copy.deepcopy(raw)
+        for entry in bare_raw["model"]["transporters"]:
+            entry.pop(transporter.CURRENT_READOUT_KEY, None)
+        bare = surface_pump_v3.structure(parse_spec(bare_raw).model).kinds
+        planted = copy.deepcopy(raw)
+        planted["model"]["transporters"][0][transporter.CURRENT_READOUT_KEY] = "yes"
+        with pytest.raises(ConfigError, match="current_readout is true or false"):
+            parse_spec(planted)
+    declaration = dict(spec.model.kinds)[transporter.KIND_ID]
+    assert transporter.to_dict(declaration) == raw["model"]["transporters"]
+    ((_, entry),) = structure.kinds
+    assert entry == transporter.CycleAxis((UNIPORT.law_id,), True, False, True)
+    bound = kind_registry.bound(transporter.TRANSPORTER, entry)
+    assert bound.readout_columns[-1:] == transporter.CURRENT_READOUT_COLUMNS
+    ((_, entry),) = bare  # Without the key: today's entry, fields and columns.
+    assert entry == transporter.CycleAxis((UNIPORT.law_id,), True)
+    bound = kind_registry.bound(transporter.TRANSPORTER, entry)
+    assert not set(transporter.CURRENT_READOUT_COLUMNS) & set(bound.readout_columns)
+    assert not set(transporter.CURRENT_READOUT_FIELDS) & set(bound.layout_fields)
+
+    potentials = potentials_for(p, -0.15, 0.0)
+    rate, *_, current = transporter.readouts(state, state, potentials, control, p, xp=np)
+    toward_p = 2.0 * CHARGE_PER_FMOL * rate[0]  # Each moves 2 H+ from N to P per cycle.
+    assert current[0] == toward_p[0] != 0 and current[1] == -toward_p[1] != 0  # u_b: N the bath.
+    assert current[2] == 0 and rate[0, 2] != 0  # u_0 does not ask.
+    assert current[1] != toward_p[1]  # Planted: the counts' orientation, not end a to end b.
+    volts = np.full(3, potentials[0] - potentials[p.active.size])  # phi_cell - phi_bath.
+    clamped, at_volts = transporter.clamped_rates(state, control, p, volts)
+    assert np.array_equal(clamped, rate) and np.array_equal(at_volts[:2], current[:2])
+    halved = control._replace(cycle_availability=0.5 * control.cycle_availability)
+    _, half = transporter.clamped_rates(state, halved, p, volts)
+    assert half == pytest.approx(0.5 * at_volts, rel=4 * np.finfo(float).eps, abs=0.0)
+    # Observed: the uniports' currents are the H row's share of the patch's outward flux.
+    h_row = list(spec.model.species_ids).index("H")
+    patch_h = CHARGE_PER_FMOL * float(np.asarray(observed.membrane_flux_fmol_s[0])[h_row, 0])
+    observed_v = np.asarray(field.potential_V)
+    own = np.full(3, observed_v[0] - observed_v[p.active.size])  # The row's phi_cell - phi_bath.
+    _, all_current = transporter.clamped_rates(state, control, p, own)
+    assert float(np.sum(all_current)) == pytest.approx(patch_h, rel=1e-12, abs=0.0)
+    assert np.array_equal(
+        np.asarray(observed.cycle_current_A[0]), np.where([True, True, False], all_current, 0.0)
+    )
+    record = {r["field"]: r for r in view["records"]}["cycle_current_A"]
+    assert (record["unit"], record["kind"]) == ("A", "rate")
+    assert (record["sign"]["from"], record["sign"]["to"]) == ("inside", "outside")
+    run_view.validate(view)
+
+
 # ------------------------------------------------------- moved fuel at a closure node (K1)
 
 CLOSURE_HYDROLYSIS = law_registry.CycleLaw(

@@ -43,6 +43,12 @@ OSMOTIC_LUMEN = "cells.osmotic_lumen@1"  # OL2 milestone 2: lumen_volume osmotic
 SHEAR_FISSION = "cells.shear_fission@1"  # OL3 milestone 1: division at shear events.
 SHARED_POOL = "cells.shared_pool@1"  # OL2 milestone 3: K slots on one pool (population.py).
 
+# FR-21's shell (D244, D246; docs/ASSEMBLY_SHELL_DESIGN.md §4.2-§4.3): a prescribed wall with a
+# declared area and lumen, its own entry law, and a gate factor over the gate's own forms.
+PRESCRIBED_SHELL = "cells.prescribed_shell@1"
+SHELL_PERMEATION = "cells.shell_permeation@1"
+GATE_FACTOR = "cells.gate_factor@1"
+
 # The family's interfaces, declared in its row of the static model table (registry/model_table.py).
 # @1's three stay @1's: a transfer is now a step (not cells.exchange_law@1's single-molecule
 # exchange), and a rate factor here is one factor per step pair on its common state (a new major of

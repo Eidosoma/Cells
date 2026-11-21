@@ -1,0 +1,21 @@
+{
+  "dataset_id": "kettner2003_vacuolar_pump@1",
+  "doi": "10.1016/S0006-3495(03)74789-4",
+  "locator": "Figure 3 and Table 2",
+  "preparation": "Patch-clamped isolated Saccharomyces cerevisiae vacuoles. Voltage is cytosol minus lumen.",
+  "assay": "Current in the presence of ATP, ADP and phosphate minus the ATP-free baseline. Reversal is the zero of that difference current.",
+  "fuel_mM": {"ATP": 5, "ADP": 5, "Pi": 10},
+  "voltage_unit": "mV",
+  "columns": ["cytosol_pH", "lumen_pH", "calculated_E_ATP", "calculated_E_H", "reversal_relation", "measured_reversal_or_bound", "reported_SE", "trials"],
+  "rows": [
+    [8.5, 5.0, -587.5, 207.2, "=", -17.5, 5, 6],
+    [7.5, 3.1, -531.4, 260.5, ">", 40, null, 3],
+    [7.5, 4.1, -531.4, 201.3, "=", -25.6, 1, 4],
+    [7.5, 5.0, -531.4, 148.0, "=", -34.0, 4, 14],
+    [7.5, 6.0, -531.4, 88.8, "=", -38.6, 9, 3],
+    [6.0, 5.0, -491.9, 59.2, "=", -59.8, 3, 9],
+    [5.0, 5.0, -494.0, 0.0, "<", -80, null, 5],
+    [7.5, 7.5, -531.4, 0.0, "<", -80, null, 4]
+  ],
+  "limits": "Five reversals were resolved and three were reported only as bounds. E_ATP describes the authors' estimated hydrolysis free energy divided by F, including pH-dependent fuel speciation. E_H is their calculated proton equilibrium voltage. Neither column is an independently measured pump current or ATP turnover."
+}

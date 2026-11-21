@@ -7,8 +7,8 @@
     "time_origin": "Start of the constant-tension hold after the loading ramp",
     "columns": ["elapsed_s", "intact_fraction"],
     "series": [
-      {"temperature_C": 12, "points": [[92, 0.500], [149, 0.312], [268, 0.125]]},
-      {"temperature_C": 32, "points": [[33, 0.500], [70, 0.222], [125, 0.111]]}
+      {"temperature_C": 12, "published_fit_per_s": 0.0073, "points": [[92, 0.500], [149, 0.312], [268, 0.125]]},
+      {"temperature_C": 32, "published_fit_per_s": 0.024, "points": [[33, 0.500], [70, 0.222], [125, 0.111]]}
     ],
     "extraction": "Approximate centers of circles (12 °C) and squares (32 °C) on the survival plot. Fractions retain plot precision.",
     "uncertainty": "The text reports 20 vesicles at each temperature. The plotted step sizes do not match increments of 1/20. Pointwise denominators and survival error bars are unresolved."

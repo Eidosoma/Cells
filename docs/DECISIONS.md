@@ -8048,3 +8048,339 @@ the timing measurments".
    - this U5 answer.
 
    OL5's fuel references are written from the note at tag `ol4-fuel-note-2026-11-20` alone.
+
+## D248: Missed wet-lab comparisons are investigated, not tuned away; FR-29 to FR-33
+
+2026-11-20, about 21:10 UTC. The lead checked the Lean project's biological review: its four
+drivers, run at main, reproduce its numbers. The user: "all go on the list but you decide with
+adviser on the priority". Then, with three requests, the user gave a rule for every comparison with
+wet-lab data, and added "add this to your lists".
+
+**The rule, in the user's words:**
+- "Use every missed wet-lab comparison to investigate the simulator, the biological model and the
+  measurement. Preserve the original prediction, comparator, units, threshold and score. Record
+  what the investigation established, who owns the open question and which observation could
+  resolve it."
+- "One experimental source is enough to propose and prototype a missing mechanism. State what the
+  mechanism predicts, give a competing explanation, and identify a fresh measurement on which they
+  would differ."
+- "Call an observation corroborated when at least two independently collected datasets agree on
+  the same quantity under comparable conditions. A paper, its supplement and a later paper reusing
+  its samples count as one source. Even independent studies can share an assay bias."
+
+**The list.** The priorities were set by the lead with the advisor. Each item starts as a design
+note by an existing owner, with no new agent.
+- **FR-29, an optional proton-return mode for ATP-driven proton pumps: normal, started first.**
+  - It has the strongest evidence: −13.0 mV measured against −112.40 mV predicted.
+  - A held-out test exists in the same table.
+  - It goes to the kinds owner after the mitochondria laws' second head.
+- **FR-30, Cx43 junctions with two relaxation times: normal, after N2.**
+  - The gap-junction replication's gate models Cx45, not Cx43, so it is not raised under D225.
+  - A prediction needs a voltage series.
+- **FR-31, vesicle rupture during a steady tension hold: low (D230).**
+  - Its note comes before OL9 registers, since a rupture is extinction in both readings.
+  - It is blocked on rupture rates against tension, and on OL6.
+- **FR-32, a DOPC swelling validation record for the water operator: low.** It is folded into the
+  next water-operator landing.
+- **FR-33, regional labelled-protein readouts: high (D228).** A study is waiting on it. Its first
+  step is identifying any missing export field.
+- **Not listed:** two signals the review itself called easy to overfit.
+
+**The other two requests:**
+- **The turnover defect** is repaired and landed (b4273772). The Lean project's reproducer and its
+  six controls at biological rates are being run at main.
+- **The protein export for A1** joins FR-25's backlog, beside the RNA readout, with how to recover
+  protein made in a chosen window that survives to sampling. The references record that protein
+  completed in minutes 60–90 was 7.46 times the net increase.
+
+## D249: The lead finds the Kir2.1 data with the advisor; the turnover request closed; FR-30 raised
+
+2026-11-20, about 21:15 UTC. The lead asked the user for Kir2.1 inputs for FR-7 item 4. The user:
+"you have to find data with advsier I dont have it". This lifts D240's hold on the search, for the
+lead with the advisor.
+
+1. **What the source already given holds** (Ambrosini et al. 2014, read verbatim; the article and its
+   supplement count as one source, D248):
+   - **Recording solutions,** for HEK293 and U251MG together:
+     - bath 4.8 mM KCl (NaCl 135, CaCl2 1.8, MgCl2 1, glucose 10, HEPES 5);
+     - pipette about 149 mM K+ (KAsp 130, KCl 15, K2-ATP 2, MgCl2 1, HEPES 5);
+     - at room temperature.
+   - **Barium-sensitive currents** (1 mM BaCl2), with a 15 mV junction-potential adjustment.
+   - **Fig. 3G,** the current density at −100 mV, n = 6, as bars only.
+   - **Fig. S2B,** a representative current density against voltage, one cell per variant.
+   - **Not stated:** the configuration, the temperature as a number, capacitance, and any non-Kir
+     conductance.
+2. **The plan:**
+   - **First, the test that needs no voltage.** Fig. 3E's membrane-fraction ratio against Fig. 3G's
+     current ratio separates abundance from channel activity. It uses ratios, since the driving force
+     at −100 mV (about 13 mV) is below the junction adjustment.
+   - **The voltage contrast still needs the Kir share of resting conductance,** which a
+     barium-sensitive current excludes. It is either a registered band over the share, or a background
+     calibrated on wild type's voltage. That second route spends one of the two means, departs from
+     D241, and is the user's call.
+3. **The turnover defect is closed.** At main b4273772 the Lean project's reproducer exits 0: 2.0 fmol
+   stored and 0.9956673077917628 pJ booked, exactly as expected, with its controls passing.
+4. **FR-30 is raised to high.** FR-16's connexin catalogue (F3 of the gap-junction cancer replication)
+   names per-connexin constants, homotypic and heterotypic, and the preprint turns on heterotypic
+   Cx43/Cx45, so FR-30 inherits D225 as part of FR-16. D248 is corrected accordingly.
+
+## D250: FR-7's Kir2.1 comparison registers a band over the Kir share
+
+2026-11-20, about 21:34 UTC. The Kir2.1 source gives the abundance-to-current link (Fig. 3E
+against Fig. 3G), but not the Kir share of the resting conductance. The lead offered two options:
+(a) register a band over that share, or (b) calibrate the background on wild type's voltage. The
+user: "lets go with your and adivsor recommendatoin for the Kir".
+
+- **The choice is (a).** The registration fixes a band [s_lo, s_hi] over the Kir share and the
+  background's reversal E_b before any computation. The prediction is then a band on the
+  K346T-minus-wild-type voltage contrast. It fails only if the published contrast (about −5.5 mV,
+  combined SEM about 1.0 mV) falls outside the band.
+- **This keeps D241's terms:** the abundance-to-conductance conversion uses neither voltage mean.
+  It is fixed from Fig. 3G's current ratio (2.03) against Fig. 3E's abundance ratio (1.64), with
+  both arms given the same rectification.
+- **Registered first:** the test of abundance against current, which needs no voltage. It is
+  disclosed as retrospective, since both ratios were computed while planning, and it can fail only
+  for a discrepancy above about 2.9-fold.
+- **The judged run stays pending** on the protein-to-surface-unit mapping and FR-8's timing (D241).
+  A steady-state start, with the engine run as a drift check, avoids the latter.
+
+## D251: A reviewer's protein and channel readout requests join the high-priority list
+
+2026-11-20, about 21:37 UTC. The user relayed a reviewer's checks with "please review and add to
+the high priority list (with all the other high priority items)".
+
+- **What the reviewer reproduced:**
+  - **The turnover repair** at b4273772: 2 fmol and +0.9956673 pJ, with its six ordinary-rate controls
+    unchanged. The lead's own run agrees, and the request is closed (D249).
+  - **The development A1 export** (f96a9606): protein-balance errors below 1e-18 fmol over 360
+    intervals.
+  - **The window survivors** for one well-mixed pool.
+- **High priority, under the requests they extend:**
+  - **FR-25:** a restart example with a rate change at the join, showing which interval owns the
+    event and whether the joined counters reproduce the uninterrupted run. Also, a field identifying
+    the population that lost material under age- or region-selective loss. Today none exists.
+  - **FR-33:** a maintained compartment-transfer example exporting the donor, the receiver and the
+    cumulative loss together. Its control gives the same fading donor signal under transfer and under
+    local destruction, with only transfer increasing the receiver.
+  - **FR-34 (new):** channel population readouts, meaning surface count, availability and signed
+    current at a declared voltage, with sign convention and units. Its control halves availability at
+    fixed count and driving force, which must halve the current.
+
+## D252: Correction to D250: the Kir2.1 band cannot fail on today's data
+
+2026-11-20, about 21:44 UTC. D250 said the registered band "fails only if the published contrast
+falls outside the band". The FR-7 lane's registration draft shows that, with the Kir share left as a
+declared ignorance range [0.1, 0.9], the band spans about −15.6 to −1.2 mV. The published contrast
+(about −5.5 mV, 2-SEM interval −7.5 to −3.4 mV) cannot fall outside it. So the band is a consistency
+check, not a test. Nothing is tagged.
+
+- **What the source establishes:** a consistent chain.
+  - The wild-type-to-K346T decay-rate ratio is about 1.7, 1.5 and 2.3 at 3, 6 and 12 h (Fig. 4B).
+  - The membrane-fraction ratio is 1.64 (Fig. 3E), and the current ratio 2.03 (Fig. 3G).
+  - Fig. S2B, read by the lead, shows mean barium-sensitive current density against voltage. It
+    reverses near −85 to −90 mV, consistent with E_K from the solutions, and K346T's current is about
+    twice wild type's at negative voltages and in the small outward hump above E_K.
+  - So slower decay, more surface channels and more current agree. But none of these links tests an
+    engine prediction sharply, and the decay ratios assume equal synthesis.
+- **What remains open:** the Kir share of the resting conductance. A measurement that would resolve
+  it is the background conductance, or resting potential, of mock-infected or untransfected U251MG
+  cells in comparable solutions.
+- **No world is built and no factor source is commissioned** until one link can fail. The mapping
+  questions wait too.
+- **FR-34's engine items, found by the same desk check,** are on the list: current at a declared
+  voltage, an effective-availability record, and per-route flux records for the kinds' routes.
+
+## D253: FR-7's Kir2.1 comparison: a search for the background conductance, then a labelled calibration on wild type's voltage
+
+2026-11-20, about 21:45 UTC. D252 offered three ways on. The user: "2. then 3. and note it well".
+
+1. **First, the lead searches for one measurement:** the background, non-Kir conductance or the
+   resting potential of mock-infected or untransfected U251MG cells, in solutions comparable to the
+   Kir2.1 paper's. The lead does this itself, with targeted reads and no agent. If a guard refuses, it
+   stops and reports. Any value found is quoted with its source, conditions and units, and checked
+   for comparability before it narrows the Kir share.
+2. **Then option (b):** the background is calibrated so that wild type rests at its measured −70.1
+   mV, and K346T's voltage is predicted from the abundance-to-current chain.
+   - **This departs from D241,** whose conversion was to use neither voltage mean. Wild type's mean
+     is spent on calibration, so only K346T's voltage, and the K346T-minus-wild-type contrast, remain
+     as the comparison.
+   - **The result is retrospective:** both means were known before the calibration was chosen.
+   - **Every record of this result carries that statement,** its source and its limits: the
+     unstated recording configuration, the room temperature, and the equal-synthesis assumption.
+
+## D254: FR-7's Kir2.1 comparison stays a consistency check; what would make it a test
+
+2026-11-20, about 21:53 UTC. This carries out D253: "2. then 3. and note it well".
+
+1. **The search (2) found one independent U251 background source.** Ratto et al., Cell Mol Neurobiol
+   2019/2020, doi:10.1007/s10571-019-00776-3, PMC11448950, read verbatim. It is © Springer with no CC
+   licence, so bare cited numbers only (D227).
+   - **Recording:** nystatin-perforated patch; bath 5 mM K+, pipette 140 mM KCl; temperature not
+     stated.
+   - **Cells outside a wound:** Vm −34.7 ± 1.7 mV (n = 33), 26 of 33 without rectifying currents.
+   - **Cells with constitutive currents:** Rm 0.72 GΩ and Cm 29.9 pF (n = 46).
+   - It is a different lab and preparation, so it is not corroboration under D248.
+2. **It does not make the comparison able to fail.** The FR-7 lane's desk analysis:
+   - Nystatin pores pass Cl⁻, so Ratto's cytosol has about 144 mM Cl⁻ against about 17 mM in
+     Ambrosini's dialysed cells. The OUT cells' −34.7 mV is the background's reversal in Ratto's
+     conditions only.
+   - Carried across by a Goldman–Hodgkin–Katz estimate, the background reverses near −37 mV if its
+     non-K part is Na⁺, or near −76 mV if it is Cl⁻.
+   - The resting conductance gives only an upper bound on the background.
+   - With these, option (a)'s band on the K346T-minus-wild-type contrast runs from about −16.6 to 0.0
+     mV. It overlaps the published 2-SEM interval [−7.5, −3.4] mV whatever the data.
+3. **Option (b), the calibration (3).** It spends wild type's −70.1 mV, departs from D241, is
+   retrospective, and carries the configuration (pump taken as 0), temperature and equal-synthesis
+   caveats.
+   - Over the background reversal's honest range (−69 to −37 mV), it predicts a contrast of −0.6 to
+     −7.0 mV. That cannot fail.
+   - Only with a Na-type background assumed (about −35 mV) does it narrow: to −6.4 to −7.9 mV at
+     Fig. 3G's current ratio 2.03, or −4.8 to −5.5 mV at Fig. 3E's abundance ratio 1.64.
+4. **So FR-7 item 4 stays a consistency check.** The chain agrees: slower decay (Fig. 4B), more
+   membrane channel (Fig. 3E, 1.64), more current (Fig. 3G, 2.03; Fig. S2B the same at every
+   voltage), and a more negative rest. No link yet tests an engine prediction. No world is built and
+   no factor source is commissioned (D252).
+   - **What would make it a test:** the U251 background's ionic composition (Na⁺ against Cl⁻), or a
+     background measured in Ambrosini's own solutions; Fig. S2B's outward hump read as numbers; and
+     the configuration of Fig. 3F's recordings.
+   - **If it becomes a test,** the route is the passive rectifier with the kinds owner's factor
+     source, whose hump relative to E_K matches Fig. S2B; `kir2p1_mh2@1`'s outward plateau does not.
+   - Ratto's values join `validation/fr7/data/` as bare cited numbers, with their comparability
+     caveats.
+
+## D255: Origin of life and gene regulation pause until tomorrow; their agents turn to core and FR work
+
+2026-11-20, about 22:07 UTC. The user: "I would like to deprioritze origin of life until tomorrow
+and also gene regulation - do not stop any tests or such - then use the agents for core / FR work
+from all the user/reviewer reqeuest today".
+
+- **No test, gate or run is stopped.** Heads whose gates pass still land. The paused lanes' work
+  resumes tomorrow:
+  - origin of life: break-and-renew, the fuel references, GARD's version 2;
+  - gene regulation: G4 and FR-25's reviewer follow-ups.
+- **FR-20 and FR-21 count as FR work** (D237, with the requester's acceptance given today). The first
+  origin-of-life builder continues them: FR-20's landing, FR-21's site step, then its shell.
+- **The freed agents take today's core and FR requests:**
+  - **the second origin-of-life builder:** FR-30's design note (Cx43's two relaxation times, within
+    FR-16's catalogue), built after N2 lands; then one of FR-34's engine items;
+  - **the gene-regulation agent:** FR-33 (the regional labelled-protein readouts: which export fields
+    exist and which are missing, and the transfer-against-destruction example), taken over from the
+    FR-7 lane;
+  - **the fuel references agent** stops at a clean point and keeps its code-blindness for tomorrow.
+- **Unchanged:**
+  - N2 for FR-8, first;
+  - FR-24, then FR-26 and FR-28, by the operators owner;
+  - FR-29's design note, by the kinds owner after its second mitochondria head;
+  - FR-34, Kir2.1 and the Ratto data, by the FR-7 lane;
+  - the robustness fixes.
+
+## D256: Mitochondria pause too; Fig. S2B read, and FR-7 item 4's options for the user
+
+2026-11-20, about 22:08 UTC. The user: "same with mitochondria, keep tests going and suh but lets
+focus on core and fr tonight while I sleep".
+
+1. **Mitochondria pause until tomorrow, beside origin of life and gene regulation (D255).** Running
+   gates and runs continue, and heads that pass still land. The kinds owner turns to FR-29's design
+   note.
+2. **Fig. S2B, read as numbers** by the FR-7 lane as a second reader (from the supplement's embedded
+   image, its SHA-256 checked; rows merged at c97f1ab1). This completes D254's record.
+   - **These are the six-cell means:** the values at −100 mV equal Fig. 3G's (wild type −7.25 against
+     −7.3; K346T −14.70 against −14.8 pA/pF), although the legend says "representative".
+   - **The points sit on the command steps** (−140 to −30 mV) within 0.2 mV, so the axis is most likely
+     the command voltage, with no 15 mV adjustment.
+   - **So it most likely shows barium-subtracted Kir current,** whose true zero crossings (about −88
+     and −92 mV) lie near E_K. This doesn't revive item 4: it checks E_K and gives Kir's shape, not its
+     share of the resting conductance.
+   - **The K346T-to-wild-type ratio** is flat near 1.9 on the inward limb. A fit scaling wild type's
+     shape could fail only for an outward ratio above about 5–6 or below 0.5, so the test has little
+     power.
+3. **D254's chloride point** (nystatin pores letting Cl⁻ into Ratto's cells) is the FR-7 lane's
+   inference, made without reading Ratto's paper, and is labelled so.
+4. **FR-7 item 4's options, for the user's decision tomorrow.**
+   - **Close it:** D238's item 4 is then recorded as unmet, not passed, with a PROGRESS entry and the
+     open question's owner.
+   - **Change the endpoint** to current at imposed voltages. This is retrospective, has low power,
+     and is the user's call, since D241 set voltage.
+   - **Get the missing measurement:** each line's barium-induced voltage shift, or mock-cell voltage
+     and resistance in Ambrosini's solutions, with Fig. 3F's configuration.
+
+## D257: The Kir2.1 variant panel cannot test abundance against current; item 4 still waits for the user
+
+2026-11-20, about 22:43 UTC. The user found a Kir2.1 variant study (Ross et al., J Biol Chem 2025,
+doi:10.1016/j.jbc.2025.110985, CC BY 4.0) and downloaded its supplementary tables. It was offered
+with the advice to keep surface abundance and channel activity as separate measurements. The FR-7
+lane extracted Tables S1, S2 and S6, which are merged as bare cited values in validation/fr7/data/.
+
+- **What the panel holds:**
+  - surface expression with the variant co-expressed with wild type, for 70 variants;
+  - surface with the variant alone, for 10;
+  - yeast growth for 20;
+  - barium-subtracted current density at −50 and −100 mV in HEK293 cells expressing one variant
+    each, for 13.
+- **Why it can't test current against abundance:**
+  - Only one variant (D71Y) has its surface level and its current measured in the same channel
+    make-up.
+  - Ten of the 13 current lines are null.
+  - Every value has been seen, so any test would be retrospective.
+  - "Abundance alone" has one parameter, fixed by wild type, so a held-out split has nothing to fit.
+  - The two-voltage scale check has no detectable power.
+  - The panel holds no K346T and no membrane voltage.
+- **What it does show** is why abundance and per-channel activity must stay separate quantities,
+  which the FR-7 design keeps.
+- **What would make a test:** surface abundance measured in the same single-variant lines that were
+  patch-clamped (Table S4's totals, if from single-variant lines, measure total protein only).
+- **Item 4's options are unchanged** (D256): close it as unmet, change the endpoint, or get the
+  measurement. The user decides.
+
+## D258: FR-29 reads Kettner's full current-voltage curves before any build
+
+2026-11-20, about 22:50 UTC. The lead explained FR-29's issue with the advisor. The user: "1.".
+- **Established:** a tightly coupled pump is ruled out. A lumen-pH change from 4.1 to 6.0 moved the
+  ATP-dependent reversal by −13.0 mV, where any fixed ratio predicts −112.4 mV.
+- **Weak so far:**
+  - The return mode's first prediction missed two rows. It is preserved as made (D248).
+  - Those rows then shaped the revised form.
+  - The remaining held-out row lies between the two fitted rows, so almost any smooth model passes
+    it, and the zero-gradient bounds only cap the return's strength.
+- **Structural:** the lumen-pH-3.1 bound fails for one saturable return site in every variant. The
+  response is nearly flat from pH 6.0 to 4.1, then rises more than 65 mV from 4.1 to 3.1.
+- **The competing explanation** is variable coupling. ATP use at the reversal separates them, and
+  Kettner does not report it.
+- **The choice:** first read Kettner's Fig. 3, the full ATP-dependent current-voltage curves, after
+  confirming which conditions it shows. It gives many points across voltages at each pH without
+  spending a held-out row. Then decide whether a return mode can work.
+- **Kept:** the build stays held; the pH 3.1 row is not dropped from the mode's domain; variable
+  coupling stays on the backlog.
+
+## D259: A review's eight findings in FR-33's tracer, G4's readers and the Kir table: fixed before any of their outputs is scored
+
+2026-11-21, about 11:14 UTC. A reviewer, relayed by the user ("review this also with adviser then
+deal with as a matter of priority"), reported eight findings. The lead and the advisor found all
+eight real, and assigned them that day.
+- **Held:** no output of FR-33's tracer, G4's cohort reader or G4's comparison tool is used to score a
+  wet-lab discrepancy until its fixes land. G4's dt 1.0 and dt 0.5 results stay unread until the
+  comparison is fixed and rerun.
+- **FR-33's tracer** (on main; the operators owner):
+  1. (P1) the trapezoid cohort update goes negative when a node's step outflow exceeds the sum of its
+     endpoint amounts, while the balance check passes. Fix: refuse on a stated resolution bound,
+     and check each cohort's bounds.
+  2. (P2) the mover check is a deny-list keyed on a species field, so FR-27's wash, which declares
+     nodes, was admitted and its removal of label unseen. Fix: fail closed.
+  3. (P2) a caller's cohort named `unlabelled` is overwritten on export. Fix: reserved names
+     refused, and the serialized cohorts checked at every row.
+- **G4's readers** (on gene-regulation-lane, not on main; the GR agent):
+  1. (P1) `--product R` selected protein completions by default, overstating new RNA by 66.4×.
+  2. (P1) `compare_run` reported zero error for a comparison it skipped. Fix: match by required
+     times, with matched and expected counts.
+  3. (P2) the known-rate control fails at zero and near-zero clearance.
+  4. (P2) a run receipt omitted an untracked script, against the provenance rule. The original
+     receipt is kept, with an addendum citing the reviewer's bit-for-bit replay.
+- **The Kir table** (on main; the FR-7 agent): (P2) the S2B rows' n = 6 is inferred from Fig. 3G
+  and moves to its own field. Any number behind D250, D254 or D256 that used it away from −100 mV
+  is corrected by a dated entry.
+- **Provenance sweep:** two validation drivers on main record no untracked sources; they are fixed
+  in the same class as finding 8.
+- **Independent check:** an agent that wrote none of the code reruns the reviewer's reproducers at
+  the base and on each fixed head before anything lands.
+- **The reviewer confirmed** that the extreme-turnover repair and the restart at a rate change held
+  up on replay.

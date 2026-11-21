@@ -11,15 +11,22 @@ In NumPy on the S2 cleft cell (tests/membrane_insertion_fixtures.cleft_cell: a f
 * Q5's observer reads the lumen filled to its patch's area, bitwise a NumPy fill of the state;
 * zero growth: the half-step selects its start state bitwise and the view is the declared
   layout;
-* definition refusals, insertion's onset rule admitting this operator, and the round trip.
+* definition refusals, insertion's onset rule admitting this operator, and the round trip;
+* the fill heat at extreme dilution (one table, each row a claim with its plant; the independent
+  Lean project's finding of 20 November 2026, lean/PROGRESS.md "cleft mixing heat"): at 1 mM
+  against 2^-60 mM, either way round, finite and within ulps of a 50-digit reference, and the
+  landed bits wherever the ratios are ordinary (kernels in NumPy and compiled, no world).
 The compiled guards are test_restricted_lumen_runs.py.
 """
 
+import contextlib
 import copy
 import math
+from decimal import Decimal, localcontext
 from types import SimpleNamespace
 
 import jax
+import jax.numpy as jnp
 import numpy as np
 import pytest
 
@@ -354,3 +361,139 @@ def test_declarations_round_trip_and_summary():
     assert owners["views"]["extracellular_volume"] == {"provider": lumen.LAW_ID, "readers": []}
     assert lumen.LAW_ID in owners["views"]["membrane_area"]["readers"]
     assert lumen.LAW_ID in owners["state"]["reservoir_supplied"]["writers"]
+
+
+# ------------------------------------------------------------ the fill heat at extreme dilution
+
+T_K = 310.0
+
+
+def landed_fill_energy(amounts, volume, bath, dv, p, *, xp):
+    """fill_energy as it landed (transcribed): mixing from e alone."""
+    rt = 1e-3 * R * p.temperature
+    on = p.lumen_node & (dv > 0)
+    v = xp.where(on, volume, 1.0)
+    v1 = v + dv
+    n = xp.where(on, amounts, 1.0)
+    cb = xp.where(on, bath, 1.0)
+    c = n / v
+    c1 = (n + cb * dv) / v1
+    e = dv * (c - cb) / (v1 * c1)
+    eb = v * (cb - c) / (v1 * c1)
+    heat = rt * lumen.species_sum(
+        c1 * (v * lumen.mixing(e, xp=xp) + dv * lumen.mixing(eb, xp=xp)), xp=xp
+    )
+    fluid = -rt * lumen.species_sum(cb, xp=xp) * dv
+    return xp.where(on, heat, 0.0), xp.where(on, fluid, 0.0)
+
+
+def heat_of(args, compiled, function=None):
+    """(heat, fluid) stacked, from fill_energy (or `function`), in NumPy or compiled afresh."""
+    f = function or lumen.fill_energy
+    amounts, volume, bath, dv = args
+    p = SimpleNamespace(lumen_node=np.ones(volume.shape, bool), temperature=T_K)
+    if compiled:
+        out = jax.jit(lambda *a: f(*a, p, xp=jnp))(amounts, volume, bath, dv)
+    else:
+        with np.errstate(all="ignore"):
+            out = f(amounts, volume, bath, dv, p, xp=np)
+    return np.stack([np.asarray(v, dtype=float) for v in out])
+
+
+def fills(cleft_mM, bath_mM, volume=0.01, dv=5e-4):
+    """One species' fills at the given cleft and bath concentrations (columns): (amounts [1, m],
+    volume [m], bath [1, m], dv [m])."""
+    c, b = np.broadcast_arrays(np.atleast_1d(np.asarray(cleft_mM, float)), np.asarray(bath_mM))
+    c, b = c.astype(float), b.astype(float)
+    v = np.full(c.shape, volume)
+    return c[None, :] * v[None, :], v, b[None, :], np.full(c.shape, dv)
+
+
+def reference_heat(args):
+    """RT c' [V phi(c / c') + dV phi(c_b / c')] per column, phi(x) = x ln x - x + 1, 50 digits."""
+    amounts, volume, bath, dv = args
+    out = []
+    with localcontext() as ctx:
+        ctx.prec = 50
+        rt = Decimal("1e-3") * Decimal(R) * Decimal(T_K)
+        for j in range(volume.size):
+            n, v, cb, d = (Decimal(float(x)) for x in (amounts[0, j], volume[j], bath[0, j], dv[j]))
+            c1 = (n + cb * d) / (v + d)
+
+            def phi(x):
+                return x * x.ln() - x + 1
+
+            out.append(rt * c1 * (v * phi(n / v / c1) + d * phi(cb / c1)))
+    return out
+
+
+def within(heat, expected, ulps):
+    return all(
+        math.isfinite(h) and h > 0 and abs(Decimal(h) - x) <= ulps * Decimal(np.spacing(h))
+        for h, x in zip(heat, expected, strict=True)
+    )
+
+
+def heat_failures(row):
+    """The claims a row breaks, by name, with fill_energy as it stands."""
+    out = []
+    if row in ("trace_bath", "trace_cleft"):
+        # The Lean cases: 1 mM against 2^-60 mM, the ratio c_b / c' or c / c' about 1e-18.
+        pair = (1.0, 2.0**-60) if row == "trace_bath" else (2.0**-60, 1.0)
+        args = fills(*pair)
+        for compiled in (False, True):
+            heat = heat_of(args, compiled)[0]
+            if not within(heat, reference_heat(args), 8):
+                out.append(f"heat {heat.tolist()} ({compiled=})")
+    elif row == "ordinary_bits":
+        # Ratios from 1e-6 to 1e6 and near 1 (the series): the landed heat and fluid work, bit
+        # for bit, in NumPy and compiled.
+        rng = np.random.default_rng(31)
+        c = 10 ** rng.uniform(-3, 2, 64)
+        ratio = np.concatenate([10 ** rng.uniform(-6, 6, 48), 1 + rng.uniform(-1e-5, 1e-5, 16)])
+        args = fills(c, c * ratio, dv=5e-4 * rng.uniform(0.1, 10, 64))
+        for compiled in (False, True):
+            landed = heat_of(args, compiled, landed_fill_energy)
+            if heat_of(args, compiled).tobytes() != landed.tobytes():
+                out.append(f"not the landed bits ({compiled=})")
+    elif row == "threshold_edge":
+        # Ratios from 2^-60 to 2^-41, below RATIO_BELOW: within ulps of the reference; from just
+        # above it to 2^-30: the landed bits (NumPy).
+        below = fills(1.0, 2.0 ** -np.linspace(41, 60, 12))
+        if not within(heat_of(below, False)[0], reference_heat(below), 8):
+            out.append("not the reference below 2^-40")
+        above = fills(1.0, 2.0 ** -np.linspace(30, 39.9, 12))
+        if heat_of(above, False).tobytes() != heat_of(above, False, landed_fill_energy).tobytes():
+            out.append("not the landed bits above 2^-40")
+    return out
+
+
+@contextlib.contextmanager
+def replaced(name, value):
+    """An attribute of the operator's module replaced for the block (a plant)."""
+    saved = getattr(lumen, name)
+    setattr(lumen, name, value)
+    try:
+        yield
+    finally:
+        setattr(lumen, name, saved)
+
+
+def e_alone(e, ratio=None, *, xp):  # Planted: the e-form as it landed, the ratio ignored.
+    return EARLIER_MIXING(e, xp=xp)
+
+
+EARLIER_MIXING = lumen.mixing
+HEATS = (  # Each plant a context: the e-form alone, or the ratio form everywhere.
+    pytest.param("trace_bath", lambda: replaced("mixing", e_alone), id="trace_bath"),
+    pytest.param("trace_cleft", lambda: replaced("mixing", e_alone), id="trace_cleft"),
+    pytest.param("ordinary_bits", lambda: replaced("RATIO_BELOW", np.inf), id="ordinary_bits"),
+    pytest.param("threshold_edge", lambda: replaced("mixing", e_alone), id="threshold_edge"),
+)
+
+
+@pytest.mark.parametrize("row, plant", HEATS)
+def test_the_fill_heat_is_finite_at_extreme_dilution_and_each_plant_breaks_it(row, plant):
+    assert heat_failures(row) == []
+    with plant():
+        assert heat_failures(row) != []

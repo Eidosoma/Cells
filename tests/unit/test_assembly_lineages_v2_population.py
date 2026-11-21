@@ -52,7 +52,7 @@ from cells.models.assembly_lineages_v2 import (
     streams,
 )
 from cells.records import relations as rel
-from tests.assembly_lineage_v2_fixtures import definition
+from tests.assembly_lineage_v2_fixtures import definition, site_binding
 from tests.unit.test_assembly_lineages_v2_division import TIMES, spec_of, world_a
 from tests.unit.test_assembly_lineages_v2_lumen import K_L, osmotic_world
 
@@ -371,6 +371,8 @@ REFUSALS = {
     "a_fresh_pool_of_the_wrong_length": (
         {"schedules": [{"index": 0, "kind": "transfer", "times_s": [1.0], "K_keep": 1,
                         "fresh_pool": [1]}]}, "one count per finite pool place"),
+    # FR-21 (§0.2f): the requester's binding on the one-particle fixture, its pair undeclared.
+    "an_undeclared_site_binding": ({"binding": "undeclared"}, "crosses phases at the membrane"),
 }  # fmt: skip
 
 
@@ -378,7 +380,11 @@ REFUSALS = {
 def test_every_refusal_of_the_shared_pool(case):
     change, message = REFUSALS[case]
     w = osmotic_world(L_pool=30, L_mem=0, S_pool=6, S_lumen=0, I_lumen=0, floor=4 * K_L)
-    w["population"] = {"structure": SHARED_POOL, "slots": 2, "founders": [FOUNDER]}
+    founder = FOUNDER
+    if "binding" in change:
+        site_binding(w, declared=change["binding"] == "declared")
+        founder = dict(FOUNDER, **{"R@membrane": 4, "XR@membrane": 2})
+    w["population"] = {"structure": SHARED_POOL, "slots": 2, "founders": [founder]}
     d = definition(w, molecules=128, horizon=5.0)
     d["execution"]["mode"] = change.get("mode", "population")
     if "schedules" in change:

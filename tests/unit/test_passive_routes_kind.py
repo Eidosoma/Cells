@@ -12,6 +12,8 @@ them. One passive route on the contact patch carries S at k = 1e15 P A (1/V_a + 
 - A route on a row another route also moves keeps the tableau's booking, bitwise.
 - Binding refuses a charged species and a host that carries the species itself; dt L > 1 is
   refused by the step checks.
+- FR-34's readouts: a route that asks reads out the step's own flux and its share of the patch's
+  current, for each of the four laws, and a world that does not ask keeps today's world.
 """
 
 import copy
@@ -25,7 +27,7 @@ from cells.definitions.specs import ConfigError, parse_spec
 from cells.definitions.surface_pump_v3_spec import control_values
 from cells.execution.errors import NumericalError
 from cells.execution.runner import run
-from cells.kinds import passive_routes
+from cells.kinds import passive_routes, proton_buffer
 from cells.laws.electrochemistry import CHARGE_PER_FMOL, F, R, bernoulli
 from cells.models import surface_pump_v3
 from cells.registry import kind_registry
@@ -419,3 +421,107 @@ def test_a_charged_trace_row_relaxes_as_the_constant_field_closed_form(voltage_f
     )
     assert end[0] == pytest.approx(expected, rel=5e-4, abs=0)
     assert float(final.passive_dissipated_energy_pJ[0]) > 0
+
+
+# --------------------------------------------------------------- FR-34: the routes' readouts
+
+
+def asking_worlds():
+    """One world per law, each with a route asking for its readouts (FR-34): the closed pair's
+    neutral route beside one that does not ask, the charged pair at its held -50 mV, the
+    rectifier's pair, and FR-4's development world's proton leak."""
+    from tests.unit import test_inward_rectifier_route as rectifier
+
+    neutral = closed_pair(routes=[dict(route("leak_S", P), readout=True), route("quiet_S", P / 2)])
+    charged = charged_pair(voltage_fmol=-5.18e-5, dt=2.5e-4)
+    charged["model"][passive_routes.MODEL_KEY][0]["readout"] = True
+    leak = fr.development_world(fr.fr4_world())
+    for entry in leak["model"][passive_routes.MODEL_KEY]:
+        entry["readout"] = True
+    rectified = rectifier.closed_pair(rectifier.route(readout=True))
+    return {"neutral": neutral, "charged": charged, "rectifier": rectified, "leak": leak}
+
+
+@pytest.mark.parametrize("law", ("neutral", "charged", "rectifier", "leak"))
+def test_an_asking_route_reads_out_the_steps_own_flux_and_its_share_of_the_current(law):
+    """FR-34 (D251, D252): at the observed row each asking route's passive_flux_fmol_s is the rates
+    hook's own flux, exactly (inward, as passive_transferred moves), and passive_current_A its
+    share of the patch's membrane current (outward, A); a route that does not ask reads 0.
+    clamped_flux at the row's own patch voltage gives the same values, and FR-34's control holds:
+    half the availability, exactly half the current. Without the key the world keeps today's
+    structure entry, its fields and its observation columns, and has no readouts hook. On the
+    charged pair, the only mover, the route's current is the patch's own. Planted: with the
+    flux's inward sign it is not. Each row parses one world and observes its start, without
+    stepping: about 2 s each, the leak's FR-4 world the longest."""
+    raw = asking_worlds()[law]
+    spec = parse_spec(copy.deepcopy(raw))
+    model = get_model(spec.model)
+    state, p = model.initial_values(spec)
+    control = model.Control(*(v[0] for v in control_values(spec, [0.0])))
+    history = model.STATE_TYPE(*(np.asarray(v)[None] for v in state))
+    observed = model.observe_history(np.zeros(1), history, p, [0.0], spec)
+    structure = surface_pump_v3.structure(spec.model)
+    values = surface_pump_v3.readouts(state, control, p, xp=np, structure=structure)
+    potentials = np.asarray(values.field.potential_V)
+    read = state
+    if any(kind == proton_buffer.KIND_ID for kind, _ in structure.kinds):  # FR-4's stage read.
+        read = proton_buffer.stage_read(state, p, xp=np)[0]
+    rates = passive_routes.rates(read, potentials, control, p, xp=np)
+    flux = np.asarray(rates.derivatives["passive_transferred"])
+    asks = np.asarray(p.passive_readout)
+    readout_flux = np.asarray(observed.passive_flux_fmol_s[0])
+    readout_current = np.asarray(observed.passive_current_A[0])
+    assert np.array_equal(readout_flux, np.where(asks[None, :], flux, 0.0))
+    assert np.any(readout_flux != 0) and (law != "neutral" or not asks[1])
+    volts = potentials[p.passive_inside] - potentials[p.passive_outside]
+    clamped, current = passive_routes.clamped_flux(read, control, p, volts)
+    assert np.array_equal(np.where(asks[None, :], clamped, 0.0), readout_flux)
+    assert np.array_equal(np.where(asks, current, 0.0), readout_current)
+    halved = control._replace(membrane=0.5 * control.membrane)
+    assert np.array_equal(passive_routes.clamped_flux(read, halved, p, volts)[1], 0.5 * current)
+    if law == "charged":  # Its one mover: the route's current is the patch's own.
+        outward = np.asarray(observed.membrane_flux_fmol_s[0])[:, int(p.passive_membrane[0])]
+        own = CHARGE_PER_FMOL * float(np.sum(np.asarray(p.valence)[:, 0] * outward))
+        assert readout_current[0] == own != 0
+        assert -readout_current[0] != own  # Planted: the flux's inward sign.
+    bare = copy.deepcopy(raw)
+    for entry in bare["model"][passive_routes.MODEL_KEY]:
+        entry.pop(passive_routes.READOUT_KEY, None)
+    bare_structure = surface_pump_v3.structure(parse_spec(bare).model)
+    entry = dict(bare_structure.kinds)[passive_routes.KIND_ID]
+    assert entry == tuple(sorted({r["law"] for r in raw["model"][passive_routes.MODEL_KEY]}))
+    bound = kind_registry.bound(passive_routes.PASSIVE_ROUTES, entry)
+    assert bound.readouts is None and bound.readout_columns == ()
+    columns = surface_pump_v3.kind_types(bare_structure).OBSERVATION_FIELDS
+    assert not set(passive_routes.READOUT_COLUMNS) & set(columns)
+
+
+def test_the_readout_key_round_trips_states_its_records_and_refuses_a_non_boolean():
+    """FR-34: the key is written back only where a route asks, the run view states each column's
+    unit, kind and sign, and a value other than true or false is refused on both route forms.
+    Parses only, about 2 s."""
+    from cells.execution.state import initialise
+    from cells.records import run_view
+    from tests.unit import test_inward_rectifier_route as rectifier
+
+    raw = asking_worlds()["neutral"]
+    spec = parse_spec(copy.deepcopy(raw))
+    declaration = dict(spec.model.kinds)[passive_routes.KIND_ID]
+    assert passive_routes.to_dict(declaration) == raw["model"][passive_routes.MODEL_KEY]
+    plan = run_view.prepare(spec, run_view.Request(), layout=initialise(spec).layout)
+    view = plan.view(run_view.single_file_bases([0.0], [0.0]), "write_run")
+    records = {r["field"]: r for r in view["records"]}
+    flux, current = records["passive_flux_fmol_s"], records["passive_current_A"]
+    assert (flux["unit"], flux["kind"]) == ("fmol/s", "rate")
+    assert (current["unit"], current["kind"]) == ("A", "rate")
+    assert (flux["sign"]["from"], flux["sign"]["to"]) == ("outside", "inside")
+    assert (current["sign"]["from"], current["sign"]["to"]) == ("inside", "outside")
+    run_view.validate(view)
+    for bad in ("yes", 1):
+        planted = copy.deepcopy(raw)
+        planted["model"][passive_routes.MODEL_KEY][0][passive_routes.READOUT_KEY] = bad
+        with pytest.raises(ConfigError, match="readout is true or false"):
+            parse_spec(planted)
+        rectified = rectifier.closed_pair(rectifier.route(readout=bad))
+        with pytest.raises(ConfigError, match="readout is true or false"):
+            parse_spec(rectified)

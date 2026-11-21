@@ -17,6 +17,7 @@ import copy
 from types import MappingProxyType
 
 import jax
+import numpy as np
 import pytest
 
 from cells.definitions import pump_composite_spec as cs
@@ -36,6 +37,7 @@ from cells.operators.contract import Operator, Read, check_declarations, factor_
 from cells.registry.models import get_model
 from validation.tissue import cell_replacement_fixtures as rfx
 from validation.tissue import pump_water_fixtures as wfx
+from validation.tissue import secreted_species_fixtures as fx
 
 WATER = "ideal_osmosis_linear_compliance_water@1"
 SYMPORT = "k_anion_symport_mass_action@1"
@@ -376,6 +378,138 @@ def test_rate_routes_are_checked_when_a_composition_is_built():
     assert check([(source, ((TURNOVER, "x"),)), (turnover, None)]) == [
         f"rate_source@1 declares a route to {TURNOVER}'s x, not one it routes"
     ]
+
+
+class QuantityOwner(Operator):
+    """A planted owner of a readable quantity (R3): level, a constant 0.25 per cell."""
+
+    LAW_ID = "quantity_owner@1"
+    SPLIT = True
+    RK4 = "split"
+    QUANTITIES = MappingProxyType({"level": ("cell_slot", "1")})
+
+    def half_step(self, state, h, control, p, *, xp):
+        return state, None
+
+    def quantities(self, state, p, *, xp):
+        return {"level": xp.full(p.volume.shape, 0.25)}
+
+
+class QuantityReader(Operator):
+    """A planted reader (R3) of the owner's level, a factor operator on @3's junctions that records
+    what its hooks receive; a definition's declaration is the tuple of reads it declares."""
+
+    LAW_ID = "quantity_reader@1"
+    SPLIT = True
+    RK4 = "split"
+    CONTROL_FACTORS = ("junction",)
+    QUANTITY_READS = MappingProxyType({"quantity_owner@1": ("level",)})
+    seen = {}
+
+    def half_step(self, state, h, control, p, *, xp):
+        return state, None
+
+    def control_factors(self, state, p, *, xp, quantities=None):
+        self.seen["control_factors"] = None if quantities is None else quantities(state)
+        return {"junction": xp.ones(p.junction_sender.shape)}
+
+    def factor_valid(self, state, p, *, xp, quantities=None):
+        self.seen["factor_valid"] = None if quantities is None else quantities(state)
+        return None
+
+    def declared_quantity_reads(self, declaration):
+        return declaration
+
+
+class PlainFactor(QuantityReader):
+    """A factor operator that reads no quantity: its hooks take no quantities keyword."""
+
+    LAW_ID = "plain_factor@1"
+    QUANTITY_READS = MappingProxyType({})
+
+    def control_factors(self, state, p, *, xp):
+        self.seen["plain"] = True
+        return {"junction": xp.ones(p.junction_sender.shape)}
+
+    def factor_valid(self, state, p, *, xp):
+        return None
+
+
+def test_quantity_reads_are_checked_recorded_and_passed_to_readers_only():
+    """R3 (FR-24; docs/OPERATOR_FEATURES_FR23_24_26_DESIGN.md §3.3): an owner declares its readable
+    quantities and computes them, a reader declares what it may read. Refused: malformed
+    declarations, an owner without quantities, a read of its own law; a read of a quantity the
+    composed owner does not declare (at the structure); and a declared read that is not one of the
+    reader's, of an owner the composition lacks, or in a route's target's half-steps with the owner
+    after that target (at the definition). The field map records the reads only where reader and
+    owner are composed; the composite passes the reader, alone, a function of state giving its
+    owners' quantities, in its factor hooks (NumPy, no world compiled)."""
+    owner, reader, plain = QuantityOwner(), QuantityReader(), PlainFactor()
+    for planted in (QuantityOwner, QuantityReader, PlainFactor):
+        check_declarations(planted)
+    malformed = (
+        (dict(QUANTITIES={"level": "cell_slot"}), "QUANTITIES maps names to"),
+        (dict(QUANTITY_READS={"quantity_owner@1": "level"}), "QUANTITY_READS maps owner laws"),
+        (dict(QUANTITY_READS={"quantity_reader@9": ("level",)}, LAW_ID="quantity_reader@9"),
+         "reads no quantity of its own law"),
+    )  # fmt: skip
+    for attributes, message in malformed:
+        with pytest.raises(ValueError, match=message):
+            check_declarations(type("M", (QuantityReader,), attributes))
+    bare = dict(LAW_ID="bare@1", SPLIT=True, RK4="split", QUANTITIES={"x": ("cell_slot", "1")})
+    with pytest.raises(ValueError, match="defines quantities"):
+        check_declarations(type("B", (Operator,), bare))
+    assert pump_composite.structure_errors(pump3, (owner, reader)) == []
+    assert pump_composite.structure_errors(pump3, (reader,)) == []  # No owner: nothing to read.
+    reads = {"quantity_owner@1": ("level", "depth")}
+    stray = type("Stray", (QuantityReader,), dict(LAW_ID="stray_reader@1", QUANTITY_READS=reads))
+    assert pump_composite.structure_errors(pump3, (owner, stray())) == [
+        "stray_reader@1 reads quantity_owner@1's depth, which it does not declare among its "
+        "quantities"
+    ]
+    assert pump_composite.quantity_readers((owner, reader, plain)) == {reader: (owner,)}
+    check = pump_composite.quantity_read_definition_errors
+    level, target = ("quantity_owner@1", "level"), Routed()
+    assert check([(owner, None), (reader, ((*level, None),))]) == []
+    assert check([(reader, ((*level, None),)), (owner, None)]) == []  # Control view: any order.
+    assert check([(owner, None), (target, None), (reader, ((*level, "routed@1"),))]) == []
+    assert check([(target, None), (owner, None), (reader, ((*level, "routed@1"),))]) == [
+        "quantity_reader@1 reads quantity_owner@1's level in routed@1's half-steps, but "
+        "quantity_owner@1 follows routed@1: an owner whose quantity a route reads precedes the "
+        "route's target, so both of its halves read the quantity after the owner's first half"
+    ]
+    assert check([(reader, ((*level, None),))]) == [
+        "quantity_reader@1 reads quantity_owner@1's level, which the composition does not hold"
+    ]
+    assert check([(owner, None), (reader, (("quantity_owner@1", "depth", None),))]) == [
+        "quantity_reader@1 declares a read of quantity_owner@1's depth, not one it reads"
+    ]
+    assert pump_composite.field_map(pump3, (owner, reader))["quantities"] == {
+        "quantity_owner@1": {
+            "quantities": {"level": ["cell_slot", "1"]},
+            "readers": [reader.LAW_ID],
+        }
+    }
+    for alone in ((owner,), (reader,), (owner, plain)):
+        assert "quantities" not in pump_composite.field_map(pump3, alone)
+    spec = parse_spec(fx.world())
+    state, p = get_model(spec.model).initial_values(spec)
+    control = get_model(spec.model).CONTROL_TYPE(*(v[0] for v in cs.control_values(spec, [0.0])))
+    composition = pump_composite.Composition(pump3, (owner, reader, plain))
+    assert composition.quantity_reader(owner, p, xp=np) is None
+    assert composition.quantity_reader(plain, p, xp=np) is None
+    QuantityReader.seen.clear()
+    composition.control_view(control, state, p, xp=np)
+    composition._control_factor_checks(state, p, xp=np)
+    expected = {"quantity_owner@1": {"level": np.full(p.volume.shape, 0.25)}}
+    for hook in ("control_factors", "factor_valid"):
+        got = QuantityReader.seen[hook]
+        assert got.keys() == expected.keys()
+        assert (
+            got["quantity_owner@1"]["level"].tobytes()
+            == expected["quantity_owner@1"]["level"].tobytes()
+        )
+    assert QuantityReader.seen["plain"] is True  # Called without the keyword.
 
 
 def test_event_times_off_the_dt_grid_are_refused_for_any_event_operator():

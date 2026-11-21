@@ -20,7 +20,13 @@ keeps ln a⁺ − ln a⁻ = −ΔF + w exactly, whichever way V moves (the check
 
 **The tension** (N/m): σ = max(0, Δp·R/2), with Δp = k_BT (N_L/V − N_A c_ext) in molecules per m³
 and R = (A/4π)^(1/2). It is 0 while the vesicle is floppy (V_osm ≤ V_sph), and continuous at the
-kink.
+kink. Its magnitude is formed from the physical area: A = q·W/2 first, then R, then
+V = (4/3)πR³, so the area's unit cannot move it beyond rounding, and a power-of-two change of the
+quantum (q/32 with W·32) gives the same float area and the same σ. Whether the vesicle is tense
+stays F's test in log space (log_volume), which the tension does not change. (Repaired 20
+November 2026 on the lead's ruling, from the Lean proofs project's finding at revision
+c85b2b88: V had come from separate logarithms of the quantum and the footprint, and two encodings
+of one vesicle, 1.45e-17 N/m apart, took different strict decisions at σ_max.)
 
 **Lysis** (§0.2b rule 3, §0.2c rule 8, §0.2d item 7): an event whose end state has σ > σ_max fires
 at its pair-rule rate and ends the life `lysed`. The membrane's and the lumen's molecules return to
@@ -169,9 +175,11 @@ def tension(n_lumen, footprint, world_kT, q, c, xp):
     log_osm = xp.log(xp.where(nl > 0, nl, 1.0)) - c[2]
     log_sph = c[3] + 1.5 * xp.log(xp.where(w > 0, w, 1.0))
     tense = (n_lumen > 0) & (footprint > 0) & (log_osm > log_sph)
-    volume_m3 = xp.exp(log_sph) * 1e-3
-    pressure = world_kT * (nl / volume_m3 - c[1] * 1e3)  # N_A c_ext in molecules per m³
-    radius = xp.sqrt(q * w / 2.0 / (4.0 * math.pi))
+    area = q * w / 2.0  # m², the physical area first (module docstring)
+    radius = xp.sqrt(area / (4.0 * math.pi))
+    volume_m3 = 4.0 / 3.0 * math.pi * radius**3
+    safe = xp.where(tense, volume_m3, 1.0)
+    pressure = world_kT * (nl / safe - c[1] * 1e3)  # N_A c_ext in molecules per m³
     return xp.where(tense, xp.maximum(0.0, pressure * radius / 2.0), 0.0)
 
 

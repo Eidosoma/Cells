@@ -228,6 +228,16 @@ Calibration: FR-10's note priced door S at 0.5–1 for the whole contract change
 
 ## 3. FR-24: binding-site occupancy as an input to reaction rates
 
+**Built on branch `operators-fr24`, 20 November 2026 (development).** D244 chose R3, θ and Q2. The
+section below is the desk note as accepted; the build is described in
+[INVENTORY_COUPLING_DESIGN.md](INVENTORY_COUPLING_DESIGN.md) §2.6. It departs from the note in three
+places:
+- θ is read as B/(B + R), which the site operator's domain keeps in [0, 1] exactly, where B/S can
+  exceed 1 by rounding at saturation;
+- the owner declares its entities' IDs and cells on the host (`quantity_entities`), so the reader
+  binds and checks locality without importing it;
+- a junction target is refused in version 1, as for the population source.
+
 ### 3.1 The request, and today's gap
 
 **The request (D239):** a reaction reads a named site population's occupied amount, accessible
@@ -472,6 +482,30 @@ and a 457-line test file of 21 tests, about 25 s.
 2. **The read path:** R3, or the cheaper R1 or R2 (§3.3)?
 
 ## 4. FR-26: owned state when a cell is replaced
+
+**Built on branch `operators-fr26`, 20 November 2026 (development), under D244's W,** with D152's
+occupant rule and part C′. Part C, contacts, donor copies, templates that change capacity or
+constants, and a newcomer's own schedule are not in version 1. The build departs from the note
+below in these places.
+- **A newcomer's occupancy lies in (0, 1), its bound and free sites each at least 4 ulps of the
+  capacity from empty** (the lead's ruling: the engine's trace convention, as FR-23's dose rule).
+  - site_occupancy@1's `site_free_energy` reads an exactly empty pool, reached from a positive
+    anchor, as 0 × log1p(−1) = NaN. This is recorded as that note's known limit (§4.3).
+  - An occupancy inside (0, 1) but below the anchor's rounding reaches the same NaN: anchor +
+    (θ′S − anchor) rounds to zero. Hence the margin, and the event's fail-closed check that the
+    pools as the owner reads them stay positive.
+  - W's own jump is formed from the endpoints, and is finite at either end.
+- **The order rule: the reads stay exact.** R3's readers read θ, B and S at the start of a target's
+  half-steps.
+  - W has only an event part, and events run before every split part's first half. So at the step
+    leaving t_e a routed target reads the newcomer's occupancy; a test row shows it.
+  - A later writer of the site pools with a split part would need R3's order check
+    (`pump_composite.quantity_read_definition_errors`) extended to writers.
+- **The acceptance world** has its own tier-2 file, `tests/unit/test_site_replacement_runs.py`
+  (about 35 s), since `test_site_occupancy_runs.py` already takes 76 s.
+- **D152 across a replacement was probed first** (`/mnt/workspaces/Cells/operators-fr26-20261120/probe_d152.json`):
+  the enzyme network's cell_0 was replaced at 2 ms with the refusal bypassed, and the runner's host
+  checks passed on every row. So its occupant rule stays definition-time only.
 
 ### 4.1 The request, and today's refusals
 

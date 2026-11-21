@@ -11,11 +11,13 @@ The operator's event map on the bound heredity sheet under water, in NumPy (no c
 * after the event the view carries the newcomer's volume, and water's first flow is the
   analytic one;
 * the combined step bounds (R5), the event's impermeant check, an idle step, and the
-  definition refusals.
+  definition refusals, with a template one float inside water's lower bound admitted (its stored
+  offset would land on the bound; the independent Lean project's finding of 20 November 2026).
 The compiled guards are test_cell_replacement_v2_runs.py.
 """
 
 import copy
+import math
 from types import SimpleNamespace
 
 import numpy as np
@@ -28,6 +30,7 @@ from cells.laws.electrochemistry import CHARGE_PER_FMOL, R
 from cells.models import surface_pump as first
 from cells.models import surface_pump_v3 as ionic
 from cells.operators import cell_replacement as v1
+from cells.operators import cell_replacement_v2 as v2
 from cells.operators import osmotic_water as water
 from cells.registry.models import get_model
 from tests import replacement_water_fixtures as fx
@@ -351,3 +354,25 @@ def test_the_definition_refusals():
     copy_event = ((T1, slot, None, "c1", donor),)
     refused(fx.over_water(unequal, templates, copy_event), "another P content")
     parse_spec(copied)  # The admitted copy, for contrast.
+    # A template one float above the slot's lower bound, whose offset on the slot's reference
+    # volume would be stored on the bound: admitted, held strictly inside one offset step inward.
+    # Planted: the declared volume bound as it stands, which water's strict domain refuses.
+    ref = next(c["volume_pL"] for c in raw["model"]["cells"] if c["id"] == slot)
+    lower = ref - 0.75 * ref
+    first = math.nextafter(lower, math.inf)
+    tight = fx.over_water(
+        raw, fx.templates(raw, volumes={"h": first}), ((T1, slot, "h", "n2"),), availability=0.0
+    )
+    row = tight["model"]["operators"][0]["compartments"]
+    next(r for r in row if r["compartment_id"] == slot)["minimum_volume_pL"] = lower
+    spec = parse_spec(tight)
+    _, p = get_model(spec.model).initial_values(spec)
+    at = [c.id for c in spec.model.cells].index(slot)
+    held = p.volume[at] + (p.template_volume_pL[0] - p.volume[at])  # Template "h", row 0.
+    assert ref + (first - ref) == lower < held and held - first < 4 * math.ulp(ref)
+    saved = v2.inward_volume
+    v2.inward_volume = lambda volume, slots: volume
+    try:
+        refused(tight, "is outside the domain")
+    finally:
+        v2.inward_volume = saved

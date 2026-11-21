@@ -594,6 +594,11 @@ sensing need: a response driven by receptor occupancy.
   factor of θ is held exactly through it. That is the property the coupling note requires of
   instantaneous sources (its §1.4).
 - **It belongs in the coupling note's doors,** beside FR-7(b)'s population-abundance source.
+- **Built (FR-24, 20 November 2026; development):** the source kind exists on
+  `species_regulated_availability@2`, read through this operator's readable quantities (the
+  contract's R3: θ = B/(B + R), B and S per population) as θ, B/V or S/V in the element's cell
+  ([INVENTORY_COUPLING_DESIGN.md](INVENTORY_COUPLING_DESIGN.md) §2.6). A regulatory state's input
+  from occupancy is not built.
 
 ### 2.7 Per-world data and the batch signature
 
@@ -815,6 +820,28 @@ an exact Riccati solution (Appendix A.4), a candidate for that door.
 - **The anchored stall** (D150 §1.3, amended). A pool anchored at a positive value and drained follows
   its closed form until about ε × its anchor, then stalls, positive and unrefused. A pool anchored at
   zero carries its whole value in the increment.
+- **Known limit: an exactly empty pool reached from a positive anchor** (found in FR-26, 20 November
+  2026).
+  - **What happens:** `site_free_energy`'s stable increment form evaluates such a pool as
+    0 × log1p(−1) = NaN, and with it the energy ledger.
+  - **No path reaches it in version 1 except W, which refuses it.**
+    - *The half-step cannot reach it.* Each Euler stage keeps at least half of a pool (h L ≤ θ = ½),
+      so a half-step keeps at least 0.604 of it, and the stored anchor + increment never rounds a
+      positive pool to zero: the stall above. A step that ended exactly empty would fail its own
+      finiteness check, through the same form.
+    - *No other operator writes the pools.* `site_occupant_replacement@1` (W, §5.2) is the only
+      accepted writer.
+    - *W refuses it,* by the engine's trace convention: a pool goes to its trace, never exactly to
+      zero (FR-23's dose rule). A template gives a newcomer's occupancy in (0, 1), and its bound and
+      free sites each lie at least 4 ulps of the capacity from empty. The event writes
+      anchor + (amount − anchor), which is within about 1.5 ulps of the amount, and it refuses a
+      step whose pools would read as non-positive (fail closed).
+  - **The check:** `/mnt/workspaces/Cells/operators-fr26-20261120/check_arrival_margin.json`. It
+    samples 2 × 10⁶ capacities and anchors at 4 to 6 ulps from either end, and finds every pool
+    positive, both in NumPy and in a jitted program. The jitted program rounds differently from
+    NumPy in a quarter of the samples, which is why the rule is a margin rather than an emulation
+    of the event's arithmetic. Below the margin, at θ′ = 10⁻¹⁷ or 1 − 2⁻⁵³, 42% of the samples read
+    exactly empty.
 - **The trace refusal** (ruling on question 9: "when both the trace and K_d are declared, refuse at
   the definition", with the threshold stated).
   - **Why it is needed.** D150's "absent" ligand is a trace c_bg > 0, and high-affinity sites bind
@@ -1010,6 +1037,29 @@ the definition, reading replacement's schedule as D152 does.
 - Populations of cells that are not replaced, and of contacts between such cells, compose.
 - The door is D150's occupant tables plus an event part of this operator at replacement's event
   steps, as the coupling note's version 1.1 reset is designed.
+
+**Built (FR-26, 20 November 2026; development): W, `site_occupant_replacement@1`** (D244 chose W over
+an event part of this operator; [OPERATOR_FEATURES_FR23_24_26_DESIGN.md](OPERATOR_FEATURES_FR23_24_26_DESIGN.md)
+§4).
+- **What it is:** a law of its own in this module, declared after this operator and replacement@1.
+  This operator and replacement@1 keep their structure and programs.
+- **What its event map does:** at replacement's event steps, it resets each patch population (either
+  face) of a replaced slot through this operator's accepted writes:
+  - B′ = θ′S, from the newcomer's template (W's `templates`, keyed by replacement template ID);
+  - R′ = S − B′.
+- **What it records:** the departed B, the arrived θ′S and the site free energy's jump (formed from
+  the endpoints).
+- **How its books close:** this operator's bound ledger through W's external terms, and @3's energy
+  ledger through its own term.
+- **The multipliers follow the occupant:** the founder's schedule ends at its death, and a newcomer
+  takes its template's multipliers, held through its life.
+- **Refused in version 1:**
+  - contact populations incident to a replaced slot;
+  - donor copies onto a slot with populations;
+  - a newcomer's occupancy of exactly 0 or 1, or within 4 ulps of the capacity from either end. By
+    the engine's trace convention a template gives a fresh cell's occupancy at a trace level (§4.3,
+    the known limit);
+  - templates that change capacity or constants.
 
 ### 5.3 The chain: binding (FR-3), internalisation with membrane (FR-2), delivery (FR-1)
 
@@ -1244,7 +1294,7 @@ S/(V (K_d + c)).
 | Internalisation with membrane (FR-2) | FR-2's retrieval writing these pools and membrane state's through `ACCEPTS_WRITES`; its energy source |
 | A compartment destination (FR-1) | FR-1's node; a destination key value; refusal of internalisation from a compartment-facing patch |
 | Partition | A partition version writing these pools; the one liveness rule (coupling ruling 8) |
-| Replacement | D150's occupant tables; an event part at replacement's steps (§5.2) |
+| Replacement | Built (FR-26): W, `site_occupant_replacement@1`, on D150's occupant tables (§5.2). Contact populations and donor copies remain doors |
 | Volume (water, the lumens) | D150 §5.1's `VIEW_READS` fallback and bookings at the view |
 | Regulated accessibility | The kinetic form through the routing door (D156); a regulated capacity with its work booking and its rule for a fall below occupancy (§2.3) |
 | Competition (several ligands per population) | Shared free sites; the competitive Langmuir law; its references |
@@ -1514,6 +1564,36 @@ and column 19). The operator's eleven refusals all come from its `CONFLICTS_VIEW
 - the protocol and its judged run;
 - the doors of §9;
 - the tier record (the lead measures at landing).
+
+## 13. FR-23: beside a bath dose (20 November 2026; D244)
+
+The design is [OPERATOR_FEATURES_FR23_24_26_DESIGN.md](OPERATOR_FEATURES_FR23_24_26_DESIGN.md)
+§2, option A, as D244 decided it. This is development, not judged.
+
+**What changed** (`site_occupancy.py`):
+- **Door S's scoped reads.** The operator declares its outside anchors and volumes
+  (`extracellular_amount_reference`, `extracellular_volume`) as `fixed` reads at stage `split`,
+  scoped to the outside nodes its populations face (`read_slots`, `facing_outside_nodes`).
+  - They are finite nodes, since a population facing a held bath is refused at parse.
+  - Cells' volumes and the masks stay unscoped, so water, insertion and the closers stay refused.
+- **So it composes with the bath schedule in either order.** The dose changes the anchors at held
+  baths only. The composition matrix's cells 17↔19 go from `n` to ✓, and the nominal row goes.
+- **The trace rule covers scheduled compositions** (`check_schedule_traces`). A dose may not set a
+  ligand below its declared trace at a held bath, read from the bath schedule's parsed program, as
+  a declared node or a replacement template may not.
+
+**What stays:**
+- **Every world, at all three levels.** The declarations are host-side, and the check runs at the
+  definition.
+- **FR-3's judged scope,** which named site occupancy beside a bath schedule as not claimed.
+- **A dose into a finite node is still refused** by the bath schedule ("a finite node cannot be
+  clamped"). D244 names it as not covered.
+
+**Evidence:**
+- the event-boundary row (`tests/unit/test_site_occupancy.py`): the dose is booked as the held
+  content's change, and every site field is unchanged, bit for bit;
+- the flipped structure assertion, beside its still-refused twin (`tests/unit/test_door_s.py`);
+- the dosed and undosed development run, `/mnt/workspaces/Cells/operators-fr23-20261120/`.
 
 ## Appendix A. Equations for the independent references
 

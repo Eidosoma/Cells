@@ -46,6 +46,7 @@ from cells.definitions.specs import ConfigError, bounded_integer
 from cells.models.assembly_lineages import folds
 from cells.models.assembly_lineages_v2 import (
     MODEL_ID,
+    PRESCRIBED_SHELL,
     SHARED_POOL,
     SHEAR_FISSION,
     division,
@@ -309,8 +310,8 @@ def program(structure):
 
 # ------------------------------------------------------------------ the host run
 
-ROW_KINDS = ("start", "periodic", "end", "observed", "shear", "lysis", "transfer")
-START, PERIODIC, END, OBSERVED, SHEAR, LYSIS, TRANSFER = range(7)
+ROW_KINDS = ("start", "periodic", "end", "observed", "shear", "lysis", "transfer", "replacement")
+START, PERIODIC, END, OBSERVED, SHEAR, LYSIS, TRANSFER, REPLACEMENT = range(8)
 
 
 class _State:
@@ -333,7 +334,7 @@ def _energy(spec, layout):
     closure = geometry.closure_kT(world)
 
     def full(c):
-        return ledger.free_energy(c, tables, world.terms, layout.terms)
+        return ledger.state_free_energy(c, tables, world.terms, layout.terms)
 
     def world_f(state):
         base = full(state.pool)
@@ -345,6 +346,7 @@ def _energy(spec, layout):
     return world_f
 
 
+# E_TRANSFER holds the pool work of every transfer and replacement (their schedule columns' sum).
 E_HEAT, E_HEAT_MAG, E_WORK, E_WORK_MAG, E_SHEAR, E_MAG, E_TRANSFER, E_SINK = range(8)
 EXTRA = 8  # the host's bookings, then one schedule-work column per declared schedule
 
@@ -365,8 +367,10 @@ class _Context:
         self.attempts, self.stops, self.lyses, self.lives = [], [], [], []
         self.by_index = {s.index: s for s in spec.experiment.schedules}
         self.transfers, self.transfer_counter, self.schedule_draws = [], {}, []
+        self.replacements = []  # FR-20: each pool replacement's record (replacement.py)
         self.life_of = {}  # slot -> index into lives
         self.attempts_before = self.transfers_before = 0  # a resumed run's numbering (rung P)
+        self.replacements_before = 0
         for k in np.flatnonzero(state.alive):
             self._born(k, int(state.keys[k]), 0.0, "founder", "", int(k), "")
 
@@ -383,6 +387,7 @@ class _Context:
         self.transfer_counter = {int(k): int(v) for k, v in doc["transfer_counter"].items()}
         self.attempts_before = int(doc["attempts"])
         self.transfers_before = int(doc["transfers"])
+        self.replacements_before = int(doc.get("replacements", 0))
         self.lives, self.life_of = [], {}
         for life in doc["lives"]:
             slot = int(life["slot"])
@@ -412,6 +417,7 @@ class _Context:
                "transfer_counter": {str(k): v for k, v in sorted(self.transfer_counter.items())},
                "attempts": self.attempts_before + len(self.attempts),
                "transfers": self.transfers_before + len(self.transfers),
+               "replacements": self.replacements_before + len(self.replacements),
                "applied_stops": applied, "splits": splits, "lives": living}  # fmt: skip
         return {"arrays": arrays, "doc": doc}
 
@@ -473,13 +479,21 @@ def run(spec, *, start=None, stop=None):
     structure, layout = model.structure(spec), model.layout(spec)
     kernel.refuse_unknown(structure)
     osmotic = world.conventions.lumen_volume == "osmotic"
-    verdict = balance.osmotic_verdict() if osmotic else balance.geometry_verdict()
+    shell = world.geometry[0] == PRESCRIBED_SHELL  # FR-21: its own probe, as runner.py takes it
+    verdict = (
+        balance.shell_verdict()
+        if shell
+        else balance.osmotic_verdict()
+        if osmotic
+        else balance.geometry_verdict()
+    )
     world_report = balance.world_report(spec)  # each slot's rates are the single assembly's
     P, R = structure.places, structure.steps
     m = masks(world, P, R)
     founders = world.population["founders"]
     horizon = spec.experiment.time_horizon_s
     plan, schedule_draws = single._plan(spec, layout.base_key)
+    _refuse_shared_replacements(spec, plan)
     world_f = _energy(spec, layout)
     if admitted is None:
         slots = np.zeros((K, P), dtype=np.int64)
@@ -609,6 +623,9 @@ def _shear_stop(spec, layout, state, ctx, world_f, vesicle_f, time, stop_events,
         if ctx.by_index[event[1]].kind == "transfer":
             _transfer(spec, layout, state, ctx, world_f, time, ctx.by_index[event[1]], n_events)
             continue
+        if ctx.by_index[event[1]].kind == "replacement":
+            _replace(spec, state, ctx, world_f, time, ctx.by_index[event[1]], n_events)
+            continue
         k = event[2]
         for s in [int(x) for x in np.flatnonzero(state.alive)]:
             parent = int(state.keys[s])
@@ -714,11 +731,7 @@ def _transfer(spec, layout, state, ctx, world_f, time, schedule, n_events):
     for s in removed:
         ctx.end(s, time, "removed", event)
         state.slots[s], state.alive[s], state.keys[s], ctx.lineage[s] = 0, False, -1, -1
-    finite = np.zeros(state.pool.size, dtype=bool)
-    finite[[i for i, p in enumerate(world.places) if p.phase == "pool" and not p.held]] = True
-    state.pool = np.where(
-        finite, transfer.fresh_vector(world, schedule, state.pool.size), state.pool
-    )
+    state.pool = transfer.replaced_pool(world, schedule, state.pool)
     empty = state.copy()
     empty.alive[:] = False
     work = world_f(empty)
@@ -730,6 +743,51 @@ def _transfer(spec, layout, state, ctx, world_f, time, schedule, n_events):
                           "draws": [list(d[:3]) for d in drawn], "kept": kept,
                           "removed": removed, "sink_kT": sink, "work_kT": work})  # fmt: skip
     ctx.stops.append((n_events, TRANSFER, time, state.copy(), ctx.extra.copy()))
+
+
+def _refuse_shared_replacements(spec, plan):
+    """FR-20: a replacement stands alone in time. Declared times are refused at parse
+    (division.parse_schedules); a Poisson shear drawn at a replacement's time is refused here, on
+    the grouped plan, before the first event."""
+    kinds = {s.index: s.kind for s in spec.experiment.schedules}
+    for time, events in plan:
+        if len(events) > 1 and any(kinds[e[1]] == "replacement" for e in events):
+            raise ConfigError(
+                f"A replacement shares the time {time} s with another stop (a Poisson shear); "
+                "relations have no order between same-time events"
+            )
+
+
+def _replace(spec, state, ctx, world_f, time, schedule, n_events):
+    """A pool replacement on the host (replacement.py): every slot kept as it stands; the pool's
+    finite places take the declared composition; the sink takes F of the old pool, the schedule's
+    work column F of the fresh pool."""
+    from cells.models.assembly_lineages_v2 import replacement, transfer
+
+    world = spec.model.world
+    if any(record["time_s"] == time for record in ctx.lyses):
+        raise ConfigError(
+            f"A lysis at {time} s, the time of replacement {schedule.index}: relations have no "
+            "order between same-time events"
+        )
+    empty = state.copy()
+    empty.alive[:] = False
+    old_f, old = world_f(empty), state.pool.copy()
+    state.pool = transfer.replaced_pool(world, schedule, state.pool)
+    empty = state.copy()
+    empty.alive[:] = False
+    work = world_f(empty)
+    ctx.extra[E_SINK] += old_f
+    ctx.extra[E_TRANSFER] += work
+    ctx.extra[EXTRA + ctx.columns.index(schedule.index)] += work
+    ctx.extra[E_MAG] += abs(old_f) + abs(work)
+    removed, supplied = replacement.removed_and_supplied(world, old, state.pool)
+    ctx.replacements.append({
+        "id": f"event:replacement/{ctx.replacements_before + len(ctx.replacements)}",
+        "time_s": time, "schedule": schedule.index, "removed": removed, "supplied": supplied,
+        "sink_kT": old_f, "work_kT": work,
+    })  # fmt: skip
+    ctx.stops.append((n_events, REPLACEMENT, time, state.copy(), ctx.extra.copy()))
 
 
 def _assemble(spec, structure, layout, m, verdict, start, state, ctx, events, draws,
@@ -767,7 +825,8 @@ def _assemble(spec, structure, layout, m, verdict, start, state, ctx, events, dr
     marks.append((len(codes), END, end_time, len(ctx.stops)))
     # In event order, then time order: an observation at or after a stop with no event between
     # sees the stop's state; at one time, a stop before an observation (as the single lineage).
-    order = {START: 0, PERIODIC: 1, SHEAR: 2, LYSIS: 2, TRANSFER: 2, OBSERVED: 3, END: 4}
+    order = {START: 0, PERIODIC: 1, SHEAR: 2, LYSIS: 2, TRANSFER: 2, REPLACEMENT: 2, OBSERVED: 3,
+             END: 4}  # fmt: skip
     marks.sort(key=lambda x: (x[0], x[2], order[x[1]], x[3]))
     replay, e = start.copy(), 0
     extra = origin["extra"].copy() if resumed else np.zeros_like(ctx.extra)
@@ -787,7 +846,7 @@ def _assemble(spec, structure, layout, m, verdict, start, state, ctx, events, dr
                 vesicle = replay.slots[g - 1] if g > 0 else np.zeros_like(replay.pool)
                 after_events.append((vesicle[:places].copy(), replay.pool[:places].copy()))
             e += 1
-        if kind in (SHEAR, LYSIS, TRANSFER):
+        if kind in (SHEAR, LYSIS, TRANSFER, REPLACEMENT):
             replay, extra = ctx.stops[at][3].copy(), ctx.stops[at][4]
         device = values[n - 1, 1:] if n > 0 else sums
         rows.append((kind, n + k0, t, replay.copy(), device, extra.copy()))
@@ -807,7 +866,9 @@ def _assemble(spec, structure, layout, m, verdict, start, state, ctx, events, dr
     booked_mag = device[:, 3] + extra[:, E_WORK_MAG] + extra[:, E_MAG]
     if not np.allclose(columns.sum(axis=1), extra[:, E_SHEAR] + extra[:, E_TRANSFER],
                        rtol=1e-12, atol=1e-9):  # fmt: skip
-        raise AssertionError("The schedule columns differ from the shear and transfer totals")
+        raise AssertionError(
+            "The schedule columns differ from the shear, transfer and replacement totals"
+        )
     f_0 = origin["f"] if resumed else f[0]  # the world's own initial F, before any cut
     residual = ledger.residual(heat, booked, f, f_0)
     tolerance = ledger.closure_tolerance(heat_mag, booked_mag, f, f_0)
@@ -821,12 +882,14 @@ def _assemble(spec, structure, layout, m, verdict, start, state, ctx, events, dr
     quanta = geometry.place_quanta(world, structure.places)
     slot_counts = np.stack([r[3].slots[:, :places] for r in rows])
     alive = np.stack([r[3].alive for r in rows])
-    V = np.zeros(alive.shape)
-    sigma = np.zeros(alive.shape)
-    for r, row in enumerate(rows):
-        for k in np.flatnonzero(row[3].alive):
-            c = (row[3].pool + row[3].slots[k])[:places]
-            V[r, k], sigma[r, k] = lumen.host_volume_L(world, c), lumen.host_tension(world, c)
+    osmotic = world.conventions.lumen_volume == "osmotic"
+    if osmotic:  # the lumen's volume and tension rows, as the single lineage records them
+        V = np.zeros(alive.shape)
+        sigma = np.zeros(alive.shape)
+        for r, row in enumerate(rows):
+            for k in np.flatnonzero(row[3].alive):
+                c = (row[3].pool + row[3].slots[k])[:places]
+                V[r, k], sigma[r, k] = lumen.host_volume_L(world, c), lumen.host_tension(world, c)
     row_arrays = {
         "row_time": np.asarray([r[2] for r in rows]),
         "row_event": np.asarray([r[1] for r in rows], dtype=np.int64),
@@ -839,10 +902,11 @@ def _assemble(spec, structure, layout, m, verdict, start, state, ctx, events, dr
         "reservoir_work_kT": work,
         "free_energy_kT": f,
         "ledger_residual_kT": residual,
-        "membrane_footprint_quanta": np.where(alive, slot_counts @ quanta[:places], 0),
-        "lumen_volume_L": V,
-        "tension_N_per_m": sigma,
     }
+    if world.geometry[0] != PRESCRIBED_SHELL:  # FR-21: a shell's wall has no quanta, so no W
+        row_arrays["membrane_footprint_quanta"] = np.where(alive, slot_counts @ quanta[:places], 0)
+    if osmotic:  # a declared lumen's volume is the world's constant, and it has no tension
+        row_arrays |= {"lumen_volume_L": V, "tension_N_per_m": sigma}
     if ctx.columns:
         row_arrays |= {"schedule_work_kT": columns, "shear_work_kT": extra[:, E_SHEAR],
                        "discarded_free_energy_kT": extra[:, E_SINK]}  # fmt: skip
@@ -890,10 +954,13 @@ def _assemble(spec, structure, layout, m, verdict, start, state, ctx, events, dr
         "reads": "one world-level SSA (cells.shared_pool@1); each lysis frees its slot, and the "
         "world goes on; every daughter lives",
     }
+    if any(s.kind == "replacement" for s in spec.experiment.schedules):  # FR-20, when declared
+        report["replacements"] = ctx.replacements
     if resumed:  # a run from a checkpoint: its start, and the world's numbering before it
         report["start"] = origin["start"]
         report["numbering"] = {"events": k0, "attempts": ctx.attempts_before,
-                               "transfers": ctx.transfers_before}  # fmt: skip
+                               "transfers": ctx.transfers_before,
+                               "replacements": ctx.replacements_before}  # fmt: skip
     timings = {"run_seconds": run_seconds, "events": int(len(codes)), "lanes": 1}
     record = None
     if diagnose:  # §0.2d item 10.5 (diagnostic.py)

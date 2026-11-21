@@ -113,7 +113,10 @@ def _provenance():
     extra = {}
     try:
         revision = _git("rev-parse", "HEAD")
-        dirty = bool(_git("status", "--porcelain", "--untracked-files=no"))
+        # Untracked files count (D259): measure globs tests/, so an untracked test file is
+        # measured, and it may import an untracked source under src/, validation/ or scripts/.
+        dirty = bool(_git("status", "--porcelain", "--untracked-files=all", "--", "src", "tests",
+                          "validation", "scripts", "pyproject.toml"))
     except (OSError, subprocess.CalledProcessError):  # immutable snapshot without .git
         snapshot = json.loads((ROOT / "SNAPSHOT.json").read_text())
         revision = snapshot["git_revision"]

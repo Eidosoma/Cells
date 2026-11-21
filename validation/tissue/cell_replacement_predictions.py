@@ -150,6 +150,11 @@ def main(argv=None):
         entry["reference_seconds"] = time.perf_counter() - t0
         out["cases"][name] = entry
         print(name, round(entry["reference_seconds"], 1), "s", flush=True)
+    from validation import executed_sources  # noqa: PLC0415
+    executed_sources.refuse_untracked(  # D259
+        Path(__file__).resolve().parents[2], "cell_replacement_predictions' record"
+    )
+
     git = ["git", "-C", str(Path(__file__).resolve().parents[2])]
     out.update(
         wall_s=time.perf_counter() - started,

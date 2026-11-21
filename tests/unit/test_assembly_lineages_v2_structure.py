@@ -8,7 +8,8 @@ abstractly). Each claim with a planted error it must catch (D187):
 - the channel table lists every step's forward, then every reverse, in fold order, with the trace's
   codes (planted: a table with two rows exchanged);
 - version 2 draws from @1's streams: domains 0-3 give @1's keys exactly, and the reserved domains
-  (label, world) are refused (planted: a key from another domain differs);
+  (label, world) are refused (planted: a key from another domain differs); a block, drawn at the
+  next power of two, is the plain draw bitwise (planted: a suffix of the larger draw);
 - one program per structure: worlds that differ only in values share a structure and trace for
   any lane count; a convention selects another program (planted: a token changed);
 - the bundle declares every array the runner writes.
@@ -98,6 +99,12 @@ def test_version_2_draws_from_1_s_streams():
             streams.stream_key_data(base, 5, reserved)
     other = np.asarray(streams.stream_key_data(base, 5, "partition"))  # Planted: another domain.
     assert not np.array_equal(other, np.asarray(streams.stream_key_data(base, 5, "events")))
+    # A block (a partition's draw, at the next power of two) is the plain draw, bitwise.
+    for count in (2, 3):
+        plain = np.asarray(streams.uniforms(other, 7, count))
+        assert np.array_equal(np.asarray(streams.block(other, 7, count)), plain), count
+    planted = np.asarray(streams.uniforms(other, 7, 4))[-3:]  # Planted: a suffix, not the prefix.
+    assert not np.array_equal(planted, np.asarray(streams.block(other, 7, 3)))
 
 
 def test_one_program_per_structure_traces_for_any_lane_count():

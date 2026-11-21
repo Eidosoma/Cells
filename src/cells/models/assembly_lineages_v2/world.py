@@ -14,7 +14,8 @@ that carries meaning is a list, so the canonical JSON that names a world fixes i
      "free_energy": [{"law": "cells.ideal_mixing@1"}, {"law": "cells.regular_mixing@1", ...}],
      "rate_factor": {"law": "cells.transition_state_factor@1", ...},        optional
      "founder": {"A@membrane": 10, ...},                      every finite place, explicitly
-     "world_role": "probe"}                                    optional (§0.2b rule 8)
+     "world_role": "probe",                                    optional (§0.2b rule 8)
+     "sites": [{"site": "R", "complex": "XR"}, ...]}           optional (FR-21; §0.2f)
 
 **Species** take D152's species form (SHARED_INVENTORY_REACTIONS_DESIGN §2.1): `moieties` (positive
 integer counts, or null: the species is its own moiety), the identity (`catalogue`, `evidence`,
@@ -37,6 +38,12 @@ species, D152's sides, `phase` in place of D152's `sites`; its locus is that pha
 places as `<species>@<phase>`). A step whose places span phases (a join, a leave, permeation
 between pool and lumen, an interfacial reaction) has the membrane as its locus; a step within one
 phase has that phase. Held places take part only as pool places.
+
+**Sites** (FR-21; §0.2f, the lead's rulings of 20 November 2026, D244 and D246). A pair declares a
+membrane species as a binding site and another as its complex, the site with one bound molecule.
+In a world with a geometry, rule 3 admits one interfacial step for a declared pair, exactly
+X@pool + site@membrane -> complex@membrane under cells.stochastic_mass_action@1 with count_on_m
+(spec._geometry_refusals); an undeclared pair stays refused. On a bilayer both take area.
 """
 
 import math
@@ -68,8 +75,11 @@ WORLD_KEYS = {
     "geometry",
     "division",
     "population",
+    "sites",
 }
-WORLD_REQUIRED = WORLD_KEYS - {"rate_factor", "world_role", "geometry", "division", "population"}
+WORLD_REQUIRED = WORLD_KEYS - {
+    "rate_factor", "world_role", "geometry", "division", "population", "sites",
+}  # fmt: skip
 ROLES = ("probe",)  # §0.2b rule 8: a world declared to be probed (rate tables), never a lineage.
 AVOGADRO = 6.02214076e23  # mol⁻¹, exact (SI 2019).
 
@@ -145,6 +155,7 @@ class World:
     geometry: tuple | None = None  # OL2: (law ID, parsed data), or None (geometry.py).
     division: dict | None = None  # OL3: the shear fission's declaration (division.py), or None.
     population: dict | None = None  # OL2 milestone 3: the shared pool's slots and founders.
+    sites: tuple | None = None  # FR-21: declared ((site, complex), ...) pairs, or None.
 
     @property
     def place_names(self):
@@ -475,6 +486,34 @@ def _rate_key(raw, laws, encounter):
             "the world declares none (§0.2c rule 3)"
         )
     return key[encounter]
+
+
+def parse_sites(raw, places):
+    """FR-21's declared pairs, [{"site", "complex"}, ...] -> ((site, complex), ...): both membrane
+    species, distinct, each complex the complex of one site (§0.2f)."""
+    if type(raw) is not list or not raw:
+        raise ConfigError("world: sites is a non-empty list of {site, complex} pairs")
+    membrane = {p.species for p in places if p.phase == MEMBRANE}
+    out, complexes = [], set()
+    for entry in raw:
+        require_fields(entry, {"site", "complex"}, "world: sites: a pair")
+        site, complex_ = identifier(entry["site"]), identifier(entry["complex"])
+        for role, name in (("site", site), ("complex", complex_)):
+            if name not in membrane:
+                raise ConfigError(f"world: sites: the {role} {name} is not a membrane species")
+        if site == complex_:
+            raise ConfigError(f"world: sites: {site} is declared as its own complex")
+        if complex_ in complexes:
+            raise ConfigError(
+                f"world: sites: the complex {complex_} is declared twice (one site per complex)"
+            )
+        complexes.add(complex_)
+        out.append((site, complex_))
+    return tuple(out)
+
+
+def sites_to_dict(sites):
+    return [{"site": site, "complex": complex_} for site, complex_ in sites]
 
 
 def parse_founder(raw, places):

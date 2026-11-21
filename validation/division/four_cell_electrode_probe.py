@@ -67,6 +67,9 @@ CARRIERS = {"K": 0.4912, "Cl": 0.5088}  # current_injection.DEFAULT_CARRIERS.
 
 
 def provenance():
+    from validation import executed_sources  # noqa: PLC0415
+    executed_sources.refuse_untracked(ROOT, "four_cell_electrode_probe's provenance")  # D259
+
     def out(*args):
         return subprocess.run(
             ["git", "-C", str(ROOT), *args], capture_output=True, text=True

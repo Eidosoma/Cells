@@ -2,7 +2,7 @@
 
 # Free energy sets ATP-driven transport direction and stall
 
-With positive forward rate J⁺, an enabled cycle has net rate J⁺(1 − exp(ΔG/RT)). It runs forward for negative ΔG, reverses for positive ΔG and stalls at zero. A disabled cycle has zero rate. Instantaneous heat is nonnegative in every case. For n protons per ATP, the stall voltage is (RT/F) ln(a_P/a_N) + ΔG_fuel/(nF). Neutral cargo flux is independent of voltage at fixed activities and forward rate.
+With positive forward rate J⁺, an enabled cycle has net rate J⁺(1 − exp(ΔG/RT)). It runs forward for negative ΔG, reverses for positive ΔG and stalls at zero. A disabled cycle has zero rate. Instantaneous heat is nonnegative in every case. For n protons per ATP, the stall voltage is (RT/F) ln(a_P/a_N) + ΔG_fuel/(nF). At fixed fuel, temperature and coupling, changing the pH gradient shifts stall by exactly the change in the proton equilibrium voltage. Neutral cargo flux is independent of voltage at fixed activities and forward rate.
 
 ## Assumptions
 
@@ -20,13 +20,14 @@ With positive forward rate J⁺, an enabled cycle has net rate J⁺(1 − exp(Δ
 - [CellsProofs.Transport.ATPCycle.stall_iff](../CellsProofs/Transport/ATPCycle.lean#L37)
 - [CellsProofs.Transport.ATPCycle.heat_nonneg](../CellsProofs/Transport/ATPCycle.lean#L42)
 - [CellsProofs.Transport.ATPCycle.proton_stall_iff](../CellsProofs/Transport/ATPCycle.lean#L59)
+- [CellsProofs.Transport.ATPCycle.proton_stall_shift](../CellsProofs/Transport/ATPCycle.lean#L71)
 - [CellsProofs.Transport.ATPCycle.neutral_voltage_independent](../CellsProofs/Transport/ATPCycle.lean#L64)
 
 Direct proof subject `cells.proton_atp_mass_action_positive@1`, `cells.atp_driven_transporter_mass_action_positive@1`
 
 ## Numerical comparison
 
-**Checked.** Across 92 compiled tissue states, 72 ran forward, 16 reversed and four were within the stall tolerance. Cycle flux agreed with frozen references to 7.50 × 10⁻¹⁶ fmol/s and heat was nonnegative in all cases. Offsetting the voltage by ±10 mV about proton stall reversed the rate. The same voltage perturbations preserved all three flowing neutral controls. Eight capacity and availability controls gave exactly zero flux, heat and work.
+**Checked.** Across 92 compiled tissue states, 72 ran forward, 16 reversed and four were within the stall tolerance. Cycle flux agreed with frozen references to 7.50 × 10⁻¹⁶ fmol/s and heat was nonnegative in all cases. Offsetting the voltage by ±10 mV about proton stall reversed the rate. The same voltage perturbations preserved all three flowing neutral controls. Eight capacity and availability controls gave exactly zero flux, heat and work. For the eight yeast assay conditions, the registered proton law also bracketed 32 stall voltages. At fixed fuel the pH-induced shift was −112.40 mV for every supported coupling.
 
 **Engine** `resolved_pump_tissue@3`, `proton_atp_mass_action_positive@1`, `atp_driven_transporter_mass_action_positive@1`
 
@@ -34,12 +35,28 @@ Direct proof subject `cells.proton_atp_mass_action_positive@1`, `cells.atp_drive
 
 [Tested engine a6f4c7d9b8e8](https://github.com/Eidosoma/Cells/commit/a6f4c7d9b8e84cbd7c23264215510ba93fb8e3d3) · [Evidence checkpoint 5f39e089a5f8](https://github.com/Eidosoma/Cells/commit/5f39e089a5f84fa4c2414d72536de844d0bd2503)
 
+**Engine** `resolved_pump_tissue@3`, `cells.proton_atp_mass_action_positive@1`
+
+[Free energy for pumping at fixed coupling](https://github.com/Eidosoma/Cells/blob/6318b7d4f8d33251760834b6079aa27d88a81831/src/cells/laws/pumps/proton_pump.py#L73) · [Signed proton pump flux](https://github.com/Eidosoma/Cells/blob/6318b7d4f8d33251760834b6079aa27d88a81831/src/cells/laws/pumps/proton_pump.py#L91) · [Stoichiometry and fuel in the tissue population](https://github.com/Eidosoma/Cells/blob/6318b7d4f8d33251760834b6079aa27d88a81831/src/cells/laws/pumps/proton_pump.py#L223) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/78acb6bccc69cabbd8639a22975d87b5eabb42a2/lean/checks/atp_cycle.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/78acb6bccc69cabbd8639a22975d87b5eabb42a2/lean/PROGRESS.md#biological-model-review)
+
+[Tested engine 6318b7d4f8d3](https://github.com/Eidosoma/Cells/commit/6318b7d4f8d33251760834b6079aa27d88a81831) · [Evidence checkpoint 78acb6bccc69](https://github.com/Eidosoma/Cells/commit/78acb6bccc69cabbd8639a22975d87b5eabb42a2)
+
 ## Biological evidence
 
 **Open.** Reversal voltage of ATP-dependent proton transport at known fuel and proton activities, and neutral-cargo flux at fixed activities under varied voltage.
 
-In yeast vacuoles at cytosolic pH 8.5 and vacuolar pH 5.0, measured reversal was −17.5 ± 5 mV (SE, six trials). The tightly coupled two-proton prediction was −86.5 mV. The authors proposed a proton shunt. Vesicles showed ATP-dependent riboflavin uptake. Neutral-cargo reversal and voltage independence remain open. [Kettner et al., Table 2](https://pmc.ncbi.nlm.nih.gov/articles/PMC1303676/) · [Van Herwaarden et al., Fig. 3E](https://pmc.ncbi.nlm.nih.gov/articles/PMC1800714/)
+Vesicles showed ATP-dependent riboflavin uptake. Neutral-cargo reversal and voltage independence remain open. [Van Herwaarden et al., Fig. 3E](https://pmc.ncbi.nlm.nih.gov/articles/PMC1800714/)
 
 **Unit** mV for reversal, fmol/s for signed cargo flux
+
+### kettner2003_vacuolar_pump@1
+
+Voltage-clamped yeast vacuoles with ATP, ADP and phosphate supplied to the cytosolic side. ATP-dependent difference currents in Fig. 3 and five resolved reversals plus three bounds in Table 2. [Kettner et al. (2003), Fig. 3 and Table 2](https://doi.org/10.1016/S0006-3495(03)74789-4)
+
+- **Evidence role** descriptive
+
+At cytosolic pH 7.5, the two measured reversal voltages were −25.6 ± 1 and −38.6 ± 9 mV (SE, four and three trials). The proton equilibrium and hydrolysis voltages are calculated quantities.
+
+Changing vacuolar pH from 4.1 to 6.0 shifted the ATP-dependent current reversal by −13.0 mV. Any fixed tightly coupled pump at the same fuel drive predicts the full proton-equilibrium shift, −112.5 mV using the paper's values. At pH 8.5/5.0 the two-proton prediction was −86.5 mV versus −17.5 ± 5 mV measured. The suggested pump-associated proton shunt remains one candidate mechanism. [Dataset manifest](../checks/data/kettner2003_vacuole.json) · [Comparison verdict](../PROGRESS.md#biological-model-review)
 
 [Claim index](../README.md#proof-index) · [Editable register](../claims.json)

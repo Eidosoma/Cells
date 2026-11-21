@@ -46,7 +46,7 @@ import numpy as np
 
 from cells.definitions.specs import ConfigError
 from cells.models.assembly_lineages import folds
-from cells.models.assembly_lineages_v2 import mass_action, streams
+from cells.models.assembly_lineages_v2 import PRESCRIBED_SHELL, mass_action, streams
 from cells.models.assembly_lineages_v2 import world as world_rules
 from cells.registry import laws as law_registry
 
@@ -272,11 +272,15 @@ def log_parts(counts, totals, factor_state, term_states, layout, structure, xp=j
     rate without its rate constant, which rates() multiplies after the exponential."""
     factor, terms = laws(structure)
     kinetics = reactions(structure)
-    footprint = None if structure.geometry is None else footprint_of(counts, layout, xp)
+    shell = structure.geometry == PRESCRIBED_SHELL  # FR-21: static, so other programs are as were
+    bilayer = structure.geometry is not None and not shell
+    footprint = footprint_of(counts, layout, xp) if bilayer else None
     out = []
     for forward in (True, False):
         v = view(counts, totals, layout, structure.offset, forward, xp)
-        if structure.geometry is not None:
+        if shell:
+            v = v._replace(log_encounter=shell_extent(layout, xp))
+        elif structure.geometry is not None:
             v = v._replace(log_encounter=encounter_extent(footprint, layout, v, xp))
         log_a = xp.full(layout.step_law.shape, -xp.inf)
         for k, law in enumerate(kinetics):  # Each step's own law: one pass per law, selected.
@@ -292,7 +296,7 @@ def log_parts(counts, totals, factor_state, term_states, layout, structure, xp=j
             change = layout.entry_alpha - layout.entry_beta
             for term, state, term_layout in zip(terms, term_states, layout.terms, strict=True):
                 log_a = log_a - term.delta(state, term_layout, v, change, xp)
-        if structure.geometry is not None:  # §0.2c rule 5: the vesicle floor, in quanta.
+        if bilayer:  # §0.2c rule 5: the vesicle floor, in quanta (a shell has none).
             moved = layout.geometry[2] if forward else -layout.geometry[2]
             log_a = xp.where(floor_zero(footprint, moved, layout.geometry[6]), -xp.inf, log_a)
         if structure.last_molecule == "kept":
@@ -335,6 +339,12 @@ def encounter_extent(footprint, layout, view, xp=jnp):
     area = layout.geometry[4] + log_w
     radius = layout.geometry[5] + 0.5 * log_w
     return xp.where(code == 1, area, xp.where(code == 2, radius, 0.0))
+
+
+def shell_extent(layout, xp=jnp):
+    """FR-21: ln(A_sh·ρ0) for each cells.shell_permeation@1 step (code 3), 0 for any other: a
+    constant of the world, the same on every state and in both directions."""
+    return xp.where(layout.geometry[3] == 3, layout.geometry[4], 0.0)
 
 
 def lysis_at(counts, layout, xp=jnp):
@@ -513,7 +523,7 @@ def event(lane, layout, structure):
     status = jnp.where(
         extinction, EXTINCT, jnp.where(events >= layout.event_limit, EVENT_LIMIT, RUNNING)
     ).astype(jnp.int32)
-    if structure.geometry is not None:  # OL2 milestone 2: lysis at the end state (§0.2b rule 3)
+    if structure.geometry not in (None, PRESCRIBED_SHELL):  # lysis at the end state (§0.2b rule 3)
         status = jnp.where(lysis_at(counts, layout), LYSED, status).astype(jnp.int32)
     after = lane._replace(
         counts=counts,

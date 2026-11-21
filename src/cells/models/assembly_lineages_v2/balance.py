@@ -28,13 +28,16 @@ import numpy as np
 from cells.definitions.specs import ConfigError
 from cells.models.assembly_lineages_v2 import (
     BILAYER_GEOMETRY,
+    GATE_FACTOR,
     IDEAL_MIXING,
     MASS_ACTION,
     MEMBRANE_PERMEATION,
     MODEL_ID,
     OSMOTIC_LUMEN,
     PHASE_EXCHANGE,
+    PRESCRIBED_SHELL,
     REGULAR_MIXING,
+    SHELL_PERMEATION,
     TRANSITION_STATE,
     kernel,
     ledger,
@@ -97,7 +100,8 @@ def deviations(spec, rng, states=STATES, max_count=MAX_COUNT):
             emptied = after[: len(world.places)][membrane].sum() == 0
             if emptied and structure.last_molecule == "extinct":
                 continue  # No reverse: an extinction is not a pair.
-            if structure.geometry is not None and kernel.lysis_at(after, layout, np):
+            bilayer = structure.geometry not in (None, PRESCRIBED_SHELL)
+            if bilayer and kernel.lysis_at(after, layout, np):
                 continue  # No reverse: a lysis ends the life (§0.2b rule 3), not a pair.
             backward = host_log_rates(after, layout, structure)[R + r]
             if backward == np.inf:
@@ -426,6 +430,122 @@ def geometry_verdict():
             ],  # fmt: skip
             "states_per_world": STATES,
             "seed": PROBE_SEED + 2,
+            "pairs": pairs,
+            "tolerance_ln": ATOL,
+            "max_abs_deviation_ln": worst,
+        },
+    }
+
+
+# ------------------------------------------------------------------ FR-21: the prescribed shell
+
+
+def shell_probe_world(rng, measure, *, regular, catalysis):
+    """A generic world with a prescribed shell (FR-21): a tracer S entering the declared lumen by
+    the shell's permeation, a gate flipping between its forms G and H in the wall, a ligand X
+    binding a declared site R to its complex XR, and a wall subunit B; random potentials, rates,
+    volumes and area. With catalysis the gate factor speeds or slows the entry by its forms."""
+    species = []
+    for name, moiety, kinds in (("S", {"s": 1}, ("solution",)), ("X", {"x": 1}, ("solution",)),
+                                ("G", {"g": 1}, ("bilayer",)), ("H", {"g": 1}, ("bilayer",)),
+                                ("R", {"r": 1}, ("bilayer",)),
+                                ("XR", {"x": 1, "r": 1}, ("bilayer",)),
+                                ("B", {"b": 1}, ("bilayer",))):  # fmt: skip
+        potentials = {kind: float(rng.normal(0, 2)) for kind in kinds}
+        species.append({"id": name, "moieties": moiety, "standard_mu_RT": potentials,
+                        "catalogue": None, "evidence": None})  # fmt: skip
+    k = lambda: float(np.exp(rng.normal(0, 1)))  # noqa: E731
+    steps = [
+        {"id": "entry_s", "locus": "membrane", "reactants": {"S@pool": 1},
+         "products": {"S@lumen": 1}, "law": SHELL_PERMEATION,
+         "permeability_m_per_s": {"value": 1e-8 * k(), "provenance": "unsourced; probe"}},
+        {"id": "flip", "phase": "membrane", "reactants": {"G": 1}, "products": {"H": 1},
+         "law": MASS_ACTION, "forward_rate_per_s": k()},
+        {"id": "bind", "locus": "membrane", "reactants": {"X@pool": 1, "R@membrane": 1},
+         "products": {"XR@membrane": 1}, "law": MASS_ACTION, "forward_rate_per_s": k()},
+    ]  # fmt: skip
+    terms = [{"law": IDEAL_MIXING}]
+    if regular:
+        terms.append({"law": REGULAR_MIXING, "chi_kT": [
+            {"pair": ["G", "B"], "chi": float(rng.normal(0, 1))},
+            {"pair": ["R", "XR"], "chi": float(rng.normal(0, 1))}]})  # fmt: skip
+    world = {
+        "units": {"time": "s", "temperature_K": 296.15, "standard_concentration_mM": 1000.0},
+        "conventions": {
+            "free_energy_form": "discrete", "condensed_measure": measure,
+            "membrane_kinetics": "count_on_m", "lumen_volume": "declared",
+            "empty_catalyst_phase": "uncatalysed", "last_molecule": "kept",
+        },
+        "species": species,
+        "phases": {
+            "pool": {"volume_L": float(np.exp(rng.normal(-52, 1))), "species": [
+                {"id": "S", "kind": "finite"}, {"id": "X", "kind": "finite"}]},
+            "membrane": {"species": ["G", "H", "R", "XR", "B"]},
+            "lumen": {"volume_L": float(np.exp(rng.normal(-54, 1))), "species": ["S"]},
+        },
+        "steps": steps,
+        "free_energy": terms,
+        "founder": {"S@pool": 3, "X@pool": 2, "S@lumen": 1, "G@membrane": 1, "H@membrane": 1,
+                    "R@membrane": 2, "XR@membrane": 1, "B@membrane": 3},
+        "sites": [{"site": "R", "complex": "XR"}],
+        "geometry": {"law": PRESCRIBED_SHELL,
+                     "area_m2": {"value": float(np.exp(rng.normal(-35, 1))),
+                                 "provenance": "unsourced; probe"}},
+    }  # fmt: skip
+    if catalysis:
+        world["rate_factor"] = {"law": GATE_FACTOR, "forms": ["G", "H"],
+                                "entries": [{"form": "G", "step": "entry_s",
+                                             "ddG_kT": float(rng.normal(0, 1.5))},
+                                            {"form": "H", "step": "entry_s",
+                                             "ddG_kT": float(rng.normal(0, 1.5))}]}  # fmt: skip
+    return {
+        "schema_version": 1,
+        "model": {"id": MODEL_ID, "world": world},
+        "experiment": {"time_horizon_s": 1.0, "event_limit": 1, "row_every_events": 1,
+                       "observation_times_s": [], "trace": False, "uniforms": False},
+        "execution": {"backend": "cpu", "precision": "float64", "mode": "single_lineage",
+                      "stream": {"seed": 0, "environment": 0, "lineage": 0, "branch": 0},
+                      "molecule_capacity": 64},
+    }  # fmt: skip
+
+
+SHELL_PROBES = tuple(
+    (measure, regular, catalysis)
+    for measure in ("multinomial", "multinomial_less_one")
+    for regular in (False, True)
+    for catalysis in (False, True)
+)
+
+
+@functools.cache
+def shell_verdict():
+    """The check's verdict on FR-21's generic shell worlds (SHELL_PROBES), as for
+    geometry_verdict(): refuses (ConfigError) if any pair fails the identity. The other verdicts
+    are left as they were, so no other run's record moves."""
+    from cells.definitions.specs import parse_spec
+
+    rng = np.random.default_rng(PROBE_SEED + 4)
+    worst, pairs = 0.0, 0
+    for measure, regular, catalysis in SHELL_PROBES:
+        world = shell_probe_world(rng, measure, regular=regular, catalysis=catalysis)
+        found = np.abs(deviations(parse_spec(world), rng))
+        pairs += found.size
+        worst = max(worst, float(np.max(found)) if found.size else 0.0)
+    if not worst <= ATOL:
+        raise ConfigError(
+            f"{MODEL_ID}: the kernel's rates fail ln a+ - ln a- = -dF + w on the shell probe: "
+            f"the largest deviation is {worst:.3g} > {ATOL:g}. Refused"
+        )
+    return {
+        "identity": "ln a+(n) - ln a-(n + nu) + F(n + nu) - F(n) - w = 0",
+        "holds": True,
+        "probe": {
+            "worlds": [
+                {"condensed_measure": m, "regular_mixing": g, "rate_factor": c}
+                for m, g, c in SHELL_PROBES
+            ],
+            "states_per_world": STATES,
+            "seed": PROBE_SEED + 4,
             "pairs": pairs,
             "tolerance_ln": ATOL,
             "max_abs_deviation_ln": worst,

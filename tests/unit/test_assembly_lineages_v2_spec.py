@@ -159,6 +159,21 @@ def test_the_rate_factor_is_refused_out_of_its_scope():
     planted = world()
     planted["rate_factor"]["law"] = GARD_PAIR_CONSISTENT  # Hosted by @1: not this family's.
     refused(planted, "is not a cells.rate_factor_law@2 of cells.assembly_lineages@2")
+    # A factor on a step wholly in the pool or wholly in the lumen (the lead's ruling of 20
+    # November); one on a step through the wall (pool to lumen) stays admitted.
+    entry = {"catalyst": "P", "step": "make_L", "ddG_kT": 0.4}
+    planted = world()
+    planted["rate_factor"]["entries"].append(entry)
+    refused(planted, "lies wholly in the pool")
+    planted = world()
+    planted["phases"]["lumen"]["species"].append("F")
+    planted["founder"]["F@lumen"] = 0
+    planted["steps"].append(step("make_L_inside", {"F": 1}, {"L": 1}, 0.1, phase="lumen"))
+    planted["rate_factor"]["entries"].append(dict(entry, step="make_L_inside"))
+    refused(planted, "lies wholly in the lumen")
+    planted = world()
+    planted["rate_factor"]["entries"].append(dict(entry, step="permeate_S"))
+    parsed(planted)
 
 
 def test_the_founder_and_the_measure_s_refusals():

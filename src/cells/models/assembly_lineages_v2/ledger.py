@@ -55,6 +55,31 @@ def free_energy(counts, tables, terms, term_layouts):
     return float(total)
 
 
+def state_free_energy(counts, tables, terms, term_layouts):
+    """F of a run's own state (the rows, the host's stops, a lysis's release), refusing a state that
+    the log-factorial table cannot hold (a Lean finding of 20 November, on FR-20).
+
+    The table's lookup clamps its index, so a count above the molecule capacity would read ln C!
+    for ln n!. The device refuses such an event (status capacity), and the parse refuses a declared
+    count above the capacity; this refuses any other state the host makes, such as a lysis's return
+    to the pool, before its F is booked. The run's ledger cannot see the error itself, since it
+    reads the same table. The check probes (balance.py) keep free_energy, so their verdicts and
+    every run's record are unchanged."""
+    from cells.definitions.specs import ConfigError
+
+    n = np.asarray(counts, dtype=np.int64)
+    last = tables.log_factorial.shape[0] - 1
+    largest = int(np.max(np.where(tables.finite, n, 0), initial=0))
+    membrane = int(np.sum(np.where(tables.membrane, n, 0)))
+    if largest > last or membrane - tables.offset > last:
+        raise ConfigError(
+            f"A state of the run holds {max(largest, membrane)} molecules in a place or the "
+            f"membrane, above the molecule capacity {last}: its F would read the log-factorial "
+            "table's clamped last entry. Refused; declare a larger molecule_capacity"
+        )
+    return free_energy(counts, tables, terms, term_layouts)
+
+
 def residual(heat, work, f, f_0):
     """Q − [W − (F(n_t) − F(n_0))], elementwise."""
     return heat - (work - (f - f_0))

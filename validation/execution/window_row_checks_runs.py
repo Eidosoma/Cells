@@ -46,6 +46,9 @@ def source():
         record = json.loads(snapshot.read_text())
         keys = ("git_revision", "dirty", "status", "patch_sha256")
         return dict(root=str(root), snapshot={k: record.get(k) for k in keys if k in record})
+    from validation import executed_sources  # noqa: PLC0415
+    executed_sources.refuse_untracked(root, "window_row_checks_runs' source record")  # D259
+
     run = lambda *a: subprocess.run(  # noqa: E731
         ["git", "-C", str(root), *a], capture_output=True, text=True
     ).stdout.strip()

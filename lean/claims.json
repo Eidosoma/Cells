@@ -18,6 +18,163 @@
     "cells.shared_pool@1": "molecular-assembly"
   },
   "comparisons": {
+    "cell-replacement-boundary-repair": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1"
+      ],
+      "laws": [],
+      "operators": [
+        "cells.scheduled_cell_replacement@2",
+        "cells.ideal_osmosis_linear_compliance_water@1"
+      ],
+      "engine_revision": "dd085e36e9ced2edfed88c7194e970bd335f3ad0",
+      "record_revision": "8f269af4c8b79150020b47a86dd71da848d91714",
+      "sources": {
+        "Template volume placed inside the water bounds": "src/cells/operators/cell_replacement_v2.py#L205",
+        "Stored volume and refusal of the uncorrected offset": "tests/unit/test_cell_replacement_v2.py#L357"
+      },
+      "driver": "lean/checks/cell_replacement.py",
+      "record": "lean/PROGRESS.md#claim-source-review"
+    },
+    "shared-pool-record-repair": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@2"
+      ],
+      "laws": [
+        "cells.shared_pool@1",
+        "cells.phase_exchange@1",
+        "cells.membrane_permeation@1",
+        "cells.stochastic_mass_action@1",
+        "cells.osmotic_lumen@1",
+        "cells.bilayer_geometry@1",
+        "cells.ideal_mixing@1"
+      ],
+      "operators": [],
+      "engine_revision": "dd085e36e9ced2edfed88c7194e970bd335f3ad0",
+      "record_revision": "8f269af4c8b79150020b47a86dd71da848d91714",
+      "sources": {
+        "Population records for osmotic and declared lumens": "src/cells/models/assembly_lineages_v2/population.py#L824",
+        "Volume and tension columns": "src/cells/models/assembly_lineages_v2/population.py#L846"
+      },
+      "driver": "lean/checks/shared_pool.py",
+      "record": "lean/PROGRESS.md#claim-source-review"
+    },
+    "scheduled-turnover-net-repair": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [],
+      "operators": [
+        "cells.scheduled_species_turnover@1"
+      ],
+      "engine_revision": "dd085e36e9ced2edfed88c7194e970bd335f3ad0",
+      "record_revision": "8f269af4c8b79150020b47a86dd71da848d91714",
+      "sources": {
+        "Net change during rapid turnover": "src/cells/operators/species_turnover.py#L273",
+        "Stored amount, production, clearance and work": "src/cells/operators/species_turnover.py#L278",
+        "Engine regression at the switch in net calculation": "tests/unit/test_species_turnover.py#L450"
+      },
+      "driver": "lean/checks/species_turnover.py",
+      "record": "lean/PROGRESS.md#claim-source-review"
+    },
+    "transition-state-factor-repair": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@2"
+      ],
+      "laws": [
+        "cells.stochastic_mass_action@1",
+        "cells.transition_state_factor@1",
+        "cells.ideal_mixing@1",
+        "cells.regular_mixing@1"
+      ],
+      "engine_revision": "dd085e36e9ced2edfed88c7194e970bd335f3ad0",
+      "record_revision": "8f269af4c8b79150020b47a86dd71da848d91714",
+      "sources": {
+        "Choice of the count-weighted mean": "src/cells/models/assembly_lineages_v2/transition_state.py#L143",
+        "Common-state transition factor": "src/cells/models/assembly_lineages_v2/transition_state.py#L170"
+      },
+      "driver": "lean/checks/assembly_kinetics.py",
+      "record": "lean/PROGRESS.md#claim-source-review"
+    },
+    "rectifier-reference-domain": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [
+        "cells.inward_rectifier_linear_driving_force@1"
+      ],
+      "engine_revision": "8f9bc0500f362096155640cd843a69f2dabc6107",
+      "record_revision": "8f269af4c8b79150020b47a86dd71da848d91714",
+      "sources": {
+        "Admitted reference concentration": "src/cells/kinds/passive_routes.py#L242",
+        "Subnormal reference refusal": "tests/unit/test_inward_rectifier_route.py#L135",
+        "Current and conductance factor": "src/cells/laws/routes/inward_rectifier_linear_driving_force.py#L81"
+      },
+      "driver": "lean/checks/inward_rectifier.py",
+      "record": "lean/PROGRESS.md#claim-source-review"
+    },
+    "vacuolar-pump-reversal": {
+      "kind": "engine",
+      "models": ["resolved_pump_tissue@3"],
+      "laws": ["cells.proton_atp_mass_action_positive@1"],
+      "engine_revision": "6318b7d4f8d33251760834b6079aa27d88a81831",
+      "record_revision": "78acb6bccc69cabbd8639a22975d87b5eabb42a2",
+      "sources": {
+        "Free energy for pumping at fixed coupling": "src/cells/laws/pumps/proton_pump.py#L73",
+        "Signed proton pump flux": "src/cells/laws/pumps/proton_pump.py#L91",
+        "Stoichiometry and fuel in the tissue population": "src/cells/laws/pumps/proton_pump.py#L223"
+      },
+      "driver": "lean/checks/atp_cycle.py",
+      "record": "lean/PROGRESS.md#biological-model-review"
+    },
+    "vesicle-lysis-repair": {
+      "kind": "engine",
+      "models": ["cells.assembly_lineages@2"],
+      "laws": ["cells.bilayer_geometry@1", "cells.osmotic_lumen@1", "cells.ideal_mixing@1", "cells.phase_exchange@1"],
+      "engine_revision": "6318b7d4f8d33251760834b6079aa27d88a81831",
+      "record_revision": "78acb6bccc69cabbd8639a22975d87b5eabb42a2",
+      "sources": {
+        "Repaired tension at the cap": "src/cells/models/assembly_lineages_v2/lumen.py#L170",
+        "Tension test at each event": "src/cells/models/assembly_lineages_v2/kernel.py#L340"
+      },
+      "driver": "lean/checks/vesicle.py",
+      "record": "lean/PROGRESS.md#biological-model-review"
+    },
+    "mitochondrial-stall-heat": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [
+        "cells.nadh_ubiquinone_proton_cycle@1",
+        "cells.ubiquinol_cytochrome_c_proton_cycle@1",
+        "cells.cytochrome_c_oxygen_proton_cycle@1",
+        "cells.proton_coupled_atp_synthesis_cycle@1",
+        "cells.electrogenic_nucleotide_exchange@1",
+        "cells.phosphate_proton_symport@1",
+        "cells.potassium_proton_exchange@1",
+        "cells.rapid_binding@1"
+      ],
+      "engine_revision": "e4b9588fdc80aa8e764e09c70a39a5b2f2db64cf",
+      "record_revision": "f0783ad9cb9c9f1ca581dfacee23ac8b5411268e",
+      "sources": {
+        "Full-turn affinity from free concentrations and voltage": "src/cells/kinds/transporter.py#L1809",
+        "Monomial affinity shares": "src/cells/laws/cycles/forms.py#L1468",
+        "Reversible rate near stall": "src/cells/laws/cycles/forms.py#L1512",
+        "Heat and cycle derivatives": "src/cells/kinds/transporter.py#L1966",
+        "Public cycle probe": "src/cells/kinds/transporter.py#L2362",
+        "Matrix and lumen fixture": "tests/unit/test_mito_cycle_laws.py#L64",
+        "Independent decimal component equations": "validation/mitochondria/appendix_check.py#L87"
+      },
+      "driver": "lean/checks/mitochondrial_stall.py",
+      "record": "lean/PROGRESS.md#mitochondrial-stall-heat"
+    },
     "mitochondrial-cycle-accounting": {
       "kind": "engine",
       "models": [
@@ -1524,6 +1681,85 @@
   },
   "claims": [
     {
+      "id": "mitochondrial-stall-heat",
+      "category": "pumps-and-cotransport",
+      "title": "Mitochondrial cycles reverse at zero free energy and dissipate power in either direction",
+      "statement": "Each enabled mitochondrial cycle runs forward at negative full-turn ΔG, reverses at positive ΔG and stalls at zero. The five electrogenic cycles have a stall voltage set by free activities. Phosphate uptake and K⁺/H⁺ exchange have voltage-independent stall ratios. At positive temperature, instantaneous dissipated power is positive in either direction and vanishes exactly at stall or when the population is off.",
+      "assumptions": [
+        "Each reaction uses the declared free species and signed charge, with N the matrix and P the intermembrane space. Free activities are positive. The dimensionless voltage is F(φ_N − φ_P)/(RT).",
+        "An enabled population has a positive finite forward kinetic prefactor. Complex III uses a half-turn exponent and complex IV a quarter-turn exponent. ΔG refers to a full turnover in both cases.",
+        "Heat here is the model's instantaneous chemical free-energy dissipation. Flux is in fmol/s and RT in J/mol. An assay of integrated whole-mitochondrion enthalpy measures a different observable."
+      ],
+      "uses": [
+        "atp-cycle",
+        "mitochondrial-respiratory-balance",
+        "mitochondrial-atp-delivery"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.nadh_ubiquinone_proton_cycle@1",
+          "cells.ubiquinol_cytochrome_c_proton_cycle@1",
+          "cells.cytochrome_c_oxygen_proton_cycle@1",
+          "cells.proton_coupled_atp_synthesis_cycle@1",
+          "cells.electrogenic_nucleotide_exchange@1",
+          "cells.phosphate_proton_symport@1",
+          "cells.potassium_proton_exchange@1"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.MitochondrialStall.rate_disabled": "lean/CellsProofs/Chemistry/MitochondrialStall.lean",
+          "CellsProofs.Chemistry.MitochondrialStall.rate_eq_fractional": "lean/CellsProofs/Chemistry/MitochondrialStall.lean",
+          "CellsProofs.Chemistry.MitochondrialStall.direction": "lean/CellsProofs/Chemistry/MitochondrialStall.lean",
+          "CellsProofs.Chemistry.MitochondrialStall.voltage_stall": "lean/CellsProofs/Chemistry/MitochondrialStall.lean",
+          "CellsProofs.Chemistry.MitochondrialStall.neutral_carrier_stalls": "lean/CellsProofs/Chemistry/MitochondrialStall.lean",
+          "CellsProofs.Chemistry.MitochondrialStall.synthase_load_shift": "lean/CellsProofs/Chemistry/MitochondrialStall.lean",
+          "CellsProofs.Chemistry.MitochondrialStall.heat_nonneg": "lean/CellsProofs/Chemistry/MitochondrialStall.lean",
+          "CellsProofs.Chemistry.MitochondrialStall.heat_zero_iff": "lean/CellsProofs/Chemistry/MitochondrialStall.lean"
+        },
+        "sources": {
+          "Mathlib geometric sum used to recover the fractional exponent": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/GeomSum.lean#L239"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "mitochondrial-stall-heat"
+        ],
+        "result": "All 49 physical settings agreed with the independent component equations on NumPy and compiled CPU JAX, including both sides of stall for all seven laws. The worst net-flux error was 3.91 × 10⁻¹⁴ of the reference forward rate. The worst residual ΔG/(RT) at a calculated stall was 2.85 × 10⁻¹⁴. The rate kernel also preserved the signs at ±2⁻⁶⁰ and returned zero at an exact zero input. The probe and the stage agreed on flux and instantaneous dissipated power."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Net turnover on either side of a measured mitochondrial stall, the shift in ATP synthase stall with phosphorylation load, and dissipated power at known cycle affinity.",
+        "unit": "turnovers per enzyme per second, pH units, H⁺/ATP, pJ/s per population",
+        "evidence": [
+          {
+            "dataset_id": "petersen2012_yeast_stall@1",
+            "manifest": "lean/checks/data/mitochondrial_stall.json",
+            "citation": "Petersen et al. (2012), Figs. 1–4 and Tables S2 and S4",
+            "doi": "10.1073/pnas.1202799109",
+            "locator": "Yeast traces in Fig. 1, corrected stall in Fig. 2, fitted coupling in Fig. 4 and all ten corrected stall entries in Table S4.",
+            "context": "Purified yeast mitochondrial ATP synthase in proteoliposomes at an imposed 60 mV.",
+            "role": "descriptive",
+            "uncertainty": "The example rates are fitted initial slopes. The equilibrium ΔpH was interpolated. One measured stall sets the offset for comparing shifts at the other loads. The comparison adds the reported interpolation limits and assumes the assay's concentration quotient is proportional to the free activity quotient.",
+            "assessment": "ATP turnover changed sign across stall, and the inferred coupling was 2.9 ± 0.2 H⁺/ATP. The model's three protons predict a 0.745 pH-unit endpoint shift against 0.74 observed. Five of nine other entries are within the combined interpolation limits using the stall at Q = 5.79 as the reference. Four intermediate entries fall outside.",
+            "report": "lean/PROGRESS.md#mitochondrial-stall-heat"
+          },
+          {
+            "dataset_id": "nakamura1978_mitochondrial_heat@1",
+            "manifest": "lean/checks/data/mitochondrial_stall.json",
+            "citation": "Nakamura and Matsuoka (1978), Figs. 5b and 6",
+            "doi": "10.1093/oxfordjournals.jbchem.a132117",
+            "locator": "The anaerobic bulk heat pulse in Fig. 5b and its dependence on the initial ADP in Fig. 6.",
+            "context": "Rat liver mitochondria following aerobic ATP production and oxygen exhaustion.",
+            "role": "descriptive",
+            "uncertainty": "The apparent enthalpy was −29 ± 7 kJ per mole of previously added ADP. The authors inferred an ATP hydrolysis contribution.",
+            "assessment": "Bulk calorimetry integrates heat from the preparation. The instantaneous dissipated power of each individual mitochondrial cycle remains experimentally open.",
+            "report": "lean/PROGRESS.md#mitochondrial-stall-heat"
+          }
+        ]
+      }
+    },
+    {
       "id": "mitochondrial-respiratory-balance",
       "category": "pumps-and-cotransport",
       "title": "Restoring both respiratory carriers fixes the turnover ratio and outward charge",
@@ -2187,7 +2423,7 @@
       "id": "cell-replacement-volume-boundary",
       "category": "tissue-and-conservation",
       "title": "Centering a strictly interior replacement volume preserves its water-domain membership in exact arithmetic",
-      "statement": "For any declared target strictly between the water bounds, subtracting and adding the same reference volume recovers that target. The float64 implementation can refuse a strictly interior declaration when the reconstructed value lands on the excluded lower bound.",
+      "statement": "For any declared target strictly between the water bounds, subtracting and adding the same reference volume recovers that target. The numerical comparison tests how v2 binds a target whose float64 offset would reconstruct at the excluded lower bound.",
       "assumptions": [
         "The water volume interval is open at both endpoints. The exact theorem uses a common real-valued reference for storing and reconstructing the target.",
         "The admission comparison uses a single template with the slot's own species amounts. Water flow is disabled and all other inputs are held fixed."
@@ -2205,15 +2441,16 @@
         }
       },
       "numerical": {
-        "status": "failed",
+        "status": "checked",
         "comparisons": [
+          "cell-replacement-boundary-repair",
           "cell-replacement-volume-boundary"
         ],
-        "result": "At reference 0.7505222518670602 pL the target 0.18763056296676509 pL reconstructs as the strict lower bound 0.18763056296676506 pL. Definition checking refuses the first interior float. The second interior float is admitted, as is the original target if only the lower bound is relaxed by one float."
+        "result": "The repaired v2 definition admitted 0.18763056296676509 pL, the first float above the strict lower bound of 0.18763056296676506 pL. It also admitted the second interior float and refused the bound itself. The binding regression verified that the adjusted offset reconstructs strictly inside. The earlier comparison records the original refusal."
       },
       "biology": {
         "status": "open",
-        "observable": "Cell volume and measurement uncertainty near a physiologically justified lower bound. The recorded refusal concerns numerical admission.",
+        "observable": "Cell volume and measurement uncertainty near a physiologically justified lower bound. The boundary replay tests numerical admission.",
         "unit": "pL",
         "evidence": []
       }
@@ -2598,13 +2835,14 @@
         }
       },
       "numerical": {
-        "status": "failed",
+        "status": "checked",
         "comparisons": [
+          "shared-pool-record-repair",
           "shared-pool-report-recheck",
           "shared-pool-inventory",
           "shared-pool-declared-volume"
         ],
-        "result": "Two 96-event osmotic populations conserved exactly one lipid and one solute across every stored row. All six slot permutations preserved the corresponding rates. The fixed-volume case failed during reporting. A parsed one-slot, one-event population raised TypeError when the reporter requested an osmotic volume for its declared lumen."
+        "result": "Two 96-event osmotic populations conserved one lipid and one solute across every recorded row. All six slot permutations preserved the corresponding rates. The repaired reporter also returned the one-event population with its declared 10⁻²² L lumen. The earlier records retain the reporting failure."
       },
       "biology": {
         "status": "open",
@@ -2809,12 +3047,13 @@
         }
       },
       "numerical": {
-        "status": "failed",
+        "status": "checked",
         "comparisons": [
+          "vesicle-lysis-repair",
           "vesicle-lysis-hold-recheck",
           "vesicle-lysis-threshold"
         ],
-        "result": "The first event has reference tension 0.0008412963098275772 N/m. At thresholds about 3 × 10⁻¹⁸ N/m below and above it, the 60-quanta representation ruptured both times and the equivalent 1,920-quanta representation remained intact both times. Both matched the reference at thresholds 1% away. Computing physical area first recovered both close decisions in float64."
+        "result": "The repaired tension calculation matched the independent reference in all eight compiled decisions. Both 60 and 1,920 area quanta gave rupture just below 0.0008412963098275772 N/m and survival just above it, including offsets of about 3 × 10⁻¹⁸ N/m. The older comparisons preserve the disagreement that led to the repair."
       },
       "biology": {
         "status": "open",
@@ -2830,8 +3069,8 @@
             "context": "Pure DOPC giant unilamellar vesicles with matched sugar concentrations under a constant 8.0 mN/m aspiration tension. Time starts at the hold.",
             "role": "descriptive",
             "uncertainty": "The published series reports 20 vesicles per temperature, but the plotted steps do not resolve those denominators. Fractions and times are approximate, and no pointwise errors are given.",
-            "assessment": "At 12 °C survival fell from 0.50 at 92 s to 0.125 at 268 s. At 32 °C it fell from 0.50 at 33 s to 0.111 at 125 s. An instantaneous, fixed threshold acting alone cannot explain the continuing declines at constant tension.",
-            "report": "lean/PROGRESS.md#vesicle-threshold-hold"
+            "assessment": "At 12 °C survival fell from 0.50 at 92 s to 0.125 at 268 s. At 32 °C it fell from 0.50 at 33 s to 0.111 at 125 s. The published rupture rates were 0.0073 and 0.024 s⁻¹. Surviving vesicles continued to rupture at unchanged tension.",
+            "report": "lean/PROGRESS.md#biological-model-review"
           },
           {
             "dataset_id": "shibly2016_dopc_hold@1",
@@ -2842,8 +3081,8 @@
             "context": "Pure DOPC vesicles at 25 ± 1 °C with an initial osmolarity difference of 2.8 mM, followed after osmotic equilibration.",
             "role": "descriptive",
             "uncertainty": "Two time points in the same cohort, read from the plotted steps. Fig. 1B has no pointwise error bars. Osmotic tension was inferred in addition to the applied aspiration tension.",
-            "assessment": "Of 19 starting vesicles, 8 remained at 40 s and 2 at 110 s. Six of eight early survivors ruptured during the next 70 s. Any constant survival fraction misses at least one reading by 3/19, or 15.8 percentage points. The measured hold supplies no choice between numerical area quanta.",
-            "report": "lean/PROGRESS.md#vesicle-threshold-hold"
+            "assessment": "Of 19 starting vesicles, 8 remained at 40 s and 2 at 110 s. A constant survival fraction misses at least one reading by 3/19. A rupture rate of 0.0216 s⁻¹ fitted to the first count predicts 1.76 survivors at the second time in the same cohort.",
+            "report": "lean/PROGRESS.md#biological-model-review"
           }
         ]
       }
@@ -3226,9 +3465,9 @@
         }
       },
       "numerical": {
-        "status": "failed",
-        "comparisons": ["scheduled-species-turnover"],
-        "result": "144 scalar cases per backend and two ordinary four-phase schedules matched the 60-digit reference. A one-second compiled run at extreme production and clearance accepted 1 fmol and zero work against a reference of 2 fmol and 0.995667 pJ. The two rounded gross bookings erased the net movement. Halving both rates recovered the correct result. A mixing-chamber check used metered input and exhaust without fitting the outlet measurements. At 120 minutes it predicted 0.387 vol% CO₂ against 0.318 ± 0.034 across four chambers (mean ± SD). [Riveros Lizana et al., Fig. 4](https://doi.org/10.3390/ani13162675)"
+        "status": "checked",
+        "comparisons": ["scheduled-turnover-net-repair", "scheduled-species-turnover"],
+        "result": "All 144 scalar cases on each backend and two ordinary four-phase schedules matched the 60-digit reference. Both extreme-rate worlds stored the reference 2 fmol and booked 0.995667 pJ of chemical work. The earlier engine stored 1 fmol and zero work in the larger-rate case. A mixing-chamber check used metered input and exhaust without fitting the outlet measurements. At 120 minutes it predicted 0.387 vol% CO₂ against 0.318 ± 0.034 across four chambers (mean ± SD). [Riveros Lizana et al., Fig. 4](https://doi.org/10.3390/ani13162675)"
       },
       "biology": {
         "status": "open",
@@ -3505,7 +3744,7 @@
         "CellsProofs.Transport.JunctionGate.two_decay_samples": "lean/CellsProofs/Transport/JunctionGate.lean"
       }},
       "numerical": {"status": "checked", "comparisons": ["junction-gate"], "result": "Across 45 constant-voltage samples the compiled gate matched the independent reference within 1.12 × 10⁻¹⁶. In three tissue cell pairs the intrinsic gates continued moving during a 31.25 ms block, and tracer transfer after release matched the integrated reference within 8.68 × 10⁻¹⁸ fmol."},
-      "biology": {"status": "open", "observable": "Normalized junction conductance at each clamp polarity and the number and duration of decay components during a fixed-voltage step.", "finding": "Seven wild-type Cx43 cell pairs gave residual conductances of 0.35 ± 0.01 and 0.33 ± 0.01 relative to the prepulse at positive and negative voltages. At −100 mV the same decay had two time constants, 70 ± 5 and 931 ± 54 ms (SEM). The Cells reference parameters give one time constant of 50.0 ms. The experiment leaves exact transient polarity symmetry and the independent availability multiplier open. [Sahu and Bera, Table 2 and Fig. S2](https://pmc.ncbi.nlm.nih.gov/articles/PMC3607587/)", "unit": "dimensionless normalized conductance and ms", "evidence": []}
+      "biology": {"status": "open", "observable": "Normalized junction conductance at each clamp polarity and the number and duration of decay components during a fixed-voltage step.", "finding": "Seven wild-type Cx43 cell pairs gave residual conductances of 0.35 ± 0.01 and 0.33 ± 0.01 relative to the prepulse at positive and negative voltages. At −100 mV the same decay had two time constants, 70 ± 5 and 931 ± 54 ms (SEM). The Cells reference parameters give one time constant of 50.0 ms. An independent wild-type Cx43 series in N2a pairs reported fast and slow times of 0.25 ± 0.04 and 3.18 ± 0.12 s at 60 mV. The experiments leave exact transient polarity symmetry and the independent availability multiplier open. [Sahu and Bera, Table 2 and Fig. S2](https://pmc.ncbi.nlm.nih.gov/articles/PMC3607587/) · [Moreno et al., Fig. 5A and Table 2](https://doi.org/10.1161/hh0402.105667)", "unit": "dimensionless normalized conductance and ms", "evidence": []}
     },
     {
       "id": "channel-gate-bounds",
@@ -3681,7 +3920,7 @@
       "id": "atp-cycle",
       "category": "pumps-and-cotransport",
       "title": "Free energy sets ATP-driven transport direction and stall",
-      "statement": "With positive forward rate J⁺, an enabled cycle has net rate J⁺(1 − exp(ΔG/RT)). It runs forward for negative ΔG, reverses for positive ΔG and stalls at zero. A disabled cycle has zero rate. Instantaneous heat is nonnegative in every case. For n protons per ATP, the stall voltage is (RT/F) ln(a_P/a_N) + ΔG_fuel/(nF). Neutral cargo flux is independent of voltage at fixed activities and forward rate.",
+      "statement": "With positive forward rate J⁺, an enabled cycle has net rate J⁺(1 − exp(ΔG/RT)). It runs forward for negative ΔG, reverses for positive ΔG and stalls at zero. A disabled cycle has zero rate. Instantaneous heat is nonnegative in every case. For n protons per ATP, the stall voltage is (RT/F) ln(a_P/a_N) + ΔG_fuel/(nF). At fixed fuel, temperature and coupling, changing the pH gradient shifts stall by exactly the change in the proton equilibrium voltage. Neutral cargo flux is independent of voltage at fixed activities and forward rate.",
       "assumptions": ["One tightly coupled mode hydrolyses one ATP on side N and moves n cargo units from N to P. Cargo valence is +1 for free protons and zero for the neutral role. Voltage is V_N − V_P.", "Activities and absolute temperature are positive. In an enabled population, capacity, availability and the saturation factor are positive. Lean represents their product by its finite logarithm and uses real arithmetic."],
       "formal": {"status": "proved", "about": ["cells.proton_atp_mass_action_positive@1", "cells.atp_driven_transporter_mass_action_positive@1"], "theorems": {
         "CellsProofs.Transport.ATPCycle.flux_disabled": "lean/CellsProofs/Transport/ATPCycle.lean",
@@ -3691,10 +3930,28 @@
         "CellsProofs.Transport.ATPCycle.stall_iff": "lean/CellsProofs/Transport/ATPCycle.lean",
         "CellsProofs.Transport.ATPCycle.heat_nonneg": "lean/CellsProofs/Transport/ATPCycle.lean",
         "CellsProofs.Transport.ATPCycle.proton_stall_iff": "lean/CellsProofs/Transport/ATPCycle.lean",
+        "CellsProofs.Transport.ATPCycle.proton_stall_shift": "lean/CellsProofs/Transport/ATPCycle.lean",
         "CellsProofs.Transport.ATPCycle.neutral_voltage_independent": "lean/CellsProofs/Transport/ATPCycle.lean"
       }},
-      "numerical": {"status": "checked", "comparisons": ["atp-cycle"], "result": "Across 92 compiled tissue states, 72 ran forward, 16 reversed and four were within the stall tolerance. Cycle flux agreed with frozen references to 7.50 × 10⁻¹⁶ fmol/s and heat was nonnegative in all cases. Offsetting the voltage by ±10 mV about proton stall reversed the rate. The same voltage perturbations preserved all three flowing neutral controls. Eight capacity and availability controls gave exactly zero flux, heat and work."},
-      "biology": {"status": "open", "observable": "Reversal voltage of ATP-dependent proton transport at known fuel and proton activities, and neutral-cargo flux at fixed activities under varied voltage.", "finding": "In yeast vacuoles at cytosolic pH 8.5 and vacuolar pH 5.0, measured reversal was −17.5 ± 5 mV (SE, six trials). The tightly coupled two-proton prediction was −86.5 mV. The authors proposed a proton shunt. Vesicles showed ATP-dependent riboflavin uptake. Neutral-cargo reversal and voltage independence remain open. [Kettner et al., Table 2](https://pmc.ncbi.nlm.nih.gov/articles/PMC1303676/) · [Van Herwaarden et al., Fig. 3E](https://pmc.ncbi.nlm.nih.gov/articles/PMC1800714/)", "unit": "mV for reversal, fmol/s for signed cargo flux", "evidence": []}
+      "numerical": {"status": "checked", "comparisons": ["atp-cycle", "vacuolar-pump-reversal"], "result": "Across 92 compiled tissue states, 72 ran forward, 16 reversed and four were within the stall tolerance. Cycle flux agreed with frozen references to 7.50 × 10⁻¹⁶ fmol/s and heat was nonnegative in all cases. Offsetting the voltage by ±10 mV about proton stall reversed the rate. The same voltage perturbations preserved all three flowing neutral controls. Eight capacity and availability controls gave exactly zero flux, heat and work. For the eight yeast assay conditions, the registered proton law also bracketed 32 stall voltages. At fixed fuel the pH-induced shift was −112.40 mV for every supported coupling."},
+      "biology": {
+        "status": "open",
+        "observable": "Reversal voltage of ATP-dependent proton transport at known fuel and proton activities, and neutral-cargo flux at fixed activities under varied voltage.",
+        "finding": "Vesicles showed ATP-dependent riboflavin uptake. Neutral-cargo reversal and voltage independence remain open. [Van Herwaarden et al., Fig. 3E](https://pmc.ncbi.nlm.nih.gov/articles/PMC1800714/)",
+        "unit": "mV for reversal, fmol/s for signed cargo flux",
+        "evidence": [{
+          "dataset_id": "kettner2003_vacuolar_pump@1",
+          "manifest": "lean/checks/data/kettner2003_vacuole.json",
+          "citation": "Kettner et al. (2003), Fig. 3 and Table 2",
+          "doi": "10.1016/S0006-3495(03)74789-4",
+          "locator": "ATP-dependent difference currents in Fig. 3 and five resolved reversals plus three bounds in Table 2.",
+          "context": "Voltage-clamped yeast vacuoles with ATP, ADP and phosphate supplied to the cytosolic side.",
+          "role": "descriptive",
+          "uncertainty": "At cytosolic pH 7.5, the two measured reversal voltages were −25.6 ± 1 and −38.6 ± 9 mV (SE, four and three trials). The proton equilibrium and hydrolysis voltages are calculated quantities.",
+          "assessment": "Changing vacuolar pH from 4.1 to 6.0 shifted the ATP-dependent current reversal by −13.0 mV. Any fixed tightly coupled pump at the same fuel drive predicts the full proton-equilibrium shift, −112.5 mV using the paper's values. At pH 8.5/5.0 the two-proton prediction was −86.5 mV versus −17.5 ± 5 mV measured. The suggested pump-associated proton shunt remains one candidate mechanism.",
+          "report": "lean/PROGRESS.md#biological-model-review"
+        }]
+      }
     },
     {
       "id": "electrogenic-pump-charge",
@@ -3902,7 +4159,7 @@
           "gard-pair-heat-nov20",
           "gard-catalysis"
         ],
-        "result": "The 210 ordinary transfer pairs agreed with the base heat within 5.00 × 10⁻¹⁶ kBT. Two admitted one-event runs with a large diagonal coefficient lost the remaining catalyst in the reverse sum. The passive ledger refused both, booking 2.33 × 10⁻¹⁰ and 0.693147 kBT where the exact heat is zero. Both one-event controls passed. The lead accepted these false refusals and assigned the repair to the builder after its current test run. The recorded failure applies to the pinned engine revision."
+        "result": "The 210 ordinary transfer pairs agreed with the base heat within 5.00 × 10⁻¹⁶ kBT. Two admitted one-event runs with a large diagonal coefficient lost the remaining catalyst in the reverse sum. The passive ledger refused both, booking 2.33 × 10⁻¹⁰ and 0.693147 kBT where the exact heat is zero. Both one-event controls passed. The failure is recorded for version 1. An in-place change altered registered results and was reverted. The lead assigned the accurate reverse calculation to version 2. [Version decision](../../docs/DECISIONS.md#L8017) · [Branch replay](../PROGRESS.md#remaining-numerical-findings)"
       },
       "biology": {"status": "open", "observable": "Entry, reverse exit and independent affinity for the same lipid as the surrounding membrane composition changes.", "unit": "M⁻¹ s⁻¹ per molar vesicles for entry, s⁻¹ for exit", "finding": "For the same lipid tracer at 308 K, changing pure POPC vesicles to 1:1 POPC/cholesterol halved the fitted entry constant. Exit estimates were 25 ± 2 and 27 ± 2 s⁻¹. Independent titrations gave association constants of 1.3 × 10⁹ and 6.1 × 10⁸ M⁻¹. A shared catalytic multiplier at fixed affinity cannot explain the change. The fit used the equilibrium measurement, and molecular neighbor counts remain unknown. [Sampaio et al., Table 1](https://doi.org/10.1529/biophysj.104.054007)", "evidence": []}
     },
@@ -4131,12 +4388,13 @@
         "about": ["cells.transition_state_factor@1"]
       },
       "numerical": {
-        "status": "failed",
+        "status": "checked",
         "comparisons": [
+          "transition-state-factor-repair",
           "assembly-transition-state-factor-nov20",
           "assembly-kinetics"
         ],
-        "result": "Both directional multipliers agreed with the exact common-state value on 1,925 ordinary reversible edges. In an admitted two-molecule world with +20 kBT moving contacts and −20 kBT for the stationary molecule, float64 gives both rates as zero instead of 2.0611536224/s. The compiled run returns inert with a passing ledger. The equivalent constant-rate control fires at 0.3459699807 s on the same draw. With neutral movers and the same stationary contact, the clock runs with a 2.00 × 10⁻⁸ relative rate error."
+        "result": "The directional multipliers agreed with the exact common-state value on 1,925 ordinary reversible edges. In the opposed ±20 kBT contact case, both rates were 2.0611536224/s and the first event occurred at the reference 0.3459699807 s. All four seeded clocks fired four events with closed ledgers. The earlier comparison records the spurious inert state."
       },
       "biology": {
         "status": "open",
@@ -4181,10 +4439,11 @@
       "numerical": {
         "status": "checked",
         "comparisons": [
+          "rectifier-reference-domain",
           "inward-rectifier-nov20",
           "inward-rectifier"
         ],
-        "result": "The original stress case passed on main after the owner’s overflow-safe concentration factor landed. All three equivalent normalizations produced 0.5520533 pA and identical transfer and heat. The 360-state control panel passed. The original failure is recorded at the earlier engine revision."
+        "result": "All three equivalent normalizations gave 0.5520533 pA and identical transfer and heat, including the smallest normal float64 potassium reference. All 360 voltage controls passed. A positive subnormal reference (5 × 10⁻³²⁴ mM) was refused during definition checking. The original overflow remains at the earlier engine revision."
       },
       "biology": {
         "status": "mixed",
