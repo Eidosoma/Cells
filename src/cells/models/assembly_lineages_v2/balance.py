@@ -276,8 +276,26 @@ def verdict():
     }
 
 
+# world_report's results, by world and capacities. The report is a pure function of both (its
+# states come from PROBE_SEED, never the run's stream), so a run of a world already reported reuses
+# it, bit for bit, instead of recomputing about a second of host rates per run.
+_WORLD_REPORTS = {}
+
+
 def world_report(spec, *, states=STATES):
-    """The identity on the world's own data (random states); refused (ConfigError) if it fails."""
+    """The identity on the world's own data (random states); refused (ConfigError) if it fails.
+    Computed once per world and capacities in a process (_WORLD_REPORTS)."""
+    from cells.models.assembly_lineages_v2.spec import world_id
+
+    x = spec.execution
+    key = (world_id(spec.model.world), x.molecule_capacity, x.place_capacity, x.step_capacity,
+           states)  # fmt: skip
+    if key not in _WORLD_REPORTS:
+        _WORLD_REPORTS[key] = _world_report(spec, states)
+    return dict(_WORLD_REPORTS[key])
+
+
+def _world_report(spec, states):
     rng = np.random.default_rng(PROBE_SEED)
     found = np.abs(deviations(spec, rng, states=states))
     worst = float(np.max(found)) if found.size else 0.0
