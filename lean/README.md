@@ -13,7 +13,7 @@ Direct Lean claims cover [49 of 49 laws](COVERAGE.md#registered-laws) and [29 of
 | [Membrane transport and osmosis](COVERAGE.md#category-membrane-transport) | 5 of 5 | 8 of 8 | 8 checked | 8 |
 | [Ion channels and junctions](COVERAGE.md#category-channels-and-junctions) | 14 of 14 | 15 of 15 | 15 checked | 14 |
 | [Pumps and cotransport](COVERAGE.md#category-pumps-and-cotransport) | 13 of 13 | 8 of 8 | 8 checked | 8 |
-| [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 3 of 3 | 8 of 8 | 8 checked | 6 |
+| [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 3 of 3 | 9 of 9 | 9 checked | 7 |
 | [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 13 of 13 | 19 of 19 | 18 checked · 1 failed | 15 |
 | [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 1 of 1 | 19 of 19 | 19 checked | 14 |
 | [Cell physiology](COVERAGE.md#category-cell-physiology) | — | 3 of 3 | 3 checked | 3 |
@@ -91,7 +91,7 @@ jq -r --arg law 'logmean_electrodiffusion@1' '
 
 For new physics claims, look first for a compatible public theorem with matching assumptions and units. The charter gives the criteria for choosing a source, recording a direct import or optional comparison, and keeping a short proof local. [Cells Lean charter](AGENTS.md)
 
-The single-site binding proof derives the Langmuir formula locally. The face-power check imports the ATOMS Lab dimensional algebra. Both claims identify the published source and how Cells uses it. [Binding example](claims/single-site-binding.md) · [Face-power example](claims/extracellular-face-dissipation.md)
+The single-site binding proof derives the Langmuir formula locally. For several forms and ligands, Physlib’s finite canonical ensemble gives each Cells form fraction at fixed free ligand activities. The binding claim also records how a magnesium–ATP affinity measured in one preparation performed in another. The face-power check imports the ATOMS Lab dimensional algebra. [One-site binding](claims/single-site-binding.md) · [Finite binding and ATP measurements](claims/binding-form-ensemble.md) · [Face-power example](claims/extracellular-face-dissipation.md)
 
 The cleft-fill and wash proofs share the same ideal mixing term. Their default proof uses Mathlib’s logarithm bounds. An optional check identifies that term with Mathlib’s relative-entropy function. A second optional check imports Physlib’s two-state ensemble and recovers the equilibrium open probability of a junction gate when the fitted gate coordinate equals the dimensionless energy gap. [Cleft heat](claims/cleft-mixing-heat.md) · [Wash heat](claims/compartment-wash.md) · [Gate specialization](checks/physlib/JunctionEquilibrium.lean)
 
@@ -152,7 +152,7 @@ bash checks/hill/check.sh
 ```
 
 <details>
-<summary>Optional Physlib check for a junction gate</summary>
+<summary>Optional Physlib checks for a junction gate and finite binding</summary>
 
 Physlib v4.22.0 uses the module name `PhysLean` and its own Lean 4.22.0 toolchain. Its extra axiom `Constants.kBAx` supplies a positive Boltzmann constant in the chosen units. From `lean/`, clone the tagged source once into `.lake/`. Run the commands inside that clone with Lean and Lake 4.22.0 on your path. [Upstream two-state ensemble](https://github.com/leanprover-community/physlib/blob/559b0e14bd87896d4ee536a536a8fb65e83b77cc/PhysLean/StatisticalMechanics/CanonicalEnsemble/TwoState.lean#L26-L37) · [Boltzmann constant axiom](https://github.com/leanprover-community/physlib/blob/559b0e14bd87896d4ee536a536a8fb65e83b77cc/PhysLean/StatisticalMechanics/BoltzmannConstant.lean#L20-L30) · [Gate specialization](checks/physlib/JunctionEquilibrium.lean)
 
@@ -168,10 +168,12 @@ git clone --depth 1 --branch v4.22.0 https://github.com/leanprover-community/phy
     Mathlib.Analysis.SpecialFunctions.Log.Summable Mathlib.MeasureTheory.Integral.Prod \
     Mathlib.MeasureTheory.Measure.ProbabilityMeasure Mathlib.Analysis.InnerProductSpace.Basic \
     Mathlib.Analysis.Calculus.Deriv.Inv Mathlib.Data.NNReal.Defs Mathlib.Lean.Expr.Basic \
-    Mathlib.Tactic.FieldSimp
+    Mathlib.Tactic.FieldSimp Mathlib.Tactic.Ring Mathlib.Algebra.BigOperators.Field \
+    Mathlib.Algebra.BigOperators.Group.Finset.Sigma
   lake build PhysLean.StatisticalMechanics.CanonicalEnsemble.TwoState
   lake env lean -DwarningAsError=true "$gate_proof"
 )
+bash checks/physlib/binding.sh
 ```
 
 </details>
@@ -339,6 +341,12 @@ For single-site binding, compare the compiled law against the independent S1 sta
 
 ```bash
 "$cells_python" -B checks/single_site_binding.py
+```
+
+For finite binding, compare the fractions of every form in S1–S7 at fixed free ligand concentrations, then check a two-ligand tissue read, isomer multiplicity and the cross-study Mg–ATP prediction. [Ensemble comparison](checks/binding_ensemble.py) · [Measurement inputs](checks/data/mgatp_binding.json)
+
+```bash
+"$cells_python" -B checks/binding_ensemble.py
 ```
 
 For Hill activation and inhibition, compare the compiled Cells factors with a 65-digit evaluation of the upstream formula on the engine's reaction test grid. [Hill comparison](checks/hill/compare.py)
