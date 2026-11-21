@@ -288,7 +288,8 @@
   "/mnt/workspaces/Cells/ol3-engine-20261119/measure-caf2737e/measured.json",
   "/mnt/workspaces/Cells/empty-surface-20261120/tiers/measured-6b0faf38/measured.json",
   "/mnt/workspaces/Cells/core-pass-kinds-20261118/gate-889bdbca/tiers/measure/measured.json",
-  "/mnt/workspaces/Cells/insertion-heat-20261120/tiers/measured-4735b1aa/measured.json"
+  "/mnt/workspaces/Cells/insertion-heat-20261120/tiers/measured-4735b1aa/measured.json",
+  "/mnt/workspaces/Cells/fr7-loop-20261119/u2-compartment/gate-362f9781/tiers/measure/measured.json"
  ],
  "measured_provenance": [
   {
@@ -2434,6 +2435,14 @@
    "root": ".claude/worktrees/insertion-extreme-heat",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-21T02:10:33+00:00"
+  },
+  {
+   "git_revision": "362f97816b123aa5e478e1c9cbe23d6764824f3e",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/fr7-loop-20261119/u2-compartment/gate-362f9781/snapshot-head-362f9781",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-20T21:54:37+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -3175,6 +3184,14 @@
     "exit_code": 0,
     "counts": {
      "passed": 8
+    }
+   },
+   {
+    "file": "tests/unit/test_channel_readouts_example.py",
+    "seconds": 16.77,
+    "exit_code": 0,
+    "counts": {
+     "passed": 1
     }
    },
    {
