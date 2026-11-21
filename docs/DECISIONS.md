@@ -8584,3 +8584,28 @@ ones".
   fixes and FR work, with their landings, come before the resumed lanes' new work, in agents' time
   and in the test lanes. A resumed lane's gate queues behind any waiting FR gate.
 
+## D268: Lanes paused again for FR work; four FR choices decided with the advisor
+
+2026-11-21, about 20:41 UTC. The user: "so lets pause those three again, get adviser on the items to
+choose - then go on the FRs instead of the three paused ones". Origin of life, gene regulation and
+mitochondria pause their own work again; FR work takes the agents. Running tests are not stopped.
+Decided by the lead with the advisor, under the user's delegation for FR choices (D244):
+1. **FR-7 item 4: closed as unmet.** No public data gives a falsifiable test of abundance against
+   function: the Ross et al. 2025 panel cannot (D257), and the Kir chain's consistency check (D256)
+   is not support. It reopens on surface abundance and current measured in the same single-variant
+   cells.
+2. **FR-29: recorded as investigated, no build.** The return mode failed its registered test, and no
+   form tested fits Fig. 3's curves and the pH 3.1 bound together (D258). It reopens on a difference
+   current at vacuolar pH 3.1 to 3.5 under Fig. 3's protocol.
+3. **FR-28: option A** (a node owner, counts as for every population; about half a day), built by
+   the operators owner after the composite clamp lands.
+4. **FR-26's L: not now.** W meets FR-26's acceptance. L, one lifecycle shared with division, is a
+   7 to 10 day build to be designed with its first division consumer.
+- **Still the user's:** the FR-30 downloads (a Cx43 voltage series); the Kv1.5 density data (D218);
+  and the floating-junction fix (A), since one G1 world would move.
+- **FR-25:** the fixed comparison over the dt runs is FR-25's own acceptance (induction and decay
+  against independent references), so it runs now as FR work, with the follow-ups after.
+- **Checking:** the origin-of-life builder, now free, becomes a second independent checker, for
+  code it did not write. Each new FR landing needs its acceptance written from the request's own
+  words, as for FR-35.
+
