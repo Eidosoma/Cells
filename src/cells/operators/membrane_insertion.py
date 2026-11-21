@@ -422,29 +422,37 @@ def charge_change(state, q, dc, bound, *, xp):
     nearly cancel, and its image charges K' delta + dK phi two of order dc V. The independent
     Lean project found a one-patch cell at dC/C = 1.7e16 booking -0.043037 pJ against +0.051603
     pJ, and its held bath an image charge of -3.6e-12 C against 0 (lean/PROGRESS.md "Membrane
-    insertion heat", 19 November 2026), so both versions refused the step.
+    insertion heat", 19 November 2026), so both versions refused the step. There the heat is
+    first_order x (H / sum first_order), H the exact branch's sum of squares, shared among the
+    patches as before, and the image charges are the exact branch's; first_order and second stay
+    fixed_charge_change's, so the rounding allowance there is theirs (an over-allowance).
 
-    Elsewhere the values are fixed_charge_change's and ok is True. Compiled, the exact branch is
-    a lax.cond whose operands are this function's raw inputs and the first- and second-order
-    terms, so the ordinary path is fixed_charge_change's program: the compiler cannot share the
-    branch's work (a second field refresh and solves) with it, which moved the image charges'
-    rounding when it could. In NumPy the branch is a Python one. Batched runs turn the cond into
-    a select. Below RATIO_ABOVE the heat keeps about eps (1 + dC/C) of H. The choice reads dc,
-    the patches' nodes, the capacitor diagonal and the held mask only."""
-    q1, image, heat, first, second, v, after = adapter.fixed_charge_change(
-        state, q, dc, bound, xp=xp
-    )
-    kept = (image, heat, first, second, after, xp.asarray(True))
+    Elsewhere every value is fixed_charge_change's and ok is True. The parent's expressions are
+    kept whole: the heat is first_order x share with only the share selected (so a compiler that
+    fuses the booking's multiply and add still does), and the image charges are selected after
+    the parent's own selection. Compiled, the exact branch is a lax.cond whose operands are this
+    function's raw inputs, so the compiler cannot share its work (a second field refresh and
+    solves) with the parent's: each of those moved registered ledgers' rounding when it could.
+    In NumPy the branch is a Python one; batched runs turn the cond into a select. Below
+    RATIO_ABOVE the heat keeps about eps (1 + dC/C) of H. The choice reads dc, the patches'
+    nodes, the capacitor diagonal and the held mask only."""
+    q1, image, _, first, second, v, after = adapter.fixed_charge_change(state, q, dc, bound, xp=xp)
+    total = entity_sum(first, axis=None, xp=xp)
+    positive = total > 0
+    share = xp.where(positive, (total + second) / xp.where(positive, total, 1.0), 0.0)
     extreme = xp.any(~q.field_fixed & _gains_above(q, dc, xp=xp))
-    operands = (state, q, dc, bound, first, second, kept)
+    o = q.outside_active.size
+    idle = (xp.asarray(0.0), xp.zeros(o), xp.asarray(True))
+    operands = (state, q, dc, bound)
     if xp is np:
-        values = _exact_change(operands[:-1], xp=np) if extreme else kept
+        squares, exact_image, ok = _exact_change(operands, xp=np) if extreme else idle
     else:
-        values = jax.lax.cond(
-            extreme, lambda a: _exact_change(a[:-1], xp=jnp), lambda a: a[-1], operands
+        squares, exact_image, ok = jax.lax.cond(
+            extreme, lambda a: _exact_change(a, xp=jnp), lambda a: idle, operands
         )
-    image, heat, first, second, after, ok = values
-    return q1, image, heat, first, second, v, after, ok
+    share = xp.where(extreme, squares / xp.where(positive, total, 1.0), share)
+    image = xp.where(extreme, exact_image, image)
+    return q1, image, first * share, first, second, v, after, ok
 
 
 def _gains_above(q, dc, *, xp):
@@ -461,14 +469,12 @@ def _gains_above(q, dc, *, xp):
 
 
 def _exact_change(operands, *, xp):
-    """charge_change's exact branch: (image, heat, first_order, second, after, ok).
+    """charge_change's exact branch: (H, the held nodes' image charges, ok).
 
     * Potentials are solved before and after the change at the same charges, with the held
       nodes at their potentials and the free nodes' offsets 0, so a node pinned near 0 V by a
       large capacitance gets its small potential to rounding.
-    * H is the sum of squares 1/2 sum [C (V' - V)^2 + dc V'^2] >= 0 (Lean's heat_eq_squares),
-      shared among the patches in proportion to their first-order terms as before; first_order
-      is then each patch's share and second 0, so the rounding allowance follows the terms summed.
+    * H is the sum of squares 1/2 sum [C (V' - V)^2 + dc V'^2] >= 0 (Lean's heat_eq_squares).
     * Each held node's image charge is its plate charge after, the sum over its patches of
       C' (phi_b - phi_cell), less before.
     * ok is False where a held node at a nonzero potential gains more than RATIO_ABOVE times its
@@ -476,7 +482,7 @@ def _exact_change(operands, *, xp):
       C' phi_b - C' phi_cell, which so large a C' cancels: a patch facing a 20 mV clamp at dC/C =
       1.7e16 books 1.0822668659647e-12 C, the exact image, and the electrode ledger refuses it (the
       parent booked 1.46e-12 C). So the step is refused, not admitted for the ledgers to reject."""
-    state, q, dc, bound, first, second = operands
+    state, q, dc, bound = operands
     n, o = q.active.size, q.outside_active.size
     added = xp.where(q.membrane_active, dc, 0.0)
     q1 = adapter.refresh_field(
@@ -493,12 +499,9 @@ def _exact_change(operands, *, xp):
     v1 = adapter.patch_voltages(phi1, q1, xp=xp)
     c = xp.where(q.membrane_active, q.membrane_capacitance, 0.0)
     squares = 0.5e12 * entity_sum(c * (v1 - v0) ** 2 + added * v1**2, axis=None, xp=xp)
-    total = entity_sum(first, axis=None, xp=xp)
-    shared = first * (squares / xp.where(total > 0, total, 1.0))
     plates0 = scatter(-c * v0, xp.zeros(o), (q.membrane_outside,), xp=xp)
     plates1 = scatter(-(c + added) * v1, xp.zeros(o), (q.membrane_outside,), xp=xp)
-    image = xp.where(held, plates1 - plates0, 0.0)
-    return image, shared, shared, xp.zeros_like(second), v1, ok
+    return squares, xp.where(held, plates1 - plates0, 0.0), ok
 
 
 def inserted(state, h, control, p, *, xp=jnp):
