@@ -3,11 +3,12 @@ with each junction gate advanced by its exponential update ((a)).
 
 Host-only rows, no world compiled (about 2 s): the frozen slope against a central difference of the
 constant-field flux; the operator block's symmetry, zero row sums and non-negative conductances;
-the N2 ID admitted by @3's parse (wherever the ionic step is @3's), with its static layout switch;
-X2's guard at the step checks; (a)'s lifted junction-gate bound and its stage update against the
-law's exact constant-voltage solution; and the definition-time bound, which drops the charge terms
-N2 makes implicit (H2's 292 ms term) and keeps every species' material relaxation. The stepped
-rows (ledgers, heat against RK4, second order) are N2's rows in test_surface_pump_v3_imex.py.
+the N2 ID admitted by @3's parse (wherever the ionic step is @3's), with its static switch, its
+tableau's vector operator time; X2's guard at the step checks; (a)'s lifted junction-gate bound and
+its stage update against the law's exact constant-voltage solution; and the definition-time bound,
+which drops the charge terms N2 makes implicit (H2's 292 ms term) and keeps every species' material
+relaxation. The stepped rows (ledgers, heat against RK4, second order) are N2's rows in
+test_surface_pump_v3_imex.py.
 """
 
 import copy
@@ -78,10 +79,13 @@ def test_the_n2_id_is_admitted_by_at3_alone_with_its_static_switch():
     spec = parse_spec(at3_world(N2))
     assert spec.execution.solver == N2
     _, layout = v3.initial_values(spec)
-    assert layout.implicit_conductances.shape == (1,)
+    assert layout.imex_operator_time.shape == (2,)  # The switch: N2's tableau's vector.
     assert v3.implicit_conductances(layout)
     _, today = v3.initial_values(parse_spec(at3_world(imex.ARS222_ID)))
-    assert today.implicit_conductances.shape == (0,)
+    assert np.shape(today.imex_operator_time) == () and not v3.implicit_conductances(today)
+    assert type(today) is type(layout)  # No field of N2's in any layout.
+    with pytest.raises(ValueError, match="one entry per frozen block"):
+        imex.operator_times(np.zeros(3))  # Any other shape refuses, never broadcasts.
     raw = fixtures_v2.definition("closed", solver=imex.ARS222_ID)
     raw["execution"]["solver"] = N2
     with pytest.raises(ConfigError):  # @1 and @2 refuse it.
@@ -119,7 +123,7 @@ def test_the_junction_gate_update_is_exact_at_constant_voltage():
     state, p = v3.initial_values(spec)
     potential = np.zeros(p.active.size + p.outside_active.size)
     potential[p.junction_sender[0]] = -0.031  # -31 mV across junction_0, past its threshold.
-    voltage, start = v3.junction_kinetics(potential, p, xp=np)
+    voltage, start = v3.junction_voltage_kinetics(potential, p, xp=np)
     dt = 40 * first.GATE_STEP_BOUND / float(start.relaxation_per_s[0])
     gate, availability = np.asarray(state.junction_gate), np.ones(p.junction_active.shape)
     advanced, ok = v3.stage_junction_gates(gate, start, potential, availability, 1.0, dt, p, xp=np)

@@ -50,7 +50,9 @@ _DELTA = 1.0 - 1.0 / (2.0 * _GAMMA)
 class Tableau(NamedTuple):
     explicit: object  # [stage, stage], strictly lower triangular
     implicit: object  # [stage, stage], zero first stage, constant diagonal
-    operator_time: object  # Step fraction at which face weights are frozen.
+    # Step fraction at which face weights are frozen: a scalar, or under an N2 ID one per frozen
+    # block of the implicit operator (faces, then the routes' slope conductances).
+    operator_time: object
 
 
 TABLEAUX = {
@@ -64,8 +66,36 @@ TABLEAUX = {
         np.asarray(0.5),
     ),
 }
-for _id in IMPLICIT_CONDUCTANCE_IDS:  # N2 runs on ARS(2,2,2)'s own arrays.
-    TABLEAUX[_id] = TABLEAUX[ARS222_ID]
+# N2's entry: ARS(2,2,2)'s own arrays, with a vector operator time. A vector operator time holds one
+# entry per frozen block of the implicit operator, the faces' weights and then the routes' slope
+# conductances (here both at half the step), and only N2's IDs declare one. That vector is N2's
+# static switch (by shape, as a tableau's stage count sets its scheme): every other ID keeps a
+# scalar, so no other world's layout or program carries anything of N2 (the lead, 21 November
+# 2026). Readers take the times through operator_times, which refuses any other shape.
+for _id in IMPLICIT_CONDUCTANCE_IDS:
+    TABLEAUX[_id] = Tableau(
+        TABLEAUX[ARS222_ID].explicit, TABLEAUX[ARS222_ID].implicit, np.asarray([0.5, 0.5])
+    )
+for _id, _tableau in TABLEAUX.items():  # Only N2's IDs declare a vector operator time.
+    if (np.shape(_tableau.operator_time) == (2,)) != (_id in IMPLICIT_CONDUCTANCE_IDS) or np.ndim(
+        _tableau.operator_time
+    ) not in (0, 1):
+        raise ValueError(f"{_id}: a vector operator time is N2's alone, one entry per frozen block")
+
+
+def operator_times(operator_time):
+    """(the faces' operator time, the routes' or None) from a tableau's or a layout's operator time:
+    a scalar under every ID but N2's, whose vector holds one entry per frozen block (faces, then
+    routes). Any other shape refuses, so a mismatch never broadcasts silently. Static (by shape)."""
+    shape = tuple(getattr(operator_time, "shape", ()))
+    if shape == ():
+        return operator_time, None
+    if shape == (2,):
+        return operator_time[0], operator_time[1]
+    raise ValueError(
+        "A tableau's operator time is a scalar, or under an N2 ID one entry per frozen block "
+        f"(faces, then routes); got shape {shape}"
+    )
 
 
 class Operator(NamedTuple):

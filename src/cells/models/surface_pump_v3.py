@@ -111,14 +111,13 @@ STATE_TYPE = NamedTuple("SurfacePumpChannelState", [(k, object) for k in STATE_A
 # @3 layout carries it (empty by default); the state layout (STATE_TYPE) is unchanged,
 # and @3 checkpoints from source before this field do not load (snapshots already
 # refuse a source change).
-# implicit_conductances: one element under an N2 solver (surface_imex.IMPLICIT_CONDUCTANCE_IDS,
-# D235), none otherwise; a static switch by shape, as junction_heat_trapezoid's.
+# N2 (D235) adds no layout field: its static switch is its tableau's operator time, a vector
+# (implicit_conductances), so every other world's layout is today's.
 CHANNEL_LAYOUT_FIELDS = (
     "channel_laws",
     "channel_relative_permeability",
     "channel_gate_active",
     "junction_heat_trapezoid",
-    "implicit_conductances",
 )
 LAYOUT_TYPE = NamedTuple(
     "SurfacePumpChannelLayout",
@@ -285,8 +284,14 @@ def _todays_initial_values(spec):
         channel_relative_permeability=np.zeros((s, nc)),
         channel_gate_active=np.zeros((2, nc), dtype=bool),
         junction_heat_trapezoid=np.zeros(int(m.junction_heat_booking == TRAPEZOID_JUNCTION_HEAT)),
-        implicit_conductances=np.zeros(int(spec.execution.solver in imex.IMPLICIT_CONDUCTANCE_IDS)),
     )
+    if (imex.operator_times(v["imex_operator_time"])[1] is not None) != (
+        spec.execution.solver in imex.IMPLICIT_CONDUCTANCE_IDS
+    ):  # N2's switch is its tableau's vector operator time; only N2's IDs declare one.
+        raise ConfigError(
+            f"{spec.execution.solver}: the layout's operator time does not match its solver "
+            "(a vector operator time is N2's alone, one entry per frozen block)"
+        )
     gate, mids = np.zeros((2, nc)), [p.id for p in m.membranes]
     codes = law_codes()  # The registry's codes (today's five keep theirs, 0-4).
     for i, c in enumerate(m.channels):
@@ -1331,9 +1336,9 @@ class ConductanceWeights(NamedTuple):
 
 
 def implicit_conductances(p):
-    """Whether the layout's solver is an N2 ID (static: its field's shape)."""
-    flag = getattr(p, "implicit_conductances", None)
-    return flag is not None and flag.shape[0] > 0
+    """Whether the layout's solver is an N2 ID: static, from its tableau's operator time, a vector
+    (faces, then routes) under N2 alone (surface_imex.operator_times)."""
+    return imex.operator_times(p.imex_operator_time)[1] is not None
 
 
 def route_slope(c_from, c_to, dv, valence, temperature, area, permeability, available, *, xp):
@@ -1552,8 +1557,9 @@ def implicit_route_heat(drift, stage, weights, potential, p, *, xp=jnp, kinds=()
 
 def operator_time_conductances(start, control, p, dt, *, xp=jnp, kinds=(), structure=None):
     """(N2's ConductanceWeights frozen for the step, the prediction's validity), from the step's
-    start (`start`: readouts at the state) at the tableau's operator time, as the face weights:
-    - the amounts advanced over operator_time x dt by the start derivative, the face weights'
+    start (`start`: readouts at the state) at the routes' operator time (the tableau's second
+    entry), as the face weights at theirs:
+    - the amounts advanced over that operator time x dt by the start derivative, the face weights'
       prediction, here for cells too;
     - the channel gates by their exponential update over that time at the start kinetics, and the
       junction gates likewise at the start's junction voltages (their law's relaxation), so a fast
@@ -1562,7 +1568,7 @@ def operator_time_conductances(start, control, p, dt, *, xp=jnp, kinds=(), struc
     The prediction must keep every concentration positive, its field finite and converged, and
     every slope finite."""
     state, derivative, potential = start.state, start.values.derivative, start.potential
-    theta = p.imex_operator_time * dt
+    theta = imex.operator_times(p.imex_operator_time)[1] * dt
     gate = gates.advance(
         state.channel_gate,
         start.values.channel_targets,
@@ -1637,7 +1643,7 @@ def stage_gates(gate, start, stage, fraction, dt, p, *, xp=jnp):
     return xp.where(p.channel_gate_active, advanced, gate), stage[2]
 
 
-def junction_kinetics(potential, p, *, xp=jnp):
+def junction_voltage_kinetics(potential, p, *, xp=jnp):
     """(the junction voltages, the junction law's kinetics at them) at the node potentials."""
     voltage = xp.where(
         p.junction_active, potential[p.junction_sender] - potential[p.junction_receiver], 0.0
@@ -1657,7 +1663,7 @@ def stage_junction_gates(
     junction law the gates hold, as junction_gate_rhs's zeros hold them today."""
     if structure is not None and not structure.junction_laws:
         return gate, True
-    voltage, stage = junction_kinetics(potential, p, xp=xp)
+    voltage, stage = junction_voltage_kinetics(potential, p, xp=xp)
     advanced = gates.advance(
         gate,
         start.target,
@@ -1697,6 +1703,7 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
     else:
         read = state
     drift = first_values.derivative.extracellular_amount_increment  # The stored totals' rate.
+    operator_time = imex.operator_times(p.imex_operator_time)[0]  # The faces' (today's scalar).
     if structure is not None and structure.free_amount_reads:
         # P1 (CORE_SEAMS §17; §19 as amended, static): the predictor reads the quantity it
         # differentiates. The stored totals are predicted, and the stage read at them gives the
@@ -1704,7 +1711,7 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
         # stage read here takes this form (_check_stage_rows), and the read leaves rows it does
         # not hold as stored. Elsewhere, today's form: the start read's amount plus the stored
         # derivative.
-        stored = state.extracellular_amount_increment + p.imex_operator_time * dt * drift
+        stored = state.extracellular_amount_increment + operator_time * dt * drift
         ahead, ahead_ok = _stage_read(
             state._replace(extracellular_amount_increment=stored), p, kinds, xp=xp
         )
@@ -1712,7 +1719,7 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
         predicted = p.extracellular_amount_reference + ahead.extracellular_amount_increment
     else:
         amount = p.extracellular_amount_reference + read.extracellular_amount_increment
-        predicted = amount + p.imex_operator_time * dt * drift
+        predicted = amount + operator_time * dt * drift
     predicted = xp.where(p.outside_active, predicted / p.extracellular_volume, 1.0)
     valid &= xp.all(xp.isfinite(predicted) & (predicted > 0))
     weight, _ = imex.face_weights(xp.where(predicted > 0, predicted, 1.0), s, xp=xp)
@@ -1750,7 +1757,8 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
         valid &= dt * material <= EXPLICIT_STEP_BOUND
     # The start kinetics are the law's own (readouts at the start potentials).
     start_kinetics = (first_values.channel_targets, first_values.channel_tau_s)
-    start_junction = junction_kinetics(start, p, xp=xp)[1] if n2 else None  # (a)'s start.
+    # (a)'s start: the junction law's kinetics at the start's junction voltages.
+    start_junction = junction_voltage_kinetics(start, p, xp=xp)[1] if n2 else None
     potential, stage = start, state
     for i in range(1, stages):
         known = first._combine(
