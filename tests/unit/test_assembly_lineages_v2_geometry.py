@@ -47,7 +47,7 @@ from cells.models.assembly_lineages_v2 import (
 )
 from cells.models.assembly_lineages_v2 import geometry as geometry_rules
 from cells.models.assembly_lineages_v2 import spec as spec_rules
-from tests.assembly_lineage_v2_fixtures import definition, world
+from tests.assembly_lineage_v2_fixtures import definition, site_binding, world
 
 Q = 5e-21  # m², the probe's quantum
 C0_MM = 1000.0
@@ -387,7 +387,62 @@ REFUSALS = {
         "closure cost is declared as"),
     "a rate key without its provenance": (
         lambda w: w["steps"][0].update(insertion_velocity_m_per_s=2e-8), "value, provenance"),
+    # FR-21 (§0.2f): rule 3 admits exactly X@pool + site@membrane -> complex@membrane for a
+    # declared pair; every other interfacial shape stays refused, declared pair or not.
+    "a site binding whose pair is undeclared": (
+        lambda w: site_binding(w, declared=False), "crosses phases at the membrane"),
+    "a second binding on an undeclared pair": (
+        lambda w: _second_pair(site_binding(w)), "crosses phases at the membrane"),
+    "a binding of two ligands": (
+        lambda w: _two_ligands(site_binding(w)), "crosses phases at the membrane"),
+    "a binding from the lumen": (
+        lambda w: _lumen_ligand(site_binding(w)), "crosses phases at the membrane"),
+    "a binding declared as the release": (
+        lambda w: _as_release(site_binding(w)), "crosses phases at the membrane"),
+    "a site that is no membrane species": (
+        lambda w: site_binding(w)["sites"][0].update(site="X"), "not a membrane species"),
+    "a complex declared for two sites": (
+        lambda w: site_binding(w)["sites"].append({"site": "P", "complex": "XR"}),
+        "declared twice"),
 }  # fmt: skip
+
+
+def _bind_step(w):
+    return next(s for s in w["steps"] if s["id"] == "bind")
+
+
+def _second_pair(w):
+    """A second complex, XP, of the undeclared site P, bound in one step from the pool."""
+    w["species"].append(species("XP", {"x": 1, "l": 1}, bilayer=-6.0))
+    w["phases"]["membrane"]["species"].append("XP")
+    w["geometry"]["area_per_leaflet"]["XP"] = {"quanta": 60, "provenance": "test"}
+    w["founder"]["XP@membrane"] = 0
+    w["steps"].append(dict(_bind_step(w), id="bind_P", reactants={"X@pool": 1, "P@membrane": 1},
+                           products={"XP@membrane": 1}))  # fmt: skip
+    return w
+
+
+def _two_ligands(w):
+    """The declared pair's complex holding two ligands, bound in one step: X2R."""
+    w["species"].append(species("X2R", {"x": 2, "r": 1}, bilayer=-8.0))
+    w["phases"]["membrane"]["species"].append("X2R")
+    w["geometry"]["area_per_leaflet"]["X2R"] = {"quanta": 60, "provenance": "test"}
+    w["founder"]["X2R@membrane"] = 0
+    w["sites"] = [{"site": "R", "complex": "X2R"}]
+    _bind_step(w).update(reactants={"X@pool": 2, "R@membrane": 1}, products={"X2R@membrane": 1})
+    return w
+
+
+def _lumen_ligand(w):
+    w["phases"]["lumen"] = {"volume_L": 1e-22, "species": ["X"]}
+    w["founder"]["X@lumen"] = 0
+    _bind_step(w)["reactants"] = {"X@lumen": 1, "R@membrane": 1}
+    return w
+
+
+def _as_release(w):
+    _bind_step(w).update(reactants={"XR@membrane": 1}, products={"X@pool": 1, "R@membrane": 1})
+    return w
 
 
 @pytest.mark.parametrize("case", sorted(REFUSALS))
@@ -397,6 +452,36 @@ def test_every_refusal_this_version_owns(case):
     edit(w)
     with pytest.raises(ConfigError, match=message):
         spec_of(w)
+
+
+def test_a_declared_site_binding_has_its_closed_form_rates_and_keeps_the_identity():
+    """FR-21 (§0.2f): X@pool + R@membrane -> XR@membrane, its pair declared, on the osmotic
+    vesicle. a+ = k_f theta+ n_R and a- = k_f e^(mu_XR - mu_R - mu_X) n_XR at equal site and complex
+    areas (theta+ the pool's activity; 0 without a free X); the pair identity at random states,
+    also with the complex larger than the site, where the osmotic excess moves. Host arithmetic."""
+    from tests.unit.test_assembly_lineages_v2_lumen import K_L, osmotic_world
+
+    def vesicle(complex_quanta=None):
+        w = osmotic_world(L_pool=30, L_mem=8, S_pool=6, S_lumen=0, I_lumen=2, floor=4 * K_L)
+        site_binding(w, k_f=50.0, mu_complex=-6.0, complex_quanta=complex_quanta)
+        return spec_of(w, capacity=128)
+
+    s = vesicle()
+    w, structure, layout = s.model.world, model.structure(s), model.layout(s)
+    R, r = structure.steps, [st.id for st in w.steps].index("bind")
+    at = {p.name: i for i, p in enumerate(w.places)}
+    X = 6.02214076e23 * w.volume("pool") * w.units.standard_concentration_mM * 1e-3
+    k_rev = 50.0 * math.exp(-6.0 - (-2.0) - 0.0)
+    for x, n_r, n_xr in ((8, 4, 2), (1, 5, 1), (0, 4, 2), (5, 0, 6)):
+        c = np.zeros(structure.places, dtype=np.int64)
+        c[[at["L@pool"], at["S@pool"], at["L@membrane"], at["I@lumen"]]] = (30, 6, 8, 2)
+        c[[at["X@pool"], at["R@membrane"], at["XR@membrane"]]] = (x, n_r, n_xr)
+        log = balance.host_log_rates(c, layout, structure)
+        assert math.exp(log[r]) == pytest.approx(50.0 * (x / X) * n_r, rel=1e-13, abs=0)
+        assert math.exp(log[R + r]) == pytest.approx(k_rev * n_xr, rel=1e-13, abs=0)
+    for quanta in (None, 90):  # the complex's area equal to the site's, then larger
+        found = balance.deviations(vesicle(quanta), np.random.default_rng(5), states=200)
+        assert found.size > 400 and np.max(np.abs(found)) <= balance.ATOL
 
 
 def test_a_geometric_law_without_a_geometry_is_refused():

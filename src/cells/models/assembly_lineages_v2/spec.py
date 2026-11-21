@@ -54,6 +54,7 @@ from cells.models.assembly_lineages_v2 import (
     FREE_ENERGY_INTERFACE,
     GEOMETRY_INTERFACE,
     IDEAL_MIXING,
+    MASS_ACTION,
     MEMBRANE_PERMEATION,
     MODEL_ID,
     MODES,
@@ -225,6 +226,8 @@ def parse_world(raw):
     world = world_rules.World(
         units, conventions, species, volumes, places, steps, terms, rate_factor, founder, role
     )
+    if "sites" in raw:  # FR-21: declared binding sites and their complexes (§0.2f).
+        world = dataclasses.replace(world, sites=world_rules.parse_sites(raw["sites"], places))
     _convention_refusals(world, founder="population" not in raw)  # a population's: per founder
     if "geometry" in raw:
         block = raw["geometry"]
@@ -324,6 +327,29 @@ def _osmotic_refusals(world):
         )
 
 
+def _declared_binding(step, world, by_name):
+    """FR-21 (§0.2f): exactly one pool molecule and one declared site forming the site's declared
+    complex, X@pool + site@membrane -> complex@membrane, declared in that direction, under
+    cells.stochastic_mass_action@1 with count_on_m. Its encounter is the site count: the law's
+    membrane factor cancels to n_site, so a+ = k_f theta+ n_site (mass_action.py)."""
+    if (
+        world.sites is None
+        or step.law != MASS_ACTION
+        or world.conventions.membrane_kinetics != "count_on_m"
+        or len(step.reactants) != 2
+        or len(step.products) != 1
+    ):
+        return False
+    (ligand, a), (site, b) = step.reactants
+    (complex_, c) = step.products[0]
+    shape = (a, b, c) == (1, 1, 1) and (by_name[ligand].phase, by_name[site].phase,
+                                         by_name[complex_].phase) == (
+        world_rules.POOL, world_rules.MEMBRANE, world_rules.MEMBRANE
+    )  # fmt: skip
+    pair = (by_name[site].species, by_name[complex_].species)
+    return shape and pair in world.sites
+
+
 def _geometry_refusals(world):
     """OL2's refusals (§0.2c rules 2, 3 and 5), after OL1's, so no earlier refusal changes."""
     registry = law_registry.active()
@@ -341,11 +367,15 @@ def _geometry_refusals(world):
             continue
         if not geometric:
             if step.locus == world_rules.MEMBRANE and len(phases) > 1:
+                if _declared_binding(step, world, by_name):
+                    continue  # FR-21: rule 3's one admitted interfacial shape (§0.2f).
                 raise ConfigError(
                     f"world: step {step.id} crosses phases at the membrane; in a world with a "
                     "geometry a cross-phase step takes a geometric encounter law (phase exchange "
                     "for a join, permeation for an entry), and other interfaces are refused until "
-                    "one is declared (§0.2c rule 3)"
+                    "one is declared (§0.2c rule 3). One shape is admitted (§0.2f): a pool "
+                    "molecule binding a declared site to form its declared complex, X@pool + "
+                    "site@membrane -> complex@membrane, under mass action with count_on_m"
                 )
             continue
         _geometric_shape(step, law, by_name)
@@ -449,6 +479,8 @@ def world_to_dict(world):
         from cells.models.assembly_lineages_v2 import population as population_rules
 
         out["population"] = population_rules.data_to_dict(world.population)
+    if world.sites is not None:
+        out["sites"] = world_rules.sites_to_dict(world.sites)
     return out
 
 

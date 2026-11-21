@@ -283,7 +283,9 @@
   "/mnt/workspaces/Cells/cleft-heat-20261120/tiers/measured-28c4e7ff/measured.json",
   "/mnt/workspaces/Cells/ol-break-renew-20261120/tiers/measure-225b1926/measured.json",
   "/mnt/workspaces/Cells/ol-break-renew-20261120/tiers/measure-c0ecf1b2/measured.json",
-  "/mnt/workspaces/Cells/fr30-design-20261120/tiers/measure-4b23f252/measured.json"
+  "/mnt/workspaces/Cells/fr30-design-20261120/tiers/measure-4b23f252/measured.json",
+  "/mnt/workspaces/Cells/ol3-engine-20261119/measure-e6df3aee/measured.json",
+  "/mnt/workspaces/Cells/ol3-engine-20261119/measure-caf2737e/measured.json"
  ],
  "measured_provenance": [
   {
@@ -2393,6 +2395,20 @@
    "root": "/mnt/workspaces/Cells/fr30-design-20261120/wt",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-20T22:23:22+00:00"
+  },
+  {
+   "git_revision": "e6df3aeecd670b09ca633a2ddc247701756c0cfe",
+   "dirty": false,
+   "root": "/mnt/workspaces/Cells/ol3-engine-20261119/tree-e6df3aee",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-20T21:59:55+00:00"
+  },
+  {
+   "git_revision": "caf2737e801d5568e90257a77bcf98c49bfbe6e5",
+   "dirty": false,
+   "root": "/mnt/workspaces/Cells/ol3-engine-20261119/tree-caf2737e",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-20T23:23:34+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -6124,10 +6140,10 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_v2_geometry.py",
-    "seconds": 28.85,
+    "seconds": 40.14,
     "exit_code": 0,
     "counts": {
-     "passed": 20
+     "passed": 28
     }
    },
    {
@@ -6156,18 +6172,18 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_v2_population.py",
-    "seconds": 81.31,
+    "seconds": 76.33,
     "exit_code": 0,
     "counts": {
-     "passed": 10
+     "passed": 11
     }
    },
    {
     "file": "tests/unit/test_assembly_lineages_v2_replacement.py",
-    "seconds": 54.82,
+    "seconds": 68.05,
     "exit_code": 0,
     "counts": {
-     "passed": 13
+     "passed": 14
     }
    },
    {
