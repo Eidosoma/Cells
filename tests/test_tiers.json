@@ -305,7 +305,8 @@
   "/mnt/workspaces/Cells/fr33-tracer-fixes-20261121/gate-2ee6e774/tiers/measure/measured.json",
   "/mnt/workspaces/Cells/ol3-engine-20261119/measure-229a513b/measured.json",
   "/mnt/workspaces/Cells/ol3-engine-20261119/measure-80510376/measured.json",
-  "/mnt/workspaces/Cells/ol3-engine-20261119/measure-7970a00e/measured.json"
+  "/mnt/workspaces/Cells/ol3-engine-20261119/measure-7970a00e/measured.json",
+  "/mnt/workspaces/Cells/ol3-engine-20261119/measure-5285792d/measured.json"
  ],
  "measured_provenance": [
   {
@@ -2579,6 +2580,13 @@
    "root": "/mnt/workspaces/Cells/ol3-engine-20261119/tree-7970a00e",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-21T13:08:05+00:00"
+  },
+  {
+   "git_revision": "5285792d2a9ba477ed7e6ff3f4b1400a6ff3ff49",
+   "dirty": false,
+   "root": "/mnt/workspaces/Cells/ol3-engine-20261119/tree-5285792d",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-21T15:21:48+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -2877,7 +2885,7 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_balance.py",
-    "seconds": 1.77,
+    "seconds": 2.93,
     "exit_code": 0,
     "counts": {
      "passed": 6
@@ -2941,7 +2949,7 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_v2_registration.py",
-    "seconds": 12.81,
+    "seconds": 10.19,
     "exit_code": 0,
     "counts": {
      "passed": 6
@@ -6334,7 +6342,7 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_v2_geometry.py",
-    "seconds": 61.57,
+    "seconds": 71.51,
     "exit_code": 0,
     "counts": {
      "passed": 42
@@ -6342,7 +6350,7 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_v2_kernel.py",
-    "seconds": 83.64,
+    "seconds": 63.13,
     "exit_code": 0,
     "counts": {
      "passed": 10
@@ -6374,10 +6382,10 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_v2_replacement.py",
-    "seconds": 87.6,
+    "seconds": 58.85,
     "exit_code": 0,
     "counts": {
-     "passed": 30
+     "passed": 34
     }
    },
    {
