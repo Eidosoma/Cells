@@ -35,7 +35,8 @@ CELL_KINDS = {
     "capsule": ({"length_um", "across_um"}, {"tip_um"}),
     "prism": ({"sides", "height_um"}, {"across_um", "radius_um", "corner_um", "edge_um"}),
 }
-PARTS = {"membranes", "wall", "nucleus", "organelles", "chromosome_kbp", "ribosomes", "appendages", "wall_nm", "organelle_sizes", "envelope", "proteins", "ribosome"}
+# `shelf`: organelles the Cell view does not draw and does not read, which stand on the Machines view's shelf alone (schema/MACHINE_CATALOGUE.md, "Organelles").
+PARTS = {"membranes", "wall", "nucleus", "organelles", "chromosome_kbp", "ribosomes", "appendages", "wall_nm", "organelle_sizes", "envelope", "proteins", "ribosome", "shelf"}
 ENVELOPE_KEYS = {"membrane_nm", "wall_nm", "outer_nm", "between_nm", "wall_to_outer_nm", "sources", "read"}  # the envelope's widths (schema/SPECIES_SHAPES.md)
 PROTEIN_KEYS = {"count", "membrane", "sources", "membrane_from"}  # how many protein molecules the cell holds
 # A ribosome's measured size and shape, the viewer's own measure of a PDB entry (tools/measure_particle.py; schema/SPECIES_SHAPES.md)

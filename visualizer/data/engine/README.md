@@ -43,8 +43,7 @@ scripts/run_detached.sh viz-declarations-<revision> 3G --cpus 12-15,28-31 --oom-
 Then the file is copied here byte for byte. Nothing edits it by hand. A reader checks `kind`
 first and refuses another major.
 
-The file here was written on 19 November 2026 from main `1ca5eada` (a clean checkout): 55
-pieces (28 laws, 5 kinds, 22 operators), 11 models and 127 legacy model IDs. The run's own
-line of output, which gives its totals (55 pieces, 11 models, 127 legacy model IDs) and `dirty:
-false`, is kept in its unit's journal, the second unit of that day's run: the first had exited
-with an error, and the file is the second's.
+The file here was written on 20 November 2026 from main `93fc8c2c` (a clean checkout): 61
+pieces (32 laws, 5 kinds, 24 operators), 11 models and 127 legacy model IDs. The run's own
+line of output, which gives its totals (61 pieces, 11 models, 127 legacy model IDs) and `dirty:
+false`, is kept in its unit's journal.

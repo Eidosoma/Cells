@@ -171,6 +171,8 @@ cells-index { position: absolute; top: 64px; left: max(16px, env(safe-area-inset
 .rail button[aria-pressed="true"]::before { background: currentColor; }
 .rail .rail-title { font-family: var(--font-display); font-size: 11px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); padding: 4px 8px 2px; }
 .has-panel .rail { display: none; }
+/* A view whose rail marks what is chosen (the Machines view's scale) folds it, while a panel is open on a wide window, behind the page's own button, beside the panel. */
+@media (min-width: 761px) { .frame.rail-beside-panel.has-panel .rail-toggle { display: flex; position: absolute; top: 68px; right: calc(max(16px, env(safe-area-inset-right, 0px)) + 376px); align-items: center; gap: 12px; padding: 0 14px; min-height: 44px; font-weight: 500; } .frame.rail-beside-panel.has-panel .rail-toggle .chevron { transform: rotate(45deg); margin-top: -4px; } .frame.rail-beside-panel.has-panel .rail-toggle.is-open .chevron { transform: rotate(-135deg); margin-top: 3px; } .frame.rail-beside-panel.has-panel.rail-open .rail { display: grid; top: 118px; transform: none; right: calc(max(16px, env(safe-area-inset-right, 0px)) + 376px); z-index: 2; } }
 /* On a phone the rail folds behind one button that names the level shown (viewer.js); a wide window has no need of it. */
 .rail-toggle, .view-toggle, .view-notice { display: none; }
 
@@ -200,6 +202,9 @@ cells-index { position: absolute; top: 64px; left: max(16px, env(safe-area-inset
 .look-switch .seg-row { grid-template-columns: auto 124px; }
 .look-note { max-width: 250px; font-size: 11.5px; line-height: 1.4; text-align: right; color: var(--muted); background: color-mix(in srgb, var(--bg) 78%, transparent); padding: 1px 6px; border-radius: 5px; }
 .fallback { position: absolute; inset: 64px 0 0 0; padding-block: 16px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); color: var(--muted); }
+/* The note lies over the whole picture, the panel's place included, and stands after the panel: it lets a press through, so
+   that a part's panel and About's can be pressed where no 3D is drawn. Nothing in the note is pressed. */
+.fallback { pointer-events: none; }
 
 /* ---------------------------------------------------------------- replay: the run's card */
 .run-card { width: 268px; gap: 7px; }

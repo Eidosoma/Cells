@@ -1769,6 +1769,51 @@ class Composition:
     def field_values(self, state, control, p, *, xp=jnp):
         return self.readouts(state, control, p, xp=xp).field
 
+    # ------------------------------------------------------------ FR-34 in a composite (D265)
+
+    def clamp_inputs(self, state, control, p, *, xp=np):
+        """(inner state, control view, layout view): what the composite's own readouts hands @3,
+        so a clamped evaluation runs at the controls and layout the step runs at. The control view
+        is the stored control times the operators' CONTROL_FACTORS (species_regulated_availability
+        @1's writes and @2's step-view routes among them, held as the step holds them); the layout
+        view is its providers' (membrane state's areas, capacitances and abundances among them).
+        The stored control and layout are not what the step runs at (D265 finding 1)."""
+        return (
+            self.inner.inner_state(state),
+            self.control_view(control, state, p, xp=xp),
+            self.view(p, state, xp=xp),
+        )
+
+    def clamped_channel_flux(self, state, control, p, voltages_V, *, xp=np):
+        """FR-34 in a composite (D265 finding 1): @3's clamped_channel_flux, each channel
+        population's outward flux [species, channel] (fmol/s) and current [channel] (A,
+        outward-positive) at the patch voltages given [membrane] (V; a scalar applies to every
+        patch), at the composite's clamp_inputs; @3 then applies its structure's stage read and
+        routing door. Given the stored control and layout instead, @3's helper loses every
+        operator factor: a population held at 0.5 by species_regulated_availability@1 read
+        11.10328 pA at -50 mV, where the composite runs at 5.55164 pA. Pure: it records nothing."""
+        inner_state, inner_control, view = self.clamp_inputs(state, control, p, xp=xp)
+        clamp = (
+            getattr(self.inner, "clamped_channel_flux", None) or pump3.ionic.clamped_channel_flux
+        )
+        return clamp(inner_state, inner_control, view, voltages_V, xp=xp)
+
+    def clamped_kind(self, function, state, control, p, voltages_V, *, xp=np):
+        """FR-34's kinds in a composite (D265 finding 1's check: the same gap): a kind's clamped
+        evaluation, cells.passive_routes@1's clamped_flux or cells.transporter@1's clamped_rates,
+        at the composite's clamp_inputs after @3's stage read and routing door of its structure,
+        the path @3's readouts takes to the kinds' rates. The kinds' own controls take no operator
+        factor today (CONTROL_FACTORS name junction and channel only), but their read, the door
+        and the layout providers' views (a patch's area) are the step's only here."""
+        ionic = pump3.ionic
+        inner_state, inner_control, view = self.clamp_inputs(state, control, p, xp=xp)
+        structure = getattr(self.inner, "structure", None)
+        kinds = ionic._kinds(structure)
+        read = ionic._stage_read(inner_state, view, kinds, xp=xp)[0] if kinds else inner_state
+        if kinds and structure.routes:
+            inner_control = ionic._route(structure, kinds, read, inner_control, view, xp=xp)[0]
+        return function(read, inner_control, view, voltages_V, xp=xp)
+
     def rhs(self, state, control, p, active, *, xp=jnp):
         values = self.readouts(state, control, p, xp=xp)
         return self.STATE_TYPE(*(xp.where(values.valid, v, xp.nan) for v in values.derivative))

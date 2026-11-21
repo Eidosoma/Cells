@@ -9,8 +9,10 @@ amounts (free, both sites' bound, the sample less the supply) sum to 100 fmol on
 """
 
 from decimal import Decimal
+from fractions import Fraction
 
 import numpy as np
+import pytest
 
 from cells.definitions.specs import parse_spec
 from cells.execution.runner import run
@@ -99,3 +101,35 @@ def test_a_nodes_own_wall_runs_as_the_stand_in_did():
         np.asarray(hn.wash_collected_fmol)[:, s, w] - np.asarray(hn.wash_supplied_fmol)[:, s, w]
     )
     assert np.max(np.abs(free_n + bound + sample - 100.0)) <= 1e-12
+
+
+@pytest.mark.parametrize("fraction", ["3/7", "1/2"])
+def test_an_unchanged_ion_is_collected_and_supplied_alike_at_any_fraction(fraction):
+    """D266, a user's finding: the review's well without sites (1 uL), washed three times by 3/7 or
+    1/2 of its liquid, compiled through the runner, whose host checks run on every accepted row at
+    their tolerances. Before the fix, at 3/7 chloride's records ended one ulp (2^-25 fmol) apart and
+    the outside ledger refused the run; at 1/2 they were equal. Now both runs complete, every ion's
+    amount never moves, its collected and supplied records are equal bit for bit at every row, and
+    both are the events' f n (eight eps). The two share one compiled program: about 22 s."""
+    f = float(Fraction(fraction))
+    times = (0.02, 0.04, 0.06)
+    raw = wfx.with_wash(
+        wfx.well(sites=False, volume=1e6, dt=0.01, end=0.08),
+        ["well"],
+        [(t, "well", f, {wfx.TRACER: wfx.TRACE_mM}) for t in times],
+    )
+    spec = parse_spec(raw)
+    result = run(spec)  # Its host checks run on every accepted row; a failure raises.
+    _, p = get_model(spec.model).initial_values(spec)
+    h = result.history
+    w = [c.id for c in spec.model.extracellular].index("well")
+    ions = np.flatnonzero(spec.model.valence)
+    amounts = np.asarray(h.extracellular_amount_increment)[:, ions, w]
+    assert not np.any(amounts)  # Every ion's amount never moves.
+    collected = np.asarray(h.wash_collected_fmol)[:, ions, w]
+    supplied = np.asarray(h.wash_supplied_fmol)[:, ions, w]
+    assert collected.tobytes() == supplied.tobytes()  # Equal bit for bit at every row.
+    count = np.asarray(h.wash_applied)[:, w]
+    assert count[-1] == len(times)
+    expected = count[:, None] * f * np.asarray(p.extracellular_amount_reference)[ions, w]
+    np.testing.assert_allclose(collected, expected, rtol=8 * np.finfo(float).eps, atol=0)

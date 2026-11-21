@@ -112,3 +112,68 @@ def read_npz(path, names=None):
                 raise ValueError(f"{path}: no array called {name}")
             out[name] = read_npy(archive.read(members[name]), name)
     return out
+
+
+HEADER_LIMIT = 65536  # a .npy header longer than this is not read (a package is untrusted input)
+MEMBER_LIMIT = 65536  # nor a .npz of more members than this
+
+
+def npy_header(stream, name="array", size=None):
+    """The element type and shape of one .npy file, from its header alone: (descr, shape). ``stream`` is a binary file
+    at the file's start; only the header is read, never the values. Where the file's length is given (``size``), a file
+    shorter than its shape says is refused, as ``read_npy`` would refuse it."""
+    lead = stream.read(10)
+    if len(lead) < 10 or lead[:6] != MAGIC:
+        raise ValueError(f"{name}: not a .npy file")
+    major = lead[6]
+    if major == 1:
+        (length,) = struct.unpack("<H", lead[8:10])
+        start = 10
+    elif major in (2, 3):
+        more = stream.read(2)
+        if len(more) < 2:
+            raise ValueError(f"{name}: not a .npy file")
+        (length,) = struct.unpack("<I", lead[8:10] + more)
+        start = 12
+    else:
+        raise ValueError(f"{name}: .npy version {major} is not supported")
+    if length > HEADER_LIMIT:
+        raise ValueError(f"{name}: its header is {length} bytes, more than {HEADER_LIMIT}")
+    text = stream.read(length)
+    if len(text) != length:
+        raise ValueError(f"{name}: the file ends inside its header")
+    try:
+        header = ast.literal_eval(text.decode("utf-8" if major == 3 else "latin1"))
+    except (ValueError, SyntaxError, UnicodeDecodeError, MemoryError, RecursionError):
+        raise ValueError(f"{name}: its header is not a dict of NumPy's format") from None
+    descr = header.get("descr") if isinstance(header, dict) else None
+    shape = header.get("shape") if isinstance(header, dict) else None
+    if not (isinstance(descr, str) and isinstance(shape, tuple) and all(type(n) is int and n >= 0 for n in shape)):
+        raise ValueError(f"{name}: its header gives no element type and shape")
+    if header.get("fortran_order"):
+        raise ValueError(f"{name}: Fortran order is not supported")
+    if descr[1:2] == "U":
+        if descr[0] != "<" or not descr[2:].isdigit():
+            raise ValueError(f"{name}: element type {descr} is not supported (text is read as little-endian '<U' only)")
+        item = 4 * int(descr[2:])
+    elif descr in CODES:
+        item = array(CODES[descr]).itemsize
+    else:
+        raise ValueError(f"{name}: element type {descr} is not supported")
+    if size is not None and size < start + length + prod(shape) * item:
+        raise ValueError(f"{name}: the file is shorter than its shape {shape} says")
+    return descr, shape
+
+
+def npz_headers(path):
+    """{name: (descr, shape)} for every .npy member of a .npz file, each from its header alone: no array is
+    decompressed past its header, so a large file costs no more to check than a small one."""
+    out = {}
+    with zipfile.ZipFile(path) as archive:
+        members = [info for info in archive.infolist() if info.filename.endswith(".npy")]
+        if len(members) > MEMBER_LIMIT:
+            raise ValueError(f"more than {MEMBER_LIMIT} arrays")
+        for info in members:
+            with archive.open(info) as stream:
+                out[info.filename[:-4]] = npy_header(stream, info.filename[:-4], info.file_size)
+    return out

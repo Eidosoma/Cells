@@ -176,6 +176,68 @@ FAMILY = "family signature"
 TOOL_WORDS = re.compile(r"gather\.json|\.py\b|\((?:data|tools|schema|src)/|listed under dropped|\b(?:left_out|holds_more|structure_elsewhere|not_looked_for|no_structure|looked_for|by_protein|per_cell|in_atlas|own_mark|sub_assemblies|left_out_entities|proteins_wanted)\b")
 
 
+# The organelles' sizes (schema/MACHINE_CATALOGUE.md, "Organelles"): each shape and the numbers its fact must give.
+ORGANELLE_SIZES = {"sphere": ("across_um",), "lens": ("across_um",), "stack": ("across_um",), "capsule": ("across_um", "long_um"), "sheet": ("thick_nm",)}
+
+
+def organelle_entry(item, entry, species, species_file, species_path, where, cite):
+    """An organelle of a species' shelf: what names it (its species' file's cell.parts) and its size (a fact of that file,
+    whole, with its sources: the cell type and species the paper measured are in the fact's own words), never a second number."""
+    parts = species_file["cell"].get("parts") or {}
+    named = item.get("named") or {}
+    part = named.get("part")
+    # Held where the species' file says so: the nucleus, its `organelles` (which the Cell view draws), or its `shelf` (organelles the
+    # Cell view does not draw, which stand on the Machines view's shelf alone and which the Cell view ignores).
+    held = bool(parts.get("nucleus")) if part == "nucleus" else part in (parts.get("organelles") or []) or part in (parts.get("shelf") or [])
+    if not part or not held or not named.get("words"):
+        raise Breach(f"{where}: an organelle is named by its species' file's cell.parts, with its words: {part!r} is not held there")
+    out = {**entry, "named": {"text": f"{species_file['label']}'s species file: its cell holds {named['words']}.", "part": part, "file": rel(species_path)}}
+    size = item.get("size")
+    if size and "held" in size:
+        # A size that rests on a paper under a non-commercial licence (the owner's ruling of 20 November 2026): read from the held file,
+        # which the page never carries; into the bench go only the size drawn, the words for its basis and the file's path.
+        held_path = ROOT / "data" / "catalogue" / "held_sizes.json"
+        held_file = read(held_path)
+        if held_file.get("format") != "cells.visualizer.held_sizes@1":
+            raise Breach(f"{rel(held_path)} is not cells.visualizer.held_sizes@1")
+        entry_held = ((held_file.get("species") or {}).get(species) or {}).get(size["held"])
+        keys = ORGANELLE_SIZES.get(size.get("shape"))
+        # A sphere's width, or a capsule's width and length (a centriole's barrel): each as the held file draws it.
+        long = size.get("long_um") != entry_held.get("drawn_long_um") if entry_held and size.get("shape") == "capsule" else False
+        if not entry_held or not keys or entry_held.get("shape") != size["shape"] or size.get("across_um") != entry_held.get("drawn_um") or long:
+            raise Breach(f"{where}: the held file gives no size {size['held']!r} of this shape drawn at {size.get('across_um')}")
+        if (entry_held.get("source") or {}).get("class") != "non-commercial":
+            raise Breach(f"{where}: a held size rests on a non-commercial source; a permissive one belongs in the species' file")
+        out["size"] = {"shape": size["shape"], "across_um": size["across_um"], **({"long_um": size["long_um"]} if size["shape"] == "capsule" else {}), "held": True, "words": entry_held["page_words"], "file": rel(held_path)}
+        if size.get("fact"):
+            found = fact(species_file, size["fact"], where)
+            out["size"].update({"label": found["label"], "text": found["value"], "sources": cite(species, found["sources"], species_file, where), **({"why": size["fact_why"]} if size.get("fact_why") else {})})
+    elif size and "part" in size:
+        # The size its species' file states for that part of its cell (cell.parts.organelle_sizes), with its sources: never a second number.
+        stated = ((parts.get("organelle_sizes") or {}).get(size["part"]) or {})
+        if size.get("shape") not in ORGANELLE_SIZES or "across_um" not in stated:
+            raise Breach(f"{where}: its species' file states no width for {size['part']!r} in cell.parts.organelle_sizes")
+        across = stated["across_um"] if isinstance(stated["across_um"], list) else [stated["across_um"]]
+        out["size"] = {"shape": size["shape"], "across_um": across, "label": size["part"], "text": f"its species' file states its cell's {size['part']} {', '.join(str(n) for n in across)} µm across (cell.parts.organelle_sizes)", "sources": cite(species, stated.get("sources") or [], species_file, where)}
+    elif size:
+        found = fact(species_file, size["fact"], where)
+        keys = ORGANELLE_SIZES.get(size.get("shape"))
+        if not keys or sorted(key for key in size if key.endswith(("_um", "_nm"))) != sorted(keys):
+            raise Breach(f"{where}: an organelle's size is one of {sorted(ORGANELLE_SIZES)}, with its numbers")
+        for key in keys:
+            for number in size[key]:
+                if not re.search(rf"(^|[^\d.]){re.escape(str(number))}([^\d]|$)", found["value"]):
+                    raise Breach(f"{where}: the fact {size['fact']!r} does not give {number}")
+        # `what`: words for what the fact's number is, where the model's measure takes it as another (a sheet's bilayer
+        # separation drawn as its thickness); words only, never a number.
+        if re.search(r"\d", size.get("what", "")):
+            raise Breach(f"{where}: a size's `what` is words, with no number")
+        out["size"] = {"shape": size["shape"], **{key: size[key] for key in keys}, "label": found["label"], "text": found["value"], "sources": cite(species, found["sources"], species_file, where), **({"what": size["what"]} if size.get("what") else {})}
+    elif item.get("no_size"):
+        out["no_size"] = item["no_size"]
+    return out
+
+
 def plain(text, where):
     """A dossier's sentence as a panel says it (PLAIN); a file's or a field's name left in it is a breach."""
     if not isinstance(text, str):
@@ -342,6 +404,7 @@ def build():
                                       **({"identified_by": kind["identified_by"], "identity": kind["identity"], "absence": kind["absence"]} if kind.get("identified_by") else {})}
     sources = {}
     entries = []
+    organelles = []
     by_protein = {}
     none_found = {}
     inputs = {rel(overlay_path), *([rel(gather_path)] if gather_path.exists() else []), *(f"data/catalogue/dossiers/{species}.json" for species in dossiers)}
@@ -398,6 +461,10 @@ def build():
                 raise Breach(f"{where}: listed twice")
             seen.add(item["kind"])
             entry = {"id": kind["id"], "species": species, "label": item.get("label") or kind.get("label")}
+            # An organelle (a kind of a group that stands on the shelf): no machine, kept apart from the bench's entries.
+            if groups[kind["group"]].get("stands") == "shelf":
+                organelles.append(organelle_entry(item, entry, species, species_file, species_path, where, cite))
+                continue
             # A label of the species' own where its dossier's one term names the kind with a numeral the kind's label lacks
             # (the human's "RNA polymerase II, core complex": RNA polymerase II, beside I and III).
             terms = ((gathered.get(item["kind"]) or {}).get("named") or {}).get("terms") or []
@@ -547,6 +614,7 @@ def build():
         "units_left_out": overlay["units_left_out"],
         "kinds": list(kinds.values()),
         "entries": entries,
+        "organelles": organelles,
         "by_protein": by_protein,
         "none_found": none_found,
         **({"unit_sizes": unit_sizes} if unit_sizes else {}),
@@ -574,14 +642,16 @@ def split(whole):
     benches = {}
     for name in species:
         entries = [entry for entry in whole["entries"] if entry["species"] == name]
+        shelf = [entry for entry in whole.get("organelles") or [] if entry["species"] == name]
         benches[name] = {"format": BENCH_FORMAT, "species": name, "note": "Generated by visualizer/tools/build_catalogue.py with catalogue.json: do not edit.", "entries": entries, "by_protein": whole["by_protein"].get(name, {}),
-                         **({"none_found": whole["none_found"][name]} if whole.get("none_found", {}).get(name) else {})}
+                         **({"none_found": whole["none_found"][name]} if whole.get("none_found", {}).get(name) else {}),
+                         **({"organelles": shelf} if shelf else {})}
     having = {}
-    for entry in whole["entries"]:
+    for entry in whole["entries"] + (whole.get("organelles") or []):
         having.setdefault(entry["id"], []).append(entry["species"])
-    core = {key: value for key, value in whole.items() if key not in ("entries", "by_protein", "none_found")}
+    core = {key: value for key, value in whole.items() if key not in ("entries", "organelles", "by_protein", "none_found")}
     core["kinds"] = [{**kind, "species": having.get(kind["id"], [])} for kind in whole["kinds"]]
-    core["benches"] = {name: {"file": f"catalogue/{name}.json", "machines": len(benches[name]["entries"])} for name in species}
+    core["benches"] = {name: {"file": f"catalogue/{name}.json", "machines": len(benches[name]["entries"]), **({"organelles": len(benches[name]["organelles"])} if benches[name].get("organelles") else {})} for name in species}
     return core, benches
 
 

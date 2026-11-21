@@ -42,7 +42,7 @@ Uses [Finite binding forms have normalized Boltzmann weights](binding-form-ensem
 
 **Open.** ATP Mg occupancy at fixed ATP, pH and temperature across measured free Mg. Quantitative self and cross-responses would require measured changes in total Mg and proton inventory.
 
-Two titration points support increasing ATP Mg occupancy. The total-Mg slope and the proton response to Mg remain unmeasured in these data.
+Two titration points support increasing ATP Mg occupancy. A separate ATP preparation acidified on magnesium addition. The total-Mg slope and the fixed-pH proton response remain open.
 
 **Unit** change in fraction of ATP carrying Mg
 
@@ -60,5 +60,15 @@ Fixed 3 mM ATP at pH 7.2, 37 °C and ionic strength 0.15 M. Matched aliquots at 
 Reading precision is about ±5 µM and ±0.1 in bound/unbound ratio. The figure pools seven runs and gives no pointwise sampling errors, run identities or measured total Mg.
 
 The model gives the observed direction and overpredicts the increase by 3.7 percentage points. Solution compositions differ. The H–Mg cross-response remains open. [Dataset manifest](../checks/data/ward1998_mgatp_titration.json) · [Comparison verdict](../PROGRESS.md#binding-ligand-response)
+
+### spicer1952_atp_acidification
+
+The controlled variable was added magnesium salt. Bulk pH could change during the titration. The ATP curve and accompanying text record a pH decrease as magnesium salt was added to a 2.5 mM ATP solution. [Spicer (1952), Fig. 2, p. 304](https://doi.org/10.1016/S0021-9258(18)44837-5)
+
+- **Evidence role** descriptive
+
+Figure 2 gives no free-Mg measurement or proton-equivalent count. A temperature specific to the titration could not be verified.
+
+The acidification supports the direction of proton release in this ATP preparation. A fixed-pH measurement is still needed to quantify the cross-response. [Dataset manifest](../checks/data/binding_equilibrium_measurements.json) · [Comparison verdict](../PROGRESS.md#binding-proton-release-observation)
 
 [Claim index](../README.md#proof-index) · [Editable register](../claims.json)

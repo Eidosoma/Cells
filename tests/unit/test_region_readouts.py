@@ -20,7 +20,9 @@ refusing what it cannot do:
 - finding 4, a law it neither reads nor lists as shown inert (the wash), with the registry walked so
   that a new law is refused until it is classified;
 - finding 7, its own cohort names as a caller's;
-- and, for D260's follow-up, a long draining run admitted at its records' rounding (about 1 s).
+- and, for D260's follow-up, a long draining run admitted at its records' rounding (about 1 s);
+- D265's findings 2, 4 and 5: equivalent spellings of a time name one step, a drain followed by
+  turnover is refused beside the long drain, and a region naming a node twice is refused.
 
 Each is planted where its refusal is lifted: the returned rows' invariant (each cohort non-negative,
 the cohorts summing to the node's amount) catches the negative split and the vanished cohort.
@@ -344,3 +346,69 @@ def test_a_long_draining_run_closes_at_its_records_rounding(monkeypatch):
     spec, states = _synthetic([0.0, 1.0], **pool)
     with pytest.raises(ValueError, match="r = O/S = 2 .*above the tracer's resolution 0.01"):
         readouts.trace(spec, [0.0, 1.0], states, base.ST, {"own": {base.CELL: 1.0}})
+    # D265 finding 4, beside the long drain: 1 fmol drained to 2^-47 in 1 s, then made and cleared
+    # at four times that pool. The cumulative clearance's rounding exceeds the second step's pool,
+    # so the resolution test and the cohort bound read the step's own terms: refused at r = 2 (on
+    # main the old cohort was -33% with both checks at 0). Planted, the bound off: the rows'
+    # invariant refuses the negative cohort.
+    x = 2.0**-47
+    spec, states = _synthetic(
+        [0.0, 1.0, 2.0],
+        cell=lambda t: 1.0 if t == 0 else x,
+        produced=lambda t: 4 * x if t == 2 else 0.0,
+        cleared=lambda t: {0.0: 0.0, 1.0: 1 - x}.get(t, 1 - x + 4 * x),
+    )
+    old = {"old": {base.CELL: 1.0}}
+    with pytest.raises(ValueError, match="t = 2.0 s .*r = O/S = 2 "):
+        readouts.trace(spec, [0.0, 1.0, 2.0], states, base.ST, old)
+    monkeypatch.setattr(readouts, "RESOLUTION", np.inf)
+    with pytest.raises(ValueError, match="cell_0, t = 2.0, are not non-negative"):
+        readouts.trace(spec, [0.0, 1.0, 2.0], states, base.ST, old)
+
+
+def test_equivalent_spellings_of_a_time_name_one_step(monkeypatch):
+    """D265 finding 2 (P1; host only, about 1 s). A label switch or a sample at 0.3 and at
+    0.1 + 0.2 name the same step: one resolver (step_index) gives the index both tools use. On
+    main the second spelling put none of the step's production into the new cohort and the export
+    returned no row. A time no step matches, or that two match, is refused, and so are two samples
+    or two switches naming one step. Planted, the resolver made exact: the second spelling is
+    refused, never silently given another step."""
+    times = [0.0, 0.1, 0.2, 0.3, 0.4]
+    spec, states = _synthetic(times, cell=lambda t: 1.0, produced=lambda t: 1e-3 * t,
+                              cleared=lambda t: 1e-3 * t)  # fmt: skip
+    own = {"own": {base.CELL: 1.0}}
+    made, rows = [], []
+    for at in (0.3, 0.1 + 0.2):
+        traced = readouts.trace(spec, times, states, base.ST, own, produced=[(0.0, "a"), (at, "b")])
+        made.append(traced["amount"]["b"][base.CELL])
+        rows.append(readouts.region_rows(spec, times, states, base.ST, [base.NODE_T], samples=[at]))
+    assert made[0] == made[1] and made[0][-1] > 0
+    assert rows[0] == rows[1] and rows[0]["times"] == [0.3]
+    for bad, message in (([0.35], "not an accepted step's time"), ([0.3, 0.1 + 0.2], "same step")):
+        with pytest.raises(ValueError, match=message):
+            readouts.region_rows(spec, times, states, base.ST, [base.NODE_T], samples=bad)
+    with pytest.raises(ValueError, match="label switch to 'b' at 0.35 s is not an accepted"):
+        readouts.trace(spec, times, states, base.ST, own, produced=[(0.35, "b")])
+    with pytest.raises(ValueError, match="two label switches name the same step"):
+        readouts.trace(spec, times, states, base.ST, own, produced=[(0.3, "a"), (0.1 + 0.2, "b")])
+    close = [0.0, 0.3, 0.3 + 1e-13, 0.4]
+    spec2, states2 = _synthetic(close, cell=lambda t: 1.0)
+    with pytest.raises(ValueError, match="ambiguous: 2 steps"):
+        readouts.region_rows(spec2, close, states2, base.ST, [base.NODE_T], samples=[0.3])
+    monkeypatch.setattr(readouts, "TIME_RTOL", 0.0)
+    with pytest.raises(ValueError, match="0.30000000000000004 s is not an accepted step's time"):
+        readouts.trace(spec, times, states, base.ST, own, produced=[(0.1 + 0.2, "b")])
+
+
+def test_a_region_naming_a_node_twice_is_refused(monkeypatch):
+    """D265 finding 5 (P2; host only, about 1 s). On main, ecs_0 named twice returned 0.002 fmol
+    inside and -0.000999 outside a cell holding 0.001001001 fmol. A repeated node is refused,
+    from one list or from overlapping ones. Planted, the repetition admitted: every row's bounds
+    (0 <= inside <= whole cell, so outside >= 0) refuse it."""
+    spec, states = _synthetic([0.0], cell=lambda t: 1e-6)
+    for region in ([base.NODE_T, base.NODE_T], [base.CELL] + [base.CELL, base.NODE_D]):
+        with pytest.raises(ValueError, match="names a node twice"):
+            readouts.region_rows(spec, [0.0], states, base.ST, region)
+    monkeypatch.setattr(readouts, "_distinct", lambda region: None)
+    with pytest.raises(ValueError, match="outside -0.000998999.* below 0"):
+        readouts.region_rows(spec, [0.0], states, base.ST, [base.NODE_T, base.NODE_T])

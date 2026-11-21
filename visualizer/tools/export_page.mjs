@@ -20,7 +20,8 @@
 //
 // The experiments published are those the Experiments tab's landing lists (--cards, data/replays/cards.json: its `listing`,
 // schema/EXPERIMENT_CARDS.md), with the runs the scene names; the cards themselves and the stills they name are published
-// beside the page (cards.json, stills/<name>), fetched only when the landing first opens.
+// beside the page (cards.json, the faces, fetched when the landing first opens; cards.details.json, each card whole, fetched
+// the first time a card's detail is asked for; stills/<name>).
 
 import { mkdir, readdir, readFile, rm, writeFile, stat } from "node:fs/promises";
 import path from "node:path";

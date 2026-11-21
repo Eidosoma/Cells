@@ -17,10 +17,10 @@ One data file, the scene, drawn through six lenses, each under a tab, in this or
 | Tab | What you see |
 | --- | --- |
 | **Scope** (the Cell view) | What Cells can simulate, drawn where it happens: one cell opened by a flat cut (after the README's biology map), the sheet of cells around it, and two placeholder outlines for the scales nothing simulates yet: a planarian's brain and the whole worm. The scales are nested, so zooming out leads from tissue into organ into organism: the sheet lies on the worm's head, above its brain. The sheet stands for skin-like tissue, a single layer of cells lying over the brain, and the cell is one cell of that layer, drawn with its neighbours (the user, 14 November 2026). The cell is flat-sided, as a cell packed in a layer is (the user, the same day: "make the cell shape be a bit more like planerian skin cell"); the shape is the picture's choice, since the engine gives a cell a volume and a membrane area and no shape, and it is not a model of a planarian's skin cell. It is placed on the worm for the scales only and is not the worm's tissue; the brain's own cells, neurons and glia, are not modelled. Zoom is continuous from molecules to organism, with a scale bar. **The species list sets the levels, the shapes and what the cell holds:** Human, Mouse, Frog, Planarian and Fruit fly under Animals; Syn3A, M. pneumoniae and E. coli under Bacteria; Thale cress under Plants. A single-celled species ends at its cell; the outlines of organs and bodies (the planarian's brain and worm, the human's heart and body, the mouse's ear and the mouse, the frog's hind foot and the frog, the fly's wing and the fly, the cress's leaf and rosette) are placeholders. The cell has a resting look, with a switch back to the plain picture |
-| **Machines** | A catalogue of the molecular machines of the species shown (`schema/MACHINE_CATALOGUE.md`), in trays on a bench by what they do. A machine with a published size is a simple shape at that size, all at one scale with a 100 nm bar; one with no size in hand is a card. The flagellar motor is drawn from its own file, an outline among the others, its parts and subunits when chosen. Each panel says what names the machine, how many and how big with their sources, the proteins its species' data marks with it, and what Cells models of it only as the record says (the ATP synthase: planned, first, D209; the rest: no model yet, FR-13). On the animals' benches the eukaryotic ribosome and five units of the law inventory (the sodium pump, SERCA, the IP3 receptor, Kv1.2 and the gap-junction channel) are drawn to scale from the viewer's own measure of a structure, of the species' own organism or another, and each panel says whose structure it is; the ATP synthase, chosen, stands in a thin slab where its ring stands, an illustration. Eight species' benches hold the machines their dossiers name (`schema/MACHINE_DOSSIERS.md`; the planarian's, Syn3A's and M. pneumoniae's proteins as candidates by family, never called parts), each bench a file beside the page read when it is shown (the page carries the catalogue's core), each with its proteins by tier, its count from an open paper where one gives it, and a door from each chain to its protein in the Protein atlas and back; the human's proteasome, mitochondrial ATP synthase, three RNA polymerases, complex I, mitochondrial ribosome and CMG helicase are measured, and its nuclear pore stays a card. A kind's panel lists the forms the Complex Portal curates for it (for the human, E. coli, the mouse and the fruit fly): each entry with its name, its Complex Portal page, how many proteins it holds and how many of the machine's parts, its stoichiometry where it gives one, and its evidence in the portal's own term (an inferred entry says so first); a form is never a machine of its own. The vault, a particle whose job has not been found, stands in a group of its own, in a tray at the back of the human's, the mouse's and the planarian's benches (behind the units' tray, where its large shape hides nothing): by the Complex Portal's record (the human), by UniProt's reviewed entries with the evidence of each sentence (the mouse), or as a candidate by its family (the planarian), each said in its own words; its size and shape are the viewer's own of a human vault (PDB 9MXV), and a bioRxiv preprint (not peer reviewed) on prokaryotic vaults is cited by its numbers and their places, with no prokaryotic vault shown. Every measured machine and unit (E. coli's six, the mycoplasmas' ribosomes at E. coli's, the human's nine, the animals' 80S and five units) offers a fourth level, Shape: the viewer's own smooth surface of each chain (`schema/MACHINE_SHAPES.md`, drawn by `src/lenses/machine_shape.js` as one mesh), a press on a surface choosing its chain. A part or chain chosen in a machine is lit in the page's accent. A measured machine's parts are its sub-assemblies, drawn as their chains, each part in one colour; the opening view frames the shapes, and while one is chosen the rest of the bench is faint. The law inventory's membrane units stand in a tray of their own, as the Protein atlas lists them; a unit's panel says which of its laws an active model declares. All of it is illustration |
+| **Machines** | A catalogue of the molecular machines of the species shown (`schema/MACHINE_CATALOGUE.md`), in trays on a bench by what they do. A machine with a published size is a simple shape at that size, all at one scale with a 100 nm bar; one with no size in hand is a card. The flagellar motor is drawn from its own file, an outline among the others, its parts and subunits when chosen. Each panel says what names the machine, how many and how big with their sources, the proteins its species' data marks with it, and what Cells models of it only as the record says (the ATP synthase: planned, first, D209; the rest: no model yet, FR-13). On the animals' benches the eukaryotic ribosome and five units of the law inventory (the sodium pump, SERCA, the IP3 receptor, Kv1.2 and the gap-junction channel) are drawn to scale from the viewer's own measure of a structure, of the species' own organism or another, and each panel says whose structure it is; the ATP synthase, chosen, stands in a thin slab where its ring stands, an illustration. Eight species' benches hold the machines their dossiers name (`schema/MACHINE_DOSSIERS.md`; the planarian's, Syn3A's and M. pneumoniae's proteins as candidates by family, never called parts), each bench a file beside the page read when it is shown (the page carries the catalogue's core), each with its proteins by tier, its count from an open paper where one gives it, and a door from each chain to its protein in the Protein atlas and back; the human's proteasome, mitochondrial ATP synthase, three RNA polymerases, complex I, mitochondrial ribosome and CMG helicase are measured, and its nuclear pore stays a card. A kind's panel lists the forms the Complex Portal curates for it (for the human, E. coli, the mouse and the fruit fly): each entry with its name, its Complex Portal page, how many proteins it holds and how many of the machine's parts, its stoichiometry where it gives one, and its evidence in the portal's own term (an inferred entry says so first); a form is never a machine of its own. The vault, a particle whose job has not been found, stands in a group of its own, in a tray at the back of the human's, the mouse's and the planarian's benches (behind the units' tray, where its large shape hides nothing): by the Complex Portal's record (the human), by UniProt's reviewed entries with the evidence of each sentence (the mouse), or as a candidate by its family (the planarian), each said in its own words; its size and shape are the viewer's own of a human vault (PDB 9MXV), and a bioRxiv preprint (not peer reviewed) on prokaryotic vaults is cited by its numbers and their places, with no prokaryotic vault shown. Every measured machine and unit (E. coli's six, the mycoplasmas' ribosomes at E. coli's, the human's nine, the animals' 80S and five units) offers a fourth level, Shape: the viewer's own smooth surface of each chain (`schema/MACHINE_SHAPES.md`, drawn by `src/lenses/machine_shape.js` as one mesh), a press on a surface choosing its chain. A part or chain chosen in a machine is lit in the page's accent. Behind each bench of a species whose cell has organelles stands a shelf of them at the same one scale, the small ones (a mitochondrion, a lysosome, a vesicle) on a plank of their own between the bench and the shelf: each drawn with the Cell view's model of it where there is one (the nucleus, the endoplasmic reticulum, the Golgi apparatus, the mitochondrion, a centriole, the thale cress's chloroplast), else with a simple model of its own, an illustration (a lysosome, a peroxisome and an autophagosome cut open over their lumens, a COPI vesicle with knobs for its coat, an endocytic vesicle with short tubules, a lipid droplet), each at a size its panel gives with its source, a measurement in one cell type or a general figure (the human's nucleus, centriole and endocytic vesicle are drawn on measurements the project's files cite and the page does not show), and a card where no size is in hand, which says what was looked for; a scale rail travels between the bench, the small organelles' plank and the shelf, each power of ten in the same time, the scale bar following, and a loupe holds a machine beside an organelle of the shelf, at its true size and magnified by a factor written on its frame. A measured machine's parts are its sub-assemblies, drawn as their chains, each part in one colour; the opening view frames the shapes, and while one is chosen the rest of the bench is faint. The law inventory's membrane units stand in a tray of their own, as the Protein atlas lists them; a unit's panel says which of its laws an active model declares. All of it is illustration |
 | **Proteins** (the Protein atlas) | The units of Cells' law inventory, set in the membranes where their laws act: channels, pumps and transporters in the plasma membrane, junction channels between two cells, and the ER and mitochondrial units inside. Each links to its engine part and out to the public atlases. A unit's panel opens each of its laws an active model declares in the Laws library; of each other law it says, with no door, what the law-port inventory of 17 November 2026 marks it (D211: to port as is, to fold into the cardiac lane's planned laws, or not a port), or, where that inventory has no row for it, that the engine's declarations do not list it. For the species shown it gives the gene products that would make each unit (Human and Planarian today), and it shows every species' own proteins on shelves: each protein by its side of a membrane, as families that open where there are thousands |
 | **Engine** | The simulator as a stack of layers, from the machines it runs on up to the experiments. References stand outside the stack, because the engine never contains them. The plan's gates climb beside it |
-| **Laws** (the Laws library) | Every piece the engine declares, on a wall of shelves by interface (channel, cycle, route and junction laws; kinds; the composite's operators by their part of the step; and, each on a shelf of their own, a model family's own laws and operators), read from the engine's declarations manifest alone (`data/engine/declarations.json`, `cells.declarations@2`; `data/laws/pieces.json`, `tools/extract_laws.py`), with a rack for each model with rows and its pieces seated in their slots (a channel law's code, a kind's key, a composition's position), and a closed case for each model family with no rows. Choosing a piece lights the slots that declare it, and its panel says what the manifest states of it: where it is declared, its kernels, provenance, test, reads, units and signs, and each null as "not stated" or "not yet extracted". No level is shown: the manifest gives none. The laws design notes name and the manifest does not list stand apart, in glass. The older model families the manifest lists as legacy are not drawn; the List names them, and an address naming one, or any ID the manifest does not list, says so. An Engine view box or operator, and a unit of the Protein atlas, open a declared piece; a unit's law that is not declared opens nothing, and says what the law-port inventory marks it (`data/laws/law_port.json`, made by `tools/extract_law_port.py`; the words in `src/lenses/law_port.js`), or that the declarations do not list it. Its files link at the manifest's revision |
+| **Laws** (the Laws library) | Every piece the engine declares, on a wall of shelves by interface (channel, cycle, route and junction laws; kinds; the composite's operators by their part of the step; and, each on a shelf of their own, a model family's own laws and operators), read from the engine's declarations manifest alone (`data/engine/declarations.json`, `cells.declarations@2`; `data/laws/pieces.json`, `tools/extract_laws.py`), with a rack for each model with rows and its pieces seated in their slots (a channel law's code, a kind's key, a composition's position), and a closed case for each model family with no rows. Choosing a piece lights the slots that declare it, and its panel says what the manifest states of it: where it is declared, its kernels, provenance, test, reads, units and signs, and each null as "not stated" or "not yet extracted". A cycle law's card says its general form in words, key by key, with its kinetics' own data counted, never poured; a key the engine's documents do not explain is shown under its own name (`schema/LAWS_LIBRARY.md`, "A cycle law's general form"). No level is shown: the manifest gives none. The laws design notes name and the manifest does not list stand apart, in glass. The older model families the manifest lists as legacy are not drawn; the List names them, and an address naming one, or any ID the manifest does not list, says so. An Engine view box or operator, and a unit of the Protein atlas, open a declared piece; a unit's law that is not declared opens nothing, and says what the law-port inventory marks it (`data/laws/law_port.json`, made by `tools/extract_law_port.py`; the words in `src/lenses/law_port.js`), or that the declarations do not list it. Its files link at the manifest's revision |
 | **Experiments** | A saved run replayed: the sheet of cells coloured by membrane voltage, a timeline to play and scrub, each cell replacement marked as it happens, and the class the experiment's own summary recorded for the run. Quantity layers draw onto it what cannot be seen: voltage as height, the drops across junctions, the push and pull on each ion, the charge on a membrane, what flows, where energy is dissipated, a secreted signal. Shown only when replays have been made |
 
 Selecting a part that belongs to another lens takes you there: a protein unit's connection
@@ -31,6 +31,21 @@ A part's id of a view's own (`laws:…`) opens that view from any other, so
 A view can also stand on a page of its own (`node tools/build_view_page.mjs <view>`):
 the Laws library and the origin-of-life view each have such a page beside their place
 here.
+
+**About and the first visit** (the owner, 20 November 2026). The bar's About button, after
+List, and the name Cells in its corner open About in the side panel's place (a sheet on a
+phone): what the page is, in words taken from the repository's README, the site's
+description and the map's caveat, each view as a door, the source code in a new tab, the
+credit line ("Made by Eidosoma."), and what the page knows of itself (the map's stamp; on
+the site, its release). The words are written once, in `data/site/about.json`, which the
+page carries in its scene as `about` (`src/ui/about.js`); what names anyone is its
+`credit` alone. `#about` in the address opens it, in the artifact's frame too. On a first
+visit a line under the bar says what the page is, with About, the source code and a close
+button; closed, it stays closed in that browser. On a window 760 px or wider it stands in
+the first band under the bar that covers no card, control or note and none of the view's
+names (it keeps from a name the clearance a name keeps from a card); elsewhere, and on
+every phone, it waits out of sight. Every check is a first visit (each run has a new
+browser profile), so the line stands in their pictures where it finds room.
 
 Three things are encoded, and kept apart:
 
@@ -404,7 +419,7 @@ control (19 November 2026):
 | Band | Cards | What stands in it |
 | --- | --- | --- |
 | Examples to start with | 2 | The tumour tissue (the gap-junction work: the line, the ladder, the sheet and the networks, 50 runs; "Development work, not judged (D138)" first on it) and the assembly (the engine's two development runs of the model system, in its own view) |
-| Judged under a registered protocol | 18 | Everything the record has judged under a registered protocol, experiment or qualification, passed or failed, side by side, each card with its own level from the Engine map: E07-v1 (38 judged runs; its answer: the disc did not renew), the judged acceptances of FR-1, FR-3, FR-4, FR-5, FR-6 (two) and FR-10, the morphogenesis gates MG0, MG0c and MG1 (its failed first run beside the pass), the secreted-species qualification D150, cell division, the BETSE parity ladder (rung 1's failed first run beside the passes), osmotic water and volume, cell replacement, the composite on the L4 (Implemented and guarded: its judged run's Q7 failed and stands), fixed points, and projective stepping (Failed qualification) |
+| Judged under a registered protocol | 19 | Everything the record has judged under a registered protocol, experiment or qualification, passed or failed, side by side, each card with its own level from the Engine map: E07-v1 (38 judged runs; its answer: the disc did not renew), the judged acceptances of FR-1, FR-3, FR-4, FR-5, FR-6 (two) and FR-10, FR-7's first closed loop (its comparison F4 against R-loop, both arms and its persistence rows; F3's comparison is queued), the morphogenesis gates MG0, MG0c and MG1 (its failed first run beside the pass), the secreted-species qualification D150, cell division, the BETSE parity ladder (rung 1's failed first run beside the passes), osmotic water and volume, cell replacement, the composite on the L4 (Implemented and guarded: its judged run's Q7 failed and stands), fixed points, and projective stepping (Failed qualification) |
 | Development runs | 6 | The turnover pre-screen (21 runs), the secreted-species run and the planarian loop (1 each), the origin-of-life laws (six rows against references, landed for development and not judged), and the heredity pilot W1 and the conduction probe (the map states no level for either, and each card says so first) |
 | Invented numbers | 1 | A test sheet of the viewer's own: no engine ran |
 
@@ -413,7 +428,7 @@ in one line, a press away from it.
 
 - **Folded bands.** The first band of the cards' file stands open, drawn large; every
   later band stands folded under its head (its label, its words and its count) behind one
-  button in the file's words (`bands[].control`: "Show qualifications and judged runs" 18,
+  button in the file's words (`bands[].control`: "Show qualifications and judged runs" 19,
   "Show development runs" 6, "Show the test sheet of invented numbers" 1; a band without
   words gets a plain control from its label). The rule is the band's place in the file,
   never its id. A press shows its cards under its head, and a second folds them. A folded
@@ -461,9 +476,13 @@ in one line, a press away from it.
   directly; a published artifact's frame passes only `#name`, so a detail has no shareable
   link there. Every address that worked before (`run=`, `select=run:`, `part=`,
   `example=`) opens its view without the landing.
-- **What each address fetches.** The landing fetches `cards.json` and, as it opens, the
-  two examples' stills; a later band's stills only once it is shown and they come near
-  the screen: no run and no model. The site's first entry fetches nothing of the landing's. A
+- **What each address fetches.** The landing fetches `cards.json`, the cards' faces (what
+  a card's face says, and what the List and the search read), and, as it opens, the two
+  examples' stills; a later band's stills only once it is shown and they come near the
+  screen: no run and no model. The cards whole (`cards.details.json`, one file for every
+  card, written by `tools/build_cards.py` beside the faces) are fetched the first time a
+  card's detail is asked for, and once (20 November 2026: the faces are 67 kB, the whole
+  187 kB). The site's first entry fetches nothing of the landing's. A
   card's view fetches its own run and the parts its opening view shows, and no other run.
   `fetches` (`tools/check_fetches.mjs`) holds each address to
   `tools/references/fetches.json`, with a bound in bytes.
@@ -480,6 +499,25 @@ A replay draws what a run saved, and nothing else.
   tile of the viewer's. A run that saves which cells are joined but no coordinates is laid
   out as the hexagonal lattice its junctions define: the replay is marked as derived and
   lists each derived piece, and rotation and handedness are arbitrary.
+- **Checking an experiment package** (19 November 2026; `docs/EXPERIMENT_PACKAGE.md`, decided
+  by the owner that day; round one of two). `python3 -I tools/check_package.py FOLDER` checks
+  a run folder before the viewer reads it: its manifest (`experiment_package.json`,
+  `cells.experiment_package@1`; the contract is `schema/EXPERIMENT_PACKAGE.md`, the schema
+  file `schema/experiment_package.schema.json`, written by the tool), every package's view and
+  the arrays it names, the sidecars, refused picks and summary, and then the adapter's own
+  reading of each package. It writes nothing; exit 0 means the adapter reads it, 1 lists every
+  problem with its code, 2 is a wrong call (`--json` for the report as JSON, `--codes` for
+  every code). A folder with no manifest, as every folder written so far, is read as the
+  adapter reads one today, and the report gives the manifest it would need. Where a run folder
+  holds `experiment_package.json`, `npm run adapt:runs` takes its arms, sidecars and refused
+  picks from it, and packages the folder to the same bytes as without one. The manifest's
+  names and rules are as the engine's lead, who keeps the specification, settled them on 20
+  November 2026: among them, the manifest's copies of the engine's revision, snapshot and
+  clean tree are held to each view and to each run's own `run.json`, and sidecars are named in
+  the order they are played. The adapter's own reading stays inside a run's folder too: a name
+  that leaves it, and a link, are refused. Not yet: the adapter does not run the whole check
+  itself before it packages, nothing acts on a package's visibility or licence, and the
+  portable play package is the next round.
 - **Run data is not in git.** `tools/adapt_run.py` reads the frozen run folders and writes
   one file per run under `out/runs/` (0.2 to 0.9 MB each), which is git-ignored.
   Only the adapter, the labels in `data/replays/` and a small synthetic fixture are committed
@@ -799,8 +837,8 @@ in and out, and the split"; and of the example: "yes lets play the marked exampl
   November 2026, evening: both parts of its build are on main (`PROGRESS.md`, "GARD's G1,
   part 2, on main"), and the engine's declarations list the stochastic assembly family
   `cells.assembly_lineages@1` with GARD's three laws and two lineage operators
-  (`data/engine/declarations.json`, written at main `1ca5eada`, the map's revision; they
-  did so at `a16b2571`, `79d23cd5`, `b5d3faf0` and `4dda2285` too). Declared is not qualified: its runs are
+  (`data/engine/declarations.json`, written at main `93fc8c2c`, the map's revision; they
+  did so at `a16b2571`, `79d23cd5`, `b5d3faf0`, `4dda2285` and `1ca5eada` too). Declared is not qualified: its runs are
   development runs, not judged, and the page says so on every picture of them. The Engine
   map's part for GARD reads "Implemented and guarded" since the map's review at `4dda2285`,
   on its tests on main, with its standing first: development runs, not judged (D192,
@@ -1044,6 +1082,7 @@ run outputs ──adapters (next)── run view ──────────�
 | `tools/import_protein_inventory.py` | Makes the slim snapshot of the law inventory. It leaves out machine paths, Xenbase identifiers and every field the view does not show |
 | `tools/lib/protein_atlas.py` | Turns the snapshot into the atlas's parts, and checks every law record against the checkout |
 | `tools/adapt_run.py` | Turns a saved run folder into a replay file. Standard library only; reads the frozen evidence and never writes there |
+| `tools/check_package.py` | Checks an experiment package (a run folder, with or without its manifest) before the viewer reads it, and says every problem with its code. Standard library only; it writes nothing and runs nothing from a package |
 | `data/replays/` | For each experiment: labels, plain lines and what the record says it found, and the runs chosen for the page. (Not `data/runs/`: the repository ignores every folder of that name) |
 | `docs/` | Reviews written for the lead: `PROTEIN_ATLAS_REVIEW.md` |
 | `src/replay/`, `src/lenses/replay.js`, `src/ui/timeline.js` | Loading a replay, the Experiments view and its timeline |
@@ -1070,11 +1109,11 @@ which part uses which (imports), the plan's gates and the shared-state table; an
 engine's declarations manifest, the registered operators with their contract declarations
 (requires, writes, provides, reads, conflicts) and the laws, kinds and models the engine
 declares. A model identifier the manifest lists only among the older families is not drawn.
-Every engine file belongs to exactly one part; the extractor warns if one does not. Code under `src/cells/legacy/` is left out of the map (the user, 17 November
+Every engine file belongs to exactly one part; the extractor warns if one does not. A module that declares two operators (an operator's next version beside it) stays the part of the first the manifest lists; each operator's panel quotes its own class's docstring. Code under `src/cells/legacy/` is left out of the map (the user, 17 November
 2026: "no legacy code, it will be removed"; the engine's D196, decided the same day: older
 code is a reference until the modular engine has learned from it, then it is dropped). A part whose files all
 stand there is not drawn, a part with files of both kinds shows its active files, and the
-build counts them apart ("255 of 255 engine files placed, 321 left out as legacy code").
+build counts them apart ("262 of 262 engine files placed, 321 left out as legacy code").
 The map's patterns are carried through the engine's source moves from the engine's own path
 tables (`scripts/moves/*-table.json`), with a check that every file stands in the part it
 stood in before (`tools/move_paths.py check`, which names a package file the move dissolved
@@ -1162,6 +1201,25 @@ document):
 - `node tools/stage_site.mjs --site SITE --id vNN --release` moves the pointer;
 - the release is recorded in `artifacts.json` and the commit tagged, then `--retain 3 --remove`.
 
+Each release's pages carry the site's own head: the About words' title and description,
+`https://cells.eidosoma.ai/` as canonical (the one place `tools/stage_site.mjs` states the
+site's address), link-preview tags with `share.jpg` (the tracked `data/site/share.jpg`, the
+page's own scene with no words, made by `tools/make_share.mjs`), and structured data for the
+site and its source code, whose one name is the credit's organisation (the site's
+publisher, the code's author). Ahead of the page stands the About text as HTML for a reader
+with no script (the source code linked, its licence not). A visitor with script does not
+see it while the page loads (the owner's choice, 20 November 2026): a cover of the page's
+own background, light or dark from the first paint, holds one ring in the window's middle
+(still, slowly fading, where less motion is asked for) and a status that says the 3D map is
+loading; the page puts the cover and the text away once it has drawn. If it has not drawn
+in 20 seconds, the cover lets the About words through by its sheet alone, and the page
+still puts them away when it draws. A reader with no script gets the words at once and no
+cover (a style inside `<noscript>`); the site adds no script. Each release also holds `robots.txt` (every reader may read everything; `/r/` is
+never closed), `sitemap.xml` and `llms.txt` (the site for an agent: the words, the views,
+the cards with their levels and verdicts, the release's files by format, the contracts,
+the source), which `--release` puts at the site's root with the pointer. The staging
+refuses a page whose About words are not the tracked file's.
+
 `deploy/` holds an example of the server's container; the owner sets the machine up.
 
 A page published without the proteins' files draws the atlas as before and says that the
@@ -1205,8 +1263,10 @@ all 112 runs, in 341 files).
    79d23cd5, after D198's retire batch and the feature-request lane's judged acceptances, and
    at b5d3faf0, after D188's second move and the landing of the origin-of-life engine's first
    laws, at 4dda2285, after the core-seams pass's first landings (seam F's laws as
-   modules among them), and on 19 November at 1ca5eada, after seams A, C and D, FR-2's first
-   version and FR-8's stage 0: 265 parts and 1007 relations, which it states.
+   modules among them), on 19 November at 1ca5eada, after seams A, C and D, FR-2's first
+   version and FR-8's stage 0, and on 20 November at 93fc8c2c, after FR-7's first closed loop,
+   the step-doubled energy check and the mitochondria work's groundwork: 270 parts and 1064
+   relations, which it states.
 4. The real-click checks in headless Chrome: `npm run check:all` runs every scenario of
    `check:input`, `check:species`, `check:shelves`, `check:layers`, `check:look`,
    `check:flux`, `check:machine` and `check:laws` once, four at a time, and writes a log
@@ -1389,8 +1449,8 @@ Ideas kept for after the basics (the user, 14 November 2026):
   words for a failed load are held by unit tests only (`tests/entries_page.test.mjs`).
 - The checks' pictures are drawn by software WebGL or on the project machine's one graphics
   card, as each run's record says.
-- The Laws library is read from the engine's declarations manifest written at main 1ca5eada:
-  55 pieces and 11 models. It is read again when a new manifest is copied in. The manifest
+- The Laws library is read from the engine's declarations manifest written at main 93fc8c2c:
+  61 pieces and 11 models. It is read again when a new manifest is copied in. The manifest
   states no level and no page yet, so the wall shows none; the 13 laws named in design notes
   are checked against their notes at that revision. The atlas's units that name no declared
   law (33 of 48) stay in the atlas; their laws, and U07's undeclared one, say what the law-port

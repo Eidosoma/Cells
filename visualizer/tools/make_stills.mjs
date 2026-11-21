@@ -7,7 +7,7 @@
 //
 //   node tools/make_stills.mjs [--runs DIR] [--out DIR] [--only CARD]
 //
-// A still is the view's picture alone: the page's bar, cards, legend, timeline and the way back are put out of sight for
+// A still is the view's picture alone: the page's bar, cards, legend, timeline, the way back and the first-visit line are put out of sight for
 // it, and the view stands as an address opens it, held still (`still=1`), at its start. It is cut from the room the page
 // leaves the picture (right of the view's card, between the bar and the timeline), at the still's own proportions. One browser makes every still of
 // a set, so that one renderer draws them all; its first page is never pictured (a fresh browser's first page is loaded,
@@ -124,7 +124,7 @@ try {
       const cut = wide / tall > aspect ? { width: tall * aspect, height: tall } : { width: wide, height: wide / aspect };
       const clip = { x: room.left + (wide - cut.width) / 2, y: room.top + (tall - cut.height) / 2, width: cut.width, height: cut.height, scale: STILL.width / cut.width };
       // The picture alone: what the page lays over it is put out of sight, then the picture settles.
-      await evaluate(`(() => { const root = ${V}.shadowRoot; const style = document.createElement("style"); style.textContent = ".bar, .card, cells-legend, cells-timeline, cells-panel, cells-index, .hint, .caveat, .view-toggle, .rail-toggle, .scalebar, .exp-back, .sweep-card, .look-box, .fallback { visibility: hidden !important; }"; root.append(style); ${V}.stage?.invalidate(); })()`);
+      await evaluate(`(() => { const root = ${V}.shadowRoot; const style = document.createElement("style"); style.textContent = ".bar, .card, cells-legend, cells-timeline, cells-panel, cells-index, .hint, .caveat, .view-toggle, .rail-toggle, .scalebar, .exp-back, .sweep-card, .look-box, .fallback, .intro { visibility: hidden !important; }"; root.append(style); ${V}.stage?.invalidate(); })()`);
       await sleep(3500);
       const state = await evaluate(`(() => { const v = ${V}, gl = v.stage?.renderer.getContext(), info = gl?.getExtension("WEBGL_debug_renderer_info"); return { renderer: info ? gl.getParameter(info.UNMASKED_RENDERER_WEBGL) : gl ? gl.getParameter(gl.RENDERER) : null, status: v.current?.chrome?.()?.status || null, error: v.current?.error || null, lost: gl?.isContextLost?.() || false }; })()`);
       if (!ready || state.status || state.error || state.lost || errors.length) {

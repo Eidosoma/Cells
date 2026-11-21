@@ -112,6 +112,10 @@ EXEMPT = {
     + " (FR-8 rung 0's restart windows: checkpoint() takes stage 0's R3 state at each window's "
     "start from its kept rows.npz, named by path and revision in rung0_20261119.json; the runs "
     "recorded no source digest, which RUNG0_20261119.md section 9.5 records after the fact)",
+    "validation/long_duration/rung1.py": DEVELOPMENT_TOOL
+    + " (FR-8 rung 1's re-based windows, RUNG1_20261119.md section 10.3: start_state takes "
+    "stage 0's R3 state at each window's start from its kept rows.npz into H2's declared initial "
+    "values; each run checks the file's sha256 against the registered digest and records it)",
     # Same-process restart and independent references.
     "validation/betse/fresh_rerun/workers.py": SAME
     + " (restart.npz written and read in one process)",
