@@ -16,12 +16,17 @@ import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { CARD, CARDS_FORMAT, FACE, KEPT, addressOf, bandHolding, cardsProblems, controlOf, countWords, detailOf, faceOf, landingOf, openFirst, opensOf, partNameOf, readKept, shorten, standingWords, stillOf, verdictsOf, writeKept } from "../src/replay/landing.js";
+import { CARD, CARDS_FORMAT, DETAILS_FILE, detailsProblems, FACE, KEPT, addressOf, bandHolding, cardsProblems, controlOf, countWords, detailOf, faceOf, landingOf, openFirst, opensOf, partNameOf, readKept, shorten, standingWords, stillOf, verdictsOf, writeKept } from "../src/replay/landing.js";
 import { landingFiles, publishedReplays } from "../tools/lib/build_page.mjs";
+import { LandingLens } from "../src/ui/landing.js";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const readJson = (file) => JSON.parse(readFileSync(path.join(ROOT, file), "utf8"));
-const cards = readJson("data/replays/cards.json");
+// The cards' faces (cards.json, what the landing draws) and each card whole (cards.details.json, a card's detail). The rows
+// below that read a card's detail read the card whole; a face draws the same card (tests/experiment_cards.test.mjs).
+const faces = readJson("data/replays/cards.json");
+const details = readJson("data/replays/cards.details.json");
+const cards = { ...faces, cards: details.cards };
 const overlay = readJson("data/replays/overlay.json");
 const scene = readJson("data/architecture/architecture.scene.json");
 
@@ -145,7 +150,11 @@ test("a band, a level or a kind the landing has not seen still stands, by its ow
   assert.deepEqual(face.level, { label: "A level never seen", says: "Its words.", status: "a-level-never-seen" });
   const detail = detailOf(made.cards[1], { statuses: new Set(scene.statuses.map((status) => status.id)) });
   assert.deepEqual(detail.chips[0], { label: "A level never seen", title: "Its words.", swatch: null }, "a level the map does not draw has its words and no swatch");
-  assert.deepEqual(cardsProblems({ format: "another@1", cards: [] }), ["it is another@1, not cells.visualizer.experiment_cards@1"]);
+  assert.deepEqual(cardsProblems({ format: "another@1", cards: [] }), ["it is another@1, not cells.visualizer.experiment_cards@2"]);
+  assert.deepEqual(cardsProblems(faces), []);
+  assert.deepEqual(detailsProblems(details), []);
+  assert.deepEqual(detailsProblems(faces), ["it is cells.visualizer.experiment_cards@2, not cells.visualizer.experiment_card_details@1"], "the faces are not the details");
+  assert.equal(faces.details, DETAILS_FILE);
 });
 
 test("a card's first words come first, and its standing's words follow them without saying them twice", () => {
@@ -207,6 +216,11 @@ test("each verdict stands as the record has it: passed or failed, its own count 
       assert.equal(verdicts[k].count, entry.verdict.count ? `${entry.verdict.count.passed} of ${entry.verdict.count.of}${entry.verdict.count.unit ? ` ${entry.verdict.count.unit}` : ""}${entry.verdict.count.not_evaluable ? `, ${entry.verdict.count.not_evaluable} not evaluable` : ""}` : null, card.id);
     });
   }
+  // FR-7's closed loop (20 November 2026): one judged run read twice, its two arms' compared rows and its persistence
+  // rows, each with its own count and day, never summed into one; its scope line is the record's.
+  const fr7 = cards.cards.find((card) => card.id === "fr7");
+  assert.deepEqual(verdictsOf(fr7).map((verdict) => [verdict.passed, verdict.count, verdict.day, verdict.scope?.text ?? null]), [[true, "1164 of 1164 compared rows", "2026-11-20", "Still to come: F3's six-world comparison against R-chain and R-clear is queued from the same snapshot."], [true, "30 of 30 compared rows", "2026-11-20", null]]);
+  assert.equal(fr7.standing.part, "fr.abundance_to_function");
   // A failed verdict stands beside the passes (the file holds some), each by its own word, not by a colour.
   assert.ok(cards.cards.some((card) => verdictsOf(card).some((verdict) => verdict.passed === false)));
   assert.equal(countWords(null), null, "a count the file withholds shows no number");
@@ -244,6 +258,28 @@ test("a press on a replay's card opens, by rule, what the tab opens: a model sys
   // A part named that the catalogue does not carry: the experiment's opening run, as the tab always did.
   const named = catalogueOf({ whole: { opens: { run: "w", part: "not-carried" } } }, []);
   assert.deepEqual(opensOf({ replay: { opens: { experiment: "whole" } } }, named), { run: "whole--w" });
+});
+
+test("a card's detail waits for the cards' details, fetched the first time one is asked for and once; where they cannot be fetched, it says its face's words and that", async () => {
+  // The landing's own methods on a landing whose faces are in (no page is drawn: its fetches are a counted loader).
+  const lensOf = (loader) => Object.assign(Object.create(LandingLens.prototype), { data: faces, byId: new Map(faces.cards.map((card) => [card.id, card])), bandOf: new Map(), whole: null, detailsError: null, detailsFetching: null, replays: null, statuses: null, sourceUrl: () => null, door: () => null, loader });
+  const asked = [];
+  const lens = lensOf(async (file) => (asked.push(file), details));
+  const [fr1, tissue] = [CARD + "fr1", CARD + "tumour-tissue"];
+  assert.equal(lens.waitsFor("run:x"), null, "a run's choice waits for nothing of the landing's");
+  await lens.waitsFor(fr1);
+  assert.equal(lens.waitsFor(tissue), null, "the second detail waits for nothing");
+  assert.deepEqual(asked, [DETAILS_FILE]);
+  const whole = details.cards.find((card) => card.id === "fr1");
+  assert.deepEqual(lens.describe(fr1), detailOf(whole, { band: undefined, sourceUrl: lens.sourceUrl, door: lens.door, plays: whole.replay ? opensOf(whole, null) : null, statuses: null, titleOf: (other) => lens.byId.get(other)?.title || null }), "the detail is the card whole's");
+  // The details refused: the detail is the face's, and says so; asked again, they are fetched again.
+  let tries = 0;
+  const cut = lensOf(async () => (tries++ ? details : Promise.reject(new Error("cards.details.json answered 503"))));
+  await cut.waitsFor(fr1);
+  assert.deepEqual(cut.describe(fr1).facts[0], ["Its detail", "could not be fetched (cards.details.json answered 503): what its card says stands here"]);
+  await cut.waitsFor(fr1);
+  assert.equal(tries, 2);
+  assert.notEqual(cut.describe(fr1).facts[0]?.[0], "Its detail");
 });
 
 test("the addresses: a view opened from a card is the page's own address of it, and a card's detail is select=card:<id>", () => {
@@ -348,10 +384,11 @@ test("the stills: each card's still for each theme is a file of the stills' reco
   const replays = catalogueOf();
   for (const card of cards.cards.filter((item) => item.kind === "replay" && opensOf(item, replays))) assert.ok(card.replay.still, `${card.id}: a replay's card carries a still of its view`);
   for (const still of record.stills) assert.ok(named.some((card) => card.id === still.card), still.file);
-  // The export publishes the cards and every still beside the page, and nothing else of the landing.
+  // The export publishes the cards' faces, their details (one file for every card) and every still beside the page, and
+  // nothing else of the landing.
   const files = await landingFiles();
   assert.deepEqual(files.problems, []);
-  assert.deepEqual(files.files.map((file) => file.path).sort(), ["cards.json", ...record.stills.map((still) => still.file)].sort());
+  assert.deepEqual(files.files.map((file) => file.path).sort(), ["cards.details.json", "cards.json", ...record.stills.map((still) => still.file)].sort());
 });
 
 test("the export publishes the experiments the landing lists, and the landing lists every experiment its replay cards open", () => {

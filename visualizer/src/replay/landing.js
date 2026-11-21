@@ -2,8 +2,9 @@
 // cards' file gives them, what each card says on its face, what a press on it opens, and what its detail holds in the
 // page's own panel. Nothing here needs a document or the 3D stage, so it is tested on its own.
 //
-// Every standing, count, date, scope line and source is the file's (data/replays/cards.json, published beside the page
-// as cards.json and fetched when the landing first opens). Nothing here names a card, a band or a level: the landing
+// Every standing, count, date, scope line and source is the files' (data/replays/cards.json, the cards' faces, published
+// beside the page as cards.json and fetched when the landing first opens; data/replays/cards.details.json, each card whole,
+// published beside it and fetched the first time a card's detail is asked for). Nothing here names a card, a band or a level: the landing
 // draws whatever bands and cards the file gives, in its order, and a band, a level or a kind of card it has not seen
 // still stands, plainly, by its own words. Where a card's words are too long for its face they are shortened at their
 // end only, with "…", and the whole is one press away (the card's detail).
@@ -17,8 +18,10 @@ import { Catalogue } from "./catalogue.js";
 import { partsOf } from "./tissue_line.js";
 import { formatDate } from "../ui/dom.js";
 
-export const CARDS_FORMAT = "cells.visualizer.experiment_cards@1";
-export const CARDS_FILE = "cards.json"; // beside the page, as the export publishes it
+export const CARDS_FORMAT = "cells.visualizer.experiment_cards@2";
+export const CARDS_FILE = "cards.json"; // beside the page, as the export publishes it: the cards' faces
+export const DETAILS_FORMAT = "cells.visualizer.experiment_card_details@1";
+export const DETAILS_FILE = "cards.details.json"; // beside it: each card whole, its detail
 export const CARD = "card:"; // the id of a card's detail in the page's panel, and in its address (`select=card:<id>`)
 // How much of a standing's words, and of a scope line, a card's face shows before it says "…".
 export const FACE = { standing: 170, scope: 120, asks: 200 };
@@ -30,6 +33,13 @@ const text = (value) => (typeof value === "string" && value.trim() ? value : nul
 /** What is wrong with a file of cards as the landing reads it; an empty list where it can be drawn. */
 export function cardsProblems(data) {
   if (data?.format !== CARDS_FORMAT) return [`it is ${data?.format ?? "no file of cards"}, not ${CARDS_FORMAT}`];
+  if (!Array.isArray(data.cards) || !data.cards.length) return ["it holds no card"];
+  return [];
+}
+
+/** What is wrong with the cards' details as a card's detail reads them; an empty list where they can be read. */
+export function detailsProblems(data) {
+  if (data?.format !== DETAILS_FORMAT) return [`it is ${data?.format ?? "no file of details"}, not ${DETAILS_FORMAT}`];
   if (!Array.isArray(data.cards) || !data.cards.length) return ["it holds no card"];
   return [];
 }

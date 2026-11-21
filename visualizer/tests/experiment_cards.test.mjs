@@ -14,13 +14,19 @@ import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } f
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { faceOf, levelOf, verdictsOf } from "../src/replay/landing.js";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const TOOL = path.join(ROOT, "tools", "build_cards.py");
 const FIXTURES = path.join(ROOT, "tests", "cards-fixtures");
 const read = (file) => JSON.parse(readFileSync(path.join(ROOT, file), "utf8"));
 const text = (file) => readFileSync(path.join(ROOT, file), "utf8");
-const cards = read("data/replays/cards.json");
+// The cards as the tool builds them: their faces (cards.json, what the landing draws) and each card whole (cards.details.json).
+// The rules on standings, sources and counts below are held on the cards whole; the faces are held to be the cards whole
+// with every field the face does not read left out.
+const faces = read("data/replays/cards.json");
+const details = read("data/replays/cards.details.json");
+const cards = { ...faces, cards: details.cards };
 const readings = read("data/replays/cards.readings.json");
 const source = read("data/replays/cards.source.json");
 const catalogue = read("data/replays/overlay.json");
@@ -84,10 +90,29 @@ const typedClaims = (given) =>
     .filter((words) => /judg|qualif/i.test(words));
 const copy = (value) => JSON.parse(JSON.stringify(value));
 
+test("the faces are the cards whole with every field the face does not read left out: the landing draws the same card from either", () => {
+  assert.deepEqual(faces.cards.map((card) => card.id), details.cards.map((card) => card.id), "one card a face, in the same order");
+  assert.deepEqual(Object.keys(faces), ["format", "note", "built_from", "bands", "not_run", "listing", "details", "cards"], "the faces' top level: the bands, the listing, and the file of the details");
+  assert.deepEqual(Object.keys(details), ["format", "note", "built_from", "cards"]);
+  // Every value of a face is the whole card's own (its record: the entries with a verdict, in their order).
+  const within = (part, of) => (part === null || typeof part !== "object" ? part === of : Array.isArray(part) ? Array.isArray(of) && part.length === of.length && part.every((item, n) => within(item, of[n])) : of !== null && typeof of === "object" && Object.entries(part).every(([key, value]) => key in of && within(value, of[key])));
+  for (const [n, face] of faces.cards.entries()) {
+    const whole = { ...details.cards[n], record: (details.cards[n].record || []).filter((entry) => entry?.verdict && typeof entry.verdict === "object") };
+    assert.ok(within(face, whole), `${face.id}: its face holds a value its whole card does not`);
+    for (const plays of [null, { run: "x" }]) assert.deepEqual(faceOf(face, { plays }), faceOf(details.cards[n], { plays }), `${face.id}: the landing draws the same face from either`);
+  }
+  // The List and the search read a card's id, title and part; llms.txt its title, level and verdict lines: the faces hold them.
+  for (const [n, face] of faces.cards.entries()) assert.deepEqual([face.id, face.title, face.standing.part, levelOf(face), verdictsOf(face)], [details.cards[n].id, details.cards[n].title, details.cards[n].standing.part, levelOf(details.cards[n]), verdictsOf(details.cards[n])]);
+  assert.ok(text("data/replays/cards.json").length * 2 < text("data/replays/cards.details.json").length, "the faces are under half the whole");
+});
+
 test("the cards are what the tool writes from tracked files and the readings", () => {
   const run = tool(["--check"]);
   assert.equal(run.status, 0, run.stderr || run.stdout);
-  assert.equal(cards.format, "cells.visualizer.experiment_cards@1");
+  assert.equal(faces.format, "cells.visualizer.experiment_cards@2");
+  assert.equal(details.format, "cells.visualizer.experiment_card_details@1");
+  assert.equal(faces.details, "cards.details.json");
+  assert.deepEqual(details.built_from, faces.built_from);
   assert.equal(readings.format, "cells.visualizer.experiment_cards_readings@1");
   assert.equal(cards.built_from.record.revision, source.record.revision);
   assert.equal(readings.record.revision, source.record.revision);
@@ -168,7 +193,7 @@ test("every source names its revision, each one the gathering found on main, and
     assert.ok(known.has(item.revision), `${item.path} at ${item.revision}: not among the revisions the gathering found on main`);
     assert.ok(!item.path.startsWith("/") && !item.path.includes(".."), item.path);
   }
-  for (const file of ["data/replays/cards.json", "data/replays/cards.readings.json", "data/replays/cards.source.json"]) {
+  for (const file of ["data/replays/cards.json", "data/replays/cards.details.json", "data/replays/cards.readings.json", "data/replays/cards.source.json"]) {
     assert.doesNotMatch(text(file), MACHINE, file);
     assert.doesNotMatch(text(file), CLOCK, file);
   }
@@ -398,6 +423,8 @@ function fixtureCopy(change = () => {}) {
   return folder;
 }
 const source_main = () => JSON.parse(readFileSync(path.join(FIXTURES, "source.json"), "utf8")).record.revision;
+/** What the tool built in a folder: the faces' top level, with each card whole (from cards.details.json beside them). */
+const builtIn = (folder) => ({ ...JSON.parse(readFileSync(path.join(folder, "cards.json"), "utf8")), cards: JSON.parse(readFileSync(path.join(folder, "cards.details.json"), "utf8")).cards });
 const gatherIn = (folder, ...extra) => tool(["--gather", "--source", path.join(folder, "source.json"), "--readings", path.join(folder, "readings.json"), "--out", path.join(folder, "cards.json"), "--evidence", path.join(folder, "evidence"), "--repo-folders", path.join(folder, "engine"), ...extra]);
 
 test("the gathering reads a verdict's own count, day and revision, and the record's sentence and scope line", () => {
@@ -405,7 +432,7 @@ test("the gathering reads a verdict's own count, day and revision, and the recor
   try {
     const run = gatherIn(folder);
     assert.equal(run.status, 0, run.stderr);
-    const built = JSON.parse(readFileSync(path.join(folder, "cards.json"), "utf8"));
+    const built = builtIn(folder);
     const fr1 = built.cards.find((card) => card.id === "fr1");
     const [first, second] = fr1.record;
     // Only the judged rows count: the unjudged row that failed is not one of them.
@@ -434,6 +461,13 @@ test("the gathering reads a verdict's own count, day and revision, and the recor
     assert.deepEqual([named.verdict.passed, named.verdict.count.passed, named.verdict.count.of, named.verdict.snapshot.revision], [true, 2, 2, "4".repeat(40)]);
     assert.deepEqual([parts.verdict.passed, parts.verdict.count.passed, parts.verdict.count.of], [false, 1, 2]);
     assert.deepEqual(parts.verdict.count.from.files, [["part-a", "Q1.json"], ["part-b", "Q2.json"]]);
+    // A comparison's own numbers (FR-7's F4): each named table's compared and failed, or each quantity's, summed; its
+    // day and its snapshot's revision as its RUN.txt writes them; the record's "All 11 rows" confirms the count.
+    const compared = fr1.record[5];
+    assert.deepEqual([compared.verdict.passed, compared.verdict.count.passed, compared.verdict.count.of, compared.verdict.count.unit], [true, 11, 11, "compared rows"]);
+    assert.match(compared.verdict.count.from.field, /^arm_a\.quantities and arm_b\.quantities and persistence: each quantity's compared and failed numbers, summed/);
+    assert.deepEqual(compared.verdict.count.confirmed_by.map((item) => item.says), ["All 11 rows"]);
+    assert.deepEqual([compared.verdict.day.date, compared.verdict.snapshot.revision], ["2026-11-10", "4".repeat(40)]);
     // The gathering lists the record's judged entries by their leads, the registration among them, for placing.
     const listed = JSON.parse(readFileSync(path.join(folder, "readings.json"), "utf8")).judged_entries;
     assert.ok(listed.includes("A fixture qualification: FAIL (10 November).") && listed.some((lead) => lead.startsWith("The fixture's protocol registered")), listed.join(" | "));
@@ -446,6 +480,7 @@ test("the gathering reads a verdict's own count, day and revision, and the recor
     const assembly = built.cards.find((card) => card.id === "assembly");
     assert.ok(assembly.standing.sources.every((item) => item.revision === "1".repeat(40)));
     assert.doesNotMatch(readFileSync(path.join(folder, "cards.json"), "utf8"), CLOCK);
+    assert.doesNotMatch(readFileSync(path.join(folder, "cards.details.json"), "utf8"), CLOCK);
     // The full check passes on what was just gathered, and fails once a run's own file changes.
     const again = gatherIn(folder, "--check");
     assert.equal(again.status, 0, again.stderr);
@@ -484,7 +519,7 @@ test("a count the record words otherwise stands where the registered protocol co
   try {
     const run = gatherIn(folder);
     assert.equal(run.status, 0, run.stderr);
-    const second = JSON.parse(readFileSync(path.join(folder, "cards.json"), "utf8")).cards.find((card) => card.id === "fr1").record[1];
+    const second = builtIn(folder).cards.find((card) => card.id === "fr1").record[1];
     assert.deepEqual([second.verdict.count.passed, second.verdict.count.of], [5, 5]);
     assert.deepEqual(second.verdict.count.confirmed_by.map((item) => item.file.join("/")), ["source/protocol.json"]);
     assert.deepEqual(second.verdict.count.differs_from.map((item) => item.says), ["All 4 criteria"]);
@@ -509,6 +544,11 @@ test("the gathering refuses a path of a machine in words it would carry, a parag
       const file = path.join(folder, "source.json");
       writeFileSync(file, readFileSync(file, "utf8").replace('"within": ["judged", "run-a"]', '"within": ["judged/run-a"]'));
     }, /folder by folder/],
+    // A comparison that says it passed while a table it counts states a failed row.
+    [(folder) => {
+      const file = path.join(folder, "evidence", "fixture-compared", "comparison.json");
+      writeFileSync(file, readFileSync(file, "utf8").replace('"y": {"compared": 2, "failed": 0', '"y": {"compared": 2, "failed": 1'));
+    }, /passes with 1 rows failed/],
   ];
   for (const [change, refusal] of cases) {
     const folder = fixtureCopy(change);

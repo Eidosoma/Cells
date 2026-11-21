@@ -785,7 +785,9 @@ the cells itself (each cell's concentration from the run's own arrays; a criteri
 quantity) and write it beside a package. The run folder's `index.json` names the file in
 the package's entry (`packages[].sidecar`: a JSON file's plain name, or a list of them);
 in a run folder with no `index.json`, the experiment's overlay entry names it beside every
-package (`sidecar`). The adapter reads it only there, for a run with the engine's own view,
+package (`sidecar`). A run folder with a manifest (`experiment_package.json`,
+`schema/EXPERIMENT_PACKAGE.md`) names its sidecars itself, in the order they are played, in
+place of both. The adapter reads it only there, for a run with the engine's own view,
 and refuses it, with the reason, where it does not fit:
 
 ```json
@@ -864,7 +866,8 @@ in `criterion.json`, carried on the stated record (`tumor_cells`, `species_names
 `place`). The overlay's `sidecar` may name several files beside each package (the
 criterion and the stated concentrations). A part whose picture opens on a stated quantity
 has its voltages in a file of their own, and of a passive route's totals only the species
-its routes carry are packaged. Its runs come from the selection's run folder: its
+its routes carry are packaged. Its runs come from the selection's run folder: the packages
+of its manifest where it has one (`schema/EXPERIMENT_PACKAGE.md`), else its
 `index.json`, or where it has none, every package in it that holds a `view.json`, by name.
 The runs in view share one clock, the union of their saved times; each shows its own
 record at or before it; past the end of runs that ended before the clock, the words over them say so.
@@ -874,7 +877,8 @@ record at or before it; past the end of runs that ended before the clock, the wo
   (`refused_picks: [{ arm, sweep, parameter, file }]`): its arm, which must be its folder's
   name, its status, which must be `refused`, and its value of the sweep's parameter (the
   key the parameter's id names), and nothing else of the file. The page puts each in its
-  place in the parameter's order, named, with nothing drawn in it.
+  place in the parameter's order, named, with nothing drawn in it. A run folder with a
+  manifest lists its refused picks itself (`refused`), in place of the search of the folder.
 - **The picture's choices**, said on the picture: the colour of a value on a scale broken
   at the criterion's own thresholds (one hue below, a grey between, another above), and
   time down each line's map on a logarithmic scale (a time t at log(1 + t / a two-hundredth

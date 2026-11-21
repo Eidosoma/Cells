@@ -34,7 +34,7 @@
 
 import test from "node:test";
 import assert from "node:assert/strict";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import { ROOT } from "../tools/lib/build_page.mjs";
@@ -568,5 +568,24 @@ test("each note says what rests on non-commercial or unlicensed sources, and nam
     // The section states the rule: the three classes, by name.
     for (const word of ["Permissive", "Non-commercial", "No stated terms"]) assert.ok(section.includes(word), `${note}: the section does not name the class "${word}"`);
     for (const [label, pattern] of wanted) assert.ok(pattern.test(section), `${note}: the section does not name ${label}`);
+  }
+});
+
+// The owner's ruling of 20 November 2026: numbers from papers under non-commercial licences may be cited in the project's files and
+// may set how a thing is drawn, and are not shown in the page. Such a size is held in data/catalogue/held_sizes.json, which the page
+// never carries; the catalogue's core, the benches and the scene carry none of its sources, papers or numbers.
+test("a size held from a paper under a non-commercial licence stays in the held file, in no file the page carries", () => {
+  const read = (file) => readFileSync(path.join(ROOT, file), "utf8");
+  const held = JSON.parse(read("data/catalogue/held_sizes.json"));
+  assert.match(held.decided, /^On 20 November 2026 the owner ruled that numbers from papers under non-commercial licences may be cited in the project's files and may set how a thing is drawn, and are not shown in the page\.$/);
+  const entries = Object.values(held.species).flatMap((kinds) => Object.values(kinds));
+  assert.ok(entries.length && entries.every((entry) => entry.source.class === "non-commercial" && entry.drawn_um?.length && entry.working));
+  const carried = ["data/catalogue/catalogue.json", "data/architecture/architecture.scene.json", ...readdirSync(path.join(ROOT, "data/catalogue/benches")).map((name) => `data/catalogue/benches/${name}`)];
+  for (const file of carried) {
+    const text = read(file);
+    // The paper's DOI, its first author's whole surname ("van der Beek", not "van"), and its numbers as read, with or without their units.
+    const surname = (entry) => entry.source.text.split(" and others")[0].replace(/ [A-Z]{1,3}$/, "");
+    for (const entry of entries) for (const word of [entry.source.doi, surname(entry), ...(entry.read.results.match(/\d+ ± \d+|\d+(?:[–-]\d+)? ?(?:nm|µm|μm)/g) || [])]) assert.ok(!text.includes(word), `${file} carries ${word}`);
+    assert.ok(!/"class": ?"non-commercial"/.test(text) || file.endsWith("scene.json"), `${file} carries a non-commercial source`);
   }
 });
