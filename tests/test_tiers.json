@@ -294,7 +294,8 @@
   "/mnt/workspaces/Cells/ol3-engine-20261119/measure-9a1a95a5/measured.json",
   "/mnt/workspaces/Cells/core-pass-at3-20261118/n2/a/measure-f8f88eab/out/measure/measured.json",
   "/mnt/workspaces/Cells/operators-fr24-20261120/gate-f7e9e770/tiers/measure/measured.json",
-  "/mnt/workspaces/Cells/operators-fr27-20261120/gate-2c453c5c/tiers/measure/measured.json"
+  "/mnt/workspaces/Cells/operators-fr27-20261120/gate-2c453c5c/tiers/measure/measured.json",
+  "/mnt/workspaces/Cells/operators-fr26-20261120/gate-e9855c1c/tiers/measure/measured.json"
  ],
  "measured_provenance": [
   {
@@ -2486,6 +2487,14 @@
    "root": "/mnt/workspaces/Cells/operators-fr27-20261120/snapshot-head-2c453c5c",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-20T21:57:18+00:00"
+  },
+  {
+   "git_revision": "e9855c1cc9f8d54c1a96ef7ae0b1a81835aef8a6",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/operators-fr26-20261120/snapshot-head-e9855c1c",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-20T23:34:22+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -5244,10 +5253,10 @@
    },
    {
     "file": "tests/unit/test_site_occupancy.py",
-    "seconds": 6.78,
+    "seconds": 5.98,
     "exit_code": 0,
     "counts": {
-     "passed": 54
+     "passed": 67
     }
    },
    {
@@ -5469,7 +5478,7 @@
    },
    {
     "file": "tests/unit/test_species_reactions_refusals.py",
-    "seconds": 5.38,
+    "seconds": 6.03,
     "exit_code": 0,
     "counts": {
      "passed": 87
@@ -5525,10 +5534,10 @@
    },
    {
     "file": "tests/unit/test_species_regulated_availability.py",
-    "seconds": 10.05,
+    "seconds": 9.85,
     "exit_code": 0,
     "counts": {
-     "passed": 105
+     "passed": 108
     }
    },
    {
@@ -7177,6 +7186,14 @@
    {
     "file": "tests/unit/test_site_occupancy_vector_reverse.py",
     "seconds": 53.85,
+    "exit_code": 0,
+    "counts": {
+     "passed": 1
+    }
+   },
+   {
+    "file": "tests/unit/test_site_replacement_runs.py",
+    "seconds": 36.33,
     "exit_code": 0,
     "counts": {
      "passed": 1

@@ -190,6 +190,109 @@ REFUSALS = {
 }
 
 
+# FR-26 (D244, W): site_occupant_replacement@1 on replaced_sites' world (cell_1 replaced at 5 ms
+# from template T), with an outward population o1 on contact_1 and an inward i1 on wall_cell_1,
+# both on cell_1, and o0 on cell_0's contact_0.
+W_POPULATIONS = (
+    ("o1", dict(patch="contact_1", theta0=0.5)),
+    ("i1", dict(patch="wall_cell_1", face="inside", theta0=0.3)),
+    ("o0", dict(patch="contact_0", theta0=0.4)),
+)
+W_TEMPLATE = {"o1": (0.1, 2.0, None), "i1": (0.9, 0.5, None)}
+
+
+def w_world(occupants=W_TEMPLATE, *, populations=W_POPULATIONS, **kwargs):
+    pops = [sfx.population(pid, **dict(attrs)) for pid, attrs in populations]
+    return sfx.replaced_sites(pops, occupants, **kwargs)
+
+
+def _w_edit(edit):
+    def make():
+        raw = w_world()
+        edit(raw)
+        return raw
+
+    return make
+
+
+def _w_block(raw):
+    return next(b for b in raw["model"]["operators"] if b["law"] == so.OCCUPANT_LAW)
+
+
+def _late_founder_change(raw):
+    for c in raw["experiment"]["site_controls"]:
+        if c["population"] == "o1":
+            c["schedule"].append(dict(time=0.007, multiplier=0.5))
+
+
+def _donor_copy(raw):
+    raw["experiment"]["replacement_events"][0].update(
+        newcomer="donor_copy", template=None, donor="cell_0"
+    )
+
+
+def _w_first(raw):
+    ops = raw["model"]["operators"]
+    w = ops.pop()
+    ops.insert(1, w)  # After replacement@1, before the site operator.
+
+
+REFUSALS.update(
+    {
+        "W: a template that is not a replacement template": (
+            _w_edit(lambda r: _w_block(r)["templates"][0].update(template_id="U")),
+            "declares U, not a replacement template",
+        ),
+        "W: a population not on a slot its newcomers fill": (
+            lambda: w_world({**W_TEMPLATE, "o0": (0.2, 1.0, None)}),
+            "names o0, not a population on a slot its newcomers fill",
+        ),
+        "W: a newcomer without an arrival occupancy": (
+            lambda: w_world({"o1": (0.1, 2.0, None)}),
+            "declares no arrival occupancy for i1",
+        ),
+        "W: a donor copy onto a slot with populations": (
+            _w_edit(_donor_copy),
+            "a donor copy onto cell_1, which holds site populations, is version 1.1",
+        ),
+        "W: an internalisation multiplier without the route": (
+            lambda: w_world({**W_TEMPLATE, "o1": (0.1, 2.0, 1.0)}),
+            "an internalisation multiplier exactly when it internalises",
+        ),
+        "W: before the site operator": (
+            _w_edit(_w_first),
+            "requires site_occupancy@1 before it",
+        ),
+        "W: without replacement@1": (
+            lambda: sfx.with_occupant(
+                sfx.face_free_sites([sfx.population("r0")]), {"T": {"r0": (0.1, 1.0, None)}}
+            ),
+            "requires scheduled_cell_replacement@1 before it",
+        ),
+        "W: an empty newcomer": (
+            lambda: w_world({**W_TEMPLATE, "o1": (0.0, 2.0, None)}),
+            "occupancy of o1 lies in \\(0, 1\\) in version 1",
+        ),
+        "W: a full newcomer": (
+            lambda: w_world({**W_TEMPLATE, "i1": (1.0, 0.5, None)}),
+            "occupancy of i1 lies in \\(0, 1\\) in version 1",
+        ),
+        "W: a newcomer within the capacity's rounding of empty": (
+            lambda: w_world({**W_TEMPLATE, "o1": (1e-17, 2.0, None)}),
+            "occupancy 1e-17 of o1 leaves its bound sites within 4 ulps of its capacity",
+        ),
+        "W: a newcomer within the capacity's rounding of full": (
+            lambda: w_world({**W_TEMPLATE, "i1": (1 - 2**-53, 0.5, None)}),
+            "of i1 leaves its free sites within 4 ulps of its capacity",
+        ),
+        "W: a founder's change after its death": (
+            _w_edit(_late_founder_change),
+            "changes at 0.007 s, after its founder's death at 0.005 s",
+        ),
+    }
+)
+
+
 @pytest.mark.parametrize("name", sorted(REFUSALS))
 def test_definition_refusals(name):
     build, message = REFUSALS[name]
@@ -198,14 +301,104 @@ def test_definition_refusals(name):
 
 
 def test_populations_on_a_replaced_slot_are_refused_and_elsewhere_admitted():
+    """FR-26 (D244, W): a patch population on a replaced slot is admitted with
+    site_occupant_replacement@1 and refused without it, naming it; a contact population incident
+    to a replaced slot stays refused."""
     inward = sfx.population("w1", patch="wall_cell_1", face="inside")
-    with pytest.raises(ConfigError, match="replaces; version 1 has no occupant rule"):
+    with pytest.raises(ConfigError, match="its occupants need site_occupant_replacement@1"):
         parse_spec(two_cells([inward], replaced=True))
+    parse_spec(sfx.with_occupant(two_cells([inward], replaced=True), {"T": {"w1": (0.2, 1, None)}}))
     on_contact = sfx.population("k0", contact="j0", side="first")
-    with pytest.raises(ConfigError, match="replaces; version 1 has no occupant rule"):
+    with pytest.raises(ConfigError, match="a contact population there is refused in version 1"):
         parse_spec(two_cells([on_contact], replaced=True))
     parse_spec(two_cells([sfx.population("w0", patch="wall_cell_0", face="inside")], replaced=True))
     parse_spec(two_cells([on_contact]))  # A contact population, no replacement.
+
+
+def _w_event(raw, time=0.005):
+    """(spec, model, the bound state, p, the control at `time`, the state after the event maps)."""
+    spec = parse_spec(raw)
+    model = get_model(spec.model)
+    state, p = model.initial_values(spec)
+    control = model.CONTROL_TYPE(*(v[0] for v in cs.control_values(spec, [time])))
+    after = state
+    for op in model.events:
+        after, ok = op.event(after, control, p, xp=np)
+        assert ok is None or bool(ok)
+    return spec, model, state, p, control, after
+
+
+def _w_energy(spec, model, row, p):
+    tol = np.asarray(spec.execution.material_balance_atol_fmol)
+    rtol = model.ENERGY_RTOL[spec.execution.solver]
+    _, limits = model.ledger_limits(row, p, tol, rtol, steps=1, magnitudes=model.magnitudes(row, p))
+    return float(model.inner_balances(row, p)["energy"]), float(limits[6])
+
+
+def test_w_resets_a_replaced_slots_populations_from_the_newcomers_template():
+    """FR-26's event rows (D244, W; NumPy, no world compiled, about 1 s). At t_e the newcomer's
+    populations hold B = theta' S and R = S - B, to the anchored increments' ulp; the other
+    cell's population and the facing node keep their bits; W's departed is the bound amount
+    before and its arrived theta' S; its jump is the owner's own site free energy's change; the
+    owner's ledgers close with W's external terms (dropped, the bound ledger misses by arrived -
+    departed) and @3's energy ledger with its term, at the event's own step, for a nearly empty
+    and a nearly full newcomer of 60 fmol capacity too (theta' of exactly 0 or 1 is refused).
+    The multipliers switch from the founder's schedule to the template's at t_e. A count the
+    state has not reached refuses the step; nothing more is due at the same control."""
+    spec, model, state, p, control, after = _w_event(w_world())
+    sites = next(o for o in model.operators if o.LAW_ID == so.LAW_ID)
+    w = next(o for o in model.operators if o.LAW_ID == so.OCCUPANT_LAW)
+    s = np.asarray(p.site_capacity_fmol)
+    before = np.asarray(p.site_bound_anchor_fmol) + np.asarray(state.site_bound_increment_fmol)
+    bound = np.asarray(p.site_bound_anchor_fmol) + np.asarray(after.site_bound_increment_fmol)
+    free = np.asarray(p.site_free_anchor_fmol) + np.asarray(after.site_free_increment_fmol)
+    theta = np.asarray([0.1, 0.9])  # The anchored increments hold them to an ulp or two.
+    assert bound[:2] == pytest.approx(theta * s[:2], rel=4 * np.finfo(float).eps, abs=0)
+    assert free[:2] == pytest.approx(s[:2] - theta * s[:2], rel=4 * np.finfo(float).eps, abs=0)
+    for name, axes in so.STATE_AXES.items():  # o0, on cell_0, keeps its bits.
+        if axes == ["site_population"]:
+            assert np.asarray(getattr(after, name))[2] == np.asarray(getattr(state, name))[2]
+    ecs = [c.id for c in spec.model.extracellular].index("ecs_0")
+    assert (
+        np.asarray(after.extracellular_amount_increment)[:, ecs].tobytes()
+        == np.asarray(state.extracellular_amount_increment)[:, ecs].tobytes()
+    )
+    assert np.asarray(after.site_departed_fmol)[:2].tobytes() == before[:2].tobytes()
+    assert np.asarray(after.site_arrived_fmol)[:2].tobytes() == (theta * s[:2]).tobytes()
+    g0, _ = so.site_energy(state, p, xp=np)
+    g1, _ = so.site_energy(after, p, xp=np)
+    jump = float(np.sum(after.site_replacement_free_energy_pJ))
+    assert jump == pytest.approx(g1 - g0, rel=1e-12, abs=1e-18)
+    ledgers = model._own_ledgers(sites, after, p, xp=np)
+    assert not np.any(ledgers["site_bound_entity"]) and not np.any(ledgers["site_moiety_entity"])
+    planted = sites.own_ledgers(after, p, xp=np)["site_bound_entity"]  # W's term dropped.
+    expected = np.asarray(after.site_arrived_fmol) - np.asarray(after.site_departed_fmol)
+    assert planted.tobytes() == expected.tobytes() and np.any(planted)
+    residual, bound_e = _w_energy(spec, model, after, p)
+    assert abs(residual) <= 1e-3 * bound_e
+    assert abs(residual + jump) > 1e3 * bound_e  # Without W's term the ledger fails.
+    assert np.asarray(control.site_binding_multiplier).tolist() == [2.0, 0.5, 1.0]
+    early = cs.control_values(spec, [0.004])
+    names = list(model.CONTROL_TYPE._fields)
+    assert early[names.index("site_binding_multiplier")][0].tolist() == [1.0, 1.0, 1.0]
+    again, ok = w.event(after, control, p, xp=np)
+    assert ok and all(
+        np.asarray(x).tobytes() == np.asarray(y).tobytes()
+        for x, y in zip(again, after, strict=True)
+    )
+    stale = control._replace(site_replacement_count=control.site_replacement_count + 1)
+    assert not bool(w.event(state, stale, p, xp=np)[1])
+    theta = np.asarray(control.site_arrival_occupancy).copy()
+    theta[0] = (
+        1e-17  # Below o1's anchor rounding: the definition refuses it; the event fails closed.
+    )
+    assert not bool(w.event(state, control._replace(site_arrival_occupancy=theta), p, xp=np)[1])
+    big = (("o1", dict(patch="contact_1", theta0=0.5, copies=60 * so.SITES_PER_FMOL, alpha=1.0)),)
+    for theta_new in (1e-9, 1.0 - 1e-9):
+        raw = w_world({"o1": (theta_new, 1.0, None)}, populations=big)
+        spec2, model2, _, p2, _, after2 = _w_event(raw)
+        residual, bound_e = _w_energy(spec2, model2, after2, p2)
+        assert np.isfinite(residual) and abs(residual) <= bound_e, (theta_new, residual, bound_e)
 
 
 def test_internalisation_from_a_compartment_is_refused():

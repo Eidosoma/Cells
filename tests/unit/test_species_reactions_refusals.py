@@ -25,7 +25,9 @@ from cells.models import pump_composite
 from cells.models import pump_composite_adapter as adapter
 from cells.operators import OPERATORS
 from cells.operators import species_common as common
+from cells.operators import species_reactions as sr
 from cells.registry.inventory_species import add_inventory_species
+from cells.registry.models import get_model
 from validation.tissue import secreted_species_fixtures as fx
 from validation.tissue import species_reactions_fixtures as rfx
 
@@ -464,10 +466,61 @@ def replaced(outside_only):
     return fx.with_replacement(raw, [template], [(0.002, "cell_0", "T", "c0_new")])
 
 
-def test_cell_routes_on_replaced_slots_are_refused_and_outside_routes_compose():
-    with pytest.raises(ConfigError, match="a slot scheduled_cell_replacement@1 replaces"):
+def _cell_0_reactions():
+    """The enzyme network's reactions with a cell route in cell_0, in declared order."""
+    spec = parse_spec(rfx.enzyme_network())
+    declaration = next(d for o, d, _ in cs.entries(spec) if o.LAW_ID == sr.LAW_ID)
+    return list(
+        dict.fromkeys(
+            r.reaction for r in declaration.routes if (r.kind, r.node) == ("cell", "cell_0")
+        )
+    )
+
+
+def test_cell_routes_on_replaced_slots_take_the_newcomers_template_multipliers():
+    """FR-26's occupant rule for D152 (D244; NumPy host tables, no world compiled): a cell route on
+    a replaced slot is admitted where its newcomer's template gives its reaction's multiplier, and
+    refused without it, naming the templates; outside routes compose as before. The multipliers
+    switch from the founder's schedule to the template's at t_e; a founder's change after its death,
+    a template that is not a replacement template and an unused multiplier are refused; without
+    templates the declaration round-trips with no templates key."""
+    with pytest.raises(ConfigError, match="takes no multiplier for it: declare it"):
         parse_spec(replaced(outside_only=False))
     parse_spec(replaced(outside_only=True))
+    cell = _cell_0_reactions()
+    raw = replaced(outside_only=False)
+    block(raw)["templates"] = [dict(template_id="T", multipliers=dict.fromkeys(cell, 0.25))]
+    spec = parse_spec(raw)
+    assert parse_spec(cs.to_dict(spec)) == spec
+    assert (
+        "templates"
+        not in cs.to_dict(parse_spec(replaced(outside_only=True)))["model"]["operators"][-1]
+    )
+    model = get_model(spec.model)
+    names = list(model.CONTROL_TYPE._fields)
+    k = names.index("reaction_multiplier")
+    declaration = next(d for o, d, _ in cs.entries(spec) if o.LAW_ID == sr.LAW_ID)
+    on_cell = [
+        i for i, r in enumerate(declaration.routes) if (r.kind, r.node) == ("cell", "cell_0")
+    ]
+    before, after = (cs.control_values(spec, [t])[k][0] for t in (0.001, 0.002))
+    assert all(before[i] == 1.0 and after[i] == 0.25 for i in on_cell)
+    others = [i for i in range(len(declaration.routes)) if i not in on_cell]
+    assert all(before[i] == after[i] for i in others)
+    late = copy.deepcopy(raw)
+    for c in late["experiment"]["reaction_controls"]:
+        if c["reaction_id"] == cell[0]:
+            c["schedule"].append(dict(time=0.003, multiplier=0.5))
+    with pytest.raises(ConfigError, match="after its founder's death at 0.002 s"):
+        parse_spec(late)
+    stray = copy.deepcopy(raw)
+    block(stray)["templates"][0]["template_id"] = "U"
+    with pytest.raises(ConfigError, match="declares multipliers for U, not a replacement template"):
+        parse_spec(stray)
+    unused = replaced(outside_only=True)
+    block(unused)["templates"] = [dict(template_id="T", multipliers={"conversion": 1.0})]
+    with pytest.raises(ConfigError, match="applies to no cell route on a slot its newcomers fill"):
+        parse_spec(unused)
 
 
 REFUSED = {  # Operator lists with each provider or closer (requirements first) and the reason.

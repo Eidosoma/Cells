@@ -246,7 +246,8 @@ At the definition, each with its reason:
   read at their next half-step. Both check their stage conditions at run time, at every stage, so
   a step outside them is refused, not taken.
 - **The run view:** one prescribed layer, each wash an event at its node.
-- **The composition matrix** gains row and column 23. The module registers last
+- **The composition matrix** gains its row and column (23 as built; 24 once FR-26's W registers
+  before it, §10). The module registers last
   (`wash_schedule.py`), so no law is renumbered.
 
 ## 5. What stays bitwise
@@ -362,10 +363,16 @@ And φ equals the cleft fix's `mixing(e, ratio)` bit for bit, in NumPy and compi
 6. The name: `scheduled_compartment_wash@1`.
 7. Branched from FR-23's head, e7a54539, so the composition matrix is edited on top of FR-23's.
 
-**Open, for the lead:**
-- the wash beside `cell_owned_compartments@1`, which its admitted list refuses (§4.7);
-- the refusal of a neutral species crossing a facing membrane, our extension of ruling 5 (§4.6),
-  which opens with a measurement, as faces do;
-- one shared φ once 28c4e7ff lands, the cleft's owner's choice (§4.3). The two agree bit for bit.
+**The lead's rulings on the open items (20 November 2026):**
+- **The wash beside `cell_owned_compartments@1`** stays refused, as a version-1 limit (§4.7).
+- **The refusal of a neutral species crossing a facing membrane** is accepted as built (§4.6). It
+  is our extension of ruling 5, and it opens with a measurement, as faces do.
+- **The two φ copies stay,** bit for bit the same: `numerics/ideal_mixing.phi` and the cleft fix's
+  (§4.3).
+- **Untested paths are version-1 limits:** a restart from a checkpoint across a wash, and batched
+  windows. Neither is exercised.
+- **Criterion 5's failed clause** (§8) is stated in the landing text.
 
-**Not exercised:** a restart from a checkpoint across a wash, and batched windows.
+**Landing:** in a stack with FR-24 and FR-26 (the lead's ruling, 20 November 2026). FR-26's
+`site_occupant_replacement@1` registers before this module, so the wash is law 24 of the
+composition matrix.

@@ -110,3 +110,61 @@ def face_free_sites(
     )
     pops = [population()] if populations is None else populations
     return with_site_occupancy(raw, pops, ligands=ligands, controls=controls)
+
+
+# ------------------------------------------------------------------ FR-26: a replaced slot
+
+OCCUPANT_LAW = "site_occupant_replacement@1"
+
+
+def with_occupant(raw, templates):
+    """site_occupant_replacement@1 (W) after the site operator. templates: {template id:
+    {population id: (initial occupancy, binding multiplier, internalisation multiplier or
+    None)}}."""
+    out = copy.deepcopy(raw)
+    out["model"]["operators"].append(
+        dict(
+            law=OCCUPANT_LAW,
+            templates=[
+                dict(
+                    template_id=tid,
+                    populations={
+                        pid: dict(
+                            initial_occupancy=v[0],
+                            binding_multiplier=v[1],
+                            **({} if v[2] is None else {"internalisation_multiplier": v[2]}),
+                        )
+                        for pid, v in pops.items()
+                    },
+                )
+                for tid, pops in templates.items()
+            ],
+        )
+    )
+    return out
+
+
+def replaced_sites(
+    populations, occupants=None, *, t_e=0.005, dt=1e-3, end=0.01, observation_times=None
+):
+    """Two cells on the bath joined by the gated junction j0, each with a contact patch on the
+    finite node ecs_0 (contact_0, contact_1), S at 1 uM everywhere; cell_1 replaced at t_e by a
+    newcomer from template T (cell_1's declared state); the populations; and, with `occupants`
+    ({population id: (theta', binding, internalisation or None)} for T), W after the site
+    operator. FR-26's worlds."""
+    raw = fx.world(
+        cells=(("cell_0", 1.0), ("cell_1", 1.0)),
+        nodes=(("ecs_0", 1.0),),
+        contacts=(("contact_0", "cell_0", "ecs_0"), ("contact_1", "cell_1", "ecs_0")),
+        faces=(),
+        junctions=(("j0", "cell_0", "cell_1"),),
+        dt=dt,
+        end=end,
+        observation_times=observation_times,
+        trace_mM=TRACE_mM,
+        concentrations_mM=dict(cell_0=1e-3, cell_1=1e-3, ecs_0=1e-3),
+    )
+    template = fx.template(raw, "cell_1", "T", s_mM=1e-3)
+    raw = fx.with_replacement(raw, [template], [(t_e, "cell_1", "T", "c1_new")])
+    raw = with_site_occupancy(raw, populations)
+    return raw if occupants is None else with_occupant(raw, {"T": occupants})

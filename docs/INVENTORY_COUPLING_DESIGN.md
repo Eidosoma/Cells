@@ -773,6 +773,12 @@ decision is the user's question 2 (§6.4).
 5. **The field refresh.** The v2 note's option (b), refactorising at declared epochs, needs declared
    times. It does not serve triggered events (W3c, §3.2).
 
+**FR-26's part C′ (D244, built 20 November 2026; development).** @2 admits an operator target's
+element in a cell that replacement@1 replaces when its source is a species of that cell or a site
+population. Replacement swaps the cell's species and `site_occupant_replacement@1` resets its
+populations, so the factor reads the newcomer's state. A regulatory state on a replaced slot stays
+refused: part C, a newcomer's state from its template, is not built. @1's checks are unchanged.
+
 ### 2.6 The site source on @2 (FR-24, built 20 November 2026; development, not judged)
 
 FR-24 (D239, decided in D244: the read path R3, θ and Q2;

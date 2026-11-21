@@ -61,6 +61,7 @@ BATH = "scheduled_bath_composition@1"
 WASH = "scheduled_compartment_wash@1"
 COMPARTMENTS = "cell_owned_compartments@1"
 SITES = "site_occupancy@1"
+OCCUPANT = "site_occupant_replacement@1"  # FR-26's W.
 TRAFFICKING = trafficking_operator.LAW_ID
 PRODUCER = "population_unit_turnover@1"
 
@@ -1017,14 +1018,18 @@ RULES = (
         why="A carrier's rates are its own (D150 §5.2)",
     ),
     dict(
-        rule="no cell route on a slot that replacement@1 replaces",
+        rule="a cell route on a slot that replacement@1 replaces takes each newcomer's multiplier "
+        "from the operator's templates",
         laws=(REACTIONS, REPLACEMENT_1),
         level="data",
         check=OPS + "species_reactions.py::check_replaced_slots",
         test=TESTS + "test_species_reactions_refusals.py::"
-        "test_cell_routes_on_replaced_slots_are_refused_and_outside_routes_compose",
+        "test_cell_routes_on_replaced_slots_take_the_newcomers_template_multipliers",
         tag=REAL,
-        why="Version 1 has no occupant rule for reactions (D152 §7.3's door)",
+        why="D152's occupant rule (FR-26, D244): a carrier's multipliers are its own. Refused: a "
+        "newcomer without its template's multiplier, a donor copy there (version 1.1), a "
+        "founder's change after its death, a template that is not a replacement template, and a "
+        "multiplier for no route its newcomers take",
     ),
     dict(
         rule="no coupling target or regulatory state on a replaced slot",
@@ -1036,14 +1041,56 @@ RULES = (
         why="Version 1 has no occupant rule for the coupling",
     ),
     dict(
-        rule="no @2 coupling target, operator target element or regulatory state on a replaced "
-        "slot",
+        rule="no @2 coupling target or regulatory state on a replaced slot, and an operator "
+        "target's element there only from a species or site source",
         laws=(COUPLING_2, REPLACEMENT_1),
         level="data",
         check=OPS + "species_regulated_availability.py::check_replaced_operator_elements",
         test=TESTS + "test_species_regulated_availability.py::test_refusals",
         tag=REAL,
-        why="@2 has @1's occupant rule, none: an element's source is read in its cell",
+        why="An element's source is read in its cell. Replacement swaps the cell's species and W "
+        "resets its site populations, so those sources read the newcomer's (FR-26's part C', "
+        "D244); a newcomer's regulatory state is not built (part C)",
+    ),
+    dict(
+        rule="a site population on a slot that replacement@1 replaces needs "
+        "site_occupant_replacement@1, and none sits on a contact incident to it",
+        laws=(SITES, REPLACEMENT_1, OCCUPANT),
+        level="data",
+        check=OPS + "site_occupancy.py::check_slots",
+        test=TESTS + "test_site_occupancy.py::"
+        "test_populations_on_a_replaced_slot_are_refused_and_elsewhere_admitted",
+        tag=REAL,
+        why="Carriers have identity, slots are storage (D150 §5.2): the occupant leaves with its "
+        "sites and bound cargo, and W gives the newcomer its template's (FR-26, D244). A "
+        "contact's populations need the contact's own restart (version 1.1)",
+    ),
+    dict(
+        rule="site_occupant_replacement@1's templates: replacement templates, every population "
+        "of each slot they fill, an occupancy a trace from either end, no donor copy there",
+        laws=(OCCUPANT, SITES, REPLACEMENT_1),
+        level="data",
+        check=OPS + "site_occupancy.py::check_occupant",
+        test=TESTS + "test_site_occupancy.py::test_definition_refusals",
+        tag=REAL,
+        why="A newcomer's site state is its template's (FR-26, D244). A pool goes to its trace, "
+        "never exactly empty (the engine's trace convention): site_occupancy@1's stable "
+        "increment form reads an exactly empty pool reached from a positive anchor as NaN",
+    ),
+    dict(
+        rule="a quantity a route reads (R3) has its owner in the composition, declared before the "
+        "route's operator target",
+        laws=(COUPLING_2, SITES, TURNOVER, REACTIONS, PRODUCER),
+        level="data",
+        check="src/cells/models/pump_composite.py::quantity_read_definition_errors",
+        test=TESTS + "test_pump_composite_contract.py::"
+        "test_quantity_reads_are_checked_recorded_and_passed_to_readers_only",
+        tag=REAL,
+        why="FR-24 (D244): the reader reads the quantity at the start of the target's half-steps, "
+        "so the owner moves it in its own half-steps before the target's first half and after its "
+        "second, keeping the split symmetric about the target. Writers of the quantity at event "
+        "steps (W) act before every first half; a writer with a split part would need the check "
+        "extended to writers",
     ),
     dict(
         rule="a declared rate route's target follows its source",
