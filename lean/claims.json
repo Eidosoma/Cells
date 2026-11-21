@@ -20,6 +20,63 @@
     "cells.shared_pool@1": "molecular-assembly"
   },
   "comparisons": {
+    "regional-pulse-balance": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [],
+      "operators": [
+        "cells.cell_owned_compartments@1",
+        "cells.scheduled_species_exchange@1",
+        "cells.scheduled_species_turnover@1"
+      ],
+      "engine_revision": "d48d40dd1ce03c1093a1c27e775cd2e8239ccf34",
+      "record_revision": "411725a61be219d1769072107e6ed6c4f665a064",
+      "sources": {
+        "First-order exchange and route counter": "src/cells/operators/species_exchange.py#L370-L417",
+        "Turnover and cumulative clearance": "src/cells/operators/species_turnover.py#L266-L306",
+        "Two-compartment tissue fixture": "validation/tissue/secreted_species_fixtures.py#L92",
+        "Matched transfer and clearance arms": "validation/compartment_transfer/example.py#L44-L156",
+        "Regional totals and tracer linear solve": "validation/regions/readouts.py#L451-L553",
+        "Pulse labelling schedule and mixed receiver": "validation/regions/example.py#L49-L73",
+        "Tracer regression cases": "tests/unit/test_region_readouts.py#L94"
+      },
+      "record_inputs": {
+        "Regional tracer proofs": "lean/CellsProofs/Tissue/RegionalTracer.lean"
+      },
+      "driver": "lean/checks/regional_tracer.py",
+      "record": "lean/PROGRESS.md#fr33-regional-tracer"
+    },
+    "transfer-or-degradation": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [],
+      "operators": [
+        "cells.cell_owned_compartments@1",
+        "cells.scheduled_species_exchange@1",
+        "cells.scheduled_species_turnover@1"
+      ],
+      "engine_revision": "d48d40dd1ce03c1093a1c27e775cd2e8239ccf34",
+      "record_revision": "411725a61be219d1769072107e6ed6c4f665a064",
+      "sources": {
+        "First-order exchange and route counter": "src/cells/operators/species_exchange.py#L370-L417",
+        "Turnover and cumulative clearance": "src/cells/operators/species_turnover.py#L266-L306",
+        "Two-compartment tissue fixture": "validation/tissue/secreted_species_fixtures.py#L92",
+        "Matched transfer and clearance arms": "validation/compartment_transfer/example.py#L44-L156",
+        "Receiver and loss control": "tests/unit/test_compartment_transfer_example.py#L14"
+      },
+      "record_inputs": {
+        "Matched-donor proofs": "lean/CellsProofs/Tissue/RegionalTracer.lean",
+        "First-order clearance specialization": "lean/CellsProofs/Chemistry/SpeciesTurnover.lean"
+      },
+      "driver": "lean/checks/regional_tracer.py",
+      "record": "lean/PROGRESS.md#fr33-matched-donors"
+    },
     "pool-withdrawal-matched-buffer": {
       "kind": "engine",
       "models": [
@@ -2586,6 +2643,113 @@
     }
   },
   "claims": [
+    {
+      "id": "regional-pulse-balance",
+      "category": "tissue-and-conservation",
+      "title": "Label remaining in a closed cell and clearance since the pulse account for the original cohort",
+      "statement": "After labelling stops, a solved tracer step changes the amount of old label in a region by labelled boundary inflow less local clearance. Across any finite sequence of such steps, label inside the region, label in the rest of the cell and clearance since the pulse sum to the amount present when the pulse ended.",
+      "assumptions": [
+        "The nodes form one closed cell with a fixed region and recorded one-way internal routes. Any new material joins another cohort. Each accepted step solves the tracer’s stated linear equations and books clearance using the same cohort share.",
+        "The balance uses exact real arithmetic. Resolving the time course of mixing and inferring directional fluxes from two-way movement are separate questions."
+      ],
+      "uses": [
+        "transfer-inventory"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [],
+        "theorems": {
+          "CellsProofs.Tissue.RegionalTracer.node_balance": "lean/CellsProofs/Tissue/RegionalTracer.lean",
+          "CellsProofs.Tissue.RegionalTracer.region_balance": "lean/CellsProofs/Tissue/RegionalTracer.lean",
+          "CellsProofs.Tissue.RegionalTracer.pulse_balance": "lean/CellsProofs/Tissue/RegionalTracer.lean"
+        },
+        "sources": {
+          "Cells signed regional transfer theorem, specialized to the tracer’s labelled flux": "lean/CellsProofs/Accounting/Transfer.lean#L35-L51",
+          "Mathlib finite sum over a region and its complement, imported (Finset.sum_add_sum_compl)": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Group/Finset/Basic.lean#L147-L150"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "regional-pulse-balance"
+        ],
+        "result": "The largest whole-cell residual was 5.20 × 10⁻¹⁸ fmol across 501 donor-cohort rows. Across 251 rows starting at the pulse switch it was 2.71 × 10⁻¹⁹ fmol. The pulse account subtracts the 5.327 × 10⁻⁵ fmol already cleared by that switch."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "The same pre-labelled protein inside a defined region, in its full complement, and across the whole neuron over a chase, with clearance and export accounted for.",
+        "unit": "fmol in Cells and relative fluorescence in the imaged synapses",
+        "evidence": [
+          {
+            "dataset_id": "uchigashima2025_psd95_map",
+            "manifest": "lean/checks/data/regional_tracer_measurements.json",
+            "citation": "Uchigashima et al. (2025), Nature Communications",
+            "doi": "10.1038/s41467-025-65813-w",
+            "locator": "Figure 6a–e and Supplementary Figure 9d.",
+            "context": "A two-hour pulse/chase distinguished pre-existing and newly made PSD-95 in three mouse cortical pyramidal neurons.",
+            "role": "descriptive",
+            "uncertainty": "The range 3,239–4,402 counts synaptic regions per neuron. It supplies no uncertainty on an old-label mass balance.",
+            "assessment": "Endpoint maps show where old and new PSD-95 were detected. A longitudinal total including the diffuse pool is still needed to test the closed-cell balance.",
+            "report": "lean/PROGRESS.md#fr33-evidence"
+          }
+        ]
+      }
+    },
+    {
+      "id": "transfer-or-degradation",
+      "category": "tissue-and-conservation",
+      "title": "Identical donor traces under transfer and degradation have distinct receiver and loss records",
+      "statement": "Pure one-way transfer and local first-order degradation give the same donor curve for all times when their rate and starting amount agree. For a positive starting amount, rate and elapsed time, either receiver gain or cumulative clearance distinguishes the two mechanisms, and the two differences agree in magnitude.",
+      "assumptions": [
+        "The two controls begin with identical donor and receiver amounts. Each has the same constant first-order rate, zero production, and a single route out of the donor. The transfer receiver retains all arriving label, and degradation books all removed label as loss.",
+        "The comparison uses amounts of the same cohort. A measured fluorescence ratio gives a local signal on a different scale."
+      ],
+      "uses": [
+        "scheduled-species-turnover",
+        "transfer-inventory"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.scheduled_species_exchange@1",
+          "cells.scheduled_species_turnover@1"
+        ],
+        "theorems": {
+          "CellsProofs.Tissue.RegionalTracer.equal_donor_traces": "lean/CellsProofs/Tissue/RegionalTracer.lean",
+          "CellsProofs.Tissue.RegionalTracer.receiver_and_loss_distinguish": "lean/CellsProofs/Tissue/RegionalTracer.lean"
+        },
+        "sources": {
+          "Cells first-order turnover amount and clearance, specialized at zero production": "lean/CellsProofs/Chemistry/SpeciesTurnover.lean#L19-L26",
+          "Mathlib strict exponential bound, imported (Real.exp_lt_one_iff)": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Data/Complex/Exponential.lean#L323-L330"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "transfer-or-degradation"
+        ],
+        "result": "The donors agreed exactly at all 11 outputs. At 0.5 s the transfer receiver gained 0.000393469 fmol with zero loss. Local degradation cleared 0.000393469 fmol with zero receiver gain."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Labelled protein at its source, at receiving synapses and across the cell, sampled over the same period.",
+        "unit": "fmol in Cells and per-spine green/red fluorescence ratio in the experiment",
+        "evidence": [
+          {
+            "dataset_id": "gray2006_psd95_exchange",
+            "manifest": "lean/checks/data/regional_tracer_measurements.json",
+            "citation": "Gray et al. (2006), PLOS Biology",
+            "doi": "10.1371/journal.pbio.0040370",
+            "locator": "Figure 4A.",
+            "context": "After local photoactivation of PSD-95 in mouse neocortex, signal fell in the source spine and rose in two neighboring spines.",
+            "role": "descriptive",
+            "uncertainty": "The figure reports relative fluorescence in selected spines. A recovered mass fraction and a same-cohort whole-neuron total are unavailable from those traces.",
+            "assessment": "The receiver signals document local redistribution. The protein and cause of the 48-hour decline in the Cells study remain unresolved.",
+            "report": "lean/PROGRESS.md#fr33-evidence"
+          }
+        ]
+      }
+    },
     {
       "id": "pool-withdrawal-matched-buffer",
       "category": "molecular-assembly",

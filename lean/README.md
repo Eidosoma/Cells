@@ -15,7 +15,7 @@ Direct Lean claims cover [50 of 50 laws](COVERAGE.md#registered-laws) and [30 of
 | [Pumps and cotransport](COVERAGE.md#category-pumps-and-cotransport) | 13 of 13 | 8 of 8 | 8 checked | 8 |
 | [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 3 of 3 | 13 of 13 | 12 checked · 1 failed | 10 |
 | [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 13 of 13 | 22 of 22 | 21 checked · 1 failed | 16 |
-| [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 1 of 1 | 20 of 20 | 20 checked | 14 |
+| [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 1 of 1 | 22 of 22 | 22 checked | 16 |
 | [Cell physiology](COVERAGE.md#category-cell-physiology) | — | 3 of 3 | 3 checked | 3 |
 
 <!-- /generated -->
@@ -25,6 +25,8 @@ Each category opens its detailed claim table on GitHub, including registered law
 The repaired wash now closes Na, K and Cl counters exactly at both tested fractions. The public composite channel clamp also reproduces the current at the patch’s own voltage. The two remaining numerical failures concern GARD version 1 heat and the sign of a rapid-binding inventory margin. The tissue host tested for the binding case requires positive held totals. [Wash and clamp replays](PROGRESS.md#d272-wash-clamp-retests) · [Current failures](COVERAGE.md#failing-numerical-checks) · [Earlier results and other review findings](PROGRESS.md#main-review-d264-d266)
 
 ## Biological evidence
+
+In a matched Cells control, a donor loses the same amount of labelled protein under transfer and degradation. A receiver gain or a clearance record distinguishes the mechanisms. Imaging of PSD-95 shows label spreading from one spine to two neighbors. The fate of the original label across the whole neuron over 48 hours remains open. [Matched donors](claims/transfer-or-degradation.md) · [Whole-cell balance and biological evidence](claims/regional-pulse-balance.md)
 
 At 0 mV, the published Kv1.5 activation curves predict 72.1% retained current at pH 6.8 if both preparations share a maximum conductance. A separate pulse in the same study gave 74.5 ± 1.9% (SEM). Applying only the measured midpoint shift to the default Cells gate gives 40.5%. [Kv1.5 pH comparison](claims/kv15-ph-activation.md)
 
