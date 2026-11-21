@@ -1957,6 +1957,62 @@
       "driver": "lean/checks/binding_response.py",
       "record": "lean/PROGRESS.md#binding-ligand-response"
     },
+    "binding-equilibrium-unique": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [
+        "rapid_binding@1"
+      ],
+      "engine_revision": "0310d9f0cfc758181c0ef145bb09d513f1ef69ec",
+      "record_revision": "fe028eeeafe61014625eef968c487f7fa64b8961",
+      "sources": {
+        "Conservation residual and equilibrium solvers": "src/cells/laws/reactions/rapid_binding.py#L122-L259",
+        "Single-ligand proton-buffer solver": "src/cells/laws/reactions/rapid_proton_buffer.py",
+        "Standard potentials and binder inventories": "validation/core_seams/references/reference_inputs.json",
+        "Independent manufactured free concentrations": "validation/core_seams/references/designs/core_seams_reference_values.json",
+        "Registered system fixtures and solver tests": "tests/unit/test_rapid_binding_kernel.py#L80",
+        "Two-ligand tissue run": "tests/unit/test_rapid_binding_world_two_ligands.py#L31"
+      },
+      "record_inputs": {
+        "Exact equilibrium theorem": "lean/CellsProofs/Chemistry/BindingEquilibrium.lean",
+        "Binding response matrix": "lean/CellsProofs/Chemistry/BindingResponse.lean",
+        "Normalized form weights": "lean/CellsProofs/Chemistry/BindingEnsemble.lean",
+        "Independent standard-potential partition": "lean/checks/binding_ensemble.py#L32",
+        "Measured endpoint conditions": "lean/checks/data/binding_equilibrium_measurements.json"
+      },
+      "driver": "lean/checks/binding_equilibrium.py",
+      "record": "lean/PROGRESS.md#binding-equilibrium-unique"
+    },
+    "binding-equilibrium-feasibility": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [
+        "rapid_binding@1"
+      ],
+      "engine_revision": "0310d9f0cfc758181c0ef145bb09d513f1ef69ec",
+      "record_revision": "1d9fe4e10ac7a4a0a9d9e0edf9a3c0e0cb0a914a",
+      "sources": {
+        "Form weights, residual and convex potential": "src/cells/laws/reactions/rapid_binding.py#L12-L39",
+        "Numerical margin and verdict": "src/cells/laws/reactions/rapid_binding.py#L233-L277",
+        "Finite vertex enumeration": "src/cells/laws/reactions/rapid_binding.py#L284-L339",
+        "Tissue host domain for signed totals": "src/cells/kinds/proton_buffer.py#L83-L88",
+        "Registered counts and inventories": "validation/core_seams/references/reference_inputs.json",
+        "Independent frozen C4 reference margins": "validation/core_seams/references/designs/core_seams_reference_values.json",
+        "C4 kernel cases": "tests/unit/test_rapid_binding_kernel.py#L189-L273",
+        "Tissue fixtures and release-step scope": "tests/unit/test_rapid_binding_world.py#L231-L279"
+      },
+      "record_inputs": {
+        "Exact feasibility proof": "lean/CellsProofs/Chemistry/BindingFeasibility.lean",
+        "Uniqueness of the held inventory solution": "lean/CellsProofs/Chemistry/BindingEquilibrium.lean",
+        "Measured optical saturation and calibration": "lean/checks/data/binding_feasibility_measurements.json"
+      },
+      "driver": "lean/checks/binding_feasibility.py",
+      "record": "lean/PROGRESS.md#binding-equilibrium-feasibility"
+    },
     "single-site-binding": {
       "kind": "engine",
       "models": ["resolved_pump_tissue@3"],
@@ -5292,7 +5348,7 @@
         "status": "open",
         "observable": "ATP Mg occupancy at fixed ATP, pH and temperature across measured free Mg. Quantitative self and cross-responses would require measured changes in total Mg and proton inventory.",
         "unit": "change in fraction of ATP carrying Mg",
-        "finding": "Two titration points support increasing ATP Mg occupancy. The total-Mg slope and the proton response to Mg remain unmeasured in these data.",
+        "finding": "Two titration points support increasing ATP Mg occupancy. A separate ATP preparation acidified on magnesium addition. The total-Mg slope and the fixed-pH proton response remain open.",
         "evidence": [
           {
             "dataset_id": "ward1998_mgatp_direction",
@@ -5316,6 +5372,150 @@
             "uncertainty": "Reading precision is about ±5 µM and ±0.1 in bound/unbound ratio. The figure pools seven runs and gives no pointwise sampling errors, run identities or measured total Mg.",
             "assessment": "The model gives the observed direction and overpredicts the increase by 3.7 percentage points. Solution compositions differ. The H–Mg cross-response remains open.",
             "report": "lean/PROGRESS.md#binding-ligand-response"
+          },
+          {
+            "dataset_id": "spicer1952_atp_acidification",
+            "manifest": "lean/checks/data/binding_equilibrium_measurements.json",
+            "citation": "Spicer (1952), Fig. 2, p. 304",
+            "doi": "10.1016/S0021-9258(18)44837-5",
+            "locator": "The ATP curve and accompanying text record a pH decrease as magnesium salt was added to a 2.5 mM ATP solution.",
+            "context": "The controlled variable was added magnesium salt. Bulk pH could change during the titration.",
+            "role": "descriptive",
+            "uncertainty": "Figure 2 gives no free-Mg measurement or proton-equivalent count. A temperature specific to the titration could not be verified.",
+            "assessment": "The acidification supports the direction of proton release in this ATP preparation. A fixed-pH measurement is still needed to quantify the cross-response.",
+            "report": "lean/PROGRESS.md#binding-proton-release-observation"
+          }
+        ]
+      }
+    },
+    {
+      "id": "binding-equilibrium-unique",
+      "category": "reactions-and-binding",
+      "title": "Prescribed totals admit at most one binding equilibrium",
+      "statement": "With fixed binder inventories, ligand totals determine at most one positive free concentration vector. Along any nonconstant joint change of free log concentrations, the projected change in totals is strictly positive. Fixing the unheld free concentrations gives the same uniqueness result for the held ligand equations and for any measured group of binder forms.",
+      "uses": [
+        "binding-ligand-response"
+      ],
+      "assumptions": [
+        "Each binder has a finite nonempty set of equilibrium forms with fixed standard potentials at one temperature. Integer ligand counts relative to the base may be signed. Zero binder totals are allowed.",
+        "The free concentrations are positive. The equations use ideal concentration activities in a common mM frame. The candidate states have identical binder totals and fixed unheld free concentrations.",
+        "Uniqueness is conditional on existence in exact arithmetic. Admissibility of arbitrary totals, rates of approach to equilibrium and the finite Newton iteration budget require separate checks."
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.rapid_binding@1"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.BindingEquilibrium.total_hasDerivAt_line": "lean/CellsProofs/Chemistry/BindingEquilibrium.lean",
+          "CellsProofs.Chemistry.BindingEquilibrium.total_pairing_pos": "lean/CellsProofs/Chemistry/BindingEquilibrium.lean",
+          "CellsProofs.Chemistry.BindingEquilibrium.held_equilibrium_unique": "lean/CellsProofs/Chemistry/BindingEquilibrium.lean",
+          "CellsProofs.Chemistry.BindingEquilibrium.equilibrium_group_unique": "lean/CellsProofs/Chemistry/BindingEquilibrium.lean",
+          "CellsProofs.Chemistry.BindingEquilibrium.positive_free_unique": "lean/CellsProofs/Chemistry/BindingEquilibrium.lean"
+        },
+        "sources": {
+          "Mathlib positivity of the matrix quadratic form, imported": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/LinearAlgebra/Matrix/PosDef.lean#L330-L334",
+          "Mathlib strict monotonicity from a positive derivative, imported": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/Calculus/Deriv/MeanValue.lean#L382-L385",
+          "Cells finite binding response and its positive definiteness": "lean/CellsProofs/Chemistry/BindingResponse.lean#L147"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "binding-equilibrium-unique"
+        ],
+        "result": "All 423 full pairs had positive projected changes on NumPy and compiled JAX CPU. With selected coordinates fixed, 283 of 284 distinct pairs were distinguishable. One pair near 0.5 mM free Mg gave equal float64 totals on both paths and a positive 80-digit projection. Both backends recovered all 423 independently manufactured target states within 2.99 × 10⁻¹³ in log concentration."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "The concentration of a bound form after two preparations with identical totals approach equilibrium from opposite starting states. Fe–Tar absorbance supplies one such observable.",
+        "unit": "µM difference in Fe–Tar complex between preparation histories",
+        "finding": "Opposite iron-loading histories converged to the same Fe–Tar signal within the graph’s resolution. Free metal and the individual protonation states remain unmeasured.",
+        "evidence": [
+          {
+            "dataset_id": "cortes2017_matched_histories",
+            "manifest": "lean/checks/data/binding_equilibrium_measurements.json",
+            "citation": "Cortes et al. (2017), supporting Fig. S4a, p. S-15",
+            "url": "https://s3-eu-west-1.amazonaws.com/pstorage-acs-6854636/8172722/ic7b00372_si_001.pdf#page=15",
+            "locator": "The Fe–Tar concentration read from the two late traces is about 22.5 µM in both cases. They approach a common plateau by approximately 15–20 min and stay close through 90 min.",
+            "context": "The final solutions had 30.8 µM Fe(II), 72 µM Tar and 220 µM EGTA at pH 7.2. Fe started bound to Tar or to EGTA, giving initial Fe–Tar signals near 31 or 0 µM. Absorbance at 720 nm measured the Fe–Tar complex across its protonation states.",
+            "role": "held_out_from_fitting",
+            "evaluation": [
+              "Difference between late Fe–Tar plateau readings in the two mixing directions"
+            ],
+            "excluded": [
+              "Absolute binding affinities and the rate of approach to the plateau"
+            ],
+            "predicted": 0,
+            "uncertainty": "Each trace is readable to about ±0.5 µM, giving about ±1 µM for their difference. The figure supplies no endpoint sampling uncertainty, replicate count or figure-specific temperature.",
+            "assessment": "The observed difference was indistinguishable from zero at plot resolution. One resolved complex supports the history-independent prediction in this preparation. The complete free ligand vector and Mg–ATP remain open.",
+            "report": "lean/PROGRESS.md#binding-equilibrium-unique"
+          }
+        ]
+      }
+    },
+    {
+      "id": "binding-equilibrium-feasibility",
+      "category": "reactions-and-binding",
+      "title": "Which ligand totals admit a positive binding equilibrium?",
+      "statement": "A finite binding ensemble has exactly one positive equilibrium if and only if every normalized nonnegative weighting of the held ligands leaves strictly positive room above the lowest projected binder inventories. Fixing the unheld activities gives the same criterion on the held rows. Positive held totals guarantee feasibility whenever each binder has a zero-count base form.",
+      "uses": [
+        "binding-equilibrium-unique"
+      ],
+      "assumptions": [
+        "The model uses ideal activities, finite standard log weights, nonnegative binder totals and a finite nonempty set of chemically present forms per binder. Relative ligand counts are signed integers.",
+        "Free concentrations are exponentials of finite real log concentrations in a common mM frame. Each unheld free concentration is fixed and positive.",
+        "The existence proof uses all nonnegative directions in the unit simplex. Enumeration of those directions’ minimizing vertices in the engine and convergence within its fixed Newton budget receive numerical checks."
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.rapid_binding@1"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.BindingFeasibility.equilibrium_has_margin": "lean/CellsProofs/Chemistry/BindingFeasibility.lean",
+          "CellsProofs.Chemistry.BindingFeasibility.equilibrium_of_margin": "lean/CellsProofs/Chemistry/BindingFeasibility.lean",
+          "CellsProofs.Chemistry.BindingFeasibility.existsUnique_equilibrium_iff": "lean/CellsProofs/Chemistry/BindingFeasibility.lean",
+          "CellsProofs.Chemistry.BindingFeasibility.existsUnique_held_equilibrium_iff": "lean/CellsProofs/Chemistry/BindingFeasibility.lean",
+          "CellsProofs.Chemistry.BindingFeasibility.positive_totals_admit_equilibrium": "lean/CellsProofs/Chemistry/BindingFeasibility.lean"
+        },
+        "sources": {
+          "Mathlib compactness of the ligand simplex, imported": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/Convex/Topology.lean#L74-L79",
+          "Mathlib extreme value theorem for a continuous potential, imported": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Topology/Order/Compact.lean#L268-L276",
+          "Mathlib derivative at a local minimum, imported": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/Calculus/LocalExtr/Basic.lean#L253-L255",
+          "Cells equilibrium total and uniqueness": "lean/CellsProofs/Chemistry/BindingEquilibrium.lean"
+        }
+      },
+      "numerical": {
+        "status": "failed",
+        "comparisons": [
+          "binding-equilibrium-feasibility"
+        ],
+        "result": "Across the 80 registered states, both CPU backends agreed with independent binder allocations on all 236 nonempty held-coordinate projections and all four C4 challenge cases. At float64 resolution both kernels admitted an exact zero margin and refused a positive margin of 2⁻⁵⁴ mM. NumPy also admitted a negative margin of −2⁻⁵³ mM which compiled JAX CPU refused. The current tissue parser rejects nonpositive H inventories."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Saturation of a measured bound-complex signal as metal is added to a known ligand inventory. Testing the strict equilibrium margin would require independent free ligand measurements.",
+        "unit": "absorbance at 705 nm",
+        "finding": "An Fe–Par titration shows optical saturation. The same breakpoint was used to calibrate the ligand stock, and free iron was unmeasured.",
+        "evidence": [
+          {
+            "dataset_id": "cortes2017_par_capacity",
+            "manifest": "lean/checks/data/binding_feasibility_measurements.json",
+            "citation": "Cortes et al. (2017), supporting Fig. S3b and p. S-4",
+            "url": "https://s3-eu-west-1.amazonaws.com/pstorage-acs-6854636/8172722/ic7b00372_si_001.pdf#page=14",
+            "locator": "At pH 7.1 the trace reads about 0.39 at Fe:Par ratios of approximately 0.5 and 0.8.",
+            "context": "The authors added Fe(II) to 40 µM Par in 50 mM Na–MOPS and 100 mM NaCl. The two ratios correspond to about 20 and 32 µM added Fe(II).",
+            "role": "descriptive",
+            "evaluation": [
+              "Shape of the bound-complex signal during titration"
+            ],
+            "excluded": [
+              "An independently measured binding stoichiometry, free iron concentration, or threshold for strictly positive free ligand"
+            ],
+            "uncertainty": "Approximate graph readings. The panel reports no endpoint uncertainty, replicate count or measurement temperature.",
+            "assessment": "The optical plateau is consistent with finite ligand capacity. Assigning one Fe per two ligands also set the working ligand concentration, so the endpoint cannot independently establish the stoichiometric boundary.",
+            "report": "lean/PROGRESS.md#binding-equilibrium-feasibility"
           }
         ]
       }
