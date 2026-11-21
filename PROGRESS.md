@@ -108,6 +108,34 @@ starts, and production design is deferred until parity is established.
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
 
+- **The FR-24, FR-27 and FR-26 stack landed (21 November 2026).** Merges 260e2ed5 (FR-24, a site
+  population's quantity as a rate source through the contract's R3), 5fc1364f (FR-27,
+  `scheduled_compartment_wash@1`) and 87f1ebef (FR-26 as W, owned state across a cell replacement),
+  tag `fr24-fr27-fr26-landed-2026-11-21`, gated once as a stack
+  ([gate](/mnt/workspaces/Cells/operators-fr26-20261120/gate-b3ec7811/stack/)): passed, with FR's
+  set. G3, gene regulation's moiety hook, followed (5f6053c4).
+
+- **FR-8 rung 1: N2 with (a) landed (21 November 2026).** Merge 03fe5119, tag
+  `fr8-n2-landed-2026-11-21`, ID `imex_ars222_implicit_conductances@1`: each membrane's and junction's
+  slope conductance in @3's IMEX operator, and the junction gates by their exponential update. I3
+  passed on the landed head, 13 of 13 rows
+  ([records](/mnt/workspaces/Cells/core-pass-at3-20261118/n2/i3/out-1dfe76ae/)). Gate: crossrev 11 of
+  11 identical, tiers 615/0, G1 113 of 113, FR's set.
+
+- **FR-21 landed: the site step and the prescribed shell (21 November 2026).** Merges 4fb9922b (one-step
+  binding to a declared site, with the requester's acceptance and FR-22's wash qualification) and
+  41338949 (the prescribed shell; the requester's tested revision 9a1a95a5, after a review finding on
+  the population probe). Both gated in full, with FR's set and the origin-of-life invariance.
+
+- **Lean fixes landed (21 November 2026), each in place under D148:** the restricted cleft lumen's
+  fill heat (2e456bbc), an empty membrane population's abundance (36217958) and membrane insertion's
+  heat and image charges at extreme capacitance gains (cdfaed68, after the operators owner's review;
+  every registered value bitwise). Evidence in the robustness lane's `*-20261120` folders.
+
+- **Also landed overnight (20 and 21 November 2026):** FR-34's readouts (81a29442) and its example
+  (bf7b50af, 1e762583); FR-30's series gates, unregistered (12c18db1); origin of life R4, break and
+  renew (a40720a6); FR-28's design note (73115292); FR-29's desk evaluation (1aa82846, 051ab7f7).
+
 - **Gene regulation G1 and G2 landed: option A's equation sheet and the code-blind references (20
   November 2026).** Merges 1f671104 and 4483efa8, tag `gr-g1-g2-landed-2026-11-20`, gated together
   as a stack ([gate](/mnt/workspaces/Cells/gene-regulation-20261120/stack-g1-g2/stack/)). No `src/`

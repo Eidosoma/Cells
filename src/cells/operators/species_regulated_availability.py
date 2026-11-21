@@ -100,6 +100,29 @@ source without membrane_entity_state@1. A source no declared writer of units or 
 reported, not refused: "constant source: the factor cannot vary in this run" (the summary). A
 population route's law code is its Hill kind plus POPULATION_OFFSET, so @1's kernels give it
 exactly f = 1 (padding); only version 2's population kernel evaluates it, and only from a view.
+
+**@2's site source** (FR-24; docs/OPERATOR_FEATURES_FR23_24_26_DESIGN.md §3; D244; development,
+not judged): a coupling's source may be {"site_population": id, "quantity": q}, a site population
+of site_occupancy@1 read through its owner's readable quantities (the contract's R3: the composite
+passes quantities=, a function of state, and it is called only with a site route). q is
+occupied_fraction, theta = B / (B + R), through site_fraction (f = theta), site_complement
+(f = 1 - theta) or a Hill law with a dimensionless half_saturation; or occupied_mM or capacity_mM,
+B / V or S / V at the element's cell's declared volume (D244's Q2: a concentration, never a count),
+through a Hill law with half_saturation_mM. An empty site is an ordinary state: a Hill law of 0
+gives activation 0 and inhibition 1. Its targets are @3's channels ("step_view", read at the
+control view) and every operator target ("target_half_steps", read at the start of each of the
+target's half-steps, whose ranges are checked there), where site_occupancy@1 precedes the target
+(refused at the definition otherwise, so both halves read after the owner's first half). The
+population and the element share a cell. Its operating range is in the quantity's unit, theta's
+inside [0, 1]. A capacity source is a layout constant in version 1, reported in the summary. A
+loop through the ligand (the routed target writing the ligand's row at the population's facing
+pool) is admitted, as D218 admits a species source's: its timing and range are declared, and each
+loop's verification against a reference is a consumer's item. Refused at parsing: an unknown
+quantity, a law or a half-saturation that does not match it, a junction target (side both needs a
+population per endpoint: later), and a range outside the quantity's; at binding: no
+site_occupancy@1, an unknown population, and a population outside the element's cell. Its law
+codes are a Hill kind plus SITE_OFFSET and SITE_FRACTION or SITE_COMPLEMENT, so @1's kernels and
+the population kernel give it exactly f = 1 (padding); only the site kernel evaluates it.
 """
 
 from contextlib import contextmanager
@@ -132,6 +155,26 @@ STATE_FACTOR_LAWS = {"state_fraction": STATE_FRACTION, "state_complement": STATE
 # offset, which @1's kernels treat as padding (f = 1).
 POPULATION_OFFSET = 4
 POPULATION_LAWS = {name: kind + POPULATION_OFFSET for name, kind in SPECIES_LAWS.items()}
+# Version 2's site source (FR-24): a site population of site_occupancy@1, read through its owner's
+# readable quantities (R3). Its law codes, which @1's kernels and the population kernel treat as
+# padding (f = 1): a Hill kind plus SITE_OFFSET, and the fraction's own two laws.
+SITE_LAW = "site_occupancy@1"
+SITE_OFFSET = 6
+SITE_HILL_LAWS = {name: kind + SITE_OFFSET for name, kind in SPECIES_LAWS.items()}
+SITE_FRACTION, SITE_COMPLEMENT = 9, 10
+SITE_FRACTION_LAWS = {"site_fraction": SITE_FRACTION, "site_complement": SITE_COMPLEMENT}
+# The quantities a site source reads, by their code on the layout: the occupied fraction theta, and
+# the occupied amount and the accessible capacity as concentrations in the route's cell (mM, at its
+# declared volume; the lead's ruling D244, Q2), each from one of the owner's quantities.
+SITE_QUANTITIES = ("occupied_fraction", "occupied_mM", "capacity_mM")
+FRACTION_Q, OCCUPIED_Q, CAPACITY_Q = range(3)
+SITE_READS = MappingProxyType(
+    {
+        "occupied_fraction": "site_occupied_fraction",
+        "occupied_mM": "site_occupied_fmol",
+        "capacity_mM": "site_capacity_fmol",
+    }
+)
 FROM_SPECIES, FROM_STATE = 1, 2
 CONTROLS_KEY, WRITES_KEY = "coupling_controls", "regulatory_writes"
 
@@ -192,10 +235,20 @@ LAYOUT_FIELDS_V2 = (
     "coupling_population_channel",
     "coupling_population_reference_density_per_um2",
     "coupling_population_half_saturation_per_um2",
+    # The site source (FR-24): each route's site route (-1: none), and per site route its
+    # population's index on the owner's axis, its quantity's code and its half-saturation (in the
+    # quantity's unit; 1 for the fraction's own laws). Static by shape: no site route, no read.
+    "coupling_route_site",
+    "coupling_site_population",
+    "coupling_site_quantity",
+    "coupling_site_half_saturation",
 )
 MEMBRANE_STATE = membrane_state.LAW_ID  # Its declaration holds each reference density.
 UNIT_FIELDS = ("population_abundance_increment", "membrane_area_increment_m2")  # rho = N / A.
 CONSTANT_SOURCE = "constant source: the factor cannot vary in this run"
+# A site source's capacity is a layout constant in version 1 (alpha, copies and sites per copy are
+# not scheduled), so its factor is constant too.
+CONSTANT_CAPACITY = "constant source: the accessible capacity is a layout constant in version 1"
 # Version 2's exact record (contract FACTOR_RECORD): each route's factor where it was last applied,
 # at the control view (a step_view route) or at its target's half-step (an operator route).
 STATE_AXES_V2 = {**STATE_AXES, "coupling_applied_factor": ["coupling_route"]}
@@ -273,6 +326,17 @@ class PopulationCoupling(Coupling):
     half_saturation_mM is None; source_kind is "population" and source the channel population."""
 
     half_saturation_per_um2: float
+
+
+@dataclass(frozen=True)
+class SiteCoupling(Coupling):
+    """Version 2's site source (FR-24): a site population's occupied fraction, or its occupied
+    amount or accessible capacity as a concentration in the route's cell, read through the owner's
+    readable quantities (R3). half_saturation_mM is None; source_kind is "site" and source the
+    population; half_saturation is in the quantity's unit (None for the fraction's own laws)."""
+
+    quantity: str
+    half_saturation: float | None
 
 
 @dataclass(frozen=True)
@@ -552,6 +616,64 @@ def _population_coupling(entry, m, elements):
     return PopulationCoupling(name, target, "population", origin, law, None, n, basal, k)
 
 
+def _site_coupling(entry, m, elements):
+    """Version 2's site source (the module docstring): a site population's quantity on @3's
+    channel targets or an operator target, read in the element's cell."""
+    name = identifier(entry.get("id"))
+    source = entry["source"]
+    _fields(source, {"site_population", "quantity"}, f"{LAW_ID_V2} coupling {name}'s site source")
+    origin = identifier(source["site_population"])
+    quantity = source["quantity"]
+    if quantity not in SITE_QUANTITIES:
+        raise ConfigError(
+            f"{LAW_ID_V2}: coupling {name}'s site source reads one of " + ", ".join(SITE_QUANTITIES)
+        )
+    law = entry.get("law")
+    fraction = quantity == "occupied_fraction"
+    half_key = "half_saturation" if fraction else "half_saturation_mM"
+    if law in SITE_FRACTION_LAWS and fraction:
+        keys = {"id", "target", "source", "law", "basal"}
+    elif law in SPECIES_LAWS:
+        keys = {"id", "target", "source", "law", "basal", half_key, "hill_coefficient"}
+    else:
+        laws = (*SITE_FRACTION_LAWS, *SPECIES_LAWS) if fraction else tuple(SPECIES_LAWS)
+        raise ConfigError(
+            f"{LAW_ID_V2}: coupling {name} reads a site population's {quantity} through one of "
+            + ", ".join(laws)
+        )
+    for key in entry:
+        if key.startswith("half_saturation") and key != half_key:
+            raise ConfigError(
+                f"{LAW_ID_V2}: coupling {name} reads {quantity} through {key}; its half-saturation "
+                f"is {half_key}, in the quantity's unit"
+                + (" (a fraction)" if fraction else " (mM in the element's cell)")
+            )
+    _fields(entry, keys, f"{LAW_ID_V2} coupling")
+    raw_target = entry["target"]
+    if isinstance(raw_target, dict) and raw_target.get("operator") != "inner":
+        target = _operator_target(raw_target, name)
+    else:
+        target = _inner_target(raw_target, name, elements, 2)
+        if target.control != "channel":
+            raise ConfigError(
+                f"{LAW_ID_V2}: coupling {name} reads a site population onto a junction; a site "
+                "source targets @3's channels or an operator target (a junction's side both needs "
+                "a population per endpoint: later)"
+            )
+    low, high = target.operating_range
+    if low < 0 or (fraction and high > 1):
+        raise ConfigError(
+            f"{LAW_ID_V2}: coupling {name}'s operating_range lies in "
+            + ("[0, 1], the occupied fraction" if fraction else "[0, inf) mM")
+        )
+    half = n = None
+    if law in SPECIES_LAWS:
+        half = _positive(entry[half_key], f"coupling {name}'s {half_key}")
+        n = _positive(entry["hill_coefficient"], f"coupling {name}'s hill_coefficient")
+    basal = _fraction(entry["basal"], f"coupling {name}'s basal level", upper_open=True)
+    return SiteCoupling(name, target, "site", origin, law, None, n, basal, quantity, half)
+
+
 def _parse_couplings(raw, base, listed, states, *, version=1):
     if type(raw) is not list:
         raise ConfigError(f"{LAW_ID} declares its couplings in an explicit list")
@@ -566,6 +688,9 @@ def _parse_couplings(raw, base, listed, states, *, version=1):
         source = entry.get("source")
         if version == 2 and isinstance(source, dict) and set(source) == {"population"}:
             couplings.append(_population_coupling(entry, m, elements))
+            continue
+        if version == 2 and isinstance(source, dict) and "site_population" in source:
+            couplings.append(_site_coupling(entry, m, elements))  # FR-24.
             continue
         law = entry.get("law")
         keys = {"id", "target", "source", "law", "basal"}
@@ -717,7 +842,7 @@ def declaration_to_dict(declaration):
             dict(
                 id=c.id,
                 target=_target_to_dict(c.target, declaration.law),
-                source={c.source_kind: c.source},
+                source=_source_to_dict(c),
                 law=c.law,
                 basal=c.basal,
                 **(
@@ -730,12 +855,29 @@ def declaration_to_dict(declaration):
                         hill_coefficient=c.hill_coefficient,
                     )
                     if c.source_kind == "population"
+                    else _site_half_saturation(c)
+                    if c.source_kind == "site"
                     else {}
                 ),
             )
             for c in declaration.couplings
         ],
     )
+
+
+def _source_to_dict(coupling):
+    if type(coupling) is SiteCoupling:  # FR-24.
+        return {"site_population": coupling.source, "quantity": coupling.quantity}
+    return {coupling.source_kind: coupling.source}
+
+
+def _site_half_saturation(coupling):
+    """FR-24: a site coupling's half-saturation in its quantity's unit, with its Hill coefficient;
+    none for the fraction's own laws."""
+    if coupling.half_saturation is None:
+        return {}
+    key = "half_saturation" if coupling.quantity == "occupied_fraction" else "half_saturation_mM"
+    return {key: coupling.half_saturation, "hill_coefficient": coupling.hill_coefficient}
 
 
 def slots(declaration):
@@ -889,6 +1031,80 @@ def _population_layout(spec, declaration, routes):
     )
 
 
+def site_entities(spec):
+    """Version 2: the site populations of the definition's site_occupancy@1, each (id, cell) in
+    its axis' order, from the owner's host-side declaration of its entities (R3); None without
+    the owner."""
+    for op, other, _ in composite_spec.entries(spec):
+        if op.LAW_ID == SITE_LAW:
+            return op.quantity_entities(spec, other)["site_population"]
+    return None
+
+
+def bound_site_quantities(spec, inner_state, inner_layout):
+    """Version 2: {SITE_LAW: its readable quantities} at the owner's own bound state, from the
+    owner's own binding and quantities (R3), host side: a site route's factor at the bound state,
+    the record's start."""
+    for op, other, schedule in composite_spec.entries(spec):
+        if op.LAW_ID == SITE_LAW:
+            state, layout = op.initial_values(spec, other, schedule, inner_state, inner_layout)
+            read = SimpleNamespace(**inner_state._asdict(), **state)
+            bound = SimpleNamespace(**inner_layout._asdict(), **layout)
+            return {SITE_LAW: op.quantities(read, bound, xp=np)}
+    raise ConfigError(f"{LAW_ID_V2}: a site source needs {SITE_LAW}")
+
+
+def _site_layout(spec, declaration, routes):
+    """Version 2: each site route's law code set (a Hill kind plus SITE_OFFSET, or the fraction's
+    own laws, so @1's kernels and the population kernel give it f = 1), and its arrays: the route
+    map ([route], -1 elsewhere), and per site route its population's index on the owner's axis,
+    its quantity's code and its half-saturation (1 for the fraction's own laws). Refused here,
+    where the binding first reads it: a site source without site_occupancy@1, an unknown
+    population, and a population outside the route's cell."""
+    index = -np.ones(len(routes), dtype=np.int64)
+    site = [
+        i
+        for i, r in enumerate(routes)
+        if type(declaration.couplings[r["coupling"]]) is SiteCoupling
+    ]
+    couplings = [declaration.couplings[routes[i]["coupling"]] for i in site]
+    population, quantity, half = [], [], []
+    if site:
+        entities = site_entities(spec)
+        if entities is None:
+            raise ConfigError(
+                f"{LAW_ID_V2}: coupling {couplings[0].id} reads a site population, but the "
+                f"definition declares no {SITE_LAW}"
+            )
+        ids = [entity for entity, _ in entities]
+        cells = [c.id for c in spec.model.cells]
+        for j, (i, coupling) in enumerate(zip(site, couplings, strict=True)):
+            if coupling.source not in ids:
+                raise ConfigError(
+                    f"{LAW_ID_V2}: coupling {coupling.id} reads an unknown site population "
+                    f"{coupling.source!r}"
+                )
+            k = ids.index(coupling.source)
+            home, cell = entities[k][1], cells[routes[i]["cell"]]
+            if home != cell:
+                raise ConfigError(
+                    f"{LAW_ID_V2}: coupling {coupling.id} reads site population {coupling.source}, "
+                    f"in {home}, on an element in {cell}; a site source is read in its element's "
+                    "cell"
+                )
+            routes[i]["law"] = SITE_FRACTION_LAWS.get(coupling.law) or SITE_HILL_LAWS[coupling.law]
+            index[i] = j
+            population.append(k)
+            quantity.append(SITE_QUANTITIES.index(coupling.quantity))
+            half.append(1.0 if coupling.half_saturation is None else coupling.half_saturation)
+    return dict(
+        coupling_route_site=index,
+        coupling_site_population=np.asarray(population, dtype=np.int64),
+        coupling_site_quantity=np.asarray(quantity, dtype=np.int64),
+        coupling_site_half_saturation=np.asarray(half, dtype=float),
+    )
+
+
 def _operator_routes(spec, declaration, routes, slot_keys):
     """Version 2: each operator target's routes, appended to `routes` after the inner ones, and
     ({table field: [elements, width] route per element, -1 pads}, [(low, high) per appended
@@ -926,8 +1142,10 @@ def _operator_routes(spec, declaration, routes, slot_keys):
                 f"{LAW_ID_V2}: coupling {coupling.id} names {target.operator}'s unknown element "
                 f"{unknown[0]!r}"
             )
-        law = (SPECIES_LAWS | STATE_FACTOR_LAWS)[coupling.law]
+        site = coupling.source_kind == "site"  # FR-24: its code set by _site_layout.
+        law = 0 if site else (SPECIES_LAWS | STATE_FACTOR_LAWS)[coupling.law]
         from_state = coupling.source_kind == "state"
+        padded = from_state or site
         for index, (element, cell) in enumerate(elements):
             if element not in target.ids:
                 continue
@@ -947,11 +1165,11 @@ def _operator_routes(spec, declaration, routes, slot_keys):
             routes.append(
                 dict(
                     law=law,
-                    row=0 if from_state else species.index(coupling.source),
+                    row=0 if padded else species.index(coupling.source),
                     cell=cells.index(cell),
                     slot=slot_keys.index((coupling.source, cell)) if from_state else 0,
-                    half=1.0 if from_state else coupling.half_saturation_mM,
-                    coefficient=1.0 if from_state else coupling.hill_coefficient,
+                    half=1.0 if padded else coupling.half_saturation_mM,
+                    coefficient=1.0 if from_state else (coupling.hill_coefficient or 1.0),
                     basal=coupling.basal,
                     coupling=c_index,
                 )
@@ -965,6 +1183,7 @@ def _operator_routes(spec, declaration, routes, slot_keys):
             table[index, : len(members)] = members
         tables[field] = table
     tables.update(_population_layout(spec, declaration, routes))  # FR-7's part (b).
+    tables.update(_site_layout(spec, declaration, routes))  # FR-24.
     return tables, ranges
 
 
@@ -1007,18 +1226,19 @@ def bind(spec, declaration, schedule):
     for c_index, coupling in enumerate(declaration.couplings):
         if type(coupling.target) is OperatorTarget:
             continue  # Version 2's, after every inner route (_operator_routes).
-        law = (SPECIES_LAWS | STATE_FACTOR_LAWS)[coupling.law]
+        site = coupling.source_kind == "site"  # Version 2's: its code set by _site_layout.
+        law = 0 if site else (SPECIES_LAWS | STATE_FACTOR_LAWS)[coupling.law]
         for element in coupling.target.ids:
             for cell in _target_cells(m, coupling.target, element):
                 from_state = coupling.source_kind == "state"
-                padded = from_state or coupling.source_kind == "population"  # Version 2's.
+                padded = from_state or coupling.source_kind in ("population", "site")  # Version 2.
                 route = dict(
                     law=law,
                     row=0 if padded else species.index(coupling.source),
                     cell=cells.index(cell),
                     slot=slot_keys.index((coupling.source, cell)) if from_state else 0,
                     half=1.0 if padded else coupling.half_saturation_mM,
-                    coefficient=1.0 if from_state else coupling.hill_coefficient,
+                    coefficient=1.0 if from_state else (coupling.hill_coefficient or 1.0),
                     basal=coupling.basal,
                     coupling=c_index,
                 )
@@ -1182,13 +1402,14 @@ def used_routes(tables, count, *, xp):
     return used
 
 
-def range_valid(state, p, used, *, xp, density=None):
+def range_valid(state, p, used, *, xp, density=None, site=None):
     """Version 2: every enabled route of `used` inside its declared operating range at `state`,
     where its factor is evaluated: a species route's concentration (mM, in its cell at the
-    declared volume), a state route's fraction, or a population route's density (units per µm²;
+    declared volume), a state route's fraction, a population route's density (units per µm²;
     `density` [population route], given at the control view, its one point of evaluation, and
-    elsewhere None, which leaves those routes out). A switched-off coupling's routes are skipped
-    (its factor is exactly 1)."""
+    elsewhere None, which leaves those routes out), or a site route's source (`site` [route],
+    site_route_sources; None leaves those routes out). A switched-off coupling's routes are
+    skipped (its factor is exactly 1)."""
     law = p.coupling_route_law
     rows, cells = p.coupling_route_row, p.coupling_route_cell
     amount = p.amount_reference[rows, cells] + state.amount_increment[rows, cells]
@@ -1204,6 +1425,12 @@ def range_valid(state, p, used, *, xp, density=None):
             source = xp.where(
                 population, density[xp.maximum(p.coupling_route_population, 0)], source
             )
+    if has_site(p):  # Static (FR-24).
+        sited = p.coupling_route_site >= 0
+        if site is None:
+            used = used & ~sited
+        else:
+            source = xp.where(sited, site, source)
     inside = (source >= p.coupling_route_low) & (source <= p.coupling_route_high)
     on = state.coupling_enabled[p.coupling_route_coupling] > 0
     return xp.all(inside | ~on | ~used)
@@ -1212,6 +1439,62 @@ def range_valid(state, p, used, *, xp, density=None):
 def has_population(p):
     """Version 2: whether any route reads a population (static, by shape)."""
     return p.coupling_population_channel.shape[0] > 0
+
+
+def has_site(p):
+    """Version 2: whether any route reads a site population (static, by shape; FR-24)."""
+    return p.coupling_site_population.shape[0] > 0
+
+
+def _required_quantities(quantities):
+    """Version 2: the function of state a site route is evaluated from (R3), refused if none."""
+    if quantities is None:
+        raise ValueError(
+            f"{LAW_ID_V2}: a site route is evaluated from {SITE_LAW}'s readable quantities, which "
+            "the composite passes as quantities= (R3), and none was passed"
+        )
+    return quantities
+
+
+def site_route_sources(quantities, p, *, xp):
+    """Version 2: [route] each site route's source from its owner's quantities (R3): theta, or B /
+    V or S / V in mM at its cell's declared volume; 1 elsewhere."""
+    q = quantities[SITE_LAW]
+    index = p.coupling_route_site
+    j = xp.maximum(index, 0)
+    population = p.coupling_site_population[j]
+    kind = p.coupling_site_quantity[j]
+    amount = xp.where(
+        kind == OCCUPIED_Q, q["site_occupied_fmol"][population], q["site_capacity_fmol"][population]
+    )
+    value = xp.where(
+        kind == FRACTION_Q,
+        q["site_occupied_fraction"][population],
+        amount / p.volume[p.coupling_route_cell],
+    )
+    return xp.where(index >= 0, value, 1.0)
+
+
+def with_site_factors(values, state, p, source, *, xp):
+    """Version 2: [route] `values` with each site route's F = b + (1 - b) f, f its law of the
+    source (`source` [route], site_route_sources): theta, 1 - theta, or a Hill law, whose source may
+    be exactly 0 (an empty site: ln 0 = -inf gives activation 0 and inhibition 1); exactly 1 for
+    a switched-off coupling, as every route's."""
+    index = p.coupling_route_site
+    law = p.coupling_route_law
+    positive = source > 0
+    log_x = xp.where(positive, xp.log(xp.where(positive, source, 1.0)), -xp.inf)
+    hill = hill_factors.factor(
+        log_x,
+        p.coupling_site_half_saturation[xp.maximum(index, 0)],
+        p.coupling_route_coefficient,
+        law - SITE_OFFSET,
+        xp=xp,
+    )
+    f = xp.where(law == SITE_FRACTION, source, xp.where(law == SITE_COMPLEMENT, 1.0 - source, hill))
+    basal = p.coupling_route_basal
+    on = state.coupling_enabled[p.coupling_route_coupling] > 0
+    return xp.where((index >= 0) & on, basal + (1.0 - basal) * f, values)
 
 
 def _required(view):
@@ -1346,7 +1629,11 @@ def route_keys(spec, declaration):
 
 def check_replaced_operator_elements(spec, declaration):
     """Version 2: refuse an operator target's element on a slot replacement@1 replaces (its source
-    is read in that cell, which a newcomer would take over)."""
+    is read in that cell, which a newcomer would take over), unless its source is a species of
+    that cell or a site population (FR-26's part C′, D244): replacement@1 swaps the cell's species
+    and site_occupant_replacement@1 resets its populations, so the factor reads the newcomer's
+    state. A state source there stays refused (part C, a newcomer's regulatory state, is not
+    built)."""
     _, events = common.replacement_of(spec)
     replaced = {v.slot for v in events}
     if not replaced:
@@ -1356,12 +1643,16 @@ def check_replaced_operator_elements(spec, declaration):
         target = coupling.target
         if type(target) is not OperatorTarget or target.operator not in declared:
             continue
+        if coupling.source_kind in ("species", "site"):  # Part C′.
+            continue
         op, target_declaration = declared[target.operator]
         for element, cell in op.routable_elements(target_declaration, target.control):
             if element in target.ids and cell in replaced:
                 raise ConfigError(
                     f"{LAW_ID_V2}: coupling {coupling.id} targets {target.operator}'s {element}, "
-                    f"on {cell}, a slot {common.REPLACEMENT_LAW} replaces (refused in version 2)"
+                    f"on {cell}, a slot {common.REPLACEMENT_LAW} replaces, from a state; a "
+                    "newcomer's regulatory state is not built (a species or a site source is "
+                    "admitted there)"
                 )
 
 
@@ -1635,6 +1926,8 @@ class SpeciesRegulatedAvailabilityV2(SpeciesRegulatedAvailability):
     # R2 (step 0 of FR-7's part (b)): the populations' abundance read at the control view.
     VIEW_READS = ("channel_abundance",)
     SCOPED_READS = MappingProxyType({"channel_abundance": Read("current", "inner")})
+    # R3 (FR-24): a site source reads site_occupancy@1's readable quantities.
+    QUANTITY_READS = MappingProxyType({SITE_LAW: tuple(SITE_READS.values())})
     # Its run view (the contract; an operator registered after the run view declares it).
     VIEW_LAYERS = (
         {
@@ -1769,6 +2062,20 @@ class SpeciesRegulatedAvailabilityV2(SpeciesRegulatedAvailability):
             out["coupling_constant_sources"] = (
                 {} if writers else {c.id: CONSTANT_SOURCE for c in population}
             )
+        site = [c for c in declaration.couplings if type(c) is SiteCoupling]
+        for c in site:  # FR-24: its quantity, its K in the quantity's unit, and its range.
+            entry = out["coupling_targets"][c.id]
+            del entry["half_saturation_mM"]
+            entry.update(
+                source={"site_population": c.source, "quantity": c.quantity},
+                half_saturation=c.half_saturation,
+                evaluation=c.target.evaluation,
+                operating_range=list(c.target.operating_range),
+                owner=SITE_LAW,
+            )
+        constant = {c.id: CONSTANT_CAPACITY for c in site if c.quantity == "capacity_mM"}
+        if constant:
+            out.setdefault("coupling_constant_sources", {}).update(constant)
         return out
 
     def initial_values(self, spec, declaration, schedule, inner_state, inner_layout):
@@ -1782,34 +2089,49 @@ class SpeciesRegulatedAvailabilityV2(SpeciesRegulatedAvailability):
         if has_population(bound):  # The declared abundance: no increment at the bound state.
             density = population_densities(bound, bound, xp=np)
             values = with_population_factors(values, read, bound, density, xp=np)
+        if has_site(bound):  # FR-24: the owner's quantities at its own bound state.
+            source = site_route_sources(
+                bound_site_quantities(spec, inner_state, inner_layout), bound, xp=np
+            )
+            values = with_site_factors(values, read, bound, source, xp=np)
         state["coupling_applied_factor"] = np.asarray(values, float)
         return state, layout
 
-    def _values(self, state, p, view, *, xp):
+    def _values(self, state, p, view, quantities, *, xp):
         """[route] every route's factor at `state`, a population route's from `view` (its reader
-        view, R2), which is called only with a population route (static)."""
+        view, R2), called only with a population route, and a site route's from `quantities` (its
+        owner's, R3), called only with a site route (static)."""
         values = route_factors(state, p, xp=xp)
-        if not has_population(p):
-            return values
-        density = population_densities(_required(view)(state), p, xp=xp)
-        return with_population_factors(values, state, p, density, xp=xp)
+        if has_population(p):
+            density = population_densities(_required(view)(state), p, xp=xp)
+            values = with_population_factors(values, state, p, density, xp=xp)
+        if has_site(p):
+            source = site_route_sources(_required_quantities(quantities)(state), p, xp=xp)
+            values = with_site_factors(values, state, p, source, xp=xp)
+        return values
 
-    def control_factors(self, state, p, *, xp, view=None):
-        """@1's factors, with each population route's from `view` (static: without a population
-        route, @1's call)."""
-        if not has_population(p):
+    def _site_sources(self, state, p, quantities, *, xp):
+        """[route] the site routes' sources at `state` (R3), or None without one (static)."""
+        if not has_site(p):
+            return None
+        return site_route_sources(_required_quantities(quantities)(state), p, xp=xp)
+
+    def control_factors(self, state, p, *, xp, view=None, quantities=None):
+        """@1's factors, with each population route's from `view` and each site route's from
+        `quantities` (static: without either, @1's call)."""
+        if not (has_population(p) or has_site(p)):
             return super().control_factors(state, p, xp=xp)
-        values = self._values(state, p, view, xp=xp)
+        values = self._values(state, p, view, quantities, xp=xp)
         return {
             name: element_product(values, getattr(p, TARGET_TABLES[name]), xp=xp)
             for name in self.CONTROL_FACTORS
             if getattr(p, TARGET_TABLES[name]).shape[1]
         }
 
-    def factor_valid(self, state, p, *, xp, view=None):
+    def factor_valid(self, state, p, *, xp, view=None, quantities=None):
         """Its step_view routes' sources inside their declared ranges at the control view, where
-        their factors are evaluated (enabled routes only), a population's density from `view`;
-        None without one (static)."""
+        their factors are evaluated (enabled routes only), a population's density from `view` and
+        a site route's source from `quantities`; None without one (static)."""
         tables = [getattr(p, field) for field in TARGET_TABLES.values()]
         if not any(table.shape[1] for table in tables):
             return None
@@ -1817,19 +2139,39 @@ class SpeciesRegulatedAvailabilityV2(SpeciesRegulatedAvailability):
         density = None
         if has_population(p):  # Static.
             density = population_densities(_required(view)(state), p, xp=xp)
-        return range_valid(state, p, used, xp=xp, density=density)
+        site = self._site_sources(state, p, quantities, xp=xp)
+        return range_valid(state, p, used, xp=xp, density=density, site=site)
 
-    def factor_record(self, state, p, target, field, *, xp, view=None):
+    def factor_record(self, state, p, target, field, *, xp, view=None, quantities=None):
         """(each route's factor at `state`, the routes evaluated there): the step_view routes at
-        the control view (target None), or one operator target's at its half-step."""
+        the control view (target None), or one operator target's at its half-step. No population
+        route stands in an operator table; a site route may (FR-24)."""
         if target is None:
             tables = [getattr(p, name) for name in TARGET_TABLES.values()]
-            values = self._values(state, p, view, xp=xp)
-        else:  # No population route stands in an operator table.
+            values = self._values(state, p, view, quantities, xp=xp)
+        else:
             tables = [getattr(p, OPERATOR_TABLES[(target, field)])]
             values = route_factors(state, p, xp=xp)
+            site = self._site_sources(state, p, quantities, xp=xp)
+            if site is not None:
+                values = with_site_factors(values, state, p, site, xp=xp)
         used = used_routes(tables, p.coupling_route_law.shape[0], xp=xp)
         return values, used
+
+    def declared_quantity_reads(self, declaration):
+        """R3 (FR-24): each site coupling's read, (owner, quantity, its operator target's law, or
+        None for an inner target, read at the control view)."""
+        return tuple(
+            dict.fromkeys(
+                (
+                    SITE_LAW,
+                    SITE_READS[c.quantity],
+                    c.target.operator if type(c.target) is OperatorTarget else None,
+                )
+                for c in declaration.couplings
+                if type(c) is SiteCoupling
+            )
+        )
 
     def declared_rate_routes(self, declaration):
         return tuple(
@@ -1840,22 +2182,32 @@ class SpeciesRegulatedAvailabilityV2(SpeciesRegulatedAvailability):
             )
         )
 
-    def rate_factors(self, state, p, target, field, *, xp):
+    def rate_factors(self, state, p, target, field, *, xp, quantities=None):
         """(the product of the routes on each element of the target's control, every enabled
-        route's source in its range) from the state the target's half-step receives; None
-        without a route on that control (static, by its table's shape)."""
+        route's source in its range) from the state the target's half-step receives, a site
+        route's from `quantities` (R3); None without a route on that control (static, by its
+        table's shape)."""
         table = getattr(p, OPERATOR_TABLES[(target, field)])
         if table.shape[1] == 0:
             return None
         values = route_factors(state, p, xp=xp)
+        site = self._site_sources(state, p, quantities, xp=xp)
+        if site is not None:
+            values = with_site_factors(values, state, p, site, xp=xp)
         used = used_routes((table,), values.shape[0], xp=xp)
-        return element_product(values, table, xp=xp), range_valid(state, p, used, xp=xp)
+        valid = range_valid(state, p, used, xp=xp, site=site)
+        return element_product(values, table, xp=xp), valid
 
-    def observe(self, row, state, control, p, view, model, spec):
-        """@1's columns; a population route's coupling_factor from the row's view."""
+    def observe(self, row, state, control, p, view, model, spec, quantities=None):
+        """@1's columns; a population route's coupling_factor from the row's view, and a site
+        route's from `quantities` (R3)."""
         columns = super().observe(row, state, control, p, view, model, spec)
+        factor = columns["coupling_factor"]
         if has_population(p):
             density = population_densities(view, p, xp=np)
-            factor = with_population_factors(columns["coupling_factor"], state, p, density, xp=np)
-            columns["coupling_factor"] = np.asarray(factor)
+            factor = with_population_factors(factor, state, p, density, xp=np)
+        site = self._site_sources(state, p, quantities, xp=np)
+        if site is not None:
+            factor = with_site_factors(factor, state, p, site, xp=np)
+        columns["coupling_factor"] = np.asarray(factor)
         return columns

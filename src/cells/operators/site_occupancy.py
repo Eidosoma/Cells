@@ -22,7 +22,10 @@ copies and sites per copy are not scheduled.
 Ownership (§1.3, option O; ARCHITECTURE.md's modular core, D174): this operator owns every site
 population of a composition and provides no view, mask or capacitance, so it is no field input and
 an occupancy-only composition does not refresh the field (ownership is separate from solver
-invalidation). It accepts later writers on its two pools (ACCEPTS_WRITES). Species identity follows
+invalidation). It accepts later writers on its two pools (ACCEPTS_WRITES). Its readable
+quantities (R3, FR-24) are each population's occupied fraction theta = B / (B + R), occupied amount
+B and accessible capacity S, computed from its own state (quantities), which a reader such as the
+coupling operator reads through the composite. Species identity follows
 the coupling operator's pattern until D172 consolidates it: ligands are parsed by
 species_common.parse_species, with a declared trace_mM (§4.3), and their identities are checked
 against D150's and D152's declarations by this operator, in either order, with no shared change.
@@ -41,10 +44,13 @@ check refuses the providers and closers of what it reads as declared (CONFLICTS_
 anchors and volumes are read only at the outside nodes its populations face (door S's scoped fixed
 reads, FR-23, D244), so a change made at other nodes, such as the bath schedule's dose at a held
 bath, is admitted beside it. The stationary analysis refuses the composite by its own ID check.
+A compartment wash's buffers are held to the trace rule as a scheduled bath composition is
+(FR-27, D246).
 """
 
 import math
 from dataclasses import dataclass
+from types import MappingProxyType
 from typing import NamedTuple
 
 import jax.numpy as jnp
@@ -73,6 +79,7 @@ DESTINATIONS = ("cell",)  # Version 1: the patch's own cell (§2.4).
 FACES, SIDES = ("outside", "inside"), ("first", "second")
 COMPARTMENTS_LAW = "cell_owned_compartments@1"
 BATH_LAW = "scheduled_bath_composition@1"
+WASH_LAW = "scheduled_compartment_wash@1"
 CELL, OUTSIDE = 0, 1  # A facing node's kind.
 
 STATE_AXES = {
@@ -226,6 +233,15 @@ def facing_node(m, population):
         return CELL, patch.inside
     junction = next(j for j in m.junctions if j.id == population.owner_id)
     return CELL, junction.sender if population.facing == "first" else junction.receiver
+
+
+def population_cell(m, population):
+    """The cell a population belongs to: its patch's own cell, whichever face it binds from, or
+    the cell on its side of a contact (R3's locality, FR-24)."""
+    if population.owner_kind == "patch":
+        return next(p for p in m.membranes if p.id == population.owner_id).inside
+    junction = next(j for j in m.junctions if j.id == population.owner_id)
+    return junction.sender if population.facing == "first" else junction.receiver
 
 
 def receiving_cell(m, population):
@@ -453,14 +469,37 @@ def parse_controls(raw, base, declaration):
     return tuple(controls)
 
 
-def route_tables(declaration, schedule):
+def route_tables(declaration, schedule, spec=None):
     """[route] multiplier tables: each population's binding, then its internalisation (or a
-    constant 0 for a population without the route)."""
+    constant 0 for a population without the route). With W (site_occupant_replacement@1) in
+    `spec`, a covered population's tables follow its slot's occupants: the founder's schedule, which
+    ends at its death, then each newcomer's template multipliers, held through its life (FR-26;
+    a newcomer's own schedule is version 1.1). Without W the tables are as before, bit for bit."""
     keyed = {(c.population, c.route): c.changes for c in schedule}
     binding = [keyed[(p.id, "binding")] for p in declaration.populations]
     internal = [
         keyed.get((p.id, "internalisation"), ((0.0, 0.0),)) for p in declaration.populations
     ]
+    occupant = None if spec is None else occupant_of(spec)
+    if occupant is None:
+        return binding, internal
+    newcomers = occupant_tables(spec, declaration, occupant)
+    for k, p in enumerate(declaration.populations):
+        rows = newcomers.get(p.id, ())
+        if not rows:
+            continue
+        death = rows[0][0]
+        for table, route in ((binding, "binding"), (internal, "internalisation")):
+            late = [t for t, _ in table[k] if t >= death]
+            if late and (p.id, route) in keyed:
+                raise ConfigError(
+                    f"{LAW_ID}: the {route} schedule of {p.id} changes at {late[0]:g} s, after its "
+                    f"founder's death at {death:g} s; a newcomer takes its template's multipliers "
+                    "(a newcomer's own schedule is version 1.1)"
+                )
+        binding[k] = (*binding[k], *((t, b) for t, (_, b, _) in rows))
+        if p.internalisation_rate is not None:
+            internal[k] = (*internal[k], *((t, i) for t, (_, _, i) in rows))
     return binding, internal
 
 
@@ -474,21 +513,32 @@ def check_identities(spec, declaration):
 
 
 def check_slots(spec, declaration):
-    """No population on a replaced slot's patch, or on a contact incident to one (§6.2)."""
+    """No contact population incident to a replaced slot (§6.2; contacts stay refused), and no
+    patch population on a replaced slot unless site_occupant_replacement@1, W, declares its
+    occupants (FR-26, D244)."""
     _, events = common.replacement_of(spec)
     slots = {v.slot for v in events}
     m = spec.model
+    occupant = occupant_of(spec) is not None
     for p in declaration.populations:
         if p.owner_kind == "patch":
             cells = {next(q for q in m.membranes if q.id == p.owner_id).inside}
         else:
             junction = next(j for j in m.junctions if j.id == p.owner_id)
             cells = {junction.sender, junction.receiver}
-        if cells & slots:
+        if not cells & slots:
+            continue
+        if p.owner_kind == "contact":
             raise ConfigError(
-                f"{LAW_ID}: population {p.id} sits on {p.owner_kind} {p.owner_id} of a slot "
-                f"{common.REPLACEMENT_LAW} replaces; version 1 has no occupant rule for sites "
-                "(their reset at replacement is a door, §5.2)"
+                f"{LAW_ID}: population {p.id} sits on contact {p.owner_id}, incident to a slot "
+                f"{common.REPLACEMENT_LAW} replaces; a contact population there is refused in "
+                "version 1 (where its bound material goes at the contact's restart needs a ruling)"
+            )
+        if not occupant:
+            raise ConfigError(
+                f"{LAW_ID}: population {p.id} sits on patch {p.owner_id} of a slot "
+                f"{common.REPLACEMENT_LAW} replaces; its occupants need {OCCUPANT_LAW} (W), "
+                "which resets it from each newcomer's template"
             )
 
 
@@ -528,21 +578,30 @@ def check_template_traces(spec, declaration):
 
 
 def check_schedule_traces(spec, declaration):
-    """§4.3's trace rule on the bath schedule's scheduled compositions (FR-23, D244): a dose may
-    not set a ligand below its declared trace at a held bath, as a declared node or a replacement
-    template may not. The scheduled content is the bath schedule's own parsed program (its held
-    series per bath, the declared content first), read on the host."""
+    """§4.3's trace rule on scheduled compositions: the bath schedule's (FR-23, D244) and the
+    compartment wash's buffers (FR-27, D246). A dose or a wash may not set a ligand below its
+    declared trace, as a declared node or a replacement template may not. Each is read from its
+    operator's own parsed program on the host: the bath schedule's held series per bath (the
+    declared content first) and the wash's events, each with a buffer for every neutral species,
+    the ligands among them."""
     ids = list(spec.model.species_ids)
     volumes = {c.id: c.volume_pL for c in spec.model.extracellular}
     extra = []
     for op, other, schedule in composite_spec.entries(spec):
-        if op.LAW_ID != BATH_LAW:
-            continue
-        for bath, series in zip(other.baths, schedule.held, strict=True):
-            for time, amounts in series[1:]:
+        if op.LAW_ID == BATH_LAW:
+            for bath, series in zip(other.baths, schedule.held, strict=True):
+                for time, amounts in series[1:]:
+                    for ligand in declaration.species:
+                        mM = amounts[ids.index(ligand.identity.id)] / volumes[bath]
+                        extra.append(
+                            (f"scheduled bath {bath} from {time:g} s", ligand.identity.id, mM)
+                        )
+        elif op.LAW_ID == WASH_LAW:
+            for event in schedule.events:
+                buffer = dict(event.buffer_mM)
+                where = f"the buffer of the wash of {event.node} at {event.time:g} s"
                 for ligand in declaration.species:
-                    mM = amounts[ids.index(ligand.identity.id)] / volumes[bath]
-                    extra.append((f"scheduled bath {bath} from {time:g} s", ligand.identity.id, mM))
+                    extra.append((where, ligand.identity.id, buffer[ligand.identity.id]))
     if extra:
         check_traces(spec.model, declaration.species, declaration.populations, extra)
 
@@ -1228,6 +1287,15 @@ class SiteOccupancy(Operator):
     LAYOUT_FIELDS = LAYOUT_FIELDS
     CONTROL_FIELDS = CONTROL_FIELDS
     EXPERIMENT_KEYS = (CONTROLS_KEY,)
+    # R3 (FR-24; docs/OPERATOR_FEATURES_FR23_24_26_DESIGN.md §3.3): its readable quantities per
+    # population, from its own state (quantities).
+    QUANTITIES = MappingProxyType(
+        {
+            "site_occupied_fraction": ("site_population", "1"),
+            "site_occupied_fmol": ("site_population", "fmol"),
+            "site_capacity_fmol": ("site_population", "fmol"),
+        }
+    )
     # D150's static-tissue list and D152's addition (§1.5): the half-step reads the declared
     # volumes, masks and outside anchors.
     CONFLICTS_VIEW = (
@@ -1290,7 +1358,7 @@ class SiteOccupancy(Operator):
         return common.value_at(schedule, time)
 
     def control_values(self, spec, declaration, schedule, records, indices, times):
-        binding, internal = route_tables(declaration, schedule)
+        binding, internal = route_tables(declaration, schedule, spec)
         n = len(declaration.populations)
         b = common.control_arrays(binding, times, 1)[..., 0] if n else np.zeros((len(times), 0))
         i = common.control_arrays(internal, times, 1)[..., 0] if n else np.zeros((len(times), 0))
@@ -1298,6 +1366,7 @@ class SiteOccupancy(Operator):
 
     def check_definition(self, spec, declaration, schedule, model):
         check_definition(spec, declaration)
+        route_tables(declaration, schedule, spec)  # FR-26: a founder's change after its death.
 
     def read_slots(self, spec, declaration):
         """Door S: the outside nodes its populations face, for each scoped read (FR-23)."""
@@ -1372,6 +1441,26 @@ class SiteOccupancy(Operator):
         own = site_domain_valid(state, p, xp=xp)
         return own if valid is None else valid & own
 
+    def quantity_entities(self, spec, declaration):
+        """R3, host side: its populations in axis order, each with the cell it belongs to."""
+        m = spec.model
+        return {
+            "site_population": tuple((q.id, population_cell(m, q)) for q in declaration.populations)
+        }
+
+    def quantities(self, state, p, *, xp):
+        """R3: per population its occupied fraction theta = B / (B + R), which the domain's B >= 0
+        and R >= 0 keep in [0, 1] exactly (B + R is S to the moiety's rounding); its occupied amount
+        B; and its accessible capacity S (fmol)."""
+        free = p.site_free_anchor_fmol + state.site_free_increment_fmol
+        bound = p.site_bound_anchor_fmol + state.site_bound_increment_fmol
+        total = free + bound
+        return dict(
+            site_occupied_fraction=bound / xp.where(total > 0, total, 1.0),
+            site_occupied_fmol=bound,
+            site_capacity_fmol=p.site_capacity_fmol,
+        )
+
     # ------------------------------------------------------------ ledgers
 
     def ledger_terms(self, result, row, p, *, xp):
@@ -1440,3 +1529,461 @@ class SiteOccupancy(Operator):
         columns["site_binding_rate_fmol_per_s"] = binding
         columns["site_internalisation_rate_fmol_per_s"] = internalisation
         return columns
+
+
+# ------------------------------------------------------------------ W: site_occupant_replacement@1
+#
+# FR-26 (D244, option W; docs/OPERATOR_FEATURES_FR23_24_26_DESIGN.md §4): a replacement writer of
+# site populations. At replacement@1's event steps it resets the populations on each replaced slot's
+# patches to the newcomer's template occupancy through site_occupancy@1's accepted writes; the
+# occupant's bound material leaves with it, recorded as departed, and the template's arrives,
+# recorded as arrived. site_occupancy@1 and replacement@1 keep their structure and programs.
+
+REPLACEMENT_LAW = common.REPLACEMENT_LAW
+# A newcomer's bound and free sites each lie at least this many ulps of the capacity from empty:
+# the event writes anchor + (amount - anchor), within about 1.5 ulps of the amount (check_occupant).
+ARRIVAL_ULPS = 4
+SITES_LAW = LAW_ID  # site_occupancy@1, the owner W writes (named apart from W's own LAW_ID).
+OCCUPANT_LAW = "site_occupant_replacement@1"
+OCCUPANT_STATE_AXES = {
+    "site_departed_fmol": ["site_population"],  # Bound material leaving with occupants.
+    "site_arrived_fmol": ["site_population"],  # Bound material arriving with newcomers.
+    "site_replacement_free_energy_pJ": ["site_population"],  # The site free energy's jumps.
+    "site_replacement_energy_magnitude_pJ": ["site_population"],  # Their absolute terms.
+    "site_replacement_applied": ["cell_slot"],  # int64: the replacements applied per slot.
+}
+OCCUPANT_LAYOUT_FIELDS = (
+    "site_replaced",  # [population] bool: a patch population on a replaced slot.
+    "site_population_cell",  # [population] int64: its cell (slot).
+)
+OCCUPANT_CONTROL_FIELDS = (
+    "site_replacement_count",  # [cell_slot] the replacements due by now at each slot.
+    "site_arrival_occupancy",  # [population] the latest newcomer's template occupancy.
+)
+
+
+@dataclass(frozen=True)
+class OccupantTemplate:
+    template_id: str  # A replacement@1 template.
+    # ((population id, arrival occupancy, binding multiplier, internalisation multiplier or None),
+    # ...) in declared order.
+    populations: tuple
+
+
+@dataclass(frozen=True)
+class OccupantDeclaration:
+    law: str
+    templates: tuple  # OccupantTemplate, in declared order.
+
+
+def parse_occupant(raw, base):
+    _fields(raw, {"law", "templates"}, "site occupant replacement")
+    if raw["law"] != OCCUPANT_LAW:
+        raise ConfigError("A site occupant replacement requires law " + OCCUPANT_LAW)
+    if type(raw["templates"]) is not list or not raw["templates"]:
+        raise ConfigError(f"{OCCUPANT_LAW} declares its templates in a non-empty list")
+    templates = []
+    for entry in raw["templates"]:
+        _fields(entry, {"template_id", "populations"}, f"{OCCUPANT_LAW} template")
+        tid = identifier(entry["template_id"])
+        if not isinstance(entry["populations"], dict) or not entry["populations"]:
+            raise ConfigError(f"{OCCUPANT_LAW}: template {tid} names its populations")
+        rows = []
+        for pid, values in entry["populations"].items():
+            keys = set(values) if isinstance(values, dict) else set()
+            if not {"initial_occupancy", "binding_multiplier"} <= keys or keys - {
+                "initial_occupancy",
+                "binding_multiplier",
+                "internalisation_multiplier",
+            }:
+                raise ConfigError(
+                    f"{OCCUPANT_LAW}: template {tid}'s population {pid} gives initial_occupancy "
+                    "and binding_multiplier, and internalisation_multiplier where it internalises"
+                )
+            theta = _number(values["initial_occupancy"], f"{tid}'s occupancy of {pid}")
+            if not 0 < theta < 1:
+                raise ConfigError(
+                    f"{OCCUPANT_LAW}: {tid}'s occupancy of {pid} lies in (0, 1) in version 1: as "
+                    "everywhere in the engine, a pool goes to its trace and is never exactly empty "
+                    "(FR-23's dose rule), so a template gives a fresh cell's occupancy at a trace "
+                    "level (site_occupancy@1's site free energy reads an exactly empty pool, "
+                    "reached from a positive anchor, as 0 x log1p(-1))"
+                )
+            binding = _number(values["binding_multiplier"], f"{tid}'s binding of {pid}", low=0.0)
+            internal = values.get("internalisation_multiplier")
+            if internal is not None:
+                internal = _number(internal, f"{tid}'s internalisation of {pid}", low=0.0)
+            rows.append((identifier(pid), theta, binding, internal))
+        if len({r[0] for r in rows}) != len(rows):
+            raise ConfigError(f"{OCCUPANT_LAW}: template {tid} names a population twice")
+        templates.append(OccupantTemplate(tid, tuple(rows)))
+    if len({t.template_id for t in templates}) != len(templates):
+        raise ConfigError(f"{OCCUPANT_LAW}: a template is declared twice")
+    return OccupantDeclaration(OCCUPANT_LAW, tuple(templates))
+
+
+def occupant_to_dict(declaration):
+    if type(declaration) is not OccupantDeclaration:
+        raise ConfigError("Require explicit immutable site occupant replacement types")
+    return dict(
+        law=declaration.law,
+        templates=[
+            dict(
+                template_id=t.template_id,
+                populations={
+                    pid: dict(
+                        initial_occupancy=theta,
+                        binding_multiplier=binding,
+                        **({} if internal is None else {"internalisation_multiplier": internal}),
+                    )
+                    for pid, theta, binding, internal in t.populations
+                },
+            )
+            for t in declaration.templates
+        ],
+    )
+
+
+def _sites_of(spec):
+    """site_occupancy@1's declaration in this composition, or None."""
+    for op, declaration, _ in composite_spec.entries(spec):
+        if op.LAW_ID == LAW_ID:
+            return declaration
+    return None
+
+
+def occupant_of(spec):
+    """W's declaration in this composition, or None."""
+    for op, declaration, _ in composite_spec.entries(spec):
+        if op.LAW_ID == OCCUPANT_LAW:
+            return declaration
+    return None
+
+
+def replaced_populations(spec, sites):
+    """{population id: its cell} of the patch populations (either face) on a slot replacement@1
+    replaces."""
+    _, events = common.replacement_of(spec)
+    slots = {v.slot for v in events}
+    m = spec.model
+    return {
+        p.id: population_cell(m, p)
+        for p in sites.populations
+        if p.owner_kind == "patch" and population_cell(m, p) in slots
+    }
+
+
+def check_occupant(spec, declaration):
+    """W at the definition: replacement@1 and site_occupancy@1 are declared (REQUIRES orders them);
+    each template is a replacement template; each newcomer from a template onto a slot with
+    populations has that template's occupancy and multipliers for every population of the slot,
+    and each population a template names sits on a slot its newcomers fill; a donor copy onto a
+    slot with populations is refused (version 1.1); an internalisation multiplier is given exactly
+    for the populations that internalise."""
+    replacement, events = common.replacement_of(spec)
+    sites = _sites_of(spec)
+    known = {t.id for t in replacement.templates}
+    by_id = {p.id: p for p in sites.populations}
+    covered = replaced_populations(spec, sites)
+    on_slot = {}
+    for pid, cell in covered.items():
+        on_slot.setdefault(cell, []).append(pid)
+    filled = {}
+    for v in events:
+        if v.slot not in on_slot:
+            continue
+        if v.newcomer != "isolated_template":
+            raise ConfigError(
+                f"{OCCUPANT_LAW}: a donor copy onto {v.slot}, which holds site populations, is "
+                "version 1.1 (a donor's site state); version 1 takes newcomers from templates"
+            )
+        filled.setdefault(v.template, set()).add(v.slot)
+    templates = {t.template_id: t for t in declaration.templates}
+    for t in declaration.templates:
+        if t.template_id not in known:
+            raise ConfigError(
+                f"{OCCUPANT_LAW} declares {t.template_id}, not a replacement template"
+            )
+        slots = filled.get(t.template_id, set())
+        for pid, _, _, internal in t.populations:
+            if pid not in covered or covered[pid] not in slots:
+                raise ConfigError(
+                    f"{OCCUPANT_LAW}: template {t.template_id} names {pid}, not a population on "
+                    "a slot its newcomers fill"
+                )
+            if (internal is None) != (by_id[pid].internalisation_rate is None):
+                raise ConfigError(
+                    f"{OCCUPANT_LAW}: template {t.template_id} gives {pid} an internalisation "
+                    "multiplier exactly when it internalises"
+                )
+    for t in declaration.templates:  # The trace rule on the pools as the owner reads them.
+        for pid, theta, _, _ in t.populations:
+            p = by_id[pid]
+            capacity = p.accessible_fraction * p.sites_per_copy * p.copies / SITES_PER_FMOL
+            least = ARRIVAL_ULPS * float(np.spacing(capacity))
+            for which, amount in (
+                ("bound", theta * capacity),
+                ("free", capacity - theta * capacity),
+            ):
+                if amount < least:
+                    raise ConfigError(
+                        f"{OCCUPANT_LAW}: {t.template_id}'s occupancy {theta!r} of {pid} leaves "
+                        f"its {which} sites within {ARRIVAL_ULPS} ulps of its capacity, which its "
+                        "anchor plus the event's increment may round to exactly empty: a fresh "
+                        f"cell's {which} sites are a trace above that, at least "
+                        f"{least / capacity:.1e} of the capacity"
+                    )
+    for tid, slots in filled.items():
+        named = {pid for pid, *_ in templates[tid].populations} if tid in templates else set()
+        for cell in sorted(slots):
+            missing = sorted(set(on_slot[cell]) - named)
+            if missing:
+                raise ConfigError(
+                    f"{OCCUPANT_LAW}: a newcomer from template {tid} at {cell} declares no "
+                    f"arrival occupancy for {missing[0]} (its template's site state)"
+                )
+
+
+def occupant_tables(spec, sites, declaration):
+    """{population id: ((time, (theta', binding, internalisation)), ...)}: each covered population's
+    newcomers, in time order, with their template's values (host side)."""
+    covered = replaced_populations(spec, sites)
+    templates = {t.template_id: {r[0]: r[1:] for r in t.populations} for t in declaration.templates}
+    lives = common.occupants(spec)
+    out = {}
+    for pid, cell in covered.items():
+        rows = [(o.birth, templates.get(o.template, {}).get(pid)) for o in lives[cell][1:]]
+        out[pid] = tuple(r for r in rows if r[1] is not None)  # check_occupant refuses gaps.
+    return out
+
+
+def bind_occupant(spec, sites):
+    m, x = spec.model, spec.execution
+    cells = [c.id for c in m.cells]
+    covered = replaced_populations(spec, sites)
+    n = len(sites.populations)
+    state = {
+        "site_departed_fmol": np.zeros(n),
+        "site_arrived_fmol": np.zeros(n),
+        "site_replacement_free_energy_pJ": np.zeros(n),
+        "site_replacement_energy_magnitude_pJ": np.zeros(n),
+        "site_replacement_applied": np.zeros(x.capacity, dtype=np.int64),
+    }
+    layout = dict(
+        site_replaced=np.asarray([p.id in covered for p in sites.populations], dtype=bool),
+        site_population_cell=np.asarray(
+            [cells.index(population_cell(m, p)) for p in sites.populations], dtype=np.int64
+        ),
+    )
+    return state, layout
+
+
+def occupant_event(state, control, p, *, xp=jnp):
+    """(state after the site resets of the replacements due at the step start, their validity).
+    Each covered population on a due slot leaves with its bound B (departed) and arrives at
+    theta' S (arrived), its free sites S - theta' S; the site free energy's jump is booked."""
+    applied = state.site_replacement_applied
+    count = control.site_replacement_count
+    due_slot = count == applied + 1
+    valid = xp.all(due_slot | (count == applied))  # A stale count refuses the step.
+    due = p.site_replaced & due_slot[p.site_population_cell]
+    capacity = p.site_capacity_fmol
+    bound = p.site_bound_anchor_fmol + state.site_bound_increment_fmol
+    free = p.site_free_anchor_fmol + state.site_free_increment_fmol
+    theta = control.site_arrival_occupancy
+    arrived = theta * capacity
+    rt = 1e-3 * R_GAS * p.temperature
+    # The jump of G = mu° B + RT [B ln(B/S) + R ln(R/S)], formed from the endpoints, so an empty
+    # or a full newcomer (theta' = 0 or 1) is exact: x ln x = 0 at x = 0 (the stable increment form
+    # of site_free_energy reads 0 x log1p(-1) there).
+    standard = rt * p.site_standard_RT
+    g = [standard * x + rt * _xlogy(x, x / capacity, xp=xp) for x in (bound, arrived)] + [
+        rt * _xlogy(x, x / capacity, xp=xp) for x in (free, capacity - arrived)
+    ]
+    jump = (g[1] - g[0]) + (g[3] - g[2])
+    terms = xp.abs(g[0]) + xp.abs(g[1]) + xp.abs(g[2]) + xp.abs(g[3])
+    bound_increment = arrived - p.site_bound_anchor_fmol
+    free_increment = (capacity - arrived) - p.site_free_anchor_fmol
+    # The pools as the owner reads them are never exactly empty (the trace rule; the definition
+    # refuses an occupancy within ARRIVAL_ULPS of either end, so this fails closed only).
+    reads_positive = (p.site_bound_anchor_fmol + bound_increment > 0) & (
+        p.site_free_anchor_fmol + free_increment > 0
+    )
+    valid &= xp.all(xp.where(due, xp.isfinite(jump) & reads_positive, True))
+
+    def add(name, term):
+        return xp.where(due, getattr(state, name) + term, getattr(state, name))
+
+    new = state._replace(
+        site_bound_increment_fmol=xp.where(due, bound_increment, state.site_bound_increment_fmol),
+        site_free_increment_fmol=xp.where(due, free_increment, state.site_free_increment_fmol),
+        site_departed_fmol=add("site_departed_fmol", bound),
+        site_arrived_fmol=add("site_arrived_fmol", arrived),
+        site_replacement_free_energy_pJ=add("site_replacement_free_energy_pJ", jump),
+        site_replacement_energy_magnitude_pJ=add("site_replacement_energy_magnitude_pJ", terms),
+        site_replacement_applied=xp.where(due_slot, applied + 1, applied),
+    )
+    flowing = xp.any(due_slot)  # Nothing due: the start state, bitwise.
+    selected = type(state)(*(xp.where(flowing, a, b) for a, b in zip(new, state, strict=True)))
+    return selected, valid
+
+
+def occupant_valid(state, p, *, xp):
+    valid = xp.all(state.site_replacement_applied >= 0)
+    for name in ("site_departed_fmol", "site_arrived_fmol", "site_replacement_energy_magnitude_pJ"):
+        value = getattr(state, name)
+        valid &= xp.all(xp.isfinite(value) & (value >= 0))
+    valid &= xp.all(xp.isfinite(state.site_replacement_free_energy_pJ))
+    for name in OCCUPANT_STATE_AXES:  # Its records stay zero off the covered populations.
+        if name != "site_replacement_applied":
+            valid &= xp.all(xp.where(p.site_replaced, True, getattr(state, name) == 0))
+    return valid
+
+
+class SiteOccupantReplacement(Operator):
+    """site_occupant_replacement@1, W (the section's comment above): an event map at replacement@1's
+    event steps that resets the covered site populations through site_occupancy@1's accepted
+    writes, with the departed and arrived records and the site free energy's jump, closed in the
+    owner's ledgers (external terms) and @3's energy ledger. It reads no view and writes no @3 row.
+    The reads of the site quantities stay exact (R3): it has only an event part, and events run
+    before every split part's first half, so a routed target reads the newcomer's occupancy from
+    the step leaving the event (a writer with a split part would need R3's order check extended to
+    writers)."""
+
+    LAW_ID = OCCUPANT_LAW
+    EVENT = True
+    REQUIRES = (REPLACEMENT_LAW, SITES_LAW)
+    STATE_AXES = OCCUPANT_STATE_AXES
+    STATE_DTYPES = {"site_replacement_applied": np.int64}
+    LAYOUT_FIELDS = OCCUPANT_LAYOUT_FIELDS
+    CONTROL_FIELDS = OCCUPANT_CONTROL_FIELDS
+    ENTITY_WRITES = {
+        "site_bound_increment_fmol": ("site_departed_fmol", "site_arrived_fmol"),
+        "site_free_increment_fmol": ("site_departed_fmol", "site_arrived_fmol"),
+    }
+    IDENTITY_ROLE = "user"  # It names site_occupancy@1's populations; it declares no species.
+    VIEW_LAYERS = (
+        {
+            "id": "site_replacement",
+            "label": "Site occupants at replacement",
+            "representation": "prescribed",
+        },  # noqa: E501
+    )
+    RECORD_KINDS = {
+        "site_departed_fmol": "cumulative",
+        "site_arrived_fmol": "cumulative",
+        "site_replacement_free_energy_pJ": "cumulative",
+        "site_replacement_energy_magnitude_pJ": "cumulative",
+        "site_replacement_applied": "cumulative",
+    }
+    UNITS = {"site_replacement_applied": "1"}
+
+    def view_events(self, spec, declaration, schedule):
+        """Its events in the run view: each reset, at its slot's cell."""
+        sites = _sites_of(spec)
+        covered = set(replaced_populations(spec, sites).values())
+        _, events = common.replacement_of(spec)
+        out = [
+            dict(
+                time=float(v.time),
+                kind="site_reset",
+                layer=self.VIEW_LAYERS[0]["id"],
+                at={"cell": v.slot},
+                label=f"site populations of {v.slot} reset from template {v.template}",
+            )
+            for v in events
+            if v.slot in covered
+        ]
+        return tuple(sorted(out, key=lambda e: (e["time"], e["label"])))
+
+    def view_sets(self, spec, declaration):
+        return {}
+
+    def parse(self, raw, base, inner_model):
+        return parse_occupant(raw, base)
+
+    def to_dict(self, declaration, base):
+        return occupant_to_dict(declaration)
+
+    def check_definition(self, spec, declaration, schedule, model):
+        check_occupant(spec, declaration)
+
+    def control_values(self, spec, declaration, schedule, records, indices, times):
+        """[time, slot] the replacements due by then, and [time, population] the latest newcomer's
+        template occupancy (0 before any), from replacement@1's events and its templates."""
+        sites = _sites_of(spec)
+        _, events = common.replacement_of(spec)
+        cells = [c.id for c in spec.model.cells]
+        x = spec.execution
+        times = np.asarray(times, dtype=np.float64)
+        count = np.zeros((times.size, x.capacity))
+        for v in events:
+            count[:, cells.index(v.slot)] += times >= v.time
+        theta = np.zeros((times.size, len(sites.populations)))
+        tables = occupant_tables(spec, sites, declaration)
+        for k, pop in enumerate(sites.populations):
+            for birth, (value, _, _) in tables.get(pop.id, ()):
+                theta[times >= birth, k] = value
+        return (count, theta)
+
+    def batch_signature(self, declaration):
+        return (OCCUPANT_LAW, tuple(t.template_id for t in declaration.templates))
+
+    def summary(self, spec, declaration, schedule, history):
+        sites = _sites_of(spec)
+        last = {k: np.asarray(getattr(history, k))[-1] for k in OCCUPANT_STATE_AXES}
+        return {
+            "site_occupant_law": OCCUPANT_LAW,
+            "site_occupant_templates": occupant_to_dict(declaration)["templates"],
+            "site_occupant_records": {
+                p.id: dict(
+                    departed_fmol=float(last["site_departed_fmol"][k]),
+                    arrived_fmol=float(last["site_arrived_fmol"][k]),
+                    free_energy_pJ=float(last["site_replacement_free_energy_pJ"][k]),
+                )
+                for k, p in enumerate(sites.populations)
+                if p.id in replaced_populations(spec, sites)
+            },
+        }
+
+    def initial_values(self, spec, declaration, schedule, inner_state, inner_layout):
+        return bind_occupant(spec, _sites_of(spec))
+
+    def event(self, state, control, p, *, xp):
+        return occupant_event(state, control, p, xp=xp)
+
+    def control_valid(self, control, p, *, xp):
+        theta = control.site_arrival_occupancy
+        valid = xp.all(xp.isfinite(theta) & (theta >= 0) & (theta <= 1))
+        return valid & xp.all(control.site_replacement_count >= 0)
+
+    def rate_checks(self, state, control, p, valid, *, xp):
+        return valid & occupant_valid(state, p, xp=xp)
+
+    def domain_valid(self, state, p, valid, *, xp):
+        own = occupant_valid(state, p, xp=xp)
+        return own if valid is None else valid & own
+
+    def ledger_terms(self, result, row, p, *, xp):
+        """@3's energy ledger: the site free energy's jumps at the resets, which the owner's
+        endpoint term (site_energy) includes, are booked here, against it."""
+        jumps = entity_sum(row.site_replacement_free_energy_pJ, axis=None, xp=xp)
+        result["energy"] = result["energy"] - jumps
+        return result, {}
+
+    def magnitude_terms(self, magnitudes, row, p, *, xp):
+        energy = entity_sum(row.site_replacement_energy_magnitude_pJ, axis=None, xp=xp)
+        magnitudes[6] = energy if magnitudes[6] is None else magnitudes[6] + energy
+        return magnitudes
+
+    def external_ledger_terms(self, ledgers, row, p, *, xp):
+        """The owner's bound ledger closes with the resets' arrived - departed (its moiety holds by
+        construction: R' + B' = S)."""
+        if "site_bound_entity" in ledgers:
+            jump = row.site_arrived_fmol - row.site_departed_fmol
+            ledgers = ledgers | {"site_bound_entity": ledgers["site_bound_entity"] - jump}
+        return ledgers
+
+    def external_magnitude_terms(self, magnitudes, row, p, *, xp):
+        moved = row.site_arrived_fmol + row.site_departed_fmol
+        return {k: v + moved for k, v in magnitudes.items()}

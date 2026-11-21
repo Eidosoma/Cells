@@ -903,6 +903,11 @@
   ],
   [
    "models/surface_pump_v3.py",
+   "imex_step",
+   "entity_sum(explicit_matrix[i], axis=None, xp=xp)"
+  ],
+  [
+   "models/surface_pump_v3.py",
    "readouts",
    "entity_sum(ca_metabolic, axis=None, xp=xp)"
   ],
@@ -1000,6 +1005,36 @@
    "operators/population_unit_turnover.py",
    "own_magnitudes",
    "entity_sum(xp.abs(row.unit_pool_units), axis=1, xp=xp)"
+  ],
+  [
+   "operators/site_occupancy.py",
+   "ledger_terms",
+   "entity_sum(row.site_replacement_free_energy_pJ, axis=None, xp=xp)"
+  ],
+  [
+   "operators/site_occupancy.py",
+   "magnitude_terms",
+   "entity_sum(row.site_replacement_energy_magnitude_pJ, axis=None, xp=xp)"
+  ],
+  [
+   "operators/wash_schedule.py",
+   "ledger_terms",
+   "entity_sum(out, axis=1, xp=xp)"
+  ],
+  [
+   "operators/wash_schedule.py",
+   "ledger_terms",
+   "entity_sum(row.wash_mixing_heat_pJ - exchanged, axis=None, xp=xp)"
+  ],
+  [
+   "operators/wash_schedule.py",
+   "magnitude_terms",
+   "entity_sum(moved, axis=1, xp=xp)"
+  ],
+  [
+   "operators/wash_schedule.py",
+   "magnitude_terms",
+   "entity_sum(row.wash_energy_magnitude_pJ, axis=None, xp=xp)"
   ]
  ]
 }

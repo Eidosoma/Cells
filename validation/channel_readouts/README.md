@@ -28,8 +28,23 @@ rounding.
 
 ## At a declared voltage
 
-No field yet gives a population's current at a voltage the user declares. That readout is engine
-work in its owner's queue (D251), and this example will use it when it lands.
+**Declared-voltage evaluation exists for passive routes and transporter populations,** not yet
+for @3's channel populations, which this example reads (81a29442, D252):
+- `cells.passive_routes@1`: a route with `readout: true` records `passive_flux_fmol_s` (inward) and
+  `passive_current_A` (outward-positive) at each observed row. `clamped_flux` gives every route's
+  flux and current at declared patch voltages.
+- `cells.transporter@1`: a population with `current_readout: true` records `cycle_current_A`
+  (outward-positive). `clamped_rates` gives each population's rates and current at declared host
+  voltages.
+- **Neither runs these twins' channel law** (`kleak_always_open@1`, one of @3's channel laws):
+  - a passive route opens with its patch's availability, times any routed factor, and has no
+    population count of its own. So two routes on one patch can't carry their own counts and
+    availabilities;
+  - a transporter population runs a carrier cycle, one of the kind's cycle laws, not a channel's
+    permeation.
+- **@3's channel populations record only `channel_flux_fmol_s`,** at the cell's own voltage.
+  Evaluating their current at a declared voltage is the @3 owner's engine work (FR-34: after N2,
+  about 1–1.5 agent-days).
 
 Until then:
 - **Row 0 is at a declared voltage.** The first observed row, t = 0, is the declared initial state.
@@ -38,12 +53,13 @@ Until then:
   checks it, and the test asserts it.
 - **Later rows are at the run's own, evolving voltage.**
 
-## Not covered here (engine work, in its owners' queues, D251)
+## Not covered here (engine work, in its owners' queues, D251, D252)
 
-- A population's current at any declared voltage.
-- One record of the effective availability: the held value times its routed factors.
-- Flux or current records per route for the kinds' routes, such as the passive-routes rectifier,
-  which record only `passive_transferred`, cumulative and inward.
+- **@3's channel populations at a declared voltage:** the @3 owner (above).
+- **One record of the effective availability,** the held value times its routed factors: the @3 or
+  operators owner.
+
+The kinds' routes now have their per-route flux and current records, on request (81a29442).
 
 ## Run it
 

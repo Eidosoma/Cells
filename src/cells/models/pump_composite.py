@@ -719,6 +719,15 @@ def structure_errors(inner, operators):
         for law in op.REQUIRES:
             if law not in laws[:i]:
                 errors.append(f"{op.LAW_ID} requires {law} before it")
+    # R3: a reader may read only quantities its composed owners declare.
+    for reader, owners in quantity_readers(operators).items():
+        for owner in owners:
+            unknown = [k for k in reader.QUANTITY_READS[owner.LAW_ID] if k not in owner.QUANTITIES]
+            if unknown:
+                errors.append(
+                    f"{reader.LAW_ID} reads {owner.LAW_ID}'s {', '.join(unknown)}, which it does "
+                    "not declare among its quantities"
+                )
     # Schema A (docs/INNER_MODEL_V4_DESIGN.md §7.4 (j)): an operator that reads or writes a kind's
     # fields declares the kind (REQUIRES_KINDS), refused where the definition does not declare it;
     # its declared writes and resets of a kind's fields name the kind too. A factor of a kind's
@@ -1064,7 +1073,62 @@ def field_map(inner, operators):
             factors.setdefault(k, []).append(op.LAW_ID)
     if factors:
         out["factors"] = factors
+    # R3's readable quantities: each owner's quantities with their axis and unit, and the readers
+    # that may read them. Only where a reader and its owner are both composed, so every other map,
+    # and so its manifests, are unchanged.
+    readers = quantity_readers(operators)
+    if readers:
+        quantities = {}
+        for reader, owners in readers.items():
+            for owner in owners:
+                entry = quantities.setdefault(
+                    owner.LAW_ID,
+                    {
+                        "quantities": {k: list(v) for k, v in owner.QUANTITIES.items()},
+                        "readers": [],
+                    },
+                )
+                entry["readers"].append(reader.LAW_ID)
+        out["quantities"] = quantities
     return out
+
+
+def quantity_readers(operators):
+    """R3: {reader: (its owners in the composition, in declared order)} for each operator whose
+    QUANTITY_READS names a composed owner (static; empty without one)."""
+    by_law = {op.LAW_ID: op for op in operators}
+    out = {}
+    for op in operators:
+        owners = tuple(by_law[law] for law in op.QUANTITY_READS if law in by_law)
+        if owners:
+            out[op] = owners
+    return out
+
+
+def quantity_read_definition_errors(pairs):
+    """R3's refusals of a definition's declared quantity reads ((operator, declaration) in declared
+    order; each reader's declared_quantity_reads): a read that is not one of its QUANTITY_READS, of
+    an owner the composition does not hold, or, read in an operator target's half-steps, of an
+    owner declared after that target. The owner then moves its quantity in its own half-steps
+    before the target's first half, and after its second, so the split stays symmetric about the
+    target."""
+    position = {op.LAW_ID: k for k, (op, _) in enumerate(pairs)}
+    errors = []
+    for op, declaration in pairs:
+        for owner, name, target in op.declared_quantity_reads(declaration):
+            if name not in op.QUANTITY_READS.get(owner, ()):
+                errors.append(f"{op.LAW_ID} declares a read of {owner}'s {name}, not one it reads")
+            elif owner not in position:
+                errors.append(
+                    f"{op.LAW_ID} reads {owner}'s {name}, which the composition does not hold"
+                )
+            elif target is not None and target in position and position[owner] > position[target]:
+                errors.append(
+                    f"{op.LAW_ID} reads {owner}'s {name} in {target}'s half-steps, but {owner} "
+                    f"follows {target}: an owner whose quantity a route reads precedes the route's "
+                    "target, so both of its halves read the quantity after the owner's first half"
+                )
+    return errors
 
 
 def accepted_writers(operators):
@@ -1122,6 +1186,8 @@ class Composition:
         self.factor_fields = {op: factor_reads(op) for op in self.factors if factor_reads(op)}
         # B1′: each routed split target's (source, field) routes (static: none without a source).
         self.rate_routes = rate_routes(operators)
+        # R3: each reader's composed owners (static: none declared, no call changes).
+        self.quantity_readers = quantity_readers(operators)
         self.domain_views = tuple(op for op in operators if op.VIEW_FOLLOWS_SPLIT)
         self.process_operator = next((op for op in operators if op.PROCESS), None)
         self.coupled = any(op.SPLIT and op.RK4 == "coupled" for op in operators) or (
@@ -1383,13 +1449,37 @@ class Composition:
             return lambda s: self.view(p, s, xp=xp)
         return lambda s: self.reader_view(op, p, s, xp=xp)
 
+    def quantity_reader(self, op, p, *, xp):
+        """R3: the function of state a reader receives as quantities=, giving {owner law: {name:
+        values}} of its composed owners, each computed by the owner's own quantities; None for an
+        operator that reads none (static). Nothing is traced unless the reader calls it."""
+        owners = self.quantity_readers.get(op)
+        if not owners:
+            return None
+        return lambda s: {owner.LAW_ID: owner.quantities(s, p, xp=xp) for owner in owners}
+
+    def _quantity_keywords(self, op, p, *, xp):
+        """R3: {"quantities": its function} for a reader with a composed owner, else {} (static)."""
+        reader = self.quantity_reader(op, p, xp=xp)
+        return {} if reader is None else {"quantities": reader}
+
     def control_view(self, control, state, p, *, xp=jnp):
         """The inner control with every factor applied at `state`; a factor operator that reads
-        at the control view gets view= (R2; static: otherwise the call is unchanged)."""
-        if not self.factor_fields:
+        at the control view gets view= (R2), and a reader of quantities quantities= (R3) (static:
+        otherwise the call is unchanged)."""
+        readers = {
+            op: self.quantity_reader(op, p, xp=xp)
+            for op in self.factors
+            if op in self.quantity_readers
+        }
+        if not self.factor_fields and not readers:
             return self.inner.control_view(control, state, p, self.factors, xp=xp)
-        views = self._factor_views(p, xp=xp)
-        return self.inner.control_view(control, state, p, self.factors, xp=xp, views=views)
+        keywords = {}
+        if self.factor_fields:
+            keywords["views"] = self._factor_views(p, xp=xp)
+        if readers:
+            keywords["quantities"] = readers
+        return self.inner.control_view(control, state, p, self.factors, xp=xp, **keywords)
 
     def inner_state(self, state):
         return self.inner.inner_state(state)
@@ -1517,14 +1607,15 @@ class Composition:
         route on a field in this definition gives None and leaves it as scheduled (static)."""
         fields, valid, records = {}, None, {}
         for source, name in routes:
-            out = source.rate_factors(state, p, op.LAW_ID, name, xp=xp)
+            keywords = self._quantity_keywords(source, p, xp=xp)  # R3 (static: {} for most).
+            out = source.rate_factors(state, p, op.LAW_ID, name, xp=xp, **keywords)
             if out is None:
                 continue
             factor, ok = out
             fields[name] = fields.get(name, getattr(control, name)) * factor
             valid = _and(valid, ok)
             if source.FACTOR_RECORD:
-                record = source.factor_record(state, p, op.LAW_ID, name, xp=xp)
+                record = source.factor_record(state, p, op.LAW_ID, name, xp=xp, **keywords)
                 records[source.FACTOR_RECORD] = _merged(
                     records.get(source.FACTOR_RECORD), record, xp=xp
                 )
@@ -1534,11 +1625,12 @@ class Composition:
         """(validity, current with its records) of the factor sources at the control view (B1′):
         each one's factor_valid, and each FACTOR_RECORD filled with the factors applied there
         (static: a source without either changes nothing). A factor operator that reads at the
-        control view gets view= in both (R2)."""
+        control view gets view= in both (R2), and a reader of quantities quantities= (R3)."""
         valid, records = None, {}
         views = self._factor_views(p, xp=xp) if self.factor_fields else {}
         for op in self.factors:
             keywords = {"view": views[op]} if op in views else {}
+            keywords |= self._quantity_keywords(op, p, xp=xp)  # R3 (static: {} for most).
             valid = _and(valid, op.factor_valid(current, p, xp=xp, **keywords))
             if op.FACTOR_RECORD:
                 record = op.factor_record(current, p, None, None, xp=xp, **keywords)
@@ -1683,7 +1775,11 @@ class Composition:
             )
         species_registry.check_definition(spec)
         pairs = [(op, d) for op, d, _ in entries(spec)]
-        scoped = scope_errors(self.inner, pairs, spec) + rate_route_definition_errors(pairs)
+        scoped = (
+            scope_errors(self.inner, pairs, spec)
+            + rate_route_definition_errors(pairs)
+            + quantity_read_definition_errors(pairs)
+        )
         if scoped:
             raise ConfigError("Invalid operator composition: " + "; ".join(scoped))
         # The operators' in-step writers beside declared kinds (held_row_errors,
@@ -2052,7 +2148,8 @@ class Composition:
             )
             row = {k: v[0] for k, v in vars(observed).items()}
             for op in self.operators:
-                columns = op.observe(row, state, control, p, view, self, spec)
+                keywords = self._quantity_keywords(op, p, xp=np)  # R3 (static: {} for most).
+                columns = op.observe(row, state, control, p, view, self, spec, **keywords)
                 if set(columns) != self.observed_keys[op.LAW_ID]:
                     undeclared = sorted(set(columns) ^ self.observed_keys[op.LAW_ID])
                     raise ConfigError(f"{op.LAW_ID} observes {undeclared} against its declaration")

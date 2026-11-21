@@ -1,0 +1,458 @@
+"""scheduled_compartment_wash@1 (FR-27, D246) in NumPy and a compiled kernel, no world compiled.
+
+docs/COMPARTMENT_WASH_DESIGN.md. Rows, each a claim: every refusal fires with its reason; the event
+map on the review's well (60 fmol free, 30 on the specimen's sites and 10 on the wall's, half
+washed with buffer at the trace) books the sample, the supply and the free-energy split, keeps
+every site field and every ion amount bit for bit, and closes @3's ledgers at the event; the
+whole wash is FR-20's booking; the mixing heat stands against a 50-digit reference, at the trace
+too, and each plant breaks it; the host's domain check reads every event's heat; two washes of one
+node keep their own fractions and buffers. About 8 s together.
+"""
+
+import copy
+import math
+from decimal import Decimal, localcontext
+
+import jax
+import jax.numpy as jnp
+import numpy as np
+import pytest
+
+from cells.definitions import pump_composite_spec as cs
+from cells.definitions.specs import ConfigError, parse_spec
+from cells.execution.errors import NumericalError
+from cells.laws.electrochemistry import R
+from cells.models import surface_pump as first
+from cells.numerics import ideal_mixing
+from cells.operators import OPERATORS
+from cells.operators import site_occupancy as so
+from cells.operators import wash_schedule as ws
+from cells.registry.models import get_model
+from validation.tissue import bath_schedule_fixtures as bfx
+from validation.tissue import compartment_fixtures as cfx
+from validation.tissue import secreted_species_fixtures as fx
+from validation.tissue import wash_schedule_fixtures as wfx
+
+S = wfx.TRACER
+T_E = 1.0  # s: the wash, on the well's 10 ms grid.
+EPS = np.finfo(float).eps
+
+
+def washed(raw=None, events=((T_E, "well", 0.5, {S: wfx.TRACE_mM}),), nodes=("well",), **kw):
+    return wfx.with_wash(wfx.well() if raw is None else raw, nodes, events, **kw)
+
+
+def changed(raw, edit):
+    out = copy.deepcopy(raw)
+    edit(out)
+    return out
+
+
+def _permeant(raw):
+    patch = next(p for p in raw["model"]["membranes"] if p["id"] == "specimen_face")
+    patch["permeability_m_per_s"][S] = 1e-9
+
+
+def _event(time=T_E, fraction=0.5, buffer=None, node="well"):
+    return (time, node, fraction, {S: wfx.TRACE_mM} if buffer is None else buffer)
+
+
+REFUSALS = {
+    "a held bath": (lambda: washed(nodes=("bath",), events=[]), "is a held bath"),
+    "an undeclared node": (lambda: washed(nodes=("pond",), events=[]), "undeclared outside node"),
+    "a node twice": (lambda: washed(nodes=("well", "well"), events=[]), "lists a node twice"),
+    "ions not the node's own": (lambda: washed(ions="formula_units"), "declares its ions"),
+    "a buffer without a species": (lambda: washed(events=[_event(buffer={})]), "missing \\['S'\\]"),
+    "a buffer with an ion": (
+        lambda: washed(events=[_event(buffer={S: 1e-9, "K": 5.0})]),
+        "other \\['K'\\]",
+    ),
+    "an exact zero": (lambda: washed(events=[_event(buffer={S: 0.0})]), "an exact zero"),
+    "a fraction of 0": (lambda: washed(events=[_event(fraction=0.0)]), "fraction lies in"),
+    "a fraction above 1": (lambda: washed(events=[_event(fraction=1.5)]), "fraction lies in"),
+    "a time off the grid": (lambda: washed(events=[_event(time=1.005)]), "multiple of dt"),
+    "a time at 0": (lambda: washed(events=[_event(time=0.0)]), "after time 0"),
+    "a time at the end": (lambda: washed(events=[_event(time=2.0)]), "before the end time"),
+    "times not increasing": (
+        lambda: washed(events=[_event(time=1.0), _event(time=0.5)]),
+        "increase strictly",
+    ),
+    "an event at a node not declared": (
+        lambda: washed(events=[_event(node="bath")]),
+        "does not declare",
+    ),
+    "a face at the node": (
+        lambda: wfx.with_wash(fx.world(), ["ecs_0"], [(0.002, "ecs_0", 0.5, {S: 1e-9})]),
+        "face face_0 touches node ecs_0",
+    ),
+    "a neutral species across a facing patch": (
+        lambda: washed(changed(wfx.well(sites=False), _permeant)),
+        "S crosses patch specimen_face",
+    ),
+    "a buffer below a site ligand's trace": (
+        lambda: washed(events=[_event(buffer={S: 1e-13})]),
+        "below its declared trace",
+    ),
+    # Off the compartments' admitted list, which fails closed (compartments.check_definition).
+    "beside the compartments": (
+        lambda: wfx.with_wash(
+            cfx.loaded_compartment(), ["ecs_0"], [(0.01, "ecs_0", 0.5, {S: 1e-6})]
+        ),
+        "scheduled_compartment_wash@1 is not on its admitted list",
+    ),
+}
+
+
+@pytest.mark.parametrize("name", sorted(REFUSALS))
+def test_each_refusal_fires_with_its_reason(name):
+    build, message = REFUSALS[name]
+    with pytest.raises(ConfigError, match=message):
+        parse_spec(build())
+
+
+def test_admitted_beside_a_dose_at_a_held_bath_and_the_declaration_round_trips():
+    """Door S: the wash reads the well alone, so the bath schedule's dose at the held bath (a
+    measured KCl-for-NaCl step, on its 1 ms grid) is admitted beside it and the sites."""
+    raw = washed(wfx.well(dt=1e-3, end=1.5))
+    raw = bfx.with_bath_schedule(
+        raw, ["bath"], bfx.SALTS, [(0.5, ["bath"], {"KCl": 2.5, "NaCl": -2.5})]
+    )
+    spec = parse_spec(raw)
+    assert parse_spec(cs.to_dict(spec)) == spec
+    ((op, declaration, _),) = [e for e in cs.entries(spec) if e[0].LAW_ID == ws.LAW_ID]
+    well = [c.id for c in spec.model.extracellular].index("well")
+    assert op.read_slots(spec, declaration) == dict.fromkeys(
+        ws.ScheduledCompartmentWash.SCOPED_READS, (well,)
+    )
+
+
+# ------------------------------------------------------------------ the event map, in NumPy
+
+
+def at_event(raw, time=T_E, count=None):
+    """(spec, model, the bound state, p, the control at `time`, the state after the event maps,
+    their validity)."""
+    spec = parse_spec(raw)
+    model = get_model(spec.model)
+    state, p = model.initial_values(spec)
+    control = model.CONTROL_TYPE(*(v[0] for v in cs.control_values(spec, [time])))
+    if count is not None:
+        control = control._replace(wash_count=np.full_like(control.wash_count, count))
+    after, valid = state, True
+    for op in model.events:
+        after, ok = op.event(after, control, p, xp=np)
+        valid &= ok is None or bool(ok)
+    return spec, model, state, p, control, after, valid
+
+
+def energy(spec, model, row, p, steps=1):
+    """(@3's energy residual with the operators' terms, its bound at `steps`, and the wash's own
+    term) at `row`."""
+    tol = np.asarray(spec.execution.material_balance_atol_fmol)
+    rtol = first.ENERGY_RTOL[spec.execution.solver]
+    magnitudes = model.magnitudes(row, p)
+    _, limits = model.ledger_limits(row, p, tol, rtol, steps=steps, magnitudes=magnitudes)
+    own = row.wash_mixing_heat_pJ - row.wash_buffer_free_energy_pJ + row.wash_sample_free_energy_pJ
+    return float(model.inner_balances(row, p)["energy"]), float(limits[6]), float(np.sum(own))
+
+
+def in_turn(raw, times):
+    """(spec, model, p, the states after the event maps at each of `times` in turn, no step
+    between; the bound state first)."""
+    spec = parse_spec(raw)
+    model = get_model(spec.model)
+    state, p = model.initial_values(spec)
+    states = [state]
+    for time in times:
+        control = model.CONTROL_TYPE(*(v[0] for v in cs.control_values(spec, [time])))
+        for op in model.events:
+            state, ok = op.event(state, control, p, xp=np)
+            assert ok is None or bool(ok)
+        states.append(state)
+    return spec, model, p, states
+
+
+def reference(n, volume, fraction, buffer, temperature):
+    """(H_mix, F_sample, F_buffer) of one species' wash, 50 digits."""
+    with localcontext() as ctx:
+        ctx.prec = 50
+        n, v, f, cb = (Decimal(float(x)) for x in (n, volume, fraction, buffer))
+        rt = Decimal("1e-3") * Decimal(R) * Decimal(temperature)
+        c = n / v
+        c1 = (1 - f) * c + f * cb
+
+        def phi(x):
+            return x * x.ln() - x + 1 if x > 0 else Decimal(1)
+
+        heat = rt * v * c1 * ((1 - f) * phi(c / c1) + f * phi(cb / c1))
+        return heat, rt * f * n * (c.ln() - 1), rt * f * v * cb * (cb.ln() - 1)
+
+
+def close(value, expected, ulps, rel=0.0):
+    """Within `ulps` of the value's spacing, plus `rel` of the reference."""
+    bound = ulps * Decimal(np.spacing(abs(value))) + Decimal(rel) * abs(expected)
+    return math.isfinite(value) and abs(Decimal(value) - expected) <= bound
+
+
+def test_the_wash_books_the_sample_the_buffer_and_its_free_energy_and_keeps_the_rest():
+    """The review's well at t_e: 60 fmol free become 30 plus the buffer's trace, the sample is 30,
+    the sites and the ions keep their bits, and @3's ledgers close at the event with the wash's
+    terms (the energy residual about 1e-13 pJ, its bound 2e-8 pJ), while the wash's energy term
+    alone is about 4e10 times that bound."""
+    spec, model, state, p, control, after, valid = at_event(washed())
+    assert valid
+    ids = list(spec.model.species_ids)
+    s, w = ids.index(S), [c.id for c in spec.model.extracellular].index("well")
+    n = np.asarray(p.extracellular_amount_reference) + np.asarray(
+        state.extracellular_amount_increment
+    )
+    collected, supplied = (
+        np.asarray(after.wash_collected_fmol),
+        np.asarray(after.wash_supplied_fmol),
+    )
+    assert collected[s, w] == 0.5 * n[s, w] == 30.0
+    assert supplied[s, w] == 0.5 * wfx.V_WELL * wfx.TRACE_mM
+    moved = np.asarray(after.extracellular_amount_increment) - np.asarray(
+        state.extracellular_amount_increment
+    )
+    assert moved[s, w] == supplied[s, w] - collected[s, w]
+    for i, z in enumerate(spec.model.valence):  # Ions: f n out and the same in, the amount kept.
+        if z:
+            assert (
+                collected[i, w].tobytes() == supplied[i, w].tobytes() == (0.5 * n[i, w]).tobytes()
+            )
+            assert moved[i, w] == 0.0
+    assert np.count_nonzero(moved) == 1  # Only the tracer at the well moved.
+    for name in so.STATE_AXES:  # Bound material is not liquid: every site field keeps its bits.
+        assert (
+            np.asarray(getattr(after, name)).tobytes() == np.asarray(getattr(state, name)).tobytes()
+        )
+    heat, f_sample, f_buffer = reference(
+        n[s, w], wfx.V_WELL, 0.5, wfx.TRACE_mM, spec.model.temperature_K
+    )
+    assert close(float(after.wash_mixing_heat_pJ[w]), heat, 64)
+    assert after.wash_last_mixing_heat_pJ[w] == after.wash_mixing_heat_pJ[w] > 0
+    assert close(float(after.wash_sample_free_energy_pJ[w]), f_sample, 8)
+    assert close(float(after.wash_buffer_free_energy_pJ[w]), f_buffer, 8)
+    assert after.wash_applied[w] == 1 and np.count_nonzero(after.wash_applied) == 1
+    op = next(op for op in model.events if op.LAW_ID == ws.LAW_ID)
+    assert not np.any(op.own_ledgers(after, p, xp=np)["wash_ions"])
+    # @3's ledgers at the event, with the wash's terms: the chemical jump against the split.
+    b = model.inner_balances(after, p)
+    tol = np.asarray(spec.execution.material_balance_atol_fmol)
+    rtol = first.ENERGY_RTOL[spec.execution.solver]
+    _, limits = model.ledger_limits(
+        after, p, tol, rtol, steps=1, magnitudes=model.magnitudes(after, p)
+    )
+    assert np.all(np.abs(b["outside"]) <= limits[1]) and np.all(np.abs(b["total"]) <= limits[2])
+    assert abs(b["energy"]) <= 1e-3 * limits[6]
+    split = float(
+        np.sum(
+            after.wash_mixing_heat_pJ
+            - after.wash_buffer_free_energy_pJ
+            + after.wash_sample_free_energy_pJ
+        )
+    )
+    assert abs(b["energy"] - split) > 1e9 * limits[6]  # Without its term the ledger fails.
+    # Nothing more is due at the same control: the state, bit for bit.
+    again, ok = op.event(after, control, p, xp=np)
+    assert ok and all(
+        np.asarray(x).tobytes() == np.asarray(y).tobytes()
+        for x, y in zip(again, after, strict=True)
+    )
+    # A count the state has not reached refuses the step.
+    _, _, _, _, _, _, valid = at_event(washed(), count=2)
+    assert not valid
+
+
+def test_the_whole_wash_is_fr20s_booking_and_the_trace_limit_of_its_amounts():
+    """f = 1: the sink takes F(old pool), the source F(fresh pool), with no mixing heat, and @3's
+    energy ledger closes at the event's own step (steps = 1), for 1 uL and 10 mL wells to traces
+    down to 1e-14 mM (the new amount, anchor plus increment, is rounded at eps times the stored
+    amounts: its magnitude term). The node at 1 mM: at 2^-60 mM the buffer's amount lies below one
+    ulp of the node's anchor and the event refuses the step; at f = 0.5 it is admitted, its heat
+    finite."""
+    one = wfx.well(sites=False, free=wfx.V_WELL)  # 1 mM.
+    spec, model, state, p, _, after, valid = at_event(
+        washed(one, [_event(fraction=1.0, buffer={S: 1e-9})])
+    )
+    assert valid
+    residual, bound, _ = energy(spec, model, after, p)
+    assert abs(residual) <= bound
+    for volume, buffer in ((1e10, 1e-12), (1e10, 1e-14)):  # Ratios 1.3 and 4.8 without the term.
+        big = wfx.well(sites=False, volume=volume, free=volume)
+        spec_b, model_b, _, p_b, _, after_b, valid_b = at_event(
+            washed(big, [_event(fraction=1.0, buffer={S: buffer})])
+        )
+        residual, bound, _ = energy(spec_b, model_b, after_b, p_b)
+        assert valid_b and abs(residual) <= 0.2 * bound
+    s, w = (
+        list(spec.model.species_ids).index(S),
+        [c.id for c in spec.model.extracellular].index("well"),
+    )
+    n = float(
+        np.asarray(p.extracellular_amount_reference)[s, w]
+        + np.asarray(state.extracellular_amount_increment)[s, w]
+    )
+    assert after.wash_mixing_heat_pJ[w] == 0.0 and after.wash_collected_fmol[s, w] == n
+    _, f_old, f_fresh = reference(n, wfx.V_WELL, 1.0, 1e-9, spec.model.temperature_K)
+    assert close(float(after.wash_sample_free_energy_pJ[w]), f_old, 8)
+    assert close(float(after.wash_buffer_free_energy_pJ[w]), f_fresh, 8)
+    left = float(
+        np.asarray(p.extracellular_amount_reference)[s, w]
+        + np.asarray(after.extracellular_amount_increment)[s, w]
+    )
+    assert left == pytest.approx(wfx.V_WELL * 1e-9, rel=1e-6)  # eps x the anchor, absolute.
+    trace = 2.0**-60
+    assert not at_event(washed(one, [_event(fraction=1.0, buffer={S: trace})]))[-1]
+    spec, _, state, p, _, after, valid = at_event(
+        washed(one, [_event(fraction=0.5, buffer={S: trace})])
+    )
+    heat, _, _ = reference(n, wfx.V_WELL, 0.5, trace, spec.model.temperature_K)
+    assert valid and close(float(after.wash_mixing_heat_pJ[w]), heat, 8)
+
+
+def test_the_domain_check_reads_every_events_heat():
+    """The host's row check (the composite's check_values): the row after the wash passes; with a
+    negative heat at the latest event it fails the domain, though the cumulative record stays
+    positive (the host check of H_mix >= 0 at every event, D246)."""
+    spec, model, _, _, _, after, _ = at_event(washed())
+    w = [c.id for c in spec.model.extracellular].index("well")
+    model.check_values(after, spec)
+    last = np.array(after.wash_last_mixing_heat_pJ)
+    last[w] = -1e-9
+    assert after.wash_mixing_heat_pJ[w] > 0
+    with pytest.raises(NumericalError, match="Invalid"):
+        model.check_values(after._replace(wash_last_mixing_heat_pJ=last), spec)
+
+
+def test_two_washes_of_one_node_keep_their_own_fractions_and_buffers():
+    """Half the well with the trace at 1 s, then a quarter with 2e-5 mM at 1.5 s: two applied, the
+    second's sample a quarter of what the first left, its buffer its own, the records summed, the
+    latest heat the second's, and @3's energy ledger closed after both."""
+    events = [_event(), _event(time=1.5, fraction=0.25, buffer={S: 2e-5})]
+    spec, model, p, (_, first_wash, second) = in_turn(washed(events=events), [T_E, 1.5])
+    s, w = (
+        list(spec.model.species_ids).index(S),
+        [c.id for c in spec.model.extracellular].index("well"),
+    )
+    left = float(
+        np.asarray(p.extracellular_amount_reference)[s, w]
+        + np.asarray(first_wash.extracellular_amount_increment)[s, w]
+    )
+    assert second.wash_applied[w] == 2
+    assert second.wash_collected_fmol[s, w] == first_wash.wash_collected_fmol[s, w] + 0.25 * left
+    supply = 0.25 * wfx.V_WELL * 2e-5
+    assert second.wash_supplied_fmol[s, w] == first_wash.wash_supplied_fmol[s, w] + supply
+    heat, _, _ = reference(left, wfx.V_WELL, 0.25, 2e-5, spec.model.temperature_K)
+    assert close(float(second.wash_last_mixing_heat_pJ[w]), heat, 64)
+    total = first_wash.wash_mixing_heat_pJ[w] + second.wash_last_mixing_heat_pJ[w]
+    assert second.wash_mixing_heat_pJ[w] == total
+    residual, bound, _ = energy(spec, model, second, p)
+    assert abs(residual) <= 1e-3 * bound
+
+
+# ------------------------------------------------------------------ the mixing heat, a kernel table
+
+
+def kernel(n, volume, fraction, buffer, compiled):
+    """(H_mix, F_sample, F_buffer) per column of one neutral species, from wash_terms."""
+    args = (
+        np.asarray(n, float)[None, :],
+        np.asarray(volume, float)[None, :],
+        np.asarray(fraction, float)[None, :],
+        np.asarray(buffer, float)[None, :],
+    )
+    ion = np.zeros((1, 1), dtype=bool)
+    if compiled:
+        out = jax.jit(lambda *a: ws.wash_terms(*a, ion, 310.0, xp=jnp))(*args)
+    else:
+        with np.errstate(all="ignore"):
+            out = ws.wash_terms(*args, ion, 310.0, xp=np)
+    return np.asarray(out[5])[0], np.asarray(out[3])[0], np.asarray(out[4])[0]
+
+
+def columns(row):
+    """(n, volume, fraction, buffer) for a row of the table."""
+    if row in ("trace_buffer", "trace_node"):
+        c, cb = (1.0, 2.0**-60) if row == "trace_buffer" else (2.0**-60, 1.0)
+        f = np.array([0.5, 0.1, 0.9])
+        return np.full(3, c * 1e6), np.full(3, 1e6), f, np.full(3, cb)
+    if row == "threshold_edge":  # c_b / c' from about 2^-59 to 2^-41, below RATIO_BELOW.
+        cb = 2.0 ** -np.linspace(42, 60, 12)
+        return np.full(12, 1e3), np.full(12, 1e3), np.full(12, 0.5), cb
+    # Ordinary: buffer-to-node ratios from 1e-6 to 1e6; within 2e-3 of 1, where the e-form takes
+    # over from the series; within 1e-5 of 1, the series; and fractions to 1.
+    rng = np.random.default_rng(27)
+    sign = rng.choice([-1.0, 1.0], 16)
+    ratio = np.concatenate(
+        [
+            10 ** rng.uniform(-6, 6, 32),
+            1 + sign * rng.uniform(2e-4, 2e-3, 16),
+            1 + rng.uniform(-1e-5, 1e-5, 16),
+        ]
+    )
+    c = 10 ** rng.uniform(-6, 2, 64)
+    f = np.concatenate([rng.uniform(0.01, 1.0, 60), [1.0, 1.0, 0.5, 1e-3]])
+    volume = 2.0 ** rng.integers(0, 20, 64)  # So c = n / V is exact, as the reference's is.
+    return c * volume, volume, f, c * ratio
+
+
+def heat_failures(row):
+    out = []
+    n, volume, f, cb = columns(row)
+    expected = [reference(*x, 310.0)[0] for x in zip(n, volume, f, cb, strict=True)]
+    # The form's own accuracy: a few ulps from the ratio and the series; the e-form keeps about
+    # eps |ln r| of phi far from 1 and about 2 eps / |e| just above the series' 1e-4.
+    rel = 1e-11 if row == "ordinary" else 0.0
+    for compiled in (False, True):
+        heat = kernel(n, volume, f, cb, compiled)[0]
+        bad = [
+            j
+            for j, (h, x) in enumerate(zip(heat, expected, strict=True))
+            if not (h >= 0 and close(float(h), x, 16, rel))
+        ]
+        if bad:
+            out.append(f"heat off the reference at {bad} ({compiled=})")
+    return out
+
+
+def e_alone(e, ratio, *, xp):  # Planted: the e-form as the cleft first had it, the ratio unread.
+    small = xp.abs(e) < ideal_mixing.SERIES_BELOW
+    safe = xp.where(small, 1.0, e)
+    return xp.where(
+        small,
+        e * e * (0.5 - e * (1.0 / 6.0 - e * (1.0 / 12.0 - e / 20.0))),
+        (1.0 + safe) * xp.log1p(safe) - safe,
+    )
+
+
+HEATS = (  # Each plant: the e-form alone, or the ratio form everywhere.
+    pytest.param("trace_buffer", ("phi", e_alone), id="trace_buffer"),
+    pytest.param("trace_node", ("phi", e_alone), id="trace_node"),
+    pytest.param("threshold_edge", ("phi", e_alone), id="threshold_edge"),
+    pytest.param("ordinary", ("RATIO_BELOW", np.inf), id="ordinary"),
+)
+
+
+@pytest.mark.parametrize("row, plant", HEATS)
+def test_the_mixing_heat_against_a_50_digit_reference_and_each_plant_breaks_it(
+    row, plant, monkeypatch
+):
+    assert heat_failures(row) == []
+    monkeypatch.setattr(ideal_mixing, *plant)
+    assert heat_failures(row) != []
+
+
+def test_it_registers_with_its_run_view():
+    op = OPERATORS[ws.LAW_ID]
+    assert op.IDENTITY_ROLE == "user" and [layer["representation"] for layer in op.VIEW_LAYERS] == [
+        "prescribed"
+    ]
+    spec = parse_spec(washed(events=[_event(time=0.5), _event(time=1.5, fraction=1.0)]))
+    ((_, declaration, schedule),) = [e for e in cs.entries(spec) if e[0].LAW_ID == ws.LAW_ID]
+    events = op.view_events(spec, declaration, schedule)
+    assert [(e["time"], e["at"], e["layer"]) for e in events] == [
+        (0.5, {"outside": "well"}, "wash"),
+        (1.5, {"outside": "well"}, "wash"),
+    ]
