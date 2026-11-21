@@ -10,7 +10,7 @@ with validation/gene_regulation/references/checks.py and without the code that w
   and steady states, the R-noise band and its verdicts, the plants' margins and summaries;
 - that a planted error in each kind of stored number is caught.
 
-About 1 s; nothing here imports the engine or scipy. Regeneration is
+About 1 s; nothing here imports the engine (the last test imports run.py, hence scipy). Regeneration is
 `python -m validation.gene_regulation.references.run` (an hour or more, detached).
 """
 
@@ -105,3 +105,29 @@ def test_planted_error_is_caught(data, path, edit, check):
     finally:
         holder[key] = original
     check(data)  # restored
+
+
+def test_receipt_records_untracked_executed_source(tmp_path, monkeypatch):
+    """A checkout's receipt holds an imported file Git does not track, with its content (D259)."""
+    import subprocess
+    import sys
+
+    from validation.gene_regulation.references import run
+
+    git = lambda *a: subprocess.run(["git", "-C", str(tmp_path), *a], check=True, capture_output=True)  # noqa: E731
+    git("init", "-q")
+    (tmp_path / "tracked.txt").write_text("x\n")
+    git("add", "tracked.txt")
+    git("-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q", "-m", "c")
+    (tmp_path / "untracked_exec.py").write_text("MARKER = 'only in the working tree'\n")
+    monkeypatch.syspath_prepend(str(tmp_path))
+    monkeypatch.setattr(run, "HERE", tmp_path)
+    import untracked_exec  # noqa: F401
+
+    try:
+        src = run.provenance()["source"]
+    finally:
+        sys.modules.pop("untracked_exec", None)
+    assert src["untracked_executed"] == ["untracked_exec.py"]
+    assert "only in the working tree" in src["diff"]
+    assert "?? untracked_exec.py" in src["status"]
