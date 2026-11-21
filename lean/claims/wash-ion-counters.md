@@ -22,7 +22,15 @@ Uses [A partial wash dilutes free tracer and preserves its inventory](compartmen
 
 ## Numerical comparison
 
-**Failed.** On compiled CPU float64, three 1/2 washes completed with identical counters. Three 3/7 washes kept all ionic inventories fixed. The final chloride collected minus supplied was −2.9802322387695312 × 10⁻⁸ fmol in the production scan, and the public runner refused the outside-material ledger. Sodium and potassium closed exactly.
+**Checked.** On the repaired compiled host, three half washes and three 3/7 washes kept Na, K and Cl inventories fixed. Collected and supplied counters agreed exactly at every saved row and both runs completed. At 68ab12e7 the 3/7 schedule left a chloride residual of −2.98 × 10⁻⁸ fmol and the outside-material ledger refused it.
+
+**Engine** `resolved_pump_composite@1`
+
+**Operators** `cells.scheduled_compartment_wash@1`
+
+[Ion sample and refill](https://github.com/Eidosoma/Cells/blob/2ae9ce8e5c6b56ecab091b6167d034eb97a5520f/src/cells/operators/wash_schedule.py#L421-L436) · [Cumulative ion counters](https://github.com/Eidosoma/Cells/blob/2ae9ce8e5c6b56ecab091b6167d034eb97a5520f/src/cells/operators/wash_schedule.py#L478-L491) · [Finite well and wash definition](https://github.com/Eidosoma/Cells/blob/2ae9ce8e5c6b56ecab091b6167d034eb97a5520f/validation/tissue/wash_schedule_fixtures.py#L35-L90) · [Public runner](https://github.com/Eidosoma/Cells/blob/2ae9ce8e5c6b56ecab091b6167d034eb97a5520f/src/cells/execution/runner.py#L384) · [Public unchanged-ion regression](https://github.com/Eidosoma/Cells/blob/2ae9ce8e5c6b56ecab091b6167d034eb97a5520f/tests/unit/test_wash_schedule_runs.py#L62-L92) · [Exact wash identity](https://github.com/Eidosoma/Cells/blob/841e06cd5d0e97b449b6eb5fdfa55f4e4376da86/lean/CellsProofs/Tissue/CompartmentWash.lean) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/841e06cd5d0e97b449b6eb5fdfa55f4e4376da86/lean/checks/compartment_wash.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/841e06cd5d0e97b449b6eb5fdfa55f4e4376da86/lean/PROGRESS.md#d272-wash-clamp-retests)
+
+[Tested engine 2ae9ce8e5c6b](https://github.com/Eidosoma/Cells/commit/2ae9ce8e5c6b56ecab091b6167d034eb97a5520f) · [Evidence checkpoint 841e06cd5d0e](https://github.com/Eidosoma/Cells/commit/841e06cd5d0e97b449b6eb5fdfa55f4e4376da86)
 
 **Engine** `resolved_pump_composite@1`, `resolved_pump_tissue@3`
 

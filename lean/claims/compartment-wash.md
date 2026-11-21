@@ -27,7 +27,15 @@ Proof sources [Mathlib logarithm bound used in the default mixing-heat proof](ht
 
 ## Numerical comparison
 
-**Checked.** Four compiled tracer schedules retained ions and site fields. The maximum tracer material discrepancy was 7.11 × 10⁻¹⁵ fmol. Whole-wash runs reached 2⁻⁵⁰ of the initial amount and reproduced the documented refusal at 2⁻⁶⁰. The separate unchanged-ion counter claim records the failure at fraction 3/7.
+**Checked.** Four compiled tracer schedules retained ions and site fields. The maximum tracer material discrepancy was 7.11 × 10⁻¹⁵ fmol. Whole-wash runs reached 2⁻⁵⁰ of the initial amount and reproduced the documented refusal at 2⁻⁶⁰. The repaired counter check completed at fractions 1/2 and 3/7 with exact agreement for each unchanged ion.
+
+**Engine** `resolved_pump_composite@1`
+
+**Operators** `cells.scheduled_compartment_wash@1`
+
+[Ion sample and refill](https://github.com/Eidosoma/Cells/blob/2ae9ce8e5c6b56ecab091b6167d034eb97a5520f/src/cells/operators/wash_schedule.py#L421-L436) · [Cumulative ion counters](https://github.com/Eidosoma/Cells/blob/2ae9ce8e5c6b56ecab091b6167d034eb97a5520f/src/cells/operators/wash_schedule.py#L478-L491) · [Finite well and wash definition](https://github.com/Eidosoma/Cells/blob/2ae9ce8e5c6b56ecab091b6167d034eb97a5520f/validation/tissue/wash_schedule_fixtures.py#L35-L90) · [Public runner](https://github.com/Eidosoma/Cells/blob/2ae9ce8e5c6b56ecab091b6167d034eb97a5520f/src/cells/execution/runner.py#L384) · [Public unchanged-ion regression](https://github.com/Eidosoma/Cells/blob/2ae9ce8e5c6b56ecab091b6167d034eb97a5520f/tests/unit/test_wash_schedule_runs.py#L62-L92) · [Exact wash identity](https://github.com/Eidosoma/Cells/blob/841e06cd5d0e97b449b6eb5fdfa55f4e4376da86/lean/CellsProofs/Tissue/CompartmentWash.lean) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/841e06cd5d0e97b449b6eb5fdfa55f4e4376da86/lean/checks/compartment_wash.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/841e06cd5d0e97b449b6eb5fdfa55f4e4376da86/lean/PROGRESS.md#d272-wash-clamp-retests)
+
+[Tested engine 2ae9ce8e5c6b](https://github.com/Eidosoma/Cells/commit/2ae9ce8e5c6b56ecab091b6167d034eb97a5520f) · [Evidence checkpoint 841e06cd5d0e](https://github.com/Eidosoma/Cells/commit/841e06cd5d0e97b449b6eb5fdfa55f4e4376da86)
 
 **Engine** `resolved_pump_composite@1`, `resolved_pump_tissue@3`
 
