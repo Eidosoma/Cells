@@ -8566,3 +8566,18 @@ level, keeps chloride's inventory fixed, but its cumulative collected and suppli
 - **Assigned:** the robustness agent, with the operators owner's review, stacked on the wash's
   surface-path fix (0e8194e0). FR-27's wash counters are held from scoring until it lands.
 
+## D267: Origin of life, gene regulation and mitochondria resume
+
+2026-11-21, about 20:35 UTC. The user, after D260's window ended: "yes lets start all three paused
+ones".
+- **Origin of life:** GARD @2's gate first (merging main), then the builder's held queue: slice 5
+  (labels), the population runs, OL5's probe roles and OL6. A fuelled pulse through a wash needs a
+  declared-source option first (D263's version-1 limit).
+- **Gene regulation:** G4 lands with the D259, D264 and D265 fixes, after a main merge and its gate.
+  The dt 1.0 and 0.5 development runs are then compared again with the fixed comparison, and only
+  then read. FR-25's follow-ups come after.
+- **Mitochondria:** the lane resumes from its own plan after FR-33's tracer fixes land. Any open
+  science choice comes to the user.
+- **Unchanged:** the review holds (D259, D263 to D266) stay until each fix lands. The floating-
+  junction fix (A) still needs the user's decision.
+
