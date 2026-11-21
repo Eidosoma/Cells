@@ -43,7 +43,9 @@ counts.
 **Refused:** a withdrawal without a population; f outside (0, 1); a buffer of the wrong length or
 with a count above molecule_capacity; a buffer whose concentration in fV exceeds c_ext (§0.2c rule
 6; the realized pool's drift is reported, as every run's); a held pool species the assemblies take
-up (FR-20's Q3: the wash would be silently partial for it); a withdrawal at another stop's declared
+up (FR-20's Q3: the wash would be silently partial for it), and any held source that reaches a
+finite place through the steps (D263: replacement.refuse_unlimited_sources, a held fuel or
+precursor included); a withdrawal at another stop's declared
 time (division.parse_schedules), or with a Poisson shear or a lysis at its time.
 """
 
@@ -106,6 +108,9 @@ def parse(entry, world):
             f"experiment: a withdrawal leaves held places as they are, so {held}, which the "
             "assemblies take up, would be washed out only in part: declare it finite (FR-20's Q3)"
         )
+    from cells.models.assembly_lineages_v2 import replacement
+
+    replacement.refuse_unlimited_sources(world, "a withdrawal", "buffer")  # D263, as a replacement
     if world.conventions.lumen_volume == "osmotic":  # §0.2c rule 6, on the buffer itself
         volume = fraction * world.volume("pool")
         held_mM = sum(p.held_mM for p in world.places if p.phase == "pool" and p.held)

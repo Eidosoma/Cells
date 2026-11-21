@@ -402,6 +402,52 @@ def channel_heat(heat, p, *, xp=jnp):
     )
 
 
+def channel_current_A(flux, p, *, xp=np):
+    """FR-34: each channel population's electric current [..., channel] (A, outward-positive:
+    positive charge from its patch's cell to that patch's outside node, e sum_s z_s J_s, the
+    convention of membrane_current_A and of the kinds' passive_current_A) from its outward flux
+    [..., species, channel] (fmol/s): the recorded channel_flux_fmol_s at observed rows, one row or
+    a stack of them, or clamped_channel_flux's. Host side by default; it records nothing."""
+    charge = xp.moveaxis(p.valence * flux, -2, 0)  # [species, ..., channel], the fold's axis first.
+    return CHARGE_PER_FMOL * species_sum(charge, xp=xp)
+
+
+def clamped_channel_flux(state, control, p, voltages_V, *, xp=np, structure=None):
+    """FR-34, current at a declared voltage: each channel population's outward flux
+    [species, channel] (fmol/s, the sign of channel_flux_fmol_s) and its current [channel] (A,
+    outward-positive, channel_current_A) at the patch voltages phi_in - phi_out given [membrane]
+    (V; a scalar applies to every patch), at a state and its controls.
+
+    It is readouts' own path to the channel kernel: the kinds' stage read and the routing door where
+    the structure declares them, the read's concentrations, the state's gates and the routed
+    availabilities; then channel_rates itself, with the field's membrane voltage replaced by the one
+    given. The gates are the state's, not their values at the declared voltage, so this is the
+    population's instantaneous current there. Pure: nothing calls it and it records nothing, so no
+    program or record changes (crossrev)."""
+    kinds = _kinds(structure)
+    read = _stage_read(state, p, kinds, xp=xp)[0] if kinds else state
+    if kinds and structure.routes:  # §7.4 (n): the routing door, after the read (static).
+        control = _route(structure, kinds, read, control, p, xp=xp)[0]
+    ci, co = physical_amounts(read, p)
+    ci, co = (
+        xp.where(p.active, ci / p.volume, 1.0),
+        xp.where(p.outside_active, co / p.extracellular_volume, 1.0),
+    )
+    voltage = xp.broadcast_to(xp.asarray(voltages_V, dtype=float), p.membrane_area.shape)
+    flux = channel_rates(
+        state.channel_gate,
+        ci,
+        co,
+        voltage,
+        xp.zeros_like(p.membrane_permeability),  # No heat is asked for.
+        control.channel,
+        p,
+        xp=xp,
+        structure=structure,
+    )[0]
+    return flux, channel_current_A(flux, p, xp=xp)
+
+
 def nak_pump_rates(ci, co, delta_mu, control, p, *, xp=jnp, structure=None):
     """(Rates, domain arguments) of the Na/K pump law at its patches' inputs [species, membrane].
 
@@ -3860,6 +3906,7 @@ STRUCTURED_FUNCTIONS = (
     "channel_kinetics",
     "channel_opening",
     "channel_rates",
+    "clamped_channel_flux",
     "readouts",
     "field_values",
     "rhs",

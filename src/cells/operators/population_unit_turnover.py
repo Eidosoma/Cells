@@ -862,6 +862,10 @@ class PopulationUnitTurnover(Operator):
         population's cell, in control order."""
         return tuple((route.id, route.cell) for route in declaration.routes)
 
+    def half_step_rows(self, declaration):
+        """B1′: each route's precursor at its population's cell (assembly consumes it)."""
+        return tuple(dict.fromkeys((r.precursor, r.cell) for r in declaration.routes))
+
     def species_identities(self, declaration):
         return declaration.species
 

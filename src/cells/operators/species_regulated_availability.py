@@ -71,9 +71,12 @@ programs included. Every @2 target declares its evaluation:
   unit producer's unit_assembly_rate by route ID, at its population's cell).
   Its factor, the same F = b + (1 - b) f, is evaluated at the start of each of the target's
   half-steps, from the state that half-step receives (pump_composite._half_step), and multiplies
-  the scheduled rate, which is the maximum. Its source, a concentration (mM) or a state's
-  fraction, is held to the declared range at every evaluation of an enabled coupling: a value
-  outside refuses the half-step and is never clipped.
+  the scheduled rate, which is the maximum. Where the target's own half-steps move the route's
+  species source in the element's cell (rate_route_sources against the target's half_step_rows),
+  the factor is evaluated at the half-step's midpoint instead, after a predictor over h/2, so the
+  route stays second order (pump_composite.self_moved_targets; the Lean project's finding). Its
+  source, a concentration (mM) or a state's fraction, is held to the declared range at every
+  evaluation of an enabled coupling: a value outside refuses the half-step and is never clipped.
 The target's elements and their cells come from its declaration (routable_elements), bound
 against it. Refused at the binding: an operator target the definition does not declare; an
 unknown element; an outside-node element (version 2 routes cell-side elements only, since its
@@ -2180,6 +2183,16 @@ class SpeciesRegulatedAvailabilityV2(SpeciesRegulatedAvailability):
                 for c in declaration.couplings
                 if type(c.target) is OperatorTarget
             )
+        )
+
+    def rate_route_sources(self, declaration):
+        """B1′: each operator-target coupling with a species source, as (target law, control,
+        element ids, species), the species read in each element's cell. A state or site source
+        is moved only by its owner's own half-steps, never by the target's."""
+        return tuple(
+            (c.target.operator, c.target.control, c.target.ids, c.source)
+            for c in declaration.couplings
+            if type(c.target) is OperatorTarget and c.source_kind == "species"
         )
 
     def rate_factors(self, state, p, target, field, *, xp, quantities=None):
