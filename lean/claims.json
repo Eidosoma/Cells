@@ -2173,6 +2173,125 @@
         "cells.species_regulated_availability@2"
       ]
     },
+    "regulated-pulse-main-nov21": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [
+        "cells.kleak_always_open@1"
+      ],
+      "operators": [
+        "cells.species_regulated_availability@1",
+        "cells.species_regulated_availability@2",
+        "cells.scheduled_species_turnover@1"
+      ],
+      "engine_revision": "68ab12e7f57552fa551b103df1393a1e095cd001",
+      "record_revision": "be54fafbff162065063b215d4ac3e6adaf534e3a",
+      "sources": {
+        "Target half-step predictor and applied factors": "src/cells/models/pump_composite.py#L1642",
+        "Regulatory reads and recorded factors": "src/cells/operators/species_regulated_availability.py",
+        "Analytic ligand trajectory and continuous gate": "validation/coupling/state_reference.py",
+        "Pulse fixture definitions": "validation/tissue/regulated_availability_fixtures.py",
+        "Turnover world and controls": "validation/tissue/secreted_species_fixtures.py",
+        "Midpoint regression": "tests/unit/test_species_regulated_availability.py#L1300"
+      },
+      "record_inputs": {
+        "Fixed-calcium SK2 inputs": "lean/checks/data/hirschberg1998_sk2.json"
+      },
+      "driver": "lean/checks/regulated_availability.py",
+      "record": "lean/PROGRESS.md#main-review-d264-d266"
+    },
+    "wash-main-nov21": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [],
+      "operators": [
+        "cells.scheduled_compartment_wash@1",
+        "cells.site_occupancy@1"
+      ],
+      "engine_revision": "68ab12e7f57552fa551b103df1393a1e095cd001",
+      "record_revision": "be54fafbff162065063b215d4ac3e6adaf534e3a",
+      "sources": {
+        "Sample and supply": "src/cells/operators/wash_schedule.py#L301",
+        "Cumulative counter updates": "src/cells/operators/wash_schedule.py#L364",
+        "Finite well and wash schedule": "validation/tissue/wash_schedule_fixtures.py",
+        "Compiled scan and host acceptance": "src/cells/execution/runner.py#L242",
+        "Public half-wash regression": "tests/unit/test_wash_schedule_runs.py#L24"
+      },
+      "record_inputs": {
+        "Wash theorem": "lean/CellsProofs/Tissue/CompartmentWash.lean",
+        "Fluorescein dilution inputs": "lean/checks/data/vloemans2024_dilution.json"
+      },
+      "driver": "lean/checks/compartment_wash.py",
+      "record": "lean/PROGRESS.md#main-review-d264-d266"
+    },
+    "channel-clamp-main-nov21": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [
+        "kv1p1_mh2@1",
+        "kv1p2_mh@1",
+        "kv1p3_mh@1",
+        "kv1p4_mh@1",
+        "kv1p5_mh@1",
+        "kv1p6_mh@1",
+        "kir2p1_mh2@1",
+        "nav1p2_m3h_regularized@1",
+        "kleak_always_open@1",
+        "naleak_always_open@1",
+        "clleak_always_open@1"
+      ],
+      "operators": [
+        "cells.species_regulated_availability@1"
+      ],
+      "engine_revision": "68ab12e7f57552fa551b103df1393a1e095cd001",
+      "record_revision": "be54fafbff162065063b215d4ac3e6adaf534e3a",
+      "sources": {
+        "Tissue clamp": "src/cells/models/surface_pump_v3.py#L415",
+        "Composite control view": "src/cells/models/pump_composite.py#L1510",
+        "Held controls in ordinary observations": "src/cells/models/pump_composite.py#L2183",
+        "Composite fixture": "validation/tissue/regulated_availability_fixtures.py",
+        "Tissue regression": "tests/unit/test_surface_pump_v3_populations.py#L165",
+        "Reference flux": "validation/betse/junction_transport/check.py"
+      },
+      "record_inputs": {
+        "Native channel reference coefficients": "lean/checks/ion_channels.py",
+        "Conducting fractions used in the host control": "lean/checks/data/maverick2022_kv_density.json"
+      },
+      "driver": "lean/checks/clamped_channel_current.py",
+      "record": "lean/PROGRESS.md#main-review-d264-d266"
+    },
+    "site-cargo-main-nov21": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [],
+      "operators": [
+        "cells.site_occupant_replacement@1",
+        "cells.site_occupancy@1",
+        "cells.species_regulated_availability@2"
+      ],
+      "engine_revision": "68ab12e7f57552fa551b103df1393a1e095cd001",
+      "record_revision": "be54fafbff162065063b215d4ac3e6adaf534e3a",
+      "sources": {
+        "Site reset and cargo": "src/cells/operators/site_occupancy.py#L1820",
+        "Reaction and replacement fixture": "tests/unit/test_site_replacement_runs.py#L101",
+        "Site-sourced controls and post-reset reads": "tests/unit/test_species_regulated_availability.py#L1511",
+        "Composite observed rows": "src/cells/models/pump_composite.py#L2183"
+      },
+      "driver": "tests/unit/test_site_replacement_runs.py",
+      "record": "lean/PROGRESS.md#main-review-d264-d266"
+    },
     "compartment-wash-nov21": {
       "kind": "engine",
       "models": [
@@ -3040,7 +3159,7 @@
         "comparisons": [
           "scheduled-cell-replacement"
         ],
-        "result": "One cell copied a donor that simultaneously received a template. Gross species transfers, image charge, electrode work and generation replay matched the expected state. The largest per-site free-energy residual was 2.21 × 10⁻¹³ pJ against 2 × 10⁻¹¹ pJ. A three-step checked sheet recorded exactly one exchange at each of the two due sites."
+        "result": "One cell copied a donor that simultaneously received a template. Gross species transfers, image charge, electrode work and generation replay matched the expected state. The largest per-site free-energy residual was 2.21 × 10⁻¹³ pJ against 2 × 10⁻¹¹ pJ. A three-step checked sheet recorded exactly one exchange at each of the two due sites. D264 separately holds the exported reaction rate at the replacement time."
       },
       "biology": {
         "status": "open",
@@ -4076,10 +4195,11 @@
       "numerical": {
         "status": "checked",
         "comparisons": [
+          "regulated-pulse-main-nov21",
           "site-regulated-readout-nov21",
           "regulated-state-response"
         ],
-        "result": "Six compiled pulse-and-washout runs agreed with the stage-by-stage state to 4.45 × 10⁻¹⁶. Against independent continuous integration the gate error fell from 7.41 × 10⁻⁴ to 1.83 × 10⁻⁴ and 4.55 × 10⁻⁵ as the step was halved. Both versions agreed on final channel availability and K⁺ transfer. Separate fixed-Ca²⁺ cells reproduced the calculated rise and washout time constants. Separate version-2 tests exercised site-sourced rate and channel factors and the post-replacement occupancy read."
+        "result": "On six pulse-and-washout runs the gate agreed with the stage-by-stage solution within 4.45 × 10⁻¹⁶. For version 2 the analytic half-step midpoints recovered the recorded second reporter factor within 4.45 × 10⁻¹⁶ and cumulative gains within 6.08 × 10⁻¹⁸ fmol. Sampling the half-step starts missed the factor by up to 0.053925. The fixed-calcium SK2 comparison also replayed. D264 holds the separate exported instantaneous site-routed reaction rate."
       },
       "biology": {
         "status": "open",
@@ -4148,10 +4268,11 @@
       "numerical": {
         "status": "checked",
         "comparisons": [
+          "regulated-pulse-main-nov21",
           "regulated-turnover-midpoint-nov21",
           "regulated-turnover-routing"
         ],
-        "result": "The left-endpoint engine reproduced first-order convergence on 21 November. On the midpoint revision the compiled gains agreed with independent midpoint sums within 2.23 × 10⁻¹⁶ fmol. Orders on 8, 16, 32 and 64 steps were 1.99973, 1.99993 and 1.99998. The continuous one-second gain is 0.5945348919 fmol."
+        "result": "The left-endpoint engine reproduced first-order convergence on 21 November. On the midpoint revision the compiled gains agreed with independent midpoint sums within 2.23 × 10⁻¹⁶ fmol. Orders on 8, 16, 32 and 64 steps were 1.99973, 1.99993 and 1.99998. The continuous one-second gain is 0.5945348919 fmol. The pulse and the four-grid ramp both passed on main at 68ab12e7."
       },
       "biology": {
         "status": "open",
@@ -4703,9 +4824,10 @@
       "numerical": {
         "status": "checked",
         "comparisons": [
+          "channel-clamp-main-nov21",
           "clamped-channel-current-fr34"
         ],
-        "result": "On two patches with 11 active channel populations, NumPy and compiled JAX CPU agreed with a 70-digit GHK reference at six voltage pairs to within 1.30 × 10⁻²⁶ A. Halving abundance or availability gave exactly half the current. Full block, off-ion fluxes and padding gave zero."
+        "result": "On the tissue host, 11 active populations on two patches agreed with the 70-digit reference within 1.30 × 10⁻²⁶ A. Halving abundance or availability halved current exactly. Full block, off-ion fluxes and padding gave zero. The composite replay at −50 mV gave 0.592416 pA with the raw control and 0.296208 pA with its effective 0.5 control. The public composite clamp remains unavailable at this revision."
       },
       "biology": {
         "status": "open",
@@ -6000,10 +6122,11 @@
       "numerical": {
         "status": "checked",
         "comparisons": [
+          "site-cargo-main-nov21",
           "site-occupant-replacement-nov21",
           "site-regulated-readout-nov21"
         ],
-        "result": "In the compiled world with occupied sites and ongoing conversion, maximum ligand and product balance residuals were at most 10⁻¹⁵ fmol. Dropping departing ligand from the balance produced the expected deficit. The site-readout regression also read the newcomer’s occupancy after reset."
+        "result": "In the compiled world with occupied sites and ongoing conversion, maximum ligand and product balance residuals were at most 10⁻¹⁵ fmol. Dropping departing ligand from the balance produced the expected deficit. The site-readout regression also read the newcomer’s occupancy after reset. These cargo and occupancy controls passed on 68ab12e7. At the replacement time the exported reaction rate mixed the departing substrate and incoming multiplier. D264 holds that row from scoring."
       },
       "biology": {
         "status": "open",
@@ -6013,9 +6136,46 @@
       }
     },
     {
+      "id": "wash-ion-counters",
+      "category": "tissue-and-conservation",
+      "title": "A wash at the same ion concentration must collect and supply equal amounts",
+      "statement": "For an unchanged ion in a well of positive volume, replacing a fraction of liquid with solution at the well’s concentration preserves the ion inventory. The collected amount equals the supplied amount at every fraction in exact arithmetic. The engine specifies an exact equality for the corresponding cumulative counters.",
+      "assumptions": [
+        "Collection and refill use the same fraction, volume, ion and concentration. Both counters start from equal values. The compiled fixture holds the well at fixed volume without any other ion transfer."
+      ],
+      "uses": [
+        "compartment-wash"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.scheduled_compartment_wash@1"
+        ],
+        "theorems": {
+          "CellsProofs.Tissue.CompartmentWash.same_concentration_ion": "lean/CellsProofs/Tissue/CompartmentWash.lean"
+        },
+        "sources": {
+          "Mathlib div_mul_cancel₀ specialized in the volume identity": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/GroupWithZero/Units/Basic.lean#L291"
+        }
+      },
+      "numerical": {
+        "status": "failed",
+        "comparisons": [
+          "wash-main-nov21"
+        ],
+        "result": "On compiled CPU float64, three 1/2 washes completed with identical counters. Three 3/7 washes kept all ionic inventories fixed. The final chloride collected minus supplied was −2.9802322387695312 × 10⁻⁸ fmol in the production scan, and the public runner refused the outside-material ledger. Sodium and potassium closed exactly."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Ion amounts in paired samples and refills at a matched electrolyte concentration and exchanged volume.",
+        "unit": "fmol per ion per well",
+        "evidence": []
+      }
+    },
+    {
       "id": "compartment-wash",
       "category": "tissue-and-conservation",
-      "title": "A partial wash dilutes free solute and accounts for every sampled molecule",
+      "title": "A partial wash dilutes free tracer and preserves its inventory",
       "statement": "For a finite well of fixed volume V, a wash of fraction f changes free amount n to (1 − f)n + f V c_buffer. Adding sampled material and subtracting supplied material recovers the original total, including bound ligand retained through the event. Repeating k equal washes multiplies the initial excess above the buffer level by (1 − f)ᵏ. For each exchanged neutral species, ideal mixing heat is nonnegative and a whole wash releases zero mixing heat.",
       "assumptions": [
         "The liquid is well mixed. Between the washes used in the repeated-wash formula there is no binding, release, synthesis or transport.",
@@ -6045,9 +6205,10 @@
       "numerical": {
         "status": "checked",
         "comparisons": [
+          "wash-main-nov21",
           "compartment-wash-nov21"
         ],
-        "result": "Four compiled schedules retained all ions and site fields. The maximum material discrepancy was 7.11 × 10⁻¹⁵ fmol. Whole tissue runs resolved a 2⁻⁵⁰ target relative to the initial amount. The 2⁻⁶⁰ target reached the documented float64 refusal."
+        "result": "Four compiled tracer schedules retained ions and site fields. The maximum tracer material discrepancy was 7.11 × 10⁻¹⁵ fmol. Whole-wash runs reached 2⁻⁵⁰ of the initial amount and reproduced the documented refusal at 2⁻⁶⁰. The separate unchanged-ion counter claim records the failure at fraction 3/7."
       },
       "biology": {
         "status": "open",

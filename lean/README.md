@@ -15,14 +15,14 @@ Direct Lean claims cover [49 of 49 laws](COVERAGE.md#registered-laws) and [29 of
 | [Pumps and cotransport](COVERAGE.md#category-pumps-and-cotransport) | 13 of 13 | 8 of 8 | 8 checked | 8 |
 | [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 3 of 3 | 9 of 9 | 9 checked | 7 |
 | [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 13 of 13 | 19 of 19 | 18 checked · 1 failed | 15 |
-| [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 1 of 1 | 19 of 19 | 19 checked | 14 |
+| [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 1 of 1 | 20 of 20 | 19 checked · 1 failed | 14 |
 | [Cell physiology](COVERAGE.md#category-cell-physiology) | — | 3 of 3 | 3 checked | 3 |
 
 <!-- /generated -->
 
 Each category opens its detailed claim table on GitHub, including registered laws still awaiting a proof. A single claim can cover several laws. The last column counts claims with a recorded measurement or literature finding, including partial evidence. Each numerical result applies to the cases in its linked record. [All registered laws](COVERAGE.md#registered-laws) · [Design notes](ENGINE_LAW_VERIFICATION.md) · [Voltage pilot closeout](../reports/BIO003_PILOT_CLOSEOUT.md)
 
-On 21 November, five former numerical failures passed their repair checks, including fresh-pool capacity and self-regulated turnover. The GARD pair-heat case remains recorded on version 1. [Repair results](PROGRESS.md#nov21-engine-review) · [Current failure list](COVERAGE.md#failing-numerical-checks)
+The 21 November main review corrected the Lean lane’s pulse replay and reproduced a wash-counter failure for unchanged chloride. The index also retains the GARD version-1 heat failure. Composite clamp currents, routed reaction-rate exports and replacement-time observations have explicit scoring holds. [Main retests and scope](PROGRESS.md#main-review-d264-d266) · [Current failure list](COVERAGE.md#failing-numerical-checks) · [Earlier repairs](PROGRESS.md#nov21-engine-review)
 
 ## Biological evidence
 
@@ -257,10 +257,12 @@ For serial transfer and shear fission, follow an impermeant tracer through succe
 "$cells_python" -B checks/vesicle_population.py
 ```
 
-For the finite-compartment wash, compare compiled exchanges and whole tissue runs with the inventory formula and the fluorescein series. For the two-gate junction, compare all gate-kind pairings with the constant-voltage expansion. [Wash and its resolution limit](PROGRESS.md#nov21-wash) · [Series-gate functions](PROGRESS.md#nov21-features)
+For the finite-compartment wash, the dilution checks cover neutral tracer, retained sites and the whole-wash resolution limit. The ion check compares three half washes with three 3/7 washes. It reports the public runner’s verdict and exits with status 1 when unchanged ions have unequal counters or the run is refused. For the two-gate junction, compare all gate-kind pairings with the constant-voltage expansion. [Wash counters](claims/wash-ion-counters.md) · [Tracer dilution](claims/compartment-wash.md) · [Series gates](PROGRESS.md#nov21-features)
 
 ```bash
 "$cells_python" -B checks/compartment_wash.py
+"$cells_python" -B checks/compartment_wash.py --case dilution
+"$cells_python" -B checks/compartment_wash.py --case ion-counters
 "$cells_python" -B checks/junction_series_gates.py
 ```
 
@@ -379,10 +381,11 @@ The Na⁺/K⁺ driver checks the eight gated channels and both leaks together on
 "$cells_python" -B checks/channel_clamp_evidence.py
 ```
 
-For the instantaneous current of a saved channel population at a declared voltage, run the comparison against an engine containing FR-34. The recorded engine revision is `1b8017d1`. [Reference, units and measured conducting fractions](claims/clamped-channel-current.md)
+The direct tissue clamp is checked against the independent current formula. The separate composite check compares the scheduled and effective controls, then tests the public clamp against the ordinary observed current and a second voltage. It exits with status 1 while that public comparison is unavailable or disagrees. [Tissue current and measured conducting fractions](claims/clamped-channel-current.md) · [Composite scoring hold](PROGRESS.md#main-review-d264-d266)
 
 ```bash
 "$cells_python" -B checks/clamped_channel_current.py
+"$cells_python" -B checks/clamped_channel_current.py --composite
 "$cells_python" -B checks/channel_density.py
 "$cells_python" -B checks/kv15_ph.py
 ```

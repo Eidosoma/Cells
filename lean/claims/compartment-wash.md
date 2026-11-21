@@ -1,6 +1,6 @@
 <!-- Generated from lean/claims.json by scripts/generate_claims.py. -->
 
-# A partial wash dilutes free solute and accounts for every sampled molecule
+# A partial wash dilutes free tracer and preserves its inventory
 
 For a finite well of fixed volume V, a wash of fraction f changes free amount n to (1 − f)n + f V c_buffer. Adding sampled material and subtracting supplied material recovers the original total, including bound ligand retained through the event. Repeating k equal washes multiplies the initial excess above the buffer level by (1 − f)ᵏ. For each exchanged neutral species, ideal mixing heat is nonnegative and a whole wash releases zero mixing heat.
 
@@ -15,11 +15,11 @@ For a finite well of fixed volume V, a wash of fraction f changes free amount n 
 **Proved**
 
 - [CellsProofs.Tissue.CompartmentWash.inventory](../CellsProofs/Tissue/CompartmentWash.lean#L16)
-- [CellsProofs.Tissue.CompartmentWash.positive](../CellsProofs/Tissue/CompartmentWash.lean#L22)
-- [CellsProofs.Tissue.CompartmentWash.whole](../CellsProofs/Tissue/CompartmentWash.lean#L26)
-- [CellsProofs.Tissue.CompartmentWash.repeated](../CellsProofs/Tissue/CompartmentWash.lean#L48)
-- [CellsProofs.Tissue.CompartmentWash.mixingHeat_nonneg](../CellsProofs/Tissue/CompartmentWash.lean#L34)
-- [CellsProofs.Tissue.CompartmentWash.whole_mixing_heat](../CellsProofs/Tissue/CompartmentWash.lean#L43)
+- [CellsProofs.Tissue.CompartmentWash.positive](../CellsProofs/Tissue/CompartmentWash.lean#L30)
+- [CellsProofs.Tissue.CompartmentWash.whole](../CellsProofs/Tissue/CompartmentWash.lean#L34)
+- [CellsProofs.Tissue.CompartmentWash.repeated](../CellsProofs/Tissue/CompartmentWash.lean#L56)
+- [CellsProofs.Tissue.CompartmentWash.mixingHeat_nonneg](../CellsProofs/Tissue/CompartmentWash.lean#L42)
+- [CellsProofs.Tissue.CompartmentWash.whole_mixing_heat](../CellsProofs/Tissue/CompartmentWash.lean#L51)
 
 Direct proof subject `cells.scheduled_compartment_wash@1`
 
@@ -27,7 +27,15 @@ Proof sources [Mathlib logarithm bound used in the default mixing-heat proof](ht
 
 ## Numerical comparison
 
-**Checked.** Four compiled schedules retained all ions and site fields. The maximum material discrepancy was 7.11 × 10⁻¹⁵ fmol. Whole tissue runs resolved a 2⁻⁵⁰ target relative to the initial amount. The 2⁻⁶⁰ target reached the documented float64 refusal.
+**Checked.** Four compiled tracer schedules retained ions and site fields. The maximum tracer material discrepancy was 7.11 × 10⁻¹⁵ fmol. Whole-wash runs reached 2⁻⁵⁰ of the initial amount and reproduced the documented refusal at 2⁻⁶⁰. The separate unchanged-ion counter claim records the failure at fraction 3/7.
+
+**Engine** `resolved_pump_composite@1`, `resolved_pump_tissue@3`
+
+**Operators** `cells.scheduled_compartment_wash@1`, `cells.site_occupancy@1`
+
+[Sample and supply](https://github.com/Eidosoma/Cells/blob/68ab12e7f57552fa551b103df1393a1e095cd001/src/cells/operators/wash_schedule.py#L301) · [Cumulative counter updates](https://github.com/Eidosoma/Cells/blob/68ab12e7f57552fa551b103df1393a1e095cd001/src/cells/operators/wash_schedule.py#L364) · [Finite well and wash schedule](https://github.com/Eidosoma/Cells/blob/68ab12e7f57552fa551b103df1393a1e095cd001/validation/tissue/wash_schedule_fixtures.py) · [Compiled scan and host acceptance](https://github.com/Eidosoma/Cells/blob/68ab12e7f57552fa551b103df1393a1e095cd001/src/cells/execution/runner.py#L242) · [Public half-wash regression](https://github.com/Eidosoma/Cells/blob/68ab12e7f57552fa551b103df1393a1e095cd001/tests/unit/test_wash_schedule_runs.py#L24) · [Wash theorem](https://github.com/Eidosoma/Cells/blob/be54fafbff162065063b215d4ac3e6adaf534e3a/lean/CellsProofs/Tissue/CompartmentWash.lean) · [Fluorescein dilution inputs](https://github.com/Eidosoma/Cells/blob/be54fafbff162065063b215d4ac3e6adaf534e3a/lean/checks/data/vloemans2024_dilution.json) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/be54fafbff162065063b215d4ac3e6adaf534e3a/lean/checks/compartment_wash.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/be54fafbff162065063b215d4ac3e6adaf534e3a/lean/PROGRESS.md#main-review-d264-d266)
+
+[Tested engine 68ab12e7f575](https://github.com/Eidosoma/Cells/commit/68ab12e7f57552fa551b103df1393a1e095cd001) · [Evidence checkpoint be54fafbff16](https://github.com/Eidosoma/Cells/commit/be54fafbff162065063b215d4ac3e6adaf534e3a)
 
 **Engine** `resolved_pump_tissue@3`
 

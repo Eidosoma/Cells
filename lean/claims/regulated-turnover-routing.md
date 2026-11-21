@@ -29,7 +29,15 @@ Uses [A regulated channel approaches its held-dose plateau without overshoot](re
 
 ## Numerical comparison
 
-**Checked.** The left-endpoint engine reproduced first-order convergence on 21 November. On the midpoint revision the compiled gains agreed with independent midpoint sums within 2.23 × 10⁻¹⁶ fmol. Orders on 8, 16, 32 and 64 steps were 1.99973, 1.99993 and 1.99998. The continuous one-second gain is 0.5945348919 fmol.
+**Checked.** The left-endpoint engine reproduced first-order convergence on 21 November. On the midpoint revision the compiled gains agreed with independent midpoint sums within 2.23 × 10⁻¹⁶ fmol. Orders on 8, 16, 32 and 64 steps were 1.99973, 1.99993 and 1.99998. The continuous one-second gain is 0.5945348919 fmol. The pulse and the four-grid ramp both passed on main at 68ab12e7.
+
+**Engine** `resolved_pump_composite@1`, `resolved_pump_tissue@3`, `cells.kleak_always_open@1`
+
+**Operators** `cells.species_regulated_availability@1`, `cells.species_regulated_availability@2`, `cells.scheduled_species_turnover@1`
+
+[Target half-step predictor and applied factors](https://github.com/Eidosoma/Cells/blob/68ab12e7f57552fa551b103df1393a1e095cd001/src/cells/models/pump_composite.py#L1642) · [Regulatory reads and recorded factors](https://github.com/Eidosoma/Cells/blob/68ab12e7f57552fa551b103df1393a1e095cd001/src/cells/operators/species_regulated_availability.py) · [Analytic ligand trajectory and continuous gate](https://github.com/Eidosoma/Cells/blob/68ab12e7f57552fa551b103df1393a1e095cd001/validation/coupling/state_reference.py) · [Pulse fixture definitions](https://github.com/Eidosoma/Cells/blob/68ab12e7f57552fa551b103df1393a1e095cd001/validation/tissue/regulated_availability_fixtures.py) · [Turnover world and controls](https://github.com/Eidosoma/Cells/blob/68ab12e7f57552fa551b103df1393a1e095cd001/validation/tissue/secreted_species_fixtures.py) · [Midpoint regression](https://github.com/Eidosoma/Cells/blob/68ab12e7f57552fa551b103df1393a1e095cd001/tests/unit/test_species_regulated_availability.py#L1300) · [Fixed-calcium SK2 inputs](https://github.com/Eidosoma/Cells/blob/be54fafbff162065063b215d4ac3e6adaf534e3a/lean/checks/data/hirschberg1998_sk2.json) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/be54fafbff162065063b215d4ac3e6adaf534e3a/lean/checks/regulated_availability.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/be54fafbff162065063b215d4ac3e6adaf534e3a/lean/PROGRESS.md#main-review-d264-d266)
+
+[Tested engine 68ab12e7f575](https://github.com/Eidosoma/Cells/commit/68ab12e7f57552fa551b103df1393a1e095cd001) · [Evidence checkpoint be54fafbff16](https://github.com/Eidosoma/Cells/commit/be54fafbff162065063b215d4ac3e6adaf534e3a)
 
 **Engine** `resolved_pump_composite@1`, `resolved_pump_tissue@3`
 
