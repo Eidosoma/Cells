@@ -8351,3 +8351,36 @@ lane extracted Tables S1, S2 and S6, which are merged as bare cited values in va
   spending a held-out row. Then decide whether a return mode can work.
 - **Kept:** the build stays held; the pH 3.1 row is not dropped from the mode's domain; variable
   coupling stays on the backlog.
+
+## D259: A review's eight findings in FR-33's tracer, G4's readers and the Kir table: fixed before any of their outputs is scored
+
+2026-11-21, about 11:14 UTC. A reviewer, relayed by the user ("review this also with adviser then
+deal with as a matter of priority"), reported eight findings. The lead and the advisor found all
+eight real, and assigned them that day.
+- **Held:** no output of FR-33's tracer, G4's cohort reader or G4's comparison tool is used to score a
+  wet-lab discrepancy until its fixes land. G4's dt 1.0 and dt 0.5 results stay unread until the
+  comparison is fixed and rerun.
+- **FR-33's tracer** (on main; the operators owner):
+  1. (P1) the trapezoid cohort update goes negative when a node's step outflow exceeds the sum of its
+     endpoint amounts, while the balance check passes. Fix: refuse on a stated resolution bound,
+     and check each cohort's bounds.
+  2. (P2) the mover check is a deny-list keyed on a species field, so FR-27's wash, which declares
+     nodes, was admitted and its removal of label unseen. Fix: fail closed.
+  3. (P2) a caller's cohort named  is overwritten on export. Fix: reserved names
+     refused, and the serialized cohorts checked at every row.
+- **G4's readers** (on gene-regulation-lane, not on main; the GR agent):
+  1. (P1)  selected protein completions by default, overstating new RNA by 66.4×.
+  2. (P1)  reported zero error for a comparison it skipped. Fix: match by required
+     times, with matched and expected counts.
+  3. (P2) the known-rate control fails at zero and near-zero clearance.
+  4. (P2) a run receipt omitted an untracked script, against the provenance rule. The original
+     receipt is kept, with an addendum citing the reviewer's bit-for-bit replay.
+- **The Kir table** (on main; the FR-7 agent): (P2) the S2B rows' n = 6 is inferred from Fig. 3G
+  and moves to its own field. Any number behind D250, D254 or D256 that used it away from −100 mV
+  is corrected by a dated entry.
+- **Provenance sweep:** two validation drivers on main record no untracked sources; they are fixed
+  in the same class as finding 8.
+- **Independent check:** an agent that wrote none of the code reruns the reviewer's reproducers at
+  the base and on each fixed head before anything lands.
+- **The reviewer confirmed** that the extreme-turnover repair and the restart at a rate change held
+  up on replay.
