@@ -470,6 +470,14 @@ use Cells' unit choice than ask for its own.
 
 **The design note (proposed, 18 November 2026):** [ABUNDANCE_TO_FUNCTION_DESIGN.md](ABUNDANCE_TO_FUNCTION_DESIGN.md), framing the user's choice of the loop's unit (D216). **Answered 18 November (D217, D218):** U2 first, then U1; the loop is admitted through B1′; qualification needs a closed loop with a feedback-cut control (the note's §9).
 
+**Before revisiting D218's kept refusal (the Lean lane, relayed by the user, 21 November 2026).**
+D218 refuses a population's availability multiplied by its own abundance where that abundance
+already sets its conductance, so a population cannot regulate its own availability through its
+density. Cells reproduced the density curve on a separate reporter. An independent Kv1.5
+density experiment (surface density and current density measured in the same cells, across
+expression levels) is the next evidence to seek before that rule is revisited. Until then, the
+refusal stands.
+
 ## FR-8 — A qualified long-duration mode
 
 **Logged 14 November 2026, priority 2** (the request's label). The request below is the requesting
