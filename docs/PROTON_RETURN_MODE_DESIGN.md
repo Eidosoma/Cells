@@ -546,14 +546,25 @@ neither can any of three minimal changes.
 
   So it does not fit both. The earlier version of this section said it did, from RMS alone, and
   was wrong.
-- **A pump voltage law fits the curves best of all.** All seven reversals pass, the in-sample
-  7.5/4.1 miss among them (−21.4 against −23.2). Yet it puts pH 3.1 at +0.9 mV.
-- **Variable coupling** draws the curves worse, but it puts pH 3.1 nearest the bound when free
-  (+34.8 mV).
+- **A pump voltage law fits the reversals best of all.** All seven pass, the in-sample 7.5/4.1
+  miss among them (−21.4 against −23.2), at a pooled RMS of 3.5 mA m⁻².
+  - That is in sample: seven parameters fitted to every row, with no per-curve shape test.
+  - Two of its parameters sit at their limits: δ_r at its bound of 1 (as in the family, and in the
+    second site), and the pump's saturation voltage at +200 mV.
+  - It still puts pH 3.1 at +0.9 mV.
+- **Variable coupling, with n levelling off with ΔpH:**
+  - It puts pH 3.1 nearest the bound when free (+34.8 mV).
+  - The bound costs it almost nothing: 4 of 7 reversals free and bound, RMS 7.7 against 7.8.
+  - Its misses are in the curves, not the bound: three of panel A's four reversals, the cytosolic
+    series (6.0/5.0 at −72.4 against −55.1, 8.5/5.0 at −42.2 against −15.5). Its n depends on ΔpH
+    alone.
 
 **What this means.** The curves and the bound pull apart:
-- every model that draws Fig. 3's curves puts the pH 3.1 reversal near 0 mV;
-- every model held to the bound loses three to five of the seven reversals.
+- **The three models that fit the reversals best** (the family, the second site and the pump
+  voltage law) put pH 3.1 within 3 mV of 0. Held to the bound, each loses two or three more
+  reversals.
+- **Variable coupling** reaches the bound's edge at no extra cost, but misses panel A's cytosolic
+  series either way.
 
 No minimal change to the return mode reconciles them. That would need one of two things:
 - **The pH 3.1 condition is not the same system** as Fig. 3's. The bound comes from Fig. 2's
@@ -569,7 +580,8 @@ them.
 1. A return through the energized pump flattens the reversal's pH dependence as measured. The
    family fitted on panel B moves the reversal 17.1 mV from vacuolar pH 6.0 to 4.1 (−33.2 to
    −16.1), against 12.6 read and 112.5 for tight coupling. With a voltage law on the pump mode as
-   well, it draws all seven curves within tolerance.
+   well, all seven reversals fall within tolerance, at a pooled RMS of 3.5 mA m⁻². That is fitted
+   to every row, so in sample, with δ_r at its bound.
 2. No form tested fits those curves and the pH 3.1 bound together, so the bound is either a
    different system or a change below vacuolar pH 4 that a return mode does not supply. A curve
    at vacuolar pH 3.1 to 3.5 should come before any build.
