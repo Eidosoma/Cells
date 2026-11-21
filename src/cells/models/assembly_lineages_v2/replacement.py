@@ -47,6 +47,12 @@ def parse(entry, world):
         raise ConfigError(
             "experiment: a replacement needs a population (execution mode population)"
         )
+    if isinstance(entry, dict) and "fraction" in entry:  # FR-35 (D261): a partial exchange
+        raise ConfigError(
+            "experiment: a replacement exchanges the whole pool and takes no fraction; a partial "
+            "exchange is a withdrawal, {index, kind: withdrawal, times_s, fraction, buffer} "
+            "(cells.pool_withdrawal@1), its buffer the counts in the withdrawn volume"
+        )
     if set(entry) != KEYS:
         raise ConfigError(f"experiment: a replacement's keys are {sorted(KEYS)}")
     index = bounded_integer(entry["index"], "experiment: schedule index", minimum=0,

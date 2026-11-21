@@ -601,6 +601,31 @@ requester's acceptance (docs/FEATURE_REQUESTS.md, FR-21).
 7. **The run's verdict** on a shell world is the shell probe's (`balance.shell_verdict`). The other
    verdicts are unchanged, so no other run's record moves.
 
+### 0.2h The lead's rulings for FR-35's pool withdrawal (21 November 2026; D261)
+
+The design is [ASSEMBLY_WITHDRAWAL_DESIGN.md](ASSEMBLY_WITHDRAWAL_DESIGN.md), decided by the lead with
+the advisor. It is built as `cells.pool_withdrawal@1`.
+1. **A new operator.** `cells.pool_replacement@1` stays as registered. `fraction` on a replacement
+   is refused, with a message that names the withdrawal kind.
+2. **The draw:** each molecule leaves independently with probability f, in per-place blocks on
+   the schedule's own stream at draw number w·P_f + j.
+   - w is derived from FR-22's applied stops, so it is one number and the checkpoint gains no key.
+   - The addresses are disjoint from a transfer's and a Poisson shear's, because each schedule's
+     index is its own carrier word.
+3. **The buffer:** integer counts in the withdrawn volume fV. Its concentration is checked against
+   c_ext at parse, and the realized pool's drift is reported.
+4. **Booking A:**
+   - the sink takes F(before; V) − F(kept; (1 − f)V), recorded as `pool_loss_kT`. It differs from
+     the sample's own F by the outcome's surprisal σ, which is recorded apart;
+   - the work column takes F(buffer; fV);
+   - the heat takes the mixing heat, which is never negative.
+
+   The free energies at fV and (1 − f)V go through the guarded table read.
+5. **Capacity:** the wash is refused before the draw when a place's pre-wash count plus its buffer
+   count exceeds `molecule_capacity`, so no refusal depends on the draw.
+6. **The legend entry** is written only when a world declares a withdrawal, so existing worlds stay
+   bitwise.
+
 ### 0.3 Estimate, order and questions
 
 - **The estimate** (§8): about 33–51 agent-days in ten milestones, plus 3–5 if templating is chosen.

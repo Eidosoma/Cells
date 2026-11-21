@@ -63,6 +63,7 @@ from cells.models.assembly_lineages_v2 import (
     shell_permeation,
     transfer,
     transition_state,
+    withdrawal,
 )
 from cells.models.assembly_lineages_v2 import model as v2_model
 from cells.models.assembly_lineages_v2.spec import AssemblyModel
@@ -99,6 +100,7 @@ OPERATORS = {  # OL3 milestone 1, then OL2 milestone 3
     SHEAR_FISSION: (division, interfaces.AssemblyOperator, OPERATOR_INTERFACE),
     "cells.serial_transfer@1": (transfer, interfaces.AssemblyOperator, OPERATOR_INTERFACE),
     "cells.pool_replacement@1": (replacement, interfaces.AssemblyOperator, OPERATOR_INTERFACE),
+    "cells.pool_withdrawal@1": (withdrawal, interfaces.AssemblyOperator, OPERATOR_INTERFACE),
 }
 
 

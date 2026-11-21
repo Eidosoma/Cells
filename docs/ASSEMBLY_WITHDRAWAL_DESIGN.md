@@ -1,10 +1,12 @@
 # A timed partial withdrawal of an assembly population's pool (FR-35): design note
 
-**Status: desk work, for the lead's decision with the advisor (21 November 2026).** It sets out the
-options, a recommendation, the files, the tests and a price (D142), and decides nothing. It is a
-general feature (D144) of `cells.assembly_lineages@2` in population mode. It builds on FR-20's
-`cells.pool_replacement@1` (D240, [note](ASSEMBLY_WASHOUT_DESIGN.md)), FR-22's checkpoints and
-FR-27's one-mechanism ruling (D246).
+**Status: decided by the lead with the advisor (D261, 21 November 2026), and built as
+`cells.pool_withdrawal@1` (ORIGIN_OF_LIFE_ENGINE_DESIGN.md §0.2h). Below is the desk note as it was
+decided, with D261's changes: capacity is decided before the draw, and the counter is derived from
+the applied stops.** As desk work it set out the options, a recommendation, the files, the tests and
+a price (D142). It is a general feature (D144) of `cells.assembly_lineages@2` in population mode. It
+builds on FR-20's `cells.pool_replacement@1` (D240, [note](ASSEMBLY_WASHOUT_DESIGN.md)), FR-22's
+checkpoints and FR-27's one-mechanism ruling (D246).
 
 **The request** (FEATURE_REQUESTS.md FR-35, 97d3bfda). At a declared time, draw off a fraction f of
 the well-mixed pool and add the same volume of a declared buffer. Each molecule leaves
@@ -158,6 +160,20 @@ The numbers, from the scratch check:
 
 The record keeps the four terms apart, so B or C can be rebuilt from it: F(k; fV), σ, F(b; fV) and
 H. They are computed in the small-ratio form D246 names for FR-27 (`log1p(−f)`).
+
+**The expected heat against FR-27's continuum** (found in the build, 21 November 2026):
+- **With a tracer-free buffer,** the expected mixing heat over k ~ Binomial(n, f) is FR-27's
+  continuum heat exactly: −n(1 − f)·ln(1 − f).
+- **With a buffer at the pool's own concentration,** FR-27's continuum heat is zero, but booking A's
+  expected heat is not.
+  - It is E[H] = E[−ln P(b | n − k + b, f)]: the expected binomial surprisal of which side each
+    molecule came from.
+  - At n = 100, b = 25 and f = ¼ it is 2.42 kT, below the mixture's binomial entropy, about
+    ½·ln(2πe·m·f(1 − f)) at large m.
+  - It is sub-extensive, so per molecule it vanishes, and the discrete booking reaches FR-27's
+    continuum in the large-n limit.
+- The test `test_a_withdrawal_books_its_mixing_heat_never_negative_and_its_limits_are_exact` holds
+  both statements.
 
 **The independent reference** for the Lean lane uses closed log-factorial arithmetic, exact ln c!
 by summation or `lgamma`. It never reads the engine's table (the capacity finding showed why).
