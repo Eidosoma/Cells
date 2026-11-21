@@ -1,6 +1,7 @@
 import CellsProofs.Accounting.Transfer
 import CellsProofs.Chemistry.AssemblyKinetics
 import CellsProofs.Chemistry.AssemblyMixing
+import CellsProofs.Chemistry.BindingEnsemble
 import CellsProofs.Chemistry.Enzyme
 import CellsProofs.Chemistry.GardCatalysis
 import CellsProofs.Chemistry.LineageFission

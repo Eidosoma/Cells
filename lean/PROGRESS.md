@@ -1,5 +1,15 @@
 # Cells proof comparisons
 
+<a id="binding-form-ensemble"></a>
+
+## 21 November 2026 · Finite binding forms at fixed ligand activities
+
+Physlib’s finite counting ensemble gives each `rapid_binding@1` form probability when its Boltzmann exponent equals the Cells log weight up to a common offset. The shared Cells source proves the change from standard concentration to mM, max-shifted normalization, and how to combine equal-count isomers at any fixed ligand chemical potentials. Equal-energy multiplicity enters once. Seven local theorems compile on Lean 4.19.0. The optional Lean 4.22.0 check uses the same source and the existing Physlib pin. Its two theorems use the standard Lean axioms and Physlib’s positive Boltzmann-constant axiom. [Cells proofs](CellsProofs/Chemistry/BindingEnsemble.lean) · [Physlib comparison](checks/physlib/BindingEnsemble.lean) · [Reproduction](README.md#reusing-a-proof)
+
+On engine `d0104950`, NumPy and JIT-compiled CPU float64 each evaluated 536 present form fractions across 80 manufactured states in S1–S7. The largest absolute difference from the 80-digit partition calculated from the original standard potentials was 7.78 × 10⁻¹⁶ or less. All 52 padded entries were zero on each backend. From the initialized two-ligand `resolved_pump_tissue@3` stage read, all six S3 form concentrations agreed with the existing reference within 8.8% of each form’s numerical tolerance. In a synthetic example with one free state and two equal-weight bound isomers, the occupied fraction was 2/3. Omitting one isomer gave 1/2 and counting the pair twice gave 4/5. The registry refused two separate declarations with identical ligand counts. [Comparison](checks/binding_ensemble.py) · [Registry convention](https://github.com/Eidosoma/Cells/blob/d0104950c40b92860a211c9e2555709d0fd61aed/src/cells/registry/species_registry.py#L399-L405)
+
+For Mg–ATP at pH 7.2 and 37 °C, Zhang et al. measured an apparent Kd of 87.4 ± 4.9 µM (SD, four measurements). Using that value at 230 µM free Mg gives a bound fraction of 0.725 in the two-form Cells projection. Ward et al.’s independent MOPS/KCl preparation gives about 0.897 at that concentration from the endpoint of their Figure 1. The difference is 0.172 in fractional occupancy. The preparations and measurement methods differ. The measurements constrain aggregate Mg-bound ATP and leave the individual H/Mg forms and their multiplicities open. [Zhang et al.](https://doi.org/10.1006/abio.1997.2238) · [Ward et al., Fig. 1](https://cds.ismrm.org/ismrm-1998/PDF6/p1693.pdf) · [Measurement inputs and uncertainty](checks/data/mgatp_binding.json)
+
 <a id="chemistry-imports-nov21"></a>
 
 ## 21 November 2026 · Imported chemistry proofs and the closed enzyme fixture
