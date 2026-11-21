@@ -47,6 +47,26 @@ base_key_data = v1.base_key_data
 uniforms = v1.uniforms
 
 
+def block(stream, counter, count):
+    """The `count` uniforms of uniforms(stream, counter, count), bitwise: drawn at the next power of
+    two and cut to that draw's prefix. A host draw whose size varies from call to call (a
+    partition's N + k + N_L) then compiles once per power of two, not once per size. The prefix of
+    a larger draw is the smaller draw only under JAX's partitionable threefry, which every run of
+    the family requires (§0.2d item 9), so without it this refuses. uniforms() itself stays as it
+    is: the kernel traces it."""
+    import jax
+
+    count = int(count)
+    if count < 0:
+        raise ValueError(f"A block holds a non-negative count of uniforms, not {count}")
+    if not jax.config.jax_threefry_partitionable:
+        raise ValueError(
+            "A block's prefix is the smaller draw only under JAX's partitionable threefry, and "
+            "jax_threefry_partitionable is off (§0.2d item 9)"
+        )
+    return uniforms(stream, counter, 1 << max(count - 1, 0).bit_length())[:count]
+
+
 def identity(seed, environment, lineage, branch):
     """The stream's identity as a run records it: @1's, with version 2's domain table."""
     out = v1.identity(seed, environment, lineage, branch)
