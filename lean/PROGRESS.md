@@ -1,5 +1,15 @@
 # Cells proof comparisons
 
+<a id="binding-ligand-response"></a>
+
+## 21 November 2026 · How total ligand responds to free concentration
+
+For `rapid_binding@1`, increasing one free ligand at fixed binder totals and other free concentrations strictly increases that ligand’s total. The derivative with respect to its log concentration is its free concentration plus a sum of variances weighted by binder totals. Counts may be signed, so the result includes forms that release a proton on binding Mg. Every cross-derivative is a corresponding covariance. The full matrix is positive definite, including the engine’s identity on unheld coordinates. The proof imports Mathlib’s results on positive diagonal matrices, weighted matrix products and derivatives. [Lean proof](CellsProofs/Chemistry/BindingResponse.lean) · [Engine residual and response matrix](https://github.com/Eidosoma/Cells/blob/68ab12e7f57552fa551b103df1393a1e095cd001/src/cells/laws/reactions/rapid_binding.py#L122-L142)
+
+At engine `68ab12e7`, 303 entries across 80 S1–S7 states were compared with an 80-digit calculation from the original standard potentials. NumPy, compiled JAX CPU and automatic differentiation of the conservation residual agreed within 3.49 × 10⁻¹⁵ of each entry’s uncentered absolute terms (maximum absolute discrepancy 2.45 × 10⁻¹⁴ mM). All 80 matrices were positive definite on each path. All nine S7 states had a negative H–Mg entry and a positive Mg diagonal. The tests also exercised unheld coordinates and empty binders. Removing binder covariance was detected in every system. Nine existing engine tests passed, including central differences of the inverse sensitivity and an H/Mg tissue run with `resolved_pump_tissue@3`. [Comparison driver](checks/binding_response.py) · [Engine sensitivity test](https://github.com/Eidosoma/Cells/blob/68ab12e7f57552fa551b103df1393a1e095cd001/tests/unit/test_rapid_binding_kernel.py#L476) · [Two-ligand tissue test](https://github.com/Eidosoma/Cells/blob/68ab12e7f57552fa551b103df1393a1e095cd001/tests/unit/test_rapid_binding_world_two_ligands.py#L31)
+
+In a 3 mM ATP solution at pH 7.2 and 37 °C, two points from Ward et al. show Mg-bound ATP rising from about 80.8% to 89.7% as measured free Mg rose from about 130 to 230 µM. Using Zhang et al.’s independently measured apparent affinity, Cells predicts 59.8% to 72.5%. The measurements support the direction. Transferring the affinity between preparations overpredicts the increase by 3.7 percentage points and underpredicts both individual occupancies. The figure gives neither point-specific sampling errors nor total Mg for the two markers. The quantitative total-Mg slope and the H–Mg cross-response remain open experimentally. [Marker readings and conditions](checks/data/ward1998_mgatp_titration.json) · [Ward et al., Fig. 1](https://cds.ismrm.org/ismrm-1998/PDF6/p1693.pdf) · [Zhang et al.](https://doi.org/10.1006/abio.1997.2238)
+
 <a id="main-review-d264-d266"></a>
 
 ## 21 November 2026 · Main review of wash counters, pulse timing and exported observations
