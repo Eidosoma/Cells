@@ -285,7 +285,8 @@
   "/mnt/workspaces/Cells/ol-break-renew-20261120/tiers/measure-c0ecf1b2/measured.json",
   "/mnt/workspaces/Cells/fr30-design-20261120/tiers/measure-4b23f252/measured.json",
   "/mnt/workspaces/Cells/ol3-engine-20261119/measure-e6df3aee/measured.json",
-  "/mnt/workspaces/Cells/ol3-engine-20261119/measure-caf2737e/measured.json"
+  "/mnt/workspaces/Cells/ol3-engine-20261119/measure-caf2737e/measured.json",
+  "/mnt/workspaces/Cells/empty-surface-20261120/tiers/measured-6b0faf38/measured.json"
  ],
  "measured_provenance": [
   {
@@ -2409,6 +2410,13 @@
    "root": "/mnt/workspaces/Cells/ol3-engine-20261119/tree-caf2737e",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-20T23:23:34+00:00"
+  },
+  {
+   "git_revision": "6b0faf3836c1ee33b8d90dece42e56741f7ac4c1",
+   "dirty": false,
+   "root": ".claude/worktrees/empty-surface-zero",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-20T21:35:37+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -4396,10 +4404,10 @@
    },
    {
     "file": "tests/unit/test_membrane_state.py",
-    "seconds": 2.72,
+    "seconds": 3.98,
     "exit_code": 0,
     "counts": {
-     "passed": 12
+     "passed": 15
     }
    },
    {
