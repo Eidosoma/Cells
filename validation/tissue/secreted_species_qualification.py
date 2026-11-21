@@ -116,6 +116,11 @@ def source_identity():
             patch_sha256=snapshot.get("patch_sha256"),
             status=snapshot.get("status"),
         )
+    from validation import executed_sources  # noqa: PLC0415
+    executed_sources.refuse_untracked(  # D259
+        ROOT, "secreted_species_qualification's source record"
+    )
+
     try:
         head = subprocess.run(
             ["git", "-C", str(ROOT), "rev-parse", "HEAD"], capture_output=True, text=True

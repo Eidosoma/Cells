@@ -36,6 +36,9 @@ STUDY_DTS = (1e-3, 5e-4)
 
 
 def provenance():
+    from validation import executed_sources  # noqa: PLC0415
+    executed_sources.refuse_untracked(ROOT, "cell_replacement_qualification's provenance")  # D259
+
     git = ["git", "-C", str(ROOT)]
     return dict(
         argv=sys.argv,

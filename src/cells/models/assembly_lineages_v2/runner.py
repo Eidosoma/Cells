@@ -253,9 +253,9 @@ def _vesicle_energy(spec, layout):
         full[: len(counts)] = counts
         empty = full.copy()
         empty[vesicle] = 0
-        value = ledger.free_energy(full, tables, world.terms, layout.terms) - ledger.free_energy(
-            empty, tables, world.terms, layout.terms
-        )
+        value = ledger.state_free_energy(
+            full, tables, world.terms, layout.terms
+        ) - ledger.state_free_energy(empty, tables, world.terms, layout.terms)
         if not np.isfinite(value):
             raise AssertionError("A vesicle's own free energy is not finite: a fault")
         return value + closure
@@ -515,7 +515,7 @@ def _release(world, layout, tables, counts, supplied, f, heat, heat_mag, work, w
             work_return -= amount * float(held_mu[j])
         else:
             after[j] += amount
-    f_after = ledger.free_energy(after, tables, world.terms, layout.terms)  # no C_close
+    f_after = ledger.state_free_energy(after, tables, world.terms, layout.terms)  # no C_close
     q_release = -(f_after - f[-1]) + work_return
     counts, supplied, f = counts.copy(), supplied.copy(), f.copy()
     heat, heat_mag, work, work_mag = heat.copy(), heat_mag.copy(), work.copy(), work_mag.copy()
@@ -596,7 +596,8 @@ def _assemble(spec, structure, layout, verdict, report, holder, final, timings):
         )
     tables = model.tables(spec)
     f = np.asarray(
-        [ledger.free_energy(c, tables, world.terms, layout.terms) for c in counts], dtype=np.float64
+        [ledger.state_free_energy(c, tables, world.terms, layout.terms) for c in counts],
+        dtype=np.float64,
     )
     if world.geometry is not None:  # C_close, once for the one living vesicle (§0.2c rule 8).
         f = f + geometry.closure_kT(world)

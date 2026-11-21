@@ -466,6 +466,11 @@ def checked_case(scale, rate, order):
 
 
 def provenance():
+    from validation import executed_sources  # noqa: PLC0415
+    executed_sources.refuse_untracked(  # D259
+        Path(__file__).resolve().parents[2], "cell_replacement_r1's provenance"
+    )
+
     git = ["git", "-C", str(Path(__file__).resolve().parents[2])]
     return dict(
         argv=sys.argv,

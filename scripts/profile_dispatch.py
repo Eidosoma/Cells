@@ -90,6 +90,9 @@ def provenance():
             "git_revision": git("rev-parse", "HEAD"),
             "dirty_paths": git("status", "--porcelain", "--untracked-files=no").splitlines(),
         }
+        from validation import executed_sources  # noqa: PLC0415
+
+        executed_sources.refuse_untracked(ROOT, "profile_dispatch's provenance")  # D259
     except (OSError, subprocess.CalledProcessError):  # validation/source_snapshot.py copy
         snapshot = json.loads((ROOT / "SNAPSHOT.json").read_text())
         source = {

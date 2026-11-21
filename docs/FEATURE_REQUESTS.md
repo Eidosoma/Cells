@@ -40,6 +40,7 @@ and a general feature, never one built for one study (D144).
 | [FR-32](#fr-32--a-dopc-swelling-validation-record-for-the-water-operator) | A DOPC swelling validation record for the water operator | Low (D248) | Requested | Folded into the next water-operator landing |
 | [FR-33](#fr-33--regional-labelled-protein-readouts-redistribution-against-degradation) | Regional labelled-protein readouts: inside a measured region, outside it and across the whole cell | High (D228, D248) | **Not for scoring until D259's fixes land** (a review's findings: the tracer's negative cohort, the wash admitted, the reserved name). **Landed** (merge ce2a3d9c, tag `fr33-region-readouts-landed-2026-11-20`): the region export and a one-way tracer, validation only; two-way movers are refused | Tracing through two-way transport is engine work (label rows or directional records), not scheduled |
 | [FR-34](#fr-34--channel-population-readouts-count-availability-and-signed-current) | Channel population readouts: surface count, availability and signed current at a declared voltage, with units and sign convention | **High** (user, 20 November 2026; D251) | **Landed:** the routes' and transporter populations' opt-in flux and current readouts with `clamped_flux` and `clamped_rates` (merge 81a29442, tag `fr34-current-readouts-landed-2026-11-21`), and the FR-7 lane's example with the halving control (bf7b50af, note 1e762583) | @3's channel populations at a declared voltage: the @3 owner's engine work (about 1–1.5 agent-days) |
+| [FR-35](#fr-35--timed-partial-withdrawal-of-an-assembly-populations-exterior-pool) | Timed partial withdrawal of an assembly population's well-mixed exterior pool: each molecule withdrawn independently, a declared buffer supplied, sites and particles kept | **High** (user, 21 November 2026) | Requested | The assembly owner (FR-20's builder): a short design note, then the build |
 
 ## FR-1 — A closed internal compartment on the shared inventory
 
@@ -1132,3 +1133,29 @@ explored.
     operators owner, 0.25–0.5.
   - **A flux or current record per route for the kinds' routes,** which today record only a cumulative
     inward transfer. The kinds owner, 0.5–1.
+
+## FR-35 — Timed partial withdrawal of an assembly population's exterior pool
+
+- **The request (user, 21 November 2026, high priority).** Add timed partial withdrawal of a
+  well-mixed exterior pool to `cells.assembly_lineages@2`.
+- **What happens today** (main beb0ddb5, `site_wash_spec()` in
+  tests/unit/test_assembly_lineages_v2_replacement.py):
+  - adding `fraction = 0.5` to its replacement schedule is refused;
+  - setting the fresh pool to four X instead records eight original X removed and four new X
+    supplied.
+
+  A half-volume wash with tracer-free buffer should supply zero X and leave some original molecules
+  in the pool.
+- **The acceptance test:** start the wash with eight independently distributed free X, four vacant
+  sites and two occupied sites.
+  1. With half the volume withdrawn, the collected count follows Binomial(8, 0.5): mean 4 and
+     variance 2 across independent streams.
+  2. At one-quarter withdrawal the mean is 2.
+  3. In every realization, collected plus remaining X equals eight.
+  4. The sites and the particles' identities are preserved.
+  5. The actual material and energy exchanged are recorded.
+  6. Restarting across the wash reproduces the uninterrupted run exactly (FR-22).
+- **Where it sits:** FR-20's `cells.pool_replacement@1` replaces the whole pool and draws nothing;
+  FR-27's `scheduled_compartment_wash@1` is the deterministic counterpart in the inner model. A
+  partial withdrawal draws each molecule's fate, so the draw, its stream and its checkpoint, the
+  buffer's supply rule and the discrete energy bookings are the design's questions.

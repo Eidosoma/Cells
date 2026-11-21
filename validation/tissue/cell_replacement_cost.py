@@ -403,6 +403,11 @@ def main(argv=None):
     args.output.mkdir(parents=True, exist_ok=True)
     started = time.perf_counter()
     result = PARTS[args.part](args)
+    from validation import executed_sources  # noqa: PLC0415
+    executed_sources.refuse_untracked(  # D259
+        Path(__file__).resolve().parents[2], "cell_replacement_cost's record"
+    )
+
     result.update(
         part=args.part,
         argv=sys.argv,

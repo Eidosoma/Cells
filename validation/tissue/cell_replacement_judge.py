@@ -519,6 +519,8 @@ def provenance():
     the engine's run records keep (cells.records.io.runtime_identity's numerical_environment:
     XLA_FLAGS and JAX_DISABLE_JIT), so a run under an XLA setting is identified by its record."""
     from cells.records.io import runtime_identity
+    from validation import executed_sources  # noqa: PLC0415
+    executed_sources.refuse_untracked(ROOT, "cell_replacement_judge's provenance")  # D259
 
     git = ["git", "-C", str(ROOT)]
     return dict(

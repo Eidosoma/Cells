@@ -644,7 +644,9 @@ def parse(data):
     model = parse_model(raw["model"])
     execution = parse_execution(raw["execution"], model)
     _mode_refusals(model.world, execution.mode)
-    return SimulationSpec(model, parse_experiment(raw["experiment"], model.world), execution)
+    experiment = parse_experiment(raw["experiment"], model.world)
+    _capacity_refusals(model.world, experiment, execution)
+    return SimulationSpec(model, experiment, execution)
 
 
 def to_dict(spec):
@@ -685,6 +687,38 @@ def _schedules_to_dict(schedules):
     from cells.models.assembly_lineages_v2 import division as division_rules
 
     return division_rules.schedule_to_dict(schedules)
+
+
+def _capacity_refusals(world, experiment, execution):
+    """Every declared count fits the molecule capacity, the log-factorial table's last index (a
+    Lean finding of 20 November, on FR-20): a population's founder vesicles (each place, and the
+    membrane's total), and each schedule's fresh pool, a transfer's or a replacement's. Equality is
+    valid. A count above the capacity would read the table's clamped last entry, ln C! for ln n!,
+    and the run's own ledger, which reads the same table, would not see it."""
+    capacity = execution.molecule_capacity
+    if world.population is not None:
+        from cells.models.assembly_lineages_v2 import population as population_rules
+
+        membrane = [i for i, p in enumerate(world.places) if p.phase == world_rules.MEMBRANE]
+        for k, vector in enumerate(population_rules.founder_vectors(world)):
+            total = sum(vector[i] for i in membrane)
+            if max(vector) > capacity or total > capacity:
+                raise ConfigError(
+                    f"execution: founder vesicle {k} holds {max(max(vector), total)} molecules in "
+                    f"a place or its membrane, above molecule_capacity {capacity}: every count is "
+                    "at most the capacity, the log-factorial table's last index"
+                )
+    names = [p.name for p in world.places if p.phase == world_rules.POOL and not p.held]
+    for schedule in experiment.schedules:
+        if schedule.fresh is None:
+            continue
+        for name, count in zip(names, schedule.fresh, strict=True):
+            if count > capacity:
+                raise ConfigError(
+                    f"experiment: {schedule.kind} {schedule.index}'s fresh {name} is {count}, "
+                    f"above molecule_capacity {capacity}: every count is at most the capacity, "
+                    "the log-factorial table's last index (equality is valid)"
+                )
 
 
 def _mode_refusals(world, mode):

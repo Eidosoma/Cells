@@ -160,6 +160,11 @@ def main(argv=None):
         inner.append(
             after._replace(**{f: np.asarray(getattr(i_state, f)) for f in ionic.STATE_TYPE._fields})
         )
+    from validation import executed_sources  # noqa: PLC0415
+    executed_sources.refuse_untracked(  # D259
+        Path(__file__).resolve().parents[2], "cell_replacement_rk4_electrode's record"
+    )
+
     out = dict(
         kind="cells.cell_replacement_rk4_electrode_diagnosis@1",
         dt_s=DT,

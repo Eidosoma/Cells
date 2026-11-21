@@ -85,7 +85,9 @@ def removed_and_supplied(world, old, new):
 
 
 CONTRACT = {
-    "trigger": "a declared replacement time; same-time events in schedule-index order",
+    "trigger": "a declared replacement time, which no other stop shares: a shear, a transfer or "
+    "another replacement at the same declared time is refused at parse, and a Poisson shear drawn "
+    "at it is refused at the run's start",
     "draw": "none: the schedule's stream (domain 6, its declared index) is never drawn",
     "keep": "every living assembly, as it stands: its places, key, sub-lineage and life",
     "pool": "the finite pool places take the declared composition; held places, c_ext and the "
