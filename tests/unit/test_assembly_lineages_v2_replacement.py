@@ -470,8 +470,10 @@ def test_a_cut_around_each_replacement_resumes_bitwise(tmp_path, monkeypatch):
     cut_around_each_stop("replacement", tmp_path, monkeypatch)
 
 
-def cut_around_each_stop(kind, tmp_path, monkeypatch):
-    """The cut test's body for a stop kind (replacement or withdrawal)."""
+def cut_around_each_stop(kind, tmp_path, monkeypatch, plants=True):
+    """The cut test's body for a stop kind (replacement or withdrawal): a cut at the last event
+    before each stop and at the first after it, resumed bitwise; with `plants`, a redone and a
+    skipped stop caught."""
     spec, a, at = world(kind)
     field = STOPS[kind][1]
     assert parse_spec(spec.to_dict()).fingerprint == spec.fingerprint  # the round trip
@@ -483,6 +485,8 @@ def cut_around_each_stop(kind, tmp_path, monkeypatch):
             assert differences(a, b1, b2, k) == []
             done = b2.population["numbering"][field]
             assert a.population[field][done:] == b2.population[field]
+    if not plants:
+        return
     real, (_, _, n) = checkpoints.admit, at[-1]  # the last stop
     for k, shift in ((n + 1, -1), (n, 1)):  # redone after a cut past it; skipped before it
 
@@ -686,9 +690,27 @@ def test_a_withdrawal_books_its_mixing_heat_never_negative_and_its_limits_are_ex
     assert 0.0 < mean_heat(count, f, buffer) < entropy
 
 
-def test_a_withdrawal_draws_binomially_independently_and_on_its_own_addresses(monkeypatch):
-    """FR-35's statistics (D261 item 6), the operator's draw at real run addresses: N_STREAMS
-    streams (seeds 0 to N - 1 of the acceptance world), 8 free X.
+def blocks(base_keys, index, number, n):
+    """[K, n]: the withdrawal's block of n uniforms at draw number `number` of schedule `index`'s
+    stream, for K base keys in one compiled call: withdrawal.draw's arithmetic (streams.block's
+    power-of-two prefix of streams.uniforms on the schedule's key) under jax.vmap."""
+    import jax
+    import jax.numpy as jnp
+
+    size = 1 << max(n - 1, 0).bit_length()
+
+    def one(base):
+        key = streams.stream_key_data(base, index, "schedule")
+        return streams.uniforms(key, number, size)[:n]
+
+    return np.asarray(jax.jit(jax.vmap(one))(jnp.asarray(base_keys)))
+
+
+def test_a_withdrawal_draws_binomially_independently_and_on_its_own_addresses():
+    """FR-35's statistics (D261 item 6), at real run addresses: N_STREAMS streams (seeds 0 to N - 1
+    of the acceptance world), 8 free X, drawn in one batched call per address. The batched draws
+    equal the operator's per-call draws (withdrawal.draw and streams.block) bit for bit on a sample
+    of 40 addresses.
     - f = 1/2: the collected mean in 4 +- 0.1 (4.47 SD), the variance in 2 +- 0.2 (4.8 SD), and a
       chi-squared over the nine outcomes below 31.8 (alpha 1e-4, 8 df). f = 1/4: the collected mean
       in 2 +- 0.1 and its variance in 1.5 +- 0.2; the remaining count's mean, 6, would not pass.
@@ -696,65 +718,59 @@ def test_a_withdrawal_draws_binomially_independently_and_on_its_own_addresses(mo
     - Independent: two places of equal count (X and L, 8 each) and two consecutive washes of one
       place are uncorrelated, |r| < 4 / sqrt(N).
     - Disjoint: a transfer's and a Poisson shear's streams (their own indices) are other keys.
-    Planted: one uniform shared by a species (mean 4, variance 16) and blocks overlapping by an
-    offset (place j reading place 0's block from j) are each caught. Host arithmetic."""
+    Planted, each caught: one uniform shared by a place's molecules (mean 4, variance 16), and
+    blocks overlapping by an offset (X reading L's block from X's ordinal). Host arithmetic."""
     spec = acceptance_spec(0.5)
     world, x = spec.model.world, spec.execution
     names = [p.name for p in world.places]
     schedule = spec.experiment.schedules[0]
-    keys = [streams.base_key_data(seed, x.environment, x.lineage, x.branch)
-            for seed in range(N_STREAMS)]  # fmt: skip
+    keys = np.asarray([streams.base_key_data(seed, x.environment, x.lineage, x.branch)
+                       for seed in range(N_STREAMS)])  # fmt: skip
+    finite = withdrawal.finite_places(world)
+    places = len(finite)
+    jx, jl = finite.index(names.index("X@pool")), finite.index(names.index("L@pool"))
+    ux = blocks(keys, schedule.index, jx, 8)  # wash 0: draw number 0 * places + j
+    ul = blocks(keys, schedule.index, jl, 8)
+    ux1 = blocks(keys, schedule.index, places + jx, 8)  # wash 1
     pool = np.zeros(len(names), dtype=np.int64)
     pool[[names.index("X@pool"), names.index("L@pool")]] = 8
-    ix, il = names.index("X@pool"), names.index("L@pool")
-
-    def collected(f, wash=0, count=N_STREAMS):
-        s = division.Schedule(1, "withdrawal", None, (T_WASH,), None, None, None, schedule.fresh,
-                              fraction=f)  # fmt: skip
-        out = np.asarray([withdrawal.draw(key, world, s, wash, pool)[0] for key in keys[:count]])
-        return out[:, ix], out[:, il]
+    for seed in range(0, N_STREAMS, N_STREAMS // 40):  # the batched draws are the operator's
+        key = streams.stream_key_data(keys[seed], schedule.index, "schedule")
+        np.testing.assert_array_equal(np.asarray(streams.block(key, jx, 8)), ux[seed])
+        taken, _ = withdrawal.draw(keys[seed], world, schedule, 0, pool)
+        assert taken[names.index("X@pool")] == np.count_nonzero(ux[seed] < 0.5)
+        assert taken[names.index("L@pool")] == np.count_nonzero(ul[seed] < 0.5)
 
     def bands(k, mean, var):
         return abs(k.mean() - mean) < 0.1 and abs(k.var(ddof=1) - var) < 0.2
 
-    kx, kl = collected(0.5)
+    kx, kl = (ux < 0.5).sum(axis=1), (ul < 0.5).sum(axis=1)
     assert bands(kx, 4.0, 2.0)
     expected = np.asarray([math.comb(8, j) for j in range(9)]) * N_STREAMS / 256.0
     chi2 = float(np.sum((np.bincount(kx, minlength=9) - expected) ** 2 / expected))
     assert chi2 < 31.8
     r = 4.0 / math.sqrt(N_STREAMS)
     assert abs(np.corrcoef(kx, kl)[0, 1]) < r  # two places of equal count
-    assert abs(np.corrcoef(kx, collected(0.5, wash=1)[0])[0, 1]) < r  # consecutive washes
-    qx, _ = collected(0.25)
+    assert abs(np.corrcoef(kx, (ux1 < 0.5).sum(axis=1))[0, 1]) < r  # consecutive washes
+    qx = (ux < 0.25).sum(axis=1)
     assert bands(qx, 2.0, 1.5) and not bands(8 - qx, 2.0, 1.5)  # the collected count, not the rest
-    base = keys[0]
-    others = {i: np.asarray(streams.stream_key_data(base, i, "schedule")) for i in (1, 2, 3)}
+    others = {i: np.asarray(streams.stream_key_data(keys[0], i, "schedule")) for i in (1, 2, 3)}
     assert len({tuple(v.tolist()) for v in others.values()}) == 3  # withdrawal, transfer, shear
-    real, places = streams.block, len(withdrawal.finite_places(world))
-
-    def shared_uniform(key, number, n):  # planted: one uniform for all of a place's molecules
-        return np.repeat(np.asarray(real(key, number, 1)), n)
-
-    def overlapping(key, number, n):  # planted: place j reads place 0's block from offset j
-        j = number % places
-        return np.asarray(real(key, number - j, n + j))[j:]
-
-    monkeypatch.setattr(withdrawal.streams, "block", shared_uniform)
-    shared, _ = collected(0.5, count=1000)
-    assert not bands(shared, 4.0, 2.0)  # one uniform per species: variance 16
-    monkeypatch.setattr(withdrawal.streams, "block", overlapping)
-    ox, ol = collected(0.5, count=1000)
-    assert abs(np.corrcoef(ox, ol)[0, 1]) > 4.0 / math.sqrt(1000)  # overlapping blocks
-    monkeypatch.undo()
+    shared = 8 * (ux[:, 0] < 0.5)  # planted: one uniform for all of a place's molecules
+    assert not bands(shared, 4.0, 2.0)
+    long = blocks(keys, schedule.index, jl, 8 + jx)  # planted: X reads L's block from its ordinal
+    ox = (long[:, jx:] < 0.5).sum(axis=1)
+    assert abs(np.corrcoef(ox, (long[:, :8] < 0.5).sum(axis=1))[0, 1]) > r
 
 
 def test_a_cut_around_each_withdrawal_resumes_bitwise(tmp_path, monkeypatch):
     """FR-22 around FR-35's withdrawal: the cut test's body (cuts at the last event before each
-    wash and the first after it, resumed bitwise; redone and skipped washes caught) on a world of
-    two washes on one schedule. Planted: the schedule's draw counter, which a resumed run derives
-    from the applied stops, left at 0 after a cut between the washes, so the second wash redraws
-    the first's addresses: caught."""
-    cut_around_each_stop("withdrawal", tmp_path, monkeypatch)
+    wash and the first after it, resumed bitwise) on a world of two washes on one schedule, on the
+    replacement world's compiled program. Planted: the schedule's draw counter, which a resumed run
+    derives from the applied stops, left at 0 after a cut between the washes, so the second wash
+    redraws the first's addresses: caught. (The redone and skipped stops' plants are the
+    replacement's cut test's, on the same applied-stops record.)"""
+    cut_around_each_stop("withdrawal", tmp_path, monkeypatch, plants=False)
     spec, a, at = world("withdrawal")
     k = at[0][2] + 1  # the first event after the first wash, before the second
     monkeypatch.setattr(population, "_count_washes", lambda *args: None)
