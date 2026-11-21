@@ -47,7 +47,124 @@ const FIELD_NULLS = {
   loop_term: "none",
   stage_term: "none",
   step_method: "none",
+  cycle: "none",
+  // A cycle or route law's step terms: "Each names the kernel that supplies it, or is null where the law has none".
+  material_term: "none",
+  charge_bound: "none",
+  material_bound: "none",
+  // `forms`: the format page says a value's meaning and of null only "or null", so a null says no more than none.
+  forms: "none",
 };
+
+/** The values of `forms` the format page names, in its words ("Cycle laws", "Binding laws"). */
+const FORMS_WORDS = {
+  base: "base: its moves written in base forms with every ligand out",
+  registry: "registry: its binders' forms are the species registry's",
+};
+
+// ------------------------------------------------------------ a cycle law's general form
+
+/** The row's name: the format page's for the field ("Cycle laws": "`cycle`: its general form (seam A's cycle form)"). */
+export const FORM_TITLE = "Its general form";
+
+/**
+ * Each kinetic form in the engine's own words (the cycle forms' module, laws/cycles/forms.py, "What a cycle form is"), and the key of
+ * the form that holds that kinetics' own data. A kinetics not named here is shown under its own name, its data counted.
+ */
+export const KINETICS = {
+  factored: { words: "factored: per mode, a product of Hill saturations", data: "saturation" },
+  diagram: { words: "diagram: a mass-action kinetic diagram, whose modes are its Hill cycles", data: "diagram" },
+  net_flow: { words: "net flow: per mode, a weighted sum of terms, each dissipative alone, exposing no one-way flux", data: "flux_terms" },
+  monomial: { words: "monomial: per mode, a rate written in log space from monomials of the activities", data: "monomial" },
+};
+
+/** The form's keys the card words (forms.py's CycleForm and its docstring); any other key is shown under its own name. */
+const FORM_KEYS = new Set(["kinetics", "roles", "rows", "modes", "parameters", "saturation", "diagram", "flux_terms", "monomial", "ph_bands", "temperature_K"]);
+/** Of those, the ones said whatever the kinetics: the rest are a kinetics' own data. */
+const WORDED = new Set(["kinetics", "roles", "rows", "modes", "parameters", "ph_bands", "temperature_K"]);
+
+const plural = (count, one, many = `${one}s`) => `${count} ${count === 1 ? one : many}`;
+const rowWords = (row) => (Array.isArray(row) ? `${row[0]} at ${row[1]}` : String(row));
+/** A mode's count: an integer, or a parameter's name, a leading "-" negating it. */
+const countWords = (count) => (typeof count === "number" ? (count > 0 ? `+${count}` : `−${-count}`) : String(count).startsWith("-") ? `−${String(count).slice(1)}` : `+${count}`);
+const valenceWords = (valence) => (valence === null || valence === undefined ? "any valence" : `valence ${valence > 0 ? "+" : valence < 0 ? "−" : ""}${Math.abs(valence)}`);
+
+/** A value the card has no words for, said plainly and never poured: a scalar as it is, a list or an object by its size. */
+export function plainValue(value) {
+  if (value === null || value === undefined) return null;
+  if (typeof value === "boolean") return value ? "yes" : "no";
+  if (Array.isArray(value)) return value.length ? plural(value.length, "entry", "entries") : NONE_WORDS;
+  if (typeof value === "object") return Object.keys(value).length ? plural(Object.keys(value).length, "key") : NONE_WORDS;
+  return String(value);
+}
+
+/** What a kinetics' own data is, in a sentence: how many states, steps, terms or rates, never the data. */
+function dataWords(kinetics, data) {
+  if (kinetics === "diagram" && data && typeof data === "object" && Array.isArray(data.states)) {
+    return `${plural(data.states.length, "state")} joined by ${plural((data.edges || []).length, "step")}, with ${plural((data.cycles || []).length, "Hill cycle")}`;
+  }
+  if (kinetics === "factored" && Array.isArray(data)) {
+    const factors = data.map((mode) => (Array.isArray(mode) ? mode : []));
+    const on = [...new Set(factors.flat().map((factor) => rowWords(factor?.row)))];
+    return `per mode, ${factors.map((mode) => plural(mode.length, "Hill factor")).join("; ")}${on.length ? `, on ${on.join(" and ")}` : ""}`;
+  }
+  if (kinetics === "net_flow" && Array.isArray(data)) return `${plural(data.flat().length, "term")} over ${plural(data.length, "mode")}`;
+  if (kinetics === "monomial" && data && typeof data === "object" && Array.isArray(data.rates)) {
+    return `${plural(data.rates.length, "rate")}, one per mode, and ${plural((data.read_roles || []).length, "read role")}: roles its kinetics read and never move`;
+  }
+  return plainValue(data) ?? "";
+}
+
+/** A parameter of the form, as forms.py's Parameter declares it: its unit and its declared range (inclusive bounds). */
+function parameterWords(parameter) {
+  const parts = [];
+  if (parameter.integer) parts.push("a whole number");
+  if (parameter.low !== null && parameter.low !== undefined && parameter.high !== null && parameter.high !== undefined) parts.push(`from ${parameter.low} to ${parameter.high}`);
+  else if (parameter.low !== null && parameter.low !== undefined) parts.push(`at least ${parameter.low}`);
+  else if (parameter.high !== null && parameter.high !== undefined) parts.push(`at most ${parameter.high}`);
+  if (parameter.positive) parts.push("above zero");
+  parts.push(parameter.unit === "1" ? "no unit" : `in ${parameter.unit}`);
+  return parts.join(", ");
+}
+
+/**
+ * A cycle law's general form in words (the format page, "Cycle laws"; forms.py): its kinetics, each mode and what it
+ * moves, its roles, rows and fuel roles, a short statement of its kinetics' own data, its pH bands and temperature
+ * domain, and its parameters with their bounds and units. A key that is null says nothing; a key the card does not
+ * know is shown under its own name, plainly. Returns the row's summary and the two lists.
+ */
+export function formWords(form) {
+  const known = KINETICS[form.kinetics];
+  const modes = Array.isArray(form.modes) ? form.modes : [];
+  const roles = Array.isArray(form.roles) ? form.roles : [];
+  const rows = Array.isArray(form.rows) ? form.rows : [];
+  const parameters = Array.isArray(form.parameters) ? form.parameters : [];
+  const items = [];
+  if (form.kinetics !== null && form.kinetics !== undefined) items.push({ label: "Kinetics", detail: known ? known.words : `${form.kinetics}: a kinetic form these words do not know yet` });
+  for (const mode of modes) {
+    const [id, counts] = Array.isArray(mode) ? mode : [String(mode), []];
+    const moved = (counts || []).map((count, index) => (count === 0 ? null : `${rowWords(rows[index])} ${countWords(count)}`)).filter(Boolean);
+    items.push({ label: `Mode ${id}`, detail: `per forward cycle: ${moved.join(", ") || "no row changed"}` });
+  }
+  if (roles.length) items.push({ label: "Roles", detail: roles.map((role) => (Array.isArray(role) ? `${role[0]} (${valenceWords(role[1])})` : String(role))).join(", ") });
+  if (rows.length) items.push({ label: "Rows", detail: `${rows.map(rowWords).join(", ")}: each a role at the N or P end of its host` });
+  // The fuel roles: a key the engine's documents do not explain, shown under its own name.
+  if (Array.isArray(form.fuel_roles)) items.push({ label: "fuel_roles", code: true, detail: form.fuel_roles.length ? form.fuel_roles.join(", ") : NONE_WORDS });
+  // The kinetics' own data: a sentence of what it is. Another kinetics' empty data key says nothing.
+  const dataKey = known ? known.data : form.kinetics;
+  const data = form[dataKey];
+  if (data !== null && data !== undefined && !(Array.isArray(data) && !data.length)) items.push({ label: `Its ${String(dataKey).replace(/_/g, " ")}`, detail: dataWords(form.kinetics, data) });
+  for (const band of Array.isArray(form.ph_bands) ? form.ph_bands : []) items.push({ label: "pH band", detail: `the pH of ${rowWords(band.row)} within ${band.width} of ${band.center}` });
+  if (Array.isArray(form.temperature_K)) items.push({ label: "Temperature domain", detail: `${form.temperature_K[0]} to ${form.temperature_K[1]} K` });
+  // Any other key under its own name, plainly: one the card does not know, or another kinetics' data where it is not empty.
+  for (const [key, value] of Object.entries(form)) {
+    if (key === "fuel_roles" || key === dataKey || value === null || value === undefined) continue;
+    if (WORDED.has(key) || (FORM_KEYS.has(key) && Array.isArray(value) && !value.length)) continue;
+    items.push({ label: key, code: true, detail: plainValue(value) });
+  }
+  const summary = `${known ? form.kinetics.replace("_", " ") : form.kinetics} kinetics, ${plural(modes.length, "mode")}, ${plural(roles.length, "role")} and ${plural(parameters.length, "parameter")}`;
+  return { summary, items, parameters: parameters.map((parameter) => ({ label: parameter.name, code: true, detail: parameterWords(parameter) })) };
+}
 
 /** Each interface's own fields as the format page names them ("Each interface's own fields"). */
 const FIELD_WORDS = {
@@ -58,6 +175,10 @@ const FIELD_WORDS = {
   rk4_step_s: "Reference RK4 step bound",
   stage_term: "Stage term",
   loop_term: "Loop term",
+  material_term: "Material term",
+  charge_bound: "Bound on a charged row",
+  material_bound: "Bound on a neutral row",
+  forms: "Forms",
   moves: "Moves per forward cycle",
   fuel_kinds: "Fuel kinds",
   hosts: "Hosts",
@@ -86,6 +207,7 @@ function words(key, value, units = {}) {
   if (key === "voltage_domain_V" && Array.isArray(value)) return `${value[0]} to ${value[1]} V`;
   if (key === "permeant" && Array.isArray(value)) return value.map(([species, valence, relative]) => `${species} (valence ${valence}, relative permeability ${relative})`).join(", ");
   if (key === "moves" && Array.isArray(value)) return value.map(([role, count]) => `${role} ${count}`).join(", ");
+  if (key === "forms" && typeof value === "string" && FORMS_WORDS[value]) return FORMS_WORDS[value];
   if (Array.isArray(value)) return value.length ? value.map((item) => (typeof item === "object" ? JSON.stringify(item) : String(item))).join(", ") : NONE_WORDS;
   if (typeof value === "object") {
     const entries = Object.entries(value);
@@ -228,8 +350,24 @@ function describePiece(library, piece, drawn, map) {
         break;
     }
   }
-  // The rest of its declaration, by its interface's own fields.
-  for (const [key, value] of Object.entries(d.fields || {})) facts.push([FIELD_WORDS[key] || key, words(key, value, d.units || {})]);
+  // The rest of its declaration, by its interface's own fields. A cycle law's general form is said in words, and where
+  // it is set it carries the law (the format page): its own moves may be empty and its kernels are null, so say so.
+  const form = d.fields?.cycle && typeof d.fields.cycle === "object" ? d.fields.cycle : null;
+  for (const [key, value] of Object.entries(d.fields || {})) {
+    if (form && (key === "kinetics" || key === "domain_valid") && value === null) continue;
+    if (key === "cycle" && form) {
+      const said = formWords(form);
+      facts.push([FORM_TITLE, `${said.summary}; below`]);
+      sections.push({ title: FORM_TITLE, items: said.items });
+      if (said.parameters.length) sections.push({ title: `${FORM_TITLE}: its parameters`, items: said.parameters });
+      continue;
+    }
+    if (key === "moves" && form && Array.isArray(value) && !value.length) {
+      facts.push([FIELD_WORDS.moves, "none of its own: its general form carries them"]);
+      continue;
+    }
+    facts.push([key === "cycle" ? FORM_TITLE : FIELD_WORDS[key] || key, words(key, value, d.units || {})]);
+  }
   // A status only where the manifest gives one, with the record it was copied from.
   facts.push(["Status", d.status ? `${d.status} (from ${d.status_source})` : "not stated: the engine's declarations give no level for it"]);
   if (d.status && d.status_source) sources.push({ path: d.status_source, where: "the record its status was copied from" });

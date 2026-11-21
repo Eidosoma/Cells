@@ -85,6 +85,15 @@
             "evidence": "fixture-parts", "within": [], "files": [["part-a", "Q1.json"], ["part-b", "Q2.json"]], "at": "verdict",
             "unit": "items", "day": { "file": ["README.md"], "line": "Run once" }
           }
+        },
+        {
+          "progress": { "entry": "A fixture comparison of two arms passes" },
+          "verdict": {
+            "evidence": "fixture-compared", "within": [], "file": ["comparison.json"], "read": "compared",
+            "tables": ["arm_a.quantities", "arm_b.quantities", "persistence"],
+            "unit": "compared rows", "day": { "file": ["RUN.txt"], "line": "run once" },
+            "snapshot": { "file": ["RUN.txt"], "text": true }
+          }
         }
       ],
       "rerun": null

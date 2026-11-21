@@ -1745,3 +1745,92 @@ def test_a_routed_targets_exported_rate_is_the_rate_its_step_runs_at(monkeypatch
     history = type(state)(*(np.asarray(v)[None] for v in state))
     observed = model.observe_history(np.array([0.0]), history, p, np.array([0.0]), spec)
     assert float(np.asarray(observed.reaction_rate_fmol_per_s)[0, 0]) == pytest.approx(k * n)
+
+
+def _clamp_world(source):
+    """FR-34's maintained twin example (validation/channel_readouts/example.py, a composite:
+    kir_0 and leak_1, the same count on one patch), both scheduled at availability 1, with leak_1
+    held at a factor of 0.5 by `source`: "write", species_regulated_availability@1 (a Hill
+    activation of R at its own concentration, exactly 0.5); "door", the routing door (a planted
+    factor source, 0.5)."""
+    from tests import kind_fixtures as kf
+    from validation.channel_readouts import example
+
+    raw = example.world()
+    for entry in raw["experiment"]["channel_controls"]:
+        if entry["channel_id"] == example.HALF:
+            entry["schedule"] = [dict(time=0.0, availability=1.0)]
+    if source == "write":
+        raw = add_inventory_species(
+            raw, rf.REGULATOR, trace_mM=1e-9, diffusivity_m2_per_s=1e-10, floor_fmol=1e-20,
+            concentrations_mM={"cell_0": 1e-3},
+        )  # fmt: skip
+        entry = rf.hill_coupling(
+            "hold", "channel", [example.HALF], rf.REGULATOR, "hill_activation", 1e-3, 1.0
+        )
+        return rf.with_coupling(raw, species=[rf.REGULATOR], couplings=[entry])
+    raw = kf.declare_routing(raw, factors={"f_a": 0.5})
+    channel = next(c for c in raw["model"]["channels"] if c["id"] == example.HALF)
+    channel["factors"] = ["f_a"]
+    return raw
+
+
+@pytest.mark.parametrize("source", ("write", "door"))
+def test_a_composites_clamped_current_runs_at_its_effective_availability(source):
+    """D265 finding 1 (a fourth review; host only, about 1 s each): in a composite, a channel
+    population's current at a declared voltage is the composite's clamped_channel_flux, which
+    hands @3 the control and layout views the step runs at (clamp_inputs). leak_1 is held at a
+    factor of 0.5 by an @1 write or by the routing door, kir_0 at 1, the same count:
+    - at the cell's own voltage the clamped flux is the recorded channel_flux_fmol_s, bit for bit;
+    - at -50 mV leak_1's current is exactly half of kir_0's;
+    - for the write, @3's helper given the stored control and layout (the reviewer's path, 11.10328
+      pA for 5.55164) loses the factor: leak_1's current equals kir_0's."""
+    from cells.models import surface_pump_v3 as v3
+    from cells.registry import kind_registry
+    from tests import kind_fixtures as kf
+    from validation.channel_readouts import example
+
+    with kind_registry.scope(kf.registry(kf.factor_source())):
+        spec = parse_spec(_clamp_world(source))
+        model = get_model(spec.model)
+        state, p = model.initial_values(spec)
+        control = model.CONTROL_TYPE(*(v[0] for v in cs.control_values(spec, [0.0])))
+        history = type(state)(*(np.asarray(v)[None] for v in state))
+        observed = model.observe_history(np.array([0.0]), history, p, np.array([0.0]), spec)
+        own = np.asarray(observed.membrane_voltage_V)[0]
+        flux, _ = model.clamped_channel_flux(state, control, p, own)
+        assert np.array_equal(flux, np.asarray(observed.channel_flux_fmol_s)[0])
+        ids = [c.id for c in spec.model.channels]
+        full, half = ids.index(example.FULL), ids.index(example.HALF)
+        _, current = model.clamped_channel_flux(state, control, p, -0.05)
+        assert current[full] != 0 and current[half] == 0.5 * current[full]
+        if source == "write":
+            inner = model.inner
+            stored = v3.clamped_channel_flux(
+                inner.inner_state(state), inner.inner_control(control), inner.inner_layout(p),
+                -0.05, xp=np, structure=inner.structure,
+            )[1]  # fmt: skip
+            assert stored[half] == stored[full] == 2 * current[half]
+
+
+def test_a_composites_clamped_kinds_are_the_steps_own_rates():
+    """D265 finding 1's check of the kinds (host only, about 2 s): in a composite with kinds
+    (crossrev's FR-4 declared world: passive routes, the rapid proton buffer, transporters), the
+    composite's clamped_kind at each route's own patch voltage is the step's own passive flux
+    (the composite readouts' passive_transferred derivative), bit for bit."""
+    from cells.kinds import passive_routes
+    from validation.tissue import composite_crossrev as crossrev
+
+    spec = parse_spec(crossrev._worlds("kinds", all_steps=False)["fr4_declared"])
+    model = get_model(spec.model)
+    state, p = model.initial_values(spec)
+    control = model.CONTROL_TYPE(*(v[0] for v in cs.control_values(spec, [0.0])))
+    values = model.readouts(state, control, p, xp=np)
+    potentials = np.asarray(values.ionic.field.potential_V)
+    _, _, view = model.clamp_inputs(state, control, p)
+    volts = (
+        potentials[np.asarray(view.passive_inside)] - potentials[np.asarray(view.passive_outside)]
+    )
+    flux, _ = model.clamped_kind(passive_routes.clamped_flux, state, control, p, volts)
+    assert np.any(flux != 0)
+    assert np.array_equal(flux, np.asarray(values.derivative.passive_transferred))

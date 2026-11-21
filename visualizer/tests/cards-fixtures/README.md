@@ -6,7 +6,8 @@ real record uses. Nothing here is a result.
 - `engine/<revision>/`: the engine's repository at a revision, one folder each (the tool's `--repo-folders`).
   A revision with a folder counts as one on main; `4444…` is a snapshot on main, `5555…` (no folder) is not.
 - `evidence/`: saved run folders, each named by its folder name, with a verdict file in three layouts
-  (criteria at the top, criteria under `verdict`, rows with a tally).
+  (criteria at the top, criteria under `verdict`, rows with a tally), and the other layouts the gathering reads
+  (a tally, names with verdicts, several files, and a comparison's compared and failed numbers, `fixture-compared`).
 - `source.json`: four cards, one in each band, that read them.
 
 The files that hold a clock time in the real record (a run's `judged.done`, `run.log`, and a PROGRESS.md

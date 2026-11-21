@@ -29904,5 +29904,251 @@
     "part"
    ]
   ]
- }
+ },
+ "organelles": [
+  {
+   "id": "nucleus",
+   "species": "human",
+   "label": "Nucleus",
+   "named": {
+    "text": "Human's species file: its cell holds a nucleus.",
+    "part": "nucleus",
+    "file": "data/species/human.json"
+   },
+   "size": {
+    "shape": "sphere",
+    "across_um": [
+     10
+    ],
+    "held": true,
+    "words": "near the size of a HeLa nucleus inside the cell",
+    "file": "data/catalogue/held_sizes.json",
+    "label": "Nucleus",
+    "text": "nuclei isolated from HeLa cells, a human cell line, in the paper's column “HeLa (fresh)”, were 17.18 ± 0.39 µm wide (the mean of their long and short axes, by light microscopy) and 16.20 ± 0.48 µm high (by atomic force microscopy), mean ± s.e.m. of 21 nuclei; the same table's column “HeLa” gives 12.73 ± 0.54 µm wide and 10.91 ± 0.59 µm high (23 nuclei). These are nuclei taken out of the cell, not nuclei measured in an intact cell",
+    "sources": [
+     "human:lherbette2017"
+    ],
+    "why": "The picture is drawn at the size inside the cell, smaller than these nuclei, which were measured taken out of the cell."
+   }
+  },
+  {
+   "id": "endoplasmic-reticulum",
+   "species": "human",
+   "label": "Endoplasmic reticulum",
+   "named": {
+    "text": "Human's species file: its cell holds an endoplasmic reticulum.",
+    "part": "er",
+    "file": "data/species/human.json"
+   },
+   "size": {
+    "shape": "sheet",
+    "thick_nm": [
+     30,
+     50
+    ],
+    "label": "Endoplasmic reticulum",
+    "text": "a review's general figure, not a measurement in one cell type: the reticulum's membrane “is formed into sheets and tubules of roughly 80–100 nm diameter”, and “The sheets are flat, with a bilayer separation of 30–50 nm”, the distance between a sheet's two membranes; the review names no species or cell type there",
+    "sources": [
+     "human:perkins2021"
+    ],
+    "what": "the review's bilayer separation, the distance between a sheet's two membranes, drawn as the sheet's whole thickness"
+   }
+  },
+  {
+   "id": "golgi-apparatus",
+   "species": "human",
+   "label": "Golgi apparatus",
+   "named": {
+    "text": "Human's species file: its cell holds a Golgi apparatus.",
+    "part": "golgi",
+    "file": "data/species/human.json"
+   },
+   "size": {
+    "shape": "stack",
+    "across_um": [
+     0.5,
+     1
+    ],
+    "label": "Golgi apparatus",
+    "text": "a review's general figure for mammalian cells, not a measurement in one cell type: “In mammalian cells, this organelle consists of a pile of flat, disk-like membranes, the cisternae”; “The diameter of the cisternae is also cell type-dependent, and is usually 0.5–1 μm”, and the cisternae of a stack are “usually numbering between 3 and 11”",
+    "sources": [
+     "human:martinezalonso2013"
+    ],
+    "what": "the review's diameter of the cisternae, drawn as the widest cisterna's"
+   }
+  },
+  {
+   "id": "lipid-droplet",
+   "species": "human",
+   "label": "Lipid droplet",
+   "named": {
+    "text": "Human's species file: its cell holds lipid droplets.",
+    "part": "lipid-droplet",
+    "file": "data/species/human.json"
+   },
+   "size": {
+    "shape": "sphere",
+    "across_um": [
+     0.1,
+     5
+    ],
+    "label": "Lipid droplet",
+    "text": "an encyclopedia's general range, not a measurement in one cell type: “the diameter of lipid droplets ranges from 0.1–5 μm in non-adipocyte cells, but increases to over 100 μm in white adipocytes”",
+    "sources": [
+     "human:wikipedia-lipid-droplet"
+    ]
+   }
+  },
+  {
+   "id": "mitochondrion",
+   "species": "human",
+   "label": "Mitochondrion",
+   "named": {
+    "text": "Human's species file: its cell holds mitochondria.",
+    "part": "mitochondria",
+    "file": "data/species/human.json"
+   },
+   "size": {
+    "shape": "capsule",
+    "across_um": [
+     0.55
+    ],
+    "long_um": [
+     1.18
+    ],
+    "label": "Mitochondrion",
+    "text": "the paper's normal mitochondria, beside the giant ones it studies, in the liver of people with non-alcoholic fatty liver disease, measured in three dimensions, were 0.55 ± 0.15 µm wide and 1.18 ± 0.59 µm long, total means ± S.D. combining the measurements from each patient (four cells from each patient, 16 cells in all); its giant mitochondria were 0.64 ± 0.24 µm wide and 3.99 ± 1.68 µm long",
+    "sources": [
+     "human:shami2021"
+    ]
+   }
+  },
+  {
+   "id": "autophagosome",
+   "species": "human",
+   "label": "Autophagosome",
+   "named": {
+    "text": "Human's species file: its cell holds autophagosomes.",
+    "part": "autophagosome",
+    "file": "data/species/human.json"
+   },
+   "size": {
+    "shape": "sphere",
+    "across_um": [
+     0.5,
+     1.5
+    ],
+    "label": "Autophagosome",
+    "text": "an encyclopedia's general range for mammalian cells, not a measurement in one cell type: “An autophagosome is a spherical structure with double layer membranes.” “Yeast autophagosomes are about 500-900 nm, while mammalian autophagosomes are larger (500-1500 nm).” The mammalian range is 0.5–1.5 µm; the sentence carries no reference of its own",
+    "sources": [
+     "human:wikipedia-autophagosome"
+    ]
+   }
+  },
+  {
+   "id": "lysosome",
+   "species": "human",
+   "label": "Lysosome",
+   "named": {
+    "text": "Human's species file: its cell holds lysosomes.",
+    "part": "lysosome",
+    "file": "data/species/human.json"
+   },
+   "size": {
+    "shape": "sphere",
+    "across_um": [
+     0.56
+    ],
+    "label": "Lysosome",
+    "text": "single lysosomes of HeLa cells, each measured on its own by electron microscopy guided by fluorescence: one “a spherical shape with an approximate diameter of 560 nm” (0.56 µm), others 0.56 × 0.56 × 0.51 µm, 0.55 × 0.58 × 0.62 µm and 0.66 × 0.69 × 0.50 µm. These are single examples, not a measure of many",
+    "sources": [
+     "human:loginov2022"
+    ]
+   }
+  },
+  {
+   "id": "peroxisome",
+   "species": "human",
+   "label": "Peroxisome",
+   "named": {
+    "text": "Human's species file: its cell holds peroxisomes.",
+    "part": "peroxisome",
+    "file": "data/species/human.json"
+   },
+   "size": {
+    "shape": "sphere",
+    "across_um": [
+     0.1,
+     1
+    ],
+    "label": "Peroxisome",
+    "text": "an encyclopedia's general range, not a measurement in one cell type: “Peroxisomes are small (0.1–1 μm diameter) organelles”",
+    "sources": [
+     "human:wikipedia-peroxisome"
+    ]
+   }
+  },
+  {
+   "id": "centriole",
+   "species": "human",
+   "label": "Centriole",
+   "named": {
+    "text": "Human's species file: its cell holds centrioles.",
+    "part": "centriole",
+    "file": "data/species/human.json"
+   },
+   "size": {
+    "shape": "capsule",
+    "across_um": [
+     0.2
+    ],
+    "long_um": [
+     0.4
+    ],
+    "held": true,
+    "words": "near the size of a centriole in the bone marrow cells of healthy people",
+    "file": "data/catalogue/held_sizes.json"
+   }
+  },
+  {
+   "id": "endocytic-vesicle",
+   "species": "human",
+   "label": "Endocytic vesicle",
+   "named": {
+    "text": "Human's species file: its cell holds endocytic vesicles.",
+    "part": "endocytic-vesicle",
+    "file": "data/species/human.json"
+   },
+   "size": {
+    "shape": "sphere",
+    "across_um": [
+     0.15
+    ],
+    "held": true,
+    "words": "near the size of the small vesicles and tubules that carry Rab5 in HeLa cells",
+    "file": "data/catalogue/held_sizes.json"
+   }
+  },
+  {
+   "id": "copi-vesicle",
+   "species": "human",
+   "label": "COPI vesicle",
+   "named": {
+    "text": "Human's species file: its cell holds COPI vesicles.",
+    "part": "copi-vesicle",
+    "file": "data/species/human.json"
+   },
+   "size": {
+    "shape": "sphere",
+    "across_um": [
+     0.126
+    ],
+    "label": "COPI vesicle",
+    "text": "dots containing COPI (coatomer) in HeLa cells, seen by STED fluorescence microscopy and sized by fitting each image (a 2D Lorentzian), were 126 ± 15 nm (0.126 µm), n = 181: an apparent size from a light microscope's fit, not an electron microscope's; COPI vesicles made in vitro measured 114 ± 11 nm (n = 64) the same way",
+    "sources": [
+     "human:pellett2013"
+    ]
+   }
+  }
+ ]
 }

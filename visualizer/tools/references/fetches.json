@@ -1,6 +1,6 @@
 {
  "format": "cells.visualizer.fetch_budgets@1",
- "note": "What each address of the published page may fetch beside the page, loaded cold (tools/check_fetches.mjs, judged by tools/lib/fetch_budget.mjs). Each address lists the files it must fetch and the files it may fetch, by pattern (* is any run of characters but /), and a bound in bytes on what it fetches beside the page. Each row of experiments stands for that experiment at its opening run's address: its run's own file and the files of its parts, and no other run. Every experiment the page carries needs a row. The bounds were set on 18 November 2026 about a tenth above that day's measure of the exported page, with every experiment listed (tools/check_fetches.mjs, CASE=all); the landing's and the tissue's rows the same night, on the page as the landing's cards list it (the export publishes what they list, so the two cases became one); the landing's again on 19 November 2026, its later bands folded as it opens. The page's own bound was raised the same day to a tenth above its measure with the frog added (5,059,135 bytes, from 4,341,031): the frog's side of the Protein atlas stands inside the scene (718,104 bytes more).",
+ "note": "What each address of the published page may fetch beside the page, loaded cold (tools/check_fetches.mjs, judged by tools/lib/fetch_budget.mjs). Each address lists the files it must fetch and the files it may fetch, by pattern (* is any run of characters but /), and a bound in bytes on what it fetches beside the page. Each row of experiments stands for that experiment at its opening run's address: its run's own file and the files of its parts, and no other run. Every experiment the page carries needs a row. The bounds were set on 18 November 2026 about a tenth above that day's measure of the exported page, with every experiment listed (tools/check_fetches.mjs, CASE=all); the landing's and the tissue's rows the same night, on the page as the landing's cards list it (the export publishes what they list, so the two cases became one); the landing's again on 19 November 2026, its later bands folded as it opens, and on 20 November 2026, with its thirtieth card and again when the cards were split into their faces and their details (with the row card-detail). The page's own bound was raised the same day to a tenth above its measure with the frog added (5,059,135 bytes, from 4,341,031): the frog's side of the Protein atlas stands inside the scene (718,104 bytes more).",
  "page_bytes": 5566000,
  "addresses": [
   {
@@ -13,11 +13,19 @@
   },
   {
    "id": "experiments",
-   "says": "The Experiments tab as it opens, on its landing (18 November 2026): the cards and the stills near the screen, and no file of runs/ or models/. Since 19 November 2026 every band but the first stands folded as it opens, so only the first band's stills are near the screen; the same day the tumour tissue's still became the sheet's, a larger picture, and the bound was set a tenth above that measure (3 files, 238,040 bytes).",
+   "says": "The Experiments tab as it opens, on its landing (18 November 2026): the cards and the stills near the screen, and no file of runs/ or models/. Since 19 November 2026 every band but the first stands folded as it opens, so only the first band's stills are near the screen; the same day the tumour tissue's still became the sheet's, a larger picture, and the bound was set a tenth above that measure (3 files, 238,040 bytes). On 20 November 2026 the cards gained FR-7's first closed loop and the map's words at main 93fc8c2c, which took the landing 1,102 bytes past that bound; it was set again a tenth above the day's measure (3 files, 263,102 bytes, of which the cards 189,140). Later that day the cards were split into their faces (cards.json, what the landing draws, fetched as it opens) and their details (cards.details.json, fetched the first time a card's detail is asked for: the row card-detail); the landing then fetched 3 files, 141,289 bytes (the faces 67,327), and its bound was set a tenth above that measure. The details are never fetched as it opens.",
    "query": "lens=experiments",
    "must": ["cards.json", "stills/*"],
    "allowed": ["cards.json", "stills/*"],
-   "bytes": 262000
+   "bytes": 156000
+  },
+  {
+   "id": "card-detail",
+   "says": "A card's detail, by its address (20 November 2026): the cards' faces, their details once (one file for every card, cards.details.json), and the stills near the screen of the band the card's detail opens; no run and no model. Its bound was set the same day a tenth above that day's measure (5 files, 347,697 bytes, of which the faces 67,327 and the details 186,709).",
+   "query": "lens=experiments&select=card:fr1",
+   "must": ["cards.json", "cards.details.json"],
+   "allowed": ["cards.json", "cards.details.json", "stills/*"],
+   "bytes": 383000
   },
   {
    "id": "tissue",

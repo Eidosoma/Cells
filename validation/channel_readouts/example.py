@@ -12,8 +12,9 @@ observed at every step.
 
 Per observed row it exports, for each population:
 - the count: membrane state's readout `population_units` (units);
-- the availability: @3's `channel_availability` (dimensionless), the scheduled value before the
-  routing door;
+- the availability: @3's `channel_availability` (dimensionless), the value the population runs at
+  before the routing door. In a composite it already holds the operators' factors (D265), so it is
+  not multiplied by them again;
 - the flux: @3's `channel_flux_fmol_s` per species (fmol/s, positive outward, from the cell of the
   population's patch to that patch's outside node);
 - the current, derived: I = 1e-15 F sum_s z_s J_s (A, positive outward);
@@ -24,7 +25,9 @@ clamped_flux, cells.transporter@1's clamped_rates); @3's channel populations, re
 and that is the @3 owner's engine work (FR-34, D252). The first observed row, t = 0, is the declared
 initial state: its voltage is the definition's charge anchor over the cell's capacitance, q0/C. So
 row 0's current is the current at that declared voltage, and the output says so
-(`first_row_at_declared_voltage`). Every later row is at the run's own, evolving voltage.
+(`first_row_at_declared_voltage`). Every later row is at the run's own, evolving voltage. In a
+composite, a current at any declared voltage is the composition's own clamped_channel_flux
+(cells.models.pump_composite; D265), never @3's helper given the stored controls.
 """
 
 import numpy as np

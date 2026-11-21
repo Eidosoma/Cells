@@ -6,41 +6,43 @@ and a general feature, never one built for one study (D144).
 
 | ID | Feature | Priority | Status | Next step |
 | --- | --- | --- | --- | --- |
-| [FR-1](#fr-1--a-closed-internal-compartment-on-the-shared-inventory) | A closed internal compartment on the shared inventory | **High** (user, 14 November 2026; the request's own label: priority 1, blocking) | **Milestone 1 landed** (15 November; [note](CLOSED_COMPARTMENT_DESIGN.md) §12, D169): `cell_owned_compartments@1`, neutral and silent, S1–S5 checked in a live-owner world with planted controls. **Judged, 18 November 2026:** its protocol, `fr1-closed-compartment-v1` (registration 05a8d193), passed, 44 of 44 judged criteria, against the code-blind references; exchange's first judged acceptance | The later doors (creation, division, fission and fusion, retirement) with seam B and the mitochondria work (D210, D216) |
-| [FR-2](#fr-2--internalisation-of-membrane-and-its-populations) | Internalisation of membrane and its populations | Priority 2 (the request's label; logged by the user, 14 November 2026) | **Version 1 landed** (19 November; `scheduled_membrane_trafficking@1`, merge 1bd35184; D217), with its comparison against code-blind references on main (merge d2dc7b8c). The first registered run matched 770 of 782 rows. A second run matched 782 of 782 after a blind references erratum, which is weaker evidence after the failed first run (PROGRESS's run entry) | The third review's one-pool-per-cell refusal (landing with its batch); the charge-transfer precision note for the declared-freeze numerics batch; later versions per its design note |
+| [FR-1](#fr-1--a-closed-internal-compartment-on-the-shared-inventory) | A closed internal compartment on the shared inventory | **High** (user, 14 November 2026; the request's own label: priority 1, blocking) | **Milestone 1 landed** (15 November; [note](CLOSED_COMPARTMENT_DESIGN.md) §12, D169): `cell_owned_compartments@1`, neutral and silent, S1–S5 checked in a live-owner world with planted controls. **Judged, 18 November 2026:** its protocol, `fr1-closed-compartment-v1` (registration 05a8d193), passed, 44 of 44 judged criteria, against the code-blind references; exchange's first judged acceptance | The later doors (creation, division, fission and fusion, retirement) with seam B: none found on main (unverified). A releasing compartment is admitted in a U2 world (merge a798e7e0, FR-7 item 3); the mitochondria work is paused (D268) |
+| [FR-2](#fr-2--internalisation-of-membrane-and-its-populations) | Internalisation of membrane and its populations | Priority 2 (the request's label; logged by the user, 14 November 2026) | **Version 1 landed** (19 November; `scheduled_membrane_trafficking@1`, merge 1bd35184; D217), with its comparison against code-blind references on main (merge d2dc7b8c). The first registered run matched 770 of 782 rows. A second run matched 782 of 782 after a blind references erratum, which is weaker evidence after the failed first run (PROGRESS's run entry); the one-pool-per-cell refusal landed (fa0a78aa, merge 560da6a0) | The charge-transfer precision note for the declared-freeze numerics batch (unverified); later versions per its design note |
 | [FR-3](#fr-3--the-site-occupancy-primitive) | The site-occupancy primitive | Priority 2 (the request's label; logged by the user, 14 November 2026) | **Milestone 1 landed** (15 November; [note](SITE_OCCUPANCY_DESIGN.md) §12, D169): `site_occupancy@1`, the contract fit and the run, with idle, restart, batch and controls. **Judged, 18 November 2026:** its protocol, `fr3-site-occupancy-v1` (registration 1b838d75), passed, 51 of 51 judged criteria, against the code-blind references; `site_occupancy@1`'s first judged acceptance | A shared SSPRK(3,3) block, FR-3's own milestone (INNER_MODEL_V4_DESIGN §15.3; main still has separate integrators in `site_occupancy.py` and `species_reactions.py`) |
 | [FR-5](#fr-5--state-conditioned-transfer-across-an-internal-membrane-with-leak-and-reseal) | State-conditioned transfer across an internal membrane, with leak and reseal | Priority 1, blocking (the request's label; logged 14 November 2026). It depends on FR-1 and FR-4 | Design accepted (§16 of [the FR-4/FR-5 note](COMPARTMENT_PH_TRANSFER_DESIGN.md)). Built and on main since fr45-next merged (16 November): the two source kinds, refusal 4 version 1.2, refusal 5 version 1.1 and FR-5's start part, for development, not judged. Its protocol, `fr5-transfer-v1`, is registered and judged on 17 November 2026: passed, 51 of 51 judged criteria (D195; tag fr5-v1-qualified-2026-11-17) | Done. The verdict's scope: `cell_owned_compartments@1` as built at 32a1d439 (refusal 4 v1.2, refusal 5 v1.1) |
-| [FR-6](#fr-6--species-driven-control-factors) | Species-driven control factors | Priority 2 (the request's label; logged 14 November 2026) | **Addressed by an accepted design (D155, D156; [the coupling note](INVENTORY_COUPLING_DESIGN.md)). Its operator, `species_regulated_availability@1`, is numerically qualified (15 November).** Three narrower items are recorded as consumer registrations. **A5″ judged, 18 November 2026:** its protocol, `fr6-a5pp-v1` (registration 555d8771), passed, 18 of 18 judged criteria, against the code-blind references: the gate-free channel target (item 1) driven through the regulatory state from a per-cell prior (item 3) | The routing door (item 2); gated channel populations (A5′), leaks and pumps (item 1's rest) |
-| [FR-7](#fr-7--abundance-to-function-exposed-in-the-composite) | Abundance-to-function, exposed in the composite | Priority 3, ordering and not scope (the request's label; logged 14 November 2026) | Logged, and registered as a consumer of the coupling operator's routing and abundance-source doors, with removal and surface insertion under FR-2 (D177). Design questions answered on 18 November (D217, D218): U2 first, then U1, with the loop admitted through B1′. Its core prerequisites (B1's role-driven lifecycle and the kinds' declarations) landed on 19 November | Building is next, in the next free agent seat |
-| [FR-8](#fr-8--a-qualified-long-duration-mode) | A qualified long-duration mode | Priority 2 (the request's label; logged 14 November 2026) | **Stage 0 landed** (19 November, merge f5025e6f: the methods measured, the harness H2). **Rung 0** (the order drop through a switch) is registered and run: its first verdict was "instrument not validated"; under a blind amendment the cause is NaV activation unresolved at coarse steps, with R3's error now estimated (D224's ladder; landing) | Rung 1's N2 with (a) **landed** (merge 03fe5119, tag `fr8-n2-landed-2026-11-21`, ID `imex_ars222_implicit_conductances@1`); (a)'s builder's entry (§10.21) to be committed on fr8-rung1 before any registered (a) reading; rung 2 after it |
-| [FR-9](#fr-9--raise-the-7-species-cap) | Raise the 7-species cap | Priority 2, **blocking for world design** (the request's label; logged 14 November 2026). Measured safe to 16 (the W4 probe) | **Landed** (14 November): `MAX_SPECIES` is 16, a D148 change to `species_common` with guard worlds of 8 or more species (D165) | The D148 change with a guard world of 8 or more species; the requester's species list comes with its world definition |
+| [FR-6](#fr-6--species-driven-control-factors) | Species-driven control factors | Priority 2 (the request's label; logged 14 November 2026) | **Addressed by an accepted design (D155, D156; [the coupling note](INVENTORY_COUPLING_DESIGN.md)). Its operator, `species_regulated_availability@1`, is numerically qualified (15 November).** Three narrower items are recorded as consumer registrations. **A5″ judged, 18 November 2026:** its protocol, `fr6-a5pp-v1` (registration 555d8771), passed, 18 of 18 judged criteria, against the code-blind references: the gate-free channel target (item 1) driven through the regulatory state from a per-cell prior (item 3) **Item 2, the routing door, landed as B1′** (merge ee43b082, tag `b1prime-landed-2026-11-19`, on `species_regulated_availability@2`; development, not judged; D218) | B1′'s judged acceptance (none found: unverified); gated channel populations (A5′), leaks and pumps (item 1's rest) |
+| [FR-7](#fr-7--abundance-to-function-exposed-in-the-composite) | Abundance-to-function, exposed in the composite | Priority 3, ordering and not scope (the request's label; logged 14 November 2026) | Items 1-3 judged and passed on 20 November. **Item 4 reopened (D273):** Maverick and Tamkun 2022 measured channel counts and conductance in the same HEK cells, the condition D268 named | Item 4's test registered before the paper is read (the FR-7 agent); the paper downloaded by the user |
+| [FR-8](#fr-8--a-qualified-long-duration-mode) | A qualified long-duration mode | Priority 2 (the request's label; logged 14 November 2026) | **Stage 0 landed** (19 November, merge f5025e6f: the methods measured, the harness H2). **Rung 0** (the order drop through a switch) is registered and run: its first verdict was "instrument not validated"; under a blind amendment the cause is NaV activation unresolved at coarse steps, with R3's error now estimated (D224's ladder; landing). **Rung 1's C judged and passed** (20 November, tag `fr8-c-judged-2026-11-20`) Section 10.20's registered reading, N2 with C at a 100 ms step, passed (a), (b) and (c) on 21 November, re-judged independently (80de0788, tag `fr8-n2c-judged-2026-11-21`). | Rung 2. C's near-coincident-event refusal (core-pass-c-near-events) is gating; extending it to clocks without windows waits for its own decision (D272) |
+| [FR-9](#fr-9--raise-the-7-species-cap) | Raise the 7-species cap | Priority 2, **blocking for world design** (the request's label; logged 14 November 2026). Measured safe to 16 (the W4 probe) | **Landed** (14 November): `MAX_SPECIES` is 16, a D148 change to `species_common` with guard worlds of 8 or more species (D165) | None: closed (D165, merge 2161f39); the requester's species list comes with its world definition (unverified) |
 | [FR-10](#fr-10--a-dose-schedule-scheduled-bath-composition-in-the-pump-family) | A dose schedule: scheduled bath composition in the pump family | Priority 2, small (the request's label; logged 14 November 2026) | **Milestones 1 and 2 landed** (14–15 November; [note](BATH_SCHEDULE_DESIGN.md) §7–§8, D169): dose steps admitted only inside measured regions (neutral up and down, K up and Na down). Its protocol, `fr10-dose-schedule-v1`, is registered and judged on 17 November 2026: passed, 31 of 31 judged criteria (registration 407ba164), against the code-blind references R-faces, R-ion and R-records | Further ions and faster faces as each is measured |
 | [FR-4](#fr-4--compartment-ph-a-proton-species-an-acidifying-pump-buffering) | Compartment pH: a proton species, an acidifying pump, buffering | Priority 1, blocking (the request's label; logged 14 November 2026). The request sequences it last of the block, after FR-1 | Design proposed in [the FR-4/FR-5 note](COMPARTMENT_PH_TRANSFER_DESIGN.md) (merged 15 November). Its kinds landed with D172's round (16 November), for development, not judged: the transporter with the proton pump, the rapid proton buffer, and the passive routes with the proton leak | Done: `fr4-acidification-v1` judged on 17 November 2026: passed, 21 of 21 judged criteria (D195; tag fr4-v1-qualified-2026-11-17) |
-| [FR-11](#fr-11--looping-replay-packages-of-living-cells-for-the-viewer) | Looping replay packages of living cells for the viewer | Not stated (the user's request, logged 15 November 2026) | Logged, with the user's choices: periodic loops, a paced human heart cell, the minimal cells' cycle in scope. The heart cell is a human ventricular cell on Track E's human law set (D183); no generic stand-in, the lead's reading kept under the user's delegation (D184) | Partly built, on main with the run-view writer since 16 November: its design note (`docs/LOOPING_REPLAY_DESIGN.md`, ruled 16 November), the writer's loop block with its closure measure, and the planarian loop's builder (`validation/replay/`), with one development run of that loop, not judged. The human loop waits for the human cardiac laws |
-| [FR-12](#fr-12--the-declarations-manifest-readable-by-the-viewer-d185) | The declarations manifest, readable by the viewer (D185) | Not stated (proposed by the visualizer session, 16 November 2026; logged 17 November) | Accepted: D185 already decided the manifest. It is being built in seam F of the core-seams pass (D195) | One command writing a versioned JSON file (`cells.declarations@1`) from the engine's registries at a revision |
-| [FR-13](#fr-13--molecular-machines-individually-and-in-aggregate) | Molecular machines, individually and in aggregate, at a level of detail set by what is looked at | Not stated (the user's request, 17 November 2026; D204) | M0 now: the viewer's catalogue, as illustration. M1, ATP synthase, after the core-seams pass; no model yet (D209) | M1's build plan: [the design note](MOLECULAR_MACHINES_DESIGN.md) §10 |
-| [FR-14](#fr-14--declared-extension-of-laws-operators-and-models) | Declared extension of laws, operators and models (object-oriented) | Not stated (the user's request, 17 November 2026; D205) | Requested; not scoped | Covered by FR-13's design note: options for a declared extends link, inherited checks and version rules |
-| [FR-15](#fr-15--junction-crossing-and-charged-species-in-the-species-operators) | Junction-crossing and charged species in the species operators | Not stated (found by the gap-junction replication, D207; 17 November 2026) | Requested; awaits the user's go | First find why `check_impermeant` refuses, and whether D191's composition rule is the intended lift |
-| [FR-16](#fr-16--junction-gating-and-availability) | Junction gating and availability: a two-state voltage gate, per-species floors, two-sided combination rules | Not stated (the same) | Requested; awaits the user's go | A short design after FR-15 |
-| [FR-17](#fr-17--field-solves-beyond-2048-nodes) | Field solves beyond 2048 nodes | Not stated (the same) | Requested; awaits the user's go | The preprint's 3D table, and mitochondria (D210) unless condensing compartment nodes serves them |
-| [FR-18](#fr-18--the-composites-energy-check-at-moderate-step-sizes) | The composite's energy check at moderate step sizes (a finding for the core) | Not stated (the same) | Reported to the core; the check is not loosened for one experiment | The core reviews the check's tolerance or its step-size advice |
-| [FR-19](#fr-19--the-passive-routes-heat-share-sign-test-at-rounding-level) | The passive routes' heat-share sign test refuses rounding-level shares (a finding for the core) | Not stated (found by the gap-junction replication, D207; 17 November 2026) | Fixed on main (merge 49494e49): the raw-sum check's rounding floor; previously admitted steps bitwise unchanged. The band near 1 mM is closed too, landed by merge a7122a43 (18 November): the floor's scale is (\|μ̄_in\| + \|μ̄_out\| + 2)·\|m\|, and crossrev's kinds record was renewed at the landing (9 of 9) | None: closed |
+| [FR-11](#fr-11--looping-replay-packages-of-living-cells-for-the-viewer) | Looping replay packages of living cells for the viewer | Not stated (the user's request, logged 15 November 2026) | **Partly built** (on main since 16 November): the design note (`docs/LOOPING_REPLAY_DESIGN.md`), the run-view writer's loop block with its closure measure (merge 358c8c20), and the planarian loop's builder (`validation/replay/`), played by the viewer (7e20af42); a development run, not judged. The user's choices (periodic loops; a paced human ventricular cell on Track E's human law set, D183, D184; the minimal cells' cycle in scope) stand | The human loop waits for the human cardiac laws (none in `src/`: grep, 21 November). The minimal cells' cycle: its admission probe was not passed (5dbad635), four operator-composition gaps queued (759f907f); later status unverified |
+| [FR-12](#fr-12--the-declarations-manifest-readable-by-the-viewer-d185) | The declarations manifest, readable by the viewer (D185) | Not stated (proposed by the visualizer session, 16 November 2026; logged 17 November) | **Landed:** `python -m cells declarations` writes the manifest (0154604f; merge 515ac020, seam F, D195). `cells.declarations@2` (merge 3891b802, D203) is the format in the engine (`FORMAT` in `registry/declarations.py`) and is read by the viewer (merge d8c56ea2) | None for the manifest; the command's help text still names @1 (a stale string, not fixed here) |
+| [FR-13](#fr-13--molecular-machines-individually-and-in-aggregate) | Molecular machines, individually and in aggregate, at a level of detail set by what is looked at | Not stated (the user's request, 17 November 2026; D204) | No machine model of FR-13's own yet (D209). **M0 done:** the viewer's catalogue (40317ef7, illustration). M1's ATP synthase: the mitochondria lane's inner-membrane laws on the cycle kind include a synthase (64565faa, development, not judged), and that lane is paused (D268) | M1's build plan ([the design note](MOLECULAR_MACHINES_DESIGN.md) §10) when the mitochondria lane resumes; U4 and U6 open (D209) |
+| [FR-14](#fr-14--declared-extension-of-laws-operators-and-models) | Declared extension of laws, operators and models (object-oriented) | Not stated (the user's request, 17 November 2026; D205) | Requested; not scoped. No declared extends link, inherited checks or version rule on main (a search of `src/cells/registry`, unverified beyond that); D205's check stands | Covered by FR-13's design note (U6 open, D209): options for a declared extends link, inherited checks and version rules |
+| [FR-15](#fr-15--junction-crossing-and-charged-species-in-the-species-operators) | Junction-crossing and charged species in the species operators | Not stated (found by the gap-junction replication, D207; 17 November 2026) | **Landed in two parts.** S1, charged species in `local_species_reactions@1` (merge ddb52790, tag `fr15-s1-landed-2026-11-19`, D148). P2, `passive_constant_field_permeation@1` on the passive-routes kind, on patches (merge ce39c904, tag `fr15-p2-landed-2026-11-20`). The first step (why `check_impermeant` refuses) was done earlier | Junction hosting of the charged route, waiting on the @3 owner's two answers (the law module's header: the floating-component residual, a junction_flux in KindRates); charged turnover routes (`scheduled_species_turnover@2`) when a consumer needs them |
+| [FR-16](#fr-16--junction-gating-and-availability) | Junction gating and availability: a two-state voltage gate, per-species floors, two-sided combination rules | Not stated (the same) | Requested; awaits the user's go (D219: not started). **F3 partly met through FR-30:** the series gates (merge 12c18db1: threshold_relaxation and boltzmann_eyring) landed. F4 (a per-species floor) and F5 (min and mean combination): not found on main (unverified) | F4 and F5 unscheduled; F3's held-out voltage test is FR-30's. A short design before any build |
+| [FR-17](#fr-17--field-solves-beyond-2048-nodes) | Field solves beyond 2048 nodes | Not stated (the same) | Requested; awaits the user's go (D219: not started). The cap stands: `FACTORED_MAX_NODES` is 2048 in `numerics/surface_field.py` (21 November) | The preprint's 3D table, and mitochondria (D210) unless condensing compartment nodes serves them |
+| [FR-18](#fr-18--the-composites-energy-check-at-moderate-step-sizes) | The composite's energy check at moderate step sizes (a finding for the core) | Not stated (the same) | **X2 landed** (merge fd894b91, `step_doubled_energy@1`, D224): an opt-in step-doubled energy check; criterion X registered (570df4fd). The default check is not loosened for one experiment; any review of its default tolerance: unverified | None unless the core reviews the default tolerance or the step-size advice (unverified) |
+| [FR-19](#fr-19--the-passive-routes-heat-share-sign-test-at-rounding-level) | The passive routes' heat-share sign test refuses rounding-level shares (a finding for the core) | Not stated (found by the gap-junction replication, D207; 17 November 2026) | **Fixed on main** (merge 49494e49): the raw-sum check's rounding floor; previously admitted steps bitwise unchanged. The band near 1 mM is closed too (merge a7122a43, 18 November) | None: closed |
 | [FR-20](#fr-20--a-pulse-and-washout-for-assembly-populations) | A pulse and washout: replace an assembly population's exterior at a declared time, with the material and energy exchanged recorded | **High** (user, 20 November 2026; D237) | **Landed** (merge 3af9ce38, tag `fr20-washout-landed-2026-11-20`): `cells.pool_replacement@1`, with Q3 as a declared version-1 limit. A Lean finding (21 November): a fresh count above `molecule_capacity` was accepted and booked with a clamped table (ln 32! for 33) | None. The capacity fix landed (e289dfd9); the D263 tracer-source fix landed (c6f8d60f) |
 | [FR-21](#fr-21--a-prescribed-shell-that-owns-a-lumen-and-an-exchange-conductance) | A prescribed shell that owns a lumen and an exchange conductance, independent of membrane inventory and binding-site count | **High** (user, 20 November 2026; D237) | **Landed.** The site step (merge 4fb9922b, tag `fr21-sites-landed-2026-11-21`) and the prescribed shell (merge 41338949, tag `fr21-shell-landed-2026-11-21`: `cells.prescribed_shell@1`, `cells.shell_permeation@1`, `cells.gate_factor@1`). The requester's tested revision is 9a1a95a5 | None; follow-ups on request |
 | [FR-22](#fr-22--checkpoint-and-resume-for-the-stochastic-assembly-runner) | Checkpoint and resume for the stochastic assembly runner, qualified around a wash | **High** (user, 20 November 2026; D237) | **Qualified around a wash** (landed with FR-21's site step, 4fb9922b): FR-20's `test_a_cut_around_each_replacement_resumes_bitwise`, with a redo-or-skip plant. Rung P landed earlier (99770fce) | None |
 | [FR-23](#fr-23--timed-bath-changes-beside-binding-sites-on-distinct-finite-nodes) | Timed bath changes beside binding sites on distinct finite nodes | **High** (user, 20 November 2026; D239) | **Built (development, D244), landed 4e3d1899:** `site_occupancy@1` beside the bath schedule by scoped reads, and the trace rule on scheduled compositions | A dose into a finite compartment is not covered (FR-27) |
 | [FR-24](#fr-24--binding-site-occupancy-as-an-input-to-reaction-rates) | Binding-site occupancy as an input to reaction rates | **High** (user, 20 November 2026; D239) | **Landed** (merge 260e2ed5, tag `fr24-fr27-fr26-landed-2026-11-21`): `site_occupancy@1`'s readable quantities and @2's site source, through the contract's R3; junction targets refused in version 1 | None |
 | [FR-25](#fr-25--a-reusable-one-gene-expression-unit) | A reusable one-gene expression unit, verified against independent references | **High** (user, 20 November 2026; D239) | **G4's readers not for scoring until D259's fixes land** (RNA counter selection, the comparison's skipped samples, the known-rate control, the receipt's provenance). Folded into gene regulation's option A (D235): equation sheet tagged, references under way | G4's operator exposes the unit as a reusable component |
-| [FR-26](#fr-26--owned-state-when-a-cell-is-replaced) | Owned state when a cell is replaced: the incoming cell from its template, environment-owned material kept, departing material recorded | **High** (user, 20 November 2026; D239) | **Landed as W** (merge 87f1ebef, the same tag): `site_occupant_replacement@1`, D152's occupant rule and @2's C′; an occupancy within 4 ulps of empty or full is refused (the trace convention) | L (one lifecycle with division) stays open for the user |
+| [FR-26](#fr-26--owned-state-when-a-cell-is-replaced) | Owned state when a cell is replaced: the incoming cell from its template, environment-owned material kept, departing material recorded | **High** (user, 20 November 2026; D239) | **Landed as W** (merge 87f1ebef, the same tag): `site_occupant_replacement@1`, D152's occupant rule and @2's C′; an occupancy within 4 ulps of empty or full is refused (the trace convention) | None for version 1 (W landed). L, one lifecycle shared with division, is not now (D268): designed with its first division consumer |
 | [FR-27](#fr-27--a-timed-partial-wash-of-a-finite-compartment) | A timed partial wash of a finite compartment: collect a fraction of its liquid into a recorded sample, refill with a declared buffer, leave bound material in place | **High** (decided by the lead with the advisor under the user's delegation, 20 November 2026; D245) | **Landed** (merge 5fc1364f, the same tag): `scheduled_compartment_wash@1` | None |
-| [FR-28](#fr-28--binding-sites-owned-by-a-compartments-surface) | Binding sites owned by a compartment's own surface, such as a vessel wall, with no cell | Normal (D245) | Design note merged (73115292, docs/NODE_SURFACE_SITES_DESIGN.md): an owner `{"node": N}`; options A (counts, recommended), B (an area and a density), C (a surface entity on @3's nodes) | Held for the user's choice; no build |
-| [FR-29](#fr-29--an-optional-proton-return-mode-for-atp-driven-proton-pumps) | An optional proton-return mode for ATP-driven proton pumps, tested on the yeast vacuolar pump | Normal, started first of D248's four (D248) | Design note (44b44e56), Kettner Fig. 3 read (a69f38ab), and the desk evaluation (1aa82846, 051ab7f7; the prediction's registration tagged `fr29-prediction-registered-2026-11-20`): the return mode failed its registered test, and no form tested fits Fig. 3's curves and the pH 3.1 bound together | Recommended to the user: record as investigated; a difference current at vacuolar pH 3.1–3.5 under Fig. 3's protocol before any build |
-| [FR-30](#fr-30--homotypic-cx43-junctions-with-two-relaxation-times) | Homotypic Cx43 junctions with two relaxation times | **High,** inherited from FR-16's connexin catalogue (D225, D249) | The series gates' functions **landed** (merge 12c18db1, tag `fr30-series-gates-landed-2026-11-21`; kind `threshold_relaxation` or `boltzmann_eyring`); not registered. No openly licensed homotypic Cx43 voltage series found | Integration landed (4532479c, development only); the user's downloads (Lin et al. 2003 first) for a held-out voltage test |
+| [FR-28](#fr-28--binding-sites-owned-by-a-compartments-surface) | Binding sites owned by a compartment's own surface, such as a vessel wall, with no cell | Normal (D245) | **Option A decided (D268):** a node owner `{"node": N}`, counts as for every population; matrix sites covered; @2 refused from reading it in version 1 | Being built by the operators owner; an independent acceptance from the request's words before it lands |
+| [FR-29](#fr-29--an-optional-proton-return-mode-for-atp-driven-proton-pumps) | An optional proton-return mode for ATP-driven proton pumps, tested on the yeast vacuolar pump | Normal, started first of D248's four (D248) | **Investigated, no build (D268).** The return mode failed its registered test, and no form tested fits Fig. 3's curves and the pH 3.1 bound together (D258) | Reopens on a difference current at vacuolar pH 3.1 to 3.5 under Fig. 3's protocol |
+| [FR-30](#fr-30--homotypic-cx43-junctions-with-two-relaxation-times) | Homotypic Cx43 junctions with two relaxation times | **High,** inherited from FR-16's connexin catalogue (D225, D249) | The series gates' functions **landed** (merge 12c18db1, tag `fr30-series-gates-landed-2026-11-21`; kind `threshold_relaxation` or `boltzmann_eyring`); not registered. No openly licensed homotypic Cx43 voltage series found | Benchmark registered before Lin, Crye and Veenstra 2003 is read (the @3 owner; D273); the paper downloaded by the user, with fallbacks named in D273 |
 | [FR-31](#fr-31--vesicle-rupture-during-a-steady-tension-hold) | Vesicle rupture during a steady tension hold: an optional rupture event competing in time | Low (D230, D248); the note before OL9 registers | Requested; a design note first | Blocked on rupture rates against tension, and on OL6 |
 | [FR-32](#fr-32--a-dopc-swelling-validation-record-for-the-water-operator) | A DOPC swelling validation record for the water operator | Low (D248) | Requested | Folded into the next water-operator landing |
-| [FR-33](#fr-33--regional-labelled-protein-readouts-redistribution-against-degradation) | Regional labelled-protein readouts: inside a measured region, outside it and across the whole cell | High (D228, D248) | **Not for scoring until D259's fixes land** (a review's findings: the tracer's negative cohort, the wash admitted, the reserved name). **Landed** (merge ce2a3d9c, tag `fr33-region-readouts-landed-2026-11-20`): the region export and a one-way tracer, validation only; two-way movers are refused | Tracing through two-way transport is engine work (label rows or directional records), not scheduled |
-| [FR-34](#fr-34--channel-population-readouts-count-availability-and-signed-current) | Channel population readouts: surface count, availability and signed current at a declared voltage, with units and sign convention | **High** (user, 20 November 2026; D251) | **Reopened (D265) for composite worlds:** the clamped evaluation (121aca27) and the availability record (d0104950) landed for @3 alone and the kinds; a composite needs its own entry point, and the example README's instruction applies a factor twice. **Landed:** the routes' and transporter populations' opt-in flux and current readouts with `clamped_flux` and `clamped_rates` (merge 81a29442, tag `fr34-current-readouts-landed-2026-11-21`), and the FR-7 lane's example with the halving control (bf7b50af, note 1e762583) | The composite's clamp entry point and the README fix (D265), held from scoring until then |
+| [FR-33](#fr-33--regional-labelled-protein-readouts-redistribution-against-degradation) | Regional labelled-protein readouts: inside a measured region, outside it and across the whole cell | High (D228, D248) | **Not for scoring until D259's fixes land** (a review's findings: the tracer's negative cohort, the wash admitted, the reserved name). **Landed** (merge ce2a3d9c, tag `fr33-region-readouts-landed-2026-11-20`): the region export and a one-way tracer, validation only; two-way movers are refused | Two-way tracing through D1, label families in the species registry, with the label-row route (the kinds owner, 1.5 to 2 days; D273) |
+| [FR-34](#fr-34--channel-population-readouts-count-availability-and-signed-current) | Channel population readouts: surface count, availability and signed current at a declared voltage, with units and sign convention | **High** (user, 20 November 2026; D251) | **Landed, composites included:** opt-in flux and current readouts with fixed-voltage evaluation (81a29442); a composite's own clamped_channel_flux and clamped_kind at the step's control and layout views (07022ddf, D265 finding 1, checker-confirmed) | None |
 | [FR-35](#fr-35--timed-partial-withdrawal-of-an-assembly-populations-exterior-pool) | Timed partial withdrawal of an assembly population's well-mixed exterior pool: each molecule withdrawn independently, a declared buffer supplied, sites and particles kept | **High** (user, 21 November 2026) | **Landed** (merge b521a11c, tag `fr35-withdrawal-landed-2026-11-21`): `cells.pool_withdrawal@1` (D261) | None. Landed (b521a11c, with D263's fixes); the independent acceptance and a 4,000-stream ensemble passed |
+| [FR-36](#fr-36--age--and-region-selective-loss-within-a-species-row) | Age- and region-selective loss within a species row | FR-25's reviewer (21 November 2026) | **Deferred (D273).** Today's tools cover completion-time cohorts in one well-mixed pool with age-independent loss (cohort.py) and FR-33's regional export and one-way tracer | Reopens on a requester's readout needing age-dependent loss: D1 (label families) and D2 (an ageing operator), 2.5 to 4 days |
+| [FR-37](#fr-37--sampling-a-liquid-whose-dye-is-unevenly-distributed) | Sampling a liquid whose dye is unevenly distributed: a draw from chosen parts of an unevenly mixed liquid | **High** (user, 21 November 2026; D274) | Requested | First a runnable example with existing operators and the inputs analysis; otherwise the smallest addition (the operators owner). An independent acceptance is written from the request's words before landing |
 
 ## FR-1 — A closed internal compartment on the shared inventory
 
@@ -497,6 +499,88 @@ only, D227).
 
 A second candidate, Ding et al. 2014 (PLoS One, CC BY), varies culture temperature rather than
 expression, with currents and surface data from different cells, so it can't support the test.
+
+**The registered test, written before the paper is opened (21 November 2026).** Item 4 reopens on
+Maverick and Tamkun 2022, which meets D268's condition: surface abundance and current in the same
+single-variant cells (D273's correction). This entry fixes the test before anyone opens the user's
+download of the PDF and Supporting Material.
+- **FR-7's prediction.** The chain has no density-dependent conducting fraction.
+  - A population's conductance is P a A = P N/ρ_ref, membrane_entity_state@1's view, linear in its
+    units N, times its availability and its gates' open probability. Neither depends on density.
+  - So at the paper's fixed protocol, the chain predicts plain proportionality: G = g N, with one
+    constant g per cell line.
+  - Cells' own Kv1.5 laws are not calibrated to these cells, so g is fitted, not taken from them.
+- **The cells.**
+  - Eligible: YFP-Kv1.5 HEK293 cells with a per-cell surface count paired with a per-cell
+    conductance. They come from the figure or table that pairs the two for the most cells.
+  - Other channels and conditions are information only.
+  - Binned or mean-only values make the test not assessable under this entry.
+- **The judged observable:** conductance against surface count, in matching extent (both per cell,
+  or both per membrane area or capacitance). If the paper pairs both a gating-charge count and a
+  TIRF count with the conductance, the gating-charge count is primary, since it is whole-cell, as
+  the conductance is. The other count is information.
+- **The held-out split** is mechanical, and uses the count alone.
+  - Order the eligible cells by count, ties by the paper's order. The top ⌊n/3⌋ are held out; the
+    rest are the fit set.
+  - It tests what non-proportionality would break: extrapolation from low to high density.
+- **The statistic,** with x = ln N and y = ln G:
+  - the fitter estimates ĉ, the fit set's mean of y − x;
+  - the checker computes d = (the held-out mean of y − x) − ĉ: the log ratio of held-out to
+    fitted conductance per unit, with Welch's 95% interval from both sets' spreads.
+- **The pass rule,** with margin δ = ln 1.25:
+  - **pass:** the whole interval lies within [−δ, δ]. Conductance per unit holds within a factor of
+    1.25 from low to high density, at 95% confidence;
+  - **fail:** the whole interval lies outside [−δ, δ];
+  - **inconclusive:** otherwise;
+  - **not assessable:** fewer than 6 fit or 4 held-out cells, or a held-out median count less than
+    twice the fit set's.
+
+  The reported headline predicts a fail with d < 0. A fail with d > 0 would contradict it, and goes
+  to an extraction audit before any conclusion is drawn.
+- **Disclosure: what was read before registering.**
+  - The headline, in the search above: conductance not proportional to density, about 26% of
+    gating channels conducting, the fraction falling with density, and about 70% non-conducting
+    near 100 per µm².
+  - This entry's author, in a repository search before writing it, also saw the Lean lane's
+    aggregate figures: conducting fractions of 0.23 and 0.18, and mean fractions of 0.96 ± 0.05
+    for Kv1.4 and 0.26 ± 0.01 for a Kv channel (the line was cut off there). It also saw that the
+    Lean lane cites Figs 8B–C.
+  - No per-cell value was seen.
+  - The Lean lane holds its own extraction of this paper,
+    lean/checks/data/maverick2022_kv_density.json, which was not opened here.
+- **Roles: three agents.**
+  - **The extractor** opens the paper and its supplement. For every eligible cell it records the
+    counts, the conductance, the capacitance if given, the source figure and the digitising error.
+    It then applies the split and writes three files: the fit set's rows, the held-out counts, and
+    the held-out conductances, sealed for the checker.
+  - **The fitter** gets only the fit set's rows and the held-out counts. It fits ĉ and records each
+    held-out prediction before the checker unseals. It never reads the paper, the sealed file, or
+    the Lean lane's files on the paper, which may hold the held-out cells' values.
+  - **The checker** unseals and scores by the rule. It also cross-checks the extraction against the
+    Lean lane's. A documented transcription error goes to the lead; it is never silently corrected.
+- **Information only, not judged:**
+  - the same test on the secondary count;
+  - the test with any background conductance the paper reports subtracted. An additive background
+    also makes G/N fall with N;
+  - a declared conducting-fraction form, G = g N/(1 + N/N_half), fitted on the fit set alone, with
+    its held-out error reported beside the chain's.
+- **What each outcome means.**
+  - **Pass:** the linear relation holds for Kv1.5 over the measured densities, and item 4 proceeds
+    with the chain.
+  - **Fail:** the relation is refuted at these densities. Cells cannot predict this response until
+    a declared density-dependent conducting fraction joins the abundance-to-function relation, as
+    a general, qualified feature (D136, D144).
+  - **Inconclusive or not assessable:** nothing changes.
+- **Bearing on D218's kept refusal.**
+  - The refusal forbids a factor on a population's availability from its own abundance, because
+    the view's linear relation already counts that abundance. This paper tests the premise, not the
+    mechanism.
+  - **A fail** would show that a Kv1.5 population's function does depend nonlinearly on its own
+    density: physics, not double counting. The refusal should still stand, with its reason
+    restated: a population's own density reaches its function only through its declared
+    abundance-to-function law, counted once there. It never reaches it through the coupling, whose
+    factor is switchable regulation of availability.
+  - **A pass** supports the premise as written.
 
 
 ## FR-8 — A qualified long-duration mode
@@ -1093,6 +1177,10 @@ explored.
 - **The competing explanation:** other forms of variable coupling. Independent ATP-consumption or
   proton-flux data would distinguish them.
 
+**Confirmed (the Lean lane's biological review, 21 November 2026).** The reopening evidence is the
+one D268 names: an ATP-dependent difference current at vacuolar pH 3.1 to 3.5 under Kettner et al.'s
+Fig. 3 protocol.
+
 ## FR-30 — Homotypic Cx43 junctions with two relaxation times
 
 - **The request (the same review; D248).** The generic `junction_voltage_relaxation@1` relaxes once,
@@ -1105,6 +1193,12 @@ explored.
   voltage dependence free, so a prediction needs a voltage series. Tracer transfer is tested
   separately, since electrical coupling and dye transfer can differ.
 - **After N2,** which is changing the gate's file.
+
+**The benchmark (the Lean lane's biological review, 21 November 2026).** At −100 mV the reference
+single gate gives 50 ms, while seven N2a cell pairs showed two decay times, 70 ± 5 and 931 ± 54 ms
+(Sahu and Bera, Table 2, PMC3607587). The development two-gate host is to be benchmarked against a
+held-out voltage series; the published two-component fits leave its predicted mixed amplitude
+unmeasured. This still waits on the user's downloads.
 
 ## FR-31 — Vesicle rupture during a steady tension hold
 
@@ -1119,11 +1213,20 @@ explored.
   (OL6), since giant vesicles are far beyond exact-event sizes. It interacts with FR-20's same-time
   rule, FR-22's checkpoints and F12's extinction, so a design note comes first, before OL9 registers.
 
+**The evidence restated (the Lean lane's biological review, 21 November 2026).** At constant tension
+and 12 °C, DOPC vesicle survival fell from 50% at 92 s to 12.5% at 268 s (doi:10.1063/1.4930108). A
+fixed rupture threshold cannot produce continuing failures under a held load, so FR-31 needs rupture
+rates across tensions, as it already states.
+
 ## FR-32 — A DOPC swelling validation record for the water operator
 
 - **The request (the same review; D248).** The tissue water operator's compliance, fitted to one
   dilution's swelling, predicted 2.57% at a second, against 2.6 ± 0.1% measured (Shibly et al. 2016,
   Fig. 2B). It is one fitted value and one held-out point, specific to that preparation.
+
+**The comparison restated (the Lean lane's biological review, 21 November 2026).** DOPC swelling
+was 2.6 ± 0.1% against 1.7% from the calibrated fixed-area model; the existing compliance calculation
+gives 2.57% (PMC5112947). It stays routed to the next water-operator landing.
 
 ## FR-33 — Regional labelled-protein readouts: redistribution against degradation
 
@@ -1188,3 +1291,70 @@ explored.
   FR-27's `scheduled_compartment_wash@1` is the deterministic counterpart in the inner model. A
   partial withdrawal draws each molecule's fate, so the draw, its stream and its checkpoint, the
   buffer's supply rule and the discrete energy bookings are the design's questions.
+
+**A validation target (the Lean lane's biological review, 21 November 2026).** In 180 passive
+droplet splits a nominal one-third branch collected 45.0% of the beads on average (Fornell et al.,
+Fig. 2c, doi:10.1063/1.4984131); a second chip retained 28.2% ± 4.4 percentage points SD at a
+measured liquid fraction of about 27.2% (Liu et al., Fig. 4, PMC6897560). The two disagree on how well
+volume predicts particle sampling, and both concern particles, not molecules. FR-35 withdraws each
+molecule with the volume fraction's probability, a well-mixed limit. The informative measurement is
+paired liquid volume and particle count for each split. No change to FR-35 now.
+
+**The Lean lane's check of the split heat (21 November 2026).** split_surprisal_kT is booked against
+the physical volume fraction f, while the finite-word sampler withdraws each molecule with
+probability q. So the exact mean heat for n tracers with tracer-free buffer is −n(1−q) ln(1−f), with
+q = f at dyadic fractions such as ¼ and ½. At the largest allowed fraction, f = 1−2⁻⁵³, a tracer
+survives with probability 2⁻⁵²: its booked split score exceeds its sampler score by exactly ln 2, and
+the mean heat is 8.1572 × 10⁻¹⁵ kBT against the ideal-volume 4.0786 × 10⁻¹⁵ kBT. The per-event energy
+accounting passes. The design note and the operator's docstring are being reworded to say so (no
+code change). Their search of three passive-split studies (Fornell et al., Fig. 2,
+doi:10.1063/1.4984131; Liu et al., Fig. 4, PMC6897560; Deshpande et al., Fig. 3, the mechanical
+division of cell-sized liposomes) found none that reports the parent count, the daughter count and the
+measured liquid fraction for the same split, the pairing that would separate volume variation from
+sampling variation. Biological validation of the heat remains open.
+
+## FR-36 — Age- and region-selective loss within a species row
+
+- **Raised by** FR-25's reviewer (21 November 2026), as FR-25's follow-up 3: loss that depends on a
+  molecule's age, or on the region it sits in, within one species row.
+- **Covered today:** validation/gene_regulation/cohort.py recovers completion-time cohorts within one
+  well-mixed pool whose loss does not depend on age; FR-33's regional export and one-way tracer cover
+  regions joined by one-way routes.
+- **The build, when needed:** D1 (label families in the species registry, now being built for
+  FR-33's two-way tracing) and D2 (an ageing operator, scheduled_species_progression@1, the operators
+  owner's), per docs/COHORT_LABELS_DESIGN.md; 2.5 to 4 days in all.
+- **Status: deferred (D273).** Outside FR-25's own request; it reopens on a requester's readout that
+  needs age-dependent loss.
+
+## FR-37 — Sampling a liquid whose dye is unevenly distributed
+
+- **The request (a user, 21 November 2026; D274).** A pipette can collect half a chamber's liquid
+  and pick up more than half its dye, when the liquid near the collection port is richer in dye than
+  the rest. The instrument then reports a higher sample concentration, although the chamber's total
+  is accounted for. FR-27 withdraws from a well-mixed compartment and FR-35 from a well-mixed
+  molecular pool. Can existing operators represent a draw from a particular part of an unevenly
+  mixed liquid? Demonstrate it with a runnable example; if something is missing, identify the
+  smallest addition.
+- **The synthetic test.** A passive dissolved tracer in two liquid regions, A and B, each 100 pL,
+  with 8 fmol in A and 2 fmol in B, above the same buffer background. Each case starts fresh and
+  collects 100 pL.
+
+  | Collection condition | Expected in sample | Left behind |
+  |---|---|---|
+  | Draw all 100 pL from A before mixing | 8 fmol | 2 fmol |
+  | Mix A and B completely, then draw | 5 fmol | 5 fmol |
+  | Draw 75 pL from A and 25 pL from B | 6.5 fmol | 3.5 fmol |
+
+  For each case, report:
+  - the volume drawn from each region;
+  - the amount and concentration in the collected sample;
+  - the tracer remaining in each region.
+  Buffer supplied by any refill is recorded separately, and the sample and remainder account for
+  all 10 fmol.
+- **Inputs.** In this first test, the starting distribution and the volume drawn from each region
+  are declared inputs. The answer must say which inputs a Cells user supplies and which Cells can
+  calculate from the collection port, flow and timing. That distinction matters experimentally:
+  - an assumed dye-rich region can reproduce a high reading;
+  - predicting that such a region forms needs separate evidence;
+  - measuring the dye left behind tests the explanation.
+- **Status:** requested, High.

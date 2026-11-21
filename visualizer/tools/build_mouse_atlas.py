@@ -93,6 +93,22 @@ PAPERS = {
 }
 BODY_UM, TAIL_UM, EAR_UM = 78500, 85300, 13300  # the paper's means of head and body, tail and ear: see PAPERS
 
+# Sizes of the cell's organelles for the Machines view's shelf (schema/MACHINE_CATALOGUE.md, "Organelles"), read on their
+# pages on 20 November 2026 and written here as facts with their sources. Unlike PAPERS, nothing of them was downloaded:
+# no saved copy stands behind them, and the build does not check them against one. The nucleus is a measurement in the
+# mouse's own cells; the Golgi's and the autophagosome's are general figures whose references name mammalian cells (a
+# general figure stands on a species' shelf only as far as its reference's own qualifier reaches).
+SHELF_FACTS = [
+    {"label": "Nucleus", "value": "whole primary beta cells of pancreatic islets isolated from 9-week-old mice, reconstructed in three dimensions by FIB-SEM: “The volume of the nuclei ranged from 102 to 150 µm³ in the six cells containing complete nuclei”. Ours, not the paper's: a sphere of the range's middle, 126 µm³, is 6.2 µm across", "sources": ["muller2020"]},
+    {"label": "Golgi apparatus", "value": "a review's general figure for mammalian cells, not a measurement in one cell type: “In mammalian cells, this organelle consists of a pile of flat, disk-like membranes, the cisternae”; “The diameter of the cisternae is also cell type-dependent, and is usually 0.5–1 μm”, and the cisternae of a stack are “usually numbering between 3 and 11”", "sources": ["martinezalonso2013"]},
+    {"label": "Autophagosome", "value": "an encyclopedia's general range for mammalian cells, not a measurement in one cell type: “An autophagosome is a spherical structure with double layer membranes.” “Yeast autophagosomes are about 500-900 nm, while mammalian autophagosomes are larger (500-1500 nm).” The mammalian range is 0.5–1.5 µm; the sentence carries no reference of its own", "sources": ["wikipedia-autophagosome"]},
+]
+SHELF_SOURCES = {
+    "muller2020": {"text": "Müller and others (2020) 3D FIB-SEM reconstruction of microtubule–organelle interaction in whole primary mouse β cells. Journal of Cell Biology 220(2):e202010039. Section “Organelle fractions are heterogeneous across cells” and its Table 1. Read as Europe PMC full text PMC7748794.", "doi": "10.1083/jcb.202010039", "licence": "CC BY 4.0, as the article states (“available under a Creative Commons License (Attribution 4.0 International”)", "class": "permissive", "accessed": "2026-11-20"},
+    "martinezalonso2013": {"text": "Martínez-Alonso, Tomás and Martínez-Menárguez (2013) Morpho-Functional Architecture of the Golgi Complex of Neuroendocrine Cells. Frontiers in Endocrinology 4:41. Section “Morphology of the Golgi Ribbon”, on mammalian cells; it cites Weidman and others for the cisternae's diameter and Rambourg and Clermont for their number. Read as Europe PMC full text PMC3610015.", "doi": "10.3389/fendo.2013.00041", "licence": "CC BY, as the article states (“distributed under the terms of the Creative Commons Attribution License”)", "class": "permissive", "accessed": "2026-11-20"},
+    "wikipedia-autophagosome": {"text": "Wikipedia, the article “Autophagosome”, its first section: an encyclopedia's general range; the sentence that gives it carries no note of its own, and its paragraph cites Mizushima, Ohsumi and Yoshimori, Cell Structure and Function 27(6):421–429, 2002. Read on en.wikipedia.org (the page as last edited on 4 October 2026).", "url": "https://en.wikipedia.org/wiki/Autophagosome", "licence": "CC BY-SA 4.0, share-alike, as the page's footer states (“Text is available under the Creative Commons Attribution-ShareAlike 4.0 License”)", "class": "permissive", "accessed": "2026-11-20"},
+}
+
 SOURCES = {
     KB: {"what": f"UniProtKB: every entry of the reference proteome {PROTEOME} of Mus musculus, reviewed and unreviewed, with its name, gene, MGI gene, length, level of evidence, stated places with the evidence for each, segments, signals and anchors; the InterPro entries and Gene Ontology terms of each; the proteome's record and counts; UniProt's gene-by-gene set of the proteome (one protein for each gene) with the page that explains it; UniProt's help page on its automatic annotation; and UniProt's statement of its licence, saved beside the data", "licence": "CC BY 4.0"},
     MGI: {"what": "The statement of terms of Mouse Genome Informatics (MGI), read before linking to it. Nothing else of MGI was downloaded: the MGI genes used here are those UniProt gives its entries", "licence": "CC BY 4.0 for MGI's data and annotations, as the page states"},
@@ -461,12 +477,15 @@ def build(datasets_folder, snapshot):
                 {"label": "Proteins", "value": f"{stated['genes']:,} genes in UniProt's reference proteome, with {stated['entries']:,} entries: {stated['reviewed']:,} reviewed by a curator and {stated['unreviewed']:,} annotated automatically. One protein is shown for each gene", "sources": ["uniprot"]},
                 {"label": "Cells' units", "value": machines, "sources": ["uniprot"]},
                 {"label": "The outlines' sizes", "value": f"head and body {BODY_UM / 1000:g} mm, tail {TAIL_UM / 1000:g} mm, ear {EAR_UM / 1000:g} mm: the means of four house mice trapped in Qatar, wild and not laboratory mice", "sources": ["islam2021"]},
+                *SHELF_FACTS,
             ],
-            "parts": {"membranes": 1, "wall": False, "nucleus": True, "organelles": ["er", "golgi", "mitochondria"]},
+            # `shelf`: organelles the Cell view does not draw, which stand on the Machines view's shelf alone (schema/SPECIES_SHAPES.md).
+            "parts": {"membranes": 1, "wall": False, "nucleus": True, "organelles": ["er", "golgi", "mitochondria"], "shelf": ["autophagosome"]},
         },
         "sources": {
             "uniprot": {"text": f"UniProt Consortium, UniProt release {release}: the reference proteome {PROTEOME} (Mus musculus{of_strain}), its entries and its gene-by-gene set.", "url": f"https://www.uniprot.org/proteomes/{PROTEOME}", "licence": "CC BY 4.0", "class": "permissive", "accessed": d.day(KB, PLACES_FILE)},
             "islam2021": {"text": f"{P.paper_cite(d, PAPERS_AT, PAPERS, 'islam2021')} Its Table 2 gives, for four house mice (Mus musculus) trapped in Qatar, a head and body length of 78.5 ± 2.4 mm, a tail of 85.3 ± 4.1 mm and a right ear of 13.3 ± 1.7 mm.", "doi": paper["doi"], "licence": "CC BY", "class": "permissive", "accessed": d.day(PAPERS_AT, "islam2021_fulltext.xml")},
+            **SHELF_SOURCES,
         },
     }
     atlas = {

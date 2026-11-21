@@ -68,8 +68,8 @@ export function createServer({ scene = DEFAULT_SCENE, runs = DEFAULT_RUNS, offli
         else response.writeHead(200, { "content-type": "application/json", "cache-control": "no-store" }).end(file);
         return;
       }
-      // The landing's cards and stills, beside the page as they are published.
-      if (url.pathname === "/cards.json" || url.pathname.startsWith("/stills/")) {
+      // The landing's cards (their faces and their details) and stills, beside the page as they are published.
+      if (url.pathname === "/cards.json" || url.pathname === "/cards.details.json" || url.pathname.startsWith("/stills/")) {
         const source = (await landingFiles({ cardsPath: cards })).files.find((file) => `/${file.path}` === url.pathname)?.source;
         const file = source ? await readFile(source).catch(() => null) : null;
         if (!file) response.writeHead(404).end("not found");

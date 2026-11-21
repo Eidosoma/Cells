@@ -317,6 +317,24 @@ test("what the manifest has not exercised yet is said as the format page says it
     assert.ok(!today.sources.some((source) => source.path.startsWith("docs/library/")), piece.id);
     assert.equal(today.status, null);
   }
+  // A cycle law's form of the fourth kinetics, monomial (null on every law at main 93fc8c2c), and of a kinetics added
+  // later with a key no word is written for: each said by what it is, under its own name, its data counted, never poured.
+  const formSaid = (form) => {
+    const grown = JSON.parse(JSON.stringify(raw));
+    Object.assign(grown.pieces.find((piece) => piece.id === "cells.na_anion_symport_factored@1").declared.fields.cycle, form);
+    const said = describe(new Library(grown), "laws:cells.na_anion_symport_factored@1");
+    return { summary: new Map(said.facts).get("Its general form"), items: new Map(said.sections.find((section) => section.title === "Its general form").items.map((item) => [item.label, item.detail])) };
+  };
+  const monomial = formSaid({ kinetics: "monomial", saturation: [], monomial: { rates: [{ log_k: 0, orders: [], zeta: 0, factors: [], share: 1 }], read_roles: [["H", 1]], standard_state_mM: 1000 } });
+  assert.match(monomial.summary, /^monomial kinetics, 1 mode, 2 roles and 5 parameters/);
+  assert.match(monomial.items.get("Kinetics"), /^monomial: /);
+  assert.equal(monomial.items.get("Its monomial"), "1 rate, one per mode, and 1 read role: roles its kinetics read and never move");
+  assert.ok(!monomial.items.has("Its saturation") && !monomial.items.has("saturation"), "another kinetics' empty data says nothing");
+  const later = formSaid({ kinetics: "chemiosmotic", saturation: [], chemiosmotic: { coupling: 1, steps: [1, 2] }, phase: [1, 2, 3] });
+  assert.equal(later.items.get("Kinetics"), "chemiosmotic: a kinetic form these words do not know yet");
+  assert.equal(later.items.get("Its chemiosmotic"), "2 keys");
+  assert.equal(later.items.get("phase"), "3 entries");
+  for (const detail of [...monomial.items.values(), ...later.items.values()]) assert.doesNotMatch(detail, /[{}"]/, "no data poured");
 });
 
 // ------------------------------------------------------------ the law-port inventory's table
@@ -661,9 +679,35 @@ test("a piece's panel says what the manifest states of it, links its files at th
     if (d.provenance) assert.equal(facts.get("Provenance"), { parity: "moved from an older family (moving is not calibrating)", cited: "cited", calibrated: "calibrated" }[d.provenance.tag], piece.id);
     if (d.provenance?.citation) for (const label of ["Cited", "Where in it", "Licence", "Departs from it"]) assert.ok(facts.get(label), `${piece.id}: ${label}`);
     // Its interface's own fields, each by its name in the format page's words (or its own key where the page has none).
-    const named = { code: "Code", gates: "Gates", rk4_step_s: "Reference RK4 step bound", moves: "Moves per forward cycle", model_key: "Definition key", parts: "Parts of the step", step_method: "Step method" };
+    const named = { code: "Code", gates: "Gates", rk4_step_s: "Reference RK4 step bound", moves: "Moves per forward cycle", model_key: "Definition key", parts: "Parts of the step", step_method: "Step method", cycle: "Its general form", stage_term: "Stage term", material_term: "Material term", charge_bound: "Bound on a charged row", material_bound: "Bound on a neutral row", forms: "Forms" };
     for (const key of Object.keys(d.fields)) if (named[key]) assert.ok(facts.has(named[key]), `${piece.id}: ${key}`);
+    // A step term or bound the law has none of, and `forms` null, say "none" (the format page: "or is null where the law
+    // has none"); a kernel's name where it has one; `forms` in the page's words for its value.
+    for (const key of ["stage_term", "material_term", "charge_bound", "material_bound", "forms"]) {
+      if (!(key in d.fields)) continue;
+      const value = d.fields[key];
+      if (value === null) assert.equal(facts.get(named[key]), "none", `${piece.id}: ${key}`);
+      else if (key === "forms") assert.match(facts.get(named[key]), new RegExp(`^${value}: `), `${piece.id}: ${key}`);
+      else assert.equal(facts.get(named[key]), value, `${piece.id}: ${key}`);
+      assert.ok(!facts.has(key), `${piece.id}: no row under the raw key ${key}`);
+    }
+    // A cycle law's general form (the format page: "`cycle`: its general form"), in words: no row under the raw key, no
+    // data poured, a null key of the form unsaid, and where the form carries the law its null kernels unsaid too.
+    if (d.fields?.cycle) {
+      assert.ok(!facts.has("cycle") && !facts.has("kinetics") && !facts.has("domain_valid"), piece.id);
+      const form = entity.sections.find((section) => section.title === "Its general form");
+      for (const said of form.items) assert.doesNotMatch(`${said.label} ${said.detail}`, /[{}[\]"]|null|undefined/, `${piece.id}: ${said.label}`);
+      for (const [key, value] of Object.entries(d.fields.cycle)) if (value === null) assert.ok(!form.items.some((said) => said.label.includes(key)), `${piece.id}: ${key} is null and says nothing`);
+      assert.equal(entity.sections.find((section) => section.title === "Its general form: its parameters").items.length, d.fields.cycle.parameters.length, piece.id);
+    }
   }
+  const formOf = (id) => Object.fromEntries(lens.describe(`laws:${id}`).sections.find((section) => section.title === "Its general form").items.map((said) => [said.label, said.detail]));
+  assert.equal(formOf("cells.na2_anion_symport_diagram@1")["Its diagram"], "8 states joined by 8 steps, with 1 Hill cycle");
+  assert.equal(formOf("cells.na_anion_symport_factored@1")["Mode import"], "per forward cycle: Na at N +n_Na, Na at P −n_Na, B at N +1, B at P −1");
+  assert.equal(formOf("cells.proton_atp_mass_action_positive@1")["Temperature domain"], "200 to 400 K");
+  const parameters = new Map(lens.describe("laws:cells.na_anion_symport_factored@1").sections.find((section) => section.title === "Its general form: its parameters").items.map((said) => [said.label, said.detail]));
+  assert.equal(parameters.get("n_Na"), "a whole number, from 1 to 4, above zero, no unit");
+  assert.equal(parameters.get("K_Na_mM"), "above zero, in mM");
   for (const frame of library.frames) assert.equal(lens.describe(`laws:${frame.id}`).status, null, `${frame.id}: a model takes no status from its parts`);
 });
 
@@ -993,7 +1037,9 @@ test("a rack's rows stand inside its frame at any length: a row too long for a l
   const inner = library.racks.find((frame) => frame.kind === "inner model");
   const grownRacks = library.racks.map((frame) => (frame !== inner ? frame : { ...frame, rows: frame.rows.map((row) => (row.role !== "channel law" ? row : { ...row, pieces: Array.from({ length: 30 }, (_, n) => `cells.made_up_${n}@1`), tags: Array.from({ length: 30 }, (_, n) => n), next_code: 30 })) }));
   const grown = Object.create(library, { racks: { value: grownRacks } });
-  for (const [name, list] of [["the list", library], ["thirty channel laws", grown]]) {
+  // And the composite with forty operators (twenty at main 1ca5eada, twenty-two at 93fc8c2c).
+  const many = Object.create(library, { racks: { value: library.racks.map((frame) => (frame.kind !== "composite" ? frame : { ...frame, rows: frame.rows.map((row) => ({ ...row, pieces: Array.from({ length: 40 }, (_, n) => `cells.made_up_operator_${n}@1`), tags: [] })) })) } });
+  for (const [name, list] of [["the list", library], ["thirty channel laws", grown], ["forty operators", many]]) {
     for (const narrow of [false, true]) {
       const at = `${name}, ${narrow ? "a tall screen" : "wide"}`;
       const frames = layoutOf(list, { narrow }).frames;

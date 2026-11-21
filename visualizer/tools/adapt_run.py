@@ -69,6 +69,8 @@ class Refused(SystemExit):
 
 
 def read_json(path):
+    if Path(path).is_symlink():
+        raise Refused(f"{Path(path).name} in {Path(path).parent.name}/ is a link: a file is read where it stands, and no link is followed")
     try:
         return json.loads(Path(path).read_text(encoding="utf-8"))
     except FileNotFoundError:
@@ -1461,6 +1463,18 @@ EXAMPLE_FILE = "example.json"  # the run-fixture tool writes it into a run folde
 HISTORY_MAIN = ("membrane_voltage_V", "cell_potential_V")
 HISTORY_SETS = {"cell": "cells", "membrane": "membranes", "junction": "junctions", "outside": "extracellular", "face": "faces", "channel": "channels"}
 RUN_FOLDER = re.compile(r"[A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)*\Z")
+
+
+def inside(folder, text):
+    """Whether a name that a run's own files give stays inside its folder: file names joined by /, none of them made of dots
+    alone, and nowhere led out of the folder through a link. A package is read from its own folder and from nowhere else
+    (schema/EXPERIMENT_PACKAGE.md); tools/check_package.py says the same of a whole package, with a code for each breach."""
+    if not (isinstance(text, str) and RUN_FOLDER.match(text)) or any(not part.strip(".") for part in text.split("/")):
+        return False
+    try:
+        return (Path(folder) / text).resolve().is_relative_to(Path(folder).resolve())
+    except OSError:
+        return False
 SIGN_FROM_ARRAYS = "the viewer's reading of the run's own saved arrays, not a declaration by the run"
 # An exchange route's total (scheduled_species_exchange@1) is positive out of the cell, for an export and an import route alike: the
 # engine's lead confirmed it on 15 November 2026 from the operator's own code, whose domain check holds an export's total at nought
@@ -1494,7 +1508,7 @@ def history_arrays(name, folder, derivation):
                 raise Refused(f"{name}: windows.jsonl has a line that is not JSON") from None
             if not (isinstance(item, dict) and item.get("kind") == "window" and item.get("observation_records") and isinstance(item.get("path"), str)):
                 continue
-            if not RUN_FOLDER.match(item["path"]) or not (folder / item["path"]).is_file():
+            if not inside(folder, item["path"]) or not (folder / item["path"]).is_file():
                 raise Refused(f"{name}: windows.jsonl names a chunk that is not in the run's folder")
             names = set(npz_names(folder / item["path"]))
             chunks.append(read_npz(folder / item["path"], [entry for entry in wanted if entry in names]))
@@ -1759,7 +1773,7 @@ def view_rows(name, folder, base, array_name):
     shape, values, rows = None, array("d"), 0
     for part in base.get("files") or []:
         file, span = part.get("file") if isinstance(part, dict) else None, part.get("rows") if isinstance(part, dict) else None
-        if not isinstance(file, str) or not RUN_FOLDER.match(file) or not (folder / file).is_file():
+        if not inside(folder, file) or not (folder / file).is_file():
             raise Refused(f"{name}: its view names a file of the time base {base.get('id')} that is not in the run's folder")
         if array_name not in npz_names(folder / file):
             raise Refused(f"{name}: {Path(file).name} does not hold {array_name}, which its view says is saved there")
@@ -1895,7 +1909,11 @@ STATED_PREFIX = "stated."
 
 def stated_files(root, name, entry=None):
     """The files the run folder's index says stand beside a package (`packages[].sidecar`, one name or a list); in a run
-    folder with no index, the file the experiment's overlay entry names beside every package (`sidecar`); none where neither says one."""
+    folder with no index, the file the experiment's overlay entry names beside every package (`sidecar`); none where neither says one.
+    A run folder with a manifest (experiment_package.json) names them itself, in place of both (`packages[].sidecars`)."""
+    manifest = package_manifest(root)
+    if manifest is not None:
+        return list(manifest["sidecars"].get(name, []))
     index = read_json(root / "index.json") if (root / "index.json").is_file() else None
     packages = index.get("packages") if isinstance(index, dict) else None
     package = next((item for item in packages if isinstance(item, dict) and item.get("arm") == name), None) if isinstance(packages, list) else None
@@ -2784,11 +2802,15 @@ def adapt_engine_view(root, name, experiment, entry):
 
 def adapt_history(root, name, experiment, entry):
     """One run written by the engine's shared output path (a folder that holds resolved_config.json and its arrays)."""
-    if not RUN_FOLDER.match(name):
+    if not inside(root, name):
         raise Refused(f"'{name}' is not a run folder's name")
     folder = root / name
     if not folder.is_dir():
         raise Refused(f"no run folder {name} in {root.name}/")
+    # A package holds its files itself: one that holds a link is refused before anything of it is read.
+    link = next((item for item in sorted(folder.rglob("*")) if item.is_symlink()), None)
+    if link is not None:
+        raise Refused(f"{name} holds a link ({link.relative_to(folder).as_posix()}): a run folder holds its files itself, and no link is followed")
     # A run with the engine's own view beside its files is packaged from that view, and from none of the adapter's tables.
     if (folder / VIEW_FILE).is_file():
         return adapt_engine_view(root, name, experiment, entry)
@@ -3171,12 +3193,71 @@ def experiments_of(selection):
 
 
 REFUSED_FILE = "REFUSED.json"  # a folder of a pick an engine check refused: its record up to the refusal, and no view
+# A run folder's manifest (schema/EXPERIMENT_PACKAGE.md; its names are the engine's lead's, of 20 November 2026). Where a
+# run folder holds one, its packages are the arms, with the sidecars each names, and its refused picks are those it lists: in
+# place of index.json, of the overlay's `sidecar`, and of the search for folders that hold a view or REFUSED.json. Nothing
+# else of it is read here: the experiment's words still come from the overlay. tools/check_package.py checks the whole of it.
+MANIFEST_FILE = "experiment_package.json"
+MANIFEST_FORMAT = "cells.experiment_package@1"
+MANIFEST_NOTES = set()
+
+
+def package_manifest(root):
+    """The run folder's manifest as {"arms": [arm], "sidecars": {arm: [file]}, "refused": [(arm, file)]}, or None where it
+    has none. A package is read from the folder named as its arm; one of a kind the adapter does not read is named and left
+    out. A manifest the adapter cannot read so is refused, never passed over."""
+    path = Path(root) / MANIFEST_FILE
+    if not path.is_file():
+        return None
+    where = f"{Path(root).name}/{MANIFEST_FILE}"
+    if path.is_symlink():
+        raise Refused(f"{where} is a link: a file is read where it stands, and no link is followed")
+    try:
+        manifest = json.loads(path.read_text(encoding="utf-8"))
+    except (ValueError, RecursionError):
+        raise Refused(f"{where} is not JSON") from None
+    if not (isinstance(manifest, dict) and manifest.get("format") == MANIFEST_FORMAT and manifest.get("level") == "source"):
+        raise Refused(f"{where} is not the manifest of a source package ({MANIFEST_FORMAT}, level source)")
+    packages, refused = manifest.get("packages"), manifest.get("refused", [])
+    if not (isinstance(packages, list) and packages and all(isinstance(item, dict) for item in packages) and isinstance(refused, list) and all(isinstance(item, dict) for item in refused)):
+        raise Refused(f"{where} lists no packages, or a package or a refused pick that is not an object (packages, refused)")
+    plain = lambda text: isinstance(text, str) and bool(ARM_NAME.match(text)) and bool(text.strip("."))  # noqa: E731
+    arms, sidecars, picks, seen = [], {}, [], set()
+    for item in packages:
+        arm, said = item.get("arm"), item.get("sidecars", [])
+        if not (plain(arm) and item.get("path") == arm):
+            raise Refused(f"{where} lists a package that is not read from the folder named as its arm (arm, path)")
+        if arm in seen:
+            raise Refused(f"{where} names the arm {arm} twice")
+        seen.add(arm)
+        if item.get("kind") != VIEW_FORMAT:
+            note = f"note: {where}: the package {arm} is of the kind {item.get('kind')!r}, which the adapter does not read; it is left out"
+            if note not in MANIFEST_NOTES:  # said once, however often the manifest is read
+                MANIFEST_NOTES.add(note)
+                print(note, file=sys.stderr)
+            continue
+        if not (isinstance(said, list) and all(isinstance(file, str) and STATED_FILE.match(file) for file in said)):
+            raise Refused(f"{where}: the package {arm} names a file beside it that is not a JSON file's plain name (sidecars)")
+        arms.append(arm)
+        sidecars[arm] = list(said)
+    for item in refused:
+        arm, file = item.get("arm"), item.get("file")
+        if not (plain(arm) and plain(file)) or arm in seen:
+            raise Refused(f"{where} lists a refused pick that is not one arm, once, with its file's plain name (refused: arm, file)")
+        seen.add(arm)
+        picks.append((arm, file))
+    return {"arms": arms, "sidecars": sidecars, "refused": picks}
 
 
 def runs_in_index(folder):
     """The runs a run folder's own index.json chooses (`selected`, else every package whose view was written): so that
     arms added to the folder later are data alone. A run folder with no index: every package in it that holds the
-    engine's view (view.json), by name."""
+    engine's view (view.json), by name. A run folder with a manifest (experiment_package.json): its packages, in its order."""
+    manifest = package_manifest(folder)
+    if manifest is not None:
+        if not manifest["arms"]:
+            raise Refused(f"{folder.name}/{MANIFEST_FILE} lists no package of a kind the adapter reads ({VIEW_FORMAT})")
+        return list(manifest["arms"])
     path = folder / "index.json"
     if not path.is_file():
         names = sorted(item.name for item in folder.iterdir() if item.is_dir() and (item / VIEW_FILE).is_file() and ARM_NAME.match(item.name))
@@ -3193,17 +3274,20 @@ def runs_in_index(folder):
 def refused_picks(root, sweeps):
     """The arms of a run folder that an engine check refused (a folder holding REFUSED.json and no view), named and no
     more: each by its arm and its value of the sweep's parameter, as the file states them. Nothing else of the file is
-    read: not its error, not when it was refused."""
+    read: not its error, not when it was refused. A run folder with a manifest names them itself (`refused`), in its order."""
+    manifest = package_manifest(root)
+    if manifest is not None:
+        picks = [(root / arm, file) for arm, file in manifest["refused"]]
+    else:
+        picks = [(folder, REFUSED_FILE) for folder in sorted(root.iterdir()) if folder.is_dir() and (folder / REFUSED_FILE).is_file() and not (folder / VIEW_FILE).is_file()]
     found = []
-    for folder in sorted(root.iterdir()):
-        if not (folder.is_dir() and (folder / REFUSED_FILE).is_file()) or (folder / VIEW_FILE).is_file():
-            continue
+    for folder, file in picks:
         if len(sweeps) != 1:
             raise Refused(f"{folder.name}: a refused pick is named by its sweep's parameter, and the summary states {len(sweeps)} sweeps, not one")
-        said, parameter = read_json(folder / REFUSED_FILE), sweeps[0]["parameter"]["id"]
+        said, parameter = read_json(folder / file), sweeps[0]["parameter"]["id"]
         if not (isinstance(said, dict) and said.get("arm") == folder.name and said.get("status") == "refused" and finite(said.get(parameter))):
-            raise Refused(f"{folder.name}/{REFUSED_FILE} does not name its own arm as refused with its value of {parameter} (arm, status, {parameter})")
-        found.append({"arm": folder.name, "sweep": sweeps[0]["id"], "parameter": said[parameter], "file": REFUSED_FILE})
+            raise Refused(f"{folder.name}/{file} does not name its own arm as refused with its value of {parameter} (arm, status, {parameter})")
+        found.append({"arm": folder.name, "sweep": sweeps[0]["id"], "parameter": said[parameter], "file": file})
     return found
 
 
