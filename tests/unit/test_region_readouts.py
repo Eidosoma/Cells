@@ -12,13 +12,15 @@ The tracer's error at the mixing node is its trapezoid split's, second order in 
 inflow within a step relative to the node's amount (validation/regions/readouts.py, "Its limit").
 The bounds below hold the measured errors with a margin. Without inflow its split is exact.
 
-Three host-only rows (the review of 21 November 2026; the example's world parsed, no run, synthetic
+Host-only rows (the review of 21 November 2026; the example's world parsed, no run, synthetic
 records from closed forms; about 1 s together, beside the module's imports) keep the tracer
 refusing what it cannot do:
-- finding 1, a step it cannot resolve (r = O/S above 0.01 where the node gains material);
+- finding 1, a step it cannot resolve (r = O/S above 0.01 where the node gains material or sends
+  it along a route);
 - finding 4, a law it neither reads nor lists as shown inert (the wash), with the registry walked so
   that a new law is refused until it is classified;
-- finding 7, its own cohort names as a caller's.
+- finding 7, its own cohort names as a caller's;
+- and, for D260's follow-up, a long draining run admitted at its records' rounding (about 1 s).
 
 Each is planted where its refusal is lifted: the returned rows' invariant (each cohort non-negative,
 the cohorts summing to the node's amount) catches the negative split and the vanished cohort.
@@ -309,3 +311,36 @@ def test_the_tracers_own_cohort_names_are_refused(monkeypatch):
     monkeypatch.setattr(readouts, "RESERVED", ())
     with pytest.raises(ValueError, match="cell_0, t = 0.0, sum to 0.0 fmol, not the node's 1.0"):
         readouts.trace(spec, [0.0, 1.0], states, base.ST, {"unlabelled": {base.CELL: 1.0}})
+
+
+def test_a_long_draining_run_closes_at_its_records_rounding(monkeypatch):
+    """The closure's tolerance follows the terms actually summed (D260's follow-up; host only,
+    about 1 s): each node's stored reference and increment, and each cumulative record, at both
+    ends of the step.
+    - A long draining run is admitted: the cell cleared at 1/s from its declared amount for 40 s
+      in 2000 steps, to e^-40 of it, far below its reference's rounding. Its two cohorts keep 30
+      and 70%.
+    - Planted, with those sizes left out (records_rounding): the closure refuses it, as it did
+      before (a false refusal, for the records' own rounding).
+    - The reviewer's f1, the steady pool in one 1 s step, is still refused, by the resolution."""
+    times = [k * 0.02 for k in range(2001)]
+    spec, _ = _synthetic([0.0], cell=lambda t: 0.0)
+    _, layout = get_model(spec.model).initial_values(spec)
+    wmap = readouts.world_map(spec, base.ST)
+    n0 = float(np.asarray(layout.amount_reference)[wmap["row"], 0])
+    spec, states = _synthetic(
+        times, cell=lambda t: n0 * math.exp(-t), cleared=lambda t: n0 * (1 - math.exp(-t))
+    )
+    cohorts = {"p30": {base.CELL: 0.3}, "p70": {base.CELL: 0.7}}
+    traced = readouts.trace(spec, times, states, base.ST, cohorts)
+    p30, p70 = (np.asarray(traced["amount"][c][base.CELL]) for c in ("p30", "p70"))
+    assert np.max(np.abs(p30 / (p30 + p70) - 0.3)) <= 1e-12
+    assert p30[-1] + p70[-1] == pytest.approx(n0 * math.exp(-40), rel=1e-6)
+    monkeypatch.setattr(readouts, "records_rounding", lambda *args: 0.0)
+    with pytest.raises(ValueError, match="do not close"):
+        readouts.trace(spec, times, states, base.ST, cohorts)
+    monkeypatch.undo()
+    pool = dict(cell=lambda t: 1.0, produced=lambda t: 4 * t, cleared=lambda t: 4 * t)
+    spec, states = _synthetic([0.0, 1.0], **pool)
+    with pytest.raises(ValueError, match="r = O/S = 2 .*above the tracer's resolution 0.01"):
+        readouts.trace(spec, [0.0, 1.0], states, base.ST, {"own": {base.CELL: 1.0}})

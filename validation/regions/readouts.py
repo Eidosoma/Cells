@@ -43,8 +43,16 @@ reads the cohort.
 - **Each step's records:** at each node, turnover's production and loss; on each exchange route,
   the amount moved from its source to its destination. Each record is one-way: a route moves only
   from its source, so its record carries the direction of every labelled molecule it moves.
-- **A closure check:** each node's change must equal those records, within rounding, or the trace
-  is refused. A mover it does not read (a face, a junction, permeation) would break it.
+- **A closure check:** each node's change must equal those records, or the trace is refused. A
+  mover it does not read (a face, a junction, permeation) would break it.
+  - **Its tolerance** is 64 ulps of the terms actually summed: the step's amounts and records,
+    each stored amount's reference and increment, and each cumulative record at both ends of the
+    step (records_rounding).
+  - **Why those sizes count:** with the step's own amounts alone, a long run's drained node was
+    refused for the rounding of its reference and its records, from about 1% of its reference
+    on (D260; tests/unit/test_region_readouts.py).
+  - **Its floor:** an unread movement smaller than those 64 ulps is not seen, and in a long run
+    the cumulative records set that floor.
 - **Production** joins the cohort that the label schedule names at the step's start. Each label
   switch must fall on a step's boundary, or the trace is refused.
 - **A node's outflow** (its loss and its routes out) leaves each cohort in proportion to that
@@ -71,7 +79,10 @@ reads the cohort.
     0.76) into a receiver at r = 0.01 put 9.4e-4 of the receiver's amount on the wrong cohort in
     that one step.
   So the trace refuses a step in which a node that gains material, or sends it along a route, has
-  r above RESOLUTION = 0.01, and reports the largest such r (resolution_largest). At that bound,
+  r above RESOLUTION = 0.01. resolution_largest is the largest r over the nodes the bound tests,
+  those that gained material or sent it along a route in a step. It is 0.0 when no node did: a
+  node that only loses material is exact at any r and is not counted, so a loss-only run's 0.0 does
+  not mean its r was small. At that bound,
   measured on 15 closed-form scenarios (a steady pool, a node filling from near-empty, a draining
   node with production, and a donor drained by a route at 0.5 to 100 times the node's loss rate,
   the node starting at 1e-3 to 1e3 times the donor's amount):
@@ -276,6 +287,30 @@ def node_records(spec, layout, state, wmap):
     return amount, produced, lost, moved
 
 
+def stored_magnitudes(layout, state, wmap):
+    """[node] |reference| + |increment| of the species' stored amount at each node: the size whose
+    rounding the amount the tracer reads carries (the engine stores anchored increments)."""
+    row, nc, no = wmap["row"], len(wmap["cells"]), len(wmap["outside"])
+    cells = np.abs(np.asarray(layout.amount_reference)[row, :nc]) + np.abs(
+        np.asarray(state.amount_increment)[row, :nc]
+    )
+    outside = np.abs(np.asarray(layout.extracellular_amount_reference)[row, :no]) + np.abs(
+        np.asarray(state.extracellular_amount_increment)[row, :no]
+    )
+    return np.concatenate([cells, outside])
+
+
+def records_rounding(stored, stored_now, previous, now, routes, index):
+    """[node] the sizes whose rounding a step's summed terms carry, beyond the step's own amounts
+    (D260): the stored amount's reference and increment and each cumulative record (produced,
+    lost, and each route's at its source and destination), at both ends of the step."""
+    scale = stored + stored_now + sum(np.abs(previous[j]) + np.abs(now[j]) for j in (1, 2))
+    for r, a0, a1 in zip(routes, previous[3], now[3], strict=True):
+        for node in (r["source"], r["destination"]):
+            scale[index[node]] += abs(a0) + abs(a1)
+    return scale
+
+
 def region_rows(spec, times, states, species, region, *, samples=None):
     """The region export (module docstring) at the sampled times (every given time by default):
     {times, inside_fmol, outside_fmol, whole_cell_fmol, node_fmol: {node: [...]},
@@ -372,7 +407,10 @@ def trace(spec, times, states, species, cohorts, *, produced=()):
     caller may not use, nor "produced"). produced: [(time, cohort), ...], the cohort new material
     joins from each time on ("produced" before the first). Returns {times, amount: {cohort: {node:
     [...]}}, loss: {cohort: {node: [...]}}, transfer: {cohort: {route: [...]}}, closure_largest,
-    closure_bound, resolution_largest, resolution_bound}; refused, with its reason, at setup (the
+    closure_bound, resolution_largest (the largest r = O/S over the nodes the bound tests, those
+    that gained material or sent it along a route in a step; 0.0 when none did, since a loss-only
+    node is exact at any r and is not counted), resolution_bound}; refused, with its reason, at
+    setup (the
     movers), at a step the records do not close, at a step it cannot resolve (r above RESOLUTION
     at a node that gains material) and where a returned row breaks the invariant."""
     check_movers(spec, species, TRACER_READS)
@@ -396,12 +434,14 @@ def trace(spec, times, states, species, cohorts, *, produced=()):
     loss = np.zeros_like(x)
     moved = np.zeros((len(routes), len(names)))
     out = dict(times=[times[0]], amount=[x.copy()], loss=[loss.copy()], transfer=[moved.copy()])
-    totals, scales = [start.copy()], [np.abs(start)]
+    stored = stored_magnitudes(layout, states[0], wmap)
+    totals, scales = [start.copy()], [np.abs(start) + stored]
     closure, bound, resolution = 0.0, 0.0, 0.0
     previous = node_records(spec, layout, states[0], wmap)
     eps = np.finfo(float).eps
     for t0, t1, state in zip(times[:-1], times[1:], states[1:], strict=True):
         now = node_records(spec, layout, state, wmap)
+        stored_now = stored_magnitudes(layout, state, wmap)
         n0, n1 = previous[0], now[0]
         made, lost, m = now[1] - previous[1], now[2] - previous[2], now[3] - previous[3]
         inflow, outflow = np.zeros(len(nodes)), lost.copy()
@@ -410,6 +450,9 @@ def trace(spec, times, states, species, cohorts, *, produced=()):
             outflow[index[r["source"]]] += amount
         residual = (n1 - n0) - (made + inflow - outflow)
         scale = np.abs(n0) + np.abs(n1) + np.abs(made) + np.abs(lost) + inflow + outflow
+        # The rounding the summed terms carry (D260): without it a node drained far below its
+        # reference, or its cumulative records, was refused for their own rounding.
+        scale = scale + records_rounding(stored, stored_now, previous, now, routes, index)
         closure = max(closure, float(np.max(np.abs(residual) / np.maximum(scale, 1e-300))))
         tol = CLOSURE_ULPS * eps * scale
         if np.any(np.abs(residual) > tol):
@@ -450,7 +493,7 @@ def trace(spec, times, states, species, cohorts, *, produced=()):
         loss += lost[:, None] * mean
         for k, (r, amount) in enumerate(zip(routes, m, strict=True)):
             moved[k] += amount * mean[index[r["source"]]]
-        x, previous = x1, now
+        x, previous, stored = x1, now, stored_now
         out["times"].append(t1)
         out["amount"].append(x.copy())
         out["loss"].append(loss.copy())
