@@ -1200,6 +1200,20 @@ RULES = (
         marks=_WASH_FIRST,
     ),
     dict(
+        rule="no declared path moves a washed node's neutral species across its surface: the "
+        "patch's own permeability, a kind's route, an exchange route through a facing patch or "
+        "a site population's internalisation from the node (fail closed)",
+        laws=(WASH, EXCHANGE, SITES),
+        level="data",
+        check=OPS + "wash_schedule.py::surface_crossings",
+        test=TESTS + "test_wash_schedule.py::test_each_refusal_fires_with_its_reason",
+        tag=REAL,
+        why="The step's booking of a concentration step at the node is unmeasured, and the "
+        "wash's books do not see the exchange (D263 finding 2, a second review: a registered "
+        "route's crossing was admitted where the patch's own was refused). An operator law not "
+        "shown local is refused until it is classified",
+    ),
+    dict(
         rule="membrane state beside a compartment only together with its admitted writers, "
         "trafficking or the unit producer",
         laws=(COMPARTMENTS, STATE),
