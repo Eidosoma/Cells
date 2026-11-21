@@ -120,6 +120,15 @@ def _not_finite(r):
     r["readouts"]["n_P"][-1] = float("nan")
 
 
+def _interior_pol():
+    """pol T=1 at interior set 18 holding G2's own values at its one required row, t_end (the
+    independent checker's repro/compare_partial_zero.py)."""
+    ends = REFERENCES.ends[18]["pol T=1"]
+    readouts = {n: [v] for n, v in ends.items()}
+    return dict(world="pol T=1", set="interior 0", symbols_RT=_symbols(18), dt_s=0.5,
+                t=[REFERENCES.horizon["pol T=1"]], readouts=readouts)  # fmt: skip
+
+
 # (case, the record, partial, readouts declared, the refusal's words, or the readout whose gap
 # must be 1).
 FINDING_3 = [
@@ -139,6 +148,9 @@ FINDING_3 = [
      None),
     ("a missing readout is refused", lambda: _trajectory(_drop_readout), False, None, "n_P", None),
     ("a non-finite value is refused", lambda: _trajectory(_not_finite), False, None, "nan", None),
+    ("J_bar alone, declared partial, leaves no readout", _interior_pol, True, ["J_bar_tx"],
+     "no readout left", None),
+    ("an empty declaration leaves no readout", _interior, False, [], "no readout left", None),
 ]  # fmt: skip
 
 

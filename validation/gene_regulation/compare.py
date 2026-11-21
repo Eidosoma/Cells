@@ -19,7 +19,8 @@ perfect agreement).
 - **Every required time must be an engine output,** and every G2 readout must be in the run, except
   those not_exported() declares (each move's ΔG and A1's u). Every engine value compared must be
   finite. Otherwise the comparison is refused (ComparisonError). So zero matches, a missing required
-  time, a missing readout and a non-finite value are each an error, never a gap of 0.
+  time, a missing readout, a non-finite value and a comparison left with no readout (every required
+  row compares at least one) are each an error, never a gap of 0.
 - **A partial comparison is declared:**
   - in time (until, or --partial for a run directory): only the required times up to the run's last
     output are required, and J_bar is left out;
@@ -97,6 +98,14 @@ def _selected(available, readouts, what):
     if unknown:
         raise ComparisonError(f"{what}: G2 holds no readout {unknown[:5]}")
     return list(readouts)
+
+
+def _some(names, what):
+    """Refuse a comparison left with no readout (a declared subset that a partial comparison then
+    empties, or an empty declaration): it would report agreement over nothing."""
+    if not names:
+        raise ComparisonError(f"{what}: no readout left to compare")
+    return names
 
 
 def _finite(value, name, what):
@@ -180,7 +189,7 @@ def gaps(engine, reference, *, until=None, readouts=None):
     if until is not None:
         skipped = sorted({*skipped, *(n for n in names if n.startswith("J_bar"))})
         names = [n for n in names if not n.startswith("J_bar")]
-    _readouts(engine, names, "the trajectory")
+    _readouts(engine, _some(names, "the trajectory"), "the trajectory")
     out = {}
     for name in names:
         values, mine = reference["readouts"][name], engine["readouts"][name]
@@ -214,7 +223,7 @@ def endpoint_gaps(engine, refs, index, world, *, until=None, readouts=None):
         if label != "t_end" or until is not None:
             skipped |= {n for n in names if n.startswith("J_bar")}
             names = [n for n in names if not n.startswith("J_bar")]
-        _readouts(engine, names, what)
+        _readouts(engine, _some(names, what), what)
         for name in names:
             mine = engine["readouts"][name]
             value = _finite(mine[0] if name.startswith("J_bar") else mine[found[t]], name, what)
