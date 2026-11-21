@@ -8401,3 +8401,41 @@ lets until 8pm this evening focus on core and FRs nothing else".
 - **Decisions open for the user** stay open (FR-7 item 4, FR-26's L, FR-28, FR-29, the FR-30
   downloads).
 
+## D261: FR-35's design, decided by the lead with the advisor under the user's delegation (D244)
+
+2026-11-21, about 12:02 UTC, on docs/ASSEMBLY_WITHDRAWAL_DESIGN.md (merged).
+1. **The law:** a new operator, `cells.pool_withdrawal@1`, schedule kind `withdrawal` with
+   `fraction` in (0, 1) and a `buffer`. `cells.pool_replacement@1` stays as registered (it draws
+   nothing and books no heat); `fraction` on a replacement is refused, naming the withdrawal kind.
+2. **The draw:** each molecule independently with probability f, so k ~ Binomial(n, f), in
+   per-place blocks on the schedule's own stream at draw number w·P_f + j. The counter w and
+   FR-22's applied-stops record are one number, or asserted equal on restore. The addresses are
+   shown disjoint from the transfer's and the Poisson shear's draws.
+3. **The buffer:** integer counts in the withdrawn volume fV; tracer-free means zero.
+4. **The booking:** A, FR-27's booking with the discrete free energy. The sink takes F(before) −
+   F(kept at (1 − f)V), the work F(buffer at fV), and the mixing heat goes to the heat ledger.
+   - That sink is not the sample's own F: it differs by σ = −ln[C(n,k) f^k (1 − f)^(n−k)], the
+     outcome's binomial surprisal. The record names the sink field for what it is and records σ
+     separately, so the energy exchanged is stated plainly.
+   - Shown: heat ≥ 0 per realization, also when the buffer carries the species. Tested: the f → 1
+     limit gives @1's bookings with zero heat, and the mean over k matches FR-27's continuum heat.
+   - The free energies at fV and (1 − f)V go through the guarded table read.
+5. **Capacity (changed from the note):** decided before the draw. The wash is refused when a
+   place's pre-wash count plus its buffer count exceeds the capacity (the k = 0 worst case), so no
+   refusal depends on k and the binomial is never truncated. The guard stays as a backstop.
+6. **The statistics:**
+   - The tier test draws on the host at real run addresses, with bands and a χ² test.
+   - One engine run's cost is measured after the compile. If a few thousand runs are cheap, that
+     ensemble runs once as development evidence across independent streams.
+   - The invariant is collected plus remaining equals the pre-wash count, recorded per run.
+   - The quarter case gets a variance band (1.5) and checks the collected count.
+   - An independence row covers two places with equal counts and consecutive washes.
+7. **c_ext:** the buffer's concentration is checked at parse, and the realized pool's drift is
+   reported.
+8. **The legend and the checkpoint key** are written only when a world declares a withdrawal, so
+   existing worlds stay bitwise.
+- **Process:** the reproducer's two behaviours are rerun at the base first; the independent checker
+  writes the acceptance from the requester's words against the built head.
+- **Price:** 1.5 to 2 agent-days, gates excluded. For the requester: the sink term above, and how
+  "independent streams" was run.
+
