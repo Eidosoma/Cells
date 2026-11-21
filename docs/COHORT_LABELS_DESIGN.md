@@ -58,14 +58,42 @@ step:
     unlabelled the other. A tracer of net records saw no movement and kept 0.1 fmol of label on
     the right, where an explicit label row reaches 0.299999 (0.3 by the closed form).
   - **So the built tracer refuses, at setup,** any face, junction or patch that moves the species,
-    any operator but turnover and exchange that declares it, and any kind that names it
-    (`check_movers`).
-- **The split.** At a node with no inflow it is exact for first-order laws. Where material flows in
-  during a step, a split by the step's starting composition would be first order in dt. The built
-  tracer splits by the mean of the start and end compositions, the trapezoid, which is second
-  order. Its error is set by the inflow within a step relative to the node's amount: 1.3e-6
-  against the closed form at a 1 ms step, where the node first receives its own amount each step
-  (tests/unit/test_region_readouts.py).
+    and it fails closed on everything else (`check_movers`; the review of 21 November 2026):
+    - every operator law it neither reads (turnover and exchange) nor lists as shown inert
+      (`SHOWN_INERT`: laws whose declarations write no species amount, provide no amount view and
+      close no node) is refused, with its reason (`REFUSED`);
+    - a law in no list is refused until it is classified there;
+    - every declared kind is refused.
+  - The rule before it looked for an operator's species field. The wash
+    (`scheduled_compartment_wash@1`) declares nodes, not species, so it passed: the tracer kept all
+    60 fmol of the well's label while the wash took 30 of it. The region export shares the check.
+- **The split.** At a node with no inflow and no production it is exact for any step, since a
+  starting cohort's survival (1 - r)/(1 + r), with r = O/S the step's outflow against the node's
+  start and end amounts, equals n1/n0 there. Where material flows in during a step, a split by the step's
+  starting composition would be first order in dt. The built tracer splits by the mean of the
+  start and end compositions, the trapezoid, which is second order:
+  - its error is set by the inflow within a step relative to the node's amount: 1.3e-6 against
+    the closed form at a 1 ms step, where the node first receives its own amount each step
+    (tests/unit/test_region_readouts.py);
+  - **where the node gains material, r must stay small** (the review of 21 November 2026). At a
+    steady node the survival is the (1,1) Pade form of e^(-2r). At r = 1 it reads 0, where the
+    truth is e^(-2) = 0.135, and above 1 it is negative: a steady 1 fmol pool made and cleared at
+    4 per second gave -0.333 fmol for e^(-4) = 0.018316 in one 1 s step, and the closure check could
+    not see it;
+  - **a node that sends material along a route needs the bound too,** though its own split stays
+    exact, because its arrivals shape its receiver's split. A donor draining most of itself in
+    one step (r = 0.76) into a receiver at r = 0.01 put 9.4e-4 of the receiver's amount on the
+    wrong cohort in that one step;
+  - so the tracer refuses a step with r above 0.01 at a node that gains material or sends it
+    along a route, and reports the largest such r.
+  - At that bound, measured on 15 closed-form scenarios (`validation/regions/readouts.py`, "The
+    resolution"), each step adds at most 7.61e-6 of the node's amount to a starting cohort's
+    error. Over each run the cohort stays within 5.6e-4 of its exact amount, relative to itself.
+  - The example's largest r is 1.0e-3.
+- **The returned rows are checked:** each cohort non-negative and the cohorts summing to the
+  node's amount at every row, on the returned dictionary. The tracer's own cohort names,
+  `unlabelled` and `produced`, are refused as a caller's: a caller's `unlabelled` cohort was
+  replaced by the tracer's own on export.
 - **Label switches** must fall on step boundaries; the tracer refuses one that does not.
 
 **Tracing through two-way transport is engine work:**
