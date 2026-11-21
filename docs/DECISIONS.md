@@ -8792,3 +8792,20 @@ user must declare and which Cells can calculate from the collection port, flow a
 - An independent checker writes the acceptance from the request's words before anything lands.
 - FR-28's landing after G4 comes first.
 
+## D275: FR-7 item 4's registered test scored inconclusive; no build now
+
+2026-11-21, about 23:07 UTC. The test was registered before the paper was read
+(fr7-item4-registered-2026-11-21), extracted and sealed (fr7-item4-extraction-sealed-2026-11-21),
+predicted blind (fr7-item4-predictions-2026-11-21) and scored by the second builder.
+- **Result:** d = −0.381, Welch's 95% interval [−0.656, −0.105], against ±ln 1.25. That is
+  inconclusive. Its direction agrees with the paper's finding that conductance per channel falls with
+  density.
+- **Information only:** a declared conducting-fraction form predicted the held-out cells better (rms
+  ln error 0.272 against the chain's 0.441).
+- **Decisions:**
+  - FR-7's chain is unchanged, and D218's refusal stands with its restated reason.
+  - Item 4 stays open.
+  - A conducting-fraction law is a candidate general model. It would need its own registered test on
+    data not used here: other cells, another paper, or the same paper's Kv1.4 family if it is
+    independent. Under D273's hold it waits.
+

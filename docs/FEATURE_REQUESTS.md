@@ -11,7 +11,7 @@ and a general feature, never one built for one study (D144).
 | [FR-3](#fr-3--the-site-occupancy-primitive) | The site-occupancy primitive | Priority 2 (the request's label; logged by the user, 14 November 2026) | **Milestone 1 landed** (15 November; [note](SITE_OCCUPANCY_DESIGN.md) §12, D169): `site_occupancy@1`, the contract fit and the run, with idle, restart, batch and controls. **Judged, 18 November 2026:** its protocol, `fr3-site-occupancy-v1` (registration 1b838d75), passed, 51 of 51 judged criteria, against the code-blind references; `site_occupancy@1`'s first judged acceptance | A shared SSPRK(3,3) block, FR-3's own milestone (INNER_MODEL_V4_DESIGN §15.3; main still has separate integrators in `site_occupancy.py` and `species_reactions.py`) |
 | [FR-5](#fr-5--state-conditioned-transfer-across-an-internal-membrane-with-leak-and-reseal) | State-conditioned transfer across an internal membrane, with leak and reseal | Priority 1, blocking (the request's label; logged 14 November 2026). It depends on FR-1 and FR-4 | Design accepted (§16 of [the FR-4/FR-5 note](COMPARTMENT_PH_TRANSFER_DESIGN.md)). Built and on main since fr45-next merged (16 November): the two source kinds, refusal 4 version 1.2, refusal 5 version 1.1 and FR-5's start part, for development, not judged. Its protocol, `fr5-transfer-v1`, is registered and judged on 17 November 2026: passed, 51 of 51 judged criteria (D195; tag fr5-v1-qualified-2026-11-17) | Done. The verdict's scope: `cell_owned_compartments@1` as built at 32a1d439 (refusal 4 v1.2, refusal 5 v1.1) |
 | [FR-6](#fr-6--species-driven-control-factors) | Species-driven control factors | Priority 2 (the request's label; logged 14 November 2026) | **Addressed by an accepted design (D155, D156; [the coupling note](INVENTORY_COUPLING_DESIGN.md)). Its operator, `species_regulated_availability@1`, is numerically qualified (15 November).** Three narrower items are recorded as consumer registrations. **A5″ judged, 18 November 2026:** its protocol, `fr6-a5pp-v1` (registration 555d8771), passed, 18 of 18 judged criteria, against the code-blind references: the gate-free channel target (item 1) driven through the regulatory state from a per-cell prior (item 3) **Item 2, the routing door, landed as B1′** (merge ee43b082, tag `b1prime-landed-2026-11-19`, on `species_regulated_availability@2`; development, not judged; D218) | B1′'s judged acceptance (none found: unverified); gated channel populations (A5′), leaks and pumps (item 1's rest) |
-| [FR-7](#fr-7--abundance-to-function-exposed-in-the-composite) | Abundance-to-function, exposed in the composite | Priority 3, ordering and not scope (the request's label; logged 14 November 2026) | Items 1-3 judged and passed on 20 November. **Item 4 reopened (D273):** Maverick and Tamkun 2022 measured channel counts and conductance in the same HEK cells, the condition D268 named | Item 4's test registered before the paper is read (the FR-7 agent); the paper downloaded by the user |
+| [FR-7](#fr-7--abundance-to-function-exposed-in-the-composite) | Abundance-to-function, exposed in the composite | Priority 3, ordering and not scope (the request's label; logged 14 November 2026) | Items 1-3 judged and passed on 20 November. **Item 4's registered test (Maverick and Tamkun 2022) scored inconclusive** (D275): d = −0.381, 95% [−0.656, −0.105] against ±0.223; the direction agrees with the paper | Item 4 open: more paired cells, or a declared conducting-fraction law with its own registered test on unused data. No build now (D273's hold) |
 | [FR-8](#fr-8--a-qualified-long-duration-mode) | A qualified long-duration mode | Priority 2 (the request's label; logged 14 November 2026) | **Stage 0 landed** (19 November, merge f5025e6f: the methods measured, the harness H2). **Rung 0** (the order drop through a switch) is registered and run: its first verdict was "instrument not validated"; under a blind amendment the cause is NaV activation unresolved at coarse steps, with R3's error now estimated (D224's ladder; landing). **Rung 1's C judged and passed** (20 November, tag `fr8-c-judged-2026-11-20`) Section 10.20's registered reading, N2 with C at a 100 ms step, passed (a), (b) and (c) on 21 November, re-judged independently (80de0788, tag `fr8-n2c-judged-2026-11-21`). | Rung 2. C's near-coincident-event refusal (core-pass-c-near-events) is gating; extending it to clocks without windows waits for its own decision (D272) |
 | [FR-9](#fr-9--raise-the-7-species-cap) | Raise the 7-species cap | Priority 2, **blocking for world design** (the request's label; logged 14 November 2026). Measured safe to 16 (the W4 probe) | **Landed** (14 November): `MAX_SPECIES` is 16, a D148 change to `species_common` with guard worlds of 8 or more species (D165) | None: closed (D165, merge 2161f39); the requester's species list comes with its world definition (unverified) |
 | [FR-10](#fr-10--a-dose-schedule-scheduled-bath-composition-in-the-pump-family) | A dose schedule: scheduled bath composition in the pump family | Priority 2, small (the request's label; logged 14 November 2026) | **Milestones 1 and 2 landed** (14–15 November; [note](BATH_SCHEDULE_DESIGN.md) §7–§8, D169): dose steps admitted only inside measured regions (neutral up and down, K up and Na down). Its protocol, `fr10-dose-schedule-v1`, is registered and judged on 17 November 2026: passed, 31 of 31 judged criteria (registration 407ba164), against the code-blind references R-faces, R-ion and R-records | Further ions and faster faces as each is measured |
@@ -606,6 +606,29 @@ and the notes, and records its predictions before the checker unseals.
 - **Information only:** the declared conducting-fraction form is fitted on the fit set alone and
   sits in the file. The secondary-count and background-subtracted variants cannot run: no TIRF
   count is paired with conductance, and the paper reports no background value.
+
+**Item 4's registered test, scored (21 November 2026, 23:07 UTC): inconclusive.** The checker's
+result, under the registered rule:
+- d = −0.381: held-out conductance per gating channel is 0.684 times the fit set's.
+- Welch's 95% interval is [−0.656, −0.105], against the margin ±ln 1.25 (±0.223). The interval
+  crosses the margin's lower edge, so it is neither wholly inside nor wholly outside it.
+- The direction agrees with the paper's headline (d < 0).
+
+Checks:
+- Every digest matches the committed records: extraction, predictions, inputs and the article.
+- The extraction reproduces byte for byte from the checker-only scripts.
+- The Lean lane's independent aggregates agree within reading precision: mean conducting fraction
+  0.250 ± 0.019 against 0.26 ± 0.01.
+
+Information only, not judged:
+- The chain's predictions are all high, with an rms ln error of 0.441; 5 of the 6 held-out cells lie
+  within their 95% prediction intervals.
+- The declared conducting-fraction form, fitted on the fit set alone, gives 0.272.
+
+Score: score.json, sha256 48958cd47f5fbcd2e725b1db263ababb7d5589034c3538942647fe5cfafb1d8c.
+**Consequence:** no engine change follows from the registered rule, and D218's refusal stands. Item 4
+stays open. A decision needs more paired cells (a narrower interval), or a declared conducting-fraction
+law with its own registered test on data not used here (D275).
 
 
 ## FR-8 — A qualified long-duration mode
