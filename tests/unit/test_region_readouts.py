@@ -227,7 +227,8 @@ def test_every_law_the_tools_do_not_read_is_refused():
     - FR-27's well without its sites, washed at 1 s: both refuse the wash by name (it moves every
       free species at its nodes, and declares no species, so a check for a species field missed it:
       the tracer kept all 60 fmol of the label while the wash took 30);
-    - a law in no list is refused, and so is a kind;
+    - a law in no list is refused, and so is a kind, and a charged species (its channel, pump and
+      membrane fluxes are in-step laws neither tool reads);
     - every registered law is classified, and each one listed as shown inert writes no species
       amount, provides no amount view, replaces none at an event and closes no node."""
     from validation.tissue import wash_schedule_fixtures as wash
@@ -240,7 +241,11 @@ def test_every_law_the_tools_do_not_read_is_refused():
         readouts.trace(spec, [0.0], [None], wash.TRACER, {"label": {"well": 1.0}})
     with pytest.raises(ValueError, match=message):
         readouts.region_rows(spec, [0.0], [None], wash.TRACER, ["specimen"])
-    model = SimpleNamespace(species_ids=("S",), faces=(), junctions=(), membranes=(),
+    ion = parse_spec(example.world())
+    charged = ion.model.species_ids[ion.model.valence.index(1)]
+    with pytest.raises(ValueError, match="it is charged"):
+        readouts.trace(ion, [0.0], [None], charged, {"label": {base.CELL: 1.0}})
+    model = SimpleNamespace(species_ids=("S",), valence=(0,), faces=(), junctions=(), membranes=(),
                             operators=(SimpleNamespace(law="unclassified_law@1"),),
                             kinds=(("a_kind", None),))  # fmt: skip
     with pytest.raises(ValueError, match="unclassified_law@1 is not classified here.*kind a_kind"):

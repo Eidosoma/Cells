@@ -22,6 +22,7 @@ list of one cell's nodes. Amounts are in fmol; losses and transfers are cumulati
 **What each tool reads, and what it refuses at setup** (check_movers, fail closed). The export
 reads turnover, exchange and the reactions; the tracer reads turnover and exchange only. Each
 refuses a world in which anything else could move the species:
+- a charged species (its channel, pump and membrane fluxes are in-step laws neither tool reads);
 - a face's diffusion, or a junction's or a patch's permeation, of the species;
 - every operator law that it neither reads nor lists as shown inert (SHOWN_INERT: laws whose
   declarations write no species amount, provide no amount view and close no node). REFUSED gives
@@ -184,6 +185,12 @@ def check_movers(spec, species, reads):
     m = spec.model
     s = list(m.species_ids).index(species)
     found = []
+    valence = getattr(m, "valence", None)
+    if valence is None or valence[s] != 0:
+        found.append(
+            "it is charged, or its charge is not declared (its channel, pump and membrane fluxes "
+            "are in-step laws neither tool reads)"
+        )
     for face in getattr(m, "faces", ()):
         if face.diffusivity_m2_per_s[s] != 0:
             found.append(f"face {face.id} diffuses it")
