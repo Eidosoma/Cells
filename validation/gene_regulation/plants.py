@@ -158,9 +158,13 @@ def names():
 
 
 def run_one(name, dt, out):
-    """One plant in this process: engine_run.py's record, or the refusal."""
+    """One plant in this process: engine_run.py's record, or the refusal, each with the source's
+    identity (engine_run.provenance: untracked source is frozen into the plant's folder)."""
     folder = out / engine_run.slug(name)
     folder.mkdir(parents=True, exist_ok=False)
+    source, patch = engine_run.provenance(folder)
+    if patch is not None:
+        (folder / "checkout.patch").write_text(patch)
     world, raw = plant(name, dt)
     symbols = worlds.test_instance()
     try:
@@ -184,6 +188,7 @@ def run_one(name, dt, out):
     except Exception as error:  # A refusal is the plant's outcome, recorded whole.
         record = dict(plant=name, world=world, refused=f"{type(error).__name__}: {error}",
                       traceback=traceback.format_exc()[-4000:])  # fmt: skip
+    record.update(source)
     (folder / "plant.json").write_text(json.dumps(record, indent=1, default=float) + "\n")
     return record
 

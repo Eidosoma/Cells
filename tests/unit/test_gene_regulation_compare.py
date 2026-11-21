@@ -112,39 +112,71 @@ def _drop_readout(r):
     del r["readouts"]["n_P"]
 
 
-# (case, the record, partial, the refusal's words, or the readout whose gap must be 1).
+def _protein_only(r):
+    r["readouts"] = {"n_P": r["readouts"]["n_P"]}
+
+
+def _not_finite(r):
+    r["readouts"]["n_P"][-1] = float("nan")
+
+
+# (case, the record, partial, readouts declared, the refusal's words, or the readout whose gap
+# must be 1).
 FINDING_3 = [
-    ("the switch row doubled is caught", lambda: _interior(_double_switch), False, None,
+    ("the switch row doubled is caught", lambda: _interior(_double_switch), False, None, None,
      "n_P at t_off"),
-    ("a lone 60 s row is not the endpoint", lambda: _interior(_lone_60_s), False,
+    ("a protein-only record, its readout declared, is caught",
+     lambda: _interior(lambda r: (_double_switch(r), _protein_only(r))), False, ["n_P"], None,
+     "n_P at t_off"),
+    ("a protein-only record, undeclared, is refused",
+     lambda: _interior(lambda r: (_double_switch(r), _protein_only(r))), False, None,
+     "are not in the run", None),
+    ("a lone 60 s row is not the endpoint", lambda: _interior(_lone_60_s), False, None,
      "2 of 2 required times", None),
     ("a lone 60 s row, declared partial, compares nothing", lambda: _interior(_lone_60_s), True,
-     "no required time", None),
-    ("a disjoint grid is refused", lambda: _trajectory(_shift_grid), False, "361 of 361", None),
-    ("a missing readout is refused", lambda: _trajectory(_drop_readout), False, "n_P", None),
+     None, "no required time", None),
+    ("a disjoint grid is refused", lambda: _trajectory(_shift_grid), False, None, "361 of 361",
+     None),
+    ("a missing readout is refused", lambda: _trajectory(_drop_readout), False, None, "n_P", None),
+    ("a non-finite value is refused", lambda: _trajectory(_not_finite), False, None, "nan", None),
 ]  # fmt: skip
 
 
-@pytest.mark.parametrize(("case", "record", "partial", "refused", "caught"), FINDING_3,
-                         ids=[c[0] for c in FINDING_3])  # fmt: skip
+@pytest.mark.parametrize(("case", "record", "partial", "readouts", "refused", "caught"),
+                         FINDING_3, ids=[c[0] for c in FINDING_3])  # fmt: skip
 def test_a_missing_comparison_is_refused_never_read_as_agreement(
-    case, record, partial, refused, caught
+    case, record, partial, readouts, refused, caught
 ):
     if refused is not None:
         with pytest.raises(compare.ComparisonError, match=refused):
-            compare.compare_record(REFERENCES, record(), partial=partial)
+            compare.compare_record(REFERENCES, record(), partial=partial, readouts=readouts)
         return
-    result = compare.compare_record(REFERENCES, record(), partial=partial)
+    result = compare.compare_record(REFERENCES, record(), partial=partial, readouts=readouts)
     assert result["matched_times"] == result["expected_times"] == 2
     assert result["gaps"][caught] == pytest.approx(1.0, rel=1e-12)
     assert max(v for k, v in result["gaps"].items() if k != caught) == 0.0
-    exact = compare.compare_record(REFERENCES, _interior())
+    assert result["readouts_declared"] == readouts and result["partial"] == (readouts is not None)
+    exact = compare.compare_record(REFERENCES, _interior(), readouts=readouts)
     assert max(exact["gaps"].values()) == 0.0 and len(exact["gaps"]) == len(result["gaps"])
 
 
 def _cohort(capsys, *args):
     assert cohort.main([str(a) for a in args]) == 0
     return json.loads(capsys.readouterr().out)
+
+
+def test_the_producing_chain_is_resolved_from_the_product():
+    makes = {"tx": "R", "tl": "P"}
+    assert cohort.producing_chain(makes, "R") == "tx" and cohort.producing_chain(makes, "P") == "tl"
+    assert cohort.producing_chain(makes, "R", "tx") == "tx"
+    for chain_map, product, chain, words in (
+        (makes, "R", "tl", "completes P, not R"),
+        (makes, "X", None, "no chain makes X"),
+        ({"tx1": "R", "tx2": "R"}, "R", None, "make R"),
+        (makes, "R", "tz", "no chain 'tz'"),
+    ):
+        with pytest.raises(ValueError, match=words):
+            cohort.producing_chain(chain_map, product, chain)
 
 
 @pytest.mark.skipif(not (SAVED_JSON.exists() and SAVED_CSV.exists()),
