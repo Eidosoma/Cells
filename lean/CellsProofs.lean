@@ -2,7 +2,10 @@ import CellsProofs.Accounting.Transfer
 import CellsProofs.Chemistry.AssemblyKinetics
 import CellsProofs.Chemistry.AssemblyMixing
 import CellsProofs.Chemistry.BindingEnsemble
+import CellsProofs.Chemistry.BindingEquilibrium
+import CellsProofs.Chemistry.BindingFeasibility
 import CellsProofs.Chemistry.BindingResponse
+import CellsProofs.Chemistry.BindingVertices
 import CellsProofs.Chemistry.Enzyme
 import CellsProofs.Chemistry.GardCatalysis
 import CellsProofs.Chemistry.LineageFission
