@@ -275,7 +275,8 @@
   "/mnt/workspaces/Cells/ol3-engine-20261119/measure-4254ccb2/measured-changed.json",
   "/mnt/workspaces/Cells/ol3-engine-20261119/measure-e3bb05c1/measured.json",
   "/mnt/workspaces/Cells/ol3-engine-20261119/measure-e6df3aee/measured.json",
-  "/mnt/workspaces/Cells/ol3-engine-20261119/measure-78c26df6/measured.json"
+  "/mnt/workspaces/Cells/ol3-engine-20261119/measure-78c26df6/measured.json",
+  "/mnt/workspaces/Cells/ol3-engine-20261119/measure-9a1a95a5/measured.json"
  ],
  "measured_provenance": [
   {
@@ -2324,6 +2325,13 @@
    "root": "/mnt/workspaces/Cells/ol3-engine-20261119/tree-78c26df6",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-20T23:15:13+00:00"
+  },
+  {
+   "git_revision": "9a1a95a5af370b79702f8c4ac07b45ebb6dceac6",
+   "dirty": false,
+   "root": "/mnt/workspaces/Cells/ol3-engine-20261119/tree-9a1a95a5",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-21T00:09:47+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -6031,10 +6039,10 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_v2_geometry.py",
-    "seconds": 48.06,
+    "seconds": 54.84,
     "exit_code": 0,
     "counts": {
-     "passed": 40
+     "passed": 41
     }
    },
    {
