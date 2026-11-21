@@ -17,6 +17,7 @@ provenance). No world is compiled: the engine's side is the operator's own half-
   holds at zero and near zero (6); a run's receipt freezes untracked source beside it (8).
 """
 
+import copy
 import importlib
 import json
 import math
@@ -26,6 +27,7 @@ from pathlib import Path
 
 import pytest
 
+from cells.definitions.specs import parse_spec
 from validation.gene_regulation import cohort, compare, engine_run, kernel, worlds
 from validation.gene_regulation import sheet_check as sheet
 
@@ -273,3 +275,141 @@ def test_a_receipt_names_untracked_source_or_is_refused(
     else:
         assert record["untracked_executed"] == [relative] and "untracked_sources" not in record
         assert "the untracked source" in patch and f"?? {relative}" in record["checkout_status"]
+
+
+# ------------------------------------------------------------------ D264's findings 3 to 6
+
+
+def _two_cell(raw, *, reverse=False, routes="cell_1"):
+    """raw with a second cell, cell_1, a copy of cell_0 with its own patch to the bath, and the
+    operator's routes moved to `routes` (all of them, or {"degradations": cell} for some); with
+    reverse, only the cells' declaration order reversed."""
+    out = copy.deepcopy(raw)
+    m, e, x = out["model"], out["experiment"], out["execution"]
+    cell = dict(copy.deepcopy(m["cells"][0]), id="cell_1")
+    patch = dict(copy.deepcopy(m["membranes"][0]), id="patch_1", inside="cell_1")
+    m["cells"].append(cell)
+    m["membranes"].append(patch)
+    e["membrane_controls"].append(
+        dict(membrane_id="patch_1", schedule=[dict(time=0.0, availability=1.0)])
+    )
+    x["capacity"], x["membrane_capacity"] = 2, 2
+    block = kernel.block(out)
+    moves = routes if isinstance(routes, dict) else dict.fromkeys(
+        ("pools", "degradations", "transfers"), routes)  # fmt: skip
+    for key, where in moves.items():
+        for item in block[key]:
+            item["cell"] = where
+    if reverse:
+        m["cells"] = m["cells"][::-1]
+    return out
+
+
+def test_the_export_follows_the_cell_by_its_id_not_its_position():
+    """D264, finding 3: the expressing cell is cell_1; reversing only the cells' declaration order
+    changes nothing exported."""
+    raw = kernel.truncated(worlds.world("pol T=5"), 120.0)
+    found = []
+    for reverse in (False, True):
+        spec, _, states, _ = kernel.run(_two_cell(raw, reverse=reverse))
+        times, values, checks = engine_run.readouts(spec, states)
+        assert checks["exported_cell"] == "cell_1"
+        found.append(values)
+    assert found[0] == found[1]
+    assert (
+        found[0]["n_R"][-1] > 1e3 * found[0]["n_R"][0]
+    )  # The expressing cell's RNA, not the trace.
+    split = _two_cell(
+        raw, routes={"pools": "cell_1", "degradations": "cell_0", "transfers": "cell_1"}
+    )
+    spec = parse_spec(split)
+    (block,) = [d for d in spec.model.operators if d.law == worlds.POLYMERISATION]
+    with pytest.raises(ValueError, match="name the cell"):
+        engine_run.exported_cell(spec, block)
+    assert engine_run.exported_cell(spec, block, "cell_0") == "cell_0"
+
+
+def _two_loss_routes(raw):
+    """raw with deg_R split into two routes at half its rate each."""
+    out = copy.deepcopy(raw)
+    block = kernel.block(out)
+    second = dict(copy.deepcopy(block["degradations"][0]), id="deg_R_b")
+    block["degradations"].append(second)
+    controls = out["experiment"]["polymerisation_controls"]
+    (rate,) = [c for c in controls if c["route_id"] == "deg_R"]
+    rate["schedule"][0]["value"] /= 2
+    controls.append(dict(route_id="deg_R_b", schedule=copy.deepcopy(rate["schedule"])))
+    return out
+
+
+def test_two_loss_routes_are_summed_once_and_close_the_rna_account():
+    """D264, finding 4: one loss reading per output; production minus loss is the RNA's change;
+    the survivors equal those of one route at the full rate."""
+    raw = kernel.truncated(worlds.world("pol T=5"), 150.0)
+    survived = []
+    for world in (raw, _two_loss_routes(raw)):
+        spec, _, states, _ = kernel.run(world)
+        t, x, _ = engine_run.readouts(spec, states)
+        assert len(x["int_D_R"]) == len(t)
+        routes = [k for k in x if k.startswith("int_D_route_")]
+        for k in range(len(t)):
+            assert x["int_D_R"][k] == math.fsum(x[r][k] for r in routes)
+            change = x["n_R"][k] - x["n_R"][0]
+            assert abs(x["int_Q_tx"][k] - x["int_D_R"][k] - change) <= 1e-12 * max(x["n_R"])
+        survived.append(cohort.survivors(t, x["n_R"], x["int_Q_tx"], x["int_D_R"], 30.0, 150.0))
+    assert survived[1] == pytest.approx(survived[0], rel=1e-12)
+
+
+def _fast_turnover(times, n0=100.0, k=1.0, P=1.0):
+    """Exact counters of a pool starting at n0 unlabelled, cleared at k, fed at P (the tester's)."""
+    n = [n0 * math.exp(-k * s) + P / k * -math.expm1(-k * s) for s in times]
+    Q = [P * s for s in times]
+    return list(times), n, Q, [q + n0 - m for q, m in zip(Q, n, strict=True)]
+
+
+def test_survivors_are_bounded_by_the_pool_and_coarse_grids_are_flagged(tmp_path, capsys):
+    """D264, finding 5: from two exact observations, 0 and 8 s, the reader gave 3.32347 fmol
+    labelled where 1.03321 fmol remained (exact 0.99966) and a zero grid error."""
+    t, n, Q, D = _fast_turnover([0.0, 8.0])
+    with pytest.raises(ValueError, match="exceeds the pool"):
+        cohort.survivors(t, n, Q, D, 0.0, 8.0)
+    assert cohort.grid_error(t, n, Q, D, 0.0, 8.0) is None  # Not estimable, never 0.
+    path = tmp_path / "slow.csv"  # Two samples within the bound: reported, and flagged.
+    path.write_text("t_s,protein_P_fmol,released_tl_fmol,degraded_P_fmol\n"
+                    "0.0,1.0,0.0,0.0\n1.0,1.4,0.5,0.1\n")  # fmt: skip
+    out = _cohort(capsys, path, "--t1", 0, "--t2", 1)
+    assert out["grid_error_fmol"] is None and out["time_resolution"].startswith("insufficient")
+    assert out["surviving_fmol"] <= 1.4
+    t, n, Q, D = _fast_turnover([k * 0.1 for k in range(81)])  # Resolved: within its grid error.
+    _, labelled, _ = cohort.survivors(t, n, Q, D, 0.0, 8.0)
+    assert abs(labelled - -math.expm1(-8.0)) <= cohort.grid_error(t, n, Q, D, 0.0, 8.0)
+
+
+# (case, the counters' edit, t1, t2, ts, the refusal's words).
+FINDING_6 = [
+    ("a NaN loss counter", lambda s: s[3].__setitem__(1, float("nan")), 0.0, 3.0, None, "nan"),
+    ("a decreasing loss counter", lambda s: s[3].__setitem__(2, 0.0), 0.0, 3.0, None, "decreases"),
+    ("a decreasing completion counter", lambda s: s[2].__setitem__(2, 0.0), 0.0, 3.0, None,
+     "decreases"),
+    ("a reversed labelling window", None, 2.0, 1.0, None, "t1 <= t2 <= ts"),
+    ("a sample before the window's end", None, 0.0, 2.0, 1.0, "t1 <= t2 <= ts"),
+    ("a doubled loss series", lambda s: s[3].extend(s[3]), 0.0, 3.0, None, "8 values for 4"),
+]  # fmt: skip
+
+
+@pytest.mark.parametrize(("case", "edit", "t1", "t2", "ts", "words"), FINDING_6,
+                         ids=[c[0] for c in FINDING_6])  # fmt: skip
+def test_invalid_counters_and_windows_are_refused(case, edit, t1, t2, ts, words):
+    """D264, finding 6: a NaN or decreasing counter gave 100% survival and a zero grid error, and
+    a reversed window negative completions."""
+    series = (
+        [0.0, 1.0, 2.0, 3.0],
+        [1.0, 1.1, 1.2, 1.3],
+        [0.0, 0.5, 1.0, 1.5],
+        [0.0, 0.1, 0.2, 0.3],
+    )
+    if edit is not None:
+        edit(series)
+    for reader in (cohort.survivors, cohort.grid_error):
+        with pytest.raises(ValueError, match=words):
+            reader(*series, t1, t2, ts)

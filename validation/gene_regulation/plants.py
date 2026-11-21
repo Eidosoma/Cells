@@ -177,6 +177,7 @@ def run_one(name, dt, out):
             kind="cells.gene_regulation.engine_run@1",
             plant=name,
             world=world,
+            cell=checks["exported_cell"],
             set="test instance",
             symbols_RT={k: str(v) for k, v in symbols.items()},
             dt_s=dt,

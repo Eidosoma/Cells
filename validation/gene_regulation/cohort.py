@@ -69,30 +69,100 @@ def _spread(x):
     return 1.0 if x == 0 else -math.expm1(-x) / x
 
 
-def survivors(t, n, Q, D, t1, t2, ts=None):
-    """(completed in [t1, t2], surviving at ts, the pool's change over [t1, t2]) from the counters
-    on an output grid holding t1, t2 and ts (module docstring)."""
-    ts = t2 if ts is None else ts
-    i1, i2, i3 = (t.index(x) for x in (t1, t2, ts))
-    S = 0.0
+BOUND_ROUNDING = 1e-12  # Relative: the survivors' allowance above the pool from rounding alone.
+
+
+def _window(t, t1, t2, ts):
+    """(i1, i2, i3) of t1 <= t2 <= ts, each an output time (D264, finding 6)."""
+    if not t1 <= t2 <= ts:
+        raise ValueError(f"the window needs t1 <= t2 <= ts, not {t1}, {t2} and {ts}")
+    index = {v: i for i, v in enumerate(t)}
+    missing = [x for x in (t1, t2, ts) if x not in index]
+    if missing:
+        raise ValueError(f"{missing[0]} s is not an output time")
+    return index[t1], index[t2], index[ts]
+
+
+def check_counters(t, n=None, Q=None, D=None):
+    """Refuse invalid inputs (D264, finding 6), naming the first fault:
+    - every series finite, with one value per output time;
+    - the output times strictly increasing, and the pool n non-negative;
+    - the completion Q and loss D counters non-decreasing, as cumulative counters always are."""
+    if any(not math.isfinite(v) for v in t) or any(b <= a for a, b in zip(t, t[1:], strict=False)):
+        raise ValueError("the output times are not finite and strictly increasing")
+    for name, seq in (("pool", n), ("completion counter", Q), ("loss counter", D)):
+        if seq is None:
+            continue
+        if len(seq) != len(t):
+            raise ValueError(f"the {name} holds {len(seq)} values for {len(t)} output times")
+        bad = next((i for i, v in enumerate(seq) if not math.isfinite(v)), None)
+        if bad is not None:
+            raise ValueError(f"the {name} is {seq[bad]!r} at t = {t[bad]} s")
+        if name == "pool":
+            low = next((i for i, v in enumerate(seq) if v < 0), None)
+            if low is not None:
+                raise ValueError(f"the pool is negative at t = {t[low]} s")
+            continue
+        down = next((i for i in range(len(seq) - 1) if seq[i + 1] < seq[i]), None)
+        if down is not None:
+            raise ValueError(
+                f"the {name} decreases between t = {t[down]} and {t[down + 1]} s: a cumulative "
+                "counter never does"
+            )
+
+
+def _cohort(t, n, Q, D, i1, i2, i3):
+    """(the cohort at ts, [(t, cohort, pool), ...] at each output after t1): the calculation of the
+    module docstring, on outputs i1 to i3, completions counted up to i2."""
+    S, path = 0.0, []
     for i in range(i1, i3):
         h = t[i + 1] - t[i]
         lost = D[i + 1] - D[i]
-        k = lost / _integral(t, n, i, i + 1) if lost > 0 else 0.0
-        decay = math.exp(-k * h)
+        k = 0.0
+        if lost > 0:
+            held = _integral(t, n, i, i + 1)
+            if held <= 0:
+                raise ValueError(f"material is lost from an empty pool at t = {t[i]} s")
+            k = lost / held
         made = Q[i + 1] - Q[i] if i < i2 else 0.0
-        S = S * decay + made * _spread(k * h)
+        S = S * math.exp(-k * h) + made * _spread(k * h)
+        path.append((t[i + 1], S, n[i + 1]))
+    return S, path
+
+
+def survivors(t, n, Q, D, t1, t2, ts=None):
+    """(completed in [t1, t2], surviving at ts, the pool's change over [t1, t2]) from the counters
+    on an output grid holding t1, t2 and ts (module docstring). Refused on invalid counters or
+    window (check_counters, _window), and where the cohort exceeds the pool at any output from t1
+    to ts beyond rounding (D264, finding 5). Labelled material is at most the total, so such a
+    result shows outputs too far apart for the calculation. Where all present material is labelled
+    the calculation stays below the pool, so the bound refuses no resolved run."""
+    ts = t2 if ts is None else ts
+    check_counters(t, n, Q, D)
+    i1, i2, i3 = _window(t, t1, t2, ts)
+    S, path = _cohort(t, n, Q, D, i1, i2, i3)
+    for when, cohort, pool in path:
+        if cohort > pool * (1 + BOUND_ROUNDING):
+            error = grid_error(t, n, Q, D, t1, t2, ts)
+            resolution = "its grid error cannot be estimated" if error is None else (
+                f"its grid error estimated at {error:.6g} fmol")  # fmt: skip
+            raise ValueError(
+                f"the cohort, {cohort:.6g} fmol, exceeds the pool, {pool:.6g} fmol, at t = {when} "
+                f"s, {resolution}: the outputs are too far apart for this calculation"
+            )
     return Q[i2] - Q[i1], S, n[i2] - n[i1]
 
 
 def known_rate(t, Q, k, t1, t2, ts=None):
     """The survivors at ts for a constant per-molecule rate k >= 0, completions spread evenly over
     each output interval: each interval's dQ e^(-k (ts - t_{i+1})) (1 - e^(-k h))/(k h), formed
-    with expm1, so it holds at small k and reaches its limit dQ at k = 0."""
+    with expm1, so it holds at small k and reaches its limit dQ at k = 0. Refused on an invalid
+    completion counter or window."""
     if not (isinstance(k, (int, float)) and math.isfinite(k) and k >= 0):
         raise ValueError(f"a known rate is a finite number >= 0, not {k!r}")
     ts = t2 if ts is None else ts
-    i1, i2 = t.index(t1), t.index(t2)
+    check_counters(t, Q=Q)
+    i1, i2, _ = _window(t, t1, t2, ts)
     out = 0.0
     for i in range(i1, i2):
         h = t[i + 1] - t[i]
@@ -102,11 +172,19 @@ def known_rate(t, Q, k, t1, t2, ts=None):
 
 def grid_error(t, n, Q, D, t1, t2, ts=None):
     """|survivors on every output - survivors on every second output|: the calculation's error on
-    the coarser grid, an upper estimate of its error on the given one."""
-    fine = survivors(t, n, Q, D, t1, t2, ts)[1]
+    the coarser grid, an upper estimate of its error on the given one. None where the window holds
+    no output to drop (D264, finding 5): the time resolution is then insufficient to estimate it,
+    which is never reported as a zero error."""
+    ts = t2 if ts is None else ts
+    check_counters(t, n, Q, D)
+    i1, i2, i3 = _window(t, t1, t2, ts)
     keep = [i for i in range(len(t)) if i % 2 == 0 or t[i] in (t1, t2, ts)]
+    if all(i in keep for i in range(i1, i3 + 1)):
+        return None
+    fine = _cohort(t, n, Q, D, i1, i2, i3)[0]
     pick = [[seq[i] for i in keep] for seq in (t, n, Q, D)]
-    coarse = survivors(*pick, t1, t2, ts)[1]
+    c1, c2, c3 = (pick[0].index(x) for x in (t1, t2, ts))
+    coarse = _cohort(*pick, c1, c2, c3)[0]
     return abs(fine - coarse)
 
 
@@ -184,15 +262,27 @@ def main(argv=None):
         t, n, Q, D = read(args.file, args.product, args.chain)
     except ValueError as error:
         parser.error(str(error))
-    completed, surviving, grew = survivors(t, n, Q, D, args.t1, args.t2, args.ts)
+    try:
+        completed, surviving, grew = survivors(t, n, Q, D, args.t1, args.t2, args.ts)
+        error = grid_error(t, n, Q, D, args.t1, args.t2, args.ts)
+        known = None
+        if args.rate is not None:
+            known = known_rate(t, Q, args.rate, args.t1, args.t2, args.ts)
+    except ValueError as refusal:
+        parser.error(str(refusal))
     out = dict(
         completed_fmol=completed,
         surviving_fmol=surviving,
         pool_change_fmol=grew,
-        grid_error_fmol=grid_error(t, n, Q, D, args.t1, args.t2, args.ts),
+        grid_error_fmol=error,
     )
-    if args.rate is not None:
-        out["surviving_known_rate_fmol"] = known_rate(t, Q, args.rate, args.t1, args.t2, args.ts)
+    if error is None:
+        out["time_resolution"] = (
+            "insufficient: the window holds no output to drop, so the grid error cannot be "
+            "estimated; sample more often"
+        )
+    if known is not None:
+        out["surviving_known_rate_fmol"] = known
     print(json.dumps(out))
     return 0
 

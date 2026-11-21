@@ -16,6 +16,16 @@ Per run (world, potential set, dt) it writes `<set>/<world>.json` into a fresh d
 `run_record.json` holds the revision, whether the checkout was dirty (its diff in checkout.patch),
 the potential sets, the step and every run's wall time and end-state own ledgers.
 
+**Keyed by ID, never by position** (D264, findings 3 and 4).
+- **The exported cell** is found by its ID: the one cell holding every route of the operator (its
+  pools, degradations and transfers), or the cell named. A world whose routes span several cells
+  must name it, and only that cell's routes are exported. The record names the cell. Reordering
+  the declared cells changes nothing exported.
+- **Each loss counter is summed once** per product, cell and output: int_D_<polymer> is the sum of
+  the native counters of every degradation route of that polymer at the cell. Each route's own
+  counter is int_D_route_<route>.
+- **Every exported series has exactly one value per output,** or the export is refused.
+
 The heat classes are assigned by route: a chain templated by a gene's copies is transcription
 (tx), one templated by a species row is translation (tl); a degradation is deg_R or deg_P as its
 polymer is made by transcription or translation; a transfer is recharging (rc).
@@ -27,6 +37,7 @@ Run: PYTHONPATH=src:. JAX_ENABLE_X64=1 python -m validation.gene_regulation.engi
 import argparse
 import hashlib
 import json
+import math
 import platform
 import re
 import subprocess
@@ -190,22 +201,50 @@ def free_energy(amounts, transit, mu, residue_mu, volume, c0):
         return total
 
 
-def readouts(spec, states):
-    """(times, {readout: [value per output]}, checks) of one run."""
+def exported_cell(spec, block, cell=None):
+    """The cell the export reads, by its ID (module docstring): the one cell holding every route,
+    or the named one. Refused where the routes span several cells and none is named."""
+    cells = [c.id for c in spec.model.cells]
+    hosts = sorted({p.cell for p in block.pools} | {d.cell for d in block.degradations}
+                   | {t.cell for t in block.transfers})  # fmt: skip
+    if cell is None:
+        if len(hosts) != 1:
+            raise ValueError(f"the routes are in cells {hosts}: name the cell to export")
+        return hosts[0]
+    if cell not in cells:
+        raise ValueError(f"no cell {cell!r}: the cells are {cells}")
+    return cell
+
+
+def readouts(spec, states, cell=None):
+    """(times, {readout: [value per output]}, checks) of one run, at the exported cell
+    (exported_cell), which checks names as exported_cell."""
     model = get_model(spec.model)
     _, p = model.initial_values(spec)
     species = list(spec.model.species_ids)
     reference = np.asarray(p.amount_reference)
     dt = spec.execution.dt
     (block,) = [d for d in spec.model.operators if d.law == worlds.POLYMERISATION]
+    cell = exported_cell(spec, block, cell)
+    at = [c.id for c in spec.model.cells].index(cell)
     rows = [s.id for s in block.species] + (["X"] if "X" in species else [])
     mu = dict(zip([s.id for s in block.species], block.mu_RT, strict=True))
-    volume = float(spec.model.cells[0].volume_pL)
+    volume = float(next(c.volume_pL for c in spec.model.cells if c.id == cell))
     residue_mu = {
         c.id: (mu[c.product] - float(np.log(block.c0_mM / sheet_c0()))) / c.residues
         for c in block.chains
     }
-    membership = classes(block)
+    here = dict(
+        chain=[i for i, c in enumerate(block.chains) if c.cell == cell],
+        pool=[i for i, q in enumerate(block.pools) if q.cell == cell],
+        degradation=[i for i, d in enumerate(block.degradations) if d.cell == cell],
+        transfer=[i for i, x in enumerate(block.transfers) if x.cell == cell],
+    )
+    membership = {
+        name: [(kind, i) for kind, i in members if i in here[kind]]
+        for name, members in classes(block).items()
+    }
+    membership = {name: members for name, members in membership.items() if members}
     times = [float(t) for t in spec.experiment.observation_times]
     out = {}
 
@@ -217,17 +256,18 @@ def readouts(spec, states):
         s = states[int(round(t / dt))]
         increment = np.asarray(s.amount_increment)
         amounts = {
-            row: float(reference[species.index(row), 0] + increment[species.index(row), 0])
+            row: float(reference[species.index(row), at] + increment[species.index(row), at])
             for row in rows
         }
         for row in rows:
             put(f"n_{row}", amounts[row])
         free = np.asarray(s.poly_free_machines_fmol)
-        for i, pool in enumerate(block.pools):
-            put(f"F_{pool.id}", free[i])
+        for i in here["pool"]:
+            put(f"F_{block.pools[i].id}", free[i])
         complexes = np.asarray(s.poly_complexes_fmol)
         transit = {}
-        for i, c in enumerate(block.chains):
+        for i in here["chain"]:
+            c = block.chains[i]
             r = c.residues // c.stages
             for j in range(c.stages):
                 put(f"C_{c.id}_{j + 1}", complexes[i, j])
@@ -237,10 +277,15 @@ def readouts(spec, states):
             put(f"int_J_I_{c.id}", np.asarray(s.poly_initiated_fmol)[i])
             put(f"int_S_{c.id}", np.asarray(s.poly_stage_exits_fmol)[i])
             put(f"int_Q_{c.id}", np.asarray(s.poly_released_fmol)[i])
-        for i, d in enumerate(block.degradations):
-            put(f"int_D_{d.polymer}", np.asarray(s.poly_degraded_fmol)[i])
-        for i, x in enumerate(block.transfers):
-            name = "int_J_C" if len(block.transfers) == 1 else f"int_J_C_{x.id}"
+        degraded = np.asarray(s.poly_degraded_fmol)
+        for polymer in sorted({block.degradations[i].polymer for i in here["degradation"]}):
+            mine = [i for i in here["degradation"] if block.degradations[i].polymer == polymer]
+            put(f"int_D_{polymer}", math.fsum(float(degraded[i]) for i in mine))
+        for i in here["degradation"]:
+            put(f"int_D_route_{block.degradations[i].id}", degraded[i])
+        for i in here["transfer"]:
+            x = block.transfers[i]
+            name = "int_J_C" if len(here["transfer"]) == 1 else f"int_J_C_{x.id}"
             put(name, np.asarray(s.poly_transferred_fmol)[i])
         heats = {
             "chain": np.asarray(s.poly_chain_heat_pJ),
@@ -253,12 +298,12 @@ def readouts(spec, states):
             "transfer": block.transfers,
         }
         for kind, items in routes.items():
-            for i, item in enumerate(items):
-                put(f"H_route_{item.id}", heats[kind][i])
+            for i in here[kind]:
+                put(f"H_route_{items[i].id}", heats[kind][i])
         for name, members in membership.items():
             put(name, sum(float(heats[kind][i]) for kind, i in members))
-        put("H_total", float(np.sum(np.asarray(s.poly_dissipated_energy_pJ))))
-        put("H_routes_sum", sum(float(np.sum(v)) for v in heats.values()))
+        put("H_total", float(np.asarray(s.poly_dissipated_energy_pJ)[at]))
+        put("H_routes_sum", sum(float(heats[kind][i]) for kind in heats for i in here[kind]))
         g = free_energy(
             {row: amounts[row] for row in mu}, transit, mu, residue_mu, volume, block.c0_mM
         )
@@ -269,13 +314,16 @@ def readouts(spec, states):
     full = float(sheet.A1M["t_end_rib" if ribosome else "t_end_pol"])
     if "X" not in rows and times[-1] == full:  # A1-M's release rate over its final window (§5.2).
         k_end, k_start = len(times) - 1, times.index(times[-1] - window)
-        for c in block.chains:
-            q = out[f"int_Q_{c.id}"]
-            out[f"J_bar_{c.id}"] = [(q[k_end] - q[k_start]) / window]
+        for i in here["chain"]:
+            q = out[f"int_Q_{block.chains[i].id}"]
+            out[f"J_bar_{block.chains[i].id}"] = [(q[k_end] - q[k_start]) / window]
+    uneven = sorted(k for k, v in out.items() if not k.startswith("J_bar") and len(v) != len(times))
+    if uneven:
+        raise ValueError(f"the export holds {uneven[:3]} with other than one value per output")
     scale = max(abs(v) for v in out["H_total"]) or 1.0
     identity = [g + h for g, h in zip(out["G_minus_G0"], out["H_total"], strict=True)]
     split = [a - b for a, b in zip(out["H_routes_sum"], out["H_total"], strict=True)]
-    magnitude = float(np.sum(np.asarray(states[max(states)].poly_energy_magnitude_pJ)))
+    magnitude = float(np.asarray(states[max(states)].poly_energy_magnitude_pJ)[at])
     checks = dict(
         G_identity_largest_pJ=max(abs(x) for x in identity),
         G_identity_over_sum_H_at_end=max(abs(x) for x in identity) / scale,
@@ -287,6 +335,7 @@ def readouts(spec, states):
             name: min(b - a for a, b in zip(out[name], out[name][1:], strict=False))
             for name in membership
         },
+        exported_cell=cell,
     )
     return times, out, checks
 
@@ -314,6 +363,7 @@ def run(name, label, symbols, dt, end, out):
     record = dict(
         kind="cells.gene_regulation.engine_run@1",
         world=name,
+        cell=checks["exported_cell"],
         set=label,
         symbols_RT={k: str(v) for k, v in symbols.items()},
         dt_s=dt,
