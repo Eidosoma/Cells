@@ -13,6 +13,8 @@ in `tests/unit/test_assembly_lineages_v2_replacement.py`:
 - adding `fraction: 0.5` to its replacement is refused;
 - a fresh pool of four X records eight removed and four supplied.
 
+These two behaviours are the request's statements. This desk note did not rerun them.
+
 **Engine models it would run:** `cells.assembly_lineages@2` in population mode, with
 `cells.shared_pool@1` and the operator of §1.
 
@@ -61,8 +63,11 @@ in `tests/unit/test_assembly_lineages_v2_replacement.py`:
 - **The grouped plan:** declared times enter the plan as FR-20's do, under its same-time rule (§6).
 - **The checkpoint (FR-22):** the counter w is kept in checkpoint@1's per-schedule counter dict
   (`transfer_counter`, keyed by the schedule's index; indices are unique among schedules), so the
-  format is unchanged. A resumed run's withdrawal numbering is a doc key, `withdrawals`, read with
-  a default of 0, as FR-20's `replacements` is.
+  format is unchanged.
+  - A resumed run's withdrawal numbering is a doc key, `withdrawals`, read with a default of 0, as
+    FR-20's `replacements` is.
+  - It is written only when the world declares a withdrawal, so no other checkpoint's content or
+    digest changes. FR-20's `replacements` key, by contrast, is written for every population.
 - **The diagnostic record** states every draw: each wash's address per place (index, draw number,
   size) and the realized k_j. The uniforms are recomputed from the address, as a fission block's
   are.
@@ -105,30 +110,45 @@ F(c; gV) = c(μ° − ln X − ln g) + ln c!, with X = N_A·V·c0.
     F(n − k; (1 − f)V) + F(k; fV) − F(n; V) = −ln[C(n, k) f^k (1 − f)^(n−k)] = σ ≥ 0
 
 The μ° and ln X terms cancel, and what is left is the outcome's binomial surprisal. It is exact, per
-place and per realization. Its mean over k is the outcome's Shannon entropy. A scratch check over
-2,000 random cases of up to four species gives |σ + ln P(k)| ≤ 9·10⁻¹⁴, with every booking below
-closing to 10⁻⁹.
+place and per realization. Its mean over k is the outcome's Shannon entropy. A saved scratch
+check, `/mnt/workspaces/Cells/ol3-engine-20261119/fr35/booking_check.py` (its log beside it), uses
+exact lgamma arithmetic. Over 2,000 random cases of up to four species it gives:
+- |σ + ln P(k)| ≤ 8.9·10⁻¹⁴;
+- the closure of each booking A, B and C, to 5.7·10⁻¹⁴;
+- the heats in the table below.
 
 **Three bookings that close.** In each, F(after) − F(before) = W − S − H, with S the sink, W the
 schedule's work column and H the heat:
 
-| Booking | Sink S | Work W | Heat H | Tracer-free, nothing withdrawn (k = 0) | Tracer-free, everything withdrawn (k = n) |
-| --- | --- | --- | --- | --- | --- |
-| **A, the volumes** | F(n; V) − F(n − k; (1 − f)V) = F(k; fV) − σ | F(b; fV) | F(n − k; (1 − f)V) + F(b; fV) − F(n − k + b; V) | S = n·ln(1 − f) < 0, H = −n·ln(1 − f) > 0 | S = F(n; V), H = 0 |
-| B, the sample's own F | F(k; fV) | F(b; fV) | whatever closes: −σ + H_A | H = 0 | H = n·ln f < 0 |
-| C, counts only | F(n; V) − F(n − k; V) | F(n − k + b; V) − F(n − k; V) | 0 | H = 0 | H = 0 |
+| Booking | Sink S | Work W | Heat H | Tracer-free: H at k = 0 | Tracer-free: H at k = n | Tracer-free: mean H over k |
+| --- | --- | --- | --- | --- | --- | --- |
+| **A, the volumes** | F(n; V) − F(n − k; (1 − f)V) = F(k; fV) − σ | F(b; fV) | F(n − k; (1 − f)V) + F(b; fV) − F(n − k + b; V) | −n·ln(1 − f) > 0, with S = n·ln(1 − f) | 0, with S = F(n; V) | −n(1 − f)·ln(1 − f) ≥ 0 |
+| B, the sample's own F | F(k; fV) | F(b; fV) | whatever closes: H_A − σ | 0 | n·ln f < 0 | H_A's mean less the outcome's entropy: f·ln f < 0 at n = 1 |
+| C, counts only | F(n; V) − F(n − k; V) | F(n − k + b; V) − F(n − k; V) | 0 | 0 | 0 | 0 |
 
-For n = 8 and f = ½ these are A at k = 0, S = −5.545 and H = +5.545 kT, and B at k = 8,
-H = −5.545 kT.
+The numbers, from the scratch check:
+- **n = 8, f = ½:**
+  - A's heat is +5.545 kT at k = 0, 0 at k = 8 and 2.773 kT on average;
+  - B's is 0, −5.545 and +1.009 kT.
+- **n = 1:** B's mean heat is f·ln f, −0.347 kT at both f = ½ and f = ¼.
 
-- **A's heat is never negative.** H_A = −ln[C(m, b) f^b (1 − f)^(m−b)], with m = n − k + b: the
-  surprisal that b of the m molecules came from the buffer's side. That is D246's constraint for
-  FR-27's wash, "a host check holds it non-negative at every event".
+**The case for A:**
+- **A's heat is never negative,** per realization and so on average.
+  - H_A = −ln[C(m, b) f^b (1 − f)^(m−b)], with m = n − k + b: the surprisal that b of the m
+    molecules came from the buffer's side.
   - At f = 1 it is @1's booking: S = F(n; V), W = F(b; V), H = 0.
   - In the large-n limit σ = O(ln n) for a typical outcome, so S → f·F(before). Then A is FR-27's
     continuum booking, term by term.
-- **B books a negative heat** when everything leaves.
-- **C hides the dilution's real dissipation,** and disagrees with FR-27 in the continuum.
+- **B books a negative heat** when everything leaves. For a small count it does so on average too:
+  at n = 1 its mean is f·ln f < 0. For large n its mean turns positive (+1.009 kT at n = 8, f = ½),
+  so the failure shows in small-count worlds.
+- **C's heat is zero, so non-negativity alone does not exclude it.**
+  - D246's "a host check holds it non-negative at every event" was ruled for FR-27's deterministic
+    wash, where one event and the mean are the same thing. It is a motive here, not by itself the
+    deciding rule.
+  - What excludes C is FR-27's continuum booking. C moves the dilution's free-energy drop into the
+    sink and the work instead of heat, so in the large-n limit it disagrees with FR-27's H_mix > 0
+    whenever the buffer differs from the pool.
 
 **Recommended: A.**
 - The sink takes the F that leaves with the sample, given the outcome.
@@ -152,8 +172,8 @@ The record's terms equal the reference to 10⁻¹².
 ## 5. The statistical acceptance
 
 **Host draws through the operator's own draw function,** at real run addresses: seeds 0 to 3,999,
-the fixture's schedule index, and its tracer place's draw number, vectorised over the 4,000
-addresses (about 5 s).
+the fixture's schedule index, and its tracer place's draw number. They are planned to be vectorised
+over the 4,000 addresses, at an estimated 5 s; none of this is measured yet.
 - **Half (f = ½, n = 8):**
   - the mean is in 4 ± 0.1 (4.47 SD of the mean);
   - the variance is in 2 ± 0.2 (4.78 SD of s²);
@@ -208,8 +228,9 @@ Each is refused at the parse unless stated, with its reason:
 
 **What moves for existing worlds: nothing.**
 - A world without a withdrawal writes no new key. The row kind `withdrawal` is listed in run.json's
-  legend only when a world declares one. (FR-20 listed `replacement` for every population; no
-  registered population run exists, and R4's landed runs are development.)
+  legend only when a world declares one, and the checkpoint's `withdrawals` key likewise. (FR-20
+  listed `replacement` for every population; no registered population run exists, and R4's landed
+  runs are development.)
 - No device program changes.
 - @1 is untouched.
 
@@ -226,8 +247,9 @@ Each is refused at the parse unless stated, with its reason:
   - `transfer.py`: the shared pool step;
   - `src/cells/registry/model_table.py`: the operator's home;
   - `FORMAT_OL2.md`, and a §0.2 entry in ORIGIN_OF_LIFE_ENGINE_DESIGN.md.
-- **Tests, rows in the replacement file (D224):** the refusals; the host statistics (about 5 s);
-  two or three engine runs; and the restart world's rows (about 30–60 s, as FR-20's cut test).
+- **Tests, rows in the replacement file (D224):** the refusals; the host statistics (estimated
+  5 s); two or three engine runs; and the restart world's rows (estimated 30–60 s, as FR-20's cut
+  test). None is measured yet.
 - **Price:** 1.5–2 agent-days of building, gates excluded:
   - the operator, 0.5;
   - the host step and its records, 0.5;
@@ -242,3 +264,12 @@ Each is refused at the parse unless stated, with its reason:
 4. **The booking:** A (recommended), B or C?
 5. **Capacity conditioning:** keep the fail-closed refusal with declared headroom (recommended), or
    refuse at parse any buffer with b_j > 0 unless headroom is proved?
+6. **The statistics' evidence:** host draws at 4,000 real run addresses, plus two or three engine
+   runs that match the draw function bit for bit, stand in for 4,000 engine runs on acceptance
+   items 1 and 2 (recommended, for D224). The requester wrote "across independent streams", and
+   the lead reports to them.
+7. **c_ext:** check the buffer's own concentration at parse, and report the realized pool's drift
+   rather than refuse it (recommended), so nothing depends on k?
+8. **The row-kind legend:** list `withdrawal` in run.json's legend only when a world declares one
+   (recommended), unlike FR-20's legend, which lists `replacement` for every population. The
+   checkpoint's `withdrawals` key is written on the same condition.
