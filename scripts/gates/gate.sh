@@ -54,7 +54,9 @@ G=$(cd "$(dirname "$0")" && pwd)
 STEPS=$G/gate_steps.py
 PY=${PY:-/mnt/workspaces/Cells/venv-cpu/bin/python}
 HOSTPY=${HOSTPY:-python3}
-C1=${C1:-/mnt/workspaces/Cells/d172-restructure-20261115-01/endgame/c1-3c10b833/g1/merged}
+# C1 renewed for fix (A) (D273): c1-3c10b833's 112 other worlds as they were, and
+# crossrev-base/replacement_padded saved at fix (A)'s head (its manifest's renewal record).
+C1=${C1:-/mnt/workspaces/Cells/core-pass-at3-20261118/fix-a/c1-b59e025c/merged}
 BASELINE=${BASELINE:-/mnt/workspaces/Cells/d172-restructure-20261115-01/acceptance/baseline-44227075}
 REC=${REC:-/mnt/workspaces/Cells/core-fixes-20261116/record-cda5dc82}
 TIERS=${TIERS:-tests/test_tiers.json}
