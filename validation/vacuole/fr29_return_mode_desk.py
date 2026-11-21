@@ -214,6 +214,20 @@ def predict(out_path):
 
 
 REVERSALS = HERE / "kettner2003_fig3_reversals.csv"
+
+
+def _read_reversals():
+    """{"pH_cyt/pH_vac": (read crossing or None, 2 x Table 2's SE or None)} for every curve."""
+    out = {}
+    with REVERSALS.open() as f:
+        for r in csv.DictReader(f):
+            key = f"{float(r['pH_cyt'])}/{float(r['pH_vac'])}"
+            read = float(r["read_reversal_mV"]) if r["read_reversal_mV"] else None
+            se = float(r["table2_SE_mV"]) if r["table2_SE_mV"] else None
+            out[key] = (read, None if se is None else 2.0 * se)
+    return out
+
+
 SHAPE_RANGE_MV = (-75.0, 20.0)  # The registered shape window: no trace end, no channel limb.
 SE_TABLE2 = {"8.5/5.0": 5.0, "7.5/5.0": 4.0, "6.0/5.0": 3.0}
 
@@ -362,6 +376,9 @@ def joint(out_path):
             print(f"   {key}: RMS {c['rms']:.2f} reversal {rev}")
 
 
+READ_REVERSALS, TOLERANCE_MV = {}, {}  # Filled by variants() from the reversals file.
+
+
 # The joint question's minimal changes (the lead's instruction): each the family with one thing
 # added, fitted on every curve with the pH 3.1 bound imposed. Parameters after the family's five.
 def _bounded(psi, slope, psi_s):
@@ -391,11 +408,14 @@ def variant_current(name, params, ph_c, ph_v, v_mv):
         pump = N * -np.expm1(np.minimum(x_c, 700.0))
         gain = _bounded(psi, delta_p, v_p / RT_F_MV) / _bounded(0.0, delta_p, v_p / RT_F_MV)
         return base + scale * pump * (gain - 1.0)
-    if name == "variable coupling":  # n = a + b dpH H+ per ATP, no return mode.
-        a, b = params[5], params[6]
-        n = a + b * (ph_c - ph_v)
+    if name == "variable coupling":  # No return: n(dpH) levels off; the pump's own voltage law.
+        # params: delta and V_s are the pump's bounded voltage term; rho and pK unused; the scale;
+        # then n at low dpH, n at high dpH, the midpoint dpH and its width.
+        n_lo, n_hi, middle, width = params[5], params[6], params[7], params[8]
+        n = n_hi + (n_lo - n_hi) / (1.0 + math.exp((ph_c - ph_v - middle) / width))
         x_c = (E_ATP_MV[ph_c] + n * (e_h - v)) / RT_F_MV
-        return scale * n * -np.expm1(np.minimum(x_c, 700.0))
+        gain = _bounded(psi, delta, v_s / RT_F_MV) / _bounded(0.0, delta, v_s / RT_F_MV)
+        return scale * n * gain * -np.expm1(np.minimum(x_c, 700.0))
     raise KeyError(name)
 
 
@@ -403,14 +423,23 @@ VARIANTS = {  # name: (extra parameters' lower bounds, upper bounds, starts)
     "family": ((), (), ((),)),
     "second site": ((-12.0, 0.0), (12.0, 10.0), ((0.0, 3.5), (2.0, 4.5), (-2.0, 7.5))),
     "pump voltage law": ((0.0, -100.0), (1.0, 200.0), ((0.3, 20.0), (0.6, 60.0), (0.9, 150.0))),
-    "variable coupling": ((1.0, -2.0), (8.0, 2.0), ((4.9, -0.69), (3.0, -0.3), (2.0, 0.0))),
+    "variable coupling": (
+        (1.0, 1.0, 0.0, 0.1),
+        (8.0, 8.0, 5.0, 3.0),
+        ((4.5, 2.4, 2.5, 0.5), (4.3, 2.5, 2.0, 1.0)),
+    ),
 }
 
 
 def variants(out_path, names=None):
-    """Each variant on every curve, free and with the pH 3.1 bound imposed: its RMS and the
-    bound. names: the variants to run (default all), so a run can be split."""
+    """Each variant on every curve, free and with the pH 3.1 bound imposed: its RMS, every curve's
+    reversal against its read crossing (within 2 Table 2 SE), and the bound. names: the variants
+    to run (default all), so a run can be split. Every model takes the same starts."""
     data = every_curve()
+    global READ_REVERSALS, TOLERANCE_MV
+    table = _read_reversals()
+    READ_REVERSALS = {k: v[0] for k, v in table.items()}
+    TOLERANCE_MV = {k: v[1] for k, v in table.items()}
     result = dict(
         kind="cells.fr29_desk_variants@1",
         written_utc=datetime.now(UTC).isoformat(timespec="seconds"),
@@ -440,11 +469,12 @@ def variants(out_path, names=None):
 
         lower = [0.0, -300.0, -12.0, 3.0, -5.0, *lo_x]
         upper = [1.0, 100.0, 12.0, 10.0, 8.0, *hi_x]
+        grid = np.linspace(-200.0, 200.0, 4001)
         out = {}
         for bounded in (False, True):
             best = None
-            for start in STARTS[::6]:
-                for extra in extra_starts[:2]:
+            for start in STARTS[::3]:  # The same 24 starts for every model, the family included.
+                for extra in extra_starts:
                     try:
                         s = least_squares(
                             residuals, [*start, *extra], bounds=(lower, upper), args=(bounded,)
@@ -456,11 +486,27 @@ def variants(out_path, names=None):
             params = unpack(best.x)
             fit_rms = float(np.sqrt(np.mean(residuals(best.x, bounded=False) ** 2)))
             at_40 = float(variant_current(name, params, 7.5, 3.1, [40.0])[0])
-            grid = np.linspace(-200.0, 200.0, 4001)
             values = variant_current(name, params, 7.5, 3.1, grid)
             sign = np.nonzero(np.diff(np.sign(values)))[0]
+            curves = {}
+            for pair in (*PANEL_A, *PANEL_B_ALL):
+                key = f"{pair[0]}/{pair[1]}"
+                values = variant_current(name, params, *pair, grid)
+                crossing = np.nonzero(np.diff(np.sign(values)))[0]
+                predicted = float(grid[crossing[0]]) if crossing.size else None
+                read = READ_REVERSALS.get(key)
+                tolerance = TOLERANCE_MV.get(key)
+                if read is None:  # A zero-gradient curve: no crossing above -80 mV is the bound.
+                    passed = predicted is None or predicted < -80.0
+                else:
+                    passed = predicted is not None and abs(predicted - read) <= tolerance
+                curves[key] = dict(
+                    predicted=predicted, read=read, tolerance=tolerance, passed=passed
+                )
             out["with the pH 3.1 bound" if bounded else "free"] = dict(
                 rms=fit_rms,
+                reversals=curves,
+                reversals_passed=sum(c["passed"] for c in curves.values()),
                 pH_3_1_crossing_mV=float(grid[sign[0]]) if sign.size else None,
                 pH_3_1_current_at_40_mV=at_40,
                 bound_met=at_40 < 0.0,
@@ -469,7 +515,11 @@ def variants(out_path, names=None):
         result["variants"][name] = out
         for key, r in out.items():
             print(f"{name}, {key}: RMS {r['rms']:.2f} mA m-2; pH 3.1 crossing "
-                  f"{r['pH_3_1_crossing_mV']}; bound met {r['bound_met']}", flush=True)  # fmt: skip
+                  f"{r['pH_3_1_crossing_mV']}; bound met {r['bound_met']}; reversals passed "
+                  f"{r['reversals_passed']} of 7", flush=True)  # fmt: skip
+            for curve, c in r["reversals"].items():
+                print(f"    {curve}: {c['predicted']} against {c['read']} (+-{c['tolerance']}) "
+                      f"passed {c['passed']}", flush=True)  # fmt: skip
     Path(out_path).write_text(json.dumps(result, indent=1) + "\n")
 
 
