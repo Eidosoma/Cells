@@ -6,14 +6,14 @@ Browse Cells engine laws by scientific topic. Each claim links its Lean proofs, 
 
 <!-- generated: claims-index -->
 
-Direct Lean claims cover [49 of 49 laws](COVERAGE.md#registered-laws) and [29 of 29 operators](COVERAGE.md#registered-operators).
+Direct Lean claims cover [50 of 50 laws](COVERAGE.md#registered-laws) and [29 of 30 operators](COVERAGE.md#registered-operators).
 
 | Category | Registered laws with proof | Claims with proof | Numerical checks | Claims with biological evidence |
 | --- | ---: | ---: | --- | ---: |
 | [Membrane transport and osmosis](COVERAGE.md#category-membrane-transport) | 5 of 5 | 8 of 8 | 8 checked | 8 |
-| [Ion channels and junctions](COVERAGE.md#category-channels-and-junctions) | 14 of 14 | 15 of 15 | 15 checked | 14 |
+| [Ion channels and junctions](COVERAGE.md#category-channels-and-junctions) | 15 of 15 | 15 of 15 | 15 checked | 14 |
 | [Pumps and cotransport](COVERAGE.md#category-pumps-and-cotransport) | 13 of 13 | 8 of 8 | 8 checked | 8 |
-| [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 3 of 3 | 12 of 12 | 11 checked · 1 failed | 10 |
+| [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 3 of 3 | 13 of 13 | 12 checked · 1 failed | 10 |
 | [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 13 of 13 | 19 of 19 | 18 checked · 1 failed | 15 |
 | [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 1 of 1 | 20 of 20 | 19 checked · 1 failed | 14 |
 | [Cell physiology](COVERAGE.md#category-cell-physiology) | — | 3 of 3 | 3 checked | 3 |
@@ -22,7 +22,7 @@ Direct Lean claims cover [49 of 49 laws](COVERAGE.md#registered-laws) and [29 of
 
 Each category opens its detailed claim table on GitHub, including registered laws still awaiting a proof. A single claim can cover several laws. The last column counts claims with a recorded measurement or literature finding, including partial evidence. Each numerical result applies to the cases in its linked record. [All registered laws](COVERAGE.md#registered-laws) · [Design notes](ENGINE_LAW_VERIFICATION.md) · [Voltage pilot closeout](../reports/BIO003_PILOT_CLOSEOUT.md)
 
-The 21 November main review corrected the Lean lane’s pulse replay and reproduced a wash-counter failure for unchanged chloride. GARD version 1 still has a heat failure. The rapid-binding kernel can also round a signed inventory margin across zero. The current tissue host requires positive held totals. Composite clamp currents, routed reaction-rate exports and replacement-time observations have explicit scoring holds. [Main retests and scope](PROGRESS.md#main-review-d264-d266) · [Binding boundary cases](PROGRESS.md#binding-equilibrium-feasibility) · [Current failure list](COVERAGE.md#failing-numerical-checks) · [Earlier repairs](PROGRESS.md#nov21-engine-review)
+The 21 November main review corrected the Lean lane’s pulse replay and reproduced a wash-counter failure for unchanged chloride. GARD version 1 still has a heat failure. The rapid-binding kernel can also round a signed inventory margin across zero. The current tissue host requires positive held totals. That review held scoring for composite clamp currents, routed reaction-rate exports and replacement-time observations at its tested revision. [Main retests and scope](PROGRESS.md#main-review-d264-d266) · [Binding boundary cases](PROGRESS.md#binding-equilibrium-feasibility) · [Current failure list](COVERAGE.md#failing-numerical-checks) · [Earlier repairs](PROGRESS.md#nov21-engine-review)
 
 ## Biological evidence
 
@@ -32,7 +32,7 @@ For Kv1.5 in HEK293 cells, a density-inhibition curve fitted to the two endpoint
 
 The biological review identifies three engine opportunities with measured targets. It covers the reversal of the yeast vacuolar proton pump, the time to rupture of a vesicle under steady tension, and fast and slow closure of Cx43 gap junctions. [Measurements, current engine results and proposed changes](PROGRESS.md#biological-model-review)
 
-The Cx43 polarity measurements bound the error of the registered single-gate law. The new two-gate functions satisfy the predicted amplitude relation on synthetic clamps. Resolving the mixed amplitude in a measured Cx43 trace remains open. [Measurements](PROGRESS.md#cx43-series-gates) · [Compiled comparison](claims/junction-series-amplitudes.md)
+The Cx43 polarity measurements bound the error of the registered single-gate law. The registered two-gate law satisfies the predicted amplitude relation on synthetic clamps and runs in the tissue host under its development flag. Resolving the mixed amplitude in a measured Cx43 trace remains open. [Measurements](PROGRESS.md#cx43-series-gates) · [Compiled comparison and host replay](PROGRESS.md#nov21-registered-series-and-withdrawal)
 
 A serial dilution experiment follows free fluorescein through three successive exchanges. The catalog gives the measured concentrations alongside the ideal series, including the discrepancy at the third 80% wash. [Measured dilution and its scope](PROGRESS.md#nov21-wash)
 
@@ -349,6 +349,14 @@ For finite binding, compare the fractions of every form in S1–S7 at fixed free
 
 ```bash
 "$cells_python" -B checks/binding_ensemble.py
+```
+
+For the inverse binding problem, the first command checks uniqueness, the second checks the finite directions that decide feasibility for the registered chemistries, and the third reproduces the float64 sign failures near zero. The third command exits with status 1 while those failures remain. [Equilibrium and measured endpoints](claims/binding-equilibrium-unique.md) · [Finite direction tests](claims/binding-margin-vertices.md) · [Signed-total cases](claims/binding-equilibrium-feasibility.md)
+
+```bash
+"$cells_python" -B checks/binding_equilibrium.py
+"$cells_python" -B checks/binding_vertices.py
+"$cells_python" -B checks/binding_feasibility.py
 ```
 
 For Hill activation and inhibition, compare the compiled Cells factors with a 65-digit evaluation of the upstream formula on the engine's reaction test grid. [Hill comparison](checks/hill/compare.py)

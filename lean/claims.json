@@ -2013,6 +2013,30 @@
       "driver": "lean/checks/binding_feasibility.py",
       "record": "lean/PROGRESS.md#binding-equilibrium-feasibility"
     },
+    "binding-margin-vertices": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [
+        "rapid_binding@1"
+      ],
+      "engine_revision": "b521a11cf6384428a564e63e4c44ab4221345600",
+      "record_revision": "739a47bf8e3ee77db8417c6255c690ae9bd89417",
+      "sources": {
+        "Exact vertex generation, held-face filtering and numerical margin": "src/cells/laws/reactions/rapid_binding.py#L261-L340",
+        "Registered form counts, totals and four C4 challenges": "validation/core_seams/references/reference_inputs.json",
+        "Frozen rational minima and minimizing directions": "validation/core_seams/references/designs/core_seams_reference_values.json",
+        "Registry fixtures, tested margins and enumeration caps": "tests/unit/test_rapid_binding_kernel.py#L175-L273"
+      },
+      "record_inputs": {
+        "Formal vertex and corner criteria": "lean/CellsProofs/Chemistry/BindingVertices.lean",
+        "Continuous feasibility criterion": "lean/CellsProofs/Chemistry/BindingFeasibility.lean",
+        "Registry count extraction and compiled backend entry points": "lean/checks/binding_feasibility.py"
+      },
+      "driver": "lean/checks/binding_vertices.py",
+      "record": "lean/PROGRESS.md#binding-margin-vertices"
+    },
     "single-site-binding": {
       "kind": "engine",
       "models": ["resolved_pump_tissue@3"],
@@ -2179,6 +2203,29 @@
         "cells.species_regulated_availability@2",
         "cells.scheduled_species_turnover@1"
       ]
+    },
+    "junction-series-registered-host": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [
+        "junction_series_gates@1"
+      ],
+      "engine_revision": "4532479c017977c67449995684657066225501d5",
+      "record_revision": "aa41cf5bf36b28125bb471a6cedf3be8756264ed",
+      "sources": {
+        "Registered two-gate declaration, clamp rates and route factors": "src/cells/laws/junctions/junction_series_gates.py",
+        "Threshold gate rates": "src/cells/laws/junctions/junction_voltage_relaxation.py#L41",
+        "Registration in the tissue model table": "src/cells/registry/model_table.py#L84",
+        "Tissue inner-law table and gate admission": "src/cells/models/inner_laws.py#L106",
+        "Normal host run, admission and pinned-gate comparisons": "tests/unit/test_junction_series_gates.py#L244-L400"
+      },
+      "record_inputs": {
+        "Two-gate expansion and amplitude identity": "lean/CellsProofs/Transport/JunctionGate.lean"
+      },
+      "driver": "lean/checks/junction_series_gates.py",
+      "record": "lean/PROGRESS.md#nov21-registered-series-and-withdrawal"
     },
     "junction-series-clamp-nov21": {
       "kind": "engine",
@@ -4670,6 +4717,9 @@
       ],
       "formal": {
         "status": "proved",
+        "about": [
+          "cells.junction_series_gates@1"
+        ],
         "theorems": {
           "CellsProofs.Transport.JunctionGate.series_clamp_expansion": "lean/CellsProofs/Transport/JunctionGate.lean",
           "CellsProofs.Transport.JunctionGate.series_amplitudes": "lean/CellsProofs/Transport/JunctionGate.lean"
@@ -4686,9 +4736,10 @@
       "numerical": {
         "status": "checked",
         "comparisons": [
-          "junction-series-clamp-nov21"
+          "junction-series-clamp-nov21",
+          "junction-series-registered-host"
         ],
-        "result": "Across all four gate-kind pairings, five clamp voltages and six times, the compiled conductance and two route factors agreed with the scalar calculation within 2.23 × 10⁻¹⁶. This tests the FR-30 module directly. Its integration and registration in the tissue host are pending."
+        "result": "Across four gate-kind pairings, five clamp voltages and six times, the compiled conductance and two route factors agreed with the independent calculation within 2.23 × 10⁻¹⁶. All 11 engine tests passed after registration, including the two-cell ionic trajectory and the comparison to one gate with the second pinned open. The tissue host admits the law for development runs."
       },
       "biology": {
         "status": "open",
@@ -5465,7 +5516,7 @@
       "assumptions": [
         "The model uses ideal activities, finite standard log weights, nonnegative binder totals and a finite nonempty set of chemically present forms per binder. Relative ligand counts are signed integers.",
         "Free concentrations are exponentials of finite real log concentrations in a common mM frame. Each unheld free concentration is fixed and positive.",
-        "The existence proof uses all nonnegative directions in the unit simplex. Enumeration of those directions’ minimizing vertices in the engine and convergence within its fixed Newton budget receive numerical checks."
+        "The existence proof uses every nonnegative direction in the unit simplex. The finite vertex claim proves the reduction for one and two ligands and for common lowest forms in any dimension. Engine enumeration and the finite Newton budget receive separate implementation checks."
       ],
       "formal": {
         "status": "proved",
@@ -5518,6 +5569,54 @@
             "report": "lean/PROGRESS.md#binding-equilibrium-feasibility"
           }
         ]
+      }
+    },
+    {
+      "id": "binding-margin-vertices",
+      "category": "reactions-and-binding",
+      "title": "Finite vertex tests for binding equilibria",
+      "statement": "For one held ligand the feasibility margin has one direction. For two, its minimum over all real normalized weights occurs at a simplex endpoint or a rational crossing of two forms of the same binder. In any number of dimensions, if each binder has a form attaining its lowest count in every held row simultaneously, the smallest coordinate remainder gives the exact minimum.",
+      "uses": [
+        "binding-equilibrium-feasibility"
+      ],
+      "assumptions": [
+        "Each binder has finitely many chemically present forms with signed integer counts relative to its base. Weights are nonnegative and sum to one on the held ligands.",
+        "The equilibrium equivalences use nonnegative binder totals, strictly positive free concentrations and finite fixed standard log weights. In the two-ligand proof duplicate or parallel profiles and coincident crossings are allowed.",
+        "The arbitrary-dimensional corner criterion requires a simultaneous componentwise minimum for each binder. The registered three-ligand S6 counts satisfy this hypothesis. The host caps on enumeration and the precision of the float64 margin are implementation properties."
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.rapid_binding@1"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.BindingVertices.two_ligand_vertex_le": "lean/CellsProofs/Chemistry/BindingVertices.lean",
+          "CellsProofs.Chemistry.BindingVertices.two_ligand_minimum_at_vertex": "lean/CellsProofs/Chemistry/BindingVertices.lean",
+          "CellsProofs.Chemistry.BindingVertices.one_ligand_equilibrium_iff": "lean/CellsProofs/Chemistry/BindingVertices.lean",
+          "CellsProofs.Chemistry.BindingVertices.two_ligand_equilibrium_iff": "lean/CellsProofs/Chemistry/BindingVertices.lean",
+          "CellsProofs.Chemistry.BindingVertices.margin_of_common_lowest_form": "lean/CellsProofs/Chemistry/BindingVertices.lean",
+          "CellsProofs.Chemistry.BindingVertices.common_floor_minimum_at_corner": "lean/CellsProofs/Chemistry/BindingVertices.lean",
+          "CellsProofs.Chemistry.BindingVertices.common_floor_equilibrium_iff": "lean/CellsProofs/Chemistry/BindingVertices.lean"
+        },
+        "sources": {
+          "Mathlib interval parametrization of the two-weight simplex, imported": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/Convex/Basic.lean#L665-L675",
+          "Mathlib singleton simplex, imported": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/Convex/Basic.lean#L623-L627",
+          "Mathlib minimum on a nonempty finite set, imported": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Data/Finset/Max.lean#L513-L516",
+          "Cells existence and uniqueness criterion": "lean/CellsProofs/Chemistry/BindingFeasibility.lean#L264"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "binding-margin-vertices"
+        ],
+        "result": "The exact minima matched the frozen references on all 80 registered states. NumPy and compiled JAX CPU agreed with the rounded exact margins on all 236 nonempty held projections. Lean checked 31 fixture statements from the engine lists and form counts. Both backends found the negative −1/24 mM minimum in two controls where omitting one vertex would give a positive result. The earlier signed-total rounding failures remain recorded under equilibrium feasibility."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "The finite directions follow from the model’s form counts. Experiments measure free and bound ligand at fixed inventories, as described under the linked equilibrium claim.",
+        "unit": "mM for the associated concentration measurements",
+        "evidence": []
       }
     },
     {

@@ -8,7 +8,7 @@ A finite binding ensemble has exactly one positive equilibrium if and only if ev
 
 - The model uses ideal activities, finite standard log weights, nonnegative binder totals and a finite nonempty set of chemically present forms per binder. Relative ligand counts are signed integers.
 - Free concentrations are exponentials of finite real log concentrations in a common mM frame. Each unheld free concentration is fixed and positive.
-- The existence proof uses all nonnegative directions in the unit simplex. Enumeration of those directions’ minimizing vertices in the engine and convergence within its fixed Newton budget receive numerical checks.
+- The existence proof uses every nonnegative direction in the unit simplex. The finite vertex claim proves the reduction for one and two ligands and for common lowest forms in any dimension. Engine enumeration and the finite Newton budget receive separate implementation checks.
 
 ## Lean proof
 
