@@ -57,6 +57,9 @@ def source():
     root = Path(__file__).resolve().parents[2]
     git = ["git", "-C", str(root)]
     run = lambda *a: subprocess.run([*git, *a], capture_output=True, text=True).stdout.strip()  # noqa: E731
+    from validation import executed_sources  # noqa: PLC0415
+    executed_sources.refuse_untracked(root, "window_check_probe's source record")  # D259
+
     return dict(
         root=str(root),
         git_revision=run("rev-parse", "HEAD"),
