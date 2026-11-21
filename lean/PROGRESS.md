@@ -12,6 +12,16 @@ On engines `e22fc9af` and `b521a11c`, all 80 registered inventories matched thei
 
 Two controls show why the hypotheses matter. Of the candidate vertices in the two-ligand fixture, only (1/3, 2/3) gives a negative margin, −1/24 mM for 1 mM binder. Omitting it gives +5/8 mM. In a three-ligand fixture that can release any one of three ligands, the minimum is −1/24 mM at (1/3, 1/3, 1/3). The next smallest listed value is +1/8 mM and every corner gives +5/8 mM. Both CPU backends identified both negative margins. General completeness of the three-ligand vertex enumeration with incomparable forms remains open. Float64 sign decisions close to zero retain their earlier failure record. [Omitted-vertex controls](checks/binding_vertices.py#L131) · [Signed-total failures](claims/binding-equilibrium-feasibility.md#numerical-comparison)
 
+<a id="nov21-registered-series-and-withdrawal"></a>
+
+## 21 November 2026 · Two gates in the tissue host and partial pool withdrawal
+
+At engine `4532479c`, FR-30 registers `junction_series_gates@1` for development runs in `resolved_pump_tissue@3`. The existing Lean expansion and amplitude identity apply to the product of the two gates at fixed voltage. Across four gate-kind pairings, five voltages and six times, the largest absolute difference between the compiled kernel and the independent calculation was 2.23 × 10⁻¹⁶ or less. All 11 engine tests passed, including a two-cell ionic run and the bitwise comparison to one gate when the second gate stays open. The measured Cx43 mixed amplitude remains open. [Lean and clamp comparison](claims/junction-series-amplitudes.md) · [Registered host tests](https://github.com/Eidosoma/Cells/blob/4532479c017977c67449995684657066225501d5/tests/unit/test_junction_series_gates.py#L244-L400)
+
+On the same revision, the rapid-binding uniqueness, feasibility and vertex drivers reproduced their earlier reports byte for byte. This includes all five previously recorded float64 misclassifications across three signed-total examples. [Vertex results](#binding-margin-vertices) · [Signed-total cases](#binding-equilibrium-feasibility)
+
+FR-35 registers `cells.pool_withdrawal@1` as an operator. Its first direct proof is open. A candidate physical comparison is the passive bead-splitting experiment of Fornell et al. From seven beads in the parent droplet, the center daughter received counts of 3, 4 and 5 in different trials. The daughter volumes were approximately equal. Overlapping points hide the frequencies at each count, so the figure supports variation at fixed starting count and leaves the binomial variance untested. [Operator coverage](COVERAGE.md#registered-operators) · [Fornell et al., Fig. 2c](https://doi.org/10.1063/1.4984131)
+
 <a id="binding-equilibrium-feasibility"></a>
 
 ## 21 November 2026 · Which totals admit a binding equilibrium?
