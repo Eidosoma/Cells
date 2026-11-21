@@ -39,6 +39,7 @@ Reason: the claims are the runs' own stops, books and events.
 
 import copy
 import functools
+import math
 
 import numpy as np
 import pytest
@@ -49,6 +50,7 @@ from cells.models.assembly_lineages_v2 import (
     SHARED_POOL,
     checkpoints,
     division,
+    ledger,
     model,
     population,
     runner,
@@ -334,7 +336,19 @@ def refusal(case):
     elif case == "a transfer at its time":
         d["experiment"]["schedules"].append({"index": 2, "kind": "transfer", "times_s": [PULSE],
                                               "K_keep": 1, "fresh_pool": pool_of(d)})  # fmt: skip
+    elif case == "a fresh count above the capacity":  # the Lean finding of 20 November
+        d["execution"]["molecule_capacity"] = 32
+        replacement["pool"] = pool_of(d, L=33)
+    elif case == "a transfer's fresh count above the capacity":
+        d["execution"]["molecule_capacity"] = 32
+        d["experiment"]["schedules"] = [transfer_of(d, L=33)]
     return d
+
+
+def transfer_of(d, **counts):
+    """A serial transfer at the pulse's time, keeping one assembly, with this fresh pool."""
+    return {"index": 2, "kind": "transfer", "times_s": [PULSE], "K_keep": 1,
+            "fresh_pool": pool_of(d, **counts)}  # fmt: skip
 
 
 REFUSALS = {
@@ -345,6 +359,8 @@ REFUSALS = {
     "a shared time": "shares the time",
     "a shear at its time": "shares the time",
     "a transfer at its time": "shares the time",
+    "a fresh count above the capacity": "fresh L@pool is 33, above molecule_capacity 32",
+    "a transfer's fresh count above the capacity": "fresh L@pool is 33, above molecule_capacity 32",
 }
 
 
@@ -352,6 +368,32 @@ REFUSALS = {
 def test_every_refusal_of_a_replacement(case):
     with pytest.raises(ConfigError, match=REFUSALS[case]):
         parse_spec(refusal(case))
+
+
+def test_a_fresh_count_at_the_capacity_is_admitted_and_one_above_misses_by_its_log():
+    """The Lean finding of 20 November (lean/checks/pool_replacement.py --case capacity, on the Lean
+    lane's branch at aae1d978): a fresh count above molecule_capacity read the log-factorial table's
+    clamped last entry, and the run's ledger, reading the same table, closed. Now 33 at capacity 32
+    is refused at parse for both schedules (REFUSALS) and 32 at 32 is admitted. Planted: the
+    unguarded lookup's F of a pool holding 33 at capacity 32 misses the exact F by exactly ln 33,
+    which the run's own F (ledger.state_free_energy) refuses. Host arithmetic."""
+    d = raw_world()
+    d["execution"]["molecule_capacity"] = 32
+    at_capacity = {"index": 1, "kind": "replacement", "times_s": [PULSE], "pool": pool_of(d, L=32)}
+    for schedule in (at_capacity, transfer_of(d, L=32)):
+        d["experiment"]["schedules"] = [schedule]
+        parse_spec(copy.deepcopy(d))  # equality is valid
+    exact_d = copy.deepcopy(d)
+    exact_d["execution"]["molecule_capacity"] = 64
+    spec, exact = parse_spec(d), parse_spec(exact_d)
+    state = model.founder(spec)
+    state[[p.name for p in spec.model.world.places].index("L@pool")] = 33
+    world = spec.model.world
+    clamped = ledger.free_energy(state, model.tables(spec), world.terms, model.layout(spec).terms)
+    right = ledger.free_energy(state, model.tables(exact), world.terms, model.layout(exact).terms)
+    assert right - clamped == pytest.approx(math.log(33), abs=1e-12)
+    with pytest.raises(ConfigError, match="above the molecule capacity 32"):
+        ledger.state_free_energy(state, model.tables(spec), world.terms, model.layout(spec).terms)
 
 
 def test_a_cut_around_each_replacement_resumes_bitwise(tmp_path, monkeypatch):

@@ -334,7 +334,7 @@ def _energy(spec, layout):
     closure = geometry.closure_kT(world)
 
     def full(c):
-        return ledger.free_energy(c, tables, world.terms, layout.terms)
+        return ledger.state_free_energy(c, tables, world.terms, layout.terms)
 
     def world_f(state):
         base = full(state.pool)
