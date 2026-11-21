@@ -66,6 +66,7 @@ from cells.definitions.surface_pump_v3_spec import (
     LAW_CODES,
     MODEL_ID,
     NAV1P2_LAW_ID,
+    SERIES_GATE_LAW_ID,
     TRAPEZOID_JUNCTION_HEAT,
     Control,
     channel_factors,
@@ -77,6 +78,7 @@ from cells.execution.errors import NumericalError
 from cells.laws.channels import sodium_channels, voltage_gates
 from cells.laws.electrochemistry import CHARGE_PER_FMOL, MOL_PER_FMOL, F, R
 from cells.laws.junctions import junction_gate
+from cells.laws.junctions import junction_series_gates as series_gates
 from cells.laws.junctions.selective import selective_flux
 from cells.laws.pumps import calcium_atpase
 from cells.laws.pumps import kinetic_pump as pump
@@ -188,12 +190,17 @@ class Values(NamedTuple):
 
 def working_size(spec):
     """Stored values per accepted step plus a margin (surface_pump.working_size): @2's, the
-    channel populations', and the declared kinds' (kind_row_values), each with the margin 2."""
+    channel populations', the declared kinds' (kind_row_values) and a series world's junction
+    gates (FR-30), each with the margin 2."""
     x, s = spec.execution, len(spec.model.species_ids)
+    series = (
+        series_gates.GATE_COUNT * x.edge_capacity if declares_series_junctions(spec.model) else 0
+    )
     return (
         second.working_size(projection(spec))
         + 2 * (2 + 2 * s) * x.channel_capacity
         + 2 * kind_row_values(spec)
+        + 2 * series
     )
 
 
@@ -242,8 +249,11 @@ def kind_row_values(spec):
 
 
 def initial_values(spec, *, structure=None):
+    series = series_junctions(structure)
+    if structure is None and declares_series_junctions(spec.model):
+        raise ConfigError(SERIES_STRUCTURE_REFUSAL)  # Fail closed: no one-gate path runs it.
     state, layout = _todays_initial_values(spec)
-    if structure is None or not structure.kinds:
+    if (structure is None or not structure.kinds) and not series:
         return state, layout
     # Schema A (§7.4 (j), (k)): each declared kind adds its state and layout fields, by name, in
     # canonical order, into its structure's types.
@@ -251,6 +261,8 @@ def initial_values(spec, *, structure=None):
     registry = kind_registry.active()
     declarations = dict(spec.model.kinds)
     fields, entries = state._asdict(), layout._asdict()
+    if series:  # FR-30 (D262): the gates' factors and parameters, [series_gate, ..., edge_slot].
+        fields[SERIES_GATES], entries[SERIES_PARAMETERS] = series_initial_values(spec)
     sizes = kind_registry.axis_sizes(STATE_AXES, fields)  # @3's axes, for the kinds' arrays.
     for kind_id, entry in structure.kinds:  # Each bound to its entry's fields (§7.4 (n) 5).
         kind = kind_registry.bound(registry.lookup(kind_id), entry)
@@ -601,6 +613,27 @@ def routes_into_channels(structure):
     return structure is not None and any(sink == OWN_SINK for sink, *_ in structure.routes)
 
 
+# FR-30 (D262): junction_series_gates@1's state and layout fields, present only where the
+# structure's junctions take that law (series_junctions); junction_gate then holds the
+# junction's conductance, the product of its gates' factors (S2).
+SERIES_GATES = "junction_series_gates"  # [series_gate, edge_slot]: each gate's factor c in [r, 1].
+SERIES_GATES_AXES = ("series_gate", "edge_slot")
+SERIES_PARAMETERS = "junction_series_parameters"  # [series_gate, series_parameter, edge_slot].
+SERIES_PARAMETER_SLOTS = max(
+    len(junction_gate.Parameters._fields), len(series_gates.BoltzmannEyring._fields)
+)
+
+
+def series_junctions(structure):
+    """Whether the structure's junctions take junction_series_gates@1 (static)."""
+    return structure is not None and bool(structure.junction_series_kinds)
+
+
+def declares_series_junctions(model):
+    """Whether a parsed model's junctions take junction_series_gates@1 (from the definition)."""
+    return any(j.law == SERIES_GATE_LAW_ID for j in model.junctions)
+
+
 def _kinds(structure):
     """The declared kinds' declarations, in hook order, each bound to its structure entry's
     fields (§7.4 (n) 5); none for today's structures."""
@@ -838,6 +871,8 @@ def readouts(state, control, p, *, xp=jnp, membrane_process=None, structure=None
     """
     from cells.execution.schedule import SurfaceControl
 
+    if series_junctions(structure):
+        raise ConfigError(SERIES_STEP_PENDING)  # FR-30's scaffold: fail closed.
     kinds = _kinds(structure)
     read, read_valid = _stage_read(state, p, kinds, xp=xp) if kinds else (state, True)
     if kinds and structure.routes:  # §7.4 (n): the routing door, after the read (static).
@@ -1101,6 +1136,8 @@ def domain_valid(state, p, active, *, xp=jnp, structure=None):
         valid &= xp.all(xp.isfinite(value)) & xp.all(xp.where(mask, True, value == 0))
     valid &= xp.all((state.channel_gate >= 0) & (state.channel_gate <= 1))
     valid &= xp.all((state.junction_gate >= p.junction_minimum) & (state.junction_gate <= 1))
+    if series_junctions(structure):  # FR-30 (D262): each gate's domain, and their product.
+        valid &= series_domain_valid(state, p, structure, xp=xp)
     # Absent species routes never carry hidden transfers or heat.
     route = p.channel_relative_permeability * p.channel_permeability * p.channel_abundance
     valid &= xp.all(xp.where(route > 0, True, state.channel_transferred == 0))
@@ -1163,6 +1200,8 @@ def explicit_rates(
     the routes' linear parts W dv leave them (explicit_remainder), after the kinds' stage checks,
     which read the whole node rates.
     """
+    if series_junctions(structure):
+        raise ConfigError(SERIES_STEP_PENDING)  # FR-30's scaffold: fail closed.
     s, n = tissue.field_layout(p).surface, p.active.size
     kinds = _kinds(structure)
     read, read_valid = _stage_read(state, p, kinds, xp=xp) if kinds else (state, True)
@@ -2054,6 +2093,12 @@ def check_definition(spec, *, structure=None):
     _check_stage_rows(spec, kinds)
     _check_held_rows(spec, kinds)
     state, p = initial_values(compact, structure=structure)
+    if series_junctions(structure) and np.any(getattr(p, "passive_on_junction", False)):
+        raise ConfigError(  # FR-30, v1 (D262): the kinds' junction routes are not wired.
+            f"A kind's passive route on a {SERIES_GATE_LAW_ID} junction takes its own route "
+            "factor through the gates (its residuals per gate), never the ionic conductance; that "
+            "route factor is not built (v1, D262)"
+        )
     controls = control_values(compact, [c.time for c in compact.experiment.changes])
     control_type = kind_types(structure).Control if structure is not None else Control
     if kinds:
@@ -2080,14 +2125,12 @@ def check_definition(spec, *, structure=None):
             )
     with np.errstate(all="ignore"):
         for i in range(len(controls.membrane)):
-            if not control_domain_valid(
-                state,
-                control_type(*(v[i] for v in controls)),
-                p,
-                p.active,
-                xp=np,
-                structure=structure,
-            ):
+            control = control_type(*(v[i] for v in controls))
+            if series_junctions(structure):  # FR-30's scaffold: its readouts are not built.
+                ok = domain_valid(state, p, p.active, xp=np, structure=structure)
+            else:
+                ok = control_domain_valid(state, control, p, p.active, xp=np, structure=structure)
+            if not ok:
                 raise ConfigError("Initial resolved channel/junction/pump domain invalid")
     if kinds:  # The moved-rows guard, after the initial domain holds (its rates are defined).
         each = [control_type(*(v[i] for v in controls)) for i in range(len(controls.membrane))]
@@ -2801,6 +2844,8 @@ class StepChecks(first.StepChecks):
 
     def __call__(self, steps):
         spec, step = self.spec, np.max(steps, initial=0)
+        if declares_series_junctions(spec.model):  # FR-30's scaffold: no series step runs.
+            raise ConfigError(SERIES_STEP_PENDING)
         if spec.execution.solver == "rk4":
             tissue.check_steps(spec, steps, None)
             laws, bound = self.gated_laws, self.rk4_bound
@@ -3387,12 +3432,16 @@ def view_declarations(structure):
     where the reference is a field of the structure's layout). A structure without kinds gets the
     module's own objects."""
     kinds = _kinds(structure)
-    if not kinds:
+    if not kinds and not series_junctions(structure):
         names = (*_VIEW_MAPS, "VIEW_LAYERS", "VIEW_AXIS_SETS", *_RECORD_ROLES)
         return {name: globals()[name] for name in names}
     types = kind_types(structure)
     present = {*types.STATE_TYPE._fields, *types.OBSERVATION_FIELDS}
     merged = {name: dict(globals()[name]) for name in _VIEW_MAPS}
+    if series_junctions(structure):  # FR-30: the gates' factors; junction_gate, their product.
+        for name, value in zip(("UNITS", "RECORD_KINDS", "RECORD_LAYERS"),
+                               ("1", "level", "channels"), strict=True):  # fmt: skip
+            merged[name][SERIES_GATES] = value
     layers, axis_sets = list(VIEW_LAYERS), {}
     diagnostics, references = list(RECORD_DIAGNOSTICS), dict(RECORD_REFERENCES)
     for kind in kinds:
@@ -3573,7 +3622,9 @@ def summarize(history, diagnostics, spec):
         "time_integrator": spec.execution.solver,
         "gate_integrator": "rk4" if spec.execution.solver == "rk4" else GATE_INTEGRATOR_ID,
         "state_fields": list(STATE_TYPE._fields),
-        "junction_law": junction_gate.RELAXATION_LAW_ID,
+        "junction_law": SERIES_GATE_LAW_ID
+        if declares_series_junctions(spec.model)
+        else junction_gate.RELAXATION_LAW_ID,
         "pump_law": pump.LAW_ID,
         "calcium_pump_law": calcium_atpase.LAW_ID,
         "channel_laws": {c.id: c.kinetic_law for c in spec.model.channels},
@@ -3616,7 +3667,78 @@ def structure(model):
         heat_bookings=getattr(model, "heat_bookings", ()),  # Seam D (§6.1): () by default.
         free_amount_reads=_free_amount_reads(model),  # P1 (§17): () by default.
         kind_ledgers=_kind_ledgers(model),  # E (§7.3): () by default.
+        junction_series_kinds=_series_kinds(model),  # FR-30 (D262): () by default.
     )
+
+
+SERIES_STEP_PENDING = (
+    f"{SERIES_GATE_LAW_ID}'s step is not built yet (FR-30's scaffold, D262): a world whose "
+    "junctions take it parses and binds its types, and nothing computes its junctions"
+)
+SERIES_STRUCTURE_REFUSAL = (
+    f"{SERIES_GATE_LAW_ID} runs in @3 alone in v1, through its structure's implementation "
+    "(registry.get_model), which holds the gates; a path without that structure, a composite's or "
+    "a water family's, would run them as one gate, so it refuses them (FR-30, D262)"
+)
+
+
+def series_initial_values(spec):
+    """FR-30: (each gate's initial factor [series_gate, edge_slot], each gate's parameters
+    [series_gate, SERIES_PARAMETER_SLOTS, edge_slot], zero-padded) of a series world's junctions;
+    padded edge slots hold 0, as a closed contact's junction_gate does."""
+    edges, gates = spec.execution.edge_capacity, series_gates.GATE_COUNT
+    factors = np.zeros((gates, edges))
+    parameters = np.zeros((gates, SERIES_PARAMETER_SLOTS, edges))
+    for i, j in enumerate(spec.model.junctions):
+        for k, g in enumerate(j.gates):
+            factors[k, i] = g.initial
+            parameters[k, : len(g.parameters), i] = g.parameters
+    return factors, parameters
+
+
+def series_parameters(p, kinds):
+    """Each gate's parameters as its kind's NamedTuple of [edge_slot] arrays, from the layout."""
+    out = []
+    for k, kind in enumerate(kinds):
+        names = series_parameter_type(kind)._fields
+        values = [p.junction_series_parameters[k, n] for n in range(len(names))]
+        out.append(series_parameter_type(kind)(*values))
+    return tuple(out)
+
+
+def series_parameter_type(kind):
+    """A series gate kind's parameter type (the law's own)."""
+    return {
+        "threshold_relaxation": junction_gate.Parameters,
+        "boltzmann_eyring": series_gates.BoltzmannEyring,
+    }[kind]
+
+
+# junction_gate equals its gates' product to this many ulps of 1 (it is computed from them).
+SERIES_PRODUCT_ULPS = 8.0
+
+
+def series_domain_valid(state, p, structure, *, xp=jnp):
+    """FR-30: every active junction's gates in [their residual, 1], padding at 0, and
+    junction_gate their product (S2: it is computed from them, never integrated)."""
+    gates = getattr(state, SERIES_GATES)
+    kinds = structure.junction_series_kinds
+    parameters = series_parameters(p, kinds)
+    valid = True
+    for k, (kind, values) in enumerate(zip(kinds, parameters, strict=True)):
+        inside = (gates[k] >= series_gates.residual_of(kind, values)) & (gates[k] <= 1)
+        valid = valid & xp.all(xp.where(p.junction_active, inside, gates[k] == 0))
+    product = series_gates.conductance(tuple(gates[k] for k in range(len(kinds))), xp=xp)
+    product = xp.where(p.junction_active, product, 0.0)
+    eps = SERIES_PRODUCT_ULPS * float(np.finfo(np.float64).eps)
+    return valid & xp.all(xp.abs(state.junction_gate - product) <= eps)
+
+
+def _series_kinds(model):
+    """FR-30: the gate kinds of the junctions' junction_series_gates@1 (the parse holds every
+    junction to one law and every series junction to one kind per gate), or ()."""
+    series = [j for j in model.junctions if j.law == SERIES_GATE_LAW_ID]
+    return tuple(g.kind for g in series[0].gates) if series else ()
 
 
 def _kind_ledgers(model):
@@ -3776,12 +3898,14 @@ TODAYS_TYPES = KindTypes(
 
 
 @cache
-def _kind_types(fields, registry):
+def _kind_types(fields, registry, series=False):
     """fields: ((kind ID, the bound kind's KindFields), ...) in canonical order. Classes are cached
     by field set (§7.4 (j); (n) 5): structures whose kinds carry the same fields share them, and a
     kind bound to fields other than its static ones (a declaration-dependent variant) names its
-    extra fields in the classes' deterministic names."""
-    if not fields:
+    extra fields in the classes' deterministic names. series (FR-30, D262): the structure's
+    junctions take junction_series_gates@1, whose gates are a state field (SERIES_GATES, after the
+    kinds' state fields) and whose parameters a layout field (SERIES_PARAMETERS)."""
+    if not fields and not series:
         return TODAYS_TYPES
 
     def label(kind_id, own):
@@ -3798,14 +3922,19 @@ def _kind_types(fields, registry):
         return "_" + re.sub(r"\W", "_", kind_id) + extra
 
     suffix = "".join(label(kind_id, own) for kind_id, own in fields)  # Deterministic.
+    suffix += "_" + SERIES_GATES if series else ""
     axes = dict(STATE_AXES)
     for kind_id, own in fields:
         for name, name_axes in own.state_axes:  # Not `field`: the field-solver module's name.
             if name in axes:
                 raise ValueError(f"Kind {kind_id}'s state field {name} is already declared")
             axes[name] = list(name_axes)
+    series_state = (SERIES_GATES,) if series else ()
+    if series:
+        axes[SERIES_GATES] = list(SERIES_GATES_AXES)
     state = NamedTuple("SurfacePumpChannelState" + suffix, [(k, object) for k in axes])
     layout_extra = [name for _, own in fields for name in own.layout_fields]
+    layout_extra += [SERIES_PARAMETERS] if series else []
     layout = NamedTuple(
         "SurfacePumpChannelLayout" + suffix,
         [(k, object) for k in (*LAYOUT_TYPE._fields, *layout_extra)],
@@ -3828,6 +3957,7 @@ def _kind_types(fields, registry):
     columns = (
         *OBSERVATION_FIELDS[:today_state],
         *(name for _, own in fields for name, _ in own.state_axes),
+        *series_state,
         *OBSERVATION_FIELDS[today_state:],
         *(column for _, own in fields for column in own.readout_columns),
     )
@@ -3850,15 +3980,16 @@ def kind_types(structure):
             kind.state_axes, kind.layout_fields, kind.control_fields, kind.readout_columns
         )
         fields.append((kind_id, own))
+    series = series_junctions(structure)
     if routes_into_channels(structure):
-        return _routed_kind_types(tuple(fields), registry)
-    return _kind_types(tuple(fields), registry)
+        return _routed_kind_types(tuple(fields), registry, series)
+    return _kind_types(tuple(fields), registry, series)
 
 
 @cache
-def _routed_kind_types(fields, registry):
+def _routed_kind_types(fields, registry, series=False):
     """_kind_types' classes with one more observation column, EFFECTIVE_AVAILABILITY, last."""
-    types = _kind_types(fields, registry)
+    types = _kind_types(fields, registry, series)
     columns = (*types.OBSERVATION_FIELDS, EFFECTIVE_AVAILABILITY)
     observations = make_dataclass(
         types.Observations.__name__ + "_" + EFFECTIVE_AVAILABILITY,
@@ -3932,7 +4063,13 @@ class InnerImplementation:
         return self.structure.gate_rows
 
     def junction_kinetics(self, voltage, p, *, xp=jnp):
-        """The declared junction law's kinetics at junction voltages (junction_gate.Rates)."""
+        """The declared junction law's kinetics at junction voltages (junction_gate.Rates); a
+        series law's gates have one Rates each, so it refuses there (FR-30, D262)."""
+        if series_junctions(self.structure):
+            raise ConfigError(
+                f"{SERIES_GATE_LAW_ID} has one Rates per gate: its gates' kinetics are the "
+                "law's own (junction_series_gates.kinetics), not one junction Rates"
+            )
         return junction_gate.kinetics(voltage, kinetic.junction_parameters(p), xp=xp)
 
 

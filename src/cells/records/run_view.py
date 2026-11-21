@@ -495,6 +495,11 @@ def _family(spec):
             raise ViewRefused(f"No view declarations for inner model {spec.model.inner_model}")
         return get_model(spec.model), spec.model.inner_model, composite.entries(spec)
     if isinstance(spec.model, tissue3.SurfacePumpChannelModel):
+        if any(j.law == tissue3.SERIES_GATE_LAW_ID for j in spec.model.junctions):
+            raise ViewRefused(  # FR-30, v1 (D262): the gates' axis has no view set yet.
+                f"No view declarations for {tissue3.SERIES_GATE_LAW_ID}'s junctions yet: its "
+                "gates' axis has no view set (FR-30, v1)"
+            )
         return get_model(spec.model), tissue3.MODEL_ID, ()
     raise ViewRefused(
         f"No view declarations for {type(spec.model).__name__}: version 1 covers "

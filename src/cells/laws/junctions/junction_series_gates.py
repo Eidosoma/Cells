@@ -33,9 +33,11 @@ x. A route declares its own residual ρ_i per gate, and its factor is Π_i (ρ_i
 Ions take ρ_i = r_i, which gives g; a large tracer may take ρ_i = 0. A route never takes g as a
 tracer's factor.
 
-**Not yet a registered law.** Its declaration (a cells.junction_law@1 with gate_count 2 and this
-module's `conductance`) and its registration come with @3's integration, after N2 lands. Until then,
-@3's parser accepts only junction_voltage_relaxation@1.
+**Registered, development only** (FR-30's @3 integration, D262; the @3 owner's addition to this
+module, for its builder's review). Its declaration (`LAW`, a cells.junction_law@1 with gate_count 2
+and this module's `conductance`) is registered through @3's model table. @3's parser admits it only
+on a junction whose gate declares `development: true`, and a registered or judged result whose
+definition carries that flag is not admissible, until a voltage series qualifies the law.
 """
 
 from typing import Any, NamedTuple
@@ -43,6 +45,7 @@ from typing import Any, NamedTuple
 import jax.numpy as jnp
 
 from cells.laws.junctions import junction_voltage_relaxation as relaxation
+from cells.modules import Citation, JunctionLaw
 
 LAW_ID = "junction_series_gates@1"
 GATES = ("fast", "slow")
@@ -208,3 +211,31 @@ def domain_valid(gates, voltage, parameters, availability, dt_s=0.0, *, kinds, x
             & (c <= 1)
         )
     return ok
+
+
+# The law's declaration (CORE_SEAMS §8.2): inert, registered through @3's model table (FR-30's
+# integration, D262). Development only: @3's parser refuses it without development: true.
+LAW = JunctionLaw(
+    LAW_ID,
+    True,
+    kinetics,
+    rhs,
+    domain_valid,
+    MAX_ABS_VOLTAGE_V,
+    host="cells.resolved_pump_tissue@3",
+    gate_count=GATE_COUNT,
+    conductance=conductance,
+    provenance="cited",
+    source=Citation(
+        "two voltage gates in series, each a two-state gate with a residual conductance "
+        "(docs/JUNCTION_TWO_RELAXATION_DESIGN.md, option (A)), for the two relaxation times one "
+        "decay of homotypic Cx43 junctions shows (S. Sahu and A. K. Bera, 2013, PLoS ONE, "
+        "doi:10.1371/journal.pone.0060506, read for the design note)",
+        "docs/JUNCTION_TWO_RELAXATION_DESIGN.md §2.1 and §4",
+        "no numbers taken: the law is a form, and its gates' parameters are a definition's values",
+        (
+            "threshold_relaxation's rates are junction_voltage_relaxation@1's own, cited there",
+            "development only until a voltage series qualifies it (D262)",
+        ),
+    ),
+)
