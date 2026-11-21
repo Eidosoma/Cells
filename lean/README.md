@@ -15,7 +15,7 @@ Direct Lean claims cover [50 of 50 laws](COVERAGE.md#registered-laws) and [30 of
 | [Pumps and cotransport](COVERAGE.md#category-pumps-and-cotransport) | 13 of 13 | 8 of 8 | 8 checked | 8 |
 | [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 3 of 3 | 13 of 13 | 12 checked · 1 failed | 10 |
 | [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 13 of 13 | 22 of 22 | 21 checked · 1 failed | 16 |
-| [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 1 of 1 | 22 of 22 | 22 checked | 16 |
+| [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 1 of 1 | 24 of 24 | 24 checked | 18 |
 | [Cell physiology](COVERAGE.md#category-cell-physiology) | — | 3 of 3 | 3 checked | 3 |
 
 <!-- /generated -->
@@ -26,7 +26,7 @@ The repaired wash now closes Na, K and Cl counters exactly at both tested fracti
 
 ## Biological evidence
 
-In a matched Cells control, a donor loses the same amount of labelled protein under transfer and degradation. A receiver gain or a clearance record distinguishes the mechanisms. Imaging of PSD-95 shows label spreading from one spine to two neighbors. The fate of the original label across the whole neuron over 48 hours remains open. [Matched donors](claims/transfer-or-degradation.md) · [Whole-cell balance and biological evidence](claims/regional-pulse-balance.md)
+In a matched Cells control, a donor loses the same amount of labelled protein under transfer and degradation. A receiver gain or a clearance record distinguishes the mechanisms. Imaging of PSD-95 shows label spreading from one spine to two neighbors. The fate of the original label across the whole neuron over 48 hours remains open. [Matched donors](claims/transfer-or-degradation.md) · [Whole-cell balance](claims/regional-pulse-balance.md) · [Neutral label diffusion and its charged-face limit](claims/neutral-label-diffusion.md)
 
 At 0 mV, the published Kv1.5 activation curves predict 72.1% retained current at pH 6.8 if both preparations share a maximum conductance. A separate pulse in the same study gave 74.5 ± 1.9% (SEM). Applying only the measured midpoint shift to the default Cells gate gives 40.5%. [Kv1.5 pH comparison](claims/kv15-ph-activation.md)
 
@@ -36,7 +36,7 @@ The biological review identifies three engine opportunities with measured target
 
 The Cx43 polarity measurements bound the error of the registered single-gate law. The registered two-gate law satisfies the predicted amplitude relation on synthetic clamps and runs in the tissue host under its development flag. Resolving the mixed amplitude in a measured Cx43 trace remains open. [Measurements](PROGRESS.md#cx43-series-gates) · [Compiled comparison and host replay](PROGRESS.md#nov21-registered-series-and-withdrawal)
 
-A serial dilution experiment follows free fluorescein through three successive exchanges. The catalog gives the measured concentrations alongside the ideal series, including the discrepancy at the third 80% wash. [Measured dilution and its scope](PROGRESS.md#nov21-wash)
+A serial dilution experiment follows free fluorescein through three successive exchanges, including the discrepancy at the third 80% wash. For uneven sampling, a separate experiment measured approximately 75% and 25% of stock dye concentration in two outlets carrying equal flow. Measuring the dye left in each region after a finite draw would test the Cells remainder prediction. [Measured dilution](PROGRESS.md#nov21-wash) · [Two-region draws and dye measurements](claims/two-region-sampling.md)
 
 For partial pool withdrawal, one passive splitter collected a mean of 45.0% of each droplet’s beads in a nominal one-third branch. Another retained 28.2% of beads at a mean liquid fraction of about 27.2%. A test of count variance still needs particle counts and liquid volume measured on the same split. [Count proof and measurements](claims/pool-withdrawal.md) · [Paired-data search and heat proof](PROGRESS.md#fr35-withdrawal-energy) · [Biological disagreements for Cells](PROGRESS.md#nov21-biological-disagreements)
 

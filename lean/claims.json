@@ -16,10 +16,67 @@
     "cells.held_reductant_supply@1": "reactions-and-binding",
     "cells.membrane_permeation@1": "membrane-transport",
     "cells.osmotic_lumen@1": "membrane-transport",
+    "cells.passive_neutral_permeation@1": "membrane-transport",
     "cells.phase_exchange@1": "molecular-assembly",
     "cells.shared_pool@1": "molecular-assembly"
   },
   "comparisons": {
+    "neutral-label-diffusion": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [
+        "logmean_electrodiffusion@1"
+      ],
+      "engine_revision": "1295a7d794feb508bdf565ca2244aff3380b27d6",
+      "record_revision": "9a39ed6f20c95e17809b594a9800a41633d8c552",
+      "sources": {
+        "Face flux and electric driving force": "src/cells/numerics/surface_transport.py#L281-L296",
+        "Logarithmic mean and series threshold": "src/cells/numerics/extracellular_field.py",
+        "Implicit face weights": "src/cells/numerics/surface_imex.py#L109-L135",
+        "Two finite nodes and explicit label rows": "validation/regions/example.py#L73-L102",
+        "Per-node history and amount reconstruction": "validation/regions/readouts.py#L269-L315",
+        "Surface component inputs": "validation/tissue/surface_fixtures.py",
+        "Regression for exchange hidden in net records": "tests/unit/test_region_readouts.py#L138-L152"
+      },
+      "record_inputs": {
+        "Label proofs": "lean/CellsProofs/Transport/LabelDiffusion.lean",
+        "Cells face law": "lean/CellsProofs/Transport/LogMeanFace.lean",
+        "Neutral permeation proof": "lean/CellsProofs/Transport/NeutralPermeation.lean",
+        "Imaging measurement record": "lean/checks/data/regional_tracer_measurements.json"
+      },
+      "driver": "lean/checks/label_diffusion.py",
+      "record": "lean/PROGRESS.md#fr33-label-diffusion"
+    },
+    "two-region-sampling": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [],
+      "operators": [
+        "cells.scheduled_compartment_wash@1"
+      ],
+      "engine_revision": "ee0b8106406eb26e57ab1b0c34e16ed6c3f83a2b",
+      "record_revision": "9a39ed6f20c95e17809b594a9800a41633d8c552",
+      "sources": {
+        "Pre-refill sample, refill and amount update": "src/cells/operators/wash_schedule.py#L415-L494",
+        "FR-37 two-region worlds and public runner": "validation/sampling/uneven_draw.py",
+        "Well-mixed wash fixture": "validation/tissue/wash_schedule_fixtures.py#L30-L37",
+        "Finite-node tissue fixture": "validation/tissue/secreted_species_fixtures.py#L92",
+        "Regional collection and remainder regression": "tests/unit/test_wash_schedule.py#L527"
+      },
+      "record_inputs": {
+        "Regional sampling proof": "lean/CellsProofs/Tissue/RegionalSampling.lean",
+        "Single-region inventory proof": "lean/CellsProofs/Tissue/CompartmentWash.lean",
+        "Two-outlet dye measurement": "lean/checks/data/johnson2006_branch_dye.json"
+      },
+      "driver": "lean/checks/regional_sampling.py",
+      "record": "lean/PROGRESS.md#fr37-regional-sampling"
+    },
     "regional-pulse-balance": {
       "kind": "engine",
       "models": [
@@ -2643,6 +2700,124 @@
     }
   },
   "claims": [
+    {
+      "id": "neutral-label-diffusion",
+      "category": "tissue-and-conservation",
+      "title": "Neutral label fluxes add and labels can exchange across a face with zero parent flux",
+      "statement": "For any finite partition of a neutral tracer, the sum of its label fluxes equals the parent flux under a common linear diffusion coefficient. With opposing 90:10 label fractions, a charged Cells face at fixed nonzero voltage instead gives a row sum (8/5)/ln(9) times the unsplit flux.",
+      "assumptions": [
+        "Labels partition the material, share transport coefficients and experience the same voltage. Concentrations at both ends of each active logarithmic-mean face are positive and RT is positive.",
+        "The ideal Fick and neutral constant-field statements are exact over the reals. On the Cells face the exact neutral reduction uses equal concentrations or |(a−b)/(a+b)| ≥ 10⁻⁴ on every label and the parent. The small nonzero-gradient polynomial has a compiled comparison.",
+        "The charged example holds voltage fixed and changes only the representation of the tracer. Its ratio applies when the unsplit flux is nonzero."
+      ],
+      "uses": [
+        "extracellular-face-direction",
+        "neutral-permeation"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.logmean_electrodiffusion@1",
+          "cells.passive_neutral_permeation@1"
+        ],
+        "theorems": {
+          "CellsProofs.Transport.LabelDiffusion.fick_sum": "lean/CellsProofs/Transport/LabelDiffusion.lean",
+          "CellsProofs.Transport.LabelDiffusion.opposing_labels": "lean/CellsProofs/Transport/LabelDiffusion.lean",
+          "CellsProofs.Transport.LabelDiffusion.neutral_permeation_sum": "lean/CellsProofs/Transport/LabelDiffusion.lean",
+          "CellsProofs.Transport.LabelDiffusion.neutral_face_eq_fick": "lean/CellsProofs/Transport/LabelDiffusion.lean",
+          "CellsProofs.Transport.LabelDiffusion.neutral_face_sum": "lean/CellsProofs/Transport/LabelDiffusion.lean",
+          "CellsProofs.Transport.LabelDiffusion.charged_opposing_ratio": "lean/CellsProofs/Transport/LabelDiffusion.lean",
+          "CellsProofs.Transport.LabelDiffusion.charged_ratio_bounds": "lean/CellsProofs/Transport/LabelDiffusion.lean"
+        },
+        "sources": {
+          "Mathlib finite-sum distributivity, imported for common Fick mobility": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Ring/Finset.lean#L50-L52",
+          "Mathlib lower bound for log(1+x), specialized to x = 8": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/SpecialFunctions/Log/Deriv.lean#L333-L337",
+          "Cells logarithmic-mean face, specialized to separate label rows": "lean/CellsProofs/Transport/LogMeanFace.lean"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "neutral-label-diffusion"
+        ],
+        "result": "Both nodes’ explicit labels summed to the parent at all 101 times. The right label reached 0.299998884 fmol at 1 s against 0.3 analytically. The compiled +1, +10 mV face gave a split-to-parent flux ratio of 0.7281913813014701."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Redistribution of a labelled molecular species, with matched diffusion coefficients and independently measured parent and label fluxes.",
+        "unit": "Relative fluorescence in the experiment and fmol in the simulation",
+        "evidence": [
+          {
+            "dataset_id": "gray2006_psd95_exchange",
+            "manifest": "lean/checks/data/regional_tracer_measurements.json",
+            "citation": "Gray et al. (2006), PLOS Biology",
+            "doi": "10.1371/journal.pbio.0040370",
+            "locator": "Figure 4A.",
+            "context": "Photoactivated PSD-95 in one dendritic spine fell while green fluorescence increased in two nearby spines.",
+            "role": "descriptive",
+            "uncertainty": "Green fluorescence was normalized to red fluorescence. The panel supplies no calibrated amount or common diffusion coefficient for the label and its complement.",
+            "assessment": "Label redistribution is observed. Equal mobility, the parent flux and the charged-face ratio remain unmeasured in this preparation.",
+            "report": "lean/PROGRESS.md#fr33-label-diffusion"
+          }
+        ]
+      }
+    },
+    {
+      "id": "two-region-sampling",
+      "category": "tissue-and-conservation",
+      "title": "A two-region sample represents the chamber under proportional withdrawal or equal concentrations",
+      "statement": "A finite draw has the chamber’s mean concentration exactly when the starting concentrations match or each region contributes the same fraction of its own volume. If region A is richer, drawing a larger fraction of A enriches the sample. Collected tracer and the dye left in each region account for the initial inventories and refill.",
+      "assumptions": [
+        "There are two internally well-mixed regions of positive volume, and the total drawn volume is positive. Each local draw lies between zero and its available volume. A zero local draw has no event.",
+        "Each draw uses the pre-refill concentration, with no concurrent transport. The amount-above-background example uses a common background for the two initial regions and the refill. The local draw volumes and initial mixing are declared."
+      ],
+      "uses": [
+        "compartment-wash"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.scheduled_compartment_wash@1"
+        ],
+        "theorems": {
+          "CellsProofs.Tissue.RegionalSampling.inventory": "lean/CellsProofs/Tissue/RegionalSampling.lean",
+          "CellsProofs.Tissue.RegionalSampling.excess_and_refill": "lean/CellsProofs/Tissue/RegionalSampling.lean",
+          "CellsProofs.Tissue.RegionalSampling.concentration_bias": "lean/CellsProofs/Tissue/RegionalSampling.lean",
+          "CellsProofs.Tissue.RegionalSampling.representative_iff": "lean/CellsProofs/Tissue/RegionalSampling.lean",
+          "CellsProofs.Tissue.RegionalSampling.enrichment_iff": "lean/CellsProofs/Tissue/RegionalSampling.lean"
+        },
+        "sources": {
+          "Cells single-region wash inventory, summed across a finite set": "lean/CellsProofs/Tissue/CompartmentWash.lean#L16",
+          "Mathlib fraction equality for nonzero denominators, imported for the two-region criterion": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/GroupWithZero/Units/Basic.lean#L426-L427"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "two-region-sampling"
+        ],
+        "result": "The three compiled 100 pL draws collected 8, 5 and 6.5 fmol above background. The corresponding regional remainders were (0, 2), (2.5, 2.5) and (2, 1.5) fmol within rounding. The compiled local inventories closed at all three recorded times in every case."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Collected dye and both post-draw regional amounts in a finite vessel with measured source concentrations and draw volumes.",
+        "unit": "Fraction of stock dye concentration",
+        "evidence": [
+          {
+            "dataset_id": "johnson2006_branch_dye",
+            "manifest": "lean/checks/data/johnson2006_branch_dye.json",
+            "citation": "Johnson, Brown and Stockman (2006), Journal of Geophysical Research",
+            "doi": "10.1029/2005JB004087",
+            "locator": "Methods paragraph 19 and continuous flow test 1, paragraph 33 and Figure 5a.",
+            "context": "Equal rates of 1 g/L Rhodamine dye solution and distilled water fed a rough-walled glass fracture replica. The researchers measured each outlet flow and dye concentration.",
+            "role": "descriptive",
+            "uncertainty": "The authors give rounded values for the half-flow case. Those values carry no reported concentration error bar.",
+            "assessment": "At equal outlet flow the two branches measured about 75% and 25% of stock concentration. This supports enrichment in a physical flow system. The regional remainders after a finite draw remain unmeasured.",
+            "report": "lean/PROGRESS.md#fr37-regional-sampling"
+          }
+        ]
+      }
+    },
     {
       "id": "regional-pulse-balance",
       "category": "tissue-and-conservation",
