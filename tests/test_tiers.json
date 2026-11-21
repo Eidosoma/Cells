@@ -296,7 +296,8 @@
   "/mnt/workspaces/Cells/operators-fr24-20261120/gate-f7e9e770/tiers/measure/measured.json",
   "/mnt/workspaces/Cells/operators-fr27-20261120/gate-2c453c5c/tiers/measure/measured.json",
   "/mnt/workspaces/Cells/operators-fr26-20261120/gate-e9855c1c/tiers/measure/measured.json",
-  "/mnt/workspaces/Cells/gene-regulation-20261120/g3-gate/timed-dd993438/measure/measured.json"
+  "/mnt/workspaces/Cells/gene-regulation-20261120/g3-gate/timed-dd993438/measure/measured.json",
+  "/mnt/workspaces/Cells/ol3-engine-20261119/measure-f62426c7/measured.json"
  ],
  "measured_provenance": [
   {
@@ -2504,6 +2505,13 @@
    "root": "/mnt/workspaces/Cells/gene-regulation-20261120/g3-gate/snapshot-head-dd993438",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-20T21:39:17+00:00"
+  },
+  {
+   "git_revision": "f62426c7a3e7fe93e48fbcddf6da81da782d7518",
+   "dirty": false,
+   "root": "/mnt/workspaces/Cells/ol3-engine-20261119/tree-f62426c7",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-21T10:34:34+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -6291,10 +6299,10 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_v2_replacement.py",
-    "seconds": 68.05,
+    "seconds": 63.32,
     "exit_code": 0,
     "counts": {
-     "passed": 14
+     "passed": 17
     }
    },
    {
