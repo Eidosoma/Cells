@@ -600,6 +600,24 @@ def test_a_shell_run_records_the_shell_probe_in_both_modes(tmp_path, monkeypatch
     assert runner.run(population_spec()).check().verdict != verdict
 
 
+def test_an_identity_checked_on_no_pair_is_refused_never_reported_as_zero(monkeypatch):
+    """D263 (a vacuous check): a check that finds no pair for a world with steps refuses, never
+    reporting a zero error. The world's own report, the shell probe and every other probe (the
+    bilayer's, the osmotic lumen's and OL1's) are planted with deviations that find no pair. The
+    real shell probe and a shell world's own report count their pairs. Host arithmetic; the planted
+    probes stop at their first world."""
+    assert balance.shell_verdict()["probe"]["pairs"] > 1000
+    spec = spec_of(shell_world())
+    assert balance.world_report(spec)["pairs"] > 0
+    monkeypatch.setattr(balance, "deviations", lambda *args, **kwargs: np.zeros(0))
+    checks = (lambda: balance.world_report(spec), balance._shell_verdict.__wrapped__,
+              balance._geometry_verdict.__wrapped__, balance._osmotic_verdict.__wrapped__,
+              balance._verdict.__wrapped__)  # fmt: skip
+    for check in checks:
+        with pytest.raises(ConfigError, match="checked on no pair"):
+            check()
+
+
 SHELL_REFUSALS = {
     "a join on a shell": (
         lambda w: w["steps"].append({"id": "join", "locus": "membrane",

@@ -21,6 +21,7 @@ and is skipped.
 The check's draws come from its own NumPy generator (PROBE_SEED), never from a simulation stream.
 """
 
+import copy
 import functools
 
 import numpy as np
@@ -235,8 +236,14 @@ PROBES = tuple(
 )
 
 
-@functools.cache
 def verdict():
+    """_verdict()'s result, a fresh copy for each caller: the cached object is never
+    handed out, so one run's edit to its check cannot reach another run's (D263)."""
+    return copy.deepcopy(_verdict())
+
+
+@functools.cache
+def _verdict():
     """The check's verdict on its generic probe worlds (PROBES), as a dict; refuses (ConfigError)
     if any pair fails the identity. Cached: it is a property of the family's code."""
     from cells.definitions.specs import parse_spec
@@ -246,6 +253,7 @@ def verdict():
     for measure, last, regular, catalysis in PROBES:
         spec = parse_spec(probe_world(rng, measure, last, regular=regular, catalysis=catalysis))
         found = np.abs(deviations(spec, rng))
+        require_pairs(found, spec, "the check's probe world")
         pairs += found.size
         worst = max(worst, float(np.max(found)) if found.size else 0.0)
     if not worst <= ATOL:
@@ -276,10 +284,21 @@ def verdict():
     }
 
 
+def require_pairs(found, spec, what):
+    """D263: an identity checked on no pair is no evidence. A world with any step must have at
+    least one pair checked, or the check refuses (ConfigError), never reporting a zero error."""
+    if found.size == 0 and spec.model.world.steps:
+        raise ConfigError(
+            f"{MODEL_ID}: on {what} the identity was checked on no pair of its "
+            f"{len(spec.model.world.steps)} steps, which is no evidence: refused (D263)"
+        )
+
+
 def world_report(spec, *, states=STATES):
     """The identity on the world's own data (random states); refused (ConfigError) if it fails."""
     rng = np.random.default_rng(PROBE_SEED)
     found = np.abs(deviations(spec, rng, states=states))
+    require_pairs(found, spec, "this world's data")
     worst = float(np.max(found)) if found.size else 0.0
     if not worst <= ATOL:
         raise ConfigError(
@@ -396,8 +415,14 @@ GEOMETRY_PROBES = tuple(
 )
 
 
-@functools.cache
 def geometry_verdict():
+    """_geometry_verdict()'s result, a fresh copy for each caller: the cached object is never
+    handed out, so one run's edit to its check cannot reach another run's (D263)."""
+    return copy.deepcopy(_geometry_verdict())
+
+
+@functools.cache
+def _geometry_verdict():
     """The check's verdict on OL2's generic geometry worlds (GEOMETRY_PROBES), as for verdict():
     refuses (ConfigError) if any pair fails the identity. OL1's verdict() is left as it was, so
     OL1's records do not move."""
@@ -407,7 +432,9 @@ def geometry_verdict():
     worst, pairs = 0.0, 0
     for measure, encounter, regular, catalysis in GEOMETRY_PROBES:
         world = geometry_probe_world(rng, measure, encounter, regular=regular, catalysis=catalysis)
-        found = np.abs(deviations(parse_spec(world), rng))
+        spec = parse_spec(world)
+        found = np.abs(deviations(spec, rng))
+        require_pairs(found, spec, "a probe world")
         pairs += found.size
         worst = max(worst, float(np.max(found)) if found.size else 0.0)
     if not worst <= ATOL:
@@ -517,8 +544,14 @@ SHELL_PROBES = tuple(
 )
 
 
-@functools.cache
 def shell_verdict():
+    """_shell_verdict()'s result, a fresh copy for each caller: the cached object is never
+    handed out, so one run's edit to its check cannot reach another run's (D263)."""
+    return copy.deepcopy(_shell_verdict())
+
+
+@functools.cache
+def _shell_verdict():
     """The check's verdict on FR-21's generic shell worlds (SHELL_PROBES), as for
     geometry_verdict(): refuses (ConfigError) if any pair fails the identity. The other verdicts
     are left as they were, so no other run's record moves."""
@@ -528,7 +561,9 @@ def shell_verdict():
     worst, pairs = 0.0, 0
     for measure, regular, catalysis in SHELL_PROBES:
         world = shell_probe_world(rng, measure, regular=regular, catalysis=catalysis)
-        found = np.abs(deviations(parse_spec(world), rng))
+        spec = parse_spec(world)
+        found = np.abs(deviations(spec, rng))
+        require_pairs(found, spec, "a probe world")
         pairs += found.size
         worst = max(worst, float(np.max(found)) if found.size else 0.0)
     if not worst <= ATOL:
@@ -587,8 +622,14 @@ def osmotic_probe_world(rng, measure, encounter, *, regular, catalysis):
     return out
 
 
-@functools.cache
 def osmotic_verdict():
+    """_osmotic_verdict()'s result, a fresh copy for each caller: the cached object is never
+    handed out, so one run's edit to its check cannot reach another run's (D263)."""
+    return copy.deepcopy(_osmotic_verdict())
+
+
+@functools.cache
+def _osmotic_verdict():
     """The check's verdict on OL2 milestone 2's generic osmotic worlds, as geometry_verdict's."""
     from cells.definitions.specs import parse_spec
 
@@ -596,7 +637,9 @@ def osmotic_verdict():
     worst, pairs = 0.0, 0
     for measure, encounter, regular, catalysis in GEOMETRY_PROBES:
         world = osmotic_probe_world(rng, measure, encounter, regular=regular, catalysis=catalysis)
-        found = np.abs(deviations(parse_spec(world), rng))
+        spec = parse_spec(world)
+        found = np.abs(deviations(spec, rng))
+        require_pairs(found, spec, "a probe world")
         pairs += found.size
         worst = max(worst, float(np.max(found)) if found.size else 0.0)
     if not worst <= ATOL:
