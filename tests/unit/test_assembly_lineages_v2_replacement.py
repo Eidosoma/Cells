@@ -310,6 +310,8 @@ def test_a_replacement_draws_nothing(monkeypatch):
 
 
 def refusal(case):
+    if case in SOURCES:
+        return held_source(case)
     d = raw_world()
     replacement = {"index": 1, "kind": "replacement", "times_s": [PULSE],
                    "pool": pool_of(d, L=30)}  # fmt: skip
@@ -351,7 +353,31 @@ def transfer_of(d, **counts):
             "fresh_pool": pool_of(d, **counts)}  # fmt: skip
 
 
+SOURCES = ("a held tracer the sites bind", "a tracer made from a held source")
+
+
+def held_source(case):
+    """D263's escapes from Q3, on FR-21's acceptance world: the tracer X held in the pool, which no
+    membrane or lumen place declares but the sites bind (the reviewer's case); or X finite but made
+    in the pool from a held source Z. Either stays an unlimited source of X through the wash."""
+    d = site_wash_spec().to_dict()
+    w = d["model"]["world"]
+    pool = w["phases"]["pool"]["species"]
+    if case == "a held tracer the sites bind":
+        x = next(e for e in pool if e["id"] == "X")
+        x["kind"], x["held_mM"] = "held", 133.0
+        del w["founder"]["X@pool"]
+    else:
+        w["species"].append(species("Z", {"x": 1}, solution=-1.0))
+        pool.append({"id": "Z", "kind": "held", "held_mM": 50.0})
+        w["steps"].append(step("make_X", {"Z": 1}, {"X": 1}, 1.0, phase="pool"))
+    d["experiment"]["schedules"][0]["pool"] = pool_of(d, L=30, S=6)
+    return d
+
+
 REFUSALS = {
+    "a held tracer the sites bind": "the held X@pool stays an unlimited source",
+    "a tracer made from a held source": "the held Z@pool stays an unlimited source",
     "no population": "needs a population",
     "an omitted species": "one count per finite pool place",
     "solutes above c_ext": "exceed c_ext",
@@ -480,3 +506,25 @@ def test_a_site_bound_ligand_stays_through_a_wash_and_a_released_one_rebinds():
     for n, after in ((n1, (1, 5, 1)), (n2, (0, 4, 2))):
         b = runner.run(spec, stop=n + 1).check()  # FR-22: the world stopped at that event
         assert sites(b.rows["pool_count"][-1], b.rows["slot_count"][-1][0]) == after
+
+
+def test_one_run_s_edited_check_never_reaches_a_later_run(tmp_path):
+    """D263 (shared state): every check a run exports is its own copy. Editing one run's verdict and
+    world check leaves a later, independent run's checks, and its saved run.json, unchanged (the
+    verdicts were cached objects handed out by reference). Two short runs (stop=1) of FR-21's
+    acceptance world, on its compiled program."""
+    import json
+
+    from cells.models.assembly_lineages_v2 import records
+
+    spec = site_wash_spec()
+    a = runner.run(spec, stop=1)
+    clean = copy.deepcopy((a.verdict, a.world_report))
+    a.verdict["probe"]["max_abs_deviation_ln"] = 99.0
+    a.verdict["holds"] = False
+    a.world_report["max_abs_deviation_ln"] = 77.0
+    b = runner.run(spec, stop=1)
+    assert (b.verdict, b.world_report) == clean
+    records.write_run(tmp_path / "b", b)
+    saved = json.loads((tmp_path / "b" / "run.json").read_text())["check"]
+    assert saved == {"probe": clean[0], "world": clean[1]}
