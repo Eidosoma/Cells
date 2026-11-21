@@ -436,6 +436,11 @@ def prescreen_check(directory=PRESCREEN):
 
 
 def provenance():
+    from validation import executed_sources  # noqa: PLC0415
+    executed_sources.refuse_untracked(  # D259
+        Path(__file__).resolve().parents[2], "e07_v1_turnover's provenance"
+    )
+
     git = ["git", "-C", str(Path(__file__).resolve().parents[2])]
 
     def run(*a):

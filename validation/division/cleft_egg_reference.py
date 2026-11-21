@@ -888,12 +888,18 @@ def provenance():
 
     import scipy
 
+    from validation import executed_sources
+
+    found = executed_sources.checkout(ROOT)
     return dict(
         argv=sys.argv,
         host=platform.node(),
         revision=out("rev-parse", "HEAD").strip(),
-        dirty=out("status", "--porcelain", "--untracked-files=no"),
-        diff=out("diff", "HEAD"),
+        # validation/executed_sources.py: every untracked file in the status, and the untracked
+        # executed sources' contents in the diff (D259).
+        dirty=found["status"],
+        diff=found["diff"],
+        untracked_executed=found["untracked_executed"],
         numpy=np.__version__,
         scipy=scipy.__version__,
         python=sys.version,
