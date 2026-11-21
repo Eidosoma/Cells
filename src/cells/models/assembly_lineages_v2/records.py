@@ -218,7 +218,10 @@ def _geometry_derived(world):
     """The geometry's derived constants (world.json's `derived`), only when it is declared."""
     if world.geometry is None:
         return {}
-    from cells.models.assembly_lineages_v2 import geometry
+    from cells.models.assembly_lineages_v2 import PRESCRIBED_SHELL, geometry
+
+    if world.geometry[0] == PRESCRIBED_SHELL:
+        return {"shell": _shell_derived(world)}
 
     c_area, c_radius = geometry.log_constants(world)
     return {
@@ -235,6 +238,26 @@ def _geometry_derived(world):
                 else {}
             ),
         }
+    }
+
+
+def _shell_derived(world):
+    """FR-21: a prescribed shell's constants, and each permeant's conductance G_s = P_s·A_sh."""
+    from cells.models.assembly_lineages_v2 import SHELL_PERMEATION, prescribed_shell
+
+    area = prescribed_shell.area(world)
+    by_name = {p.name: p for p in world.places}
+    conductance = {
+        by_name[step.reactants[0][0]].species: step.forward_rate_per_s * area
+        for step in world.steps
+        if step.law == SHELL_PERMEATION
+    }
+    return {
+        "rho0_per_m3": prescribed_shell.rho0(world),
+        "area_m2": area,
+        "lumen_volume_L": world.volume("lumen"),
+        "log_extent": prescribed_shell.log_extent(world),
+        "conductance_m3_per_s": conductance,
     }
 
 

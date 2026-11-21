@@ -392,9 +392,11 @@ def vesicle_places(world):
 
 
 def block(base_key, parent, counter, size):
-    """The attempt's uniforms: the parent's fission stream (domain 2) at its counter."""
+    """The attempt's uniforms: the parent's fission stream (domain 2) at its counter. They are
+    drawn at the next power of two and cut (streams.block), the plain draw bit for bit, so a host
+    draw compiles once per power of two rather than once per size."""
     key = streams.stream_key_data(base_key, int(parent), "partition")
-    return np.asarray(streams.uniforms(key, int(counter), int(size)), dtype=np.float64)
+    return np.asarray(streams.block(key, int(counter), int(size)), dtype=np.float64)
 
 
 def attempt(world, counts, parent, counter, event, base_key, vesicle_f, next_key,

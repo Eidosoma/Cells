@@ -39,6 +39,7 @@ from cells.definitions.specs import ConfigError
 from cells.models.assembly_lineages import keys
 from cells.models.assembly_lineages_v2 import (
     MODE,
+    PRESCRIBED_SHELL,
     balance,
     diagnostic,
     division,
@@ -396,7 +397,11 @@ def run_lanes(specs):
         verdict = balance.osmotic_verdict()
     else:
         verdict = (
-            balance.geometry_verdict() if structure.geometry is not None else balance.verdict()
+            balance.shell_verdict()  # FR-21: a shell world takes the shell probe's verdict
+            if structure.geometry == PRESCRIBED_SHELL
+            else balance.geometry_verdict()
+            if structure.geometry is not None
+            else balance.verdict()
         )
     by_world = {}  # The world's own report, once per distinct world (lanes often share one).
     for s in specs:
@@ -643,7 +648,7 @@ def _assemble(spec, structure, layout, verdict, report, holder, final, timings):
         "free_energy_kT": f,
         "ledger_residual_kT": residual,
     }
-    if world.geometry is not None:  # OL2: the membrane's footprint W at each row (quanta).
+    if world.geometry is not None and world.geometry[0] != PRESCRIBED_SHELL:  # OL2: W, quanta
         row_arrays["membrane_footprint_quanta"] = counts[:, :places] @ geometry.place_quanta(
             world, places
         )

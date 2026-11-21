@@ -343,3 +343,20 @@ The record is written when the experiment declares `diagnostic: true`, as `diagn
   shape is refused, as before.
 - **No new record.** The step is an ordinary step of the event table and of relations@2. On a
   bilayer, R and XR carry their own area quanta.
+
+## FR-21, the shell: a prescribed wall and lumen (§0.2g)
+
+- **The geometry:** `{"law": "cells.prescribed_shell@1", "area_m2": {"value", "provenance"}}`.
+  - The world has `lumen_volume: declared` and `phases.lumen.volume_L`, and no
+    `exchange_encounter`.
+  - The wall's species carry no area quanta.
+- **The entry:** `{"locus": "membrane", "reactants": {"S@pool": 1}, "products": {"S@lumen": 1},
+  "law": "cells.shell_permeation@1", "permeability_m_per_s": {"value", "provenance"}}`, with
+  a⁺ = P_s·A_sh·ρ0·θ⁺.
+- **The gate factor (optional):** `{"law": "cells.gate_factor@1", "forms": [...],
+  "entries": [{"form", "step", "ddG_kT"}]}`, with fractions over the gate's forms only.
+- **world.json's `derived.shell`** gives `rho0_per_m3`, `area_m2`, `lumen_volume_L`, `log_extent`
+  = ln(A_sh·ρ0), and `conductance_m3_per_s` (G_s = P_s·A_sh per permeant).
+- **The rows:**
+  - `membrane_footprint_quanta`, where written, is 0: the wall has no quanta.
+  - There is no tension, lysis or division record.

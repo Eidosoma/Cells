@@ -178,9 +178,17 @@ def layout(spec):
 
 
 def geometry_layout(world, P, R, place):
-    """OL2's geometry arrays, in kernel.GEOMETRY_FIELDS' order (geometry.py)."""
-    from cells.models.assembly_lineages_v2 import MEMBRANE_PERMEATION, PHASE_EXCHANGE
+    """OL2's geometry arrays, in kernel.GEOMETRY_FIELDS' order (geometry.py); FR-21's shell's in
+    the same order (shell_layout)."""
+    from cells.models.assembly_lineages_v2 import (
+        MEMBRANE_PERMEATION,
+        PHASE_EXCHANGE,
+        PRESCRIBED_SHELL,
+    )
     from cells.models.assembly_lineages_v2 import geometry as geometry_rules
+
+    if world.geometry[0] == PRESCRIBED_SHELL:
+        return shell_layout(world, P, R)
 
     quanta = geometry_rules.place_quanta(world, P)
     entry_quanta = quanta[place]
@@ -204,6 +212,35 @@ def geometry_layout(world, P, R, place):
         np.int64(geometry_rules.floor_quanta(world)),
         *lysis_layout(world, P),
     )
+
+
+def shell_layout(world, P, R):
+    """FR-21's prescribed shell in kernel.GEOMETRY_FIELDS' order: no quanta, no floor and no
+    lysis; each cells.shell_permeation@1 step takes the constant extent ln(A_sh·ρ0) (code 3, in
+    the log_area slot)."""
+    from cells.models.assembly_lineages_v2 import SHELL_PERMEATION, prescribed_shell
+
+    encounter = np.zeros(R, dtype=np.int32)
+    for r, step in enumerate(world.steps):
+        if step.law == SHELL_PERMEATION:
+            encounter[r] = SHELL_ENCOUNTER
+    return (
+        np.zeros(P, dtype=np.int64),
+        np.zeros((R, ENTRIES), dtype=np.int64),
+        np.zeros(R, dtype=np.int64),
+        encounter,
+        np.float64(prescribed_shell.log_extent(world)),
+        np.float64(0.0),
+        np.int64(0),
+        np.zeros(P, dtype=np.int64),
+        np.zeros(4, dtype=np.float64),
+        np.float64(np.inf),
+        np.float64(world.units.kT_J),
+        np.float64(0.0),
+    )
+
+
+SHELL_ENCOUNTER = 3  # kernel.GEOMETRY_FIELDS' step_encounter: a shell's constant extent
 
 
 def lysis_layout(world, P):

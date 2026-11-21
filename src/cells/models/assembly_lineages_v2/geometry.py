@@ -209,9 +209,10 @@ def data_to_dict(data):
 
 
 def place_quanta(world, capacity):
-    """k_i at each finite membrane place, 0 elsewhere ([P] int64)."""
+    """k_i at each finite membrane place, 0 elsewhere ([P] int64); all 0 without a bilayer (FR-21's
+    shell has no quanta)."""
     out = np.zeros(capacity, dtype=np.int64)
-    if world.geometry is None:
+    if world.geometry is None or world.geometry[0] != BILAYER_GEOMETRY:
         return out
     k = {name: q for name, q, *_ in world.geometry[1]["area_per_leaflet"]}
     for i, place in enumerate(world.places):
@@ -238,8 +239,11 @@ def floor_quanta(world):
 
 
 def closure_kT(world):
-    """C_close, once for the one living vesicle of a single-assembly world (0 with no geometry)."""
-    return 0.0 if world.geometry is None else world.geometry[1]["closure"]["value"]
+    """C_close, once for the one living vesicle of a single-assembly world (0 with no geometry, and
+    0 for FR-21's shell, which has no closure cost of its own)."""
+    if world.geometry is None or world.geometry[0] != BILAYER_GEOMETRY:
+        return 0.0
+    return world.geometry[1]["closure"]["value"]
 
 
 def area_m2(world, footprint):

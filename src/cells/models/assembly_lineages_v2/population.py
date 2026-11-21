@@ -46,6 +46,7 @@ from cells.definitions.specs import ConfigError, bounded_integer
 from cells.models.assembly_lineages import folds
 from cells.models.assembly_lineages_v2 import (
     MODEL_ID,
+    PRESCRIBED_SHELL,
     SHARED_POOL,
     SHEAR_FISSION,
     division,
@@ -478,7 +479,14 @@ def run(spec, *, start=None, stop=None):
     structure, layout = model.structure(spec), model.layout(spec)
     kernel.refuse_unknown(structure)
     osmotic = world.conventions.lumen_volume == "osmotic"
-    verdict = balance.osmotic_verdict() if osmotic else balance.geometry_verdict()
+    shell = world.geometry[0] == PRESCRIBED_SHELL  # FR-21: its own probe, as runner.py takes it
+    verdict = (
+        balance.shell_verdict()
+        if shell
+        else balance.osmotic_verdict()
+        if osmotic
+        else balance.geometry_verdict()
+    )
     world_report = balance.world_report(spec)  # each slot's rates are the single assembly's
     P, R = structure.places, structure.steps
     m = masks(world, P, R)
@@ -894,8 +902,9 @@ def _assemble(spec, structure, layout, m, verdict, start, state, ctx, events, dr
         "reservoir_work_kT": work,
         "free_energy_kT": f,
         "ledger_residual_kT": residual,
-        "membrane_footprint_quanta": np.where(alive, slot_counts @ quanta[:places], 0),
     }
+    if world.geometry[0] != PRESCRIBED_SHELL:  # FR-21: a shell's wall has no quanta, so no W
+        row_arrays["membrane_footprint_quanta"] = np.where(alive, slot_counts @ quanta[:places], 0)
     if osmotic:  # a declared lumen's volume is the world's constant, and it has no tension
         row_arrays |= {"lumen_volume_L": V, "tension_N_per_m": sigma}
     if ctx.columns:
