@@ -8366,11 +8366,11 @@ eight real, and assigned them that day.
      and check each cohort's bounds.
   2. (P2) the mover check is a deny-list keyed on a species field, so FR-27's wash, which declares
      nodes, was admitted and its removal of label unseen. Fix: fail closed.
-  3. (P2) a caller's cohort named  is overwritten on export. Fix: reserved names
+  3. (P2) a caller's cohort named `unlabelled` is overwritten on export. Fix: reserved names
      refused, and the serialized cohorts checked at every row.
 - **G4's readers** (on gene-regulation-lane, not on main; the GR agent):
-  1. (P1)  selected protein completions by default, overstating new RNA by 66.4×.
-  2. (P1)  reported zero error for a comparison it skipped. Fix: match by required
+  1. (P1) `--product R` selected protein completions by default, overstating new RNA by 66.4×.
+  2. (P1) `compare_run` reported zero error for a comparison it skipped. Fix: match by required
      times, with matched and expected counts.
   3. (P2) the known-rate control fails at zero and near-zero clearance.
   4. (P2) a run receipt omitted an untracked script, against the provenance rule. The original
