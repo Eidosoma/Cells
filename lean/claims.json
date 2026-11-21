@@ -1915,8 +1915,8 @@
       "laws": [
         "cells.kleak_always_open@1"
       ],
-      "engine_revision": "d74f519d40b9a9f7488b94b489c6dc4dd865504c",
-      "record_revision": "ceeca19816acd761ab68379d67bb0f7426366a1c",
+      "engine_revision": "a6235d7b02c04e147991342c2891eb0c1cd3deb6",
+      "record_revision": "9dad3f26380e6ac11f25016eb1a33ae62aff1dbb",
       "sources": {
         "Exact zero-count abundance": "src/cells/operators/membrane_state.py#L159",
         "Composite readout": "src/cells/models/pump_composite.py"

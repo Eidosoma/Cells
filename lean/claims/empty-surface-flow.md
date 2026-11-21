@@ -28,9 +28,9 @@ Uses [At fixed channel drive, whole-patch flow tracks the surface unit count](me
 
 **Operators** `cells.membrane_entity_state@1`
 
-[Exact zero-count abundance](https://github.com/Eidosoma/Cells/blob/d74f519d40b9a9f7488b94b489c6dc4dd865504c/src/cells/operators/membrane_state.py#L159) · [Composite readout](https://github.com/Eidosoma/Cells/blob/d74f519d40b9a9f7488b94b489c6dc4dd865504c/src/cells/models/pump_composite.py) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/ceeca19816acd761ab68379d67bb0f7426366a1c/lean/checks/population_units.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/ceeca19816acd761ab68379d67bb0f7426366a1c/lean/PROGRESS.md#nov21-engine-review)
+[Exact zero-count abundance](https://github.com/Eidosoma/Cells/blob/a6235d7b02c04e147991342c2891eb0c1cd3deb6/src/cells/operators/membrane_state.py#L159) · [Composite readout](https://github.com/Eidosoma/Cells/blob/a6235d7b02c04e147991342c2891eb0c1cd3deb6/src/cells/models/pump_composite.py) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/9dad3f26380e6ac11f25016eb1a33ae62aff1dbb/lean/checks/population_units.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/9dad3f26380e6ac11f25016eb1a33ae62aff1dbb/lean/PROGRESS.md#nov21-engine-review)
 
-[Tested engine d74f519d40b9](https://github.com/Eidosoma/Cells/commit/d74f519d40b9a9f7488b94b489c6dc4dd865504c) · [Evidence checkpoint ceeca19816ac](https://github.com/Eidosoma/Cells/commit/ceeca19816acd761ab68379d67bb0f7426366a1c)
+[Tested engine a6235d7b02c0](https://github.com/Eidosoma/Cells/commit/a6235d7b02c04e147991342c2891eb0c1cd3deb6) · [Evidence checkpoint 9dad3f26380e](https://github.com/Eidosoma/Cells/commit/9dad3f26380e6ac11f25016eb1a33ae62aff1dbb)
 
 **Engine** `resolved_pump_composite@1`, `resolved_pump_tissue@3`, `cells.kir2p1_mh2@1`, `cells.nav1p2_m3h_regularized@1`
 
