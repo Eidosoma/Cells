@@ -13,7 +13,7 @@ Direct Lean claims cover [49 of 49 laws](COVERAGE.md#registered-laws) and [29 of
 | [Membrane transport and osmosis](COVERAGE.md#category-membrane-transport) | 5 of 5 | 8 of 8 | 8 checked | 8 |
 | [Ion channels and junctions](COVERAGE.md#category-channels-and-junctions) | 14 of 14 | 15 of 15 | 15 checked | 14 |
 | [Pumps and cotransport](COVERAGE.md#category-pumps-and-cotransport) | 13 of 13 | 8 of 8 | 8 checked | 8 |
-| [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 3 of 3 | 11 of 11 | 11 checked | 9 |
+| [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 3 of 3 | 12 of 12 | 11 checked · 1 failed | 10 |
 | [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 13 of 13 | 19 of 19 | 18 checked · 1 failed | 15 |
 | [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 1 of 1 | 20 of 20 | 19 checked · 1 failed | 14 |
 | [Cell physiology](COVERAGE.md#category-cell-physiology) | — | 3 of 3 | 3 checked | 3 |
@@ -22,7 +22,7 @@ Direct Lean claims cover [49 of 49 laws](COVERAGE.md#registered-laws) and [29 of
 
 Each category opens its detailed claim table on GitHub, including registered laws still awaiting a proof. A single claim can cover several laws. The last column counts claims with a recorded measurement or literature finding, including partial evidence. Each numerical result applies to the cases in its linked record. [All registered laws](COVERAGE.md#registered-laws) · [Design notes](ENGINE_LAW_VERIFICATION.md) · [Voltage pilot closeout](../reports/BIO003_PILOT_CLOSEOUT.md)
 
-The 21 November main review corrected the Lean lane’s pulse replay and reproduced a wash-counter failure for unchanged chloride. The index also retains the GARD version-1 heat failure. Composite clamp currents, routed reaction-rate exports and replacement-time observations have explicit scoring holds. [Main retests and scope](PROGRESS.md#main-review-d264-d266) · [Current failure list](COVERAGE.md#failing-numerical-checks) · [Earlier repairs](PROGRESS.md#nov21-engine-review)
+The 21 November main review corrected the Lean lane’s pulse replay and reproduced a wash-counter failure for unchanged chloride. GARD version 1 still has a heat failure. The rapid-binding kernel can also round a signed inventory margin across zero. The current tissue host requires positive held totals. Composite clamp currents, routed reaction-rate exports and replacement-time observations have explicit scoring holds. [Main retests and scope](PROGRESS.md#main-review-d264-d266) · [Binding boundary cases](PROGRESS.md#binding-equilibrium-feasibility) · [Current failure list](COVERAGE.md#failing-numerical-checks) · [Earlier repairs](PROGRESS.md#nov21-engine-review)
 
 ## Biological evidence
 
