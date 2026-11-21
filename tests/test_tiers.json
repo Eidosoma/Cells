@@ -292,7 +292,8 @@
   "/mnt/workspaces/Cells/fr7-loop-20261119/u2-compartment/gate-362f9781/tiers/measure/measured.json",
   "/mnt/workspaces/Cells/ol3-engine-20261119/measure-78c26df6/measured.json",
   "/mnt/workspaces/Cells/ol3-engine-20261119/measure-9a1a95a5/measured.json",
-  "/mnt/workspaces/Cells/core-pass-at3-20261118/n2/a/measure-f8f88eab/out/measure/measured.json"
+  "/mnt/workspaces/Cells/core-pass-at3-20261118/n2/a/measure-f8f88eab/out/measure/measured.json",
+  "/mnt/workspaces/Cells/operators-fr24-20261120/gate-f7e9e770/tiers/measure/measured.json"
  ],
  "measured_provenance": [
   {
@@ -2468,6 +2469,14 @@
    "root": "/mnt/workspaces/Cells/core-pass-at3-20261118/snapshot-f8f88eab",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-20T22:16:39+00:00"
+  },
+  {
+   "git_revision": "f7e9e7709562a078d4ff20014615e8532433a9d3",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/operators-fr24-20261120/snapshot-head-f7e9e770",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-20T22:38:39+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -3156,10 +3165,10 @@
    },
    {
     "file": "tests/unit/test_cell_owned_compartments.py",
-    "seconds": 10.59,
+    "seconds": 10.99,
     "exit_code": 0,
     "counts": {
-     "passed": 205
+     "passed": 210
     }
    },
    {
@@ -4986,10 +4995,10 @@
    },
    {
     "file": "tests/unit/test_pump_composite_contract.py",
-    "seconds": 4.18,
+    "seconds": 4.73,
     "exit_code": 0,
     "counts": {
-     "passed": 17
+     "passed": 18
     }
    },
    {
@@ -5226,7 +5235,7 @@
    },
    {
     "file": "tests/unit/test_site_occupancy.py",
-    "seconds": 4.98,
+    "seconds": 6.78,
     "exit_code": 0,
     "counts": {
      "passed": 54
@@ -5507,10 +5516,10 @@
    },
    {
     "file": "tests/unit/test_species_regulated_availability.py",
-    "seconds": 8.09,
+    "seconds": 10.05,
     "exit_code": 0,
     "counts": {
-     "passed": 94
+     "passed": 105
     }
    },
    {

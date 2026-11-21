@@ -557,9 +557,17 @@ class InnerAdapter:
         """The module's view (below) on the structure's declared layout."""
         return _view(self.inner_layout, p, state, providers, closers, xp=xp, refresh=refresh)
 
-    def control_view(self, control, state, p, factors, *, xp=jnp, views=None):
+    def control_view(self, control, state, p, factors, *, xp=jnp, views=None, quantities=None):
         """The module's control_view (below) on the structure's control."""
-        return _control_view(self.inner_control(control), state, p, factors, xp=xp, views=views)
+        return _control_view(
+            self.inner_control(control),
+            state,
+            p,
+            factors,
+            xp=xp,
+            views=views,
+            quantities=quantities,
+        )
 
 
 def for_structure(structure):
@@ -703,17 +711,23 @@ def close_state(state, q, *, xp):
     return state._replace(junction_gate=xp.where(q.junction_active, state.junction_gate, 0.0))
 
 
-def control_view(control, state, p, factors, *, xp=jnp, views=None):
+def control_view(control, state, p, factors, *, xp=jnp, views=None, quantities=None):
     """@3's control: each factored availability times its multipliers, in declared order.
     views: {factor operator: its reader-view function} for those that read at the control view
-    (R2), each passed as view=; None or absent, every call is as before."""
-    return _control_view(inner_control(control), state, p, factors, xp=xp, views=views)
+    (R2), each passed as view=; quantities: {factor operator: its quantities function} for the
+    readers of an owner's quantities (R3), each passed as quantities=. None or absent, every call
+    is as before."""
+    return _control_view(
+        inner_control(control), state, p, factors, xp=xp, views=views, quantities=quantities
+    )
 
 
-def _control_view(c, state, p, factors, *, xp, views=None):
+def _control_view(c, state, p, factors, *, xp, views=None, quantities=None):
     """control_view from @3's control c: this module's, or an adapter's for its structure."""
     for operator in factors:
         keywords = {"view": views[operator]} if views and operator in views else {}
+        if quantities and operator in quantities:
+            keywords["quantities"] = quantities[operator]
         values = operator.control_factors(state, p, xp=xp, **keywords)
         c = c._replace(**{k: getattr(c, k) * v for k, v in values.items()})
     return c

@@ -228,6 +228,16 @@ Calibration: FR-10's note priced door S at 0.5–1 for the whole contract change
 
 ## 3. FR-24: binding-site occupancy as an input to reaction rates
 
+**Built on branch `operators-fr24`, 20 November 2026 (development).** D244 chose R3, θ and Q2. The
+section below is the desk note as accepted; the build is described in
+[INVENTORY_COUPLING_DESIGN.md](INVENTORY_COUPLING_DESIGN.md) §2.6. It departs from the note in three
+places:
+- θ is read as B/(B + R), which the site operator's domain keeps in [0, 1] exactly, where B/S can
+  exceed 1 by rounding at saturation;
+- the owner declares its entities' IDs and cells on the host (`quantity_entities`), so the reader
+  binds and checks locality without importing it;
+- a junction target is refused in version 1, as for the population source.
+
 ### 3.1 The request, and today's gap
 
 **The request (D239):** a reaction reads a named site population's occupied amount, accessible
