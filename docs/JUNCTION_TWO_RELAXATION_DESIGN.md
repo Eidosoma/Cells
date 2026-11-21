@@ -160,7 +160,7 @@ interface.
 - dc_i/dt = α_i(1 − c_i) − β_i(c_i − r_i): today's `rhs`, with r_i in place of the minimum.
 
 **Two kinds of gate**, chosen per gate and fixed at parse:
-- **`relaxation_betse`:** today's α and β, with a threshold. This is today's law exactly.
+- **`threshold_relaxation`:** today's α and β, with a threshold. This is today's law exactly.
 - **`boltzmann_eyring`:** a two-state gate in |V|, for cited constants.
   - With u_i = A_i·(|V| − V0_i): α_i = λ_i·exp(−δ_i·u_i) opens, and β_i = λ_i·exp((1 − δ_i)·u_i)
     closes.
@@ -201,7 +201,7 @@ law whose rates could overflow on the domain is refused at parse.
     where target is the steady c_i and relaxation is α_i + β_i;
   - `rhs`, `advance_clamped` and `domain_valid`.
   - A gate kind adds only its own `Parameters` NamedTuple: the threshold and minimum for
-    `relaxation_betse`; λ, A, V0, δ and r for `boltzmann_eyring`.
+    `threshold_relaxation`; λ, A, V0, δ and r for `boltzmann_eyring`.
 - **The law adds:**
   - `gate_count`: m, static, so it selects the program. m is 1 for every existing law;
   - `conductance(gates) → g`: the product, the identity when m = 1;
@@ -300,7 +300,7 @@ planted error:
   to one direction only.
 - **The exact step:** two gates' exact step against a fine numerical integration. Planted: the
   product's cross term dropped.
-- **The one-gate reduction:** m = 1 with `relaxation_betse` equals today's `rhs` and
+- **The one-gate reduction:** m = 1 with `threshold_relaxation` equals today's `rhs` and
   `advance_clamped` bitwise. Planted: the residual applied twice.
 - **Two relaxation times:** a decay from open, with k_f ≫ k_s, fitted by two exponentials, recovers
   k_f and k_s within a stated tolerance.
@@ -324,7 +324,7 @@ The search for an open-access voltage series is not priced.
 
 ## 12. Questions for the lead
 
-1. **Approve (A),** two gates in series, each a two-state gate (BETSE's kind or the Boltzmann–Eyring
+1. **Approve (A),** two gates in series, each a two-state gate (the threshold kind or the Boltzmann–Eyring
    kind), with today's law as the one-gate case? Or (B), the sequential chain?
 2. **Moreno et al.:** the fetch was refused (HTTP 403). Keep its numbers as the review's report and
    use them for nothing, or obtain the paper another way, for example as a copy the user downloads?

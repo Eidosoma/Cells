@@ -9,8 +9,8 @@ one-gate case, and every gate keeps its `Rates` (alpha, beta, the steady c as ta
 relaxation) and its exact constant-voltage step.
 
 **Two kinds of gate,** fixed per gate (`kinds`, static):
-- `relaxation_betse`: junction_voltage_relaxation@1's own rates and parameters (a threshold and a
-  minimum), reused as they are; BETSE v1.5.0's rates are cited in that module;
+- `threshold_relaxation`: junction_voltage_relaxation@1's own rates and parameters (a threshold
+  and a minimum), reused as they are; BETSE v1.5.0's rates are cited in that module;
 - `boltzmann_eyring`: a two-state gate in |V|, for cited constants.
   - With u = A·(|V| − V0), α = λ·exp(−δ·u) opens and β = λ·exp((1 − δ)·u) closes.
   - So α/β = exp(−u): detailed balance. The steady open fraction is the Boltzmann 1/(1 + exp(u)),
@@ -47,7 +47,7 @@ from cells.laws.junctions import junction_voltage_relaxation as relaxation
 LAW_ID = "junction_series_gates@1"
 GATES = ("fast", "slow")
 GATE_COUNT = len(GATES)
-KINDS = ("relaxation_betse", "boltzmann_eyring")
+KINDS = ("threshold_relaxation", "boltzmann_eyring")
 MAX_ABS_VOLTAGE_V = relaxation.MAX_ABS_VOLTAGE_V
 MAX_EXPONENT = 80.0  # the largest |u| admitted on the domain, so every rate stays finite
 Rates = relaxation.Rates
@@ -82,7 +82,7 @@ def boltzmann_eyring_kinetics(voltage, parameters, *, xp=jnp):
 
 def gate_kinetics(kind, voltage, parameters, *, xp=jnp):
     """One gate's Rates: junction_voltage_relaxation@1's kinetics, or boltzmann_eyring's."""
-    if kind == "relaxation_betse":
+    if kind == "threshold_relaxation":
         return relaxation.kinetics(voltage, parameters, xp=xp)
     if kind == "boltzmann_eyring":
         return boltzmann_eyring_kinetics(voltage, parameters, xp=xp)
@@ -90,8 +90,8 @@ def gate_kinetics(kind, voltage, parameters, *, xp=jnp):
 
 
 def residual_of(kind, parameters):
-    """A gate's residual r: relaxation_betse's minimum, or boltzmann_eyring's residual."""
-    if kind == "relaxation_betse":
+    """A gate's residual r: threshold_relaxation's minimum, or boltzmann_eyring's residual."""
+    if kind == "threshold_relaxation":
         return parameters.minimum_open_fraction
     if kind == "boltzmann_eyring":
         return parameters.residual
@@ -118,11 +118,11 @@ def rhs(gates, voltage, parameters, *, kinds, xp=jnp):
 def advance_clamped(gates, voltage, parameters, dt_s, *, kinds, xp=jnp):
     """The exact step over an interval of constant voltage: each gate's own exact step, the
     formula of junction_voltage_relaxation@1's advance_clamped (that function itself for a
-    relaxation_betse gate). Like it, this is not a solver for a freely varying voltage."""
+    threshold_relaxation gate). Like it, this is not a solver for a freely varying voltage."""
     kinds = _check_kinds(kinds)
     out = []
     for c, kind, p in zip(gates, kinds, parameters, strict=True):
-        if kind == "relaxation_betse":
+        if kind == "threshold_relaxation":
             out.append(relaxation.advance_clamped(c, voltage, p, dt_s, xp=xp))
             continue
         rate = gate_kinetics(kind, voltage, p, xp=xp)
@@ -167,7 +167,7 @@ def route_factor(gates, parameters, route_residuals, *, kinds, xp=jnp):
 
 
 def domain_valid(gates, voltage, parameters, availability, dt_s=0.0, *, kinds, xp=jnp):
-    """The junction's domain, per gate: relaxation_betse's own, and for boltzmann_eyring λ > 0,
+    """The junction's domain, per gate: threshold_relaxation's own, and for boltzmann_eyring λ > 0,
     A ≥ 0 with every exponent within MAX_EXPONENT on the voltage domain, δ and r in [0, 1], and c
     in [r, 1]; the voltage, availability and interval as junction_voltage_relaxation@1's."""
     kinds = _check_kinds(kinds)
@@ -181,7 +181,7 @@ def domain_valid(gates, voltage, parameters, availability, dt_s=0.0, *, kinds, x
         & (dt_s >= 0)
     )
     for c, kind, p in zip(gates, kinds, parameters, strict=True):
-        if kind == "relaxation_betse":
+        if kind == "threshold_relaxation":
             ok = ok & relaxation.domain_valid(c, voltage, p, availability, dt_s, xp=xp)
             continue
         lam, slope, midpoint, split, residual = p

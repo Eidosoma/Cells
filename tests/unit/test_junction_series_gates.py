@@ -12,8 +12,8 @@ Host arithmetic only (NumPy), with no world compiled. Each claim with a planted 
 - S3: the exact constant-voltage step is each gate's own exact step, and the junction's decay is
   the product of two exponential relaxations, against the four-state chain's master equation
   (planted: the slow gate stepped at the fast gate's rate; the product's cross term dropped);
-- S4: a relaxation_betse gate is junction_voltage_relaxation@1 itself, bitwise, so today's law is
-  the one-gate case (planted: another residual moves the derivative);
+- S4: a threshold_relaxation gate is junction_voltage_relaxation@1 itself, bitwise, so today's
+  law is the one-gate case (planted: another residual moves the derivative);
 - S5: a route's factor through the gates is the conductance for ions and the open fractions'
   product for a tracer whose residual is 0, never the conductance (planted: a tracer given g);
 - S6: JunctionLaw's two defaulted fields keep every one-gate law as it was, and a several-gate law
@@ -138,9 +138,9 @@ def test_the_exact_step_is_each_gate_s_and_the_decay_two_relaxations():
     assert rates[0].relaxation_per_s > 10 * rates[1].relaxation_per_s
 
 
-def test_a_relaxation_betse_gate_is_today_s_law_bitwise():
+def test_a_threshold_relaxation_gate_is_today_s_law_bitwise():
     p = relaxation.Parameters(threshold_voltage_V=0.017, minimum_open_fraction=0.112)
-    kinds = ("relaxation_betse", "boltzmann_eyring")
+    kinds = ("threshold_relaxation", "boltzmann_eyring")
     for v in (-0.11, -0.04, 0.0, 0.03, 0.1):
         for c in (0.112, 0.5, 1.0):
             got = series.rhs((c, 1.0), v, (p, SLOW), kinds=kinds, xp=np)[0]
