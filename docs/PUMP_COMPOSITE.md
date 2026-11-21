@@ -58,6 +58,7 @@ The experiment adds each operator's schedule under the operator's own keys:
 | `site_occupancy@1` | `species` (ligands: identity, `trace_mM`), `populations` (owner patch face or contact side, copies, sites per copy, accessible fraction, ligand, k_on, k_off, initial occupancy, optional site-conserving internalisation) | `site_controls` (binding and internalisation multipliers per population) | none: a new law ([site-occupancy design](SITE_OCCUPANCY_DESIGN.md), D169): binding sites as owned state, Langmuir binding and site-conserving internalisation on D152's SSPRK(3,3) form; no field input |
 | `scheduled_membrane_trafficking@1` | `routes` (each its own ID, a plasma patch of a compartment's owner, the FR-1 compartment receiving it, charged carriers with transference numbers, plasma and pool area floors, retrieval and recycling enrichments and the internalised units per plasma population) | `trafficking_controls` (per route, piecewise-constant retrieval and recycling rates) | none: a new law ([membrane retrieval design](MEMBRANE_RETRIEVAL_DESIGN.md) §2, FR-2, D217): membrane retrieval and recycling between a plasma patch and a compartment's pool on palindromic split half-steps, the charges following the patches (R2), no fluid moved (F0); requires membrane state and the compartments |
 | `population_unit_turnover@1` | `species` (the precursor it consumes: identity), `routes` (each its own ID, a channel population, its precursor, the molecules per unit and the maturation pools with their mean time) | `unit_turnover_controls` (per route, piecewise-constant assembly and removal rates) | none: a new law ([abundance-to-function design](ABUNDANCE_TO_FUNCTION_DESIGN.md) §5, FR-7, D217): a population's units made from a precursor species through first-order maturation pools and removed at first order, on exact split half-steps, with one material account; requires membrane state |
+| `scheduled_compartment_wash@1` | `nodes` (the finite outside nodes it washes), `ions` (`same_as_compartment`: the buffer carries the node's own ion composition) | `compartment_wash_events` (time, node, fraction, and the buffer's concentration of every neutral species) | none: a new law ([compartment wash design](COMPARTMENT_WASH_DESIGN.md), FR-27, D246): an event map exchanges a fraction of a finite node's liquid for a declared buffer at constant volume, recording the sample, the supply, their free energies and the mixing heat; the deterministic execution of the liquid exchange whose whole-exchange, exact-count execution is FR-20's pool replacement |
 
 The blocks and keys are the frozen models' own, so `frozen_definition(raw)` rewrites a
 `resolved_pump_tissue@3`, water@1, water@2 or replacement@1 definition as the equivalent
@@ -150,33 +151,35 @@ fills from its source bath at the declared composition without declaring that re
 | 20 | `scheduled_membrane_trafficking@1` | 6, 18 |  |  | `extracellular_volume`, `extracellular_amount_reference`, `active`, `outside_active`, `membrane_active` |
 | 21 | `population_unit_turnover@1` | 6 |  |  | `volume`, `extracellular_volume`, `active`, `outside_active`, `membrane_active` |
 | 22 | `species_regulated_availability@2` |  |  |  | `volume`, `extracellular_volume`, `active`, `outside_active`, `membrane_active` |
+| 23 | `scheduled_compartment_wash@1` |  |  |  | `extracellular_volume`, `extracellular_amount_reference`, `outside_active` |
 
 Row: the earlier operator in the list; column: the later. ✓ admitted by the declarations; R refused, with a real conflict among the refusals; n refused, every refusal nominal; d admitted by the declarations, refused at the definition by a law-level rule; · the same law.
 
-| | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 | 21 | 22 |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| **1** | · | ✓ | R | ✓ | R | R | R | R | R | R | R | R | R | R | R | R | ✓ | R | R | R | R | R |
-| **2** | ✓ | · | R | ✓ | R | R | R | R | R | R | R | R | R | R | R | R | ✓ | R | R | R | R | R |
-| **3** | R | R | · | R | ✓ | R | R | R | R | R | R | R | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | R | R | ✓ |
-| **4** | ✓ | ✓ | R | · | R | R | R | R | R | R | R | R | R | R | R | R | ✓ | R | R | R | R | R |
-| **5** | R | R | ✓ | R | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | d | ✓ | ✓ |
-| **6** | R | R | R | R | ✓ | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | d | ✓ | ✓ | ✓ | ✓ |
-| **7** | R | R | R | R | ✓ | ✓ | · | ✓ | R | R | R | R | R | R | R | n | R | R | R | R | n | n |
-| **8** | R | R | R | R | ✓ | ✓ | ✓ | · | R | R | R | R | R | R | R | n | R | R | R | R | n | n |
-| **9** | R | R | R | R | ✓ | ✓ | R | R | · | ✓ | d | d | R | R | R | R | R | R | R | R | R | R |
-| **10** | R | R | R | R | ✓ | ✓ | R | R | ✓ | · | d | d | R | R | R | R | R | R | R | R | R | R |
-| **11** | R | R | R | R | ✓ | ✓ | R | R | ✓ | ✓ | · | ✓ | R | R | R | n | R | R | R | R | n | n |
-| **12** | R | R | R | R | ✓ | ✓ | R | R | ✓ | ✓ | ✓ | · | R | R | R | n | R | R | R | R | n | n |
-| **13** | R | R | ✓ | R | ✓ | ✓ | R | R | R | R | R | R | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| **14** | R | R | ✓ | R | ✓ | n | R | R | R | R | R | R | ✓ | · | ✓ | ✓ | ✓ | ✓ | ✓ | R | n | ✓ |
-| **15** | R | R | ✓ | R | ✓ | ✓ | R | R | R | R | R | R | ✓ | ✓ | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| **16** | R | R | ✓ | R | ✓ | ✓ | n | n | R | R | n | n | ✓ | ✓ | ✓ | · | ✓ | ✓ | ✓ | ✓ | ✓ | R |
-| **17** | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | R | R | R | R | R | R | ✓ | ✓ | ✓ | ✓ | · | ✓ | ✓ | R | ✓ | ✓ |
-| **18** | R | R | ✓ | R | ✓ | d | R | R | R | R | R | R | ✓ | ✓ | ✓ | ✓ | ✓ | · | d | ✓ | ✓ | ✓ |
-| **19** | R | R | ✓ | R | ✓ | ✓ | R | R | R | R | R | R | ✓ | ✓ | ✓ | ✓ | ✓ | d | · | d | ✓ | ✓ |
-| **20** | R | R | R | R | d | ✓ | R | R | R | R | R | R | ✓ | d | ✓ | ✓ | R | ✓ | d | · | R | d |
-| **21** | R | R | R | R | ✓ | ✓ | n | n | R | R | n | n | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | d | · | ✓ |
-| **22** | R | R | ✓ | R | ✓ | ✓ | n | n | R | R | n | n | ✓ | ✓ | ✓ | R | ✓ | ✓ | ✓ | d | ✓ | · |
+| | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 | 21 | 22 | 23 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| **1** | · | ✓ | R | ✓ | R | R | R | R | R | R | R | R | R | R | R | R | ✓ | R | R | R | R | R | R |
+| **2** | ✓ | · | R | ✓ | R | R | R | R | R | R | R | R | R | R | R | R | ✓ | R | R | R | R | R | R |
+| **3** | R | R | · | R | ✓ | R | R | R | R | R | R | R | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | R | R | ✓ | ✓ |
+| **4** | ✓ | ✓ | R | · | R | R | R | R | R | R | R | R | R | R | R | R | ✓ | R | R | R | R | R | R |
+| **5** | R | R | ✓ | R | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | d | ✓ | ✓ | ✓ |
+| **6** | R | R | R | R | ✓ | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | d | ✓ | ✓ | ✓ | ✓ | ✓ |
+| **7** | R | R | R | R | ✓ | ✓ | · | ✓ | R | R | R | R | R | R | R | n | R | R | R | R | n | n | R |
+| **8** | R | R | R | R | ✓ | ✓ | ✓ | · | R | R | R | R | R | R | R | n | R | R | R | R | n | n | R |
+| **9** | R | R | R | R | ✓ | ✓ | R | R | · | ✓ | d | d | R | R | R | R | R | R | R | R | R | R | ✓ |
+| **10** | R | R | R | R | ✓ | ✓ | R | R | ✓ | · | d | d | R | R | R | R | R | R | R | R | R | R | ✓ |
+| **11** | R | R | R | R | ✓ | ✓ | R | R | ✓ | ✓ | · | ✓ | R | R | R | n | R | R | R | R | n | n | R |
+| **12** | R | R | R | R | ✓ | ✓ | R | R | ✓ | ✓ | ✓ | · | R | R | R | n | R | R | R | R | n | n | R |
+| **13** | R | R | ✓ | R | ✓ | ✓ | R | R | R | R | R | R | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| **14** | R | R | ✓ | R | ✓ | n | R | R | R | R | R | R | ✓ | · | ✓ | ✓ | ✓ | ✓ | ✓ | R | n | ✓ | ✓ |
+| **15** | R | R | ✓ | R | ✓ | ✓ | R | R | R | R | R | R | ✓ | ✓ | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| **16** | R | R | ✓ | R | ✓ | ✓ | n | n | R | R | n | n | ✓ | ✓ | ✓ | · | ✓ | ✓ | ✓ | ✓ | ✓ | R | ✓ |
+| **17** | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | R | R | R | R | R | R | ✓ | ✓ | ✓ | ✓ | · | ✓ | ✓ | R | ✓ | ✓ | ✓ |
+| **18** | R | R | ✓ | R | ✓ | d | R | R | R | R | R | R | ✓ | ✓ | ✓ | ✓ | ✓ | · | d | ✓ | ✓ | ✓ | d |
+| **19** | R | R | ✓ | R | ✓ | ✓ | R | R | R | R | R | R | ✓ | ✓ | ✓ | ✓ | ✓ | d | · | d | ✓ | ✓ | ✓ |
+| **20** | R | R | R | R | d | ✓ | R | R | R | R | R | R | ✓ | d | ✓ | ✓ | R | ✓ | d | · | R | d | d |
+| **21** | R | R | R | R | ✓ | ✓ | n | n | R | R | n | n | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | d | · | ✓ | ✓ |
+| **22** | R | R | ✓ | R | ✓ | ✓ | n | n | R | R | n | n | ✓ | ✓ | ✓ | R | ✓ | ✓ | ✓ | d | ✓ | · | ✓ |
+| **23** | R | R | ✓ | R | ✓ | ✓ | R | R | ✓ | ✓ | R | R | ✓ | ✓ | ✓ | ✓ | ✓ | d | ✓ | d | ✓ | ✓ | · |
 
 **Refusals from the declarations**, with the number of ordered pairs each refuses:
 
@@ -314,6 +317,11 @@ Row: the earlier operator in the list; column: the later. ✓ admitted by the de
 | species_regulated_availability (22) reads `membrane_active` as declared; partition (9) closes it | 4 | real | A coupling's source cell can retire: the partition moves its amounts to the daughters, so a route or state on it would read moved amounts (not shown nominal); closure propagates from the retired cell to its patches, populations and contacts |
 | species_regulated_availability (22) reads `membrane_active`, `outside_active` as declared; membrane_insertion_v2 (11) closes them | 4 | nominal | The coupling's runtime reads are cell amounts, cell volumes and its own fields (route_factors, state_inputs, state_half_step, event_map), and it books nothing; it reads no mask, and insertion@2 closes only onset patches and nodes, which hold no channel population (check_onsets), so nothing the coupling reads or multiplies is padded |
 | species_regulated_availability (22) reads `extracellular_volume` as declared; restricted_lumen_v2 (12) provides it | 2 | nominal | The coupling's runtime reads are cell amounts, cell volumes and its own fields (route_factors, state_inputs, state_half_step, event_map), and it books nothing; it reads no outside node |
+| wash_schedule (23) reads `extracellular_volume` as declared; osmotic_water (1) provides it | 6 | real | The wash exchanges a fraction of its node's declared volume (wash_terms); water changes finite nodes' volumes |
+| wash_schedule (23) reads `extracellular_amount_reference`, `outside_active` as declared; membrane_insertion (7) provides them | 4 | real | Insertion@1 opens onset nodes and changes their anchors; a washed node may be one (not shown nominal) |
+| wash_schedule (23) reads `extracellular_volume` as declared; restricted_lumen (8) provides it | 2 | real | The wash reads its node's declared volume; a lumen changes its node's volume (not shown nominal) |
+| wash_schedule (23) reads `extracellular_amount_reference`, `outside_active` as declared; membrane_insertion_v2 (11) closes them | 4 | real | Insertion@2 closes onset nodes and pads their anchors until their onset; a washed node may be one (not shown nominal) |
+| wash_schedule (23) reads `extracellular_volume` as declared; restricted_lumen_v2 (12) provides it | 2 | real | The wash reads its node's declared volume; a lumen changes its node's volume (not shown nominal) |
 
 **Rules at the definition** (each operator's `check_definition`; law-level rules refuse a pair or an order whatever the data, data-level rules a condition):
 
@@ -339,9 +347,10 @@ Row: the earlier operator in the list; column: the later. ✓ admitted by the de
 | one identity per species across the species operators | 13, 14, 15, 16, 22 | data | `src/cells/operators/species_common.py::check_identities` | `tests/unit/test_species_reactions_refusals.py::test_identities_must_agree_with_the_d150_operators_in_either_order` | real | Identity is a declaration of the species, not of an operator |
 | at most 16 species per world | 13, 14, 15, 16, 22 | data | `src/cells/operators/species_common.py::check_species_cap` | `tests/unit/test_secreted_species.py::test_more_than_sixteen_species_are_refused_with_the_reason` | real | Probed to 16 (FR-9 / D165); above it, another probe |
 | beside water@1 every bath step is isosmotic | 17, 1 | data | `src/cells/operators/bath_schedule.py::check_definition` | `tests/unit/test_bath_schedule.py::test_beside_water_only_an_isosmotic_step_is_admitted` | real | Water reads the declared bath, its water potential bound at the definition (the bath-schedule design §3.1, door W) |
-| cell_owned_compartments@1 composes only with its admitted list, which fails closed | 18 | law, marks 18→19, 19→18 | `src/cells/operators/compartments.py::check_definition` | `tests/unit/test_cell_owned_compartments.py::test_the_admitted_list_fails_closed` | real | A new operator may treat outside nodes as environment (the closed-compartment design §4). It marks the off-list pairs the declarations admit (site occupancy: FR-1's door for it, §4) and stands behind the declarations' refusals of the rest |
+| cell_owned_compartments@1 composes only with its admitted list, which fails closed | 18 | law, marks 18→19, 19→18, 18→23, 23→18 | `src/cells/operators/compartments.py::check_definition` | `tests/unit/test_cell_owned_compartments.py::test_the_admitted_list_fails_closed` | real | A new operator may treat outside nodes as environment (the closed-compartment design §4). It marks the off-list pairs the declarations admit (site occupancy: FR-1's door for it, §4; the compartment wash, off the list until admitted) and stands behind the declarations' refusals of the rest |
 | scheduled_membrane_trafficking@1 composes only with its admitted list, which fails closed | 20 | law, marks 20→5, 5→20, 20→14, 21→20, 20→22, 22→20 | `src/cells/operators/membrane_trafficking.py::check_definition` | `tests/unit/test_membrane_trafficking.py::test_each_refusal_fires_with_its_reason` | real | Version 1 is qualified beside membrane state, the compartments, turnover, reactions and the coupling only (FR-2's design statement §6; D217). It marks the off-list pairs the declarations admit and the compartments' list passes (injection, not qualified beside it) and stands behind the declarations' refusals of the rest. A pair with a law off the compartments' list too is that list's first (the next rule) |
 | beside scheduled_membrane_trafficking@1, the compartments' admitted list refuses site occupancy first | 20, 19 | law, marks 20→19, 19→20 | `src/cells/operators/compartments.py::check_definition` | `tests/unit/test_membrane_trafficking.py::test_each_refusal_fires_with_its_reason` | real | Trafficking requires the compartments, whose check runs first, and site_occupancy@1 is not on their admitted list: the case 'site occupancy beside it' asserts that message. Trafficking's own reason, that sites move with their membrane only from version 1.1, is a second wall this composition never reaches |
+| beside scheduled_membrane_trafficking@1, the compartments' admitted list refuses the compartment wash first | 20, 23 | law, marks 20→23, 23→20 | `src/cells/operators/compartments.py::check_definition` | `tests/unit/test_wash_schedule.py::test_each_refusal_fires_with_its_reason` | real | Trafficking requires the compartments, whose check runs first, and scheduled_compartment_wash@1 is not on their admitted list: the case 'beside the compartments' asserts that message. The wash's own refusals at the definition are a second wall this composition never reaches |
 | membrane state beside a compartment only together with its admitted writers, trafficking or the unit producer | 18, 6 | law, marks 18→6, 6→18 | `src/cells/operators/compartments.py::check_definition` | `tests/unit/test_cell_owned_compartments.py::test_membrane_state_beside_a_compartment_only_with_trafficking` | real | The membrane-state wall's door (the closed-compartment design §4; FR-2, D217): the declaration reads the areas and capacitances as references, and membrane state, which provides them, composes with it only beside scheduled_membrane_trafficking@1 or population_unit_turnover@1, which writes units only (the lead's ruling of 20 November 2026), and only where every writer of its fields is one of them |
 | replacement@1 schedules no event on a compartment's owner and names no owner as a donor | 18, 3 | data | `src/cells/operators/compartments.py::check_definition` | `tests/unit/test_cell_owned_compartments.py::test_replacement_composes_away_from_owners_and_never_on_or_from_one` | real | A newcomer would inherit the compartment's content, and a donor copy takes the donor's cytosolic amounts only (door R, the closed-compartment design §1.5) |
 | D152 refuses RK4 | 15 | data | `src/cells/operators/species_reactions.py::LocalSpeciesReactions.check_definition` | `tests/unit/test_species_reactions_refusals.py::test_rk4_is_refused_with_its_reasons` | real | Version 1's bookings are exact and checked at rounding under IMEX; D150's RK4 worlds stay the transport's sharp reference, and no consumer needs it (D152 §4.6) |

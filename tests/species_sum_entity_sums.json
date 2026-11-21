@@ -1005,6 +1005,26 @@
    "operators/population_unit_turnover.py",
    "own_magnitudes",
    "entity_sum(xp.abs(row.unit_pool_units), axis=1, xp=xp)"
+  ],
+  [
+   "operators/wash_schedule.py",
+   "ledger_terms",
+   "entity_sum(out, axis=1, xp=xp)"
+  ],
+  [
+   "operators/wash_schedule.py",
+   "ledger_terms",
+   "entity_sum(row.wash_mixing_heat_pJ - exchanged, axis=None, xp=xp)"
+  ],
+  [
+   "operators/wash_schedule.py",
+   "magnitude_terms",
+   "entity_sum(moved, axis=1, xp=xp)"
+  ],
+  [
+   "operators/wash_schedule.py",
+   "magnitude_terms",
+   "entity_sum(row.wash_energy_magnitude_pJ, axis=None, xp=xp)"
   ]
  ]
 }
