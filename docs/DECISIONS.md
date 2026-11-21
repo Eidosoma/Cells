@@ -8779,3 +8779,16 @@ work". Decided by the lead with the advisor.
    that "less" is visible.
 - Also landed this evening: C's near-event refusal for windowed clocks (c65dbfa5).
 
+## D274: FR-37, sampling an unevenly mixed liquid, added at high priority
+
+2026-11-21, about 22:34 UTC. A user's feature request, relayed by the user ("add to our high priority
+feature list"): a draw from chosen parts of an unevenly mixed liquid, with a synthetic two-region
+test (8 and 2 fmol in two 100 pL regions; three collection cases) and the question of which inputs a
+user must declare and which Cells can calculate from the collection port, flow and timing.
+- It is FR-37, High.
+- The operators owner, who built FR-27's wash, takes the first step: whether existing operators
+  represent the draw, shown as a runnable example over the three cases with the request's
+  accounting, plus the inputs analysis. If something is missing, it names the smallest addition.
+- An independent checker writes the acceptance from the request's words before anything lands.
+- FR-28's landing after G4 comes first.
+

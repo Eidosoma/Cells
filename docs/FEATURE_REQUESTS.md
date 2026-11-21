@@ -42,6 +42,7 @@ and a general feature, never one built for one study (D144).
 | [FR-34](#fr-34--channel-population-readouts-count-availability-and-signed-current) | Channel population readouts: surface count, availability and signed current at a declared voltage, with units and sign convention | **High** (user, 20 November 2026; D251) | **Landed, composites included:** opt-in flux and current readouts with fixed-voltage evaluation (81a29442); a composite's own clamped_channel_flux and clamped_kind at the step's control and layout views (07022ddf, D265 finding 1, checker-confirmed) | None |
 | [FR-35](#fr-35--timed-partial-withdrawal-of-an-assembly-populations-exterior-pool) | Timed partial withdrawal of an assembly population's well-mixed exterior pool: each molecule withdrawn independently, a declared buffer supplied, sites and particles kept | **High** (user, 21 November 2026) | **Landed** (merge b521a11c, tag `fr35-withdrawal-landed-2026-11-21`): `cells.pool_withdrawal@1` (D261) | None. Landed (b521a11c, with D263's fixes); the independent acceptance and a 4,000-stream ensemble passed |
 | [FR-36](#fr-36--age--and-region-selective-loss-within-a-species-row) | Age- and region-selective loss within a species row | FR-25's reviewer (21 November 2026) | **Deferred (D273).** Today's tools cover completion-time cohorts in one well-mixed pool with age-independent loss (cohort.py) and FR-33's regional export and one-way tracer | Reopens on a requester's readout needing age-dependent loss: D1 (label families) and D2 (an ageing operator), 2.5 to 4 days |
+| [FR-37](#fr-37--sampling-a-liquid-whose-dye-is-unevenly-distributed) | Sampling a liquid whose dye is unevenly distributed: a draw from chosen parts of an unevenly mixed liquid | **High** (user, 21 November 2026; D274) | Requested | First a runnable example with existing operators and the inputs analysis; otherwise the smallest addition (the operators owner). An independent acceptance is written from the request's words before landing |
 
 ## FR-1 — A closed internal compartment on the shared inventory
 
@@ -1325,3 +1326,35 @@ sampling variation. Biological validation of the heat remains open.
 - **Status: deferred (D273).** Outside FR-25's own request; it reopens on a requester's readout that
   needs age-dependent loss.
 
+## FR-37 — Sampling a liquid whose dye is unevenly distributed
+
+- **The request (a user, 21 November 2026; D274).** A pipette can collect half a chamber's liquid
+  and pick up more than half its dye, when the liquid near the collection port is richer in dye than
+  the rest. The instrument then reports a higher sample concentration, although the chamber's total
+  is accounted for. FR-27 withdraws from a well-mixed compartment and FR-35 from a well-mixed
+  molecular pool. Can existing operators represent a draw from a particular part of an unevenly
+  mixed liquid? Demonstrate it with a runnable example; if something is missing, identify the
+  smallest addition.
+- **The synthetic test.** A passive dissolved tracer in two liquid regions, A and B, each 100 pL,
+  with 8 fmol in A and 2 fmol in B, above the same buffer background. Each case starts fresh and
+  collects 100 pL.
+
+  | Collection condition | Expected in sample | Left behind |
+  |---|---|---|
+  | Draw all 100 pL from A before mixing | 8 fmol | 2 fmol |
+  | Mix A and B completely, then draw | 5 fmol | 5 fmol |
+  | Draw 75 pL from A and 25 pL from B | 6.5 fmol | 3.5 fmol |
+
+  For each case, report:
+  - the volume drawn from each region;
+  - the amount and concentration in the collected sample;
+  - the tracer remaining in each region.
+  Buffer supplied by any refill is recorded separately, and the sample and remainder account for
+  all 10 fmol.
+- **Inputs.** In this first test, the starting distribution and the volume drawn from each region
+  are declared inputs. The answer must say which inputs a Cells user supplies and which Cells can
+  calculate from the collection port, flow and timing. That distinction matters experimentally:
+  - an assumed dye-rich region can reproduce a high reading;
+  - predicting that such a region forms needs separate evidence;
+  - measuring the dye left behind tests the explanation.
+- **Status:** requested, High.
