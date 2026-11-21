@@ -33,6 +33,7 @@ import CellsProofs.Tissue.DivisionBridge
 import CellsProofs.Tissue.MembraneInsertion
 import CellsProofs.Tissue.MembraneTrafficking
 import CellsProofs.Tissue.ReactionTransport
+import CellsProofs.Tissue.RegionalTracer
 import CellsProofs.Tissue.RestrictedLumen
 import CellsProofs.Transport.ATPCycle
 import CellsProofs.Transport.ChargedPermeation
