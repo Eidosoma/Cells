@@ -1,5 +1,31 @@
 # Cells proof comparisons
 
+<a id="fr33-label-energy"></a>
+
+## 21 November 2026 · FR-33, heat booked when neutral labels mix
+
+Two neutral labels can cross a face in opposite directions while the total tracer stays still. For any finite collection of strictly positive label fractions with common diffusivity, Lean proves that resolving labels adds a nonnegative term to the ideal face power. The term is zero exactly when every label has the same fraction on both sides. The reduction from the Cells neutral face uses its logarithmic quotient or equal-concentration branch for every active row and the parent. An optional check identifies the term with Mathlib’s relative-entropy function. [Proof](CellsProofs/Transport/LabelMixingPower.lean) · [Mathlib equivalence](checks/mixing/KLFun.lean)
+
+The accepted step books heat from applied fluxes and predicted weights. With positive weights this booking is zero exactly when every applied flux is zero. Combining two rows with their summed weights removes a nonnegative square. An independently simulated parent predicts its own weight. We therefore ran both representations through the public two-node world. The table gives cumulative face heat after 1 s at a 10 ms step. Label amounts summed to the parent at both nodes throughout, within 3 × 10⁻¹⁴ fmol. [Accepted-step booking](https://github.com/Eidosoma/Cells/blob/ee0b8106406eb26e57ab1b0c34e16ed6c3f83a2b/src/cells/models/surface_pump_v3.py#L2119-L2134) · [Comparison](checks/label_mixing_power.py)
+
+| Gradients | Parent (pJ) | Separate labels (pJ) |
+| --- | ---: | ---: |
+| Opposing 90:10 fractions, equal totals | 0 | 1.47315444 |
+| Same fractions, twofold total gradient | 0.33000851 | 0.33000851 |
+| Different fractions and different totals | 0.11645669 | 0.51387347 |
+
+Across 800 accepted CPU float64 steps the largest difference between a recorded heat increment and its independent reconstruction was 3.68 × 10⁻¹⁶ pJ. In the opposing case a 5 ms step gave 1.47318357 pJ against the analytic continuous free-energy loss of 1.47319327 pJ. D1 users who split one chemical species into separate rows for tracking should keep this change in calculated heat explicit. Its interpretation as measurable heat from a label alone remains open. The frozen numerical record is `lean-label-energy-wall-20261121/label-energy.json`. [Parent and label transport](#fr33-label-diffusion)
+
+<a id="fr28-wall-wash"></a>
+
+## 21 November 2026 · FR-28, bound tracer at a wash and at the next reading
+
+A draw removes a fraction of the free tracer. Applying that fraction to the whole inventory overestimates the sample by the same fraction of the bound stock. Lean proves retention at the event, inventory closure during later exchange, and the sign of the first binding rate after dilution at an initially equilibrated surface. [Proof](CellsProofs/Tissue/WallWash.lean) · [Compiled comparison](checks/wall_wash.py)
+
+The operator candidate `9917e3d9` started with 60 fmol free, 10 on the wall and 30 on the specimen. A half wash collected **30 fmol** and the refill supplied 0.0000005 fmol. All eight site-state fields were byte-identical across the event. The post-wash wall rate was −2.99999995 fmol/s. At the next recorded step, 10 ms later, the wall held **9.97015402 fmol** and the specimen held 29.99100988 fmol. Their releases raised the liquid to 30.03883660 fmol. Node ownership and an inert stand-in yielded identical traces. A concentration-matched refill gave zero wall rate. A whole draw collected 60 fmol and left 40 fmol bound at the instant of exchange. The frozen numerical record is `lean-label-energy-wall-20261121/wall-wash.json`. [Wash and counters](https://github.com/Eidosoma/Cells/blob/9917e3d9567993e1019c8caafa89f8653ee6ea9b/src/cells/operators/wash_schedule.py#L438-L501) · [Candidate well](https://github.com/Eidosoma/Cells/blob/9917e3d9567993e1019c8caafa89f8653ee6ea9b/validation/tissue/wash_schedule_fixtures.py#L56-L81)
+
+Robinson et al. separately counted labelled albumin in removed urine, six water rinses and the final disk. A separate five-hour experiment on the same plastic at pH 5 and 87 mg/L yielded **8.759 µg** in pooled liquid and **22.96 ng/cm²** on the disk (0.22%, four replicates). That pool included the original sample, rinses and pipette tip. These measurements support separate liquid and surface accounting. Testing the simulated release rate requires known rinse times and a way to distinguish desorption from liquid carried over between rinses. [Rinse series, Fig. S3](https://stacks.cdc.gov/view/cdc/50419/cdc_50419_DS2.pdf#page=4) · [Surface data, Table S2](https://stacks.cdc.gov/view/cdc/50419/cdc_50419_DS2.pdf#page=7) · [Liquid data, Table S4](https://stacks.cdc.gov/view/cdc/50419/cdc_50419_DS2.pdf#page=9) · [Measurement record](checks/data/robinson2014_wall_wash.json)
+
 <a id="fr33-label-diffusion"></a>
 
 ## 21 November 2026 · FR-33 D1, diffusion of a label and its complement

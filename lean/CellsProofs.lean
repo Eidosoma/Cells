@@ -36,6 +36,7 @@ import CellsProofs.Tissue.ReactionTransport
 import CellsProofs.Tissue.RegionalSampling
 import CellsProofs.Tissue.RegionalTracer
 import CellsProofs.Tissue.RestrictedLumen
+import CellsProofs.Tissue.WallWash
 import CellsProofs.Transport.ATPCycle
 import CellsProofs.Transport.ChargedPermeation
 import CellsProofs.Transport.ConditionedVoltage
@@ -45,6 +46,7 @@ import CellsProofs.Transport.InwardRectifier
 import CellsProofs.Transport.IonChannels
 import CellsProofs.Transport.JunctionGate
 import CellsProofs.Transport.LabelDiffusion
+import CellsProofs.Transport.LabelMixingPower
 import CellsProofs.Transport.LogMeanFace
 import CellsProofs.Transport.MixedMembrane
 import CellsProofs.Transport.NeutralPermeation
