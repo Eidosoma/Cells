@@ -8467,3 +8467,22 @@ lets until 8pm this evening focus on core and FRs nothing else".
 - **Tests added:** a convergence-order row with a planted stale product at one stage; m = 2 with
   the second gate pinned open, reproducing the one-gate trajectory.
 
+## D263: A second review's four findings in the assembly washes, the compartment wash and the shell; FR-35 held until fixed
+
+2026-11-21, about 14:36 UTC. A reviewer's report, relayed by the user ("report"):
+1. **A wash with an unlimited tracer source still active.** A full wash (`cells.pool_replacement@1`, on
+   main) reported successful accounting while such a source remained active: three molecules bound
+   to exposed sites before any bound molecule was released. FR-35's partial withdrawal accepts the
+   same configuration. The review asks that the tracer-source check be fixed before FR-35 merges,
+   and that the same fix be applied to full washes on main.
+2. **Crossing a surface:** a bulk wash refuses tracer crossing a surface through its built-in
+   permeability, but accepts the same crossing through a registered route.
+3. **A vacuous shell check:** a low-count shell fired a reaction and reported zero detailed-balance
+   error after checking zero reaction pairs.
+4. **Shared state between runs:** editing one exported check changed the result saved for a later,
+   independent run.
+- **Held:** FR-35 does not land until finding 1 is fixed on its branch and on main.
+- **Fixers:** findings 1, 3 and 4 go to the assembly owner, finding 2 to the operators owner.
+- **Independent check:** as in D259, an agent that wrote none of the code reproduces each finding at
+  its base and reruns the reproducers on each fixed head before anything lands.
+
