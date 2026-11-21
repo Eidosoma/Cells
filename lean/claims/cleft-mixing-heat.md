@@ -23,6 +23,8 @@ For each species in an ideal isothermal fill, mixing heat is the bath’s chemic
 
 Direct proof subject `cells.restricted_cleft_lumen@1`, `cells.restricted_cleft_lumen@2`
 
+Proof sources [Mathlib logarithm bound used in the default mixing-heat proof](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/SpecialFunctions/Log/Basic.lean#L293-L294) · [Mathlib klFun_nonneg and klFun_eq_zero_iff, imported in the optional comparison](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/InformationTheory/KullbackLeibler/KLFun.lean#L145-L149) · [Cells specialization of the relative-entropy formula](../checks/mixing/KLFun.lean)
+
 Uses [Fluid from a held bath dilutes a growing cleft in proportion to its added volume](cleft-bath-fill.md) · [A held bath can return to its original composition after supplying solute and work to tissue](scheduled-bath-exchange.md)
 
 ## Numerical comparison

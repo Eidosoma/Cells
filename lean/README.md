@@ -85,7 +85,11 @@ jq -r --arg law 'logmean_electrodiffusion@1' '
 
 ### Reusing a proof
 
-Keep the Cells theorem beside the mechanism it explains. Import a narrow upstream module when it fits our pinned Lean version. For a short result from another Lean version, a local derivation can be simpler. When copying licensed source, keep the original attribution, license and required notices with the copy. Give the claim a `formal.sources` entry for the upstream theorem at a fixed revision and label how we used it. The binding claim shows a local Lean 4 derivation. The face-power claim links an optional external import. [Binding example](claims/single-site-binding.md) · [Face-power example](claims/extracellular-face-dissipation.md)
+For new physics claims, look first for a compatible public theorem with matching assumptions and units. The charter gives the criteria for choosing a source, recording a direct import or optional comparison, and keeping a short proof local. [Cells Lean charter](AGENTS.md)
+
+The single-site binding proof derives the Langmuir formula locally. The face-power check imports the ATOMS Lab dimensional algebra. Both claims identify the published source and how Cells uses it. [Binding example](claims/single-site-binding.md) · [Face-power example](claims/extracellular-face-dissipation.md)
+
+The cleft-fill and wash proofs share the same ideal mixing term. Their default proof uses Mathlib’s logarithm bounds. An optional check identifies that term with Mathlib’s relative-entropy function. A second optional check imports Physlib’s two-state ensemble and recovers the equilibrium open probability of a junction gate when the fitted gate coordinate equals the dimensionless energy gap. [Cleft heat](claims/cleft-mixing-heat.md) · [Wash heat](claims/compartment-wash.md) · [Gate specialization](checks/physlib/JunctionEquilibrium.lean)
 
 Two monotonicity proofs from `grn-lean` also apply directly to the scalar Hill factors in Cells. The optional check compiles the pinned definition and both upstream proofs, verifies the equivalence with our log-space evaluation, and shows that basal channel availability preserves the activating and inhibiting dose responses. The chemistry review records which reaction-network results apply to the closed enzyme fixture. [Hill specialization](checks/hill/Response.lean) · [Regulated channel proof](claims/regulated-state-response.md) · [Chemistry libraries tested against Cells](ENGINE_LAW_VERIFICATION.md#chemistry-libraries-tested-against-cells)
 
@@ -122,10 +126,17 @@ lake exe cache get Mathlib.Data.Complex.Exponential \
 lake build
 ```
 
-To check the ATOMS Lab dimensional algebra on the Cells toolchain, run the following from `lean/`. The first run downloads two source modules and their license from a pinned revision and fetches the compiled matrix-rank dependency if needed. Later runs can use the local cache. The check compiles the dimension of flux × molar potential and checks the scalar conversion used by the engine. [Optional proof](checks/units/FacePower.lean) · [Pinned source and compatibility edit](checks/units/check.sh)
+To check the ATOMS Lab dimensional algebra on the Cells toolchain, run the following from `lean/`. The first run downloads two source modules and their license from a pinned revision and fetches the compiled matrix-rank dependency if needed. Later runs can use the local cache. The check verifies that flux × molar potential has units of power and electrode charge × voltage has units of energy. [Optional proofs](checks/units/FacePower.lean) · [Pinned source and compatibility edit](checks/units/check.sh)
 
 ```bash
 bash checks/units/check.sh
+```
+
+For the relative-entropy comparison, the first command fetches the additional compiled Mathlib modules on the Cells pin. The second checks that the mixing term is nonnegative and vanishes exactly at a concentration ratio of one. [Optional proof](checks/mixing/KLFun.lean)
+
+```bash
+lake exe cache get Mathlib.InformationTheory.KullbackLeibler.KLFun
+lake env lean -DwarningAsError=true checks/mixing/KLFun.lean
 ```
 
 For the Hill proofs, the first run fetches two pinned source files, their MIT license and any missing compiled real-power dependencies. The command works from the cache on subsequent runs. [Hill proof runner](checks/hill/check.sh)
@@ -133,6 +144,31 @@ For the Hill proofs, the first run fetches two pinned source files, their MIT li
 ```bash
 bash checks/hill/check.sh
 ```
+
+<details>
+<summary>Optional Physlib check for a junction gate</summary>
+
+Physlib v4.22.0 uses the module name `PhysLean` and its own Lean 4.22.0 toolchain. Its extra axiom `Constants.kBAx` supplies a positive Boltzmann constant in the chosen units. From `lean/`, clone the tagged source once into `.lake/`. Run the commands inside that clone with Lean and Lake 4.22.0 on your path. [Upstream two-state ensemble](https://github.com/leanprover-community/physlib/blob/559b0e14bd87896d4ee536a536a8fb65e83b77cc/PhysLean/StatisticalMechanics/CanonicalEnsemble/TwoState.lean#L26-L37) · [Boltzmann constant axiom](https://github.com/leanprover-community/physlib/blob/559b0e14bd87896d4ee536a536a8fb65e83b77cc/PhysLean/StatisticalMechanics/BoltzmannConstant.lean#L20-L30) · [Gate specialization](checks/physlib/JunctionEquilibrium.lean)
+
+```bash
+gate_proof="$PWD/checks/physlib/JunctionEquilibrium.lean"
+git clone --depth 1 --branch v4.22.0 https://github.com/leanprover-community/physlib .lake/physlib-v4.22.0
+(
+  set -e
+  cd .lake/physlib-v4.22.0
+  test "$(git rev-parse HEAD)" = 559b0e14bd87896d4ee536a536a8fb65e83b77cc
+  lake env lean --version
+  lake exe cache get Mathlib.Analysis.Calculus.ParametricIntegral \
+    Mathlib.Analysis.SpecialFunctions.Log.Summable Mathlib.MeasureTheory.Integral.Prod \
+    Mathlib.MeasureTheory.Measure.ProbabilityMeasure Mathlib.Analysis.InnerProductSpace.Basic \
+    Mathlib.Analysis.Calculus.Deriv.Inv Mathlib.Data.NNReal.Defs Mathlib.Lean.Expr.Basic \
+    Mathlib.Tactic.FieldSimp
+  lake build PhysLean.StatisticalMechanics.CanonicalEnsemble.TwoState
+  lake env lean -DwarningAsError=true "$gate_proof"
+)
+```
+
+</details>
 
 ## CPU comparisons
 

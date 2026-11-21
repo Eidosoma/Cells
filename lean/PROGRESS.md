@@ -1,5 +1,13 @@
 # Cells proof comparisons
 
+## 21 November 2026 · Reusing public physics proofs
+
+The cleft and the scheduled compartment wash use the same ideal mixing term. The wash proof now reuses the cleft’s Mathlib-based sign bound for each exchanged neutral species and proves zero mixing heat at complete replacement. On Lean 4.19.0 the optional comparison with Mathlib’s `klFun` also proves that the term vanishes exactly at a concentration ratio of one. Adding that import to the default library would have raised its transitive Mathlib source-module count from 1,725 to 2,079. The optional ATOMS Lab check on the same toolchain verifies the units of charge × voltage for electrode work. [Wash heat](claims/compartment-wash.md) · [Relative entropy](checks/mixing/KLFun.lean) · [Electrode units](checks/units/FacePower.lean)
+
+With Physlib v4.22.0, Lean recovered the single gate’s open probability `1 / (1 + exp u)` from the two-state partition function under the identification `u = β E`. Physlib postulates a positive Boltzmann constant in the chosen units. The completed specialization uses that postulate and Lean’s `propext`, `Classical.choice` and `Quot.sound`. The experiment leaves the fitted voltage slope, kinetic rates and Cx43 measurements as separate questions. [Upstream theorem](https://github.com/leanprover-community/physlib/blob/559b0e14bd87896d4ee536a536a8fb65e83b77cc/PhysLean/StatisticalMechanics/CanonicalEnsemble/TwoState.lean#L33-L37) · [Boltzmann constant](https://github.com/leanprover-community/physlib/blob/559b0e14bd87896d4ee536a536a8fb65e83b77cc/PhysLean/StatisticalMechanics/BoltzmannConstant.lean#L22-L30) · [Cells specialization](checks/physlib/JunctionEquilibrium.lean)
+
+Seven existing CPU tests passed on the engine in `8ace24ee`. They cover the 50-digit wash-heat comparisons and whole replacement, the gate’s detailed-balance and open-fraction check, and electrode work for both polarities. [Wash tests](../tests/unit/test_wash_schedule.py#L439) · [Gate test](../tests/unit/test_junction_series_gates.py#L43) · [Electrode test](../tests/unit/test_current_injection.py#L34) · [Reproduction commands](README.md#build)
+
 <a id="nov21-engine-review"></a>
 
 ## 21 November 2026 · Five repairs and the new registered mechanisms

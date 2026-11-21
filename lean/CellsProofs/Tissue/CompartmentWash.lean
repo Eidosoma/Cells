@@ -1,4 +1,4 @@
-import Mathlib.Data.Real.Basic
+import CellsProofs.Tissue.RestrictedLumen
 import Mathlib.Logic.Function.Iterate
 import Mathlib.Tactic.Ring
 
@@ -6,6 +6,8 @@ import Mathlib.Tactic.Ring
 Amounts use one common unit. Bound ligand is held during the event. -/
 
 namespace CellsProofs.Tissue.CompartmentWash
+
+open RestrictedLumen (phi phi_nonneg)
 
 noncomputable def afterWash (fraction amount bufferAmount : ℝ) : ℝ :=
   (1 - fraction) * amount + fraction * bufferAmount
@@ -22,6 +24,25 @@ theorem positive {f n b : ℝ} (hf : 0 < f) (hfull : f ≤ 1) (hn : 0 < n) (hb :
   exact add_pos_of_nonneg_of_pos (mul_nonneg (sub_nonneg.mpr hfull) hn.le) (mul_pos hf hb)
 
 theorem whole (n b : ℝ) : afterWash 1 n b = b := by simp [afterWash]
+
+/-- Per exchanged neutral species, with free concentrations `c` and `b` in mM,
+volume in pL and `rt` in pJ/fmol. This is the ideal isothermal heat in pJ. -/
+noncomputable def mixingHeat (rt volume f c b : ℝ) : ℝ :=
+  let m := afterWash f c b
+  rt * volume * m * ((1 - f) * phi (c / m) + f * phi (b / m))
+
+theorem mixingHeat_nonneg {rt volume f c b : ℝ} (hrt : 0 ≤ rt) (hv : 0 < volume)
+    (hf : 0 < f) (hfull : f ≤ 1) (hc : 0 < c) (hb : 0 < b) :
+    0 ≤ mixingHeat rt volume f c b := by
+  have hm := positive hf hfull hc hb
+  exact mul_nonneg (mul_nonneg (mul_nonneg hrt hv.le) hm.le)
+    (add_nonneg (mul_nonneg (sub_nonneg.mpr hfull) (phi_nonneg (div_pos hc hm)))
+      (mul_nonneg hf.le (phi_nonneg (div_pos hb hm))))
+
+/-- Replacing the entire liquid leaves no retained liquid to mix with the buffer. -/
+theorem whole_mixing_heat (rt volume c : ℝ) {b : ℝ} (hb : 0 < b) :
+    mixingHeat rt volume 1 c b = 0 := by
+  simp [mixingHeat, whole, hb.ne', phi]
 
 /-- Successive identical washes with no intervening flux or binding relax to the buffer level. -/
 theorem repeated (f n b : ℝ) (k : ℕ) :

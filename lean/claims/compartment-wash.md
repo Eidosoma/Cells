@@ -2,23 +2,28 @@
 
 # A partial wash dilutes free solute and accounts for every sampled molecule
 
-For a finite well of fixed volume V, a wash of fraction f changes free amount n to (1 − f)n + f V c_buffer. Adding sampled material and subtracting supplied material recovers the original total, including bound ligand retained through the event. Repeating k equal washes multiplies the initial excess above the buffer level by (1 − f)ᵏ.
+For a finite well of fixed volume V, a wash of fraction f changes free amount n to (1 − f)n + f V c_buffer. Adding sampled material and subtracting supplied material recovers the original total, including bound ligand retained through the event. Repeating k equal washes multiplies the initial excess above the buffer level by (1 − f)ᵏ. For each exchanged neutral species, ideal mixing heat is nonnegative and a whole wash releases zero mixing heat.
 
 ## Assumptions
 
 - The liquid is well mixed. Between the washes used in the repeated-wash formula there is no binding, release, synthesis or transport.
 - The Lean positivity result assumes 0 < f ≤ 1 and strictly positive free and buffer amounts. Float64 whole-wash storage also requires sufficient resolution at the host’s amount anchor. Version 1 exchanges ions at their own concentration.
+- For the heat, the well is ideal and isothermal with positive volume and concentrations and a nonnegative thermal energy scale.
 
 ## Lean proof
 
 **Proved**
 
-- [CellsProofs.Tissue.CompartmentWash.inventory](../CellsProofs/Tissue/CompartmentWash.lean#L14)
-- [CellsProofs.Tissue.CompartmentWash.positive](../CellsProofs/Tissue/CompartmentWash.lean#L20)
-- [CellsProofs.Tissue.CompartmentWash.whole](../CellsProofs/Tissue/CompartmentWash.lean#L24)
-- [CellsProofs.Tissue.CompartmentWash.repeated](../CellsProofs/Tissue/CompartmentWash.lean#L27)
+- [CellsProofs.Tissue.CompartmentWash.inventory](../CellsProofs/Tissue/CompartmentWash.lean#L16)
+- [CellsProofs.Tissue.CompartmentWash.positive](../CellsProofs/Tissue/CompartmentWash.lean#L22)
+- [CellsProofs.Tissue.CompartmentWash.whole](../CellsProofs/Tissue/CompartmentWash.lean#L26)
+- [CellsProofs.Tissue.CompartmentWash.repeated](../CellsProofs/Tissue/CompartmentWash.lean#L48)
+- [CellsProofs.Tissue.CompartmentWash.mixingHeat_nonneg](../CellsProofs/Tissue/CompartmentWash.lean#L34)
+- [CellsProofs.Tissue.CompartmentWash.whole_mixing_heat](../CellsProofs/Tissue/CompartmentWash.lean#L43)
 
 Direct proof subject `cells.scheduled_compartment_wash@1`
+
+Proof sources [Mathlib logarithm bound used in the default mixing-heat proof](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/SpecialFunctions/Log/Basic.lean#L293-L294) · [Mathlib klFun_nonneg and klFun_eq_zero_iff, imported in the optional comparison](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/InformationTheory/KullbackLeibler/KLFun.lean#L145-L149) · [Cells specialization of the relative-entropy formula](../checks/mixing/KLFun.lean) · [Cells wash heat computed from the retained and supplied concentrations](../../src/cells/operators/wash_schedule.py#L320)
 
 ## Numerical comparison
 

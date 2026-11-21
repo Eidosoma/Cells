@@ -3781,6 +3781,11 @@
           "CellsProofs.Tissue.RestrictedLumen.heat_same": "lean/CellsProofs/Tissue/RestrictedLumen.lean",
           "CellsProofs.Tissue.RestrictedLumen.heat_entropy": "lean/CellsProofs/Tissue/RestrictedLumen.lean",
           "CellsProofs.Tissue.RestrictedLumen.energy_booking": "lean/CellsProofs/Tissue/RestrictedLumen.lean"
+        },
+        "sources": {
+          "Mathlib logarithm bound used in the default mixing-heat proof": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/SpecialFunctions/Log/Basic.lean#L293-L294",
+          "Mathlib klFun_nonneg and klFun_eq_zero_iff, imported in the optional comparison": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/InformationTheory/KullbackLeibler/KLFun.lean#L145-L149",
+          "Cells specialization of the relative-entropy formula": "lean/checks/mixing/KLFun.lean"
         }
       },
       "numerical": {
@@ -4205,6 +4210,10 @@
           "CellsProofs.Tissue.CurrentInjection.pulse_charge": "lean/CellsProofs/Tissue/CurrentInjection.lean",
           "CellsProofs.Tissue.CurrentInjection.charge_error": "lean/CellsProofs/Tissue/CurrentInjection.lean",
           "CellsProofs.Tissue.CurrentInjection.single_patch_work": "lean/CellsProofs/Tissue/CurrentInjection.lean"
+        },
+        "sources": {
+          "ATOMS Lab base dimensions and energy, imported in the optional units check": "https://github.com/ATOMSLab/LeanDimensionalAnalysis/blob/de263eed945693058ef2b8a1fa56c2ec5642ea7a/DimensionalAnalysis/Dimensions.lean#L10-L43",
+          "Cells specialization for charge times voltage": "lean/checks/units/FacePower.lean"
         }
       },
       "numerical": {
@@ -4336,7 +4345,11 @@
         },
         "sources": {
           "FR-30 product of independent gate factors at constant voltage": "docs/JUNCTION_TWO_RELAXATION_DESIGN.md#L174",
-          "Constant-voltage step and product conductance": "src/cells/laws/junctions/junction_series_gates.py#L134"
+          "Constant-voltage step and product conductance": "src/cells/laws/junctions/junction_series_gates.py#L134",
+          "Physlib two-state partition function, imported in the optional single-gate equilibrium check": "https://github.com/leanprover-community/physlib/blob/559b0e14bd87896d4ee536a536a8fb65e83b77cc/PhysLean/StatisticalMechanics/CanonicalEnsemble/TwoState.lean#L33-L37",
+          "Physlib postulate used by the optional check, a positive Boltzmann constant in the chosen units": "https://github.com/leanprover-community/physlib/blob/559b0e14bd87896d4ee536a536a8fb65e83b77cc/PhysLean/StatisticalMechanics/BoltzmannConstant.lean#L22-L30",
+          "Cells specialization for one gate with dimensionless open-state energy gap": "lean/checks/physlib/JunctionEquilibrium.lean",
+          "Engine steady open fraction before residual conductance": "src/cells/laws/junctions/junction_series_gates.py#L79"
         }
       },
       "numerical": {
@@ -5620,10 +5633,11 @@
       "id": "compartment-wash",
       "category": "tissue-and-conservation",
       "title": "A partial wash dilutes free solute and accounts for every sampled molecule",
-      "statement": "For a finite well of fixed volume V, a wash of fraction f changes free amount n to (1 − f)n + f V c_buffer. Adding sampled material and subtracting supplied material recovers the original total, including bound ligand retained through the event. Repeating k equal washes multiplies the initial excess above the buffer level by (1 − f)ᵏ.",
+      "statement": "For a finite well of fixed volume V, a wash of fraction f changes free amount n to (1 − f)n + f V c_buffer. Adding sampled material and subtracting supplied material recovers the original total, including bound ligand retained through the event. Repeating k equal washes multiplies the initial excess above the buffer level by (1 − f)ᵏ. For each exchanged neutral species, ideal mixing heat is nonnegative and a whole wash releases zero mixing heat.",
       "assumptions": [
         "The liquid is well mixed. Between the washes used in the repeated-wash formula there is no binding, release, synthesis or transport.",
-        "The Lean positivity result assumes 0 < f ≤ 1 and strictly positive free and buffer amounts. Float64 whole-wash storage also requires sufficient resolution at the host’s amount anchor. Version 1 exchanges ions at their own concentration."
+        "The Lean positivity result assumes 0 < f ≤ 1 and strictly positive free and buffer amounts. Float64 whole-wash storage also requires sufficient resolution at the host’s amount anchor. Version 1 exchanges ions at their own concentration.",
+        "For the heat, the well is ideal and isothermal with positive volume and concentrations and a nonnegative thermal energy scale."
       ],
       "formal": {
         "status": "proved",
@@ -5634,7 +5648,15 @@
           "CellsProofs.Tissue.CompartmentWash.inventory": "lean/CellsProofs/Tissue/CompartmentWash.lean",
           "CellsProofs.Tissue.CompartmentWash.positive": "lean/CellsProofs/Tissue/CompartmentWash.lean",
           "CellsProofs.Tissue.CompartmentWash.whole": "lean/CellsProofs/Tissue/CompartmentWash.lean",
-          "CellsProofs.Tissue.CompartmentWash.repeated": "lean/CellsProofs/Tissue/CompartmentWash.lean"
+          "CellsProofs.Tissue.CompartmentWash.repeated": "lean/CellsProofs/Tissue/CompartmentWash.lean",
+          "CellsProofs.Tissue.CompartmentWash.mixingHeat_nonneg": "lean/CellsProofs/Tissue/CompartmentWash.lean",
+          "CellsProofs.Tissue.CompartmentWash.whole_mixing_heat": "lean/CellsProofs/Tissue/CompartmentWash.lean"
+        },
+        "sources": {
+          "Mathlib logarithm bound used in the default mixing-heat proof": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/SpecialFunctions/Log/Basic.lean#L293-L294",
+          "Mathlib klFun_nonneg and klFun_eq_zero_iff, imported in the optional comparison": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/InformationTheory/KullbackLeibler/KLFun.lean#L145-L149",
+          "Cells specialization of the relative-entropy formula": "lean/checks/mixing/KLFun.lean",
+          "Cells wash heat computed from the retained and supplied concentrations": "src/cells/operators/wash_schedule.py#L320"
         }
       },
       "numerical": {
