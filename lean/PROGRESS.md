@@ -1,5 +1,26 @@
 # Cells proof comparisons
 
+<a id="kv15-ph-activation"></a>
+
+## 21 November 2026 · Kv1.5 activation and the current retained at pH 6.8
+
+Trapani and Korn measured wild-type human Kv1.5 in HEK293 cells with 100 mM internal and 10 mM external potassium. At 0 mV, Figure 1F gives peak tail conductances of about 0.915 at pH 7.3 and 0.66 at pH 6.8. Each curve uses its own maximum. If both maxima are equal and the peak openings transfer between protocols, their ratio predicts **72.1%** retained step current. Figure 1B, reserved for evaluation, reports **74.5 ± 1.9%** (SEM, eight cells) in a 75 ms pulse from −80 to 0 mV. The prediction is 2.37 percentage points below the measurement. Reading each marker within ±0.01 gives 70.3–74.0% from the graph. A statistical comparison would also need uncertainty in both curve readings, their covariance and the ratio of absolute maxima. [Original Figure 1B and 1F](https://pmc.ncbi.nlm.nih.gov/articles/PMC1302603/#fig1) · [Measurements, protocols and graph coordinates](checks/data/trapani2003_kv15_ph.json)
+
+The registered Kv1.5 activation midpoint is −6.0 mV. The paper gives −15.3 mV in control and −3.6 mV in acid. Applying the measured +11.7 mV shift to the registered gate gives **40.5%** retained peak current. Supplying both measured midpoints with the registered slope and clocks gives **69.5%**. The voltage-only law run under both pH labels gives 100%. These comparisons keep inactivation kinetics, channel count, permeability and ionic drive fixed. Lean proves how the ratio of fully open currents enters the prediction, and that a right shift of a rising Boltzmann curve of fixed width gives a strictly increasing treated/control activation ratio with voltage. The paper does not give panel-specific slopes. A comparison of absolute maximal conductance and the control activation curve in this preparation would distinguish the remaining explanations. [Lean theorems](CellsProofs/Transport/IonChannels.lean#L298) · [Engine comparison](checks/kv15_ph.py)
+
+<a id="channel-source-replays-nov21"></a>
+
+## 21 November 2026 · Channel and pump comparisons after the availability readout landed
+
+The four drivers below exercise `resolved_pump_tissue@3` on the frozen engine `d0104950`, after FR-34 added the effective-availability record for routed channels. The host test also recovered the held availability times its routed factor. The junction driver covers both the analytic clamp and the published Cx43 polarity comparison. [Tested Cells revision](https://github.com/Eidosoma/Cells/commit/d0104950c40b92860a211c9e2555709d0fd61aed) · [Routed-availability test](https://github.com/Eidosoma/Cells/blob/d0104950c40b92860a211c9e2555709d0fd61aed/tests/unit/test_surface_pump_v3_populations.py#L205) · [Cx43 fit parameters](checks/data/revilla1999_cx43.json) · [Polarity interpretation](#cx43-series-gates)
+
+| Comparison | Result |
+| --- | --- |
+| [Na⁺/K⁺ channel gates and transfer](checks/ion_channels.py) | Eight gated channels and two leaks at 25 voltages. The maximum error over 72 exponential-stage cases was 2.23 × 10⁻¹⁶ or less, and the tissue transfer error was below 2.38 × 10⁻¹³ fmol. |
+| [Chloride channel charge](checks/chloride_channel.py) | Both directions of chloride transfer and the shift in reversal were recovered. The maximum tissue transfer error was below 1.59 × 10⁻¹² fmol. |
+| [Electrogenic pump charge](checks/electrogenic_pumps.py) | At five voltages spanning the two pump stalls, the largest cycle-rate error was 3.51 × 10⁻¹⁶ fmol/s or less. The maximum current error was 3.80 × 10⁻²⁶ A or less. |
+| [Junction gating and Cx43 polarity](checks/junction_gate.py) | At 45 clamp samples the maximum gate error was 1.12 × 10⁻¹⁶ or less. The tissue tracer transfer error was below 8.68 × 10⁻¹⁸ fmol. The registered single gate gives the same target at ±80 mV. Any symmetric prediction misses at least one of the published polarity fits by 0.05287 in normalized conductance. |
+
 <a id="kv15-channel-density"></a>
 
 ## 21 November 2026 · Kv1.5 availability at an intermediate density

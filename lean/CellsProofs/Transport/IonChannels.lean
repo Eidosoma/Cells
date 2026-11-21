@@ -293,6 +293,40 @@ theorem relative_availability_from_counts (law : Law) (q m h scale vf ci co v : 
   exact ⟨mul_ne_zero (div_ne_zero hav.ne' hr.ne') probe, by
     rw [mul_div_mul_right _ _ probe, div_div_div_cancel_right₀ hr.ne']⟩
 
+/-- A normalized opening curve determines the current ratio once the ratio of
+the two fully open population currents is known. Both share the ionic drive. -/
+theorem clamp_ratio_from_openings (law : Law) (q scale vf ci co v m₀ h₀ m₁ h₁ : ℝ)
+    {max₀ : ℝ} (max₁ : ℝ) (hmax : 0 < max₀) (hopen : 0 < opening law m₀ h₀)
+    (probe : outwardCurrent law q (constantFieldFlux seriesFactor scale vf ci co v) ≠ 0) :
+    let control := clampedCurrent law q m₀ h₀ scale vf ci co max₀ 1 v
+    let treated := clampedCurrent law q m₁ h₁ scale vf ci co max₁ 1 v
+    control ≠ 0 ∧ treated / control = (max₁ / max₀) * (opening law m₁ h₁ / opening law m₀ h₀) := by
+  dsimp only
+  simp only [clamped_current_factors, mul_one, ← mul_assoc]
+  exact ⟨mul_ne_zero (mul_ne_zero hmax.ne' hopen.ne') probe, by
+    rw [mul_div_mul_right _ _ probe, mul_div_mul_comm]⟩
+
+/-- Shifting a rising Boltzmann activation curve right, at fixed positive width,
+has a strictly voltage-dependent effect on the treated/control activation ratio. -/
+theorem right_shift_ratio_strictMono (mid : ℝ) {width shift : ℝ}
+    (hw : 0 < width) (hs : 0 < shift) :
+    StrictMono (fun v => boltz v (mid + shift) (-width) / boltz v mid (-width)) := by
+  have ratio (v : ℝ) : boltz v (mid + shift) (-width) / boltz v mid (-width) =
+      (1 + Real.exp ((mid - v) / width)) /
+        (1 + Real.exp (shift / width) * Real.exp ((mid - v) / width)) := by
+    unfold boltz
+    rw [show (v - (mid + shift)) / -width = shift / width + (mid - v) / width by ring,
+        show (v - mid) / -width = (mid - v) / width by ring, Real.exp_add]
+    simp [one_div, div_eq_mul_inv, mul_comm]
+  intro u v huv
+  dsimp only
+  rw [ratio u, ratio v]
+  have ordered := Real.exp_lt_exp_of_lt
+    ((div_lt_div_iff_of_pos_right hw).mpr (sub_lt_sub_left huv mid))
+  have shifted : 1 < Real.exp (shift / width) := Real.one_lt_exp_iff.mpr (div_pos hs hw)
+  apply (div_lt_div_iff₀ (by positivity) (by positivity)).mpr
+  nlinarith only [mul_pos (sub_pos.mpr shifted) (sub_pos.mpr ordered)]
+
 end
 
 end CellsProofs.Transport.IonChannels
