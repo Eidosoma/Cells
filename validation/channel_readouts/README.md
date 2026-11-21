@@ -10,7 +10,7 @@ availability and signed current today, with the request's control (D251). The co
 | --- | --- | --- | --- |
 | Surface count | `population_units`, membrane_entity_state@1's readout, per channel slot | units | The population's units: its declared count plus every writer's increment. Only where membrane state is composed |
 | Relative abundance | `channel_abundance`, @3's view field | 1 | a = N / (A rho_ref). A view field, not an observation column |
-| Availability | `channel_availability`, @3's observation, per channel slot | 1 | The scheduled availability, **before the routing door**. Where species_regulated_availability routes factors onto the population, it runs at this value times the factors, which that operator records separately as `coupling_factor` |
+| Availability | `channel_availability`, @3's observation, per channel slot | 1 | The availability the population runs at, **before the routing door**. In a composite it already holds the operators' factors (species_regulated_availability's writes and step-view routes, which that operator also records as `coupling_factor`): **do not multiply it by them again**. `channel_effective_availability` adds only the routing door's factors (D265) |
 | Flux | `channel_flux_fmol_s`, @3's observation, per species and channel slot | fmol/s | **Positive outward:** a positive amount leaves the cell of the population's patch for that patch's outside node |
 | Current, derived | I = 1e-15 F sum_s z_s J_s, from the flux | A | **Positive outward** (for a cation, outward flux). Derived in `example.py`; no field holds it |
 | Voltage | `membrane_voltage_V`, @3's observation, per patch | V | Inside minus outside |
@@ -28,8 +28,11 @@ rounding.
 
 ## At a declared voltage
 
-**Declared-voltage evaluation exists for passive routes and transporter populations,** not yet
-for @3's channel populations, which this example reads (81a29442, D252):
+**Declared-voltage evaluation now exists for @3's channel populations too:** @3's
+`clamped_channel_flux` (FR-34, D252), and in a composite the composition's own entry point (below,
+D265). The rest of this section is the record from before it landed. It covered passive routes and
+transporter populations, not yet @3's channel populations, which this example reads (81a29442,
+D252):
 - `cells.passive_routes@1`: a route with `readout: true` records `passive_flux_fmol_s` (inward) and
   `passive_current_A` (outward-positive) at each observed row. `clamped_flux` gives every route's
   flux and current at declared patch voltages.
@@ -52,6 +55,21 @@ Until then:
   current is the current at that declared voltage. The output's `first_row_at_declared_voltage`
   checks it, and the test asserts it.
 - **Later rows are at the run's own, evolving voltage.**
+
+## In a composite world (D265)
+
+A composite runs @3 at its **control view**: the stored control times the operators' factors, and
+its providers' layout view. So:
+- **`channel_availability` already holds the operators' factors.** Multiplying it by the
+  recorded `coupling_factor` applies the factor twice.
+- **@3's `clamped_channel_flux` given the composite's stored state, controls and layout loses the
+  operators' factors.** A population held at 0.5 by species_regulated_availability@1 read 11.10328
+  pA at -50 mV, where the composite runs at 5.55164 pA. In a composite, call the composition's
+  own entry point, `model.clamped_channel_flux(state, control, p, voltages_V)`
+  (`cells.models.pump_composite`). It hands @3 the step's views (`clamp_inputs`), and at the
+  cell's own voltage it gives the recorded flux bit for bit.
+- **The kinds' clamped evaluations** (`clamped_flux`, `clamped_rates`) take the same views through
+  `model.clamped_kind(function, state, control, p, voltages_V)`.
 
 ## Not covered here (engine work, in its owners' queues, D251, D252)
 
