@@ -32,15 +32,19 @@ timed ARM OUT_DIR REF_DIR    the cost re-run (§10.1): its rows against REF_DIR'
 plant STEP_MS OUTPUT         FR-3's plant at another step (§10.1; a cross-check under §10.6).
 calm-run STEP_MS SOURCE_DIR OUT_DIR   §10.8's calm probe at a step (development).
 step-change OUT_DIR [--no-window]     §10.9's step change, 20 ms to 1 ms and back (development).
-c-run OUT_DIR                         §10.10: C's registered arm.
+c-run OUT_DIR [ARM]                   a registered windowed arm: H2-C, §10.10's (the default),
+                                      or H2-N2C, §10.20's N2 with C.
 run ARM OUT_DIR --solver=ID           an arm under another time integrator (§6, set after the
                                       definition is built).
 stage-a-read OUTPUT ARM_DIR CONTROL   §6's reading: N2 alone on the slow phase against R3.
-c-timed OUT_DIR REF_DIR               §10.10 (c): its timed re-run, rows checked bitwise.
-c-judge OUTPUT C_DIR [FULL1_COST C_COST]  §10.10's verdict on C's arm.
+c-timed OUT_DIR REF_DIR [ARM]         (c): the arm's timed re-run, rows checked bitwise.
+c-judge OUTPUT C_DIR [FULL1_COST C_COST] [--arm=ARM] [--plant=PLANT]
+                                      the arm's verdict: §10.10's on H2-C, §10.20's on H2-N2C
+                                      (with (b)'s in-world plant record, PLANT).
 calm-read OUTPUT ROOT SOURCE_DIR       its reading (development, information).
-inworld-plant ARM OUTPUT [AT_MS]
-                             §10.7's plant in the arm's world at its step (AT_MS: development).
+inworld-plant ARM OUTPUT [AT_MS] [--solver=ID]
+                             §10.7's plant in the arm's world at its step (AT_MS: development;
+                             ID set after the definition is built, §10.16's route).
 """
 
 import dataclasses
@@ -1294,7 +1298,7 @@ PLANT_FIELD, PLANT_SLOT, PLANT_RESUME_STEPS = "pump_dissipated_energy_pJ", 0, 10
 BINDING_MESSAGE = "does not hold its state's residual"
 
 
-def inworld_plant(arm, output, at_ms=None):
+def inworld_plant(arm, output, at_ms=None, solver=None):
     """§10.7's plant in the arm's own world at the arm's step (the largest step claimed).
 
     The arm's registered definition runs at its full horizon through the scalar windows with its
@@ -1304,7 +1308,9 @@ def inworld_plant(arm, output, at_ms=None):
     then stopped. Sensitivity is shown when both tests hold: the binding at load (the planted
     resume refused with X2's binding message, the control resumed) and the in-step test, eps* =
     (floor_T + sum|a|_T / 16) / heat(T) <= 1e-6 (FR-18's plant model in evaluate_x). A world that
-    cannot run the step is a result, not a miss. at_ms replaces T for development only."""
+    cannot run the step is a result, not a miss. at_ms replaces T for development only. solver, when
+    given, is set after the arm's definition is built, as §10.16's wrapper set N2's ID after
+    rung1.definition returned (§10.20 (b)); the record names it and its route."""
     import jax
 
     jax.config.update("jax_enable_x64", True)
@@ -1319,7 +1325,9 @@ def inworld_plant(arm, output, at_ms=None):
     plant_ms = PLANT_AT_MS[world] if at_ms is None else int(at_ms)
     row = dict(arm=arm, world=world, step_ms=str(step_ms), dt_s=dt, plant_ms=plant_ms,
                development=at_ms is not None, field=PLANT_FIELD, slot=PLANT_SLOT,
-               relative=PLANT_RELATIVE, energy_check=x2_block(),
+               relative=PLANT_RELATIVE, energy_check=x2_block(), integrator=solver or TODAY,
+               solver_route=None if solver is None else (
+                   "set after rung1.definition returned (§10.16's route), not X2_QUALIFY_SOLVER"),
                snapshot_revision=harness.snapshot_revision(),
                started_utc=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()))  # fmt: skip
     started = time.perf_counter()
@@ -1327,6 +1335,8 @@ def inworld_plant(arm, output, at_ms=None):
     short = WindowPolicy(window_steps=PLANT_RESUME_STEPS, row_checks="device")
     try:
         raw, _ = definition(arm)
+        if solver is not None:  # §10.16's route: the ID set after the definition is built.
+            raw["execution"]["solver"] = solver
         spec = parse_spec(raw)
         t = grid_time(plant_ms, step_ms, dt)
         cp = None
@@ -1682,39 +1692,70 @@ def step_switches(a, before=5, after=12):
 C_COARSE_MS, C_FINE = 20, 1e-3
 C_WINDOW = dict(start_time=1799.98, end_time=1802.0)
 C_END_MS, C_ALL_FINE_STEPS = 3_600_000, 3_600_000  # Today's dt*(I), 1 ms, over the arm's horizon.
+N2_FINAL = "imex_ars222_implicit_conductances@1"  # N2 with (a), the final ID (§10.20, §10.21).
+# The registered windowed arms: H2 from 0 to 3600 s on the fine-window clock, X2 on. H2-N2C's
+# window ends are the 100 ms grid's own products, 17999 x 0.1 and 18020 x 0.1, and its cue edges
+# are re-declared at their grid products: the off-edge at 18003 x 0.1 = 1800.3000000000002, not
+# the decimal 1800.3 that worlds.h2 declares (§10.20). H2-C's definition is unchanged.
+WINDOWED = {
+    "H2-C": dict(section="§10.10", study="C's registered arm", coarse_ms=C_COARSE_MS,
+                 window=C_WINDOW, solver=TODAY, steps=181_919, regrid_cue=False),
+    "H2-N2C": dict(section="§10.20", study="N2 with C's registered arm", coarse_ms=100,
+                   window=dict(start_time=17999 * 0.1, end_time=18020 * 0.1), solver=N2_FINAL,
+                   steps=38_079, regrid_cue=True),
+}  # fmt: skip
 
 
-def c_definition():
-    """§10.10's arm: H2 from 0 to 3600 s on today's integrator at 20 ms, with 1 ms inside
-    [1799.98, 1802.00] s (execution.fine_windows), X2 on. Its rows are R3's kept rows that are
-    points of its own clock, read off EventGrid(spec); the cue's edges are checked to be points."""
+def c_definition(arm="H2-C"):
+    """A registered windowed arm (WINDOWED): H2 from 0 to 3600 s at its coarse step, with 1 ms
+    inside its window (execution.fine_windows), under its ID, X2 on. §10.10's H2-C is today's
+    integrator at 20 ms, [1799.98, 1802.00] s; §10.20's H2-N2C is the final N2 ID at 100 ms,
+    [1799.9, 1802.0] s, its cue edges re-declared at their grid products. Its rows are R3's kept
+    rows that are points of its own clock, read off EventGrid(spec); the cue's edges are checked
+    to be points, and the clock to hold exactly the registered steps, before any run."""
     from cells.definitions.specs import ConfigError, parse_spec
     from cells.execution.grid import EventGrid
     from validation.long_duration import worlds
 
-    dt = float(f"{C_COARSE_MS}e-3")
-    n_end = C_END_MS // C_COARSE_MS
+    a = WINDOWED[arm]
+    dt = float(f"{a['coarse_ms']}e-3")
+    n_end = C_END_MS // a["coarse_ms"]
     raw = worlds.h2(dt)
     e, x = raw["experiment"], raw["execution"]
     e["end_time"] = n_end * dt
     e["observation_times"] = [0.0, n_end * dt]
-    x["max_steps"] = 181_919 + 8
+    x["max_steps"] = a["steps"] + 8
     x["energy_check"] = x2_block()
-    x["fine_windows"] = dict(method="fixed_fine_windows@1", dt=C_FINE, windows=[dict(C_WINDOW)])
+    if a["solver"] != TODAY:
+        x["solver"] = a["solver"]
+    if a["regrid_cue"]:  # §10.20: each cue edge at its grid product i x dt.
+        for g in e["channel_controls"]:
+            if g["channel_id"] == "cue_0":
+                for c in g["schedule"]:
+                    c["time"] = round(c["time"] / dt) * dt
+    x["fine_windows"] = dict(method="fixed_fine_windows@1", dt=C_FINE, windows=[dict(a["window"])])
     grid = EventGrid(parse_spec(raw))
     points = {grid[i] for i in range(len(grid))}
     cue = [c["time"] for g in e["channel_controls"] if g["channel_id"] == "cue_0"
            for c in g["schedule"]]  # fmt: skip
     if any(t not in points for t in cue):
         raise ConfigError(f"a cue edge is not a point of the clock: {cue}")
+    if len(grid) - 1 != a["steps"]:
+        raise ConfigError(f"{arm}: the clock holds {len(grid) - 1} steps, not {a['steps']}")
     r3 = worlds.harness_observation_times()
     rows = sorted(t for t in r3 if t in points)
+    if a["regrid_cue"]:  # Read off the clock: R3's rows by their integer millisecond (§10.4).
+        wanted = {ms_of(t) for t in r3}
+        rows = sorted(t for t in points if ms_of(t) in wanted)
+        if len({ms_of(t) for t in rows}) != len(rows):
+            raise ConfigError(f"{arm}: two of its rows share an integer millisecond")
     e["observation_times"] = rows
     return raw, dict(clock_points=len(grid), rows=len(rows), cue_s=cue)
 
 
-def c_run(out_dir):
-    """C's arm, recorded as the control's arms are (definition, rows, run record)."""
+def c_run(out_dir, arm="H2-C"):
+    """A registered windowed arm (WINDOWED), recorded as the control's arms are (definition, rows,
+    run record)."""
     import jax
 
     jax.config.update("jax_enable_x64", True)
@@ -1725,14 +1766,15 @@ def c_run(out_dir):
 
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=False)
-    record = dict(study="FR-8 rung 1, C's registered arm (§10.10)", arm="H2-C",
-                  integrator=TODAY, energy_check=x2_block(),
+    a = WINDOWED[arm]
+    record = dict(study=f"FR-8 rung 1, {a['study']} ({a['section']})", arm=arm,
+                  integrator=a["solver"], energy_check=x2_block(),
                   snapshot_revision=harness.snapshot_revision(),
                   cpu_affinity=sorted(os.sched_getaffinity(0)), nice=os.nice(0),
                   started_utc=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()))  # fmt: skip
     started, keeper = time.perf_counter(), None
     try:
-        raw, extra = c_definition()
+        raw, extra = c_definition(arm)
         record.update(extra, fine_windows=raw["execution"]["fine_windows"])
         (out / "definition.json").write_text(json.dumps(raw, indent=1) + "\n")
         spec = parse_spec(raw)
@@ -1763,10 +1805,10 @@ def c_run(out_dir):
     return 0
 
 
-def c_timed(out_dir, reference_dir):
-    """§10.10 (c)'s cost: C's arm re-run (on the timed lane, by its runner script), its rows
-    against the arm's, bitwise; seconds per simulated second from its record."""
-    c_run(out_dir)
+def c_timed(out_dir, reference_dir, arm="H2-C"):
+    """(c)'s cost (§10.10, §10.20): the arm re-run (on the timed lane, by its runner script), its
+    rows against the arm's, bitwise; seconds per simulated second from its record."""
+    c_run(out_dir, arm)
     record = json.loads((Path(out_dir) / "run.json").read_text())
     _, mine = load_rows(out_dir)
     _, theirs = load_rows(reference_dir)
@@ -1790,15 +1832,19 @@ def c_timed(out_dir, reference_dir):
     return 0
 
 
-def c_judge(output, c_dir, full1_cost=None, c_cost=None):
-    """§10.10's verdict on C's arm: (a) the (I) reading under B_P with the event criteria (B_A
-    reported), on all of its rows and on the 100 ms common rows; (b) X2's decision and kind; (c)
-    the step-count gain over 1 ms, with the timed cost ratio beside it when given."""
+def c_judge(output, c_dir, full1_cost=None, c_cost=None, arm="H2-C", plant=None):
+    """A windowed arm's verdict (§10.10 on H2-C, §10.20 on H2-N2C): (a) the (I) reading under B_P
+    with the event criteria (B_A reported), on all of its rows and on the 100 ms common rows; (b)
+    X2's decision and kind, and for H2-N2C the sensitivity standard, "binding shown, eps* reported",
+    from (b)'s in-world plant record (plant); (c) the step-count gain over 1 ms, with the timed cost
+    ratio beside it when given."""
     import jax
 
     jax.config.update("jax_enable_x64", True)
+    arm_id, a = arm, WINDOWED[arm]  # Before `arm` names the arm's Series below.
     arm = Series(c_dir, None, 0, 1.0)
-    out = dict(study="FR-8 rung 1, C's arm judged under §10.10", arm="H2-C")
+    study = "C's arm" if arm_id == "H2-C" else a["study"]
+    out = dict(study=f"FR-8 rung 1, {study} judged under {a['section']}", arm=arm_id)
     stage0 = stage0_ladder()
     wa = rung0_ladder("WA")
     wa_events = ladder_events(wa)
@@ -1817,7 +1863,7 @@ def c_judge(output, c_dir, full1_cost=None, c_cost=None):
         verdicts, tables = arm_reading(arm, parts, sets, [("events", ev["verdict"])])
         retention = Path(output).with_suffix("")
         retention.mkdir(exist_ok=True)
-        save_retention(retention, "H2-C", tables)
+        save_retention(retention, arm_id, tables)
         out["events"] = ev
         out["readings"] = verdicts
         out["largest_deltas"] = {s: {k: float(np.nanmax(v["delta"])) for k, v in tbl[1].items()}
@@ -1833,21 +1879,30 @@ def c_judge(output, c_dir, full1_cost=None, c_cost=None):
             c = json.loads(Path(c_cost).read_text())
             if not c.get("void") and c.get("seconds_per_simulated_second"):
                 cost = f["seconds_per_simulated_second"] / c["seconds_per_simulated_second"]
-            out["cost"] = dict(today_1ms=f, C=c, ratio=cost)
+            out["cost"] = {"today_1ms": f, "C" if arm_id == "H2-C" else "arm": c, "ratio": cost}
+        sensitivity, binding = ("shown at 20 ms by H2's plant (§10.7; "
+                                "records-d03ca463/plants/H2-slow-20.json)"), True  # fmt: skip
+        if arm_id != "H2-C":  # §10.20 (b): binding shown, eps* reported, from its plant record.
+            row = json.loads(Path(plant).read_text()) if plant else {}
+            binding = bool(row.get("binding_shown"))
+            sensitivity = dict(record=str(plant) if plant else None, text=row.get("sensitivity"),
+                               binding_shown=binding, eps_star=row.get("eps_star"),
+                               plant_arm=row.get("arm"), plant_ms=row.get("plant_ms"),
+                               integrator=row.get("integrator"),
+                               solver_route=row.get("solver_route"))  # fmt: skip
         out["x2"] = dict(decision="passes" if arm.complete else "refused", summary=summary,
-                         sensitivity="shown at 20 ms by H2's plant (§10.7; "
-                         "records-d03ca463/plants/H2-slow-20.json)")  # fmt: skip
+                         sensitivity=sensitivity)  # fmt: skip
         out["gain"] = dict(steps=steps, all_fine_steps=C_ALL_FINE_STEPS, step_gain=gain,
                            cost_ratio=cost, threshold=10)  # fmt: skip
         out["verdict"] = dict(
             a="pass" if a_pass else worst([verdicts["B_P"][s]["verdict"] for s in sets]),
-            b="pass" if arm.complete else "fail",
+            b="pass" if arm.complete and binding else "fail",
             c="pass" if gain is not None and gain >= 10 else "fail",
         )
-        out["verdict"]["C"] = (
-            "passes §10.10"
+        out["verdict"]["C" if arm_id == "H2-C" else "arm"] = (
+            f"passes {a['section']}"
             if all(out["verdict"][k] == "pass" for k in ("a", "b", "c"))
-            else "does not pass §10.10"
+            else f"does not pass {a['section']}"
         )
     Path(output).write_text(json.dumps(out, indent=1, default=float) + "\n")
     print(json.dumps(out.get("verdict"), default=float))
@@ -1918,20 +1973,26 @@ def main(argv):
         return timed(argv[1], argv[2], argv[3])
     if len(argv) == 3 and argv[0] == "plant":
         return plant(argv[1], argv[2])
-    if len(argv) in (3, 4) and argv[0] == "inworld-plant":
-        return inworld_plant(argv[1], argv[2], *argv[3:])
+    if len(argv) >= 3 and argv[0] == "inworld-plant":
+        solver = next((a.split("=", 1)[1] for a in argv[3:] if a.startswith("--solver=")), None)
+        rest = [a for a in argv[3:] if not a.startswith("--")]
+        if len(rest) <= 1:
+            return inworld_plant(argv[1], argv[2], *rest, solver=solver)
     if len(argv) == 4 and argv[0] == "calm-run":
         return calm_run(argv[1], argv[2], argv[3])
     if len(argv) == 4 and argv[0] == "calm-read":
         return calm_read(argv[1], argv[2], argv[3])
     if len(argv) in (2, 3) and argv[0] == "step-change":
         return step_change(argv[1], window="--no-window" not in argv[2:])
-    if len(argv) == 2 and argv[0] == "c-run":
-        return c_run(argv[1])
-    if len(argv) == 3 and argv[0] == "c-timed":
-        return c_timed(argv[1], argv[2])
-    if len(argv) in (3, 5) and argv[0] == "c-judge":
-        return c_judge(argv[1], argv[2], *argv[3:])
+    if len(argv) in (2, 3) and argv[0] == "c-run":
+        return c_run(*argv[1:])
+    if len(argv) in (3, 4) and argv[0] == "c-timed":
+        return c_timed(*argv[1:])
+    if len(argv) >= 3 and argv[0] == "c-judge":
+        options = dict(a[2:].split("=", 1) for a in argv[3:] if a.startswith("--"))
+        rest = [a for a in argv[3:] if not a.startswith("--")]
+        if len(rest) in (0, 2) and not set(options) - {"arm", "plant"}:
+            return c_judge(argv[1], argv[2], *rest, **options)
     if argv == ["arms"]:
         print("\n".join(control_arms()))
         return 0
