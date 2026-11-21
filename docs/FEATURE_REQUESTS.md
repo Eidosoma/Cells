@@ -1305,6 +1305,13 @@ gives 2.57% (PMC5112947). It stays routed to the next water-operator landing.
     only transfer increasing the receiver.
   - **A field** that names the population that lost material under region-selective loss.
 
+**The Lean lane's check of label rows (21 November 2026).** Two neutral labels summed to the parent
+tracer at both nodes across all 101 recorded times: the parent stayed at 1 fmol on the right while the
+labelled part rose from 0.1 to 0.299999 fmol. For a charged tracer on a log-mean face, splitting a +1
+tracer into opposing 90:10 label gradients at +10 mV carried 72.819% of the unsplit flux. The compiled
+face reproduces the proved ratio. So D1's guarantee covers independent neutral label rows with a shared
+diffusion coefficient, and charged log-mean faces stay outside it, as D1's design refuses them.
+
 ## FR-34 — Channel population readouts: count, availability and signed current
 
 - **The request (a reviewer, relayed by the user on 20 November 2026; D251).** For membrane
@@ -1428,3 +1435,15 @@ sampling variation. Biological validation of the heat remains open.
   - The smallest addition for prediction: an advection operator on faces, with the wash's face
     refusal lifted, about 3 to 5 agent-days.
   - Each region's predicted remainder is what a measurement of the dye left behind would test.
+
+**The Lean lane's check (21 November 2026).** They proved that a two-region sample has the chamber's
+mean concentration exactly when the regions have equal concentrations or the draw removes the same
+fraction of each region. They also reproduced the three declared draws through the compiled runner at
+ee0b8106, regional remainders included: 8 fmol with 0 and 2 left; 5 fmol with 2.5 and 2.5; 6.5 fmol
+with 2 and 1.5.
+- **Experimental support:** their search found two outlets carrying equal flow that measured about 75%
+  and 25% of the stock dye concentration (Johnson et al., Fig. 5a and paragraph 33,
+  doi:10.1029/2005JB004087), which supports sampling enrichment.
+- **The remaining experimental gap:** the dye left in each original region after a finite draw.
+- **Not covered:** predicting how much liquid a physical port draws from each region remains a
+  separate engine capability.
