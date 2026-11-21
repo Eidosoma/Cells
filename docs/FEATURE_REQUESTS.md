@@ -594,6 +594,19 @@ workspace, outside the repository. SHA-256: held_out_conductance.json (sealed)
 5465e3b20da3c94339eb624ccd26b530ec9216a00f0cb0fd51d876281c0ff20d. The fitter sees only the fit rows, the held-out counts, the protocol
 and the notes, and records its predictions before the checker unseals.
 
+**The fitter's predictions, written before unsealing (21 November 2026).**
+/mnt/workspaces/Cells/fr7-maverick2022-test/fit/predictions.json, sha256
+`6027e2738278fe217787250cc781190779d9e793f71221a4184a4586b3e9e4f4`.
+- **Inputs:** fit.json and held_out_counts.json only. Their sha256 are recorded in the file, and
+  the sealed conductances were not read. The script is fit_chain.py beside it, sha256
+  `3626dd48207c29a69d3018fc42957d1435c7bdd0d550b8ef3662f80c35fdbb6b`.
+- **The chain's fit**, on the primary count (count_primary_gating_channels) for both sets:
+  ĝ = 1.2128 pS per gating channel (ĉ = −6.71479 in ln nS), fit-set spread s_fit = 0.2742 in ln
+  units, n = 13. Each held-out cell has G_pred = ĝ N.
+- **Information only:** the declared conducting-fraction form is fitted on the fit set alone and
+  sits in the file. The secondary-count and background-subtracted variants cannot run: no TIRF
+  count is paired with conductance, and the paper reports no background value.
+
 
 ## FR-8 — A qualified long-duration mode
 
