@@ -8609,3 +8609,27 @@ Decided by the lead with the advisor, under the user's delegation for FR choices
   code it did not write. Each new FR landing needs its acceptance written from the request's own
   words, as for FR-35.
 
+## D269: The Lean lane's biological-disagreement review, routed
+
+2026-11-21, about 20:49 UTC. The Lean lane and its literature search reviewed where Cells' models
+disagree with measurements (relayed by the user: "from lean get that to the right places"). Routed:
+- **FR-35, FR-30, FR-31, FR-32 and FR-29:** each finding is recorded in its FR section in
+  docs/FEATURE_REQUESTS.md as a validation target or a restatement. No build changes now.
+- **Shear fission (the assembly owner, origin of life):** summed daughter fluorescence was 0.87 ±
+  0.01 of the parent expectation (PMC5876618). Bath tracer and optical recovery are to be measured
+  before a 13% molecular loss is assigned; a validation target for the division model, not a defect.
+- **Channel currents (the @3 owner and the kinds owner):** matching reversal still left large
+  amplitude errors. Red-cell chloride at −59 mV gave −1.17 ± 0.13 against −1.97 mA/g Hb predicted
+  (doi:10.1085/jgp.109.2.201); Kir4.1 at 15 mM external potassium gave about −0.59 against −0.385 pA
+  (doi:10.2170/jjphysiol.48.71). Both are targets for testing full current-voltage curves, with
+  FR-34's clamped evaluation as the instrument.
+- **Kv1.5 pH (FR-7's lane):** retention at pH 6.8 was 74.5 ± 1.9% (SEM); voltage alone gives 100%,
+  the measured pH shift on the default gate 40.5%, and both measured midpoints 69.5%. The control
+  midpoint and pulse protocol are to be matched before the residual is read.
+- **Mitochondrial ATP synthase stalls (the mitochondria lane, paused):** the three-proton endpoint
+  shift was 0.745 pH unit against 0.74 observed, but four intermediate values sat 0.068 to 0.078 pH
+  unit below prediction. Free activities and interpolation errors are to be checked before any
+  change of stoichiometry; the measured coupling was 2.9 ± 0.2 H⁺/ATP.
+- The full handoff is the Lean lane's PROGRESS.md, in its FR-35 withdrawal checkpoint folder. The
+  paused lanes take their items when they resume.
+

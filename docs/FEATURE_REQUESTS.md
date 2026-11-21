@@ -1093,6 +1093,10 @@ explored.
 - **The competing explanation:** other forms of variable coupling. Independent ATP-consumption or
   proton-flux data would distinguish them.
 
+**Confirmed (the Lean lane's biological review, 21 November 2026).** The reopening evidence is the
+one D268 names: an ATP-dependent difference current at vacuolar pH 3.1 to 3.5 under Kettner et al.'s
+Fig. 3 protocol.
+
 ## FR-30 — Homotypic Cx43 junctions with two relaxation times
 
 - **The request (the same review; D248).** The generic `junction_voltage_relaxation@1` relaxes once,
@@ -1105,6 +1109,12 @@ explored.
   voltage dependence free, so a prediction needs a voltage series. Tracer transfer is tested
   separately, since electrical coupling and dye transfer can differ.
 - **After N2,** which is changing the gate's file.
+
+**The benchmark (the Lean lane's biological review, 21 November 2026).** At −100 mV the reference
+single gate gives 50 ms, while seven N2a cell pairs showed two decay times, 70 ± 5 and 931 ± 54 ms
+(Sahu and Bera, Table 2, PMC3607587). The development two-gate host is to be benchmarked against a
+held-out voltage series; the published two-component fits leave its predicted mixed amplitude
+unmeasured. This still waits on the user's downloads.
 
 ## FR-31 — Vesicle rupture during a steady tension hold
 
@@ -1119,11 +1129,20 @@ explored.
   (OL6), since giant vesicles are far beyond exact-event sizes. It interacts with FR-20's same-time
   rule, FR-22's checkpoints and F12's extinction, so a design note comes first, before OL9 registers.
 
+**The evidence restated (the Lean lane's biological review, 21 November 2026).** At constant tension
+and 12 °C, DOPC vesicle survival fell from 50% at 92 s to 12.5% at 268 s (doi:10.1063/1.4930108). A
+fixed rupture threshold cannot produce continuing failures under a held load, so FR-31 needs rupture
+rates across tensions, as it already states.
+
 ## FR-32 — A DOPC swelling validation record for the water operator
 
 - **The request (the same review; D248).** The tissue water operator's compliance, fitted to one
   dilution's swelling, predicted 2.57% at a second, against 2.6 ± 0.1% measured (Shibly et al. 2016,
   Fig. 2B). It is one fitted value and one held-out point, specific to that preparation.
+
+**The comparison restated (the Lean lane's biological review, 21 November 2026).** DOPC swelling
+was 2.6 ± 0.1% against 1.7% from the calibrated fixed-area model; the existing compliance calculation
+gives 2.57% (PMC5112947). It stays routed to the next water-operator landing.
 
 ## FR-33 — Regional labelled-protein readouts: redistribution against degradation
 
@@ -1188,3 +1207,11 @@ explored.
   FR-27's `scheduled_compartment_wash@1` is the deterministic counterpart in the inner model. A
   partial withdrawal draws each molecule's fate, so the draw, its stream and its checkpoint, the
   buffer's supply rule and the discrete energy bookings are the design's questions.
+
+**A validation target (the Lean lane's biological review, 21 November 2026).** In 180 passive
+droplet splits a nominal one-third branch collected 45.0% of the beads on average (Fornell et al.,
+Fig. 2c, doi:10.1063/1.4984131); a second chip retained 28.2% ± 4.4 percentage points SD at a
+measured liquid fraction of about 27.2% (Liu et al., Fig. 4, PMC6897560). The two disagree on how well
+volume predicts particle sampling, and both concern particles, not molecules. FR-35 withdraws each
+molecule with the volume fraction's probability, a well-mixed limit. The informative measurement is
+paired liquid volume and particle count for each split. No change to FR-35 now.
