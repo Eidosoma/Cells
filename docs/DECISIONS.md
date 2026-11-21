@@ -8512,3 +8512,44 @@ gene-regulation-lane 43afa534; FR-24 and the two FR-25 RNA counter issues first.
 - **Independent check:** as in D259 and D263, an agent that wrote none of the code reproduces each
   finding at its base and reruns the reproducers on each fixed head before anything lands.
 
+## D265: A fourth review's nine findings; FR-34 reopened for composite worlds
+
+2026-11-21, about 15:30 UTC. A reviewer's report, relayed by the user ("review this with adviser and then
+get into high priority"); the lead and the advisor found all nine real.
+- **FR-34 is reopened.** The lead had reported it complete, and 121aca27's landing text says composite
+  worlds are covered. Finding 1 shows they are not:
+  - in a composite with `species_regulated_availability@1` holding one population's factor at 0.5,
+    the inner helper given the composite's stored state, controls and layout returns 11.10328 pA at
+    −50 mV, where the composite's effective controls give 5.55164 pA (and reproduce the recorded
+    0.95264 pA at the cell's own voltage);
+  - the composite exposes no clamp method, and the example README tells a reader to multiply an
+    observed availability that already holds the factor by the factor again.
+  - The fix exposes the calculation through the composite, with its ordinary readout's views, and
+    corrects the README. The lead's scope ruling for the effective-availability note (operator
+    writes enter through the held value) is to be checked against the stored control and the
+    observed field.
+- **FR-33 (main):**
+  - (2) equivalent pulse times assign different material and can drop a requested sample, because
+    the tracer admits a time within tolerance but applies it, and the exporter samples it, by exact
+    comparison;
+  - (4) a nearly depleted pool still returns negative old material with both checks at zero, because
+    the cumulative balance tolerance also decides the resolution test;
+  - (5) a repeated region member creates negative outside material.
+- **FR-25 (gene regulation's branch):**
+  - (3) conflicting rows at one required time can earn a zero error, and six-decimal time keys collide;
+  - (7) a valid zero-loss product raises in the cohort reader;
+  - (8) the reader resolves a producing chain across all cells, not the exported one;
+  - (9) a receipt is called clean while archiving an ignored source; main's fix (c180c1bc) is to be
+    merged and checked through G4's entry point. D260 parked finding 9's class for the lane's
+    resume; the user's instruction here overrides that.
+- **(6) The Lean lane's pulse replay** samples the start of each half-step, so it fails against the
+  midpoint rule (a6235d7b). It is the Lean lane's file; it is relayed, and it confirms the midpoint
+  record (sampling the midpoints reproduces it to 3.9e-16).
+- **Held from scoring until fixed:** FR-34's composite currents and the README's instruction,
+  FR-33's tracer and region export, and FR-25's readers (already held).
+- **Process:**
+  - The independent checker reproduces each finding at main 62ec1cc0 and gene-regulation-lane
+    c06a0612 first, and reruns D264's cases on the gene-regulation head.
+  - Follow-ups to a held tool now get the checker's rerun as well: finding 4 may have come with the
+    tolerance follow-up (1b8017d1), which landed without one.
+
