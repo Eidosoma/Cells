@@ -16,6 +16,8 @@ The review used clean CPU snapshots of Cells at `d74f519d` and `a6235d7b`. The s
 
 The GARD pair-heat failure remains on version 1. Its production module is unchanged since the last recorded reproduction. The previous failure and the lead's versioning decision remain linked in the claim. [GARD claim](claims/gard-pair-heat.md)
 
+The source comparison flagged the composite host used by the prepared empty-surface check once more after the midpoint fix. The six cases were repeated on `a6235d7b` and their complete machine-readable result matched the preceding run byte for byte. The run manifest `lean-review-20261121/review.json` lists the arguments, engine revisions, outputs and exit codes for the comparisons, including the first-order run before the repair.
+
 <a id="nov21-features"></a>
 
 ### Registered laws, operators and the two-gate junction
