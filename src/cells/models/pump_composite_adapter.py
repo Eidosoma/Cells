@@ -574,6 +574,11 @@ def for_structure(structure):
     """The adapter of one declared inner structure: one per implementation object, so equal
     structures share it, and a structure that declares kinds is also keyed on the active kind
     registry, as its object is (surface_pump_v3.implementation)."""
+    if ionic.series_junctions(structure):  # FR-30, v1 (D262; the @3 owner's recorded exception).
+        raise ConfigError(
+            f"{ionic.SERIES_GATE_LAW_ID} runs in @3 alone in v1: a composite's operators, its "
+            "closers and its lifecycle write junction_gate as one gate (D262)"
+        )
     return _adapter(ionic.implementation(structure))
 
 
