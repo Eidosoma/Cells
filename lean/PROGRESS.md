@@ -1,5 +1,29 @@
 # Cells proof comparisons
 
+<a id="fr33-label-diffusion"></a>
+
+## 21 November 2026 · FR-33 D1, diffusion of a label and its complement
+
+For a neutral tracer with a common Fick coefficient, summing the fluxes of any finite set of labels recovers the parent flux. Opposing gradients can move labels even when the parent is stationary. Lean proves this for ideal Fick transport, neutral constant-field permeation and the Cells neutral face when every row and the parent use the logarithmic quotient or have equal end concentrations. The small nonzero-gradient polynomial branch has a numerical check. [Proof](CellsProofs/Transport/LabelDiffusion.lean) · [Compiled comparison](checks/label_diffusion.py)
+
+In the two-node world at `1295a7d7`, total tracer on the right stayed at 1 fmol. Right-hand labelled tracer rose from 0.1 to 0.299998884 fmol at 1 s, against 0.3 analytically. The sum of both labels equalled the parent at both nodes on all 101 rows. On a separate face with valence +1, +10 mV from left to right and opposing 90:10 label fractions, the row sum was 2.72590648 × 10⁻⁵ fmol/s versus 3.74339294 × 10⁻⁵ fmol/s for the parent. Lean gives their ratio exactly as (8/5)/ln(9), about **0.7281913813**. Independent charged faces therefore change the total flux in this case. Gray et al. observed labelled PSD-95 leaving a spine and appearing in two neighboring spines. The measurement supports redistribution and leaves the equal-mobility assumption untested. [Engine face](https://github.com/Eidosoma/Cells/blob/1295a7d794feb508bdf565ca2244aff3380b27d6/src/cells/numerics/surface_transport.py#L280-L301) · [Gray et al., Fig. 4A](https://doi.org/10.1371/journal.pbio.0040370.g004)
+
+<a id="fr37-regional-sampling"></a>
+
+## 21 November 2026 · FR-37, when a dye draw represents the chamber
+
+For two internally well-mixed regions and a nonempty draw, Lean proves that sample and chamber concentrations agree exactly when the two concentrations agree or the same fraction of each region is withdrawn. A larger draw fraction from the richer region enriches the sample. Each region’s final amount plus its collected amount equals its initial amount plus its refill. The local draw volumes are inputs. [Proof](CellsProofs/Tissue/RegionalSampling.lean) · [Compiled comparison](checks/regional_sampling.py) · [Cells example at the tested revision](https://github.com/Eidosoma/Cells/blob/ee0b8106406eb26e57ab1b0c34e16ed6c3f83a2b/validation/sampling/uneven_draw.py)
+
+| Starting excess A / B (fmol) | Draw A / B (pL) | Collected excess (fmol) | Excess left A / B (fmol) | Sample excess (mM) |
+| --- | --- | ---: | --- | ---: |
+| 8 / 2 | 100 / 0 | 8 | 0 / 2 | 0.080 |
+| 5 / 5, initially mixed | 50 / 50 | 5 | 2.5 / 2.5 | 0.050 |
+| 8 / 2 | 75 / 25 | 6.5 | 2 / 1.5 | 0.065 |
+
+Each region held 100 pL. All three compiled runs closed the gross local inventory at every recorded time. The refill supplied 10⁻¹⁰ fmol of background dye per draw. The rounded zero in the first row was 8.27 × 10⁻¹⁸ fmol above background. Cells took the regional draw volumes as declared. Johnson et al. measured enrichment independently in a physical flow experiment. Equal outlet flow gave approximately 75% and 25% of stock dye concentration in the two branches, with 50% expected under complete mixing. The experiment measured two flowing outlets. An independent measurement of the dye remaining in each region after a finite draw is still open. [Johnson et al., Fig. 5a and paragraph 33](https://doi.org/10.1029/2005JB004087) · [Measurement record](checks/data/johnson2006_branch_dye.json)
+
+Run the two comparison scripts with the Cells CPU environment and the tested checkout’s `src` and root on `PYTHONPATH`. The sampling script uses the FR-37 example from `ee0b8106`, which has the same engine source as `1295a7d7`. Frozen run directory `lean-label-diffusion-sampling-20261121` contains the JSON results and test logs.
+
 <a id="fr33-regional-tracer"></a>
 
 ## 21 November 2026 · Where the original protein label goes after a pulse
