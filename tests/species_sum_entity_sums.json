@@ -143,6 +143,11 @@
   ],
   [
    "kinds/transporter.py",
+   "_charge_current",
+   "entity_sum(p.cycle_charge_moved * e.j, axis=0, xp=xp)"
+  ],
+  [
+   "kinds/transporter.py",
    "_evaluate",
    "entity_sum(nu * ln_c[None], axis=1, xp=xp)"
   ],
