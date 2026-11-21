@@ -74,9 +74,9 @@ programs included. Every @2 target declares its evaluation:
   the scheduled rate, which is the maximum. Where the target's own half-steps move the route's
   species source in the element's cell (rate_route_sources against the target's half_step_rows),
   the factor is evaluated at the half-step's midpoint instead, after a predictor over h/2, so the
-  route stays second order (pump_composite.self_moved_targets; the Lean project's finding). Its source, a concentration (mM) or a state's
-  fraction, is held to the declared range at every evaluation of an enabled coupling: a value
-  outside refuses the half-step and is never clipped.
+  route stays second order (pump_composite.self_moved_targets; the Lean project's finding). Its
+  source, a concentration (mM) or a state's fraction, is held to the declared range at every
+  evaluation of an enabled coupling: a value outside refuses the half-step and is never clipped.
 The target's elements and their cells come from its declaration (routable_elements), bound
 against it. Refused at the binding: an operator target the definition does not declare; an
 unknown element; an outside-node element (version 2 routes cell-side elements only, since its

@@ -1339,6 +1339,46 @@ def test_version_2_evaluates_a_route_its_target_moves_at_the_half_steps_midpoint
     errors = [abs(g - exact) for g in gains((8, 16, 32, 64))]
     orders = [np.log2(a / b) for a, b in zip(errors, errors[1:], strict=False)]
     assert min(orders) >= 1.9, orders
+    # Beside a site route (the operators owner's review): site_routed's turnover, made self-moved
+    # by a second route of X0, which it produces, onto the same make_x0. The predictor moves X0,
+    # never the site's pools, so the site route's factor applied at the midpoint is bitwise
+    # 0.1 + 0.9 theta of the state the half-step receives.
+    mixed = site_routed()
+    block_v2(mixed)["species"] = rf.identities(["X0"])
+    target = dict(
+        operator=sfx.TURNOVER,
+        control="turnover_rate",
+        ids=["make_x0"],
+        evaluation="target_half_steps",
+        operating_range=[0.0, 1e6],
+    )
+    block_v2(mixed)["couplings"].append(
+        dict(
+            id="c_x0",
+            source=dict(species="X0"),
+            law="hill_activation",
+            basal=0.0,
+            half_saturation_mM=1e-9,
+            hill_coefficient=1.0,
+            target=target,
+        )
+    )
+    mixed["experiment"]["coupling_controls"].append(
+        dict(coupling_id="c_x0", schedule=[dict(time=0.0, enabled=1)])
+    )
+    mixed = parse_spec(mixed)
+    assert pump_composite.self_moved_targets(mixed.model) == {sfx.TURNOVER}
+    model2 = get_model(mixed.model)
+    state2, p2 = model2.initial_values(mixed)
+    turnover2 = next(o for o in model2.operators if o.LAW_ID == sfx.TURNOVER)
+    control2 = model2.CONTROL_TYPE(*(v[0] for v in cs.control_values(mixed, [0.0])))
+    stepped, ok = model2._half_step(turnover2, state2, mixed.execution.dt / 2, control2, p2, xp=np)
+    v2 = next(d for d in mixed.model.operators if d.law == LAW_V2)
+    keys = [k[0] for k in sra.route_keys(mixed, v2)]
+    applied = np.asarray(getattr(stepped, record))
+    assert bool(ok) and float(applied[keys.index("c_site")]) == 0.1 + 0.9 * float(
+        _theta(state2, p2)[0]
+    )
     monkeypatch.setattr(model, "midpoint", frozenset())
     planted = [abs(g - exact) for g in gains((8, 16))]
     assert np.log2(planted[0] / planted[1]) < 1.2
