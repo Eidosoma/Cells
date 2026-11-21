@@ -23,7 +23,15 @@ Uses [Channel opening scales the signed transfer of sodium or potassium](channel
 
 ## Numerical comparison
 
-**Checked.** On the tissue host, 11 active populations on two patches agreed with the 70-digit reference within 1.30 × 10⁻²⁶ A. Halving abundance or availability halved current exactly. Full block, off-ion fluxes and padding gave zero. The composite replay at −50 mV gave 0.592416 pA with the raw control and 0.296208 pA with its effective 0.5 control. The public composite clamp remains unavailable at this revision.
+**Checked.** On the tissue host, 11 active populations on two patches agreed with the 70-digit reference within 1.30 × 10⁻²⁶ A. Halving abundance or availability halved current exactly. Full block, off-ion fluxes and padding gave zero. On the repaired composite the public clamp reproduced the observed 0.658534 pA at the patch voltage and gave 0.296208 pA at −50 mV with availability 0.5. The raw scheduled control gave 0.592416 pA there.
+
+**Engine** `resolved_pump_composite@1`, `kir2p1_mh2@1`
+
+**Operators** `cells.species_regulated_availability@1`
+
+[Effective control view](https://github.com/Eidosoma/Cells/blob/2ae9ce8e5c6b56ecab091b6167d034eb97a5520f/src/cells/models/pump_composite.py#L1525) · [Public composite clamp and kind inputs](https://github.com/Eidosoma/Cells/blob/2ae9ce8e5c6b56ecab091b6167d034eb97a5520f/src/cells/models/pump_composite.py#L1774-L1815) · [Composite history observations](https://github.com/Eidosoma/Cells/blob/2ae9ce8e5c6b56ecab091b6167d034eb97a5520f/src/cells/models/pump_composite.py#L2243) · [Tissue clamp called by the composite](https://github.com/Eidosoma/Cells/blob/2ae9ce8e5c6b56ecab091b6167d034eb97a5520f/src/cells/models/surface_pump_v3.py#L427) · [Kir fixture and scheduled controls](https://github.com/Eidosoma/Cells/blob/2ae9ce8e5c6b56ecab091b6167d034eb97a5520f/validation/tissue/regulated_availability_fixtures.py#L178-L196) · [Public clamp regressions](https://github.com/Eidosoma/Cells/blob/2ae9ce8e5c6b56ecab091b6167d034eb97a5520f/tests/unit/test_species_regulated_availability.py#L1779-L1835) · [Fixed-gate channel theorem](https://github.com/Eidosoma/Cells/blob/841e06cd5d0e97b449b6eb5fdfa55f4e4376da86/lean/CellsProofs/Transport/IonChannels.lean) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/841e06cd5d0e97b449b6eb5fdfa55f4e4376da86/lean/checks/clamped_channel_current.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/841e06cd5d0e97b449b6eb5fdfa55f4e4376da86/lean/PROGRESS.md#d272-wash-clamp-retests)
+
+[Tested engine 2ae9ce8e5c6b](https://github.com/Eidosoma/Cells/commit/2ae9ce8e5c6b56ecab091b6167d034eb97a5520f) · [Evidence checkpoint 841e06cd5d0e](https://github.com/Eidosoma/Cells/commit/841e06cd5d0e97b449b6eb5fdfa55f4e4376da86)
 
 **Engine** `resolved_pump_composite@1`, `resolved_pump_tissue@3`, `kv1p1_mh2@1`, `kv1p2_mh@1`, `kv1p3_mh@1`, `kv1p4_mh@1`, `kv1p5_mh@1`, `kv1p6_mh@1`, `kir2p1_mh2@1`, `nav1p2_m3h_regularized@1`, `kleak_always_open@1`, `naleak_always_open@1`, `clleak_always_open@1`
 

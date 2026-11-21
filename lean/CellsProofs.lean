@@ -10,6 +10,8 @@ import CellsProofs.Chemistry.Enzyme
 import CellsProofs.Chemistry.GardCatalysis
 import CellsProofs.Chemistry.LineageFission
 import CellsProofs.Chemistry.PoolWithdrawal
+import CellsProofs.Chemistry.PoolWithdrawalEnergy
+import CellsProofs.Chemistry.MatchedBuffer
 import CellsProofs.Chemistry.MitochondrialCycles
 import CellsProofs.Chemistry.MitochondrialReactions
 import CellsProofs.Chemistry.MitochondrialStall
@@ -31,6 +33,7 @@ import CellsProofs.Tissue.DivisionBridge
 import CellsProofs.Tissue.MembraneInsertion
 import CellsProofs.Tissue.MembraneTrafficking
 import CellsProofs.Tissue.ReactionTransport
+import CellsProofs.Tissue.RegionalTracer
 import CellsProofs.Tissue.RestrictedLumen
 import CellsProofs.Transport.ATPCycle
 import CellsProofs.Transport.ChargedPermeation

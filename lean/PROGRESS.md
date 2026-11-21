@@ -1,5 +1,65 @@
 # Cells proof comparisons
 
+<a id="fr33-regional-tracer"></a>
+
+## 21 November 2026 · Where the original protein label goes after a pulse
+
+The FR-33 tracer splits a node’s outflow according to the cohort’s share across the start and end of each accepted step. Lean starts from the tracer’s linear equations. It proves that the cohort’s change in any fixed region plus its local clearance equals labelled transfer across its boundary. For a closed cell after the pulse ends, **label inside + label in the rest of the cell + clearance since the pulse = label present at the pulse endpoint**. New synthesis can continue under a different label. Each route must record one-way movement. A two-way net flux alone can hide exchange of labels in opposite directions. [Lean proof](CellsProofs/Tissue/RegionalTracer.lean#L47-L108) · [Solver and bookings](https://github.com/Eidosoma/Cells/blob/d48d40dd1ce03c1093a1c27e775cd2e8239ccf34/validation/regions/readouts.py#L534-L548)
+
+On engine `d48d40dd`, the compiled `resolved_pump_composite@1` example on `resolved_pump_tissue@3` exercised compartment ownership, one-way exchange and first-order turnover. Across 501 rows the donor cohort’s largest whole-cell balance residual was **5.20 × 10⁻¹⁸ fmol** for 0.001 fmol initially labelled. The tracer’s donor transfer matched the sampled engine counter at every output. For the cohort made during the pulse, 5.327 × 10⁻⁵ fmol had already cleared by the 0.25 s switch. Using only subsequent clearance closed its balance to **2.71 × 10⁻¹⁹ fmol** across the remaining 251 rows, while the cell continued to synthesize protein. These are accounting residuals against the computed trace. The route split at a mixing node is a time discretization. [Comparison](checks/regional_tracer.py) · [Pulse and chase fixture](https://github.com/Eidosoma/Cells/blob/d48d40dd1ce03c1093a1c27e775cd2e8239ccf34/validation/regions/example.py#L49-L73)
+
+<a id="fr33-matched-donors"></a>
+
+### What distinguishes transfer from degradation
+
+Lean proves that one-way transfer and pure clearance give the same entire donor trace for the same starting amount and rate. For positive time, rate and starting amount, the receiver gain in the transfer arm equals the clearance in the degradation arm. In the compiled control the donors agreed exactly at all 11 outputs. Both started at 0.001 fmol and held 0.000606531 fmol at 0.5 s. [Two-control proof](CellsProofs/Tissue/RegionalTracer.lean#L119-L146) · [Maintained Cells control](../validation/compartment_transfer/README.md)
+
+| Control at 0.5 s | Receiver gain (fmol) | Cumulative loss (fmol) |
+| --- | ---: | ---: |
+| Internal transfer | 0.000393469 | 0 |
+| Local degradation | 0 | 0.000393469 |
+
+<a id="fr33-evidence"></a>
+
+Gray et al. photoactivated PSD-95 in one dendritic spine and observed fluorescence fall there and rise in two neighboring spines. Their green/red ratios measure redistribution in those spines. Uchigashima et al. mapped pre-existing and nascent PSD-95 at 3,239–4,402 synaptic regions per neuron in three neurons after a two-hour interval. Neither observation measures the old label in the source, its full complement and the whole neuron across a 48-hour chase. The protein in the Cells study request is unnamed. PSD-95 provides a comparison for the mechanism, and its imaging data supply no fitted Cells rate. [Gray et al., Fig. 4A](https://doi.org/10.1371/journal.pbio.0040370.g004) · [Uchigashima et al., Fig. 6](https://pmc.ncbi.nlm.nih.gov/articles/PMC12606364/#Fig6) · [Measurement records](checks/data/regional_tracer_measurements.json)
+
+Run `checks/regional_tracer.py` with the Cells CPU environment and the checkout’s `src` and root on `PYTHONPATH`. Run `tests/unit/test_region_readouts.py` and `tests/unit/test_compartment_transfer_example.py` for the ten engine regressions. The frozen run is recorded under `lean-fr33-cohorts-20261121`. [Reproducible comparison](checks/regional_tracer.py) · [Regional regression cases](../tests/unit/test_region_readouts.py) · [Matched-donor control](../tests/unit/test_compartment_transfer_example.py)
+
+<a id="matched-buffer-heat"></a>
+
+## 21 November 2026 · Finite-pool heat when the buffer matches the starting concentration
+
+Let a pool place hold `n` molecules, and let the buffer supply exactly `b = nf` molecules in the withdrawn volume fraction `0 < f < 1`. For every realized withdrawal, the heat booked by FR-35 lies between zero and that outcome’s physical split score. Lean proves this by comparing adjacent binomial masses. When the word sampler’s withdrawal probability equals `f`, averaging gives **0 < E[H] ≤ entropy of the withdrawn count ≤ ln(n+1)** for a nonempty place. Along any growing sequence of exactly matched pools, E[H]/n tends to zero. The sign and the per-outcome comparison also hold after summing over matched places. The mean bound uses independent uniform words and natural logarithms. An independent experimental energy budget for this exchange remains open. [Lean proof](CellsProofs/Chemistry/MatchedBuffer.lean) · [Discrete energy convention and sampler](#fr35-withdrawal-energy) · [Cells design](https://github.com/Eidosoma/Cells/blob/2ae9ce8e5c6b56ecab091b6167d034eb97a5520f/docs/ASSEMBLY_WITHDRAWAL_DESIGN.md#L169-L191)
+
+| Initial count | Buffer at ¼ volume | Mean heat (k_BT) | Mean per initial molecule (k_BT) | ln(n+1)/n |
+| ---: | ---: | ---: | ---: | ---: |
+| 4 | 1 | 0.891032 | 0.222758 | 0.402359 |
+| 20 | 5 | 1.628482 | 0.081424 | 0.152226 |
+| 100 | 25 | 2.419274 | 0.024193 | 0.046151 |
+| 400 | 100 | 3.109805 | 0.007775 | 0.014985 |
+
+At engine `2ae9ce8e`, 575 guarded bookings across seven pools matched an independent 88-digit calculation within 1.13 × 10⁻¹² k_BT per heat. Pool volume scaled with the starting tracer count. Exact integer comparisons covered all 42,875 combinations of a matched buffer and withdrawal for 2–50 starting molecules. A complete three-species population wash booked 4.535007 k_BT of heat against a split score of 5.164075. For a mismatched half wash with four tracers, two withdrawn and none supplied, heat exceeds the split score by ln(3/2) k_BT. [Reproducible comparison](checks/matched_buffer.py) · [Engine booking](https://github.com/Eidosoma/Cells/blob/2ae9ce8e5c6b56ecab091b6167d034eb97a5520f/src/cells/models/assembly_lineages_v2/withdrawal.py#L173-L198)
+
+<a id="d272-wash-clamp-retests"></a>
+
+## 21 November 2026 · D272 wash-counter and composite-clamp retests
+
+Both Lean-lane drivers passed on `0aa7f955` and reproduced their numerical JSON byte for byte on `2ae9ce8e`. Three half washes and three 3/7 washes of a 1 µL well completed through the public runner. Na, K and Cl kept their inventories, and cumulative collection and supply matched exactly at every saved row. At `68ab12e7`, three 3/7 washes left a chloride difference of −2.9802322387695312 × 10⁻⁸ fmol and the host refused the step. [Wash replay](checks/compartment_wash.py) · [Repaired counter update](https://github.com/Eidosoma/Cells/blob/2ae9ce8e5c6b56ecab091b6167d034eb97a5520f/src/cells/operators/wash_schedule.py#L478-L491) · [Earlier failed replay](#main-review-d264-d266)
+
+The public composite clamp reproduced the ordinary Kir current of 0.658534 pA at the patch’s own voltage. At −50 mV, its availability of 0.5 gave 0.296208 pA, compared with 0.592416 pA from the raw schedule. The passing engine regressions also covered an independently routed channel factor and a passive route at its own voltage. Six existing tests passed across the wash, clamp and FR-35 checks. [Composite replay](checks/clamped_channel_current.py) · [Composite clamp inputs](https://github.com/Eidosoma/Cells/blob/2ae9ce8e5c6b56ecab091b6167d034eb97a5520f/src/cells/models/pump_composite.py#L1774-L1815) · [Cells lead’s D272](https://github.com/Eidosoma/Cells/blob/2ae9ce8e5c6b56ecab091b6167d034eb97a5520f/docs/DECISIONS.md#L8707-L8716)
+
+<a id="fr35-withdrawal-energy"></a>
+
+## 21 November 2026 · Energy in a partial pool withdrawal
+
+For any finite ideal pool, any integer split and any fixed buffer at a volume fraction `0 < f < 1`, Lean proves **ΔF = buffer work − pool loss − mixing heat**. The pool loss equals the free energy of the withdrawn sample minus its split score. At each place the score is the negative log binomial probability of the withdrawn count at the physical fraction `f`. The mixing heat has the same formula with the supplied count in place of the withdrawn count, so both are nonnegative in exact arithmetic. The proof uses Mathlib’s normalized binomial distribution and the existing Cells discrete free energy. All energies below are in k_BT. [Lean proof](CellsProofs/Chemistry/PoolWithdrawalEnergy.lean) · [Mathlib binomial mass](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Probability/ProbabilityMassFunction/Binomial.lean#L25-L44)
+
+With zero supplied tracer, each retained tracer contributes `−ln(1−f)` to the booked heat. For `n` tracers sampled with independent uniform midpoint words, the exact mean is `−n(1−q) ln(1−f)`, where `q` is the fraction of words that trigger withdrawal. For grid fractions such as 1/4 and 1/2, `q=f`. At the largest admissible float, `f=1−2⁻⁵³`, one word in 2⁵² retains the tracer. Its recorded split score is 36.73680057 against a sampler score of 36.04365339, a difference of exactly ln 2. For one tracer, weighting both booked outcomes gives 8.1572 × 10⁻¹⁵ k_BT, exactly twice the continuum mean of 4.0786 × 10⁻¹⁵ k_BT in the model. The finite-word qualification affects interpreting the split score and the design’s mean-heat identity. The per-outcome energy equation holds in both cases. [Finite grid](CellsProofs/Chemistry/PoolWithdrawal.lean) · [Energy booking](https://github.com/Eidosoma/Cells/blob/695f8cdd974e130f25b021df8efeabe4cac8a515/src/cells/models/assembly_lineages_v2/withdrawal.py#L163-L188) · [Design’s mean heat](../docs/ASSEMBLY_WITHDRAWAL_DESIGN.md#L164-L175)
+
+On engine `695f8cdd`, an 88-digit calculation independently checked the five receipt fields in three complete `cells.assembly_lineages@2` worlds and the changes in their saved energy, sink, heat and schedule-work columns. The maximum error there was 1.96 × 10⁻¹⁴ k_BT. Across 1,080 combinations of original, withdrawn and supplied counts and eight fractions, the largest balance error was 6.21 × 10⁻¹⁴ k_BT, within the existing 10⁻¹⁰ k_BT tolerance. All booked heats were nonnegative. In 126 cases a positive reference heat of at most 8.89 × 10⁻¹⁶ k_BT rounded to zero. Four supplied raw words checked which side of a midpoint is taken. Substituting the sample energy for the sink in an eight-molecule control broke closure by ln 32 k_BT. Both existing FR-35 energy tests passed. [Independent comparison](checks/pool_withdrawal_energy.py) · [Host energy columns](https://github.com/Eidosoma/Cells/blob/695f8cdd974e130f25b021df8efeabe4cac8a515/src/cells/models/assembly_lineages_v2/population.py#L785-L825)
+
+The biological comparison still needs the parent count, daughter count and measured daughter volume fraction **for the same split**. Fornell reports 180 passive count pairs at a nominal volume fraction. Liu measured bead retention over 20 splits and volume over 50 droplets without a published pairing. Deshpande’s daughter-size and fluorescence panels cover 152 and 151 pairs respectively. Their single-vesicle movie shows both daughters, but saturated dye intensities prevent calibrated molecule counting. The count studies do not measure the withdrawal’s energy budget. [Count evidence](#fr35-withdrawal) · [Fornell Fig. 2](https://doi.org/10.1063/1.4984131) · [Liu Fig. 4](https://pmc.ncbi.nlm.nih.gov/articles/PMC6897560/) · [Deshpande Fig. 3](https://ceesdekkerlab.nl/wp-content/uploads/2019/08/Mechanical-division-of-cell-sized-liposomes.pdf#page=5) · [Deshpande Movie S2](https://pmc-oa-opendata.s3.amazonaws.com/PMC5876618.1/nn7b08411_si_003.avi)
+
 <a id="fr35-withdrawal"></a>
 
 ## 21 November 2026 · What a partial withdrawal conserves and samples

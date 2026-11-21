@@ -20,6 +20,177 @@
     "cells.shared_pool@1": "molecular-assembly"
   },
   "comparisons": {
+    "regional-pulse-balance": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [],
+      "operators": [
+        "cells.cell_owned_compartments@1",
+        "cells.scheduled_species_exchange@1",
+        "cells.scheduled_species_turnover@1"
+      ],
+      "engine_revision": "d48d40dd1ce03c1093a1c27e775cd2e8239ccf34",
+      "record_revision": "411725a61be219d1769072107e6ed6c4f665a064",
+      "sources": {
+        "First-order exchange and route counter": "src/cells/operators/species_exchange.py#L370-L417",
+        "Turnover and cumulative clearance": "src/cells/operators/species_turnover.py#L266-L306",
+        "Two-compartment tissue fixture": "validation/tissue/secreted_species_fixtures.py#L92",
+        "Matched transfer and clearance arms": "validation/compartment_transfer/example.py#L44-L156",
+        "Regional totals and tracer linear solve": "validation/regions/readouts.py#L451-L553",
+        "Pulse labelling schedule and mixed receiver": "validation/regions/example.py#L49-L73",
+        "Tracer regression cases": "tests/unit/test_region_readouts.py#L94"
+      },
+      "record_inputs": {
+        "Regional tracer proofs": "lean/CellsProofs/Tissue/RegionalTracer.lean"
+      },
+      "driver": "lean/checks/regional_tracer.py",
+      "record": "lean/PROGRESS.md#fr33-regional-tracer"
+    },
+    "transfer-or-degradation": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [],
+      "operators": [
+        "cells.cell_owned_compartments@1",
+        "cells.scheduled_species_exchange@1",
+        "cells.scheduled_species_turnover@1"
+      ],
+      "engine_revision": "d48d40dd1ce03c1093a1c27e775cd2e8239ccf34",
+      "record_revision": "411725a61be219d1769072107e6ed6c4f665a064",
+      "sources": {
+        "First-order exchange and route counter": "src/cells/operators/species_exchange.py#L370-L417",
+        "Turnover and cumulative clearance": "src/cells/operators/species_turnover.py#L266-L306",
+        "Two-compartment tissue fixture": "validation/tissue/secreted_species_fixtures.py#L92",
+        "Matched transfer and clearance arms": "validation/compartment_transfer/example.py#L44-L156",
+        "Receiver and loss control": "tests/unit/test_compartment_transfer_example.py#L14"
+      },
+      "record_inputs": {
+        "Matched-donor proofs": "lean/CellsProofs/Tissue/RegionalTracer.lean",
+        "First-order clearance specialization": "lean/CellsProofs/Chemistry/SpeciesTurnover.lean"
+      },
+      "driver": "lean/checks/regional_tracer.py",
+      "record": "lean/PROGRESS.md#fr33-matched-donors"
+    },
+    "pool-withdrawal-matched-buffer": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@2"
+      ],
+      "laws": [
+        "cells.ideal_mixing@1"
+      ],
+      "operators": [
+        "cells.pool_withdrawal@1"
+      ],
+      "engine_revision": "2ae9ce8e5c6b56ecab091b6167d034eb97a5520f",
+      "record_revision": "841e06cd5d0e97b449b6eb5fdfa55f4e4376da86",
+      "sources": {
+        "Parsed buffer, pre-draw guard and sampled counts": "src/cells/models/assembly_lineages_v2/withdrawal.py#L81-L171",
+        "Five energy fields of a withdrawal": "src/cells/models/assembly_lineages_v2/withdrawal.py#L173-L198",
+        "Normal population receipt": "src/cells/models/assembly_lineages_v2/population.py#L785-L825",
+        "Discrete ideal free energy": "src/cells/models/assembly_lineages_v2/ideal_mixing.py#L64-L78",
+        "Guarded pool energy table": "src/cells/models/assembly_lineages_v2/ledger.py#L58-L81",
+        "Stream word grid": "src/cells/models/assembly_lineages/streams.py#L120-L128",
+        "Population fixture and matched quarter-volume control": "tests/unit/test_assembly_lineages_v2_replacement.py#L594-L727"
+      },
+      "record_inputs": {
+        "Matched-buffer proofs": "lean/CellsProofs/Chemistry/MatchedBuffer.lean",
+        "Per-outcome energy and count probabilities": "lean/CellsProofs/Chemistry/PoolWithdrawalEnergy.lean",
+        "Independent energy and log-factorial reference": "lean/checks/pool_withdrawal_energy.py",
+        "Exact word cutoffs": "lean/checks/pool_withdrawal.py"
+      },
+      "driver": "lean/checks/matched_buffer.py",
+      "record": "lean/PROGRESS.md#matched-buffer-heat"
+    },
+    "wash-ion-counters-d272": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1"
+      ],
+      "laws": [],
+      "operators": [
+        "cells.scheduled_compartment_wash@1"
+      ],
+      "engine_revision": "2ae9ce8e5c6b56ecab091b6167d034eb97a5520f",
+      "record_revision": "841e06cd5d0e97b449b6eb5fdfa55f4e4376da86",
+      "sources": {
+        "Ion sample and refill": "src/cells/operators/wash_schedule.py#L421-L436",
+        "Cumulative ion counters": "src/cells/operators/wash_schedule.py#L478-L491",
+        "Finite well and wash definition": "validation/tissue/wash_schedule_fixtures.py#L35-L90",
+        "Public runner": "src/cells/execution/runner.py#L384",
+        "Public unchanged-ion regression": "tests/unit/test_wash_schedule_runs.py#L62-L92"
+      },
+      "record_inputs": {
+        "Exact wash identity": "lean/CellsProofs/Tissue/CompartmentWash.lean"
+      },
+      "driver": "lean/checks/compartment_wash.py",
+      "record": "lean/PROGRESS.md#d272-wash-clamp-retests"
+    },
+    "composite-channel-clamp-d272": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1"
+      ],
+      "laws": [
+        "kir2p1_mh2@1"
+      ],
+      "operators": [
+        "cells.species_regulated_availability@1"
+      ],
+      "engine_revision": "2ae9ce8e5c6b56ecab091b6167d034eb97a5520f",
+      "record_revision": "841e06cd5d0e97b449b6eb5fdfa55f4e4376da86",
+      "sources": {
+        "Effective control view": "src/cells/models/pump_composite.py#L1525",
+        "Public composite clamp and kind inputs": "src/cells/models/pump_composite.py#L1774-L1815",
+        "Composite history observations": "src/cells/models/pump_composite.py#L2243",
+        "Tissue clamp called by the composite": "src/cells/models/surface_pump_v3.py#L427",
+        "Kir fixture and scheduled controls": "validation/tissue/regulated_availability_fixtures.py#L178-L196",
+        "Public clamp regressions": "tests/unit/test_species_regulated_availability.py#L1779-L1835"
+      },
+      "record_inputs": {
+        "Fixed-gate channel theorem": "lean/CellsProofs/Transport/IonChannels.lean"
+      },
+      "driver": "lean/checks/clamped_channel_current.py",
+      "record": "lean/PROGRESS.md#d272-wash-clamp-retests"
+    },
+    "pool-withdrawal-energy": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@2"
+      ],
+      "laws": [
+        "cells.ideal_mixing@1"
+      ],
+      "operators": [
+        "cells.pool_withdrawal@1"
+      ],
+      "engine_revision": "695f8cdd974e130f25b021df8efeabe4cac8a515",
+      "record_revision": "59f5bba6d8773a907706db8333ac8e9ca6d29cea",
+      "sources": {
+        "Per-place sample and five signed energy fields": "src/cells/models/assembly_lineages_v2/withdrawal.py#L140-L188",
+        "Host receipt, work column, sink and heat": "src/cells/models/assembly_lineages_v2/population.py#L785-L825",
+        "Discrete free energy in the finite pool": "src/cells/models/assembly_lineages_v2/ideal_mixing.py#L64-L78",
+        "Host free energy and table guard": "src/cells/models/assembly_lineages_v2/ledger.py#L46-L81",
+        "Word addresses for each sampled place": "src/cells/models/assembly_lineages_v2/streams.py#L49-L66",
+        "Conversion to a uniform midpoint": "src/cells/models/assembly_lineages/streams.py#L120-L128",
+        "Acceptance world and independent withdrawal booking tests": "tests/unit/test_assembly_lineages_v2_replacement.py#L594-L735"
+      },
+      "record_inputs": {
+        "Exact energy and word-weighted heat proof": "lean/CellsProofs/Chemistry/PoolWithdrawalEnergy.lean",
+        "Finite-word counting law": "lean/CellsProofs/Chemistry/PoolWithdrawal.lean",
+        "Discrete site energy": "lean/CellsProofs/Chemistry/AssemblyMixing.lean",
+        "Binomial expectation on finite trials": "lean/CellsProofs/Chemistry/LineageFission.lean",
+        "Shared exact word indices and thresholds": "lean/checks/pool_withdrawal.py"
+      },
+      "driver": "lean/checks/pool_withdrawal_energy.py",
+      "record": "lean/PROGRESS.md#fr35-withdrawal-energy"
+    },
     "pool-withdrawal": {
       "kind": "engine",
       "models": [
@@ -2472,6 +2643,218 @@
     }
   },
   "claims": [
+    {
+      "id": "regional-pulse-balance",
+      "category": "tissue-and-conservation",
+      "title": "Label remaining in a closed cell and clearance since the pulse account for the original cohort",
+      "statement": "After labelling stops, a solved tracer step changes the amount of old label in a region by labelled boundary inflow less local clearance. Across any finite sequence of such steps, label inside the region, label in the rest of the cell and clearance since the pulse sum to the amount present when the pulse ended.",
+      "assumptions": [
+        "The nodes form one closed cell with a fixed region and recorded one-way internal routes. Any new material joins another cohort. Each accepted step solves the tracer’s stated linear equations and books clearance using the same cohort share.",
+        "The balance uses exact real arithmetic. Resolving the time course of mixing and inferring directional fluxes from two-way movement are separate questions."
+      ],
+      "uses": [
+        "transfer-inventory"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [],
+        "theorems": {
+          "CellsProofs.Tissue.RegionalTracer.node_balance": "lean/CellsProofs/Tissue/RegionalTracer.lean",
+          "CellsProofs.Tissue.RegionalTracer.region_balance": "lean/CellsProofs/Tissue/RegionalTracer.lean",
+          "CellsProofs.Tissue.RegionalTracer.pulse_balance": "lean/CellsProofs/Tissue/RegionalTracer.lean"
+        },
+        "sources": {
+          "Cells signed regional transfer theorem, specialized to the tracer’s labelled flux": "lean/CellsProofs/Accounting/Transfer.lean#L35-L51",
+          "Mathlib finite sum over a region and its complement, imported (Finset.sum_add_sum_compl)": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Group/Finset/Basic.lean#L147-L150"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "regional-pulse-balance"
+        ],
+        "result": "The largest whole-cell residual was 5.20 × 10⁻¹⁸ fmol across 501 donor-cohort rows. Across 251 rows starting at the pulse switch it was 2.71 × 10⁻¹⁹ fmol. The pulse account subtracts the 5.327 × 10⁻⁵ fmol already cleared by that switch."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "The same pre-labelled protein inside a defined region, in its full complement, and across the whole neuron over a chase, with clearance and export accounted for.",
+        "unit": "fmol in Cells and relative fluorescence in the imaged synapses",
+        "evidence": [
+          {
+            "dataset_id": "uchigashima2025_psd95_map",
+            "manifest": "lean/checks/data/regional_tracer_measurements.json",
+            "citation": "Uchigashima et al. (2025), Nature Communications",
+            "doi": "10.1038/s41467-025-65813-w",
+            "locator": "Figure 6a–e and Supplementary Figure 9d.",
+            "context": "A two-hour pulse/chase distinguished pre-existing and newly made PSD-95 in three mouse cortical pyramidal neurons.",
+            "role": "descriptive",
+            "uncertainty": "The range 3,239–4,402 counts synaptic regions per neuron. It supplies no uncertainty on an old-label mass balance.",
+            "assessment": "Endpoint maps show where old and new PSD-95 were detected. A longitudinal total including the diffuse pool is still needed to test the closed-cell balance.",
+            "report": "lean/PROGRESS.md#fr33-evidence"
+          }
+        ]
+      }
+    },
+    {
+      "id": "transfer-or-degradation",
+      "category": "tissue-and-conservation",
+      "title": "Identical donor traces under transfer and degradation have distinct receiver and loss records",
+      "statement": "Pure one-way transfer and local first-order degradation give the same donor curve for all times when their rate and starting amount agree. For a positive starting amount, rate and elapsed time, either receiver gain or cumulative clearance distinguishes the two mechanisms, and the two differences agree in magnitude.",
+      "assumptions": [
+        "The two controls begin with identical donor and receiver amounts. Each has the same constant first-order rate, zero production, and a single route out of the donor. The transfer receiver retains all arriving label, and degradation books all removed label as loss.",
+        "The comparison uses amounts of the same cohort. A measured fluorescence ratio gives a local signal on a different scale."
+      ],
+      "uses": [
+        "scheduled-species-turnover",
+        "transfer-inventory"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.scheduled_species_exchange@1",
+          "cells.scheduled_species_turnover@1"
+        ],
+        "theorems": {
+          "CellsProofs.Tissue.RegionalTracer.equal_donor_traces": "lean/CellsProofs/Tissue/RegionalTracer.lean",
+          "CellsProofs.Tissue.RegionalTracer.receiver_and_loss_distinguish": "lean/CellsProofs/Tissue/RegionalTracer.lean"
+        },
+        "sources": {
+          "Cells first-order turnover amount and clearance, specialized at zero production": "lean/CellsProofs/Chemistry/SpeciesTurnover.lean#L19-L26",
+          "Mathlib strict exponential bound, imported (Real.exp_lt_one_iff)": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Data/Complex/Exponential.lean#L323-L330"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "transfer-or-degradation"
+        ],
+        "result": "The donors agreed exactly at all 11 outputs. At 0.5 s the transfer receiver gained 0.000393469 fmol with zero loss. Local degradation cleared 0.000393469 fmol with zero receiver gain."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Labelled protein at its source, at receiving synapses and across the cell, sampled over the same period.",
+        "unit": "fmol in Cells and per-spine green/red fluorescence ratio in the experiment",
+        "evidence": [
+          {
+            "dataset_id": "gray2006_psd95_exchange",
+            "manifest": "lean/checks/data/regional_tracer_measurements.json",
+            "citation": "Gray et al. (2006), PLOS Biology",
+            "doi": "10.1371/journal.pbio.0040370",
+            "locator": "Figure 4A.",
+            "context": "After local photoactivation of PSD-95 in mouse neocortex, signal fell in the source spine and rose in two neighboring spines.",
+            "role": "descriptive",
+            "uncertainty": "The figure reports relative fluorescence in selected spines. A recovered mass fraction and a same-cohort whole-neuron total are unavailable from those traces.",
+            "assessment": "The receiver signals document local redistribution. The protein and cause of the 48-hour decline in the Cells study remain unresolved.",
+            "report": "lean/PROGRESS.md#fr33-evidence"
+          }
+        ]
+      }
+    },
+    {
+      "id": "pool-withdrawal-matched-buffer",
+      "category": "molecular-assembly",
+      "title": "Matched-buffer heat per molecule tends to zero when sampling follows the liquid volume fraction",
+      "statement": "When the buffer supplies exactly the fraction f of the starting count at each place, the mixing heat of every split lies between zero and its physical split score. For one nonempty place with n molecules and sampler probability q=f, the mean heat is positive and at most the entropy of the withdrawn count, hence at most ln(n+1) in k_BT. The mean per starting molecule tends to zero along increasing, exactly matched pool sizes.",
+      "assumptions": [
+        "The finite pool has the additive discrete ideal free energy. All counts are nonnegative integers and 0 < f < 1. Exact matching requires b = nf for every place being compared.",
+        "The mean uses one independent uniform midpoint word per original molecule. The volume fraction and its finite-word probability must agree for the entropy bound, including the tested quarters, halves, eighths and three-quarters.",
+        "The limit concerns a fixed fraction and a sequence of admissible pool sizes tending to infinity. The finite bound applies at every positive size with an exactly matched integer buffer."
+      ],
+      "uses": [
+        "pool-withdrawal-energy"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.pool_withdrawal@1"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.MatchedBuffer.matched_mass": "lean/CellsProofs/Chemistry/MatchedBuffer.lean",
+          "CellsProofs.Chemistry.MatchedBuffer.heat_le_split_score": "lean/CellsProofs/Chemistry/MatchedBuffer.lean",
+          "CellsProofs.Chemistry.MatchedBuffer.booked_heat_bounds": "lean/CellsProofs/Chemistry/MatchedBuffer.lean",
+          "CellsProofs.Chemistry.MatchedBuffer.mean_from_word_counts": "lean/CellsProofs/Chemistry/MatchedBuffer.lean",
+          "CellsProofs.Chemistry.MatchedBuffer.mean_le_split_entropy": "lean/CellsProofs/Chemistry/MatchedBuffer.lean",
+          "CellsProofs.Chemistry.MatchedBuffer.mean_bounds": "lean/CellsProofs/Chemistry/MatchedBuffer.lean",
+          "CellsProofs.Chemistry.MatchedBuffer.per_molecule_bound": "lean/CellsProofs/Chemistry/MatchedBuffer.lean",
+          "CellsProofs.Chemistry.MatchedBuffer.per_molecule_limit": "lean/CellsProofs/Chemistry/MatchedBuffer.lean"
+        },
+        "sources": {
+          "Mathlib adjacent binomial coefficient identity, imported": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Data/Nat/Choose/Basic.lean#L120-L126",
+          "Mathlib logarithm tangent bound, specialized to the uniform count distribution": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/SpecialFunctions/Log/Basic.lean#L288-L290",
+          "Mathlib sublinear growth of log, imported for the per-molecule limit": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/SpecialFunctions/Log/Basic.lean#L399-L402",
+          "Mathlib reciprocal limit for natural counts, imported": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/SpecificLimits/Basic.lean#L36-L40",
+          "Cells binomial energy and finite word calculation": "lean/CellsProofs/Chemistry/PoolWithdrawalEnergy.lean#L102-L115",
+          "Matched-concentration design and finite-pool reference": "docs/ASSEMBLY_WITHDRAWAL_DESIGN.md#L182-L191"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "pool-withdrawal-matched-buffer"
+        ],
+        "result": "All 42,875 exact count comparisons passed. Across seven parsed pools and 575 guarded outcomes, the largest heat error against an 88-digit reference was 1.13 × 10⁻¹² k_BT. In a quarter wash the mean heat per starting molecule was 0.024193 k_BT at n=100 and 0.007775 k_BT at n=400. A complete three-species wash booked 4.535007 k_BT of heat against a split score of 5.164075."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Mean energy dissipated per starting tracer molecule in a partial exchange, with measured volumes and counts and concentration-matched buffer, across a range of pool sizes.",
+        "unit": "k_BT per starting molecule",
+        "evidence": []
+      }
+    },
+    {
+      "id": "pool-withdrawal-energy",
+      "category": "molecular-assembly",
+      "title": "Partial withdrawal closes the energy balance and releases nonnegative mixing heat",
+      "statement": "For every count split and supplied buffer, the change of pool free energy equals buffer work minus pool loss minus mixing heat. The loss equals sample free energy minus the physical binomial split score. Both the split score and the mixing heat are nonnegative. For a tracer-free buffer the mean heat per initial tracer is −(1−q) ln(1−f), where q is the effective withdrawal probability and f is the physical volume fraction.",
+      "assumptions": [
+        "The pool has finitely many places with nonnegative integer counts. Its discrete ideal free energy is additive over finite species and includes the log factorial of each count. The buffer fills the withdrawn volume and the full pool volume is restored.",
+        "The physical fraction f lies strictly between zero and one. Work, sink and heat use Cells’ withdrawal convention in units of k_BT. Closure and signs hold for each realized split.",
+        "Sampler probabilities and mean heats assume independent, uniformly distributed word indices. Cells compares each midpoint from 2⁵² bins strictly to f. The split-score comparison uses outcomes with positive sampler probability."
+      ],
+      "uses": [
+        "pool-withdrawal",
+        "assembly-ideal-mixing"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.pool_withdrawal@1"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.PoolWithdrawalEnergy.binomial_mass": "lean/CellsProofs/Chemistry/PoolWithdrawalEnergy.lean",
+          "CellsProofs.Chemistry.PoolWithdrawalEnergy.partition_cost": "lean/CellsProofs/Chemistry/PoolWithdrawalEnergy.lean",
+          "CellsProofs.Chemistry.PoolWithdrawalEnergy.energy_balance": "lean/CellsProofs/Chemistry/PoolWithdrawalEnergy.lean",
+          "CellsProofs.Chemistry.PoolWithdrawalEnergy.binomial_bookings": "lean/CellsProofs/Chemistry/PoolWithdrawalEnergy.lean",
+          "CellsProofs.Chemistry.PoolWithdrawalEnergy.nonnegative_heat_and_split": "lean/CellsProofs/Chemistry/PoolWithdrawalEnergy.lean",
+          "CellsProofs.Chemistry.PoolWithdrawalEnergy.tracer_free_heat": "lean/CellsProofs/Chemistry/PoolWithdrawalEnergy.lean",
+          "CellsProofs.Chemistry.PoolWithdrawalEnergy.mean_tracer_free_heat": "lean/CellsProofs/Chemistry/PoolWithdrawalEnergy.lean",
+          "CellsProofs.Chemistry.PoolWithdrawalEnergy.sampled_count_mass": "lean/CellsProofs/Chemistry/PoolWithdrawalEnergy.lean",
+          "CellsProofs.Chemistry.PoolWithdrawalEnergy.sampled_score_gap": "lean/CellsProofs/Chemistry/PoolWithdrawalEnergy.lean",
+          "CellsProofs.Chemistry.PoolWithdrawalEnergy.last_midpoint_mean_heat": "lean/CellsProofs/Chemistry/PoolWithdrawalEnergy.lean",
+          "CellsProofs.Chemistry.PoolWithdrawalEnergy.last_midpoint_gap": "lean/CellsProofs/Chemistry/PoolWithdrawalEnergy.lean"
+        },
+        "sources": {
+          "Mathlib binomial distribution and its point mass, imported and specialized": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Probability/ProbabilityMassFunction/Binomial.lean#L25-L44",
+          "Mathlib bound on the mass of a single outcome, imported": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Probability/ProbabilityMassFunction/Basic.lean#L115",
+          "Mathlib binomial coefficient and factorial identity, imported": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Data/Nat/Choose/Basic.lean#L174",
+          "Cells proof of the midpoint sampler’s count law": "lean/CellsProofs/Chemistry/PoolWithdrawal.lean#L91-L125",
+          "Discrete energy and expected heat convention in the withdrawal design": "docs/ASSEMBLY_WITHDRAWAL_DESIGN.md#L101-L175"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "pool-withdrawal-energy"
+        ],
+        "result": "Three complete worlds and 1,080 small-count cases matched an 88-digit independent reference. The largest balance error was 6.21 × 10⁻¹⁴ k_BT. All booked heats were nonnegative. At f = 1−2⁻⁵³ the last word retains one tracer, the split score exceeds its sampler score by ln 2, and the word-weighted tracer-free mean is 8.1572 × 10⁻¹⁵ k_BT against an ideal-volume mean of 4.0786 × 10⁻¹⁵ k_BT."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Independent energy budget for a measured partial withdrawal with known tracer counts, buffer content, liquid volumes and work during resupply.",
+        "unit": "k_BT per withdrawal",
+        "evidence": []
+      }
+    },
     {
       "id": "pool-withdrawal",
       "category": "molecular-assembly",
@@ -5065,10 +5448,11 @@
       "numerical": {
         "status": "checked",
         "comparisons": [
+          "composite-channel-clamp-d272",
           "channel-clamp-main-nov21",
           "clamped-channel-current-fr34"
         ],
-        "result": "On the tissue host, 11 active populations on two patches agreed with the 70-digit reference within 1.30 × 10⁻²⁶ A. Halving abundance or availability halved current exactly. Full block, off-ion fluxes and padding gave zero. The composite replay at −50 mV gave 0.592416 pA with the raw control and 0.296208 pA with its effective 0.5 control. The public composite clamp remains unavailable at this revision."
+        "result": "On the tissue host, 11 active populations on two patches agreed with the 70-digit reference within 1.30 × 10⁻²⁶ A. Halving abundance or availability halved current exactly. Full block, off-ion fluxes and padding gave zero. On the repaired composite the public clamp reproduced the observed 0.658534 pA at the patch voltage and gave 0.296208 pA at −50 mV with availability 0.5. The raw scheduled control gave 0.592416 pA there."
       },
       "biology": {
         "status": "open",
@@ -6665,11 +7049,12 @@
         }
       },
       "numerical": {
-        "status": "failed",
+        "status": "checked",
         "comparisons": [
+          "wash-ion-counters-d272",
           "wash-main-nov21"
         ],
-        "result": "On compiled CPU float64, three 1/2 washes completed with identical counters. Three 3/7 washes kept all ionic inventories fixed. The final chloride collected minus supplied was −2.9802322387695312 × 10⁻⁸ fmol in the production scan, and the public runner refused the outside-material ledger. Sodium and potassium closed exactly."
+        "result": "On the repaired compiled host, three half washes and three 3/7 washes kept Na, K and Cl inventories fixed. Collected and supplied counters agreed exactly at every saved row and both runs completed. At 68ab12e7 the 3/7 schedule left a chloride residual of −2.98 × 10⁻⁸ fmol and the outside-material ledger refused it."
       },
       "biology": {
         "status": "open",
@@ -6711,10 +7096,11 @@
       "numerical": {
         "status": "checked",
         "comparisons": [
+          "wash-ion-counters-d272",
           "wash-main-nov21",
           "compartment-wash-nov21"
         ],
-        "result": "Four compiled tracer schedules retained ions and site fields. The maximum tracer material discrepancy was 7.11 × 10⁻¹⁵ fmol. Whole-wash runs reached 2⁻⁵⁰ of the initial amount and reproduced the documented refusal at 2⁻⁶⁰. The separate unchanged-ion counter claim records the failure at fraction 3/7."
+        "result": "Four compiled tracer schedules retained ions and site fields. The maximum tracer material discrepancy was 7.11 × 10⁻¹⁵ fmol. Whole-wash runs reached 2⁻⁵⁰ of the initial amount and reproduced the documented refusal at 2⁻⁶⁰. The repaired counter check completed at fractions 1/2 and 3/7 with exact agreement for each unchanged ion."
       },
       "biology": {
         "status": "open",
