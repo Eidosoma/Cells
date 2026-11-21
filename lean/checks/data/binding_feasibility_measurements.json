@@ -1,0 +1,27 @@
+{
+  "cortes2017_par_capacity": {
+    "doi": "10.1021/acs.inorgchem.7b00372",
+    "source": "https://s3-eu-west-1.amazonaws.com/pstorage-acs-6854636/8172722/ic7b00372_si_001.pdf#page=14",
+    "locator": "Supporting Fig. S3b, middle pH series, and calibration method on p. S-4.",
+    "conditions": {
+      "Par_uM": 40,
+      "pH": 7.1,
+      "Na_MOPS_mM": 50,
+      "NaCl_mM": 100
+    },
+    "observable": "Absorbance at 705 nm during Fe(II) addition to Par.",
+    "readings": [
+      {
+        "Fe_to_Par_approx": 0.5,
+        "added_Fe_uM_approx": 20,
+        "A705_approx": 0.39
+      },
+      {
+        "Fe_to_Par_approx": 0.8,
+        "added_Fe_uM_approx": 32,
+        "A705_approx": 0.39
+      }
+    ],
+    "limits": "Read from the plot. No replicate count, endpoint uncertainties or free Fe measurement. The authors standardized ligand concentrations using the same 1:2 Fe-to-ligand endpoint. This describes optical saturation under the stated preparation."
+  }
+}

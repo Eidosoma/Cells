@@ -12,6 +12,9 @@ export const BENCH_FORMAT = "cells.visualizer.machine_bench@1";
 export const PREFIX = "machine:";
 export const pageId = (kind) => `${PREFIX}${kind}`;
 export const kindOf = (id) => (typeof id === "string" && id.startsWith(PREFIX) ? id.slice(PREFIX.length).split(":")[0] : null);
+/** An organelle's id on the page: `organelle:<kind>` (schema/MACHINE_CATALOGUE.md, "Organelles"). An organelle is no machine: it stands on the shelf. */
+export const ORGANELLE = "organelle:";
+export const organelleKind = (id) => (typeof id === "string" && id.startsWith(ORGANELLE) ? id.slice(ORGANELLE.length) : null);
 /** The dossier's word for a machine that only its family route names (schema/MACHINE_DOSSIERS.md): candidates, not parts. */
 export const FAMILY = "family signature";
 /** Whether a machine of a bench is named only by its dossier's family route: a machine its species' records do not name. */
@@ -39,7 +42,7 @@ export class Catalogue {
     this.reading = new Map();
     // A shape file the view could not read, by its path: the words its panel gives instead.
     this.shapeWords = new Map();
-    if (this.raw.entries) for (const name of new Set(this.raw.entries.map((entry) => entry.species))) this.benches.set(name, { status: "found", entries: this.raw.entries.filter((entry) => entry.species === name), byProtein: this.raw.by_protein?.[name] || {}, noneFound: this.raw.none_found?.[name] || [] });
+    if (this.raw.entries) for (const name of new Set(this.raw.entries.map((entry) => entry.species))) this.benches.set(name, { status: "found", entries: this.raw.entries.filter((entry) => entry.species === name), byProtein: this.raw.by_protein?.[name] || {}, noneFound: this.raw.none_found?.[name] || [], organelles: (this.raw.organelles || []).filter((entry) => entry.species === name) });
   }
 
   /** Whether a species' bench is in hand (read, or carried whole). */
@@ -65,7 +68,7 @@ export class Catalogue {
         .then(() => load(path))
         .then((data) => {
           if (data?.format !== BENCH_FORMAT || data.species !== species) throw new Error(`it is not the bench of ${species}`);
-          return { status: "found", entries: data.entries || [], byProtein: data.by_protein || {}, noneFound: data.none_found || [] };
+          return { status: "found", entries: data.entries || [], byProtein: data.by_protein || {}, noneFound: data.none_found || [], organelles: data.organelles || [] };
         })
         .catch((error) => ({ status: "failed", words: `The machines of this species could not be read (${path}: ${error?.message || error}). The units of the law inventory stand without them.` }))
         .then((state) => {
@@ -132,8 +135,18 @@ export class Catalogue {
     return ordered;
   }
 
-  /** One machine of a species by its page id, or null. */
+  /**
+   * The organelles on a species' shelf (`organelles` of its bench), in the overlay's order: each { id, label, group, kind,
+   * entry, size, organelle: true }. They are no machines: in no count of machines and in no tray.
+   */
+  organellesOf(species) {
+    const bench = this.benches.get(species);
+    return (bench?.organelles || []).filter((entry) => entry.species === species && this.kinds.has(entry.id)).map((entry) => ({ id: `${ORGANELLE}${entry.id}`, label: entry.label || this.kinds.get(entry.id).label, group: this.kinds.get(entry.id).group, kind: this.kinds.get(entry.id), entry, unit: null, size: entry.size || null, sized: Boolean(entry.size), organelle: true }));
+  }
+
+  /** One machine of a species by its page id, or one of its organelles; null for neither. */
   item(species, id) {
+    if (organelleKind(id)) return this.organellesOf(species).find((item) => item.id === id) || null;
     return this.of(species).find((item) => item.id === id) || null;
   }
 

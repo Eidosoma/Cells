@@ -45,8 +45,8 @@ a tree that was not clean as well.
 ```json
 "stamp": {
   "generator": "visualizer/tools/extract_laws.py",
-  "read": "Read from the engine's declarations at main 1ca5eada",
-  "manifest": { "path": "data/engine/declarations.json", "kind": "cells.declarations@2", "revision": "<40 hex digits>", "short": "1ca5eada", "dirty": false, "origin": "git checkout" },
+  "read": "Read from the engine's declarations at main 93fc8c2c",
+  "manifest": { "path": "data/engine/declarations.json", "kind": "cells.declarations@2", "revision": "<40 hex digits>", "short": "93fc8c2c", "dirty": false, "origin": "git checkout" },
   "overlay_as_of": "2026-11-18",
   "boxes": "data/architecture/overlay.json: the Engine view's components, matched to each piece's module_path"
 }
@@ -75,7 +75,7 @@ The manifest states no date, and the view writes none.
 - **`declared`** is the manifest's piece, unchanged. Nothing else of the list says what a piece
   is.
 - **No `status`** is added. A level is shown only where the manifest's `status` gives one, with
-  its `status_source`. At main 1ca5eada none does.
+  its `status_source`. At main 93fc8c2c none does.
 
 ### A law a design note names
 
@@ -122,7 +122,11 @@ that is null is said by its meaning (the format page, "The three meanings of nul
 
 An empty list or object says "the declaration lists none". A nested null keeps the meaning the
 format page gives its field: `rk4_step_s` null is "none: a law with no gate"; `stage_term`,
-`loop_term` and `step_method` null are "none". `declared_host` null says the host is not stated
+`loop_term`, `material_term`, `charge_bound`, `material_bound` and `step_method` null are "none"
+("Each names the kernel that supplies it, or is null where the law has none"); `forms` null is
+"none" too, since the page says of it only "or null", and a value of `forms` is said in the page's
+words ("base", "registry"). The step terms and bounds are named as the page names them: "Stage term",
+"Material term", "Bound on a charged row", "Bound on a neutral row", "Forms". `declared_host` null says the host is not stated
 as a registered model, kind or operator; a null `module_path` says the module is outside the
 `cells` package, and nothing is linked.
 
@@ -136,8 +140,42 @@ The panel says, of a declared piece:
   page);
 - its test; its reads with mode and stage; what it changes, owns, writes, provides and controls;
   its ledgers and energy; its units and signs; an operator's requirements; a kind's laws;
-- the rest under `fields`, by the format page's section for its interface;
+- the rest under `fields`, by the format page's section for its interface, a cycle law's general
+  form in words (below);
 - its status ("not stated" today) and its page (`doc`: "none given yet" today).
+
+### A cycle law's general form
+
+A cycle law's `fields.cycle` is said under the format page's name for it, "Its general form"
+("Cycle laws": "`cycle`: its general form (seam A's cycle form), or null"), never as the raw key
+or its JSON. Each key's meaning is the engine's own: the format page and the docstrings of the
+cycle forms' module (`laws/cycles/forms.py`, "What a cycle form is").
+- **The row** says its kinetics and how many modes, roles and parameters it has. A null form
+  says "none".
+- **The section "Its general form"** says, key by key:
+  - `kinetics`: which of the four kinetic forms, in the module's words (factored, diagram, net
+    flow, monomial);
+  - `modes`: each mode by its ID, and each row's change per forward cycle, signed: an integer,
+    or a parameter's name, which a leading "-" negates;
+  - `roles`: each role with the valence it requires of the species it binds, or any valence;
+  - `rows`: each a role at the N or P end of its host;
+  - the kinetics' own data (`saturation`, `diagram`, `flux_terms` or `monomial`): what it is,
+    never the data: a factored form's Hill factors per mode and their rows, a diagram's states,
+    steps and Hill cycles, a net-flow form's terms, a monomial form's rates and read roles;
+  - `ph_bands`: the row whose pH stays within a band, and the band's two parameters;
+  - `temperature_K`: the domain, low to high, in K.
+- **The section "Its general form: its parameters"** says each parameter with its unit and its
+  declared range: inclusive bounds, above zero where it is positive, a whole number where it is
+  an integer.
+- **A key that is null says nothing,** and another kinetics' empty data says nothing.
+- **A key the engine's documents do not explain** is shown under its own name with a plain
+  value: `fuel_roles` today.
+- **A form the card does not know** (a kinetics added later, or a key added to the form) still
+  shows: the kinetics under its own name, as one these words do not know yet, and its data and
+  any other key under their own names, a list or an object counted by its size, never poured.
+- **Where the form carries the law** (the format page: "`moves` may be empty and the kernels
+  null"), its empty moves say "none of its own: its general form carries them", and its null
+  `kinetics` and `domain_valid` fields say nothing.
 
 ## Sources and links
 
@@ -147,7 +185,7 @@ Every source is the engine's own record or the viewer's own data; no third-party
   model's, a page in `doc`, a design note's) links at `stamp.manifest.revision`, in the
   repository of the scene's `source_base_url`: the file is there by construction. Where the
   map's revision is another, the words beside the link say so ("line 47, as declared at main
-  1ca5eada"). The link names the file; the line is said in words.
+  93fc8c2c"). The link names the file; the line is said in words.
 - **Not linked.** No page is linked while the manifest gives none, and no file outside the
   package is linked.
 - **The Engine view's boxes** are linked only where the page draws them, and no level of a box

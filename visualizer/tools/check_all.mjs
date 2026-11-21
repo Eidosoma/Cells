@@ -166,6 +166,11 @@ const SUITE = [
   { name: "catalogue-benches-720", tool: "check_catalogue.mjs", args: [pictures], env: { CASE: "benches", NAME: "catalogue-benches-720", WIDTH: "1280", HEIGHT: "720", THEME: "dark" }, minutes: 3 },
   { name: "catalogue-benches-phone", tool: "check_catalogue.mjs", args: [pictures], env: { CASE: "benches", NAME: "catalogue-benches-phone", WIDTH: "400", HEIGHT: "844" }, minutes: 3 },
   { name: "catalogue-benches-360", tool: "check_catalogue.mjs", args: [pictures], env: { CASE: "benches", NAME: "catalogue-benches-360", WIDTH: "360", HEIGHT: "780", THEME: "dark" }, minutes: 3 },
+  // The shelf of organelles behind the human's bench and the scale rail between them (wide, at 1280 by 720, and on phones of 390 and 360 px).
+  { name: "catalogue-shelf", tool: "check_catalogue.mjs", args: [pictures], env: { CASE: "shelf", NAME: "catalogue-shelf", WIDTH: "1440", HEIGHT: "900" }, minutes: 3 },
+  { name: "catalogue-shelf-720", tool: "check_catalogue.mjs", args: [pictures], env: { CASE: "shelf", NAME: "catalogue-shelf-720", WIDTH: "1280", HEIGHT: "720" }, minutes: 3 },
+  { name: "catalogue-shelf-phone", tool: "check_catalogue.mjs", args: [pictures], env: { CASE: "shelf", NAME: "catalogue-shelf-phone", WIDTH: "390", HEIGHT: "844" }, minutes: 3 },
+  { name: "catalogue-shelf-360", tool: "check_catalogue.mjs", args: [pictures], env: { CASE: "shelf", NAME: "catalogue-shelf-360", WIDTH: "360", HEIGHT: "780" }, minutes: 3 },
   flux("phone", { WIDTH: "400", HEIGHT: "780" }, 2),
   flux("address", { ADDRESS: "1" }, 2),
   flux("loop", { LOOP: "1", MOVING: "1" }, 3), // the planarian's own looping run: it needs the run among the replays served (out/runs)

@@ -2,7 +2,7 @@
   "format": "cells.visualizer.experiment_cards_source@1",
   "note": "What the Experiments landing's cards type by hand: each card's title, what it asks, its band and kind, and which map part, catalogue entry, verdict file and PROGRESS.md entry it reads. Nothing here is a standing, a count or a date: tools/build_cards.py reads those from the Engine map's overlay, the catalogue's overlay, the model-system entries and the record (schema/EXPERIMENT_CARDS.md). The landing was decided on 18 November 2026. An evidence folder is a folder's name and `within` its folders one by one, never a path.",
   "record": {
-    "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565",
+    "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265",
     "says": "PROGRESS.md, the docs and the verdict files are read at this revision of main and in the saved run folders; the readings are kept in data/replays/cards.readings.json."
   },
   "bands": [
@@ -220,6 +220,43 @@
             "unit": "judged criteria",
             "day": { "file": ["judged.log"], "line": "\\bend:" },
             "snapshot": { "file": ["verdict", "verdict.json"], "field": "source.git_revision" }
+          }
+        }
+      ],
+      "rerun": null
+    },
+    {
+      "id": "fr7",
+      "band": "judged",
+      "kind": "standing",
+      "title": "FR-7: abundance to function, in a closed loop",
+      "asks": "Can a transient template change a protein's abundance, and so a measurable response, in a loop that feeds back on itself?",
+      "map": "fr.abundance_to_function",
+      "record": [
+        {
+          "progress": { "entry": "FR-7's first closed loop, F4 against R-loop: judged, passed", "item": "The arms:", "count_in": "item", "scope": "Still to come:" },
+          "verdict": {
+            "evidence": "fr7-loop-20261119",
+            "within": ["judged-90392025", "f4"],
+            "file": ["f4_comparison.json"],
+            "read": "compared",
+            "tables": ["closed.quantities", "clamped.quantities"],
+            "unit": "compared rows",
+            "day": { "file": ["RUN.txt"], "line": "\\blaunched\\b" },
+            "snapshot": { "file": ["RUN.txt"], "text": true }
+          }
+        },
+        {
+          "progress": { "entry": "FR-7's first closed loop, F4 against R-loop: judged, passed", "item": "Persistence:", "count_in": "item" },
+          "verdict": {
+            "evidence": "fr7-loop-20261119",
+            "within": ["judged-90392025", "f4"],
+            "file": ["f4_comparison.json"],
+            "read": "compared",
+            "tables": ["persistence"],
+            "unit": "compared rows",
+            "day": { "file": ["RUN.txt"], "line": "\\blaunched\\b" },
+            "snapshot": { "file": ["RUN.txt"], "text": true }
           }
         }
       ],
@@ -673,7 +710,9 @@
     { "entry": "Heredity pre-screen 9", "why": "A development pre-screen before E07-v1, not judged. No map part, catalogue entry or replay gives it a standing a card could read: asked of the coordinator." },
     { "entry": "Heredity pre-screen 8", "why": "As pre-screen 9." },
     { "entry": "Heredity pre-screen 7", "why": "As pre-screen 9." },
-    { "entry": "Projective mode (C) landed", "why": "The landing of the code, not yet qualified; its one qualification, which failed, is on the projective stepping card." }
+    { "entry": "Projective mode (C) landed", "why": "The landing of the code, not yet qualified; its one qualification, which failed, is on the projective stepping card." },
+    { "entry": "FR-7 F1: the unit producer", "why": "Development, not judged: the landing of FR-7's unit producer, with its gates. FR-7's judged run, its first closed loop, has an entry and a card of its own." },
+    { "entry": "B1′, the operator rate route", "why": "Development, not judged: the landing of the coupling operator's version 2, with its gates." }
   ],
   "left_out": [
     { "part": "exp.excitable_sheet", "why": "The lead's inventory of 18 November 2026 gives it no run records: it stays on the Engine map. Asked of the lead." },

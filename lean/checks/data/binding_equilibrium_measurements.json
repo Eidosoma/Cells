@@ -1,0 +1,21 @@
+{
+  "cortes2017_matched_histories": {
+    "doi": "10.1021/acs.inorgchem.7b00372",
+    "source": "https://s3-eu-west-1.amazonaws.com/pstorage-acs-6854636/8172722/ic7b00372_si_001.pdf#page=15",
+    "locator": "Cortes et al., supporting information, Fig. S4a, printed p. S-15. Approximate plateau readings from the two traces through 90 min.",
+    "conditions": {"Fe_II_uM": 30.8, "Tar_uM": 72, "EGTA_uM": 220, "Na_MOPS_mM": 50, "NaCl_mM": 100, "pH": 7.2, "atmosphere": "anaerobic"},
+    "observable": "Concentration of Fe(II)Hₓ(Tar)₂ inferred from 720 nm absorbance. The signal combines protonation states. Tar is 4-(2-thiazolylazo)resorcinol.",
+    "Fe_preloaded_on_Tar": {"initial_uM_approx": 30.8, "plateau_uM_approx": 22.5},
+    "Fe_preloaded_on_EGTA": {"initial_uM_approx": 0, "plateau_uM_approx": 22.5},
+    "plateau_reading_precision_uM": 0.5,
+    "limits": "The traces approach the plateau by about 15–20 min. Figure S4a provides no endpoint sampling errors, replicate count or figure-specific temperature. Free iron and individual microscopic occupancies were unmeasured. No affinity was taken from either trace."
+  },
+  "spicer1952_atp_acidification": {
+    "doi": "10.1016/S0021-9258(18)44837-5",
+    "locator": "Spicer, Fig. 2 and accompanying text, JBC 199, p. 304. Magnesium salt was added to 2.5 mM ATP and solution pH decreased.",
+    "ATP_mM": 2.5,
+    "controlled": "Added magnesium salt",
+    "observed": "Bulk solution acidification",
+    "limits": "The plot gives neither measured free Mg nor proton equivalents needed to hold pH fixed. A temperature for this titration could not be verified."
+  }
+}

@@ -148,14 +148,27 @@ EDITS = {
 }
 
 
+def writable_copy(source, target):
+    """copytree, then owner-writable: a run from a frozen snapshot copies its read-only modes, and
+    every variant edits its copy (the tier-3 refreeze, 18 November 2026)."""
+    shutil.copytree(source, target, ignore=shutil.ignore_patterns("__pycache__"))
+    for folder, dirs, files in os.walk(target):
+        for name in [*dirs, *files]:
+            path = Path(folder) / name
+            os.chmod(path, os.stat(path).st_mode | 0o200)
+    os.chmod(target, os.stat(target).st_mode | 0o200)
+
+
+def edit(path, text):
+    """Write an edit and read it back: the variant runs only what was really written."""
+    path.write_text(text)
+    assert path.read_text() == text, (path, "the edit did not take")
+
+
 def tree(base, name, edits=()):
     """A scratch source root holding a copy of this checkout's src/cells, edited."""
     target = base / name
-    shutil.copytree(
-        ROOT / "src" / "cells",
-        target / "src" / "cells",
-        ignore=shutil.ignore_patterns("__pycache__"),
-    )
+    writable_copy(ROOT / "src" / "cells", target / "src" / "cells")
     for relative, old, new in edits:
         path = target / "src" / "cells" / relative
         text = path.read_text()
@@ -164,8 +177,32 @@ def tree(base, name, edits=()):
         else:
             assert text.count(old) == 1, (name, relative, "the edit's anchor moved")
             text = text.replace(old, new)
-        path.write_text(text)
+        edit(path, text)
     return target
+
+
+def test_a_read_only_source_is_copied_writable_and_edited(tmp_path):
+    """The plant: a read-only tree, as in a frozen snapshot. Its copy takes the edit, read back,
+    while the source keeps its bytes and its modes."""
+    source = tmp_path / "frozen" / "cells"
+    (source / "execution").mkdir(parents=True)
+    module = source / "execution" / "vector_windows.py"
+    module.write_text("class _Round:\n    pass\n")
+    for path in (module, source / "execution", source):
+        os.chmod(path, 0o444 if path.is_file() else 0o555)
+    try:
+        if os.geteuid() != 0:
+            with pytest.raises(PermissionError):
+                module.write_text("planted")  # The plant holds: a plain write is refused.
+        writable_copy(source, tmp_path / "copy" / "cells")
+        copied = tmp_path / "copy" / "cells" / "execution" / "vector_windows.py"
+        edit(copied, copied.read_text().replace("_Round", "_RoundBuilder"))
+        assert "class _RoundBuilder:" in copied.read_text()
+        assert module.read_text() == "class _Round:\n    pass\n"
+        assert not os.access(module, os.W_OK) or os.geteuid() == 0
+    finally:
+        for path in (source, source / "execution", module):
+            os.chmod(path, 0o755 if path.is_dir() else 0o644)
 
 
 def run_tool(module, *args, source):
@@ -397,7 +434,7 @@ def test_a_tree_without_an_entry_point_cannot_decide(world):
     path = s1 / "src" / "cells" / "execution" / "vector_windows.py"
     text = path.read_text()
     assert text.count("_Round(") == 2 and text.count("class _Round:") == 1
-    path.write_text(text.replace("_Round", "_RoundBuilder"))
+    edit(path, text.replace("_Round", "_RoundBuilder"))
     out = world["base"] / "run-missing" / "continuity"
     assert admit.propose(admission(world, s1, out), launcher=world["launcher"]) == 3
     refusal = json.loads((out / "refusal.json").read_text())

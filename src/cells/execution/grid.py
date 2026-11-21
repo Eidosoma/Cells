@@ -13,8 +13,10 @@ number. Every coarse point stays a boundary, bit for bit, so a window adds bound
 none: an event or an observation on the coarse grid keeps its exact time inside a window. A
 window's ends are coarse points exactly, so the steps beside it are whole coarse steps, and the
 fine steps are h to within the rounding of the products: no window makes a tiny step. An event
-within that rounding of a fine point it does not equal is refused, naming the point (an event
-there would leave a step of a few ulps). The clock keeps one entry per window and per event.
+within that rounding of a point of the clock it does not equal, fine or coarse (or the end), is
+refused, naming the point: an event there would leave a step of a few ulps (FR-8 rung 1, §10.22: a
+decimal 1800.3 one ulp from the coarse point 18003 * 0.1). The clock keeps one entry per window
+and per event.
 """
 
 import math
@@ -214,7 +216,7 @@ class EventGrid(Sequence):
             if lo < nominal and self._nominal(lo) == t:
                 continue
             if spans:
-                self._refuse_near_fine_point(t, lo)
+                self._refuse_near_point(t, lo)
             indices.append(lo + len(extras))
             extras.append(t)
         if nominal + len(extras) > spec.execution.max_steps:
@@ -259,17 +261,23 @@ class EventGrid(Sequence):
             n -= span.shift  # A coarse point after window k: its coarse index.
         return n * self.dt, False
 
-    def _refuse_near_fine_point(self, t, lo):
-        """Refuse an event within rounding of a fine point it does not equal (the points either
-        side of it, lo - 1 and lo), naming the point: it would leave a step of a few ulps."""
+    def _refuse_near_point(self, t, lo):
+        """Refuse an event within rounding of a point of the clock it does not equal (the points
+        either side of it, lo - 1 and lo: fine, coarse or the end), naming the point: it would
+        leave a step of a few ulps."""
         for n in (lo - 1, lo):
-            if 0 <= n <= self.last_nominal:
+            if not 0 <= n <= self.last_nominal + 1:
+                continue
+            if n == self.last_nominal + 1:
+                point, kind = self.end, "end"
+            else:
                 point, fine = self._windowed(n)
-                if fine and same_instant(point, t):
-                    raise ConfigError(
-                        f"execution.fine_windows: an event at {t!r} lies within rounding of the "
-                        f"fine boundary {point!r} without equalling it; declare it at {point!r}"
-                    )
+                kind = "fine" if fine else "coarse"
+            if same_instant(point, t):
+                raise ConfigError(
+                    f"execution.fine_windows: an event at {t!r} lies within rounding of the "
+                    f"{kind} boundary {point!r} without equalling it; declare it at {point!r}"
+                )
 
     def fine_window_record(self):
         """The declared fine windows as this clock runs them (a windowed run's resources): each
