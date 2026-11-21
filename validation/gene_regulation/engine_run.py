@@ -62,12 +62,18 @@ SOURCE_SCOPE = ("src", "validation")  # What a run imports or reads from the che
 def provenance(out=None):
     """(The source's identity, the dirty diff or None), for a run's record.
     - From a frozen snapshot (validation/source_snapshot.py): its record.
-    - From the checkout: the revision, `git status` and the tracked files' dirty diff (git diff
-      HEAD). That diff omits untracked files' contents (the review's finding 8: a receipt named a
-      revision without the script that ran). So every untracked, nonignored file under
-      SOURCE_SCOPE is frozen beside the run, into OUT/untracked-sources, by the existing
-      validation/source_snapshot.freeze, and the record names the folder, the files and the
-      manifest's digest. Without an OUT, a checkout with such files is refused."""
+    - From the checkout (the review's finding 8 and its class, D259: a receipt named a revision
+      without the script that ran):
+      - validation/executed_sources.checkout: the status with every untracked file, and the dirty
+        diff, `git diff --binary HEAD` joined to the full content of every executed source Git
+        does not track, wherever it lives (the root, scripts/, tests/ fixtures). The record lists
+        those sources as untracked_executed;
+      - beside it, every untracked, nonignored file under SOURCE_SCOPE, executed or not yet, is
+        frozen into OUT/untracked-sources by validation/source_snapshot.freeze, and the record
+        names the folder, the files and the manifest's digest.
+
+      Without an OUT, a checkout with either kind is refused. A source loaded later in the run is
+      added at its end (late_sources)."""
     snapshot = ROOT / "SNAPSHOT.json"
     if snapshot.exists():
         d = json.loads(snapshot.read_text())
@@ -78,22 +84,27 @@ def provenance(out=None):
             snapshot=str(ROOT),
             snapshot_patch_sha256=d["patch_sha256"],
         ), None
-    status = git("status", "--porcelain")
-    dirty = bool(status.strip())
-    record = dict(
-        engine_revision=git("rev-parse", "HEAD").strip(),
-        checkout_dirty=dirty,
-        checkout_status=status.splitlines(),
-        dirty_diff="checkout.patch" if dirty else None,
-    )
+    from validation import executed_sources
+
+    found = executed_sources.checkout(ROOT)
     listed = git("ls-files", "--others", "--exclude-standard", "-z", "--", *SOURCE_SCOPE)
     untracked = sorted(name for name in listed.split("\0") if name)
-    if untracked:
-        if out is None:
+    if out is None:
+        executed_sources.refuse_untracked(ROOT, "this run, with no output folder for its record,")
+        if untracked:
             raise RuntimeError(
                 f"untracked source {untracked[:3]} would not be recorded: commit it, run from a "
                 "frozen snapshot, or give the run an output folder to freeze it into"
             )
+    dirty = bool(found["status"].strip())
+    record = dict(
+        engine_revision=git("rev-parse", "HEAD").strip(),
+        checkout_dirty=dirty,
+        checkout_status=found["status"].splitlines(),
+        dirty_diff="checkout.patch" if found["diff"] else None,
+        untracked_executed=found["untracked_executed"],
+    )
+    if untracked:
         from validation import source_snapshot
 
         folder = Path(out) / "untracked-sources"
@@ -104,7 +115,32 @@ def provenance(out=None):
             files=untracked,
             manifest_sha256=hashlib.sha256(manifest).hexdigest(),
         )
-    return record, git("diff", "HEAD") if dirty else None
+    return record, found["diff"] or None
+
+
+def late_sources(out, source):
+    """source, with any executed source Git does not track that the run loaded after provenance()
+    took its record: each one's full content appended to OUT/checkout.patch, its path to
+    untracked_executed (validation/executed_sources.untracked)."""
+    if "snapshot" in source:
+        return source
+    from validation import executed_sources
+
+    known = set(source.get("untracked_executed", ()))
+    new = [p for p in executed_sources.untracked(ROOT) if p not in known]
+    if not new:
+        return source
+    with (Path(out) / "checkout.patch").open("a") as stream:
+        stream.write(executed_sources.untracked_diff(ROOT, new))
+    return dict(
+        source,
+        checkout_dirty=True,
+        dirty_diff="checkout.patch",
+        untracked_executed=sorted(known | set(new)),
+        untracked_executed_after_start=sorted(
+            {*source.get("untracked_executed_after_start", ()), *new}
+        ),  # fmt: skip
+    )
 
 
 def slug(text):
@@ -325,6 +361,7 @@ def main(argv=None):
     for label, symbols in sets.items():
         for name in names:
             record["runs"].append(run(name, label, symbols, args.dt, args.end, out))
+            record.update(late_sources(out, record))
             (out / "run_record.json").write_text(json.dumps(record, indent=1) + "\n")
             print(json.dumps(record["runs"][-1]), flush=True)
     return 0

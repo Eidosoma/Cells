@@ -153,7 +153,7 @@ def main(argv=None):
     if patch is not None:
         (out / "checkout.patch").write_text(patch)
     record = example(args.world, args.route, args.join, args.factor, args.window_steps, out)
-    record.update(source)
+    record.update(engine_run.late_sources(out, source))
     (out / "restart.json").write_text(json.dumps(record, indent=1) + "\n")
     print(json.dumps(record["verdicts"]), record["initiation_extent_fmol"])
     return 0

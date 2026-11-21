@@ -17,9 +17,11 @@ provenance). No world is compiled: the engine's side is the operator's own half-
   holds at zero and near zero (6); a run's receipt freezes untracked source beside it (8).
 """
 
+import importlib
 import json
 import math
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -224,7 +226,22 @@ def test_a_known_rate_holds_at_zero_and_near_zero(tmp_path, capsys):
         cohort.main([str(path), "--t1", "0", "--t2", "1", "--rate=-1"])
 
 
-def test_a_receipt_freezes_untracked_source_beside_the_run(tmp_path, monkeypatch):
+# (case, the untracked file, imported by the run, what the receipt must name).
+RECEIPTS = [
+    ("an untracked module under validation/, frozen", "validation/untracked.py", False,
+     "untracked_sources"),
+    ("an untracked script at the repository root, recorded", "root_driver_gr_receipt.py", True,
+     "untracked_executed"),
+]  # fmt: skip
+
+
+@pytest.mark.parametrize(("case", "relative", "imported", "named"), RECEIPTS,
+                         ids=[c[0] for c in RECEIPTS])  # fmt: skip
+def test_a_receipt_names_untracked_source_or_is_refused(
+    case, relative, imported, named, tmp_path, monkeypatch
+):
+    """Finding 8 and the independent checker's root-level case (D259): with an output folder the
+    receipt names the untracked source and holds its bytes; without one the run is refused."""
     repo, run = tmp_path / "repo", tmp_path / "run"
     (repo / "validation").mkdir(parents=True)
     (repo / "validation" / "tracked.py").write_text("A = 1\n")
@@ -236,12 +253,23 @@ def test_a_receipt_freezes_untracked_source_beside_the_run(tmp_path, monkeypatch
     git("init", "-q")
     git("add", "validation/tracked.py")
     git("commit", "-q", "-m", "tracked")
-    (repo / "validation" / "untracked.py").write_text("B = 2\n")
+    path = repo / relative
+    path.write_text("B = 'the untracked source'\n")
+    if imported:  # The run executes it, as a driver at the root would be.
+        monkeypatch.syspath_prepend(str(path.parent))
+        monkeypatch.delitem(sys.modules, path.stem, raising=False)
+        importlib.import_module(path.stem)
+        monkeypatch.setitem(sys.modules, path.stem, sys.modules[path.stem])
     monkeypatch.setattr(engine_run, "ROOT", repo)
-    with pytest.raises(RuntimeError, match="would not be recorded"):
+    with pytest.raises(RuntimeError, match="not track|would not be recorded"):
         engine_run.provenance()
     run.mkdir()
     record, patch = engine_run.provenance(run)
-    assert record["untracked_sources"]["files"] == ["validation/untracked.py"]
-    frozen = run / "untracked-sources" / "validation" / "untracked.py"
-    assert frozen.read_text() == "B = 2\n" and patch == ""  # No tracked change to diff.
+    if named == "untracked_sources":
+        assert record["untracked_sources"]["files"] == [relative]
+        frozen = run / "untracked-sources" / relative
+        assert frozen.read_text() == "B = 'the untracked source'\n"
+        assert record["untracked_executed"] == [] and patch is None
+    else:
+        assert record["untracked_executed"] == [relative] and "untracked_sources" not in record
+        assert "the untracked source" in patch and f"?? {relative}" in record["checkout_status"]

@@ -188,7 +188,7 @@ def run_one(name, dt, out):
     except Exception as error:  # A refusal is the plant's outcome, recorded whole.
         record = dict(plant=name, world=world, refused=f"{type(error).__name__}: {error}",
                       traceback=traceback.format_exc()[-4000:])  # fmt: skip
-    record.update(source)
+    record.update(engine_run.late_sources(folder, source))
     (folder / "plant.json").write_text(json.dumps(record, indent=1, default=float) + "\n")
     return record
 
