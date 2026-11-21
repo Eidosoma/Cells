@@ -216,6 +216,83 @@ theorem patch_booking (law : Law) (m h availability scale vf inside outside volt
       opening law m h * availability * full) := by
   simp [Accounting.nodeChange, permeant_flux]
 
+/-- Instantaneous outward current at a declared voltage in V. The channel gates
+come from the saved state. The scale is for reference abundance one. -/
+def clampedCurrent (law : Law) (q m h scale vf ci co abundance availability v : ℝ) : ℝ :=
+  outwardCurrent law q (flux law (permeant law) m h availability (scale * abundance) vf ci co v)
+
+/-- Summing charged outward fluxes over the species slots gives this population's
+current. Other species may have different concentrations, valences and voltage factors. -/
+theorem clamped_current_from_species (law : Law) (ions : Finset Ion)
+    (hp : permeant law ∈ ions) (z vf ci co : Ion → ℝ) (hz : z (permeant law) = valence law)
+    (q m h scale abundance availability v : ℝ) :
+    q * (∑ i ∈ ions, z i * flux law i m h availability (scale * abundance) (vf i) (ci i) (co i) v) =
+      clampedCurrent law q m h scale (vf (permeant law)) (ci (permeant law)) (co (permeant law))
+        abundance availability v := by
+  rw [Finset.sum_eq_single_of_mem (permeant law) hp, hz]
+  · unfold clampedCurrent outwardCurrent
+    ring
+  · intro i _ hi
+    rw [other_flux hi, mul_zero]
+
+theorem clamped_current_factors (law : Law) (q m h scale vf ci co abundance availability v : ℝ) :
+    clampedCurrent law q m h scale vf ci co abundance availability v =
+      (abundance * availability) * (opening law m h *
+        outwardCurrent law q (constantFieldFlux seriesFactor scale vf ci co v)) := by
+  unfold clampedCurrent
+  rw [permeant_flux]
+  unfold outwardCurrent constantFieldFlux
+  ring
+
+/-- A nonzero probe in the measured voltage set determines the abundance–availability
+product when the stored gates and single-channel drive are fixed. -/
+theorem same_clamped_curve_iff (law : Law) (voltages : Set ℝ) (q m h scale vf ci co n₁ a₁ n₂ a₂ : ℝ)
+    (probe : ∃ v ∈ voltages, opening law m h *
+      outwardCurrent law q (constantFieldFlux seriesFactor scale vf ci co v) ≠ 0) :
+    (∀ v ∈ voltages, clampedCurrent law q m h scale vf ci co n₁ a₁ v =
+      clampedCurrent law q m h scale vf ci co n₂ a₂ v) ↔ n₁ * a₁ = n₂ * a₂ := by
+  constructor
+  · intro heq
+    obtain ⟨v, hv, nonzero⟩ := probe
+    have h := heq v hv
+    simp only [clamped_current_factors] at h
+    exact mul_right_cancel₀ nonzero h
+  · intro heq v _
+    simp only [clamped_current_factors, heq]
+
+/-- Divide the current by the independently counted channels on a patch.
+Here `scale` is the constant-field scale per unit area and `density / reference`
+is the dimensionless abundance supplied to the host. -/
+theorem clamped_current_per_channel (law : Law) (q m h scale vf ci co v avail : ℝ)
+    {area density reference : ℝ} (ha : 0 < area) (hd : 0 < density) (hr : 0 < reference) :
+    clampedCurrent law q m h (scale * area) vf ci co (density / reference) avail v /
+        (area * density) =
+      avail / reference * (opening law m h *
+        outwardCurrent law q (constantFieldFlux seriesFactor scale vf ci co v)) := by
+  rw [clamped_current_factors]
+  unfold outwardCurrent constantFieldFlux
+  field_simp [ha.ne', hd.ne', hr.ne']
+  ring
+
+/-- The ratio of count-normalized currents measures relative availability even
+when the patch areas differ. Both preparations share the saved gates and drive. -/
+theorem relative_availability_from_counts (law : Law) (q m h scale vf ci co v : ℝ)
+    {area₁ area₂ density₁ density₂ reference avail₁ : ℝ} (avail₂ : ℝ)
+    (ha₁ : 0 < area₁) (ha₂ : 0 < area₂) (hd₁ : 0 < density₁) (hd₂ : 0 < density₂)
+    (hr : 0 < reference) (hav : 0 < avail₁)
+    (probe : opening law m h *
+      outwardCurrent law q (constantFieldFlux seriesFactor scale vf ci co v) ≠ 0) :
+    let first := clampedCurrent law q m h (scale * area₁) vf ci co (density₁ / reference) avail₁ v /
+      (area₁ * density₁)
+    let second := clampedCurrent law q m h (scale * area₂) vf ci co (density₂ / reference) avail₂ v /
+      (area₂ * density₂)
+    first ≠ 0 ∧ second / first = avail₂ / avail₁ := by
+  dsimp only
+  rw [clamped_current_per_channel law _ _ _ _ _ _ _ _ _ ha₂ hd₂ hr,
+      clamped_current_per_channel law _ _ _ _ _ _ _ _ _ ha₁ hd₁ hr]
+  exact ⟨mul_ne_zero (div_ne_zero hav.ne' hr.ne') probe, by
+    rw [mul_div_mul_right _ _ probe, div_div_div_cancel_right₀ hr.ne']⟩
+
 end
 
 end CellsProofs.Transport.IonChannels

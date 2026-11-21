@@ -123,4 +123,38 @@ theorem volume_gate {a v k : ℝ} (ha : 0 ≤ a) (hv : 0 ≤ v) (hk : 0 < k) :
     Real.sq_sqrt hk.le]
   rw [← cap, mul_assoc, mul_comm k, mul_le_mul_left (show 0 < 36 * Real.pi by positivity)]
 
+/-- For one finite species, a pool replacement keeps every slot. -/
+def replacePool (fresh : ℕ) (s : SharedPool.State Slot) : SharedPool.State Slot :=
+  transfer (fun _ => true) fresh s
+
+omit [Fintype Slot] in
+theorem replacement_state (fresh : ℕ) (s : SharedPool.State Slot) :
+    replacePool fresh s = ⟨fresh, s.slots⟩ := rfl
+
+theorem replacement_inventory (fresh : ℕ) (s : SharedPool.State Slot) :
+    SharedPool.inventory (replacePool fresh s) + s.pool = SharedPool.inventory s + fresh := by
+  simpa [replacePool, retained] using transfer_inventory (fun _ => true) fresh s
+
+/-- After a tracer-free wash, every free or retained molecule in an exchange-only
+history comes from the cargo that survived the wash. -/
+theorem wash_history_inventory [DecidableEq Slot] {s t : SharedPool.State Slot}
+    (moves : Relation.ReflTransGen SharedPool.Transfer (replacePool 0 s) t) :
+    t.pool + ReservoirExchange.size t.slots = ReservoirExchange.size s.slots := by
+  simpa [SharedPool.inventory, replacement_state] using (SharedPool.history_inventory moves).symm
+
+/-- For additive bath and slot energies, signed fresh-bath work less the spent-bath
+sink accounts for the entire free-energy change at an isolated replacement. -/
+theorem replacement_energy (slotEnergy : Slot → ℝ) (old fresh : ℝ) :
+    (fresh + ∑ i, slotEnergy i) - (old + ∑ i, slotEnergy i) = fresh - old := by
+  simp
+
+/-- A discrete ideal solute at the first count beyond a log-factorial table
+loses exactly log(cap + 1) of free energy if its table index is clipped. -/
+theorem replacement_capacity_gap (cap : ℕ) (linear : ℝ) :
+    (((cap + 1 : ℕ) : ℝ) * linear + ReservoirExchange.logFactorial (cap + 1)) -
+      (((cap + 1 : ℕ) : ℝ) * linear + ReservoirExchange.logFactorial (min (cap + 1) cap)) =
+        Real.log ((cap : ℝ) + 1) := by
+  rw [Nat.min_eq_right (Nat.le_succ cap), ReservoirExchange.logFactorial_succ]
+  ring
+
 end CellsProofs.Chemistry.VesiclePopulation

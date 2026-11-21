@@ -98,6 +98,31 @@ theorem clamp_add (g s m t u : ℝ) :
 theorem clamp_polarity (g v threshold m t : ℝ) :
     advance g (|-v| - threshold) m t = advance g (|v| - threshold) m t := by rw [abs_neg]
 
+/-- A common prediction at opposite voltages misses at least one observed value by
+half their separation. This applies to the clamped gate by `clamp_polarity`. -/
+theorem polarity_error_bound (negative positive predicted : ℝ) :
+    |negative - positive| / 2 ≤ max |negative - predicted| |predicted - positive| := by
+  have h := abs_sub_le negative predicted positive
+  have hn := le_max_left |negative - predicted| |predicted - positive|
+  have hp := le_max_right |negative - predicted| |predicted - positive|
+  linarith
+
+/-- FR-30 proposes multiplying two independent gate factors at fixed voltage.
+Each delta is the initial factor minus its steady value. -/
+theorem series_clamp_expansion (fast slow deltaFast deltaSlow kFast kSlow t : ℝ) :
+    (fast + deltaFast * Real.exp (-kFast * t)) * (slow + deltaSlow * Real.exp (-kSlow * t)) =
+      fast * slow + deltaFast * slow * Real.exp (-kFast * t) +
+        fast * deltaSlow * Real.exp (-kSlow * t) +
+        deltaFast * deltaSlow * Real.exp (-(kFast + kSlow) * t) := by
+  rw [show -(kFast + kSlow) * t = -kFast * t + -kSlow * t by ring, Real.exp_add]
+  ring
+
+/-- The plateau times the mixed amplitude equals the product of the fast and slow
+amplitudes, even after a common normalization of the conductance trace. -/
+theorem series_amplitudes (fast slow deltaFast deltaSlow gain : ℝ) :
+    (gain * (fast * slow)) * (gain * (deltaFast * deltaSlow)) =
+      (gain * (deltaFast * slow)) * (gain * (fast * deltaSlow)) := by ring
+
 end
 
 end CellsProofs.Transport.JunctionGate

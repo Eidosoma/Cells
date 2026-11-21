@@ -20,7 +20,7 @@ done
 if [[ ! -f .lake/packages/mathlib/.lake/build/lib/lean/Mathlib/Data/Matrix/Rank.olean ]]; then
   lake exe cache get Mathlib.Data.Matrix.Rank
 fi
-lake build CellsProofs.Transport.LogMeanFace
+lake build CellsProofs.Transport.LogMeanFace CellsProofs.Tissue.CurrentInjection
 lake_path=$(lake env printenv LEAN_PATH)
 export LEAN_PATH="$build_dir:$lake_path"
 # In Mathlib 4.19 the upstream matrix-rank module lived under Data.
