@@ -22,9 +22,12 @@ The evidence on FR-8's worlds stops at dt = 5 ms.
 from dataclasses import dataclass, replace
 
 from cells.definitions.specs import ConfigError, _fields, _number
-from cells.numerics.surface_imex import ARS222_ID
+from cells.numerics.surface_imex import ARS222_ID, IMPLICIT_CONDUCTANCE_IDS
 
 CHECK_ID = "step_doubled_energy@1"
+# The schemes X2 admits: ARS(2,2,2), and N2's IDs on its tableau (D235), whose admission rests on
+# RUNG1's I3, X2's qualification rows run under the ID.
+SCHEMES = (ARS222_ID, *IMPLICIT_CONDUCTANCE_IDS)
 FIELDS = ("check", "integration_error_cap")
 
 
@@ -43,10 +46,10 @@ def parse(data, spec):
         raise ConfigError(f"execution.energy_check requires check {CHECK_ID}")
     cap = _number(data["integration_error_cap"], "execution.energy_check.integration_error_cap",
                   positive=True)  # fmt: skip
-    if spec.execution.solver != ARS222_ID:
+    if spec.execution.solver not in SCHEMES:
         raise ConfigError(
             f"execution.energy_check {CHECK_ID} runs only with {ARS222_ID}, the scheme whose step "
-            "doubling its registration tested"
+            "doubling its registration tested, or N2's ARS(2,2,2) IDs (D235, RUNG1 I3)"
         )
     return EnergyCheck(CHECK_ID, cap)
 

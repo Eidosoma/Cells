@@ -133,6 +133,20 @@ This is tested on:
 
 The 825-node world was not compared.
 
+## Owned state of other operators at a replacement (FR-26, D244)
+
+Carriers have identity and slots are storage: each operator's state on the slot leaves with the
+occupant, and the newcomer takes its template's.
+- **`site_occupancy@1`'s patch populations on the slot:** `site_occupant_replacement@1` (W) resets
+  them at this operator's event steps to the template's occupancy. It records the departed and
+  arrived bound material and the site free energy's jump.
+- **`local_species_reactions@1`'s cell routes on the slot:** take the template's multipliers
+  (`templates` on that operator). Its records stay with the slot.
+- **`species_regulated_availability@2`:** an operator target's element on the slot is admitted from
+  a species or site source (part C′). A regulatory state there stays refused (part C).
+- **D150's turnover and exchange:** take the template's rates, as before.
+- **Contact populations and donor copies onto slots with populations:** stay refused.
+
 ## Limits
 
 - Inner model `resolved_pump_tissue@3` only; the water model is stage 3.

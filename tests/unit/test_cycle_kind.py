@@ -7,7 +7,8 @@ Each claim with its plant (D187); every world is this file's own (no seam-A refe
   one patch and finite fuel under the neutral law take the population axis; each entry writes
   back in the form it was declared in;
 - the general parse refuses with its reason (unknown host, orientation, roles, valence, ranges,
-  held rows, fuel kinds, a charged held row (Q4), chemistry at P (Q3), duplicate IDs);
+  held rows, fuel kinds, a charged held row (Q4), duplicate IDs), and admits chemistry at P (K3;
+  refused before it, as Q3);
 - the layouts agree (condition 2): at the start, the probe's x, S, J+, J-, J, heat, work, charge
   and conductance, and the proton law's step terms; over steps (@3's own IMEX step on the host, the
   runner's checked step for a declared tableau, without its compile), the cycles, amounts, supply,
@@ -333,8 +334,9 @@ def test_the_general_parse_refuses_a_charged_held_row_chemistry_at_p_and_moved_p
         dict(id="p_0", host="membrane_0", law="seamtest.chemistry_at_p@1", orientation={"N": "a"},
              capacity_fmol_s=0.1, roles={"Z": "Y", "W": "ATP"}, parameters={}, held_rows=[])
     )  # fmt: skip
-    with scoped(), pytest.raises(ConfigError, match="chemistry at P is refused in this pass"):
-        parse_spec(raw)
+    with scoped():  # Chemistry at P (Q3's refusal until K3) is admitted; its rows are neutral,
+        ((_, entry),) = surface_pump_v3.structure(parse_spec(raw).model).kinds  # so no K3b field.
+    assert entry == transporter.CycleAxis(("seamtest.chemistry_at_p@1",))
     with scoped(), pytest.raises(ConfigError, match="must be unique"):
         parse_spec(tk.held_world(general(tk.population()), general(tk.population())))
 
@@ -547,6 +549,23 @@ def test_the_probe_is_the_runs_own_arithmetic_with_its_slopes_against_difference
     off = transporter.probe(state, v, control, closed, xp=np)
     assert not np.any(off.modes.j) and not np.any(off.edges.net_fmol_s)
     assert not np.any(np.nan_to_num(off.modes.j_minus_diagram))
+    # The diagram's carriers read k a as the material path does (the Lean project's eight-state
+    # finding): at this world's k a, the formula before the fix, bit for bit; at k a = 1e-302 the
+    # reverse cycle flux is the material J-, where the old floor at 1e-300 read it 100 times over.
+    diagram = transporter._evaluate(state, v, control, p, xp=np).diagram
+    dg = (p.cycle_form == transporter.FORM_CODES["diagram"])[None, :] & p.cycle_mode_present
+    per_carrier = np.exp(diagram.log_minus + diagram.log_share)
+
+    def floored(ka):
+        return np.exp(np.log(np.maximum(ka, 1e-300)) - p.cycle_dg_log_scale)[None, :] * per_carrier
+
+    ka = p.cycle_capacity_fmol_s * control.cycle_availability
+    np.testing.assert_array_equal(pr.modes.j_minus_diagram[dg], floored(ka)[dg])
+    low = p._replace(cycle_capacity_fmol_s=np.full_like(p.cycle_capacity_fmol_s, 1e-302))
+    tiny = transporter.probe(state, v, control, low, xp=np)
+    np.testing.assert_allclose(tiny.modes.j_minus_diagram[dg], tiny.modes.j_minus[dg], rtol=1e-9)
+    planted = floored(1e-302 * control.cycle_availability)[dg] / tiny.modes.j_minus[dg]
+    np.testing.assert_allclose(planted, 100.0, rtol=1e-9)
     fd_modes = p.cycle_form[None, :] != transporter.FORM_CODES["net_flow"]
     on = fd_modes & p.cycle_mode_present
     gap = np.abs(np.where(on, pr.modes.j_plus - pr.modes.j_minus - pr.modes.j, 0.0))
@@ -1222,6 +1241,79 @@ def test_the_proton_readouts_tie_delta_p_to_a_pure_proton_modes_x_with_beards_si
     run_view.validate(view)
 
 
+def test_an_asking_population_reads_out_its_share_of_the_current_and_clamped_rates_agree():
+    """FR-34 (D251, D252): cycle_current_A is each asking population's current through its host in
+    A, outward-positive (end a to end b, the cell to the bath here): e times the charge its modes
+    move N to P, turned where N is end b. A population that does not ask reads 0, and the H row's
+    share of the patch's own outward flux is the three uniports' currents. clamped_rates at the
+    row's own voltage gives the readouts' J and current exactly, and FR-34's control holds to
+    rounding: half the availability, half the current. Without the key the world keeps its entry,
+    fields and columns. The key round-trips, a non-boolean is refused, and the run view states the
+    column's unit, kind and sign. Planted: the current left in the counts' N-to-P orientation
+    misses u_b's, whose N is the bath. Parses and observes one world, without stepping: about 3 s."""
+    from cells.execution.state import initialise
+    from cells.records import run_view
+
+    raw = proton_world()
+    for entry in raw["model"]["transporters"][:2]:  # u_a (N the cell) and u_b (N the bath).
+        entry[transporter.CURRENT_READOUT_KEY] = True
+    with mono_scoped(UNIPORT):
+        spec = parse_spec(copy.deepcopy(raw))
+        structure, state, p, control = start(spec)
+        impl = get_model(spec.model)
+        history = impl.STATE_TYPE(*(np.asarray(v)[None] for v in state))
+        observed = impl.observe_history(np.zeros(1), history, p, [0.0], spec)
+        plan = run_view.prepare(spec, run_view.Request(), layout=initialise(spec).layout)
+        view = plan.view(run_view.single_file_bases([0.0], [0.0]), "write_run")
+        field = surface_pump_v3.readouts(state, control, p, xp=np, structure=structure).field
+        bare_raw = copy.deepcopy(raw)
+        for entry in bare_raw["model"]["transporters"]:
+            entry.pop(transporter.CURRENT_READOUT_KEY, None)
+        bare = surface_pump_v3.structure(parse_spec(bare_raw).model).kinds
+        planted = copy.deepcopy(raw)
+        planted["model"]["transporters"][0][transporter.CURRENT_READOUT_KEY] = "yes"
+        with pytest.raises(ConfigError, match="current_readout is true or false"):
+            parse_spec(planted)
+    declaration = dict(spec.model.kinds)[transporter.KIND_ID]
+    assert transporter.to_dict(declaration) == raw["model"]["transporters"]
+    ((_, entry),) = structure.kinds
+    assert entry == transporter.CycleAxis((UNIPORT.law_id,), True, False, True)
+    bound = kind_registry.bound(transporter.TRANSPORTER, entry)
+    assert bound.readout_columns[-1:] == transporter.CURRENT_READOUT_COLUMNS
+    ((_, entry),) = bare  # Without the key: today's entry, fields and columns.
+    assert entry == transporter.CycleAxis((UNIPORT.law_id,), True)
+    bound = kind_registry.bound(transporter.TRANSPORTER, entry)
+    assert not set(transporter.CURRENT_READOUT_COLUMNS) & set(bound.readout_columns)
+    assert not set(transporter.CURRENT_READOUT_FIELDS) & set(bound.layout_fields)
+
+    potentials = potentials_for(p, -0.15, 0.0)
+    rate, *_, current = transporter.readouts(state, state, potentials, control, p, xp=np)
+    toward_p = 2.0 * CHARGE_PER_FMOL * rate[0]  # Each moves 2 H+ from N to P per cycle.
+    assert current[0] == toward_p[0] != 0 and current[1] == -toward_p[1] != 0  # u_b: N the bath.
+    assert current[2] == 0 and rate[0, 2] != 0  # u_0 does not ask.
+    assert current[1] != toward_p[1]  # Planted: the counts' orientation, not end a to end b.
+    volts = np.full(3, potentials[0] - potentials[p.active.size])  # phi_cell - phi_bath.
+    clamped, at_volts = transporter.clamped_rates(state, control, p, volts)
+    assert np.array_equal(clamped, rate) and np.array_equal(at_volts[:2], current[:2])
+    halved = control._replace(cycle_availability=0.5 * control.cycle_availability)
+    _, half = transporter.clamped_rates(state, halved, p, volts)
+    assert half == pytest.approx(0.5 * at_volts, rel=4 * np.finfo(float).eps, abs=0.0)
+    # Observed: the uniports' currents are the H row's share of the patch's outward flux.
+    h_row = list(spec.model.species_ids).index("H")
+    patch_h = CHARGE_PER_FMOL * float(np.asarray(observed.membrane_flux_fmol_s[0])[h_row, 0])
+    observed_v = np.asarray(field.potential_V)
+    own = np.full(3, observed_v[0] - observed_v[p.active.size])  # The row's phi_cell - phi_bath.
+    _, all_current = transporter.clamped_rates(state, control, p, own)
+    assert float(np.sum(all_current)) == pytest.approx(patch_h, rel=1e-12, abs=0.0)
+    assert np.array_equal(
+        np.asarray(observed.cycle_current_A[0]), np.where([True, True, False], all_current, 0.0)
+    )
+    record = {r["field"]: r for r in view["records"]}["cycle_current_A"]
+    assert (record["unit"], record["kind"]) == ("A", "rate")
+    assert (record["sign"]["from"], record["sign"]["to"]) == ("inside", "outside")
+    run_view.validate(view)
+
+
 # ------------------------------------------------------- moved fuel at a closure node (K1)
 
 CLOSURE_HYDROLYSIS = law_registry.CycleLaw(
@@ -1250,15 +1342,44 @@ CLOSURE_HYDROLYSIS = law_registry.CycleLaw(
 MU_H_SHIFT = 5.0  # H's mu°/RT off 0, so its standard part is not invisible to the ledger.
 
 
+INHIBITED_HYDROLYSIS = law_registry.CycleLaw(
+    "seamtest.inhibited_hydrolysis@1",
+    (),
+    (transporter.FINITE,),
+    None,
+    None,
+    reads=("rapid_binding@1",),
+    forms="base",
+    cycle=CycleForm(
+        kinetics="monomial",
+        roles=(("ATP", -4), ("ADP", -3), ("Pi", -2), ("H", 1)),
+        rows=(("ATP", "N"), ("ADP", "N"), ("Pi", "N"), ("H", "N")),
+        modes=(("hydrolysis", (-1, 1, 1, 1)),),
+        fuel_roles=("ATP", "ADP", "Pi"),
+        monomial=forms.MonomialForm((
+            forms.MonomialRate(
+                log_k=-12.0,
+                orders=((forms.Reference("ATP", "N"), 1.0), (forms.Reference("H", "N"), -1.0)),
+            ),
+        )),
+    ),
+    host=transporter.KIND_ID,
+    provenance="calibrated",
+    source="a test-only hydrolysis first order in free ATP and inhibited by free h (K3b), never "
+    "shipped",
+)  # fmt: skip
+
+
 @contextlib.contextmanager
 def closure_scoped():
-    """The transporter and the binding closure's kind, the test laws and CLOSURE_HYDROLYSIS."""
-    laws = law_registry.BUILTIN.extended(*TEST_LAWS, CLOSURE_HYDROLYSIS)
+    """The transporter and the binding closure's kind, the test laws, CLOSURE_HYDROLYSIS and the
+    inhibited hydrolysis."""
+    laws = law_registry.BUILTIN.extended(*TEST_LAWS, CLOSURE_HYDROLYSIS, INHIBITED_HYDROLYSIS)
     with tk.scoped(*tk.CHARGED_KINDS), law_registry.scope(laws):
         yield
 
 
-def closure_fuel_world(closure="general", n_end="a", lumped=False):
+def closure_fuel_world(closure="general", n_end="a", lumped=False, binder=False):
     """The binding owner's buffered cell (B binds H at the cell; every route, channel and pump at
     availability 0) with ATP4-, ADP3- and Pi2- rows, and one population hydrolysing ATP at the cell
     on finite fuel, its proton released into the cell's H row: fuel moving where protons move.
@@ -1269,7 +1390,9 @@ def closure_fuel_world(closure="general", n_end="a", lumped=False):
     "version 1", rapid_proton_buffer@1 there; or "no proton row", the general closure declaring
     none. n_end "b" puts the population's N, and so its fuel and H, at the bath. lumped adds the
     built-in neutral law on finite fuel at the cell (transformed potentials: no base forms), its
-    role Y and its lumped fuel nATP, nADP and nPi neutral rows that no closure holds."""
+    role Y and its lumped fuel nATP, nADP and nPi neutral rows that no closure holds. binder makes
+    ATP a binder of the general closure at the cell (its form HATP, pK 7.8; the registry defers its
+    base-form move to the closure's admission) and runs the inhibited hydrolysis on it."""
     from cells.kinds import proton_buffer
     from tests.unit.test_proton_buffer_kind import buffered_world
     from tests.unit.test_rapid_binding_world import general as closed
@@ -1287,11 +1410,18 @@ def closure_fuel_world(closure="general", n_end="a", lumped=False):
     fuel = (("ATP", -4, 0.0, 2.0), ("ADP", -3, -9.0, 0.2), ("Pi", -2, -6.0, 1.0))
     for sid, z, mu_RT, mM in fuel:
         add_species(raw, sid, z, mu_RT, {cell: mM, bath: mM})
+    if binder:
+        atp = next(e for e in m["species"] if e["id"] == "ATP")
+        hatp = atp["standard_mu_RT"] + rows["H"]["standard_mu_RT"] - 7.8 * math.log(10.0)
+        atp["forms"] = [dict(id="HATP", counts={"H": 1}, standard_mu_RT=hatp)]
+        (read,) = m[proton_buffer.MODEL_KEY]
+        read["binders"][cell] = sorted([*read["binders"][cell], "ATP"])
+        read["k_on_per_mM_s"]["ATP"] = {"H": 1e7}
     m[transporter.MODEL_KEY] = [
         dict(
             id="hydrolysis_0",
             host=m["membranes"][0]["id"],
-            law=CLOSURE_HYDROLYSIS.law_id,
+            law=(INHIBITED_HYDROLYSIS if binder else CLOSURE_HYDROLYSIS).law_id,
             orientation={"N": n_end},
             capacity_fmol_s=0.05,
             roles={"ATP": "ATP", "ADP": "ADP", "Pi": "Pi", "H": "H"},
@@ -1387,6 +1517,295 @@ def test_moved_fuel_at_a_general_closures_proton_row_runs_and_its_energy_closes(
     rt_f = R * spec.model.temperature_K / F
     assert term == pytest.approx(rt_f * math.log(h_ratio(read)), rel=1e-9)  # Free h.
     assert term - rt_f * math.log(h_ratio(states[0])) > 0.3  # Not the stored totals' (planted).
+    # K3b, at the start (no step): with ATP a binder of the closure, ATP's material slope runs
+    # through the closure's derivative, its own D and free h's through the inhibition, and bounds
+    # the central difference of its rate against its stored total; planted: through the free
+    # amount instead (too tight by total over free) and through D's diagonal alone (too loose).
+    with closure_scoped():
+        spec = parse_spec(closure_fuel_world(binder=True))
+        impl = get_model(spec.model)
+        state, p = impl.initial_values(spec)
+        control = impl.Control(*(v[0] for v in control_values(spec, [0.0])))
+        volts = potentials_for(p, 0.0, 0.0)
+
+        def flux(s):
+            read, ok = proton_buffer.stage_read(s, p, xp=np)
+            assert bool(ok)
+            return float(transporter._evaluate(read, volts, control, p, xp=np).j[0, 0]), read
+
+        j, read = flux(state)
+        slopes, _ = transporter._material_slopes(read, volts, control, p, xp=np)
+        e = transporter._evaluate(read, volts, control, p, xp=np)
+        d, held = proton_buffer.free_log_sensitivity(read, p, xp=np)
+    ids = list(spec.model.species_ids)
+    a, h = ids.index("ATP"), ids.index("H")
+    assert bool(held[a, 0]) and bool(held[h, 0]) and j > 0
+    total = float((p.amount_reference + state.amount_increment)[a, 0])
+    delta = 1e-4 * total  # Its curvature error ~1e-8; the closure's solve noise far below.
+    moved = {}
+    for sign in (1, -1):
+        shifted = state.amount_increment.copy()
+        shifted[a, 0] += sign * delta
+        moved[sign], _ = flux(state._replace(amount_increment=shifted))
+    central = abs(moved[1] - moved[-1]) / (2 * delta)  # |dJ/dn_ATP| at the cell (1/s)
+    k = 0  # Row 0 is ATP at N, the cell.
+    g = np.abs(e.d_j_d_ln_c[0, :, 0])  # Rows ATP, ADP, Pi, H.
+    through = g[0] * abs(d[a, a, 0]) + g[3] * abs(d[h, a, 0])  # ATP's own term and free h's.
+    assert float(slopes[k, 0]) == pytest.approx(through, rel=1e-12)
+    assert float(slopes[k, 0]) == pytest.approx(central, rel=1e-5)  # The terms add: exact here.
+    free = float((p.amount_reference + read.amount_increment)[a, 0])
+    assert g[0] / free > 2.0 * central  # Planted: through the free amount, too tight.
+    assert g[0] * abs(d[a, a, 0]) < 0.97 * central  # Planted: D's diagonal alone, too loose.
+
+
+# ------------------------------------------------------------------- chemistry at P (K3)
+
+Q_CYCLE = (-1, 1, -2, 2, -2, 4)  # QH2 + 2 Cox+ (P) + 2 H+ (N) -> Q + 2 Cred (P) + 4 H+ (P)
+
+
+def p_redox(forms="base"):
+    """A test-only cytochrome c reducer at P, complex III's net Q cycle on charged cytochrome c
+    forms (Cox+ to Cred), saturating in Cox, its moves in base forms read through rapid_binding@1
+    (never shipped)."""
+    return law_registry.CycleLaw(
+        "seamtest.p_side_redox@1",
+        (),
+        (),
+        None,
+        None,
+        reads=("rapid_binding@1",),
+        forms=forms,
+        cycle=CycleForm(
+            kinetics="factored",
+            roles=(("QH2", 0), ("Q", 0), ("Cox", 1), ("Cred", 0), ("H", 1)),
+            rows=(("QH2", "N"), ("Q", "N"), ("Cox", "P"), ("Cred", "P"), ("H", "N"), ("H", "P")),
+            modes=(("q_cycle", Q_CYCLE),),
+            saturation=((Saturation(("Cox", "P"), 1.0, 1),),),
+        ),
+        host=transporter.KIND_ID,
+        provenance="calibrated",
+        source="a test-only cytochrome c reducer at P (K3), never shipped",
+    )
+
+
+@contextlib.contextmanager
+def p_redox_scoped(*kinds, law=None):
+    laws = law_registry.BUILTIN.extended(*TEST_LAWS, law or p_redox())
+    with tk.scoped(*(kinds or tk.CHARGED_KINDS)), law_registry.scope(laws):
+        yield
+
+
+def p_redox_world():
+    """The binding owner's buffered cell under the general closure (H held at the cell; H's
+    potential off 0, HB's with it) with Q, QH2 and cytochrome c's two forms, Cox+ and Cred, at
+    distinct nonzero potentials, and one reducer whose N is the bath (end b): P is the buffered
+    cell, so the mode's P rows meet §5.2's admission at the closure's H row. Its Cox pool is small,
+    so Cox's material slope leads the cell's."""
+    from tests.unit.test_proton_buffer_kind import buffered_world
+    from tests.unit.test_rapid_binding_world import general as closed
+
+    raw = buffered_world(quiet=True)
+    rows = {e["id"]: e for e in raw["model"]["species"]}
+    rows["H"]["standard_mu_RT"] += MU_H_SHIFT
+    rows["B"]["protonated_standard_mu_RT"] += MU_H_SHIFT
+    raw = closed(raw)
+    m = raw["model"]
+    cell, bath = m["cells"][0]["id"], m["extracellular"][0]["id"]
+    redox = (
+        ("QH2", 0, 0.0, 1.0),
+        ("Q", 0, -8.0, 0.5),
+        ("Cox", 1, -3.0, 0.02),
+        ("Cred", 0, 2.0, 0.5),
+    )
+    for sid, z, mu_RT, mM in redox:
+        add_species(raw, sid, z, mu_RT, {cell: mM, bath: mM})
+    m[transporter.MODEL_KEY] = [
+        dict(
+            id="redox_0",
+            host=m["membranes"][0]["id"],
+            law="seamtest.p_side_redox@1",
+            orientation={"N": "b"},
+            capacity_fmol_s=0.05,
+            roles={"QH2": "QH2", "Q": "Q", "Cox": "Cox", "Cred": "Cred", "H": "H"},
+            parameters={},
+            held_rows=[],
+        )
+    ]
+    return raw
+
+
+def test_a_mode_converting_cytochrome_c_at_p_moves_bounds_and_books_it_there():
+    """K3: a mode that changes a species at P without changing it at N. Admitted, with its P rows
+    through §5.2's admission at the closure's H row (planted: the law without base forms is
+    refused there). At the start: the material term bounds the charged Cox+ row at P, its slope
+    |nu dJ/dn| from the evaluation's own derivative (planted: without K3's rows the cell's term is
+    far smaller); the membrane flux reads every P-side change as a crossing, so its charge is the
+    patch's current, -q J outward with N at the bath. Four steps: the P rows move at the cell by
+    their counts and every ledger closes, the energy ledger with the conversions' standard parts
+    (planted: the P-side change booked at N, which the cell's material ledger refuses; and, stepped
+    once, the population's g° shifted by 1, which the energy ledger refuses)."""
+
+    def run(impl, spec, p, control, steps=4):
+        state, _ = impl.initial_values(spec)
+        states = [state]
+        for _ in range(steps):
+            state, valid = impl.imex_step(state, spec.execution.dt, control, p, xp=np)
+            assert bool(valid)
+            states.append(state)
+        history = impl.STATE_TYPE(*(np.stack(v) for v in zip(*states, strict=True)))
+        impl.check_values(history, spec, steps=np.arange(len(states)))  # Every ledger closes.
+        return states, history
+
+    with p_redox_scoped():
+        spec = parse_spec(p_redox_world())
+        impl = get_model(spec.model)
+        _, p = impl.initial_values(spec)
+        control = impl.Control(*(v[0] for v in control_values(spec, [0.0])))
+        states, history = run(impl, spec, p, control)
+        shifted = p._replace(cycle_standard_RT=p.cycle_standard_RT + 1.0)
+        with pytest.raises(NumericalError, match="energy"):  # Planted: the ledger sees it.
+            run(impl, spec, shifted, control, steps=1)
+    with p_redox_scoped(law=p_redox(forms=None)), pytest.raises(ConfigError, match="base forms"):
+        parse_spec(p_redox_world())
+    booked_at_n = dataclasses.replace(
+        transporter.TRANSPORTER,
+        ledger_terms=lambda state, p, *, xp: transporter.ledger_terms(
+            state, p._replace(cycle_row_at_n=xp.ones_like(p.cycle_row_at_n)), xp=xp
+        ),
+    )
+    from cells.kinds import proton_buffer
+
+    with p_redox_scoped(booked_at_n, proton_buffer.PROTON_BUFFER):  # Planted: P booked at N.
+        with pytest.raises(NumericalError, match="accounting failed: local"):
+            get_model(spec.model).check_values(history, spec, steps=np.arange(len(states)))
+    entry = dict(impl.structure.kinds)[transporter.KIND_ID]
+    assert entry.end_chemistry and "cycle_row_end_chemistry" in type(p)._fields
+    ids, k = list(spec.model.species_ids), 2  # Row 2 is Cox at P.
+    potentials = potentials_for(p, 0.0, 0.0)
+    read, read_ok = proton_buffer.stage_read(states[0], p, xp=np)  # Free h at the cell.
+    assert bool(read_ok)
+    e = transporter._evaluate(read, potentials, control, p, xp=np)
+    amount = (p.amount_reference + read.amount_increment)[ids.index("Cox"), 0]
+    slope = abs(2.0 * float(e.d_j_d_ln_c[0, k, 0])) / float(amount)
+    term = transporter.material_term(read, potentials, control, p, xp=np)
+    assert float(term[0]) == pytest.approx(slope, rel=1e-12)  # The cell's term is Cox's slope.
+    without = p._replace(cycle_row_end_chemistry=np.zeros_like(p.cycle_row_end_chemistry))
+    assert float(transporter.material_term(read, potentials, control, without, xp=np)[0]) < (
+        1e-3 * slope
+    )
+    rates = transporter.rates(read, potentials, control, p, xp=np)
+    j = float(rates.derivatives["cycle_count"][0, 0])
+    charge = float(np.sum(np.asarray(spec.model.valence) * rates.membrane_flux[:, 0]))
+    assert j > 0 and charge == pytest.approx(-2.0 * j, rel=1e-12)  # q = 2, outward is P to N.
+    cycles = float(states[-1].cycle_count[0, 0])
+    moved = states[-1].amount_increment[:, 0] - states[0].amount_increment[:, 0]
+    for species, n in (("Cox", -2), ("Cred", 2), ("H", 4)):
+        assert moved[ids.index(species)] == pytest.approx(n * cycles, rel=1e-9), species
+
+
+# ------------------------------------------------------ P at a finite outside node (K3b)
+
+P_ACID = law_registry.CycleLaw(
+    "seamtest.p_side_acid@1",
+    (),
+    (),
+    None,
+    None,
+    reads=("rapid_binding@1",),
+    forms="base",
+    cycle=CycleForm(
+        kinetics="factored",
+        roles=(("HA", 0), ("A", -1), ("H", 1)),
+        rows=(("HA", "P"), ("A", "P"), ("H", "P")),
+        modes=(("release", (-1, 1, 1)),),
+        saturation=((Saturation(("HA", "P"), 1.0, 1),),),
+    ),
+    host=transporter.KIND_ID,
+    provenance="calibrated",
+    source="a test-only acid releasing its proton at P only (K3b), never shipped",
+)
+
+
+def lumen_acid_world(closure_at_lumen):
+    """FR-4's development world under the general closure (the binding owner's lumen_general), its
+    lumen a finite outside node, with an acid HA and its base A- at every node and one population
+    on the bounding patch, N at the cell and P at the lumen (host P's orientation), releasing H+
+    from HA at P only. Without the closure at the lumen, the closure holds the cell's rows alone
+    and B_L is a plain row."""
+    from tests.unit.test_rapid_binding_world import fr, lumen_general
+
+    raw = lumen_general()
+    m = raw["model"]
+    if not closure_at_lumen:
+        (read,) = m["stage_reads"]
+        read["binders"] = {fr.CELL: ["B_c"]}
+        read["k_on_per_mM_s"] = {"B_c": {"H": 1e7}}
+        del next(e for e in m["species"] if e["id"] == "B_L")["forms"]
+    nodes = [node["id"] for node in (*m["cells"], *m["extracellular"])]
+    for sid, z, mu_RT, mM in (("HA", 0, 0.0, 1.0), ("A", -1, -2.0, 0.1)):
+        add_species(raw, sid, z, mu_RT, dict.fromkeys(nodes, mM))
+    m[transporter.MODEL_KEY] = [
+        dict(
+            id="acid_0",
+            host="bounding_0",
+            law=P_ACID.law_id,
+            orientation={"N": "a"},
+            capacity_fmol_s=0.01,
+            roles={"HA": "HA", "A": "A", "H": "H"},
+            parameters={},
+            held_rows=[],
+        )
+    ]
+    return raw
+
+
+@pytest.mark.parametrize("closure_at_lumen", (True, False))
+def test_p_at_a_finite_outside_node_books_and_bounds_with_and_without_a_closure(closure_at_lumen):
+    """K3b (b), host P's orientation: N at the cell, P at FR-4's lumen, a finite outside node. Two
+    steps of an acid releasing H+ at P only: the lumen's rows move by their counts and every ledger
+    closes. The H row it changes at P only is bounded through the closure's derivative where the
+    closure holds the lumen's H, by sum_i |dJ/d ln c_i| |D_iH| and far below its free amount's
+    slope (the buffer's capacity), and through the free amount where it does not."""
+    from cells.kinds import proton_buffer
+
+    laws = law_registry.BUILTIN.extended(*TEST_LAWS, P_ACID)
+    with tk.scoped(*tk.CHARGED_KINDS), law_registry.scope(laws):
+        spec = parse_spec(lumen_acid_world(closure_at_lumen))
+        impl = get_model(spec.model)
+        state, p = impl.initial_values(spec)
+        control = impl.Control(*(v[0] for v in control_values(spec, [0.0])))
+        states = [state]
+        for _ in range(2):
+            state, valid = impl.imex_step(state, spec.execution.dt, control, p, xp=np)
+            assert bool(valid)
+            states.append(state)
+        history = impl.STATE_TYPE(*(np.stack(v) for v in zip(*states, strict=True)))
+        impl.check_values(history, spec, steps=np.arange(len(states)))  # Every ledger closes.
+        read, read_ok = proton_buffer.stage_read(states[0], p, xp=np)
+        volts = potentials_for(p, 0.0, 0.0)
+        slopes, row_node = transporter._material_slopes(read, volts, control, p, xp=np)
+        e = transporter._evaluate(read, volts, control, p, xp=np)
+        d, held = proton_buffer.free_log_sensitivity(read, p, xp=np)
+    ids = list(spec.model.species_ids)
+    n = len(spec.model.cells)
+    o = [x.id for x in spec.model.extracellular].index("lumen_0")
+    cycles = float(states[-1].cycle_count[0, 0])
+    before, after = (s.extracellular_amount_increment[:, o] for s in (states[0], states[-1]))
+    assert bool(read_ok) and cycles > 0
+    for species, count in (("HA", -1), ("A", 1), ("H", 1)):
+        moved = after[ids.index(species)] - before[ids.index(species)]
+        assert moved == pytest.approx(count * cycles, rel=1e-9), species
+    k, h = 2, ids.index("H")  # Row 2 is H at P, the lumen.
+    assert int(row_node[k, 0]) == n + o and bool(held[h, n + o]) == closure_at_lumen
+    g = np.abs(e.d_j_d_ln_c[0, :, 0])
+    free_h = float((p.extracellular_amount_reference + read.extracellular_amount_increment)[h, o])
+    by_amount = g[k] / free_h
+    slope = float(slopes[k, 0])
+    if closure_at_lumen:
+        through = sum(g[i] * abs(d[ids.index(s), h, n + o]) for i, s in enumerate(("HA", "A", "H")))
+        assert slope == pytest.approx(through, rel=1e-12) and 0 < slope < 1e-2 * by_amount
+    else:
+        assert slope == pytest.approx(by_amount, rel=1e-12) and slope > 0
 
 
 # ------------------------------------------------------------------ M2 on this device (amendment 2)

@@ -32,7 +32,19 @@ Proof sources [Mathlib’s lower bound on the hyperbolic sine](https://github.co
 
 ## Numerical comparison
 
-**Failed.** A 360-state compiled panel passed against 60-digit currents and derivatives. Two equivalent reference settings produced identical one-step transfer and heat. A third, also finite, had the same 0.5520533 pA reference current but overflowed in c_out/K_ref and was refused during definition validation.
+**Checked.** All three equivalent normalizations gave 0.5520533 pA and identical transfer and heat, including the smallest normal float64 potassium reference. All 360 voltage controls passed. A positive subnormal reference (5 × 10⁻³²⁴ mM) was refused during definition checking. The original overflow remains at the earlier engine revision.
+
+**Engine** `resolved_pump_tissue@3`, `cells.inward_rectifier_linear_driving_force@1`
+
+[Admitted reference concentration](https://github.com/Eidosoma/Cells/blob/8f9bc0500f362096155640cd843a69f2dabc6107/src/cells/kinds/passive_routes.py#L242) · [Subnormal reference refusal](https://github.com/Eidosoma/Cells/blob/8f9bc0500f362096155640cd843a69f2dabc6107/tests/unit/test_inward_rectifier_route.py#L135) · [Current and conductance factor](https://github.com/Eidosoma/Cells/blob/8f9bc0500f362096155640cd843a69f2dabc6107/src/cells/laws/routes/inward_rectifier_linear_driving_force.py#L81) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/8f269af4c8b79150020b47a86dd71da848d91714/lean/checks/inward_rectifier.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/8f269af4c8b79150020b47a86dd71da848d91714/lean/PROGRESS.md#claim-source-review)
+
+[Tested engine 8f9bc0500f36](https://github.com/Eidosoma/Cells/commit/8f9bc0500f362096155640cd843a69f2dabc6107) · [Evidence checkpoint 8f269af4c8b7](https://github.com/Eidosoma/Cells/commit/8f269af4c8b79150020b47a86dd71da848d91714)
+
+**Engine** `resolved_pump_tissue@3`, `cells.inward_rectifier_linear_driving_force@1`
+
+[Overflow-safe concentration factor](https://github.com/Eidosoma/Cells/blob/b9d6452dff1cd0a1d5d3664e0a81b00ce988bfbc/src/cells/laws/routes/inward_rectifier_linear_driving_force.py#L69) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/b4353f85b18d489a277818bfe43e20c8416b6066/lean/checks/inward_rectifier.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/b4353f85b18d489a277818bfe43e20c8416b6066/lean/PROGRESS.md#six-numerical-retests)
+
+[Tested engine b9d6452dff1c](https://github.com/Eidosoma/Cells/commit/b9d6452dff1cd0a1d5d3664e0a81b00ce988bfbc) · [Evidence checkpoint b4353f85b18d](https://github.com/Eidosoma/Cells/commit/b4353f85b18d489a277818bfe43e20c8416b6066)
 
 **Engine** `resolved_pump_tissue@3`, `cells.inward_rectifier_linear_driving_force@1`
 

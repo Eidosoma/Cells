@@ -132,6 +132,11 @@ def snapshot_identity(root=ROOT):
         return dict(kind="snapshot", git_revision=snapshot.get("git_revision"),
                     patch_sha256=snapshot.get("patch_sha256"), status=snapshot.get("status"))
 
+    from validation import executed_sources  # noqa: PLC0415
+    executed_sources.refuse_untracked(  # D259
+        root, "compartment_acceptance_qualification's source record"
+    )
+
     def git(*args):
         return subprocess.run(["git", "-C", str(root), *args], capture_output=True, text=True,
                               check=False).stdout.strip()

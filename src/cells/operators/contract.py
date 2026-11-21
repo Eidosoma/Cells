@@ -57,6 +57,22 @@ Declarations (class attributes):
   where such a read is declared (``factor_reads``; static), so every other call is unchanged; a
   factor operator that declares one takes ``view=None`` in each of those hooks it defines (a
   routed half-step's ``factor_record`` passes none).
+* Readable quantities (R3, FR-24; docs/OPERATOR_FEATURES_FR23_24_26_DESIGN.md §3.3): an owner's
+  ``QUANTITIES`` ({name: (entity axis, unit)}), each computed by its own ``quantities(state, p)``
+  from its state, so its representation stays its own, with its entities' IDs and cells on each
+  axis, host side (``quantity_entities``); a reader's ``QUANTITY_READS`` ({owner law:
+  (names, ...)}), what it may read, and its ``declared_quantity_reads(declaration)``, what a
+  definition reads: ((owner law, name, target law or None), ...), the target an operator target's
+  route, whose half-steps evaluate the read, or None for a read at the control view. Where an
+  owner it reads is in the composition, the composite passes a reader ``quantities=``, a function
+  of state giving {owner law: {name: values}}, in its factor hooks at the control view
+  (``control_factors``, ``factor_valid``, ``factor_record``) and in its routed ``rate_factors`` and
+  ``factor_record``; elsewhere every call is unchanged, and nothing of the owner is traced unless
+  the reader calls the function (static, by its own layout's shapes). The composite refuses a
+  read of an undeclared quantity (structure), and at the definition a declared read whose owner
+  the composition does not hold or whose owner follows the route's target (so both of the
+  target's halves read the owner after its first half, symmetric about the target). It records
+  the reads in the field map, only where a reader and its owner are both composed.
 * Parts (kinds of §3.4), each optional: an event map at the start of the step
   leaving an event time (``EVENT``); a split process, half-steps around the inner
   step on its own variables (``SPLIT``); an in-step membrane process through the
@@ -175,7 +191,9 @@ Declarations (class attributes):
 * Species identity and the step (registry/species_registry.py, D176): ``IDENTITY_ROLE``
   ("author" for an operator that declares the species it writes, "user" for one that refers to
   species others declare) and ``species_identities``; ``moves_in_step``, the rows an in-step
-  process moves inside the inner step, which an operator with ``PROCESS`` declares.
+  process moves inside the inner step, which an operator with ``PROCESS`` declares;
+  ``species_moieties``, the net row change of each move it makes, which the registry's
+  check_moieties holds to the model's moieties (docs/GENE_REGULATION_DESIGN.md §7.6).
 * The run view (docs/RUN_VIEW_DESIGN.md §3; cells/records/run_view.py reads them, host side only):
   - ``VIEW_LAYERS``: its layers, each {"id", "label", "representation"}; None: undeclared,
     which the run-view writer refuses;
@@ -318,6 +336,10 @@ class Operator:
     # B1′'s exact record: an owned state field [route] the composite fills with each route's factor
     # where it is applied (factor_record); None: no record.
     FACTOR_RECORD = None
+    # R3 (module docstring): its readable quantities, {name: (entity axis, unit)}, and the owners'
+    # quantities it may read, {owner law: (names, ...)}.
+    QUANTITIES = MappingProxyType({})
+    QUANTITY_READS = MappingProxyType({})
     CONFLICTS_VIEW = ()
     ENTITY_WRITES = MappingProxyType({})
     # Inner kinetic state it sets at events (intensive, without a ledger: gates).
@@ -516,6 +538,17 @@ class Operator:
         declaring those, as today's check reads them."""
         return ()
 
+    def species_moieties(self, declaration):
+        """The net moves of the species rows it converts (docs/GENE_REGULATION_DESIGN.md §7.6):
+        ((move name, ((species, nu), ...)), ...), each move's net change of the model's rows per
+        unit of its progress (a finished product, a molecule degraded, a turnover), nu nonzero
+        integers, products positive; (). Material it holds in its own pools between the rows (a
+        chain's residues in transit) is left out: its own ledgers close it. The species registry's
+        check_moieties refuses a move that changes a declared moiety, naming the operator and the
+        move, as it refuses a kind's mode or a free-energy entry; so a weight the operator assumes
+        (the residues of a polymer row) that differs from the model's moiety shows as a change."""
+        return ()
+
     def view_events(self, spec, declaration, schedule):
         """Its events in the run view: ({"time", "kind", "layer", "at", "from", "label"}, ...),
         each entity one {set id: entity id} ("from" optional). The default gives the births and
@@ -594,6 +627,35 @@ class Operator:
         axis: the ids a route names and the cell where its source is read (None: an outside node)
         (B1′, the target side; a routable operator defines it)."""
         raise NotImplementedError
+
+    def half_step_rows(self, declaration):
+        """((species id, cell id), ...) the rows its own half-steps move, in the cells its
+        routable_elements name (B1′, the target side): a rate route whose species source is one of
+        them is self-moved, and the composite evaluates its factor at the half-step's midpoint
+        (pump_composite.self_moved_targets). (): it moves none."""
+        return ()
+
+    def rate_route_sources(self, declaration):
+        """((target law, field, element ids, source species id), ...) of its declared rate routes
+        with a species source read in each element's cell (B1′, the source side), for the
+        composite's self-moved test; ()."""
+        return ()
+
+    def quantities(self, state, p, *, xp):
+        """R3, the owner: {name: values} of its QUANTITIES at `state`, each on its entity axis."""
+        return {}
+
+    def quantity_entities(self, spec, declaration):
+        """R3, the owner, host side: {entity axis: ((entity id, its cell id or None), ...)} in the
+        axis' order, for each axis of its QUANTITIES: a reader binds its reads by entity ID and
+        checks where they are read, without importing the owner."""
+        return {}
+
+    def declared_quantity_reads(self, declaration):
+        """R3, the reader: ((owner law, name, target law or None), ...) the declaration reads,
+        each one of QUANTITY_READS; the target is an operator target's route, whose half-steps
+        evaluate it, or None, a read at the control view."""
+        return ()
 
     def factor_valid(self, state, p, *, xp):
         """The validity of its CONTROL_FACTORS' sources at the control view, where the composite
@@ -852,6 +914,7 @@ def check_declarations(operator):
             )
     _check_scopes(operator)
     _check_routes(operator)
+    _check_quantities(operator)
     if operator.PROCESS and not _defined_below_operator(operator, "moves_in_step"):
         raise ValueError(f"{name}: an in-step process declares the rows it moves (moves_in_step)")
     if operator.IDENTITY_ROLE not in IDENTITY_ROLES:
@@ -1020,6 +1083,36 @@ def _check_layers(operator):
 
 def _named_string(value):
     return isinstance(value, str) and bool(value)
+
+
+def _check_quantities(operator):
+    """R3's declarations (module docstring): an owner's QUANTITIES map distinct names to (entity
+    axis, unit), non-empty strings, with quantities defined; a reader's QUANTITY_READS map other
+    laws to tuples of distinct names."""
+    name = operator.LAW_ID
+    own = operator.QUANTITIES
+    if not isinstance(own, Mapping) or not all(
+        _named_string(key)
+        and isinstance(value, tuple)
+        and len(value) == 2
+        and all(map(_named_string, value))
+        for key, value in own.items()
+    ):
+        raise ValueError(f"{name}: QUANTITIES maps names to (entity axis, unit) strings")
+    if own and not _defined_below_operator(operator, "quantities"):
+        raise ValueError(f"{name}: an owner of readable quantities defines quantities")
+    reads = operator.QUANTITY_READS
+    if not isinstance(reads, Mapping) or not all(
+        _named_string(law)
+        and isinstance(names, tuple)
+        and names
+        and all(map(_named_string, names))
+        and len(set(names)) == len(names)
+        for law, names in reads.items()
+    ):
+        raise ValueError(f"{name}: QUANTITY_READS maps owner laws to tuples of distinct names")
+    if name in reads:
+        raise ValueError(f"{name}: a reader reads no quantity of its own law")
 
 
 def _check_routes(operator):

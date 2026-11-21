@@ -8,8 +8,20 @@ type fixed; the assembly is an ideal-mixing phase of N = sum_i n_i molecules. Fo
                                                          takes up nothing)
     leave  n -> n - e_i   at rate  kb_i * n_i
 
-with kf_i = K_i * kb_i, K_i the type's transfer constant (family.py, its one authority). Its mean
-field relaxes toward x_i = n_i / N = K_i rho_i.
+with kf_i = K_i * kb_i, K_i the type's transfer constant (family.py, its one authority).
+
+What the mean field's composition x_i = n_i / N does depends on the leave constants (GARD_DESIGN
+§2.1). Write theta_i = K_i rho_i:
+- zero net exchange, a true fixed point at x_i = theta_i, needs sum_j theta_j = 1; otherwise the
+  assembly grows (sum_j theta_j > 1) or shrinks;
+- with a common leave constant kb, dx_i/dt = kb (theta_i - x_i sum_j theta_j), so the composition
+  relaxes toward theta_i / sum_j theta_j while N changes;
+- with a leave constant per type, kb_i (`leave_rate` admits one), the proportions depend on the
+  kb_i as well and need not stay at theta_i / sum_j theta_j: counts (1, 1), theta = (1, 1) and
+  kb = (1, 2) give dx_1/dt = -1/4, and the compiled engine agrees.
+(Corrected 19 November 2026 from the Lean proofs project's finding, lean/PROGRESS.md and
+lean/CellsProofs/Chemistry/ReservoirExchange.lean; the earlier wording stated the common-kb result
+without its condition.)
 
 Thermodynamics. Write theta_i = K_i rho_i. The jump process's affinity of the transfer pair
 n <-> n + e_i is

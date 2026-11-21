@@ -50,8 +50,14 @@ Refused at the definition, each with its reason (§1.4, §1.5):
    it, insertion, the lumens, and S5's closers (division). The areas and capacitances are
    reference reads (D217): the declaration reads the declared bounding patch as data, its
    identity, so a provider of them is no conflict. Membrane state, which provides them, is
-   admitted only together with scheduled_membrane_trafficking@1 (FR-2; the membrane-state wall's
-   door), whose routes are the one writer of them that the list admits.
+   admitted only together with one of its admitted writers, and only where every writer of its
+   fields is one of them (the membrane-state wall's door): scheduled_membrane_trafficking@1
+   (FR-2), whose routes write areas, capacitances and units, and FR-7's unit producer
+   population_unit_turnover@1, which writes units only, never an area or a capacitance (the
+   lead's ruling of 20 November 2026, amending that of 19 November on FR-2's question 11). The
+   producer acts in its populations' cells only, and species_regulated_availability@2 reads its
+   sources in its elements' cells and refuses an outside-node element (FR-7's U2 world with a
+   releasing compartment, D217).
 The stationary analysis does not admit the composite (its own ID check).
 
 Identity is a host-side map (identity_map; ARCHITECTURE.md's modular core, D174): per compartment,
@@ -125,8 +131,11 @@ STATE_LAW = "membrane_entity_state@1"
 # FR-2's operator (docs/MEMBRANE_RETRIEVAL_DESIGN.md; D217): named here before its module lands,
 # so that the admission is on main for its builder (the lead's ruling of 19 November 2026).
 TRAFFICKING_LAW = "scheduled_membrane_trafficking@1"
+# FR-7's unit producer (docs/ABUNDANCE_TO_FUNCTION_DESIGN.md; D217, D232): it writes membrane
+# state's units only, in its populations' cells (the lead's ruling of 20 November 2026).
+PRODUCER_LAW = "population_unit_turnover@1"
 # §4's admitted list (fails closed). @3 itself is the composite's inner model. Membrane state is
-# admitted only together with trafficking (check_definition).
+# admitted only together with one of its admitted writers (check_definition).
 ADMITTED = (
     LAW_ID,
     "electrode_current_injection@1",
@@ -138,6 +147,15 @@ ADMITTED = (
     "scheduled_bath_composition@1",
     STATE_LAW,
     TRAFFICKING_LAW,
+    "species_regulated_availability@2",
+    PRODUCER_LAW,
+)
+# Membrane state's fields that its writers write (membrane_state.ACCEPTS_WRITES): the wall's door
+# admits a writer of any of them only if it is one of the admitted writers (check_definition).
+STATE_FIELDS = (
+    "membrane_area_increment_m2",
+    "membrane_capacitance_increment_F",
+    "population_abundance_increment",
 )
 # Read as declared: the volumes and the activity masks (§1.4, 7).
 CONFLICTS_VIEW = (
@@ -515,23 +533,40 @@ def declaration_to_dict(declaration):
     )
 
 
-def refuse_untrafficked_state(laws):
-    """7. Membrane state beside a compartment only together with trafficking (FR-2, D217; the lead's
-    ruling of 19 November 2026 on its question 11): membrane state provides every patch's area and
-    capacitance, a bounding patch's included, and trafficking is the one writer of them on the
-    admitted list. Alone it would provide the declared values only, a composition no world
-    needs, so it fails closed."""
-    if STATE_LAW in laws and TRAFFICKING_LAW not in laws:
+def refuse_unwritten_state(entries):
+    """7. Membrane state beside a compartment only together with one of its admitted writers, and
+    only where every writer of its fields is one of them (the membrane-state wall's door). The
+    writers: trafficking (FR-2, D217; the lead's ruling of 19 November 2026 on its question 11),
+    which writes every patch's area and capacitance, a bounding patch's included, and units; and
+    FR-7's unit producer, which writes units only (the lead's ruling of 20 November 2026). Alone,
+    membrane state would provide the declared values only, a composition no world needs, so it
+    fails closed; any other writer of its fields is refused, whatever the admitted list holds.
+    The writers are read when the check runs, so a stand-in may take trafficking's place."""
+    writers = (TRAFFICKING_LAW, PRODUCER_LAW)
+    laws = [op.LAW_ID for op, _, _ in entries]
+    if STATE_LAW not in laws:
+        return
+    if not set(writers) & set(laws):
         raise ConfigError(
-            f"{LAW_ID} admits {STATE_LAW} only together with {TRAFFICKING_LAW}: membrane state "
-            "provides every patch's area and capacitance, a bounding patch's included, and "
-            "trafficking is the one writer of them on its admitted list (fails closed)"
+            f"{LAW_ID} admits {STATE_LAW} only together with {TRAFFICKING_LAW} or "
+            f"{PRODUCER_LAW}: membrane state provides every patch's area and capacitance, a "
+            "bounding patch's included, and they are the writers of its fields on its admitted "
+            "list (trafficking of areas, capacitances and units; the producer of units only), so "
+            "alone it is a composition no world needs (fails closed)"
         )
+    for op, _, _ in entries:
+        written = [field for field in STATE_FIELDS if field in op.ENTITY_WRITES]
+        if written and op.LAW_ID not in writers:
+            raise ConfigError(
+                f"{LAW_ID} admits {STATE_LAW} only where every writer of its fields is "
+                f"{TRAFFICKING_LAW} or {PRODUCER_LAW}; {op.LAW_ID} writes its {written[0]} "
+                "(fails closed)"
+            )
 
 
 def check_definition(spec, declaration):
     """7. The admitted list, which fails closed, replacement@1's owners, and membrane state only
-    with trafficking; then 5. (version 1.2), which reads the admitted operators' routes."""
+    with its admitted writers; then 5. (version 1.2), which reads the admitted operators' routes."""
     owners = {c.owner for c in declaration.compartments}
     entries = composite_spec.entries(spec)
     for op, _, schedule in entries:
@@ -555,7 +590,7 @@ def check_definition(spec, declaration):
                     "a donor; a donor copy takes the donor's cytosolic amounts only, so the "
                     "newcomer would not be a copy (door R)"
                 )
-    refuse_untrafficked_state([op.LAW_ID for op, _, _ in entries])
+    refuse_unwritten_state(entries)
     # 5., version 1.2: per compartment, in declared order (positional: bypasses in the silence
     # tests and FR-1's plants replace it with a positional-only lambda).
     into = charged_by(spec, declaration, entries)

@@ -13,6 +13,12 @@ The operator's step bound (one table, each row a claim with its plant; the indep
 project's finding of 19 November 2026, lean/PROGRESS.md): a finite outside node's concentrations
 and volume enter the route's relaxation rate, each volume its own, a held bath adds nothing, and
 routes that share a node add their rates there.
+
+The law's log of the product ratio (a second table, likewise; the Lean project's component case,
+lean/checks/potassium_anion_symport.py product_ratio): where both concentration products are
+normal floats and their quotient is not (16 mM inside and 2^-510 mM outside, and its mirror), the
+affinity and heat are finite and within ulps of the 60-digit reference, their derivatives finite;
+every normal quotient keeps the unguarded log's bits, in numpy and compiled.
 """
 
 import contextlib
@@ -315,3 +321,198 @@ def test_the_step_bound_reads_a_finite_outside_node_and_each_plant_breaks_it(row
     assert bound_failures(row) == []
     with plant():
         assert bound_failures(row) != []
+
+
+# ------------------------------------------------------------------ the affinity at extreme ratios
+
+# The split form's four logs and two differences, carried through R T and the heat's product: a
+# few ulps (measured on 20 November 2026: at most 1 on the values, 0 on the affinity's slopes).
+ULPS = 8
+TEMPERATURE_K = 310.0
+EXTREMES = (  # (K_i, A_i, K_o, A_o) mM: both products normal floats, their quotient not.
+    (16.0, 16.0, 2.0**-510, 2.0**-510),  # The Lean component case: the quotient 2^1028 overflows.
+    (2.0**-510, 2.0**-510, 16.0, 16.0),  # Its mirror: the quotient 2^-1028 underflows.
+)
+EDGES = (  # Products near the ends of the floats, their quotient still normal: the direct form.
+    (2.0**500, 2.0**500, 2.0**-11, 2.0**-11),  # 2^1022
+    (2.0**-500, 2.0**-500, 2.0**10, 2.0**10),  # 2^-1020
+    (16.0, 16.0, 2.0**-507, 2.0**-507),  # 2^1022: the Lean case's neighbour, still direct.
+    # Within the split's margin of the ends: the largest double but one, 2^1024 (1 - 2^-52), and
+    # the smallest normal, 2^-1022 (a tie rounded to even). Both normal, so both direct.
+    (2.0**500, 2.0**500, 2.0**-12, 2.0**-12 * (1.0 + 2.0**-52)),
+    (2.0**-500, 2.0**-500, 2.0**11, 2.0**11 * (1.0 - 2.0**-53)),
+)
+
+
+def unguarded(k_in, a_in, k_out, a_out, *, xp):  # The log as the law landed: ln of the quotient.
+    return xp.log((k_in * a_in) / (k_out * a_out))
+
+
+def split_everywhere(k_in, a_in, k_out, a_out, *, xp):  # Planted: the split form at every input.
+    return (xp.log(k_in) - xp.log(k_out)) + (xp.log(a_in) - xp.log(a_out))
+
+
+def single_where(k_in, a_in, k_out, a_out, *, xp):  # Planted: each branch on its raw inputs.
+    quotient = (k_in * a_in) / (k_out * a_out)
+    info = xp.finfo(xp.result_type(quotient))
+    normal = (quotient >= info.tiny) & (quotient <= info.max)
+    return xp.where(normal, xp.log(quotient), split_everywhere(k_in, a_in, k_out, a_out, xp=xp))
+
+
+@contextlib.contextmanager
+def log_ratio(replacement):
+    """The law's log of the product ratio replaced for the block (a plant, or the unguarded)."""
+    saved = law.log_product_ratio
+    law.log_product_ratio = replacement
+    try:
+        yield
+    finally:
+        law.log_product_ratio = saved
+
+
+@contextlib.contextmanager
+def margin(value):  # Planted (-SPLIT_MARGIN): the margin on the wrong side of the normal range.
+    saved = law.SPLIT_MARGIN
+    law.SPLIT_MARGIN = value
+    try:
+        yield
+    finally:
+        law.SPLIT_MARGIN = saved
+
+
+def kernel(args, compiled):
+    """The four Rates outputs stacked, in numpy or compiled afresh (a new function, so a plant is
+    traced, never a cached law)."""
+    if compiled:
+        out = jax.jit(lambda *a: law.rates(*a, xp=jnp))(*args)
+    else:
+        with np.errstate(over="ignore", divide="ignore", invalid="ignore"):  # A plant's.
+            out = law.rates(*args, xp=np)
+    shape = np.shape(args[0])
+    return np.stack([np.broadcast_to(np.asarray(v, dtype=float), shape) for v in out])
+
+
+def derivatives(args, outputs=(1, 3)):
+    """d/d(K_i, A_i, K_o, A_o, V) of the chosen Rates outputs (affinity 1, heat 3), forward
+    (jacfwd) and reverse (grad), compiled afresh: [state, output and mode, argument]."""
+    k_in, a_in, k_out, a_out, volume, temperature, q, opening = args
+
+    def one(k_in, a_in, k_out, a_out, volume, q, opening):
+        out = []
+        for index in outputs:
+
+            def value(*c, index=index):
+                return law.rates(*c, temperature, q, opening, xp=jnp)[index]
+
+            for mode in (jax.jacfwd, jax.grad):
+                out.append(jnp.stack(mode(value, argnums=(0, 1, 2, 3, 4))(
+                    k_in, a_in, k_out, a_out, volume)))  # fmt: skip
+        return jnp.stack(out)
+
+    axes = (0, 0, 0, 0, 0, law.Parameters(0, None, 0), 0)
+    return np.asarray(jax.jit(jax.vmap(one, in_axes=axes))(
+        k_in, a_in, k_out, a_out, volume, q, opening))  # fmt: skip
+
+
+def ordinary_states(n, seed):
+    """Random ordinary routes (the reference transcription's ranges), the edge rows appended."""
+    rng = np.random.default_rng(seed)
+    c = np.concatenate([10 ** rng.uniform(-1, 2.5, (4, n)), np.array(EDGES).T], axis=1)
+    m = c.shape[1]
+    q = law.Parameters(rng.uniform(1e-8, 1e-6, m), 0.75, rng.uniform(0.05, 2, m))
+    return (*c, rng.uniform(0.4, 1.5, m), TEMPERATURE_K, q, rng.uniform(0.1, 1, m))
+
+
+def edge_states():
+    c = np.array(EDGES).T
+    m = c.shape[1]
+    q = law.Parameters(np.full(m, 1e-7), 0.75, np.ones(m))
+    return (*c, np.full(m, 0.75), TEMPERATURE_K, q, np.ones(m))
+
+
+def extreme_states():
+    c = np.array(EXTREMES).T
+    m = c.shape[1]
+    q = law.Parameters(np.full(m, 0.01), 1.0, np.ones(m))
+    return (*c, np.ones(m), TEMPERATURE_K, q, np.ones(m))
+
+
+def references():
+    """The 60-digit affinity, heat and affinity derivatives R T (1/K_i, 1/A_i, -1/K_o, -1/A_o, 0)
+    at EXTREMES (validation/core_seams/references/exact.py, as the Lean reproducer uses)."""
+    from validation.core_seams.references import exact
+
+    values, slopes = [], []
+    with exact.context():
+        rt = exact.RT_J_per_mol(TEMPERATURE_K)
+        for k_in, a_in, k_out, a_out in EXTREMES:
+            ki, ai, ko, ao = map(exact.dec, (k_in, a_in, k_out, a_out))
+            affinity = rt * (ki.ln() + ai.ln() - ko.ln() - ao.ln())
+            heat = exact.dec(0.01) * (ki * ai - ko * ao) * affinity / 1000
+            values.append([float(affinity), float(heat)])
+            slopes.append([float(rt / ki), float(rt / ai), float(-rt / ko), float(-rt / ao), 0.0])
+    return np.array(values), np.array(slopes)
+
+
+def quotient_failures(row):
+    """The claims a row breaks, by name, with the law's log of the product ratio as it stands."""
+    out = []
+    if row == "quotient_ordinary":
+        # The kernel's four outputs and the affinity's derivatives keep the unguarded log's bits at
+        # ordinary and edge states, 4096 routes and one, in numpy and compiled.
+        for n, seed in ((4096, 3), (1, 5)):
+            args = ordinary_states(n, seed)
+            with log_ratio(unguarded):
+                old = [kernel(args, False), kernel(args, True), derivatives(args, (1,))]
+            new = [kernel(args, False), kernel(args, True), derivatives(args, (1,))]
+            for name, a, b in zip(("numpy", "compiled", "derivatives"), old, new, strict=True):
+                if not close(a, b, 0):
+                    out.append(f"the unguarded bits ({name}, {n} routes)")
+    elif row == "quotient_edges":
+        # Every normal quotient keeps the direct form, also within the split's margin of the ends
+        # of the normal range: the unguarded log's bits, in numpy and compiled.
+        args = edge_states()
+        with log_ratio(unguarded):
+            old = [kernel(args, False), kernel(args, True)]
+        new = [kernel(args, False), kernel(args, True)]
+        for name, a, b in zip(("numpy", "compiled"), old, new, strict=True):
+            if not close(a, b, 0):
+                out.append(f"the unguarded bits at the edges ({name})")
+    elif row == "quotient_extremes":
+        # Finite and within ULPS of the 60-digit affinity and heat, admitted by domain_valid.
+        args, (expected, _) = extreme_states(), references()
+        for name, compiled in (("numpy", False), ("compiled", True)):
+            got = kernel(args, compiled)[[1, 3]].T
+            if not close(got, expected, ULPS):
+                out.append(f"values ({name}): {got.tolist()} against {expected.tolist()}")
+        if not np.all(law.domain_valid(*args[:5], args[6], args[7], xp=np)):
+            out.append("refused by domain_valid")
+    elif row == "quotient_derivatives":
+        # Forward and reverse derivatives finite at both extremes; the affinity's within ULPS.
+        d = derivatives(extreme_states())
+        _, slopes = references()
+        if not np.all(np.isfinite(d)):
+            out.append(f"non-finite derivatives: {np.argwhere(~np.isfinite(d)).tolist()}")
+        for mode in (0, 1):
+            if not close(d[:, mode], slopes, ULPS):
+                out.append(f"affinity derivatives (mode {mode}): {d[:, mode].tolist()}")
+    return out
+
+
+QUOTIENT = (  # Each plant a context: the law's log replaced, or its margin moved.
+    pytest.param("quotient_ordinary", lambda: log_ratio(split_everywhere), id="quotient_ordinary"),
+    pytest.param("quotient_edges", lambda: margin(-law.SPLIT_MARGIN), id="quotient_edges"),
+    pytest.param("quotient_extremes", lambda: log_ratio(unguarded), id="quotient_extremes"),
+    pytest.param(
+        "quotient_derivatives", lambda: log_ratio(single_where), id="quotient_derivatives"
+    ),
+)
+
+
+@pytest.mark.parametrize("row, plant", QUOTIENT)
+def test_the_affinity_is_finite_where_the_product_quotient_is_not_and_each_plant_breaks_it(
+    row, plant
+):
+    assert quotient_failures(row) == []
+    with plant():
+        assert quotient_failures(row) != []

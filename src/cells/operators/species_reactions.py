@@ -283,6 +283,9 @@ class Reactions:
     species: tuple
     reactions: tuple
     routes: tuple  # Every (reaction, site), reaction by reaction in declared order.
+    # FR-26's occupant rule (D244): ((replacement template ID, ((reaction ID, multiplier), ...)),
+    # ...), a newcomer's multiplier for each reaction's route in its cell; () when not declared.
+    templates: tuple = ()
 
 
 @dataclass(frozen=True)
@@ -573,8 +576,31 @@ def _reaction(raw, base, species):
     return reaction, routes
 
 
+def _templates(raw, reactions):
+    """FR-26's optional templates: [{template_id, multipliers: {reaction id: multiplier}}]."""
+    if type(raw) is not list or not raw:
+        raise ConfigError(f"{LAW_ID}: templates, where given, is a non-empty list")
+    names = {r.id for r in reactions}
+    out = []
+    for entry in raw:
+        _fields(entry, {"template_id", "multipliers"}, f"{LAW_ID} template")
+        tid = identifier(entry["template_id"])
+        if not isinstance(entry["multipliers"], dict) or not entry["multipliers"]:
+            raise ConfigError(f"{LAW_ID}: template {tid} names its reactions' multipliers")
+        rows = []
+        for reaction, value in entry["multipliers"].items():
+            if reaction not in names:
+                raise ConfigError(f"{LAW_ID}: template {tid} names an undeclared reaction")
+            rows.append((reaction, _number(value, f"{tid}'s multiplier of {reaction}", low=0)))
+        out.append((tid, tuple(rows)))
+    if len({tid for tid, _ in out}) != len(out):
+        raise ConfigError(f"{LAW_ID}: a template is declared twice")
+    return tuple(out)
+
+
 def parse_reactions(raw, base):
-    _fields(raw, {"law", "standard_concentration_mM", "species", "reactions"}, "species reactions")
+    keys = {"law", "standard_concentration_mM", "species", "reactions"}
+    _fields(raw, keys | ({"templates"} if "templates" in raw else set()), "species reactions")
     if raw["law"] != LAW_ID:
         raise ConfigError("Species reactions require law " + LAW_ID)
     c0 = _number(raw["standard_concentration_mM"], "standard_concentration_mM", low=0, strict=True)
@@ -588,7 +614,8 @@ def parse_reactions(raw, base):
         routes += own
     if len({r.id for r in reactions}) != len(reactions):
         raise ConfigError(f"{LAW_ID}: reaction IDs are unique")
-    return Reactions(LAW_ID, c0, species, tuple(reactions), tuple(routes))
+    templates = _templates(raw["templates"], reactions) if "templates" in raw else ()
+    return Reactions(LAW_ID, c0, species, tuple(reactions), tuple(routes), templates)
 
 
 def reactions_to_dict(declaration):
@@ -637,12 +664,19 @@ def reactions_to_dict(declaration):
                 {"catalyst": r.catalyst, key: r.rate_constant, "saturation_mM": r.saturation_mM}
             )
         reactions.append(entry)
-    return dict(
+    out = dict(
         law=declaration.law,
         standard_concentration_mM=declaration.standard_concentration_mM,
         species=species,
         reactions=reactions,
     )
+    if (
+        declaration.templates
+    ):  # FR-26: absent when not declared, so definitions round-trip as before.
+        out["templates"] = [
+            dict(template_id=tid, multipliers=dict(rows)) for tid, rows in declaration.templates
+        ]
+    return out
 
 
 ORDER_UNITS = ("mM/s", "1/s", "1/(mM s)", "1/(mM^2 s)")  # Mass action's k by order q = 0 to 3.
@@ -738,13 +772,38 @@ def parse_controls(raw, base, declaration):
     return tuple(controls)
 
 
-def route_tables(declaration, schedule):
+def route_tables(declaration, schedule, spec=None):
     """Per route, its multiplier table ((time, multiplier), ...): its site's, else its
-    reaction's."""
+    reaction's. FR-26's occupant rule (D244): with templates and replacement@1 in `spec`, a cell
+    route on a replaced slot follows the slot's occupants, the founder's table ending at its death
+    and each newcomer's template multiplier held through its life (a newcomer's own schedule is
+    version 1.1); a founder's change at or after its death is refused. Without templates the tables
+    are as before, bit for bit."""
     keyed = {(c.reaction_id, c.site): c.changes for c in schedule}
-    return [
+    tables = [
         keyed.get((r.reaction, r.node), keyed.get((r.reaction, None))) for r in declaration.routes
     ]
+    if spec is None or not declaration.templates:
+        return tables
+    lives = common.occupants(spec)
+    multipliers = {tid: dict(rows) for tid, rows in declaration.templates}
+    for k, route in enumerate(declaration.routes):
+        if route.kind != "cell" or len(lives[route.node]) == 1:
+            continue
+        newcomers = lives[route.node][1:]
+        death = newcomers[0].birth
+        late = [t for t, _ in tables[k] if t >= death]
+        if late:
+            raise ConfigError(
+                f"{LAW_ID}: reaction {route.reaction}'s schedule at {route.node} changes at "
+                f"{late[0]:g} s, after its founder's death at {death:g} s; a newcomer takes its "
+                "template's multiplier (give the other sites their own schedules)"
+            )
+        given = [(o.birth, multipliers.get(o.template, {}).get(route.reaction)) for o in newcomers]
+        # A gap is refused at the definition (check_replaced_slots); the controls may be built
+        # before that check runs.
+        tables[k] = (*tables[k], *((t, m) for t, m in given if m is not None))
+    return tables
 
 
 # ------------------------------------------------------------------ binding
@@ -852,15 +911,46 @@ def check_turnover_rows(spec, declaration):
 
 
 def check_replaced_slots(spec, declaration):
-    """Refuse a cell route on a slot that replacement@1 replaces (§2.1, the lead's ruling 6)."""
-    _, events = common.replacement_of(spec)
-    slots = {v.slot for v in events}
-    for route in declaration.routes:
-        if route.kind == "cell" and route.node in slots:
+    """A cell route on a slot that replacement@1 replaces is admitted only where every newcomer
+    there comes from a template whose multiplier for the route's reaction this declaration gives
+    (FR-26's occupant rule, D244); a donor copy there is version 1.1. Each template is a replacement
+    template, and each multiplier a reaction with a cell route on a slot its newcomers fill
+    (outside routes compose as before; §2.1, the lead's ruling 6)."""
+    replacement, events = common.replacement_of(spec)
+    multipliers = {tid: dict(rows) for tid, rows in declaration.templates}
+    known = set() if replacement is None else {t.id for t in replacement.templates}
+    for tid in multipliers:
+        if tid not in known:
             raise ConfigError(
-                f"{LAW_ID}: reaction {route.reaction} acts in cell {route.node}, a slot "
-                f"{common.REPLACEMENT_LAW} replaces: version 1 refuses cell routes on replaced "
-                "slots (outside routes compose; the occupant rule for cell routes is version 1.1's)"
+                f"{LAW_ID} declares multipliers for {tid}, not a replacement template"
+            )
+    filled = {}
+    for v in events:
+        filled.setdefault(v.slot, []).append(v)
+    used = set()
+    for route in declaration.routes:
+        if route.kind != "cell" or route.node not in filled:
+            continue
+        for v in filled[route.node]:
+            if v.newcomer != "isolated_template":
+                raise ConfigError(
+                    f"{LAW_ID}: reaction {route.reaction} acts in cell {route.node}, which a "
+                    "donor copy fills; a donor copy's reaction multipliers are version 1.1"
+                )
+            if route.reaction not in multipliers.get(v.template, {}):
+                raise ConfigError(
+                    f"{LAW_ID}: reaction {route.reaction} acts in cell {route.node}, a slot "
+                    f"{common.REPLACEMENT_LAW} replaces, and a newcomer from template "
+                    f"{v.template} takes no multiplier for it: declare it in this operator's "
+                    "templates (its occupant rule)"
+                )
+            used.add((v.template, route.reaction))
+    for tid, rows in multipliers.items():
+        unused = sorted(set(rows) - {r for t, r in used if t == tid})
+        if unused:
+            raise ConfigError(
+                f"{LAW_ID}: template {tid}'s multiplier for {unused[0]} applies to no cell route "
+                "on a slot its newcomers fill"
             )
 
 
@@ -1422,7 +1512,7 @@ class LocalSpeciesReactions(Operator):
         return common.value_at(schedule, time)
 
     def control_values(self, spec, declaration, schedule, records, indices, times):
-        tables = route_tables(declaration, schedule)
+        tables = route_tables(declaration, schedule, spec)
         return (common.control_arrays(tables, times, 1)[..., 0],)
 
     def routable_elements(self, declaration, field):
@@ -1431,6 +1521,22 @@ class LocalSpeciesReactions(Operator):
         return tuple(
             (route.reaction, route.node if route.kind == "cell" else None)
             for route in declaration.routes
+        )
+
+    def half_step_rows(self, declaration):
+        """B1′: each reaction's reactants and products at each of its cell sites (a catalyst and
+        a rate factor are read, not moved)."""
+        reactions = {r.id: r for r in declaration.reactions}
+        return tuple(
+            dict.fromkeys(
+                (species, route.node)
+                for route in declaration.routes
+                if route.kind == "cell"
+                for species, _ in (
+                    *reactions[route.reaction].reactants,
+                    *reactions[route.reaction].products,
+                )
+            )
         )
 
     def check_definition(self, spec, declaration, schedule, model):
@@ -1444,6 +1550,7 @@ class LocalSpeciesReactions(Operator):
         common.check_identities(spec, LAW_ID, tuple(s.identity for s in declaration.species))
         check_turnover_rows(spec, declaration)
         check_replaced_slots(spec, declaration)
+        route_tables(declaration, schedule, spec)  # FR-26: a founder's change after its death.
 
     def read_slots(self, spec, declaration):
         """Door S: every finite outside node (its domain reads them all; held baths are masked)."""

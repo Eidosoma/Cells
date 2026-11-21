@@ -255,7 +255,9 @@ A route law declares nothing it changes: a definition chooses the species of mos
 `cells.junction_law@1`: a junction's conductance law.
 - `gated`: whether it carries a gate state;
 - `max_abs_voltage_V`: the largest voltage across a junction (V) where it is valid;
-- its kernels: `kinetics`, `rhs` and `domain_valid`.
+- `gate_count`: its gates in series, 1 for a one-gate law (FR-30);
+- its kernels: `kinetics`, `rhs` and `domain_valid`, and `conductance` (the junction's relative
+  conductance from its gates) where it has several gates; a one-gate law's `conductance` is null.
 
 ### Kinds
 

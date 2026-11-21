@@ -56,33 +56,56 @@ not admissible until a probe measures it. In a mixed world the onset energy book
 from the trace is a few percent off and passes unseen under the ions' bound, a known limit (§2.6).
 RK4 is guarded, not refused: exact half-steps around @3's RK4 step ("split").
 
+The patch area is a current read (D191; the lead's ruling of 20 November 2026, for FR-7's U2 world
+with a releasing compartment): SCOPED_READS declares membrane_area current at stage split, so where
+an operator of the composition changes it (membrane_entity_state@1 provides it), each half-step's
+imports take the area of the view it receives, the route's patch found on device as the one
+declared patch that joins the route's cell to its outside node (route_areas). A second declared
+patch joining that pair is then refused at the definition (check_area_reads), since the lookup
+could not tell the two apart. Where no operator changes the area, the composite passes no view
+(C1's fallback) and the half-step reads the declared area bound at the definition, so those worlds
+keep their programs bit for bit (D148). With membrane state and no writer of its areas, the view's
+area is the declared area plus a zero increment: the declared area, bit for bit. The law's ID is
+kept (D191).
+
 Refusals. At the definition: a charged species, a patch on a held bath, an import with a flux law,
 a saturable export, a negative rate, K_M <= 0, a schedule change off the dt grid, more than 16
 species per world (FR-9 / D165), an occupant without its rates, a donor copy whose route values
-differ from the slot's, and every provider or closer of the volumes, the activity masks and the
-membrane areas
-(CONFLICTS_VIEW: version 1 reads the declared volume and area, so water, the lumens, membrane state,
-insertion and S5's operators are refused). At run time: a supply shortfall, a failed saturable
-solve, non-finite values and any written amount that would not stay positive; each half-step returns
-the finiteness and positivity of both amounts it wrote, and the operator's own domain re-checks its
-species rows. The stationary analysis does not admit the composite, and version 1 keeps it so (§8).
+differ from the slot's, a second patch joining a route's cell and outside node where a provider of
+the areas is composed (above), and every provider or closer of the volumes and the activity masks
+(CONFLICTS_VIEW: version 1 reads the declared volumes, so water, the lumens, insertion and S5's
+operators are refused). At run time: a supply shortfall, a failed saturable solve, non-finite values
+and any written amount that would not stay positive; each half-step returns the finiteness and
+positivity of both amounts it wrote, and the operator's own domain re-checks its species rows. The
+stationary analysis does not admit the composite, and version 1 keeps it so (§8).
+
+Resolution near depletion. Amounts are stored as an anchor (the declared amount) plus an increment,
+so a pool's representable remainders are the anchor's grid: about 1.11e-16 fmol apart for a 1 fmol
+anchor. The stored remainder is the grid point nearest the exact one (from 1 fmol to e^-35 fmol it
+stores 6.661e-16 fmol for 6.305e-16, 5.65% high), and a remainder below half a spacing rounds to 0
+and is refused at run time: the step fails closed. Conservation holds to rounding. Forming the
+remainder another way cannot change this, since it is stored on the same grid; a finer resolution
+needs a representation change, such as re-anchoring a depleted pool or a scale per node, which is
+@3's state layout (the independent Lean project's finding, lean/PROGRESS.md, 20 November 2026).
 
 Idle: no route, statically idle; no positive rate in a half-step, the start state is selected;
 untouched entries are selected, never offset by zero. The face diffusivity that carries the species
 between nodes is the effective (FRAP) kind (§6).
 """
 
+from collections import Counter
 from dataclasses import dataclass
 
 import jax.numpy as jnp
 import numpy as np
 
+from cells.definitions import pump_composite_spec as composite_spec
 from cells.definitions.spec_values import identifier
 from cells.definitions.specs import ConfigError, _fields
 from cells.models import pump_composite_adapter as adapter
 from cells.numerics.species_sums import entity_sum
 from cells.operators import species_common as common
-from cells.operators.contract import Operator
+from cells.operators.contract import Operator, Read
 from cells.operators.species_turnover import scatter_add, set_rows
 
 LAW_ID = "scheduled_species_exchange@1"
@@ -315,11 +338,25 @@ def saturable_removed(n, a, b, h, *, xp):
     return -n * e, xp.abs(residual) <= NEWTON_RTOL * scale
 
 
-def _stage(inc_c, inc_o, acc, which, h, control, p, *, xp):
+def route_areas(membrane_area, p, *, xp):
+    """Each route's patch area from `membrane_area`, the current area per membrane slot of the view
+    a half-step receives (D191's current read): the one declared patch that joins the route's cell
+    to its outside node, which check_area_reads makes unique wherever a provider of the areas is
+    composed. A gather of the view's own values, so a zero increment gives the declared area."""
+    joins = (
+        p.membrane_active[None, :]
+        & (p.membrane_cell[None, :] == p.exchange_route_cell[:, None])
+        & (p.membrane_outside[None, :] == p.exchange_route_outside[:, None])
+    )
+    return membrane_area[xp.argmax(joins, axis=1)]
+
+
+def _stage(inc_c, inc_o, acc, which, h, control, p, area, *, xp):
     """One exact stage over h on the operator's rows: (inc_c, inc_o, acc, valid).
 
     which: FIRST_ORDER_EXPORT, FLUX_EXPORT, FIRST_ORDER_IMPORT or (SATURABLE_IMPORT, rank).
-    acc: the per-route (moved, work, magnitude) accumulators."""
+    acc: the per-route (moved, work, magnitude) accumulators. area: each route's patch area, the
+    declared one bound at the definition or the view's current one (route_areas)."""
     rows = p.exchange_rows
     k, n, o = rows.shape[0], p.active.size, p.outside_active.size
     row, cell, node = p.exchange_route_row, p.exchange_route_cell, p.exchange_route_outside
@@ -336,7 +373,7 @@ def _stage(inc_c, inc_o, acc, which, h, control, p, *, xp):
             k_r = xp.where(mask, rate, 0.0)
             source, index, size = nc, cell, n
         else:
-            k_r = xp.where(mask, rate * p.exchange_route_area_m2 * PL_PER_M3 / volume, 0.0)
+            k_r = xp.where(mask, rate * area * PL_PER_M3 / volume, 0.0)
             source, index, size = no, node, o
         total = scatter_add(xp.zeros((k, size)), (row, index), k_r, xp=xp)[row, index]
         removed = source[row, index] * -xp.expm1(-total * h)
@@ -346,7 +383,7 @@ def _stage(inc_c, inc_o, acc, which, h, control, p, *, xp):
         moved = xp.where(mask, rate * h, 0.0)
     else:
         mask = (code == SATURABLE_IMPORT) & (p.exchange_route_rank == which[1])
-        a = xp.where(mask, rate * p.exchange_route_area_m2, 0.0)
+        a = xp.where(mask, rate * area, 0.0)
         b = xp.where(mask, control.exchange_saturation_mM * volume, 1.0)
         removed, converged = saturable_removed(no[row, node], a, b, h, xp=xp)
         valid &= xp.all(xp.where(mask & (a > 0), converged, True))
@@ -396,9 +433,11 @@ def stages(p):
     )
 
 
-def exchange_half_step(state, control, h, p, *, xp=jnp):
+def exchange_half_step(state, control, h, p, *, xp=jnp, area=None):
     """(state after h of exchange, validity): every written amount finite and positive, and every
-    saturable solve converged."""
+    saturable solve converged. area: each route's current patch area (route_areas), or None for
+    the declared area bound at the definition."""
+    area = p.exchange_route_area_m2 if area is None else area
     rows = p.exchange_rows
     inc_c = state.amount_increment[rows]
     inc_o = state.extracellular_amount_increment[rows]
@@ -411,7 +450,7 @@ def exchange_half_step(state, control, h, p, *, xp=jnp):
     )
     valid = xp.asarray(True)
     for which, length in plan:
-        inc_c, inc_o, acc, ok = _stage(inc_c, inc_o, acc, which, length, control, p, xp=xp)
+        inc_c, inc_o, acc, ok = _stage(inc_c, inc_o, acc, which, length, control, p, area, xp=xp)
         valid &= ok
     new = state._replace(
         amount_increment=set_rows(state.amount_increment, rows, inc_c, xp=xp),
@@ -452,6 +491,27 @@ def exchange_domain_valid(state, p, *, xp):
 # ------------------------------------------------------------------ the operator
 
 
+def check_area_reads(spec, declaration):
+    """Where an operator of the composition provides membrane_area, so that the half-steps read
+    the view's current areas (D191), refuse a route whose patch shares its cell and outside node
+    with another declared patch: route_areas finds the patch on device by that pair (fails
+    closed)."""
+    if not any("membrane_area" in op.VIEW_FIELDS for op, _, _ in composite_spec.entries(spec)):
+        return
+    patches = {p.id: p for p in spec.model.membranes}
+    pairs = Counter((p.inside, p.outside) for p in spec.model.membranes)
+    for route in declaration.routes:
+        patch = patches[route.patch]
+        if pairs[(patch.inside, patch.outside)] > 1:
+            raise ConfigError(
+                f"{LAW_ID}: route {route.id}'s patch {route.patch!r} is one of "
+                f"{pairs[(patch.inside, patch.outside)]} declared patches joining "
+                f"{patch.inside!r} to {patch.outside!r}; where an operator provides the patch "
+                "areas, a route's current area is found by its cell and outside node, so that "
+                "pair must name one patch (D191's current read; fails closed)"
+            )
+
+
 def key_of(route):
     return (route.species, route.direction, route.law)
 
@@ -467,8 +527,13 @@ class ScheduledSpeciesExchange(Operator):
     LAYOUT_FIELDS = LAYOUT_FIELDS
     CONTROL_FIELDS = ("exchange_rate", "exchange_saturation_mM")
     EXPERIMENT_KEYS = ("exchange_controls",)
-    # Uptake per area reads the declared patch area, and every rate the declared volumes.
-    CONFLICTS_VIEW = (*common.CONFLICTS_VIEW, "membrane_area")
+    # Every rate reads the declared volumes. Uptake per area reads the patch area current at its
+    # half-step (D191): the view's where an operator of the composition changes it, else the
+    # declared one (module docstring). A change at stage split, a writer of membrane state's
+    # fields included, must precede it in the declared order (C2).
+    CONFLICTS_VIEW = common.CONFLICTS_VIEW
+    VIEW_READS = ("membrane_area",)
+    SCOPED_READS = {"membrane_area": Read("current", "split")}
     ENTITY_WRITES = {
         "amount_increment": ("exchange_moved_fmol",),
         "extracellular_amount_increment": ("exchange_moved_fmol",),
@@ -553,6 +618,7 @@ class ScheduledSpeciesExchange(Operator):
             spec, declaration.routes, schedule, declaration.templates, LAW_ID
         )
         common.check_donor_copies(spec, declaration.routes, tables, LAW_ID, key_of)
+        check_area_reads(spec, declaration)
 
     def batch_signature(self, declaration):
         """The static route structure; identities and rates are not part of it."""
@@ -587,8 +653,11 @@ class ScheduledSpeciesExchange(Operator):
     def statically_idle(self, p):
         return p.exchange_route_cell.shape[0] == 0
 
-    def half_step(self, state, h, control, p, *, xp):
-        return exchange_half_step(state, control, h, p, xp=xp)
+    def half_step(self, state, h, control, p, *, xp, view=None):
+        """view: the reader view the composite passes where an operator changes membrane_area
+        (D191's current read; C1: none otherwise, and the declared area is read)."""
+        area = None if view is None else route_areas(view.membrane_area, p, xp=xp)
+        return exchange_half_step(state, control, h, p, xp=xp, area=area)
 
     def control_valid(self, control, p, *, xp):
         rate, km = control.exchange_rate, control.exchange_saturation_mM

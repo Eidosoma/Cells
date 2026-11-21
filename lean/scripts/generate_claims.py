@@ -1,11 +1,15 @@
-"""Generate claim notes, the README index and coverage of registered engine laws and operators."""
+"""Generate claim notes, the README overview and the proof and evidence catalog."""
 
 import argparse
 import json
 import os
 import re
+import stat
 import sys
+from collections import Counter, defaultdict
+from functools import cache
 from pathlib import Path
+from subprocess import CalledProcessError
 from tempfile import TemporaryDirectory
 from urllib.parse import quote
 
@@ -15,6 +19,7 @@ BEGIN = "<!-- generated: claims-index -->"
 END = "<!-- /generated -->"
 NOTE = "<!-- Generated from lean/claims.json by scripts/generate_claims.py. -->"
 COVERAGE_NOTE = "<!-- Generated from lean/registry.json and lean/claims.json. -->"
+CLAIM_HEADER = "| Claim | Lean proof | Numerical check | Biological measurements and limits |"
 
 
 def unique_keys(pairs):
@@ -32,6 +37,85 @@ def source_path(target):
     if not filename or path.is_absolute() or ".." in path.parts:
         raise ValueError(f"expected a checkout-relative source, got {target!r}")
     return path, f"#{quote(anchor)}" if anchor else ""
+
+
+def check_sources(lane, since=None):
+    """Compare the named input files with Git. Reading blobs leaves the shared index alone."""
+    sys.path.insert(0, str(LANE.parent))
+    try:
+        from validation.source_snapshot import git
+    finally:
+        sys.path.pop(0)
+    repo = lane.parent
+    head = git(repo, "rev-parse", "HEAD").decode().strip()
+    register = json.loads((lane / "claims.json").read_text(), object_pairs_hook=unique_keys)
+    base = None
+    if since is not None:
+        obj = git(repo, "rev-parse", "--verify", "--end-of-options", since + "^{commit}")
+        base = obj.decode().strip()
+    paths = defaultdict(lambda: defaultdict(set))
+    for name, row in register["comparisons"].items():
+        record = row["record_revision"]
+        source = row["engine_revision"] if row["kind"] == "engine" else record
+        for revision, targets in ((source, row["sources"].values()), (record, [row["driver"]])):
+            if not re.fullmatch(r"[0-9a-f]{40}", revision):
+                raise ValueError(f"{name}: invalid recorded revision {revision!r}")
+            for target in targets:
+                path, _ = source_path(target)
+                paths[base or revision][str(path)].add(name)
+
+    @cache
+    def checkout_file(name):
+        path = repo / name
+        if path.parent.resolve() != path.parent:
+            return None
+        try:
+            mode = path.lstat().st_mode
+        except (FileNotFoundError, NotADirectoryError):
+            return None
+        if stat.S_ISLNK(mode):
+            return b"120000", os.fsencode(path.readlink())
+        if stat.S_ISREG(mode):
+            return (b"100755" if mode & stat.S_IXUSR else b"100644"), path.read_bytes()
+        return None
+
+    @cache
+    def blob(oid):
+        return git(repo, "cat-file", "blob", oid)
+
+    changed = defaultdict(set)
+    for revision, cited in paths.items():
+        entries = {}
+        for line in git(repo, "ls-tree", "-z", revision, "--", *cited).split(b"\0"):
+            if line:
+                meta, filename = line.split(b"\t", 1)
+                entries[os.fsdecode(filename)] = meta.split()
+        for name, comparisons in cited.items():
+            expected = None
+            if name in entries:
+                mode, kind, oid = entries[name]
+                if kind == b"blob":
+                    expected = mode, blob(oid)
+                elif base is None:
+                    raise ValueError(f"{name} is not a file at {revision}")
+            elif base is None:
+                raise ValueError(f"missing cited file {name} at {revision}")
+            if checkout_file(name) != expected:
+                for comparison in comparisons:
+                    changed[comparison].add(name)
+    if git(repo, "rev-parse", "HEAD").decode().strip() != head:
+        raise ValueError("checkout revision changed during the source comparison")
+    claims = register["claims"]
+    return {
+        "checkout": head,
+        "baseline": base or "recorded revisions",
+        "comparisons": len(register["comparisons"]),
+        "claims": len(claims),
+        "changed_claims": sorted(
+            c["id"] for c in claims if changed.keys() & set(c["numerical"]["comparisons"])
+        ),
+        "changed_comparisons": {key: sorted(files) for key, files in sorted(changed.items())},
+    }
 
 
 def local_link(label, target, repo, from_dir="lean/claims"):
@@ -217,7 +301,7 @@ def live_inventory(lane):
     }
 
 
-def coverage(inventory, claims, comparisons, repo):
+def coverage(inventory, claims, comparisons, repo, category_sections):
     direct, exercised = {}, {}
     for claim in claims.values():
         for piece in claim["formal"].get("about", []):
@@ -238,23 +322,33 @@ def coverage(inventory, claims, comparisons, repo):
     active = set(inventory["law"]) | set(inventory["operator"])
     if unknown := direct.keys() - active - exercised.keys():
         raise ValueError(f"unrecognized direct proof subjects: {', '.join(sorted(unknown))}")
+    failing = [
+        f"- [{c['title']}](claims/{c['id']}.md#numerical-comparison)"
+        for c in claims.values()
+        if c["numerical"]["status"] == "failed"
+    ]
     parts = [
         COVERAGE_NOTE,
-        "# Engine law coverage",
-        "Each row links to a Cells registry declaration. The proof column lists named claims "
-        "about that piece. The comparison column links to runs that exercised it, including "
-        "runs checking another property. Open means the Cells claim register has no entry "
-        "in that column. [Proof index](README.md#proof-index) · "
-        "[Registry inventory](registry.json)",
+        "# Proof and evidence catalog",
+        "Choose a claim for its assumptions, theorems, numerical results and sources. "
+        "Partial evidence covers a measured part of a claim. A result marked not assessable "
+        "has too much uncertainty for a verdict. [Topic overview](README.md#proof-index) · "
+        "[Registered laws](#registered-laws) · [Registered operators](#registered-operators)",
+        "## Failing numerical checks",
+        "\n".join(failing) or "The register lists zero numerical failures.",
+        *category_sections,
     ]
+    overview = []
     for kind in ("law", "operator"):
         rows = inventory[kind]
         n_direct = sum(key in direct for key in rows)
         n_checked = sum(key in exercised for key in rows)
+        overview.append(f"[{n_direct} of {len(rows)} {kind}s](COVERAGE.md#registered-{kind}s)")
         parts += [
             f"## Registered {kind}s",
             f"Direct Lean claims cover {n_direct} of {len(rows)} registered {kind}s. "
-            f"Recorded numerical comparisons exercise {n_checked}.",
+            f"Recorded numerical comparisons exercise {n_checked}. Each linked record names "
+            "the property tested.",
         ]
         table = [
             f"| {kind.title()} | Direct Lean claims | Recorded comparisons |",
@@ -266,7 +360,7 @@ def coverage(inventory, claims, comparisons, repo):
             runs = " · ".join(exercised.get(piece, [])) or "Open"
             table.append(f"| {label} | {proofs} | {runs} |")
         parts.append("\n".join(table))
-    return "\n\n".join(parts) + "\n"
+    return "\n\n".join(parts) + "\n", "Direct Lean claims cover " + " and ".join(overview) + "."
 
 
 def render(lane, live_registry=False):
@@ -288,28 +382,97 @@ def render(lane, live_registry=False):
         if live_registry
         else json.loads(inventory_path.read_text(encoding="utf-8"), object_pairs_hook=unique_keys)
     )
-    outputs = {
-        lane / "COVERAGE.md": coverage(inventory, claims, register["comparisons"], lane.parent)
-    }
+    # A version-one register written before categories were introduced still renders.
+    categories = register.get("categories", {"all": "All claims"})
+    if not categories or any(
+        not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", key) for key in categories
+    ):
+        raise ValueError("category IDs must be nonempty, stable link fragments")
+    groups = {key: [] for key in categories}
+    proof_topics = {law: set() for law in inventory["law"]}
+    outputs = {}
     if live_registry:
         outputs[inventory_path] = json.dumps(inventory, indent=2, sort_keys=True) + "\n"
-    rows = [
-        "| Claim | Lean proof | Numerical check | Biological measurements and limits |",
-        "| --- | --- | --- | --- |",
-    ]
     for key, claim in claims.items():
         try:
             note, row = render_claim(claim, claims, comparisons, lane.parent)
         except (KeyError, ValueError, TypeError) as error:
             raise ValueError(f"claim {key!r}: {error}") from error
         outputs[lane / "claims" / f"{key}.md"] = note
-        rows.append(row)
+        category = claim.get("category", "all")
+        if category not in groups:
+            raise ValueError(f"claim {key!r} needs a category from the register")
+        groups[category].append((claim, row))
+        for subject in claim["formal"].get("about", []):
+            if subject in proof_topics:
+                proof_topics[subject].add(category)
+
+    # A law usually gets its topic from its first direct proof. An explicit topic also
+    # lets an open law appear here before there is a claim or biological measurement.
+    assigned = register.get("law_categories", {})
+    if assigned.keys() - proof_topics.keys() or set(assigned.values()) - groups.keys():
+        raise ValueError("law_categories must name registered laws and existing categories")
+    laws_by_topic = {}
+    for law, topics in proof_topics.items():
+        if law not in assigned and len(topics) > 1:
+            raise ValueError(f"assign {law} a primary category in law_categories")
+        topic = assigned.get(law) or next(iter(topics), None)
+        groups.setdefault(topic, [])
+        laws_by_topic.setdefault(topic, {})[law] = bool(topics)
+
+    overview = [
+        "| Category | Registered laws with proof | Claims with proof | Numerical checks "
+        "| Claims with biological evidence |",
+        "| --- | ---: | ---: | --- | ---: |",
+    ]
+    sections = []
+    for key, group in groups.items():
+        laws = laws_by_topic.get(key, {})
+        if not (group or laws):
+            continue
+        title = categories[key] if key is not None else "Laws awaiting a category"
+        anchor = "category-" + key if key is not None else "uncategorized-laws"
+        counts = Counter(c["numerical"]["status"] for c, _ in group)
+        checks = " · ".join(f"{counts[s]} {s}" for s in ("checked", "failed", "open") if counts[s])
+        proved = sum(c["formal"]["status"] == "proved" for c, _ in group)
+        measured = sum(
+            bool(c["biology"].get("finding") or c["biology"]["evidence"]) for c, _ in group
+        )
+        law_count = f"{sum(laws.values())} of {len(laws)}" if laws else "—"
+        claim_count = f"{proved} of {len(group)}" if group else "—"
+        overview.append(
+            f"| [{title}](COVERAGE.md#{anchor}) | {law_count} | {claim_count} "
+            f"| {checks or '—'} | {measured} |"
+        )
+        sections.extend([f'<a name="{anchor}"></a>', f"## {title}"])
+        pending = [
+            local_link(f"`{law}`", inventory["law"][law], lane.parent, from_dir="lean")
+            for law in sorted(laws)
+            if not laws[law]
+        ]
+        if pending:
+            sections.append("**Awaiting a direct Lean proof** " + " · ".join(pending))
+        if group:
+            sections.append(
+                "\n".join(
+                    [
+                        CLAIM_HEADER,
+                        "| --- | --- | --- | --- |",
+                        *(row for _, row in group),
+                    ]
+                )
+            )
+    outputs[lane / "COVERAGE.md"], registry_summary = coverage(
+        inventory, claims, register["comparisons"], lane.parent, sections
+    )
     readme = lane / "README.md"
     before, start, rest = readme.read_text(encoding="utf-8").partition(BEGIN)
     body, end, after = rest.partition(END)
     if not start or not end or BEGIN in rest or "<!-- generated:" in body:
         raise ValueError("expected one claims-index block in the Lean README")
-    outputs[readme] = before + BEGIN + "\n\n" + "\n".join(rows) + "\n\n" + END + after
+    outputs[readme] = (
+        before + "\n\n".join([BEGIN, registry_summary, "\n".join(overview), END]) + after
+    )
     return outputs
 
 
@@ -355,7 +518,14 @@ def generate(lane, check=False, live_registry=False):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--check", action="store_true", help="report stale pages without writing")
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--check", action="store_true", help="report stale pages without writing")
+    mode.add_argument(
+        "--check-sources",
+        action="store_true",
+        help="report changes to cited source files and comparison drivers as JSON",
+    )
+    parser.add_argument("--since", metavar="REV", help="compare all cited files to REV")
     parser.add_argument(
         "--live-registry",
         action="store_true",
@@ -363,6 +533,19 @@ if __name__ == "__main__":
     )
     try:
         args = parser.parse_args()
+        if args.since is not None and not args.check_sources:
+            parser.error("--since requires --check-sources")
+        if args.check_sources:
+            if args.live_registry:
+                parser.error("--check-sources reads the claim register directly")
+            report = check_sources(LANE, args.since)
+            print(json.dumps(report, indent=2))
+            sys.exit(int(bool(report["changed_comparisons"])))
         sys.exit(0 if generate(LANE, args.check, args.live_registry) else 1)
+    except CalledProcessError as error:
+        detail = os.fsdecode(error.stderr or b"").strip() or str(error)
+        print(f"claims: Git could not read the comparison history: {detail}", file=sys.stderr)
+        sys.exit(2)
     except (ImportError, OSError, ValueError, TypeError, KeyError) as error:
-        sys.exit(f"claims: {error}")
+        print(f"claims: {error}", file=sys.stderr)
+        sys.exit(2 if args.check_sources else 1)

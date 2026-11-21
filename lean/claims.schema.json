@@ -7,6 +7,12 @@
   "properties": {
     "$schema": {"type": "string"},
     "version": {"const": 1},
+    "categories": {
+      "type": "object", "minProperties": 1,
+      "propertyNames": {"pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"},
+      "additionalProperties": {"$ref": "#/$defs/text"}
+    },
+    "law_categories": {"type": "object", "additionalProperties": {"$ref": "#/$defs/text"}},
     "comparisons": {"type": "object", "additionalProperties": {"$ref": "#/$defs/comparison"}},
     "claims": {"type": "array", "items": {"$ref": "#/$defs/claim"}}
   },
@@ -34,6 +40,7 @@
       "required": ["id", "title", "statement", "assumptions", "formal", "numerical", "biology"],
       "properties": {
         "id": {"type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"},
+        "category": {"type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"},
         "title": {"$ref": "#/$defs/text"}, "statement": {"$ref": "#/$defs/text"},
         "assumptions": {"$ref": "#/$defs/texts"}, "uses": {"$ref": "#/$defs/texts"},
         "formal": {

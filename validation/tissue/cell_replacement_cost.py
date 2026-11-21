@@ -400,9 +400,20 @@ def main(argv=None):
     parser.add_argument("--worlds", type=int, default=0)
     parser.add_argument("--repeats", type=int, default=2)
     args = parser.parse_args(argv)
+    from validation import executed_sources  # noqa: PLC0415
+
+    # D259: refuse before any compute, so a refused run loses nothing; checked again at the
+    # record, for a source the run imports on its way.
+    executed_sources.refuse_untracked(
+        Path(__file__).resolve().parents[2], "cell_replacement_cost's record"
+    )
     args.output.mkdir(parents=True, exist_ok=True)
     started = time.perf_counter()
     result = PARTS[args.part](args)
+    executed_sources.refuse_untracked(  # D259: again, for a source imported during the run
+        Path(__file__).resolve().parents[2], "cell_replacement_cost's record"
+    )
+
     result.update(
         part=args.part,
         argv=sys.argv,

@@ -4,8 +4,9 @@ On the bound heredity cell, in NumPy (no compile): zero increments give @3's dec
 bit for bit (R8, with the field arrays selected as bound); increments reach the view as area,
 capacitance and abundance (a fixed number of units keeps its conductance); the entity ledgers
 and domain; catalogue references never reach bindings or the batch signature, only the
-summary and the definition; definition refusals. The compiled guards are
-test_membrane_insertion_runs.py.
+summary and the definition; definition refusals; an empty population's abundance and flux exactly
+zero at a moved area (one row, with its plant; the independent Lean project's findings of 20
+November 2026). The compiled guards are test_membrane_insertion_runs.py.
 """
 
 import copy
@@ -14,13 +15,15 @@ import jax
 import numpy as np
 import pytest
 
+from cells.definitions import pump_composite_spec as composite
 from cells.definitions.specs import ConfigError, parse_spec
 from cells.models import pump_composite_adapter as adapter
-from cells.operators import OPERATORS
+from cells.operators import OPERATORS, membrane_state
 from cells.operators.contract import check_declarations
 from cells.operators.membrane_state import MembraneEntityState
 from cells.registry.models import get_model
 from tests import membrane_insertion_fixtures as fx
+from validation.fr7 import unit_turnover_fixtures as ufx
 
 CATALOGUE = {
     "kir_0": {"catalogue": "test_catalogue", "entry": "kir2.1"},
@@ -143,3 +146,50 @@ def test_operators_that_read_the_declared_area_refuse_the_membrane_state():
     for law in ("ideal_osmosis_linear_compliance_water@1", "scheduled_cell_replacement@1"):
         errors = pump_composite.structure_errors(adapter, (OPERATORS[law], OPERATORS[fx.STATE]))
         assert any(f"{law} reads membrane_area as declared" in e for e in errors), law
+
+
+def two_term(state, p, *, xp):  # Planted: the abundance as it landed, two rounded terms always.
+    patch = p.channel_membranes
+    a = membrane_state.area(state, p, xp=xp)[patch]
+    value = p.channel_abundance * (p.membrane_area[patch] / a) + (
+        state.population_abundance_increment / (a * p.population_reference_density_per_m2)
+    )
+    return xp.where(p.channel_active, value, p.channel_abundance)
+
+
+def emptied(area_ratio):
+    """(units, abundance, K flux) of FR-7's unit cell with every unit withdrawn and its patch at
+    area_ratio of its declared area: the Lean project's states (lean/checks/population_units.py
+    surface, 3072 and 1536 units; 0.7 is a retrieval's 30% removal, as in its trafficking case)."""
+    raw = ufx.cell(dt=1 / 1024, end=8 / 1024)
+    raw["model"]["membranes"][0]["area_m2"] = 2.0**-32
+    for row in raw["model"]["operators"][0]["populations"]:
+        row["reference_density_per_m2"] = 3.0 * 2**42
+    spec = parse_spec(raw)
+    model = get_model(spec.model)
+    state, p = model.initial_values(spec)
+    control = model.CONTROL_TYPE(*(v[0] for v in composite.control_values(spec, [0.0])))
+    counts = np.asarray(membrane_state.units(state, p, xp=np))
+    state = state._replace(
+        membrane_area_increment_m2=np.asarray(p.membrane_area) * (area_ratio - 1),
+        population_abundance_increment=-counts,
+    )
+    k = list(spec.model.species_ids).index("K")
+    flux = model.readouts(state, control, p, xp=np).ionic.channel_flux_fmol_s[k]
+    q = model.view(p, state, xp=np)
+    return np.asarray(membrane_state.units(state, p, xp=np)), np.asarray(q.channel_abundance), flux
+
+
+@pytest.mark.parametrize("area_ratio", [1.4, 1.8, 0.7], ids=["producer", "grown", "retrieval"])
+def test_an_empty_population_has_exactly_zero_abundance_and_flux_at_a_moved_area(area_ratio):
+    """Zero units give exactly zero abundance and potassium flux, whatever the area. Planted: the
+    two-term abundance, which leaves -1.1e-16, +1.1e-16 and -2.2e-16 here."""
+    units, abundance, flux = emptied(area_ratio)
+    assert np.all(units == 0) and np.all(abundance == 0) and np.all(np.asarray(flux) == 0)
+    saved = membrane_state.abundance
+    membrane_state.abundance = two_term
+    try:
+        _, abundance, flux = emptied(area_ratio)
+    finally:
+        membrane_state.abundance = saved
+    assert np.any(abundance != 0) and np.any(np.asarray(flux) != 0)

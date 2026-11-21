@@ -30,6 +30,38 @@ CONVENTIONS = {
 }
 
 
+def site_binding(w, *, declared=True, k_f=5000.0, mu_complex=-10.0, complex_quanta=None):
+    """FR-21's binding in a geometry world `w` (changed in place and returned): a ligand X in the
+    pool binds a site R in the wall to form its complex XR, X@pool + R@membrane -> XR@membrane,
+    under mass action (the requester's S and XS are R and XR here, since the worlds' S is a lumen
+    solute). The pair is declared in `sites` unless `declared` is False. R and XR take the first
+    declared area unless `complex_quanta` gives XR its own; their pool places let a lysing world
+    return them (§0.2c rule 8). Every new place starts at 0."""
+    first = next(iter(w["geometry"]["area_per_leaflet"].values()))
+    made = (
+        ("X", {"x": 1}, {"solution": 0.0}),
+        ("R", {"r": 1}, {"solution": 0.0, "bilayer": -2.0}),
+        ("XR", {"x": 1, "r": 1}, {"solution": 0.0, "bilayer": mu_complex}),
+    )
+    for name, moieties, mu in made:
+        w["species"].append(species(name, moieties, **mu))
+        w["phases"]["pool"]["species"].append({"id": name, "kind": "finite"})
+        w["founder"][f"{name}@pool"] = 0
+        if name == "X":
+            continue
+        w["phases"]["membrane"]["species"].append(name)
+        w["founder"][f"{name}@membrane"] = 0
+        quanta = complex_quanta if name == "XR" and complex_quanta else first["quanta"]
+        w["geometry"]["area_per_leaflet"][name] = {"quanta": quanta, "provenance": "test"}
+    reactants, products = {"X@pool": 1, "R@membrane": 1}, {"XR@membrane": 1}
+    w["steps"].append({"id": "bind", "locus": "membrane", "reactants": reactants,
+                       "products": products, "law": MASS_ACTION,
+                       "forward_rate_per_s": k_f})  # fmt: skip
+    if declared:
+        w["sites"] = [{"site": "R", "complex": "XR"}]
+    return w
+
+
 def species(name, moieties, *, solution=None, bilayer=None):
     potentials = {}
     if solution is not None:

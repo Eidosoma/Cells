@@ -14,6 +14,8 @@ The compiled runs are in the _runs and _bitwise files.
 import copy
 from types import MappingProxyType, SimpleNamespace
 
+import jax
+import jax.numpy as jnp
 import numpy as np
 import pytest
 
@@ -30,6 +32,7 @@ from validation.tissue import cell_replacement_fixtures as crfx
 from validation.tissue import pump_water_fixtures as wfx
 from validation.tissue import regulated_availability_fixtures as rf
 from validation.tissue import secreted_species_fixtures as sfx
+from validation.tissue import site_occupancy_fixtures as ofx
 
 LAW = sra.LAW_ID
 
@@ -555,6 +558,200 @@ REFUSALS.update(
 )
 
 
+# ------------------------------------------------------------------ version 2's site source
+# FR-24 (D244; the contract's R3): @2 reads a site population of site_occupancy@1 through its
+# readable quantities. The world: D150's face-free cell with an outward population r0 on contact_0
+# (cell_0, facing ecs_0) at theta0, and @2 routing its quantity to the turnover's production of X0
+# in cell_0, declared after site_occupancy@1 and before the turnover. Development, not judged.
+
+SITE_FRACTION = ("occupied_fraction", "site_fraction")
+
+
+def site_routed(*, source=SITE_FRACTION, half=None, ranged=(0.0, 1.0), theta0=0.4, order=None):
+    """source: (quantity, law); half: (half-saturation, Hill coefficient) for a Hill law; order:
+    the operator blocks' order by law (default site occupancy, @2, the turnover)."""
+    raw = ofx.face_free_sites([ofx.population("r0", theta0=theta0)])
+    raw = add_inventory_species(
+        raw, "X0", trace_mM=1e-9, diffusivity_m2_per_s=1e-10, floor_fmol=1e-20
+    )
+    quantity, law = source
+    target = dict(
+        operator=sfx.TURNOVER,
+        control="turnover_rate",
+        ids=["make_x0"],
+        evaluation="target_half_steps",
+        operating_range=list(ranged),
+    )
+    entry = dict(
+        id="c_site",
+        target=target,
+        source={"site_population": "r0", "quantity": quantity},
+        law=law,
+        basal=0.1,
+    )
+    if half is not None:
+        key = "half_saturation" if quantity == "occupied_fraction" else "half_saturation_mM"
+        entry.update({key: half[0], "hill_coefficient": half[1]})
+    raw = rf.with_coupling(raw, species=[], couplings=[entry])
+    block(raw)["law"] = LAW_V2
+    raw["model"]["operators"].append(
+        dict(
+            law=sfx.TURNOVER,
+            species=rf.identities(["X0"]),
+            routes=[dict(id="make_x0", species="X0", node="cell_0", kind="production")],
+            templates=[],
+        )
+    )
+    raw["experiment"]["turnover_controls"] = [
+        dict(route_id="make_x0", carrier_id="cell_0", schedule=[dict(time=0.0, rate=PRODUCTION)])
+    ]
+    if order is not None:
+        by_law = {b["law"]: b for b in raw["model"]["operators"]}
+        raw["model"]["operators"] = [by_law[law] for law in order]
+        keys = {
+            ofx.LAW: ("site_controls",),
+            LAW_V2: ("coupling_controls", "regulatory_writes"),
+            sfx.TURNOVER: ("turnover_controls",),
+        }
+        for law, dropped in keys.items():
+            if law not in order:
+                for key in dropped:
+                    del raw["experiment"][key]
+    return raw
+
+
+def site_inner(*, element="kir_0", theta0=0.3, law="site_complement"):
+    """The sheet with an inward population r_in on cell_0's membrane_0 binding R from the cytosol
+    (K_d 1e-3 mM, trace 5e-10 mM), and @2 routing its occupied fraction to `element`'s channel
+    availability at the control view (step_view), basal 0.2."""
+    raw = rf.sheet()
+    population = ofx.population("r_in", patch="membrane_0", face="inside", theta0=theta0)
+    population.update(ligand=rf.REGULATOR, association_rate_per_mM_per_s=1e3)
+    raw = ofx.with_site_occupancy(
+        raw, [population], ligands=[ofx.ligand(trace_mM=5e-10, species=rf.REGULATOR)]
+    )
+    target = dict(
+        operator="inner",
+        control="channel",
+        ids=[element],
+        side=None,
+        evaluation="step_view",
+        operating_range=[0.0, 1.0],
+    )
+    entry = dict(
+        id="c_kir",
+        target=target,
+        source={"site_population": "r_in", "quantity": "occupied_fraction"},
+        law=law,
+        basal=0.2,
+    )
+    raw = rf.with_coupling(raw, species=[], couplings=[entry])
+    block(raw)["law"] = LAW_V2
+    return raw
+
+
+def _site_entry(raw):
+    return block_v2(raw)["couplings"][0]
+
+
+def _site_edit(edit, **kwargs):
+    def make():
+        raw = site_routed(**kwargs)
+        edit(_site_entry(raw))
+        return raw
+
+    return make
+
+
+REFUSALS.update(
+    {
+        "v2 site: no site operator": (
+            lambda: site_routed(order=(LAW_V2, sfx.TURNOVER)),
+            "which the composition does not hold",
+        ),
+        "v2 site: the owner after the target": (
+            lambda: site_routed(order=(LAW_V2, sfx.TURNOVER, ofx.LAW)),
+            f"but {ofx.LAW} follows {sfx.TURNOVER}",
+        ),
+        "v2 site: an unknown population": (
+            _site_edit(lambda e: e["source"].update(site_population="r9")),
+            "unknown site population 'r9'",
+        ),
+        "v2 site: an unknown quantity": (
+            _site_edit(lambda e: e["source"].update(quantity="occupied_fmol")),
+            "site source reads one of occupied_fraction",
+        ),
+        "v2 site: a law that does not match": (
+            _site_edit(lambda e: e["source"].update(quantity="occupied_mM")),
+            "occupied_mM through one of hill_activation, hill_inhibition",
+        ),
+        "v2 site: a half-saturation in another unit": (
+            _site_edit(
+                lambda e: e.update(
+                    law="hill_activation", half_saturation_mM=0.5, hill_coefficient=1
+                )
+            ),
+            "its half-saturation is half_saturation, in the quantity's unit",
+        ),
+        "v2 site: a fraction's range above one": (
+            lambda: site_routed(ranged=(0.0, 2.0)),
+            "operating_range lies in [0, 1], the occupied fraction",
+        ),
+        "v2 site: a junction target": (
+            lambda: _with_junction_target(site_inner()),
+            "reads a site population onto a junction",
+        ),
+        "v2 site: a population in another cell": (
+            lambda: site_inner(element="kir_1"),
+            "a site source is read in its element's cell",
+        ),
+    }
+)
+
+
+def _with_junction_target(raw):
+    _site_entry(raw)["target"].update(control="junction", ids=["junction_0"], side="first")
+    return raw
+
+
+def routed_replaced(**kwargs):
+    """routed() with replacement@1 replacing cell_0 at 10 ms by a newcomer from template T (cell_0's
+    declared state), whose production of X0 the turnover's template gives (D150's occupant rule):
+    the routed element make_x0 sits in a replaced cell (FR-26's part C′)."""
+    raw = routed(**kwargs)
+    turnover = next(b for b in raw["model"]["operators"] if b["law"] == sfx.TURNOVER)
+    turnover["templates"] = [dict(template_id="T", rates={"make_x0": PRODUCTION})]
+    template = crfx.template_from_cell(raw, "cell_0", "T")  # With the cell's channel gates.
+    return sfx.with_replacement(raw, [template], [(0.01, "cell_0", "T", "c0_new")])
+
+
+REFUSALS.update(
+    {
+        "v2 C′: a state source in a replaced cell": (
+            lambda: _with_state_source(
+                routed_replaced(states=[rf.state("s", ["cell_0"], [STATE_INPUT])])
+            ),
+            "state s is declared in cell_0",
+        ),
+    }
+)
+
+
+def _with_state_source(raw):
+    _from_state(raw)
+    return raw
+
+
+def test_version_2_routes_an_element_in_a_replaced_cell_from_a_species_source():
+    """FR-26's part C′ (D244): @2 admits an operator target's element in a cell replacement@1
+    replaces when its source is a species of that cell, since replacement swaps the cell's species
+    and the factor then reads the newcomer's. (A site source there is admitted likewise, with
+    site_occupant_replacement@1 resetting the population: the acceptance world.) Parse only."""
+    spec = parse_spec(routed_replaced())
+    declaration = next(d for o, d, _ in cs.entries(spec) if o.LAW_ID == LAW_V2)
+    assert declaration.couplings[0].source_kind == "species"
+
+
 @pytest.mark.parametrize("case", sorted(REFUSALS))
 def test_refusals(case):
     make, message = REFUSALS[case]
@@ -1067,6 +1264,126 @@ def test_version_2_routes_a_production_rate_in_the_targets_half_steps(monkeypatc
         parse_spec(routed())
 
 
+def self_routed():
+    """The independent Lean project's ramp world (lean/checks/regulated_availability.py,
+    ramp_order, 20 November 2026): a 1 pL cell with S at 1 mM; the turnover produces S at 1 fmol/s
+    (make_S) and Y at 1 fmol/s times @2's Hill activation of S (K 1 mM, n 1, basal 0) in the same
+    cell (make_Y): a route whose source its own target moves."""
+    raw = sfx.world(nodes=(), contacts=(), faces=(), trace_mM=1.0, dt=1 / 8, end=1.0)
+    raw = add_inventory_species(
+        raw, "Y", trace_mM=1.0, diffusivity_m2_per_s=1e-10, floor_fmol=1e-20
+    )
+    coupling = dict(
+        id="reporter_gate",
+        source=dict(species=sfx.SPECIES),
+        law="hill_activation",
+        basal=0.0,
+        half_saturation_mM=1.0,
+        hill_coefficient=1.0,
+        target=dict(
+            operator=sfx.TURNOVER,
+            control="turnover_rate",
+            ids=["make_Y"],
+            evaluation="target_half_steps",
+            operating_range=[1.0, 2.0],
+        ),
+    )
+    raw = rf.with_coupling(raw, species=[sfx.SPECIES], couplings=[coupling])
+    block(raw)["law"] = LAW_V2
+    routes = [(r, "cell_0", "production") for r in ("make_S", "make_Y")]
+    controls = [(r, "cell_0", [(0.0, 1.0)]) for r, _, _ in routes]
+    raw = sfx.with_turnover(raw, routes, controls, species=rf.identities([sfx.SPECIES, "Y"]))
+    next(r for r in raw["model"]["operators"][-1]["routes"] if r["id"] == "make_Y")["species"] = "Y"
+    return parse_spec(raw)
+
+
+def test_version_2_evaluates_a_route_its_target_moves_at_the_half_steps_midpoint(monkeypatch):
+    """A route whose source its own target moves (the independent Lean project's finding: first
+    order, a gain of 0.58928135 fmol at 8 steps against 1 - ln(3/2)): the composite evaluates its
+    factor at the target half-step's midpoint, from a predictor over h/2 (pump_composite's
+    self_moved_targets and _half_step). NumPy half-steps of the turnover alone (S and Y are moved
+    by nothing else), under 1 s, no world compiled. Four refinements of the one-second ramp
+    converge at order at least 1.9; the record holds the midpoint's factor; the S route keeps its
+    booking; a composition without such a route (routed) keeps its key. Planted: the midpoint off,
+    order 1."""
+    spec = parse_spec(routed())
+    assert pump_composite.self_moved_targets(spec.model) == frozenset()
+    assert get_model(spec.model).structure_key[3:] == ()
+    spec = self_routed()
+    assert pump_composite.self_moved_targets(spec.model) == {sfx.TURNOVER}
+    model = get_model(spec.model)
+    assert model.structure_key[3:] == (("midpoint", (sfx.TURNOVER,)),)
+    state, p = model.initial_values(spec)
+    turnover = next(o for o in model.operators if o.LAW_ID == sfx.TURNOVER)
+    control = model.CONTROL_TYPE(*(v[0] for v in cs.control_values(spec, [0.0])))
+    s, y = (list(spec.model.species_ids).index(k) for k in (sfx.SPECIES, "Y"))
+    record = sra.SpeciesRegulatedAvailabilityV2.FACTOR_RECORD
+    h = 1 / 16
+    first, ok = model._half_step(turnover, state, h, control, p, xp=np)
+    c_mid = 1.0 + h / 2  # mM: S after the predictor's h/2 at 1 fmol/s in 1 pL.
+    assert bool(ok) and float(np.asarray(getattr(first, record))[0]) == c_mid / (1.0 + c_mid)
+    assert float(np.asarray(first.amount_increment)[s, 0]) == h  # make_S, as without a route.
+
+    def gains(steps):
+        out = []
+        for n in steps:
+            current = state
+            for _ in range(2 * n):
+                current, ok = model._half_step(turnover, current, 1 / (2 * n), control, p, xp=np)
+                assert bool(ok)
+            assert float(np.asarray(current.amount_increment)[s, 0]) == 1.0
+            out.append(float(np.asarray(current.amount_increment)[y, 0]))
+        return out
+
+    exact = 1.0 - np.log1p(0.5)
+    errors = [abs(g - exact) for g in gains((8, 16, 32, 64))]
+    orders = [np.log2(a / b) for a, b in zip(errors, errors[1:], strict=False)]
+    assert min(orders) >= 1.9, orders
+    # Beside a site route (the operators owner's review): site_routed's turnover, made self-moved
+    # by a second route of X0, which it produces, onto the same make_x0. The predictor moves X0,
+    # never the site's pools, so the site route's factor applied at the midpoint is bitwise
+    # 0.1 + 0.9 theta of the state the half-step receives.
+    mixed = site_routed()
+    block_v2(mixed)["species"] = rf.identities(["X0"])
+    target = dict(
+        operator=sfx.TURNOVER,
+        control="turnover_rate",
+        ids=["make_x0"],
+        evaluation="target_half_steps",
+        operating_range=[0.0, 1e6],
+    )
+    block_v2(mixed)["couplings"].append(
+        dict(
+            id="c_x0",
+            source=dict(species="X0"),
+            law="hill_activation",
+            basal=0.0,
+            half_saturation_mM=1e-9,
+            hill_coefficient=1.0,
+            target=target,
+        )
+    )
+    mixed["experiment"]["coupling_controls"].append(
+        dict(coupling_id="c_x0", schedule=[dict(time=0.0, enabled=1)])
+    )
+    mixed = parse_spec(mixed)
+    assert pump_composite.self_moved_targets(mixed.model) == {sfx.TURNOVER}
+    model2 = get_model(mixed.model)
+    state2, p2 = model2.initial_values(mixed)
+    turnover2 = next(o for o in model2.operators if o.LAW_ID == sfx.TURNOVER)
+    control2 = model2.CONTROL_TYPE(*(v[0] for v in cs.control_values(mixed, [0.0])))
+    stepped, ok = model2._half_step(turnover2, state2, mixed.execution.dt / 2, control2, p2, xp=np)
+    v2 = next(d for d in mixed.model.operators if d.law == LAW_V2)
+    keys = [k[0] for k in sra.route_keys(mixed, v2)]
+    applied = np.asarray(getattr(stepped, record))
+    assert bool(ok) and float(applied[keys.index("c_site")]) == 0.1 + 0.9 * float(
+        _theta(state2, p2)[0]
+    )
+    monkeypatch.setattr(model, "midpoint", frozenset())
+    planted = [abs(g - exact) for g in gains((8, 16))]
+    assert np.log2(planted[0] / planted[1]) < 1.2
+
+
 def _bitwise_but(a, b, skipped):
     """Every field of two states bitwise equal but `skipped`."""
     for name in type(a)._fields:
@@ -1175,3 +1492,185 @@ def test_a_factor_operator_reads_the_control_view_only_where_it_declares_it():
     for _, view in at_view:
         assert type(view)._fields == ("channel_abundance",)
         assert np.array_equal(view.channel_abundance, full.channel_abundance)
+
+
+def _site_model(raw):
+    spec = parse_spec(raw)
+    model = get_model(spec.model)
+    state, p = model.initial_values(spec)
+    coupling = next(o for o in model.operators if o.LAW_ID == LAW_V2)
+    return spec, model, state, p, coupling
+
+
+def _theta(state, p):
+    bound = np.asarray(p.site_bound_anchor_fmol) + np.asarray(state.site_bound_increment_fmol)
+    free = np.asarray(p.site_free_anchor_fmol) + np.asarray(state.site_free_increment_fmol)
+    return bound / (bound + free)
+
+
+def test_version_2_routes_a_site_populations_quantity_in_the_targets_half_steps():
+    """FR-24 on @2 (development, not judged), in NumPy with no world compiled (about 2 s): the
+    turnover's production of X0 in cell_0 routed from r0's occupied fraction (site_fraction, basal
+    0.1), read through site_occupancy@1's readable quantities (R3). The factor is
+    0.1 + 0.9 theta at the bound state and its record's start; the routed half-step is bitwise the
+    half-step at the product rate; at another occupancy the factor and the half-step change;
+    switched off the factor is exactly 1; the site half-step keeps its bits whether the coupling is
+    on, off or absent (a one-way read); a theta outside the declared range refuses the half-step
+    only while on. A Hill law of B / V, of an empty site (activation gives the basal level,
+    inhibition 1, in NumPy and compiled), and a capacity source reported constant."""
+    op = OPERATORS[LAW_V2]
+    assert op.QUANTITY_READS == {
+        sra.SITE_LAW: ("site_occupied_fraction", "site_occupied_fmol", "site_capacity_fmol")
+    }
+    spec, model, state, p, coupling = _site_model(site_routed())
+    again = parse_spec(cs.to_dict(spec))
+    assert again.model.operators == spec.model.operators
+    declaration = next(d for o, d, _ in cs.entries(spec) if o.LAW_ID == LAW_V2)
+    assert coupling.declared_quantity_reads(declaration) == (
+        (sra.SITE_LAW, "site_occupied_fraction", sfx.TURNOVER),
+    )
+    assert np.asarray(p.coupling_route_site).tolist() == [0]
+    assert np.asarray(p.coupling_route_law).tolist() == [sra.SITE_FRACTION]
+    turnover = next(o for o in model.operators if o.LAW_ID == sfx.TURNOVER)
+    sites = next(o for o in model.operators if o.LAW_ID == ofx.LAW)
+    quantities = model.quantity_reader(coupling, p, xp=np)
+    theta = _theta(state, p)[0]
+    factor, ok = coupling.rate_factors(
+        state, p, sfx.TURNOVER, "turnover_rate", xp=np, quantities=quantities
+    )
+    assert bool(ok) and float(factor[0]) == 0.1 + 0.9 * theta and theta == pytest.approx(0.4)
+    record = sra.SpeciesRegulatedAvailabilityV2.FACTOR_RECORD
+    assert np.asarray(getattr(state, record)).tobytes() == np.asarray(factor).tobytes()  # Bound.
+    control = model.CONTROL_TYPE(*(v[0] for v in cs.control_values(spec, [0.0])))
+    h = 0.5 * spec.execution.dt
+    routed_step, ok = model._half_step(turnover, state, h, control, p, xp=np)
+    scheduled = control._replace(turnover_rate=control.turnover_rate * factor)
+    by_hand, _ = turnover.half_step(state, h, scheduled, p, xp=np)
+    assert bool(ok)
+    _bitwise_but(routed_step, by_hand, record)
+    moved = np.asarray(p.site_free_anchor_fmol) * 0.5  # Half the free sites bound.
+    other = state._replace(
+        site_bound_increment_fmol=np.asarray(state.site_bound_increment_fmol) + moved,
+        site_free_increment_fmol=np.asarray(state.site_free_increment_fmol) - moved,
+    )
+    factor2, _ = coupling.rate_factors(
+        other, p, sfx.TURNOVER, "turnover_rate", xp=np, quantities=quantities
+    )
+    assert float(factor2[0]) == 0.1 + 0.9 * _theta(other, p)[0] and factor2[0] > factor[0]
+    step2, _ = model._half_step(turnover, other, h, control, p, xp=np)
+    assert not np.array_equal(step2.amount_increment, routed_step.amount_increment)
+    off = state._replace(coupling_enabled=np.zeros_like(state.coupling_enabled))
+    cut, ok = model._half_step(turnover, off, h, control, p, xp=np)
+    plain, _ = turnover.half_step(off, h, control, p, xp=np)
+    assert bool(ok)
+    _bitwise_but(cut, plain, record)
+    assert np.asarray(getattr(cut, record)).tolist() == [1.0]
+    absent = parse_spec(site_routed(order=(ofx.LAW, sfx.TURNOVER)))
+    absent_model = get_model(absent.model)
+    absent_state, absent_p = absent_model.initial_values(absent)
+    values = cs.control_values(absent, [0.0])
+    absent_control = absent_model.CONTROL_TYPE(*(v[0] for v in values))
+    site_steps = [model._half_step(sites, s, h, control, p, xp=np)[0] for s in (state, off)] + [
+        absent_model._half_step(sites, absent_state, h, absent_control, absent_p, xp=np)[0]
+    ]
+    for name in ofx_state_fields():
+        on_bits, off_bits, absent_bits = (
+            np.asarray(getattr(s, name)).tobytes() for s in site_steps
+        )
+        assert on_bits == off_bits == absent_bits, name
+    narrow = parse_spec(site_routed(ranged=(0.5, 1.0)))  # theta 0.4, below the range.
+    model3 = get_model(narrow.model)
+    state3, p3 = model3.initial_values(narrow)
+    _, ok = model3._half_step(turnover, state3, h, control, p3, xp=np)
+    assert not bool(ok)
+    off3 = state3._replace(coupling_enabled=np.zeros_like(state3.coupling_enabled))
+    assert bool(model3._half_step(turnover, off3, h, control, p3, xp=np)[1])
+    # A Hill law of B / V (mM in cell_0, at its declared volume), and of an empty site.
+    for theta0, law, expected_empty in (
+        (0.4, "hill_activation", None),
+        (0.0, "hill_activation", 0.1),
+        (0.0, "hill_inhibition", 1.0),
+    ):  # noqa: E501
+        raw = site_routed(
+            source=("occupied_mM", law), half=(1e-9, 2.0), theta0=theta0, ranged=(0, 1)
+        )
+        spec4, model4, state4, p4, coupling4 = _site_model(raw)
+        reader = model4.quantity_reader(coupling4, p4, xp=np)
+        f4, _ = coupling4.rate_factors(
+            state4, p4, sfx.TURNOVER, "turnover_rate", xp=np, quantities=reader
+        )
+        cell = [c.id for c in spec4.model.cells].index("cell_0")
+        bound = np.asarray(p4.site_bound_anchor_fmol)[0]
+        x = bound / np.asarray(p4.volume)[cell]
+        if expected_empty is None:
+            assert float(f4[0]) == pytest.approx(0.1 + 0.9 * _hill(x, 1e-9, 2.0, law), rel=1e-14)
+        else:
+            assert x == 0.0 and float(f4[0]) == expected_empty
+            source = sra.site_route_sources(reader(state4), p4, xp=np)
+            compiled = jax.jit(
+                lambda s, st, pp: sra.with_site_factors(jnp.ones(1), st, pp, s, xp=jnp)
+            )
+            assert float(np.asarray(compiled(source, state4, p4))[0]) == expected_empty
+    capacity = parse_spec(
+        site_routed(source=("capacity_mM", "hill_activation"), half=(1e-9, 1.0), ranged=(0, 1))
+    )  # noqa: E501
+    declaration = next(d for o, d, _ in cs.entries(capacity) if o.LAW_ID == LAW_V2)
+    summary = op.summary(capacity, declaration, None, SimpleNamespace())
+    assert summary["coupling_constant_sources"] == {"c_site": sra.CONSTANT_CAPACITY}
+    assert summary["coupling_targets"]["c_site"]["source"] == {
+        "site_population": "r0",
+        "quantity": "capacity_mM",
+    }
+
+
+def ofx_state_fields():
+    return tuple(OPERATORS[ofx.LAW].STATE_AXES)
+
+
+def test_version_2_reads_a_site_population_on_a_channel_at_the_control_view():
+    """FR-24's inner target (development, not judged; NumPy, no world compiled): kir_0's
+    availability factor at the control view is 0.2 + 0.8 (1 - theta) of r_in, an inward population
+    binding R in cell_0, and every other channel's 1, through the composite's control view, which
+    passes @2 its quantities (R3); the range check holds there."""
+    spec, model, state, p, coupling = _site_model(site_inner())
+    reader = model.quantity_reader(coupling, p, xp=np)
+    theta = _theta(state, p)[0]
+    factors = coupling.control_factors(state, p, xp=np, quantities=reader)
+    channels = [c.id for c in spec.model.channels]
+    k = channels.index("kir_0")
+    assert float(factors["channel"][k]) == 0.2 + 0.8 * (1.0 - theta)
+    assert np.all(np.delete(np.asarray(factors["channel"]), k) == 1.0)
+    assert bool(coupling.factor_valid(state, p, xp=np, quantities=reader))
+    control = model.CONTROL_TYPE(*(v[0] for v in cs.control_values(spec, [0.0])))
+    effective = model.control_view(control, state, p, xp=np)
+    scheduled = np.asarray(model.inner.inner_control(control).channel)
+    assert float(np.asarray(effective.channel)[k]) == float(scheduled[k] * factors["channel"][k])
+
+
+def test_version_2_reads_the_newcomers_occupancy_after_its_reset():
+    """FR-26's exact reads (D244; the lead's ruling: the reads-stay-exact branch, NumPy). cell_0,
+    holding r0 (theta0 0.4) and the routed production of X0, is replaced at 10 ms; W resets r0 to
+    its newcomer's template occupancy 0.8. W has only an event part, and events run before every
+    split part's first half, so at the step leaving t_e the routed factor is the newcomer's,
+    0.1 + 0.9 theta(after the events), from the target's first half on (a writer with a split part
+    would need R3's order check extended to writers)."""
+    raw = site_routed(theta0=0.4)
+    turnover = next(b for b in raw["model"]["operators"] if b["law"] == sfx.TURNOVER)
+    turnover["templates"] = [dict(template_id="T", rates={"make_x0": PRODUCTION})]
+    raw = sfx.with_replacement(
+        raw, [sfx.template(raw, "cell_0", "T")], [(0.01, "cell_0", "T", "n")]
+    )
+    raw = ofx.with_occupant(raw, {"T": {"r0": (0.8, 1.0, None)}})
+    spec, model, state, p, coupling = _site_model(raw)
+    control = model.CONTROL_TYPE(*(v[0] for v in cs.control_values(spec, [0.01])))
+    after = state
+    for op in model.events:
+        after, ok = op.event(after, control, p, xp=np)
+        assert ok is None or bool(ok)
+    reader = model.quantity_reader(coupling, p, xp=np)
+    theta = _theta(after, p)[0]
+    assert theta == pytest.approx(0.8, rel=1e-15) and _theta(state, p)[0] == pytest.approx(0.4)
+    factor, ok = coupling.rate_factors(
+        after, p, sfx.TURNOVER, "turnover_rate", xp=np, quantities=reader
+    )
+    assert bool(ok) and float(factor[0]) == 0.1 + 0.9 * theta

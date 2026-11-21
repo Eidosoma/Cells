@@ -7,6 +7,7 @@ import numpy as np
 
 from cells.definitions.specs import ConfigError, _number, canonical_json
 from cells.execution.devices import execution_device
+from cells.execution.grid import manifest_numerics
 from cells.execution.runner import validate_checkpoint, with_energy_record
 from cells.execution.state import initialise
 from cells.execution.windows import DEFAULT_POLICY, _consume_windows, plan_windows
@@ -192,7 +193,9 @@ def write_windowed_run(
                 ),
             },
             "numerics": {
-                "grid": "zero_anchored_event_split",
+                # The clock's name, and declared fine windows' method (C, the lead's grant of
+                # 20 November 2026 for this key in this file and records/io.py).
+                **manifest_numerics(spec),
                 "jit": spec.execution.jit,
                 **(
                     {"stage_domain": model.STAGE_DOMAIN_ID}

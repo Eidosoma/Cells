@@ -17,6 +17,7 @@ done
 if [[ ! -f .lake/packages/mathlib/.lake/build/lib/lean/Mathlib/Analysis/SpecialFunctions/Pow/Real.olean ]]; then
   lake exe cache get Mathlib.Analysis.SpecialFunctions.Pow.Real
 fi
+lake build CellsProofs.Transport.RegulatedAvailability
 
 # The pinned Hill definition and two proof bodies use real powers and linear arithmetic.
 {

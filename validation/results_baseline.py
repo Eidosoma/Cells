@@ -336,6 +336,9 @@ def source():
             git_revision=data.get("git_revision"),
             dirty=bool(data.get("selected_status_porcelain_v1_z")),
         )
+    from validation import executed_sources  # noqa: PLC0415
+    executed_sources.refuse_untracked(root, "results_baseline's source record")  # D259
+
     git = ["git", "-C", str(root)]
     run = lambda *a: subprocess.run([*git, *a], capture_output=True, text=True).stdout.strip()  # noqa: E731
     return dict(

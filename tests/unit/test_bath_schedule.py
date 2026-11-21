@@ -19,13 +19,19 @@ In NumPy (no compile), on the species-only dose leg (validation/tissue/bath_sche
 * the view presents the held content at the bath and the declared array elsewhere, bit for bit;
 * the reservoir-work ledger of a row whose supply is booked at each epoch's potential, as @3 books
   it, closes with the operator's term and fails without it (the negative control);
-* the operator's own ledgers close after an event, and the step checks see the worst composition.
+* the operator's own ledgers close after an event, and the step checks see the worst composition;
+* a recipe's target does not depend on the order of its entries (each claim with its plant, the
+  left-to-right running total; the independent Lean project's finding of 20 November 2026,
+  lean/PROGRESS.md "Bath recipe order"), and every order of +24, -24 and +2^-49 mM books the exact
+  dose (the user's regression).
 
 These are the operator's own bookings checked against their definitions. The independent references
 of record come from a separate agent (D169).
 """
 
+import contextlib
 import copy
+import itertools
 from decimal import Decimal, getcontext
 from types import SimpleNamespace
 
@@ -38,6 +44,7 @@ from cells.laws.electrochemistry import R
 from cells.models import pump_composite
 from cells.models import pump_composite_adapter as adapter
 from cells.operators import OPERATORS
+from cells.operators import bath_schedule as schedule
 from cells.registry.models import get_model
 from validation.tissue import bath_schedule_fixtures as bfx
 from validation.tissue import secreted_species_fixtures as fx
@@ -304,3 +311,105 @@ def test_the_composites_structure_check_admits_what_version_1_composes_with(laws
     for order in ((*laws, bfx.LAW), (bfx.LAW, *laws)):
         errors = pump_composite.structure_errors(adapter, tuple(OPERATORS[k] for k in order))
         assert errors == [], (order, errors)
+
+
+# ------------------------------------------------------------ the recipe's order
+
+ORDER_DT = 2.0**-10
+ORDER_UNITS = {"single": {fx.SPECIES: 1}, "pair": {fx.SPECIES: 2}, "triple": {fx.SPECIES: 3}}
+# (bath S mM, intended change d mM, opposing terms A mM): the three units give +d, +A and -A, every
+# input and product a float64, so the 1 pL bath's target is S + d fmol in every order. The ordinary
+# +-24 mM terms on a trace are the six cases below, with the event's records.
+ORDER_CASES = {
+    "opposing_extremes": (2.0**-10, 2.0**-11, 24.0 * 2.0**39),  # An ordinary dose.
+}
+
+
+def running_sum(declaration, offsets, species_ids):  # Planted: the left-to-right running total.
+    counts = {u.name: dict(u.counts) for u in declaration.formula_units}
+    change = np.zeros(len(species_ids))
+    for unit, amount in offsets:
+        for species, count in counts[unit].items():
+            change[species_ids.index(species)] += count * amount
+    return change
+
+
+@contextlib.contextmanager
+def summed_by(function):
+    """The operator's unit_change replaced for the block (a plant)."""
+    saved = schedule.unit_change
+    schedule.unit_change = function
+    try:
+        yield
+    finally:
+        schedule.unit_change = saved
+
+
+def order_failures(case):
+    """The recipe's six orders whose parsed target is not S + d, with the operator as it stands."""
+    anchor, d, a = ORDER_CASES[case]
+    offsets = {"single": d, "pair": a / 2, "triple": -a / 3}
+    raw = fx.world(nodes=(), contacts=(), faces=(), dt=ORDER_DT, end=4 * ORDER_DT, trace_mM=anchor)
+    out = []
+    for names in itertools.permutations(offsets):
+        recipe = {name: offsets[name] for name in names}
+        events = [(ORDER_DT, ["bath"], recipe)]
+        spec = parse_spec(bfx.with_bath_schedule(raw, ["bath"], ORDER_UNITS, events))
+        row = list(spec.model.species_ids).index(fx.SPECIES)
+        j = [c.id for c in spec.model.extracellular].index("bath")
+        node = spec.model.extracellular[j]
+        expected = node.initial_amount_fmol[row] + node.volume_pL * d
+        target = target_at(spec, ORDER_DT)[row, j]
+        if not (node.volume_pL == 1.0 and target == expected == anchor + d):
+            out.append(f"{' '.join(names)}: {target!r} fmol against {anchor + d!r}")
+    return out
+
+
+@pytest.mark.parametrize("case", sorted(ORDER_CASES))
+def test_a_recipes_target_does_not_depend_on_the_order_of_its_entries(case):
+    assert order_failures(case) == []
+    with summed_by(running_sum):
+        assert order_failures(case) != []
+
+
+# The user's regression (20 November 2026): +24 mM, -24 mM and +2^-49 mM of S, in every order, to a
+# 1 pL bath at 2^-49 mM give the parsed target 2^-48 fmol, which the event holds, and the dose
+# 2^-49 fmol = 1.7763568394002505e-15 fmol, each exactly. Before, "+24, +2^-49, -24" booked 0
+# and "+24, -24, +2^-49" booked 2^-49 (lean/checks/bath_schedule.py, recipe_orders(2**-49, 2**-49,
+# 1): the units pair, triple and single give +24, -24 and +2^-49 mM).
+TRACE = 2.0**-49
+TRACE_RECIPE = {"pair": 12.0, "triple": -8.0, "single": TRACE}
+TRACE_ORDERS = tuple(itertools.permutations(TRACE_RECIPE))
+SIGNED = {"pair": "+24", "triple": "-24", "single": "+2^-49"}
+
+
+def trace_order(names):
+    """(target, held, dose) fmol of S at the bath after the event, and its validity, for one
+    order of the recipe (parse, bind and the event in NumPy; no compile)."""
+    raw = fx.world(nodes=(), contacts=(), faces=(), dt=ORDER_DT, end=4 * ORDER_DT, trace_mM=TRACE)
+    events = [(ORDER_DT, ["bath"], {name: TRACE_RECIPE[name] for name in names})]
+    spec = parse_spec(bfx.with_bath_schedule(raw, ["bath"], ORDER_UNITS, events))
+    model = get_model(spec.model)
+    state, p = model.initial_values(spec)
+    op = next(o for o in model.operators if o.LAW_ID == bfx.LAW)
+    row = list(spec.model.species_ids).index(fx.SPECIES)
+    j = [c.id for c in spec.model.extracellular].index("bath")
+    target = target_at(spec, ORDER_DT)
+    new, ok = event(op, state, target, p)
+    held, dose = new.bath_held_amount_fmol[row, j], new.bath_dose_fmol[row, j]
+    return float(target[row, j]), float(held), float(dose), bool(ok)
+
+
+@pytest.mark.parametrize("names", TRACE_ORDERS, ids=lambda n: ",".join(SIGNED[k] for k in n))
+def test_every_order_of_plus_and_minus_24_mM_and_a_trace_books_the_exact_dose(names):
+    target, held, dose, ok = trace_order(names)
+    assert ok and target == held == 2.0**-48
+    assert dose == TRACE == 1.7763568394002505e-15
+
+
+def test_the_running_sum_books_zero_unless_the_trace_comes_last():
+    """The plant of the six cases above: the left-to-right running total erases the trace wherever
+    it is added before the two 24 mM terms have cancelled (four of the six orders)."""
+    with summed_by(running_sum):
+        wrong = {names for names in TRACE_ORDERS if trace_order(names)[2] != TRACE}
+    assert wrong == {names for names in TRACE_ORDERS if names[-1] != "single"}

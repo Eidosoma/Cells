@@ -776,6 +776,10 @@ class SimulationSpec:
     # the definition's serialization and digest are unchanged. Added by the @3 owner at the
     # lead's word (a recorded exception in this file).
     energy_check: Any = None
+    # Opt-in fine windows (definitions/fine_window_spec.py; C, D235), serialized as
+    # execution.fine_windows. None, the default, keeps today's clock, and the definition's
+    # serialization and digest are unchanged. Added by C's builder at the lead's word (D235).
+    fine_windows: Any = None
 
     def to_dict(self) -> dict:
         result = self._fine_dict()
@@ -787,6 +791,10 @@ class SimulationSpec:
             from cells.definitions.energy_check_spec import to_dict as energy_check_to_dict
 
             result["execution"]["energy_check"] = energy_check_to_dict(self.energy_check)
+        if self.fine_windows is not None:
+            from cells.definitions.fine_window_spec import to_dict as fine_windows_to_dict
+
+            result["execution"]["fine_windows"] = fine_windows_to_dict(self.fine_windows)
         return result
 
     def _fine_dict(self) -> dict:
@@ -986,6 +994,10 @@ def parse_spec(data: dict) -> SimulationSpec:
     _fields(data, {"schema_version", "model", "experiment", "execution"}, "definition")
     if type(data["schema_version"]) is not int or data["schema_version"] != 1:
         raise ConfigError("Only schema_version 1 is supported")
+    if isinstance(data["execution"], dict) and "fine_windows" in data["execution"]:
+        from cells.definitions.fine_window_spec import parse_definition as fine_window_definition
+
+        return fine_window_definition(data, parse_spec)
     if isinstance(data["execution"], dict) and "energy_check" in data["execution"]:
         from cells.definitions.energy_check_spec import parse_definition as energy_definition
 

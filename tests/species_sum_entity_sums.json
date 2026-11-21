@@ -18,8 +18,23 @@
   ],
   [
    "kinds/transporter.py",
-   "material_term",
+   "_material_slopes",
    "entity_sum(xp.abs(p.cycle_nu * e.d_j_d_ln_c), axis=0, xp=xp)"
+  ],
+  [
+   "kinds/transporter.py",
+   "_closure_slopes",
+   "entity_sum(xp.abs(e.d_j_d_ln_c)[:, :, None, :] * cross[None], axis=1, xp=xp)"
+  ],
+  [
+   "kinds/transporter.py",
+   "_closure_slopes",
+   "entity_sum(slopes[:, :, None, :] * slot_cross[None], axis=1, xp=xp)"
+  ],
+  [
+   "kinds/transporter.py",
+   "_closure_slopes",
+   "entity_sum(xp.abs(p.cycle_nu) * through, axis=0, xp=xp)"
   ],
   [
    "kinds/transporter.py",
@@ -124,6 +139,11 @@
   [
    "kinds/transporter.py",
    "probe",
+   "entity_sum(p.cycle_charge_moved * e.j, axis=0, xp=xp)"
+  ],
+  [
+   "kinds/transporter.py",
+   "_charge_current",
    "entity_sum(p.cycle_charge_moved * e.j, axis=0, xp=xp)"
   ],
   [
@@ -310,6 +330,16 @@
    "operators/k_anion_symport.py",
    "ledger_terms",
    "entity_sum(row.symport_dissipated_energy_pJ, axis=None, xp=xp)"
+  ],
+  [
+   "operators/membrane_insertion.py",
+   "_exact_change",
+   "entity_sum(c * (v1 - v0) ** 2 + added * v1 ** 2, axis=None, xp=xp)"
+  ],
+  [
+   "operators/membrane_insertion.py",
+   "charge_change",
+   "entity_sum(first, axis=None, xp=xp)"
   ],
   [
    "operators/membrane_insertion.py",
@@ -873,6 +903,11 @@
   ],
   [
    "models/surface_pump_v3.py",
+   "imex_step",
+   "entity_sum(explicit_matrix[i], axis=None, xp=xp)"
+  ],
+  [
+   "models/surface_pump_v3.py",
    "readouts",
    "entity_sum(ca_metabolic, axis=None, xp=xp)"
   ],
@@ -970,6 +1005,36 @@
    "operators/population_unit_turnover.py",
    "own_magnitudes",
    "entity_sum(xp.abs(row.unit_pool_units), axis=1, xp=xp)"
+  ],
+  [
+   "operators/site_occupancy.py",
+   "ledger_terms",
+   "entity_sum(row.site_replacement_free_energy_pJ, axis=None, xp=xp)"
+  ],
+  [
+   "operators/site_occupancy.py",
+   "magnitude_terms",
+   "entity_sum(row.site_replacement_energy_magnitude_pJ, axis=None, xp=xp)"
+  ],
+  [
+   "operators/wash_schedule.py",
+   "ledger_terms",
+   "entity_sum(out, axis=1, xp=xp)"
+  ],
+  [
+   "operators/wash_schedule.py",
+   "ledger_terms",
+   "entity_sum(row.wash_mixing_heat_pJ - exchanged, axis=None, xp=xp)"
+  ],
+  [
+   "operators/wash_schedule.py",
+   "magnitude_terms",
+   "entity_sum(moved, axis=1, xp=xp)"
+  ],
+  [
+   "operators/wash_schedule.py",
+   "magnitude_terms",
+   "entity_sum(row.wash_energy_magnitude_pJ, axis=None, xp=xp)"
   ]
  ]
 }

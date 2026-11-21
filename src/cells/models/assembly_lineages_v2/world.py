@@ -14,7 +14,8 @@ that carries meaning is a list, so the canonical JSON that names a world fixes i
      "free_energy": [{"law": "cells.ideal_mixing@1"}, {"law": "cells.regular_mixing@1", ...}],
      "rate_factor": {"law": "cells.transition_state_factor@1", ...},        optional
      "founder": {"A@membrane": 10, ...},                      every finite place, explicitly
-     "world_role": "probe"}                                    optional (§0.2b rule 8)
+     "world_role": "probe",                                    optional (§0.2b rule 8)
+     "sites": [{"site": "R", "complex": "XR"}, ...]}           optional (FR-21; §0.2f)
 
 **Species** take D152's species form (SHARED_INVENTORY_REACTIONS_DESIGN §2.1): `moieties` (positive
 integer counts, or null: the species is its own moiety), the identity (`catalogue`, `evidence`,
@@ -37,6 +38,12 @@ species, D152's sides, `phase` in place of D152's `sites`; its locus is that pha
 places as `<species>@<phase>`). A step whose places span phases (a join, a leave, permeation
 between pool and lumen, an interfacial reaction) has the membrane as its locus; a step within one
 phase has that phase. Held places take part only as pool places.
+
+**Sites** (FR-21; §0.2f, the lead's rulings of 20 November 2026, D244 and D246). A pair declares a
+membrane species as a binding site and another as its complex, the site with one bound molecule.
+In a world with a geometry, rule 3 admits one interfacial step for a declared pair, exactly
+X@pool + site@membrane -> complex@membrane under cells.stochastic_mass_action@1 with count_on_m
+(spec._geometry_refusals); an undeclared pair stays refused. On a bilayer both take area.
 """
 
 import math
@@ -65,8 +72,14 @@ WORLD_KEYS = {
     "rate_factor",
     "founder",
     "world_role",
+    "geometry",
+    "division",
+    "population",
+    "sites",
 }
-WORLD_REQUIRED = WORLD_KEYS - {"rate_factor", "world_role"}
+WORLD_REQUIRED = WORLD_KEYS - {
+    "rate_factor", "world_role", "geometry", "division", "population", "sites",
+}  # fmt: skip
 ROLES = ("probe",)  # §0.2b rule 8: a world declared to be probed (rate tables), never a lineage.
 AVOGADRO = 6.02214076e23  # mol⁻¹, exact (SI 2019).
 
@@ -122,7 +135,9 @@ class Step:
     products: tuple
     locus: str
     law: str
-    forward_rate_per_s: float
+    forward_rate_per_s: float  # The step's rate constant k, in its law's unit (rate_key).
+    rate_key: str = "forward_rate_per_s"  # OL2's geometric laws name theirs (§0.2d item 2).
+    rate_provenance: str | None = None  # OL2: their rate constants carry it (§0.2e rule 7).
 
 
 @dataclass(frozen=True)
@@ -137,6 +152,10 @@ class World:
     rate_factor: tuple | None  # (law ID, parsed data), or None.
     founder: tuple  # Counts per place (0 for a held place).
     role: str | None = None  # "probe" (§0.2b rule 8), or None: a world to run.
+    geometry: tuple | None = None  # OL2: (law ID, parsed data), or None (geometry.py).
+    division: dict | None = None  # OL3: the shear fission's declaration (division.py), or None.
+    population: dict | None = None  # OL2 milestone 3: the shared pool's slots and founders.
+    sites: tuple | None = None  # FR-21: declared ((site, complex), ...) pairs, or None.
 
     @property
     def place_names(self):
@@ -254,8 +273,10 @@ def _species_list(raw, phase, known):
     return names
 
 
-def parse_phases(raw, species):
-    """(places, volumes): the places in place order, the dilute phases' volumes."""
+def parse_phases(raw, species, *, osmotic=False):
+    """(places, volumes): the places in place order, the dilute phases' volumes. Under
+    `lumen_volume: osmotic` (OL2) the lumen's volume is a function of the counts, so its block
+    declares none and it has no entry in the volumes."""
     if not isinstance(raw, dict) or MEMBRANE not in raw or set(raw) - set(PHASES):
         raise ConfigError(
             "world: phases is an object with the membrane (required) and the pool and the lumen "
@@ -269,6 +290,17 @@ def parse_phases(raw, species):
         block = raw[phase]
         if phase == MEMBRANE:
             require_fields(block, {"species"}, "world: phases: membrane")
+            names = _species_list(block["species"], phase, known)
+            places += [Place(n, phase) for n in names]
+            continue
+        if phase == LUMEN and osmotic:
+            if "volume_L" in block:
+                raise ConfigError(
+                    "world: phases: lumen: under lumen_volume osmotic the lumen's volume follows "
+                    "from its counts and the membrane's area, so it declares no volume_L "
+                    "(§0.2b rule 2)"
+                )
+            require_fields(block, {"species"}, "world: phases: lumen")
             names = _species_list(block["species"], phase, known)
             places += [Place(n, phase) for n in names]
             continue
@@ -325,6 +357,8 @@ def phases_to_dict(world):
             continue
         if phase == MEMBRANE:
             out[phase] = {"species": [p.species for p in mine]}
+        elif phase == LUMEN and world.volume(phase) is None:  # OL2's osmotic lumen
+            out[phase] = {"species": [p.species for p in mine]}
         elif phase == LUMEN:
             out[phase] = {"volume_L": world.volume(phase), "species": [p.species for p in mine]}
         else:
@@ -361,11 +395,12 @@ def _side(raw, step, which, form, phase, by_name):
     return out
 
 
-def parse_step(raw, world_places, species, laws):
+def parse_step(raw, world_places, species, laws, encounter=None):
     if not isinstance(raw, dict):
         raise ConfigError("world: a step is an object")
     form = "phase" if "phase" in raw else "locus"
-    keys = {"id", "reactants", "products", form, "law", "forward_rate_per_s"}
+    rate_key = _rate_key(raw, laws, encounter)
+    keys = {"id", "reactants", "products", form, "law", rate_key}
     require_fields(raw, keys, "world: step")
     step = identifier(raw["id"])
     by_name = {p.name: p for p in world_places}
@@ -421,10 +456,64 @@ def parse_step(raw, world_places, species, laws):
         )
     if raw["law"] not in laws:
         raise ConfigError(f"world: step {step}'s law is one of {', '.join(sorted(laws))}")
-    rate = finite_number(
-        raw["forward_rate_per_s"], f"step {step}: forward_rate_per_s", positive=True
+    if rate_key == "forward_rate_per_s":  # OL1's key: a bare number, as it always was.
+        rate = finite_number(raw[rate_key], f"step {step}: {rate_key}", positive=True)
+        return Step(step, form, reactants, products, where, raw["law"], rate, rate_key)
+    entry = raw[rate_key]
+    if not isinstance(entry, dict) or set(entry) != {"value", "provenance"}:
+        raise ConfigError(
+            f"world: step {step}'s {rate_key} is {{value, provenance}} (§0.2e rule 7)"
+        )
+    if not isinstance(entry["provenance"], str) or not entry["provenance"]:
+        raise ConfigError(f"world: step {step}'s {rate_key} states its provenance")
+    rate = finite_number(entry["value"], f"step {step}: {rate_key}", positive=True)
+    return Step(
+        step, form, reactants, products, where, raw["law"], rate, rate_key, entry["provenance"]
     )
-    return Step(step, form, reactants, products, where, raw["law"], rate)
+
+
+def _rate_key(raw, laws, encounter):
+    """The step's rate-constant key: OL1's `forward_rate_per_s`, unless its law names its own
+    (a mapping by the world's exchange_encounter for OL2's geometric laws, §0.2d item 2)."""
+    name = raw.get("law")
+    law = laws.get(name) if isinstance(name, str) else None
+    key = getattr(law, "rate_key", "forward_rate_per_s")
+    if isinstance(key, str):
+        return key
+    if encounter is None:
+        raise ConfigError(
+            f"world: step {raw.get('id')!r}'s law {name} takes its encounter from a geometry, and "
+            "the world declares none (§0.2c rule 3)"
+        )
+    return key[encounter]
+
+
+def parse_sites(raw, places):
+    """FR-21's declared pairs, [{"site", "complex"}, ...] -> ((site, complex), ...): both membrane
+    species, distinct, each complex the complex of one site (§0.2f)."""
+    if type(raw) is not list or not raw:
+        raise ConfigError("world: sites is a non-empty list of {site, complex} pairs")
+    membrane = {p.species for p in places if p.phase == MEMBRANE}
+    out, complexes = [], set()
+    for entry in raw:
+        require_fields(entry, {"site", "complex"}, "world: sites: a pair")
+        site, complex_ = identifier(entry["site"]), identifier(entry["complex"])
+        for role, name in (("site", site), ("complex", complex_)):
+            if name not in membrane:
+                raise ConfigError(f"world: sites: the {role} {name} is not a membrane species")
+        if site == complex_:
+            raise ConfigError(f"world: sites: {site} is declared as its own complex")
+        if complex_ in complexes:
+            raise ConfigError(
+                f"world: sites: the complex {complex_} is declared twice (one site per complex)"
+            )
+        complexes.add(complex_)
+        out.append((site, complex_))
+    return tuple(out)
+
+
+def sites_to_dict(sites):
+    return [{"site": site, "complex": complex_} for site, complex_ in sites]
 
 
 def parse_founder(raw, places):
@@ -459,7 +548,11 @@ def steps_to_dict(steps):
             reactants=strip(s.reactants),
             products=strip(s.products),
             law=s.law,
-            forward_rate_per_s=s.forward_rate_per_s,
+        )
+        entry[s.rate_key] = (
+            s.forward_rate_per_s
+            if s.rate_provenance is None
+            else {"value": s.forward_rate_per_s, "provenance": s.rate_provenance}
         )
         out.append(entry)
     return out

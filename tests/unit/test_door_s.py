@@ -331,10 +331,13 @@ def test_the_bath_schedule_and_d152_compose_in_either_order_and_the_other_pairs_
     assert "local_species_reactions@1 reads extracellular_amount_reference as declared, but " in (
         " ".join(laws(STATE, INSERTION_1, D152))
     )
-    assert laws(BATH, SITES) == [
-        "site_occupancy@1 reads extracellular_amount_reference as declared, but "
-        "scheduled_bath_composition@1 provides it"
-    ]
+    # FR-23 (D244): site occupancy's anchor reads are scoped to its facing finite nodes, so it
+    # composes beside the bath schedule in either order; beside insertion@1, whose anchors are
+    # unscoped, it stays refused.
+    assert laws(BATH, SITES) == [] and laws(SITES, BATH) == []
+    assert "site_occupancy@1 reads extracellular_amount_reference as declared, but " in (
+        " ".join(laws(STATE, INSERTION_1, SITES))
+    )
 
 
 def test_the_delivery_world_binds_with_disjoint_slots(world):

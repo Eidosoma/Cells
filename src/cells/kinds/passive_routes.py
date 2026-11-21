@@ -99,7 +99,7 @@ from typing import NamedTuple
 
 import numpy as np
 
-from cells.laws.electrochemistry import R
+from cells.laws.electrochemistry import CHARGE_PER_FMOL, R
 from cells.laws.routes import constant_field_permeation as charged_law
 from cells.laws.routes import inward_rectifier_linear_driving_force as rectifier
 from cells.laws.routes import passive_permeation as passive
@@ -155,6 +155,16 @@ RECTIFIER_KEYS = ("id", "law", "patch", "species", *rectifier.COEFFICIENTS)
 # The charged law's own field, only where a definition declares it (declared_fields), and its
 # material_term, which a definition without it does not have (KindFields.without).
 CHARGED_FIELDS = ("passive_charged",)  # [route]: the charged law's routes.
+# FR-34's readouts (D251, D252): a route asks with its optional key `readout: true`, and the field,
+# the columns and the readouts hook exist only where one does (declared_fields; KindFields.without
+# drops the hook elsewhere), so a definition without the key keeps today's structure entry,
+# fields, observations and programs.
+READOUT_KEY = "readout"
+READOUT_FIELDS = ("passive_readout",)  # [route]: the route asks.
+READOUT_COLUMNS = (
+    "passive_flux_fmol_s",  # [species, route]: inward, as passive_transferred moves.
+    "passive_current_A",  # [route]: outward, its share of @3's membrane_current_A.
+)
 
 
 def hosted_laws():
@@ -174,6 +184,7 @@ class Route(NamedTuple):
     species: str
     permeability: float  # m/s
     factors: tuple = ()  # Factor-source IDs, in declared order (§7.4 (n)).
+    readout: bool = False  # FR-34: its flux and current read out at each observed row.
 
 
 class RectifierRoute(NamedTuple):
@@ -192,11 +203,23 @@ class RectifierRoute(NamedTuple):
     v_half: float  # V
     slope: float  # V, > 0
     factors: tuple = ()  # Factor-source IDs, in declared order (§7.4 (n)).
+    readout: bool = False  # FR-34: its flux and current read out at each observed row.
 
 
 def _moves(route):
     """Whether a route moves its row: a positive permeability, or a rectifier's positive g_ref."""
     return route.g_ref > 0 if isinstance(route, RectifierRoute) else route.permeability > 0
+
+
+def _readout(raw, rid):
+    """A route's optional readout key (FR-34): true or false, false where it is not given."""
+    readout = raw.get(READOUT_KEY, False)
+    if not isinstance(readout, bool):
+        raise ConfigError(
+            f"{MODEL_KEY} {rid}: {READOUT_KEY} is true or false (true reads the route's flux and "
+            "current out at each observed row)"
+        )
+    return readout
 
 
 def _parse_rectifier(raw, rid, patches, m):
@@ -205,10 +228,10 @@ def _parse_rectifier(raw, rid, patches, m):
     keys = set(raw)
     if "junction" in keys:
         raise ConfigError(f"{MODEL_KEY} {rid}: {RECTIFIER_LAW_ID} sits on a membrane patch")
-    if not set(RECTIFIER_KEYS) <= keys <= {*RECTIFIER_KEYS, "factors"}:
+    if not set(RECTIFIER_KEYS) <= keys <= {*RECTIFIER_KEYS, "factors", READOUT_KEY}:
         raise ConfigError(
             f"{MODEL_KEY} {rid}: a {RECTIFIER_LAW_ID} route declares {', '.join(RECTIFIER_KEYS)} "
-            "and optionally factors"
+            f"and optionally factors and {READOUT_KEY}"
         )
     hosted = hosted_laws()
     if RECTIFIER_LAW_ID not in hosted:
@@ -240,6 +263,11 @@ def _parse_rectifier(raw, rid, patches, m):
         raise ConfigError(f"{MODEL_KEY} {rid}: g_ref_S_per_m2 is >= 0 (0: a closed route)")
     if not k_ref > 0:
         raise ConfigError(f"{MODEL_KEY} {rid}: k_ref_mM is positive")
+    if k_ref < np.finfo(np.float64).tiny:
+        raise ConfigError(
+            f"{MODEL_KEY} {rid}: k_ref_mM is a normal float, at least 2.2250738585072014e-308 mM "
+            "(compiled CPU code reads a subnormal K_ref as 0, and sqrt(c_o / K_ref) as inf)"
+        )
     if not slope > 0:
         raise ConfigError(
             f"{MODEL_KEY} {rid}: slope_V is positive (q falls as V - E rises: inward rectification)"
@@ -247,7 +275,7 @@ def _parse_rectifier(raw, rid, patches, m):
     patch = patches[host]
     return RectifierRoute(
         rid, RECTIFIER_LAW_ID, "patch", host, patch.inside, patch.outside, species, g_ref, k_ref,
-        v_half, slope, tuple(factors),
+        v_half, slope, tuple(factors), _readout(raw, rid),
     )  # fmt: skip
 
 
@@ -266,11 +294,11 @@ def parse(entries, base):
             routes.append(_parse_rectifier(raw, rid, patches, m))
             continue
         hosts = [h for h in HOSTS if h in raw]
-        allowed = {"id", "law", "permeability_m_per_s", "species", "factors", *hosts}
+        allowed = {"id", "law", "permeability_m_per_s", "species", "factors", READOUT_KEY, *hosts}
         if not {"id", "law", "permeability_m_per_s"} <= set(raw) <= allowed or len(hosts) != 1:
             raise ConfigError(
                 f"{MODEL_KEY}: a route declares id, law, permeability_m_per_s, one host (patch or "
-                "junction), and species for the neutral law"
+                f"junction), and species for the neutral law; optionally factors and {READOUT_KEY}"
             )
         law, hosted = raw["law"], hosted_laws()
         if not isinstance(law, str) or law not in hosted:
@@ -311,7 +339,10 @@ def parse(entries, base):
         value = float(value)
         if not (np.isfinite(value) and value >= 0):
             raise ConfigError(f"{MODEL_KEY} {rid}: permeability_m_per_s is finite and >= 0")
-        routes.append(Route(rid, law, kind, host, inside, outside, species, value, tuple(factors)))
+        readout = _readout(raw, rid)
+        routes.append(
+            Route(rid, law, kind, host, inside, outside, species, value, tuple(factors), readout)
+        )
     ids = [r.id for r in routes]
     if len(set(ids)) != len(ids):
         raise ConfigError(f"{MODEL_KEY}: route IDs must be unique")
@@ -327,6 +358,8 @@ def to_dict(declaration):
             entry |= dict(zip(rectifier.COEFFICIENTS, values, strict=True))
             if r.factors:
                 entry["factors"] = list(r.factors)
+            if r.readout:  # FR-34: written only where asked, so a definition keeps its form.
+                entry[READOUT_KEY] = True
             out.append(entry)
             continue
         entry = {
@@ -339,6 +372,8 @@ def to_dict(declaration):
             entry["species"] = r.species
         if r.factors:
             entry["factors"] = list(r.factors)
+        if r.readout:  # FR-34: written only where asked, so a definition keeps its form.
+            entry[READOUT_KEY] = True
         out.append(entry)
     return out
 
@@ -349,27 +384,42 @@ class Factored(NamedTuple):
     laws: tuple
 
 
+class ReadOut(NamedTuple):
+    """The structure entry of a declaration where a route asks for its readouts (FR-34)."""
+
+    laws: tuple
+    factored: bool  # Whether a route declares factors (the multiplier, as Factored has it).
+
+
 def structure_entry(declaration):
     """Value-free: the declared laws (the leak traces its own kernel); Factored(laws) where any
-    route declares factors, so today's declarations keep today's entry."""
+    route declares factors; ReadOut(laws, factored) where any route asks for its readouts (FR-34).
+    So today's declarations keep today's entry."""
     laws = tuple(sorted({route.law for route in declaration}))
-    return Factored(laws) if any(route.factors for route in declaration) else laws
+    factored = any(route.factors for route in declaration)
+    if any(route.readout for route in declaration):
+        return ReadOut(laws, factored)
+    return Factored(laws) if factored else laws
 
 
 def declared_fields(entry):
     """The kind's fields for its entry (§7.4 (n) 5): the multiplier exists only where factored,
-    the rectifier's fields only where a route runs it, and the charged law's field and its
-    material_term only where a route runs that law (so no other entry's program changes)."""
-    laws = entry.laws if isinstance(entry, Factored) else entry
+    the rectifier's fields only where a route runs it, the charged law's field and its
+    material_term only where a route runs that law, and the readouts' field, columns and hook only
+    where a route asks (FR-34), so no other entry's program or observation changes."""
+    readout = isinstance(entry, ReadOut)
+    laws = entry.laws if isinstance(entry, (Factored, ReadOut)) else entry
+    factored = entry.factored if readout else isinstance(entry, Factored)
     layout = LAYOUT_FIELDS + (RECTIFIER_FIELDS if RECTIFIER_LAW_ID in laws else ())
     charged = CHARGED_LAW_ID in laws
     layout += CHARGED_FIELDS if charged else ()
+    layout += READOUT_FIELDS if readout else ()
     return KindFields(
         STATE_AXES,
         layout,
-        (MULTIPLIER,) if isinstance(entry, Factored) else (),
-        (),
-        () if charged else ("material_term",),
+        (MULTIPLIER,) if factored else (),
+        READOUT_COLUMNS if readout else (),
+        (() if charged else ("material_term",)) + (() if readout else ("readouts",)),
     )
 
 
@@ -471,6 +521,8 @@ def initial(spec, declaration, layout):
         own |= _rectifier_layout(ids, declaration)
     if any(route.law == CHARGED_LAW_ID for route in declaration):  # declared_fields' test.
         own["passive_charged"] = np.asarray([route.law == CHARGED_LAW_ID for route in declaration])
+    if any(route.readout for route in declaration):  # declared_fields' test (FR-34).
+        own["passive_readout"] = np.asarray([route.readout for route in declaration])
     state = dict(passive_transferred=np.zeros((s, r)), passive_dissipated_energy_pJ=np.zeros(r))
     return state, own
 
@@ -546,19 +598,32 @@ def _rectifier_terms(c_in, c_out, voltage, opening, p):
     )  # fmt: skip
 
 
-def rates(state, potentials, control, p, *, xp):
-    from cells.models.surface_pump_v3 import KindRates
+class Flux(NamedTuple):
+    """Every route's flux at one stage, with the inputs its heat reads."""
 
+    c_in: object  # [species, route], mM
+    c_out: object
+    voltage: object  # [route], phi_in - phi_out (V)
+    terms: object  # The rectifier kernels' arguments, or None where no route runs it.
+    flux: object  # [species, route], fmol/s, inward.
+
+
+def _flux(state, potentials, control, p, *, xp, voltage=None):
+    """Every route's flux, inward, at the stage's read amounts and its availability. Its voltage
+    is the patch voltage phi_in - phi_out from the potentials, or the one given (clamped_flux), at
+    the same step of the arithmetic, so rates' program is the step's as before (FR-34)."""
     c_in, c_out = _ends(state, p, xp)
     opening = _opening(state, control, p, xp)
     neutral = passive.flux_fmol_s(
         c_in, c_out, p.passive_area, p.passive_permeability, opening, xp=xp
     )  # [species, route], inward.
-    voltage = potentials[p.passive_inside] - potentials[p.passive_outside]  # phi_in - phi_out.
+    if voltage is None:
+        voltage = potentials[p.passive_inside] - potentials[p.passive_outside]  # phi_in - phi_out.
     charged = leak.flux_fmol_s(
         c_in, c_out, voltage, p.temperature, p.passive_area, p.passive_permeability, opening, xp=xp
     )
     flux = xp.where(p.passive_leak, charged, neutral)
+    terms = None
     if _rectified(p):  # Static: only a definition that declares the rectifier traces it.
         terms = _rectifier_terms(c_in, c_out, voltage, opening, p)
         flux = xp.where(p.passive_rectifier, rectifier.flux_fmol_s(*terms, xp=xp), flux)
@@ -568,6 +633,21 @@ def rates(state, potentials, control, p, *, xp):
             opening, xp=xp,
         )  # fmt: skip
         flux = xp.where(p.passive_charged, moved, flux)
+    return Flux(c_in, c_out, voltage, terms, flux)
+
+
+def _current(flux, p, *, xp):
+    """[route] each route's electric current (A), outward-positive: positive charge from its
+    inside end to its outside end, its share of @3's membrane_current_A (e species_sum(z x the
+    patches' outward flux)); 0 on a junction, which crosses no membrane patch."""
+    outward = xp.where(p.passive_on_junction, 0.0, -flux)
+    return CHARGE_PER_FMOL * species_sum(p.valence * outward, xp=xp)
+
+
+def rates(state, potentials, control, p, *, xp):
+    from cells.models.surface_pump_v3 import KindRates
+
+    c_in, c_out, voltage, terms, flux = _flux(state, potentials, control, p, xp=xp)
     volume, _ = _volumes(p, xp)
     n = p.active.size
     net = _net(flux, p, volume.shape[0], xp)
@@ -591,6 +671,29 @@ def rates(state, potentials, control, p, *, xp):
         work_pJ_s=xp.zeros(()),
         membrane_flux=patch_flux,
     )
+
+
+def readouts(state, read, potentials, control, p, *, xp):
+    """FR-34: each asking route's flux [species, route] (fmol/s, inward-positive, as
+    passive_transferred moves) and current [route] (A, outward-positive, its share of @3's
+    membrane_current_A), at the observed row's read amounts and potentials: the rates' own flux, so
+    the step and its record are one computation. 0 on every route that does not ask."""
+    del state
+    flux = xp.where(
+        p.passive_readout[None, :], _flux(read, potentials, control, p, xp=xp).flux, 0.0
+    )
+    return flux, _current(flux, p, xp=xp)
+
+
+def clamped_flux(read, control, p, voltages_V, *, xp=np):
+    """FR-34, current at a declared voltage: every route's flux [species, route] (fmol/s, inward)
+    and current [route] (A, outward-positive) at the patch voltages phi_in - phi_out given [route]
+    (V; a scalar applies to every route), at a state's read amounts and controls: the step's own
+    kernels, the potentials' voltage replaced by the one given. A junction's route is voltage-free
+    and carries no current. Pure: it records nothing, so no program or record changes."""
+    voltage = xp.broadcast_to(xp.asarray(voltages_V, dtype=float), p.passive_inside.shape)
+    flux = _flux(read, None, control, p, xp=xp, voltage=voltage).flux
+    return flux, _current(flux, p, xp=xp)
 
 
 def _row_energy(n, volume, xp):
@@ -892,27 +995,75 @@ def check_definition(spec):
 
 # The run view's declarations (D154): the routes' own set (axis passive_route), with each route's
 # ends as roles, its carried species, law and host; transfers are inward-positive (rates: `flux`).
+# FR-34's readout columns exist only where a route asks (READOUT_KEY); each is the instantaneous
+# value at the observed row, not a step's mean (that is passive_transferred's difference over dt).
+_INWARD = MappingProxyType(
+    {
+        "from": "outside",
+        "to": "inside",
+        "says": "inward-positive: a positive amount moves from the route's outside end (its "
+        "patch's outside node, or its junction's receiver) into its inside end (its patch's cell, "
+        "or its junction's sender)",
+        "confirmed": "the core's owner, from the code (core-next, 16 November 2026)",
+    }
+)
+_OUTWARD_CURRENT = MappingProxyType(
+    {
+        "from": "inside",
+        "to": "outside",
+        "says": "outward-positive, in A: positive charge moving from the route's inside end (its "
+        "patch's cell) to its outside end, the route's share of the patch's membrane_current_A; "
+        "0 on a junction's route, which crosses no patch",
+        "confirmed": "the kinds owner, from the code (FR-34, 20 November 2026)",
+    }
+)
 VIEW = KindView(
-    units=MappingProxyType({"passive_transferred": "fmol", "passive_dissipated_energy_pJ": "pJ"}),
+    units=MappingProxyType(
+        {
+            "passive_transferred": "fmol",
+            "passive_dissipated_energy_pJ": "pJ",
+            "passive_flux_fmol_s": "fmol/s",
+            "passive_current_A": "A",
+        }
+    ),
+    observation_axes=MappingProxyType(
+        {
+            "passive_flux_fmol_s": ("species", "passive_route"),
+            "passive_current_A": ("passive_route",),
+        }
+    ),
     record_kinds=MappingProxyType(
-        {"passive_transferred": "cumulative", "passive_dissipated_energy_pJ": "cumulative"}
+        {
+            "passive_transferred": "cumulative",
+            "passive_dissipated_energy_pJ": "cumulative",
+            "passive_flux_fmol_s": "rate",
+            "passive_current_A": "rate",
+        }
     ),
     orientation=MappingProxyType(
         {
-            "passive_transferred": MappingProxyType(
+            "passive_transferred": _INWARD,
+            "passive_flux_fmol_s": MappingProxyType(
                 {
-                    "from": "outside",
-                    "to": "inside",
-                    "says": "inward-positive: a positive amount moves from the route's outside "
-                    "end (its patch's outside node, or its junction's receiver) into its inside "
-                    "end (its patch's cell, or its junction's sender)",
-                    "confirmed": "the core's owner, from the code (core-next, 16 November 2026)",
+                    **_INWARD,
+                    "says": f"{_INWARD['says']}; the rate at the observed row, 0 on a route that "
+                    f"does not ask ({READOUT_KEY} false)",
+                    "confirmed": "the kinds owner, from the code (FR-34, 20 November 2026)",
                 }
-            )
+            ),
+            "passive_current_A": MappingProxyType(
+                {
+                    **_OUTWARD_CURRENT,
+                    "says": f"{_OUTWARD_CURRENT['says']}; 0 on a route that does not ask "
+                    f"({READOUT_KEY} false)",
+                }
+            ),
         }
     ),
     record_layers=MappingProxyType(
-        {"passive_transferred": "membrane", "passive_dissipated_energy_pJ": "membrane"}
+        dict.fromkeys(
+            ("passive_transferred", "passive_dissipated_energy_pJ", *READOUT_COLUMNS), "membrane"
+        )
     ),
 )
 
@@ -962,6 +1113,7 @@ PASSIVE_ROUTES = BUILTIN.register(
         structure_entry=structure_entry,
         initial=initial,
         rates=rates,
+        readouts=readouts,  # FR-34: bound only where a route asks (declared_fields).
         stage_term=stage_term,
         material_term=material_term,
         book=book,

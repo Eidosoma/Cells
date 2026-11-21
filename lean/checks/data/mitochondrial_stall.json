@@ -1,0 +1,46 @@
+{
+  "petersen2012_yeast_stall@1": {
+    "doi": "10.1073/pnas.1202799109",
+    "locator": "Figure 1 (yeast traces), Figure 2 (uncoupled hydrolysis correction), Figure 4 and supplementary Tables S2 and S4",
+    "preparation": "Purified Saccharomyces cerevisiae mitochondrial ATP synthase in proteoliposomes. The external assay medium faces the catalytic domain.",
+    "imposed_voltage_mV": 60,
+    "Q_definition": "Numerical value of [ATP]/([ADP][Pi]) with concentrations in M. The paper reports concentrations in the assay medium.",
+    "single_load": {
+      "Q": 5.79,
+      "ATP_nM": 596,
+      "ADP_uM": 10.3,
+      "Pi_mM": 10,
+      "pH_out": 8.38,
+      "trace_columns": ["pH_out_minus_in", "initial_net_ATP_per_enzyme_per_s"],
+      "example_traces": [[1.49, -0.04], [1.68, 0.11]],
+      "raw_stall_dpH": 1.57,
+      "corrected_stall_dpH": 1.53,
+      "interpolation_error_dpH": 0.04
+    },
+    "corrected_columns": ["Q", "stall_dpH", "interpolation_error_dpH"],
+    "corrected_stalls": [
+      [0.095, 0.96, 0.03],
+      [0.303, 1.02, 0.05],
+      [0.303, 1.07, 0.03],
+      [0.718, 1.15, 0.03],
+      [1.87, 1.29, 0.03],
+      [1.87, 1.29, 0.02],
+      [3.06, 1.37, 0.02],
+      [5.79, 1.53, 0.04],
+      [9.36, 1.61, 0.06],
+      [16.3, 1.70, 0.03]
+    ],
+    "inferred_protons_per_ATP": 2.9,
+    "slope_SD": 0.2,
+    "limits": "Initial rates are slopes fitted to ATP traces. Equilibrium gradients are interpolated. The comparison of relative shifts assumes a constant conversion from the reported nucleotide and phosphate quotient to the free activity quotient. Heat was not measured."
+  },
+  "nakamura1978_mitochondrial_heat@1": {
+    "doi": "10.1093/oxfordjournals.jbchem.a132117",
+    "locator": "Figures 5b and 6",
+    "preparation": "Isolated rat liver mitochondria following aerobic ATP production and oxygen exhaustion",
+    "observable": "Apparent enthalpy of the uncoupler-induced anaerobic heat pulse per mole of ADP previously added",
+    "value_kJ_per_mol_initial_ADP": -29,
+    "reported_error": 7,
+    "limits": "The authors attributed the pulse to hydrolysis of previously formed ATP. The preparation integrates several processes over time. Free-energy dissipation of an individual cycle at a known affinity was not measured."
+  }
+}

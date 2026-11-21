@@ -25,7 +25,15 @@ Uses [Single-molecule exchange heat equals the change in assembly log weight](as
 
 ## Numerical comparison
 
-**Failed.** The 210 ordinary transfer pairs agreed with the base heat within 5.00 × 10⁻¹⁶ kBT. Two admitted one-event runs with a large diagonal coefficient lost the remaining catalyst in the reverse sum. The passive ledger refused both, booking 2.33 × 10⁻¹⁰ and 0.693147 kBT where the exact heat is zero. Both one-event controls passed. The lead accepted these false refusals and assigned the repair to the builder after its current test run. The recorded failure applies to the pinned engine revision.
+**Failed.** The 210 ordinary transfer pairs agreed with the base heat within 5.00 × 10⁻¹⁶ kBT. Two admitted one-event runs with a large diagonal coefficient lost the remaining catalyst in the reverse sum. The passive ledger refused both, booking 2.33 × 10⁻¹⁰ and 0.693147 kBT where the exact heat is zero. Both one-event controls passed. The failure is recorded for version 1. An in-place change altered registered results and was reverted. The lead assigned the accurate reverse calculation to version 2. [Version decision](../../docs/DECISIONS.md#L8017) · [Branch replay](../PROGRESS.md#remaining-numerical-findings)
+
+**Engine** `cells.assembly_lineages@1`, `cells.reservoir_exchange@1`, `cells.gard_catalysis_pair_consistent@1`, `cells.gard_catalysis_single_event@1`
+
+**Operators** `cells.size_threshold_fission@1`, `cells.daughter_continuation@1`
+
+[Reverse pair factor](https://github.com/Eidosoma/Cells/blob/b9d6452dff1cd0a1d5d3664e0a81b00ce988bfbc/src/cells/models/assembly_lineages/gard.py#L143) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/b4353f85b18d489a277818bfe43e20c8416b6066/lean/checks/gard_catalysis.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/b4353f85b18d489a277818bfe43e20c8416b6066/lean/PROGRESS.md#six-numerical-retests)
+
+[Tested engine b9d6452dff1c](https://github.com/Eidosoma/Cells/commit/b9d6452dff1cd0a1d5d3664e0a81b00ce988bfbc) · [Evidence checkpoint b4353f85b18d](https://github.com/Eidosoma/Cells/commit/b4353f85b18d489a277818bfe43e20c8416b6066)
 
 **Engine** `cells.assembly_lineages@1`, `cells.reservoir_exchange@1`, `cells.gard_catalysis_pair_consistent@1`, `cells.gard_catalysis_single_event@1`
 

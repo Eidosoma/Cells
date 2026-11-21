@@ -1,6 +1,6 @@
 # Progress
 
-Last updated: 2026-11-18 UTC.
+Last updated: 2026-11-21 UTC.
 
 This is the source of current implementation status. Milestone definitions live
 in [Roadmap](docs/ROADMAP.md), scientific updates in
@@ -107,6 +107,144 @@ starts, and production design is deferred until parity is established.
 
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
+
+- **The FR-24, FR-27 and FR-26 stack landed (21 November 2026).** Merges 260e2ed5 (FR-24, a site
+  population's quantity as a rate source through the contract's R3), 5fc1364f (FR-27,
+  `scheduled_compartment_wash@1`) and 87f1ebef (FR-26 as W, owned state across a cell replacement),
+  tag `fr24-fr27-fr26-landed-2026-11-21`, gated once as a stack
+  ([gate](/mnt/workspaces/Cells/operators-fr26-20261120/gate-b3ec7811/stack/)): passed, with FR's
+  set. G3, gene regulation's moiety hook, followed (5f6053c4).
+
+- **FR-8 rung 1: N2 with (a) landed (21 November 2026).** Merge 03fe5119, tag
+  `fr8-n2-landed-2026-11-21`, ID `imex_ars222_implicit_conductances@1`: each membrane's and junction's
+  slope conductance in @3's IMEX operator, and the junction gates by their exponential update. I3
+  passed on the landed head, 13 of 13 rows
+  ([records](/mnt/workspaces/Cells/core-pass-at3-20261118/n2/i3/out-1dfe76ae/)). Gate: crossrev 11 of
+  11 identical, tiers 615/0, G1 113 of 113, FR's set.
+
+- **FR-21 landed: the site step and the prescribed shell (21 November 2026).** Merges 4fb9922b (one-step
+  binding to a declared site, with the requester's acceptance and FR-22's wash qualification) and
+  41338949 (the prescribed shell; the requester's tested revision 9a1a95a5, after a review finding on
+  the population probe). Both gated in full, with FR's set and the origin-of-life invariance.
+
+- **Lean fixes landed (21 November 2026), each in place under D148:** the restricted cleft lumen's
+  fill heat (2e456bbc), an empty membrane population's abundance (36217958) and membrane insertion's
+  heat and image charges at extreme capacitance gains (cdfaed68, after the operators owner's review;
+  every registered value bitwise). Evidence in the robustness lane's `*-20261120` folders.
+
+- **Also landed overnight (20 and 21 November 2026):** FR-34's readouts (81a29442) and its example
+  (bf7b50af, 1e762583); FR-30's series gates, unregistered (12c18db1); origin of life R4, break and
+  renew (a40720a6); FR-28's design note (73115292); FR-29's desk evaluation (1aa82846, 051ab7f7).
+
+- **Gene regulation G1 and G2 landed: option A's equation sheet and the code-blind references (20
+  November 2026).** Merges 1f671104 and 4483efa8, tag `gr-g1-g2-landed-2026-11-20`, gated together
+  as a stack ([gate](/mnt/workspaces/Cells/gene-regulation-20261120/stack-g1-g2/stack/)). No `src/`
+  change. The lane is paused overnight (D255); finished work landed.
+
+- **FR-33 landed: regional labelled-protein readouts (20 November 2026).** Merge ce2a3d9c, tag
+  `fr33-region-readouts-landed-2026-11-20`. `validation/regions/`: the region export and a one-way
+  cohort tracer, which refuses at setup the two-way movers it cannot see (a review finding), with
+  the FR-7 lane's compartment-transfer example. Validation only. Light gate: tiers 616/0.
+
+- **FR-20 landed: a pulse and washout for assembly populations (20 November 2026).** Merge
+  3af9ce38, tag `fr20-washout-landed-2026-11-20`: `cells.pool_replacement@1`, with L1 (a
+  transition-state factor on a step wholly off the membrane is refused). Q3 is a declared version-1
+  limit. Gate: crossrev 11 of 11 identical, tiers 615/0, G1 113 of 113; FR's set and the
+  origin-of-life invariance passed ([gate](/mnt/workspaces/Cells/ol3-engine-20261119/gate-e473df3c/)).
+
+- **FR-29 and FR-7 data (20 November 2026).** Kettner et al. 2003 Fig. 3 read as bare values
+  (a69f38ab, `validation/vacuole/`), the FR-29 design note (44b44e56) and D258. Ross et al. 2025's
+  Kir2.1 variant tables (51dad6a6, D257): they cannot test current against abundance.
+
+- **Mitochondria laws, head 2 landed (20 November 2026).** Merge cf8473de, tag
+  `mito-laws-head2-landed-2026-11-20`: `held_reductant_supply@1`, adenylate kinase on beard2005@2
+  and the host world test. All ten laws were compared against the registered code-blind references,
+  every row in band. Gate: crossrev 11 of 11, tiers, G1 113 of 113, FR's set and the tier-3 files.
+
+- **FR-23 landed: a timed bath dose beside binding sites on other nodes (20 November 2026,
+  development).** Merge 4e3d1899, tag `fr23-landed-2026-11-20` (D244, option A). `site_occupancy@1`
+  declares its outside reads scoped to the nodes its populations face, and a scheduled dose below a
+  ligand's trace is refused. The development run
+  ([evidence](/mnt/workspaces/Cells/operators-fr23-20261120/)) passed every criterion written before
+  it: the arms bitwise up to the dose; the dose booked as the held content's change, bit for bit;
+  bound material unchanged at the dose and rising after it. Gate: crossrev 11 of 11 identical, tiers
+  613/0, G1 113 of 113, FR's set passed.
+
+- **FR-8 rung 1, §6: N2 alone on H2's slow phase; a gain of 5, the registered 10 missed (20 November
+  2026).** RUNG1 §10.19 on branch fr8-rung1, tag `fr8-rung1-n2c-registered-2026-11-20`
+  ([records](/mnt/workspaces/Cells/fr8-rung1-20261119/stage-a/), `stage-a.json`).
+  - **The run:** `imex_ars222_implicit_conductances_n2_alone@0` from 0 to 1790 s at 100 ms with X2,
+    all 17,900 steps, at the engine of badc86ac.
+  - **X2 passes with no refusal:** 8,030 steps counted, 3 held against a cap of 161, integration
+    error at most 7.8e-4 against 2e-3.
+  - **Against R3:** it passes the parity caps at all 180 rows (0.63 µV, 4.0e-5 relative), and fails
+    the adequacy budgets in start-up, which is reported only. Today's integrator at 100 ms is refused
+    at its first step.
+  - **The miss:** N2 alone reaches 100 ms, a gain of 5 over today's 20 ms; D238's target of 10 needs
+    200 ms, which N2 alone does not reach. From t = 0 the dissipation check refuses the third step,
+    and after a 100 ms start-up X2's out-of-band count refuses it. 125 ms is not offered, since it
+    would be a tuned rung.
+  - **Next, registered as §10.20 before it runs:** N2 with C on the final ID. The arm is H2 from 0 to
+    3600 s at 100 ms, with a 1 ms window around the cue, 38,079 steps. It predicts a step gain of
+    about 94.5 over 1 ms, after the junction gate's update (a) and N2's landing.
+
+- **FR-7 item 3: the releasing compartment, judged and passed (20 November 2026).** Under the
+  registration `fr7-u2-compartment-registered-2026-11-20` (95b7b3e0), from a frozen snapshot of main
+  439f54fd; tag `fr7-u2-judged-2026-11-20`
+  ([verdict](/mnt/workspaces/Cells/fr7-loop-20261119/u2-compartment/judged-439f54fd/VERDICT.json),
+  `passed: true`; RUN.txt beside it).
+  - Both worlds ran 1,000,000 steps to 1000 s with no refusal.
+  - **C2, a releasing compartment:** J1's t_clear 680 s (registered 680 s); J2, the compartment left
+    out, 620 s (registered 620 s); the sealed compartment counted, 680 s (information).
+  - **C5, release stopped at 300 s:** J1 460 s (registered 460 s); J2, the sealed compartment counted,
+    not cleared (registered not cleared); the compartment left out, 460 s (information).
+  - The brackets agree with R-clear's to about 1e-10, and c* is within 1e-8 of R-clear's exact rows on
+    every row above D150's mean-field floor. The template's account closes to 8e-13 fmol and the
+    chain's total is constant to 2e-17 fmol. The engine rows equal the development runs' exactly.
+  - C5 took 11,561 s of wall time because its CPU was shared until about 19:15 UTC; the world was not
+    the cause.
+
+- **FR-8 rung 1: C, the fine-window executor, judged and passed (20 November 2026).** Under RUNG1
+  §10.10, on H2 from 0 to 3600 s at 20 ms with a 1 ms window over [1799.98, 1802.0] s and X2 on
+  (tag `fr8-c-judged-2026-11-20`; C landed at 54cb3195, the driver at fr8-rung1 e48c14b1).
+  - **(a) Intervention reading:** H2's reading under the parity caps, with the event criteria,
+    passes on all 3,831 rows.
+    - Largest |ΔVm| 3.3 µV against 20 µV; |Δc|/c 1.4 × 10⁻⁶ against 2 × 10⁻⁴.
+    - The peak is within 0.80 µV of the 74 µV criterion's reference, and the crossing within 2.2 µs.
+  - **(b) X2:** passes with no refusal. 230 counted steps, median ratio 4.016, 2 held of 8.
+  - **(c) Gain:** 19.8 in steps over 1 ms throughout (181,919 against 3.6 × 10⁶). The timed cost
+    ratio, 13.6, is reported beside it.
+  - **N2:** I3 passed by its rules on N2 alone (badc86ac). Its plant and cap controls never reach
+    N2's implicit path, so §10.15 adds charged-world controls on H2 and W0, registered before §6 is
+    read. D238 keeps the registered gain of 10.
+  - **Records:** /mnt/workspaces/Cells/fr8-rung1-20261119/c-arm/.
+
+- **FR-7's six chain worlds, F3 against R-chain and R-clear: judged, passed (20 November 2026).**
+  From a frozen snapshot of main b9d6452d (tag `fr7-chains-judged-2026-11-20`), with main's own
+  references interface.
+  - **Every world passed:** 4,614 compared rows, none failed. The largest margin is 0.0055 of a band
+    (W5's V at 20 s).
+  - **Clearance:** every clearance row equals the registered row (260, 280, or 0 without a template),
+    computed in the run.
+  - **The references' power context holds:** no core row lacks a plant in any world.
+  - **Records:** /mnt/workspaces/Cells/fr7-loop-20261119/judged-f3-b9d6452d/ (RUN.txt, VERDICT.json).
+  - **Run time:** the worlds with maturation stages (m = 3) ran in 2,500–4,000 s on one shared light
+    CPU after the optimization-barrier fix (`fr7-perf-landed-2026-11-20`). Without it, each had run
+    past 9 CPU-hours unfinished.
+  - **With F4's closed loop** (`fr7-rloop-judged-2026-11-20`), FR-7's first judged comparisons are
+    complete.
+- **Also landed today, after the morning entry:**
+  - K3, chemistry at P (`kinds-k3-landed-2026-11-20`);
+  - FR-7's optimization barrier (`fr7-perf-landed-2026-11-20`);
+  - the lane check's fix for a unit without a control group (6affa4d2);
+  - C, the fine-window executor (`fine-window-landed-2026-11-20`).
+- **Registered today, before any engine output:**
+  - the mitochondria appendix's second tag (`mito-laws-appendix-2026-11-20b`, D236's repairs);
+  - MR1-MT2, the model-level reference (`mito-mr1-mt2-registration-2026-11-20`);
+  - the component references (`mito-components-registration-2026-11-20`);
+  - gene regulation's equation sheet (`gr1-sheet-2026-11-20`, option A).
+- **Decisions:** D236 (Beard's repairs; FR-7's development chains stopped) and D237 (FR-20 to
+  FR-22 at high priority).
 
 - **FR-7's first closed loop, F4 against R-loop: judged, passed (20 November 2026).**
   - **The run:** from a frozen snapshot of main 90392025 (tag `fr7-rloop-judged-2026-11-20`), with

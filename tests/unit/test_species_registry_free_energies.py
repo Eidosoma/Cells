@@ -29,6 +29,15 @@ Each claim with its plant (D187), in one table whose every row parses a definiti
   elsewhere, and a second set. The set's moieties over the rows present are required, and its
   proton buffer is checked as the set's rows are (planted, each refused: a set moiety dropped, one
   edited, and the buffer's protonated form moved);
+- the set's second version (D236): beard2005@2 is @1, bit for bit on every shared row, with AMP2-,
+  fixed by adenylate kinase's constant in base forms, which carries no temperature. The set
+  derives it from K_AK 0.4331 on totals at the free Mg2+ of the source's state-3 buffer, and
+  applied at 298.15 K every potential is the lane's appendix's to its nine decimals, the match
+  written out independently (3.808553529 mM, K_base 0.388964538). Planted: the buffer's Mg2+ read
+  as free, and the constant left on totals, each move AMP off the appendix; the contract refuses
+  a buffer with a second ligand and a matched constant at a pH basis. AMP joins adenine and
+  phosphorus at 1, required as the set's moieties are (planted, AMP at 2 in phosphorus is
+  refused); the kinase's entry beside the set is admitted in base forms and refused on totals;
 - an entry in kJ/mol (F's kJ form, D234's option (b)) is converted at the world's declared
   temperature: the honest pump entry given in kJ/mol is admitted, and the same entry in a world
   3 K warmer is refused, its dG°/RT moved by 1 %. Table 2's four reactions as source-derived
@@ -37,7 +46,11 @@ Each claim with its plant (D187), in one table whose every row parses a definiti
   basis (converted at 310.15 K and held) are refused at 298.15 K;
 - the moieties (B2): a moiety naming no row is refused; the ATP-driven law's fuel mode conserves
   phosphorus and adenine, and §7.3's planted error, the same mode with Pi +2, is refused naming the
-  moiety, as is an entry with Pi +2.
+  moiety, as is an entry with Pi +2;
+- an operator's reported moves (the contract's species_moieties; GENE_REGULATION_DESIGN §7.6): the
+  enzyme network's two moves conserve its enzyme and substrate moieties and are admitted; planted,
+  a move with P +2 is refused naming the operator, the move and the moiety, a move naming water is
+  refused as naming no row, and a non-integer count is refused at the hook's reading.
 The pump's rows use the kinds owner's diagram pump world (tests/unit/test_kinds_lifecycle_
 declarations.py); the operator's, the reactions fixture's enzyme network at a registry c0 of
 1000 mM (as tests/unit/test_species_potentials.py).
@@ -244,14 +257,14 @@ def expected_RT(name, temperature_K):
     return x - (math.log1p(1e-7 / 1.7783e-7) if name == "F" else 0.0)
 
 
-def set_world(temperature_K=None):
+def set_world(temperature_K=None, potential_set=species_registry.BEARD_2005):
     """Heredity cell D (its Na, K, M and P) with every other row of the set and a declared matrix
     buffer, Buf (valence -1), impermeant, at 1 mM (H at 1e-4 mM), no potentials of their own."""
     raw = water.heredity_cell("D", end_time=0.002)
     if temperature_K is not None:
         raw["model"]["temperature_K"] = temperature_K
     declared = {e["id"] for e in raw["model"]["species"]}
-    for row, z in (*species_registry.BEARD_2005.rows, ("Buf", -1)):
+    for row, z in (*potential_set.rows, ("Buf", -1)):
         if row not in declared:
             mM = 1e-4 if row == "H" else 1.0
             ck.add_species(raw, row, z, 0.0, {"cell_0": mM, "bath_0": mM})
@@ -326,6 +339,119 @@ def a_buffer_edited(monkeypatch):
     return raw, contextlib.nullcontext()
 
 
+SECOND = species_registry.BEARD_2005_V2
+KINASE = (("ADP", -2), ("ATP", 1), ("AMP", 1))  # 2 ADP3- -> ATP4- + AMP2-, in base forms.
+# The lane's appendix, its potentials at 298.15 K (mu°/RT at 1 M; D236's ruled forms):
+# docs/MITOCHONDRIA_LAWS_APPENDIX.md at tag mito-laws-appendix-2026-11-20b, section 9.
+APPENDIX_298 = {
+    "H": 0.0, "K": 0.0, "Mg": 0.0, "O2": 0.0, "NAD": 0.0, "Q": 0.0, "cytc_ox": 0.0, "ADP": 0.0,
+    "Pi": 0.0, "S_ox": 0.0, "cytc_red": 40.914814298, "QH2": 62.715891459,
+    "NADH": 106.817529855, "ATP": -2.029938769, "S_red": 90.699434204, "AMP": 2.974205870,
+    "MgATP": -12.667395497, "MgADP": -7.966185778, "H2PO4": -15.542437799,
+}  # fmt: skip
+
+
+def state_3_match():
+    """(free Mg2+ in M, K_base) written out here, independently of the registry's bisection: the
+    positive root of m^2 + (K_MgADP + ADP - Mg) m - Mg K_MgADP = 0 for the state-3 buffer (5.0 mM
+    Mg2+, 1.3 mM ADP), then K_AK (1 + m/K_MgADP)^2 / (1 + m/K_MgATP)."""
+    k_adp, k_atp, mg, adp = 347.0e-6, 24.0e-6, 5.0e-3, 1.3e-3
+    b = k_adp + adp - mg
+    m = (-b + math.sqrt(b * b + 4 * mg * k_adp)) / 2
+    return m, 0.4331 * (1 + m / k_adp) ** 2 / (1 + m / k_atp)
+
+
+def with_match(**changed):
+    """beard2005@2 with its kinase's match changed (a plant)."""
+    r = SECOND.reactions[-1]
+    planted = r._replace(**changed.pop("reaction", {}), match=r.match._replace(**changed))
+    return SECOND._replace(reactions=(*SECOND.reactions[:-1], planted))
+
+
+def a_second_version(monkeypatch):
+    """beard2005@2 applied whole, with AMP. Its preconditions: the set keeps its own contract;
+    every row it shares with @1 has @1's double, bit for bit, at the world's temperature and at
+    310.15 K; adenylate kinase's sum of nu mu°/RT is -ln K_base at both, its constant carrying no
+    temperature; AMP's moieties are adenine and phosphorus at 1 each."""
+    assert species_registry.potential_set_errors(SECOND) == []
+    _, k_base = state_3_match()
+    for temperature in (298.15, 310.15):
+        first, second = (
+            species_registry.potential_set_values(
+                name, temperature_K=temperature, standard_concentration_mM=1000.0
+            )
+            for name in (BEARD, SECOND.name)
+        )
+        assert set(second) - set(first) == {"AMP"}
+        assert all(float.hex(first[k]) == float.hex(second[k]) for k in first), temperature
+        kinase = sum(n * second[row] for row, n in KINASE)
+        assert abs(kinase + math.log(k_base)) <= 1e-12, temperature
+    raw = species_registry.with_potential_set(set_world(potential_set=SECOND), SECOND.name)
+    moieties = {m["id"]: m["weights"] for m in raw["model"]["moieties"]}
+    assert moieties["phosphorus"]["AMP"] == 1 and moieties["adenine"]["AMP"] == 1
+    spec = parse_spec(raw)
+    assert species_registry.declared(parse_spec(to_dict(spec))) == species_registry.declared(spec)
+    return raw, contextlib.nullcontext()
+
+
+def the_second_version_as_the_appendix_prints_it(monkeypatch):
+    """beard2005@2 applied in a world at 298.15 K: every set row's and form's mu°/RT, as the world
+    declares it, is the lane's appendix's to its nine decimals, AMP's included, and the match is
+    the appendix's (free Mg2+ 3.808553529 mM, K_base 0.388964538, written out independently; its
+    section 7 declares no rounded constant). Planted, each
+    moving AMP off the appendix: the buffer's total Mg2+ read as free (no ADP in the buffer:
+    K_base 0.491) and the constant on totals left unconverted (a buffer of negligible Mg2+). The
+    contract refuses a buffer with a second ligand and a matched constant at a pH basis."""
+    m, k_base = state_3_match()
+    assert (f"{m * 1e3:.9f}", f"{k_base:.9f}") == ("3.808553529", "0.388964538")
+    raw = species_registry.with_potential_set(set_world(298.15, SECOND), SECOND.name)
+    assert raw["model"]["standard_concentration_mM"] == 1000.0  # The appendix's 1 M basis.
+    declared = {e["id"]: e for e in raw["model"]["species"]}
+    rows = [row for row, _ in SECOND.rows]
+    printed = {row: declared[row]["standard_mu_RT"] for row in rows}
+    forms = [f for row in rows for f in declared[row].get("forms", ())]
+    printed |= {f["id"]: f["standard_mu_RT"] for f in forms}
+    nine = {k: f"{v:.9f}" for k, v in APPENDIX_298.items()}
+    assert {k: f"{v:.9f}" for k, v in printed.items()} == nine
+    for plant in (with_match(buffer_M=(("Mg", 5.0e-3),)), with_match(buffer_M=(("Mg", 1e-12),))):
+        with monkeypatch.context() as patch:
+            patch.setattr(species_registry, "POTENTIAL_SETS", {SECOND.name: plant})
+            mu = species_registry.potential_set_values(
+                SECOND.name, temperature_K=298.15, standard_concentration_mM=1000.0
+            )
+        assert f"{mu['AMP']:.9f}" != nine["AMP"], plant.reactions[-1].match
+    for plant, refusal in (
+        (with_match(buffer_M=(("Mg", 5.0e-3), ("ADP", 1.3e-3), ("H", 1e-7))), "holds one ligand"),
+        (with_match(reaction=dict(proton_reference_M=1e-7)), "in base forms at 1 M"),
+    ):
+        (error,) = species_registry.potential_set_errors(plant)
+        assert error.startswith("reaction for AMP: ") and refusal in error, error
+    return raw, contextlib.nullcontext()
+
+
+def a_second_version_amp_at_two_phosphorus(monkeypatch):
+    raw = species_registry.with_potential_set(set_world(potential_set=SECOND), SECOND.name)
+    (phosphorus,) = [m for m in raw["model"]["moieties"] if m["id"] == "phosphorus"]
+    phosphorus["weights"]["AMP"] = 2
+    return raw, contextlib.nullcontext()
+
+
+def the_kinase_beside_the_second_version(k):
+    """beard2005@2 applied, with adenylate kinase's entry declared beside it at the constant k (a
+    planted declarer, as Table 2's): in base forms at K_base, or the constant on totals."""
+
+    def setup(monkeypatch):
+        raw = species_registry.with_potential_set(set_world(potential_set=SECOND), SECOND.name)
+        planted = ((KINASE_LAW, (FreeEnergyEntry(KINASE, -math.log(k), 1000.0),)),)
+        monkeypatch.setattr(species_registry, "declared_free_energies", lambda spec: planted)
+        return raw, contextlib.nullcontext()
+
+    return setup
+
+
+KINASE_LAW = "The adenylate kinase law's standard_free_energies"
+
+
 def with_moieties(raw, *weights):
     raw["model"]["moieties"] = [dict(id=name, weights=dict(w)) for name, w in weights]
     return raw
@@ -361,6 +487,23 @@ def a_balanced_fuel_mode(monkeypatch):
 def a_fuel_mode_off_by_one(monkeypatch):
     laws = law_registry.BUILTIN.extended(off_by_one())
     return fuel_world("seamtest.atp_pi_off_by_one@1"), law_registry.scope(laws)
+
+
+ENZYME = ("enzyme", (("E", 1), ("C", 1)))
+SUBSTRATE = ("substrate", (("S", 1), ("C", 1), ("P", 1)))
+MOVES = r"Operator local_species_reactions@1's"
+
+
+def operator_moves(moves):
+    """The enzyme network with its two moieties, its operator reporting `moves`."""
+
+    def setup(monkeypatch):
+        monkeypatch.setattr(
+            LocalSpeciesReactions, "species_moieties", lambda self, declaration: moves
+        )
+        return with_moieties(enzyme_world(), ENZYME, SUBSTRATE), contextlib.nullcontext()
+
+    return setup
 
 
 def an_entry_off_by_one(monkeypatch):
@@ -503,6 +646,24 @@ TABLE = {  # name: (definition and scope, None (admitted) or the refusal's patte
         a_buffer_edited,
         r"proton buffer Buf \(potential set beard2005@1, pK 7\.4\): its potentials .* are not",
     ),
+    "the second version applied whole, with AMP": (a_second_version, None),
+    "the second version as the lane's appendix prints it": (
+        the_second_version_as_the_appendix_prints_it,
+        None,
+    ),
+    "the second version's AMP at 2 in phosphorus": (
+        a_second_version_amp_at_two_phosphorus,
+        r"potential set beard2005@2: its moiety phosphorus over the rows present, .* is declared "
+        r"as \{.*'AMP': 2\}",
+    ),
+    "adenylate kinase in base forms beside the second version": (
+        the_kinase_beside_the_second_version(state_3_match()[1]),
+        None,
+    ),
+    "adenylate kinase on totals beside the second version": (
+        the_kinase_beside_the_second_version(0.4331),
+        rf"{KINASE_LAW}, entry 0: dG°/RT .* beyond the rounding bound",
+    ),
     "a moiety naming no row": (an_unknown_moiety_row, r"moiety glucose: 'Glc' is not a species"),
     "a fuel mode that conserves every moiety": (a_balanced_fuel_mode, None),
     "a fuel mode with Pi off by one": (
@@ -526,6 +687,27 @@ TABLE = {  # name: (definition and scope, None (admitted) or the refusal's patte
     "an entry with Pi off by one": (
         an_entry_off_by_one,
         rf"{KIND}: it changes moiety phosphorus by \+1 per turnover",
+    ),
+    "an operator's moves that conserve every moiety": (
+        operator_moves(
+            (
+                ("binding", (("E", -1), ("S", -1), ("C", 1))),
+                ("catalysis", (("C", -1), ("E", 1), ("P", 1))),
+            )
+        ),
+        None,
+    ),
+    "an operator's move with P off by one": (
+        operator_moves((("catalysis", (("C", -1), ("E", 1), ("P", 2))),)),
+        rf"{MOVES} move catalysis: it changes moiety substrate by \+1 per turnover",
+    ),
+    "an operator's move naming a species that is not a row": (
+        operator_moves((("leak", (("S", -1), ("H2O", 1))),)),
+        rf"{MOVES} move leak: it names 'H2O', which is not a species of the model",
+    ),
+    "an operator's move with a count that is not an integer": (
+        operator_moves((("half", (("S", -1), ("P", 0.5))),)),
+        rf"{MOVES} species_moieties: move 'half' is a non-empty",
     ),
 }
 

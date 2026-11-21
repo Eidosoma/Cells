@@ -1,0 +1,36 @@
+{
+  "strack2011_innervated_cohort@1": {
+    "doi": "10.1371/journal.pone.0020524",
+    "figure": "https://doi.org/10.1371/journal.pone.0020524.g003",
+    "location": "Figure 3D, PDF page 4, filled circles for innervated adult mouse tibialis anterior; caption on page 5",
+    "animals": "Ten innervated hindlimbs with contralateral denervation",
+    "observable": "Receptor-associated label remaining relative to the day-7 group mean",
+    "timing": "Elapsed days from the plotted day-7 normalization point. Horizontal distances were read against the five-day tick spacing.",
+    "extraction": "Read the centers and end caps on the logarithmic ordinate relative to the initial filled point. Values are approximate whole percentages. The authors' fitted curve was excluded.",
+    "columns": ["elapsed_days", "percent_of_anchor", "lower_bar", "upper_bar"],
+    "fit": [[0, 100, null, null], [7, 67, 63, 72]],
+    "evaluation": [[14, 48, 43, 52], [16, 43, 37, 49], [18, 42, 39, 46]],
+    "uncertainty": "The figure caption specifies SD and the methods specify SEM. The bars are recorded without a distributional interpretation. Repeated measurements share the animals and anchor.",
+    "interpretation": "A labelled cohort is a proxy for surviving surface receptors. Starting on day 7 emphasizes the slow component. The study reports multiple stability classes over the full time course."
+  },
+  "devreotes1977_surface_arrival@1": {
+    "doi": "10.1016/0092-8674(77)90023-X",
+    "source": "https://pubmed.ncbi.nlm.nih.gov/844098/",
+    "location": "Page 365, abstract, statements on label appearance over the first 3 and 3.5 hours",
+    "preparation": "Cultured chick skeletal muscle",
+    "few_labelled_receptors_at_surface_through_h": 3,
+    "most_new_insertions_labelled_by_h": 3.5,
+    "interpretation": "The second observation concerns the label among newly inserted receptors. A pool count, fixed transit time and fraction of the original pulse completed cannot be inferred from it."
+  },
+  "land1980_receptor_sites_and_current@1": {
+    "doi": "10.1073/pnas.77.6.3736",
+    "source": "https://people.ece.cornell.edu/land/Papers/PNAS1980.pdf#page=2",
+    "location": "Table 1, printed page 3737",
+    "preparation": "Esterase-inactivated Anolis intercostal neuromuscular junctions, −100 mV and 23 °C",
+    "columns": ["available_sites_per_um2", "density_error", "mean_peak_current_nA", "current_error_nA"],
+    "fit": [[18000, 4000, 7.5, 1.3]],
+    "evaluation": [[8200, 1900, 4.0, 0.7], [6900, 2000, 2.5, 0.5]],
+    "uncertainty": "Reported estimated standard errors include systematic error. Condition means combine recordings across muscle fibers. The table does not specify a biological sample count per row.",
+    "interpretation": "The denominator is receptor-rich membrane area. The measured current is the magnitude of a miniature endplate current. Relative binding-site density is a proxy for relative available functional units under an assumed common effective area and single-unit drive."
+  }
+}

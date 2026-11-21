@@ -1,0 +1,25 @@
+{
+  "deshpande2018": {
+    "citation": "Deshpande, Spoelstra, van Doorn, Kerssemakers and Dekker (2018), Mechanical Division of Cell-Sized Liposomes",
+    "doi": "10.1021/acsnano.7b08411",
+    "figure": "4a",
+    "paired_successful_divisions": 78,
+    "observable": "Slope of summed daughter fluorescence against fluorescence of the corresponding parent at the microfluidic splitter",
+    "slope": 0.87,
+    "reported_sd": 0.01,
+    "r_squared": 0.94,
+    "conditions": "DOPC-based giant liposomes crossing a Y-junction. The fit uses events with two observable daughters.",
+    "limits": "The corrections for channel geometry and object size approximately cancel. Optical recovery depends on signal calibration. There is no independently quantified exterior dye inventory for these pairs."
+  },
+  "fayolle2018": {
+    "citation": "Fayolle, Fiore, Stano and Strazewski (2018), Rapid purification of giant lipid vesicles by microfiltration",
+    "doi": "10.1371/journal.pone.0192975",
+    "location": "Table 1 and Fig. 3A–E",
+    "conditions": "DOPC/DOPA (7:3) giant vesicles containing calcein. Each retentate has a volume of 1 mL. The lipid assay measures recovered material in that volume.",
+    "loaded_lipid_nmol": 500,
+    "retentate_lipid_nmol": [200, 130, 80],
+    "lumen_to_exterior_signal_ratio": [39, 89, 137],
+    "signal_ratio_relative_error_percent": 20,
+    "limits": "Five confocal micrographs per signal estimate. The later exterior signals reach the instrument floor. No lipid error bars or independent filtrate and total entrapped calcein inventories were reported."
+  }
+}
