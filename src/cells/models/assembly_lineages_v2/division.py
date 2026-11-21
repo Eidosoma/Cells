@@ -95,14 +95,15 @@ class Schedule:
     its times: declared (times), or a Poisson process of rate `rate` (1/s) drawn per run."""
 
     index: int
-    kind: str  # "shear", "transfer" or "replacement" (FR-20)
+    kind: str  # "shear", "transfer", "replacement" (FR-20) or "withdrawal" (FR-35)
     k: int | None
     times: tuple | None
     rate: float | None
     stress: float | None
     keep: int | None = None  # a transfer's K_keep
-    fresh: tuple | None = None  # a transfer's fresh pool, or a replacement's pool: one count per
-    # finite pool place
+    fresh: tuple | None = None  # a transfer's fresh pool, a replacement's pool or a withdrawal's
+    # buffer (its counts in the withdrawn volume): one count per finite pool place
+    fraction: float | None = None  # a withdrawal's fraction f, in (0, 1) (FR-35)
 
 
 def parse_schedules(raw, world):
@@ -112,10 +113,12 @@ def parse_schedules(raw, world):
     critical = None if world.division is None else world.division["critical_stress_Pa"]
     out, seen = [], set()
     for entry in raw:
-        if isinstance(entry, dict) and entry.get("kind") in ("transfer", "replacement"):
-            from cells.models.assembly_lineages_v2 import replacement, transfer
+        if isinstance(entry, dict) and entry.get("kind") in ("transfer", "replacement",
+                                                             "withdrawal"):  # fmt: skip
+            from cells.models.assembly_lineages_v2 import replacement, transfer, withdrawal
 
-            module = transfer if entry["kind"] == "transfer" else replacement
+            module = {"transfer": transfer, "replacement": replacement,
+                      "withdrawal": withdrawal}[entry["kind"]]  # fmt: skip
             schedule = module.parse(entry, world)
             if schedule.index in seen:
                 raise ConfigError("experiment: schedule indices are unique")
@@ -125,8 +128,9 @@ def parse_schedules(raw, world):
         if not isinstance(entry, dict) or entry.get("kind") != "shear":
             raise ConfigError(
                 "experiment: a schedule is {index, kind: shear, k, times_s, ...}, "
-                "{index, kind: transfer, times_s, K_keep, fresh_pool} or "
-                "{index, kind: replacement, times_s, pool}"
+                "{index, kind: transfer, times_s, K_keep, fresh_pool}, "
+                "{index, kind: replacement, times_s, pool} or "
+                "{index, kind: withdrawal, times_s, fraction, buffer}"
             )
         if world.division is None:
             raise ConfigError("experiment: a shear schedule needs the world's division block")
@@ -165,15 +169,15 @@ def parse_schedules(raw, world):
     # FR-20: a replacement never shares a declared time with another stop, since cells.relations
     # has no order between same-time events (the lead's condition of 20 November).
     for s in out:
-        if s.kind != "replacement":
+        if s.kind not in ("replacement", "withdrawal"):  # FR-35: a withdrawal stands alone too
             continue
         for other in out:
             shared = set(s.times) & set(other.times or ()) if other is not s else set()
             if shared:
                 raise ConfigError(
-                    f"experiment: replacement {s.index} shares the time {min(shared)} s with "
+                    f"experiment: {s.kind} {s.index} shares the time {min(shared)} s with "
                     f"schedule {other.index} ({other.kind}); relations have no order between "
-                    "same-time events, so a replacement stands alone in time"
+                    f"same-time events, so a {s.kind} stands alone in time"
                 )
     first = {}  # Two shear schedules never share a time: each attempt has one payer (19 November).
     for s in out:
@@ -198,6 +202,10 @@ def schedule_to_dict(schedules):
         if s.kind == "replacement":
             out.append({"index": s.index, "kind": s.kind, "times_s": list(s.times),
                         "pool": list(s.fresh)})  # fmt: skip
+            continue
+        if s.kind == "withdrawal":  # FR-35
+            out.append({"index": s.index, "kind": s.kind, "times_s": list(s.times),
+                        "fraction": s.fraction, "buffer": list(s.fresh)})  # fmt: skip
             continue
         entry = {"index": s.index, "kind": s.kind, "k": s.k}
         if s.times is not None:

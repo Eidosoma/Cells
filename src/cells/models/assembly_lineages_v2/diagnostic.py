@@ -318,4 +318,6 @@ def build_population(spec, layout, ctx, draws, committed, codes, values, after_e
     }
     if ctx.replacements:  # FR-20: each pool replacement, when declared (it draws nothing)
         body["replacement_events"] = ctx.replacements
+    if ctx.withdrawals:  # FR-35: each withdrawal, its draws by address (index, number, size)
+        body["withdrawal_events"] = ctx.withdrawals
     return body, arrays

@@ -54,6 +54,8 @@ from cells.models.assembly_lineages_v2 import (
     model,
     population,
     runner,
+    streams,
+    withdrawal,
 )
 from tests.assembly_lineage_v2_fixtures import definition, site_binding, species, step
 from tests.unit.test_assembly_lineages_v2_checkpoints import differences
@@ -123,23 +125,40 @@ def wash_spec(d=None):
     return parse_spec(d)
 
 
+def withdrawal_wash_spec(d=None):
+    """FR-35's restart world: the three-phase world with one withdrawal schedule of two washes (a
+    cut between them tests the schedule's draw counter), half the pool each time, the medium's L
+    in the withdrawn volume."""
+    d = copy.deepcopy(d or raw_world())
+    d["experiment"]["schedules"] = [
+        {"index": 1, "kind": "withdrawal", "times_s": [PULSE, WASH], "fraction": 0.5,
+         "buffer": pool_of(d, L=15)}
+    ]  # fmt: skip
+    return parse_spec(d)
+
+
+STOPS = {"replacement": (wash_spec, "replacements", population.REPLACEMENT),
+         "withdrawal": (withdrawal_wash_spec, "withdrawals", population.WITHDRAWAL)}  # fmt: skip
+
+
 @functools.lru_cache(maxsize=None)
-def world():
-    """(spec, the uninterrupted run, its replacements [(record, row, events before it)])."""
-    spec = wash_spec()
+def world(kind="replacement"):
+    """(spec, the uninterrupted run, its stops [(record, row, events before it)])."""
+    build, field, row_kind = STOPS[kind]
+    spec = build()
     a = runner.run(spec).check()
     rows, out = a.rows, []
-    for r in a.population["replacements"]:
-        i = int(np.flatnonzero((rows["row_kind"] == population.REPLACEMENT)
+    for r in a.population[field]:
+        i = int(np.flatnonzero((rows["row_kind"] == row_kind)
                                & (rows["row_time"] == r["time_s"]))[0])  # fmt: skip
         out.append((r, i, int(rows["row_event"][i])))
     return spec, a, tuple(out)
 
 
 @functools.lru_cache(maxsize=None)
-def stopped(k):
+def stopped(k, kind="replacement"):
     """The world stopped at its k-th event (FR-22)."""
-    return runner.run(world()[0], stop=k).check()
+    return runner.run(world(kind)[0], stop=k).check()
 
 
 def padded(vector, size):
@@ -342,7 +361,41 @@ def refusal(case):
     elif case == "a transfer's fresh count above the capacity":
         d["execution"]["molecule_capacity"] = 32
         d["experiment"]["schedules"] = [transfer_of(d, L=33)]
+    elif case == "a fraction on a replacement":  # FR-35: a partial exchange is a withdrawal
+        replacement["fraction"] = 0.5
+    elif case.startswith("a withdrawal"):
+        d["experiment"]["schedules"] = [withdrawal_of(d)]
+        planted = d["experiment"]["schedules"][0]
+        if case == "a withdrawal of the whole pool":
+            planted["fraction"] = 1.0
+        elif case == "a withdrawal of nothing":
+            planted["fraction"] = 0.0
+        elif case == "a withdrawal buffer of the wrong length":
+            planted["buffer"] = planted["buffer"][:-1]
+        elif case == "a withdrawal buffer above c_ext":
+            planted["buffer"] = pool_of(d, L=10**6)
+        elif case == "a withdrawal buffer above the capacity":
+            d["execution"]["molecule_capacity"] = 32
+            planted["fraction"] = 0.9  # so its concentration in fV stays below c_ext
+            planted["buffer"] = pool_of(d, L=33)
+        elif case == "a withdrawal at a replacement's time":
+            d["experiment"]["schedules"].append(dict(replacement, index=2))
+        elif case == "a withdrawal of a held species the vesicles take up":
+            pool = d["model"]["world"]["phases"]["pool"]["species"]
+            pool[0] = {"id": "L", "kind": "held", "held_mM": 1.0}
+            del d["model"]["world"]["founder"]["L@pool"]
+            planted["buffer"] = pool_of(d)
+        elif case == "a withdrawal without a population":
+            w = d["model"]["world"]
+            d["execution"]["mode"] = "single_lineage"
+            w["founder"] |= w.pop("population")["founders"][0]
     return d
+
+
+def withdrawal_of(d, fraction=0.5, **counts):
+    """A withdrawal at the pulse's time of half the pool, its buffer these counts in fV."""
+    return {"index": 1, "kind": "withdrawal", "times_s": [PULSE], "fraction": fraction,
+            "buffer": pool_of(d, **counts)}  # fmt: skip
 
 
 def transfer_of(d, **counts):
@@ -361,6 +414,16 @@ REFUSALS = {
     "a transfer at its time": "shares the time",
     "a fresh count above the capacity": "fresh L@pool is 33, above molecule_capacity 32",
     "a transfer's fresh count above the capacity": "fresh L@pool is 33, above molecule_capacity 32",
+    # FR-35 (D261)
+    "a fraction on a replacement": "a partial exchange is a withdrawal",
+    "a withdrawal of the whole pool": "fraction is in \\(0, 1\\)",
+    "a withdrawal of nothing": "fraction is in \\(0, 1\\)",
+    "a withdrawal buffer of the wrong length": "one count per finite pool place",
+    "a withdrawal buffer above c_ext": "above c_ext",
+    "a withdrawal buffer above the capacity": "fresh L@pool is 33, above molecule_capacity 32",
+    "a withdrawal at a replacement's time": "shares the time",
+    "a withdrawal of a held species the vesicles take up": "washed out only in part",
+    "a withdrawal without a population": "needs a population",
 }
 
 
@@ -404,17 +467,23 @@ def test_a_cut_around_each_replacement_resumes_bitwise(tmp_path, monkeypatch):
     replacement records. A cut cannot fall at the replacement itself, since cuts are at events and
     a replacement lies between two. Planted: a resumed run that redoes the wash (its checkpoint's
     applied stops one short, after the wash) or skips it (one over, before it) is caught."""
-    spec, a, at = world()
+    cut_around_each_stop("replacement", tmp_path, monkeypatch)
+
+
+def cut_around_each_stop(kind, tmp_path, monkeypatch):
+    """The cut test's body for a stop kind (replacement or withdrawal)."""
+    spec, a, at = world(kind)
+    field = STOPS[kind][1]
     assert parse_spec(spec.to_dict()).fingerprint == spec.fingerprint  # the round trip
     for _, _, n in at:
         for k in (n, n + 1):  # the last event before it, the first after it
-            b1 = stopped(k)
-            path = checkpoints.write(tmp_path / f"c{k}", b1.checkpoint())
+            b1 = stopped(k, kind)
+            path = checkpoints.write(tmp_path / f"{kind}{k}", b1.checkpoint())
             b2 = runner.run(spec, start=checkpoints.read(path)).check()
             assert differences(a, b1, b2, k) == []
-            done = b2.population["numbering"]["replacements"]
-            assert a.population["replacements"][done:] == b2.population["replacements"]
-    real, (_, _, n) = checkpoints.admit, at[-1]  # the wash
+            done = b2.population["numbering"][field]
+            assert a.population[field][done:] == b2.population[field]
+    real, (_, _, n) = checkpoints.admit, at[-1]  # the last stop
     for k, shift in ((n + 1, -1), (n, 1)):  # redone after a cut past it; skipped before it
 
         def shifted(spec_, checkpoint, shift=shift):
@@ -423,7 +492,7 @@ def test_a_cut_around_each_replacement_resumes_bitwise(tmp_path, monkeypatch):
             return record, lane, dict(host, doc=doc)
 
         monkeypatch.setattr(checkpoints, "admit", shifted)
-        b1 = stopped(k)
+        b1 = stopped(k, kind)
         assert differences(a, b1, runner.run(spec, start=b1.checkpoint()), k) != []
         monkeypatch.undo()
 
@@ -480,3 +549,217 @@ def test_a_site_bound_ligand_stays_through_a_wash_and_a_released_one_rebinds():
     for n, after in ((n1, (1, 5, 1)), (n2, (0, 4, 2))):
         b = runner.run(spec, stop=n + 1).check()  # FR-22: the world stopped at that event
         assert sites(b.rows["pool_count"][-1], b.rows["slot_count"][-1][0]) == after
+
+
+# ------------------------------------------------------------------ FR-35: a partial withdrawal
+
+N_STREAMS = 4000  # host draws at real run addresses: the tier test (D261 item 6)
+
+
+def acceptance_spec(fraction, *, seed=1):
+    """FR-35's acceptance world: site_wash_spec() with its wash a withdrawal of `fraction` (8 free
+    X, 4 vacant and 2 occupied sites), the buffer tracer-free: no X, the medium's L and S in the
+    withdrawn volume, floored to a count (7 and 1 at a quarter; the note's B1)."""
+    d = site_wash_spec().to_dict()
+    d["experiment"]["schedules"] = [
+        {"index": 1, "kind": "withdrawal", "times_s": [T_WASH], "fraction": fraction,
+         "buffer": pool_of(d, L=int(30 * fraction), S=int(6 * fraction))}
+    ]  # fmt: skip
+    d["execution"]["stream"]["seed"] = seed
+    return parse_spec(d)
+
+
+def pool_f_of(spec):
+    """F of a pool vector at the pool's volume, through the run's guarded table read."""
+    world, layout = spec.model.world, model.layout(spec)
+    tables = model.tables(spec)
+    return lambda c: ledger.state_free_energy(np.asarray(c), tables, world.terms, layout.terms)
+
+
+def reference(spec, record):
+    """§4's independent reference: exact log-factorials (lgamma), never the engine's table."""
+    world, f = spec.model.world, record["fraction"]
+    X = 6.02214076e23 * world.volume("pool") * world.units.standard_concentration_mM * 1e-3
+    mu = {s.id: s.mu_solution for s in world.species}
+    species = {p.name: p.species for p in world.places}
+
+    def F(counts, ln_g):
+        return sum(c * (mu[species[p]] - math.log(X) - ln_g) + math.lgamma(c + 1)
+                   for p, c in counts.items() if c)  # fmt: skip
+
+    before, k, kept, b = (record[x] for x in ("before", "withdrawn", "remaining", "supplied"))
+    after = {p: kept[p] + b[p] for p in kept}
+    ln_f, ln_rest = math.log(f), math.log1p(-f)
+    ln_p = sum(math.lgamma(before[p] + 1) - math.lgamma(k[p] + 1) - math.lgamma(kept[p] + 1)
+               + k[p] * ln_f + kept[p] * ln_rest for p in before)  # fmt: skip
+    return {"pool_loss_kT": F(before, 0.0) - F(kept, ln_rest), "sample_F_kT": F(k, ln_f),
+            "split_surprisal_kT": -ln_p, "buffer_F_kT": F(b, ln_f),
+            "mixing_heat_kT": F(kept, ln_rest) + F(b, ln_f) - F(after, 0.0)}  # fmt: skip
+
+
+def test_a_withdrawal_keeps_every_slot_draws_each_molecule_and_closes_its_books():
+    """FR-35 (D261), two engine runs of the acceptance world (f = 1/2 and 1/4, one stream each):
+    the recorded withdrawn counts are the operator's draw at the run's own address, bit for bit;
+    collected plus remaining is the recorded pre-wash count in every place; the particle's sites
+    and key are as they were; the record's energies are §4's independent reference (exact
+    log-factorials) to 1e-10 kT, the heat is not negative, and the books close (check())."""
+    for fraction in (0.5, 0.25):
+        spec = acceptance_spec(fraction)
+        run = runner.run(spec).check()
+        (record,) = run.population["withdrawals"]
+        world, (schedule,) = spec.model.world, spec.experiment.schedules
+        before = model.founder(spec)
+        names = [p.name for p in world.places]
+        for name, count in record["before"].items():
+            before[names.index(name)] = count
+        taken, _ = withdrawal.draw(model.layout(spec).base_key, world, schedule, 0, before)
+        assert record["withdrawn"] == withdrawal.by_place(world, taken)
+        for p, n in record["before"].items():
+            assert record["withdrawn"][p] + record["remaining"][p] == n
+        assert record["supplied"]["X@pool"] == 0  # tracer-free
+        rows = run.rows
+        i = int(np.flatnonzero(rows["row_kind"] == population.WITHDRAWAL)[0])
+        assert rows["row_event"][i - 1] == rows["row_event"][i]  # no event between them
+        for field in ("slot_count", "slot_key"):
+            np.testing.assert_array_equal(rows[field][i], rows[field][i - 1])
+        for name, value in reference(spec, record).items():
+            assert record[name] == pytest.approx(value, abs=1e-10), name
+        assert record["mixing_heat_kT"] >= 0.0
+        assert record["pool_loss_kT"] == pytest.approx(
+            record["sample_F_kT"] - record["split_surprisal_kT"], abs=1e-10
+        )  # the sink is not the sample's own F: they differ by the surprisal
+
+
+def test_a_withdrawal_books_its_mixing_heat_never_negative_and_its_limits_are_exact():
+    """FR-35's booking (D261 item 4), through the operator's booking on the guarded table read:
+    the heat is not negative and the books' identity holds in random realizations whose buffer
+    carries the species; at f = 1 the bookings are cells.pool_replacement@1's, with zero heat; the
+    mean heat over k ~ Bin(n, f) is FR-27's continuum heat exactly for a tracer-free buffer, and
+    exceeds it with a buffer at the pool's own concentration by less than the mixture's binomial
+    entropy (the discrete surprisal of which side each molecule came from). Host arithmetic."""
+    spec = acceptance_spec(0.5)
+    world, pool_f = spec.model.world, pool_f_of(spec)
+
+    def vector(**counts):  # a pool vector, padded to the places' capacity, with these counts
+        out = np.zeros(spec.execution.place_capacity, dtype=np.int64)
+        for i, p in enumerate(world.places):
+            if p.phase == "pool" and not p.held:
+                out[i] = counts.get(p.species, 0)
+        return out
+
+    rng = np.random.default_rng(35)
+    for _ in range(40):
+        f = float(rng.uniform(0.05, 0.95))
+        n = vector(L=int(rng.integers(0, 40)), S=int(rng.integers(0, 20)),
+                   X=int(rng.integers(0, 30)))  # fmt: skip
+        k = np.asarray([int(rng.integers(0, c + 1)) for c in n])
+        b = vector(L=int(rng.integers(0, 30)), S=int(rng.integers(1, 20)),
+                   X=int(rng.integers(1, 30)))  # fmt: skip
+        e = withdrawal.booking(pool_f, n, k, b, f, world)
+        assert e["mixing_heat_kT"] >= -1e-12
+        change = pool_f(n - k + b) - pool_f(n)
+        assert change == pytest.approx(e["buffer_F_kT"] - e["pool_loss_kT"] - e["mixing_heat_kT"],
+                                       abs=1e-9)  # fmt: skip
+    n, b = vector(L=30, S=6, X=8), vector(L=12, S=3)
+    whole = withdrawal.booking(pool_f, n, n, b, 1.0, world)  # f = 1: @1's whole exchange
+    zero = pool_f(np.zeros_like(n))
+    assert whole["pool_loss_kT"] == pytest.approx(pool_f(n) - zero, abs=1e-12)  # @1's sink
+    assert whole["buffer_F_kT"] == pytest.approx(pool_f(b) - zero, abs=1e-12)  # @1's work
+    assert whole["mixing_heat_kT"] == pytest.approx(0.0, abs=1e-12)
+    assert whole["split_surprisal_kT"] == pytest.approx(0.0, abs=1e-12)
+
+    def mean_heat(count, f, buffer):
+        out = 0.0
+        for k in range(count + 1):
+            p = math.comb(count, k) * f**k * (1 - f) ** (count - k)
+            taken = vector(X=k)
+            e = withdrawal.booking(pool_f, vector(X=count), taken, vector(X=buffer), f, world)
+            out += p * e["mixing_heat_kT"]
+        return out
+
+    for count, f in ((8, 0.5), (8, 0.25), (100, 0.25)):  # tracer-free: FR-27's -(1-f) n ln(1-f)
+        assert mean_heat(count, f, 0) == pytest.approx(-(1 - f) * count * math.log1p(-f), 1e-12)
+    count, f, buffer = 100, 0.25, 25  # the buffer at the pool's concentration: continuum heat 0
+    m = round((1 - f) * count) + buffer
+    entropy = -sum(q * math.log(q) for q in (math.comb(m, j) * f**j * (1 - f) ** (m - j)
+                                             for j in range(m + 1)) if q > 0)  # fmt: skip
+    assert 0.0 < mean_heat(count, f, buffer) < entropy
+
+
+def test_a_withdrawal_draws_binomially_independently_and_on_its_own_addresses(monkeypatch):
+    """FR-35's statistics (D261 item 6), the operator's draw at real run addresses: N_STREAMS
+    streams (seeds 0 to N - 1 of the acceptance world), 8 free X.
+    - f = 1/2: the collected mean in 4 +- 0.1 (4.47 SD), the variance in 2 +- 0.2 (4.8 SD), and a
+      chi-squared over the nine outcomes below 31.8 (alpha 1e-4, 8 df). f = 1/4: the collected mean
+      in 2 +- 0.1 and its variance in 1.5 +- 0.2; the remaining count's mean, 6, would not pass.
+      The rates are a prior over the seed choice, fixed once chosen.
+    - Independent: two places of equal count (X and L, 8 each) and two consecutive washes of one
+      place are uncorrelated, |r| < 4 / sqrt(N).
+    - Disjoint: a transfer's and a Poisson shear's streams (their own indices) are other keys.
+    Planted: one uniform shared by a species (mean 4, variance 16) and blocks overlapping by an
+    offset (place j reading place 0's block from j) are each caught. Host arithmetic."""
+    spec = acceptance_spec(0.5)
+    world, x = spec.model.world, spec.execution
+    names = [p.name for p in world.places]
+    schedule = spec.experiment.schedules[0]
+    keys = [streams.base_key_data(seed, x.environment, x.lineage, x.branch)
+            for seed in range(N_STREAMS)]  # fmt: skip
+    pool = np.zeros(len(names), dtype=np.int64)
+    pool[[names.index("X@pool"), names.index("L@pool")]] = 8
+    ix, il = names.index("X@pool"), names.index("L@pool")
+
+    def collected(f, wash=0, count=N_STREAMS):
+        s = division.Schedule(1, "withdrawal", None, (T_WASH,), None, None, None, schedule.fresh,
+                              fraction=f)  # fmt: skip
+        out = np.asarray([withdrawal.draw(key, world, s, wash, pool)[0] for key in keys[:count]])
+        return out[:, ix], out[:, il]
+
+    def bands(k, mean, var):
+        return abs(k.mean() - mean) < 0.1 and abs(k.var(ddof=1) - var) < 0.2
+
+    kx, kl = collected(0.5)
+    assert bands(kx, 4.0, 2.0)
+    expected = np.asarray([math.comb(8, j) for j in range(9)]) * N_STREAMS / 256.0
+    chi2 = float(np.sum((np.bincount(kx, minlength=9) - expected) ** 2 / expected))
+    assert chi2 < 31.8
+    r = 4.0 / math.sqrt(N_STREAMS)
+    assert abs(np.corrcoef(kx, kl)[0, 1]) < r  # two places of equal count
+    assert abs(np.corrcoef(kx, collected(0.5, wash=1)[0])[0, 1]) < r  # consecutive washes
+    qx, _ = collected(0.25)
+    assert bands(qx, 2.0, 1.5) and not bands(8 - qx, 2.0, 1.5)  # the collected count, not the rest
+    base = keys[0]
+    others = {i: np.asarray(streams.stream_key_data(base, i, "schedule")) for i in (1, 2, 3)}
+    assert len({tuple(v.tolist()) for v in others.values()}) == 3  # withdrawal, transfer, shear
+    real, places = streams.block, len(withdrawal.finite_places(world))
+
+    def shared_uniform(key, number, n):  # planted: one uniform for all of a place's molecules
+        return np.repeat(np.asarray(real(key, number, 1)), n)
+
+    def overlapping(key, number, n):  # planted: place j reads place 0's block from offset j
+        j = number % places
+        return np.asarray(real(key, number - j, n + j))[j:]
+
+    monkeypatch.setattr(withdrawal.streams, "block", shared_uniform)
+    shared, _ = collected(0.5, count=1000)
+    assert not bands(shared, 4.0, 2.0)  # one uniform per species: variance 16
+    monkeypatch.setattr(withdrawal.streams, "block", overlapping)
+    ox, ol = collected(0.5, count=1000)
+    assert abs(np.corrcoef(ox, ol)[0, 1]) > 4.0 / math.sqrt(1000)  # overlapping blocks
+    monkeypatch.undo()
+
+
+def test_a_cut_around_each_withdrawal_resumes_bitwise(tmp_path, monkeypatch):
+    """FR-22 around FR-35's withdrawal: the cut test's body (cuts at the last event before each
+    wash and the first after it, resumed bitwise; redone and skipped washes caught) on a world of
+    two washes on one schedule. Planted: the schedule's draw counter, which a resumed run derives
+    from the applied stops, left at 0 after a cut between the washes, so the second wash redraws
+    the first's addresses: caught."""
+    cut_around_each_stop("withdrawal", tmp_path, monkeypatch)
+    spec, a, at = world("withdrawal")
+    k = at[0][2] + 1  # the first event after the first wash, before the second
+    monkeypatch.setattr(population, "_count_washes", lambda *args: None)
+    b1 = stopped(k, "withdrawal")
+    b2 = runner.run(spec, start=b1.checkpoint()).check()
+    assert differences(a, b1, b2, k) != [] or (
+        a.population["withdrawals"][1:] != b2.population["withdrawals"]
+    )
