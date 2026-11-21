@@ -8836,3 +8836,29 @@ predicted blind (fr7-item4-predictions-2026-11-21) and scored by the second buil
     test_field_floor_held passes unedited, and existing test bodies stay as they are.
   - The second builder reproduces the orders at base and head.
 
+## D277: Overnight delegation, and the order in which paused lanes resume
+
+2026-11-21, about 23:24 UTC. The user, going to bed: "good luck with the FRs, lean and core over night.
+you decide with adviser this question and the ones overnight except something significant", and
+"if there are free agents, I guess the FR list will take a while then start, mitochondria and gene
+regulation and origin of life last".
+- **The held junction study runs as option (a),** three plain commands. That removes the ambiguity
+  the safety check flagged, without overriding it. If one is refused again, it waits for the morning.
+- **Decided overnight with the advisor:** what is already decided runs without asking.
+  - FR-25's rule tag, fresh runs, table tag and judgement, including the declared retry.
+  - FR-30's next paper in the registered order, after the checker confirms the one before is
+    undetermined.
+  - Landings whose gates pass with no undeclared movement.
+- **Held for the user (significant):**
+  - a gate where crossrev or G1 moves an undeclared world;
+  - what to build after a failed or inconclusive verdict (the verdict itself is recorded as scored);
+  - any engine build not already decided: FR-37's advection, a conducting-fraction law, D2, kinds on
+    crossing junctions, the unwindowed-clock refusal;
+  - deletions, a content refusal, and a privacy-scan hit.
+- **Lane order:** FR and core work first. G4 takes the first free test lane after FR-28.
+- **Paused lanes resume only with free agents, in this order:** mitochondria, gene regulation's own
+  work, then origin of life last. Desk work first; nothing of theirs takes a test lane ahead of the
+  FR and core landings.
+- **The Lean lane** publishes its own work. The lead scans its commits after they land and does not
+  merge its branches tonight.
+
