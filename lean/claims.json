@@ -21,6 +21,65 @@
     "cells.shared_pool@1": "molecular-assembly"
   },
   "comparisons": {
+    "label-mixing-power": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [
+        "logmean_electrodiffusion@1"
+      ],
+      "engine_revision": "ee0b8106406eb26e57ab1b0c34e16ed6c3f83a2b",
+      "record_revision": "a710e377ea87a865af46a1e6b2d7cf3574ff5aa3",
+      "sources": {
+        "Neutral face and instantaneous power": "src/cells/numerics/surface_transport.py#L283-L302",
+        "Logarithmic mean and series threshold": "src/cells/numerics/extracellular_field.py#L48-L69",
+        "Predicted face conductances": "src/cells/numerics/surface_imex.py#L109-L135",
+        "Applied flux and cumulative heat": "src/cells/models/surface_pump_v3.py#L2111-L2134",
+        "Diffusion rate, two nodes and explicit labels": "validation/regions/example.py#L45-L105",
+        "Accepted-step histories": "validation/regions/readouts.py#L269-L290",
+        "Pointwise surface comparison inputs": "validation/tissue/surface_fixtures.py",
+        "Baseline concentration for inactive species": "validation/tissue/secreted_species_fixtures.py#L29-L33"
+      },
+      "record_inputs": {
+        "Mixing power and accepted-step proofs": "lean/CellsProofs/Transport/LabelMixingPower.lean",
+        "Neutral face reduction": "lean/CellsProofs/Transport/LabelDiffusion.lean",
+        "Optional Mathlib relative-entropy equivalence": "lean/checks/mixing/KLFun.lean"
+      },
+      "driver": "lean/checks/label_mixing_power.py",
+      "record": "lean/PROGRESS.md#fr33-label-energy"
+    },
+    "wall-wash-retention": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [],
+      "operators": [
+        "cells.scheduled_compartment_wash@1",
+        "cells.site_occupancy@1"
+      ],
+      "engine_revision": "9917e3d9567993e1019c8caafa89f8653ee6ea9b",
+      "record_revision": "a710e377ea87a865af46a1e6b2d7cf3574ff5aa3",
+      "sources": {
+        "Liquid sample, refill and ledgers": "src/cells/operators/wash_schedule.py#L420-L501",
+        "Surface binding rate and sign convention": "src/cells/operators/site_occupancy.py#L927-L932",
+        "Scheduled controls at the event": "src/cells/definitions/pump_composite_spec.py#L258-L280",
+        "Accepted history and checkpoint": "src/cells/execution/runner.py",
+        "Node and stand-in well fixtures": "validation/tissue/wash_schedule_fixtures.py#L56-L115",
+        "Well geometry and initial free tracer": "validation/tissue/secreted_species_fixtures.py",
+        "Node versus stand-in regression": "tests/unit/test_wash_schedule_runs.py#L61-L93"
+      },
+      "record_inputs": {
+        "Retention and subsequent release": "lean/CellsProofs/Tissue/WallWash.lean",
+        "Finite-pool wash identity": "lean/CellsProofs/Tissue/CompartmentWash.lean",
+        "Albumin rinse and residual measurements": "lean/checks/data/robinson2014_wall_wash.json"
+      },
+      "driver": "lean/checks/wall_wash.py",
+      "record": "lean/PROGRESS.md#fr28-wall-wash"
+    },
     "neutral-label-diffusion": {
       "kind": "engine",
       "models": [
@@ -2700,6 +2759,109 @@
     }
   },
   "claims": [
+    {
+      "id": "label-mixing-power",
+      "category": "tissue-and-conservation",
+      "title": "Resolving neutral labels can increase the heat booked for diffusion",
+      "statement": "At a neutral Fick face, the sum of label powers exceeds or equals the parent power. Equality holds exactly when the label fractions agree at both ends. An accepted-step face booking with positive weights is zero exactly when every applied flux is zero.",
+      "assumptions": [
+        "The two end concentrations, all normalized label fractions and the common mobility and temperature factor are strictly positive. The exact Cells face reduction uses its logarithmic quotient or equal-concentration branch on every row and the parent.",
+        "The timestep booking uses the applied mean flux and its predicted weight. The two-row square identity combines the two weights by addition. A separately simulated parent uses the weight predicted for its own concentration.",
+        "The trajectory comparison runs a closed, two-node neutral system with the same physical concentrations in both representations."
+      ],
+      "uses": [
+        "neutral-label-diffusion",
+        "extracellular-face-dissipation"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.logmean_electrodiffusion@1"
+        ],
+        "theorems": {
+          "CellsProofs.Transport.LabelMixingPower.neutral_face_power": "lean/CellsProofs/Transport/LabelMixingPower.lean",
+          "CellsProofs.Transport.LabelMixingPower.power_difference": "lean/CellsProofs/Transport/LabelMixingPower.lean",
+          "CellsProofs.Transport.LabelMixingPower.power_order_and_equality": "lean/CellsProofs/Transport/LabelMixingPower.lean",
+          "CellsProofs.Transport.LabelMixingPower.booking_zero_iff": "lean/CellsProofs/Transport/LabelMixingPower.lean",
+          "CellsProofs.Transport.LabelMixingPower.booking_difference_two": "lean/CellsProofs/Transport/LabelMixingPower.lean"
+        },
+        "sources": {
+          "Mathlib strict logarithmic inequality for the equality condition": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/SpecialFunctions/Log/Basic.lean#L242-L246",
+          "Mathlib non-strict logarithmic bound for each term": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/SpecialFunctions/Log/Basic.lean#L288-L292",
+          "Mathlib relative-entropy function, identified in the optional check": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/InformationTheory/KullbackLeibler/KLFun.lean#L45-L51"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "label-mixing-power"
+        ],
+        "result": "Across 800 accepted steps the largest reconstruction error was 3.68 × 10⁻¹⁶ pJ. Opposing labels booked 1.47315444 pJ in 1 s and the parent booked zero. With the same label fractions both booked 0.33000851 pJ."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Heat of mixing for independently characterized neutral tracers with equal mobility. Interpreting the extra booking for labels used solely to track provenance remains open.",
+        "unit": "pJ of heat over a specified interval",
+        "evidence": []
+      }
+    },
+    {
+      "id": "wall-wash-retention",
+      "category": "tissue-and-conservation",
+      "title": "A wash collects free tracer while surface-bound tracer can release later",
+      "statement": "A finite-volume wash collects the draw fraction of the free stock and preserves each bound stock at the event. At a previously equilibrated surface, dilution initiates net release. Free, bound, collected and supplied tracer satisfy one inventory through subsequent exchange.",
+      "assumptions": [
+        "A well-mixed compartment is refilled to its original volume. Only free tracer is accessible to the instantaneous draw. The wall and specimen each hold a separately tracked bound stock.",
+        "For the strict release sign, the wash fraction, association rate and vacant site amount are positive, the buffer is more dilute than the free tracer, and the pre-wash surface is in binding equilibrium. The numerical well has unit binding multiplier and no internalisation."
+      ],
+      "uses": [
+        "compartment-wash",
+        "site-occupancy-stages"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.scheduled_compartment_wash@1",
+          "cells.site_occupancy@1"
+        ],
+        "theorems": {
+          "CellsProofs.Tissue.WallWash.event_retention": "lean/CellsProofs/Tissue/WallWash.lean",
+          "CellsProofs.Tissue.WallWash.inventory": "lean/CellsProofs/Tissue/WallWash.lean",
+          "CellsProofs.Tissue.WallWash.whole_stock_bias": "lean/CellsProofs/Tissue/WallWash.lean",
+          "CellsProofs.Tissue.WallWash.rate_after_draw": "lean/CellsProofs/Tissue/WallWash.lean",
+          "CellsProofs.Tissue.WallWash.release_after_dilution": "lean/CellsProofs/Tissue/WallWash.lean"
+        },
+        "sources": {
+          "Finite compartment draw and refill": "lean/CellsProofs/Tissue/CompartmentWash.lean"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "wall-wash-retention"
+        ],
+        "result": "The FR-28 candidate collected 30 fmol from 60 free in a 100 fmol well. The wall held 10 fmol at the event and 9.97015402 fmol at the next step, 10 ms later. Both wall owners yielded identical traces. A matched buffer gave zero wall rate."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Tracer recovered in each wash and on the surface, with the time between dilution and measurement.",
+        "unit": "µg in pooled liquid and ng/cm² on the disk in the experiment, fmol and fmol/s in Cells",
+        "evidence": [
+          {
+            "dataset_id": "robinson2014_albumin_wall_wash",
+            "manifest": "lean/checks/data/robinson2014_wall_wash.json",
+            "citation": "Robinson et al. (2014), Clinica Chimica Acta",
+            "doi": "10.1016/j.cca.2014.01.035",
+            "locator": "Supplementary Figure S3 and Tables S2 and S4, material 7.",
+            "context": "The authors counted labelled albumin in six successive rinses and on the final disk. A separate pH 5 endpoint yielded 8.759 µg in pooled liquid and 22.96 ng/cm² on polyethylene terephthalate (0.22%, four replicates).",
+            "role": "descriptive",
+            "uncertainty": "The rinse series has no per-rinse dwell time or error bars. The tabulated endpoint pools the starting sample, rinses and pipette tip and has no condition-specific uncertainty.",
+            "assessment": "Independent recovery of tracer in liquid and on the surface is measured. The instantaneous bound fraction and the synthetic release constant remain open.",
+            "report": "lean/PROGRESS.md#fr28-wall-wash"
+          }
+        ]
+      }
+    },
     {
       "id": "neutral-label-diffusion",
       "category": "tissue-and-conservation",

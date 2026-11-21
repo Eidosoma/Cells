@@ -15,7 +15,7 @@ Direct Lean claims cover [50 of 50 laws](COVERAGE.md#registered-laws) and [30 of
 | [Pumps and cotransport](COVERAGE.md#category-pumps-and-cotransport) | 13 of 13 | 8 of 8 | 8 checked | 8 |
 | [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 3 of 3 | 13 of 13 | 12 checked · 1 failed | 10 |
 | [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 13 of 13 | 22 of 22 | 21 checked · 1 failed | 16 |
-| [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 1 of 1 | 24 of 24 | 24 checked | 18 |
+| [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 1 of 1 | 26 of 26 | 26 checked | 19 |
 | [Cell physiology](COVERAGE.md#category-cell-physiology) | — | 3 of 3 | 3 checked | 3 |
 
 <!-- /generated -->
@@ -26,7 +26,7 @@ The repaired wash now closes Na, K and Cl counters exactly at both tested fracti
 
 ## Biological evidence
 
-In a matched Cells control, a donor loses the same amount of labelled protein under transfer and degradation. A receiver gain or a clearance record distinguishes the mechanisms. Imaging of PSD-95 shows label spreading from one spine to two neighbors. The fate of the original label across the whole neuron over 48 hours remains open. [Matched donors](claims/transfer-or-degradation.md) · [Whole-cell balance](claims/regional-pulse-balance.md) · [Neutral label diffusion and its charged-face limit](claims/neutral-label-diffusion.md)
+In a matched Cells control, a donor loses the same amount of labelled protein under transfer and degradation. A receiver gain or a clearance record distinguishes the mechanisms. Imaging of PSD-95 shows label spreading from one spine to two neighbors. The fate of the original label across the whole neuron over 48 hours remains open. Representing a neutral tracer by separate species rows can also change the heat attributed to mixing. [Matched donors](claims/transfer-or-degradation.md) · [Whole-cell balance](claims/regional-pulse-balance.md) · [Neutral label diffusion](claims/neutral-label-diffusion.md) · [Effect on booked heat](claims/label-mixing-power.md)
 
 At 0 mV, the published Kv1.5 activation curves predict 72.1% retained current at pH 6.8 if both preparations share a maximum conductance. A separate pulse in the same study gave 74.5 ± 1.9% (SEM). Applying only the measured midpoint shift to the default Cells gate gives 40.5%. [Kv1.5 pH comparison](claims/kv15-ph-activation.md)
 
@@ -41,6 +41,8 @@ A serial dilution experiment follows free fluorescein through three successive e
 For partial pool withdrawal, one passive splitter collected a mean of 45.0% of each droplet’s beads in a nominal one-third branch. Another retained 28.2% of beads at a mean liquid fraction of about 27.2%. A test of count variance still needs particle counts and liquid volume measured on the same split. [Count proof and measurements](claims/pool-withdrawal.md) · [Paired-data search and heat proof](PROGRESS.md#fr35-withdrawal-energy) · [Biological disagreements for Cells](PROGRESS.md#nov21-biological-disagreements)
 
 For finite-pool washes, tracer measurements distinguish what leaves the exterior, what survives inside a vesicle, and what can later enter another membrane. [Washout and redistribution measurements](claims/pool-replacement.md#biological-evidence)
+
+For a wash of a solid surface, the first saved step can already include tracer released from the wall. An albumin experiment measured both rinse liquid and the final surface residue. The time course of release in that preparation remains open. [Wall retention and measured albumin recovery](claims/wall-wash-retention.md)
 
 Yeast mitochondrial ATP synthase provides a measured example of reversal. The enzyme switched from hydrolysis to synthesis as the proton gradient increased. Cells captures the shift between the lowest and highest ATP loads. The comparison also records the four intermediate measurements outside the combined interpolation limits. [Mitochondrial stall and biological evidence](claims/mitochondrial-stall-heat.md#biological-evidence)
 
