@@ -8678,3 +8678,29 @@ disagree with measurements (relayed by the user: "from lean get that to the righ
     copied code before landing; and packed-gpu-planner, held for the GPU decision.
   - Ten branches hold nothing not on main. Their deletion waits for the user.
 
+## D271: FR-25's registration amended: heat's order, the order window, and the claim's wording
+
+2026-11-21, about 21:14 UTC, before the rule is tagged. Decided by the lead with the advisor
+(amends D270).
+- **Heat in the A1-M worlds is declared second order.** Each route's heat is its share of the exact
+  total, split by divided-difference potentials, a second-order discrete gradient. Recharging,
+  running near equilibrium, shows it (2.47e-7 at dt 1.0 against 6.26e-8 at dt 0.5, order 1.98, in
+  pol T=100). The other A1-M classes stay third order (SSPRK(3,3)); A1 stays second order (the
+  Strang split of its coupling and the X turnover). No order is set per route.
+- **The order window is p − 0.5 ≤ q ≤ 3.5 for every judged readout**, replacing p ± 0.5.
+  - Under p ± 0.5, benign superconvergence would have made every world inconclusive.
+  - Removing the upper bound would leave the tolerance unboundedly loose. With p declared, it is
+    (2^q − 1)/(2^p − 1) times larger than the actual step error, 7× at q = 3 for p = 2.
+  - The bound 3.5 is the integrator's order plus the declared margin, so it comes from the scheme.
+    It caps the tolerance near 10× the actual step error. Above it, the declared finer-triple
+    retry applies.
+  - Disclosure: the development orders (a maximum of about 3.2) were seen before this change.
+- **The claim is worded "within 3× the step-error estimate at the scheme's formal order"**, not "3×
+  the engine's step error". The judge reports, per readout, the observed order and the effective
+  factor against the actual step error; these are reported, not judged.
+- **The sequence**, so that no tag publishes ungated code: G4 lands; the follow-ups and the
+  registration tools land (validation only); the rule is tagged on main; the fresh runs launch from
+  that snapshot; the table is tagged; the OL builder judges.
+- F = 3 cites Roache's grid-convergence-index convention through secondary sources (NASA's NPARC
+  tutorial; Phillips and Roy 2014, J. Fluids Eng.). The 1994 paper itself was not reached.
+
