@@ -191,7 +191,9 @@ Declarations (class attributes):
 * Species identity and the step (registry/species_registry.py, D176): ``IDENTITY_ROLE``
   ("author" for an operator that declares the species it writes, "user" for one that refers to
   species others declare) and ``species_identities``; ``moves_in_step``, the rows an in-step
-  process moves inside the inner step, which an operator with ``PROCESS`` declares.
+  process moves inside the inner step, which an operator with ``PROCESS`` declares;
+  ``species_moieties``, the net row change of each move it makes, which the registry's
+  check_moieties holds to the model's moieties (docs/GENE_REGULATION_DESIGN.md §7.6).
 * The run view (docs/RUN_VIEW_DESIGN.md §3; cells/records/run_view.py reads them, host side only):
   - ``VIEW_LAYERS``: its layers, each {"id", "label", "representation"}; None: undeclared,
     which the run-view writer refuses;
@@ -534,6 +536,17 @@ class Operator:
         each with the registry's sum of nu mu°/RT, converted by (sum of nu) ln(c0_registry / c0).
         A species' potential is the case of one species at nu = 1; species_potentials keeps
         declaring those, as today's check reads them."""
+        return ()
+
+    def species_moieties(self, declaration):
+        """The net moves of the species rows it converts (docs/GENE_REGULATION_DESIGN.md §7.6):
+        ((move name, ((species, nu), ...)), ...), each move's net change of the model's rows per
+        unit of its progress (a finished product, a molecule degraded, a turnover), nu nonzero
+        integers, products positive; (). Material it holds in its own pools between the rows (a
+        chain's residues in transit) is left out: its own ledgers close it. The species registry's
+        check_moieties refuses a move that changes a declared moiety, naming the operator and the
+        move, as it refuses a kind's mode or a free-energy entry; so a weight the operator assumes
+        (the residues of a polymer row) that differs from the model's moiety shows as a change."""
         return ()
 
     def view_events(self, spec, declaration, schedule):

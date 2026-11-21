@@ -58,6 +58,7 @@ __all__ = (
     "OPERATORS",
     "OperatorRegistry",
     "active",
+    "operator_species_moieties",
     "operator_standard_free_energies",
     "package_operators",
     "register_package",
@@ -244,6 +245,43 @@ def operator_standard_free_energies(operator, declaration):
     entries = operator.standard_free_energies(declaration)
     where = f"Operator {operator.LAW_ID}'s standard_free_energies"
     return kind_registry.free_energy_entries(entries, {}, where)
+
+
+def operator_species_moieties(operator, declaration):
+    """A composite operator's net moves (the contract's Operator.species_moieties), checked: a
+    tuple of (move name, ((species, nu), ...)), each name a non-empty string used once, each
+    stoichiometry non-empty with distinct named species and nonzero integer counts. Refused
+    (ValueError, naming the operator) otherwise; the species registry's check_moieties reads it."""
+    where = f"Operator {operator.LAW_ID}'s species_moieties"
+    moves = operator.species_moieties(declaration)
+    shape = f"{where} returns a tuple of (move name, ((species, nu), ...))"
+    if not isinstance(moves, tuple):
+        raise ValueError(shape)
+    names, out = set(), []
+    for item in moves:
+        if not (isinstance(item, tuple) and len(item) == 2):
+            raise ValueError(shape)
+        name, stoichiometry = item
+        if not (isinstance(name, str) and name):
+            raise ValueError(shape)
+        if name in names:
+            raise ValueError(f"{where}: move {name!r} is named twice")
+        names.add(name)
+        pairs = stoichiometry if isinstance(stoichiometry, tuple) else ()
+        if not pairs or not all(
+            isinstance(pair, tuple)
+            and len(pair) == 2
+            and isinstance(pair[0], str)
+            and pair[0]
+            and type(pair[1]) is int
+            and pair[1] != 0
+            for pair in pairs
+        ):
+            raise ValueError(f"{where}: move {name!r} is a non-empty ((species, nonzero int), ...)")
+        if len({species for species, _ in pairs}) != len(pairs):
+            raise ValueError(f"{where}: move {name!r} names a species twice")
+        out.append((name, pairs))
+    return tuple(out)
 
 
 def package_operators(package):
