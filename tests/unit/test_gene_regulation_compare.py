@@ -593,7 +593,8 @@ def _engine_triple(world, *, offsets=None, orders=None):
 REGISTRATION = [
     ("step error alone passes", None, None, "passed", None),
     ("a model error beyond 3 est fails", {"n_R": 1e-5}, None, "failed", "n_R"),
-    ("an order outside its window is inconclusive", None, {"n_R": 1}, "inconclusive", "n_R"),
+    ("an order below p - 0.5 is inconclusive", None, {"n_R": 1}, "inconclusive", "n_R"),
+    ("an order above 3.5 is inconclusive", None, {"n_R": 4}, "inconclusive", "n_R"),
 ]  # fmt: skip
 
 
@@ -616,3 +617,6 @@ def test_the_registration_judges_from_step_error_alone(case, offsets, orders, ve
     assert world["outside_window"] == ([decides] if verdict == "inconclusive" else [])
     entry = table["worlds"]["test instance | pol T=5"]["readouts"]["J_bar_tx"]
     assert entry["at_floor"] and entry["order"] is not None  # Its order is not checked.
+    assert world["effective_factors"]["J_bar_tx"] is None
+    if verdict == "passed":  # At the declared order the effective factor is F itself.
+        assert world["effective_factors"]["n_R"] == pytest.approx(3.0, rel=1e-6)
