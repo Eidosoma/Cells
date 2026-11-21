@@ -1,6 +1,6 @@
 # Progress
 
-Last updated: 2026-11-18 UTC.
+Last updated: 2026-11-21 UTC.
 
 This is the source of current implementation status. Milestone definitions live
 in [Roadmap](docs/ROADMAP.md), scientific updates in
@@ -107,6 +107,31 @@ starts, and production design is deferred until parity is established.
 
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
+
+- **Gene regulation G1 and G2 landed: option A's equation sheet and the code-blind references (20
+  November 2026).** Merges 1f671104 and 4483efa8, tag `gr-g1-g2-landed-2026-11-20`, gated together
+  as a stack ([gate](/mnt/workspaces/Cells/gene-regulation-20261120/stack-g1-g2/stack/)). No `src/`
+  change. The lane is paused overnight (D255); finished work landed.
+
+- **FR-33 landed: regional labelled-protein readouts (20 November 2026).** Merge ce2a3d9c, tag
+  `fr33-region-readouts-landed-2026-11-20`. `validation/regions/`: the region export and a one-way
+  cohort tracer, which refuses at setup the two-way movers it cannot see (a review finding), with
+  the FR-7 lane's compartment-transfer example. Validation only. Light gate: tiers 616/0.
+
+- **FR-20 landed: a pulse and washout for assembly populations (20 November 2026).** Merge
+  3af9ce38, tag `fr20-washout-landed-2026-11-20`: `cells.pool_replacement@1`, with L1 (a
+  transition-state factor on a step wholly off the membrane is refused). Q3 is a declared version-1
+  limit. Gate: crossrev 11 of 11 identical, tiers 615/0, G1 113 of 113; FR's set and the
+  origin-of-life invariance passed ([gate](/mnt/workspaces/Cells/ol3-engine-20261119/gate-e473df3c/)).
+
+- **FR-29 and FR-7 data (20 November 2026).** Kettner et al. 2003 Fig. 3 read as bare values
+  (a69f38ab, `validation/vacuole/`), the FR-29 design note (44b44e56) and D258. Ross et al. 2025's
+  Kir2.1 variant tables (51dad6a6, D257): they cannot test current against abundance.
+
+- **Mitochondria laws, head 2 landed (20 November 2026).** Merge cf8473de, tag
+  `mito-laws-head2-landed-2026-11-20`: `held_reductant_supply@1`, adenylate kinase on beard2005@2
+  and the host world test. All ten laws were compared against the registered code-blind references,
+  every row in band. Gate: crossrev 11 of 11, tiers, G1 113 of 113, FR's set and the tier-3 files.
 
 - **FR-23 landed: a timed bath dose beside binding sites on other nodes (20 November 2026,
   development).** Merge 4e3d1899, tag `fr23-landed-2026-11-20` (D244, option A). `site_occupancy@1`
