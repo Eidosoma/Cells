@@ -19,8 +19,9 @@ Per observed row it exports, for each population:
 - the current, derived: I = 1e-15 F sum_s z_s J_s (A, positive outward);
 - the voltage it is at: @3's `membrane_voltage_V` on the patch (V, inside minus outside).
 
-At a declared voltage. Today no field gives a population's current at a voltage the user declares.
-That is engine work in its owner's queue (D251). The first observed row, t = 0, is the declared
+At a declared voltage. Passive routes and transporter populations have it (cells.passive_routes@1's
+clamped_flux, cells.transporter@1's clamped_rates); @3's channel populations, read here, do not yet,
+and that is the @3 owner's engine work (FR-34, D252). The first observed row, t = 0, is the declared
 initial state: its voltage is the definition's charge anchor over the cell's capacitance, q0/C. So
 row 0's current is the current at that declared voltage, and the output says so
 (`first_row_at_declared_voltage`). Every later row is at the run's own, evolving voltage.
