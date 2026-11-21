@@ -19,13 +19,22 @@ list of one cell's nodes. Amounts are in fmol; losses and transfers are cumulati
 - and, beside them, the amount at each of the cell's nodes and the cumulative production there
   (turnover_produced_fmol, with a reaction's produced amount).
 
-**What each tool reads, and what it refuses at setup** (check_movers). The export reads turnover,
-exchange and the reactions; the tracer reads turnover and exchange only. Each refuses a world in
-which anything else moves the species: a face's diffusion, a junction's or a patch's permeation, or
-another operator that declares it. The export's transfer columns would miss those moves. For the
-tracer it is worse: a two-way movement can leave every net record at zero while labelled material
-goes one way and unlabelled the other (two equal nodes exchanging by diffusion keep both totals
-and the net face flux at 0). The tracer would then report no movement at all.
+**What each tool reads, and what it refuses at setup** (check_movers, fail closed). The export
+reads turnover, exchange and the reactions; the tracer reads turnover and exchange only. Each
+refuses a world in which anything else could move the species:
+- a face's diffusion, or a junction's or a patch's permeation, of the species;
+- every operator law that it neither reads nor lists as shown inert (SHOWN_INERT: laws whose
+  declarations write no species amount, provide no amount view and close no node). REFUSED gives
+  each registered law's reason, and a law in neither list is refused until it is classified here;
+- every declared kind, since none is classified.
+
+The export's transfer columns would miss those moves. For the tracer it is worse: a two-way
+movement can leave every net record at zero while labelled material goes one way and unlabelled
+the other (two equal nodes exchanging by diffusion keep both totals and the net face flux at 0).
+The tracer would then report no movement at all. A law that moves every species at its nodes
+without naming one (the wash, scheduled_compartment_wash@1) is refused too: a check that looked
+for a species field would miss it, and the tracer would keep the washed-out label (a review
+finding, 21 November 2026).
 
 **The tracer** (trace) carries cohorts within the species' row, beside it, from the movers'
 per-step records. It reads every accepted step, and changes no flux, so it applies where no law
@@ -42,8 +51,28 @@ reads the cohort.
   its source's split into its destination.
 - **The step's cohort amounts** at every node solve one linear system per step (nodes by nodes,
   shared by every cohort). Every cohort's amounts sum to the node's amount.
+- **The returned rows are checked** (_check_rows): at every row and node, each cohort is
+  non-negative and the cohorts sum to the node's amount, both within the closure's tolerance, on
+  the dictionary as returned. Cohort names `unlabelled` and `produced` are the tracer's own and
+  are refused as a caller's.
 
 **Its limits.**
+- **The resolution** (a review finding, 21 November 2026). A cohort present at a step's start
+  survives it as (1 - r)/(1 + r), with r = O/S the node's outflow over the step against its start
+  and end amounts, S = n0 + n1. Where the node gains no material in the step this equals n1/n0,
+  so it is exact for any r. Where material enters (production or a route in), it is not:
+  - at a steady node it is the (1,1) Pade form of the true survival e^(-2r), 2r^3/3 off per step;
+  - at r = 1 it reads 0, where the truth is e^(-2) = 0.135; above 1 it is negative (the
+    reviewer's steady pool: 1 fmol made and cleared at 4 per s, one 1 s step: -0.333 for e^(-4)
+    = 0.0183), and the closure check cannot see it, since the cohorts still sum to the amount.
+  So the trace refuses a step in which a node that gains material has r above RESOLUTION = 0.01,
+  and reports the largest such r (resolution_largest). At that bound, over four closed-form
+  scenarios (a steady pool, a node filling from near-empty, a draining node with production, a
+  node fed by a route), a node's starting cohort stays within 4.3e-4 of its exact amount,
+  relative to that amount, after five e-foldings of loss, and each step adds at most 7.61e-6 of
+  the node's amount (measured; for the steady pool 1.7e-4 and 6.5e-7, near Pade's kT r^2/3 and
+  2r^3/3). The error is second order: halving the step quarters it. A node empty at both ends of
+  a step holds no cohort; material that passes through an empty node within one step is refused.
 - **Directions.** It is right only where the per-step records carry the direction of every
   labelled movement, as one-way routes do. A two-way law's net record (Fick's flux on a face, a
   junction's or a patch's permeation, a reversible reaction) does not, so those are refused at
@@ -71,9 +100,14 @@ import numpy as np
 
 from cells.registry.models import get_model
 
+TURNOVER = "scheduled_species_turnover@1"
 EXCHANGE = "scheduled_species_exchange@1"
+REACTIONS = "local_species_reactions@1"
 COMPARTMENTS = "cell_owned_compartments@1"
 CLOSURE_ULPS = 64
+# The largest O/S at a node that gains material in a step (module docstring, "The resolution").
+RESOLUTION = 0.01
+RESERVED = ("unlabelled", "produced")  # The tracer's own cohorts.
 
 
 def world_map(spec, species):
@@ -108,14 +142,45 @@ def world_map(spec, species):
     )
 
 
-EXPORT_READS = ("scheduled_species_turnover@1", EXCHANGE, "local_species_reactions@1")
-TRACER_READS = ("scheduled_species_turnover@1", EXCHANGE)
+EXPORT_READS = (TURNOVER, EXCHANGE, REACTIONS)
+TRACER_READS = (TURNOVER, EXCHANGE)
+# Laws shown to move no species amount: their declarations write no amount field, provide no
+# amount view and close no node (test_region_readouts.py checks each against its contract).
+SHOWN_INERT = {
+    "ideal_osmosis_linear_compliance_water@1": "changes volumes, never amounts",
+    "membrane_entity_state@1": "provides channel abundances, membrane areas and capacitances",
+    COMPARTMENTS: "declares which cell owns each compartment",
+    "species_regulated_availability@1": "scales other laws' availabilities; its state is its own",
+    "species_regulated_availability@2": "scales other laws' availabilities and rates; its state "
+    "is its own",
+    "site_occupant_replacement@1": "resets site pools at replacement events; free amounts stay",
+}
+# Every other registered law, with why it is refused (fail closed: a law in no list is refused
+# too, until it is classified here).
+REFUSED = {
+    REACTIONS: "is not read by the tracer (a reversible reaction's net record has no direction)",
+    "site_occupancy@1": "binds and releases its ligands (a two-way exchange with bound pools)",
+    "population_unit_turnover@1": "consumes its precursors into units",
+    "k_anion_symport_mass_action@1": "moves its potassium and anion across membranes in-step",
+    "electrode_current_injection@1": "moves its carriers between the electrode and a cell",
+    "scheduled_cell_replacement@1": "swaps a replaced cell's pools at its events",
+    "scheduled_cell_replacement@2": "swaps a replaced cell's pools at its events",
+    "isopotential_partition@1": "splits a dividing cell's contents between its daughters",
+    "cytoplasmic_bridge_closure@1": "sets a daughter bridge's availability (with the partition)",
+    "scheduled_membrane_insertion@1": "opens onset nodes with their declared contents",
+    "scheduled_membrane_insertion@2": "opens and retires nodes and patches",
+    "restricted_cleft_lumen@1": "fills a lumen node with bath fluid as it grows",
+    "restricted_cleft_lumen@2": "fills a lumen node with bath fluid as it grows",
+    "scheduled_bath_composition@1": "sets held baths' compositions at its events",
+    "scheduled_membrane_trafficking@1": "moves membrane, and the charges on it, between nodes",
+    "scheduled_compartment_wash@1": "collects and refills every free species at its nodes",
+}
 
 
 def check_movers(spec, species, reads):
-    """Refuse a world in which anything but the laws `reads` moves the species (module docstring):
-    a face's diffusivity, a junction's or a patch's permeability for it, another operator that
-    declares it, or a kind that names it."""
+    """Refuse a world in which anything but the laws `reads` could move the species (module
+    docstring; fail closed): a face's diffusivity, a junction's or a patch's permeability for it,
+    every operator law neither read nor shown inert (REFUSED says why), and every declared kind."""
     m = spec.model
     s = list(m.species_ids).index(species)
     found = []
@@ -129,17 +194,17 @@ def check_movers(spec, species, reads):
         if patch.permeability_m_per_s[s] != 0:
             found.append(f"patch {patch.id} permeates it")
     for op in m.operators:
-        named = {getattr(x, "id", x) for x in getattr(op, "species", ())}
-        if species in named and op.law not in reads:
-            found.append(f"{op.law} moves it")
-    for kind_id, declaration in getattr(m, "kinds", ()):
-        if repr(species) in repr(declaration):
-            found.append(f"kind {kind_id} names it")
+        if op.law in reads or op.law in SHOWN_INERT:
+            continue
+        why = REFUSED.get(op.law, "is not classified here (neither read nor shown inert)")
+        found.append(f"{op.law} {why}")
+    for kind_id, _ in getattr(m, "kinds", ()):
+        found.append(f"kind {kind_id} is declared (no kind is read or shown inert)")
     if found:
         raise ValueError(
             f"{species}: {'; '.join(found)}. Not read here: a two-way movement's net record can "
             "stay at zero while labelled and unlabelled material cross in opposite directions, so "
-            f"only {', '.join(reads)} are read"
+            f"only {', '.join(reads)} are read, beside laws shown inert"
         )
 
 
@@ -233,14 +298,65 @@ def region_rows(spec, times, states, species, region, *, samples=None):
     return out
 
 
+def _cohort_shares(cohorts, nodes):
+    """[node, cohort] the caller's cohorts' fractions of each node's starting amount, refused
+    where a name is the tracer's own, a node is unknown, a fraction lies outside [0, 1] or a node's
+    fractions sum above 1 (by more than 1e-12; within it they are scaled to sum to 1)."""
+    index = {n: i for i, n in enumerate(nodes)}
+    share = np.zeros((len(nodes), len(cohorts)))
+    for c, (name, fractions) in enumerate(cohorts.items()):
+        if name in RESERVED:
+            raise ValueError(
+                f"cohort {name!r} is the tracer's own name ({', '.join(RESERVED)}): name it "
+                "otherwise (the tracer's own column would replace it on export)"
+            )
+        for node, fraction in fractions.items():
+            if node not in index:
+                raise ValueError(f"cohort {name!r} names an unknown node {node!r}")
+            if not 0.0 <= fraction <= 1.0:
+                raise ValueError(f"cohort {name!r}'s fraction at {node} lies outside [0, 1]")
+            share[index[node], c] = fraction
+    total = share.sum(axis=1)
+    if np.any(total > 1.0 + 1e-12):
+        raise ValueError("a node's cohort fractions sum above 1")
+    over = total > 1.0
+    share[over] /= total[over, None]
+    return share
+
+
+def _check_rows(result, totals, scales):
+    """The returned rows' invariant (module docstring): at every row and node, each cohort
+    non-negative and the cohorts summing to the node's amount, within the closure's tolerance, on
+    the dictionary as returned (so a column a name replaced, or a negative split, is seen)."""
+    eps = np.finfo(float).eps
+    amount = result["amount"]
+    for node, total in totals.items():
+        for k, t in enumerate(result["times"]):
+            tol = CLOSURE_ULPS * eps * scales[node][k]
+            values = [amount[c][node][k] for c in amount]
+            if min(values) < -tol:
+                raise ValueError(
+                    f"the trace's cohorts at {node}, t = {t}, are not non-negative ({min(values)} "
+                    "fmol)"
+                )
+            if abs(sum(values) - total[k]) > tol:
+                raise ValueError(
+                    f"the trace's cohorts at {node}, t = {t}, sum to {sum(values)} fmol, not the "
+                    f"node's {total[k]} fmol"
+                )
+
+
 def trace(spec, times, states, species, cohorts, *, produced=()):
     """The passive tracer (module docstring) over consecutive accepted steps.
 
     cohorts: {name: {node: fraction of the node's starting amount}}; at each node the fractions sum
-    to 1 over the cohorts, and a node no cohort names starts in "unlabelled". produced: [(time,
-    cohort), ...], the cohort new material joins from each time on ("produced" before the first).
-    Returns {times, amount: {cohort: {node: [...]}}, loss: {cohort: {node: [...]}}, transfer:
-    {cohort: {route: [...]}}, closure_largest, closure_bound}."""
+    to at most 1 over the cohorts, and a node no cohort names starts in "unlabelled" (a name the
+    caller may not use, nor "produced"). produced: [(time, cohort), ...], the cohort new material
+    joins from each time on ("produced" before the first). Returns {times, amount: {cohort: {node:
+    [...]}}, loss: {cohort: {node: [...]}}, transfer: {cohort: {route: [...]}}, closure_largest,
+    closure_bound, resolution_largest, resolution_bound}; refused, with its reason, at setup (the
+    movers), at a step the records do not close, at a step it cannot resolve (r above RESOLUTION
+    at a node that gains material) and where a returned row breaks the invariant."""
     check_movers(spec, species, TRACER_READS)
     for t, _ in produced:
         if t > times[0] and not any(abs(t - u) <= 1e-12 * max(1.0, abs(t)) for u in times):
@@ -251,13 +367,8 @@ def trace(spec, times, states, species, cohorts, *, produced=()):
     index = {n: i for i, n in enumerate(nodes)}
     names = list(cohorts)
     start = node_records(spec, layout, states[0], wmap)[0]
-    share = np.zeros((len(nodes), len(names) + 1))
-    for c, name in enumerate(names):
-        for node, fraction in cohorts[name].items():
-            share[index[node], c] = fraction
-    share[:, -1] = 1.0 - share[:, :-1].sum(axis=1)
-    if np.any(share[:, -1] < -1e-12):
-        raise ValueError("a node's cohort fractions sum above 1")
+    share = _cohort_shares(cohorts, nodes)
+    share = np.concatenate([share, (1.0 - share.sum(axis=1))[:, None].clip(min=0.0)], axis=1)
     names = names + ["unlabelled"]
     for label in [c for _, c in produced] + ["produced"]:
         if label not in names:
@@ -267,7 +378,8 @@ def trace(spec, times, states, species, cohorts, *, produced=()):
     loss = np.zeros_like(x)
     moved = np.zeros((len(routes), len(names)))
     out = dict(times=[times[0]], amount=[x.copy()], loss=[loss.copy()], transfer=[moved.copy()])
-    closure, bound = 0.0, 0.0
+    totals, scales = [start.copy()], [np.abs(start)]
+    closure, bound, resolution = 0.0, 0.0, 0.0
     previous = node_records(spec, layout, states[0], wmap)
     eps = np.finfo(float).eps
     for t0, t1, state in zip(times[:-1], times[1:], states[1:], strict=True):
@@ -281,20 +393,37 @@ def trace(spec, times, states, species, cohorts, *, produced=()):
         residual = (n1 - n0) - (made + inflow - outflow)
         scale = np.abs(n0) + np.abs(n1) + np.abs(made) + np.abs(lost) + inflow + outflow
         closure = max(closure, float(np.max(np.abs(residual) / np.maximum(scale, 1e-300))))
-        if np.any(np.abs(residual) > CLOSURE_ULPS * eps * scale):
+        tol = CLOSURE_ULPS * eps * scale
+        if np.any(np.abs(residual) > tol):
             raise ValueError(f"the records do not close the species' amounts at t = {t1}")
         bound = CLOSURE_ULPS * eps
-        label = next((c for t, c in reversed(produced) if t <= t0), "produced")
+        # The resolution (module docstring): r = O/S, tested where the node gains material.
         S = n0 + n1
-        A = np.diag(1.0 + outflow / S)
-        B = x * (1.0 - outflow / S)[:, None]
+        filled = S > 0
+        inv = np.where(filled, 1.0 / np.where(filled, S, 1.0), 0.0)
+        ratio = np.where(filled, outflow * inv, np.where(outflow > tol, np.inf, 0.0))
+        gaining = made + inflow > tol
+        if np.any(gaining):
+            resolution = max(resolution, float(np.max(ratio[gaining])))
+        if np.any(gaining & (ratio > RESOLUTION)):
+            k = int(np.argmax(np.where(gaining, ratio, -1.0)))
+            raise ValueError(
+                f"the step to t = {t1} s takes {outflow[k]:.6g} fmol out of {nodes[k]}, which "
+                f"gains {made[k] + inflow[k]:.6g} fmol in it: r = O/S = {ratio[k]:.3g} of its "
+                f"start and end amounts, above the tracer's resolution {RESOLUTION} (a cohort "
+                "present at the step's start would survive as (1 - r)/(1 + r): 0 at r = 1, where "
+                "the truth is e^-2 = 0.135, and negative above it); take smaller steps"
+            )
+        label = next((c for t, c in reversed(produced) if t <= t0), "produced")
+        A = np.diag(1.0 + outflow * inv)
+        B = x * (1.0 - outflow * inv)[:, None]
         B[:, names.index(label)] += made
         for r, amount in zip(routes, m, strict=True):
             i, s = index[r["destination"]], index[r["source"]]
-            A[i, s] -= amount / S[s]
-            B[i] += amount / S[s] * x[s]
+            A[i, s] -= amount * inv[s]
+            B[i] += amount * inv[s] * x[s]
         x1 = np.linalg.solve(A, B)
-        mean = (x + x1) / S[:, None]  # Each cohort's share of the step's outflow.
+        mean = (x + x1) * inv[:, None]  # Each cohort's share of the step's outflow.
         loss += lost[:, None] * mean
         for k, (r, amount) in enumerate(zip(routes, m, strict=True)):
             moved[k] += amount * mean[index[r["source"]]]
@@ -303,17 +432,27 @@ def trace(spec, times, states, species, cohorts, *, produced=()):
         out["amount"].append(x.copy())
         out["loss"].append(loss.copy())
         out["transfer"].append(moved.copy())
+        totals.append(n1.copy())
+        scales.append(scale)
 
     def by(array_list, labels):
         stacked = np.array(array_list)  # [time, label, cohort]
         return {name: {lab: stacked[:, j, c].tolist() for j, lab in enumerate(labels)}
                 for c, name in enumerate(names)}  # fmt: skip
 
-    return dict(
+    result = dict(
         times=out["times"],
         amount=by(out["amount"], nodes),
         loss=by(out["loss"], nodes),
         transfer=by(out["transfer"], [r["id"] for r in routes]),
         closure_largest=closure,
         closure_bound=bound,
+        resolution_largest=resolution,
+        resolution_bound=RESOLUTION,
     )
+    _check_rows(
+        result,
+        {n: [float(v[i]) for v in totals] for i, n in enumerate(nodes)},
+        {n: [float(v[i]) for v in scales] for i, n in enumerate(nodes)},
+    )
+    return result
