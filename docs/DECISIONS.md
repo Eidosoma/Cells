@@ -8553,3 +8553,16 @@ get into high priority"); the lead and the advisor found all nine real.
   - Follow-ups to a held tool now get the checker's rerun as well: finding 4 may have come with the
     tolerance follow-up (1b8017d1), which landed without one.
 
+## D266: FR-27's wash books unchanged ions inexactly at non-dyadic fractions
+
+2026-11-21, about 15:34 UTC. A user's finding, relayed: on main c4570309, in compiled float64 on
+CPU, `validation.tissue.wash_schedule_fixtures.well(sites=False, volume=1e6, dt=0.01, end=0.08)`,
+replacing 3/7 of the well at 0.02, 0.04 and 0.06 s and refilling with only the tracer at its trace
+level, keeps chloride's inventory fixed, but its cumulative collected and supplied amounts differ by
+2.98e-8 fmol. Three half-volume exchanges give exact equality.
+- **The fix:** an unchanged ion's collected and supplied amounts come from one expression, so they
+  are equal exactly at any fraction. Both fractions (3/7 and 1/2) become regression rows at the
+  existing balance tolerances.
+- **Assigned:** the robustness agent, with the operators owner's review, stacked on the wash's
+  surface-path fix (0e8194e0). FR-27's wash counters are held from scoring until it lands.
+
