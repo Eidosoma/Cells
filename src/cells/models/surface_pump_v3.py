@@ -1723,6 +1723,9 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
     predicted = xp.where(p.outside_active, predicted / p.extracellular_volume, 1.0)
     valid &= xp.all(xp.isfinite(predicted) & (predicted > 0))
     weight, _ = imex.face_weights(xp.where(predicted > 0, predicted, 1.0), s, xp=xp)
+    # The coefficient before the Laplacian, in today's order, so a world without N2 keeps
+    # today's program text (crossrev compares it).
+    coefficient = implicit_matrix[-1, -1] * dt
     laplacian = imex.face_laplacian(weight, s, xp=xp)
     n2 = implicit_conductances(p)  # N2 (D235, static): the routes' slopes join the operator.
     if n2:
@@ -1738,9 +1741,7 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
         valid &= ok
         laplacian = laplacian + conductance_laplacian(conductances, p, xp=xp)
         hook["conductances"] = conductances
-    operator, ok = imex.factor_operator(
-        implicit_matrix[-1, -1] * dt, laplacian, p.boundary_V, f, xp=xp
-    )
+    operator, ok = imex.factor_operator(coefficient, laplacian, p.boundary_V, f, xp=xp)
     valid &= ok
     rates, ok, *process = explicit_rates(state, start, control, p, xp=xp, **hook)
     processes += process
