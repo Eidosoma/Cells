@@ -163,12 +163,15 @@ class ClaimDocsTests(unittest.TestCase):
         git("commit", "-qm", "law", "--", "law.py")
         first = git("rev-parse", "HEAD")
         driver.write_text("driver")
-        git("add", "--", "lean/run.py")
-        git("commit", "-qm", "driver", "--", "lean/run.py")
+        measurement = self.lane / "curve.json"
+        measurement.write_text("[0.66]")
+        git("add", "--", "lean/run.py", "lean/curve.json")
+        git("commit", "-qm", "driver and input", "--", "lean/run.py", "lean/curve.json")
         second = git("rev-parse", "HEAD")
         engine_record = dict(
             kind="engine",
             sources={"law": "law.py#L1"},
+            record_inputs={"curve": "lean/curve.json"},
             driver="lean/run.py",
             engine_revision=first,
             record_revision=second,
@@ -186,8 +189,13 @@ class ClaimDocsTests(unittest.TestCase):
         self.assertEqual(check_sources(self.lane)["changed_claims"], [])
         self.assertEqual(
             check_sources(self.lane, first)["changed_comparisons"],
-            {"engine": ["lean/run.py"], "reference": ["lean/run.py"]},
+            {"engine": ["lean/curve.json", "lean/run.py"], "reference": ["lean/run.py"]},
         )
+        measurement.write_text("[0.67]")
+        self.assertEqual(
+            check_sources(self.lane)["changed_comparisons"], {"engine": ["lean/curve.json"]}
+        )
+        measurement.write_text("[0.66]")
         engine.write_text("staged")
         git("add", "--", "law.py")
         engine.write_text("first version")

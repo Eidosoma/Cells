@@ -101,18 +101,19 @@
       "kind": "engine",
       "models": ["resolved_pump_tissue@3"],
       "laws": ["cells.junction_voltage_relaxation@1"],
-      "engine_revision": "0d3f300a5d1c09bf0ad3c557d151879f441425b1",
-      "record_revision": "0d3f300a5d1c09bf0ad3c557d151879f441425b1",
+      "engine_revision": "d0104950c40b92860a211c9e2555709d0fd61aed",
+      "record_revision": "c1e2b733bc4c54a4fd005b9dedb4697d801855d1",
       "sources": {
+        "Exponential gate stage": "src/cells/models/surface_pump_v3.py#L1708",
         "Intrinsic gate kinetics and clamp solution": "src/cells/laws/junctions/junction_voltage_relaxation.py#L41",
-        "Tissue junction transport and gate dynamics": "src/cells/models/surface_pump_v3.py#L733",
+        "Tissue junction transport and gate dynamics": "src/cells/models/surface_pump_v3.py#L849",
         "Voltage-clamp protocol": "validation/betse/junction_gate/protocol.json",
         "Independent clamp solution": "validation/betse/junction_gate/reference.py#L9",
-        "Cell-pair fixture": "validation/tissue/surface_pump_v3_fixtures.py",
-        "Published Cx43 fit parameters": "lean/checks/data/revilla1999_cx43.json"
+        "Cell-pair fixture": "validation/tissue/surface_pump_v3_fixtures.py"
       },
+      "record_inputs": {"Published Cx43 fit parameters": "lean/checks/data/revilla1999_cx43.json"},
       "driver": "lean/checks/junction_gate.py",
-      "record": "lean/PROGRESS.md#cx43-series-gates"
+      "record": "lean/PROGRESS.md#channel-source-replays-nov21"
     },
     "mitochondrial-seven-cycle-stalls": {
       "kind": "engine",
@@ -1387,17 +1388,43 @@
       "kind": "engine",
       "models": ["resolved_pump_tissue@3"],
       "laws": ["junction_voltage_relaxation@1"],
-      "engine_revision": "6d74998581eab13d45327bc4801b463d0fb7a6f7",
-      "record_revision": "394a9294379f7636b7f75993fee850363c04bd26",
+      "engine_revision": "d0104950c40b92860a211c9e2555709d0fd61aed",
+      "record_revision": "c1e2b733bc4c54a4fd005b9dedb4697d801855d1",
       "sources": {
+        "Exponential gate stage": "src/cells/models/surface_pump_v3.py#L1708",
         "Voltage dependence and constant-voltage update": "src/cells/laws/junctions/junction_voltage_relaxation.py#L41",
-        "Tissue transport opening": "src/cells/models/surface_pump_v3.py#L733",
-        "Intrinsic gate rate in the tissue": "src/cells/models/surface_pump_v3.py#L779",
+        "Tissue transport opening": "src/cells/models/surface_pump_v3.py#L849",
+        "Intrinsic gate rate in the tissue": "src/cells/models/surface_pump_v3.py#L895",
         "Independent voltage-clamp protocol": "validation/betse/junction_gate/protocol.json",
         "Independent rate calculation in mV and ms": "validation/betse/junction_gate/reference.py#L9"
       },
+      "record_inputs": {"Published Cx43 fit parameters": "lean/checks/data/revilla1999_cx43.json"},
       "driver": "lean/checks/junction_gate.py",
-      "record": "lean/PROGRESS.md#19-november-2026--voltage-gated-junction-conductance"
+      "record": "lean/PROGRESS.md#channel-source-replays-nov21"
+    },
+    "kv15-ph-clamp": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [
+        "cells.kv1p5_mh@1"
+      ],
+      "engine_revision": "d0104950c40b92860a211c9e2555709d0fd61aed",
+      "record_revision": "c1e2b733bc4c54a4fd005b9dedb4697d801855d1",
+      "sources": {
+        "Clamped population current at a declared voltage": "src/cells/models/surface_pump_v3.py#L415",
+        "Kv1.5 activation, inactivation and opening": "src/cells/laws/channels/kv1p5_mh.py#L25",
+        "Exponential gate update over the pulse": "src/cells/numerics/exponential_gates.py#L44",
+        "Held control schedule": "src/cells/definitions/surface_pump_v3_spec.py#L563",
+        "Tissue membrane and ionic reservoirs": "tests/unit/test_chloride_leak_law.py#L37",
+        "Channel population fixture": "validation/tissue/surface_pump_v3_fixtures.py#L61"
+      },
+      "record_inputs": {
+        "Trapani and Korn, protocols, normalized openings and measured current": "lean/checks/data/trapani2003_kv15_ph.json"
+      },
+      "driver": "lean/checks/kv15_ph.py",
+      "record": "lean/PROGRESS.md#kv15-ph-activation"
     },
     "kv15-density-clamp": {
       "kind": "engine",
@@ -1470,37 +1497,37 @@
       "kind": "engine",
       "models": ["resolved_pump_tissue@3"],
       "laws": ["kv1p1_mh2@1", "kv1p2_mh@1", "kv1p3_mh@1", "kv1p4_mh@1", "kv1p5_mh@1", "kv1p6_mh@1", "kir2p1_mh2@1", "nav1p2_m3h_regularized@1", "kleak_always_open@1", "naleak_always_open@1"],
-      "engine_revision": "ec46f7a4e940b86c6fc110230b2bd851081dee50",
-      "record_revision": "a45e076f2af4828a29058c06d40cdbafb7081db0",
+      "engine_revision": "d0104950c40b92860a211c9e2555709d0fd61aed",
+      "record_revision": "c1e2b733bc4c54a4fd005b9dedb4697d801855d1",
       "sources": {
-        "Tissue channel kinetics and opening": "src/cells/models/surface_pump_v3.py#L304",
-        "Tissue outward per-ion flux": "src/cells/models/surface_pump_v3.py#L358",
+        "Tissue channel kinetics and opening": "src/cells/models/surface_pump_v3.py#L316",
+        "Tissue outward per-ion flux": "src/cells/models/surface_pump_v3.py#L370",
         "Exponential stage and its small-step series": "src/cells/numerics/exponential_gates.py#L36",
-        "Gate update in the tissue integrator": "src/cells/models/surface_pump_v3.py#L1257",
-        "Per-channel transfer and membrane balance": "src/cells/models/surface_pump_v3.py#L2251",
+        "Gate update in the tissue integrator": "src/cells/models/surface_pump_v3.py#L1689",
+        "Per-channel transfer and membrane balance": "src/cells/models/surface_pump_v3.py#L2839",
         "Independent Kv1 kinetics": "validation/tissue/kv1_reference.py#L13",
         "Independent Kir2.1 kinetics": "validation/tissue/kir_reference.py#L10",
         "Independent NaV1.2 kinetics": "validation/tissue/sodium_reference.py#L12",
         "Independent constant-field flux": "validation/betse/junction_transport/check.py#L10"
       },
       "driver": "lean/checks/ion_channels.py",
-      "record": "lean/PROGRESS.md#19-november-2026--ten-ion-channel-laws"
+      "record": "lean/PROGRESS.md#channel-source-replays-nov21"
     },
     "chloride-channel": {
       "kind": "engine",
       "models": ["resolved_pump_tissue@3"],
       "laws": ["clleak_always_open@1"],
-      "engine_revision": "d4f1eaf723ee1bdd1e54d9be086cb81d67356bfa",
-      "record_revision": "f44a045e4d4d6f15ed9f4b0f7ab556bae104b8df",
+      "engine_revision": "d0104950c40b92860a211c9e2555709d0fd61aed",
+      "record_revision": "c1e2b733bc4c54a4fd005b9dedb4697d801855d1",
       "sources": {
         "Chloride population and valence": "src/cells/laws/channels/clleak_always_open.py#L20",
-        "Outward population flux": "src/cells/models/surface_pump_v3.py#L358",
-        "Membrane and held-electrode currents": "src/cells/models/surface_pump_v3.py#L872",
+        "Outward population flux": "src/cells/models/surface_pump_v3.py#L370",
+        "Membrane and held-electrode currents": "src/cells/models/surface_pump_v3.py#L938",
         "Cell, bath and chloride substitution": "tests/unit/test_chloride_leak_law.py#L37",
         "Independent constant-field calculation": "validation/betse/junction_transport/check.py#L10"
       },
       "driver": "lean/checks/chloride_channel.py",
-      "record": "lean/PROGRESS.md#19-november-2026--chloride-leak"
+      "record": "lean/PROGRESS.md#channel-source-replays-nov21"
     },
     "assembly-exchange": {
       "kind": "engine",
@@ -1840,23 +1867,23 @@
       "kind": "engine",
       "models": ["resolved_pump_tissue@3"],
       "laws": ["nak_atp_mass_action_positive@1", "ca_atp_mass_action_positive@1"],
-      "engine_revision": "a06ee308a8348a5392e4645ccc368ccf8a086604",
-      "record_revision": "970598abe12fa2c19fd001f4bf32ec52a21d3d35",
+      "engine_revision": "d0104950c40b92860a211c9e2555709d0fd61aed",
+      "record_revision": "c1e2b733bc4c54a4fd005b9dedb4697d801855d1",
       "sources": {
         "Na⁺/K⁺ drive and rate": "src/cells/laws/pumps/nak_atp_mass_action_positive.py#L55",
         "Calcium standard state and rate": "src/cells/laws/pumps/ca_atp_mass_action_positive.py#L66",
         "Plasma-membrane voltage convention": "src/cells/laws/reactions/plasma_calcium.py#L29",
         "Calcium rate formula": "src/cells/laws/reactions/er_calcium.py#L36",
-        "Tissue pump dispatch": "src/cells/models/surface_pump_v3.py#L343",
-        "Outward ion transfers": "src/cells/models/surface_pump_v3.py#L783",
-        "Charge and electrode current": "src/cells/models/surface_pump_v3.py#L822",
+        "Tissue pump dispatch": "src/cells/models/surface_pump_v3.py#L451",
+        "Outward ion transfers": "src/cells/models/surface_pump_v3.py#L898",
+        "Charge and electrode current": "src/cells/models/surface_pump_v3.py#L938",
         "Na⁺/K⁺ scalar reference": "validation/betse/pump_contact/pump_reference.py#L83",
         "Calcium scalar reference": "validation/chemistry/finite_calcium_pump_reference.py#L19",
         "Na⁺/K⁺ rate tests": "tests/unit/test_kinetic_pump.py#L46",
         "Calcium standard-state and stall tests": "tests/unit/test_surface_pump_v2.py#L86"
       },
       "driver": "lean/checks/electrogenic_pumps.py",
-      "record": "lean/PROGRESS.md#19-november-2026--sodium-potassium-and-calcium-pump-charge"
+      "record": "lean/PROGRESS.md#channel-source-replays-nov21"
     },
     "extracellular-face": {
       "kind": "engine",
@@ -4489,6 +4516,67 @@
       }},
       "numerical": {"status": "checked", "comparisons": ["ion-channels"], "result": "The compiled dispatcher matched independent gate targets at 25 voltages within 2.23 × 10⁻¹⁶ and time constants within 1.78 × 10⁻¹⁵ s. All 72 stage cases stayed in [0, 1]. During the tissue block all eight gate pairs continued to move."},
       "biology": {"status": "open", "observable": "Normalized whole-current activation, decay or recovery for the same isoform, temperature, holding state and voltage-step sequence.", "unit": "normalized current, ms and mV", "finding": "Rat Kv1.1 decay at −20 mV and 25 °C was 313 ± 82 ms (SD). Cells retained 88% of its peak after 1.5 s and gave a fit of about 8 s from an equilibrated −80 mV hold. Rat Kv1.4 retained under 2% after 3.2 s at 0 mV, versus 0.57% in Cells. Four gate parameters match that paper. Human NaV1.2 rose in 0.38 ± 0.05 ms (10–90%, SEM), versus 0.296 ms in Cells. Its fitted inactivation midpoint was −63.53 ± 0.79 mV, while Cells gave half of its −120 mV reference response at −54.9 mV. [Ranjan et al., Fig. 2C](https://doi.org/10.3389/fncel.2019.00358) · [Stühmer et al., Table I and Fig. 6](https://doi.org/10.1002/j.1460-2075.1989.tb08483.x) · [Begemann et al., Table 2](https://doi.org/10.1186/s10020-019-0073-6)", "evidence": []}
+    },
+    {
+      "id": "kv15-ph-activation",
+      "category": "channels-and-junctions",
+      "title": "Kv1.5 activation and current retention under extracellular acidification",
+      "statement": "With common nonzero ionic drive, the treated/control current ratio is the product of the fully open population-scale ratio and the effective-opening ratio. For a rising Boltzmann curve of fixed positive width, translating the midpoint to the right makes the treated/control activation ratio increase strictly with voltage.",
+      "assumptions": [
+        "The control has positive maximal scale and opening. Both conditions share the single-open-channel drive at the test voltage, including permeant ion, temperature and concentrations.",
+        "Transferring the separately normalized peak tails in Figure 1F to the Figure 1B current assumes equal absolute maximal conductance and comparable peak openings in both protocols. Figure 1B supplies no input to the prediction.",
+        "The registered-channel sensitivity calculation moves only the activation midpoint. Inactivation, both gate time scales, channel count, permeability, ionic drive and the registered activation slope stay fixed."
+      ],
+      "uses": [
+        "clamped-channel-current",
+        "channel-density-availability",
+        "channel-gate-bounds"
+      ],
+      "formal": {
+        "status": "proved",
+        "theorems": {
+          "CellsProofs.Transport.IonChannels.clamp_ratio_from_openings": "lean/CellsProofs/Transport/IonChannels.lean",
+          "CellsProofs.Transport.IonChannels.right_shift_ratio_strictMono": "lean/CellsProofs/Transport/IonChannels.lean"
+        },
+        "sources": {
+          "Mathlib cancellation of the common nonzero drive": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/GroupWithZero/Units/Basic.lean#L317-L325",
+          "Mathlib strict monotonicity of the real exponential": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Data/Complex/Exponential.lean#L288-L295"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "kv15-ph-clamp"
+        ],
+        "result": "With equal maximal scales, stored effective openings from Figure 1F gave 0.72131 for the ratios at 0 mV and −90 mV on NumPy and compiled JAX CPU. Halving the acid maximum gave 0.36066. The native channel gave a peak ratio of 1.000 under both pH labels. Applying the +11.7 mV shift to its −6.0 mV midpoint gave 0.40493. Supplying both measured midpoints with native kinetics gave 0.69537."
+      },
+      "biology": {
+        "status": "not_assessable",
+        "observable": "How much peak outward potassium current remains at 0 mV when external pH falls from 7.3 to 6.8, given the separately normalized peak-tail activation curves.",
+        "unit": "fraction of control current",
+        "evidence": [
+          {
+            "dataset_id": "trapani2003_kv15_ph",
+            "manifest": "lean/checks/data/trapani2003_kv15_ph.json",
+            "citation": "Trapani and Korn (2003), Fig. 1B and 1F",
+            "doi": "10.1016/S0006-3495(03)74842-5",
+            "locator": "Figure 1F at the 0 mV prepulse and the activation midpoints in its caption. The 75 ms step in Figure 1B is held out.",
+            "context": "Wild-type human Kv1.5 expressed in HEK293 cells, whole-cell at room temperature, 100 mM internal and 10 mM external K⁺. Figure 1F uses voltage-dependent prepulse durations and peak tails at −90 mV. Figure 1B compares outward currents in a pulse from −80 to 0 mV.",
+            "role": "held_out_from_fitting",
+            "fit": [
+              "Figure 1F peak-tail fractions at 0 mV and the two activation midpoints"
+            ],
+            "evaluation": [
+              "Figure 1B 0 mV step-current ratio at pH 6.8 versus 7.3"
+            ],
+            "observed": 0.745,
+            "predicted": 0.72131,
+            "uncertainty": "Figure 1B reports SEM 0.019 over eight cells. Figure 1F normalizes each condition separately and gives neither the absolute maxima nor enough information to propagate experimental uncertainty. Reading both plotted fractions within ±0.01 gives 0.703–0.740 from graph precision alone. Both assays come from one study.",
+            "assessment": "The equal-maximum projection is 0.0237 below the measured fraction. The control midpoint explains why imposing the measured shift on the default Cells gate gives a smaller ratio. Quantitative pH validation needs comparable maximum conductances and matched activation kinetics.",
+            "report": "lean/PROGRESS.md#kv15-ph-activation"
+          }
+        ]
+      }
     },
     {
       "id": "channel-density-availability",

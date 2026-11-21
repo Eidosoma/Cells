@@ -11,7 +11,7 @@ Direct Lean claims cover [49 of 49 laws](COVERAGE.md#registered-laws) and [29 of
 | Category | Registered laws with proof | Claims with proof | Numerical checks | Claims with biological evidence |
 | --- | ---: | ---: | --- | ---: |
 | [Membrane transport and osmosis](COVERAGE.md#category-membrane-transport) | 5 of 5 | 8 of 8 | 8 checked | 8 |
-| [Ion channels and junctions](COVERAGE.md#category-channels-and-junctions) | 14 of 14 | 14 of 14 | 14 checked | 13 |
+| [Ion channels and junctions](COVERAGE.md#category-channels-and-junctions) | 14 of 14 | 15 of 15 | 15 checked | 14 |
 | [Pumps and cotransport](COVERAGE.md#category-pumps-and-cotransport) | 13 of 13 | 8 of 8 | 8 checked | 8 |
 | [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 3 of 3 | 8 of 8 | 8 checked | 6 |
 | [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 13 of 13 | 19 of 19 | 18 checked · 1 failed | 15 |
@@ -25,6 +25,8 @@ Each category opens its detailed claim table on GitHub, including registered law
 On 21 November, five former numerical failures passed their repair checks, including fresh-pool capacity and self-regulated turnover. The GARD pair-heat case remains recorded on version 1. [Repair results](PROGRESS.md#nov21-engine-review) · [Current failure list](COVERAGE.md#failing-numerical-checks)
 
 ## Biological evidence
+
+At 0 mV, the published Kv1.5 activation curves predict 72.1% retained current at pH 6.8 if both preparations share a maximum conductance. A separate pulse in the same study gave 74.5 ± 1.9% (SEM). Applying only the measured midpoint shift to the default Cells gate gives 40.5%. [Kv1.5 pH comparison](claims/kv15-ph-activation.md)
 
 For Kv1.5 in HEK293 cells, a density-inhibition curve fitted to the two endpoints predicts a conducting fraction of 0.22 at 300 channels/µm². The same figure gives about 0.23 there, without a pointwise uncertainty. An independent channel count lets a fixed-gate current comparison distinguish changes in availability. [Density comparison](claims/channel-density-availability.md) · [Clamp proof](claims/clamped-channel-current.md)
 
@@ -46,7 +48,7 @@ Edit the claims register. A stable `id` gives each claim its note under `claims/
 
 Laws inherit the topic of their direct proofs. Use `law_categories` to put a law awaiting its first proof in the right section, or to choose its primary topic when proofs span several categories. Newly registered laws awaiting classification appear together in the overview.
 
-In `formal.about`, list the canonical registry IDs whose law or operator property the theorem establishes. General composition and accounting theorems can leave this empty. In `numerical.comparisons`, list the comparison IDs for the claim. Each comparison names the models, laws and operators it exercised. For engine runs, `engine_revision` identifies the code that ran. The `record_revision` pins the comparison driver and the published result. For a reference calculation it also pins the implementation. File paths in the register start at the checkout root.
+In `formal.about`, list the canonical registry IDs whose law or operator property the theorem establishes. General composition and accounting theorems can leave this empty. In `numerical.comparisons`, list the comparison IDs for the claim. Each comparison names the models, laws and operators it exercised. For engine runs, `engine_revision` identifies the code that ran. The `record_revision` pins the comparison driver, the published result and any measured data files listed in `record_inputs`. The source audit also detects changes to those inputs. For a reference calculation this revision also pins the implementation. File paths in the register start at the checkout root.
 
 In `biology.observable` and `unit`, name the quantity the claim needs. Use `biology.finding` for a brief published measurement, its scope and its primary citation. The generator puts that finding in the detailed catalog and the claim page. Formal experimental comparisons go in `biology.evidence`. The catalog reads their observed and predicted values, assessment and citation directly from those records. A claim awaiting measurements displays its requested observable.
 
@@ -372,6 +374,7 @@ For the instantaneous current of a saved channel population at a declared voltag
 ```bash
 "$cells_python" -B checks/clamped_channel_current.py
 "$cells_python" -B checks/channel_density.py
+"$cells_python" -B checks/kv15_ph.py
 ```
 
 For neutral permeation, compare the compiled inward flux and the final amounts in a closed tissue pair with the analytic solution. The unequal-volume case distinguishes amount from concentration. [Neutral driver](checks/neutral_permeation.py) · [Closed-pair reference](../validation/passive/passive_reference.py#L66)
