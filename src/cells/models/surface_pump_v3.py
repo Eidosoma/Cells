@@ -435,7 +435,12 @@ def clamped_channel_flux(state, control, p, voltages_V, *, xp=np, structure=None
     availabilities; then channel_rates itself, with the field's membrane voltage replaced by the one
     given. The gates are the state's, not their values at the declared voltage, so this is the
     population's instantaneous current there. Pure: nothing calls it and it records nothing, so no
-    program or record changes (crossrev)."""
+    program or record changes (crossrev).
+
+    The controls are the ones @3 receives: in a composite, the composite's control view
+    (control_view(control, state, p), with the operators' factors and writes, as held_schedules
+    holds them for its observations), never the composite's stored controls, which leave an
+    operator's factor out (D265, finding 1)."""
     kinds = _kinds(structure)
     read = _stage_read(state, p, kinds, xp=xp)[0] if kinds else state
     if kinds and structure.routes:  # §7.4 (n): the routing door, after the read (static).
@@ -3692,7 +3697,9 @@ RECORD_NOTES = MappingProxyType(
 # B1's door (docs/CORE_SEAMS_DESIGN.md §4.3): what channel_availability records where a population
 # declares factors, and FR-34's record of the value its flux runs at.
 ROUTED_CHANNEL_NOTE = (
-    "the held availability, before the routing door. An operator's write to the availability "
+    "the held availability, before the routing door: the control @3 receives, which in a "
+    "composite is its control view (the operators' factors and writes, as held_schedules holds "
+    "them), never the composite's stored controls. An operator's write to the availability "
     "enters here, through the held value; a population that declares factors runs, at every "
     "stage, at this times its sources' factors (a left fold in declared order), which enter "
     "through the door; their product, the value its flux follows, is "
@@ -3700,9 +3707,11 @@ ROUTED_CHANNEL_NOTE = (
 )
 EFFECTIVE_AVAILABILITY_NOTE = (
     "the effective availability, the value each population's flux runs at: the held "
-    "availability (channel_availability, which carries an operator's writes) times its sources' "
-    "factors at the row's read state, a left fold in declared order (B1's door); recorded only "
-    "where a population declares factors, since elsewhere it is channel_availability"
+    "availability (channel_availability: the control @3 receives, which carries an operator's "
+    "writes and, in a composite, its control view's factors; never the composite's stored "
+    "controls) times its sources' factors at the row's read state, a left fold in declared "
+    "order (B1's door); recorded only where a population declares factors, since elsewhere it "
+    "is channel_availability"
 )
 
 
