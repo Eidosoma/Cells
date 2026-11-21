@@ -633,6 +633,7 @@ def test_an_identity_checked_on_no_pair_is_refused_never_reported_as_zero(monkey
     with pytest.raises(ConfigError, match="checked on no pair"):
         balance.world_report(low, states=60)
     monkeypatch.setattr(balance, "deviations", lambda *args, **kwargs: np.zeros(0))
+    monkeypatch.setattr(balance, "_WORLD_REPORTS", {})  # the planted check is not a kept report
     checks = (lambda: balance.world_report(spec), balance._shell_verdict.__wrapped__,
               balance._geometry_verdict.__wrapped__, balance._osmotic_verdict.__wrapped__,
               balance._verdict.__wrapped__)  # fmt: skip
