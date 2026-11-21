@@ -1215,3 +1215,16 @@ measured liquid fraction of about 27.2% (Liu et al., Fig. 4, PMC6897560). The tw
 volume predicts particle sampling, and both concern particles, not molecules. FR-35 withdraws each
 molecule with the volume fraction's probability, a well-mixed limit. The informative measurement is
 paired liquid volume and particle count for each split. No change to FR-35 now.
+
+**The Lean lane's check of the split heat (21 November 2026).** split_surprisal_kT is booked against
+the physical volume fraction f, while the finite-word sampler withdraws each molecule with
+probability q. So the exact mean heat for n tracers with tracer-free buffer is −n(1−q) ln(1−f), with
+q = f at dyadic fractions such as ¼ and ½. At the largest allowed fraction, f = 1−2⁻⁵³, a tracer
+survives with probability 2⁻⁵²: its booked split score exceeds its sampler score by exactly ln 2, and
+the mean heat is 8.1572 × 10⁻¹⁵ kBT against the ideal-volume 4.0786 × 10⁻¹⁵ kBT. The per-event energy
+accounting passes. The design note and the operator's docstring are being reworded to say so (no
+code change). Their search of three passive-split studies (Fornell et al., Fig. 2,
+doi:10.1063/1.4984131; Liu et al., Fig. 4, PMC6897560; Deshpande et al., Fig. 3, the mechanical
+division of cell-sized liposomes) found none that reports the parent count, the daughter count and the
+measured liquid fraction for the same split, the pairing that would separate volume variation from
+sampling variation. Biological validation of the heat remains open.
