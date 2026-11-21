@@ -213,19 +213,21 @@ def gaps(engine, reference, *, until=None, readouts=None):
         names = [n for n in names if not n.startswith("J_bar")]
     _readouts(engine, _some(names, "the trajectory"), "the trajectory")
     hits, rows = rows, _unique(engine, rows, names, "the trajectory")
-    out = {}
+    out, absolute = {}, {}
     for name in names:
         values, mine = reference["readouts"][name], engine["readouts"][name]
         if name.startswith("J_bar"):
-            out[name] = abs(_finite(mine[0], name, "the trajectory") - values[0]) / abs(values[0])
+            absolute[name] = abs(_finite(mine[0], name, "the trajectory") - values[0])
+            out[name] = absolute[name] / abs(values[0])
             continue
         scale = max(abs(v) for v in values) or 1.0
         pairs = [(t, v) for t, v in zip(reference["t"], values, strict=True) if t in rows]
-        out[name] = (
-            max(abs(_finite(mine[rows[t]], name, f"the trajectory at {t}") - v) for t, v in pairs)
-            / scale
+        absolute[name] = max(
+            abs(_finite(mine[rows[t]], name, f"the trajectory at {t}") - v) for t, v in pairs
         )
-    return dict(gaps=out, expected_times=len(required), matched_times=len(rows),
+        out[name] = absolute[name] / scale
+    return dict(gaps=out, absolute_gaps=absolute, expected_times=len(required),
+                matched_times=len(rows),
                 duplicate_rows=sum(len(v) - 1 for v in hits.values()),
                 partial=partial, until=until, not_compared=skipped)  # fmt: skip
 
@@ -292,6 +294,7 @@ def compare_record(refs, engine, *, partial=False, readouts=None):
         heats=heats,
         checks=engine.get("checks", {}),
         gaps=found,
+        absolute_gaps=result.get("absolute_gaps", {}),
     )
 
 

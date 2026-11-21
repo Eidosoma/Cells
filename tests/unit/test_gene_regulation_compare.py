@@ -561,3 +561,58 @@ def test_the_per_cell_rna_readout_meets_its_two_controls():
         assert g["mean"] == pytest.approx(mean, rel=1e-5)
         assert g["positive_fraction"] == positive
         assert g["positive_mean"] == pytest.approx(positive_mean, rel=1e-5)
+
+
+def _engine_triple(world, *, offsets=None, orders=None):
+    """Three synthetic engine records of a world at the test instance, steps 2, 1 and 0.5 s: G2's
+    trajectory plus a step error 1e-6 scale h^p at each readout's declared order (or `orders`), at
+    rounding size (1e-14 scale h^p) for J_bar as in the development runs, plus `offsets` (a model
+    error, the same at every step)."""
+    from validation.gene_regulation import registration
+
+    reference = REFERENCES.sets[0][1][world]
+    names = [n for n in reference["readouts"] if not compare.not_exported(n)]
+    triple = []
+    for h in registration.STEPS:
+        readouts = {}
+        for name in names:
+            values = reference["readouts"][name]
+            scale = max(abs(v) for v in values) or 1.0
+            p = (orders or {}).get(name) or registration.P_DECLARED[
+                (registration.kind(world), registration.klass(name))][0]  # fmt: skip
+            size = 1e-14 if name.startswith("J_bar") else 1e-6
+            shift = size * scale * h**p + (offsets or {}).get(name, 0.0) * scale
+            readouts[name] = [v + shift for v in values]
+        triple.append({("test instance", world): dict(
+            world=world, set="test instance", symbols_RT=_symbols(0), dt_s=h,
+            t=list(reference["t"]), readouts=readouts)})  # fmt: skip
+    return triple
+
+
+# (case, offsets, orders, FR-25's verdict, the readout that decides it).
+REGISTRATION = [
+    ("step error alone passes", None, None, "passed", None),
+    ("a model error beyond 3 est fails", {"n_R": 1e-5}, None, "failed", "n_R"),
+    ("an order outside its window is inconclusive", None, {"n_R": 1}, "inconclusive", "n_R"),
+]  # fmt: skip
+
+
+@pytest.mark.parametrize(("case", "offsets", "orders", "verdict", "decides"), REGISTRATION,
+                         ids=[c[0] for c in REGISTRATION])  # fmt: skip
+def test_the_registration_judges_from_step_error_alone(case, offsets, orders, verdict, decides):
+    """FR-25's registered tolerance (validation/gene_regulation/registration.py, D268), on synthetic
+    triples built from G2's pol T=5 trajectory (no world compiled). J_bar's step error is at
+    rounding size, so it is judged at the floor in every case, its order unchecked."""
+    from validation.gene_regulation import registration
+
+    coarse, middle, fine = _engine_triple("pol T=5", offsets=offsets, orders=orders)
+    table = registration.table(coarse, middle, fine)
+    result = registration.judge(table, fine, REFERENCES)
+    assert result["verdict"] == verdict
+    (world,) = result["worlds"].values()
+    assert world["matched_times"] == world["expected_times"] == 121
+    if verdict != "inconclusive":  # An inconclusive world's tolerances are not sound to fail by.
+        assert world["failed"] == ([decides] if verdict == "failed" else [])
+    assert world["outside_window"] == ([decides] if verdict == "inconclusive" else [])
+    entry = table["worlds"]["test instance | pol T=5"]["readouts"]["J_bar_tx"]
+    assert entry["at_floor"] and entry["order"] is not None  # Its order is not checked.
