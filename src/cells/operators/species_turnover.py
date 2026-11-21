@@ -529,6 +529,12 @@ class ScheduledSpeciesTurnover(Operator):
         an outside node), in control order."""
         return tuple((route.id, route.cell) for route in declaration.routes)
 
+    def half_step_rows(self, declaration):
+        """B1′: each cell route's species at its cell (production and clearance both move it)."""
+        return tuple(
+            dict.fromkeys((r.species, r.cell) for r in declaration.routes if r.cell is not None)
+        )
+
     def species_identities(self, declaration):
         return declaration.species
 

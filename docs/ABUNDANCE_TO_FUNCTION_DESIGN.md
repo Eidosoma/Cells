@@ -252,7 +252,9 @@ which changes a response.
     law.
   - The factor F ∈ [b, 1] multiplies the scheduled rate. It is evaluated in the target's own
     half-steps, from the state each half-step receives, so the route is second order (coupling
-    §2.1, **S**). The scheduled rate is therefore the maximum.
+    §2.1, **S**). Where the target itself moves the route's species source, it is read at the
+    half-step's midpoint, which keeps the route second order. The scheduled rate is therefore the
+    maximum.
 - **Energy:** the target books as today. A factor on D150's production is the same object as a
   scheduled production (coupling §2.1).
 - **Not the kinds' door.**
