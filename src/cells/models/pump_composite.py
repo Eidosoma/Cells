@@ -123,21 +123,24 @@ def _checked_above(row, p, active, *, xp):
     return xp.asarray(True)
 
 
-def implementation(inner_model, laws, structure=None):
+def implementation(inner_model, laws, structure=None, *, midpoint=frozenset()):
     """The composite for one inner identity, ordered operator law tuple and, from a definition,
     the inner model's declared structure (I2: the composite then takes the inner protocol from
-    that structure's implementation object; None keeps the module's own, the full catalogue).
+    that structure's implementation object; None keeps the module's own, the full catalogue), and
+    the definition's self-moved rate-route targets (self_moved_targets; empty: none).
 
     Cached: equal arguments share one composition. A structure that declares kinds is also keyed
     on the active kind registry, whose kinds its types are built from (schema A, §7.4 (j)), as
     the inner implementation object is; one that declares none shares its composition across
-    registries, so a registered but undeclared kind changes nothing."""
+    registries, so a registered but undeclared kind changes nothing. A definition without a
+    self-moved route shares the composition it had before the midpoint existed."""
     kinds = structure is not None and bool(structure.kinds)
-    return _implementation(inner_model, laws, structure, kind_registry.active() if kinds else None)
+    registry = kind_registry.active() if kinds else None
+    return _implementation(inner_model, laws, structure, registry, frozenset(midpoint))
 
 
 @cache
-def _implementation(inner_model, laws, structure, registry):
+def _implementation(inner_model, laws, structure, registry, midpoint):
     from cells.operators import OPERATORS
 
     if inner_model not in INNERS:
@@ -148,15 +151,52 @@ def _implementation(inner_model, laws, structure, registry):
     inner = INNERS[inner_model]
     if structure is not None:
         inner = inner.for_structure(structure)
-    return Composition(inner, tuple(OPERATORS[law] for law in laws))
+    return Composition(inner, tuple(OPERATORS[law] for law in laws), midpoint=midpoint)
 
 
 def model_for(spec_model):
     inner = INNERS[spec_model.inner_model] if spec_model.inner_model in INNERS else None
     structure = None if inner is None else inner.inner_structure(spec_model)
     return implementation(
-        spec_model.inner_model, composite_spec.operator_laws(spec_model), structure
+        spec_model.inner_model,
+        composite_spec.operator_laws(spec_model),
+        structure,
+        midpoint=self_moved_targets(spec_model),
     )
+
+
+def self_moved_targets(spec_model):
+    """The law IDs of the definition's rate-route targets whose own half-steps move a species
+    source of one of their routes, in the cell the route reads it (B1′; the independent Lean
+    project's finding, lean/PROGRESS.md "regulated-turnover-routing", 20 November 2026).
+
+    A factor read at the start of a half-step is exact while nothing in that half-step moves its
+    source: another split operator's halves and @3's step stand symmetric about it (Strang). When
+    the target moves the source itself (a turnover producing the regulator of its own route),
+    the frozen factor is a left-endpoint rule, first order: those targets' half-steps evaluate
+    the factor at the half-step's midpoint (Composition._half_step). Read from the declarations
+    alone (each source's rate_route_sources, each target's routable_elements and half_step_rows),
+    so a definition without such a route is the composition it was. A route the definition's
+    checks would refuse (to a law not composed, or a control not routable) is passed over here."""
+    from cells.operators import OPERATORS
+
+    declared = [
+        (OPERATORS[d.law], d) for d in getattr(spec_model, "operators", ()) if d.law in OPERATORS
+    ]
+    by_law = {op.LAW_ID: (op, d) for op, d in declared}
+    out = set()
+    for op, declaration in declared:
+        for law, control, ids, species in op.rate_route_sources(declaration):
+            if law not in by_law:
+                continue
+            target, target_declaration = by_law[law]
+            if target.ROUTABLE_CONTROLS.get(control) != "rate":
+                continue
+            moved = set(target.half_step_rows(target_declaration))
+            elements = target.routable_elements(target_declaration, control)
+            if any(e in ids and (species, cell) in moved for e, cell in elements):
+                out.add(law)
+    return frozenset(out)
 
 
 def check_definition(spec):
@@ -1154,7 +1194,7 @@ def _channel_targets(values):
 class Composition:
     """The model protocol of one composition (attributes as a model module's)."""
 
-    def __init__(self, inner, operators):
+    def __init__(self, inner, operators, *, midpoint=frozenset()):
         errors = structure_errors(inner, operators)
         if errors:
             raise ConfigError("Invalid operator composition: " + "; ".join(errors))
@@ -1163,8 +1203,12 @@ class Composition:
         self.writers_of = accepted_writers(operators)
         self.observed_keys = {op.LAW_ID: {*op.observed_columns(), *op.REPLACES} for op in operators}
         self.laws = tuple(op.LAW_ID for op in operators)
-        # The executable's structure (I2): the inner structure's key and the operator list.
+        # The executable's structure (I2): the inner structure's key and the operator list, and
+        # the self-moved rate-route targets where there are any (static, B1′: none keeps the key).
         self.structure_key = (MODEL_ID, getattr(inner, "structure_key", None), self.laws)
+        self.midpoint = frozenset(midpoint)
+        if self.midpoint:
+            self.structure_key += (("midpoint", tuple(sorted(self.midpoint))),)
         # Declarations contribute nothing to the step (contract.DECLARATION_ONLY): a composition
         # of declarations alone steps as the empty composition does (FR-1 design §1.6, S5).
         self.stepping = tuple(op for op in operators if not op.DECLARATION_ONLY)
@@ -1594,6 +1638,17 @@ class Composition:
         if self._passes_view(op):
             keywords["view"] = self._view_for(op, p, xp=xp)(state)
         routes = self.rate_routes.get(op)
+        if routes and op.LAW_ID in self.midpoint:  # Static: a self-moved route's target.
+            # The explicit midpoint (self_moved_targets): a predictor over h/2 with the factors
+            # from the state this half-step receives, then the half-step over h with the factors
+            # from the predictor's state, second order where the target moves a route's source.
+            # Every validity counts; FACTOR_RECORD holds the factors applied, the midpoint's.
+            start, routed0, _ = self._routed_control(op, routes, state, control, p, xp=xp)
+            mid, ok0 = op.half_step(state, h / 2, start, p, xp=xp, **keywords)
+            control, routed, records = self._routed_control(op, routes, mid, control, p, xp=xp)
+            new, ok = op.half_step(state, h, control, p, xp=xp, **keywords)
+            valid = _and(_and(routed0, ok0), _and(ok, routed))
+            return _recorded(new, records, xp=xp), valid
         if routes:  # Static (B1′): its routed rates, from the state this half-step receives.
             control, routed, records = self._routed_control(op, routes, state, control, p, xp=xp)
             new, ok = op.half_step(state, h, control, p, xp=xp, **keywords)

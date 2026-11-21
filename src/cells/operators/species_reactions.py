@@ -1523,6 +1523,22 @@ class LocalSpeciesReactions(Operator):
             for route in declaration.routes
         )
 
+    def half_step_rows(self, declaration):
+        """B1′: each reaction's reactants and products at each of its cell sites (a catalyst and
+        a rate factor are read, not moved)."""
+        reactions = {r.id: r for r in declaration.reactions}
+        return tuple(
+            dict.fromkeys(
+                (species, route.node)
+                for route in declaration.routes
+                if route.kind == "cell"
+                for species, _ in (
+                    *reactions[route.reaction].reactants,
+                    *reactions[route.reaction].products,
+                )
+            )
+        )
+
     def check_definition(self, spec, declaration, schedule, model):
         if spec.execution.solver == "rk4":
             raise ConfigError(

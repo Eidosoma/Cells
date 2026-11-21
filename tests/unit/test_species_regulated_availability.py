@@ -1264,6 +1264,86 @@ def test_version_2_routes_a_production_rate_in_the_targets_half_steps(monkeypatc
         parse_spec(routed())
 
 
+def self_routed():
+    """The independent Lean project's ramp world (lean/checks/regulated_availability.py,
+    ramp_order, 20 November 2026): a 1 pL cell with S at 1 mM; the turnover produces S at 1 fmol/s
+    (make_S) and Y at 1 fmol/s times @2's Hill activation of S (K 1 mM, n 1, basal 0) in the same
+    cell (make_Y): a route whose source its own target moves."""
+    raw = sfx.world(nodes=(), contacts=(), faces=(), trace_mM=1.0, dt=1 / 8, end=1.0)
+    raw = add_inventory_species(
+        raw, "Y", trace_mM=1.0, diffusivity_m2_per_s=1e-10, floor_fmol=1e-20
+    )
+    coupling = dict(
+        id="reporter_gate",
+        source=dict(species=sfx.SPECIES),
+        law="hill_activation",
+        basal=0.0,
+        half_saturation_mM=1.0,
+        hill_coefficient=1.0,
+        target=dict(
+            operator=sfx.TURNOVER,
+            control="turnover_rate",
+            ids=["make_Y"],
+            evaluation="target_half_steps",
+            operating_range=[1.0, 2.0],
+        ),
+    )
+    raw = rf.with_coupling(raw, species=[sfx.SPECIES], couplings=[coupling])
+    block(raw)["law"] = LAW_V2
+    routes = [(r, "cell_0", "production") for r in ("make_S", "make_Y")]
+    controls = [(r, "cell_0", [(0.0, 1.0)]) for r, _, _ in routes]
+    raw = sfx.with_turnover(raw, routes, controls, species=rf.identities([sfx.SPECIES, "Y"]))
+    next(r for r in raw["model"]["operators"][-1]["routes"] if r["id"] == "make_Y")["species"] = "Y"
+    return parse_spec(raw)
+
+
+def test_version_2_evaluates_a_route_its_target_moves_at_the_half_steps_midpoint(monkeypatch):
+    """A route whose source its own target moves (the independent Lean project's finding: first
+    order, a gain of 0.58928135 fmol at 8 steps against 1 - ln(3/2)): the composite evaluates its
+    factor at the target half-step's midpoint, from a predictor over h/2 (pump_composite's
+    self_moved_targets and _half_step). NumPy half-steps of the turnover alone (S and Y are moved
+    by nothing else), under 1 s, no world compiled. Four refinements of the one-second ramp
+    converge at order at least 1.9; the record holds the midpoint's factor; the S route keeps its
+    booking; a composition without such a route (routed) keeps its key. Planted: the midpoint off,
+    order 1."""
+    spec = parse_spec(routed())
+    assert pump_composite.self_moved_targets(spec.model) == frozenset()
+    assert get_model(spec.model).structure_key[3:] == ()
+    spec = self_routed()
+    assert pump_composite.self_moved_targets(spec.model) == {sfx.TURNOVER}
+    model = get_model(spec.model)
+    assert model.structure_key[3:] == (("midpoint", (sfx.TURNOVER,)),)
+    state, p = model.initial_values(spec)
+    turnover = next(o for o in model.operators if o.LAW_ID == sfx.TURNOVER)
+    control = model.CONTROL_TYPE(*(v[0] for v in cs.control_values(spec, [0.0])))
+    s, y = (list(spec.model.species_ids).index(k) for k in (sfx.SPECIES, "Y"))
+    record = sra.SpeciesRegulatedAvailabilityV2.FACTOR_RECORD
+    h = 1 / 16
+    first, ok = model._half_step(turnover, state, h, control, p, xp=np)
+    c_mid = 1.0 + h / 2  # mM: S after the predictor's h/2 at 1 fmol/s in 1 pL.
+    assert bool(ok) and float(np.asarray(getattr(first, record))[0]) == c_mid / (1.0 + c_mid)
+    assert float(np.asarray(first.amount_increment)[s, 0]) == h  # make_S, as without a route.
+
+    def gains(steps):
+        out = []
+        for n in steps:
+            current = state
+            for _ in range(2 * n):
+                current, ok = model._half_step(turnover, current, 1 / (2 * n), control, p, xp=np)
+                assert bool(ok)
+            assert float(np.asarray(current.amount_increment)[s, 0]) == 1.0
+            out.append(float(np.asarray(current.amount_increment)[y, 0]))
+        return out
+
+    exact = 1.0 - np.log1p(0.5)
+    errors = [abs(g - exact) for g in gains((8, 16, 32, 64))]
+    orders = [np.log2(a / b) for a, b in zip(errors, errors[1:], strict=False)]
+    assert min(orders) >= 1.9, orders
+    monkeypatch.setattr(model, "midpoint", frozenset())
+    planted = [abs(g - exact) for g in gains((8, 16))]
+    assert np.log2(planted[0] / planted[1]) < 1.2
+
+
 def _bitwise_but(a, b, skipped):
     """Every field of two states bitwise equal but `skipped`."""
     for name in type(a)._fields:

@@ -628,6 +628,19 @@ class Operator:
         (B1′, the target side; a routable operator defines it)."""
         raise NotImplementedError
 
+    def half_step_rows(self, declaration):
+        """((species id, cell id), ...) the rows its own half-steps move, in the cells its
+        routable_elements name (B1′, the target side): a rate route whose species source is one of
+        them is self-moved, and the composite evaluates its factor at the half-step's midpoint
+        (pump_composite.self_moved_targets). (): it moves none."""
+        return ()
+
+    def rate_route_sources(self, declaration):
+        """((target law, field, element ids, source species id), ...) of its declared rate routes
+        with a species source read in each element's cell (B1′, the source side), for the
+        composite's self-moved test; ()."""
+        return ()
+
     def quantities(self, state, p, *, xp):
         """R3, the owner: {name: values} of its QUANTITIES at `state`, each on its entity axis."""
         return {}
