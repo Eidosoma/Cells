@@ -53,6 +53,33 @@ def _permeant(raw):
     patch["permeability_m_per_s"][S] = 1e-9
 
 
+def _route(raw):
+    """The review's crossing by a registered route (D263 finding 2): species exchange imports S
+    from the well into the specimen through its patch, at first order."""
+    return fx.with_exchange(
+        raw,
+        [("uptake", "specimen_face", "import", "first_order")],
+        [("uptake", "specimen", [(0.0, 0.5)])],
+    )
+
+
+def _kind_route(raw):
+    raw["model"]["passive_routes"] = [
+        dict(id="s_route", patch="specimen_face", law="passive_neutral_permeation@1", species=S,
+             permeability_m_per_s=1e-12)
+    ]  # fmt: skip
+
+
+def _internalising(raw):
+    sites = next(o for o in raw["model"]["operators"] if o["law"] == "site_occupancy@1")
+    population = next(q for q in sites["populations"] if q["id"] == "specimen_sites")
+    population["internalisation"] = dict(rate_per_s=0.01, destination="cell")
+    raw["experiment"]["site_controls"].append(
+        dict(population="specimen_sites", route="internalisation",
+             schedule=[dict(time=0.0, multiplier=1.0)])
+    )  # fmt: skip
+
+
 def _event(time=T_E, fraction=0.5, buffer=None, node="well"):
     return (time, node, fraction, {S: wfx.TRACE_mM} if buffer is None else buffer)
 
@@ -89,6 +116,19 @@ REFUSALS = {
         lambda: washed(changed(wfx.well(sites=False), _permeant)),
         "S crosses patch specimen_face",
     ),
+    # D263 finding 2 (a second review): the same crossing by a registered route was admitted.
+    "a neutral species across the surface by an exchange route": (
+        lambda: washed(_route(wfx.well(sites=False))),
+        "S may cross node well's surface by scheduled_species_exchange@1's route uptake",
+    ),
+    "a neutral species across the surface by a kind's route": (
+        lambda: washed(changed(wfx.well(sites=False), _kind_route)),
+        "by cells.passive_routes@1 \\(passive_neutral_permeation@1\\)",
+    ),
+    "a ligand internalised across the surface": (
+        lambda: washed(changed(wfx.well(), _internalising)),
+        "by site_occupancy@1's internalisation specimen_sites",
+    ),
     "a buffer below a site ligand's trace": (
         lambda: washed(events=[_event(buffer={S: 1e-13})]),
         "below its declared trace",
@@ -108,6 +148,32 @@ def test_each_refusal_fires_with_its_reason(name):
     build, message = REFUSALS[name]
     with pytest.raises(ConfigError, match=message):
         parse_spec(build())
+
+
+def test_every_path_across_a_washed_surface_is_classified(monkeypatch):
+    """D263 finding 2, fail closed (host only, parse): every registered operator law is read for its
+    routes (exchange, sites), shown local or refused with its reason, so a new law is refused
+    beside the wash until it is classified here. Planted: turnover unclassified, a world with it is
+    refused. The review's well with its sites, and a route-free wash, stay admitted."""
+    from cells.operators import OPERATORS
+    from cells.operators import wash_schedule as wash
+
+    read = {wash.EXCHANGE, wash.SITES}
+    lists = [read, set(wash.SHOWN_LOCAL), set(wash.REFUSED)]
+    assert sorted(set(OPERATORS) - set().union(*lists)) == [], "classify the new law here"
+    assert sum(len(x) for x in lists) == len(set().union(*lists))
+    parse_spec(washed())
+    parse_spec(washed(wfx.well(sites=False)))
+    raw = fx.with_turnover(
+        wfx.well(sites=False),
+        [("make", "specimen", "production")],
+        [("make", "specimen", [(0.0, 1e-6)])],
+    )
+    parse_spec(washed(raw))
+    shown = {k: v for k, v in wash.SHOWN_LOCAL.items() if k != "scheduled_species_turnover@1"}
+    monkeypatch.setattr(wash, "SHOWN_LOCAL", shown)
+    with pytest.raises(ConfigError, match="scheduled_species_turnover@1, which is not classified"):
+        parse_spec(washed(raw))
 
 
 def test_admitted_beside_a_dose_at_a_held_bath_and_the_declaration_round_trips():
