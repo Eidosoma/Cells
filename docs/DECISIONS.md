@@ -8486,3 +8486,29 @@ lets until 8pm this evening focus on core and FRs nothing else".
 - **Independent check:** as in D259, an agent that wrote none of the code reproduces each finding at
   its base and reruns the reproducers on each fixed head before anything lands.
 
+## D264: A tester's six readout findings (FR-24, FR-26, FR-25); their readouts held from scoring until fixed
+
+2026-11-21, about 14:57 UTC. A tester's report, relayed by the user, tested at main 5dcf276a and
+gene-regulation-lane 43afa534; FR-24 and the two FR-25 RNA counter issues first.
+1. **FR-24 (main):** a receptor-controlled reaction's exported rate ignores the receptor factor. It
+   reads 0.000200 fmol/s in all three controls, where the accumulated product shows 0 (empty
+   receptors), 0.000080 (40% occupancy) and 0.000200 (coupling disabled).
+2. **FR-26 (main):** at a replacement's event time (0.020 s), the observation combines the
+   departing cell's substrate with the incoming cell's multiplier, giving 0.00048009 fmol/s. The
+   departing rate is 0.00192035 and the incoming rate 0.00050000.
+3. **FR-25 (gene regulation's branch):** reversing only the cell declaration order of a two-cell A1
+   run changes exported RNA from 1.00e-12 to 1.403e-8 fmol, because the export is keyed by
+   position, not by cell and gene ID.
+4. **FR-25:** two degradation routes for one RNA give ten loss readings for five sampling times,
+   overstating surviving labelled RNA by 64%.
+5. **FR-25:** the survivor reader reports 3.32347 fmol labelled where only 1.03321 fmol total
+   remains (exact 0.99966), with zero reported grid error.
+6. **FR-25:** a NaN or decreasing loss counter returns 100% survival and zero grid error, and a
+   reversed labelling window returns negative completions.
+- **Held:** FR-24's exported reaction rates at routed reactions, FR-26's event-row observations,
+  and FR-25's readers (already held by D259) are not used for scoring until fixed.
+- **Fixers:** 1 and 2 go to the operators owner; 3 to 6 to the gene-regulation agent. These are FR
+  fixes, inside D260's core-and-FR window.
+- **Independent check:** as in D259 and D263, an agent that wrote none of the code reproduces each
+  finding at its base and reruns the reproducers on each fixed head before anything lands.
+
