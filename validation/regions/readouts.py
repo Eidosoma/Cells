@@ -66,14 +66,24 @@ reads the cohort.
   - at r = 1 it reads 0, where the truth is e^(-2) = 0.135; above 1 it is negative (the
     reviewer's steady pool: 1 fmol made and cleared at 4 per s, one 1 s step: -0.333 for e^(-4)
     = 0.0183), and the closure check cannot see it, since the cohorts still sum to the amount.
-  So the trace refuses a step in which a node that gains material has r above RESOLUTION = 0.01,
-  and reports the largest such r (resolution_largest). At that bound, over four closed-form
-  scenarios (a steady pool, a node filling from near-empty, a draining node with production, a
-  node fed by a route), a node's starting cohort stays within 4.3e-4 of its exact amount,
-  relative to that amount, after five e-foldings of loss, and each step adds at most 7.61e-6 of
-  the node's amount (measured; for the steady pool 1.7e-4 and 6.5e-7, near Pade's kT r^2/3 and
-  2r^3/3). The error is second order: halving the step quarters it. A node empty at both ends of
-  a step holds no cohort; material that passes through an empty node within one step is refused.
+  - A node that sends material along a route needs the same bound, though its own split stays
+    exact: its arrivals shape its receiver's. A donor draining most of itself in one step (r =
+    0.76) into a receiver at r = 0.01 put 9.4e-4 of the receiver's amount on the wrong cohort in
+    that one step.
+  So the trace refuses a step in which a node that gains material, or sends it along a route, has
+  r above RESOLUTION = 0.01, and reports the largest such r (resolution_largest). At that bound,
+  measured on 15 closed-form scenarios (a steady pool, a node filling from near-empty, a draining
+  node with production, and a donor drained by a route at 0.5 to 100 times the node's loss rate,
+  the node starting at 1e-3 to 1e3 times the donor's amount):
+  - each step adds at most 7.61e-6 of the node's amount to a starting cohort's error (6.5e-7 for
+    the steady pool, near Pade's 2r^3/3);
+  - over each run (five e-foldings of the slower of the node's loss and the route, at most 30
+    route time constants) the cohort stays within 5.6e-4 of its exact amount, relative to itself
+    (1.7e-4 for the steady pool, near kT r^2/3), the worst a node fed slowly by a donor 1000 times
+    larger. The error grows about linearly with the e-foldings run;
+  - it is second order: halving the step quarters it.
+  A node empty at both ends of a step holds no cohort; material that passes through an empty node
+  within one step is refused.
 - **Directions.** It is right only where the per-step records carry the direction of every
   labelled movement, as one-way routes do. A two-way law's net record (Fick's flux on a face, a
   junction's or a patch's permeation, a reversible reaction) does not, so those are refused at
@@ -404,22 +414,27 @@ def trace(spec, times, states, species, cohorts, *, produced=()):
         if np.any(np.abs(residual) > tol):
             raise ValueError(f"the records do not close the species' amounts at t = {t1}")
         bound = CLOSURE_ULPS * eps
-        # The resolution (module docstring): r = O/S, tested where the node gains material.
+        # The resolution (module docstring): r = O/S, tested where the node gains material or
+        # sends it along a route (its route's arrivals then shape a receiver's split).
         S = n0 + n1
         filled = S > 0
         inv = np.where(filled, 1.0 / np.where(filled, S, 1.0), 0.0)
         ratio = np.where(filled, outflow * inv, np.where(outflow > tol, np.inf, 0.0))
-        gaining = made + inflow > tol
-        if np.any(gaining):
-            resolution = max(resolution, float(np.max(ratio[gaining])))
-        if np.any(gaining & (ratio > RESOLUTION)):
-            k = int(np.argmax(np.where(gaining, ratio, -1.0)))
+        checked = made + inflow > tol
+        for r, amount in zip(routes, m, strict=True):
+            s = index[r["source"]]
+            checked[s] |= amount > tol[s]
+        if np.any(checked):
+            resolution = max(resolution, float(np.max(ratio[checked])))
+        if np.any(checked & (ratio > RESOLUTION)):
+            k = int(np.argmax(np.where(checked, ratio, -1.0)))
             raise ValueError(
                 f"the step to t = {t1} s takes {outflow[k]:.6g} fmol out of {nodes[k]}, which "
-                f"gains {made[k] + inflow[k]:.6g} fmol in it: r = O/S = {ratio[k]:.3g} of its "
-                f"start and end amounts, above the tracer's resolution {RESOLUTION} (a cohort "
-                "present at the step's start would survive as (1 - r)/(1 + r): 0 at r = 1, where "
-                "the truth is e^-2 = 0.135, and negative above it); take smaller steps"
+                "gains material in it or sends it along a route: r = O/S = "
+                f"{ratio[k]:.3g} of its start and end amounts, above the tracer's resolution "
+                f"{RESOLUTION} (a cohort present at the step's start would survive as (1 - r)/(1 + "
+                "r): 0 at r = 1, where the truth is e^-2 = 0.135, and negative above it; a route "
+                "sender's arrivals shape its receiver's split); take smaller steps"
             )
         label = next((c for t, c in reversed(produced) if t <= t0), "produced")
         A = np.diag(1.0 + outflow * inv)

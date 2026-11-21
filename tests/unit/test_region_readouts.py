@@ -152,17 +152,21 @@ def test_a_two_way_movement_the_net_records_cannot_see_is_refused():
 # Host only: the example's world parsed (no run), with synthetic records built from closed forms.
 
 
-def _synthetic(times, cell, *, produced=None, cleared=None, ecs_1=None):
+def _synthetic(times, cell, *, produced=None, cleared=None, ecs_1=None, donor=None, moved=None):
     """(spec, states) of the example's world with ST's cell amount cell(t) fmol, its cumulative
-    production and clearance there, ecs_1's amount (its declared one by default) and every other
-    record constant."""
+    production and clearance there, ecs_1's amount (its declared one by default), ecs_0's amount
+    donor(t) and the release's cumulative move moved(t) into the cell (none by default), and
+    every other record constant."""
     spec = parse_spec(example.world())
     state0, layout = get_model(spec.model).initial_values(spec)
     wmap = readouts.world_map(spec, base.ST)
     row = wmap["row"]
     c, d = wmap["cells"].index(base.CELL), wmap["outside"].index(base.NODE_D)
+    e = wmap["outside"].index(base.NODE_T)
+    (release,) = wmap["routes"]
     ref_c = np.asarray(layout.amount_reference)[row, c]
     ref_d = np.asarray(layout.extracellular_amount_reference)[row, d]
+    ref_e = np.asarray(layout.extracellular_amount_reference)[row, e]
     states = []
     for t in times:
         amounts = np.zeros_like(np.asarray(state0.amount_increment))
@@ -170,13 +174,16 @@ def _synthetic(times, cell, *, produced=None, cleared=None, ecs_1=None):
         amounts[row, c] = cell(t) - ref_c
         if ecs_1 is not None:
             outside[row, d] = ecs_1 - ref_d
+        if donor is not None:
+            outside[row, e] = donor(t) - ref_e
+        exchange = np.zeros(len(np.asarray(state0.exchange_moved_fmol)))
+        exchange[release["index"]] = 0.0 if moved is None else release["sign"] * moved(t)
         made, gone = np.zeros_like(amounts), np.zeros_like(amounts)
         made[row, c] = 0.0 if produced is None else produced(t)
         gone[row, c] = 0.0 if cleared is None else cleared(t)
         states.append(SimpleNamespace(
             amount_increment=amounts, extracellular_amount_increment=outside,
-            turnover_produced_fmol=made, turnover_cleared_fmol=gone,
-            exchange_moved_fmol=np.zeros(len(np.asarray(state0.exchange_moved_fmol))),
+            turnover_produced_fmol=made, turnover_cleared_fmol=gone, exchange_moved_fmol=exchange,
         ))  # fmt: skip
     return spec, states
 
@@ -191,6 +198,8 @@ def test_the_tracer_refuses_a_step_it_cannot_resolve(monkeypatch):
       it, the made one 1 - e^-4, and resolution_largest is 0.005;
     - with no gains a node is exact at any r: the cell cleared at 1/s, one 1 s step (r = 0.46),
       two cohorts keep 30 and 70% of its amount e^-1;
+    - a node that sends material along a route is held to the bound too, since its arrivals shape
+      its receiver's split: a donor at r = 0.76 into the cell at r = 0.01 is refused;
     - a node empty at both ends of every step (ecs_1 at 0 fmol) holds no cohort, with no NaN."""
     pool = {"cell": dict(cell=lambda t: 1.0, produced=lambda t: 4 * t, cleared=lambda t: 4 * t)}
     spec, states = _synthetic([0.0, 1.0], **pool["cell"])
@@ -218,7 +227,24 @@ def test_the_tracer_refuses_a_step_it_cannot_resolve(monkeypatch):
     p30, p70 = (split["amount"][c][base.CELL][-1] for c in ("p30", "p70"))
     assert p30 == pytest.approx(0.3 * math.exp(-1), rel=1e-15)
     assert p70 == pytest.approx(0.7 * math.exp(-1), rel=1e-15)
-    assert split["resolution_largest"] == 0.0  # No node gained material.
+    assert split["resolution_largest"] == 0.0  # No node gained or sent material.
+    # A donor draining most of itself in one step (kappa dt = 2) into the cell, which gains it at
+    # r = 0.01: refused at the donor, whose own split is exact but whose arrivals would put 9.4e-4
+    # of the cell's amount on the wrong cohort (the advisor's case).
+    kappa, k = 2.0, 0.0183
+
+    def fed(t):
+        return math.exp(-k * t) + kappa / (k - kappa) * (math.exp(-kappa * t) - math.exp(-k * t))
+
+    spec, states = _synthetic(
+        [0.0, 1.0],
+        fed,
+        cleared=lambda t: 1.0 + (1.0 - math.exp(-kappa * t)) - fed(t),
+        donor=lambda t: math.exp(-kappa * t),
+        moved=lambda t: 1.0 - math.exp(-kappa * t),
+    )
+    with pytest.raises(ValueError, match="out of ecs_0, which gains material in it or sends it"):
+        readouts.trace(spec, [0.0, 1.0], states, base.ST, {"own": {base.CELL: 1.0}})
 
 
 def test_every_law_the_tools_do_not_read_is_refused():
