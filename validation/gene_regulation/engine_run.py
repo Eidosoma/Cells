@@ -23,7 +23,8 @@ the potential sets, the step and every run's wall time and end-state own ledgers
   the declared cells changes nothing exported.
 - **Each loss counter is summed once** per product, cell and output: int_D_<polymer> is the sum of
   the native counters of every degradation route of that polymer at the cell. Each route's own
-  counter is int_D_route_<route>.
+  counter is int_D_route_<route>. A product of the cell's chains with no loss route there, named
+  by no other operator, is lossless by its definition: its int_D is a zero series (D265).
 - **Every exported series has exactly one value per output,** or the export is refused.
 
 The heat classes are assigned by route: a chain templated by a gene's copies is transcription
@@ -245,6 +246,12 @@ def readouts(spec, states, cell=None):
         for name, members in classes(block).items()
     }
     membership = {name: members for name, members in membership.items() if members}
+    # D265, finding 7: a product of the cell's chains with no loss route there, and named by no
+    # other operator, is established as lossless, and exported with a zero loss series.
+    lost = {block.degradations[i].polymer for i in here["degradation"]}
+    others = {getattr(x, "id", x) for op in spec.model.operators if op.law != worlds.POLYMERISATION
+              for x in getattr(op, "species", ())}  # fmt: skip
+    zero_loss = sorted({block.chains[i].product for i in here["chain"]} - lost - others)
     times = [float(t) for t in spec.experiment.observation_times]
     out = {}
 
@@ -278,6 +285,8 @@ def readouts(spec, states, cell=None):
             put(f"int_S_{c.id}", np.asarray(s.poly_stage_exits_fmol)[i])
             put(f"int_Q_{c.id}", np.asarray(s.poly_released_fmol)[i])
         degraded = np.asarray(s.poly_degraded_fmol)
+        for polymer in zero_loss:
+            put(f"int_D_{polymer}", 0.0)
         for polymer in sorted({block.degradations[i].polymer for i in here["degradation"]}):
             mine = [i for i in here["degradation"] if block.degradations[i].polymer == polymer]
             put(f"int_D_{polymer}", math.fsum(float(degraded[i]) for i in mine))

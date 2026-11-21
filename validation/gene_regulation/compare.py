@@ -27,7 +27,11 @@ perfect agreement).
   - in readouts (readouts, or --readouts): only the named readouts are required and compared.
 
   The report says so.
-- **Each result reports** its expected and matched times, which are equal whenever it is given.
+- **Each required time has one engine row** (D265, finding 3), matched within 1e-9 s, never by a
+  rounded key. Several rows at one required time, a join's duplicate endpoint, are collapsed only
+  where every compared value agrees exactly; otherwise the comparison is refused.
+- **Each result reports** its expected and matched times, which are equal whenever it is given,
+  and its duplicate rows.
 
 For each readout, its gap is the largest |engine - G2| over the required times over its scale, the
 largest |G2| over G2's outputs (the sheet's §6). At an interior point each required row is compared
@@ -50,7 +54,8 @@ ROOT = Path(__file__).resolve().parents[2]
 TAG = "gr1-references-2026-11-20"
 INTERFACE = "validation/gene_regulation/references/interface"
 FLOOR = 1e-14  # A gap below this, relative, is rounding: no order is read from it.
-TIME_DIGITS = 6  # Required and engine times match when equal to 1e-6 s.
+TIME_DIGITS = 6  # The partial cut's allowance, 1e-6 s.
+TIME_TOLERANCE_S = 1e-9  # A required time and an engine row match within it (no rounded key).
 
 
 class ComparisonError(ValueError):
@@ -62,22 +67,39 @@ def not_exported(name):
     return name == "u" or name.startswith("dG_")
 
 
-def _index(times):
-    return {round(float(t), TIME_DIGITS): i for i, t in enumerate(times)}
-
-
 def _matched(engine_times, required, what):
-    """{required time: engine row}, or ComparisonError naming the missing times."""
+    """{required time: [every engine row within TIME_TOLERANCE_S of it]}, or ComparisonError naming
+    the missing times. _unique then makes each one row (D265, finding 3)."""
     if not required:
         raise ComparisonError(f"{what}: no required time to compare")
-    index = _index(engine_times)
-    missing = [t for t in required if round(float(t), TIME_DIGITS) not in index]
+    times = [float(x) for x in engine_times]
+    hits = {t: [i for i, e in enumerate(times) if abs(e - float(t)) <= TIME_TOLERANCE_S]
+            for t in required}  # fmt: skip
+    missing = [t for t in required if not hits[t]]
     if missing:
         raise ComparisonError(
             f"{what}: {len(missing)} of {len(required)} required times are not outputs of the "
             f"run (the first {missing[:3]}); declare a partial comparison if that is intended"
         )
-    return {t: index[round(float(t), TIME_DIGITS)] for t in required}
+    return hits
+
+
+def _unique(engine, hits, names, what):
+    """{required time: its one engine row}: several rows at one required time (a join's duplicate
+    endpoint) collapse only where every compared value agrees exactly; otherwise ComparisonError
+    (D265, finding 3: a second, agreeing row hid a doubled one)."""
+    out = {}
+    for t, rows in hits.items():
+        for name in names:
+            if len(rows) > 1 and not name.startswith("J_bar"):
+                found = [engine["readouts"][name][i] for i in rows]
+                if any(v != found[0] for v in found[1:]):
+                    raise ComparisonError(
+                        f"{what}: {len(rows)} rows at the required time {t} s disagree in {name} "
+                        f"({found[:3]}): no unique row to compare"
+                    )
+        out[t] = rows[0]
+    return out
 
 
 def _readouts(engine, names, what):
@@ -190,6 +212,7 @@ def gaps(engine, reference, *, until=None, readouts=None):
         skipped = sorted({*skipped, *(n for n in names if n.startswith("J_bar"))})
         names = [n for n in names if not n.startswith("J_bar")]
     _readouts(engine, _some(names, "the trajectory"), "the trajectory")
+    hits, rows = rows, _unique(engine, rows, names, "the trajectory")
     out = {}
     for name in names:
         values, mine = reference["readouts"][name], engine["readouts"][name]
@@ -203,6 +226,7 @@ def gaps(engine, reference, *, until=None, readouts=None):
             / scale
         )
     return dict(gaps=out, expected_times=len(required), matched_times=len(rows),
+                duplicate_rows=sum(len(v) - 1 for v in hits.values()),
                 partial=partial, until=until, not_compared=skipped)  # fmt: skip
 
 
@@ -224,12 +248,14 @@ def endpoint_gaps(engine, refs, index, world, *, until=None, readouts=None):
             skipped |= {n for n in names if n.startswith("J_bar")}
             names = [n for n in names if not n.startswith("J_bar")]
         _readouts(engine, _some(names, what), what)
+        row = _unique(engine, {t: found[t]}, names, what)[t]
         for name in names:
             mine = engine["readouts"][name]
-            value = _finite(mine[0] if name.startswith("J_bar") else mine[found[t]], name, what)
+            value = _finite(mine[0] if name.startswith("J_bar") else mine[row], name, what)
             gap = abs(value - values[name]) / (abs(values[name]) or 1.0)
             out[name if label == "t_end" else f"{name} at {label}"] = gap
     return dict(gaps=out, expected_times=len(rows), matched_times=len(found),
+                duplicate_rows=sum(len(v) - 1 for v in found.values()),
                 partial=partial, until=until, not_compared=sorted(skipped))  # fmt: skip
 
 
@@ -259,6 +285,7 @@ def compare_record(refs, engine, *, partial=False, readouts=None):
         readouts_declared=None if readouts is None else list(readouts),
         expected_times=result["expected_times"],
         matched_times=result["matched_times"],
+        duplicate_rows=result["duplicate_rows"],
         not_compared=result["not_compared"],
         readouts=len(found),
         largest=worst[:5],

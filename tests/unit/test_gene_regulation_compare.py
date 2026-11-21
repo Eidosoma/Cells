@@ -413,3 +413,130 @@ def test_invalid_counters_and_windows_are_refused(case, edit, t1, t2, ts, words)
     for reader in (cohort.survivors, cohort.grid_error):
         with pytest.raises(ValueError, match=words):
             reader(*series, t1, t2, ts)
+
+
+# ------------------------------------------------------------------ D265's findings 9, 3, 7 and 8
+
+
+def test_a_loaded_ignored_source_marks_the_receipt_dirty(tmp_path, monkeypatch):
+    """D265, finding 9: an imported, Git-ignored fixture was recorded in the patch but with
+    checkout_dirty false and an empty status (main's c180c1bc lists it as "!!")."""
+    repo, run = tmp_path / "repo", tmp_path / "run"
+    (repo / "runs").mkdir(parents=True)
+    (repo / ".gitignore").write_text("runs/\n")
+
+    def git(*args):
+        subprocess.run(["git", "-C", str(repo), "-c", "user.name=t", "-c", "user.email=t@invalid",
+                        *args], check=True, capture_output=True)  # fmt: skip
+
+    git("init", "-q")
+    git("add", ".gitignore")
+    git("commit", "-q", "-m", "base")
+    path = repo / "runs" / "gr_ignored_fixture_d265.py"
+    path.write_text("C = 'the ignored source'\n")
+    monkeypatch.syspath_prepend(str(path.parent))
+    monkeypatch.delitem(sys.modules, path.stem, raising=False)
+    monkeypatch.setitem(sys.modules, path.stem, importlib.import_module(path.stem))
+    monkeypatch.setattr(engine_run, "ROOT", repo)
+    with pytest.raises(RuntimeError, match="not track"):
+        engine_run.provenance()
+    run.mkdir()
+    record, patch = engine_run.provenance(run)
+    relative = "runs/gr_ignored_fixture_d265.py"
+    assert record["untracked_executed"] == [relative] and "the ignored source" in patch
+    assert record["checkout_dirty"] is True and f"!! {relative}" in record["checkout_status"]
+
+
+def _switch_rows(r, second):
+    """The interior record with a second row at the switch: "same" repeats the switch row,
+    "reference" holds G2's values there, and "near" holds G2's values 0.4 us later."""
+    i = r["t"].index(REFERENCES.switch["A1"])
+    r["t"].insert(i + 1, r["t"][i] + (4e-7 if second == "near" else 0.0))
+    for name, values in r["readouts"].items():
+        values.insert(i + 1, values[i] if second == "same" else
+                      REFERENCES.ends[18]["A1 at t_off"][name])  # fmt: skip
+
+
+# (case, the edit, the refusal's words, or the gap of n_P at t_off).
+FINDING_3_DUPLICATES = [
+    ("a doubled switch row beside a reference one is refused",
+     lambda r: (_double_switch(r), _switch_rows(r, "reference")), "disagree in n_P", None),
+    ("an agreeing duplicate switch row collapses", lambda r: (_double_switch(r),
+     _switch_rows(r, "same")), None, 1.0),
+    ("a reference row 0.4 us after the switch is its own", lambda r: (_double_switch(r),
+     _switch_rows(r, "near")), None, 1.0),
+]  # fmt: skip
+
+
+@pytest.mark.parametrize(("case", "edit", "refused", "gap"), FINDING_3_DUPLICATES,
+                         ids=[c[0] for c in FINDING_3_DUPLICATES])  # fmt: skip
+def test_each_required_time_has_one_engine_row(case, edit, refused, gap):
+    """D265, finding 3: a second switch row holding the reference value turned the doubled row's
+    gap of 1.0 into 0.0, and two times 0.4 us apart collided in the six-decimal index."""
+    record = _interior(edit)
+    if refused is not None:
+        with pytest.raises(compare.ComparisonError, match=refused):
+            compare.compare_record(REFERENCES, record)
+        return
+    result = compare.compare_record(REFERENCES, record)
+    assert result["gaps"]["n_P at t_off"] == pytest.approx(gap, rel=1e-12)
+    assert result["matched_times"] == result["expected_times"] == 2
+
+
+def _protein_world(*, lossless=False, two_cells=False):
+    """rib n_R=10 to 60 s; lossless drops deg_P; two_cells gives cell_1 its own ribosomes and chain
+    making P, beside cell_0's."""
+    raw = kernel.truncated(worlds.world("rib n_R=10"), 60.0)
+    block = kernel.block(raw)
+    if lossless:
+        block["degradations"] = []
+        raw["experiment"]["polymerisation_controls"] = [
+            c for c in raw["experiment"]["polymerisation_controls"] if c["route_id"] != "deg_P"
+        ]
+    if two_cells:
+        raw = _two_cell(raw, routes={})
+        block = kernel.block(raw)
+        block["pools"].append(dict(copy.deepcopy(block["pools"][0]), id="rib_1", cell="cell_1"))
+        block["chains"].append(dict(copy.deepcopy(block["chains"][0]), id="tl_1", pool="rib_1"))
+        rate = next(
+            c for c in raw["experiment"]["polymerisation_controls"] if c["route_id"] == "tl"
+        )
+        raw["experiment"]["polymerisation_controls"].append(
+            dict(copy.deepcopy(rate), route_id="tl_1")
+        )
+    return raw
+
+
+def _record(raw, tmp_path, cell=None):
+    spec, _, states, _ = kernel.run(raw)
+    times, values, checks = engine_run.readouts(spec, states, cell)
+    path = tmp_path / f"run-{len(list(tmp_path.iterdir()))}.json"
+    path.write_text(json.dumps(dict(t=times, readouts=values, cell=checks["exported_cell"],
+                                    definition=raw)))  # fmt: skip
+    return path, values
+
+
+def test_a_lossless_product_reads_a_zero_loss_series(tmp_path):
+    """D265, finding 7: with the protein's degradation route removed the export omitted int_D_P,
+    and the reader raised KeyError; a declared loss route's missing counter is still refused."""
+    path, values = _record(_protein_world(lossless=True), tmp_path)
+    assert values["int_D_P"] == [0.0] * len(values["n_P"])
+    t, n, Q, D = cohort.read(path, "P")
+    completed, surviving, _ = cohort.survivors(t, n, Q, D, 0.0, 60.0)
+    assert surviving == completed > 0  # Nothing is lost.
+    lossy, _ = _record(_protein_world(), tmp_path)
+    record = json.loads(lossy.read_text())
+    del record["readouts"]["int_D_P"]
+    lossy.write_text(json.dumps(record))
+    with pytest.raises(ValueError, match="deg_P"):
+        cohort.read(lossy, "P")
+
+
+def test_the_reader_resolves_the_chain_at_the_exported_cell(tmp_path):
+    """D265, finding 8: two cells each with a chain making P; the record exports cell_0; the reader
+    saw two chains, and naming the other cell's raised KeyError."""
+    path, _ = _record(_protein_world(two_cells=True), tmp_path, cell="cell_0")
+    t, n, Q, D = cohort.read(path, "P")
+    assert Q == json.loads(path.read_text())["readouts"]["int_Q_tl"]
+    with pytest.raises(ValueError, match="tl_1 is in cell_1"):
+        cohort.read(path, "P", "tl_1")

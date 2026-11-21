@@ -228,6 +228,20 @@ def producing_chain(makes, product, chain=None):
     return found[0]
 
 
+def exported_cell(record, block):
+    """The cell an engine_run.py record exports (D264's record names it), or for a record without
+    one the single cell of its routes, the single-cell format (D265, finding 8)."""
+    if record.get("cell"):
+        return record["cell"]
+    cells = {q["cell"] for q in block["pools"]} | {d["cell"] for d in block["degradations"]}
+    cells |= {x["cell"] for x in block["transfers"]}
+    if len(cells) != 1:
+        raise ValueError(
+            f"the record names no exported cell, and its routes are in {sorted(cells)}"
+        )
+    return next(iter(cells))
+
+
 def read(path, product="P", chain=None):
     """(t, n, Q, D) of an engine_run.py JSON or the A1 export's CSV, for one product, with Q the
     completions of the chain that makes it (producing_chain)."""
@@ -235,9 +249,30 @@ def read(path, product="P", chain=None):
     if path.suffix == ".json":
         r = json.loads(path.read_text())
         (block,) = [o for o in r["definition"]["model"]["operators"] if o["law"] == POLYMERISATION]
-        chain = producing_chain({c["id"]: c["product"] for c in block["chains"]}, product, chain)
+        cell = exported_cell(r, block)
+        pool_cell = {q["id"]: q["cell"] for q in block["pools"]}
+        local = {c["id"]: c["product"] for c in block["chains"] if pool_cell[c["pool"]] == cell}
+        elsewhere = {c["id"]: pool_cell[c["pool"]] for c in block["chains"] if c["id"] not in local}
+        if chain in elsewhere:
+            raise ValueError(
+                f"chain {chain} is in {elsewhere[chain]}; the record exports {cell} (D265)"
+            )
+        chain = producing_chain(local, product, chain)
         x = r["readouts"]
-        return r["t"], x[f"n_{product}"], x[f"int_Q_{chain}"], x[f"int_D_{product}"]
+        loss = x.get(f"int_D_{product}")
+        if loss is None:
+            routes = [d["id"] for d in block["degradations"]
+                      if d["polymer"] == product and d["cell"] == cell]  # fmt: skip
+            if routes:
+                raise ValueError(
+                    f"the record lacks int_D_{product}, which the loss routes {routes} at {cell} "
+                    "supply"
+                )
+            raise ValueError(
+                f"the record lacks int_D_{product}: no loss route of {product} at {cell} is "
+                "declared, but the record does not establish zero loss (re-export it)"
+            )
+        return r["t"], x[f"n_{product}"], x[f"int_Q_{chain}"], loss
     producing_chain(CSV_CHAINS, product, chain)
     if product not in CSV_COLUMNS:
         raise ValueError(f"the A1 export holds the products {sorted(CSV_COLUMNS)}, not {product}")
