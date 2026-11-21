@@ -202,6 +202,35 @@ def test_a_population_s_current_at_a_declared_voltage_with_the_halving_control()
         assert not np.array_equal(held[1], at[1])  # The held value alone differs.
 
 
+def test_the_effective_availability_is_recorded_where_the_door_routes_into_channels():
+    """FR-34's second item, host only: where a population declares factors, the observed rows
+    record channel_effective_availability, the held value times its factors (the left fold the
+    flux runs at), declared for the run view with its note; a population without factors records
+    its held value there; a world without factors records no such field, so its records and
+    types are today's."""
+    names = ("f_b", "f_c")
+    with scoped():
+        for raw, routed in ((heredity(names), True), (heredity(), False)):
+            spec = parse_spec(raw)
+            impl, state, layout = get_model(spec.model), *get_model(spec.model).initial_values(spec)
+            history = type(state)(*(np.asarray(v)[None] for v in state))
+            obs = impl.observe_history(np.array([0.0]), history, layout, np.array([0.0]), spec)
+            assert (v3.EFFECTIVE_AVAILABILITY in impl.OBSERVATION_FIELDS) is routed
+            assert hasattr(obs, v3.EFFECTIVE_AVAILABILITY) is routed
+            held = np.asarray(obs.channel_availability)[0]
+            assert held[0] == HELD
+            if routed:
+                effective = np.asarray(getattr(obs, v3.EFFECTIVE_AVAILABILITY))[0]
+                assert effective[0] == left_fold(HELD, names) and effective[1] == held[1]
+                assert impl.UNITS[v3.EFFECTIVE_AVAILABILITY] == "1"
+                assert impl.OBSERVATION_AXES[v3.EFFECTIVE_AVAILABILITY] == ("channel_slot",)
+                notes = impl.RECORD_NOTES
+                assert notes[v3.EFFECTIVE_AVAILABILITY] == v3.EFFECTIVE_AVAILABILITY_NOTE
+                assert type(state) is type(bound(parse_spec(heredity()))[1])  # Same state type.
+            else:
+                assert v3.EFFECTIVE_AVAILABILITY not in impl.UNITS
+
+
 def test_the_model_gains_no_field_so_the_families_that_copy_it_still_parse():
     """The water families build their models from @3's model fields by name, so the door adds
     none (the factors ride on the population); a planted model field would break their parse."""

@@ -591,6 +591,14 @@ def presence_gated(p, structure, *, xp=jnp):
 
 KindRates = kind_registry.KindRates  # The kind contract's (§8.5 of docs/CORE_SEAMS_DESIGN.md).
 OWN_SINK = kind_registry.qualified(MODEL_ID)  # @3 as the sink of its channel field (B1's door).
+# FR-34's record of the effective availability: recorded only where the door routes into @3's
+# channels (routes_into_channels), the one place it differs from channel_availability.
+EFFECTIVE_AVAILABILITY = "channel_effective_availability"
+
+
+def routes_into_channels(structure):
+    """Whether the structure routes factors into @3's own channel slots (B1's door; static)."""
+    return structure is not None and any(sink == OWN_SINK for sink, *_ in structure.routes)
 
 
 def _kinds(structure):
@@ -3409,10 +3417,15 @@ def view_declarations(structure):
             for k, v in view.record_references.items()
             if k in present and v in types.LAYOUT_TYPE._fields
         }
-    out = {name: MappingProxyType(value) for name, value in merged.items()}
     notes = dict(RECORD_NOTES)
-    if any(sink == OWN_SINK for sink, *_ in structure.routes):  # B1's door into @3.
+    if routes_into_channels(structure):  # B1's door into @3, with FR-34's effective record.
         notes["channel_availability"] = ROUTED_CHANNEL_NOTE
+        notes[EFFECTIVE_AVAILABILITY] = EFFECTIVE_AVAILABILITY_NOTE
+        declared = ("1", "level", "channels", ("channel_slot",))
+        for name, value in zip(("UNITS", "RECORD_KINDS", "RECORD_LAYERS", "OBSERVATION_AXES"),
+                               declared, strict=True):  # fmt: skip
+            merged[name][EFFECTIVE_AVAILABILITY] = value
+    out = {name: MappingProxyType(value) for name, value in merged.items()}
     return out | dict(
         VIEW_LAYERS=tuple(layers),
         VIEW_AXIS_SETS=MappingProxyType(axis_sets),
@@ -3434,11 +3447,19 @@ RECORD_NOTES = MappingProxyType(
 
 
 # B1's door (docs/CORE_SEAMS_DESIGN.md §4.3): what channel_availability records where a population
-# declares factors.
+# declares factors, and FR-34's record of the value its flux runs at.
 ROUTED_CHANNEL_NOTE = (
-    "the held availability, before the routing door: a population that declares factors runs, at "
-    "every stage, at this times its sources' factors (a left fold in declared order), so its flux "
-    "follows the routed value, not this record"
+    "the held availability, before the routing door. An operator's write to the availability "
+    "enters here, through the held value; a population that declares factors runs, at every "
+    "stage, at this times its sources' factors (a left fold in declared order), which enter "
+    "through the door; their product, the value its flux follows, is "
+    "channel_effective_availability"
+)
+EFFECTIVE_AVAILABILITY_NOTE = (
+    "the effective availability, the value each population's flux runs at: the held "
+    "availability (channel_availability, which carries an operator's writes) times its sources' "
+    "factors at the row's read state, a left fold in declared order (B1's door); recorded only "
+    "where a population declares factors, since elsewhere it is channel_availability"
 )
 
 
@@ -3511,6 +3532,8 @@ def observe_history(times, history, layout, requested, spec, *, structure=None):
                         xp=np,
                     )
                 ),
+                # FR-34: the routed availability, where the door routes into @3's channels.
+                *((routed.channel,) if routes_into_channels(structure) else ()),
             )
         )
     if records:
@@ -3817,7 +3840,8 @@ def _kind_types(fields, registry):
 def kind_types(structure):
     """The structure's types: today's own objects when it declares no kind (§7.4 (j), schema A),
     else classes cached by its kinds' fields, each kind bound to its structure entry ((n) 5), in
-    canonical order."""
+    canonical order. Where the door routes into @3's channels, the observations gain FR-34's
+    effective availability last (_routed_kind_types); state, layout and controls are the same."""
     registry = kind_registry.active()
     fields = []
     for kind_id, entry in structure.kinds:
@@ -3826,7 +3850,22 @@ def kind_types(structure):
             kind.state_axes, kind.layout_fields, kind.control_fields, kind.readout_columns
         )
         fields.append((kind_id, own))
+    if routes_into_channels(structure):
+        return _routed_kind_types(tuple(fields), registry)
     return _kind_types(tuple(fields), registry)
+
+
+@cache
+def _routed_kind_types(fields, registry):
+    """_kind_types' classes with one more observation column, EFFECTIVE_AVAILABILITY, last."""
+    types = _kind_types(fields, registry)
+    columns = (*types.OBSERVATION_FIELDS, EFFECTIVE_AVAILABILITY)
+    observations = make_dataclass(
+        types.Observations.__name__ + "_" + EFFECTIVE_AVAILABILITY,
+        [(k, np.ndarray) for k in columns],
+        frozen=True,
+    )
+    return types._replace(OBSERVATION_FIELDS=columns, Observations=observations)
 
 
 class InnerImplementation:
