@@ -499,6 +499,88 @@ only, D227).
 A second candidate, Ding et al. 2014 (PLoS One, CC BY), varies culture temperature rather than
 expression, with currents and surface data from different cells, so it can't support the test.
 
+**The registered test, written before the paper is opened (21 November 2026).** Item 4 reopens on
+Maverick and Tamkun 2022, which meets D268's condition: surface abundance and current in the same
+single-variant cells (D273's correction). This entry fixes the test before anyone opens the user's
+download of the PDF and Supporting Material.
+- **FR-7's prediction.** The chain has no density-dependent conducting fraction.
+  - A population's conductance is P a A = P N/ρ_ref, membrane_entity_state@1's view, linear in its
+    units N, times its availability and its gates' open probability. Neither depends on density.
+  - So at the paper's fixed protocol, the chain predicts plain proportionality: G = g N, with one
+    constant g per cell line.
+  - Cells' own Kv1.5 laws are not calibrated to these cells, so g is fitted, not taken from them.
+- **The cells.**
+  - Eligible: YFP-Kv1.5 HEK293 cells with a per-cell surface count paired with a per-cell
+    conductance. They come from the figure or table that pairs the two for the most cells.
+  - Other channels and conditions are information only.
+  - Binned or mean-only values make the test not assessable under this entry.
+- **The judged observable:** conductance against surface count, in matching extent (both per cell,
+  or both per membrane area or capacitance). If the paper pairs both a gating-charge count and a
+  TIRF count with the conductance, the gating-charge count is primary, since it is whole-cell, as
+  the conductance is. The other count is information.
+- **The held-out split** is mechanical, and uses the count alone.
+  - Order the eligible cells by count, ties by the paper's order. The top ⌊n/3⌋ are held out; the
+    rest are the fit set.
+  - It tests what non-proportionality would break: extrapolation from low to high density.
+- **The statistic,** with x = ln N and y = ln G:
+  - the fitter estimates ĉ, the fit set's mean of y − x;
+  - the checker computes d = (the held-out mean of y − x) − ĉ: the log ratio of held-out to
+    fitted conductance per unit, with Welch's 95% interval from both sets' spreads.
+- **The pass rule,** with margin δ = ln 1.25:
+  - **pass:** the whole interval lies within [−δ, δ]. Conductance per unit holds within a factor of
+    1.25 from low to high density, at 95% confidence;
+  - **fail:** the whole interval lies outside [−δ, δ];
+  - **inconclusive:** otherwise;
+  - **not assessable:** fewer than 6 fit or 4 held-out cells, or a held-out median count less than
+    twice the fit set's.
+
+  The reported headline predicts a fail with d < 0. A fail with d > 0 would contradict it, and goes
+  to an extraction audit before any conclusion is drawn.
+- **Disclosure: what was read before registering.**
+  - The headline, in the search above: conductance not proportional to density, about 26% of
+    gating channels conducting, the fraction falling with density, and about 70% non-conducting
+    near 100 per µm².
+  - This entry's author, in a repository search before writing it, also saw the Lean lane's
+    aggregate figures: conducting fractions of 0.23 and 0.18, and mean fractions of 0.96 ± 0.05
+    for Kv1.4 and 0.26 ± 0.01 for a Kv channel (the line was cut off there). It also saw that the
+    Lean lane cites Figs 8B–C.
+  - No per-cell value was seen.
+  - The Lean lane holds its own extraction of this paper,
+    lean/checks/data/maverick2022_kv_density.json, which was not opened here.
+- **Roles: three agents.**
+  - **The extractor** opens the paper and its supplement. For every eligible cell it records the
+    counts, the conductance, the capacitance if given, the source figure and the digitising error.
+    It then applies the split and writes three files: the fit set's rows, the held-out counts, and
+    the held-out conductances, sealed for the checker.
+  - **The fitter** gets only the fit set's rows and the held-out counts. It fits ĉ and records each
+    held-out prediction before the checker unseals. It never reads the paper, the sealed file, or
+    the Lean lane's files on the paper, which may hold the held-out cells' values.
+  - **The checker** unseals and scores by the rule. It also cross-checks the extraction against the
+    Lean lane's. A documented transcription error goes to the lead; it is never silently corrected.
+- **Information only, not judged:**
+  - the same test on the secondary count;
+  - the test with any background conductance the paper reports subtracted. An additive background
+    also makes G/N fall with N;
+  - a declared conducting-fraction form, G = g N/(1 + N/N_half), fitted on the fit set alone, with
+    its held-out error reported beside the chain's.
+- **What each outcome means.**
+  - **Pass:** the linear relation holds for Kv1.5 over the measured densities, and item 4 proceeds
+    with the chain.
+  - **Fail:** the relation is refuted at these densities. Cells cannot predict this response until
+    a declared density-dependent conducting fraction joins the abundance-to-function relation, as
+    a general, qualified feature (D136, D144).
+  - **Inconclusive or not assessable:** nothing changes.
+- **Bearing on D218's kept refusal.**
+  - The refusal forbids a factor on a population's availability from its own abundance, because
+    the view's linear relation already counts that abundance. This paper tests the premise, not the
+    mechanism.
+  - **A fail** would show that a Kv1.5 population's function does depend nonlinearly on its own
+    density: physics, not double counting. The refusal should still stand, with its reason
+    restated: a population's own density reaches its function only through its declared
+    abundance-to-function law, counted once there. It never reaches it through the coupling, whose
+    factor is switchable regulation of availability.
+  - **A pass** supports the premise as written.
+
 
 ## FR-8 — A qualified long-duration mode
 
