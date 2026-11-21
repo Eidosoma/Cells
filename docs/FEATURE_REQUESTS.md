@@ -478,6 +478,27 @@ density experiment (surface density and current density measured in the same cel
 expression levels) is the next evidence to seek before that rule is revisited. Until then, the
 refusal stands.
 
+**The search's result (21 November 2026).** One study measures both in the same Kv1.5 cells across a
+continuous range of expression: Maverick and Tamkun 2022, Biophys J 121:755-768,
+doi:10.1016/j.bpj.2022.01.021 (PMC8943702; free to read, not openly licensed, so bare cited values
+only, D227).
+- **Method:** HEK293 cells with YFP-Kv1.5. Surface channel number came from TIRF counting
+  calibrated to single channels, and from gating charge. Conductance came from the I-V slope near
+  E_K.
+- **Result, as reported:** conductance is not proportional to surface density. About 26% of gating
+  channels conduct, and the conducting fraction falls as density rises (about 70% non-conducting
+  near 100 channels per square micrometre).
+- **What it supports:** not a test of "current scales with density". It could support a held-out
+  test of a density-dependent conducting fraction, fitted on low-density cells and predicted on
+  high-density ones. That non-conducting fraction is a separate effect from availability as
+  Cells defines it.
+- **What it needs:** the values are in Figs 7-8 and the supplement. A test needs the user's
+  download of the PDF and supplement for digitising, or the authors' per-cell data.
+
+A second candidate, Ding et al. 2014 (PLoS One, CC BY), varies culture temperature rather than
+expression, with currents and surface data from different cells, so it can't support the test.
+
+
 ## FR-8 — A qualified long-duration mode
 
 **Logged 14 November 2026, priority 2** (the request's label). The request below is the requesting
