@@ -36,8 +36,8 @@ tracer's factor.
 **Registered, development only** (FR-30's @3 integration, D262; the @3 owner's addition to this
 module, for its builder's review). Its declaration (`LAW`, a cells.junction_law@1 with gate_count 2
 and this module's `conductance`) is registered through @3's model table. @3's parser admits it only
-on a junction whose gate declares `development: true`, and a registered or judged result whose
-definition carries that flag is not admissible, until a voltage series qualifies the law.
+on a junction whose gate block declares `development: true`, and a registered or judged result
+whose definition carries that flag is not admissible, until a voltage series qualifies the law.
 """
 
 from typing import Any, NamedTuple
@@ -45,7 +45,7 @@ from typing import Any, NamedTuple
 import jax.numpy as jnp
 
 from cells.laws.junctions import junction_voltage_relaxation as relaxation
-from cells.modules import Citation, JunctionLaw
+from cells.modules import Citation, CitedWork, JunctionLaw
 
 LAW_ID = "junction_series_gates@1"
 GATES = ("fast", "slow")
@@ -215,6 +215,9 @@ def domain_valid(gates, voltage, parameters, availability, dt_s=0.0, *, kinds, x
 
 # The law's declaration (CORE_SEAMS §8.2): inert, registered through @3's model table (FR-30's
 # integration, D262). Development only: @3's parser refuses it without development: true.
+# Its call form is the two-gate one, not JunctionLaw's one-gate comment, so no generic caller may
+# treat it as one gate: kinetics, rhs and domain_valid take kinds= and one parameter tuple per
+# gate; kinetics returns a tuple of Rates and rhs a tuple of dc/dt, and domain_valid one boolean.
 LAW = JunctionLaw(
     LAW_ID,
     True,
@@ -229,13 +232,27 @@ LAW = JunctionLaw(
     source=Citation(
         "two voltage gates in series, each a two-state gate with a residual conductance "
         "(docs/JUNCTION_TWO_RELAXATION_DESIGN.md, option (A)), for the two relaxation times one "
-        "decay of homotypic Cx43 junctions shows (S. Sahu and A. K. Bera, 2013, PLoS ONE, "
-        "doi:10.1371/journal.pone.0060506, read for the design note)",
+        "decay of homotypic Cx43 junctions shows (G. Sahu and A. K. Bera, 2013, PLoS ONE 8(3): "
+        "e60506, doi:10.1371/journal.pone.0060506, read for the design note)",
         "docs/JUNCTION_TWO_RELAXATION_DESIGN.md §2.1 and §4",
-        "no numbers taken: the law is a form, and its gates' parameters are a definition's values",
+        "no numbers taken: the law is a form, and its gates' parameters are a definition's values; "
+        "the article is CC BY",
         (
             "threshold_relaxation's rates are junction_voltage_relaxation@1's own, cited there",
+            "the boltzmann_eyring gate is one Boltzmann in |V|, symmetric in polarity, where the "
+            "paper fits each polarity",
+            "A is a fitted slope, with no gating charge derived from it",
             "development only until a voltage series qualifies it (D262)",
+        ),
+        (
+            CitedWork(
+                ("Giriraj Sahu", "Amal Kanti Bera"),
+                2013,
+                "Contribution of Intracellular Calcium and pH in Ischemic Uncoupling of Cardiac "
+                "Gap Junction Channels Formed of Connexins 43, 40, and 45: A Critical Function "
+                "of C-Terminal Domain",
+                doi="10.1371/journal.pone.0060506",
+            ),
         ),
     ),
 )

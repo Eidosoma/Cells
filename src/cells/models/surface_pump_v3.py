@@ -502,6 +502,97 @@ def junction_gate_rhs(gate, junction_voltage, p, *, xp=jnp, structure=None):
     return junction_gate.rhs(gate, junction_voltage, kinetic.junction_parameters(p), xp=xp)
 
 
+def series_kinetics(voltage, p, structure, *, xp=jnp):
+    """FR-30: each junction_series_gates@1 gate's Rates at the junction voltages [edge], in GATES
+    order (the law's own kinetics, with the layout's parameters); a padded edge's relaxation is 1,
+    so no update divides by its zero rates (its gates are held)."""
+    kinds = structure.junction_series_kinds
+    rates = series_gates.kinetics(voltage, series_parameters(p, kinds), kinds=kinds, xp=xp)
+    return tuple(
+        r._replace(relaxation_per_s=xp.where(p.junction_active, r.relaxation_per_s, 1.0))
+        for r in rates
+    )
+
+
+def series_junction_rates(state, junction_voltage, p, structure, *, xp=jnp):
+    """FR-30 (S2): (junction_gate's rate [edge], each gate's [series_gate, edge]), 0 on padded
+    edges: each gate's own rhs, and the conductance's the product's (the chain rule). The step
+    never integrates junction_gate: it sets it to the gates' product at every stage."""
+    kinds = structure.junction_series_kinds
+    gates = getattr(state, SERIES_GATES)
+    each = series_gates.rhs(
+        tuple(gates[k] for k in range(len(kinds))),
+        junction_voltage,
+        series_parameters(p, kinds),
+        kinds=kinds,
+        xp=xp,
+    )
+    total = xp.zeros_like(state.junction_gate)
+    for k, rate in enumerate(each):
+        others = xp.ones_like(state.junction_gate)
+        for j in range(len(kinds)):
+            others = others if j == k else others * gates[j]
+        total = total + others * rate
+    each = xp.stack([xp.where(p.junction_active, rate, 0.0) for rate in each])
+    return xp.where(p.junction_active, total, 0.0), each
+
+
+def series_conductance(gates, p, *, xp=jnp):
+    """FR-30 (S2): each junction's conductance factor [edge], its gates' product; 0 padded."""
+    product = series_gates.conductance(tuple(gates[k] for k in range(gates.shape[0])), xp=xp)
+    return xp.where(p.junction_active, product, 0.0)
+
+
+def series_stage(stage, start, p, *, xp=jnp):
+    """FR-30 (S2), a tableau stage: its junction_gate set to its gates' product, as the tableau
+    moved them from the step's start (`start`, for the order test's planted stale product)."""
+    del start
+    return with_series_conductance(stage, p, xp=xp)
+
+
+def with_series_conductance(state, p, *, xp=jnp):
+    """state with junction_gate set to its gates' product (S2: computed, never integrated)."""
+    return state._replace(junction_gate=series_conductance(getattr(state, SERIES_GATES), p, xp=xp))
+
+
+def series_junction_domain(state, junction_voltage, availability, p, structure, *, xp=jnp):
+    """FR-30: every active junction on its law's domain, gate by gate (the law's domain_valid)."""
+    kinds = structure.junction_series_kinds
+    gates = getattr(state, SERIES_GATES)
+    ok = series_gates.domain_valid(
+        tuple(gates[k] for k in range(len(kinds))),
+        junction_voltage,
+        series_parameters(p, kinds),
+        availability,
+        kinds=kinds,
+        xp=xp,
+    )
+    return xp.all(xp.where(p.junction_active, ok, True))
+
+
+def series_rate_bound(spec):
+    """FR-30: a bound (1/s) on a series world's junction gates' relaxation rates over the
+    voltage domain, for the tableau's junction-gate step bound (N2 lifts it): each gate's α + β is
+    convex in its exponent, so its largest value lies at |V| = 0 or the domain's edge. A gate
+    whose residual is 1 is pinned open and sets none."""
+    rates = [0.0]
+    edges = (0.0, series_gates.MAX_ABS_VOLTAGE_V)
+    for junction in spec.model.junctions:
+        for gate in junction.gates:
+            values = series_gate_parameters_of(gate)
+            if series_gates.residual_of(gate.kind, values) >= 1.0:
+                continue
+            for v in edges:
+                rate = series_gates.gate_kinetics(gate.kind, np.asarray(v), values, xp=np)
+                rates.append(float(rate.relaxation_per_s))
+    return max(rates)
+
+
+def series_gate_parameters_of(gate):
+    """A parsed SeriesGate's parameters as its kind's type (host values)."""
+    return series_parameter_type(gate.kind)(*gate.parameters)
+
+
 def host_gated_pumps(p, structure, *, xp=jnp):
     """B1 (docs/CORE_SEAMS_DESIGN.md §4.2, §4.5 Q1): the layout @3's pump laws see, each pump idle
     where its host is closed.
@@ -783,10 +874,11 @@ def _kind_rates(kinds, state, potentials, control, p, *, xp):
     return rates
 
 
-def _with_kind_derivatives(base, rates, structure, state, *, xp):
-    """base's derivative in the structure's state type, the kinds' fields by name."""
+def _with_kind_derivatives(base, rates, structure, state, *, xp, extra=None):
+    """base's derivative in the structure's state type, the kinds' fields by name, and extra's
+    ({field: rate}: FR-30's series gates)."""
     types = kind_types(structure)
-    derivatives = {}
+    derivatives = dict(extra or {})
     for kr in rates:
         derivatives |= kr.derivatives
     own = types.STATE_TYPE._fields[len(STATE_TYPE._fields) :]
@@ -871,8 +963,6 @@ def readouts(state, control, p, *, xp=jnp, membrane_process=None, structure=None
     """
     from cells.execution.schedule import SurfaceControl
 
-    if series_junctions(structure):
-        raise ConfigError(SERIES_STEP_PENDING)  # FR-30's scaffold: fail closed.
     kinds = _kinds(structure)
     read, read_valid = _stage_read(state, p, kinds, xp=xp) if kinds else (state, True)
     if kinds and structure.routes:  # §7.4 (n): the routing door, after the read (static).
@@ -925,11 +1015,19 @@ def readouts(state, control, p, *, xp=jnp, membrane_process=None, structure=None
         xp=xp,
         structure=structure,
     )
-    jgate_rate = xp.where(
-        p.junction_active,
-        junction_gate_rhs(state.junction_gate, r.junction_voltage_V, p, xp=xp, structure=structure),
-        0.0,
-    )
+    series_rate = None  # FR-30 (S2): each series gate's own rate, where the law is declared.
+    if series_junctions(structure):
+        jgate_rate, series_rate = series_junction_rates(
+            state, r.junction_voltage_V, p, structure, xp=xp
+        )
+    else:
+        jgate_rate = xp.where(
+            p.junction_active,
+            junction_gate_rhs(
+                state.junction_gate, r.junction_voltage_V, p, xp=xp, structure=structure
+            ),
+            0.0,
+        )
     # Inward-positive pump stoichiometries, outward-positive channel flux.
     extra = (
         -p.stoichiometry * cycles
@@ -1036,8 +1134,9 @@ def readouts(state, control, p, *, xp=jnp, membrane_process=None, structure=None
         ca_d,
         ca_metabolic,
     )
-    if kinds:
-        result = _with_kind_derivatives(result, kind_rates, structure, state, xp=xp)
+    if kinds or series_rate is not None:
+        extra = {} if series_rate is None else {SERIES_GATES: series_rate}
+        result = _with_kind_derivatives(result, kind_rates, structure, state, xp=xp, extra=extra)
     valid = v.converged
     if args is not None:  # The Na/K pump's domain, where its law is declared.
         valid = valid & xp.all(pump.domain_valid(*args, xp=xp))
@@ -1055,7 +1154,10 @@ def readouts(state, control, p, *, xp=jnp, membrane_process=None, structure=None
     for kind in kinds:
         if kind.control_domain is not None:
             valid &= kind.control_domain(control, p, xp=xp)
-    if structure is None or structure.junction_laws:
+    if series_junctions(structure):  # FR-30: each gate on its law's domain.
+        valid &= series_junction_domain(state, r.junction_voltage_V, control.junction, p, structure,
+                                        xp=xp)  # fmt: skip
+    elif structure is None or structure.junction_laws:
         valid &= xp.all(
             junction_gate.domain_valid(
                 state.junction_gate,
@@ -1200,8 +1302,6 @@ def explicit_rates(
     the routes' linear parts W dv leave them (explicit_remainder), after the kinds' stage checks,
     which read the whole node rates.
     """
-    if series_junctions(structure):
-        raise ConfigError(SERIES_STEP_PENDING)  # FR-30's scaffold: fail closed.
     s, n = tissue.field_layout(p).surface, p.active.size
     kinds = _kinds(structure)
     read, read_valid = _stage_read(state, p, kinds, xp=xp) if kinds else (state, True)
@@ -1275,12 +1375,18 @@ def explicit_rates(
         - scatter(diffusion, zero, (p.face_sender,), xp=xp)
         + scatter(diffusion, zero, (p.face_receiver,), xp=xp)
     )
-    if conductances is None:
+    series_rate = None  # FR-30 (S2): each series gate's own rate, where the law is declared.
+    if conductances is not None:  # N2 ((a), static): imex_step sets the junction gates by their
+        # exponential update.
+        gate = xp.zeros_like(state.junction_gate)
+        if series_junctions(structure):
+            series_rate = xp.zeros_like(getattr(state, SERIES_GATES))
+    elif series_junctions(structure):
+        gate, series_rate = series_junction_rates(state, r.junction_voltage_V, p, structure, xp=xp)
+    else:
         gate = junction_gate_rhs(
             state.junction_gate, r.junction_voltage_V, p, xp=xp, structure=structure
         )
-    else:  # N2 ((a), static): imex_step sets the junction gates by their exponential update.
-        gate = xp.zeros_like(state.junction_gate)
     outside_zero = xp.zeros_like(p.boundary_V)
     cell_rate = r.cell_rate_fmol_s - scatter(extra, r.cell_rate_fmol_s, (p.membrane_cell,), xp=xp)
     gated = presence_gated(p, structure, xp=xp)  # Q2: entities on closed hosts absent (static).
@@ -1312,8 +1418,9 @@ def explicit_rates(
         ca_d,
         ca_metabolic,
     )
-    if kinds:
-        rates = _with_kind_derivatives(rates, kind_rates, structure, state, xp=xp)
+    if kinds or series_rate is not None:
+        extra = {} if series_rate is None else {SERIES_GATES: series_rate}
+        rates = _with_kind_derivatives(rates, kind_rates, structure, state, xp=xp, extra=extra)
     if conductances is not None:  # N2 (static): the remainder, J - W dv, at these potentials.
         rates = explicit_remainder(rates, conductances, potential, r, p, xp=xp)
     valid = r.valid
@@ -1329,7 +1436,10 @@ def explicit_rates(
     if ca_args is not None:
         valid &= xp.all(calcium_atpase.domain_valid(*ca_args, xp=xp))
     valid &= channel_domain_valid(cv, target, tau, p, xp=xp)
-    if structure is None or structure.junction_laws:
+    if series_junctions(structure):  # FR-30: each gate on its law's domain.
+        valid &= series_junction_domain(state, r.junction_voltage_V, control.junction, p, structure,
+                                        xp=xp)  # fmt: skip
+    elif structure is None or structure.junction_laws:
         valid &= xp.all(
             junction_gate.domain_valid(
                 state.junction_gate,
@@ -1674,17 +1784,27 @@ def operator_time_conductances(start, control, p, dt, *, xp=jnp, kinds=(), struc
     junction_voltage = xp.where(
         p.junction_active, potential[p.junction_sender] - potential[p.junction_receiver], 0.0
     )
-    rates = junction_gate.kinetics(junction_voltage, kinetic.junction_parameters(p), xp=xp)
-    junction = state.junction_gate + (rates.target - state.junction_gate) * -xp.expm1(
-        -rates.relaxation_per_s * theta
-    )
-    ahead = state._replace(
-        amount_increment=state.amount_increment + theta * derivative.amount_increment,
-        extracellular_amount_increment=state.extracellular_amount_increment
-        + theta * derivative.extracellular_amount_increment,
-        channel_gate=xp.where(p.channel_gate_active, gate, state.channel_gate),
-        junction_gate=xp.where(p.junction_active, junction, state.junction_gate),
-    )
+    if series_junctions(structure):  # FR-30: each gate's own exponential update, then the product.
+        series = predicted_series_gates(state, junction_voltage, theta, p, structure, xp=xp)
+        ahead = with_series_conductance(state._replace(**{SERIES_GATES: series}), p, xp=xp)
+        ahead = ahead._replace(
+            amount_increment=state.amount_increment + theta * derivative.amount_increment,
+            extracellular_amount_increment=state.extracellular_amount_increment
+            + theta * derivative.extracellular_amount_increment,
+            channel_gate=xp.where(p.channel_gate_active, gate, state.channel_gate),
+        )
+    else:  # Today's program, unchanged.
+        rates = junction_gate.kinetics(junction_voltage, kinetic.junction_parameters(p), xp=xp)
+        junction = state.junction_gate + (rates.target - state.junction_gate) * -xp.expm1(
+            -rates.relaxation_per_s * theta
+        )
+        ahead = state._replace(
+            amount_increment=state.amount_increment + theta * derivative.amount_increment,
+            extracellular_amount_increment=state.extracellular_amount_increment
+            + theta * derivative.extracellular_amount_increment,
+            channel_gate=xp.where(p.channel_gate_active, gate, state.channel_gate),
+            junction_gate=xp.where(p.junction_active, junction, state.junction_gate),
+        )
     read, valid = _stage_read(ahead, p, kinds, xp=xp) if kinds else (ahead, True)
     ci, co = physical_amounts(read, p)
     valid = valid & xp.all(xp.where(p.active, xp.isfinite(ci) & (ci > 0), True))
@@ -1742,6 +1862,58 @@ def junction_voltage_kinetics(potential, p, *, xp=jnp):
         p.junction_active, potential[p.junction_sender] - potential[p.junction_receiver], 0.0
     )
     return voltage, junction_gate.kinetics(voltage, kinetic.junction_parameters(p), xp=xp)
+
+
+def stage_junctions(stage, state, start, potential, availability, fraction, dt, p, *, xp=jnp,
+                    structure=None):  # fmt: skip
+    """N2's (a) at a stage: (the stage with its junction gates by their exponential update, its
+    validity): one gate's (stage_junction_gates), or each series gate's and their product
+    (stage_series_gates, FR-30)."""
+    if series_junctions(structure):
+        return stage_series_gates(
+            stage, state, start, potential, availability, fraction, dt, p, structure, xp=xp
+        )
+    junction, ok = stage_junction_gates(
+        state.junction_gate, start, potential, availability, fraction, dt, p, xp=xp,
+        structure=structure,
+    )  # fmt: skip
+    return stage._replace(junction_gate=junction), ok
+
+
+def predicted_series_gates(state, junction_voltage, theta, p, structure, *, xp=jnp):
+    """FR-30: each series gate after theta by its exponential update at the start's kinetics
+    (N2's operator-time prediction, as for one gate) [series_gate, edge]; padded edges held."""
+    gates = getattr(state, SERIES_GATES)
+    out = []
+    for k, rates in enumerate(series_kinetics(junction_voltage, p, structure, xp=xp)):
+        moved = gates[k] + (rates.target - gates[k]) * -xp.expm1(-rates.relaxation_per_s * theta)
+        out.append(xp.where(p.junction_active, moved, gates[k]))
+    return xp.stack(out)
+
+
+def stage_series_gates(stage, state, start, potential, availability, fraction, dt, p, structure, *,
+                       xp=jnp):  # fmt: skip
+    """N2's (a) for junction_series_gates@1 (FR-30): each gate's exponential update from the
+    step start to the stage at fraction * dt, as stage_junction_gates' for one gate, from each
+    gate's Rates at the start's (`start`) and the stage's junction voltages; then junction_gate
+    their product (S2); with the law's domain at the stage. (stage, valid)."""
+    voltage = xp.where(
+        p.junction_active, potential[p.junction_sender] - potential[p.junction_receiver], 0.0
+    )
+    gates = getattr(state, SERIES_GATES)
+    out = []
+    for k, (begin, end) in enumerate(zip(start, series_kinetics(voltage, p, structure, xp=xp),
+                                         strict=True)):  # fmt: skip
+        advanced = gates_advance(gates[k], begin, end, fraction * dt, xp=xp)
+        out.append(xp.where(p.junction_active, advanced, gates[k]))
+    stage = with_series_conductance(stage._replace(**{SERIES_GATES: xp.stack(out)}), p, xp=xp)
+    return stage, series_junction_domain(stage, voltage, availability, p, structure, xp=xp)
+
+
+def gates_advance(gate, begin, end, interval, *, xp=jnp):
+    """exponential_gates.advance from two junction Rates (targets and time constants)."""
+    return gates.advance(gate, begin.target, 1.0 / begin.relaxation_per_s, end.target,
+                         1.0 / end.relaxation_per_s, interval, xp=xp)  # fmt: skip
 
 
 def stage_junction_gates(
@@ -1852,7 +2024,13 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
     # The start kinetics are the law's own (readouts at the start potentials).
     start_kinetics = (first_values.channel_targets, first_values.channel_tau_s)
     # (a)'s start: the junction law's kinetics at the start's junction voltages.
-    start_junction = junction_voltage_kinetics(start, p, xp=xp)[1] if n2 else None
+    if n2 and series_junctions(structure):  # FR-30: each gate's Rates at the start.
+        voltage = xp.where(
+            p.junction_active, start[p.junction_sender] - start[p.junction_receiver], 0.0
+        )
+        start_junction = series_kinetics(voltage, p, structure, xp=xp)
+    else:  # Today's.
+        start_junction = junction_voltage_kinetics(start, p, xp=xp)[1] if n2 else None
     potential, stage = start, state
     for i in range(1, stages):
         known = first._combine(
@@ -1888,8 +2066,9 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
         )
         stage, valid = stage._replace(channel_gate=gate), valid & ok
         if n2:  # (a): the junction gates by their exponential update, as the channel gates.
-            junction, ok = stage_junction_gates(
-                state.junction_gate,
+            stage, ok = stage_junctions(
+                stage,
+                state,
                 start_junction,
                 potential,
                 control.junction,
@@ -1899,7 +2078,9 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
                 xp=xp,
                 structure=structure,
             )
-            stage, valid = stage._replace(junction_gate=junction), valid & ok
+            valid &= ok
+        elif series_junctions(structure):  # FR-30 (S2): the tableau moved the gates; the product.
+            stage = series_stage(stage, state, p, xp=xp)
         if i < stages - 1:
             rates, ok, *process = explicit_rates(stage, potential, control, p, xp=xp, **hook)
             processes += process
@@ -2125,12 +2306,14 @@ def check_definition(spec, *, structure=None):
             )
     with np.errstate(all="ignore"):
         for i in range(len(controls.membrane)):
-            control = control_type(*(v[i] for v in controls))
-            if series_junctions(structure):  # FR-30's scaffold: its readouts are not built.
-                ok = domain_valid(state, p, p.active, xp=np, structure=structure)
-            else:
-                ok = control_domain_valid(state, control, p, p.active, xp=np, structure=structure)
-            if not ok:
+            if not control_domain_valid(
+                state,
+                control_type(*(v[i] for v in controls)),
+                p,
+                p.active,
+                xp=np,
+                structure=structure,
+            ):
                 raise ConfigError("Initial resolved channel/junction/pump domain invalid")
     if kinds:  # The moved-rows guard, after the initial domain holds (its rates are defined).
         each = [control_type(*(v[i] for v in controls)) for i in range(len(controls.membrane))]
@@ -2842,10 +3025,21 @@ class StepChecks(first.StepChecks):
                 rates.append(float(kind.bound_rate(self.spec, declaration)))
         return max(rates)
 
+    @cached_property
+    def junction_rate(self):
+        """The junction gates' relaxation-rate bound: the one-gate law's (first's), or each series
+        gate's largest over the voltage domain (FR-30)."""
+        if declares_series_junctions(self.spec.model):
+            return series_rate_bound(self.spec)
+        return first.junction_gate_rate_bound(self.spec)
+
     def __call__(self, steps):
         spec, step = self.spec, np.max(steps, initial=0)
-        if declares_series_junctions(spec.model):  # FR-30's scaffold: no series step runs.
-            raise ConfigError(SERIES_STEP_PENDING)
+        if declares_series_junctions(spec.model):  # FR-30, v1 (D262).
+            if spec.execution.solver == "rk4":
+                raise ConfigError(SERIES_RK4_REFUSAL)
+            if getattr(spec, "projective", None) is not None:
+                raise ConfigError(SERIES_PROJECTIVE_REFUSAL)
         if spec.execution.solver == "rk4":
             tissue.check_steps(spec, steps, None)
             laws, bound = self.gated_laws, self.rk4_bound
@@ -3671,9 +3865,14 @@ def structure(model):
     )
 
 
-SERIES_STEP_PENDING = (
-    f"{SERIES_GATE_LAW_ID}'s step is not built yet (FR-30's scaffold, D262): a world whose "
-    "junctions take it parses and binds its types, and nothing computes its junctions"
+SERIES_RK4_REFUSAL = (
+    f"{SERIES_GATE_LAW_ID} runs on the IMEX tableaux in v1 (D262): RK4 would integrate "
+    "junction_gate apart from its gates, while the IMEX step sets it to their product at every "
+    "stage"
+)
+SERIES_PROJECTIVE_REFUSAL = (
+    f"{SERIES_GATE_LAW_ID} runs on the fine engine in v1 (D262): execution.projective's settling "
+    "test reads one junction gate's kinetics"
 )
 SERIES_STRUCTURE_REFUSAL = (
     f"{SERIES_GATE_LAW_ID} runs in @3 alone in v1, through its structure's implementation "
