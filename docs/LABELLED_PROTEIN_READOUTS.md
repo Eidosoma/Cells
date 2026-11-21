@@ -59,8 +59,8 @@ receiver rises only under transfer, and the cumulative loss only under destructi
    gives it for any region of one cell's nodes, with each node's amount beside it, and with no
    engine change. It refuses, at setup, a world in which anything it does not read could move the
    species: a face, junction or patch that moves it, every operator law it neither reads nor
-   lists as shown inert, and every declared kind (`check_movers`, fail closed since the review of
-   21 November 2026).
+   lists as shown inert, every declared kind and a charged species (`check_movers`, fail closed
+   since the review of 21 November 2026).
 3. **Every other way out of the cell, named.** Secretion to a node the cell does not own also lowers
    the whole-cell total. Cells books it as a transfer (`exchange_moved_fmol` to that node), not as a
    loss, so the two stay apart, which imaging alone cannot do.
