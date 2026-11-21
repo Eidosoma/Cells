@@ -6,29 +6,31 @@ Browse Cells engine laws by scientific topic. Each claim links its Lean proofs, 
 
 <!-- generated: claims-index -->
 
-Direct Lean claims cover [46 of 46 laws](COVERAGE.md#registered-laws) and [27 of 27 operators](COVERAGE.md#registered-operators).
+Direct Lean claims cover [49 of 49 laws](COVERAGE.md#registered-laws) and [29 of 29 operators](COVERAGE.md#registered-operators).
 
 | Category | Registered laws with proof | Claims with proof | Numerical checks | Claims with biological evidence |
 | --- | ---: | ---: | --- | ---: |
 | [Membrane transport and osmosis](COVERAGE.md#category-membrane-transport) | 5 of 5 | 8 of 8 | 8 checked | 8 |
-| [Ion channels and junctions](COVERAGE.md#category-channels-and-junctions) | 14 of 14 | 12 of 12 | 10 checked · 1 failed · 1 open | 11 |
+| [Ion channels and junctions](COVERAGE.md#category-channels-and-junctions) | 14 of 14 | 12 of 12 | 12 checked | 11 |
 | [Pumps and cotransport](COVERAGE.md#category-pumps-and-cotransport) | 13 of 13 | 8 of 8 | 8 checked | 8 |
-| [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 3 of 3 | 8 of 8 | 7 checked · 1 failed | 6 |
-| [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 10 of 10 | 18 of 18 | 16 checked · 2 failed | 15 |
-| [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 1 of 1 | 17 of 17 | 15 checked · 2 failed | 13 |
+| [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 3 of 3 | 8 of 8 | 8 checked | 6 |
+| [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 13 of 13 | 19 of 19 | 18 checked · 1 failed | 15 |
+| [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 1 of 1 | 19 of 19 | 19 checked | 14 |
 | [Cell physiology](COVERAGE.md#category-cell-physiology) | — | 3 of 3 | 3 checked | 3 |
 
 <!-- /generated -->
 
 Each category opens its detailed claim table on GitHub, including registered laws still awaiting a proof. A single claim can cover several laws. The last column counts claims with a recorded measurement or literature finding, including partial evidence. Each numerical result applies to the cases in its linked record. [All registered laws](COVERAGE.md#registered-laws) · [Design notes](ENGINE_LAW_VERIFICATION.md) · [Voltage pilot closeout](../reports/BIO003_PILOT_CLOSEOUT.md)
 
-The failure list updates from the claims register. The finite-pool comparison records an accepted replacement with an incorrect energy entry. The earlier review records failures and repair replays for other laws. [Fresh-pool capacity finding](PROGRESS.md#pool-replacement-capacity) · [Earlier repair results](PROGRESS.md#remaining-numerical-findings)
+On 21 November, five former numerical failures passed their repair checks, including fresh-pool capacity and self-regulated turnover. The GARD pair-heat case remains recorded on version 1. [Repair results](PROGRESS.md#nov21-engine-review) · [Current failure list](COVERAGE.md#failing-numerical-checks)
 
 ## Biological evidence
 
 The biological review identifies three engine opportunities with measured targets. It covers the reversal of the yeast vacuolar proton pump, the time to rupture of a vesicle under steady tension, and fast and slow closure of Cx43 gap junctions. [Measurements, current engine results and proposed changes](PROGRESS.md#biological-model-review)
 
-For Cx43, the opposite-polarity measurements put a lower bound on the error of the current gate. A separate proof gives the proposed two-gate law a test using the amplitudes of its decay components. [Voltage series and proofs](PROGRESS.md#cx43-series-gates)
+The Cx43 polarity measurements bound the error of the registered single-gate law. The new two-gate functions satisfy the predicted amplitude relation on synthetic clamps. Resolving the mixed amplitude in a measured Cx43 trace remains open. [Measurements](PROGRESS.md#cx43-series-gates) · [Compiled comparison](claims/junction-series-amplitudes.md)
+
+A serial dilution experiment follows free fluorescein through three successive exchanges. The catalog gives the measured concentrations alongside the ideal series, including the discrepancy at the third 80% wash. [Measured dilution and its scope](PROGRESS.md#nov21-wash)
 
 For finite-pool washes, tracer measurements distinguish what leaves the exterior, what survives inside a vesicle, and what can later enter another membrane. [Washout and redistribution measurements](claims/pool-replacement.md#biological-evidence)
 
@@ -211,6 +213,13 @@ For serial transfer and shear fission, follow an impermeant tracer through succe
 "$cells_python" -B checks/vesicle_population.py
 ```
 
+For the finite-compartment wash, compare compiled exchanges and whole tissue runs with the inventory formula and the fluorescein series. For the two-gate junction, compare all gate-kind pairings with the constant-voltage expansion. [Wash and its resolution limit](PROGRESS.md#nov21-wash) · [Series-gate functions](PROGRESS.md#nov21-features)
+
+```bash
+"$cells_python" -B checks/compartment_wash.py
+"$cells_python" -B checks/junction_series_gates.py
+```
+
 For scheduled pool replacement, replay both sides of the pulse and wash, including species receipts and saved relations. The capacity comparison exits 1 when either schedule accepts an oversized bath. [Tracer and energy results](PROGRESS.md#pool-replacement) · [Capacity finding](PROGRESS.md#pool-replacement-capacity)
 
 ```bash
@@ -247,11 +256,12 @@ For the held bath, follow the controller’s dose and the tissue’s supply thro
 "$cells_python" -B checks/bath_schedule.py --controls-only
 ```
 
-For regulated availability, pulse and wash out a ligand in both operator versions and compare the channel response with rat SK2 dose and timing measurements. The full driver also checks the order of reporter production when turnover changes its own regulator. It exits with status 1 on the recorded first-order result. The controls-only run checks the pulse, both rate samples and the SK2 calculation. [Channel proof and biological measurements](claims/regulated-state-response.md) · [Turnover finding and reproducer](claims/regulated-turnover-routing.md)
+For regulated availability, pulse and wash out a ligand in both operator versions and compare the channel response with rat SK2 dose and timing measurements. The full driver also checks the order of reporter production when turnover changes its own regulator. The midpoint repair restored second-order convergence on the four tested grids. The controls-only run checks the pulse, both rate samples and the SK2 calculation. [Channel proof and biological measurements](claims/regulated-state-response.md) · [Turnover finding and reproducer](claims/regulated-turnover-routing.md)
 
 ```bash
 "$cells_python" -B checks/regulated_availability.py
 "$cells_python" -B checks/regulated_availability.py --controls-only
+"$cells_python" -B checks/regulated_availability.py --ramp-only
 ```
 
 For scheduled turnover, the driver checks production, clearance and chemical work, then compares a neuronal protein chase and a chamber with independently metered flow. The full run also checks that both extreme-rate worlds retain the 1 fmol net change and its chemical work. The second command runs the ordinary controls. [Proof, measurements and engine finding](claims/scheduled-species-turnover.md)
@@ -275,7 +285,7 @@ The site driver follows two binding populations and their shared free ligand. Th
 "$cells_python" -B checks/mixed_membrane.py
 ```
 
-For membrane insertion, compare both operators with a one-patch fixed-charge solution. The first command reports the engine result and exits with status 1 if any case fails. The two optional controls rerun the stress case with known single-patch heat and image-charge values substituted in memory. At the recorded revision the original and heat-only runs fail, and the heat-and-charge control completes. [Driver](checks/membrane_insertion.py) · [Results](PROGRESS.md#19-november-2026--membrane-insertion-heat)
+For membrane insertion, compare both operators with a one-patch fixed-charge solution. The first command reports the engine result and exits with status 1 if any case fails. The two optional controls rerun the stress case with known single-patch heat and image-charge values substituted in memory. Both repaired operators now complete the original stress rollout. [Driver](checks/membrane_insertion.py) · [Original result](PROGRESS.md#19-november-2026--membrane-insertion-heat) · [Repair](PROGRESS.md#nov21-engine-review)
 
 ```bash
 "$cells_python" -B checks/membrane_insertion.py

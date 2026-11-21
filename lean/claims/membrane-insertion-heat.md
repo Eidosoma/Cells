@@ -25,7 +25,15 @@ Direct proof subject `cells.scheduled_membrane_insertion@1`, `cells.scheduled_me
 
 ## Numerical comparison
 
-**Failed.** Both versions passed six control half-steps each. At an extreme ΔC/C of 1.7 × 10¹⁶, both computed −0.043037 pJ against an 80-digit reference of +0.051603 pJ and refused step one. The computed bath image charge was −3.638 × 10⁻¹² C. Using the sum-of-squares heat and exact single-patch image charge in a diagnostic control allowed both runs to finish. The lead confirmed the step refusal and assigned the fix to the operators owner.
+**Checked.** Both versions passed all seven half-step cases and completed the original extreme one-patch rollout. At ΔC/C = 1.7 × 10¹⁶ both booked +0.051603097344170144 pJ, against +0.05160309734417014 pJ from the 80-digit calculation. The earlier refusal and diagnostic substitutions are retained below.
+
+**Engine** `resolved_pump_composite@1`, `resolved_pump_tissue@3`
+
+**Operators** `scheduled_membrane_insertion@1`, `scheduled_membrane_insertion@2`, `membrane_entity_state@1`
+
+[Selection of the stable insertion calculation](https://github.com/Eidosoma/Cells/blob/d74f519d40b9a9f7488b94b489c6dc4dd865504c/src/cells/operators/membrane_insertion.py#L416) · [Heat and image calculation in the extreme branch](https://github.com/Eidosoma/Cells/blob/d74f519d40b9a9f7488b94b489c6dc4dd865504c/src/cells/operators/membrane_insertion.py#L471) · [Second-version half-step](https://github.com/Eidosoma/Cells/blob/d74f519d40b9a9f7488b94b489c6dc4dd865504c/src/cells/operators/membrane_insertion_v2.py#L369) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/ceeca19816acd761ab68379d67bb0f7426366a1c/lean/checks/membrane_insertion.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/ceeca19816acd761ab68379d67bb0f7426366a1c/lean/PROGRESS.md#nov21-engine-review)
+
+[Tested engine d74f519d40b9](https://github.com/Eidosoma/Cells/commit/d74f519d40b9a9f7488b94b489c6dc4dd865504c) · [Evidence checkpoint ceeca19816ac](https://github.com/Eidosoma/Cells/commit/ceeca19816acd761ab68379d67bb0f7426366a1c)
 
 **Engine** `resolved_pump_composite@1`, `resolved_pump_tissue@3`
 

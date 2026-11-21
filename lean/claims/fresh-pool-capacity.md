@@ -21,7 +21,15 @@ Uses [A finite-pool wash preserves assembly cargo and books the two bath energie
 
 ## Numerical comparison
 
-**Failed.** Both operators accepted 33 molecules at capacity 32 and finished with a passing ledger. Both booked −53.676961 kBT against −50.180454 kBT from the discrete ideal-bath formula. The shortfall of 3.496508 kBT equals ln(33) to rounding. For both operators, 32 molecules at capacity 32 and 33 molecules at capacity 64 gave the reference work.
+**Checked.** Both schedules now reject 33 molecules at capacity 32 during definition. Both accepted 32 at 32 and 33 at 64 with the reference work. The earlier comparison records the incorrect work of an accepted oversized pool.
+
+**Engine** `cells.assembly_lineages@2`, `cells.shared_pool@1`, `cells.ideal_mixing@1`
+
+**Operators** `cells.pool_replacement@1`, `cells.serial_transfer@1`
+
+[Checks on every fresh count and founder](https://github.com/Eidosoma/Cells/blob/d74f519d40b9a9f7488b94b489c6dc4dd865504c/src/cells/models/assembly_lineages_v2/spec.py#L692) · [Discrete ideal-bath energy](https://github.com/Eidosoma/Cells/blob/d74f519d40b9a9f7488b94b489c6dc4dd865504c/src/cells/models/assembly_lineages_v2/ideal_mixing.py) · [Replacement and transfer schedule definitions](https://github.com/Eidosoma/Cells/blob/d74f519d40b9a9f7488b94b489c6dc4dd865504c/tests/unit/test_assembly_lineages_v2_replacement.py) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/ceeca19816acd761ab68379d67bb0f7426366a1c/lean/checks/pool_replacement.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/ceeca19816acd761ab68379d67bb0f7426366a1c/lean/PROGRESS.md#nov21-engine-review)
+
+[Tested engine d74f519d40b9](https://github.com/Eidosoma/Cells/commit/d74f519d40b9a9f7488b94b489c6dc4dd865504c) · [Evidence checkpoint ceeca19816ac](https://github.com/Eidosoma/Cells/commit/ceeca19816acd761ab68379d67bb0f7426366a1c)
 
 **Engine** `cells.assembly_lineages@2`, `cells.shared_pool@1`, `cells.ideal_mixing@1`
 

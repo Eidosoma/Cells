@@ -24,7 +24,15 @@ Uses [Vesicles withdrawing from a finite shared bath conserve each species acros
 
 ## Numerical comparison
 
-**Checked.** In the two-vesicle CPU world a pulse supplied 12 tracer molecules. The wash removed six and retained six, including three bound to membrane sites. Tracer inventory closed exactly at all 856 saved rows. All six nonzero material edges matched the independently reconstructed receipts, and the maximum bath or world energy discrepancy was below 2.85 × 10⁻¹⁴ kBT. After washing at 2 s, release preceded uptake at 2.000848 s and 2.001470 s.
+**Checked.** In the two-vesicle CPU world a pulse supplied 12 tracer molecules. The wash removed six and retained six, including three bound to membrane sites. Tracer inventory closed exactly at all 856 saved rows. All six nonzero material edges matched the independently reconstructed receipts, and the maximum bath or world energy discrepancy was below 2.85 × 10⁻¹⁴ kBT. After washing at 2 s, release preceded uptake at 2.000848 s and 2.001470 s. The 21 November pulse-and-wash replay preserved the tracer ledger on all 856 rows with a maximum energy discrepancy of 2.85 × 10⁻¹⁴ kBT.
+
+**Engine** `cells.assembly_lineages@2`, `cells.shared_pool@1`, `cells.ideal_mixing@1`
+
+**Operators** `cells.pool_replacement@1`, `cells.serial_transfer@1`
+
+[Checks on every fresh count and founder](https://github.com/Eidosoma/Cells/blob/d74f519d40b9a9f7488b94b489c6dc4dd865504c/src/cells/models/assembly_lineages_v2/spec.py#L692) · [Discrete ideal-bath energy](https://github.com/Eidosoma/Cells/blob/d74f519d40b9a9f7488b94b489c6dc4dd865504c/src/cells/models/assembly_lineages_v2/ideal_mixing.py) · [Replacement and transfer schedule definitions](https://github.com/Eidosoma/Cells/blob/d74f519d40b9a9f7488b94b489c6dc4dd865504c/tests/unit/test_assembly_lineages_v2_replacement.py) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/ceeca19816acd761ab68379d67bb0f7426366a1c/lean/checks/pool_replacement.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/ceeca19816acd761ab68379d67bb0f7426366a1c/lean/PROGRESS.md#nov21-engine-review)
+
+[Tested engine d74f519d40b9](https://github.com/Eidosoma/Cells/commit/d74f519d40b9a9f7488b94b489c6dc4dd865504c) · [Evidence checkpoint ceeca19816ac](https://github.com/Eidosoma/Cells/commit/ceeca19816acd761ab68379d67bb0f7426366a1c)
 
 **Engine** `cells.assembly_lineages@2`, `cells.shared_pool@1`, `cells.ideal_mixing@1`, `cells.phase_exchange@1`, `cells.membrane_permeation@1`, `cells.transition_state_factor@1`
 

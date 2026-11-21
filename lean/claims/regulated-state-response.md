@@ -33,7 +33,15 @@ Uses [Production and first-order clearance preserve a positive pool and account 
 
 ## Numerical comparison
 
-**Checked.** Six compiled pulse-and-washout runs agreed with the stage-by-stage state to 4.45 × 10⁻¹⁶. Against independent continuous integration the gate error fell from 7.41 × 10⁻⁴ to 1.83 × 10⁻⁴ and 4.55 × 10⁻⁵ as the step was halved. Both versions agreed on final channel availability and K⁺ transfer. Separate fixed-Ca²⁺ cells reproduced the calculated rise and washout time constants.
+**Checked.** Six compiled pulse-and-washout runs agreed with the stage-by-stage state to 4.45 × 10⁻¹⁶. Against independent continuous integration the gate error fell from 7.41 × 10⁻⁴ to 1.83 × 10⁻⁴ and 4.55 × 10⁻⁵ as the step was halved. Both versions agreed on final channel availability and K⁺ transfer. Separate fixed-Ca²⁺ cells reproduced the calculated rise and washout time constants. Separate version-2 tests exercised site-sourced rate and channel factors and the post-replacement occupancy read.
+
+**Engine** `resolved_pump_tissue@3`
+
+**Operators** `cells.site_occupant_replacement@1`, `cells.site_occupancy@1`, `cells.species_regulated_availability@2`
+
+[Readable site quantities](https://github.com/Eidosoma/Cells/blob/a6235d7b02c04e147991342c2891eb0c1cd3deb6/src/cells/operators/species_regulated_availability.py#L1462) · [Template and channel readouts](https://github.com/Eidosoma/Cells/blob/a6235d7b02c04e147991342c2891eb0c1cd3deb6/tests/unit/test_species_regulated_availability.py#L1511) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/ceeca19816acd761ab68379d67bb0f7426366a1c/tests/unit/test_species_regulated_availability.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/ceeca19816acd761ab68379d67bb0f7426366a1c/lean/PROGRESS.md#nov21-features)
+
+[Tested engine a6235d7b02c0](https://github.com/Eidosoma/Cells/commit/a6235d7b02c04e147991342c2891eb0c1cd3deb6) · [Evidence checkpoint ceeca19816ac](https://github.com/Eidosoma/Cells/commit/ceeca19816acd761ab68379d67bb0f7426366a1c)
 
 **Engine** `resolved_pump_composite@1`, `resolved_pump_tissue@3`, `cells.kleak_always_open@1`
 
