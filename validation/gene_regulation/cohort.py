@@ -19,9 +19,9 @@ interval is integrated with the pool's per-molecule loss rate held at its interv
 k_i = (D_{i+1} - D_i)/(integral of n over the interval), and completions spread evenly over the
 interval:
   S_{i+1} = S_i e^(-k_i h) + (dQ_i / (k_i h)) (1 - e^(-k_i h)) inside the window, without the dQ
-term after it. The integral of n uses Simpson's rule where the grid allows, else the trapezoid.
-Both are exact as the grid refines. The calculation's error on a grid is stated by running it on
-every second output as well and differencing (`grid_error`).
+term after it. The integral of n over each interval is the trapezoid, h (n_i + n_{i+1})/2, which
+is exact as the grid refines. The calculation's error on a grid is stated by running it on every
+second output as well and differencing (`grid_error`).
 
 **When the rate is known** (constant k >= 0), `known_rate` gives the closed form for completions
 spread evenly over each output interval, through expm1 and with its zero-rate limit (everything
@@ -52,7 +52,8 @@ from pathlib import Path
 
 def _integral(t, n, i, j):
     """The integral of n over [t_i, t_j] on the output grid, by Simpson's rule on uniform pairs of
-    intervals, the trapezoid on what remains."""
+    intervals, the trapezoid on what remains. survivors calls it on one interval at a time
+    (j = i + 1), where it is the trapezoid."""
     total, k = 0.0, i
     while k + 2 <= j and abs((t[k + 1] - t[k]) - (t[k + 2] - t[k + 1])) < 1e-9:
         total += (t[k + 2] - t[k]) * (n[k] + 4 * n[k + 1] + n[k + 2]) / 6
