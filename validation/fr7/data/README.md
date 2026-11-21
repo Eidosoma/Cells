@@ -12,11 +12,15 @@ and their plotted standard errors, read from published figures.
   - Fig. 3G, the barium-sensitive current density at -100 mV (n = 6);
   - Fig. 4B, total protein remaining at 0, 3, 6 and 12 h of a chase;
   - Supplementary Fig. S2B, the steady-state current density at -140 to -30 mV in 10 mV steps, for
-    each variant (a second reader's rows, D254).
+    each variant (a second reader's rows, D254). Its legend states no sample size (below).
 
   The pixel positions of every mean and error-bar tip are kept. The `reader` column marks who read
   each row: `first_reader` for the user's 12 rows (D241), and `second_reader` for Fig. 3G's two,
   read by the FR-7 lane on 20 November 2026 by the same method from the same image (D249).
+
+  `n` is the count the source states, with `replicate_unit` saying what it counts. A count that is
+  only inferred goes in `n_inferred`, with its basis in `n_inferred_basis`; only S2B's rows carry
+  one.
 - `kir21_public_data_v1.json`: the studies' public locations, sizes and SHA-256 checksums of the
   source files, and each digitized axis's tick coordinates. Qile et al. (2019) gives a 2.6 h
   half-life for wild-type human Kir2.1 protein in HEK293T cells.
@@ -31,8 +35,17 @@ and their plotted standard errors, read from published figures.
 - **The points sit on the drawn axis at -140 to -30 mV,** exactly the legend's command steps. The
   axis shows no 15 mV junction offset, and the figure doesn't say whether it carries the
   adjustment.
-- **Its -100 mV points equal Fig. 3G's means and SEMs,** so its rows are the six-cell means despite
-  the legend's "representative"; their n is given as 3G's.
+- **The legend states no sample size.** Panel B is "Representative steady-state current density
+  (pA/pF) as a function of voltage" (the supplement's text layer, PDF page 4). So `n` is left
+  empty on these rows, with `replicate_unit` `not_stated`.
+- **Its -100 mV points match Fig. 3G's means and SEMs:** wild type -7.2 ± 1.8 against 3G's
+  -7.3 ± 1.9 pA/pF, and K346T -14.7 ± 2.7 against -14.8 ± 2.5.
+  - That supports a cross-check at -100 mV: the curves may be the same six cells' means.
+  - It is not stated. So the count is recorded apart, as `n_inferred` 6 with the basis
+    `fig_3G_six_cells_at_minus_100_mV`, and it is unverified at every other voltage.
+  - **A scorer uses Fig. 3G's rows** for the documented six-cell comparison at -100 mV.
+- **The error bars are read as SEMs,** as the article's Methods present the patch-clamp data
+  ("mean ± SEM"). The S2 legend itself names no statistic.
 - **Gaps:**
   - wild type at -80 mV is hidden behind K346T's marker and is read from its connecting line;
   - several error bars end inside their markers, and those SEMs are left empty.
