@@ -286,6 +286,193 @@ def score(prediction_path, out_path):
         print(f"bound {b['pair']} {b['relation']} {b['bound_mV']}: met {b['met']}")
 
 
+PANEL_B_ALL = ((7.5, 7.5), (7.5, 6.0), (7.5, 4.1))
+
+
+def every_curve():
+    """Every curve's separable, reliable stretch: panel A from -75 to +20 mV without its
+    ambiguous rows, panel B below -5 mV; the -80 mV trace end left out."""
+    out = []
+    for pair, v, i, flags, identity in rows("A", PANEL_A):
+        if SHAPE_RANGE_MV[0] <= v <= SHAPE_RANGE_MV[1] and "ambiguous" not in identity + flags:
+            out.append((pair, v, i, flags, identity))
+    for pair, v, i, flags, identity in rows("B", PANEL_B_ALL, below_mv=-5.0):
+        if "trace_end" not in flags:
+            out.append((pair, v, i, flags, identity))
+    return out
+
+
+def joint(out_path):
+    """The family question: the best member on every curve, free and with the pH 3.1 bound
+    imposed (a reversal at vacuolar pH 3.1 above +40 mV), each from the same starts."""
+    data = every_curve()
+
+    def run(bounded):
+        def residuals(x):
+            params = (x[0], x[1], math.exp(x[2]), x[3], math.exp(x[4]))
+            r = np.concatenate([current(params, *pair, [v]) - i for pair, v, i, *_ in data])
+            if not bounded:
+                return r
+            # The bound as a residual: the current at +40 mV at pH 3.1 must be < 0 (inward),
+            # so the zero crossing lies above +40 mV; weighted to dominate when violated.
+            at_40 = float(current(params, 7.5, 3.1, [40.0])[0])
+            return np.concatenate([r, [100.0 * max(at_40, 0.0)]])
+
+        lower, upper = [0.0, -300.0, -12.0, 3.0, -5.0], [1.0, 100.0, 12.0, 10.0, 8.0]
+        best = None
+        for start in STARTS:
+            try:
+                s = least_squares(residuals, start, bounds=(lower, upper))
+            except ValueError:
+                continue
+            if best is None or s.cost < best.cost:
+                best = s
+        x = best.x
+        params = (x[0], x[1], math.exp(x[2]), x[3], math.exp(x[4]))
+        curve_res = np.concatenate([current(params, *pair, [v]) - i for pair, v, i, *_ in data])
+        per_curve = {}
+        for pair in (*PANEL_A, *PANEL_B_ALL):
+            r = [float(current(params, *pair, [v])[0] - i) for q, v, i, *_ in data if q == pair]
+            per_curve[f"{pair[0]}/{pair[1]}"] = dict(
+                rms=float(np.sqrt(np.mean(np.square(r)))), reversal=reversal(params, *pair)
+            )
+        return dict(
+            parameters=dict(zip(PARAMETERS, [float(v) for v in params], strict=True)),
+            rms=float(np.sqrt(np.mean(curve_res**2))),
+            pH_3_1_reversal_mV=reversal(params, 7.5, 3.1),
+            current_at_40_mV_pH_3_1=float(current(params, 7.5, 3.1, [40.0])[0]),
+            per_curve=per_curve,
+        )
+
+    result = dict(
+        kind="cells.fr29_desk_joint@1",
+        written_utc=datetime.now(UTC).isoformat(timespec="seconds"),
+        revision=head(),
+        rows=len(data),
+        free=run(False),
+        with_the_pH_3_1_bound=run(True),
+    )
+    Path(out_path).write_text(json.dumps(result, indent=1) + "\n")
+    for name in ("free", "with_the_pH_3_1_bound"):
+        r = result[name]
+        print(name, "RMS", round(r["rms"], 2), "pH 3.1 reversal", r["pH_3_1_reversal_mV"],
+              {k: round(v, 3) for k, v in r["parameters"].items()})  # fmt: skip
+        for key, c in r["per_curve"].items():
+            rev = None if c["reversal"] is None else round(c["reversal"], 1)
+            print(f"   {key}: RMS {c['rms']:.2f} reversal {rev}")
+
+
+# The joint question's minimal changes (the lead's instruction): each the family with one thing
+# added, fitted on every curve with the pH 3.1 bound imposed. Parameters after the family's five.
+def _bounded(psi, slope, psi_s):
+    """e^(slope psi) / (1 + e^(slope (psi - psi_s))): exponential on one side, flat on the other."""
+    return np.exp(slope * psi - np.logaddexp(0.0, slope * (psi - psi_s)))
+
+
+def variant_current(name, params, ph_c, ph_v, v_mv):
+    """The family's current with one change (VARIANTS), or the family itself for "family"."""
+    base = current(params[:5], ph_c, ph_v, v_mv)
+    v = np.asarray(v_mv, dtype=float)
+    h_c, h_v = 10.0**-ph_c, 10.0**-ph_v
+    e_h = RT_F_MV * math.log(h_v / h_c)
+    psi = v / RT_F_MV
+    delta, v_s, rho, pk, scale = params[:5]
+    if name == "family":
+        return base
+    if name == "second site":  # A second, independent site: its own ratio and pK.
+        rho2, pk2 = params[5], params[6]
+        k2 = 10.0**-pk2
+        x_r = (v - e_h) / RT_F_MV
+        second = rho2 * h_v / (h_v + k2) * k2 / (k2 + h_c) * _bounded(psi, -delta, v_s / RT_F_MV)
+        return base - scale * second * -np.expm1(x_r)
+    if name == "pump voltage law":  # The pump mode's rate over its own bounded Eyring term.
+        delta_p, v_p = params[5], params[6]
+        x_c = (E_ATP_MV[ph_c] + N * (e_h - v)) / RT_F_MV
+        pump = N * -np.expm1(np.minimum(x_c, 700.0))
+        gain = _bounded(psi, delta_p, v_p / RT_F_MV) / _bounded(0.0, delta_p, v_p / RT_F_MV)
+        return base + scale * pump * (gain - 1.0)
+    if name == "variable coupling":  # n = a + b dpH H+ per ATP, no return mode.
+        a, b = params[5], params[6]
+        n = a + b * (ph_c - ph_v)
+        x_c = (E_ATP_MV[ph_c] + n * (e_h - v)) / RT_F_MV
+        return scale * n * -np.expm1(np.minimum(x_c, 700.0))
+    raise KeyError(name)
+
+
+VARIANTS = {  # name: (extra parameters' lower bounds, upper bounds, starts)
+    "family": ((), (), ((),)),
+    "second site": ((-12.0, 0.0), (12.0, 10.0), ((0.0, 3.5), (2.0, 4.5), (-2.0, 7.5))),
+    "pump voltage law": ((0.0, -100.0), (1.0, 200.0), ((0.3, 20.0), (0.6, 60.0), (0.9, 150.0))),
+    "variable coupling": ((1.0, -2.0), (8.0, 2.0), ((4.9, -0.69), (3.0, -0.3), (2.0, 0.0))),
+}
+
+
+def variants(out_path, names=None):
+    """Each variant on every curve, free and with the pH 3.1 bound imposed: its RMS and the
+    bound. names: the variants to run (default all), so a run can be split."""
+    data = every_curve()
+    result = dict(
+        kind="cells.fr29_desk_variants@1",
+        written_utc=datetime.now(UTC).isoformat(timespec="seconds"),
+        revision=head(),
+        rows=len(data),
+        variants={},
+    )
+    for name, (lo_x, hi_x, extra_starts) in VARIANTS.items():
+        if names and name not in names:
+            continue
+
+        def unpack(x, name=name):
+            params = [x[0], x[1], math.exp(x[2]), x[3], math.exp(x[4]), *x[5:]]
+            if name == "second site":
+                params[5] = math.exp(x[5])
+            return params
+
+        def residuals(x, bounded=True, name=name, unpack=unpack):
+            params = unpack(x)
+            r = np.concatenate(
+                [variant_current(name, params, *pair, [v]) - i for pair, v, i, *_ in data]
+            )
+            if not bounded:
+                return r
+            at_40 = float(variant_current(name, params, 7.5, 3.1, [40.0])[0])
+            return np.concatenate([r, [100.0 * max(at_40, 0.0)]])
+
+        lower = [0.0, -300.0, -12.0, 3.0, -5.0, *lo_x]
+        upper = [1.0, 100.0, 12.0, 10.0, 8.0, *hi_x]
+        out = {}
+        for bounded in (False, True):
+            best = None
+            for start in STARTS[::6]:
+                for extra in extra_starts[:2]:
+                    try:
+                        s = least_squares(
+                            residuals, [*start, *extra], bounds=(lower, upper), args=(bounded,)
+                        )
+                    except ValueError:
+                        continue
+                    if best is None or s.cost < best.cost:
+                        best = s
+            params = unpack(best.x)
+            fit_rms = float(np.sqrt(np.mean(residuals(best.x, bounded=False) ** 2)))
+            at_40 = float(variant_current(name, params, 7.5, 3.1, [40.0])[0])
+            grid = np.linspace(-200.0, 200.0, 4001)
+            values = variant_current(name, params, 7.5, 3.1, grid)
+            sign = np.nonzero(np.diff(np.sign(values)))[0]
+            out["with the pH 3.1 bound" if bounded else "free"] = dict(
+                rms=fit_rms,
+                pH_3_1_crossing_mV=float(grid[sign[0]]) if sign.size else None,
+                pH_3_1_current_at_40_mV=at_40,
+                bound_met=at_40 < 0.0,
+                parameters=[float(v) for v in params],
+            )
+        result["variants"][name] = out
+        for key, r in out.items():
+            print(f"{name}, {key}: RMS {r['rms']:.2f} mA m-2; pH 3.1 crossing "
+                  f"{r['pH_3_1_crossing_mV']}; bound met {r['bound_met']}", flush=True)  # fmt: skip
+    Path(out_path).write_text(json.dumps(result, indent=1) + "\n")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     sub = parser.add_subparsers(dest="step", required=True)
@@ -293,11 +480,19 @@ def main():
     scoring = sub.add_parser("score")
     scoring.add_argument("prediction")
     scoring.add_argument("out")
+    sub.add_parser("joint").add_argument("out")
+    chosen = sub.add_parser("variants")
+    chosen.add_argument("out")
+    chosen.add_argument("names", nargs="*")
     args = parser.parse_args()
     if args.step == "predict":
         predict(args.out)
     elif args.step == "score":
         score(args.prediction, args.out)
+    elif args.step == "joint":
+        joint(args.out)
+    elif args.step == "variants":
+        variants(args.out, args.names)
 
 
 if __name__ == "__main__":

@@ -464,3 +464,74 @@ That is **4–5 agent-days,** gates excluded. Digitizing Fig. 3, if ruled (§7, 
    (§4).
 5. **Variable coupling:** whether it is built later as the competing hypothesis's own law (§5), or
    left as the recorded alternative until the separating measurement exists.
+
+## 8. The desk evaluation against Fig. 3 (D258, 20–21 November 2026)
+
+This section reports what the lead's desk evaluation established on the curves. It is a closed-form
+computation in `validation/vacuole/fr29_return_mode_desk.py`, not the engine, run on the FR-7
+lane's reading of Fig. 3.
+- **Records:** `fr29_desk_prediction.json` (the prediction), `fr29_desk_score.json`,
+  `fr29_desk_joint.json` and `fr29_desk_variants.json`.
+- **Rulings applied:** δ_r and ψ_s were fitted on Fig. 3 (ruling 1), and the ATP-free baseline is
+  read as zero (ruling 4).
+
+**The registered prediction.**
+- **The fit:** δ_r, ψ_s, ρ, the site pK and one current scale, on panel B's vacuolar pH 6.0 and 4.1
+  curves below −5 mV, 28 rows.
+- **Committed before panel A was read:** 4531d06d at 23:26 UTC; the score is de8cfe16, at 23:27.
+- **The family fails its own training curves:**
+  - δ_r comes out at 1.0, the family's bound;
+  - the in-sample RMS is 3.1 mA m⁻²;
+  - the pH 4.1 curve's fitted reversal is −16.1 mV against −23.2 read.
+
+  That is a failure of the family, not of the data. At −75 mV the pump mode's mass-action backward
+  branch falls 9 mA m⁻² below the reading (−46.5 against −37.5).
+- **Panel A, scored by the record's own rules:**
+
+  | Curve | Shape | Reversal |
+  | --- | --- | --- |
+  | 5.0/5.0 | passes | no crossing, met |
+  | 6.0/5.0 | passes | +4.5 mV off, passes |
+  | 7.5/5.0 | fails (RMS 7.1 against 6.1) | +12.1 mV off, fails |
+  | 8.5/5.0 | fails | −1.6 mV off, passes |
+
+  Of the bounds, pH 3.1 fails (+3.5 mV predicted) and both zero-gradient bounds are met.
+- **Seen before:**
+  - Panel A's reversals shaped the family, so its reversal scores are in sample in that sense.
+  - Its curve shapes were not seen, apart from the facts the reading's README states: the meeting
+    points, the values near +60 mV, 12.2 mA m⁻² at 0 mV for 7.5/5.0, and the zero-gradient curves'
+    lowest readings. One reversal slope was also seen.
+- **The comparator:** reversals are scored against the curves' read crossings. Table 2's means
+  stand beside them, 2.0 to 4.7 mV more negative.
+
+**The joint question: can any member fit the curves and the pH 3.1 bound together?** No. All 122
+reliable rows were fitted together:
+- Free, the family fits at an RMS of 4.3 mA m⁻² and predicts +2.2 mV at pH 3.1.
+- Forced to the bound, it reaches only the bound's edge (+39.7 mV). Its RMS rises to 7.5. The
+  reversals of panel A's 7.5/5.0 and 8.5/5.0 curves and of panel B's 4.1 curve move by 50 to 65 mV,
+  to +29 to +36 mV against −16 to −31 read.
+
+**Minimal changes, each fitted the same way (free / with the bound):**
+
+| Change | RMS free | RMS with the bound | The bound |
+| --- | --- | --- | --- |
+| A second site | 3.4 | 4.5 | reached at its edge (+39.9 mV) |
+| A pump voltage law | 3.5 | 7.5 | collapses to the family's bounded fit |
+| Variable coupling (n = a + b ΔpH, no return) | 10.6 | 11.0 | met only with n below 0 at ΔpH 4.4, which is unphysical |
+
+- **A second site:** its pK runs to the range limit, so it behaves as a return first-order in
+  vacuolar H⁺ that matters only below about vacuolar pH 4.
+- **A pump voltage law** improves the curves but does not move the pH 3.1 crossing.
+- **Variable coupling** in the pump alone cannot draw the curves.
+
+So the minimal change that fits both is a second, low-affinity return site. Its two extra
+parameters are pinned by one bound, so it is a hypothesis, not a finding. A curve at vacuolar pH
+3.1 to 3.5 would test it.
+
+**What the curves say about the return mode, in two lines:**
+1. A proton return through the energized pump does account for the flat middle (vacuolar pH 4.1
+   to 6.0). But the note's one-site form fits even its own two training curves poorly, and it
+   misses half of panel A's held-out shapes and reversals.
+2. No member of that family fits the curves and the pH 3.1 bound together. A second, unsaturated
+   return site reaches the bound at little cost to the curves, but one bound pins it, so it needs
+   a curve below vacuolar pH 4 before any build.
