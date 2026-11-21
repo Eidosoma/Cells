@@ -42,7 +42,7 @@ and a general feature, never one built for one study (D144).
 | [FR-34](#fr-34--channel-population-readouts-count-availability-and-signed-current) | Channel population readouts: surface count, availability and signed current at a declared voltage, with units and sign convention | **High** (user, 20 November 2026; D251) | **Landed, composites included:** opt-in flux and current readouts with fixed-voltage evaluation (81a29442); a composite's own clamped_channel_flux and clamped_kind at the step's control and layout views (07022ddf, D265 finding 1, checker-confirmed) | None |
 | [FR-35](#fr-35--timed-partial-withdrawal-of-an-assembly-populations-exterior-pool) | Timed partial withdrawal of an assembly population's well-mixed exterior pool: each molecule withdrawn independently, a declared buffer supplied, sites and particles kept | **High** (user, 21 November 2026) | **Landed** (merge b521a11c, tag `fr35-withdrawal-landed-2026-11-21`): `cells.pool_withdrawal@1` (D261) | None. Landed (b521a11c, with D263's fixes); the independent acceptance and a 4,000-stream ensemble passed |
 | [FR-36](#fr-36--age--and-region-selective-loss-within-a-species-row) | Age- and region-selective loss within a species row | FR-25's reviewer (21 November 2026) | **Deferred (D273).** Today's tools cover completion-time cohorts in one well-mixed pool with age-independent loss (cohort.py) and FR-33's regional export and one-way tracer | Reopens on a requester's readout needing age-dependent loss: D1 (label families) and D2 (an ageing operator), 2.5 to 4 days |
-| [FR-37](#fr-37--sampling-a-liquid-whose-dye-is-unevenly-distributed) | Sampling a liquid whose dye is unevenly distributed: a draw from chosen parts of an unevenly mixed liquid | **High** (user, 21 November 2026; D274) | Requested | First a runnable example with existing operators and the inputs analysis; otherwise the smallest addition (the operators owner). An independent acceptance is written from the request's words before landing |
+| [FR-37](#fr-37--sampling-a-liquid-whose-dye-is-unevenly-distributed) | Sampling a liquid whose dye is unevenly distributed: a draw from chosen parts of an unevenly mixed liquid | **High** (user, 21 November 2026; D274) | **Shown with existing operators** (2bba6043, validation/sampling/uneven_draw.py): per-region wash events; the three cases match, with all 10 fmol accounted for; checker-accepted. Mixing is declared, not simulated (D246), and the sample is a host-side sum | Predicting the per-region split from the port, flow and timing needs an advection operator on faces, with the wash's face refusal lifted (about 3 to 5 days): built only if the requester asks |
 
 ## FR-1 — A closed internal compartment on the shared inventory
 
@@ -1415,4 +1415,16 @@ sampling variation. Biological validation of the heat remains open.
   - an assumed dye-rich region can reproduce a high reading;
   - predicting that such a region forms needs separate evidence;
   - measuring the dye left behind tests the explanation.
-- **Status:** requested, High.
+- **Status: shown with existing operators** (2bba6043; tag fr37-uneven-draw-landed-2026-11-21).
+  validation/sampling/uneven_draw.py gives each region its own scheduled_compartment_wash@1 event, at
+  fraction = drawn volume / region volume. It reproduces the three cases (8 and 2, 5 and 5, 6.5 and
+  3.5 fmol) and records the refill's buffer separately. The second builder wrote its own acceptance
+  and confirmed it.
+  - What a user declares: the regions and their volumes, the starting distribution, each region's
+    drawn volume and time, and the refill buffer.
+  - What Cells cannot calculate today: which parts of the liquid a port draws, since it has no bulk
+    flow. Mixing in the same world as the draw is also refused (D246), so the mixed case is a
+    declared state.
+  - The smallest addition for prediction: an advection operator on faces, with the wash's face
+    refusal lifted, about 3 to 5 agent-days.
+  - Each region's predicted remainder is what a measurement of the dye left behind would test.
