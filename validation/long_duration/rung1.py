@@ -1856,6 +1856,13 @@ def c_judge(output, c_dir, full1_cost=None, c_cost=None, arm="H2-C", plant=None)
     arm = Series(c_dir, None, 0, 1.0)
     study = "C's arm" if arm_id == "H2-C" else a["study"]
     out = dict(study=f"FR-8 rung 1, {study} judged under {a['section']}", arm=arm_id)
+    # §10.24: the judge's own source, the snapshot it runs from (its runner's working directory).
+    snap = Path.cwd() / "SNAPSHOT.json"
+    meta = json.loads(snap.read_text()) if snap.is_file() else {}
+    out["source"] = dict(snapshot=str(Path.cwd()) if meta else None,
+                         git_revision=meta.get("git_revision"),
+                         patch_sha256=meta.get("patch_sha256"),
+                         driver=str(Path(__file__).resolve()))  # fmt: skip
     stage0 = stage0_ladder()
     wa = rung0_ladder("WA")
     wa_events = ladder_events(wa)
