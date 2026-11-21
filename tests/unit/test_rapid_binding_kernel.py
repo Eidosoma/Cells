@@ -240,6 +240,40 @@ def test_the_four_planted_states_meet_their_margins_and_verdicts():
             assert np.all(np.abs(g) <= kernel.RESIDUAL_RTOL * scale)
 
 
+# The Lean lane's signed proton totals at float64 resolution (21 November 2026): copies of the
+# registry's rel1 binder (forms holding 0 and -1 H), whose exact margin is T_H + sum T_B. Their
+# margins are within an ulp of 0, where the margin's float sign misclassifies (exact 0 admitted,
+# +2^-54 refused; -2^-53 admitted by NumPy, refused by compiled JAX).
+LEAN_SIGNED = (
+    (-1.7, (0.5, 0.6, 0.6), "exact margin 0"),
+    (-0.8999999999999999, (0.3, 0.3, 0.3), "exact margin +2^-54"),
+    (-3.8000000000000003, (0.3, 0.3, 1.0, 1.1, 1.1), "exact margin -2^-53"),
+)
+
+
+@pytest.mark.parametrize("h_total, binders, label", LEAN_SIGNED, ids=[c[2] for c in LEAN_SIGNED])
+def test_the_closures_read_refuses_a_signed_held_total_on_its_own_sign(h_total, binders, label):
+    """The read's precondition by construction (kinds/proton_buffer.py, positive_held_totals; host
+    only, under 0.1 s each): each of the Lean lane's three cases holds a negative H total, so the
+    closure's read refuses it on the total's own sign, whatever the margin's float verdict. Planted,
+    the guard lifted: the read is the kernel's verdict alone, and the exact-zero case is admitted
+    with its non-positive total unrefused."""
+    from cells.kinds import proton_buffer
+
+    specs = tuple((f"rel1_{k}",) + binder_spec("rel1", ("H",))[1:] for k in range(len(binders)))
+    net = kernel.network(("H",), specs)
+    tl, tb = np.array([[h_total]]), np.array([[b] for b in binders])
+    held, comp_l, comp_b = masks(net, 1)
+    with np.errstate(all="ignore"):
+        _, admitted = kernel.free_ligands(tl, tb, net["log_beta"], net["counts"], net["present"],
+                                          held, comp_l, comp_b, vertices=net["margin_vertices"],
+                                          xp=np)  # fmt: skip
+    guard = proton_buffer.positive_held_totals(tl, held, xp=np)
+    assert not bool(guard[0]) and not bool(admitted[0] & guard[0]), label
+    if label == "exact margin 0":  # Planted: the guard lifted, the kernel's verdict alone.
+        assert bool(admitted[0]), "the misclassification the guard closes"
+
+
 def test_two_forms_below_base_in_different_ligands_meet_the_joint_margin():
     """The lead's plant: one binder X with A {H: -1} and B {Mg: -1}. At T_X = 1 mM both per-ligand
     floors are -1 mM, yet both cannot be met at once. T_H = T_Mg = -0.9 mM has t* = -0.4 mM:
