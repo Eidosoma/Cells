@@ -609,6 +609,29 @@ def test_an_identity_checked_on_no_pair_is_refused_never_reported_as_zero(monkey
     assert balance.shell_verdict()["probe"]["pairs"] > 1000
     spec = spec_of(shell_world())
     assert balance.world_report(spec)["pairs"] > 0
+    # The independent checker's case: a shell at molecule_capacity 2 (X binding a wall site R, S
+    # entering, one molecule of each). Its probe states are now drawn within its capacity, so its
+    # own data is checked; drawn up to 12 a place, as before, it checked no pair, which now refuses.
+    tiny = shell_world(B=0, R=1, XR=0, out=1, inside=0)
+    tiny.pop("rate_factor")
+    for form in ("G", "H"):
+        tiny["species"] = [x for x in tiny["species"] if x["id"] != form]
+        tiny["phases"]["membrane"]["species"].remove(form)
+        del tiny["founder"][f"{form}@membrane"]
+    tiny["species"] = [x for x in tiny["species"] if x["id"] != "B"]
+    tiny["phases"]["membrane"]["species"].remove("B")
+    del tiny["founder"]["B@membrane"]
+    tiny["founder"]["X@pool"] = 1
+    low = spec_of(tiny, capacity=2)
+    assert balance.world_report(low)["pairs"] > 0
+    real_state = balance.random_state
+
+    def old_draw(world, places, rng, max_count):  # planted: the old draw, up to 12 a place
+        return real_state(world, places, rng, 12)
+
+    monkeypatch.setattr(balance, "random_state", old_draw)
+    with pytest.raises(ConfigError, match="checked on no pair"):
+        balance.world_report(low, states=60)
     monkeypatch.setattr(balance, "deviations", lambda *args, **kwargs: np.zeros(0))
     checks = (lambda: balance.world_report(spec), balance._shell_verdict.__wrapped__,
               balance._geometry_verdict.__wrapped__, balance._osmotic_verdict.__wrapped__,

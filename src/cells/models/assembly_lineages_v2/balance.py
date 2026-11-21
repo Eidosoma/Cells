@@ -79,24 +79,42 @@ def random_state(world, capacity, rng, max_count=MAX_COUNT):
     return counts
 
 
+def _within(counts, tables):
+    """Whether a state fits the world's log-factorial table: every finite count, and the
+    membrane's total less the offset, at most its last index (ledger.state_free_energy's rule)."""
+    last = tables.log_factorial.shape[0] - 1
+    largest = int(np.max(np.where(tables.finite, counts, 0), initial=0))
+    membrane = int(np.sum(np.where(tables.membrane, counts, 0)))
+    return largest <= last and membrane - tables.offset <= last
+
+
 def deviations(spec, rng, states=STATES, max_count=MAX_COUNT):
-    """ln a⁺(n) − ln a⁻(n') + ΔF − w for every step that can fire at `states` random states."""
+    """ln a⁺(n) − ln a⁻(n') + ΔF − w for every step that can fire at `states` random states.
+
+    The states are drawn within the world's own capacity (D263): at most min(max_count, molecule
+    capacity) molecules per place, and a state or a result the world's table cannot hold is no
+    pair. Before, a low-capacity world drew states above its capacity and checked none of them. A
+    world of capacity 12 or more draws exactly as it did, and checks the same pairs unless a state's
+    membrane total passed its capacity (read from the clamped table before, skipped now)."""
     world = spec.model.world
     structure, layout, tables = model.structure(spec), model.layout(spec), model.tables(spec)
     terms = world.terms
     term_layouts = layout.terms
     R = structure.steps
     membrane = np.asarray([p.phase == "membrane" and not p.held for p in world.places])
+    max_count = min(max_count, structure.molecules)
     found = []
     for _ in range(states):
         n = random_state(world, structure.places, rng, max_count)
+        if not _within(n, tables):
+            continue
         forward = host_log_rates(n, layout, structure)
         f_n = ledger.free_energy(n, tables, terms, term_layouts)
         for r in range(len(world.steps)):
             if not np.isfinite(forward[r]):
                 continue
             after = n + _nu(layout, r)
-            if np.any(after < 0) or np.max(after) > structure.molecules:
+            if np.any(after < 0) or not _within(after, tables):
                 continue
             emptied = after[: len(world.places)][membrane].sum() == 0
             if emptied and structure.last_molecule == "extinct":
