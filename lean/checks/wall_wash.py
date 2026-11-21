@@ -1,5 +1,6 @@
 """FR-28. Resolve the wash event and the following binding step in the same finite well."""
 
+import argparse
 import json
 
 import jax
@@ -18,7 +19,9 @@ DT = 0.01
 
 
 def compare(owner, fraction, buffer, *, trajectory):
-    well = fx.well(wall=owner, dt=DT, end=0.1)
+    # Both fixture revisions default to the inert stand-in. Only FR-28 adds the node option.
+    wall_option = {"wall": "node"} if owner == "node" else {}
+    well = fx.well(dt=DT, end=0.1, **wall_option)
     definition = fx.with_wash(well, ["well"], [(EVENT_TIME, "well", fraction, {fx.TRACER: buffer})])
     spec = parse_spec(definition)
     model = get_model(spec.model)
@@ -113,9 +116,17 @@ def compare(owner, fraction, buffer, *, trajectory):
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--stand-in-only", action="store_true", help="replay the original well on main"
+    )
+    args = parser.parse_args()
     jax.config.update("jax_enable_x64", True)
-    node, node_rows = compare("node", 0.5, fx.TRACE_mM, trajectory=True)
     stand_in, stand_in_rows = compare("stand-in", 0.5, fx.TRACE_mM, trajectory=True)
+    if args.stand_in_only:
+        print(json.dumps(stand_in, indent=2))
+        raise SystemExit(0)
+    node, node_rows = compare("node", 0.5, fx.TRACE_mM, trajectory=True)
     for n, s in zip(node_rows, stand_in_rows, strict=True):
         assert n.tobytes() == s.tobytes()
     matched, _ = compare("node", 0.5, 60 / fx.V_WELL, trajectory=False)

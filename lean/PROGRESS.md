@@ -26,6 +26,10 @@ The operator candidate `9917e3d9` started with 60 fmol free, 10 on the wall and 
 
 Robinson et al. separately counted labelled albumin in removed urine, six water rinses and the final disk. A separate five-hour experiment on the same plastic at pH 5 and 87 mg/L yielded **8.759 µg** in pooled liquid and **22.96 ng/cm²** on the disk (0.22%, four replicates). That pool included the original sample, rinses and pipette tip. These measurements support separate liquid and surface accounting. Testing the simulated release rate requires known rinse times and a way to distinguish desorption from liquid carried over between rinses. [Rinse series, Fig. S3](https://stacks.cdc.gov/view/cdc/50419/cdc_50419_DS2.pdf#page=4) · [Surface data, Table S2](https://stacks.cdc.gov/view/cdc/50419/cdc_50419_DS2.pdf#page=7) · [Liquid data, Table S4](https://stacks.cdc.gov/view/cdc/50419/cdc_50419_DS2.pdf#page=9) · [Measurement record](checks/data/robinson2014_wall_wash.json)
 
+<a id="fr28-main-stand-in"></a>
+
+The existing wall stand-in on main at `587ba787` reproduced every reported half-wash value from the FR-28 candidate. The independent run returned 30 fmol collected, 10 fmol on the wall at exchange, 9.97015402 fmol there 10 ms later and a zero maximum inventory residual. Run `checks/wall_wash.py --stand-in-only` for this case. The separate node-ownership comparison above uses `9917e3d9`. [Main well definition](https://github.com/Eidosoma/Cells/blob/587ba7873ac7c3112c00639687d7d86ee186c6fd/validation/tissue/wash_schedule_fixtures.py#L55-L88)
+
 <a id="fr33-label-diffusion"></a>
 
 ## 21 November 2026 · FR-33 D1, diffusion of a label and its complement
