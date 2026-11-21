@@ -177,6 +177,18 @@ theorem ramp_refinement_lower (n : ℕ) {h : ℝ} (hh : 0 ≤ h) (span : (n : �
           gcongr <;> linarith
         _ = 36 := by norm_num
 
+/-- With the self-moved source read at the midpoint, the same refinement has a cubic
+panel difference. This compares one target stage with two equal target stages. -/
+theorem ramp_midpoint_difference {t h : ℝ} (ht : 0 ≤ t) (hh : 0 ≤ h) :
+    h * rampGate (t + h / 2) - h / 2 * (rampGate (t + h / 4) + rampGate (t + 3 * h / 4)) =
+      h ^ 3 / (16 * (2 + (t + h / 4)) * (2 + (t + h / 2)) * (2 + (t + 3 * h / 4))) := by
+  unfold rampGate
+  have ha : 2 + (t + h / 4) ≠ 0 := by positivity
+  have hb : 2 + (t + h / 2) ≠ 0 := by positivity
+  have hc : 2 + (t + 3 * h / 4) ≠ 0 := by positivity
+  field_simp [ha, hb, hc]
+  ring
+
 end
 
 end CellsProofs.Transport.RegulatedAvailability

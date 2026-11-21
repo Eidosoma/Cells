@@ -1,5 +1,38 @@
 # Cells proof comparisons
 
+<a id="nov21-engine-review"></a>
+
+## 21 November 2026 · Five repairs and the new registered mechanisms
+
+The review used clean CPU snapshots of Cells at `d74f519d` and `a6235d7b`. The second includes the midpoint repair. Comparing the cited files of the previous 74 claims with `a69f38ab` flagged 61 of 87 comparison records across 54 claims. Sixty records referenced a changed engine source file. This pass rechecked the reported failures affected by fixes and the newly available mechanisms. Other records retain their tested revisions. The project evidence run is `lean-review-20261121`. Its `base/SNAPSHOT.json`, `midpoint/SNAPSHOT.json`, `source-drift.json`, per-driver results and exit codes identify the inputs and outcomes. [Automatic source comparison](scripts/generate_claims.py)
+
+| Earlier failure | Result on the repaired engine |
+| --- | --- |
+| Fresh finite pool | Replacement and serial transfer both rejected 33 molecules at a capacity of 32. Both admitted 32 at 32 and 33 at 64 with the reference work. The 856-row pulse and wash retained its tracer inventory with a largest energy discrepancy of 2.85 × 10⁻¹⁴ kBT. [Comparison](checks/pool_replacement.py) |
+| Membrane insertion | Both versions completed the original one-patch rollout at ΔC/C = 1.7 × 10¹⁶. Both booked 0.051603097344170144 pJ against the 80-digit calculation rounded to 0.05160309734417014 pJ. The driver's separate image-charge diagnostic calls the shared field helper. This verdict covers booked heat and completion of the one-patch rollout. [Comparison](checks/membrane_insertion.py) |
+| Restricted cleft | Both versions completed both orientations of 1 versus 2⁻⁶⁰ mM, with positive first-fill heat. The largest cumulative discrepancy over the four traces was 3.47 × 10⁻¹⁸ pJ. [Comparison](checks/restricted_lumen.py) |
+| Empty membrane population | All six prepared NumPy and JAX cases gave exactly zero abundance and K flux. The original retrieval trajectory finished at 4 ms with zero count, abundance and flux at all four checked observations. [Prepared states](checks/population_units.py) · [Retrieval](checks/compartment_trafficking.py) |
+| Self-regulated turnover | Before the repair the orders were 1.0062, 1.0031, 1.0016. On `a6235d7b` they were 1.99973, 1.99993, 1.99998 at 8, 16, 32 and 64 steps. The booked gains agreed with an independent midpoint sum within 2.23 × 10⁻¹⁶ fmol. Lean proves the cubic change under midpoint refinement for this Hill ramp. [Driver with `--ramp-only`](checks/regulated_availability.py) · [Proof](CellsProofs/Transport/RegulatedAvailability.lean) |
+
+The GARD pair-heat failure remains on version 1. Its production module is unchanged since the last recorded reproduction. The previous failure and the lead's versioning decision remain linked in the claim. [GARD claim](claims/gard-pair-heat.md)
+
+<a id="nov21-features"></a>
+
+### Registered laws, operators and the two-gate junction
+
+- **FR-21 prescribed shell.** Lean proves that equal permeability × prescribed area gives equal entry and exit rates at fixed activities. It also proves that counts outside the declared gate forms leave the factor unchanged. Two existing Cells tests passed, including comparison with the closed-form propensity, variation of wall/site counts, and single-lineage and population run records. [Proof](CellsProofs/Chemistry/PrescribedShell.lean) · [Engine comparisons](../tests/unit/test_assembly_lineages_v2_geometry.py#L538)
+- **FR-26 replacement of occupied sites and FR-24 site readouts.** Lean accounts for departing bound ligand and the incoming template occupancy times capacity. In the compiled replacement world the ligand and product balances stayed within 10⁻¹⁵ fmol. Omitting the departing ligand produced the expected deficit. Four targeted operator tests passed for site quantities, the post-replacement read, channel control and midpoint evaluation. [Proof](CellsProofs/Tissue/CellReplacement.lean) · [Replacement comparison](../tests/unit/test_site_replacement_runs.py#L101) · [Site readouts](../tests/unit/test_species_regulated_availability.py)
+- **FR-30 Cx43 series gates.** The compiled functions matched the independent four-term conductance expansion, the ion route and a zero-residual tracer route to within 2.23 × 10⁻¹⁶ absolute error across 120 clamp samples and all four gate-kind pairings. At this revision the functions are executable and await host registration. The mixed amplitude still needs a measurement in a single biological trace. [Driver](checks/junction_series_gates.py) · [Amplitude claim](claims/junction-series-amplitudes.md)
+- **FR-35 stochastic partial withdrawal.** Decision D261 specifies a separate assembly event with per-place draws. Its design is available. A registry entry and executable event are still pending at the reviewed head. [Withdrawal design](../docs/ASSEMBLY_WITHDRAWAL_DESIGN.md)
+
+<a id="nov21-wash"></a>
+
+### FR-27 finite-compartment wash and experimental dilution
+
+Four Lean theorems cover inventory, positive free amount, whole replacement and repeated dilution toward a fixed buffer. The compiled event with 60 fmol of free tracer retained both site populations and all ions through four test schedules. The largest discrepancy in free amount, collected amount, supplied amount or balance was 7.11 × 10⁻¹⁵ fmol. Whole-wash tissue runs starting with 64 fmol reached 32 fmol and 64 × 2⁻⁵⁰ fmol exactly. The run targeting 64 × 2⁻⁶⁰ fmol refused its first wash in keeping with the documented resolution of the host's amount representation. [Proof](CellsProofs/Tissue/CompartmentWash.lean) · [Driver](checks/compartment_wash.py) · [Engine representation limit](../src/cells/operators/wash_schedule.py#L43)
+
+Vloemans et al. measured free fluorescein in successive 10 µL plugs. Their one-step retained fractions were 0.498, 0.193 and 0.093 for expected fractions of 0.50, 0.20 and 0.10. Starting the three 80% exchanges at the measured 1.712 µg/mL gives ideal values of 0.3424, 0.06848 and 0.013696 µg/mL. The printed means were 0.332, 0.067 and 0.020 µg/mL. The last mean is 46% above the ideal value. These data address freely dissolved dye. The study reports graphical SDs, possible wall adsorption and a limited instrument range. Bound-site retention and mixing heat in a biological well remain open. [Figure 4](https://doi.org/10.1039/D4LC00195H) · [Measured values](checks/data/vloemans2024_dilution.json) · [Comparison](checks/compartment_wash.py)
+
 <a id="pool-replacement"></a>
 
 ## 20 November 2026 · Tracer and energy at a finite-pool wash

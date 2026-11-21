@@ -236,6 +236,8 @@ def ramp_order():
         assert abs(amount - booked) < 1e-14
         starts = np.arange(2 * steps) * dt / 2
         rectangles = float(np.sum((1 + starts) / (2 + starts)) * dt / 2)
+        midpoints = starts + dt / 4
+        midpoint_sum = float(np.sum((1 + midpoints) / (2 + midpoints)) * dt / 2)
         rows.append(
             dict(
                 steps=steps,
@@ -243,6 +245,7 @@ def ramp_order():
                 reporter_gain_fmol=amount,
                 exact_gain_fmol=exact,
                 left_sum_fmol=rectangles,
+                midpoint_sum_fmol=midpoint_sum,
                 absolute_error_fmol=abs(amount - exact),
             )
         )
@@ -374,16 +377,15 @@ def sk2_comparison():
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument(
+    panel = parser.add_mutually_exclusive_group()
+    panel.add_argument(
         "--controls-only", action="store_true", help="omit the second-order claim on the ramp"
     )
+    panel.add_argument("--ramp-only", action="store_true", help="only run the four self-regulated turnover worlds")
     args = parser.parse_args()
     jax.config.update("jax_enable_x64", True)
     with jax.default_device(jax.devices("cpu")[0]):
-        report = dict(
-            pulse=pulse_panel(),
-            sk2=sk2_comparison(),
-        )
+        report = {} if args.ramp_only else dict(pulse=pulse_panel(), sk2=sk2_comparison())
         if not args.controls_only:
             report["ramp"] = ramp_order()
         print(json.dumps(report, indent=2, allow_nan=False))
