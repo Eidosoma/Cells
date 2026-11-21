@@ -299,7 +299,8 @@
   "/mnt/workspaces/Cells/gene-regulation-20261120/g3-gate/timed-dd993438/measure/measured.json",
   "/mnt/workspaces/Cells/ol3-engine-20261119/measure-f62426c7/measured.json",
   "/mnt/workspaces/Cells/gene-regulation-20261120/review-fixes/timed-40c14f33/measure/measured.json",
-  "/mnt/workspaces/Cells/gene-regulation-20261120/review-fixes/timed-11234cc4/measure/measured.json"
+  "/mnt/workspaces/Cells/gene-regulation-20261120/review-fixes/timed-11234cc4/measure/measured.json",
+  "/mnt/workspaces/Cells/gene-regulation-20261120/review-fixes/timed-96391686/measure/measured.json"
  ],
  "measured_provenance": [
   {
@@ -2530,6 +2531,14 @@
    "root": "/mnt/workspaces/Cells/gene-regulation-20261120/review-fixes/snapshot-lane-11234cc4",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-21T11:36:15+00:00"
+  },
+  {
+   "git_revision": "96391686d0ba96fedfb9abafc5367c875dae6655",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/gene-regulation-20261120/review-fixes/snapshot-lane-96391686",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-21T11:45:49+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -4063,10 +4072,10 @@
    },
    {
     "file": "tests/unit/test_gene_regulation_compare.py",
-    "seconds": 5.63,
+    "seconds": 6.79,
     "exit_code": 0,
     "counts": {
-     "passed": 18
+     "passed": 19
     }
    },
    {
@@ -5873,7 +5882,7 @@
    },
    {
     "file": "tests/unit/test_templated_polymerisation.py",
-    "seconds": 4.32,
+    "seconds": 4.58,
     "exit_code": 0,
     "counts": {
      "passed": 16
