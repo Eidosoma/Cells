@@ -199,6 +199,21 @@ def self_moved_targets(spec_model):
     return frozenset(out)
 
 
+# The laws whose events change which occupant a slot holds (D150's occupant tables switch at
+# their times): observe_history's event rows report the departing occupant.
+OCCUPANT_EVENTS = ("scheduled_cell_replacement@1",)
+
+
+def occupant_event_times(spec):
+    """The times OCCUPANT_EVENTS' events land on in this definition (a set of floats)."""
+    return {
+        float(event.time)
+        for op, _, schedule in entries(spec)
+        if op.LAW_ID in OCCUPANT_EVENTS
+        for event in schedule
+    }
+
+
 def check_definition(spec):
     model_for(spec.model).check_definition(spec)
 
@@ -2181,17 +2196,42 @@ class Composition:
     # ------------------------------------------------------------ observations
 
     def observe_history(self, times, history, layout, requested, spec):
-        """The inner observations of each row at its view, then each operator's columns."""
+        """The inner observations of each row at its view, then each operator's columns.
+
+        Each operator observes with the controls its step runs at (D264, a tester's findings):
+        - **a routed target's** controls times its rate routes' factors at the row's state
+          (_routed_control), so an exported rate is the one the step ran at, not the scheduled
+          one (finding 1: a receptor-routed reaction exported its unrouted rate);
+        - **at an occupant event's row** (a time replacement@1's events land on, OCCUPANT_EVENTS)
+          the controls held over the step that ended there, at t - dt. The row's state is that
+          step's end, before the event, the departing occupant's, so state and controls are one
+          occupant's; the newcomer appears from the next row on (finding 2: the event row mixed
+          the departing cell's substrate with the newcomer's multiplier).
+        The inner observations keep the row's own controls."""
         p = type(layout)(*(np.asarray(v) for v in layout))
         requested = np.asarray(requested, dtype=float)
         if any(t not in times for t in requested):
             raise ConfigError("Composite observations require accepted times")
         controls = composite_spec.control_values(spec, requested)
+        events = occupant_event_times(spec)
+        departing = [j for j, t in enumerate(requested) if float(t) in events]
+        held = (
+            composite_spec.control_values(
+                spec, [float(requested[j]) - spec.execution.dt for j in departing]
+            )
+            if departing
+            else None
+        )
         base, records = projection(spec), []
         for j, t in enumerate(requested):
             i = int(np.flatnonzero(times == t)[0])
             state = self.STATE_TYPE(*(np.asarray(v[i]) for v in history))
             control = self.CONTROL_TYPE(*(v[j] for v in controls))
+            if j in departing:
+                k = departing.index(j)
+                operator_control = self.CONTROL_TYPE(*(v[k] for v in held))
+            else:
+                operator_control = control
             view = self.view(p, state, xp=np)
             inner_spec = base
             if self.factored:
@@ -2204,7 +2244,13 @@ class Composition:
             row = {k: v[0] for k, v in vars(observed).items()}
             for op in self.operators:
                 keywords = self._quantity_keywords(op, p, xp=np)  # R3 (static: {} for most).
-                columns = op.observe(row, state, control, p, view, self, spec, **keywords)
+                observed_control = operator_control
+                routes = self.rate_routes.get(op)
+                if routes:  # B1': the routed rates the step runs at, at the row's state.
+                    observed_control, _, _ = self._routed_control(
+                        op, routes, state, operator_control, p, xp=np
+                    )
+                columns = op.observe(row, state, observed_control, p, view, self, spec, **keywords)
                 if set(columns) != self.observed_keys[op.LAW_ID]:
                     undeclared = sorted(set(columns) ^ self.observed_keys[op.LAW_ID])
                     raise ConfigError(f"{op.LAW_ID} observes {undeclared} against its declaration")

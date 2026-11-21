@@ -54,8 +54,18 @@ Refused at the definition (version 1):
 - a node a face touches, until measured (D246 item 5). A wash is a step in the node's
   concentration, and @3's face booking of such a step is FR-10's onset limit, measured for held
   baths only;
-- a neutral species that crosses a membrane patch facing the node, its booking of the step
-  unmeasured likewise;
+- a neutral species that crosses the node's surface by any declared path, its booking of the
+  step unmeasured likewise, and its exchange unseen by the wash's books (fail closed; D263 finding
+  2, a second review: a path through a registered route was admitted while the patch's own
+  permeability was refused). The paths are read from the declarations (surface_crossings):
+  - the inner model's movers, through the core's join (species_registry.inner_movers): each
+    patch's permeability, channels, pumps, faces, junctions and every declared kind's moved
+    rows;
+  - each operator's routes: species exchange's routes through a patch facing the node, and a
+    site population's internalisation from it;
+  - every operator's in-step process that moves a neutral species at an outside node;
+  - every operator law not shown local (SHOWN_LOCAL), with its reason (REFUSED), and a law in
+    no list, until it is classified;
 - ions declared other than same_as_compartment;
 - a buffer that misses a neutral species, names another, or holds a concentration <= 0 or below a
   site ligand's trace;
@@ -83,6 +93,39 @@ from cells.operators.contract import Operator, Read
 
 LAW_ID = "scheduled_compartment_wash@1"
 EVENTS_KEY = "compartment_wash_events"
+EXCHANGE, SITES = "scheduled_species_exchange@1", "site_occupancy@1"
+# The inner movers on a membrane patch, by the core's join (species_registry.NODE_KINDS): their
+# entities are patch IDs. Faces' are face IDs and junctions' junction IDs (between cells); a
+# kind's movers name the nodes they move between.
+PATCH_MOVERS = ("membrane", "channel", "pump")
+# Operator laws shown to move no species across a node's surface (D263 finding 2), each with why;
+# EXCHANGE's and SITES' routes are read (surface_crossings), and every other law is refused.
+SHOWN_LOCAL = {
+    "scheduled_species_turnover@1": "makes and clears species at its own cells and nodes",
+    "local_species_reactions@1": "converts species at its own sites",
+    "scheduled_bath_composition@1": "sets held baths' compositions",
+    "membrane_entity_state@1": "provides channel abundances, membrane areas and capacitances",
+    "species_regulated_availability@1": "scales other laws' availabilities; its state is its own",
+    "species_regulated_availability@2": "scales other laws' availabilities and rates",
+    "cell_owned_compartments@1": "declares which cell owns each compartment",
+    "scheduled_cell_replacement@1": "swaps a replaced cell's own pools",
+    "scheduled_cell_replacement@2": "swaps a replaced cell's own pools",
+    "site_occupant_replacement@1": "resets site pools at replacement events",
+    "electrode_current_injection@1": "moves charged carriers between an electrode and a cell",
+    "isopotential_partition@1": "splits a dividing cell's contents between its daughters",
+    "cytoplasmic_bridge_closure@1": "sets a bridge junction's availability, between two cells",
+    "population_unit_turnover@1": "consumes precursors into units in cells",
+    "ideal_osmosis_linear_compliance_water@1": "changes volumes, never amounts",
+    "k_anion_symport_mass_action@1": "moves its charged potassium and anion in-step (read below)",
+    LAW_ID: "is this law",
+}
+REFUSED = {
+    "scheduled_membrane_trafficking@1": "moves membrane, and the charges on it, between nodes",
+    "scheduled_membrane_insertion@1": "opens onset nodes with their declared contents",
+    "scheduled_membrane_insertion@2": "opens and retires nodes and patches",
+    "restricted_cleft_lumen@1": "fills a lumen node with bath fluid as it grows",
+    "restricted_cleft_lumen@2": "fills a lumen node with bath fluid as it grows",
+}
 IONS_SAME = "same_as_compartment"
 FLOOR_FMOL = 1e-12  # The own ledger's floor (each ion's sample against its supply: exactly 0).
 
@@ -248,9 +291,75 @@ def due_at(schedule, time):
     return tuple(out)
 
 
+def surface_crossings(spec, declaration):
+    """[(species, node, path)] each declared path that may move a neutral species across a washed
+    node's surface (the module docstring's refusals; fail closed): an inner mover whose entity is
+    a patch facing the node, a face touching it, or the node itself, or which names no node or
+    patch it is known to sit on; an exchange route through a patch facing it; a site population
+    internalising from it; an operator's in-step process moving the species at an outside node;
+    and an operator law neither read nor shown local."""
+    from cells.definitions import pump_composite_spec as composite_spec
+    from cells.registry import species_registry
+
+    m = spec.model
+    washed = set(declaration.nodes)
+    neutral = {s for s, z in zip(m.species_ids, m.valence, strict=True) if z == 0}
+    patches = {p.id: p for p in m.membranes}
+    faces = {f.id: f for f in m.faces}
+    nodes = {c.id for c in m.cells} | {c.id for c in m.extracellular}
+    found = []
+    _, movers = species_registry.inner_movers(spec)
+    for species, entries in movers.items():
+        if species not in neutral:
+            continue
+        for kind, law, entities in entries:
+            for entity in entities:
+                if kind in PATCH_MOVERS and entity in patches:
+                    if patches[entity].outside in washed:
+                        found.append((species, patches[entity].outside, f"patch {entity}"))
+                elif kind == "face" and entity in faces:
+                    touched = {faces[entity].sender, faces[entity].receiver} & washed
+                    found += [(species, n, f"face {entity}") for n in sorted(touched)]
+                elif kind == "junction":
+                    continue  # Between two cells: no outside node's surface.
+                elif entity in nodes:
+                    if entity in washed:
+                        found.append((species, entity, f"{kind} ({law})"))
+                else:
+                    found.append((species, "?", f"{kind} ({law}) at {entity}, unclassified"))
+    for op, other, _ in composite_spec.entries(spec):
+        law = op.LAW_ID
+        if law == EXCHANGE:
+            for r in other.routes:
+                if r.outside in washed and r.species in neutral:
+                    found.append((r.species, r.outside, f"{EXCHANGE}'s route {r.id}"))
+        elif law == SITES:
+            for population in other.populations:
+                patch = patches.get(population.owner_id)
+                facing = patch.outside if patch is not None else None
+                if (
+                    population.internalisation_rate is not None
+                    and population.owner_kind == "patch"
+                    and population.facing == "outside"
+                    and facing in washed
+                ):
+                    found.append(
+                        (population.ligand, facing, f"{SITES}'s internalisation {population.id}")
+                    )
+        elif law not in SHOWN_LOCAL:
+            why = REFUSED.get(law, "is not classified (neither read nor shown local)")
+            found.append(("any species", "any node", f"{law}, which {why}"))
+        if op.PROCESS:
+            for species, kind in op.moves_in_step(spec, other):
+                if species in neutral and kind == "outside":
+                    found.append((species, "an outside node", f"{law}'s in-step process"))
+    return found
+
+
 def check_definition(spec, declaration):
     """Version 1's refusals of what the step would book unmeasured: a face at a washed node, and
-    a neutral species crossing a membrane patch that faces one."""
+    a neutral species crossing a washed node's surface by any declared path
+    (surface_crossings)."""
     m = spec.model
     for face in m.faces:
         touched = {face.sender, face.receiver} & set(declaration.nodes)
@@ -260,17 +369,20 @@ def check_definition(spec, declaration):
                 "the node's concentration, and @3's face booking of such a step is FR-10's onset "
                 "limit, measured for held baths only: refused until measured (D246)"
             )
-    neutral = [k for k, z in enumerate(m.valence) if z == 0]
-    for patch in m.membranes:
-        if patch.outside not in declaration.nodes:
-            continue
-        crossing = [m.species_ids[k] for k in neutral if patch.permeability_m_per_s[k] > 0]
-        if crossing:
+    found = surface_crossings(spec, declaration)
+    if found:
+        species, node, path = found[0]
+        if path.startswith("patch "):
             raise ConfigError(
-                f"{LAW_ID}: {crossing[0]} crosses patch {patch.id}, which faces node "
-                f"{patch.outside}; its booking of a step in the node's concentration is "
-                "unmeasured, as a face's: refused in version 1"
+                f"{LAW_ID}: {species} crosses {path}, which faces node {node}; its booking of a "
+                "step in the node's concentration is unmeasured, as a face's: refused in version 1"
             )
+        raise ConfigError(
+            f"{LAW_ID}: {species} may cross node {node}'s surface by {path}; a washed node's "
+            "species cross its surface by no declared path in version 1, since the step's "
+            "booking is unmeasured and the wash's books do not see the exchange (D263; fail "
+            "closed: a path is refused until it is shown not to move the species)"
+        )
 
 
 def bind(spec, declaration):

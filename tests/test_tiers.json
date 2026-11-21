@@ -304,6 +304,11 @@
   "/mnt/workspaces/Cells/review-check-20261121/lead-measure-2ef50ab8/measure/measured.json",
   "/mnt/workspaces/Cells/fr33-tracer-fixes-20261121/gate-2ee6e774/tiers/measure/measured.json",
   "/mnt/workspaces/Cells/core-pass-at3-20261118/fr34b/measure-3fd63763/measure/measured.json",
+  "/mnt/workspaces/Cells/ol3-engine-20261119/measure-229a513b/measured.json",
+  "/mnt/workspaces/Cells/ol3-engine-20261119/measure-5285792d/measured.json",
+  "/mnt/workspaces/Cells/wash-surface-paths-20261121/gate-0e8194e0/tiers/measure/measured.json",
+  "/mnt/workspaces/Cells/observer-routed-factors-20261121/gate-245ef325/tiers/measure/measured.json",
+  "/mnt/workspaces/Cells/core-pass-at3-20261118/fr30/measure-ddd57e03/measure/measured.json",
   "/mnt/workspaces/Cells/gene-regulation-20261120/review-fixes/timed-40c14f33/measure/measured.json",
   "/mnt/workspaces/Cells/gene-regulation-20261120/review-fixes/timed-11234cc4/measure/measured.json",
   "/mnt/workspaces/Cells/gene-regulation-20261120/review-fixes/timed-96391686/measure/measured.json",
@@ -2571,6 +2576,44 @@
    "utc": "2026-11-21T12:58:54+00:00"
   },
   {
+   "git_revision": "229a513ba7ba170a5003bf2c4f8ddfc2ca5cc0e2",
+   "dirty": false,
+   "root": "/mnt/workspaces/Cells/ol3-engine-20261119/tree-229a513b",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-21T15:08:16+00:00"
+  },
+  {
+   "git_revision": "5285792d2a9ba477ed7e6ff3f4b1400a6ff3ff49",
+   "dirty": false,
+   "root": "/mnt/workspaces/Cells/ol3-engine-20261119/tree-5285792d",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-21T15:21:48+00:00"
+  },
+  {
+   "git_revision": "0e8194e046068412804b77138365f73ce7c3f45c",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/wash-surface-paths-20261121/snapshot-0e8194e0",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-21T14:45:58+00:00"
+  },
+  {
+   "git_revision": "245ef3258608c652774c3bf38b9c4923e54d3d69",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/observer-routed-factors-20261121/snapshot-245ef325",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-21T15:15:10+00:00"
+  },
+  {
+   "git_revision": "ddd57e03ead0ca31744e1996d5c3da97a2f502b0",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/core-pass-at3-20261118/snapshot-ddd57e03",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-21T14:31:31+00:00"
+  },
+  {
    "git_revision": "40c14f33ba8acec938286141c77aedaab0415e5d",
    "dirty": false,
    "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -2907,7 +2950,7 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_balance.py",
-    "seconds": 1.87,
+    "seconds": 2.93,
     "exit_code": 0,
     "counts": {
      "passed": 6
@@ -2971,7 +3014,7 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_v2_registration.py",
-    "seconds": 8.54,
+    "seconds": 10.19,
     "exit_code": 0,
     "counts": {
      "passed": 6
@@ -4300,7 +4343,7 @@
    },
    {
     "file": "tests/unit/test_inner_laws.py",
-    "seconds": 18.72,
+    "seconds": 18.37,
     "exit_code": 0,
     "counts": {
      "passed": 15
@@ -4388,10 +4431,10 @@
    },
    {
     "file": "tests/unit/test_junction_series_gates.py",
-    "seconds": 1.83,
+    "seconds": 5.58,
     "exit_code": 0,
     "counts": {
-     "passed": 6
+     "passed": 11
     }
    },
    {
@@ -4532,7 +4575,7 @@
    },
    {
     "file": "tests/unit/test_law_modules.py",
-    "seconds": 1.42,
+    "seconds": 1.77,
     "exit_code": 0,
     "counts": {
      "passed": 3
@@ -5664,10 +5707,10 @@
    },
    {
     "file": "tests/unit/test_species_regulated_availability.py",
-    "seconds": 9.44,
+    "seconds": 14.81,
     "exit_code": 0,
     "counts": {
-     "passed": 109
+     "passed": 110
     }
    },
    {
@@ -6058,10 +6101,10 @@
    },
    {
     "file": "tests/unit/test_wash_schedule.py",
-    "seconds": 6.43,
+    "seconds": 7.61,
     "exit_code": 0,
     "counts": {
-     "passed": 28
+     "passed": 32
     }
    },
    {
@@ -6372,18 +6415,18 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_v2_geometry.py",
-    "seconds": 54.84,
+    "seconds": 71.51,
     "exit_code": 0,
     "counts": {
-     "passed": 41
+     "passed": 42
     }
    },
    {
     "file": "tests/unit/test_assembly_lineages_v2_kernel.py",
-    "seconds": 55.26,
+    "seconds": 63.13,
     "exit_code": 0,
     "counts": {
-     "passed": 9
+     "passed": 10
     }
    },
    {
@@ -6412,10 +6455,10 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_v2_replacement.py",
-    "seconds": 63.32,
+    "seconds": 58.85,
     "exit_code": 0,
     "counts": {
-     "passed": 17
+     "passed": 34
     }
    },
    {
@@ -6907,7 +6950,7 @@
    },
    {
     "file": "tests/unit/test_law_registry.py",
-    "seconds": 23.29,
+    "seconds": 23.09,
     "exit_code": 0,
     "counts": {
      "passed": 9
@@ -7323,7 +7366,7 @@
    },
    {
     "file": "tests/unit/test_site_replacement_runs.py",
-    "seconds": 36.33,
+    "seconds": 39.87,
     "exit_code": 0,
     "counts": {
      "passed": 1

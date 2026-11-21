@@ -43,7 +43,7 @@ from cells.definitions.surface_pump_v3_spec import (
     TRAPEZOID_JUNCTION_HEAT,
 )
 from cells.laws.channels import kv1p5_mh, nav1p2_m3h_regularized
-from cells.laws.junctions import junction_voltage_relaxation
+from cells.laws.junctions import junction_series_gates, junction_voltage_relaxation
 from cells.laws.pumps import ca_atp_mass_action_positive, nak_atp_mass_action_positive
 from cells.laws.routes import constant_field, logmean_electrodiffusion
 from cells.registry import kind_registry
@@ -100,7 +100,11 @@ class _HostedChannelLaws(Mapping):
 
 CHANNEL_LAWS = _HostedChannelLaws()
 JUNCTION_LAWS = MappingProxyType(
-    {junction_voltage_relaxation.LAW_ID: junction_voltage_relaxation.LAW}
+    {
+        junction_voltage_relaxation.LAW_ID: junction_voltage_relaxation.LAW,
+        # FR-30, development only (D262; the @3 owner's recorded exception in the F owner's file).
+        junction_series_gates.LAW_ID: junction_series_gates.LAW,
+    }
 )
 PUMP_LAWS = MappingProxyType(  # Today's order: the structure's.
     {
@@ -269,6 +273,10 @@ class InnerStructure:
     # both at check time. () for every definition of today's, so no structure or program moves.
     # Added by the @3 owner at the lead's word (a recorded exception in this file).
     kind_ledgers: tuple = ()
+    # FR-30 (D262): the kinds of junction_series_gates@1's gates, in its GATES order, where the
+    # junctions declare that law (every junction or none in v1); () otherwise, so no structure or
+    # program of today's moves. Added by the @3 owner (a recorded exception in this file).
+    junction_series_kinds: tuple = ()
 
     def __post_init__(self):
         ids = [kind_id for kind_id, _ in self.kinds]
@@ -287,6 +295,21 @@ class InnerStructure:
         problems = kind_ledger_errors(self.kind_ledgers, ids)
         if problems:
             raise ValueError("Kind ledgers of an inner structure: " + "; ".join(problems))
+        series = self.junction_series_kinds
+        if (
+            (junction_series_gates.LAW_ID in self.junction_laws) != bool(series)
+            or series
+            and (
+                not isinstance(series, tuple)
+                or len(series) != junction_series_gates.GATE_COUNT
+                or any(kind not in junction_series_gates.KINDS for kind in series)
+                or self.junction_laws != (junction_series_gates.LAW_ID,)
+            )
+        ):
+            raise ValueError(
+                "Series gate kinds name one kind per gate of junction_series_gates@1, the "
+                "structure's only junction law"
+            )
         # Validated against the active law registry (§8.3): each declared law is one @3 runs.
         unknown = []
         for interface, declared in (

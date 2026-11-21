@@ -600,6 +600,48 @@ def test_a_shell_run_records_the_shell_probe_in_both_modes(tmp_path, monkeypatch
     assert runner.run(population_spec()).check().verdict != verdict
 
 
+def test_an_identity_checked_on_no_pair_is_refused_never_reported_as_zero(monkeypatch):
+    """D263 (a vacuous check): a check that finds no pair for a world with steps refuses, never
+    reporting a zero error. The world's own report, the shell probe and every other probe (the
+    bilayer's, the osmotic lumen's and OL1's) are planted with deviations that find no pair. The
+    real shell probe and a shell world's own report count their pairs. Host arithmetic; the planted
+    probes stop at their first world."""
+    assert balance.shell_verdict()["probe"]["pairs"] > 1000
+    spec = spec_of(shell_world())
+    assert balance.world_report(spec)["pairs"] > 0
+    # The independent checker's case: a shell at molecule_capacity 2 (X binding a wall site R, S
+    # entering, one molecule of each). Its probe states are now drawn within its capacity, so its
+    # own data is checked; drawn up to 12 a place, as before, it checked no pair, which now refuses.
+    tiny = shell_world(B=0, R=1, XR=0, out=1, inside=0)
+    tiny.pop("rate_factor")
+    for form in ("G", "H"):
+        tiny["species"] = [x for x in tiny["species"] if x["id"] != form]
+        tiny["phases"]["membrane"]["species"].remove(form)
+        del tiny["founder"][f"{form}@membrane"]
+    tiny["species"] = [x for x in tiny["species"] if x["id"] != "B"]
+    tiny["phases"]["membrane"]["species"].remove("B")
+    del tiny["founder"]["B@membrane"]
+    tiny["founder"]["X@pool"] = 1
+    low = spec_of(tiny, capacity=2)
+    assert balance.world_report(low)["pairs"] > 0
+    real_state = balance.random_state
+
+    def old_draw(world, places, rng, max_count):  # planted: the old draw, up to 12 a place
+        return real_state(world, places, rng, 12)
+
+    monkeypatch.setattr(balance, "random_state", old_draw)
+    with pytest.raises(ConfigError, match="checked on no pair"):
+        balance.world_report(low, states=60)
+    monkeypatch.setattr(balance, "deviations", lambda *args, **kwargs: np.zeros(0))
+    monkeypatch.setattr(balance, "_WORLD_REPORTS", {})  # the planted check is not a kept report
+    checks = (lambda: balance.world_report(spec), balance._shell_verdict.__wrapped__,
+              balance._geometry_verdict.__wrapped__, balance._osmotic_verdict.__wrapped__,
+              balance._verdict.__wrapped__)  # fmt: skip
+    for check in checks:
+        with pytest.raises(ConfigError, match="checked on no pair"):
+            check()
+
+
 SHELL_REFUSALS = {
     "a join on a shell": (
         lambda w: w["steps"].append({"id": "join", "locus": "membrane",

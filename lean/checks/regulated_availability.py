@@ -174,10 +174,11 @@ def pulse_comparison(version, dt):
     if version == 1:
         np.testing.assert_allclose(booked, REPORTER_RATE * times, rtol=1e-14, atol=0)
         return report
-    # The reporter's two half-steps see their own starting concentrations.
-    # Its last recorded factor and its interval booking recover both applied factors.
-    first = basal_factor(source.value(times[:-1]))
-    second = basal_factor(source.value(times[:-1] + dt / 2))
+    # Turnover also moves this regulator. Its two target half-steps sample their
+    # midpoints. The analytic ligand trajectory is independent of the engine predictor.
+    starts = times[:-1]
+    first = basal_factor(source.value(starts + dt / 4))
+    second = basal_factor(source.value(starts + 3 * dt / 4))
     records = np.asarray(hist.coupling_applied_factor[1:])
     np.testing.assert_allclose(records[:, 0], held, atol=2e-14, rtol=0)
     np.testing.assert_allclose(records[:, 1], second, atol=2e-14, rtol=0)
@@ -185,6 +186,9 @@ def pulse_comparison(version, dt):
     np.testing.assert_allclose(inferred_first, first, atol=2e-13, rtol=0)
     expected_booked = np.cumsum(REPORTER_RATE * dt / 2 * (first + second))
     np.testing.assert_allclose(booked[1:], expected_booked, atol=2e-16, rtol=0)
+    endpoint_second = basal_factor(source.value(starts + dt / 2))
+    endpoint_error = float(np.max(np.abs(records[:, 1] - endpoint_second)))
+    assert endpoint_error > 2e-14
     stale = np.max(np.abs(np.diff(booked) - REPORTER_RATE * dt * first))
     assert stale > 1e-9
     exact_booked = REPORTER_RATE * (BASAL * times + (1 - BASAL) * continuous_integral)
@@ -192,6 +196,9 @@ def pulse_comparison(version, dt):
         final_reporter_produced_fmol=float(booked[-1]),
         max_stale_step_error_fmol=float(stale),
         max_first_factor_error=float(np.max(np.abs(inferred_first - first))),
+        max_second_factor_error=float(np.max(np.abs(records[:, 1] - second))),
+        max_second_factor_error_at_left_endpoint=endpoint_error,
+        max_booking_error_vs_midpoints_fmol=float(np.max(np.abs(booked[1:] - expected_booked))),
         max_reporter_error_vs_continuous_fmol=float(np.max(np.abs(booked - exact_booked))),
     )
     return report
@@ -236,6 +243,8 @@ def ramp_order():
         assert abs(amount - booked) < 1e-14
         starts = np.arange(2 * steps) * dt / 2
         rectangles = float(np.sum((1 + starts) / (2 + starts)) * dt / 2)
+        midpoints = starts + dt / 4
+        midpoint_sum = float(np.sum((1 + midpoints) / (2 + midpoints)) * dt / 2)
         rows.append(
             dict(
                 steps=steps,
@@ -243,6 +252,7 @@ def ramp_order():
                 reporter_gain_fmol=amount,
                 exact_gain_fmol=exact,
                 left_sum_fmol=rectangles,
+                midpoint_sum_fmol=midpoint_sum,
                 absolute_error_fmol=abs(amount - exact),
             )
         )
@@ -374,16 +384,15 @@ def sk2_comparison():
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument(
+    panel = parser.add_mutually_exclusive_group()
+    panel.add_argument(
         "--controls-only", action="store_true", help="omit the second-order claim on the ramp"
     )
+    panel.add_argument("--ramp-only", action="store_true", help="only run the four self-regulated turnover worlds")
     args = parser.parse_args()
     jax.config.update("jax_enable_x64", True)
     with jax.default_device(jax.devices("cpu")[0]):
-        report = dict(
-            pulse=pulse_panel(),
-            sk2=sk2_comparison(),
-        )
+        report = {} if args.ramp_only else dict(pulse=pulse_panel(), sk2=sk2_comparison())
         if not args.controls_only:
             report["ramp"] = ramp_order()
         print(json.dumps(report, indent=2, allow_nan=False))

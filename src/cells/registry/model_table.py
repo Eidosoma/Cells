@@ -80,6 +80,8 @@ MODELS = MappingProxyType(
                 # The always-open Cl⁻ leak, code 10 (D228 item 3, the H1 seam's Cl⁻ part).
                 "cells.laws.channels.clleak_always_open",
                 "cells.laws.junctions.junction_voltage_relaxation",
+                # FR-30, development only (D262; the @3 owner's recorded exception, F's file).
+                "cells.laws.junctions.junction_series_gates",
                 "cells.laws.pumps.nak_atp_mass_action_positive",
                 "cells.laws.pumps.ca_atp_mass_action_positive",
                 "cells.laws.routes.constant_field",
@@ -173,6 +175,7 @@ MODELS = MappingProxyType(
                 "cells.models.assembly_lineages_v2.division",
                 "cells.models.assembly_lineages_v2.transfer",
                 "cells.models.assembly_lineages_v2.replacement",  # FR-20 (D240)
+                "cells.models.assembly_lineages_v2.withdrawal",  # FR-35 (D261)
             ),
             interfaces=(
                 "cells.reaction_law@1",

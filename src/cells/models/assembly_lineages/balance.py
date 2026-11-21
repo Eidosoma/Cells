@@ -20,6 +20,7 @@ cycle affinity, never closed.
 The check's draws come from its own NumPy generator (PROBE_SEED), never from a simulation stream.
 """
 
+import copy
 import functools
 import math
 
@@ -84,8 +85,15 @@ def deviations(law, layout, rng, states=STATES, max_size=MAX_SIZE):
     return np.asarray(out)
 
 
-@functools.cache
 def verdict(law_id):
+    """_verdict(law_id)'s result, a fresh copy for each caller: the cached object is never handed
+    out, so one run's edit to its check cannot reach another run's (D263). Its cache is cleared
+    through verdict.cache_clear(), as before."""
+    return copy.deepcopy(_verdict(law_id))
+
+
+@functools.cache
+def _verdict(law_id):
     """The check's verdict on a rate-factor law (None: the exchange law alone), as a dict.
 
     Refuses (ConfigError) a law declared passive whose rates fail the identity."""
@@ -115,6 +123,9 @@ def verdict(law_id):
             "max_abs_deviation_ln": float(np.max(found)),
         },
     }
+
+
+verdict.cache_clear = _verdict.cache_clear
 
 
 def world_report(spec, *, states=STATES):

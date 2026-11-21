@@ -360,3 +360,39 @@ The record is written when the experiment declares `diagnostic: true`, as `diagn
 - **The rows:**
   - `membrane_footprint_quanta`, where written, is 0: the wall has no quanta.
   - There is no tension, lysis or division record.
+
+## FR-35: a pool withdrawal, a partial exchange (`cells.pool_withdrawal@1`)
+
+The design is [the note](../../docs/ASSEMBLY_WITHDRAWAL_DESIGN.md) under D261.
+
+- **The schedule:** `{"index", "kind": "withdrawal", "times_s", "fraction", "buffer"}`.
+  - `fraction` f is in (0, 1).
+  - `buffer` gives one integer count per finite pool place, in place order: the molecules in the
+    withdrawn volume fV. Tracer-free is 0.
+- **The draw:** each molecule leaves with probability f. Place j (its ordinal among the finite
+  pool places) draws one block of its count on the schedule's stream (domain 6, the schedule's
+  index) at draw number w·P_f + j. The counter w is the schedule's washes among the applied stops,
+  so a checkpoint carries it as FR-22's applied-stops record, with no key of its own.
+- **`run.json`'s `population.withdrawals`** lists each withdrawal, with these fields:
+
+  | Field | What |
+  | --- | --- |
+  | `id` | the event's ID |
+  | `time_s`, `schedule`, `fraction` | the stop and its schedule |
+  | `before`, `withdrawn`, `remaining`, `supplied` | `{place: count}` over the finite pool places |
+  | `draws` | each block's `[index, draw number, size]` |
+  | `pool_loss_kT` | the sink: F(before; V) − F(kept; (1 − f)V) |
+  | `sample_F_kT` | the sample's own F at fV |
+  | `split_surprisal_kT` | σ = −ln P(k), so the sink is `sample_F_kT` − σ |
+  | `buffer_F_kT` | the schedule's work: the buffer's F at fV |
+  | `mixing_heat_kT` | in the heat; never negative |
+
+- **Only when a world declares a withdrawal:**
+  - the diagnostic record's `withdrawal_events`;
+  - a row of kind `withdrawal` (8), whose legend entry is written only then;
+  - in relations@2, the event `event:withdrawal/<n>` (kind `withdrawal`, at `node:pool`, paid by
+    `source:withdrawal/<index>`), with `removes_to` edges from the pool to the sink weighed by the
+    withdrawn counts and `supplies` edges from the source weighed by the supplied counts (mode
+    `event`).
+- **Refused at the wash, before the draw:** a place whose pre-wash count plus its buffer count
+  exceeds `molecule_capacity`.

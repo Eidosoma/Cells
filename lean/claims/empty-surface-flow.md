@@ -2,7 +2,7 @@
 
 # An empty surface population has zero abundance and channel flow
 
-Removing the full declared number of functional units sets both the normalized abundance and the channel's contribution to zero for any positive patch area. The two-term float64 readout can retain a signed residue.
+Removing the full declared number of functional units sets both the normalized abundance and the channel's contribution to zero for any positive patch area. The original two-term float64 readout retained a signed residue at certain areas.
 
 ## Assumptions
 
@@ -22,7 +22,23 @@ Uses [At fixed channel drive, whole-patch flow tracks the surface unit count](me
 
 ## Numerical comparison
 
-**Failed.** Prepared zero-unit states gave potassium flux of −2.19124 × 10⁻¹⁸ and +2.81730 × 10⁻¹⁸ fmol/s at 1.4 and 1.8 times declared area. Scheduled retrieval reached a zero Kir count at 70% of the starting area. At 4 ms its abundance was −2.22045 × 10⁻¹⁶, its potassium flux was −5.58157 × 10⁻¹⁹ fmol/s and the engine refused the observation. The ordinary enrichment and the diagnostic that set abundance to zero at zero count both completed.
+**Checked.** Six prepared states at three area ratios on NumPy and JAX CPU gave exact zeros for abundance and potassium flux. The retrieval rollout completed and every zero-count observation through 4 ms had exactly zero abundance and flux.
+
+**Engine** `resolved_pump_composite@1`, `resolved_pump_tissue@3`, `cells.kleak_always_open@1`
+
+**Operators** `cells.membrane_entity_state@1`
+
+[Exact zero-count abundance](https://github.com/Eidosoma/Cells/blob/a6235d7b02c04e147991342c2891eb0c1cd3deb6/src/cells/operators/membrane_state.py#L159) · [Composite readout](https://github.com/Eidosoma/Cells/blob/a6235d7b02c04e147991342c2891eb0c1cd3deb6/src/cells/models/pump_composite.py) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/9dad3f26380e6ac11f25016eb1a33ae62aff1dbb/lean/checks/population_units.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/9dad3f26380e6ac11f25016eb1a33ae62aff1dbb/lean/PROGRESS.md#nov21-engine-review)
+
+[Tested engine a6235d7b02c0](https://github.com/Eidosoma/Cells/commit/a6235d7b02c04e147991342c2891eb0c1cd3deb6) · [Evidence checkpoint 9dad3f26380e](https://github.com/Eidosoma/Cells/commit/9dad3f26380e6ac11f25016eb1a33ae62aff1dbb)
+
+**Engine** `resolved_pump_composite@1`, `resolved_pump_tissue@3`, `cells.kir2p1_mh2@1`, `cells.nav1p2_m3h_regularized@1`
+
+**Operators** `cells.scheduled_membrane_trafficking@1`, `cells.cell_owned_compartments@1`, `cells.membrane_entity_state@1`
+
+[Redistribution and retrieval](https://github.com/Eidosoma/Cells/blob/d74f519d40b9a9f7488b94b489c6dc4dd865504c/src/cells/operators/membrane_trafficking.py) · [Zero-count abundance](https://github.com/Eidosoma/Cells/blob/d74f519d40b9a9f7488b94b489c6dc4dd865504c/src/cells/operators/membrane_state.py#L159) · [Tissue host observations](https://github.com/Eidosoma/Cells/blob/d74f519d40b9a9f7488b94b489c6dc4dd865504c/src/cells/models/surface_pump_v3.py) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/ceeca19816acd761ab68379d67bb0f7426366a1c/lean/checks/compartment_trafficking.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/ceeca19816acd761ab68379d67bb0f7426366a1c/lean/PROGRESS.md#nov21-engine-review)
+
+[Tested engine d74f519d40b9](https://github.com/Eidosoma/Cells/commit/d74f519d40b9a9f7488b94b489c6dc4dd865504c) · [Evidence checkpoint ceeca19816ac](https://github.com/Eidosoma/Cells/commit/ceeca19816acd761ab68379d67bb0f7426366a1c)
 
 **Engine** `resolved_pump_composite@1`, `resolved_pump_tissue@3`, `cells.kleak_always_open@1`
 

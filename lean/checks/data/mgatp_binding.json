@@ -1,0 +1,24 @@
+{
+  "zhang1997": {
+    "doi": "10.1006/abio.1997.2238",
+    "source": "https://pubmed.ncbi.nlm.nih.gov/9299023/",
+    "locator": "Abstract, Mg-sensitive macroelectrode measurements at 37 °C in the normal muscle-like background.",
+    "temperature_C": 37, "ionic_strength_M": 0.156,
+    "apparent_kd_uM_by_pH": {
+      "6.7": {"mean": 106.6, "sd": 9.6, "n": 4},
+      "7.2": {"mean": 87.4, "sd": 4.9, "n": 4},
+      "7.7": {"mean": 78.1, "sd": 2.0, "n": 4}
+    }
+  },
+  "ward1998": {
+    "source": "https://cds.ismrm.org/ismrm-1998/PDF6/p1693.pdf",
+    "locator": "ISMRM meeting proceedings, p. 1693, Figure 1, rightmost marker. Coordinates are approximate readings on the two axes.",
+    "temperature_C": 37, "pH": 7.2, "ionic_strength_M": 0.15, "ATP_mM": 3,
+    "solution": "MOPS/KCl. Seven experiments at five magnesium levels. Mag-fura-2 determined free magnesium in matched aliquots; calibrated phosphorus NMR shifts give the aggregate Mg-bound/unbound ATP ratio.",
+    "free_mg_uM": 230, "bound_to_unbound": 8.7,
+    "reading_precision": {"free_mg_uM": 5, "bound_to_unbound": 0.1},
+    "uncertainty": "Reading precision describes the graph only. Pointwise sampling uncertainty is unavailable.",
+    "apparent_kd_uM_fit": 27.7, "reported_fit_error_uM": 0.4,
+    "fit_scope": "The published slope uses the plotted measurements, including this marker. It is supplied for context only."
+  }
+}

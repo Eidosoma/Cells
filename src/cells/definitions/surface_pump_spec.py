@@ -12,7 +12,9 @@ and the solver may be RK4 or an IMEX scheme with implicit face
 electromigration (numerics/surface_imex.py).
 """
 
+import contextvars
 import copy
+from contextlib import contextmanager
 from dataclasses import asdict, dataclass, replace
 
 from cells.definitions import surface_kinetic_spec as kinetic
@@ -30,6 +32,22 @@ GATE_LAW_ID = junction_gate.RELAXATION_LAW_ID
 SOLVERS = ("rk4", imex.EULER_ID, imex.ARS222_ID)
 GATE_FIELDS = ("law", "threshold_voltage_V", "minimum_open_fraction", "initial_gate")
 EXECUTION_FIELDS = set(kinetic.Execution.__dataclass_fields__) - {"channel_capacity"}
+# FR-30 (D262; the @3 owner's recorded exception in this file): the gate laws a calling family's
+# parse admits beyond this model's own, each by its law ID with its block's parser, block ->
+# (minimum, initial, junction class, its extra fields), the minimum and initial being the
+# junction's conductance. Empty outside such a parse, so @1 and @2 refuse every other law;
+# resolved_pump_tissue@3's parse admits junction_series_gates@1 (admitting).
+_ADMITTED_GATES = contextvars.ContextVar("admitted_gate_laws", default=())
+
+
+@contextmanager
+def admitting(parsers):
+    """Within the block, this parse admits the given gate laws ({law ID: block parser})."""
+    token = _ADMITTED_GATES.set(tuple(parsers.items()))
+    try:
+        yield
+    finally:
+        _ADMITTED_GATES.reset(token)
 
 
 @dataclass(frozen=True)
@@ -60,7 +78,11 @@ def to_dict(spec):
     for target, p in zip(raw["model"]["membranes"], m.membranes, strict=True):
         target["pump"] = pump_to_dict(p, m.species_ids)
     for target, p in zip(raw["model"]["junctions"], m.junctions, strict=True):
-        target["gate"] = {k: getattr(p, k) for k in GATE_FIELDS}
+        target["gate"] = (  # FR-30: an admitted law's junction writes its own block.
+            p.gate_block()
+            if isinstance(p, kinetic.SeriesJunction)
+            else {k: getattr(p, k) for k in GATE_FIELDS}
+        )
     raw["experiment"]["pump_controls"] = [
         dict(pump_id=p.pump.id, schedule=[asdict(c) for c in g])
         for p, g in zip(m.membranes, e.pumps, strict=True)
@@ -135,10 +157,16 @@ def parse(data):
     for key in ("species", "membranes", "junctions"):
         if type(m[key]) is not list:
             raise ConfigError(key + " requires an explicit list")
-    gates = {}
+    gates, admitted_junctions, admitted = {}, {}, dict(_ADMITTED_GATES.get())
     for p in m["junctions"]:
         _fields(p, set(base.Junction.__dataclass_fields__) | {"law", "gate"}, "junction")
-        g = _fields(p.pop("gate"), set(GATE_FIELDS), "junction gate")
+        block = p.pop("gate")
+        if isinstance(block, dict) and block.get("law") in admitted:  # FR-30: a caller's law.
+            minimum, initial, junction_class, extra = admitted[block["law"]](block)
+            gates[p["id"]] = (block["law"], 0.0, minimum, initial)  # Its threshold: read by none.
+            admitted_junctions[p["id"]] = (junction_class, extra)
+            continue
+        g = _fields(block, set(GATE_FIELDS), "junction gate")
         threshold = _number(g["threshold_voltage_V"], "junction threshold")
         minimum, initial = (fraction(g[k], k) for k in ("minimum_open_fraction", "initial_gate"))
         if (
@@ -181,8 +209,13 @@ def parse(data):
         kinetic.Membrane(**asdict(p), pump=parse_pump(q, m0.species_ids, m0.valence))
         for p, q in zip(m0.membranes, pumps, strict=True)
     )
+    today = (kinetic.Junction, {})
     junctions = tuple(
-        kinetic.Junction(**asdict(p), **dict(zip(GATE_FIELDS, gates[p.id], strict=True)))
+        admitted_junctions.get(p.id, today)[0](
+            **asdict(p),
+            **dict(zip(GATE_FIELDS, gates[p.id], strict=True)),
+            **admitted_junctions.get(p.id, today)[1],
+        )
         for p in m0.junctions
     )
     names = [

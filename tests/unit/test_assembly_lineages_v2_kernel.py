@@ -24,7 +24,7 @@ import math
 import numpy as np
 import pytest
 
-from cells.definitions.specs import parse_spec
+from cells.definitions.specs import ConfigError, parse_spec
 from cells.models.assembly_lineages_v2 import (
     balance,
     kernel,
@@ -126,6 +126,49 @@ def test_the_kernel_identity_holds_on_its_probe_and_on_worlds():
         spec = spec_of(world(**kw))
         assert worst(spec) <= TOL
         assert balance.world_report(spec, states=20)["max_abs_deviation_ln"] <= TOL
+
+
+def test_the_world_report_is_kept_per_world_capacities_and_states_and_never_when_refused(
+    monkeypatch,
+):
+    """balance.world_report is kept per process (FR-35's cost ruling; the lead's condition of 21
+    November): a second run of one world reuses it, and a change to any input it reads misses the
+    cache and recomputes: the world's content (its id, a full digest of world_to_dict), each of the
+    molecule, place and step capacities, and the probe states. A refused world is never kept: asked
+    again, it is recomputed and refused again. Host arithmetic at 20 states."""
+    calls = []
+    real = balance._world_report
+    monkeypatch.setattr(balance, "_WORLD_REPORTS", {})
+
+    def counted(spec, states):
+        calls.append(states)
+        return real(spec, states)
+
+    monkeypatch.setattr(balance, "_world_report", counted)
+
+    def report(the_world, states=20, **execution):
+        d = definition(the_world)
+        d["execution"].update(execution)
+        return balance.world_report(parse_spec(d), states=states)
+
+    first = report(world())
+    assert report(world()) == first and len(calls) == 1  # the same world: kept
+    faster = world()
+    faster["steps"][0]["forward_rate_per_s"] *= 2.0
+    misses = (lambda: report(faster), lambda: report(world(), molecule_capacity=128),
+              lambda: report(world(), place_capacity=32), lambda: report(world(), step_capacity=16),
+              lambda: report(world(), states=21))  # fmt: skip
+    for n, miss in enumerate(misses, start=2):
+        miss()
+        assert len(calls) == n  # each input it reads is in the key
+    power = renamed_mass_action("tests.power_propensity@1", _power)
+    with scoped(power):
+        refused = with_law(paired(world(catalysis=False)), "tests.power_propensity@1")
+        for attempt in (1, 2):
+            with pytest.raises(ConfigError, match="fail the identity"):
+                report(refused)
+            assert len(calls) == len(misses) + 1 + attempt  # recomputed: never kept
+    assert len(balance._WORLD_REPORTS) == len(misses) + 1
 
 
 def test_planted_kinetics_fail_the_identity_by_far_more_than_rounding():

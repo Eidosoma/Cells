@@ -1674,3 +1674,74 @@ def test_version_2_reads_the_newcomers_occupancy_after_its_reset():
         after, p, sfx.TURNOVER, "turnover_rate", xp=np, quantities=reader
     )
     assert bool(ok) and float(factor[0]) == 0.1 + 0.9 * theta
+
+
+def receptor_routed(theta0, enabled=1):
+    """The tester's receptor-controlled reaction (D264 finding 1): the face-free world's cell_0
+    holds X0 at 1e-3 mM, and D152's convert X0 -> P (mass action, k 0.2/s) in cell_0 is routed by
+    @2 from the receptor r0's occupied fraction (site_fraction, basal 0); r0's binding is off, so
+    its theta holds at theta0. enabled: the coupling's switch."""
+    from validation.tissue import species_reactions_fixtures as rfx
+
+    raw = ofx.face_free_sites(
+        [ofx.population("r0", theta0=theta0)], controls={("r0", "binding"): [(0.0, 0.0)]}
+    )
+    for name, profile in (("X0", {"cell_0": 1e-3}), ("P", None)):
+        raw = add_inventory_species(
+            raw, name, trace_mM=1e-9, diffusivity_m2_per_s=1e-10, floor_fmol=1e-20,
+            concentrations_mM=profile,
+        )  # fmt: skip
+    species = [rfx.species("X0", moieties={"Q": 1}), rfx.species("P", moieties={"Q": 1}, mu=-1.0)]
+    reaction = rfx.mass_action("convert", {"cells": ["cell_0"]}, {"X0": 1}, {"P": 1}, 0.2)
+    raw = rfx.with_reactions(raw, species, [reaction], [("convert", None, [(0.0, 1.0)])])
+    target = dict(
+        operator="local_species_reactions@1",
+        control="reaction_multiplier",
+        ids=["convert"],
+        evaluation="target_half_steps",
+        operating_range=[0.0, 1.0],
+    )
+    entry = dict(id="receptor", target=target, law="site_fraction", basal=0.0,
+                 source={"site_population": "r0", "quantity": "occupied_fraction"})  # fmt: skip
+    raw = rf.with_coupling(
+        raw, species=[], couplings=[entry], switches={"receptor": [(0.0, enabled)]}
+    )
+    block(raw)["law"] = LAW_V2
+    rank = {ofx.LAW: 0, LAW_V2: 1, "local_species_reactions@1": 2}
+    raw["model"]["operators"].sort(key=lambda b: rank.get(b["law"], -1))
+    return raw
+
+
+def test_a_routed_targets_exported_rate_is_the_rate_its_step_runs_at(monkeypatch):
+    """D264 finding 1 (a tester's report; host only, about 1 s). A receptor-routed reaction's
+    exported rate (reaction_rate_fmol_per_s) read 0.000200 fmol/s in all three controls, where its
+    product accumulated at 0, 0.000080 and 0.000200: the observer took the scheduled multiplier,
+    not the routed one. The composite now observes a routed target with its routes' factors at the
+    row's state (pump_composite's observe_history). In each control the exported rate at t = 0
+    is k n theta-factor, and it equals the product one target half-step makes, per second (to
+    the step's own depletion). Planted, the routes left out of the observer: the empty receptor
+    exports the unrouted 0.000200 again. Turnover and the unit producer observe their state only,
+    and @3's channels are observed at the control view, so they need no change."""
+    k, n = 0.2, 1e-3  # 1/s; fmol, X0 in cell_0 (1e-3 mM in 1 pL).
+    h = 1e-6
+    for theta0, enabled, factor in ((0.0, 1, 0.0), (0.4, 1, 0.4), (0.4, 0, 1.0)):
+        spec = parse_spec(receptor_routed(theta0, enabled))
+        model = get_model(spec.model)
+        state, p = model.initial_values(spec)
+        history = type(state)(*(np.asarray(v)[None] for v in state))
+        observed = model.observe_history(np.array([0.0]), history, p, np.array([0.0]), spec)
+        exported = float(np.asarray(observed.reaction_rate_fmol_per_s)[0, 0])
+        assert exported == pytest.approx(k * n * factor, rel=1e-12, abs=1e-30), theta0
+        reactions = next(o for o in model.operators if o.LAW_ID == "local_species_reactions@1")
+        control = model.CONTROL_TYPE(*(v[0] for v in cs.control_values(spec, [0.0])))
+        stepped, ok = model._half_step(reactions, state, h, control, p, xp=np)
+        row = list(spec.model.species_ids).index("P")
+        made = float(np.asarray(stepped.reaction_produced_fmol)[row, 0]) / h
+        assert bool(ok) and made == pytest.approx(exported, rel=1e-6, abs=1e-30), theta0
+    spec = parse_spec(receptor_routed(0.0))
+    model = get_model(spec.model)
+    state, p = model.initial_values(spec)
+    monkeypatch.setattr(model, "rate_routes", {})
+    history = type(state)(*(np.asarray(v)[None] for v in state))
+    observed = model.observe_history(np.array([0.0]), history, p, np.array([0.0]), spec)
+    assert float(np.asarray(observed.reaction_rate_fmol_per_s)[0, 0]) == pytest.approx(k * n)

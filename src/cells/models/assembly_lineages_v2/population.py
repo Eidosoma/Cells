@@ -312,6 +312,10 @@ def program(structure):
 
 ROW_KINDS = ("start", "periodic", "end", "observed", "shear", "lysis", "transfer", "replacement")
 START, PERIODIC, END, OBSERVED, SHEAR, LYSIS, TRANSFER, REPLACEMENT = range(8)
+# FR-35: a withdrawal's row. Its legend entry is written only when a world declares a withdrawal
+# (records.py), so every other population's run.json is unchanged.
+WITHDRAWAL = len(ROW_KINDS)
+WITHDRAWAL_KIND = "withdrawal"
 
 
 class _State:
@@ -368,6 +372,10 @@ class _Context:
         self.by_index = {s.index: s for s in spec.experiment.schedules}
         self.transfers, self.transfer_counter, self.schedule_draws = [], {}, []
         self.replacements = []  # FR-20: each pool replacement's record (replacement.py)
+        self.withdrawals = []  # FR-35: each pool withdrawal's record (withdrawal.py)
+        # FR-35: each withdrawal schedule's washes applied (its draw counter w) and the world's
+        # withdrawals before a resumed run: both derived from the applied stops, never stored.
+        self.washes, self.withdrawals_before = {}, 0
         self.life_of = {}  # slot -> index into lives
         self.attempts_before = self.transfers_before = 0  # a resumed run's numbering (rung P)
         self.replacements_before = 0
@@ -517,6 +525,7 @@ def run(spec, *, start=None, stop=None):
                                             state.keys, state.supplied), 0)  # fmt: skip
         ctx.restore(host, float(lane.time))
         applied = int(host["doc"]["applied_stops"])
+        _count_washes(spec, ctx, plan[:applied])  # FR-35: w is the applied stops', one number
         plan = plan[applied:]  # the stops the checkpoint's run applied are its own
         origin = {"start": record, "f": float(host["arrays"]["f_origin"]),
                   "events": int(lane.events), "counter": int(lane.counter),
@@ -625,6 +634,9 @@ def _shear_stop(spec, layout, state, ctx, world_f, vesicle_f, time, stop_events,
             continue
         if ctx.by_index[event[1]].kind == "replacement":
             _replace(spec, state, ctx, world_f, time, ctx.by_index[event[1]], n_events)
+            continue
+        if ctx.by_index[event[1]].kind == "withdrawal":
+            _withdraw(spec, layout, state, ctx, world_f, time, ctx.by_index[event[1]], n_events)
             continue
         k = event[2]
         for s in [int(x) for x in np.flatnonzero(state.alive)]:
@@ -751,11 +763,68 @@ def _refuse_shared_replacements(spec, plan):
     the grouped plan, before the first event."""
     kinds = {s.index: s.kind for s in spec.experiment.schedules}
     for time, events in plan:
-        if len(events) > 1 and any(kinds[e[1]] == "replacement" for e in events):
+        alone = [kinds[e[1]] for e in events if kinds[e[1]] in ("replacement", "withdrawal")]
+        if len(events) > 1 and alone:
             raise ConfigError(
-                f"A replacement shares the time {time} s with another stop (a Poisson shear); "
+                f"A {alone[0]} shares the time {time} s with another stop (a Poisson shear); "
                 "relations have no order between same-time events"
             )
+
+
+def _count_washes(spec, ctx, applied_plan):
+    """FR-35: a withdrawal schedule's draw counter w is the number of its stops among the applied
+    ones, so a resumed run reads it from FR-22's applied-stops record, one number."""
+    kinds = {s.index: s.kind for s in spec.experiment.schedules}
+    for _, events in applied_plan:
+        for event in events:
+            if kinds[event[1]] == "withdrawal":
+                ctx.washes[event[1]] = ctx.washes.get(event[1], 0) + 1
+                ctx.withdrawals_before += 1
+
+
+def _withdraw(spec, layout, state, ctx, world_f, time, schedule, n_events):
+    """A pool withdrawal on the host (withdrawal.py): every slot kept; each molecule of each finite
+    pool place withdrawn with probability f on the schedule's stream; the buffer added; the sink,
+    the schedule's work column and the mixing heat booked."""
+    from cells.models.assembly_lineages_v2 import withdrawal
+
+    world = spec.model.world
+    if any(record["time_s"] == time for record in ctx.lyses):
+        raise ConfigError(
+            f"A lysis at {time} s, the time of withdrawal {schedule.index}: relations have no "
+            "order between same-time events"
+        )
+    before = state.pool.copy()
+    withdrawal.refuse_beyond_capacity(world, schedule, before, spec.execution.molecule_capacity)
+    wash = ctx.washes.get(schedule.index, 0)
+    taken, addresses = withdrawal.draw(layout.base_key, world, schedule, wash, before)
+    ctx.washes[schedule.index] = wash + 1
+    buffer = withdrawal.buffer_vector(world, schedule, before.size)
+    empty = state.copy()
+    empty.alive[:] = False
+
+    def pool_f(c):  # F of a pool vector at the pool's volume: the run's own guarded read
+        empty.pool = np.asarray(c, dtype=np.int64)
+        return world_f(empty)
+
+    energy = withdrawal.booking(pool_f, before, taken, buffer, schedule.fraction, world)
+    state.pool = before - taken + buffer
+    sink, work, heat = energy["pool_loss_kT"], energy["buffer_F_kT"], energy["mixing_heat_kT"]
+    ctx.extra[E_SINK] += sink
+    ctx.extra[E_TRANSFER] += work
+    ctx.extra[EXTRA + ctx.columns.index(schedule.index)] += work
+    ctx.extra[[E_HEAT, E_HEAT_MAG]] += [heat, abs(heat)]
+    ctx.extra[E_MAG] += abs(sink) + abs(work)
+    ctx.withdrawals.append({
+        "id": f"event:withdrawal/{ctx.withdrawals_before + len(ctx.withdrawals)}",
+        "time_s": time, "schedule": schedule.index, "fraction": schedule.fraction,
+        "before": withdrawal.by_place(world, before),
+        "withdrawn": withdrawal.by_place(world, taken),
+        "remaining": withdrawal.by_place(world, before - taken),
+        "supplied": withdrawal.by_place(world, buffer),
+        "draws": [list(a) for a in addresses], **energy,
+    })  # fmt: skip
+    ctx.stops.append((n_events, WITHDRAWAL, time, state.copy(), ctx.extra.copy()))
 
 
 def _replace(spec, state, ctx, world_f, time, schedule, n_events):
@@ -825,8 +894,8 @@ def _assemble(spec, structure, layout, m, verdict, start, state, ctx, events, dr
     marks.append((len(codes), END, end_time, len(ctx.stops)))
     # In event order, then time order: an observation at or after a stop with no event between
     # sees the stop's state; at one time, a stop before an observation (as the single lineage).
-    order = {START: 0, PERIODIC: 1, SHEAR: 2, LYSIS: 2, TRANSFER: 2, REPLACEMENT: 2, OBSERVED: 3,
-             END: 4}  # fmt: skip
+    order = {START: 0, PERIODIC: 1, SHEAR: 2, LYSIS: 2, TRANSFER: 2, REPLACEMENT: 2, WITHDRAWAL: 2,
+             OBSERVED: 3, END: 4}  # fmt: skip
     marks.sort(key=lambda x: (x[0], x[2], order[x[1]], x[3]))
     replay, e = start.copy(), 0
     extra = origin["extra"].copy() if resumed else np.zeros_like(ctx.extra)
@@ -846,7 +915,7 @@ def _assemble(spec, structure, layout, m, verdict, start, state, ctx, events, dr
                 vesicle = replay.slots[g - 1] if g > 0 else np.zeros_like(replay.pool)
                 after_events.append((vesicle[:places].copy(), replay.pool[:places].copy()))
             e += 1
-        if kind in (SHEAR, LYSIS, TRANSFER, REPLACEMENT):
+        if kind in (SHEAR, LYSIS, TRANSFER, REPLACEMENT, WITHDRAWAL):
             replay, extra = ctx.stops[at][3].copy(), ctx.stops[at][4]
         device = values[n - 1, 1:] if n > 0 else sums
         rows.append((kind, n + k0, t, replay.copy(), device, extra.copy()))
@@ -867,7 +936,8 @@ def _assemble(spec, structure, layout, m, verdict, start, state, ctx, events, dr
     if not np.allclose(columns.sum(axis=1), extra[:, E_SHEAR] + extra[:, E_TRANSFER],
                        rtol=1e-12, atol=1e-9):  # fmt: skip
         raise AssertionError(
-            "The schedule columns differ from the shear, transfer and replacement totals"
+            "The schedule columns differ from the shear, transfer, replacement and withdrawal "
+            "totals"
         )
     f_0 = origin["f"] if resumed else f[0]  # the world's own initial F, before any cut
     residual = ledger.residual(heat, booked, f, f_0)
@@ -956,11 +1026,16 @@ def _assemble(spec, structure, layout, m, verdict, start, state, ctx, events, dr
     }
     if any(s.kind == "replacement" for s in spec.experiment.schedules):  # FR-20, when declared
         report["replacements"] = ctx.replacements
+    withdraws = any(s.kind == "withdrawal" for s in spec.experiment.schedules)
+    if withdraws:  # FR-35, when declared
+        report["withdrawals"] = ctx.withdrawals
     if resumed:  # a run from a checkpoint: its start, and the world's numbering before it
         report["start"] = origin["start"]
         report["numbering"] = {"events": k0, "attempts": ctx.attempts_before,
                                "transfers": ctx.transfers_before,
                                "replacements": ctx.replacements_before}  # fmt: skip
+        if withdraws:
+            report["numbering"]["withdrawals"] = ctx.withdrawals_before
     timings = {"run_seconds": run_seconds, "events": int(len(codes)), "lanes": 1}
     record = None
     if diagnose:  # §0.2d item 10.5 (diagnostic.py)

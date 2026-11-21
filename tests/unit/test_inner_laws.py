@@ -35,6 +35,7 @@ from validation.tissue import pump_water_fixtures as water_fixtures
 from validation.tissue import surface_pump_v3_fixtures as fixtures
 
 ARS = "imex_ars222_face_electromigration@1"
+SERIES_LAW = spec3.SERIES_GATE_LAW_ID  # FR-30's junction_series_gates@1 (D262).
 TODAYS = {law_id: inner_laws.CHANNEL_LAWS[law_id] for law_id in spec3.TODAYS_CHANNEL_LAWS}
 GATED = [law for law in TODAYS.values() if law.gated]  # The Kv1 laws': test_kv1_channel_laws.
 KV1_CODES = {"kv1p1_mh2@1": 5, "kv1p2_mh@1": 6, "kv1p3_mh@1": 7, "kv1p4_mh@1": 8, "kv1p6_mh@1": 9}
@@ -183,8 +184,10 @@ def test_kernels_and_openings_are_todays_dispatch_bitwise(law):
 
 
 def test_junction_and_pump_declarations():
-    (junction,) = inner_laws.JUNCTION_LAWS.values()
-    assert junction.law_id == junction_gate.LAW_ID and junction.gated
+    junction, series = (inner_laws.JUNCTION_LAWS[k] for k in (junction_gate.LAW_ID, SERIES_LAW))
+    assert list(inner_laws.JUNCTION_LAWS) == [junction_gate.LAW_ID, SERIES_LAW]
+    assert series.gate_count == 2 and series.gated  # FR-30's series gates (D262).
+    assert junction.law_id == junction_gate.LAW_ID and junction.gated and junction.gate_count == 1
     assert junction.kinetics is junction_gate.kinetics and junction.rhs is junction_gate.rhs
     assert junction.domain_valid is junction_gate.domain_valid
     assert junction.max_abs_voltage_V == junction_gate.MAX_ABS_VOLTAGE_V

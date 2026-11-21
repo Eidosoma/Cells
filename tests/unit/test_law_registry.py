@@ -64,6 +64,7 @@ from cells.laws.cycles import (
 )
 from cells.laws.cycles import na2_anion_symport_diagram as symport2
 from cells.laws.cycles import na_anion_symport_factored as symport
+from cells.laws.junctions import junction_series_gates
 from cells.laws.routes import passive_permeation
 from cells.laws.transport import proton_leak
 from cells.models import inner_laws, surface_pump_v3
@@ -122,21 +123,27 @@ def without(*law_ids):
 def test_todays_declarations_are_template_instances_with_their_fields_kept():
     assert laws.PumpLaw is laws.CycleLaw and inner_laws.PumpLaw is laws.CycleLaw
     todays = {law_id: inner_laws.CHANNEL_LAWS[law_id] for law_id in spec3.TODAYS_CHANNEL_LAWS}
+    series = junction_series_gates.LAW_ID  # FR-30's cited series law (D262), beside today's.
+    junctions = {k: v for k, v in inner_laws.JUNCTION_LAWS.items() if k != series}
     tables = {
         laws.CHANNEL_LAW: todays,
-        laws.JUNCTION_LAW: inner_laws.JUNCTION_LAWS,
+        laws.JUNCTION_LAW: junctions,
         laws.CYCLE_LAW: inner_laws.PUMP_LAWS,
         laws.ROUTE_LAW: inner_laws.ROUTE_LAWS,
     }
     # @3 also hosts the Kv1 pilot's five, cited laws registered since the Kv1 trigger, and the
-    # always-open chloride leak (D228 item 3).
+    # always-open chloride leak (D228 item 3); and FR-30's series gates (D262).
     kv1 = {m.LAW_ID: m.LAW for m in (kv1p1_mh2, kv1p2_mh, kv1p3_mh, kv1p4_mh, kv1p6_mh)}
     kv1[clleak_always_open.LAW_ID] = clleak_always_open.LAW
+    extra = {laws.CHANNEL_LAW: kv1, laws.JUNCTION_LAW: {series: junction_series_gates.LAW}}
+    assert inner_laws.JUNCTION_LAWS[series] is junction_series_gates.LAW
+    series_law = junction_series_gates.LAW
+    assert series_law.provenance == "cited" and not series_law.errors()
     for interface, table in tables.items():
         assert table and all(type(law).interface == interface for law in table.values())
         assert all(isinstance(law, laws.Law) and law.host == HOST for law in table.values())
         assert all(law.provenance == "parity" and not law.errors() for law in table.values())
-        hosted = {**table, **kv1} if interface == laws.CHANNEL_LAW else table
+        hosted = {**table, **extra.get(interface, {})}
         assert laws.active().laws(interface, HOST) == tuple(
             law for _, law in sorted((laws.qualified(k), v) for k, v in hosted.items())
         )
