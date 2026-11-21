@@ -47,6 +47,7 @@ inworld-plant ARM OUTPUT [AT_MS] [--solver=ID]
                              ID set after the definition is built, §10.16's route).
 """
 
+import copy
 import dataclasses
 import hashlib
 import json
@@ -533,6 +534,16 @@ class Series:
 
     def steps(self, ms):
         return (np.asarray(ms, dtype=np.int64) - self.start_ms) * self.steps_per_ms
+
+
+def subset(series, keep):
+    """The series at the rows a boolean mask over its rows keeps (a judge's second row set)."""
+    s = copy.copy(series)
+    s.rows = {k: np.asarray(v)[keep] for k, v in series.rows.items()}
+    s.ms, s.times = series.ms[keep], series.times[keep]
+    s.c = classes(series.raw, s.rows)
+    s.index = {int(m): i for i, m in enumerate(s.ms)}
+    return s
 
 
 class Ladder:
@@ -1904,6 +1915,22 @@ def c_judge(output, c_dir, full1_cost=None, c_cost=None, arm="H2-C", plant=None)
             if all(out["verdict"][k] == "pass" for k in ("a", "b", "c"))
             else f"does not pass {a['section']}"
         )
+        if a["regrid_cue"]:  # The lead's addition: (a) also on rule (i)'s rows, a subset (§10.23).
+            from validation.long_duration import worlds
+
+            r3 = set(worlds.harness_observation_times())
+            keep = np.asarray([float(t) in r3 for t in arm.rows["times"]])
+            sub = subset(arm, keep)
+            ev_i = judge_events(series_events(sub), wa_events)
+            sets_i = dict(own=sub.ms, common=sub.ms[sub.ms % 100 == 0])
+            verdicts_i, _ = arm_reading(sub, parts, sets_i, [("events", ev_i["verdict"])])
+            a_i = [verdicts_i["B_P"][s]["verdict"] for s in sets_i]
+            out["subset_exact_rows"] = dict(
+                rule="(i): R3's kept rows whose decimal time is exactly a point of the clock, a "
+                "subset of the registered rows (ii); information beside the registered verdict",
+                rows=int(keep.sum()), events=ev_i, readings=verdicts_i,
+                a="pass" if all(v == "pass" for v in a_i) else worst(a_i),
+            )  # fmt: skip
     Path(output).write_text(json.dumps(out, indent=1, default=float) + "\n")
     print(json.dumps(out.get("verdict"), default=float))
     return 0
