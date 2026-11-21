@@ -8580,4 +8580,7 @@ ones".
   science choice comes to the user.
 - **Unchanged:** the review holds (D259, D263 to D266) stay until each fix lands. The floating-
   junction fix (A) still needs the user's decision.
+- **Priority (the user, the same evening: "but still prioritize FR fixes"):** FR fixes and their
+  landings come before the resumed lanes' new work, in agents' time and in the test lanes. A
+  resumed lane's gate queues behind any waiting FR fix's gate.
 
