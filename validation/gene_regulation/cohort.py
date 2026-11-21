@@ -23,10 +23,17 @@ term after it. The integral of n uses Simpson's rule where the grid allows, else
 Both are exact as the grid refines. The calculation's error on a grid is stated by running it on
 every second output as well and differencing (`grid_error`).
 
-**When the rate is known** (constant k), `known_rate` gives the closed form for completions spread
-evenly over each output interval. On the engine's A1 export (revision f96a9606), minutes 60–90 and
-sampled at minute 90, both reproduce the reviewer's figures: 2.01673e-5 fmol completed and
-1.32977e-5 fmol surviving, while the pool grew by 2.70386e-6 fmol.
+**When the rate is known** (constant k >= 0), `known_rate` gives the closed form for completions
+spread evenly over each output interval, through expm1 and with its zero-rate limit (everything
+survives), so small and zero rates hold. On the engine's A1 export (revision f96a9606), minutes
+60–90 and sampled at minute 90, both reproduce the reviewer's figures: 2.01673e-5 fmol completed
+and 1.32977e-5 fmol surviving, while the pool grew by 2.70386e-6 fmol.
+
+**Which chain completes the product** (`producing_chain`; the review's finding 2). An engine_run.py
+record's own definition names the chain that makes each product row, so the completions are that
+chain's: for the mRNA R in A1, transcription's (tx), not translation's (tl). A chain named that
+does not make the product is refused, and so is a product that no chain or several chains make,
+unless one of them is named. The A1 export's CSV holds tx (making R) and tl (making P).
 
 **The check.** FR-25's turnover control: 100 copies at steady state, a one-hour half-life and
 production of 100 ln 2 copies per hour. Of the 69.31 copies completed in the first hour, 50 remain
@@ -56,6 +63,11 @@ def _integral(t, n, i, j):
     return total
 
 
+def _spread(x):
+    """(1 - e^(-x))/x, the mean of e^(-x s) over s in [0, 1], with its limit 1 at x = 0."""
+    return 1.0 if x == 0 else -math.expm1(-x) / x
+
+
 def survivors(t, n, Q, D, t1, t2, ts=None):
     """(completed in [t1, t2], surviving at ts, the pool's change over [t1, t2]) from the counters
     on an output grid holding t1, t2 and ts (module docstring)."""
@@ -68,21 +80,22 @@ def survivors(t, n, Q, D, t1, t2, ts=None):
         k = lost / _integral(t, n, i, i + 1) if lost > 0 else 0.0
         decay = math.exp(-k * h)
         made = Q[i + 1] - Q[i] if i < i2 else 0.0
-        spread = -math.expm1(-k * h) / (k * h) if k > 0 else 1.0
-        S = S * decay + made * spread
+        S = S * decay + made * _spread(k * h)
     return Q[i2] - Q[i1], S, n[i2] - n[i1]
 
 
 def known_rate(t, Q, k, t1, t2, ts=None):
-    """The survivors at ts for a constant per-molecule rate k, completions spread evenly over each
-    output interval."""
+    """The survivors at ts for a constant per-molecule rate k >= 0, completions spread evenly over
+    each output interval: each interval's dQ e^(-k (ts - t_{i+1})) (1 - e^(-k h))/(k h), formed
+    with expm1, so it holds at small k and reaches its limit dQ at k = 0."""
+    if not (isinstance(k, (int, float)) and math.isfinite(k) and k >= 0):
+        raise ValueError(f"a known rate is a finite number >= 0, not {k!r}")
     ts = t2 if ts is None else ts
     i1, i2 = t.index(t1), t.index(t2)
     out = 0.0
     for i in range(i1, i2):
         h = t[i + 1] - t[i]
-        early, late = ts - t[i], ts - t[i + 1]
-        out += (Q[i + 1] - Q[i]) * (math.exp(-k * late) - math.exp(-k * early)) / (k * h)
+        out += (Q[i + 1] - Q[i]) * math.exp(-k * (ts - t[i + 1])) * _spread(k * h)
     return out
 
 
@@ -111,18 +124,47 @@ def turnover_control(points_per_hour=60):
     return completed, at_1h, at_2h
 
 
-def read(path, product="P", chain="tl"):
-    """(t, n, Q, D) of an engine_run.py JSON or the A1 export's CSV, for one product."""
+POLYMERISATION = "templated_polymerisation@1"
+CSV_CHAINS = {"tx": "R", "tl": "P"}  # The A1 export's chains and the product each makes.
+CSV_COLUMNS = {"P": ("protein_P_fmol", "released_tl_fmol", "degraded_P_fmol"),
+               "R": ("mRNA_R_fmol", "released_tx_fmol", "degraded_R_fmol")}  # fmt: skip
+
+
+def producing_chain(makes, product, chain=None):
+    """The chain whose completions are the product's (module docstring), from {chain: the row it
+    makes}; ValueError for a named chain that makes another row, or none or several without one."""
+    if chain is not None:
+        if chain not in makes:
+            raise ValueError(f"no chain {chain!r}: the chains are {sorted(makes)}")
+        if makes[chain] != product:
+            raise ValueError(
+                f"chain {chain} completes {makes[chain]}, not {product}: its completions are not "
+                f"{product}'s"
+            )
+        return chain
+    found = sorted(c for c, made in makes.items() if made == product)
+    if len(found) != 1:
+        what = "no chain makes" if not found else f"chains {found} make"
+        raise ValueError(f"{what} {product}: name the chain with --chain")
+    return found[0]
+
+
+def read(path, product="P", chain=None):
+    """(t, n, Q, D) of an engine_run.py JSON or the A1 export's CSV, for one product, with Q the
+    completions of the chain that makes it (producing_chain)."""
     path = Path(path)
     if path.suffix == ".json":
         r = json.loads(path.read_text())
+        (block,) = [o for o in r["definition"]["model"]["operators"] if o["law"] == POLYMERISATION]
+        chain = producing_chain({c["id"]: c["product"] for c in block["chains"]}, product, chain)
         x = r["readouts"]
         return r["t"], x[f"n_{product}"], x[f"int_Q_{chain}"], x[f"int_D_{product}"]
+    producing_chain(CSV_CHAINS, product, chain)
+    if product not in CSV_COLUMNS:
+        raise ValueError(f"the A1 export holds the products {sorted(CSV_COLUMNS)}, not {product}")
     rows = list(csv.DictReader(path.open()))
-    name = {"P": ("protein_P_fmol", "released_tl_fmol", "degraded_P_fmol"),
-            "R": ("mRNA_R_fmol", "released_tx_fmol", "degraded_R_fmol")}[product]  # fmt: skip
     t = [float(row["t_s"]) for row in rows]
-    return (t, *([float(row[c]) for row in rows] for c in name))
+    return (t, *([float(row[c]) for row in rows] for c in CSV_COLUMNS[product]))
 
 
 def main(argv=None):
@@ -132,10 +174,15 @@ def main(argv=None):
     parser.add_argument("--t2", type=float, required=True)
     parser.add_argument("--ts", type=float)
     parser.add_argument("--product", default="P")
-    parser.add_argument("--chain", default="tl")
-    parser.add_argument("--rate", type=float, help="a known constant per-molecule rate, 1/s")
+    parser.add_argument("--chain", help="the chain that completes the product (else resolved)")
+    parser.add_argument("--rate", type=float, help="a known constant per-molecule rate >= 0, 1/s")
     args = parser.parse_args(argv)
-    t, n, Q, D = read(args.file, args.product, args.chain)
+    if args.rate is not None and not (math.isfinite(args.rate) and args.rate >= 0):
+        parser.error(f"--rate is a finite number >= 0, not {args.rate!r}")
+    try:
+        t, n, Q, D = read(args.file, args.product, args.chain)
+    except ValueError as error:
+        parser.error(str(error))
     completed, surviving, grew = survivors(t, n, Q, D, args.t1, args.t2, args.ts)
     out = dict(
         completed_fmol=completed,
@@ -143,7 +190,7 @@ def main(argv=None):
         pool_change_fmol=grew,
         grid_error_fmol=grid_error(t, n, Q, D, args.t1, args.t2, args.ts),
     )
-    if args.rate:
+    if args.rate is not None:
         out["surviving_known_rate_fmol"] = known_rate(t, Q, args.rate, args.t1, args.t2, args.ts)
     print(json.dumps(out))
     return 0

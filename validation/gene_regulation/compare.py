@@ -9,12 +9,28 @@ engine run is paired with G2's potential set of the same four symbols, matched b
 - the sixteen corners (sets 2 to 17) on every tenth output (trajectories_edge_sets.json);
 - the 32 interior points (sets 18 to 49) at t_end, and A1's also at t_off (endpoints.json).
 
-For each readout both sides hold, its gap is the largest |engine - G2| over the common outputs over
-its scale, the largest |G2| over G2's outputs (the sheet's §6). J_bar is compared relative to G2's.
-Given runs at two steps, each readout's observed order is log2 of its gap's ratio over log2 of the
-steps' ratio, where both gaps stand above rounding.
+**What is compared, and what refuses** (the review's finding 3: a missing comparison read as
+perfect agreement).
+- **Samples are matched by G2's required times,** never by whatever outputs both sides happen to
+  hold:
+  - a trajectory's: every output time of G2's grid for the world (full, or every tenth);
+  - an interior point's: the world's t_end, and for A1 the input switch t_off too, each from G2's
+    inputs.json.
+- **Every required time must be an engine output,** and every G2 readout must be in the run, except
+  the declared NOT_EXPORTED ones (each move's ΔG and A1's u). Otherwise the comparison is refused
+  (ComparisonError). So zero matches, a missing required time and a missing readout are each an
+  error, never a gap of 0.
+- **A partial comparison is declared** (until, or --partial for a run directory): only the required
+  times up to the run's last output are required, J_bar is left out, and the report says so.
+- **Each result reports** its expected and matched times, which are equal whenever it is given.
 
-Run: python -m validation.gene_regulation.compare RUN_DIR [RUN_DIR_2] --out FILE
+For each readout, its gap is the largest |engine - G2| over the required times over its scale, the
+largest |G2| over G2's outputs (the sheet's §6). At an interior point each required row is compared
+relative to G2's value, the switch row's readouts named "<readout> at t_off". J_bar is compared
+relative to G2's. Given runs at two steps, each readout's observed order is log2 of its gap's ratio
+over log2 of the steps' ratio, where both gaps stand above rounding.
+
+Run: python -m validation.gene_regulation.compare RUN_DIR [RUN_DIR_2] --out FILE [--partial]
 """
 
 import argparse
@@ -29,6 +45,40 @@ ROOT = Path(__file__).resolve().parents[2]
 TAG = "gr1-references-2026-11-20"
 INTERFACE = "validation/gene_regulation/references/interface"
 FLOOR = 1e-14  # A gap below this, relative, is rounding: no order is read from it.
+TIME_DIGITS = 6  # Required and engine times match when equal to 1e-6 s.
+
+
+class ComparisonError(ValueError):
+    """A comparison that cannot be made as required: a refusal, never a gap."""
+
+
+def not_exported(name):
+    """G2's readouts the engine's runs do not export: each move's ΔG (dG_*) and A1's u."""
+    return name == "u" or name.startswith("dG_")
+
+
+def _index(times):
+    return {round(float(t), TIME_DIGITS): i for i, t in enumerate(times)}
+
+
+def _matched(engine_times, required, what):
+    """{required time: engine row}, or ComparisonError naming the missing times."""
+    if not required:
+        raise ComparisonError(f"{what}: no required time to compare")
+    index = _index(engine_times)
+    missing = [t for t in required if round(float(t), TIME_DIGITS) not in index]
+    if missing:
+        raise ComparisonError(
+            f"{what}: {len(missing)} of {len(required)} required times are not outputs of the "
+            f"run (the first {missing[:3]}); declare a partial comparison if that is intended"
+        )
+    return {t: index[round(float(t), TIME_DIGITS)] for t in required}
+
+
+def _readouts(engine, names, what):
+    absent = [n for n in names if n not in engine["readouts"]]
+    if absent:
+        raise ComparisonError(f"{what}: G2's readouts {absent[:5]} are not in the run")
 
 
 def interface(name):
@@ -69,6 +119,21 @@ class References:
         for entry in interface("endpoints.json")["sets"]:
             self.sets[int(entry["set"])] = (symbols_kJ(entry["potentials"]), None)
             self.ends[int(entry["set"])] = entry["worlds"]
+        self.horizon, self.switch = {}, {}  # world: t_end; world: t_off (A1's input switch)
+        for w in interface("inputs.json")["worlds"]:
+            self.horizon[w["name"]] = float(w["t_end"])
+            starts = [float(phase[0]) for phase in w["phases"][1:]]
+            if starts:
+                self.switch[w["name"]] = starts[0]
+
+    def endpoints(self, world):
+        """[(label, required time, G2's readouts there), ...] of a world at an interior point,
+        from the endpoint file's entries for it: "<world>" at t_end, "<world> at t_off" at the
+        switch."""
+        rows = [("t_end", self.horizon[world], world)]
+        if f"{world} at t_off" in next(iter(self.ends.values())):
+            rows.append(("t_off", self.switch[world], f"{world} at t_off"))
+        return rows
 
     def find(self, symbols_RT):
         target = engine_kJ(symbols_RT)
@@ -78,62 +143,94 @@ class References:
         return hits[0]
 
 
-def gaps(engine, reference):
-    """{readout: gap} over the common outputs (module docstring)."""
-    times = {round(t, 6): i for i, t in enumerate(engine["t"])}
+def gaps(engine, reference, *, until=None):
+    """A trajectory comparison (module docstring): {gaps: {readout: gap}, expected_times,
+    matched_times, partial, until, not_compared}. until declares a partial comparison: only G2's
+    times up to it are required, and J_bar is left out. Refused (ComparisonError) where a required
+    time or readout is missing."""
+    partial = until is not None
+    required = [t for t in reference["t"] if not partial or t <= until + 10.0**-TIME_DIGITS]
+    rows = _matched(engine["t"], required, "the trajectory")
+    names = [n for n in reference["readouts"] if not not_exported(n)]
+    skipped = sorted(n for n in reference["readouts"] if not_exported(n))
+    if partial:
+        skipped += sorted(n for n in names if n.startswith("J_bar"))
+        names = [n for n in names if not n.startswith("J_bar")]
+    _readouts(engine, names, "the trajectory")
     out = {}
-    for name, values in reference["readouts"].items():
-        mine = engine["readouts"].get(name)
-        if mine is None or name.startswith("J_bar"):
+    for name in names:
+        values, mine = reference["readouts"][name], engine["readouts"][name]
+        if name.startswith("J_bar"):
+            out[name] = abs(mine[0] - values[0]) / abs(values[0])
             continue
         scale = max(abs(v) for v in values) or 1.0
-        worst = 0.0
-        for t, v in zip(reference["t"], values, strict=True):
-            i = times.get(round(t, 6))
-            if i is not None:
-                worst = max(worst, abs(mine[i] - v))
-        out[name] = worst / scale
-    for name, values in reference["readouts"].items():
-        if name.startswith("J_bar") and name in engine["readouts"]:
-            out[name] = abs(engine["readouts"][name][0] - values[0]) / abs(values[0])
-    return out
+        pairs = [(t, v) for t, v in zip(reference["t"], values, strict=True) if t in rows]
+        out[name] = max(abs(mine[rows[t]] - v) for t, v in pairs) / scale
+    return dict(gaps=out, expected_times=len(required), matched_times=len(rows),
+                partial=partial, until=until, not_compared=skipped)  # fmt: skip
 
 
-def endpoint_gaps(engine, ends):
-    """{readout: relative gap at t_end} at an interior point, against G2's endpoint."""
-    out = {}
-    for name, value in ends.items():
-        mine = engine["readouts"].get(name)
-        if mine is None or not isinstance(value, (int, float)):
-            continue
-        out[name] = abs(mine[-1] - value) / (abs(value) or 1.0)
-    return out
+def endpoint_gaps(engine, refs, index, world, *, until=None):
+    """An interior point's comparison (module docstring): each required row of the world, t_end
+    and A1's switch, against G2's values there. Refused where a required row or readout is missing;
+    a declared partial comparison (until) requires only the rows up to it."""
+    partial = until is not None
+    rows = [r for r in refs.endpoints(world) if not partial or r[1] <= until + 10.0**-TIME_DIGITS]
+    found = _matched(engine["t"], [t for _, t, _ in rows], f"{world}'s interior endpoints")
+    out, skipped = {}, set()
+    for label, t, key in rows:
+        values = refs.ends[index][key]
+        names = [n for n in values if not not_exported(n)]
+        skipped |= {n for n in values if not_exported(n)}
+        if label != "t_end" or partial:
+            skipped |= {n for n in names if n.startswith("J_bar")}
+            names = [n for n in names if not n.startswith("J_bar")]
+        _readouts(engine, names, f"{world}'s row at {label}")
+        for name in names:
+            mine = engine["readouts"][name]
+            value = mine[0] if name.startswith("J_bar") else mine[found[t]]
+            gap = abs(value - values[name]) / (abs(values[name]) or 1.0)
+            out[name if label == "t_end" else f"{name} at {label}"] = gap
+    return dict(gaps=out, expected_times=len(rows), matched_times=len(found),
+                partial=partial, until=until, not_compared=sorted(skipped))  # fmt: skip
 
 
-def compare_run(refs, path):
-    engine = json.loads(path.read_text())
+def compare_record(refs, engine, *, partial=False):
+    """One engine run's record against G2's set of its four symbols (module docstring); partial
+    declares a comparison up to the run's last output."""
     index = refs.find(engine["symbols_RT"])
     _, worlds = refs.sets[index]
+    until = float(engine["t"][-1]) if partial else None
     if worlds is not None:
-        found = gaps(engine, worlds[engine["world"]])
+        result = gaps(engine, worlds[engine["world"]], until=until)
         kind = "trajectory" if index in (0, 1) else "every tenth output"
     else:
-        found = endpoint_gaps(engine, refs.ends[index][engine["world"]])
-        kind = "t_end"
+        result = endpoint_gaps(engine, refs, index, engine["world"], until=until)
+        kind = "interior endpoints"
+    found = result["gaps"]
     worst = sorted(found.items(), key=lambda kv: -kv[1])
-    heats = {k: v for k, v in found.items() if k.startswith("H_") or k == "G_minus_G0"}
+    heats = {k: v for k, v in found.items() if k.startswith("H_") or k.startswith("G_minus_G0")}
     return dict(
         world=engine["world"],
         set=engine["set"],
         g2_set=index,
         dt_s=engine["dt_s"],
         compared=kind,
+        partial=result["partial"],
+        until=result["until"],
+        expected_times=result["expected_times"],
+        matched_times=result["matched_times"],
+        not_compared=result["not_compared"],
         readouts=len(found),
         largest=worst[:5],
         heats=heats,
-        checks=engine["checks"],
+        checks=engine.get("checks", {}),
         gaps=found,
     )
+
+
+def compare_run(refs, path, *, partial=False):
+    return compare_record(refs, json.loads(Path(path).read_text()), partial=partial)
 
 
 def orders(fine, coarse, ratio):
@@ -155,18 +252,25 @@ def main(argv=None):
     parser.add_argument("run", help="an engine_run.py output directory")
     parser.add_argument("coarse", nargs="?", help="the same runs at another step, for the order")
     parser.add_argument("--out", required=True)
+    parser.add_argument(
+        "--partial", action="store_true", help="declare each comparison partial: to its last output"
+    )
     args = parser.parse_args(argv)
     refs = References()
-    results = [compare_run(refs, p) for p in runs(args.run)]
+    paths = runs(args.run)
+    if not paths:
+        raise ComparisonError(f"{args.run} holds no run to compare")
+    results = [compare_run(refs, p, partial=args.partial) for p in paths]
     report = dict(
-        kind="cells.gene_regulation.compare@1",
+        kind="cells.gene_regulation.compare@2",
         references=f"{TAG}:{INTERFACE}",
         runs=args.run,
+        partial=args.partial,
         results=results,
     )
     if args.coarse:
-        coarse = {(r["world"], r["set"]): r for r in map(lambda p: compare_run(refs, p),
-                                                         runs(args.coarse))}  # fmt: skip
+        coarse = {(r["world"], r["set"]): r for r in (compare_run(refs, p, partial=args.partial)
+                                                      for p in runs(args.coarse))}  # fmt: skip
         for r in results:
             other = coarse.get((r["world"], r["set"]))
             if other is not None:

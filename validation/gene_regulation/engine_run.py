@@ -56,9 +56,18 @@ def git(*args):
     ).stdout
 
 
-def provenance():
-    """The source's identity: a frozen snapshot's record (validation/source_snapshot.py) when run
-    from one, else the checkout's revision and dirty diff."""
+SOURCE_SCOPE = ("src", "validation")  # What a run imports or reads from the checkout.
+
+
+def provenance(out=None):
+    """(The source's identity, the dirty diff or None), for a run's record.
+    - From a frozen snapshot (validation/source_snapshot.py): its record.
+    - From the checkout: the revision, `git status` and the tracked files' dirty diff (git diff
+      HEAD). That diff omits untracked files' contents (the review's finding 8: a receipt named a
+      revision without the script that ran). So every untracked, nonignored file under
+      SOURCE_SCOPE is frozen beside the run, into OUT/untracked-sources, by the existing
+      validation/source_snapshot.freeze, and the record names the folder, the files and the
+      manifest's digest. Without an OUT, a checkout with such files is refused."""
     snapshot = ROOT / "SNAPSHOT.json"
     if snapshot.exists():
         d = json.loads(snapshot.read_text())
@@ -71,12 +80,31 @@ def provenance():
         ), None
     status = git("status", "--porcelain")
     dirty = bool(status.strip())
-    return dict(
+    record = dict(
         engine_revision=git("rev-parse", "HEAD").strip(),
         checkout_dirty=dirty,
         checkout_status=status.splitlines(),
         dirty_diff="checkout.patch" if dirty else None,
-    ), git("diff", "HEAD") if dirty else None
+    )
+    listed = git("ls-files", "--others", "--exclude-standard", "-z", "--", *SOURCE_SCOPE)
+    untracked = sorted(name for name in listed.split("\0") if name)
+    if untracked:
+        if out is None:
+            raise RuntimeError(
+                f"untracked source {untracked[:3]} would not be recorded: commit it, run from a "
+                "frozen snapshot, or give the run an output folder to freeze it into"
+            )
+        from validation import source_snapshot
+
+        folder = Path(out) / "untracked-sources"
+        source_snapshot.freeze(ROOT, folder, {name: name for name in untracked})
+        manifest = (folder / "SNAPSHOT.json").read_bytes()
+        record["untracked_sources"] = dict(
+            folder="untracked-sources",
+            files=untracked,
+            manifest_sha256=hashlib.sha256(manifest).hexdigest(),
+        )
+    return record, git("diff", "HEAD") if dirty else None
 
 
 def slug(text):
@@ -277,7 +305,7 @@ def main(argv=None):
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=False)
     stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
-    source, patch = provenance()
+    source, patch = provenance(out)
     if patch is not None:
         (out / "checkout.patch").write_text(patch)
     everything = sheet.potential_sets(interior=any(s.startswith("interior") for s in args.sets))

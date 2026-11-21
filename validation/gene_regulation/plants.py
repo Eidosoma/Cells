@@ -200,7 +200,7 @@ def main(argv=None):
         print(json.dumps({"plant": args.plant, "refused": record["refused"]}), flush=True)
         return 0
     out.mkdir(parents=True, exist_ok=False)
-    source, patch = engine_run.provenance()
+    source, patch = engine_run.provenance(out)
     if patch is not None:
         (out / "checkout.patch").write_text(patch)
     (out / "run_record.json").write_text(json.dumps(dict(source, dt_s=args.dt), indent=1) + "\n")

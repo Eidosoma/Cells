@@ -149,7 +149,7 @@ def main(argv=None):
     args = parser.parse_args(argv)
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=False)
-    source, patch = engine_run.provenance()
+    source, patch = engine_run.provenance(out)
     if patch is not None:
         (out / "checkout.patch").write_text(patch)
     record = example(args.world, args.route, args.join, args.factor, args.window_steps, out)
