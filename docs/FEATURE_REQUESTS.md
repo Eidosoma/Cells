@@ -1258,6 +1258,14 @@ held_out.json sha256 0451caa00972a116673077293c3173378d78c7bde0609e697031aefe8de
   condition. The checker confirms it.
 - The next paper is taken only under an amendment registered before it is read (D276).
 
+**The Desplantez et al. 2004 extraction (21 November 2026, 23:53 UTC), under section 13.1.** The held-out
+file is sealed: held_out.json sha256 48f061c074414b6ea8b1a88e64964110fa05edc5abfaec57c657cebdb7aae53d; fit.json 29cd94719305e3155a8bc34d93d2b3e74bdfcb1ed93d56fab74a20fec33b5be1.
+- For homotypic Cx43 the paper prints a legible decay time constant at only two magnitudes (Fig. 9B),
+  and 60 mV of those stays in training.
+- The second exponential is "data not shown", with no slow time constant or amplitude at any voltage.
+- So the extractor reports both "undetermined" conditions (rules 1 and 4). The checker confirms them
+  before Moreno et al. 2002 is opened, and no fitter sees these files.
+
 ## FR-31 — Vesicle rupture during a steady tension hold
 
 - **The request (the same review; D248).** The assembly model tests rupture only at a state change.
