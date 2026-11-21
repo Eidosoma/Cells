@@ -11,7 +11,7 @@ Direct Lean claims cover [49 of 49 laws](COVERAGE.md#registered-laws) and [29 of
 | Category | Registered laws with proof | Claims with proof | Numerical checks | Claims with biological evidence |
 | --- | ---: | ---: | --- | ---: |
 | [Membrane transport and osmosis](COVERAGE.md#category-membrane-transport) | 5 of 5 | 8 of 8 | 8 checked | 8 |
-| [Ion channels and junctions](COVERAGE.md#category-channels-and-junctions) | 14 of 14 | 12 of 12 | 12 checked | 11 |
+| [Ion channels and junctions](COVERAGE.md#category-channels-and-junctions) | 14 of 14 | 13 of 13 | 13 checked | 12 |
 | [Pumps and cotransport](COVERAGE.md#category-pumps-and-cotransport) | 13 of 13 | 8 of 8 | 8 checked | 8 |
 | [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 3 of 3 | 8 of 8 | 8 checked | 6 |
 | [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 13 of 13 | 19 of 19 | 18 checked · 1 failed | 15 |
@@ -25,6 +25,8 @@ Each category opens its detailed claim table on GitHub, including registered law
 On 21 November, five former numerical failures passed their repair checks, including fresh-pool capacity and self-regulated turnover. The GARD pair-heat case remains recorded on version 1. [Repair results](PROGRESS.md#nov21-engine-review) · [Current failure list](COVERAGE.md#failing-numerical-checks)
 
 ## Biological evidence
+
+Kv1.5 measurements in HEK293 cells give a conducting fraction of about 0.34 at 115 voltage-sensing channels/µm² and 0.18 at 425. The Cells clamp proof explains why an ionic current curve alone cannot distinguish abundance from availability. [Proof, current comparison and measurements](claims/clamped-channel-current.md)
 
 The biological review identifies three engine opportunities with measured targets. It covers the reversal of the yeast vacuolar proton pump, the time to rupture of a vesicle under steady tension, and fast and slow closure of Cx43 gap junctions. [Measurements, current engine results and proposed changes](PROGRESS.md#biological-model-review)
 
@@ -126,7 +128,7 @@ lake exe cache get Mathlib.Data.Complex.Exponential \
 lake build
 ```
 
-To check the ATOMS Lab dimensional algebra on the Cells toolchain, run the following from `lean/`. The first run downloads two source modules and their license from a pinned revision and fetches the compiled matrix-rank dependency if needed. Later runs can use the local cache. The check verifies that flux × molar potential has units of power and electrode charge × voltage has units of energy. [Optional proofs](checks/units/FacePower.lean) · [Pinned source and compatibility edit](checks/units/check.sh)
+To check the ATOMS Lab dimensional algebra on the Cells toolchain, run the following from `lean/`. The first run downloads two source modules and their license from a pinned revision and fetches the compiled matrix-rank dependency if needed. Later runs can use the local cache. The check covers face power, electrode work and the Faraday conversion from molar flux to current. [Optional proofs](checks/units/FacePower.lean) · [Pinned source and compatibility edit](checks/units/check.sh)
 
 ```bash
 bash checks/units/check.sh
@@ -363,6 +365,12 @@ The Na⁺/K⁺ driver checks the eight gated channels and both leaks together on
 "$cells_python" -B checks/ion_channels.py
 "$cells_python" -B checks/chloride_channel.py
 "$cells_python" -B checks/channel_clamp_evidence.py
+```
+
+For the instantaneous current of a saved channel population at a declared voltage, run the comparison against an engine containing FR-34. The recorded engine revision is `1b8017d1`. [Reference, units and measured conducting fractions](claims/clamped-channel-current.md)
+
+```bash
+"$cells_python" -B checks/clamped_channel_current.py
 ```
 
 For neutral permeation, compare the compiled inward flux and the final amounts in a closed tissue pair with the analytic solution. The unequal-volume case distinguishes amount from concentration. [Neutral driver](checks/neutral_permeation.py) · [Closed-pair reference](../validation/passive/passive_reference.py#L66)
