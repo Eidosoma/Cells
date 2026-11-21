@@ -63,7 +63,9 @@ step:
       (`SHOWN_INERT`: laws whose declarations write no species amount, provide no amount view and
       close no node) is refused, with its reason (`REFUSED`);
     - a law in no list is refused until it is classified there;
-    - every declared kind is refused.
+    - every declared kind is refused;
+    - a charged species is refused: its channel, pump and membrane fluxes are in-step laws the
+      tracer does not read, and they can be two-way.
   - The rule before it looked for an operator's species field. The wash
     (`scheduled_compartment_wash@1`) declares nodes, not species, so it passed: the tracer kept all
     60 fmol of the well's label while the wash took 30 of it. The region export shares the check.

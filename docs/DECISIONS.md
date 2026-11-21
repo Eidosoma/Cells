@@ -8439,3 +8439,50 @@ lets until 8pm this evening focus on core and FRs nothing else".
 - **Price:** 1.5 to 2 agent-days, gates excluded. For the requester: the sink term above, and how
   "independent streams" was run.
 
+## D262: FR-30's integration into @3, decided by the lead with the advisor (D244's delegation)
+
+2026-11-21, about 13:31 UTC, on the @3 owner's plan for `junction_series_gates`.
+- **State S2:** `junction_gate` [edge] keeps its meaning, the junction's relative conductance; a
+  series-law world adds `junction_series_gates` [gate, edge]; `junction_gate` is set to the
+  product of the gates wherever they change (computed, never integrated, and checked).
+- **Readers:**
+  - The junction's own transport applies one factor to every species it carries. So a series-law
+    edge refuses any valence-0 species with nonzero junction permeability: its factor would be
+    the ionic conductance, and a neutral species needs its own route factor, not built in
+    version 1.
+  - A kind's passive route on a series-law edge is refused.
+  - Partition, cell replacement, the composite adapter's closers, the projective mode and the
+    stationary analysis each refuse the law.
+- **Scope, version 1:** @3 alone and @3 with kinds. Every composite is refused, at
+  `pump_composite_adapter.for_structure` (a recorded exception in the operators owner's file,
+  reviewed by them).
+- **Grants:** @1's check in `definitions/surface_pump_spec.py`, narrowly (@1 and @2 still refuse
+  the law; no existing definition's `to_dict` moves); `models/inner_laws.py` and
+  `registry/model_table.py`, as recorded exceptions naming the F owner.
+- **Development only:** the law refuses unless its junction declaration carries
+  `development: true`. A registered or judged result whose definition carries the flag is not
+  admissible. The registry's reserved `qualified` field (D175) is left for a general consumer.
+- **Order:** the scaffold first (fields, types, parse, registration, refusals, no physics), shown
+  bitwise (crossrev 11 of 11, the guard set, `test_inner_laws`, the IDs check); then the step.
+- **Tests added:** a convergence-order row with a planted stale product at one stage; m = 2 with
+  the second gate pinned open, reproducing the one-gate trajectory.
+
+## D263: A second review's four findings in the assembly washes, the compartment wash and the shell; FR-35 held until fixed
+
+2026-11-21, about 14:36 UTC. A reviewer's report, relayed by the user ("report"):
+1. **A wash with an unlimited tracer source still active.** A full wash (`cells.pool_replacement@1`, on
+   main) reported successful accounting while such a source remained active: three molecules bound
+   to exposed sites before any bound molecule was released. FR-35's partial withdrawal accepts the
+   same configuration. The review asks that the tracer-source check be fixed before FR-35 merges,
+   and that the same fix be applied to full washes on main.
+2. **Crossing a surface:** a bulk wash refuses tracer crossing a surface through its built-in
+   permeability, but accepts the same crossing through a registered route.
+3. **A vacuous shell check:** a low-count shell fired a reaction and reported zero detailed-balance
+   error after checking zero reaction pairs.
+4. **Shared state between runs:** editing one exported check changed the result saved for a later,
+   independent run.
+- **Held:** FR-35 does not land until finding 1 is fixed on its branch and on main.
+- **Fixers:** findings 1, 3 and 4 go to the assembly owner, finding 2 to the operators owner.
+- **Independent check:** as in D259, an agent that wrote none of the code reproduces each finding at
+  its base and reruns the reproducers on each fixed head before anything lands.
+
