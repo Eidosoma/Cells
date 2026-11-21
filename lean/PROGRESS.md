@@ -1,5 +1,28 @@
 # Cells proof comparisons
 
+<a id="matched-buffer-heat"></a>
+
+## 21 November 2026 · Finite-pool heat when the buffer matches the starting concentration
+
+Let a pool place hold `n` molecules, and let the buffer supply exactly `b = nf` molecules in the withdrawn volume fraction `0 < f < 1`. For every realized withdrawal, the heat booked by FR-35 lies between zero and that outcome’s physical split score. Lean proves this by comparing adjacent binomial masses. When the word sampler’s withdrawal probability equals `f`, averaging gives **0 < E[H] ≤ entropy of the withdrawn count ≤ ln(n+1)** for a nonempty place. Along any growing sequence of exactly matched pools, E[H]/n tends to zero. The sign and the per-outcome comparison also hold after summing over matched places. The mean bound uses independent uniform words and natural logarithms. An independent experimental energy budget for this exchange remains open. [Lean proof](CellsProofs/Chemistry/MatchedBuffer.lean) · [Discrete energy convention and sampler](#fr35-withdrawal-energy) · [Cells design](https://github.com/Eidosoma/Cells/blob/2ae9ce8e5c6b56ecab091b6167d034eb97a5520f/docs/ASSEMBLY_WITHDRAWAL_DESIGN.md#L169-L191)
+
+| Initial count | Buffer at ¼ volume | Mean heat (k_BT) | Mean per initial molecule (k_BT) | ln(n+1)/n |
+| ---: | ---: | ---: | ---: | ---: |
+| 4 | 1 | 0.891032 | 0.222758 | 0.402359 |
+| 20 | 5 | 1.628482 | 0.081424 | 0.152226 |
+| 100 | 25 | 2.419274 | 0.024193 | 0.046151 |
+| 400 | 100 | 3.109805 | 0.007775 | 0.014985 |
+
+At engine `2ae9ce8e`, 575 guarded bookings across seven pools matched an independent 88-digit calculation within 1.13 × 10⁻¹² k_BT per heat. Pool volume scaled with the starting tracer count. Exact integer comparisons covered all 42,875 combinations of a matched buffer and withdrawal for 2–50 starting molecules. A complete three-species population wash booked 4.535007 k_BT of heat against a split score of 5.164075. For a mismatched half wash with four tracers, two withdrawn and none supplied, heat exceeds the split score by ln(3/2) k_BT. [Reproducible comparison](checks/matched_buffer.py) · [Engine booking](https://github.com/Eidosoma/Cells/blob/2ae9ce8e5c6b56ecab091b6167d034eb97a5520f/src/cells/models/assembly_lineages_v2/withdrawal.py#L173-L198)
+
+<a id="d272-wash-clamp-retests"></a>
+
+## 21 November 2026 · D272 wash-counter and composite-clamp retests
+
+Both Lean-lane drivers passed on `0aa7f955` and reproduced their numerical JSON byte for byte on `2ae9ce8e`. Three half washes and three 3/7 washes of a 1 µL well completed through the public runner. Na, K and Cl kept their inventories, and cumulative collection and supply matched exactly at every saved row. At `68ab12e7`, three 3/7 washes left a chloride difference of −2.9802322387695312 × 10⁻⁸ fmol and the host refused the step. [Wash replay](checks/compartment_wash.py) · [Repaired counter update](https://github.com/Eidosoma/Cells/blob/2ae9ce8e5c6b56ecab091b6167d034eb97a5520f/src/cells/operators/wash_schedule.py#L478-L491) · [Earlier failed replay](#main-review-d264-d266)
+
+The public composite clamp reproduced the ordinary Kir current of 0.658534 pA at the patch’s own voltage. At −50 mV, its availability of 0.5 gave 0.296208 pA, compared with 0.592416 pA from the raw schedule. The passing engine regressions also covered an independently routed channel factor and a passive route at its own voltage. Six existing tests passed across the wash, clamp and FR-35 checks. [Composite replay](checks/clamped_channel_current.py) · [Composite clamp inputs](https://github.com/Eidosoma/Cells/blob/2ae9ce8e5c6b56ecab091b6167d034eb97a5520f/src/cells/models/pump_composite.py#L1774-L1815) · [Cells lead’s D272](https://github.com/Eidosoma/Cells/blob/2ae9ce8e5c6b56ecab091b6167d034eb97a5520f/docs/DECISIONS.md#L8707-L8716)
+
 <a id="fr35-withdrawal-energy"></a>
 
 ## 21 November 2026 · Energy in a partial pool withdrawal
