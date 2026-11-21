@@ -94,6 +94,9 @@ Code is cited by function, at that stack's top, which is what FR-28 would build 
   - **Replacement@1 and W.** It sits on no slot. `check_slots` never refuses it, and W never resets
     it, so it keeps its bound material across any cell's replacement, as a vessel wall would.
     `bind_occupant` would give it the padding index 0, with `site_replaced` false.
+  - **The padding index 0 is also a real cell's index.** It is safe only because W's event selects
+    a population by `site_replaced` before it reads the cell index:
+    `due = site_replaced & due_slot[site_population_cell]`. §8's aliasing row guards this.
   - **R3 (FR-24).** `quantity_entities` gives it no cell. @2's site source requires the population
     and the element to share a cell (`_site_layout`), so a node-owned population is refused as a
     source, with a message of its own. No @2 target lives at a node, so the door is a node-level
@@ -132,10 +135,21 @@ This is where the options differ.
 No new ledger or term. A node-owned population books exactly as an outward patch population at N:
 - **Material:** its moiety identity R + B = S, the bound ledger, and @3's outside ledger at N
   through `site_bound_net_fmol` (`material_terms`).
-- **Energy:** the site free energy (site note §3.3), with the heat at N in
-  `site_outside_dissipated_energy_pJ` [outside]. Binding is passive, so the component books no work,
-  unless an internalising population of a patch facing N joins it, in which case the hybrid rules
-  apply as they do today.
+- **Energy:** the site free energy (site note §3.3). Binding is passive, so the component books no
+  work, unless an internalising population of a patch facing N joins it, in which case the hybrid
+  rules apply as they do today.
+- **Where its site-side heat and work are booked, with no cell to own it:**
+  - **Heat** is booked per pool, never per owner. The half-step forms each pool's heat
+    (`half_step_terms`' `pool_heat`, its node's subsystem) and scatters it by the pool's kind, into
+    `site_dissipated_energy_pJ` [cell] or `site_outside_dissipated_energy_pJ` [outside].
+  - A node-owned population's pool is (outside, N), so its heat goes to N's entry of the outside
+    field. The cell scatter's padding index 0 carries an exact 0 there, through the same masked
+    `where` that serves an outward patch population today.
+  - **Work and the energy magnitude** go to the population's own entries, `site_work_pJ` and
+    `site_energy_magnitude_pJ` [site population].
+  - No cell index is read for any of these fields, so nothing is booked at a cell.
+  - **W's books** (departed, arrived, the jump) are also per population. A node-owned population's
+    entries stay 0, since W never resets it (§3, §8).
 - **Charge:** none. Ligands are neutral.
 - **The trace rule** (site note §4.3) applies unchanged: the ligand's trace is at most 10⁻⁶ K_d of a
   node-owned population too.
@@ -187,6 +201,20 @@ The criteria are written before any run, as FR-27's were.
    - the round trip, the summary's owner record, and no cell from `population_cell`;
    - one row in `REFUSALS` for each refusal of §7, and the @2 row in
      `test_species_regulated_availability.py`.
+   - **The aliasing row** (W's event map, as FR-26's event rows are written).
+     - **Its world:** cells `cell_0` (index 0, the padding index's real owner) and `cell_1`; an
+       outward population on `cell_0`'s patch, covered by W from template T; and a node-owned wall
+       population at the finite node that patch faces. replacement@1 replaces `cell_0` at t_e.
+     - **At t_e, after the event maps:**
+       - `cell_0`'s population is reset to its template, B′ = θ′S within W's 4 ulps;
+       - the wall's R and B are bitwise unchanged, and its departed, arrived and jump entries are
+         exactly 0;
+       - the summed departed booking equals `cell_0`'s population's B before the event, so it
+         excludes the wall's sites;
+       - the owner's bound ledger closes with W's terms.
+     - **Planted:** the wall read as `cell_0`'s (its `site_replaced` set true in the layout, its
+       index left at 0). The event then resets the wall and books its B as departed, so the row's
+       assertions fail. The test asserts that they do.
 2. **A compiled pair:** one row in the review's compiled test file, `test_wash_schedule_runs.py`,
    tier 2, about 20 s for both arms over a short horizon (**S**). Its reason: the request's
    statement that the numbers are unaffected needs the runner.
