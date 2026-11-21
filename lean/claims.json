@@ -3359,6 +3359,10 @@
         "assembly-stochastic-encounter"
       ],
       "formal": {
+        "sources": {
+          "VeriBiota preservation of a weighted count under an enabled firing, imported in the optional check": "https://github.com/OmnisGenomics/VeriBiota/blob/a145b640d7d8009a5a653849c41ef9a1d6b1c176/Biosim/Proofs/Invariants.lean#L113-L121",
+          "Cells specialization to a one-molecule transfer from a finite pool": "lean/checks/chemistry/Reuse.lean#L63"
+        },
         "status": "proved",
         "about": [
           "cells.phase_exchange@1"
@@ -4983,7 +4987,10 @@
       "statement": "In E + S ⇌ C and C → E + P, total enzyme is E + C and total substrate is S + C + P. Omitting the returned E loses one enzyme unit per catalytic event while preserving substrate.",
       "assumptions": ["Each complex carries one enzyme unit and one substrate unit. Each product retains one substrate unit. The site has no external supply or removal."],
       "uses": ["reaction-inventory"],
-      "formal": {"status": "proved", "about": ["cells.local_species_reactions@1"], "theorems": {
+      "formal": {"status": "proved", "about": ["cells.local_species_reactions@1"], "sources": {
+        "crnt-lean concentration-rate conservation, imported in the optional check": "https://github.com/marpaia/crnt-lean/blob/7386777488a41efd92e6abc2bccf889fb611660e/CRNT/Examples/Enzyme.lean#L64-L82",
+        "Cells comparison of all directed stoichiometric entries and the fixed-volume conversion": "lean/checks/chemistry/Reuse.lean#L22"
+      }, "theorems": {
         "CellsProofs.Chemistry.Enzyme.enzyme_conserved": "lean/CellsProofs/Chemistry/Enzyme.lean",
         "CellsProofs.Chemistry.Enzyme.substrate_conserved": "lean/CellsProofs/Chemistry/Enzyme.lean",
         "CellsProofs.Chemistry.Enzyme.missing_enzyme_balance": "lean/CellsProofs/Chemistry/Enzyme.lean"
@@ -5301,6 +5308,10 @@
       ],
       "uses": ["assembly-stochastic-encounter"],
       "formal": {
+        "sources": {
+          "Pythia Eyring rate and positivity proof, imported in the optional check": "https://github.com/athanor-ai/pythia/blob/65404339b5c6fe8004d91fdd9c0c14ceb0bf7cd3/Pythia/Frontier/Chemistry/Eyring.lean#L23-L36",
+          "Cells single-contact factor as the ratio of the two Eyring rates": "lean/checks/chemistry/Reuse.lean#L77"
+        },
         "status": "proved",
         "theorems": {
           "CellsProofs.Chemistry.AssemblyKinetics.common_residual": "lean/CellsProofs/Chemistry/AssemblyKinetics.lean",

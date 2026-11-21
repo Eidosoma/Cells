@@ -18,6 +18,8 @@ In E + S ⇌ C and C → E + P, total enzyme is E + C and total substrate is S +
 
 Direct proof subject `cells.local_species_reactions@1`
 
+Proof sources [crnt-lean concentration-rate conservation, imported in the optional check](https://github.com/marpaia/crnt-lean/blob/7386777488a41efd92e6abc2bccf889fb611660e/CRNT/Examples/Enzyme.lean#L64-L82) · [Cells comparison of all directed stoichiometric entries and the fixed-volume conversion](../checks/chemistry/Reuse.lean#L22)
+
 Uses [Balanced reactions preserve a weighted inventory](reaction-inventory.md)
 
 ## Numerical comparison

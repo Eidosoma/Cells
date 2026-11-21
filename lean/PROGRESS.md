@@ -1,5 +1,11 @@
 # Cells proof comparisons
 
+<a id="chemistry-imports-nov21"></a>
+
+## 21 November 2026 · Imported chemistry proofs and the closed enzyme fixture
+
+Four optional theorems connecting Cells to crnt-lean, VeriBiota and Pythia passed on Lean 4.19.0 with the three standard axioms. The run took 35 seconds with upstream source and Mathlib cached. In the `resolved_pump_composite@1` enzyme fixture, the imported network matches every directed reaction coefficient. On engine `d0104950`, a 0.0125 s CPU float64 half-step gave residuals of 6.78 × 10⁻²¹ fmol for enzyme and −1.12 × 10⁻²⁰ fmol for substrate, within the 6.94 × 10⁻¹⁸ fmol tolerance. Removing the returned enzyme from the catalytic reaction caused the expected admission refusal. [Imported theorems](checks/chemistry/Reuse.lean) · [Reproduction](checks/chemistry/check.sh) · [Numerical comparison](checks/closed_enzyme.py) · [Chemistry library survey](ENGINE_LAW_VERIFICATION.md#chemistry-imports-for-cells)
+
 <a id="kv15-ph-activation"></a>
 
 ## 21 November 2026 · Kv1.5 activation and the current retained at pH 6.8

@@ -25,6 +25,8 @@ On a positive reversible edge, catalysis preserves the forward-to-reverse rate r
 
 Direct proof subject `cells.transition_state_factor@1`
 
+Proof sources [Pythia Eyring rate and positivity proof, imported in the optional check](https://github.com/athanor-ai/pythia/blob/65404339b5c6fe8004d91fdd9c0c14ceb0bf7cd3/Pythia/Frontier/Chemistry/Eyring.lean#L23-L36) · [Cells single-contact factor as the ratio of the two Eyring rates](../checks/chemistry/Reuse.lean#L77)
+
 Uses [Finite molecule counts set stochastic encounter rates and paired event heat](assembly-stochastic-encounter.md)
 
 ## Numerical comparison

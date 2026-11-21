@@ -97,6 +97,8 @@ The cleft-fill and wash proofs share the same ideal mixing term. Their default p
 
 Two monotonicity proofs from `grn-lean` also apply directly to the scalar Hill factors in Cells. The optional check compiles the pinned definition and both upstream proofs, verifies the equivalence with our log-space evaluation, and shows that basal channel availability preserves the activating and inhibiting dose responses. The chemistry review records which reaction-network results apply to the closed enzyme fixture. [Hill specialization](checks/hill/Response.lean) · [Regulated channel proof](claims/regulated-state-response.md) · [Chemistry libraries tested against Cells](ENGINE_LAW_VERIFICATION.md#chemistry-libraries-tested-against-cells)
 
+Three optional chemistry imports cover the closed enzyme reaction, conservation of a molecule exchanged with a finite pool, and the effect of lowering one activation barrier. Run `bash checks/chemistry/check.sh` from `lean/` with the pinned Lean on your path. The first run fetches the selected modules and their licenses. [Tested imports and future chemistry options](ENGINE_LAW_VERIFICATION.md#chemistry-imports-for-cells) · [Cells proofs](checks/chemistry/Reuse.lean)
+
 ## Build
 
 Run these commands from `lean/`. Lean and Mathlib are pinned to 4.19.0. Lake reads the dependency revisions from the lockfile. The Linux x86-64 setup below reuses the lane’s installed compiler, or fetches it on a fresh checkout. [Lean release](https://github.com/leanprover/lean4/releases/tag/v4.19.0) · [Mathlib release](https://github.com/leanprover-community/mathlib4/releases/tag/v4.19.0)
