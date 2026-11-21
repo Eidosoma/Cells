@@ -5,6 +5,8 @@ must catch (D187):
 - an untracked module the process imported is found, its full content is in checkout()'s diff, the
   status lists it, and refuse_untracked raises; once committed, none is found and nothing is
   refused (planted: the old fallback, `git diff HEAD` with `--untracked-files=no`, is empty);
+- an ignored one (runs/), which Git's status omits, gets Git's `!!` line, so the status is not empty
+  where its content is recorded (planted: Git's own status is empty there);
 - pytest's collected test files are the harness, not a source;
 - a frozen snapshot's root (SNAPSHOT.json) and a tree outside Git report none.
 
@@ -33,7 +35,8 @@ def repo(tmp_path):
     git(root, "config", "user.email", "check@example.invalid")
     git(root, "config", "user.name", "check")
     (root / "tracked.py").write_text("X = 1\n")
-    git(root, "add", "tracked.py")
+    (root / ".gitignore").write_text("__pycache__/\nruns/\n")  # as the repository's own
+    git(root, "add", "tracked.py", ".gitignore")
     git(root, "commit", "-q", "-m", "base")
     return root
 
@@ -52,6 +55,7 @@ def load(root, name, text, relative=None):
 
 def test_an_untracked_executed_source_is_found_recorded_and_refused(repo):
     name = "d259_untracked_driver_helper"
+    ignored = "d259_ignored_driver_helper"
     try:
         load(repo, name, "VALUE = 'the untracked executed source'\n")
         assert executed_sources.untracked(repo) == [f"{name}.py"]
@@ -68,8 +72,16 @@ def test_an_untracked_executed_source_is_found_recorded_and_refused(repo):
         git(repo, "commit", "-q", "-m", "tracked now")
         assert executed_sources.untracked(repo) == []
         executed_sources.refuse_untracked(repo, "the check")  # tracked: nothing to refuse
+        # An ignored one: Git's status omits it (planted: empty); checkout() adds Git's "!!" line.
+        load(repo, ignored, "VALUE = 'the ignored source'\n", relative=f"runs/{ignored}.py")
+        assert git(repo, "status", "--porcelain=v1", "--untracked-files=all") == ""
+        record = executed_sources.checkout(repo)
+        assert record["status"] == f"!! runs/{ignored}.py\n"
+        assert "the ignored source" in record["diff"]
+        assert record["untracked_executed"] == [f"runs/{ignored}.py"]
     finally:
         sys.modules.pop(name, None)
+        sys.modules.pop(ignored, None)
 
 
 def test_the_harness_a_snapshot_and_a_tree_outside_git_report_none(repo, tmp_path):

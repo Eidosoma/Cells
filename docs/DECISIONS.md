@@ -8384,3 +8384,185 @@ eight real, and assigned them that day.
   the base and on each fixed head before anything lands.
 - **The reviewer confirmed** that the extreme-turnover repair and the restart at a rate change held
   up on replay.
+
+## D260: Until 20:00 UTC on 21 November, core and feature requests only
+
+2026-11-21, about 11:49 UTC. The user: "so lets pause the gene regualatoin work after that check,
+lets until 8pm this evening focus on core and FRs nothing else".
+- **Gene regulation** pauses after the independent checker's rerun of finding 8 on its branch
+  (D259). A gap that rerun finds is recorded for when the lane resumes, not fixed now. Its dt 1.0
+  and dt 0.5 results stay unread.
+- **Origin of life and mitochondria** stay paused, except their feature-request work (FR-35's
+  partial withdrawal, by the assembly owner).
+- **Until 20:00 UTC:** the core and the feature requests. That covers FR-33's tracer fixes
+  (D259), FR-35, regulated turnover's second-order step, FR-34's declared-voltage evaluation for
+  @3's channel populations, FR-30's integration into @3 now that N2 has landed, and the gates'
+  own upkeep (the scope map and the crossrev information record).
+- **Decisions open for the user** stay open (FR-7 item 4, FR-26's L, FR-28, FR-29, the FR-30
+  downloads).
+
+## D261: FR-35's design, decided by the lead with the advisor under the user's delegation (D244)
+
+2026-11-21, about 12:02 UTC, on docs/ASSEMBLY_WITHDRAWAL_DESIGN.md (merged).
+1. **The law:** a new operator, `cells.pool_withdrawal@1`, schedule kind `withdrawal` with
+   `fraction` in (0, 1) and a `buffer`. `cells.pool_replacement@1` stays as registered (it draws
+   nothing and books no heat); `fraction` on a replacement is refused, naming the withdrawal kind.
+2. **The draw:** each molecule independently with probability f, so k ~ Binomial(n, f), in
+   per-place blocks on the schedule's own stream at draw number w·P_f + j. The counter w and
+   FR-22's applied-stops record are one number, or asserted equal on restore. The addresses are
+   shown disjoint from the transfer's and the Poisson shear's draws.
+3. **The buffer:** integer counts in the withdrawn volume fV; tracer-free means zero.
+4. **The booking:** A, FR-27's booking with the discrete free energy. The sink takes F(before) −
+   F(kept at (1 − f)V), the work F(buffer at fV), and the mixing heat goes to the heat ledger.
+   - That sink is not the sample's own F: it differs by σ = −ln[C(n,k) f^k (1 − f)^(n−k)], the
+     outcome's binomial surprisal. The record names the sink field for what it is and records σ
+     separately, so the energy exchanged is stated plainly.
+   - Shown: heat ≥ 0 per realization, also when the buffer carries the species. Tested: the f → 1
+     limit gives @1's bookings with zero heat, and the mean over k matches FR-27's continuum heat.
+   - The free energies at fV and (1 − f)V go through the guarded table read.
+5. **Capacity (changed from the note):** decided before the draw. The wash is refused when a
+   place's pre-wash count plus its buffer count exceeds the capacity (the k = 0 worst case), so no
+   refusal depends on k and the binomial is never truncated. The guard stays as a backstop.
+6. **The statistics:**
+   - The tier test draws on the host at real run addresses, with bands and a χ² test.
+   - One engine run's cost is measured after the compile. If a few thousand runs are cheap, that
+     ensemble runs once as development evidence across independent streams.
+   - The invariant is collected plus remaining equals the pre-wash count, recorded per run.
+   - The quarter case gets a variance band (1.5) and checks the collected count.
+   - An independence row covers two places with equal counts and consecutive washes.
+7. **c_ext:** the buffer's concentration is checked at parse, and the realized pool's drift is
+   reported.
+8. **The legend and the checkpoint key** are written only when a world declares a withdrawal, so
+   existing worlds stay bitwise.
+- **Process:** the reproducer's two behaviours are rerun at the base first; the independent checker
+  writes the acceptance from the requester's words against the built head.
+- **Price:** 1.5 to 2 agent-days, gates excluded. For the requester: the sink term above, and how
+  "independent streams" was run.
+
+## D262: FR-30's integration into @3, decided by the lead with the advisor (D244's delegation)
+
+2026-11-21, about 13:31 UTC, on the @3 owner's plan for `junction_series_gates`.
+- **State S2:** `junction_gate` [edge] keeps its meaning, the junction's relative conductance; a
+  series-law world adds `junction_series_gates` [gate, edge]; `junction_gate` is set to the
+  product of the gates wherever they change (computed, never integrated, and checked).
+- **Readers:**
+  - The junction's own transport applies one factor to every species it carries. So a series-law
+    edge refuses any valence-0 species with nonzero junction permeability: its factor would be
+    the ionic conductance, and a neutral species needs its own route factor, not built in
+    version 1.
+  - A kind's passive route on a series-law edge is refused.
+  - Partition, cell replacement, the composite adapter's closers, the projective mode and the
+    stationary analysis each refuse the law.
+- **Scope, version 1:** @3 alone and @3 with kinds. Every composite is refused, at
+  `pump_composite_adapter.for_structure` (a recorded exception in the operators owner's file,
+  reviewed by them).
+- **Grants:** @1's check in `definitions/surface_pump_spec.py`, narrowly (@1 and @2 still refuse
+  the law; no existing definition's `to_dict` moves); `models/inner_laws.py` and
+  `registry/model_table.py`, as recorded exceptions naming the F owner.
+- **Development only:** the law refuses unless its junction declaration carries
+  `development: true`. A registered or judged result whose definition carries the flag is not
+  admissible. The registry's reserved `qualified` field (D175) is left for a general consumer.
+- **Order:** the scaffold first (fields, types, parse, registration, refusals, no physics), shown
+  bitwise (crossrev 11 of 11, the guard set, `test_inner_laws`, the IDs check); then the step.
+- **Tests added:** a convergence-order row with a planted stale product at one stage; m = 2 with
+  the second gate pinned open, reproducing the one-gate trajectory.
+
+## D263: A second review's four findings in the assembly washes, the compartment wash and the shell; FR-35 held until fixed
+
+2026-11-21, about 14:36 UTC. A reviewer's report, relayed by the user ("report"):
+1. **A wash with an unlimited tracer source still active.** A full wash (`cells.pool_replacement@1`, on
+   main) reported successful accounting while such a source remained active: three molecules bound
+   to exposed sites before any bound molecule was released. FR-35's partial withdrawal accepts the
+   same configuration. The review asks that the tracer-source check be fixed before FR-35 merges,
+   and that the same fix be applied to full washes on main.
+2. **Crossing a surface:** a bulk wash refuses tracer crossing a surface through its built-in
+   permeability, but accepts the same crossing through a registered route.
+3. **A vacuous shell check:** a low-count shell fired a reaction and reported zero detailed-balance
+   error after checking zero reaction pairs.
+4. **Shared state between runs:** editing one exported check changed the result saved for a later,
+   independent run.
+- **Held:** FR-35 does not land until finding 1 is fixed on its branch and on main.
+- **Fixers:** findings 1, 3 and 4 go to the assembly owner, finding 2 to the operators owner.
+- **Independent check:** as in D259, an agent that wrote none of the code reproduces each finding at
+  its base and reruns the reproducers on each fixed head before anything lands.
+
+## D264: A tester's six readout findings (FR-24, FR-26, FR-25); their readouts held from scoring until fixed
+
+2026-11-21, about 14:57 UTC. A tester's report, relayed by the user, tested at main 5dcf276a and
+gene-regulation-lane 43afa534; FR-24 and the two FR-25 RNA counter issues first.
+1. **FR-24 (main):** a receptor-controlled reaction's exported rate ignores the receptor factor. It
+   reads 0.000200 fmol/s in all three controls, where the accumulated product shows 0 (empty
+   receptors), 0.000080 (40% occupancy) and 0.000200 (coupling disabled).
+2. **FR-26 (main):** at a replacement's event time (0.020 s), the observation combines the
+   departing cell's substrate with the incoming cell's multiplier, giving 0.00048009 fmol/s. The
+   departing rate is 0.00192035 and the incoming rate 0.00050000.
+3. **FR-25 (gene regulation's branch):** reversing only the cell declaration order of a two-cell A1
+   run changes exported RNA from 1.00e-12 to 1.403e-8 fmol, because the export is keyed by
+   position, not by cell and gene ID.
+4. **FR-25:** two degradation routes for one RNA give ten loss readings for five sampling times,
+   overstating surviving labelled RNA by 64%.
+5. **FR-25:** the survivor reader reports 3.32347 fmol labelled where only 1.03321 fmol total
+   remains (exact 0.99966), with zero reported grid error.
+6. **FR-25:** a NaN or decreasing loss counter returns 100% survival and zero grid error, and a
+   reversed labelling window returns negative completions.
+- **Held:** FR-24's exported reaction rates at routed reactions, FR-26's event-row observations,
+  and FR-25's readers (already held by D259) are not used for scoring until fixed.
+- **Fixers:** 1 and 2 go to the operators owner; 3 to 6 to the gene-regulation agent. These are FR
+  fixes, inside D260's core-and-FR window.
+- **Independent check:** as in D259 and D263, an agent that wrote none of the code reproduces each
+  finding at its base and reruns the reproducers on each fixed head before anything lands.
+
+## D265: A fourth review's nine findings; FR-34 reopened for composite worlds
+
+2026-11-21, about 15:30 UTC. A reviewer's report, relayed by the user ("review this with adviser and then
+get into high priority"); the lead and the advisor found all nine real.
+- **FR-34 is reopened.** The lead had reported it complete, and 121aca27's landing text says composite
+  worlds are covered. Finding 1 shows they are not:
+  - in a composite with `species_regulated_availability@1` holding one population's factor at 0.5,
+    the inner helper given the composite's stored state, controls and layout returns 11.10328 pA at
+    −50 mV, where the composite's effective controls give 5.55164 pA (and reproduce the recorded
+    0.95264 pA at the cell's own voltage);
+  - the composite exposes no clamp method, and the example README tells a reader to multiply an
+    observed availability that already holds the factor by the factor again.
+  - The fix exposes the calculation through the composite, with its ordinary readout's views, and
+    corrects the README. The lead's scope ruling for the effective-availability note (operator
+    writes enter through the held value) is to be checked against the stored control and the
+    observed field.
+- **FR-33 (main):**
+  - (2) equivalent pulse times assign different material and can drop a requested sample, because
+    the tracer admits a time within tolerance but applies it, and the exporter samples it, by exact
+    comparison;
+  - (4) a nearly depleted pool still returns negative old material with both checks at zero, because
+    the cumulative balance tolerance also decides the resolution test;
+  - (5) a repeated region member creates negative outside material.
+- **FR-25 (gene regulation's branch):**
+  - (3) conflicting rows at one required time can earn a zero error, and six-decimal time keys collide;
+  - (7) a valid zero-loss product raises in the cohort reader;
+  - (8) the reader resolves a producing chain across all cells, not the exported one;
+  - (9) a receipt is called clean while archiving an ignored source; main's fix (c180c1bc) is to be
+    merged and checked through G4's entry point. D260 parked finding 9's class for the lane's
+    resume; the user's instruction here overrides that.
+- **(6) The Lean lane's pulse replay** samples the start of each half-step, so it fails against the
+  midpoint rule (a6235d7b). It is the Lean lane's file; it is relayed, and it confirms the midpoint
+  record (sampling the midpoints reproduces it to 3.9e-16).
+- **Held from scoring until fixed:** FR-34's composite currents and the README's instruction,
+  FR-33's tracer and region export, and FR-25's readers (already held).
+- **Process:**
+  - The independent checker reproduces each finding at main 62ec1cc0 and gene-regulation-lane
+    c06a0612 first, and reruns D264's cases on the gene-regulation head.
+  - Follow-ups to a held tool now get the checker's rerun as well: finding 4 may have come with the
+    tolerance follow-up (1b8017d1), which landed without one.
+
+## D266: FR-27's wash books unchanged ions inexactly at non-dyadic fractions
+
+2026-11-21, about 15:34 UTC. A user's finding, relayed: on main c4570309, in compiled float64 on
+CPU, `validation.tissue.wash_schedule_fixtures.well(sites=False, volume=1e6, dt=0.01, end=0.08)`,
+replacing 3/7 of the well at 0.02, 0.04 and 0.06 s and refilling with only the tracer at its trace
+level, keeps chloride's inventory fixed, but its cumulative collected and supplied amounts differ by
+2.98e-8 fmol. Three half-volume exchanges give exact equality.
+- **The fix:** an unchanged ion's collected and supplied amounts come from one expression, so they
+  are equal exactly at any fraction. Both fractions (3/7 and 1/2) become regression rows at the
+  existing balance tolerances.
+- **Assigned:** the robustness agent, with the operators owner's review, stacked on the wash's
+  surface-path fix (0e8194e0). FR-27's wash counters are held from scoring until it lands.
+

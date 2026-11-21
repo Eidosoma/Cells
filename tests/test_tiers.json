@@ -298,6 +298,12 @@
   "/mnt/workspaces/Cells/operators-fr26-20261120/gate-e9855c1c/tiers/measure/measured.json",
   "/mnt/workspaces/Cells/gene-regulation-20261120/g3-gate/timed-dd993438/measure/measured.json",
   "/mnt/workspaces/Cells/ol3-engine-20261119/measure-f62426c7/measured.json",
+  "/mnt/workspaces/Cells/regulated-midpoint-20261121/tiers/measured-0c34a800/measured.json",
+  "/mnt/workspaces/Cells/fr33-tracer-fixes-20261121/gate-9f1a9ee0/tiers/measure/measured.json",
+  "/mnt/workspaces/Cells/core-pass-at3-20261118/fr34/measure-7fc14469/measure/measured.json",
+  "/mnt/workspaces/Cells/review-check-20261121/lead-measure-2ef50ab8/measure/measured.json",
+  "/mnt/workspaces/Cells/fr33-tracer-fixes-20261121/gate-2ee6e774/tiers/measure/measured.json",
+  "/mnt/workspaces/Cells/core-pass-at3-20261118/fr34b/measure-3fd63763/measure/measured.json",
   "/mnt/workspaces/Cells/gene-regulation-20261120/review-fixes/timed-40c14f33/measure/measured.json",
   "/mnt/workspaces/Cells/gene-regulation-20261120/review-fixes/timed-11234cc4/measure/measured.json",
   "/mnt/workspaces/Cells/gene-regulation-20261120/review-fixes/timed-96391686/measure/measured.json",
@@ -2518,6 +2524,52 @@
    "utc": "2026-11-21T10:34:34+00:00"
   },
   {
+   "git_revision": "0c34a80034766b277c999fde21fadaca3c026490",
+   "dirty": false,
+   "root": ".claude/worktrees/regulated-midpoint",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-21T11:16:25+00:00"
+  },
+  {
+   "git_revision": "9f1a9ee0cd85bfaba5b0c2182cf6610eb9037e59",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/fr33-tracer-fixes-20261121/snapshot-9f1a9ee0",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-21T11:49:49+00:00"
+  },
+  {
+   "git_revision": "7fc144692be9104c7870e183d9da1a0d0a24dee0",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/core-pass-at3-20261118/snapshot-7fc14469",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-21T11:57:03+00:00"
+  },
+  {
+   "git_revision": "2ef50ab86279091ee721a16d757184e1b31cd4f6",
+   "dirty": false,
+   "root": "/mnt/workspaces/Cells/review-check-20261121/lead-measure-2ef50ab8/tree",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-21T12:55:45+00:00"
+  },
+  {
+   "git_revision": "2ee6e774d09eb71c012781d17db2cf9e3ade5b5b",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/fr33-tracer-fixes-20261121/snapshot-2ee6e774",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-21T12:38:57+00:00"
+  },
+  {
+   "git_revision": "3fd63763b0f9e454cd69513c843ae5d1d98d0b08",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/core-pass-at3-20261118/snapshot-3fd63763",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-21T12:58:54+00:00"
+  },
+  {
    "git_revision": "40c14f33ba8acec938286141c77aedaab0415e5d",
    "dirty": false,
    "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -3658,6 +3710,14 @@
     "exit_code": 0,
     "counts": {
      "passed": 16
+    }
+   },
+   {
+    "file": "tests/unit/test_executed_sources.py",
+    "seconds": 1.17,
+    "exit_code": 0,
+    "counts": {
+     "passed": 2
     }
    },
    {
@@ -5595,10 +5655,10 @@
    },
    {
     "file": "tests/unit/test_species_regulated_availability.py",
-    "seconds": 9.85,
+    "seconds": 9.44,
     "exit_code": 0,
     "counts": {
-     "passed": 108
+     "passed": 109
     }
    },
    {
@@ -5839,14 +5899,6 @@
     "exit_code": 0,
     "counts": {
      "passed": 1
-    }
-   },
-   {
-    "file": "tests/unit/test_surface_pump_v3_populations.py",
-    "seconds": 17.11,
-    "exit_code": 0,
-    "counts": {
-     "passed": 14
     }
    },
    {
@@ -7126,10 +7178,10 @@
    },
    {
     "file": "tests/unit/test_region_readouts.py",
-    "seconds": 40.54,
+    "seconds": 40.52,
     "exit_code": 0,
     "counts": {
-     "passed": 3
+     "passed": 7
     }
    },
    {
@@ -7507,6 +7559,14 @@
     "exit_code": 0,
     "counts": {
      "passed": 4
+    }
+   },
+   {
+    "file": "tests/unit/test_surface_pump_v3_populations.py",
+    "seconds": 28.32,
+    "exit_code": 0,
+    "counts": {
+     "passed": 16
     }
    },
    {

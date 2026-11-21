@@ -39,7 +39,7 @@ and a general feature, never one built for one study (D144).
 | [FR-31](#fr-31--vesicle-rupture-during-a-steady-tension-hold) | Vesicle rupture during a steady tension hold: an optional rupture event competing in time | Low (D230, D248); the note before OL9 registers | Requested; a design note first | Blocked on rupture rates against tension, and on OL6 |
 | [FR-32](#fr-32--a-dopc-swelling-validation-record-for-the-water-operator) | A DOPC swelling validation record for the water operator | Low (D248) | Requested | Folded into the next water-operator landing |
 | [FR-33](#fr-33--regional-labelled-protein-readouts-redistribution-against-degradation) | Regional labelled-protein readouts: inside a measured region, outside it and across the whole cell | High (D228, D248) | **Not for scoring until D259's fixes land** (a review's findings: the tracer's negative cohort, the wash admitted, the reserved name). **Landed** (merge ce2a3d9c, tag `fr33-region-readouts-landed-2026-11-20`): the region export and a one-way tracer, validation only; two-way movers are refused | Tracing through two-way transport is engine work (label rows or directional records), not scheduled |
-| [FR-34](#fr-34--channel-population-readouts-count-availability-and-signed-current) | Channel population readouts: surface count, availability and signed current at a declared voltage, with units and sign convention | **High** (user, 20 November 2026; D251) | **Landed:** the routes' and transporter populations' opt-in flux and current readouts with `clamped_flux` and `clamped_rates` (merge 81a29442, tag `fr34-current-readouts-landed-2026-11-21`), and the FR-7 lane's example with the halving control (bf7b50af, note 1e762583) | @3's channel populations at a declared voltage: the @3 owner's engine work (about 1–1.5 agent-days) |
+| [FR-34](#fr-34--channel-population-readouts-count-availability-and-signed-current) | Channel population readouts: surface count, availability and signed current at a declared voltage, with units and sign convention | **High** (user, 20 November 2026; D251) | **Reopened (D265) for composite worlds:** the clamped evaluation (121aca27) and the availability record (d0104950) landed for @3 alone and the kinds; a composite needs its own entry point, and the example README's instruction applies a factor twice. **Landed:** the routes' and transporter populations' opt-in flux and current readouts with `clamped_flux` and `clamped_rates` (merge 81a29442, tag `fr34-current-readouts-landed-2026-11-21`), and the FR-7 lane's example with the halving control (bf7b50af, note 1e762583) | The composite's clamp entry point and the README fix (D265), held from scoring until then |
 | [FR-35](#fr-35--timed-partial-withdrawal-of-an-assembly-populations-exterior-pool) | Timed partial withdrawal of an assembly population's well-mixed exterior pool: each molecule withdrawn independently, a declared buffer supplied, sites and particles kept | **High** (user, 21 November 2026) | Requested | The assembly owner (FR-20's builder): a short design note, then the build |
 
 ## FR-1 — A closed internal compartment on the shared inventory
@@ -469,6 +469,35 @@ use Cells' unit choice than ask for its own.
   heredity question. A unit chosen for the loop should be one where that question is measurable.
 
 **The design note (proposed, 18 November 2026):** [ABUNDANCE_TO_FUNCTION_DESIGN.md](ABUNDANCE_TO_FUNCTION_DESIGN.md), framing the user's choice of the loop's unit (D216). **Answered 18 November (D217, D218):** U2 first, then U1; the loop is admitted through B1′; qualification needs a closed loop with a feedback-cut control (the note's §9).
+
+**Before revisiting D218's kept refusal (the Lean lane, relayed by the user, 21 November 2026).**
+D218 refuses a population's availability multiplied by its own abundance where that abundance
+already sets its conductance, so a population cannot regulate its own availability through its
+density. Cells reproduced the density curve on a separate reporter. An independent Kv1.5
+density experiment (surface density and current density measured in the same cells, across
+expression levels) is the next evidence to seek before that rule is revisited. Until then, the
+refusal stands.
+
+**The search's result (21 November 2026).** One study measures both in the same Kv1.5 cells across a
+continuous range of expression: Maverick and Tamkun 2022, Biophys J 121:755-768,
+doi:10.1016/j.bpj.2022.01.021 (PMC8943702; free to read, not openly licensed, so bare cited values
+only, D227).
+- **Method:** HEK293 cells with YFP-Kv1.5. Surface channel number came from TIRF counting
+  calibrated to single channels, and from gating charge. Conductance came from the I-V slope near
+  E_K.
+- **Result, as reported:** conductance is not proportional to surface density. About 26% of gating
+  channels conduct, and the conducting fraction falls as density rises (about 70% non-conducting
+  near 100 channels per square micrometre).
+- **What it supports:** not a test of "current scales with density". It could support a held-out
+  test of a density-dependent conducting fraction, fitted on low-density cells and predicted on
+  high-density ones. That non-conducting fraction is a separate effect from availability as
+  Cells defines it.
+- **What it needs:** the values are in Figs 7-8 and the supplement. A test needs the user's
+  download of the PDF and supplement for digitising, or the authors' per-cell data.
+
+A second candidate, Ding et al. 2014 (PLoS One, CC BY), varies culture temperature rather than
+expression, with currents and surface data from different cells, so it can't support the test.
+
 
 ## FR-8 — A qualified long-duration mode
 

@@ -114,6 +114,13 @@ def main(argv=None):
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args(argv)
+    from validation import executed_sources  # noqa: PLC0415
+
+    # D259: refuse before any compute, so a refused run loses nothing; checked again at the
+    # record, for a source the run imports on its way.
+    executed_sources.refuse_untracked(
+        Path(__file__).resolve().parents[2], "cell_replacement_rk4_electrode's record"
+    )
     args.output.mkdir(parents=True, exist_ok=False)
     raw = fx.heredity_sheet(1, 0, dt=DT, end_time=STEPS * DT, solver="rk4")
     raw["experiment"]["observation_times"] = [0.0, STEPS * DT]
@@ -160,8 +167,7 @@ def main(argv=None):
         inner.append(
             after._replace(**{f: np.asarray(getattr(i_state, f)) for f in ionic.STATE_TYPE._fields})
         )
-    from validation import executed_sources  # noqa: PLC0415
-    executed_sources.refuse_untracked(  # D259
+    executed_sources.refuse_untracked(  # D259: again, for a source imported during the run
         Path(__file__).resolve().parents[2], "cell_replacement_rk4_electrode's record"
     )
 
