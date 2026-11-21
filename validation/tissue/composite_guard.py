@@ -650,6 +650,9 @@ def _provenance():
             patch_sha256=record["patch_sha256"],
             dirty=bool(record["selected_status_porcelain_v1_z"]),
         )
+    from validation import executed_sources  # noqa: PLC0415
+    executed_sources.refuse_untracked(root, "composite_guard's source record")  # D259
+
     command = ["git", "-C", str(root)]
 
     def output(*args):

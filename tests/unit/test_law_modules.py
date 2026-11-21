@@ -29,6 +29,7 @@ OWN = {  # Each law's own module: its declarer.
     "kleak_always_open@1": "cells.laws.channels.kleak_always_open",
     "naleak_always_open@1": "cells.laws.channels.naleak_always_open",
     "junction_voltage_relaxation@1": "cells.laws.junctions.junction_voltage_relaxation",
+    "junction_series_gates@1": "cells.laws.junctions.junction_series_gates",  # FR-30 (D262).
     "nak_atp_mass_action_positive@1": "cells.laws.pumps.nak_atp_mass_action_positive",
     "ca_atp_mass_action_positive@1": "cells.laws.pumps.ca_atp_mass_action_positive",
     "constant_field@1": "cells.laws.routes.constant_field",

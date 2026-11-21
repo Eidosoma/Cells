@@ -108,6 +108,12 @@ references. Both sides cite this subsection.
 - **The catalysing phase.** In OL1 only the assembly's condensed phase catalyses. A dilute catalysing
   phase is refused until a declared meaning exists, since its fraction would have to include the
   solvent.
+  - **A catalysed step touches the membrane** (the lead's ruling of 20 November 2026). A factor on a
+    step that lies wholly in the pool or wholly in the lumen is refused until a meaning is declared.
+    A single lineage would scale such a step by the membrane's fractions, while a population
+    evaluates the pool's steps at an empty vesicle, where g = 1. No registered world is affected:
+    the one refusal world that declares such a factor is refused earlier, for its dilute catalysing
+    phase.
 - **The measure** (D215, which amends U6(a)):
   - the GARD limit uses `multinomial_less_one` with `extinct`, which reproduces G1's rates exactly;
   - physical worlds use `multinomial` with `kept`.
@@ -225,6 +231,8 @@ that refine it.
      an entry;
    - a join from the lumen, an interfacial reaction and a pool-to-lumen reaction are refused until
      a geometric encounter is declared for them.
+   - **Amended 20 November 2026 (§0.2f):** one interfacial shape is admitted, a pool molecule
+     binding a declared site to form its declared complex.
 
    Worlds without a geometry keep `count_on_m` on every membrane-locus step. That covers OL1's
    worlds, the probes and the GARD limit.
@@ -515,6 +523,108 @@ export of the registered OL2 and OL3 inputs, made at main e8759b48, showed what 
    - It shipped in OL2 milestone 1 on 18 November, so it is recorded there as rule 16's listed
      amendment. Before that milestone lands, the lead checks that each of the 47 files is in the
      tool's leaf-compared set.
+
+### 0.2f The lead's rulings for FR-21's site step (20 November 2026; D244, D246)
+
+The user delegated FR questions to the lead (D244). The lead decided these with the advisor; they
+are not the user's approval.
+
+1. **Rule 3 of §0.2c is amended** to admit exactly one interfacial shape, one-step site binding:
+   X@pool + site@membrane -> complex@membrane.
+   - It is admitted under the existing `cells.stochastic_mass_action@1` with `count_on_m`. No new
+     law is added.
+   - Its encounter is the site count, since the law's membrane factor cancels to n_site. So
+     a⁺ = k_f·θ⁺·n_site, and a⁻ = k_f·exp(Σνμ°)·n_complex, its reverse from F.
+   - The world declares the pair, `"sites": [{"site": ..., "complex": ...}]`: both are membrane
+     species, distinct, and a complex belongs to one site.
+2. **Admission is keyed on the declaration** (D246), never on stoichiometry alone.
+   - The step must be declared in the binding direction: one pool molecule and the declared site
+     form the site's declared complex.
+   - Still refused:
+     - an undeclared pair;
+     - a binding of two ligands;
+     - a ligand in the lumen;
+     - the step declared as the release;
+     - every other interfacial step, as before.
+   - **OL5's registered refusal worlds stay refused.** `refuse_count_on_m_cross_phase` has the
+     shape but declares no site or complex.
+3. **On a bilayer, sites and complexes take area,** as every membrane species does. The shell's
+   own geometry, where sites set nothing, comes after this step lands.
+4. **Not yet settled:**
+   - **OL5's reference parser,** `refusals2.validate` in `validation/ool/references/`, refuses every
+     cross-phase step under a geometry. It needs OL5's own amendment before an FR-21 world can be
+     registered. That is OL5's work, later.
+   - **k_f's provenance.** FR-21's note says k_f carries its provenance (§0.2e item 3). The
+     mass-action law's rate key is a bare number, so where the provenance lives is a world-format
+     question for the lead before a world is registered.
+5. **The acceptance** is the requester's, relayed on 20 November 2026. It is a test in
+   `tests/unit/test_assembly_lineages_v2_replacement.py`:
+   - on the one-particle fixture, a bound ligand stays through FR-20's wash;
+   - a released one rebinds.
+
+### 0.2g The lead's rulings for FR-21's prescribed shell (20 November 2026; D244, D246)
+
+The design is [ASSEMBLY_SHELL_DESIGN.md](ASSEMBLY_SHELL_DESIGN.md) §4.2–§4.3, built to the
+requester's acceptance (docs/FEATURE_REQUESTS.md, FR-21).
+
+1. **`cells.prescribed_shell@1` is a geometry kind beside the bilayer.**
+   - It declares `area_m2` (value, provenance), and its lumen is `lumen_volume: declared` with
+     `phases.lumen.volume_L`.
+   - The wall is the membrane phase, and its species carry no area quanta. So the wall's counts,
+     binding sites included, set neither the area nor the lumen.
+2. **It has its own entry law, `cells.shell_permeation@1`:** a⁺ = P_s·A_sh·ρ0·θ⁺, with the exit
+   the same law applied to the products.
+   - The extent is a constant of the world, so G_s = P_s·A_sh. The run reports G_s per permeant,
+     in world.json's `derived.shell`.
+   - `cells.membrane_permeation@1`'s text is unchanged (D147).
+3. **The gate factor, `cells.gate_factor@1` (the note's G2).** Its fractions are over the gate's
+   declared forms only: g = Σ m_j e^ΔΔG‡ / Σ m_j over the gate.
+   - So the site count cannot dilute a gated entry, which the transition-state factor's
+     whole-wall fractions would do.
+   - It is evaluated on the common state m, as that factor is, so detailed balance is kept.
+   - A gated shell is therefore built, not refused.
+4. **A shell refuses,** at the parse and each with its reason:
+   - a join (phase exchange);
+   - the bilayer's permeation;
+   - an osmotic lumen;
+   - `exchange_encounter`;
+   - the bilayer's keys: area quanta, a floor, a closure cost, a lysis tension;
+   - a missing lumen;
+   - division and shear.
+
+   A bilayer refuses the shell's permeation.
+5. **One shell type per world** in version 1, with its area and lumen as world constants.
+   - Population mode admits it: a prescribed wall cannot empty.
+   - FR-22's checkpoints carry over, since the state stays integer counts.
+6. **Dispatch is static, by the geometry's ID,** so every bilayer and OL1 program traces as
+   before. Every existing world stays bitwise, which the invariance gate checks.
+7. **The run's verdict** on a shell world is the shell probe's (`balance.shell_verdict`). The other
+   verdicts are unchanged, so no other run's record moves.
+
+### 0.2h The lead's rulings for FR-35's pool withdrawal (21 November 2026; D261)
+
+The design is [ASSEMBLY_WITHDRAWAL_DESIGN.md](ASSEMBLY_WITHDRAWAL_DESIGN.md), decided by the lead with
+the advisor. It is built as `cells.pool_withdrawal@1`.
+1. **A new operator.** `cells.pool_replacement@1` stays as registered. `fraction` on a replacement
+   is refused, with a message that names the withdrawal kind.
+2. **The draw:** each molecule leaves independently with probability f, in per-place blocks on
+   the schedule's own stream at draw number w·P_f + j.
+   - w is derived from FR-22's applied stops, so it is one number and the checkpoint gains no key.
+   - The addresses are disjoint from a transfer's and a Poisson shear's, because each schedule's
+     index is its own carrier word.
+3. **The buffer:** integer counts in the withdrawn volume fV. Its concentration is checked against
+   c_ext at parse, and the realized pool's drift is reported.
+4. **Booking A:**
+   - the sink takes F(before; V) − F(kept; (1 − f)V), recorded as `pool_loss_kT`. It differs from
+     the sample's own F by the outcome's surprisal σ, which is recorded apart;
+   - the work column takes F(buffer; fV);
+   - the heat takes the mixing heat, which is never negative.
+
+   The free energies at fV and (1 − f)V go through the guarded table read.
+5. **Capacity:** the wash is refused before the draw when a place's pre-wash count plus its buffer
+   count exceeds `molecule_capacity`, so no refusal depends on the draw.
+6. **The legend entry** is written only when a world declares a withdrawal, so existing worlds stay
+   bitwise.
 
 ### 0.3 Estimate, order and questions
 

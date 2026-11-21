@@ -54,13 +54,16 @@ from cells.models.assembly_lineages_v2 import (
     FREE_ENERGY_INTERFACE,
     GEOMETRY_INTERFACE,
     IDEAL_MIXING,
+    MASS_ACTION,
     MEMBRANE_PERMEATION,
     MODEL_ID,
     MODES,
     PHASE_EXCHANGE,
     POPULATION,
+    PRESCRIBED_SHELL,
     RATE_FACTOR_INTERFACE,
     REACTION_INTERFACE,
+    SHELL_PERMEATION,
     streams,
 )
 from cells.models.assembly_lineages_v2 import conventions as conventions_rules
@@ -191,7 +194,10 @@ def parse_terms(raw, world):
 def parse_world(raw):
     _keys(raw, world_rules.WORLD_KEYS, world_rules.WORLD_REQUIRED, "world")
     units = world_rules.parse_units(raw["units"])
-    conventions = conventions_rules.parse(raw["conventions"], geometry="geometry" in raw)
+    shell = _declares_shell(raw)
+    conventions = conventions_rules.parse(
+        raw["conventions"], geometry="geometry" in raw and not shell
+    )
     species = world_rules.parse_species(raw["species"])
     osmotic = conventions.lumen_volume == conventions_rules.OSMOTIC
     places, volumes = world_rules.parse_phases(raw["phases"], species, osmotic=osmotic)
@@ -225,6 +231,8 @@ def parse_world(raw):
     world = world_rules.World(
         units, conventions, species, volumes, places, steps, terms, rate_factor, founder, role
     )
+    if "sites" in raw:  # FR-21: declared binding sites and their complexes (§0.2f).
+        world = dataclasses.replace(world, sites=world_rules.parse_sites(raw["sites"], places))
     _convention_refusals(world, founder="population" not in raw)  # a population's: per founder
     if "geometry" in raw:
         block = raw["geometry"]
@@ -324,6 +332,52 @@ def _osmotic_refusals(world):
         )
 
 
+def _declares_shell(raw):
+    """FR-21: whether the world's geometry is a prescribed shell, refusing first the conventions a
+    shell cannot have, with their reasons (a bilayer's conventions are parsed as before)."""
+    block = raw.get("geometry")
+    if not (isinstance(block, dict) and block.get("law") == PRESCRIBED_SHELL):
+        return False
+    tokens = raw["conventions"] if isinstance(raw["conventions"], dict) else {}
+    if tokens.get("lumen_volume") == conventions_rules.OSMOTIC:
+        raise ConfigError(
+            "world: a prescribed shell's lumen is declared, not osmotic: the wall does not swell "
+            "(FR-21)"
+        )
+    if conventions_rules.ENCOUNTER in tokens:
+        raise ConfigError(
+            f"world: a prescribed shell declares no {conventions_rules.ENCOUNTER}: it takes up no "
+            "amphiphiles, so no join is declared (FR-21)"
+        )
+    for step in raw["steps"] if isinstance(raw["steps"], list) else ():
+        if isinstance(step, dict) and step.get("law") in (PHASE_EXCHANGE, MEMBRANE_PERMEATION):
+            _refuse_other_kind(step.get("id"), step["law"], PRESCRIBED_SHELL)
+    return True
+
+
+def _declared_binding(step, world, by_name):
+    """FR-21 (§0.2f): exactly one pool molecule and one declared site forming the site's declared
+    complex, X@pool + site@membrane -> complex@membrane, declared in that direction, under
+    cells.stochastic_mass_action@1 with count_on_m. Its encounter is the site count: the law's
+    membrane factor cancels to n_site, so a+ = k_f theta+ n_site (mass_action.py)."""
+    if (
+        world.sites is None
+        or step.law != MASS_ACTION
+        or world.conventions.membrane_kinetics != "count_on_m"
+        or len(step.reactants) != 2
+        or len(step.products) != 1
+    ):
+        return False
+    (ligand, a), (site, b) = step.reactants
+    (complex_, c) = step.products[0]
+    shape = (a, b, c) == (1, 1, 1) and (by_name[ligand].phase, by_name[site].phase,
+                                         by_name[complex_].phase) == (
+        world_rules.POOL, world_rules.MEMBRANE, world_rules.MEMBRANE
+    )  # fmt: skip
+    pair = (by_name[site].species, by_name[complex_].species)
+    return shape and pair in world.sites
+
+
 def _geometry_refusals(world):
     """OL2's refusals (§0.2c rules 2, 3 and 5), after OL1's, so no earlier refusal changes."""
     registry = law_registry.active()
@@ -339,13 +393,19 @@ def _geometry_refusals(world):
                     "and the world declares none (§0.2c rule 3)"
                 )
             continue
+        if world.geometry is not None:  # FR-21: each geometric law belongs to its geometry kind.
+            _refuse_other_kind(step.id, step.law, world.geometry[0])
         if not geometric:
             if step.locus == world_rules.MEMBRANE and len(phases) > 1:
+                if _declared_binding(step, world, by_name):
+                    continue  # FR-21: rule 3's one admitted interfacial shape (§0.2f).
                 raise ConfigError(
                     f"world: step {step.id} crosses phases at the membrane; in a world with a "
                     "geometry a cross-phase step takes a geometric encounter law (phase exchange "
                     "for a join, permeation for an entry), and other interfaces are refused until "
-                    "one is declared (§0.2c rule 3)"
+                    "one is declared (§0.2c rule 3). One shape is admitted (§0.2f): a pool "
+                    "molecule binding a declared site to form its declared complex, X@pool + "
+                    "site@membrane -> complex@membrane, under mass action with count_on_m"
                 )
             continue
         _geometric_shape(step, law, by_name)
@@ -356,6 +416,8 @@ def _geometry_refusals(world):
             "world: a geometry's vesicle floor requires last_molecule kept (§0.2c rule 5), not "
             f"{world.conventions.last_molecule!r}"
         )
+    if world.geometry[0] == PRESCRIBED_SHELL:
+        return  # FR-21: a prescribed wall has no floor; nothing removes it
     from cells.models.assembly_lineages_v2 import geometry as geometry_rules
 
     quanta = geometry_rules.place_quanta(world, len(world.places))
@@ -367,9 +429,28 @@ def _geometry_refusals(world):
         )
 
 
+def _refuse_other_kind(step_id, law_id, geometry):
+    """FR-21: a shell world takes cells.shell_permeation@1 and refuses joins and the bilayer's
+    permeation; a bilayer world refuses the shell's permeation."""
+    if geometry == PRESCRIBED_SHELL and law_id in (PHASE_EXCHANGE, MEMBRANE_PERMEATION):
+        reason = (
+            "a prescribed shell takes up no amphiphiles, so it has no join"
+            if law_id == PHASE_EXCHANGE
+            else f"a shell's entry takes {SHELL_PERMEATION}, at its declared area"
+        )
+        raise ConfigError(f"world: step {step_id}'s law {law_id} is refused: {reason} (FR-21)")
+    if geometry != PRESCRIBED_SHELL and law_id == SHELL_PERMEATION:
+        raise ConfigError(
+            f"world: step {step_id}'s law {SHELL_PERMEATION} is a prescribed shell's; a bilayer's "
+            f"entry takes {MEMBRANE_PERMEATION} (FR-21)"
+        )
+
+
 def _geometric_shape(step, law, by_name):
-    """Phase exchange is a join and permeation an entry, one molecule of one species (rule 2)."""
-    want = {PHASE_EXCHANGE: "membrane", MEMBRANE_PERMEATION: "lumen"}.get(law.law_id)
+    """Phase exchange is a join and permeation an entry, one molecule of one species (rule 2); so
+    is the shell's permeation (FR-21)."""
+    want = {PHASE_EXCHANGE: "membrane", MEMBRANE_PERMEATION: "lumen",
+            SHELL_PERMEATION: "lumen"}.get(law.law_id)  # fmt: skip
     ok = want is not None and len(step.reactants) == len(step.products) == 1
     if ok:
         (r, a), (p, b) = step.reactants[0], step.products[0]
@@ -449,6 +530,8 @@ def world_to_dict(world):
         from cells.models.assembly_lineages_v2 import population as population_rules
 
         out["population"] = population_rules.data_to_dict(world.population)
+    if world.sites is not None:
+        out["sites"] = world_rules.sites_to_dict(world.sites)
     return out
 
 
@@ -561,7 +644,9 @@ def parse(data):
     model = parse_model(raw["model"])
     execution = parse_execution(raw["execution"], model)
     _mode_refusals(model.world, execution.mode)
-    return SimulationSpec(model, parse_experiment(raw["experiment"], model.world), execution)
+    experiment = parse_experiment(raw["experiment"], model.world)
+    _capacity_refusals(model.world, experiment, execution)
+    return SimulationSpec(model, experiment, execution)
 
 
 def to_dict(spec):
@@ -602,6 +687,38 @@ def _schedules_to_dict(schedules):
     from cells.models.assembly_lineages_v2 import division as division_rules
 
     return division_rules.schedule_to_dict(schedules)
+
+
+def _capacity_refusals(world, experiment, execution):
+    """Every declared count fits the molecule capacity, the log-factorial table's last index (a
+    Lean finding of 20 November, on FR-20): a population's founder vesicles (each place, and the
+    membrane's total), and each schedule's fresh pool, a transfer's or a replacement's. Equality is
+    valid. A count above the capacity would read the table's clamped last entry, ln C! for ln n!,
+    and the run's own ledger, which reads the same table, would not see it."""
+    capacity = execution.molecule_capacity
+    if world.population is not None:
+        from cells.models.assembly_lineages_v2 import population as population_rules
+
+        membrane = [i for i, p in enumerate(world.places) if p.phase == world_rules.MEMBRANE]
+        for k, vector in enumerate(population_rules.founder_vectors(world)):
+            total = sum(vector[i] for i in membrane)
+            if max(vector) > capacity or total > capacity:
+                raise ConfigError(
+                    f"execution: founder vesicle {k} holds {max(max(vector), total)} molecules in "
+                    f"a place or its membrane, above molecule_capacity {capacity}: every count is "
+                    "at most the capacity, the log-factorial table's last index"
+                )
+    names = [p.name for p in world.places if p.phase == world_rules.POOL and not p.held]
+    for schedule in experiment.schedules:
+        if schedule.fresh is None:
+            continue
+        for name, count in zip(names, schedule.fresh, strict=True):
+            if count > capacity:
+                raise ConfigError(
+                    f"experiment: {schedule.kind} {schedule.index}'s fresh {name} is {count}, "
+                    f"above molecule_capacity {capacity}: every count is at most the capacity, "
+                    "the log-factorial table's last index (equality is valid)"
+                )
 
 
 def _mode_refusals(world, mode):

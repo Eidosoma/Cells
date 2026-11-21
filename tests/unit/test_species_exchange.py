@@ -6,8 +6,9 @@ implicit closed form), first-order exports from one cell combined exactly and sh
 palindromic stages second order against the exact solution of a secretion-uptake pair, the booked
 work against the exact free-energy change written out independently (Decimal, 50 digits: the NumPy
 dG test of record per law), the host checks closing, the start state selected bitwise at zero rate,
-the refusals of a supply shortfall and of a failed saturable solve, and the definition refusals with
-their messages.
+the refusals of a supply shortfall and of a failed saturable solve, the definition refusals with
+their messages, and a pool near depletion stored on its anchor's grid and refused below half a
+spacing (the representation limit, the independent Lean project's finding of 20 November 2026).
 """
 
 from decimal import Decimal, getcontext
@@ -17,7 +18,9 @@ import numpy as np
 import pytest
 from scipy.linalg import expm
 
+from cells.definitions.pump_composite_spec import control_values
 from cells.definitions.specs import ConfigError, parse_spec
+from cells.operators import species_exchange as exchange
 from cells.registry.models import get_model
 from validation.tissue import secreted_species_fixtures as fx
 
@@ -252,3 +255,40 @@ def test_definition_refusals(change, message):
     change(raw)
     with pytest.raises(ConfigError, match=message):
         parse_spec(raw)
+
+
+def depleted(log_drop):
+    """(stored amount fmol, each half-step's validity, exact remainder fmol) of the Lean project's
+    closed-pair uptake (lean/checks/species_exchange.py depletion): a 1 fmol node in 1 pL taken to
+    e^-log_drop fmol over 1 s by saturable uptake (K_M 1 mM), as two exact half-steps in NumPy."""
+    u = -Decimal(log_drop)
+    a = float(-u + 1 - u.exp())  # The dose that leaves e^u fmol: b ln(n / q) + n - q = a h.
+    raw = fx.face_free(pool_mM=1, node_mM=1.0, end=1.0, dt=1.0)
+    area = next(m["area_m2"] for m in raw["model"]["membranes"] if m["id"] == "contact_0")
+    routes = [("uptake", "contact_0", "import", "saturable")]
+    spec = parse_spec(fx.with_exchange(raw, routes, [("uptake", "cell_0", [(0.0, a / area, 1.0)])]))
+    state, p = get_model(spec.model).initial_values(spec)
+    controls = control_values(spec, [0.0])
+    control = type(controls)(*(v[0] for v in controls))
+    row = list(spec.model.species_ids).index(fx.SPECIES)
+    node = [n["id"] for n in raw["model"]["extracellular"]].index("ecs_0")
+    valid = []
+    for _ in range(2):
+        with np.errstate(all="ignore"):  # The refused trial reads log(0) in its work.
+            state, ok = exchange.exchange_half_step(state, control, 0.5, p, xp=np)
+        valid.append(bool(ok))
+    return 1.0 + state.extracellular_amount_increment[row, node], valid, float(u.exp())
+
+
+@pytest.mark.parametrize("log_drop", [4, 35, 38])
+def test_a_depleted_pool_is_stored_on_its_anchors_grid_and_refused_below_half_a_spacing(log_drop):
+    """The module docstring's resolution near depletion: a 1 fmol anchor's grid is 1.11e-16 fmol
+    apart, the stored remainder is the grid point nearest the exact one (e^-4 and e^-35 fmol, the
+    latter stored 5.65% high), and below half a spacing (e^-38 fmol) the nearest point is 0, so the
+    second half-step is refused."""
+    stored, valid, exact = depleted(log_drop)
+    spacing = 1.0 - np.nextafter(1.0, 0.0)
+    if exact >= spacing / 2:
+        assert valid == [True, True] and stored == round(exact / spacing) * spacing
+    else:
+        assert valid == [True, False] and stored == 0.0

@@ -11,13 +11,274 @@
     "cell-physiology": "Cell physiology"
   },
   "law_categories": {
+    "cells.adenylate_kinase@1": "reactions-and-binding",
     "cells.bilayer_geometry@1": "molecular-assembly",
+    "cells.held_reductant_supply@1": "reactions-and-binding",
     "cells.membrane_permeation@1": "membrane-transport",
     "cells.osmotic_lumen@1": "membrane-transport",
     "cells.phase_exchange@1": "molecular-assembly",
     "cells.shared_pool@1": "molecular-assembly"
   },
   "comparisons": {
+    "pool-replacement": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@2"
+      ],
+      "engine_revision": "529070a8c844ae8d58da615494df31f21ce49774",
+      "record_revision": "529070a8c844ae8d58da615494df31f21ce49774",
+      "laws": [
+        "cells.shared_pool@1",
+        "cells.ideal_mixing@1",
+        "cells.phase_exchange@1",
+        "cells.membrane_permeation@1",
+        "cells.transition_state_factor@1"
+      ],
+      "operators": [
+        "cells.pool_replacement@1"
+      ],
+      "sources": {
+        "Fresh finite counts and per-species receipts": "src/cells/models/assembly_lineages_v2/replacement.py#L81",
+        "Shared operation on finite pool places": "src/cells/models/assembly_lineages_v2/transfer.py#L81",
+        "Two signed bath energy entries at the stop": "src/cells/models/assembly_lineages_v2/population.py#L753",
+        "Saved per-species material edges": "src/cells/models/assembly_lineages_v2/records.py#L511",
+        "Pulse and wash fixture": "tests/unit/test_assembly_lineages_v2_replacement.py#L106",
+        "Independent dilute-bath free energy": "lean/checks/vesicle_population.py#L37",
+        "Vesicle wash and redistribution measurements": "lean/checks/data/pool_replacement_measurements.json"
+      },
+      "driver": "lean/checks/pool_replacement.py",
+      "record": "lean/PROGRESS.md#pool-replacement"
+    },
+    "fresh-pool-capacity": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@2"
+      ],
+      "engine_revision": "529070a8c844ae8d58da615494df31f21ce49774",
+      "record_revision": "529070a8c844ae8d58da615494df31f21ce49774",
+      "laws": [
+        "cells.shared_pool@1",
+        "cells.ideal_mixing@1"
+      ],
+      "operators": [
+        "cells.pool_replacement@1",
+        "cells.serial_transfer@1"
+      ],
+      "sources": {
+        "Declared per-count capacity": "src/cells/models/assembly_lineages_v2/spec.py#L35",
+        "Fresh replacement composition": "src/cells/models/assembly_lineages_v2/replacement.py#L67",
+        "Serial transfer and shared fresh-pool step": "src/cells/models/assembly_lineages_v2/transfer.py#L81",
+        "Transfer and replacement work": "src/cells/models/assembly_lineages_v2/population.py#L700",
+        "Discrete ideal free energy": "src/cells/models/assembly_lineages_v2/ideal_mixing.py#L64",
+        "Clipped log-factorial access": "src/cells/models/assembly_lineages_v2/mass_action.py#L66",
+        "Three-phase world and pool ordering": "tests/unit/test_assembly_lineages_v2_replacement.py#L56",
+        "Independent discrete ideal-bath energy": "lean/checks/vesicle_population.py#L37"
+      },
+      "driver": "lean/checks/pool_replacement.py",
+      "record": "lean/PROGRESS.md#pool-replacement-capacity"
+    },
+    "mitochondrial-kinase-supply": {
+      "kind": "engine",
+      "models": ["resolved_pump_tissue@3"],
+      "laws": ["cells.adenylate_kinase@1", "cells.held_reductant_supply@1", "cells.rapid_binding@1"],
+      "engine_revision": "0d3f300a5d1c09bf0ad3c557d151879f441425b1",
+      "record_revision": "0d3f300a5d1c09bf0ad3c557d151879f441425b1",
+      "sources": {
+        "Adenylate kinase stoichiometry and Mg prefactor": "src/cells/laws/cycles/adenylate_kinase.py#L51",
+        "Held reductant stoichiometry and phosphate prefactor": "src/cells/laws/cycles/held_reductant_supply.py#L43",
+        "Free ligand and nucleotide forms": "src/cells/laws/reactions/rapid_binding.py#L347",
+        "Monomial forward and reverse rates": "src/cells/laws/cycles/forms.py#L1468",
+        "Material movement and held chemical work": "src/cells/kinds/transporter.py#L1956",
+        "Registered component rate evaluator": "validation/mitochondria/component_comparison.py#L273",
+        "Finite matrix and intermembrane-space fixture": "tests/unit/test_mito_cycle_laws.py#L85",
+        "Reference activities and model parameters": "tests/unit/mito_component_center_rows.json",
+        "Kinase and redox measurements": "lean/checks/data/mitochondrial_reaction_measurements.json"
+      },
+      "driver": "lean/checks/mitochondrial_reactions.py",
+      "record": "lean/PROGRESS.md#mitochondrial-kinase-supply"
+    },
+    "junction-cx43-polarity": {
+      "kind": "engine",
+      "models": ["resolved_pump_tissue@3"],
+      "laws": ["cells.junction_voltage_relaxation@1"],
+      "engine_revision": "d0104950c40b92860a211c9e2555709d0fd61aed",
+      "record_revision": "c1e2b733bc4c54a4fd005b9dedb4697d801855d1",
+      "sources": {
+        "Exponential gate stage": "src/cells/models/surface_pump_v3.py#L1708",
+        "Intrinsic gate kinetics and clamp solution": "src/cells/laws/junctions/junction_voltage_relaxation.py#L41",
+        "Tissue junction transport and gate dynamics": "src/cells/models/surface_pump_v3.py#L849",
+        "Voltage-clamp protocol": "validation/betse/junction_gate/protocol.json",
+        "Independent clamp solution": "validation/betse/junction_gate/reference.py#L9",
+        "Cell-pair fixture": "validation/tissue/surface_pump_v3_fixtures.py"
+      },
+      "record_inputs": {"Published Cx43 fit parameters": "lean/checks/data/revilla1999_cx43.json"},
+      "driver": "lean/checks/junction_gate.py",
+      "record": "lean/PROGRESS.md#channel-source-replays-nov21"
+    },
+    "mitochondrial-seven-cycle-stalls": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [
+        "cells.nadh_ubiquinone_proton_cycle@1",
+        "cells.ubiquinol_cytochrome_c_proton_cycle@1",
+        "cells.cytochrome_c_oxygen_proton_cycle@1",
+        "cells.proton_coupled_atp_synthesis_cycle@1",
+        "cells.electrogenic_nucleotide_exchange@1",
+        "cells.phosphate_proton_symport@1",
+        "cells.potassium_proton_exchange@1",
+        "cells.rapid_binding@1"
+      ],
+      "engine_revision": "0d3f300a5d1c09bf0ad3c557d151879f441425b1",
+      "record_revision": "0d3f300a5d1c09bf0ad3c557d151879f441425b1",
+      "sources": {
+        "Full-turn affinity from free concentrations and voltage": "src/cells/kinds/transporter.py#L1809",
+        "Monomial affinity shares": "src/cells/laws/cycles/forms.py#L1468",
+        "Reversible rate near stall": "src/cells/laws/cycles/forms.py#L1512",
+        "Heat and cycle derivatives": "src/cells/kinds/transporter.py#L1966",
+        "Public cycle probe": "src/cells/kinds/transporter.py#L2362",
+        "Matrix and lumen fixture": "tests/unit/test_mito_cycle_laws.py#L85",
+        "Independent decimal component equations": "validation/mitochondria/appendix_check.py#L87",
+        "Seven populations selected explicitly for the shared fixture": "lean/checks/mitochondrial_cycles.py#L16",
+        "ATP synthase stall measurements": "lean/checks/data/mitochondrial_stall.json"
+      },
+      "driver": "lean/checks/mitochondrial_stall.py",
+      "record": "lean/PROGRESS.md#mitochondrial-kinase-supply"
+    },
+    "mitochondrial-seven-cycle-material": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [
+        "cells.nadh_ubiquinone_proton_cycle@1",
+        "cells.ubiquinol_cytochrome_c_proton_cycle@1",
+        "cells.cytochrome_c_oxygen_proton_cycle@1",
+        "cells.proton_coupled_atp_synthesis_cycle@1",
+        "cells.electrogenic_nucleotide_exchange@1",
+        "cells.phosphate_proton_symport@1",
+        "cells.potassium_proton_exchange@1",
+        "cells.rapid_binding@1"
+      ],
+      "engine_revision": "0d3f300a5d1c09bf0ad3c557d151879f441425b1",
+      "record_revision": "0d3f300a5d1c09bf0ad3c557d151879f441425b1",
+      "sources": {
+        "Complex I": "src/cells/laws/cycles/nadh_ubiquinone_proton_cycle.py#L20",
+        "Complex III": "src/cells/laws/cycles/ubiquinol_cytochrome_c_proton_cycle.py#L35",
+        "Complex IV": "src/cells/laws/cycles/cytochrome_c_oxygen_proton_cycle.py#L37",
+        "ATP synthesis": "src/cells/laws/cycles/proton_coupled_atp_synthesis_cycle.py#L35",
+        "Nucleotide exchange": "src/cells/laws/cycles/electrogenic_nucleotide_exchange.py#L34",
+        "Phosphate import": "src/cells/laws/cycles/phosphate_proton_symport.py#L28",
+        "Potassium–proton exchange": "src/cells/laws/cycles/potassium_proton_exchange.py#L16",
+        "Material ledger by species and side": "src/cells/kinds/transporter.py#L2128",
+        "Matrix and lumen fixture": "tests/unit/test_mito_cycle_laws.py#L85",
+        "Independent stoichiometry by cycle and side": "lean/checks/mitochondrial_cycles.py#L20"
+      },
+      "driver": "lean/checks/mitochondrial_cycles.py",
+      "record": "lean/PROGRESS.md#mitochondrial-kinase-supply"
+    },
+    "cell-replacement-boundary-repair": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1"
+      ],
+      "laws": [],
+      "operators": [
+        "cells.scheduled_cell_replacement@2",
+        "cells.ideal_osmosis_linear_compliance_water@1"
+      ],
+      "engine_revision": "dd085e36e9ced2edfed88c7194e970bd335f3ad0",
+      "record_revision": "8f269af4c8b79150020b47a86dd71da848d91714",
+      "sources": {
+        "Template volume placed inside the water bounds": "src/cells/operators/cell_replacement_v2.py#L205",
+        "Stored volume and refusal of the uncorrected offset": "tests/unit/test_cell_replacement_v2.py#L357"
+      },
+      "driver": "lean/checks/cell_replacement.py",
+      "record": "lean/PROGRESS.md#claim-source-review"
+    },
+    "shared-pool-record-repair": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@2"
+      ],
+      "laws": [
+        "cells.shared_pool@1",
+        "cells.phase_exchange@1",
+        "cells.membrane_permeation@1",
+        "cells.stochastic_mass_action@1",
+        "cells.osmotic_lumen@1",
+        "cells.bilayer_geometry@1",
+        "cells.ideal_mixing@1"
+      ],
+      "operators": [],
+      "engine_revision": "dd085e36e9ced2edfed88c7194e970bd335f3ad0",
+      "record_revision": "8f269af4c8b79150020b47a86dd71da848d91714",
+      "sources": {
+        "Population records for osmotic and declared lumens": "src/cells/models/assembly_lineages_v2/population.py#L824",
+        "Volume and tension columns": "src/cells/models/assembly_lineages_v2/population.py#L846"
+      },
+      "driver": "lean/checks/shared_pool.py",
+      "record": "lean/PROGRESS.md#claim-source-review"
+    },
+    "scheduled-turnover-net-repair": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [],
+      "operators": [
+        "cells.scheduled_species_turnover@1"
+      ],
+      "engine_revision": "dd085e36e9ced2edfed88c7194e970bd335f3ad0",
+      "record_revision": "8f269af4c8b79150020b47a86dd71da848d91714",
+      "sources": {
+        "Net change during rapid turnover": "src/cells/operators/species_turnover.py#L273",
+        "Stored amount, production, clearance and work": "src/cells/operators/species_turnover.py#L278",
+        "Engine regression at the switch in net calculation": "tests/unit/test_species_turnover.py#L450"
+      },
+      "driver": "lean/checks/species_turnover.py",
+      "record": "lean/PROGRESS.md#claim-source-review"
+    },
+    "transition-state-factor-repair": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@2"
+      ],
+      "laws": [
+        "cells.stochastic_mass_action@1",
+        "cells.transition_state_factor@1",
+        "cells.ideal_mixing@1",
+        "cells.regular_mixing@1"
+      ],
+      "engine_revision": "dd085e36e9ced2edfed88c7194e970bd335f3ad0",
+      "record_revision": "8f269af4c8b79150020b47a86dd71da848d91714",
+      "sources": {
+        "Choice of the count-weighted mean": "src/cells/models/assembly_lineages_v2/transition_state.py#L143",
+        "Common-state transition factor": "src/cells/models/assembly_lineages_v2/transition_state.py#L170"
+      },
+      "driver": "lean/checks/assembly_kinetics.py",
+      "record": "lean/PROGRESS.md#claim-source-review"
+    },
+    "rectifier-reference-domain": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [
+        "cells.inward_rectifier_linear_driving_force@1"
+      ],
+      "engine_revision": "8f9bc0500f362096155640cd843a69f2dabc6107",
+      "record_revision": "8f269af4c8b79150020b47a86dd71da848d91714",
+      "sources": {
+        "Admitted reference concentration": "src/cells/kinds/passive_routes.py#L242",
+        "Subnormal reference refusal": "tests/unit/test_inward_rectifier_route.py#L135",
+        "Current and conductance factor": "src/cells/laws/routes/inward_rectifier_linear_driving_force.py#L81"
+      },
+      "driver": "lean/checks/inward_rectifier.py",
+      "record": "lean/PROGRESS.md#claim-source-review"
+    },
     "vacuolar-pump-reversal": {
       "kind": "engine",
       "models": ["resolved_pump_tissue@3"],
@@ -1127,53 +1388,146 @@
       "kind": "engine",
       "models": ["resolved_pump_tissue@3"],
       "laws": ["junction_voltage_relaxation@1"],
-      "engine_revision": "6d74998581eab13d45327bc4801b463d0fb7a6f7",
-      "record_revision": "394a9294379f7636b7f75993fee850363c04bd26",
+      "engine_revision": "d0104950c40b92860a211c9e2555709d0fd61aed",
+      "record_revision": "c1e2b733bc4c54a4fd005b9dedb4697d801855d1",
       "sources": {
+        "Exponential gate stage": "src/cells/models/surface_pump_v3.py#L1708",
         "Voltage dependence and constant-voltage update": "src/cells/laws/junctions/junction_voltage_relaxation.py#L41",
-        "Tissue transport opening": "src/cells/models/surface_pump_v3.py#L733",
-        "Intrinsic gate rate in the tissue": "src/cells/models/surface_pump_v3.py#L779",
+        "Tissue transport opening": "src/cells/models/surface_pump_v3.py#L849",
+        "Intrinsic gate rate in the tissue": "src/cells/models/surface_pump_v3.py#L895",
         "Independent voltage-clamp protocol": "validation/betse/junction_gate/protocol.json",
         "Independent rate calculation in mV and ms": "validation/betse/junction_gate/reference.py#L9"
       },
+      "record_inputs": {"Published Cx43 fit parameters": "lean/checks/data/revilla1999_cx43.json"},
       "driver": "lean/checks/junction_gate.py",
-      "record": "lean/PROGRESS.md#19-november-2026--voltage-gated-junction-conductance"
+      "record": "lean/PROGRESS.md#channel-source-replays-nov21"
+    },
+    "kv15-ph-clamp": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [
+        "cells.kv1p5_mh@1"
+      ],
+      "engine_revision": "d0104950c40b92860a211c9e2555709d0fd61aed",
+      "record_revision": "c1e2b733bc4c54a4fd005b9dedb4697d801855d1",
+      "sources": {
+        "Clamped population current at a declared voltage": "src/cells/models/surface_pump_v3.py#L415",
+        "Kv1.5 activation, inactivation and opening": "src/cells/laws/channels/kv1p5_mh.py#L25",
+        "Exponential gate update over the pulse": "src/cells/numerics/exponential_gates.py#L44",
+        "Held control schedule": "src/cells/definitions/surface_pump_v3_spec.py#L563",
+        "Tissue membrane and ionic reservoirs": "tests/unit/test_chloride_leak_law.py#L37",
+        "Channel population fixture": "validation/tissue/surface_pump_v3_fixtures.py#L61"
+      },
+      "record_inputs": {
+        "Trapani and Korn, protocols, normalized openings and measured current": "lean/checks/data/trapani2003_kv15_ph.json"
+      },
+      "driver": "lean/checks/kv15_ph.py",
+      "record": "lean/PROGRESS.md#kv15-ph-activation"
+    },
+    "kv15-density-clamp": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_tissue@3",
+        "resolved_pump_composite@1"
+      ],
+      "laws": [
+        "cells.kv1p5_mh@1",
+        "cells.kleak_always_open@1"
+      ],
+      "operators": [
+        "cells.membrane_entity_state@1",
+        "cells.species_regulated_availability@2"
+      ],
+      "engine_revision": "1b8017d13755bed2ee9be09375c998e364a4ca62",
+      "record_revision": "71807e24c375bbc354501e046ea3e61961a4d550",
+      "sources": {
+        "Instantaneous current at a declared voltage": "src/cells/models/surface_pump_v3.py#L415",
+        "Channel abundance and schedule in the constant-field flux": "src/cells/models/surface_pump_v3.py#L370",
+        "Kv1.5 gate specification": "src/cells/laws/channels/kv1p5_mh.py#L47",
+        "Reference density and membrane area": "src/cells/operators/membrane_state.py#L158",
+        "Population-density read and inhibition factor": "src/cells/operators/species_regulated_availability.py#L1513",
+        "Own-population refusal (D218)": "src/cells/operators/species_regulated_availability.py#L602",
+        "Log-domain Hill factor": "src/cells/laws/reactions/hill_factors.py#L39",
+        "Composite control view": "src/cells/models/pump_composite.py#L1510",
+        "Distinct source and reporter fixture": "tests/unit/test_regulated_availability_population.py#L54",
+        "Membrane units declaration": "validation/fr7/unit_turnover_fixtures.py#L68",
+        "Scheduled target availability": "validation/tissue/regulated_availability_fixtures.py#L164",
+        "Clamp tissue specimen": "tests/unit/test_chloride_leak_law.py#L37",
+        "Channel population parameters": "validation/tissue/surface_pump_v3_fixtures.py#L61"
+      },
+      "driver": "lean/checks/channel_density.py",
+      "record": "lean/PROGRESS.md#kv15-channel-density"
+    },
+    "clamped-channel-current-fr34": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [
+        "kv1p1_mh2@1",
+        "kv1p2_mh@1",
+        "kv1p3_mh@1",
+        "kv1p4_mh@1",
+        "kv1p5_mh@1",
+        "kv1p6_mh@1",
+        "kir2p1_mh2@1",
+        "nav1p2_m3h_regularized@1",
+        "kleak_always_open@1",
+        "naleak_always_open@1",
+        "clleak_always_open@1"
+      ],
+      "engine_revision": "1b8017d13755bed2ee9be09375c998e364a4ca62",
+      "record_revision": "13302130c8198319ae57b7419f97d60cefd0555d",
+      "sources": {
+        "Declared-voltage readout and signed current": "src/cells/models/surface_pump_v3.py#L405",
+        "Per-population gate and abundance in the flux": "src/cells/models/surface_pump_v3.py#L370",
+        "Selective constant-field transfer": "src/cells/laws/junctions/selective.py#L19",
+        "Faraday and fmol conversion": "src/cells/laws/electrochemistry.py#L10",
+        "Independent 70-digit constant-field reference": "validation/betse/junction_transport/check.py#L10",
+        "Channel opening powers used by the reference": "lean/checks/ion_channels.py#L24",
+        "Chloride specimen": "tests/unit/test_chloride_leak_law.py#L37",
+        "Routed availability and native-voltage regression": "tests/unit/test_surface_pump_v3_populations.py#L165"
+      },
+      "driver": "lean/checks/clamped_channel_current.py",
+      "record": "lean/PROGRESS.md#fr34-clamped-current"
     },
     "ion-channels": {
       "kind": "engine",
       "models": ["resolved_pump_tissue@3"],
       "laws": ["kv1p1_mh2@1", "kv1p2_mh@1", "kv1p3_mh@1", "kv1p4_mh@1", "kv1p5_mh@1", "kv1p6_mh@1", "kir2p1_mh2@1", "nav1p2_m3h_regularized@1", "kleak_always_open@1", "naleak_always_open@1"],
-      "engine_revision": "ec46f7a4e940b86c6fc110230b2bd851081dee50",
-      "record_revision": "a45e076f2af4828a29058c06d40cdbafb7081db0",
+      "engine_revision": "d0104950c40b92860a211c9e2555709d0fd61aed",
+      "record_revision": "c1e2b733bc4c54a4fd005b9dedb4697d801855d1",
       "sources": {
-        "Tissue channel kinetics and opening": "src/cells/models/surface_pump_v3.py#L304",
-        "Tissue outward per-ion flux": "src/cells/models/surface_pump_v3.py#L358",
+        "Tissue channel kinetics and opening": "src/cells/models/surface_pump_v3.py#L316",
+        "Tissue outward per-ion flux": "src/cells/models/surface_pump_v3.py#L370",
         "Exponential stage and its small-step series": "src/cells/numerics/exponential_gates.py#L36",
-        "Gate update in the tissue integrator": "src/cells/models/surface_pump_v3.py#L1257",
-        "Per-channel transfer and membrane balance": "src/cells/models/surface_pump_v3.py#L2251",
+        "Gate update in the tissue integrator": "src/cells/models/surface_pump_v3.py#L1689",
+        "Per-channel transfer and membrane balance": "src/cells/models/surface_pump_v3.py#L2839",
         "Independent Kv1 kinetics": "validation/tissue/kv1_reference.py#L13",
         "Independent Kir2.1 kinetics": "validation/tissue/kir_reference.py#L10",
         "Independent NaV1.2 kinetics": "validation/tissue/sodium_reference.py#L12",
         "Independent constant-field flux": "validation/betse/junction_transport/check.py#L10"
       },
       "driver": "lean/checks/ion_channels.py",
-      "record": "lean/PROGRESS.md#19-november-2026--ten-ion-channel-laws"
+      "record": "lean/PROGRESS.md#channel-source-replays-nov21"
     },
     "chloride-channel": {
       "kind": "engine",
       "models": ["resolved_pump_tissue@3"],
       "laws": ["clleak_always_open@1"],
-      "engine_revision": "d4f1eaf723ee1bdd1e54d9be086cb81d67356bfa",
-      "record_revision": "f44a045e4d4d6f15ed9f4b0f7ab556bae104b8df",
+      "engine_revision": "d0104950c40b92860a211c9e2555709d0fd61aed",
+      "record_revision": "c1e2b733bc4c54a4fd005b9dedb4697d801855d1",
       "sources": {
         "Chloride population and valence": "src/cells/laws/channels/clleak_always_open.py#L20",
-        "Outward population flux": "src/cells/models/surface_pump_v3.py#L358",
-        "Membrane and held-electrode currents": "src/cells/models/surface_pump_v3.py#L872",
+        "Outward population flux": "src/cells/models/surface_pump_v3.py#L370",
+        "Membrane and held-electrode currents": "src/cells/models/surface_pump_v3.py#L938",
         "Cell, bath and chloride substitution": "tests/unit/test_chloride_leak_law.py#L37",
         "Independent constant-field calculation": "validation/betse/junction_transport/check.py#L10"
       },
       "driver": "lean/checks/chloride_channel.py",
-      "record": "lean/PROGRESS.md#19-november-2026--chloride-leak"
+      "record": "lean/PROGRESS.md#channel-source-replays-nov21"
     },
     "assembly-exchange": {
       "kind": "engine",
@@ -1513,23 +1867,23 @@
       "kind": "engine",
       "models": ["resolved_pump_tissue@3"],
       "laws": ["nak_atp_mass_action_positive@1", "ca_atp_mass_action_positive@1"],
-      "engine_revision": "a06ee308a8348a5392e4645ccc368ccf8a086604",
-      "record_revision": "970598abe12fa2c19fd001f4bf32ec52a21d3d35",
+      "engine_revision": "d0104950c40b92860a211c9e2555709d0fd61aed",
+      "record_revision": "c1e2b733bc4c54a4fd005b9dedb4697d801855d1",
       "sources": {
         "Na⁺/K⁺ drive and rate": "src/cells/laws/pumps/nak_atp_mass_action_positive.py#L55",
         "Calcium standard state and rate": "src/cells/laws/pumps/ca_atp_mass_action_positive.py#L66",
         "Plasma-membrane voltage convention": "src/cells/laws/reactions/plasma_calcium.py#L29",
         "Calcium rate formula": "src/cells/laws/reactions/er_calcium.py#L36",
-        "Tissue pump dispatch": "src/cells/models/surface_pump_v3.py#L343",
-        "Outward ion transfers": "src/cells/models/surface_pump_v3.py#L783",
-        "Charge and electrode current": "src/cells/models/surface_pump_v3.py#L822",
+        "Tissue pump dispatch": "src/cells/models/surface_pump_v3.py#L451",
+        "Outward ion transfers": "src/cells/models/surface_pump_v3.py#L898",
+        "Charge and electrode current": "src/cells/models/surface_pump_v3.py#L938",
         "Na⁺/K⁺ scalar reference": "validation/betse/pump_contact/pump_reference.py#L83",
         "Calcium scalar reference": "validation/chemistry/finite_calcium_pump_reference.py#L19",
         "Na⁺/K⁺ rate tests": "tests/unit/test_kinetic_pump.py#L46",
         "Calcium standard-state and stall tests": "tests/unit/test_surface_pump_v2.py#L86"
       },
       "driver": "lean/checks/electrogenic_pumps.py",
-      "record": "lean/PROGRESS.md#19-november-2026--sodium-potassium-and-calcium-pump-charge"
+      "record": "lean/PROGRESS.md#channel-source-replays-nov21"
     },
     "extracellular-face": {
       "kind": "engine",
@@ -1546,6 +1900,62 @@
       },
       "driver": "lean/checks/logmean_face.py",
       "record": "lean/PROGRESS.md#19-november-2026--extracellular-face-electrodiffusion"
+    },
+    "binding-form-ensemble": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [
+        "rapid_binding@1"
+      ],
+      "engine_revision": "d0104950c40b92860a211c9e2555709d0fd61aed",
+      "record_revision": "44e6c613f0da21fd5837dee756aa7cbdda882368",
+      "sources": {
+        "Form normalization and concentrations": "src/cells/laws/reactions/rapid_binding.py#L100",
+        "Registry potentials and standard concentration": "src/cells/registry/species_registry.py#L1435",
+        "Tissue stage read": "src/cells/kinds/proton_buffer.py#L377",
+        "Manufactured conditions and standard potentials": "validation/core_seams/references/reference_inputs.json",
+        "Independent reference concentrations and tolerances": "validation/core_seams/references/designs/core_seams_reference_values.json",
+        "Binding kernel fixtures": "tests/unit/test_rapid_binding_kernel.py#L60",
+        "Tissue fixture and read": "tests/unit/test_rapid_binding_world.py#L232",
+        "Initialization used by the tissue check": "tests/unit/test_proton_buffer_kind.py"
+      },
+      "record_inputs": {
+        "Measured Mg–ATP inputs": "lean/checks/data/mgatp_binding.json",
+        "Exact binding theorem": "lean/CellsProofs/Chemistry/BindingEnsemble.lean",
+        "Optional Physlib specialization": "lean/checks/physlib/BindingEnsemble.lean",
+        "Pinned Physlib reproduction": "lean/checks/physlib/binding.sh"
+      },
+      "driver": "lean/checks/binding_ensemble.py",
+      "record": "lean/PROGRESS.md#binding-form-ensemble"
+    },
+    "binding-ligand-response": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [
+        "rapid_binding@1"
+      ],
+      "engine_revision": "68ab12e7f57552fa551b103df1393a1e095cd001",
+      "record_revision": "e9510ee6724149a27cfdb035bc03be59fae8bf36",
+      "sources": {
+        "Form moments, conservation residual and Hessian": "src/cells/laws/reactions/rapid_binding.py#L100-L142",
+        "Inverse sensitivity of the closure": "src/cells/laws/reactions/rapid_binding.py#L450",
+        "Registered standard potentials and manufactured totals": "validation/core_seams/references/reference_inputs.json",
+        "Reference free concentrations": "validation/core_seams/references/designs/core_seams_reference_values.json",
+        "S1–S7 inverse sensitivity and central differences": "tests/unit/test_rapid_binding_kernel.py#L476",
+        "H/Mg tissue run": "tests/unit/test_rapid_binding_world_two_ligands.py#L31"
+      },
+      "record_inputs": {
+        "Exact response proof": "lean/CellsProofs/Chemistry/BindingResponse.lean",
+        "Normalized form weights": "lean/CellsProofs/Chemistry/BindingEnsemble.lean",
+        "ATP titration markers": "lean/checks/data/ward1998_mgatp_titration.json",
+        "Independent Mg–ATP affinity": "lean/checks/data/mgatp_binding.json"
+      },
+      "driver": "lean/checks/binding_response.py",
+      "record": "lean/PROGRESS.md#binding-ligand-response"
     },
     "single-site-binding": {
       "kind": "engine",
@@ -1576,9 +1986,550 @@
       },
       "driver": "scripts/evaluate_conditioned_voltage.py",
       "record": "reports/BIO002_CONDITIONED_VOLTAGE.md"
+    },
+    "fresh-pool-capacity-nov21": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@2"
+      ],
+      "laws": [
+        "cells.shared_pool@1",
+        "cells.ideal_mixing@1"
+      ],
+      "engine_revision": "d74f519d40b9a9f7488b94b489c6dc4dd865504c",
+      "record_revision": "ceeca19816acd761ab68379d67bb0f7426366a1c",
+      "sources": {
+        "Checks on every fresh count and founder": "src/cells/models/assembly_lineages_v2/spec.py#L692",
+        "Discrete ideal-bath energy": "src/cells/models/assembly_lineages_v2/ideal_mixing.py",
+        "Replacement and transfer schedule definitions": "tests/unit/test_assembly_lineages_v2_replacement.py"
+      },
+      "driver": "lean/checks/pool_replacement.py",
+      "record": "lean/PROGRESS.md#nov21-engine-review",
+      "operators": [
+        "cells.pool_replacement@1",
+        "cells.serial_transfer@1"
+      ]
+    },
+    "cleft-mixing-heat-nov21": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [],
+      "engine_revision": "d74f519d40b9a9f7488b94b489c6dc4dd865504c",
+      "record_revision": "ceeca19816acd761ab68379d67bb0f7426366a1c",
+      "sources": {
+        "Direct ratios in the mixing heat": "src/cells/operators/restricted_lumen.py#L268",
+        "Stable entropy evaluation": "src/cells/numerics/ideal_mixing.py",
+        "Second-version fill": "src/cells/operators/restricted_lumen_v2.py"
+      },
+      "driver": "lean/checks/restricted_lumen.py",
+      "record": "lean/PROGRESS.md#nov21-engine-review",
+      "operators": [
+        "cells.membrane_entity_state@1",
+        "cells.scheduled_membrane_insertion@1",
+        "cells.scheduled_membrane_insertion@2",
+        "cells.restricted_cleft_lumen@1",
+        "cells.restricted_cleft_lumen@2"
+      ]
+    },
+    "membrane-insertion-heat-nov21": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [],
+      "engine_revision": "d74f519d40b9a9f7488b94b489c6dc4dd865504c",
+      "record_revision": "ceeca19816acd761ab68379d67bb0f7426366a1c",
+      "sources": {
+        "Selection of the stable insertion calculation": "src/cells/operators/membrane_insertion.py#L416",
+        "Heat and image calculation in the extreme branch": "src/cells/operators/membrane_insertion.py#L471",
+        "Second-version half-step": "src/cells/operators/membrane_insertion_v2.py#L369"
+      },
+      "driver": "lean/checks/membrane_insertion.py",
+      "record": "lean/PROGRESS.md#nov21-engine-review",
+      "operators": [
+        "scheduled_membrane_insertion@1",
+        "scheduled_membrane_insertion@2",
+        "membrane_entity_state@1"
+      ]
+    },
+    "empty-surface-flow-nov21": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [
+        "cells.kleak_always_open@1"
+      ],
+      "engine_revision": "a6235d7b02c04e147991342c2891eb0c1cd3deb6",
+      "record_revision": "9dad3f26380e6ac11f25016eb1a33ae62aff1dbb",
+      "sources": {
+        "Exact zero-count abundance": "src/cells/operators/membrane_state.py#L159",
+        "Composite readout": "src/cells/models/pump_composite.py"
+      },
+      "driver": "lean/checks/population_units.py",
+      "record": "lean/PROGRESS.md#nov21-engine-review",
+      "operators": [
+        "cells.membrane_entity_state@1"
+      ]
+    },
+    "trafficking-empty-surface-nov21": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [
+        "cells.kir2p1_mh2@1",
+        "cells.nav1p2_m3h_regularized@1"
+      ],
+      "engine_revision": "d74f519d40b9a9f7488b94b489c6dc4dd865504c",
+      "record_revision": "ceeca19816acd761ab68379d67bb0f7426366a1c",
+      "sources": {
+        "Redistribution and retrieval": "src/cells/operators/membrane_trafficking.py",
+        "Zero-count abundance": "src/cells/operators/membrane_state.py#L159",
+        "Tissue host observations": "src/cells/models/surface_pump_v3.py"
+      },
+      "driver": "lean/checks/compartment_trafficking.py",
+      "record": "lean/PROGRESS.md#nov21-engine-review",
+      "operators": [
+        "cells.scheduled_membrane_trafficking@1",
+        "cells.cell_owned_compartments@1",
+        "cells.membrane_entity_state@1"
+      ]
+    },
+    "regulated-turnover-midpoint-nov21": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [],
+      "engine_revision": "a6235d7b02c04e147991342c2891eb0c1cd3deb6",
+      "record_revision": "ceeca19816acd761ab68379d67bb0f7426366a1c",
+      "sources": {
+        "Self-moved target selection": "src/cells/models/pump_composite.py#L168",
+        "Half-step midpoint predictor and applied factor": "src/cells/models/pump_composite.py#L1641",
+        "Turnover production booking": "src/cells/operators/species_turnover.py",
+        "Routed operator regression": "tests/unit/test_species_regulated_availability.py#L1300"
+      },
+      "driver": "lean/checks/regulated_availability.py",
+      "record": "lean/PROGRESS.md#nov21-engine-review",
+      "operators": [
+        "cells.species_regulated_availability@2",
+        "cells.scheduled_species_turnover@1"
+      ]
+    },
+    "junction-series-clamp-nov21": {
+      "kind": "engine",
+      "models": [],
+      "laws": [
+        "junction_series_gates@1"
+      ],
+      "engine_revision": "d74f519d40b9a9f7488b94b489c6dc4dd865504c",
+      "record_revision": "ceeca19816acd761ab68379d67bb0f7426366a1c",
+      "sources": {
+        "Two gate types, exact clamp and route factors": "src/cells/laws/junctions/junction_series_gates.py",
+        "Threshold gate rates": "src/cells/laws/junctions/junction_voltage_relaxation.py#L41"
+      },
+      "driver": "lean/checks/junction_series_gates.py",
+      "record": "lean/PROGRESS.md#nov21-features"
+    },
+    "shell-rates-nov21": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@2"
+      ],
+      "laws": [
+        "cells.prescribed_shell@1",
+        "cells.shell_permeation@1",
+        "cells.gate_factor@1"
+      ],
+      "engine_revision": "a6235d7b02c04e147991342c2891eb0c1cd3deb6",
+      "record_revision": "ceeca19816acd761ab68379d67bb0f7426366a1c",
+      "sources": {
+        "Declared shell extent": "src/cells/models/assembly_lineages_v2/prescribed_shell.py#L82",
+        "Permeation rate law": "src/cells/models/assembly_lineages_v2/shell_permeation.py",
+        "Factor over gate forms only": "src/cells/models/assembly_lineages_v2/gate_factor.py#L121",
+        "Closed-form rates and population records": "tests/unit/test_assembly_lineages_v2_geometry.py#L538"
+      },
+      "driver": "tests/unit/test_assembly_lineages_v2_geometry.py",
+      "record": "lean/PROGRESS.md#nov21-features"
+    },
+    "site-occupant-replacement-nov21": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [],
+      "engine_revision": "a6235d7b02c04e147991342c2891eb0c1cd3deb6",
+      "record_revision": "ceeca19816acd761ab68379d67bb0f7426366a1c",
+      "sources": {
+        "Template selection and arrival bounds": "src/cells/operators/site_occupancy.py#L1676",
+        "Departure and arrival bookings": "src/cells/operators/site_occupancy.py#L1820",
+        "Whole-world ligand balance": "tests/unit/test_site_replacement_runs.py#L64"
+      },
+      "driver": "tests/unit/test_site_replacement_runs.py",
+      "record": "lean/PROGRESS.md#nov21-features",
+      "operators": [
+        "cells.site_occupant_replacement@1",
+        "cells.site_occupancy@1"
+      ]
+    },
+    "site-regulated-readout-nov21": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [],
+      "engine_revision": "a6235d7b02c04e147991342c2891eb0c1cd3deb6",
+      "record_revision": "ceeca19816acd761ab68379d67bb0f7426366a1c",
+      "sources": {
+        "Readable site quantities": "src/cells/operators/species_regulated_availability.py#L1462",
+        "Template and channel readouts": "tests/unit/test_species_regulated_availability.py#L1511"
+      },
+      "driver": "tests/unit/test_species_regulated_availability.py",
+      "record": "lean/PROGRESS.md#nov21-features",
+      "operators": [
+        "cells.site_occupant_replacement@1",
+        "cells.site_occupancy@1",
+        "cells.species_regulated_availability@2"
+      ]
+    },
+    "regulated-pulse-main-nov21": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [
+        "cells.kleak_always_open@1"
+      ],
+      "operators": [
+        "cells.species_regulated_availability@1",
+        "cells.species_regulated_availability@2",
+        "cells.scheduled_species_turnover@1"
+      ],
+      "engine_revision": "68ab12e7f57552fa551b103df1393a1e095cd001",
+      "record_revision": "be54fafbff162065063b215d4ac3e6adaf534e3a",
+      "sources": {
+        "Target half-step predictor and applied factors": "src/cells/models/pump_composite.py#L1642",
+        "Regulatory reads and recorded factors": "src/cells/operators/species_regulated_availability.py",
+        "Analytic ligand trajectory and continuous gate": "validation/coupling/state_reference.py",
+        "Pulse fixture definitions": "validation/tissue/regulated_availability_fixtures.py",
+        "Turnover world and controls": "validation/tissue/secreted_species_fixtures.py",
+        "Midpoint regression": "tests/unit/test_species_regulated_availability.py#L1300"
+      },
+      "record_inputs": {
+        "Fixed-calcium SK2 inputs": "lean/checks/data/hirschberg1998_sk2.json"
+      },
+      "driver": "lean/checks/regulated_availability.py",
+      "record": "lean/PROGRESS.md#main-review-d264-d266"
+    },
+    "wash-main-nov21": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [],
+      "operators": [
+        "cells.scheduled_compartment_wash@1",
+        "cells.site_occupancy@1"
+      ],
+      "engine_revision": "68ab12e7f57552fa551b103df1393a1e095cd001",
+      "record_revision": "be54fafbff162065063b215d4ac3e6adaf534e3a",
+      "sources": {
+        "Sample and supply": "src/cells/operators/wash_schedule.py#L301",
+        "Cumulative counter updates": "src/cells/operators/wash_schedule.py#L364",
+        "Finite well and wash schedule": "validation/tissue/wash_schedule_fixtures.py",
+        "Compiled scan and host acceptance": "src/cells/execution/runner.py#L242",
+        "Public half-wash regression": "tests/unit/test_wash_schedule_runs.py#L24"
+      },
+      "record_inputs": {
+        "Wash theorem": "lean/CellsProofs/Tissue/CompartmentWash.lean",
+        "Fluorescein dilution inputs": "lean/checks/data/vloemans2024_dilution.json"
+      },
+      "driver": "lean/checks/compartment_wash.py",
+      "record": "lean/PROGRESS.md#main-review-d264-d266"
+    },
+    "channel-clamp-main-nov21": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [
+        "kv1p1_mh2@1",
+        "kv1p2_mh@1",
+        "kv1p3_mh@1",
+        "kv1p4_mh@1",
+        "kv1p5_mh@1",
+        "kv1p6_mh@1",
+        "kir2p1_mh2@1",
+        "nav1p2_m3h_regularized@1",
+        "kleak_always_open@1",
+        "naleak_always_open@1",
+        "clleak_always_open@1"
+      ],
+      "operators": [
+        "cells.species_regulated_availability@1"
+      ],
+      "engine_revision": "68ab12e7f57552fa551b103df1393a1e095cd001",
+      "record_revision": "be54fafbff162065063b215d4ac3e6adaf534e3a",
+      "sources": {
+        "Tissue clamp": "src/cells/models/surface_pump_v3.py#L415",
+        "Composite control view": "src/cells/models/pump_composite.py#L1510",
+        "Held controls in ordinary observations": "src/cells/models/pump_composite.py#L2183",
+        "Composite fixture": "validation/tissue/regulated_availability_fixtures.py",
+        "Tissue regression": "tests/unit/test_surface_pump_v3_populations.py#L165",
+        "Reference flux": "validation/betse/junction_transport/check.py"
+      },
+      "record_inputs": {
+        "Native channel reference coefficients": "lean/checks/ion_channels.py",
+        "Conducting fractions used in the host control": "lean/checks/data/maverick2022_kv_density.json"
+      },
+      "driver": "lean/checks/clamped_channel_current.py",
+      "record": "lean/PROGRESS.md#main-review-d264-d266"
+    },
+    "site-cargo-main-nov21": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [],
+      "operators": [
+        "cells.site_occupant_replacement@1",
+        "cells.site_occupancy@1",
+        "cells.species_regulated_availability@2"
+      ],
+      "engine_revision": "68ab12e7f57552fa551b103df1393a1e095cd001",
+      "record_revision": "be54fafbff162065063b215d4ac3e6adaf534e3a",
+      "sources": {
+        "Site reset and cargo": "src/cells/operators/site_occupancy.py#L1820",
+        "Reaction and replacement fixture": "tests/unit/test_site_replacement_runs.py#L101",
+        "Site-sourced controls and post-reset reads": "tests/unit/test_species_regulated_availability.py#L1511",
+        "Composite observed rows": "src/cells/models/pump_composite.py#L2183"
+      },
+      "driver": "tests/unit/test_site_replacement_runs.py",
+      "record": "lean/PROGRESS.md#main-review-d264-d266"
+    },
+    "compartment-wash-nov21": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [],
+      "engine_revision": "d74f519d40b9a9f7488b94b489c6dc4dd865504c",
+      "record_revision": "ceeca19816acd761ab68379d67bb0f7426366a1c",
+      "sources": {
+        "Liquid, sample and supply": "src/cells/operators/wash_schedule.py#L301",
+        "Host event and validity": "src/cells/operators/wash_schedule.py#L325",
+        "Finite well with two bound populations": "validation/tissue/wash_schedule_fixtures.py"
+      },
+      "driver": "lean/checks/compartment_wash.py",
+      "record": "lean/PROGRESS.md#nov21-wash",
+      "operators": [
+        "cells.scheduled_compartment_wash@1",
+        "cells.site_occupancy@1"
+      ]
     }
   },
   "claims": [
+    {
+      "id": "pool-replacement",
+      "category": "molecular-assembly",
+      "title": "A finite-pool wash preserves assembly cargo and books the two bath energies",
+      "statement": "A replacement swaps the finite bath at one isolated stop. For each finite species, the inventory after the stop plus the removed bath equals the inventory before plus the supplied bath. A tracer-free wash leaves exactly the tracer retained by the slots available for later exchange. When bath and slot energies are additive, the change in total free energy equals fresh-bath work minus the spent-bath sink.",
+      "assumptions": [
+        "Each slot survives the stop. The pool volume is fixed and fresh finite counts fit the execution capacity. The signed energy calculation uses the same units and standard potentials on both sides.",
+        "Between the wash and later observations, the tracer can move between bath and slots. Binding inside a slot preserves its tracer moiety. The history assumes no tracer source, sink, lysis or further wash."
+      ],
+      "uses": [
+        "shared-pool-inventory",
+        "vesicle-serial-transfer"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.pool_replacement@1"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.VesiclePopulation.replacement_state": "lean/CellsProofs/Chemistry/VesiclePopulation.lean",
+          "CellsProofs.Chemistry.VesiclePopulation.replacement_inventory": "lean/CellsProofs/Chemistry/VesiclePopulation.lean",
+          "CellsProofs.Chemistry.VesiclePopulation.wash_history_inventory": "lean/CellsProofs/Chemistry/VesiclePopulation.lean",
+          "CellsProofs.Chemistry.VesiclePopulation.replacement_energy": "lean/CellsProofs/Chemistry/VesiclePopulation.lean"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "fresh-pool-capacity-nov21",
+          "pool-replacement"
+        ],
+        "result": "In the two-vesicle CPU world a pulse supplied 12 tracer molecules. The wash removed six and retained six, including three bound to membrane sites. Tracer inventory closed exactly at all 856 saved rows. All six nonzero material edges matched the independently reconstructed receipts, and the maximum bath or world energy discrepancy was below 2.85 × 10⁻¹⁴ kBT. After washing at 2 s, release preceded uptake at 2.000848 s and 2.001470 s. The 21 November pulse-and-wash replay preserved the tracer ledger on all 856 rows with a maximum energy discrepancy of 2.85 × 10⁻¹⁴ kBT."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "External tracer depletion, cargo retained by surviving vesicles, and redistribution to finite recipient membranes.",
+        "unit": "fluorescence units, fraction of total fluorescence, and elapsed time",
+        "finding": "Giant vesicles retained fluorescent cargo after external label fell to near background. A separate liposome experiment measured transfer between finite donor and recipient membranes. The synthetic fixture’s return time and absolute retention remain uncalibrated.",
+        "evidence": [
+          {
+            "dataset_id": "zhao_dextran_exchange@1",
+            "manifest": "lean/checks/data/pool_replacement_measurements.json",
+            "citation": "Zhao et al., supporting Figure S3a–c",
+            "doi": "10.1002/adma.202106633",
+            "locator": "Supporting Figure S3a–c and solution-exchange methods.",
+            "context": "Trapped giant unilamellar vesicles containing fluorescent dextran. The replacement liquid contained the unlabelled polymers.",
+            "role": "descriptive",
+            "uncertainty": "Three preparations, 3–4 measurements per position, error bars SD. Some vesicles were lost and no per-vesicle retained fraction was reported.",
+            "assessment": "After 40 min of flow at 1 µL/min the exterior signal was approximately 0.1 fluorescence units while surviving vesicles retained fluorescent contents.",
+            "report": "lean/PROGRESS.md#pool-replacement"
+          },
+          {
+            "dataset_id": "sumi_intervesicle_transfer@1",
+            "manifest": "lean/checks/data/pool_replacement_measurements.json",
+            "citation": "Sumi et al. (2017)",
+            "doi": "10.1038/s41598-017-02980-x",
+            "locator": "Figure 7A and adjacent text on C6-NBD-PC exchange.",
+            "context": "DOPC-based donor and acceptor liposomes. Acceptor material was twice the donor amount.",
+            "role": "descriptive",
+            "uncertainty": "The figure shows a representative trace from three experiments. The crossover has no reported uncertainty interval.",
+            "assessment": "The signal reached about 48% of total fluorescence at 3.8 min. The assay resolves redistribution between populations. It does not identify a molecule returning to its original vesicle.",
+            "report": "lean/PROGRESS.md#pool-replacement"
+          }
+        ]
+      }
+    },
+    {
+      "id": "fresh-pool-capacity",
+      "category": "molecular-assembly",
+      "title": "A fresh bath one molecule beyond capacity loses a logarithmic term if accepted",
+      "statement": "For a dilute species with count M + 1, using the last log-factorial entry M in its discrete ideal energy understates that energy by ln(M + 1) kBT. The molecular capacity must cover every finite count committed by an accepted replacement or serial transfer.",
+      "assumptions": [
+        "M is a positive integer capacity. The discrete ideal energy consists of a linear term in the full molecular count and a log-factorial term. At the first count outside the table the lookup returns the entry at M.",
+        "The test replaces the bath at the horizon. The fresh bath is below the osmotic ceiling, and the transfer keeps both living slots."
+      ],
+      "uses": [
+        "pool-replacement",
+        "assembly-ideal-mixing"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.pool_replacement@1",
+          "cells.serial_transfer@1"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.VesiclePopulation.replacement_capacity_gap": "lean/CellsProofs/Chemistry/VesiclePopulation.lean"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "fresh-pool-capacity-nov21",
+          "fresh-pool-capacity"
+        ],
+        "result": "Both schedules now reject 33 molecules at capacity 32 during definition. Both accepted 32 at 32 and 33 at 64 with the reference work. The earlier comparison records the incorrect work of an accepted oversized pool."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "The table limit is an implementation property. Its reference is the discrete ideal free energy of the finite bath.",
+        "unit": "molecules and kBT",
+        "evidence": []
+      }
+    },
+    {
+      "id": "mitochondrial-adenylate-kinase",
+      "category": "reactions-and-binding",
+      "title": "Magnesium shifts the apparent equilibrium of adenylate kinase",
+      "statement": "One signed extent of 2 ADP ⇌ ATP + AMP conserves adenylates, phosphate groups and Mg-free base-form charge. At free Mg concentration m, the total-nucleotide equilibrium quotient equals K_base (1 + m/a)/(1 + m/d)². For d ≥ 2a it reaches its maximum at m = d − 2a.",
+      "assumptions": [
+        "ATP and ADP each bind one Mg with positive dissociation constants a and d in the same units as m. AMP remains free. The enabled reaction reads positive free nucleotide activities and includes the ATP binding factor in its kinetic prefactor.",
+        "The quotient is [ATP]_total [AMP]/[ADP]_total². The equilibrium formula extends to zero Mg by continuity. The engine's log-activity evaluator uses positive inputs."
+      ],
+      "uses": ["atp-cycle"],
+      "formal": {"status": "proved", "about": ["cells.adenylate_kinase@1"], "theorems": {
+        "CellsProofs.Chemistry.MitochondrialReactions.kinase_inventories": "lean/CellsProofs/Chemistry/MitochondrialReactions.lean",
+        "CellsProofs.Chemistry.MitochondrialReactions.kinase_free_flux": "lean/CellsProofs/Chemistry/MitochondrialReactions.lean",
+        "CellsProofs.Chemistry.MitochondrialReactions.kinase_rate_on_totals": "lean/CellsProofs/Chemistry/MitochondrialReactions.lean",
+        "CellsProofs.Chemistry.MitochondrialReactions.kinase_peak_gap": "lean/CellsProofs/Chemistry/MitochondrialReactions.lean",
+        "CellsProofs.Chemistry.MitochondrialReactions.kinase_peak_bound": "lean/CellsProofs/Chemistry/MitochondrialReactions.lean"
+      }},
+      "numerical": {"status": "checked", "comparisons": ["mitochondrial-kinase-supply"], "result": "Across 21 Mg and nucleotide loads, the largest flux discrepancy was 7.04 × 10⁻¹⁵ of the forward rate. The three nucleotide changes followed their signed extents in two tissue steps. With the declared binding constants the predicted maximum is 1.5104 at 0.299 mM free Mg. At the 3.809 mM buffer match, omitting the Mg prefactor reduced the nonzero flux by a factor of 159.69."},
+      "biology": {
+        "status": "open",
+        "observable": "Total-nucleotide equilibrium quotient as a function of free Mg in a defined preparation.",
+        "unit": "dimensionless quotient and mM free Mg",
+        "finding": "Two enzyme assays support a magnesium-dependent equilibrium. The position of the predicted maximum and its transfer to the cardiac intermembrane space remain open.",
+        "evidence": [
+          {
+            "dataset_id": "lawson1979_myokinase@1",
+            "manifest": "lean/checks/data/mitochondrial_reaction_measurements.json",
+            "citation": "Lawson and Veech (1979)",
+            "url": "https://pubmed.ncbi.nlm.nih.gov/36398/",
+            "locator": "Abstract, myokinase equilibrium on total nucleotides at 0 and 1 mM free Mg.",
+            "context": "pH 7.0, 38 °C, ionic strength 0.25 M. Cells uses its declared 25 °C constants.",
+            "role": "descriptive",
+            "uncertainty": "The abstract gives neither pointwise uncertainties nor the method for establishing zero free Mg.",
+            "assessment": "The measured quotient rose from 0.391 to 1.05. The model gives 0.3890 in the zero-Mg limit and 1.1013 at 1 mM.",
+            "report": "lean/PROGRESS.md#mitochondrial-kinase-supply"
+          },
+          {
+            "dataset_id": "kleczkowski1991_maize_kinase@1",
+            "manifest": "lean/checks/data/mitochondrial_reaction_measurements.json",
+            "citation": "Kleczkowski and Randall (1991)",
+            "doi": "10.1093/jxb/42.4.537",
+            "locator": "Abstract, apparent equilibrium at 1.8–1.9 mM free Mg.",
+            "context": "Purified maize-leaf adenylate kinase.",
+            "role": "descriptive",
+            "uncertainty": "The authors report ±0.10. The abstract does not specify the type of uncertainty.",
+            "assessment": "The reported quotient was 0.76 ± 0.10. Cells gives 0.744–0.772 over the reported free-Mg range.",
+            "report": "lean/PROGRESS.md#mitochondrial-kinase-supply"
+          }
+        ]
+      }
+    },
+    {
+      "id": "mitochondrial-reductant-supply",
+      "category": "reactions-and-binding",
+      "title": "The held reductant supply has a pH-dependent stall and balances work in either direction",
+      "statement": "The enabled supply stalls exactly when free matrix NADH/NAD equals the held reduced-to-oxidized donor ratio times the reference proton concentration divided by the free matrix proton concentration. At any signed flux, work supplied by the held pair equals the dissipated heat plus chemical work delivered to NAD, NADH and H⁺.",
+      "assumptions": [
+        "The matrix reaction is S_red + NAD ⇌ S_ox + NADH + H⁺. Both donor rows are held. The reaction has no charge transfer across the membrane.",
+        "Free activities and the kinetic prefactor are positive. Cells assigns zero standard drive at its reference proton concentration of 10⁻⁷ M. Work and heat refer to instantaneous chemical power."
+      ],
+      "uses": ["atp-cycle"],
+      "formal": {"status": "proved", "about": ["cells.held_reductant_supply@1"], "theorems": {
+        "CellsProofs.Chemistry.MitochondrialReactions.supply_stall": "lean/CellsProofs/Chemistry/MitochondrialReactions.lean",
+        "CellsProofs.Chemistry.MitochondrialReactions.supply_work": "lean/CellsProofs/Chemistry/MitochondrialReactions.lean"
+      }},
+      "numerical": {"status": "checked", "comparisons": ["mitochondrial-kinase-supply"], "result": "Across 24 pH, phosphate and NADH loads the largest net-flux discrepancy was 1.23 × 10⁻¹⁴ of the forward rate. For a held ratio of 3.63858 the stalled NADH/NAD ratio was 4.5807 at pH 7.1 and 9.1397 at pH 7.4. The two-step tissue run kept the donor amounts fixed, recorded opposite donor receipts and moved NAD and NADH with opposite signs. Held work matched heat plus delivered chemical work within a relative tolerance of 2 × 10⁻¹² at positive and negative flux."},
+      "biology": {
+        "status": "open",
+        "observable": "Dependence of the free NADH/NAD equilibrium ratio on proton activity and the reduced-to-oxidized donor ratio. The absolute stall and heat require a specified donor.",
+        "unit": "dimensionless activity ratio, M for the measured equilibrium quotient, pJ/s for the model heat",
+        "finding": "A named ketone-body donor exhibits the one-proton equilibrium dependence. The absolute stall ratio and heat for the Cells donor remain unmeasured.",
+        "evidence": [{
+          "dataset_id": "williamson1967_hydroxybutyrate@1",
+          "manifest": "lean/checks/data/mitochondrial_reaction_measurements.json",
+          "citation": "Williamson, Lund and Krebs (1967)",
+          "doi": "10.1042/bj1030514",
+          "locator": "Table 3, equilibrium of D-β-hydroxybutyrate dehydrogenase.",
+          "context": "The β-hydroxybutyrate/acetoacetate donor pair at 38 °C, ionic strength 0.255 M and pH 6.84–7.16.",
+          "role": "descriptive",
+          "uncertainty": "SEM of 25 determinations.",
+          "assessment": "The quotient [acetoacetate][NADH][H⁺]/([β-hydroxybutyrate][NAD⁺]) was (4.94 ± 0.086) × 10⁻⁹ M. This measures the proton dependence and equilibrium for this specific donor pair.",
+          "report": "lean/PROGRESS.md#mitochondrial-kinase-supply"
+        }]
+      }
+    },
     {
       "id": "mitochondrial-stall-heat",
       "category": "pumps-and-cotransport",
@@ -1622,7 +2573,8 @@
       "numerical": {
         "status": "checked",
         "comparisons": [
-          "mitochondrial-stall-heat"
+          "mitochondrial-stall-heat",
+          "mitochondrial-seven-cycle-stalls"
         ],
         "result": "All 49 physical settings agreed with the independent component equations on NumPy and compiled CPU JAX, including both sides of stall for all seven laws. The worst net-flux error was 3.91 × 10⁻¹⁴ of the reference forward rate. The worst residual ΔG/(RT) at a calculated stall was 2.85 × 10⁻¹⁴. The rate kernel also preserved the signs at ±2⁻⁶⁰ and returned zero at an exact zero input. The probe and the stage agreed on flux and instantaneous dissipated power."
       },
@@ -1686,7 +2638,8 @@
       "numerical": {
         "status": "checked",
         "comparisons": [
-          "mitochondrial-cycle-accounting"
+          "mitochondrial-cycle-accounting",
+          "mitochondrial-seven-cycle-material"
         ],
         "result": "All seven registered columns were checked against independently written material balances. Per forward turnover the respiratory complexes added 4, 2 and 8 net charges on P, while each added four explicit P protons. In two checked steps of a finite-matrix/lumen world, the redox, adenine and phosphate changes matched predictions from the measured extents within 8.28 × 10⁻²⁵ fmol."
       },
@@ -1754,7 +2707,8 @@
       "numerical": {
         "status": "checked",
         "comparisons": [
-          "mitochondrial-cycle-accounting"
+          "mitochondrial-cycle-accounting",
+          "mitochondrial-seven-cycle-material"
         ],
         "result": "The synthesized ATP, nucleotide exchange, phosphate import and K/H exchange carry −3, −1, 0 and 0 net charge equivalents on P per turn. All seven populations carried nonzero extents in two checked 1 ms steps. The independently calculated combined material postings matched the engine ledger. Global charge error stayed below 1.0 × 10⁻³³ C."
       },
@@ -2170,7 +3124,7 @@
       "id": "empty-surface-flow",
       "category": "channels-and-junctions",
       "title": "An empty surface population has zero abundance and channel flow",
-      "statement": "Removing the full declared number of functional units sets both the normalized abundance and the channel's contribution to zero for any positive patch area. The two-term float64 readout can retain a signed residue.",
+      "statement": "Removing the full declared number of functional units sets both the normalized abundance and the channel's contribution to zero for any positive patch area. The original two-term float64 readout retained a signed residue at certain areas.",
       "assumptions": [
         "The two initial channel counts are exactly representable, and the state subtracts those counts exactly. The engine accepts the controlled state at each tested area.",
         "The controlled states isolate abundance at fixed capacitance and drive. A second comparison follows a scheduled four-step retrieval from the declared initial state of 3,072 Kir units, with synthetic enrichment 1,024 and a total area decrease of 30%."
@@ -2189,12 +3143,14 @@
         }
       },
       "numerical": {
-        "status": "failed",
+        "status": "checked",
         "comparisons": [
+          "empty-surface-flow-nov21",
+          "trafficking-empty-surface-nov21",
           "empty-surface-flow",
           "trafficking-empty-surface"
         ],
-        "result": "Prepared zero-unit states gave potassium flux of −2.19124 × 10⁻¹⁸ and +2.81730 × 10⁻¹⁸ fmol/s at 1.4 and 1.8 times declared area. Scheduled retrieval reached a zero Kir count at 70% of the starting area. At 4 ms its abundance was −2.22045 × 10⁻¹⁶, its potassium flux was −5.58157 × 10⁻¹⁹ fmol/s and the engine refused the observation. The ordinary enrichment and the diagnostic that set abundance to zero at zero count both completed."
+        "result": "Six prepared states at three area ratios on NumPy and JAX CPU gave exact zeros for abundance and potassium flux. The retrieval rollout completed and every zero-count observation through 4 ms had exactly zero abundance and flux."
       },
       "biology": {
         "status": "open",
@@ -2230,7 +3186,7 @@
         "comparisons": [
           "scheduled-cell-replacement"
         ],
-        "result": "One cell copied a donor that simultaneously received a template. Gross species transfers, image charge, electrode work and generation replay matched the expected state. The largest per-site free-energy residual was 2.21 × 10⁻¹³ pJ against 2 × 10⁻¹¹ pJ. A three-step checked sheet recorded exactly one exchange at each of the two due sites."
+        "result": "One cell copied a donor that simultaneously received a template. Gross species transfers, image charge, electrode work and generation replay matched the expected state. The largest per-site free-energy residual was 2.21 × 10⁻¹³ pJ against 2 × 10⁻¹¹ pJ. A three-step checked sheet recorded exactly one exchange at each of the two due sites. D264 separately holds the exported reaction rate at the replacement time."
       },
       "biology": {
         "status": "open",
@@ -2322,7 +3278,7 @@
       "id": "cell-replacement-volume-boundary",
       "category": "tissue-and-conservation",
       "title": "Centering a strictly interior replacement volume preserves its water-domain membership in exact arithmetic",
-      "statement": "For any declared target strictly between the water bounds, subtracting and adding the same reference volume recovers that target. The float64 implementation can refuse a strictly interior declaration when the reconstructed value lands on the excluded lower bound.",
+      "statement": "For any declared target strictly between the water bounds, subtracting and adding the same reference volume recovers that target. The numerical comparison tests how v2 binds a target whose float64 offset would reconstruct at the excluded lower bound.",
       "assumptions": [
         "The water volume interval is open at both endpoints. The exact theorem uses a common real-valued reference for storing and reconstructing the target.",
         "The admission comparison uses a single template with the slot's own species amounts. Water flow is disabled and all other inputs are held fixed."
@@ -2340,15 +3296,16 @@
         }
       },
       "numerical": {
-        "status": "failed",
+        "status": "checked",
         "comparisons": [
+          "cell-replacement-boundary-repair",
           "cell-replacement-volume-boundary"
         ],
-        "result": "At reference 0.7505222518670602 pL the target 0.18763056296676509 pL reconstructs as the strict lower bound 0.18763056296676506 pL. Definition checking refuses the first interior float. The second interior float is admitted, as is the original target if only the lower bound is relaxed by one float."
+        "result": "The repaired v2 definition admitted 0.18763056296676509 pL, the first float above the strict lower bound of 0.18763056296676506 pL. It also admitted the second interior float and refused the bound itself. The binding regression verified that the adjusted offset reconstructs strictly inside. The earlier comparison records the original refusal."
       },
       "biology": {
         "status": "open",
-        "observable": "Cell volume and measurement uncertainty near a physiologically justified lower bound. The recorded refusal concerns numerical admission.",
+        "observable": "Cell volume and measurement uncertainty near a physiologically justified lower bound. The boundary replay tests numerical admission.",
         "unit": "pL",
         "evidence": []
       }
@@ -2577,6 +3534,10 @@
         "assembly-stochastic-encounter"
       ],
       "formal": {
+        "sources": {
+          "VeriBiota preservation of a weighted count under an enabled firing, imported in the optional check": "https://github.com/OmnisGenomics/VeriBiota/blob/a145b640d7d8009a5a653849c41ef9a1d6b1c176/Biosim/Proofs/Invariants.lean#L113-L121",
+          "Cells specialization to a one-molecule transfer from a finite pool": "lean/checks/chemistry/Reuse.lean#L63"
+        },
         "status": "proved",
         "about": [
           "cells.phase_exchange@1"
@@ -2733,13 +3694,14 @@
         }
       },
       "numerical": {
-        "status": "failed",
+        "status": "checked",
         "comparisons": [
+          "shared-pool-record-repair",
           "shared-pool-report-recheck",
           "shared-pool-inventory",
           "shared-pool-declared-volume"
         ],
-        "result": "Two 96-event osmotic populations conserved exactly one lipid and one solute across every stored row. All six slot permutations preserved the corresponding rates. The fixed-volume case failed during reporting. A parsed one-slot, one-event population raised TypeError when the reporter requested an osmotic volume for its declared lumen."
+        "result": "Two 96-event osmotic populations conserved one lipid and one solute across every recorded row. All six slot permutations preserved the corresponding rates. The repaired reporter also returned the one-event population with its declared 10⁻²² L lumen. The earlier records retain the reporting failure."
       },
       "biology": {
         "status": "open",
@@ -3092,14 +4054,20 @@
           "CellsProofs.Tissue.RestrictedLumen.heat_same": "lean/CellsProofs/Tissue/RestrictedLumen.lean",
           "CellsProofs.Tissue.RestrictedLumen.heat_entropy": "lean/CellsProofs/Tissue/RestrictedLumen.lean",
           "CellsProofs.Tissue.RestrictedLumen.energy_booking": "lean/CellsProofs/Tissue/RestrictedLumen.lean"
+        },
+        "sources": {
+          "Mathlib logarithm bound used in the default mixing-heat proof": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/SpecialFunctions/Log/Basic.lean#L293-L294",
+          "Mathlib klFun_nonneg and klFun_eq_zero_iff, imported in the optional comparison": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/InformationTheory/KullbackLeibler/KLFun.lean#L145-L149",
+          "Cells specialization of the relative-entropy formula": "lean/checks/mixing/KLFun.lean"
         }
       },
       "numerical": {
-        "status": "failed",
+        "status": "checked",
         "comparisons": [
+          "cleft-mixing-heat-nov21",
           "cleft-mixing-heat"
         ],
-        "result": "At 1 and 2⁻⁶⁰ mM, in either orientation, the heat evaluator rounds one fractional deviation to −1 and produces NaN. Both versions refuse the first fill. The reference gives +0.00245660 or +0.00618054 pJ. Replacing only nonfinite heat with the direct positive-ratio form in memory lets all four complete, within 2.09 × 10⁻¹⁷ pJ of cumulative reference heat."
+        "result": "Both operator versions completed both orientations of 1 versus 2⁻⁶⁰ mM. First-fill heat was positive and matched the reference. Cumulative heat differed by at most 3.47 × 10⁻¹⁸ pJ over the four runs."
       },
       "biology": {
         "status": "open",
@@ -3254,9 +4222,11 @@
       "numerical": {
         "status": "checked",
         "comparisons": [
+          "regulated-pulse-main-nov21",
+          "site-regulated-readout-nov21",
           "regulated-state-response"
         ],
-        "result": "Six compiled pulse-and-washout runs agreed with the stage-by-stage state to 4.45 × 10⁻¹⁶. Against independent continuous integration the gate error fell from 7.41 × 10⁻⁴ to 1.83 × 10⁻⁴ and 4.55 × 10⁻⁵ as the step was halved. Both versions agreed on final channel availability and K⁺ transfer. Separate fixed-Ca²⁺ cells reproduced the calculated rise and washout time constants."
+        "result": "On six pulse-and-washout runs the gate agreed with the stage-by-stage solution within 4.45 × 10⁻¹⁶. For version 2 the analytic half-step midpoints recovered the recorded second reporter factor within 4.45 × 10⁻¹⁶ and cumulative gains within 6.08 × 10⁻¹⁸ fmol. Sampling the half-step starts missed the factor by up to 0.053925. The fixed-calcium SK2 comparison also replayed. D264 holds the separate exported instantaneous site-routed reaction rate."
       },
       "biology": {
         "status": "open",
@@ -3294,10 +4264,10 @@
     {
       "id": "regulated-turnover-routing",
       "category": "reactions-and-binding",
-      "title": "Regulated turnover rates stay bounded and a changing regulator can give first-order production",
-      "statement": "A product of route factors in [0, 1] keeps the applied rate between zero and its scheduled maximum. When turnover produces its own regulator, taking a fresh Hill factor at the start of each target half-step can give first-order error in accumulated product.",
+      "title": "Midpoint sampling restores second-order reporter gain on the self-regulated ramp",
+      "statement": "A product of route factors in [0, 1] keeps the applied rate between zero and its scheduled maximum. When turnover produces its own regulator, taking a fresh Hill factor at the start of each target half-step can give first-order error in accumulated product. For the same ramp, using its midpoint gives a one-panel refinement difference proportional to the cube of the target stage width, with the exact denominator in the theorem.",
       "assumptions": [
-        "The scheduled rate is nonnegative. Each factor is evaluated in its declared range at the state received by the target half-step.",
+        "The scheduled rate is nonnegative. Every applied route factor lies in its declared range. The midpoint comparison uses the half-stage predictor for a source changed by its own turnover target.",
         "In the counterexample a fixed 1 pL cell starts at 1 mM regulator. The same turnover operator produces the regulator at 1 fmol/s and the reporter at a scheduled 1 fmol/s. Its reporter factor has zero basal activity, Hill exponent 1 and half-saturation 1 mM. Both routes are pure production.",
         "Time is in seconds on [0, 1]. The target half-steps have uniform width h = dt/2 and an integer number spans the interval. The refinement bound compares accumulated gain on grids of width h and h/2 in exact arithmetic."
       ],
@@ -3315,15 +4285,21 @@
           "CellsProofs.Transport.RegulatedAvailability.reread_production": "lean/CellsProofs/Transport/RegulatedAvailability.lean",
           "CellsProofs.Transport.RegulatedAvailability.ramp_reference": "lean/CellsProofs/Transport/RegulatedAvailability.lean",
           "CellsProofs.Transport.RegulatedAvailability.ramp_panel_difference": "lean/CellsProofs/Transport/RegulatedAvailability.lean",
-          "CellsProofs.Transport.RegulatedAvailability.ramp_refinement_lower": "lean/CellsProofs/Transport/RegulatedAvailability.lean"
+          "CellsProofs.Transport.RegulatedAvailability.ramp_refinement_lower": "lean/CellsProofs/Transport/RegulatedAvailability.lean",
+          "CellsProofs.Transport.RegulatedAvailability.ramp_midpoint_difference": "lean/CellsProofs/Transport/RegulatedAvailability.lean"
+        },
+        "sources": {
+          "Midpoint evaluation for a self-moved source": "src/cells/models/pump_composite.py#L1641"
         }
       },
       "numerical": {
-        "status": "failed",
+        "status": "checked",
         "comparisons": [
+          "regulated-pulse-main-nov21",
+          "regulated-turnover-midpoint-nov21",
           "regulated-turnover-routing"
         ],
-        "result": "Version 2 reread the Hill factor in both target half-steps. All four ramp worlds accepted and booked their reporter gains. The exact one-second gain was 0.59453489 fmol. For 8, 16, 32 and 64 steps the measured convergence orders were 1.006, 1.003 and 1.002, failing the design’s second-order claim when turnover also changes the regulator. Lean proves that halving the target half-step increases this example’s gain by at least h/36."
+        "result": "The left-endpoint engine reproduced first-order convergence on 21 November. On the midpoint revision the compiled gains agreed with independent midpoint sums within 2.23 × 10⁻¹⁶ fmol. Orders on 8, 16, 32 and 64 steps were 1.99973, 1.99993 and 1.99998. The continuous one-second gain is 0.5945348919 fmol. The pulse and the four-grid ramp both passed on main at 68ab12e7."
       },
       "biology": {
         "status": "open",
@@ -3362,9 +4338,9 @@
         }
       },
       "numerical": {
-        "status": "failed",
-        "comparisons": ["scheduled-species-turnover"],
-        "result": "144 scalar cases per backend and two ordinary four-phase schedules matched the 60-digit reference. A one-second compiled run at extreme production and clearance accepted 1 fmol and zero work against a reference of 2 fmol and 0.995667 pJ. The two rounded gross bookings erased the net movement. Halving both rates recovered the correct result. A mixing-chamber check used metered input and exhaust without fitting the outlet measurements. At 120 minutes it predicted 0.387 vol% CO₂ against 0.318 ± 0.034 across four chambers (mean ± SD). [Riveros Lizana et al., Fig. 4](https://doi.org/10.3390/ani13162675)"
+        "status": "checked",
+        "comparisons": ["scheduled-turnover-net-repair", "scheduled-species-turnover"],
+        "result": "All 144 scalar cases on each backend and two ordinary four-phase schedules matched the 60-digit reference. Both extreme-rate worlds stored the reference 2 fmol and booked 0.995667 pJ of chemical work. The earlier engine stored 1 fmol and zero work in the larger-rate case. A mixing-chamber check used metered input and exhaust without fitting the outlet measurements. At 120 minutes it predicted 0.387 vol% CO₂ against 0.318 ± 0.034 across four chambers (mean ± SD). [Riveros Lizana et al., Fig. 4](https://doi.org/10.3390/ani13162675)"
       },
       "biology": {
         "status": "open",
@@ -3509,6 +4485,10 @@
           "CellsProofs.Tissue.CurrentInjection.pulse_charge": "lean/CellsProofs/Tissue/CurrentInjection.lean",
           "CellsProofs.Tissue.CurrentInjection.charge_error": "lean/CellsProofs/Tissue/CurrentInjection.lean",
           "CellsProofs.Tissue.CurrentInjection.single_patch_work": "lean/CellsProofs/Tissue/CurrentInjection.lean"
+        },
+        "sources": {
+          "ATOMS Lab base dimensions and energy, imported in the optional units check": "https://github.com/ATOMSLab/LeanDimensionalAnalysis/blob/de263eed945693058ef2b8a1fa56c2ec5642ea7a/DimensionalAnalysis/Dimensions.lean#L10-L43",
+          "Cells specialization for charge times voltage": "lean/checks/units/FacePower.lean"
         }
       },
       "numerical": {
@@ -3624,6 +4604,45 @@
       "biology": {"status": "open", "observable": "Ion transfer rate attributable to a junction under a specified blocking condition, with the assay detection limit.", "finding": "Heptanol suppressed junctional current in a bovine epithelial cell pair, and the current returned after washout. The trace has no reported detection threshold for residual ion flux. [Wang et al., Fig. 2E–F](https://pubmed.ncbi.nlm.nih.gov/20089928/)", "unit": "fmol/s", "evidence": []}
     },
     {
+      "id": "junction-series-amplitudes",
+      "category": "channels-and-junctions",
+      "title": "Two independent junction gates constrain the decay amplitudes",
+      "statement": "At fixed voltage, multiplying two independent relaxing gate factors gives a plateau P and terms at the fast rate, the slow rate and their sum. Their signed amplitudes satisfy P × A_mixed = A_fast × A_slow. With a nonzero plateau, measuring the fast and slow amplitudes determines the mixed amplitude.",
+      "assumptions": [
+        "Each gate relaxes exponentially toward its own fixed plateau. Junction conductance is proportional to the product of the two factors with a common time origin.",
+        "The reported conductance can be divided by a common reference. Any additive background has been removed. Interpreting the three amplitudes separately requires distinct positive gate rates and a trace that resolves them."
+      ],
+      "formal": {
+        "status": "proved",
+        "theorems": {
+          "CellsProofs.Transport.JunctionGate.series_clamp_expansion": "lean/CellsProofs/Transport/JunctionGate.lean",
+          "CellsProofs.Transport.JunctionGate.series_amplitudes": "lean/CellsProofs/Transport/JunctionGate.lean"
+        },
+        "sources": {
+          "FR-30 product of independent gate factors at constant voltage": "docs/JUNCTION_TWO_RELAXATION_DESIGN.md#L174",
+          "Constant-voltage step and product conductance": "src/cells/laws/junctions/junction_series_gates.py#L134",
+          "Physlib two-state partition function, imported in the optional single-gate equilibrium check": "https://github.com/leanprover-community/physlib/blob/559b0e14bd87896d4ee536a536a8fb65e83b77cc/PhysLean/StatisticalMechanics/CanonicalEnsemble/TwoState.lean#L33-L37",
+          "Physlib postulate used by the optional check, a positive Boltzmann constant in the chosen units": "https://github.com/leanprover-community/physlib/blob/559b0e14bd87896d4ee536a536a8fb65e83b77cc/PhysLean/StatisticalMechanics/BoltzmannConstant.lean#L22-L30",
+          "Cells specialization for one gate with dimensionless open-state energy gap": "lean/checks/physlib/JunctionEquilibrium.lean",
+          "Engine steady open fraction before residual conductance": "src/cells/laws/junctions/junction_series_gates.py#L79"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "junction-series-clamp-nov21"
+        ],
+        "result": "Across all four gate-kind pairings, five clamp voltages and six times, the compiled conductance and two route factors agreed with the scalar calculation within 2.23 × 10⁻¹⁶. This tests the FR-30 module directly. Its integration and registration in the tissue host are pending."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Plateau and amplitudes at the fast, slow and summed rates in the same wild-type Cx43 conductance trace at a fixed voltage.",
+        "finding": "In wild-type rat Cx43 oocyte pairs, a −100 mV step gave fast and slow fitted time constants of 417 ± 175 ms and 7.06 ± 1.28 s, with a fast-to-slow amplitude ratio of 3. Figure 3 shows the voltage series for six pairs (mean ± SEM). The two-component fit leaves the mixed amplitude open. [Revilla et al., Fig. 3 and p. 1377](https://doi.org/10.1016/S0006-3495(99)76986-9)",
+        "unit": "conductance normalized to a common reference",
+        "evidence": []
+      }
+    },
+    {
       "id": "junction-gate",
       "category": "channels-and-junctions",
       "title": "Junction conductance relaxes toward a voltage-dependent target",
@@ -3637,11 +4656,25 @@
         "CellsProofs.Transport.JunctionGate.clamp_bounds": "lean/CellsProofs/Transport/JunctionGate.lean",
         "CellsProofs.Transport.JunctionGate.clamp_add": "lean/CellsProofs/Transport/JunctionGate.lean",
         "CellsProofs.Transport.JunctionGate.clamp_polarity": "lean/CellsProofs/Transport/JunctionGate.lean",
+        "CellsProofs.Transport.JunctionGate.polarity_error_bound": "lean/CellsProofs/Transport/JunctionGate.lean",
         "CellsProofs.Transport.JunctionGate.single_decay_samples": "lean/CellsProofs/Transport/JunctionGate.lean",
         "CellsProofs.Transport.JunctionGate.two_decay_samples": "lean/CellsProofs/Transport/JunctionGate.lean"
       }},
-      "numerical": {"status": "checked", "comparisons": ["junction-gate"], "result": "Across 45 constant-voltage samples the compiled gate matched the independent reference within 1.12 × 10⁻¹⁶. In three tissue cell pairs the intrinsic gates continued moving during a 31.25 ms block, and tracer transfer after release matched the integrated reference within 8.68 × 10⁻¹⁸ fmol."},
-      "biology": {"status": "open", "observable": "Normalized junction conductance at each clamp polarity and the number and duration of decay components during a fixed-voltage step.", "finding": "Seven wild-type Cx43 cell pairs gave residual conductances of 0.35 ± 0.01 and 0.33 ± 0.01 relative to the prepulse at positive and negative voltages. At −100 mV the same decay had two time constants, 70 ± 5 and 931 ± 54 ms (SEM). The Cells reference parameters give one time constant of 50.0 ms. An independent wild-type Cx43 series in N2a pairs reported fast and slow times of 0.25 ± 0.04 and 3.18 ± 0.12 s at 60 mV. The experiments leave exact transient polarity symmetry and the independent availability multiplier open. [Sahu and Bera, Table 2 and Fig. S2](https://pmc.ncbi.nlm.nih.gov/articles/PMC3607587/) · [Moreno et al., Fig. 5A and Table 2](https://doi.org/10.1161/hh0402.105667)", "unit": "dimensionless normalized conductance and ms", "evidence": []}
+      "numerical": {"status": "checked", "comparisons": ["junction-gate", "junction-cx43-polarity"], "result": "Across 45 constant-voltage samples the compiled gate matched the independent reference within 1.12 × 10⁻¹⁶. In three tissue cell pairs the intrinsic gates continued moving during a 31.25 ms block, and tracer transfer after release matched the integrated reference within 8.68 × 10⁻¹⁸ fmol. At −80 and +80 mV the intrinsic steady target was 0.1003927 at each polarity."},
+      "biology": {"status": "open", "observable": "Normalized junction conductance at each clamp polarity and the number and duration of decay components during a fixed-voltage step.", "finding": "Seven wild-type Cx43 cell pairs gave residual conductances of 0.35 ± 0.01 and 0.33 ± 0.01 relative to the prepulse at positive and negative voltages. At −100 mV the same decay had two time constants, 70 ± 5 and 931 ± 54 ms (SEM). The Cells reference parameters give one time constant of 50.0 ms. An independent wild-type Cx43 series in N2a pairs reported fast and slow times of 0.25 ± 0.04 and 3.18 ± 0.12 s at 60 mV. The experiments leave exact transient polarity symmetry and the independent availability multiplier open. [Sahu and Bera, Table 2 and Fig. S2](https://pmc.ncbi.nlm.nih.gov/articles/PMC3607587/) · [Moreno et al., Fig. 5A and Table 2](https://doi.org/10.1161/hh0402.105667)", "unit": "dimensionless normalized conductance and ms", "evidence": [
+        {
+          "dataset_id": "revilla1999_cx43_polarity@1",
+          "manifest": "lean/checks/data/revilla1999_cx43.json",
+          "citation": "Revilla, Castro and Barrio (1999)",
+          "doi": "10.1016/S0006-3495(99)76986-9",
+          "locator": "Table 1, RCx43–RCx43 row, and Fig. 3C.",
+          "context": "Homotypic wild-type rat Cx43 in paired Xenopus oocytes, with conductance normalized to a 10 mV prepulse.",
+          "role": "descriptive",
+          "uncertainty": "Table 1 reports rounded parameters for both fitted curves. Uncertainties for those parameters and their covariance are unavailable.",
+          "assessment": "At −80 and +80 mV the published fits give 0.48745 and 0.38171. A model predicting the same value at both voltages must miss at least one fit by 0.05287 in normalized conductance (rounded). A significance test on paired observations remains open.",
+          "report": "lean/PROGRESS.md#cx43-series-gates"
+        }
+      ]}
     },
     {
       "id": "channel-gate-bounds",
@@ -3664,6 +4697,185 @@
       }},
       "numerical": {"status": "checked", "comparisons": ["ion-channels"], "result": "The compiled dispatcher matched independent gate targets at 25 voltages within 2.23 × 10⁻¹⁶ and time constants within 1.78 × 10⁻¹⁵ s. All 72 stage cases stayed in [0, 1]. During the tissue block all eight gate pairs continued to move."},
       "biology": {"status": "open", "observable": "Normalized whole-current activation, decay or recovery for the same isoform, temperature, holding state and voltage-step sequence.", "unit": "normalized current, ms and mV", "finding": "Rat Kv1.1 decay at −20 mV and 25 °C was 313 ± 82 ms (SD). Cells retained 88% of its peak after 1.5 s and gave a fit of about 8 s from an equilibrated −80 mV hold. Rat Kv1.4 retained under 2% after 3.2 s at 0 mV, versus 0.57% in Cells. Four gate parameters match that paper. Human NaV1.2 rose in 0.38 ± 0.05 ms (10–90%, SEM), versus 0.296 ms in Cells. Its fitted inactivation midpoint was −63.53 ± 0.79 mV, while Cells gave half of its −120 mV reference response at −54.9 mV. [Ranjan et al., Fig. 2C](https://doi.org/10.3389/fncel.2019.00358) · [Stühmer et al., Table I and Fig. 6](https://doi.org/10.1002/j.1460-2075.1989.tb08483.x) · [Begemann et al., Table 2](https://doi.org/10.1186/s10020-019-0073-6)", "evidence": []}
+    },
+    {
+      "id": "kv15-ph-activation",
+      "category": "channels-and-junctions",
+      "title": "Kv1.5 activation and current retention under extracellular acidification",
+      "statement": "With common nonzero ionic drive, the treated/control current ratio is the product of the fully open population-scale ratio and the effective-opening ratio. For a rising Boltzmann curve of fixed positive width, translating the midpoint to the right makes the treated/control activation ratio increase strictly with voltage.",
+      "assumptions": [
+        "The control has positive maximal scale and opening. Both conditions share the single-open-channel drive at the test voltage, including permeant ion, temperature and concentrations.",
+        "Transferring the separately normalized peak tails in Figure 1F to the Figure 1B current assumes equal absolute maximal conductance and comparable peak openings in both protocols. Figure 1B supplies no input to the prediction.",
+        "The registered-channel sensitivity calculation moves only the activation midpoint. Inactivation, both gate time scales, channel count, permeability, ionic drive and the registered activation slope stay fixed."
+      ],
+      "uses": [
+        "clamped-channel-current",
+        "channel-density-availability",
+        "channel-gate-bounds"
+      ],
+      "formal": {
+        "status": "proved",
+        "theorems": {
+          "CellsProofs.Transport.IonChannels.clamp_ratio_from_openings": "lean/CellsProofs/Transport/IonChannels.lean",
+          "CellsProofs.Transport.IonChannels.right_shift_ratio_strictMono": "lean/CellsProofs/Transport/IonChannels.lean"
+        },
+        "sources": {
+          "Mathlib cancellation of the common nonzero drive": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/GroupWithZero/Units/Basic.lean#L317-L325",
+          "Mathlib strict monotonicity of the real exponential": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Data/Complex/Exponential.lean#L288-L295"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "kv15-ph-clamp"
+        ],
+        "result": "With equal maximal scales, stored effective openings from Figure 1F gave 0.72131 for the ratios at 0 mV and −90 mV on NumPy and compiled JAX CPU. Halving the acid maximum gave 0.36066. The native channel gave a peak ratio of 1.000 under both pH labels. Applying the +11.7 mV shift to its −6.0 mV midpoint gave 0.40493. Supplying both measured midpoints with native kinetics gave 0.69537."
+      },
+      "biology": {
+        "status": "not_assessable",
+        "observable": "How much peak outward potassium current remains at 0 mV when external pH falls from 7.3 to 6.8, given the separately normalized peak-tail activation curves.",
+        "unit": "fraction of control current",
+        "evidence": [
+          {
+            "dataset_id": "trapani2003_kv15_ph",
+            "manifest": "lean/checks/data/trapani2003_kv15_ph.json",
+            "citation": "Trapani and Korn (2003), Fig. 1B and 1F",
+            "doi": "10.1016/S0006-3495(03)74842-5",
+            "locator": "Figure 1F at the 0 mV prepulse and the activation midpoints in its caption. The 75 ms step in Figure 1B is held out.",
+            "context": "Wild-type human Kv1.5 expressed in HEK293 cells, whole-cell at room temperature, 100 mM internal and 10 mM external K⁺. Figure 1F uses voltage-dependent prepulse durations and peak tails at −90 mV. Figure 1B compares outward currents in a pulse from −80 to 0 mV.",
+            "role": "held_out_from_fitting",
+            "fit": [
+              "Figure 1F peak-tail fractions at 0 mV and the two activation midpoints"
+            ],
+            "evaluation": [
+              "Figure 1B 0 mV step-current ratio at pH 6.8 versus 7.3"
+            ],
+            "observed": 0.745,
+            "predicted": 0.72131,
+            "uncertainty": "Figure 1B reports SEM 0.019 over eight cells. Figure 1F normalizes each condition separately and gives neither the absolute maxima nor enough information to propagate experimental uncertainty. Reading both plotted fractions within ±0.01 gives 0.703–0.740 from graph precision alone. Both assays come from one study.",
+            "assessment": "The equal-maximum projection is 0.0237 below the measured fraction. The control midpoint explains why imposing the measured shift on the default Cells gate gives a smaller ratio. Quantitative pH validation needs comparable maximum conductances and matched activation kinetics.",
+            "report": "lean/PROGRESS.md#kv15-ph-activation"
+          }
+        ]
+      }
+    },
+    {
+      "id": "channel-density-availability",
+      "category": "channels-and-junctions",
+      "title": "Independent channel counts determine relative availability from fixed-gate currents",
+      "statement": "When two populations share their single-channel drive and stored gates, the ratio of their currents per counted surface channel equals the ratio of their availabilities. Their patch areas and channel densities may differ.",
+      "assumptions": [
+        "Compare the same permeant ion, voltage, charge conversion, temperature, concentrations, gate state, permeability and reference channel density. Counting uses all voltage-sensing channels, including channels that are silent.",
+        "Each patch has positive area and density. The reference preparation has positive availability and a nonzero single-channel response. The test uses the same area units for current density and channel density.",
+        "The descriptive density curve fixes the Hill exponent at one and basal fraction at zero. Its maximum and half-saturation come from the two Kv1.5 endpoints. The composite exercises a distinct reporter. D218 excludes using a population’s own density to route its own availability."
+      ],
+      "uses": [
+        "clamped-channel-current",
+        "regulated-state-response"
+      ],
+      "formal": {
+        "status": "proved",
+        "theorems": {
+          "CellsProofs.Transport.IonChannels.clamped_current_per_channel": "lean/CellsProofs/Transport/IonChannels.lean",
+          "CellsProofs.Transport.IonChannels.relative_availability_from_counts": "lean/CellsProofs/Transport/IonChannels.lean"
+        },
+        "sources": {
+          "Mathlib cancellation of common nonzero factors, used in the standard proof": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/GroupWithZero/Units/Basic.lean#L317-L325",
+          "grn-lean Hill response at the pinned revision, specialized in the optional check": "https://github.com/marpaia/grn-lean/blob/070ba8da6a09bdc4b0550396c61611668768bc0b/GRN/Dynamics/VectorField.lean#L34-L37",
+          "Cells reciprocal-availability specialization at exponent one": "lean/checks/hill/Response.lean#L60"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "kv15-density-clamp"
+        ],
+        "result": "On three Kv1.5 patches of 100, 160 and 240 µm², the count-normalized currents relative to the low-density patch were 1, 1 and 1 at fixed availability. With the measured fractions supplied, they were 1, 0.6765 and 0.5294 at both clamp voltages on NumPy and compiled JAX CPU. The separate reporter returned 0.22215 at 300 channels/µm², matching the reciprocal interpolation."
+      },
+      "biology": {
+        "status": "not_assessable",
+        "observable": "Kv1.5 conducting fraction at a middle density excluded from fitting, and whether changes in the channel’s own density cause those changes in availability.",
+        "unit": "conducting fraction",
+        "evidence": [
+          {
+            "dataset_id": "maverick2022_kv_density",
+            "manifest": "lean/checks/data/maverick2022_kv_density.json",
+            "citation": "Maverick and Tamkun (2022), Fig. 8C",
+            "doi": "10.1016/j.bpj.2022.01.021",
+            "locator": "Fig. 8C, journal p. 766. The orange triangle nearest 300 channels/µm² is the evaluation point.",
+            "context": "Tagged Kv1.5 in HEK293 cells at room temperature. Conducting-channel estimates use ionic conductance, and voltage-sensing channel counts use calibrated gating charge. The density series compares different cells.",
+            "role": "held_out_from_fitting",
+            "fit": [
+              "Kv1.5 near 115 channels/µm²",
+              "Kv1.5 near 425 channels/µm²"
+            ],
+            "evaluation": [
+              "Kv1.5 near 300 channels/µm²"
+            ],
+            "observed": 0.23,
+            "predicted": 0.22215,
+            "uncertainty": "Graph readings of three-cell moving averages from one study. There are no pointwise errors. The estimated gating count occurs in the density numerator and the conducting-fraction denominator, so error in that count can induce anticorrelation.",
+            "assessment": "The middle estimate is about 0.23. The two-endpoint inhibition curve gives about 0.22 there and a constant fraction calibrated at the low density gives 0.34. The comparison cannot establish the Kv1.5 silencing mechanism. Nearby Kv1.4 fractions were about 0.64 and 0.73.",
+            "report": "lean/PROGRESS.md#kv15-channel-density"
+          }
+        ]
+      }
+    },
+    {
+      "id": "clamped-channel-current",
+      "category": "channels-and-junctions",
+      "title": "A fixed-gate current curve identifies the product of channel abundance and availability",
+      "statement": "At a declared voltage, the population’s outward electrical current is its outward permeant-ion flux times the signed charge per fmol. With fixed stored gates and known drive, two abundance and availability pairs give the same current at every sampled voltage exactly when their products agree, provided at least one voltage gives a nonzero response at unit abundance and availability.",
+      "assumptions": [
+        "The channel conducts one declared ion. The charge, concentrations, temperature, area and permeability defining its single-population drive are known and shared across the two preparations.",
+        "The readout uses the stored gates. Abundance is proportional to surface count at fixed patch area and reference density. At reversal or with closed gates, a zero signal alone cannot determine the product."
+      ],
+      "uses": [
+        "channel-ion-transfer",
+        "chloride-channel-charge",
+        "empty-surface-flow"
+      ],
+      "formal": {
+        "status": "proved",
+        "theorems": {
+          "CellsProofs.Transport.IonChannels.clamped_current_from_species": "lean/CellsProofs/Transport/IonChannels.lean",
+          "CellsProofs.Transport.IonChannels.clamped_current_factors": "lean/CellsProofs/Transport/IonChannels.lean",
+          "CellsProofs.Transport.IonChannels.same_clamped_curve_iff": "lean/CellsProofs/Transport/IonChannels.lean"
+        },
+        "sources": {
+          "Mathlib Finset.sum_eq_single_of_mem, the additive theorem used in the standard build": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Group/Finset/Basic.lean#L302-L310",
+          "ATOMS Lab base current, time and amount, imported in the optional units check": "https://github.com/ATOMSLab/LeanDimensionalAnalysis/blob/de263eed945693058ef2b8a1fa56c2ec5642ea7a/DimensionalAnalysis/Dimensions.lean#L12-L17",
+          "Cells specialization for a Faraday conversion times molar flux": "lean/checks/units/FacePower.lean#L31"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "channel-clamp-main-nov21",
+          "clamped-channel-current-fr34"
+        ],
+        "result": "On the tissue host, 11 active populations on two patches agreed with the 70-digit reference within 1.30 × 10⁻²⁶ A. Halving abundance or availability halved current exactly. Full block, off-ion fluxes and padding gave zero. The composite replay at −50 mV gave 0.592416 pA with the raw control and 0.296208 pA with its effective 0.5 control. The public composite clamp remains unavailable at this revision."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "A matched signed current at a declared voltage with independent measurements of channel abundance, the fraction available to conduct, stored gate state and unitary drive.",
+        "unit": "conducting fraction",
+        "evidence": [
+          {
+            "dataset_id": "maverick2022_kv_density",
+            "manifest": "lean/checks/data/maverick2022_kv_density.json",
+            "citation": "Maverick and Tamkun (2022), Fig. 8B–C",
+            "doi": "10.1016/j.bpj.2022.01.021",
+            "locator": "Fig. 8B reports the group means. Fig. 8C, p. 766, orange triangles, gives the density series for Kv1.5.",
+            "context": "Tagged Kv channels in HEK293 cells at room temperature. Channel estimates use gating charge, fluorescence calibration, ionic slope conductance near reversal and current fluctuations.",
+            "role": "descriptive",
+            "observed": 0.18,
+            "uncertainty": "The two Kv1.5 endpoints are approximate readings of a three-cell moving average near 115 and 425 gating channels/µm². No endpoint uncertainties are given. Group means were 0.96 ± 0.05 for Kv1.4 and 0.26 ± 0.01 for Kv1.5 (SEM).",
+            "assessment": "A conducting fraction held at the low-density value would predict 0.34 at the high-density endpoint, where the figure gives about 0.18. Density changes across cells. The measured fractions constrain an availability model across densities. A matched test of absolute instantaneous current remains open.",
+            "report": "lean/PROGRESS.md#fr34-clamped-current"
+          }
+        ]
+      }
     },
     {
       "id": "channel-ion-transfer",
@@ -3953,13 +5165,160 @@
       "statement": "In E + S ⇌ C and C → E + P, total enzyme is E + C and total substrate is S + C + P. Omitting the returned E loses one enzyme unit per catalytic event while preserving substrate.",
       "assumptions": ["Each complex carries one enzyme unit and one substrate unit. Each product retains one substrate unit. The site has no external supply or removal."],
       "uses": ["reaction-inventory"],
-      "formal": {"status": "proved", "about": ["cells.local_species_reactions@1"], "theorems": {
+      "formal": {"status": "proved", "about": ["cells.local_species_reactions@1"], "sources": {
+        "crnt-lean concentration-rate conservation, imported in the optional check": "https://github.com/marpaia/crnt-lean/blob/7386777488a41efd92e6abc2bccf889fb611660e/CRNT/Examples/Enzyme.lean#L64-L82",
+        "Cells comparison of all directed stoichiometric entries and the fixed-volume conversion": "lean/checks/chemistry/Reuse.lean#L22"
+      }, "theorems": {
         "CellsProofs.Chemistry.Enzyme.enzyme_conserved": "lean/CellsProofs/Chemistry/Enzyme.lean",
         "CellsProofs.Chemistry.Enzyme.substrate_conserved": "lean/CellsProofs/Chemistry/Enzyme.lean",
         "CellsProofs.Chemistry.Enzyme.missing_enzyme_balance": "lean/CellsProofs/Chemistry/Enzyme.lean"
       }},
       "numerical": {"status": "checked", "comparisons": ["closed-enzyme"], "result": "Lean checked both fixture columns and both weight rows. The largest absolute inventory residual in the CPU half-step was about 1.12 × 10⁻²⁰ fmol, below the 6.94 × 10⁻¹⁸ fmol tolerance. The engine refused the missing-enzyme reaction."},
       "biology": {"status": "open", "observable": "Free enzyme, substrate, bound complex and product amounts in a specified closed enzyme preparation.", "finding": "NMR resolved ligand states bound to triosephosphate isomerase. Testing both balances requires simultaneous amounts of free enzyme, substrate, bound complex and product during turnover. [Rozovsky and McDermott, Figs. 3–5](https://pmc.ncbi.nlm.nih.gov/articles/PMC1794347/)", "unit": "fmol", "evidence": []}
+    },
+    {
+      "id": "binding-form-ensemble",
+      "category": "reactions-and-binding",
+      "title": "Finite binding forms have normalized Boltzmann weights",
+      "statement": "At fixed free ligand activities, the fraction in each form equals its effective Boltzmann weight divided by the finite partition sum. Isomers with the same ligand counts can be combined into one registered form by summing their weights. This preserves their aggregate occupancy at every such set of activities.",
+      "assumptions": [
+        "A binder has finitely many present forms and a positive total. Equilibrium is conditional on finite positive free ligand activities and a fixed positive inverse temperature. The tissue solver supplies those activities when only totals are given.",
+        "Counts relative to the base form may be signed. All standard potentials use the same temperature and standard concentration. The engine uses ideal concentration activities x/c₀. A concentration-dependent activity coefficient would require its own model.",
+        "Microscopic states within a registered form have the same ligand counts. Each state is counted once, and the group’s standard potential is −log Σ exp(−μᵢ°/RT) in units of RT."
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.rapid_binding@1"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.BindingEnsemble.logWeight_change_frame": "lean/CellsProofs/Chemistry/BindingEnsemble.lean",
+          "CellsProofs.Chemistry.BindingEnsemble.fraction_shift": "lean/CellsProofs/Chemistry/BindingEnsemble.lean",
+          "CellsProofs.Chemistry.BindingEnsemble.fraction_from_log_sum": "lean/CellsProofs/Chemistry/BindingEnsemble.lean",
+          "CellsProofs.Chemistry.BindingEnsemble.fraction_grouped": "lean/CellsProofs/Chemistry/BindingEnsemble.lean",
+          "CellsProofs.Chemistry.BindingEnsemble.group_log_weight": "lean/CellsProofs/Chemistry/BindingEnsemble.lean",
+          "CellsProofs.Chemistry.BindingEnsemble.binding_fraction_from_isomers": "lean/CellsProofs/Chemistry/BindingEnsemble.lean",
+          "CellsProofs.Chemistry.BindingEnsemble.equal_state_log_weight": "lean/CellsProofs/Chemistry/BindingEnsemble.lean"
+        },
+        "sources": {
+          "Physlib finite partition, specialized on the optional v4.22.0 pin": "https://github.com/leanprover-community/physlib/blob/559b0e14bd87896d4ee536a536a8fb65e83b77cc/PhysLean/StatisticalMechanics/CanonicalEnsemble/Finite.lean#L119-L125",
+          "Physlib single-state probability": "https://github.com/leanprover-community/physlib/blob/559b0e14bd87896d4ee536a536a8fb65e83b77cc/PhysLean/StatisticalMechanics/CanonicalEnsemble/Basic.lean#L388-L394",
+          "Physlib Boltzmann-constant axiom": "https://github.com/leanprover-community/physlib/blob/559b0e14bd87896d4ee536a536a8fb65e83b77cc/PhysLean/StatisticalMechanics/BoltzmannConstant.lean#L20-L30",
+          "Cells specialization compiled with Physlib": "lean/checks/physlib/BindingEnsemble.lean"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "binding-form-ensemble"
+        ],
+        "result": "On both NumPy and JIT-compiled JAX CPU, 536 form fractions across 80 S1–S7 states agreed with an 80-digit standard-potential partition to within 7.78 × 10⁻¹⁶ in absolute fraction. All 52 padded entries were zero. The six-form H/Mg tissue read stayed within the registered tolerance. The isomer control distinguished 1/2, 2/3 and 4/5 occupied."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "ATP fraction carrying Mg at measured free Mg, pH, temperature and solution composition. The individual H/Mg microscopic forms would require additional resolved measurements.",
+        "unit": "fraction of ATP carrying Mg",
+        "finding": "At pH 7.2 and 37 °C, transferring an independently measured apparent affinity between two preparations underpredicted Mg-bound ATP by about 0.17. Their solution compositions and measurement methods differ.",
+        "evidence": [
+          {
+            "dataset_id": "ward1998_mgatp_zhang1997_affinity",
+            "manifest": "lean/checks/data/mgatp_binding.json",
+            "citation": "Ward et al. (1998), Fig. 1",
+            "url": "https://cds.ismrm.org/ismrm-1998/PDF6/p1693.pdf",
+            "locator": "Rightmost marker in Figure 1, about 230 µM free Mg and a bound/unbound ATP ratio of 8.7. Dividing the ratio by one plus the ratio gives the observed fraction.",
+            "context": "Three mM ATP in MOPS/KCl at pH 7.2, 37 °C and ionic strength 0.15 M. Matched aliquots supplied the fluorescent free-Mg and phosphorus NMR measurements. The two-form prediction uses Zhang et al.’s macroelectrode Kd at the same pH and temperature in a muscle-like solution of ionic strength 0.156 M. [Zhang et al. (1997)](https://doi.org/10.1006/abio.1997.2238)",
+            "role": "held_out_from_fitting",
+            "fit": [
+              "Zhang et al. apparent Kd at pH 7.2, 87.4 µM"
+            ],
+            "evaluation": [
+              "Ward et al. Figure 1 rightmost aggregate Mg-bound fraction"
+            ],
+            "excluded": [
+              "Ward et al. same-figure fitted Kd, 27.7 µM",
+              "Zhang et al. pH 6.7 and 7.7 Kd values"
+            ],
+            "observed": 0.897,
+            "predicted": 0.725,
+            "uncertainty": "Zhang et al. report SD 4.9 µM over four measurements. Graph-reading precision is about ±5 µM in free Mg and ±0.1 in bound/unbound ratio. Ward et al. give no sampling uncertainty for this individual marker.",
+            "assessment": "A single transferred apparent Kd misses the aggregate fraction in this preparation. Quantitative validation of individual H/Mg occupancies requires matched solution conditions and form-resolved evidence.",
+            "report": "lean/PROGRESS.md#binding-form-ensemble"
+          }
+        ]
+      }
+    },
+    {
+      "id": "binding-ligand-response",
+      "category": "reactions-and-binding",
+      "title": "Total ligand increases with its own free concentration",
+      "statement": "At fixed binder totals and other free ligand concentrations, increasing one free ligand strictly increases its total. The matrix of derivatives of totals with respect to free log concentrations is symmetric positive definite. Filling unheld coordinates with the engine’s identity block preserves this property.",
+      "uses": [
+        "binding-form-ensemble"
+      ],
+      "assumptions": [
+        "Each binder has finitely many present equilibrium forms with normalized weights. Temperature and standard potentials are fixed. Ligand counts relative to the base form may be signed.",
+        "Free concentrations are positive and binder totals are nonnegative. The derivative varies one free log concentration while holding the other free concentrations fixed. The formula uses exact real arithmetic."
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.rapid_binding@1"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.BindingResponse.logWeight_perturb": "lean/CellsProofs/Chemistry/BindingResponse.lean",
+          "CellsProofs.Chemistry.BindingResponse.covariance_eq_centered": "lean/CellsProofs/Chemistry/BindingResponse.lean",
+          "CellsProofs.Chemistry.BindingResponse.hasDerivAt_mean": "lean/CellsProofs/Chemistry/BindingResponse.lean",
+          "CellsProofs.Chemistry.BindingResponse.response_entry_hasDerivAt": "lean/CellsProofs/Chemistry/BindingResponse.lean",
+          "CellsProofs.Chemistry.BindingResponse.totalAlong_strictMono": "lean/CellsProofs/Chemistry/BindingResponse.lean",
+          "CellsProofs.Chemistry.BindingResponse.total_strictMonoOn_free": "lean/CellsProofs/Chemistry/BindingResponse.lean",
+          "CellsProofs.Chemistry.BindingResponse.response_posDef": "lean/CellsProofs/Chemistry/BindingResponse.lean",
+          "CellsProofs.Chemistry.BindingResponse.masked_response_posDef": "lean/CellsProofs/Chemistry/BindingResponse.lean"
+        },
+        "sources": {
+          "Mathlib positive definite diagonal, imported": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/LinearAlgebra/Matrix/PosDef.lean#L362-L370",
+          "Mathlib weighted positive semidefinite matrix product, imported": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/LinearAlgebra/Matrix/PosDef.lean#L69-L76",
+          "Mathlib sum of a positive definite and a positive semidefinite matrix, imported": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/LinearAlgebra/Matrix/PosDef.lean#L420-L426",
+          "Mathlib strict monotonicity from a positive derivative, imported": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/Calculus/Deriv/MeanValue.lean#L382-L385"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "binding-ligand-response"
+        ],
+        "result": "NumPy, compiled JAX CPU and the differentiated conservation residual each matched all 303 entries of an 80-digit centered covariance across 80 S1–S7 states. The largest absolute error was 2.45 × 10⁻¹⁴ mM. All nine proton-release states had a negative H–Mg entry and a positive Mg diagonal. Checks included empty binders, unheld coordinates and a missing-covariance control."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "ATP Mg occupancy at fixed ATP, pH and temperature across measured free Mg. Quantitative self and cross-responses would require measured changes in total Mg and proton inventory.",
+        "unit": "change in fraction of ATP carrying Mg",
+        "finding": "Two titration points support increasing ATP Mg occupancy. The total-Mg slope and the proton response to Mg remain unmeasured in these data.",
+        "evidence": [
+          {
+            "dataset_id": "ward1998_mgatp_direction",
+            "manifest": "lean/checks/data/ward1998_mgatp_titration.json",
+            "citation": "Ward et al. (1998), Fig. 1",
+            "url": "https://cds.ismrm.org/ismrm-1998/PDF6/p1693.pdf",
+            "locator": "Distinct squares at approximately 130 and 230 µM free Mg have bound/unbound ATP ratios of 4.2 and 8.7. These give Mg occupancies of 0.808 and 0.897.",
+            "context": "Fixed 3 mM ATP at pH 7.2, 37 °C and ionic strength 0.15 M. Matched aliquots at each level supplied free Mg by fluorescence and aggregate occupancy by phosphorus NMR. The engine’s two-form comparison uses an independent apparent affinity from a muscle-like solution. [Zhang et al.](https://doi.org/10.1006/abio.1997.2238)",
+            "role": "held_out_from_fitting",
+            "fit": [
+              "Zhang et al. apparent Mg–ATP Kd of 87.4 µM at 37 °C and pH 7.2"
+            ],
+            "evaluation": [
+              "Change in ATP Mg occupancy between the two Figure 1 samples"
+            ],
+            "excluded": [
+              "Ward’s fitted line and all other markers"
+            ],
+            "observed": 0.089,
+            "predicted": 0.127,
+            "uncertainty": "Reading precision is about ±5 µM and ±0.1 in bound/unbound ratio. The figure pools seven runs and gives no pointwise sampling errors, run identities or measured total Mg.",
+            "assessment": "The model gives the observed direction and overpredicts the increase by 3.7 percentage points. Solution compositions differ. The H–Mg cross-response remains open.",
+            "report": "lean/PROGRESS.md#binding-ligand-response"
+          }
+        ]
+      }
     },
     {
       "id": "single-site-binding",
@@ -3993,12 +5352,13 @@
         "CellsProofs.Tissue.MembraneInsertion.one_patch_image_zero": "lean/CellsProofs/Tissue/MembraneInsertion.lean"
       }},
       "numerical": {
-        "status": "failed",
+        "status": "checked",
         "comparisons": [
+          "membrane-insertion-heat-nov21",
           "membrane-insertion-heat-nov20",
           "membrane-insertion"
         ],
-        "result": "Both versions passed six control half-steps each. At an extreme ΔC/C of 1.7 × 10¹⁶, both computed −0.043037 pJ against an 80-digit reference of +0.051603 pJ and refused step one. The computed bath image charge was −3.638 × 10⁻¹² C. Using the sum-of-squares heat and exact single-patch image charge in a diagnostic control allowed both runs to finish. The lead confirmed the step refusal and assigned the fix to the operators owner."
+        "result": "Both versions passed all seven half-step cases and completed the original extreme one-patch rollout. At ΔC/C = 1.7 × 10¹⁶ both booked +0.051603097344170144 pJ, against +0.05160309734417014 pJ from the 80-digit calculation. The earlier refusal and diagnostic substitutions are retained below."
       },
       "biology": {"status": "open", "observable": "Membrane capacitance, patch voltage and clamp charge during a characterized insertion event, with the incoming membrane’s initial charge accounted for.", "finding": "Capacitance steps were measured during secretion in chromaffin cells. Testing insertion heat also needs the initial charge of the added membrane and independent electrical work and energy measurements. [Neher and Marty](https://doi.org/10.1073/pnas.79.21.6712)", "unit": "pJ for heat, C for image charge", "evidence": []}
     },
@@ -4056,7 +5416,7 @@
           "gard-pair-heat-nov20",
           "gard-catalysis"
         ],
-        "result": "The 210 ordinary transfer pairs agreed with the base heat within 5.00 × 10⁻¹⁶ kBT. Two admitted one-event runs with a large diagonal coefficient lost the remaining catalyst in the reverse sum. The passive ledger refused both, booking 2.33 × 10⁻¹⁰ and 0.693147 kBT where the exact heat is zero. Both one-event controls passed. The lead accepted these false refusals and assigned the repair to the builder after its current test run. The recorded failure applies to the pinned engine revision."
+        "result": "The 210 ordinary transfer pairs agreed with the base heat within 5.00 × 10⁻¹⁶ kBT. Two admitted one-event runs with a large diagonal coefficient lost the remaining catalyst in the reverse sum. The passive ledger refused both, booking 2.33 × 10⁻¹⁰ and 0.693147 kBT where the exact heat is zero. Both one-event controls passed. The failure is recorded for version 1. An in-place change altered registered results and was reverted. The lead assigned the accurate reverse calculation to version 2. [Version decision](../../docs/DECISIONS.md#L8017) · [Branch replay](../PROGRESS.md#remaining-numerical-findings)"
       },
       "biology": {"status": "open", "observable": "Entry, reverse exit and independent affinity for the same lipid as the surrounding membrane composition changes.", "unit": "M⁻¹ s⁻¹ per molar vesicles for entry, s⁻¹ for exit", "finding": "For the same lipid tracer at 308 K, changing pure POPC vesicles to 1:1 POPC/cholesterol halved the fitted entry constant. Exit estimates were 25 ± 2 and 27 ± 2 s⁻¹. Independent titrations gave association constants of 1.3 × 10⁹ and 6.1 × 10⁸ M⁻¹. A shared catalytic multiplier at fixed affinity cannot explain the change. The fit used the equilibrium measurement, and molecular neighbor counts remain unknown. [Sampaio et al., Table 1](https://doi.org/10.1529/biophysj.104.054007)", "evidence": []}
     },
@@ -4270,6 +5630,10 @@
       ],
       "uses": ["assembly-stochastic-encounter"],
       "formal": {
+        "sources": {
+          "Pythia Eyring rate and positivity proof, imported in the optional check": "https://github.com/athanor-ai/pythia/blob/65404339b5c6fe8004d91fdd9c0c14ceb0bf7cd3/Pythia/Frontier/Chemistry/Eyring.lean#L23-L36",
+          "Cells single-contact factor as the ratio of the two Eyring rates": "lean/checks/chemistry/Reuse.lean#L77"
+        },
         "status": "proved",
         "theorems": {
           "CellsProofs.Chemistry.AssemblyKinetics.common_residual": "lean/CellsProofs/Chemistry/AssemblyKinetics.lean",
@@ -4285,12 +5649,13 @@
         "about": ["cells.transition_state_factor@1"]
       },
       "numerical": {
-        "status": "failed",
+        "status": "checked",
         "comparisons": [
+          "transition-state-factor-repair",
           "assembly-transition-state-factor-nov20",
           "assembly-kinetics"
         ],
-        "result": "Both directional multipliers agreed with the exact common-state value on 1,925 ordinary reversible edges. In an admitted two-molecule world with +20 kBT moving contacts and −20 kBT for the stationary molecule, float64 gives both rates as zero instead of 2.0611536224/s. The compiled run returns inert with a passing ledger. The equivalent constant-rate control fires at 0.3459699807 s on the same draw. With neutral movers and the same stationary contact, the clock runs with a 2.00 × 10⁻⁸ relative rate error."
+        "result": "The directional multipliers agreed with the exact common-state value on 1,925 ordinary reversible edges. In the opposed ±20 kBT contact case, both rates were 2.0611536224/s and the first event occurred at the reference 0.3459699807 s. All four seeded clocks fired four events with closed ledgers. The earlier comparison records the spurious inert state."
       },
       "biology": {
         "status": "open",
@@ -4335,10 +5700,11 @@
       "numerical": {
         "status": "checked",
         "comparisons": [
+          "rectifier-reference-domain",
           "inward-rectifier-nov20",
           "inward-rectifier"
         ],
-        "result": "The original stress case passed on main after the owner’s overflow-safe concentration factor landed. All three equivalent normalizations produced 0.5520533 pA and identical transfer and heat. The 360-state control panel passed. The original failure is recorded at the earlier engine revision."
+        "result": "All three equivalent normalizations gave 0.5520533 pA and identical transfer and heat, including the smallest normal float64 potassium reference. All 360 voltage controls passed. A positive subnormal reference (5 × 10⁻³²⁴ mM) was refused during definition checking. The original overflow remains at the earlier engine revision."
       },
       "biology": {
         "status": "mixed",
@@ -4796,6 +6162,174 @@
           "assessment": "The retrospective C3 prediction was 3.41 mV above the figure reading. The closeout records a descriptive result. Biological acceptance remains unresolved because experimental uncertainty and the recording boundary are insufficiently characterized.",
           "report": "reports/bio-003-closeout.json"
         }]
+      }
+    },
+    {
+      "id": "prescribed-shell-rates",
+      "category": "molecular-assembly",
+      "title": "Shell entry and exit depend on conductance and the gate’s own forms",
+      "statement": "At fixed activities and standard density, the area–permeability product fixes both rate prefactors. Changing other wall counts leaves the gate factor unchanged. The common gate preserves the ratio of the two directional activities when the reverse rate is positive.",
+      "assumptions": [
+        "The declared area and lumen volume are fixed. Forward and reverse comparisons use their respective activities and the same gate counts on the pair’s common state.",
+        "The gate factor is a count-weighted mean over its declared forms. An absent gate has factor one."
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.prescribed_shell@1",
+          "cells.shell_permeation@1",
+          "cells.gate_factor@1"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.PrescribedShell.same_conductance": "lean/CellsProofs/Chemistry/PrescribedShell.lean",
+          "CellsProofs.Chemistry.PrescribedShell.gate_unchanged": "lean/CellsProofs/Chemistry/PrescribedShell.lean",
+          "CellsProofs.Chemistry.PrescribedShell.absent_gate": "lean/CellsProofs/Chemistry/PrescribedShell.lean",
+          "CellsProofs.Chemistry.PrescribedShell.paired_rates": "lean/CellsProofs/Chemistry/PrescribedShell.lean"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "shell-rates-nov21"
+        ],
+        "result": "Two existing engine tests passed. Doubling area while halving permeability preserved both rates to rounding. Doubling permeability alone doubled both rates. Changes to nongate inventory left rates and lumen volume identical. Both run modes recorded the shell probe."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Bidirectional flux at measured shell area and permeability, with the gate-form ratio held fixed while nongate site counts vary.",
+        "unit": "molecules/s",
+        "evidence": []
+      }
+    },
+    {
+      "id": "site-occupant-cargo",
+      "category": "tissue-and-conservation",
+      "title": "Replacing occupied sites accounts for departing and arriving bound ligand",
+      "statement": "For each due population the newcomer carries its template occupancy times its capacity. Site-bound ligand after the event plus departures equals site-bound ligand before the event plus arrivals. Free ligand common to the two sides cancels.",
+      "assumptions": [
+        "The identity isolates the site operator at the event. The host accounts separately for changes to free pools, reactions and binding between rows.",
+        "Each due population has an admitted template and a fixed site capacity. Other populations retain their bound amount."
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.site_occupant_replacement@1"
+        ],
+        "theorems": {
+          "CellsProofs.Tissue.CellReplacement.occupant_ligand_balance": "lean/CellsProofs/Tissue/CellReplacement.lean"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "site-cargo-main-nov21",
+          "site-occupant-replacement-nov21",
+          "site-regulated-readout-nov21"
+        ],
+        "result": "In the compiled world with occupied sites and ongoing conversion, maximum ligand and product balance residuals were at most 10⁻¹⁵ fmol. Dropping departing ligand from the balance produced the expected deficit. The site-readout regression also read the newcomer’s occupancy after reset. These cargo and occupancy controls passed on 68ab12e7. At the replacement time the exported reaction rate mixed the departing substrate and incoming multiplier. D264 holds that row from scoring."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Cross-event inventories of free and occupant-bound ligand with independently measured departing and arriving cargo.",
+        "unit": "fmol",
+        "evidence": []
+      }
+    },
+    {
+      "id": "wash-ion-counters",
+      "category": "tissue-and-conservation",
+      "title": "A wash at the same ion concentration must collect and supply equal amounts",
+      "statement": "For an unchanged ion in a well of positive volume, replacing a fraction of liquid with solution at the well’s concentration preserves the ion inventory. The collected amount equals the supplied amount at every fraction in exact arithmetic. The engine specifies an exact equality for the corresponding cumulative counters.",
+      "assumptions": [
+        "Collection and refill use the same fraction, volume, ion and concentration. Both counters start from equal values. The compiled fixture holds the well at fixed volume without any other ion transfer."
+      ],
+      "uses": [
+        "compartment-wash"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.scheduled_compartment_wash@1"
+        ],
+        "theorems": {
+          "CellsProofs.Tissue.CompartmentWash.same_concentration_ion": "lean/CellsProofs/Tissue/CompartmentWash.lean"
+        },
+        "sources": {
+          "Mathlib div_mul_cancel₀ specialized in the volume identity": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/GroupWithZero/Units/Basic.lean#L291"
+        }
+      },
+      "numerical": {
+        "status": "failed",
+        "comparisons": [
+          "wash-main-nov21"
+        ],
+        "result": "On compiled CPU float64, three 1/2 washes completed with identical counters. Three 3/7 washes kept all ionic inventories fixed. The final chloride collected minus supplied was −2.9802322387695312 × 10⁻⁸ fmol in the production scan, and the public runner refused the outside-material ledger. Sodium and potassium closed exactly."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Ion amounts in paired samples and refills at a matched electrolyte concentration and exchanged volume.",
+        "unit": "fmol per ion per well",
+        "evidence": []
+      }
+    },
+    {
+      "id": "compartment-wash",
+      "category": "tissue-and-conservation",
+      "title": "A partial wash dilutes free tracer and preserves its inventory",
+      "statement": "For a finite well of fixed volume V, a wash of fraction f changes free amount n to (1 − f)n + f V c_buffer. Adding sampled material and subtracting supplied material recovers the original total, including bound ligand retained through the event. Repeating k equal washes multiplies the initial excess above the buffer level by (1 − f)ᵏ. For each exchanged neutral species, ideal mixing heat is nonnegative and a whole wash releases zero mixing heat.",
+      "assumptions": [
+        "The liquid is well mixed. Between the washes used in the repeated-wash formula there is no binding, release, synthesis or transport.",
+        "The Lean positivity result assumes 0 < f ≤ 1 and strictly positive free and buffer amounts. Float64 whole-wash storage also requires sufficient resolution at the host’s amount anchor. Version 1 exchanges ions at their own concentration.",
+        "For the heat, the well is ideal and isothermal with positive volume and concentrations and a nonnegative thermal energy scale."
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.scheduled_compartment_wash@1"
+        ],
+        "theorems": {
+          "CellsProofs.Tissue.CompartmentWash.inventory": "lean/CellsProofs/Tissue/CompartmentWash.lean",
+          "CellsProofs.Tissue.CompartmentWash.positive": "lean/CellsProofs/Tissue/CompartmentWash.lean",
+          "CellsProofs.Tissue.CompartmentWash.whole": "lean/CellsProofs/Tissue/CompartmentWash.lean",
+          "CellsProofs.Tissue.CompartmentWash.repeated": "lean/CellsProofs/Tissue/CompartmentWash.lean",
+          "CellsProofs.Tissue.CompartmentWash.mixingHeat_nonneg": "lean/CellsProofs/Tissue/CompartmentWash.lean",
+          "CellsProofs.Tissue.CompartmentWash.whole_mixing_heat": "lean/CellsProofs/Tissue/CompartmentWash.lean"
+        },
+        "sources": {
+          "Mathlib logarithm bound used in the default mixing-heat proof": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/SpecialFunctions/Log/Basic.lean#L293-L294",
+          "Mathlib klFun_nonneg and klFun_eq_zero_iff, imported in the optional comparison": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/InformationTheory/KullbackLeibler/KLFun.lean#L145-L149",
+          "Cells specialization of the relative-entropy formula": "lean/checks/mixing/KLFun.lean",
+          "Cells wash heat computed from the retained and supplied concentrations": "src/cells/operators/wash_schedule.py#L320"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "wash-main-nov21",
+          "compartment-wash-nov21"
+        ],
+        "result": "Four compiled tracer schedules retained ions and site fields. The maximum tracer material discrepancy was 7.11 × 10⁻¹⁵ fmol. Whole-wash runs reached 2⁻⁵⁰ of the initial amount and reproduced the documented refusal at 2⁻⁶⁰. The separate unchanged-ion counter claim records the failure at fraction 3/7."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Free tracer after successive known-fraction washes, together with independently measured ligand retained on the surface.",
+        "unit": "µg/mL",
+        "evidence": [
+          {
+            "dataset_id": "vloemans2024-dilution",
+            "manifest": "lean/checks/data/vloemans2024_dilution.json",
+            "citation": "Vloemans et al., Lab on a Chip (2024)",
+            "doi": "10.1039/D4LC00195H",
+            "locator": "Fig. 4A–B, printed mean concentrations",
+            "context": "Free fluorescein in PBS, successive 10 µL plugs. For the numerical row, use the measured 1.712 µg/mL starting concentration and three 80% exchanges with blank buffer.",
+            "role": "descriptive",
+            "observed": 0.02,
+            "predicted": 0.013696,
+            "uncertainty": "At least three replicates per point, with one SD drawn graphically. The comparison uses rounded printed means. The study notes wall adsorption and a limited instrument range.",
+            "assessment": "The first two 80% washes measured 0.332 and 0.067 µg/mL against 0.3424 and 0.06848. The third mean was 46% above ideal dilution. The experiments address freely dissolved dye. Instantaneous bound-site retention in a biological well remains open.",
+            "report": "lean/PROGRESS.md#nov21-wash"
+          }
+        ]
       }
     }
   ]

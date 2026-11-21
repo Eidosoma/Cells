@@ -4,9 +4,12 @@ import argparse
 import json
 import os
 import re
+import stat
 import sys
-from collections import Counter
+from collections import Counter, defaultdict
+from functools import cache
 from pathlib import Path
+from subprocess import CalledProcessError
 from tempfile import TemporaryDirectory
 from urllib.parse import quote
 
@@ -34,6 +37,86 @@ def source_path(target):
     if not filename or path.is_absolute() or ".." in path.parts:
         raise ValueError(f"expected a checkout-relative source, got {target!r}")
     return path, f"#{quote(anchor)}" if anchor else ""
+
+
+def check_sources(lane, since=None):
+    """Compare the named input files with Git. Reading blobs leaves the shared index alone."""
+    sys.path.insert(0, str(LANE.parent))
+    try:
+        from validation.source_snapshot import git
+    finally:
+        sys.path.pop(0)
+    repo = lane.parent
+    head = git(repo, "rev-parse", "HEAD").decode().strip()
+    register = json.loads((lane / "claims.json").read_text(), object_pairs_hook=unique_keys)
+    base = None
+    if since is not None:
+        obj = git(repo, "rev-parse", "--verify", "--end-of-options", since + "^{commit}")
+        base = obj.decode().strip()
+    paths = defaultdict(lambda: defaultdict(set))
+    for name, row in register["comparisons"].items():
+        record = row["record_revision"]
+        source = row["engine_revision"] if row["kind"] == "engine" else record
+        inputs = [row["driver"], *row.get("record_inputs", {}).values()]
+        for revision, targets in ((source, row["sources"].values()), (record, inputs)):
+            if not re.fullmatch(r"[0-9a-f]{40}", revision):
+                raise ValueError(f"{name}: invalid recorded revision {revision!r}")
+            for target in targets:
+                path, _ = source_path(target)
+                paths[base or revision][str(path)].add(name)
+
+    @cache
+    def checkout_file(name):
+        path = repo / name
+        if path.parent.resolve() != path.parent:
+            return None
+        try:
+            mode = path.lstat().st_mode
+        except (FileNotFoundError, NotADirectoryError):
+            return None
+        if stat.S_ISLNK(mode):
+            return b"120000", os.fsencode(path.readlink())
+        if stat.S_ISREG(mode):
+            return (b"100755" if mode & stat.S_IXUSR else b"100644"), path.read_bytes()
+        return None
+
+    @cache
+    def blob(oid):
+        return git(repo, "cat-file", "blob", oid)
+
+    changed = defaultdict(set)
+    for revision, cited in paths.items():
+        entries = {}
+        for line in git(repo, "ls-tree", "-z", revision, "--", *cited).split(b"\0"):
+            if line:
+                meta, filename = line.split(b"\t", 1)
+                entries[os.fsdecode(filename)] = meta.split()
+        for name, comparisons in cited.items():
+            expected = None
+            if name in entries:
+                mode, kind, oid = entries[name]
+                if kind == b"blob":
+                    expected = mode, blob(oid)
+                elif base is None:
+                    raise ValueError(f"{name} is not a file at {revision}")
+            elif base is None:
+                raise ValueError(f"missing cited file {name} at {revision}")
+            if checkout_file(name) != expected:
+                for comparison in comparisons:
+                    changed[comparison].add(name)
+    if git(repo, "rev-parse", "HEAD").decode().strip() != head:
+        raise ValueError("checkout revision changed during the source comparison")
+    claims = register["claims"]
+    return {
+        "checkout": head,
+        "baseline": base or "recorded revisions",
+        "comparisons": len(register["comparisons"]),
+        "claims": len(claims),
+        "changed_claims": sorted(
+            c["id"] for c in claims if changed.keys() & set(c["numerical"]["comparisons"])
+        ),
+        "changed_comparisons": {key: sorted(files) for key, files in sorted(changed.items())},
+    }
 
 
 def local_link(label, target, repo, from_dir="lean/claims"):
@@ -86,6 +169,9 @@ def comparison_text(check):
         if not re.fullmatch(r"[0-9a-f]{40}", revision):
             raise ValueError(f"invalid source revision {revision!r}")
     links = [pinned_link(label, target, source) for label, target in check["sources"].items()]
+    links.extend(
+        pinned_link(label, target, record) for label, target in check.get("record_inputs", {}).items()
+    )
     links += [
         pinned_link("Comparison driver", check["driver"], record),
         pinned_link("Recorded result", check["record"], record),
@@ -240,6 +326,11 @@ def coverage(inventory, claims, comparisons, repo, category_sections):
     active = set(inventory["law"]) | set(inventory["operator"])
     if unknown := direct.keys() - active - exercised.keys():
         raise ValueError(f"unrecognized direct proof subjects: {', '.join(sorted(unknown))}")
+    failing = [
+        f"- [{c['title']}](claims/{c['id']}.md#numerical-comparison)"
+        for c in claims.values()
+        if c["numerical"]["status"] == "failed"
+    ]
     parts = [
         COVERAGE_NOTE,
         "# Proof and evidence catalog",
@@ -247,6 +338,8 @@ def coverage(inventory, claims, comparisons, repo, category_sections):
         "Partial evidence covers a measured part of a claim. A result marked not assessable "
         "has too much uncertainty for a verdict. [Topic overview](README.md#proof-index) · "
         "[Registered laws](#registered-laws) · [Registered operators](#registered-operators)",
+        "## Failing numerical checks",
+        "\n".join(failing) or "The register lists zero numerical failures.",
         *category_sections,
     ]
     overview = []
@@ -429,7 +522,14 @@ def generate(lane, check=False, live_registry=False):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--check", action="store_true", help="report stale pages without writing")
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--check", action="store_true", help="report stale pages without writing")
+    mode.add_argument(
+        "--check-sources",
+        action="store_true",
+        help="report changes to cited source files and comparison drivers as JSON",
+    )
+    parser.add_argument("--since", metavar="REV", help="compare all cited files to REV")
     parser.add_argument(
         "--live-registry",
         action="store_true",
@@ -437,6 +537,19 @@ if __name__ == "__main__":
     )
     try:
         args = parser.parse_args()
+        if args.since is not None and not args.check_sources:
+            parser.error("--since requires --check-sources")
+        if args.check_sources:
+            if args.live_registry:
+                parser.error("--check-sources reads the claim register directly")
+            report = check_sources(LANE, args.since)
+            print(json.dumps(report, indent=2))
+            sys.exit(int(bool(report["changed_comparisons"])))
         sys.exit(0 if generate(LANE, args.check, args.live_registry) else 1)
+    except CalledProcessError as error:
+        detail = os.fsdecode(error.stderr or b"").strip() or str(error)
+        print(f"claims: Git could not read the comparison history: {detail}", file=sys.stderr)
+        sys.exit(2)
     except (ImportError, OSError, ValueError, TypeError, KeyError) as error:
-        sys.exit(f"claims: {error}")
+        print(f"claims: {error}", file=sys.stderr)
+        sys.exit(2 if args.check_sources else 1)

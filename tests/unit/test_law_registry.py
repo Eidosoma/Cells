@@ -52,8 +52,10 @@ from cells.laws.channels import (
     kv1p6_mh,
 )
 from cells.laws.cycles import (
+    adenylate_kinase,
     cytochrome_c_oxygen_proton_cycle,
     electrogenic_nucleotide_exchange,
+    held_reductant_supply,
     nadh_ubiquinone_proton_cycle,
     phosphate_proton_symport,
     potassium_proton_exchange,
@@ -62,6 +64,7 @@ from cells.laws.cycles import (
 )
 from cells.laws.cycles import na2_anion_symport_diagram as symport2
 from cells.laws.cycles import na_anion_symport_factored as symport
+from cells.laws.junctions import junction_series_gates
 from cells.laws.routes import passive_permeation
 from cells.laws.transport import proton_leak
 from cells.models import inner_laws, surface_pump_v3
@@ -120,21 +123,27 @@ def without(*law_ids):
 def test_todays_declarations_are_template_instances_with_their_fields_kept():
     assert laws.PumpLaw is laws.CycleLaw and inner_laws.PumpLaw is laws.CycleLaw
     todays = {law_id: inner_laws.CHANNEL_LAWS[law_id] for law_id in spec3.TODAYS_CHANNEL_LAWS}
+    series = junction_series_gates.LAW_ID  # FR-30's cited series law (D262), beside today's.
+    junctions = {k: v for k, v in inner_laws.JUNCTION_LAWS.items() if k != series}
     tables = {
         laws.CHANNEL_LAW: todays,
-        laws.JUNCTION_LAW: inner_laws.JUNCTION_LAWS,
+        laws.JUNCTION_LAW: junctions,
         laws.CYCLE_LAW: inner_laws.PUMP_LAWS,
         laws.ROUTE_LAW: inner_laws.ROUTE_LAWS,
     }
     # @3 also hosts the Kv1 pilot's five, cited laws registered since the Kv1 trigger, and the
-    # always-open chloride leak (D228 item 3).
+    # always-open chloride leak (D228 item 3); and FR-30's series gates (D262).
     kv1 = {m.LAW_ID: m.LAW for m in (kv1p1_mh2, kv1p2_mh, kv1p3_mh, kv1p4_mh, kv1p6_mh)}
     kv1[clleak_always_open.LAW_ID] = clleak_always_open.LAW
+    extra = {laws.CHANNEL_LAW: kv1, laws.JUNCTION_LAW: {series: junction_series_gates.LAW}}
+    assert inner_laws.JUNCTION_LAWS[series] is junction_series_gates.LAW
+    series_law = junction_series_gates.LAW
+    assert series_law.provenance == "cited" and not series_law.errors()
     for interface, table in tables.items():
         assert table and all(type(law).interface == interface for law in table.values())
         assert all(isinstance(law, laws.Law) and law.host == HOST for law in table.values())
         assert all(law.provenance == "parity" and not law.errors() for law in table.values())
-        hosted = {**table, **kv1} if interface == laws.CHANNEL_LAW else table
+        hosted = {**table, **extra.get(interface, {})}
         assert laws.active().laws(interface, HOST) == tuple(
             law for _, law in sorted((laws.qualified(k), v) for k, v in hosted.items())
         )
@@ -276,6 +285,8 @@ def test_kinds_and_the_inner_model_find_their_laws_by_interface_and_host():
                 electrogenic_nucleotide_exchange,
                 phosphate_proton_symport,
                 potassium_proton_exchange,
+                held_reductant_supply,  # The matrix's NADH supply (the second head).
+                adenylate_kinase,  # The intermembrane space's kinase (the second head).
             )
         },
     }
@@ -303,7 +314,8 @@ def test_kinds_and_the_inner_model_find_their_laws_by_interface_and_host():
     # The planted errors a module tuple would miss: each law is admitted only while registered.
     proton = population(law=transporter.PROTON_LAW, role="H")
     with laws.scope(without(transporter.PROTON_LAW)):
-        with pytest.raises(ConfigError, match="law is one of cells.atp_driven"):
+        rest = ", ".join(transporter.hosted_laws())  # Sorted, without the proton law.
+        with pytest.raises(ConfigError, match=f"law is one of {re.escape(rest)}$"):
             parse_spec(held_world(proton))
     rest = [law for law in passive_routes.hosted_laws() if law != passive_routes.LAW_ID]  # Bare.
     with laws.scope(without(passive_routes.LAW_ID)):

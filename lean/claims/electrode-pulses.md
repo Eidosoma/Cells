@@ -21,6 +21,8 @@ A pulse delivers the time-integrated current times the sum of the carrier fracti
 
 Direct proof subject `cells.electrode_current_injection@1`
 
+Proof sources [ATOMS Lab base dimensions and energy, imported in the optional units check](https://github.com/ATOMSLab/LeanDimensionalAnalysis/blob/de263eed945693058ef2b8a1fa56c2ec5642ea7a/DimensionalAnalysis/Dimensions.lean#L10-L43) · [Cells specialization for charge times voltage](../checks/units/FacePower.lean)
+
 ## Numerical comparison
 
 **Checked.** Three carrier mixtures passed opposite 1 pA pulses. All material, charge and work ledgers matched the independent calculation. A fraction sum of 1.0000000005 delivered 2.000000001 fC for a nominal 2 fC.

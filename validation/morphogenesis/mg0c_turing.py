@@ -1672,6 +1672,9 @@ def source_identity(root=ROOT):
     if (Path(root) / "SNAPSHOT.json").exists():
         return snapshot_identity(root)
 
+    from validation import executed_sources  # noqa: PLC0415
+    executed_sources.refuse_untracked(root, "mg0c_turing's source record")  # D259
+
     def git(*args):
         done = subprocess.run(
             ["git", "-C", str(root), *args], capture_output=True, text=True, check=False

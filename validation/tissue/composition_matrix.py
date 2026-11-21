@@ -58,8 +58,10 @@ TURNOVER, EXCHANGE = "scheduled_species_turnover@1", "scheduled_species_exchange
 REACTIONS, COUPLING = "local_species_reactions@1", "species_regulated_availability@1"
 COUPLING_2 = "species_regulated_availability@2"  # @1 plus operator targets (B1′).
 BATH = "scheduled_bath_composition@1"
+WASH = "scheduled_compartment_wash@1"
 COMPARTMENTS = "cell_owned_compartments@1"
 SITES = "site_occupancy@1"
+OCCUPANT = "site_occupant_replacement@1"  # FR-26's W.
 TRAFFICKING = trafficking_operator.LAW_ID
 PRODUCER = "population_unit_turnover@1"
 
@@ -497,19 +499,8 @@ def _tags():
             "node's volume (not shown nominal)",
             (),
         )
-    tags[("reads", SITES, BATH, "extracellular_amount_reference")] = (
-        NOMINAL,
-        "The sites read the outside anchors only at their facing pools, which are finite nodes "
-        "(a population facing a held bath is refused: parse_population; pool_amounts), and the "
-        "bath schedule provides the declared array off its baths and schedules held baths only "
-        "(held_view, parse_declaration): the slots are disjoint",
-        (
-            OPS + "site_occupancy.py::parse_population",
-            OPS + "site_occupancy.py::pool_amounts",
-            OPS + "bath_schedule.py::held_view",
-            OPS + "bath_schedule.py::parse_declaration",
-        ),
-    )
+    # The sites beside the bath schedule are admitted since FR-23 (D244): both declare their slots
+    # (door S), the sites' anchor reads at their facing finite nodes and the dose at held baths.
     for name in ("extracellular_amount_reference", "membrane_active", "outside_active"):
         tags[("reads", SITES, INSERTION_1, name)] = (
             REAL,
@@ -600,6 +591,35 @@ def _tags():
         "closure closes only faces at its onset nodes (closures): the slots are disjoint",
         (OPS + "compartments.py::parse_declaration", OPS + "membrane_insertion_v2.py::closures"),
     )
+    # FR-27's compartment wash (wash_schedule.py, D246) reads its nodes' volumes, anchors and
+    # outside mask as declared (wash_schedule.CONFLICTS_VIEW): fixed reads at its event, scoped to
+    # its nodes, so the bath schedule's dose at held baths is admitted beside it (door S).
+    tags[("reads", WASH, WATER, "extracellular_volume")] = (
+        REAL,
+        "The wash exchanges a fraction of its node's declared volume (wash_terms); water changes "
+        "finite nodes' volumes",
+        (),
+    )
+    for lumen in (LUMEN_1, LUMEN_2):
+        tags[("reads", WASH, lumen, "extracellular_volume")] = (
+            REAL,
+            "The wash reads its node's declared volume; a lumen changes its node's volume (not "
+            "shown nominal)",
+            (),
+        )
+    for name in ("extracellular_amount_reference", "outside_active"):
+        tags[("reads", WASH, INSERTION_1, name)] = (
+            REAL,
+            "Insertion@1 opens onset nodes and changes their anchors; a washed node may be one "
+            "(not shown nominal)",
+            (),
+        )
+        tags[("reads-closed", WASH, INSERTION_2, name)] = (
+            REAL,
+            "Insertion@2 closes onset nodes and pads their anchors until their onset; a washed "
+            "node may be one (not shown nominal)",
+            (),
+        )
     anchors = "Insertion@2's closure pads the anchors of its onset nodes until their onset"
     tags[("reads-closed", REACTIONS, INSERTION_2, "extracellular_amount_reference")] = (
         REAL,
@@ -840,8 +860,12 @@ _TRAFFICKING_FIRST = tuple(
 # The producer's own writer rule refuses it beside trafficking before the compartments' list is
 # read (its check runs first in sequence(PRODUCER, TRAFFICKING)), so that rule alone marks it.
 _COMPARTMENTS_FIRST = tuple(
-    pair for pair in _TRAFFICKING_OFF if pair not in _TRAFFICKING_FIRST and PRODUCER not in pair
+    pair
+    for pair in _TRAFFICKING_OFF
+    if pair not in _TRAFFICKING_FIRST and PRODUCER not in pair and WASH not in pair
 )
+# The compartment wash is off both lists too; its pairs with trafficking are refused there first.
+_WASH_FIRST = tuple(pair for pair in _TRAFFICKING_OFF if WASH in pair)
 
 # population_unit_turnover@1 refuses every other writer of population units, in either order
 # (population_unit_turnover.check_writers).
@@ -994,14 +1018,18 @@ RULES = (
         why="A carrier's rates are its own (D150 §5.2)",
     ),
     dict(
-        rule="no cell route on a slot that replacement@1 replaces",
+        rule="a cell route on a slot that replacement@1 replaces takes each newcomer's multiplier "
+        "from the operator's templates",
         laws=(REACTIONS, REPLACEMENT_1),
         level="data",
         check=OPS + "species_reactions.py::check_replaced_slots",
         test=TESTS + "test_species_reactions_refusals.py::"
-        "test_cell_routes_on_replaced_slots_are_refused_and_outside_routes_compose",
+        "test_cell_routes_on_replaced_slots_take_the_newcomers_template_multipliers",
         tag=REAL,
-        why="Version 1 has no occupant rule for reactions (D152 §7.3's door)",
+        why="D152's occupant rule (FR-26, D244): a carrier's multipliers are its own. Refused: a "
+        "newcomer without its template's multiplier, a donor copy there (version 1.1), a "
+        "founder's change after its death, a template that is not a replacement template, and a "
+        "multiplier for no route its newcomers take",
     ),
     dict(
         rule="no coupling target or regulatory state on a replaced slot",
@@ -1013,14 +1041,56 @@ RULES = (
         why="Version 1 has no occupant rule for the coupling",
     ),
     dict(
-        rule="no @2 coupling target, operator target element or regulatory state on a replaced "
-        "slot",
+        rule="no @2 coupling target or regulatory state on a replaced slot, and an operator "
+        "target's element there only from a species or site source",
         laws=(COUPLING_2, REPLACEMENT_1),
         level="data",
         check=OPS + "species_regulated_availability.py::check_replaced_operator_elements",
         test=TESTS + "test_species_regulated_availability.py::test_refusals",
         tag=REAL,
-        why="@2 has @1's occupant rule, none: an element's source is read in its cell",
+        why="An element's source is read in its cell. Replacement swaps the cell's species and W "
+        "resets its site populations, so those sources read the newcomer's (FR-26's part C', "
+        "D244); a newcomer's regulatory state is not built (part C)",
+    ),
+    dict(
+        rule="a site population on a slot that replacement@1 replaces needs "
+        "site_occupant_replacement@1, and none sits on a contact incident to it",
+        laws=(SITES, REPLACEMENT_1, OCCUPANT),
+        level="data",
+        check=OPS + "site_occupancy.py::check_slots",
+        test=TESTS + "test_site_occupancy.py::"
+        "test_populations_on_a_replaced_slot_are_refused_and_elsewhere_admitted",
+        tag=REAL,
+        why="Carriers have identity, slots are storage (D150 §5.2): the occupant leaves with its "
+        "sites and bound cargo, and W gives the newcomer its template's (FR-26, D244). A "
+        "contact's populations need the contact's own restart (version 1.1)",
+    ),
+    dict(
+        rule="site_occupant_replacement@1's templates: replacement templates, every population "
+        "of each slot they fill, an occupancy a trace from either end, no donor copy there",
+        laws=(OCCUPANT, SITES, REPLACEMENT_1),
+        level="data",
+        check=OPS + "site_occupancy.py::check_occupant",
+        test=TESTS + "test_site_occupancy.py::test_definition_refusals",
+        tag=REAL,
+        why="A newcomer's site state is its template's (FR-26, D244). A pool goes to its trace, "
+        "never exactly empty (the engine's trace convention): site_occupancy@1's stable "
+        "increment form reads an exactly empty pool reached from a positive anchor as NaN",
+    ),
+    dict(
+        rule="a quantity a route reads (R3) has its owner in the composition, declared before the "
+        "route's operator target",
+        laws=(COUPLING_2, SITES, TURNOVER, REACTIONS, PRODUCER),
+        level="data",
+        check="src/cells/models/pump_composite.py::quantity_read_definition_errors",
+        test=TESTS + "test_pump_composite_contract.py::"
+        "test_quantity_reads_are_checked_recorded_and_passed_to_readers_only",
+        tag=REAL,
+        why="FR-24 (D244): the reader reads the quantity at the start of the target's half-steps, "
+        "so the owner moves it in its own half-steps before the target's first half and after its "
+        "second, keeping the split symmetric about the target. Writers of the quantity at event "
+        "steps (W) act before every first half; a writer with a split part would need the check "
+        "extended to writers",
     ),
     dict(
         rule="a declared rate route's target follows its source",
@@ -1080,7 +1150,8 @@ RULES = (
         tag=REAL,
         why="A new operator may treat outside nodes as environment (the closed-compartment design "
         "§4). It marks the off-list pairs the declarations admit (site occupancy: FR-1's door for "
-        "it, §4) and stands behind the declarations' refusals of the rest",
+        "it, §4; the compartment wash, off the list until admitted) and stands behind the "
+        "declarations' refusals of the rest",
         marks=_off_list(True),
         behind=_off_list(False),
     ),
@@ -1113,6 +1184,34 @@ RULES = (
         "message. Trafficking's own reason, that sites move with their membrane only from "
         "version 1.1, is a second wall this composition never reaches",
         marks=_COMPARTMENTS_FIRST,
+    ),
+    dict(
+        rule="beside scheduled_membrane_trafficking@1, the compartments' admitted list refuses "
+        "the compartment wash first",
+        laws=(TRAFFICKING, WASH),
+        level="law",
+        check=OPS + "compartments.py::check_definition",
+        test=TESTS + "test_wash_schedule.py::test_each_refusal_fires_with_its_reason",
+        tag=REAL,
+        why="Trafficking requires the compartments, whose check runs first, and "
+        "scheduled_compartment_wash@1 is not on their admitted list: the case 'beside the "
+        "compartments' asserts that message. The wash's own refusals at the definition are a "
+        "second wall this composition never reaches",
+        marks=_WASH_FIRST,
+    ),
+    dict(
+        rule="no declared path moves a washed node's neutral species across its surface: the "
+        "patch's own permeability, a kind's route, an exchange route through a facing patch or "
+        "a site population's internalisation from the node (fail closed)",
+        laws=(WASH, EXCHANGE, SITES),
+        level="data",
+        check=OPS + "wash_schedule.py::surface_crossings",
+        test=TESTS + "test_wash_schedule.py::test_each_refusal_fires_with_its_reason",
+        tag=REAL,
+        why="The step's booking of a concentration step at the node is unmeasured, and the "
+        "wash's books do not see the exchange (D263 finding 2, a second review: a registered "
+        "route's crossing was admitted where the patch's own was refused). An operator law not "
+        "shown local is refused until it is classified",
     ),
     dict(
         rule="membrane state beside a compartment only together with its admitted writers, "

@@ -175,7 +175,9 @@ def oracle(spec, table, *, counted=True):
                 if table["fission_outcome"][r] != 0:
                     continue
                 n, n_l = counts[membrane].sum(), counts[inside].sum()
-                u = division.block(layout.base_key, key, table["fission_counter"][r], n + 2 + n_l)
+                # The plain draw: division.block's power-of-two prefix is the same, bit for bit.
+                part = streams.stream_key_data(layout.base_key, key, "partition")
+                u = np.asarray(streams.uniforms(part, table["fission_counter"][r], n + 2 + n_l))
                 by_m, by_l = division.split(counts[membrane], quanta[membrane], counts[inside], 2,
                                             Q, u)  # fmt: skip
                 daughters = table["fission_daughter_counts"][r]

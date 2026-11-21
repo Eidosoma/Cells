@@ -32,7 +32,13 @@ Proof sources [Mathlib’s lower bound on the hyperbolic sine](https://github.co
 
 ## Numerical comparison
 
-**Checked.** The original stress case passed on main after the owner’s overflow-safe concentration factor landed. All three equivalent normalizations produced 0.5520533 pA and identical transfer and heat. The 360-state control panel passed. The original failure is recorded at the earlier engine revision.
+**Checked.** All three equivalent normalizations gave 0.5520533 pA and identical transfer and heat, including the smallest normal float64 potassium reference. All 360 voltage controls passed. A positive subnormal reference (5 × 10⁻³²⁴ mM) was refused during definition checking. The original overflow remains at the earlier engine revision.
+
+**Engine** `resolved_pump_tissue@3`, `cells.inward_rectifier_linear_driving_force@1`
+
+[Admitted reference concentration](https://github.com/Eidosoma/Cells/blob/8f9bc0500f362096155640cd843a69f2dabc6107/src/cells/kinds/passive_routes.py#L242) · [Subnormal reference refusal](https://github.com/Eidosoma/Cells/blob/8f9bc0500f362096155640cd843a69f2dabc6107/tests/unit/test_inward_rectifier_route.py#L135) · [Current and conductance factor](https://github.com/Eidosoma/Cells/blob/8f9bc0500f362096155640cd843a69f2dabc6107/src/cells/laws/routes/inward_rectifier_linear_driving_force.py#L81) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/8f269af4c8b79150020b47a86dd71da848d91714/lean/checks/inward_rectifier.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/8f269af4c8b79150020b47a86dd71da848d91714/lean/PROGRESS.md#claim-source-review)
+
+[Tested engine 8f9bc0500f36](https://github.com/Eidosoma/Cells/commit/8f9bc0500f362096155640cd843a69f2dabc6107) · [Evidence checkpoint 8f269af4c8b7](https://github.com/Eidosoma/Cells/commit/8f269af4c8b79150020b47a86dd71da848d91714)
 
 **Engine** `resolved_pump_tissue@3`, `cells.inward_rectifier_linear_driving_force@1`
 

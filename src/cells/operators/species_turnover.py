@@ -19,14 +19,28 @@ Law, exact over each half-step h, per species and node with total production P a
 clearance k (several clearance routes at one node add: simultaneous first-order processes):
     n' = n e^{-kh} + P g,   g = (1 - e^{-kh}) / k   (g = h when k = 0),
 booked as produced = P h and cleared = n f + P (h - g) >= 0 with f = -expm1(-kh) and h - g formed
-as (kh + expm1(-kh)) / k, which is >= 0 in floating point too. The moved amount produced - cleared
-is applied to @3's stored increment, never as n' - reference. The work is the exact free-energy
-change of the touched node from that moved amount (adapter.species_chemical_free_energy_pJ, @3's
-own term, one species row at a time), booked as signed work: a first-order law can run uphill in
-the 1 mM reference convention (removing material below 1 mM raises G), and the dissipation check
-refuses a decreasing heat element. Its real metabolic cost (synthesis, proteolysis) lies outside the
-modelled inventory, a declared limit. The rounding magnitudes are the moved amounts and the absolute
-terms of each booked change.
+as (kh + expm1(-kh)) / k, which is >= 0 in floating point too. The moved amount is applied to @3's
+stored increment, never as n' - reference: produced - cleared where kh <= NET_EXPONENT (1), and
+the net change (P/k - n) f where kh > 1.
+- Why: each booking is right to an ulp, but at kh >> 1 both are about P h, so their difference
+  keeps only about eps P h = eps (P/k) kh of absolute precision, eps kh of the pool. The
+  independent Lean project (lean/claims/scheduled-species-turnover.md, 20 November 2026) found a
+  1 fmol change lost at kh = 2^53: produced and cleared rounded to one value, and zero work was
+  booked. Generic rates lose 4e-10 of the pool at kh = 6.5e6. The net form keeps eps max(n, P/k).
+- The threshold: at kh <= 1 the two forms carry the same rounding (eps max(P h, n) against
+  eps max(P/k, n)). Every registered world's half-step kh is at most 0.025 (20 November 2026), so
+  they keep the gross form. The choice and the net read the rates, h and n only, never the
+  bookings' products.
+- The balance: the bookings stay gross (they are the ledgers), so per half-step the stored change
+  and produced - cleared agree to the bookings' rounding, |change - (produced - cleared)| <= about
+  2 eps (produced + cleared). The material ledgers' rounding allowance counts produced + cleared
+  (magnitude_terms), so their checks hold the balance.
+The work is the exact free-energy change of the touched node from that moved amount
+(adapter.species_chemical_free_energy_pJ, @3's own term, one species row at a time), booked as
+signed work: a first-order law can run uphill in the 1 mM reference convention (removing material
+below 1 mM raises G), and the dissipation check refuses a decreasing heat element. Its real
+metabolic cost (synthesis, proteolysis) lies outside the modelled inventory, a declared limit. The
+rounding magnitudes are the moved amounts and the absolute terms of each booked change.
 
 Energy guards. Under the IMEX solvers the shared energy bound is set by the ions' flows and is blind
 to these bookings at µM–nM (bound/change 1.7 to 1,721 in a probed mixed world); the species-only
@@ -79,6 +93,9 @@ CHARGED_LIMIT = (
 )
 STEP_ID = "exact_production_clearance_half_steps@1"
 KINDS = ("production", "clearance")
+# _node_update: the half-step clearance exponent kh above which the stored change is formed net,
+# (P/k - n) f, rather than as produced - cleared (the module docstring).
+NET_EXPONENT = 1.0
 # A7 (the summation SPEC.md §2; D182): the former row_sum folds, here and in D152's half step,
 # are species_sum in the same order and without the device barrier, as the 113-world rehearsal
 # of A7's tolerance file ran them (its call-site patch folded the S0 and SF sites only and left
@@ -253,13 +270,23 @@ def produced_cleared(n, production, clearance, h, *, xp):
     return production * h, n * f + production * lag
 
 
+def net_change(n, production, clearance, h, *, xp):
+    """n' - n = (P/k - n) f over h (k > 0), formed directly: no difference of gross bookings."""
+    return (production / clearance - n) * -xp.expm1(-(clearance * h))
+
+
 def _node_update(increment, anchor, volume, mask, production, clearance, h, temperature, *, xp):
     """One node kind's update on the operator's rows: (increment', produced, cleared, work,
-    magnitude, touched, valid), every per-element output zero or unchanged where untouched."""
+    magnitude, touched, valid), every per-element output zero or unchanged where untouched. The
+    moved amount is produced - cleared where k h <= NET_EXPONENT and net_change where k h exceeds
+    it (the module docstring); the choice and the net read the rates, h and n only, and the net
+    branch reads k = 1 where it is not taken."""
     touched = mask[None, :] & ((production > 0) | (clearance > 0))
     n = xp.where(mask[None, :], anchor + increment, 1.0)
     produced, cleared = produced_cleared(n, production, clearance, h, xp=xp)
-    moved = xp.where(touched, produced - cleared, 0.0)
+    stiff = clearance > NET_EXPONENT / h
+    net = net_change(n, production, xp.where(stiff, clearance, 1.0), h, xp=xp)
+    moved = xp.where(touched, xp.where(stiff, net, produced - cleared), 0.0)
     new = xp.where(touched, increment + moved, increment)
     after = anchor + new
     valid = xp.all(xp.where(touched, xp.isfinite(after) & (after > 0), True))
@@ -501,6 +528,12 @@ class ScheduledSpeciesTurnover(Operator):
         """B1′: turnover_rate's elements are its routes, by route ID, each at its cell (None for
         an outside node), in control order."""
         return tuple((route.id, route.cell) for route in declaration.routes)
+
+    def half_step_rows(self, declaration):
+        """B1′: each cell route's species at its cell (production and clearance both move it)."""
+        return tuple(
+            dict.fromkeys((r.species, r.cell) for r in declaration.routes if r.cell is not None)
+        )
 
     def species_identities(self, declaration):
         return declaration.species

@@ -60,6 +60,57 @@ class Junction(base.Junction):
 
 
 @dataclass(frozen=True)
+class SeriesGate:
+    """One gate of a junction_series_gates@1 junction (FR-30): its kind, its parameters in that
+    kind's Parameters order (laws/junctions/junction_series_gates.py), and its initial
+    conductance factor c in [r, 1]."""
+
+    kind: str
+    parameters: tuple[float, ...]
+    initial: float
+
+
+@dataclass(frozen=True)
+class SeriesJunction(Junction):
+    """A junction whose gate is junction_series_gates@1 (FR-30; parsed by @3 alone, D262). Its
+    Junction fields hold the conductance the gates give: minimum_open_fraction the product of
+    the gates' residuals, initial_gate the product of their initial factors, the law the series
+    law's ID; threshold_voltage_V is 0.0 and read by nothing, since each gate carries its own
+    parameters. development is True: the law is development only, and a registered or judged
+    result whose definition carries it is not admissible."""
+
+    gates: tuple[SeriesGate, ...]
+    development: bool
+
+    def gate_block(self):
+        """The definition's gate block, as parsed (to_dict's form)."""
+        return {
+            "law": self.law,
+            "development": self.development,
+            "gates": [
+                {"kind": g.kind}
+                | dict(zip(series_parameter_names(g.kind), g.parameters, strict=True))
+                | {"initial": g.initial}
+                for g in self.gates
+            ],
+        }
+
+
+def series_parameter_names(kind):
+    """A series gate kind's parameter names, its Parameters' fields in the law's own order."""
+    from cells.laws.junctions import junction_series_gates as series
+    from cells.laws.junctions import junction_voltage_relaxation as relaxation
+
+    names = {
+        "threshold_relaxation": relaxation.Parameters._fields,
+        "boltzmann_eyring": series.BoltzmannEyring._fields,
+    }
+    if kind not in names:
+        raise ConfigError(f"A series junction gate's kind is one of {series.KINDS}, not {kind!r}")
+    return names[kind]
+
+
+@dataclass(frozen=True)
 class SurfaceKineticModel(base.SurfaceTissueModel):
     channels: tuple[ChannelSpec, ...]
 

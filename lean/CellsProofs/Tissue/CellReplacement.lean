@@ -109,6 +109,17 @@ theorem same_volume_water_jump (rt extra ref n₀ n₁ v e : ℝ) :
   unfold water
   ring
 
+/-- Free ligand at the event plus site-bound ligand balances the departing and incoming cargo.
+Each replaced site arrives with the occupancy of its template and its own capacity. -/
+theorem occupant_ligand_balance {Site : Type*} [Fintype Site] [DecidableEq Site]
+    (due : Finset Site) (old capacity occupancy : Site → ℝ) (free : ℝ) :
+    free + (∑ i, afterEvent due old (fun j => .template (occupancy j * capacity j)) i) +
+        (∑ i ∈ due, old i) =
+      free + (∑ i, old i) + ∑ i ∈ due, occupancy i * capacity i := by
+  have h := gross_balance due old (fun j => .template (occupancy j * capacity j))
+  simp only [incoming] at h
+  linarith
+
 end
 
 end CellsProofs.Tissue.CellReplacement

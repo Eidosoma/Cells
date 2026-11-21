@@ -60,6 +60,9 @@ from cells.definitions import surface_pump_spec as first
 from cells.definitions import surface_pump_v2_spec as second
 from cells.definitions.spec_values import fraction, identifier
 from cells.definitions.specs import ConfigError, _fields, _integer, _number
+from cells.laws.junctions import junction_gate
+from cells.laws.junctions import junction_series_gates as series_gates
+from cells.numerics import surface_imex as imex
 from cells.registry import kind_registry
 from cells.registry import species_registry as registry
 
@@ -427,6 +430,104 @@ def _kind_schedules(registry, declared, given, base):
     return tuple(out)
 
 
+# --- FR-30 (D262): junctions whose gate is junction_series_gates@1, development only ----------
+
+SERIES_GATE_LAW_ID = series_gates.LAW_ID
+SERIES_DEVELOPMENT = (
+    f"{SERIES_GATE_LAW_ID} is development only until a voltage series qualifies it: its "
+    "junction's gate declares development: true, and a registered or judged result whose "
+    "definition carries it is not admissible (D262)"
+)
+
+
+def series_gate_parameters(gate):
+    """A parsed SeriesGate's parameters as its kind's NamedTuple (the law's own types)."""
+    kind_type = {
+        "threshold_relaxation": junction_gate.Parameters,
+        "boltzmann_eyring": series_gates.BoltzmannEyring,
+    }[gate.kind]
+    return kind_type(*gate.parameters)
+
+
+def parse_series_gate(block):
+    """A junction_series_gates@1 gate block: {law, development: true, gates: [fast, slow]}, each
+    gate {kind, its kind's parameters by name, initial}. Returns @1's admission tuple: the
+    junction's minimum and initial conductance (the products of the gates' residuals and initial
+    factors), its class and its extra fields. Every gate lies on the law's own domain at 0 V."""
+    _fields(block, {"law", "development", "gates"}, "series junction gate")
+    if block["development"] is not True:
+        raise ConfigError(SERIES_DEVELOPMENT)
+    raw = block["gates"]
+    if type(raw) is not list or len(raw) != series_gates.GATE_COUNT:
+        raise ConfigError(
+            f"A series junction declares its {series_gates.GATE_COUNT} gates "
+            f"({', '.join(series_gates.GATES)}) as a list"
+        )
+    gates = []
+    for name, g in zip(series_gates.GATES, raw, strict=True):
+        if not isinstance(g, dict) or g.get("kind") not in series_gates.KINDS:
+            raise ConfigError(
+                f"Series junction gate {name}'s kind is one of {', '.join(series_gates.KINDS)}"
+            )
+        names = kinetic.series_parameter_names(g["kind"])
+        _fields(g, {"kind", "initial", *names}, f"series junction gate {name}")
+        values = tuple(_number(g[k], f"series junction gate {name}'s {k}") for k in names)
+        gates.append(kinetic.SeriesGate(g["kind"], values, _number(g["initial"], "initial")))
+    kinds = tuple(g.kind for g in gates)
+    parameters = tuple(series_gate_parameters(g) for g in gates)
+    initial = tuple(np.asarray(g.initial, dtype=float) for g in gates)
+    if not bool(
+        series_gates.domain_valid(
+            initial, np.asarray(0.0), parameters, np.asarray(1.0), kinds=kinds, xp=np
+        )
+    ):
+        raise ConfigError(
+            "A series junction's gates lie on the law's domain: each parameter finite and in "
+            "range, and each initial factor in [its residual, 1] (the law's domain_valid)"
+        )
+    pairs = zip(kinds, parameters, strict=True)
+    residuals = [series_gates.residual_of(kind, values) for kind, values in pairs]
+    return (
+        float(np.prod(residuals)),
+        float(np.prod([g.initial for g in gates])),
+        kinetic.SeriesJunction,
+        dict(gates=tuple(gates), development=True),
+    )
+
+
+def series_junction_errors(model):
+    """v1's refusals for series junctions (D262), at parse: a world's junctions all take one gate
+    law; and a series junction carries no neutral species, since its factor is the ionic
+    conductance, while a neutral species needs its own route factor (its residuals per gate,
+    FR-30 design §7), which is not built."""
+    series = [j for j in model.junctions if isinstance(j, kinetic.SeriesJunction)]
+    if not series:
+        return
+    if len(series) != len(model.junctions):
+        raise ConfigError(
+            f"A world's junctions take one gate law: {SERIES_GATE_LAW_ID} on every junction or "
+            "on none (v1, D262)"
+        )
+    kinds = {tuple(g.kind for g in j.gates) for j in series}
+    if len(kinds) != 1:
+        raise ConfigError(
+            f"A world's {SERIES_GATE_LAW_ID} junctions declare the same kind for each gate (v1)"
+        )
+    neutral = [z == 0 for z in model.valence]
+    for j in series:
+        carried = sorted(
+            s
+            for s, z0, value in zip(model.species_ids, neutral, j.permeability_m_per_s, strict=True)
+            if z0 and value
+        )
+        if carried:
+            raise ConfigError(
+                f"Junction {j.id} ({SERIES_GATE_LAW_ID}) carries neutral species {carried}: its "
+                "factor is the ionic conductance, and a neutral species needs its own route "
+                "factor (its residuals per gate), which is not built (v1, D262)"
+            )
+
+
 def parse(data):
     raw = copy.deepcopy(data)
     m, e, x = raw.get("model"), raw.get("experiment"), raw.get("execution")
@@ -471,7 +572,17 @@ def parse(data):
             )
         given.setdefault(kind_registry.qualified(kind.kind_id), {})[key] = e.pop(key)
     m["id"] = second.MODEL_ID
-    base = second.parse(raw)
+    # N2 (D235): the implicit-conductance IDs are admitted wherever the ionic step is @3's, so by
+    # this parse: @3 itself and the models that parse through it (water@1, the composite), the
+    # intended scope. @2's parse validates ARS(2,2,2), their tableau, and the ID returns to the
+    # execution below; @1 and @2 refuse it themselves.
+    solver = x.get("solver")
+    if solver in imex.IMPLICIT_CONDUCTANCE_IDS:
+        x["solver"] = imex.ARS222_ID
+    # FR-30 (D262): @3 alone admits junction_series_gates@1; @1's and @2's parses refuse it.
+    with first.admitting({SERIES_GATE_LAW_ID: parse_series_gate}):
+        base = second.parse(raw)
+    series_junction_errors(base.model)
     ids, z = base.model.species_ids, base.model.valence
     parsed = tuple(parse_channel(c, ids, z, {p.id for p in base.model.membranes}) for c in channels)
     parsed = tuple(
@@ -530,6 +641,8 @@ def parse(data):
         base.execution,
         channel_capacity=_integer(capacity, "channel_capacity", minimum=len(parsed)),
     )
+    if solver in imex.IMPLICIT_CONDUCTANCE_IDS:
+        execution = replace(execution, solver=solver)
     spec = replace(base, model=model, experiment=experiment, execution=execution)
     from cells.models.surface_pump_v3 import check_definition, structure
 
@@ -543,6 +656,7 @@ def parse(data):
             or channel_factors(spec.model)
             or any(c.kinetic_law not in LAW_CODES for c in spec.model.channels)
             or spec.model.heat_bookings  # Seam D: the structure holds the picks.
+            or any(isinstance(j, kinetic.SeriesJunction) for j in spec.model.junctions)  # FR-30.
         )
         check_definition(spec, structure=structure(spec.model) if declared else None)
     except (ArithmeticError, ValueError) as error:

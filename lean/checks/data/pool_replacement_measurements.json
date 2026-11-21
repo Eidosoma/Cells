@@ -1,0 +1,27 @@
+{
+  "zhao_dextran_exchange": {
+    "doi": "10.1002/adma.202106633",
+    "source": "https://www.mpikg.mpg.de/th/people/dimova/publications/Zhao%20AdvMat%2021.pdf#page=17",
+    "locator": "Methods on solution exchange and supporting Figure S3a–c",
+    "preparation": "Trapped giant unilamellar vesicles containing fluorescent dextran. The incoming solution contained the unlabelled polymers.",
+    "flow_uL_min": 1.0,
+    "wash_min": 40,
+    "approximate_chamber_volume_uL": 4.0,
+    "approximate_external_fluorescence_after_au": 0.1,
+    "preparations": 3,
+    "reads_per_position": [3, 4],
+    "uncertainty": "Error bars in S3c are SD. Some vesicles were lost. The fraction of internal tracer retained in the surviving vesicles was unreported."
+  },
+  "sumi_intervesicle_transfer": {
+    "doi": "10.1038/s41598-017-02980-x",
+    "source": "https://pmc.ncbi.nlm.nih.gov/articles/PMC5460167/#Fig7",
+    "locator": "Figure 7A and adjacent text",
+    "preparation": "DOPC donor and acceptor liposomes with fluorescent C6-NBD-PC tracer in the donor preparation.",
+    "acceptor_to_donor_ratio": 2,
+    "crossover_min": 3.8,
+    "approximate_fraction_of_total_fluorescence": 0.48,
+    "later_fluorescence_increase_percent_per_min": 0.27,
+    "experiments": 3,
+    "uncertainty": "Representative trace. The paper gives no interval for the crossover and measures fluorescence across populations."
+  }
+}

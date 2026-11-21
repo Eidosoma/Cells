@@ -413,7 +413,8 @@ def structure_entry(declaration):
     if isinstance(declaration, PopulationAxis):
         asks = any(t.proton_readout is not None for t in declaration)
         ends = any(_end_chemistry_rows(t).any() for t in declaration)
-        return CycleAxis(tuple(sorted({t.law for t in declaration})), asks, ends)
+        current = any(t.current_readout for t in declaration)
+        return CycleAxis(tuple(sorted({t.law for t in declaration})), asks, ends, current)
     return (
         tuple(sorted({t.law for t in declaration})),
         tuple(sorted({t.fuel_kind for t in declaration})),
@@ -1020,6 +1021,11 @@ PROTON_READOUT_FIELDS = (
 # other (chemistry at that end), only where a population declares such a mode (declared_fields):
 # the material term bounds them though charged.
 END_CHEMISTRY_FIELDS = ("cycle_row_end_chemistry",)  # [K, P]
+# FR-34's current readout (D251, D252): a population asks with its optional key current_readout
+# (true), and the field and column exist only where one does, as K4's (declared_fields).
+CURRENT_READOUT_KEY = "current_readout"
+CURRENT_READOUT_FIELDS = ("cycle_current_present",)  # [P]: the population asks
+CURRENT_READOUT_COLUMNS = ("cycle_current_A",)  # [P]: _charge_current, outward-positive (A)
 PROTON_READOUT_COLUMNS = (
     "cycle_membrane_potential_V",  # [P]: delta psi = phi_P - phi_N
     "cycle_proton_motive_force_V",  # [P]: delta p = delta psi + (RT/F) ln(h_P / h_N)
@@ -1033,12 +1039,14 @@ LN_PH_STANDARD = math.log(1000.0)  # pH = -log10(c / 1000 mM)
 
 class CycleAxis(NamedTuple):
     """The population axis's structure entry: its declared laws, sorted (value-free), whether a
-    population asks for the proton readouts (K4), and whether a mode changes a charged species at
-    one end without changing it at the other (K3b)."""
+    population asks for the proton readouts (K4), whether a mode changes a charged species at one
+    end without changing it at the other (K3b), and whether a population asks for its current
+    (FR-34)."""
 
     laws: tuple
     proton_readout: bool = False
     end_chemistry: bool = False
+    current_readout: bool = False
 
 
 class CyclePopulation(NamedTuple):
@@ -1057,6 +1065,7 @@ class CyclePopulation(NamedTuple):
     source: object = None  # the version-1 Population an entry in today's keys was read from
     proton_readout: object = None  # K4: its free-proton species row, where it asks (else None)
     charged_roles: tuple = ()  # K3b: its roles whose species is charged, recorded at the parse
+    current_readout: bool = False  # FR-34: its current read out at each observed row
 
 
 class PopulationAxis(tuple):
@@ -1129,7 +1138,8 @@ def _counts(form, values):
 
 def _parse_general(raw, base, patches, valence, taken):
     """One entry in the general form (statement 1, §1)."""
-    optional = {PROTON_READOUT_KEY} & set(raw) if isinstance(raw, dict) else set()
+    keys = {PROTON_READOUT_KEY, CURRENT_READOUT_KEY}  # Each optional (K4, FR-34).
+    optional = keys & set(raw) if isinstance(raw, dict) else set()
     require_fields(raw, set(GENERAL_FIELDS) | optional, "a transporter population")
     name = raw["id"]
     if not isinstance(name, str) or not name or name in taken:
@@ -1185,6 +1195,12 @@ def _parse_general(raw, base, patches, valence, taken):
             "+1), whose concentrations at the N and P ends give the population's proton-motive "
             "force"
         )
+    current = raw.get(CURRENT_READOUT_KEY, False)
+    if not isinstance(current, bool):
+        raise ConfigError(
+            f"{where}: {CURRENT_READOUT_KEY} is true or false (true reads the population's "
+            "current out at each observed row)"
+        )
     population = CyclePopulation(
         name,
         patch.id,
@@ -1198,6 +1214,7 @@ def _parse_general(raw, base, patches, valence, taken):
         patch.outside,
         proton_readout=proton,
         charged_roles=tuple(role for role in named if valence[roles[role]] != 0),
+        current_readout=current,
     )
     _check_population(population, form, hosted[law], valence, where)
     return population
@@ -1300,6 +1317,8 @@ def _population_dict(t):
     )
     if t.proton_readout is not None:  # K4: omitted at its default, so a fingerprint is kept.
         out[PROTON_READOUT_KEY] = t.proton_readout
+    if t.current_readout:  # FR-34: likewise, written only where asked.
+        out[CURRENT_READOUT_KEY] = True
     return out
 
 
@@ -1313,6 +1332,8 @@ def declared_fields(entry):
             layout, columns = layout + PROTON_READOUT_FIELDS, columns + PROTON_READOUT_COLUMNS
         if entry.end_chemistry:  # K3b: only where a mode changes a charged species at one end.
             layout = layout + END_CHEMISTRY_FIELDS
+        if entry.current_readout:  # FR-34: only where a population asks.
+            layout, columns = layout + CURRENT_READOUT_FIELDS, columns + CURRENT_READOUT_COLUMNS
         return KindFields(GENERAL_STATE_AXES, layout, GENERAL_CONTROL_FIELDS, columns)
     return KindFields(STATE_AXES, LAYOUT_FIELDS, CONTROL_FIELDS, READOUT_COLUMNS, POPULATION_HOOKS)
 
@@ -1471,6 +1492,8 @@ def _population_initial(spec, declaration):
             dtype=np.int64,
         )
         v["cycle_pmf_present"] = np.array([t.proton_readout is not None for t in declaration])
+    if any(t.current_readout for t in declaration):  # Its test (FR-34).
+        v["cycle_current_present"] = np.array([t.current_readout for t in declaration])
     state = dict(
         cycle_count=np.zeros((M, P)),
         cycle_dissipated_energy_pJ=np.zeros(P),
@@ -1785,9 +1808,10 @@ class Evaluation(NamedTuple):
     mono_slots: object = None
 
 
-def _evaluate(read, potentials, control, p, *, xp):
+def _evaluate(read, potentials, control, p, *, xp, voltage_ab=None):
     """The population axis's one evaluation (statement 1, §4): rates, stage_term, material_term,
-    readouts and probe are projections of it."""
+    readouts and probe are projections of it. voltage_ab, where given (clamped_rates, FR-34), is
+    each host's voltage phi_a - phi_b in place of the potentials'."""
     from cells.modules import host_table, node_concentrations
 
     table = host_table(p, xp=xp)
@@ -1803,7 +1827,9 @@ def _evaluate(read, potentials, control, p, *, xp):
     positive = xp.isfinite(c) & (c > 0)
     ln_c = xp.where(present, xp.log(xp.where(present & positive, c, 1.0)), 0.0)
     rt = R * p.temperature
-    if potentials is None:
+    if voltage_ab is not None:  # Clamped (FR-34): phi_N - phi_P from the host's phi_a - phi_b.
+        v_np = xp.where(p.cycle_n_at_b, -voltage_ab, voltage_ab)
+    elif potentials is None:
         v_np = xp.zeros(host.shape)
     else:
         v_np = potentials[n_node] - potentials[p_node]
@@ -2005,7 +2031,33 @@ def _population_readouts(read, potentials, control, p, *, xp):
     )
     if "cycle_pmf_species" in type(p)._fields:  # Static: a population asks (K4).
         out += _proton_readouts(read, potentials, e, p, xp=xp)
+    if "cycle_current_present" in type(p)._fields:  # Static: a population asks (FR-34).
+        out += (xp.where(p.cycle_current_present, _charge_current(e, p, xp=xp), 0.0),)
     return out
+
+
+def _charge_current(e, p, *, xp):
+    """FR-34: [P] each population's electric current through its host, in A, outward-positive:
+    positive charge moving from the host's end a to its end b (a patch's cell to its outside
+    node), the convention of the routes' passive_current_A and of @3's membrane_current_A. It is e
+    times the charge the population's modes move from N to P per second, sum_m q_m J_m, turned
+    where N is end b; 0 where the population is absent (Q2)."""
+    toward_p = CHARGE_PER_FMOL * entity_sum(p.cycle_charge_moved * e.j, axis=0, xp=xp)
+    return xp.where(e.active, xp.where(p.cycle_n_at_b, -toward_p, toward_p), 0.0)
+
+
+def clamped_rates(read, control, p, voltages_V, *, xp=np):
+    """FR-34, current at a declared voltage, on the population axis: each population's signed
+    cycles per mode [M, P] (fmol/s, its counts' N-to-P orientation) and its current [P] (A,
+    outward-positive, as _charge_current) at the host voltages phi_a - phi_b given [P] (V; a
+    scalar applies to every population), at a state's stage read and controls: the step's own
+    evaluation with the voltage clamped. Pure: it records nothing."""
+    if MARK not in type(p)._fields:
+        raise ValueError("clamped_rates evaluates the population axis's layout only")
+    voltage = xp.broadcast_to(xp.asarray(voltages_V, dtype=float), p.cycle_host.shape)
+    e = _evaluate(read, None, control, p, xp=xp, voltage_ab=voltage)
+    modes = p.cycle_mode_present & e.active[None, :]
+    return xp.where(modes, e.j, 0.0), _charge_current(e, p, xp=xp)
 
 
 def _proton_readouts(read, potentials, e, p, *, xp):
@@ -2518,14 +2570,20 @@ def view_sets(spec, declaration):
         )
         populations.append(t)
     modes = max(len(cycle_form(t.law).modes) for t in declaration)
+    roles = {
+        "N": "the population's N end, at its host's end a or b (orientation)",
+        "P": "its P end, the host's other end",
+    }
+    if any(t.current_readout for t in declaration):  # FR-34: the current's ends, only then.
+        roles |= {
+            "inside": "the population's host's end a: its patch's cell",
+            "outside": "its host's end b: the patch's outside node",
+        }
     return {
         "cycle_population": {
             "id": "cycle_population",
             "ids": [t.id for t in populations],
-            "roles": {
-                "N": "the population's N end, at its host's end a or b (orientation)",
-                "P": "its P end, the host's other end",
-            },
+            "roles": roles,
             "kinds": ["cycle" for _ in populations],
             "laws": [{"law_id": t.law} for t in populations],
             "at": [{"membrane": t.host} for t in populations],
@@ -2570,6 +2628,18 @@ _POTENTIAL_DIFFERENCE = MappingProxyType(
         "phi_P - phi_N); 0 where the population names no proton_readout",
     }
 )
+_OUTWARD_CURRENT = MappingProxyType(
+    {
+        "from": "inside",
+        "to": "outside",
+        "says": "outward-positive, in A: positive charge moving from the population's host's end a "
+        "(its patch's cell) to its end b, e times the charge its modes move from N to P per "
+        "second, turned where N is end b: its share of the patch's membrane_current_A; the rate at "
+        "the observed row, 0 where the population does not ask (current_readout false) or is "
+        "absent",
+        "confirmed": "the kinds owner, from the code (FR-34, 20 November 2026)",
+    }
+)
 _PROTON_MOTIVE_FORCE = MappingProxyType(
     {
         "plus": "P",
@@ -2602,12 +2672,14 @@ VIEW = KindView(
             "cycle_held_drive_J_mol": "J/mol",
             "cycle_membrane_potential_V": "V",
             "cycle_proton_motive_force_V": "V",
+            "cycle_current_A": "A",
         }
     ),
     observation_axes=MappingProxyType(
         {c: ("membrane_slot",) for c in READOUT_COLUMNS}
         | {c: ("cycle_mode", "cycle_population") for c in GENERAL_READOUT_COLUMNS}
         | {c: ("cycle_population",) for c in PROTON_READOUT_COLUMNS}
+        | {c: ("cycle_population",) for c in CURRENT_READOUT_COLUMNS}
     ),
     record_kinds=MappingProxyType(
         {
@@ -2627,6 +2699,7 @@ VIEW = KindView(
             "cycle_held_drive_J_mol": "level",
             "cycle_membrane_potential_V": "level",
             "cycle_proton_motive_force_V": "level",
+            "cycle_current_A": "rate",
         }
     ),
     orientation=MappingProxyType(
@@ -2637,6 +2710,7 @@ VIEW = KindView(
             "cycle_rate_fmol_s": _MODES,
             "cycle_membrane_potential_V": _POTENTIAL_DIFFERENCE,
             "cycle_proton_motive_force_V": _PROTON_MOTIVE_FORCE,
+            "cycle_current_A": _OUTWARD_CURRENT,
         }
     ),
     record_layers=MappingProxyType(
@@ -2647,6 +2721,7 @@ VIEW = KindView(
                 *(f for f, _ in GENERAL_STATE_AXES),
                 *GENERAL_READOUT_COLUMNS,
                 *PROTON_READOUT_COLUMNS,
+                *CURRENT_READOUT_COLUMNS,
             ),
             "pumps",
         )
@@ -2707,11 +2782,12 @@ _STRUCTURAL = {
     "cycle_pmf_species": 0,
     "cycle_pmf_present": False,
     "cycle_row_end_chemistry": False,
+    "cycle_current_present": False,
 }
 _EXTENSIVE = ("transporter_capacity_fmol_s", "cycle_capacity_fmol_s")
 _PER_ENTITY = (
     *LAYOUT_FIELDS, *CONTROL_FIELDS, *GENERAL_LAYOUT_FIELDS, *MONOMIAL_FIELDS,
-    *PROTON_READOUT_FIELDS, *END_CHEMISTRY_FIELDS, *GENERAL_CONTROL_FIELDS,
+    *PROTON_READOUT_FIELDS, *END_CHEMISTRY_FIELDS, *CURRENT_READOUT_FIELDS, *GENERAL_CONTROL_FIELDS,
 )  # fmt: skip
 PARTITION_ROLES = MappingProxyType(
     {
@@ -2772,6 +2848,7 @@ _SHAPES = {
     "cycle_mono_term_q": "MQGRP", "cycle_mono_term_eta": "MQGP", "cycle_mono_term_present": "MQGP",
     "cycle_mono_share": "MP", "cycle_mono_ln_standard": "P",
     "cycle_pmf_species": "P", "cycle_pmf_present": "P", "cycle_row_end_chemistry": "KP",
+    "cycle_current_present": "P",
 }  # fmt: skip
 FIELD_AXES = MappingProxyType(
     {

@@ -29,6 +29,7 @@ from cells.models.assembly_lineages.spec import LineageModel
 from cells.models.assembly_lineages_v2 import (
     BILAYER_GEOMETRY,
     FREE_ENERGY_INTERFACE,
+    GATE_FACTOR,
     GEOMETRY_INTERFACE,
     IDEAL_MIXING,
     MASS_ACTION,
@@ -38,14 +39,17 @@ from cells.models.assembly_lineages_v2 import (
     OSMOTIC_LUMEN,
     PHASE_EXCHANGE,
     POPULATION_INTERFACE,
+    PRESCRIBED_SHELL,
     RATE_FACTOR_INTERFACE,
     REACTION_INTERFACE,
     REGULAR_MIXING,
     SHARED_POOL,
     SHEAR_FISSION,
+    SHELL_PERMEATION,
     TRANSITION_STATE,
     division,
     exchange,
+    gate_factor,
     geometry,
     ideal_mixing,
     interfaces,
@@ -53,9 +57,13 @@ from cells.models.assembly_lineages_v2 import (
     mass_action,
     permeation,
     population,
+    prescribed_shell,
     regular_mixing,
+    replacement,
+    shell_permeation,
     transfer,
     transition_state,
+    withdrawal,
 )
 from cells.models.assembly_lineages_v2 import model as v2_model
 from cells.models.assembly_lineages_v2.spec import AssemblyModel
@@ -83,10 +91,16 @@ HOMES = {
     OSMOTIC_LUMEN: (lumen, interfaces.FreeEnergyTerm, FREE_ENERGY_INTERFACE, None),
     # OL2 milestone 3.
     SHARED_POOL: (population, interfaces.PopulationStructure, POPULATION_INTERFACE, None),
+    # FR-21's shell (D244, D246).
+    PRESCRIBED_SHELL: (prescribed_shell, interfaces.GeometryLaw, GEOMETRY_INTERFACE, None),
+    SHELL_PERMEATION: (shell_permeation, interfaces.ReactionLaw, REACTION_INTERFACE, None),
+    GATE_FACTOR: (gate_factor, interfaces.RateFactorLaw, RATE_FACTOR_INTERFACE, None),
 }  # fmt: skip
 OPERATORS = {  # OL3 milestone 1, then OL2 milestone 3
     SHEAR_FISSION: (division, interfaces.AssemblyOperator, OPERATOR_INTERFACE),
     "cells.serial_transfer@1": (transfer, interfaces.AssemblyOperator, OPERATOR_INTERFACE),
+    "cells.pool_replacement@1": (replacement, interfaces.AssemblyOperator, OPERATOR_INTERFACE),
+    "cells.pool_withdrawal@1": (withdrawal, interfaces.AssemblyOperator, OPERATOR_INTERFACE),
 }
 
 
@@ -116,6 +130,7 @@ def test_the_four_laws_are_template_declarations_of_the_family_s_interfaces():
         MASS_ACTION,
         PHASE_EXCHANGE,
         MEMBRANE_PERMEATION,
+        SHELL_PERMEATION,
     }
     # @1's rate factors are unchanged by @2's registrations.
     assert set(factors.registered()) == {law.law_id for law in gard.LAWS}

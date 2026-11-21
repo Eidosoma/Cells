@@ -296,3 +296,103 @@ The record is written when the experiment declares `diagnostic: true`, as `diagn
     it;
   - in relations@2, the lives alive at the cut are `continued`.
 - **The joining rule** for the two segments' records is `checkpoints.py`'s module docstring.
+
+## FR-20: a pool replacement, a pulse or a washout (`cells.pool_replacement@1`)
+
+- **The declaration:** `{index, kind: replacement, times_s, pool}`, beside the shear and transfer
+  schedules. `pool` gives one count per finite pool place, in place order, as a transfer's
+  `fresh_pool` does.
+- **At each time, a host stop:**
+  - it draws nothing;
+  - every slot is kept as it stands;
+  - the pool's finite places take `pool`;
+  - the held places, c_ext and the pool's volume are unchanged.
+- **Refused:**
+  - a replacement without a population;
+  - a `pool` of the wrong length;
+  - fresh solutes above c_ext;
+  - a held pool species that also has a membrane or lumen place, since it could not be washed out.
+- **Booking:** the sink takes F of the old pool, and the schedule's column `schedule_work_kT` takes
+  F of the fresh pool. `shear_work_kT` plus the transfers' and replacements' work equals the
+  columns' sum at every row.
+- **Records:**
+  - `row_kind` adds `replacement`;
+  - `run.json`'s `population.replacements` lists each replacement: its `id`, `time_s`, `schedule`,
+    `removed` and `supplied` (`{place: count}` over the finite pool places), `sink_kT` and
+    `work_kT`;
+  - the diagnostic record's `replacement_events` holds the same;
+  - relations@2 adds the event `event:replacement/<n>` (kind `replacement`, at `node:pool`), the
+    source `source:replacement/<index>` (schedule, substrate, the payer of its column), the nodes
+    `node:pool` and `sink:discard`, and, per species with a count, a `removes_to` edge from
+    `node:pool` to the sink and a `supplies` edge from the source to `node:pool`, each weighed by
+    its count at the event (mode `event`);
+  - a world without a replacement writes none of these, but for the `row_kind` legend in
+    `run.json`, which lists `replacement` for every population.
+
+## FR-21, the site step: one-step binding to a declared site (§0.2f)
+
+- **The world's optional `sites`:** `[{"site": "R", "complex": "XR"}, ...]`.
+  - Both are membrane species, distinct, and a complex belongs to one site.
+  - A world without sites writes no key, so its id and fingerprint are unchanged.
+- **The step it admits** in a world with a geometry (rule 3, amended):
+  - `{"locus": "membrane", "reactants": {"X@pool": 1, "R@membrane": 1}, "products":
+    {"XR@membrane": 1}, "law": "cells.stochastic_mass_action@1", "forward_rate_per_s": k_f}`;
+  - declared in this direction, for a declared pair.
+
+  Its rates are a⁺ = k_f·θ⁺·n_R and a⁻ = k_f·exp(μ°_XR − μ°_R − μ°_X)·n_XR. Any other interfacial
+  shape is refused, as before.
+- **No new record.** The step is an ordinary step of the event table and of relations@2. On a
+  bilayer, R and XR carry their own area quanta.
+
+## FR-21, the shell: a prescribed wall and lumen (§0.2g)
+
+- **The geometry:** `{"law": "cells.prescribed_shell@1", "area_m2": {"value", "provenance"}}`.
+  - The world has `lumen_volume: declared` and `phases.lumen.volume_L`, and no
+    `exchange_encounter`.
+  - The wall's species carry no area quanta.
+- **The entry:** `{"locus": "membrane", "reactants": {"S@pool": 1}, "products": {"S@lumen": 1},
+  "law": "cells.shell_permeation@1", "permeability_m_per_s": {"value", "provenance"}}`, with
+  a⁺ = P_s·A_sh·ρ0·θ⁺.
+- **The gate factor (optional):** `{"law": "cells.gate_factor@1", "forms": [...],
+  "entries": [{"form", "step", "ddG_kT"}]}`, with fractions over the gate's forms only.
+- **world.json's `derived.shell`** gives `rho0_per_m3`, `area_m2`, `lumen_volume_L`, `log_extent`
+  = ln(A_sh·ρ0), and `conductance_m3_per_s` (G_s = P_s·A_sh per permeant).
+- **The rows:**
+  - `membrane_footprint_quanta`, where written, is 0: the wall has no quanta.
+  - There is no tension, lysis or division record.
+
+## FR-35: a pool withdrawal, a partial exchange (`cells.pool_withdrawal@1`)
+
+The design is [the note](../../docs/ASSEMBLY_WITHDRAWAL_DESIGN.md) under D261.
+
+- **The schedule:** `{"index", "kind": "withdrawal", "times_s", "fraction", "buffer"}`.
+  - `fraction` f is in (0, 1).
+  - `buffer` gives one integer count per finite pool place, in place order: the molecules in the
+    withdrawn volume fV. Tracer-free is 0.
+- **The draw:** each molecule leaves with probability f. Place j (its ordinal among the finite
+  pool places) draws one block of its count on the schedule's stream (domain 6, the schedule's
+  index) at draw number w·P_f + j. The counter w is the schedule's washes among the applied stops,
+  so a checkpoint carries it as FR-22's applied-stops record, with no key of its own.
+- **`run.json`'s `population.withdrawals`** lists each withdrawal, with these fields:
+
+  | Field | What |
+  | --- | --- |
+  | `id` | the event's ID |
+  | `time_s`, `schedule`, `fraction` | the stop and its schedule |
+  | `before`, `withdrawn`, `remaining`, `supplied` | `{place: count}` over the finite pool places |
+  | `draws` | each block's `[index, draw number, size]` |
+  | `pool_loss_kT` | the sink: F(before; V) − F(kept; (1 − f)V) |
+  | `sample_F_kT` | the sample's own F at fV |
+  | `split_surprisal_kT` | σ = −ln P(k), so the sink is `sample_F_kT` − σ |
+  | `buffer_F_kT` | the schedule's work: the buffer's F at fV |
+  | `mixing_heat_kT` | in the heat; never negative |
+
+- **Only when a world declares a withdrawal:**
+  - the diagnostic record's `withdrawal_events`;
+  - a row of kind `withdrawal` (8), whose legend entry is written only then;
+  - in relations@2, the event `event:withdrawal/<n>` (kind `withdrawal`, at `node:pool`, paid by
+    `source:withdrawal/<index>`), with `removes_to` edges from the pool to the sink weighed by the
+    withdrawn counts and `supplies` edges from the source weighed by the supplied counts (mode
+    `event`).
+- **Refused at the wash, before the draw:** a place whose pre-wash count plus its buffer count
+  exceeds `molecule_capacity`.

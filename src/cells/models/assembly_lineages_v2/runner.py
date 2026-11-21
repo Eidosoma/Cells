@@ -39,6 +39,7 @@ from cells.definitions.specs import ConfigError
 from cells.models.assembly_lineages import keys
 from cells.models.assembly_lineages_v2 import (
     MODE,
+    PRESCRIBED_SHELL,
     balance,
     diagnostic,
     division,
@@ -252,9 +253,9 @@ def _vesicle_energy(spec, layout):
         full[: len(counts)] = counts
         empty = full.copy()
         empty[vesicle] = 0
-        value = ledger.free_energy(full, tables, world.terms, layout.terms) - ledger.free_energy(
-            empty, tables, world.terms, layout.terms
-        )
+        value = ledger.state_free_energy(
+            full, tables, world.terms, layout.terms
+        ) - ledger.state_free_energy(empty, tables, world.terms, layout.terms)
         if not np.isfinite(value):
             raise AssertionError("A vesicle's own free energy is not finite: a fault")
         return value + closure
@@ -396,7 +397,11 @@ def run_lanes(specs):
         verdict = balance.osmotic_verdict()
     else:
         verdict = (
-            balance.geometry_verdict() if structure.geometry is not None else balance.verdict()
+            balance.shell_verdict()  # FR-21: a shell world takes the shell probe's verdict
+            if structure.geometry == PRESCRIBED_SHELL
+            else balance.geometry_verdict()
+            if structure.geometry is not None
+            else balance.verdict()
         )
     by_world = {}  # The world's own report, once per distinct world (lanes often share one).
     for s in specs:
@@ -510,7 +515,7 @@ def _release(world, layout, tables, counts, supplied, f, heat, heat_mag, work, w
             work_return -= amount * float(held_mu[j])
         else:
             after[j] += amount
-    f_after = ledger.free_energy(after, tables, world.terms, layout.terms)  # no C_close
+    f_after = ledger.state_free_energy(after, tables, world.terms, layout.terms)  # no C_close
     q_release = -(f_after - f[-1]) + work_return
     counts, supplied, f = counts.copy(), supplied.copy(), f.copy()
     heat, heat_mag, work, work_mag = heat.copy(), heat_mag.copy(), work.copy(), work_mag.copy()
@@ -591,7 +596,8 @@ def _assemble(spec, structure, layout, verdict, report, holder, final, timings):
         )
     tables = model.tables(spec)
     f = np.asarray(
-        [ledger.free_energy(c, tables, world.terms, layout.terms) for c in counts], dtype=np.float64
+        [ledger.state_free_energy(c, tables, world.terms, layout.terms) for c in counts],
+        dtype=np.float64,
     )
     if world.geometry is not None:  # C_close, once for the one living vesicle (§0.2c rule 8).
         f = f + geometry.closure_kT(world)
@@ -643,7 +649,7 @@ def _assemble(spec, structure, layout, verdict, report, holder, final, timings):
         "free_energy_kT": f,
         "ledger_residual_kT": residual,
     }
-    if world.geometry is not None:  # OL2: the membrane's footprint W at each row (quanta).
+    if world.geometry is not None and world.geometry[0] != PRESCRIBED_SHELL:  # OL2: W, quanta
         row_arrays["membrane_footprint_quanta"] = counts[:, :places] @ geometry.place_quanta(
             world, places
         )

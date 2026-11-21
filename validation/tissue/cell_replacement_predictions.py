@@ -129,6 +129,13 @@ def main(argv=None):
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args(argv)
+    from validation import executed_sources  # noqa: PLC0415
+
+    # D259: refuse before any compute, so a refused run loses nothing; checked again at the
+    # record, for a source the run imports on its way.
+    executed_sources.refuse_untracked(
+        Path(__file__).resolve().parents[2], "cell_replacement_predictions' record"
+    )
     started = time.perf_counter()
     out = dict(
         kind="cells.cell_replacement_q1_predictions@1",
@@ -150,6 +157,10 @@ def main(argv=None):
         entry["reference_seconds"] = time.perf_counter() - t0
         out["cases"][name] = entry
         print(name, round(entry["reference_seconds"], 1), "s", flush=True)
+    executed_sources.refuse_untracked(  # D259: again, for a source imported during the run
+        Path(__file__).resolve().parents[2], "cell_replacement_predictions' record"
+    )
+
     git = ["git", "-C", str(Path(__file__).resolve().parents[2])]
     out.update(
         wall_s=time.perf_counter() - started,

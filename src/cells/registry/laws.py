@@ -54,7 +54,8 @@ declarations manifest (registry/declarations.py) writes out.
 - `cells.junction_law@1`, `JunctionLaw`: @3's junction conductance law. Its contract (a gated
   state with kinetics(V, parameters), a right-hand side, a domain and a voltage bound) is not the
   membrane channel's (codes, named gates, permeant ions, an RK4 step), so it takes an interface of
-  its own.
+  its own. Two defaulted fields (FR-30) let it hold gates in series: `gate_count` (1) and
+  `conductance` (None: the one gate's state is the conductance).
 These five are the initial set, each held to its type. The set is open to built-in families: the
 `cells` namespace is reserved (docs/MODULE_SYSTEM_DESIGN.md §2.3), so a built-in family declares its
 interfaces as `cells.*` in its row of the static model table (registry/model_table.py), named for
@@ -537,13 +538,21 @@ class BindingLaw(Law):
 
 @dataclass(frozen=True)
 class JunctionLaw(Law):
-    """A junction conductance law; a gated one carries junction_gate state."""
+    """A junction conductance law; a gated one carries junction_gate state.
+
+    FR-30 (docs/JUNCTION_TWO_RELAXATION_DESIGN.md §5; the lead's ruling of 20 November 2026, D191:
+    two defaulted fields, not a new interface version): `gate_count` gates in series, each with
+    today's kinetics, and `conductance(gates)`, the junction's relative conductance from them. Their
+    defaults, 1 and None, keep every one-gate law as it was: its one gate's state is its
+    conductance."""
 
     gated: bool
     kinetics: Callable  # (voltage, parameters, *, xp) -> junction_gate.Rates
     rhs: Callable
     domain_valid: Callable
     max_abs_voltage_V: float
+    gate_count: int = 1
+    conductance: Callable | None = None  # (gates, *, xp) -> relative conductance; None: one gate
 
     interface: ClassVar[str] = JUNCTION_LAW
     UNITS: ClassVar = MappingProxyType({"max_abs_voltage_V": "V"})
@@ -554,6 +563,14 @@ class JunctionLaw(Law):
             out.append("its gated flag is a bool")
         if not (_number(self.max_abs_voltage_V) and self.max_abs_voltage_V > 0):
             out.append("its voltage bound is positive")
+        if isinstance(self.gate_count, bool) or not (
+            isinstance(self.gate_count, int) and self.gate_count >= 1
+        ):
+            out.append("its gate count is a positive integer")
+        elif self.conductance is None and self.gate_count > 1:
+            out.append("a law of several gates declares its conductance")
+        if self.conductance is not None and not callable(self.conductance):
+            out.append("its conductance is a callable, or None for one gate")
         return out
 
 

@@ -1375,6 +1375,14 @@ default (). It reports two things:
 - Material in transit sits in the operator's own pools. Its own conversion ledger closes it, as the
   producer's `unit_chain` does.
 
+**As built (G3; the lead's ruling of 20 November 2026): moves only.**
+- The hook reports each move's net row change per unit of progress, not separate weights.
+- A weight the operator assumes that differs from the model's moiety still shows. The move then
+  changes the moiety, and `check_moieties` refuses it by name, for example "Operator
+  templated_polymerisation@1's move chain tx: it changes moiety phosphorus by -1 per turnover".
+- **A known limit:** a model that declares no moieties is not checked, so there the hook is not
+  read and its shape is not checked.
+
 **D152** can report its reactions through the same hook, which ends its private moiety authority
 (one authority, the registry's). Whether that lands with A, or at D152's next version under
 crossrev, is the operators owner's call.
@@ -1402,7 +1410,11 @@ tag before the next starts.
 1. **The equation sheet** (`docs/TEMPLATED_POLYMERISATION_LAWS.md`, new; S). The lane agent states
    each law's physics only:
    - each move's integer stoichiometry, per stage and per route, with its charge and its moieties;
-   - each cited reaction energy, as a `FreeEnergyEntry` in kJ/mol with its basis, offset and source;
+   - each cited reaction energy, as a `FreeEnergyEntry` with its source:
+     - in kJ/mol with its basis and offset;
+     - or, where the source cites an equilibrium constant, as a temperature-free dG_RT = −ln K. The
+       sheet's recharging entry is entered this way (TEMPLATED_POLYMERISATION_LAWS §3.3; corrected
+       with the sheet, 20 November 2026);
    - the rate laws: initiation, the m-stage chain with its saturating draws, degradation and
      recharging;
    - the machine identity and the account identities;
@@ -1464,9 +1476,14 @@ tag before the next starts.
   - So J = kTM/(1 + kTτ). It rises linearly at small T and saturates at M/τ.
   - With two genes, J_g = k_g T_g M/(1 + Σ_h k_h T_h τ_h): each takes its share of one budget.
   - The transient comes from R-share's stiff ODE.
-- **Its own plants.** Each must fail one of the arm's judged items: the J–T curve at the saturated
-  end, or the machine identity at every row.
-  1. Initiation reads the total machines, not the free ones. That removes the saturation.
+- **Its own plants.** Each must fail one of the arm's judged items: the J–T curve, or the machine
+  identity at every row.
+  1. **Initiation reads the total machines, not the free ones.** That removes the saturation.
+     - It is registered at a T where F stays positive, T = 5 (λτ ≈ 0.5). There initiation on total
+       machines reads J ≈ 1.5 J*.
+     - Nearer the saturated end, at T ≥ 10, the same edit drives F below zero, and the engine would
+       refuse the step rather than yield a J.
+     - The lead's ruling of 20 November 2026; TEMPLATED_POLYMERISATION_LAWS §5.2.
   2. A machine is not returned at release. That breaks free plus engaged equals total, and drains
      the budget.
 
@@ -1529,7 +1546,9 @@ The protocol's scope lists these as non-claims, so that no reader takes them as 
   - its own references, from the same sheet, 1.5–2.5;
   - the operator's charged-form work, 2–3: closure reads at the half-steps, base-form moves, H⁺
     moves, and a valence of −L. G5 covers only the registry and the contract;
-  - its registration and judged run, 1–1.5.
+  - its registration and judged run, 1–1.5;
+  - not priced here: a field-side owner for the charge the operator holds in transit. The node's
+    charge must count the growing mRNA's −1 per residue (TEMPLATED_POLYMERISATION_LAWS §1.3).
 - **Composing with mitochondria** adds the cap's raising (§7.2), which is not estimated here.
 - **Elapsed:** about 6–9 working days for A with two new seats (estimate).
 

@@ -143,12 +143,14 @@ Moieties (moieties, check_moieties)
 The model may declare its conserved moieties, ``moieties``: [{id, weights: {row: nonzero
 integer}}, ...], each weight per unit of the row's total. A row with forms holds every form, so Mg
 bound in MgATP counts in the Mg row's total where a closure holds it, and a form needs no weights
-of its own. The registry is their one authority for kinds and entries (the lead's Q7 ruling):
-check_moieties refuses any kind mode, resolved through its role_species (entity_modes), and any
-declared free-energy entry that changes a moiety, naming it (CORE_SEAMS §3.2 and §7.3). Transport
-keeps a species' identity, so a mode's net change over both ends is its chemistry. A model that
-declares none is not checked. An operator's own moieties (D152's reactions) stay its own until an
-operator-contract hook reports them (the operators owner's follow-up).
+of its own. The registry is their one authority for kinds, entries and operators' moves (the
+lead's Q7 ruling): check_moieties refuses any kind mode, resolved through its role_species
+(entity_modes), any declared free-energy entry, and any net move an operator reports through the
+contract's species_moieties (operators.operator_species_moieties; docs/GENE_REGULATION_DESIGN.md
+§7.6) that changes a moiety, naming it (CORE_SEAMS §3.2 and §7.3). Transport keeps a species'
+identity, so a mode's net change over both ends is its chemistry. A model that declares none is not
+checked. An operator that reports no moves (the hook's default, D152's reactions today) keeps its
+own moieties; whether D152 reports through the hook is the operators owner's call.
 
 Moved by the step (moved_in_step)
 ---------------------------------
@@ -1316,11 +1318,13 @@ def check_potential_set(spec):
 
 
 def check_moieties(spec):
-    """Refuse a kind mode or a declared free-energy entry that changes a declared moiety (module
-    docstring, "Moieties"): each mode resolved through its kind's role_species (entity_modes),
-    its net change over both ends being its chemistry, and each entry's stoichiometry, sum w nu = 0
-    exactly for every moiety; naming the mover, the mode or entry, the moiety and its change. A
-    model without moieties is not checked."""
+    """Refuse a kind mode, a declared free-energy entry or an operator's reported move that
+    changes a declared moiety (module docstring, "Moieties"): each mode resolved through its
+    kind's role_species (entity_modes), its net change over both ends being its chemistry, each
+    entry's stoichiometry, and each move of an operator's species_moieties, sum w nu = 0 exactly
+    for every moiety; naming the mover, the mode, entry or move, the moiety and its change. A model
+    without moieties is not checked: a known limit, since its operators' species_moieties are then
+    not read, and the hook's shape is not checked there either."""
     model = declared(spec)
     if model is None or not model.moieties:
         return
@@ -1350,6 +1354,21 @@ def check_moieties(spec):
     for where, entries in declared_free_energies(spec):
         for index, entry in enumerate(entries):
             changes(dict(entry.stoichiometry), f"{where}, entry {index}")
+    from cells.registry import operators as operator_registry
+
+    rows = set(m.species_ids)
+    try:
+        for op, declaration in _entries(spec):
+            for name, pairs in operator_registry.operator_species_moieties(op, declaration):
+                where = f"Operator {op.LAW_ID}'s move {name}"
+                stray = [species for species, _ in pairs if species not in rows]
+                if stray:
+                    raise ConfigError(
+                        f"{where}: it names {stray[0]!r}, which is not a species of the model"
+                    )
+                changes(dict(pairs), where)
+    except ValueError as error:
+        raise ConfigError(str(error)) from error
 
 
 def standard_potential(spec, species):

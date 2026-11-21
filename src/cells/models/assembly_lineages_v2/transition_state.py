@@ -16,6 +16,10 @@ negative ΔΔG‡ (β in (−1, 0)); g stays positive.
   (GARD's single-event form) cannot be declared here.
 - **The catalysing phase** (§0.2a): the membrane only in OL1. A dilute catalysing phase is refused
   until a declared meaning exists, since its fraction would have to include the solvent.
+- **The catalysed step touches the membrane.** A factor on a step that lies wholly in the pool or
+  wholly in the lumen is refused until a meaning is declared: a single lineage would scale it by
+  the membrane's fractions, while a population evaluates the pool's steps at an empty vesicle, where
+  g = 1 (the lead's ruling of 20 November). This check runs after the others.
 - **Boundary** (`empty_catalyst_phase: uncatalysed`): g = 1 where the catalysing phase is empty at
   m.
 
@@ -113,7 +117,28 @@ def parse_data(raw, world):
                 "refused, §2.4)"
             )
         out.append((catalyst, step, float(value)))
+    refuse_steps_off_the_membrane(out, world)  # after every earlier check, whose messages stand
     return {"catalysing_phase": raw["catalysing_phase"], "entries": tuple(out)}
+
+
+def refuse_steps_off_the_membrane(entries, world):
+    """A factor on a step that lies wholly in the pool or wholly in the lumen has no declared
+    meaning: a single lineage would scale it by the membrane's fractions, while a population
+    evaluates the pool's steps at an empty vesicle, where g = 1 (the lead's ruling of 20 November,
+    the fuel note's L1). It is refused until a meaning is declared."""
+    phase_of = {p.name: p.phase for p in world.places}
+    steps = {s.id: s for s in world.steps}
+    for catalyst, step_id, _ in entries:
+        step = steps[step_id]
+        phases = {phase_of[name] for name, _ in (*step.reactants, *step.products)}
+        if phases in ({"pool"}, {"lumen"}):
+            raise ConfigError(
+                f"world: rate_factor: ({catalyst}, {step_id}): step {step_id} lies wholly in the "
+                f"{min(phases)}, so a factor on the membrane's catalysts has no declared meaning "
+                "there (a single lineage would scale it by the membrane's fractions, a population "
+                "evaluates the pool's steps at an empty vesicle, where g = 1); it is refused until "
+                "one is declared"
+            )
 
 
 def data_to_dict(data):

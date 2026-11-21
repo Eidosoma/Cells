@@ -123,21 +123,24 @@ def _checked_above(row, p, active, *, xp):
     return xp.asarray(True)
 
 
-def implementation(inner_model, laws, structure=None):
+def implementation(inner_model, laws, structure=None, *, midpoint=frozenset()):
     """The composite for one inner identity, ordered operator law tuple and, from a definition,
     the inner model's declared structure (I2: the composite then takes the inner protocol from
-    that structure's implementation object; None keeps the module's own, the full catalogue).
+    that structure's implementation object; None keeps the module's own, the full catalogue), and
+    the definition's self-moved rate-route targets (self_moved_targets; empty: none).
 
     Cached: equal arguments share one composition. A structure that declares kinds is also keyed
     on the active kind registry, whose kinds its types are built from (schema A, §7.4 (j)), as
     the inner implementation object is; one that declares none shares its composition across
-    registries, so a registered but undeclared kind changes nothing."""
+    registries, so a registered but undeclared kind changes nothing. A definition without a
+    self-moved route shares the composition it had before the midpoint existed."""
     kinds = structure is not None and bool(structure.kinds)
-    return _implementation(inner_model, laws, structure, kind_registry.active() if kinds else None)
+    registry = kind_registry.active() if kinds else None
+    return _implementation(inner_model, laws, structure, registry, frozenset(midpoint))
 
 
 @cache
-def _implementation(inner_model, laws, structure, registry):
+def _implementation(inner_model, laws, structure, registry, midpoint):
     from cells.operators import OPERATORS
 
     if inner_model not in INNERS:
@@ -148,15 +151,67 @@ def _implementation(inner_model, laws, structure, registry):
     inner = INNERS[inner_model]
     if structure is not None:
         inner = inner.for_structure(structure)
-    return Composition(inner, tuple(OPERATORS[law] for law in laws))
+    return Composition(inner, tuple(OPERATORS[law] for law in laws), midpoint=midpoint)
 
 
 def model_for(spec_model):
     inner = INNERS[spec_model.inner_model] if spec_model.inner_model in INNERS else None
     structure = None if inner is None else inner.inner_structure(spec_model)
     return implementation(
-        spec_model.inner_model, composite_spec.operator_laws(spec_model), structure
+        spec_model.inner_model,
+        composite_spec.operator_laws(spec_model),
+        structure,
+        midpoint=self_moved_targets(spec_model),
     )
+
+
+def self_moved_targets(spec_model):
+    """The law IDs of the definition's rate-route targets whose own half-steps move a species
+    source of one of their routes, in the cell the route reads it (B1′; the independent Lean
+    project's finding, lean/PROGRESS.md "regulated-turnover-routing", 20 November 2026).
+
+    A factor read at the start of a half-step is exact while nothing in that half-step moves its
+    source: another split operator's halves and @3's step stand symmetric about it (Strang). When
+    the target moves the source itself (a turnover producing the regulator of its own route),
+    the frozen factor is a left-endpoint rule, first order: those targets' half-steps evaluate
+    the factor at the half-step's midpoint (Composition._half_step). Read from the declarations
+    alone (each source's rate_route_sources, each target's routable_elements and half_step_rows),
+    so a definition without such a route is the composition it was. A route the definition's
+    checks would refuse (to a law not composed, or a control not routable) is passed over here."""
+    from cells.operators import OPERATORS
+
+    declared = [
+        (OPERATORS[d.law], d) for d in getattr(spec_model, "operators", ()) if d.law in OPERATORS
+    ]
+    by_law = {op.LAW_ID: (op, d) for op, d in declared}
+    out = set()
+    for op, declaration in declared:
+        for law, control, ids, species in op.rate_route_sources(declaration):
+            if law not in by_law:
+                continue
+            target, target_declaration = by_law[law]
+            if target.ROUTABLE_CONTROLS.get(control) != "rate":
+                continue
+            moved = set(target.half_step_rows(target_declaration))
+            elements = target.routable_elements(target_declaration, control)
+            if any(e in ids and (species, cell) in moved for e, cell in elements):
+                out.add(law)
+    return frozenset(out)
+
+
+# The laws whose events change which occupant a slot holds (D150's occupant tables switch at
+# their times): observe_history's event rows report the departing occupant.
+OCCUPANT_EVENTS = ("scheduled_cell_replacement@1",)
+
+
+def occupant_event_times(spec):
+    """The times OCCUPANT_EVENTS' events land on in this definition (a set of floats)."""
+    return {
+        float(event.time)
+        for op, _, schedule in entries(spec)
+        if op.LAW_ID in OCCUPANT_EVENTS
+        for event in schedule
+    }
 
 
 def check_definition(spec):
@@ -719,6 +774,15 @@ def structure_errors(inner, operators):
         for law in op.REQUIRES:
             if law not in laws[:i]:
                 errors.append(f"{op.LAW_ID} requires {law} before it")
+    # R3: a reader may read only quantities its composed owners declare.
+    for reader, owners in quantity_readers(operators).items():
+        for owner in owners:
+            unknown = [k for k in reader.QUANTITY_READS[owner.LAW_ID] if k not in owner.QUANTITIES]
+            if unknown:
+                errors.append(
+                    f"{reader.LAW_ID} reads {owner.LAW_ID}'s {', '.join(unknown)}, which it does "
+                    "not declare among its quantities"
+                )
     # Schema A (docs/INNER_MODEL_V4_DESIGN.md §7.4 (j)): an operator that reads or writes a kind's
     # fields declares the kind (REQUIRES_KINDS), refused where the definition does not declare it;
     # its declared writes and resets of a kind's fields name the kind too. A factor of a kind's
@@ -1064,7 +1128,62 @@ def field_map(inner, operators):
             factors.setdefault(k, []).append(op.LAW_ID)
     if factors:
         out["factors"] = factors
+    # R3's readable quantities: each owner's quantities with their axis and unit, and the readers
+    # that may read them. Only where a reader and its owner are both composed, so every other map,
+    # and so its manifests, are unchanged.
+    readers = quantity_readers(operators)
+    if readers:
+        quantities = {}
+        for reader, owners in readers.items():
+            for owner in owners:
+                entry = quantities.setdefault(
+                    owner.LAW_ID,
+                    {
+                        "quantities": {k: list(v) for k, v in owner.QUANTITIES.items()},
+                        "readers": [],
+                    },
+                )
+                entry["readers"].append(reader.LAW_ID)
+        out["quantities"] = quantities
     return out
+
+
+def quantity_readers(operators):
+    """R3: {reader: (its owners in the composition, in declared order)} for each operator whose
+    QUANTITY_READS names a composed owner (static; empty without one)."""
+    by_law = {op.LAW_ID: op for op in operators}
+    out = {}
+    for op in operators:
+        owners = tuple(by_law[law] for law in op.QUANTITY_READS if law in by_law)
+        if owners:
+            out[op] = owners
+    return out
+
+
+def quantity_read_definition_errors(pairs):
+    """R3's refusals of a definition's declared quantity reads ((operator, declaration) in declared
+    order; each reader's declared_quantity_reads): a read that is not one of its QUANTITY_READS, of
+    an owner the composition does not hold, or, read in an operator target's half-steps, of an
+    owner declared after that target. The owner then moves its quantity in its own half-steps
+    before the target's first half, and after its second, so the split stays symmetric about the
+    target."""
+    position = {op.LAW_ID: k for k, (op, _) in enumerate(pairs)}
+    errors = []
+    for op, declaration in pairs:
+        for owner, name, target in op.declared_quantity_reads(declaration):
+            if name not in op.QUANTITY_READS.get(owner, ()):
+                errors.append(f"{op.LAW_ID} declares a read of {owner}'s {name}, not one it reads")
+            elif owner not in position:
+                errors.append(
+                    f"{op.LAW_ID} reads {owner}'s {name}, which the composition does not hold"
+                )
+            elif target is not None and target in position and position[owner] > position[target]:
+                errors.append(
+                    f"{op.LAW_ID} reads {owner}'s {name} in {target}'s half-steps, but {owner} "
+                    f"follows {target}: an owner whose quantity a route reads precedes the route's "
+                    "target, so both of its halves read the quantity after the owner's first half"
+                )
+    return errors
 
 
 def accepted_writers(operators):
@@ -1090,7 +1209,7 @@ def _channel_targets(values):
 class Composition:
     """The model protocol of one composition (attributes as a model module's)."""
 
-    def __init__(self, inner, operators):
+    def __init__(self, inner, operators, *, midpoint=frozenset()):
         errors = structure_errors(inner, operators)
         if errors:
             raise ConfigError("Invalid operator composition: " + "; ".join(errors))
@@ -1099,8 +1218,12 @@ class Composition:
         self.writers_of = accepted_writers(operators)
         self.observed_keys = {op.LAW_ID: {*op.observed_columns(), *op.REPLACES} for op in operators}
         self.laws = tuple(op.LAW_ID for op in operators)
-        # The executable's structure (I2): the inner structure's key and the operator list.
+        # The executable's structure (I2): the inner structure's key and the operator list, and
+        # the self-moved rate-route targets where there are any (static, B1′: none keeps the key).
         self.structure_key = (MODEL_ID, getattr(inner, "structure_key", None), self.laws)
+        self.midpoint = frozenset(midpoint)
+        if self.midpoint:
+            self.structure_key += (("midpoint", tuple(sorted(self.midpoint))),)
         # Declarations contribute nothing to the step (contract.DECLARATION_ONLY): a composition
         # of declarations alone steps as the empty composition does (FR-1 design §1.6, S5).
         self.stepping = tuple(op for op in operators if not op.DECLARATION_ONLY)
@@ -1122,6 +1245,8 @@ class Composition:
         self.factor_fields = {op: factor_reads(op) for op in self.factors if factor_reads(op)}
         # B1′: each routed split target's (source, field) routes (static: none without a source).
         self.rate_routes = rate_routes(operators)
+        # R3: each reader's composed owners (static: none declared, no call changes).
+        self.quantity_readers = quantity_readers(operators)
         self.domain_views = tuple(op for op in operators if op.VIEW_FOLLOWS_SPLIT)
         self.process_operator = next((op for op in operators if op.PROCESS), None)
         self.coupled = any(op.SPLIT and op.RK4 == "coupled" for op in operators) or (
@@ -1383,13 +1508,37 @@ class Composition:
             return lambda s: self.view(p, s, xp=xp)
         return lambda s: self.reader_view(op, p, s, xp=xp)
 
+    def quantity_reader(self, op, p, *, xp):
+        """R3: the function of state a reader receives as quantities=, giving {owner law: {name:
+        values}} of its composed owners, each computed by the owner's own quantities; None for an
+        operator that reads none (static). Nothing is traced unless the reader calls it."""
+        owners = self.quantity_readers.get(op)
+        if not owners:
+            return None
+        return lambda s: {owner.LAW_ID: owner.quantities(s, p, xp=xp) for owner in owners}
+
+    def _quantity_keywords(self, op, p, *, xp):
+        """R3: {"quantities": its function} for a reader with a composed owner, else {} (static)."""
+        reader = self.quantity_reader(op, p, xp=xp)
+        return {} if reader is None else {"quantities": reader}
+
     def control_view(self, control, state, p, *, xp=jnp):
         """The inner control with every factor applied at `state`; a factor operator that reads
-        at the control view gets view= (R2; static: otherwise the call is unchanged)."""
-        if not self.factor_fields:
+        at the control view gets view= (R2), and a reader of quantities quantities= (R3) (static:
+        otherwise the call is unchanged)."""
+        readers = {
+            op: self.quantity_reader(op, p, xp=xp)
+            for op in self.factors
+            if op in self.quantity_readers
+        }
+        if not self.factor_fields and not readers:
             return self.inner.control_view(control, state, p, self.factors, xp=xp)
-        views = self._factor_views(p, xp=xp)
-        return self.inner.control_view(control, state, p, self.factors, xp=xp, views=views)
+        keywords = {}
+        if self.factor_fields:
+            keywords["views"] = self._factor_views(p, xp=xp)
+        if readers:
+            keywords["quantities"] = readers
+        return self.inner.control_view(control, state, p, self.factors, xp=xp, **keywords)
 
     def inner_state(self, state):
         return self.inner.inner_state(state)
@@ -1504,6 +1653,17 @@ class Composition:
         if self._passes_view(op):
             keywords["view"] = self._view_for(op, p, xp=xp)(state)
         routes = self.rate_routes.get(op)
+        if routes and op.LAW_ID in self.midpoint:  # Static: a self-moved route's target.
+            # The explicit midpoint (self_moved_targets): a predictor over h/2 with the factors
+            # from the state this half-step receives, then the half-step over h with the factors
+            # from the predictor's state, second order where the target moves a route's source.
+            # Every validity counts; FACTOR_RECORD holds the factors applied, the midpoint's.
+            start, routed0, _ = self._routed_control(op, routes, state, control, p, xp=xp)
+            mid, ok0 = op.half_step(state, h / 2, start, p, xp=xp, **keywords)
+            control, routed, records = self._routed_control(op, routes, mid, control, p, xp=xp)
+            new, ok = op.half_step(state, h, control, p, xp=xp, **keywords)
+            valid = _and(_and(routed0, ok0), _and(ok, routed))
+            return _recorded(new, records, xp=xp), valid
         if routes:  # Static (B1′): its routed rates, from the state this half-step receives.
             control, routed, records = self._routed_control(op, routes, state, control, p, xp=xp)
             new, ok = op.half_step(state, h, control, p, xp=xp, **keywords)
@@ -1517,14 +1677,15 @@ class Composition:
         route on a field in this definition gives None and leaves it as scheduled (static)."""
         fields, valid, records = {}, None, {}
         for source, name in routes:
-            out = source.rate_factors(state, p, op.LAW_ID, name, xp=xp)
+            keywords = self._quantity_keywords(source, p, xp=xp)  # R3 (static: {} for most).
+            out = source.rate_factors(state, p, op.LAW_ID, name, xp=xp, **keywords)
             if out is None:
                 continue
             factor, ok = out
             fields[name] = fields.get(name, getattr(control, name)) * factor
             valid = _and(valid, ok)
             if source.FACTOR_RECORD:
-                record = source.factor_record(state, p, op.LAW_ID, name, xp=xp)
+                record = source.factor_record(state, p, op.LAW_ID, name, xp=xp, **keywords)
                 records[source.FACTOR_RECORD] = _merged(
                     records.get(source.FACTOR_RECORD), record, xp=xp
                 )
@@ -1534,11 +1695,12 @@ class Composition:
         """(validity, current with its records) of the factor sources at the control view (B1′):
         each one's factor_valid, and each FACTOR_RECORD filled with the factors applied there
         (static: a source without either changes nothing). A factor operator that reads at the
-        control view gets view= in both (R2)."""
+        control view gets view= in both (R2), and a reader of quantities quantities= (R3)."""
         valid, records = None, {}
         views = self._factor_views(p, xp=xp) if self.factor_fields else {}
         for op in self.factors:
             keywords = {"view": views[op]} if op in views else {}
+            keywords |= self._quantity_keywords(op, p, xp=xp)  # R3 (static: {} for most).
             valid = _and(valid, op.factor_valid(current, p, xp=xp, **keywords))
             if op.FACTOR_RECORD:
                 record = op.factor_record(current, p, None, None, xp=xp, **keywords)
@@ -1683,7 +1845,11 @@ class Composition:
             )
         species_registry.check_definition(spec)
         pairs = [(op, d) for op, d, _ in entries(spec)]
-        scoped = scope_errors(self.inner, pairs, spec) + rate_route_definition_errors(pairs)
+        scoped = (
+            scope_errors(self.inner, pairs, spec)
+            + rate_route_definition_errors(pairs)
+            + quantity_read_definition_errors(pairs)
+        )
         if scoped:
             raise ConfigError("Invalid operator composition: " + "; ".join(scoped))
         # The operators' in-step writers beside declared kinds (held_row_errors,
@@ -2030,17 +2196,42 @@ class Composition:
     # ------------------------------------------------------------ observations
 
     def observe_history(self, times, history, layout, requested, spec):
-        """The inner observations of each row at its view, then each operator's columns."""
+        """The inner observations of each row at its view, then each operator's columns.
+
+        Each operator observes with the controls its step runs at (D264, a tester's findings):
+        - **a routed target's** controls times its rate routes' factors at the row's state
+          (_routed_control), so an exported rate is the one the step ran at, not the scheduled
+          one (finding 1: a receptor-routed reaction exported its unrouted rate);
+        - **at an occupant event's row** (a time replacement@1's events land on, OCCUPANT_EVENTS)
+          the controls held over the step that ended there, at t - dt. The row's state is that
+          step's end, before the event, the departing occupant's, so state and controls are one
+          occupant's; the newcomer appears from the next row on (finding 2: the event row mixed
+          the departing cell's substrate with the newcomer's multiplier).
+        The inner observations keep the row's own controls."""
         p = type(layout)(*(np.asarray(v) for v in layout))
         requested = np.asarray(requested, dtype=float)
         if any(t not in times for t in requested):
             raise ConfigError("Composite observations require accepted times")
         controls = composite_spec.control_values(spec, requested)
+        events = occupant_event_times(spec)
+        departing = [j for j, t in enumerate(requested) if float(t) in events]
+        held = (
+            composite_spec.control_values(
+                spec, [float(requested[j]) - spec.execution.dt for j in departing]
+            )
+            if departing
+            else None
+        )
         base, records = projection(spec), []
         for j, t in enumerate(requested):
             i = int(np.flatnonzero(times == t)[0])
             state = self.STATE_TYPE(*(np.asarray(v[i]) for v in history))
             control = self.CONTROL_TYPE(*(v[j] for v in controls))
+            if j in departing:
+                k = departing.index(j)
+                operator_control = self.CONTROL_TYPE(*(v[k] for v in held))
+            else:
+                operator_control = control
             view = self.view(p, state, xp=np)
             inner_spec = base
             if self.factored:
@@ -2052,7 +2243,14 @@ class Composition:
             )
             row = {k: v[0] for k, v in vars(observed).items()}
             for op in self.operators:
-                columns = op.observe(row, state, control, p, view, self, spec)
+                keywords = self._quantity_keywords(op, p, xp=np)  # R3 (static: {} for most).
+                observed_control = operator_control
+                routes = self.rate_routes.get(op)
+                if routes:  # B1': the routed rates the step runs at, at the row's state.
+                    observed_control, _, _ = self._routed_control(
+                        op, routes, state, operator_control, p, xp=np
+                    )
+                columns = op.observe(row, state, observed_control, p, view, self, spec, **keywords)
                 if set(columns) != self.observed_keys[op.LAW_ID]:
                     undeclared = sorted(set(columns) ^ self.observed_keys[op.LAW_ID])
                     raise ConfigError(f"{op.LAW_ID} observes {undeclared} against its declaration")

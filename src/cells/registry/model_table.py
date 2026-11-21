@@ -80,6 +80,8 @@ MODELS = MappingProxyType(
                 # The always-open Cl⁻ leak, code 10 (D228 item 3, the H1 seam's Cl⁻ part).
                 "cells.laws.channels.clleak_always_open",
                 "cells.laws.junctions.junction_voltage_relaxation",
+                # FR-30, development only (D262; the @3 owner's recorded exception, F's file).
+                "cells.laws.junctions.junction_series_gates",
                 "cells.laws.pumps.nak_atp_mass_action_positive",
                 "cells.laws.pumps.ca_atp_mass_action_positive",
                 "cells.laws.routes.constant_field",
@@ -103,6 +105,8 @@ MODELS = MappingProxyType(
                 "cells.laws.cycles.electrogenic_nucleotide_exchange",
                 "cells.laws.cycles.phosphate_proton_symport",
                 "cells.laws.cycles.potassium_proton_exchange",
+                "cells.laws.cycles.held_reductant_supply",
+                "cells.laws.cycles.adenylate_kinase",
                 # The general binding closure (rapid_binding@1), seam C's: the binding owner's
                 # line, a recorded exception (the lead, 18 November 2026).
                 "cells.laws.reactions.rapid_binding",
@@ -163,10 +167,15 @@ MODELS = MappingProxyType(
                 "cells.models.assembly_lineages_v2.permeation",
                 "cells.models.assembly_lineages_v2.lumen",
                 "cells.models.assembly_lineages_v2.population",
+                "cells.models.assembly_lineages_v2.prescribed_shell",  # FR-21 (D244, D246)
+                "cells.models.assembly_lineages_v2.shell_permeation",  # FR-21
+                "cells.models.assembly_lineages_v2.gate_factor",  # FR-21
             ),
             operator_homes=(
                 "cells.models.assembly_lineages_v2.division",
                 "cells.models.assembly_lineages_v2.transfer",
+                "cells.models.assembly_lineages_v2.replacement",  # FR-20 (D240)
+                "cells.models.assembly_lineages_v2.withdrawal",  # FR-35 (D261)
             ),
             interfaces=(
                 "cells.reaction_law@1",

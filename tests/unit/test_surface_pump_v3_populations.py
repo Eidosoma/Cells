@@ -162,6 +162,75 @@ def test_without_factors_a_definition_keeps_todays_form_and_with_them_round_trip
         assert factored.fingerprint != parse_spec(heredity()).fingerprint
 
 
+def test_a_population_s_current_at_a_declared_voltage_with_the_halving_control():
+    """FR-34 (D251, D252), host only: clamped_channel_flux at the cell's own voltage is readouts'
+    channel flux bit for bit; at a declared voltage, half the availability gives half the current
+    (the same count and driving force); the current is outward-positive (Kir's K current changes
+    sign across E_K, NaV's Na current is inward below E_Na); a factored population reads its
+    routed availability, as the door's rows above do; and channel_current_A takes a stack of
+    recorded rows."""
+    spec = parse_spec(water_fixtures.heredity_cell("D", end_time=0.004))
+    impl, state, p, control = bound(spec)
+    w = impl.readouts(state, control, p, xp=np)
+    own = np.asarray(w.field.rates.membrane_voltage_V)
+    flux, current = impl.clamped_channel_flux(state, control, p, own, xp=np)
+    assert np.array_equal(flux, w.channel_flux_fmol_s)
+    assert np.array_equal(current, v3.channel_current_A(w.channel_flux_fmol_s, p))
+    rows = np.stack([w.channel_flux_fmol_s, 2.0 * w.channel_flux_fmol_s])
+    assert np.array_equal(v3.channel_current_A(rows, p), np.stack([current, 2.0 * current]))
+    kir, nav = ([c.id for c in spec.model.channels].index(i) for i in ("kir_0", "nav_0"))
+    half = control._replace(channel=0.5 * control.channel)
+    for volts, kir_sign in ((-0.12, -1.0), (-0.03, 1.0), (0.04, 1.0)):
+        full_flux, full = impl.clamped_channel_flux(state, control, p, volts, xp=np)
+        half_flux, halved = impl.clamped_channel_flux(state, half, p, volts, xp=np)
+        assert np.array_equal(halved, 0.5 * full) and np.array_equal(half_flux, 0.5 * full_flux)
+        assert np.sign(full[kir]) == kir_sign and full[nav] < 0  # E_K about -90 mV.
+    names = ("f_b", "f_c")
+    with scoped():
+        factored = parse_spec(heredity(names))
+        impl1, state1, p1, control1 = bound(factored)
+        plain = parse_spec(heredity())
+        impl0, state0, p0, control0 = bound(plain)
+        routed = control1.channel.copy()
+        routed[0] = left_fold(routed[0], names)
+        at = impl1.clamped_channel_flux(state1, control1, p1, -0.05, xp=np)
+        product = impl0.clamped_channel_flux(
+            state0, control0._replace(channel=routed), p0, -0.05, xp=np
+        )
+        assert all(np.array_equal(a, b) for a, b in zip(at, product, strict=True))
+        held = impl0.clamped_channel_flux(state0, control1, p0, -0.05, xp=np)
+        assert not np.array_equal(held[1], at[1])  # The held value alone differs.
+
+
+def test_the_effective_availability_is_recorded_where_the_door_routes_into_channels():
+    """FR-34's second item, host only: where a population declares factors, the observed rows
+    record channel_effective_availability, the held value times its factors (the left fold the
+    flux runs at), declared for the run view with its note; a population without factors records
+    its held value there; a world without factors records no such field, so its records and
+    types are today's."""
+    names = ("f_b", "f_c")
+    with scoped():
+        for raw, routed in ((heredity(names), True), (heredity(), False)):
+            spec = parse_spec(raw)
+            impl, state, layout = get_model(spec.model), *get_model(spec.model).initial_values(spec)
+            history = type(state)(*(np.asarray(v)[None] for v in state))
+            obs = impl.observe_history(np.array([0.0]), history, layout, np.array([0.0]), spec)
+            assert (v3.EFFECTIVE_AVAILABILITY in impl.OBSERVATION_FIELDS) is routed
+            assert hasattr(obs, v3.EFFECTIVE_AVAILABILITY) is routed
+            held = np.asarray(obs.channel_availability)[0]
+            assert held[0] == HELD
+            if routed:
+                effective = np.asarray(getattr(obs, v3.EFFECTIVE_AVAILABILITY))[0]
+                assert effective[0] == left_fold(HELD, names) and effective[1] == held[1]
+                assert impl.UNITS[v3.EFFECTIVE_AVAILABILITY] == "1"
+                assert impl.OBSERVATION_AXES[v3.EFFECTIVE_AVAILABILITY] == ("channel_slot",)
+                notes = impl.RECORD_NOTES
+                assert notes[v3.EFFECTIVE_AVAILABILITY] == v3.EFFECTIVE_AVAILABILITY_NOTE
+                assert type(state) is type(bound(parse_spec(heredity()))[1])  # Same state type.
+            else:
+                assert v3.EFFECTIVE_AVAILABILITY not in impl.UNITS
+
+
 def test_the_model_gains_no_field_so_the_families_that_copy_it_still_parse():
     """The water families build their models from @3's model fields by name, so the door adds
     none (the factors ride on the population); a planted model field would break their parse."""

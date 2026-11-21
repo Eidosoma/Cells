@@ -218,7 +218,10 @@ def _geometry_derived(world):
     """The geometry's derived constants (world.json's `derived`), only when it is declared."""
     if world.geometry is None:
         return {}
-    from cells.models.assembly_lineages_v2 import geometry
+    from cells.models.assembly_lineages_v2 import PRESCRIBED_SHELL, geometry
+
+    if world.geometry[0] == PRESCRIBED_SHELL:
+        return {"shell": _shell_derived(world)}
 
     c_area, c_radius = geometry.log_constants(world)
     return {
@@ -235,6 +238,26 @@ def _geometry_derived(world):
                 else {}
             ),
         }
+    }
+
+
+def _shell_derived(world):
+    """FR-21: a prescribed shell's constants, and each permeant's conductance G_s = P_s·A_sh."""
+    from cells.models.assembly_lineages_v2 import SHELL_PERMEATION, prescribed_shell
+
+    area = prescribed_shell.area(world)
+    by_name = {p.name: p for p in world.places}
+    conductance = {
+        by_name[step.reactants[0][0]].species: step.forward_rate_per_s * area
+        for step in world.steps
+        if step.law == SHELL_PERMEATION
+    }
+    return {
+        "rho0_per_m3": prescribed_shell.rho0(world),
+        "area_m2": area,
+        "lumen_volume_L": world.volume("lumen"),
+        "log_extent": prescribed_shell.log_extent(world),
+        "conductance_m3_per_s": conductance,
     }
 
 
@@ -416,6 +439,23 @@ def _population_record(run):
         "schedule_columns[c] (source:shear/<index> or source:transfer/<index>); shear_work_kT is "
         "the shears' total, and at every row the columns sum to it plus the transfers' work"
     )
+    if "replacements" in report:  # FR-20, when declared (replacement.py)
+        out["replacements"] = report["replacements"]
+        out["payers"] = (
+            "schedule_work_kT's column c is paid by the schedule whose declared index is "
+            "schedule_columns[c] (source:shear/<index>, source:transfer/<index> or "
+            "source:replacement/<index>); shear_work_kT is the shears' total, and at every row "
+            "the columns sum to it plus the transfers' and replacements' work"
+        )
+    if "withdrawals" in report:  # FR-35, when declared (withdrawal.py)
+        out["withdrawals"] = report["withdrawals"]
+        out["payers"] = (
+            "schedule_work_kT's column c is paid by the schedule whose declared index is "
+            "schedule_columns[c] (source:shear/<index>, source:transfer/<index>, "
+            "source:replacement/<index> or source:withdrawal/<index>); shear_work_kT is the "
+            "shears' total, and at every row the columns sum to it plus the transfers', "
+            "replacements' and withdrawals' work; a withdrawal's mixing heat is in the heat"
+        )
     return out
 
 
@@ -426,6 +466,8 @@ def _declared(run, name):
 
         if name == "row_kind":
             legend = {str(i): kind for i, kind in enumerate(population.ROW_KINDS)}
+            if "withdrawals" in run.population:  # FR-35: only when the world declares one
+                legend[str(population.WITHDRAWAL)] = population.WITHDRAWAL_KIND
             return {**table[name], "legend": legend}
         if name == "fission_outcome":
             legend = {str(i): o for i, o in enumerate(division.POPULATION_OUTCOMES)}
@@ -488,21 +530,61 @@ def population_tables(directory, run):
         for life in lives
         if life.end_reason == "lysed"
     ]  # fmt: skip
+    from cells.models.assembly_lineages_v2.replacement import POOL_REPLACEMENT
+    from cells.models.assembly_lineages_v2.withdrawal import POOL_WITHDRAWAL
+
+    by = {"shear": SHEAR_FISSION, "transfer": SERIAL_TRANSFER, "replacement": POOL_REPLACEMENT,
+          "withdrawal": POOL_WITHDRAWAL}  # fmt: skip
+    replacements = run.population.get("replacements", [])
+    withdrawals = run.population.get("withdrawals", [])  # FR-35, when declared
+    events += [
+        rel.Event(r["id"], r["time_s"], "replacement", POOL_REPLACEMENT, scheduled=True, step=-1,
+                  at=POOL, source=f"source:replacement/{r['schedule']}")
+        for r in replacements
+    ]  # fmt: skip
+    events += [
+        rel.Event(r["id"], r["time_s"], "withdrawal", POOL_WITHDRAWAL, scheduled=True, step=-1,
+                  at=POOL, source=f"source:withdrawal/{r['schedule']}")
+        for r in withdrawals
+    ]  # fmt: skip
     slots = run.population["slots"]
     nodes = [rel.Node(f"slot:{k}", "slot", SHARED_POOL) for k in range(slots)]
+    edges = []
+    if replacements or withdrawals:  # the pool as a node, what left it removed, what came supplied
+        sink_by = POOL_REPLACEMENT if replacements else POOL_WITHDRAWAL
+        nodes += [rel.Node(POOL, "node", SHARED_POOL), rel.Node(SINK, "sink", sink_by)]
+        species = {p.name: p.species for p in run.spec.model.world.places}
+        stops = [(r, "replacement", POOL_REPLACEMENT, r["removed"]) for r in replacements]
+        stops += [(r, "withdrawal", POOL_WITHDRAWAL, r["withdrawn"]) for r in withdrawals]
+        for r, kind, operator_id, removed in stops:
+            source = f"source:{kind}/{r['schedule']}"
+            moves = (("removes_to", removed, (POOL, SINK)),
+                     ("supplies", r["supplied"], (source, POOL)))  # fmt: skip
+            for relation, counts, ends in moves:
+                edges += [
+                    rel.Edge(relation, *ends, operator_id, event=r["id"],
+                             species=species[place], weight=float(count), mode="event")
+                    for place, count in sorted(counts.items())
+                    if count
+                ]  # fmt: skip
     sources, records = [], {}
     if run.population["schedule_columns"]:
         sources = [
             rel.Source(f"source:{s.kind}/{s.index}", "schedule",
-                       "energy" if s.kind == "shear" else "substrate",
-                       SHEAR_FISSION if s.kind == "shear" else SERIAL_TRANSFER,
+                       "energy" if s.kind == "shear" else "substrate", by[s.kind],
                        payer_of="schedule_work_kT")
             for s in run.spec.experiment.schedules
         ]  # fmt: skip
         records = rel.records_in(directory, [ARRAYS], {"schedule_work_kT": "cumulative"},
                                  times="row_time")  # fmt: skip
-    return {"lives": lives, "events": events, "nodes": nodes, "sources": sources,
-            "records": records}  # fmt: skip
+    out = {"lives": lives, "events": events, "nodes": nodes, "sources": sources,
+           "records": records}  # fmt: skip
+    if edges:
+        out["edges"] = edges
+    return out
+
+
+POOL = "node:pool"  # FR-20: the shared pool as a node of cells.relations@2
 
 
 SINK = "sink:discard"

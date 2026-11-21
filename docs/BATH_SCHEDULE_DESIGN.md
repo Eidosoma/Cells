@@ -269,10 +269,12 @@ uptake into a cell runs from a finite node beside the bath, not from the bath it
   and D152 now composes with this operator in either order.** Checked on main:
   `pump_composite.structure_errors` is empty for the pair in both orders, and the first delivery
   world binds with disjoint slots (`tests/unit/test_door_s.py`). Insertion@1 and the closers stay
-  refused, as below. `site_occupancy@1` (FR-3) beside this operator is refused, since it reads the
-  field as declared. The operator's module docstring still calls D152 refused; that text is stale
-  and is corrected in a later `src` edit, after move 2 (the lead's ruling). The paragraphs below
-  record the analysis as written before door S.
+  refused, as below. `site_occupancy@1` (FR-3) composes with this operator too since FR-23 (20
+  November 2026, D244): its anchor reads are scoped to the finite nodes its populations face, and a
+  scheduled composition may not set a site ligand below its trace (`site_occupancy.py`,
+  `check_schedule_traces`). The operator's module docstring still calls D152 refused; that text is
+  stale and is corrected in a later `src` edit, after move 2 (the lead's ruling). The paragraphs
+  below record the analysis as written before door S.
 - **D152: refused, but the conflict is nominal** (read, not run). Everywhere D152 reads the field it
   masks held baths: `node_amounts` and `reactions_domain_valid` read finite nodes only
   (`outside_active & ~reservoir`, `species_reactions.py`), and D152 refuses held-bath sites. Its
@@ -300,7 +302,7 @@ uptake into a cell runs from a finite node beside the bath, not from the bath it
   refuses;
 - a net-charged formula unit (§2.5);
 - insertion@1, the closers and the lumens; D152 only before door S (it composes since door S
-  landed: see above); `site_occupancy@1`, which reads the field as declared;
+  landed: see above); `site_occupancy@1` only before FR-23 (it composes since then: see above);
 - water@1 with an anisosmotic step;
 - the stationary analysis.
 

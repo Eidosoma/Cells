@@ -1,6 +1,7 @@
 """Check voltage-clamped gate kinetics and tracer transfer after a timed junction block."""
 
 import json
+import math
 from pathlib import Path
 
 import jax
@@ -47,6 +48,28 @@ def clamped():
         max_gate_error=float(np.max(abs(actual - expected))),
         max_three_sample_residual=float(np.max(abs(residual))),
         tau_at_minus_100_mV_ms=float(1000 / rates.relaxation_per_s[voltages == -0.1].item()),
+        polarity=polarity_comparison(voltages, target),
+    )
+
+
+def polarity_comparison(voltages_V, targets):
+    data = json.loads((Path(__file__).with_name("data") / "revilla1999_cx43.json").read_text())
+    voltage_mV = data["comparison_abs_voltage_mV"]
+    fitted = {}
+    for polarity in ("negative", "positive"):
+        branch = data[polarity]
+        exponent = branch["slope_per_mV"] * (voltage_mV - branch["abs_midpoint_mV"])
+        span = branch["maximum"] - branch["minimum"]
+        fitted[polarity] = branch["minimum"] + span / (1 + math.exp(exponent))
+    negative = targets[voltages_V == -voltage_mV / 1000].item()
+    positive = targets[voltages_V == voltage_mV / 1000].item()
+    assert negative == positive
+    assert fitted["negative"] > fitted["positive"]  # Ordering in the wild-type panel, Fig. 3C.
+    return dict(
+        abs_voltage_mV=voltage_mV,
+        fitted_normalized_conductance=fitted,
+        min_max_error_against_fits=(fitted["negative"] - fitted["positive"]) / 2,
+        engine_intrinsic_targets=dict(negative=negative, positive=positive),
     )
 
 

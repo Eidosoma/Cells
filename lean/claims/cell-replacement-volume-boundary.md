@@ -2,7 +2,7 @@
 
 # Centering a strictly interior replacement volume preserves its water-domain membership in exact arithmetic
 
-For any declared target strictly between the water bounds, subtracting and adding the same reference volume recovers that target. The float64 implementation can refuse a strictly interior declaration when the reconstructed value lands on the excluded lower bound.
+For any declared target strictly between the water bounds, subtracting and adding the same reference volume recovers that target. The numerical comparison tests how v2 binds a target whose float64 offset would reconstruct at the excluded lower bound.
 
 ## Assumptions
 
@@ -21,7 +21,15 @@ Uses [Replacement over water accounts for incoming volume and composition-depend
 
 ## Numerical comparison
 
-**Failed.** At reference 0.7505222518670602 pL the target 0.18763056296676509 pL reconstructs as the strict lower bound 0.18763056296676506 pL. Definition checking refuses the first interior float. The second interior float is admitted, as is the original target if only the lower bound is relaxed by one float.
+**Checked.** The repaired v2 definition admitted 0.18763056296676509 pL, the first float above the strict lower bound of 0.18763056296676506 pL. It also admitted the second interior float and refused the bound itself. The binding regression verified that the adjusted offset reconstructs strictly inside. The earlier comparison records the original refusal.
+
+**Engine** `resolved_pump_composite@1`
+
+**Operators** `cells.scheduled_cell_replacement@2`, `cells.ideal_osmosis_linear_compliance_water@1`
+
+[Template volume placed inside the water bounds](https://github.com/Eidosoma/Cells/blob/dd085e36e9ced2edfed88c7194e970bd335f3ad0/src/cells/operators/cell_replacement_v2.py#L205) · [Stored volume and refusal of the uncorrected offset](https://github.com/Eidosoma/Cells/blob/dd085e36e9ced2edfed88c7194e970bd335f3ad0/tests/unit/test_cell_replacement_v2.py#L357) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/8f269af4c8b79150020b47a86dd71da848d91714/lean/checks/cell_replacement.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/8f269af4c8b79150020b47a86dd71da848d91714/lean/PROGRESS.md#claim-source-review)
+
+[Tested engine dd085e36e9ce](https://github.com/Eidosoma/Cells/commit/dd085e36e9ced2edfed88c7194e970bd335f3ad0) · [Evidence checkpoint 8f269af4c8b7](https://github.com/Eidosoma/Cells/commit/8f269af4c8b79150020b47a86dd71da848d91714)
 
 **Engine** `resolved_pump_composite@1`
 
@@ -33,7 +41,7 @@ Uses [Replacement over water accounts for incoming volume and composition-depend
 
 ## Biological evidence
 
-**Open.** Cell volume and measurement uncertainty near a physiologically justified lower bound. The recorded refusal concerns numerical admission.
+**Open.** Cell volume and measurement uncertainty near a physiologically justified lower bound. The boundary replay tests numerical admission.
 
 **Unit** pL
 

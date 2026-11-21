@@ -1,0 +1,12 @@
+{
+  "source": "https://cds.ismrm.org/ismrm-1998/PDF6/p1693.pdf",
+  "locator": "Ward et al., ISMRM 1998, p. 1693, Fig. 1. Isolated square above the fit near ratio 4.2 and rightmost square near 8.7.",
+  "ATP_mM": 3, "temperature_C": 37, "pH": 7.2, "ionic_strength_M": 0.15,
+  "solution": "MOPS/KCl. Each Mg level was divided into aliquots for free Mg by Mag-fura-2 fluorescence and aggregate ATP Mg occupancy by calibrated phosphorus NMR.",
+  "figure_1_markers": [
+    {"free_Mg_uM": 130, "bound_to_unbound": 4.2},
+    {"free_Mg_uM": 230, "bound_to_unbound": 8.7}
+  ],
+  "reading_precision": {"free_Mg_uM": 5, "bound_to_unbound": 0.1},
+  "limits": "Approximate graph readings across distinct samples using the same formulation. Seven experiments at five levels are pooled. Per-marker run identity, sampling uncertainty and measured total Mg are unavailable. No fitted affinity enters this comparison."
+}

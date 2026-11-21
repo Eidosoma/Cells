@@ -19,6 +19,10 @@ whole organs and interacting organ systems. A
 it models and replays of saved runs. [Progress](PROGRESS.md) holds the detailed
 current status and evidence.
 
+[**Open the 3D visualizer at cells.eidosoma.ai**](https://cells.eidosoma.ai/)
+
+[![The Scope view shows a cutaway cell with a purple nucleus, pink Golgi apparatus and orange mitochondria. The scale selector is set to One cell.](visualizer/docs/screenshots/cells-eidosoma-scope.webp)](https://cells.eidosoma.ai/)
+
 ![A cutaway animal cell maps its membrane to bioelectricity, cytoplasm to chemistry and transport, ER to calcium signalling, Golgi apparatus to protein modification, sorting and packaging, mitochondria to organelle physiology, regulatory machinery to regulatory cell state, protein complexes to molecular assembly, ATP and volume to fuel and water, and cell contacts to tissue communication.](docs/assets/cells-biology-map.png)
 
 This schematic links cell structures and biological processes;
