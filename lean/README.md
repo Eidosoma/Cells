@@ -6,7 +6,7 @@ Browse Cells engine laws by scientific topic. Each claim links its Lean proofs, 
 
 <!-- generated: claims-index -->
 
-Direct Lean claims cover [50 of 50 laws](COVERAGE.md#registered-laws) and [29 of 30 operators](COVERAGE.md#registered-operators).
+Direct Lean claims cover [50 of 50 laws](COVERAGE.md#registered-laws) and [30 of 30 operators](COVERAGE.md#registered-operators).
 
 | Category | Registered laws with proof | Claims with proof | Numerical checks | Claims with biological evidence |
 | --- | ---: | ---: | --- | ---: |
@@ -14,7 +14,7 @@ Direct Lean claims cover [50 of 50 laws](COVERAGE.md#registered-laws) and [29 of
 | [Ion channels and junctions](COVERAGE.md#category-channels-and-junctions) | 15 of 15 | 15 of 15 | 15 checked | 14 |
 | [Pumps and cotransport](COVERAGE.md#category-pumps-and-cotransport) | 13 of 13 | 8 of 8 | 8 checked | 8 |
 | [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 3 of 3 | 13 of 13 | 12 checked · 1 failed | 10 |
-| [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 13 of 13 | 19 of 19 | 18 checked · 1 failed | 15 |
+| [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 13 of 13 | 20 of 20 | 19 checked · 1 failed | 16 |
 | [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 1 of 1 | 20 of 20 | 19 checked · 1 failed | 14 |
 | [Cell physiology](COVERAGE.md#category-cell-physiology) | — | 3 of 3 | 3 checked | 3 |
 
@@ -35,6 +35,8 @@ The biological review identifies three engine opportunities with measured target
 The Cx43 polarity measurements bound the error of the registered single-gate law. The registered two-gate law satisfies the predicted amplitude relation on synthetic clamps and runs in the tissue host under its development flag. Resolving the mixed amplitude in a measured Cx43 trace remains open. [Measurements](PROGRESS.md#cx43-series-gates) · [Compiled comparison and host replay](PROGRESS.md#nov21-registered-series-and-withdrawal)
 
 A serial dilution experiment follows free fluorescein through three successive exchanges. The catalog gives the measured concentrations alongside the ideal series, including the discrepancy at the third 80% wash. [Measured dilution and its scope](PROGRESS.md#nov21-wash)
+
+For partial pool withdrawal, one passive splitter collected 45.0% of the beads in a nominal one-third branch. Another retained 28.2% at a measured liquid fraction of about 27.2%. [Count proof and both experiments](claims/pool-withdrawal.md) · [Biological disagreements for Cells](PROGRESS.md#nov21-biological-disagreements)
 
 For finite-pool washes, tracer measurements distinguish what leaves the exterior, what survives inside a vesicle, and what can later enter another membrane. [Washout and redistribution measurements](claims/pool-replacement.md#biological-evidence)
 
@@ -271,6 +273,12 @@ For scheduled pool replacement, replay both sides of the pulse and wash, includi
 ```bash
 "$cells_python" -B checks/pool_replacement.py --case pulse
 "$cells_python" -B checks/pool_replacement.py --case capacity
+```
+
+For partial withdrawal, replay the host balance, finite-word edge cases, sample moments and measured bead fractions. To verify all 180 plotted counts, export page 3 of the cited vector PDF with `pdftocairo -svg -f 3 -l 3 paper.pdf fig2.svg` and add `--figure-svg fig2.svg`. [Input data and source](checks/data/pool_withdrawal_measurements.json)
+
+```bash
+"$cells_python" -B checks/pool_withdrawal.py
 ```
 
 For vesicle exchange, compare lipid insertion and neutral solute permeation against their rate equations and measured washout and swelling. The shared-pool controls follow one lipid and one solute between two vesicles. The one-event fixed-volume case now returns the declared-lumen records. [Measurements and engine results](PROGRESS.md#vesicle-permeation) · [Shared-pool counts](PROGRESS.md#shared-pool-inventory) · [Earlier reporting failure](PROGRESS.md#shared-pool-declared-volume) · [Repair and retest](PROGRESS.md#claim-source-review)
