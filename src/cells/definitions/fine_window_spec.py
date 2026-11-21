@@ -16,14 +16,14 @@ is required:
 
 The clock keeps every coarse point and adds the m - 1 fine points (m i + r) x h inside each coarse
 step of a window (cells.execution.grid). Events stay compulsory boundaries: schedule changes,
-doses and writes, operators' schedules included; one within rounding of a fine point it does not
-equal is refused, naming the point to declare. Read a window's rows off the clock, EventGrid(spec),
-which does not depend on observation_times. Each step is taken at its own size: the rollout reads
-it from the clock, and the step-doubled energy check (execution.energy_check), which composes with
-the block and is not required by it, doubles each step at its own size. A checkpoint at any
-boundary restarts on the same clock (§4.4). The block is execution, not physics: the model,
-experiment and the other execution fields are parsed by the model's own parser, unchanged, as for
-execution.projective and execution.energy_check.
+doses and writes, operators' schedules included; one within rounding of a point of the clock it
+does not equal, fine or coarse, is refused, naming the point to declare. Read a window's rows off
+the clock, EventGrid(spec), which does not depend on observation_times. Each step is taken at its
+own size: the rollout reads it from the clock, and the step-doubled energy check
+(execution.energy_check), which composes with the block and is not required by it, doubles each
+step at its own size. A checkpoint at any boundary restarts on the same clock (§4.4). The block is
+execution, not physics: the model, experiment and the other execution fields are parsed by the
+model's own parser, unchanged, as for execution.projective and execution.energy_check.
 
 Refused, fail-closed:
 - a model other than ADMITTED_MODELS: the older families read execution.dt in their dynamics, and
@@ -122,7 +122,7 @@ def admit(spec):
 def parse(data, spec):
     """The fine_windows block of an already parsed definition: its fields, its admission and its
     clock (cells.execution.grid.EventGrid refuses windows off the coarse grid, a fine dt that does
-    not divide execution.dt, an event within rounding of a fine point and a clock above
+    not divide execution.dt, an event within rounding of a clock point and a clock above
     max_steps)."""
     _fields(data, set(FIELDS), "execution.fine_windows")
     if data["method"] != METHOD_ID:
