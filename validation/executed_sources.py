@@ -7,13 +7,31 @@ from a checkout, not from a frozen snapshot, names its revision and its dirty di
 A run that executed one would then name a revision that lacks it, with an empty patch. This module
 finds those files and gives a driver two remedies:
 - record them, as validation/betse/betse_reference_run.py does: each one's full content, as a diff
-  from /dev/null, joined to the tracked diff (checkout());
+  from /dev/null, joined to the tracked diff (checkout()). Git's status omits an ignored file, so
+  checkout() adds Git's own `!!` line for each ignored one the run loaded: a dirty flag read from
+  the status is then true wherever content is recorded (the checker's finding, D259);
 - refuse the run while there are any (refuse_untracked()), for a driver whose record holds no diff.
 
 **Executed sources** are the files under the checkout that the running process has loaded: every
 imported module's file, the script it runs among them. pytest's collected test files (test_*.py
-under tests/, and conftest.py) are the harness, not a driver's source, so they are left out. A data
-file that a driver reads is not an executed source here.
+under tests/, and conftest.py) are the harness, not a driver's source, so they are left out.
+
+**Its limits.** It reads, at one moment, the modules loaded so far against Git's index, so it does
+not see:
+- a data file that a run reads rather than imports;
+- code run without a lasting sys.modules entry (runpy.run_path, exec);
+- a file named as pytest's (test_*.py under tests/, conftest.py), left out by its name even where a
+  driver, not pytest, loads it;
+- a source outside the work tree, such as a driver kept under /mnt/workspaces;
+- an untracked file the run never loads, which is in the status only (it did not run);
+- three races between a record and a later load, for a driver that records at its start, loads
+  more on its way and rechecks untracked() at its end: a tracked module edited after the record
+  and first loaded after it; an untracked file that someone stages after the record and the run
+  then loads (whether a file is tracked is read from the index, not from the recorded revision);
+  and one committed after the record and then loaded (the recorded revision lacks it).
+A frozen execution snapshot (validation/source_snapshot.py) is the remedy for all of them: a run
+from one loads and reads the snapshot's files, fixed before it starts, with its drivers kept in the
+checkout and so in the snapshot (AGENTS.md).
 
 **Not a checkout.** A frozen execution snapshot (SNAPSHOT.json at its root,
 validation/source_snapshot.py) holds a copy of every source it ran, so it has none to report. A
@@ -101,10 +119,22 @@ def untracked_diff(root, paths):
     )
 
 
+def _ignored(top, paths):
+    """Git's own `!! path` status line for each of `paths` that it ignores (its status omits them;
+    an ignored folder holding a nested repository shows as the folder), so that the status is not
+    empty where checkout() records their content."""
+    if not paths:
+        return ""
+    shown = _git(top, "--literal-pathspecs", "status", "--porcelain=v1", "--untracked-files=all",
+                 "--ignored", "--", *paths).stdout.decode("utf-8", "surrogateescape")  # fmt: skip
+    return "".join(f"{line}\n" for line in shown.splitlines() if line.startswith("!! "))
+
+
 def checkout(root):
     """{status, diff, untracked_executed} of a run from `root`'s checkout: the porcelain status with
-    every untracked file, `git diff --binary HEAD` joined to the untracked executed sources' full
-    contents, and their paths (betse_reference_run.py's form). Empty outside a work tree."""
+    every untracked file and Git's `!!` line for each ignored executed source (_ignored), `git diff
+    --binary HEAD` joined to the untracked executed sources' full contents, and their paths
+    (betse_reference_run.py's form). Empty outside a work tree."""
     top = _toplevel(root)
     if top is None:
         return dict(status="", diff="", untracked_executed=[])
@@ -112,7 +142,7 @@ def checkout(root):
     tracked = _git(top, "diff", "--binary", "--no-ext-diff", "HEAD").stdout
     paths = untracked(top)
     return dict(
-        status=status.decode("utf-8", "surrogateescape"),
+        status=status.decode("utf-8", "surrogateescape") + _ignored(top, paths),
         diff=tracked.decode("utf-8", "surrogateescape") + untracked_diff(top, paths),
         untracked_executed=paths,
     )
