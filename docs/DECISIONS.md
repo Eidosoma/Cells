@@ -8725,3 +8725,57 @@ disagree with measurements (relayed by the user: "from lean get that to the righ
   worktree with uncommitted changes (core-pass-at3-fr34), worktrees in evidence folders, and two
   whose removal git refused.
 
+## D273: The user's delegation of three decisions, and the hold on the paused lanes
+
+2026-11-21, about 22:14 UTC. The user: "You and adviser decide on 1. - 3. I can help with
+downloading papers etc add to this vm - 4. all on hold for now until we have less FR and core
+work". Decided by the lead with the advisor.
+1. **The floating-junction order fix (A) will be built,** as the next engine item, landing alone.
+   It is a defect in the default integrator and in N2, not a missing feature, and it will never be
+   cheaper than now: one registered world moves, by 2.6e-11 in a gate, with transfer and heat
+   bitwise.
+   - It is recorded as a D148 exception under the user's delegation.
+   - Three facts gate the go:
+     - the fixture tier differences, which may move values only where a junction crosses a
+       floating component;
+     - whether "never conducts" is static in replacement_padded;
+     - the topology scan of FR-30's development host worlds and FR-15's planned junction hosting.
+       If either has a conducting crossing junction, (A) lands before that FR is judged.
+   - The @3 owner prices it. Above about two days, the fallback is a parse-time refusal of
+     conducting crossing junctions.
+   - Its landing stops unless all of these hold:
+     - crossrev differs only for replacement_padded;
+     - G1 moves only that world, with transfer and heat bitwise;
+     - H2-N2C's arm reruns bitwise against its frozen rows;
+     - the new baseline matches the old by digest for every other world.
+   - The second builder reproduces the orders at base and head.
+2. **FR-25's follow-up 3, age- and region-selective loss, is not now.** It lies outside FR-25's
+   request, and the cohort design builds it when a study needs it. It is FR-36, which reopens on a
+   requester's readout needing age-dependent loss.
+   - **FR-33's two-way tracing is approved: D1, label families in the species registry, with the
+     label-row route** (the kinds owner, 1.5 to 2 agent-days, after the binding guard). FR-33's
+     request is labelled protein moving between synapses, which is two-way transport. No
+     host-side patch can trace that through diffusion, while the engine's own linear laws trace it
+     exactly on checked label rows. Every world stays bitwise. No more host-side tracer patching.
+3. **Papers.** The user downloads them into /mnt/datasets/Cells/papers/incoming/<paper>/, outside
+   the checkout. They are never committed; non-CC sources give bare cited numbers only (D227).
+   - First: Lin, Crye and Veenstra 2003 (Circ Res, doi:10.1161/01.RES.0000093379.61888.35), for
+     FR-30's voltage series; and Maverick and Tamkun 2022 (Biophys J 121:755,
+     doi:10.1016/j.bpj.2022.01.021, PMC8943702), with its Supporting Material, for FR-7.
+   - Fallbacks: Desplantez et al. 2004 (Pflugers Arch, doi:10.1007/s00424-004-1250-0), Snipas et
+     al. 2020 (Biophys J, PMC7642245, with Supporting Material) and Moreno et al. 2002 (Circ Res,
+     doi:10.1161/hh0402.105667).
+   - Each benchmark is registered before anyone opens its paper, as FR-29's was: a held-out split
+     within the one paper (labs cannot be pooled), the judged observables and the pass rule, tagged.
+     One agent extracts, another fits without the held-out file, and a checker scores. Anything
+     already read is disclosed.
+   - **A correction to D268:** FR-7 item 4 is not closed. D268 named its reopening condition,
+     surface abundance and current measured in the same single-variant cells, and Maverick and
+     Tamkun 2022 meets it (TIRF channel counts, gating charge and conductance in the same HEK
+     cells), as the 14:27 search had logged. Item 4 waits on that paper; its test is registered
+     first, disclosing that the headline result was already read.
+4. **On hold:** origin of life, gene regulation's own lane work and mitochondria stay paused until
+   FR and core work lessen (the user). PROGRESS carries a count of the open FR and core items, so
+   that "less" is visible.
+- Also landed this evening: C's near-event refusal for windowed clocks (c65dbfa5).
+
