@@ -18,9 +18,17 @@ included), and for each of S and P the balance of the design's §4.8 holds:
 
 Planted: the balance without W's departed term misses from the event row on by the bound amount
 that left with the occupant.
+
+The event row's observation (D264 finding 2, a tester's report). The row at t_e is the state the
+step ending there left, before the event: the departing occupant's. Its exported reaction rate is
+the departing occupant's, k S x 1, not the founder's S times the newcomer's 0.25 (0.00048 fmol/s,
+where the departing rate is 0.00192 and the incoming 0.00050). The next row's is the incoming
+occupant's, k S x 0.25 (pump_composite's observe_history: an occupant event's row observes with
+the controls held over the step that ended there).
 """
 
 import numpy as np
+import pytest
 
 from cells.definitions.specs import parse_spec
 from cells.execution.runner import run
@@ -119,3 +127,9 @@ def test_occupied_sites_and_an_active_reaction_cross_one_replacement():
     capacity = np.asarray(p.site_capacity_fmol)
     theta = bound / capacity
     assert abs(theta[k, 0] - 0.5) < 0.05 and abs(theta[k + 1, 0] - 0.1) < 0.05  # Reset at t_e.
+    # The event row reports the departing occupant, the next row the incoming one (D264).
+    j = int(np.flatnonzero(np.asarray(spec.experiment.observation_times, dtype=float) == T_E)[0])
+    rate = np.asarray(result.observations.reaction_rate_fmol_per_s)[:, 0]
+    cell_s = np.asarray(p.amount_reference)[s, 1] + np.asarray(h.amount_increment)[:, s, 1]
+    assert rate[j] == pytest.approx(2.0 * 1.0 * cell_s[k], rel=1e-14)
+    assert rate[j + 1] == pytest.approx(2.0 * 0.25 * cell_s[k + 1], rel=1e-14)
