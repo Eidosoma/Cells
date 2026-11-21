@@ -1,6 +1,8 @@
 # An optional proton-return mode for ATP-driven proton pumps (FR-29): design note
 
-**Status: proposed, 20 November 2026, by the kinds owner, for the lead.** Desk work only (D142).
+**Status: proposed, 20 November 2026, by the kinds owner, for the lead; the build is held for the
+user (D258). Evaluated at the desk against Fig. 3's curves on 20–21 November 2026: §8.** Desk work
+only (D142).
 This note covers the evidence, the design, the bitwise argument, the worlds affected, the held-out
 test, the competing explanation, the files, the tests and a price. Nothing is built and nothing ran
 on the engine. Branch `core-pass-kinds-16` from main 9b214dd8, where the code was read.
@@ -32,7 +34,7 @@ FR-4's development world reduced to a cytosol, a vacuole lumen and the patch bet
 | **Engine changes** | `forms.py`: optional modes, mode parameters, a per-mode rate on factored modes with a bounded voltage term, and a negative Hill number for an emptying site. `transporter.py`: the population key `optional_modes`, layouts from each population's own modes, the per-mode rate in S and its voltage slope, its supremum in the definition-time bounds, and a per-mode heat record where an optional mode is declared |
 | **Bitwise** | Every existing world, including FR-4 and FR-5 on version 1's kernel. No world declares the mode, so layouts and programs are unchanged (§2.5) |
 | **Held-out test** | Fit the return's ratio and site pK on rows 3 and 5 (lumen pH 4.1 and 6.0). Predict rows 1, 4 and 6, each within 2 SE, and check the three bounds. Only row 4 and the bounds remain truly held out: the form's cytosolic factor and the voltage exponent's range were chosen after the desk saw rows 1 and 6 (§1.3) |
-| **Desk outlook (D)** | The first prediction (a return loaded from the lumen only) missed rows 1 and 6 and two bounds. The revised one-site form predicts rows 1 and 4 within 2 SE at every voltage exponent tried. Row 6 passes only at an exponent of 1 with the voltage term bounded (−57.2 at ψ_s = −100 mV), a post hoc choice. The lumen-pH-3.1 bound (> +40 mV) fails throughout (0 to 6 mV). The return mode alone does not explain that row |
+| **Desk outlook (D)** | The first prediction (a return loaded from the lumen only) missed rows 1 and 6 and two bounds. The revised one-site form predicts rows 1 and 4 within 2 SE at every voltage exponent tried. Row 6 passes only at an exponent of 1 with the voltage term bounded (−57.2 at ψ_s = −100 mV), a post hoc choice. The lumen-pH-3.1 bound (> +40 mV) fails throughout (0 to 6 mV). The return mode alone does not explain that row. Superseded by Fig. 3's curves: §8 |
 | **Separating measurement** | ATP hydrolysis where the ATP-dependent current reverses. The return mode predicts 95–100% of the pump mode's saturated rate there. Variable tight coupling predicts zero |
 | **Price** | 4–5 agent-days, gates excluded |
 
@@ -364,6 +366,7 @@ net current is inward at 1.3 to 9.4 times the pump mode's outward ceiling, from 
     bounds of rows 2 and 7. It is never rescored or replaced.
   - **The engine's registered model:** n = 2 and the pump mode as today, with the §2.6 values,
     and the one-site return of §2.1. It was revised after the first prediction.
+  - **Ruled (D258): δ_r and ψ_s are fitted on Fig. 3's rows 3 and 5 curves; §8 has the result.**
   - **δ_r and ψ_s are not registered by this note.** δ_r = ½ is the only a-priori value, a
     symmetric barrier. δ_r = 1 is the desk's best for row 6, and is post hoc. Ruling 1 chooses:
     - δ_r and ψ_s from Fig. 3's curves at rows 3 and 5's conditions, digitized and registered
@@ -464,3 +467,109 @@ That is **4–5 agent-days,** gates excluded. Digitizing Fig. 3, if ruled (§7, 
    (§4).
 5. **Variable coupling:** whether it is built later as the competing hypothesis's own law (§5), or
    left as the recorded alternative until the separating measurement exists.
+
+## 8. The desk evaluation against Fig. 3 (D258, 20–21 November 2026)
+
+This section reports what the lead's desk evaluation established on the curves. It is a closed-form
+computation, not the engine, run on the FR-7 lane's reading of Fig. 3
+(`validation/vacuole/kettner2003_fig3_readings.csv`).
+- **Records:** frozen as evidence in `/mnt/workspaces/Cells/core-pass-kinds-20261118/fr29/evidence/`
+  (README and SHA256SUMS). The lead ruled them out of `validation/`, since a closed-form return mode
+  is physics the engine lacks. They were registered in git on branch core-pass-kinds-18:
+  - the prediction, `fr29_desk_prediction.json`, at 4531d06d (tagged
+    `fr29-prediction-registered-2026-11-20`);
+  - the score, `fr29_desk_score.json`, at de8cfe16;
+  - the joint fits, `fr29_desk_variants.json`, made by e91541b3's code.
+
+  Each is beside the script at its revision.
+- **Rulings applied:** δ_r and ψ_s were fitted on Fig. 3 (ruling 1), and the ATP-free baseline is
+  read as zero (ruling 4).
+
+**The registered prediction.**
+- **The fit:** δ_r, ψ_s, ρ, the site pK and one current scale, on panel B's vacuolar pH 6.0 and 4.1
+  curves below −5 mV, 28 rows.
+- **Committed before panel A was read:** 4531d06d at 23:26 UTC; the score is de8cfe16, at 23:27.
+- **The family fails its own training curves:**
+  - δ_r comes out at 1.0, the family's bound;
+  - the in-sample RMS is 3.1 mA m⁻²;
+  - the pH 4.1 curve's fitted reversal is −16.1 mV against −23.2 read.
+
+  That is a failure of the family, not of the data. At −75 mV the pump mode's mass-action backward
+  branch falls 9 mA m⁻² below the reading (−46.5 against −37.5).
+- **Panel A, scored by the record's own rules:**
+
+  | Curve | Shape | Reversal |
+  | --- | --- | --- |
+  | 5.0/5.0 | passes | no crossing, met |
+  | 6.0/5.0 | passes | +4.5 mV off, passes |
+  | 7.5/5.0 | fails (RMS 7.1 against 6.1) | +12.1 mV off, fails |
+  | 8.5/5.0 | fails | −1.6 mV off, passes |
+
+  Of the bounds, pH 3.1 fails (+3.5 mV predicted) and both zero-gradient bounds are met.
+- **Seen before:**
+  - Panel A's reversals shaped the family, so its reversal scores are in sample in that sense.
+  - Its curve shapes were not seen, apart from the facts the reading's README states: the meeting
+    points, the values near +60 mV, 12.2 mA m⁻² at 0 mV for 7.5/5.0, and the zero-gradient curves'
+    lowest readings. One reversal slope was also seen.
+- **The comparator:** reversals are scored against the curves' read crossings. Table 2's means
+  stand beside them, 2.0 to 4.7 mV more negative.
+
+**The joint question: can any member fit the curves and the pH 3.1 bound together?** No, and
+neither can any of three minimal changes.
+- **The fits:** all 122 reliable rows at once. That is panel A from −75 to +20 mV without its
+  ambiguous rows, and panel B below −5 mV, with the −80 mV ends left out.
+- **Each model** is fitted from the same 24 starts, free and then with the bound imposed (the
+  current at +40 mV at pH 3.1 held at or below 0).
+- **The run:** e91541b3's code; the record is the evidence folder's `fr29_desk_variants.json`.
+- **Scoring:** each fit's seven reversals are scored against the curves' read crossings, within
+  2 Table 2 SE (±2 mV for 7.5/4.1, ±6 for 6.0/5.0). The two zero-gradient curves must not cross
+  above −80 mV.
+
+| Model | Free: RMS (mA m⁻²) | Free: reversals passed | Free: pH 3.1 crossing (mV) | Bound imposed: RMS | Bound imposed: reversals passed |
+| --- | --- | --- | --- | --- | --- |
+| The family | 4.3 | 5 of 7 | +2.2 | 7.5 | 2 of 7 |
+| A second site | 3.4 | 6 of 7 | +2.1 | 4.5 | 4 of 7 |
+| A pump voltage law (the pump mode's own bounded term) | 3.5 | 7 of 7 | +0.9 | 7.0 | 4 of 7 |
+| Variable coupling (n levelling off with ΔpH, the pump's voltage law, no return) | 7.7 | 4 of 7 | +34.8 | 7.8 | 4 of 7 |
+
+- **The bound is never quite met.** Each bound-imposed fit reaches only its edge, crossing at +39.7
+  to +39.9 mV.
+- **The family free:**
+  - It misses 6.0/5.0 at −70.7 mV against −55.1 read.
+  - It misses 7.5/4.1 at −20.9 against −23.2. That is the in-sample failure again.
+- **The family with the bound:** its 7.5/5.0, 8.5/5.0 and 7.5/4.1 reversals move to +29 to +36 mV,
+  against −16 to −31 read.
+- **A second site:** its RMS of 4.5 with the bound hides three failures:
+  - 6.0/5.0 lands at −177 mV against −55;
+  - the zero-gradient 7.5/7.5 curve crosses at −75 mV, breaking its bound;
+  - 7.5/4.1 lands at −13.6 against −23.2.
+
+  So it does not fit both. The earlier version of this section said it did, from RMS alone, and
+  was wrong.
+- **A pump voltage law fits the curves best of all.** All seven reversals pass, the in-sample
+  7.5/4.1 miss among them (−21.4 against −23.2). Yet it puts pH 3.1 at +0.9 mV.
+- **Variable coupling** draws the curves worse, but it puts pH 3.1 nearest the bound when free
+  (+34.8 mV).
+
+**What this means.** The curves and the bound pull apart:
+- every model that draws Fig. 3's curves puts the pH 3.1 reversal near 0 mV;
+- every model held to the bound loses three to five of the seven reversals.
+
+No minimal change to the return mode reconciles them. That would need one of two things:
+- **The pH 3.1 condition is not the same system** as Fig. 3's. The bound comes from Fig. 2's
+  recordings, not Fig. 3's protocol.
+- **Something changes steeply below vacuolar pH 4,** in the pump rather than the return. Examples
+  are a coupling ratio that rises again (the authors' own linear fit, n = 4.9 − 0.69 ΔpH, gives
+  1.86 at ΔpH 4.4, where the bound needs more than 2.41), or a change in the enzyme at that pH.
+
+A difference current read at vacuolar pH 3.1 to 3.5 under Fig. 3's protocol would decide between
+them.
+
+**What the curves say about the return mode, in two lines:**
+1. A return through the energized pump flattens the reversal's pH dependence as measured. The
+   family fitted on panel B moves the reversal 17.1 mV from vacuolar pH 6.0 to 4.1 (−33.2 to
+   −16.1), against 12.6 read and 112.5 for tight coupling. With a voltage law on the pump mode as
+   well, it draws all seven curves within tolerance.
+2. No form tested fits those curves and the pH 3.1 bound together, so the bound is either a
+   different system or a change below vacuolar pH 4 that a return mode does not supply. A curve
+   at vacuolar pH 3.1 to 3.5 should come before any build.
