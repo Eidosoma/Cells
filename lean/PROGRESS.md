@@ -1,5 +1,13 @@
 # Cells proof comparisons
 
+<a id="kv15-channel-density"></a>
+
+## 21 November 2026 · Kv1.5 availability at an intermediate density
+
+In tagged Kv1.5 expressed in HEK293 cells, the conducting fraction read from Figure 8C is about 0.34, 0.23 and 0.18 at 115, 300 and 425 voltage-sensing channels/µm². The two endpoints determine a one-site inhibition curve `A K / (K + density)` with a maximum of 0.507 and a half-saturation density of 234 channels/µm². The middle point was excluded from calibration. The curve predicts 0.222 there. Holding the low-density fraction constant predicts 0.34. The middle fraction is a three-cell moving average from the same figure. The authors give no pointwise errors, and gating count enters the two axes in opposite directions. At comparable densities, two Kv1.4 markers give about 0.64 and 0.73. These measurements leave the mechanism and its transfer to other channels open. [Published figure, p. 766](https://ars.els-cdn.com/content/image/1-s2.0-S0006349522000716-mmc3.pdf#page=12) · [Measurements and reading convention](checks/data/maverick2022_kv_density.json)
+
+The existing composite reproduced 0.222 on a separate reporter through its population-density route, with Hill exponent one, basal zero and the fitted schedule. The parser enforces D218 when the source and target are the same channel population. For Kv1.5 itself, three synthetic patches of 100, 160 and 240 µm² ran through the FR-34 clamp at −120 and +60 mV. After division by channel count, fixed availability gave ratios of one. Supplying the three measured fractions gave ratios of 1, 0.6765 and 0.5294 on NumPy and compiled JAX CPU. Lean proves this cancellation for unequal patch areas given shared gates, permeability, concentrations, voltage and reference density, with a nonzero reference current. The optional grn-lean check gives the affine reciprocal used for the intermediate prediction. [Count-normalized current](CellsProofs/Transport/IonChannels.lean#L266) · [Upstream Hill specialization](checks/hill/Response.lean#L60) · [Comparison driver](checks/channel_density.py) · [D218 self-source rule](https://github.com/Eidosoma/Cells/blob/1b8017d13755bed2ee9be09375c998e364a4ca62/src/cells/operators/species_regulated_availability.py#L598-L607)
+
 <a id="fr34-clamped-current"></a>
 
 ## 21 November 2026 · What an instantaneous channel current identifies

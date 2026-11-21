@@ -260,6 +260,39 @@ theorem same_clamped_curve_iff (law : Law) (voltages : Set ℝ) (q m h scale vf 
   · intro heq v _
     simp only [clamped_current_factors, heq]
 
+/-- Divide the current by the independently counted channels on a patch.
+Here `scale` is the constant-field scale per unit area and `density / reference`
+is the dimensionless abundance supplied to the host. -/
+theorem clamped_current_per_channel (law : Law) (q m h scale vf ci co v avail : ℝ)
+    {area density reference : ℝ} (ha : 0 < area) (hd : 0 < density) (hr : 0 < reference) :
+    clampedCurrent law q m h (scale * area) vf ci co (density / reference) avail v /
+        (area * density) =
+      avail / reference * (opening law m h *
+        outwardCurrent law q (constantFieldFlux seriesFactor scale vf ci co v)) := by
+  rw [clamped_current_factors]
+  unfold outwardCurrent constantFieldFlux
+  field_simp [ha.ne', hd.ne', hr.ne']
+  ring
+
+/-- The ratio of count-normalized currents measures relative availability even
+when the patch areas differ. Both preparations share the saved gates and drive. -/
+theorem relative_availability_from_counts (law : Law) (q m h scale vf ci co v : ℝ)
+    {area₁ area₂ density₁ density₂ reference avail₁ : ℝ} (avail₂ : ℝ)
+    (ha₁ : 0 < area₁) (ha₂ : 0 < area₂) (hd₁ : 0 < density₁) (hd₂ : 0 < density₂)
+    (hr : 0 < reference) (hav : 0 < avail₁)
+    (probe : opening law m h *
+      outwardCurrent law q (constantFieldFlux seriesFactor scale vf ci co v) ≠ 0) :
+    let first := clampedCurrent law q m h (scale * area₁) vf ci co (density₁ / reference) avail₁ v /
+      (area₁ * density₁)
+    let second := clampedCurrent law q m h (scale * area₂) vf ci co (density₂ / reference) avail₂ v /
+      (area₂ * density₂)
+    first ≠ 0 ∧ second / first = avail₂ / avail₁ := by
+  dsimp only
+  rw [clamped_current_per_channel law _ _ _ _ _ _ _ _ _ ha₂ hd₂ hr,
+      clamped_current_per_channel law _ _ _ _ _ _ _ _ _ ha₁ hd₁ hr]
+  exact ⟨mul_ne_zero (div_ne_zero hav.ne' hr.ne') probe, by
+    rw [mul_div_mul_right _ _ probe, div_div_div_cancel_right₀ hr.ne']⟩
+
 end
 
 end CellsProofs.Transport.IonChannels

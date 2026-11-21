@@ -15,6 +15,13 @@
       {"gating_channels_per_um2": 115, "conducting_fraction": 0.34},
       {"gating_channels_per_um2": 425, "conducting_fraction": 0.18}
     ],
+    "kv15_middle": {"gating_channels_per_um2": 300, "conducting_fraction": 0.23},
+    "kv14_near_middle": [
+      {"gating_channels_per_um2": 290, "conducting_fraction": 0.64},
+      {"gating_channels_per_um2": 315, "conducting_fraction": 0.73}
+    ],
+    "middle_locator": "Fig. 8C. The orange triangle nearest 300 channels/µm² lies at about 298, rounded to 300 on the same five-channel grid as the endpoints. The two grey Kv1.4 markers bracket it. The middle Kv1.5 point was excluded from the two-endpoint fit. All markers are from the same study and the three-cell moving averages have no individual error bars.",
+    "density_and_fraction": "The estimated gating-channel count contributes to density and is also the denominator of the conducting fraction. Error in that count can move the two axes in opposite directions. An independent density manipulation or matched replicate would strengthen a causal test.",
     "density_locator": "Fig. 8C, p. 766. Approximate axis readings of the first and last orange triangles in the authors' three-cell moving average, rounded to about 5 channels/µm² and 0.01 fraction. No pointwise uncertainty is printed.",
     "interpretation": "The density series compares groups of cells. It can challenge a constant conducting fraction across expression densities. Testing absolute signed current requires the conductance and state at the specified voltage."
   }
