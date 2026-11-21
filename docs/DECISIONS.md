@@ -8704,3 +8704,24 @@ disagree with measurements (relayed by the user: "from lean get that to the righ
 - F = 3 cites Roache's grid-convergence-index convention through secondary sources (NASA's NPARC
   tutorial; Phillips and Roy 2014, J. Fluids Eng.). The 1994 paper itself was not reached.
 
+## D272: Holds lifted as their fixes land; a clock finding recorded
+
+2026-11-21, about 21:21 UTC.
+- **FR-34's reopening for composites (D265) is closed.** The composite clamp landed at 07022ddf: the
+  composition's own clamped_channel_flux and clamped_kind, at the step's control and layout views.
+  The second builder confirmed it independently.
+- **D266's wash ion counters are fixed** at 52831912. The lead reran the Lean lane's acceptance
+  (ion-counters) before landing: exit 1 at main, exit 0 at the head. Wash runs with ions at any
+  fraction need no special handling now.
+- **FR-8's section 10.20 reading passed.** The second builder's re-judge confirmed it from the frozen
+  outputs and found that judge.json came from the launch snapshot, not the one named. An erratum
+  (section 10.24) names each verdict's snapshot before the branch lands.
+- **A finding for its own decision:** a clock without fine windows has the same near-coincident
+  exposure that C's fix closes for windowed clocks. A decimal event one ulp from i x dt adds a step
+  of about 2e-13 s. Extending the refusal would touch every world's clock, so it is not done now.
+- **Housekeeping, at the user's word:** ten branches holding nothing not on main were deleted, then
+  145 branches merged into main along with 94 idle, clean worktrees. Their tips are recorded beside
+  the lead notes. Kept: lean-*, visualizer, branches or worktrees used in the last six hours, one
+  worktree with uncommitted changes (core-pass-at3-fr34), worktrees in evidence folders, and two
+  whose removal git refused.
+
