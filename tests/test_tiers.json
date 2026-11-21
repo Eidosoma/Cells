@@ -312,7 +312,8 @@
   "/mnt/workspaces/Cells/composite-clamp-20261121/gate-3967eaf7/tiers/measure/measured.json",
   "/mnt/workspaces/Cells/wash-unchanged-20261121/tiers/measured-86018b1a/measured.json",
   "/mnt/workspaces/Cells/core-pass-kinds-20261118/gate-737ec83c/tiers-lead/measured.json",
-  "/mnt/workspaces/Cells/core-pass-at3-20261118/cfix/measure-4cc30449/measure/measured.json"
+  "/mnt/workspaces/Cells/core-pass-at3-20261118/cfix/measure-4cc30449/measure/measured.json",
+  "/mnt/workspaces/Cells/fr37-uneven-draw-20261121/gate-ee0b8106/tiers/measure/measured.json"
  ],
  "measured_provenance": [
   {
@@ -2641,6 +2642,14 @@
    "root": "/mnt/workspaces/Cells/core-pass-at3-20261118/snapshot-4cc30449",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-21T21:13:49+00:00"
+  },
+  {
+   "git_revision": "ee0b8106406eb26e57ab1b0c34e16ed6c3f83a2b",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/fr37-uneven-draw-20261121/snapshot-ee0b8106",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-21T22:38:22+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -6074,10 +6083,10 @@
    },
    {
     "file": "tests/unit/test_wash_schedule.py",
-    "seconds": 7.61,
+    "seconds": 7.08,
     "exit_code": 0,
     "counts": {
-     "passed": 32
+     "passed": 33
     }
    },
    {
