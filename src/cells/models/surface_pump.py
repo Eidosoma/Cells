@@ -56,6 +56,7 @@ FLOOR_LAYOUT_TYPE = NamedTuple(
 # 1 ms; with dt and dt^2 scaling these bounds cover admitted steps. Ledger totals
 # are compared with RK4 separately in tests/unit/test_surface_pump.py.
 ENERGY_RTOL = {"rk4": 0.0, imex.EULER_ID: 2e-2, imex.ARS222_ID: 2e-3}
+ENERGY_RTOL.update(dict.fromkeys(imex.IMPLICIT_CONDUCTANCE_IDS, 2e-3))  # N2: ARS(2,2,2)'s value.
 # Global charge (electrode charge plus charge-weighted reservoir supply) cancels
 # terms that grow with the charge moved through the boundary (moved_charge), so
 # its rounding accumulates with their magnitude: a fixed floor fails long runs.

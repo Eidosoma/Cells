@@ -903,6 +903,11 @@
   ],
   [
    "models/surface_pump_v3.py",
+   "imex_step",
+   "entity_sum(explicit_matrix[i], axis=None, xp=xp)"
+  ],
+  [
+   "models/surface_pump_v3.py",
    "readouts",
    "entity_sum(ca_metabolic, axis=None, xp=xp)"
   ],

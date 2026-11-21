@@ -34,12 +34,14 @@ Usage (cwd = a clean snapshot root; PYTHONPATH=src:.):
   python -B validation/energy_step_doubling/qualify_x2.py cap OUT_JSON
   python -B validation/energy_step_doubling/qualify_x2.py judge OUT_DIR RESULTS_JSON [RESULTS_JSON ...]
 SAVED_WORLD_JSON is the registered run's own record of the world (its out/ID.json: kind, argument
-and replayed steps).
+and replayed steps). With X2_QUALIFY_SOLVER set to a time-integrator ID, every row runs with
+execution.solver set to it: FR-8 rung 1's I3 (RUNG1_20261119 §5, D235), X2's rows under N2's ID.
 """
 
 import copy
 import json
 import math
+import os
 import sys
 import time
 import traceback
@@ -51,6 +53,7 @@ import harness as H  # noqa: E402  The registered harness's world builders, unch
 CAP = 3e-2
 CAP_CONTROL = 2e-3
 CHECK = "step_doubled_energy@1"
+SOLVER_ENV = "X2_QUALIFY_SOLVER"  # Unset: each world's own solver, as registered.
 WINDOW = 4096  # Whole-horizon runs; a first-STEPS run takes one window of STEPS.
 REPORTED = (
     ("counted_steps", "counted_steps"),
@@ -64,8 +67,13 @@ REPORTED = (
 
 
 def selected(raw, cap):
+    """The definition with X2 selected at `cap`; under SOLVER_ENV (FR-8 rung 1's I3, D235) with
+    execution.solver set to that ID, the same rows run under a new time integrator."""
     out = copy.deepcopy(raw)
     out["execution"]["energy_check"] = dict(check=CHECK, integration_error_cap=cap)
+    solver = os.environ.get(SOLVER_ENV)
+    if solver:
+        out["execution"]["solver"] = solver
     return out
 
 
@@ -142,7 +150,9 @@ def run_plant(out_path):
     def resumed(checkpoint):
         try:
             result = run(resume, checkpoint)
-            return dict(admitted=True, refusal=None, summary=energy.summary(result.final.energy_check))
+            return dict(
+                admitted=True, refusal=None, summary=energy.summary(result.final.energy_check)
+            )
         except (NumericalError, ConfigError) as error:
             return dict(admitted=False, refusal=f"{type(error).__name__}: {error}")
 
