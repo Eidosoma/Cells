@@ -116,7 +116,8 @@ EXCHANGE = "scheduled_species_exchange@1"
 REACTIONS = "local_species_reactions@1"
 COMPARTMENTS = "cell_owned_compartments@1"
 CLOSURE_ULPS = 64
-# The largest O/S at a node that gains material in a step (module docstring, "The resolution").
+# The largest O/S at a node that gains material in a step or sends it along a route (module
+# docstring, "The resolution").
 RESOLUTION = 0.01
 RESERVED = ("unlabelled", "produced")  # The tracer's own cohorts.
 
