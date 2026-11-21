@@ -1,5 +1,6 @@
 """Compare finite-well wash events with an independent inventory and dilution calculation."""
 
+import argparse
 import json
 import math
 from pathlib import Path
@@ -10,8 +11,11 @@ import numpy as np
 
 from cells.definitions import pump_composite_spec as composite
 from cells.definitions.specs import parse_spec
+from cells.execution import runner
 from cells.execution.errors import NumericalError
 from cells.execution.runner import run
+from cells.execution.schedule import control_values
+from cells.execution.state import initialise
 from cells.operators import site_occupancy, wash_schedule
 from cells.registry.models import get_model
 from validation.tissue import wash_schedule_fixtures as well
@@ -85,6 +89,55 @@ def whole_wash(exponent):
     return dict(row, completed=True, stored_fmol=actual)
 
 
+def ion_counters(fraction):
+    """Follow the counters through the public compiled run, including the final accumulation."""
+    times = [0.02, 0.04, 0.06]
+    raw = well.well(sites=False, volume=1e6, dt=0.01, end=0.08)
+    events = [(t, "well", fraction, {well.TRACER: well.TRACE_mM}) for t in times]
+    spec = parse_spec(well.with_wash(raw, ["well"], events))
+    start = initialise(spec)
+    layout = start.layout
+    refusal = None
+    try:
+        hist = run(spec, start).history
+    except NumericalError as exc:
+        if str(exc) != "Resolved pump accounting failed: outside":
+            raise
+        # The normal host ledger refused these rows. Retain the same compiled scan's
+        # pre-ledger counters for diagnosis, with all per-step domain checks enabled.
+        refusal = str(exc)
+        model = get_model(spec.model)
+        grid = runner.timeline(spec)
+        _, rows, valid = runner._compiled_discrete_rollout(
+            start.state, runner.integration_steps(spec, grid), control_values(spec, grid[:-1]),
+            model.parameters(spec, layout), layout.active, model.checked_step)
+        assert np.all(valid)
+        hist = jax.tree_util.tree_map(
+            lambda first, rest: np.concatenate((np.asarray(first)[None], np.asarray(rest))),
+            start.state, rows)
+    w = [node.id for node in spec.model.extracellular].index("well")
+    ions = np.flatnonzero(spec.model.valence)
+    amounts = np.asarray(hist.extracellular_amount_increment)[:, ions, w]
+    np.testing.assert_array_equal(amounts, np.broadcast_to(amounts[0], amounts.shape))
+    initial = np.asarray(layout.extracellular_amount_reference)[ions, w] + amounts[0]
+    collected = np.asarray(hist.wash_collected_fmol)[:, ions, w]
+    supplied = np.asarray(hist.wash_supplied_fmol)[:, ions, w]
+    # The fixture changes no ions and delivers the same fraction at each of three events.
+    count = np.asarray(hist.wash_applied)[:, w]
+    np.testing.assert_array_equal(np.unique(count), np.arange(len(times) + 1))
+    assert np.all(np.diff(count) >= 0)
+    expected = count[:, None] * fraction * initial
+    for booked in (collected, supplied):
+        np.testing.assert_allclose(booked, expected, rtol=8 * np.finfo(float).eps, atol=0)
+    residual = collected - supplied
+    return dict(fraction=fraction, event_count=int(count[-1]), inventories_unchanged=True,
+                run_completed=refusal is None, refusal=refusal,
+                max_abs_counter_difference_fmol=float(np.max(abs(residual))),
+                final_collected_minus_supplied_fmol=dict(zip(
+                    [spec.model.species_ids[i] for i in ions], residual[-1].tolist(), strict=True)),
+                counters_equal_at_every_row=bool(np.array_equal(collected, supplied)))
+
+
 def dilution_data():
     data = json.loads(Path(__file__).with_name("data").joinpath("vloemans2024_dilution.json").read_text())
     rows = []
@@ -96,8 +149,17 @@ def dilution_data():
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--case", choices=("all", "ion-counters", "dilution"), default="all")
+    args = parser.parse_args()
     assert jax.config.x64_enabled and jax.default_backend() == "cpu"
-    report = dict(compiled_events=[exchanges(fs) for fs in ([0.5, 0.25], [0.8] * 3, [0.9] * 3, [1.0])],
-                  whole_wash_runs=[whole_wash(e) for e in (1, 50, 60)],
-                  fluorescein_ug_per_mL=dilution_data())
+    report = {}
+    if args.case in ("all", "dilution"):
+        report.update(compiled_events=[exchanges(fs) for fs in ([0.5, 0.25], [0.8] * 3, [0.9] * 3, [1.0])],
+                      whole_wash_runs=[whole_wash(e) for e in (1, 50, 60)],
+                      fluorescein_ug_per_mL=dilution_data())
+    if args.case in ("all", "ion-counters"):
+        report["ion_counters"] = [ion_counters(f) for f in (1 / 2, 3 / 7)]
     print(json.dumps(report, indent=2, allow_nan=False))
+    ok = all(row["run_completed"] and row["counters_equal_at_every_row"] for row in report.get("ion_counters", []))
+    raise SystemExit(int(not ok))

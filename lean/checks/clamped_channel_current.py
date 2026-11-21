@@ -1,5 +1,6 @@
 """Compare @3 instantaneous clamp currents with a 70-digit GHK reference."""
 
+import argparse
 import json
 from pathlib import Path
 
@@ -7,6 +8,7 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
+from cells.definitions import pump_composite_spec
 from cells.definitions.specs import parse_spec
 from cells.definitions.surface_pump_v3_spec import control_values
 from cells.models import surface_pump_v3 as host
@@ -14,6 +16,7 @@ from cells.registry.models import get_model
 from ion_channels import REFERENCES
 from tests.unit.test_chloride_leak_law import chloride_world
 from validation.betse.junction_transport.check import decimal_flux
+from validation.tissue import regulated_availability_fixtures as gates
 from validation.tissue.surface_pump_v3_fixtures import channel
 from validation.tissue.surface_reference import F, R
 
@@ -135,5 +138,57 @@ def run():
     }
 
 
+def composite_clamp():
+    """Compare the public composite entry point with the controls used for its recorded flux."""
+    target = gates.SHARED_CHANNEL
+    raw = gates.with_coupling(
+        gates.scheduled(channel=1.0), species=[gates.REGULATOR],
+        states=[gates.frozen("gate", ["cell_3"], 0.5)],
+        couplings=[gates.fraction("half_open", "channel", [target], "gate")],
+    )
+    spec = parse_spec(raw)
+    model = get_model(spec.model)
+    state, layout = model.initial_values(spec)
+    times = np.array([0.0])
+    control = model.CONTROL_TYPE(*(v[0] for v in pump_composite_spec.control_values(spec, times)))
+    slot = next(i for i, ch in enumerate(raw["model"]["channels"]) if ch["id"] == target)
+    history = type(state)(*(np.asarray(v)[None] for v in state))
+    observed = model.observe_history(times, history, layout, times, spec)
+    inner = model.inner
+    s = model.inner_state(state)
+    p = model.view(layout, state, xp=np)
+    held = inner.inner_control(control)
+    effective = model.control_view(control, state, layout, xp=np)
+    assert effective.channel[slot] == observed.channel_availability[0, slot] == 0.5 * held.channel[slot]
+    volt = np.asarray(observed.membrane_voltage_V)[0]
+    recorded = host.channel_current_A(np.asarray(observed.channel_flux_fmol_s)[0], p)[slot]
+    at_own = inner.clamped_channel_flux(s, effective, p, volt, xp=np)[1][slot]
+    held_at_own = inner.clamped_channel_flux(s, held, p, volt, xp=np)[1][slot]
+    at_clamp = inner.clamped_channel_flux(s, effective, p, -0.050, xp=np)[1][slot]
+    at_held = inner.clamped_channel_flux(s, held, p, -0.050, xp=np)[1][slot]
+    np.testing.assert_allclose(at_own, recorded, rtol=2e-14, atol=0)
+    assert at_clamp != 0 and recorded != 0
+    np.testing.assert_allclose(at_held, 2 * at_clamp, rtol=2e-14, atol=0)
+    np.testing.assert_allclose(held_at_own, 2 * recorded, rtol=2e-14, atol=0)
+    public = getattr(model, "clamped_channel_flux", None)
+    agrees = False
+    if public is not None:
+        values = [float(public(state, control, layout, v, xp=np)[1][slot]) for v in (volt, -0.05)]
+        agrees = bool(np.allclose(values, [recorded, at_clamp], rtol=2e-14, atol=0))
+    else:
+        values = None
+    return dict(model=raw["model"]["id"], channel=target, held=float(held.channel[slot]),
+                observed_availability=float(observed.channel_availability[0, slot]),
+                held_at_minus50_pA=float(1e12 * at_held), effective_at_minus50_pA=float(1e12 * at_clamp),
+                held_at_own_voltage_pA=float(1e12 * held_at_own),
+                recorded_at_own_voltage_pA=float(1e12 * recorded), public_currents_A=values,
+                public_clamp_matches_both=agrees)
+
+
 if __name__ == "__main__":
-    print(json.dumps(run(), indent=2, allow_nan=False))
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--composite", action="store_true", help="check the operator-controlled composite clamp")
+    args = parser.parse_args()
+    report = composite_clamp() if args.composite else run()
+    print(json.dumps(report, indent=2, allow_nan=False))
+    raise SystemExit(int(args.composite and not report["public_clamp_matches_both"]))

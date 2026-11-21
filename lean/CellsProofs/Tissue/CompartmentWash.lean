@@ -18,6 +18,14 @@ theorem inventory (f n b bound : ℝ) :
   unfold afterWash
   ring
 
+/-- At the compartment's own ion concentration the wash preserves inventory and the
+collected and supplied amounts agree for every fraction in exact arithmetic. -/
+theorem same_concentration_ion (f n : ℝ) {v : ℝ} (hv : 0 < v) :
+    afterWash f n (v * (n / v)) = n ∧ f * (v * (n / v)) = f * n := by
+  have hb : v * (n / v) = n := by rw [mul_comm, div_mul_cancel₀ _ hv.ne']
+  rw [hb]
+  exact ⟨by unfold afterWash; ring, rfl⟩
+
 /-- Every admitted fraction leaves a positive free amount, including a whole wash. -/
 theorem positive {f n b : ℝ} (hf : 0 < f) (hfull : f ≤ 1) (hn : 0 < n) (hb : 0 < b) :
     0 < afterWash f n b := by
