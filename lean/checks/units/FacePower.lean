@@ -26,8 +26,19 @@ theorem charge_voltage_energy (B : Type) [HasBaseCurrent B] [HasBaseTime B]
   funext i
   abel
 
+/-- Faraday's constant is charge per amount, with charge equal to current
+times time. Multiplying by an outward amount rate gives electric current. -/
+theorem faraday_current_dimension (B : Type) [HasBaseCurrent B] [HasBaseTime B]
+    [HasBaseAmount B] :
+    ((dimension.current B ℤ * dimension.time B ℤ) / dimension.amount B ℤ) *
+      (dimension.amount B ℤ / dimension.time B ℤ) = dimension.current B ℤ := by
+  simp only [dimension.mul_def', dimension.div_def']
+  funext i
+  abel
+
 #print axioms face_power_dimension
 #print axioms charge_voltage_energy
+#print axioms faraday_current_dimension
 #print axioms CellsProofs.Transport.Face.power_in_pJ_per_s
 #print axioms CellsProofs.Tissue.CurrentInjection.single_patch_work
 

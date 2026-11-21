@@ -216,6 +216,50 @@ theorem patch_booking (law : Law) (m h availability scale vf inside outside volt
       opening law m h * availability * full) := by
   simp [Accounting.nodeChange, permeant_flux]
 
+/-- Instantaneous outward current at a declared voltage in V. The channel gates
+come from the saved state. The scale is for reference abundance one. -/
+def clampedCurrent (law : Law) (q m h scale vf ci co abundance availability v : ℝ) : ℝ :=
+  outwardCurrent law q (flux law (permeant law) m h availability (scale * abundance) vf ci co v)
+
+/-- Summing charged outward fluxes over the species slots gives this population's
+current. Other species may have different concentrations, valences and voltage factors. -/
+theorem clamped_current_from_species (law : Law) (ions : Finset Ion)
+    (hp : permeant law ∈ ions) (z vf ci co : Ion → ℝ) (hz : z (permeant law) = valence law)
+    (q m h scale abundance availability v : ℝ) :
+    q * (∑ i ∈ ions, z i * flux law i m h availability (scale * abundance) (vf i) (ci i) (co i) v) =
+      clampedCurrent law q m h scale (vf (permeant law)) (ci (permeant law)) (co (permeant law))
+        abundance availability v := by
+  rw [Finset.sum_eq_single_of_mem (permeant law) hp, hz]
+  · unfold clampedCurrent outwardCurrent
+    ring
+  · intro i _ hi
+    rw [other_flux hi, mul_zero]
+
+theorem clamped_current_factors (law : Law) (q m h scale vf ci co abundance availability v : ℝ) :
+    clampedCurrent law q m h scale vf ci co abundance availability v =
+      (abundance * availability) * (opening law m h *
+        outwardCurrent law q (constantFieldFlux seriesFactor scale vf ci co v)) := by
+  unfold clampedCurrent
+  rw [permeant_flux]
+  unfold outwardCurrent constantFieldFlux
+  ring
+
+/-- A nonzero probe in the measured voltage set determines the abundance–availability
+product when the stored gates and single-channel drive are fixed. -/
+theorem same_clamped_curve_iff (law : Law) (voltages : Set ℝ) (q m h scale vf ci co n₁ a₁ n₂ a₂ : ℝ)
+    (probe : ∃ v ∈ voltages, opening law m h *
+      outwardCurrent law q (constantFieldFlux seriesFactor scale vf ci co v) ≠ 0) :
+    (∀ v ∈ voltages, clampedCurrent law q m h scale vf ci co n₁ a₁ v =
+      clampedCurrent law q m h scale vf ci co n₂ a₂ v) ↔ n₁ * a₁ = n₂ * a₂ := by
+  constructor
+  · intro heq
+    obtain ⟨v, hv, nonzero⟩ := probe
+    have h := heq v hv
+    simp only [clamped_current_factors] at h
+    exact mul_right_cancel₀ nonzero h
+  · intro heq v _
+    simp only [clamped_current_factors, heq]
+
 end
 
 end CellsProofs.Transport.IonChannels
