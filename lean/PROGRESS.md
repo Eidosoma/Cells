@@ -1,5 +1,27 @@
 # Cells proof comparisons
 
+<a id="binding-equilibrium-feasibility"></a>
+
+## 21 November 2026 · Which totals admit a binding equilibrium?
+
+A finite binding ensemble with nonnegative binder totals has exactly one positive equilibrium if and only if every normalized nonnegative weighting of the held ligands leaves a positive inventory above the binders’ lowest projected counts. An available solution leaves at least the smallest free concentration in every weighting. Conversely, a positive minimum margin bounds the low-energy states of the binding potential in a finite box. At its minimum every held inventory residual vanishes. Fixed unheld activities enter only in the form weights. When every binder has a zero-count base form, positive held totals guarantee feasibility. Finite vertex enumeration and the fixed Newton iteration budget remain numerical obligations. [Five Lean theorems](CellsProofs/Chemistry/BindingFeasibility.lean) · [Uniqueness](CellsProofs/Chemistry/BindingEquilibrium.lean) · [Engine equations](https://github.com/Eidosoma/Cells/blob/0310d9f0cfc758181c0ef145bb09d513f1ef69ec/src/cells/laws/reactions/rapid_binding.py#L12-L39)
+
+The comparison allocates nonnegative concentrations to each present form from the original species registry, conserves every binder total, and uses a linear program to maximize the common free remainder. NumPy and compiled JAX CPU matched its margin on all 236 nonempty held-coordinate projections of the 80 registered S1–S7 states. All 80 empty projections returned positive infinity. The four C4 challenges gave the correct margins and solver verdicts. Fifteen existing engine tests passed. [Comparison and independent allocation](checks/binding_feasibility.py) · [C4 reference states](https://github.com/Eidosoma/Cells/blob/0310d9f0cfc758181c0ef145bb09d513f1ef69ec/tests/unit/test_rapid_binding_kernel.py#L189-L265)
+
+### Signed proton totals at float64 resolution
+
+For copies of the registry’s `rel1` binder, the two forms hold zero or minus one proton equivalent. The exact margin is the signed H total plus the sum of binder totals. All entries below are in mM. The reference uses exact fractions of the supplied binary64 values. The admissions shown are the actual `free_ligands` verdicts with its residual check and margin enabled. [Reproducer](checks/binding_feasibility.py) · [Margin calculation and strict comparison](https://github.com/Eidosoma/Cells/blob/0310d9f0cfc758181c0ef145bb09d513f1ef69ec/src/cells/laws/reactions/rapid_binding.py#L244-L277)
+
+| H total | Binder totals | Exact margin | NumPy margin and verdict | Compiled JAX CPU margin and verdict |
+| ---: | --- | ---: | --- | --- |
+| −1.7 | 0.5, 0.6, 0.6 | 0 | +2.22 × 10⁻¹⁶, admitted | +2.22 × 10⁻¹⁶, admitted |
+| −0.8999999999999999 | 0.3, 0.3, 0.3 | +2⁻⁵⁴ | 0, refused | 0, refused |
+| −3.8000000000000003 | 0.3, 0.3, 1.0, 1.1, 1.1 | −2⁻⁵³ | +4.44 × 10⁻¹⁶, admitted | 0, refused |
+
+The residual-only check passed all three examples on both backends. A fixed absolute cutoff would also discard genuinely positive margins. The relevant lead decision is how to resolve the sign when its rounding interval includes zero before admitting signed held totals. The `resolved_pump_tissue@3` parser accepted its ordinary S7 control and rejected zero and −1.7 mM initial H rows. The kernel finding concerns that prospective signed-total domain. The comparison exits with status 1 while the classifications disagree with the exact reference. [Tissue host domain](https://github.com/Eidosoma/Cells/blob/0310d9f0cfc758181c0ef145bb09d513f1ef69ec/src/cells/kinds/proton_buffer.py#L83-L88) · [Boundary and parser checks](checks/binding_feasibility.py)
+
+Cortes et al. observed an absorbance plateau near 0.39 at 705 nm as Fe(II) added to 40 µM Par increased from about 20 to 32 µM at pH 7.1. The trace illustrates a finite binding capacity. The authors also used the 1:2 Fe-to-ligand breakpoint to calibrate the ligand stock. Residual free Fe, endpoint errors and replicate counts are unavailable for this panel, so the strict mathematical boundary has no independent experimental test here. [Supporting Fig. S3b](https://s3-eu-west-1.amazonaws.com/pstorage-acs-6854636/8172722/ic7b00372_si_001.pdf#page=14) · [Calibration method](https://s3-eu-west-1.amazonaws.com/pstorage-acs-6854636/8172722/ic7b00372_si_001.pdf#page=4) · [Measurement conditions](checks/data/binding_feasibility_measurements.json)
+
 <a id="binding-equilibrium-unique"></a>
 
 ## 21 November 2026 · One binding equilibrium for prescribed totals
