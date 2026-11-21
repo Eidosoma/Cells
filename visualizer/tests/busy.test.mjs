@@ -14,7 +14,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const atRest = () => ({
   model: {},
   current: { loading: false, pending: null, fetching: new Set(), mounted: { opening: null } },
-  landingView: { fetching: null },
+  landingView: { fetching: null, detailsFetching: null },
   stage: { rig: { flight: null }, needsRender: false, moving: false, running: false },
 });
 
@@ -27,6 +27,7 @@ test("at rest the page says nothing; each thing it is busy with is said while it
     ["a layer's records are on their way", (v) => v.current.fetching.add("voltage")],
     ["a family is opening", (v) => (v.current.mounted.opening = Promise.resolve())],
     ["the landing's cards are on their way", (v) => (v.landingView.fetching = Promise.resolve())],
+    ["the cards' details are on their way", (v) => (v.landingView.detailsFetching = Promise.resolve())],
     ["the camera is in flight", (v) => (v.stage.rig.flight = { elapsed: 0, duration: 600 })],
     ["a frame is owed", (v) => (v.stage.needsRender = true)],
     ["a view is moving", (v) => (v.stage.moving = true)],

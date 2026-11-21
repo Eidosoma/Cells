@@ -133,6 +133,11 @@ def first_paragraph(path):
         doc = ast.get_docstring(ast.parse(path.read_text(encoding="utf-8")))
     except (SyntaxError, OSError, UnicodeDecodeError):
         return None
+    return paragraph(doc)
+
+
+def paragraph(doc):
+    """A docstring's first paragraph on one line, or None."""
     if not doc:
         return None
     return " ".join(doc.strip().split("\n\n")[0].split())
@@ -400,10 +405,15 @@ class Build:
             values["CONTROL_FACTORS"] = factors
             values["RK4"] = own.get("RK4")
             values["ACCEPTS_WRITES"] = own.get("ACCEPTS_WRITES") or {}
-            found[law] = {"class": class_name, "path": path, "values": values}
+            node = source.classes.get(class_name) if source is not None and class_name else None
+            found[law] = {"class": class_name, "path": path, "values": values, "class_doc": paragraph(ast.get_docstring(node)) if node else None}
         for law in config["items"]:
             if law not in found:
                 self.warnings.append(f"overlay names operator {law}, which is not registered")
+        # A module may declare more than one operator (a next version beside the first). Its file stays the part of the
+        # first operator the manifest lists, so that every file keeps one part; each operator's detail is then its own
+        # class's docstring, not the module's.
+        shared = Counter(record["path"] for record in found.values())
         for law, record in found.items():
             curated = config["items"].get(law)
             if curated is None:
@@ -412,7 +422,7 @@ class Build:
             identifier = f"op.{law}"
             paths = [record["path"], *curated.get("files", [])]
             for path in paths:
-                self.owner[path] = identifier
+                self.owner.setdefault(path, identifier)
             record["id"] = identifier
             values = record["values"]
             parts = [
@@ -443,7 +453,7 @@ class Build:
                     "status": curated.get("status"),
                     "as_of": curated.get("as_of"),
                     "plain": curated.get("plain", ""),
-                    "detail": first_paragraph(self.repo / record["path"]),
+                    "detail": (record["class_doc"] if shared[record["path"]] > 1 and record["class_doc"] else first_paragraph(self.repo / record["path"])),
                     "facts": facts,
                     "sources": [{"path": path} for path in paths] + curated.get("sources", []),
                     "files": paths,

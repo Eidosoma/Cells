@@ -1,0 +1,89 @@
+{
+ "format": "cells.visualizer.about@1",
+ "note": "The viewer's About words, written once: the page's About panel and first-visit line (src/ui/about.js), and the site's title, description, text without script, structured data and llms.txt (tools/stage_site.mjs) all read them. The page carries them in its scene as `about` (tools/lib/build_page.mjs), and the site's staging reads them from the staged page. Every sentence names the place it was taken from (`from`); none says more of Cells than that place does. What names anyone is `credit` alone (its words, and the organisation the structured data names as the source code's author and the site's publisher); a contact and further links are added here alone (`contact`, `links`), and every reader of this file shows them where they are given.",
+ "name": "Cells",
+ "title": {
+  "text": "Cells: a map of a physics simulator for biology",
+  "from": "tools/stage_site.mjs, the site's title (TITLE) until Version 53"
+ },
+ "description": {
+  "text": "A 3D map of Cells, a physics simulator for biology: the parts and laws of its engine, the species, proteins and machines it draws, and replays of its experiments' runs.",
+  "from": "tools/stage_site.mjs, the site's description (DESCRIPTION) until Version 53"
+ },
+ "line": {
+  "text": "A 3D map of Cells, a physics simulator for biology.",
+  "from": "the site's description, its first words"
+ },
+ "lead": [
+  {
+   "text": "Cells is a physics simulator for biology. It builds cells and tissues from explicit physical laws, from electrodiffusion, chemistry and transport to mechanics and molecular assembly, with energy, charge and matter accounted for at every step.",
+   "from": "the repository's README.md, its opening paragraph, the first two sentences"
+  },
+  {
+   "text": "This page is a 3D map of it: the parts and laws of its engine, the species, proteins and machines it draws, and replays of its experiments' runs.",
+   "from": "the site's description"
+  },
+  {
+   "text": "Capabilities vary by model, and whole-cell integration is ongoing. No single run uses every part drawn here.",
+   "from": "data/architecture/overlay.json, caveat (the map's caveat)"
+  }
+ ],
+ "reading": [
+  {
+   "text": "Each part carries the level the project's record gives it, and no level the record does not state; its panel names the source and, where the record gives one, the date.",
+   "from": "the viewer's README, \"Rules the map keeps\" (it states no status the record does not state; every status has a source and, where the record gives one, a date), and the Experiments landing's words that each card shows its own level from the Engine map (data/replays/cards.source.json)"
+  },
+  {
+   "text": "Shapes are schematic unless a part's panel says otherwise. Clear glass shapes and grey outlines are scenery.",
+   "from": "the Protein atlas's legend (\"Shapes are schematic\", src/lenses/proteins.js) and the Scope view's legend (\"Clear glass shapes and grey outlines are scenery\", src/ui/viewer.js)"
+  }
+ ],
+ "views": [
+  {
+   "id": "cell",
+   "text": "What Cells can simulate, drawn where it happens: one cell opened by a flat cut, the sheet of cells around it, and placeholder outlines for the scales nothing simulates yet.",
+   "from": "the viewer's README, the table of views, Scope (shortened)"
+  },
+  {
+   "id": "machines",
+   "text": "A catalogue of the molecular machines of the species shown, in trays on a bench by what they do. Behind each bench of a species whose cell has organelles stands a shelf of them at the same one scale. All of it is illustration.",
+   "from": "the viewer's README, the table of views, Machines: its first sentence, its sentence on the shelf behind each bench (its first words, to the scale), and its last"
+  },
+  {
+   "id": "proteins",
+   "text": "The units of Cells' law inventory, set in the membranes where their laws act, and every species' own proteins on shelves.",
+   "from": "the viewer's README, the table of views, Proteins (shortened)"
+  },
+  {
+   "id": "engine",
+   "text": "The simulator as a stack of layers, from the machines it runs on up to the experiments.",
+   "from": "the viewer's README, the table of views, Engine (its first sentence)"
+  },
+  {
+   "id": "laws",
+   "text": "Every piece the engine declares, on a wall of shelves by interface, read from the engine's declarations manifest alone.",
+   "from": "the viewer's README, the table of views, Laws (shortened)"
+  },
+  {
+   "id": "experiments",
+   "text": "Everything Cells has run, on cards, each with its standing in the record's words; a card opens its saved run, replayed.",
+   "from": "the viewer's README, \"Experiment replays\" (its opening sentence) and the table of views, Experiments (\"A saved run replayed\")"
+  }
+ ],
+ "source": {
+  "label": "Source code",
+  "url": "https://github.com/Eidosoma/Cells",
+  "licence": {
+   "name": "MIT",
+   "path": "LICENSE",
+   "from": "the repository's LICENSE, its first line (\"MIT License\")"
+  }
+ },
+ "credit": {
+  "text": "Made by Eidosoma.",
+  "organisation": "Eidosoma",
+  "from": "the owner's answer of 20 November 2026: the page names Eidosoma, an organisation, and no person"
+ },
+ "contact": null,
+ "links": []
+}

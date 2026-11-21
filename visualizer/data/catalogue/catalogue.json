@@ -135,6 +135,13 @@
    "plain": "Large particles whose function has not been found.",
    "stands": "behind",
    "stands_why": "Decided 19 November 2026: this group's tray stands at the back of the bench, behind the tray of the law inventory's units. Its one particle, the vault, is the largest shape on a bench; in the row before that tray it stood in front of the units' small shapes at the opening view and hid them."
+  },
+  {
+   "id": "organelles",
+   "label": "Organelles",
+   "plain": "The cell's own compartments, each far larger than any machine: they stand on a shelf behind the bench, at the bench's one scale.",
+   "stands": "shelf",
+   "stands_why": "Asked for on 20 November 2026: the organelles stand in the Machines view as the machines do, on a shelf above the bench, drawn with the Cell view's own models at the bench's one scale, and travelled to. They are no machines: in no tray and no count of machines."
   }
  ],
  "records": {
@@ -166,6 +173,22 @@
    "path": "visualizer/docs/CELL_STRUCTURES.md",
    "where": "What each status rests on: Ribosomes",
    "entity": "cap.ribosomes"
+  },
+  "map-nucleus": {
+   "label": "The map's status of the Cell view's nucleus",
+   "map": "cap.nucleus"
+  },
+  "map-er": {
+   "label": "The map's status of the part drawn at the endoplasmic reticulum",
+   "map": "cap.calcium"
+  },
+  "map-golgi": {
+   "label": "The map's status of the Cell view's Golgi apparatus",
+   "map": "cap.golgi"
+  },
+  "map-mitochondria": {
+   "label": "The map's status of the Cell view's mitochondria",
+   "map": "cap.mitochondria"
   }
  },
  "units_left_out": {
@@ -363,6 +386,178 @@
    ],
    "species": [
     "mpneumoniae"
+   ]
+  },
+  {
+   "id": "nucleus",
+   "label": "Nucleus",
+   "group": "organelles",
+   "map_part": "cap.nucleus",
+   "drawn_at": "nucleus",
+   "plain": "Holds the cell's DNA inside a double membrane, the nuclear envelope, whose pores let molecules in and out; the nucleolus inside it is where ribosomes are put together.",
+   "records": [
+    "map-nucleus"
+   ],
+   "species": [
+    "human",
+    "mouse",
+    "planarian",
+    "fruitfly",
+    "thalecress"
+   ]
+  },
+  {
+   "id": "endoplasmic-reticulum",
+   "label": "Endoplasmic reticulum",
+   "group": "organelles",
+   "map_part": "cap.calcium",
+   "drawn_at": "endoplasmic reticulum",
+   "plain": "A network of membrane sheets and tubes that runs on from the nuclear envelope: the rough sheets, studded with ribosomes, make proteins for membranes and for export, and the network stores calcium.",
+   "records": [
+    "map-er"
+   ],
+   "species": [
+    "human",
+    "mouse",
+    "planarian",
+    "fruitfly",
+    "thalecress"
+   ]
+  },
+  {
+   "id": "golgi-apparatus",
+   "label": "Golgi apparatus",
+   "group": "organelles",
+   "map_part": "cap.golgi",
+   "drawn_at": "Golgi apparatus",
+   "plain": "Stacks of flattened sacs, the cisternae, where proteins made at the endoplasmic reticulum are modified, sorted and sent on in vesicles.",
+   "records": [
+    "map-golgi"
+   ],
+   "species": [
+    "human",
+    "mouse",
+    "planarian",
+    "fruitfly",
+    "thalecress"
+   ]
+  },
+  {
+   "id": "mitochondrion",
+   "label": "Mitochondrion",
+   "group": "organelles",
+   "map_part": "cap.mitochondria",
+   "drawn_at": "mitochondria",
+   "plain": "An organelle of two membranes, the inner one folded into cristae, where most of a cell's ATP is made.",
+   "records": [
+    "map-mitochondria"
+   ],
+   "species": [
+    "human",
+    "mouse",
+    "planarian",
+    "fruitfly",
+    "thalecress"
+   ]
+  },
+  {
+   "id": "chloroplast",
+   "label": "Chloroplast",
+   "group": "organelles",
+   "drawn_at": "chloroplasts",
+   "plain": "A plant cell's organelle of light: two envelope membranes round stacks of membrane discs, where photosynthesis captures light and fixes carbon dioxide.",
+   "records": [],
+   "species": [
+    "thalecress"
+   ]
+  },
+  {
+   "id": "vacuole",
+   "label": "Vacuole",
+   "group": "organelles",
+   "drawn_at": "vacuole",
+   "plain": "A plant cell's large sac of water and solutes, bounded by one membrane: it fills most of the cell and holds it taut against its wall.",
+   "records": [],
+   "species": [
+    "thalecress"
+   ]
+  },
+  {
+   "id": "lysosome",
+   "label": "Lysosome",
+   "group": "organelles",
+   "drawn_at": "lysosome",
+   "plain": "A sac of digestive enzymes in an acid lumen, bounded by one membrane, where the cell breaks down what it takes in and its own worn parts.",
+   "records": [],
+   "species": [
+    "human"
+   ]
+  },
+  {
+   "id": "copi-vesicle",
+   "label": "COPI vesicle",
+   "group": "organelles",
+   "drawn_at": "copi vesicle",
+   "plain": "A small vesicle coated with coatomer (COPI) that carries cargo between the Golgi's cisternae and back to the endoplasmic reticulum.",
+   "records": [],
+   "species": [
+    "human"
+   ]
+  },
+  {
+   "id": "peroxisome",
+   "label": "Peroxisome",
+   "group": "organelles",
+   "drawn_at": "peroxisome",
+   "plain": "A small organelle of one membrane where fatty acids are broken down and hydrogen peroxide is made and destroyed.",
+   "records": [],
+   "species": [
+    "human"
+   ]
+  },
+  {
+   "id": "lipid-droplet",
+   "label": "Lipid droplet",
+   "group": "organelles",
+   "drawn_at": "lipid droplet",
+   "plain": "A store of fat in the cytoplasm: neutral lipids wrapped in a single layer of phospholipids, from which the cell draws fatty acids and sterols.",
+   "records": [],
+   "species": [
+    "human"
+   ]
+  },
+  {
+   "id": "autophagosome",
+   "label": "Autophagosome",
+   "group": "organelles",
+   "drawn_at": "autophagosome",
+   "plain": "A sphere of two membranes that closes round worn parts of the cell and other cargo and carries them to a lysosome, where they are broken down (autophagy).",
+   "records": [],
+   "species": [
+    "human",
+    "mouse"
+   ]
+  },
+  {
+   "id": "centriole",
+   "label": "Centriole",
+   "group": "organelles",
+   "drawn_at": "centriole",
+   "plain": "A short barrel of nine triplets of microtubules. Two of them at right angles, in a cloud of protein, make the centrosome, which organises the cell's microtubules.",
+   "records": [],
+   "species": [
+    "human"
+   ]
+  },
+  {
+   "id": "endocytic-vesicle",
+   "label": "Endocytic vesicle",
+   "group": "organelles",
+   "drawn_at": "endocytic vesicle",
+   "plain": "A small vesicle or short tubule of membrane taken in from the cell's surface and marked by the protein Rab5: among the first stations of the way in (endocytosis), before the early endosome.",
+   "records": [],
+   "species": [
+    "human"
    ]
   },
   {
@@ -4102,6 +4297,90 @@
    "licence": "CC BY 4.0",
    "class": "permissive"
   },
+  "human:lherbette2017": {
+   "text": "Lherbette M and others (2017) Atomic Force Microscopy micro-rheology reveals large structural inhomogeneities in single cell-nuclei. Scientific Reports 7:8116. Table 1, the columns “HeLa (fresh)” and “HeLa” (mean ± s.e.m.; the width by light microscopy as the mean of the long and short axes, the height by atomic force microscopy), and the Methods on how the width was measured. Read on the journal's page.",
+   "doi": "10.1038/s41598-017-08517-6",
+   "licence": "CC BY 4.0, as the article's Rights and permissions section states",
+   "class": "permissive",
+   "accessed": "2026-11-20"
+  },
+  "human:loginov2022": {
+   "text": "Loginov SV and others (2022) Correlative Organelle Microscopy: Fluorescence Guided Volume Electron Microscopy of Intracellular Processes. Frontiers in Cell and Developmental Biology 10:829545. Sections 3.3 (the spherical lysosome), 3.4 and 3.5. Read as Europe PMC full text PMC9035751.",
+   "doi": "10.3389/fcell.2022.829545",
+   "licence": "CC BY, as the article's permissions state",
+   "class": "permissive",
+   "accessed": "2026-11-20"
+  },
+  "human:martinezalonso2013": {
+   "text": "Martínez-Alonso, Tomás and Martínez-Menárguez (2013) Morpho-Functional Architecture of the Golgi Complex of Neuroendocrine Cells. Frontiers in Endocrinology 4:41. Section “Morphology of the Golgi Ribbon”, on mammalian cells; it cites Weidman and others for the cisternae's diameter and Rambourg and Clermont for their number. Read as Europe PMC full text PMC3610015.",
+   "doi": "10.3389/fendo.2013.00041",
+   "licence": "CC BY, as the article states (“distributed under the terms of the Creative Commons Attribution License”)",
+   "class": "permissive",
+   "accessed": "2026-11-20"
+  },
+  "human:pellett2013": {
+   "text": "Pellett PA and others (2013) Inter-Golgi transport mediated by COPI-containing vesicles carrying small cargoes. eLife 2:e01296. Results, “Inter-Golgi transport intermediates are the size of COPI vesicles and contain coatomer”; Methods, “Size measurement method”. Read as Europe PMC full text PMC3787390.",
+   "doi": "10.7554/eLife.01296",
+   "licence": "CC BY, as the article states (“distributed under the terms of the Creative Commons Attribution License”)",
+   "class": "permissive",
+   "accessed": "2026-11-20"
+  },
+  "human:perkins2021": {
+   "text": "Perkins and Allan (2021) Intertwined and Finely Balanced: Endoplasmic Reticulum Morphology, Dynamics, Function, and Diseases. Cells 10(9):2341. Section 2, “Morphology”: a review's general statement, which names no species or cell type there. Read as Europe PMC full text PMC8472773.",
+   "doi": "10.3390/cells10092341",
+   "licence": "CC BY, as the article states (“distributed under the terms and conditions of the Creative Commons Attribution (CC BY) license”)",
+   "class": "permissive",
+   "accessed": "2026-11-20"
+  },
+  "human:shami2021": {
+   "text": "Shami GJ and others (2021) Three-dimensional ultrastructure of giant mitochondria in human non-alcoholic fatty liver disease. Scientific Reports 11:3319. Results, the sentence that begins “On average GM were 3.5 × longer”, which gives the widths and lengths of the giant (GM) and normal (NM) mitochondria; the Methods give the data as total means ± S.D. combining the measurements from each patient, four cells from each (16 cells in total). Read on the journal's page.",
+   "doi": "10.1038/s41598-021-82884-z",
+   "licence": "CC BY 4.0, as the article's Rights and permissions section states",
+   "class": "permissive",
+   "accessed": "2026-11-20"
+  },
+  "human:wikipedia-autophagosome": {
+   "text": "Wikipedia, the article “Autophagosome”, its first section: an encyclopedia's general range; the sentence that gives it carries no note of its own, and its paragraph cites Mizushima, Ohsumi and Yoshimori, Cell Structure and Function 27(6):421–429, 2002. Read on en.wikipedia.org (the page as last edited on 4 October 2026).",
+   "url": "https://en.wikipedia.org/wiki/Autophagosome",
+   "licence": "CC BY-SA 4.0, share-alike, as the page's footer states (“Text is available under the Creative Commons Attribution-ShareAlike 4.0 License”)",
+   "class": "permissive",
+   "accessed": "2026-11-20"
+  },
+  "human:wikipedia-lipid-droplet": {
+   "text": "Wikipedia, the article “Lipid droplet”, its first section: an encyclopedia's general range, which cites Fujimoto and Parton, Cold Spring Harbor Perspectives in Biology 3(3):a004838, 2011. Read on en.wikipedia.org (the page as last edited on 27 September 2026).",
+   "url": "https://en.wikipedia.org/wiki/Lipid_droplet",
+   "licence": "CC BY-SA 4.0, share-alike, as the page's footer states (“Text is available under the Creative Commons Attribution-ShareAlike 4.0 License”)",
+   "class": "permissive",
+   "accessed": "2026-11-20"
+  },
+  "human:wikipedia-peroxisome": {
+   "text": "Wikipedia, the article “Peroxisome”, its first section: an encyclopedia's general range. Read on en.wikipedia.org.",
+   "url": "https://en.wikipedia.org/wiki/Peroxisome",
+   "licence": "CC BY-SA 4.0, share-alike, as the page's footer states (“Text is available under the Creative Commons Attribution-ShareAlike 4.0 License”)",
+   "class": "permissive",
+   "accessed": "2026-11-20"
+  },
+  "mouse:martinezalonso2013": {
+   "text": "Martínez-Alonso, Tomás and Martínez-Menárguez (2013) Morpho-Functional Architecture of the Golgi Complex of Neuroendocrine Cells. Frontiers in Endocrinology 4:41. Section “Morphology of the Golgi Ribbon”, on mammalian cells; it cites Weidman and others for the cisternae's diameter and Rambourg and Clermont for their number. Read as Europe PMC full text PMC3610015.",
+   "doi": "10.3389/fendo.2013.00041",
+   "licence": "CC BY, as the article states (“distributed under the terms of the Creative Commons Attribution License”)",
+   "class": "permissive",
+   "accessed": "2026-11-20"
+  },
+  "mouse:muller2020": {
+   "text": "Müller and others (2020) 3D FIB-SEM reconstruction of microtubule–organelle interaction in whole primary mouse β cells. Journal of Cell Biology 220(2):e202010039. Section “Organelle fractions are heterogeneous across cells” and its Table 1. Read as Europe PMC full text PMC7748794.",
+   "doi": "10.1083/jcb.202010039",
+   "licence": "CC BY 4.0, as the article states (“available under a Creative Commons License (Attribution 4.0 International”)",
+   "class": "permissive",
+   "accessed": "2026-11-20"
+  },
+  "mouse:wikipedia-autophagosome": {
+   "text": "Wikipedia, the article “Autophagosome”, its first section: an encyclopedia's general range; the sentence that gives it carries no note of its own, and its paragraph cites Mizushima, Ohsumi and Yoshimori, Cell Structure and Function 27(6):421–429, 2002. Read on en.wikipedia.org (the page as last edited on 4 October 2026).",
+   "url": "https://en.wikipedia.org/wiki/Autophagosome",
+   "licence": "CC BY-SA 4.0, share-alike, as the page's footer states (“Text is available under the Creative Commons Attribution-ShareAlike 4.0 License”)",
+   "class": "permissive",
+   "accessed": "2026-11-20"
+  },
   "mpneumoniae:genbank": {
    "text": "Himmelreich R, Hilbert H, Li B-C; Suyama M, Dandekar T, Herrmann R (1996, 2000) Mycoplasma pneumoniae M129, complete genome. GenBank U00089.2.",
    "url": "https://www.ncbi.nlm.nih.gov/nuccore/U00089.2",
@@ -4153,6 +4432,13 @@
    "class": "permissive",
    "accessed": "2026-11-15"
   },
+  "planarian:dutta2025": {
+   "text": "Dutta A and others (2025) Identification and characterization of planarian multinucleated cells in Schmidtea mediterranea using imaging flow cytometry. Frontiers in Cell and Developmental Biology 13:1611516. Results, 3.2; Discussion. Read as Europe PMC full text PMC12698644.",
+   "doi": "10.3389/fcell.2025.1611516",
+   "licence": "CC BY, as the article's permissions state",
+   "class": "permissive",
+   "accessed": "2026-11-20"
+  },
   "syn3a:genbank": {
    "text": "Glass J (2017) Synthetic bacterium JCVI-Syn3A, complete genome. GenBank CP016816.2, annotation of 12 April 2018.",
    "url": "https://www.ncbi.nlm.nih.gov/nuccore/CP016816.2",
@@ -4189,6 +4475,13 @@
    "licence": "CC BY 4.0",
    "class": "permissive",
    "accessed": "2026-11-14"
+  },
+  "thalecress:tolleter2024": {
+   "text": "Tolleter D, Smith EN, Dupont-Thibert C, Uwizeye C, Vile D, Gloaguen P, Falconet D, Finazzi G, Vandenbrouck Y, Curien G (2024) The Arabidopsis leaf quantitative atlas: a cellular and subcellular mapping through unified data integration. Quantitative plant biology 5:e2.",
+   "doi": "10.1017/qpb.2024.1",
+   "licence": "CC BY",
+   "class": "permissive",
+   "accessed": "2026-11-15"
   }
  },
  "benches": {
@@ -4206,23 +4499,28 @@
   },
   "human": {
    "file": "catalogue/human.json",
-   "machines": 33
+   "machines": 33,
+   "organelles": 11
   },
   "mouse": {
    "file": "catalogue/mouse.json",
-   "machines": 33
+   "machines": 33,
+   "organelles": 5
   },
   "planarian": {
    "file": "catalogue/planarian.json",
-   "machines": 32
+   "machines": 32,
+   "organelles": 4
   },
   "fruitfly": {
    "file": "catalogue/fruitfly.json",
-   "machines": 32
+   "machines": 32,
+   "organelles": 4
   },
   "thalecress": {
    "file": "catalogue/thalecress.json",
-   "machines": 38
+   "machines": 38,
+   "organelles": 6
   }
  }
 }

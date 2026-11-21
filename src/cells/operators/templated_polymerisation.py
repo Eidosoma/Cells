@@ -1223,6 +1223,8 @@ class TemplatedPolymerisation(Operator):
         §3.3 entries), each a FreeEnergyEntry on the route's net move per unit at its c0: a
         polymer molecule degraded, a transfer turnover. Chains declare none: their dG° follows
         from the rows' potentials. check_free_energies holds each to the registry's."""
+        if declaration is None:  # The contract's default: no declaration, no entries.
+            return ()
         out = []
         for route, cited in (
             *((d, d.standard_free_energy) for d in declaration.degradations),

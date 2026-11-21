@@ -424,7 +424,7 @@ function nucleus(env, random, chromatinPart) {
     part: "nucleus",
     probe: c.clone().addScaledVector(toward, core * 0.78).addScaledVector(radial(OPEN + Math.PI / 2), core * 0.12).addScaledVector(UP, 0.02),
     said: [
-      ["Drawn", `${across} µm across, in the cell drawn here: the picture's choice, since the species' file gives no size. A wedge of it is cut away, as of a globe, to show the two membranes of its envelope, the chromatin and the nucleolus.`],
+      ["Drawn", `${across} µm across, in the cell drawn here: the picture's choice. The cell drawn here is a generic one and uses no size of the species' file: where the file gives a nucleus a size, it is of the cell type it names, and it stands on the Machines view's shelf. A wedge of it is cut away, as of a globe, to show the two membranes of its envelope, the chromatin and the nucleolus.`],
       ["Its envelope", real ? `Two membranes about ${Math.round(gap * u * 1000)} nm apart, with ${pores.length.toLocaleString("en-US")} pores drawn as dots: the picture's choice.` : `Two membranes, drawn farther apart than they are so that the space between them shows, with ${pores.length} pores: the picture's choice.`],
     ],
   };
@@ -566,7 +566,7 @@ function reticulum(env, random) {
 
 // A stack's cisternae, from the cis face, as widths in the cell's frame; and to scale, an animal cell's ribbon of stacks
 // side by side, each about a micrometre across. The picture's choice (docs/CELL_STRUCTURES.md).
-const CISTERNAE = { real: [1.0, 1.15, 1.2, 1.15, 1.0, 0.85], schematic: [2.2, 2.55, 2.7, 2.5, 2.1] };
+export const CISTERNAE = { real: [1.0, 1.15, 1.2, 1.15, 1.0, 0.85], schematic: [2.2, 2.55, 2.7, 2.5, 2.1] };
 const RIBBON = { count: 4, width: 1.2, gap: 0.3 };
 
 /** The half-angle, seen from the nucleus's middle, that an animal cell's Golgi takes beside it, with room on each side: where its ER leaves a window. */

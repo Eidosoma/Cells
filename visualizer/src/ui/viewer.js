@@ -38,6 +38,7 @@ import { CARD } from "../replay/landing.js";
 import "./model_views.js"; // the views of model systems, each registered beside itself
 import { busyReasons } from "../core/busy.js";
 import { readHost } from "../core/host.js";
+import { AboutPart, ABOUT_CSS } from "./about.js";
 
 // The views, in the order of the switch. "label" is a tab's title, "short" its title on a narrow screen: each is
 // stated here and nowhere else (the checks and tests read them from this list). A view keeps its own name in prose
@@ -121,6 +122,8 @@ class CellsViewer extends HTMLElement {
     this.speciesBox = h("div", { class: "species", hidden: true });
     this.stamp = h("span", { class: "stamp" });
     this.indexButton = h("button", { class: "pill-button", type: "button", "aria-pressed": "false", onclick: () => this.toggleIndex() }, "List");
+    // About (src/ui/about.js): its button after List, the name in the bar's corner as a second way to it, and the line under the bar.
+    this.about = new AboutPart(this);
     this.legend = h("cells-legend", { class: "card" });
     this.panel = h("cells-panel", { class: "card", hidden: true });
     this.index = h("cells-index", { class: "card", hidden: true });
@@ -148,8 +151,9 @@ class CellsViewer extends HTMLElement {
     this.frame = h(
       "div",
       { class: "frame", style: "position:absolute;inset:0" },
-      h("div", { class: "stage" }, this.canvas, this.labelBox),
-      (this.bar = h("header", { class: "bar" }, h("div", { class: "brand" }, h("b", {}, "Cells")), this.switchBox, this.speciesBox, h("div", { class: "bar-end" }, this.stamp, this.indexButton))),
+      // The first-visit line under the view's names (src/ui/about.js): it yields to them, and every card stands over it.
+      h("div", { class: "stage" }, this.canvas, this.about.line, this.labelBox),
+      (this.bar = h("header", { class: "bar" }, h("div", { class: "brand" }, this.about.brand), this.switchBox, this.speciesBox, h("div", { class: "bar-end" }, this.stamp, this.indexButton, this.about.button))),
       this.hint,
       this.caveat,
       this.timeline,
@@ -165,7 +169,7 @@ class CellsViewer extends HTMLElement {
       this.panel,
       this.fallback
     );
-    root.append(h("style", {}, css + LENSES.map((lens) => lens.styles || "").join("")), this.frame);
+    root.append(h("style", {}, css + ABOUT_CSS + LENSES.map((lens) => lens.styles || "").join("")), this.frame);
     root.addEventListener("cells-select", (event) => this.select(event.detail.id, event.detail));
     root.addEventListener("cells-isolate", (event) => this.setIsolate(event.detail));
     root.addEventListener("cells-together", (event) => this.current?.setTogether?.(event.detail));
@@ -356,6 +360,7 @@ class CellsViewer extends HTMLElement {
       const name = location.hash.slice(1);
       if (this.views.some((lens) => lens.id === name) && name !== this.state.lens) this.setLens(name);
     });
+    this.about.start();
     this.dispatchEvent(new CustomEvent("cells-ready", { bubbles: true, composed: true }));
   }
 
@@ -562,6 +567,7 @@ class CellsViewer extends HTMLElement {
   // ------------------------------------------------------------ state changes
 
   select(id, { fly = false, waited = false } = {}) {
+    if (this.state.about) this.about.toggle(false, { from: false }); // a choice closes About, as it closes any panel
     // An id a view makes itself (laws:…), named by an address or a link from another view: that view opens first.
     // The view shown keeps an id it holds itself (a machine's closer view in the Cell view keeps `machine:<id>`).
     const owner = id && !this.current?.has?.(id) && this.views?.find((view) => view.owns?.(id));
@@ -1015,6 +1021,7 @@ class CellsViewer extends HTMLElement {
       );
     }
     this.rail.hidden = this.railToggle.hidden = !chrome.rail;
+    this.frame.classList.toggle("rail-beside-panel", Boolean(chrome.rail && chrome.railBesidePanel)); // the rail stays beside an open panel (styles.js)
     if (!chrome.rail) this.toggleRail(false);
     if (chrome.rail) {
       this.rail.replaceChildren(
@@ -1887,17 +1894,19 @@ class CellsViewer extends HTMLElement {
   }
 
   renderPanel() {
-    this.panel.show({ model: this.model, entity: this.lookup(this.state.selected) });
+    // About stands in the panel's place over the part chosen (src/ui/about.js): closed, that part's panel is back.
+    const open = Boolean(this.state.selected) || Boolean(this.state.about);
+    if (this.state.about) this.panel.showOwn(this.about.panel());
+    else this.panel.show({ model: this.model, entity: this.lookup(this.state.selected) });
     for (const button of this.shadowRoot.querySelectorAll(".species-state")) button.setAttribute("aria-pressed", String(/^(species|model):[^:]+$/.test(this.state.selected || ""))); // a species' panel, or a model system's own
     const had = this.frame.classList.contains("has-panel");
-    this.frame.classList.toggle("has-panel", Boolean(this.state.selected));
-    if (!this.state.selected) this.toggleViewCard(false); // the card folds again with the next panel
-    if (had !== Boolean(this.state.selected) && this.clientWidth < 760) this.renderLegend(); // the Flux switch moves to the legend's head, or back
+    this.frame.classList.toggle("has-panel", open);
+    if (!open) this.toggleViewCard(false); // the card folds again with the next panel
+    if (had !== open && this.clientWidth < 760) this.renderLegend(); // the Flux switch moves to the legend's head, or back
     this.placeSheet();
     this.placeFoot();
     if (this.state.lens === "proteins" && this.current?.mounted) renderAtlasNav(this, this.current.chrome().nav || null); // the trail names what is chosen
     if (this.stage) {
-      const open = Boolean(this.state.selected);
       const narrow = this.clientWidth < 760;
       // On a phone the picture is centred in the band left free: from what stands under the bar (the folded card's button)
       // down to the first of what stands on the sheet's top edge (a replay's timeline, the legend's title, the look's
@@ -1992,7 +2001,8 @@ class CellsViewer extends HTMLElement {
         } else if (this.state.viewOpen && this.state.selected) {
           this.toggleViewCard(false);
           this.viewToggle.focus({ preventScroll: true });
-        } else if (this.current?.escape?.()) return; // the protein atlas's own proteins: one level of its trail back
+        } else if (this.state.about) this.about.toggle(false); // About closes first, and the focus goes back to what opened it
+        else if (this.current?.escape?.()) return; // the protein atlas's own proteins: one level of its trail back
         else if (this.state.selected) this.select(null);
         else if (this.current?.back?.()) return;
         else if (this.state.indexOpen) this.toggleIndex(false);

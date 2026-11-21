@@ -34,6 +34,9 @@ from pathlib import Path
 import numpy as np
 import scipy
 
+# Engine-free provenance helper (validation/executed_sources.py): records or refuses the executed
+# sources Git does not track. It is the one validation/ module the references import.
+from validation import executed_sources
 from . import closed_forms, model, noise, plants, sheet
 
 # The judge and the sheet's 100× tighter check. 2.5e-14 sits just above scipy's floor of
@@ -260,8 +263,14 @@ def provenance() -> dict:
                   "selected_status": man["selected_status_porcelain_v1_z"] or None,
                   "patch_sha256": man["patch_sha256"]}
     else:
+        # A checkout: `git diff HEAD` and the status miss a file Git does not track, so the receipt
+        # also holds the full status (every untracked file, `!!` for loaded ignored sources), the
+        # diff from HEAD joined to each untracked executed source's full content, and their paths.
+        record = executed_sources.checkout(HERE)
         source = {"snapshot": None, "git_revision": git("rev-parse", "HEAD") or None,
-                  "selected_status": git("status", "--porcelain", "--", str(HERE)) or None}
+                  "selected_status": git("status", "--porcelain", "--", str(HERE)) or None,
+                  "status": record["status"] or None, "diff": record["diff"] or None,
+                  "untracked_executed": record["untracked_executed"]}
     return {"source": source, "python": platform.python_version(), "numpy": np.__version__,
             "scipy": scipy.__version__, "generated_utc": datetime.now(timezone.utc).isoformat(),
             "cpu_affinity": sorted(os.sched_getaffinity(0))}

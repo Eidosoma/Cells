@@ -14,8 +14,10 @@ every neutral species of the world and no other, so no wash is silently partial.
 The event map, at the start of the step leaving t, at each node with a wash due: every species s of
 the node's liquid becomes (1 - f) n_s + f V c_buf,s, at constant volume. An ion's buffer is the
 node's own concentration, so its amount is kept as it is, and its sample and supply are both f n_s:
-the books show it unchanged. The sample f n_s and the supply f V c_buf,s are recorded cumulatively
-for every species, ions included. Bound material, which is not liquid, stays where it is.
+the books show it unchanged. Its supplied record is its collected record, one expression, so the two
+are equal bit for bit at any fraction (D266). The sample f n_s and the supply f V c_buf,s are
+recorded cumulatively for every species, ions included. Bound material, which is not liquid, stays
+where it is.
 
 For the exchanged (neutral) species it records the free energy of the sample, F_sample = f F(n, V),
 taken to its sink, and of the buffer, F_buffer = F(f V c_buf, f V), drawn from its source, with
@@ -117,6 +119,8 @@ SHOWN_LOCAL = {
     "population_unit_turnover@1": "consumes precursors into units in cells",
     "ideal_osmosis_linear_compliance_water@1": "changes volumes, never amounts",
     "k_anion_symport_mass_action@1": "moves its charged potassium and anion in-step (read below)",
+    # Gene regulation's option A (G4): a recorded exception naming the operators owner.
+    "templated_polymerisation@1": "makes, degrades and recharges species at its routes' cells",
     LAW_ID: "is this law",
 }
 REFUSED = {
@@ -476,10 +480,17 @@ def apply_events(state, control, p, *, xp=jnp):
     def add(field, term, mask):
         return xp.where(mask, getattr(state, field) + term, getattr(state, field))
 
+    # An ion's supply is its sample (wash_terms), so its supplied record is its collected record:
+    # one expression. Two accumulations of the same term round differently where a compiler fuses
+    # one product into its sum and not the other (D266: three washes of 3/7 of a 1 uL well left
+    # chloride's records one ulp, 2^-25 fmol, apart, and the outside ledger refused the step).
+    collected = add("wash_collected_fmol", sample, on)
     new = state._replace(
         extracellular_amount_increment=add("extracellular_amount_increment", change, on),
-        wash_collected_fmol=add("wash_collected_fmol", sample, on),
-        wash_supplied_fmol=add("wash_supplied_fmol", supply, on),
+        wash_collected_fmol=collected,
+        wash_supplied_fmol=xp.where(
+            p.wash_ion[:, None], collected, add("wash_supplied_fmol", supply, on)
+        ),
         wash_sample_free_energy_pJ=add("wash_sample_free_energy_pJ", sample_energy, due),
         wash_buffer_free_energy_pJ=add("wash_buffer_free_energy_pJ", buffer_energy, due),
         wash_mixing_heat_pJ=add("wash_mixing_heat_pJ", heat_node, due),

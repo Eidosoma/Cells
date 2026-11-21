@@ -1,0 +1,1086 @@
+{
+ "registration": "fr8-rung1-20261119",
+ "text": "RUNG1_20261119.md",
+ "status": "draft registration (desk work), written before the new ID exists; registered when the lead accepts it, and before any new-ID run",
+ "written_utc": "2026-11-19T19:51Z",
+ "base": "8f213710",
+ "judged": false,
+ "wording": "converged within budget, development (the references are the engine's own fine arms)",
+ "engine_models": {
+  "H2": "resolved_pump_tissue@3",
+  "W0": "resolved_pump_composite@1 over resolved_pump_tissue@3 with scheduled_species_turnover@1 and species_regulated_availability@1",
+  "channel_laws": [
+   "nav1p2_m3h_regularized@1",
+   "kir2p1_mh2@1",
+   "naleak_always_open@1"
+  ],
+  "gates": "exponential_mean_rate_linear_target_gates@1",
+  "junction_law": "junction_voltage_relaxation@1",
+  "field_solver_H2": "capacitive_reduction_gauged_damped_newton@2"
+ },
+ "time_integrators": {
+  "today": "imex_ars222_face_electromigration@1",
+  "new": null,
+  "new_note": "one new opt-in ID under D147 (N2 with (a)), named by its builder in a dated addition to section 10 before its first run; it refuses to run unless X2 is selected"
+ },
+ "energy_check": {
+  "check": "step_doubled_energy@1",
+  "integration_error_cap": 0.002,
+  "cap_source": "today's registered value, stage 0's m5.energy_rtol_ars222 (the lead's ruling)",
+  "every_arm": true,
+  "I3_rows_keep_their_caps": "X2's qualification caps (3e-2 for the plant; the cap control's own)"
+ },
+ "budgets": {
+  "B_P": {
+   "voltage_V": 2e-05,
+   "relative_concentration": 0.0002,
+   "gate": null,
+   "source": "stage 0's section 0 parity caps (projective's criteria.absolute_caps); no gate cap inherited, gates reported as information"
+  },
+  "B_A": {
+   "voltage_V": 2e-06,
+   "relative_concentration": 2e-05,
+   "gate": 1e-05,
+   "source": "stage 0's section 5.3 reference-adequacy budgets (rung 0's budgets)"
+  },
+  "cumulative_from_t0": true
+ },
+ "gain_threshold": {
+  "value": 10,
+  "status": "proposed; the user's to confirm before any arm's readings are read"
+ },
+ "user_decisions_open": [
+  "acceptance budget: B_P or B_A",
+  "gain threshold (10 proposed)",
+  "whether X2 stands in for branch X's exact booking"
+ ],
+ "order": {
+  "readable_factor": 10,
+  "bands": {
+   "second": [
+    1.8,
+    2.2
+   ],
+   "first": [
+    0.7,
+    1.3
+   ]
+  },
+  "source": "rung 0"
+ },
+ "window_steps": 2048,
+ "records": "/mnt/workspaces/Cells/fr8-rung1-20261119",
+ "cpus": [
+  6,
+  7,
+  22,
+  23
+ ],
+ "nice": 10,
+ "H2": {
+  "reference": {
+   "other_rows": "R3, stage 0's 0.25 ms run of record",
+   "error_bound": "the difference from the next-coarser arm of its own ladder (rung 0's k = 8; stage 0's R2), valid where the observed order at that row and class from the three finest arms (k = 7, 8, 9; R1, R2, R3) is at least 1; otherwise the row is undetermined",
+   "why_not_R3_through_switch": "its error there is 0.36 uV and 8.7e-6 in gate, 0.18 and 0.87 of B_A",
+   "rung0_arms": [
+    "/mnt/workspaces/Cells/fr8-rung0-20261119/records-cf1ca34b",
+    "/mnt/workspaces/Cells/fr8-rung0-20261119/records-58c336c0"
+   ],
+   "r3_rows": "/mnt/workspaces/Cells/fr8-stage0-20261118/records-24e516c7/harness/R3/rows.npz",
+   "window_arm_rows": "rung 0's k = 9 arm of the same window (records-cf1ca34b; WN in records-58c336c0)",
+   "full_run_rows_1799.990_to_1801.000_s": "rung 0's WA arm at k = 9"
+  },
+  "source": {
+   "rows": "/mnt/workspaces/Cells/fr8-stage0-20261118/records-24e516c7/harness/R3/rows.npz",
+   "sha256": "d76d4ce78529f84d22efcc088c6f73c4a035420ddf1c5dbdcbb6281a714fcfec",
+   "revision": "24e516c7012139d86c771e105a6135c73b4244cb",
+   "record": "/mnt/workspaces/Cells/fr8-stage0-20261118/records-24e516c7/harness/R3/run.json",
+   "check_at_run_time": "sha256 recomputed, refused on mismatch; digest, revision and record identity written to each run's inputs"
+  },
+  "windows": {
+   "WS": {
+    "start_ms": 1790000,
+    "end_ms": 1791000
+   },
+   "WA": {
+    "start_ms": 1799990,
+    "end_ms": 1801000
+   },
+   "WC": {
+    "start_ms": 1800010,
+    "end_ms": 1800299
+   },
+   "WB": {
+    "start_ms": 1800300,
+    "end_ms": 1801000
+   },
+   "WN": {
+    "start_ms": 0,
+    "end_ms": 2000,
+    "from_initial": true,
+    "no_channels": true
+   }
+  },
+  "window_import": "rule (b), re-based: R3's amounts and channel gates at the start as declared initial values at t = 0, the cue re-timed, ledgers from zero, horizon the window's length",
+  "window_k_range": [
+   0,
+   9
+  ],
+  "window_ids": [
+   "today (the control)",
+   "new"
+  ],
+  "fallback_ii": {
+   "trigger": "per window and rung: X2 refuses the control at that rung",
+   "today": "rerun at that rung with X2 off, as a development instrument check",
+   "new": "cannot run without X2; keeps X2 on, result reported as it stands",
+   "dt_star": "that rung of that window leaves dt* for both IDs",
+   "full_runs_added_ms": [
+    0.5,
+    0.25
+   ],
+   "likely": "X2 allows at most max(8, ceil(0.02 |Q|)) out-of-band held steps per run",
+   "collision": "fallback (ii) reruns with X2 off, while the new ID refuses without X2; this handling is the draft's choice, for the lead to confirm"
+  },
+  "full_runs": {
+   "through_cue": {
+    "end_s": 3600.0,
+    "dts_ms": [
+     1,
+     2,
+     5,
+     10,
+     20,
+     50,
+     100
+    ]
+   },
+   "slow_phase": {
+    "end_s": 1790.0,
+    "dts_ms": [
+     200,
+     500,
+     1000,
+     2000,
+     5000,
+     10000
+    ]
+   },
+   "ids": [
+    "today",
+    "new"
+   ],
+   "rows": "R3's kept rows on each arm's grid",
+   "predicted_refusals": {
+    "today_from_ms": 100,
+    "check": "membrane charge bound (M1: 71.4 ms)"
+   }
+  },
+  "phases": {
+   "S_before_s": 1800.0,
+   "I_to_s": 3600.0
+  }
+ },
+ "W0": {
+  "build": "validation/long_duration/worlds.w0 as M5 built it (registration_20261118.json m5 and w0)",
+  "end_s": 60.0,
+  "dose_s": 20.0,
+  "write_s": 40.0,
+  "booking": "explicit_tableau",
+  "rows": {
+   "every_s": 1.0,
+   "fine_every_s": 0.01,
+   "fine_spans_s": [
+    [
+     20.0,
+     22.0
+    ],
+    [
+     40.0,
+     42.0
+    ]
+   ],
+   "fine_for": "arms whose step divides 10 ms"
+  },
+  "dts_ms": {
+   "today": [
+    0.125,
+    0.25,
+    0.5,
+    1,
+    2,
+    5,
+    10
+   ],
+   "new": [
+    0.125,
+    0.25,
+    0.5,
+    1,
+    2,
+    5,
+    10,
+    20,
+    50,
+    100,
+    200,
+    500,
+    1000
+   ]
+  },
+  "predicted_refusals": {
+   "today_ms": 10,
+   "check": "junction-gate bound, as M5 registered"
+  },
+  "reference": {
+   "arm_ms": 0.125,
+   "error_bound": "the difference from the 0.25 ms arm, valid where the observed order at that row and class from the 0.5, 0.25 and 0.125 ms arms is at least 1; otherwise the row is undetermined"
+  },
+  "phases": {
+   "S_before_s": 20.0,
+   "I_to_s": 60.0
+  }
+ },
+ "readings": {
+  "pass": "completes with every row accepted by the engine's checks (X2 included) and every row of the reading passes, cumulative from t = 0; no row failing but some undetermined makes the reading undetermined",
+  "dt_star": "the largest rung on the ID's ladder that passes, every finer rung passing too; 'none on the ladder' otherwise",
+  "gain": "dt*(new) / dt*(today); undefined where either is none",
+  "H2_join": "(I): window rungs (below 1 ms) read inside their window only (common rows for dt*, their 1 ms rows beside) joined to full-run rungs (1 ms and up) on R3's rows, both read at 1 ms; (S): the full runs alone",
+  "also_reported": [
+   "order",
+   "what binds",
+   "X2 record: counted steps, q median and distribution, held steps, max sum|a|/F"
+  ],
+  "rows": {
+   "common": {
+    "basis_of": "dt* and the gain",
+    "H2_I": "R3's rows on the 100 ms grid",
+    "H2_S": "the 10 s rows",
+    "W0": "the 1 s rows",
+    "window_rungs": "the common rows inside their window"
+   },
+   "own": "every reference row on the arm's grid, reported beside (favours coarse arms, which see fewer rows)"
+  },
+  "row_decision": "with the reference's bound e and budget b: pass if |d| + e <= b, fail if |d| - e > b, otherwise undetermined"
+ },
+ "instrument": {
+  "I1a": "on each window, the control at k = 9 against rung 0's k = 9 within the readable floor; the control at k = 2 on WA against R3's kept rows within the floor",
+  "I1b": "the new ID's finest arm against today's within the readable floor plus both estimated errors (H2 windows at k = 9; W0 at 0.125 ms)",
+  "I2": "the bound exists (observed order at least 1) at the rows that decide each dt*; rows without a bound are undetermined; decides readings, not the instrument",
+  "I3": {
+   "tool": "validation/energy_step_doubling/qualify_x2.py",
+   "solver": "the new ID",
+   "rows": {
+    "fr3plant-q1_eps_1e-1": "control resume admitted; planted resume refused with 'does not hold its state's residual'",
+    "cap-control-fr18-fig5net100-16": "refused with 'exceeds the registration's cap at accepted step 1'"
+   },
+   "limit": "tests X2's binding and cap, not a misbooking planted inside the new step",
+   "run_by": "X2's owner, in the ID's landing (the solver is set in X2's own file)",
+   "caps": "X2's qualification caps",
+   "when": "on the N2-alone head before stage A is read, and on the final head before any other new-ID arm is read"
+  },
+  "I4": "the order function on synthetic sequences (rung 0's I1)",
+  "failure": "instrument not validated, if I1, I3 or I4 fails"
+ },
+ "outcomes": {
+  "gain_at_least_threshold": "converged within budget at dt*, development, X2 on",
+  "between_1_and_threshold": "a bounded gain, what binds named",
+  "at_most_1": "no gain; the ID stays opt-in",
+  "undefined": "reported with the side that has no passing rung",
+  "x2_refusal_at_coarse_step": "what binds, provided I3 passes",
+  "acceptance_reading": "I"
+ },
+ "prediction": {
+  "H2_I_gain": "about 1 (NaV activation, rung 0's (C))",
+  "S_gain": "any gain is here: H2 past 71.4 ms, W0 past 5.18 ms",
+  "W0_I": "not predicted"
+ },
+ "stage_A": {
+  "what": "N2 alone, before (a) is built: one measurement past 5 ms on the slow phase",
+  "world": "H2",
+  "end_s": 1790.0,
+  "dt_ms": 100,
+  "rows": "R3's 10 s rows",
+  "control": "today's ID at 100 ms (predicted refused at definition)",
+  "use": "reported in section 10; enters no dt*; a refusal goes to the lead before (a) is built",
+  "head": "development only; N2 alone never lands under the final ID's name (D147)",
+  "after": "I3 passes on that head first"
+ },
+ "revised_utc": "2026-11-19T19:58Z",
+ "limits": [
+  "two worlds, one cue on H2, two interventions on W0 over 60 s",
+  "the references are the engine's own fine arms (development)",
+  "rows outside H2's windows at rungs below 1 ms are inferred",
+  "row density: errors between the coarsest arm's rows are unread",
+  "references' bounds can leave readings undetermined",
+  "I3 tests X2's binding and cap, not a misbooking planted inside the new step",
+  "X2's evidence ended at 5 ms before rung 1"
+ ],
+ "section_10": [
+  {
+   "entry": "10.1",
+   "entry_utc": "2026-11-19T20:55Z",
+   "title": "the three choices (D231), before any new-ID run",
+   "decision": "D231",
+   "main": "15efb14b",
+   "closes": [
+    "section 1's three choices",
+    "section 9's list for the user"
+   ],
+   "still_open": [
+    "the new ID's name",
+    "the N2-alone head's revision (the @3 owner's later entry)"
+   ],
+   "bar": {
+    "method": "B_P: dt*, the gain and the outcomes are read under it; gates have no cap there and are reported",
+    "reference": "B_A: the reference's error bound at each row and class must lie within B_A; otherwise, or with no bound, the row is undetermined in that class",
+    "why": "stage 0's registration (section 5.3) defined its trajectory budgets as a tenth of the caps",
+    "reported": "every arm's readings under B_A, with their dt* and gains, as information"
+   },
+   "events_check": "the registered (I) reading did not carry stage 0's peak-response and crossing-time criteria; added here",
+   "events_H2": {
+    "read_on": "WA's window arms and the full runs through the cue, each on its own rows",
+    "peak_response": {
+     "quantity": "cell_0 peak |Vm - Vm(1800 s)| after 1800 s",
+     "relative": 0.001,
+     "r3": {
+      "value_V": 0.07384501075624066,
+      "at_s": 1800.3
+     }
+    },
+    "crossings": {
+     "level_V": -0.05,
+     "after_s": 1800.0,
+     "count": 2,
+     "budget_s": 0.0005,
+     "same_direction": true,
+     "located_between_rows_at_most_s": 0.001,
+     "one_run_only": "fails",
+     "r3": [
+      {
+       "time_s": 1800.0939767730576,
+       "direction": "up"
+      }
+     ]
+    },
+    "recovery": {
+     "deltas_V": [
+      0.001,
+      0.0001
+     ],
+     "through_s": 1830.0,
+     "reported_to_the_row": true,
+     "r3": "none (cell_0 stays switched)"
+    },
+    "decision": "as rows (section 4): pass if difference + reference bound <= criterion; fail if difference - bound > criterion; otherwise undetermined; the bound is the difference from the next-coarser arm (k = 8 for WA's k = 9; R2 for R3)",
+    "required_for_I": true,
+    "consequence": "rows bracketing the crossing more than 1 ms apart take no timing pass, so H2's (I) dt* is at most 1 ms for either ID",
+    "reported_beside": [
+     "H2's (I) dt* from the trajectory and the peak alone",
+     "each coarse arm's crossing located between its own rows, with their spacing"
+    ]
+   },
+   "events_W0": "information only: per intervention, the peak over cells of |Vm - Vm(t)| to the next intervention or the end, against the reference's, and any crossing of -50 mV by the same rule",
+   "histories": "not carried: stage 0's history budget is an adequacy budget with no counterpart among the caps; conservation is judged in every arm by the engine's checks",
+   "clarification_WN": "an instrument control as at rung 0; its orders are reported, and its rows enter no reading of H2",
+   "threshold": {
+    "step_gain": 10,
+    "bar": "B_P",
+    "status": "as registered"
+   },
+   "cost": {
+    "reading": "cost per simulated second of both IDs at dt* (reported; judges nothing)",
+    "method": "each ID's dt* arm under B_P re-run once on the timed lane (CPU 4 under its lock, one thread; D190; stage 0's section 5.4), same snapshot, X2 on; rows bitwise equal to the arm's, or the timing is void",
+    "reported": [
+     "run seconds per simulated second, preflight and compilation apart",
+     "the cost gain, today's over the new ID's",
+     "each arm's own recorded seconds from the light CPUs, labelled as such"
+    ],
+    "none": "no cost for a side whose dt* is none or undetermined"
+   },
+   "energy_check": {
+    "check": "step_doubled_energy@1",
+    "integration_error_cap": 0.002,
+    "raised": "never",
+    "exact_booking": "not built by rung 1",
+    "why_deferred": "on the intervention reading the predicted limit is NaV resolution, which an exact booking would not lift (D231)"
+   },
+   "trigger": {
+    "builds": "seam D's branch X (the exact booking; the @3 owner's, 2-3 agent-days) before rung 2",
+    "cap_refusal": "X2's row refusal on its cap: sum|a| > cap x F + floor ('exceeds the registration's cap')",
+    "when": [
+     "Stage A: its 100 ms arm is refused by X2's cap",
+     "either reading, (S) or (I), on H2 or W0, under B_P: the first failing rung above the new ID's dt* is refused by X2's cap"
+    ],
+    "other_x2_refusals": "reported as what binds, by message, to the lead; they do not fire the trigger",
+    "today": "X2's cap binding today's ID is reported"
+   },
+   "I3_largest_step": {
+    "plant": "FR-3's registered plant (qualify_x2.run_plant), its world's step set to each ID's largest dt* claimed under B_P",
+    "when": "after the readings, before any claim is reported",
+    "caught": "control resume admitted, planted resume refused with 'does not hold its state's residual'",
+    "otherwise": "the plant is run one rung down the ladder until caught; claims of that ID above that step are reported as measured and marked 'X2's sensitivity not shown at this step'",
+    "cannot_run": "a definition refusal at that step, or the plant time (1 s) off the step's grid",
+    "risk": "FR-3's site-occupancy world (declared 1 ms; plant at 1 s; work x (1 + 1e-6)) may not run at coarse slow-phase steps; a plant in rung 1's own worlds is a question for X2's owner and the lead"
+   }
+  },
+  {
+   "entry": "10.2",
+   "entry_utc": "2026-11-19T20:58Z",
+   "title": "the lead's two edits to section 10.1, before any run",
+   "location_rule_consequence": {
+    "today_at_1ms": "within the parity caps and the event criteria through the switch on stage 0's and rung 0's evidence: voltage 2.97 uV against R3 (stage 0) and 3.3 uV against rung 0's finest WA arm over WA's whole span, beside 20 uV; concentration 1.4e-7 relative against the same arm, beside 2e-4; peak within 9.8e-6 relative of R3's and crossing within 2.1 us of R3's (stage 0's judge); X2 judges and does not step, and FR-18's replay admitted H2 at 1 ms over 3600 s",
+    "cap": "no ID can claim a dt* above 1 ms on H2's (I)",
+    "gain": "at most 1 by construction, not by measurement, once rung 1's own reading confirms today's ID at 1 ms; otherwise reported as it falls",
+    "follows": "FR-8's acceptance of an intervention with a threshold event needs fine steps through the event: rung 2's fine windows",
+    "event_information": [
+     "the trajectory-only dt*",
+     "each coarse arm's own crossing, with its rows' spacing"
+    ],
+    "prediction": "the gain of about 1 on H2's (I) now rests on the rule, not on NaV resolution; NaV's part is seen only in the trajectory-only dt* (information)",
+    "binds": "the rung above 1 ms fails by the location rule if it completes; a refusal that ends it first is what binds (section 4), so the trigger can still fire",
+    "W0": "not capped: its events are information, so its (I) is read on the trajectory and its gain remains a measurement"
+   },
+   "histories": {
+    "status": "carried as a reported reading, information only (replaces section 10.1's 'not carried')",
+    "fields": "every accumulator of the state: membrane and channel transfers, pump cycles, reservoir supply, electrode charge, every dissipated-energy and work field",
+    "beside": {
+     "relative": 2e-05,
+     "floors": {
+      "amount_fmol": 1e-10,
+      "energy_pJ": 2e-08,
+      "charge_C": 3e-25
+     },
+     "source": "stage 0's section 5.3",
+     "and": "the reference's own bound (section 3)"
+    },
+    "judges": "nothing",
+    "where": "every arm; full runs from t = 0 against R3's or W0's reference; re-based windows as increments from the window's start (the arm's accumulator against the reference's less its value at that start)"
+   },
+   "plant_direction": {
+    "rule": "the plant guarding a claim sits in the world whose claim it guards",
+    "plants": "X2 plants inside H2 and W0, each at a time on every rung's grid, asked of the @3 owner and registered in that owner's dated section 10 entry before any new-ID run",
+    "from_then": "section 10.1's I3-at-the-largest-step rule applies to each world's plant for that world's claims",
+    "FR3_plant": "a cross-check, run as in section 10.1 and reported; it no longer caps claims"
+   }
+  },
+  {
+   "entry": "10.3",
+   "entry_utc": "2026-11-19T21:20Z",
+   "title": "D232, the control first, before any run",
+   "decision": "D232",
+   "main": "2bb3a253",
+   "n2_build": "on hold",
+   "control": {
+    "integrator": "imex_ars222_face_electromigration@1",
+    "energy_check": {
+     "check": "step_doubled_energy@1",
+     "integration_error_cap": 0.002
+    },
+    "horizons": "full registered horizons (X2's whole-run conditions never judged on a short run)",
+    "arms": {
+     "H2_windows": {
+      "windows": [
+       "WS",
+       "WA",
+       "WC",
+       "WB"
+      ],
+      "k": [
+       0,
+       9
+      ],
+      "import": "re-based (rule (b))"
+     },
+     "H2_WN": {
+      "k": [
+       0,
+       9
+      ],
+      "role": "instrument control"
+     },
+     "H2_full_through_cue": {
+      "dts_ms": [
+       1,
+       2,
+       5,
+       10,
+       20,
+       50,
+       100
+      ],
+      "end_s": 3600.0
+     },
+     "H2_slow_phase": {
+      "dts_ms": [
+       200,
+       500,
+       1000,
+       2000,
+       5000,
+       10000
+      ],
+      "end_s": 1790.0
+     },
+     "W0": {
+      "dts_ms": [
+       0.125,
+       0.25,
+       0.5,
+       1,
+       2,
+       5,
+       10
+      ],
+      "end_s": 60.0,
+      "also": "W0's reference"
+     }
+    },
+    "as_registered": [
+     "fallback (ii)",
+     "I1a",
+     "I2",
+     "I4",
+     "the readings of sections 4, 10.1 and 10.2",
+     "the cost reading"
+    ],
+    "waits_for_new_id": [
+     "I1b",
+     "I3 under the new ID"
+    ],
+    "plant": "section 10.1's plant at the largest step claimed applies to today's ID with FR-3's plant, until the @3 owner's entry registers plants inside H2 and W0"
+   },
+   "reports": {
+    "per": "each world and reading under B_P, with B_A beside",
+    "items": [
+     "the largest passing step (today's dt*)",
+     "what stops the next rung: its check, message and row (a refusal) or its first breach (class, row and value)",
+     "wall time per simulated second at dt* on the timed lane under its lock"
+    ],
+    "decides": "nothing; the calm stretch of D232's rules is rung 1's (S)"
+   },
+   "decision_rules_quoted_from_D232": [
+    "if charge stability limits the calm stretch and the proposed method (N2) addresses that limit, proceed to A (build N2, then rung 1 as registered);",
+    "if today's integrator already gives adequate calm-stretch performance and event windows can use it, prioritise C (the fine-window executor);",
+    "if X2's cap binds today's integrator, report the evidence and keep the exact-accounting build on hold. The registered build trigger (D231) applies to Stage A or the new integrator's limiting rung; a refusal on today's integrator alone does not trigger it."
+   ],
+   "wording": {
+    "ceiling": "about 71 ms is a predicted charge-stability ceiling (M1's Mc, 14.0 /s, at H2's declared initial state with the channels' initial openings); 'today's membrane charge bound (71.4 ms)' in sections 3.1, 5 and 6 reads so",
+    "prediction_mechanism_corrected": "from M1's own definitions, before any run: M (3.42 /s, definition-time on the channel-free projection) admits up to 292 ms; Mc is checked by each IMEX step at its own openings; so refused at definition from 500 ms, and at 100 and 200 ms admitted at definition and refused by the first step's own check; where and whether the ceiling binds is what the control measures",
+    "rung0": "rung 0's official verdict stays inconclusive ('instrument not validated'); its follow-up under amendment 1 supports a pre-asymptotic transient in this case; 'rung 0's outcome (C)' in sections 5 and 10.2 means that follow-up",
+    "3.3_uV": "the difference from the finest saved trace through one switch (rung 0's finest WA arm)"
+   },
+   "precision_to_10.2": "the 1 ms rule governs the spacing of the samples bracketing the threshold crossing; rung 1's single-rate arms sample at their steps, so for them it caps the intervention reading at 1 ms; a method sampling at 1 ms or finer around events, such as fine windows, is not excluded",
+   "retention": {
+    "kept": [
+     "per arm, the error at every row read in every class against its reference",
+     "the reference refinement: each reference's bound and its ladder's differences at those rows"
+    ],
+    "why": "so 6.25 uV per arm and 25 uV across four arms can be checked separately from FR-8's 20 uV per-trace criterion",
+    "judges": "nothing in rung 1"
+   }
+  },
+  {
+   "entry": "10.4",
+   "entry_utc": "2026-11-19T21:33Z",
+   "title": "three gaps found while building the control's driver, before any run",
+   "slow_phase_arms": {
+    "added_dts_ms": [
+     1,
+     2,
+     5,
+     10,
+     20,
+     50,
+     100
+    ],
+    "all_dts_ms": [
+     1,
+     2,
+     5,
+     10,
+     20,
+     50,
+     100,
+     200,
+     500,
+     1000,
+     2000,
+     5000,
+     10000
+    ],
+    "end_s": 1790.0,
+    "ids": [
+     "today",
+     "new"
+    ],
+    "reading": "(S) on H2 is read on the slow-phase arms alone; the through-cue arms serve (I)",
+    "stage_A_control": "today's ID at 100 ms on the slow phase is one of these arms",
+    "why": "a through-cue arm refused at the cue does not complete, and X2's whole-run conditions are decided only at a run's end, so it gives no verdict on the calm stretch",
+    "cost": "about 1 CPU-hour more for today's ID"
+   },
+   "reference_bound_at_rounding": {
+    "rule": "where a reference's finest ladder difference is at or below its readable floor (in a class at a row), the reference's bound there is that floor",
+    "floor": "rung 0's: readable_factor (10) x N x eps x scale; rung 0's scales (voltage 0.1 V, concentration 1, gate 1); N the finer arm's steps from its own start to the row",
+    "elsewhere": "section 3's rule: the finest difference where the observed order is at least 1, otherwise undetermined",
+    "B_A": "still judges every bound",
+    "why": "in slow phases and over all of WS (rung 0: no readable pair) no order exists, so section 3 would leave those rows undetermined although the reference's error there is at rounding; H2's (I) ladder holds WS at every window rung"
+   },
+   "times": {
+    "rule": "every time an arm declares (rows, cue edges, interventions, horizon) is the arm's own grid product i x dt at the registered integer millisecond; rows are matched across arms by their integer millisecond; each run records the times it declared",
+    "why": "the engine's grid is the float products i x dt, and an observation or an edge must equal one exactly"
+   },
+   "changed": "no registered number, criterion or outcome"
+  },
+  {
+   "entry": "10.5",
+   "entry_utc": "2026-11-19T21:51Z",
+   "title": "the instrument's tolerance, a bound without an order, and event bounds, before any run",
+   "I1a": {
+    "finding": "development only: a smoke re-based at 600 s (50 ms at k = 0) against rung 0's DEV600 smoke exceeds rung 0's readable floor: voltage up to 1.3e-14 V against 1.1e-14 V (8 of 51 rows; the first row at 1.2e-14 V with identical amounts and gates, the readout's rounding), gates up to 2.9e-13 against 1.1e-13 (41 of 51 rows)",
+    "tolerance": "B_A: the control at k = 9 against rung 0's k = 9 on each re-based window, and WA's control at k = 2 against R3's kept rows, at every row and class",
+    "carried": "the import's measured effect |control k = 9 - rung 0's k = 9| per window row and class is added to that row's reference bound for every arm of that window",
+    "x2": "no effect on the trajectory: a development smoke with X2 on and off gave bitwise equal rows; WN's control at k = 9 against rung 0's WN at k = 9 is reported"
+   },
+   "bound_without_order": {
+    "finding": "references only (stage 0's R1-R3, rung 0's k = 7-9): rows with the finest difference 1.0-5.4 times the floor and an order below 1 (rounding noise): none on (S)'s and (I)'s rows outside WA's span; WS 14 voltage and 12 gate rows of 1001; WA 42 and 21 of 1011, including one voltage row on (I)'s common rows (1800.000 s) and two gate rows; WC and WB none",
+    "rule": "where a reference's ladder gives an order below 1 above the floor, its bound is the largest of its two ladder differences and its floor; B_A still judges every bound",
+    "largest_such_bounds": {
+     "voltage_V": 5e-12,
+     "gate": 5e-10
+    },
+    "plainly": "a reference row always has a bound now, so section 3's 'order below 1, undetermined' no longer applies anywhere, not only near rounding; on the existing references it bites only at 1.0-5.4 times the floor; W0's ladder is control data, and its count of such rows is reported with the results"
+   },
+   "event_bounds": {
+    "rule": "as rows: the difference from the next-coarser arm where the order from the three finest is at least 1; the floor where that difference is at or below it; otherwise the larger spread",
+    "floors": {
+     "peak": "twice the voltage floor at its row",
+     "crossing_time": "the voltage floor at its row over the reference's slope between its bracketing rows"
+    },
+    "on_WA": {
+     "peak_bound_V": 7e-11,
+     "peak_criterion_V": 7.4e-05,
+     "crossing_bound_s": 4.3e-11,
+     "crossing_criterion_s": 0.0005
+    }
+   },
+   "analysis": "committed with this entry before any registered row exists (rung1.py instrument and analyse); analyse refuses unless I1a and I4 pass; an exception other than the engine's ConfigError or NumericalError is a driver fault, fixed under a new head and never what binds",
+   "changed": "no registered number, budget or outcome",
+   "refusals": "an arm's result: any run-time NumericalError, or a ConfigError from a step bound; any other exception is unclassified, a fault that stops the ladder's walk, is fixed under a new head and is never what binds",
+   "revised_utc": "2026-11-19T21:58Z (before any run and before the lead's tag)"
+  },
+  {
+   "entry": "10.6",
+   "entry_utc": "2026-11-19T22:08Z",
+   "title": "the lead's rulings on sections 10.4 and 10.5, before any run",
+   "I1a": {
+    "accepted": "B_A, with the import's measured effect in every window row's bound",
+    "prompted_by": "development runs only: the re-based smoke at 600 s (50 ms at k = 0) against rung 0's DEV600 checkpoint-import smoke; none covered a switch window",
+    "second_leg": "WA at k = 2 against R3: both at 0.25 ms, so R3's own error there (0.87 of B_A in gate) is common and does not enter; only the import's effect does; on the stand-in (rung 0's own arm) it passes at 0, bitwise",
+    "can_fail": "a stand-in with WA at k = 9 offset above the bar (gates +2e-5 after the first row) is refused: 'instrument not validated' (WA's gate 2.0e-5 against 1e-5), and analyse refuses to read; records in dev/standin2/fail/",
+    "if_it_fails": "if I1a fails through the switch under this bar, that result stands, with no second amendment"
+   },
+   "slow_phase_arms": "section 10.4 item 1 accepted (about 1 CPU-hour more)",
+   "reference_rule": {
+    "replaces": "section 10.5 item 2",
+    "why": "below order 1 a ladder difference understates the error (d / (2^p - 1) for order p)",
+    "rule": "a reference row with order below 1 is determined only if its larger ladder difference, or its floor, is at most a tenth of B_A for its class (stage 0's own ratio); that is then its bound; otherwise it stays undetermined",
+    "events": "a tenth of stage 0's event criterion: 1e-4 of the peak, and 0.05 ms for a crossing time",
+    "on_references": "H2's counted rows pass by orders of magnitude (spreads at most 5e-12 V and 5e-10 in gate against tenths of 2e-7 V and 1e-6); R3's ladder leaves 12 voltage and 11 gate rows undetermined, all inside 1800.138-1800.152 s, where every arm reads WA's ladder (section 3), so none is read",
+    "W0": "control data; its count is reported with the results"
+   },
+   "what_stops_a_rung": {
+    "x2_kinds": [
+     "the per-row integration-error cap (the cap binds)",
+     "the whole-run count of out-of-band held steps",
+     "the whole-run order band of the step ratio"
+    ],
+    "x2_other_per_row": [
+     "the allowance (a misbooking's signature)",
+     "a held step over today's bound",
+     "a non-finite value"
+    ],
+    "beside": [
+     "the step's own check (a domain failure, holding the membrane-rate ceiling)",
+     "the junction-gate bound at definition (W0's 5.18 ms)",
+     "the explicit-rate bound at definition",
+     "a row's ledger checks"
+    ],
+    "cap_binds_today": "evidence for D232's third rule; does not fire D231's trigger"
+   },
+   "plants": {
+    "builder": "the @3 owner, under today's method",
+    "edit": "FR-3's: the booked work x (1 + 1e-6), FR-3's registered size",
+    "field": "metabolic_work_pJ at cell_0's pump (a term of X2's residual)",
+    "times_s": {
+     "H2": 1000.0,
+     "W0": 10.0
+    },
+    "resume_steps": 10,
+    "caught": "control resume admitted, planted resume refused with 'does not hold its state's residual'",
+    "run": "in each world at the largest step claimed (section 10.1)",
+    "until_in": "every claimed step is reported with 'X2's sensitivity not shown'",
+    "FR3_cross_check": "reported; at 1 ms the wrapper reproduces X2's qualification row: caught (|R(state) - R| 1.6e-11 pJ against a floor of 1.3e-16 pJ)"
+   },
+   "changed": "no registered number, budget or outcome; nothing has run"
+  },
+  {
+   "entry": "10.7",
+   "entry_utc": "2026-11-19T22:31Z",
+   "title": "the plants, revised after the @3 owner's review, before any plant runs",
+   "replaces": "section 10.6 item 5",
+   "control": "unaffected: it runs from the frozen d03ca463 snapshot",
+   "field": {
+    "name": "pump_dissipated_energy_pJ",
+    "slot": 0,
+    "slot_is": "membrane_0 in cell_0, carrying pump_0",
+    "edit": "x (1 + 1e-6)",
+    "why_not_metabolic_work": "also held by @1's exact metabolic-work ledger; validate_checkpoint runs check_values first, so the plant was refused with 'Resolved pump accounting failed: metabolic_work' and read as not caught at every step (the @3 owner on W0 at 1-5 ms and H2 at 5-20 ms; my development checks on H2 at 5 ms, T = 10 s, and W0 at 1 ms, T = 1 s)",
+    "heat_term": "belongs to X2's residual alone: X2's binding refuses its edit, and the unplanted control validates",
+    "evidence": "/mnt/workspaces/Cells/core-pass-at3-20261118/fr8-plant-review/ (summary.txt, w0.json, h2.json)"
+   },
+   "procedure": [
+    "the arm's registered definition at its full horizon through the scalar windows, with its registered policy",
+    "the checkpoint at T with RunResult.checkpoint_at(T) on the window holding T",
+    "the planted and unplanted checkpoints resumed in the same definition with a 10-step window, then stopped"
+   ],
+   "T_ms": {
+    "H2": 1000000,
+    "W0": 10000
+   },
+   "arm": "the one at the largest step claimed in its world (section 10.1)",
+   "sensitivity_shown": {
+    "binding": "the planted checkpoint refused with X2's binding message, the control resumed",
+    "in_step": "eps* = (floor_T + sum|a|_T / 16) / heat(T) <= 1e-6 (FR-18's plant model in evaluate_x; FR-3's plant size)",
+    "both": "'X2's sensitivity shown at this step'; otherwise 'binding shown; in-step eps* = ...'",
+    "at3_measurements": "eps* grows about as the step squared: W0 at 5 ms 8.8e-7; extrapolated W0 at 10 ms about 3.5e-6, H2 at 200 ms about 3e-6"
+   },
+   "limit": "a one-off misbooking that pushes a counted step out of band is held and checked only against today's bound; neither test covers it",
+   "cannot_run": "results, not misses: H2 at 50 ms refused by the step's domain check at 0.35 s; W0 at 10 ms by the junction step bound at definition (the @3 owner's development runs)",
+   "FR3_plant": "a cross-check, run at the largest step claimed and reported",
+   "code": "rung1.py inworld-plant ARM OUTPUT",
+   "changed": "no registered number, budget or outcome of the control"
+  },
+  {
+   "entry": "10.8",
+   "entry_utc": "2026-11-20T04:23Z",
+   "title": "a development probe of the calm stretch, written before it runs (information)",
+   "steps_ms": [
+    20,
+    50,
+    100,
+    200,
+    250
+   ],
+   "from_s": 1000.0,
+   "to_s": 1790.0,
+   "source": "the control's H2-slow-1 (rule (b))",
+   "records": "/mnt/workspaces/Cells/fr8-rung1-20261119/calm-probe/"
+  },
+  {
+   "entry": "10.9",
+   "entry_utc": "2026-11-20T10:57Z",
+   "title": "X2 across a step change, a development run, written before it runs (information)",
+   "grid": "H2 at a nominal 20 ms with 1 ms steps inside [1799.98, 1802.00] s, from t = 0 to 1830 s, by no-op schedule entries (kir_0 kept at 1)",
+   "records": "/mnt/workspaces/Cells/fr8-rung1-20261119/step-change/"
+  },
+  {
+   "entry": "10.10",
+   "entry_utc": "2026-11-20T11:00Z",
+   "title": "C, the fine-window executor, added to rung 1 with its own acceptance, before any C run",
+   "decision": "D235",
+   "what_C_is": "one definition, one run: a coarse step outside declared fine windows and a fine step inside them (one grid, two rates), run by the scalar windowed runner with X2 on at the registered cap; windows declared in the definition from the start; first on today's integrator, with N2 in a later dated entry",
+   "arm": {
+    "world": "H2",
+    "from_s": 0.0,
+    "to_s": 3600.0,
+    "coarse_ms": 20,
+    "fine_ms": 1,
+    "fine_window_s": [
+     1799.98,
+     1802.0
+    ],
+    "why_window": "holds the cue's edges and the crossing; on R3's rows |dVm/dt| < 1e-4 V/s and |dg/dt| < 1e-3 /s from 1801.72 s on",
+    "start_up": "no window: 20 ms completes it from t = 0 (the control's H2-slow-20)",
+    "rows": "R3's kept rows on the arm's grid"
+   },
+   "acceptance": {
+    "a": "(I) on H2 under B_P as registered: every row and the event criteria (peak within 1e-3; each crossing within 0.5 ms, located between rows at most 1 ms apart)",
+    "b": "X2 passes, no refusal of any kind (section 10.6), with its sensitivity shown at the coarse step (section 10.7; H2's plant at 20 ms shows it)",
+    "c": "a gain over today's dt*(I) of 1 ms of at least 10 (D231), read as the ratio of step counts (3.6e6 over C's); the timed cost per simulated second against H2-full-1's 0.34 s is reported beside",
+    "reported": "B_A and histories, not judged"
+   },
+   "prediction": {
+    "step_gain": 19.8,
+    "cost_gain": 16.6,
+    "a": "pass",
+    "b": "depends on X2 across the two step changes (section 10.9)"
+   },
+   "not_claimed": [
+    "W0: its coarse step is held at 5 ms by the junction-gate bound under today's ID, which C cannot lift, and its (I) already passes at 5 ms",
+    "windows ended by settling thresholds (the composite readout gap): a later version",
+    "C with N2: its own dated entry after N2 lands"
+   ]
+  },
+  {
+   "entry": "10.11",
+   "entry_utc": "2026-11-20T12:22Z",
+   "title": "the new ID's builder's entry (section 9), before I3 or any registered reading",
+   "author": "the @3 owner, N2's builder (D235); committed unedited by the FR-8 owner",
+   "final_id": "imex_ars222_implicit_conductances@1",
+   "development_id": "imex_ars222_implicit_conductances_n2_alone@0",
+   "n2_alone_head": "badc86ace01f16fa66042f2debe6c1446d494e52",
+   "branch": "core-pass-at3-n2",
+   "from_main": "93fc8c2c"
+  },
+  {
+   "entry": "10.12",
+   "entry_utc": "2026-11-20T12:35Z",
+   "title": "I3's cap control replaced for N2, before I3",
+   "world": "fr18-fig5net100:16",
+   "cap": 1e-13,
+   "cap_source": "X2's own constants: a counted step in band has |a| >= (4/3)(3.5 - 1) x 1000 eps M ~ 7.4e-13 M and F <= M, so the cap's comparison fires at the first counted step for k up to about 1,150",
+   "passes": "refused with 'exceeds the registration's cap' at the first counted step, within 1,000 steps from t = 0",
+   "untested": "no counted step within the horizon: an instrument failure (section 5)",
+   "nature": "a mechanism control: checks the cap's comparison fires under N2, not that N2 reaches a realistic error; no number measured under N2 enters the rule",
+   "original_row": "cap 2e-3, refused at step 1: run beside, information only",
+   "plant_row": "unchanged"
+  },
+  {
+   "entry": "10.13",
+   "entry_utc": "2026-11-20T12:35Z",
+   "title": "N2 alone at 200 ms after a 100 ms start-up, a development run, written before it runs (information)",
+   "source": "a frozen snapshot of badc86ac, development ID imex_ars222_implicit_conductances_n2_alone@0, X2 on at the registered cap",
+   "grid": "H2 from t = 0 to 1790 s: 100 ms over [0, 20] s, then 200 ms, on section 10.9's no-op-entry grid",
+   "why": "the 200 ms refusal at 0.4-0.6 s from t = 0 is a real wrong-signed Na transfer through nav_0 (the @3 owner), likely NaV's opening changing within a step whose slope is frozen at the operator time; the dissipation check acts as the wrong-sign detector",
+   "records": "/mnt/workspaces/Cells/fr8-rung1-20261119/n2-startup/"
+  },
+  {
+   "entry": "10.14",
+   "entry_utc": "2026-11-20T12:50Z",
+   "title": "the step ratio's deficit under N2 alone, development runs, written before they run (information)",
+   "records": "/mnt/workspaces/Cells/fr8-rung1-20261119/q-deficit/"
+  },
+  {
+   "entry": "10.15",
+   "entry_utc": "2026-11-20T15:49Z",
+   "title": "I3 on charged worlds under N2 alone, before section 6 is read and before anything is measured",
+   "gap": "I3's plant and cap rows run on worlds with no charged species or ion permeabilities, where N2's slopes are exactly zero and the rows are bitwise ARS",
+   "runner": "the @3 owner, under imex_ars222_implicit_conductances_n2_alone@0 from a frozen badc86ac, once this entry is committed",
+   "plant": {
+    "procedure": "section 10.7",
+    "edit": "pump_dissipated_energy_pJ at membrane slot 0 x (1 + 1e-6)",
+    "arms": {
+     "H2": {
+      "step_ms": 100,
+      "horizon_s": [
+       0,
+       1790
+      ],
+      "T_s": 1000
+     },
+     "W0": {
+      "step_ms": 5,
+      "horizon_s": [
+       0,
+       60
+      ],
+      "T_s": 10
+     }
+    },
+    "rule": "the binding refuses the planted checkpoint with X2's binding message and the control resumes; the in-step eps* reported; cannot-run is a result, not caught"
+   },
+   "cap_control": {
+    "rule": "section 10.12",
+    "cap": 1e-13,
+    "arms": "H2 at 100 ms and W0 at 5 ms under N2 alone from t = 0",
+    "passes": "refused with 'exceeds the registration's cap' at its first counted step, within 1,000 steps",
+    "untested": "an instrument failure",
+    "nature": "a mechanism control on a world where N2's implicit path is active"
+   },
+   "order": "section 6 is read only after both rows pass on both worlds; a failure goes to the lead first"
+  },
+  {
+   "entry": "10.16",
+   "entry_utc": "2026-11-20T16:34Z",
+   "title": "section 10.15's results, recorded",
+   "records": "/mnt/workspaces/Cells/core-pass-at3-20261118/n2/s1015/out-badc86ac/",
+   "plants": {
+    "H2-slow-100": {
+     "binding": "shown",
+     "eps_star": 1.06e-06
+    },
+    "W0-5": {
+     "binding": "shown",
+     "eps_star": 1.98e-06
+    },
+    "reading": "binding shown; in-step eps* above 1e-6 in both"
+   },
+   "cap_controls": {
+    "H2-slow-100": {
+     "first_counted_step": 1,
+     "refused_at_step": 3
+    },
+    "W0-5": {
+     "first_counted_step": 1,
+     "refused_at_step": 6
+    },
+    "verdict": "failed by the rule's letter: the first counted steps were out of band and held (a = 0); the cap fired at the first in-band counted step",
+    "how_run": "a 1,000-step window, scalar windows with device row checks, c' = 1e-13, the new ID set by a wrapper after rung1.definition returned",
+    "flaw": "the derivation covers in-band counted steps; the pass condition said the first counted step"
+   },
+   "attribution": {
+    "H2": "at 20 ms both IDs start in band (today 4.21, N2 3.75); at 100 ms only N2 runs (today's refused at its first step) and its first two counted steps are out of band (2.32, 3.12)",
+    "W0": "the @3 owner runs today's ID at 5 ms; if it starts in band, the out-of-band start is an N2 finding for section 6 and (a)",
+    "so_far": "nothing yet attributes the out-of-band first steps to N2"
+   },
+   "replaces": "section 10.15 item 2 is replaced by section 10.17's row",
+   "addendum_16_35": {
+    "twin": "the same cap row under today's ID at 5 ms on W0 (diag/cap-diag-W0-5-ars.json)",
+    "today": "step 1 counted at q = 3.26 and held; the cap fires at step 2, the first counted in-band step: section 10.12's rule fails under today's ID too, so the flaw is the rule's",
+    "N2": "five counted steps out of band (q 2.05 to 12.03); the cap fires at step 6",
+    "reading": "the out-of-band start is not N2's alone; under N2 it lasts longer and lies further out; information for section 6's account and (a)'s registration, not a criterion"
+   }
+  },
+  {
+   "entry": "10.17",
+   "entry_utc": "2026-11-20T16:34Z",
+   "title": "the cap control, corrected, on arms nobody has seen, committed before it runs",
+   "rule": "k* is the first counted step X2 does not hold; the cap fires at k_r <= k*; passes if refused with 'the integration error exceeds the registration's cap' at k_r <= k*, with no earlier refusal of another kind; untested if no counted unheld step within 1,000 steps and no refusal (an instrument failure)",
+   "constants": "a held step carries a = 0; a counted unheld step has |a| >= (4/3)(3.5 - 1) x 1000 eps M ~ 7.4e-13 M; F <= M; so at c' = 1e-13 the comparison must fire by k* for k up to about 1,150; uncounted unheld steps add to sum|a| and may fire it earlier",
+   "reported": [
+    "k_r",
+    "k*",
+    "sum|a|, F, M and the floor at k_r"
+   ],
+   "arms_rule": "I3's g1 worlds with registered horizons of at least 200 steps, one row per world, under N2 alone from t = 0 with X2 at c'",
+   "arms": [
+    "W1_P4 at 1 ms (crossrev qualification form)",
+    "s3 cleft_egg"
+   ],
+   "runner": "the @3 owner, from a frozen badc86ac, the ID set as in section 10.16",
+   "gate": "section 6 opens only once both rows pass; a failure goes to the lead first"
+  },
+  {
+   "entry": "10.18",
+   "entry_utc": "2026-11-20T16:47Z",
+   "title": "section 10.17's rows pass under N2 alone, with one deviation",
+   "records": "/mnt/workspaces/Cells/core-pass-at3-20261118/n2/s1017/out-badc86ac/",
+   "rows": {
+    "W1_P4 at 1 ms": {
+     "k_star": 2,
+     "k_r": 2,
+     "sum_abs_a_pJ": 4.969e-09,
+     "cap_side_pJ": 6.98e-15,
+     "note": "step 1 counted at q = 3.4825, out of band, held"
+    },
+    "s3 cleft_egg": {
+     "k_star": 1,
+     "k_r": 1,
+     "sum_abs_a_pJ": 1.775e-09,
+     "cap_side_pJ": 1.47e-13
+    }
+   },
+   "verdict": "both pass: refused with the cap's message at k_r <= k*, no earlier refusal of another kind",
+   "deviation": "I3's 200-step windows, not one 1,000-step window, to keep the cleft egg clear of the trace-budget preflight; the refusal step does not depend on the window's width",
+   "then": "I3 complete under N2 alone; section 6 opens"
+  },
+  {
+   "entry": "10.19",
+   "entry_utc": "2026-11-20T21:16Z",
+   "title": "section 6 read, and the miss against D238's target recorded",
+   "arm": {
+    "world": "H2 slow phase",
+    "span_s": [
+     0,
+     1790
+    ],
+    "step_ms": 100,
+    "id": "imex_ars222_implicit_conductances_n2_alone@0",
+    "source": "a frozen merge of the driver at 10a9ad4c onto badc86ac (engine badc86ac's exactly)",
+    "rows": 180,
+    "records": "/mnt/workspaces/Cells/fr8-rung1-20261119/stage-a/"
+   },
+   "reading": {
+    "steps": 17900,
+    "x2": {
+     "decision": "passes",
+     "counted": 8030,
+     "median_q": 3.79,
+     "held": 3,
+     "held_cap": 161,
+     "integration_error_max": 0.00078
+    },
+    "B_P": "pass at every row (voltage 0.63 uV, concentration 4.0e-5 relative; gate 6.4e-6, information)",
+    "B_A": "first breach: concentration at 10 s, 4.0e-5 against 2e-5 (the start-up), reported",
+    "today_at_100ms": "refused by its own step check on [0, 0.1] s (charge-stability ceiling)"
+   },
+   "miss": {
+    "gain_reached": 5,
+    "against": "today's 20 ms (sections 10.3, 10.8)",
+    "registered_gain": 10,
+    "why": "200 ms is not reached: from t = 0 the dissipation check refuses the third step (wrong-signed Na through nav_0); after a 100 ms start-up X2's out-of-band count refuses (876 against 114), the deficit 4 - q growing as dt (section 10.14)",
+    "not_offered": "125 ms (a tuned rung, D238)",
+    "note": "section 6 enters no dt*; N2 with (a) and N2 with C are read on their own"
+   },
+   "information": "the out-of-band start is not N2's alone; under N2 it lasts longer and lies further out (W0 at 5 ms: five steps, q 2.05-12.03, against one, q 3.26)"
+  },
+  {
+   "entry": "10.20",
+   "entry_utc": "2026-11-20T21:16Z",
+   "title": "N2 with C, a new dated arm, registered before it runs",
+   "id": "imex_ars222_implicit_conductances@1 (N2 with (a)), the final ID",
+   "source": "the first main revision carrying both C (54cb3195) and the final N2 ID, named in a dated entry at launch",
+   "order": [
+    "section 6",
+    "(a)",
+    "N2's landing with its full gate",
+    "this arm"
+   ],
+   "arm": {
+    "world": "H2",
+    "span_s": [
+     0,
+     3600
+    ],
+    "coarse_ms": 100,
+    "fine_ms": 1,
+    "window_s": [
+     1799.9,
+     1802.0
+    ],
+    "window_ends": "17999 x 0.1 and 18020 x 0.1, the grid's products",
+    "cue_off_edge": "18003 x 0.1 = 1800.3000000000002 (the grid's value)",
+    "cue_on_edge": "18000 x 0.1 = 1800.0",
+    "steps": {
+     "coarse": 35979,
+     "fine": 2100,
+     "total": 38079
+    },
+    "max_steps_at_least": 38087,
+    "rows": "R3's kept rows that are points of the arm's clock, read off EventGrid(spec)",
+    "x2": "on at the registered cap"
+   },
+   "acceptance": {
+    "a": "(I) under B_P with the event criteria, as section 10.10 (a); B_A reported",
+    "b": "X2 passes, no refusal of any kind; sensitivity standard: binding shown, eps* reported, no threshold; the plant is section 10.7's inside H2 at T = 1000 s at 100 ms",
+    "eps_star_seen": {
+     "H2 at 100 ms": 1.06e-06,
+     "W0 at 5 ms": 1.98e-06
+    },
+    "c": "step-count gain over today's 1 ms at least 10; the timed cost against H2-full-1's 0.341 s reported beside it, rows checked bitwise"
+   },
+   "predictions": {
+    "step_gain": 94.5,
+    "steps_vs_C_alone": "4.8x fewer (181,919)",
+    "cost_vs_C_alone": "about 3.8x lower (N2 adds about 26% per step)",
+    "cost_ratio_vs_1ms": 52,
+    "risk": "the first 100 ms steps after the window closes at 1802.0 s (gates changing within a coarse step, section 10.13)"
+   },
+   "record": [
+    "C's section 10.10 was judged on today's integrator at 20 ms (it passes)",
+    "the out-of-band start under N2 is information, not a criterion"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,24 @@
+{
+ "format": "cells.visualizer.share@1",
+ "note": "The picture of a link to the site shared elsewhere (og:image; tools/stage_site.mjs copies it into each release as share.jpg). The page's own 3D scene and nothing else: no words, no control, no label, the scene's painted marks put away. Made by tools/make_share.mjs; the owner chose it, the first of four candidates, as the site's picture on 20 November 2026. Make it again: node tools/make_share.mjs --plan PLAN --out DIR, with PLAN holding this address and theme.",
+ "alt": "One cell opened by a flat cut, its parts drawn in 3D: the Scope view of the Cells map.",
+ "address": "?lens=cell&azimuth=0.52&polar=0.88&distance=37",
+ "theme": "light",
+ "camera": {
+  "azimuth": 0.52,
+  "polar": 0.88,
+  "distance": 37
+ },
+ "width": 1200,
+ "height": 630,
+ "drawn_at": 2,
+ "quality": 90,
+ "bytes": 97682,
+ "sha256": "9295f2c827ac0ecf4f4986c6a6395179821d156ef8dffca111ff62dbf1dd9643",
+ "made": "2026-11-20",
+ "page": {
+  "revision": "57bdbe671df3d907424c5fc9e6a5cf7715babf07",
+  "uncommitted": true
+ },
+ "renderer": "ANGLE (NVIDIA, Vulkan 1.4.341 (NVIDIA NVIDIA L4 (0x000027B8)), NVIDIA)"
+}

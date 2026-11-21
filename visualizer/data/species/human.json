@@ -158,7 +158,71 @@
   }
  ],
  "cell": {
-  "facts": [],
+  "facts": [
+   {
+    "label": "Nucleus",
+    "value": "nuclei isolated from HeLa cells, a human cell line, in the paper's column “HeLa (fresh)”, were 17.18 ± 0.39 µm wide (the mean of their long and short axes, by light microscopy) and 16.20 ± 0.48 µm high (by atomic force microscopy), mean ± s.e.m. of 21 nuclei; the same table's column “HeLa” gives 12.73 ± 0.54 µm wide and 10.91 ± 0.59 µm high (23 nuclei). These are nuclei taken out of the cell, not nuclei measured in an intact cell",
+    "sources": [
+     "lherbette2017"
+    ]
+   },
+   {
+    "label": "Mitochondrion",
+    "value": "the paper's normal mitochondria, beside the giant ones it studies, in the liver of people with non-alcoholic fatty liver disease, measured in three dimensions, were 0.55 ± 0.15 µm wide and 1.18 ± 0.59 µm long, total means ± S.D. combining the measurements from each patient (four cells from each patient, 16 cells in all); its giant mitochondria were 0.64 ± 0.24 µm wide and 3.99 ± 1.68 µm long",
+    "sources": [
+     "shami2021"
+    ]
+   },
+   {
+    "label": "Lysosome",
+    "value": "single lysosomes of HeLa cells, each measured on its own by electron microscopy guided by fluorescence: one “a spherical shape with an approximate diameter of 560 nm” (0.56 µm), others 0.56 × 0.56 × 0.51 µm, 0.55 × 0.58 × 0.62 µm and 0.66 × 0.69 × 0.50 µm. These are single examples, not a measure of many",
+    "sources": [
+     "loginov2022"
+    ]
+   },
+   {
+    "label": "COPI vesicle",
+    "value": "dots containing COPI (coatomer) in HeLa cells, seen by STED fluorescence microscopy and sized by fitting each image (a 2D Lorentzian), were 126 ± 15 nm (0.126 µm), n = 181: an apparent size from a light microscope's fit, not an electron microscope's; COPI vesicles made in vitro measured 114 ± 11 nm (n = 64) the same way",
+    "sources": [
+     "pellett2013"
+    ]
+   },
+   {
+    "label": "Peroxisome",
+    "value": "an encyclopedia's general range, not a measurement in one cell type: “Peroxisomes are small (0.1–1 μm diameter) organelles”",
+    "sources": [
+     "wikipedia-peroxisome"
+    ]
+   },
+   {
+    "label": "Endoplasmic reticulum",
+    "value": "a review's general figure, not a measurement in one cell type: the reticulum's membrane “is formed into sheets and tubules of roughly 80–100 nm diameter”, and “The sheets are flat, with a bilayer separation of 30–50 nm”, the distance between a sheet's two membranes; the review names no species or cell type there",
+    "sources": [
+     "perkins2021"
+    ]
+   },
+   {
+    "label": "Golgi apparatus",
+    "value": "a review's general figure for mammalian cells, not a measurement in one cell type: “In mammalian cells, this organelle consists of a pile of flat, disk-like membranes, the cisternae”; “The diameter of the cisternae is also cell type-dependent, and is usually 0.5–1 μm”, and the cisternae of a stack are “usually numbering between 3 and 11”",
+    "sources": [
+     "martinezalonso2013"
+    ]
+   },
+   {
+    "label": "Lipid droplet",
+    "value": "an encyclopedia's general range, not a measurement in one cell type: “the diameter of lipid droplets ranges from 0.1–5 μm in non-adipocyte cells, but increases to over 100 μm in white adipocytes”",
+    "sources": [
+     "wikipedia-lipid-droplet"
+    ]
+   },
+   {
+    "label": "Autophagosome",
+    "value": "an encyclopedia's general range for mammalian cells, not a measurement in one cell type: “An autophagosome is a spherical structure with double layer membranes.” “Yeast autophagosomes are about 500-900 nm, while mammalian autophagosomes are larger (500-1500 nm).” The mammalian range is 0.5–1.5 µm; the sentence carries no reference of its own",
+    "sources": [
+     "wikipedia-autophagosome"
+    ]
+   }
+  ],
   "parts": {
    "membranes": 1,
    "wall": false,
@@ -167,6 +231,15 @@
     "er",
     "golgi",
     "mitochondria"
+   ],
+   "shelf": [
+    "lysosome",
+    "copi-vesicle",
+    "peroxisome",
+    "lipid-droplet",
+    "autophagosome",
+    "centriole",
+    "endocytic-vesicle"
    ]
   },
   "capabilities": {}
@@ -185,6 +258,69 @@
    "licence": "CC BY 4.0",
    "class": "permissive",
    "accessed": "2026-11-15"
+  },
+  "lherbette2017": {
+   "text": "Lherbette M and others (2017) Atomic Force Microscopy micro-rheology reveals large structural inhomogeneities in single cell-nuclei. Scientific Reports 7:8116. Table 1, the columns “HeLa (fresh)” and “HeLa” (mean ± s.e.m.; the width by light microscopy as the mean of the long and short axes, the height by atomic force microscopy), and the Methods on how the width was measured. Read on the journal's page.",
+   "doi": "10.1038/s41598-017-08517-6",
+   "licence": "CC BY 4.0, as the article's Rights and permissions section states",
+   "class": "permissive",
+   "accessed": "2026-11-20"
+  },
+  "shami2021": {
+   "text": "Shami GJ and others (2021) Three-dimensional ultrastructure of giant mitochondria in human non-alcoholic fatty liver disease. Scientific Reports 11:3319. Results, the sentence that begins “On average GM were 3.5 × longer”, which gives the widths and lengths of the giant (GM) and normal (NM) mitochondria; the Methods give the data as total means ± S.D. combining the measurements from each patient, four cells from each (16 cells in total). Read on the journal's page.",
+   "doi": "10.1038/s41598-021-82884-z",
+   "licence": "CC BY 4.0, as the article's Rights and permissions section states",
+   "class": "permissive",
+   "accessed": "2026-11-20"
+  },
+  "loginov2022": {
+   "text": "Loginov SV and others (2022) Correlative Organelle Microscopy: Fluorescence Guided Volume Electron Microscopy of Intracellular Processes. Frontiers in Cell and Developmental Biology 10:829545. Sections 3.3 (the spherical lysosome), 3.4 and 3.5. Read as Europe PMC full text PMC9035751.",
+   "doi": "10.3389/fcell.2022.829545",
+   "licence": "CC BY, as the article's permissions state",
+   "class": "permissive",
+   "accessed": "2026-11-20"
+  },
+  "pellett2013": {
+   "text": "Pellett PA and others (2013) Inter-Golgi transport mediated by COPI-containing vesicles carrying small cargoes. eLife 2:e01296. Results, “Inter-Golgi transport intermediates are the size of COPI vesicles and contain coatomer”; Methods, “Size measurement method”. Read as Europe PMC full text PMC3787390.",
+   "doi": "10.7554/eLife.01296",
+   "licence": "CC BY, as the article states (“distributed under the terms of the Creative Commons Attribution License”)",
+   "class": "permissive",
+   "accessed": "2026-11-20"
+  },
+  "wikipedia-peroxisome": {
+   "text": "Wikipedia, the article “Peroxisome”, its first section: an encyclopedia's general range. Read on en.wikipedia.org.",
+   "url": "https://en.wikipedia.org/wiki/Peroxisome",
+   "licence": "CC BY-SA 4.0, share-alike, as the page's footer states (“Text is available under the Creative Commons Attribution-ShareAlike 4.0 License”)",
+   "class": "permissive",
+   "accessed": "2026-11-20"
+  },
+  "perkins2021": {
+   "text": "Perkins and Allan (2021) Intertwined and Finely Balanced: Endoplasmic Reticulum Morphology, Dynamics, Function, and Diseases. Cells 10(9):2341. Section 2, “Morphology”: a review's general statement, which names no species or cell type there. Read as Europe PMC full text PMC8472773.",
+   "doi": "10.3390/cells10092341",
+   "licence": "CC BY, as the article states (“distributed under the terms and conditions of the Creative Commons Attribution (CC BY) license”)",
+   "class": "permissive",
+   "accessed": "2026-11-20"
+  },
+  "martinezalonso2013": {
+   "text": "Martínez-Alonso, Tomás and Martínez-Menárguez (2013) Morpho-Functional Architecture of the Golgi Complex of Neuroendocrine Cells. Frontiers in Endocrinology 4:41. Section “Morphology of the Golgi Ribbon”, on mammalian cells; it cites Weidman and others for the cisternae's diameter and Rambourg and Clermont for their number. Read as Europe PMC full text PMC3610015.",
+   "doi": "10.3389/fendo.2013.00041",
+   "licence": "CC BY, as the article states (“distributed under the terms of the Creative Commons Attribution License”)",
+   "class": "permissive",
+   "accessed": "2026-11-20"
+  },
+  "wikipedia-lipid-droplet": {
+   "text": "Wikipedia, the article “Lipid droplet”, its first section: an encyclopedia's general range, which cites Fujimoto and Parton, Cold Spring Harbor Perspectives in Biology 3(3):a004838, 2011. Read on en.wikipedia.org (the page as last edited on 27 September 2026).",
+   "url": "https://en.wikipedia.org/wiki/Lipid_droplet",
+   "licence": "CC BY-SA 4.0, share-alike, as the page's footer states (“Text is available under the Creative Commons Attribution-ShareAlike 4.0 License”)",
+   "class": "permissive",
+   "accessed": "2026-11-20"
+  },
+  "wikipedia-autophagosome": {
+   "text": "Wikipedia, the article “Autophagosome”, its first section: an encyclopedia's general range; the sentence that gives it carries no note of its own, and its paragraph cites Mizushima, Ohsumi and Yoshimori, Cell Structure and Function 27(6):421–429, 2002. Read on en.wikipedia.org (the page as last edited on 4 October 2026).",
+   "url": "https://en.wikipedia.org/wiki/Autophagosome",
+   "licence": "CC BY-SA 4.0, share-alike, as the page's footer states (“Text is available under the Creative Commons Attribution-ShareAlike 4.0 License”)",
+   "class": "permissive",
+   "accessed": "2026-11-20"
   }
  }
 }

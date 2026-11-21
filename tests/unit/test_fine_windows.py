@@ -279,6 +279,19 @@ REFUSALS = {
         ),
         "within rounding of the fine boundary 1800.001",
     ),
+    # A coarse point's (FR-8 rung 1, §10.22): an event exactly on one (90005 x 0.02, not the decimal
+    # 1800.1) is admitted, and one an ulp below the next (90010 x 0.02) is refused, naming it.
+    "an event within rounding of a coarse point": (
+        _changed(
+            lambda raw: raw["experiment"]["membrane_controls"][0]["schedule"].extend(
+                [
+                    dict(time=90005 * 0.02, availability=0.5),
+                    dict(time=math.nextafter(90010 * 0.02, 0.0), availability=1.0),
+                ]
+            )
+        ),
+        f"within rounding of the coarse boundary {90010 * 0.02!r}",
+    ),
     "a model it does not admit": (_source_decay, "fine_windows admits"),
     "an operator that counts steps": (
         _counting_operator,

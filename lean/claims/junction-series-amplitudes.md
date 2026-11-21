@@ -16,17 +16,25 @@ At fixed voltage, multiplying two independent relaxing gate factors gives a plat
 - [CellsProofs.Transport.JunctionGate.series_clamp_expansion](../CellsProofs/Transport/JunctionGate.lean#L112)
 - [CellsProofs.Transport.JunctionGate.series_amplitudes](../CellsProofs/Transport/JunctionGate.lean#L122)
 
+Direct proof subject `cells.junction_series_gates@1`
+
 Proof sources [FR-30 product of independent gate factors at constant voltage](../../docs/JUNCTION_TWO_RELAXATION_DESIGN.md#L174) · [Constant-voltage step and product conductance](../../src/cells/laws/junctions/junction_series_gates.py#L134) · [Physlib two-state partition function, imported in the optional single-gate equilibrium check](https://github.com/leanprover-community/physlib/blob/559b0e14bd87896d4ee536a536a8fb65e83b77cc/PhysLean/StatisticalMechanics/CanonicalEnsemble/TwoState.lean#L33-L37) · [Physlib postulate used by the optional check, a positive Boltzmann constant in the chosen units](https://github.com/leanprover-community/physlib/blob/559b0e14bd87896d4ee536a536a8fb65e83b77cc/PhysLean/StatisticalMechanics/BoltzmannConstant.lean#L22-L30) · [Cells specialization for one gate with dimensionless open-state energy gap](../checks/physlib/JunctionEquilibrium.lean) · [Engine steady open fraction before residual conductance](../../src/cells/laws/junctions/junction_series_gates.py#L79)
 
 ## Numerical comparison
 
-**Checked.** Across all four gate-kind pairings, five clamp voltages and six times, the compiled conductance and two route factors agreed with the scalar calculation within 2.23 × 10⁻¹⁶. This tests the FR-30 module directly. Its integration and registration in the tissue host are pending.
+**Checked.** Across four gate-kind pairings, five clamp voltages and six times, the compiled conductance and two route factors agreed with the independent calculation within 2.23 × 10⁻¹⁶. All 11 engine tests passed after registration, including the two-cell ionic trajectory and the comparison to one gate with the second pinned open. The tissue host admits the law for development runs.
 
 **Engine** `junction_series_gates@1`
 
 [Two gate types, exact clamp and route factors](https://github.com/Eidosoma/Cells/blob/d74f519d40b9a9f7488b94b489c6dc4dd865504c/src/cells/laws/junctions/junction_series_gates.py) · [Threshold gate rates](https://github.com/Eidosoma/Cells/blob/d74f519d40b9a9f7488b94b489c6dc4dd865504c/src/cells/laws/junctions/junction_voltage_relaxation.py#L41) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/ceeca19816acd761ab68379d67bb0f7426366a1c/lean/checks/junction_series_gates.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/ceeca19816acd761ab68379d67bb0f7426366a1c/lean/PROGRESS.md#nov21-features)
 
 [Tested engine d74f519d40b9](https://github.com/Eidosoma/Cells/commit/d74f519d40b9a9f7488b94b489c6dc4dd865504c) · [Evidence checkpoint ceeca19816ac](https://github.com/Eidosoma/Cells/commit/ceeca19816acd761ab68379d67bb0f7426366a1c)
+
+**Engine** `resolved_pump_tissue@3`, `junction_series_gates@1`
+
+[Registered two-gate declaration, clamp rates and route factors](https://github.com/Eidosoma/Cells/blob/4532479c017977c67449995684657066225501d5/src/cells/laws/junctions/junction_series_gates.py) · [Threshold gate rates](https://github.com/Eidosoma/Cells/blob/4532479c017977c67449995684657066225501d5/src/cells/laws/junctions/junction_voltage_relaxation.py#L41) · [Registration in the tissue model table](https://github.com/Eidosoma/Cells/blob/4532479c017977c67449995684657066225501d5/src/cells/registry/model_table.py#L84) · [Tissue inner-law table and gate admission](https://github.com/Eidosoma/Cells/blob/4532479c017977c67449995684657066225501d5/src/cells/models/inner_laws.py#L106) · [Normal host run, admission and pinned-gate comparisons](https://github.com/Eidosoma/Cells/blob/4532479c017977c67449995684657066225501d5/tests/unit/test_junction_series_gates.py#L244-L400) · [Two-gate expansion and amplitude identity](https://github.com/Eidosoma/Cells/blob/aa41cf5bf36b28125bb471a6cedf3be8756264ed/lean/CellsProofs/Transport/JunctionGate.lean) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/aa41cf5bf36b28125bb471a6cedf3be8756264ed/lean/checks/junction_series_gates.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/aa41cf5bf36b28125bb471a6cedf3be8756264ed/lean/PROGRESS.md#nov21-registered-series-and-withdrawal)
+
+[Tested engine 4532479c0179](https://github.com/Eidosoma/Cells/commit/4532479c017977c67449995684657066225501d5) · [Evidence checkpoint aa41cf5bf36b](https://github.com/Eidosoma/Cells/commit/aa41cf5bf36b28125bb471a6cedf3be8756264ed)
 
 ## Biological evidence
 

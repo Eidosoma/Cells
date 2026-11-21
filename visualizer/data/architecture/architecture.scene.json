@@ -4,35 +4,35 @@
  "title": "Cells architecture",
  "caveat": "Capabilities vary by model, and whole-cell integration is ongoing. No single run uses every part drawn here.",
  "meta": {
-  "as_of": "2026-11-19",
-  "generated_at": "2026-11-19T21:49:53Z",
-  "revision": "1ca5eada",
-  "revision_date": "2026-11-19",
+  "as_of": "2026-11-20",
+  "generated_at": "2026-11-20T22:03:14Z",
+  "revision": "93fc8c2c",
+  "revision_date": "2026-11-20",
   "dirty": false,
   "generator": "visualizer/tools/extract_architecture.py",
-  "source_base_url": "https://github.com/Eidosoma/Cells/blob/1ca5eada37ec8d7c8262fd0f81fedd218016f565/",
+  "source_base_url": "https://github.com/Eidosoma/Cells/blob/93fc8c2cd217dbac9c2f6381d201f5acdb020265/",
   "own_source_base_url": "https://github.com/Eidosoma/Cells/blob/visualizer/",
   "declarations": {
    "kind": "cells.declarations@2",
-   "revision": "1ca5eada37ec8d7c8262fd0f81fedd218016f565",
+   "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265",
    "pieces": {
     "kind": 5,
-    "law": 28,
-    "operator": 22
+    "law": 32,
+    "operator": 24
    },
    "models": 11,
    "legacy_models": 127
   },
   "counts": {
-   "engine_files": 255,
-   "engine_files_placed": 255,
-   "engine_files_read": 576,
+   "engine_files": 262,
+   "engine_files_placed": 262,
+   "engine_files_read": 583,
    "engine_files_legacy": 321,
-   "parts": 265,
-   "relations": 1007,
+   "parts": 270,
+   "relations": 1064,
    "by_kind": {
-    "operator": 20,
-    "component": 155,
+    "operator": 22,
+    "component": 158,
     "state": 6,
     "gate": 8,
     "capability": 23,
@@ -40,11 +40,11 @@
     "unit": 48
    },
    "by_status": {
-    "qualified": 48,
-    "landed": 46,
+    "qualified": 49,
+    "landed": 50,
     "established": 46,
-    "planned": 29,
-    "designed": 20,
+    "planned": 27,
+    "designed": 22,
     "failed": 1,
     "unstated": 70,
     "external": 5
@@ -550,12 +550,12 @@
     ]
    },
    "gained": {
-    "added": 94,
+    "added": 103,
     "removed": 125,
     "where": [
      [
       "operators",
-      29
+      32
      ],
      [
       "models/assembly_lineages",
@@ -575,7 +575,7 @@
      "covers_all": false
     }
    },
-   "checked_at": "1ca5eada"
+   "checked_at": "93fc8c2c"
   },
   "counts": {
    "units": 48,
@@ -4154,7 +4154,71 @@
     }
    ],
    "cell": {
-    "facts": [],
+    "facts": [
+     {
+      "label": "Nucleus",
+      "value": "nuclei isolated from HeLa cells, a human cell line, in the paper's column “HeLa (fresh)”, were 17.18 ± 0.39 µm wide (the mean of their long and short axes, by light microscopy) and 16.20 ± 0.48 µm high (by atomic force microscopy), mean ± s.e.m. of 21 nuclei; the same table's column “HeLa” gives 12.73 ± 0.54 µm wide and 10.91 ± 0.59 µm high (23 nuclei). These are nuclei taken out of the cell, not nuclei measured in an intact cell",
+      "sources": [
+       "lherbette2017"
+      ]
+     },
+     {
+      "label": "Mitochondrion",
+      "value": "the paper's normal mitochondria, beside the giant ones it studies, in the liver of people with non-alcoholic fatty liver disease, measured in three dimensions, were 0.55 ± 0.15 µm wide and 1.18 ± 0.59 µm long, total means ± S.D. combining the measurements from each patient (four cells from each patient, 16 cells in all); its giant mitochondria were 0.64 ± 0.24 µm wide and 3.99 ± 1.68 µm long",
+      "sources": [
+       "shami2021"
+      ]
+     },
+     {
+      "label": "Lysosome",
+      "value": "single lysosomes of HeLa cells, each measured on its own by electron microscopy guided by fluorescence: one “a spherical shape with an approximate diameter of 560 nm” (0.56 µm), others 0.56 × 0.56 × 0.51 µm, 0.55 × 0.58 × 0.62 µm and 0.66 × 0.69 × 0.50 µm. These are single examples, not a measure of many",
+      "sources": [
+       "loginov2022"
+      ]
+     },
+     {
+      "label": "COPI vesicle",
+      "value": "dots containing COPI (coatomer) in HeLa cells, seen by STED fluorescence microscopy and sized by fitting each image (a 2D Lorentzian), were 126 ± 15 nm (0.126 µm), n = 181: an apparent size from a light microscope's fit, not an electron microscope's; COPI vesicles made in vitro measured 114 ± 11 nm (n = 64) the same way",
+      "sources": [
+       "pellett2013"
+      ]
+     },
+     {
+      "label": "Peroxisome",
+      "value": "an encyclopedia's general range, not a measurement in one cell type: “Peroxisomes are small (0.1–1 μm diameter) organelles”",
+      "sources": [
+       "wikipedia-peroxisome"
+      ]
+     },
+     {
+      "label": "Endoplasmic reticulum",
+      "value": "a review's general figure, not a measurement in one cell type: the reticulum's membrane “is formed into sheets and tubules of roughly 80–100 nm diameter”, and “The sheets are flat, with a bilayer separation of 30–50 nm”, the distance between a sheet's two membranes; the review names no species or cell type there",
+      "sources": [
+       "perkins2021"
+      ]
+     },
+     {
+      "label": "Golgi apparatus",
+      "value": "a review's general figure for mammalian cells, not a measurement in one cell type: “In mammalian cells, this organelle consists of a pile of flat, disk-like membranes, the cisternae”; “The diameter of the cisternae is also cell type-dependent, and is usually 0.5–1 μm”, and the cisternae of a stack are “usually numbering between 3 and 11”",
+      "sources": [
+       "martinezalonso2013"
+      ]
+     },
+     {
+      "label": "Lipid droplet",
+      "value": "an encyclopedia's general range, not a measurement in one cell type: “the diameter of lipid droplets ranges from 0.1–5 μm in non-adipocyte cells, but increases to over 100 μm in white adipocytes”",
+      "sources": [
+       "wikipedia-lipid-droplet"
+      ]
+     },
+     {
+      "label": "Autophagosome",
+      "value": "an encyclopedia's general range for mammalian cells, not a measurement in one cell type: “An autophagosome is a spherical structure with double layer membranes.” “Yeast autophagosomes are about 500-900 nm, while mammalian autophagosomes are larger (500-1500 nm).” The mammalian range is 0.5–1.5 µm; the sentence carries no reference of its own",
+      "sources": [
+       "wikipedia-autophagosome"
+      ]
+     }
+    ],
     "parts": {
      "membranes": 1,
      "wall": false,
@@ -4163,6 +4227,15 @@
       "er",
       "golgi",
       "mitochondria"
+     ],
+     "shelf": [
+      "lysosome",
+      "copi-vesicle",
+      "peroxisome",
+      "lipid-droplet",
+      "autophagosome",
+      "centriole",
+      "endocytic-vesicle"
      ]
     },
     "capabilities": {}
@@ -4181,6 +4254,69 @@
      "licence": "CC BY 4.0",
      "class": "permissive",
      "accessed": "2026-11-15"
+    },
+    "lherbette2017": {
+     "text": "Lherbette M and others (2017) Atomic Force Microscopy micro-rheology reveals large structural inhomogeneities in single cell-nuclei. Scientific Reports 7:8116. Table 1, the columns “HeLa (fresh)” and “HeLa” (mean ± s.e.m.; the width by light microscopy as the mean of the long and short axes, the height by atomic force microscopy), and the Methods on how the width was measured. Read on the journal's page.",
+     "doi": "10.1038/s41598-017-08517-6",
+     "licence": "CC BY 4.0, as the article's Rights and permissions section states",
+     "class": "permissive",
+     "accessed": "2026-11-20"
+    },
+    "shami2021": {
+     "text": "Shami GJ and others (2021) Three-dimensional ultrastructure of giant mitochondria in human non-alcoholic fatty liver disease. Scientific Reports 11:3319. Results, the sentence that begins “On average GM were 3.5 × longer”, which gives the widths and lengths of the giant (GM) and normal (NM) mitochondria; the Methods give the data as total means ± S.D. combining the measurements from each patient, four cells from each (16 cells in total). Read on the journal's page.",
+     "doi": "10.1038/s41598-021-82884-z",
+     "licence": "CC BY 4.0, as the article's Rights and permissions section states",
+     "class": "permissive",
+     "accessed": "2026-11-20"
+    },
+    "loginov2022": {
+     "text": "Loginov SV and others (2022) Correlative Organelle Microscopy: Fluorescence Guided Volume Electron Microscopy of Intracellular Processes. Frontiers in Cell and Developmental Biology 10:829545. Sections 3.3 (the spherical lysosome), 3.4 and 3.5. Read as Europe PMC full text PMC9035751.",
+     "doi": "10.3389/fcell.2022.829545",
+     "licence": "CC BY, as the article's permissions state",
+     "class": "permissive",
+     "accessed": "2026-11-20"
+    },
+    "pellett2013": {
+     "text": "Pellett PA and others (2013) Inter-Golgi transport mediated by COPI-containing vesicles carrying small cargoes. eLife 2:e01296. Results, “Inter-Golgi transport intermediates are the size of COPI vesicles and contain coatomer”; Methods, “Size measurement method”. Read as Europe PMC full text PMC3787390.",
+     "doi": "10.7554/eLife.01296",
+     "licence": "CC BY, as the article states (“distributed under the terms of the Creative Commons Attribution License”)",
+     "class": "permissive",
+     "accessed": "2026-11-20"
+    },
+    "wikipedia-peroxisome": {
+     "text": "Wikipedia, the article “Peroxisome”, its first section: an encyclopedia's general range. Read on en.wikipedia.org.",
+     "url": "https://en.wikipedia.org/wiki/Peroxisome",
+     "licence": "CC BY-SA 4.0, share-alike, as the page's footer states (“Text is available under the Creative Commons Attribution-ShareAlike 4.0 License”)",
+     "class": "permissive",
+     "accessed": "2026-11-20"
+    },
+    "perkins2021": {
+     "text": "Perkins and Allan (2021) Intertwined and Finely Balanced: Endoplasmic Reticulum Morphology, Dynamics, Function, and Diseases. Cells 10(9):2341. Section 2, “Morphology”: a review's general statement, which names no species or cell type there. Read as Europe PMC full text PMC8472773.",
+     "doi": "10.3390/cells10092341",
+     "licence": "CC BY, as the article states (“distributed under the terms and conditions of the Creative Commons Attribution (CC BY) license”)",
+     "class": "permissive",
+     "accessed": "2026-11-20"
+    },
+    "martinezalonso2013": {
+     "text": "Martínez-Alonso, Tomás and Martínez-Menárguez (2013) Morpho-Functional Architecture of the Golgi Complex of Neuroendocrine Cells. Frontiers in Endocrinology 4:41. Section “Morphology of the Golgi Ribbon”, on mammalian cells; it cites Weidman and others for the cisternae's diameter and Rambourg and Clermont for their number. Read as Europe PMC full text PMC3610015.",
+     "doi": "10.3389/fendo.2013.00041",
+     "licence": "CC BY, as the article states (“distributed under the terms of the Creative Commons Attribution License”)",
+     "class": "permissive",
+     "accessed": "2026-11-20"
+    },
+    "wikipedia-lipid-droplet": {
+     "text": "Wikipedia, the article “Lipid droplet”, its first section: an encyclopedia's general range, which cites Fujimoto and Parton, Cold Spring Harbor Perspectives in Biology 3(3):a004838, 2011. Read on en.wikipedia.org (the page as last edited on 27 September 2026).",
+     "url": "https://en.wikipedia.org/wiki/Lipid_droplet",
+     "licence": "CC BY-SA 4.0, share-alike, as the page's footer states (“Text is available under the Creative Commons Attribution-ShareAlike 4.0 License”)",
+     "class": "permissive",
+     "accessed": "2026-11-20"
+    },
+    "wikipedia-autophagosome": {
+     "text": "Wikipedia, the article “Autophagosome”, its first section: an encyclopedia's general range; the sentence that gives it carries no note of its own, and its paragraph cites Mizushima, Ohsumi and Yoshimori, Cell Structure and Function 27(6):421–429, 2002. Read on en.wikipedia.org (the page as last edited on 4 October 2026).",
+     "url": "https://en.wikipedia.org/wiki/Autophagosome",
+     "licence": "CC BY-SA 4.0, share-alike, as the page's footer states (“Text is available under the Creative Commons Attribution-ShareAlike 4.0 License”)",
+     "class": "permissive",
+     "accessed": "2026-11-20"
     }
    },
    "cell_types": [
@@ -4269,10 +4405,83 @@
        "er",
        "golgi",
        "mitochondria"
+      ],
+      "shelf": [
+       "lysosome",
+       "copi-vesicle",
+       "peroxisome",
+       "lipid-droplet",
+       "autophagosome",
+       "centriole",
+       "endocytic-vesicle"
       ]
      },
      "capabilities": {},
-     "facts": [],
+     "facts": [
+      {
+       "label": "Nucleus",
+       "value": "nuclei isolated from HeLa cells, a human cell line, in the paper's column “HeLa (fresh)”, were 17.18 ± 0.39 µm wide (the mean of their long and short axes, by light microscopy) and 16.20 ± 0.48 µm high (by atomic force microscopy), mean ± s.e.m. of 21 nuclei; the same table's column “HeLa” gives 12.73 ± 0.54 µm wide and 10.91 ± 0.59 µm high (23 nuclei). These are nuclei taken out of the cell, not nuclei measured in an intact cell",
+       "sources": [
+        "lherbette2017"
+       ]
+      },
+      {
+       "label": "Mitochondrion",
+       "value": "the paper's normal mitochondria, beside the giant ones it studies, in the liver of people with non-alcoholic fatty liver disease, measured in three dimensions, were 0.55 ± 0.15 µm wide and 1.18 ± 0.59 µm long, total means ± S.D. combining the measurements from each patient (four cells from each patient, 16 cells in all); its giant mitochondria were 0.64 ± 0.24 µm wide and 3.99 ± 1.68 µm long",
+       "sources": [
+        "shami2021"
+       ]
+      },
+      {
+       "label": "Lysosome",
+       "value": "single lysosomes of HeLa cells, each measured on its own by electron microscopy guided by fluorescence: one “a spherical shape with an approximate diameter of 560 nm” (0.56 µm), others 0.56 × 0.56 × 0.51 µm, 0.55 × 0.58 × 0.62 µm and 0.66 × 0.69 × 0.50 µm. These are single examples, not a measure of many",
+       "sources": [
+        "loginov2022"
+       ]
+      },
+      {
+       "label": "COPI vesicle",
+       "value": "dots containing COPI (coatomer) in HeLa cells, seen by STED fluorescence microscopy and sized by fitting each image (a 2D Lorentzian), were 126 ± 15 nm (0.126 µm), n = 181: an apparent size from a light microscope's fit, not an electron microscope's; COPI vesicles made in vitro measured 114 ± 11 nm (n = 64) the same way",
+       "sources": [
+        "pellett2013"
+       ]
+      },
+      {
+       "label": "Peroxisome",
+       "value": "an encyclopedia's general range, not a measurement in one cell type: “Peroxisomes are small (0.1–1 μm diameter) organelles”",
+       "sources": [
+        "wikipedia-peroxisome"
+       ]
+      },
+      {
+       "label": "Endoplasmic reticulum",
+       "value": "a review's general figure, not a measurement in one cell type: the reticulum's membrane “is formed into sheets and tubules of roughly 80–100 nm diameter”, and “The sheets are flat, with a bilayer separation of 30–50 nm”, the distance between a sheet's two membranes; the review names no species or cell type there",
+       "sources": [
+        "perkins2021"
+       ]
+      },
+      {
+       "label": "Golgi apparatus",
+       "value": "a review's general figure for mammalian cells, not a measurement in one cell type: “In mammalian cells, this organelle consists of a pile of flat, disk-like membranes, the cisternae”; “The diameter of the cisternae is also cell type-dependent, and is usually 0.5–1 μm”, and the cisternae of a stack are “usually numbering between 3 and 11”",
+       "sources": [
+        "martinezalonso2013"
+       ]
+      },
+      {
+       "label": "Lipid droplet",
+       "value": "an encyclopedia's general range, not a measurement in one cell type: “the diameter of lipid droplets ranges from 0.1–5 μm in non-adipocyte cells, but increases to over 100 μm in white adipocytes”",
+       "sources": [
+        "wikipedia-lipid-droplet"
+       ]
+      },
+      {
+       "label": "Autophagosome",
+       "value": "an encyclopedia's general range for mammalian cells, not a measurement in one cell type: “An autophagosome is a spherical structure with double layer membranes.” “Yeast autophagosomes are about 500-900 nm, while mammalian autophagosomes are larger (500-1500 nm).” The mammalian range is 0.5–1.5 µm; the sentence carries no reference of its own",
+       "sources": [
+        "wikipedia-autophagosome"
+       ]
+      }
+     ],
      "loop": null
     }
    ],
@@ -4452,6 +4661,27 @@
       "sources": [
        "islam2021"
       ]
+     },
+     {
+      "label": "Nucleus",
+      "value": "whole primary beta cells of pancreatic islets isolated from 9-week-old mice, reconstructed in three dimensions by FIB-SEM: “The volume of the nuclei ranged from 102 to 150 µm³ in the six cells containing complete nuclei”. Ours, not the paper's: a sphere of the range's middle, 126 µm³, is 6.2 µm across",
+      "sources": [
+       "muller2020"
+      ]
+     },
+     {
+      "label": "Golgi apparatus",
+      "value": "a review's general figure for mammalian cells, not a measurement in one cell type: “In mammalian cells, this organelle consists of a pile of flat, disk-like membranes, the cisternae”; “The diameter of the cisternae is also cell type-dependent, and is usually 0.5–1 μm”, and the cisternae of a stack are “usually numbering between 3 and 11”",
+      "sources": [
+       "martinezalonso2013"
+      ]
+     },
+     {
+      "label": "Autophagosome",
+      "value": "an encyclopedia's general range for mammalian cells, not a measurement in one cell type: “An autophagosome is a spherical structure with double layer membranes.” “Yeast autophagosomes are about 500-900 nm, while mammalian autophagosomes are larger (500-1500 nm).” The mammalian range is 0.5–1.5 µm; the sentence carries no reference of its own",
+      "sources": [
+       "wikipedia-autophagosome"
+      ]
      }
     ],
     "parts": {
@@ -4462,6 +4692,9 @@
       "er",
       "golgi",
       "mitochondria"
+     ],
+     "shelf": [
+      "autophagosome"
      ]
     },
     "capabilities": {}
@@ -4480,6 +4713,27 @@
      "licence": "CC BY",
      "class": "permissive",
      "accessed": "2026-11-16"
+    },
+    "muller2020": {
+     "text": "Müller and others (2020) 3D FIB-SEM reconstruction of microtubule–organelle interaction in whole primary mouse β cells. Journal of Cell Biology 220(2):e202010039. Section “Organelle fractions are heterogeneous across cells” and its Table 1. Read as Europe PMC full text PMC7748794.",
+     "doi": "10.1083/jcb.202010039",
+     "licence": "CC BY 4.0, as the article states (“available under a Creative Commons License (Attribution 4.0 International”)",
+     "class": "permissive",
+     "accessed": "2026-11-20"
+    },
+    "martinezalonso2013": {
+     "text": "Martínez-Alonso, Tomás and Martínez-Menárguez (2013) Morpho-Functional Architecture of the Golgi Complex of Neuroendocrine Cells. Frontiers in Endocrinology 4:41. Section “Morphology of the Golgi Ribbon”, on mammalian cells; it cites Weidman and others for the cisternae's diameter and Rambourg and Clermont for their number. Read as Europe PMC full text PMC3610015.",
+     "doi": "10.3389/fendo.2013.00041",
+     "licence": "CC BY, as the article states (“distributed under the terms of the Creative Commons Attribution License”)",
+     "class": "permissive",
+     "accessed": "2026-11-20"
+    },
+    "wikipedia-autophagosome": {
+     "text": "Wikipedia, the article “Autophagosome”, its first section: an encyclopedia's general range; the sentence that gives it carries no note of its own, and its paragraph cites Mizushima, Ohsumi and Yoshimori, Cell Structure and Function 27(6):421–429, 2002. Read on en.wikipedia.org (the page as last edited on 4 October 2026).",
+     "url": "https://en.wikipedia.org/wiki/Autophagosome",
+     "licence": "CC BY-SA 4.0, share-alike, as the page's footer states (“Text is available under the Creative Commons Attribution-ShareAlike 4.0 License”)",
+     "class": "permissive",
+     "accessed": "2026-11-20"
     }
    },
    "cell_types": [
@@ -4558,6 +4812,9 @@
        "er",
        "golgi",
        "mitochondria"
+      ],
+      "shelf": [
+       "autophagosome"
       ]
      },
      "capabilities": {},
@@ -4581,6 +4838,27 @@
        "value": "head and body 78.5 mm, tail 85.3 mm, ear 13.3 mm: the means of four house mice trapped in Qatar, wild and not laboratory mice",
        "sources": [
         "islam2021"
+       ]
+      },
+      {
+       "label": "Nucleus",
+       "value": "whole primary beta cells of pancreatic islets isolated from 9-week-old mice, reconstructed in three dimensions by FIB-SEM: “The volume of the nuclei ranged from 102 to 150 µm³ in the six cells containing complete nuclei”. Ours, not the paper's: a sphere of the range's middle, 126 µm³, is 6.2 µm across",
+       "sources": [
+        "muller2020"
+       ]
+      },
+      {
+       "label": "Golgi apparatus",
+       "value": "a review's general figure for mammalian cells, not a measurement in one cell type: “In mammalian cells, this organelle consists of a pile of flat, disk-like membranes, the cisternae”; “The diameter of the cisternae is also cell type-dependent, and is usually 0.5–1 μm”, and the cisternae of a stack are “usually numbering between 3 and 11”",
+       "sources": [
+        "martinezalonso2013"
+       ]
+      },
+      {
+       "label": "Autophagosome",
+       "value": "an encyclopedia's general range for mammalian cells, not a measurement in one cell type: “An autophagosome is a spherical structure with double layer membranes.” “Yeast autophagosomes are about 500-900 nm, while mammalian autophagosomes are larger (500-1500 nm).” The mammalian range is 0.5–1.5 µm; the sentence carries no reference of its own",
+       "sources": [
+        "wikipedia-autophagosome"
        ]
       }
      ],
@@ -5291,7 +5569,15 @@
     }
    ],
    "cell": {
-    "facts": [],
+    "facts": [
+     {
+      "label": "Nucleus",
+      "value": "in planarian cells dissociated from the animal, by imaging flow cytometry with a nuclear stain (Draq5), “the nuclear diameters for all cells were generally constant at ~3–4 µm”; the paper discusses whether some stained spots are nuclear foci rather than whole nuclei",
+      "sources": [
+       "dutta2025"
+      ]
+     }
+    ],
     "parts": {
      "membranes": 1,
      "wall": false,
@@ -5314,6 +5600,13 @@
      "licence": "CC BY 4.0",
      "class": "permissive",
      "accessed": "2026-11-15"
+    },
+    "dutta2025": {
+     "text": "Dutta A and others (2025) Identification and characterization of planarian multinucleated cells in Schmidtea mediterranea using imaging flow cytometry. Frontiers in Cell and Developmental Biology 13:1611516. Results, 3.2; Discussion. Read as Europe PMC full text PMC12698644.",
+     "doi": "10.3389/fcell.2025.1611516",
+     "licence": "CC BY, as the article's permissions state",
+     "class": "permissive",
+     "accessed": "2026-11-20"
     }
    },
    "cell_types": [
@@ -5399,7 +5692,15 @@
       ]
      },
      "capabilities": {},
-     "facts": [],
+     "facts": [
+      {
+       "label": "Nucleus",
+       "value": "in planarian cells dissociated from the animal, by imaging flow cytometry with a nuclear stain (Draq5), “the nuclear diameters for all cells were generally constant at ~3–4 µm”; the paper discusses whether some stained spots are nuclear foci rather than whole nuclei",
+       "sources": [
+        "dutta2025"
+       ]
+      }
+     ],
      "loop": "planarian-loop--planarian-b08af640"
     }
    ],
@@ -20977,7 +21278,7 @@
    "group": "operators",
    "status": "qualified",
    "as_of": "2026-11-11",
-   "plain": "A carrier that moves potassium and an anion together, the route by which cells regulate their volume.",
+   "plain": "A carrier that moves potassium and an anion together, the route by which cells regulate their volume. On 20 November 2026 its step bound came to count a finite outside node, summed per cell and per node, which closes a silent step in the wrong direction that the Lean proofs project found; every registered world faces held baths and keeps its bits, and nothing was judged again.",
    "detail": "Operator k_anion_symport_mass_action@1: KCC-type K+/anion symport routes.",
    "facts": [
     [
@@ -21012,6 +21313,10 @@
     {
      "path": "PROGRESS.md",
      "where": "Osmotic water and volume qualified and landed"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "kcc-step-bound-landed-2026-11-20"
     }
    ],
    "files": [
@@ -21025,7 +21330,7 @@
    "group": "operators",
    "status": "qualified",
    "as_of": "2026-11-15",
-   "plain": "Reactions between species in the tissue's one inventory, with exact energy bookings. Numerically qualified on 15 November 2026 within the scope of its protocol, MG0c: the judged run passed all 55 criteria, the guards and every kept control. The scope is driven mass-action reactions at outside nodes with the composite's species transport, on CPU. Since 17 November 2026 it declares its run view, its layer, routes, readout axes, units, kinds and signs, so a reactions world writes a view; these are declarations only, and no computation changed. The gap-junction work needs it (D207).",
+   "plain": "Reactions between species in the tissue's one inventory, with exact energy bookings. Numerically qualified on 15 November 2026 within the scope of its protocol, MG0c: the judged run passed all 55 criteria, the guards and every kept control. The scope is driven mass-action reactions at outside nodes with the composite's species transport, on CPU. Since 17 November 2026 it declares its run view, its layer, routes, readout axes, units, kinds and signs, so a reactions world writes a view; these are declarations only, and no computation changed. The gap-junction work needs it (D207). On 19 November 2026 it was widened in place under D148 to admit charged species where every reaction conserves charge, a charged row keeping the tissue model's own routes only as a declared counter-ion that the tissue model's own bound covers (FR-15's S1); crossrev's sets stayed identical, and nothing was judged again.",
    "detail": "Operator local_species_reactions@1: reactions on the shared species inventory (D152, version 1).",
    "facts": [
     [
@@ -21098,6 +21403,10 @@
     },
     {
      "path": "tests/unit/test_species_reactions_view.py"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "FR-15 S1: charged species in `local_species_reactions@1` (19 November 2026; in place under"
     }
    ],
    "files": [
@@ -21150,6 +21459,93 @@
    ],
    "files": [
     "src/cells/operators/membrane_state.py"
+   ]
+  },
+  {
+   "id": "op.population_unit_turnover@1",
+   "label": "Unit producer (FR-7)",
+   "kind": "operator",
+   "group": "operators",
+   "status": "landed",
+   "as_of": "2026-11-20",
+   "plain": "Development, not judged. A membrane population's units made from a precursor species: the precursor is consumed at first order into channel units through a declared number of maturation pools, and every unit of a routed population, those present at the start included, is removed at first order into a booked sink. Each half-step is the chain's exact solution, so its one material account closes by construction. It landed on 19 November 2026 as FR-7's first piece (F1), and on 20 November 2026 its assembly rate became a target of the coupling's rate route (F3) and it gained declared initial units per maturation pool. It holds removal inside itself, a departure from D177 that the user accepted as a scoped exception covering surface insertion and irreversible removal (D232). Its refusal is simulation-wide: it composes with no other writer of population units, so not with FR-2's recycling, membrane insertion or division, even on other populations. It runs in FR-7's first closed loop, whose comparison F4 was judged on 20 November 2026 and passed (a part of its own). Implemented and guarded: a test on main holds its chain, its writers and its refusals.",
+   "detail": "Operator population_unit_turnover@1: a membrane population's units made from a precursor species through maturation pools, and removed at first order (FR-7's unit producer, F1).",
+   "facts": [
+    [
+     "Law",
+     "population_unit_turnover@1"
+    ],
+    [
+     "Class",
+     "PopulationUnitTurnover"
+    ],
+    [
+     "Parts of the step",
+     "split half-steps"
+    ],
+    [
+     "Step method",
+     "exact_unit_chain_half_steps@1"
+    ],
+    [
+     "Under an RK4 inner step",
+     "split"
+    ],
+    [
+     "Schedule in a definition",
+     "unit_turnover_controls"
+    ],
+    [
+     "Work booked in",
+     "unit_turnover_work_pJ"
+    ],
+    [
+     "Own ledgers",
+     "unit_chain, unit_conversion"
+    ],
+    [
+     "State it owns",
+     "7 fields"
+    ],
+    [
+     "Reads as declared",
+     "volume, extracellular_volume, active, outside_active, membrane_active"
+    ]
+   ],
+   "sources": [
+    {
+     "path": "src/cells/operators/population_unit_turnover.py"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "FR-7 F1: the unit producer `population_unit_turnover@1` (19 November 2026; development, not"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "The fourth review's fixes, FR-7 F2 and FR-7's references (19–20 November 2026)."
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "fr7-pools-landed-2026-11-20"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "fr7-f3-landed-2026-11-20"
+    },
+    {
+     "path": "docs/DECISIONS.md",
+     "where": "D232: FR-7's scoped exception to D177, and FR-8 measures before it builds"
+    },
+    {
+     "path": "docs/PUMP_COMPOSITE.md",
+     "where": "a population's units made from a precursor species through first-order maturation pools"
+    },
+    {
+     "path": "tests/unit/test_population_unit_turnover.py"
+    }
+   ],
+   "files": [
+    "src/cells/operators/population_unit_turnover.py"
    ]
   },
   {
@@ -21828,8 +22224,8 @@
    "kind": "operator",
    "group": "operators",
    "status": "landed",
-   "as_of": "2026-11-18",
-   "plain": "Production and clearance of secreted molecules, inside cells and between them. Implemented and guarded. Its first-order clearance is part of the numerically qualified secreted-species transport (D150 v1); production is guarded by tests only. The shared species code holds up to 16 species since 14 November 2026 (FR-9, D165); the transport's judged scope stays at 7 species or fewer. The shared species code refuses a species that one of these operators writes when it crosses the tissue model's own junction routes, here and in the reaction, exchange and site-occupancy operators, and it refuses charged species; a neutral species on a junction route of the passive routes is admitted, as the record corrected on 17 November 2026. Lifting the rest, for charged species that cross junctions, was requested the same day by the gap-junction work, and awaits the user's go (FR-15); on 18 November 2026 it was scheduled with the owners of the kinds and of the tissue model, after their current work, and is not started (D219).",
+   "as_of": "2026-11-20",
+   "plain": "Production and clearance of secreted molecules, inside cells and between them. Implemented and guarded. Its first-order clearance is part of the numerically qualified secreted-species transport (D150 v1); production is guarded by tests only. The shared species code holds up to 16 species since 14 November 2026 (FR-9, D165); the transport's judged scope stays at 7 species or fewer. The shared species code refuses a species that one of these operators writes when it crosses the tissue model's own junction routes, here and in the reaction, exchange and site-occupancy operators, and it refuses charged species; a neutral species on a junction route of the passive routes is admitted, as the record corrected on 17 November 2026. Lifting the rest, for charged species that cross junctions, was requested the same day by the gap-junction work (FR-15) and scheduled on 18 November 2026 with the owners of the kinds and of the tissue model (D219). On 19 November 2026 the lead ruled its direction: charged species in the reactions operator first, then a charged constant-field route law on the passive routes kind, and both landed by 20 November 2026. In this operator charged routes wait for a version 2, when a consumer needs exact first-order clearance of a charged row.",
    "detail": "Operator scheduled_species_turnover@1: production and first-order clearance of neutral species.",
    "facts": [
     [
@@ -21902,7 +22298,11 @@
     },
     {
      "path": "docs/FEATURE_REQUESTS.md",
-     "where": "D219: scheduled with the kinds and @3 owners after their current work. Not started."
+     "where": "D219: scheduled with the kinds and @3 owners after their current work"
+    },
+    {
+     "path": "docs/FEATURE_REQUESTS.md",
+     "where": "F2's direction (the lead's rulings of 19 November 2026): S1 + P2."
     }
    ],
    "files": [
@@ -22008,7 +22408,7 @@
    "group": "operators",
    "status": "qualified",
    "as_of": "2026-11-18",
-   "plain": "A species amount in the inventory sets how available a junction or a channel population is, so chemistry can change electrical behaviour. Numerically qualified on 15 November 2026: its judged run passed all 47 criteria. It agrees at second order with independent references, for two cells whose contact is set by each cell's regulatory state and for a species that sets a channel's availability. The qualification is for CPU runs within its stated scope: worlds without pumps or gated channels, over 1 and 2 seconds. On 15 November 2026 an export driver ran its world in four matched arms, as development evidence with no verdict (D177): restarts and windows were identical byte for byte, and the engine agreed with the refined reference to 4.5e-7 mV at the finest step. Its registered protocol was run again on the rebuilt tissue model before the rework landed on 16 November 2026, and passed. On 18 November 2026 its second judged protocol, A5″ (FR-6's items 1 and 3), passed all 18 judged criteria against independent references: two cells' potassium leak populations without gates, driven through its regulatory state from different starting states under the same dose of regulator. Its scope line: the operator with its regulatory state and the secreted-species turnover as built at 555d8771, two pump-free 2 pL cells over 2 s, synthetic values, CPU only; gated channels, the routing door, leak and pump targets and any biological comparison are not covered.",
+   "plain": "A species amount in the inventory sets how available a junction or a channel population is, so chemistry can change electrical behaviour. Numerically qualified on 15 November 2026: its judged run passed all 47 criteria. It agrees at second order with independent references, for two cells whose contact is set by each cell's regulatory state and for a species that sets a channel's availability. The qualification is for CPU runs within its stated scope: worlds without pumps or gated channels, over 1 and 2 seconds. On 15 November 2026 an export driver ran its world in four matched arms, as development evidence with no verdict (D177): restarts and windows were identical byte for byte, and the engine agreed with the refined reference to 4.5e-7 mV at the finest step. Its registered protocol was run again on the rebuilt tissue model before the rework landed on 16 November 2026, and passed. On 18 November 2026 its second judged protocol, A5″ (FR-6's items 1 and 3), passed all 18 judged criteria against independent references: two cells' potassium leak populations without gates, driven through its regulatory state from different starting states under the same dose of regulator. Its scope line: the operator with its regulatory state and the secreted-species turnover as built at 555d8771, two pump-free 2 pL cells over 2 s, synthetic values, CPU only; gated channels, the routing door, leak and pump targets and any biological comparison are not covered. Since 19 November 2026 its version 2 stands beside it, in the same module, as a part of its own; this version is untouched, so its judged results stand.",
    "detail": "Operator species_regulated_availability@1: coupling out of the inventory (D155 item 1, D156).",
    "facts": [
     [
@@ -22103,6 +22503,91 @@
     {
      "path": "docs/INVENTORY_COUPLING_DESIGN.md",
      "where": "A5″ qualified, 18 November 2026 (FR-6 items 1 and 3)"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "B1′, the operator rate route, on `species_regulated_availability@2` (19 November 2026; FR-7's"
+    }
+   ],
+   "files": [
+    "src/cells/operators/species_regulated_availability.py"
+   ]
+  },
+  {
+   "id": "op.species_regulated_availability@2",
+   "label": "Regulated availability @2",
+   "kind": "operator",
+   "group": "operators",
+   "status": "landed",
+   "as_of": "2026-11-20",
+   "plain": "Development, not judged. Version 2 of the coupling operator: version 1, plus a coupling's factor on another operator's rate, turnover's rate by route or a reaction's multiplier, evaluated at the start of each of that operator's half-steps, with a declared operating range refused when its source leaves it and the factor applied recorded exactly (B1′, the coupling's rate route; FR-7's part (a), D218). Since FR-7's F2 it also reads a channel population's abundance as a coupling's source, FR-7's part (b), through a factor operator's current read at the control view. It landed on 19 November 2026 in the same module as version 1, which is untouched, so FR-6's judged results stand on version 1. It runs in FR-7's first closed loop, whose comparison F4 was judged on 20 November 2026 and passed (a part of its own). Implemented and guarded: tests on main hold its refusals and its population source.",
+   "detail": "species_regulated_availability@2: @1 plus operator targets (the module docstring; B1′, docs/INVENTORY_COUPLING_DESIGN.md §2.1) and the population source (FR-7's part (b)). It shares @1's laws, states, events and inner targets; its layout adds the operator targets' element tables, every route's operating range and the population routes' arrays. A population route is evaluated from its reader view of channel_abundance where the composite passes it (R2): control_factors, factor_valid and factor_record at the control view, and observe from the row's view. Elsewhere (@1's rate_checks and domain_valid, and the target half-steps' factor_record, where it stands in no table) its factor is @1's padding, exactly 1; at a step's end membrane state's domain (finite units, at least 0, positive area) keeps its density finite and nonnegative, so its factor lies in [b, 1]. Development, not judged.",
+   "facts": [
+    [
+     "Law",
+     "species_regulated_availability@2"
+    ],
+    [
+     "Class",
+     "SpeciesRegulatedAvailabilityV2"
+    ],
+    [
+     "Parts of the step",
+     "event map, split half-steps"
+    ],
+    [
+     "Step method",
+     "exact_two_state_half_steps@1"
+    ],
+    [
+     "Under an RK4 inner step",
+     "split"
+    ],
+    [
+     "Schedule in a definition",
+     "coupling_controls, regulatory_writes"
+    ],
+    [
+     "State it owns",
+     "7 fields"
+    ],
+    [
+     "Reads as declared",
+     "volume, extracellular_volume, active, outside_active, membrane_active"
+    ]
+   ],
+   "sources": [
+    {
+     "path": "src/cells/operators/species_regulated_availability.py"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "B1′, the operator rate route, on `species_regulated_availability@2` (19 November 2026; FR-7's"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "The fourth review's fixes, FR-7 F2 and FR-7's references (19–20 November 2026)."
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "R2, the view into `control_factors` for a factor operator's current reads"
+    },
+    {
+     "path": "docs/PUMP_COMPOSITE.md",
+     "where": "@1 plus operator targets, B1′"
+    },
+    {
+     "path": "docs/INVENTORY_COUPLING_DESIGN.md"
+    },
+    {
+     "path": "docs/DECISIONS.md",
+     "where": "D218: D145's hold, narrowed again: physical production feedback through the one routing door"
+    },
+    {
+     "path": "tests/unit/test_species_regulated_availability.py"
+    },
+    {
+     "path": "tests/unit/test_regulated_availability_population.py"
     }
    ],
    "files": [
@@ -22245,7 +22730,7 @@
     ],
     [
      "Lines of Python",
-     "333"
+     "335"
     ]
    ],
    "sources": [
@@ -22257,7 +22742,64 @@
     "src/cells/__init__.py",
     "src/cells/__main__.py"
    ],
-   "weight": 333
+   "weight": 335
+  },
+  {
+   "id": "exec.energy_check",
+   "label": "Step-doubled energy check (X2)",
+   "kind": "component",
+   "group": "execution",
+   "status": "landed",
+   "as_of": "2026-11-20",
+   "plain": "An opt-in check of a run's energy ledger, the composite's answer to feature request FR-18, which found that its energy check refused honest worlds at moderate steps while a small misbooking passed it. Each accepted step is taken again as two half steps from the same state: the step's own integration error is then subtracted from the energy residual, and what remains holds any misbooking at its full size. The user adopted it on 19 November 2026 as an opt-in check that registered and judged runs must select, each registration declaring its own cap on the integration error, with no default; with it off, today's check and its programs stay bit for bit the same, and it runs only under the implicit–explicit step ARS(2,2,2), the one scheme its registration tested (D224). It landed on main the same day as FR-18's criterion X2, with the harness that registered and judged the criterion, the check's independent reference, beside it. Its qualification, which D224 set as one run on the boundary worlds against their saved verdicts, gave 13 rows, each with its saved verdict, and FR-3's planted energy error was refused at its step; its evidence on FR-8's worlds stops at a step of 5 ms. It costs about 1.22 times a run without it, compiling apart. Implemented and guarded: a test on main runs it in windows.",
+   "facts": [
+    [
+     "Files",
+     "10"
+    ],
+    [
+     "Lines of Python",
+     "2,049"
+    ]
+   ],
+   "sources": [
+    {
+     "path": "PROGRESS.md",
+     "where": "X2, the opt-in step-doubled energy check `step_doubled_energy@1` (19 November 2026; FR-18's"
+    },
+    {
+     "path": "docs/DECISIONS.md",
+     "where": "D224: The user's answers on FR-2's floors, X2, FR-8's ladder and the test suite's cost"
+    },
+    {
+     "path": "docs/FR18_CRITERION_X_2026-11-18.md",
+     "where": "FR-18: criterion X, registered before its run on the full set"
+    },
+    {
+     "path": "validation/energy_step_doubling/RESULTS.md",
+     "where": "X2 works"
+    },
+    {
+     "path": "docs/FEATURE_REQUESTS.md",
+     "where": "FR-18 — The composite's energy check at moderate step sizes"
+    },
+    {
+     "path": "tests/unit/test_step_doubled_energy_windows.py"
+    }
+   ],
+   "files": [
+    "src/cells/definitions/energy_check_spec.py",
+    "src/cells/execution/energy_check.py",
+    "validation/energy_step_doubling/RESULTS.md",
+    "validation/energy_step_doubling/evaluate_x.py",
+    "validation/energy_step_doubling/evaluate_x_running.py",
+    "validation/energy_step_doubling/harness.py",
+    "validation/energy_step_doubling/qualify_x2.py",
+    "validation/energy_step_doubling/recorder_fr8.py",
+    "validation/energy_step_doubling/recorder_x.py",
+    "validation/energy_step_doubling/tools.sha256"
+   ],
+   "weight": 2049
   },
   {
    "id": "exec.specs",
@@ -22273,7 +22815,7 @@
     ],
     [
      "Lines of Python",
-     "5,884"
+     "5,899"
     ],
     [
      "Model identifiers",
@@ -22304,7 +22846,7 @@
      "where": "D188's move 2 landed on main (18 November 2026)."
     }
    ],
-   "weight": 5884
+   "weight": 5899
   },
   {
    "id": "exec.registry",
@@ -22383,7 +22925,7 @@
     ],
     [
      "Lines of Python",
-     "198"
+     "201"
     ]
    ],
    "sources": [
@@ -22452,7 +22994,7 @@
    "files": [
     "src/cells/modules/__init__.py"
    ],
-   "weight": 198
+   "weight": 201
   },
   {
    "id": "exec.declarations",
@@ -22474,11 +23016,11 @@
     ],
     [
      "Read by this map",
-     "cells.declarations@2, written at 1ca5eada"
+     "cells.declarations@2, written at 93fc8c2c"
     ],
     [
      "Laws, kinds and operators",
-     "28, 5 and 22"
+     "32, 5 and 24"
     ],
     [
      "Active models",
@@ -22588,7 +23130,7 @@
     ],
     [
      "Lines of Python",
-     "163"
+     "167"
     ]
    ],
    "sources": [
@@ -22621,7 +23163,7 @@
    "files": [
     "src/cells/registry/model_table.py"
    ],
-   "weight": 163
+   "weight": 167
   },
   {
    "id": "exec.layout",
@@ -22816,7 +23358,7 @@
     ],
     [
      "Lines of Python",
-     "710"
+     "718"
     ]
    ],
    "sources": [
@@ -22833,7 +23375,7 @@
     "src/cells/execution/resources.py",
     "src/cells/execution/state.py"
    ],
-   "weight": 710
+   "weight": 718
   },
   {
    "id": "exec.schedule",
@@ -22913,7 +23455,7 @@
     ],
     [
      "Lines of Python",
-     "919"
+     "1,037"
     ]
    ],
    "sources": [
@@ -22930,7 +23472,7 @@
     "src/cells/execution/runner.py",
     "src/cells/execution/windows.py"
    ],
-   "weight": 919
+   "weight": 1037
   },
   {
    "id": "exec.batch",
@@ -23316,7 +23858,7 @@
     ],
     [
      "Lines of Python",
-     "1,216"
+     "1,224"
     ]
    ],
    "sources": [
@@ -23362,7 +23904,7 @@
     "validation/execution/window_check_probe.py",
     "validation/execution/window_row_checks_runs.py"
    ],
-   "weight": 1216
+   "weight": 1224
   },
   {
    "id": "exec.gpu_production",
@@ -23499,7 +24041,7 @@
     ],
     [
      "Lines of Python",
-     "988"
+     "1,031"
     ]
    ],
    "sources": [
@@ -23527,7 +24069,7 @@
     "src/cells/records/io.py",
     "src/cells/records/window_io.py"
    ],
-   "weight": 988
+   "weight": 1031
   },
   {
    "id": "exec.continuity",
@@ -23960,9 +24502,9 @@
    "label": "Long-time methods",
    "kind": "component",
    "group": "numerics",
-   "status": "planned",
-   "as_of": "2026-11-19",
-   "plain": "Multirate or quasi-steady stepping for hours to months of biology. A verdict on them is a deliverable of the compute-limits gate; its acceptance now includes an intervention applied during the slow phase (feature request FR-8, D164). A design note for FR-8, a long-time path for composite operators, was proposed on 18 November 2026 with options and the user's questions, written before the GH200 numbers (D216). The user answered it the same evening (D217): only its stage 0 is approved, five measurements and a small numerical harness on an existing case of today's fine engine, each measurement's criteria and tolerances declared before its comparison; the method is chosen after stage 0's results and the core's probe of the composite's energy check. Its stage 0, the measurements and the harness on today's fine engine (a part of its own), landed on 19 November 2026, and a ladder of rungs was then decided, with the user's agreement (D224): rung 0 explains the fine engine's order drop through a switch, and ran the same day; rung 1, the first method, the design note's N2, linearly implicit membranes and junctions, with the junction gates updated exponentially, as one new opt-in identifier, comes after the energy check X2 lands; rung 2, a slow integrator, is to be designed inside the existing long-horizon family. No long-duration method is built.",
+   "status": "designed",
+   "as_of": "2026-11-20",
+   "plain": "Multirate or quasi-steady stepping for hours to months of biology. A verdict on them is a deliverable of the compute-limits gate; its acceptance now includes an intervention applied during the slow phase (feature request FR-8, D164). A design note for FR-8, a long-time path for composite operators, was proposed on 18 November 2026 with options and the user's questions, written before the GH200 numbers (D216). The user answered it the same evening (D217): only its stage 0 is approved, five measurements and a small numerical harness on an existing case of today's fine engine, each measurement's criteria and tolerances declared before its comparison; the method is chosen after stage 0's results and the core's probe of the composite's energy check. Its stage 0, the measurements and the harness on today's fine engine (a part of its own), landed on 19 November 2026, and a ladder of rungs was then decided, with the user's agreement (D224): rung 0 explains the fine engine's order drop through a switch, and ran the same day; rung 1, the first method, the design note's N2, linearly implicit membranes and junctions, with the junction gates updated exponentially, as one new opt-in identifier, came after the energy check X2, which landed on 19 November 2026; rung 2, a slow integrator, is to be designed inside the existing long-horizon family. After rung 1's registered control on today's integrator (D232), N2 was chosen on 20 November 2026 as rung 1 as registered, built by the tissue model's owner, and then C, a fine-window executor, required and not optional, since N2 alone is predicted to gain about 1 through the cue (D235). Designed: no long-duration method is on main.",
    "sources": [
     {
      "path": "docs/CURRENT_PLAN.md",
@@ -23991,6 +24533,18 @@
     {
      "path": "PROGRESS.md",
      "where": "FR-8 rung 0: the fine engine's order through a switch (19 November 2026)"
+    },
+    {
+     "path": "docs/DECISIONS.md",
+     "where": "D232: FR-7's scoped exception to D177, and FR-8 measures before it builds"
+    },
+    {
+     "path": "docs/DECISIONS.md",
+     "where": "D235: FR-8 builds N2 then C; mitochondria on host P; gene regulation's option A"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "FR-8 rung 1's control"
     }
    ],
    "weight": 0
@@ -24292,8 +24846,8 @@
    "kind": "component",
    "group": "laws",
    "status": "designed",
-   "as_of": "2026-11-16",
-   "plain": "Mitochondria that respire and make ATP, in the tissue model. The direction was decided on 16 November 2026 (D193): one law set for mitochondria and for bacteria such as E. coli and JCVI-syn3A, with every cycle in one thermodynamic form; one effective mitochondrion per cell first; isolated heart mitochondria first, then mitochondria in a heart cell. Its equations and parameters come from Beard's published model of 2005, with its 2006 correction. A probe of the stiff membrane-potential mode comes first. The user approved a comparison three ways: an independent reference, the published model run unchanged outside the engine, and a comparison over the source's steady-state and low-oxygen protocols. The laws would join the tissue model as declared kinds, with a cell-owned compartment as the matrix inside a cell. About 23 to 46 agent-days, built in step 4 of the order the user set the same evening (D194). Designed; no engine code. On 17 November 2026 the user confirmed that the level of detail is chosen per research question (D210): one lumped mitochondrion of identical members per cell first, which stays the reference that individual mitochondria must reduce to, then classes, then individuals. Individual mitochondria, with fission and fusion, are to come sooner: their design now, and its dependencies pulled forward. The ATP synthesis law is also the first molecular machine's; Beard's printed form of it fails the engine's step-0 screen, so the user rules on a departure first (D209). An addendum to its design, proposed and read-only, with options, sets out individual mitochondria: static ones, N per cell with no events, are admitted as compartments today; dynamic ones, with fission, fusion, removal and inheritance, need new doors, random draws, geometry as state and the next version of the relationship tables. It recommends handing these requirements to the formats' owners now, a check soon, and the doors after the core-seams pass. No mitochondrion runs in the modular engine yet. Today the earlier tissue families exchange ions with mitochondria passively, and respiration is not modelled.",
+   "as_of": "2026-11-20",
+   "plain": "Mitochondria that respire and make ATP, in the tissue model. The direction was decided on 16 November 2026 (D193): one law set for mitochondria and for bacteria such as E. coli and JCVI-syn3A, with every cycle in one thermodynamic form; one effective mitochondrion per cell first; isolated heart mitochondria first, then mitochondria in a heart cell. Its equations and parameters come from Beard's published model of 2005, with its 2006 correction. A probe of the stiff membrane-potential mode comes first. The user approved a comparison three ways: an independent reference, the published model run unchanged outside the engine, and a comparison over the source's steady-state and low-oxygen protocols. The laws would join the tissue model as declared kinds, with a cell-owned compartment as the matrix inside a cell. About 23 to 46 agent-days, built in step 4 of the order the user set the same evening (D194). Designed; no engine code. On 17 November 2026 the user confirmed that the level of detail is chosen per research question (D210): one lumped mitochondrion of identical members per cell first, which stays the reference that individual mitochondria must reduce to, then classes, then individuals. Individual mitochondria, with fission and fusion, are to come sooner: their design now, and its dependencies pulled forward. The ATP synthesis law is also the first molecular machine's; Beard's printed form of it fails the engine's step-0 screen, so the user rules on a departure first (D209). An addendum to its design, proposed and read-only, with options, sets out individual mitochondria: static ones, N per cell with no events, are admitted as compartments today; dynamic ones, with fission, fusion, removal and inheritance, need new doors, random draws, geometry as state and the next version of the relationship tables. It recommends handing these requirements to the formats' owners now, a check soon, and the doors after the core-seams pass. On 19 November 2026 the user chose option 2 of the core-laws roadmap (D234): a new mitochondria lane writes the mitochondrial laws and their validation, its first milestone, MT-1, one isolated cardiac mitochondrion, lumped, on the tissue model @3. On 20 November 2026 host P was chosen for MT-1 and MT-2, and MT-1 is to run on today's solver at declared activities (D235). What main holds of it by 20 November 2026 is groundwork: the cycle kind's fourth kinetic form, monomial, with no law of that form yet; a named potential set of the species registry, with its moieties; and a code-blind reference of Beard's model (a part of its own, Mitochondria references (MR1)). Beard's repairs stay the user's (D209). Designed; no mitochondrial law is on main, and no mitochondrion runs in the modular engine yet. Today the earlier tissue families exchange ions with mitochondria passively, and respiration is not modelled.",
    "sources": [
     {
      "path": "docs/DECISIONS.md",
@@ -24322,6 +24876,22 @@
     {
      "path": "docs/MITOCHONDRIA_DESIGN.md",
      "where": "Status: proposed, read-only, with options (D210)"
+    },
+    {
+     "path": "docs/DECISIONS.md",
+     "where": "D234: Option 2 of the core-laws roadmap, and gene regulation's design begins"
+    },
+    {
+     "path": "docs/DECISIONS.md",
+     "where": "D235: FR-8 builds N2 then C; mitochondria on host P; gene regulation's option A"
+    },
+    {
+     "path": "docs/CORE_LAWS_ROADMAP.md",
+     "where": "Decided, 19 November 2026 (D234)."
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "The mitochondria engine groundwork and the X2 floor fix (20 November 2026, early morning)."
     }
    ],
    "weight": 0
@@ -24383,7 +24953,7 @@
    "group": "laws",
    "status": "qualified",
    "as_of": "2026-11-18",
-   "plain": "The rule by which a species amount in the inventory sets how available a junction or a channel population is, so chemistry can change electrical behaviour. It is in the engine since 14 November 2026: the Hill factors, the operator that applies them to junctions and to channels, and a slower two-state regulatory state. The operator was numerically qualified on 15 November 2026, on CPU and within its stated scope. It also answers feature request FR-6, species-driven control factors. FR-6's first item, the channel target, is qualified for channel populations without gates by that judged run, and on 18 November 2026 a second judged protocol, A5″, passed all 18 of its judged criteria: two cells' potassium leak populations driven through the slower regulatory state from different starting states, under the same dose. Numerically qualified within its scope line: the operator with its regulatory state and the secreted-species turnover as built at 555d8771, two pump-free 2 pL cells over 2 s, synthetic values, CPU only; gated channels, the routing door, leak and pump targets and any biological comparison are not covered. FR-7's design note, proposed on 18 November 2026 with options and the user's questions, frames the user's choice of the closed loop's unit; the coupling operator's rate route that it needs became a step of its own in the core pass, to go ahead only if the user's answer on the hold of D145 admitted a loop from species to control to production (D216, amended). The user answered that evening (D217, D218): the first loop is a membrane channel population, the junction channel next; its first acceptance is numerical, on synthetic lifetimes labelled so; the closed loop is not called qualified until a closed feedback case passes beside a control in which the feedback is cut; and physical production feedback is admitted through the one routing door, each loop verified whole. Its core prerequisites, B1's lifecycle driven by roles and the kinds' declarations, landed on 19 November 2026; nothing of the loop is built, and building it is next.",
+   "plain": "The rule by which a species amount in the inventory sets how available a junction or a channel population is, so chemistry can change electrical behaviour. It is in the engine since 14 November 2026: the Hill factors, the operator that applies them to junctions and to channels, and a slower two-state regulatory state. The operator was numerically qualified on 15 November 2026, on CPU and within its stated scope. It also answers feature request FR-6, species-driven control factors. FR-6's first item, the channel target, is qualified for channel populations without gates by that judged run, and on 18 November 2026 a second judged protocol, A5″, passed all 18 of its judged criteria: two cells' potassium leak populations driven through the slower regulatory state from different starting states, under the same dose. Numerically qualified within its scope line: the operator with its regulatory state and the secreted-species turnover as built at 555d8771, two pump-free 2 pL cells over 2 s, synthetic values, CPU only; gated channels, the routing door, leak and pump targets and any biological comparison are not covered. FR-7's design note, proposed on 18 November 2026 with options and the user's questions, frames the user's choice of the closed loop's unit; the coupling operator's rate route that it needs became a step of its own in the core pass, to go ahead only if the user's answer on the hold of D145 admitted a loop from species to control to production (D216, amended). The user answered that evening (D217, D218): the first loop is a membrane channel population, the junction channel next; its first acceptance is numerical, on synthetic lifetimes labelled so; the closed loop is not called qualified until a closed feedback case passes beside a control in which the feedback is cut; and physical production feedback is admitted through the one routing door, each loop verified whole. Its core prerequisites, B1's lifecycle driven by roles and the kinds' declarations, landed on 19 November 2026, and the loop's pieces followed on 19 and 20 November 2026: the coupling operator's version 2, with the rate route and a population's abundance as a source, and a unit producer. FR-7's first closed loop was judged on 20 November 2026 and passed (a part of its own, Abundance to function (FR-7)); that verdict is FR-7's, in its own scope, and adds nothing to this part's scope line.",
    "detail": "Hill activation and inhibition factors in log space (a neutral helper).",
    "facts": [
     [
@@ -24462,6 +25032,14 @@
     {
      "path": "docs/FEATURE_REQUESTS.md",
      "where": "FR-7"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "FR-7's first closed loop, F4 against R-loop: judged, passed (20 November 2026)."
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "B1′, the operator rate route, on `species_regulated_availability@2` (19 November 2026; FR-7's"
     }
    ],
    "files": [
@@ -24553,8 +25131,9 @@
    "label": "Gene regulation in tissue",
    "kind": "component",
    "group": "laws",
-   "status": "planned",
-   "plain": "Gene networks that set how much of each protein is made, coupled to the tissue's physiology.",
+   "status": "designed",
+   "as_of": "2026-11-20",
+   "plain": "Designed; no engine code. Gene networks that set how much of each protein is made, coupled to the tissue's physiology. On 19 November 2026 the user lifted D145's hold for a design only (D234): transcription and translation as physics, regulatory networks as declared laws, and how they are verified, its options coming to the user before any engine code is written. The design note, proposed on 20 November 2026, is desk work, with no engine code and no runs, and sets out options A to D for a first milestone. Option A was chosen the same day (D235): one gene, open loop and deterministic, expression as templated polymerisation with its ATP cost, judged against exact references only, to start when seats free, after the note is refreshed against main; the note's other questions remain open.",
    "sources": [
     {
      "path": "README.md",
@@ -24562,6 +25141,18 @@
     },
     {
      "path": "docs/GRN_WETLAB_VALIDATION.md"
+    },
+    {
+     "path": "docs/GENE_REGULATION_DESIGN.md",
+     "where": "Status: proposed, 20 November 2026, for the lead and the advisor, then the user (D234 item 2)."
+    },
+    {
+     "path": "docs/DECISIONS.md",
+     "where": "D234: Option 2 of the core-laws roadmap, and gene regulation's design begins"
+    },
+    {
+     "path": "docs/DECISIONS.md",
+     "where": "D235: FR-8 builds N2 then C; mitochondria on host P; gene regulation's option A"
     }
    ],
    "weight": 0
@@ -24774,8 +25365,8 @@
    "kind": "component",
    "group": "laws",
    "status": "landed",
-   "as_of": "2026-11-19",
-   "plain": "How a new kind of piece joins the tissue model. A kind is one module's contribution: its own fields, and hooks that the tissue model calls at fixed points of its step. Each kind registers itself on a registry that belongs to one model build, exactly as a package from outside Cells would, and a kind that a world does not declare changes nothing. Its name carries a namespace, so an outside kind cannot collide with a built-in one, and the order in which kinds add their fields is fixed by their sorted names. On main since the rework landed on 16 November 2026, with three built-in kinds: passive routes, a rapid proton buffer and transporters. Since the evening of the same day there are two more, for feature request FR-5: the damage of a membrane patch and a pH condition, which act on routes only through the routing door. A test on main registers a planted kind from outside the engine's source and runs it through every seam, and two kinds whose reads of one row could disagree are refused when a world is built. On the evening of 16 November 2026, with the core's next lane, it gained controls that change on a schedule, a routing door through which one kind's factors scale another's routes, and the terms finite fuel needs in the energy accounts. Since 18 November 2026 a kind writes only its own resolved, declared fields, its initial values, derivatives and control outputs, and a planted write to another's field is refused where the model is built and where it is traced: one of two boundary fixes that an external adviser's architecture review asked for, landed before move 2 as an exception to D195's order (D214). With the core pass's first landings on 18 November 2026, the kind contract gained the declarations its seams need, each checked at registration: a field's energy role, the heat bookings a kind admits, its partition roles and its ledgers, and the class of a kind's rates, which the tissue model now imports from it; and the core fixes, carried across the second source move, added a kind's material slope to the step's rule: an explicit stage is refused where the step times the largest slope at a node exceeds the explicit step's bound (D4). On 19 November 2026 it gained presence fields, which let a kind stand beside a closer, gated by its host's activity, with the built-in transporter declaring its own so that no kind code changed; the kinds' own ledgers, read into the inner model's checks; and one lifecycle for kinds' state at division and retirement, driven by each field's role. A check that each state field's array matches its declared axes is scheduled (D228, item 6). Implemented and guarded.",
+   "as_of": "2026-11-20",
+   "plain": "How a new kind of piece joins the tissue model. A kind is one module's contribution: its own fields, and hooks that the tissue model calls at fixed points of its step. Each kind registers itself on a registry that belongs to one model build, exactly as a package from outside Cells would, and a kind that a world does not declare changes nothing. Its name carries a namespace, so an outside kind cannot collide with a built-in one, and the order in which kinds add their fields is fixed by their sorted names. On main since the rework landed on 16 November 2026, with three built-in kinds: passive routes, a rapid proton buffer and transporters. Since the evening of the same day there are two more, for feature request FR-5: the damage of a membrane patch and a pH condition, which act on routes only through the routing door. A test on main registers a planted kind from outside the engine's source and runs it through every seam, and two kinds whose reads of one row could disagree are refused when a world is built. On the evening of 16 November 2026, with the core's next lane, it gained controls that change on a schedule, a routing door through which one kind's factors scale another's routes, and the terms finite fuel needs in the energy accounts. Since 18 November 2026 a kind writes only its own resolved, declared fields, its initial values, derivatives and control outputs, and a planted write to another's field is refused where the model is built and where it is traced: one of two boundary fixes that an external adviser's architecture review asked for, landed before move 2 as an exception to D195's order (D214). With the core pass's first landings on 18 November 2026, the kind contract gained the declarations its seams need, each checked at registration: a field's energy role, the heat bookings a kind admits, its partition roles and its ledgers, and the class of a kind's rates, which the tissue model now imports from it; and the core fixes, carried across the second source move, added a kind's material slope to the step's rule: an explicit stage is refused where the step times the largest slope at a node exceeds the explicit step's bound (D4). On 19 November 2026 it gained presence fields, which let a kind stand beside a closer, gated by its host's activity, with the built-in transporter declaring its own so that no kind code changed; the kinds' own ledgers, read into the inner model's checks; and one lifecycle for kinds' state at division and retirement, driven by each field's role. On 19 November 2026 the check that each kind field's array matches its declared axes where the tissue model binds it landed (D228, item 6), and the presence gate came to host channel and face slots, so that a kind with presence on channel populations or faces is admitted beside a closer. Implemented and guarded.",
    "detail": "The kind registry of resolved_pump_tissue@3 (docs/INNER_MODEL_V4_DESIGN.md §7.4 (j), (k)).",
    "facts": [
     [
@@ -24784,7 +25375,7 @@
     ],
     [
      "Lines of Python",
-     "1,199"
+     "1,338"
     ]
    ],
    "sources": [
@@ -24859,13 +25450,21 @@
     },
     {
      "path": "tests/unit/test_kind_lifecycle_roles.py"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "The kind contract's array-axes check and `Kind.dispatch_masks` (19 November 2026; D228 item"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "The presence gate hosts channel and face slots (19 November 2026; the operators owner's"
     }
    ],
    "files": [
     "src/cells/kinds/__init__.py",
     "src/cells/registry/kind_registry.py"
    ],
-   "weight": 1199
+   "weight": 1338
   },
   {
    "id": "laws.template",
@@ -25088,20 +25687,20 @@
    "kind": "component",
    "group": "laws",
    "status": "landed",
-   "as_of": "2026-11-19",
-   "plain": "Two kinds of piece of the tissue model, on main since the rework landed on 16 November 2026. A transporter is a population on a membrane patch that spends one ATP per cycle to move a species from one side to the other: an uncharged one, or protons, as the pump that acidifies a compartment does (feature request FR-4). In this round its fuel is held constant, as rows of the shared inventory that are read and never used up; finite fuel is refused until a later step. The rapid proton buffer sets, at every stage of a step, how many of a node's protons are free and how many are bound to the buffers declared there, so that laws can read the pH while the node's charge stays as stored. Implemented and guarded. Both ran in FR-4's judged acceptance on 17 November 2026, which passed all 21 judged criteria; its scope line names the compartment operator as built at 32a1d439. On 19 November 2026 the core pass gave both a general form, for development, not judged. The transporter became seam A's general cycle kind, which runs any declared cycle law, each law's modes and kinetics given as data by a cycle form, in a module of forms that binds no law of its own; it landed with its comparison against the code-blind references for seam A. The buffer's closure became rapid_binding@1, seam C's rapid-equilibrium binding of several ligands on binders of several forms, run in whole worlds and with its free energy booked. Neither general form ran in a judged acceptance. Tests on main hold the cycle forms, the cycle kind against seam A's references, and the binding closure against seam C's references at every registered state.",
+   "as_of": "2026-11-20",
+   "plain": "Two kinds of piece of the tissue model, on main since the rework landed on 16 November 2026. A transporter is a population on a membrane patch that spends one ATP per cycle to move a species from one side to the other: an uncharged one, or protons, as the pump that acidifies a compartment does (feature request FR-4). In this round its fuel is held constant, as rows of the shared inventory that are read and never used up; finite fuel is refused until a later step. The rapid proton buffer sets, at every stage of a step, how many of a node's protons are free and how many are bound to the buffers declared there, so that laws can read the pH while the node's charge stays as stored. Implemented and guarded. Both ran in FR-4's judged acceptance on 17 November 2026, which passed all 21 judged criteria; its scope line names the compartment operator as built at 32a1d439. On 19 November 2026 the core pass gave both a general form, for development, not judged. The transporter became seam A's general cycle kind, which runs any declared cycle law, each law's modes and kinetics given as data by a cycle form, in a module of forms that binds no law of its own; it landed with its comparison against the code-blind references for seam A. The buffer's closure became rapid_binding@1, seam C's rapid-equilibrium binding of several ligands on binders of several forms, run in whole worlds and with its free energy booked. Neither general form ran in a judged acceptance. Tests on main hold the cycle forms, the cycle kind against seam A's references, and the binding closure against seam C's references at every registered state. On 19 and 20 November 2026 the cycle kind gained two cycle laws, an electrogenic sodium-coupled anion symporter in two forms, a general feature a real use case found missing (D228, item 1), cited, and neither judged: a factored form with no fuel, its sodium count a declared parameter from 1 to 4, refused at a compartment's node; and its version 2, a kinetic diagram of eight states with two sodium ions per cycle, its rate constants a definition's values. The kind also gained schedules of a population's availability (D228, item 5) with its population bound in log space, a trapezoid booking of its heat, readouts of the proton-motive force, moved fuel at a binding closure's nodes, and its standard free energies declared as entries the species registry checks; and on 20 November 2026 a fourth kinetic form, monomial, landed as groundwork for the mitochondria work, with no law of that form yet. The general binding closure's booked energy term is now formed from increments through the closure's dual, which removed a rounding floor that had failed the step-doubled energy check's order condition in buffered worlds. Tests on main hold both symporter laws.",
    "facts": [
     [
      "Files",
-     "8"
+     "10"
     ],
     [
      "Lines of Python",
-     "5,466"
+     "6,837"
     ],
     [
      "Laws it declares",
-     "3"
+     "5"
     ],
     [
      "Kinds it declares",
@@ -25112,6 +25711,14 @@
     {
      "label": "cells.atp_driven_transporter_mass_action_positive@1",
      "detail": "law, declared in atp_transporter.py"
+    },
+    {
+     "label": "cells.na2_anion_symport_diagram@1",
+     "detail": "law, declared in na2_anion_symport_diagram.py"
+    },
+    {
+     "label": "cells.na_anion_symport_factored@1",
+     "detail": "law, declared in na_anion_symport_factored.py"
     },
     {
      "label": "cells.proton_atp_mass_action_positive@1",
@@ -25193,6 +25800,44 @@
     },
     {
      "path": "tests/unit/test_rapid_binding_world.py"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "The electrogenic Na⁺-coupled anion symporter, version 1: `cells.na_anion_symport_factored@1`"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "symporter-v2-landed-2026-11-20"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "kinds-schedules-landed-2026-11-20"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "kinds-k124-landed-2026-11-20"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "The transporter's standard free energies as `FreeEnergyEntry` (19 November 2026; seam E,"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "monomial-kernel-landed-2026-11-20"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "x2-floor-fix-landed-2026-11-20"
+    },
+    {
+     "path": "docs/DECISIONS.md",
+     "where": "D228: Gaps found by real use cases are prioritised as general engine features"
+    },
+    {
+     "path": "tests/unit/test_na_anion_symport_factored.py"
+    },
+    {
+     "path": "tests/unit/test_na2_anion_symport_diagram.py"
     }
    ],
    "files": [
@@ -25200,12 +25845,14 @@
     "src/cells/kinds/transporter.py",
     "src/cells/laws/cycles/__init__.py",
     "src/cells/laws/cycles/forms.py",
+    "src/cells/laws/cycles/na2_anion_symport_diagram.py",
+    "src/cells/laws/cycles/na_anion_symport_factored.py",
     "src/cells/laws/pumps/atp_transporter.py",
     "src/cells/laws/pumps/proton_pump.py",
     "src/cells/laws/reactions/rapid_binding.py",
     "src/cells/laws/reactions/rapid_proton_buffer.py"
    ],
-   "weight": 5466
+   "weight": 6837
   },
   {
    "id": "laws.route_factors",
@@ -25279,8 +25926,8 @@
    "kind": "component",
    "group": "laws",
    "status": "landed",
-   "as_of": "2026-11-18",
-   "plain": "Each kind of molecule is to have one identity and one conserved total, declared once where a world is defined, however many arrays hold it: free and bound molecules of one kind are one species. Since the rework landed on 16 November 2026, a registry of species holds each species' identity, its standard chemical potential and its background in one place, so new laws need no checks against each other's species lists, and a test on main refuses any such check left in the engine. Every sum over species follows one declared order: the species are added one at a time, in the order they are declared (D182), so that raising the limit on the number of species later needs only a check on one test world and a cost measurement. Measured on the L4, this costs no measurable time at 16 species, and its sums come out bit for bit the same on the GPU and the CPU. It moved only ledgers and diagnostics, at rounding: in all 113 saved worlds every physical quantity stayed the same bit for bit. A test refuses any sum in the tissue model, the operators or the kinds that bypasses the declared order. Since the core fixes landed on 18 November 2026 an operator that declares its own standard potentials is held to the registry's: each is converted to the registry's standard concentration, and one that differs by more than rounding is refused, naming the operator (D3). Implemented and guarded.",
+   "as_of": "2026-11-20",
+   "plain": "Each kind of molecule is to have one identity and one conserved total, declared once where a world is defined, however many arrays hold it: free and bound molecules of one kind are one species. Since the rework landed on 16 November 2026, a registry of species holds each species' identity, its standard chemical potential and its background in one place, so new laws need no checks against each other's species lists, and a test on main refuses any such check left in the engine. Every sum over species follows one declared order: the species are added one at a time, in the order they are declared (D182), so that raising the limit on the number of species later needs only a check on one test world and a cost measurement. Measured on the L4, this costs no measurable time at 16 species, and its sums come out bit for bit the same on the GPU and the CPU. It moved only ledgers and diagnostics, at rounding: in all 113 saved worlds every physical quantity stayed the same bit for bit. A test refuses any sum in the tissue model, the operators or the kinds that bypasses the declared order. Since the core fixes landed on 18 November 2026 an operator that declares its own standard potentials is held to the registry's: each is converted to the registry's standard concentration, and one that differs by more than rounding is refused, naming the operator (D3). Implemented and guarded. On 19 and 20 November 2026 the registry gained a check of every declared standard free-energy entry against its own sum of standard potentials, within the form's band, and, as groundwork for the mitochondria work (D234), a named potential set from Beard's published model, beard2005@1, with the moieties it requires; neither is a law, and no mitochondrion runs in the engine. A test on main holds the free-energy entries.",
    "detail": "One authority for each species' identity, standard potential and background (D174, D176).",
    "facts": [
     [
@@ -25289,7 +25936,7 @@
     ],
     [
      "Lines of Python",
-     "1,100"
+     "1,940"
     ]
    ],
    "sources": [
@@ -25330,13 +25977,28 @@
     },
     {
      "path": "tests/unit/test_species_potentials.py"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "Seam E's checks and F's cleanup (19 November 2026)."
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "binding-mito-landed-2026-11-20"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "binding-sets-followup-landed-2026-11-20"
+    },
+    {
+     "path": "tests/unit/test_species_registry_free_energies.py"
     }
    ],
    "files": [
     "src/cells/numerics/species_sums.py",
     "src/cells/registry/species_registry.py"
    ],
-   "weight": 1100
+   "weight": 1940
   },
   {
    "id": "laws.fuel",
@@ -25395,25 +26057,25 @@
   },
   {
    "id": "laws.passive_permeation",
-   "label": "Passive permeation law",
+   "label": "Passive routes and their laws",
    "kind": "component",
    "group": "laws",
    "status": "landed",
-   "as_of": "2026-11-18",
-   "plain": "A law for molecules that cross a membrane on their own, down their gradient: the one law added in the rework round, to show that adding a law changes nothing for worlds that do not use it. Since the rework landed on 16 November 2026 it is on main as one of the tissue model's passive routes, beside a proton leak that compartment pH uses. For an uncharged molecule its core computation is the membrane transport's own route at zero charge, and it books the heat it releases exactly, as the free energy lost by what it moved. In a closed test with two compartments it must conserve material, stop when both sides are at equal chemical potential, reverse with the driving force, and turn the free energy lost into heat with no work from outside. Its independent reference, written by a separate agent that read no engine code, landed on 15 November 2026: in it, flow and heat are exactly zero at equal concentrations, the flow reverses exactly, and heat never decreases. The engine's operator for secretion and uptake is a driven route that books work, so it does not count as passive. Implemented and guarded: on a closed pair of compartments, a test on main shows it relaxing as the independent closed form says, conserving material, and booking as heat the engine's own decrease of free energy, to rounding. It has not been judged against its own reference, and its composition with water is still a target; the passive routes ran in FR-4's and FR-5's judged acceptances on 17 November 2026, which passed, and their scope line names the compartment operator as built at 32a1d439. Until a later step, the composite model refuses an operator that writes a row such a route books exactly. The minimal-cell track's vesicle tests are its first user. On 17 November 2026 the gap-junction work found that its exact heat booking refused a step when a route's share of heat was negative by rounding alone (FR-19). It was fixed that evening: a share is refused only beyond a rounding floor scaled by its own terms, admitted shares are booked as computed, every step admitted before is bitwise unchanged, and the law keeps its identifier (D148). A band near 1 mM that the first floor left open was closed on 18 November 2026, the floor's scale now (|μ̄_in| + |μ̄_out| + 2)·|m|, and crossrev's record of the kinds was renewed at that landing, 9 of 9.",
+   "as_of": "2026-11-20",
+   "plain": "The tissue model's passive routes kind and the route laws it hosts. The first is a law for molecules that cross a membrane on their own, down their gradient: the one law added in the rework round, to show that adding a law changes nothing for worlds that do not use it. Since the rework landed on 16 November 2026 it is on main as one of the tissue model's passive routes, beside a proton leak that compartment pH uses. For an uncharged molecule its core computation is the membrane transport's own route at zero charge, and it books the heat it releases exactly, as the free energy lost by what it moved. In a closed test with two compartments it must conserve material, stop when both sides are at equal chemical potential, reverse with the driving force, and turn the free energy lost into heat with no work from outside. Its independent reference, written by a separate agent that read no engine code, landed on 15 November 2026: in it, flow and heat are exactly zero at equal concentrations, the flow reverses exactly, and heat never decreases. The engine's operator for secretion and uptake is a driven route that books work, so it does not count as passive. Implemented and guarded: on a closed pair of compartments, a test on main shows it relaxing as the independent closed form says, conserving material, and booking as heat the engine's own decrease of free energy, to rounding. It has not been judged against its own reference, and its composition with water is still a target; the passive routes ran in FR-4's and FR-5's judged acceptances on 17 November 2026, which passed, and their scope line names the compartment operator as built at 32a1d439. Until a later step, the composite model refuses an operator that writes a row such a route books exactly. The minimal-cell track's vesicle tests are its first user. On 17 November 2026 the gap-junction work found that its exact heat booking refused a step when a route's share of heat was negative by rounding alone (FR-19). It was fixed that evening: a share is refused only beyond a rounding floor scaled by its own terms, admitted shares are booked as computed, every step admitted before is bitwise unchanged, and the law keeps its identifier (D148). A band near 1 mM that the first floor left open was closed on 18 November 2026, the floor's scale now (|μ̄_in| + |μ̄_out| + 2)·|m|, and crossrev's record of the kinds was renewed at that landing, 9 of 9. On 19 and 20 November 2026 the passive routes gained two more route laws, each a general feature that real use cases found missing (D228), each cited, with its coefficients a definition's values, unsourced today, and neither judged: an instantaneous inward rectifier, its current linear in the driving force, rectified by a logistic of it and its conductance scaling as the square root of the outside potassium (D228, item 2; the Xenopus lane's first use); and the Goldman–Hodgkin–Katz constant-field flux of a charged species at its valence, read from its amounts at both ends, on membranes first (FR-15's P2). On 20 November 2026 the rectifier's square-root ratio was formed in place so that it cannot overflow (D148), a fix the Lean proofs project found. Tests on main hold the rectifier's route and the passive routes kind with both laws.",
    "detail": "passive_neutral_permeation@1: the passive permeation law's kernel for neutral species (A5).",
    "facts": [
     [
      "Files",
-     "3"
+     "5"
     ],
     [
      "Lines of Python",
-     "863"
+     "1,485"
     ],
     [
      "Laws it declares",
-     "2"
+     "4"
     ],
     [
      "Kinds it declares",
@@ -25421,6 +26083,14 @@
     ]
    ],
    "members": [
+    {
+     "label": "inward_rectifier_linear_driving_force@1",
+     "detail": "law, declared in inward_rectifier_linear_driving_force.py"
+    },
+    {
+     "label": "passive_constant_field_permeation@1",
+     "detail": "law, declared in constant_field_permeation.py"
+    },
     {
      "label": "passive_neutral_permeation@1",
      "detail": "law, declared in passive_permeation.py"
@@ -25492,14 +26162,39 @@
     {
      "path": "docs/FEATURE_REQUESTS.md",
      "where": "closed on branch `passive-share-band` and landed by merge a7122a43 on 18 November"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "The inward-rectifier route law `inward_rectifier_linear_driving_force@1` (19 November 2026;"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "fr15-p2-landed-2026-11-20"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "kir-ratio-landed-2026-11-20"
+    },
+    {
+     "path": "docs/FEATURE_REQUESTS.md",
+     "where": "F2's direction (the lead's rulings of 19 November 2026): S1 + P2."
+    },
+    {
+     "path": "docs/DECISIONS.md",
+     "where": "D228: Gaps found by real use cases are prioritised as general engine features"
+    },
+    {
+     "path": "tests/unit/test_inward_rectifier_route.py"
     }
    ],
    "files": [
     "src/cells/kinds/passive_routes.py",
+    "src/cells/laws/routes/constant_field_permeation.py",
+    "src/cells/laws/routes/inward_rectifier_linear_driving_force.py",
     "src/cells/laws/routes/passive_permeation.py",
     "src/cells/laws/transport/proton_leak.py"
    ],
-   "weight": 863
+   "weight": 1485
   },
   {
    "id": "laws.levels_of_detail",
@@ -25583,7 +26278,7 @@
    "group": "models",
    "status": "qualified",
    "as_of": "2026-11-10",
-   "plain": "The tissue model behind the BETSE comparisons: pumps, channels, junctions and the space between cells. It passes parity on CPU and on the GPU. Its version @3 was rebuilt in place on 16 November 2026 as the modular inner model, under its own name; before the rework landed, every registered small protocol run again on it passed, and so did its ten parity cases on the L4. A finding of the test audit reached it: one refusal had been missing since a change of 9 November in shared field code (D187). The core's fixes closed it on 16 November 2026, with no registered world affected. On 18 November 2026 its version @3 gained the core pass's host table and seam D's switch for its classes of mover; at each landing tiers 1 and 2 showed no changed outcome, G1 passed on all 113 saved worlds and crossrev's sets were identical, and nothing was judged again. On 19 November 2026 its version @3 gained seam D's heat bookings, a channel table read from the law registry, with the five Kv1 laws and a chloride leak, chloride admitted at −1 in its table of valences, and the third external review's fix of its trace estimate; each merge's message records its gates, and nothing was judged again.",
+   "plain": "The tissue model behind the BETSE comparisons: pumps, channels, junctions and the space between cells. It passes parity on CPU and on the GPU. Its version @3 was rebuilt in place on 16 November 2026 as the modular inner model, under its own name; before the rework landed, every registered small protocol run again on it passed, and so did its ten parity cases on the L4. A finding of the test audit reached it: one refusal had been missing since a change of 9 November in shared field code (D187). The core's fixes closed it on 16 November 2026, with no registered world affected. On 18 November 2026 its version @3 gained the core pass's host table and seam D's switch for its classes of mover; at each landing tiers 1 and 2 showed no changed outcome, G1 passed on all 113 saved worlds and crossrev's sets were identical, and nothing was judged again. On 19 November 2026 its version @3 gained seam D's heat bookings, a channel table read from the law registry, with the five Kv1 laws and a chloride leak, chloride admitted at −1 in its table of valences, and the third external review's fix of its trace estimate; each merge's message records its gates, and nothing was judged again. On 20 November 2026 the fourth external review's fix made its version @3's batch signature carry each kind's axis sizes; nothing was judged again.",
    "detail": "resolved_pump_tissue@1: shared kinetic rates, factored field, RK4 or IMEX steps.",
    "facts": [
     [
@@ -25592,7 +26287,7 @@
     ],
     [
      "Lines of Python",
-     "5,200"
+     "5,263"
     ],
     [
      "Model identifiers",
@@ -25661,6 +26356,10 @@
     {
      "path": "PROGRESS.md",
      "where": "The third external review's five findings, fixed (19 November 2026)"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "The fourth review's fixes, FR-7 F2 and FR-7's references (19–20 November 2026)."
     }
    ],
    "files": [
@@ -25669,7 +26368,7 @@
     "src/cells/models/surface_pump_v2.py",
     "src/cells/models/surface_pump_v3.py"
    ],
-   "weight": 5200
+   "weight": 5263
   },
   {
    "id": "models.water",
@@ -25771,7 +26470,7 @@
    "group": "models",
    "status": "qualified",
    "as_of": "2026-11-15",
-   "plain": "The newer design: the pump tissue's own step plus declared operators, so new combinations are definitions and not new model modules. Numerically qualified on CPU through its frozen-model guards and judged in E07-v1. On the L4 GPU it agrees within the registered tolerance (W1, W2, and Q1 to Q6 of G2-Q1 pass); the one criterion that asks for bitwise equality failed on the judged run, from the GPU's own nondeterminism. Judged alone under a deterministic GPU setting on 16 November 2026, it passed, in that setting only. Since the rework landed on 16 November 2026, its inner model is the modular one, and it merges several operators' changes to one field place by place (door S). Before the landing, in the deterministic setting, the rework's block of GPU runs passed W1, W2 and all seven criteria of G2-Q1. On 17 November 2026 the gap-junction work found that its energy check refuses some worlds of uncharged species crossing junctions at moderate step sizes, well inside the stability bound; this is reported to the core, which reviews the check's tolerance or its advice on step size, and the check is not loosened for one experiment (FR-18). On 19 November 2026 it gained the channel targets that close FR-8's settling gap, and one lifecycle for its kinds' state at division and retirement (B1's last slice); nothing was judged again. The same day FR-18's criterion X2 was adopted as an opt-in energy check that registered and judged runs must select, each registration declaring its own cap, row by row, with no default (D224); it is not built.",
+   "plain": "The newer design: the pump tissue's own step plus declared operators, so new combinations are definitions and not new model modules. Numerically qualified on CPU through its frozen-model guards and judged in E07-v1. On the L4 GPU it agrees within the registered tolerance (W1, W2, and Q1 to Q6 of G2-Q1 pass); the one criterion that asks for bitwise equality failed on the judged run, from the GPU's own nondeterminism. Judged alone under a deterministic GPU setting on 16 November 2026, it passed, in that setting only. Since the rework landed on 16 November 2026, its inner model is the modular one, and it merges several operators' changes to one field place by place (door S). Before the landing, in the deterministic setting, the rework's block of GPU runs passed W1, W2 and all seven criteria of G2-Q1. On 17 November 2026 the gap-junction work found that its energy check refuses some worlds of uncharged species crossing junctions at moderate step sizes, well inside the stability bound; this is reported to the core, which reviews the check's tolerance or its advice on step size, and the check is not loosened for one experiment (FR-18). On 19 November 2026 it gained the channel targets that close FR-8's settling gap, and one lifecycle for its kinds' state at division and retirement (B1's last slice); nothing was judged again. The same day FR-18's criterion X2 was adopted as an opt-in energy check that registered and judged runs must select, each registration declaring its own cap, row by row, with no default (D224), and it landed on main (a part of its own). On 19 and 20 November 2026 it gained two operators, FR-7's unit producer and the coupling operator's version 2, and the fourth external review's fix that splits its device checks' ledger magnitudes at the operators' count; nothing was judged again.",
    "detail": "resolved_pump_composite@1: resolved_pump_tissue@3's own step plus declared operators.",
    "facts": [
     [
@@ -25780,7 +26479,7 @@
     ],
     [
      "Lines of Python",
-     "3,093"
+     "3,257"
     ],
     [
      "Model identifiers",
@@ -25828,13 +26527,21 @@
     {
      "path": "docs/DECISIONS.md",
      "where": "D224: The user's answers on FR-2's floors, X2, FR-8's ladder and the test suite's cost"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "X2, the opt-in step-doubled energy check `step_doubled_energy@1` (19 November 2026; FR-18's"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "The fourth review's fixes, FR-7 F2 and FR-7's references (19–20 November 2026)."
     }
    ],
    "files": [
     "src/cells/models/pump_composite.py",
     "src/cells/models/pump_composite_adapter.py"
    ],
-   "weight": 3093
+   "weight": 3257
   },
   {
    "id": "models.modular",
@@ -25909,8 +26616,8 @@
    "kind": "component",
    "group": "models",
    "status": "landed",
-   "as_of": "2026-11-19",
-   "plain": "One pass over the seams the engine's pieces share, the second step of the order set on 16 November 2026 (D194): membrane cycles, populations, binding, heat booking, finite fuel's core part, laws as modules, and the run view's format items, each piece joining by the same five declarations. The user approved it at its scope on 17 November 2026, within seven agents, with no checkpoint crossing the second source move (D195). Its design note is still marked proposed. Seam F's foundation, the law template and registry with the declarations manifest, landed the same day; the rest of the pass was to follow the second source move, which landed on 18 November 2026. Its step 0, the screens and probes that come before the seams' code, completed on 17 November 2026. That evening the user set the chain (D213): D198's retire batch lands, which it did the same evening, then the second source move, then the pass resumes at its steps 1 to 3 with about four owners within the cap of seven, with the Kv1 port pilot of D211 folded into seam F's second step. An external adviser's architecture follow-up, forwarded by the user, sent two boundary fixes ahead, which landed on 18 November 2026, and its other items to the core backlog, mapped to the seams and the plan's records: the shared physical interfaces through their consumers, the module system's first stage with one installed external module, at low priority, a minimal static contract for levels of detail, general composition through D191's rule, the packed GPU qualification on the merged core, and precise reporting (D214). A step B1′ joined the pass's table on 18 November 2026: the coupling operator's rate route, for FR-6 and FR-7, to go ahead only if the user's answer on the hold of D145 admitted a loop from species to control to production (D216, amended); the user's answer that evening admitted it, through the one routing door, each loop verified whole with a control in which the feedback is cut, and B1′ stays the operators owner's, after B1 (D218). The pass started the same day, with the lead's rulings at launch: the owner table checked again on the moved tree, the files of the builder of OL2 and OL3 added to it, the owners seated within the seven, and gates added before the first landing under the operators, the kinds or the tissue model @3: quick worlds of the feature-request lane's judged acceptances, compared bit for bit at every core landing, and tier 3 once on the final tree, with G3 and G4. Its first landings followed on the evening of 18 November 2026, each checked again at its merge with main: the core fixes, carried across the second source move with one semantic fix; the code-blind references for seams A and C, registered before either seam's first output; the tissue model's host table, every patch and junction a row with its kind and its two end nodes, the prerequisite of seam A; crossrev's set of the judged acceptances' quick worlds, and a second set of the gap-junction work's, which every core landing must regenerate bit for bit; and seam F's laws as modules, with the step terms the operators' admission reads, the hand-offs to the tissue model's owner and seam D's switch. At the landings whose gates the record states, the core fixes, the references, the host table, the second crossrev set and seam F's laws, tiers 1 and 2 showed no changed outcome, G1 passed on all 113 saved worlds, and crossrev's sets were identical. Composition's first milestone, the rules by which an operator reads another's current state, landed the same evening. Three amendments of seam C's references were registered before any output of its general binding. The same evening the user put the core and the feature requests first (D222): the core pass's owners, its verification owner and the references for seams A and C take seats and processors first, and the gate tooling counts as core, decided to move into the repository with tests (D220), which it did on 19 November 2026. Gates use both lanes of processors and are sized to what a landing changes (D223). Its next landings followed from the late evening of 18 November 2026, each merge's message recording its gates: refusal 4 version 1.3, which admits a compartment's kinds move by move; the first slices of B1, the operators' energy roles and seam E's hook for standard free energies; the tissue model's guard landing with the run view's format items; and seam F's hand-offs to the registry. By the morning of 19 November 2026 seam A, the general cycle kind, with its comparison against the code-blind references, seam C's second stage, the general rapid binding closure in whole worlds, and seam D, the heat bookings, had landed, with the presence gate that admits a kind beside a closer, the predictor for stage reads under a closure, B1's last slice, the lifecycle driven by roles at division and retirement, and the five Kv1 laws as the tissue model's own. The same day the user gave priority to the gaps that real use cases find, as general features scheduled into the pass as its current heads land (D228); the first, a chloride leak among the tissue model's channel laws, landed that day. Implemented and guarded, not judged: what the record says has landed is on main with its tests, named in the sources. That is seam F, seams A and D, seam C to its second stage, the run view's format items, B1 to its last slice, and of seam E the two adopted fixes, the hook for standard free energies and the kinds' own ledgers. The pass is not finished: B1′, the coupling operator's rate route, comes after B1. The design note's own status line still reads proposed.",
+   "as_of": "2026-11-20",
+   "plain": "One pass over the seams the engine's pieces share, the second step of the order set on 16 November 2026 (D194): membrane cycles, populations, binding, heat booking, finite fuel's core part, laws as modules, and the run view's format items, each piece joining by the same five declarations. The user approved it at its scope on 17 November 2026, within seven agents, with no checkpoint crossing the second source move (D195). Its design note is still marked proposed. Seam F's foundation, the law template and registry with the declarations manifest, landed the same day; the rest of the pass was to follow the second source move, which landed on 18 November 2026. Its step 0, the screens and probes that come before the seams' code, completed on 17 November 2026. That evening the user set the chain (D213): D198's retire batch lands, which it did the same evening, then the second source move, then the pass resumes at its steps 1 to 3 with about four owners within the cap of seven, with the Kv1 port pilot of D211 folded into seam F's second step. An external adviser's architecture follow-up, forwarded by the user, sent two boundary fixes ahead, which landed on 18 November 2026, and its other items to the core backlog, mapped to the seams and the plan's records: the shared physical interfaces through their consumers, the module system's first stage with one installed external module, at low priority, a minimal static contract for levels of detail, general composition through D191's rule, the packed GPU qualification on the merged core, and precise reporting (D214). A step B1′ joined the pass's table on 18 November 2026: the coupling operator's rate route, for FR-6 and FR-7, to go ahead only if the user's answer on the hold of D145 admitted a loop from species to control to production (D216, amended); the user's answer that evening admitted it, through the one routing door, each loop verified whole with a control in which the feedback is cut, and B1′ stays the operators owner's, after B1 (D218). The pass started the same day, with the lead's rulings at launch: the owner table checked again on the moved tree, the files of the builder of OL2 and OL3 added to it, the owners seated within the seven, and gates added before the first landing under the operators, the kinds or the tissue model @3: quick worlds of the feature-request lane's judged acceptances, compared bit for bit at every core landing, and tier 3 once on the final tree, with G3 and G4. Its first landings followed on the evening of 18 November 2026, each checked again at its merge with main: the core fixes, carried across the second source move with one semantic fix; the code-blind references for seams A and C, registered before either seam's first output; the tissue model's host table, every patch and junction a row with its kind and its two end nodes, the prerequisite of seam A; crossrev's set of the judged acceptances' quick worlds, and a second set of the gap-junction work's, which every core landing must regenerate bit for bit; and seam F's laws as modules, with the step terms the operators' admission reads, the hand-offs to the tissue model's owner and seam D's switch. At the landings whose gates the record states, the core fixes, the references, the host table, the second crossrev set and seam F's laws, tiers 1 and 2 showed no changed outcome, G1 passed on all 113 saved worlds, and crossrev's sets were identical. Composition's first milestone, the rules by which an operator reads another's current state, landed the same evening. Three amendments of seam C's references were registered before any output of its general binding. The same evening the user put the core and the feature requests first (D222): the core pass's owners, its verification owner and the references for seams A and C take seats and processors first, and the gate tooling counts as core, decided to move into the repository with tests (D220), which it did on 19 November 2026. Gates use both lanes of processors and are sized to what a landing changes (D223). Its next landings followed from the late evening of 18 November 2026, each merge's message recording its gates: refusal 4 version 1.3, which admits a compartment's kinds move by move; the first slices of B1, the operators' energy roles and seam E's hook for standard free energies; the tissue model's guard landing with the run view's format items; and seam F's hand-offs to the registry. By the morning of 19 November 2026 seam A, the general cycle kind, with its comparison against the code-blind references, seam C's second stage, the general rapid binding closure in whole worlds, and seam D, the heat bookings, had landed, with the presence gate that admits a kind beside a closer, the predictor for stage reads under a closure, B1's last slice, the lifecycle driven by roles at division and retirement, and the five Kv1 laws as the tissue model's own. The same day the user gave priority to the gaps that real use cases find, as general features scheduled into the pass as its current heads land (D228); the first, a chloride leak among the tissue model's channel laws, landed that day. Implemented and guarded, not judged: what the record says has landed is on main with its tests, named in the sources. That is seam F, seams A and D, seam C to its second stage, the run view's format items, B1 to its last slice, and of seam E the two adopted fixes, the hook for standard free energies and the kinds' own ledgers. B1′, the coupling operator's rate route, landed on 19 November 2026 on the coupling operator's version 2, and of seam E the species registry's check of every declared free-energy entry. On 19 November 2026 the user chose option 2 of the core-laws roadmap (D234): the energy groundwork and mitochondria go to the kinds and binding owners and a new mitochondria lane, while the operators, F and @3 owners keep D222's order for the feature requests and the Xenopus lane. The kinds and binding owners' first landings under it followed on 20 November 2026, on the cycle kind's and the binding closure's own parts. The design note's own status line still reads proposed.",
    "sources": [
     {
      "path": "docs/DECISIONS.md",
@@ -26024,6 +26731,22 @@
     },
     {
      "path": "tests/unit/test_kind_ledgers.py"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "B1′, the operator rate route, on `species_regulated_availability@2` (19 November 2026; FR-7's"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "Seam E's checks and F's cleanup (19 November 2026)."
+    },
+    {
+     "path": "docs/DECISIONS.md",
+     "where": "D234: Option 2 of the core-laws roadmap, and gene regulation's design begins"
+    },
+    {
+     "path": "docs/CORE_LAWS_ROADMAP.md",
+     "where": "Decided, 19 November 2026 (D234)."
     }
    ],
    "weight": 0
@@ -26535,7 +27258,7 @@
     ],
     [
      "Lines of Python",
-     "1,438"
+     "1,582"
     ]
    ],
    "sources": [
@@ -26588,7 +27311,7 @@
     "src/cells/operators/contract.py",
     "src/cells/registry/operators.py"
    ],
-   "weight": 1438
+   "weight": 1582
   },
   {
    "id": "op.scoped_composition",
@@ -26711,8 +27434,8 @@
    "kind": "component",
    "group": "operators",
    "status": "designed",
-   "as_of": "2026-11-19",
-   "plain": "Four general cases where one operator must read what another has just changed, each refused by the engine today: production that reads a cell's current volume, with a dividing cell's daughter volumes taken from the current volume beside water; water that reads the current membrane area beside an operator that adds membrane; turnover that reads which cells and nodes are still open beside the operators that close them; and pumps on a dividing cell, with pump capacity as state. A probe of the minimal cells' cycle for the living-cell loops found them on 16 November 2026; that cycle needs all four, and division with water needs the first. The user queued them at high priority after the landing, and the design was decided on 16 November 2026 (D191): one general rule. Each operator declares, for each field, whether it reads the current value or the declared one, and the composite settles each read when the model is built: the current value where some operator of the composition changes the field, the declared value otherwise. Worlds that do not compose keep their programs bit for bit. It is to be qualified numerically only, since no judged experiment needs it yet, and is built in step 3 of the order the user set the same evening (D194). Four is a lower bound until every refusal of the full cycle is collected. Its first milestone was built and landed on 18 November 2026: the composite's rules for current, fixed and reference reads (C1 to C4), with one table of every change of a view field, from which the composite settles each read. Every operator is unchanged, no registered composition is newly refused or admitted, and the four cases wait for the next milestones, M2 to M5, which follow B1; B1's last slice landed on 19 November 2026. Designed: of its milestones only M1 is built.",
+   "as_of": "2026-11-20",
+   "plain": "Four general cases where one operator must read what another has just changed, each refused by the engine today: production that reads a cell's current volume, with a dividing cell's daughter volumes taken from the current volume beside water; water that reads the current membrane area beside an operator that adds membrane; turnover that reads which cells and nodes are still open beside the operators that close them; and pumps on a dividing cell, with pump capacity as state. A probe of the minimal cells' cycle for the living-cell loops found them on 16 November 2026; that cycle needs all four, and division with water needs the first. The user queued them at high priority after the landing, and the design was decided on 16 November 2026 (D191): one general rule. Each operator declares, for each field, whether it reads the current value or the declared one, and the composite settles each read when the model is built: the current value where some operator of the composition changes the field, the declared value otherwise. Worlds that do not compose keep their programs bit for bit. It is to be qualified numerically only, since no judged experiment needs it yet, and is built in step 3 of the order the user set the same evening (D194). Four is a lower bound until every refusal of the full cycle is collected. Its first milestone was built and landed on 18 November 2026: the composite's rules for current, fixed and reference reads (C1 to C4), with one table of every change of a view field, from which the composite settles each read. Every operator is unchanged, no registered composition is newly refused or admitted, and the four cases wait for the next milestones, M2 to M5, which follow B1; B1's last slice landed on 19 November 2026. Designed: of its milestones only M1 is built. On 19 November 2026 a factor operator gained a current read at the control view (R2), FR-7's prerequisite, which the coupling operator's version 2 uses for a population's abundance.",
    "sources": [
     {
      "path": "docs/CURRENT_PLAN.md",
@@ -26747,6 +27470,10 @@
     {
      "path": "PROGRESS.md",
      "where": "The core-seams pass's morning landings (19 November 2026"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "R2, the view into `control_factors` for a factor operator's current reads"
     }
    ],
    "weight": 0
@@ -26824,8 +27551,8 @@
    "kind": "component",
    "group": "operators",
    "status": "landed",
-   "as_of": "2026-11-19",
-   "plain": "Development, not judged. The request: membrane, with the populations on it, moves inward on a schedule and carries the compartment it forms, the reverse of membrane insertion. Version 1, on main, moves membrane into a receiving pool declared with the world, one per cell, and back, and moves no fluid. Logged on 14 November 2026, to follow the internal compartment. Its design note was proposed on 18 November 2026, with options and the user's questions, for the user and the lead to discuss: it answers once where retrieval's energy comes from, for three questions that earlier decisions left open (D216). The user answered it on 18 November 2026 (D217): version 1 is the retrieval and recycling of membrane and channels, retrieval following the membrane's charge, with no new explicit fuel drawn by the machinery in version 1, whose omitted cost is a declared limit, and one well-mixed receiving pool per cell, stated as such; fluid-phase uptake comes in version 1.1. Version 1 landed on main on 19 November 2026 as an operator of its own, Membrane retrieval and recycling, for development, not judged; it moves the charges with the split-and-merge kernel that landed the evening before. Its registered comparison against code-blind references: the first run passed 770 of 782 rows; the second, after a blind correction of the references, all 782, which is weaker evidence after the failed first run. The comparison is on main with its fixtures and checks every row in every gate. The third external review's fix of the same day refuses two routes of one cell, so that each cell has one receiving pool. The design note's own status line still reads proposed, and fluid-phase uptake comes in version 1.1. Implemented and guarded: the operator and its comparison are on main with their tests.",
+   "as_of": "2026-11-20",
+   "plain": "Development, not judged. The request: membrane, with the populations on it, moves inward on a schedule and carries the compartment it forms, the reverse of membrane insertion. Version 1, on main, moves membrane into a receiving pool declared with the world, one per cell, and back, and moves no fluid. Logged on 14 November 2026, to follow the internal compartment. Its design note was proposed on 18 November 2026, with options and the user's questions, for the user and the lead to discuss: it answers once where retrieval's energy comes from, for three questions that earlier decisions left open (D216). The user answered it on 18 November 2026 (D217): version 1 is the retrieval and recycling of membrane and channels, retrieval following the membrane's charge, with no new explicit fuel drawn by the machinery in version 1, whose omitted cost is a declared limit, and one well-mixed receiving pool per cell, stated as such; fluid-phase uptake comes in version 1.1. Version 1 landed on main on 19 November 2026 as an operator of its own, Membrane retrieval and recycling, for development, not judged; it moves the charges with the split-and-merge kernel that landed the evening before. Its registered comparison against code-blind references: the first run passed 770 of 782 rows; the second, after a blind correction of the references, all 782, which is weaker evidence after the failed first run. The comparison is on main with its fixtures and checks every row in every gate. The third external review's fix of the same day refuses two routes of one cell, so that each cell has one receiving pool. The design note's own status line still reads proposed, and fluid-phase uptake comes in version 1.1. Implemented and guarded: the operator and its comparison are on main with their tests. On 19 November 2026 the user asked that FR-2's later design say who owns insertion and give each population one owner of terminal removal, so that a retrieved unit can either return or be destroyed and its loss is counted once (D232).",
    "detail": "FR-2 version 1's engine-side comparison with its code-blind references (D224: the user's choice (b), 19 November 2026; validation/membrane_trafficking/references/REFERENCES_USAGE.md).",
    "facts": [
     [
@@ -26882,6 +27609,10 @@
     },
     {
      "path": "tests/unit/test_membrane_trafficking.py"
+    },
+    {
+     "path": "docs/DECISIONS.md",
+     "where": "D232: FR-7's scoped exception to D177, and FR-8 measures before it builds"
     }
    ],
    "files": [
@@ -27145,6 +27876,90 @@
     "validation/compartment_ph_engine/world_agreement.py"
    ],
    "weight": 319
+  },
+  {
+   "id": "fr.abundance_to_function",
+   "label": "Abundance to function (FR-7)",
+   "kind": "component",
+   "group": "operators",
+   "status": "qualified",
+   "as_of": "2026-11-20",
+   "plain": "Judged in one scope only: FR-7's first closed loop, its comparison F4 against the code-blind reference R-loop, passed on 20 November 2026; F3's six-world comparison against its own references is queued, and every piece of the loop is development, not judged, on its own part. The request: the amount of a protein in the composite sets how a membrane population conducts, and a declared species can drive the rate at which it is made, so that a transient template changes a measurable response that may or may not outlive it (feature request FR-7). The user's answers of 18 November 2026 set the first loop's unit, admitted the loop through the one routing door, and ruled that a closed loop is not called qualified until a closed feedback case passes beside a control in which the feedback is cut (D217, D218). Its pieces landed on 19 and 20 November 2026: the unit producer, whose removal of units inside itself is a scoped exception to D177 that the user accepted (D232); the coupling operator's version 2, with a factor on another operator's rate and a population's abundance as a source; the producer's assembly rate as a target (F3); declared initial units per maturation pool; and the comparison code, the mappers and comparisons of the chain and of the loop, which has no test of its own. For the closed loop, under the user's delegation, the Na/K pump with Na-leak units at a declared synthetic time scale was chosen (D231), and its world scales the template's half-saturation and dose five-fold (D233). Its world, as its mapper declares it: one cell of the composite over the tissue model @3, with the Na/K pump on held fuel, membrane state's K-leak and Na-leak populations, species turnover, the coupling operator's version 2 and the unit producer. The judged run, from a frozen snapshot of main with the registered interface, ran both arms, closed and clamped: every compared row is within its band, the cut's applied factor is within its registered bound, the clearance row equals the registered 260 s, all 30 persistence rows pass, and the pump's rate read from the engine's own readouts matches its cumulative ledger. Its values are synthetic and labelled so.",
+   "facts": [
+    [
+     "Files",
+     "6"
+    ],
+    [
+     "Lines of Python",
+     "1,533"
+    ]
+   ],
+   "sources": [
+    {
+     "path": "PROGRESS.md",
+     "where": "FR-7's first closed loop, F4 against R-loop: judged, passed (20 November 2026)."
+    },
+    {
+     "path": "docs/FEATURE_REQUESTS.md",
+     "where": "FR-7 — Abundance-to-function, exposed in the composite"
+    },
+    {
+     "path": "docs/ABUNDANCE_TO_FUNCTION_DESIGN.md"
+    },
+    {
+     "path": "docs/DECISIONS.md",
+     "where": "D217: FR-7, FR-8 and FR-2: the first loop's unit, stage 0, and retrieval's version 1"
+    },
+    {
+     "path": "docs/DECISIONS.md",
+     "where": "D218: D145's hold, narrowed again: physical production feedback through the one routing door"
+    },
+    {
+     "path": "docs/DECISIONS.md",
+     "where": "D231: FR-7's first closed loop and FR-8 rung 1's three choices"
+    },
+    {
+     "path": "docs/DECISIONS.md",
+     "where": "D232: FR-7's scoped exception to D177, and FR-8 measures before it builds"
+    },
+    {
+     "path": "docs/DECISIONS.md",
+     "where": "D233: FR-7's closed-loop world scales its template five-fold"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "FR-7 F1: the unit producer `population_unit_turnover@1` (19 November 2026; development, not"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "The fourth review's fixes, FR-7 F2 and FR-7's references (19–20 November 2026)."
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "fr7-f3-landed-2026-11-20"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "fr7-comparisons-landed-2026-11-20"
+    },
+    {
+     "path": "validation/fr7/loop_mapper.py",
+     "where": "The composite resolved_pump_composite@1 over resolved_pump_tissue@3, holding:"
+    },
+    {
+     "path": "validation/fr7/loop_comparison.py"
+    }
+   ],
+   "files": [
+    "validation/fr7/__init__.py",
+    "validation/fr7/chain_comparison.py",
+    "validation/fr7/chain_mapper.py",
+    "validation/fr7/loop_comparison.py",
+    "validation/fr7/loop_mapper.py",
+    "validation/fr7/unit_turnover_fixtures.py"
+   ],
+   "weight": 1533
   },
   {
    "id": "exp.parity",
@@ -27470,8 +28285,8 @@
    "label": "Gap-junction networks and tumour tissue (development)",
    "kind": "component",
    "group": "experiments",
-   "as_of": "2026-11-19",
-   "plain": "Development work, not judged (D138). The record states none of this map's levels for it. Cells' own runs of the model of a public preprint made with BITSEY: J. Grodstein, J. Mathews and M. Levin, \"Membrane voltage and connexin expression work together to enhance tumor growth and metastasis in cancer\", bioRxiv, doi:10.64898/2026.09.02.748840, version 1, 3 September 2026, CC-BY 4.0. It asks how strongly gap junctions must couple cells for healthy tissue to turn a tumour back to the healthy state. The user gave the work the highest priority on 17 November 2026 (D207), and its driver and its note are on main since that evening. Its linear model runs as written on the engine's own pieces, the reactions operator with the passive routes' neutral law on junction routes, unqualified, and its error against dense solves falls at second order; its exact Norton-equivalent network on the tissue model's own routes is its check. The preprint's tissue tables need engine features not built yet: a charged microRNA on junctions, a two-state junction gate and larger field solves (FR-15 to FR-17). On a line of 25 cells, the first six a tumour, the driver searched for the coupling at which the tumour returns to the healthy state; an engine check first stopped that search (FR-19), and after its fix the search ran again from main, followed by a ladder of ten couplings and a 9 by 9 sheet, an extension beyond the preprint's setup. On 18 November 2026 the user answered the note's questions (D219). Its next bundle, for a free seat: the correctly specified 25 by 25 threshold case, the preprint's Figure 5a through the windowed execution and record path, and BITSEY run unmodified, out of process, for pinned reference outputs, after its licence and revision are checked; the 2D search's registration states its geometry, success criterion, horizon, bracket, refinement rule and compute budget before it runs. Two judged comparisons were approved, each under a registered protocol with code-blind references: the linear model's numerical qualification, Figure 8 judged against independently derived physical balances, with the printed recursion's discrepancy kept as a finding; and the threshold comparison, whose verdict includes successful refinement and a convergence condition declared in advance, and in which only the 2D field is a true pre-registration, since the 1D line's value was already seen. For Table 3, its logged inputs and the interventions as actually executed govern the code's target, and the printed table is kept as a separate publication target, with the mapping discrepancies reported. FR-15 to FR-17 were scheduled with the owners whose files they touch, not yet started. The same evening the user put the core and the feature requests first (D222): the bundle's steps 2 to 5 and the references for the two judged comparisons wait for free seats and lanes. On 19 November 2026 charged species in the species operators, which the work's microRNA needs, were scheduled into the core pass as a general feature, starting with a diagnosis (FR-15's F2 part; D226, D228 item 4). Five quick worlds of this work form a set of crossrev, recorded from the engine's source before any core change, which every later core landing must regenerate bit for bit; that holds the engine to its own earlier programs, and compares nothing with the preprint. None of this is judged.",
+   "as_of": "2026-11-20",
+   "plain": "Development work, not judged (D138). The record states none of this map's levels for it. Cells' own runs of the model of a public preprint made with BITSEY: J. Grodstein, J. Mathews and M. Levin, \"Membrane voltage and connexin expression work together to enhance tumor growth and metastasis in cancer\", bioRxiv, doi:10.64898/2026.09.02.748840, version 1, 3 September 2026, CC-BY 4.0. It asks how strongly gap junctions must couple cells for healthy tissue to turn a tumour back to the healthy state. The user gave the work the highest priority on 17 November 2026 (D207), and its driver and its note are on main since that evening. Its linear model runs as written on the engine's own pieces, the reactions operator with the passive routes' neutral law on junction routes, unqualified, and its error against dense solves falls at second order; its exact Norton-equivalent network on the tissue model's own routes is its check. The preprint's tissue tables need engine features not built yet: a charged microRNA on junctions, a two-state junction gate and larger field solves (FR-15 to FR-17). On a line of 25 cells, the first six a tumour, the driver searched for the coupling at which the tumour returns to the healthy state; an engine check first stopped that search (FR-19), and after its fix the search ran again from main, followed by a ladder of ten couplings and a 9 by 9 sheet, an extension beyond the preprint's setup. On 18 November 2026 the user answered the note's questions (D219). Its next bundle, for a free seat: the correctly specified 25 by 25 threshold case, the preprint's Figure 5a through the windowed execution and record path, and BITSEY run unmodified, out of process, for pinned reference outputs, after its licence and revision are checked; the 2D search's registration states its geometry, success criterion, horizon, bracket, refinement rule and compute budget before it runs. Two judged comparisons were approved, each under a registered protocol with code-blind references: the linear model's numerical qualification, Figure 8 judged against independently derived physical balances, with the printed recursion's discrepancy kept as a finding; and the threshold comparison, whose verdict includes successful refinement and a convergence condition declared in advance, and in which only the 2D field is a true pre-registration, since the 1D line's value was already seen. For Table 3, its logged inputs and the interventions as actually executed govern the code's target, and the printed table is kept as a separate publication target, with the mapping discrepancies reported. FR-15 to FR-17 were scheduled with the owners whose files they touch, not yet started. The same evening the user put the core and the feature requests first (D222): the bundle's steps 2 to 5 and the references for the two judged comparisons wait for free seats and lanes. On 19 November 2026 charged species in the species operators, which the work's microRNA needs, were scheduled into the core pass as a general feature, starting with a diagnosis (FR-15's F2 part; D226, D228 item 4). By 20 November 2026 its first two steps had landed as general features: charged species in the reactions operator, where every reaction conserves charge, and a charged constant-field route law on the passive routes, on membranes first; hosting it on junctions waits for two answers from the tissue model's owner. Five quick worlds of this work form a set of crossrev, recorded from the engine's source before any core change, which every later core landing must regenerate bit for bit; that holds the engine to its own earlier programs, and compares nothing with the preprint. None of this is judged.",
    "facts": [
     [
      "Files",
@@ -27542,6 +28357,18 @@
     {
      "path": "docs/DECISIONS.md",
      "where": "D228: Gaps found by real use cases are prioritised as general engine features"
+    },
+    {
+     "path": "docs/FEATURE_REQUESTS.md",
+     "where": "F2's direction (the lead's rulings of 19 November 2026): S1 + P2."
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "FR-15 S1: charged species in `local_species_reactions@1` (19 November 2026; in place under"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "fr15-p2-landed-2026-11-20"
     }
    ],
    "files": [
@@ -27557,8 +28384,8 @@
    "label": "Xenopus bioelectric cancer lane (plan)",
    "kind": "component",
    "group": "experiments",
-   "as_of": "2026-11-19",
-   "plain": "A lane the user decided on 19 November 2026, with a first experiment that can fail: the record states none of this map's levels for it. An external review checked into the repository that day proposes a lane for published experiments of Levin and colleagues on tumour-like structures in Xenopus, starting with their suppression by local hyperpolarisation (Chernet and Levin, 2013). The user made it the third of the top three priorities, beside the core pass and the feature requests; its runs are to use Cells' own physics laws, each judged run under a protocol registered before it (D225). The user chose option B of the gap analysis (D226): a first bundle, the physical preparation (XC0) and the first experiment's local transport (XC1) in one-cell and two-cell preparations, a small mosaic and a matched replay of three arms, beside general features that other users need too, charged species in the species operators (FR-15's F2 part) and anatomy as data, with a decision point after the matched replay. XC1's success is defined so that it can fail: its registration lists every published transport-level number it is scored against, and the outcomes that count as failure. An evidence ledger comes first, then a parse-only probe of the carrier, before any protocol is registered or law coded; the ledger found three transport-level numbers that can be scored, none with an uncertainty, and the lane's first result is not to be reported as a replication (D227). What it needs enters the engine only as general features, each to be qualified with its own references before the lane uses it (D228): the always-open chloride leak landed the same day, and is not qualified; a sodium-coupled anion symporter and an instantaneous inward rectifier come first in its order.",
+   "as_of": "2026-11-20",
+   "plain": "A lane the user decided on 19 November 2026, with a first experiment that can fail: the record states none of this map's levels for it. An external review checked into the repository that day proposes a lane for published experiments of Levin and colleagues on tumour-like structures in Xenopus, starting with their suppression by local hyperpolarisation (Chernet and Levin, 2013). The user made it the third of the top three priorities, beside the core pass and the feature requests; its runs are to use Cells' own physics laws, each judged run under a protocol registered before it (D225). The user chose option B of the gap analysis (D226): a first bundle, the physical preparation (XC0) and the first experiment's local transport (XC1) in one-cell and two-cell preparations, a small mosaic and a matched replay of three arms, beside general features that other users need too, charged species in the species operators (FR-15's F2 part) and anatomy as data, with a decision point after the matched replay. XC1's success is defined so that it can fail: its registration lists every published transport-level number it is scored against, and the outcomes that count as failure. An evidence ledger comes first, then a parse-only probe of the carrier, before any protocol is registered or law coded; the ledger found three transport-level numbers that can be scored, none with an uncertainty, and the lane's first result is not to be reported as a replication (D227). What it needs enters the engine only as general features, each to be qualified with its own references before the lane uses it (D228): the always-open chloride leak landed the same day, and the instantaneous inward rectifier and the sodium-coupled anion symporter, in two forms, followed on 19 and 20 November 2026; none of them is qualified.",
    "sources": [
     {
      "path": "docs/lanes/LEVIN_CANCER_XENOPUS.md",
@@ -27583,6 +28410,14 @@
     {
      "path": "PROGRESS.md",
      "where": "Cl⁻ in @3's channel populations: the always-open chloride leak"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "The inward-rectifier route law `inward_rectifier_linear_driving_force@1` (19 November 2026;"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "The electrogenic Na⁺-coupled anion symporter, version 1: `cells.na_anion_symport_factored@1`"
     }
    ],
    "weight": 0
@@ -27991,7 +28826,7 @@
     ],
     [
      "Lines of Python",
-     "93,422"
+     "93,608"
     ]
    ],
    "sources": [
@@ -28012,7 +28847,7 @@
      "where": "The FR worlds."
     }
    ],
-   "weight": 93422
+   "weight": 93608
   },
   {
    "id": "val.division",
@@ -28437,8 +29272,8 @@
    "kind": "component",
    "group": "references",
    "status": "landed",
-   "as_of": "2026-11-19",
-   "plain": "Development, not judged. The measurements and the harness that come before a long-duration mode is chosen (feature request FR-8), all on today's fine engine. Stage 0 landed on main on 19 November 2026: five measurements, each with its criteria registered before its run, and the harness, a world of an hour whose cue at its midpoint switches a cell for good, run at three steps. Stage 0 makes no qualification claim, since its references are the engine's own runs. A ladder of rungs was then decided, with the user's agreement (D224): rung 0 first, to explain why the fine engine's order of accuracy drops through a switch, before any later rung is registered, and every later accuracy study judged against it. Rung 0 ran the same day, on the tissue model alone. Its registered verdict is \"instrument not validated\": its control for the slow phase had no power, so no cause is identified. Under an amendment registered blind before the main windows were read, the weaker evidence, the instruments pass and the cause is the transient before the step's order settles: the observed orders climb toward 2 as the step halves. Rung 1 comes after the energy check X2 lands. Implemented and guarded: on main, with tests of the harness's judge and of the measurements M1, M2, M4 and M5, M1's on a registered world. M3, a measurement of cost, has no test of its own, and neither has rung 0's driver, which the engine's guard for restarts lists as a development tool.",
+   "as_of": "2026-11-20",
+   "plain": "Development, not judged. The measurements and the harness that come before a long-duration mode is chosen (feature request FR-8), all on today's fine engine. Stage 0 landed on main on 19 November 2026: five measurements, each with its criteria registered before its run, and the harness, a world of an hour whose cue at its midpoint switches a cell for good, run at three steps. Stage 0 makes no qualification claim, since its references are the engine's own runs. A ladder of rungs was then decided, with the user's agreement (D224): rung 0 first, to explain why the fine engine's order of accuracy drops through a switch, before any later rung is registered, and every later accuracy study judged against it. Rung 0 ran the same day, on the tissue model alone. Its registered verdict is \"instrument not validated\": its control for the slow phase had no power, so no cause is identified. Under an amendment registered blind before the main windows were read, the weaker evidence, the instruments pass and the cause is the transient before the step's order settles: the observed orders climb toward 2 as the step halves. The energy check X2 landed on 19 November 2026 (a part of its own). Rung 1's registered control, today's integrator with X2 on, then ran first, as the user chose (D232): its largest passing steps under the parity caps were 20 ms on the harness's calm stretch, held by charge stability, 1 ms through the cue, by the location rule, and 5 ms on a second world, by the junction-gate bound, and X2 refused nothing. By D232's rules a method was chosen on 20 November 2026 (D235): N2, the design note's linearly implicit step, as rung 1 as registered, then C, a fine-window executor, required and not optional. Rung 0's official verdict stays inconclusive (D232), and the fourth external review's fix makes its reader check each arm's identity, step and grid. Implemented and guarded: on main, with tests of the harness's judge and of the measurements M1, M2, M4 and M5, M1's on a registered world. M3, a measurement of cost, has no test of its own, and neither has rung 0's driver, which the engine's guard for restarts lists as a development tool.",
    "facts": [
     [
      "Files",
@@ -28446,7 +29281,7 @@
     ],
     [
      "Lines of Python",
-     "2,708"
+     "2,720"
     ]
    ],
    "sources": [
@@ -28488,25 +29323,109 @@
     },
     {
      "path": "tests/unit/test_long_duration_m2_m4_m5.py"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "FR-8 rung 1's control"
+    },
+    {
+     "path": "docs/DECISIONS.md",
+     "where": "D232: FR-7's scoped exception to D177, and FR-8 measures before it builds"
+    },
+    {
+     "path": "docs/DECISIONS.md",
+     "where": "D235: FR-8 builds N2 then C; mitochondria on host P; gene regulation's option A"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "The fourth review's fixes, FR-7 F2 and FR-7's references (19–20 November 2026)."
     }
    ],
-   "weight": 2708
+   "weight": 2720
+  },
+  {
+   "id": "val.mitochondria",
+   "label": "Mitochondria references (MR1)",
+   "kind": "component",
+   "group": "references",
+   "status": "landed",
+   "as_of": "2026-11-20",
+   "plain": "A reference outside the engine, not a model in it: the engine has no mitochondrial law yet. MR1 is an independent reference for the isolated cardiac mitochondrion of Beard's published model of 2005, as corrected in 2006, written from the two papers alone, without reading the engine's code, before any engine code for mitochondria existed; nothing of it imports the engine. It holds the model as data, a checked compiler of its expressions, the published protocols, an audit of each process's Gibbs energy, the published curves read from the article's figures with their uncertainties, and proposed comparison rows for a first engine milestone, which are a proposal, not a registration. It reproduces the published curves to about the precision of their digitisation. Its audit finds the paper's ATP synthase flux dissipating negatively at the paper's own state-3 points, a finding the core-laws roadmap does not count as independent, since its brief allowed the design note that already names it; its repair table shows that one printed equation is a typo, the restored form being what the paper ran. The repairs are the user's to rule on (D209), and the record gives its registration as waiting for the user's ruling on its declared departures. It landed on main on 20 November 2026, for the mitochondria lane the user set up on 19 November 2026 (D234), whose second milestone, MT-2, it serves. Implemented and guarded: two tests on main check its integrity and its reproduction of the published curves.",
+   "facts": [
+    [
+     "Files",
+     "10"
+    ],
+    [
+     "Lines of Python",
+     "1,673"
+    ]
+   ],
+   "sources": [
+    {
+     "path": "validation/mitochondria/references/README.md",
+     "where": "It was built before any engine code for mitochondria existed."
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "mito-references-landed-2026-11-20"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "Tagged, not yet landed"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "The night's landings, 20 November 2026 (core, FR and the mitochondria groundwork)."
+    },
+    {
+     "path": "docs/CORE_LAWS_ROADMAP.md",
+     "where": "Decided, 19 November 2026 (D234)."
+    },
+    {
+     "path": "docs/DECISIONS.md",
+     "where": "D234: Option 2 of the core-laws roadmap, and gene regulation's design begins"
+    },
+    {
+     "path": "docs/DECISIONS.md",
+     "where": "D235: FR-8 builds N2 then C; mitochondria on host P; gene regulation's option A"
+    },
+    {
+     "path": "tests/unit/test_mito_references_integrity.py"
+    },
+    {
+     "path": "tests/unit/test_mito_references_reproduction.py"
+    }
+   ],
+   "files": [
+    "validation/mitochondria/references/README.md",
+    "validation/mitochondria/references/__init__.py",
+    "validation/mitochondria/references/audit.py",
+    "validation/mitochondria/references/beard2005_model.json",
+    "validation/mitochondria/references/digitize.py",
+    "validation/mitochondria/references/model.py",
+    "validation/mitochondria/references/proposal.json",
+    "validation/mitochondria/references/published_targets.json",
+    "validation/mitochondria/references/reproduce.py",
+    "validation/mitochondria/references/sources.py"
+   ],
+   "weight": 1673
   },
   {
    "id": "val.lean_proofs",
    "label": "Lean proofs of the laws' properties",
    "kind": "component",
    "group": "references",
-   "as_of": "2026-11-19",
-   "plain": "Not engine code: the record states none of this map's levels for it. A library of proofs in Lean, in the repository's lean/ folder since 19 November 2026, kept by a project of its own, the Lean proofs project, which commits to main from the same checkout (D227). In its own words, it connects engine laws to their proofs, numerical checks and experimental measurements, and each claim's page records its assumptions and links to the code and sources. Its index lists 22 claims about properties of the laws, such as the direction of a flux and the conservation of what it moves: 20 marked proved in Lean and 2 open; of their numerical checks against the engine, 20 marked checked, one failed (that inserting uncharged membrane dissipates heat that is not negative) and one open; and its biological evidence is partial for 21 claims and not assessable for one. Its coverage table counts direct Lean claims for 21 of the 28 registered laws and 3 of the 22 registered operators. The map takes none of this as a level of the engine's parts.",
+   "as_of": "2026-11-20",
+   "plain": "Not engine code: the record states none of this map's levels for it. A library of proofs in Lean, in the repository's lean/ folder since 19 November 2026, kept by a project of its own, the Lean proofs project, which commits to main from the same checkout (D227). In its own words, it connects engine laws to their proofs, numerical checks and experimental measurements, and each claim's page records its assumptions and links to the code and sources. Its index lists 32 claims about properties of the laws, such as the direction of a flux and the conservation of what it moves: 31 marked proved in Lean and one open. Of their numerical checks against the engine, 27 are marked checked and 5 failed: that inserting uncharged membrane dissipates heat that is not negative, two claims of the origin-of-life track's catalysis, the inward rectifier's, and the potassium–anion cotransport's. Its biological evidence is partial for 28 claims, mixed for one and not assessable for one, and a measurement is sought for two. Its coverage table counts direct Lean claims for 30 of the 30 registered laws and 4 of the 24 registered operators. On 19 and 20 November 2026 the record credits it with two findings fixed in the engine, the inward rectifier's square-root ratio and the K–anion cotransport's step bound, and two corrected statements of the GARD design note. The map takes none of this as a level of the engine's parts.",
    "facts": [
     [
      "Files",
-     "76"
+     "110"
     ],
     [
      "Lines of Python",
-     "2,767"
+     "4,120"
     ]
    ],
    "sources": [
@@ -28520,11 +29439,11 @@
     },
     {
      "path": "lean/COVERAGE.md",
-     "where": "Direct Lean claims cover 21 of 28 registered laws"
+     "where": "Direct Lean claims cover 30 of 30 registered laws"
     },
     {
      "path": "lean/COVERAGE.md",
-     "where": "Direct Lean claims cover 3 of 22 registered operators"
+     "where": "Direct Lean claims cover 4 of 24 registered operators"
     },
     {
      "path": "README.md",
@@ -28533,9 +29452,21 @@
     {
      "path": "docs/DECISIONS.md",
      "where": "D227: Bare published numbers may be committed with their citation; one rule for commits in the shared checkout"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "kir-ratio-landed-2026-11-20"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "kcc-step-bound-landed-2026-11-20"
+    },
+    {
+     "path": "docs/GARD_DESIGN.md",
+     "where": "Corrected 19 November 2026 from the Lean proofs project's finding"
     }
    ],
-   "weight": 2767
+   "weight": 4120
   },
   {
    "id": "val.fr_references",
@@ -28543,16 +29474,16 @@
    "kind": "component",
    "group": "references",
    "status": "landed",
-   "as_of": "2026-11-19",
-   "plain": "Independent references for the feature-request lane (D216), each written without reading the engine's code, on worlds registered before any engine output existed: FR-10's dose schedule, for the bath's faces, its ions and its records; FR-1's closed compartment; FR-3's site occupancy, whose worlds are registered here too; and FR-6's channel driven through a regulatory state from a per-cell prior. Each set has planted controls with their power, a usage note that the protocol calls inside its judged snapshot, and its own tests. Four judged acceptances passed against them: FR-10's on 17 November 2026, and FR-1's, FR-3's and FR-6's A5″ on 18 November 2026. FR-2's references, for its first version, were registered on 19 November 2026 before any comparison with the engine's output; their author corrected the floor of one class of checks as a dated erratum, auditing it blind, without seeing any result, and the comparison against them landed on main the same day, after the operator, for development, not judged. As the user's answer on FR-2's floors decided (D224, item 1), the engine's side reads only a named interface file of the floors and planted rows it needs, generated from the references' design file. Two inputs files of the lane, copied byte for byte into these references, stand beside them.",
+   "as_of": "2026-11-20",
+   "plain": "Independent references for the feature-request lane (D216), each written without reading the engine's code, on worlds registered before any engine output existed: FR-10's dose schedule, for the bath's faces, its ions and its records; FR-1's closed compartment; FR-3's site occupancy, whose worlds are registered here too; and FR-6's channel driven through a regulatory state from a per-cell prior. Each set has planted controls with their power, a usage note that the protocol calls inside its judged snapshot, and its own tests. Four judged acceptances passed against them: FR-10's on 17 November 2026, and FR-1's, FR-3's and FR-6's A5″ on 18 November 2026. FR-2's references, for its first version, were registered on 19 November 2026 before any comparison with the engine's output; their author corrected the floor of one class of checks as a dated erratum, auditing it blind, without seeing any result, and the comparison against them landed on main the same day, after the operator, for development, not judged. As the user's answer on FR-2's floors decided (D224, item 1), the engine's side reads only a named interface file of the floors and planted rows it needs, generated from the references' design file. Two inputs files of the lane, copied byte for byte into these references, stand beside them. FR-7's references, R-chain, R-clear and R-loop, were each tagged before any engine output, on 19 November 2026, R-loop following D233's five-fold template with its floor-sensitivity table, and they landed on main on 20 November 2026; FR-7's first closed loop was judged against R-loop the same day and passed. Their values are synthetic and labelled so (D217).",
    "facts": [
     [
      "Files",
-     "70"
+     "92"
     ],
     [
      "Lines of Python",
-     "8,397"
+     "11,380"
     ]
    ],
    "sources": [
@@ -28593,9 +29524,30 @@
     },
     {
      "path": "tests/unit/test_membrane_trafficking_references.py"
+    },
+    {
+     "path": "validation/fr7/references/interface/REFERENCES_USAGE.md",
+     "where": "Registered 19 November 2026, before any engine output for FR-7's F3."
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "The fourth review's fixes, FR-7 F2 and FR-7's references (19–20 November 2026)."
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "FR-7's first closed loop, F4 against R-loop: judged, passed (20 November 2026)."
+    },
+    {
+     "path": "tests/unit/test_fr7_references.py"
+    },
+    {
+     "path": "tests/unit/test_fr7_references_regeneration.py"
+    },
+    {
+     "path": "tests/unit/test_fr7_references_loop_regeneration.py"
     }
    ],
-   "weight": 8397
+   "weight": 11380
   },
   {
    "id": "val.passive",
@@ -28692,19 +29644,19 @@
    "facts": [
     [
      "Files",
-     "922"
+     "935"
     ],
     [
      "Lines of Python",
-     "240,917"
+     "248,349"
     ],
     [
      "Tier 1 test files",
-     "418"
+     "422"
     ],
     [
      "Tier 2 test files",
-     "175"
+     "184"
     ],
     [
      "Tier 3 test files",
@@ -28766,7 +29718,7 @@
      "path": "tests/unit/test_tier_fold.py"
     }
    ],
-   "weight": 240917
+   "weight": 248349
   },
   {
    "id": "val.results_gate",
@@ -28774,16 +29726,16 @@
    "kind": "component",
    "group": "references",
    "status": "landed",
-   "as_of": "2026-11-19",
-   "plain": "How the rework was accepted, and, through its comparison of saved worlds, how changes built on it are checked. A machine-readable list names every scientific result that must still hold, and the gate fails if any of them did not actually run. Every saved world is run before and after on the CPU and compared field by field (G1). At the landing, every registered protocol that uses the tissue model was also run again and had to keep its verdict (G2); the user held E07-v1's re-run, whose worlds the comparison covers instead (D181). The rework landed through it on 16 November 2026: all 113 saved worlds were the same bit for bit before the round's last change, and within its declared tolerance after it, and every registered small protocol run again passed. The comparison of saved worlds is what is in use since: it ran again at the core's next lane, at the core's fixes and on main a83d8f15, all 113 worlds the same bit for bit each time. The protocols' re-run (G2) ran at the landing and is not repeated for each lane: a lane whose comparison of saved worlds is bit for bit moves no registered result. Two parts are still owed, each shown as a part of its own: the planted changes that it must catch (G3), and the measurements of compile time, memory and run time (G4). Both run once with tier 3 of the tests on the source tree as D188's moves leave it (D194). Since 18 November 2026 a gate is sized to what a landing changes: one that changes the engine's source runs the full gate, as before: tiers 1 and 2, G1's 113 worlds, crossrev's eleven sets and the IDs; one that does not runs G1 and crossrev only where a changed file is in their harnesses' import closures, computed at the landing's head (D223). On 19 November 2026 the gate tooling moved into the repository (D220, D222): the lane check, the snapshot freeze, the feature-request lane's bitwise landing set, crossrev's set runner, which fails closed, and the fingerprint check through a move map, each tool with tests that plant failures. The same day the user amended the sizing (D229): a landing that changes no engine source runs the files of tiers 1 and 2 it can reach, found from recorded imports and file reads, an always-run set of guards and the IDs, and tiers 1 and 2 run in full each night; once the plan's fail-fast steps are in, queued heads may be gated together as a stack of two or three. The comparison's own planted-difference self-test is a test on main, and the routine test gate also flags a test file whose count of passing tests falls or whose count of skipped tests rises.",
+   "as_of": "2026-11-20",
+   "plain": "How the rework was accepted, and, through its comparison of saved worlds, how changes built on it are checked. A machine-readable list names every scientific result that must still hold, and the gate fails if any of them did not actually run. Every saved world is run before and after on the CPU and compared field by field (G1). At the landing, every registered protocol that uses the tissue model was also run again and had to keep its verdict (G2); the user held E07-v1's re-run, whose worlds the comparison covers instead (D181). The rework landed through it on 16 November 2026: all 113 saved worlds were the same bit for bit before the round's last change, and within its declared tolerance after it, and every registered small protocol run again passed. The comparison of saved worlds is what is in use since: it ran again at the core's next lane, at the core's fixes and on main a83d8f15, all 113 worlds the same bit for bit each time. The protocols' re-run (G2) ran at the landing and is not repeated for each lane: a lane whose comparison of saved worlds is bit for bit moves no registered result. Two parts are still owed, each shown as a part of its own: the planted changes that it must catch (G3), and the measurements of compile time, memory and run time (G4). Both run once with tier 3 of the tests on the source tree as D188's moves leave it (D194). Since 18 November 2026 a gate is sized to what a landing changes: one that changes the engine's source runs the full gate, as before: tiers 1 and 2, G1's 113 worlds, crossrev's eleven sets and the IDs; one that does not runs G1 and crossrev only where a changed file is in their harnesses' import closures, computed at the landing's head (D223). On 19 November 2026 the gate tooling moved into the repository (D220, D222): the lane check, the snapshot freeze, the feature-request lane's bitwise landing set, crossrev's set runner, which fails closed, and the fingerprint check through a move map, each tool with tests that plant failures. The same day the user amended the sizing (D229): a landing that changes no engine source runs the files of tiers 1 and 2 it can reach, found from recorded imports and file reads, an always-run set of guards and the IDs, and tiers 1 and 2 run in full each night; once the plan's fail-fast steps are in, queued heads may be gated together as a stack of two or three. The comparison's own planted-difference self-test is a test on main, and the routine test gate also flags a test file whose count of passing tests falls or whose count of skipped tests rises. On 20 November 2026 the next part of the gate tooling landed: a gate that fails fast, gates stacked over queued heads, the map of what a landing that changes no engine source can reach, a qualifier of the gates' cache, and the nightly run of tiers 1 and 2, with its timer installed.",
    "facts": [
     [
      "Files",
-     "10"
+     "20"
     ],
     [
      "Lines of Python",
-     "952"
+     "3,044"
     ]
    ],
    "sources": [
@@ -28876,21 +29828,16 @@
     },
     {
      "path": "tests/unit/test_gates_fingerprints.py"
+    },
+    {
+     "path": "PROGRESS.md",
+     "where": "gate-tooling-landed-2026-11-20"
+    },
+    {
+     "path": "tests/unit/test_gates_gate.py"
     }
    ],
-   "files": [
-    "scripts/gates/README.md",
-    "scripts/gates/crossrev_sets.py",
-    "scripts/gates/fingerprints.py",
-    "scripts/gates/fingerprints_landing.sh",
-    "scripts/gates/fr_landing_holder.sh",
-    "scripts/gates/fr_landing_queue.sh",
-    "scripts/gates/fr_landing_set.sh",
-    "scripts/gates/fr_landing_verdict.py",
-    "scripts/gates/freeze_snapshot.py",
-    "scripts/gates/lane_busy.py"
-   ],
-   "weight": 952
+   "weight": 3044
   },
   {
    "id": "val.gate_controls",
@@ -29774,7 +30721,7 @@
    "representation": "illustration",
    "part": "genome",
    "scale": "cell",
-   "plain": "Gene networks that set how much of each protein is made, coupled to the tissue. Planned; the full track is held (D145).",
+   "plain": "Gene networks that set how much of each protein is made, coupled to the tissue. Planned; the full track is held (D145), its hold lifted on 19 November 2026 for a design note only (D234).",
    "sources": [
     {
      "path": "README.md",
@@ -29783,6 +30730,10 @@
     {
      "path": "docs/CURRENT_PLAN.md",
      "where": "Status on 14 November 2026, and the working order (D156)"
+    },
+    {
+     "path": "docs/DECISIONS.md",
+     "where": "D234: Option 2 of the core-laws roadmap, and gene regulation's design begins"
     }
    ]
   },
@@ -77679,6 +78630,13 @@
    "weight": 1
   },
   {
+   "from": "fr.abundance_to_function",
+   "to": "val.fr_references",
+   "kind": "compared_with",
+   "weight": 1,
+   "label": "F4 against R-loop, judged and passed on 20 November 2026"
+  },
+  {
    "from": "fr.compartment_ph",
    "to": "val.compartment_ph",
    "kind": "compared_with",
@@ -77818,6 +78776,13 @@
   },
   {
    "from": "op.ideal_osmosis_linear_compliance_water@1",
+   "to": "op.population_unit_turnover@1",
+   "kind": "conflicts",
+   "weight": 2,
+   "label": "volume, extracellular_volume"
+  },
+  {
+   "from": "op.ideal_osmosis_linear_compliance_water@1",
    "to": "op.restricted_cleft_lumen@1",
    "kind": "conflicts",
    "weight": 2,
@@ -77873,8 +78838,22 @@
    "label": "volume, extracellular_volume"
   },
   {
+   "from": "op.ideal_osmosis_linear_compliance_water@1",
+   "to": "op.species_regulated_availability@2",
+   "kind": "conflicts",
+   "weight": 2,
+   "label": "volume, extracellular_volume"
+  },
+  {
    "from": "op.isopotential_partition@1",
    "to": "op.local_species_reactions@1",
+   "kind": "conflicts",
+   "weight": 1,
+   "label": "active"
+  },
+  {
+   "from": "op.isopotential_partition@1",
+   "to": "op.population_unit_turnover@1",
    "kind": "conflicts",
    "weight": 1,
    "label": "active"
@@ -77917,6 +78896,13 @@
   {
    "from": "op.isopotential_partition@1",
    "to": "op.species_regulated_availability@1",
+   "kind": "conflicts",
+   "weight": 1,
+   "label": "active"
+  },
+  {
+   "from": "op.isopotential_partition@1",
+   "to": "op.species_regulated_availability@2",
    "kind": "conflicts",
    "weight": 1,
    "label": "active"
@@ -77978,6 +78964,34 @@
    "label": "membrane_area"
   },
   {
+   "from": "op.population_unit_turnover@1",
+   "to": "op.restricted_cleft_lumen@1",
+   "kind": "conflicts",
+   "weight": 1,
+   "label": "extracellular_volume"
+  },
+  {
+   "from": "op.population_unit_turnover@1",
+   "to": "op.restricted_cleft_lumen@2",
+   "kind": "conflicts",
+   "weight": 1,
+   "label": "extracellular_volume"
+  },
+  {
+   "from": "op.population_unit_turnover@1",
+   "to": "op.scheduled_membrane_insertion@1",
+   "kind": "conflicts",
+   "weight": 2,
+   "label": "outside_active, membrane_active"
+  },
+  {
+   "from": "op.population_unit_turnover@1",
+   "to": "op.scheduled_membrane_insertion@2",
+   "kind": "conflicts",
+   "weight": 2,
+   "label": "outside_active, membrane_active"
+  },
+  {
    "from": "op.restricted_cleft_lumen@1",
    "to": "op.restricted_cleft_lumen@2",
    "kind": "conflicts",
@@ -78027,6 +79041,13 @@
    "label": "extracellular_volume"
   },
   {
+   "from": "op.restricted_cleft_lumen@1",
+   "to": "op.species_regulated_availability@2",
+   "kind": "conflicts",
+   "weight": 1,
+   "label": "extracellular_volume"
+  },
+  {
    "from": "op.restricted_cleft_lumen@2",
    "to": "op.scheduled_cell_replacement@1",
    "kind": "conflicts",
@@ -78064,6 +79085,13 @@
   {
    "from": "op.restricted_cleft_lumen@2",
    "to": "op.species_regulated_availability@1",
+   "kind": "conflicts",
+   "weight": 1,
+   "label": "extracellular_volume"
+  },
+  {
+   "from": "op.restricted_cleft_lumen@2",
+   "to": "op.species_regulated_availability@2",
    "kind": "conflicts",
    "weight": 1,
    "label": "extracellular_volume"
@@ -78146,6 +79174,13 @@
    "label": "outside_active, membrane_active"
   },
   {
+   "from": "op.scheduled_membrane_insertion@1",
+   "to": "op.species_regulated_availability@2",
+   "kind": "conflicts",
+   "weight": 2,
+   "label": "outside_active, membrane_active"
+  },
+  {
    "from": "op.scheduled_membrane_insertion@2",
    "to": "op.scheduled_membrane_trafficking@1",
    "kind": "conflicts",
@@ -78176,6 +79211,13 @@
   {
    "from": "op.scheduled_membrane_insertion@2",
    "to": "op.species_regulated_availability@1",
+   "kind": "conflicts",
+   "weight": 2,
+   "label": "outside_active, membrane_active"
+  },
+  {
+   "from": "op.scheduled_membrane_insertion@2",
+   "to": "op.species_regulated_availability@2",
    "kind": "conflicts",
    "weight": 2,
    "label": "outside_active, membrane_active"
@@ -78723,6 +79765,27 @@
    "label": "the chloride leak its chloride-only patch needs, landed as a general feature (D228, item 3)"
   },
   {
+   "from": "exp.xenopus_lane",
+   "to": "laws.passive_permeation",
+   "kind": "extends",
+   "weight": 1,
+   "label": "the inward rectifier its preparation needs (XC0), landed as a general feature (D228, item 2)"
+  },
+  {
+   "from": "exp.xenopus_lane",
+   "to": "laws.transporters",
+   "kind": "extends",
+   "weight": 1,
+   "label": "the sodium-coupled anion symporter its preparation needs (XC0), landed as a general feature (D228, item 1)"
+  },
+  {
+   "from": "fr.abundance_to_function",
+   "to": "laws.inventory_coupling",
+   "kind": "extends",
+   "weight": 1,
+   "label": "the coupling's routing and abundance-source doors (FR-6 item 2)"
+  },
+  {
    "from": "fr.compartment_ph",
    "to": "fr.internal_compartment",
    "kind": "extends",
@@ -79001,6 +80064,13 @@
    "kind": "extends",
    "weight": 1,
    "label": "then mitochondria in a heart cell (D183)"
+  },
+  {
+   "from": "laws.respiration",
+   "to": "val.mitochondria",
+   "kind": "extends",
+   "weight": 1,
+   "label": "MR1 serves its second milestone, MT-2 (D234)"
   },
   {
    "from": "laws.route_factors",
@@ -79853,6 +80923,12 @@
    "weight": 1
   },
   {
+   "from": "op.population_unit_turnover@1",
+   "to": "models.composite",
+   "kind": "operator_of",
+   "weight": 1
+  },
+  {
    "from": "op.restricted_cleft_lumen@1",
    "to": "models.composite",
    "kind": "operator_of",
@@ -79920,6 +80996,12 @@
   },
   {
    "from": "op.species_regulated_availability@1",
+   "to": "models.composite",
+   "kind": "operator_of",
+   "weight": 1
+  },
+  {
+   "from": "op.species_regulated_availability@2",
    "to": "models.composite",
    "kind": "operator_of",
    "weight": 1
@@ -80044,6 +81126,27 @@
    "label": "channel_abundance"
   },
   {
+   "from": "op.species_regulated_availability@2",
+   "to": "op.membrane_entity_state@1",
+   "kind": "reads",
+   "weight": 1,
+   "label": "channel_abundance"
+  },
+  {
+   "from": "op.species_regulated_availability@2",
+   "to": "op.scheduled_cell_replacement@1",
+   "kind": "reads",
+   "weight": 1,
+   "label": "channel_abundance"
+  },
+  {
+   "from": "op.species_regulated_availability@2",
+   "to": "op.scheduled_cell_replacement@2",
+   "kind": "reads",
+   "weight": 1,
+   "label": "channel_abundance"
+  },
+  {
    "from": "op.cytoplasmic_bridge_closure@1",
    "to": "op.isopotential_partition@1",
    "kind": "requires",
@@ -80058,6 +81161,12 @@
   {
    "from": "op.k_anion_symport_mass_action@1",
    "to": "op.ideal_osmosis_linear_compliance_water@1",
+   "kind": "requires",
+   "weight": 1
+  },
+  {
+   "from": "op.population_unit_turnover@1",
+   "to": "op.membrane_entity_state@1",
    "kind": "requires",
    "weight": 1
   },
@@ -80274,6 +81383,27 @@
    "to": "models.water",
    "kind": "runs",
    "weight": 1
+  },
+  {
+   "from": "fr.abundance_to_function",
+   "to": "models.composite",
+   "kind": "runs",
+   "weight": 1,
+   "label": "one cell of the composite over @3, with the Na/K pump and Na-leak units (D231)"
+  },
+  {
+   "from": "fr.abundance_to_function",
+   "to": "op.population_unit_turnover@1",
+   "kind": "runs",
+   "weight": 1,
+   "label": "its closed loop's unit producer (F1); F4 judged on 20 November 2026"
+  },
+  {
+   "from": "fr.abundance_to_function",
+   "to": "op.species_regulated_availability@2",
+   "kind": "runs",
+   "weight": 1,
+   "label": "the coupling's rate route and population source (B1′, F2)"
   },
   {
    "from": "fr.loop_planarian",
@@ -80909,6 +82039,54 @@
    "weight": 1
   },
   {
+   "from": "exec.energy_check",
+   "to": "exec.registry",
+   "kind": "uses",
+   "weight": 2
+  },
+  {
+   "from": "exec.energy_check",
+   "to": "exec.specs",
+   "kind": "uses",
+   "weight": 2
+  },
+  {
+   "from": "exec.energy_check",
+   "to": "exec.state",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
+   "from": "exec.energy_check",
+   "to": "laws.electrodiffusion",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
+   "from": "exec.energy_check",
+   "to": "models.pump_tissue",
+   "kind": "uses",
+   "weight": 2
+  },
+  {
+   "from": "exec.energy_check",
+   "to": "models.resolved",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
+   "from": "exec.energy_check",
+   "to": "num.imex",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
+   "from": "exec.gpu_native",
+   "to": "exec.energy_check",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
    "from": "exec.gpu_native",
    "to": "exec.phase_markers",
    "kind": "uses",
@@ -80967,6 +82145,12 @@
    "to": "exec.devices",
    "kind": "uses",
    "weight": 3
+  },
+  {
+   "from": "exec.io",
+   "to": "exec.energy_check",
+   "kind": "uses",
+   "weight": 1
   },
   {
    "from": "exec.io",
@@ -81150,6 +82334,12 @@
   },
   {
    "from": "exec.runner",
+   "to": "exec.energy_check",
+   "kind": "uses",
+   "weight": 2
+  },
+  {
+   "from": "exec.runner",
    "to": "exec.gpu_native",
    "kind": "uses",
    "weight": 1
@@ -81213,6 +82403,12 @@
    "to": "exec.specs",
    "kind": "uses",
    "weight": 11
+  },
+  {
+   "from": "exec.specs",
+   "to": "exec.energy_check",
+   "kind": "uses",
+   "weight": 1
   },
   {
    "from": "exec.specs",
@@ -81361,6 +82557,12 @@
   {
    "from": "exec.state",
    "to": "exec.devices",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
+   "from": "exec.state",
+   "to": "exec.energy_check",
    "kind": "uses",
    "weight": 1
   },
@@ -81656,7 +82858,7 @@
    "from": "laws.passive_permeation",
    "to": "exec.modules",
    "kind": "uses",
-   "weight": 2
+   "weight": 4
   },
   {
    "from": "laws.passive_permeation",
@@ -81668,7 +82870,7 @@
    "from": "laws.passive_permeation",
    "to": "laws.electrodiffusion",
    "kind": "uses",
-   "weight": 3
+   "weight": 5
   },
   {
    "from": "laws.passive_permeation",
@@ -81750,6 +82952,12 @@
   },
   {
    "from": "laws.species_identity",
+   "to": "laws.electrodiffusion",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
+   "from": "laws.species_identity",
    "to": "laws.kinds",
    "kind": "uses",
    "weight": 1
@@ -81773,6 +82981,12 @@
    "weight": 1
   },
   {
+   "from": "laws.species_identity",
+   "to": "op.contract",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
    "from": "laws.template",
    "to": "exec.model_table",
    "kind": "uses",
@@ -81788,7 +83002,7 @@
    "from": "laws.transporters",
    "to": "exec.modules",
    "kind": "uses",
-   "weight": 5
+   "weight": 7
   },
   {
    "from": "laws.transporters",
@@ -83081,6 +84295,66 @@
    "weight": 1
   },
   {
+   "from": "op.population_unit_turnover@1",
+   "to": "exec.registry",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
+   "from": "op.population_unit_turnover@1",
+   "to": "exec.specs",
+   "kind": "uses",
+   "weight": 4
+  },
+  {
+   "from": "op.population_unit_turnover@1",
+   "to": "laws.species_identity",
+   "kind": "uses",
+   "weight": 2
+  },
+  {
+   "from": "op.population_unit_turnover@1",
+   "to": "laws.template",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
+   "from": "op.population_unit_turnover@1",
+   "to": "models.composite",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
+   "from": "op.population_unit_turnover@1",
+   "to": "models.pump_tissue",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
+   "from": "op.population_unit_turnover@1",
+   "to": "op.contract",
+   "kind": "uses",
+   "weight": 2
+  },
+  {
+   "from": "op.population_unit_turnover@1",
+   "to": "op.local_species_reactions@1",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
+   "from": "op.population_unit_turnover@1",
+   "to": "op.membrane_entity_state@1",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
+   "from": "op.population_unit_turnover@1",
+   "to": "op.scheduled_species_turnover@1",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
    "from": "op.restricted_cleft_lumen@1",
    "to": "exec.registry",
    "kind": "uses",
@@ -83582,13 +84856,19 @@
    "from": "op.scheduled_species_turnover@1",
    "to": "exec.registry",
    "kind": "uses",
-   "weight": 1
+   "weight": 2
   },
   {
    "from": "op.scheduled_species_turnover@1",
    "to": "exec.specs",
    "kind": "uses",
-   "weight": 6
+   "weight": 7
+  },
+  {
+   "from": "op.scheduled_species_turnover@1",
+   "to": "laws.electrodiffusion",
+   "kind": "uses",
+   "weight": 1
   },
   {
    "from": "op.scheduled_species_turnover@1",
@@ -83605,6 +84885,12 @@
   {
    "from": "op.scheduled_species_turnover@1",
    "to": "models.composite",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
+   "from": "op.scheduled_species_turnover@1",
+   "to": "models.resolved",
    "kind": "uses",
    "weight": 1
   },
@@ -83666,7 +84952,7 @@
    "from": "op.species_regulated_availability@1",
    "to": "exec.specs",
    "kind": "uses",
-   "weight": 2
+   "weight": 4
   },
   {
    "from": "op.species_regulated_availability@1",
@@ -83697,6 +84983,12 @@
    "to": "op.contract",
    "kind": "uses",
    "weight": 2
+  },
+  {
+   "from": "op.species_regulated_availability@1",
+   "to": "op.membrane_entity_state@1",
+   "kind": "uses",
+   "weight": 1
   },
   {
    "from": "op.species_regulated_availability@1",
@@ -83787,6 +85079,27 @@
    "kind": "writes",
    "weight": 1,
    "label": "extracellular_amount_increment"
+  },
+  {
+   "from": "op.population_unit_turnover@1",
+   "to": "op.membrane_entity_state@1",
+   "kind": "writes",
+   "weight": 1,
+   "label": "population_abundance_increment"
+  },
+  {
+   "from": "op.population_unit_turnover@1",
+   "to": "state.compartment",
+   "kind": "writes",
+   "weight": 1,
+   "label": "amount_increment"
+  },
+  {
+   "from": "op.population_unit_turnover@1",
+   "to": "state.functional_unit_population",
+   "kind": "writes",
+   "weight": 1,
+   "label": "population_abundance_increment"
   },
   {
    "from": "op.restricted_cleft_lumen@1",
@@ -83951,6 +85264,13 @@
   },
   {
    "from": "op.species_regulated_availability@1",
+   "to": "state.contact",
+   "kind": "writes",
+   "weight": 1,
+   "label": "scales the junction availability"
+  },
+  {
+   "from": "op.species_regulated_availability@2",
    "to": "state.contact",
    "kind": "writes",
    "weight": 1,

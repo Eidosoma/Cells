@@ -3,10 +3,11 @@
 // view gets), so that a card's detail is the page's own panel (`select=card:<id>`), the List lists its cards and Escape
 // closes what is open; it needs no 3D stage, and works where none can be drawn.
 //
-// What it fetches, and when: cards.json (beside the page) the first time the landing shows, never at the page's first
-// entry; and each card's still (stills/…, beside the page) once it comes near the screen, with its size stated so that
-// nothing moves when it arrives. It fetches no run and no model: a replay's card opens the view that exists for it, and
-// that view fetches what it draws.
+// What it fetches, and when: cards.json (beside the page, the cards' faces) the first time the landing shows, never at the
+// page's first entry; cards.details.json (each card whole) the first time a card's detail is asked for (its "more", a
+// card without a replay pressed, the List, an address that names a detail), once; and each card's still (stills/…, beside
+// the page) once it comes near the screen, with its size stated so that nothing moves when it arrives. It fetches no run
+// and no model: a replay's card opens the view that exists for it, and that view fetches what it draws.
 //
 // Its first band stands open; every later band stands folded behind one control, a button in the file's words with the
 // band's count of cards beside them (19 November 2026). A folded band's cards are made the first time it is shown, and
@@ -16,7 +17,7 @@
 
 import { h, svg, statusSwatch, formatDate } from "./dom.js";
 import { loadBeside } from "../lenses/protein_shelves.js";
-import { CARDS_FILE, CARD, cardsProblems, landingOf, faceOf, detailOf, opensOf, partNameOf, stillOf, openFirst, bandHolding, controlOf, readKept, writeKept } from "../replay/landing.js";
+import { CARDS_FILE, DETAILS_FILE, CARD, cardsProblems, detailsProblems, landingOf, faceOf, detailOf, opensOf, partNameOf, stillOf, openFirst, bandHolding, controlOf, readKept, writeKept } from "../replay/landing.js";
 
 // How near the screen a still must come before it is fetched, in pixels above and below what is in sight.
 export const STILL_MARGIN = 120;
@@ -48,6 +49,9 @@ export class LandingLens {
     this.landing = null;
     this.error = null;
     this.fetching = null;
+    this.whole = null; // a card's id -> the card whole (cards.details.json), once fetched
+    this.detailsError = null;
+    this.detailsFetching = null;
     this.active = false;
     this.scrolled = 0;
     this.selected = null;
@@ -95,6 +99,29 @@ export class LandingLens {
       });
     this.ready = this.fetching;
     return this.fetching;
+  }
+
+  /** Fetch the cards' details (once; again after a failure, the next time one is asked for). Resolves when they are in or have failed. */
+  loadDetails() {
+    if (this.whole) return Promise.resolve();
+    if (this.detailsFetching) return this.detailsFetching;
+    this.detailsError = null;
+    this.detailsFetching = Promise.resolve()
+      .then(() => this.loader(DETAILS_FILE))
+      .then((data) => {
+        const problems = detailsProblems(data);
+        if (problems.length) throw new Error(`${DETAILS_FILE}: ${problems[0]}`);
+        this.whole = new Map(data.cards.filter((card) => card?.id).map((card) => [card.id, card]));
+        this.onPanel?.();
+      })
+      .catch((error) => {
+        this.detailsError = String(error?.message || error);
+        this.onPanel?.();
+      })
+      .finally(() => {
+        this.detailsFetching = null;
+      });
+    return this.detailsFetching;
   }
 
   drawStatus() {
@@ -326,15 +353,24 @@ export class LandingLens {
     return typeof id === "string" && id.startsWith(CARD) && Boolean(this.byId?.has(id.slice(CARD.length)));
   }
 
-  /** A card's detail named before the cards are in (the address's select=card:…): the choice waits for them. */
+  /**
+   * A card's detail asked for: the choice waits for the cards (where they are not in yet: the address's select=card:…) and
+   * for their details, fetched the first time one is asked for. Null where nothing is to wait for.
+   */
   waitsFor(id) {
-    return typeof id === "string" && id.startsWith(CARD) && !this.data && !this.error ? this.load() : null;
+    if (typeof id !== "string" || !id.startsWith(CARD)) return null;
+    if (!this.data && !this.error) return this.load().then(() => (this.has(id) ? this.loadDetails() : null));
+    return this.data && !this.whole && !this.detailsFetching ? this.loadDetails() : this.detailsFetching;
   }
 
+  /** A card's detail: from the card whole (its details), or, where they could not be fetched, from its face, saying so. */
   describe(id) {
     if (!this.has(id)) return null;
-    const card = this.byId.get(id.slice(CARD.length));
-    return detailOf(card, { band: this.bandOf.get(card.id), sourceUrl: this.sourceUrl, door: this.door, plays: card.replay ? opensOf(card, this.replays) : null, statuses: this.statuses, titleOf: (other) => this.byId.get(other)?.title || null });
+    const face = this.byId.get(id.slice(CARD.length));
+    const card = this.whole?.get(face.id) || face;
+    const detail = detailOf(card, { band: this.bandOf.get(face.id), sourceUrl: this.sourceUrl, door: this.door, plays: card.replay ? opensOf(card, this.replays) : null, statuses: this.statuses, titleOf: (other) => this.byId.get(other)?.title || null });
+    if (!this.whole && this.detailsError) detail.facts.unshift(["Its detail", `could not be fetched (${this.detailsError}): what its card says stands here`]);
+    return detail;
   }
 
   sections() {

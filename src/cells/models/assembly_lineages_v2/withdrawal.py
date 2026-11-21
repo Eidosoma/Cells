@@ -4,8 +4,11 @@ times, the same volume of a declared buffer added (FR-35; D261; docs/ASSEMBLY_WI
 The experiment declares `{index, kind: withdrawal, times_s, fraction, buffer}`. `fraction` f is in
 (0, 1); `buffer` gives one integer count per finite pool place, in place order: the molecules in
 the withdrawn volume fV (tracer-free is 0). At each time, a host stop:
-- **the draw:** each molecule of each finite pool place leaves independently with probability f,
-  so a place's withdrawn count is Binomial(n, f) exactly in distribution. Place j's molecules (j
+- **the draw:** each molecule of each finite pool place leaves independently with probability q,
+  f in the sampler's finite word: the uniforms are (m + 0.5)·2⁻⁵² with m a 52-bit integer, so
+  q = #{m : (m + 0.5)·2⁻⁵² < f}·2⁻⁵², and q = f exactly at dyadic fractions such as ¼ and ½ (the
+  Lean lane's finding of 21 November 2026). A place's withdrawn count is Binomial(n, q) exactly
+  in distribution. Place j's molecules (j
   its ordinal among the P_f finite pool places, in place order) draw one block of n_j uniforms on
   the schedule's stream (domain 6, its declared index as the carrier word) at draw number
   w·P_f + j, w the schedule's washes before this one; molecule i leaves when u_i < f. A place's
@@ -25,13 +28,20 @@ of counts c in volume gV, read through the guarded table at V and shifted by −
 - the sink takes F(before; V) − F(kept; (1 − f)V), the free energy the pool loses as the sample
   leaves, given the outcome (`pool_loss_kT`). It is not the sample's own F(k; fV)
   (`sample_F_kT`): they differ by σ = −ln[C(n, k) f^k (1 − f)^(n−k)] summed over places, the
-  outcome's binomial surprisal (`split_surprisal_kT`);
+  outcome's binomial surprisal (`split_surprisal_kT`), booked against the physical f, not the
+  sampler's q;
 - the schedule's work column takes F(buffer; fV) (`buffer_F_kT`), paid by source:withdrawal/<index>;
 - the heat ledger takes the mixing heat F(kept; (1 − f)V) + F(buffer; fV) − F(after; V)
   (`mixing_heat_kT`), which is −ln of a binomial probability, so never negative;
 - F(after) − F(before) = work − sink − heat exactly, and F is additive over the pool and the
-  vesicles, so the books close. At f = 1 these are cells.pool_replacement@1's bookings with zero
-  heat; f = 1 itself is that operator's.
+  vesicles, so the books close. Per-event booking is exact either way, since every term is a
+  function of the realized k and the physical f. At f = 1 these are cells.pool_replacement@1's
+  bookings with zero heat; f = 1 itself is that operator's.
+- **The mean heat:** for n tracers and a tracer-free buffer it is exactly −n(1 − q) ln(1 − f).
+  This is FR-27's −n(1 − f) ln(1 − f) where q = f. The extreme fraction shows the largest
+  relative gap: at f = 1 − 2⁻⁵³, 1 − q = 2⁻⁵² against 1 − f = 2⁻⁵³, so a surviving tracer's
+  booked split score exceeds the sampler's by ln 2, and one tracer's mean heat is 8.1572e-15 kT
+  against the ideal-volume 4.0786e-15 kT.
 
 **Records.** Each withdrawal's time, schedule, fraction, the pre-wash, withdrawn, remaining and
 supplied counts per finite place, its draws' addresses (index, draw number, size), and the five
