@@ -170,9 +170,9 @@ Row: the earlier operator in the list; column: the later. ✓ admitted by the de
 | **14** | R | R | ✓ | R | ✓ | n | R | R | R | R | R | R | ✓ | · | ✓ | ✓ | ✓ | ✓ | ✓ | R | n | ✓ |
 | **15** | R | R | ✓ | R | ✓ | ✓ | R | R | R | R | R | R | ✓ | ✓ | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | **16** | R | R | ✓ | R | ✓ | ✓ | n | n | R | R | n | n | ✓ | ✓ | ✓ | · | ✓ | ✓ | ✓ | ✓ | ✓ | R |
-| **17** | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | R | R | R | R | R | R | ✓ | ✓ | ✓ | ✓ | · | ✓ | n | R | ✓ | ✓ |
+| **17** | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | R | R | R | R | R | R | ✓ | ✓ | ✓ | ✓ | · | ✓ | ✓ | R | ✓ | ✓ |
 | **18** | R | R | ✓ | R | ✓ | d | R | R | R | R | R | R | ✓ | ✓ | ✓ | ✓ | ✓ | · | d | ✓ | ✓ | ✓ |
-| **19** | R | R | ✓ | R | ✓ | ✓ | R | R | R | R | R | R | ✓ | ✓ | ✓ | ✓ | n | d | · | d | ✓ | ✓ |
+| **19** | R | R | ✓ | R | ✓ | ✓ | R | R | R | R | R | R | ✓ | ✓ | ✓ | ✓ | ✓ | d | · | d | ✓ | ✓ |
 | **20** | R | R | R | R | d | ✓ | R | R | R | R | R | R | ✓ | d | ✓ | ✓ | R | ✓ | d | · | R | d |
 | **21** | R | R | R | R | ✓ | ✓ | n | n | R | R | n | n | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | d | · | ✓ |
 | **22** | R | R | ✓ | R | ✓ | ✓ | n | n | R | R | n | n | ✓ | ✓ | ✓ | R | ✓ | ✓ | ✓ | d | ✓ | · |
@@ -276,7 +276,6 @@ Row: the earlier operator in the list; column: the later. ✓ admitted by the de
 | site_occupancy (19) reads `extracellular_amount_reference` as declared; membrane_insertion_v2 (11) closes it | 4 | real | Insertion@2's closure pads the anchors of its onset nodes until their onset; a population's facing pool may be one (not shown nominal) |
 | site_occupancy (19) reads `membrane_active`, `outside_active` as declared; membrane_insertion_v2 (11) closes them | 4 | real | Insertion@2 closes onset patches and nodes until their onset; a population's patch or facing node may be one (not shown nominal) |
 | site_occupancy (19) reads `extracellular_volume` as declared; restricted_lumen_v2 (12) provides it | 2 | real | The site half-step reads its facing nodes' declared volumes; a lumen changes its node's volume (not shown nominal) |
-| site_occupancy (19) reads `extracellular_amount_reference` as declared; bath_schedule (17) provides it | 2 | nominal | The sites read the outside anchors only at their facing pools, which are finite nodes (a population facing a held bath is refused: parse_population; pool_amounts), and the bath schedule provides the declared array off its baths and schedules held baths only (held_view, parse_declaration): the slots are disjoint |
 | membrane_trafficking (20) reads `extracellular_volume` as declared; osmotic_water (1) provides it | 6 | real | The carriers' work is the exact free-energy change at the free nodes it touches, at their declared volumes; water changes finite nodes' volumes, and no fluid moves beside trafficking in version 1 (F0) |
 | membrane_trafficking (20) reads the view `channel_abundance` before cell_replacement (3) changes it | 1 | real | Trafficking's split part reads its populations' units before replacement changes abundances there, a read lagged by half a step (C2's order rule) (not shown nominal); an owner must not be replaced (FR-1's door R) |
 | membrane_trafficking (20) reads the view `channel_abundance` before cell_replacement_v2 (4) changes it | 1 | real | Trafficking's split part reads its populations' units before replacement changes abundances there, a read lagged by half a step (C2's order rule) (not shown nominal); an owner must not be replaced (FR-1's door R) |

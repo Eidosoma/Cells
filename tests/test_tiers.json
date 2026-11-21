@@ -272,9 +272,20 @@
   "/mnt/workspaces/Cells/ol3-engine-20261119/measure-aaee2582/measured.json",
   "/mnt/workspaces/Cells/core-pass-binding-20261118/gate-2b572f87/tiers/measure/measured.json",
   "/mnt/workspaces/Cells/replacement-bound-20261120/tiers/measured-d1a0b86b/measured.json",
-  "/mnt/workspaces/Cells/ol3-engine-20261119/measure-4254ccb2/measured-changed.json",
+  "/mnt/workspaces/Cells/turnover-net-20261120/tiers/measured-4b39f285/measured.json",
+  "/mnt/workspaces/Cells/operators-fr23-20261120/gate-e7a54539/tiers/measure/measured.json",
+  "/mnt/workspaces/Cells/exchange-depletion-20261120/tiers/measured-dee83958/measured.json",
+  "/mnt/workspaces/Cells/core-pass-kinds-20261118/gate-e0dc3cfd/tiers/measure/measured.json",
   "/mnt/workspaces/Cells/ol3-engine-20261119/measure-e3bb05c1/measured.json",
+  "/mnt/workspaces/Cells/gene-regulation-20261120/fr33/timed-54ddcf78/measure/measured.json",
+  "/mnt/workspaces/Cells/gene-regulation-20261120/fr33/timed-285a8f8e/measure/measured.json",
+  "/mnt/workspaces/Cells/gene-regulation-20261120/stack-g1-g2/timed-69061d6a/measure/measured.json",
+  "/mnt/workspaces/Cells/cleft-heat-20261120/tiers/measured-28c4e7ff/measured.json",
+  "/mnt/workspaces/Cells/ol-break-renew-20261120/tiers/measure-225b1926/measured.json",
+  "/mnt/workspaces/Cells/ol-break-renew-20261120/tiers/measure-c0ecf1b2/measured.json",
+  "/mnt/workspaces/Cells/fr30-design-20261120/tiers/measure-4b23f252/measured.json",
   "/mnt/workspaces/Cells/ol3-engine-20261119/measure-e6df3aee/measured.json",
+  "/mnt/workspaces/Cells/ol3-engine-20261119/measure-caf2737e/measured.json",
   "/mnt/workspaces/Cells/ol3-engine-20261119/measure-78c26df6/measured.json",
   "/mnt/workspaces/Cells/ol3-engine-20261119/measure-9a1a95a5/measured.json"
  ],
@@ -2299,11 +2310,34 @@
    "utc": "2026-11-20T20:24:14+00:00"
   },
   {
-   "git_revision": "4254ccb2c2666cf2464b261720e317b846a69b2f",
+   "git_revision": "4b39f28586b7ba4d9784d289bc62b74503fdaeb7",
    "dirty": false,
-   "root": "/mnt/workspaces/Cells/ol3-engine-20261119/tree-4254ccb2",
+   "root": ".claude/worktrees/turnover-net",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
-   "utc": "2026-11-20T18:10:49+00:00"
+   "utc": "2026-11-20T18:27:27+00:00"
+  },
+  {
+   "git_revision": "e7a5453942dcdf54168486de8ec3dff35d73d5c3",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/operators-fr23-20261120/snapshot-head-e7a54539",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-20T19:25:16+00:00"
+  },
+  {
+   "git_revision": "dee839586bc493b65a3970768f84d4918dc4bc0a",
+   "dirty": false,
+   "root": ".claude/worktrees/exchange-limit-kref",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-20T21:19:12+00:00"
+  },
+  {
+   "git_revision": "e0dc3cfd8bcca8211be2ad8be0a5927deb002ebb",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/core-pass-kinds-20261118/snapshot-e0dc3cfd",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-20T20:55:16+00:00"
   },
   {
    "git_revision": "e3bb05c1cae112db68a89023eb39d1bd1b452b18",
@@ -2313,11 +2347,70 @@
    "utc": "2026-11-20T20:28:16+00:00"
   },
   {
+   "git_revision": "54ddcf78218e6023df552f51df440cbce495202c",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/gene-regulation-20261120/fr33/snapshot-head-54ddcf78",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-20T22:24:32+00:00"
+  },
+  {
+   "git_revision": "285a8f8e97e4d1304cce4ed158c108440ee39425",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/gene-regulation-20261120/fr33/snapshot-head-285a8f8e",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-20T22:42:12+00:00"
+  },
+  {
+   "git_revision": "69061d6ace1ae08e7856fef1d21ca83eeaeee7f2",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/gene-regulation-20261120/stack-g1-g2/snapshot-refs-69061d6a",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-20T21:39:32+00:00"
+  },
+  {
+   "git_revision": "28c4e7ff1270bf6c131d3412179ac69381936f2c",
+   "dirty": false,
+   "root": ".claude/worktrees/cleft-mixing-ratio",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-20T18:27:36+00:00"
+  },
+  {
+   "git_revision": "225b192699883a53c9402631a850f5bb1fcff54b",
+   "dirty": false,
+   "root": "/mnt/workspaces/Cells/ol-break-renew-20261120/wt",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-20T20:02:58+00:00"
+  },
+  {
+   "git_revision": "c0ecf1b2296839d0a4d0cb92c41dc72a218db302",
+   "dirty": false,
+   "root": "/mnt/workspaces/Cells/ol-break-renew-20261120/wt",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-20T20:34:20+00:00"
+  },
+  {
+   "git_revision": "4b23f2520ae4dfd7cc22749ccfc1ffa2f95edfd2",
+   "dirty": false,
+   "root": "/mnt/workspaces/Cells/fr30-design-20261120/wt",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-20T22:23:22+00:00"
+  },
+  {
    "git_revision": "e6df3aeecd670b09ca633a2ddc247701756c0cfe",
    "dirty": false,
    "root": "/mnt/workspaces/Cells/ol3-engine-20261119/tree-e6df3aee",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-20T21:59:55+00:00"
+  },
+  {
+   "git_revision": "caf2737e801d5568e90257a77bcf98c49bfbe6e5",
+   "dirty": false,
+   "root": "/mnt/workspaces/Cells/ol3-engine-20261119/tree-caf2737e",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-20T23:23:34+00:00"
   },
   {
    "git_revision": "78c26df6aa080264d9422951aba92ce273de3bc7",
@@ -2710,7 +2803,7 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_v2_structure.py",
-    "seconds": 3.02,
+    "seconds": 4.58,
     "exit_code": 0,
     "counts": {
      "passed": 5
@@ -3020,7 +3113,7 @@
    },
    {
     "file": "tests/unit/test_cell_owned_compartments.py",
-    "seconds": 12.07,
+    "seconds": 10.59,
     "exit_code": 0,
     "counts": {
      "passed": 205
@@ -3341,7 +3434,7 @@
    },
    {
     "file": "tests/unit/test_door_s.py",
-    "seconds": 3.82,
+    "seconds": 3.68,
     "exit_code": 0,
     "counts": {
      "passed": 26
@@ -3856,6 +3949,14 @@
     }
    },
    {
+    "file": "tests/unit/test_gene_regulation_references.py",
+    "seconds": 0.77,
+    "exit_code": 0,
+    "counts": {
+     "passed": 19
+    }
+   },
+   {
     "file": "tests/unit/test_geometry_profile_preparation.py",
     "seconds": 16.32,
     "exit_code": 1,
@@ -4075,6 +4176,14 @@
     "exit_code": 0,
     "counts": {
      "passed": 10
+    }
+   },
+   {
+    "file": "tests/unit/test_junction_series_gates.py",
+    "seconds": 1.83,
+    "exit_code": 0,
+    "counts": {
+     "passed": 6
     }
    },
    {
@@ -4351,10 +4460,10 @@
    },
    {
     "file": "tests/unit/test_mito_cycle_laws.py",
-    "seconds": 11.43,
+    "seconds": 10.75,
     "exit_code": 0,
     "counts": {
-     "passed": 4
+     "passed": 5
     }
    },
    {
@@ -4970,10 +5079,10 @@
    },
    {
     "file": "tests/unit/test_restricted_lumen.py",
-    "seconds": 3.43,
+    "seconds": 5.84,
     "exit_code": 0,
     "counts": {
-     "passed": 18
+     "passed": 22
     }
    },
    {
@@ -5066,10 +5175,10 @@
    },
    {
     "file": "tests/unit/test_site_occupancy.py",
-    "seconds": 8.67,
+    "seconds": 4.98,
     "exit_code": 0,
     "counts": {
-     "passed": 52
+     "passed": 54
     }
    },
    {
@@ -5251,10 +5360,10 @@
    },
    {
     "file": "tests/unit/test_species_exchange.py",
-    "seconds": 3.39,
+    "seconds": 4.88,
     "exit_code": 0,
     "counts": {
-     "passed": 16
+     "passed": 19
     }
    },
    {
@@ -5387,10 +5496,10 @@
    },
    {
     "file": "tests/unit/test_species_turnover.py",
-    "seconds": 3.57,
+    "seconds": 8.34,
     "exit_code": 0,
     "counts": {
-     "passed": 19
+     "passed": 23
     }
    },
    {
@@ -6038,6 +6147,14 @@
     }
    },
    {
+    "file": "tests/unit/test_assembly_lineages_v2_f12.py",
+    "seconds": 45.95,
+    "exit_code": 0,
+    "counts": {
+     "passed": 7
+    }
+   },
+   {
     "file": "tests/unit/test_assembly_lineages_v2_geometry.py",
     "seconds": 54.84,
     "exit_code": 0,
@@ -6079,7 +6196,7 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_v2_replacement.py",
-    "seconds": 64.03,
+    "seconds": 68.05,
     "exit_code": 0,
     "counts": {
      "passed": 14
@@ -6249,6 +6366,14 @@
     "counts": {
      "passed": 34,
      "skipped": 1
+    }
+   },
+   {
+    "file": "tests/unit/test_compartment_transfer_example.py",
+    "seconds": 27.88,
+    "exit_code": 0,
+    "counts": {
+     "passed": 1
     }
    },
    {
@@ -6494,7 +6619,7 @@
    },
    {
     "file": "tests/unit/test_inward_rectifier_route.py",
-    "seconds": 26.17,
+    "seconds": 28.81,
     "exit_code": 0,
     "counts": {
      "passed": 10
@@ -6566,7 +6691,7 @@
    },
    {
     "file": "tests/unit/test_law_registry.py",
-    "seconds": 25.19,
+    "seconds": 23.29,
     "exit_code": 0,
     "counts": {
      "passed": 9
@@ -6834,6 +6959,14 @@
     "exit_code": 0,
     "counts": {
      "passed": 80
+    }
+   },
+   {
+    "file": "tests/unit/test_region_readouts.py",
+    "seconds": 40.54,
+    "exit_code": 0,
+    "counts": {
+     "passed": 3
     }
    },
    {

@@ -29,15 +29,18 @@ against D150's and D152's declarations by this operator, in either order, with n
 
 Refused at the definition (§6.2), each with its reason: a charged, permeant or undeclared ligand; an
 identity that differs from D150's or D152's; more than 16 species; a declared concentration of a
-ligand below its declared trace, or a trace above 1e-6 K_d of a population binding it (§4.3); an
-unknown patch or contact; an outward population on a patch facing a held bath; copies <= 0, sites
-per copy not a positive int, alpha outside (0, 1], an unlisted ligand, initial occupancy outside
-[0, 1]; k_on <= 0, k_off <= 0, k_int < 0; internalisation on an inward patch, a contact or a
-compartment-facing patch; a destination other than "cell"; a population on a replaced slot's patch,
-or on a contact incident to one; RK4; schedules that are missing, do not start at 0, change off the
-dt grid or outside the horizon, or carry a negative multiplier; unknown keys and duplicate IDs. The
-composite's structure check refuses the providers and closers of what it reads as declared
-(CONFLICTS_VIEW). The stationary analysis refuses the composite by its own ID check.
+ligand below its declared trace, a replacement template's or a scheduled bath composition's
+included, or a trace above 1e-6 K_d of a population binding it (§4.3); an unknown patch or contact;
+an outward population on a patch facing a held bath; copies <= 0, sites per copy not a positive
+int, alpha outside (0, 1], an unlisted ligand, initial occupancy outside [0, 1]; k_on <= 0,
+k_off <= 0, k_int < 0; internalisation on an inward patch, a contact or a compartment-facing patch;
+a destination other than "cell"; a population on a replaced slot's patch, or on a contact incident
+to one; RK4; schedules that are missing, do not start at 0, change off the dt grid or outside the
+horizon, or carry a negative multiplier; unknown keys and duplicate IDs. The composite's structure
+check refuses the providers and closers of what it reads as declared (CONFLICTS_VIEW). Its outside
+anchors and volumes are read only at the outside nodes its populations face (door S's scoped fixed
+reads, FR-23, D244), so a change made at other nodes, such as the bath schedule's dose at a held
+bath, is admitted beside it. The stationary analysis refuses the composite by its own ID check.
 """
 
 import math
@@ -54,7 +57,7 @@ from cells.laws.electrochemistry import R as R_GAS
 from cells.models import pump_composite_adapter as adapter
 from cells.numerics.species_sums import entity_sum
 from cells.operators import species_common as common
-from cells.operators.contract import Operator
+from cells.operators.contract import Operator, Read
 from cells.operators.membrane_state import parse_catalogue
 
 LAW_ID = "site_occupancy@1"
@@ -69,6 +72,7 @@ TRACE_RTOL = 1e-12  # A node declared at its trace, to representation (amount / 
 DESTINATIONS = ("cell",)  # Version 1: the patch's own cell (§2.4).
 FACES, SIDES = ("outside", "inside"), ("first", "second")
 COMPARTMENTS_LAW = "cell_owned_compartments@1"
+BATH_LAW = "scheduled_bath_composition@1"
 CELL, OUTSIDE = 0, 1  # A facing node's kind.
 
 STATE_AXES = {
@@ -523,6 +527,39 @@ def check_template_traces(spec, declaration):
     check_traces(spec.model, declaration.species, declaration.populations, extra)
 
 
+def check_schedule_traces(spec, declaration):
+    """§4.3's trace rule on the bath schedule's scheduled compositions (FR-23, D244): a dose may
+    not set a ligand below its declared trace at a held bath, as a declared node or a replacement
+    template may not. The scheduled content is the bath schedule's own parsed program (its held
+    series per bath, the declared content first), read on the host."""
+    ids = list(spec.model.species_ids)
+    volumes = {c.id: c.volume_pL for c in spec.model.extracellular}
+    extra = []
+    for op, other, schedule in composite_spec.entries(spec):
+        if op.LAW_ID != BATH_LAW:
+            continue
+        for bath, series in zip(other.baths, schedule.held, strict=True):
+            for time, amounts in series[1:]:
+                for ligand in declaration.species:
+                    mM = amounts[ids.index(ligand.identity.id)] / volumes[bath]
+                    extra.append((f"scheduled bath {bath} from {time:g} s", ligand.identity.id, mM))
+    if extra:
+        check_traces(spec.model, declaration.species, declaration.populations, extra)
+
+
+def facing_outside_nodes(spec, declaration):
+    """The indices of the outside nodes its populations face, sorted: finite nodes, since a
+    population facing a held bath is refused at parse (parse_population)."""
+    m = spec.model
+    outside = [c.id for c in m.extracellular]
+    nodes = set()
+    for population in declaration.populations:
+        kind, node = facing_node(m, population)
+        if kind == OUTSIDE:
+            nodes.add(outside.index(node))
+    return tuple(sorted(nodes))
+
+
 def check_definition(spec, declaration):
     if spec.execution.solver == "rk4":
         raise ConfigError(
@@ -534,6 +571,7 @@ def check_definition(spec, declaration):
     check_slots(spec, declaration)
     check_compartments(spec, declaration)
     check_template_traces(spec, declaration)
+    check_schedule_traces(spec, declaration)
 
 
 # ------------------------------------------------------------------ binding
@@ -1200,6 +1238,15 @@ class SiteOccupancy(Operator):
         "membrane_active",
         "extracellular_amount_reference",
     )
+    # Door S (docs/SCOPED_COMPOSITION_DESIGN.md §5; FR-23, D244): its outside anchors and volumes
+    # are read only at the outside nodes its populations face (pool_amounts, pool_volumes;
+    # read_slots names them, finite by parse_population), so a change made elsewhere, such as the
+    # bath schedule's dose at a held bath, does not meet them. A cell pool's index-0 entry in those
+    # gathers is padding, selected away by where: no read. Volumes and masks of cells stay unscoped.
+    SCOPED_READS = {
+        name: Read("fixed", "split", scoped=True)
+        for name in ("extracellular_volume", "extracellular_amount_reference")
+    }
     READOUT_COLUMNS = READOUT_COLUMNS
     LEDGERS = LEDGERS
     LEDGER_DIAGNOSTICS = LEDGER_DIAGNOSTICS
@@ -1251,6 +1298,10 @@ class SiteOccupancy(Operator):
 
     def check_definition(self, spec, declaration, schedule, model):
         check_definition(spec, declaration)
+
+    def read_slots(self, spec, declaration):
+        """Door S: the outside nodes its populations face, for each scoped read (FR-23)."""
+        return dict.fromkeys(self.SCOPED_READS, facing_outside_nodes(spec, declaration))
 
     def batch_signature(self, declaration):
         """The static structure (§2.7): ligands, each population's owner and facing, its ligand,

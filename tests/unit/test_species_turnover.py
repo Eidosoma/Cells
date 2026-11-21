@@ -7,18 +7,29 @@ for this law), the host checks closing at the species' own scale with a negative
 state selected bitwise at zero rate, untouched rows and nodes bitwise, the anchored-amount limit of
 a pool cleared far below its anchor, the definition refusals with their messages, and the half-step
 beside a planted rate-route source (B1′), bitwise the half-step at the product rates.
+
+The stored change at stiff rates (one table, each row a claim with its plant; the independent Lean
+project's finding of 20 November 2026, lean/claims/scheduled-species-turnover.md): where the
+half-step's kh exceeds NET_EXPONENT the change is formed net, (P/k - n) f, and the Lean case keeps
+its 1 fmol change and its work; elsewhere the node update keeps the gross form's bits, in NumPy
+and compiled (kernels only, no world).
 """
 
+import contextlib
 from decimal import Decimal, getcontext
 from types import SimpleNamespace
 from typing import NamedTuple
 
+import jax
+import jax.numpy as jnp
 import numpy as np
 import pytest
 
 from cells.definitions.specs import ConfigError, parse_spec
 from cells.execution.errors import NumericalError
 from cells.models import pump_composite
+from cells.models import pump_composite_adapter as adapter
+from cells.operators import species_turnover as turnover
 from cells.operators.contract import Operator
 from cells.operators.species_turnover import LAW_ID as LAW_ID_TURNOVER
 from cells.registry.models import get_model
@@ -288,3 +299,155 @@ def test_definition_refusals(change, message):
     change(raw)
     with pytest.raises(ConfigError, match=message):
         parse_spec(raw)
+
+
+# ------------------------------------------------------------ the stored change at stiff rates
+
+EPS = np.finfo(np.float64).eps
+TEMPERATURE_K = 310.0  # free_energy's.
+
+
+@pytest.fixture(scope="module")
+def x64():
+    jax.config.update("jax_enable_x64", True)
+
+
+def landed(increment, anchor, volume, mask, production, clearance, h, temperature, *, xp):
+    """The node update's increment, bookings and work as they landed (transcribed): the moved
+    amount produced - cleared at every kh."""
+    touched = mask[None, :] & ((production > 0) | (clearance > 0))
+    n = xp.where(mask[None, :], anchor + increment, 1.0)
+    produced, cleared = turnover.produced_cleared(n, production, clearance, h, xp=xp)
+    moved = xp.where(touched, produced - cleared, 0.0)
+    work = adapter.species_chemical_free_energy_pJ(n, moved, volume, temperature, xp=xp)
+    return (
+        xp.where(touched, increment + moved, increment),
+        xp.where(touched, produced, 0.0),
+        xp.where(touched, cleared, 0.0),
+        xp.where(touched, work, 0.0),
+    )
+
+
+def update(args, compiled, function=None):
+    """Increment, produced, cleared and work stacked, from the node update (or `function`), in
+    NumPy or compiled afresh (a new function, so a plant is traced)."""
+    f = function or turnover._node_update
+    if compiled:
+        out = jax.jit(lambda *a: f(*a, xp=jnp)[:4])(*args)
+    else:
+        with np.errstate(all="ignore"):
+            out = f(*args, xp=np)[:4]
+    return np.stack([np.asarray(v, dtype=float) for v in out])
+
+
+def nodes(low, high, seed, *, ordinary=False, rows=3, columns=48):
+    """Random nodes at half-step exponents kh log-uniform in [low, high] (h = 0.37 s, the last
+    column masked). Stiff states put the equilibrium P/k near the pool; ordinary states also hold
+    entries with production or clearance alone."""
+    rng = np.random.default_rng(seed)
+    shape, h = (rows, columns), 0.37
+    anchor = 10 ** rng.uniform(-3, 1, shape)
+    increment = anchor * rng.uniform(-0.5, 0.5, shape)
+    clearance = 10 ** rng.uniform(np.log10(low), np.log10(high), shape) / h
+    if ordinary:
+        production = 10 ** rng.uniform(-4, 1, shape) * (rng.uniform(size=shape) > 0.2)
+        clearance = clearance * (rng.uniform(size=shape) > 0.2)
+    else:
+        production = clearance * (anchor + increment) * rng.uniform(0.5, 2, shape)
+    mask, volume = np.arange(columns) < columns - 1, 10 ** rng.uniform(-1, 1, columns)
+    return increment, anchor, volume, mask, production, clearance, h, TEMPERATURE_K
+
+
+def accuracy(args, out):
+    """The largest stored-amount error against the 50-digit closed form, in eps of the entry's
+    scale, and the largest |change - (produced - cleared)| in eps of the bookings and increments."""
+    increment, anchor, _, mask, production, clearance, h, _ = args
+    new, produced, cleared = out[0], out[1], out[2]
+    stored_error, balance = 0.0, 0.0
+    for i, j in np.argwhere(mask[None, :] & (clearance > 0)):
+        exact = closed(anchor[i, j] + increment[i, j], production[i, j], clearance[i, j], h)
+        scale = max(anchor[i, j], abs(new[i, j]), float(exact), production[i, j] / clearance[i, j])
+        error = abs(Decimal(float(anchor[i, j] + new[i, j])) - exact)
+        stored_error = max(stored_error, float(error) / (EPS * scale))
+        size = produced[i, j] + cleared[i, j] + abs(increment[i, j]) + abs(new[i, j])
+        change = new[i, j] - increment[i, j]
+        balance = max(balance, abs(change - (produced[i, j] - cleared[i, j])) / (EPS * size))
+    return stored_error, balance
+
+
+def stiff_failures(row):
+    """The claims a row breaks, by name, with the operator as it stands."""
+    failures = []
+    if row == "lean_endpoint":
+        # The Lean case: 1 fmol in 1 pL, k = 2^54 /s, P = 2k, two half-steps of 0.5 s. The exact
+        # pool, 2 - e^{-k} fmol, is 2.0 in float64; the work is G(2) - G(1).
+        expected = free_energy(2.0, 1.0) - free_energy(1.0, 1.0)
+        for compiled in (False, True):
+            increment, work = np.zeros((1, 1)), 0.0
+            for _ in range(2):
+                rates = np.full((1, 1), 2.0**55), np.full((1, 1), 2.0**54)
+                args = (increment, np.ones((1, 1)), np.ones(1), np.ones(1, bool), *rates, 0.5)
+                out = update((*args, TEMPERATURE_K), compiled)
+                increment, work = out[0], work + out[3, 0, 0]
+            name = "compiled" if compiled else "numpy"
+            if 1.0 + increment[0, 0] != 2.0:
+                failures.append(f"stored {1.0 + increment[0, 0]!r} fmol ({name})")
+            if not abs(Decimal(float(work)) - expected) <= Decimal("1e-14") * expected:
+                failures.append(f"work {work!r} pJ against {float(expected)!r} ({name})")
+    elif row == "stiff_accuracy":
+        # kh from 36 (f = 1 in float64) to 1e15: the stored pool within 8 eps of its scale and the
+        # change within 4 eps of the gross bookings, in NumPy and compiled.
+        args = nodes(36.0, 1e15, 11)
+        for compiled in (False, True):
+            stored_error, balance = accuracy(args, update(args, compiled))
+            if stored_error > 8 or balance > 4:
+                failures.append(f"errors {stored_error:.3g}, {balance:.3g} eps ({compiled=})")
+    elif row == "ordinary_bits":
+        # kh from 1e-6 to 1, with production or clearance alone in some entries: the landed bits.
+        for seed in (13, 17):
+            args = nodes(1e-6, 1.0, seed, ordinary=True)
+            for compiled in (False, True):
+                if update(args, compiled).tobytes() != update(args, compiled, landed).tobytes():
+                    failures.append(f"not the landed bits (seed {seed}, {compiled=})")
+    elif row == "threshold_edge":
+        # At kh from 0.5 to 1, the landed bits; just above 1, where the net form's factor f is far
+        # from 1, the stored pool and the balance as at stiff rates (NumPy).
+        below = nodes(0.5, 1.0, 19)
+        if update(below, False).tobytes() != update(below, False, landed).tobytes():
+            failures.append("not the landed bits below 1")
+        stored_error, balance = accuracy(above := nodes(1.0001, 8.0, 23), update(above, False))
+        if stored_error > 8 or balance > 4:
+            failures.append(f"errors above 1: {stored_error:.3g}, {balance:.3g} eps")
+    return failures
+
+
+@contextlib.contextmanager
+def replaced(name, value):
+    """An attribute of the operator's module replaced for the block (a plant)."""
+    saved = getattr(turnover, name)
+    setattr(turnover, name, value)
+    try:
+        yield
+    finally:
+        setattr(turnover, name, saved)
+
+
+def factor_dropped(n, production, clearance, h, *, xp):  # Planted: (P/k - n) without f.
+    return production / clearance - n
+
+
+STIFF = (  # Each plant a context: the threshold moved, or the net form's factor dropped.
+    pytest.param("lean_endpoint", lambda: replaced("NET_EXPONENT", np.inf), id="lean_endpoint"),
+    pytest.param("stiff_accuracy", lambda: replaced("NET_EXPONENT", np.inf), id="stiff_accuracy"),
+    pytest.param("ordinary_bits", lambda: replaced("NET_EXPONENT", 0.0), id="ordinary_bits"),
+    pytest.param(
+        "threshold_edge", lambda: replaced("net_change", factor_dropped), id="threshold_edge"
+    ),
+)
+
+
+@pytest.mark.parametrize("row, plant", STIFF)
+def test_the_stored_change_is_net_where_kh_exceeds_one_and_each_plant_breaks_it(x64, row, plant):
+    assert stiff_failures(row) == []
+    with plant():
+        assert stiff_failures(row) != []

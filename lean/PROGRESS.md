@@ -1,5 +1,40 @@
 # Cells proof comparisons
 
+<a id="claim-source-review"></a>
+
+## 20 November 2026 · Changes to the code cited by the claims
+
+At engine revision `8f9bc050`, the 69 claims cited 76 numerical comparisons. Comparing the named source files and drivers with each comparison's original Git pins found changes in 46 comparisons, referenced by 44 claims. This count includes earlier failures kept for provenance. Against the preceding catalogue checkpoint `973d41a8`, ten claims cited a changed file. Seven shared a change to passive routes or species exchange. The other three cited site occupancy or scheduled turnover. The source check reads the working files and the original Git objects and can also compare against a single review revision. The README gives the command and exit codes. [Source check](README.md#checking-whether-the-engine-code-changed) · [Frozen-run SHA-256 verification](../validation/source_snapshot.py#L155) · [Earlier study of proof and source identity](docs/LEAN_TEST_OPTIMIZATION_STUDY.md)
+
+We reran all nine claims recorded as numerical failures. Four repairs passed their original checks on the engine source at `dd085e36`. The tissue cases exercise `resolved_pump_composite@1` or `resolved_pump_tissue@3`. The shared-pool and transition-state cases exercise `cells.assembly_lineages@2`.
+
+| Repaired comparison | What the replay established |
+| --- | --- |
+| [Scheduled species turnover](checks/species_turnover.py) | Both extreme production/clearance schedules finished at the reference **2 fmol** and booked **0.9956673078 pJ**. The earlier engine stored 1 fmol and zero work. All 144 scalar cases on each backend passed. |
+| [Replacement volume at the water bound](checks/cell_replacement.py#L176) | V2 admitted the first interior input, **0.18763056296676509 pL**, and continued to refuse the exact lower bound. The engine's binding regression also checks the actual stored volume. |
+| [Shared-pool vesicle records](checks/shared_pool.py#L137) | The one-event population returned its declared **10⁻²² L** lumen records. Two 96-event osmotic controls conserved one lipid and one solute at every recorded row. |
+| [Transition-state catalysis](checks/assembly_kinetics.py#L113) | The opposed-contact case recovered **2.0611536224 s⁻¹** in both directions. The first event occurred at the reference **0.3459699807 s**. All four seeded clocks and 1,925 ordinary reversible edges passed. |
+
+Site occupancy retained the finite-pool error reduction of **8.26** on halving the time step, and continued to refuse the combined 0.600 loss load. On `8f9bc050`, the inward-rectifier control passed all 360 states and the minimum normal potassium reference. The new parser test refused a subnormal potassium reference. The species-exchange driver reproduced its documented resolution limit near depletion. The mixed-ion, neutral permeation, charged permeation, proton leak and conditioned-voltage drivers also passed. These replays use the existing experimental inputs. [Site occupancy](checks/site_occupancy.py) · [Rectifier](checks/inward_rectifier.py) · [Parser test](../tests/unit/test_inward_rectifier_route.py#L135) · [Species exchange](checks/species_exchange.py)
+
+The 46 historical comparisons with changed files use 33 distinct drivers. All 33 were replayed on CPU float64. Thirty passed. GARD, membrane insertion and regulated turnover reproduced the known failures. The strict empty-surface and cleft checks were rerun separately. The engine inputs for the later replays remained identical from `8f9bc050` through `5ed13ff2`. An independent Git tree diff agreed on all 76 original comparison records. The eight repository guards, targeted engine tests and replacement binding regression passed **164 tests** in total. The six catalogue tests also passed. The historical comparison records retain their original revisions and outcomes. [Comparison register](claims.json) · [Replacement binding regression](../tests/unit/test_cell_replacement_v2.py#L357)
+
+<a id="remaining-numerical-findings"></a>
+
+### Five numerical findings on main, 20 November 2026
+
+At `0d32ef8d`, the engine source on main matched `8f9bc050`. The register had 64 checked numerical claims and five failures. Three development branches were also available for independent replay. Each used the Lean lane's comparison code at `7528c6aa`, CPU float64, and clean engine and fixture files at the branch revision below. [Current failure list](COVERAGE.md#failing-numerical-checks)
+
+| Finding | Effect on main | Repair or decision |
+| --- | --- | --- |
+| Regulated turnover | A run completes at ordinary rates when turnover changes its own regulator. In eight steps the reporter gained 0.58928135 fmol against an exact 0.59453489 fmol. Halving the step roughly halves the error. | The design promises second order for this route. The decision is whether to narrow that promise for this configuration or evaluate the changing regulator at the midpoint and demonstrate second order on the four existing refinements. [Measured errors and proof](#regulated-turnover-routing) · [Design claim](../docs/INVENTORY_COUPLING_DESIGN.md#L690) |
+| Empty surface channels | At 4 ms the engine stored zero Kir channels, calculated a tiny potassium flux and refused the observation. | On `empty-surface-zero` at `6b0faf38`, all six prepared empty states had exactly zero abundance and flux. The unmodified 4 ms retrieval run completed with a valid zero-flux observation. [Prepared states](checks/population_units.py) · [Retrieval](checks/compartment_trafficking.py#L145) |
+| Restricted-cleft mixing heat | A fill between positive concentrations of 1 and 2⁻⁶⁰ mM produced nonfinite heat and stopped the run. | On `cleft-mixing-ratio` at `28c4e7ff`, both operator versions completed both concentration orientations. The greatest cumulative heat error in these runs was 3.47 × 10⁻¹⁸ pJ. All five ordinary controls passed. [Cleft comparison](checks/restricted_lumen.py#L201) |
+| Membrane-insertion heat | Both versions refused a valid one-patch insertion at an extreme capacitance ratio. They computed −0.043037 pJ against +0.051603 pJ. | The operators owner has the accepted repair. The single-patch diagnostic completed when both the heat and the held-node image charge were evaluated without cancellation. The recorded-world bitwise check determines when it can land. [Reproducer, diagnostic and owner's response](#19-november-2026--membrane-insertion-heat) |
+| GARD pair-consistent catalysis | Version 1 refused two valid transfers at extreme catalyst ratios. The larger case booked 0.693147 kBT for an exact zero. | An in-place repair changed recorded results and was reverted. On `ol-gard-v2` at `3d31a606`, the separate `@2` law gave equal forward and reverse factors, zero heat and closed ledgers in both stress cases and both controls. On the same branch, `@1` still refused the two stress cases. D255 pauses further GARD work until 21 November and allows passing gates to land. Version 2 needs its own comparison on main after landing. [Version decision](../docs/DECISIONS.md#L8017) · [Scheduling decision](../docs/DECISIONS.md#L8251) · [Exact comparison](checks/gard_catalysis.py#L107) |
+
+To reproduce the branch checks, use each branch's engine and tests with `population_units.py --require-empty`, `compartment_trafficking.py --require-trajectory` or `restricted_lumen.py`. For GARD, call `check_reverse_subtraction` with each full law ID and the same four pairs from the driver, (2, 1), (2⁵⁴, 0), (2²¹, 2⁻³²) and (2⁵⁴, 1). The main finding refers to `cells.gard_catalysis_pair_consistent@1`. [GARD inputs](checks/gard_catalysis.py#L145)
+
 <a id="biological-model-review"></a>
 
 ## 20 November 2026 · Engine changes suggested by biological measurements
