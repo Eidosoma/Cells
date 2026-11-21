@@ -279,7 +279,8 @@
   "/mnt/workspaces/Cells/ol3-engine-20261119/measure-e3bb05c1/measured.json",
   "/mnt/workspaces/Cells/gene-regulation-20261120/fr33/timed-54ddcf78/measure/measured.json",
   "/mnt/workspaces/Cells/gene-regulation-20261120/fr33/timed-285a8f8e/measure/measured.json",
-  "/mnt/workspaces/Cells/gene-regulation-20261120/stack-g1-g2/timed-69061d6a/measure/measured.json"
+  "/mnt/workspaces/Cells/gene-regulation-20261120/stack-g1-g2/timed-69061d6a/measure/measured.json",
+  "/mnt/workspaces/Cells/cleft-heat-20261120/tiers/measured-28c4e7ff/measured.json"
  ],
  "measured_provenance": [
   {
@@ -2361,6 +2362,13 @@
    "root": "/mnt/workspaces/Cells/gene-regulation-20261120/stack-g1-g2/snapshot-refs-69061d6a",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-20T21:39:32+00:00"
+  },
+  {
+   "git_revision": "28c4e7ff1270bf6c131d3412179ac69381936f2c",
+   "dirty": false,
+   "root": ".claude/worktrees/cleft-mixing-ratio",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-20T18:27:36+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -5007,10 +5015,10 @@
    },
    {
     "file": "tests/unit/test_restricted_lumen.py",
-    "seconds": 3.43,
+    "seconds": 5.84,
     "exit_code": 0,
     "counts": {
-     "passed": 18
+     "passed": 22
     }
    },
    {
