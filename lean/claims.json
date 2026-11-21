@@ -21,6 +21,33 @@
     "cells.shared_pool@1": "molecular-assembly"
   },
   "comparisons": {
+    "wall-wash-stand-in": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [],
+      "operators": [
+        "cells.scheduled_compartment_wash@1",
+        "cells.site_occupancy@1"
+      ],
+      "engine_revision": "587ba7873ac7c3112c00639687d7d86ee186c6fd",
+      "record_revision": "a86c914fa3e0021c8b5c6335f8c402cf264c80ba",
+      "sources": {
+        "Stand-in geometry and initial stocks": "validation/tissue/wash_schedule_fixtures.py#L55-L88",
+        "Gross collection and refill": "src/cells/operators/wash_schedule.py#L420-L501",
+        "Binding and release rates on main": "src/cells/operators/site_occupancy.py#L901-L906",
+        "Scheduled controls at the event": "src/cells/definitions/pump_composite_spec.py#L258-L280",
+        "Accepted history and checkpoint": "src/cells/execution/runner.py",
+        "Main well regression": "tests/unit/test_wash_schedule_runs.py#L26-L59"
+      },
+      "record_inputs": {
+        "Wash retention and rate identities": "lean/CellsProofs/Tissue/WallWash.lean"
+      },
+      "driver": "lean/checks/wall_wash.py",
+      "record": "lean/PROGRESS.md#fr28-main-stand-in"
+    },
     "label-mixing-power": {
       "kind": "engine",
       "models": [
@@ -62,7 +89,7 @@
         "cells.site_occupancy@1"
       ],
       "engine_revision": "9917e3d9567993e1019c8caafa89f8653ee6ea9b",
-      "record_revision": "a710e377ea87a865af46a1e6b2d7cf3574ff5aa3",
+      "record_revision": "a86c914fa3e0021c8b5c6335f8c402cf264c80ba",
       "sources": {
         "Liquid sample, refill and ledgers": "src/cells/operators/wash_schedule.py#L420-L501",
         "Surface binding rate and sign convention": "src/cells/operators/site_occupancy.py#L927-L932",
@@ -2838,9 +2865,10 @@
       "numerical": {
         "status": "checked",
         "comparisons": [
-          "wall-wash-retention"
+          "wall-wash-retention",
+          "wall-wash-stand-in"
         ],
-        "result": "The FR-28 candidate collected 30 fmol from 60 free in a 100 fmol well. The wall held 10 fmol at the event and 9.97015402 fmol at the next step, 10 ms later. Both wall owners yielded identical traces. A matched buffer gave zero wall rate."
+        "result": "Main’s stand-in and both FR-28 wall owners collected 30 fmol from 60 free. The wall held 10 fmol at the event and 9.97015402 fmol 10 ms later. Both candidate owners yielded identical traces. A matched buffer gave zero wall rate."
       },
       "biology": {
         "status": "open",
