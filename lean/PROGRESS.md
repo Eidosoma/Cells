@@ -1,5 +1,21 @@
 # Cells proof comparisons
 
+<a id="binding-equilibrium-unique"></a>
+
+## 21 November 2026 · One binding equilibrium for prescribed totals
+
+At fixed temperature, standard potentials and nonnegative binder totals, the ligand inventories determine at most one positive free concentration vector. The proof follows a line on which several free log concentrations change together. Its derivative is the full response matrix applied to that change. Positive definiteness makes the projected inventory increase strictly along every nonconstant line. The result also covers fixed unheld ligands, signed counts, empty binders and any measured group of forms. Existence of a solution for a proposed set of totals and convergence within a fixed Newton budget are separate questions. [Lean proof](CellsProofs/Chemistry/BindingEquilibrium.lean) · [Engine equations](https://github.com/Eidosoma/Cells/blob/0310d9f0cfc758181c0ef145bb09d513f1ef69ec/src/cells/laws/reactions/rapid_binding.py#L100-L142)
+
+On public engine `0310d9f0`, NumPy and compiled JAX CPU gave a positive projected change for all 423 pairs of the 80 S1–S7 reference states, holding each binder inventory fixed across each pair. In 163 pairs, different free ligands moved in opposite directions. An independent partition calculation used the original standard potentials and the symmetrized relative entropy of each binder’s form fractions. Dropping the bound contribution was detectable in all 423 pairs. The public B4 and Newton paths each ran on their registered chemistries and recovered all 423 independently constructed target states per backend. The largest error was 2.99 × 10⁻¹³ in log concentration. Ten existing engine tests passed, including the two-ligand tissue run. [Comparison driver](checks/binding_equilibrium.py) · [Reference inputs](https://github.com/Eidosoma/Cells/blob/0310d9f0cfc758181c0ef145bb09d513f1ef69ec/validation/core_seams/references/reference_inputs.json)
+
+Fixing selected coordinates gave 284 distinct pairs and 139 identical endpoints. Of the distinct pairs, 283 were separated on both backends. For S4 states 10 and 12 with H fixed, free Mg changed from 0.49999999999999994 to 0.5000000000000001 mM. Both paths returned 5.881688425907021 mM total Mg at both ends. An 80-digit evaluation at the stored log inputs gave a positive projection of 1.79 × 10⁻³¹ mM. The nearest binary64 reference totals differ by one unit in the last place. The comparison retains this tie and the independent error bound for every pair. [Rounded-pair calculation](checks/binding_equilibrium.py)
+
+Cortes et al. prepared the same totals of 30.8 µM Fe(II), 72 µM Tar and 220 µM EGTA at pH 7.2, starting with iron bound to either Tar or EGTA. The measured Fe–Tar complex started near 31 or 0 µM and reached about 22.5 µM in both preparations by 15–20 min, with traces close through 90 min. Uniqueness predicts a zero equilibrium difference without an affinity fit. The figure resolves a difference only to about ±1 µM across the two readings and supplies no endpoint sampling error. The absorbance pools Fe–Tar protonation states. Free iron and individual microscopic forms would require separate measurements. [Cortes et al., Fig. S4a, p. S-15](https://s3-eu-west-1.amazonaws.com/pstorage-acs-6854636/8172722/ic7b00372_si_001.pdf#page=15) · [Measurement conditions](checks/data/binding_equilibrium_measurements.json)
+
+<a id="binding-proton-release-observation"></a>
+
+For the earlier H–Mg response claim, Spicer observed a fall in pH on adding magnesium salt to 2.5 mM ATP. This supports acidification in that preparation. Quantifying proton release at fixed pH would require measured free Mg and proton equivalents. [Spicer, Fig. 2, p. 304](https://doi.org/10.1016/S0021-9258(18)44837-5) · [Conditions and measurement limits](checks/data/binding_equilibrium_measurements.json)
+
 <a id="binding-ligand-response"></a>
 
 ## 21 November 2026 · How total ligand responds to free concentration
