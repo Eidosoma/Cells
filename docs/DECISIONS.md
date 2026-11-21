@@ -8633,3 +8633,48 @@ disagree with measurements (relayed by the user: "from lean get that to the righ
 - The full handoff is the Lean lane's PROGRESS.md, in its FR-35 withdrawal checkpoint folder. The
   paused lanes take their items when they resume.
 
+## D270: FR-25's tolerance registration, FR-8's row rule, and the branch triage
+
+2026-11-21, about 21:07 UTC. Decided by the lead with the advisor, under D268's FR delegation.
+- **FR-25's registration (the GR agent's plan, approved with five changes).** Each readout's
+  tolerance is F x a Richardson estimate of the engine's own step error at dt 0.5, from fresh runs
+  at dt 2.0, 1.0 and 0.5 at G4's landed head, with a floor of 1e-9 of scale (the references'
+  resolution). It is set per readout and world, never from the gaps to G2. F = 3, after Roache's
+  grid-convergence-index convention for an assumed order (to be checked against the source before
+  it is cited). The changes:
+  1. A readout at the floor is judged against the floor without an order check. Elsewhere an
+     observed order outside p +/- 0.5 makes the world inconclusive, and FR-25 does not pass with
+     any inconclusive world.
+  2. p is declared per world kind and readout class, each with its scheme's reason; heat's order
+     is checked first.
+  3. One retry, declared now: an inconclusive world gets one finer triple (1.0, 0.5, 0.25) under
+     the same rule.
+  4. Two tags: the rule before the fresh runs launch, then the table before anything compares to
+     G2.
+  5. It is not blind. The development gaps were read, and the landed head differs from those runs
+     only at rounding; the rule's soundness is that it comes from step error alone.
+  - The OL builder judges, recomputing the table with its own code.
+  - A pass covers G2's trajectories at dt 0.5, within 3x the engine's own step error. dG and u are
+    not exported, and corners and interior points stay with G6.
+  - About one agent-day and three CPU-hours; the runs wait for G4's landing.
+- **FR-8's section 10.20 reading: its rows are matched to the clock by integer millisecond**, each at
+  the clock's own point (section 10.4's Times rule): 2,711 rows. Exact float membership would drop 60
+  rows on representation artefacts, including the stretch after 1802.0 that section 10.20 calls
+  uncertain. The judge reports the verdict on both sets, the 2,711 (registered) and the 2,651.
+  - The dated entry before launch records both counts, the desk figure's correction and the judge's
+    ordering fix, and C's near-coincident-event finding with a proposed rule. The fix to
+    fine_windows comes after the reading.
+  - The run is from a frozen snapshot of 03fe5119 plus the driver commit, as section 10.20 names.
+    The second builder re-judges from the frozen outputs.
+- **Merges into main.** The visualizer's Versions 52 and 53 (beb6ff1b). The Lean lane's latest line,
+  unedited (c6ad8cc4); its catalog cites 3d31a606, which is local until GARD @2 lands.
+- **Branch triage.** A read-only triage of the older unmerged branches.
+  - Landed: the floating-junction interim note (26059683), FR-7's division note, proposed
+    (8e2268a0), P1's section 9 committed before its runs (faf64005), and the tier-3 refreeze
+    (2a3166be).
+  - Pending with owners: crossrev-renewal (needs a gate; a tier-row conflict); three code-blind
+    reference branches (OL5 amendment 7, the XC0 references, G2's published interior sample),
+    which wait for their lanes; the 11 November Phase 0 reference runner, which needs a review for
+    copied code before landing; and packed-gpu-planner, held for the GPU decision.
+  - Ten branches hold nothing not on main. Their deletion waits for the user.
+
