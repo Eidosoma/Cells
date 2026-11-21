@@ -8384,3 +8384,20 @@ eight real, and assigned them that day.
   the base and on each fixed head before anything lands.
 - **The reviewer confirmed** that the extreme-turnover repair and the restart at a rate change held
   up on replay.
+
+## D260: Until 20:00 UTC on 21 November, core and feature requests only
+
+2026-11-21, about 11:49 UTC. The user: "so lets pause the gene regualatoin work after that check,
+lets until 8pm this evening focus on core and FRs nothing else".
+- **Gene regulation** pauses after the independent checker's rerun of finding 8 on its branch
+  (D259). A gap that rerun finds is recorded for when the lane resumes, not fixed now. Its dt 1.0
+  and dt 0.5 results stay unread.
+- **Origin of life and mitochondria** stay paused, except their feature-request work (FR-35's
+  partial withdrawal, by the assembly owner).
+- **Until 20:00 UTC:** the core and the feature requests. That covers FR-33's tracer fixes
+  (D259), FR-35, regulated turnover's second-order step, FR-34's declared-voltage evaluation for
+  @3's channel populations, FR-30's integration into @3 now that N2 has landed, and the gates'
+  own upkeep (the scope map and the crossrev information record).
+- **Decisions open for the user** stay open (FR-7 item 4, FR-26's L, FR-28, FR-29, the FR-30
+  downloads).
+
