@@ -690,27 +690,49 @@ def test_a_withdrawal_books_its_mixing_heat_never_negative_and_its_limits_are_ex
     assert 0.0 < mean_heat(count, f, buffer) < entropy
 
 
+@functools.lru_cache(maxsize=None)
+def _blocks_program(index, size):
+    import jax
+
+    def one(base, number):
+        key = streams.stream_key_data(base, index, "schedule")
+        return streams.uniforms(key, number, size)
+
+    return jax.jit(jax.vmap(one, in_axes=(0, None)))
+
+
 def blocks(base_keys, index, number, n):
     """[K, n]: the withdrawal's block of n uniforms at draw number `number` of schedule `index`'s
     stream, for K base keys in one compiled call: withdrawal.draw's arithmetic (streams.block's
-    power-of-two prefix of streams.uniforms on the schedule's key) under jax.vmap."""
-    import jax
+    power-of-two prefix of streams.uniforms on the schedule's key) under jax.vmap, compiled once
+    per block size."""
     import jax.numpy as jnp
 
     size = 1 << max(n - 1, 0).bit_length()
+    out = _blocks_program(index, size)(jnp.asarray(base_keys), jnp.int64(number))
+    return np.asarray(out)[:, :n]
 
-    def one(base):
-        key = streams.stream_key_data(base, index, "schedule")
-        return streams.uniforms(key, number, size)[:n]
 
-    return np.asarray(jax.jit(jax.vmap(one))(jnp.asarray(base_keys)))
+def base_keys(seeds, environment, lineage, branch):
+    """[K, 2]: streams.base_key_data for many seeds in one compiled call (its key, then its three
+    fold-ins), equal to it bit for bit (a row checks it)."""
+    import jax
+    import jax.numpy as jnp
+
+    def one(seed):
+        key = jax.random.key(seed, impl=streams.GENERATOR)
+        for value in (environment, lineage, branch):
+            key = jax.random.fold_in(key, jnp.uint32(value))
+        return jax.random.key_data(key)
+
+    return np.asarray(jax.jit(jax.vmap(one))(jnp.asarray(seeds, dtype=jnp.uint32)), np.uint32)
 
 
 def test_a_withdrawal_draws_binomially_independently_and_on_its_own_addresses():
     """FR-35's statistics (D261 item 6), at real run addresses: N_STREAMS streams (seeds 0 to N - 1
     of the acceptance world), 8 free X, drawn in one batched call per address. The batched draws
     equal the operator's per-call draws (withdrawal.draw and streams.block) bit for bit on a sample
-    of 40 addresses.
+    of 40 addresses, and so do the batched base keys (streams.base_key_data).
     - f = 1/2: the collected mean in 4 +- 0.1 (4.47 SD), the variance in 2 +- 0.2 (4.8 SD), and a
       chi-squared over the nine outcomes below 31.8 (alpha 1e-4, 8 df). f = 1/4: the collected mean
       in 2 +- 0.1 and its variance in 1.5 +- 0.2; the remaining count's mean, 6, would not pass.
@@ -724,8 +746,7 @@ def test_a_withdrawal_draws_binomially_independently_and_on_its_own_addresses():
     world, x = spec.model.world, spec.execution
     names = [p.name for p in world.places]
     schedule = spec.experiment.schedules[0]
-    keys = np.asarray([streams.base_key_data(seed, x.environment, x.lineage, x.branch)
-                       for seed in range(N_STREAMS)])  # fmt: skip
+    keys = base_keys(np.arange(N_STREAMS), x.environment, x.lineage, x.branch)
     finite = withdrawal.finite_places(world)
     places = len(finite)
     jx, jl = finite.index(names.index("X@pool")), finite.index(names.index("L@pool"))
@@ -735,6 +756,8 @@ def test_a_withdrawal_draws_binomially_independently_and_on_its_own_addresses():
     pool = np.zeros(len(names), dtype=np.int64)
     pool[[names.index("X@pool"), names.index("L@pool")]] = 8
     for seed in range(0, N_STREAMS, N_STREAMS // 40):  # the batched draws are the operator's
+        exact = streams.base_key_data(seed, x.environment, x.lineage, x.branch)
+        np.testing.assert_array_equal(exact, keys[seed])
         key = streams.stream_key_data(keys[seed], schedule.index, "schedule")
         np.testing.assert_array_equal(np.asarray(streams.block(key, jx, 8)), ux[seed])
         taken, _ = withdrawal.draw(keys[seed], world, schedule, 0, pool)
