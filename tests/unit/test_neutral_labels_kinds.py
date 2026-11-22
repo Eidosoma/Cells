@@ -25,6 +25,9 @@ Host rows (NumPy steps and evaluations, no compile):
   reports off);
 - admitted (parses): a transporter's crossing rows in both layouts, and K beside every FR-4 and
   FR-5 kind; the hook's refusals are rows of test_neutral_arrival_labels.py's REFUSED;
+- the population axis through the labelled step (factored with N at either end, a diagram's two
+  crossing rows, and a net-flow population beside an untouched row), the Euler IMEX's weighted
+  start fluxes, and @3's label_errors reading each kind's reasons from the model;
 - the unlabelled step's jaxpr is unchanged by each mover's hook.
 """
 
@@ -562,3 +565,91 @@ def test_the_unlabelled_step_is_unchanged_by_each_movers_hook(mover):
     with scope:
         text = [_jaxpr(raw, _registry(kinds, strip=strip)) for strip in (False, True)]
     assert text[0] == text[1] and len(text[0]) > 10_000
+
+
+def axis_world(case):
+    """(the world, its labelled species, its scope) of each population-axis case."""
+    if case == "factored, N at the cell":
+        return tk.held_world(ck.general(tk.population())), ["Y"], ck.scoped()
+    if case == "factored, N at the bath":
+        return tk.held_world(ck.general(tk.population(), n_end="b")), ["Y"], ck.scoped()
+    if case == "diagram, two crossing rows":
+        return ck.exchange_world(ck.exchanger()), ["W", "X"], ck.scoped()
+    raw = ck.exchange_world(ck.exchanger(law="seamtest.net_exchange@1"))
+    raw["execution"]["dt"] = 1e-4  # A step every form admits (test_cycle_kind's four_steps).
+    return raw, ["Y"], ck.scoped()  # Y: moved by nothing, beside a net-flow population.
+
+
+@pytest.mark.parametrize(
+    "case",
+    [
+        "factored, N at the cell",
+        "factored, N at the bath",
+        "diagram, two crossing rows",
+        "net flow beside an untouched row",
+    ],
+)
+def test_the_population_axis_reports_its_crossings_through_the_labelled_step(case):
+    """@3's labelled host step with the population axis: the state and validity are the
+    unlabelled step's bit for bit; the pump's two transfers run N to P and P to N, every amount
+    finite and >= 0; and N to P less P to N is each row's move out of N, the cell's change with
+    its sign, at rounding (the bath is held). A net-flow population beside reports finite zeros
+    (its NaN one-way rates are selected out)."""
+    raw, labelled, scope = axis_world(case)
+    with scope:
+        spec, impl, state, p, control = host(raw)
+        rows = np.asarray([list(spec.model.species_ids).index(s) for s in labelled])
+        dt = spec.execution.dt
+        plain = impl.imex_step(state, dt, control, p, xp=np)
+        end, valid, transfers = impl.imex_step(state, dt, control, p, xp=np, labels=rows)
+    assert bool(plain[1]) and bool(valid)
+    assert all(bits(a) == bits(b) for a, b in zip(plain[0], end, strict=True))
+    (to_p, n_node, p_node), (to_n, back_p, back_n) = transfers[-2:]
+    assert bits(n_node) == bits(back_n) and bits(p_node) == bits(back_p)
+    for amount in (to_p, to_n):
+        assert np.all(np.isfinite(amount)) and np.all(amount >= 0)
+    net = (to_p - to_n)[:, 0]
+    if case.startswith("net flow"):
+        assert np.all(to_p == 0) and np.all(to_n == 0)
+        return
+    cell = int(n_node[0]) < p.active.size  # Whether N is the cell (else the held bath).
+    change = (end.amount_increment - state.amount_increment)[rows, 0]
+    np.testing.assert_allclose(net, -change if cell else change, rtol=4 * EPS, atol=0)
+    assert np.all(net != 0) and np.all(to_n > 0)  # Both directions run.
+
+
+def test_the_euler_imex_weights_each_kinds_start_fluxes():
+    """Under the Euler IMEX each kind's hook takes weight = dt a[last, 0] times its one-way
+    fluxes at the start (its end view the state alone): the state is the unlabelled step's bit for
+    bit, and the passive route's and the pump's forward less backward are their booked nets at
+    rounding, every amount >= 0."""
+    raw = kinds_world(labelled=False, node_mM=0.1 * S_mM)
+    raw["execution"]["solver"] = "imex_euler_face_electromigration@1"
+    spec, impl, state, p, control = host(raw)
+    ids = list(spec.model.species_ids)
+    rows = np.asarray([ids.index("S"), ids.index("Y")])
+    dt = spec.execution.dt
+    plain = impl.imex_step(state, dt, control, p, xp=np)
+    end, valid, transfers = impl.imex_step(state, dt, control, p, xp=np, labels=rows)
+    assert bool(valid) and all(bits(a) == bits(b) for a, b in zip(plain[0], end, strict=True))
+    inward, outward, pumped, back = (t[0] for t in transfers[-4:])
+    assert all(np.all(t[0] >= 0) for t in transfers)
+    booked = (end.passive_transferred - state.passive_transferred)[rows]
+    np.testing.assert_allclose(inward - outward, booked, rtol=4 * EPS, atol=0)
+    cycles = end.transporter_cycles - state.transporter_cycles  # Y's stoichiometry is 1.
+    np.testing.assert_allclose((pumped - back)[1], cycles, rtol=4 * EPS, atol=0)
+    assert float(np.max(np.abs(booked))) > 0 and float(np.max(cycles)) > 0
+
+
+def test_label_errors_take_each_kinds_reasons_from_the_model():
+    """@3's host-side label_errors: given the parsed model, the declared kinds' own reasons (here a
+    rectifier carrying the labelled Na, none for S); without the model, kinds stay refused."""
+    spec, impl, state, p, control = host(routes_world())
+    structure = surface_pump_v3.structure(spec.model)
+    ids = list(spec.model.species_ids)
+    for species, refused in (("S", False), ("Na", True)):
+        rows = (ids.index(species),)
+        errors = surface_pump_v3.label_errors(p, rows, structure=structure, model=spec.model)
+        assert any("rectifier_Na runs" in e for e in errors) == refused, (species, errors)
+    blanket = surface_pump_v3.label_errors(p, (ids.index("S"),), structure=structure)
+    assert any("need the parsed model" in e for e in blanket)

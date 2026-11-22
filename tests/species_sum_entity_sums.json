@@ -207,6 +207,21 @@
    "entity_sum(xp.abs(nf.counts) * (xp.abs(ln_c[None, None]) + 1.0), axis=2, xp=xp)"
   ],
   [
+   "kinds/transporter.py",
+   "label_transfers",
+   "entity_sum(xp.where(at_n[:, None], p.cycle_nu[None], 0.0), axis=2, xp=xp)"
+  ],
+  [
+   "kinds/transporter.py",
+   "label_transfers",
+   "entity_sum(leaves * forward[None] + enters * backward[None], axis=1, xp=xp)"
+  ],
+  [
+   "kinds/transporter.py",
+   "label_transfers",
+   "entity_sum(enters * forward[None] + leaves * backward[None], axis=1, xp=xp)"
+  ],
+  [
    "operators/bath_schedule.py",
    "check_isosmotic",
    "entity_sum(species_sum(declared, xp=np), axis=None, xp=np)"
