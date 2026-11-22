@@ -715,11 +715,13 @@ def parse(data):
     from cells.models.surface_pump_v3 import check_definition, structure
 
     if forms_faces and any(
-        kind_registry.active().lookup(kind_id).stage_read is not None for kind_id, _ in model.kinds
-    ):  # Ahead of the registry's closure checks.
+        kind_registry.active().lookup(kind_id).stage_read is not None
+        and getattr(declaration, "read_id", None) != forms_law.CLOSURE_READ_ID
+        for kind_id, declaration in model.kinds
+    ):  # Ahead of the registry's closure checks: the forms read is the general closure's.
         raise ConfigError(
-            f"{forms_law.LAW_ID} faces beside a stage read (a closure) wait for their forms read, "
-            "the build plan's item 1, its next part: refused (version 1)"
+            f"{forms_law.LAW_ID} faces read the general closure ({forms_law.CLOSURE_READ_ID}) "
+            "alone: beside another stage read they are refused (version 1)"
         )
     registry.check_definition(spec)  # Ahead of @3's own checks, so its refusals come first.
     try:

@@ -85,6 +85,7 @@ from cells.laws.junctions.selective import selective_flux
 from cells.laws.pumps import calcium_atpase
 from cells.laws.pumps import kinetic_pump as pump
 from cells.laws.pumps import kinetic_pump_binding as pumps
+from cells.laws.reactions import rapid_binding as binding_law
 from cells.laws.routes import logmean_electrodiffusion_forms as forms_law
 from cells.laws.routes import passive_permeation as exact_kernel
 from cells.laws.routes import patch_electrodiffusion as constant_field_route
@@ -161,7 +162,10 @@ FORMS_LAYOUT_FIELDS = (
     "forms_face_factor",  # [mover, forms face] D A / L (m^3/s)
     "forms_face_valence",  # [mover, 1]
     "forms_face_stoichiometry",  # [mover, species]
-    "forms_face_row",  # [mover] the species row a row mover reads
+    "forms_face_row",  # [mover] the species row a row mover reads (-1 for a binder form)
+    "forms_face_binder",  # [mover] a binder form's binder in the general closure (-1 for a row)
+    "forms_face_form",  # [mover] a binder form's index among its binder's forms (-1 for a row)
+    "forms_face_form_movers",  # [form mover] the binder forms' movers; its size is static
     "forms_face_incidence",  # [floating component, forms face] (field.bind's face_incidence's form)
 )
 FORMS_STRUCTURE_REFUSAL = (
@@ -231,7 +235,7 @@ def working_size(spec):
     forms = 0
     if getattr(spec.model, "forms_faces", ()):  # Each mover's transfer and each face's heat.
         faces = len(spec.model.forms_faces)
-        forms = faces * (len(forms_law.movers(spec.model).names) + 1)
+        forms = faces * (forms_law.mover_count(spec.model) + 1)
     return (
         second.working_size(projection(spec))
         + 2 * (2 + 2 * s) * x.channel_capacity
@@ -304,10 +308,6 @@ def initial_values(spec, *, structure=None):
     fields, entries = state._asdict(), layout._asdict()
     if series:  # FR-30 (D262): the gates' factors and parameters, [series_gate, ..., edge_slot].
         fields[SERIES_GATES], entries[SERIES_PARAMETERS] = series_initial_values(spec)
-    if declared_forms:  # The forms faces' own entity set (FORMS_STATE_AXES, FORMS_LAYOUT_FIELDS).
-        own_state, own_layout = forms_initial_values(spec, layout)
-        fields |= own_state
-        entries |= own_layout
     sizes = kind_registry.axis_sizes(STATE_AXES, fields)  # @3's axes, for the kinds' arrays.
     for kind_id, entry in structure.kinds:  # Each bound to its entry's fields (§7.4 (n) 5).
         kind = kind_registry.bound(registry.lookup(kind_id), entry)
@@ -319,6 +319,10 @@ def initial_values(spec, *, structure=None):
             kind, "initial values", own_layout, kind.layout_fields, "layout"
         )
         kind_registry.refuse_misshapen(kind, "initial values", own_state, own_layout, sizes)
+        fields |= own_state
+        entries |= own_layout
+    if declared_forms:  # The forms faces' own entity set, after the kinds (their closure's arrays).
+        own_state, own_layout = forms_initial_values(spec, entries)
         fields |= own_state
         entries |= own_layout
     floor = "field_current_floor" in entries
@@ -397,16 +401,32 @@ def _has_forms(p):
 
 def forms_initial_values(spec, layout):
     """(state fields, layout fields) of the forms faces (FORMS_STATE_AXES, FORMS_LAYOUT_FIELDS),
-    from the definition and today's layout (its outside nodes and floating basis). One slot per
-    declared forms face; the movers are the law's table (forms_law.movers)."""
+    from the definition and the layout's fields (a mapping: its outside nodes and floating basis,
+    and the general closure's arrays where a binder moves as its forms). One slot per declared
+    forms face; the movers are the law's table (forms_law.movers)."""
     m = spec.model
     oids = [o.id for o in m.extracellular]
-    table = forms_law.movers(m)
+    network = None
+    if "binding_rows" in layout:  # The general closure's arrays (its kind's initial values).
+        network = (
+            np.asarray(layout["binding_rows"]),
+            np.asarray(layout["binding_counts"]),
+            np.asarray(layout["binding_present"]),
+            np.asarray(layout["binding_held"]).shape[0],
+        )
+    table = forms_law.movers(m, network)
+    charge = np.asarray(table.stoichiometry) @ np.asarray(m.valence, dtype=float)
+    if not np.array_equal(charge, np.asarray(table.valence, dtype=float)):  # Exact: integers.
+        bad = table.names[int(np.flatnonzero(charge != np.asarray(table.valence))[0])]
+        raise ConfigError(
+            f"Forms face mover {bad} changes its rows' charge by other than its valence: a bound "
+            "form carries its ligands, and the field books the rows' charge"
+        )
     faces = len(m.forms_faces)
     sender = np.asarray([oids.index(f.sender) for f in m.forms_faces], dtype=np.int64)
     receiver = np.asarray([oids.index(f.receiver) for f in m.forms_faces], dtype=np.int64)
-    n = np.asarray(layout.active).size
-    basis = np.asarray(layout.field_floating_basis)
+    n = np.asarray(layout["active"]).size
+    basis = np.asarray(layout["field_floating_basis"])
     own = dict(
         forms_face_active=np.ones(faces, dtype=bool),
         forms_face_sender=sender,
@@ -415,6 +435,9 @@ def forms_initial_values(spec, layout):
         forms_face_valence=np.asarray(table.valence, dtype=float)[:, None],
         forms_face_stoichiometry=np.asarray(table.stoichiometry, dtype=float),
         forms_face_row=np.asarray(table.row, dtype=np.int64),
+        forms_face_binder=np.asarray(table.binder, dtype=np.int64),
+        forms_face_form=np.asarray(table.form, dtype=np.int64),
+        forms_face_form_movers=np.flatnonzero(np.asarray(table.binder) >= 0).astype(np.int64),
         forms_face_incidence=(basis[n + sender] - basis[n + receiver]).T,
     )
     state = dict(
@@ -436,17 +459,29 @@ def forms_faces_of(p):
     )
 
 
-def forms_ends(co, p):
+def forms_ends(co, p, *, xp=jnp):
     """(left, right) [mover, forms face]: each mover's concentration (mM) at each forms face's
     sender and receiver, from the outside nodes' concentrations co [species, outside node] (the
-    stage read's): a row mover reads its row (the version 1 slice's movers are rows)."""
-    c = co[p.forms_face_row]
+    stage read's, or the predictor's at the predicted totals): a row mover reads its row (a ligand
+    row's free amount at a closure node, its stored amount elsewhere); a binder's form is the
+    closure's c_f = c_base beta_f prod x_L^n_L (rapid_binding.forms_from_free, the binding
+    owner's export) at the read's free ligands and free base form. Static: without a binder form
+    (the size of forms_face_form_movers) only the rows are read."""
+    c = co[xp.maximum(p.forms_face_row, 0)]
+    if p.forms_face_form_movers.shape[0]:
+        nl, rows = p.binding_held.shape[0], p.binding_rows
+        forms = binding_law.forms_from_free(
+            xp.log(co[rows[:nl]]), co[rows[nl:]], p.binding_log_beta, p.binding_counts,
+            p.binding_present, xp=xp,
+        )  # fmt: skip
+        gathered = forms[xp.maximum(p.forms_face_binder, 0), xp.maximum(p.forms_face_form, 0)]
+        c = xp.where((p.forms_face_binder >= 0)[:, None], gathered, c)
     return c[:, p.forms_face_sender], c[:, p.forms_face_receiver]
 
 
-def forms_field(co, p):
+def forms_field(co, p, *, xp=jnp):
     """field.solve's forms argument at outside concentrations co (the stage read's)."""
-    left, right = forms_ends(co, p)
+    left, right = forms_ends(co, p, xp=xp)
     return field.FormsField(forms_faces_of(p), left, right, p.forms_face_incidence)
 
 
@@ -981,7 +1016,7 @@ def _field_values(state, read, control, p, *, xp):
         p.boundary_V,
         tissue.field_layout(p),
         xp=xp,
-        **({"forms": forms_field(co, p)} if forms else {}),
+        **({"forms": forms_field(co, p, xp=xp)} if forms else {}),
     )
 
 
@@ -992,7 +1027,7 @@ def forms_rates(read, potential, p, *, xp):
     _, co = physical_amounts(read, p)
     co = xp.where(p.outside_active, co / p.extracellular_volume, 1.0)
     faces = forms_faces_of(p)
-    left, right = forms_ends(co, p)
+    left, right = forms_ends(co, p, xp=xp)
     outside = potential[n:]
     rates = surface.forms_face_transport(
         left, right, outside[faces.sender] - outside[faces.receiver], p.temperature, faces, xp=xp
@@ -1544,7 +1579,7 @@ def explicit_rates(
     forms_diffusion = None
     if forms_faces_declared(structure):  # The forms faces' diffusion, explicit as the faces'.
         faces = forms_faces_of(p)
-        forms_weight, forms_log = imex.forms_face_weights(*forms_ends(co, p), faces, xp=xp)
+        forms_weight, forms_log = imex.forms_face_weights(*forms_ends(co, p, xp=xp), faces, xp=xp)
         forms_diffusion = forms_weight * forms_log
         _, forms_inflow = surface.forms_row_rates(forms_diffusion, faces, co.shape[1], xp=xp)
         inflow = inflow + forms_inflow
@@ -2351,7 +2386,7 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
     forms_weight = None
     if forms_faces_declared(structure):  # The forms faces' movers, frozen as the faces' (static).
         faces = forms_faces_of(p)
-        ends = forms_ends(xp.where(predicted > 0, predicted, 1.0), p)
+        ends = forms_ends(xp.where(predicted > 0, predicted, 1.0), p, xp=xp)
         forms_weight, _ = imex.forms_face_weights(*ends, faces, xp=xp)
         laplacian = laplacian + imex.forms_face_laplacian(
             forms_weight, p.temperature, laplacian.shape[0], p.active.size, faces, xp=xp
@@ -2718,6 +2753,10 @@ def check_definition(spec, *, structure=None):
                 f"{forms_law.LAW_ID} faces books the tableau (version 1)"
             )
         _check_exact_faces(m)
+    if getattr(m, "forms_faces", ()):  # The forms law's carriage (a one-ended binder, v1).
+        problems = forms_law.carriage(m)[1]
+        if problems:
+            raise ConfigError(problems[0])
     kinds = _kinds(structure)
     for kind in kinds:  # §7.4 (k): a kind's definition checks, ahead of @3's.
         if kind.check_definition is not None:
@@ -3427,9 +3466,10 @@ def implicit_conductance_rate_bound(spec):
 
 def forms_rate_bound(spec):
     """The forms faces' explicit diffusion bound (1/s), the face term of
-    surface_pump.explicit_rate_bound per mover: 2 max over movers and finite outside nodes of the
-    D A / (L V) of every face that moves it there, today's faces' on a row mover's row included
-    (the face note's §4: the face's explicit bound joins the per-stage bound per form)."""
+    surface_pump.explicit_rate_bound with the forms faces: 2 max over rows and finite outside nodes
+    of the D A / (L V) of every face that moves the row there, today's and the forms faces'. A
+    binder's forms move at its row's diffusivity (one class), so each form's term is its row's (the
+    face note's §4: the face's explicit bound joins the per-stage bound per form)."""
     m = spec.model
     oids = [o.id for o in m.extracellular]
     volume = np.asarray([np.inf if o.reservoir else o.volume_pL * 1e-15 for o in m.extracellular])
@@ -3438,15 +3478,12 @@ def forms_rate_bound(spec):
         factor = np.asarray(face.diffusivity_m2_per_s) * face.area_m2 / face.length_m
         plain[:, oids.index(face.sender)] += factor
         plain[:, oids.index(face.receiver)] += factor
-    table = forms_law.movers(m)
-    factors = forms_law.face_factors(m, table)
-    movers = np.zeros((len(table.names), len(oids)))
-    for k, face in enumerate(m.forms_faces):
-        movers[:, oids.index(face.sender)] += factors[:, k]
-        movers[:, oids.index(face.receiver)] += factors[:, k]
-    rows = np.asarray(table.row)
-    movers += np.where((rows >= 0)[:, None], plain[np.maximum(rows, 0)], 0.0)
-    return 2 * float(np.max(movers / volume, initial=0.0))
+    rows = np.zeros_like(plain)  # Each row's forms faces, as itself or as its forms (one class).
+    for face in m.forms_faces:
+        factor = np.asarray(face.diffusivity_m2_per_s) * face.area_m2 / face.length_m
+        rows[:, oids.index(face.sender)] += factor
+        rows[:, oids.index(face.receiver)] += factor
+    return 2 * float(np.max((rows + plain) / volume, initial=0.0))
 
 
 def bind_step_checks(spec):
@@ -4705,6 +4742,7 @@ def moved_rows(model):
     no fuel row; a species absent from the mapping is moved by nothing in the step.
     """
     movers = {s: [] for s in model.species_ids}
+    forms_moved = forms_law.moved_rows_of(model) if getattr(model, "forms_faces", ()) else {}
 
     def add(species, kind, law, entities):
         if entities:
@@ -4720,11 +4758,11 @@ def moved_rows(model):
             inner_laws.FACE_ROUTE_LAW_ID,
             [f.id for f in model.faces if f.diffusivity_m2_per_s[row]],
         )
-        add(  # The forms faces (their own entity set): every row they carry.
+        add(  # The forms faces (their own entity set): each row they carry or a form carries.
             s,
             "face",
             inner_laws.FORMS_FACE_ROUTE_LAW_ID,
-            [f.id for f in getattr(model, "forms_faces", ()) if f.diffusivity_m2_per_s[row]],
+            [f.id for f in getattr(model, "forms_faces", ()) if s in forms_moved.get(f.id, ())],
         )
     for law in structure(model).declared_channel_laws:
         for s in model.species_ids:
@@ -5017,12 +5055,14 @@ def structured_batch_signature(model):
     review's finding 4). Where no kind has an own axis, the signature is today's."""
     sizes = kind_axis_sizes(model)
     forms = getattr(model, "forms_faces", ())
-    shapes = ((("forms_faces", len(forms)), ("face_mover", len(forms_law.movers(model).names))),)
+    shapes = ()
+    if forms:  # The forms faces' static shapes: no mixed batch.
+        shapes = ((("forms_faces", len(forms)), ("face_mover", forms_law.mover_count(model))),)
     return (
         *batch_signature(model),
         structure(model),
         *((sizes,) if sizes else ()),
-        *(shapes if forms else ()),  # The forms faces' static shapes (no mixed batch).
+        *shapes,
     )
 
 

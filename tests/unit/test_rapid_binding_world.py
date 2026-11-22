@@ -42,6 +42,7 @@ import pytest
 
 from cells.definitions import pump_composite_spec as cs
 from cells.definitions.specs import ConfigError, parse_spec
+from cells.definitions.surface_pump_v3_spec import control_values
 from cells.execution.state import initialise
 from cells.kinds import proton_buffer
 from cells.laws.electrochemistry import CHARGE_PER_FMOL, R
@@ -629,15 +630,16 @@ def test_the_forms_entity_set_is_absent_unless_declared_and_binds_its_return_pat
         ("stationary", "the structural laws read neither"),
         ("run view", "No view declarations for logmean_electrodiffusion_forms@1"),
         ("exact booking", "books today's faces' neutral rows"),
-        ("closure", "beside a stage read"),
+        ("closure", "beside another stage read"),
     ],
 )
 def test_version_1_refuses_a_forms_face_where_its_paths_are_not_built(case, message):
     """Each path version 1 does not build for a forms face refuses it, naming why: RK4 and N2
     (the plain IMEX tableaux only), the projective mode, a caller without @3's structure, the
     composite's adapter, the stationary analysis, the run view, the faces' exact booking, and a
-    world with a closure, until the forms read lands. The control: the same forms world parses and
-    steps (test_a_forms_face_of_rows_as_themselves_steps_as_todays_face)."""
+    world with another stage read than the general closure's (version 1's rapid_proton_buffer@1
+    here). The control: the same forms world parses and steps
+    (test_a_forms_face_of_rows_as_themselves_steps_as_todays_face)."""
     from cells.analysis import stationary
     from cells.models import pump_composite_adapter as adapter
     from cells.models import surface_pump_v3 as inner
@@ -665,3 +667,138 @@ def test_version_1_refuses_a_forms_face_where_its_paths_are_not_built(case, mess
             stationary._components(p, None, [0])
         else:
             run_view.prepare(spec, run_view.Request(), layout=p)
+
+
+def forms_world(*, law=FORMS, carry=("B_L", "H", "K", "Na", "Cl"), receiver_holds=True):
+    """lumen_general's world (the general closure at the cell and the lumen, no movers) with a
+    second finite outside node, lumen_1, holding B_L under the closure too, at 80% of the lumen's
+    B_L, K and Cl and neutral on its own (it has no capacitor), joined to the lumen by a face of
+    `law` carrying `carry`. The face is lumen_1's only path, so its potential is set by zero net
+    face current (G5's condition), on the floor field solver. receiver_holds False: lumen_1's
+    closure holds no B_L (a one-ended binder)."""
+    raw = lumen_general()
+    m, x = raw["model"], raw["execution"]
+    lumen = next(n for n in m["extracellular"] if n["id"] == fr.LUMEN)
+    other = copy.deepcopy(lumen)
+    other["id"] = "lumen_1"
+    z = {s["id"]: s["valence"] for s in m["species"]}
+    other["initial_amount_fmol"] = {
+        s: a * (0.8 if s in ("B_L", "K", "Cl") else 1.0)
+        for s, a in lumen["initial_amount_fmol"].items()
+    }
+    other["initial_charge_C"] = 0.0
+    other["fixed_charge_equivalent_fmol"] = -math.fsum(
+        z[s] * a for s, a in other["initial_amount_fmol"].items()
+    )
+    m["extracellular"].append(other)
+    if receiver_holds:
+        m["stage_reads"][0]["binders"]["lumen_1"] = ["B_L"]
+    diffusivity = dict.fromkeys((s["id"] for s in m["species"]), 0.0)
+    diffusivity.update(dict.fromkeys(carry, 1e-9))
+    m["faces"] = [dict(id="face_0", sender=fr.LUMEN, receiver="lumen_1", area_m2=1e-12,
+                       length_m=1e-6, diffusivity_m2_per_s=diffusivity, law=law)]  # fmt: skip
+    x["extracellular_capacity"] = len(m["extracellular"])
+    x["face_capacity"] = int(law != FORMS)
+    x["field_solver"] = "capacitive_reduction_gauged_damped_newton@3"
+    return raw
+
+
+def test_the_forms_kernel_sums_to_the_totals_difference_and_rests_at_equal_forms():
+    """The face note's §2 at the kernel (numerics/surface_transport.forms_face_transport): at zero
+    potential difference a binder's forms' fluxes sum to (D A/L) (c_total,s - c_total,r), since
+    logmean(a, b) ln(a/b) = a - b per form, within rounding; equal forms at both ends give zero flux
+    and zero heat, exactly. Planted: one form's valence drives a flux at a potential difference."""
+    from cells.laws.electrochemistry import MOL_PER_FMOL
+    from cells.numerics import surface_transport as surface
+
+    faces = surface.FormsFaces(
+        np.array([True]), np.array([0]), np.array([1]), np.full((3, 1), 2e-15),
+        np.array([[-2.0], [-1.0], [0.0]]), np.eye(3),
+    )  # fmt: skip
+    left, right = np.array([[3.0], [0.2], [1e-3]]), np.array([[1.0], [0.5], [2e-3]])
+    rates = surface.forms_face_transport(left, right, np.zeros(1), 298.15, faces, xp=np)
+    total = 2e-15 * float(np.sum(left - right)) / MOL_PER_FMOL
+    assert bool(rates.valid)
+    assert abs(float(np.sum(rates.flux_fmol_s)) - total) <= 16 * EPS * float(
+        np.sum(np.abs(rates.flux_fmol_s))
+    )
+    rest = surface.forms_face_transport(left, left, np.zeros(1), 298.15, faces, xp=np)
+    assert not np.any(rest.flux_fmol_s) and not np.any(rest.dissipation_pJ_s)
+    moved = surface.forms_face_transport(left, left, np.full(1, 1e-3), 298.15, faces, xp=np)
+    assert np.count_nonzero(moved.flux_fmol_s) == 2  # The neutral form stays at rest (planted).
+
+
+def test_a_forms_face_moves_a_binder_as_its_forms_and_every_ledger_closes():
+    """The face note's §5 rows on a forms face between two closure nodes, three host steps:
+    - B_L moves as its forms (B_L, HB_L) at the closure's free forms, HB_L carrying its proton;
+      the rows H, K, Na and Cl as themselves (free H at both ends);
+    - every ledger closes (check_values: the material ledgers with the bound H carried, the energy
+      ledger with the closure's S_c and the movers' heat), and each step's heat is non-negative;
+    - lumen_1, whose only path is the face, sits where the face's net current is zero (G5's
+      condition), to the field's rounding.
+    Planted: the forms moved without their ligands (HB_L's proton left out of its stoichiometry)
+    are refused at the definition."""
+    from cells.laws.routes import logmean_electrodiffusion_forms as forms_law
+    from cells.models import surface_pump_v3 as inner
+
+    spec, impl, states = host_steps(forms_world(), 3)
+    p = impl.initial_values(spec)[1]
+    names = forms_law.movers(spec.model, (np.asarray(p.binding_rows), np.asarray(p.binding_counts),
+                                          np.asarray(p.binding_present), 1)).names  # fmt: skip
+    assert names[-2:] == ("B_L:B_L", "B_L:HB_L") and list(p.forms_face_form_movers) == [9, 10]
+    moved = states[-1].forms_face_transferred[:, 0]
+    assert moved[9] != 0 and moved[10] != 0 and moved[5] == 0  # B_L as its forms, not as a row.
+    heat = [s.forms_face_dissipated_energy_pJ[0] for s in states]
+    assert all(b >= a for a, b in zip(heat, heat[1:], strict=False)) and heat[-1] > 0
+    history = impl.STATE_TYPE(*(np.stack(v) for v in zip(*states, strict=True)))
+    impl.check_values(history, spec, steps=np.arange(len(states)))  # Every ledger closes.
+    control = impl.Control(*(v[0] for v in control_values(spec, [0.0])))
+    values = impl.readouts(states[-1], control, p, xp=np)
+    read = proton_buffer.stage_read(states[-1], p, xp=np)[0]
+    forms, _ = inner.forms_rates(read, np.asarray(values.field.potential_V), p, xp=np)
+    terms = float(np.sum(np.abs(p.forms_face_valence * forms.flux_fmol_s)))
+    assert abs(float(forms.current_A[0])) <= 1e-9 * CHARGE_PER_FMOL * terms  # G5: no net current.
+    real = forms_law.movers
+
+    def unligated(model, network=None):
+        table = real(model, network)
+        stoichiometry = np.array(table.stoichiometry)
+        stoichiometry[np.asarray(table.binder) >= 0, list(model.species_ids).index("H")] = 0.0
+        return table._replace(stoichiometry=stoichiometry)
+
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setattr(forms_law, "movers", unligated)
+        with pytest.raises(ConfigError, match="HB_L changes its rows' charge"):
+            parse_spec(forms_world())
+
+
+@pytest.mark.parametrize(
+    "case, message",
+    [
+        ("forms law", None),
+        ("today's law at a ligand row", r"species H at lumen_0 is held by the closure .* face_0"),
+        ("today's law at a binder row", r"species B_L has forms .* face face_0 moves its outside"),
+        ("one end held", "holds at lumen_0 and not at lumen_1"),
+        ("binder held at neither end", "species B_c has .* moves its outside rows"),
+    ],
+)
+def test_the_forms_law_is_admitted_at_closure_rows_where_todays_face_is_refused(case, message):
+    """§4's admission: at the general closure's rows the forms law is admitted (it moves each form
+    and free ligand at the closure's read) and today's face law refused (it reads stored totals);
+    a binder the closure holds at one end only is refused (version 1: its forms have no
+    concentration there), and a multi-form row the closure holds at neither end stays inert, as
+    the registry rules for every mover."""
+    raw = {
+        "forms law": lambda: forms_world(),
+        "today's law at a ligand row": lambda: forms_world(
+            law="logmean_electrodiffusion@1", carry=("H", "K")
+        ),
+        "today's law at a binder row": lambda: forms_world(law="logmean_electrodiffusion@1"),
+        "one end held": lambda: forms_world(receiver_holds=False),
+        "binder held at neither end": lambda: forms_world(carry=("B_c", "K")),
+    }[case]()
+    if message is None:
+        parse_spec(raw)
+        return
+    with pytest.raises(ConfigError, match=message):
+        parse_spec(raw)
