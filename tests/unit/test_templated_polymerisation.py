@@ -178,7 +178,16 @@ def _control(raw, route):
     return next(c for c in raw["experiment"]["polymerisation_controls"] if c["route_id"] == route)
 
 
-# R1's refusals (§9.1-§9.6): (edit of R1's raw definition at p = 0.75, words of the refusal).
+def _beside_replacement(raw):
+    """R1 beside scheduled_cell_replacement@1, which replaces its one cell at 120 s (in place)."""
+    from validation.tissue import secreted_species_fixtures as sfx
+
+    template = sfx.template(raw, worlds.CELL, "T")
+    raw.update(sfx.with_replacement(raw, [template], [(120.0, worlds.CELL, "T", "cell_0_g1")]))
+
+
+# R1's refusals (§9.1-§9.6, and D301's beside a replacement): (edit of R1's raw definition at
+# p = 0.75, words of the refusal).
 RELEASE_REFUSALS = [
     (lambda raw: _release(raw).update(machine="kept"), "machine is one of"),
     (lambda raw: _release(raw).update(durable_fraction=1.5), "durable_fraction"),
@@ -197,6 +206,7 @@ RELEASE_REFUSALS = [
         ),
         "durable fraction is in",
     ),
+    (_beside_replacement, r"with scheduled_cell_replacement@1 yet: .* FR-38's step 4"),
 ]
 
 

@@ -155,6 +155,9 @@ Refused at the definition
 - a transfer that is not a reaction (a sign missing), and a degradation whose polymer a chain makes
   at another length;
 - another writer of a listed row: an author, D152's reactions or an in-step mover;
+- any composition with a cell replacement (scheduled_cell_replacement@1 or @2, so also
+  site_occupant_replacement@1, which requires @1), until FR-38's step 4 defines a replaced slot's
+  chains in progress, hold, machines and counters (D301; check_replacement);
 - dt kappa > 1, dt k_D > 1, dt k_I c_T F/F > 1 for a gene's template, and dt/tau > 1;
 - a release's fate rows that break the rules above, and a held hold that the pool cannot staff;
 - more than the species cap.
@@ -196,6 +199,7 @@ THETA = 0.5  # The stage condition h max L <= THETA at every stage.
 RATE_BOUND = 1.0  # dt times a route's largest static rate.
 FLOOR_FMOL = 1e-22  # The own ledgers' floor.
 SERIES_BELOW = 1e-6  # |x| below which mu-bar's ratio (1 + x) log1p(x) / x is a series (D152's).
+REPLACEMENT_FAMILY = "scheduled_cell_replacement"  # Every version is refused (check_replacement).
 POOL_AXIS, CHAIN_AXIS, STAGE_AXIS = "poly_pool", "poly_chain", "poly_stage"
 DEGRADATION_AXIS, TRANSFER_AXIS = "poly_degradation", "poly_transfer"
 RELEASE_AXIS, CLASS_AXIS, FATE_AXIS = "poly_release", "poly_class", "poly_fate"
@@ -955,6 +959,20 @@ def check_writers(spec, declaration):
             raise ConfigError(
                 f"{LAW_ID}: {name!r} is moved inside the inner step by {movers[0]}; its writer is "
                 "this split part's half-steps only"
+            )
+
+
+def check_replacement(spec):
+    """Refuse any composition with a cell replacement, whatever its events (D301, temporary). A
+    replacement swaps a slot's rows at its event, but nothing here yet defines what becomes of the
+    replaced slot's chains in progress, its hold, its machines or its counters. FR-38's step 4
+    (replacement accounting, D296) defines them and lifts this refusal."""
+    for op, _, _ in composite_spec.entries(spec):
+        if op.LAW_ID.startswith(REPLACEMENT_FAMILY):
+            raise ConfigError(
+                f"{LAW_ID} does not compose with {op.LAW_ID} yet: a replaced slot's chains in "
+                "progress, hold, machines and counters are undefined until FR-38's step 4 "
+                "(replacement accounting) defines them (D301)"
             )
 
 
@@ -1869,6 +1887,7 @@ class TemplatedPolymerisation(Operator):
         return tuple(moves)
 
     def check_definition(self, spec, declaration, schedule, model):
+        check_replacement(spec)
         common.check_species_cap(spec, LAW_ID)
         common.check_identities(spec, LAW_ID, declaration.species)
         check_writers(spec, declaration)
