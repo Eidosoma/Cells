@@ -12,11 +12,18 @@ m - 1 fine points (m * i + r) * h, r = 1, ..., m - 1, where h is the fine dt and
 number. Every coarse point stays a boundary, bit for bit, so a window adds boundaries and moves
 none: an event or an observation on the coarse grid keeps its exact time inside a window. A
 window's ends are coarse points exactly, so the steps beside it are whole coarse steps, and the
-fine steps are h to within the rounding of the products: no window makes a tiny step. An event
-within that rounding of a point of the clock it does not equal, fine or coarse (or the end), is
-refused, naming the point: an event there would leave a step of a few ulps (FR-8 rung 1, §10.22: a
-decimal 1800.3 one ulp from the coarse point 18003 * 0.1). The clock keeps one entry per window
-and per event.
+fine steps are h to within the rounding of the products: no window makes a tiny step. The clock
+keeps one entry per window and per event.
+
+One rule for every clock, with fine windows or without (D283): an event within the clock's
+same-instant tolerance (same_instant, ROUNDING_ULPS) of a point of the clock, fine, coarse or the
+end, *is* that point. It snaps there and adds no step: a decimal 1.25e-06 declared beside
+10 * 1.25e-7 = 1.2499999999999999e-06 changes the controls at that point, where before it split
+off a step of one ulp. An event past that tolerance but within NEAR_MISS of a point's step is
+refused as an author's near miss (near_miss below), and every other event splits the step it falls
+in, at its own time. The clock records each snap, declared and applied (snapped); the runner runs
+an applied copy of the definition (applied_definition), and the declared definition keeps its
+fingerprint.
 """
 
 import math
@@ -39,6 +46,74 @@ ROUNDING_ULPS = 4
 def same_instant(a, b):
     """Whether a and b differ by at most ROUNDING_ULPS ulps of the larger."""
     return abs(a - b) <= ROUNDING_ULPS * math.ulp(max(abs(a), abs(b)))
+
+
+# The near-miss band (D283): an event more than ROUNDING_ULPS from a point of the clock but within
+# NEAR_MISS of the step it would split off is refused. Such a sub-step, a millionth of its step or
+# less, is never an intended event: it is a computed time that missed the grid (0.1 * 3 against
+# 3 * 0.1 is within the tolerance and snaps; 1800.3000001 at dt 0.1 is in the band). Both of D283's
+# scans, every saved run definition and the judged worlds' builders, found no event in the band.
+NEAR_MISS = 1e-6
+
+
+def on_grid(time, dt):
+    """D283's one predicate for a clock without windows: the point k * dt that `time` is, exactly or
+    within the same-instant tolerance, or None. Every check that asks whether a time is on the
+    step grid asks this."""
+    point = round(time / dt) * dt
+    return point if point == time or same_instant(point, time) else None
+
+
+def near_miss(time, point, step):
+    """Whether `time` misses `point` by more than the same-instant tolerance but by at most
+    NEAR_MISS of `step`, the step it would split (the band, refused)."""
+    return not same_instant(point, time) and abs(time - point) <= NEAR_MISS * step
+
+
+def _snap_times(value, snap, pairs):
+    """`value` with every number under a "time" key replaced by snap(it) where snap gives a point
+    (recording (declared, applied)); lists and dicts walked, everything else kept."""
+    if isinstance(value, dict):
+        out = {}
+        for k, v in value.items():
+            if k == "time" and isinstance(v, (int, float)) and not isinstance(v, bool):
+                applied = snap(float(v))
+                if applied is not None and applied != v:
+                    pairs.append((float(v), applied))
+                    v = applied
+            else:
+                v = _snap_times(v, snap, pairs)
+            out[k] = v
+        return out
+    if isinstance(value, list):
+        return [_snap_times(v, snap, pairs) for v in value]
+    return value
+
+
+def applied_definition(spec):
+    """(the applied copy of a parsed definition, its snaps): every event time of its experiment that
+    its clock snaps (EventGrid(spec).snapped) replaced by the point, re-parsed. The runner runs
+    this copy, so every control lookup, observation and operator sees the instant the clock steps
+    at; the declared definition keeps its fingerprint, record and manifest. Without a snap, `spec`
+    itself."""
+    from cells.definitions.specs import parse_spec
+
+    grid = EventGrid(spec)
+    snapped = dict(grid.snapped)
+    rows = [t for t in spec.experiment.observation_times if grid.instant(t) != t]
+    if not snapped and not rows:
+        return spec, ()
+    raw = spec.to_dict()
+    pairs = [(t, grid.instant(t)) for t in rows]
+    raw["experiment"] = _snap_times(raw["experiment"], snapped.get, pairs)
+    if rows:  # A row declared at a snapped instant is that point's row.
+        raw["experiment"]["observation_times"] = [
+            grid.instant(t) for t in raw["experiment"]["observation_times"]
+        ]
+    applied = parse_spec(raw)
+    if EventGrid(applied).snapped:
+        raise ConfigError("The applied definition still holds an event to snap (D283)")
+    return applied, tuple(sorted(set(pairs)))
 
 
 GRID_ID = "zero_anchored_event_split"  # The run manifests' name for this clock.
@@ -180,6 +255,7 @@ class EventGrid(Sequence):
     extra_indices: tuple[int, ...]
     spans: tuple[FineSpan, ...] = ()
     span_positions: tuple[int, ...] = ()
+    snapped: tuple[tuple[float, float], ...] = ()  # D283: each snapped event (declared, applied).
 
     def __init__(self, spec):
         end, dt = spec.experiment.end_time, spec.execution.dt
@@ -201,7 +277,7 @@ class EventGrid(Sequence):
             ("span_positions", tuple(s.position for s in spans)),
         ):
             object.__setattr__(self, key, value)
-        extras, indices = [], []
+        extras, indices, snapped = [], [], []
         points = sorted({*(c.time for c in spec.experiment.changes), *refinement_times(spec)})
         for t in points:
             if t == 0 or t == end:
@@ -215,14 +291,17 @@ class EventGrid(Sequence):
                     hi = mid
             if lo < nominal and self._nominal(lo) == t:
                 continue
-            if spans:
-                self._refuse_near_point(t, lo)
+            point = self._near_point(t, lo)  # D283: the point this event is, or None.
+            if point is not None:
+                snapped.append((t, point))
+                continue
             indices.append(lo + len(extras))
             extras.append(t)
         if nominal + len(extras) > spec.execution.max_steps:
             raise ConfigError("Event-split integration grid exceeds max_steps")
         object.__setattr__(self, "extras", tuple(extras))
         object.__setattr__(self, "extra_indices", tuple(indices))
+        object.__setattr__(self, "snapped", tuple(snapped))
 
     def __len__(self):
         return self.last_nominal + 2 + len(self.extras)
@@ -261,23 +340,31 @@ class EventGrid(Sequence):
             n -= span.shift  # A coarse point after window k: its coarse index.
         return n * self.dt, False
 
-    def _refuse_near_point(self, t, lo):
-        """Refuse an event within rounding of a point of the clock it does not equal (the points
-        either side of it, lo - 1 and lo: fine, coarse or the end), naming the point: it would
-        leave a step of a few ulps."""
-        for n in (lo - 1, lo):
-            if not 0 <= n <= self.last_nominal + 1:
-                continue
-            if n == self.last_nominal + 1:
-                point, kind = self.end, "end"
-            else:
-                point, fine = self._windowed(n)
-                kind = "fine" if fine else "coarse"
+    def _point(self, n):
+        """(point n of the lattice, or the end at last_nominal + 1; its kind)."""
+        if n == self.last_nominal + 1:
+            return self.end, "end"
+        point, fine = self._windowed(n)
+        return point, "fine" if fine else "coarse"
+
+    def _near_point(self, t, lo):
+        """D283: the point of the clock (fine, coarse or the end; the points either side of t,
+        lo - 1 and lo) that the event t is within the same-instant tolerance, or None; an event in
+        the near-miss band of the step it would split is refused, naming the point."""
+        near = [self._point(n) for n in (lo - 1, lo) if 0 <= n <= self.last_nominal + 1]
+        for point, _ in near:
             if same_instant(point, t):
-                raise ConfigError(
-                    f"execution.fine_windows: an event at {t!r} lies within rounding of the "
-                    f"{kind} boundary {point!r} without equalling it; declare it at {point!r}"
-                )
+                return point
+        if len(near) == 2:
+            step = near[1][0] - near[0][0]
+            for point, kind in near:
+                if near_miss(t, point, step):
+                    raise ConfigError(
+                        f"The clock: an event at {t!r} misses the {kind} point {point!r} by "
+                        f"{abs(t - point)!r} s, at most {NEAR_MISS} of its step (a near miss, "
+                        f"D283); declare it at {point!r} or clearly off it"
+                    )
+        return None
 
     def fine_window_record(self):
         """The declared fine windows as this clock runs them (a windowed run's resources): each
@@ -299,10 +386,23 @@ class EventGrid(Sequence):
         return dict(windows=rows, fine_steps=fine, coarse_steps=len(self) - 1 - fine)
 
     def exact_index(self, time):
+        """The index of the point `time` is: equal, or within the same-instant tolerance (D283's
+        one predicate, so a checkpoint or row declared at a snapped event's time finds its
+        point)."""
         index = bisect_left(self, time)
-        if index == len(self) or self[index] != time:
-            raise ConfigError("Checkpoints require an exact accepted integration boundary")
-        return index
+        if index < len(self) and self[index] == time:
+            return index
+        for i in (index - 1, index):
+            if 0 <= i < len(self) and same_instant(self[i], time):
+                return i
+        raise ConfigError("Checkpoints require an exact accepted integration boundary")
+
+    def instant(self, time):
+        """The point of the clock that `time` is (D283), or `time` itself where it is none."""
+        try:
+            return self[self.exact_index(time)]
+        except ConfigError:
+            return time
 
     def windows(self, start_step, window_steps):
         """Adjacent windows share one endpoint; a terminal continuation yields one row."""

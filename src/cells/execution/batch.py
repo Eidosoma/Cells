@@ -29,7 +29,7 @@ from cells.definitions.specs import (
 from cells.execution import blas_threads, phases
 from cells.execution.devices import execution_device
 from cells.execution.errors import NumericalError
-from cells.execution.grid import refinement_times
+from cells.execution.grid import EventGrid, refinement_times
 from cells.execution.resources import trace_bytes
 from cells.execution.runner import (
     RunResult,
@@ -213,6 +213,11 @@ def plan_batch(spec: BatchSpec) -> BatchPlan:
     grids = []
     for world in spec.worlds:
         try:
+            if EventGrid(world.simulation).snapped:  # D283: the batch path runs declared worlds.
+                raise ConfigError(
+                    "The batch path does not run a definition whose clock snaps an event onto a "
+                    "point (D283); run it through the scalar runner"
+                )
             grids.append(timeline(world.simulation))
         except (ConfigError, NumericalError) as exc:
             raise type(exc)(f"World {world.world_id}: {exc}") from exc
