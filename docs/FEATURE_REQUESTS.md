@@ -1342,6 +1342,12 @@ sha256 afa1f3e7c406580f3631205094a4633b3ba696bf02f6c85ccd6191c2d339f943; fit.jso
 - So Xu 2013 is undetermined. The checker confirms it before Lin et al. 2010 is read, and Lin 2010's PDF
   comes from the user.
 
+**Section 13.3's candidates (22 November 2026, 15:10 UTC; D291).** Lin et al. 2010 is undetermined: the
+Xu ruling extends to its on-rates without P_open, and its atrial myocytes fall outside the native
+admission. Ek-Vitorín et al. 2018 is undetermined under rule 1, with one magnitude only. The registered
+candidates are exhausted. The next step is the user's: FR-30 stays development-only, or a further
+metadata-only search.
+
 ## FR-31 — Vesicle rupture during a steady tension hold
 
 - **The request (the same review; D248).** The assembly model tests rupture only at a state change.
