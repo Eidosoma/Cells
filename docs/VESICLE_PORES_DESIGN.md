@@ -47,7 +47,8 @@ from memory). Nor is any form that bends upward in σ offered (§2.1).
 
 **Prior grounds, independent of the middle values.** Line-tension nucleation shares Γ with the open
 pore's dynamics: a pore shrinks while σr < Γ. That makes FR-31 and FR-39 one mechanism. Its barrier,
-πΓ²/σ, is a difference of F between two states, so it fits the event-pair contract (§3.3). The
+πΓ²/σ, is a difference of F between two states where σ comes from F, and that difference less a held
+boundary's work where σ is held, so it fits the event-pair contract either way (§3.3). The
 exponential law names an activation area, not a state of F.
 
 **Per vesicle or per area.** Karal and Yamazaki's rates are per vesicle, at their vesicles' size.
@@ -87,7 +88,12 @@ seen (§5), so only the forms are given here, in words:
 ### 1.5 Energy
 
 Every step books q = −ΔF + w, as now:
-- **Opening.** F rises by the barrier. The bath supplies it, so q = −ΔF* < 0.
+- **Opening.** Where σ comes from F (the osmotic and elastic sources), F rises by the barrier and
+  the bath supplies it, so q = −ΔF* < 0.
+- **Under a held tension,** the vesicle's F rises only by the edge energy 2πrΓ, and the boundary
+  does work: w = σ·d(πr²) as the pore's area grows, at opening (σπr*²) and on the way to rupture.
+  The hold is then a work source, with a declared payer and a work column, as a shear's work is
+  (§4, decision 3).
 - **The open pore.** Its flow runs downhill. Over each sub-step q = −ΔF, and friction dissipates it.
 - **Leaked molecules.** They move from the lumen to the pool, or to a held place's reservoir with
   its reservoir work, and are booked as the release books them.
@@ -157,15 +163,17 @@ The candidate rules' outcomes follow from §2.1, so the choice is made in the op
 
 ### 2.4 A blind alternative
 
-As far as this note knows, two candidates have not yet been compared with any law:
+As far as this note knows, two candidates have not yet been compared with any law. Only the first
+could be blind:
 - **Fig. 2a's other temperature columns.** The extraction read "the two common temperature columns",
   which suggests the figure has others. This note's author has not opened the paper or the figure.
   If nobody has read the other columns, a blind test is possible: fix a form and a temperature law
   now, fit them on the four end points already read, and predict those columns. The temperature law
   could be, for example, the line-tension law with ν and Γ linear in T, or the source's
   activation-energy form.
-- **The same paper's 12 °C survival** (FR-31: 50% at 92 s, 12.5% at 268 s). If its tension is one of
-  the three registered ones, the same fit can predict it across temperature.
+- **The same paper's 12 °C survival** (FR-31: 50% at 92 s, 12.5% at 268 s). FR-31 prints these
+  values, so they have been read, as the middle values were; they are not blind. If its tension is
+  one of the three registered ones, the same fit can still predict it across temperature.
 
 ## 3. Engine shape
 
@@ -210,8 +218,13 @@ The hazard is off by default. A world that declares none of these laws runs as t
 Every step today is a pair whose rates keep ln a⁺ − ln a⁻ = −ΔF + w (`interfaces.py`, U2 and D199).
 FORMAT_OL2 exempts one case: a pair whose end state lyses has no reverse and is not checked.
 - **Opening, under the line-tension law, is the forward of a pair.** Closed goes to a pore at the
-  critical radius r* = Γ/σ, at rate ν·e^(−ΔF*/k_BT), with ΔF* = πΓ²/σ = F(r*) − F(closed). Its
-  reverse is the collapse from r* at rate ν. That pair keeps the contract exactly.
+  critical radius r* = Γ/σ, at rate ν·e^(−πΓ²/(σ·k_BT)). Its reverse is the collapse from r* at
+  rate ν.
+  - Where σ comes from F (osmotic or elastic), πΓ²/σ = F(r*) − F(closed), to leading order in r*/R,
+    and w = 0.
+  - Under a held tension, F(r*) − F(closed) = 2πr*Γ only, and the boundary does w = σπr*². The pair
+    then reads −ΔF + w with w ≠ 0, and the hold is a declared work source.
+  - Either way the pair keeps the contract.
 - **The open pore's growth, leak and resealing are a downhill deterministic flow,** with q = −ΔF per
   sub-step. Resealing is not a stochastic reverse event.
 - **Rupture is one-way,** like lysis. It falls under the existing exemption.
@@ -287,7 +300,7 @@ and the user's and the Lean lane's time on data.
 
 | Phase | Content | Agent-days |
 | --- | --- | --- |
-| A. FR-31 | The hazard interface; `cells.pore_nucleation@1` in both forms; `cells.tension_hold@1`; the clock in the single-lineage and population kernels, idle chemistry included; stream domain 7; rupture through the release; records, relations and the diagnostic record; refusals (same time, checkpoint cuts); test rows; the gate, the invariance gate and the runs2 compare | 3–5 |
+| A. FR-31 | The hazard interface; `cells.pore_nucleation@1` in both forms; `cells.tension_hold@1` with its payer and work column; the clock in the single-lineage and population kernels, idle chemistry included; stream domain 7; rupture through the release; records, relations and the diagnostic record; refusals (same time, checkpoint cuts); test rows; the gate, the invariance gate and the runs2 compare | 3.5–5.5 |
 | A′. The registered test | The registration text, the engine's prediction, the cohort check and PROGRESS | 0.5–1 |
 | B. FR-39 | `cells.pore_episode@1` (radius, volume, solute and cargo leak, resealing, rupture); `cells.area_elasticity@1`; the episode's ledger; the stop rules; records; how F12 and relations read it; the deterministic episode qualified against exact events at sizes both can run | 5–8, after OL6 |
 | B′. FR-39's comparison | Oglęcka 2014's Fig. 5 (closures within about 1 s) and Chabanon 2017's Fig. 4 (stepwise loss), registered before any value is read | 2–3 |
@@ -298,7 +311,9 @@ and the user's and the Lean lane's time on data.
 2. **Run the disclosed, non-blind test as it stands,** or look for a blind one first (§2.4).
 3. **A held tension as a declared boundary** (`cells.tension_hold@1`). Pipette experiments need it.
    Is it general enough, under the rule that features are general and never built for one
-   experiment? Any experiment at a held tension could use it.
+   experiment? Any experiment at a held tension could use it. It is a work source: under U2 (D199)
+   a declaration that is not passive names a declared source of free energy, so the hold needs a
+   payer and a work column, as a shear's work has (`source:shear/<index>`, `shear_work_kT`).
 4. **The pair contract (§3.3):** opening as a pair under the line-tension law, or a one-way opening
    as a second exemption. This is the lead's ruling.
 5. **The hazard per vesicle or per area** (§1.2).
@@ -323,8 +338,9 @@ and the user's and the Lean lane's time on data.
 - Karal MAS, Yamazaki M (2015). Communication: activation energy of tension-induced pore formation
   in lipid membranes. *J Chem Phys* 143:081103, doi:10.1063/1.4930108.
   - Confirmed by the data file's DOI.
-  - Its analysis, an activation energy with a tension-independent term, is from a search summary.
-  - The paper and its Fig. 2a were not opened for this note (§2.4).
+  - Its analysis, an activation energy with a tension-independent term, is from a search tool's
+    summary, which drew on the repository PDF's text.
+  - No rate values reached this note's author, and the figure was not viewed (§2.4).
 - Karal MAS, Levadnyy V, Yamazaki M (2016). *Phys Chem Chem Phys* 18:13487. From a search result.
 
 **Cited by Chabanon et al., not opened here:**
