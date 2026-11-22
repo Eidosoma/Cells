@@ -280,14 +280,18 @@ def readouts(spec, states, cell=None):
     }
     membership = {name: members for name, members in membership.items() if members}
     # D265, finding 7: a product of the cell's chains with no loss route there, and named by no
-    # other operator, is established as lossless, and exported with a zero loss series.
+    # other operator, is established as lossless, and exported with a zero loss series. A
+    # release's fate rows (FR-38, the sheet's §9; every class's) are filled by its chain as a
+    # product is, so the rule covers them too (the Lean lane's finding, 22 November 2026).
     lost = {block.degradations[i].polymer for i in here["degradation"]}
     others = {getattr(x, "id", x) for op in spec.model.operators if op.law != worlds.POLYMERISATION
               for x in getattr(op, "species", ())}  # fmt: skip
-    zero_loss = sorted({block.chains[i].product for i in here["chain"]} - lost - others)
     releases = [
         (i, c, r) for i, (c, r) in enumerate(polymerisation.releases_of(block)) if c.cell == cell
     ]
+    made = {block.chains[i].product for i in here["chain"]}
+    made |= {row for _, _, r in releases for row in r.rows()}
+    zero_loss = sorted(made - lost - others)
     times = [float(t) for t in spec.experiment.observation_times]
     out = {}
 
