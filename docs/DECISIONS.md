@@ -9201,3 +9201,47 @@ priority". The evidence branch was merged unedited at 81916b5d.
   - The Sonnet extractor reads the values, since the Opus extractor was stopped by a safeguard false
     positive on Akui's methods; the user moved that task to Sonnet.
 
+## D293: The rupture blind test's stage-1 rulings, made before any prediction or held-out value
+
+2026-11-22, about 15:36 UTC. The sealed extractor's stage 1 (conditions only; stage1_conditions.json sha256
+9c02be36…) found:
+- set 1: six held-out points in five new temperature columns of Karal and Yamazaki's Fig. 2a, at about
+  38, 35, 30, 18, 18 and 12 °C;
+- set 2: Shibly et al. 2016's tables hold six osmotic rows and no control rows, and give no standard
+  errors.
+The lead's rulings, which are made blind to every held-out value and extend VESICLE_PORES_LAWS §8:
+1. **Temperatures.**
+   - Set 1 uses each column's plotted position, T = 10⁶/x, exactly as the six fit points did.
+   - Set 2 uses T = 298.15 K with δT = 1 K (the paper's 25 ± 1 °C).
+2. **Set 1's S1-6 (12 °C, 8.0 mN/m) is reported, not scored.** FR-31's entry, which the builders have read,
+   already quotes 12 °C survival under a held tension from the same paper.
+3. **Set 2's controls: a stage-1b pass.**
+   - The extractor reads the control points' tensions from Fig. 1C, x only, with n where stated, and these
+     become control conditions.
+   - Their rates are read at stage 2, with the digitising error s_dig = 0.03 in ln k declared now.
+   - The controls are scored two-sided, and the osmotic rows one-sided (§8).
+4. **The vesicle area across preparations.**
+   - In stage 1b the extractor reads Karal's method reference (Levadny et al. 2013) for the GUV radii,
+     conditions only.
+   - Set 2's per-vesicle predictions scale by (r_Shibly/r_Karal)², with r_Karal the midpoint of the stated
+     range.
+   - A declared term s_area, half the width of ln r² over that range, enters set 2's tolerance only. Set 1
+     is unaffected, since its area cancels.
+5. **Set 2's standard errors** are read from Fig. 1C's error bars at stage 2, with the declared s_dig. A
+   point with no readable bar is reported, not scored.
+6. **The quoted survival count.** At stage 2 the extractor matches it against Fig. 1B's curves among the
+   2.8 mM cohorts. The matched point is reported, not scored. If the match is ambiguous, every candidate
+   is unscored.
+7. **Stage 2's reading of set 1:**
+   - vector coordinates, with the centre at the midpoint of the bar caps;
+   - the six fit points re-read as a check against the data file;
+   - s_dig stays 0.03.
+8. **Minor:**
+   - the 1.9 mM series takes the stated 3 × 18–22 as its n;
+   - Shibly's ± on r₀ is used as stated, for s_area;
+   - the PMC HTML page is set 2's source of record.
+   - The reader scripts stay with the run's evidence.
+- **The exposures are disclosed:** lean/PROGRESS.md's intact fractions for Karal's Fig. 1(a) were seen by
+  the extractor, and they concern S1-6, which is unscored. The extractor's other exposures carry no held-out
+  value.
+
