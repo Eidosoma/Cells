@@ -51,6 +51,10 @@ import json
 import math
 from pathlib import Path
 
+# D283: the window edges' predicate is the clock's one same-instant predicate (it was a seam here,
+# equal times, until D283 landed), as templated_polymerisation.grid_time reads on_grid.
+from cells.numerics.clock_instants import same_instant
+
 
 def _integral(t, n, i, j):
     """The integral of n over [t_i, t_j] on the output grid, by Simpson's rule on uniform pairs of
@@ -72,13 +76,6 @@ def _spread(x):
 
 
 BOUND_ROUNDING = 1e-12  # Relative: the survivors' allowance above the pool from rounding alone.
-
-
-def same_instant(a, b):
-    """Whether two times name one instant of the clock: the window edges' predicate, a seam like
-    templated_polymerisation.grid_time's for D283's same-instant snap. Until it lands, equal
-    times; D283 widens both to the clock's predicate."""
-    return a == b
 
 
 def _window(t, t1, t2, ts):

@@ -363,7 +363,7 @@ The values are illustrative and synthetic.
 - **`destination`** admits one value in version 1, `"cell"`: the patch's own cell. The key exists so
   that FR-1 and FR-2 add destinations without changing the form (§2.4).
 - **The experiment** adds `site_controls`: per population and route (`binding`, `internalisation`), a
-  piecewise-constant multiplier m ≥ 0 from time 0, changing at exact multiples of dt.
+  piecewise-constant multiplier m ≥ 0 from time 0, changing on the clock's grid (D283).
   - A zero multiplier switches the route off (D136): a blocking antibody, a washout, an inhibitor of
     uptake.
   - A binding multiplier scales k_on and k_off together, so the equilibrium is unchanged, as D152's
