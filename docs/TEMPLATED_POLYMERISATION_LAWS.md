@@ -1567,10 +1567,11 @@ definition without a replacement keeps §0–§9.15 bit for bit.*
       reported to the lead.
     - **No extracellular retention** (item 7).
 
-### 9.17 Amendment T (proposed): extracellular retention, options and the recommendation (FR-38; D284, D303)
+### 9.17 Amendment T: extracellular retention, options and the choice (FR-38; D284, D303)
 
-*Proposed 22 November 2026 by the gene-regulation lane, for the lead's review and the tag before any
-code. The requester asks that "RNA retained in an extracellular compartment keeps its original
+*Proposed 22 November 2026 by the gene-regulation lane, for the tag before any code. The lead's
+review approved option (a) with two changes, folded in: only a driven export in version 1
+(§9.17.2), and several producers admitted into one node row (§9.17.3). The requester asks that "RNA retained in an extracellular compartment keeps its original
 producer ID", and D284 is full scope, so D303 restores it to FR-38. When tagged, this amendment
 supersedes amendment S's extracellular bullet (§9.16, item 7) and its non-claim (§9.16, item 10). A
 definition without an export keeps §0–§9.16 bit for bit.*
@@ -1647,16 +1648,19 @@ Per export e of row F from cell c into node o, across patch π (inside c, outsid
 J_E = k_E n_F,c φ_E (1 − e^(x_E)),  x_E = [μ_F,o − μ_F,c + Σ_k ν_k μ_k,c] / RT.
 
 - **The coupling** ν is declared data: the cell's rows the move consumes and releases per molecule
-  exported, for example one ATP to ADP and Pi for a driven, vesicular export. It may be empty,
-  which is the passive form, x_E = ln(c_F,o / c_F,c).
-- **φ_E** is the product, over the consumed coupling rows, of c/(K + c), with K declared for each;
-  it is 1 with none.
-- This is §4's one-sided form, as for the stage exits and the degradations:
-  - at an export in use, x_E ≤ X_DOM = −1, and a state outside it is refused, never repaired
-    (§3.5);
-  - so a passive export refuses a node filled past c_F,c / e;
-  - a driven export stays inside its domain while the coupling's affinity pays for the
-    gradient.
+  exported, for example one ATP to ADP and Pi for a vesicular export. In version 1 it is non-empty:
+  only a driven export is admitted (the lead's choice (i), 22 November 2026). RNA export from cells
+  is generally active, vesicular or transporter-driven.
+- **φ_E** is the product, over the consumed coupling rows, of c/(K + c), with K declared for each.
+- This is §4's one-sided form, as for the stage exits and the degradations: at an export in use,
+  x_E ≤ X_DOM = −1, and a state outside it is refused, never repaired (§3.5). A driven export
+  stays far inside that domain while the coupling's affinity pays for the gradient.
+- **Why the passive form is refused.** With an empty coupling, x_E = ln(c_F,o / c_F,c), so the
+  domain refuses a node filled past c_F,c / e. That is exactly the requester's chase: the cell's
+  RNA decays while the retained RNA persists, so c_F,o / c_F,c rises through 1/e and the run would
+  be refused mid-chase, where the replacement test lives. **(ii), a follow-on on request:** the
+  passive form's own two-sided law, export and re-import, with both one-way moves reported to the
+  labels.
 - **Energy:** heat H_E = J_E (−x_E RT) ≥ 0, booked exactly from the state by the half-step's
   divided-difference potentials, as every route's is (§3.4). F's standard term cancels between
   the two nodes; the coupling's rows carry theirs, booked as a transfer's are. No work.
@@ -1683,6 +1687,13 @@ This holds over every generation and every producer exporting into o. Replacemen
 only, so an event leaves o untouched. **Exported RNA survives its producer's replacement, retained
 with its label.**
 
+**Several producers may share one node row** (the lead's review, 22 November 2026). A shared
+extracellular space is the natural tissue case, and producer labels on FR-42's shares exist so that
+one row can hold several producers' RNA. Each export route belongs to one chain, so its counter ∫E_e
+is that chain's exports, and §9.16's birth values split it by generation. Nothing in the node's
+balance or the identities above needs one producer per node row; the fate rows keep §9.11's one
+producer each.
+
 #### 9.17.4 The label, on FR-42's shares (D289, D296)
 
 - The label owner labels a species at every node, so the node's row carries the fate row's labels.
@@ -1697,9 +1708,13 @@ with its label.**
 
 1. **Extracellular RNA by producer.**
    - Route 1: n_o times the producer's share at o.
-   - Route 2, host-side: each generation's exports over its life, carried by o's own per-molecule
-     loss from the counters (cohort.py's form, exact for first-order, age-independent loss in a
-     well-mixed node, up to its grid error).
+   - Route 2, host-side: each producer's exports, its chain's export counter over each
+     generation's life, carried by o's own per-molecule loss, ∫D_o over n_o from the counters
+     (cohort.py's form, exact for first-order, age-independent loss in a well-mixed node, up to its
+     grid error). The node's loss is shared by every producer's RNA at one per-molecule rate.
+   - **A row with two producers into one node:** two cells, each with its own chain and fate row
+     of the same species, exporting into one finite node. Each producer's RNA there, by both
+     routes, and their sum the node's row.
 2. **The release-marked cohort's survival at o.**
    - Route 1: n_o times the window's share. A molecule released in [t1, t2) keeps that label
      through export.
@@ -1719,8 +1734,7 @@ At the definition:
 - any other writer or mover of the exported row at its node: an author such as exchange or
   turnover, a D152 reaction, or an in-step mover such as a face or a kind (retention is the
   one-writer rule extended to the node);
-- two chains exporting into one node's row (one producer per row, as for fate rows), apart from
-  one chain's generations, which share it by labels;
+- an export whose coupling is empty (the passive form, §9.17.2: follow-on (ii));
 - a coupling row that is not a listed row of the cell, or a consumed one without its K;
 - dt k_E > 1, and an outside degradation's dt k > 1;
 - a provider of the volumes, as today (CONFLICTS_VIEW).
@@ -1747,9 +1761,11 @@ At run time: x_E > X_DOM at an export in use, a non-positive amount, a non-finit
   - the export, its coupling, its heat and its domain 1.5–2;
   - the outside degradation and the nodes' accumulators and ledgers 0.75–1;
   - the label transfer 0.25;
-  - the readouts' routes 1 and 2 (cohort.py's series form) 0.75–1;
+  - the readouts' routes 1 and 2 (cohort.py's series form), with the two-producer row, 1–1.25;
   - tests, optin and the gate 0.75–1.
 
-  In all about 4.5–5.75, after step 4 (§9.16) and alongside step 5.
+  In all about 4.75–6, after step 4 (§9.16) and alongside step 5.
+- **(ii), on request:** the passive form's two-sided law and its re-import's reports, about
+  1–1.5 more.
 - **(b1):** about 4–4.75 with its owners' reviews, with driven work and a second door.
 - **(b2):** about 4.5 with the @3 owner's review, and the wrong physics.
