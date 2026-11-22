@@ -1,0 +1,405 @@
+{
+ "kind": "cells.validation.mito_reference_registration@1",
+ "name": "MR1-MT2",
+ "role": "MT-2's model-level reference (D236), written code-blind from Beard 2005 and its 2006 correction",
+ "status": "prepared for registration before any engine organelle output exists; the coordinator's tag registers it",
+ "arm": {
+  "name": "mr1_mt2",
+  "switches": {
+   "J_F1": "eq11_appendix_balanced",
+   "J_PiHt": "eq16_appendix_balanced",
+   "H_x_row": "pi_protons_counted",
+   "J_DH": "eq1_balanced_supply",
+   "J_AK": "eq18_base_forms"
+  },
+  "overrides": {
+   "h_ref_DH": 7.943282347242822e-08,
+   "K_base_AK": 0.388964538
+  },
+  "description": "MR1, MT-2's model-level reference (D236, appendix tag mito-laws-appendix-2026-11-20b): host_p_question_arm_ak_base with K_base = 0.388964538 at m = 3.808553529 mM",
+  "label": "with-control[J_DH=eq1_balanced_supply,J_AK=eq18_base_forms,J_F1=eq11_appendix_balanced,J_PiHt=eq16_appendix_balanced,H_x_row=pi_protons_counted,K_base_AK=0.388965,h_ref_DH=7.94328e-08]",
+  "T_K": 298.15,
+  "matrix_Mg_total_M": 0.005,
+  "matrix_charge_inventory_mol_per_l_mito": -0.018171992460450904,
+  "charge_inventory_definition": "V_x (ln[H+]x/(100 M^-1) + [Pi]x h/(h + k_dH) + [K+]x - [NADH]x - [ATP]x - 2[Pi]x) + C_IM dPsi, conserved by Eq. 22 (frame B), anchored to pH_x = 7.1418 at [Pi]e = 0, state 4",
+  "IMS_free_Mg_rule": "held at the buffer's free Mg2+ (5.0 mM total; Table 1 binding constants)",
+  "buffer": {
+   "pH_e": 7.1,
+   "K_e_mM": 150,
+   "Mg_total_mM": 5.0,
+   "ATP_e": 0,
+   "AMP_e": 0,
+   "ADP_e_mM": [
+    0,
+    1.3
+   ],
+   "Pi_e_mM": [
+    0,
+    1,
+    2,
+    3,
+    5,
+    10
+   ],
+   "O2_M": 2.6e-05
+  },
+  "parameters": "beard2005_model.json, Table 1 (2006), with phosphate control"
+ },
+ "appendix": {
+  "tag": "mito-laws-appendix-2026-11-20b",
+  "commit": "c9c5be1fda8ab316e51926de53fc405be49186c7",
+  "match": [
+   {
+    "law": "Eq. 1, held_reductant_supply@1 (section 6)",
+    "MR1": "eq1_balanced_supply, h_ref = 10^-7.10 M",
+    "result": "J = X_DH phi_DH (r[NAD] - [NADH] h_N/10^-7.10 M); dG/RT = ln([NADH]/(r[NAD])) + ln(h_N/10^-7.10 M): identical"
+   },
+   {
+    "law": "Eqs. 2-5, complex I (section 1.1)",
+    "MR1": "printed",
+    "result": "declared = printed: identical"
+   },
+   {
+    "law": "Eqs. 6, 7, 24, complex III (section 1.2)",
+    "MR1": "eq24_with_eq7_proton_term",
+    "result": "Eq. 24 restored as phi_Pi x Eq. 7: identical"
+   },
+   {
+    "law": "Eqs. 8, 9, complex IV (section 1.3)",
+    "MR1": "printed, per 1/2 O2",
+    "result": "the appendix's law per O2 is half the printed flux per 1/2 O2: the same physics, identical"
+   },
+   {
+    "law": "Eqs. 10, 11, ATP synthesis (section 2)",
+    "MR1": "eq11_appendix_balanced",
+    "result": "printed forward term, backward x (1e-7/h_N)(1 + h_N/k_dH)/(1 + 1e-7/k_dH): identical"
+   },
+   {
+    "law": "Eq. 14, nucleotide exchange (section 3)",
+    "MR1": "printed",
+    "result": "declared = printed (shares 0.35 + 0.65 = 1): identical"
+   },
+   {
+    "law": "Eqs. 15, 16, phosphate carrier (section 4)",
+    "MR1": "eq16_appendix_balanced",
+    "result": "printed forward term, backward [H2PO4-]_N h_N^2/h_P: identical"
+   },
+   {
+    "law": "Eq. 21, K+/H+ exchange (section 5)",
+    "MR1": "printed",
+    "result": "declared = printed: identical"
+   },
+   {
+    "law": "Eqs. 17, 18, IMS adenylate kinase (section 7)",
+    "MR1": "eq18_base_forms, K_base = 0.388964538",
+    "result": "X_AK (1 + [Mg2+]_P/K_MgATP)(K_base [ADP3-]^2 - [AMP2-][ATP4-]) = the source's form on totals with K_tot = K_base (1 + m/K_MgATP)/(1 + m/K_MgADP)^2: identical at binding equilibrium (every steady state)"
+   },
+   {
+    "law": "Eq. 13, outer membrane (section 8)",
+    "MR1": "printed, on totals",
+    "result": "the appendix's per-form Fick fluxes sum to Eq. 13's totals exactly; with the IMS free Mg2+ held (declared with the world) the steady states are identical"
+   },
+   {
+    "law": "Eq. 22's proton row, frame B (section 0)",
+    "MR1": "pi_protons_counted",
+    "result": "the total counts the protons on phosphate and on the buffer; coefficients -5, -2, -8 per O2 (= -4 per 1/2 O2), +(n_A - 1), +2, -1, +1, +1: identical"
+   },
+   {
+    "law": "Constants (section 0)",
+    "MR1": "T = 298.15 K; exact SI R and F",
+    "result": "identical"
+   },
+   {
+    "law": "Parameters (section 9)",
+    "MR1": "Table 1 (2006), with phosphate control",
+    "result": "all 29 listed values equal MR1's; declared pH_ref 7.10, dG_S = 0 at pH 7, K_base, Mg2+ total 5 mM: identical"
+   },
+   {
+    "law": "Not covered by the appendix (section 12)",
+    "MR1": "the source's forms",
+    "result": "proton leak (Eq. 19), passive K+ (Eq. 20, X_K = 0), Mg2+ binding (Eq. 12; MR1 kinetic at X_MgA = 1e6, at equilibrium in every steady state), the matrix buffer r_buff, C_IM = 6.75e-6"
+   }
+  ]
+ },
+ "reported_states": [
+  {
+   "state": "state4",
+   "ADP_e_mM": 0.0,
+   "Pi_e_mM": 0.0,
+   "dPsi_mV": 169.75200552833726,
+   "pH_x": 7.14180000002401,
+   "NADH_frac": 0.6093271969610122,
+   "cytc_red_frac": 0.07623818832624746,
+   "O2_flux_mol_per_s_per_l": 0.00016856943395510124,
+   "K_x_mM": 136.23580398152566,
+   "Pi_x_mM": 0.0,
+   "ATP_x_mM": 0.0,
+   "IMS_free_Mg_mM": 4.999999999999999,
+   "integration_vs_newton_rel": 8.55673869707918e-15,
+   "newton_residual": 5.777777777777778e-46
+  },
+  {
+   "state": "state4",
+   "ADP_e_mM": 0.0,
+   "Pi_e_mM": 1.0,
+   "dPsi_mV": 185.47684954724087,
+   "pH_x": 7.114349884200791,
+   "NADH_frac": 0.7554041372116477,
+   "cytc_red_frac": 0.10173348452682542,
+   "O2_flux_mol_per_s_per_l": 0.00018416626062409765,
+   "K_x_mM": 145.12471332489582,
+   "Pi_x_mM": 1.0575951779291957,
+   "ATP_x_mM": 7.4560125021945565,
+   "IMS_free_Mg_mM": 4.999999999999999,
+   "integration_vs_newton_rel": 1.0190070661637808e-13,
+   "newton_residual": 2.8893333333333334e-43
+  },
+  {
+   "state": "state4",
+   "ADP_e_mM": 0.0,
+   "Pi_e_mM": 2.0,
+   "dPsi_mV": 188.73703158526834,
+   "pH_x": 7.106214446227445,
+   "NADH_frac": 0.761809676584797,
+   "cytc_red_frac": 0.10736382338394093,
+   "O2_flux_mol_per_s_per_l": 0.0001874006602888618,
+   "K_x_mM": 147.86889001303263,
+   "Pi_x_mM": 2.049035955464125,
+   "ATP_x_mM": 8.727095032084247,
+   "IMS_free_Mg_mM": 4.999999999999999,
+   "integration_vs_newton_rel": 4.2499556077487477e-13,
+   "newton_residual": 9.417777777777779e-44
+  },
+  {
+   "state": "state4",
+   "ADP_e_mM": 0.0,
+   "Pi_e_mM": 3.0,
+   "dPsi_mV": 190.40310291109486,
+   "pH_x": 7.1005704275058825,
+   "NADH_frac": 0.7632434617564741,
+   "cytc_red_frac": 0.10997886700637725,
+   "O2_flux_mol_per_s_per_l": 0.00018905335091765762,
+   "K_x_mM": 149.80311065048676,
+   "Pi_x_mM": 3.0066720726993292,
+   "ATP_x_mM": 9.190298674180426,
+   "IMS_free_Mg_mM": 4.999999999999999,
+   "integration_vs_newton_rel": 3.9550470221865725e-13,
+   "newton_residual": 1.3431111111111111e-43
+  },
+  {
+   "state": "state4",
+   "ADP_e_mM": 0.0,
+   "Pi_e_mM": 5.0,
+   "dPsi_mV": 192.29029631633702,
+   "pH_x": 7.09140374996584,
+   "NADH_frac": 0.7629207154620175,
+   "cytc_red_frac": 0.11229358810530354,
+   "O2_flux_mol_per_s_per_l": 0.00019092486886609865,
+   "K_x_mM": 152.99861839912114,
+   "Pi_x_mM": 4.835594749570298,
+   "ATP_x_mM": 9.545834173706886,
+   "IMS_free_Mg_mM": 4.999999999999999,
+   "integration_vs_newton_rel": 3.228664123514202e-13,
+   "newton_residual": 1.0727407407407408e-43
+  },
+  {
+   "state": "state4",
+   "ADP_e_mM": 0.0,
+   "Pi_e_mM": 10.0,
+   "dPsi_mV": 194.72147842007809,
+   "pH_x": 7.072758691953,
+   "NADH_frac": 0.7586626738205035,
+   "cytc_red_frac": 0.11353549678313767,
+   "O2_flux_mol_per_s_per_l": 0.000193334559870472,
+   "K_x_mM": 159.71016821476064,
+   "Pi_x_mM": 8.997300654168132,
+   "ATP_x_mM": 9.787779881353595,
+   "IMS_free_Mg_mM": 4.999999999999999,
+   "integration_vs_newton_rel": 4.748784202683634e-13,
+   "newton_residual": 2.554962962962963e-43
+  },
+  {
+   "state": "state3",
+   "ADP_e_mM": 1.3,
+   "Pi_e_mM": 0.0,
+   "dPsi_mV": 169.79624082068034,
+   "pH_x": 7.141785814959885,
+   "NADH_frac": 0.6101178984115891,
+   "cytc_red_frac": 0.07620502455349429,
+   "O2_flux_mol_per_s_per_l": 0.0001681424967773982,
+   "K_x_mM": 136.24025383123987,
+   "Pi_x_mM": 0.0001667396214495251,
+   "ATP_x_mM": 0.002606740056778726,
+   "IMS_free_Mg_mM": 3.8085535288777344,
+   "integration_vs_newton_rel": 1.1906189140103273e-14,
+   "newton_residual": 2.327406438702094e-45
+  },
+  {
+   "state": "state3",
+   "ADP_e_mM": 1.3,
+   "Pi_e_mM": 1.0,
+   "dPsi_mV": 157.5194074554593,
+   "pH_x": 7.135875829294651,
+   "NADH_frac": 0.3441775843623137,
+   "cytc_red_frac": 0.14969326318060439,
+   "O2_flux_mol_per_s_per_l": 0.0010772730315495695,
+   "K_x_mM": 138.1069167664747,
+   "Pi_x_mM": 0.6234902800637963,
+   "ATP_x_mM": 1.6014158616578897,
+   "IMS_free_Mg_mM": 3.8085535288777344,
+   "integration_vs_newton_rel": 7.556534224222014e-14,
+   "newton_residual": 1.0074074074074073e-45
+  },
+  {
+   "state": "state3",
+   "ADP_e_mM": 1.3,
+   "Pi_e_mM": 2.0,
+   "dPsi_mV": 159.43269416617457,
+   "pH_x": 7.128844995740068,
+   "NADH_frac": 0.33393843610233687,
+   "cytc_red_frac": 0.17232037122355431,
+   "O2_flux_mol_per_s_per_l": 0.001368750097510233,
+   "K_x_mM": 140.36093847573872,
+   "Pi_x_mM": 1.3070446729647702,
+   "ATP_x_mM": 2.904281217937191,
+   "IMS_free_Mg_mM": 3.8085535288777344,
+   "integration_vs_newton_rel": 1.2952251691719289e-13,
+   "newton_residual": 1.5714074074074075e-43
+  },
+  {
+   "state": "state3",
+   "ADP_e_mM": 1.3,
+   "Pi_e_mM": 3.0,
+   "dPsi_mV": 161.41118399647874,
+   "pH_x": 7.122558755378717,
+   "NADH_frac": 0.3357299369317849,
+   "cytc_red_frac": 0.18445960049385238,
+   "O2_flux_mol_per_s_per_l": 0.0014947720211773714,
+   "K_x_mM": 142.40738238775356,
+   "Pi_x_mM": 2.003917330271972,
+   "ATP_x_mM": 3.9286224037465907,
+   "IMS_free_Mg_mM": 3.8085535288777344,
+   "integration_vs_newton_rel": 2.510431944640138e-14,
+   "newton_residual": 9.05037037037037e-44
+  },
+  {
+   "state": "state3",
+   "ADP_e_mM": 1.3,
+   "Pi_e_mM": 5.0,
+   "dPsi_mV": 164.5376736920778,
+   "pH_x": 7.111980815443667,
+   "NADH_frac": 0.3451835713574667,
+   "cytc_red_frac": 0.1972271715057546,
+   "O2_flux_mol_per_s_per_l": 0.0015885156629708798,
+   "K_x_mM": 145.91852924000284,
+   "Pi_x_mM": 3.3974049922282172,
+   "ATP_x_mM": 5.333428585755586,
+   "IMS_free_Mg_mM": 3.8085535288777344,
+   "integration_vs_newton_rel": 1.0977953708439125e-14,
+   "newton_residual": 4.702074074074074e-43
+  },
+  {
+   "state": "state3",
+   "ADP_e_mM": 1.3,
+   "Pi_e_mM": 10.0,
+   "dPsi_mV": 169.02279494073346,
+   "pH_x": 7.091910274033734,
+   "NADH_frac": 0.35863978130338037,
+   "cytc_red_frac": 0.20879937013534153,
+   "O2_flux_mol_per_s_per_l": 0.0016398403155269135,
+   "K_x_mM": 152.82027787181414,
+   "Pi_x_mM": 6.7120286973118475,
+   "ATP_x_mM": 7.1452564944295585,
+   "IMS_free_Mg_mM": 3.8085535288777344,
+   "integration_vs_newton_rel": 3.162135128694628e-13,
+   "newton_residual": 1.844e-43
+  }
+ ],
+ "tolerances": {
+  "dPsi_mV": {
+   "abs": 0.05,
+   "unit": "mV"
+  },
+  "pH_x": {
+   "abs": 0.0005,
+   "unit": "1"
+  },
+  "NADH_frac": {
+   "abs": 0.0005,
+   "unit": "1"
+  },
+  "cytc_red_frac": {
+   "abs": 0.0005,
+   "unit": "1"
+  },
+  "O2_flux_mol_per_s_per_l": {
+   "rel": 0.001,
+   "unit": "mol O2 s^-1 (l mito)^-1"
+  },
+  "K_x_mM": {
+   "rel": 0.001,
+   "unit": "mM"
+  },
+  "Pi_x_mM": {
+   "rel": 0.001,
+   "unit": "mM"
+  },
+  "ATP_x_mM": {
+   "rel": 0.001,
+   "unit": "mM"
+  }
+ },
+ "band_basis": "A stated physical scale: about a third of the published figures' 1-px resolution (0.13 mV, 0.0033 pH, 0.001 fraction), far above MR1's convergence floor (below). Not derived from any engine output.",
+ "convergence_floor": {
+  "max_integration_vs_newton_rel": 4.748784202683634e-13,
+  "max_newton_residual": 4.702074074074074e-43,
+  "uniqueness_three_starts_rel": 1.9044656131755006e-13
+ },
+ "fit_rms_z_to_published_curves": 3.717796707423648,
+ "fit_max_abs_diff_per_panel": {
+  "fig4A:state4": 0.010907326179496524,
+  "fig4A:state3": 0.027007584362313708,
+  "fig4B:state3": 5.89621492533837,
+  "fig4B:state4": 0.8545793240402872,
+  "fig4C:state3": 0.006730371223554327,
+  "fig4C:state4": 0.001628867006377252,
+  "fig4D:state3": 0.007910274033734233,
+  "fig4D:state4": 0.01225869195299989,
+  "fig5:state4": 1.398521579921919,
+  "fig5:state3": 0.8594074554592908
+ },
+ "departure_from_published_arm": {
+  "dPsi_mV": 1.3074478564791718,
+  "pH_x": 0.014154865810086292,
+  "NADH_frac": 0.019701028624804162,
+  "cytc_red_frac": 0.003967922223449993,
+  "O2_flux_rel": 0.021154220115448208
+ },
+ "thermodynamics": {
+  "dissipation_reported_states": {
+   "negative_states": {},
+   "processes_counted": 17
+  },
+  "dissipation_random_states_binding_at_equilibrium": {
+   "negative_states": {},
+   "processes_counted": 19
+  },
+  "dissipation_random_states_binding_random": {
+   "negative_states": {
+    "J_AK": 532,
+    "J_F1": 146
+   },
+   "processes_counted": 19
+  }
+ },
+ "non_claims": [
+  "Not Beard's published model. The D236 repairs move it from MR1's published arm by the departures given here; at this Mg2+ total the published arm fits the published curves at rms z 1.40, MR1-MT2 at 3.72.",
+  "Not the measured data (Bose et al. 2003), which MR1 never read; a later question (D151).",
+  "Conditional on declared inputs the source does not report: 298.15 K; the matrix Mg2+ total (5 mM); the matrix charge inventory (anchored to Fig. 4D's pH at [Pi]e = 0, recorded here as a number); the IMS free Mg2+ (the buffer's free Mg2+); the reference pH 7.10 of the supply.",
+  "Steady states only. The model was fitted to steady states; no transient is claimed. Transients need a rapid Mg2+-binding closure (Q15: at X_MgA = 1e6 an ADP step drives IMS free ADP negative).",
+  "Q15, random binding: with Mg2+ binding away from equilibrium, F1F0 (Eq. 11 reads Mg-bound forms, Eq. 22 books free forms) and the base-form kinase (it reads totals through the free Mg2+) can dissipate negatively. Every steady state has binding at equilibrium, and a rapid binding closure removes it; it is not a property of the reported states.",
+  "MVO2 in the figures' units (per mol cytochrome a) is not claimed: no conversion is reported, and MR1's scale is one anchor.",
+  "Host P only (D235): a matrix, an IMS node and a held buffer. No cell, no calcium, no low-oxygen rows (P50 is not part of this registration).",
+  "The ATP and AMP effluxes into a buffer held at zero have unbounded dissipation; they are excluded from every dissipation check."
+ ]
+}
