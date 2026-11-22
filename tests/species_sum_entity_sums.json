@@ -1245,6 +1245,31 @@
    "operators/templated_polymerisation.py",
    "one_way_moves",
    "entity_sum(label, axis=1, xp=xp)"
+  ],
+  [
+   "operators/templated_polymerisation.py",
+   "_hold_removed",
+   "entity_sum(removed, axis=1, xp=xp)"
+  ],
+  [
+   "operators/templated_polymerisation.py",
+   "hold_report",
+   "entity_sum(state.poly_hold_fmol, axis=1, xp=xp)"
+  ],
+  [
+   "operators/templated_polymerisation.py",
+   "poly_event",
+   "entity_sum(complexes, axis=1, xp=xp)"
+  ],
+  [
+   "operators/templated_polymerisation.py",
+   "poly_event",
+   "entity_sum(held * complexes, axis=1, xp=xp)"
+  ],
+  [
+   "operators/templated_polymerisation.py",
+   "poly_event",
+   "entity_sum(hold, axis=1, xp=xp)"
   ]
  ]
 }
