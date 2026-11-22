@@ -1298,12 +1298,11 @@ class Composition:
             op for op in self.events if self.label_owner is not None and takes_labels(op.event)
         )
         # FR-42's stage 2: the inner step reports its one-way transfers where it takes labels=
-        # (static: by the inner implementation's signature; none without an owner, and none beside
-        # declared kinds, whose one-way hook comes later).
-        self.inner_reports_labels = (
-            self.label_owner is not None
-            and takes_labels(self.inner.checked_step)
-            and not getattr(inner, "KINDS", ())
+        # (static: by the inner implementation's signature; none without an owner). Declared
+        # kinds report theirs through their hook (D303 item 6), and the owner's definition check
+        # refuses what a kind cannot carry (species_labels.in_step_errors).
+        self.inner_reports_labels = self.label_owner is not None and takes_labels(
+            self.inner.checked_step
         )
         self.coupled = any(op.SPLIT and op.RK4 == "coupled" for op in operators) or (
             self.process_operator is not None

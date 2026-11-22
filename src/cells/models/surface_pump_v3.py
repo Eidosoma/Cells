@@ -1964,18 +1964,33 @@ def stage_junction_gates(
 # (O(dt^3)) on the side its sign gives: forward - backward is the booked net at rounding, both stay
 # >= 0 and second order. ARS(2,2,2)'s explicit weights (delta, 1 - delta, 0), delta < 0, would make
 # a stage-weighted one-way amount negative where a flux falls by more than 59% within a step.
+# Declared kinds report theirs through their own hook (D303 item 6, kind_registry.Kind's
+# label_transfers, the same rule on their own one-way fluxes and booked nets), appended after the
+# core's; their refusals are their label_refusals (kind_registry.label_refusal_errors).
 
 FR42_REFUSAL = "FR-42 (labelled rows inside @3's step)"
 
 
-def label_errors(p, rows, *, structure=None, solver=None):
+def label_errors(p, rows, *, structure=None, solver=None, model=None):
     """FR-42's refusals at the definition (host side, the layout's values): the reasons the
-    labelled rows `rows` cannot be carried, or []."""
+    labelled rows `rows` cannot be carried, or []. Declared kinds give their own reasons
+    (label_refusals, read from their declarations in `model`, the parsed inner model); without
+    the model they stay refused."""
     errors = []
     if solver == "rk4" or getattr(p, "imex_explicit", np.zeros((1,))).shape[0] == 0:
         errors.append(f"{FR42_REFUSAL}: RK4 refuses labels in version 1")
     if structure is not None and structure.kinds:
-        errors.append(f"{FR42_REFUSAL}: declared kinds are refused until their one-way hook lands")
+        if model is None:
+            errors.append(
+                f"{FR42_REFUSAL}: declared kinds give their refusals from their declarations, "
+                "which need the parsed model"
+            )
+        else:
+            species = tuple(model.species_ids[int(r)] for r in rows)
+            errors += [
+                f"{FR42_REFUSAL}: {reason}"
+                for reason in kind_registry.label_refusal_errors(model.kinds, species)
+            ]
     rows = list(rows)
     s = tissue.field_layout(p).surface
     valence = np.asarray(p.valence).reshape(len(p.valence), -1)[:, 0]
@@ -2145,8 +2160,13 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
     hook["structure"] = structure
     processes = []
     kinds = _kinds(structure)
-    if labels is not None and kinds:  # FR-42 (static): kinds wait for their one-way hook.
-        raise ConfigError(f"{FR42_REFUSAL}: declared kinds are refused until their hook lands")
+    if labels is not None:  # FR-42 (static, D303 item 6): a kind's moves need its refusals.
+        for kind in kinds:
+            if kind.rates is not None and kind.label_refusals is None:
+                raise ConfigError(
+                    f"{FR42_REFUSAL}: kind {kind.kind_id} has a rates hook and no label_refusals, "
+                    "so it is refused beside labels (fail-closed)"
+                )
     f = tissue.field_layout(p)
     s, explicit_matrix, implicit_matrix = f.surface, p.imex_explicit, p.imex_implicit
     stages = explicit_matrix.shape[0]
@@ -2418,10 +2438,17 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
             terms = one_way_fluxes(begin, p, labels, xp=xp)
             weight = dt * explicit_matrix[last, 0]
             direct = {k: (weight * f, weight * b) for k, (f, b) in terms.items()}
-            transfers = step_transfers(begin, LabelView(stage), p, dt, labels, xp=xp, direct=direct)
+            end, weighted = LabelView(stage), dict(weight=weight)
+            transfers = step_transfers(begin, end, p, dt, labels, xp=xp, direct=direct)
         else:
             end, _ = crossing_view(stage, control, p, xp=xp, kinds=kinds, structure=structure)
-            transfers = step_transfers(begin, end, p, dt, labels, xp=xp)
+            transfers, weighted = step_transfers(begin, end, p, dt, labels, xp=xp), {}
+        gated = presence_gated(p, structure, xp=xp)  # The layout the kinds' rates see (Q2).
+        for kind in kinds:  # D303 item 6: each reporting kind's transfers, after the core's.
+            if kind.label_transfers is not None:
+                transfers += tuple(
+                    kind.label_transfers(begin, end, gated, dt, labels, xp=xp, **weighted)
+                )
         extra = (transfers,)
     if membrane_process is None:
         kept = jax.tree.map(lambda old, new: xp.where(valid, new, old), state, stage)

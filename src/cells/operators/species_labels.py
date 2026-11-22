@@ -42,15 +42,21 @@ kept bit for bit). The physical state and validity are the reporter's, bit for b
 run's physical fields and records equal the unlabelled run's.
 
 Stage 2 and D296 (docs/NEUTRAL_LABELS_DESIGN.md section 8): where the inner step takes labels=,
-its faces' and routes' one-way transfers carry their sources' shares (advance_inner); a pool
-reporter's pools are advanced with its rows as sites (advance_pools); a source reporter receives
-each source's arrival label (source_controls); and replacement@1's event reports the slots it
-replaced, which take the newcomer label (advance_event).
+its faces' and routes' one-way transfers carry their sources' shares (advance_inner), and so do
+its declared kinds' through their hook (section 11; D303 item 6); a pool reporter's pools are
+advanced with its rows as sites (advance_pools); a source reporter receives each source's arrival
+label (source_controls); and replacement@1's event reports the slots it replaced, which take the
+newcomer label (advance_event).
 
 Refused (fail closed), each refusal naming the FR-42 stage that lifts it:
 - a labelled species moved inside the inner step (registry moved_in_step) by anything the inner
   step does not report: every mover before @3's side lands (stage 2); afterwards a charged face,
-  a channel, a pump, a kind or an in-step process, and RK4 beside a followed mover;
+  a channel, a pump, a kind without its hook (label_transfers) or an in-step process, and RK4
+  beside a followed mover;
+- what a declared kind says it cannot carry (its label_refusals), and, while any row is
+  labelled, every kind with a rates hook and no label_refusals (kind_registry.label_refusal_errors);
+- a labelled species a closure holds at some node (a kind's stage read: B4's proton row and
+  buffers, rapid_binding@1's closure rows), whatever moves it (closure_errors);
 - an operator whose split part writes species amounts without reporting (turnover, exchange,
   reactions and templated polymerisation report; FR-42's stage 3 added exchange and the reactions'
   passive routes);
@@ -74,7 +80,7 @@ from cells.numerics import label_shares
 from cells.numerics.clock_instants import ON_THE_GRID, on_grid, same_instant  # D283's predicate.
 from cells.numerics.species_sums import entity_sum
 from cells.operators.contract import Operator, reports_labels, takes_labels
-from cells.registry import species_registry
+from cells.registry import kind_registry, species_registry
 
 LAW_ID = "neutral_arrival_labels@1"
 SCHEDULE_KEY = "label_arrivals"
@@ -343,32 +349,39 @@ def operator_errors(spec):
 
 
 def in_step_errors(spec, declaration, reports):
-    """Stage 2's refusals of a labelled species moved inside the inner step, as messages. reports:
-    the inner step reports its one-way transfers (it takes labels=; the composition's
-    inner_reports_labels). Where it does, an uncharged face and the membrane and junction routes
-    (REPORTED_MOVERS) are followed, except under RK4; every other in-step mover is refused: a
+    """Stage 2's refusals of a labelled species moved inside the inner step, and the kinds hook's
+    (D303 item 6), as messages. reports: the inner step reports its one-way transfers (it takes
+    labels=; the composition's inner_reports_labels). Where it does, an uncharged face, the
+    membrane and junction routes (REPORTED_MOVERS) and a declared kind's moves through its hook
+    (label_transfers) are followed, except under RK4; every other in-step mover is refused: a
     charged face (no one-way form), a channel or a pump (no FR-42 stage plans them yet), a kind
-    (its hook follows @3's side) and an operator's in-step process. Without a reporting inner step
-    (beside declared kinds, or a step that takes no labels), every in-step mover is refused."""
+    without the hook and an operator's in-step process. Without a reporting inner step (one that
+    takes no labels), every in-step mover is refused. Besides: each declared kind's own refusals
+    (kind_registry.label_refusal_errors: its label_refusals, and a kind with a rates hook and none
+    refused while any row is labelled), and a labelled row a closure holds (closure_errors)."""
     m, inner = species_registry.inner_movers(spec)
     valence = dict(zip(m.species_ids, m.valence, strict=True))
     moved = species_registry.moved_in_step(spec)
     rk4 = spec.execution.solver == "rk4"
+    kinds = kind_registry.declared_kinds(getattr(m, "kinds", ()))
+    hooked = {kind_id for kind_id, kind, _ in kinds if kind.label_transfers is not None}
     errors = []
     for s in declaration.species:
         followed, refused = [], []
-        for kind, law, entities in inner.get(s.id, ()):
-            ok = REPORTED_MOVERS.get(kind) == law and (kind != "face" or valence[s.id] == 0)
-            (followed if reports and ok else refused).append(f"{kind} {', '.join(entities)}")
+        for mover, law, entities in inner.get(s.id, ()):
+            ok = mover in hooked or (
+                REPORTED_MOVERS.get(mover) == law and (mover != "face" or valence[s.id] == 0)
+            )
+            (followed if reports and ok else refused).append(f"{mover} {', '.join(entities)}")
         names = [*moved[s.id]["cell"], *moved[s.id]["outside"]]
         refused += list(dict.fromkeys(n for n in names if n.endswith("(its in-step process)")))
         if refused:
             later = (
                 "a charged face has no one-way form, channels, pumps and in-step processes "
-                "wait for a later stage, and kinds for their hook"
+                "wait for a later stage, and a kind reports only through its hook "
+                "(label_transfers)"
                 if reports
-                else "this composition's inner step reports none: beside declared kinds, until "
-                "their hook, or where its step takes no labels"
+                else "this composition's inner step reports none: its step takes no labels"
             )
             errors.append(
                 f"{LAW_ID}: {s.id} is moved inside the inner step by {', '.join(refused)}, "
@@ -379,7 +392,32 @@ def in_step_errors(spec, declaration, reports):
                 f"{LAW_ID}: {s.id} is moved inside the inner step by {', '.join(followed)}, and "
                 "version 1 follows labels through the IMEX step only, not RK4 (FR-42)"
             )
-    return errors
+    species = tuple(s.id for s in declaration.species)
+    errors += [
+        f"{LAW_ID}: {reason}"
+        for reason in kind_registry.label_refusal_errors(getattr(m, "kinds", ()), species)
+    ]
+    return errors + closure_errors(kinds, declaration)
+
+
+def closure_errors(kinds, declaration):
+    """D303 item 6, centrally: a labelled species that a closure holds at some node (a declared
+    kind's stage read, its stage_rows: B4's proton row and buffers at their buffered nodes,
+    rapid_binding@1's closure rows) is refused, whatever moves it. Its stored row is the closure's
+    total, which the read splits between forms for the rates, so no mover's one-way terms are the
+    stored row's. kinds: kind_registry.declared_kinds of the inner model."""
+    held = {}
+    for kind_id, kind, kind_declaration in kinds:
+        if kind.stage_rows is not None:
+            for row in kind.stage_rows(kind_declaration):
+                held.setdefault(row[0], {}).setdefault(kind_id, []).append(row[1])
+    return [
+        f"{LAW_ID}: {s.id} is held by {kind_id}'s closure at {', '.join(dict.fromkeys(nodes))} "
+        "(its stored row is the closure's total, which the stage read splits between forms), and "
+        "labels do not follow a closure's rows"
+        for s in declaration.species
+        for kind_id, nodes in held.get(s.id, {}).items()
+    ]
 
 
 def check_labels(spec, declaration, model=None):

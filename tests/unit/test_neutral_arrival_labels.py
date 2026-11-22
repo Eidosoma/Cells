@@ -33,11 +33,15 @@ bit. It holds:
 Its resume through a snapshot is in tests/unit/test_neutral_labels_resume.py, and the routes' rows
 (stage 2) in tests/unit/test_neutral_labels_transport.py.
 
-Definitions refused (parses only): a transporter kind's role and finite fuel beside labels (until
-the kinds' hook), a bath schedule, a retired label family (D300), a second owner, an arrival off the
-grid, an undeclared label, shares that do not sum to one and a held bath node.
+Definitions refused (parses only): what the kinds' hook (D303 item 6) refuses, a transporter's
+finite or held fuel (changed at one end only), a rectifier's row, a net-flow population's row,
+unequal counts at a crossing's two ends, a kind with a rates hook and no label_refusals
+(fail-closed) and a closure's held row; a bath schedule, a retired label family (D300), a second
+owner, an arrival off the grid, an undeclared label, shares that do not sum to one and a held bath
+node. What the hook admits is in tests/unit/test_neutral_labels_kinds.py.
 """
 
+import contextlib
 import copy
 import math
 
@@ -627,29 +631,87 @@ def labelled_s(raw, labels=("base", "new"), initial=None, arrivals=()):
     return with_labels(raw, [("S", list(labels), initial or {})], arrivals)
 
 
-def mover(kind):
-    """A transporter kind's moved role Y, or its finite fuel's ATP, labelled
-    (tests/unit/test_transporter_kind.py's held world): kinds report from their hook, after @3's
-    side."""
+def mover(kind, *, finite=True):
+    """A transporter kind's moved role Y, or its fuel's ATP, labelled (tests/unit/
+    test_transporter_kind.py's held world; finite fuel takes the population axis): the kinds'
+    hook (D303 item 6) admits the role, which crosses, and refuses the fuel, which its law changes
+    at one end only."""
     from cells.definitions import pump_composite_spec as cs
     from cells.kinds import transporter
     from tests.unit import test_transporter_kind as tk
 
-    fuel = dict(tk.population()["fuel"], kind=transporter.FINITE)
+    fuel = dict(tk.population()["fuel"], kind=transporter.FINITE if finite else transporter.HELD)
     raw = cs.frozen_definition(tk.held_world(tk.population(fuel=fuel)))
     return with_labels(raw, [("Y" if kind == "role" else "ATP", ["base"], {})])
 
 
+def kinds_case(case):
+    """(a labelled definition, the registry scope it parses in) refused by the kinds' hook (D303
+    item 6): a kind's own label_refusals, the fail-closed rule or the central closure rule."""
+    import dataclasses
+
+    from cells.definitions import pump_composite_spec as cs
+    from cells.kinds import passive_routes
+    from cells.registry import kind_registry
+    from tests.unit import test_cycle_kind as ck
+    from tests.unit import test_neutral_labels_kinds as nk
+    from validation.compartment_ph_engine import definitions as fr
+
+    if case == "rectifier":
+        raw = nk.kinds_world(labelled=False)
+        raw["model"][passive_routes.MODEL_KEY].append(nk.RECTIFIER_NA)
+        return with_labels(raw, [("Na", ["base"], {})]), contextlib.nullcontext()
+    if case in ("net flow", "unequal"):
+        entry = ck.exchanger(law="seamtest.net_exchange@1") if case == "net flow" else nk.UNEQUAL
+        raw = cs.frozen_definition(ck.exchange_world(entry))
+        return with_labels(raw, [("W", ["base"], {})]), nk.cycle_scope()
+    if case == "fail-closed":
+        kinds = kind_registry.KindRegistry()
+        kinds.register(
+            dataclasses.replace(
+                passive_routes.PASSIVE_ROUTES, label_refusals=None, label_transfers=None
+            )
+        )
+        return nk.face_world(), kind_registry.scope(kinds)
+    if case == "closure":  # FR-4's world without FR-1's compartment operator, as a composite.
+        raw = cs.frozen_definition(fr.development_world(fr.fr4_world()))
+        return with_labels(raw, [("H", ["base"], {})]), contextlib.nullcontext()
+    raise ValueError(case)
+
+
 REFUSED = {
-    "a kind moves its role (until the kinds' hook)": (
-        lambda: mover("role"),
-        r"Y is moved inside the inner step by cells.transporter@1 .*beside declared kinds, "
-        "until their hook",
-    ),
-    "a kind moves its finite fuel (until the kinds' hook)": (
+    "a transporter changes its finite fuel at one end only (the kinds' hook)": (
         lambda: mover("fuel"),
-        r"ATP is moved inside the inner step by cells.transporter@1 .*beside declared kinds, "
-        "until their hook",
+        r"cells.transporter@1: transporter_0's mode cycle changes the labelled ATP at its N end "
+        r"only \(chemistry there, not a crossing\)",
+    ),
+    "a transporter changes its held fuel (the kinds' hook)": (
+        lambda: mover("fuel", finite=False),
+        r"cells.transporter@1: transporter_0's law changes the labelled ATP at its N end, a held "
+        r"row \(its maintenance's new material is not reported\)",
+    ),
+    "an inward rectifier moves its row (the kinds' hook)": (
+        lambda: kinds_case("rectifier"),
+        r"cells.passive_routes@1: rectifier_Na runs inward_rectifier_linear_driving_force@1, "
+        r"whose flux has no one-way form",
+    ),
+    "a net-flow population changes its row (the kinds' hook)": (
+        lambda: kinds_case("net flow"),
+        r"exchanger_0 runs seamtest.net_exchange@1, a net-flow form with no one-way cycle rates, "
+        "and changes the labelled W",
+    ),
+    "a crossing's counts differ at its two ends (the kinds' hook)": (
+        lambda: kinds_case("unequal"),
+        r"p_unequal's mode cyc changes the labelled W by -2 at N and 1 at P, unequal counts",
+    ),
+    "a kind with a rates hook and no label_refusals (the kinds' hook, fail-closed)": (
+        lambda: kinds_case("fail-closed"),
+        r"cells.passive_routes@1 has a rates hook and no label_refusals, so it is refused while "
+        r"any row is labelled \(fail-closed\)",
+    ),
+    "a closure holds the labelled row (the kinds' hook)": (
+        lambda: kinds_case("closure"),
+        r"H is held by cells.rapid_proton_buffer@1's closure at cell_0, lumen",
     ),
     "a bath schedule changes amounts": (
         lambda: labelled_s(
@@ -694,5 +756,7 @@ REFUSED = {
 @pytest.mark.parametrize("case", sorted(REFUSED))
 def test_a_labelled_definition_is_refused_where_labels_cannot_follow_it(case):
     make, message = REFUSED[case]
-    with pytest.raises(ConfigError, match=message):
-        parse_spec(make())
+    made = make()  # A definition, or (a definition, the registry scope it parses in).
+    raw, scope = made if isinstance(made, tuple) else (made, contextlib.nullcontext())
+    with scope, pytest.raises(ConfigError, match=message):
+        parse_spec(raw)

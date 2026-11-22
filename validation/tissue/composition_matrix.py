@@ -1382,9 +1382,12 @@ RULES = (
         "test_a_labelled_definition_is_refused_where_labels_cannot_follow_it",
         tag=REAL,
         why="Where the inner step takes labels= it reports its uncharged faces' and its routes' "
-        "one-way transfers (FR-42's stage 2); a charged face, a channel, a pump, a kind or an "
+        "one-way transfers (FR-42's stage 2), and its declared kinds' through their hook "
+        "(D303 item 6); a charged face, a channel, a pump, a kind without the hook or an "
         "in-step process (species_registry.moved_in_step) is refused, and so is RK4 beside a "
-        "followed mover",
+        "followed mover. Each kind refuses what it cannot carry (its label_refusals), a kind "
+        "with a rates hook and none is refused while any row is labelled, and a row a closure "
+        "holds (a kind's stage read) is refused",
     ),
 )
 
