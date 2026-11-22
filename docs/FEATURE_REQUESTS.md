@@ -47,6 +47,7 @@ and a general feature, never one built for one study (D144).
 | [FR-39](#fr-39--a-vesicle-that-survives-transient-pores) | A vesicle that survives transient pores: repeated opening and resealing with partial cargo loss | **High** (user, via the Lean lane, 22 November 2026; D286) | **Requested.** Cells ends a lineage at terminal lysis | A design note shared with FR-31: tension-driven pore opening that either reseals after leaking or ruptures |
 | [FR-40](#fr-40--a-single-ribosome-translation-timing-benchmark) | A single-ribosome translation timing benchmark: 406 s from first detectable nascent chain to release | **High** (user, via the Lean lane, 22 November 2026; D286) | **Desk note landed** (022a5d2a). With only the paper's own speeds, which conflict, a comparison is a calibration, not a validation | A metadata-only search for a matched-condition speed or a multi-length reporter series; the spread test needs no speed |
 | [FR-41](#fr-41--vesicle-shrinkage-validation-records) | Vesicle shrinkage validation records for the osmotic lumen law | **High** (user, via the Lean lane, 22 November 2026; D286) | **One agreement:** Fujiwara et al. 2014, about one quarter of the initial volume measured against 24.56% from Cells' equilibrium replay, unfitted | Small-osmole retention: no paired same-vesicle study found; the nearest are Akui 2021 (analysis-only licence) and Ahumada 2015 (not open). The next step is the user's |
+| [FR-42](#fr-42--neutral-arrival-time-labels-that-leave-the-dynamics-unchanged) | Neutral arrival-time labels that leave the dynamics unchanged: loss computed once per physical population and shared by label | **High** (a user, 22 November 2026) | **Requested.** Today's label rows (D1's families, FR-38's class rows) carry their own potentials, so labelling can move booked heat and, under a nonlinear loss, the trajectory | A desk assessment of share-based labels across families, turnover, templated polymerisation and faces. FR-38's cohort route 1 depends on it |
 
 ## FR-1 — A closed internal compartment on the shared inventory
 
@@ -1760,3 +1761,48 @@ with 2 and 1.5.
   - Emami et al. 2018 (PMC6303272): a small glucose analogue entering GUVs during deflation.
 - The ranked list, the near misses and the searches tried are in
   /mnt/workspaces/Cells/fr41-search-20261122/candidates.md.
+
+## FR-42 — Neutral arrival-time labels that leave the dynamics unchanged
+
+- **The request (a user, 22 November 2026; high priority by the user).** A neutral label records when
+  otherwise identical units entered a pool, so the cohort that arrived during a window can be followed.
+  Changing the number of labels must leave the total amount, the loss rate and the energy balance unchanged
+  throughout the run.
+  - **Loss:** computed once for each well-mixed population whose members share a per-molecule loss rate.
+    With N units, a label marking n of them, and a total loss flux J, the label is assigned J × n/N.
+    Unlabelled material counts as a share. An empty population has zero loss. Physically distinct
+    populations can each have their own loss law.
+  - **Energy:** chemical potentials, free energy and heat are computed from the physical populations
+    wherever the simulator models them. Subdividing a population by arrival time preserves them.
+  - **Windows:**
+    - arrivals count from a window's start up to, but excluding, its end;
+    - a new cohort starts at zero, even when the pool already holds material;
+    - its losses are followed after the window closes;
+    - a reused label accounts for the survival of its older material in the same run.
+- **The reference case.** In scaled units, dN/dt = −N², so N(t) = a/(1 + a t).
+  - Two units of older material, plus one newly labelled unit at t = 0. The initial loss rate is 9;
+    computing each label's loss separately would give 5 and change the trajectory.
+  - At t = 1 the total is 3/4. The new cohort is still one third of it, 1/4.
+  - A blank run with only the two older units ends at 2/3, so blank subtraction gives 1/12. It fails
+    because the added material raised the older material's loss rate.
+- **The acceptance checks:**
+  1. **One initial state, run unlabelled and then with one, two and several labels.** Include unequal
+     shares and an empty label, and a state near the edge of the supported concentration range, where the
+     loss rate is sensitive. At every comparison time the shares sum to the reference total. The total
+     loss, free energy and heat agree within declared tolerances.
+  2. **Arrivals at a window's start and at its end, with older material present.** Only the start-boundary
+     arrival enters the cohort. Its survivors agree with an independent calculation from the arrival history
+     and the run's own per-molecule loss rate.
+  3. **Two physical populations with different loss rates, one subdivided by arrival time.** Each keeps its
+     own reference trajectory, and the subdivided one's labels account for all its material.
+- **Where Cells stands:**
+  - D1's label families and FR-38's operator-local class rows are separate rows, each with its own
+    potential. So a label carries its own mixing term: the Lean lane found that D1's neutral labels can
+    change booked face heat, and FR-38's label rows depart from the unlabelled run by up to about 1e-8.
+  - FR-38's cohort route 1 subtracts a matched blank, which is exact only when the loss is linear in the
+    amount.
+  - docs/COHORT_LABELS_DESIGN.md's option B (labels inside a physical population, under nonlinear laws)
+    was deferred for want of a consumer. This request is that consumer.
+- **The first step:** a desk assessment. It covers share-based labels inside physical populations across
+  families, turnover, templated polymerisation and faces; what moves in registered worlds; and how FR-38's
+  cohort would use it.
