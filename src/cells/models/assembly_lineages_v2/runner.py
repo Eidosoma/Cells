@@ -480,8 +480,8 @@ def run_lanes(specs):
         else None
         for s, h in zip(specs, host_layouts, strict=True)
     ]
-    for plan, clock, s in zip(plans, clocks, specs, strict=True):
-        if clock is not None and clock.time <= s.experiment.time_horizon_s:
+    for plan, clock in zip(plans, clocks, strict=True):
+        if clock is not None and clock.due:  # t* within the horizon, decided exactly
             plan.append((clock.time, [PORE_STOP]))
     stops = [
         layout_i._replace(horizon=np.float64(plan[0][0])) if plan else layout_i
