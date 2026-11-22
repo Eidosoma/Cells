@@ -9,8 +9,59 @@ section 6). It reproduces no published model; that is MT-2's.
 - **Outputs.** The committed `interface.json` and `RECEIPT.json` are the run of record of commit
   989959fe, against the world declaration's erratum 2 (tag
   `mito-mt1b-declaration-erratum-2-2026-11-22`). The results and findings below are that run's.
+- **The scoring of record is erratum 3's** (tag `mito-mt1b-declaration-erratum-3-2026-11-22`). It
+  puts W3(d)'s window on the O2 flux and judges the anoxic collapse with transient bands.
+  `rescore_erratum3.json` re-scores the same run of record under it, with `rescore.py` from a clean
+  snapshot of a5c62a31. Nothing was rerun; the next section gives its results.
+- **`interface.json`** keeps the run's own scoring, under erratum 2's rules.
 - **The previous run of record** (61779e22, against the declaration before erratum 2) is kept in
   its run folder. Its findings led to erratum 2.
+
+## Re-scored under erratum 3 (the scoring of record)
+
+**How.** `rescore.py`, from a clean snapshot of a5c62a31, re-scored run-989959fe5012 from its saved
+states, with no new integration of the run.
+- Its rebuilt readouts match the interface's stored ones to 5.0e-10, which is the storage
+  precision.
+- The run saved its plants' scores, not their trajectories. Erratum 3 changes only world (d)'s
+  scoring, so each plant's world (d) was recomputed from its own anchored start with the run's
+  code and tolerance.
+- Each recomputation reproduces the run's saved plateau-end scores: P-a and P-c to 0 band, P-b to
+  7e-13. Worlds (a)-(c) stand as the run scored them.
+
+**What the rules fixed from this reference alone:**
+- the window opens where the O2 flux falls below 0.1% of the state-3 flux (1.638e-3): 195.79 s;
+- the collapse starts at the matrix O2's P50 crossing: 160.49 s;
+- the collapse's transient bands are a tenth of each judged readout's excursion over it:
+  - dPsi 10.23 mV;
+  - pH_N 0.00062 and pH_P 0.0021;
+  - NADH 0.022 and cytochrome c 0.0016;
+  - O2 flux 7.8e-5;
+  - K_N 0.21 mM, Pi_N 0.12 mM, ATP_N 0.15 mM.
+
+**The trace check (1 pM against 1 fM): passes.**
+- The worst is 0.044 band, dPsi in (a)'s inhibitor branch at t = 307.5 s. Plateau ends alone also
+  give 0.044.
+- On the collapse rows the worst is 0.0028; in world (d) overall it is 0.023, the O2 flux at
+  t = 160.0 s.
+- The 0.245 band under erratum 2 (dPsi at t = 189.0 s) now falls on the collapse's transient band.
+
+**The plants** (each must miss by at least 3 bands):
+
+| Plant | Overall | At plateau ends | Collapse rows alone |
+| --- | --- | --- | --- |
+| P-a (shares 0.35 and 0.70, printed form) | 110 | 3.45 (state-3 O2 flux) | 3.13 (cytochrome c at the onset, t = 160.5 s) |
+| P-b (X_ANT x 1.01) | 87 | 8.5 (state-3 O2 flux) | **2.28** (cytochrome c at the onset) |
+| P-c (the 2005 k_O2) | 1224 | 236 (state-3 cytochrome c) | 6.2 (pH_P at t = 174.5 s; cytochrome c 6.0, dPsi 5.8, Pi_N 4.1) |
+
+- Every plant is still caught overall and at plateau ends.
+- P-c, the O2 law's plant, stays on judged rows through the collapse, at 6.2 bands, as erratum 3
+  intends.
+- On the collapse rows alone, P-b misses by only 2.28 bands. P-a's catch there (3.13) is as thin as
+  at plateau ends (3.45).
+- P-a's and P-b's collapse catches both sit on cytochrome c's reduced fraction at the collapse's
+  onset. Its transient band is small (0.0016) because cytochrome c is already 98% reduced at
+  P50.
 
 ## Independence
 
@@ -312,8 +363,8 @@ registration's transient bands ("a tenth of its excursion in the step"):
      - dPsi moves 0.245 band at t = 189.0 s (37.840 against 37.827 mV). The window opens at
        189.2 s, during the anoxic collapse of dPsi.
      - The O2 flux moves 0.074 band there.
-   - **Decision for the lead:** whether the window's opening needs a margin (an earlier threshold
-     or a time margin), or whether dPsi in the anoxic collapse is judged on a transient band.
+   - **Erratum 3 settled it:** the window moves onto the flux and the collapse takes transient
+     bands. Re-scored that way, the trace check passes (the section above).
 2. **W3(d).**
    - The matrix O2 crosses P50 at 160.49 s; erratum 2 expected about 160.4 s.
    - The window (O2_N below 0.373 nM) opens at 189.20 s and excludes 102 output times.
@@ -382,6 +433,7 @@ registration's transient bands ("a tenth of its excursion in the step"):
 | `protocol.py` | The schedule (G7), the integration with restarts, the output grid, the drift rule and the ledger closure |
 | `run.py` | The full run: start state, four worlds, the tolerance ladder, BDF, the trace check; writes `interface.json`, `full.npz` and `RECEIPT.json` |
 | `rescore.py` | Re-scores a run of record from its saved states (`full.npz`) under the committed declaration, integrating nothing again: the trace check at every scored output time, at plateau ends and for the focus classes, and the O2 window check. With the scoring unchanged it reproduces the run's own trace check exactly (checked on run-989959fe5012, in 3.7 s) |
+| `rescore_erratum3.json` | The run of record re-scored under erratum 3 (the scoring of record), by `rescore.py` from a clean snapshot of a5c62a31 with no rerun. It holds the times and transient bands the rules fix from the reference, the trace check (at every scored output, at plateau ends, on the collapse, and the focus classes), the plants (world (d) recomputed, collapse rows apart) and the O2 window check |
 | `interface.json` | The run of record's outputs, copied byte for byte (compact JSON, 3.6 MB). It holds every declared readout at G7's output times for each world; each process's dissipation and each invariant's drift over time; the start state and its anchor; the plateaus with the drift rule and the Newton check; W3(d)'s P50 crossing and window; the stall check; the convergence ladder; the trace check and the plants |
 | `RECEIPT.json` | That run's receipt: the snapshot's Git revision (989959fe) and clean patch, the environment, times and the outputs' digests |
 
