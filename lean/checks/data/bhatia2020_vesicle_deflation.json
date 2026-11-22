@@ -1,0 +1,27 @@
+{
+  "dataset_id": "bhatia2020_single_vesicle_deflation@1",
+  "doi": "10.1039/D0SM00155D",
+  "figure": "Figure 2 and text on p. 7363",
+  "supplement": "https://www.rsc.org/suppdata/d0/sm/d0sm00155d/d0sm00155d1.pdf#page=2",
+  "preparation": "A trapped giant vesicle imaged by confocal z-stacks before and after deflation. Movie S1 identifies the Figure 2b specimen and its bath. External calcein reveals bath-origin liquid in the inward tube.",
+  "initial": {
+    "sugar_mM": 66,
+    "outer_area_um2": 1300,
+    "outer_volume_um3": 4500
+  },
+  "after": {
+    "sugar_mM": 72,
+    "outer_area_um2": 1103.8,
+    "outer_area_reported_pm_um2": 200,
+    "outer_volume_um3": 3400.9,
+    "outer_volume_reported_pm_um3": 1000,
+    "tube_length_um": 18,
+    "tube_diameter_um": 4
+  },
+  "reconstruction_errors": {
+    "area_percent": 25,
+    "volume_percent": 33,
+    "scope": "Approximate errors from confocal z-resolution. The reported ± values carry no stated sampling distribution. No separate uncertainty is supplied for tube dimensions."
+  },
+  "mapping": "Initial area and volume are approximate, and the initial vesicle has no inward tube. Total membrane area includes the tube and lumen volume excludes its liquid. Treating the tube as a straight cylinder is a shape scenario. The ideal comparison assumes initial osmotic balance at the prepared concentration, fixed membrane area and retained osmoles. Figure 4 follows a separate 92 to 117 mM exchange. Its interior concentration is inferred from volume using solute conservation."
+}

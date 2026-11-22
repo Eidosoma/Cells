@@ -7,6 +7,7 @@ import { mkdir, mkdtemp, readdir, readFile, rename, rm, stat, writeFile } from "
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { PARTS_FORMAT, validatePart } from "../../src/replay/run.js";
+import { UNIT_EVIDENCE_FORMAT } from "../../src/scene/model.js";
 
 export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 export const THREE_VERSION = "0.170.0";
@@ -27,6 +28,35 @@ const MEMBERS_NAME = /^members-\d+\.json$/;
 const MEMBERS_STEP = /^python3 (tools\/[a-z0-9_]+\.py) members --out DIR\b/;
 
 const modified = (file) => stat(file).then((found) => found.mtimeMs, () => null);
+
+/** Keep the fields the atlas draws and searches in the scene. A unit's detailed evidence
+ * is read on selection, one file per species, shared by the Proteins and Machines views. */
+export function splitUnitEvidence(scene) {
+  if (!scene.proteins || !scene.entities) return { scene, files: [] };
+  const bySpecies = new Map();
+  const entities = scene.entities.map((entity) => {
+    if (entity.kind !== "unit" || !entity.species) return entity;
+    const species = { ...entity.species };
+    for (const [id, record] of Object.entries(species)) {
+      if (!Array.isArray(record?.items)) continue;
+      if (!/^[a-z0-9][a-z0-9_-]*$/.test(id)) throw new Error("Invalid unit evidence species: " + id);
+      const { items, note, ...summary } = record;
+      if (!bySpecies.has(id)) bySpecies.set(id, {});
+      bySpecies.get(id)[entity.id] = { items, note };
+      species[id] = summary;
+    }
+    return { ...entity, species };
+  });
+  if (!bySpecies.size) return { scene, files: [] };
+  const evidence_files = {};
+  const files = [];
+  for (const [species, units] of bySpecies) {
+    const path = `proteins/${species}/unit-evidence.json`;
+    evidence_files[species] = path;
+    files.push({ path, text: JSON.stringify({ format: UNIT_EVIDENCE_FORMAT, species, units }) });
+  }
+  return { scene: { ...scene, entities, proteins: { ...scene.proteins, evidence_files } }, files };
+}
 
 /**
  * The files of the species' own proteins that are published beside the page: for every
@@ -450,9 +480,10 @@ export function publishedReplays(index, scene, listing = null) {
  * `replays` is the catalogue the page carries where the caller has made it (the export, which packages the parts first:
  * packageParts); else it is read from `runsDir`, as `published` says.
  */
-export async function buildPage({ scenePath = DEFAULT_SCENE, three = THREE_CDN, runsDir = DEFAULT_RUNS, inlineRuns = false, published = false, hideExperiments = false, proteinsDir = DEFAULT_PROTEINS, membersDir = DEFAULT_MEMBERS, machinesDir = DEFAULT_MACHINES, lawsPath = DEFAULT_LAWS, lawPortPath = DEFAULT_LAW_PORT, cataloguePath = DEFAULT_CATALOGUE, aboutPath = DEFAULT_ABOUT, cardsPath = DEFAULT_CARDS, stillsDir = DEFAULT_STILLS, replays: made = undefined } = {}) {
+export async function buildPage({ scenePath = DEFAULT_SCENE, preparedScene, three = THREE_CDN, runsDir = DEFAULT_RUNS, inlineRuns = false, published = false, hideExperiments = false, proteinsDir = DEFAULT_PROTEINS, membersDir = DEFAULT_MEMBERS, machinesDir = DEFAULT_MACHINES, lawsPath = DEFAULT_LAWS, lawPortPath = DEFAULT_LAW_PORT, cataloguePath = DEFAULT_CATALOGUE, aboutPath = DEFAULT_ABOUT, cardsPath = DEFAULT_CARDS, stillsDir = DEFAULT_STILLS, replays: made = undefined } = {}) {
   const script = await bundle(path.join(ROOT, "src", "main.js"), { three });
-  const data = JSON.parse(await readFile(scenePath, "utf8"));
+  const prepared = preparedScene ?? splitUnitEvidence(JSON.parse(await readFile(scenePath, "utf8")));
+  const data = { ...prepared.scene };
   if (lawsPath && !data.laws && (await modified(lawsPath)) !== null) data.laws = JSON.parse(await readFile(lawsPath, "utf8"));
   if (lawPortPath && !data.law_port && (await modified(lawPortPath)) !== null) data.law_port = JSON.parse(await readFile(lawPortPath, "utf8"));
   if (cataloguePath && !data.catalogue && (await modified(cataloguePath)) !== null) data.catalogue = JSON.parse(await readFile(cataloguePath, "utf8"));
@@ -485,6 +516,9 @@ export async function buildPage({ scenePath = DEFAULT_SCENE, three = THREE_CDN, 
   }
   // The same for the species' own proteins: beside the page by default, inside it for a file on disk.
   if (inlineRuns) {
+    for (const file of prepared.files) {
+      inline += `\n<script type="application/json" data-file="${file.path}">${file.text.replaceAll("<", "\\u003c")}</script>`;
+    }
     for (const file of [...(await proteinFiles(data, { proteinsDir, membersDir })).files, ...(await machineFiles(data, { machinesDir })).files, ...(await modelFiles(data)).files, ...(await shapeFiles()).files, ...(await benchFiles()).files]) {
       const text = (await readFile(file.source, "utf8")).replaceAll("<", "\\u003c");
       inline += `\n<script type="application/json" data-file="${file.path}">${text}</script>`;

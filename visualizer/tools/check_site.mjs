@@ -315,8 +315,10 @@ try {
         if (now?.lens === tabName && now.hash === `#${tabName}`) break;
         await sleep(250);
       }
-      const search = query ? new URLSearchParams(query).toString() : "";
-      check(`${label}: a press on ${tabName} keeps the address at ${at} and names the tab`, pressed && now?.lens === tabName && now.path === at && now.hash === `#${tabName}` && new URLSearchParams(now.search).toString() === search, JSON.stringify(now));
+      const search = new URLSearchParams(query);
+      search.delete("lens");
+      search.delete("select");
+      check(`${label}: a press on ${tabName} keeps the address at ${at} and names the tab`, pressed && now?.lens === tabName && now.path === at && now.hash === `#${tabName}` && new URLSearchParams(now.search).toString() === search.toString(), JSON.stringify(now));
       if (rows.some((row) => row.path === "/favicon.ico")) note(`  the browser asked for /favicon.ico (${rows.find((row) => row.path === "/favicon.ico").status}); no page names it`);
       const copies = files.some((row) => row.br !== null || row.gz !== null);
       note(`  requests by host: ${JSON.stringify(byHost)}; first visit: ${totals.requests} files, raw ${kb(totals.raw)}, as sent ${kb(totals.sent)}; ${copies ? `with every copy brotli's ${kb(totals.br)}, gzip's ${kb(totals.gz)}` : "the release holds no compressed copies (--compress)"}`);
@@ -324,6 +326,31 @@ try {
       record.visits.push({ page: which, address, ready, hosts: byHost, outside, errors: errors.slice(0, 20), totals, files: files.map((row) => [row.path, row.status, row.raw, row.sent, row.encoding]), fonts, host: state.host, press: { tab: tabName, address: now } });
     }
   }
+  // Old shared links could carry both routes. Refreshing and moving the same element must keep the chosen tab.
+  await open("/?lens=machines&species=human#engine");
+  check("the fragment wins on a conflicting shared link", await evaluate(`${V}.state.lens === "engine"`));
+  await tab("Page.reload");
+  let restored = false;
+  for (let tries = 0; tries < 80 && !restored; tries++) {
+    await sleep(250);
+    restored = await evaluate(`Boolean(${V}?.model && ${V}.state.lens === "engine" && performance.getEntriesByType("navigation")[0]?.type === "reload")`).catch(() => false);
+  }
+  check("a refresh restores the same tab", restored);
+  const remounted = await evaluate(`(async () => {
+    const viewer = ${V}, parent = viewer.parentNode, next = viewer.nextSibling;
+    const root = viewer.shadowRoot, stage = viewer.stage;
+    const ready = new Promise((done) => viewer.addEventListener("cells-ready", () => done(true), { once: true }));
+    viewer.remove();
+    const detached = !viewer.model && !viewer.stage;
+    parent.insertBefore(viewer, next);
+    const mounted = await Promise.race([ready, new Promise((done) => setTimeout(() => done(false), 5000))]);
+    return mounted && detached && viewer.shadowRoot === root && (!stage || viewer.stage !== stage) &&
+      viewer.shadowRoot.querySelectorAll(".frame").length === 1 && viewer.state.lens === "engine";
+  })()`);
+  check("the same viewer can be removed and mounted again", remounted);
+  const part = await evaluate(`${V}.model.inLens("engine")[0].id`);
+  await open(`/?select=${encodeURIComponent(part)}`);
+  check("a link that names only a part keeps its selection when its tab opens", await evaluate(`${V}.state.lens === "engine" && ${V}.state.selected === new URL(location.href).searchParams.get("select") && ${V}.state.selected === ${JSON.stringify(part)}`));
   // ---------------------------------------------------------------- the cover while the page loads
   const pictures = path.join(OUT, "pictures");
   await mkdir(pictures, { recursive: true });

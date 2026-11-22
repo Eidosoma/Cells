@@ -10,7 +10,7 @@ from cells.definitions.specs import ConfigError, SimulationSpec, _integer, _numb
 from cells.execution import blas_threads, row_checks
 from cells.execution import energy_check as energy
 from cells.execution.devices import execution_device
-from cells.execution.grid import EventGrid, checked_grid, require_scalar_path
+from cells.execution.grid import EventGrid, applied_definition, checked_grid, require_scalar_path
 from cells.execution.resources import trace_bytes
 from cells.execution.runner import (
     CheckedRunResult,
@@ -69,6 +69,10 @@ class WindowPlan:
     window_count: int
     max_observations: int
     estimated_working_bytes: int
+    # D283: the declared definition where the clock snaps an event (spec is then its applied copy,
+    # applied_definition), and the snaps; None and () otherwise.
+    declared: SimulationSpec | None = None
+    snapped: tuple = ()
 
 
 def _plan_windows_metadata(spec, policy=DEFAULT_POLICY, checkpoint=None, *, energy_check=False):
@@ -76,6 +80,7 @@ def _plan_windows_metadata(spec, policy=DEFAULT_POLICY, checkpoint=None, *, ener
     check; a definition selecting it is refused on every other path (the batch and vector
     windows share this planner), fail-closed."""
     spec = parse_spec(spec.to_dict())
+    declared, (spec, snapped) = spec, applied_definition(spec)  # D283: () without a snap.
     if energy.selected(spec) and not energy_check:
         raise ConfigError(
             "execution.energy_check runs only through cells.execution.runner.run and the "
@@ -120,6 +125,8 @@ def _plan_windows_metadata(spec, policy=DEFAULT_POLICY, checkpoint=None, *, ener
         max(1, (remaining + policy.window_steps - 1) // policy.window_steps),
         peak,
         estimate,
+        declared if snapped else None,
+        snapped,
     )
 
 
@@ -282,8 +289,10 @@ def _consume_windows(plan, checkpoint, sink, *, started, preparation_seconds):
         checked = checked | {"energy_check": energy.summary(final.energy_check)}
     if plan.grid.spans:  # Declared fine windows, as the clock runs them (provenance).
         checked = checked | {"fine_windows": plan.grid.fine_window_record()}
+    if plan.snapped:  # D283: each snapped event, declared and applied.
+        checked = checked | {"snapped_events": [list(pair) for pair in plan.snapped]}
     return WindowedResult(
-        plan.spec,
+        plan.declared or plan.spec,  # The record keeps the declared definition (D283).
         plan.policy,
         final,
         plan.start_step,
