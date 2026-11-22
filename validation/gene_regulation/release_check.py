@@ -80,7 +80,6 @@ LIMIT = dict(
 SET = "test instance"
 RID = worlds.RELEASE
 FATE_ROWS = dict(durable="R", short_lived="R_s")
-LABEL_ROWS = dict(zip(("durable", "short_lived"), worlds.R1_LABEL_ROWS, strict=True))  # R1S's.
 SHARES = 128 * 2.0**-52  # A row's label amounts against the row: the shares' domain allows 64 ulps.
 
 
@@ -144,7 +143,7 @@ def identities(checks, name, run, machine):
     x = run["readouts"]
     steps = run["steps"]
     H0 = x[f"H_{RID}"][0]
-    fates = [FATE_ROWS] + ([LABEL_ROWS] if f"n_{LABEL_ROWS['durable']}" in x else [])
+    fates = [FATE_ROWS]
     worst = dict(hold=0.0, fate=0.0, producer=0.0, machines=0.0)
     for i, _ in enumerate(run["t"]):
         A, H = x["int_Q_tx"][i], x[f"H_{RID}"][i]
@@ -452,65 +451,83 @@ def check_r2(directory):
     return _write(directory, "release_check_r2.json", checks)
 
 
-def switches(checks, name, run):
-    """R1S (worlds.r1s): psi switched at completion and p changed mid-run, compiled. While psi = 2
-    every arrival joins hold class 2, and after the switch none does, so class 2's hold and
-    releases are int_Q_tx up to the switch; class 1's are its 80 copies and the arrivals after
-    it; and each fate's share of every interval's releases is that interval's p, 0.75 and then
-    0.25. Each at rounding."""
-    x, steps = run["readouts"], run["steps"]
+def switches(checks, name, run, plain):
+    """R1S (worlds.r1s): labels marked at completion (the hold's own shares, D296) and p changed
+    mid-run, compiled, against R1SU, the same world unlabelled.
+    - Every readout but the label exports, and every check, R1SU's bit for bit.
+    - The hold's and each fate row's label amounts sum to them, and the cohort starts at exactly
+      zero.
+    - The hold's cohort, the completions of [0, R1S_TIMES[0]) still held, against route 2's
+      known-rate calculation on the run's own completions (cohort.known_rate at the hold's exact
+      per-molecule exit rate 1/tau), within its grid error (the same on every second output) plus
+      the survivors' bound.
+    - Each fate's share of every interval's releases is that interval's p, 0.75 and then 0.25."""
+    x, xu = run["readouts"], plain["readouts"]
     switch, change, _ = worlds.R1S_TIMES
+    base, window = worlds.R1_LABELS
     t, A = run["t"], x["int_Q_tx"]
-    at = t.index(switch)
-    worst = dict(class_2=0.0, class_1=0.0, share=0.0)
-    H0 = x[f"H_{RID}_1"][0]
+    physical = {k: v for k, v in x.items() if not k.startswith("label_")}
+    differ = sorted(k for k in set(xu) | set(physical) if xu.get(k) != physical.get(k))
+    checks.add(
+        f"{name}: every readout and check the unlabelled run's, bit for bit",
+        not differ and run["checks"] == plain["checks"],
+        differing=differ[:5],
+    )
+    pairs = [(f"n_{row}", f"label_{row}") for row in FATE_ROWS.values()]
+    pairs.append((f"H_{RID}", f"label_H_{RID}"))
+    worst = max(
+        abs(x[f"{label}_{base}"][i] + x[f"{label}_{window}"][i] - x[total][i])
+        / max(x[total][i], FLOOR_FMOL)
+        for total, label in pairs
+        for i in range(len(t))
+    )
+    checks.add(f"{name}: each hold's and row's label amounts sum to it", worst <= SHARES,
+               largest_relative=worst)  # fmt: skip
+    starts = [x[f"{label}_{window}"][0] for _, label in pairs]
+    checks.add(f"{name}: the cohort starts at exactly zero", starts == [0.0] * len(pairs))
+    rate = 1.0 / float(sheet.RELEASE["tau"])
+    keep = [i for i in range(len(t)) if i % 2 == 0 or t[i] in (0.0, switch, t[-1])]
+    worst = 0.0
     for i, now in enumerate(t):
-        kept = {
-            k: x[f"H_{RID}_{k}"][i] + sum(x[f"int_Q_{RID}_{f}_{k}"][i] for f in FATE_ROWS)
-            for k in (1, 2)
-        }
-        joined = A[min(i, at)]
-        later = A[i] - A[min(i, at)]
-        worst["class_2"] = max(worst["class_2"], abs(kept[2] - joined) / _bound(steps, A[i]))
-        worst["class_1"] = max(
-            worst["class_1"], abs(kept[1] - H0 - later) / _bound(steps, H0, A[i], kept[1])
-        )
+        if now < switch:
+            continue
+        held = x[f"label_H_{RID}_{window}"][i]
+        fine = cohort.known_rate(t, A, rate, 0.0, switch, now)
+        if now in [t[k] for k in keep]:
+            coarse = cohort.known_rate([t[k] for k in keep], [A[k] for k in keep], rate, 0.0,
+                                       switch, now)  # fmt: skip
+            bound = abs(fine - coarse) + SURVIVORS * abs(fine)
+            worst = max(worst, abs(held - fine) / bound)
+    checks.add(
+        f"{name}: the hold's cohort, route 2's known-rate calculation, within its grid error",
+        worst <= 1.0,
+        largest_over_bound=worst,
+    )
+    worst = 0.0
+    for i, now in enumerate(t):
         if i == 0:
             continue
-        out = {
-            f: sum(x[f"int_Q_{RID}_{f}_{k}"][i] - x[f"int_Q_{RID}_{f}_{k}"][i - 1] for k in (1, 2))
-            for f in FATE_ROWS
-        }
+        out = {f: x[f"int_Q_{RID}_{f}"][i] - x[f"int_Q_{RID}_{f}"][i - 1] for f in FATE_ROWS}
         p = 0.75 if now <= change else 0.25
         share = out["durable"] / (out["durable"] + out["short_lived"])
-        worst["share"] = max(worst["share"], abs(share - p))
-    checks.add(
-        f"{name}: class 2 holds the arrivals before the switch, and only those",
-        worst["class_2"] <= 1.0,
-        largest_over_bound=worst["class_2"],
-    )
-    checks.add(
-        f"{name}: class 1 holds its 80 copies and the arrivals after the switch",
-        worst["class_1"] <= 1.0,
-        largest_over_bound=worst["class_1"],
-    )
+        worst = max(worst, abs(share - p))
     checks.add(
         f"{name}: each interval's releases split by its p",
-        worst["share"] <= 1e-12,
-        largest=worst["share"],
+        worst <= 1e-12,
+        largest=worst,
     )
 
 
 def check_switch(directory):
-    """R1S at each machine option: its identities, energy and switches."""
+    """R1S at each machine option, beside R1SU: its identities, energy, labels and p's switch."""
     directory = Path(directory)
     checks = Checks()
     for machine in ("returned", "held"):
         name = f"R1S {machine}"
-        run = _load(directory, name)
+        run, plain = _load(directory, name), _load(directory, f"R1SU {machine}")
         identities(checks, name, run, machine)
         energy(checks, name, run)
-        switches(checks, name, run)
+        switches(checks, name, run, plain)
     return _write(directory, "release_check_switch.json", checks)
 
 

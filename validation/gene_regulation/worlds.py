@@ -495,9 +495,7 @@ def ribosome_limited(n_R, *, dt=0.5, symbols=None):
 # ------------------------------------------------------------------ R1 (§9.9, FR-38)
 
 RELEASE = "tx_release"
-LABEL = "tx_label"
 R1_ROWS = ("N", "M", "Pi", "R", "R_s")
-R1_LABEL_ROWS = ("R_c2", "R_s_c2")  # R1S's class 2 fate rows (the class axis, §9.1).
 R1_DT = 2.0  # s: dt kappa_tx = 2/3 <= 1; the hold's and fates' rates times dt are below 1e-3.
 R1_EVERY = 60.0  # s: outputs every minute, the sheet's five among them (the cohort's grid).
 R1_WINDOW = (0.0, 3600.0)  # The release-window cohort's [t1, t2) (§9.9).
@@ -519,13 +517,15 @@ def _release(p, machine, copies, fates, label=None):
     )
 
 
-def with_share_labels(raw, rows=R1_LABELLED, window=R1_WINDOW, labels=R1_LABELS):
+def with_share_labels(raw, rows=R1_LABELLED, window=R1_WINDOW, labels=R1_LABELS, sources=()):
     """raw with FR-42's label owner (neutral_arrival_labels@1, D289) on `rows`, each with
-    `labels` (the base first, then the window's), every node starting at the base, and the
-    arrivals of [t1, t2) joining the window's label (erratum C: §9.8's route 1 on shares). The
-    rows' physics is unchanged: no law reads a share."""
+    `labels` (the base first, then the window's, then any others), every node starting at the
+    base, and the arrivals of [t1, t2) joining the window's label (erratum C: §9.8's route 1 on
+    shares). sources: ((chain, species, ((time, label), ...)), ...), a chain's own label schedule
+    (D296: a producer's label, its cell, generation and chain). The rows' physics is unchanged: no
+    law reads a share."""
     out = copy.deepcopy(raw)
-    base, marked = labels
+    base, marked = labels[:2]
     t1, t2 = window
     out["model"]["operators"].append(
         dict(law=SHARE_LABELS, species=[dict(id=r, labels=list(labels), initial=[]) for r in rows])
@@ -533,20 +533,15 @@ def with_share_labels(raw, rows=R1_LABELLED, window=R1_WINDOW, labels=R1_LABELS)
     changes = ([] if t1 == 0 else [(0.0, base)]) + [(t1, marked), (t2, base)]
     out["experiment"]["label_arrivals"] = [
         dict(species=r, schedule=[dict(time=float(t), label=x) for t, x in changes]) for r in rows
+    ] + [
+        dict(species=row, source=chain, schedule=[dict(time=float(t), label=x) for t, x in own])
+        for chain, row, own in sources
     ]
     return out
 
 
 def r1(
-    p,
-    *,
-    machine="returned",
-    blank=False,
-    labelled=False,
-    classes=False,
-    initiation=0.0,
-    dt=R1_DT,
-    symbols=None,
+    p, *, machine="returned", blank=False, labelled=False, initiation=0.0, dt=R1_DT, symbols=None
 ):
     """The sheet's R1 (§9.9 and its R2 addendum), the requester's hold: one 1 pL cell with one
     chain of A1's transcription at k_I = 0, its release at tau = 3600/ln 2 s and constant p into
@@ -556,15 +551,11 @@ def r1(
     14,400 s.
     - labelled: §9.8's route 1 on shares (erratum C): FR-42's labels on R and R_s, the releases in
       R1_WINDOW joining the window's label, the label marking the release (with_share_labels).
-    - classes: the class axis (§9.1), a second class of fate rows (R_c2, R_s_c2) under the label
-      schedule tx_label, at release; R1S builds on it. Its rows are not neutral labels (erratum B).
     - initiation: transcription's k_I (mM^-1 s^-1), 0 in R1; the tests set A1's, so that
       completions arrive in the hold."""
-    if labelled and classes:
-        raise ValueError("R1 is labelled by shares or by the class axis, not both")
     a, r = sheet.A1, sheet.RELEASE
     symbols = test_instance() if symbols is None else symbols
-    rows = R1_ROWS + (R1_LABEL_ROWS if classes else ())
+    rows = R1_ROWS
     start = {row: _f(a, f"c_{row}") for row in ("N", "M", "Pi")}
     start |= dict.fromkeys(rows[3:], _f(a, "c_R"))
     end = float(r["t_out"][-1])
@@ -574,8 +565,8 @@ def r1(
     mu = potentials_RT(symbols, {row: ("R_res", L_R) for row in polymers})
     raw = cs.frozen_definition(_with_registry(raw, mu, _moieties(rows, polymers)))
     E_pd_kJ = symbols["E_pd"] * sheet.RT
-    fates = [("R", "R_s")] + ([R1_LABEL_ROWS] if classes else [])
-    label = dict(id=LABEL, at="release") if classes else None
+    fates = [("R", "R_s")]
+    label = None
     chain = _transcription("tx", "R", a["T_copies"], L_R)
     chain["release"] = _release(p, machine, [0 if blank else r["H0"]], fates, label)
     rates = {"tx": [(0.0, float(initiation))]}
@@ -584,41 +575,32 @@ def r1(
         degradations.append(_degradation(f"deg_{row}", row, L_R, "M", E_pd_kJ))
         rates[f"deg_{row}"] = [(0.0, float(r[fate]))]
     block = _block(mu, rows, {"pol": a["M_pol"]}, [chain], degradations, [])
-    if classes:
-        t1, t2 = R1_WINDOW
-        rates[LABEL] = [(0.0, 2.0), (t2, 1.0)] if t1 == 0 else [(0.0, 1.0), (t1, 2.0), (t2, 1.0)]
     out = _finish(raw, block, rates)
     return with_share_labels(out) if labelled else out
 
 
-R1S_TIMES = (600.0, 900.0, 1800.0)  # psi's switch, p's change and the end, s.
+R1S_TIMES = (600.0, 900.0, 1800.0)  # The window's end, p's change and the end, s.
 
 
-def r1s(machine, *, dt=R1_DT, symbols=None):
-    """A compiled check of the class axis labelled at completion and of a scheduled p, each changed
-    mid-run (development; not one of §9.9's worlds): R1 with A1's k_I, so that completions arrive,
-    its hold in two classes with class 1 holding R1's 80 copies; psi = 2 until R1S_TIMES[0], then
-    1; p = 0.75 until R1S_TIMES[1], then 0.25; to R1S_TIMES[2], outputs every R1_EVERY s."""
+def r1s(machine, *, dt=R1_DT, symbols=None, labelled=True):
+    """A compiled check of labels marked at completion and of a scheduled p, each changed mid-run
+    (development; not one of §9.9's worlds): R1 with A1's k_I, so that completions arrive, its
+    hold holding R1's 80 copies at the base; FR-42's labels on R and R_s (base, cohort), the hold
+    carrying them (label at completion, D296), completions in [0, R1S_TIMES[0]) joining the cohort;
+    p = 0.75 until R1S_TIMES[1], then 0.25; to R1S_TIMES[2], outputs every R1_EVERY s. labelled
+    False: the same world without the label owner, physically the same run."""
     switch, change, end = R1S_TIMES
     k_I = _f(sheet.A1, "k_I_tx")
-    raw = r1(0.75, machine=machine, classes=True, initiation=k_I, dt=dt, symbols=symbols)
+    raw = r1(0.75, machine=machine, initiation=k_I, dt=dt, symbols=symbols)
     chain = next(c for c in raw["model"]["operators"][-1]["chains"] if "release" in c)
-    chain["release"].update(
-        label=dict(id=LABEL, at="completion"),
-        initial_copies=[float(sheet.RELEASE["H0"]), 0.0],
-        durable_fraction="scheduled",
-    )
-    controls = raw["experiment"]["polymerisation_controls"]
-    next(c for c in controls if c["route_id"] == LABEL)["schedule"] = _schedule(
-        [(0.0, 2.0), (switch, 1.0)], "value"
-    )
+    chain["release"].update(label=dict(at="completion"), durable_fraction="scheduled")
     fraction = _schedule([(0.0, 0.75), (change, 0.25)], "value")
-    controls.append(dict(route_id=RELEASE, schedule=fraction))
+    raw["experiment"]["polymerisation_controls"].append(dict(route_id=RELEASE, schedule=fraction))
     e = raw["experiment"]
     e["end_time"] = end
     e["observation_times"] = [t for t in e["observation_times"] if t <= end]
     raw["execution"]["max_steps"] = int(math.ceil(end / dt)) + 8
-    return raw
+    return with_share_labels(raw, window=(0.0, switch)) if labelled else raw
 
 
 def release_names():
@@ -660,8 +642,9 @@ def world(name, *, dt=0.5, symbols=None, end=None):
         return a1(dt=dt, end=end, symbols=symbols)
     if name.startswith(("R1 ", "R1L ")) and end is None:
         return _r1_world(name, dt, symbols)
-    if name.startswith("R1S ") and end is None:
-        return r1s(name.split(" ")[1], dt=dt, symbols=symbols)
+    if name.startswith(("R1S ", "R1SU ")) and end is None:
+        kind, machine = name.split(" ")
+        return r1s(machine, dt=dt, symbols=symbols, labelled=kind == "R1S")
     if name.startswith("R2 "):
         return r2(name.split(" ")[1], dt=dt, end=end, symbols=symbols)
     if name.startswith("R2A "):

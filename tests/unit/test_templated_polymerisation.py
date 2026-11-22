@@ -22,7 +22,7 @@ from cells.definitions.specs import ConfigError, parse_spec
 from cells.operators import templated_polymerisation as polymerisation
 from cells.registry import kind_registry
 from cells.registry.models import get_model
-from validation.gene_regulation import engine_run, kernel, release_check, worlds
+from validation.gene_regulation import cohort, engine_run, kernel, release_check, worlds
 
 EPS = np.finfo(float).eps
 
@@ -185,7 +185,11 @@ RELEASE_REFUSALS = [
     (lambda raw: _release(raw).update(fates=[dict(durable="R", short_lived="R")]), "distinct"),
     (lambda raw: _release(raw)["fates"][0].update(short_lived="N"), "none of its draws"),
     (lambda raw: _release(raw)["fates"][0].update(short_lived="M"), "another standard_mu_RT"),
-    (lambda raw: _release(raw).update(label=dict(id="l", at="release")), "label is null"),
+    (lambda raw: _release(raw).update(label=dict(at="later")), "label is at one of"),
+    (
+        lambda raw: _release(raw).update(fates=[dict(durable="R", short_lived="R_s")] * 2),
+        "one {durable, short_lived} pair",
+    ),
     (lambda raw: _release(raw).update(machine="held", initial_copies=[2e4]), "cannot hold"),
     (lambda raw: _release(raw).update(dwell_s=1.0), "dt/tau"),
     (
@@ -285,93 +289,137 @@ def test_the_release_keeps_its_identities_and_sits_on_its_limit(p, machine, k_I,
     assert min(float(np.min(x)) for x in increments) >= 0.0
 
 
+PRODUCER = "cell_0-g0-tx"  # A producer's label: cell, occupant generation and chain (D296).
+
+
 def _labelled(at, k_I):
-    """R1's labelled world at p = 0.75. At release, to 40 s, route 1 on shares (erratum C): FR-42's
-    labels on R and R_s, the releases in [0, 20 s) joining the cohort. At completion, to 60 s, the
-    class axis (§9.1), the label held at class 2 from t = 0, the hold in both classes, class 1
-    holding R1's 80 copies."""
-    if at == "release":
-        raw = kernel.truncated(worlds.r1(0.75, initiation=k_I), 40.0)
-        return worlds.with_share_labels(raw, window=(0.0, 20.0))
-    raw = worlds.r1(0.75, classes=True, initiation=k_I)
-    _control(raw, worlds.LABEL)["schedule"] = [dict(time=0.0, value=2.0)]
-    _release(raw).update(label=dict(id=worlds.LABEL, at="completion"), initial_copies=[80, 0])
-    return kernel.truncated(raw, 60.0)
+    """R1's world at p = 0.75 to 40 s, labelled by shares (FR-42, D289, D296; erratum C): FR-42's
+    labels on R and R_s, the window [0, 20 s) marking the releases, or at completion the
+    completions, which the hold then carries into the fate rows; outputs every step. The producer
+    row marks at completion too, transcription's completions joining its producer label by its own
+    schedule (a source's, D296) from t = 0."""
+    raw = kernel.truncated(worlds.r1(0.75, initiation=k_I), 40.0)
+    raw["experiment"]["observation_times"] = [float(t) for t in range(0, 41, 2)]
+    if at in ("completion", "producer"):
+        _release(raw)["label"] = dict(at="completion")
+    if at == "producer":
+        labels = (*worlds.R1_LABELS, PRODUCER)
+        sources = (("tx", "R", ((0.0, PRODUCER),)),)
+        return worlds.with_share_labels(raw, window=(0.0, 20.0), labels=labels, sources=sources)
+    return worlds.with_share_labels(raw, window=(0.0, 20.0))
 
 
-@pytest.mark.parametrize("at", ["release", "completion"])
+@pytest.mark.parametrize("at", ["release", "completion", "producer"])
 def test_the_label_marks_each_molecule(at):
-    """FR-38, no world compiled: about 1.5 s at release, 0.6 s at completion.
-    - Labelled at release, on shares (FR-42, D289; erratum C), with the label owner's own update
-      (species_labels.advance) as the composite applies it: every physical field bit for bit the
-      unlabelled run's, the cohort at exactly zero before its first release, each row's shares
-      summing to 1, and route 1, R's row times its cohort share, on the window's closed form
+    """FR-38, no world compiled, about 1.5 s a row: labels on shares (FR-42, D289; erratum C), with
+    the label owner's own update (species_labels.advance) as the composite applies it. Every
+    physical field is the unlabelled run's bit for bit (a label at completion changes no physics),
+    each row's and the hold's shares sum to 1, and the cohort starts at exactly zero.
+    - At release (k_I = 0): route 1, R's row times its cohort share, on the window's closed form
       within the survivors' bound plus the update's split, k_f h^2/(12 tau).
-    - Labelled at completion, the class axis (§9.1; until the label owner holds the hold's shares,
-      D296), with arrivals (A1's k_I): every arrival enters hold class 2, while class 1's starting
-      copies leave into class 1's rows alone."""
-    start, end, layout, spec, _ = _ends(_labelled(at, K_I if at == "completion" else 0.0))
-    hold, released = end.poly_hold_fmol[0], end.poly_hold_released_fmol[0]  # [class], [class, fate]
+    - At completion (A1's k_I, D296): the hold's cohort, the window's completions still held, on
+      route 2's known-rate calculation at the hold's exact exit rate 1/tau, from the run's own
+      completions, within its grid error (the same on every second output) plus the survivors'
+      bound; and the hold carries the cohort into both fate rows.
+    - A producer (step 3): transcription's own schedule puts all its completions at its producer
+      label, so the hold's producer amount is every completion still held, the window's cohort
+      takes none of them, and the hold carries the producer's label into both fate rows."""
+    k_I = 0.0 if at == "release" else K_I
+    spec, layout, states, _ = kernel.run(_labelled(at, k_I))
+    plain = kernel.run(kernel.truncated(worlds.r1(0.75, initiation=k_I), 40.0))[2][20]
+    start, end = states[0], states[20]
+    for name in type(plain)._fields:
+        assert np.array_equal(getattr(end, name), getattr(plain, name)), name
+    shares, hold = end.label_share[:, :, 0], end.label_pool_share[0, :, 0]  # [R, R_s][base, cohort]
+    assert np.all(np.abs(shares.sum(axis=1) - 1.0) <= 128 * EPS)
+    assert abs(hold.sum() - 1.0) <= 128 * EPS
+    assert start.label_share[0, 1, 0] == start.label_pool_share[0, 1, 0] == 0.0
+    rows = list(spec.model.species_ids)
+    n = layout.amount_reference[rows.index("R"), 0] + end.amount_increment[rows.index("R"), 0]
     if at == "release":
-        _, plain, _, _, _ = _ends(kernel.truncated(worlds.r1(0.75), 40.0))
-        for name in type(plain)._fields:
-            assert np.array_equal(getattr(end, name), getattr(plain, name)), name
-        shares = end.label_share[:, :, 0]  # [R, R_s][base, cohort]
-        assert np.all(np.abs(shares.sum(axis=1) - 1.0) <= 64 * EPS)
-        rows = list(spec.model.species_ids)
-        n = layout.amount_reference[rows.index("R"), 0] + end.amount_increment[rows.index("R"), 0]
         route1 = float(n * shares[0, 1]) / polymerisation.COPY_FMOL
         exact = release_check.window_cohort(0.75, "durable", 0.0, 20.0, 40.0)
         bound = release_check.SURVIVORS + release_check.split_bound("durable", spec.execution.dt)
-        assert abs(route1 - exact) <= bound * exact
-        assert start.label_share[0, 1, 0] == 0.0 < float(end.label_share[0, 1, 0])
+        assert abs(route1 - exact) <= bound * exact and hold[1] == 0.0
         return
-    H0 = 80 * polymerisation.COPY_FMOL
-    A = float(end.poly_released_fmol[0])
-    tau = float(worlds.sheet.RELEASE["tau"])
-    assert A > 0 and hold[0] == pytest.approx(H0 * np.exp(-60.0 / tau), rel=1e-10)
-    assert abs(H0 - hold[0] - np.sum(released[0])) <= _identity_bound(H0)
-    assert abs(A - hold[1] - np.sum(released[1])) <= _identity_bound(A, hold[1])
+    t = sorted(float(k) * spec.execution.dt for k in states)
+    made = [float(states[k].poly_released_fmol[0]) for k in sorted(states)]
+    rate = 1.0 / float(worlds.sheet.RELEASE["tau"])
+    marked, until = (2, 40.0) if at == "producer" else (1, 20.0)
+    fine = cohort.known_rate(t, made, rate, 0.0, until, 40.0)
+    coarse = cohort.known_rate(t[::2], made[::2], rate, 0.0, until, 40.0)
+    held = float(end.poly_hold_fmol[0, 0] * hold[marked])
+    assert held > 0 and abs(held - fine) <= abs(fine - coarse) + release_check.SURVIVORS * fine
+    assert shares[0, marked] > 0 and shares[1, marked] > 0  # Carried into both fate rows.
+    assert at != "producer" or hold[1] == 0.0  # The window's cohort took no completion.
 
 
-# FR-42's one-way moves (D289): (world, its labelled rows, seconds at dt/2 a half-step).
-MOVES = [("pol T=5", ("R", "N", "M", "ATP"), 30.0), ("R1 held", ("R", "R_s", "M"), 60.0)]
+# FR-42's one-way moves (D289, D296): (world, its labelled rows, the hold's marking, seconds).
+MOVES = [
+    ("pol T=5", ("R", "N", "M", "ATP"), None, 30.0),
+    ("R1 held", ("R", "R_s", "M"), "release", 60.0),
+    ("R1 held", ("M", "R_s", "R"), "completion", 60.0),
+]
 
 
-@pytest.mark.parametrize(("world", "labelled", "seconds"), MOVES)
-def test_the_one_way_moves_close_each_labelled_row(world, labelled, seconds):
-    """FR-42 (D289), about 0.3 s a row, no world compiled: with labels the half-step's state is
-    bit for bit the unlabelled call's, and its moves are non-negative, at the arrival label alone,
-    with no transfers in stage 1, and close each labelled row and cell: n1 - n0 = sum into - out.
-    pol T=5 moves rows by draws, completions, both degradation directions (R's re-synthesis among
-    them) and both transfer directions; R1 with A1's k_I by arrivals and fate releases."""
+@pytest.mark.parametrize(("world", "labelled", "at", "seconds"), MOVES)
+def test_the_one_way_moves_close_each_labelled_row(world, labelled, at, seconds):
+    """FR-42 (D289, D296), about 0.3 s a row, no world compiled: with labels the half-step's state
+    is bit for bit the unlabelled call's, and its moves are non-negative, with no transfers, and
+    close each labelled row and cell and each hold: n1 - n0 = sum into - out + carried in - carried
+    out. Window material joins label 1 of 3; a chain's material its source label, here 2.
+    - pol T=5 moves rows by draws, completions (at the source label), both degradation
+      directions (R's re-synthesis among them) and both transfer directions.
+    - R1 with A1's k_I: arrivals into the hold, at the base where the release marks its labels and
+      at the source label at completion; fate releases into the rows at the source label, or
+      carried from the hold where it marks them at completion, never also into the row."""
     if world == "pol T=5":
         raw = kernel.truncated(worlds.world(world), seconds)
     else:
         raw = kernel.truncated(worlds.r1(0.75, machine="held", initiation=K_I), seconds)
+        if at == "completion":
+            _release(raw)["label"] = dict(at="completion")
     spec = parse_spec(raw)
     state, layout = get_model(spec.model).initial_values(spec)
     state = type(state)(*(np.asarray(v) for v in state))
     (block,) = [d for d in spec.model.operators if d.law == worlds.POLYMERISATION]
     control = kernel.controls(raw, block)
     rows = np.array([list(spec.model.species_ids).index(r) for r in labelled])
-    arrival = np.zeros((len(rows), 3))
+    m, nodes = len(rows), layout.active.shape[0] + layout.outside_active.shape[0]
+    arrival = np.zeros((m, 3))
     arrival[:, 1] = 1.0  # The window names label 1 of 3.
+    source = np.zeros((len(block.chains) + 1, 3))  # Padded past the chains, as the owner's.
+    source[:, 2] = 1.0
     reference = np.asarray(layout.amount_reference)[rows]
     h = spec.execution.dt / 2
-    regrown = 0.0
+    regrown = carried = 0.0
     for _ in range(int(round(seconds / h))):
         plain, ok = kernel.OP.half_step(state, h, control, layout, xp=np)
-        new, ok2, (out, into, transfers) = kernel.OP.half_step(
-            state, h, control, layout, xp=np, labels=(rows, arrival)
+        new, ok2, (out, into, transfers, pools) = kernel.OP.half_step(
+            state, h, control, layout, xp=np, labels=(rows, arrival, source)
         )
         assert bool(ok) and bool(ok2) and transfers == ()
         assert all(np.array_equal(a, b) for a, b in zip(plain, new, strict=True))
-        assert np.all(out >= 0) and np.all(into >= 0) and np.all(into[:, [0, 2]] == 0)
+        n0p, n1p, intop, outp, (amount, origin, destination) = pools
+        assert np.all(out >= 0) and np.all(into >= 0) and np.all(into[:, 0] == 0)
+        assert np.all(intop >= 0) and np.all(outp >= 0) and np.all(amount >= 0)
+        sites = np.zeros(m * nodes + len(n0p))  # Carried in minus out, by site.
+        np.add.at(sites, destination, amount)
+        np.add.at(sites, origin, -amount)
+        moved = sites[: m * nodes].reshape(m, nodes)[:, : into.shape[2]]
         n0 = reference + state.amount_increment[rows]
         n1 = reference + new.amount_increment[rows]
-        gap = np.abs((n1 - n0) - (np.sum(into, axis=1) - out))
-        assert np.all(gap <= 64 * EPS * np.maximum.reduce([np.abs(n1), out, into[:, 1]]) + 1e-30)
-        regrown += float(into[0, 1, 0]) if world == "pol T=5" else 0.0
+        gap = np.abs((n1 - n0) - (np.sum(into, axis=1) - out + moved))
+        scale = np.maximum.reduce([np.abs(n1), out, np.sum(into, axis=1), np.abs(moved)])
+        assert np.all(gap <= 64 * EPS * scale + 1e-30)
+        if len(n0p):
+            held = np.abs((n1p - n0p) - (np.sum(intop, axis=1) - outp + sites[m * nodes :]))
+            assert np.all(held <= 64 * EPS * np.maximum(n0p, n1p) + 1e-30)
+            assert np.all(np.sum(intop, axis=1) == intop[:, 2 if at == "completion" else 0])
+            fates = into[[labelled.index("R"), labelled.index("R_s")], 2]  # At the source label.
+            assert (at == "completion") == (np.all(fates == 0) and np.sum(amount) > 0)
+        regrown += float(into[0, 2, 0]) if world == "pol T=5" else 0.0
+        carried += float(np.sum(amount))
         state = new
-    assert world != "pol T=5" or regrown > 0  # R's one-way gains: completions and re-synthesis.
+    assert world != "pol T=5" or regrown > 0  # R's chain-sourced gains: its completions.
+    assert (at == "completion") == (carried > 0)

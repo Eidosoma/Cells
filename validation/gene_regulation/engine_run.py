@@ -34,16 +34,18 @@ polymer is made by transcription or translation; a transfer is recharging (rc).
 Run: PYTHONPATH=src:. JAX_ENABLE_X64=1 python -m validation.gene_regulation.engine_run
 [--worlds NAME ... | all | release | release2] [--sets LABEL ...] [--dt S] [--end S] --out DIR.
 "release" is R1's runs (worlds.release_names(), FR-38), at dt worlds.R1_DT; "release2" is R2's,
-its development check's and A1, at A1's 0.5 s; "switch" is R1S's (worlds.r1s), at R1's dt. All
+its development check's and A1, at A1's 0.5 s; "switch" is R1S's (worlds.r1s) and its unlabelled twin R1SU's, at R1's dt. All
 export the release's readouts: the
 hold H_<release>, its releases int_Q_<release>_<fate>, each fate's class total n_<release>_<fate>
 and its heat class H_rel_<release>_<fate>, and the hold's term in G_minus_G0 (the sheet's §9).
 
 A world that declares FR-42's labels (neutral_arrival_labels@1, D289) also exports each labelled
 row's amount carrying each of its labels at the exported cell, label_<row>_<label>: the row's
-amount times the label's share, keyed by the species' and label's IDs. In R1L that is §9.8's route
-1 on shares (erratum C): label_R_cohort and label_R_s_cohort, the window's releases still present,
-with no blank. A label never changes a physical readout.
+amount times the label's share, keyed by the species' and label's IDs; and each release's hold by
+the labels of its durable fate row, label_H_<release>_<label>, the hold times its share in the
+label owner's pool (D296). In R1L label_R_cohort and label_R_s_cohort are §9.8's route 1 on shares
+(erratum C), the window's releases still present, with no blank. A label never changes a physical
+readout.
 """
 
 import argparse
@@ -317,6 +319,14 @@ def readouts(spec, states, cell=None):
                 n = float(reference[species.index(row), at] + increment[species.index(row), at])
                 for k, name in enumerate(names):
                     put(f"label_{row}_{name}", n * float(share[j, k, at]))
+            # D296: each hold at the exported cell by its durable fate row's labels, the hold
+            # times its share (the operator the only pool reporter; its pools, its releases).
+            pooled = np.asarray(s.label_pool_share)[0]  # [label, pool]
+            hold = np.asarray(s.poly_hold_fmol)
+            for i, _, r in releases:
+                names = dict(shared).get(r.fates[0][0], ())
+                for k, name in enumerate(names):
+                    put(f"label_H_{r.id}_{name}", float(hold[i, 0]) * float(pooled[k, i]))
         free = np.asarray(s.poly_free_machines_fmol)
         for i in here["pool"]:
             put(f"F_{block.pools[i].id}", free[i])
@@ -501,7 +511,7 @@ def main(argv=None):
         all=worlds.names(),
         release=worlds.release_names(),
         release2=[*worlds.r2_names(), *worlds.r2_check_names(), "A1"],
-        switch=["R1S returned", "R1S held"],
+        switch=["R1S returned", "R1S held", "R1SU returned", "R1SU held"],
     ).get(args.worlds[0] if len(args.worlds) == 1 else None, args.worlds)
     record = dict(
         what="The engine's development runs of option A (G4). Development, not judged.",

@@ -1219,7 +1219,17 @@
   [
    "operators/templated_polymerisation.py",
    "one_way_moves",
-   "entity_sum(extents[4][..., None] * p.poly_rel_fate, axis=(1, 2), xp=xp)"
+   "entity_sum(hit, axis=0, xp=xp)"
+  ],
+  [
+   "operators/templated_polymerisation.py",
+   "one_way_moves",
+   "entity_sum(xp.arange(m, dtype=float)[:, None, None] * hit, axis=0, xp=xp)"
+  ],
+  [
+   "operators/templated_polymerisation.py",
+   "one_way_moves",
+   "entity_sum(label, axis=1, xp=xp)"
   ]
  ]
 }

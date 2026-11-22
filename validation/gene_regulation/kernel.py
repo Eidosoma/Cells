@@ -5,9 +5,10 @@ inner step leaves them and the operator's fields unchanged: these half-steps are
 dynamics for them. Development, not judged.
 
 A world that declares FR-42's labels (neutral_arrival_labels@1, D289) is advanced as the composite
-advances it: each half-step takes the step's arrival labels and the label owner advances the
-shares from its moves (species_labels.advance), each step's label resolved as the owner's control
-resolves it (arrival_controls).
+advances it: each half-step takes the step's arrival labels and its chains' source labels (D296),
+and the label owner advances the shares of the rows and the holds from its moves
+(species_labels.advance, the operator the only pool reporter), each step's labels resolved as the
+owner's controls resolve them (arrival_controls, source_controls).
 """
 
 import copy
@@ -44,8 +45,8 @@ def truncated(raw, end):
 
 def controls(raw, declaration, only=None):
     """The world's rates at time 0 by route; with `only`, every other route's at zero. A release's
-    durable fraction and class (the sheet's §9) are their declared or time-0 values whatever
-    `only` is."""
+    durable fraction (the sheet's §9) is its declared or time-0 value whatever `only` is, and its
+    class 1."""
     rate = {
         c["route_id"]: c["schedule"][0]["value"]
         for c in raw["experiment"]["polymerisation_controls"]
@@ -62,9 +63,7 @@ def controls(raw, declaration, only=None):
         polymerisation_release_fraction=np.array(
             [rate[r.id] if r.durable_fraction is None else r.durable_fraction for r in releases]
         ),
-        polymerisation_release_class=np.array(
-            [rate[r.label.id] if r.label is not None else 1.0 for r in releases]
-        ),
+        polymerisation_release_class=np.ones(len(releases)),  # One class (D296).
     )
 
 
@@ -89,18 +88,21 @@ def run(raw, *, only=None, record=False):
     wanted = {int(round(float(t) / dt)) for t in spec.experiment.observation_times}
     steps = int(round(float(spec.experiment.end_time) / dt))
     owner = label_owner(spec)
-    if owner is not None:
+    if owner is not None:  # D296: the operator is a source and a pool reporter, the only one.
         times = [k * dt for k in range(steps)]
         arrivals = species_labels.arrival_controls(owner[1], owner[2], times)
+        sources = species_labels.source_controls(spec, owner[1], owner[2], times)
+        (reporter,) = [op for op, _ in species_labels.reporters(spec, "LABEL_POOLS")]
+        assert reporter is OP
     states, increments = {0: state}, []
     for k in range(1, steps + 1):
         for _ in range(2):
             if owner is None:
                 new, ok = OP.half_step(state, dt / 2, control, p, xp=np)
             else:
-                labels = (p.label_rows, arrivals[k - 1])
+                labels = (p.label_rows, arrivals[k - 1], sources[k - 1, 0])
                 new, ok, moves = OP.half_step(state, dt / 2, control, p, xp=np, labels=labels)
-                new = owner[0].advance(state, new, moves, p, xp=np)
+                new = owner[0].advance(state, new, moves, p, xp=np, pool=0)
             if not bool(ok):
                 raise RuntimeError(f"the half-step was refused at step {k}")
             if record:  # The chains', degradations' and releases' heat increments.
