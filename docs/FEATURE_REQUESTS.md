@@ -1663,3 +1663,16 @@ with 2 and 1.5.
   package README's "completion-time cohort" reads, or when they are released, as the request body says?
   The two differ whenever the dwell matters. A pulse label marks at synthesis.
 - **Only (c) and (e) block anything,** and each blocks only its own piece.
+
+**Progress (22 November 2026, 13:25 UTC).**
+- **Landed:**
+  - the sheet's amendment R (§9) with its R2 addendum and a tau fix (tags gr1-sheet-fr38-2026-11-22,
+    gr1-sheet-fr38-r2-2026-11-22 and gr1-sheet-fr38-tau-2026-11-22);
+  - the code-blind references for R1 and R2 (679fe885, tag gr-refs-fr38-2026-11-22). In R1, the
+    requester's 40/40/30/10 hold to rounding, and the survivors lie within 1.54e-8 of their limit.
+- **In progress:** the engine piece (the gene regulation lane) and an erratum settling the references'
+  readings, both before a registered comparison. The reader (`src/cells/assays/transcription_sites.py`) is
+  checker-accepted and in its gate.
+- **A disclosure for that comparison's rule.** On 22 November the lead showed the builder the references'
+  R1 survivors at p = 0.75 and 1 h, to 10 digits, before any comparison, then withdrew them as a build
+  target.
