@@ -8914,3 +8914,31 @@ FORMAT is to state these.
 Recorded as scored. Evidence: the second builder's review folder, ol5/ (ol5_verdict.json and the
 adapter, with sha256s).
 
+## D280: The user's decisions on the overnight holds
+
+2026-11-22, about 10:22 UTC. The user: "OK on the disc cleanup. 1. Agreed 2. Lets search for other
+sources to get FR-30 working, I don't have time in this process to contact authors... 3. agreed 4.
+Agreed 5. Agreed 6. Agreed 7. as you and adviser suggest", answering the lead's and the advisor's
+recommendations.
+1. **FR-25:** one more registered finer triple (0.5, 0.25, 0.125 s) for the four inconclusive
+   worlds-by-set (A1 and pol T=100 at both instances), under the same window and F, registered and
+   tagged before the runs. After it, the verdict is final. The cap is not loosened. dG and u stay out
+   of scope.
+2. **FR-30:** search for other sources: a paper or dataset with two-exponential step decays of
+   homotypic Cx43 at four or more junction voltages. The search is metadata only and reads no values;
+   any candidate is registered and sealed before it is read. No contact with authors. FR-30 stays
+   development-only until a benchmark passes.
+3. **The face-heat booking: F2.** An opt-in exact booking under heat_bookings, with no registered world
+   moving; its note says what heat a label family's rows book. F1 comes only after an MG0c rerun.
+4. **FR-33 in-cell:** a short priced note on the cheapest of the three blocks, and a question to the
+   requester, through the user, whether two regions joined by a face meet their need. No build yet.
+5. **MT-1b:** R2, a fresh code-blind integration, is the judged reference. Two facts come before the
+   other choices: whether any judged readout depends on the IMS binding equilibria, and the CPU cost
+   at the proposed activity range. The lane's owner reviews the draft.
+6. **OL5:** the three checks run first: exact forward forms, event times from the references' rates,
+   and R7 and R8 confirmed from the engine's code. No fix and no tolerance change until they report.
+7. **Small items wait.** The one exception is extending C's near-event refusal to clocks without
+   windows: scan the registered worlds first, and add the refusal only if none is hit.
+- **Disk cleanup approved:** the listed scratch copies and idle worktrees are removed. Old run folders
+  are archived to /mnt/datasets with a link left at each old path, so cited paths still resolve.
+
