@@ -384,15 +384,15 @@ ln(c_F/c°) ≤ −23.43; in R2, y ≤ −11.96 and ln(c_F/c°) ≤ −21.15.
 
 | Figure | Requester | References (copies) | Relative distance |
 | --- | --- | --- | --- |
-| Held | 40 | 40.000000000000 | −3.5 × 10⁻¹⁶ |
-| Released | 40 | 40.000000000000 | 0 |
-| Into the durable row | 30 | 30.000000000000 | +2.3 × 10⁻¹⁶ |
-| Into the short-lived row | 10 | 10.000000000000 | −5.0 × 10⁻¹⁶ |
+| Held | 40 | 40.000000000000 | ≤ 7.5 × 10⁻¹⁶ (rounding) |
+| Released | 40 | 40.000000000000 | ≤ 7.5 × 10⁻¹⁶ (rounding) |
+| Into the durable row | 30 | 30.000000000000 | ≤ 7.5 × 10⁻¹⁶ (rounding) |
+| Into the short-lived row | 10 | 10.000000000000 | ≤ 7.5 × 10⁻¹⁶ (rounding) |
 | Durable, still present | 24.852814 | 24.852813785212 | −8.6 × 10⁻⁹ (+1.723 × 10⁻⁹ from the exact 24.852813742386) |
 | Short-lived, still present | 5.000000 | 5.000000028885 | +5.777 × 10⁻⁹ |
 
 The release law sits on the limit at every case and output: the hold and the releases differ from
-it by at most 1.5 × 10⁻¹⁵.
+it by at most 1.4 × 10⁻¹⁵.
 
 The released molecules still present sit above the limit because of §4.4's factor (1 − e^(y_f)).
 - At p = 0.75 the distance grows with time:
@@ -405,7 +405,8 @@ The released molecules still present sit above the limit because of §4.4's fact
   | 4 h | 8.0 × 10⁻⁹ | 1.54 × 10⁻⁸ |
 
 - The largest distance over every case is 1.54 × 10⁻⁸.
-- The tracker LR, n_F minus the matched blank, and the integrated distance DL agree to 10⁻¹².
+- The tracker LR, n_F minus the matched blank, and the integrated distance DL agree to
+  4 × 10⁻¹⁵.
 
 ### R1: the release-window cohort (§9.8), [0, 3,600 s] sampled at 3,600 and 7,200 s
 
@@ -418,7 +419,7 @@ The released molecules still present sit above the limit because of §4.4's fact
   - At p = 0.75 with `returned`, the shortfall is 7.1 × 10⁻⁶ and 1.7 × 10⁻⁵ for the durable fate at
     1 h and 2 h, and 9.0 × 10⁻⁵ and 4.5 × 10⁻⁴ for the short-lived one.
   - The cause: class 2's row starts at the trace, and the difference misses the trace's own loss,
-    F_2(0)(1 − S(ts)).
+    F_2(0)(1 − S(ts)). In absolute terms that is up to 5.6 × 10⁻⁴ copies.
   - This is finding R-F1.
 
 ### R2
@@ -487,16 +488,22 @@ These were sent to the lead. None was resolved from code.
   - The references give R2's route 2 exactly, as an addition.
   - Route 1 needs label rows, and whether R2's class-2 rows are translated is not ruled, so it is not
     computed. The R2 world refuses two classes.
+- **R10, R1's domain** lists the moves in use: the fates' losses (y_f ≤ x_dom) and the release
+  (c_F ≤ c°). R1 has no complexes (k_I = 0), so elongation's affinity is left out of its domain.
 
 **Findings:**
 - **R-F1, §9.8's route 1.** "F^f_ρ,2(ts) − F^f_ρ,2(0) is the cohort, for any loss law" misses the
-  trace's own loss. It is off by up to 4.5 × 10⁻⁴ relative in R1, far outside any grid error.
-  Subtracting the matched blank's F_2(ts) makes it exact to 10⁻¹¹.
+  trace's own loss: up to 5.6 × 10⁻⁴ copies in R1, or 4.5 × 10⁻⁴ of the short-lived cohort at 2 h.
+  Whether that is inside the host-side route's grid error is for the lane to say. Subtracting the
+  matched blank's F_2(ts) makes route 1 exact to 6.4 × 10⁻¹².
 - **R-F2, §9.10's 1e-8.** The distance holds for the released molecules still present: 1.7–5.8 × 10⁻⁹
   at 1 h, and at most 1.54 × 10⁻⁸ by 4 h. It does not hold for the fate rows themselves, which
   carry the trace.
 - **R-F3, the requester's figures.** The six-decimal 24.852814 is itself 1.04 × 10⁻⁸ above the exact
   limit, 24.852813742386.
+
+**τ.** Every run uses the expression τ = 3600/ln 2 = 5193.702147 s exactly, as the fix tagged
+`gr1-sheet-fr38-tau-2026-11-22` asks. No run used the table's former typed 5193.8 s.
 
 **Regenerating.** `python -m validation.gene_regulation.references.release_run --out DIR`, from a
 source snapshot, takes about three minutes on one free core. The committed interface's revision and

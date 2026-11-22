@@ -147,7 +147,7 @@ def test_release_interface_complete_and_consistent(rel):
     checks.check_release_all(rel)
 
 
-CASE = ("release_r1", "cases", 7)  # p = 0.75 with `returned` sits at index 3; 7 is `held`, p = 0
+CASE = ("release_r1", "cases", 7)  # index 7: `held`, p = 0.25 (index 3: `returned`, p = 0.75)
 RELEASE_PLANTED = [
     ("a hold value", (*CASE, "readouts", "hold_tx", 2), _times(1 + 1e-9),
      checks.check_release_identities),
