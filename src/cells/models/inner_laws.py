@@ -277,6 +277,12 @@ class InnerStructure:
     # junctions declare that law (every junction or none in v1); () otherwise, so no structure or
     # program of today's moves. Added by the @3 owner (a recorded exception in this file).
     junction_series_kinds: tuple = ()
+    # Fix (A) (D273): the IDs, sorted, of the junctions that join two capacitor components where
+    # one floats (surface_pump_v3.crossing_junctions, from the parsed topology). Where any exists
+    # the IMEX step's explicit rates, and N2's stage junction gates, read each stage state's
+    # quasi-static potentials. () for a world whose junctions all join held components, so no
+    # structure or program of those moves. Added by the @3 owner (a recorded exception here).
+    crossing_junctions: tuple = ()
 
     def __post_init__(self):
         ids = [kind_id for kind_id, _ in self.kinds]
@@ -295,6 +301,13 @@ class InnerStructure:
         problems = kind_ledger_errors(self.kind_ledgers, ids)
         if problems:
             raise ValueError("Kind ledgers of an inner structure: " + "; ".join(problems))
+        crossing = self.crossing_junctions
+        if not (
+            isinstance(crossing, tuple)
+            and all(isinstance(j, str) and j for j in crossing)
+            and list(crossing) == sorted(set(crossing))
+        ):
+            raise ValueError("Crossing junctions are a sorted tuple of distinct junction IDs")
         series = self.junction_series_kinds
         if (
             (junction_series_gates.LAW_ID in self.junction_laws) != bool(series)
