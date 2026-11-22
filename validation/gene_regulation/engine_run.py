@@ -34,10 +34,18 @@ polymer is made by transcription or translation; a transfer is recharging (rc).
 Run: PYTHONPATH=src:. JAX_ENABLE_X64=1 python -m validation.gene_regulation.engine_run
 [--worlds NAME ... | all | release | release2] [--sets LABEL ...] [--dt S] [--end S] --out DIR.
 "release" is R1's runs (worlds.release_names(), FR-38), at dt worlds.R1_DT; "release2" is R2's,
-its development check's and A1, at A1's 0.5 s; "switch" is R1S's (worlds.r1s), at R1's dt. All
+its development check's and A1, at A1's 0.5 s; "switch" is R1S's (worlds.r1s) and its unlabelled twin R1SU's, at R1's dt. All
 export the release's readouts: the
 hold H_<release>, its releases int_Q_<release>_<fate>, each fate's class total n_<release>_<fate>
 and its heat class H_rel_<release>_<fate>, and the hold's term in G_minus_G0 (the sheet's §9).
+
+A world that declares FR-42's labels (neutral_arrival_labels@1, D289) also exports each labelled
+row's amount carrying each of its labels at the exported cell, label_<row>_<label>: the row's
+amount times the label's share, keyed by the species' and label's IDs; and each release's hold by
+the labels of its durable fate row, label_H_<release>_<label>, the hold times its share in the
+label owner's pool (D296). In R1L label_R_cohort and label_R_s_cohort are §9.8's route 1 on shares
+(erratum C), the window's releases still present, with no blank. A label never changes a physical
+readout.
 """
 
 import argparse
@@ -64,7 +72,8 @@ from validation.gene_regulation import worlds
 
 ROOT = Path(__file__).resolve().parents[2]
 SHEET_TAG = "gr1-sheet-2026-11-20b"
-RELEASE_SHEET_TAG = "gr1-sheet-fr38-erratum-a2-2026-11-22"  # The sheet's §9, as amended (FR-38).
+RELEASE_SHEET_TAG = "gr1-sheet-fr38-erratum-c-2026-11-22"  # The sheet's §9, as amended (FR-38).
+LABELS = "neutral_arrival_labels@1"  # FR-42's label owner (D289).
 POLICY = WindowPolicy(window_steps=10000, recording="observations")
 DIGITS = 60
 
@@ -234,6 +243,15 @@ def exported_cell(spec, block, cell=None):
     return cell
 
 
+def labelled(spec):
+    """((species, its labels), ...) that FR-42's label owner declares, in its order; () where the
+    world declares none."""
+    for d in spec.model.operators:
+        if d.law == LABELS:
+            return tuple((s.id, s.labels) for s in d.species)
+    return ()
+
+
 def readouts(spec, states, cell=None):
     """(times, {readout: [value per output]}, checks) of one run, at the exported cell
     (exported_cell), which checks names as exported_cell."""
@@ -266,9 +284,11 @@ def readouts(spec, states, cell=None):
     # D265, finding 7: a product of the cell's chains with no loss route there, and named by no
     # other operator, is established as lossless, and exported with a zero loss series. A
     # release's fate rows (FR-38, the sheet's §9; every class's) are filled by its chain as a
-    # product is, so the rule covers them too (the Lean lane's finding, 22 November 2026).
+    # product is, so the rule covers them too (the Lean lane's finding, 22 November 2026). FR-42's
+    # label owner names species but moves no material, so it is no other mover.
     lost = {block.degradations[i].polymer for i in here["degradation"]}
-    others = {getattr(x, "id", x) for op in spec.model.operators if op.law != worlds.POLYMERISATION
+    others = {getattr(x, "id", x) for op in spec.model.operators
+              if op.law not in (worlds.POLYMERISATION, LABELS)
               for x in getattr(op, "species", ())}  # fmt: skip
     releases = [
         (i, c, r) for i, (c, r) in enumerate(polymerisation.releases_of(block)) if c.cell == cell
@@ -282,6 +302,7 @@ def readouts(spec, states, cell=None):
     def put(name, value):
         out.setdefault(name, []).append(float(value))
 
+    shared = labelled(spec)
     g0 = None
     for t in times:
         s = states[int(round(t / dt))]
@@ -292,6 +313,20 @@ def readouts(spec, states, cell=None):
         }
         for row in rows:
             put(f"n_{row}", amounts[row])
+        if shared:  # FR-42 (D289): each labelled row's amount by label, the row times its share.
+            share = np.asarray(s.label_share)  # [labelled species, label, cell]
+            for j, (row, names) in enumerate(shared):
+                n = float(reference[species.index(row), at] + increment[species.index(row), at])
+                for k, name in enumerate(names):
+                    put(f"label_{row}_{name}", n * float(share[j, k, at]))
+            # D296: each hold at the exported cell by its durable fate row's labels, the hold
+            # times its share (the operator the only pool reporter; its pools, its releases).
+            pooled = np.asarray(s.label_pool_share)[0]  # [label, pool]
+            hold = np.asarray(s.poly_hold_fmol)
+            for i, _, r in releases:
+                names = dict(shared).get(r.fates[0][0], ())
+                for k, name in enumerate(names):
+                    put(f"label_H_{r.id}_{name}", float(hold[i, 0]) * float(pooled[k, i]))
         free = np.asarray(s.poly_free_machines_fmol)
         for i in here["pool"]:
             put(f"F_{block.pools[i].id}", free[i])
@@ -476,7 +511,7 @@ def main(argv=None):
         all=worlds.names(),
         release=worlds.release_names(),
         release2=[*worlds.r2_names(), *worlds.r2_check_names(), "A1"],
-        switch=["R1S returned", "R1S held"],
+        switch=["R1S returned", "R1S held", "R1SU returned", "R1SU held"],
     ).get(args.worlds[0] if len(args.worlds) == 1 else None, args.worlds)
     record = dict(
         what="The engine's development runs of option A (G4). Development, not judged.",
