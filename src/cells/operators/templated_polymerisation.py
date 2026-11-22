@@ -848,9 +848,8 @@ def declaration_to_dict(d):
 def grid_time(time, dt):
     """The clock's instant that `time` names on steps of dt, or None where it names none: the
     predicate this operator's schedules read for their change times, a release's durable fraction
-    and class switches among them. It is one of two seams for D283's same-instant snap; the other
-    is the host-side cohort's window edges (validation/gene_regulation/cohort.same_instant). D283's
-    stage 2 widens it to the clock's predicate (cells.numerics.clock_instants.on_grid)."""
+    and class switches among them: D283's clock predicate (cells.numerics.clock_instants.on_grid),
+    as the host-side cohort's window edges read its same_instant."""
     return on_grid(time, dt)  # D283: the clock's one predicate, the same-instant tolerance.
 
 
