@@ -9358,3 +9358,39 @@ two-sided.
   - for set 2, equal vesicle sizes across the two papers.
 - The Lean lane had viewed the figure before the test (D287).
 
+## D299: An external review's four architecture items, adopted into the queue
+
+2026-11-22, about 16:57 UTC. An external reviewer, relayed by the user, asked the next architecture work
+to focus on four items. The user: "lets go on 2. as you suggest put it on our backlog / 3. as you guys
+suggest / 4. lets go on this as you see fit in the queue".
+1. **Finish FR-42's neutral-label separation** (in progress, D289 and D296):
+   - one physical population, with labels as passive shares;
+   - FR-38's and FR-33's consumers moved onto it;
+   - verified across label count, nonlinear loss, transport and restart.
+
+   What remains is one independent acceptance on the stacked head: transport with face heat (F2 on),
+   restart mid-transfer and with pools, replacement, and a reused label. D1's own-potential family rows
+   stay as they are until the user decides their future.
+2. **One small evolving-cell integration case, on the backlog.**
+   - A read-only inventory ranks the composition matrix's refused volume and lifecycle combinations by
+     the approved items they block, preferring a missing declared read or accounting term over a new law.
+   - The lead chooses from it.
+   - It uses the declared-read and ownership contracts, and unsupported combinations stay explicitly
+     refused. It may extend to a lifecycle event, such as FR-38's replace-and-restart.
+3. **Affordable realistic-duration runs,** judged by end-to-end cost per simulated biological duration at
+   a stated accuracy, fixed before timing with the registered step-error estimate. Ensemble throughput,
+   interacting-tissue size and biological duration are reported separately.
+   - The dt ladder names the limit that binds the step, and whether the implicit cycle block relaxes it.
+     The block's go returns to the user with those numbers (D290's premise was about 115 times too stiff).
+   - Also in this item: the runner overhead (the bit-identical closure reuse), the step-cost growth with
+     run length, and device row checks proven against the host checks.
+   - Ensemble throughput is measured first on the existing batch and vector CPU paths. The GPU planner
+     stays held until those numbers are in.
+4. **One executable static level-of-detail pair, queued by the lead.**
+   - The first pair is chosen from the read-only inventory: both versions through one physical interface,
+     a validity measure, declared conserved quantities, supported readouts, a validity range and error
+     limits.
+   - The reduced version is opt-in, the choice is made at definition and never at run time, out-of-range
+     use is refused, and the one-writer rule prevents double counting.
+   - The general level-of-detail contract follows from it.
+
