@@ -762,6 +762,11 @@
    "entity_sum(row.exchange_energy_magnitude_pJ, axis=None, xp=xp)"
   ],
   [
+   "operators/species_labels.py",
+   "advance",
+   "entity_sum(i, axis=1, xp=xp)"
+  ],
+  [
    "operators/species_reactions.py",
    "ledger_terms",
    "entity_sum(cell, axis=1, xp=xp)"

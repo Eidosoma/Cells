@@ -105,6 +105,14 @@ Idle (§4.5): no route, statically idle; every multiplier zero in a step, the st
 Within a step, each (species, node) entry is written only where a route with a positive multiplier
 changes it, and each node's fields only where such a route acts: a catalyst's or factor's row is
 read, never offset, and an idle node beside an active one keeps every field bit for bit.
+
+Labels (FR-42, D289; operators/species_labels.py): a reporter for its driven routes. Given labels
+(rows, arrival), the half-step also returns its one-way moves for the labelled rows
+(one_way_moves): each driven route's extent times its consumed coefficients as out and its produced
+ones, at the arrival label, as into. A passive route's extent is net, so one on a labelled row is
+refused at the definition until FR-42's stage 3 adds its one-way parts (check_labelled_routes). The
+physics is unchanged: the labelled call's state is bit for bit the unlabelled one's, and without
+labels nothing of it is traced.
 """
 
 import math
@@ -1278,10 +1286,11 @@ def _split(values, n):
     return values[..., :n], values[..., n:]
 
 
-def reactions_half_step(state, multiplier, h, p, *, xp=jnp):
+def reactions_half_step(state, multiplier, h, p, *, xp=jnp, labels=None):
     """(state after h of the network, validity): the network's rows and the operator's own fields,
     each entry selected where a route with a positive multiplier writes it, else its start value
-    (never offset by a computed zero, §4.5)."""
+    (never offset by a computed zero, §4.5). With labels (FR-42, D289; static), also its one-way
+    moves (one_way_moves)."""
     step = half_step_terms(state, multiplier, h, p, xp=xp)
     rows = p.reaction_rows
     n = p.active.shape[0]
@@ -1339,7 +1348,43 @@ def reactions_half_step(state, multiplier, h, p, *, xp=jnp):
             state.reaction_outside_energy_magnitude_pJ, outside_on, magnitude[1]
         ),
     )
-    return new, step.valid & _own_valid(new, p, xp=xp)
+    valid = step.valid & _own_valid(new, p, xp=xp)
+    if labels is None:
+        return new, valid
+    return new, valid, one_way_moves(step, multiplier, p, labels, xp=xp)
+
+
+def one_way_moves(step, multiplier, p, labels, *, xp=jnp):
+    """(out [m, node], into [m, label, node], ()) of the labelled rows over a half-step (FR-42's
+    interface, operators/contract.py; the network's node axis, cells then outside nodes): each
+    route's extent times its consumed coefficients, max(-nu, 0), as out, and times its produced
+    ones, max(nu, 0), as into at the arrival label, so a species on both sides of a route counts
+    its net. One-way only for driven routes, whose extents are >= 0: a passive route on a labelled
+    row is refused at the definition (check_labelled_routes). Into minus out is each row's
+    booked move, at rounding."""
+    net = network(p, multiplier, xp=xp)
+    taken = _to_nodes(xp.maximum(-net.nu, 0.0) * step.extent[None, :], net.node, net.size, xp=xp)
+    made = _to_nodes(xp.maximum(net.nu, 0.0) * step.extent[None, :], net.node, net.size, xp=xp)
+    label_rows, arrival = labels
+    match = p.reaction_rows[None, :] == xp.asarray(label_rows)[:, None]  # [m, network rows]
+    own, at = xp.any(match, axis=1)[:, None], xp.argmax(match, axis=1)
+    out = xp.where(own, taken[at], 0.0)
+    return out, arrival[:, :, None] * xp.where(own, made[at], 0.0)[:, None, :], ()
+
+
+def check_labelled_routes(spec, declaration):
+    """FR-42 (D289): a passive route reports no one-way parts yet (its extent is net), so one that
+    moves a labelled species is refused; FR-42's stage 3 adds them."""
+    from cells.operators.species_labels import labelled_species
+
+    labelled = labelled_species(spec)
+    for r in declaration.reactions:
+        named = sorted((set(dict(r.reactants)) | set(dict(r.products))) & labelled)
+        if r.law == PASSIVE_LAW and named:
+            raise ConfigError(
+                f"{LAW_ID}: reaction {r.id} is a passive route on labelled {', '.join(named)}, "
+                "whose one-way parts are not reported yet (FR-42's stage 3 adds them)"
+            )
 
 
 def stage_report(state, control, p, dt):
@@ -1551,6 +1596,7 @@ class LocalSpeciesReactions(Operator):
         check_turnover_rows(spec, declaration)
         check_replaced_slots(spec, declaration)
         route_tables(declaration, schedule, spec)  # FR-26: a founder's change after its death.
+        check_labelled_routes(spec, declaration)
 
     def read_slots(self, spec, declaration):
         """Door S: every finite outside node (its domain reads them all; held baths are masked)."""
@@ -1641,8 +1687,12 @@ class LocalSpeciesReactions(Operator):
     def statically_idle(self, p):
         return p.reaction_route_node.shape[0] == 0
 
-    def half_step(self, state, h, control, p, *, xp):
-        return reactions_half_step(state, control.reaction_multiplier, h, p, xp=xp)
+    def half_step(self, state, h, control, p, *, xp, labels=None):
+        """labels (FR-42, D289; static): (rows, arrival); the call then also returns its one-way
+        moves. Without it, today's call."""
+        if labels is None:
+            return reactions_half_step(state, control.reaction_multiplier, h, p, xp=xp)
+        return reactions_half_step(state, control.reaction_multiplier, h, p, xp=xp, labels=labels)
 
     def control_valid(self, control, p, *, xp):
         m = control.reaction_multiplier

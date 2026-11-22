@@ -1,8 +1,8 @@
 # Neutral arrival-time labels (FR-42): desk assessment
 
-**Status: proposed, 22 November 2026, by the kinds owner, for the lead.** Desk only: no code was
-written or run. The code was read at main 184fc81c. **S** marks this note's own reading or
-proposal.
+**Status: option A chosen (D289); stage 1 built (§7), 22 November 2026, by the kinds owner.**
+Sections 0 to 6 are the desk assessment, written before any code at main 184fc81c. **S** marks
+this note's own reading or proposal.
 
 **The request** (FR-42 in [FEATURE_REQUESTS.md](FEATURE_REQUESTS.md); D288; erratum B,
 [TEMPLATED_POLYMERISATION_LAWS.md](TEMPLATED_POLYMERISATION_LAWS.md) §9.8 and §9.13): a label never
@@ -169,3 +169,89 @@ transfer. C remains the host-side cross-check, as route 2 is for FR-38.
 (2A → B in local_species_reactions@1, with B removed or held). So stage 1's acceptance needs either
 that law with one-way reports, or a test-only law. N(t) = a/(1 + a t): the new cohort is 1/4 of
 3/4 at t = 1, against blank subtraction's 1/12.
+
+## 7. Stage 1 as built (pools)
+
+**The operator.** Labels are an operator, `neutral_arrival_labels@1` (operators/species_labels.py),
+not a registry key (the lead's approval). The registry is host side only, and the share state, each
+step's arrival label and the update reach the traced program. A composition's types are keyed on
+its law tuple, so a world without the operator keeps its composition key and its programs by
+construction.
+- **The declaration:** `species`, each with its `labels` (one to 16, distinct) and its `initial`
+  shares by node, a list that may be empty.
+- **The base** is each species' first label. It holds unlabelled material: all initial material
+  at every node not listed, and every arrival outside a window. Unlabelled material counts as a
+  share, as FR-42 asks.
+- **The schedule:** `label_arrivals`, per species, gives the label that each step's arrivals join.
+  - Switch times are exact multiples of dt, and each step's label is the one in force at its start.
+  - Steps are resolved by step index with execution/grid.py's `same_instant`, the predicate D283
+    names for label switches. So arrivals in the step that starts at a window's start join it,
+    and those in the step that starts at its end do not.
+  - `label_arrivals` is a new consumer of the on-grid rule, for D283's stage 2 to sweep.
+- **The state:** `label_share` [labelled species, label, cell] and `label_outside_share` [...,
+  outside node], padded labels at 0 under a presence mask. Checkpoints carry it, and a resume is
+  bit for bit, in process and through a snapshot.
+- **A diagnostic:** `label_closure_relative`, the largest closure residual of any reporter's
+  half-step. It measures each reporter's own consistency. That no other mover touched the row is
+  the refusals' to hold.
+
+**The interface** (operators/contract.py, the lead's leave; one for every operator, agreed with the
+gene regulation agent). A reporter's `half_step` takes `labels=(rows, arrival)` and returns
+`(state, valid, moves)`, its state and validity bit for bit the unlabelled call's.
+- **moves:** `(out [m, node], into [m, label, node], transfers)`, from the same combination as the
+  booked move.
+- **The node axis:** cells, then outside nodes. A reporter at cells only may give its cells alone.
+- **transfers:** `()` until stage 2.
+- **The composite** (models/pump_composite.py `_half_step`, the lead's leave) advances the shares
+  after each applied half-step of a reporter. That covers the midpoint path's second half-step;
+  its predictor runs unlabelled. Without a label owner no call changes.
+- **The reporters:**
+  - turnover: its booked clearance out, its production in;
+  - reactions: each driven route's extent times its consumed and produced coefficients, with the
+    lead's leave for species_reactions.py;
+  - templated polymerisation: the gene regulation lane's side, 824da76b.
+
+**The update** (numerics/label_shares.advance). Over one half-step it solves
+n1 = n0 e^(−u) + I φ(u), φ(u) = (1 − e^(−u))/u, for u ≥ 0 from the engine's own n0, n1 and the
+arrivals I, by bisection with a fixed count. Each label's material is then n0 s e^(−u) + into φ(u),
+and the shares are that over its sum.
+- **Non-negative for any step.** Zero stays zero until a label receives arrivals, so a new cohort
+  starts at zero.
+- **Exact for a constant per-molecule rate,** with constant arrival rates, within a half-step.
+  Turnover is such a case.
+- **Without arrivals the shares are kept bit for bit,** whatever the loss law. FR-42's reference,
+  dN/dt = −N², is therefore exact: the new cohort is 1/4 of 3/4 at t = 1, where blank subtraction
+  gives 1/12.
+- **Otherwise second order.** With k(t) and a(t) varying within a half-step of length h, the new
+  material it attributes exceeds the exact amount by (a(0) k′(0) − a′(0) k(0)) h³/12 + O(h⁴), and
+  the old falls short by as much. That is second order over a run, as Strang splitting is.
+  - A halving row measures this: per-halving ratios of 7.7 to 7.9, and the coefficient within 0.8%
+    at h = 0.0125.
+  - The error vanishes when a and k vary in proportion.
+- **Never the totals:** they are the engine's, so no record of the physical state moves.
+
+**How FR-42's check 2 is computed** (against the run's own per-molecule loss rate). The cohort's
+survivors at T are the arrivals of its window's steps, each carried by exp(−∫ k dt) to T.
+- Within each step, k = one-way loss / n, from the run's records.
+- Where k is constant within each step (first-order clearance at a scheduled rate), that
+  calculation and the update agree at rounding. The test row measures 8e-16 against the analytic
+  solution, at both boundaries.
+- Elsewhere they agree to the update's second order.
+
+**Refused in stage 1** (fail closed; each refusal names the stage that lifts it):
+- **Stage 2:** a labelled species moved inside the inner step, by a face, a route, a channel, a
+  pump, a kind or an in-step process (registry `moved_in_step`).
+- **Stage 3:** exchange on a labelled species, and a passive reaction route on a labelled row.
+  The reactions refuse the second themselves.
+- **No stage plans these yet:**
+  - other operators that write species amounts in their split parts without reporting;
+  - events that write amounts;
+  - closers, retirers, and providers of the amount references, such as a bath schedule.
+- **D1's families:** a world that declares them admits only turnover and declarations beside them
+  (D1's own refusal). Shares replace family rows.
+- **Not refused:** RK4 on the coupled path. It is vacuous, since a coupled RK4 composition already
+  refuses every split-only part, so no reporter runs there.
+
+**What moves: nothing.** Worlds without the operator keep their programs, which crossrev and G1
+check in the gate. In labelled worlds every physical field, observation and diagnostic is the
+unlabelled run's, bit for bit, in each test row.

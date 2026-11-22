@@ -70,6 +70,7 @@ from cells.operators.contract import (
     monotone_heat,
     part_stages,
     reads_of,
+    reports_labels,
 )
 from cells.registry import kind_registry, species_registry
 
@@ -1274,6 +1275,12 @@ class Composition:
         self.quantity_readers = quantity_readers(operators)
         self.domain_views = tuple(op for op in operators if op.VIEW_FOLLOWS_SPLIT)
         self.process_operator = next((op for op in operators if op.PROCESS), None)
+        # FR-42 (D289): the label owner and the split parts that report their one-way moves to it
+        # (static: without an owner no half-step call changes).
+        self.label_owner = next((op for op in operators if op.LABEL_OWNER), None)
+        self.label_reporters = frozenset(
+            op for op in self.splits if self.label_owner is not None and reports_labels(op)
+        )
         self.coupled = any(op.SPLIT and op.RK4 == "coupled" for op in operators) or (
             self.process_operator is not None
         )
@@ -1677,6 +1684,17 @@ class Composition:
         keywords = self._inner_keyword(op)
         if self._passes_view(op):
             keywords["view"] = self._view_for(op, p, xp=xp)(state)
+        labelled = op in self.label_reporters  # Static (FR-42): its moves advance the shares.
+
+        def applied(at, h, control):
+            """op's half-step from `at` as applied, with the label owner's shares advanced by its
+            moves where op reports to one (FR-42, D289; otherwise today's call)."""
+            if not labelled:
+                return op.half_step(at, h, control, p, xp=xp, **keywords)
+            labels = self.label_owner.labels(control, p)
+            new, ok, moves = op.half_step(at, h, control, p, xp=xp, labels=labels, **keywords)
+            return self.label_owner.advance(at, new, moves, p, xp=xp), ok
+
         routes = self.rate_routes.get(op)
         if routes and op.LAW_ID in self.midpoint:  # Static: a self-moved route's target.
             # The explicit midpoint (self_moved_targets): a predictor over h/2 with the factors
@@ -1686,14 +1704,14 @@ class Composition:
             start, routed0, _ = self._routed_control(op, routes, state, control, p, xp=xp)
             mid, ok0 = op.half_step(state, h / 2, start, p, xp=xp, **keywords)
             control, routed, records = self._routed_control(op, routes, mid, control, p, xp=xp)
-            new, ok = op.half_step(state, h, control, p, xp=xp, **keywords)
+            new, ok = applied(state, h, control)
             valid = _and(_and(routed0, ok0), _and(ok, routed))
             return _recorded(new, records, xp=xp), valid
         if routes:  # Static (B1′): its routed rates, from the state this half-step receives.
             control, routed, records = self._routed_control(op, routes, state, control, p, xp=xp)
-            new, ok = op.half_step(state, h, control, p, xp=xp, **keywords)
+            new, ok = applied(state, h, control)
             return _recorded(new, records, xp=xp), _and(ok, routed)
-        return op.half_step(state, h, control, p, xp=xp, **keywords)
+        return applied(state, h, control)
 
     def _routed_control(self, op, routes, state, control, p, *, xp):
         """(control with each of op's routed fields times its sources' factors, in declared

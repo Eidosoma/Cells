@@ -194,6 +194,18 @@ Declarations (class attributes):
   process moves inside the inner step, which an operator with ``PROCESS`` declares;
   ``species_moieties``, the net row change of each move it makes, which the registry's
   check_moieties holds to the model's moieties (docs/GENE_REGULATION_DESIGN.md §7.6).
+* Neutral arrival-time labels (FR-42, D289; operators/species_labels.py): a label owner
+  (``LABEL_OWNER``, part-less, at most one per composition) holds each labelled species' shares,
+  which the composite advances after every applied half-step of a reporter. A reporter is a split
+  part whose ``half_step`` takes ``labels=None`` (reports_labels). Given ``labels=(rows,
+  arrival)``, rows [m] the labelled species' rows and arrival [m, label] one-hot, the label the
+  step's window names, it returns ``(state, valid, moves)``: its state and validity bit for bit
+  the unlabelled call's, and moves = (out [m, node], into [m, label, node], transfers), from the
+  same combination as its booked move. out is the one-way amount each labelled row lost at each
+  node, into the one-way amount it gained by label (new material at the arrival label, material
+  that keeps its labels at theirs), and transfers () until transport reports (FR-42's stage 2).
+  The node axis is the cells, then the outside nodes; a reporter that acts at cells only may give
+  its cells alone. Without labels nothing of it is traced.
 * The run view (docs/RUN_VIEW_DESIGN.md §3; cells/records/run_view.py reads them, host side only):
   - ``VIEW_LAYERS``: its layers, each {"id", "label", "representation"}; None: undeclared,
     which the run-view writer refuses;
@@ -302,6 +314,12 @@ def factor_reads(operator):
     )
 
 
+def reports_labels(operator):
+    """Whether a split part reports its one-way moves to a label owner (FR-42, module
+    docstring): its half_step takes labels=."""
+    return operator.SPLIT and "labels" in inspect.signature(operator.half_step).parameters
+
+
 def part_stages(operator):
     """The stages at which an operator's own parts run: event (its event map), split (its
     half-steps) and inner (its in-step process)."""
@@ -399,6 +417,9 @@ class Operator:
     RECORD_REFERENCES = MappingProxyType({})
     # A declaration with no part and no field (module docstring; check_declarations).
     DECLARATION_ONLY = False
+    # FR-42 (module docstring): a part-less owner of label shares, advanced by the composite from
+    # its reporters' moves.
+    LABEL_OWNER = False
 
     @classmethod
     def observed_columns(cls):
@@ -851,13 +872,17 @@ def check_declarations(operator):
         and not (
             (operator.ACCEPTS_WRITES and operator.VIEW_FIELDS)
             or (operator.STATE_AXES and set(operator.STATE_AXES) <= set(operator.ACCEPTS_WRITES))
+            or (operator.LABEL_OWNER and operator.STATE_AXES)
         )
     ):
         raise ValueError(
             f"{name}: an operator contributes at least one part, or is a state owner that "
             "provides views of fields later operators write (ACCEPTS_WRITES), or owns only "
-            "fields later operators write, or is a declaration (DECLARATION_ONLY)"
+            "fields later operators write, or owns label shares (LABEL_OWNER), or is a "
+            "declaration (DECLARATION_ONLY)"
         )
+    if operator.LABEL_OWNER and (operator.EVENT or operator.SPLIT or operator.PROCESS):
+        raise ValueError(f"{name}: a label owner has no part; the composite advances its shares")
     for field in operator.STATE_AXES:
         booked = field in operator.HEAT_FIELDS or field in operator.WORK_FIELDS
         if field.endswith((HEAT_SUFFIX, WORK_SUFFIX)) != booked:
