@@ -4,6 +4,21 @@ R2 integrates MT-1b's declared equations on its own stiff integrator. The engine
 judged against its outputs (`docs/MITOCHONDRIA_DESIGN.md`, the MT-1b draft and the face note's
 section 6). It reproduces no published model; that is MT-2's.
 
+## Status
+
+- **Outputs.** The committed `interface.json` and `RECEIPT.json` are the run of record of commit
+  61779e22, against the declaration before erratum 2. The results and findings below are that
+  run's.
+- **Erratum 2.** The lead's rulings of 22 November 2026 are implemented from commit b15dfcb1:
+  - traces at 1 pM, with the error control's floor scaled to the smallest trace;
+  - W3(d)'s O2 node from 60 s;
+  - a declared excluded window for scoring (its floor pending the erratum);
+  - ledgers over time in the interface;
+  - plant P-a's printed-exchange switch, and the three plants run in full;
+  - the trace check and the plants scored both at every output time and at plateau ends alone.
+  - The leak's reading is ruled: the IMS's own free H+.
+- **The rerun** waits for erratum 2's tag. Its results then replace this run's.
+
 ## Independence
 
 R2 was written from the declared documents alone, each read at its tag with `git show`:

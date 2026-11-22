@@ -190,19 +190,25 @@ def world_payload(world, run):
         k = (r["branch"], r["segment"])
         if k not in keys:
             keys.append(k)
+    coarse = world.declaration["protocol"]["output"]["coarse_dt_s"]
     for branch, seg in keys:
         rs = [r for r in rows if r["segment"] == seg and r["branch"] == branch]
+        # The ledgers over time are cumulative and smooth: they are kept on the coarse grid and
+        # at each segment's ends.
+        lr = [r for r in rs if r["side"] != "inside"
+              or abs(r["t"] / coarse - round(r["t"] / coarse)) < 1e-9]
         part = {"segment": seg, "branch": branch, "controls": rs[0]["controls"],
                 "t0": rs[0]["t"], "t1": rs[-1]["t"], "t": [fmt(r["t"]) for r in rs],
                 "readouts": {k: [fmt(r["readouts"][k]) for r in rs] for k in READOUTS},
                 "ledgers": {
                     "energy_residual": [fmt(r["energy_residual"]) for r in rs],
                     "dissipation_cumulative": [fmt(r["D"]) for r in rs],
+                    "ledger_t": [fmt(r["t"]) for r in lr],
                     "dissipation_cumulative_by_process": {
-                        k: [fmt6(r["D_by_process"][k]) for r in rs]
+                        k: [fmt6(r["D_by_process"][k]) for r in lr]
                         for k in model.PROCESSES + ("face",)},
                     "invariant_drift": {
-                        k: [fmt6(r["invariants"][k] - run["ref"]["inv"][k]) for r in rs]
+                        k: [fmt6(r["invariants"][k] - run["ref"]["inv"][k]) for r in lr]
                         for k in run["ref"]["inv"]},
                 },
                 "synthase_stall_mV": [fmt(r["stall_mV"]) for r in rs]}
@@ -350,7 +356,10 @@ def main(argv=None):
         start_small = settle_and_start(world_small, a.rule, log)["start"]
         small_runs = run_all(world_small, start_small, DELIVERED_RTOL, "Radau", WORLDS, log)
         trace, worst_trace = compare_runs(world, delivered, small_runs, bands)
-        log("trace check: worst change %.3e of a band (must stay below 0.1)" % worst_trace)
+        trace_ends, worst_trace_ends = compare_runs(world, delivered, small_runs, bands,
+                                                    where=lambda n, r: r["side"] == "end")
+        log("trace check: worst change %.3e of a band (must stay below 0.1); %.3e at plateau "
+            "ends" % (worst_trace, worst_trace_ends))
         # The classes left undetermined at 1 nM (erratum 2, item 4): (a)'s inhibitor branch and
         # (b)'s early transient, the first 2 s.
         focus = {
@@ -372,10 +381,16 @@ def main(argv=None):
                 pstart = settle_and_start(pworld, a.rule, log)["start"]
                 pruns = run_all(pworld, pstart, DELIVERED_RTOL, "Radau", WORLDS, log)
                 per, worst = compare_runs(world, delivered, pruns, bands)
+                per_end, worst_end = compare_runs(world, delivered, pruns, bands,
+                                                  where=lambda n, r: r["side"] == "end")
                 plants[pname] = {"what": plant["what"], "overrides": plant["overrides"],
                                  "worst_over_band": worst, "caught": bool(worst >= 3.0),
-                                 "per_world": per}
-                log("plant %s: worst change %.3g bands (caught at 3)" % (pname, worst))
+                                 "per_world": per,
+                                 "at_plateau_ends": {"worst_over_band": worst_end,
+                                                     "caught": bool(worst_end >= 3.0),
+                                                     "per_world": per_end}}
+                log("plant %s: worst change %.3g bands, %.3g at plateau ends (caught at 3)" % (
+                    pname, worst, worst_end))
         # The interface.
         N, P = world.forms(start)
         ctl4 = model.Controls(world, bath="trace")
@@ -433,6 +448,9 @@ def main(argv=None):
             },
             "trace_check": {"traces_M": small, "worst_over_band": worst_trace,
                             "passes": bool(worst_trace < 0.1), "per_world": trace,
+                            "at_plateau_ends": {"worst_over_band": worst_trace_ends,
+                                                "passes": bool(worst_trace_ends < 0.1),
+                                                "per_world": trace_ends},
                             "focus": focus},
             "scoring": decl.get("scoring"),
             "plants": plants,
