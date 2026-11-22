@@ -22,6 +22,59 @@
     "cells.shared_pool@1": "molecular-assembly"
   },
   "comparisons": {
+    "fr31-area-reference": {
+      "kind": "reference",
+      "models": [],
+      "laws": [],
+      "record_revision": "e4b729acf7e784cd088a3a9f05da4de42d5e8dd2",
+      "sources": {
+        "Declared area scaling and fixed-tension survival": "docs/VESICLE_PORES_LAWS.md#5-the-area-and-the-clock",
+        "Finite-cohort survival bound and endpoint construction": "lean/CellsProofs/Chemistry/VesicleArea.lean"
+      },
+      "driver": "lean/checks/vesicle_area.py",
+      "record": "lean/PROGRESS.md#fr31-area-bounds"
+    },
+    "fr42-window-reference": {
+      "kind": "reference",
+      "models": [],
+      "laws": [],
+      "record_revision": "e4b729acf7e784cd088a3a9f05da4de42d5e8dd2",
+      "sources": {
+        "Half-open windows and within-run label reuse": "docs/FEATURE_REQUESTS.md#fr-42--neutral-arrival-time-labels-that-leave-the-dynamics-unchanged",
+        "FR-38 release-marking and chase denominator": "docs/FEATURE_REQUESTS.md#fr-38--rna-release-from-its-template-into-two-pools-with-different-lifetimes",
+        "Point-arrival recurrence and survival of the original cohort": "lean/CellsProofs/Chemistry/ArrivalWindow.lean",
+        "Host calculation for uniformly spread arrivals": "validation/gene_regulation/cohort.py#L123-L180"
+      },
+      "driver": "lean/checks/arrival_windows.py",
+      "record": "lean/PROGRESS.md#fr42-release-windows"
+    },
+    "fr38-release-class-window": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [],
+      "operators": [
+        "cells.templated_polymerisation@1"
+      ],
+      "engine_revision": "57cf9a4ed0b68454232a3c531c14e1b725853955",
+      "record_revision": "e4b729acf7e784cd088a3a9f05da4de42d5e8dd2",
+      "sources": {
+        "One-way release from the template hold into the scheduled class and fate": "src/cells/operators/templated_polymerisation.py#L1201-L1224",
+        "Template hold and release classes in the R1 world": "validation/gene_regulation/worlds.py#L519-L558",
+        "Schedule controls on the engine grid": "src/cells/definitions/pump_composite_spec.py#L258",
+        "Public windowed engine execution": "src/cells/execution/windows.py",
+        "Compiled collection and class-specific release counters": "validation/gene_regulation/engine_run.py#L393-L411",
+        "Observation horizon and grid of the starting fixture": "validation/gene_regulation/kernel.py#L28-L36",
+        "Fate export and release-counter selection": "validation/gene_regulation/cohort.py#L240-L310"
+      },
+      "record_inputs": {
+        "Exact release-window and chase identities": "lean/CellsProofs/Chemistry/ArrivalWindow.lean"
+      },
+      "driver": "lean/checks/arrival_windows.py",
+      "record": "lean/PROGRESS.md#fr42-release-windows"
+    },
     "vesicle-birth-returns": {
       "kind": "engine",
       "models": [
@@ -3297,6 +3350,109 @@
     }
   },
   "claims": [
+    {
+      "id": "vesicle-area-survival",
+      "category": "molecular-assembly",
+      "title": "Vesicle area variation bounds survival during a tension hold",
+      "statement": "Under a common hazard per unit area, survival evaluated at the initial mean area bounds the cohort’s survival from below. The linear interpolation of the two endpoint survivals at that mean bounds it from above. An endpoint mixture attains the upper bound.",
+      "assumptions": [
+        "Every vesicle has fixed area during observation, the same integrated hazard per unit area and single-vesicle survival exp(−qA). The initial finite cohort weights are nonnegative and sum to one.",
+        "For the upper bound, L and U are actual limits on the same initial cohort’s areas and L < U. If L = U the common single-area result is exact. Positive exposure and unequal areas with positive weights give a strict lower bound.",
+        "For spherical vesicles the required mean area is 4π times the mean of squared radii. Inferring area from a mean radius alone requires further information. D293’s set-2 allowance addresses area differences across preparations. The bound here concerns the survival curve within one cohort."
+      ],
+      "formal": {
+        "status": "proved",
+        "theorems": {
+          "CellsProofs.Chemistry.VesicleArea.at_mean_le": "lean/CellsProofs/Chemistry/VesicleArea.lean",
+          "CellsProofs.Chemistry.VesicleArea.at_mean_lt": "lean/CellsProofs/Chemistry/VesicleArea.lean",
+          "CellsProofs.Chemistry.VesicleArea.endpoint_mixture": "lean/CellsProofs/Chemistry/VesicleArea.lean",
+          "CellsProofs.Chemistry.VesicleArea.le_chord": "lean/CellsProofs/Chemistry/VesicleArea.lean",
+          "CellsProofs.Chemistry.VesicleArea.population_le_chord": "lean/CellsProofs/Chemistry/VesicleArea.lean",
+          "CellsProofs.Chemistry.VesicleArea.one_area": "lean/CellsProofs/Chemistry/VesicleArea.lean"
+        },
+        "sources": {
+          "Mathlib exponential convexity and strict convexity, imported for survival": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/Convex/SpecificFunctions/Basic.lean#L37-L60",
+          "Mathlib finite Jensen inequality and its strict form, specialized to initial cohort weights": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/Convex/Jensen.lean#L63-L100",
+          "D293 records a separate area allowance across preparations for the registered blind test": "https://github.com/Eidosoma/Cells/blob/562cc9b4ec5225089feee26cab3ad2ef42405e02/docs/DECISIONS.md#d293-the-rupture-blind-tests-stage-1-rulings-made-before-any-prediction-or-held-out-value",
+        "Cells tagged FR-31 law sheet, area scaling and survival": "https://github.com/Eidosoma/Cells/blob/57cf9a4ed0b68454232a3c531c14e1b725853955/docs/VESICLE_PORES_LAWS.md#5-the-area-and-the-clock"
+        }
+      },
+      "numerical": {
+        "status": "open",
+        "comparisons": [
+          "fr31-area-reference"
+        ],
+        "result": "Four synthetic calculations passed. With mean area 2 and range 1 to 3, the lower and upper bounds are 1/4 and 5/16 at the selected exposure. Two cohorts give 5/16 and 9/32. Equal areas and zero exposure give equality. An FR-31 engine comparison is pending."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Initial vesicle areas from the same at-risk population, held tension, and time to first rupture or censoring per vesicle. Linked observations would quantify the mean-area approximation.",
+        "unit": "Surviving fraction at a stated exposure",
+        "evidence": []
+      }
+    },
+    {
+      "id": "release-window-survival",
+      "category": "reactions-and-binding",
+      "title": "A reused release-time label carries forward its older survivors",
+      "statement": "Half-open arrival windows assign releases at a shared boundary exactly once. In a well-mixed pool with common survival factors, the surviving amount after label reuse is the sum of the two separately followed release histories. The chase fraction uses the original cohort alive at window close.",
+      "assumptions": [
+        "Time is indexed by step boundaries. In the exact event example a molecule is marked on detachment and experiences the following interval’s survival factor. Sampling is before any new releases at that sample boundary.",
+        "Every member of the same physical pool experiences the same survival factor in each interval. For a physical chase each factor is in [0,1]. A reused label receives new material from nonoverlapping windows.",
+        "A zero denominator gives an undefined chase fraction. A host readout with only interval totals assumes a within-interval arrival profile. The synthetic counter comparison uses uniform arrivals and constant per-molecule loss."
+      ],
+      "uses": [
+        "fr42-cohort-shares"
+      ],
+      "formal": {
+        "status": "proved",
+        "theorems": {
+          "CellsProofs.Chemistry.ArrivalWindow.at_start": "lean/CellsProofs/Chemistry/ArrivalWindow.lean",
+          "CellsProofs.Chemistry.ArrivalWindow.at_end": "lean/CellsProofs/Chemistry/ArrivalWindow.lean",
+          "CellsProofs.Chemistry.ArrivalWindow.adjacent": "lean/CellsProofs/Chemistry/ArrivalWindow.lean",
+          "CellsProofs.Chemistry.ArrivalWindow.add_histories": "lean/CellsProofs/Chemistry/ArrivalWindow.lean",
+          "CellsProofs.Chemistry.ArrivalWindow.reuse": "lean/CellsProofs/Chemistry/ArrivalWindow.lean",
+          "CellsProofs.Chemistry.ArrivalWindow.chase_only": "lean/CellsProofs/Chemistry/ArrivalWindow.lean",
+          "CellsProofs.Chemistry.ArrivalWindow.chase_fraction": "lean/CellsProofs/Chemistry/ArrivalWindow.lean",
+          "CellsProofs.Chemistry.ArrivalWindow.empty_fraction": "lean/CellsProofs/Chemistry/ArrivalWindow.lean",
+          "CellsProofs.Chemistry.ArrivalWindow.release_example": "lean/CellsProofs/Chemistry/ArrivalWindow.lean"
+        },
+        "sources": {
+          "Mathlib product over the successor range, imported for survival across a chase": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Group/Finset/Basic.lean#L503",
+          "FR-42 boundary and reuse requirements": "https://github.com/Eidosoma/Cells/blob/57cf9a4ed0b68454232a3c531c14e1b725853955/docs/FEATURE_REQUESTS.md#fr-42--neutral-arrival-time-labels-that-leave-the-dynamics-unchanged",
+          "FR-38 clarification of release, survivors and the chase denominator": "https://github.com/Eidosoma/Cells/blob/57cf9a4ed0b68454232a3c531c14e1b725853955/docs/FEATURE_REQUESTS.md#fr-38--rna-release-from-its-template-into-two-pools-with-different-lifetimes"
+        }
+      },
+      "numerical": {
+        "status": "open",
+        "comparisons": [
+          "fr42-window-reference",
+          "fr38-release-class-window"
+        ],
+        "result": "For 10 releases, 8 remain at close and 6 later, giving 6/8. The reused label ends with 3 old plus 1 new. The compiled FR-38 development fixture routed all five steps to the expected classes in both fates with zero new chain completions. Its host reconstruction added both surviving histories within 2 × 10⁻¹⁴ relative tolerance. The FR-42 share-based engine and label-neutral energy comparison remain open."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Cohort membership requires the time of release from the template and survival of the same molecules to a later sample.",
+        "unit": "Fraction (0–1)",
+        "finding": "Bellecourt et al. measured detachment separately from synthesis. Their released-RNA fraction has a different denominator from survival of a release-marked cohort.",
+        "evidence": [
+          {
+            "dataset_id": "bellecourt-2019-hisl-release",
+            "manifest": "lean/checks/data/bellecourt2019_rna_release.json",
+            "citation": "Bellecourt et al. (2019), Journal of Molecular Biology 431, 696–713",
+            "doi": "10.1016/j.jmb.2019.01.003",
+            "locator": "Figure 5A and accompanying Results, with the time course in Figure S5",
+            "context": "In vitro bacterial transcription. The assay distinguished released terminator-length RNA and template-associated terminator-length RNA. The chase followed labelling of nascent RNA.",
+            "role": "descriptive",
+            "observed": 0.94,
+            "uncertainty": "The study reports ±0.02 for the wild-type release fraction under reducing conditions. Figure 5A pools the 120, 240 and 480 s samples.",
+            "assessment": "This measures population detachment. Individual completion-to-release delays and later survival of the same released cohort remain unmeasured.",
+            "report": "lean/PROGRESS.md#fr42-release-windows"
+          }
+        ]
+      }
+    },
     {
       "id": "fr42-cohort-shares",
       "category": "reactions-and-binding",
