@@ -21,6 +21,12 @@ cell, so outside >= 0, within its stored amounts' rounding.
   (exchange_moved_fmol counts export positive, so an import's is negated);
 - and, beside them, the amount at each of the cell's nodes and the cumulative production there
   (turnover_produced_fmol, with a reaction's produced amount).
+- **A label family** (D1, the species registry's label_families): the export takes a family's ID
+  as its species and sums the family's rows, or one of its rows alone. Since the registry admits
+  a family's rows only under movers linear in each row, a family row's faces, junctions and patches
+  are admitted here, and their cumulative records are reported per host (host_transfer_fmol: a
+  face or junction from its sender to its receiver, a patch outward from its cell). The engine's
+  own laws move each row, so no tracer is needed: two-way transport is traced exactly.
 
 **What each tool reads, and what it refuses at setup** (check_movers, fail closed). The export
 reads turnover, exchange and the reactions; the tracer reads turnover and exchange only. Each
@@ -232,10 +238,13 @@ REFUSED = {
 }
 
 
-def check_movers(spec, species, reads):
+def check_movers(spec, species, reads, *, host_transport=False):
     """Refuse a world in which anything but the laws `reads` could move the species (module
     docstring; fail closed): a face's diffusivity, a junction's or a patch's permeability for it,
-    every operator law neither read nor shown inert (REFUSED says why), and every declared kind."""
+    every operator law neither read nor shown inert (REFUSED says why), and every declared kind.
+    host_transport (the export of a label family's row, D1): its faces, junctions and patches are
+    admitted, since the registry's check_families admits only movers linear in each row, and the
+    export reads their records (host_transfer_fmol)."""
     m = spec.model
     s = list(m.species_ids).index(species)
     found = []
@@ -245,13 +254,13 @@ def check_movers(spec, species, reads):
             "it is charged, or its charge is not declared (its channel, pump and membrane fluxes "
             "are in-step laws neither tool reads)"
         )
-    for face in getattr(m, "faces", ()):
+    for face in () if host_transport else getattr(m, "faces", ()):
         if face.diffusivity_m2_per_s[s] != 0:
             found.append(f"face {face.id} diffuses it")
-    for junction in getattr(m, "junctions", ()):
+    for junction in () if host_transport else getattr(m, "junctions", ()):
         if junction.permeability_m_per_s[s] != 0:
             found.append(f"junction {junction.id} permeates it")
-    for patch in getattr(m, "membranes", ()):
+    for patch in () if host_transport else getattr(m, "membranes", ()):
         if patch.permeability_m_per_s[s] != 0:
             found.append(f"patch {patch.id} permeates it")
     for op in m.operators:
@@ -348,9 +357,16 @@ def region_rows(spec, times, states, species, region, *, samples=None):
     {times, inside_fmol, outside_fmol, whole_cell_fmol, node_fmol: {node: [...]},
     produced_fmol: {node: [...]}, loss_fmol: {node: [...]}, transfer_fmol: {route: [...]}, region,
     cell_nodes}."""
-    check_movers(spec, species, EXPORT_READS)
+    from cells.registry import species_registry
+
+    family = species_registry.family_rows(spec, species)
+    rows = list(family) if family is not None else [species]
+    labelled = family is not None or species_registry.family_of(spec, species) is not None
+    for row in rows:
+        check_movers(spec, row, EXPORT_READS, host_transport=labelled)
     _distinct(region)
-    wmap = world_map(spec, species)
+    wmaps = [world_map(spec, row) for row in rows]
+    wmap = wmaps[0]  # Nodes, owners and routes are the world's, one per row alike.
     _, layout = get_model(spec.model).initial_values(spec)
     owners = {wmap["owner"].get(n) for n in region if n not in wmap["cells"]}
     owners |= {n for n in region if n in wmap["cells"]}
@@ -367,21 +383,31 @@ def region_rows(spec, times, states, species, region, *, samples=None):
             raise ValueError("two samples name the same step")
         picked.sort()
     eps = np.finfo(float).eps
+    routes = list({r["id"]: r for w in wmaps for r in w["routes"]}.values())
+    hosts = _cell_hosts(spec, cell_nodes, rows) if labelled else []
     out = dict(times=[], inside_fmol=[], outside_fmol=[], whole_cell_fmol=[],
                node_fmol={n: [] for n in cell_nodes}, produced_fmol={n: [] for n in cell_nodes},
                loss_fmol={n: [] for n in cell_nodes},
-               transfer_fmol={r["id"]: [] for r in wmap["routes"]},
-               region=list(region), cell_nodes=cell_nodes)  # fmt: skip
+               transfer_fmol={r["id"]: [] for r in routes},
+               region=list(region), cell_nodes=cell_nodes, rows=rows)  # fmt: skip
+    if labelled:
+        out["host_transfer_fmol"] = {h["id"]: [] for h in hosts}
     if len(times) != len(states):
         raise ValueError("times and states differ in length")
     for k in picked:
         t, state = times[k], states[k]
-        amount, made, lost, moved = node_records(spec, layout, state, wmap)
+        records = [node_records(spec, layout, state, w) for w in wmaps]
+        amount = sum(r[0] for r in records)  # A family's rows summed (D1); one row as before.
+        made, lost = sum(r[1] for r in records), sum(r[2] for r in records)
+        moved = {}
+        for w, r in zip(wmaps, records, strict=True):
+            for route, value in zip(w["routes"], r[3], strict=True):
+                moved[route["id"]] = moved.get(route["id"], 0.0) + value
         inside = sum(amount[index[n]] for n in region)
         whole = sum(amount[index[n]] for n in cell_nodes)
         # The row's bounds (finding 5): 0 <= inside <= whole cell, so outside >= 0, within the
         # rounding of the cell's stored amounts.
-        stored = stored_magnitudes(layout, state, wmap)
+        stored = sum(stored_magnitudes(layout, state, w) for w in wmaps)
         tol = CLOSURE_ULPS * eps * sum(abs(amount[index[n]]) + stored[index[n]] for n in cell_nodes)
         if inside < -tol or whole - inside < -tol:
             raise ValueError(
@@ -396,8 +422,36 @@ def region_rows(spec, times, states, species, region, *, samples=None):
             out["node_fmol"][n].append(float(amount[index[n]]))
             out["produced_fmol"][n].append(float(made[index[n]]))
             out["loss_fmol"][n].append(float(lost[index[n]]))
-        for r, value in zip(wmap["routes"], moved, strict=True):
-            out["transfer_fmol"][r["id"]].append(float(value))
+        for r in routes:
+            out["transfer_fmol"][r["id"]].append(float(moved.get(r["id"], 0.0)))
+        for h in hosts:
+            record = np.asarray(getattr(state, h["field"]))
+            value = sum(record[list(spec.model.species_ids).index(row), h["slot"]] for row in rows)
+            out["host_transfer_fmol"][h["id"]].append(float(value))
+    return out
+
+
+def _cell_hosts(spec, cell_nodes, rows):
+    """The faces, junctions and patches that move a label family's rows at the cell's nodes (D1):
+    [{id, field, slot, from, to}], each with its cumulative record's orientation (the engine's: a
+    face or a junction from its sender to its receiver, a patch outward from its cell)."""
+    m = spec.model
+    ids = list(m.species_ids)
+    out = []
+    for field, kind, coefficient, ends in (
+        ("face_transferred", getattr(m, "faces", ()), "diffusivity_m2_per_s",
+         lambda e: (e.sender, e.receiver)),
+        ("junction_transferred", getattr(m, "junctions", ()), "permeability_m_per_s",
+         lambda e: (e.sender, e.receiver)),
+        ("membrane_transferred", getattr(m, "membranes", ()), "permeability_m_per_s",
+         lambda e: (e.inside, e.outside)),
+    ):  # fmt: skip
+        for slot, e in enumerate(kind):
+            if not any(getattr(e, coefficient)[ids.index(r)] for r in rows):
+                continue
+            a, b = ends(e)
+            if a in cell_nodes or b in cell_nodes:
+                out.append(dict(id=e.id, field=field, slot=slot, **{"from": a, "to": b}))
     return out
 
 

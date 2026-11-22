@@ -35,6 +35,21 @@ and 10% on the right. Each diffuses down its own gradient, so `L` on the right r
 A tracer of `S` driven by net records would see no movement and keep 0.1 there, so `trace` refuses
 the face at setup.
 
+**FR-33's acceptance on a label family** (synapse_world, D1): two synapse regions, finite outside
+nodes `syn_1` and `syn_2` of 1 pL, joined by a face that diffuses the protein at R_SYNAPSE per
+node, each bounded by a contact patch to the cell that nothing crosses. `P` is declared as a label
+family of two rows, `P_L` (labelled, 1 mM in syn_1) and `P_U` (unlabelled, 1 mM in syn_2), each
+0.1 mM elsewhere, with equal coefficients, so the engine's own face law carries each row both
+ways. With `degrade`, turnover clears both rows in syn_1, alike (a family's clearance must match on
+every row). The
+engine's records then show pure redistribution (syn_1's loss of label is syn_2's gain, the face's
+record, and the labelled total is stable) or degradation (the labelled total falls by the clearance
+record), exactly to the engine's numerics, with no resolution bound.
+- **Why not two compartments of one cell:** a cell-owned compartment can carry no face, and no
+  constant-field route without a declared kind, and turnover refuses a species that permeates a
+  patch or a junction (it would have no material-rate bound). So within one cell the engine cannot
+  yet diffuse a cleared protein between two compartments: an engine gap, recorded for FR-33.
+
 Run: PYTHONPATH=src:. JAX_ENABLE_X64=1 JAX_PLATFORMS=cpu python -m validation.regions.example
 """
 
@@ -54,6 +69,10 @@ COHORTS = {"from_ecs_0": {base.NODE_T: 1.0}, "in_cell": {base.CELL: 1.0}}
 LABELS = [(0.0, "pulse"), (T_PULSE, "chase")]
 R_DIFFUSION = math.log(2) / 2  # 1/s: each node's exchange rate in the reviewer's case.
 FACE_AREA_M2, FACE_LENGTH_M = 1e-10, 1e-5
+R_SYNAPSE = 1.0  # 1/s: each synapse region's exchange rate through their face.
+K_DEGRADE = 0.5  # 1/s: the protein's clearance in syn_1, when degraded.
+SYNAPSES = ("syn_1", "syn_2")
+FAMILY = {"id": "P", "rows": ["P_L", "P_U"]}
 
 
 def world():
@@ -96,6 +115,50 @@ def two_node_diffusion(*, dt=0.01, steps=100):
             floor_fmol=base.fx.FLOOR_FMOL,
             concentrations_mM={"left": left, "right": right},
         )
+    return raw
+
+
+def synapse_world(*, degrade=0.0, dt=1e-3, steps=200):
+    """FR-33's acceptance world on a label family (module docstring): turnover clears P_L and P_U
+    in syn_1 at `degrade` (1/s) alike, so a zero rate and a positive one share one program."""
+    pl_m3 = 1e-15
+    diffusivity = R_SYNAPSE * FACE_LENGTH_M * pl_m3 / FACE_AREA_M2  # r = D A / (L V), V = 1 pL.
+    end = dt * steps
+    raw = base.fx.world(
+        cells=((base.CELL, 1.0),),
+        nodes=tuple((s, 1.0) for s in SYNAPSES),
+        contacts=(("contact_1", base.CELL, "syn_1"), ("contact_2", base.CELL, "syn_2")),
+        faces=(("face_12", "syn_1", "syn_2", FACE_AREA_M2, FACE_LENGTH_M),),
+        dt=dt,
+        end=end,
+        observation_times=base.fx.grid_times(end, dt, end / 10),
+        diffusivity=diffusivity,
+    )
+    for name, node in (("P_L", "syn_1"), ("P_U", "syn_2")):
+        # 1 mM where it starts and 0.1 mM elsewhere: the protein's total is even, so only the
+        # labels move (at a 1e-9 mM trace a node's face terms failed the energy ledger's check).
+        others = {n: 0.1 for n in (base.CELL, *SYNAPSES) if n != node}
+        raw = add_inventory_species(
+            raw,
+            name,
+            trace_mM=base.fx.TRACE_mM,
+            diffusivity_m2_per_s=diffusivity,
+            floor_fmol=base.fx.FLOOR_FMOL,
+            concentrations_mM={node: 1.0, **others},
+        )
+    m = raw["model"]
+    m["label_families"] = [copy.deepcopy(FAMILY)]
+    m["operators"].append(dict(
+        law=base.fx.TURNOVER,
+        species=[dict(id=r, catalogue=None, evidence=None) for r in FAMILY["rows"]],
+        routes=[dict(id=f"degrade_{r}", species=r, node="syn_1", kind="clearance")
+                for r in FAMILY["rows"]],
+        templates=[],
+    ))  # fmt: skip
+    raw["experiment"]["turnover_controls"] = [
+        dict(route_id=f"degrade_{r}", carrier_id=None, schedule=[dict(time=0.0, rate=degrade)])
+        for r in FAMILY["rows"]
+    ]
     return raw
 
 

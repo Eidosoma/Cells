@@ -243,9 +243,20 @@ class Declared:
     moieties: tuple = ()
     potential_set: str | None = None
     proton_buffers: tuple = ()
+    families: tuple = ()  # Family, ...: label families (D1), in declared order.
 
     def entry(self, species):
         return next((e for e in self.entries if e.id == species), None)
+
+
+@dataclass(frozen=True)
+class Family:
+    """A label family (D1, docs/COHORT_LABELS_DESIGN.md): its ID and its rows, two or more of the
+    model's species that label one species' material. Each row stays an ordinary row, so every law,
+    ledger and energy term is unchanged; check_families holds the rows to one species' terms."""
+
+    id: str
+    rows: tuple
 
 
 @dataclass(frozen=True)
@@ -297,6 +308,7 @@ MODEL_KEY = "standard_concentration_mM"
 MOIETIES_KEY = "moieties"  # The model's conserved moieties (module docstring), optional.
 SET_KEY = "potential_set"  # The named potential set the model's potentials come from, optional.
 BUFFERS_KEY = "proton_buffers"  # {row: pK} applied on the named set's proton reference, optional.
+FAMILIES_KEY = "label_families"  # [{id, rows}]: rows that are labels of one species, optional (D1).
 MOIETY_KEYS = ("id", "weights")
 FORM_KEYS = ("id", "counts", "standard_mu_RT")  # A form's required keys; "valence" is optional.
 
@@ -447,7 +459,12 @@ def _parse_buffers(raw, rows, potential_set):
 
 
 def build(
-    raw_entries, standard_concentration_mM=None, moieties=None, potential_set=None, buffers=None
+    raw_entries,
+    standard_concentration_mM=None,
+    moieties=None,
+    potential_set=None,
+    buffers=None,
+    families=None,
 ):
     """The registry of entries {id, any of REGISTRY_KEYS}, in the model's species order, at c0
     (mM; required when an entry declares a potential), with the model's moieties, named potential
@@ -501,9 +518,49 @@ def build(
         )
     if buffers is not None:
         buffers = _parse_buffers(buffers, {e.id for e in entries}, potential_set)
+    if families is not None:
+        families = _parse_families(families, [e.id for e in entries])
     return Declared(
-        tuple(entries), standard_concentration_mM, moieties or (), potential_set, buffers or ()
+        tuple(entries),
+        standard_concentration_mM,
+        moieties or (),
+        potential_set,
+        buffers or (),
+        families or (),
     )
+
+
+def _parse_families(raw, rows):
+    """The model's label families, [{id, rows: [row, ...]}, ...] (D1): each ID a non-empty string
+    named once and no row's, each family two or more distinct rows of the model, and each row in
+    one family at most."""
+    if type(raw) is not list or not raw:
+        raise ConfigError(f"The model's {FAMILIES_KEY} is a non-empty list of {{id, rows}}")
+    out, seen, members = [], set(), set()
+    for item in raw:
+        if not isinstance(item, dict):
+            raise ConfigError(f"Each of the model's {FAMILIES_KEY} is an object {{id, rows}}")
+        _fields(item, {"id", "rows"}, "a label family")
+        name, family_rows = item["id"], item["rows"]
+        if type(name) is not str or not name or name in seen or name in rows:
+            raise ConfigError(
+                f"A label family's id is a non-empty string, named once and no species': {name!r}"
+            )
+        seen.add(name)
+        if (
+            type(family_rows) is not list
+            or len(family_rows) < 2
+            or len(set(family_rows)) != len(family_rows)
+        ):
+            raise ConfigError(f"label family {name}: its rows are two or more distinct species")
+        for row in family_rows:
+            if row not in rows:
+                raise ConfigError(f"label family {name}: {row!r} is not a species of the model")
+            if row in members:
+                raise ConfigError(f"label family {name}: {row} is already another family's row")
+            members.add(row)
+        out.append(Family(name, tuple(family_rows)))
+    return tuple(out)
 
 
 def parse_entries(raw_model):
@@ -520,7 +577,8 @@ def parse_entries(raw_model):
     moieties = raw_model.pop(MOIETIES_KEY, None)
     named = raw_model.pop(SET_KEY, None)
     buffers = raw_model.pop(BUFFERS_KEY, None)
-    if (c0, moieties, named, buffers) == (None,) * 4 and not any(k for _, k in popped):
+    families = raw_model.pop(FAMILIES_KEY, None)
+    if (c0, moieties, named, buffers, families) == (None,) * 5 and not any(k for _, k in popped):
         return None
     return build(
         [dict(id=raw.get("id") if isinstance(raw, dict) else None, **keys) for raw, keys in popped],
@@ -528,6 +586,7 @@ def parse_entries(raw_model):
         moieties,
         named,
         buffers,
+        families,
     )
 
 
@@ -571,6 +630,8 @@ def to_entries(declared_registry):
         keys[SET_KEY] = declared_registry.potential_set
     if declared_registry.proton_buffers:
         keys[BUFFERS_KEY] = dict(declared_registry.proton_buffers)
+    if declared_registry.families:
+        keys[FAMILIES_KEY] = [dict(id=f.id, rows=list(f.rows)) for f in declared_registry.families]
     return species, keys
 
 
@@ -1957,11 +2018,157 @@ def check_definition(spec):
     check_forms(spec)
     check_potential_set(spec)
     check_moieties(spec)
+    check_families(spec)
     check_closure_rows(spec)
     check_stage_read_rows(spec)
     check_amount_reading_routes(spec)
     check_potentials(spec)
     check_free_energies(spec)
+
+
+# ------------------------------------------------------------------ label families (D1)
+
+# The movers a label family's rows admit (D1; the Lean lane's finding of 21 November 2026): a law
+# admits a family only where it is linear in each row, so its move of the family's total is the
+# sum of its moves of the rows, and equal coefficients make every row move alike. The membrane and
+# junction route (constant_field@1: GHK through selective_flux) is linear in the two end
+# concentrations at the shared voltage. The face law (logmean_electrodiffusion@1) is Fick's for an
+# uncharged row, factor (a - b), but its drift for a charged one is factor L(a, b) z F dV / RT,
+# whose log-mean L does not add across rows: at +10 mV two opposite label gradients carried 72.82%
+# of the unsplit flux. Every other mover is refused until it is shown linear in each row.
+ROW_LINEAR_ROUTE = "constant_field@1"
+ROW_LINEAR_UNCHARGED_FACE = "logmean_electrodiffusion@1"
+FAMILY_TURNOVER = "scheduled_species_turnover@1"  # Production per row; clearance equal per family.
+FAMILY_INERT = {  # Operator laws whose declarations move no species amount.
+    "cell_owned_compartments@1": "declares which cell owns each compartment",
+    "membrane_entity_state@1": "provides channel abundances, membrane areas and capacitances",
+    "ideal_osmosis_linear_compliance_water@1": "changes volumes, never amounts",
+}
+
+
+def family_of(spec, row):
+    """The label family (Family) a species row belongs to, or None."""
+    model = declared(spec)
+    for f in () if model is None else model.families:
+        if row in f.rows:
+            return f
+    return None
+
+
+def family_rows(spec, name):
+    """The rows of label family `name`, or None where no family has that ID."""
+    model = declared(spec)
+    return next((f.rows for f in (() if model is None else model.families) if f.id == name), None)
+
+
+def check_families(spec):
+    """Refuse a label family (D1) whose rows are not one species' labels, each refusal naming the
+    family: unequal valences, standard potentials or moiety weights; a row with forms (a closure
+    would equilibrate them, and cohorts never equilibrate) or one a kind's stage read reads; a
+    mover not linear in each row (ROW_LINEAR_ROUTE; ROW_LINEAR_UNCHARGED_FACE for uncharged rows
+    only; every other in-step mover); unequal transport coefficients on a face, junction or patch;
+    and, in a composite, an operator law other than FAMILY_TURNOVER and FAMILY_INERT, or turnover
+    clearance whose routes and schedules differ between a family's rows (production may differ,
+    as a label's source). A model that declares no family is not checked."""
+    model = declared(spec)
+    if model is None or not model.families:
+        return
+    from cells.registry import kind_registry
+
+    m = _inner_model(spec)
+    ids = list(m.species_ids)
+    valence = dict(zip(ids, m.valence, strict=True))
+    _, movers = inner_movers(spec)
+    read_rows = set()
+    for kind_id, declaration in getattr(m, "kinds", ()):
+        kind = kind_registry.active().lookup(kind_id)
+        if kind.stage_rows is not None:
+            read_rows |= {species for species, _ in kind.stage_rows(declaration)}
+    for f in model.families:
+        at = f"label family {f.id}"
+        if len({valence[r] for r in f.rows}) != 1:
+            raise ConfigError(f"{at}: its rows' valences differ (one species' labels share one)")
+        if len({standard_potential(spec, r) for r in f.rows}) != 1:
+            raise ConfigError(f"{at}: its rows' standard potentials differ")
+        for moiety in model.moieties:
+            weights = dict(moiety.weights)
+            if len({weights.get(r, 0) for r in f.rows}) != 1:
+                raise ConfigError(f"{at}: its rows' weights in moiety {moiety.id} differ")
+        for r in f.rows:
+            entry = model.entry(r)
+            if entry is not None and (entry.forms or entry.protonated_standard_mu_RT is not None):
+                raise ConfigError(
+                    f"{at}: {r} has registry forms, which a closure equilibrates; a label row "
+                    "never equilibrates with another"
+                )
+            if r in read_rows:
+                raise ConfigError(f"{at}: a kind's stage read reads {r}; a label row is not read")
+            for kind, law, entities in movers.get(r, ()):
+                linear = (kind in ("membrane", "junction") and law == ROW_LINEAR_ROUTE) or (
+                    kind == "face" and law == ROW_LINEAR_UNCHARGED_FACE and valence[r] == 0
+                )
+                if not linear:
+                    why = (
+                        "its drift's log-mean does not add across rows for a charged row"
+                        if kind == "face"
+                        else "it is not shown linear in each row"
+                    )
+                    raise ConfigError(
+                        f"{at}: {kind} {', '.join(entities)} moves {r} by {law}, and {why}"
+                    )
+        hosts = (
+            ("face", getattr(m, "faces", ()), "diffusivity_m2_per_s"),
+            ("junction", getattr(m, "junctions", ()), "permeability_m_per_s"),
+            ("patch", getattr(m, "membranes", ()), "permeability_m_per_s"),
+        )
+        for kind, entities, field in hosts:
+            for e in entities:
+                values = {getattr(e, field)[ids.index(r)] for r in f.rows}
+                if len(values) != 1:
+                    raise ConfigError(f"{at}: {kind} {e.id}'s {field} differs between its rows")
+    if hasattr(spec.model, "operators"):
+        _check_family_operators(spec, model.families)
+
+
+def _check_family_operators(spec, families):
+    """check_families' composite part: only FAMILY_TURNOVER and FAMILY_INERT laws, and turnover's
+    clearance alike on every row of a family (its nodes, carriers and schedules)."""
+    from cells.definitions import pump_composite_spec as composite_spec
+
+    members = {r for f in families for r in f.rows}
+    base = composite_spec.projection(spec)
+    for op, declaration, schedule in composite_spec.entries(spec):
+        if op.LAW_ID in FAMILY_INERT:
+            continue
+        if op.LAW_ID != FAMILY_TURNOVER:
+            raise ConfigError(
+                f"{op.LAW_ID} is composed beside label families, and is not shown linear in each "
+                f"row: admitted are {FAMILY_TURNOVER} and {', '.join(sorted(FAMILY_INERT))}"
+            )
+        for template in declaration.templates:
+            named = set(dict(template.rates)) & members
+            if named:
+                raise ConfigError(
+                    f"{op.LAW_ID}: template {template.template_id} names label rows "
+                    f"{sorted(named)}, not shown alike on every row"
+                )
+        controls = op.schedule_to_dict(schedule, base, declaration).get("turnover_controls", [])
+        by_route = {}
+        for c in controls:
+            changes = tuple((s["time"], s["rate"]) for s in c["schedule"])
+            by_route.setdefault(c["route_id"], []).append((c.get("carrier_id"), changes))
+        for f in families:
+            seen = {}
+            for route in declaration.routes:
+                if route.species in f.rows and route.kind == "clearance":
+                    key = (route.node, tuple(sorted(map(repr, by_route.get(route.id, [])))))
+                    seen.setdefault(route.species, []).append(key)
+            shapes = {r: tuple(sorted(seen.get(r, []))) for r in f.rows}
+            if len(set(shapes.values())) != 1:
+                raise ConfigError(
+                    f"label family {f.id}: {op.LAW_ID}'s clearance differs between its rows (each "
+                    "row's routes, nodes and schedules must match; production may differ)"
+                )
 
 
 # ------------------------------------------------------------------ moved by the step

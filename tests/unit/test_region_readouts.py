@@ -412,3 +412,44 @@ def test_a_region_naming_a_node_twice_is_refused(monkeypatch):
     monkeypatch.setattr(readouts, "_distinct", lambda region: None)
     with pytest.raises(ValueError, match="outside -0.000998999.* below 0"):
         readouts.region_rows(spec, [0.0], states, base.ST, [base.NODE_T, base.NODE_T])
+
+
+# ------------------------------------------------------------------ FR-33 on a label family (D1)
+
+
+def test_a_label_family_shows_redistribution_and_degradation_exactly():
+    """FR-33's acceptance on a label family (D1, the lead's approval of 21 November 2026;
+    validation/regions/example.synapse_world). One compiled program, two runs of 200 steps (the
+    rates are data). The labelled row P_L moves between the synapse regions syn_1 and syn_2 by the
+    engine's own face law, and the unlabelled P_U the other way, with no tracer and no resolution
+    bound:
+    - pure redistribution (no clearance): syn_1's loss of label is exactly the face's record, syn_2
+      gains it, and the labelled total is stable, each to the stored amounts' rounding;
+    - degradation (clearance in syn_1, alike on both rows): the labelled total falls by exactly
+      the clearance record;
+    - the region export of the family P over [cell_0] sums its rows, bit for bit."""
+    eps = np.finfo(float).eps
+    for degrade in (0.0, 0.5):
+        spec = parse_spec(example.synapse_world(degrade=degrade))
+        times, states = readouts.runs(spec)
+        _, layout = get_model(spec.model).initial_values(spec)
+        label = readouts.world_map(spec, "P_L")
+        nodes = label["nodes"]
+        s1, s2 = nodes.index("syn_1"), nodes.index("syn_2")
+        face = [f.id for f in spec.model.faces].index("face_12")
+        row = label["row"]
+        a0, _, lost0, _ = readouts.node_records(spec, layout, states[0], label)
+        for state in states[1:]:
+            a, _, lost, _ = readouts.node_records(spec, layout, state, label)
+            moved = float(np.asarray(state.face_transferred)[row, face])  # syn_1 -> syn_2
+            tol = 64 * eps * (np.abs(a0).sum() + np.abs(a).sum() + np.abs(lost).sum())
+            assert abs((a0[s1] - a[s1]) - (moved + lost[s1] - lost0[s1])) <= tol
+            assert abs((a[s2] - a0[s2]) - moved) <= tol
+            assert abs((a.sum() - a0.sum()) + (lost.sum() - lost0.sum())) <= tol
+        assert moved > 0.1 and (lost.sum() > 0.05) == (degrade > 0)
+        family = readouts.region_rows(spec, times, states, "P", [base.CELL])
+        assert family["rows"] == ["P_L", "P_U"]
+        unlabelled = readouts.world_map(spec, "P_U")
+        for k, state in enumerate(states):
+            parts = [readouts.node_records(spec, layout, state, w)[0] for w in (label, unlabelled)]
+            assert family["inside_fmol"][k] == float((parts[0] + parts[1])[nodes.index(base.CELL)])
