@@ -8883,3 +8883,34 @@ section 6 is corrected to match.
 **Held for the user (D277):** record FR-25 as inconclusive, or register a revised rule before any new
 runs, or bring ΔG and u into scope with a later registration.
 
+## D279: OL5's probe roles scored: 6 of 10 registered rows pass, 4 fail at the registered 1e-12 precision; the next step is the user's
+
+2026-11-22, about 06:42 UTC.
+
+**How it was judged.** The judged driver run came from a clean frozen snapshot of main 67bb0bfe
+(manifest c0a5ee55...). The second builder wrote the adapter from FORMAT_OL2.md alone, without opening
+the engine side's code, and ran OL5's code-blind harness2.
+
+**Result.**
+- Pass: OL2-2, OL2-5 (all 22 declarations refused), OL3-1, OL3-3, OL3-4 and OL3-5.
+- Fail at the registered tolerance of 1e-12:
+  - OL2-1: forward_form's log residual is 5.07e-12;
+  - OL2-3, OL2-4 and OL3-2: event times differ by up to 3.8e-12 relative.
+- Every law-level check passes. Channels, counts, slots, keys, draws and bookings replay exactly, and
+  the time differences follow from the rate differences through tau = -ln(u)/a0.
+- A planted partition-count error failed, as it should.
+
+**The adapter's readings** where FORMAT did not fix the mapping (R1 to R8) are listed in its docstring.
+Two of them changed closure verdicts:
+- R7: a non-splitting drawing attempt books zero terms;
+- R8: a lysing step's heat includes the release.
+FORMAT is to state these.
+
+**Held for the user (D277):**
+- whether the engine's rate arithmetic should match the references' forms to 1e-12, which is an engine
+  change;
+- or whether a revised tolerance is registered, which would be after the fact and must be disclosed.
+
+Recorded as scored. Evidence: the second builder's review folder, ol5/ (ol5_verdict.json and the
+adapter, with sha256s).
+
