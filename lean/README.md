@@ -14,7 +14,7 @@ Direct Lean claims cover [51 of 51 laws](COVERAGE.md#registered-laws) and [31 of
 | [Ion channels and junctions](COVERAGE.md#category-channels-and-junctions) | 15 of 15 | 15 of 15 | 15 checked | 14 |
 | [Pumps and cotransport](COVERAGE.md#category-pumps-and-cotransport) | 13 of 13 | 8 of 8 | 8 checked | 8 |
 | [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 3 of 3 | 13 of 13 | 12 checked · 1 failed | 10 |
-| [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 14 of 14 | 28 of 28 | 26 checked · 2 failed | 18 |
+| [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 14 of 14 | 29 of 29 | 27 checked · 2 failed | 19 |
 | [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 1 of 1 | 26 of 26 | 26 checked | 19 |
 | [Cell physiology](COVERAGE.md#category-cell-physiology) | — | 3 of 3 | 3 checked | 3 |
 
@@ -25,6 +25,8 @@ Each category opens its detailed claim table on GitHub, including registered law
 Three claims have failing numerical checks. GARD v1 can refuse a reversible event. GARD v2 repairs that case but can report a stalled lineage at an admitted coefficient with a finite positive event rate. Its range check also records a lost subnormal and a capacity limit. The third claim concerns the sign of a rapid-binding inventory margin. The tissue host tested for that case requires positive held totals. [Current failures](COVERAGE.md#failing-numerical-checks) · [GARD v2 reproducer](PROGRESS.md#gard-v2-range) · [Wash and clamp repairs](PROGRESS.md#d272-wash-clamp-retests)
 
 ## Biological evidence
+
+During mechanical division of a liposome, one daughter can rupture while its sibling survives. Cells now reconciles the returned material in both runners. The experiment measured sibling fluorescence and external dye spreading in separate analyses. A same-event measurement of where the ruptured daughter’s contents went remains open. [Rupture at birth](claims/vesicle-birth-returns.md) · [Sibling fates, Fig. 1d](https://ceesdekkerlab.nl/wp-content/uploads/2019/08/Mechanical-division-of-cell-sized-liposomes.pdf#page=2)
 
 The osmotic volume law has **mixed biological evidence**. Fujiwara and Yanagisawa’s liposomes shrank to about 25% of their starting volume, against 24.56% in Cells without fitting. Wolfisberg’s four later volumes were below prediction. In Bhatia’s vesicle, the uncertainty in the outer contour spans the difference after accounting for the inward tube. [Three preparations side by side](PROGRESS.md#intact-vesicle-deflation) · [Generated claim and primary sources](claims/osmotic-vesicle-volume.md#biological-evidence)
 
@@ -212,6 +214,12 @@ Run the OL5 comparison for single-event osmotic energies, short reaction product
 ```bash
 "$cells_python" -B checks/vesicle_events.py
 "$cells_python" -B checks/vesicle_release.py
+```
+
+For rupture at birth, the six-run comparison covers the followed daughter, its unfollowed sister and population slot reuse. Use `--population-record DIRECTORY` to check the shear and lysis rows in an existing population bundle. [R10 proof and archived OL5 result](PROGRESS.md#vesicle-birth-returns)
+
+```bash
+"$cells_python" -B checks/vesicle_birth.py
 ```
 
 For mitochondrial respiration and ATP delivery, check the seven reaction columns, charge on each side and the material booked in a world with a finite matrix and intermembrane space. The results link complex I proton measurements and a bovine ATP synthase structure to the counts the model assumes. [Mitochondrial balance and measurements](PROGRESS.md#mitochondrial-cycle-accounting)
