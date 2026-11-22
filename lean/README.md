@@ -14,15 +14,15 @@ Direct Lean claims cover [50 of 50 laws](COVERAGE.md#registered-laws) and [30 of
 | [Ion channels and junctions](COVERAGE.md#category-channels-and-junctions) | 15 of 15 | 15 of 15 | 15 checked | 14 |
 | [Pumps and cotransport](COVERAGE.md#category-pumps-and-cotransport) | 13 of 13 | 8 of 8 | 8 checked | 8 |
 | [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 3 of 3 | 13 of 13 | 12 checked · 1 failed | 10 |
-| [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 13 of 13 | 20 of 20 | 19 checked · 1 failed | 16 |
-| [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 1 of 1 | 20 of 20 | 19 checked · 1 failed | 14 |
+| [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 13 of 13 | 22 of 22 | 21 checked · 1 failed | 16 |
+| [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 1 of 1 | 20 of 20 | 20 checked | 14 |
 | [Cell physiology](COVERAGE.md#category-cell-physiology) | — | 3 of 3 | 3 checked | 3 |
 
 <!-- /generated -->
 
 Each category opens its detailed claim table on GitHub, including registered laws still awaiting a proof. A single claim can cover several laws. The last column counts claims with a recorded measurement or literature finding, including partial evidence. Each numerical result applies to the cases in its linked record. [All registered laws](COVERAGE.md#registered-laws) · [Design notes](ENGINE_LAW_VERIFICATION.md) · [Voltage pilot closeout](../reports/BIO003_PILOT_CLOSEOUT.md)
 
-The 21 November main review corrected the Lean lane’s pulse replay and reproduced a wash-counter failure for unchanged chloride. GARD version 1 still has a heat failure. The rapid-binding kernel can also round a signed inventory margin across zero. The current tissue host requires positive held totals. That review held scoring for composite clamp currents, routed reaction-rate exports and replacement-time observations at its tested revision. [Main retests and scope](PROGRESS.md#main-review-d264-d266) · [Binding boundary cases](PROGRESS.md#binding-equilibrium-feasibility) · [Current failure list](COVERAGE.md#failing-numerical-checks) · [Earlier repairs](PROGRESS.md#nov21-engine-review)
+The repaired wash now closes Na, K and Cl counters exactly at both tested fractions. The public composite channel clamp also reproduces the current at the patch’s own voltage. The two remaining numerical failures concern GARD version 1 heat and the sign of a rapid-binding inventory margin. The tissue host tested for the binding case requires positive held totals. [Wash and clamp replays](PROGRESS.md#d272-wash-clamp-retests) · [Current failures](COVERAGE.md#failing-numerical-checks) · [Earlier results and other review findings](PROGRESS.md#main-review-d264-d266)
 
 ## Biological evidence
 
@@ -36,7 +36,7 @@ The Cx43 polarity measurements bound the error of the registered single-gate law
 
 A serial dilution experiment follows free fluorescein through three successive exchanges. The catalog gives the measured concentrations alongside the ideal series, including the discrepancy at the third 80% wash. [Measured dilution and its scope](PROGRESS.md#nov21-wash)
 
-For partial pool withdrawal, one passive splitter collected 45.0% of the beads in a nominal one-third branch. Another retained 28.2% at a measured liquid fraction of about 27.2%. [Count proof and both experiments](claims/pool-withdrawal.md) · [Biological disagreements for Cells](PROGRESS.md#nov21-biological-disagreements)
+For partial pool withdrawal, one passive splitter collected a mean of 45.0% of each droplet’s beads in a nominal one-third branch. Another retained 28.2% of beads at a mean liquid fraction of about 27.2%. A test of count variance still needs particle counts and liquid volume measured on the same split. [Count proof and measurements](claims/pool-withdrawal.md) · [Paired-data search and heat proof](PROGRESS.md#fr35-withdrawal-energy) · [Biological disagreements for Cells](PROGRESS.md#nov21-biological-disagreements)
 
 For finite-pool washes, tracer measurements distinguish what leaves the exterior, what survives inside a vesicle, and what can later enter another membrane. [Washout and redistribution measurements](claims/pool-replacement.md#biological-evidence)
 
@@ -120,6 +120,7 @@ On the first build, fetch the compiled dependencies for the imported modules. Su
 
 ```bash
 lake exe cache get Mathlib.Data.Complex.Exponential \
+  Mathlib.Probability.ProbabilityMassFunction.Binomial \
   Mathlib.Analysis.SpecialFunctions.Log.Basic Mathlib.Algebra.Order.BigOperators.Group.Finset \
   Mathlib.Analysis.Calculus.Deriv.Add Mathlib.Analysis.Calculus.Deriv.Inv \
   Mathlib.Data.Nat.Factorial.Basic Mathlib.Data.Matrix.Mul Mathlib.Tactic.Positivity \
@@ -275,10 +276,12 @@ For scheduled pool replacement, replay both sides of the pulse and wash, includi
 "$cells_python" -B checks/pool_replacement.py --case capacity
 ```
 
-For partial withdrawal, replay the host balance, finite-word edge cases, sample moments and measured bead fractions. To verify all 180 plotted counts, export page 3 of the cited vector PDF with `pdftocairo -svg -f 3 -l 3 paper.pdf fig2.svg` and add `--figure-svg fig2.svg`. [Input data and source](checks/data/pool_withdrawal_measurements.json)
+For partial withdrawal, replay the host balance, finite-word edge cases, sample moments and measured bead fractions. To verify all 180 plotted counts, export page 3 of the cited vector PDF with `pdftocairo -svg -f 3 -l 3 paper.pdf fig2.svg` and add `--figure-svg fig2.svg`. The energy check compares all five fields and the saved ledger, including rare midpoint draws. The matched-buffer proof bounds the mean heat per starting molecule by ln(n+1)/n on the exact sampling grid. [Matched-buffer result](PROGRESS.md#matched-buffer-heat) · [Energy results](PROGRESS.md#fr35-withdrawal-energy) · [Count data and source](checks/data/pool_withdrawal_measurements.json)
 
 ```bash
 "$cells_python" -B checks/pool_withdrawal.py
+"$cells_python" -B checks/pool_withdrawal_energy.py
+"$cells_python" -B checks/matched_buffer.py
 ```
 
 For vesicle exchange, compare lipid insertion and neutral solute permeation against their rate equations and measured washout and swelling. The shared-pool controls follow one lipid and one solute between two vesicles. The one-event fixed-volume case now returns the declared-lumen records. [Measurements and engine results](PROGRESS.md#vesicle-permeation) · [Shared-pool counts](PROGRESS.md#shared-pool-inventory) · [Earlier reporting failure](PROGRESS.md#shared-pool-declared-volume) · [Repair and retest](PROGRESS.md#claim-source-review)
@@ -397,7 +400,7 @@ The Na⁺/K⁺ driver checks the eight gated channels and both leaks together on
 "$cells_python" -B checks/channel_clamp_evidence.py
 ```
 
-The direct tissue clamp is checked against the independent current formula. The separate composite check compares the scheduled and effective controls, then tests the public clamp against the ordinary observed current and a second voltage. It exits with status 1 while that public comparison is unavailable or disagrees. [Tissue current and measured conducting fractions](claims/clamped-channel-current.md) · [Composite scoring hold](PROGRESS.md#main-review-d264-d266)
+The direct tissue clamp is checked against the independent current formula. The separate composite check compares the scheduled and effective controls, then tests the public clamp against the ordinary observed current and a second voltage. It exits with status 1 while that public comparison is unavailable or disagrees. [Tissue current and measured conducting fractions](claims/clamped-channel-current.md) · [Composite clamp retest](PROGRESS.md#d272-wash-clamp-retests)
 
 ```bash
 "$cells_python" -B checks/clamped_channel_current.py
