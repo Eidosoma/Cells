@@ -177,3 +177,46 @@ def test_restart_is_bitwise_and_invalid_channel_controls_refuse_the_step(tmp_pat
     gate[:, -2] = 0.5  # A leak population has no gate state.
     with pytest.raises(NumericalError):
         surface_pump_v3.check_values(state._replace(channel_gate=gate), spec)
+
+
+@pytest.mark.parametrize(
+    "arm, solver",
+    [
+        ("closed", imex.ARS222_ID),
+        ("closed", N2),
+        ("clamped", imex.EULER_ID),
+        ("release", imex.ARS222_ID),
+    ],
+)
+def test_labelled_step_reports_non_negative_one_way_transfers(arm, solver):
+    """FR-42 (host steps, nothing compiled): with labels the step's state and validity are the
+    unlabelled call's bit for bit; every one-way amount is >= 0; forward - backward is the booked
+    net per entity at rounding. The fixtures' rows are charged, so label_errors refuses them on
+    their faces (the transfers are still reported, the gap carrying the faces' electromigration)."""
+    spec, state, p, control = initial(fixtures.definition(arm, solver=solver))
+    structure, dt = surface_pump_v3.structure(spec.model), spec.execution.dt
+    rows = (spec.model.species_ids.index("K"),)
+    plain = surface_pump_v3.imex_step(state, dt, control, p, xp=np, structure=structure)
+    labelled = surface_pump_v3.imex_step(
+        state, dt, control, p, xp=np, structure=structure, labels=rows
+    )
+    for a, b in zip(plain[0], labelled[0], strict=True):
+        np.testing.assert_array_equal(np.asarray(a), np.asarray(b))
+    assert bool(plain[1]) == bool(labelled[1]) and bool(plain[1])
+    transfers = labelled[2]
+    assert len(transfers) == 6 and all(np.all(np.asarray(t[0]) >= 0) for t in transfers)
+    for i, field in (
+        (0, "face_transferred"),
+        (2, "membrane_transferred"),
+        (4, "junction_transferred"),
+    ):
+        net = (np.asarray(getattr(plain[0], field)) - np.asarray(getattr(state, field)))[list(rows)]
+        moved = np.asarray(transfers[i][0]) - np.asarray(transfers[i + 1][0])
+        np.testing.assert_allclose(moved, net, rtol=0, atol=1e-14 * max(np.max(np.abs(net)), 1e-30))
+    assert any(
+        "logmean face" in e for e in surface_pump_v3.label_errors(p, rows, structure=structure)
+    )
+    with pytest.raises(Exception, match="RK4 refuses labels"):
+        rk4 = fixtures.definition(arm, solver="rk4")
+        spec4, state4, p4, control4 = initial(rk4)
+        surface_pump_v3.checked_step(state4, dt, control4, p4, p4.active, labels=rows)
