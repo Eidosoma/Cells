@@ -1708,6 +1708,7 @@ def _entity_ends(m):
     ends = {p.id: (p.inside, p.outside) for p in m.membranes}
     ends |= {j.id: (j.sender, j.receiver) for j in m.junctions}
     ends |= {f.id: (f.sender, f.receiver) for f in m.faces}
+    ends |= {f.id: (f.sender, f.receiver) for f in getattr(m, "forms_faces", ())}  # Their own set.
     ends |= {c.id: ends[c.membrane_id] for c in m.channels}
     return ends
 

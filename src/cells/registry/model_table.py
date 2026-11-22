@@ -86,6 +86,8 @@ MODELS = MappingProxyType(
                 "cells.laws.pumps.ca_atp_mass_action_positive",
                 "cells.laws.routes.constant_field",
                 "cells.laws.routes.logmean_electrodiffusion",
+                # The forms face law (MT-1b's face, the face builder under the @3 owner's leave).
+                "cells.laws.routes.logmean_electrodiffusion_forms",
                 "cells.laws.routes.passive_permeation",
                 "cells.laws.routes.inward_rectifier_linear_driving_force",  # The kinds owner's.
                 "cells.laws.routes.constant_field_permeation",  # FR-15 P2 (the operators owner's).

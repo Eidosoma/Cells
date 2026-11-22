@@ -500,6 +500,11 @@ def _family(spec):
                 f"No view declarations for {tissue3.SERIES_GATE_LAW_ID}'s junctions yet: its "
                 "gates' axis has no view set (FR-30, v1)"
             )
+        if getattr(spec.model, "forms_faces", ()):
+            raise ViewRefused(  # The forms law, version 1: its movers' axis has no view set yet.
+                "No view declarations for logmean_electrodiffusion_forms@1's faces yet: their "
+                "movers' axis has no view set (version 1)"
+            )
         return get_model(spec.model), tissue3.MODEL_ID, ()
     raise ViewRefused(
         f"No view declarations for {type(spec.model).__name__}: version 1 covers "

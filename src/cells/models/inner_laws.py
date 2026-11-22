@@ -46,7 +46,11 @@ from cells.definitions.surface_pump_v3_spec import (
 from cells.laws.channels import kv1p5_mh, nav1p2_m3h_regularized
 from cells.laws.junctions import junction_series_gates, junction_voltage_relaxation
 from cells.laws.pumps import ca_atp_mass_action_positive, nak_atp_mass_action_positive
-from cells.laws.routes import constant_field, logmean_electrodiffusion
+from cells.laws.routes import (
+    constant_field,
+    logmean_electrodiffusion,
+    logmean_electrodiffusion_forms,
+)
 from cells.registry import kind_registry
 from cells.registry import laws as law_registry
 from cells.registry.kind_registry import qualified
@@ -56,6 +60,10 @@ HOST = qualified(MODEL_ID)  # @3 runs its own populations' laws (registry/laws.p
 MAINTAINED_FUEL_ID = METABOLISM_ID  # maintained_chemical_reservoirs@1, today's pumps' fuel kind.
 MEMBRANE_ROUTE_LAW_ID = constant_field.LAW_ID  # The passive membrane and junction route law.
 FACE_ROUTE_LAW_ID = logmean_electrodiffusion.LAW_ID
+# The forms law (the face note's §2-4, MITOCHONDRIA_DESIGN; its build plan's item 1): a face that
+# declares it moves each row it carries as its forms, in its own entity set (InnerStructure
+# .forms_faces); every other face keeps FACE_ROUTE_LAW_ID.
+FORMS_FACE_ROUTE_LAW_ID = logmean_electrodiffusion_forms.LAW_ID
 BASE_GATE_ROWS = 2  # Today's channel gate rows; a law with more gates adds rows where declared.
 # Reference RK4 step bounds of the resolved channel family (surface_kinetic.check_steps): 2.5 us
 # with NaV1.2, 25 us with Kv1.5 or Kir2.1, as their declarations hold them. surface_pump_v3's
@@ -125,6 +133,7 @@ ROUTE_LAWS = MappingProxyType(
     {
         constant_field.LAW_ID: constant_field.LAW,
         logmean_electrodiffusion.LAW_ID: logmean_electrodiffusion.LAW,
+        logmean_electrodiffusion_forms.LAW_ID: logmean_electrodiffusion_forms.LAW,
     }
 )
 
@@ -290,6 +299,12 @@ class InnerStructure:
     # quasi-static potentials. () for a world whose junctions all join held components, so no
     # structure or program of those moves. Added by the @3 owner (a recorded exception here).
     crossing_junctions: tuple = ()
+    # The forms faces (logmean_electrodiffusion_forms@1; MITOCHONDRIA_DESIGN's face note, its
+    # build plan's item 1): their IDs, sorted, where the definition declares any. They are their
+    # own entity set, with their own layout and state fields (surface_pump_v3.FORMS_*), so () for
+    # every other definition: no structure, layout or program of those moves (D148 case 2). Added
+    # by the face builder under the @3 owner's leave (a recorded exception in this file).
+    forms_faces: tuple = ()
 
     def __post_init__(self):
         ids = [kind_id for kind_id, _ in self.kinds]
@@ -315,6 +330,13 @@ class InnerStructure:
             and list(crossing) == sorted(set(crossing))
         ):
             raise ValueError("Crossing junctions are a sorted tuple of distinct junction IDs")
+        forms = self.forms_faces
+        if not (
+            isinstance(forms, tuple)
+            and all(isinstance(f, str) and f for f in forms)
+            and list(forms) == sorted(set(forms))
+        ):
+            raise ValueError("Forms faces are a sorted tuple of distinct face IDs")
         series = self.junction_series_kinds
         if (
             (junction_series_gates.LAW_ID in self.junction_laws) != bool(series)
