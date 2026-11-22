@@ -322,6 +322,10 @@ try {
       ),
     );
     await lookAt("intact");
+    await select("Plot", '"lumen_volume_L"');
+    check("the intact-volume plot exposes its measured range in litres", await evaluate(`${V}.shadowRoot.querySelector(".v-chart figcaption").textContent.includes("3.411e-19–3.444e-19 L")`));
+    await lookAt("volume");
+    await select("Plot", '"tension_N_per_m"');
     await evaluate(`[...${V}.shadowRoot.querySelectorAll(".v-boundary button")].find(b=>b.textContent==="Released state").click()`);
     check(
       "the same instant shows threshold release and the returned pool molecules",

@@ -3,7 +3,8 @@
 **Cells' own vesicles, 22 November 2026.** The Scope switch now offers **Cells vesicles**
 in the Origin of life group. Its growth and threshold-lysis replays come from
 `cells.assembly_lineages@2`. The clock counts seconds and the quantity layers use the run's
-saved rows. Select **Last intact state** at lysis to inspect the triggering tension, then
+saved rows. The intact-volume plot in the lysis run ranges from 3.4113 to 3.4438 × 10⁻¹⁹ L.
+The last intact volume is 0.94% below the starting volume. Select **Last intact state** to inspect the triggering tension, then
 **Released state** for the returned material at the same time. GARD retains its own comparison
 entry and fission clock. The data contract and the limits of the molecular illustration are
 in [Vesicle replays in recorded seconds](../schema/ASSEMBLY_RUN.md#vesicle-replays-in-recorded-seconds).

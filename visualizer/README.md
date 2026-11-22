@@ -759,7 +759,7 @@ connect to the Engine"; and of the ten ideas shown: "Lets do them all except wai
 Choose **Cells vesicles** in the **Origin of life** group of the Scope switch, or open
 `?entry=origin-vesicles`. The first replay follows amphiphile exchange and one daughter through shear divisions.
 The second follows the osmotic lumen to threshold lysis. Its **Last intact state** and **Released state**
-buttons show two observations at the same recorded time. The **Membrane** and **Molecule** levels magnify
+buttons show two observations at the same recorded time. **Plot** switches between footprint, intact lumen volume and tension. The **Membrane** and **Molecule** levels magnify
 the illustrated bilayer and its molecular reference. The readout gives the run's own species, counts,
 footprint, volume and tension. Both replays carry their development standing.
 

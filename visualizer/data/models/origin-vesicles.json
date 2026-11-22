@@ -23,6 +23,6 @@
  "clock": {"base":"second","says":"Seconds from the saved run."},
  "runs": [
   {"file":"data/origin/vesicle-3014a196.json","label":"Growth and shear division","kind":"development"},
-  {"file":"data/origin/vesicle-01fe390a.json","label":"Osmotic swelling and lysis","kind":"development"}
+  {"file":"data/origin/vesicle-01fe390a.json","label":"Osmotic lumen and threshold lysis","kind":"development"}
  ]
 }

@@ -176,6 +176,7 @@ test("the engine's two runs of one world: each a small file the view reads, the 
 
 test("the held population preserves carrier identity, release time and returned counts and refuses a missing record", async () => {
   const { VesicleRun } = await import("../src/lenses/vesicle_run.js");
+  const { VesicleScene } = await import("../src/lenses/vesicle_scene.js");
   const dir = mkdtempSync(path.join(tmpdir(), "vesicle-bundle-"));
   try {
     for (const [fault, message] of [
@@ -219,6 +220,15 @@ test("the held population preserves carrier identity, release time and returned 
       );
       assert.equal(run.at(1, 0).hold.sigma_N_per_m, 0.001);
       assert.equal(run.at(1, 0).sample.lumen_volume_L, undefined);
+      const scene = new VesicleScene();
+      for (const [t, living] of [[0, 2], [2, 1], [7, 0]]) {
+        scene.draw(run.at(t), run, "vesicle", "species", t, 0);
+        assert.equal(scene.cloud.count, living);
+        assert.equal(scene.release.visible, t !== 0);
+        if (t) assert.ok(scene.rim.visible && !scene.fragments.visible);
+        if (living) assert.equal(scene.cloud.userData.pick({ instanceId: 0 }), "vesicle:slot:0");
+      }
+      scene.dispose();
     }
   } finally {
     rmSync(dir, { recursive: true, force: true });

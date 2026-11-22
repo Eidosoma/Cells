@@ -30,26 +30,52 @@ function choose(label, options, value, set) {
   );
 }
 const arrow = (a, b) => a + " → " + b;
-function series(run, slot) {
+const quantities = {
+  membrane_footprint_quanta: ["Intact membrane footprint", "quanta"],
+  lumen_volume_L: ["Intact lumen volume", "L"],
+  tension_N_per_m: ["Membrane tension", "N/m"],
+};
+function series(run, slot, quantity) {
   if (run.pop)
     return {
       title: "Vesicles surviving",
+      min: 0,
       max: run.founders,
+      unit: "",
       points: [
         [run.start, run.founders],
         ...run.ruptures.map((e, i) => [e.time, run.founders - i - 1]),
         [run.end, run.survivors(run.end)],
       ],
     };
-  const samples = run.rows.flatMap((r) => (r.slots[slot]?.tension_N_per_m == null ? [] : [[r.t, r.slots[slot].tension_N_per_m]]));
-  return { title: "Recorded tension", max: run.maxTension, points: samples };
+  const [title, unit] = quantities[quantity];
+  const tension = quantity === "tension_N_per_m";
+  const points = [];
+  let min = Infinity,
+    max = tension ? run.maxTension : -Infinity;
+  for (const r of run.rows) {
+    const sample = r.slots[slot];
+    if (sample?.[quantity] == null || (!tension && !sample.membrane_footprint_quanta)) continue;
+    const value = sample[quantity];
+    points.push([r.t, value]);
+    min = Math.min(min, value);
+    max = Math.max(max, value);
+  }
+  return { title, min, max, unit, points };
 }
 function chart(view) {
   const run = view.run,
-    s = series(run, view.slot);
+    initial = run.rows[0].slots[view.slot];
+  const options = Object.entries(quantities)
+    .filter(([key]) => initial?.[key] != null)
+    .map(([key, [title]]) => [key, title]);
+  const quantity = view.plot ?? (run.maxTension && initial?.tension_N_per_m != null ? "tension_N_per_m" : "membrane_footprint_quanta");
+  const s = series(run, view.slot, quantity);
   if (!s.points.length) return null;
   const x = (t) => 3 + (194 * (t - run.start)) / (run.end - run.start || 1),
-    y = (n) => 43 - (37 * n) / (s.max || 1);
+    y = (n) => 43 - (37 * (n - s.min)) / (s.max - s.min || 1);
+  const formatValue = (value) => (s.unit === "quanta" || !s.unit ? fmt(value) : sci(value, "").trim());
+  const range = (s.min === s.max ? formatValue(s.max) : formatValue(s.min) + "–" + formatValue(s.max)) + (s.unit ? " " + s.unit : "");
   const d = s.points.map(([t, n], i) => (i ? "H" + x(t) + "V" + y(n) : "M" + x(t) + " " + y(n))).join(" ");
   const cursor = svg("line", { x1: 3, x2: 3, y1: 2, y2: 46, stroke: "currentColor", "stroke-width": 1 });
   view.moveCursor = (t) => {
@@ -62,13 +88,19 @@ function chart(view) {
     svg("path", { d, fill: "none", stroke: "#258b89", "stroke-width": 2.2, "stroke-linejoin": "round" }),
   );
   for (const e of run.file.releases)
-    if (!run.pop && e.cause === "threshold")
+    if (!run.pop && quantity === "tension_N_per_m" && e.cause === "threshold")
       pic.append(svg("circle", { cx: x(e.time), cy: y(e.tension_N_per_m), r: 3, fill: "#d5763d" }));
   pic.append(cursor);
   return h(
     "figure",
     { class: "v-chart" },
-    h("figcaption", {}, s.title + " · " + (s.max ? "0–" : "") + (run.pop ? fmt(s.max) : sci(s.max, "N/m"))),
+    run.pop || options.length < 2
+      ? null
+      : choose("Plot", options, quantity, (key) => {
+          view.plot = key;
+          view.refresh();
+        }),
+    h("figcaption", {}, s.title + " · " + range),
     pic,
     h("div", {}, h("span", {}, fmt(run.start, "s")), h("span", {}, fmt(run.end, "s"))),
   );
@@ -165,6 +197,7 @@ export class VesicleLens {
     if (!next) return;
     const playing = this.player.playing;
     this.run = next;
+    this.plot = null;
     this.slot = Math.max(0, next.rows[0].slots.findIndex(Boolean));
     this.player.load(next);
     this.level = "vesicle";
@@ -557,7 +590,7 @@ const styles = `
 .v-boundary{display:flex;gap:5px}.v-boundary button{border:1px solid var(--line);border-radius:6px;background:var(--bg-raised);color:var(--fg);padding:5px;flex:1}
 .v-standing{font-size:11px;line-height:1.4;color:var(--muted);margin:0}
 .v-metrics>div{display:flex;justify-content:space-between;align-items:baseline;gap:6px}.v-metrics strong{text-align:right}.v-metrics span,.v-explain,.v-record{color:var(--muted)}
-.v-chart{margin:1px 0}.v-chart svg{width:100%;height:38px;display:block}.v-chart>div{display:flex;justify-content:space-between;color:var(--muted);font-size:10px}
+.v-chart{margin:1px 0}.v-chart .v-choice{grid-template-columns:auto 1fr;align-items:center;gap:6px;margin-bottom:4px}.v-chart .run-select{font-size:11px}.v-chart svg{width:100%;height:38px;display:block}.v-chart>div{display:flex;justify-content:space-between;color:var(--muted);font-size:10px}
 .v-event,.v-record,.v-explain{margin:0;font-size:12px;line-height:1.4}.v-event{border-left:2px solid #459c90;padding-left:7px}.v-record-details{font-size:12px;overflow-wrap:anywhere}
 .view:has(.v-controls){max-height:calc(100% - 148px);overflow:auto}.swatch-ves-head,.swatch-ves-species-0{background:#50c6b3}.swatch-ves-species-1{background:#aa9bd6}.swatch-ves-species-2{background:#e6bd6d}.swatch-ves-species-3{background:#91bbdc}.swatch-ves-high{background:#e88b4c}.swatch-ves-carbon{background:#72a7a4}.swatch-ves-oxygen{background:#ed785f}.swatch-ves-nitrogen{background:#5476d4}.swatch-ves-phosphorus{background:#eeb64f}.swatch-ves-tail{background:#b89670}.swatch-ves-lumen{background:#489fbe}
 .frame:has(.v-controls) .caveat{display:none}
