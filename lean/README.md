@@ -47,6 +47,8 @@ Yeast mitochondrial ATP synthase provides a measured example of reversal. The en
 
 The catalog gives each measurement, its primary source and the part of the law it tests. **Partial evidence** means the literature measures a relevant part of the claim and a full biological verdict remains open. **Not assessable** means a recorded comparison has too much uncertainty for a verdict. The studies and their figures are linked in each row. [Literature review](claims/incoming/biological-evidence.md) · [Pump flux, charge and ATP measurements](claims/incoming/pump-charge-evidence.md) · [PGI worksheet audit](claims/incoming/pgi-evidence.md) · [Publisher’s PGI workbook and spectra](https://mdpi-res.com/metabolites/metabolites-02-00818/article_deploy/metabolites-02-00818-s001.zip)
 
+Same-temperature rupture rates now give FR-31 a three-tension comparison. A separate tracer experiment tests vesicle shrinkage, and a single-ribosome study supplies a measured time to protein release. [Measurements, engine replay and outstanding questions](PROGRESS.md#vesicle-and-translation-evidence)
+
 ## Maintaining the claims
 
 Edit the claims register. A stable `id` gives each claim its note under `claims/`. Set `category` to a key from the register’s `categories` map. The key keeps the section link stable when its display title changes. In `formal.theorems`, map fully qualified Lean names to their source files. Use `uses` to link claims that build on earlier proofs. [Editable register](claims.json) · [JSON Schema](claims.schema.json)
