@@ -1,6 +1,6 @@
 """The engine's development runs of gene regulation's option A (G4): worlds of worlds.py at
-potential sets and a step, each with every readout of the sheet's §6 under G2's interface names.
-Development, not judged.
+potential sets and a step, each with the sheet's §6 readouts under G2's interface names, except
+each move's dG and A1's u(t), which are not exported (README.md). Development, not judged.
 
 Per run (world, potential set, dt) it writes `<set>/<world>.json` into a fresh directory:
 - the output times and, at each, the readouts: every row's amount n_*, each pool's free machines

@@ -7,13 +7,37 @@ which this folder's tools read as data only.
 | Tool | What it does |
 | --- | --- |
 | `worlds.py` | The sheet's A1 and A1-M's fifteen worlds, at any potential set |
-| `engine_run.py` | Runs worlds, exporting every readout of the sheet's §6 per cell by ID, with a receipt of the source |
+| `engine_run.py` | Runs worlds, exporting the sheet's §6 readouts per cell by ID, except each move's ΔG and A1's u(t) (below), with a receipt of the source |
 | `compare.py` | An engine run against G2's interface at G2's required times |
 | `cohort.py` | Window survivors from the counters: one well-mixed pool, loss independent of age |
 | `rna_readouts.py` | Per-cell RNA readouts and FR-25's two controls |
 | `restart_example.py` | A restart at a rate change |
 | `kernel.py` | The operator's own half-steps in NumPy, used by the tests |
 | `plants.py` | The sheet's plants |
+
+## What `engine_run.py` exports
+
+At each output, per cell by ID, under G2's interface names:
+- **Amounts:** every row the operator lists, `n_<row>` (and `n_X` in A1), and each pool's free
+  machines, `F_<pool>`.
+- **Chains:** each stage's complexes `C_<chain>_<j>`, their sum `E_<chain>`, the residues in transit
+  `W_<chain>`, and the cumulative initiations, stage exits and releases, `int_J_I_<chain>`,
+  `int_S_<chain>` and `int_Q_<chain>`.
+- **Losses and recharging:** `int_D_<polymer>`, the sum of the polymer's loss routes at the cell (a
+  zero series for a product with no loss route there), each route's own `int_D_route_<route>`, and
+  `int_J_C` (signed).
+- **Energy:**
+  - the five heat classes `H_tx`, `H_tl`, `H_deg_R`, `H_deg_P` and `H_rc`;
+  - each route's heat `H_route_<route>`, their sum and the booked total;
+  - `G_minus_G0`, from the state alone.
+- **J_bar_<chain>** in A1-M's worlds, at their full horizon.
+
+**Not exported**, though G2 publishes them:
+- each move's ΔG, `dG_tx`, `dG_tl`, `dG_rel_R`, `dG_rel_P`, `dG_deg_R`, `dG_deg_P` and `dG_rc`;
+- A1's coupling factor u(t).
+
+`compare.py` declares those two as not exported (`not_exported`) and lists them in each result's
+`not_compared`. FR-25's registered acceptance (D278) therefore covers neither.
 
 ## Per-cell RNA readouts (`rna_readouts.py`)
 
