@@ -174,7 +174,7 @@ export class AboutPart {
     if (!introClosed()) this.showLine();
     // The address names the panel: as the page opens, and when only its #name changes.
     if (aboutAsked(location.hash)) this.toggle(true);
-    globalThis.addEventListener?.("hashchange", () => aboutAsked(location.hash) && !viewer.state.about && this.toggle(true));
+    globalThis.addEventListener?.("hashchange", () => aboutAsked(location.hash) && !viewer.state.about && this.toggle(true), { signal: viewer.connection?.signal });
   }
 
   showLine() {

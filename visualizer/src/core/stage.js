@@ -101,11 +101,12 @@ export class Stage {
 
   /** Ask for a frame. Cheap to call often. */
   invalidate() {
+    if (this.disposed) return;
     this.needsRender = true;
     if (!this.running) {
       this.running = true;
       this.last = performance.now();
-      requestAnimationFrame((time) => this.frame(time));
+      this.frameRequest = requestAnimationFrame((time) => this.frame(time));
     }
   }
 
@@ -151,6 +152,7 @@ export class Stage {
   }
 
   frame(time) {
+    if (this.disposed) return;
     // A frame's timestamp can be a little earlier than the clock read when it was asked for.
     const { dt, real } = frameTimes(time - this.last);
     this.last = time;
@@ -169,8 +171,8 @@ export class Stage {
       if (animating && this.moving) this.look.frame(dt);
     }
     this.moving = animating;
-    if (animating && document.visibilityState === "visible") {
-      requestAnimationFrame((next) => this.frame(next));
+    if (!this.disposed && animating && document.visibilityState === "visible") {
+      this.frameRequest = requestAnimationFrame((next) => this.frame(next));
     } else {
       this.running = false;
     }
@@ -350,6 +352,11 @@ export class Stage {
   }
 
   dispose() {
+    this.disposed = true;
+    cancelAnimationFrame(this.frameRequest);
+    this.listeners.clear();
+    this.afterRender.clear();
+    this.paletteListeners.clear();
     this.frames?.stop();
     this.stopWatching();
     this.observer.disconnect();
@@ -359,6 +366,7 @@ export class Stage {
     this.finish?.dispose();
     this.rig.dispose();
     this.renderer.dispose();
+    this.renderer.forceContextLoss();
   }
 }
 

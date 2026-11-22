@@ -25,7 +25,7 @@
 
 import { mkdir, readdir, readFile, rm, writeFile, stat } from "node:fs/promises";
 import path from "node:path";
-import { buildPage, proteinFiles, machineFiles, modelFiles, shapeFiles, benchFiles, landingFiles, readReplays, readCards, publishedReplays, packageParts, partsTogether, wrap, ROOT, DEFAULT_SCENE, DEFAULT_RUNS, DEFAULT_OVERLAY, DEFAULT_CARDS } from "./lib/build_page.mjs";
+import { buildPage, splitUnitEvidence, proteinFiles, machineFiles, modelFiles, shapeFiles, benchFiles, landingFiles, readReplays, readCards, publishedReplays, packageParts, partsTogether, wrap, ROOT, DEFAULT_SCENE, DEFAULT_RUNS, DEFAULT_OVERLAY, DEFAULT_CARDS } from "./lib/build_page.mjs";
 
 const args = process.argv.slice(2);
 const value = (name, fallback) => (args.includes(name) ? args[args.indexOf(name) + 1] : fallback);
@@ -40,9 +40,11 @@ const cardsPath = path.resolve(value("--cards", DEFAULT_CARDS));
 // Only the runs of the experiments the landing lists and the runs the scene names are published (lib/build_page.mjs,
 // publishedReplays), their parts packaged as the overlay says (packageParts): the same catalogue goes into the page and names
 // the files listed beside it.
-const listed = publishedReplays(await readReplays(runsDir), JSON.parse(await readFile(scenePath, "utf8")), (await readCards(cardsPath))?.listing);
+const preparedScene = splitUnitEvidence(JSON.parse(await readFile(scenePath, "utf8")));
+const scene = preparedScene.scene;
+const listed = publishedReplays(await readReplays(runsDir), scene, (await readCards(cardsPath))?.listing);
 const packaged = inlineRuns ? { replays: listed, files: [] } : await packageParts(listed, { runsDir, together: partsTogether(JSON.parse(await readFile(overlayPath, "utf8"))) });
-const content = await buildPage({ scenePath, runsDir, inlineRuns, hideExperiments, cardsPath, replays: listed ? packaged.replays : null });
+const content = await buildPage({ preparedScene, runsDir, inlineRuns, hideExperiments, cardsPath, replays: listed ? packaged.replays : null });
 await mkdir(path.dirname(out), { recursive: true });
 await writeFile(out, standalone ? wrap(content) : content);
 const size = (bytes) => (bytes >= 1024 * 1024 ? `${(bytes / 1024 / 1024).toFixed(2)} MB` : `${(bytes / 1024).toFixed(0)} KB`);
@@ -82,12 +84,21 @@ if (!replays) {
   }
 }
 // The species' own proteins, for the protein atlas's shelves.
-const proteins = await proteinFiles(JSON.parse(await readFile(scenePath, "utf8")));
+if (!inlineRuns) {
+  const assets = path.join(path.dirname(out), path.basename(out, path.extname(out)) + ".assets");
+  for (const file of preparedScene.files) {
+    const target = path.join(assets, file.path);
+    await mkdir(path.dirname(target), { recursive: true });
+    await writeFile(target, file.text);
+    await beside(file.path, target);
+  }
+}
+const proteins = await proteinFiles(scene);
 for (const problem of proteins.problems) console.log(`proteins: ${problem}: the atlas is shown without that species' own proteins`);
 if (inlineRuns && proteins.files.length) console.log(`${proteins.files.length} files of the species' own proteins are inside the page`);
 else for (const file of proteins.files) await beside(file.path, file.source);
 // The machines a species' cell can show closer (schema/MACHINES.md), each a file beside the page.
-const machines = await machineFiles(JSON.parse(await readFile(scenePath, "utf8")));
+const machines = await machineFiles(scene);
 for (const problem of machines.problems) console.log(`machines: ${problem}: that foot is shown without a closer view`);
 if (inlineRuns && machines.files.length) console.log(`${machines.files.length} machine files are inside the page`);
 else for (const file of machines.files) await beside(file.path, file.source);
@@ -104,7 +115,7 @@ if (replays && !hideExperiments) {
   if (!inlineRuns) for (const file of landing.files) await beside(file.path, file.source);
 }
 // A model system's run files (schema/MODEL_SYSTEMS.md), each beside the page.
-const modelled = await modelFiles(JSON.parse(await readFile(scenePath, "utf8")));
+const modelled = await modelFiles(scene);
 for (const problem of modelled.problems) console.log(`models: ${problem}`);
 if (!inlineRuns) for (const file of modelled.files) await beside(file.path, file.source);
 const list = path.join(path.dirname(out), "cells-architecture.files.json");
