@@ -9245,3 +9245,27 @@ The lead's rulings, which are made blind to every held-out value and extend VESI
   the extractor, and they concern S1-6, which is unscored. The extractor's other exposures carry no held-out
   value.
 
+## D294: The rupture blind test's stage-1b rulings
+
+2026-11-22, about 15:53 UTC. The extractor's stage 1b (stage1b_conditions.json sha256 0feca192…) found:
+- set 2's three control points (Shibly's Fig. 1C, open squares) at 7.0, 7.5 and 8.0 mN/m, reprinted from
+  Levadny et al. 2013, with n, temperature and solutions not stated;
+- that Levadny et al. 2013 could not be obtained.
+The lead's rulings, made blind to every held-out value:
+1. **The controls are reported, not scored.** They sit at the fit points' tensions and come from the
+   method paper of the fit data's laboratory, so they may overlap the fit data. Without a copy, their
+   independence cannot be shown. This replaces D293's two-sided scoring of the controls. A prediction at
+   6.5 mN/m with ΔC₀ = 0 is also recorded, reported only, in case stage 2 finds a control there.
+2. **Set 2's scored content is the osmotic rows, one-sided** (D287, D293), less the point the quoted
+   count matches.
+3. **Karal's vesicle radius,** for the osmotic rows' area ratio (D293 item 4). In a stage 1c, the
+   extractor reads only the methods of Karal et al. 2015 (Phys Rev E 92:012708, the Shizuoka repository's
+   free copy), a paper from the same laboratory using the same micropipette method, for the GUV radius
+   range. Karal, Levadnyy and Yamazaki 2016 stays unopened, since it may reanalyse the temperature series.
+4. **The controls' temperature** is reported at 298.15 K with δT = 1 K, as for Shibly's own rows.
+5. **Fig. 1C's digitising error.**
+   - It is s_dig = max(0.03, the ln k span of 2 pixels on the panel's y-axis).
+   - The pixel scale comes from the axis calibration at stage 2. That is axis metadata, read before any
+     data mark.
+   - It applies to the error bars read there.
+
