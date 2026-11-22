@@ -583,12 +583,15 @@ same mechanism, and the closure is its rapid limit. Both take K from the registr
 - **Why.** Under the tableau a face books RT J²/W, with the log-mean weight W at the step's
   half-step predicted amounts. Over a step that fills a node from its trace, that midpoint log
   understates the time-averaged driving force by 1 − ln 2 per unit moved: about 4% of that step's
-  heat, however small the trace. At row 1 the energy bound is 2e-8 pJ plus 2e-3 of the flows so
-  far, which are that one step's, so the run is refused there ("accounting failed: energy"). A node starting below about
-  one to two steps' transfer fails; the boundary scales with the exchange rate × dt × the source
-  concentration. This is SECRETED_SPECIES_TRANSPORT_DESIGN §11.4's known limit of 13 November;
-  the 22 November probe and its evidence are in `/mnt/workspaces/Cells/trace-face-20261122/`.
+  heat, however small the trace. At row 1 the energy bound is 2e-8 pJ plus 2e-3 of the flows so far,
+  which are that one step's, so the run is refused there ("accounting failed: energy"). A node
+  starting below about one to two steps' transfer fails; the boundary scales with the exchange rate
+  × dt × the source concentration. This is SECRETED_SPECIES_TRANSPORT_DESIGN §11.4's known limit of
+  13 November; the 22 November probe and its evidence are in
+  `/mnt/workspaces/Cells/trace-face-20261122/`.
 - **What it books** (the user's go, D280): `heat_bookings: {"faces": "exact_free_energy_heat@1"}`.
+  - **The ID is the design's own,** INNER_MODEL_V4_DESIGN §7.5's name and §6.1's table's, under a
+    new own class, `faces`; no new booking name was made (the lead's acceptance, 22 November).
   - Each face books, per step, each row's exact free-energy release.
   - That release is the amount the face moved, sender to receiver, times the difference of the
     row's divided-difference potentials at the face's two end nodes.
@@ -603,12 +606,14 @@ same mechanism, and the closure is its rapid limit. Both take K from the registr
   - A face that carries a charged row, or a row that a membrane, channel, pump, declared kind or
     an operator's in-step process also moves, is refused at definition
     (`surface_pump_v3._check_exact_faces`; `pump_composite.exact_face_row_errors`).
-  - A face that touches a held bath is refused too, as the passive routes' scope holds ("a held
-    bath's row is never one"). In development a plain held bath closed the ledger to 8.9e-16 of
-    the flows, its pinned amount giving the reservoir's potential. A scheduled bath (FR-10) was not
-    tried, so admitting baths is a later step with its own row.
+  - A face that touches a held bath is refused too in version 1, as the passive routes' scope
+    holds ("a held bath's row is never one"; the lead's acceptance, 22 November). In development
+    a plain held bath closed the ledger to 8.9e-16 of the flows, its pinned amount giving the
+    reservoir's potential. A scheduled bath (FR-10) was not tried, so admitting baths is a later
+    step with its own row.
   - IMEX solvers only, since RK4 refuses every booking option.
-- **No clamp and no other form.** The step is refused where:
+- **No clamp and no other form** (§7.5's refusals; the lead's acceptance, 22 November). The step is
+  refused where:
   - a share falls below its floor (§7.5's sign rule, as amended 17 November);
   - or a finite node's shares miss its exact change beyond their rounding (the raw-sum bound).
 
