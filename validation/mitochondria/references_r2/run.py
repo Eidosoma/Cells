@@ -55,14 +55,6 @@ UNITS = {
 }
 
 
-def judged_error(key, a, b, bands):
-    band_key, kind = protocol.JUDGED[key]
-    band = bands[band_key]
-    if kind == "absolute":
-        return np.abs(a - b) / band
-    return np.abs(a - b) / np.maximum(np.abs(b), 1e-300) / band
-
-
 def settle_and_start(world, rule, log):
     """R2's guesses, settled at state 4, then the anchored start state (G7)."""
     ctl = model.Controls(world, bath="trace")
@@ -86,9 +78,7 @@ def check_start_is_steady(world, start, rtol):
     sol, st = protocol.integrate(world, start, 0.0, 600.0, ctl, np.array([0.0, 600.0]), rtol)
     a = world.readouts(sol.y[:, 0], ctl)
     b = world.readouts(sol.y[:, -1], ctl)
-    bands = world.declaration["bands"]
-    return {k: float(judged_error(k, np.array(b[k]), np.array(a[k]), bands))
-            for k in protocol.JUDGED}
+    return {k: float(protocol.judged_error(world, k, b[k], a[k])) for k in protocol.JUDGED}
 
 
 def table(rows, keys):
@@ -124,7 +114,7 @@ def convergence(world, runs, ref_key, keys, bands):
             entry = {}
             for k in keys:
                 if k in protocol.JUDGED:
-                    err = judged_error(k, a[k], b[k], bands)
+                    err = protocol.judged_error(world, k, a[k], b[k])
                     entry[k] = {"max_error_over_band": float(np.max(err[keep])),
                                 "max_error_over_band_all_times": float(np.max(err))}
                 else:
@@ -152,7 +142,7 @@ def compare_runs(world, base, other, bands, where=None):
         B = table(other[name]["rows"], protocol.JUDGED)
         entry = {}
         for k in protocol.JUDGED:
-            err = np.where(keep, judged_error(k, B[k], A[k], bands), -1.0)
+            err = np.where(keep, protocol.judged_error(world, k, B[k], A[k]), -1.0)
             i = int(np.argmax(err))
             entry[k] = {"worst_over_band": float(err[i]), "segment": rows[i]["segment"],
                         "branch": rows[i]["branch"], "t": rows[i]["t"],
@@ -242,11 +232,33 @@ def plateau_newton_check(world, run, bands):
             continue
         a = world.readouts(y, ctl)
         b = world.readouts(ys, ctl)
-        errs = {k: float(judged_error(k, np.array(a[k]), np.array(b[k]), bands))
-                for k in protocol.JUDGED}
+        errs = {k: float(protocol.judged_error(world, k, a[k], b[k])) for k in protocol.JUDGED}
         out[r["segment"]] = {"worst_over_band": max(errs.values()), "per_readout": errs,
                              "newton_iterations": info["iterations"]}
     return out
+
+
+def w3d_report(world, run):
+    """World (d): when the matrix O2 crosses P50 and when the scoring window opens (erratum 2)."""
+    rows = run["rows"]
+    sc = world.declaration["scoring"]
+    p50 = sc["expected_P50_crossing_s"]["P50_M"]
+    floor = sc["excluded_window"]["below_M"]
+    t = np.array([r["t"] for r in rows])
+    o2 = np.array([r["readouts"]["O2_N"] for r in rows])
+
+    def crossing(level):
+        i = int(np.argmax(o2 < level))
+        if not o2[i] < level:
+            return None
+        # Linear in ln O2 between the two output times around the crossing.
+        a, b = np.log(o2[i - 1]), np.log(o2[i])
+        return float(t[i - 1] + (t[i] - t[i - 1]) * (a - np.log(level)) / (a - b))
+
+    return {"P50_M": p50, "P50_crossing_s": crossing(p50),
+            "expected_P50_crossing_s": sc["expected_P50_crossing_s"]["value"],
+            "window_floor_M": floor, "window_opens_s": crossing(floor),
+            "excluded_outputs": int(np.sum(~protocol.scored(world, rows)))}
 
 
 def uncoupler_stall(run):
@@ -440,6 +452,7 @@ def main(argv=None):
             },
             "worlds": {name: world_payload(world, delivered[name]) for name in WORLDS},
             "uncoupler_stall": uncoupler_stall(delivered["a"]),
+            "w3d": w3d_report(world, delivered["d"]),
             "convergence": {
                 "reference": None if a.quick else "Radau %.0e" % min(LADDER),
                 "failed_runs": ladder_failures,

@@ -43,6 +43,24 @@ JUDGED = {  # readout: (band key, kind): the MT-1b draft's plateau bands
 }
 
 
+def band(world, key, reference):
+    """A judged readout's band at a reference value (scalar or array): the plateau band, absolute
+    or relative, with erratum 2's absolute floor on concentration readouts,
+    band = max(relative band x |value|, floor)."""
+    bands = world.declaration["bands"]
+    band_key, kind = JUDGED[key]
+    if kind == "absolute":
+        return np.full(np.shape(reference), bands[band_key]) if np.ndim(reference) else \
+            bands[band_key]
+    floor = bands.get("floors", {}).get(key, 0.0)
+    return np.maximum(np.maximum(bands[band_key] * np.abs(reference), floor), 1e-300)
+
+
+def judged_error(world, key, value, reference):
+    """|value - reference| over the reference's band."""
+    return np.abs(np.asarray(value) - np.asarray(reference)) / band(world, key, reference)
+
+
 def atol_vector(rtol, concentration_floor):
     a = np.full(len(model.STATE), LEDGER_ATOL)
     a[:model.NPHYS] = rtol * concentration_floor
@@ -196,7 +214,6 @@ def plateau_drift(world, rows):
     band."""
     p = world.declaration["protocol"]
     window = p["drift_window_s"]
-    bands = world.declaration["bands"]
     out = {}
     keys = []
     for r in rows:
@@ -210,11 +227,10 @@ def plateau_drift(world, rows):
         before = min(seg_rows, key=lambda r: abs(r["t"] - (t_end - window)))
         entry = {"t_end": t_end, "t_window_start": before["t"], "readouts": {}}
         worst = 0.0
-        for key, (band_key, kind) in JUDGED.items():
+        for key in JUDGED:
             a, b = before["readouts"][key], end["readouts"][key]
-            band = bands[band_key]
-            drift = abs(b - a) if kind == "absolute" else abs(b - a) / max(abs(b), 1e-300)
-            ratio = drift / (band / 10.0)
+            drift = abs(b - a)
+            ratio = float(drift / (band(world, key, b) / 10.0))
             worst = max(worst, ratio)
             entry["readouts"][key] = {"value": b, "drift": drift, "drift_over_tenth_band": ratio}
         entry["outer_potential_mV"] = end["readouts"]["outer_potential_mV"]

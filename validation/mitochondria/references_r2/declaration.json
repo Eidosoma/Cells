@@ -5,7 +5,7 @@
     "laws_appendix": "docs/MITOCHONDRIA_LAWS_APPENDIX.md at tag mito-laws-appendix-2026-11-20b",
     "design": "docs/MITOCHONDRIA_DESIGN.md at tag mito-mt1b-face-design-2026-11-22 (section 7, the MT-1b draft, the face note)",
     "world_declaration": "docs/MITOCHONDRIA_DESIGN.md at tag mito-mt1b-declaration-erratum-2026-11-22, the declaration of record: 'MT-1b's world declaration' (G1-G7, first tagged as mito-mt1b-world-declaration-2026-11-22) with the face note's section 6 erratum and G5's erratum (the I_NP rule)",
-    "erratum_2": "docs/MITOCHONDRIA_DESIGN.md at erratum 2's tag (pending): the lead's ruling of 22 November 2026, for the world declaration's erratum 2 (tag pending)"
+    "erratum_2": "docs/MITOCHONDRIA_DESIGN.md at tag mito-mt1b-declaration-erratum-2-2026-11-22, 'Erratum 2': the declaration of record for this run"
   },
   "readings": {
     "column": "Table 1 (2006) 'with Pi control' column; complex III under Eq. 24 restored as phi_Pi x Eq. 7 (appendix 1.2). Confirmed (world declaration, R2's readings)",
@@ -17,7 +17,7 @@
     "bath_speciation": "option (a): free pH held; free Mg2+ from Mg_tot through K_MgATP and K_MgADP (G3)",
     "bath_valuation": "the held bath's supply valued at each row's free potential (option (a)). Confirmed",
     "o2_supply": "G6 (ii), the lead's ruling: O2 held in the bath, supplied through the face at p_Pi and across the inner membrane at P_O2; a declared departure R2 shares",
-    "leak": "constant-field H+ (Eq. 19 as G1 quotes it) on the IMS's own free H+, the P side of the inner membrane (appendix 0). Ruled: the lead's ruling of 22 November 2026, for the world declaration's erratum 2 (tag pending); erratum 2 corrects G1's printed H_e",
+    "leak": "constant-field H+ (Eq. 19) on the IMS's own free H+, h_P, the P side of the inner membrane: world declaration erratum 2 (tag mito-mt1b-declaration-erratum-2-2026-11-22), item 1",
     "A_IM": "R2's reading, accepted by the lead (22 November 2026): A_IM = C/(1 uF cm-2) exactly, with C = C_IM F per litre of mitochondria (world declaration 0 prints 6.513e-8 m2 for 1 pL, rounded)",
     "controls_b_c": "R2's reading, accepted by the lead (22 November 2026): controls (b) and (c) run (a)'s main schedule (0-300 s) from the declared start; the branches are world (a)'s",
     "anchor": "G7 with G5's erratum: the matrix charge inventory is the dynamics' conserved matrix charge, I_N = C_IM dPsi + W_x sum_N z_row c_row over frame B's rows (the matrix buffer's base charge, a constant, left out); its value is the one whose state-4 steady state at [Pi]e = 0 has pH_N = 7.1418, computed as the limit [Pi]e -> 0 with the declared traces. The seventh inventory, I_NP = W_x sum_N z c + W_i sum_P z c, is set by zero outer-membrane potential at the anchor state and again at the start state",
@@ -308,7 +308,7 @@
     },
     "exchange_form": {
       "value": "declared",
-      "source": "appendix 3: the declared form J = S (1 - e^x). 'printed' (Eq. 14's two-fraction form, which balances only when theta_P + theta_N = 1) is plant P-a's option only: the lead's ruling of 22 November 2026, for the world declaration's erratum 2 (tag pending)"
+      "source": "appendix 3: the declared form J = S (1 - e^x). 'printed' (Eq. 14's two-fraction form) is plant P-a's option only (the lead's ruling of 22 November 2026)"
     }
   },
   "bath": {
@@ -345,17 +345,17 @@
     "ADP_trace": {
       "value": 1e-12,
       "unit": "M",
-      "source": "1 pM: the lead's ruling of 22 November 2026, for the world declaration's erratum 2 (tag pending)"
+      "source": "1 pM: world declaration erratum 2 (tag mito-mt1b-declaration-erratum-2-2026-11-22), item 2"
     },
     "ATP_trace": {
       "value": 1e-12,
       "unit": "M",
-      "source": "1 pM: the lead's ruling of 22 November 2026, for the world declaration's erratum 2 (tag pending)"
+      "source": "1 pM: world declaration erratum 2 (tag mito-mt1b-declaration-erratum-2-2026-11-22), item 2"
     },
     "AMP_trace": {
       "value": 1e-12,
       "unit": "M",
-      "source": "1 pM: the lead's ruling of 22 November 2026, for the world declaration's erratum 2 (tag pending)"
+      "source": "1 pM: world declaration erratum 2 (tag mito-mt1b-declaration-erratum-2-2026-11-22), item 2"
     },
     "ADP_atp_bath": {
       "value": 0.0005,
@@ -478,11 +478,22 @@
     "world_d_source": "O2 depletion starts at 60 s, so 0-60 s is a true state-4 plateau: the lead's ruling of 22 November 2026, for the world declaration's erratum 2 (tag pending)"
   },
   "bands": {
-    "note": "the MT-1b draft's plateau bands (MR1-MT2's); the drift rule asks a change below a tenth of these over the last 10 s",
+    "note": "the MT-1b draft's plateau bands (MR1-MT2's), with erratum 2's absolute floors on concentration readouts: band = max(relative band x |value|, floor). The drift rule asks a change below a tenth of the band over the last 10 s",
     "dpsi_mV": 0.05,
     "pH": 0.0005,
     "fraction": 0.0005,
-    "relative": 0.001
+    "relative": 0.001,
+    "floors": {
+      "ATP_N": 1e-05,
+      "ADP_N": 1e-05,
+      "Pi_N": 1e-05,
+      "K_N": 0.00015,
+      "ATP_P": 1.3e-06,
+      "ADP_P": 1.3e-06,
+      "AMP_P": 1.3e-06,
+      "source": "world declaration erratum 2 (tag mito-mt1b-declaration-erratum-2-2026-11-22), item 3: 0.1% of each pool's declared total (ATP_N and ADP_N of A_tot 10 mM, Pi_N of the bath's 10 mM, K_N of the bath's 150 mM, the IMS adenylates of the bath's 1.3 mM ADP); the O2 flux band has no absolute floor (R2's reading: item 3 floors concentration readouts, and item 4's window covers the O2 flux's vanishing tail)"
+    },
+    "judged_weight": "world declaration erratum 2 (tag mito-mt1b-declaration-erratum-2-2026-11-22), item 7: dPsi (plateaus and transients), cytochrome c's reduced fraction, NADH's fraction, pH, the O2 flux outside the window, and concentrations above their floors only"
   },
   "start_guess": {
     "note": "R2's first guesses for the Newton steady states; the start state itself is the anchored steady state (G7), so these reach no output",
@@ -498,14 +509,19 @@
   "integration": {
     "concentration_floor": {
       "rule": "the smallest declared trace (ADP, ATP and AMP in the bath)",
-      "source": "R2's advice, ruled: the lead's ruling of 22 November 2026, for the world declaration's erratum 2 (tag pending). The error control is relative for every concentration above the floor"
+      "source": "world declaration erratum 2 (tag mito-mt1b-declaration-erratum-2-2026-11-22), item 2: the floor scales with the trace, so the error control stays relative down to the smallest trace"
     }
   },
   "scoring": {
     "excluded_window": {
       "reading": "O2_N",
-      "below_M": null,
-      "source": "W3(d)'s anoxic tail, a declared excluded window for scoring: the trace check and every judged comparison skip output times where this reading is below the floor. The floor's value comes from erratum 2: the lead's ruling of 22 November 2026, for the world declaration's erratum 2 (tag pending)"
+      "below_M": 3.73e-10,
+      "source": "world declaration erratum 2 (tag mito-mt1b-declaration-erratum-2-2026-11-22), item 4: every judged readout of world (d) is excluded while the matrix's free O2 (the O2 that complex IV reads) is below 1e-3 x P50; P50 = 0.373 uM (G7), so 0.373 nM, printed rounded as 0.37 nM (R2's reading)"
+    },
+    "expected_P50_crossing_s": {
+      "value": 160.4,
+      "P50_M": 3.73e-07,
+      "source": "world declaration erratum 2 (tag mito-mt1b-declaration-erratum-2-2026-11-22), item 4: a prediction R2's run reports against"
     }
   },
   "plants": {
