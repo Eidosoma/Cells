@@ -311,3 +311,135 @@ symbols, refused outside §3.3's ranges.
 | `r_noise.json` | Means, SEs, deterministic means and bands at every output, with both worlds' verdicts |
 | `plants.json` | Every plant run: changes, identities, gaps and the named items' margins, with a summary per plant |
 | `convergence.json` | The 100× check per solve, Radau against it, and the closed forms' and R-noise's precision |
+
+## Amendment R (§9): the release worlds
+
+These are written from `docs/TEMPLATED_POLYMERISATION_LAWS.md` at tag `gr1-sheet-fr38-2026-11-22`,
+§9 read against §0–§8, and from this package's G2 references. Under the same code-blind rule as G2,
+no engine code and none of the lane's tools were read.
+
+- **R1** (§9.9) is built.
+- **R2** waits for the sheet's addendum on its translation, which is to be tagged.
+
+| File | What it holds |
+| --- | --- |
+| `release.py` | `ReleaseSystem` on the G2 model, R1's world, the integrator, the readouts, §9.7's identities, and §9.10's limit in decimal arithmetic |
+| `release_run.py` | The driver, with G2's run receipts (`run.provenance()`) |
+| `interface/release_inputs.json` | §9.9's declared values, methods, tolerances and the run's receipt |
+| `interface/release_r1.json` | Every R1 case at its outputs, the limit checks, the requester's figures, the cohorts and the recharging variant |
+
+**What R1 computes.**
+- The cases: p ∈ {0, 0.25, 0.75, 1} and the matched blank (H(0) = 0), each with `returned` and with
+  `held`.
+- Two runs per case:
+  - **one class:** the reference;
+  - **two classes, labelled at release:** class 2 during [0, 3,600 s], which is §9.8's route 1.
+- **Outputs** at 0, 1,800, 3,600, 7,200 and 14,400 s. The solver restarts every 60 s, and every
+  switch lies on that grid.
+- **Readouts:**
+  - every row;
+  - F_pol, and E_tx, which under `held` is §9.3's ΣC + H (`C_sum_tx` is the complexes alone);
+  - the hold;
+  - §9.7's counters: arrivals ∫Q, ∫Q^f per fate, the fate amounts and ∫D_F per fate row;
+  - G − G(0), the heats, and each move's ΔG;
+  - the residuals of the hold, fate-row and per-producer identities at every output.
+
+**Three exact trackers** run in the one-class runs and do not feed back:
+- **CO_f:** the release-window cohort under first-order, age-independent loss. This is §9.8's route
+  2 with no grid.
+- **LR_f:** the released molecules still present.
+- **DL_f:** LR_f's distance from the requester's limit, integrated directly as
+  DL′ = −k_f DL + k_f e^(y_f) LR.
+
+**Precision.**
+- Every run is DOP853 at rtol 2.5 × 10⁻¹², checked at 2.5 × 10⁻¹⁴.
+  - **Convergence:** at most 1.8 × 10⁻¹² of scale, and 1.8 × 10⁻¹¹ in the label runs (the sheet
+    allows 10⁻⁹).
+  - **Identities:** at most 5.0 × 10⁻¹⁵, and 3.0 × 10⁻¹⁴ in the label runs (the sheet allows
+    10⁻¹²).
+  - **Heats:** no class ever decreases.
+  - **Domain:** y_f ≤ −18.4676 and ln(c_F/c°) ≤ −23.43.
+- The limit is computed at 50 digits.
+
+### The requester's limit (§9.10), at p = 0.75 and t = 1 h
+
+| Figure | Requester | References (copies) | Relative distance |
+| --- | --- | --- | --- |
+| Held | 40 | 40.000000000000 | −3.5 × 10⁻¹⁶ |
+| Released | 40 | 40.000000000000 | 0 |
+| Into the durable row | 30 | 30.000000000000 | +2.3 × 10⁻¹⁶ |
+| Into the short-lived row | 10 | 10.000000000000 | −5.0 × 10⁻¹⁶ |
+| Durable, still present | 24.852814 | 24.852813785212 | −8.6 × 10⁻⁹ (+1.723 × 10⁻⁹ from the exact 24.852813742386) |
+| Short-lived, still present | 5.000000 | 5.000000028885 | +5.777 × 10⁻⁹ |
+
+The release law sits on the limit at every case and output: the hold and the releases differ from
+it by at most 1.5 × 10⁻¹⁵.
+
+The released molecules still present sit above the limit because of §4.4's factor (1 − e^(y_f)).
+- At p = 0.75 the distance grows with time:
+
+  | t | Durable | Short-lived |
+  | --- | --- | --- |
+  | 0.5 h | 8.4 × 10⁻¹⁰ | 3.1 × 10⁻⁹ |
+  | 1 h | 1.72 × 10⁻⁹ | 5.78 × 10⁻⁹ |
+  | 2 h | 3.6 × 10⁻⁹ | 1.01 × 10⁻⁸ |
+  | 4 h | 8.0 × 10⁻⁹ | 1.54 × 10⁻⁸ |
+
+- The largest distance over every case is 1.54 × 10⁻⁸.
+- The tracker LR, n_F minus the matched blank, and the integrated distance DL agree to 10⁻¹².
+
+### The release-window cohort (§9.8), [0, 3,600 s] sampled at 3,600 and 7,200 s
+
+- **Route 2, exact:** above the first-order closed form by at most 1.9 × 10⁻⁸, from the same loss
+  factor.
+- **Route 1 against the matched blank,** F_2(ts) − F_2^blank(ts): agrees with route 2 to 6.4 × 10⁻¹²
+  at every case.
+- **Route 1 as §9.8 writes it,** F_2(ts) − F_2(0): falls short of route 2 by 5.3 × 10⁻⁶ to
+  4.5 × 10⁻⁴, relative.
+  - At p = 0.75 with `returned`, the shortfall is 7.1 × 10⁻⁶ and 1.7 × 10⁻⁵ for the durable fate at
+    1 h and 2 h, and 9.0 × 10⁻⁵ and 4.5 × 10⁻⁴ for the short-lived one.
+  - The cause: class 2's row starts at the trace, and the difference misses the trace's own loss,
+    F_2(0)(1 − S(ts)).
+  - This is finding R-F1.
+
+### Readings of §9
+
+These are sent to the lead for the sheet's fixes. None was resolved from code.
+
+- **R1, R1's routes.** §9.9 does not list them. They are the chain (k_I = 0, so nothing completes),
+  its release and the fates' losses. There is no recharging, translation or regulator, and R and P
+  stay at their traces.
+  - §9.10's "y_f ≈ −18.48 at every fate amount" supports this reading: it needs M near A1's 0.05 mM,
+    and recharging would draw M down within minutes.
+  - **A reported variant** adds A1's recharging. Its distance from the limit is 8.97 × 10⁻¹⁰ and
+    3.01 × 10⁻⁹ at 1 h, about half.
+- **R2, "the inventory trace"** (§9.9), is not defined in the sheet. It is taken as A1's product
+  trace, 1.0 × 10⁻¹² mM: 10⁻¹² fmol in 1 pL, or 6.0 × 10⁻⁴ molecules, in every fate row.
+- **R3, the limit's survivors** are the released molecules still present (§9.10's "of those").
+  - They are compared as n_F minus the matched blank, which equals the tracker LR.
+  - The fate row n_F itself also holds the trace's survivors. It sits 5.2 × 10⁻⁷ to 9.5 × 10⁻⁵ from
+    the limit (1.7 × 10⁻⁵ and 3.0 × 10⁻⁵ at 1 h, p = 0.75), not about 10⁻⁸. This is finding R-F2.
+- **R4, the matched blank** has H(0) = 0 and is otherwise equal: the same machine option and class
+  count. With nothing released, p has no effect.
+- **R5, the heat classes.** §9.5 names H_rel,ρ,f per fate, but not the class for a fate's loss. The
+  references use H_deg,Fd and H_deg,Fs, one per fate and summed over classes, and G's identity sums
+  every class.
+- **R6, E_tx under `held`** is §9.3's E_ρ = ΣC + ΣH, and `C_sum_tx` keeps the complexes alone.
+- **R7, the label schedule** is read at each segment's start. A release during [0, 3,600 s) enters
+  class 2, and the switch at 3,600 s lies on the grid.
+- **R8, R1's domain** lists the moves in use: the fates' losses (y_f ≤ x_dom) and the release
+  (c_F ≤ c°). Elongation has no complexes in R1.
+
+**Findings:**
+- **R-F1, §9.8's route 1.** "F^f_ρ,2(ts) − F^f_ρ,2(0) is the cohort, for any loss law" misses the
+  trace's own loss. It is off by up to 4.5 × 10⁻⁴ relative in R1, far outside any grid error.
+  Subtracting the matched blank's F_2(ts) makes it exact to 10⁻¹¹.
+- **R-F2, §9.10's 1e-8.** The distance holds for the released molecules still present: 1.7–5.8 × 10⁻⁹
+  at 1 h, and at most 1.54 × 10⁻⁸ by 4 h. It does not hold for the fate rows themselves, which
+  carry the trace.
+- **R-F3, the requester's figures.** The six-decimal 24.852814 is itself 1.04 × 10⁻⁸ above the exact
+  limit, 24.852813742386.
+
+**Regenerating.** `python -m validation.gene_regulation.references.release_run --out DIR`, from a
+source snapshot, takes about 30 s on one core. The committed interface came from revision
+`85668e36` by snapshot, with a clean status and an empty patch.
