@@ -263,7 +263,7 @@ def test_a_pool_cleared_far_below_its_anchor_stalls_at_the_anchors_resolution(bo
             lambda raw: raw["experiment"]["turnover_controls"][1]["schedule"].append(
                 dict(time=0.0015, rate=0.1)
             ),
-            "exact multiple of dt",
+            "on the clock's grid",
         ),
         (
             lambda raw: raw["experiment"]["turnover_controls"][1]["schedule"].append(

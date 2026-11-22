@@ -344,7 +344,7 @@ REFUSALS = {
                 dict(time=0.0055, enabled=0)
             )
         ),
-        "exact multiple of dt",
+        "on the clock's grid",
     ),
     "switch outside the horizon": (
         _edit(
@@ -360,7 +360,7 @@ REFUSALS = {
                 dict(state_id="s", cell_id="cell_0", time=0.0055, value=0.5)
             )
         ),
-        "exact multiple of dt",
+        "on the clock's grid",
     ),
     "write outside the horizon": (
         _edit(

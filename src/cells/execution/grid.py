@@ -36,17 +36,12 @@ import numpy as np
 from cells.definitions.specs import ConfigError, _integer
 from cells.execution.resources import trace_bytes
 from cells.execution.schedule import control_values
+from cells.numerics.clock_instants import (  # noqa: F401 (D283's one predicate)
+    ROUNDING_ULPS,
+    on_grid,
+    same_instant,
+)
 from cells.registry.models import get_model
-
-# Two times are one instant to within the rounding of two products of declared steps (each
-# product and each step's binary value round by half an ulp; 4 ulps holds them with margin).
-ROUNDING_ULPS = 4
-
-
-def same_instant(a, b):
-    """Whether a and b differ by at most ROUNDING_ULPS ulps of the larger."""
-    return abs(a - b) <= ROUNDING_ULPS * math.ulp(max(abs(a), abs(b)))
-
 
 # The near-miss band (D283): an event more than ROUNDING_ULPS from a point of the clock but within
 # NEAR_MISS of the step it would split off is refused. Such a sub-step, a millionth of its step or
@@ -60,27 +55,26 @@ def same_instant(a, b):
 NEAR_MISS = 1e-6
 
 
-def on_grid(time, dt):
-    """D283's one predicate for a clock without windows: the point k * dt that `time` is, exactly or
-    within the same-instant tolerance, or None. Every check that asks whether a time is on the
-    step grid asks this."""
-    point = round(time / dt) * dt
-    return point if point == time or same_instant(point, time) else None
-
-
 def near_miss(time, point, step):
     """Whether `time` misses `point` by more than the same-instant tolerance but by at most
     NEAR_MISS of `step`, the step it would split (the band, refused)."""
     return not same_instant(point, time) and abs(time - point) <= NEAR_MISS * step
 
 
+# The keys under which an experiment declares event times: every schedule's "time", a bridge's
+# "start_time" (bridge_closure@1) and an insertion's "onset_time" (membrane_insertion@1 and @2).
+# An explicit set, never a *_time pattern: experiment.end_time is no event. A key missed here
+# fails closed: the applied copy keeps its event off the point, and applied_definition refuses it.
+EVENT_TIME_KEYS = frozenset({"time", "start_time", "onset_time"})
+
+
 def _snap_times(value, snap, pairs):
-    """`value` with every number under a "time" key replaced by snap(it) where snap gives a point
-    (recording (declared, applied)); lists and dicts walked, everything else kept."""
+    """`value` with every number under an EVENT_TIME_KEYS key replaced by snap(it) where snap gives
+    a point (recording (declared, applied)); lists and dicts walked, everything else kept."""
     if isinstance(value, dict):
         out = {}
         for k, v in value.items():
-            if k == "time" and isinstance(v, (int, float)) and not isinstance(v, bool):
+            if k in EVENT_TIME_KEYS and isinstance(v, (int, float)) and not isinstance(v, bool):
                 applied = snap(float(v))
                 if applied is not None and applied != v:
                     pairs.append((float(v), applied))
@@ -99,7 +93,12 @@ def applied_definition(spec):
     its clock snaps (EventGrid(spec).snapped) replaced by the point, re-parsed. The runner runs
     this copy, so every control lookup, observation and operator sees the instant the clock steps
     at; the declared definition keeps its fingerprint, record and manifest. Without a snap, `spec`
-    itself."""
+    itself.
+
+    The operators' own schedules are among these events (D283 stage 2): each operator reports its
+    times (schedule_times) into the experiment's changes, and its grid check admits a time within
+    the same-instant tolerance of k * dt (numerics.clock_instants.on_grid), which the clock snaps
+    onto k * dt, so the copy declares it there."""
     from cells.definitions.specs import parse_spec
 
     grid = EventGrid(spec)
