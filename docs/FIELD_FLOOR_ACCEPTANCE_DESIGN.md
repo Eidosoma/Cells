@@ -363,3 +363,43 @@ cut, the only definition re-anchored from a running state, meets the same zero-s
 its own check applies. Tests: `tests/unit/test_component_net_charge.py`, the `[anchor]` cases of
 `test_surface_tissue.py` and `test_surface_kinetic.py`, and `test_surface_excision.py`'s
 unsolvable cuts.
+
+## Junctions across floating components converge at first order under ARS(2,2,2) (21 November 2026)
+
+**The limit.** Under `imex_ars222_face_electromigration@1` and N2's
+`imex_ars222_implicit_conductances@1`, a junction that joins two capacitor components, at least one
+of them floating, converges at first order. A floating component is one that holds neither a
+reservoir nor the gauge. First order applies to the junction's gate, its transfer and heat, and the
+face transfers that carry its charge between the components. Everything within one component stays
+second order, membrane voltages included. RK4 is not affected.
+
+**Why.** A floating component's potential offset is not set by its charges.
+- At the step start, `solve` sets it by current balance, faces and junctions together.
+- At the ARS stages, (C + a dt L) φ = q sets it through the implicit faces alone, against junction
+  currents taken explicitly from earlier stages.
+- So at stage 1 the offsets, and every potential difference across components, are O(dt) off, while
+  the charges and every within-component voltage are not. The junction gate's explicit rate at
+  stage 1 reads that junction voltage.
+
+**Measured** on the @3 closed fixture over 2 ms, at dt from 5e-5 to 1.25e-5 s:
+- the junction gate's error goes from 5.9e-7 to 1.2e-7, order 1.1;
+- with a held node in each component, it is second order (2.0) and 14 times smaller;
+- under N2 the transfer's error is near rounding, but the gate stays near first order (1.2 to 1.3).
+
+**The books close.** The booked transfer is the amounts' junction change, so both carry the same
+bias. The amounts only look second order at these steps because their membrane routes' second-order
+error is larger there.
+
+**Where it applies today.** The scan covered 323 registered tissue worlds and the 285 saved
+BETSE-parity definitions. Its only such junction is in crossrev's `base/replacement_padded` and
+G1's copy of it, and that junction never conducts in its run. Worlds whose topology changes during a
+run cannot have one, because the composite's field refresh needs a held bath in every component.
+
+**Open.** The lead is reviewing a fix that re-solves the stage offsets by current balance. Evidence:
+`/mnt/workspaces/Cells/junction-order-20261121/`.
+
+**Fixed (22 November 2026, b8e786d4; D273, D276).** Fix (A) landed: junctions crossing floating
+capacitor components now converge at second order under ARS(2,2,2) and N2. The second builder's
+independent study measured 2.00 to 2.02 for the junction gate, transfer and heat, against 1.07 to 1.26
+at the base. The interim limit stated above no longer applies. replacement_padded's junction gate moved
+by 2.6e-11 relative, with G1's baseline renewed in the same landing.

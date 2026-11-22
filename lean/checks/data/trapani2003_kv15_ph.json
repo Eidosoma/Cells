@@ -1,0 +1,30 @@
+{
+  "trapani2003_kv15_ph": {
+    "authors": "Josef G. Trapani and Stephen J. Korn",
+    "doi": "10.1016/S0006-3495(03)74842-5",
+    "article": "https://pmc.ncbi.nlm.nih.gov/articles/PMC1302603/",
+    "figure": "https://cdn.ncbi.nlm.nih.gov/pmc/blobs/2504/1302603/7e829535bfc0/biophysj13771f01.jpg",
+    "preparation": "Wild-type human Kv1.5 expressed in HEK293 cells. Whole-cell recordings at room temperature; the authors give no exact temperature. Both panels use 10 mM external K+.",
+    "protocol": {
+      "inside_K_mM": 100, "outside_K_mM": 10, "inside_pH": 7.3,
+      "outside_pH_control": 7.3, "outside_pH_acid": 6.8,
+      "hold_mV": -80, "test_mV": 0, "tail_mV": -90,
+      "step_current_pulse_ms": 75, "activation_voltage_spacing_mV": 5
+    },
+    "panel_F": {
+      "observable": "Peak tail conductance after the prepulse, normalized to maximum in each condition. Prepulse duration was adjusted at each voltage to reach peak step current while minimizing inactivation.",
+      "midpoint_mV": {"control": -15.3, "acid": -3.6},
+      "midpoint_sem_mV": {"control": 0.8, "acid": 2.4},
+      "cells": {"control": 5, "acid": 3},
+      "normalized_at_test": {"control": 0.915, "acid": 0.66},
+      "reading_precision": 0.01,
+      "locator": "Figure 1F, the filled circle and triangle centered on the 0 mV tick. On the archived 651 by 720 pixel image the axis runs from y about 665 (zero) to 461 (one). The control marker is near y 479 and the acid marker near y 531. Reading precision is approximate and is separate from sampling uncertainty.",
+      "uncertainty": "Midpoint errors are SEM. At 0 mV the acid marker's vertical error bar reads roughly 0.61 to 0.71. The control error bar cannot be read separately. The panel gives neither absolute maximum nor covariance. Its modified Boltzmann fits have no printed panel-specific slopes or exponent."
+    },
+    "panel_B": {
+      "observable": "Acid/control whole-cell outward current magnitude in a 0 mV pulse, with the acid recording bracketed by two control recordings.",
+      "ratio": 0.745, "sem": 0.019, "cells": 8,
+      "locator": "Figure 1B and its caption, 0 mV for 75 ms. This ratio was reserved for evaluation; it supplies no activation-curve input."
+    }
+  }
+}

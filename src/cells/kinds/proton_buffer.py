@@ -86,6 +86,16 @@ declaration:
   its total. So the margin never refuses an admitted world today: it is the exact condition, kept
   fail-closed, for when totals at or below zero are admitted. Its vertices are the layout's
   binding_margin_vertices, and a network past the enumeration's caps is refused at the definition.
+- **Every held total is positive at every stage, by construction** (positive_held_totals; the
+  lead's decision of 21 November 2026, on the Lean lane's finding). @3 holds every stored amount
+  positive at the checked states (the parse, the predictor's totals and each step's end), but a
+  tableau's intermediate stages are read before any such check. With release forms a signed total
+  can leave the margin within an ulp of 0, where its float sign misclassifies it (the Lean lane's
+  three rel1 cases). So the read refuses any held total <= 0 at any stage, on the total's own sign,
+  before the margin is consulted. It refuses through the read's validity, the engine's existing
+  failed-read path: the step is refused as a domain failure, whose message does not name the read
+  (no host-side reason reaches it from the compiled stage). Nothing is NaN-poisoned. No admitted
+  world reaches it, so every registered world keeps its values.
 - A form below its base in some ligand makes a release step, a unit step whose bound form holds
   count <= 0 in its ligand. Amendment C5 registers seven release-step cases, and the envelope
   bounds their kinetic lag, the cross-row drives included, within its first order's registered
@@ -508,10 +518,38 @@ def _declared_terms(p, amounts, *, xp):
     return xp.where(buffered, term - 1e-3 * R * p.temperature * protons * standard, 0.0)
 
 
+# The host path's last general term: (layout, stored increments, change). The host row checks
+# value one accepted row twice (balances, then channel_magnitudes), so the second call returns a
+# copy of the first's array and the closure is solved once: bit-identical by construction. It is
+# reused only for the same layout object and bitwise-equal increments; device traces never reach it.
+_HOST_CHANGE = []
+
+
+def _host_general_change(state, p):
+    increments = tuple(
+        np.asarray(a) for a in (state.amount_increment, state.extracellular_amount_increment)
+    )
+    if (
+        _HOST_CHANGE
+        and _HOST_CHANGE[0] is p
+        and all(
+            a.dtype == b.dtype and a.shape == b.shape and a.tobytes() == b.tobytes()
+            for a, b in zip(_HOST_CHANGE[1], increments, strict=True)
+        )
+    ):
+        return _HOST_CHANGE[2].copy()
+    change = _general_change(state, p, np)
+    _HOST_CHANGE[:] = (p, tuple(a.copy() for a in increments), np.array(change, copy=True))
+    return change
+
+
 def ledger_terms(state, p, *, xp):
     """The declared term's change since the start, as stored free energy (rule (a)). The general
-    closure books phase 1's S_c (CORE_SEAMS §19 as amended), @3 its ideal terms on the rows."""
+    closure books phase 1's S_c (CORE_SEAMS §19 as amended), @3 its ideal terms on the rows. On the
+    host the general term is reused for a repeated row (_HOST_CHANGE)."""
     if _is_general(p):
+        if xp is np:
+            return dict(stored_pJ=_host_general_change(state, p))
         return dict(stored_pJ=_general_change(state, p, xp))
     return dict(
         stored_pJ=_declared_terms(p, _amounts(state, p, xp), xp=xp) - p.proton_buffer_initial_pJ
@@ -714,8 +752,15 @@ def _general_solve(amounts, p, xp):
     u, ok = binding.free_ligands(total_l, total_b, p.binding_log_beta, p.binding_counts,
                                  p.binding_present, held, comp_l, comp_b,
                                  vertices=p.binding_margin_vertices, xp=xp)
+    ok = ok & positive_held_totals(total_l, held, xp=xp)  # By construction (module docstring).
     valid = xp.all(xp.where(xp.any(held, axis=0), ok, True))
     return u, valid, total_l, total_b, held, member, safe_v
+
+
+def positive_held_totals(total_l, held, *, xp):
+    """[node] whether every ligand total the closure holds at the node is positive (and so finite):
+    the read's precondition, by construction at every stage (module docstring)."""
+    return xp.all(xp.where(held, total_l > 0, True), axis=0)
 
 
 def _general_terms(p, amounts, xp):

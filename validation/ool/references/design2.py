@@ -102,12 +102,13 @@ ZERO_POWER = [
     "Which daughter takes which slot: the daughters are exchangeable under pi; the replay follows the recorded map "
     "when its slot set is either reading (the parent's slot and the lowest free, or the lowest of the free and the "
     "parent's).",
-    "Which daughter a single lineage follows (G1's daughter_continuation@1, recorded as fission_followed and "
-    "required) and the daughters' carrier keys (the relations rule, read from the lives table): taken from the "
-    "record; the checks are per key.",
+    "Which daughter a single lineage follows (declared continuation first, amendment 7; recorded as "
+    "fission_followed and required) and the daughters' carrier keys (the relations rule, read from the lives "
+    "table): taken from the record, not checked against the declaration (G1's daughter_continuation@1 carries "
+    "that claim); the checks are per key.",
     "Implemented as §0.2d 10 rules them, but not exercised by the registered runs: two scheduled events at one time, a "
     "declared time equal to t_end, daughters not re-tested in the event that made them, a total rate of zero with a "
-    "schedule pending (no draw), and a shear's stress test (none is declared).",
+    "schedule pending (no draw), and a shear's stress test (no critical stress is declared, amendment 7).",
     "The finite pool's c_ext drift (§0.2c rule 6): reported by the engine, not checked.",
     "The uniforms' own distribution in domains 1, 5 and 6: the replays check the maps from uniforms to events, and "
     "OL1's ensemble rows the generator; OL3-1's laws test domain 2's block draws end to end.",
@@ -156,6 +157,13 @@ AMENDMENTS = [
          "declared time equal to t_end applies (neither occurs in a registered run: every run's draws are unchanged)",
          "a single lineage's channel table must be the ruled order too (was: any declared order)",
          "every recorded draw must be the reference's: no exemption for a gap past t_end or a stopped attempt",
+     ]},
+    {"id": 7, "date": "2026-11-19", "ruling": "none needed: the values the registered references already assume",
+     "registered_inputs": "one file added, designs/ol3_division.json; every other input unchanged",
+     "changes": [
+         "ol3_lineage declares continuation first (the lineage follows daughter 0): the stand-in's, and the only "
+         "value the registered replay admits, since §0.2d's stream layout has no continuation draw",
+         "no OL3 world declares a critical stress, so no stress test applies (admission is v <= k^(-1/2) alone)",
      ]},
 ]
 

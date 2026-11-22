@@ -283,6 +283,24 @@ def one_vesicle_states(states, slots: int) -> list:
     return sorted(out)
 
 
+DIVISION_ON = "2026-11-19"
+DIVISION = {
+    # amendment 7: the division inputs the engine's division block declares, as the references assume
+    "ol3_lineage": {"continuation": "first", "critical_stress_Pa": None},
+    "ol3_population": {"critical_stress_Pa": None},
+    "ol3_shear_probe": {"critical_stress_Pa": None},
+    "ol3_slots_full": {"critical_stress_Pa": None},
+}
+
+
+def division_document() -> dict:
+    return {"format": "ool_references.division_inputs@1", "registered": DIVISION_ON,
+            "amends": f"the OL2/OL3 inputs registered {REGISTERED_ON}",
+            "keys": {"continuation": "first: the lineage follows daughter 0 (single-lineage worlds only)",
+                     "critical_stress_Pa": "null: no critical stress is declared"},
+            "worlds": DIVISION}
+
+
 OL3_PARENTS = [
     dict(id="eq_N5_k3", counts=(2, 1, 2), k_area=(1, 1, 1), lumen=(30, 6), k=3),
     dict(id="eq_N8_k3", counts=(4, 4), k_area=(1, 1), lumen=(40,), k=3),
@@ -375,6 +393,7 @@ def documents() -> dict:
             "state": "one-vesicle probe states [membrane, lumen, finite pool]; the closed world's states are every "
                      "combination of its vesicles' counts above the floor with the conserved total",
             "states": [[list(a), list(b), list(c)] for a, b, c in one]}
+    docs["ol3_division.json"] = division_document()
     docs["ol3_parents.json"] = {"format": "ool_references.ol3_parents@1", "registered": REGISTERED_ON,
                                 "authority": "§0.2c rules 9 and 10", "attempts_per_parent": PARTITION_ATTEMPTS,
                                 "parents": OL3_PARENTS}

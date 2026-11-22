@@ -21,7 +21,9 @@ and is skipped.
 The check's draws come from its own NumPy generator (PROBE_SEED), never from a simulation stream.
 """
 
+import copy
 import functools
+import math
 
 import numpy as np
 
@@ -78,24 +80,69 @@ def random_state(world, capacity, rng, max_count=MAX_COUNT):
     return counts
 
 
+def _within(counts, tables):
+    """Whether a state fits the world's log-factorial table: every finite count, and the
+    membrane's total less the offset, at most its last index (ledger.state_free_energy's rule)."""
+    last = tables.log_factorial.shape[0] - 1
+    largest = int(np.max(np.where(tables.finite, counts, 0), initial=0))
+    membrane = int(np.sum(np.where(tables.membrane, counts, 0)))
+    return largest <= last and membrane - tables.offset <= last
+
+
+def lifted_to_floor(counts, membrane, quanta, floor):
+    """A probe state at or above the vesicle floor (§0.2c rule 5): a state whose footprint is below
+    `floor` gains the same number of molecules at every membrane place, the fewest that reach it;
+    any other state is returned as it is. The draw is unchanged, so a world whose states all stand
+    at its floor (the generic probe worlds: one molecule of the smallest area is the floor) checks
+    exactly the same pairs. Found by OL5's registered OL3 worlds (22 November 2026): floors of 200
+    to 1,500 quanta at one quantum a molecule, so no drawn state reached them, none of their joins
+    was paired, and the world report refused them (D263)."""
+    w = int(np.sum(counts[membrane] * quanta[membrane]))
+    if w >= floor:
+        return counts
+    out = counts.copy()
+    out[membrane] += -(-(floor - w) // int(np.sum(quanta[membrane])))
+    return out
+
+
 def deviations(spec, rng, states=STATES, max_count=MAX_COUNT):
-    """ln a⁺(n) − ln a⁻(n') + ΔF − w for every step that can fire at `states` random states."""
+    """ln a⁺(n) − ln a⁻(n') + ΔF − w for every step that can fire at `states` random states.
+
+    The states are drawn within the world's own capacity (D263): at most min(max_count, molecule
+    capacity) molecules per place, and a state or a result the world's table cannot hold is no
+    pair. Before, a low-capacity world drew states above its capacity and checked none of them. A
+    world of capacity 12 or more draws exactly as it did, and checks the same pairs unless a state's
+    membrane total passed its capacity (read from the clamped table before, skipped now).
+
+    A bilayer world's states stand at or above its vesicle floor (lifted_to_floor): below it every
+    channel that changes the footprint is zero, so such a state pairs none of them."""
     world = spec.model.world
     structure, layout, tables = model.structure(spec), model.layout(spec), model.tables(spec)
     terms = world.terms
     term_layouts = layout.terms
     R = structure.steps
     membrane = np.asarray([p.phase == "membrane" and not p.held for p in world.places])
+    max_count = min(max_count, structure.molecules)
+    floor = None
+    if structure.geometry not in (None, PRESCRIBED_SHELL):
+        from cells.models.assembly_lineages_v2 import geometry as geometry_rules
+
+        quanta = geometry_rules.place_quanta(world, structure.places)
+        floor = (np.flatnonzero(membrane), quanta, geometry_rules.floor_quanta(world))
     found = []
     for _ in range(states):
         n = random_state(world, structure.places, rng, max_count)
+        if floor is not None:
+            n = lifted_to_floor(n, *floor)
+        if not _within(n, tables):
+            continue
         forward = host_log_rates(n, layout, structure)
         f_n = ledger.free_energy(n, tables, terms, term_layouts)
         for r in range(len(world.steps)):
             if not np.isfinite(forward[r]):
                 continue
             after = n + _nu(layout, r)
-            if np.any(after < 0) or np.max(after) > structure.molecules:
+            if np.any(after < 0) or not _within(after, tables):
                 continue
             emptied = after[: len(world.places)][membrane].sum() == 0
             if emptied and structure.last_molecule == "extinct":
@@ -235,8 +282,14 @@ PROBES = tuple(
 )
 
 
-@functools.cache
 def verdict():
+    """_verdict()'s result, a fresh copy for each caller: the cached object is never
+    handed out, so one run's edit to its check cannot reach another run's (D263)."""
+    return copy.deepcopy(_verdict())
+
+
+@functools.cache
+def _verdict():
     """The check's verdict on its generic probe worlds (PROBES), as a dict; refuses (ConfigError)
     if any pair fails the identity. Cached: it is a property of the family's code."""
     from cells.definitions.specs import parse_spec
@@ -246,6 +299,7 @@ def verdict():
     for measure, last, regular, catalysis in PROBES:
         spec = parse_spec(probe_world(rng, measure, last, regular=regular, catalysis=catalysis))
         found = np.abs(deviations(spec, rng))
+        require_pairs(found, spec, "the check's probe world")
         pairs += found.size
         worst = max(worst, float(np.max(found)) if found.size else 0.0)
     if not worst <= ATOL:
@@ -276,10 +330,39 @@ def verdict():
     }
 
 
+def require_pairs(found, spec, what):
+    """D263: an identity checked on no pair is no evidence. A world with any step must have at
+    least one pair checked, or the check refuses (ConfigError), never reporting a zero error."""
+    if found.size == 0 and spec.model.world.steps:
+        raise ConfigError(
+            f"{MODEL_ID}: on {what} the identity was checked on no pair of its "
+            f"{len(spec.model.world.steps)} steps, which is no evidence: refused (D263)"
+        )
+
+
+# world_report's results, by world and capacities. The report is a pure function of both (its
+# states come from PROBE_SEED, never the run's stream), so a run of a world already reported reuses
+# it, bit for bit, instead of recomputing about a second of host rates per run.
+_WORLD_REPORTS = {}
+
+
 def world_report(spec, *, states=STATES):
-    """The identity on the world's own data (random states); refused (ConfigError) if it fails."""
+    """The identity on the world's own data (random states); refused (ConfigError) if it fails.
+    Computed once per world and capacities in a process (_WORLD_REPORTS)."""
+    from cells.models.assembly_lineages_v2.spec import world_id
+
+    x = spec.execution
+    key = (world_id(spec.model.world), x.molecule_capacity, x.place_capacity, x.step_capacity,
+           states)  # fmt: skip
+    if key not in _WORLD_REPORTS:
+        _WORLD_REPORTS[key] = _world_report(spec, states)
+    return copy.deepcopy(_WORLD_REPORTS[key])  # D263: never the kept object
+
+
+def _world_report(spec, states):
     rng = np.random.default_rng(PROBE_SEED)
     found = np.abs(deviations(spec, rng, states=states))
+    require_pairs(found, spec, "this world's data")
     worst = float(np.max(found)) if found.size else 0.0
     if not worst <= ATOL:
         raise ConfigError(
@@ -396,8 +479,14 @@ GEOMETRY_PROBES = tuple(
 )
 
 
-@functools.cache
 def geometry_verdict():
+    """_geometry_verdict()'s result, a fresh copy for each caller: the cached object is never
+    handed out, so one run's edit to its check cannot reach another run's (D263)."""
+    return copy.deepcopy(_geometry_verdict())
+
+
+@functools.cache
+def _geometry_verdict():
     """The check's verdict on OL2's generic geometry worlds (GEOMETRY_PROBES), as for verdict():
     refuses (ConfigError) if any pair fails the identity. OL1's verdict() is left as it was, so
     OL1's records do not move."""
@@ -407,7 +496,9 @@ def geometry_verdict():
     worst, pairs = 0.0, 0
     for measure, encounter, regular, catalysis in GEOMETRY_PROBES:
         world = geometry_probe_world(rng, measure, encounter, regular=regular, catalysis=catalysis)
-        found = np.abs(deviations(parse_spec(world), rng))
+        spec = parse_spec(world)
+        found = np.abs(deviations(spec, rng))
+        require_pairs(found, spec, "a probe world")
         pairs += found.size
         worst = max(worst, float(np.max(found)) if found.size else 0.0)
     if not worst <= ATOL:
@@ -517,8 +608,14 @@ SHELL_PROBES = tuple(
 )
 
 
-@functools.cache
 def shell_verdict():
+    """_shell_verdict()'s result, a fresh copy for each caller: the cached object is never
+    handed out, so one run's edit to its check cannot reach another run's (D263)."""
+    return copy.deepcopy(_shell_verdict())
+
+
+@functools.cache
+def _shell_verdict():
     """The check's verdict on FR-21's generic shell worlds (SHELL_PROBES), as for
     geometry_verdict(): refuses (ConfigError) if any pair fails the identity. The other verdicts
     are left as they were, so no other run's record moves."""
@@ -528,7 +625,9 @@ def shell_verdict():
     worst, pairs = 0.0, 0
     for measure, regular, catalysis in SHELL_PROBES:
         world = shell_probe_world(rng, measure, regular=regular, catalysis=catalysis)
-        found = np.abs(deviations(parse_spec(world), rng))
+        spec = parse_spec(world)
+        found = np.abs(deviations(spec, rng))
+        require_pairs(found, spec, "a probe world")
         pairs += found.size
         worst = max(worst, float(np.max(found)) if found.size else 0.0)
     if not worst <= ATOL:
@@ -587,8 +686,14 @@ def osmotic_probe_world(rng, measure, encounter, *, regular, catalysis):
     return out
 
 
-@functools.cache
 def osmotic_verdict():
+    """_osmotic_verdict()'s result, a fresh copy for each caller: the cached object is never
+    handed out, so one run's edit to its check cannot reach another run's (D263)."""
+    return copy.deepcopy(_osmotic_verdict())
+
+
+@functools.cache
+def _osmotic_verdict():
     """The check's verdict on OL2 milestone 2's generic osmotic worlds, as geometry_verdict's."""
     from cells.definitions.specs import parse_spec
 
@@ -596,7 +701,9 @@ def osmotic_verdict():
     worst, pairs = 0.0, 0
     for measure, encounter, regular, catalysis in GEOMETRY_PROBES:
         world = osmotic_probe_world(rng, measure, encounter, regular=regular, catalysis=catalysis)
-        found = np.abs(deviations(parse_spec(world), rng))
+        spec = parse_spec(world)
+        found = np.abs(deviations(spec, rng))
+        require_pairs(found, spec, "a probe world")
         pairs += found.size
         worst = max(worst, float(np.max(found)) if found.size else 0.0)
     if not worst <= ATOL:
@@ -625,3 +732,88 @@ def osmotic_verdict():
             "max_abs_deviation_ln": worst,
         },
     }
+
+
+# ------------------------------------------------------------------ FR-31: the pore's event pair
+
+PORE_STATES = 240  # the generic probe's states (parameters, tension, temperature and area)
+
+
+def pore_deviation(log_nu, gamma, e_a, eta, sigma, temperature, area):
+    """ln k_v − ln P + (ΔF − w)/k_BT at one state, from three separate statements of the sheet
+    (§2, §7): k_v the law's rate, P its reverse (the critical pore's collapse, damped by η_m(T)),
+    and ΔF and w from the pore's energy, ΔF = 2πr_cΓ − k_BT·ln(A·n_s) with n_s's closed form at
+    298.15 K and w = σ·πr_c², r_c = Γ/σ. It is 0 to rounding where the three agree."""
+    from cells.models.assembly_lineages_v2 import pore_nucleation as law
+
+    kt = law.K_B * temperature
+    r_c = gamma / sigma
+    log_sites = math.log(area) + law.log_site_density(log_nu, gamma, e_a, eta)
+    delta_f = 2.0 * math.pi * r_c * gamma / kt - log_sites
+    work = sigma * math.pi * r_c * r_c / kt
+    log_k = law.log_rate(area, sigma, temperature, log_nu, gamma, e_a)
+    log_p = math.log(law.collapse_rate(sigma, temperature, gamma, e_a, eta))
+    return log_k - log_p + (delta_f - work)
+
+
+def pore_verdict():
+    """_pore_verdict()'s result, a fresh copy for each caller (D263)."""
+    return copy.deepcopy(_pore_verdict())
+
+
+@functools.cache
+def _pore_verdict():
+    """The pair's identity on the check's own generic states (its parameters, tension, temperature
+    and area drawn from PROBE_SEED + 7, with T away from 298.15 K, where η_m's factors are 1):
+    refuses (ConfigError) if any state fails it. Cached: a property of the family's code."""
+    from cells.models.assembly_lineages_v2 import pore_nucleation as law
+
+    rng = np.random.default_rng(PROBE_SEED + 7)
+    worst = 0.0
+    for _ in range(PORE_STATES):
+        gamma = float(rng.uniform(3e-12, 30e-12))
+        temperature = float(rng.uniform(260.0, 380.0))
+        sigma = float(rng.uniform(0.02, 0.25)) * law.sigma_beta(gamma, temperature)
+        found = pore_deviation(
+            float(rng.uniform(10.0, 60.0)), gamma, float(rng.uniform(5e3, 80e3)),
+            float(np.exp(rng.uniform(np.log(1e-11), np.log(1e-8)))), sigma, temperature,
+            float(np.exp(rng.uniform(np.log(1e-18), np.log(1e-6)))),
+        )  # fmt: skip
+        worst = max(worst, abs(found))
+    if not worst <= ATOL:
+        raise ConfigError(
+            f"{MODEL_ID}: the pore's pair fails ln k_v - ln P = -(dF - w) on the check's probe: "
+            f"the largest deviation is {worst:.3g} > {ATOL:g}. Refused"
+        )
+    return {
+        "identity": "ln k_v - ln P + (dF - w)/k_BT = 0, dF = 2 pi r_c Gamma - k_BT ln(A n_s), "
+        "w = sigma pi r_c^2 (the sheet's §7)",
+        "holds": True,
+        "probe": {
+            "states": PORE_STATES,
+            "seed": PROBE_SEED + 7,
+            "tolerance_ln": ATOL,
+            "max_abs_deviation_ln": worst,
+        },  # fmt: skip
+    }
+
+
+def pore_world_report(spec, areas):
+    """The pair's identity at the world's own states: its parameters and temperature, each hold's
+    tension and each vesicle's area (A in m²); refused (ConfigError) if it fails."""
+    from cells.models.assembly_lineages_v2 import pore_nucleation as law
+
+    world = spec.model.world
+    log_nu, gamma, e_a, eta = law.parameters(world)
+    found = [
+        pore_deviation(log_nu, gamma, e_a, eta, hold.sigma, world.units.temperature_K, area)
+        for hold in spec.experiment.tension_holds
+        for area in areas
+    ]
+    worst = max((abs(x) for x in found), default=0.0)
+    if not found or not worst <= ATOL:
+        raise ConfigError(
+            f"{MODEL_ID}: on this world's data the pore's pair fails its identity by {worst:.3g} "
+            f"> {ATOL:g} (or was checked at no state): refused"
+        )
+    return {"states": len(found), "max_abs_deviation_ln": worst, "tolerance_ln": ATOL}

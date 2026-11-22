@@ -4,7 +4,9 @@
   world's own data (planted: a factor at each direction's own state, a power propensity, a
   one-sided composition term; each fails by far more than rounding).
 - The reverse is the products' mass action, against textbook formulas written here (planted: the
-  power propensity).
+  power propensity); at counts in the thousands the activities keep double precision, each falling
+  factorial a sum of direct logarithms (OL5's precision fix; planted: the log-factorial table's
+  differences, 5e-12 off at OL2-1's registered state).
 - Catalysis is kinetic only: a closed world's stationary law, solved from the kernel's own rates,
   is exp(−F)/Z with and without catalysts (planted: the factor at each direction's own state moves
   it); a world with every rate constant doubled draws the same channels at exactly half the times.
@@ -24,7 +26,7 @@ import math
 import numpy as np
 import pytest
 
-from cells.definitions.specs import parse_spec
+from cells.definitions.specs import ConfigError, parse_spec
 from cells.models.assembly_lineages_v2 import (
     balance,
     kernel,
@@ -128,6 +130,49 @@ def test_the_kernel_identity_holds_on_its_probe_and_on_worlds():
         assert balance.world_report(spec, states=20)["max_abs_deviation_ln"] <= TOL
 
 
+def test_the_world_report_is_kept_per_world_capacities_and_states_and_never_when_refused(
+    monkeypatch,
+):
+    """balance.world_report is kept per process (FR-35's cost ruling; the lead's condition of 21
+    November): a second run of one world reuses it, and a change to any input it reads misses the
+    cache and recomputes: the world's content (its id, a full digest of world_to_dict), each of the
+    molecule, place and step capacities, and the probe states. A refused world is never kept: asked
+    again, it is recomputed and refused again. Host arithmetic at 20 states."""
+    calls = []
+    real = balance._world_report
+    monkeypatch.setattr(balance, "_WORLD_REPORTS", {})
+
+    def counted(spec, states):
+        calls.append(states)
+        return real(spec, states)
+
+    monkeypatch.setattr(balance, "_world_report", counted)
+
+    def report(the_world, states=20, **execution):
+        d = definition(the_world)
+        d["execution"].update(execution)
+        return balance.world_report(parse_spec(d), states=states)
+
+    first = report(world())
+    assert report(world()) == first and len(calls) == 1  # the same world: kept
+    faster = world()
+    faster["steps"][0]["forward_rate_per_s"] *= 2.0
+    misses = (lambda: report(faster), lambda: report(world(), molecule_capacity=128),
+              lambda: report(world(), place_capacity=32), lambda: report(world(), step_capacity=16),
+              lambda: report(world(), states=21))  # fmt: skip
+    for n, miss in enumerate(misses, start=2):
+        miss()
+        assert len(calls) == n  # each input it reads is in the key
+    power = renamed_mass_action("tests.power_propensity@1", _power)
+    with scoped(power):
+        refused = with_law(paired(world(catalysis=False)), "tests.power_propensity@1")
+        for attempt in (1, 2):
+            with pytest.raises(ConfigError, match="fail the identity"):
+                report(refused)
+            assert len(calls) == len(misses) + 1 + attempt  # recomputed: never kept
+    assert len(balance._WORLD_REPORTS) == len(misses) + 1
+
+
 def test_planted_kinetics_fail_the_identity_by_far_more_than_rounding():
     at_state = dataclasses.replace(
         transition_state.LAW, law_id="tests.at_state_factor@1", log_factor=_at_state
@@ -200,6 +245,24 @@ def test_the_reverse_from_F_is_the_products_mass_action():
         )
     assert planted[r] == pytest.approx(0.7 * 7 * 7 / X_pool, rel=1e-13)  # n²: caught
     assert planted[r] != pytest.approx(plus[r], rel=1e-3)
+    # OL5's precision fix: at OL2-1's registered counts (r1's worst, n = 1672 of N = 1847 in the
+    # membrane) the dimerisation and the leave keep double precision; the table's differences,
+    # lgamma(n + 1) − lgamma(n − 1), missed by 5e-12.
+    big = {"L@pool": 7, "S@pool": 5, "L@membrane": 1672, "P@membrane": 175, "D@membrane": 0,
+           "L@lumen": 2, "S@lumen": 1}  # fmt: skip
+    wide = spec_of(world(regular=False, catalysis=False), molecules=4096)
+    plus, minus = rates_at(wide, big)
+    N = 1672 + 175
+    r = ids.index("dimerise")
+    assert plus[r] == pytest.approx(1.0 * 1672 * 175 / N, rel=2e-15)
+    r = ids.index("join_L")
+    assert minus[r] == pytest.approx(10.0 * math.exp(mu["L@membrane"] - mu["L@pool"]) * 1672,
+                                     rel=2e-15)  # fmt: skip
+    n1, M = 1672, 1847
+    tabled = math.exp(
+        (math.lgamma(n1 + 1) - math.lgamma(n1 - 1)) - (math.lgamma(M + 1) - math.lgamma(M))
+    )
+    assert abs(tabled / (n1 * (n1 - 1) / M) - 1) > 1e-12  # planted: the table's differences
 
 
 # ------------------------------------------------------------------ catalysis is kinetic only

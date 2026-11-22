@@ -54,6 +54,7 @@ from cells.definitions.specs import ConfigError
 from cells.models.assembly_lineages import (
     EVERY_DESCENDANT,
     MODE,
+    MODEL_ID,
     balance,
     checkpoints,
     factors,
@@ -305,6 +306,8 @@ def run_lanes(specs, *, starts=None, stop=None, calls=None):
         holder = holders[i]
         holder.rows.append(_host_row(final, count[i]) | {"kind": END, "fission": 0})
         status = _STOPPED if held[i] else kernel.STATUS[int(final["status"])]
+        if status == "stalled":
+            _refuse_a_fault_as_a_stall(final)
         events = sum(len(c) for c, _, _ in holder.steps)
         start = holder.start
         clock = {"events": int(final["events"]), "fissions": int(final["fissions"])}
@@ -373,6 +376,19 @@ def _split_entry(host, i, structure, count):
         "places": None if not structure.uniforms else host.places[i],
         "choice": None if not structure.uniforms else host.choice[i],
     }
+
+
+def _refuse_a_fault_as_a_stall(lane):
+    """A lane stalls when its total rate is not a finite positive number. With every rate finite
+    and the total zero, nothing can fire: a stall. A rate that is not finite (an overflow, or a NaN,
+    which no admitted world reaches) is a fault: refused here, never reported as a stall (the Lean
+    proofs project's finding of 22 November 2026)."""
+    rates = np.asarray(lane["rates"], dtype=np.float64)
+    if not np.all(np.isfinite(rates)):
+        raise FloatingPointError(
+            f"{MODEL_ID}: a rate is not finite ({int(np.sum(~np.isfinite(rates)))} of "
+            f"{rates.size}) at event {int(lane['events'])}: a fault, refused, not a stall"
+        )
 
 
 def _censored_by(status):
@@ -702,6 +718,8 @@ def _run_batch(batch, empty, structure, layout, advance, split, sibling, count, 
         life.end_lane = lane
         if not due[i]:
             reason = kernel.STATUS[int(status[i])]
+            if reason == "stalled":
+                _refuse_a_fault_as_a_stall(lane)
             row = _host_row(lane, count) | {"kind": END, "fission": 0}
             life.end_row = row
             if reason == "extinct":

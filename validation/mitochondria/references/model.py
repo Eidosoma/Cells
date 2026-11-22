@@ -115,6 +115,8 @@ class Arm:
     """One choice per switch in the data file; ``published()`` is the published arm."""
     column: str = "with"
     table: str = "e8"
+    J_DH: str = "eq1"
+    J_AK: str = "eq18"
     J_C3: str = "eq24_with_eq7_proton_term"   # Q02: what the published curves were computed with
     J_F1: str = "eq11"
     J_PiHt: str = "eq16_printed"
@@ -136,7 +138,7 @@ class Arm:
 
     def label(self) -> str:
         ref = Arm.published() if self.column == "with" else Arm.without_control()
-        diff = [f"{k}={getattr(self, k)}" for k in ("table", "J_C3", "J_F1", "J_PiHt", "DGo_ATP_sign",
+        diff = [f"{k}={getattr(self, k)}" for k in ("table", "J_DH", "J_AK", "J_C3", "J_F1", "J_PiHt", "DGo_ATP_sign",
                                                     "cytc_volume", "H_x_row", "T")
                 if getattr(self, k) != getattr(ref, k)]
         diff += [f"{k}={v:g}" for k, v in sorted(self.overrides.items())]
@@ -161,6 +163,7 @@ def parameters(model: dict, arm: Arm) -> dict[str, float]:
     return out
 
 
+PI_PROTONS = "pi_protons_counted"   # frame B's matrix proton inventory (repairs.py)
 STATES = ("H_x", "K_x", "Mg_x", "NADH_x", "QH2_x", "cytCred", "ATP_x", "mATP_x", "mADP_x", "Pi_x",
           "ATP_i", "ADP_i", "AMP_i", "mATP_i", "mADP_i", "Pi_i", "dPsi")
 HELD = ("H_e", "K_e", "Mg_i", "ATP_e", "ADP_e", "AMP_e", "Pi_e", "O2")
@@ -290,6 +293,7 @@ def compile_model(model: dict | None = None, arm: Arm | None = None) -> Compiled
     frac_env = {k: Fraction(repr(v)) if not isinstance(v, int) else Fraction(v) for k, v in params.items()}
     coeffs: dict[str, Fraction] = {}
     outs = []
+    deferred = []
     for s in STATES:
         row = rows[s]
         terms = []
@@ -299,10 +303,17 @@ def compile_model(model: dict | None = None, arm: Arm | None = None) -> Compiled
             coeffs[cname] = val
             terms.append(f"{cname}*{j}")
         rate = "(" + " + ".join(terms) + ")"
+        outs.append(f"d_{s}")
+        if s == "H_x" and arm.H_x_row == PI_PROTONS:
+            # Frame B: the matrix proton inventory counts the protons on phosphate,
+            # B(h) + [Pi]x h/(h + k_dH); the sources keep Eq. 22's coefficients (total protons).
+            deferred.append(f"    d_H_x = ({rate}/V_x - (H_x/(H_x + k_dH))*d_Pi_x)/"
+                            f"(1/inv_rbuff + Pi_x*k_dH/((H_x + k_dH)*(H_x + k_dH)))")
+            continue
         if row.get("factor"):
             rate = f"{row['factor']}*{rate}"
         lines.append(f"    d_{s} = {rate}/{row['volume']}")
-        outs.append(f"d_{s}")
+    lines.extend(deferred)
     lines.append("    return (" + ", ".join(outs) + ",), (" + ", ".join(fexprs) + ",)")
     comp = Compiled(model, arm, params, "\n".join(lines), tuple(fexprs))
     comp._consts = {k: v for k, v in consts.items()}
@@ -377,6 +388,16 @@ def amount(state: str, value, params: dict, rows: dict, kind="float"):
     return P[vol] * value
 
 
+def pi_bound_protons(comp: Compiled, y, kind="float"):
+    """V_x [Pi]x h/(h + k_dH): the protons on matrix phosphate, counted only in frame B."""
+    if comp.arm.H_x_row != PI_PROTONS:
+        return 0
+    h, pi = y[STATES.index("H_x")], y[STATES.index("Pi_x")]
+    P = comp.params
+    V, k = (float(P["V_x"]), float(P["k_dH"])) if kind == "float" else (_dec(P["V_x"]), _dec(P["k_dH"]))
+    return V * pi * h / (h + k)
+
+
 def invariants(comp: Compiled, y, kind="float"):
     laws = conservation_laws(comp.model, comp.arm)
     rows = ode_rows(comp.model, comp.arm)
@@ -386,6 +407,8 @@ def invariants(comp: Compiled, y, kind="float"):
         for s, w in law.items():
             wv = float(w) if kind == "float" else Decimal(w.numerator) / Decimal(w.denominator)
             tot = tot + wv * amount(s, y[STATES.index(s)], comp.params, rows, kind)
+            if s == "H_x":
+                tot = tot + wv * pi_bound_protons(comp, y, kind)
         out.append(tot)
     return laws, out
 
@@ -581,10 +604,11 @@ def steady_state(comp: Compiled, h: dict, y_guess, invariant_values=None, pinned
         scale[STATES.index("H_x")] = Decimal("1e-8")
         scale[STATES.index("dPsi")] = Decimal(100)
 
-        def amount_d(i, v):
+        def amount_d(i, yv):
             s = STATES[i]
+            v = yv[i]
             if s == "H_x":
-                return Pd["V_x"] * v.ln() / Pd["rbuff_coeff"]
+                return Pd["V_x"] * v.ln() / Pd["rbuff_coeff"] + pi_bound_protons(comp, yv, "decimal")
             return Pd[rows[s]["volume"]] * v
 
         def F(yv):
@@ -593,7 +617,7 @@ def steady_state(comp: Compiled, h: dict, y_guess, invariant_values=None, pinned
             for i in free:
                 if i in replaced:
                     k = replaced.index(i)
-                    out.append(sum(w * amount_d(j, yv[j]) for j, w in wlaws[k].items()) - G[k])
+                    out.append(sum(w * amount_d(j, yv) for j, w in wlaws[k].items()) - G[k])
                 else:
                     out.append(d[i])
             return out

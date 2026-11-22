@@ -1,0 +1,2084 @@
+{
+ "kind": "cells.validation.mito_reference_repairs@1",
+ "base": "MR1's published arm (2006 Table 1; Eq. 24 restored; Eqs. 11 and 16 printed; 298.15 K) at the recommended matrix Mg2+ total, 5 mM; matrix charge anchored to Fig. 4D's pH at [Pi]e = 0",
+ "frames": "They differ in how the protons on phosphate are booked.\n- **Frame S, the source's.** Total Pi is one proton-free species: F1F0 consumes one matrix H+,\n  and the carrier moves two H+ per Pi. This is exactly Eq. 22's bookkeeping, so S is the frame\n  in which MR1's own invariants close.\n- **Frame B, base forms (the appendix's).** HPO4 2- carries k_dH speciation, and the protons\n  bound to phosphate count as protons. A binding closure with species works in this frame.\n\nA form is balanced in a frame when its rate law vanishes exactly where that frame's Gibbs\nenergy does, with J dG <= 0 everywhere. Frame S and frame B differ by:\n- F1F0: RT ln((1 + h_N/k_dH)/(1 + 10^-7/k_dH));\n- the carrier: RT ln((k_dH + h_P)/(k_dH + h_N)).\nBoth vanish only at pH 7, or where h_N = h_P.",
+ "appendix": "docs/MITOCHONDRIA_LAWS_APPENDIX.md at tag mito-laws-appendix-2026-11-20",
+ "rows": [
+  {
+   "equation": "Eq. 1",
+   "candidate": "eq1_printed",
+   "role": "printed",
+   "form": "printed: X phi (r[NAD] - [NADH]); no reductant, no free energy",
+   "switch": {
+    "J_DH": "eq1"
+   },
+   "identical_to": [],
+   "proportional_to": {
+    "eq1_supply_pH7.06": [
+     -564.9119253226477,
+     35.9982664893259
+    ],
+    "eq1_supply_pH7.10": [
+     -30.148109920265888,
+     580.7804424239355
+    ],
+    "eq1_supply_pH7.14": [
+     -80.93264535947885,
+     79.69948250285896
+    ]
+   },
+   "sign_random_states": {
+    "S": 172,
+    "B": 172,
+    "n": 2000,
+    "max_abs_dG_violating_kJ": {
+     "S": 3.657622749431591,
+     "B": 3.657622749431591
+    }
+   },
+   "zero_offset_kJ_state3_Pi10": {
+    "S": 0.33249733502188505,
+    "B": 0.33249733502188505
+   },
+   "dissipation_reported_states": {
+    "S_min_W_per_l": 0.1313576245842305,
+    "B_min_W_per_l": 0.1313576245842305,
+    "negative_at": []
+   },
+   "fit_rms_z_mg5": 1.4010640889799326,
+   "fit_max_abs_diff": {
+    "fig4A:state4": {
+     "max_abs_diff": 0.00468039064956316,
+     "rms_z": 0.800439644005404
+    },
+    "fig4A:state3": {
+     "max_abs_diff": 0.012049074231308243,
+     "rms_z": 2.998843695338922
+    },
+    "fig4B:state3": {
+     "max_abs_diff": 2.575062463851225,
+     "rms_z": 1.329599937737273
+    },
+    "fig4B:state4": {
+     "max_abs_diff": 0.8098347090780678,
+     "rms_z": 0.41882335187945846
+    },
+    "fig4C:state3": {
+     "max_abs_diff": 0.003082976323552783,
+     "rms_z": 2.4556736933217027
+    },
+    "fig4C:state4": {
+     "max_abs_diff": 0.001386600756439177,
+     "rms_z": 0.7360373599004196
+    },
+    "fig4D:state3": {
+     "max_abs_diff": 0.0017804452885137323,
+     "rms_z": 0.32648150119954716
+    },
+    "fig4D:state4": {
+     "max_abs_diff": 0.0018961738570864028,
+     "rms_z": 0.31257058894536355
+    },
+    "fig5:state4": {
+     "max_abs_diff": 0.2200592212079755,
+     "rms_z": 1.0956623059714001
+    },
+    "fig5:state3": {
+     "max_abs_diff": 0.045485965507282344,
+     "rms_z": 0.19211989471388322
+    }
+   },
+   "departure_from_published_arm_mg5": {
+    "dPsi_mV": 0.0,
+    "pH_x": 0.0,
+    "NADH_frac": 0.0,
+    "cytc_red_frac": 0.0,
+    "O2_flux_rel": 0.0
+   }
+  },
+  {
+   "equation": "Eq. 1",
+   "candidate": "eq1_supply_pH7.06",
+   "role": "appendix balanced",
+   "form": "balanced supply, held neutral reductant pair, printed forward kept; reference matrix pH 7.06",
+   "switch": {
+    "J_DH": "eq1_balanced_supply",
+    "h_ref_DH": 8.709635899560814e-08
+   },
+   "identical_to": [],
+   "proportional_to": {
+    "eq1_printed": [
+     -564.9119253226477,
+     35.9982664893259
+    ],
+    "eq1_supply_pH7.10": [
+     -5.258113686073228,
+     175.43762109891554
+    ],
+    "eq1_supply_pH7.14": [
+     -20.603396845091922,
+     13.137430826538651
+    ]
+   },
+   "sign_random_states": {
+    "S": 0,
+    "B": 0,
+    "n": 2000,
+    "max_abs_dG_violating_kJ": {
+     "S": 0.0,
+     "B": 0.0
+    }
+   },
+   "zero_offset_kJ_state3_Pi10": {
+    "S": 5.504390342540464e-16,
+    "B": 5.504390342540464e-16
+   },
+   "dissipation_reported_states": {
+    "S_min_W_per_l": 0.31552837735946043,
+    "B_min_W_per_l": 0.31552837735946043,
+    "negative_at": []
+   },
+   "fit_rms_z_mg5": 2.056477195417791,
+   "fit_max_abs_diff": {
+    "fig4A:state4": {
+     "max_abs_diff": 0.013423402340874135,
+     "rms_z": 2.5726813314025523
+    },
+    "fig4A:state3": {
+     "max_abs_diff": 0.01761223066451656,
+     "rms_z": 4.827192826592816
+    },
+    "fig4B:state3": {
+     "max_abs_diff": 2.9975474132040176,
+     "rms_z": 1.5560450744033743
+    },
+    "fig4B:state4": {
+     "max_abs_diff": 0.8044346931066215,
+     "rms_z": 0.42581028025088474
+    },
+    "fig4C:state3": {
+     "max_abs_diff": 0.0034867138615804483,
+     "rms_z": 2.795690641993568
+    },
+    "fig4C:state4": {
+     "max_abs_diff": 0.0017053069616269206,
+     "rms_z": 0.9220014129897417
+    },
+    "fig4D:state3": {
+     "max_abs_diff": 0.0018472857446010238,
+     "rms_z": 0.3286585348421991
+    },
+    "fig4D:state4": {
+     "max_abs_diff": 0.001755786668674375,
+     "rms_z": 0.29143363340317163
+    },
+    "fig5:state4": {
+     "max_abs_diff": 0.10564807415289579,
+     "rms_z": 0.5258786765586158
+    },
+    "fig5:state3": {
+     "max_abs_diff": 0.11674481630313949,
+     "rms_z": 0.5204598745803052
+    }
+   },
+   "departure_from_published_arm_mg5": {
+    "dPsi_mV": 0.22714885414643504,
+    "pH_x": 0.0001403871884120278,
+    "NADH_frac": 0.018720789646443525,
+    "cytc_red_frac": 0.0004098016501997981,
+    "O2_flux_rel": 0.0024678956906851734
+   }
+  },
+  {
+   "equation": "Eq. 1",
+   "candidate": "eq1_supply_pH7.10",
+   "role": "appendix balanced",
+   "form": "the same, reference matrix pH 7.10 (the buffer's)",
+   "switch": {
+    "J_DH": "eq1_balanced_supply",
+    "h_ref_DH": 7.943282347242822e-08
+   },
+   "identical_to": [],
+   "proportional_to": {
+    "eq1_printed": [
+     -30.148109920265888,
+     580.7804424239355
+    ],
+    "eq1_supply_pH7.06": [
+     -5.258113686073228,
+     175.43762109891554
+    ],
+    "eq1_supply_pH7.14": [
+     -10.54704520009756,
+     7.487473399302034
+    ]
+   },
+   "sign_random_states": {
+    "S": 0,
+    "B": 0,
+    "n": 2000,
+    "max_abs_dG_violating_kJ": {
+     "S": 0.0,
+     "B": 0.0
+    }
+   },
+   "zero_offset_kJ_state3_Pi10": {
+    "S": -5.504390342540466e-16,
+    "B": -5.504390342540466e-16
+   },
+   "dissipation_reported_states": {
+    "S_min_W_per_l": 0.2955056380238386,
+    "B_min_W_per_l": 0.2955056380238386,
+    "negative_at": []
+   },
+   "fit_rms_z_mg5": 1.703636663180931,
+   "fit_max_abs_diff": {
+    "fig4A:state4": {
+     "max_abs_diff": 0.015496065282924909,
+     "rms_z": 2.350704666588956
+    },
+    "fig4A:state3": {
+     "max_abs_diff": 0.01333235680458078,
+     "rms_z": 3.4434556837655412
+    },
+    "fig4B:state3": {
+     "max_abs_diff": 2.781848965471738,
+     "rms_z": 1.4367320287392369
+    },
+    "fig4B:state4": {
+     "max_abs_diff": 0.7819602973369655,
+     "rms_z": 0.4122995646447402
+    },
+    "fig4C:state3": {
+     "max_abs_diff": 0.0032597007475129725,
+     "rms_z": 2.564770962149418
+    },
+    "fig4C:state4": {
+     "max_abs_diff": 0.0013740763796685762,
+     "rms_z": 0.6569287242897347
+    },
+    "fig4D:state3": {
+     "max_abs_diff": 0.0018241482181382551,
+     "rms_z": 0.3250302866513368
+    },
+    "fig4D:state4": {
+     "max_abs_diff": 0.0017182431367048778,
+     "rms_z": 0.2853739419476488
+    },
+    "fig5:state4": {
+     "max_abs_diff": 0.24891329930500206,
+     "rms_z": 1.4049372119379544
+    },
+    "fig5:state3": {
+     "max_abs_diff": 0.05603924459589393,
+     "rms_z": 0.261183269471568
+    }
+   },
+   "departure_from_published_arm_mg5": {
+    "dPsi_mV": 0.15783957586225483,
+    "pH_x": 0.00017793072038152502,
+    "NADH_frac": 0.013409893432755227,
+    "cytc_red_frac": 0.0003498863713489314,
+    "O2_flux_rel": 0.0012081835298456411
+   }
+  },
+  {
+   "equation": "Eq. 1",
+   "candidate": "eq1_supply_pH7.14",
+   "role": "appendix balanced",
+   "form": "the same, reference matrix pH 7.1418 (Fig. 4D at [Pi]e = 0, MR1's anchor)",
+   "switch": {
+    "J_DH": "eq1_balanced_supply",
+    "h_ref_DH": 7.21439637925809e-08
+   },
+   "identical_to": [],
+   "proportional_to": {
+    "eq1_printed": [
+     -80.93264535947885,
+     79.69948250285896
+    ],
+    "eq1_supply_pH7.06": [
+     -20.603396845091922,
+     13.137430826538651
+    ],
+    "eq1_supply_pH7.10": [
+     -10.54704520009756,
+     7.487473399302034
+    ]
+   },
+   "sign_random_states": {
+    "S": 0,
+    "B": 0,
+    "n": 2000,
+    "max_abs_dG_violating_kJ": {
+     "S": 0.0,
+     "B": 0.0
+    }
+   },
+   "zero_offset_kJ_state3_Pi10": {
+    "S": -1.1008780685080932e-15,
+    "B": -1.1008780685080932e-15
+   },
+   "dissipation_reported_states": {
+    "S_min_W_per_l": 0.27607375219032165,
+    "B_min_W_per_l": 0.27607375219032165,
+    "negative_at": []
+   },
+   "fit_rms_z_mg5": 2.2728685486677525,
+   "fit_max_abs_diff": {
+    "fig4A:state4": {
+     "max_abs_diff": 0.02990481763190811,
+     "rms_z": 5.773064091744666
+    },
+    "fig4A:state3": {
+     "max_abs_diff": 0.008562421418763955,
+     "rms_z": 1.9475616820792385
+    },
+    "fig4B:state3": {
+     "max_abs_diff": 2.5377345046999835,
+     "rms_z": 1.3049065900646455
+    },
+    "fig4B:state4": {
+     "max_abs_diff": 0.757338604636594,
+     "rms_z": 0.39786121325924867
+    },
+    "fig4C:state3": {
+     "max_abs_diff": 0.003003701818625276,
+     "rms_z": 2.307598258647543
+    },
+    "fig4C:state4": {
+     "max_abs_diff": 0.0010092958945604052,
+     "rms_z": 0.3933893466834827
+    },
+    "fig4D:state3": {
+     "max_abs_diff": 0.0017985916418901127,
+     "rms_z": 0.32105588906378146
+    },
+    "fig4D:state4": {
+     "max_abs_diff": 0.001676976329111568,
+     "rms_z": 0.2797399879199547
+    },
+    "fig5:state4": {
+     "max_abs_diff": 0.4068720825902403,
+     "rms_z": 2.4772891678582876
+    },
+    "fig5:state3": {
+     "max_abs_diff": 0.11173143572312938,
+     "rms_z": 0.43160886813211885
+    }
+   },
+   "departure_from_published_arm_mg5": {
+    "dPsi_mV": 0.3157983591474931,
+    "pH_x": 0.00021919752797483483,
+    "NADH_frac": 0.027818645781738427,
+    "cytc_red_frac": 0.0007345028941306425,
+    "O2_flux_rel": 0.001611306154674308
+   }
+  },
+  {
+   "equation": "Eq. 11",
+   "candidate": "eq11_printed",
+   "role": "printed",
+   "form": "printed",
+   "switch": {
+    "J_F1": "eq11"
+   },
+   "identical_to": [],
+   "proportional_to": {
+    "eq11_appendix_balanced": [
+     -1.0068172584410582,
+     9.757797872628
+    ],
+    "eq11_proton_in_exponent_base": [
+     -3.395970905135795,
+     34.67950405758974
+    ],
+    "eq11_pi_as_h2po4": [
+     -37.51484492642267,
+     91.0156378721903
+    ],
+    "eq11_mr1": [
+     -14.92418499293245,
+     93.49716663121174
+    ]
+   },
+   "sign_random_states": {
+    "S": 39,
+    "B": 23,
+    "n": 2000,
+    "max_abs_dG_violating_kJ": {
+     "S": 2.9986050175353327,
+     "B": 2.216797986970374
+    }
+   },
+   "zero_offset_kJ_state3_Pi10": {
+    "S": 0.4768984124226989,
+    "B": 0.3156137471164846
+   },
+   "dissipation_reported_states": {
+    "S_min_W_per_l": -4.416585427642854,
+    "B_min_W_per_l": -2.893397568053598,
+    "negative_at": [
+     "S:state3:Pi1",
+     "B:state3:Pi1",
+     "S:state3:Pi2",
+     "B:state3:Pi2",
+     "S:state3:Pi3",
+     "B:state3:Pi3",
+     "S:state3:Pi5",
+     "B:state3:Pi5",
+     "S:state3:Pi10",
+     "B:state3:Pi10"
+    ]
+   },
+   "fit_rms_z_mg5": 1.4010640889799326,
+   "fit_max_abs_diff": {
+    "fig4A:state4": {
+     "max_abs_diff": 0.00468039064956316,
+     "rms_z": 0.800439644005404
+    },
+    "fig4A:state3": {
+     "max_abs_diff": 0.012049074231308243,
+     "rms_z": 2.998843695338922
+    },
+    "fig4B:state3": {
+     "max_abs_diff": 2.575062463851225,
+     "rms_z": 1.329599937737273
+    },
+    "fig4B:state4": {
+     "max_abs_diff": 0.8098347090780678,
+     "rms_z": 0.41882335187945846
+    },
+    "fig4C:state3": {
+     "max_abs_diff": 0.003082976323552783,
+     "rms_z": 2.4556736933217027
+    },
+    "fig4C:state4": {
+     "max_abs_diff": 0.001386600756439177,
+     "rms_z": 0.7360373599004196
+    },
+    "fig4D:state3": {
+     "max_abs_diff": 0.0017804452885137323,
+     "rms_z": 0.32648150119954716
+    },
+    "fig4D:state4": {
+     "max_abs_diff": 0.0018961738570864028,
+     "rms_z": 0.31257058894536355
+    },
+    "fig5:state4": {
+     "max_abs_diff": 0.2200592212079755,
+     "rms_z": 1.0956623059714001
+    },
+    "fig5:state3": {
+     "max_abs_diff": 0.045485965507282344,
+     "rms_z": 0.19211989471388322
+    }
+   },
+   "departure_from_published_arm_mg5": {
+    "dPsi_mV": 0.0,
+    "pH_x": 0.0,
+    "NADH_frac": 0.0,
+    "cytc_red_frac": 0.0,
+    "O2_flux_rel": 0.0
+   }
+  },
+  {
+   "equation": "Eq. 11",
+   "candidate": "eq11_appendix_balanced",
+   "role": "appendix balanced",
+   "form": "printed forward kept; backward x (1e-7/h_N)(1 + h_N/k_dH)/(1 + 1e-7/k_dH)",
+   "switch": {
+    "J_F1": "eq11_appendix_balanced"
+   },
+   "identical_to": [],
+   "proportional_to": {
+    "eq11_printed": [
+     -1.0068172584410582,
+     9.757797872628
+    ],
+    "eq11_proton_in_exponent_base": [
+     0.6159909311537323,
+     4.379186961550509
+    ],
+    "eq11_pi_as_h2po4": [
+     -50.872729436900755,
+     76.14796131236689
+    ],
+    "eq11_mr1": [
+     -5.06214688055425,
+     35.08521110368841
+    ]
+   },
+   "sign_random_states": {
+    "S": 16,
+    "B": 0,
+    "n": 2000,
+    "max_abs_dG_violating_kJ": {
+     "S": 1.0011778660223882,
+     "B": 0.0
+    }
+   },
+   "zero_offset_kJ_state3_Pi10": {
+    "S": 0.16219684927599332,
+    "B": 8.881784197001252e-16
+   },
+   "dissipation_reported_states": {
+    "S_min_W_per_l": -1.3197554789098371,
+    "B_min_W_per_l": -1.729549608712875e-27,
+    "negative_at": [
+     "S:state3:Pi1",
+     "S:state3:Pi2",
+     "S:state3:Pi3",
+     "S:state3:Pi5",
+     "S:state3:Pi10"
+    ]
+   },
+   "fit_rms_z_mg5": 2.2033774481921538,
+   "fit_max_abs_diff": {
+    "fig4A:state4": {
+     "max_abs_diff": 0.004676037856996329,
+     "rms_z": 0.7991762410708595
+    },
+    "fig4A:state3": {
+     "max_abs_diff": 0.02516167733144986,
+     "rms_z": 5.314597249229103
+    },
+    "fig4B:state3": {
+     "max_abs_diff": 5.039401265137599,
+     "rms_z": 2.016301223975789
+    },
+    "fig4B:state4": {
+     "max_abs_diff": 0.859335391268722,
+     "rms_z": 0.4463915930992217
+    },
+    "fig4C:state3": {
+     "max_abs_diff": 0.00306617123205169,
+     "rms_z": 2.4497915580594243
+    },
+    "fig4C:state4": {
+     "max_abs_diff": 0.0014072103987606,
+     "rms_z": 0.7506748292309385
+    },
+    "fig4D:state3": {
+     "max_abs_diff": 0.0021513670323969336,
+     "rms_z": 0.3230851757983173
+    },
+    "fig4D:state4": {
+     "max_abs_diff": 0.0018594775154792131,
+     "rms_z": 0.3274600305979627
+    },
+    "fig5:state4": {
+     "max_abs_diff": 0.2396646720298179,
+     "rms_z": 1.2526299576457287
+    },
+    "fig5:state3": {
+     "max_abs_diff": 0.7060755367453169,
+     "rms_z": 2.626174313503473
+    }
+   },
+   "departure_from_published_arm_mg5": {
+    "dPsi_mV": 0.7075988994548936,
+    "pH_x": 0.0007535445147617281,
+    "NADH_frac": 0.017855121593940315,
+    "cytc_red_frac": 5.446825358962348e-05,
+    "O2_flux_rel": 0.02708773627543759
+   }
+  },
+  {
+   "equation": "Eq. 11",
+   "candidate": "eq11_proton_in_exponent_base",
+   "role": "appendix alternative",
+   "form": "proton restored inside the exponent, base forms: forward x (h_N/1e-7)(1 + 1e-7/k_dH)/(1 + h_N/k_dH) (x0.51 at pH_N 7.4)",
+   "switch": {
+    "J_F1": "eq11_proton_in_exponent_base"
+   },
+   "identical_to": [],
+   "proportional_to": {
+    "eq11_printed": [
+     -3.395970905135795,
+     34.67950405758974
+    ],
+    "eq11_appendix_balanced": [
+     0.6159909311537323,
+     4.379186961550509
+    ],
+    "eq11_pi_as_h2po4": [
+     -80.77298557256474,
+     48.08755818013568
+    ],
+    "eq11_mr1": [
+     -7.5612870701492225,
+     19.573447108200007
+    ]
+   },
+   "sign_random_states": {
+    "S": 16,
+    "B": 0,
+    "n": 2000,
+    "max_abs_dG_violating_kJ": {
+     "S": 1.0011778660223882,
+     "B": 0.0
+    }
+   },
+   "zero_offset_kJ_state3_Pi10": {
+    "S": 0.16220596039366342,
+    "B": -2.7478019859472624e-15
+   },
+   "dissipation_reported_states": {
+    "S_min_W_per_l": -1.280952124997621,
+    "B_min_W_per_l": -8.647748043564376e-28,
+    "negative_at": [
+     "S:state3:Pi1",
+     "S:state3:Pi2",
+     "S:state3:Pi3",
+     "S:state3:Pi5",
+     "S:state3:Pi10"
+    ]
+   },
+   "fit_rms_z_mg5": 2.2230262031173953,
+   "fit_max_abs_diff": {
+    "fig4A:state4": {
+     "max_abs_diff": 0.004676037856996329,
+     "rms_z": 0.7991762410708595
+    },
+    "fig4A:state3": {
+     "max_abs_diff": 0.0255143486631223,
+     "rms_z": 5.3561861763730265
+    },
+    "fig4B:state3": {
+     "max_abs_diff": 5.147985807374766,
+     "rms_z": 2.065957385686384
+    },
+    "fig4B:state4": {
+     "max_abs_diff": 0.8598609206430723,
+     "rms_z": 0.4467112148084186
+    },
+    "fig4C:state3": {
+     "max_abs_diff": 0.0030655049042281612,
+     "rms_z": 2.449447794226453
+    },
+    "fig4C:state4": {
+     "max_abs_diff": 0.0014072103987606,
+     "rms_z": 0.7506748292309385
+    },
+    "fig4D:state3": {
+     "max_abs_diff": 0.002156698119591738,
+     "rms_z": 0.32354170148063166
+    },
+    "fig4D:state4": {
+     "max_abs_diff": 0.0018594775154792131,
+     "rms_z": 0.3274600305979627
+    },
+    "fig5:state4": {
+     "max_abs_diff": 0.2396646720298179,
+     "rms_z": 1.2526299576457287
+    },
+    "fig5:state3": {
+     "max_abs_diff": 0.7201201086415381,
+     "rms_z": 2.672878545937261
+    }
+   },
+   "departure_from_published_arm_mg5": {
+    "dPsi_mV": 0.7216434713511148,
+    "pH_x": 0.0007535445147617281,
+    "NADH_frac": 0.018207792925612754,
+    "cytc_red_frac": 5.446825358962348e-05,
+    "O2_flux_rel": 0.02762923552163765
+   }
+  },
+  {
+   "equation": "Eq. 11",
+   "candidate": "eq11_pi_as_h2po4",
+   "role": "appendix alternative",
+   "form": "Pi read as H2PO4-, printed constant: forward x h_N/(h_N + k_dH)",
+   "switch": {
+    "J_F1": "eq11_pi_as_h2po4"
+   },
+   "identical_to": [],
+   "proportional_to": {
+    "eq11_printed": [
+     -37.51484492642267,
+     91.0156378721903
+    ],
+    "eq11_appendix_balanced": [
+     -50.872729436900755,
+     76.14796131236689
+    ],
+    "eq11_proton_in_exponent_base": [
+     -80.77298557256474,
+     48.08755818013568
+    ],
+    "eq11_mr1": [
+     -40.13225753878534,
+     5.677431332733796
+    ]
+   },
+   "sign_random_states": {
+    "S": 58,
+    "B": 58,
+    "n": 2000,
+    "max_abs_dG_violating_kJ": {
+     "S": 3.344084052630599,
+     "B": 2.5313973669508236
+    }
+   },
+   "zero_offset_kJ_state3_Pi10": {
+    "S": -2.3633906747643607,
+    "B": -2.5330955419436982
+   },
+   "dissipation_reported_states": {
+    "S_min_W_per_l": -0.013924812068643258,
+    "B_min_W_per_l": -0.015569350512385652,
+    "negative_at": [
+     "S:state3:Pi0",
+     "B:state3:Pi0"
+    ]
+   },
+   "fit_rms_z_mg5": 10.132012745388232,
+   "fit_max_abs_diff": {
+    "fig4A:state4": {
+     "max_abs_diff": 0.004631423777660126,
+     "rms_z": 0.7880933360224444
+    },
+    "fig4A:state3": {
+     "max_abs_diff": 0.11062816967473077,
+     "rms_z": 20.271672667232966
+    },
+    "fig4B:state3": {
+     "max_abs_diff": 30.321399466154844,
+     "rms_z": 18.416621851288603
+    },
+    "fig4B:state4": {
+     "max_abs_diff": 1.5661281539748018,
+     "rms_z": 0.9221886204849116
+    },
+    "fig4C:state3": {
+     "max_abs_diff": 0.002162155522725251,
+     "rms_z": 1.7181740474489327
+    },
+    "fig4C:state4": {
+     "max_abs_diff": 0.00161850998623006,
+     "rms_z": 0.8953376393563882
+    },
+    "fig4D:state3": {
+     "max_abs_diff": 0.004221028161849993,
+     "rms_z": 0.8896217636953597
+    },
+    "fig4D:state4": {
+     "max_abs_diff": 0.005644084896636592,
+     "rms_z": 0.9641270092599098
+    },
+    "fig5:state4": {
+     "max_abs_diff": 0.5288923879496394,
+     "rms_z": 2.6827966863598975
+    },
+    "fig5:state3": {
+     "max_abs_diff": 4.237071550041037,
+     "rms_z": 17.596117892246756
+    }
+   },
+   "departure_from_published_arm_mg5": {
+    "dPsi_mV": 4.238594912750614,
+    "pH_x": 0.005549496817250699,
+    "NADH_frac": 0.10332161393722122,
+    "cytc_red_frac": 0.0010894439853839921,
+    "O2_flux_rel": 0.1658032978284174
+   }
+  },
+  {
+   "equation": "Eq. 11",
+   "candidate": "eq11_mr1",
+   "role": "MR1-declared",
+   "form": "MR1-declared: -RT ln(h_N/1e-7) restored in the exponent, total Pi (frame S): forward x h_N/1e-7 (x0.40 at pH_N 7.4)",
+   "switch": {
+    "J_F1": "eq11_with_proton_term"
+   },
+   "identical_to": [],
+   "proportional_to": {
+    "eq11_printed": [
+     -14.92418499293245,
+     93.49716663121174
+    ],
+    "eq11_appendix_balanced": [
+     -5.06214688055425,
+     35.08521110368841
+    ],
+    "eq11_proton_in_exponent_base": [
+     -7.5612870701492225,
+     19.573447108200007
+    ],
+    "eq11_pi_as_h2po4": [
+     -40.13225753878534,
+     5.677431332733796
+    ]
+   },
+   "sign_random_states": {
+    "S": 0,
+    "B": 16,
+    "n": 2000,
+    "max_abs_dG_violating_kJ": {
+     "S": 0.0,
+     "B": 0.6390337480795396
+    }
+   },
+   "zero_offset_kJ_state3_Pi10": {
+    "S": 0.0,
+    "B": -0.16268743017257917
+   },
+   "dissipation_reported_states": {
+    "S_min_W_per_l": 0.0,
+    "B_min_W_per_l": -0.0007424159656227612,
+    "negative_at": [
+     "B:state3:Pi0"
+    ]
+   },
+   "fit_rms_z_mg5": 2.85601587999355,
+   "fit_max_abs_diff": {
+    "fig4A:state4": {
+     "max_abs_diff": 0.004673647961117577,
+     "rms_z": 0.7985021958978128
+    },
+    "fig4A:state3": {
+     "max_abs_diff": 0.034239822095851524,
+     "rms_z": 6.657164574479636
+    },
+    "fig4B:state3": {
+     "max_abs_diff": 7.771153116250673,
+     "rms_z": 3.5563178587866533
+    },
+    "fig4B:state4": {
+     "max_abs_diff": 0.888123824271382,
+     "rms_z": 0.4630539265535903
+    },
+    "fig4C:state3": {
+     "max_abs_diff": 0.003036462145152352,
+     "rms_z": 2.431995038407515
+    },
+    "fig4C:state4": {
+     "max_abs_diff": 0.0014185265458643292,
+     "rms_z": 0.758685002115979
+    },
+    "fig4D:state3": {
+     "max_abs_diff": 0.0023281053979875566,
+     "rms_z": 0.3415652506615951
+    },
+    "fig4D:state4": {
+     "max_abs_diff": 0.0018388982631405426,
+     "rms_z": 0.3498150133540624
+    },
+    "fig5:state4": {
+     "max_abs_diff": 0.25042771196024205,
+     "rms_z": 1.3397622741222712
+    },
+    "fig5:state3": {
+     "max_abs_diff": 1.0685830955418396,
+     "rms_z": 4.015584188421185
+    }
+   },
+   "departure_from_published_arm_mg5": {
+    "dPsi_mV": 1.0701064582514164,
+    "pH_x": 0.0011405750717941032,
+    "NADH_frac": 0.02693326635834198,
+    "cytc_red_frac": 8.245669054214588e-05,
+    "O2_flux_rel": 0.04110680630578667
+   }
+  },
+  {
+   "equation": "Eq. 16",
+   "candidate": "eq16_printed",
+   "role": "printed",
+   "form": "printed: [H2PO4-]_P h_N - [H2PO4-]_N h_P",
+   "switch": {
+    "J_PiHt": "eq16_printed"
+   },
+   "identical_to": [],
+   "proportional_to": {
+    "eq16_appendix_balanced": [
+     -104.80028076215537,
+     180.6091983510405
+    ],
+    "eq16_swapped_mr1": [
+     -173.30896848972958,
+     93.62211978767058
+    ],
+    "eq16_total_pi_frame_s": [
+     -66.17691390896883,
+     207.46271456323242
+    ]
+   },
+   "sign_random_states": {
+    "S": 933,
+    "B": 893,
+    "n": 2000,
+    "max_abs_dG_violating_kJ": {
+     "S": 14.875499706746513,
+     "B": 12.93305714445689
+    }
+   },
+   "zero_offset_kJ_state3_Pi10": {
+    "S": 0.2171799555733945,
+    "B": 0.18780507564061125
+   },
+   "dissipation_reported_states": {
+    "S_min_W_per_l": 0.0,
+    "B_min_W_per_l": 0.0,
+    "negative_at": []
+   },
+   "fit_rms_z_mg5": 1.4010640889799326,
+   "fit_max_abs_diff": {
+    "fig4A:state4": {
+     "max_abs_diff": 0.00468039064956316,
+     "rms_z": 0.800439644005404
+    },
+    "fig4A:state3": {
+     "max_abs_diff": 0.012049074231308243,
+     "rms_z": 2.998843695338922
+    },
+    "fig4B:state3": {
+     "max_abs_diff": 2.575062463851225,
+     "rms_z": 1.329599937737273
+    },
+    "fig4B:state4": {
+     "max_abs_diff": 0.8098347090780678,
+     "rms_z": 0.41882335187945846
+    },
+    "fig4C:state3": {
+     "max_abs_diff": 0.003082976323552783,
+     "rms_z": 2.4556736933217027
+    },
+    "fig4C:state4": {
+     "max_abs_diff": 0.001386600756439177,
+     "rms_z": 0.7360373599004196
+    },
+    "fig4D:state3": {
+     "max_abs_diff": 0.0017804452885137323,
+     "rms_z": 0.32648150119954716
+    },
+    "fig4D:state4": {
+     "max_abs_diff": 0.0018961738570864028,
+     "rms_z": 0.31257058894536355
+    },
+    "fig5:state4": {
+     "max_abs_diff": 0.2200592212079755,
+     "rms_z": 1.0956623059714001
+    },
+    "fig5:state3": {
+     "max_abs_diff": 0.045485965507282344,
+     "rms_z": 0.19211989471388322
+    }
+   },
+   "departure_from_published_arm_mg5": {
+    "dPsi_mV": 0.0,
+    "pH_x": 0.0,
+    "NADH_frac": 0.0,
+    "cytc_red_frac": 0.0,
+    "O2_flux_rel": 0.0
+   }
+  },
+  {
+   "equation": "Eq. 16",
+   "candidate": "eq16_appendix_balanced",
+   "role": "appendix balanced",
+   "form": "printed forward kept; backward [H2PO4-]_N h_N^2/h_P",
+   "switch": {
+    "J_PiHt": "eq16_appendix_balanced"
+   },
+   "identical_to": [],
+   "proportional_to": {
+    "eq16_printed": [
+     -104.80028076215537,
+     180.6091983510405
+    ],
+    "eq16_swapped_mr1": [
+     0.08227497657750085,
+     14.073022118389188
+    ],
+    "eq16_total_pi_frame_s": [
+     -2.4446453584030396,
+     34.08601507278444
+    ]
+   },
+   "sign_random_states": {
+    "S": 40,
+    "B": 0,
+    "n": 2000,
+    "max_abs_dG_violating_kJ": {
+     "S": 1.2033840684402723,
+     "B": 0.0
+    }
+   },
+   "zero_offset_kJ_state3_Pi10": {
+    "S": 0.02428672280815546,
+    "B": -5.504390342540466e-16
+   },
+   "dissipation_reported_states": {
+    "S_min_W_per_l": 0.0,
+    "B_min_W_per_l": -0.0,
+    "negative_at": []
+   },
+   "fit_rms_z_mg5": 2.8659199667616986,
+   "fit_max_abs_diff": {
+    "fig4A:state4": {
+     "max_abs_diff": 0.004747712848972685,
+     "rms_z": 0.7784881655327088
+    },
+    "fig4A:state3": {
+     "max_abs_diff": 0.012128579230540726,
+     "rms_z": 3.0816408056043203
+    },
+    "fig4B:state3": {
+     "max_abs_diff": 10.140034258980847,
+     "rms_z": 5.868941840747183
+    },
+    "fig4B:state4": {
+     "max_abs_diff": 0.7985429869229819,
+     "rms_z": 0.4196103134662396
+    },
+    "fig4C:state3": {
+     "max_abs_diff": 0.006268589580032097,
+     "rms_z": 4.571687765853866
+    },
+    "fig4C:state4": {
+     "max_abs_diff": 0.0013278244056803418,
+     "rms_z": 0.7943213009985212
+    },
+    "fig4D:state3": {
+     "max_abs_diff": 0.002530613859631714,
+     "rms_z": 0.5264981012061181
+    },
+    "fig4D:state4": {
+     "max_abs_diff": 0.0058361033326201905,
+     "rms_z": 0.7958399358268274
+    },
+    "fig5:state4": {
+     "max_abs_diff": 0.8775505183502617,
+     "rms_z": 3.410238441557068
+    },
+    "fig5:state3": {
+     "max_abs_diff": 0.5088752921051025,
+     "rms_z": 2.930273145938678
+    }
+   },
+   "departure_from_published_arm_mg5": {
+    "dPsi_mV": 0.7864767949075144,
+    "pH_x": 0.007732277189706593,
+    "NADH_frac": 0.001839343900182755,
+    "cytc_red_frac": 0.0035548862254021485,
+    "O2_flux_rel": 0.046490247031565346
+   }
+  },
+  {
+   "equation": "Eq. 16",
+   "candidate": "eq16_swapped_mr1",
+   "role": "appendix alternative = MR1-declared",
+   "form": "subscripts swapped to the stated co-transport, [H2PO4-]_P h_P - [H2PO4-]_N h_N (x2.0 at pH_N 7.4); this is MR1-declared",
+   "switch": {
+    "J_PiHt": "eq16_symport"
+   },
+   "identical_to": [],
+   "proportional_to": {
+    "eq16_printed": [
+     -173.30896848972958,
+     93.62211978767058
+    ],
+    "eq16_appendix_balanced": [
+     0.08227497657750085,
+     14.073022118389188
+    ],
+    "eq16_total_pi_frame_s": [
+     -2.794235960281723,
+     28.171158558377876
+    ]
+   },
+   "sign_random_states": {
+    "S": 40,
+    "B": 0,
+    "n": 2000,
+    "max_abs_dG_violating_kJ": {
+     "S": 1.2033840684402723,
+     "B": 0.0
+    }
+   },
+   "zero_offset_kJ_state3_Pi10": {
+    "S": 0.02340427104253998,
+    "B": 5.504390342540464e-16
+   },
+   "dissipation_reported_states": {
+    "S_min_W_per_l": -1.489848848126344e-17,
+    "B_min_W_per_l": -0.0,
+    "negative_at": []
+   },
+   "fit_rms_z_mg5": 3.3620222968570506,
+   "fit_max_abs_diff": {
+    "fig4A:state4": {
+     "max_abs_diff": 0.004747712848972685,
+     "rms_z": 0.7784881655327088
+    },
+    "fig4A:state3": {
+     "max_abs_diff": 0.012488141060500446,
+     "rms_z": 3.1264802798553375
+    },
+    "fig4B:state3": {
+     "max_abs_diff": 14.12025034099804,
+     "rms_z": 7.455423388270371
+    },
+    "fig4B:state4": {
+     "max_abs_diff": 0.8087947404217886,
+     "rms_z": 0.426317462868276
+    },
+    "fig4C:state3": {
+     "max_abs_diff": 0.007306704462687524,
+     "rms_z": 5.350496867387929
+    },
+    "fig4C:state4": {
+     "max_abs_diff": 0.0013278244056803418,
+     "rms_z": 0.7943213009985212
+    },
+    "fig4D:state3": {
+     "max_abs_diff": 0.002995598719549797,
+     "rms_z": 0.6160355983402142
+    },
+    "fig4D:state4": {
+     "max_abs_diff": 0.0058361033326201905,
+     "rms_z": 0.7958399358268274
+    },
+    "fig5:state4": {
+     "max_abs_diff": 0.8775505183502617,
+     "rms_z": 3.410238441557068
+    },
+    "fig5:state3": {
+     "max_abs_diff": 0.6531587164630537,
+     "rms_z": 3.720297091817479
+    }
+   },
+   "departure_from_published_arm_mg5": {
+    "dPsi_mV": 0.7864767949075144,
+    "pH_x": 0.007732277189706593,
+    "NADH_frac": 0.0024005843986885655,
+    "cytc_red_frac": 0.005023084092477176,
+    "O2_flux_rel": 0.06557528554835512
+   }
+  },
+  {
+   "equation": "Eq. 16",
+   "candidate": "eq16_total_pi_frame_s",
+   "role": "MR1 frame-S variant (extra)",
+   "form": "swapped forward kept; backward balanced in frame S: [Pi]_N h_N^2/(h_P + k_dH)",
+   "switch": {
+    "J_PiHt": "eq16_symport_total_pi"
+   },
+   "identical_to": [],
+   "proportional_to": {
+    "eq16_printed": [
+     -66.17691390896883,
+     207.46271456323242
+    ],
+    "eq16_appendix_balanced": [
+     -2.4446453584030396,
+     34.08601507278444
+    ],
+    "eq16_swapped_mr1": [
+     -2.794235960281723,
+     28.171158558377876
+    ]
+   },
+   "sign_random_states": {
+    "S": 0,
+    "B": 40,
+    "n": 2000,
+    "max_abs_dG_violating_kJ": {
+     "S": 0.0,
+     "B": 1.1536519001546832
+    }
+   },
+   "zero_offset_kJ_state3_Pi10": {
+    "S": -5.504390342540466e-16,
+    "B": -0.022827940401685825
+   },
+   "dissipation_reported_states": {
+    "S_min_W_per_l": -0.0,
+    "B_min_W_per_l": -9.585409241486566e-17,
+    "negative_at": []
+   },
+   "fit_rms_z_mg5": 3.6205394024424735,
+   "fit_max_abs_diff": {
+    "fig4A:state4": {
+     "max_abs_diff": 0.004757239528496271,
+     "rms_z": 0.777803082193957
+    },
+    "fig4A:state3": {
+     "max_abs_diff": 0.012761132894478056,
+     "rms_z": 3.149573889653581
+    },
+    "fig4B:state3": {
+     "max_abs_diff": 15.569266169952641,
+     "rms_z": 8.102469825668138
+    },
+    "fig4B:state4": {
+     "max_abs_diff": 0.8244414668205877,
+     "rms_z": 0.4273358444687163
+    },
+    "fig4C:state3": {
+     "max_abs_diff": 0.007746186579152492,
+     "rms_z": 5.670017039353662
+    },
+    "fig4C:state4": {
+     "max_abs_diff": 0.001319517962987432,
+     "rms_z": 0.8042131717249487
+    },
+    "fig4D:state3": {
+     "max_abs_diff": 0.0032194777492255966,
+     "rms_z": 0.6708474437930916
+    },
+    "fig4D:state4": {
+     "max_abs_diff": 0.006741774883234797,
+     "rms_z": 0.9206497010131939
+    },
+    "fig5:state4": {
+     "max_abs_diff": 0.9738651431308369,
+     "rms_z": 3.7647191711730086
+    },
+    "fig5:state3": {
+     "max_abs_diff": 0.7224087549292335,
+     "rms_z": 4.119147583297739
+    }
+   },
+   "departure_from_published_arm_mg5": {
+    "dPsi_mV": 0.8827914196880897,
+    "pH_x": 0.0086379487403212,
+    "NADH_frac": 0.002673576232666175,
+    "cytc_red_frac": 0.005550823587613191,
+    "O2_flux_rel": 0.0724139182560779
+   }
+  },
+  {
+   "equation": "Eq. 24",
+   "candidate": "eq24_printed",
+   "role": "printed",
+   "form": "printed: Eq. 7's 2RT ln(h_N/1e-7) dropped",
+   "switch": {
+    "J_C3": "eq24_printed"
+   },
+   "identical_to": [],
+   "proportional_to": {
+    "eq24_appendix_balanced": [
+     -18.813869661523068,
+     41.23604181661281
+    ],
+    "eq24_restored_mr1": [
+     -38.087156360263485,
+     14.292717294757168
+    ],
+    "eq24_full_affinity": [
+     -9.285258092604861,
+     19.544687349928598
+    ]
+   },
+   "sign_random_states": {
+    "S": 126,
+    "B": 126,
+    "n": 2000,
+    "max_abs_dG_violating_kJ": {
+     "S": 8.71093173159528,
+     "B": 8.71093173159528
+    }
+   },
+   "zero_offset_kJ_state3_Pi10": {
+    "S": -0.9622293722895776,
+    "B": -0.9622293722895776
+   },
+   "dissipation_reported_states": {
+    "S_min_W_per_l": 0.8542037685909544,
+    "B_min_W_per_l": 0.8542037685909544,
+    "negative_at": []
+   },
+   "fit_rms_z_mg5": 6.262219829369064,
+   "fit_max_abs_diff": {
+    "fig4A:state4": {
+     "max_abs_diff": 0.004167990736023586,
+     "rms_z": 0.667025982790574
+    },
+    "fig4A:state3": {
+     "max_abs_diff": 0.039316660591916186,
+     "rms_z": 7.4516197842978915
+    },
+    "fig4B:state3": {
+     "max_abs_diff": 9.261717578197107,
+     "rms_z": 4.368183693957599
+    },
+    "fig4B:state4": {
+     "max_abs_diff": 0.743690763711399,
+     "rms_z": 0.352051732786609
+    },
+    "fig4C:state3": {
+     "max_abs_diff": 0.005205691921396055,
+     "rms_z": 4.862485761929517
+    },
+    "fig4C:state4": {
+     "max_abs_diff": 0.003777477397026205,
+     "rms_z": 2.4246691450507685
+    },
+    "fig4D:state3": {
+     "max_abs_diff": 0.0021533724892641715,
+     "rms_z": 0.3140185941102447
+    },
+    "fig4D:state4": {
+     "max_abs_diff": 0.0017828676367201979,
+     "rms_z": 0.3359084086087556
+    },
+    "fig5:state4": {
+     "max_abs_diff": 2.2118694515856987,
+     "rms_z": 12.325623467709981
+    },
+    "fig5:state3": {
+     "max_abs_diff": 1.8103768266526004,
+     "rms_z": 11.458418027882765
+    }
+   },
+   "departure_from_published_arm_mg5": {
+    "dPsi_mV": 2.5379484812152953,
+    "pH_x": 0.001045264140546287,
+    "NADH_frac": 0.03201010485440664,
+    "cytc_red_frac": 0.008063004228300447,
+    "O2_flux_rel": 0.04946979451788913
+   }
+  },
+  {
+   "equation": "Eq. 24",
+   "candidate": "eq24_appendix_balanced",
+   "role": "appendix balanced",
+   "form": "printed forward kept; backward x h_N/1e-7",
+   "switch": {
+    "J_C3": "eq24_appendix_balanced"
+   },
+   "identical_to": [],
+   "proportional_to": {
+    "eq24_printed": [
+     -18.813869661523068,
+     41.23604181661281
+    ],
+    "eq24_restored_mr1": [
+     0.15925034027143095,
+     2.4996921454595173
+    ],
+    "eq24_full_affinity": [
+     0.00014315942431885446,
+     0.9999976654864388
+    ]
+   },
+   "sign_random_states": {
+    "S": 0,
+    "B": 0,
+    "n": 2000,
+    "max_abs_dG_violating_kJ": {
+     "S": 0.0,
+     "B": 0.0
+    }
+   },
+   "zero_offset_kJ_state3_Pi10": {
+    "S": 0.0,
+    "B": 0.0
+   },
+   "dissipation_reported_states": {
+    "S_min_W_per_l": 0.6628369292951011,
+    "B_min_W_per_l": 0.6628369292951011,
+    "negative_at": []
+   },
+   "fit_rms_z_mg5": 4.866266897578152,
+   "fit_max_abs_diff": {
+    "fig4A:state4": {
+     "max_abs_diff": 0.004416516064571385,
+     "rms_z": 0.7256947541580572
+    },
+    "fig4A:state3": {
+     "max_abs_diff": 0.03761837530951595,
+     "rms_z": 7.046698678109181
+    },
+    "fig4B:state3": {
+     "max_abs_diff": 8.908081624946789,
+     "rms_z": 4.032216392206544
+    },
+    "fig4B:state4": {
+     "max_abs_diff": 0.8419376052418954,
+     "rms_z": 0.3949270195509179
+    },
+    "fig4C:state3": {
+     "max_abs_diff": 0.004789903654024069,
+     "rms_z": 3.91664159659244
+    },
+    "fig4C:state4": {
+     "max_abs_diff": 0.0026149779827802366,
+     "rms_z": 1.2264943054355277
+    },
+    "fig4D:state3": {
+     "max_abs_diff": 0.0021293580422421243,
+     "rms_z": 0.3117361248636629
+    },
+    "fig4D:state4": {
+     "max_abs_diff": 0.001801440616319816,
+     "rms_z": 0.3213002767312816
+    },
+    "fig5:state4": {
+     "max_abs_diff": 1.6756670394721027,
+     "rms_z": 7.495085655924016
+    },
+    "fig5:state3": {
+     "max_abs_diff": 1.5446380171212581,
+     "rms_z": 9.77255109071365
+    }
+   },
+   "departure_from_published_arm_mg5": {
+    "dPsi_mV": 2.4267975918546654,
+    "pH_x": 0.0007920134176995219,
+    "NADH_frac": 0.030311819572006404,
+    "cytc_red_frac": 0.007264912860282885,
+    "O2_flux_rel": 0.04679465994830201
+   }
+  },
+  {
+   "equation": "Eq. 24",
+   "candidate": "eq24_restored_mr1",
+   "role": "appendix alternative = MR1 published and declared",
+   "form": "dropped term restored, forward x 1e-7/h_N (x2.51 at pH_N 7.4); identical to phi_Pi x Eq. 7; MR1's published arm",
+   "switch": {
+    "J_C3": "eq24_with_eq7_proton_term"
+   },
+   "identical_to": [],
+   "proportional_to": {
+    "eq24_printed": [
+     -38.087156360263485,
+     14.292717294757168
+    ],
+    "eq24_appendix_balanced": [
+     0.15925034027143095,
+     2.4996921454595173
+    ],
+    "eq24_full_affinity": [
+     0.00031047251288983336,
+     6.196960125762915
+    ]
+   },
+   "sign_random_states": {
+    "S": 0,
+    "B": 0,
+    "n": 2000,
+    "max_abs_dG_violating_kJ": {
+     "S": 0.0,
+     "B": 0.0
+    }
+   },
+   "zero_offset_kJ_state3_Pi10": {
+    "S": 7.105427357601002e-15,
+    "B": 7.105427357601002e-15
+   },
+   "dissipation_reported_states": {
+    "S_min_W_per_l": 0.5891080686593515,
+    "B_min_W_per_l": 0.5891080686593515,
+    "negative_at": []
+   },
+   "fit_rms_z_mg5": 1.4010640889799326,
+   "fit_max_abs_diff": {
+    "fig4A:state4": {
+     "max_abs_diff": 0.00468039064956316,
+     "rms_z": 0.800439644005404
+    },
+    "fig4A:state3": {
+     "max_abs_diff": 0.012049074231308243,
+     "rms_z": 2.998843695338922
+    },
+    "fig4B:state3": {
+     "max_abs_diff": 2.575062463851225,
+     "rms_z": 1.329599937737273
+    },
+    "fig4B:state4": {
+     "max_abs_diff": 0.8098347090780678,
+     "rms_z": 0.41882335187945846
+    },
+    "fig4C:state3": {
+     "max_abs_diff": 0.003082976323552783,
+     "rms_z": 2.4556736933217027
+    },
+    "fig4C:state4": {
+     "max_abs_diff": 0.001386600756439177,
+     "rms_z": 0.7360373599004196
+    },
+    "fig4D:state3": {
+     "max_abs_diff": 0.0017804452885137323,
+     "rms_z": 0.32648150119954716
+    },
+    "fig4D:state4": {
+     "max_abs_diff": 0.0018961738570864028,
+     "rms_z": 0.31257058894536355
+    },
+    "fig5:state4": {
+     "max_abs_diff": 0.2200592212079755,
+     "rms_z": 1.0956623059714001
+    },
+    "fig5:state3": {
+     "max_abs_diff": 0.045485965507282344,
+     "rms_z": 0.19211989471388322
+    }
+   },
+   "departure_from_published_arm_mg5": {
+    "dPsi_mV": 0.0,
+    "pH_x": 0.0,
+    "NADH_frac": 0.0,
+    "cytc_red_frac": 0.0,
+    "O2_flux_rel": 0.0
+   }
+  },
+  {
+   "equation": "Eq. 24",
+   "candidate": "eq24_full_affinity",
+   "role": "appendix alternative",
+   "form": "printed forward kept, full affinity: J = A (1 - e^x) in place of A (1 - e^(x/2))",
+   "switch": {
+    "J_C3": "eq24_full_affinity"
+   },
+   "identical_to": [],
+   "proportional_to": {
+    "eq24_printed": [
+     -9.285258092604861,
+     19.544687349928598
+    ],
+    "eq24_appendix_balanced": [
+     0.00014315942431885446,
+     0.9999976654864388
+    ],
+    "eq24_restored_mr1": [
+     0.00031047251288983336,
+     6.196960125762915
+    ]
+   },
+   "sign_random_states": {
+    "S": 0,
+    "B": 0,
+    "n": 2000,
+    "max_abs_dG_violating_kJ": {
+     "S": 0.0,
+     "B": 0.0
+    }
+   },
+   "zero_offset_kJ_state3_Pi10": {
+    "S": 0.0,
+    "B": 0.0
+   },
+   "dissipation_reported_states": {
+    "S_min_W_per_l": 0.388206856225071,
+    "B_min_W_per_l": 0.388206856225071,
+    "negative_at": []
+   },
+   "fit_rms_z_mg5": 3.3241708275419124,
+   "fit_max_abs_diff": {
+    "fig4A:state4": {
+     "max_abs_diff": 0.004913907672728035,
+     "rms_z": 0.8462569378885286
+    },
+    "fig4A:state3": {
+     "max_abs_diff": 0.03310594590991717,
+     "rms_z": 5.922366295437891
+    },
+    "fig4B:state3": {
+     "max_abs_diff": 8.098632970743012,
+     "rms_z": 3.2404042700570708
+    },
+    "fig4B:state4": {
+     "max_abs_diff": 0.9108309889692876,
+     "rms_z": 0.462752484967077
+    },
+    "fig4C:state3": {
+     "max_abs_diff": 0.003773829484190333,
+     "rms_z": 2.655352185370695
+    },
+    "fig4C:state4": {
+     "max_abs_diff": 0.0032752524190641785,
+     "rms_z": 2.113884137278817
+    },
+    "fig4D:state3": {
+     "max_abs_diff": 0.0020610085171828274,
+     "rms_z": 0.32920482423432057
+    },
+    "fig4D:state4": {
+     "max_abs_diff": 0.0018281423542676478,
+     "rms_z": 0.3037943917165006
+    },
+    "fig5:state4": {
+     "max_abs_diff": 0.6788041366534685,
+     "rms_z": 3.7848568009691803
+    },
+    "fig5:state3": {
+     "max_abs_diff": 1.1141310925752634,
+     "rms_z": 6.151503578034307
+    }
+   },
+   "departure_from_published_arm_mg5": {
+    "dPsi_mV": 2.1411987354172197,
+    "pH_x": 0.0004014045232167973,
+    "NADH_frac": 0.02579939017240762,
+    "cytc_red_frac": 0.005799170441344731,
+    "O2_flux_rel": 0.039714983170544005
+   }
+  },
+  {
+   "equation": "combined",
+   "candidate": "mr1_declared",
+   "form": "MR1-declared: Eq. 11 with its proton term, Eq. 16 swapped; Eq. 24 restored",
+   "switch": {
+    "J_F1": "eq11_with_proton_term",
+    "J_PiHt": "eq16_symport"
+   },
+   "fit_rms_z_mg5": 3.7590728489929566,
+   "departure_from_published_arm_mg5": {
+    "dPsi_mV": 1.269713005559538,
+    "pH_x": 0.007797908058774006,
+    "NADH_frac": 0.02304005170845813,
+    "cytc_red_frac": 0.0050881734750996555,
+    "O2_flux_rel": 0.024098396966929947
+   }
+  },
+  {
+   "equation": "combined",
+   "candidate": "appendix_all",
+   "form": "the appendix's balanced Eqs. 11, 16 and 24 together",
+   "switch": {
+    "J_F1": "eq11_appendix_balanced",
+    "J_PiHt": "eq16_appendix_balanced",
+    "J_C3": "eq24_appendix_balanced"
+   },
+   "fit_rms_z_mg5": 4.728059261050053,
+   "departure_from_published_arm_mg5": {
+    "dPsi_mV": 2.4267975918546654,
+    "pH_x": 0.007858575839943427,
+    "NADH_frac": 0.04404620820854077,
+    "cytc_red_frac": 0.005385972288656199,
+    "O2_flux_rel": 0.026687810535631074
+   }
+  },
+  {
+   "equation": "combined",
+   "candidate": "frame_s_consistent",
+   "form": "one frame, S: MR1's Eq. 11 with the frame-S Eq. 16; Eq. 24 restored",
+   "switch": {
+    "J_F1": "eq11_with_proton_term",
+    "J_PiHt": "eq16_symport_total_pi"
+   },
+   "fit_rms_z_mg5": 3.9572892112918097,
+   "departure_from_published_arm_mg5": {
+    "dPsi_mV": 1.2987415709647507,
+    "pH_x": 0.008704559949046065,
+    "NADH_frac": 0.022636028066384706,
+    "cytc_red_frac": 0.005632137283327315,
+    "O2_flux_rel": 0.03110101114381769
+   }
+  },
+  {
+   "equation": "combined",
+   "candidate": "frame_b_restored_eq24",
+   "form": "frame B's rate laws (the appendix's Eqs. 11 and 16, Eq. 24 restored) on Eq. 22's printed proton row, which leaves phosphate proton-free: rate laws and bookkeeping in different frames",
+   "switch": {
+    "J_F1": "eq11_appendix_balanced",
+    "J_PiHt": "eq16_appendix_balanced"
+   },
+   "fit_rms_z_mg5": 3.0997691053575784,
+   "departure_from_published_arm_mg5": {
+    "dPsi_mV": 0.878547377143093,
+    "pH_x": 0.007774354424673113,
+    "NADH_frac": 0.015388652683497206,
+    "cytc_red_frac": 0.003671645899214926,
+    "O2_flux_rel": 0.019941968899749973
+   }
+  },
+  {
+   "equation": "combined",
+   "candidate": "frame_b_restored_eq24_pi_protons",
+   "form": "one frame, B, consistent: the same rate laws, and Eq. 22's proton row counting the protons on phosphate",
+   "switch": {
+    "J_F1": "eq11_appendix_balanced",
+    "J_PiHt": "eq16_appendix_balanced",
+    "H_x_row": "pi_protons_counted"
+   },
+   "fit_rms_z_mg5": 3.4618626927473795,
+   "departure_from_published_arm_mg5": {
+    "dPsi_mV": 1.2042057398230384,
+    "pH_x": 0.014033129207387418,
+    "NADH_frac": 0.015590641323382781,
+    "cytc_red_frac": 0.003767686701324019,
+    "O2_flux_rel": 0.019890304903276812
+   }
+  },
+  {
+   "equation": "combined",
+   "candidate": "appendix_all_pi_protons",
+   "form": "the appendix's balanced Eqs. 11, 16 and 24 with frame B's proton row",
+   "switch": {
+    "J_F1": "eq11_appendix_balanced",
+    "J_PiHt": "eq16_appendix_balanced",
+    "J_C3": "eq24_appendix_balanced",
+    "H_x_row": "pi_protons_counted"
+   },
+   "fit_rms_z_mg5": 5.2822612030892095,
+   "departure_from_published_arm_mg5": {
+    "dPsi_mV": 2.426797591854637,
+    "pH_x": 0.014119874262829235,
+    "NADH_frac": 0.044357222223042114,
+    "cytc_red_frac": 0.004910648322346306,
+    "O2_flux_rel": 0.026906862653161
+   }
+  },
+  {
+   "equation": "combined",
+   "candidate": "host_p_question_arm",
+   "form": "the arm for the user's repairs question (host P, D235): frame B (the appendix's balanced Eqs. 11 and 16, the protons on phosphate counted), Eq. 24 restored (phi_Pi x Eq. 7), the balanced NADH supply at reference pH 7.10; 298.15 K, matrix Mg2+ 5 mM",
+   "switch": {
+    "J_F1": "eq11_appendix_balanced",
+    "J_PiHt": "eq16_appendix_balanced",
+    "H_x_row": "pi_protons_counted",
+    "J_DH": "eq1_balanced_supply",
+    "h_ref_DH": 7.943282347242822e-08
+   },
+   "fit_rms_z_mg5": 3.71779670748186,
+   "departure_from_published_arm_mg5": {
+    "dPsi_mV": 1.3074478564791718,
+    "pH_x": 0.014154865810086292,
+    "NADH_frac": 0.01970102862538642,
+    "cytc_red_frac": 0.003967922223448245,
+    "O2_flux_rel": 0.021154220114531164
+   },
+   "full_check": {
+    "existence": {
+     "max_integration_vs_newton_rel": 4.748784202683634e-13,
+     "max_newton_residual": 2.8893333333333334e-43
+    },
+    "uniqueness_state3_Pi3": {
+     "max_relative_spread": 2.0797630162040085e-13,
+     "max_relative_rate_at_end_per_s": 7.2600390161039254e-12
+    },
+    "dissipation_reported_states": {
+     "least_W_per_l": {
+      "J_C1": 0.4837429378215134,
+      "J_C3": 0.6297247407362552,
+      "J_C4": 9.277925588237428,
+      "J_KH": -0.0,
+      "J_Hle": 48.190010464731515,
+      "J_K": 0.0,
+      "J_MgADPx": -0.0,
+      "J_DH": 0.3007548978954092,
+      "J_F1": -1.3952669112305544e-27,
+      "J_PiHt": -0.0,
+      "J_Pit": -0.0,
+      "J_MgATPx": -0.0,
+      "J_ANT": 0.0006657814601385832,
+      "J_AK": 355.45576236707774,
+      "J_ADPt": 421.7350940507611,
+      "J_MgATPi": 9.106249950547183e-31,
+      "J_MgADPi": -0.0
+     },
+     "negative_states": {},
+     "states_counted": {
+      "J_C1": 12,
+      "J_C3": 12,
+      "J_C4": 12,
+      "J_KH": 12,
+      "J_Hle": 12,
+      "J_K": 12,
+      "J_MgADPx": 12,
+      "J_DH": 12,
+      "J_F1": 11,
+      "J_PiHt": 11,
+      "J_Pit": 10,
+      "J_MgATPx": 11,
+      "J_ANT": 6,
+      "J_AK": 6,
+      "J_ADPt": 6,
+      "J_MgATPi": 6,
+      "J_MgADPi": 6
+     }
+    },
+    "dissipation_random_states_binding_at_equilibrium": {
+     "least_W_per_l": {
+      "J_C1": 0.004775825605842166,
+      "J_C3": 8.239106383163014e-07,
+      "J_C4": 8.586161192783894e-05,
+      "J_F1": 0.21832674412589761,
+      "J_ANT": 3.9358724085636875e-06,
+      "J_PiHt": 3.0386974160948733e-05,
+      "J_KH": 1.543375806348271e-05,
+      "J_Hle": 2.5840553319645742e-08,
+      "J_K": 0.0,
+      "J_AK": 0.00025028943126642063,
+      "J_ATPt": 2.156219913518673e-05,
+      "J_ADPt": 1.346312376713603e-06,
+      "J_Pit": 0.030840028803768793,
+      "J_MgATPx": -0.0,
+      "J_MgADPx": -0.0,
+      "J_DH": 1.9557308314846993e-07,
+      "J_MgATPi": -0.0,
+      "J_MgADPi": -0.0,
+      "J_AMPt": 0.0019516321147541875
+     },
+     "negative_states": {},
+     "states_counted": {
+      "J_C1": 2000,
+      "J_C3": 2000,
+      "J_C4": 2000,
+      "J_F1": 2000,
+      "J_ANT": 2000,
+      "J_PiHt": 2000,
+      "J_KH": 2000,
+      "J_Hle": 2000,
+      "J_K": 2000,
+      "J_AK": 2000,
+      "J_ATPt": 2000,
+      "J_ADPt": 2000,
+      "J_Pit": 2000,
+      "J_MgATPx": 2000,
+      "J_MgADPx": 2000,
+      "J_DH": 2000,
+      "J_MgATPi": 2000,
+      "J_MgADPi": 2000,
+      "J_AMPt": 2000
+     }
+    },
+    "dissipation_random_states_binding_random": {
+     "least_W_per_l": {
+      "J_C1": 0.004775825605842166,
+      "J_C3": 8.239106383163014e-07,
+      "J_C4": 8.586161192783894e-05,
+      "J_F1": -197269.24281575304,
+      "J_ANT": 7.55109086911741e-09,
+      "J_PiHt": 3.0386974160948733e-05,
+      "J_KH": 1.543375806348271e-05,
+      "J_Hle": 2.5840553319645742e-08,
+      "J_K": 0.0,
+      "J_AK": 0.00025028943126642063,
+      "J_ATPt": 2.156219913518673e-05,
+      "J_ADPt": 1.346312376713603e-06,
+      "J_Pit": 0.030840028803768793,
+      "J_MgATPx": 0.0004636395197366992,
+      "J_MgADPx": 0.04015087017310302,
+      "J_DH": 1.9557308314846993e-07,
+      "J_MgATPi": 0.03119572751272506,
+      "J_MgADPi": 0.00022669895406020533,
+      "J_AMPt": 0.0019516321147541875
+     },
+     "negative_states": {
+      "J_F1": 146
+     },
+     "states_counted": {
+      "J_C1": 2000,
+      "J_C3": 2000,
+      "J_C4": 2000,
+      "J_F1": 2000,
+      "J_ANT": 2000,
+      "J_PiHt": 2000,
+      "J_KH": 2000,
+      "J_Hle": 2000,
+      "J_K": 2000,
+      "J_AK": 2000,
+      "J_ATPt": 2000,
+      "J_ADPt": 2000,
+      "J_Pit": 2000,
+      "J_MgATPx": 2000,
+      "J_MgADPx": 2000,
+      "J_DH": 2000,
+      "J_MgATPi": 2000,
+      "J_MgADPi": 2000,
+      "J_AMPt": 2000
+     }
+    }
+   }
+  },
+  {
+   "equation": "combined",
+   "candidate": "host_p_question_arm_ak_base",
+   "form": "host_p_question_arm with Eq. 18 in base forms, 2 ADP3- -> ATP4- + AMP2-, K_base = 0.389 (matched to K_AK = 0.4331 at free Mg2+ 3.81 mM); the effective K on totals follows the IMS's free Mg2+",
+   "switch": {
+    "J_F1": "eq11_appendix_balanced",
+    "J_PiHt": "eq16_appendix_balanced",
+    "H_x_row": "pi_protons_counted",
+    "J_DH": "eq1_balanced_supply",
+    "J_AK": "eq18_base_forms",
+    "h_ref_DH": 7.943282347242822e-08,
+    "K_base_AK": 0.389
+   },
+   "fit_rms_z_mg5": 3.7178316404997904,
+   "departure_from_published_arm_mg5": {
+    "dPsi_mV": 1.3074478564791718,
+    "pH_x": 0.014154865810086292,
+    "NADH_frac": 0.01970137804960881,
+    "cytc_red_frac": 0.003967921181303624,
+    "O2_flux_rel": 0.021153669607413272
+   },
+   "full_check": {
+    "existence": {
+     "max_integration_vs_newton_rel": 4.748784202683634e-13,
+     "max_newton_residual": 4.9794074074074074e-43
+    },
+    "uniqueness_state3_Pi3": {
+     "max_relative_spread": 3.4388567072131275e-13,
+     "max_relative_rate_at_end_per_s": 1.2079562556314438e-11
+    },
+    "dissipation_reported_states": {
+     "least_W_per_l": {
+      "J_C1": 0.48374285992375643,
+      "J_C3": 0.6297247407362552,
+      "J_C4": 9.277925588237428,
+      "J_KH": -0.0,
+      "J_Hle": 48.19001929401271,
+      "J_K": 0.0,
+      "J_MgADPx": -0.0,
+      "J_DH": 0.3007548978954092,
+      "J_F1": -1.3952669112305544e-27,
+      "J_PiHt": -0.0,
+      "J_Pit": -0.0,
+      "J_MgATPx": -0.0,
+      "J_ANT": 0.0006658188932551669,
+      "J_AK": 355.46023323328666,
+      "J_ADPt": 421.7659100285582,
+      "J_MgATPi": 2.18549998813132e-28,
+      "J_MgADPi": 2.9139999841750995e-29
+     },
+     "negative_states": {},
+     "states_counted": {
+      "J_C1": 12,
+      "J_C3": 12,
+      "J_C4": 12,
+      "J_KH": 12,
+      "J_Hle": 12,
+      "J_K": 12,
+      "J_MgADPx": 12,
+      "J_DH": 12,
+      "J_F1": 11,
+      "J_PiHt": 11,
+      "J_Pit": 10,
+      "J_MgATPx": 11,
+      "J_ANT": 6,
+      "J_AK": 6,
+      "J_ADPt": 6,
+      "J_MgATPi": 6,
+      "J_MgADPi": 6
+     }
+    },
+    "dissipation_random_states_binding_at_equilibrium": {
+     "least_W_per_l": {
+      "J_C1": 0.004775825605842166,
+      "J_C3": 8.239106383163014e-07,
+      "J_C4": 8.586161192783894e-05,
+      "J_F1": 0.21832674412589761,
+      "J_ANT": 3.9358724085636875e-06,
+      "J_PiHt": 3.0386974160948733e-05,
+      "J_KH": 1.543375806348271e-05,
+      "J_Hle": 2.5840553319645742e-08,
+      "J_K": 0.0,
+      "J_AK": 0.004151408201341202,
+      "J_ATPt": 2.156219913518673e-05,
+      "J_ADPt": 1.346312376713603e-06,
+      "J_Pit": 0.030840028803768793,
+      "J_MgATPx": -0.0,
+      "J_MgADPx": -0.0,
+      "J_DH": 1.9557308314846993e-07,
+      "J_MgATPi": -0.0,
+      "J_MgADPi": -0.0,
+      "J_AMPt": 0.0019516321147541875
+     },
+     "negative_states": {},
+     "states_counted": {
+      "J_C1": 2000,
+      "J_C3": 2000,
+      "J_C4": 2000,
+      "J_F1": 2000,
+      "J_ANT": 2000,
+      "J_PiHt": 2000,
+      "J_KH": 2000,
+      "J_Hle": 2000,
+      "J_K": 2000,
+      "J_AK": 2000,
+      "J_ATPt": 2000,
+      "J_ADPt": 2000,
+      "J_Pit": 2000,
+      "J_MgATPx": 2000,
+      "J_MgADPx": 2000,
+      "J_DH": 2000,
+      "J_MgATPi": 2000,
+      "J_MgADPi": 2000,
+      "J_AMPt": 2000
+     }
+    },
+    "dissipation_random_states_binding_random": {
+     "least_W_per_l": {
+      "J_C1": 0.004775825605842166,
+      "J_C3": 8.239106383163014e-07,
+      "J_C4": 8.586161192783894e-05,
+      "J_F1": -197269.24281575304,
+      "J_ANT": 7.55109086911741e-09,
+      "J_PiHt": 3.0386974160948733e-05,
+      "J_KH": 1.543375806348271e-05,
+      "J_Hle": 2.5840553319645742e-08,
+      "J_K": 0.0,
+      "J_AK": -40535.19887889663,
+      "J_ATPt": 2.156219913518673e-05,
+      "J_ADPt": 1.346312376713603e-06,
+      "J_Pit": 0.030840028803768793,
+      "J_MgATPx": 0.0004636395197366992,
+      "J_MgADPx": 0.04015087017310302,
+      "J_DH": 1.9557308314846993e-07,
+      "J_MgATPi": 0.03119572751272506,
+      "J_MgADPi": 0.00022669895406020533,
+      "J_AMPt": 0.0019516321147541875
+     },
+     "negative_states": {
+      "J_AK": 532,
+      "J_F1": 146
+     },
+     "states_counted": {
+      "J_C1": 2000,
+      "J_C3": 2000,
+      "J_C4": 2000,
+      "J_F1": 2000,
+      "J_ANT": 2000,
+      "J_PiHt": 2000,
+      "J_KH": 2000,
+      "J_Hle": 2000,
+      "J_K": 2000,
+      "J_AK": 2000,
+      "J_ATPt": 2000,
+      "J_ADPt": 2000,
+      "J_Pit": 2000,
+      "J_MgATPx": 2000,
+      "J_MgADPx": 2000,
+      "J_DH": 2000,
+      "J_MgATPi": 2000,
+      "J_MgADPi": 2000,
+      "J_AMPt": 2000
+     }
+    }
+   },
+   "departure_from_host_p_question_arm": {
+    "dPsi_mV": 2.6566985212639338e-05,
+    "pH_x": 3.442729212821405e-08,
+    "NADH_frac": 6.028513946931824e-07,
+    "cytc_red_frac": 4.5186379110662145e-08,
+    "O2_flux_rel": 1.2843282694019464e-06
+   },
+   "ims_free_mg_mM": {
+    "state4": {
+     "0": 4.999999999999999,
+     "1": 4.999999999999999,
+     "2": 4.999999999999999,
+     "3": 4.999999999999999,
+     "5": 4.999999999999999,
+     "10": 4.999999999999999
+    },
+    "state3": {
+     "0": 3.8085535288777352,
+     "1": 3.8085535288777352,
+     "2": 3.8085535288777352,
+     "3": 3.8085535288777352,
+     "5": 3.8085535288777352,
+     "10": 3.8085535288777352
+    }
+   },
+   "effective_K_on_totals_state3": 0.4331394857759678
+  }
+ ]
+}

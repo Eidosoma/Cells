@@ -1,0 +1,11 @@
+{
+  "dataset_id": "revilla1999_cx43_polarity@1",
+  "citation": "Revilla, Castro and Barrio (1999), Biophysical Journal 77, 1374–1383",
+  "doi": "10.1016/S0006-3495(99)76986-9",
+  "locator": "Table 1, RCx43–RCx43 row. Figure 3B–C describes six pairs. The Boltzmann relation is given on p. 1375.",
+  "preparation": "Homotypic wild-type rat Cx43 in paired Xenopus oocytes. Conductance on both branches was normalized to a brief 10 mV prepulse.",
+  "uncertainty": "The rounded fit parameters in Table 1 have no reported uncertainties or covariance. Figure 3C shows means and SEM for the measured conductances.",
+  "comparison_abs_voltage_mV": 80,
+  "negative": {"maximum": 1.02, "minimum": 0.36, "slope_per_mV": 0.10, "abs_midpoint_mV": 65.7},
+  "positive": {"maximum": 1.02, "minimum": 0.24, "slope_per_mV": 0.07, "abs_midpoint_mV": 58.5}
+}

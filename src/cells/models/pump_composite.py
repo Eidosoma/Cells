@@ -60,6 +60,7 @@ from cells.execution.errors import NumericalError
 from cells.models import pump_composite_adapter as pump3
 from cells.models.surface_pump import DOMAIN_MESSAGE
 from cells.models.surface_pump_checks import row_checks
+from cells.numerics.clock_instants import ON_THE_GRID, on_grid  # D283's one predicate.
 from cells.numerics.fixed_step import rk4_checked_step
 from cells.operators.contract import (
     COMMUTING,
@@ -197,6 +198,21 @@ def self_moved_targets(spec_model):
             if any(e in ids and (species, cell) in moved for e, cell in elements):
                 out.add(law)
     return frozenset(out)
+
+
+# The laws whose events change which occupant a slot holds (D150's occupant tables switch at
+# their times): observe_history's event rows report the departing occupant.
+OCCUPANT_EVENTS = ("scheduled_cell_replacement@1",)
+
+
+def occupant_event_times(spec):
+    """The times OCCUPANT_EVENTS' events land on in this definition (a set of floats)."""
+    return {
+        float(event.time)
+        for op, _, schedule in entries(spec)
+        if op.LAW_ID in OCCUPANT_EVENTS
+        for event in schedule
+    }
 
 
 def check_definition(spec):
@@ -543,6 +559,31 @@ def exact_row_errors(entries, spec, p):
                     "cannot yet downgrade the route to tableau booking where an operator writes "
                     "its row"
                 )
+    return errors
+
+
+def exact_face_row_errors(entries, spec, structure):
+    """D280, the operators' half for @3's faces: where the inner structure picks
+    exact_free_energy_heat@1 for faces (surface_pump_v3.exact_faces), no operator's in-step
+    process writes a row a face carries (a species with a positive diffusivity, at either end
+    node), as exact_row_errors holds for exact passive routes: the face's exact share would
+    average over a change it did not make."""
+    writers = operator_writers(entries, spec) if pump3.ionic.exact_faces(structure) else {}
+    if not writers:
+        return []
+    errors, m = [], spec.model
+    for face in m.faces:
+        for species, diffusivity in zip(m.species_ids, face.diffusivity_m2_per_s, strict=True):
+            if not diffusivity:
+                continue
+            for node in (face.sender, face.receiver):
+                for law in writers.get((species, node), ()):
+                    errors.append(
+                        f"{law} moves {species} at every {_node_kind(spec, node)} node in the "
+                        f"step (its in-step process), and face {face.id} books {species} at "
+                        f"{node} exactly ({pump3.ionic.EXACT_FREE_ENERGY_HEAT}, D280); version 1 "
+                        "refuses this"
+                    )
     return errors
 
 
@@ -1754,6 +1795,51 @@ class Composition:
     def field_values(self, state, control, p, *, xp=jnp):
         return self.readouts(state, control, p, xp=xp).field
 
+    # ------------------------------------------------------------ FR-34 in a composite (D265)
+
+    def clamp_inputs(self, state, control, p, *, xp=np):
+        """(inner state, control view, layout view): what the composite's own readouts hands @3,
+        so a clamped evaluation runs at the controls and layout the step runs at. The control view
+        is the stored control times the operators' CONTROL_FACTORS (species_regulated_availability
+        @1's writes and @2's step-view routes among them, held as the step holds them); the layout
+        view is its providers' (membrane state's areas, capacitances and abundances among them).
+        The stored control and layout are not what the step runs at (D265 finding 1)."""
+        return (
+            self.inner.inner_state(state),
+            self.control_view(control, state, p, xp=xp),
+            self.view(p, state, xp=xp),
+        )
+
+    def clamped_channel_flux(self, state, control, p, voltages_V, *, xp=np):
+        """FR-34 in a composite (D265 finding 1): @3's clamped_channel_flux, each channel
+        population's outward flux [species, channel] (fmol/s) and current [channel] (A,
+        outward-positive) at the patch voltages given [membrane] (V; a scalar applies to every
+        patch), at the composite's clamp_inputs; @3 then applies its structure's stage read and
+        routing door. Given the stored control and layout instead, @3's helper loses every
+        operator factor: a population held at 0.5 by species_regulated_availability@1 read
+        11.10328 pA at -50 mV, where the composite runs at 5.55164 pA. Pure: it records nothing."""
+        inner_state, inner_control, view = self.clamp_inputs(state, control, p, xp=xp)
+        clamp = (
+            getattr(self.inner, "clamped_channel_flux", None) or pump3.ionic.clamped_channel_flux
+        )
+        return clamp(inner_state, inner_control, view, voltages_V, xp=xp)
+
+    def clamped_kind(self, function, state, control, p, voltages_V, *, xp=np):
+        """FR-34's kinds in a composite (D265 finding 1's check: the same gap): a kind's clamped
+        evaluation, cells.passive_routes@1's clamped_flux or cells.transporter@1's clamped_rates,
+        at the composite's clamp_inputs after @3's stage read and routing door of its structure,
+        the path @3's readouts takes to the kinds' rates. The kinds' own controls take no operator
+        factor today (CONTROL_FACTORS name junction and channel only), but their read, the door
+        and the layout providers' views (a patch's area) are the step's only here."""
+        ionic = pump3.ionic
+        inner_state, inner_control, view = self.clamp_inputs(state, control, p, xp=xp)
+        structure = getattr(self.inner, "structure", None)
+        kinds = ionic._kinds(structure)
+        read = ionic._stage_read(inner_state, view, kinds, xp=xp)[0] if kinds else inner_state
+        if kinds and structure.routes:
+            inner_control = ionic._route(structure, kinds, read, inner_control, view, xp=xp)[0]
+        return function(read, inner_control, view, voltages_V, xp=xp)
+
     def rhs(self, state, control, p, active, *, xp=jnp):
         values = self.readouts(state, control, p, xp=xp)
         return self.STATE_TYPE(*(xp.where(values.valid, v, xp.nan) for v in values.derivative))
@@ -1847,14 +1933,16 @@ class Composition:
         dt, end = spec.execution.dt, spec.experiment.end_time
         for op, _, schedule in entries(spec):
             if op.EVENT and any(
-                not 0 < t < end or int(round(t / dt)) * dt != t for t in op.schedule_times(schedule)
+                not 0 < t < end or on_grid(t, dt) is None for t in op.schedule_times(schedule)
             ):
                 raise ConfigError(
-                    f"{op.LAW_ID} event times must be exact multiples of dt inside the horizon"
+                    f"{op.LAW_ID} event times must lie inside the horizon and {ON_THE_GRID}"
                 )
         small = compact(spec)
         state, p = self.initial_values(small)
         exact = exact_row_errors(pairs, spec, p) if writing else []
+        if self.process_operator is not None:  # D280: the faces' exact booking (static).
+            exact += exact_face_row_errors(pairs, spec, getattr(self.inner, "structure", None))
         if exact:
             raise ConfigError("Invalid operator composition: " + "; ".join(exact))
         if self.field_inputs:
@@ -2181,17 +2269,42 @@ class Composition:
     # ------------------------------------------------------------ observations
 
     def observe_history(self, times, history, layout, requested, spec):
-        """The inner observations of each row at its view, then each operator's columns."""
+        """The inner observations of each row at its view, then each operator's columns.
+
+        Each operator observes with the controls its step runs at (D264, a tester's findings):
+        - **a routed target's** controls times its rate routes' factors at the row's state
+          (_routed_control), so an exported rate is the one the step ran at, not the scheduled
+          one (finding 1: a receptor-routed reaction exported its unrouted rate);
+        - **at an occupant event's row** (a time replacement@1's events land on, OCCUPANT_EVENTS)
+          the controls held over the step that ended there, at t - dt. The row's state is that
+          step's end, before the event, the departing occupant's, so state and controls are one
+          occupant's; the newcomer appears from the next row on (finding 2: the event row mixed
+          the departing cell's substrate with the newcomer's multiplier).
+        The inner observations keep the row's own controls."""
         p = type(layout)(*(np.asarray(v) for v in layout))
         requested = np.asarray(requested, dtype=float)
         if any(t not in times for t in requested):
             raise ConfigError("Composite observations require accepted times")
         controls = composite_spec.control_values(spec, requested)
+        events = occupant_event_times(spec)
+        departing = [j for j, t in enumerate(requested) if float(t) in events]
+        held = (
+            composite_spec.control_values(
+                spec, [float(requested[j]) - spec.execution.dt for j in departing]
+            )
+            if departing
+            else None
+        )
         base, records = projection(spec), []
         for j, t in enumerate(requested):
             i = int(np.flatnonzero(times == t)[0])
             state = self.STATE_TYPE(*(np.asarray(v[i]) for v in history))
             control = self.CONTROL_TYPE(*(v[j] for v in controls))
+            if j in departing:
+                k = departing.index(j)
+                operator_control = self.CONTROL_TYPE(*(v[k] for v in held))
+            else:
+                operator_control = control
             view = self.view(p, state, xp=np)
             inner_spec = base
             if self.factored:
@@ -2204,7 +2317,13 @@ class Composition:
             row = {k: v[0] for k, v in vars(observed).items()}
             for op in self.operators:
                 keywords = self._quantity_keywords(op, p, xp=np)  # R3 (static: {} for most).
-                columns = op.observe(row, state, control, p, view, self, spec, **keywords)
+                observed_control = operator_control
+                routes = self.rate_routes.get(op)
+                if routes:  # B1': the routed rates the step runs at, at the row's state.
+                    observed_control, _, _ = self._routed_control(
+                        op, routes, state, operator_control, p, xp=np
+                    )
+                columns = op.observe(row, state, observed_control, p, view, self, spec, **keywords)
                 if set(columns) != self.observed_keys[op.LAW_ID]:
                     undeclared = sorted(set(columns) ^ self.observed_keys[op.LAW_ID])
                     raise ConfigError(f"{op.LAW_ID} observes {undeclared} against its declaration")

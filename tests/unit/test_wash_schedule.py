@@ -53,6 +53,33 @@ def _permeant(raw):
     patch["permeability_m_per_s"][S] = 1e-9
 
 
+def _route(raw):
+    """The review's crossing by a registered route (D263 finding 2): species exchange imports S
+    from the well into the specimen through its patch, at first order."""
+    return fx.with_exchange(
+        raw,
+        [("uptake", "specimen_face", "import", "first_order")],
+        [("uptake", "specimen", [(0.0, 0.5)])],
+    )
+
+
+def _kind_route(raw):
+    raw["model"]["passive_routes"] = [
+        dict(id="s_route", patch="specimen_face", law="passive_neutral_permeation@1", species=S,
+             permeability_m_per_s=1e-12)
+    ]  # fmt: skip
+
+
+def _internalising(raw):
+    sites = next(o for o in raw["model"]["operators"] if o["law"] == "site_occupancy@1")
+    population = next(q for q in sites["populations"] if q["id"] == "specimen_sites")
+    population["internalisation"] = dict(rate_per_s=0.01, destination="cell")
+    raw["experiment"]["site_controls"].append(
+        dict(population="specimen_sites", route="internalisation",
+             schedule=[dict(time=0.0, multiplier=1.0)])
+    )  # fmt: skip
+
+
 def _event(time=T_E, fraction=0.5, buffer=None, node="well"):
     return (time, node, fraction, {S: wfx.TRACE_mM} if buffer is None else buffer)
 
@@ -70,7 +97,7 @@ REFUSALS = {
     "an exact zero": (lambda: washed(events=[_event(buffer={S: 0.0})]), "an exact zero"),
     "a fraction of 0": (lambda: washed(events=[_event(fraction=0.0)]), "fraction lies in"),
     "a fraction above 1": (lambda: washed(events=[_event(fraction=1.5)]), "fraction lies in"),
-    "a time off the grid": (lambda: washed(events=[_event(time=1.005)]), "multiple of dt"),
+    "a time off the grid": (lambda: washed(events=[_event(time=1.005)]), "on the clock's grid"),
     "a time at 0": (lambda: washed(events=[_event(time=0.0)]), "after time 0"),
     "a time at the end": (lambda: washed(events=[_event(time=2.0)]), "before the end time"),
     "times not increasing": (
@@ -88,6 +115,19 @@ REFUSALS = {
     "a neutral species across a facing patch": (
         lambda: washed(changed(wfx.well(sites=False), _permeant)),
         "S crosses patch specimen_face",
+    ),
+    # D263 finding 2 (a second review): the same crossing by a registered route was admitted.
+    "a neutral species across the surface by an exchange route": (
+        lambda: washed(_route(wfx.well(sites=False))),
+        "S may cross node well's surface by scheduled_species_exchange@1's route uptake",
+    ),
+    "a neutral species across the surface by a kind's route": (
+        lambda: washed(changed(wfx.well(sites=False), _kind_route)),
+        "by cells.passive_routes@1 \\(passive_neutral_permeation@1\\)",
+    ),
+    "a ligand internalised across the surface": (
+        lambda: washed(changed(wfx.well(), _internalising)),
+        "by site_occupancy@1's internalisation specimen_sites",
     ),
     "a buffer below a site ligand's trace": (
         lambda: washed(events=[_event(buffer={S: 1e-13})]),
@@ -108,6 +148,32 @@ def test_each_refusal_fires_with_its_reason(name):
     build, message = REFUSALS[name]
     with pytest.raises(ConfigError, match=message):
         parse_spec(build())
+
+
+def test_every_path_across_a_washed_surface_is_classified(monkeypatch):
+    """D263 finding 2, fail closed (host only, parse): every registered operator law is read for its
+    routes (exchange, sites), shown local or refused with its reason, so a new law is refused
+    beside the wash until it is classified here. Planted: turnover unclassified, a world with it is
+    refused. The review's well with its sites, and a route-free wash, stay admitted."""
+    from cells.operators import OPERATORS
+    from cells.operators import wash_schedule as wash
+
+    read = {wash.EXCHANGE, wash.SITES}
+    lists = [read, set(wash.SHOWN_LOCAL), set(wash.REFUSED)]
+    assert sorted(set(OPERATORS) - set().union(*lists)) == [], "classify the new law here"
+    assert sum(len(x) for x in lists) == len(set().union(*lists))
+    parse_spec(washed())
+    parse_spec(washed(wfx.well(sites=False)))
+    raw = fx.with_turnover(
+        wfx.well(sites=False),
+        [("make", "specimen", "production")],
+        [("make", "specimen", [(0.0, 1e-6)])],
+    )
+    parse_spec(washed(raw))
+    shown = {k: v for k, v in wash.SHOWN_LOCAL.items() if k != "scheduled_species_turnover@1"}
+    monkeypatch.setattr(wash, "SHOWN_LOCAL", shown)
+    with pytest.raises(ConfigError, match="scheduled_species_turnover@1, which is not classified"):
+        parse_spec(washed(raw))
 
 
 def test_admitted_beside_a_dose_at_a_held_bath_and_the_declaration_round_trips():
@@ -456,3 +522,28 @@ def test_it_registers_with_its_run_view():
         (0.5, {"outside": "well"}, "wash"),
         (1.5, {"outside": "well"}, "wash"),
     ]
+
+
+def test_a_draw_from_chosen_regions_of_an_uneven_liquid():
+    """FR-37 (D274), its synthetic test with existing operators (validation/sampling/uneven_draw.py;
+    host only, the composite's own event maps on the bound state, about 1 s): two 100 pL regions,
+    each a finite node, 8 and 2 fmol of S above the buffer's background; 100 pL collected by
+    per-region wash events, refilled with buffer at the background.
+    - unmixed, all 100 pL from A: sample 8, left 0 and 2;
+    - mixed (declared, 5 and 5), 50 pL from each: sample 5, left 2.5 and 2.5;
+    - the port's, 75 pL from A and 25 from B: sample 6.5, left 2 and 1.5.
+    Each reports the drawn volumes, the sample and its concentration, the remainders and the refill
+    separately, and accounts for the 10 fmol within rounding."""
+    from validation.sampling import uneven_draw as draw
+
+    expected = {"unmixed": (8.0, (0.0, 2.0)), "mixed": (5.0, (2.5, 2.5)), "port": (6.5, (2.0, 1.5))}
+    for case, (sample, left) in expected.items():
+        out = draw.report(case)
+        assert sum(out["drawn_pL"].values()) == 100.0
+        assert out["sample_above_background_fmol"] == pytest.approx(sample, abs=1e-12), case
+        assert out["sample_mM"] == pytest.approx(out["sample_fmol"] / 100.0, rel=1e-15)
+        for region, amount in zip(draw.REGIONS, left, strict=True):
+            got = out["remainder_above_background_fmol"][region]
+            assert got == pytest.approx(amount, abs=1e-12), (case, region)
+        assert out["refill_supplied_fmol"] == pytest.approx(draw.BACKGROUND_mM * 100.0, rel=1e-12)
+        assert abs(out["account_residual_fmol"]) <= 1e-15, case

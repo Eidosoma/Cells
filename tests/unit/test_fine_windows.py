@@ -32,7 +32,6 @@ it), and the device row checks' program.
 
 import dataclasses
 import json
-import math
 from types import SimpleNamespace
 
 import jax
@@ -271,13 +270,28 @@ REFUSALS = {
         _changed(_set(("execution", "max_steps"), 91_000)),
         "Fine-windowed integration grid exceeds max_steps",
     ),
-    "an event within rounding of a fine point": (
+    # D283 renews these two rows: an event within the same-instant tolerance of a point now snaps
+    # there (admitted); one past it but within NEAR_MISS of its step is the refused near miss.
+    "an event in the near-miss band of a fine point": (
         _changed(
             lambda raw: raw["experiment"]["membrane_controls"][0]["schedule"].append(
-                dict(time=math.nextafter(FINE_POINT, 0.0), availability=0.5)
+                dict(time=FINE_POINT - 1e-10, availability=0.5)
             )
         ),
-        "within rounding of the fine boundary 1800.001",
+        "misses the fine point 1800.001",
+    ),
+    # A coarse point's: an event exactly on one (90005 x 0.02, not the decimal 1800.1) is admitted,
+    # and one 1e-10 s below the next (90010 x 0.02), in its fine step's band, is refused, naming it.
+    "an event in the near-miss band of a coarse point": (
+        _changed(
+            lambda raw: raw["experiment"]["membrane_controls"][0]["schedule"].extend(
+                [
+                    dict(time=90005 * 0.02, availability=0.5),
+                    dict(time=90010 * 0.02 - 1e-10, availability=1.0),
+                ]
+            )
+        ),
+        f"misses the coarse point {90010 * 0.02!r}",
     ),
     "a model it does not admit": (_source_decay, "fine_windows admits"),
     "an operator that counts steps": (

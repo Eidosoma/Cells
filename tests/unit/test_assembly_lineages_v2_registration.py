@@ -31,6 +31,7 @@ from cells.models.assembly_lineages_v2 import (
     FREE_ENERGY_INTERFACE,
     GATE_FACTOR,
     GEOMETRY_INTERFACE,
+    HAZARD_INTERFACE,
     IDEAL_MIXING,
     MASS_ACTION,
     MEMBRANE_PERMEATION,
@@ -39,6 +40,7 @@ from cells.models.assembly_lineages_v2 import (
     OSMOTIC_LUMEN,
     PHASE_EXCHANGE,
     POPULATION_INTERFACE,
+    PORE_NUCLEATION,
     PRESCRIBED_SHELL,
     RATE_FACTOR_INTERFACE,
     REACTION_INTERFACE,
@@ -46,6 +48,7 @@ from cells.models.assembly_lineages_v2 import (
     SHARED_POOL,
     SHEAR_FISSION,
     SHELL_PERMEATION,
+    TENSION_HOLD,
     TRANSITION_STATE,
     division,
     exchange,
@@ -57,12 +60,15 @@ from cells.models.assembly_lineages_v2 import (
     mass_action,
     permeation,
     population,
+    pore_nucleation,
     prescribed_shell,
     regular_mixing,
     replacement,
     shell_permeation,
+    tension_hold,
     transfer,
     transition_state,
+    withdrawal,
 )
 from cells.models.assembly_lineages_v2 import model as v2_model
 from cells.models.assembly_lineages_v2.spec import AssemblyModel
@@ -94,11 +100,16 @@ HOMES = {
     PRESCRIBED_SHELL: (prescribed_shell, interfaces.GeometryLaw, GEOMETRY_INTERFACE, None),
     SHELL_PERMEATION: (shell_permeation, interfaces.ReactionLaw, REACTION_INTERFACE, None),
     GATE_FACTOR: (gate_factor, interfaces.RateFactorLaw, RATE_FACTOR_INTERFACE, None),
+    # FR-31's Phase A (D287).
+    PORE_NUCLEATION: (pore_nucleation, interfaces.AssemblyHazard, HAZARD_INTERFACE,
+                      "10.1088/1367-2630/13/9/095010"),
 }  # fmt: skip
 OPERATORS = {  # OL3 milestone 1, then OL2 milestone 3
     SHEAR_FISSION: (division, interfaces.AssemblyOperator, OPERATOR_INTERFACE),
     "cells.serial_transfer@1": (transfer, interfaces.AssemblyOperator, OPERATOR_INTERFACE),
     "cells.pool_replacement@1": (replacement, interfaces.AssemblyOperator, OPERATOR_INTERFACE),
+    "cells.pool_withdrawal@1": (withdrawal, interfaces.AssemblyOperator, OPERATOR_INTERFACE),
+    TENSION_HOLD: (tension_hold, interfaces.AssemblyOperator, OPERATOR_INTERFACE),  # FR-31
 }
 
 

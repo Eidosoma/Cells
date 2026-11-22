@@ -8,7 +8,10 @@ Each claim with a planted error it must catch (D187):
   P A(m) rho0 theta for an entry (planted: the area at the result n' instead of m);
 - §0.2c rule 5: below the floor an area-keeping step fires and an area-changing one is zero
   (planted: a molecule floor would zero the dimerisation);
-- the kernel identity on the geometry probe and on a run's own world, and the ledger closes;
+- the kernel identity on the geometry probe and on a run's own world, and the ledger closes; a
+  world whose floor no drawn state reaches has its probe states lifted to the floor, so its joins
+  are paired (planted: without the lift its report refuses, no pair checked; with it, an error in
+  the join's reverse is refused);
 - a geometry run's bundle is written and read back with its geometry records, and the host oracle
   replays its trace from the saved uniforms (planted: a reverse weight changes the replay); a
   one-slot population with that declared lumen records its one event and writes a bundle without
@@ -598,6 +601,74 @@ def test_a_shell_run_records_the_shell_probe_in_both_modes(tmp_path, monkeypatch
         assert "membrane_footprint_quanta" not in arrays, name
     monkeypatch.setattr(balance, "shell_verdict", balance.geometry_verdict)  # planted
     assert runner.run(population_spec()).check().verdict != verdict
+
+
+def test_an_identity_checked_on_no_pair_is_refused_never_reported_as_zero(monkeypatch):
+    """D263 (a vacuous check): a check that finds no pair for a world with steps refuses, never
+    reporting a zero error. The world's own report, the shell probe and every other probe (the
+    bilayer's, the osmotic lumen's and OL1's) are planted with deviations that find no pair. The
+    real shell probe and a shell world's own report count their pairs. Host arithmetic; the planted
+    probes stop at their first world."""
+    assert balance.shell_verdict()["probe"]["pairs"] > 1000
+    spec = spec_of(shell_world())
+    assert balance.world_report(spec)["pairs"] > 0
+    # The independent checker's case: a shell at molecule_capacity 2 (X binding a wall site R, S
+    # entering, one molecule of each). Its probe states are now drawn within its capacity, so its
+    # own data is checked; drawn up to 12 a place, as before, it checked no pair, which now refuses.
+    tiny = shell_world(B=0, R=1, XR=0, out=1, inside=0)
+    tiny.pop("rate_factor")
+    for form in ("G", "H"):
+        tiny["species"] = [x for x in tiny["species"] if x["id"] != form]
+        tiny["phases"]["membrane"]["species"].remove(form)
+        del tiny["founder"][f"{form}@membrane"]
+    tiny["species"] = [x for x in tiny["species"] if x["id"] != "B"]
+    tiny["phases"]["membrane"]["species"].remove("B")
+    del tiny["founder"]["B@membrane"]
+    tiny["founder"]["X@pool"] = 1
+    low = spec_of(tiny, capacity=2)
+    assert balance.world_report(low)["pairs"] > 0
+    # OL5's registered OL3 worlds (floors of 200 to 1,500 quanta at a quantum a molecule): a world
+    # whose floor no drawn state reaches has its states lifted to it, so its joins are paired.
+    high = floor_world()
+    high["steps"] = [x for x in high["steps"] if x["id"] == "join"]  # every step changes W
+    high["geometry"]["vesicle_floor"]["quanta"] = 100
+    high["founder"]["A@membrane"] = 100
+    high_spec = spec_of(high, capacity=256)
+    assert balance.world_report(high_spec)["pairs"] > 0
+    real_rates = balance.host_log_rates
+
+    def wrong_reverse(n, layout, structure):  # planted: the join's reverse off by 1e-6 in ln
+        out = np.array(real_rates(n, layout, structure), dtype=np.float64)
+        if np.isfinite(out[structure.steps]):
+            out[structure.steps] += 1e-6
+        return out
+
+    with monkeypatch.context() as m:
+        m.setattr(balance, "_WORLD_REPORTS", {})
+        m.setattr(balance, "lifted_to_floor", lambda counts, *rest: counts)  # planted: no lift
+        with pytest.raises(ConfigError, match="checked on no pair"):
+            balance.world_report(high_spec)
+    with monkeypatch.context() as m:
+        m.setattr(balance, "_WORLD_REPORTS", {})
+        m.setattr(balance, "host_log_rates", wrong_reverse)
+        with pytest.raises(ConfigError, match="fail the identity"):
+            balance.world_report(high_spec)
+    real_state = balance.random_state
+
+    def old_draw(world, places, rng, max_count):  # planted: the old draw, up to 12 a place
+        return real_state(world, places, rng, 12)
+
+    monkeypatch.setattr(balance, "random_state", old_draw)
+    with pytest.raises(ConfigError, match="checked on no pair"):
+        balance.world_report(low, states=60)
+    monkeypatch.setattr(balance, "deviations", lambda *args, **kwargs: np.zeros(0))
+    monkeypatch.setattr(balance, "_WORLD_REPORTS", {})  # the planted check is not a kept report
+    checks = (lambda: balance.world_report(spec), balance._shell_verdict.__wrapped__,
+              balance._geometry_verdict.__wrapped__, balance._osmotic_verdict.__wrapped__,
+              balance._verdict.__wrapped__)  # fmt: skip
+    for check in checks:
+        with pytest.raises(ConfigError, match="checked on no pair"):
+            check()
 
 
 SHELL_REFUSALS = {

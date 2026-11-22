@@ -1,0 +1,792 @@
+{
+ "kind": "cells.validation.mito_reference_xf1_scaling@1",
+ "question": "the cost of declaring F1F0's activity X_F1 lower by a scale, instead of an implicit block",
+ "conditions": "matrix Mg2+ total 5 mM; matrix charge anchored per arm to Fig. 4D's pH at [Pi]e = 0; 298.15 K",
+ "threshold": "fit within 10% of the arm's own unscaled fit (the coordinator's orientation)",
+ "largest_scale_within_threshold": {
+  "published": {
+   "own_fit": 1.4010640889799326,
+   "threshold": 1.541170497877926,
+   "largest_passing_scale": 4.43,
+   "smallest_failing_scale_above": 5.48
+  },
+  "frame_b_restored_eq24": {
+   "own_fit": 3.0997691053575784,
+   "threshold": 3.4097460158933366,
+   "largest_passing_scale": 6.78,
+   "smallest_failing_scale_above": 8.38
+  }
+ },
+ "rows": [
+  {
+   "arm": "published",
+   "scale": 0.01,
+   "X_F1": 15093.0,
+   "fit_rms_z": 1.388817595544509,
+   "within_10pct_of_own": true,
+   "departure_from_published_arm": {
+    "dPsi_mV": 0.0702641132976396,
+    "pH_x": 4.393859546247825e-05,
+    "NADH_frac": 0.0017811700807670583,
+    "cytc_red_frac": 9.340174172312032e-06,
+    "O2_flux_rel": 0.0026671383773686497
+   },
+   "departure_from_own_unscaled": {
+    "dPsi_mV": 0.0702641132976396,
+    "pH_x": 4.393859546247825e-05,
+    "NADH_frac": 0.0017811700807670583,
+    "cytc_red_frac": 9.340174172312032e-06,
+    "O2_flux_rel": 0.0026671383773686497
+   },
+   "existence": {
+    "max_integration_vs_newton_rel": 2.427323919111745e-12,
+    "max_newton_residual": 2.9515896296296296e-41
+   },
+   "uniqueness_state3_Pi3": {
+    "max_relative_spread": 1.627156201048524e-12,
+    "max_relative_rate_at_end_per_s": 6.329350350076259e-10
+   },
+   "state3_Pi10": {
+    "dPsi_mV": 169.82405397506673,
+    "NADH_frac": 0.359953745580555,
+    "MVO2_mol_per_s_per_l": 0.0016452953988772608,
+    "J_F1": 0.007383420751693183
+   }
+  },
+  {
+   "arm": "published",
+   "scale": 0.1,
+   "X_F1": 1509.3,
+   "fit_rms_z": 1.3894399770326882,
+   "within_10pct_of_own": true,
+   "departure_from_published_arm": {
+    "dPsi_mV": 0.06383900237412377,
+    "pH_x": 3.9924733431284665e-05,
+    "NADH_frac": 0.0016182429631678708,
+    "cytc_red_frac": 8.449008016275794e-06,
+    "O2_flux_rel": 0.0024234328845404995
+   },
+   "departure_from_own_unscaled": {
+    "dPsi_mV": 0.06383900237412377,
+    "pH_x": 3.9924733431284665e-05,
+    "NADH_frac": 0.0016182429631678708,
+    "cytc_red_frac": 8.449008016275794e-06,
+    "O2_flux_rel": 0.0024234328845404995
+   },
+   "existence": {
+    "max_integration_vs_newton_rel": 1.850135531634022e-12,
+    "max_newton_residual": 3.220488888888889e-42
+   },
+   "uniqueness_state3_Pi3": {
+    "max_relative_spread": 2.3587901985987493e-13,
+    "max_relative_rate_at_end_per_s": 4.157032922202081e-11
+   },
+   "state3_Pi10": {
+    "dPsi_mV": 169.82392374770708,
+    "NADH_frac": 0.3599578652165175,
+    "MVO2_mol_per_s_per_l": 0.001645280465345621,
+    "J_F1": 0.007383346720610397
+   }
+  },
+  {
+   "arm": "published",
+   "scale": 1.0,
+   "X_F1": 150.93,
+   "fit_rms_z": 1.4010640889799326,
+   "within_10pct_of_own": true,
+   "departure_from_published_arm": {
+    "dPsi_mV": 0.0,
+    "pH_x": 0.0,
+    "NADH_frac": 0.0,
+    "cytc_red_frac": 0.0,
+    "O2_flux_rel": 0.0
+   },
+   "departure_from_own_unscaled": {
+    "dPsi_mV": 0.0,
+    "pH_x": 0.0,
+    "NADH_frac": 0.0,
+    "cytc_red_frac": 0.0,
+    "O2_flux_rel": 0.0
+   },
+   "existence": {
+    "max_integration_vs_newton_rel": 3.2465766101323147e-13,
+    "max_newton_residual": 3.8995555555555556e-43
+   },
+   "uniqueness_state3_Pi3": {
+    "max_relative_spread": 1.3494780539583385e-13,
+    "max_relative_rate_at_end_per_s": 8.053666596850755e-12
+   },
+   "state3_Pi10": {
+    "dPsi_mV": 169.82263265414858,
+    "NADH_frac": 0.3599990742313082,
+    "MVO2_mol_per_s_per_l": 0.0016451311127720302,
+    "J_F1": 0.00738260626981285
+   }
+  },
+  {
+   "arm": "published",
+   "scale": 2.34,
+   "X_F1": 64.5,
+   "fit_rms_z": 1.4356681623123635,
+   "within_10pct_of_own": true,
+   "departure_from_published_arm": {
+    "dPsi_mV": 0.0936849522535681,
+    "pH_x": 5.873353433916151e-05,
+    "NADH_frac": 0.002372834166465665,
+    "cytc_red_frac": 1.1066454734559583e-05,
+    "O2_flux_rel": 0.0035629390315738974
+   },
+   "departure_from_own_unscaled": {
+    "dPsi_mV": 0.0936849522535681,
+    "pH_x": 5.873353433916151e-05,
+    "NADH_frac": 0.002372834166465665,
+    "cytc_red_frac": 1.1066454734559583e-05,
+    "O2_flux_rel": 0.0035629390315738974
+   },
+   "existence": {
+    "max_integration_vs_newton_rel": 2.0985316392369614e-13,
+    "max_newton_residual": 1.0665185185185186e-43
+   },
+   "uniqueness_state3_Pi3": {
+    "max_relative_spread": 4.32410213020268e-13,
+    "max_relative_rate_at_end_per_s": 1.2910045345414273e-11
+   },
+   "state3_Pi10": {
+    "dPsi_mV": 169.82074767434085,
+    "NADH_frac": 0.360060472168284,
+    "MVO2_mol_per_s_per_l": 0.0016449086855850365,
+    "J_F1": 0.007381503347732616
+   }
+  },
+  {
+   "arm": "published",
+   "scale": 3.58,
+   "X_F1": 42.159217877094974,
+   "fit_rms_z": 1.4843675047343332,
+   "within_10pct_of_own": true,
+   "departure_from_published_arm": {
+    "dPsi_mV": 0.17896175708790452,
+    "pH_x": 0.00011234371484292183,
+    "NADH_frac": 0.004530572522396914,
+    "cytc_red_frac": 1.9763863045835217e-05,
+    "O2_flux_rel": 0.006812673378341461
+   },
+   "departure_from_own_unscaled": {
+    "dPsi_mV": 0.17896175708790452,
+    "pH_x": 0.00011234371484292183,
+    "NADH_frac": 0.004530572522396914,
+    "cytc_red_frac": 1.9763863045835217e-05,
+    "O2_flux_rel": 0.006812673378341461
+   },
+   "existence": {
+    "max_integration_vs_newton_rel": 1.4083414497675008e-13,
+    "max_newton_residual": 3.9614814814814814e-44
+   },
+   "uniqueness_state3_Pi3": {
+    "max_relative_spread": 4.751007621721619e-14,
+    "max_relative_rate_at_end_per_s": 9.1202604296091e-12
+   },
+   "state3_Pi10": {
+    "dPsi_mV": 169.81904258965358,
+    "NADH_frac": 0.36011733271218116,
+    "MVO2_mol_per_s_per_l": 0.0016447027963679486,
+    "J_F1": 0.007380482234401613
+   }
+  },
+  {
+   "arm": "published",
+   "scale": 4.43,
+   "X_F1": 34.06997742663657,
+   "fit_rms_z": 1.5259126815589061,
+   "within_10pct_of_own": true,
+   "departure_from_published_arm": {
+    "dPsi_mV": 0.2366506880969439,
+    "pH_x": 0.00014869030518394055,
+    "NADH_frac": 0.005989055091897955,
+    "cytc_red_frac": 2.490525859391579e-05,
+    "O2_flux_rel": 0.009014551058636022
+   },
+   "departure_from_own_unscaled": {
+    "dPsi_mV": 0.2366506880969439,
+    "pH_x": 0.00014869030518394055,
+    "NADH_frac": 0.005989055091897955,
+    "cytc_red_frac": 2.490525859391579e-05,
+    "O2_flux_rel": 0.009014551058636022
+   },
+   "existence": {
+    "max_integration_vs_newton_rel": 1.8629092685900407e-13,
+    "max_newton_residual": 1.001037037037037e-43
+   },
+   "uniqueness_state3_Pi3": {
+    "max_relative_spread": 5.581858022353021e-13,
+    "max_relative_rate_at_end_per_s": 3.909167509647786e-12
+   },
+   "state3_Pi10": {
+    "dPsi_mV": 169.81789526899675,
+    "NADH_frac": 0.360156334144097,
+    "MVO2_mol_per_s_per_l": 0.0016445616290037305,
+    "J_F1": 0.007379782003550494
+   }
+  },
+  {
+   "arm": "published",
+   "scale": 5.48,
+   "X_F1": 27.541970802919707,
+   "fit_rms_z": 1.5852276240872287,
+   "within_10pct_of_own": false,
+   "departure_from_published_arm": {
+    "dPsi_mV": 0.30707185697329464,
+    "pH_x": 0.0001931459387707335,
+    "NADH_frac": 0.007768061629497336,
+    "cytc_red_frac": 3.0370621581371493e-05,
+    "O2_flux_rel": 0.011706100094494243
+   },
+   "departure_from_own_unscaled": {
+    "dPsi_mV": 0.30707185697329464,
+    "pH_x": 0.0001931459387707335,
+    "NADH_frac": 0.007768061629497336,
+    "cytc_red_frac": 3.0370621581371493e-05,
+    "O2_flux_rel": 0.011706100094494243
+   },
+   "existence": {
+    "max_integration_vs_newton_rel": 5.917077945077127e-14,
+    "max_newton_residual": 4.76e-44
+   },
+   "uniqueness_state3_Pi3": {
+    "max_relative_spread": 2.0327490859235843e-13,
+    "max_relative_rate_at_end_per_s": 1.1173904337005155e-11
+   },
+   "state3_Pi10": {
+    "dPsi_mV": 169.81650182378613,
+    "NADH_frac": 0.36020453954493026,
+    "MVO2_mol_per_s_per_l": 0.0016443872083186026,
+    "J_F1": 0.007378916707572339
+   }
+  },
+  {
+   "arm": "published",
+   "scale": 30.0,
+   "X_F1": 5.031000000000001,
+   "fit_rms_z": 3.7807267788480536,
+   "within_10pct_of_own": false,
+   "departure_from_published_arm": {
+    "dPsi_mV": 1.7300172630556574,
+    "pH_x": 0.0011114224879547052,
+    "NADH_frac": 0.04331193089683388,
+    "cytc_red_frac": 0.00010857895267060713,
+    "O2_flux_rel": 0.06682482737299988
+   },
+   "departure_from_own_unscaled": {
+    "dPsi_mV": 1.7300172630556574,
+    "pH_x": 0.0011114224879547052,
+    "NADH_frac": 0.04331193089683388,
+    "cytc_red_frac": 0.00010857895267060713,
+    "O2_flux_rel": 0.06682482737299988
+   },
+   "existence": {
+    "max_integration_vs_newton_rel": 5.433961059066277e-14,
+    "max_newton_residual": 1.5762962962962964e-44
+   },
+   "uniqueness_state3_Pi3": {
+    "max_relative_spread": 5.234154786204955e-14,
+    "max_relative_rate_at_end_per_s": 6.142343175377112e-12
+   },
+   "state3_Pi10": {
+    "dPsi_mV": 169.79074426745387,
+    "NADH_frac": 0.36133808343599066,
+    "MVO2_mol_per_s_per_l": 0.0016403030180074571,
+    "J_F1": 0.007358621266395309
+   }
+  },
+  {
+   "arm": "published",
+   "scale": 300.0,
+   "X_F1": 0.5031,
+   "fit_rms_z": 18.37271417305107,
+   "within_10pct_of_own": false,
+   "departure_from_published_arm": {
+    "dPsi_mV": 8.164045417716892,
+    "pH_x": 0.00597645630161292,
+    "NADH_frac": 0.18795121625816558,
+    "cytc_red_frac": 0.0045250328415888386,
+    "O2_flux_rel": 0.31833983451894066
+   },
+   "departure_from_own_unscaled": {
+    "dPsi_mV": 8.164045417716892,
+    "pH_x": 0.00597645630161292,
+    "NADH_frac": 0.18795121625816558,
+    "cytc_red_frac": 0.0045250328415888386,
+    "O2_flux_rel": 0.31833983451894066
+   },
+   "existence": {
+    "max_integration_vs_newton_rel": 5.90958771293383e-14,
+    "max_newton_residual": 9.822222222222223e-45
+   },
+   "uniqueness_state3_Pi3": {
+    "max_relative_spread": 1.855826483794614e-13,
+    "max_relative_rate_at_end_per_s": 9.485759532758733e-12
+   },
+   "state3_Pi10": {
+    "dPsi_mV": 169.90689233937684,
+    "NADH_frac": 0.3742936113886399,
+    "MVO2_mol_per_s_per_l": 0.001594610918537196,
+    "J_F1": 0.007129570766586288
+   }
+  },
+  {
+   "arm": "published",
+   "scale": 3000.0,
+   "X_F1": 0.05031,
+   "fit_rms_z": 42.73235624834037,
+   "within_10pct_of_own": false,
+   "departure_from_published_arm": {
+    "dPsi_mV": 17.18351166543067,
+    "pH_x": 0.010842212914142557,
+    "NADH_frac": 0.33372027818647865,
+    "cytc_red_frac": 0.020409186976012517,
+    "O2_flux_rel": 0.6167323059723038
+   },
+   "departure_from_own_unscaled": {
+    "dPsi_mV": 17.18351166543067,
+    "pH_x": 0.010842212914142557,
+    "NADH_frac": 0.33372027818647865,
+    "cytc_red_frac": 0.020409186976012517,
+    "O2_flux_rel": 0.6167323059723038
+   },
+   "existence": {
+    "max_integration_vs_newton_rel": 5.896807845540875e-14,
+    "max_newton_residual": 7.111111111111111e-45
+   },
+   "uniqueness_state3_Pi3": {
+    "max_relative_spread": 1.909073472230921e-13,
+    "max_relative_rate_at_end_per_s": 1.0585676096628657e-11
+   },
+   "state3_Pi10": {
+    "dPsi_mV": 173.52245099280674,
+    "NADH_frac": 0.4735921614573348,
+    "MVO2_mol_per_s_per_l": 0.0012474968273397647,
+    "J_F1": 0.005376036074787831
+   }
+  },
+  {
+   "arm": "published",
+   "scale": 9000.0,
+   "X_F1": 0.01677,
+   "fit_rms_z": 53.280104741989454,
+   "within_10pct_of_own": false,
+   "departure_from_published_arm": {
+    "dPsi_mV": 20.91588558717811,
+    "pH_x": 0.009162608877912426,
+    "NADH_frac": 0.37570281805970374,
+    "cytc_red_frac": 0.03164048501369701,
+    "O2_flux_rel": 0.7107954463918769
+   },
+   "departure_from_own_unscaled": {
+    "dPsi_mV": 20.91588558717811,
+    "pH_x": 0.009162608877912426,
+    "NADH_frac": 0.37570281805970374,
+    "cytc_red_frac": 0.03164048501369701,
+    "O2_flux_rel": 0.7107954463918769
+   },
+   "existence": {
+    "max_integration_vs_newton_rel": 6.714241245677054e-14,
+    "max_newton_residual": 2.7407407407407406e-45
+   },
+   "uniqueness_state3_Pi3": {
+    "max_relative_spread": 7.683635687921193e-14,
+    "max_relative_rate_at_end_per_s": 1.2731853051243018e-11
+   },
+   "state3_Pi10": {
+    "dPsi_mV": 177.52248310910778,
+    "NADH_frac": 0.5595443703784134,
+    "MVO2_mol_per_s_per_l": 0.000943390229883424,
+    "J_F1": 0.0038356465498324875
+   }
+  },
+  {
+   "arm": "frame_b_restored_eq24",
+   "scale": 0.01,
+   "X_F1": 15093.0,
+   "fit_rms_z": 3.0626730366616868,
+   "within_10pct_of_own": true,
+   "departure_from_published_arm": {
+    "dPsi_mV": 0.8495366644851288,
+    "pH_x": 0.007774354424673113,
+    "NADH_frac": 0.014005801356233694,
+    "cytc_red_frac": 0.003665421256145579,
+    "O2_flux_rel": 0.022113677171595292
+   },
+   "departure_from_own_unscaled": {
+    "dPsi_mV": 0.05562059759955673,
+    "pH_x": 3.308085600384203e-05,
+    "NADH_frac": 0.0013828513272635123,
+    "cytc_red_frac": 6.224643069346891e-06,
+    "O2_flux_rel": 0.002129246896456216
+   },
+   "existence": {
+    "max_integration_vs_newton_rel": 5.445978419578489e-12,
+    "max_newton_residual": 7.915573333333333e-41
+   },
+   "uniqueness_state3_Pi3": {
+    "max_relative_spread": 2.124264300890965e-12,
+    "max_relative_rate_at_end_per_s": 6.59947634550028e-10
+   },
+   "state3_Pi10": {
+    "dPsi_mV": 169.340520054433,
+    "NADH_frac": 0.3591912090112989,
+    "MVO2_mol_per_s_per_l": 0.0016404160032629704,
+    "J_F1": 0.00736141600774636
+   }
+  },
+  {
+   "arm": "frame_b_restored_eq24",
+   "scale": 0.1,
+   "X_F1": 1509.3,
+   "fit_rms_z": 3.0659340069186967,
+   "within_10pct_of_own": true,
+   "departure_from_published_arm": {
+    "dPsi_mV": 0.852179828658393,
+    "pH_x": 0.007774354424673113,
+    "NADH_frac": 0.014132144458228357,
+    "cytc_red_frac": 0.0036660135535617477,
+    "O2_flux_rel": 0.021915444029939835
+   },
+   "departure_from_own_unscaled": {
+    "dPsi_mV": 0.05054069730704214,
+    "pH_x": 3.006083353085387e-05,
+    "NADH_frac": 0.0012565082252688486,
+    "cytc_red_frac": 5.632345653178161e-06,
+    "O2_flux_rel": 0.001934889621532765
+   },
+   "existence": {
+    "max_integration_vs_newton_rel": 3.2813396626060544e-12,
+    "max_newton_residual": 3.421762962962963e-42
+   },
+   "uniqueness_state3_Pi3": {
+    "max_relative_spread": 2.4084678336184707e-13,
+    "max_relative_rate_at_end_per_s": 1.8684993658521087e-11
+   },
+   "state3_Pi10": {
+    "dPsi_mV": 169.34053271302344,
+    "NADH_frac": 0.3591961747517744,
+    "MVO2_mol_per_s_per_l": 0.0016403999003755064,
+    "J_F1": 0.007361335422895703
+   }
+  },
+  {
+   "arm": "frame_b_restored_eq24",
+   "scale": 1.0,
+   "X_F1": 150.93,
+   "fit_rms_z": 3.0997691053575784,
+   "within_10pct_of_own": true,
+   "departure_from_published_arm": {
+    "dPsi_mV": 0.878547377143093,
+    "pH_x": 0.007774354424673113,
+    "NADH_frac": 0.015388652683497206,
+    "cytc_red_frac": 0.003671645899214926,
+    "O2_flux_rel": 0.019941968899749973
+   },
+   "departure_from_own_unscaled": {
+    "dPsi_mV": 0.0,
+    "pH_x": 0.0,
+    "NADH_frac": 0.0,
+    "cytc_red_frac": 0.0,
+    "O2_flux_rel": 0.0
+   },
+   "existence": {
+    "max_integration_vs_newton_rel": 3.381133491550111e-13,
+    "max_newton_residual": 2.4034074074074074e-43
+   },
+   "uniqueness_state3_Pi3": {
+    "max_relative_spread": 5.648522406689567e-13,
+    "max_relative_rate_at_end_per_s": 5.584635149959376e-12
+   },
+   "state3_Pi10": {
+    "dPsi_mV": 169.3406654626604,
+    "NADH_frac": 0.3592458193778058,
+    "MVO2_mol_per_s_per_l": 0.0016402388786688473,
+    "J_F1": 0.007360529577947428
+   }
+  },
+  {
+   "arm": "frame_b_restored_eq24",
+   "scale": 5.48,
+   "X_F1": 27.541970802919707,
+   "fit_rms_z": 3.29756675803493,
+   "within_10pct_of_own": true,
+   "departure_from_published_arm": {
+    "dPsi_mV": 1.101358459849962,
+    "pH_x": 0.007774354424673113,
+    "NADH_frac": 0.021461743293236968,
+    "cytc_red_frac": 0.0036922392586314634,
+    "O2_flux_rel": 0.010352100755107951
+   },
+   "departure_from_own_unscaled": {
+    "dPsi_mV": 0.24481408373384284,
+    "pH_x": 0.0001459766735143475,
+    "NADH_frac": 0.006073090609739762,
+    "cytc_red_frac": 2.0593359416537504e-05,
+    "O2_flux_rel": 0.00940236644540382
+   },
+   "existence": {
+    "max_integration_vs_newton_rel": 1.8884453818911675e-13,
+    "max_newton_residual": 7.819259259259259e-44
+   },
+   "uniqueness_state3_Pi3": {
+    "max_relative_spread": 2.682262956309434e-13,
+    "max_relative_rate_at_end_per_s": 5.584549256198471e-12
+   },
+   "state3_Pi10": {
+    "dPsi_mV": 169.34148925144288,
+    "NADH_frac": 0.3594926015247736,
+    "MVO2_mol_per_s_per_l": 0.0016394375372021438,
+    "J_F1": 0.007356518403256727
+   }
+  },
+  {
+   "arm": "frame_b_restored_eq24",
+   "scale": 6.78,
+   "X_F1": 22.261061946902654,
+   "fit_rms_z": 3.362764413469327,
+   "within_10pct_of_own": true,
+   "departure_from_published_arm": {
+    "dPsi_mV": 1.1703697482273299,
+    "pH_x": 0.007774354424673113,
+    "NADH_frac": 0.023169542044999936,
+    "cytc_red_frac": 0.003696045200940329,
+    "O2_flux_rel": 0.007639970202145463
+   },
+   "departure_from_own_unscaled": {
+    "dPsi_mV": 0.31382537211121075,
+    "pH_x": 0.00018723576746193515,
+    "NADH_frac": 0.00778088936150273,
+    "cytc_red_frac": 2.4399301725402944e-05,
+    "O2_flux_rel": 0.012061469252878432
+   },
+   "existence": {
+    "max_integration_vs_newton_rel": 6.936165140468083e-14,
+    "max_newton_residual": 7.638518518518518e-44
+   },
+   "uniqueness_state3_Pi3": {
+    "max_relative_spread": 4.332003252557714e-13,
+    "max_relative_rate_at_end_per_s": 1.1169049019689941e-11
+   },
+   "state3_Pi10": {
+    "dPsi_mV": 169.3417777252435,
+    "NADH_frac": 0.3595641100316615,
+    "MVO2_mol_per_s_per_l": 0.001639205062080622,
+    "J_F1": 0.007355354488185817
+   }
+  },
+  {
+   "arm": "frame_b_restored_eq24",
+   "scale": 8.38,
+   "X_F1": 18.01073985680191,
+   "fit_rms_z": 3.446978463434788,
+   "within_10pct_of_own": false,
+   "departure_from_published_arm": {
+    "dPsi_mV": 1.2541066507932044,
+    "pH_x": 0.007774354424673113,
+    "NADH_frac": 0.025239183500561646,
+    "cytc_red_frac": 0.0036994854803020782,
+    "O2_flux_rel": 0.005155384362428128
+   },
+   "departure_from_own_unscaled": {
+    "dPsi_mV": 0.39756227467708527,
+    "pH_x": 0.00023736318839695514,
+    "NADH_frac": 0.00985053081706444,
+    "cytc_red_frac": 2.9580091255809737e-05,
+    "O2_flux_rel": 0.015292866347189182
+   },
+   "existence": {
+    "max_integration_vs_newton_rel": 2.5583958162435906e-13,
+    "max_newton_residual": 2.463703703703704e-44
+   },
+   "uniqueness_state3_Pi3": {
+    "max_relative_spread": 3.1858797249357373e-13,
+    "max_relative_rate_at_end_per_s": 1.0610538908357122e-11
+   },
+   "state3_Pi10": {
+    "dPsi_mV": 169.34216238024385,
+    "NADH_frac": 0.35965205919254,
+    "MVO2_mol_per_s_per_l": 0.0016389189728466317,
+    "J_F1": 0.007353922001642085
+   }
+  },
+  {
+   "arm": "frame_b_restored_eq24",
+   "scale": 12.8,
+   "X_F1": 11.79140625,
+   "fit_rms_z": 3.698277066136117,
+   "within_10pct_of_own": false,
+   "departure_from_published_arm": {
+    "dPsi_mV": 1.4788271860810198,
+    "pH_x": 0.007774354424673113,
+    "NADH_frac": 0.030778918824699186,
+    "cytc_red_frac": 0.0037023509207018968,
+    "O2_flux_rel": 0.007095099080721146
+   },
+   "departure_from_own_unscaled": {
+    "dPsi_mV": 0.6222828099649007,
+    "pH_x": 0.00037223558396259904,
+    "NADH_frac": 0.01539026614120198,
+    "cytc_red_frac": 4.595630804063444e-05,
+    "O2_flux_rel": 0.023990259690559568
+   },
+   "existence": {
+    "max_integration_vs_newton_rel": 8.030937162942017e-14,
+    "max_newton_residual": 1.8296296296296295e-44
+   },
+   "uniqueness_state3_Pi3": {
+    "max_relative_spread": 9.362292356692759e-14,
+    "max_relative_rate_at_end_per_s": 3.1195531486609967e-12
+   },
+   "state3_Pi10": {
+    "dPsi_mV": 169.34338985481313,
+    "NADH_frac": 0.35989467747842274,
+    "MVO2_mol_per_s_per_l": 0.0016381288398944417,
+    "J_F1": 0.007349964889395703
+   }
+  },
+  {
+   "arm": "frame_b_restored_eq24",
+   "scale": 30.0,
+   "X_F1": 5.031000000000001,
+   "fit_rms_z": 4.811277011861566,
+   "within_10pct_of_own": false,
+   "departure_from_published_arm": {
+    "dPsi_mV": 2.2718495265432637,
+    "pH_x": 0.007774354424673113,
+    "NADH_frac": 0.0501424657482068,
+    "cytc_red_frac": 0.0036389009268382455,
+    "O2_flux_rel": 0.03609665240495863
+   },
+   "departure_from_own_unscaled": {
+    "dPsi_mV": 1.4153051504271446,
+    "pH_x": 0.0008521303975665973,
+    "NADH_frac": 0.03475381306470959,
+    "cytc_red_frac": 0.00010113575032352773,
+    "O2_flux_rel": 0.05494295069077271
+   },
+   "existence": {
+    "max_integration_vs_newton_rel": 7.303648685608434e-14,
+    "max_newton_residual": 8.533333333333334e-45
+   },
+   "uniqueness_state3_Pi3": {
+    "max_relative_spread": 1.2005527634983733e-13,
+    "max_relative_rate_at_end_per_s": 4.467276587749123e-12
+   },
+   "state3_Pi10": {
+    "dPsi_mV": 169.35027213151997,
+    "NADH_frac": 0.36083444340076015,
+    "MVO2_mol_per_s_per_l": 0.0016350565064051075,
+    "J_F1": 0.007334567774617181
+   }
+  },
+  {
+   "arm": "frame_b_restored_eq24",
+   "scale": 300.0,
+   "X_F1": 0.5031,
+   "fit_rms_z": 17.255055223471498,
+   "within_10pct_of_own": false,
+   "departure_from_published_arm": {
+    "dPsi_mV": 8.147172232379177,
+    "pH_x": 0.007907073507517737,
+    "NADH_frac": 0.18097133333851978,
+    "cytc_red_frac": 0.0006340427466212939,
+    "O2_flux_rel": 0.27265704733336427
+   },
+   "departure_from_own_unscaled": {
+    "dPsi_mV": 7.2906278562630575,
+    "pH_x": 0.004646100714896129,
+    "NADH_frac": 0.16558268065502257,
+    "cytc_red_frac": 0.003844101989137566,
+    "O2_flux_rel": 0.2868781020441309
+   },
+   "existence": {
+    "max_integration_vs_newton_rel": 6.520460080907567e-14,
+    "max_newton_residual": 5.896296296296296e-45
+   },
+   "uniqueness_state3_Pi3": {
+    "max_relative_spread": 2.7587120896214025e-13,
+    "max_relative_rate_at_end_per_s": 5.5147791484132874e-12
+   },
+   "state3_Pi10": {
+    "dPsi_mV": 169.6621064211978,
+    "NADH_frac": 0.37510444899094586,
+    "MVO2_mol_per_s_per_l": 0.0015872228901595718,
+    "J_F1": 0.007093840907032435
+   }
+  },
+  {
+   "arm": "frame_b_restored_eq24",
+   "scale": 3000.0,
+   "X_F1": 0.05031,
+   "fit_rms_z": 41.14125783693123,
+   "within_10pct_of_own": false,
+   "departure_from_published_arm": {
+    "dPsi_mV": 17.145279392910084,
+    "pH_x": 0.011758734495485257,
+    "NADH_frac": 0.32837688361598727,
+    "cytc_red_frac": 0.016076766969810335,
+    "O2_flux_rel": 0.5869048419022846
+   },
+   "departure_from_own_unscaled": {
+    "dPsi_mV": 16.288735016793964,
+    "pH_x": 0.008497761702863649,
+    "NADH_frac": 0.31298823093249006,
+    "cytc_red_frac": 0.019305313466324553,
+    "O2_flux_rel": 0.5949817041617214
+   },
+   "existence": {
+    "max_integration_vs_newton_rel": 1.29957731879476e-13,
+    "max_newton_residual": 5.674074074074074e-45
+   },
+   "uniqueness_state3_Pi3": {
+    "max_relative_spread": 2.520208412296215e-14,
+    "max_relative_rate_at_end_per_s": 6.68648470151743e-12
+   },
+   "state3_Pi10": {
+    "dPsi_mV": 173.49172368332125,
+    "NADH_frac": 0.4759895160249292,
+    "MVO2_mol_per_s_per_l": 0.001237296887593222,
+    "J_F1": 0.005325186786120617
+   }
+  },
+  {
+   "arm": "frame_b_restored_eq24",
+   "scale": 9000.0,
+   "X_F1": 0.01677,
+   "fit_rms_z": 52.01414241513462,
+   "within_10pct_of_own": false,
+   "departure_from_published_arm": {
+    "dPsi_mV": 21.007910016323052,
+    "pH_x": 0.010369661958069543,
+    "NADH_frac": 0.3727867309150704,
+    "cytc_red_frac": 0.028259453159187375,
+    "O2_flux_rel": 0.6908229269610942
+   },
+   "departure_from_own_unscaled": {
+    "dPsi_mV": 20.151365640206933,
+    "pH_x": 0.0071086891654479345,
+    "NADH_frac": 0.3573980782315732,
+    "cytc_red_frac": 0.03075394011300356,
+    "O2_flux_rel": 0.6968679763492556
+   },
+   "existence": {
+    "max_integration_vs_newton_rel": 5.303018340866064e-14,
+    "max_newton_residual": 1.801368339970203e-45
+   },
+   "uniqueness_state3_Pi3": {
+    "max_relative_spread": 7.47507879862442e-14,
+    "max_relative_rate_at_end_per_s": 1.0023317866767893e-11
+   },
+   "state3_Pi10": {
+    "dPsi_mV": 177.50601742939833,
+    "NADH_frac": 0.5625094502960666,
+    "MVO2_mol_per_s_per_l": 0.0009312264679819508,
+    "J_F1": 0.0037749070061881837
+   }
+  }
+ ]
+}

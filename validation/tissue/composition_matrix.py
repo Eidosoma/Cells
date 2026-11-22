@@ -826,6 +826,39 @@ def _tags():
     for key, value in list(tags.items()):
         if COUPLING in key and COUPLING_2 not in key:
             tags[tuple(COUPLING_2 if part == COUPLING else part for part in key)] = value
+    # templated_polymerisation@1 (gene regulation's option A, G4; a recorded exception naming the
+    # operators owner): it declares common.CONFLICTS_VIEW, as turnover does, and reads the declared
+    # volumes and masks at its routes' cells (fluxes, poly_half_step). None is shown nominal.
+    poly = "templated_polymerisation@1"
+    volumes = "Its rates and exact dG read the declared cell volumes (fluxes, poly_half_step)"
+    masks = "It reads the declared masks at its routes' cells, as common.CONFLICTS_VIEW declares"
+    for name in ("volume", "extracellular_volume"):
+        tags[("reads", poly, WATER, name)] = (REAL, volumes, ())
+    for lumen in (LUMEN_1, LUMEN_2):
+        tags[("reads", poly, lumen, "extracellular_volume")] = (
+            REAL,
+            volumes + "; a lumen changes its node's volume (not shown nominal)",
+            (),
+        )
+    for name in ("outside_active", "membrane_active"):
+        tags[("reads", poly, INSERTION_1, name)] = (
+            REAL,
+            masks + "; insertion@1 opens onset nodes and patches (not shown nominal)",
+            (),
+        )
+        tags[("reads-closed", poly, INSERTION_2, name)] = (
+            REAL,
+            masks + "; insertion@2 closes onset nodes and patches until their onset (not shown "
+            "nominal)",
+            (),
+        )
+    for name in ("active", "membrane_active"):
+        tags[("reads-closed", poly, PARTITION, name)] = (
+            REAL,
+            masks + "; the partition retires its cells, whose rows its routes write (not shown "
+            "nominal)",
+            (),
+        )
     return tags
 
 
@@ -1078,6 +1111,18 @@ RULES = (
         "increment form reads an exactly empty pool reached from a positive anchor as NaN",
     ),
     dict(
+        rule="@2's site source reads no node-owned population (FR-28: a node's own sites belong "
+        "to no cell)",
+        laws=(COUPLING_2, SITES),
+        level="data",
+        check=OPS + "species_regulated_availability.py::_site_layout",
+        test=TESTS + "test_site_occupancy.py::"
+        "test_a_nodes_own_sites_are_the_stand_ins_layout_and_round_trip",
+        tag=REAL,
+        why="A site source is read in its element's cell, and no @2 target lives at a node "
+        "(D268, option A; docs/NODE_SURFACE_SITES_DESIGN.md §7)",
+    ),
+    dict(
         rule="a quantity a route reads (R3) has its owner in the composition, declared before the "
         "route's operator target",
         laws=(COUPLING_2, SITES, TURNOVER, REACTIONS, PRODUCER),
@@ -1198,6 +1243,20 @@ RULES = (
         "compartments' asserts that message. The wash's own refusals at the definition are a "
         "second wall this composition never reaches",
         marks=_WASH_FIRST,
+    ),
+    dict(
+        rule="no declared path moves a washed node's neutral species across its surface: the "
+        "patch's own permeability, a kind's route, an exchange route through a facing patch or "
+        "a site population's internalisation from the node (fail closed)",
+        laws=(WASH, EXCHANGE, SITES),
+        level="data",
+        check=OPS + "wash_schedule.py::surface_crossings",
+        test=TESTS + "test_wash_schedule.py::test_each_refusal_fires_with_its_reason",
+        tag=REAL,
+        why="The step's booking of a concentration step at the node is unmeasured, and the "
+        "wash's books do not see the exchange (D263 finding 2, a second review: a registered "
+        "route's crossing was admitted where the patch's own was refused). An operator law not "
+        "shown local is refused until it is classified",
     ),
     dict(
         rule="membrane state beside a compartment only together with its admitted writers, "

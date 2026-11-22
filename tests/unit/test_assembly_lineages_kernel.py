@@ -2,12 +2,16 @@
 
 The kernel's events, splits and similarities equal the oracle's (reference.py: scalar arithmetic,
 the rate factor recomputed at every event) for the exchange law alone and both GARD forms, under
-both partitions and the uniform continuation. Saving the uniforms changes no event.
+both partitions and the uniform continuation, and for @2's exact cache (the oracle in rationals),
+also on the Lean proofs project's stress world (beta_00 = 2^54). Saving the uniforms changes no
+event.
 
 Planted errors it must catch:
 - the incremental catalysis state updated with beta's row instead of its column;
 - the oracle reading the two uniforms the other way round (a biased channel choice);
-- the oracle evaluating the other GARD form (the law's leave factor).
+- the oracle evaluating the other GARD form (the law's leave factor);
+- @2's cache with its low word dropped (one word, as @1 keeps), which loses the catalyst B from
+  A's leave on the stress world: the ledger fails to close.
 """
 
 import dataclasses
@@ -18,7 +22,10 @@ import pytest
 from cells.definitions.specs import parse_spec
 from cells.models.assembly_lineages import (
     GARD_PAIR_CONSISTENT,
+    GARD_PAIR_CONSISTENT_V2,
     GARD_SINGLE_EVENT,
+    balance,
+    folds,
     gard,
     reference,
     runner,
@@ -26,10 +33,18 @@ from cells.models.assembly_lineages import (
 from cells.registry import laws as law_registry
 from tests.assembly_lineage_fixtures import definition, world
 
+# The Lean proofs project's stress world: beta_00 = 2^54, and B catalyses A.
+STRESS = [[2.0**54, 1.0], [0.0, 0.0]]
+
 CASES = {
     "exchange alone": (dict(matrix=False), None),
     "single-event": ({}, GARD_SINGLE_EVENT),
     "pair-consistent": ({}, GARD_PAIR_CONSISTENT),
+    "pair-consistent, exact cache": ({}, GARD_PAIR_CONSISTENT_V2),
+    "pair-consistent, exact cache, beta_00 = 2^54": (
+        dict(count=2, size=8, beta=STRESS),
+        GARD_PAIR_CONSISTENT_V2,
+    ),
     "binomial, uniform daughter": (
         dict(partition={"rule": "binomial", "probability": 0.5}, daughter="uniform", empty="other"),
         GARD_PAIR_CONSISTENT,
@@ -119,3 +134,47 @@ def test_saving_the_uniforms_changes_no_event():
         "partition_uniforms",
         "continuation_uniform",
     }
+
+
+def test_the_exact_cache_keeps_the_reverse_factor():
+    """@2 on the stress world from (A, B) = (0, 1): A's join carries 1 + 1/1 = 2, and its reverse
+    from (1, 1) carries 1 + ((2^54 + 1) - 2^54)/1 = 2, so the first event's heat is the exchange
+    law's and the ledger closes. Planted: the cache's low word dropped, which makes that reverse
+    factor 1 (the catalyst lost, as in @1's single word): the ledger fails to close. A rate that
+    is not finite is a fault, refused, never reported as a stall (the Lean proofs project's
+    finding of 22 November 2026); a zero total with finite rates is a stall."""
+    with pytest.raises(FloatingPointError, match="not a stall"):
+        runner._refuse_a_fault_as_a_stall({"rates": np.array([np.nan, 1.0]), "events": 0})
+    runner._refuse_a_fault_as_a_stall({"rates": np.zeros(4), "events": 3})
+    the_world = world(count=2, size=8, beta=STRESS, transfer_constant=1.0, supply=1.0,
+                      leave_rate=[1.0, 1 / 32])  # fmt: skip
+    the_world["founder"] = [0, 1]
+    layout = gard.layout_exact({gard.FIELD: STRESS}, 2)
+    before, after = np.array([0.0, 1.0]), np.array([1.0, 1.0])
+    join, _ = gard.factors_exact(before, 1.0, gard.state_exact(before, layout, np), layout, np)
+    _, leave = gard.factors_exact(after, 2.0, gard.state_exact(after, layout, np), layout, np)
+    assert join[0] == leave[0] == 2.0
+
+    def dropped(cache, xp):
+        return xp.stack((cache[0], xp.zeros_like(cache[1])))
+
+    planted = dataclasses.replace(
+        gard.PAIR_CONSISTENT_EXACT,
+        law_id="tests.low_word_dropped@1",
+        state=lambda n, d, xp, unroll=folds.UNROLL: dropped(gard.state_exact(n, d, xp, unroll), xp),
+        update=lambda c, d, i, sign, xp: dropped(gard.update_exact(c, d, i, sign, xp), xp),
+    )
+    law_registry.active()
+    try:
+        runs = {}
+        for law in (gard.PAIR_CONSISTENT_EXACT, planted):
+            with law_registry.scope(law_registry.BUILTIN.extended(planted)):
+                spec = parse_spec(definition(the_world, law.law_id, fissions=2, uniforms=True))
+                runs[law.law_id] = runner.run(spec, stop=1)
+    finally:
+        balance.verdict.cache_clear()
+    honest, broken = runs[GARD_PAIR_CONSISTENT_V2], runs[planted.law_id]
+    for run in (honest, broken):  # The same first event: A joins.
+        np.testing.assert_array_equal(run.trace["event_channel"], [1])
+        np.testing.assert_array_equal(run.rows["assembly_count"][-1, :, 0], [1, 1])
+    assert honest.closure["holds"] and not broken.closure["holds"]

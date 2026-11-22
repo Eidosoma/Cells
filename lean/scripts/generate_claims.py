@@ -57,7 +57,8 @@ def check_sources(lane, since=None):
     for name, row in register["comparisons"].items():
         record = row["record_revision"]
         source = row["engine_revision"] if row["kind"] == "engine" else record
-        for revision, targets in ((source, row["sources"].values()), (record, [row["driver"]])):
+        inputs = [row["driver"], *row.get("record_inputs", {}).values()]
+        for revision, targets in ((source, row["sources"].values()), (record, inputs)):
             if not re.fullmatch(r"[0-9a-f]{40}", revision):
                 raise ValueError(f"{name}: invalid recorded revision {revision!r}")
             for target in targets:
@@ -168,6 +169,10 @@ def comparison_text(check):
         if not re.fullmatch(r"[0-9a-f]{40}", revision):
             raise ValueError(f"invalid source revision {revision!r}")
     links = [pinned_link(label, target, source) for label, target in check["sources"].items()]
+    links.extend(
+        pinned_link(label, target, record)
+        for label, target in check.get("record_inputs", {}).items()
+    )
     links += [
         pinned_link("Comparison driver", check["driver"], record),
         pinned_link("Recorded result", check["record"], record),
@@ -175,7 +180,7 @@ def comparison_text(check):
     revisions = [f"[Evidence checkpoint {record[:12]}]({REPOSITORY}/commit/{record})"]
     if check["kind"] == "engine":
         revisions.insert(0, f"[Tested engine {source[:12]}]({REPOSITORY}/commit/{source})")
-    lines = [f"**{kind}** {ids}"]
+    lines = [f"**{kind}** {ids}".rstrip()]
     if check.get("operators"):
         lines.append("**Operators** " + ", ".join(f"`{op}`" for op in check["operators"]))
     return "\n\n".join([*lines, " · ".join(links), " · ".join(revisions)])

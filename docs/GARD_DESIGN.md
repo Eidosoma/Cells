@@ -348,7 +348,7 @@ enumeration (evidence: `/mnt/workspaces/Cells/verify-gard-beard-20261116/`).
 | Many species | @3's cap of 16, raised on need (D165); A7's fold costs +4% at 150 species on the L4 (D182) | Not needed in option A: N_G is the family's own axis. The registry gets an indexed type family |
 | Populations on the GPU | `cells.ensemble`: stable world-ID ranges, a seed per arm, multi-GPU queues, pause and resume (GPU_ENSEMBLES.md) | Lanes over (matrix × landmark × branch), masked when finished. Population mode is exact by independent clocks between fissions, because a held reservoir decouples the exchange; fissions commit in time order (**S**) |
 | Checkpoints and branching | The assembly checkpoints keep the pending event and the stream identity, and resume without resampling; the CLI's `branch` "continue[s] with explicitly changed future inputs". The composite's checkpoint refuses random state (`io.py`) | Landmarks at post-fission states, where nothing is pending; futures as branch-keyed worlds |
-| Division | `isopotential_partition@1`: prescribed, deterministic fraction, scheduled at exact multiples of dt, fresh slots, no reuse (S5 §6.2) | State-triggered, stochastic, repeated fission with slot reuse and carrier-keyed lineage: the endogenous lifecycle's open items in miniature (CURRENT_PLAN.md, "Gate: lifecycle operators") |
+| Division | `isopotential_partition@1`: prescribed, deterministic fraction, scheduled on the clock's grid (D283), fresh slots, no reuse (S5 §6.2) | State-triggered, stochastic, repeated fission with slot reuse and carrier-keyed lineage: the endogenous lifecycle's open items in miniature (CURRENT_PLAN.md, "Gate: lifecycle operators") |
 | Lineage | S5's record shape (carrier_id, slot, kind, parent_carrier, sibling, birth_s, death_s, successors, route) shared with replacement's | The same shape, written by the run at scale (§5.2), with the followed daughter and the split |
 | Thermodynamics | D152's passive and driven classes, exact ΔG bookings and the dissipation check | The stochastic-law contract of §2.4 |
 | Observers and analysis | Run-view records, saved outputs, `validation/` analysis | H on the device; F12, F32 and compotypes in `validation/` |
@@ -416,6 +416,33 @@ as its own design, after the composition gaps and the endogenous lifecycle.
 
 **Recommended: (iii).**
 
+**The pair-consistent form's version 2** (`cells.gard_catalysis_pair_consistent@2`; D244, D246).
+@1 caches x = βn and forms a leave's factor from x_i − β_ii. With β_ii = 2^54 and one other
+catalyst, that subtraction loses the catalyst (the Lean proofs project's finding of 19 November
+2026). @1 keeps its bits (D148). Version 2 is the same law with its cache held exactly.
+- **The cache** is a pair of float64 words (hi, lo), hi = fl(x) and lo = x − hi.
+  - An event adds ±β[:, i] by two error-free two-sums: O(C), as @1.
+  - The founder and each daughter refold it from the counts. Each entry is split into its top 33
+    bits and the rest, so every product with a count up to 2^20 is exact.
+  - The leave forms x_i − β_ii exactly and rounds it once.
+  - So the join from m and the leave from m + e_i evaluate the same correctly rounded Σ_j β_ij m_j:
+    the factor cancels from every transfer pair bit for bit.
+- **The budget, proved.** Row i's values are multiples of 2^q_i, its entries' lowest set bit, and at
+  most max_j β_ij · S, with S the fission size. Below 2^(q_i + 106), each two-sum's error and the low
+  word are at most 2^(q_i + 52), so their sum is exact. At 107 bits a unit can be lost (a
+  constructed state loses one).
+- **Refused at parse beyond it.** The message names the bits needed. At fission size 80, 0.2% of
+  1,000 T2-02-like matrices (100 types, β = e^(−4 + 4Z)) need more; the median needs 98 bits. An
+  experiment that draws matrices records each refused draw and how it handled it (redrawn or
+  excluded), as its protocol declares, and never falls back silently to @1.
+- **Evidence:**
+  - the Lean project's own driver functions run under version 2, all four reverse-subtraction
+    cases included;
+  - the kernel against an oracle in rationals, on the stress world;
+  - a dropped low word, planted, which the ledger catches.
+
+  The Lean project's driver stays on @1 until that project points it at version 2.
+
 ### 4.5 The reference experiment
 
 | Option | Specification and access | Comparable quantities |
@@ -433,7 +460,7 @@ cross-check, using numbers from the open paper under D186.
 | Option | For | Against |
 | --- | --- | --- |
 | **(F1) A stochastic family beside the assembly kernels** (`cells/assembly_lineages/`, `cells.assembly_lineages@1`), its laws and operators declared and registered as modules in their own namespace (D185) | It reuses proven patterns: keyed streams, pending-event checkpoints, the host oracle and the ensemble queue. Event-driven. The composite and its qualifications are untouched | A second runner shape beside the composite's fixed-step one |
-| (F2) Kinds and operators in the composite over @3 | One runner | Kinds need IMEX and a fixed dt (§7.4 (k) 3). Operator events sit at exact multiples of dt, not at state triggers. The checkpoint refuses random state. The species cap binds. Amphiphiles have no charge or voltage role. This is option B's route, later |
+| (F2) Kinds and operators in the composite over @3 | One runner | Kinds need IMEX and a fixed dt (§7.4 (k) 3). Operator events sit on the clock's grid (D283), not at state triggers. The checkpoint refuses random state. The species cap binds. Amphiphiles have no charge or voltage role. This is option B's route, later |
 
 **Recommended: (F1).**
 - **Clean (D142):** entities, laws, operators and observers are separate objects; the environment
@@ -519,7 +546,7 @@ leaves are saved only on request; the totals carry them.
 ### 5.3 Where the run view v1 does not fit (for its owner)
 
 1. **Events from the run.** `living_intervals` and `view_events` are computed on the host from the
-   definition's schedule, at exact multiples of dt. Fissions here are state-triggered and
+   definition's schedule, on the clock's grid (D283). Fissions here are state-triggered and
    stochastic, so their events must come from the run's saved fission table.
 2. **Event tables as arrays.** 100 fissions across 10⁴ lanes are 10⁶ events, too many for
    `view.json`. The view should name the fission table as an event record. JSON events stay for

@@ -1,0 +1,369 @@
+{
+ "format": "ool_references.world@1",
+ "id": "ol4_fd_kernel",
+ "registered": "2026-11-20",
+ "source": "docs/ORIGIN_OF_LIFE_FUEL_DESIGN.md at tag ol4-fuel-note-2026-11-20",
+ "description": "Fuel kernel probe (rows OL4-1, OL4-2): option (d) without geometry; F and W held (drive ln 24); B, S, L1 and L2 with pool and membrane places; the fuel step, five joins, the catalysed core steps and the decays.",
+ "units": {
+  "time": "s",
+  "energy": "k_BT",
+  "concentration": "mM",
+  "volume": "L"
+ },
+ "temperature_K": 298.15,
+ "standard_concentration_mM": {
+  "exact": "1",
+  "float": 1.0
+ },
+ "avogadro_per_mol": {
+  "exact": "602214076000000000000000",
+  "float": 6.02214076e+23
+ },
+ "phases": {
+  "membrane": {
+   "kind": "condensed"
+  },
+  "pool": {
+   "kind": "dilute",
+   "volume_L": {
+    "exact": "1/75276759500000000000",
+    "float": 1.3284312537390773e-20
+   },
+   "X": "8"
+  }
+ },
+ "species": [
+  {
+   "id": "B",
+   "moieties": {
+    "block": 1
+   },
+   "identity": "label_only",
+   "standard_mu_RT": {
+    "solution": {
+     "exp_minus": "1/2",
+     "float": 0.6931471805599453
+    },
+    "bilayer": {
+     "exp_minus": "1",
+     "float": -0.0
+    }
+   }
+  },
+  {
+   "id": "S",
+   "moieties": {
+    "block": 1
+   },
+   "identity": "label_only",
+   "standard_mu_RT": {
+    "solution": {
+     "exp_minus": "32",
+     "float": -3.4657359027997265
+    },
+    "bilayer": {
+     "exp_minus": "16",
+     "float": -2.772588722239781
+    }
+   }
+  },
+  {
+   "id": "L1",
+   "moieties": {
+    "block": 1
+   },
+   "identity": "label_only",
+   "standard_mu_RT": {
+    "solution": {
+     "exp_minus": "1",
+     "float": -0.0
+    },
+    "bilayer": {
+     "exp_minus": "8",
+     "float": -2.0794415416798357
+    }
+   }
+  },
+  {
+   "id": "L2",
+   "moieties": {
+    "block": 1
+   },
+   "identity": "label_only",
+   "standard_mu_RT": {
+    "solution": {
+     "exp_minus": "1",
+     "float": -0.0
+    },
+    "bilayer": {
+     "exp_minus": "8",
+     "float": -2.0794415416798357
+    }
+   }
+  },
+  {
+   "id": "F",
+   "moieties": {
+    "fuel": 1
+   },
+   "identity": "label_only",
+   "standard_mu_RT": {
+    "solution": {
+     "exp_minus": "1/4",
+     "float": 1.3862943611198906
+    }
+   }
+  },
+  {
+   "id": "W",
+   "moieties": {
+    "fuel": 1
+   },
+   "identity": "label_only",
+   "standard_mu_RT": {
+    "solution": {
+     "exp_minus": "2",
+     "float": -0.6931471805599453
+    }
+   }
+  }
+ ],
+ "places": [
+  {
+   "species": "B",
+   "phase": "membrane"
+  },
+  {
+   "species": "S",
+   "phase": "membrane"
+  },
+  {
+   "species": "L1",
+   "phase": "membrane"
+  },
+  {
+   "species": "L2",
+   "phase": "membrane"
+  },
+  {
+   "species": "B",
+   "phase": "pool"
+  },
+  {
+   "species": "S",
+   "phase": "pool"
+  },
+  {
+   "species": "L1",
+   "phase": "pool"
+  },
+  {
+   "species": "L2",
+   "phase": "pool"
+  },
+  {
+   "species": "F",
+   "phase": "pool",
+   "held_mM": {
+    "exact": "3/2",
+    "float": 1.5
+   }
+  },
+  {
+   "species": "W",
+   "phase": "pool",
+   "held_mM": {
+    "exact": "1/2",
+    "float": 0.5
+   }
+  }
+ ],
+ "regular_mixing_chi": [],
+ "steps": [
+  {
+   "id": "f1",
+   "law": "cells.stochastic_mass_action@1",
+   "locus": "pool",
+   "reactants": {
+    "F@pool": 1,
+    "S@pool": 1
+   },
+   "products": {
+    "B@pool": 1,
+    "W@pool": 1
+   },
+   "forward_rate_per_s": {
+    "exact": "1/2",
+    "float": 0.5
+   },
+   "transition_state_factor": []
+  },
+  {
+   "id": "jB",
+   "law": "cells.stochastic_mass_action@1",
+   "locus": "membrane",
+   "reactants": {
+    "B@pool": 1
+   },
+   "products": {
+    "B@membrane": 1
+   },
+   "forward_rate_per_s": {
+    "exact": "1",
+    "float": 1.0
+   },
+   "transition_state_factor": []
+  },
+  {
+   "id": "jS",
+   "law": "cells.stochastic_mass_action@1",
+   "locus": "membrane",
+   "reactants": {
+    "S@pool": 1
+   },
+   "products": {
+    "S@membrane": 1
+   },
+   "forward_rate_per_s": {
+    "exact": "3/4",
+    "float": 0.75
+   },
+   "transition_state_factor": []
+  },
+  {
+   "id": "jL1",
+   "law": "cells.stochastic_mass_action@1",
+   "locus": "membrane",
+   "reactants": {
+    "L1@pool": 1
+   },
+   "products": {
+    "L1@membrane": 1
+   },
+   "forward_rate_per_s": {
+    "exact": "1/4",
+    "float": 0.25
+   },
+   "transition_state_factor": []
+  },
+  {
+   "id": "jL2",
+   "law": "cells.stochastic_mass_action@1",
+   "locus": "membrane",
+   "reactants": {
+    "L2@pool": 1
+   },
+   "products": {
+    "L2@membrane": 1
+   },
+   "forward_rate_per_s": {
+    "exact": "1/4",
+    "float": 0.25
+   },
+   "transition_state_factor": []
+  },
+  {
+   "id": "a1",
+   "law": "cells.stochastic_mass_action@1",
+   "locus": "membrane",
+   "reactants": {
+    "B@membrane": 1,
+    "L1@membrane": 1
+   },
+   "products": {
+    "L1@membrane": 2
+   },
+   "forward_rate_per_s": {
+    "exact": "2",
+    "float": 2.0
+   },
+   "transition_state_factor": [
+    {
+     "catalyst": "L1@membrane",
+     "beta": "5/2",
+     "ddG_kT": 1.252762968495368
+    }
+   ]
+  },
+  {
+   "id": "a2",
+   "law": "cells.stochastic_mass_action@1",
+   "locus": "membrane",
+   "reactants": {
+    "B@membrane": 1,
+    "L2@membrane": 1
+   },
+   "products": {
+    "L2@membrane": 2
+   },
+   "forward_rate_per_s": {
+    "exact": "2",
+    "float": 2.0
+   },
+   "transition_state_factor": [
+    {
+     "catalyst": "L2@membrane",
+     "beta": "5/2",
+     "ddG_kT": 1.252762968495368
+    }
+   ]
+  },
+  {
+   "id": "d1",
+   "law": "cells.stochastic_mass_action@1",
+   "locus": "membrane",
+   "reactants": {
+    "L1@membrane": 1
+   },
+   "products": {
+    "S@membrane": 1
+   },
+   "forward_rate_per_s": {
+    "exact": "1/3",
+    "float": 0.3333333333333333
+   },
+   "transition_state_factor": []
+  },
+  {
+   "id": "d2",
+   "law": "cells.stochastic_mass_action@1",
+   "locus": "membrane",
+   "reactants": {
+    "L2@membrane": 1
+   },
+   "products": {
+    "S@membrane": 1
+   },
+   "forward_rate_per_s": {
+    "exact": "1/3",
+    "float": 0.3333333333333333
+   },
+   "transition_state_factor": []
+  }
+ ],
+ "initial_state": {
+  "B@membrane": 3,
+  "S@membrane": 2,
+  "L1@membrane": 4,
+  "L2@membrane": 3,
+  "B@pool": 4,
+  "S@pool": 5,
+  "L1@pool": 1,
+  "L2@pool": 1
+ },
+ "conventions_required": [
+  "free_energy_form",
+  "condensed_measure",
+  "membrane_kinetics",
+  "lumen_volume",
+  "empty_catalyst_phase",
+  "last_molecule"
+ ],
+ "probed_conventions": [
+  {
+   "condensed_measure": "multinomial",
+   "last_molecule": "kept"
+  }
+ ],
+ "provenance": "unsourced: every value is a declared test parameter of OL5's fuel references"
+}

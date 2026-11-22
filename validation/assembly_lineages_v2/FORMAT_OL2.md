@@ -4,7 +4,8 @@ This page adds to `FORMAT.md` (OL1's, unchanged) what a world that declares a ge
 milestone 1's geometry, and milestone 2's osmotic lumen and lysis. The physical choices are the
 lead's rulings in `docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md` §0.2b–§0.2e. A world without a geometry
 writes exactly what `FORMAT.md` describes. The shared pool, the diagnostic record and OL3's division
-come in later milestones, and so does the probe driver for OL5's registered OL2 inputs.
+came in later milestones, and the probe driver for OL5's registered OL2 and OL3 inputs is the last
+section ("OL5's probe roles").
 
 **Every declared physical value carries its provenance** (§0.2e rule 3): `{value, provenance}`,
 where a value without a source says so, its provenance beginning "unsourced".
@@ -205,6 +206,16 @@ The record is written when the experiment declares `diagnostic: true`, as `diagn
   after the event (`vesicle_places` order) and the pool after it (`pool_places` order).
 - **`attempt_uniforms`** holds each drawing attempt's block (N + k + N_L values), concatenated.
   `diagnostic.json`'s shear events give each attempt's offset and count.
+- **The state after each scheduled event** (OL5's run rows): every shear event, and in a population
+  every transfer event, states `pool_after` and `slots_after` (each living slot's slot, key and
+  counts), the state once its attempts and their births beyond σ_max, or its sample and fresh pool,
+  are applied.
+- **An attempt's heat and reservoir work** in a population include the release of each daughter
+  that lysed at birth. That lysis is still listed in `lyses` with `at_birth` true, and its row
+  books the release once: the attempt's figures attribute it to the attempt and are not a second
+  booking, so a reader sums one or the other, never both.
+- **A transfer event's draws** are `[{slot, counter, uniform}]`, one per living assembly in slot
+  order, on the schedule's stream (domain 6, its index) at those counters.
 - **`diagnostic.json`** gives:
   - the channel table;
   - the shear events, each with its time, schedule, the slots not admitted, and its attempts: slot,
@@ -360,3 +371,230 @@ The record is written when the experiment declares `diagnostic: true`, as `diagn
 - **The rows:**
   - `membrane_footprint_quanta`, where written, is 0: the wall has no quanta.
   - There is no tension, lysis or division record.
+
+## FR-35: a pool withdrawal, a partial exchange (`cells.pool_withdrawal@1`)
+
+The design is [the note](../../docs/ASSEMBLY_WITHDRAWAL_DESIGN.md) under D261.
+
+- **The schedule:** `{"index", "kind": "withdrawal", "times_s", "fraction", "buffer"}`.
+  - `fraction` f is in (0, 1).
+  - `buffer` gives one integer count per finite pool place, in place order: the molecules in the
+    withdrawn volume fV. Tracer-free is 0.
+- **The draw:** each molecule leaves with probability f. Place j (its ordinal among the finite
+  pool places) draws one block of its count on the schedule's stream (domain 6, the schedule's
+  index) at draw number w·P_f + j. The counter w is the schedule's washes among the applied stops,
+  so a checkpoint carries it as FR-22's applied-stops record, with no key of its own.
+- **`run.json`'s `population.withdrawals`** lists each withdrawal, with these fields:
+
+  | Field | What |
+  | --- | --- |
+  | `id` | the event's ID |
+  | `time_s`, `schedule`, `fraction` | the stop and its schedule |
+  | `before`, `withdrawn`, `remaining`, `supplied` | `{place: count}` over the finite pool places |
+  | `draws` | each block's `[index, draw number, size]` |
+  | `pool_loss_kT` | the sink: F(before; V) − F(kept; (1 − f)V) |
+  | `sample_F_kT` | the sample's own F at fV |
+  | `split_surprisal_kT` | σ = −ln P(k), so the sink is `sample_F_kT` − σ |
+  | `buffer_F_kT` | the schedule's work: the buffer's F at fV |
+  | `mixing_heat_kT` | in the heat; never negative |
+
+- **Only when a world declares a withdrawal:**
+  - the diagnostic record's `withdrawal_events`;
+  - a row of kind `withdrawal` (8), whose legend entry is written only then;
+  - in relations@2, the event `event:withdrawal/<n>` (kind `withdrawal`, at `node:pool`, paid by
+    `source:withdrawal/<index>`), with `removes_to` edges from the pool to the sink weighed by the
+    withdrawn counts and `supplies` edges from the source weighed by the supplied counts (mode
+    `event`).
+- **Refused at the wash, before the draw:** a place whose pre-wash count plus its buffer count
+  exceeds `molecule_capacity`.
+
+## OL5's probe roles: OL2's and OL3's registered inputs (`probes2.py`)
+
+The engine's outputs on OL5's registered OL2 and OL3 inputs, for the rows OL2-1 to OL2-5 and OL3-1
+to OL3-5 of `validation/ool/references/harness2.py`. An adapter written from this page alone maps
+them onto harness2's canonical layout; the driver reads only the inputs' export folder, never the
+references' code.
+
+- **Running it:** `python -m validation.assembly_lineages_v2.probes2 freeze OUT`, then, inside
+  `OUT/source`, `PYTHONPATH=src:. python -m validation.assembly_lineages_v2.probes2 run INPUTS OUT`.
+  INPUTS is an export of the registered inputs (`INPUTS/designs/`: the worlds, runs, probe states,
+  partition parents, `refusals2/` and amendment 7's `ol3_division.json`). OUT holds `roles2.json`,
+  this page and `FORMAT.md`, and one folder per role.
+- **Settings** fixed before the first run (the lead's rulings of 22 November 2026), recorded in
+  `roles2.json`: the stream `{seed: 1, environment: 0, lineage: 0, branch: 0}`;
+  `molecule_capacity` 2^18 = 262,144, above every registered count (it changes no value); 64
+  events a device call; a row every 1,000 events. A different seed waits for a ruling.
+
+### The reader (`registered.py`: `world2`, `run_entries`, `definition2`)
+
+The module's docstring gives the mapping field by field; it checks nothing, so every refusal is
+the engine parser's. In short:
+- **Places** are `species@phase`. The pool's places are its `finite` species in order, then its
+  `held_mM` species in order; then the membrane's and the lumen's species in order.
+- **Steps:** a join is `cells.phase_exchange@1` and an entry `cells.membrane_permeation@1`, one
+  molecule from the direction's first phase to its second; a mass-action step keeps its law, locus
+  and sides. Rates are `{value, provenance}`.
+- **Units:** `standard_concentration_M` and `outside_osmolarity_M` × 10³ become mM; held
+  concentrations are mM already.
+- **The founder:** `{n, l, p}` by position over the membrane, lumen and finite pool species. A
+  population's founder vesicles become `population.founders`, founder i in slot i, with the
+  run's `slots`; the world's founder then holds the pool and every vesicle place at 0.
+- **The run:** `mode`; `t_end_s` → `time_horizon_s`; `max_events` → `event_limit`; `schedules`
+  unchanged (none when empty). Amendment 7's division inputs give `division = {law:
+  cells.shear_fission@1, continuation?}`.
+- **Provenance** (§0.2e rule 3, as ruled for these roles on 22 November 2026): a value takes the
+  registered world's own source text where the registered format carries one, and otherwise
+  `unsourced; registered OL5 world <id>`. The format carries one only for σ_max
+  (`sigma_max_source`), which §0.2c rule 8 requires: a missing source passes through as a σ_max
+  with no provenance, and the parser refuses it. The default is never put in its place.
+- **Defects reach the parser as they are:** nothing is cast or defaulted, and a field the reader
+  does not map, or whose engine block is absent, is passed on under its own name for the parser to
+  refuse. So the parser's message may name an earlier check than the rule a declaration breaks.
+
+### `roles2.json`
+
+| Field | What |
+| --- | --- |
+| `format` | `cells.assembly_lineages.probe_roles2@1` |
+| `source` | the engine's source: the snapshot's revision, dirty state and diff hash |
+| `inputs` | `directory`, and `files`: every input JSON file's SHA-256, by its path under INPUTS |
+| `settings` | `stream`, `molecule_capacity`, `chunk_events`, `row_every_events`, the `execution` and the two experiments (`probe_experiment` for parses and probes, `run_experiment` for runs), the partition's carrier keys, and when they were fixed |
+| `roles` | the roles run |
+| `problems` | each role's problem (a declaration admitted, a run refused), or none |
+| `files` | every output file's SHA-256, by its path under OUT |
+
+### `refusals2/refusals.json` (OL2-5)
+
+`{format: cells.assembly_lineages.probe@2, role, source, rule, results, all_refused}`. `results`
+maps each declaration's `id` (its file name before the first dot) to `{file, sha256, refused,
+message}`, the parser's message when refused. A run declaration (`*.run2.json`) is parsed on its
+registered world with amendment 7's division inputs, and its entry adds `registered_world`,
+`registered_world_sha256`, `division_inputs` and `division_inputs_sha256`.
+
+### `kernel2/<world>/` (OL2-1, OL2-2)
+
+For `ol2_wa` and `ol2_wa_diffusion` at their probe states, and `ol2_closed` and `ol2_two` at their
+one-vesicle states. `ol2_two`'s states are evaluated on its first founder vesicle's world (a
+one-vesicle state's rates do not depend on another vesicle); `probe.json`'s
+`world.founder_vesicle` says which, null for a one-vesicle world.
+
+`probe.npz` (S states, C the vesicle steps: every step with a membrane or lumen place, in declared
+order, named by `probe.json`'s `steps`):
+
+| Array | Shape | What |
+| --- | --- | --- |
+| `input_states` | [S, D] int64 | the registered states echoed in the registered order: membrane counts, lumen counts, finite pool counts; `probe.json`'s `places` names each column `species@phase` |
+| `a_plus` | [S, C] | the step's forward rate at the state (1/s), from the kernel's own rate function on the host; 0 where it cannot fire |
+| `a_minus` | [S, C] | the rate at the state of the step's reverse event (the step run backwards from the state) |
+| `lyses_plus`, `lyses_minus` | [S, C] bool | whether that event's end state has σ > σ_max (`kernel.lysis_at`); false where its rate is 0 |
+| `derived` | [S, 7] | at the state: W (quanta), A (m²), R (m), V_osm (L), V_sph (L), V (L), σ (N/m), in `probe.json`'s `derived` order; V_osm is 0 at an empty lumen (`lumen.host_derived`) |
+| `free_energy_kT` | [S] | F(state), the ledger's value |
+| `reservoir_work_kT` | [C] | the held reservoirs' work of each forward event; its reverse books minus that |
+
+`probe.json` also gives the world (`registered`, `sha256`, `engine_world_id`), the conventions,
+the full definition, the channel table and `arrays_sha256`; held places are at their declared
+concentrations.
+
+### `partition/` (OL3-1)
+
+`probe.npz` holds, for each parent of `ol3_parents.json` (M = `attempts_per_parent` attempts):
+
+| Array | Shape | What |
+| --- | --- | --- |
+| `<id>_u` | [M, N + k + N_L] | the attempt's block of uniforms as used: rule 9's N (one per listed membrane molecule, species in the listed order) and k (π), then rule 10's N_L (one per listed lumen molecule) |
+| `<id>_membrane` | [M, k, G] int64 | each daughter's membrane counts, by daughter: block t went to daughter π(t) |
+| `<id>_lumen` | [M, k, G_L] int64 | each daughter's lumen counts, by daughter |
+
+Attempt m is the engine's fission stream (domain 2) of the parent's carrier key at counter m
+(`division.block`), under the run stream above; the daughters are the engine's own split
+(`division.split`). `probe.json`'s `parents` gives each parent's `id`, `carrier_key` (its index
+in `ol3_parents.json`), `counters`, `k` and `uniforms_per_attempt`, and `area_quantum_m2` the
+quantum used for the lumen's weights, the registered OL3 worlds' own (it cancels in
+V_sph(A_j)/Σ V_sph(A_l)).
+
+### `runs2/<run>/` (OL2-3, OL2-4, OL3-2 to OL3-5)
+
+Each registered run is a bundle (FORMAT.md, and this page's sections above) run in the diagnostic
+mode: `manifest.json` (its `runtime` states `jax_threefry_partitionable`), `resolved_config.json`
+(the definition: the reader's world with the run's `mode`, `slots`, horizon, event limit and
+schedules), `world.json`, `run.json`, `records.npz`, the relations files for a population, and
+`diagnostic.json` and `diagnostic.npz`. A run the engine refuses writes `refused.json` (`message`)
+instead. The record's forms differ by mode:
+
+| Item | Single lineage | Population |
+| --- | --- | --- |
+| draws: `draw_domain`, `draw_key`, `draw_counter` | domain 1: the occupant's carrier key, its age counter (draws since its birth, from 0) | domain 5: carrier word 0, the world's draw count (from 0) |
+| `draw_uniforms` | [draws, 2]: u1 sets τ = −ln(u1)/a0, u2 the channel | [draws, 3]: u1 τ, u2 the group, u3 the channel |
+| `draw_fate` | an index into `fates`: `committed`, `discarded_at_schedule`, `ended_run` | the same |
+| `event_group` | 0: the slot's group (every declared step) | 0 the pool, 1 + k slot k |
+| `event_channel` | the kernel's signed code: +(r+1) step r's forward, −(r+1) its reverse (`channels.lineage`'s rows) | the same code; `channels.pool` and `channels.vesicle` list each group's channels as `[step, direction]` in fold order |
+| `event_vesicle_after`, `event_pool_after` | over `vesicle_places` and over `pool_places` (the finite pool places) | both over `places` (every place), 0 outside their phase; all 0 for a pool event's vesicle |
+| a slot's `counts` (states, `slots_after`, daughters) | over `vesicle_places` | over `places` (daughters: over the membrane and lumen places) |
+| a `pool` (states, `pool_after`) | over `pool_places` | over `places` |
+
+Common to both:
+- **Schedule draws:** `schedule_draw_index`, `_counter`, `_uniform`, `_use` (an index into
+  `schedule_uses`: `gap`, `transfer`) and `_time` (the time a gap gives, NaN for a transfer draw);
+  a gap past the horizon is drawn too.
+- **Step events:** `event_time`, `event_lysed`, `event_heat_kT` and `event_reservoir_work_kT`.
+  A lysing step's `event_heat_kT` and `event_reservoir_work_kT` are the step's own. The same
+  event's release is booked separately: in a single lineage in `run.json`'s `osmotic.lysis`
+  (`release_heat_kT`, `release_reservoir_work_kT`), in a population in that event's `lyses` entry
+  (`at_birth` false). The event's total is the sum.
+
+  A lysing step's counts read the same way. At a step with `event_lysed` true, `event_vesicle_after`
+  and `event_pool_after` are the step's own state: after the step and before the release, with the
+  vesicle still full. The release's molecules are in the same record's `returned` (`osmotic.lysis`
+  or the `lyses` entry), by pool place, and they total the vesicle's counts. The pool after the
+  whole event is `event_pool_after` plus `returned` at the finite pool places, matched by name. A
+  held place's count does not change: its reservoir takes the molecules back, booked in
+  `release_reservoir_work_kT`. The record keeps both pools: the step's own in `event_pool_after`,
+  and the pool after the event in records.npz. In a single lineage that is the end row, also
+  `diagnostic.json`'s `states.final` (the vesicle then empty); in a population it is that lysis's
+  row (`row_kind` `lysis`).
+- **`shear_events`:** `{time, schedule, not_admitted, attempts, pool_after, slots_after}`, in time
+  and schedule order. An attempt is `{slot, key, counter, outcome, uniforms_offset,
+  uniforms_count}`, with `outcome` one of `split`, `refused_floor`, `refused_volume`,
+  `refused_stress` or `slots_full`. A slot not admitted (v > k^(−1/2), or a stress test) appears
+  in `not_admitted` and as an attempt with outcome `refused_volume` or `refused_stress` and no draw
+  (`counter` −1, `uniforms_count` 0), as does a `slots_full` attempt. A drawing attempt's block,
+  the used prefix, is `attempt_uniforms[uniforms_offset : uniforms_offset + uniforms_count]`. A
+  split adds `daughters` (`{key, slot, counts, lysed_at_birth}`), `shear_work_kT`, `heat_kT`,
+  `reservoir_work_kT` and `sink_kT`. An attempt that does not split books nothing: no shear work,
+  heat, reservoir work or sink (its entry carries none of them). In a single lineage a daughter's `slot` is 0 for the followed
+  one and null otherwise, and the attempt adds `followed` (its daughter index) and `pool_after`.
+  In a population every daughter's `slot` is the slot it took (a birth-lysed daughter's too), and
+  the attempt's heat and reservoir work include its births beyond σ_max (attribution: the lyses'
+  rows book them once).
+
+  At a birth beyond σ_max, a shear event's `pool_after` (the diagnostic record's state after the
+  event, above) reads differently in the two modes. Its `slots_after` reads the same in both: the
+  living slots after the event, so a birth-lysed daughter is never in it. So that section's
+  sentence, "the state once its attempts and their births beyond σ_max ... are applied", holds for
+  both of a population's fields, and in a single lineage for `slots_after` only.
+  - In a population, `pool_after` is the pool after the whole event. Each birth lysis has freed
+    its slot (a later attempt's daughter in the same event can take it) and returned its molecules:
+    its `lyses` entry, `at_birth` true, matched to the daughter by `key`. The pool before those
+    lyses is `pool_after` minus their `returned` at the finite pool places. records.npz keeps both
+    states: each split's `shear` row before its births' lyses, and each lysis's `lysis` row after
+    it.
+  - In a single lineage, a followed daughter born beyond σ_max ends the run `lysed`, and
+    `pool_after` (the event's and the attempt's) is the pool before its release. Its molecules are
+    in neither `pool_after` nor `slots_after`; they are in `run.json`'s `osmotic.lysis.returned`.
+    The release's heat and reservoir work are in `osmotic.lysis` (a single lineage's split books 0
+    in `heat_kT` and `reservoir_work_kT`), and no step event is marked `event_lysed`. The pool
+    after the whole event is `pool_after` plus `returned` at the finite pool places, matched by name
+    (a held place's molecules go back to its reservoir). That pool is on records.npz's end row and
+    in `diagnostic.json`'s `states.final`; the `shear` row before it holds the state before the
+    release, the daughter still full. An unfollowed daughter born beyond σ_max leaves for the sink
+    as born and returns nothing to the pool.
+- **`transfer_events`** (a population): `{id, time_s, schedule, draws, kept, removed, sink_kT,
+  work_kT, pool_after, slots_after}`, with `draws` `[{slot, counter, uniform}]`, `kept` and
+  `removed` slots, the sink and the schedule's work.
+- **`lyses`** (a population): `{time_s, slot, key, event, returned, release_heat_kT,
+  release_reservoir_work_kT, sigma_N_per_m, at_birth}`.
+- **`states`:** `initial` and `final`, each `{slots: [{slot, key, counts}], pool}`; a carrier key
+  is an int64, spelled `s * 2**32 + c` (`keys`).
+- **Identity:** `world` is the engine's world ID (the definition's SHA-256), not a carrier key;
+  `end` is the run's status (`complete`: held to the horizon; `lysed`; `slots_full`;
+  `event_limit`; `capacity`; ...); `environment` gives `jax_threefry_partitionable`.

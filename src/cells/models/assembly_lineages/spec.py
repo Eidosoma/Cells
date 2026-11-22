@@ -300,6 +300,8 @@ def parse_model(raw):
             raise ConfigError(
                 f"{law_id} reads law_data {sorted(law.data)}; the world holds {sorted(world.data)}"
             )
+        if law.domain is not None:
+            law.domain(world)  # The declared law's own numerical domain (D246).
     elif world.law_data:
         raise ConfigError("world: law_data is given but no rate-factor law reads it")
     return LineageModel(world, law_id)
@@ -355,8 +357,13 @@ def parse_execution(raw, model):
         )
     elif lanes is not None:
         raise ConfigError("execution: lanes is every_descendant mode's")
-    capacity = raw.get("type_capacity", type_family.bucket(world.types.count))
-    molecules = raw.get("molecule_capacity", type_family.bucket(world.fission.size))
+    # A default bucket only where no capacity is declared: an explicit capacity is bounded below
+    # (the types, the fission size) and above (2^16, 2^20) by itself, never by the buckets' largest
+    # (the Lean proofs project's finding of 22 November 2026: an explicit 4,097 had been refused).
+    capacity = (raw["type_capacity"] if "type_capacity" in raw
+                else type_family.bucket(world.types.count))  # fmt: skip
+    molecules = (raw["molecule_capacity"] if "molecule_capacity" in raw
+                 else type_family.bucket(world.fission.size))  # fmt: skip
     return Execution(
         backend=raw["backend"],
         precision=raw["precision"],

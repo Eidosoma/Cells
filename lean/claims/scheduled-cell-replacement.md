@@ -22,7 +22,7 @@ Direct proof subject `cells.scheduled_cell_replacement@1`
 
 ## Numerical comparison
 
-**Checked.** One cell copied a donor that simultaneously received a template. Gross species transfers, image charge, electrode work and generation replay matched the expected state. The largest per-site free-energy residual was 2.21 × 10⁻¹³ pJ against 2 × 10⁻¹¹ pJ. A three-step checked sheet recorded exactly one exchange at each of the two due sites.
+**Checked.** One cell copied a donor that simultaneously received a template. Gross species transfers, image charge, electrode work and generation replay matched the expected state. The largest per-site free-energy residual was 2.21 × 10⁻¹³ pJ against 2 × 10⁻¹¹ pJ. A three-step checked sheet recorded exactly one exchange at each of the two due sites. D264 separately holds the exported reaction rate at the replacement time.
 
 **Engine** `resolved_pump_composite@1`
 

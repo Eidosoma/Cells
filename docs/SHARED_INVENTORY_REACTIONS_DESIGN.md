@@ -403,7 +403,7 @@ without one; a passive law declares `forward_rate_per_s`.)
 
 **The schedule, `reaction_controls`:**
 - per reaction, and optionally per site, a piecewise-constant multiplier m_r(t) ≥ 0;
-- changes at exact multiples of dt, refused otherwise;
+- changes on the clock's grid (D283), refused otherwise;
 - a zero multiplier switches a reaction off (D136 idleness; E15's "switching off at the damage");
 - on a passive reaction the multiplier scales both directions, as `compartment_reactions@1`'s does.
   It changes the kinetic barrier, adds no material and leaves the equilibrium unchanged.

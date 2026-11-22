@@ -1,6 +1,10 @@
 # Binding sites owned by a finite node's own surface (FR-28): design note
 
-**Status: desk note, proposed, not built.** The operators owner wrote it at the lead's request on
+**Status: decided (D268, option A, a plain `{"node": N}`, matrix sites covered, @2 refused in
+version 1) and built on branch `fr28-node-sites` (development, 21 November 2026).** The note below is
+the desk note as decided.
+
+**Earlier status: desk note, proposed, not built.** The operators owner wrote it at the lead's request on
 20 November 2026 (FR-28, D245, normal priority). The user wants the options discussed before a new
 system is built. Nothing here is coded, and integration would grant no acceptance (D143).
 
@@ -227,8 +231,16 @@ The criteria are written before any run, as FR-27's were.
      therefore allowed 16 ulps, as FR-24's two programs differed by 8.
    - A difference beyond these is diagnosed before any bound is changed.
    - The four amounts sum to 100 fmol within 10⁻¹² fmol on every row.
+   - **Which time each stock is read at** (the Lean lane's request). The rows are the history's
+     accepted steps of 10 ms, and the wash is at 0.05 s. The row at 0.05 s holds the stock the wash
+     acts on: the wall's 10 fmol and the specimen's 30. The first saved row after it is 0.01 s
+     later, at 0.06 s. Its bound stocks are not the event's, since both populations have begun to
+     re-equilibrate with the halved free tracer (the wall's relaxation time is about 1.1 s, **S**).
+     The sample, booked at the event, is exact on every later row.
 3. **The development run** (evidence, not a test): the review's whole sequence, 140 s with FR-27's
-   wash at 20 s, with the node-owned wall, against FR-27's development run (its arm W).
+   wash at 20 s, with the node-owned wall, against FR-27's development run (its arm W). Its row
+   at 20 s is the stock the wash acts on, and its first saved row after the wash is one step,
+   10 ms, later.
    - The same comparison holds on every row.
    - At the end, the amounts lie within 2 × 10⁻⁶ fmol of the review's analytic two-site
      equilibrium.

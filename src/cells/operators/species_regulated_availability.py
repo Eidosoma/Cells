@@ -68,7 +68,8 @@ programs included. Every @2 target declares its evaluation:
 * an operator target {operator, control, ids, evaluation: "target_half_steps",
   operating_range: [low, high]} names a target law and control of RATE_ROUTES (the turnover's
   turnover_rate by route ID; the reactions' reaction_multiplier by reaction ID, every site; the
-  unit producer's unit_assembly_rate by route ID, at its population's cell).
+  unit producer's unit_assembly_rate by route ID, at its population's cell; templated
+  polymerisation's polymerisation_initiation_rate by chain ID, at its pool's cell).
   Its factor, the same F = b + (1 - b) f, is evaluated at the start of each of the target's
   half-steps, from the state that half-step receives (pump_composite._half_step), and multiplies
   the scheduled rate, which is the maximum. Where the target's own half-steps move the route's
@@ -138,6 +139,7 @@ from cells.definitions import pump_composite_spec as composite_spec
 from cells.definitions.spec_values import identifier
 from cells.definitions.specs import ConfigError, _fields, _number
 from cells.laws.reactions import hill_factors
+from cells.numerics.clock_instants import ON_THE_GRID, on_grid  # D283's one predicate.
 from cells.numerics.species_sums import entity_sum
 from cells.operators import membrane_state
 from cells.operators import species_common as common
@@ -224,6 +226,11 @@ OPERATOR_TABLES = MappingProxyType(
         ("local_species_reactions@1", "reaction_multiplier"): "coupling_reaction_multiplier_routes",
         # FR-7's unit producer (F3), a recorded exception naming the operators owner.
         ("population_unit_turnover@1", "unit_assembly_rate"): "coupling_unit_assembly_rate_routes",
+        # Gene regulation's option A (G4, D235): a chain's initiation rate constant, a recorded
+        # exception naming the operators owner.
+        ("templated_polymerisation@1", "polymerisation_initiation_rate"): (
+            "coupling_polymerisation_initiation_rate_routes"
+        ),
     }
 )
 LAYOUT_FIELDS_V2 = (
@@ -891,11 +898,11 @@ def slots(declaration):
 def _event_time(value, what, base, *, at_zero=False):
     """A switch change after time 0 (0 < t < end, the composite's rule for event times, §1.11), or
     a write (0 <= t < end: a write at 0 is applied at the first step start and is not a schedule
-    change time). An exact multiple of dt, refused here with its own message."""
+    change time). On the clock's grid (D283), refused here with its own message."""
     dt, end = base.execution.dt, base.experiment.end_time
     time = _number(value, f"{LAW_ID}: {what}")
-    if time != round(time / dt) * dt:
-        raise ConfigError(f"{LAW_ID}: {what} must be an exact multiple of dt (k * dt)")
+    if on_grid(time, dt) is None:
+        raise ConfigError(f"{LAW_ID}: {what} must be {ON_THE_GRID}")
     if not (0.0 <= time if at_zero else 0.0 < time) or not time < end:
         bound = "0 <= t < end" if at_zero else "0 < t < end"
         raise ConfigError(f"{LAW_ID}: {what} lies inside the horizon, {bound}")
@@ -1089,6 +1096,13 @@ def _site_layout(spec, declaration, routes):
                 )
             k = ids.index(coupling.source)
             home, cell = entities[k][1], cells[routes[i]["cell"]]
+            if home is None:  # FR-28 (D268): a node's own sites belong to no cell.
+                raise ConfigError(
+                    f"{LAW_ID_V2}: coupling {coupling.id} reads site population "
+                    f"{coupling.source}, a node's own sites, which belong to no cell; a site "
+                    "source is read in its element's cell, and no @2 target lives at a node "
+                    "(version 1)"
+                )
             if home != cell:
                 raise ConfigError(
                     f"{LAW_ID_V2}: coupling {coupling.id} reads site population {coupling.source}, "

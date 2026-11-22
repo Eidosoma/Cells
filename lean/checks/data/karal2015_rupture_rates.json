@@ -1,0 +1,21 @@
+{
+  "dataset_id": "karal2015_dopc_tension_series@1",
+  "doi": "10.1063/1.4930108",
+  "figure": "Figure 2a, journal page 081103-3",
+  "source": "https://shizuoka.repo.nii.ac.jp/record/8029/files/150908002.pdf#page=4",
+  "preparation": "Pure DOPC giant vesicles with 0.1 M sucrose inside and 0.1 M glucose outside. Time starts at the constant aspiration-tension hold. Complete aspiration of an individual vesicle marks rupture.",
+  "observable": "Mean fitted rate of first rupture per intact vesicle per second. Each repeat fits exponential survival to a cohort.",
+  "independent_experiments_per_setting": 3,
+  "vesicles_per_experiment": 20,
+  "uncertainty": "The figure labels the bars as standard errors across the three experiments. The two cap readings below are coordinates on the log-rate axis. Individual rupture times are unavailable in this figure.",
+  "extraction": "Read the two common temperature columns from Figure 2a at approximately 3356 and 3279 on the 10^6/T axis (T in kelvin). Calibrate the vertical axis on its -6.0 and -3.5 ticks. At each square, triangle and circle, read the bar caps and use their midpoint for the center. Values are rounded readings of the natural log of a rate in inverse seconds.",
+  "columns": ["temperature_C_approx", "tension_mN_m", "ln_rate", "ln_lower_bar", "ln_upper_bar"],
+  "points": [
+    [25, 7.0, -5.940, -5.970, -5.909],
+    [25, 7.5, -5.192, -5.236, -5.148],
+    [25, 8.0, -4.181, -4.209, -4.153],
+    [32, 7.0, -5.466, -5.504, -5.428],
+    [32, 7.5, -4.812, -4.837, -4.787],
+    [32, 8.0, -3.773, -3.810, -3.737]
+  ]
+}

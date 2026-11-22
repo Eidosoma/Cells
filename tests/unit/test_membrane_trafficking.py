@@ -301,7 +301,7 @@ def refusal_cases():
         edited(
             schedule_edit(lambda s: s["recycling"].append(dict(time=0.0015, rate_m2_per_s=0.0)))
         ),
-        "exact multiple of dt",
+        "on the clock's grid",
     )
     yield (
         "a schedule not starting at 0",

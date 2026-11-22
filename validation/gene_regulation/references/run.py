@@ -11,6 +11,8 @@ Stages (each writes under DIR and resumes from what is there; `assemble` writes 
   plants    every plant at the 18 edge sets (model.SHEET_EDITS, model.OWN_EDITS)
   noise     R-noise at the test instance (the first set)
   assemble  the interface JSON files
+  interior  with --sets published-interior (stages refs closed interior): the addition
+            interior_published.json, compared with --reference's interface
 
 `--potentials` runs everything at one named set of the four symbols (the registration's): ΔG′°_ATP,
 E_pd and E_pep in kJ/mol, then E_rc/RT. It must lie inside §3.3's ranges.
@@ -34,6 +36,9 @@ from pathlib import Path
 import numpy as np
 import scipy
 
+# Engine-free provenance helper (validation/executed_sources.py): records or refuses the executed
+# sources Git does not track. It is the one validation/ module the references import.
+from validation import executed_sources
 from . import closed_forms, model, noise, plants, sheet
 
 # The judge and the sheet's 100× tighter check. 2.5e-14 sits just above scipy's floor of
@@ -81,11 +86,19 @@ def potential_sets(which: str, potentials: list[str] | None) -> list[sheet.Poten
                 raise SystemExit(f"{name} = {v} lies outside §3.3's range [{lo}, {hi}]")
         return [sheet.Potentials("registered", g, pd, pep, rc)]
     return {"all": sheet.potential_sets(), "edge": sheet.edge_sets(),
-            "test": [sheet.TEST_INSTANCE]}[which]
+            "test": [sheet.TEST_INSTANCE],
+            "published-interior": sheet.published_interior_points()}[which]
 
 
 def n_edge(sets: list) -> int:
-    return min(len(sets), 18)
+    """The leading sets that get Radau and the plants: the test instances, the corners or a
+    registered set; never an interior point."""
+    n = 0
+    for p in sets[:18]:
+        if p.label.startswith(("interior", "published interior")):
+            break
+        n += 1
+    return n
 
 
 def convergence(a: dict, b: dict) -> dict:
@@ -260,8 +273,14 @@ def provenance() -> dict:
                   "selected_status": man["selected_status_porcelain_v1_z"] or None,
                   "patch_sha256": man["patch_sha256"]}
     else:
+        # A checkout: `git diff HEAD` and the status miss a file Git does not track, so the receipt
+        # also holds the full status (every untracked file, `!!` for loaded ignored sources), the
+        # diff from HEAD joined to each untracked executed source's full content, and their paths.
+        record = executed_sources.checkout(HERE)
         source = {"snapshot": None, "git_revision": git("rev-parse", "HEAD") or None,
-                  "selected_status": git("status", "--porcelain", "--", str(HERE)) or None}
+                  "selected_status": git("status", "--porcelain", "--", str(HERE)) or None,
+                  "status": record["status"] or None, "diff": record["diff"] or None,
+                  "untracked_executed": record["untracked_executed"]}
     return {"source": source, "python": platform.python_version(), "numpy": np.__version__,
             "scipy": scipy.__version__, "generated_utc": datetime.now(timezone.utc).isoformat(),
             "cpu_affinity": sorted(os.sched_getaffinity(0))}
@@ -311,7 +330,10 @@ def main(argv=None) -> None:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--out", required=True, type=Path)
     ap.add_argument("--stage", nargs="+", default=["refs", "closed", "plants", "noise", "assemble"])
-    ap.add_argument("--sets", choices=("all", "edge", "test"), default="all")
+    ap.add_argument("--sets", choices=("all", "edge", "test", "published-interior"),
+                    default="all")
+    ap.add_argument("--reference", type=Path, default=HERE / "interface",
+                    help="the interface the interior stage compares with")
     ap.add_argument("--potentials", nargs=4, metavar=("G_ATP", "E_pd", "E_pep", "E_rc_RT"))
     ap.add_argument("--workers", type=int, default=1)
     ap.add_argument("--noise-replicates", type=int, default=sheet.NOISE_REPLICATES,
@@ -331,6 +353,9 @@ def main(argv=None) -> None:
         if stage == "assemble":
             from . import assemble
             assemble.write_interface(args.out, sets, provenance())
+        elif stage == "interior":
+            from . import interior
+            interior.write_addition(args.out, sets, provenance(), args.reference)
         else:
             run_stage(stage, args.out, sets, args.workers, args.noise_replicates)
 

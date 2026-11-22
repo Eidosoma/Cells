@@ -13,23 +13,31 @@ On a positive reversible edge, catalysis preserves the forward-to-reverse rate r
 
 **Proved**
 
-- [CellsProofs.Chemistry.AssemblyKinetics.common_residual](../CellsProofs/Chemistry/AssemblyKinetics.lean#L89)
-- [CellsProofs.Chemistry.AssemblyKinetics.common_weight](../CellsProofs/Chemistry/AssemblyKinetics.lean#L96)
-- [CellsProofs.Chemistry.AssemblyKinetics.empty_factor](../CellsProofs/Chemistry/AssemblyKinetics.lean#L109)
-- [CellsProofs.Chemistry.AssemblyKinetics.catalyst_mean](../CellsProofs/Chemistry/AssemblyKinetics.lean#L112)
-- [CellsProofs.Chemistry.AssemblyKinetics.catalyst_pos](../CellsProofs/Chemistry/AssemblyKinetics.lean#L120)
-- [CellsProofs.Chemistry.AssemblyKinetics.single_contact](../CellsProofs/Chemistry/AssemblyKinetics.lean#L130)
-- [CellsProofs.Chemistry.AssemblyKinetics.shared_ratio](../CellsProofs/Chemistry/AssemblyKinetics.lean#L144)
-- [CellsProofs.Chemistry.AssemblyKinetics.ratio_iff](../CellsProofs/Chemistry/AssemblyKinetics.lean#L156)
-- [CellsProofs.Chemistry.AssemblyKinetics.equilibrium_flow_iff](../CellsProofs/Chemistry/AssemblyKinetics.lean#L150)
+- [CellsProofs.Chemistry.AssemblyKinetics.common_residual](../CellsProofs/Chemistry/AssemblyKinetics.lean#L113)
+- [CellsProofs.Chemistry.AssemblyKinetics.common_weight](../CellsProofs/Chemistry/AssemblyKinetics.lean#L120)
+- [CellsProofs.Chemistry.AssemblyKinetics.empty_factor](../CellsProofs/Chemistry/AssemblyKinetics.lean#L133)
+- [CellsProofs.Chemistry.AssemblyKinetics.catalyst_mean](../CellsProofs/Chemistry/AssemblyKinetics.lean#L136)
+- [CellsProofs.Chemistry.AssemblyKinetics.catalyst_pos](../CellsProofs/Chemistry/AssemblyKinetics.lean#L144)
+- [CellsProofs.Chemistry.AssemblyKinetics.single_contact](../CellsProofs/Chemistry/AssemblyKinetics.lean#L154)
+- [CellsProofs.Chemistry.AssemblyKinetics.shared_ratio](../CellsProofs/Chemistry/AssemblyKinetics.lean#L168)
+- [CellsProofs.Chemistry.AssemblyKinetics.ratio_iff](../CellsProofs/Chemistry/AssemblyKinetics.lean#L180)
+- [CellsProofs.Chemistry.AssemblyKinetics.equilibrium_flow_iff](../CellsProofs/Chemistry/AssemblyKinetics.lean#L174)
 
 Direct proof subject `cells.transition_state_factor@1`
+
+Proof sources [Pythia Eyring rate and positivity proof, imported in the optional check](https://github.com/athanor-ai/pythia/blob/65404339b5c6fe8004d91fdd9c0c14ceb0bf7cd3/Pythia/Frontier/Chemistry/Eyring.lean#L23-L36) · [Cells single-contact factor as the ratio of the two Eyring rates](../checks/chemistry/Reuse.lean#L77)
 
 Uses [Finite molecule counts set stochastic encounter rates and paired event heat](assembly-stochastic-encounter.md)
 
 ## Numerical comparison
 
 **Checked.** The directional multipliers agreed with the exact common-state value on 1,925 ordinary reversible edges. In the opposed ±20 kBT contact case, both rates were 2.0611536224/s and the first event occurred at the reference 0.3459699807 s. All four seeded clocks fired four events with closed ledgers. The earlier comparison records the spurious inert state.
+
+**Engine** `cells.assembly_lineages@2`, `cells.stochastic_mass_action@1`, `cells.transition_state_factor@1`, `cells.ideal_mixing@1`, `cells.regular_mixing@1`
+
+[Ordered draws and cancelled membrane denominator](https://github.com/Eidosoma/Cells/blob/329e9e395ac117998657a21eb827192d34314107/src/cells/models/assembly_lineages_v2/mass_action.py) · [Rate factor on the common state](https://github.com/Eidosoma/Cells/blob/329e9e395ac117998657a21eb827192d34314107/src/cells/models/assembly_lineages_v2/transition_state.py) · [Forward and reverse rate assembly](https://github.com/Eidosoma/Cells/blob/329e9e395ac117998657a21eb827192d34314107/src/cells/models/assembly_lineages_v2/kernel.py) · [World balance probe](https://github.com/Eidosoma/Cells/blob/329e9e395ac117998657a21eb827192d34314107/src/cells/models/assembly_lineages_v2/balance.py) · [Independent rational draw and factor](https://github.com/Eidosoma/Cells/blob/329e9e395ac117998657a21eb827192d34314107/validation/ool/references/laws.py) · [Independent rate tolerance](https://github.com/Eidosoma/Cells/blob/329e9e395ac117998657a21eb827192d34314107/validation/ool/references/detailed_balance.py) · [Registered boundary world](https://github.com/Eidosoma/Cells/blob/329e9e395ac117998657a21eb827192d34314107/validation/ool/references/designs/ol1_boundary.world.json) · [assembly lineage v2 fixtures](https://github.com/Eidosoma/Cells/blob/329e9e395ac117998657a21eb827192d34314107/tests/assembly_lineage_v2_fixtures.py) · [probes](https://github.com/Eidosoma/Cells/blob/329e9e395ac117998657a21eb827192d34314107/validation/assembly_lineages_v2/probes.py) · [ol1 wa.world](https://github.com/Eidosoma/Cells/blob/329e9e395ac117998657a21eb827192d34314107/validation/ool/references/designs/ol1_wa.world.json) · [ol1 kernel probe states](https://github.com/Eidosoma/Cells/blob/329e9e395ac117998657a21eb827192d34314107/validation/ool/references/designs/ol1_kernel_probe_states.json) · [ol1 boundary probe states](https://github.com/Eidosoma/Cells/blob/329e9e395ac117998657a21eb827192d34314107/validation/ool/references/designs/ol1_boundary_probe_states.json) · [assembly mixing](https://github.com/Eidosoma/Cells/blob/ad1f96418722d25876b38b5a5f38996512d6a32c/lean/checks/assembly_mixing.py) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/ad1f96418722d25876b38b5a5f38996512d6a32c/lean/checks/assembly_kinetics.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/ad1f96418722d25876b38b5a5f38996512d6a32c/lean/PROGRESS.md#ol5-six-replays)
+
+[Tested engine 329e9e395ac1](https://github.com/Eidosoma/Cells/commit/329e9e395ac117998657a21eb827192d34314107) · [Evidence checkpoint ad1f96418722](https://github.com/Eidosoma/Cells/commit/ad1f96418722d25876b38b5a5f38996512d6a32c)
 
 **Engine** `cells.assembly_lineages@2`, `cells.stochastic_mass_action@1`, `cells.transition_state_factor@1`, `cells.ideal_mixing@1`, `cells.regular_mixing@1`
 

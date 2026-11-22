@@ -451,7 +451,8 @@ At J_ρ,m:
 - one product molecule enters its row (+J_ρ,m);
 - one machine returns to F_q.
 
-A machine is returned at every release.
+A machine is returned at every release. A chain that declares §9's release step instead puts its
+completed molecule in a hold, and releases it from there into one of two fate rows.
 
 ### 4.4 Degradation
 
@@ -1101,3 +1102,467 @@ summariser of the pages. The publisher pages were not opened.
 - Alberty's transformed potentials (Alberty, *Thermodynamics of Biochemical Reactions*, 2003);
 - the mean velocity of a biased walk of elementary steps;
 - the linear chain trick (MacDonald 1978, as FR-7's producer cites it).
+
+## 9. Amendment R: a release step with two fates (FR-38; D284)
+
+*Proposed 22 November 2026 by the gene-regulation lane, for the tag before any code. It amends
+this sheet (tag `gr1-sheet-2026-11-20b`) without changing §0–§8. A chain that does not declare it
+keeps §4.3 bit for bit.*
+
+**What it adds.** A completed chain need not join its product row at once. It may wait in a hold
+that its producer owns, and then leave at first order into one of two fate rows, a durable one and a
+short-lived one, each with its own loss. This is FR-38's request (a user's, 22 November 2026, with a
+reference package that states no licence; nothing of it is copied here).
+
+### 9.1 The hold, its classes and the fate rows
+
+- **Opt-in, per chain ρ.** A `release` block on the chain declares §9 for it. Without one, §4.3
+  stands.
+- **The hold.** H_ρ,k (fmol) is the amount of complete chains of ρ held in class k, for k = 1, …,
+  K_ρ. K_ρ = 1 by default. A held chain is complete: L_ρ residues, and no concentration term
+  (§9.5). It is the producer's own pool, like the complexes, which no other mechanism reads.
+- **The fate rows.** Each class k of each chain has two rows of the model, F^d_ρ,k (durable) and
+  F^s_ρ,k (short-lived). Each is one molecule of L_ρ residues of the product's chemistry, with
+  the product's standard potential (μ°_F = μ°_prod) and its moiety weights. They are rows: other
+  mechanisms may read them, and §4.4's degradation acts on each with its own rate.
+- **One producer per fate row** (version 1; question d). A fate row is written by one chain only. A
+  second chain naming it is refused. Shared fate rows would need producer labels on FR-42's shares
+  (D296: each chain a label source, its own schedule naming its producer's label; erratum D) or
+  the host-side cohort of §9.8, which apportions a shared pool only under first-order,
+  age-independent loss.
+- **The class axis and the label switch** (question e).
+  - A declared class schedule ψ_ρ(t) ∈ {1, …, K_ρ}, piecewise constant on the clock's grid
+    (D283), labels the molecules at one of two transitions, `label_at`:
+    - at **completion**: a chain completing at t enters H_ρ,ψ(t), and keeps its class through
+      release, into F^f_ρ,ψ;
+    - at **release**: the hold has one class, and a molecule released at t enters F^f_ρ,ψ(t).
+  - With K_ρ = 1 no schedule is declared, and nothing is labelled.
+
+### 9.2 The release law
+
+  Q^d_ρ,k = p_ρ(t) H_ρ,k / τ_ρ,   Q^s_ρ,k = (1 − p_ρ(t)) H_ρ,k / τ_ρ   (fmol/s)
+
+- **τ_ρ > 0** is the mean dwell in the hold (declared; the exit half-life is τ ln 2).
+- **p_ρ(t) ∈ [0, 1]** is the durable fraction, evaluated at release (§9.4).
+- **No affinity factor.** The hold's exit carries none, as §4.3's release carries none. Its free
+  energy (§9.5) is booked, and its one-sidedness is held by the domain (§9.6).
+- **At p = 0 or 1** one route has a zero rate. It moves nothing, and books nothing.
+- **The fates' losses** are §4.4's law, per fate row f with its own rate k_f:
+  J^D_f = k_f n_f (1 − e^(y_f)), with y_f = ΔG_deg,f/(L_ρ RT), which returns L_ρ monomers.
+
+### 9.3 The machine, a declared option per chain (question a)
+
+- **`returned`** (the default, §4.3's physics: the machine leaves at termination). The machine
+  returns at completion, J_ρ,m. The hold holds no machine.
+- **`held`.** The machine stays engaged through the hold and returns at release. The hold is then a
+  terminal stage that adds no residues, left at rate 1/τ_ρ. The engaged machines are
+  E_ρ = Σ_j C_ρ,j + Σ_k H_ρ,k, and they return at Σ_f Q^f_ρ,k.
+- **Initial occupancy.** H_ρ,k(0) may be declared, in copies (the 80-chain case). With `held`, the
+  pool's free machines start at F_q(0) = M_q − Σ_(ρ on q) Σ_k H_ρ,k(0), which must be ≥ 0, or the
+  definition is refused. With `returned`, F_q(0) = M_q.
+
+### 9.4 The durable fraction p
+
+One of three sources, named in the declaration and stamped in the run's record:
+1. **A constant** p ∈ [0, 1].
+2. **A schedule** per chain in `polymerisation_controls`, piecewise constant on the clock's grid
+   (D283's same-instant predicate).
+3. **A B1′ route** onto the chain's routable `release_fraction`: p = p_max u(t), with p_max ≤ 1 the
+   scheduled value and u ∈ [b, 1] a coupling's factor on an engine state.
+   - **Evaluation.** u is evaluated at the half-step's start, as B1′'s routes are. Where the
+     release moves u's own source (a fate row as the source, say), u is evaluated at the
+     half-step's midpoint instead, which keeps second order (B1′'s midpoint rule, e27849be).
+   - **Record.** The composite records the factors applied at each step.
+
+No host callable supplies p.
+
+### 9.5 Free energy and heat
+
+- **G gains the held chains' standard term:** Σ_ρ,k L_ρ μ°_ρ,res H_ρ,k. It is booked like §3.4's
+  residues in transit, with no concentration term.
+- **Each move's ΔG.**
+  - **Completion** into the hold books r_ρ ΔG_ρ: its residue moves only.
+  - **Release** into fate f books ΔG^rel_f = μ_F − L_ρ μ°_ρ,res = RT ln(c_F/c°). This is §3.4's
+    release term, now at the hold's exit and split across the fate rows by their own
+    concentrations.
+  - **A fate's loss** books §3.4's ΔG_deg with its own row.
+- **The heat classes.** H_rel,ρ,f = ∫ Q^f (−ΔG^rel_f) dt joins §3.4's classes. A chain with §9 has
+  no release term in its H_tx or H_tl.
+- **No work, no new energy object.** The release adds no work term and no new energy field. The
+  identity G(t) − G(0) + Σ H = 0 holds with every class ≥ 0 inside the domain (§9.6).
+  - This is the contrast with the requester's replay, whose driven `mass_action` books the release's
+    and the loss's ΔG as work. There, a move into a fuller pool is booked as positive work, which
+    the dissipation check does not see.
+
+### 9.6 The domain
+
+- **One-sided release.** At a release in use, c_F ≤ c° = 1 M, so ΔG^rel_f ≤ 0. A state outside it
+  is refused, never repaired (§3.5).
+- **The fates' losses** are one-sided as §3.5's degradations are: y_f ≤ x_dom.
+- **p** lies in [0, 1], τ > 0, and every rate is ≥ 0. Each is checked at the definition, or at run
+  time for a routed p.
+
+### 9.7 The equations of motion and the identities
+
+Per chain ρ with §9 and K_ρ = 1, beside §4.7's columns. Q_ρ = J_ρ,m is now the completions:
+- dH_ρ/dt = Q_ρ − Q^d_ρ − Q^s_ρ;
+- dn_F^f/dt = Q^f_ρ − D_F^f, for f = d, s;
+- the machine: with `returned`, dF_q/dt gains +Q_ρ as in §4.7; with `held`, it gains Q^d + Q^s
+  instead;
+- the residues in transit: W_ρ loses L_ρ at Q_ρ, as in §4.8, and the hold holds L_ρ per molecule.
+
+**The counters**, each cumulative from t = 0:
+- arrivals A_ρ = ∫Q_ρ (the existing int_Q);
+- the hold H_ρ,k;
+- the release into each fate ∫Q^f_ρ,k;
+- each fate row's loss ∫D_F^f (the existing int_D, per fate row).
+
+**The identities:**
+- **The hold:** H_ρ(0) + A_ρ(t) = H_ρ(t) + Σ_f ∫Q^f_ρ(t).
+- **Each fate row,** with one producer: n_F^f(t) = n_F^f(0) + ∫Q^f_ρ(t) − ∫D_F^f(t).
+- **Per producer:** initial + arrivals = attached + surviving + lost, exactly:
+  H_ρ(0) + A_ρ(t) = H_ρ(t) + Σ_f [n_F^f(t) − n_F^f(0)] + Σ_f ∫D_F^f(t).
+- **Machines:** §4.8's, with the hold among the engaged where the machine is `held`.
+- **Moieties and energy:** §4.8's, with the hold's residues counted in the residue identity and
+  its standard term in G.
+
+**Restart.** The hold, its classes and every counter are state, so a checkpoint and resume carry
+them bit for bit. Replacement waits for the requester's answer (question c).
+
+### 9.8 The release-window cohort, by two routes
+
+Of the molecules released into fate f during [t1, t2], the amount still present at ts ≥ t2:
+1. **Shares** (FR-42's neutral arrival-time labels, D289; erratum C). The label marks the
+   release. FR-42's label owner labels each fate row, its base label first, and its arrival
+   schedule names the window's label during [t1, t2) and the base otherwise.
+   - A release joins the label in force at the start of its step.
+   - The cohort is F^f_ρ(ts) s^f_w(ts), the fate row times its window label's share.
+   - **No blank.** A cohort's share starts at exactly zero. The fate's loss is computed once on
+     the physical row and shared by its labels, so there is no class-row departure (erratum B).
+   - **Its error is the share update's split.** It is exact for a constant per-molecule loss rate
+     and constant arrivals within a half-step. Otherwise it errs by (a k′ − a′ k) h³/12 per
+     half-step h, which is second order over a run. In R1 the arrivals into fate f decay with the
+     hold (a′ = −a/τ) at a nearly constant loss rate k_f. So route 1 lies within k_f h²/(12 τ),
+     relative, of the cohort the update would give exactly.
+2. **Host-side.** `validation/gene_regulation/cohort.py` on each fate pool's own counters, n_F^f,
+   ∫Q^f and ∫D_F^f. It is exact for first-order, age-independent loss in a well-mixed pool, up to
+   its grid error.
+
+Under §9.2's laws both routes apply, and they must agree within the host-side route's grid error
+plus route 1's split.
+
+**The survival readout** (the requester's answer to questions (c) and (e)): the window's members
+alive at t2, the same molecules alive at a later ts, and their ratio, undefined at a zero
+denominator. Route 1 reads its cohort at both times. Route 2 computes both from the counters.
+
+**The class rows** (§9.1's K_ρ > 1) remain for labels marked at completion, until FR-42's label
+owner holds the hold's own shares (D296). Their sum departs from the unlabelled row (erratum B):
+- **The factor.** A class row k of a fate with total N reads its own potential (§9.2). Its loss
+  factor is therefore 1 − e^(y_f) (N/n_k)^(1/L), where e^(y_f) is the population's, not
+  1 − e^(y_f).
+- **At R1,** e^(y_f) ≈ 9.4 × 10⁻⁹, so the departure is at most about 10⁻⁸ relative (erratum A2).
+  That is well inside the two routes' agreement bound.
+- **In general** it is not small. Near the domain bound, y_f → x_dom, it reaches percent level for
+  a small class.
+- **Not physical for a neutral label.** The departure would be physical only for a chemically
+  distinct label. For a neutral arrival-time label, as here, it is an artefact of separate rows,
+  which FR-42 asks labels never to have. Erratum B retracts erratum A's "physical".
+
+### 9.9 The release worlds
+
+**R1, the requester's hold** (its acceptance case):
+- one 1 pL cell with one chain of A1's transcription (L_R = 1200, m_tx = 8, v_tx = 50 nt/s);
+- k_I = 0, so nothing completes, and H(0) = 80 copies;
+- τ = 3600/ln 2 s (an exit half-life of 1 h), and p constant;
+- the fates' rates k_d = ln 2/7200 s⁻¹ and k_s = ln 2/1800 s⁻¹ (half-lives of 2 h and 0.5 h);
+- the fate rows start at the inventory trace;
+- every other row as A1's initial state, at the numeric test instance.
+
+It is run at four fractions, p ∈ {0, 0.25, 0.75, 1}, beside a matched blank (H(0) = 0), with
+`returned`, and with `held` (M_pol = A1's 10⁴).
+- **Outputs:** 0, 1,800, 3,600, 7,200 and 14,400 s.
+- **The release-window cohort:** [0, 3,600 s], sampled at 3,600 and 7,200 s.
+
+**R2, A1 with the release step:**
+- A1 (§5.1), with transcription's chain declaring §9: τ = 3600/ln 2 s, p constant 0.75, and the
+  fates' rates as R1;
+- both machine options;
+- A1's horizon and outputs.
+
+**Addendum: R2's rows and translation, a declared choice** (the lead's ruling, 22 November 2026,
+tagged before R2's code and references):
+- **The fate rows, in R1 and R2.** The durable fate is A1's R. The short-lived fate is a new row
+  R_s with R's chemistry: R's μ° and moiety weights (§9.1). "The inventory trace" is the sheet's
+  trace c_R = 1.0 × 10⁻¹² mM, so R_s starts there, as R does.
+- **The fates' losses.** deg_R takes the durable rate k_d. A new degradation deg_R_s, with deg_R's
+  form and standard free energy, takes the short-lived rate k_s.
+- **Translation.** Two chains, `tl` templated by R and `tl_s` templated by R_s. Each has A1's
+  translation parameters (§5.1), and both share the ribosome pool and make P. The two fates are
+  one chemistry, so both are translatable.
+- **A development check, not an acceptance row.** Set both fates' loss rates to A1's k_R.
+  - Each chain's initiation is linear in its template, so translation's initiation sees the total
+    RNA, R + R_s.
+  - R2's total RNA and protein then follow A1's, delayed by the hold. They approach A1's as τ
+    shrinks, with either machine option.
+  - They differ from A1's by the hold, by R_s's starting trace, and by each fate's own factor
+    (1 − e^(y_f)) (§9.10).
+
+<!-- release -->
+| Symbol | Value | Unit | Meaning | Source |
+| --- | --- | --- | --- | --- |
+| `H0` | 80 | copies | R1's initial hold | The requester |
+| `tau` | 5193.7 | s | 3600/ln 2: an exit half-life of 1 h | The requester |
+| `p_cases` | 0, 0.25, 0.75, 1 | 1 | R1's durable fractions | The requester |
+| `k_durable` | ln 2/7200 | s⁻¹ | A half-life of 2 h | The requester |
+| `k_short` | ln 2/1800 | s⁻¹ | A half-life of 0.5 h | The requester |
+| `t_out` | 0, 1800, 3600, 7200, 14400 | s | R1's outputs | The requester |
+<!-- /release -->
+
+### 9.10 The requester's limit, and the release worlds' distance from it
+
+- **The limit.** The requester's numbers assume pure first-order exits and losses. At p = 0.75 and
+  t = 1 h:
+  - 40 held and 40 released, 30 into the durable row and 10 into the short-lived one;
+  - of those, 24.852814 durable and 5.000000 short-lived still present.
+- **Their closed forms,** with k_e = 1/τ:
+  - hold: H(t) = H0 e^(−k_e t);
+  - survivors in fate f: π_f H0 k_e (e^(−k_e t) − e^(−k_f t))/(k_f − k_e).
+- **The distance of R1 and R2.**
+  - **The release law** has no affinity factor (§9.2), so it sits on the limit exactly.
+  - **The fates' losses** carry §4.4's factor (1 − e^(y_f)). At R1's state, at the test instance:
+    - y_f ≈ −18.48 at every fate amount from the trace to 80 copies;
+    - so e^(y_f) ≈ 9.4 × 10⁻⁹;
+    - each loss rate is k_f (1 − 9.4 × 10⁻⁹), and each survivor sits within about 10⁻⁸ of the
+      limit, relative.
+  - The limit's six-decimal figures stand at that distance.
+  - **The quantity compared** (erratum A, R-F2): the released molecules still present in fate f,
+    the fate row minus the matched blank's (§9.8). The fate rows themselves also carry their
+    starting trace, so they sit further from the limit, up to about 10⁻⁴ relative.
+- **No amount or potential was chosen to reach a tolerance.** R1's amounts and potentials are A1's
+  and the requester's.
+
+### 9.11 What the amendment does not claim
+
+1. **No biology.** τ, p and the fates' rates are declared. No dataset is compared.
+2. **No release energy** beyond the residues' standard term (question b). If a retention or binding
+   free energy is declared later, it is a new term of §9.5.
+3. **No replacement semantics** for the hold or the fates (question c).
+4. **One producer per fate row** (question d). Shared rows would need producer labels on FR-42's
+   shares or §9.8's host-side route (erratum D).
+5. **Neither label transition is the default reading** of the requester's "release window"
+   (question e). Both are declared, and the requester names the one meant.
+6. **No observation layer** here. Per-copy detection, roster denominators and two-colour statistics
+   are `src/cells/assays`, built separately.
+7. **R2's translation is a declared choice,** not a biological claim (§9.9's addendum): two chains,
+   one per fate row, because both fates are one chemistry.
+
+**The requester's questions,** carried to their answer:
+- (a) does an attached chain keep its machine;
+- (b) the release energy;
+- (c) what "replacement" means for producer identity;
+- (d) one gene per producer;
+- (e) which transition the label switch marks.
+
+### 9.12 Erratum A: the readings where §9 was silent
+
+*22 November 2026, after the code-blind references (tag `gr-refs-fr38-2026-11-22`), so that the
+builder and the references read one sheet before the registered comparison. It settles their two
+findings, R-F1 (§9.8) and R-F2 (§9.10), in place, and the readings below.*
+
+1. **R1's routes.** The chain at k_I = 0, its release, and the fates' two degradations: no
+   recharging, translation or regulator. N, M and Pi start at A1's initial state and are moved
+   only by the routes in use (the fates' losses return NMPs to M; erratum A2). §9.10's y_f ≈
+   −18.48 reads M at A1's 0.05 mM.
+2. **The inventory trace** is the sheet's c_R, 1.0 × 10⁻¹² mM (§9.9's addendum).
+3. **The matched blank** is the same world with H(0) = 0, everything else equal.
+4. **The limit's survivors** are the released molecules still present: each fate row minus the
+   matched blank's (§9.10).
+5. **The heat classes.** deg_R books to H_deg,R and deg_R_s to its own class, H_deg,R_s. H_rel is
+   per fate. H_tl sums tl and tl_s.
+6. **The engaged machines** E_tx are ΣC + ΣH under `held` and ΣC under `returned` (§9.3).
+7. **The label** (as erratum C amends it). The window's label is the one in force at the start of
+   each step, resolved by step index from the label owner's schedule. So a release in [t1, t2)
+   joins it, and a release in the step that starts at t2 does not. R1L labels R and R_s (base,
+   cohort) and has no class rows.
+8. **R2's hold** starts empty, H(0) = 0. **R2's cohort** is route 2 alone; route 1 is not computed in
+   R2.
+9. **R1's domain** leaves out elongation, which has no complexes there: §9.6's and §3.5's bounds
+   hold at the routes in use.
+
+### 9.13 Erratum B: the label rows are not neutral labels
+
+*22 November 2026, after FR-42 (neutral arrival-time labels; the lead's request), docs only.*
+
+1. **Retracted:** erratum A's statement that the label rows' departure is "physical, not an
+   error". It is physical only for a chemically distinct label. §9.1's class rows are meant as
+   neutral arrival-time labels, and a neutral label must leave the loss, the free energy and the
+   heat of its physical population unchanged (FR-42).
+2. **The departure's general form** (§9.8): a class row's loss factor is 1 − e^(y_f) (N/n_k)^(1/L),
+   with N the fate's total and n_k the row's amount. The bound of about 10⁻⁸ holds at R1 alone,
+   where e^(y_f) ≈ 9.4 × 10⁻⁹.
+3. **Route 1 is provisional, pending FR-42.** Its blank subtraction is exact only for a loss linear
+   in the amount. The user decides whether FR-38's label rows are replaced under FR-42 before the
+   registered comparison.
+4. **Route 2 stands.** cohort.py reads the run's own per-molecule loss, which is FR-42's method on
+   the host.
+
+### 9.14 Erratum C: route 1 on shares
+
+*22 November 2026, after FR-42's stage 1 (D289) and the user's decision that FR-42's shares replace
+the class rows (D288). Docs only, before the code that builds on it.*
+
+1. **Route 1 moves to shares** (§9.8). R1L's fate rows carry FR-42's labels, with the window
+   marked at release, in place of the class rows R_c2 and R_s_c2. The cohort is the fate row times
+   its window label's share, with no blank.
+2. **Reading 7** (§9.12) reads the window's label from the label owner's schedule at the start of
+   each step.
+3. **R1L's blank is dropped.** The matched blank stays for the survivors (§9.10; §9.12, reading 4).
+4. **Route 1 is second order.** Its error is the share update's split (§9.8), not the
+   operator's third-order step. In R1 the split is k_f h²/(12 τ), relative: below 6.2 × 10⁻⁹ at
+   R1's step of 2 s. FR-38's registered comparison declares p = 2 for route 1.
+5. **The requester's answer to (e) marks the window at release** (§9.11, question e).
+   - A molecule that detaches from its template during [t0, t1) belongs to the cohort, even if it
+     finished transcription before t0.
+   - One released exactly at t1 belongs to the next window.
+   - Labelling at completion (§9.1) stays declared, on the class axis, until the label owner holds
+     the hold's own shares (D296).
+6. **The survival readout** (§9.8) is the requester's answer to (c) and (e).
+7. **A limit:** a labelled species carries at most the label owner's MAX_LABELS labels. So
+   producer identity crossed with the window labels must fit within it.
+8. **Route 2 stands** (erratum B).
+
+### 9.15 Erratum D: producer labels on shares, not label families
+
+*22 November 2026, after D300 retired D1's own-potential label families. Docs only.*
+
+1. **§9.1 and §9.11 (item 4)** named D1's label families per producer as one way to share a fate
+   row between producers. D1's families are retired (D300): each family row carried its own
+   potential, so a label changed the physics (erratum B's departure, in another form).
+2. **Producer labels on FR-42's shares replace them** (D296). Each chain is a label source, and the
+   label owner's schedule may name a chain, so a producer's label (its cell, occupant generation
+   and chain, crossed with the window) marks its material without changing the physics.
+3. **One producer per fate row stays version 1's rule.** A second chain naming a fate row is still
+   refused; sharing one is a later extension, now on shares.
+
+### 9.16 Amendment S: the producer across replacement (FR-38's step 4; D296, D301)
+
+*Proposed 22 November 2026 by the gene-regulation lane, for the tag before any code. It answers
+question (c) with the requester's clarification of 22 November (docs/FEATURE_REQUESTS.md, FR-38),
+replaces §9.7's "Replacement waits" and §9.11's item 3, and lifts D301's temporary refusal. A
+definition without a replacement keeps §0–§9.15 bit for bit.*
+
+1. **Scope.**
+   - `templated_polymerisation@1` composes with `scheduled_cell_replacement@1`, whose events
+     replace a slot's occupant by a newcomer from an isolated template.
+   - Refused in version 1, each at the definition:
+     - a donor copy into a slot that holds a pool of this operator, or from one (D152 defers its
+       own donor copies to version 1.1);
+     - `scheduled_cell_replacement@2`, as the declarations already refuse it: water provides the
+       volumes this operator reads as declared.
+   - A replaced slot's chains, releases, degradations and transfers are those whose cell it is. A
+     pool and its chains share one cell, so an occupant takes its whole gene unit with it.
+2. **The event.** At the start of the step leaving t_e, the step in which replacement@1 swaps the
+   slot's rows, this operator's own event part acts on every replaced slot c:
+   - **The chains in progress leave.** Every chain ρ at c sets C_ρ,j → 0. Its counters gain the
+     chains removed Σ_j C_ρ,j and the residues removed W_ρ = r_ρ Σ_j (j − 1) C_ρ,j (§1.2).
+   - **The hold leaves.** Every release of such a chain sets H_ρ → 0, and its hold-removed counter
+     gains H_ρ.
+   - **The newcomer's machines are all free.** Every pool q at c sets F_q → M_q. Machines carry no
+     free energy (§1.2), so this books nothing.
+   - **The free energy leaving with them** is μ°_ρ,res (W_ρ + L_ρ H_ρ). It is booked in a removal
+     counter of its own, not as heat.
+   - **The event reads only its own state and controls:** the replacements due at each slot,
+     known from replacement@1's events at the definition. So it does not depend on the order of
+     the two events in the operator list.
+   - **The rows are replacement@1's.** It removes the occupant's amounts and supplies the
+     template's (`replacement_removed_fmol`, `replacement_supplied_fmol`), with their chemical and
+     capacitor free energy (`replacement_free_energy_pJ`). The rows' standard term
+     Σ_s μ°'_s Δn_s at the swap is booked by neither operator. D152's owned standard term has the
+     same gap, since its operator has no event part either. The engine's energy ledger closes all
+     the same, because each owned standard term is an accumulator of its operator's own moves.
+     Item 5 states the account with the swap computed from replacement@1's records.
+3. **Generations and counters.**
+   - A slot's occupants are its generations: the founder g = 0, then each newcomer g + 1,
+     replacement@1's `generation`. A producer is (cell, generation, chain), preserved across
+     restart and cell reordering, as IDs.
+   - Every counter of §4.7 and §9.7 stays cumulative from t = 0: initiations, stage exits,
+     arrivals A_ρ = ∫Q_ρ, releases ∫Q^f_ρ, each degradation's ∫D and each transfer's extent. Removal
+     is counted apart from degradation, by the counters of item 2.
+   - **The newcomer's counters start at zero.** Per chain, release, degradation and transfer of a
+     replaced slot, the operator holds each cumulative counter's value at the current generation's
+     birth (0 for the founder). At each event it records the departing generation's own totals,
+     the counter at its death minus that birth value, and the counter's value becomes the
+     newcomer's birth value. The newcomer's own counters are the cumulative counters minus it.
+   - State holds only the latest departed generation's totals. An earlier generation's totals are
+     in the records only where an output follows its death before the slot's next event; the
+     definition does not require one (a declared limit of version 1).
+4. **The identities across events.** Each holds at every step; the removal terms are cumulative
+   from t = 0.
+   - **Machines:** F_q + engaged − M_q = 0, as in §9.7. After an event every machine at c is free.
+   - **Residues in transit, per chain:** r_ρ ∫S_ρ = W_ρ + L_ρ A_ρ + W^rem_ρ.
+   - **The hold, per release:** H_ρ(0) + A_ρ = H_ρ + Σ_f ∫Q^f_ρ + H^rem_ρ.
+   - **Per producer,** for generation g of chain ρ between its birth t_b and its death t_d, with
+     one producer per fate row (§9.11, item 4) and no other mover of it (a transport, FR-42's
+     stage 2, adds its own term):
+     H_ρ(t_b) + A_g = H^rem_g + Σ_f [R^f_g + ∫_{t_b}^{t_d} D_F^f], where
+     - A_g is the arrivals of its life, and H_ρ(t_b) = 0 for a newcomer;
+     - H^rem_g is its hold at t_d, which the event removes;
+     - R^f_g = n_F^f(t_d) − n_F^f(t_b) is the net RNA it added to fate row f. Replacement@1 removes
+       n_F^f(t_d) at the event and supplies the template's n_F^f(t_b) of the next generation;
+     - so initial plus arrivals equals attached, surviving, lost and removed RNA, with removal
+       booked to the departing generation and apart from degradation.
+
+     A living generation's identity is §9.7's, from t_b.
+   - **Moieties** (§1.4, §4.8): each total over the rows, the residues in transit and the hold
+     changes only at events, by what they supply less what they remove. The rows' parts are
+     replacement@1's supplied and removed records. The transit's and the hold's are item 2's
+     removal counters: W^rem_ρ residues and L_ρ H^rem_ρ residues.
+5. **The energy account.**
+   G(t) − G(0) + Σ H + Σ_events (G^out − G^in) = 0, where:
+   - G^out is the departing occupant's G within §3.4's scope: its rows' terms at removal, from
+     replacement@1's removed amounts, plus item 2's transit and hold terms, from this operator's
+     removal counter;
+   - G^in is the newcomer's, its template's rows at supply. Its transit and hold are empty.
+
+   Each class of Σ H stays non-negative and non-decreasing inside the domain (§3.5, §9.6). The event
+   books no heat.
+6. **The newcomer's rates (the occupant rule, D244).**
+   - An optional `templates` key gives them: {template_id, rates: {route ID: value}} for a
+     replacement template whose newcomers fill a slot of this operator. A route here is a chain's
+     k_I, a degradation's k, a transfer's capacity, or a scheduled release's p.
+   - Each route of a replaced slot takes its template's value from the newcomer's birth.
+   - Refused at the definition:
+     - a route of a replaced slot without its template's value;
+     - a template value for no route its newcomers take;
+     - a template that is not a replacement template;
+     - a schedule change of a replaced slot's route after its founder's death. In version 1 a
+       newcomer's values are its template's, constant through its life.
+   - The gene's copies T, the chains' structure and the pools' machines M are declared per slot,
+     so the newcomer has the founder's.
+   - A definition without the key keeps its declaration, to_dict and fingerprint byte for byte.
+7. **Labels (D296; the label owner's side).**
+   - The producer's label is a label source's schedule, the chain's, naming (cell, generation,
+     chain) from each generation's birth.
+   - At the event the label owner gives the replaced slot's labelled rows and this operator's hold
+     pools the label in force there, the newcomer's. The departing material leaves with its shares.
+   - **Extracellular RNA is not admitted in version 1.** `check_writers` refuses every other
+     mover of a listed row: another author such as exchange, and an in-step mover such as a face.
+     So no fate row leaves its cell, and the requester's retention of a producer's label outside
+     the cell needs a transport door that this amendment does not define.
+   - Labels change no physics.
+8. **Restart.** Item 2's and item 3's counters, and the replacements applied per slot, are state.
+   So a checkpoint and resume carry them bit for bit, and the controls come from the definition.
+9. **Static.** Without replacement@1 in the composition, or with no event on a slot of this
+   operator, every new field is zero-size. The event part then returns its state unchanged with no
+   validity term, so no program gains an equation. Under D148's case 2 (D296), the proof is the
+   programs check and `validation/gene_regulation/optin_check.py` before and after, with every
+   physical field bitwise.
+10. **What it does not claim.**
+    - **No biology** in the departure: that an occupant's chains in progress and its hold leave
+      with it is the requester's reading of replacement, declared. A newcomer that inherits a
+      chain is not modelled.
+    - **No donor copies** (item 1), and **no `scheduled_cell_replacement@2`**.
+    - **No standard term for the rows' swap** in the engine's bookings (item 2). It is a gap
+      shared with D152 on a desk reading (its docstring and its having no event part, no run),
+      reported to the lead.
+    - **No extracellular retention** (item 7).

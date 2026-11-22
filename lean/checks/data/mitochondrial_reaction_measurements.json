@@ -1,0 +1,29 @@
+{
+  "lawson1979_myokinase": {
+    "source": "https://pubmed.ncbi.nlm.nih.gov/36398/",
+    "locator": "Abstract, myokinase equilibrium on total nucleotides",
+    "conditions": "pH 7.0, 38 °C, ionic strength 0.25 M",
+    "free_Mg_mM": [0.0, 1.0],
+    "total_ATP_AMP_over_ADP_squared": [0.391, 1.05],
+    "uncertainty": "The abstract gives no pointwise uncertainties or method for the zero-free-Mg endpoint."
+  },
+  "kleczkowski1991_maize": {
+    "doi": "10.1093/jxb/42.4.537",
+    "locator": "Abstract, apparent equilibrium on total nucleotides",
+    "preparation": "Purified maize-leaf adenylate kinase",
+    "free_Mg_mM_interval": [1.8, 1.9],
+    "total_ATP_AMP_over_ADP_squared": 0.76,
+    "reported_plus_minus": 0.10,
+    "uncertainty": "The abstract leaves the type of the reported uncertainty unspecified."
+  },
+  "williamson1967_hydroxybutyrate": {
+    "doi": "10.1042/bj1030514",
+    "locator": "Table 3, equilibrium of D-β-hydroxybutyrate dehydrogenase",
+    "conditions": "38 °C, ionic strength 0.255 M, pH 6.84–7.16",
+    "quotient": "[acetoacetate][NADH][H+]/([D-β-hydroxybutyrate][NAD+])",
+    "observed_M": 4.94e-9,
+    "sem_M": 8.6e-11,
+    "determinations": 25,
+    "scope": "Chemical equilibrium for a specified donor. Cells supplies its own standard free energy for an unnamed donor pair."
+  }
+}

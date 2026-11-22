@@ -8,7 +8,10 @@ engine change.
 - each exchange route's source and destination.
 
 **The region export** (region_rows): one row per sample for one species and a declared region, a
-list of one cell's nodes. Amounts are in fmol; losses and transfers are cumulative from t = 0.
+list of one cell's distinct nodes (a node named twice is refused). Each sample is resolved once to
+the one accepted step its time names (step_index), as the tracer's label switches are. Amounts are
+in fmol; losses and transfers are cumulative from t = 0. Every row is held to 0 <= inside <= whole
+cell, so outside >= 0, within its stored amounts' rounding.
 - inside: the amount over the region's nodes;
 - outside: the amount over the cell's other nodes (its cytosol and its other compartments);
 - whole_cell: inside + outside, the cell and every compartment it owns;
@@ -18,6 +21,12 @@ list of one cell's nodes. Amounts are in fmol; losses and transfers are cumulati
   (exchange_moved_fmol counts export positive, so an import's is negated);
 - and, beside them, the amount at each of the cell's nodes and the cumulative production there
   (turnover_produced_fmol, with a reaction's produced amount).
+- **A label family** (D1, the species registry's label_families): the export takes a family's ID
+  as its species and sums the family's rows, or one of its rows alone. Since the registry admits
+  a family's rows only under movers linear in each row, a family row's faces, junctions and patches
+  are admitted here, and their cumulative records are reported per host (host_transfer_fmol: a
+  face or junction from its sender to its receiver, a patch outward from its cell). The engine's
+  own laws move each row, so no tracer is needed: two-way transport is traced exactly.
 
 **What each tool reads, and what it refuses at setup** (check_movers, fail closed). The export
 reads turnover, exchange and the reactions; the tracer reads turnover and exchange only. Each
@@ -54,16 +63,18 @@ reads the cohort.
   - **Its floor:** an unread movement smaller than those 64 ulps is not seen, and in a long run
     the cumulative records set that floor.
 - **Production** joins the cohort that the label schedule names at the step's start. Each label
-  switch must fall on a step's boundary, or the trace is refused.
+  switch is resolved once to the one accepted step its time names, within TIME_RTOL (step_index),
+  and the schedule is read by that index alone: a time no step matches, or that two match, is
+  refused (D265: 0.3 and 0.1 + 0.2 had assigned the step's production differently).
 - **A node's outflow** (its loss and its routes out) leaves each cohort in proportion to that
   cohort's mean amount over the step, (start + end)/2, the trapezoid. A route's outflow carries
   its source's split into its destination.
 - **The step's cohort amounts** at every node solve one linear system per step (nodes by nodes,
   shared by every cohort). Every cohort's amounts sum to the node's amount.
 - **The returned rows are checked** (_check_rows): at every row and node, each cohort is
-  non-negative and the cohorts sum to the node's amount, both within the closure's tolerance, on
-  the dictionary as returned. Cohort names `unlabelled` and `produced` are the tracer's own and
-  are refused as a caller's.
+  non-negative within the rounding of the step's own terms, and the cohorts sum to the node's
+  amount within the closure's tolerance, on the dictionary as returned. Cohort names
+  `unlabelled` and `produced` are the tracer's own and are refused as a caller's.
 
 **Its limits.**
 - **The resolution** (a review finding, 21 November 2026). A cohort present at a step's start
@@ -79,8 +90,11 @@ reads the cohort.
     0.76) into a receiver at r = 0.01 put 9.4e-4 of the receiver's amount on the wrong cohort in
     that one step.
   So the trace refuses a step in which a node that gains material, or sends it along a route, has
-  r above RESOLUTION = 0.01. resolution_largest is the largest r over the nodes the bound tests,
-  those that gained material or sent it along a route in a step. It is 0.0 when no node did: a
+  r above RESOLUTION = 0.01. Whether a node gained or sent material reads the step's own terms,
+  not the closure's tolerance (D265 finding 4): after a long drain the cumulative records'
+  rounding can exceed the node's whole pool, which had hidden a step at r = 2 (a cohort at -33%).
+  resolution_largest is the largest r over the nodes the bound tests, those that gained material
+  or sent it along a route in a step. It is 0.0 when no node did: a
   node that only loses material is exact at any r and is not counted, so a loss-only run's 0.0 does
   not mean its r was small. At that bound,
   measured on 15 closed-form scenarios (a steady pool, a node filling from near-empty, a draining
@@ -131,6 +145,27 @@ CLOSURE_ULPS = 64
 # docstring, "The resolution").
 RESOLUTION = 0.01
 RESERVED = ("unlabelled", "produced")  # The tracer's own cohorts.
+TIME_RTOL = 1e-12  # A requested time names the step within this of it (relative, at least 1 s).
+
+
+def step_index(times, t, what):
+    """The one accepted step a requested time names (D265 finding 2): the step whose time lies
+    within TIME_RTOL max(1, |t|) s of t, so equivalent spellings (0.3 and 0.1 + 0.2) name the same
+    step, and the tracer's labels and the export's samples use that index alone. A time no step
+    matches, or that two steps match, is refused."""
+    tol = TIME_RTOL * max(1.0, abs(t))
+    hits = [k for k, u in enumerate(times) if abs(u - t) <= tol]
+    if not hits:
+        raise ValueError(f"{what} at {t!r} s is not an accepted step's time")
+    if len(hits) > 1:
+        raise ValueError(f"{what} at {t!r} s is ambiguous: {len(hits)} steps within {tol:.3g} s")
+    return hits[0]
+
+
+def _distinct(region):
+    """Refuse a region that names a node twice (D265 finding 5: each would be counted twice)."""
+    if len(set(region)) != len(region):
+        raise ValueError(f"the region {list(region)} names a node twice")
 
 
 def world_map(spec, species):
@@ -197,13 +232,19 @@ REFUSED = {
     "scheduled_bath_composition@1": "sets held baths' compositions at its events",
     "scheduled_membrane_trafficking@1": "moves membrane, and the charges on it, between nodes",
     "scheduled_compartment_wash@1": "collects and refills every free species at its nodes",
+    # Gene regulation's option A (G4): a recorded exception naming the table's owner.
+    "templated_polymerisation@1": "makes, degrades and recharges species at its routes' cells; "
+    "neither tool reads its counters",
 }
 
 
-def check_movers(spec, species, reads):
+def check_movers(spec, species, reads, *, host_transport=False):
     """Refuse a world in which anything but the laws `reads` could move the species (module
     docstring; fail closed): a face's diffusivity, a junction's or a patch's permeability for it,
-    every operator law neither read nor shown inert (REFUSED says why), and every declared kind."""
+    every operator law neither read nor shown inert (REFUSED says why), and every declared kind.
+    host_transport (the export of a label family's row, D1): its faces, junctions and patches are
+    admitted, since the registry's check_families admits only movers linear in each row, and the
+    export reads their records (host_transfer_fmol)."""
     m = spec.model
     s = list(m.species_ids).index(species)
     found = []
@@ -213,13 +254,13 @@ def check_movers(spec, species, reads):
             "it is charged, or its charge is not declared (its channel, pump and membrane fluxes "
             "are in-step laws neither tool reads)"
         )
-    for face in getattr(m, "faces", ()):
+    for face in () if host_transport else getattr(m, "faces", ()):
         if face.diffusivity_m2_per_s[s] != 0:
             found.append(f"face {face.id} diffuses it")
-    for junction in getattr(m, "junctions", ()):
+    for junction in () if host_transport else getattr(m, "junctions", ()):
         if junction.permeability_m_per_s[s] != 0:
             found.append(f"junction {junction.id} permeates it")
-    for patch in getattr(m, "membranes", ()):
+    for patch in () if host_transport else getattr(m, "membranes", ()):
         if patch.permeability_m_per_s[s] != 0:
             found.append(f"patch {patch.id} permeates it")
     for op in m.operators:
@@ -316,8 +357,16 @@ def region_rows(spec, times, states, species, region, *, samples=None):
     {times, inside_fmol, outside_fmol, whole_cell_fmol, node_fmol: {node: [...]},
     produced_fmol: {node: [...]}, loss_fmol: {node: [...]}, transfer_fmol: {route: [...]}, region,
     cell_nodes}."""
-    check_movers(spec, species, EXPORT_READS)
-    wmap = world_map(spec, species)
+    from cells.registry import species_registry
+
+    family = species_registry.family_rows(spec, species)
+    rows = list(family) if family is not None else [species]
+    labelled = family is not None or species_registry.family_of(spec, species) is not None
+    for row in rows:
+        check_movers(spec, row, EXPORT_READS, host_transport=labelled)
+    _distinct(region)
+    wmaps = [world_map(spec, row) for row in rows]
+    wmap = wmaps[0]  # Nodes, owners and routes are the world's, one per row alike.
     _, layout = get_model(spec.model).initial_values(spec)
     owners = {wmap["owner"].get(n) for n in region if n not in wmap["cells"]}
     owners |= {n for n in region if n in wmap["cells"]}
@@ -326,18 +375,45 @@ def region_rows(spec, times, states, species, region, *, samples=None):
     (cell,) = owners
     cell_nodes = [cell] + [n for n, o in wmap["owner"].items() if o == cell]
     index = {n: i for i, n in enumerate(wmap["nodes"])}
-    picked = set(samples) if samples is not None else None
+    if samples is None:
+        picked = list(range(len(times)))
+    else:
+        picked = [step_index(times, t, "the sample") for t in samples]
+        if len(set(picked)) != len(picked):
+            raise ValueError("two samples name the same step")
+        picked.sort()
+    eps = np.finfo(float).eps
+    routes = list({r["id"]: r for w in wmaps for r in w["routes"]}.values())
+    hosts = _cell_hosts(spec, cell_nodes, rows) if labelled else []
     out = dict(times=[], inside_fmol=[], outside_fmol=[], whole_cell_fmol=[],
                node_fmol={n: [] for n in cell_nodes}, produced_fmol={n: [] for n in cell_nodes},
                loss_fmol={n: [] for n in cell_nodes},
-               transfer_fmol={r["id"]: [] for r in wmap["routes"]},
-               region=list(region), cell_nodes=cell_nodes)  # fmt: skip
-    for t, state in zip(times, states, strict=True):
-        if picked is not None and t not in picked:
-            continue
-        amount, made, lost, moved = node_records(spec, layout, state, wmap)
+               transfer_fmol={r["id"]: [] for r in routes},
+               region=list(region), cell_nodes=cell_nodes, rows=rows)  # fmt: skip
+    if labelled:
+        out["host_transfer_fmol"] = {h["id"]: [] for h in hosts}
+    if len(times) != len(states):
+        raise ValueError("times and states differ in length")
+    for k in picked:
+        t, state = times[k], states[k]
+        records = [node_records(spec, layout, state, w) for w in wmaps]
+        amount = sum(r[0] for r in records)  # A family's rows summed (D1); one row as before.
+        made, lost = sum(r[1] for r in records), sum(r[2] for r in records)
+        moved = {}
+        for w, r in zip(wmaps, records, strict=True):
+            for route, value in zip(w["routes"], r[3], strict=True):
+                moved[route["id"]] = moved.get(route["id"], 0.0) + value
         inside = sum(amount[index[n]] for n in region)
         whole = sum(amount[index[n]] for n in cell_nodes)
+        # The row's bounds (finding 5): 0 <= inside <= whole cell, so outside >= 0, within the
+        # rounding of the cell's stored amounts.
+        stored = sum(stored_magnitudes(layout, state, w) for w in wmaps)
+        tol = CLOSURE_ULPS * eps * sum(abs(amount[index[n]]) + stored[index[n]] for n in cell_nodes)
+        if inside < -tol or whole - inside < -tol:
+            raise ValueError(
+                f"the region {list(region)} at t = {t} holds {inside} fmol of a cell holding "
+                f"{whole} fmol: outside {whole - inside} fmol, below 0"
+            )
         out["times"].append(t)
         out["inside_fmol"].append(float(inside))
         out["outside_fmol"].append(float(whole - inside))
@@ -346,8 +422,36 @@ def region_rows(spec, times, states, species, region, *, samples=None):
             out["node_fmol"][n].append(float(amount[index[n]]))
             out["produced_fmol"][n].append(float(made[index[n]]))
             out["loss_fmol"][n].append(float(lost[index[n]]))
-        for r, value in zip(wmap["routes"], moved, strict=True):
-            out["transfer_fmol"][r["id"]].append(float(value))
+        for r in routes:
+            out["transfer_fmol"][r["id"]].append(float(moved.get(r["id"], 0.0)))
+        for h in hosts:
+            record = np.asarray(getattr(state, h["field"]))
+            value = sum(record[list(spec.model.species_ids).index(row), h["slot"]] for row in rows)
+            out["host_transfer_fmol"][h["id"]].append(float(value))
+    return out
+
+
+def _cell_hosts(spec, cell_nodes, rows):
+    """The faces, junctions and patches that move a label family's rows at the cell's nodes (D1):
+    [{id, field, slot, from, to}], each with its cumulative record's orientation (the engine's: a
+    face or a junction from its sender to its receiver, a patch outward from its cell)."""
+    m = spec.model
+    ids = list(m.species_ids)
+    out = []
+    for field, kind, coefficient, ends in (
+        ("face_transferred", getattr(m, "faces", ()), "diffusivity_m2_per_s",
+         lambda e: (e.sender, e.receiver)),
+        ("junction_transferred", getattr(m, "junctions", ()), "permeability_m_per_s",
+         lambda e: (e.sender, e.receiver)),
+        ("membrane_transferred", getattr(m, "membranes", ()), "permeability_m_per_s",
+         lambda e: (e.inside, e.outside)),
+    ):  # fmt: skip
+        for slot, e in enumerate(kind):
+            if not any(getattr(e, coefficient)[ids.index(r)] for r in rows):
+                continue
+            a, b = ends(e)
+            if a in cell_nodes or b in cell_nodes:
+                out.append(dict(id=e.id, field=field, slot=slot, **{"from": a, "to": b}))
     return out
 
 
@@ -377,17 +481,19 @@ def _cohort_shares(cohorts, nodes):
     return share
 
 
-def _check_rows(result, totals, scales):
+def _check_rows(result, totals, scales, local_scales):
     """The returned rows' invariant (module docstring): at every row and node, each cohort
-    non-negative and the cohorts summing to the node's amount, within the closure's tolerance, on
-    the dictionary as returned (so a column a name replaced, or a negative split, is seen)."""
+    non-negative within the rounding of the step's own terms (local_scales: D265 finding 4, since
+    the cumulative records' rounding can exceed a drained node's whole pool), and the cohorts
+    summing to the node's amount within the closure's tolerance (scales), on the dictionary as
+    returned (so a column a name replaced, or a negative split, is seen)."""
     eps = np.finfo(float).eps
     amount = result["amount"]
     for node, total in totals.items():
         for k, t in enumerate(result["times"]):
             tol = CLOSURE_ULPS * eps * scales[node][k]
             values = [amount[c][node][k] for c in amount]
-            if min(values) < -tol:
+            if min(values) < -CLOSURE_ULPS * eps * local_scales[node][k]:
                 raise ValueError(
                     f"the trace's cohorts at {node}, t = {t}, are not non-negative ({min(values)} "
                     "fmol)"
@@ -414,9 +520,9 @@ def trace(spec, times, states, species, cohorts, *, produced=()):
     movers), at a step the records do not close, at a step it cannot resolve (r above RESOLUTION
     at a node that gains material) and where a returned row breaks the invariant."""
     check_movers(spec, species, TRACER_READS)
-    for t, _ in produced:
-        if t > times[0] and not any(abs(t - u) <= 1e-12 * max(1.0, abs(t)) for u in times):
-            raise ValueError(f"the label switch at {t} s is not on a step's boundary")
+    switches = sorted((step_index(times, t, f"the label switch to {c!r}"), c) for t, c in produced)
+    if len({k for k, _ in switches}) != len(switches):
+        raise ValueError("two label switches name the same step")
     wmap = world_map(spec, species)
     _, layout = get_model(spec.model).initial_values(spec)
     nodes, routes = wmap["nodes"], wmap["routes"]
@@ -435,11 +541,11 @@ def trace(spec, times, states, species, cohorts, *, produced=()):
     moved = np.zeros((len(routes), len(names)))
     out = dict(times=[times[0]], amount=[x.copy()], loss=[loss.copy()], transfer=[moved.copy()])
     stored = stored_magnitudes(layout, states[0], wmap)
-    totals, scales = [start.copy()], [np.abs(start) + stored]
+    totals, scales, locals_ = [start.copy()], [np.abs(start) + stored], [np.abs(start)]
     closure, bound, resolution = 0.0, 0.0, 0.0
     previous = node_records(spec, layout, states[0], wmap)
     eps = np.finfo(float).eps
-    for t0, t1, state in zip(times[:-1], times[1:], states[1:], strict=True):
+    for k0, (t1, state) in enumerate(zip(times[1:], states[1:], strict=True)):
         now = node_records(spec, layout, state, wmap)
         stored_now = stored_magnitudes(layout, state, wmap)
         n0, n1 = previous[0], now[0]
@@ -459,15 +565,19 @@ def trace(spec, times, states, species, cohorts, *, produced=()):
             raise ValueError(f"the records do not close the species' amounts at t = {t1}")
         bound = CLOSURE_ULPS * eps
         # The resolution (module docstring): r = O/S, tested where the node gains material or
-        # sends it along a route (its route's arrivals then shape a receiver's split).
+        # sends it along a route (its route's arrivals then shape a receiver's split). Its test
+        # reads the step's own terms (D265 finding 4): the closure's tolerance carries the
+        # cumulative records' rounding, and after a long drain it can exceed the whole pool.
+        local = np.abs(n0) + np.abs(n1) + np.abs(made) + np.abs(lost) + inflow + outflow
+        local_tol = CLOSURE_ULPS * eps * local
         S = n0 + n1
         filled = S > 0
         inv = np.where(filled, 1.0 / np.where(filled, S, 1.0), 0.0)
-        ratio = np.where(filled, outflow * inv, np.where(outflow > tol, np.inf, 0.0))
-        checked = made + inflow > tol
+        ratio = np.where(filled, outflow * inv, np.where(outflow > local_tol, np.inf, 0.0))
+        checked = made + inflow > local_tol
         for r, amount in zip(routes, m, strict=True):
             s = index[r["source"]]
-            checked[s] |= amount > tol[s]
+            checked[s] |= amount > local_tol[s]
         if np.any(checked):
             resolution = max(resolution, float(np.max(ratio[checked])))
         if np.any(checked & (ratio > RESOLUTION)):
@@ -480,7 +590,7 @@ def trace(spec, times, states, species, cohorts, *, produced=()):
                 "r): 0 at r = 1, where the truth is e^-2 = 0.135, and negative above it; a route "
                 "sender's arrivals shape its receiver's split); take smaller steps"
             )
-        label = next((c for t, c in reversed(produced) if t <= t0), "produced")
+        label = next((c for k, c in reversed(switches) if k <= k0), "produced")
         A = np.diag(1.0 + outflow * inv)
         B = x * (1.0 - outflow * inv)[:, None]
         B[:, names.index(label)] += made
@@ -500,6 +610,7 @@ def trace(spec, times, states, species, cohorts, *, produced=()):
         out["transfer"].append(moved.copy())
         totals.append(n1.copy())
         scales.append(scale)
+        locals_.append(local)
 
     def by(array_list, labels):
         stacked = np.array(array_list)  # [time, label, cohort]
@@ -520,5 +631,6 @@ def trace(spec, times, states, species, cohorts, *, produced=()):
         result,
         {n: [float(v[i]) for v in totals] for i, n in enumerate(nodes)},
         {n: [float(v[i]) for v in scales] for i, n in enumerate(nodes)},
+        {n: [float(v[i]) for v in locals_] for i, n in enumerate(nodes)},
     )
     return result

@@ -21,11 +21,19 @@ At fixed external number density, scaling the area-equivalent radius by s scales
 
 Direct proof subject `cells.phase_exchange@1`
 
+Proof sources [VeriBiota preservation of a weighted count under an enabled firing, imported in the optional check](https://github.com/OmnisGenomics/VeriBiota/blob/a145b640d7d8009a5a653849c41ef9a1d6b1c176/Biosim/Proofs/Invariants.lean#L113-L121) · [Cells specialization to a one-molecule transfer from a finite pool](../checks/chemistry/Reuse.lean#L63)
+
 Uses [Bilayer area is half the sum of the molecular footprints in its two leaflets](bilayer-footprint.md) · [Finite molecule counts set stochastic encounter rates and paired event heat](assembly-stochastic-encounter.md)
 
 ## Numerical comparison
 
 **Checked.** Doubling radius gave 4× area-limited insertion and 2× diffusion-limited capture. Across both transport steps, eight compiled configurations tested finite and held baths and both counting measures. All 40 blocked directions had zero rate. Across 64 active pairs the largest free-energy residual was 1.43 × 10⁻¹⁴ k_BT.
+
+**Engine** `cells.assembly_lineages@2`, `cells.phase_exchange@1`, `cells.membrane_permeation@1`, `cells.bilayer_geometry@1`, `cells.ideal_mixing@1`
+
+[Directional activities and geometric factor](https://github.com/Eidosoma/Cells/blob/329e9e395ac117998657a21eb827192d34314107/src/cells/models/assembly_lineages_v2/exchange.py) · [Area or radius on the common footprint](https://github.com/Eidosoma/Cells/blob/329e9e395ac117998657a21eb827192d34314107/src/cells/models/assembly_lineages_v2/kernel.py) · [assembly lineage v2 fixtures](https://github.com/Eidosoma/Cells/blob/329e9e395ac117998657a21eb827192d34314107/tests/assembly_lineage_v2_fixtures.py) · [test assembly lineages v2 geometry](https://github.com/Eidosoma/Cells/blob/329e9e395ac117998657a21eb827192d34314107/tests/unit/test_assembly_lineages_v2_geometry.py) · [vesicle exchange measurements](https://github.com/Eidosoma/Cells/blob/ad1f96418722d25876b38b5a5f38996512d6a32c/lean/checks/data/vesicle_exchange_measurements.json) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/ad1f96418722d25876b38b5a5f38996512d6a32c/lean/checks/vesicle_exchange.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/ad1f96418722d25876b38b5a5f38996512d6a32c/lean/PROGRESS.md#ol5-six-replays)
+
+[Tested engine 329e9e395ac1](https://github.com/Eidosoma/Cells/commit/329e9e395ac117998657a21eb827192d34314107) · [Evidence checkpoint ad1f96418722](https://github.com/Eidosoma/Cells/commit/ad1f96418722d25876b38b5a5f38996512d6a32c)
 
 **Engine** `cells.assembly_lineages@2`, `cells.phase_exchange@1`, `cells.membrane_permeation@1`, `cells.bilayer_geometry@1`, `cells.ideal_mixing@1`
 

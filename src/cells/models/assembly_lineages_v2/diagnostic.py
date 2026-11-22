@@ -5,8 +5,12 @@ It records every draw with its address (domain, carrier key, counter), its unifo
 (committed event, discarded at a schedule time, or the draw that ended the run); every schedule
 draw; the channel table; each step event with its group, its heat and reservoir work, the changed
 vesicle's counts after it and the pool after it; each shear event's attempts with their uniforms
-(the used prefix); the initial and final states; the world's key and the end reason; and the
-environment record (§0.2d item 9). OL1's `event_uniforms` keeps its meaning (committed events only).
+(the used prefix), and its pool and living slots after it; each transfer event with its draws by
+slot, and its pool and living slots after it; the initial and final states; the world's key and
+the end reason; and the environment record (§0.2d item 9). An attempt states the heat and reservoir
+work of its daughters' births beyond sigma_max, whose lysis rows book them (attribution, not a
+second booking). OL1's `event_uniforms` keeps its meaning (committed events only). None of this
+changes a run: the record is written from the run's own state, after it.
 
 The uniforms are recomputed on the host from each draw's address, by the run's own derivation; a
 committed draw's equal the device's own record when the experiment also records uniforms (checked).
@@ -18,6 +22,10 @@ from cells.models.assembly_lineages_v2 import division, kernel, streams
 
 FATES = ("committed", "discarded_at_schedule", "ended_run")
 COMMITTED, DISCARDED, ENDED = range(3)
+# FR-31: a pore world's fates add the draw that crosses a pore stop (pore_clock.py); every other
+# record's fates are FATES, unchanged.
+PORE_FATES = (*FATES, "discarded_at_pore")
+DISCARDED_AT_PORE = 3
 USES = ("gap", "transfer")
 
 
@@ -197,6 +205,20 @@ def _shear_events(spec, layout, holder):
         if attempt.outcome in ("refused_stress", "refused_volume"):
             stop["not_admitted"].append(0)
         stop["attempts"].append(entry)
+        # The event's state after it: the followed daughter in slot 0 (none when it lysed at
+        # birth, which ends the run), or the parent unchanged; and the pool.
+        if attempt.outcome == "split":
+            after = attempt.daughters[attempt.followed]
+            living = not attempt.lysed[attempt.followed]
+            key = int(attempt.keys[attempt.followed])
+        else:
+            after, living, key = attempt.parent_counts, True, int(attempt.parent)
+        stop["pool_after"] = np.asarray(after)[pool].tolist()
+        stop["slots_after"] = (
+            [{"slot": 0, "key": key, "counts": np.asarray(after)[vesicle].tolist()}]
+            if living
+            else []
+        )
     out = sorted(events.values(), key=lambda e: (e["time"], e["schedule"]))
     return out, (np.concatenate(blocks) if blocks else np.zeros(0))
 
@@ -245,8 +267,14 @@ def build_population(spec, layout, ctx, draws, committed, codes, values, after_e
         "event_lysed": lysed,
         "event_heat_kT": np.diff(np.concatenate(([heat_0], heat))),
         "event_reservoir_work_kT": np.diff(np.concatenate(([work_0], work))),
-        "event_vesicle_after": np.asarray([a for a, _ in after_events]).reshape(len(codes), -1),
-        "event_pool_after": np.asarray([b for _, b in after_events]).reshape(len(codes), -1),
+        # [event, place]: explicit widths, so a run with no step event (OL5's ol3_shear_probe,
+        # 0.03 s) writes [0, P] rather than failing to reshape an empty array
+        "event_vesicle_after": np.asarray([a for a, _ in after_events], dtype=np.int64).reshape(
+            len(codes), len(world.places)
+        ),
+        "event_pool_after": np.asarray([b for _, b in after_events], dtype=np.int64).reshape(
+            len(codes), len(world.places)
+        ),
     }
     sched = ctx.schedule_draws
     arrays |= {
@@ -259,6 +287,17 @@ def build_population(spec, layout, ctx, draws, committed, codes, values, after_e
     stops, blocks, offset = {}, [], 0
     places = len(world.places)
     membrane, inside = division.vesicle_places(world)
+
+    def state_of(s):
+        return {"slots": [{"slot": int(k), "key": int(s.keys[k]),
+                           "counts": s.slots[k][: places].tolist()}
+                          for k in np.flatnonzero(s.alive)],
+                "pool": s.pool[: places].tolist()}  # fmt: skip
+
+    # A daughter born beyond sigma_max lyses at birth (§0.2d item 10.3): its lysis row books the
+    # release, and the attempt that bore it states that heat and work too (attribution, not a
+    # second booking: FORMAT_OL2.md).
+    born = {int(r["key"]): r for r in ctx.lyses if r["at_birth"]}
     for a, _, slot, homes in ctx.attempts:
         entry = {"slot": int(slot), "key": int(a.parent), "counter": int(a.counter),
                  "outcome": a.outcome, "uniforms_offset": offset, "uniforms_count": 0}  # fmt: skip
@@ -273,7 +312,11 @@ def build_population(spec, layout, ctx, draws, committed, codes, values, after_e
                  "counts": a.daughters[j][vesicle].tolist(), "lysed_at_birth": bool(a.lysed[j])}
                 for j, key in enumerate(a.keys)
             ]  # fmt: skip
-            entry |= {"shear_work_kT": a.shear_work, "heat_kT": 0.0, "reservoir_work_kT": 0.0,
+            lysed = [born[int(key)] for key in a.keys if int(key) in born]
+            entry |= {"shear_work_kT": a.shear_work,
+                      "heat_kT": float(sum(r["release_heat_kT"] for r in lysed)),
+                      "reservoir_work_kT": float(sum(r["release_reservoir_work_kT"]
+                                                     for r in lysed)),
                       "sink_kT": 0.0}  # fmt: skip
         stop = stops.setdefault(
             (a.time, a.schedule),
@@ -283,12 +326,27 @@ def build_population(spec, layout, ctx, draws, committed, codes, values, after_e
             stop["not_admitted"].append(int(slot))
         stop["attempts"].append(entry)
     arrays["attempt_uniforms"] = np.concatenate(blocks) if blocks else np.zeros(0)
-
-    def state_of(s):
-        return {"slots": [{"slot": int(k), "key": int(s.keys[k]),
-                           "counts": s.slots[k][: places].tolist()}
-                          for k in np.flatnonzero(s.alive)],
-                "pool": s.pool[: places].tolist()}  # fmt: skip
+    # Each shear and transfer event's pool and living slots after it (the shear's attempts and
+    # birth lyses, or the transfer's sample and fresh pool applied), and each transfer draw's slot.
+    transfers = {(t["time_s"], t["schedule"]): t for t in ctx.transfers}
+    transfer_events = []
+    for time, schedule, after, living in ctx.scheduled_after:
+        state_after = state_of(after)
+        if ctx.by_index[schedule].kind == "transfer":
+            event = {k: v for k, v in transfers[(time, schedule)].items() if k != "draws"}
+            drawn = transfers[(time, schedule)]["draws"]
+            if len(drawn) != len(living):
+                raise AssertionError("A transfer drew other than once per living assembly")
+            event["draws"] = [{"slot": s, "counter": int(d[1]), "uniform": float(d[2])}
+                              for s, d in zip(living, drawn, strict=True)]  # fmt: skip
+            transfer_events.append(event | {"pool_after": state_after["pool"],
+                                            "slots_after": state_after["slots"]})  # fmt: skip
+            continue
+        stop = stops.setdefault(
+            (time, schedule),
+            {"time": time, "schedule": schedule, "not_admitted": [], "attempts": []},
+        )
+        stop |= {"pool_after": state_after["pool"], "slots_after": state_after["slots"]}
 
     groups = {"pool": [], "vesicle": []}
     for direction in ("forward", "reverse"):
@@ -307,7 +365,7 @@ def build_population(spec, layout, ctx, draws, committed, codes, values, after_e
         "after": "event_vesicle_after is the event's slot over every place (pool places 0; all 0 "
         "for a pool event); event_pool_after the pool over every place (vesicle places 0)",
         "shear_events": sorted(stops.values(), key=lambda e: (e["time"], e["schedule"])),
-        "transfer_events": ctx.transfers,
+        "transfer_events": transfer_events,
         "lyses": ctx.lyses,
         "states": {"initial": state_of(start), "final": state_of(final)},
         "keys": keys_rules.SPELLING,
@@ -318,4 +376,6 @@ def build_population(spec, layout, ctx, draws, committed, codes, values, after_e
     }
     if ctx.replacements:  # FR-20: each pool replacement, when declared (it draws nothing)
         body["replacement_events"] = ctx.replacements
+    if ctx.withdrawals:  # FR-35: each withdrawal, its draws by address (index, number, size)
+        body["withdrawal_events"] = ctx.withdrawals
     return body, arrays

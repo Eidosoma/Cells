@@ -32,6 +32,7 @@
         "operators": {"$ref": "#/$defs/texts"},
         "engine_revision": {"$ref": "#/$defs/revision"}, "record_revision": {"$ref": "#/$defs/revision"},
         "sources": {"$ref": "#/$defs/links"},
+        "record_inputs": {"$ref": "#/$defs/links"},
         "driver": {"$ref": "#/$defs/text"}, "record": {"$ref": "#/$defs/text"}
       }
     },

@@ -8566,3 +8566,948 @@ level, keeps chloride's inventory fixed, but its cumulative collected and suppli
 - **Assigned:** the robustness agent, with the operators owner's review, stacked on the wash's
   surface-path fix (0e8194e0). FR-27's wash counters are held from scoring until it lands.
 
+## D267: Origin of life, gene regulation and mitochondria resume
+
+2026-11-21, about 20:35 UTC. The user, after D260's window ended: "yes lets start all three paused
+ones".
+- **Origin of life:** GARD @2's gate first (merging main), then the builder's held queue: slice 5
+  (labels), the population runs, OL5's probe roles and OL6. A fuelled pulse through a wash needs a
+  declared-source option first (D263's version-1 limit).
+- **Gene regulation:** G4 lands with the D259, D264 and D265 fixes, after a main merge and its gate.
+  The dt 1.0 and 0.5 development runs are then compared again with the fixed comparison, and only
+  then read. FR-25's follow-ups come after.
+- **Mitochondria:** the lane resumes from its own plan after FR-33's tracer fixes land. Any open
+  science choice comes to the user.
+- **Unchanged:** the review holds (D259, D263 to D266) stay until each fix lands. The floating-
+  junction fix (A) still needs the user's decision.
+- **Priority (the user, the same evening: "but still prioritize FR fixes", then "and Frs"):** FR
+  fixes and FR work, with their landings, come before the resumed lanes' new work, in agents' time
+  and in the test lanes. A resumed lane's gate queues behind any waiting FR gate.
+
+## D268: Lanes paused again for FR work; four FR choices decided with the advisor
+
+2026-11-21, about 20:41 UTC. The user: "so lets pause those three again, get adviser on the items to
+choose - then go on the FRs instead of the three paused ones". Origin of life, gene regulation and
+mitochondria pause their own work again; FR work takes the agents. Running tests are not stopped.
+Decided by the lead with the advisor, under the user's delegation for FR choices (D244):
+1. **FR-7 item 4: closed as unmet.** No public data gives a falsifiable test of abundance against
+   function: the Ross et al. 2025 panel cannot (D257), and the Kir chain's consistency check (D256)
+   is not support. It reopens on surface abundance and current measured in the same single-variant
+   cells.
+2. **FR-29: recorded as investigated, no build.** The return mode failed its registered test, and no
+   form tested fits Fig. 3's curves and the pH 3.1 bound together (D258). It reopens on a difference
+   current at vacuolar pH 3.1 to 3.5 under Fig. 3's protocol.
+3. **FR-28: option A** (a node owner, counts as for every population; about half a day), built by
+   the operators owner after the composite clamp lands.
+4. **FR-26's L: not now.** W meets FR-26's acceptance. L, one lifecycle shared with division, is a
+   7 to 10 day build to be designed with its first division consumer.
+- **Still the user's:** the FR-30 downloads (a Cx43 voltage series); the Kv1.5 density data (D218);
+  and the floating-junction fix (A), since one G1 world would move.
+- **FR-25:** the fixed comparison over the dt runs is FR-25's own acceptance (induction and decay
+  against independent references), so it runs now as FR work, with the follow-ups after.
+- **Checking:** the origin-of-life builder, now free, becomes a second independent checker, for
+  code it did not write. Each new FR landing needs its acceptance written from the request's own
+  words, as for FR-35.
+
+## D269: The Lean lane's biological-disagreement review, routed
+
+2026-11-21, about 20:49 UTC. The Lean lane and its literature search reviewed where Cells' models
+disagree with measurements (relayed by the user: "from lean get that to the right places"). Routed:
+- **FR-35, FR-30, FR-31, FR-32 and FR-29:** each finding is recorded in its FR section in
+  docs/FEATURE_REQUESTS.md as a validation target or a restatement. No build changes now.
+- **Shear fission (the assembly owner, origin of life):** summed daughter fluorescence was 0.87 ±
+  0.01 of the parent expectation (PMC5876618). Bath tracer and optical recovery are to be measured
+  before a 13% molecular loss is assigned; a validation target for the division model, not a defect.
+- **Channel currents (the @3 owner and the kinds owner):** matching reversal still left large
+  amplitude errors. Red-cell chloride at −59 mV gave −1.17 ± 0.13 against −1.97 mA/g Hb predicted
+  (doi:10.1085/jgp.109.2.201); Kir4.1 at 15 mM external potassium gave about −0.59 against −0.385 pA
+  (doi:10.2170/jjphysiol.48.71). Both are targets for testing full current-voltage curves, with
+  FR-34's clamped evaluation as the instrument.
+- **Kv1.5 pH (FR-7's lane):** retention at pH 6.8 was 74.5 ± 1.9% (SEM); voltage alone gives 100%,
+  the measured pH shift on the default gate 40.5%, and both measured midpoints 69.5%. The control
+  midpoint and pulse protocol are to be matched before the residual is read.
+- **Mitochondrial ATP synthase stalls (the mitochondria lane, paused):** the three-proton endpoint
+  shift was 0.745 pH unit against 0.74 observed, but four intermediate values sat 0.068 to 0.078 pH
+  unit below prediction. Free activities and interpolation errors are to be checked before any
+  change of stoichiometry; the measured coupling was 2.9 ± 0.2 H⁺/ATP.
+- The full handoff is the Lean lane's PROGRESS.md, in its FR-35 withdrawal checkpoint folder. The
+  paused lanes take their items when they resume.
+
+## D270: FR-25's tolerance registration, FR-8's row rule, and the branch triage
+
+2026-11-21, about 21:07 UTC. Decided by the lead with the advisor, under D268's FR delegation.
+- **FR-25's registration (the GR agent's plan, approved with five changes).** Each readout's
+  tolerance is F x a Richardson estimate of the engine's own step error at dt 0.5, from fresh runs
+  at dt 2.0, 1.0 and 0.5 at G4's landed head, with a floor of 1e-9 of scale (the references'
+  resolution). It is set per readout and world, never from the gaps to G2. F = 3, after Roache's
+  grid-convergence-index convention for an assumed order (to be checked against the source before
+  it is cited). The changes:
+  1. A readout at the floor is judged against the floor without an order check. Elsewhere an
+     observed order outside p +/- 0.5 makes the world inconclusive, and FR-25 does not pass with
+     any inconclusive world.
+  2. p is declared per world kind and readout class, each with its scheme's reason; heat's order
+     is checked first.
+  3. One retry, declared now: an inconclusive world gets one finer triple (1.0, 0.5, 0.25) under
+     the same rule.
+  4. Two tags: the rule before the fresh runs launch, then the table before anything compares to
+     G2.
+  5. It is not blind. The development gaps were read, and the landed head differs from those runs
+     only at rounding; the rule's soundness is that it comes from step error alone.
+  - The OL builder judges, recomputing the table with its own code.
+  - A pass covers G2's trajectories at dt 0.5, within 3x the engine's own step error. dG and u are
+    not exported, and corners and interior points stay with G6.
+  - About one agent-day and three CPU-hours; the runs wait for G4's landing.
+- **FR-8's section 10.20 reading: its rows are matched to the clock by integer millisecond**, each at
+  the clock's own point (section 10.4's Times rule): 2,711 rows. Exact float membership would drop 60
+  rows on representation artefacts, including the stretch after 1802.0 that section 10.20 calls
+  uncertain. The judge reports the verdict on both sets, the 2,711 (registered) and the 2,651.
+  - The dated entry before launch records both counts, the desk figure's correction and the judge's
+    ordering fix, and C's near-coincident-event finding with a proposed rule. The fix to
+    fine_windows comes after the reading.
+  - The run is from a frozen snapshot of 03fe5119 plus the driver commit, as section 10.20 names.
+    The second builder re-judges from the frozen outputs.
+- **Merges into main.** The visualizer's Versions 52 and 53 (beb6ff1b). The Lean lane's latest line,
+  unedited (c6ad8cc4); its catalog cites 3d31a606, which is local until GARD @2 lands.
+- **Branch triage.** A read-only triage of the older unmerged branches.
+  - Landed: the floating-junction interim note (26059683), FR-7's division note, proposed
+    (8e2268a0), P1's section 9 committed before its runs (faf64005), and the tier-3 refreeze
+    (2a3166be).
+  - Pending with owners: crossrev-renewal (needs a gate; a tier-row conflict); three code-blind
+    reference branches (OL5 amendment 7, the XC0 references, G2's published interior sample),
+    which wait for their lanes; the 11 November Phase 0 reference runner, which needs a review for
+    copied code before landing; and packed-gpu-planner, held for the GPU decision.
+  - Ten branches hold nothing not on main. Their deletion waits for the user.
+
+## D271: FR-25's registration amended: heat's order, the order window, and the claim's wording
+
+2026-11-21, about 21:14 UTC, before the rule is tagged. Decided by the lead with the advisor
+(amends D270).
+- **Heat in the A1-M worlds is declared second order.** Each route's heat is its share of the exact
+  total, split by divided-difference potentials, a second-order discrete gradient. Recharging,
+  running near equilibrium, shows it (2.47e-7 at dt 1.0 against 6.26e-8 at dt 0.5, order 1.98, in
+  pol T=100). The other A1-M classes stay third order (SSPRK(3,3)); A1 stays second order (the
+  Strang split of its coupling and the X turnover). No order is set per route.
+- **The order window is p − 0.5 ≤ q ≤ 3.5 for every judged readout**, replacing p ± 0.5.
+  - Under p ± 0.5, benign superconvergence would have made every world inconclusive.
+  - Removing the upper bound would leave the tolerance unboundedly loose. With p declared, it is
+    (2^q − 1)/(2^p − 1) times larger than the actual step error, 7× at q = 3 for p = 2.
+  - The bound 3.5 is the integrator's order plus the declared margin, so it comes from the scheme.
+    It caps the tolerance near 10× the actual step error. Above it, the declared finer-triple
+    retry applies.
+  - Disclosure: the development orders (a maximum of about 3.2) were seen before this change.
+- **The claim is worded "within 3× the step-error estimate at the scheme's formal order"**, not "3×
+  the engine's step error". The judge reports, per readout, the observed order and the effective
+  factor against the actual step error; these are reported, not judged.
+- **The sequence**, so that no tag publishes ungated code: G4 lands; the follow-ups and the
+  registration tools land (validation only); the rule is tagged on main; the fresh runs launch from
+  that snapshot; the table is tagged; the OL builder judges.
+- F = 3 cites Roache's grid-convergence-index convention through secondary sources (NASA's NPARC
+  tutorial; Phillips and Roy 2014, J. Fluids Eng.). The 1994 paper itself was not reached.
+
+## D272: Holds lifted as their fixes land; a clock finding recorded
+
+2026-11-21, about 21:21 UTC.
+- **FR-34's reopening for composites (D265) is closed.** The composite clamp landed at 07022ddf: the
+  composition's own clamped_channel_flux and clamped_kind, at the step's control and layout views.
+  The second builder confirmed it independently.
+- **D266's wash ion counters are fixed** at 52831912. The lead reran the Lean lane's acceptance
+  (ion-counters) before landing: exit 1 at main, exit 0 at the head. Wash runs with ions at any
+  fraction need no special handling now.
+- **FR-8's section 10.20 reading passed.** The second builder's re-judge confirmed it from the frozen
+  outputs and found that judge.json came from the launch snapshot, not the one named. An erratum
+  (section 10.24) names each verdict's snapshot before the branch lands.
+- **A finding for its own decision:** a clock without fine windows has the same near-coincident
+  exposure that C's fix closes for windowed clocks. A decimal event one ulp from i x dt adds a step
+  of about 2e-13 s. Extending the refusal would touch every world's clock, so it is not done now.
+- **Housekeeping, at the user's word:** ten branches holding nothing not on main were deleted, then
+  145 branches merged into main along with 94 idle, clean worktrees. Their tips are recorded beside
+  the lead notes. Kept: lean-*, visualizer, branches or worktrees used in the last six hours, one
+  worktree with uncommitted changes (core-pass-at3-fr34), worktrees in evidence folders, and two
+  whose removal git refused.
+
+## D273: The user's delegation of three decisions, and the hold on the paused lanes
+
+2026-11-21, about 22:14 UTC. The user: "You and adviser decide on 1. - 3. I can help with
+downloading papers etc add to this vm - 4. all on hold for now until we have less FR and core
+work". Decided by the lead with the advisor.
+1. **The floating-junction order fix (A) will be built,** as the next engine item, landing alone.
+   It is a defect in the default integrator and in N2, not a missing feature, and it will never be
+   cheaper than now: one registered world moves, by 2.6e-11 in a gate, with transfer and heat
+   bitwise.
+   - It is recorded as a D148 exception under the user's delegation.
+   - Three facts gate the go:
+     - the fixture tier differences, which may move values only where a junction crosses a
+       floating component;
+     - whether "never conducts" is static in replacement_padded;
+     - the topology scan of FR-30's development host worlds and FR-15's planned junction hosting.
+       If either has a conducting crossing junction, (A) lands before that FR is judged.
+   - The @3 owner prices it. Above about two days, the fallback is a parse-time refusal of
+     conducting crossing junctions.
+   - Its landing stops unless all of these hold:
+     - crossrev differs only for replacement_padded;
+     - G1 moves only that world, with transfer and heat bitwise;
+     - H2-N2C's arm reruns bitwise against its frozen rows;
+     - the new baseline matches the old by digest for every other world.
+   - The second builder reproduces the orders at base and head.
+2. **FR-25's follow-up 3, age- and region-selective loss, is not now.** It lies outside FR-25's
+   request, and the cohort design builds it when a study needs it. It is FR-36, which reopens on a
+   requester's readout needing age-dependent loss.
+   - **FR-33's two-way tracing is approved: D1, label families in the species registry, with the
+     label-row route** (the kinds owner, 1.5 to 2 agent-days, after the binding guard). FR-33's
+     request is labelled protein moving between synapses, which is two-way transport. No
+     host-side patch can trace that through diffusion, while the engine's own linear laws trace it
+     exactly on checked label rows. Every world stays bitwise. No more host-side tracer patching.
+3. **Papers.** The user downloads them into /mnt/datasets/Cells/papers/incoming/<paper>/, outside
+   the checkout. They are never committed; non-CC sources give bare cited numbers only (D227).
+   - First: Lin, Crye and Veenstra 2003 (Circ Res, doi:10.1161/01.RES.0000093379.61888.35), for
+     FR-30's voltage series; and Maverick and Tamkun 2022 (Biophys J 121:755,
+     doi:10.1016/j.bpj.2022.01.021, PMC8943702), with its Supporting Material, for FR-7.
+   - Fallbacks: Desplantez et al. 2004 (Pflugers Arch, doi:10.1007/s00424-004-1250-0), Snipas et
+     al. 2020 (Biophys J, PMC7642245, with Supporting Material) and Moreno et al. 2002 (Circ Res,
+     doi:10.1161/hh0402.105667).
+   - Each benchmark is registered before anyone opens its paper, as FR-29's was: a held-out split
+     within the one paper (labs cannot be pooled), the judged observables and the pass rule, tagged.
+     One agent extracts, another fits without the held-out file, and a checker scores. Anything
+     already read is disclosed.
+   - **A correction to D268:** FR-7 item 4 is not closed. D268 named its reopening condition,
+     surface abundance and current measured in the same single-variant cells, and Maverick and
+     Tamkun 2022 meets it (TIRF channel counts, gating charge and conductance in the same HEK
+     cells), as the 14:27 search had logged. Item 4 waits on that paper; its test is registered
+     first, disclosing that the headline result was already read.
+4. **On hold:** origin of life, gene regulation's own lane work and mitochondria stay paused until
+   FR and core work lessen (the user). PROGRESS carries a count of the open FR and core items, so
+   that "less" is visible.
+- Also landed this evening: C's near-event refusal for windowed clocks (c65dbfa5).
+
+## D274: FR-37, sampling an unevenly mixed liquid, added at high priority
+
+2026-11-21, about 22:34 UTC. A user's feature request, relayed by the user ("add to our high priority
+feature list"): a draw from chosen parts of an unevenly mixed liquid, with a synthetic two-region
+test (8 and 2 fmol in two 100 pL regions; three collection cases) and the question of which inputs a
+user must declare and which Cells can calculate from the collection port, flow and timing.
+- It is FR-37, High.
+- The operators owner, who built FR-27's wash, takes the first step: whether existing operators
+  represent the draw, shown as a runnable example over the three cases with the request's
+  accounting, plus the inputs analysis. If something is missing, it names the smallest addition.
+- An independent checker writes the acceptance from the request's words before anything lands.
+- FR-28's landing after G4 comes first.
+
+## D275: FR-7 item 4's registered test scored inconclusive; no build now
+
+2026-11-21, about 23:07 UTC. The test was registered before the paper was read
+(fr7-item4-registered-2026-11-21), extracted and sealed (fr7-item4-extraction-sealed-2026-11-21),
+predicted blind (fr7-item4-predictions-2026-11-21) and scored by the second builder.
+- **Result:** d = −0.381, Welch's 95% interval [−0.656, −0.105], against ±ln 1.25. That is
+  inconclusive. Its direction agrees with the paper's finding that conductance per channel falls with
+  density.
+- **Information only:** a declared conducting-fraction form predicted the held-out cells better (rms
+  ln error 0.272 against the chain's 0.441).
+- **Decisions:**
+  - FR-7's chain is unchanged, and D218's refusal stands with its restated reason.
+  - Item 4 stays open.
+  - A conducting-fraction law is a candidate general model. It would need its own registered test on
+    data not used here: other cells, another paper, or the same paper's Kv1.4 family if it is
+    independent. Under D273's hold it waits.
+
+## D276: FR-30's benchmark on Lin 2003 is undetermined by its registered rule; the fallbacks are registered before they are read; fix (A) goes ahead
+
+2026-11-21, about 23:13 UTC, with the advisor.
+- **Lin, Crye and Veenstra 2003 reports single-exponential decays only.** That meets the
+  registration's "undetermined" condition: fewer than two held-out voltages carry both relaxation
+  times. The checker confirms it. Lin's held-out file stays sealed, and nothing is reinterpreted
+  after the fact.
+- **The fallbacks:** the @3 owner amends section 13 before anyone opens them. The same split, judged
+  observables and pass rule apply in a fixed order: Desplantez et al. 2004, then Moreno et al. 2002,
+  then Snipas et al. 2020. Each is extracted only if the one before is undetermined. The amendment is
+  tagged before any extraction.
+- **Fix (A) goes ahead** (amends D273). Its price is about 2.5 agent-days with charged kind routes
+  refused on crossing junctions in version 1; including them adds about a day, when FR-15 needs it.
+  - D273's two-day threshold is withdrawn. It assumed the parse-time refusal was a cheap route to the
+    same guarantee. Facts 2 and 3 show it is not: it would refuse the @3 conducting fixtures and
+    FR-30's development host, and it would have to evaluate replacement_padded's formation lag at
+    parse.
+  - **The three gating facts:**
+    - no tier verdict depends on the moved values; the one changed test counted the prototype's extra
+      solves;
+    - "never conducts" is declared;
+    - FR-30's development host is affected, and FR-15's planned hosts are not.
+  - **Added stop checks:** every frozen bitwise baseline (gate.sh, FR's landing set, the OL
+    invariance gate) is shown unmoved or renewed; the kinds refusal's reach is scanned first;
+    test_field_floor_held passes unedited, and existing test bodies stay as they are.
+  - The second builder reproduces the orders at base and head.
+
+## D277: Overnight delegation, and the order in which paused lanes resume
+
+2026-11-21, about 23:24 UTC. The user, going to bed: "good luck with the FRs, lean and core over night.
+you decide with adviser this question and the ones overnight except something significant", and
+"if there are free agents, I guess the FR list will take a while then start, mitochondria and gene
+regulation and origin of life last".
+- **The held junction study runs as option (a),** three plain commands. That removes the ambiguity
+  the safety check flagged, without overriding it. If one is refused again, it waits for the morning.
+- **Decided overnight with the advisor:** what is already decided runs without asking.
+  - FR-25's rule tag, fresh runs, table tag and judgement, including the declared retry.
+  - FR-30's next paper in the registered order, after the checker confirms the one before is
+    undetermined.
+  - Landings whose gates pass with no undeclared movement.
+- **Held for the user (significant):**
+  - a gate where crossrev or G1 moves an undeclared world;
+  - what to build after a failed or inconclusive verdict (the verdict itself is recorded as scored);
+  - any engine build not already decided: FR-37's advection, a conducting-fraction law, D2, kinds on
+    crossing junctions, the unwindowed-clock refusal;
+  - deletions, a content refusal, and a privacy-scan hit.
+- **Lane order:** FR and core work first. G4 takes the first free test lane after FR-28.
+- **Paused lanes resume only with free agents, in this order:** mitochondria, gene regulation's own
+  work, then origin of life last. Desk work first; nothing of theirs takes a test lane ahead of the
+  FR and core landings.
+- **The Lean lane** publishes its own work. The lead scans its commits after they land and does not
+  merge its branches tonight.
+
+## D278: FR-25's registered acceptance scored inconclusive; the next step is the user's
+
+2026-11-22, about 01:53 UTC. The registered sequence ran as D270 and D271 set it:
+- the rule was tagged before any run;
+- the fresh runs came from the tagged snapshot;
+- the table was tagged before any comparison;
+- the declared retry's table was tagged before its comparison;
+- the OL builder judged independently.
+
+**Result:** 28 of 32 worlds-by-set pass, every judged readout within 0.40 of its tolerance. 4 are
+inconclusive after the one declared retry: A1 at both test instances (order 3.69, above the cap) and pol
+T=100 at both (order 2.40, below p - 0.5). No world failed. Under the registered rule FR-25 is
+inconclusive, recorded as scored.
+
+**Coverage:** G2's per-move ΔG and A1's u(t) are published but not exported by the engine, so a pass
+would not cover them. The lane README's claim that engine_run exports every readout of the sheet's
+section 6 is corrected to match.
+
+**Held for the user (D277):** record FR-25 as inconclusive, or register a revised rule before any new
+runs, or bring ΔG and u into scope with a later registration.
+
+## D279: OL5's probe roles scored: 6 of 10 registered rows pass, 4 fail at the registered 1e-12 precision; the next step is the user's
+
+2026-11-22, about 06:42 UTC.
+
+**How it was judged.** The judged driver run came from a clean frozen snapshot of main 67bb0bfe
+(manifest c0a5ee55...). The second builder wrote the adapter from FORMAT_OL2.md alone, without opening
+the engine side's code, and ran OL5's code-blind harness2.
+
+**Result.**
+- Pass: OL2-2, OL2-5 (all 22 declarations refused), OL3-1, OL3-3, OL3-4 and OL3-5.
+- Fail at the registered tolerance of 1e-12:
+  - OL2-1: forward_form's log residual is 5.07e-12;
+  - OL2-3, OL2-4 and OL3-2: event times differ by up to 3.8e-12 relative.
+- Every law-level check passes. Channels, counts, slots, keys, draws and bookings replay exactly, and
+  the time differences follow from the rate differences through tau = -ln(u)/a0.
+- A planted partition-count error failed, as it should.
+
+**The adapter's readings** where FORMAT did not fix the mapping (R1 to R8) are listed in its docstring.
+Two of them changed closure verdicts:
+- R7: a non-splitting drawing attempt books zero terms;
+- R8: a lysing step's heat includes the release.
+FORMAT is to state these.
+
+**Held for the user (D277):**
+- whether the engine's rate arithmetic should match the references' forms to 1e-12, which is an engine
+  change;
+- or whether a revised tolerance is registered, which would be after the fact and must be disclosed.
+
+Recorded as scored. Evidence: the second builder's review folder, ol5/ (ol5_verdict.json and the
+adapter, with sha256s).
+
+## D280: The user's decisions on the overnight holds
+
+2026-11-22, about 10:22 UTC. The user: "OK on the disc cleanup. 1. Agreed 2. Lets search for other
+sources to get FR-30 working, I don't have time in this process to contact authors... 3. agreed 4.
+Agreed 5. Agreed 6. Agreed 7. as you and adviser suggest", answering the lead's and the advisor's
+recommendations.
+1. **FR-25:** one more registered finer triple (0.5, 0.25, 0.125 s) for the four inconclusive
+   worlds-by-set (A1 and pol T=100 at both instances), under the same window and F, registered and
+   tagged before the runs. After it, the verdict is final. The cap is not loosened. dG and u stay out
+   of scope.
+2. **FR-30:** search for other sources: a paper or dataset with two-exponential step decays of
+   homotypic Cx43 at four or more junction voltages. The search is metadata only and reads no values;
+   any candidate is registered and sealed before it is read. No contact with authors. FR-30 stays
+   development-only until a benchmark passes.
+3. **The face-heat booking: F2.** An opt-in exact booking under heat_bookings, with no registered world
+   moving; its note says what heat a label family's rows book. F1 comes only after an MG0c rerun.
+4. **FR-33 in-cell:** a short priced note on the cheapest of the three blocks, and a question to the
+   requester, through the user, whether two regions joined by a face meet their need. No build yet.
+5. **MT-1b:** R2, a fresh code-blind integration, is the judged reference. Two facts come before the
+   other choices: whether any judged readout depends on the IMS binding equilibria, and the CPU cost
+   at the proposed activity range. The lane's owner reviews the draft.
+6. **OL5:** the three checks run first: exact forward forms, event times from the references' rates,
+   and R7 and R8 confirmed from the engine's code. No fix and no tolerance change until they report.
+7. **Small items wait.** The one exception is extending C's near-event refusal to clocks without
+   windows: scan the registered worlds first, and add the refusal only if none is hit.
+- **Disk cleanup approved:** the listed scratch copies and idle worktrees are removed. Old run folders
+  are archived to /mnt/datasets with a link left at each old path, so cited paths still resolve.
+
+## D281: OL5's precision fix, (a) plus (b), approved; FR-25's final triple from one snapshot
+
+2026-11-22, about 10:29 UTC.
+- **OL5's precision fix.** The user, "lets go as you suggest a + b", on the lead's recommendation after the
+  checks. The four OL5 failures are the engine's arithmetic, not conditioning: the references are exact,
+  the activities come from log-factorial table differences, and the osmotic ΔF from a difference of large
+  energies.
+  - (a) computes ln ff(n, k) as a direct sum of logs (k <= 3) in mass_action and exchange.
+  - (b) computes lumen.delta's ΔF_osm incrementally with log1p/expm1.
+  - (a) moves OL1's probe bits, so OL1's probe set is renewed in the same landing as a declared
+    renewal, and OL1's registered rows are rerun on it. Invariance steps 1 to 4 stay bitwise.
+  - OL5's judged run is then repeated and judged by the unchanged adapter at the registered 1e-12, with
+    nothing loosened.
+  - R7 and R8 are confirmed from the engine's code, and FORMAT now states them (1dcdda1b), so D279's 6
+    passes stand.
+- **FR-25's final triple** (registered at 97c6359c) runs all three steps from one frozen snapshot of the
+  tagged main, rather than mixing in earlier runs (the lead's call on the GR agent's question).
+
+## D282: FR-25's final verdict: inconclusive under the registered rule, 30 of 32 pass, none failed
+
+2026-11-22, about 11:26 UTC. The registered sequence (D270, D271, D280) is complete.
+- The rule, the table, the first retry and the final retry were each tagged before their comparison.
+- The final retry made pol T=100 ready, and it passes at both instances.
+- A1 stays inconclusive at both instances. C_tx_3's observed order moved 3.94, then 3.69, then 1.49.
+- 30 of 32 worlds-by-set pass, and none failed. Under the rule FR-25 is inconclusive, and the rule
+  makes this final.
+- A1 carries the request's induction and decay under the regulator switch, so the request's central
+  claim is not judged. The passing worlds cover the chains' amounts, extents and heats against G2.
+- Any further test of A1 would be a new registration after these results, and is the user's decision.
+
+## D283: Near-event times snap to the clock's instant on clocks without windows
+
+2026-11-22, about 12:35 UTC. The user: "get adviser in on both those question but we want to be ambitous".
+Decided with the advisor: option 2 of the three the @3 owner priced after the extension's gate failed,
+reversing the lead's recommendation to drop it.
+- **The rule:** on clocks without windows, an event within the clock's same-instant tolerance (4 ulps) of
+  a coarse point is that point.
+  - One predicate serves every on-the-grid check: events, control schedules, label switches, and wash and
+    intervention times.
+  - An event just outside the tolerance that would still make a degenerate step is refused as an author
+    error, in a band the owner states.
+- **Windowed clocks:** the owner either states why they refuse rather than snap, or adopts the same rule.
+- **Not silent:** the record carries both the declared and the applied time, and the fingerprint stays on
+  the declared definition.
+- **Checkpoints:** a checkpoint written on the old grid is refused or handled on resume.
+- **First, a scan** of the worlds that validation drivers build behind judged results (FR-25, FR-8, MG0c
+  and others). A hit goes back to the user.
+- **What moves:**
+  - no registered world is affected (the extension's own scan);
+  - the seven test files' worlds lose their one-ulp step and move at rounding.
+- **No opt-in strict mode** (option 3).
+- **Order:** it lands before FR-38's engine piece, which adds grid consumers.
+
+## D284: FR-38 at full scope, finishing with a registered comparison
+
+2026-11-22. The same words, decided with the advisor; the scope is the gene regulation lane's full path
+plus two pieces.
+- **The engine piece** goes in `templated_polymerisation@1`, in place under D148, with a sheet amendment
+  tagged before code:
+  - a terminal hold per chain, split by p into two fate rows, with exact energy and no driven work;
+  - the machine held or released, as a declared per-chain option;
+  - p from a constant, a schedule or a state factor, its source recorded;
+  - declarable initial hold occupancy;
+  - counters and a per-producer ledger;
+  - producer identity across restart.
+- **The cohort, two ways:**
+  - release into label rows by schedule (D1);
+  - recovery from the counters, on the host.
+
+  The two must agree. The hold's occupancy carries a class axis (size one by default), so a label switch
+  can sit at completion or at release.
+- **The observation reader** goes in `src/cells/assays`:
+  - per-copy detection thresholds, with the copy distribution a named input;
+  - roster denominators that keep IDs;
+  - named two-colour statistics.
+- **Law form:** the sheet states it, including any affinity factor, and the acceptance world states its
+  distance from the requester's far-from-equilibrium limit. Amounts and potentials are not chosen to hit
+  a tolerance.
+- **The finish:** a registered comparison against code-blind references.
+  - Its rule is tagged before the runs, and disclosed as written after FR-25's outcome.
+  - Until then, the routes are development status.
+- **Waiting on the requester:**
+  - (c) what "replacement" means, and (e) whether the cohort is marked at completion or at release; these
+    block only their own pieces;
+  - (a) is covered by the option;
+  - (b) keeps the default, no binding energy;
+  - (d) defaults to one gene per producer.
+
+## D285: OL5's second judging, after D281's precision fix: 9 of 10 rows pass
+
+2026-11-22, about 13:14 UTC. The second builder re-judged OL5's probe roles with its unchanged adapter, at
+the registered 1e-12 precision. The run was frozen from main e6571f88, which carries D281's fix (a)+(b);
+its manifest sha256 is 5cc8f280….
+- **The verdict file says this is a second judging,** after an engine fix prompted by the first. D279's
+  6 of 10 stands as the first result. Verdicts: verdicts-e6571f88.json, sha256
+  2598e017131773d741e462a027fc912f71fe44acf338e56f01c54c592fda1db9.
+- **Three of the four earlier failures now pass:**
+  - OL2-1's forward log residual is 4.4e-15 and 1.0e-14 (it was 5.07e-12);
+  - OL2-4's and OL3-2's event times replay exactly.
+- **OL2-3 fails, on a convention, not a residual.** Its event times now match exactly. That uncovers a
+  difference that the first judging's list, which stopped at five time differences, had hidden: the
+  lysing event's pool.
+  - The engine records the step's own pool, [30, 0], and the released molecules separately: 1,470 of L1
+    and 61,178 of S.
+  - The references expect the pool after the whole event, [1500, 61178], which is the same total.
+  - FORMAT_OL2 states R7 and R8 but is silent on this pool. A reading R9 (the lysing step's pool includes
+    the returned molecules) makes OL2-3 pass. That check is information only and is not scored.
+- **The result stands at 9 of 10.**
+  - FORMAT_OL2 states R9 next, so that any later judging reads it.
+  - A third judging would be a new registration after these results, and is the user's call.
+- A planted failure (the partition probe's eq_N5_k3 + 1) fails, as it must.
+
+## D286: The Lean lane's biological findings go into the high-priority list
+
+2026-11-22, about 13:32 UTC. The user relayed the Lean lane's findings with "from lean get into high
+priority". The evidence branch was merged unedited at 81916b5d.
+- **FR-31 goes from Low to High.** Karal and Yamazaki's tension series is the data it was waiting for.
+  The next step is a design note shared with FR-39, then a registered test of a declared rupture law,
+  fitted on the end tensions and predicting the middle. The middle values were read before registration,
+  and that is disclosed. OL6 remains a dependency.
+- **FR-39 (new, High):** a vesicle that survives transient pores, with partial cargo loss.
+- **FR-40 (new, High):** a single-ribosome translation timing benchmark. The 406 s observation is kept,
+  and the speed comparison stays unscored until reconciled.
+- **FR-41 (new, High):** vesicle shrinkage validation records. One agreement is unfitted (24.56% against
+  about 25%). Small-osmole retention stays open.
+- **Owners:**
+  - the FR-31 and FR-39 design note goes to the OL builder, at the desk;
+  - the FR-40 desk note goes to the gene regulation references' author, from the sheet's laws;
+  - FR-41's search waits for a free agent.
+
+## D287: Vesicle pores (FR-31, FR-39): the user's four decisions, and the lead's rulings
+
+2026-11-22, about 14:25 UTC. The design note is docs/VESICLE_PORES_DESIGN.md (64e9f8e7).
+
+**The user chose:**
+1. **Phase A (FR-31, rupture under a held tension): go, with code-blind references.**
+   - A laws sheet, tagged before code, written from primary papers read directly.
+   - The engine build, and references in parallel.
+2. **A blind test, plus a search.**
+   - The six points already read (Karal and Yamazaki, 25 °C and 32 °C at 7.0, 7.5 and 8.0 mN/m) are fit
+     rows, reported as a disclosed comparison with no pass or fail. Both classical forms fitted on the end
+     tensions over-predict the read middle, by 14% to 28%.
+   - The held-out set is the figure's other temperature columns. The sheet states how the prefactor and
+     line tension depend on temperature, with sources, before extraction. The tolerance (the stated
+     standard errors at their small n, plus a declared digitising error) is fixed before a sealed
+     extractor reads them.
+   - The Lean lane has already viewed the figure, and that is disclosed. No Cells agent opens the
+     Karal PDF before then.
+   - A metadata-only search for another tension series runs alongside.
+   - Given the in-sample misfit, a blind failure is likely. It would be recorded, and the law would ship
+     as development status.
+3. **A held tension becomes a general, declared boundary** (cells.tension_hold@1). It is a work source,
+   with a named payer and a work column, as shear has (U2, D199).
+4. **OL6 comes right after Phase A,** with the same owner, then FR-39's pore episodes.
+
+**The lead's rulings, with the advisor (the user may overrule):**
+- **The law:** line-tension nucleation only. Opening forms an event pair under it, so there is no second
+  exemption, and the exponential form is not built into the engine.
+- **The hazard is per membrane area.** A per-vesicle rate belongs to a preparation.
+- **One line tension per composition,** shared by opening and the open pore's dynamics.
+- **Exact-event worlds** get rupture only. Transient pores need OL6.
+- **sigma_max stays** as registered in every world. In worlds with pores it carries its own cause label
+  and count.
+
+## D288: The user's decisions on FR-38's labels, FR-41, MT-1b and the optional re-tests
+
+2026-11-22, about 14:43 UTC.
+1. **FR-38's labels are rebuilt under FR-42.**
+   - FR-38's engine core lands as development once its gate passes, with its class rows (K > 1) marked
+     not neutral.
+   - FR-42's share-based labels replace those rows, and FR-38's registered comparison waits for that.
+   - Erratum B (81fc3ebb) retracts erratum A's "physical" for a neutral label's departure and marks
+     route 1 provisional. Route 2, the counters through cohort.py, stands: it reads the run's own
+     per-molecule loss.
+2. **FR-41: Akui et al. 2021, with Ahumada et al. 2015 downloaded by the user.**
+   - Akui is a sealed extraction and a disclosed, weak test. Its licence (CC BY-NC-ND) allows analysis
+     only, so only bare cited numbers are used, never committed material. Its volumes come from other
+     experiments.
+   - Ahumada is evaluated when it arrives.
+3. **MT-1b: the outer-membrane face that reads the IMS closure is built, and the judged run keeps 180 mV**
+   with a larger CPU budget rather than scaled activities. The mitochondria lane resumes with a free
+   agent (D277).
+4. **No optional re-tests now.** FR-25's A1 stays inconclusive (D282) and OL5 stays at 9 of 10 (D285).
+
+## D289: FR-42 is built as option A, labels as share vectors on the physical row
+
+2026-11-22, about 14:54 UTC. The user chose option A of docs/NEUTRAL_LABELS_DESIGN.md (fa4b9d9e).
+- **The design:** one physical population per row; labels are shares of it.
+  - Every law, the energy terms and the heat bookings read the physical population.
+  - Each one-way flux is split by its source's shares.
+  - A new cohort starts at exactly zero as a share.
+  - Windows resolve to step indices.
+- **The stages, 7–10 agent-days in all:**
+  1. pools: registry labels, @3's share state, and one-way reports from turnover and templated
+     polymerisation;
+  2. transport: faces and routes report one-way flows, and FR-33's first test is rebuilt on shares;
+  3. exchange, reactions and kinds, each by its own owner.
+- **Owners:** the kinds owner leads. The gene regulation lane adds templated polymerisation's one-way
+  reports, then replaces FR-38's class rows with shares before FR-38's registered comparison (D288).
+- **Bitwise and records:**
+  - worlds without labels keep their programs, and no registered world moves;
+  - labelled worlds get a new checkpoint field;
+  - D1's and FR-33's examples keep their material and transfer records, while their booked face heat
+    moves to the physical value.
+- **Scoring:** an independent checker writes FR-42's acceptance from the requester's words, including
+  its reference case dN/dt = −N², built with the engine's own second-order mass action.
+
+## D290: MT-1b keeps 180 mV and the source's activities, through an implicit cycle block
+
+2026-11-22, about 15:10 UTC. The robustness agent priced D288's choice.
+- **Explicit cycles cannot run it.** At 180 mV with the source's activities, the cycle kind's explicit
+  bound is 27 ns. 300 s of protocol is then about 1.1e10 steps: about 19,400 CPU-hours on the device
+  step alone, which is years of wall time, since one trajectory runs on one core.
+- **The user chose to build the implicit cycle block** (D235's branch I, which MT-2 needs anyway): the
+  cycles' slope conductances in N2's implicit operator, with a design note first. The outer-membrane face
+  (18 µs bound) then limits the step: about 1–4 days per world on a lane, provided the runner path's
+  per-step overhead comes down from 168 ms towards the device step's 6.3 ms. That overhead is being
+  examined.
+- **The order:**
+  1. the face's design note, then the cycle block's;
+  2. the face build and gate, then the cycle block's;
+  3. MT-1b's worlds and the pre-registration checks;
+  4. registration, then the judged run.
+  R2's code-blind references start once the face note fixes the declared equations.
+
+## D291: FR-30's section 13.3 candidates are all undetermined
+
+2026-11-22, about 15:10 UTC. The lead's rulings, made blind to every value.
+- **Lin et al. 2010** (J Mol Cell Cardiol 48:238) is undetermined on two separate grounds.
+  - The Xu 2013 ruling (the strict reading) extends to it. It reports closing rates
+    k_on = (1 − P_open)/tau from fitted exponentials, without P_open per voltage, so the law's relaxation
+    times cannot be mapped without inference.
+  - Its only kinetic data are neonatal atrial myocytes, with similar Cx40 and Cx43. That is neither
+    ventricular nor Cx43-dominated, so it falls outside section 13.3's native admission.
+- **Ek-Vitorín et al. 2018** (IJMS 19:1659) is undetermined under rule 1. Its decays come from ±80 mV
+  pulses only, which is one magnitude, and wild-type Cx43 has a steady state only.
+- With Xu 2013 also undetermined, section 13.3's registered candidates are exhausted. The extractor's
+  files are under /mnt/workspaces/Cells/fr30-lin2010-benchmark/ and fr30-ekvitorin2018-benchmark/, with
+  the held-out files sealed empty.
+- **What follows is the user's decision.** FR-30 can stay development-only, with its gating law built and
+  unjudged, or another metadata-only search round can look for two-exponential step decays at four or
+  more voltages.
+
+## D292: FR-30 gets one more metadata-only search; FR-41 gets a data-only retention check
+
+2026-11-22, about 15:11 UTC. The user's choices.
+- **FR-30:** one more metadata-only search, with values unread, broadened to any Cx43 preparation with
+  two-exponential voltage-step decays at four or more voltages. A registration (a section 13.4 entry)
+  comes before any extraction. If nothing qualifies, FR-30 stays development-only.
+- **FR-41: a data-only check of whether calcein is retained during shrinkage,** in Akui 2021 and Ahumada
+  2015/2017.
+  - The analysis was fixed by the lead, blind to every value, before any reading:
+    /mnt/workspaces/Cells/fr41-retention-20261122/rule.md, sha256
+    9ae86b4028451d91663a40cdae1c8821a64b8dfcf4f121f1cc7922e3a6292d0f.
+  - It is evidence for Cells' retention assumption, not a validation of Cells: no Cells prediction is
+    scored.
+  - The Sonnet extractor reads the values, since the Opus extractor was stopped by a safeguard false
+    positive on Akui's methods; the user moved that task to Sonnet.
+
+## D293: The rupture blind test's stage-1 rulings, made before any prediction or held-out value
+
+2026-11-22, about 15:36 UTC. The sealed extractor's stage 1 (conditions only; stage1_conditions.json sha256
+9c02be36…) found:
+- set 1: six held-out points in five new temperature columns of Karal and Yamazaki's Fig. 2a, at about
+  38, 35, 30, 18, 18 and 12 °C;
+- set 2: Shibly et al. 2016's tables hold six osmotic rows and no control rows, and give no standard
+  errors.
+The lead's rulings, which are made blind to every held-out value and extend VESICLE_PORES_LAWS §8:
+1. **Temperatures.**
+   - Set 1 uses each column's plotted position, T = 10⁶/x, exactly as the six fit points did.
+   - Set 2 uses T = 298.15 K with δT = 1 K (the paper's 25 ± 1 °C).
+2. **Set 1's S1-6 (12 °C, 8.0 mN/m) is reported, not scored.** FR-31's entry, which the builders have read,
+   already quotes 12 °C survival under a held tension from the same paper.
+3. **Set 2's controls: a stage-1b pass.**
+   - The extractor reads the control points' tensions from Fig. 1C, x only, with n where stated, and these
+     become control conditions.
+   - Their rates are read at stage 2, with the digitising error s_dig = 0.03 in ln k declared now.
+   - The controls are scored two-sided, and the osmotic rows one-sided (§8).
+4. **The vesicle area across preparations.**
+   - In stage 1b the extractor reads Karal's method reference (Levadny et al. 2013) for the GUV radii,
+     conditions only.
+   - Set 2's per-vesicle predictions scale by (r_Shibly/r_Karal)², with r_Karal the midpoint of the stated
+     range.
+   - A declared term s_area, half the width of ln r² over that range, enters set 2's tolerance only. Set 1
+     is unaffected, since its area cancels.
+5. **Set 2's standard errors** are read from Fig. 1C's error bars at stage 2, with the declared s_dig. A
+   point with no readable bar is reported, not scored.
+6. **The quoted survival count.** At stage 2 the extractor matches it against Fig. 1B's curves among the
+   2.8 mM cohorts. The matched point is reported, not scored. If the match is ambiguous, every candidate
+   is unscored.
+7. **Stage 2's reading of set 1:**
+   - vector coordinates, with the centre at the midpoint of the bar caps;
+   - the six fit points re-read as a check against the data file;
+   - s_dig stays 0.03.
+8. **Minor:**
+   - the 1.9 mM series takes the stated 3 × 18–22 as its n;
+   - Shibly's ± on r₀ is used as stated, for s_area;
+   - the PMC HTML page is set 2's source of record.
+   - The reader scripts stay with the run's evidence.
+- **The exposures are disclosed:** lean/PROGRESS.md's intact fractions for Karal's Fig. 1(a) were seen by
+  the extractor, and they concern S1-6, which is unscored. The extractor's other exposures carry no held-out
+  value.
+
+## D294: The rupture blind test's stage-1b rulings
+
+2026-11-22, about 15:53 UTC. The extractor's stage 1b (stage1b_conditions.json sha256 0feca192…) found:
+- set 2's three control points (Shibly's Fig. 1C, open squares) at 7.0, 7.5 and 8.0 mN/m, reprinted from
+  Levadny et al. 2013, with n, temperature and solutions not stated;
+- that Levadny et al. 2013 could not be obtained.
+The lead's rulings, made blind to every held-out value:
+1. **The controls are reported, not scored.** They sit at the fit points' tensions and come from the
+   method paper of the fit data's laboratory, so they may overlap the fit data. Without a copy, their
+   independence cannot be shown. This replaces D293's two-sided scoring of the controls. A prediction at
+   6.5 mN/m with ΔC₀ = 0 is also recorded, reported only, in case stage 2 finds a control there.
+2. **Set 2's scored content is the osmotic rows, one-sided** (D287, D293), less the point the quoted
+   count matches.
+3. **Karal's vesicle radius,** for the osmotic rows' area ratio (D293 item 4). In a stage 1c, the
+   extractor reads only the methods of Karal et al. 2015 (Phys Rev E 92:012708, the Shizuoka repository's
+   free copy), a paper from the same laboratory using the same micropipette method, for the GUV radius
+   range. Karal, Levadnyy and Yamazaki 2016 stays unopened, since it may reanalyse the temperature series.
+4. **The controls' temperature** is reported at 298.15 K with δT = 1 K, as for Shibly's own rows.
+5. **Fig. 1C's digitising error.**
+   - It is s_dig = max(0.03, the ln k span of 2 pixels on the panel's y-axis).
+   - The pixel scale comes from the axis calibration at stage 2. That is axis metadata, read before any
+     data mark.
+   - It applies to the error bars read there.
+
+## D295: The vesicle area for set 2's osmotic rows: a declared premise
+
+2026-11-22, about 15:55 UTC. Stage 1c (stage1c_conditions.json sha256 7f99f680…): Karal et al. 2015 PRE's methods
+state no GUV size, and Levadny et al. 2013 is unobtainable. The lead's ruling, made blind to every held-out
+value:
+- **The area ratio for set 2's osmotic rows is 1,** under a declared premise. Shibly et al.'s vesicles
+  and the fit data's come from one laboratory, by one micropipette method in the same period, so their
+  size distributions are taken as equal.
+- **s_area** is the propagation of Shibly's stated ±0.2 µm on its mean r0 of about 13.5 µm:
+  2 × 0.2/13.5, about 0.03 in ln k.
+- **The premise is stated beside each set-2 verdict,** as the identity "first rupture is first opening"
+  is. A set-2 failure may come from a size difference between preparations rather than from the law.
+- **Set 1 is unaffected,** since its area cancels.
+
+## D296: FR-42's label state lives in the label owner (option b); FR-38's replacement accounting in the operator
+
+2026-11-22, about 16:09 UTC. The user: "lets go as you suggest regarding the label".
+- **Label state lives in the label owner** (`neutral_arrival_labels@1`), through a contract addition:
+  - reporters declare the pools they own, such as the release hold;
+  - the owner holds those pools' label shares;
+  - moves carry a pools part;
+  - arrivals can be keyed by source, so that a chain's products join its producer label (cell, generation,
+    chain).
+
+  So every unlabelled program stays unchanged (D289). The kinds owner designs it and prices it beside
+  stage 2. If it proves too costly, the fallback is operator-held shares as a D148 case 2, which goes back
+  to the user.
+- **FR-38's replacement accounting** (per-producer removal counters, per-generation counter starts, the
+  operator's EVENT part) is the gene unit's own physical bookkeeping, not label state. It may add
+  zero-size fields when no replacement is declared, as a D148 case 2 like FR-38's release fields. The proof
+  is the programs check and optin_check before and after, with every physical field bitwise.
+
+## D297: The rupture blind test's stage 2 is sealed; set 2 reads from Shibly et al.'s corrected Fig. 1C
+
+2026-11-22, about 16:27 UTC. Recorded before any scoring; the lead has seen no held-out value.
+- **The sealed file:** /mnt/workspaces/Cells/pores-extraction-20261122/held_out.json, sha256
+  20a0c4a534a28ab2748d96f0c5de0cf81d38e2a47283c4f2aea94b0c9647468b. Stage 2 began at 16:04:16 UTC, after
+  the predictions' tag (6d718ae2, 16:03:26). The extractor did not open the predictions.
+- **Set 2 uses the corrected Fig. 1C.** Its SEs and control readings come from the figure in the
+  journal's correction (Biophys J 112:1290, 2017, doi:10.1016/j.bpj.2017.03.001, PMC5376104), which
+  replaced the original panel.
+  - The corrected figure reproduces all six tabulated osmotic rates within 0.005 in ln k.
+  - Its control tensions match stage 1b's, so the registered conditions and predictions are unaffected.
+  - Disclosed: the extractor first read the original panel and found it inconsistent with the tables. Those
+    readings are sealed separately (superseded_original_fig1c.json, sha256 d27cb33b…) and are not for
+    scoring.
+- **The quoted count matches S2-6** (4.3 mN/m, ΔC₀ = 2.8 mM) unambiguously. S2-6 is reported, not scored
+  (D293 item 6).
+- **Set 2's controls:** three, reported only. None lies at 6.5 mN/m.
+- **The tables print two significant figures,** a rounding of up to about 0.05 in ln k. The registered
+  s_dig = 0 for tabulated rates stands unchanged, since the corrected figure agrees with the printed values
+  within 0.005.
+- **Set 1:** read from the vector coordinates, with centres at the cap midpoints. The six fit points
+  re-read within 0.0005 of the data file. S1-6 is reported only.
+
+## D298: The vesicle-rupture blind test passes: set 1 five of five, set 2 five of five (one-sided, weak)
+
+2026-11-22, about 16:39 UTC. The independent checker scored the registered predictions
+(pores-predictions-registered-2026-11-22, sha256 8f72193b…) against the sealed held-out values
+(held_out.json 20a0c4a5…) under VESICLE_PORES_LAWS §8, D293–D295 and D297. The score file is
+/mnt/workspaces/Cells/review-check-20261121/pores/score.json, sha256 a4b452d6…. A planted failure fails.
+
+**Set 1, Karal and Yamazaki's other temperature columns, two-sided: 5 of 5 pass.**
+- **In range:** S1-1 (38 °C, 7.5 mN/m) has residual −0.200 against τ 0.252, the closest at 0.79 τ. S1-2
+  (35 °C, 7.0) is −0.009 against 0.263, and S1-3 (30 °C, 7.0) is +0.032 against 0.257.
+- **Extrapolated below the viscosity data:** S1-4 (18 °C, 7.5) is −0.035 against 0.231, and S1-5
+  (18 °C, 8.0) is +0.173 against 0.241.
+- **Reported only:** S1-6 (12 °C, 8.0) is +0.287 against 0.264. It would fail by 0.023. It was
+  unscored because FR-31's entry had quoted that condition.
+
+**Set 2, Shibly et al.'s osmotic rows, one-sided: 5 of 5 pass.** These are weak tests: the read rates lie
+5.6 to 15.4 in ln k above the law at the external tension, as any added osmotic tension allows. The law
+implies total tensions of 7.1 to 8.2 mN/m, an osmotic tension of about 2.6 to 3.9 mN/m (reported, not
+scored). S2-6 (the quoted count) and the three controls are reported only. The controls would pass
+two-sided.
+
+**What this does and does not show.**
+- The line-tension law, with the membrane viscosity's temperature dependence (E_A = 27 kJ/mol) and a
+  constant line tension, fitted on the six read points, predicts first-rupture rates at three other
+  temperatures within the registered tolerance, including two below the viscosity data's range.
+- The tolerance is wide: t(0.975, 2) = 4.303 on three experiments per setting, so τ is about 0.25 in
+  ln k, or about 28% in rate.
+- The in-sample misfit stands as disclosed: the law over-predicts the 7.5 mN/m points by 14% to 28%,
+  with χ² = 98.6 on 4 degrees of freedom.
+- **Both declared premises go with every verdict:**
+  - a pipette-held vesicle's first rupture is its first opening, though pores under suction can reclose;
+  - for set 2, equal vesicle sizes across the two papers.
+- The Lean lane had viewed the figure before the test (D287).
+
+## D299: An external review's four architecture items, adopted into the queue
+
+2026-11-22, about 16:57 UTC. An external reviewer, relayed by the user, asked the next architecture work
+to focus on four items. The user: "lets go on 2. as you suggest put it on our backlog / 3. as you guys
+suggest / 4. lets go on this as you see fit in the queue".
+1. **Finish FR-42's neutral-label separation** (in progress, D289 and D296):
+   - one physical population, with labels as passive shares;
+   - FR-38's and FR-33's consumers moved onto it;
+   - verified across label count, nonlinear loss, transport and restart.
+
+   What remains is one independent acceptance on the stacked head: transport with face heat (F2 on),
+   restart mid-transfer and with pools, replacement, and a reused label. D1's own-potential family rows
+   stay as they are until the user decides their future.
+2. **One small evolving-cell integration case, on the backlog.**
+   - A read-only inventory ranks the composition matrix's refused volume and lifecycle combinations by
+     the approved items they block, preferring a missing declared read or accounting term over a new law.
+   - The lead chooses from it.
+   - It uses the declared-read and ownership contracts, and unsupported combinations stay explicitly
+     refused. It may extend to a lifecycle event, such as FR-38's replace-and-restart.
+3. **Affordable realistic-duration runs,** judged by end-to-end cost per simulated biological duration at
+   a stated accuracy, fixed before timing with the registered step-error estimate. Ensemble throughput,
+   interacting-tissue size and biological duration are reported separately.
+   - The dt ladder names the limit that binds the step, and whether the implicit cycle block relaxes it.
+     The block's go returns to the user with those numbers (D290's premise was about 115 times too stiff).
+   - Also in this item: the runner overhead (the bit-identical closure reuse), the step-cost growth with
+     run length, and device row checks proven against the host checks.
+   - Ensemble throughput is measured first on the existing batch and vector CPU paths. The GPU planner
+     stays held until those numbers are in.
+4. **One executable static level-of-detail pair, queued by the lead.**
+   - The first pair is chosen from the read-only inventory: both versions through one physical interface,
+     a validity measure, declared conserved quantities, supported readouts, a validity range and error
+     limits.
+   - The reduced version is opt-in, the choice is made at definition and never at run time, out-of-range
+     use is refused, and the one-writer rule prevents double counting.
+   - The general level-of-detail contract follows from it.
+
+## D300: D1's own-potential label families are retired; no backwards compatibility before alpha
+
+2026-11-22, about 16:59 UTC. The user: "retire them as soon as possible, we don't want old backwards
+compatibility - we're still in heavy dev not even at alpha".
+- **D1's families are removed,** with their checks, sums and D1-only paths, in the kinds owner's stacked
+  FR-42 landing.
+  - Their consumers (FR-33's first test and tracer, and FR-38's labelled cohort) are on FR-42's neutral
+    shares.
+  - D1-only tests are removed in one batch, with a removal list (D224).
+  - Crossrev and G1 must stay identical, since no registered world uses D1 families.
+- **The general rule before alpha:** a superseded mechanism is retired as soon as its replacement lands,
+  with no compatibility path or opt-in for the old behaviour. Registered and judged results stay
+  reproducible through their tags, frozen snapshots and records (D148), not by keeping old code.
+- **Also recorded:** the Lean lane found FR-38's release_check accepting a survival ratio of 1.00 where 0.25
+  is predicted, on a 0, 1 and 2 h grid. A grid error that could not be estimated became an infinite
+  tolerance, and an empty cohort raised ZeroDivisionError. The fix fails closed, with "insufficient
+  resolution" and "empty cohort". All eight saved R1/R2 survival comparisons passed with finite bounds,
+  so no saved result moves.
+
+## D301: The architecture items' first cases: FR-38's replace-and-restart, then M3; the site/sink level-of-detail pair
+
+2026-11-22, about 17:22 UTC. The lead chooses under D299 ("as you suggest", "as you see fit in the queue"),
+from the checker's read-only inventories (/mnt/workspaces/Cells/arch-inventories-20261122/INVENTORIES.md).
+- **The evolving-cell case:**
+  - **First:** FR-38's producer across replacement and restart, the gene unit beside
+    scheduled_cell_replacement@1 with labels. It needs an accounting term and a definition-time occupant
+    rule, priced at 1–2 agent-days once the label branches land (FR-38 step 4).
+  - **A finding:** main admits the gene unit beside replacement but defines nothing for a replaced slot's
+    chains, hold, machines or counters. A temporary refusal closes that now, until step 4 defines it.
+  - **Next on the backlog:** composition M3, turnover beside water and beside partition or insertion,
+    reading the current volume and masks. It is the cheapest case with a changing volume: declared reads
+    only, 2–2.5 agent-days plus references.
+- **The first static level-of-detail pair: site binding against exchange's saturable sink.**
+  - The pair shares a ligand and the same node-to-cell ends, both run in the engine, and each is judged
+    (FR-3, FR-1). Its validity measure is ε, with an error of order ε.
+  - With it comes the general contract: one representation per scope, chosen at definition, refused when
+    both are declared; out-of-range use and unsupported readouts refused; an automated comparison. The
+    detailed form is the default and the reduced form is opt-in.
+  - About 4.5–6.5 agent-days in all. Queued after FR-42 and FR-38 land.
+  - **D214's finite fuel** remains named as a level-of-detail consumer, to follow on the same contract.
+  - **R2 against A1** is the in-lane alternative after FR-38's comparison, with its default reversed so the
+    detailed form leads.
+
+## D302: The implicit cycle block is dropped; the half-step energy check is now the cost driver
+
+2026-11-22, about 19:37 UTC. The user chose "Drop the block", on the robustness agent's measurements.
+- **The measurements** (MT-1b's state-4 world, explicit cycles, today's solver, windowed runner, device
+  row checks):
+  - 16 µs passes every check through the protocol's inhibitor event, at more than 100 times inside the
+    declared bands by FR-25's step-error form;
+  - X2's order condition binds between 16 and 18.25 µs;
+  - the block would buy at most about 1.14 times, or 1.3–1.5 times with the face present.
+  D290's premise of 5e6 /s was about 115 times too stiff; the cycles' ΣG/C is 4.35e4 /s, about 98%
+  of it from the synthase. MT-2 has the same stiffness. MT-1b runs explicitly at about 16 µs.
+- **The cost now:**
+  - X2, the half-step energy check, costs about 57 ms per step against 7.3 ms for the device step alone.
+    At 16 µs that is about 300 CPU-h per 300 s world, against 38 without X2.
+  - X2's per-step cost also grows with run length (39.6 to 53.7 ms per step from 512 to 2,560 steps).
+    One candidate is the record's per-window concatenation.
+  - The next item-3 target (D299) is a cheaper X2 with the same guarantee, profiled at length and designed
+    before code.
+- **Findings recorded for the backlog:**
+  - **At a replacement swap,** neither replacement@1 nor templated_polymerisation@1 books the rows'
+    standard term Σμ°Δn, and D152's reactions share the gap. The energy ledger still closes, because the
+    owned terms are accumulators, but replacement_free_energy_pJ understates what leaves and arrives. This
+    is a desk reading.
+  - **FR-38's extracellular retention** of the producer ID is not admitted in version 1. The one-writer rule
+    refuses any other mover of a gene-unit row, so no fate row can leave its cell. It needs a designed
+    door.
+
+## D303: Corrections to D302, FR-38's extracellular retention restored, the face plan re-priced, and the evening's repairs
+
+2026-11-22, about 20:22 UTC.
+1. **D302's basis, qualified.** The 16 µs result, and the question put to the user, covered state 4
+   over at most 2,560 steps, not every MT-1b world.
+   - State 3 was refused at 16 µs (dissipation) and at 8 µs (X2's cap at its first step). The cause is not
+     established; the inference is the faceless IMS not being at steady state.
+   - A long run at the source's activities was refused under head 2's per-species ledger floors, and was
+     rerun with development floors.
+   - X2's cost at length measured about 19 ms per step, not 57. The CPU-h figure in D302 is corrected
+     when the timing table is in.
+   - The block stays dropped unless state 3 or the floors reopen it. Both tests are raised in priority. A
+     300 s world that fits under no admissible floor goes to the user, since floors are a tolerance.
+2. **FR-38's extracellular retention is restored to FR-38's scope.** D302 filed it for the backlog, and
+   amendment S marked it not admitted in version 1. That was wrong: the requester's clarification asks
+   that RNA retained in an extracellular compartment keeps its original producer ID, and D284 is full
+   scope. The one-writer rule refuses any other mover of a gene-unit row, so the door is designed as a
+   sheet amendment, tagged before code, with options and a recommendation. Amendment S's sentence is
+   superseded when that amendment is tagged.
+3. **MT-1b's face build plan** (bafe39ef) is re-priced from the 2–4 agent-days quoted at D288 to about
+   6.5–9, for four items:
+   - the forms law and face, 3–5 days, by a separate face builder under the @3 owner's leave;
+   - the held buffer, about 1 day;
+   - the leak @2, 1.5–2 days for the kinds owner plus about half a day in the binding owner's admission;
+   - the forms-aware lag drive, about 1.5 days.
+   The capacitor/held-bath parse change is not needed. Dropping the implicit block (D302) saved 4.5–5.5
+   days. The user has been told. The engine's builders stay blind to R2's code and outputs, and every
+   exposure is recorded for the comparison's registration.
+4. **FR-3's Q6 classifier repaired** (1adbb39e). replaced_slot's phrase is matched to today's message.
+   view_conflict_bath_schedule is retired: FR-23 (D244) admitted that pair through door S's scoped
+   reads. The repair is disclosed beside CHECKS, and the judged run stays reproducible at its tag.
+5. **FR-42's stacked acceptance** at core-pass-kinds-26 3f760925 passed every check buildable from the
+   public declarations, and all three planted failures were caught:
+   - transport by a face with F2 on, by contact patches and by junctions, order 2.00;
+   - exchange and reversible reactions; restart mid-transfer; replacement's rows; a reused label;
+   - D1's families refused.
+   Templated polymerisation's pools and sources come with the gene-regulation branch, so a second
+   acceptance runs on that head. Kinds' routes are refused until the kinds hook.
+6. **FR-42's kinds hook.** This is a separate optional kind hook, traced only with labels: it computes
+   the trapezoid and the gap at the step's start and end states, with per-kind `label_refusals` in place
+   of the blanket refusal. Passive routes and the transporter's flux-force forms report one-way moves;
+   the rectifier and net-flow modes are refused. The kinds owner takes 1–1.5 days and @3 half a day,
+   once the signature is agreed.
+7. **The kinds owner's queue** follows D277's order, FRs first: FR-42's kinds hook, then the replacement
+   event report FR-38's step 5 needs, then the leak @2, which is still ready before the face's item 1.
+8. **OL6 has a new owner,** from the Phase A builder's handover. Its design note comes before code.
+

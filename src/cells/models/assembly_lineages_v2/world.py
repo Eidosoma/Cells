@@ -15,7 +15,8 @@ that carries meaning is a list, so the canonical JSON that names a world fixes i
      "rate_factor": {"law": "cells.transition_state_factor@1", ...},        optional
      "founder": {"A@membrane": 10, ...},                      every finite place, explicitly
      "world_role": "probe",                                    optional (§0.2b rule 8)
-     "sites": [{"site": "R", "complex": "XR"}, ...]}           optional (FR-21; §0.2f)
+     "sites": [{"site": "R", "complex": "XR"}, ...],           optional (FR-21; §0.2f)
+     "hazard": {"law": "cells.pore_nucleation@1", ...}}        optional (FR-31; pore_nucleation.py)
 
 **Species** take D152's species form (SHARED_INVENTORY_REACTIONS_DESIGN §2.1): `moieties` (positive
 integer counts, or null: the species is its own moiety), the identity (`catalogue`, `evidence`,
@@ -76,9 +77,10 @@ WORLD_KEYS = {
     "division",
     "population",
     "sites",
+    "hazard",
 }
 WORLD_REQUIRED = WORLD_KEYS - {
-    "rate_factor", "world_role", "geometry", "division", "population", "sites",
+    "rate_factor", "world_role", "geometry", "division", "population", "sites", "hazard",
 }  # fmt: skip
 ROLES = ("probe",)  # §0.2b rule 8: a world declared to be probed (rate tables), never a lineage.
 AVOGADRO = 6.02214076e23  # mol⁻¹, exact (SI 2019).
@@ -156,6 +158,7 @@ class World:
     division: dict | None = None  # OL3: the shear fission's declaration (division.py), or None.
     population: dict | None = None  # OL2 milestone 3: the shared pool's slots and founders.
     sites: tuple | None = None  # FR-21: declared ((site, complex), ...) pairs, or None.
+    hazard: tuple | None = None  # FR-31: a vesicle hazard, (law ID, parsed data), or None.
 
     @property
     def place_names(self):

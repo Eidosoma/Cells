@@ -28,12 +28,18 @@ Each claim with a planted error it must catch (D187):
   refuses it there (planted: the first pair, under which it is an ordinary world);
 - every run of the ladder (OL1-4b) has its own stream identity over all rungs and both pairs, as the
   references' design requires ("none shared"; planted: lineage word = the run's index on every
-  rung, which repeats across rungs).
+  rung, which repeats across rungs);
+- OL5's registered OL2 and OL3 inputs (validation/ool/references/designs, as the references'
+  export gives them): the reader maps every world and run, which the parser admits, adding no key
+  the mapping does not name; and the parser refuses each of the 22 registered declarations
+  (planted: a sigma_max whose missing source took the default provenance would be admitted,
+  against the ruling of 22 November 2026; a world key the reader added is caught).
 """
 
 import copy
 import dataclasses
 import json
+from pathlib import Path
 
 import pytest
 
@@ -350,3 +356,68 @@ def test_every_ladder_run_has_its_own_stream_identity():
               for w in range(probes.WB_RUNS)]  # fmt: skip
     planted = [i for _ in blocks for i in identities(shared)]  # Planted: index on every rung.
     assert len(set(planted)) == probes.WB_RUNS < len(planted)  # shared across rungs: caught
+
+
+REGISTERED2 = Path(__file__).resolve().parents[2] / "validation" / "ool" / "references" / "designs"
+KERNEL_WORLDS2 = ("ol2_wa", "ol2_wa_diffusion", "ol2_closed", "ol2_two")
+WORLD_KEYS2 = {"units", "conventions", "species", "phases", "steps", "free_energy", "founder",
+               "geometry", "population", "division"}  # fmt: skip
+
+
+def registered2(name):
+    """A registered OL2/OL3 document as OL5's export gives it: its free-text description and the
+    role tags on a founder's vesicles removed (the export's two removed fields, not inputs)."""
+    document = json.loads((REGISTERED2 / name).read_text())
+    document.pop("description", None)
+    for vesicle in (document.get("founder") or {}).get("vesicles") or []:
+        vesicle.pop("role", None)
+    return document
+
+
+def test_the_registered_ol2_and_ol3_inputs_map_and_every_declaration_is_refused():
+    """OL5's probe roles (FORMAT_OL2.md): every registered world and run maps and parses, with no
+    key beyond the mapping's; each of the 22 declarations is refused by the parser, the reader
+    raising for none. Parse only: no rate is computed."""
+    from validation.assembly_lineages_v2 import probes2
+    from validation.assembly_lineages_v2 import registered as reader
+
+    settings = {"experiment": probes2.PROBE_EXPERIMENT, "execution": probes2.EXECUTION}
+    division = registered2("ol3_division.json")["worlds"]
+    for name in KERNEL_WORLDS2:
+        document = registered2(f"{name}.world2.json")
+        vesicle = 0 if "vesicles" in document["founder"] else None
+        made = reader.definition2(document, vesicle=vesicle, **settings)
+        assert set(made["model"]["world"]) <= WORLD_KEYS2
+        parse_spec(made)
+    runs = sorted(REGISTERED2.glob("*_run.json"))
+    assert len(runs) == 6
+    for path in runs:
+        run = registered2(path.name)
+        made = reader.definition2(registered2(f"{run['world']}.world2.json"), run=run,
+                                  division=division.get(run["world"]), **settings)  # fmt: skip
+        assert set(made["model"]["world"]) <= WORLD_KEYS2
+        assert parse_spec(made).execution.mode == run["mode"]
+    planted = copy.deepcopy(made)
+    planted["model"]["world"]["registered_units"] = {}  # Planted: a key the reader added.
+    assert not set(planted["model"]["world"]) <= WORLD_KEYS2
+    declarations = sorted((REGISTERED2 / "refusals2").glob("*.json"))
+    assert len(declarations) == 22
+    for path in declarations:
+        document = registered2(f"refusals2/{path.name}")
+        if document["format"] == reader.RUN_FORMAT2:
+            made = reader.definition2(registered2(f"{document['world']}.world2.json"),
+                                      run=document, division=division.get(document["world"]),
+                                      **settings)  # fmt: skip
+        else:
+            made = reader.definition2(document, **settings)
+        with pytest.raises(ConfigError):
+            parse_spec(made)
+    # sigma_max's source (§0.2c rule 8, as ruled): a missing one passes through as no provenance.
+    sourceless = registered2("refusals2/refuse_sigma_max_without_source.world2.json")
+    made = reader.definition2(sourceless, **settings)
+    sigma = made["model"]["world"]["geometry"]["sigma_max_N_per_m"]
+    assert "provenance" not in sigma
+    with pytest.raises(ConfigError, match="sigma_max_N_per_m is"):
+        parse_spec(made)
+    sigma["provenance"] = reader.provenance2(sourceless)  # Planted: the default put in its place.
+    parse_spec(made)

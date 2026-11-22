@@ -6,31 +6,63 @@ Browse Cells engine laws by scientific topic. Each claim links its Lean proofs, 
 
 <!-- generated: claims-index -->
 
-Direct Lean claims cover [44 of 44 laws](COVERAGE.md#registered-laws) and [26 of 26 operators](COVERAGE.md#registered-operators).
+Direct Lean claims cover [51 of 51 laws](COVERAGE.md#registered-laws) and [31 of 31 operators](COVERAGE.md#registered-operators).
 
 | Category | Registered laws with proof | Claims with proof | Numerical checks | Claims with biological evidence |
 | --- | ---: | ---: | --- | ---: |
-| [Membrane transport and osmosis](COVERAGE.md#category-membrane-transport) | 5 of 5 | 8 of 8 | 8 checked | 8 |
-| [Ion channels and junctions](COVERAGE.md#category-channels-and-junctions) | 14 of 14 | 11 of 11 | 10 checked · 1 failed | 10 |
+| [Membrane transport and osmosis](COVERAGE.md#category-membrane-transport) | 5 of 5 | 10 of 10 | 10 checked | 9 |
+| [Ion channels and junctions](COVERAGE.md#category-channels-and-junctions) | 15 of 15 | 15 of 15 | 15 checked | 14 |
 | [Pumps and cotransport](COVERAGE.md#category-pumps-and-cotransport) | 13 of 13 | 8 of 8 | 8 checked | 8 |
-| [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 1 of 1 | 6 of 6 | 5 checked · 1 failed | 4 |
-| [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 10 of 10 | 16 of 16 | 15 checked · 1 failed | 14 |
-| [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 1 of 1 | 17 of 17 | 15 checked · 2 failed | 13 |
+| [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 3 of 3 | 15 of 15 | 12 checked · 1 failed · 2 open | 11 |
+| [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 14 of 14 | 31 of 31 | 28 checked · 2 failed · 1 open | 19 |
+| [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 1 of 1 | 26 of 26 | 26 checked | 19 |
 | [Cell physiology](COVERAGE.md#category-cell-physiology) | — | 3 of 3 | 3 checked | 3 |
 
 <!-- /generated -->
 
 Each category opens its detailed claim table on GitHub, including registered laws still awaiting a proof. A single claim can cover several laws. The last column counts claims with a recorded measurement or literature finding, including partial evidence. Each numerical result applies to the cases in its linked record. [All registered laws](COVERAGE.md#registered-laws) · [Design notes](ENGINE_LAW_VERIFICATION.md) · [Voltage pilot closeout](../reports/BIO003_PILOT_CLOSEOUT.md)
 
-The failure list updates from the claims register. The 20 November review records which failures stop a run, which affect its accuracy, and which fixes passed on development branches. [Repair status and replay results](PROGRESS.md#remaining-numerical-findings)
+Three claims have failing checks. GARD v1 can refuse a reversible event, and the rapid-binding inventory margin can have the wrong sign in a fixture. The tested tissue host requires positive held totals. In the third case, an RNA release fate gains the correct amount, but a missing zero-loss record prevents the cohort reader from reporting its survivors. GARD v2 passes all nine range and capacity checks. [Current failures](COVERAGE.md#failing-numerical-checks) · [Lossless RNA export and control](PROGRESS.md#fr38-lossless-fate) · [GARD repair and original failure](PROGRESS.md#gard-v2-range-repair) · [Wash and clamp repairs](PROGRESS.md#d272-wash-clamp-retests)
+
+FR-42 has an exact design result for neutral arrival-time labels. Sharing the physical loss preserves the pooled inventory. With quadratic loss, the surviving new cohort is ¼ at time one, while subtraction of a separate blank gives 1/12. The compiled comparison will become possible when Cells implements the share-based labels. [Cohort proof and remaining checks](claims/fr42-cohort-shares.md)
+
+FR-38’s development release operator now directs material from an existing template hold to the class active at detachment. The compiled fixture exercised two separate windows with the same label, for both RNA fates. Lean proves that a reused label carries its older survivors and that the chase denominator is the cohort alive at window close. Bellecourt et al. measured released and template-associated RNA separately. Measuring survival of that same released cohort remains open. [Release windows, compiled comparison and biological evidence](claims/release-window-survival.md)
 
 ## Biological evidence
 
+During mechanical division of a liposome, one daughter can rupture while its sibling survives. Cells now reconciles the returned material in both runners. The experiment measured sibling fluorescence and external dye spreading in separate analyses. A same-event measurement of where the ruptured daughter’s contents went remains open. [Rupture at birth](claims/vesicle-birth-returns.md) · [Sibling fates, Fig. 1d](https://ceesdekkerlab.nl/wp-content/uploads/2019/08/Mechanical-division-of-cell-sized-liposomes.pdf#page=2)
+
+The osmotic volume law has **mixed biological evidence**. Fujiwara and Yanagisawa’s liposomes shrank to about 25% of their starting volume, against 24.56% in Cells without fitting. Wolfisberg’s four later volumes were below prediction. In Bhatia’s vesicle, the uncertainty in the outer contour spans the difference after accounting for the inward tube. [Three preparations side by side](PROGRESS.md#intact-vesicle-deflation) · [Generated claim and primary sources](claims/osmotic-vesicle-volume.md#biological-evidence)
+
+At the same growth rate, measured fractions of mRNA-bound ribosomes in *E. coli* ranged from 31% to 65% across three nutrient limitations. In hamster cells, tracer measurements followed residues in unfinished and released protein separately. These experiments give observables for the two polymerisation balances. A quantitative Cells comparison still needs matched conditions and pool definitions. [Machine occupancy](claims/polymerisation-machines.md) · [Residues in transit and released](claims/polymerisation-residues.md)
+
+In a purified *E. coli* experiment, polymerase remained on DNA after RNA release in 87 of 100 selected traces. Separate recordings also detected new RNA synthesis by retained polymerase. Both Cells options for returning polymerase conserve its pool. The experiment leaves open when that polymerase becomes available to other templates. [Measurement and both engine comparisons](PROGRESS.md#fr38-terminal-inventories) · [Harden et al., Figures 1 and 3](https://pmc.ncbi.nlm.nih.gov/articles/PMC6978322/)
+
+In a matched Cells control, a donor loses the same amount of labelled protein under transfer and degradation. A receiver gain or a clearance record distinguishes the mechanisms. Imaging of PSD-95 shows label spreading from one spine to two neighbors. The fate of the original label across the whole neuron over 48 hours remains open. Representing a neutral tracer by separate species rows can also change the heat attributed to mixing. [Matched donors](claims/transfer-or-degradation.md) · [Whole-cell balance](claims/regional-pulse-balance.md) · [Neutral label diffusion](claims/neutral-label-diffusion.md) · [Effect on booked heat](claims/label-mixing-power.md)
+
+At 0 mV, the published Kv1.5 activation curves predict 72.1% retained current at pH 6.8 if both preparations share a maximum conductance. A separate pulse in the same study gave 74.5 ± 1.9% (SEM). Applying only the measured midpoint shift to the default Cells gate gives 40.5%. [Kv1.5 pH comparison](claims/kv15-ph-activation.md)
+
+For Kv1.5 in HEK293 cells, a density-inhibition curve fitted to the two endpoints predicts a conducting fraction of 0.22 at 300 channels/µm². The same figure gives about 0.23 there, without a pointwise uncertainty. An independent channel count lets a fixed-gate current comparison distinguish changes in availability. [Density comparison](claims/channel-density-availability.md) · [Clamp proof](claims/clamped-channel-current.md)
+
 The biological review identifies three engine opportunities with measured targets. It covers the reversal of the yeast vacuolar proton pump, the time to rupture of a vesicle under steady tension, and fast and slow closure of Cx43 gap junctions. [Measurements, current engine results and proposed changes](PROGRESS.md#biological-model-review)
+
+The Cx43 polarity measurements bound the error of the registered single-gate law. The registered two-gate law satisfies the predicted amplitude relation on synthetic clamps and runs in the tissue host under its development flag. Resolving the mixed amplitude in a measured Cx43 trace remains open. [Measurements](PROGRESS.md#cx43-series-gates) · [Compiled comparison and host replay](PROGRESS.md#nov21-registered-series-and-withdrawal)
+
+A serial dilution experiment follows free fluorescein through three successive exchanges, including the discrepancy at the third 80% wash. For uneven sampling, a separate experiment measured approximately 75% and 25% of stock dye concentration in two outlets carrying equal flow. Measuring the dye left in each region after a finite draw would test the Cells remainder prediction. [Measured dilution](PROGRESS.md#nov21-wash) · [Two-region draws and dye measurements](claims/two-region-sampling.md)
+
+For partial pool withdrawal, one passive splitter collected a mean of 45.0% of each droplet’s beads in a nominal one-third branch. Another retained 28.2% of beads at a mean liquid fraction of about 27.2%. A test of count variance still needs particle counts and liquid volume measured on the same split. [Count proof and measurements](claims/pool-withdrawal.md) · [Paired-data search and heat proof](PROGRESS.md#fr35-withdrawal-energy) · [Biological disagreements for Cells](PROGRESS.md#nov21-biological-disagreements)
+
+For finite-pool washes, tracer measurements distinguish what leaves the exterior, what survives inside a vesicle, and what can later enter another membrane. [Washout and redistribution measurements](claims/pool-replacement.md#biological-evidence)
+
+For a wash of a solid surface, the first saved step can already include tracer released from the wall. An albumin experiment measured both rinse liquid and the final surface residue. The time course of release in that preparation remains open. [Wall retention and measured albumin recovery](claims/wall-wash-retention.md)
 
 Yeast mitochondrial ATP synthase provides a measured example of reversal. The enzyme switched from hydrolysis to synthesis as the proton gradient increased. Cells captures the shift between the lowest and highest ATP loads. The comparison also records the four intermediate measurements outside the combined interpolation limits. [Mitochondrial stall and biological evidence](claims/mitochondrial-stall-heat.md#biological-evidence)
 
 The catalog gives each measurement, its primary source and the part of the law it tests. **Partial evidence** means the literature measures a relevant part of the claim and a full biological verdict remains open. **Not assessable** means a recorded comparison has too much uncertainty for a verdict. The studies and their figures are linked in each row. [Literature review](claims/incoming/biological-evidence.md) · [Pump flux, charge and ATP measurements](claims/incoming/pump-charge-evidence.md) · [PGI worksheet audit](claims/incoming/pgi-evidence.md) · [Publisher’s PGI workbook and spectra](https://mdpi-res.com/metabolites/metabolites-02-00818/article_deploy/metabolites-02-00818-s001.zip)
+
+Three measured rupture rates at each of two temperatures give FR-31 a disclosed comparison for first rupture. Evans and Smith describe an independent vesicle lifetime assay. Linking a particular constant-tension series to its vesicle sizes, exposure times and censoring remains open. A complete rupture returns each molecule to its destination in both assembly runners. [Rate measurements](claims/vesicle-lysis-threshold.md#biological-evidence) · [Independent study search](claims/incoming/vesicle-osmosis-evidence.md#independent-fixed-tension-series) · [Rupture receipts in Lean and Cells](claims/vesicle-lysis-returns.md) · [Independent translation-timing data screened by Search](claims/incoming/translation-release-evidence.md#fr-40-screening-for-independent-timing-data)
+
+For a vesicle population at a common per-area hazard, survival at the mean area is a lower bound. The initial mean and actual area limits also give a sharp upper bound. In one synthetic mixture the bounds were 25% and 31.25%. Applying them to a preparation requires size data for the same starting cohort. [Vesicle survival bounds](claims/vesicle-area-survival.md)
 
 ## Maintaining the claims
 
@@ -38,7 +70,7 @@ Edit the claims register. A stable `id` gives each claim its note under `claims/
 
 Laws inherit the topic of their direct proofs. Use `law_categories` to put a law awaiting its first proof in the right section, or to choose its primary topic when proofs span several categories. Newly registered laws awaiting classification appear together in the overview.
 
-In `formal.about`, list the canonical registry IDs whose law or operator property the theorem establishes. General composition and accounting theorems can leave this empty. In `numerical.comparisons`, list the comparison IDs for the claim. Each comparison names the models, laws and operators it exercised. For engine runs, `engine_revision` identifies the code that ran. The `record_revision` pins the comparison driver and the published result. For a reference calculation it also pins the implementation. File paths in the register start at the checkout root.
+In `formal.about`, list the canonical registry IDs whose law or operator property the theorem establishes. General composition and accounting theorems can leave this empty. In `numerical.comparisons`, list the comparison IDs for the claim. Each comparison names the models, laws and operators it exercised. For engine runs, `engine_revision` identifies the code that ran. The `record_revision` pins the comparison driver, the published result and any measured data files listed in `record_inputs`. The source audit also detects changes to those inputs. For a reference calculation this revision also pins the implementation. File paths in the register start at the checkout root.
 
 In `biology.observable` and `unit`, name the quantity the claim needs. Use `biology.finding` for a brief published measurement, its scope and its primary citation. The generator puts that finding in the detailed catalog and the claim page. Formal experimental comparisons go in `biology.evidence`. The catalog reads their observed and predicted values, assessment and citation directly from those records. A claim awaiting measurements displays its requested observable.
 
@@ -79,9 +111,15 @@ jq -r --arg law 'logmean_electrodiffusion@1' '
 
 ### Reusing a proof
 
-Keep the Cells theorem beside the mechanism it explains. Import a narrow upstream module when it fits our pinned Lean version. For a short result from another Lean version, a local derivation can be simpler. When copying licensed source, keep the original attribution, license and required notices with the copy. Give the claim a `formal.sources` entry for the upstream theorem at a fixed revision and label how we used it. The binding claim shows a local Lean 4 derivation. The face-power claim links an optional external import. [Binding example](claims/single-site-binding.md) · [Face-power example](claims/extracellular-face-dissipation.md)
+For new physics claims, look first for a compatible public theorem with matching assumptions and units. The charter gives the criteria for choosing a source, recording a direct import or optional comparison, and keeping a short proof local. [Cells Lean charter](AGENTS.md)
+
+The single-site binding proof derives the Langmuir formula locally. For several forms and ligands, Physlib’s finite canonical ensemble gives each Cells form fraction at fixed free ligand activities. The binding claim also records how a magnesium–ATP affinity measured in one preparation performed in another. The face-power check imports the ATOMS Lab dimensional algebra. [One-site binding](claims/single-site-binding.md) · [Finite binding and ATP measurements](claims/binding-form-ensemble.md) · [Face-power example](claims/extracellular-face-dissipation.md)
+
+The cleft-fill and wash proofs share the same ideal mixing term. Their default proof uses Mathlib’s logarithm bounds. An optional check identifies that term with Mathlib’s relative-entropy function. A second optional check imports Physlib’s two-state ensemble and recovers the equilibrium open probability of a junction gate when the fitted gate coordinate equals the dimensionless energy gap. [Cleft heat](claims/cleft-mixing-heat.md) · [Wash heat](claims/compartment-wash.md) · [Gate specialization](checks/physlib/JunctionEquilibrium.lean)
 
 Two monotonicity proofs from `grn-lean` also apply directly to the scalar Hill factors in Cells. The optional check compiles the pinned definition and both upstream proofs, verifies the equivalence with our log-space evaluation, and shows that basal channel availability preserves the activating and inhibiting dose responses. The chemistry review records which reaction-network results apply to the closed enzyme fixture. [Hill specialization](checks/hill/Response.lean) · [Regulated channel proof](claims/regulated-state-response.md) · [Chemistry libraries tested against Cells](ENGINE_LAW_VERIFICATION.md#chemistry-libraries-tested-against-cells)
+
+Three optional chemistry imports cover the closed enzyme reaction, conservation of a molecule exchanged with a finite pool, and the effect of lowering one activation barrier. Run `bash checks/chemistry/check.sh` from `lean/` with the pinned Lean on your path. The first run fetches the selected modules and their licenses. [Tested imports and future chemistry options](ENGINE_LAW_VERIFICATION.md#chemistry-imports-for-cells) · [Cells proofs](checks/chemistry/Reuse.lean)
 
 ## Build
 
@@ -102,6 +140,7 @@ On the first build, fetch the compiled dependencies for the imported modules. Su
 
 ```bash
 lake exe cache get Mathlib.Data.Complex.Exponential \
+  Mathlib.Probability.ProbabilityMassFunction.Binomial \
   Mathlib.Analysis.SpecialFunctions.Log.Basic Mathlib.Algebra.Order.BigOperators.Group.Finset \
   Mathlib.Analysis.Calculus.Deriv.Add Mathlib.Analysis.Calculus.Deriv.Inv \
   Mathlib.Data.Nat.Factorial.Basic Mathlib.Data.Matrix.Mul Mathlib.Tactic.Positivity \
@@ -116,10 +155,17 @@ lake exe cache get Mathlib.Data.Complex.Exponential \
 lake build
 ```
 
-To check the ATOMS Lab dimensional algebra on the Cells toolchain, run the following from `lean/`. The first run downloads two source modules and their license from a pinned revision and fetches the compiled matrix-rank dependency if needed. Later runs can use the local cache. The check compiles the dimension of flux × molar potential and checks the scalar conversion used by the engine. [Optional proof](checks/units/FacePower.lean) · [Pinned source and compatibility edit](checks/units/check.sh)
+To check the ATOMS Lab dimensional algebra on the Cells toolchain, run the following from `lean/`. The first run downloads two source modules and their license from a pinned revision and fetches the compiled matrix-rank dependency if needed. Later runs can use the local cache. The check covers face power, electrode work and the Faraday conversion from molar flux to current. [Optional proofs](checks/units/FacePower.lean) · [Pinned source and compatibility edit](checks/units/check.sh)
 
 ```bash
 bash checks/units/check.sh
+```
+
+For the relative-entropy comparison, the first command fetches the additional compiled Mathlib modules on the Cells pin. The second checks that the mixing term is nonnegative and vanishes exactly at a concentration ratio of one. [Optional proof](checks/mixing/KLFun.lean)
+
+```bash
+lake exe cache get Mathlib.InformationTheory.KullbackLeibler.KLFun
+lake env lean -DwarningAsError=true checks/mixing/KLFun.lean
 ```
 
 For the Hill proofs, the first run fetches two pinned source files, their MIT license and any missing compiled real-power dependencies. The command works from the cache on subsequent runs. [Hill proof runner](checks/hill/check.sh)
@@ -127,6 +173,33 @@ For the Hill proofs, the first run fetches two pinned source files, their MIT li
 ```bash
 bash checks/hill/check.sh
 ```
+
+<details>
+<summary>Optional Physlib checks for a junction gate and finite binding</summary>
+
+Physlib v4.22.0 uses the module name `PhysLean` and its own Lean 4.22.0 toolchain. Its extra axiom `Constants.kBAx` supplies a positive Boltzmann constant in the chosen units. From `lean/`, clone the tagged source once into `.lake/`. Run the commands inside that clone with Lean and Lake 4.22.0 on your path. [Upstream two-state ensemble](https://github.com/leanprover-community/physlib/blob/559b0e14bd87896d4ee536a536a8fb65e83b77cc/PhysLean/StatisticalMechanics/CanonicalEnsemble/TwoState.lean#L26-L37) · [Boltzmann constant axiom](https://github.com/leanprover-community/physlib/blob/559b0e14bd87896d4ee536a536a8fb65e83b77cc/PhysLean/StatisticalMechanics/BoltzmannConstant.lean#L20-L30) · [Gate specialization](checks/physlib/JunctionEquilibrium.lean)
+
+```bash
+gate_proof="$PWD/checks/physlib/JunctionEquilibrium.lean"
+git clone --depth 1 --branch v4.22.0 https://github.com/leanprover-community/physlib .lake/physlib-v4.22.0
+(
+  set -e
+  cd .lake/physlib-v4.22.0
+  test "$(git rev-parse HEAD)" = 559b0e14bd87896d4ee536a536a8fb65e83b77cc
+  lake env lean --version
+  lake exe cache get Mathlib.Analysis.Calculus.ParametricIntegral \
+    Mathlib.Analysis.SpecialFunctions.Log.Summable Mathlib.MeasureTheory.Integral.Prod \
+    Mathlib.MeasureTheory.Measure.ProbabilityMeasure Mathlib.Analysis.InnerProductSpace.Basic \
+    Mathlib.Analysis.Calculus.Deriv.Inv Mathlib.Data.NNReal.Defs Mathlib.Lean.Expr.Basic \
+    Mathlib.Tactic.FieldSimp Mathlib.Tactic.Ring Mathlib.Algebra.BigOperators.Field \
+    Mathlib.Algebra.BigOperators.Group.Finset.Sigma
+  lake build PhysLean.StatisticalMechanics.CanonicalEnsemble.TwoState
+  lake env lean -DwarningAsError=true "$gate_proof"
+)
+bash checks/physlib/binding.sh
+```
+
+</details>
 
 ## CPU comparisons
 
@@ -144,6 +217,19 @@ cells_python=${CELLS_PYTHON:-python}
 <details>
 <summary>Commands for individual comparisons</summary>
 
+Run the OL5 comparison for single-event osmotic energies, short reaction products and measured vesicle deflation. Select one calculation with `--case energy`, `--case draws`, `--case deflation` (Bhatia) or `--case intact-deflation` (Fujiwara and Yanagisawa). The release check reads the saved diagnostic events and the matching final or lysis rows in four runs. Pass `--output DIRECTORY` to retain its bundles. [Energy proof](claims/vesicle-event-energy.md) · [Release proof](claims/vesicle-lysis-returns.md) · [OL5 replay differences](PROGRESS.md#ol5-six-replays)
+
+```bash
+"$cells_python" -B checks/vesicle_events.py
+"$cells_python" -B checks/vesicle_release.py
+```
+
+For rupture at birth, the six-run comparison covers the followed daughter, its unfollowed sister and population slot reuse. Use `--population-record DIRECTORY` to check the shear and lysis rows in an existing population bundle. [R10 proof and archived OL5 result](PROGRESS.md#vesicle-birth-returns)
+
+```bash
+"$cells_python" -B checks/vesicle_birth.py
+```
+
 For mitochondrial respiration and ATP delivery, check the seven reaction columns, charge on each side and the material booked in a world with a finite matrix and intermembrane space. The results link complex I proton measurements and a bovine ATP synthase structure to the counts the model assumes. [Mitochondrial balance and measurements](PROGRESS.md#mitochondrial-cycle-accounting)
 
 ```bash
@@ -154,6 +240,12 @@ Check the stall conditions of all seven cycles, compare instantaneous heat and f
 
 ```bash
 "$cells_python" -B checks/mitochondrial_stall.py
+```
+
+Check how free magnesium shifts the adenylate kinase equilibrium, how pH shifts the held reductant supply's stall, and how the tissue books material, work and heat. The comparison includes two kinase assays and a measured redox equilibrium. [Predictions and biological evidence](PROGRESS.md#mitochondrial-kinase-supply)
+
+```bash
+"$cells_python" -B checks/mitochondrial_reactions.py
 ```
 
 For the conditioned kidney-cell voltage, check the two-dose extrapolation on three synthetic Na/K/Cl membranes and reproduce the fixed C3 prediction and its figure-reading bounds. [C3 results](PROGRESS.md#conditioned-voltage-bounds)
@@ -201,6 +293,30 @@ For serial transfer and shear fission, follow an impermeant tracer through succe
 "$cells_python" -B checks/vesicle_population.py
 ```
 
+For the finite-compartment wash, the dilution checks cover neutral tracer, retained sites and the whole-wash resolution limit. The ion check compares three half washes with three 3/7 washes. It reports the public runner’s verdict and exits with status 1 when unchanged ions have unequal counters or the run is refused. For the two-gate junction, compare all gate-kind pairings with the constant-voltage expansion. [Wash counters](claims/wash-ion-counters.md) · [Tracer dilution](claims/compartment-wash.md) · [Series gates](PROGRESS.md#nov21-features)
+
+```bash
+"$cells_python" -B checks/compartment_wash.py
+"$cells_python" -B checks/compartment_wash.py --case dilution
+"$cells_python" -B checks/compartment_wash.py --case ion-counters
+"$cells_python" -B checks/junction_series_gates.py
+```
+
+For scheduled pool replacement, replay both sides of the pulse and wash, including species receipts and saved relations. The capacity comparison exits 1 when either schedule accepts an oversized bath. [Tracer and energy results](PROGRESS.md#pool-replacement) · [Capacity finding](PROGRESS.md#pool-replacement-capacity)
+
+```bash
+"$cells_python" -B checks/pool_replacement.py --case pulse
+"$cells_python" -B checks/pool_replacement.py --case capacity
+```
+
+For partial withdrawal, replay the host balance, finite-word edge cases, sample moments and measured bead fractions. To verify all 180 plotted counts, export page 3 of the cited vector PDF with `pdftocairo -svg -f 3 -l 3 paper.pdf fig2.svg` and add `--figure-svg fig2.svg`. The energy check compares all five fields and the saved ledger, including rare midpoint draws. The matched-buffer proof bounds the mean heat per starting molecule by ln(n+1)/n on the exact sampling grid. [Matched-buffer result](PROGRESS.md#matched-buffer-heat) · [Energy results](PROGRESS.md#fr35-withdrawal-energy) · [Count data and source](checks/data/pool_withdrawal_measurements.json)
+
+```bash
+"$cells_python" -B checks/pool_withdrawal.py
+"$cells_python" -B checks/pool_withdrawal_energy.py
+"$cells_python" -B checks/matched_buffer.py
+```
+
 For vesicle exchange, compare lipid insertion and neutral solute permeation against their rate equations and measured washout and swelling. The shared-pool controls follow one lipid and one solute between two vesicles. The one-event fixed-volume case now returns the declared-lumen records. [Measurements and engine results](PROGRESS.md#vesicle-permeation) · [Shared-pool counts](PROGRESS.md#shared-pool-inventory) · [Earlier reporting failure](PROGRESS.md#shared-pool-declared-volume) · [Repair and retest](PROGRESS.md#claim-source-review)
 
 ```bash
@@ -230,11 +346,12 @@ For the held bath, follow the controller’s dose and the tissue’s supply thro
 "$cells_python" -B checks/bath_schedule.py --controls-only
 ```
 
-For regulated availability, pulse and wash out a ligand in both operator versions and compare the channel response with rat SK2 dose and timing measurements. The full driver also checks the order of reporter production when turnover changes its own regulator. It exits with status 1 on the recorded first-order result. The controls-only run checks the pulse, both rate samples and the SK2 calculation. [Channel proof and biological measurements](claims/regulated-state-response.md) · [Turnover finding and reproducer](claims/regulated-turnover-routing.md)
+For regulated availability, pulse and wash out a ligand in both operator versions and compare the channel response with rat SK2 dose and timing measurements. The full driver also checks the order of reporter production when turnover changes its own regulator. The midpoint repair restored second-order convergence on the four tested grids. The controls-only run checks the pulse, both rate samples and the SK2 calculation. [Channel proof and biological measurements](claims/regulated-state-response.md) · [Turnover finding and reproducer](claims/regulated-turnover-routing.md)
 
 ```bash
 "$cells_python" -B checks/regulated_availability.py
 "$cells_python" -B checks/regulated_availability.py --controls-only
+"$cells_python" -B checks/regulated_availability.py --ramp-only
 ```
 
 For scheduled turnover, the driver checks production, clearance and chemical work, then compares a neuronal protein chase and a chamber with independently metered flow. The full run also checks that both extreme-rate worlds retain the 1 fmol net change and its chemical work. The second command runs the ordinary controls. [Proof, measurements and engine finding](claims/scheduled-species-turnover.md)
@@ -258,7 +375,7 @@ The site driver follows two binding populations and their shared free ligand. Th
 "$cells_python" -B checks/mixed_membrane.py
 ```
 
-For membrane insertion, compare both operators with a one-patch fixed-charge solution. The first command reports the engine result and exits with status 1 if any case fails. The two optional controls rerun the stress case with known single-patch heat and image-charge values substituted in memory. At the recorded revision the original and heat-only runs fail, and the heat-and-charge control completes. [Driver](checks/membrane_insertion.py) · [Results](PROGRESS.md#19-november-2026--membrane-insertion-heat)
+For membrane insertion, compare both operators with a one-patch fixed-charge solution. The first command reports the engine result and exits with status 1 if any case fails. The two optional controls rerun the stress case with known single-patch heat and image-charge values substituted in memory. Both repaired operators now complete the original stress rollout. [Driver](checks/membrane_insertion.py) · [Original result](PROGRESS.md#19-november-2026--membrane-insertion-heat) · [Repair](PROGRESS.md#nov21-engine-review)
 
 ```bash
 "$cells_python" -B checks/membrane_insertion.py
@@ -270,6 +387,20 @@ For single-site binding, compare the compiled law against the independent S1 sta
 
 ```bash
 "$cells_python" -B checks/single_site_binding.py
+```
+
+For finite binding, compare the fractions of every form in S1–S7 at fixed free ligand concentrations, then check a two-ligand tissue read, isomer multiplicity and the cross-study Mg–ATP prediction. [Ensemble comparison](checks/binding_ensemble.py) · [Measurement inputs](checks/data/mgatp_binding.json)
+
+```bash
+"$cells_python" -B checks/binding_ensemble.py
+```
+
+For the inverse binding problem, the first command checks uniqueness, the second checks the finite directions that decide feasibility for the registered chemistries, and the third reproduces the float64 sign failures near zero. The third command exits with status 1 while those failures remain. [Equilibrium and measured endpoints](claims/binding-equilibrium-unique.md) · [Finite direction tests](claims/binding-margin-vertices.md) · [Signed-total cases](claims/binding-equilibrium-feasibility.md)
+
+```bash
+"$cells_python" -B checks/binding_equilibrium.py
+"$cells_python" -B checks/binding_vertices.py
+"$cells_python" -B checks/binding_feasibility.py
 ```
 
 For Hill activation and inhibition, compare the compiled Cells factors with a 65-digit evaluation of the upstream formula on the engine's reaction test grid. [Hill comparison](checks/hill/compare.py)
@@ -300,6 +431,15 @@ The Na⁺/K⁺ driver checks the eight gated channels and both leaks together on
 "$cells_python" -B checks/ion_channels.py
 "$cells_python" -B checks/chloride_channel.py
 "$cells_python" -B checks/channel_clamp_evidence.py
+```
+
+The direct tissue clamp is checked against the independent current formula. The separate composite check compares the scheduled and effective controls, then tests the public clamp against the ordinary observed current and a second voltage. It exits with status 1 while that public comparison is unavailable or disagrees. [Tissue current and measured conducting fractions](claims/clamped-channel-current.md) · [Composite clamp retest](PROGRESS.md#d272-wash-clamp-retests)
+
+```bash
+"$cells_python" -B checks/clamped_channel_current.py
+"$cells_python" -B checks/clamped_channel_current.py --composite
+"$cells_python" -B checks/channel_density.py
+"$cells_python" -B checks/kv15_ph.py
 ```
 
 For neutral permeation, compare the compiled inward flux and the final amounts in a closed tissue pair with the analytic solution. The unequal-volume case distinguishes amount from concentration. [Neutral driver](checks/neutral_permeation.py) · [Closed-pair reference](../validation/passive/passive_reference.py#L66)
@@ -355,11 +495,34 @@ For assembly exchange, compare entry and exit rates at every three-species compo
 "$cells_python" -B checks/reservoir_exchange.py
 ```
 
-For the two GARD laws, compare both directions of each transfer and each four-event cycle against exact rational rates. The full run also exercises two cases where subtracting a large diagonal coefficient loses the remaining catalyst. It exits with status 1 when the passive law refuses a valid event. The controls-only command runs the ordinary comparisons and two passing one-event controls. [Driver](checks/gard_catalysis.py) · [Findings and membrane measurements](PROGRESS.md#19-november-2026--gard-catalysis-on-reversible-transfers)
+For the original GARD laws, compare both directions of each transfer and each four-event cycle against exact rational rates. The full run also exercises two cases where subtracting a large diagonal coefficient loses the remaining catalyst. It exits with status 1 when the passive law refuses a valid event. The controls-only command runs the ordinary comparisons and two passing one-event controls. [Driver](checks/gard_catalysis.py) · [Findings and membrane measurements](PROGRESS.md#19-november-2026--gard-catalysis-on-reversible-transfers)
 
 ```bash
 "$cells_python" -B checks/gard_catalysis.py
 "$cells_python" -B checks/gard_catalysis.py --controls-only
+```
+
+For FR-31, run the four synthetic cohort-size checks. For FR-42, run the point-release and interval-counter references, followed by the full comparison on the five-step FR-38 development fixture. [Area bounds](PROGRESS.md#fr31-area-bounds) · [Release windows and label reuse](PROGRESS.md#fr42-release-windows)
+
+```bash
+"$cells_python" -B checks/vesicle_area.py
+"$cells_python" -B checks/arrival_windows.py --reference-only
+"$cells_python" -B checks/arrival_windows.py
+```
+
+For the GARD v2 two-word cache, replay the reversible event, signed updates and precision guard. The separate range command checks an admitted finite-rate event, upper and lower exponent boundaries, and explicit capacity on both sides of 4,096. It exits with status 1 if any of its nine expectations fails. For templated polymerisation, check the two balances across every saved row of three compiled worlds, including two chains competing for one machine pool. [Cache precision](PROGRESS.md#gard-v2-cache) · [Repaired and historical range checks](PROGRESS.md#gard-v2-range-repair) · [Polymerisation balances and measurements](PROGRESS.md#polymerisation-balances)
+
+```bash
+"$cells_python" -B checks/gard_cache.py
+"$cells_python" -B checks/gard_cache.py --range
+"$cells_python" -B checks/polymerisation_balances.py
+```
+
+For a chain with a terminal RNA hold, check both machine-return policies through a change of class and a change of fate fraction. The second command asks the public cohort reader for surviving RNA in both lossless fates. It exits with status 1 if a fate record is unreadable. [Machine and residue balances](PROGRESS.md#fr38-terminal-inventories) · [Lossless fate export](PROGRESS.md#fr38-lossless-fate)
+
+```bash
+"$cells_python" -B checks/terminal_release.py
+"$cells_python" -B checks/terminal_release.py --lossless
 ```
 
 For ideal and regular assembly mixing, one command checks the 592 registered probe states under both count measures and rebooks four compiled trajectories. It compares the activity curves with Shaw’s 25 DOPC measurements and Parker’s independent crystal-onset endpoint. [Driver](checks/assembly_mixing.py) · [Fit, assumptions and results](PROGRESS.md#19-november-2026--ideal-and-regular-assembly-mixing)

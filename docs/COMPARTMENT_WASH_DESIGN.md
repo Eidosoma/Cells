@@ -220,9 +220,22 @@ At the definition, each with its reason:
 - **a face at a washed node, until measured** (ruling 5). A wash is a step in the node's
   concentration, and @3's face booking of such a step is FR-10's onset limit, measured for held
   baths only;
-- **a neutral species that crosses a membrane patch facing a washed node** (nonzero passive
-  permeability; channels carry ions only). Its booking of the step is unmeasured, as a face's.
-  This is our extension of ruling 5, for the lead;
+- **a neutral species that crosses a washed node's surface by any declared path** (fail closed;
+  D263 finding 2). This was first the patch's own permeability alone, the extension of ruling 5
+  that the lead accepted. A second review then found the same crossing admitted through a
+  registered route, so the paths are now read from the declarations (`surface_crossings`):
+  - the inner model's movers, through the core's join (`species_registry.inner_movers`): a
+    patch's permeability, channels and pumps on a patch facing the node, a face touching it, and
+    every declared kind's moved rows at the node (a kind's passive route, a transporter);
+  - species exchange's routes through a patch facing the node, and a site population's
+    internalisation from it;
+  - an operator's in-step process moving a neutral species at an outside node;
+  - every operator law not shown local (`SHOWN_LOCAL`, each with why), with `REFUSED`'s reasons
+    for the rest; a law in no list is refused until it is classified.
+
+  Its booking of the step is unmeasured, as a face's, and the wash's books do not see the
+  exchange. A site population that only binds stays admitted: its bound material is the site
+  operator's, left in place by the wash, the review's case;
 - ions declared other than `same_as_compartment`;
 - a buffer that misses a neutral species, names another, or holds a concentration ≤ 0 or below a
   site ligand's trace;

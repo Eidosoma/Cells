@@ -35,6 +35,42 @@ and 10% on the right. Each diffuses down its own gradient, so `L` on the right r
 A tracer of `S` driven by net records would see no movement and keep 0.1 there, so `trace` refuses
 the face at setup.
 
+**FR-33's acceptance on a label family** (synapse_world, D1): two synapse regions, finite outside
+nodes `syn_1` and `syn_2` of 1 pL, joined by a face that diffuses the protein at R_SYNAPSE per
+node, each bounded by a contact patch to the cell that nothing crosses. `P` is declared as a label
+family of two rows, `P_L` (labelled, 1 mM in syn_1) and `P_U` (unlabelled, 1 mM in syn_2), each
+0.1 mM elsewhere, with equal coefficients, so the engine's own face law carries each row both
+ways. With `degrade`, turnover clears both rows in syn_1, alike (a family's clearance must match on
+every row). The
+engine's records then show pure redistribution (syn_1's loss of label is syn_2's gain, the face's
+record, and the labelled total is stable) or degradation (the labelled total falls by the clearance
+record), exactly to the engine's numerics, with no resolution bound.
+- **Why not two compartments of one cell:** a cell-owned compartment can carry no face, and no
+  constant-field route without a declared kind, and turnover refuses a species that permeates a
+  patch or a junction (it would have no material-rate bound). So within one cell the engine cannot
+  yet diffuse a cleared protein between two compartments: an engine gap, recorded for FR-33.
+
+**FR-33's first test, as its requester asked** (first_test_world and first_test; the requester's
+answer, relayed by the user on 22 November 2026: "Two named regions of the same cell joined by one
+bidirectional face are sufficient for our first test"). Two named regions, `donor` and `receiver`,
+finite nodes of FIRST_TEST_VOLUME_pL each, joined by one bidirectional face. The protein is the
+label family P (D1): `P_L` labelled, 1 mM in the donor, and `P_U` unlabelled, 1 mM in the
+receiver, each at the usual 1e-9 mM trace elsewhere, so the receiver starts with no label. The face
+books its heat exactly (heat_bookings: faces exact_free_energy_heat@1, F2), which keeps the energy
+ledger closed from a trace start. No labelled production is declared.
+- **Case "transfer":** the face open, and no turnover at all. The label total is conserved and the
+  receiver's gain is the donor's loss.
+- **Case "local_loss",** the local-loss control: the face closed (zero diffusivity for both rows)
+  and turnover clearing both rows at the donor, alike. The receiver stays flat, and the cumulative
+  clearance accounts for the donor's missing label. Turnover is declared in this case only: F2's
+  version 1 refuses an operator's in-step writer on a row an exact face carries, so the open face
+  and turnover on the same rows cannot share a world.
+- **The record's "whole-cell label"** is the label summed over the two regions. The regions are
+  nodes joined by a face, not compartments of a cell, so that sum is the definition, stated in the
+  record. The cell's own small label, which nothing moves, is not counted.
+- Every readout is in fmol, at the same saved times (the world's observation times), and each
+  region keeps its ID and declared volume in the record.
+
 Run: PYTHONPATH=src:. JAX_ENABLE_X64=1 JAX_PLATFORMS=cpu python -m validation.regions.example
 """
 
@@ -54,6 +90,10 @@ COHORTS = {"from_ecs_0": {base.NODE_T: 1.0}, "in_cell": {base.CELL: 1.0}}
 LABELS = [(0.0, "pulse"), (T_PULSE, "chase")]
 R_DIFFUSION = math.log(2) / 2  # 1/s: each node's exchange rate in the reviewer's case.
 FACE_AREA_M2, FACE_LENGTH_M = 1e-10, 1e-5
+R_SYNAPSE = 1.0  # 1/s: each synapse region's exchange rate through their face.
+K_DEGRADE = 0.5  # 1/s: the protein's clearance in syn_1, when degraded.
+SYNAPSES = ("syn_1", "syn_2")
+FAMILY = {"id": "P", "rows": ["P_L", "P_U"]}
 
 
 def world():
@@ -97,6 +137,155 @@ def two_node_diffusion(*, dt=0.01, steps=100):
             concentrations_mM={"left": left, "right": right},
         )
     return raw
+
+
+def synapse_world(*, degrade=0.0, dt=1e-3, steps=200):
+    """FR-33's acceptance world on a label family (module docstring): turnover clears P_L and P_U
+    in syn_1 at `degrade` (1/s) alike, so a zero rate and a positive one share one program."""
+    pl_m3 = 1e-15
+    diffusivity = R_SYNAPSE * FACE_LENGTH_M * pl_m3 / FACE_AREA_M2  # r = D A / (L V), V = 1 pL.
+    end = dt * steps
+    raw = base.fx.world(
+        cells=((base.CELL, 1.0),),
+        nodes=tuple((s, 1.0) for s in SYNAPSES),
+        contacts=(("contact_1", base.CELL, "syn_1"), ("contact_2", base.CELL, "syn_2")),
+        faces=(("face_12", "syn_1", "syn_2", FACE_AREA_M2, FACE_LENGTH_M),),
+        dt=dt,
+        end=end,
+        observation_times=base.fx.grid_times(end, dt, end / 10),
+        diffusivity=diffusivity,
+    )
+    for name, node in (("P_L", "syn_1"), ("P_U", "syn_2")):
+        # 1 mM where it starts and 0.1 mM elsewhere: the protein's total is even, so only the
+        # labels move (at a 1e-9 mM trace a node's face terms failed the energy ledger's check).
+        others = {n: 0.1 for n in (base.CELL, *SYNAPSES) if n != node}
+        raw = add_inventory_species(
+            raw,
+            name,
+            trace_mM=base.fx.TRACE_mM,
+            diffusivity_m2_per_s=diffusivity,
+            floor_fmol=base.fx.FLOOR_FMOL,
+            concentrations_mM={node: 1.0, **others},
+        )
+    m = raw["model"]
+    m["label_families"] = [copy.deepcopy(FAMILY)]
+    m["operators"].append(dict(
+        law=base.fx.TURNOVER,
+        species=[dict(id=r, catalogue=None, evidence=None) for r in FAMILY["rows"]],
+        routes=[dict(id=f"degrade_{r}", species=r, node="syn_1", kind="clearance")
+                for r in FAMILY["rows"]],
+        templates=[],
+    ))  # fmt: skip
+    raw["experiment"]["turnover_controls"] = [
+        dict(route_id=f"degrade_{r}", carrier_id=None, schedule=[dict(time=0.0, rate=degrade)])
+        for r in FAMILY["rows"]
+    ]
+    return raw
+
+
+FIRST_TEST_REGIONS = ("donor", "receiver")
+FIRST_TEST_VOLUME_pL = 1.0
+FIRST_TEST_CLEARANCE = 0.5  # 1/s: the local-loss control's clearance at the donor.
+FIRST_TEST_CASES = ("transfer", "local_loss")
+WHOLE_CELL_LABEL = (
+    "the label summed over the two regions, donor and receiver: they are finite nodes joined by "
+    "one face, not compartments of a cell, so that sum is the definition (the cell's own small "
+    "label, which nothing moves, is not counted)"
+)
+
+
+def first_test_world(case, *, dt=1e-3, steps=200):
+    """FR-33's first test (module docstring): case "transfer" (the face open, no turnover) or
+    "local_loss" (the face closed for both rows, turnover clearing both at the donor, alike). Each
+    starts the label at the usual trace outside its own region, with the face's heat booked
+    exactly (F2)."""
+    if case not in FIRST_TEST_CASES:
+        raise ValueError(f"the case is one of {FIRST_TEST_CASES}")
+    donor, receiver = FIRST_TEST_REGIONS
+    pl_m3 = 1e-15
+    diffusivity = R_SYNAPSE * FACE_LENGTH_M * pl_m3 / FACE_AREA_M2  # r = D A / (L V), V = 1 pL.
+    end = dt * steps
+    raw = base.fx.world(
+        cells=((base.CELL, 1.0),),
+        nodes=tuple((r, FIRST_TEST_VOLUME_pL) for r in FIRST_TEST_REGIONS),
+        contacts=(("contact_donor", base.CELL, donor), ("contact_receiver", base.CELL, receiver)),
+        faces=(("face_dr", donor, receiver, FACE_AREA_M2, FACE_LENGTH_M),),
+        dt=dt,
+        end=end,
+        observation_times=base.fx.grid_times(end, dt, end / 10),
+        diffusivity=diffusivity,
+    )
+    for name, node in (("P_L", donor), ("P_U", receiver)):
+        raw = add_inventory_species(
+            raw,
+            name,
+            trace_mM=base.fx.TRACE_mM,
+            diffusivity_m2_per_s=diffusivity,
+            floor_fmol=base.fx.FLOOR_FMOL,
+            concentrations_mM={node: 1.0},  # The usual trace elsewhere.
+        )
+    m = raw["model"]
+    m["label_families"] = [copy.deepcopy(FAMILY)]
+    m["heat_bookings"] = {"faces": "exact_free_energy_heat@1"}  # F2: exact from a trace start.
+    if case == "transfer":
+        return raw
+    (face,) = m["faces"]  # The local-loss control: the face closed for both rows, alike.
+    face["diffusivity_m2_per_s"].update({r: 0.0 for r in FAMILY["rows"]})
+    m["operators"].append(dict(
+        law=base.fx.TURNOVER,
+        species=[dict(id=r, catalogue=None, evidence=None) for r in FAMILY["rows"]],
+        routes=[dict(id=f"clear_{r}", species=r, node=donor, kind="clearance")
+                for r in FAMILY["rows"]],
+        templates=[],
+    ))  # fmt: skip
+    raw["experiment"]["turnover_controls"] = [
+        dict(route_id=f"clear_{r}", carrier_id=None,
+             schedule=[dict(time=0.0, rate=FIRST_TEST_CLEARANCE)])
+        for r in FAMILY["rows"]
+    ]  # fmt: skip
+    return raw
+
+
+def first_test(case, result=None):
+    """FR-33's first test's record for one case (module docstring): the regions with their IDs and
+    declared volumes, the definitions, and the donor's, the receiver's and the whole-cell label and
+    the donor's cumulative clearance, all in fmol at the world's observation times. result:
+    (spec, times, states) of a run of first_test_world(case), or None to run it."""
+    if result is None:
+        spec = parse_spec(first_test_world(case))
+        times, states = readouts.runs(spec)
+    else:
+        spec, times, states = result
+    from cells.registry.models import get_model
+
+    _, layout = get_model(spec.model).initial_values(spec)
+    label = readouts.world_map(spec, "P_L")
+    donor, receiver = (label["nodes"].index(r) for r in FIRST_TEST_REGIONS)
+    volumes = {o.id: o.volume_pL for o in spec.model.extracellular}
+    observed = spec.experiment.observation_times
+    saved = [readouts.step_index(times, t, "a saved time") for t in observed]
+    out = dict(
+        case=case,
+        regions=[dict(id=r, node=r, volume_pL=float(volumes[r])) for r in FIRST_TEST_REGIONS],
+        family=copy.deepcopy(FAMILY),
+        label="P_L",
+        units="fmol",
+        definitions=dict(
+            whole_cell_label_fmol=WHOLE_CELL_LABEL,
+            cleared_fmol="turnover's cumulative clearance record of the label at the donor "
+            "(turnover_outside_cleared_fmol)",
+        ),
+        times_s=[], donor_label_fmol=[], receiver_label_fmol=[], whole_cell_label_fmol=[],
+        cleared_fmol=[],
+    )  # fmt: skip
+    for k in saved:
+        amount, _, lost, _ = readouts.node_records(spec, layout, states[k], label)
+        out["times_s"].append(float(times[k]))
+        out["donor_label_fmol"].append(float(amount[donor]))
+        out["receiver_label_fmol"].append(float(amount[receiver]))
+        out["whole_cell_label_fmol"].append(float(amount[donor] + amount[receiver]))
+        out["cleared_fmol"].append(float(lost[donor]))
+    return out
 
 
 def run():

@@ -35,6 +35,7 @@ from cells.models.assembly_lineages_v2 import (
     kernel,
     ledger,
     model,
+    pore_clock,
     runner,
 )
 from cells.models.assembly_lineages_v2 import spec as world_spec
@@ -187,6 +188,18 @@ DIVISION_BASES = {
     "at its schedule time",
     "fission": DIVISION_BASE,
 }
+# FR-31's records, written only by a world that declares the pore law (pore_clock.py).
+PORE_RECORDS = {
+    "tension_hold_work_kT": _record(
+        "row", ["row", "hold"], "k_BT", "cumulative",
+        "each hold's work, sigma pi r_c^2 at each pore's opening (run.json tension_hold names "
+        "each column's hold and payer, in order)",
+    ),
+}  # fmt: skip
+PORE_BASE = (
+    "; a world with the pore law adds a pore row (row_kind pore) at each rupture, at its time, "
+    "holding the released state"
+)
 SCHEDULED_DRAW = (
     "two uniforms per draw, (u1, u2), from the occupant's event stream (domain 1, its carrier "
     "key) at counter = the occupant's draws since its birth: each committed event's, and the draw "
@@ -342,12 +355,10 @@ def run_record(run, world_id):
         "run": {"qualifier": run.qualifier, "start": run.start},
         "conventions": world_spec.conventions_rules.to_dict(world.conventions),
         "laws": [_law(law_id) for law_id in components["laws"]],
-        "check": {"probe": run.verdict, "world": run.world_report},
+        "check": _check(run),
         "mode": spec.execution.mode,
         "stream": world_spec.stream_identity(spec),
-        "ssa": kernel.SSA_CONVENTION
-        if run.division is None
-        else {**kernel.SSA_CONVENTION, "draw": SCHEDULED_DRAW},
+        "ssa": _ssa(run),
         "lifecycle": _lifecycle(run),
         "ledger": {**ledger.CONVENTIONS, "closure": run.closure},
         "source": _source(),
@@ -361,7 +372,7 @@ def run_record(run, world_id):
             "temperature_K": world.units.temperature_K,
             "kT_J": world.units.kT_J,
             "horizon_s": spec.experiment.time_horizon_s,
-            "bases": BASES if run.division is None else DIVISION_BASES,
+            "bases": _bases(run),
         },
         "places": places_table(world),
         "channels": kernel.channel_table(world),
@@ -375,6 +386,38 @@ def run_record(run, world_id):
         **({"osmotic": run.osmotic} if run.osmotic is not None else {}),
         **({"division": _division_record(run)} if run.division is not None else {}),
         **({"population": _population_record(run)} if run.population is not None else {}),
+        **(_pore_records(run) if run.pores is not None else {}),
+    }
+
+
+def _check(run):
+    out = {"probe": run.verdict, "world": run.world_report}
+    if run.pores is not None:  # FR-31: the pore's event pair, on its probe and the world's states
+        out["pores"] = run.pores["check"]
+    return out
+
+
+def _ssa(run):
+    out = kernel.SSA_CONVENTION if run.division is None else {**kernel.SSA_CONVENTION,
+                                                               "draw": SCHEDULED_DRAW}  # fmt: skip
+    if run.pores is not None:  # FR-31: the clock's rule beside the draw's
+        out = {**out, "pore_clock": pore_clock.CLOCK}
+    return out
+
+
+def _bases(run):
+    out = BASES if run.division is None else DIVISION_BASES
+    if run.pores is not None:  # FR-31: the pore row
+        out = {**out, "row": out["row"] + PORE_BASE}
+    return out
+
+
+def _pore_records(run):
+    """FR-31: run.json's `pores` (the law, its parameters, the events and their causes) and
+    `tension_hold` (each hold with its payer)."""
+    return {
+        "pores": pore_clock.block(run.spec, run.pores["events"], run.pores["causes"]),
+        "tension_hold": pore_clock.holds_block(run.spec),
     }
 
 
@@ -405,6 +448,13 @@ POPULATION_RECORDS = {
 
 
 def _lifecycle(run):
+    out = _mode_lifecycle(run)
+    if run.pores is not None:  # FR-31: the clock's statuses and order
+        out = pore_clock.lifecycle(out, population=run.population is not None)
+    return out
+
+
+def _mode_lifecycle(run):
     if run.population is not None:  # a population ends slots_full too; a lysis frees one slot
         statuses = {**kernel.LIFECYCLE_OSMOTIC["statuses"]}
         statuses["lysed"] = ("never a population's end: a lysis frees its slot, books one row, "
@@ -447,16 +497,38 @@ def _population_record(run):
             "source:replacement/<index>); shear_work_kT is the shears' total, and at every row "
             "the columns sum to it plus the transfers' and replacements' work"
         )
+    if "withdrawals" in report:  # FR-35, when declared (withdrawal.py)
+        out["withdrawals"] = report["withdrawals"]
+        out["payers"] = (
+            "schedule_work_kT's column c is paid by the schedule whose declared index is "
+            "schedule_columns[c] (source:shear/<index>, source:transfer/<index>, "
+            "source:replacement/<index> or source:withdrawal/<index>); shear_work_kT is the "
+            "shears' total, and at every row the columns sum to it plus the transfers', "
+            "replacements' and withdrawals' work; a withdrawal's mixing heat is in the heat"
+        )
     return out
 
 
 def _declared(run, name):
+    if run.pores is not None:  # FR-31: the hold's column, and the pore row's legend entry
+        if name in PORE_RECORDS:
+            return PORE_RECORDS[name]
+        if name == "row_kind":
+            out = _declared_by_mode(run, name)
+            legend = {**out["legend"], str(pore_clock.PORE_ROW): pore_clock.PORE_ROW_KIND}
+            return {**out, "legend": legend}
+    return _declared_by_mode(run, name)
+
+
+def _declared_by_mode(run, name):
     table = {**RECORDS, **GEOMETRY_RECORDS}
     if run.population is not None:
         from cells.models.assembly_lineages_v2 import population
 
         if name == "row_kind":
             legend = {str(i): kind for i, kind in enumerate(population.ROW_KINDS)}
+            if "withdrawals" in run.population:  # FR-35: only when the world declares one
+                legend[str(population.WITHDRAWAL)] = population.WITHDRAWAL_KIND
             return {**table[name], "legend": legend}
         if name == "fission_outcome":
             legend = {str(i): o for i, o in enumerate(division.POPULATION_OUTCOMES)}
@@ -488,8 +560,10 @@ def population_tables(directory, run):
     from cells.models.assembly_lineages import keys
     from cells.models.assembly_lineages_v2 import (
         OSMOTIC_LUMEN,
+        PORE_NUCLEATION,
         SHARED_POOL,
         SHEAR_FISSION,
+        TENSION_HOLD,
         population,
     )
     from cells.records import relations as rel
@@ -513,34 +587,52 @@ def population_tables(directory, run):
                   source=f"source:transfer/{t['schedule']}")
         for t in run.population["transfers"]
     ]  # fmt: skip
+    ruptured = {}  # FR-31: each rupture by its vesicle's key, its lysis by the pore law
+    if run.pores is not None:
+        ruptured = {e["key"]: e for e in run.pores["events"]}
     events += [
         rel.Event(life.end_event, life.end_time, "lysis", OSMOTIC_LUMEN, scheduled=False, step=-1,
                   at=life.id, source="")
+        if life.key not in ruptured
+        else rel.Event(life.end_event, life.end_time, "lysis", PORE_NUCLEATION, scheduled=False,
+                       step=-1, at=life.id,
+                       source=f"source:tension_hold/{ruptured[life.key]['hold']}")
         for life in lives
         if life.end_reason == "lysed"
     ]  # fmt: skip
     from cells.models.assembly_lineages_v2.replacement import POOL_REPLACEMENT
+    from cells.models.assembly_lineages_v2.withdrawal import POOL_WITHDRAWAL
 
-    by = {"shear": SHEAR_FISSION, "transfer": SERIAL_TRANSFER, "replacement": POOL_REPLACEMENT}
+    by = {"shear": SHEAR_FISSION, "transfer": SERIAL_TRANSFER, "replacement": POOL_REPLACEMENT,
+          "withdrawal": POOL_WITHDRAWAL}  # fmt: skip
     replacements = run.population.get("replacements", [])
+    withdrawals = run.population.get("withdrawals", [])  # FR-35, when declared
     events += [
         rel.Event(r["id"], r["time_s"], "replacement", POOL_REPLACEMENT, scheduled=True, step=-1,
                   at=POOL, source=f"source:replacement/{r['schedule']}")
         for r in replacements
     ]  # fmt: skip
+    events += [
+        rel.Event(r["id"], r["time_s"], "withdrawal", POOL_WITHDRAWAL, scheduled=True, step=-1,
+                  at=POOL, source=f"source:withdrawal/{r['schedule']}")
+        for r in withdrawals
+    ]  # fmt: skip
     slots = run.population["slots"]
     nodes = [rel.Node(f"slot:{k}", "slot", SHARED_POOL) for k in range(slots)]
     edges = []
-    if replacements:  # FR-20: the pool as a node, its old content removed, its fresh supplied
-        nodes += [rel.Node(POOL, "node", SHARED_POOL), rel.Node(SINK, "sink", POOL_REPLACEMENT)]
+    if replacements or withdrawals:  # the pool as a node, what left it removed, what came supplied
+        sink_by = POOL_REPLACEMENT if replacements else POOL_WITHDRAWAL
+        nodes += [rel.Node(POOL, "node", SHARED_POOL), rel.Node(SINK, "sink", sink_by)]
         species = {p.name: p.species for p in run.spec.model.world.places}
-        for r in replacements:
-            source = f"source:replacement/{r['schedule']}"
-            moves = (("removes_to", r["removed"], (POOL, SINK)),
+        stops = [(r, "replacement", POOL_REPLACEMENT, r["removed"]) for r in replacements]
+        stops += [(r, "withdrawal", POOL_WITHDRAWAL, r["withdrawn"]) for r in withdrawals]
+        for r, kind, operator_id, removed in stops:
+            source = f"source:{kind}/{r['schedule']}"
+            moves = (("removes_to", removed, (POOL, SINK)),
                      ("supplies", r["supplied"], (source, POOL)))  # fmt: skip
             for relation, counts, ends in moves:
                 edges += [
-                    rel.Edge(relation, *ends, POOL_REPLACEMENT, event=r["id"],
+                    rel.Edge(relation, *ends, operator_id, event=r["id"],
                              species=species[place], weight=float(count), mode="event")
                     for place, count in sorted(counts.items())
                     if count
@@ -555,6 +647,14 @@ def population_tables(directory, run):
         ]  # fmt: skip
         records = rel.records_in(directory, [ARRAYS], {"schedule_work_kT": "cumulative"},
                                  times="row_time")  # fmt: skip
+    if run.pores is not None:  # FR-31: each hold pays its column
+        sources += [rel.Source(h["payer"], "schedule", "energy", TENSION_HOLD,
+                               payer_of="tension_hold_work_kT")
+                    for h in pore_clock.holds_block(run.spec)]  # fmt: skip
+        kinds = {"tension_hold_work_kT": "cumulative"}
+        if run.population["schedule_columns"]:
+            kinds["schedule_work_kT"] = "cumulative"
+        records = rel.records_in(directory, [ARRAYS], kinds, times="row_time")
     out = {"lives": lives, "events": events, "nodes": nodes, "sources": sources,
            "records": records}  # fmt: skip
     if edges:

@@ -1,0 +1,16 @@
+{
+  "citation": "Vloemans et al. (2024), Lab on a Chip, Fig. 4A–B",
+  "doi": "10.1039/D4LC00195H",
+  "unit": "microgram/mL",
+  "observable": "Measured free fluorescein concentrations in successive 10 microliter plugs. Compare concentrations on the same assay scale within each series.",
+  "uncertainty": "Printed means, at least three replicates per point. Error bars show one SD. Absolute SDs were not transcribed. Wall adsorption and instrument range can contribute to deviations.",
+  "single_exchange": [
+    {"fraction": 0.5, "measured": [4.698, 2.338]},
+    {"fraction": 0.8, "measured": [4.584, 0.885]},
+    {"fraction": 0.9, "measured": [4.762, 0.443]}
+  ],
+  "repeated_exchange": [
+    {"fraction": 0.8, "measured": [1.712, 0.332, 0.067, 0.020]},
+    {"fraction": 0.9, "measured": [1.440, 0.131, 0.012, 0.001]}
+  ]
+}

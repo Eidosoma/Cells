@@ -53,6 +53,7 @@ import numpy as np
 from cells.definitions.specs import ConfigError
 from cells.models.assembly_lineages import (
     GARD_PAIR_CONSISTENT,
+    GARD_PAIR_CONSISTENT_V2,
     GARD_SINGLE_EVENT,
     MODEL_ID,
     folds,
@@ -251,3 +252,244 @@ PAIR_CONSISTENT = RateFactorLaw(
 
 # Registered from this home, which the static model table lists, through the public call.
 LAWS = tuple(law_registry.BUILTIN.register(law) for law in (SINGLE_EVENT, PAIR_CONSISTENT))
+
+
+# cells.gard_catalysis_pair_consistent@2 (D244, D246): the pair-consistent form above, with its
+# cache of beta n held exactly. @1 keeps its cached subtraction and its bits (D148): with
+# beta_ii = 2^54 and one other catalyst, its leave factor 1 + ((beta n)_i - beta_ii) / (N - 1) loses
+# the catalyst (the Lean proofs project's finding of 19 November 2026).
+#
+# The cache is an unevaluated pair (hi, lo) of float64 words, hi = fl(beta n) and lo = beta n - hi.
+# - A join or leave adds +-beta[:, i] by two error-free two-sums (Knuth's TwoSum gives a rounded sum
+#   and its exact error): the error of hi + b and the low word are added exactly, then renormalised.
+# - The founder and each daughter refold it from the counts. Each entry is split on the host into
+#   its top 33 bits and the rest (at most 20 bits), so every product with a count up to 2^20 (the
+#   family's molecule capacity) is exact.
+# - The leave forms (beta n)_i - beta_ii exactly and rounds it once.
+# So the join from m and the leave from m + e_i both evaluate the correctly rounded
+# sum_j beta_ij m_j: the factor cancels from every transfer pair bit for bit, and the cache equals a
+# fresh fold bit for bit at every event (it is a function of n alone).
+#
+# The budget. Every value of row i is a multiple of 2^q_i, q_i the lowest set bit among the row's
+# nonzero entries, and at most max_j beta_ij * S, S the fission size (no state the kernel keeps is
+# larger). Below 2^(q_i + 106), each two-sum's error and the low word are at most 2^(q_i + 52), so
+# their sum, at most 2^(q_i + 53), is exact; at 107 bits a unit can be lost. A world whose row needs
+# more is refused at parse (domain_exact), never run inexactly; it runs under @1, or an experiment
+# that draws matrices records the draw as refused and handles it as its protocol declares (D246).
+
+BUDGET_BITS = 106
+SPLIT_BITS = 33  # An entry's top bits; the rest has at most 53 - 33 = 20.
+COUNT_BITS = 20  # So every count up to 2^20 multiplies either part exactly.
+# The range (the Lean proofs project's findings of 22 November 2026). The budget bounds a row's span
+# of bits, not where it sits:
+# - at the top, every value the cache holds is at most M = max_j beta_ij * S, and a two-sum's
+#   intermediates stay within 6M (s = a + b, then s - a and a - (s - bb)), as does the leave's
+#   (beta n)_i - beta_ii. So M < 2^TOP_BITS keeps every word finite, with a factor 2.6 to spare,
+#   where 2^1023 times a founder of 2 had made both words NaN and the run "stalled";
+# - at the bottom, an entry with a bit below 2^LOW_BITS (a subnormal part) is refused. Every value
+#   the cache holds is then a multiple of 2^LOW_BITS, products, sums, two-sum errors and low words
+#   alike, so no word is subnormal and the compiled cache's flush of subnormals (XLA's, where NumPy
+#   keeps them) changes nothing; the factors' quotients x/N can be subnormal only where they are
+#   added to 1, which absorbs them on either side.
+TOP_BITS = 1020
+LOW_BITS = -1022
+
+
+class ExactMatrix(NamedTuple):
+    matrix: object  # [C, C] float64, zero-padded.
+    diagonal: object  # [C] float64.
+    low: object  # [C, C] float64: each entry below its top SPLIT_BITS bits (matrix - low, exact).
+
+
+def split_low(matrix):
+    """Each entry's bits below its top SPLIT_BITS bits, exactly (on the host)."""
+    mantissa, exponent = np.frexp(matrix)
+    high = np.ldexp(np.floor(np.ldexp(mantissa, SPLIT_BITS)), exponent - SPLIT_BITS)
+    return matrix - high
+
+
+def layout_exact(data, capacity):
+    base = layout(data, capacity)
+    return ExactMatrix(base.matrix, base.diagonal, split_low(base.matrix))
+
+
+def two_sum(a, b):
+    """(fl(a + b), its exact error): Knuth's TwoSum, six operations and no branch."""
+    s = a + b
+    bb = s - a
+    return s, (a - (s - bb)) + (b - bb)
+
+
+def _add_exact(hi, lo, b):
+    """(hi, lo) + b: the error of hi + b and the low word add exactly within the budget."""
+    s, e = two_sum(hi, b)
+    return two_sum(s, e + lo)
+
+
+def state_exact(counts, data, xp, unroll=folds.UNROLL):
+    """(hi, lo) of beta n, [2, C]: for each i, a serial fold over j of (beta_ij - low_ij) n_j and
+    low_ij n_j in declared order, each product exact, each added exactly."""
+    count = counts.shape[0]
+    high = data.matrix - data.low
+    terms = xp.stack((high * counts[None, :], data.low * counts[None, :]))  # [part, i, j]
+    terms = xp.transpose(terms, (2, 0, 1)).reshape(2 * count, count)  # [(j, part), i]
+    zero = xp.zeros_like(counts)
+    if xp is np:
+        hi, lo = zero, zero
+        for term in terms:
+            hi, lo = _add_exact(hi, lo, term)
+        return np.stack((hi, lo))
+    import jax
+
+    terms = jax.lax.optimization_barrier(terms)  # As folds.py: no product contracted into an add.
+    (hi, lo), _ = jax.lax.scan(
+        lambda carry, term: (_add_exact(carry[0], carry[1], term), None),
+        (zero, zero),
+        terms,
+        unroll=unroll,
+    )
+    return xp.stack((hi, lo))
+
+
+def update_exact(cache, data, i, sign, xp):
+    """The cache after one molecule of type i joins (sign +1) or leaves (-1): +-beta[:, i]."""
+    hi, lo = _add_exact(cache[0], cache[1], sign * data.matrix[:, i])
+    return xp.stack((hi, lo))
+
+
+def factors_exact(counts, size, cache, data, xp):
+    """@1's pair-consistent factors from the exact cache: the join's x_i is hi_i = fl((beta n)_i);
+    the leave's (beta n)_i - beta_ii is formed exactly and rounded once."""
+    hi, lo = cache[0], cache[1]
+    join = _per_member(hi, size, xp)
+    s, e = two_sum(hi, -data.diagonal)
+    rest = size - 1.0
+    safe = xp.where(rest > 0, rest, 1.0)
+    leave = xp.where((rest > 0) & (counts > 0), 1.0 + (s + (e + lo)) / safe, 1.0)
+    return join, leave
+
+
+def _lowest_bit(value):
+    """The exponent of a positive finite double's lowest set bit."""
+    mantissa, exponent = np.frexp(value)
+    whole = int(np.ldexp(mantissa, 53))
+    return int(exponent) - 53 + (whole & -whole).bit_length() - 1
+
+
+def _top_bits(entries, size):
+    """The t with max(entries) * size < 2^t, exactly: the bit just above the largest value the
+    cache holds (0 for no entries)."""
+    if not entries:
+        return 0
+    mantissa, exponent = np.frexp(max(entries))
+    top = int(np.ldexp(mantissa, 53)) * int(size)  # max * size = top * 2^(exponent - 53), exactly.
+    return top.bit_length() + int(exponent) - 53
+
+
+def bits_needed(row, size):
+    """The bits row i's sums can span: from the lowest set bit among its nonzero entries up to
+    max_j beta_ij * size, the largest value the cache holds (0 for a row of zeros)."""
+    entries = [float(v) for v in row if v > 0]
+    if not entries:
+        return 0
+    return _top_bits(entries, size) - min(_lowest_bit(v) for v in entries)
+
+
+def domain_exact(world):
+    """@2's domain, at parse: every row's sums fit the budget at the world's fission size."""
+    size = world.fission.size
+    if size > 2**COUNT_BITS:
+        raise ConfigError(
+            f"{GARD_PAIR_CONSISTENT_V2}: the fission size {size} exceeds 2^{COUNT_BITS}, beyond "
+            "which a count's products with the matrix are not exact"
+        )
+    for i, row in enumerate(world.data[FIELD]):
+        entries = [float(v) for v in row if v > 0]
+        lowest = min((_lowest_bit(v) for v in entries), default=0)
+        if lowest < LOW_BITS:
+            raise ConfigError(
+                f"{GARD_PAIR_CONSISTENT_V2}: {FIELD} row {i} has an entry with a bit at "
+                f"2^{lowest}, below the normal range (2^{LOW_BITS}): its cache would hold "
+                "subnormal words, which the compiled kernel flushes to zero and the host keeps. "
+                "Refused"
+            )
+        top = _top_bits(entries, size)
+        if top > TOP_BITS:
+            raise ConfigError(
+                f"{GARD_PAIR_CONSISTENT_V2}: {FIELD} row {i}'s largest value, its largest entry "
+                f"times the fission size {size}, is at least 2^{top - 1}: not below 2^{TOP_BITS}, "
+                "within which the cache's two-sums keep every word finite. Refused (a word that "
+                "overflows would make the rates NaN)"
+            )
+        bits = bits_needed(row, size)
+        if bits > BUDGET_BITS:
+            raise ConfigError(
+                f"{GARD_PAIR_CONSISTENT_V2}: {FIELD} row {i} needs {bits} bits (its largest entry "
+                f"times the fission size {size}, down to its entries' lowest set bit), beyond the "
+                f"{BUDGET_BITS}-bit budget within which the cache holds beta n exactly. Refused "
+                "(D246): run the world under @1, or, in an experiment that draws matrices, record "
+                "the draw as refused and redraw or exclude it as its protocol declares"
+            )
+
+
+TEST_V2 = (
+    "tests/unit/test_assembly_lineages_kernel.py::test_the_exact_cache_keeps_the_reverse_factor"
+)
+
+PAIR_CONSISTENT_EXACT = RateFactorLaw(
+    GARD_PAIR_CONSISTENT_V2,
+    host=MODEL_ID,
+    provenance="cited",
+    source=Citation(
+        SOURCE,
+        PLACE,
+        LICENCE,
+        (
+            "the factor of a transfer is evaluated on the assembly without the moving molecule, "
+            "so a transfer and its reverse see the same catalysts (GARD_DESIGN §1.4, 2)",
+            "beta n is held exactly, as a pair of float64 words, within a declared budget (D246)",
+        ),
+    ),
+    test=TEST_V2,
+    form="pair-consistent",
+    energy_role="passive",
+    law_set=LAW_SET,
+    data=(FIELD,),
+    parse_data=parse_data,
+    data_to_dict=data_to_dict,
+    layout=layout_exact,
+    state=state_exact,
+    update=update_exact,
+    factors=factors_exact,
+    probe=probe,
+    comparison_only=True,
+    formulas={
+        "g_join_i(n)": "1 + x_i / N, on n (the state without the moving molecule), x_i = hi_i, "
+        "the correctly rounded (beta n)_i; 1 when N = 0",
+        "g_leave_i(n)": "1 + fl((beta n)_i - beta_ii) / (N - 1), on n - e_i, the difference formed "
+        "exactly from (hi, lo) and rounded once, when N >= 2 and n_i >= 1; 1 otherwise (the last "
+        "molecule leaves uncatalysed; a type with n_i = 0 has no leave)",
+        "last_molecule": "the last molecule's leave (N = 1, n_i = 1) carries 1: no catalyst "
+        "remains",
+        "state": "(hi, lo) with hi + lo = beta n exactly and hi = fl(beta n): a serial fold over j "
+        "in declared order of (beta_ij - low_ij) n_j and low_ij n_j, low_ij being beta_ij below "
+        "its top 33 bits (so each product is exact for n_j <= 2^20), each added by two error-free "
+        "two-sums; computed for the founder and for each followed daughter",
+        "update": "after an event of type i with sign s (+1 join, -1 leave): (hi, lo) <- (hi, lo) "
+        "+ s * beta[:, i], by two error-free two-sums, exactly",
+        "domain": "every row i: max_j beta_ij * S < 2^(q_i + 106), S the fission size and q_i the "
+        "lowest set bit among the row's nonzero entries; a world beyond it is refused at parse",
+        "replay": "a replay that recomputes beta n in rationals and rounds once agrees bit for "
+        "bit: the cache equals a fresh fold at every event",
+    },
+    note=(
+        SCOPE + ". The pair-consistent form, passive, with its cache of beta n held exactly "
+        "within a declared budget, so the factor cancels from every transfer pair bit for bit; a "
+        "world beyond the budget is refused at parse. @1 keeps its cached subtraction and its "
+        "bits (D148)."
+    ),
+    domain=domain_exact,
+)
+
+# Appended to the set's registrations, after @1's, from the same home.
+LAWS = (*LAWS, law_registry.BUILTIN.register(PAIR_CONSISTENT_EXACT))

@@ -38,6 +38,9 @@ repository. Only bare numbers are committed, each with its citation (D227).
 | `digitize.py`, `published_targets.json` | The published model curves of Figs. 2–5, read from the article's rasters with pixel uncertainties, and the text's numbers. `digitize.py --targets` regenerates the file. |
 | `sources.py` | Table 1, re-read from both XMLs: all 140 cells match the model file. |
 | `proposal.json` | Proposed comparison rows, bands and plants for a first engine milestone. It is a proposal, not a registration. |
+| `xf1_scaling.py`, `xf1_scaling.json`, `xf1_scaling.md` | The F1F0 activity X_F1 scaled down (x1/30 to x1/9000) and up (x10, x100) on the published arm and on frame B with Eq. 24 restored. For each scale: fit, departures, and whether the steady state exists and is unique; also the largest scale-down within 10% of each arm's fit. |
+| `registration.py`, `mr1_mt2_registration.json`, `mr1_mt2_registration.md` | MR1-MT2, MT-2's model-level reference (D236): the arm and its inputs, its term-by-term match to the appendix tag `mito-laws-appendix-2026-11-20b`, the 12 reported states with tolerances, the convergence floor, the fit and departures, the thermodynamic checks, and what it does not claim. |
+| `repairs.py`, `repairs_table.json`, `repairs_table.md` | MR1's candidate repairs of Eqs. 1, 11, 16 and 24, set beside the engine appendix's. Each is checked for consistency in two frames, fitted to the published curves, and measured for its departure from the published arm. For the user's ruling; nothing is registered. |
 
 Tests: `tests/unit/test_mito_references_integrity.py` (fast, about 2 s) and
 `tests/unit/test_mito_references_reproduction.py` (heavier, about 75 s on a shared core;

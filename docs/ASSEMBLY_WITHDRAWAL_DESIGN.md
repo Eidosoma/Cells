@@ -1,10 +1,12 @@
 # A timed partial withdrawal of an assembly population's pool (FR-35): design note
 
-**Status: desk work, for the lead's decision with the advisor (21 November 2026).** It sets out the
-options, a recommendation, the files, the tests and a price (D142), and decides nothing. It is a
-general feature (D144) of `cells.assembly_lineages@2` in population mode. It builds on FR-20's
-`cells.pool_replacement@1` (D240, [note](ASSEMBLY_WASHOUT_DESIGN.md)), FR-22's checkpoints and
-FR-27's one-mechanism ruling (D246).
+**Status: decided by the lead with the advisor (D261, 21 November 2026), and built as
+`cells.pool_withdrawal@1` (ORIGIN_OF_LIFE_ENGINE_DESIGN.md §0.2h). Below is the desk note as it was
+decided, with D261's changes: capacity is decided before the draw, and the counter is derived from
+the applied stops.** As desk work it set out the options, a recommendation, the files, the tests and
+a price (D142). It is a general feature (D144) of `cells.assembly_lineages@2` in population mode. It
+builds on FR-20's `cells.pool_replacement@1` (D240, [note](ASSEMBLY_WASHOUT_DESIGN.md)), FR-22's
+checkpoints and FR-27's one-mechanism ruling (D246).
 
 **The request** (FEATURE_REQUESTS.md FR-35, 97d3bfda). At a declared time, draw off a fraction f of
 the well-mixed pool and add the same volume of a declared buffer. Each molecule leaves
@@ -39,11 +41,13 @@ These two behaviours are the request's statements. This desk note did not rerun 
 
 ## 2. The draw
 
-- **The rule:** each molecule of each finite pool place is withdrawn independently with
-  probability f: molecule i of place j leaves when its uniform u_ji < f. So k_j ~ Binomial(n_j, f),
-  exactly in distribution.
-- **The uniforms** are `streams.uniforms`: (m + 0.5)·2⁻⁵², m a 52-bit integer. So P(u < f) equals f
-  to within 2⁻⁵², and exactly for a dyadic f such as 1/2 or 1/4.
+- **The rule:** each molecule of each finite pool place is withdrawn independently: molecule i of
+  place j leaves when its uniform u_ji < f. So k_j ~ Binomial(n_j, q), exactly in distribution.
+  - q is f in the sampler's finite word.
+  - **The uniforms** are `streams.uniforms`: (m + 0.5)·2⁻⁵², m a 52-bit integer, so
+    q = #{m : (m + 0.5)·2⁻⁵² < f}·2⁻⁵².
+  - q = f exactly at dyadic fractions such as ¼ and ½, and within 2⁻⁵² otherwise.
+  - (The Lean lane's finding of 21 November 2026, verified on the host.)
 - **The address: one block per finite pool place.** The stream is domain 6, `schedule`, with the
   schedule's declared index as its carrier word, like a transfer's. The draw number for wash w and
   place ordinal j (finite pool places in place order, P_f of them) is w·P_f + j. Its block holds
@@ -110,7 +114,10 @@ F(c; gV) = c(μ° − ln X − ln g) + ln c!, with X = N_A·V·c0.
     F(n − k; (1 − f)V) + F(k; fV) − F(n; V) = −ln[C(n, k) f^k (1 − f)^(n−k)] = σ ≥ 0
 
 The μ° and ln X terms cancel, and what is left is the outcome's binomial surprisal. It is exact, per
-place and per realization. Its mean over k is the outcome's Shannon entropy. A saved scratch
+place and per realization.
+- **Booked against the physical f.** The split score `split_surprisal_kT` is this σ, with the
+  physical volume fraction f, not the sampler's q.
+- **Its mean.** Over k drawn with q = f, its mean is the outcome's Shannon entropy. A saved scratch
 check, `/mnt/workspaces/Cells/ol3-engine-20261119/fr35/booking_check.py` (its log beside it), uses
 exact lgamma arithmetic. Over 2,000 random cases of up to four species it gives:
 - |σ + ln P(k)| ≤ 8.9·10⁻¹⁴;
@@ -158,6 +165,30 @@ The numbers, from the scratch check:
 
 The record keeps the four terms apart, so B or C can be rebuilt from it: F(k; fV), σ, F(b; fV) and
 H. They are computed in the small-ratio form D246 names for FR-27 (`log1p(−f)`).
+
+**The expected heat against FR-27's continuum** (found in the build, 21 November 2026):
+- **With a tracer-free buffer,** the expected mixing heat over the sampler's k ~ Binomial(n, q) is
+  exactly −n(1 − q)·ln(1 − f).
+  - Where q = f (dyadic fractions such as ¼ and ½), that is FR-27's continuum heat,
+    −n(1 − f)·ln(1 − f).
+  - **The extreme fraction shows the largest relative gap.** At the largest admitted fraction,
+    f = 1 − 2⁻⁵³, the sampler gives 1 − q = 2⁻⁵², twice 1 − f.
+    - One tracer then survives with probability 2⁻⁵².
+    - When it survives, its booked split score, −ln(1 − f), exceeds the sampler's, −ln(1 − q), by
+      exactly ln 2.
+    - Its mean heat is 8.1572 × 10⁻¹⁵ kT, against the ideal-volume prediction 4.0786 × 10⁻¹⁵ kT.
+  - **Per-event booking is exact either way:** the sink, the work and the heat are functions of
+    the realized k and the physical f, so every event's books close.
+- **With a buffer at the pool's own concentration,** FR-27's continuum heat is zero, but booking A's
+  expected heat is not.
+  - It is E[H] = E[−ln P(b | n − k + b, f)]: the expected binomial surprisal of which side each
+    molecule came from.
+  - At n = 100, b = 25 and f = ¼ it is 2.42 kT, below the mixture's binomial entropy, about
+    ½·ln(2πe·m·f(1 − f)) at large m.
+  - It is sub-extensive, so per molecule it vanishes, and the discrete booking reaches FR-27's
+    continuum in the large-n limit.
+- The test `test_a_withdrawal_books_its_mixing_heat_never_negative_and_its_limits_are_exact` holds
+  both statements.
 
 **The independent reference** for the Lean lane uses closed log-factorial arithmetic, exact ln c!
 by summation or `lgamma`. It never reads the engine's table (the capacity finding showed why).

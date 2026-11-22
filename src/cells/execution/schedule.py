@@ -108,7 +108,15 @@ class PhysicalIonicGraphControl(NamedTuple):
 
 
 def event_index(spec, time):
-    return bisect_right([change.time for change in spec.experiment.changes], time) - 1
+    """The schedule position at `time`: the last change at or before it, a change within the
+    clock's same-instant tolerance after it counting as at it (D283's one predicate)."""
+    from cells.execution.grid import same_instant
+
+    times = [change.time for change in spec.experiment.changes]
+    k = bisect_right(times, time)
+    while k < len(times) and same_instant(times[k], time):
+        k += 1
+    return k - 1
 
 
 def control_values(spec, times):

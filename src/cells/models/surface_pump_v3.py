@@ -62,10 +62,12 @@ import numpy as np
 
 from cells.definitions.specs import ConfigError
 from cells.definitions.surface_pump_v3_spec import (
+    EXACT_FREE_ENERGY_HEAT,
     GATED_CODES,
     LAW_CODES,
     MODEL_ID,
     NAV1P2_LAW_ID,
+    SERIES_GATE_LAW_ID,
     TRAPEZOID_JUNCTION_HEAT,
     Control,
     channel_factors,
@@ -77,10 +79,12 @@ from cells.execution.errors import NumericalError
 from cells.laws.channels import sodium_channels, voltage_gates
 from cells.laws.electrochemistry import CHARGE_PER_FMOL, MOL_PER_FMOL, F, R
 from cells.laws.junctions import junction_gate
+from cells.laws.junctions import junction_series_gates as series_gates
 from cells.laws.junctions.selective import selective_flux
 from cells.laws.pumps import calcium_atpase
 from cells.laws.pumps import kinetic_pump as pump
 from cells.laws.pumps import kinetic_pump_binding as pumps
+from cells.laws.routes import passive_permeation as exact_kernel
 from cells.laws.routes import patch_electrodiffusion as constant_field_route
 from cells.models import inner_laws
 from cells.models import surface_kinetic as kinetic
@@ -188,12 +192,17 @@ class Values(NamedTuple):
 
 def working_size(spec):
     """Stored values per accepted step plus a margin (surface_pump.working_size): @2's, the
-    channel populations', and the declared kinds' (kind_row_values), each with the margin 2."""
+    channel populations', the declared kinds' (kind_row_values) and a series world's junction
+    gates (FR-30), each with the margin 2."""
     x, s = spec.execution, len(spec.model.species_ids)
+    series = (
+        series_gates.GATE_COUNT * x.edge_capacity if declares_series_junctions(spec.model) else 0
+    )
     return (
         second.working_size(projection(spec))
         + 2 * (2 + 2 * s) * x.channel_capacity
         + 2 * kind_row_values(spec)
+        + 2 * series
     )
 
 
@@ -242,8 +251,11 @@ def kind_row_values(spec):
 
 
 def initial_values(spec, *, structure=None):
+    series = series_junctions(structure)
+    if structure is None and declares_series_junctions(spec.model):
+        raise ConfigError(SERIES_STRUCTURE_REFUSAL)  # Fail closed: no one-gate path runs it.
     state, layout = _todays_initial_values(spec)
-    if structure is None or not structure.kinds:
+    if (structure is None or not structure.kinds) and not series:
         return state, layout
     # Schema A (§7.4 (j), (k)): each declared kind adds its state and layout fields, by name, in
     # canonical order, into its structure's types.
@@ -251,6 +263,8 @@ def initial_values(spec, *, structure=None):
     registry = kind_registry.active()
     declarations = dict(spec.model.kinds)
     fields, entries = state._asdict(), layout._asdict()
+    if series:  # FR-30 (D262): the gates' factors and parameters, [series_gate, ..., edge_slot].
+        fields[SERIES_GATES], entries[SERIES_PARAMETERS] = series_initial_values(spec)
     sizes = kind_registry.axis_sizes(STATE_AXES, fields)  # @3's axes, for the kinds' arrays.
     for kind_id, entry in structure.kinds:  # Each bound to its entry's fields (§7.4 (n) 5).
         kind = kind_registry.bound(registry.lookup(kind_id), entry)
@@ -423,7 +437,12 @@ def clamped_channel_flux(state, control, p, voltages_V, *, xp=np, structure=None
     availabilities; then channel_rates itself, with the field's membrane voltage replaced by the one
     given. The gates are the state's, not their values at the declared voltage, so this is the
     population's instantaneous current there. Pure: nothing calls it and it records nothing, so no
-    program or record changes (crossrev)."""
+    program or record changes (crossrev).
+
+    The controls are the ones @3 receives: in a composite, the composite's control view
+    (control_view(control, state, p), with the operators' factors and writes, as held_schedules
+    holds them for its observations), never the composite's stored controls, which leave an
+    operator's factor out (D265, finding 1)."""
     kinds = _kinds(structure)
     read = _stage_read(state, p, kinds, xp=xp)[0] if kinds else state
     if kinds and structure.routes:  # §7.4 (n): the routing door, after the read (static).
@@ -488,6 +507,97 @@ def junction_gate_rhs(gate, junction_voltage, p, *, xp=jnp, structure=None):
     if structure is not None and not structure.junction_laws:
         return xp.zeros_like(gate)
     return junction_gate.rhs(gate, junction_voltage, kinetic.junction_parameters(p), xp=xp)
+
+
+def series_kinetics(voltage, p, structure, *, xp=jnp):
+    """FR-30: each junction_series_gates@1 gate's Rates at the junction voltages [edge], in GATES
+    order (the law's own kinetics, with the layout's parameters); a padded edge's relaxation is 1,
+    so no update divides by its zero rates (its gates are held)."""
+    kinds = structure.junction_series_kinds
+    rates = series_gates.kinetics(voltage, series_parameters(p, kinds), kinds=kinds, xp=xp)
+    return tuple(
+        r._replace(relaxation_per_s=xp.where(p.junction_active, r.relaxation_per_s, 1.0))
+        for r in rates
+    )
+
+
+def series_junction_rates(state, junction_voltage, p, structure, *, xp=jnp):
+    """FR-30 (S2): (junction_gate's rate [edge], each gate's [series_gate, edge]), 0 on padded
+    edges: each gate's own rhs, and the conductance's the product's (the chain rule). The step
+    never integrates junction_gate: it sets it to the gates' product at every stage."""
+    kinds = structure.junction_series_kinds
+    gates = getattr(state, SERIES_GATES)
+    each = series_gates.rhs(
+        tuple(gates[k] for k in range(len(kinds))),
+        junction_voltage,
+        series_parameters(p, kinds),
+        kinds=kinds,
+        xp=xp,
+    )
+    total = xp.zeros_like(state.junction_gate)
+    for k, rate in enumerate(each):
+        others = xp.ones_like(state.junction_gate)
+        for j in range(len(kinds)):
+            others = others if j == k else others * gates[j]
+        total = total + others * rate
+    each = xp.stack([xp.where(p.junction_active, rate, 0.0) for rate in each])
+    return xp.where(p.junction_active, total, 0.0), each
+
+
+def series_conductance(gates, p, *, xp=jnp):
+    """FR-30 (S2): each junction's conductance factor [edge], its gates' product; 0 padded."""
+    product = series_gates.conductance(tuple(gates[k] for k in range(gates.shape[0])), xp=xp)
+    return xp.where(p.junction_active, product, 0.0)
+
+
+def series_stage(stage, start, p, *, xp=jnp):
+    """FR-30 (S2), a tableau stage: its junction_gate set to its gates' product, as the tableau
+    moved them from the step's start (`start`, for the order test's planted stale product)."""
+    del start
+    return with_series_conductance(stage, p, xp=xp)
+
+
+def with_series_conductance(state, p, *, xp=jnp):
+    """state with junction_gate set to its gates' product (S2: computed, never integrated)."""
+    return state._replace(junction_gate=series_conductance(getattr(state, SERIES_GATES), p, xp=xp))
+
+
+def series_junction_domain(state, junction_voltage, availability, p, structure, *, xp=jnp):
+    """FR-30: every active junction on its law's domain, gate by gate (the law's domain_valid)."""
+    kinds = structure.junction_series_kinds
+    gates = getattr(state, SERIES_GATES)
+    ok = series_gates.domain_valid(
+        tuple(gates[k] for k in range(len(kinds))),
+        junction_voltage,
+        series_parameters(p, kinds),
+        availability,
+        kinds=kinds,
+        xp=xp,
+    )
+    return xp.all(xp.where(p.junction_active, ok, True))
+
+
+def series_rate_bound(spec):
+    """FR-30: a bound (1/s) on a series world's junction gates' relaxation rates over the
+    voltage domain, for the tableau's junction-gate step bound (N2 lifts it): each gate's α + β is
+    convex in its exponent, so its largest value lies at |V| = 0 or the domain's edge. A gate
+    whose residual is 1 is pinned open and sets none."""
+    rates = [0.0]
+    edges = (0.0, series_gates.MAX_ABS_VOLTAGE_V)
+    for junction in spec.model.junctions:
+        for gate in junction.gates:
+            values = series_gate_parameters_of(gate)
+            if series_gates.residual_of(gate.kind, values) >= 1.0:
+                continue
+            for v in edges:
+                rate = series_gates.gate_kinetics(gate.kind, np.asarray(v), values, xp=np)
+                rates.append(float(rate.relaxation_per_s))
+    return max(rates)
+
+
+def series_gate_parameters_of(gate):
+    """A parsed SeriesGate's parameters as its kind's type (host values)."""
+    return series_parameter_type(gate.kind)(*gate.parameters)
 
 
 def host_gated_pumps(p, structure, *, xp=jnp):
@@ -599,6 +709,27 @@ EFFECTIVE_AVAILABILITY = "channel_effective_availability"
 def routes_into_channels(structure):
     """Whether the structure routes factors into @3's own channel slots (B1's door; static)."""
     return structure is not None and any(sink == OWN_SINK for sink, *_ in structure.routes)
+
+
+# FR-30 (D262): junction_series_gates@1's state and layout fields, present only where the
+# structure's junctions take that law (series_junctions); junction_gate then holds the
+# junction's conductance, the product of its gates' factors (S2).
+SERIES_GATES = "junction_series_gates"  # [series_gate, edge_slot]: each gate's factor c in [r, 1].
+SERIES_GATES_AXES = ("series_gate", "edge_slot")
+SERIES_PARAMETERS = "junction_series_parameters"  # [series_gate, series_parameter, edge_slot].
+SERIES_PARAMETER_SLOTS = max(
+    len(junction_gate.Parameters._fields), len(series_gates.BoltzmannEyring._fields)
+)
+
+
+def series_junctions(structure):
+    """Whether the structure's junctions take junction_series_gates@1 (static)."""
+    return structure is not None and bool(structure.junction_series_kinds)
+
+
+def declares_series_junctions(model):
+    """Whether a parsed model's junctions take junction_series_gates@1 (from the definition)."""
+    return any(j.law == SERIES_GATE_LAW_ID for j in model.junctions)
 
 
 def _kinds(structure):
@@ -750,10 +881,11 @@ def _kind_rates(kinds, state, potentials, control, p, *, xp):
     return rates
 
 
-def _with_kind_derivatives(base, rates, structure, state, *, xp):
-    """base's derivative in the structure's state type, the kinds' fields by name."""
+def _with_kind_derivatives(base, rates, structure, state, *, xp, extra=None):
+    """base's derivative in the structure's state type, the kinds' fields by name, and extra's
+    ({field: rate}: FR-30's series gates)."""
     types = kind_types(structure)
-    derivatives = {}
+    derivatives = dict(extra or {})
     for kr in rates:
         derivatives |= kr.derivatives
     own = types.STATE_TYPE._fields[len(STATE_TYPE._fields) :]
@@ -890,11 +1022,19 @@ def readouts(state, control, p, *, xp=jnp, membrane_process=None, structure=None
         xp=xp,
         structure=structure,
     )
-    jgate_rate = xp.where(
-        p.junction_active,
-        junction_gate_rhs(state.junction_gate, r.junction_voltage_V, p, xp=xp, structure=structure),
-        0.0,
-    )
+    series_rate = None  # FR-30 (S2): each series gate's own rate, where the law is declared.
+    if series_junctions(structure):
+        jgate_rate, series_rate = series_junction_rates(
+            state, r.junction_voltage_V, p, structure, xp=xp
+        )
+    else:
+        jgate_rate = xp.where(
+            p.junction_active,
+            junction_gate_rhs(
+                state.junction_gate, r.junction_voltage_V, p, xp=xp, structure=structure
+            ),
+            0.0,
+        )
     # Inward-positive pump stoichiometries, outward-positive channel flux.
     extra = (
         -p.stoichiometry * cycles
@@ -1001,8 +1141,9 @@ def readouts(state, control, p, *, xp=jnp, membrane_process=None, structure=None
         ca_d,
         ca_metabolic,
     )
-    if kinds:
-        result = _with_kind_derivatives(result, kind_rates, structure, state, xp=xp)
+    if kinds or series_rate is not None:
+        extra = {} if series_rate is None else {SERIES_GATES: series_rate}
+        result = _with_kind_derivatives(result, kind_rates, structure, state, xp=xp, extra=extra)
     valid = v.converged
     if args is not None:  # The Na/K pump's domain, where its law is declared.
         valid = valid & xp.all(pump.domain_valid(*args, xp=xp))
@@ -1020,7 +1161,10 @@ def readouts(state, control, p, *, xp=jnp, membrane_process=None, structure=None
     for kind in kinds:
         if kind.control_domain is not None:
             valid &= kind.control_domain(control, p, xp=xp)
-    if structure is None or structure.junction_laws:
+    if series_junctions(structure):  # FR-30: each gate on its law's domain.
+        valid &= series_junction_domain(state, r.junction_voltage_V, control.junction, p, structure,
+                                        xp=xp)  # fmt: skip
+    elif structure is None or structure.junction_laws:
         valid &= xp.all(
             junction_gate.domain_valid(
                 state.junction_gate,
@@ -1101,6 +1245,8 @@ def domain_valid(state, p, active, *, xp=jnp, structure=None):
         valid &= xp.all(xp.isfinite(value)) & xp.all(xp.where(mask, True, value == 0))
     valid &= xp.all((state.channel_gate >= 0) & (state.channel_gate <= 1))
     valid &= xp.all((state.junction_gate >= p.junction_minimum) & (state.junction_gate <= 1))
+    if series_junctions(structure):  # FR-30 (D262): each gate's domain, and their product.
+        valid &= series_domain_valid(state, p, structure, xp=xp)
     # Absent species routes never carry hidden transfers or heat.
     route = p.channel_relative_permeability * p.channel_permeability * p.channel_abundance
     valid &= xp.all(xp.where(route > 0, True, state.channel_transferred == 0))
@@ -1236,12 +1382,18 @@ def explicit_rates(
         - scatter(diffusion, zero, (p.face_sender,), xp=xp)
         + scatter(diffusion, zero, (p.face_receiver,), xp=xp)
     )
-    if conductances is None:
+    series_rate = None  # FR-30 (S2): each series gate's own rate, where the law is declared.
+    if conductances is not None:  # N2 ((a), static): imex_step sets the junction gates by their
+        # exponential update.
+        gate = xp.zeros_like(state.junction_gate)
+        if series_junctions(structure):
+            series_rate = xp.zeros_like(getattr(state, SERIES_GATES))
+    elif series_junctions(structure):
+        gate, series_rate = series_junction_rates(state, r.junction_voltage_V, p, structure, xp=xp)
+    else:
         gate = junction_gate_rhs(
             state.junction_gate, r.junction_voltage_V, p, xp=xp, structure=structure
         )
-    else:  # N2 ((a), static): imex_step sets the junction gates by their exponential update.
-        gate = xp.zeros_like(state.junction_gate)
     outside_zero = xp.zeros_like(p.boundary_V)
     cell_rate = r.cell_rate_fmol_s - scatter(extra, r.cell_rate_fmol_s, (p.membrane_cell,), xp=xp)
     gated = presence_gated(p, structure, xp=xp)  # Q2: entities on closed hosts absent (static).
@@ -1273,8 +1425,9 @@ def explicit_rates(
         ca_d,
         ca_metabolic,
     )
-    if kinds:
-        rates = _with_kind_derivatives(rates, kind_rates, structure, state, xp=xp)
+    if kinds or series_rate is not None:
+        extra = {} if series_rate is None else {SERIES_GATES: series_rate}
+        rates = _with_kind_derivatives(rates, kind_rates, structure, state, xp=xp, extra=extra)
     if conductances is not None:  # N2 (static): the remainder, J - W dv, at these potentials.
         rates = explicit_remainder(rates, conductances, potential, r, p, xp=xp)
     valid = r.valid
@@ -1290,7 +1443,10 @@ def explicit_rates(
     if ca_args is not None:
         valid &= xp.all(calcium_atpase.domain_valid(*ca_args, xp=xp))
     valid &= channel_domain_valid(cv, target, tau, p, xp=xp)
-    if structure is None or structure.junction_laws:
+    if series_junctions(structure):  # FR-30: each gate on its law's domain.
+        valid &= series_junction_domain(state, r.junction_voltage_V, control.junction, p, structure,
+                                        xp=xp)  # fmt: skip
+    elif structure is None or structure.junction_laws:
         valid &= xp.all(
             junction_gate.domain_valid(
                 state.junction_gate,
@@ -1635,17 +1791,27 @@ def operator_time_conductances(start, control, p, dt, *, xp=jnp, kinds=(), struc
     junction_voltage = xp.where(
         p.junction_active, potential[p.junction_sender] - potential[p.junction_receiver], 0.0
     )
-    rates = junction_gate.kinetics(junction_voltage, kinetic.junction_parameters(p), xp=xp)
-    junction = state.junction_gate + (rates.target - state.junction_gate) * -xp.expm1(
-        -rates.relaxation_per_s * theta
-    )
-    ahead = state._replace(
-        amount_increment=state.amount_increment + theta * derivative.amount_increment,
-        extracellular_amount_increment=state.extracellular_amount_increment
-        + theta * derivative.extracellular_amount_increment,
-        channel_gate=xp.where(p.channel_gate_active, gate, state.channel_gate),
-        junction_gate=xp.where(p.junction_active, junction, state.junction_gate),
-    )
+    if series_junctions(structure):  # FR-30: each gate's own exponential update, then the product.
+        series = predicted_series_gates(state, junction_voltage, theta, p, structure, xp=xp)
+        ahead = with_series_conductance(state._replace(**{SERIES_GATES: series}), p, xp=xp)
+        ahead = ahead._replace(
+            amount_increment=state.amount_increment + theta * derivative.amount_increment,
+            extracellular_amount_increment=state.extracellular_amount_increment
+            + theta * derivative.extracellular_amount_increment,
+            channel_gate=xp.where(p.channel_gate_active, gate, state.channel_gate),
+        )
+    else:  # Today's program, unchanged.
+        rates = junction_gate.kinetics(junction_voltage, kinetic.junction_parameters(p), xp=xp)
+        junction = state.junction_gate + (rates.target - state.junction_gate) * -xp.expm1(
+            -rates.relaxation_per_s * theta
+        )
+        ahead = state._replace(
+            amount_increment=state.amount_increment + theta * derivative.amount_increment,
+            extracellular_amount_increment=state.extracellular_amount_increment
+            + theta * derivative.extracellular_amount_increment,
+            channel_gate=xp.where(p.channel_gate_active, gate, state.channel_gate),
+            junction_gate=xp.where(p.junction_active, junction, state.junction_gate),
+        )
     read, valid = _stage_read(ahead, p, kinds, xp=xp) if kinds else (ahead, True)
     ci, co = physical_amounts(read, p)
     valid = valid & xp.all(xp.where(p.active, xp.isfinite(ci) & (ci > 0), True))
@@ -1705,6 +1871,58 @@ def junction_voltage_kinetics(potential, p, *, xp=jnp):
     return voltage, junction_gate.kinetics(voltage, kinetic.junction_parameters(p), xp=xp)
 
 
+def stage_junctions(stage, state, start, potential, availability, fraction, dt, p, *, xp=jnp,
+                    structure=None):  # fmt: skip
+    """N2's (a) at a stage: (the stage with its junction gates by their exponential update, its
+    validity): one gate's (stage_junction_gates), or each series gate's and their product
+    (stage_series_gates, FR-30)."""
+    if series_junctions(structure):
+        return stage_series_gates(
+            stage, state, start, potential, availability, fraction, dt, p, structure, xp=xp
+        )
+    junction, ok = stage_junction_gates(
+        state.junction_gate, start, potential, availability, fraction, dt, p, xp=xp,
+        structure=structure,
+    )  # fmt: skip
+    return stage._replace(junction_gate=junction), ok
+
+
+def predicted_series_gates(state, junction_voltage, theta, p, structure, *, xp=jnp):
+    """FR-30: each series gate after theta by its exponential update at the start's kinetics
+    (N2's operator-time prediction, as for one gate) [series_gate, edge]; padded edges held."""
+    gates = getattr(state, SERIES_GATES)
+    out = []
+    for k, rates in enumerate(series_kinetics(junction_voltage, p, structure, xp=xp)):
+        moved = gates[k] + (rates.target - gates[k]) * -xp.expm1(-rates.relaxation_per_s * theta)
+        out.append(xp.where(p.junction_active, moved, gates[k]))
+    return xp.stack(out)
+
+
+def stage_series_gates(stage, state, start, potential, availability, fraction, dt, p, structure, *,
+                       xp=jnp):  # fmt: skip
+    """N2's (a) for junction_series_gates@1 (FR-30): each gate's exponential update from the
+    step start to the stage at fraction * dt, as stage_junction_gates' for one gate, from each
+    gate's Rates at the start's (`start`) and the stage's junction voltages; then junction_gate
+    their product (S2); with the law's domain at the stage. (stage, valid)."""
+    voltage = xp.where(
+        p.junction_active, potential[p.junction_sender] - potential[p.junction_receiver], 0.0
+    )
+    gates = getattr(state, SERIES_GATES)
+    out = []
+    for k, (begin, end) in enumerate(zip(start, series_kinetics(voltage, p, structure, xp=xp),
+                                         strict=True)):  # fmt: skip
+        advanced = gates_advance(gates[k], begin, end, fraction * dt, xp=xp)
+        out.append(xp.where(p.junction_active, advanced, gates[k]))
+    stage = with_series_conductance(stage._replace(**{SERIES_GATES: xp.stack(out)}), p, xp=xp)
+    return stage, series_junction_domain(stage, voltage, availability, p, structure, xp=xp)
+
+
+def gates_advance(gate, begin, end, interval, *, xp=jnp):
+    """exponential_gates.advance from two junction Rates (targets and time constants)."""
+    return gates.advance(gate, begin.target, 1.0 / begin.relaxation_per_s, end.target,
+                         1.0 / end.relaxation_per_s, interval, xp=xp)  # fmt: skip
+
+
 def stage_junction_gates(
     gate, start, potential, availability, fraction, dt, p, *, xp=jnp, structure=None
 ):
@@ -1733,7 +1951,179 @@ def stage_junction_gates(
     return advanced, ok
 
 
-def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure=None):
+# --- FR-42 (D289): labelled rows' one-way amounts over an inner step ---------------------------
+#
+# Labels are shares of a physical row; they follow material only through one-way amounts. With
+# `labels` (the labelled species' rows, static), imex_step and checked_step also return transfers:
+# per direction and entity kind, (amount [m, entity] fmol over the step, each >= 0, source and
+# destination node [entity] on the combined axis, cells then outside nodes). The state and validity
+# are the unlabelled call's bit for bit; without labels nothing is traced. Each entity's amounts are
+# the trapezoid of its one-way fluxes at the step's start and end states (the Euler IMEX, whose
+# weights are all >= 0, combines its one explicit stage directly), plus the gap to the booked move
+# (O(dt^3)) on the side its sign gives: forward - backward is the booked net at rounding, both stay
+# >= 0 and second order. ARS(2,2,2)'s explicit weights (delta, 1 - delta, 0), delta < 0, would make
+# a stage-weighted one-way amount negative where a flux falls by more than 59% within a step.
+
+FR42_REFUSAL = "FR-42 (labelled rows inside @3's step)"
+
+
+def label_errors(p, rows, *, structure=None, solver=None):
+    """FR-42's refusals at the definition (host side, the layout's values): the reasons the
+    labelled rows `rows` cannot be carried, or []."""
+    errors = []
+    if solver == "rk4" or getattr(p, "imex_explicit", np.zeros((1,))).shape[0] == 0:
+        errors.append(f"{FR42_REFUSAL}: RK4 refuses labels in version 1")
+    if structure is not None and structure.kinds:
+        errors.append(f"{FR42_REFUSAL}: declared kinds are refused until their one-way hook lands")
+    rows = list(rows)
+    s = tissue.field_layout(p).surface
+    valence = np.asarray(p.valence).reshape(len(p.valence), -1)[:, 0]
+    faces = np.asarray(s.face_active, dtype=bool)
+    for r in rows:
+        if valence[r] != 0 and faces.any():
+            errors.append(f"{FR42_REFUSAL}: charged row {r} on a logmean face has no one-way form")
+        # A channel carries row r where its relative permeability [species, channel] is nonzero,
+        # on an active population with a permeability (FR-42's fix: species row, not channel).
+        relative = getattr(p, "channel_relative_permeability", None)
+        if relative is not None and np.asarray(relative).shape[-1]:
+            carried = np.asarray(relative)[r] != 0
+            carried &= np.asarray(p.channel_active, dtype=bool) & (
+                np.asarray(p.channel_permeability) > 0
+            )
+            if np.any(carried):
+                errors.append(f"{FR42_REFUSAL}: row {r} crosses a channel population")
+        # A pump moves row r where its stoichiometry [species, membrane] is nonzero at a patch with
+        # a capacity.
+        pumps = (
+            ("stoichiometry", "pump_capacity"),
+            ("calcium_stoichiometry", "calcium_pump_capacity"),
+        )
+        for stoichiometry, capacity in pumps:
+            if hasattr(p, stoichiometry):
+                moved = np.asarray(getattr(p, stoichiometry))[r] != 0
+                if hasattr(p, capacity):
+                    moved &= np.asarray(getattr(p, capacity)) > 0
+                if np.any(moved):
+                    errors.append(f"{FR42_REFUSAL}: row {r} is moved by a pump")
+                    break
+    return errors
+
+
+def one_way_fluxes(state, potential, control, p, rows, *, xp=jnp):
+    """FR-42: the labelled rows' one-way fluxes (fmol/s) at a state and its potentials, as
+    (forward, backward) per entity kind [m, entity], in the transport law's own directions: faces
+    sender to receiver, membranes cell to outside, junctions sender to receiver. Faces carry
+    uncharged rows (W ln(a/b) = c (a - b), c = face_factor / MOL_PER_FMOL, so c a and c b);
+    membranes and junctions the constant-field law's two terms, opening x B(-x) c_from and
+    B(x) c_to (laws/junctions/selective)."""
+    from cells.laws.electrochemistry import bernoulli
+
+    idx = xp.asarray(rows)
+    s = tissue.field_layout(p).surface
+    n = p.active.size
+    ci, co = physical_amounts(state, p)
+    ci = xp.where(p.active, ci / p.volume, 1.0)
+    co = xp.where(p.outside_active, co / p.extracellular_volume, 1.0)
+    z = p.valence[idx]
+    rt = R * p.temperature
+    cell, outside = potential[:n], potential[n:]
+
+    def route(c_from, c_to, dv, area, permeability, opening, active):
+        x = z * F * xp.where(active, dv, 0.0) / rt
+        prefactor = area * permeability[idx] * opening / MOL_PER_FMOL
+        c_from, c_to = xp.where(active, c_from, 1.0), xp.where(active, c_to, 1.0)
+        forward = xp.where(active, prefactor * c_from * bernoulli(-x, xp=xp), 0.0)
+        backward = xp.where(active, prefactor * c_to * bernoulli(x, xp=xp), 0.0)
+        return forward, backward
+
+    membrane = route(
+        ci[idx][:, s.membrane_cell],
+        co[idx][:, s.membrane_outside],
+        cell[s.membrane_cell] - outside[s.membrane_outside],
+        s.membrane_area,
+        s.membrane_permeability,
+        control.membrane,
+        s.membrane_active,
+    )
+    junction = route(
+        ci[idx][:, s.junction_sender],
+        ci[idx][:, s.junction_receiver],
+        cell[s.junction_sender] - cell[s.junction_receiver],
+        s.junction_area,
+        s.junction_permeability,
+        control.junction * state.junction_gate,
+        s.junction_active,
+    )
+    c = xp.where(s.face_active, s.face_factor[idx] / MOL_PER_FMOL, 0.0)
+    face = (
+        c * xp.where(s.face_active, co[idx][:, s.face_sender], 0.0),
+        c * xp.where(s.face_active, co[idx][:, s.face_receiver], 0.0),
+    )
+    return dict(face=face, membrane=membrane, junction=junction)
+
+
+def step_transfers(start_state, start_potential, end_state, end_potential, control, p, dt, rows,
+                   *, xp=jnp, direct=None):  # fmt: skip
+    """FR-42: the step's transfers (module comment above): the trapezoid of the start and end
+    one-way fluxes (or `direct`, the Euler IMEX's combined stage terms), plus the gap to the booked
+    net on the side its sign gives."""
+    idx = xp.asarray(rows)
+    s = tissue.field_layout(p).surface
+    n = p.active.size
+    if direct is None:
+        a = one_way_fluxes(start_state, start_potential, control, p, rows, xp=xp)
+        b = one_way_fluxes(end_state, end_potential, control, p, rows, xp=xp)
+        sums = {k: tuple(0.5 * dt * (a[k][i] + b[k][i]) for i in (0, 1)) for k in a}
+    else:
+        sums = direct
+    nodes = dict(
+        face=(n + s.face_sender, n + s.face_receiver),
+        membrane=(s.membrane_cell, n + s.membrane_outside),
+        junction=(s.junction_sender, s.junction_receiver),
+    )
+    booked = dict(face="face_transferred", membrane="membrane_transferred",
+                  junction="junction_transferred")  # fmt: skip
+    transfers = []
+    for kind in ("face", "membrane", "junction"):
+        forward, backward = sums[kind]
+        net = (getattr(end_state, booked[kind]) - getattr(start_state, booked[kind]))[idx]
+        gap = net - (forward - backward)
+        source, destination = nodes[kind]
+        transfers.append((forward + xp.maximum(gap, 0.0), source, destination))
+        transfers.append((backward + xp.maximum(-gap, 0.0), destination, source))
+    return tuple(transfers)
+
+
+def crosses_floating(structure):
+    """Fix (A) (D273): whether a junction joins two capacitor components where one floats (the
+    structure's crossing_junctions; static)."""
+    return structure is not None and bool(structure.crossing_junctions)
+
+
+def crossing_potential(state, control, p, *, xp=jnp, kinds=(), structure=None):
+    """Fix (A) (D273): a stage state's quasi-static potentials and their validity, solved as
+    readouts solves the step start's: the field at the state's charges, with the stage read and the
+    routing door, and each floating component's offset by current balance at the state's own
+    junction openings. Where a junction joins capacitor components and one floats, the stage solve's
+    offsets follow from current balance with a lagged junction current, and its junction converges
+    at first order; the explicit rates (and N2's stage junction gates) read these instead."""
+    from cells.execution.schedule import SurfaceControl
+
+    read = _stage_read(state, p, kinds, xp=xp)[0] if kinds else state
+    if kinds and structure.routes:  # §7.4 (n): the routing door, as readouts opens it.
+        control = _route(structure, kinds, read, control, p, xp=xp)[0]
+    values = _field_values(
+        state,
+        read,
+        SurfaceControl(control.membrane, control.junction * state.junction_gate),
+        p,
+        xp=xp,
+    )
+    potential = values.potential_V
+    return potential, xp.all(xp.isfinite(potential)) & values.converged
+
+
+def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure=None, labels=None):
     """surface_pump_v2.imex_step with channel currents and exponential stage gates.
 
     With a membrane_process (opt-in, module docstring) the call returns
@@ -1745,6 +2135,8 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
     hook["structure"] = structure
     processes = []
     kinds = _kinds(structure)
+    if labels is not None and kinds:  # FR-42 (static): kinds wait for their one-way hook.
+        raise ConfigError(f"{FR42_REFUSAL}: declared kinds are refused until their hook lands")
     f = tissue.field_layout(p)
     s, explicit_matrix, implicit_matrix = f.surface, p.imex_explicit, p.imex_implicit
     stages = explicit_matrix.shape[0]
@@ -1782,6 +2174,7 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
     coefficient = implicit_matrix[-1, -1] * dt
     laplacian = imex.face_laplacian(weight, s, xp=xp)
     n2 = implicit_conductances(p)  # N2 (D235, static): the routes' slopes join the operator.
+    crossing = crosses_floating(structure)  # Fix (A) (D273, static): () for every other world.
     if n2:
         conductances, ok = operator_time_conductances(
             StepStart(state, first_values, start),
@@ -1813,7 +2206,13 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
     # The start kinetics are the law's own (readouts at the start potentials).
     start_kinetics = (first_values.channel_targets, first_values.channel_tau_s)
     # (a)'s start: the junction law's kinetics at the start's junction voltages.
-    start_junction = junction_voltage_kinetics(start, p, xp=xp)[1] if n2 else None
+    if n2 and series_junctions(structure):  # FR-30: each gate's Rates at the start.
+        voltage = xp.where(
+            p.junction_active, start[p.junction_sender] - start[p.junction_receiver], 0.0
+        )
+        start_junction = series_kinetics(voltage, p, structure, xp=xp)
+    else:  # Today's.
+        start_junction = junction_voltage_kinetics(start, p, xp=xp)[1] if n2 else None
     potential, stage = start, state
     for i in range(1, stages):
         known = first._combine(
@@ -1849,20 +2248,49 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
         )
         stage, valid = stage._replace(channel_gate=gate), valid & ok
         if n2:  # (a): the junction gates by their exponential update, as the channel gates.
-            junction, ok = stage_junction_gates(
-                state.junction_gate,
+            fraction = entity_sum(explicit_matrix[i], axis=None, xp=xp)
+            moved, ok = stage_junctions(
+                stage,
+                state,
                 start_junction,
                 potential,
                 control.junction,
-                entity_sum(explicit_matrix[i], axis=None, xp=xp),
+                fraction,
                 dt,
                 p,
                 xp=xp,
                 structure=structure,
             )
-            stage, valid = stage._replace(junction_gate=junction), valid & ok
+            if crossing:  # Fix (A): the gates again, at the moved stage's quasi-static potentials.
+                quasi, solved = crossing_potential(
+                    moved, control, p, xp=xp, kinds=kinds, structure=structure
+                )
+                moved, ok = stage_junctions(
+                    stage,
+                    state,
+                    start_junction,
+                    quasi,
+                    control.junction,
+                    fraction,
+                    dt,
+                    p,
+                    xp=xp,
+                    structure=structure,
+                )
+                valid &= solved
+            stage = moved
+            valid &= ok
+        elif series_junctions(structure):  # FR-30 (S2): the tableau moved the gates; the product.
+            stage = series_stage(stage, state, p, xp=xp)
         if i < stages - 1:
-            rates, ok, *process = explicit_rates(stage, potential, control, p, xp=xp, **hook)
+            if crossing:  # Fix (A): the rates at the stage state's quasi-static potentials.
+                at, solved = crossing_potential(
+                    stage, control, p, xp=xp, kinds=kinds, structure=structure
+                )
+                valid &= solved
+            else:
+                at = potential
+            rates, ok, *process = explicit_rates(stage, at, control, p, xp=xp, **hook)
             processes += process
             explicit.append(rates)
             explicit_states.append(stage)
@@ -1911,6 +2339,13 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
         + 1e-3 * species_sum(mu * (dt * applied("reservoir_supplied")), xp=xp),
         electrode_work_pJ=state.electrode_work_pJ + 1e12 * p.boundary_V * electrode,
     )
+    if exact_faces(structure):  # exact_free_energy_heat@1 (D280, a static choice).
+        # Each face books its rows' exact free-energy release from the nodes' start and end
+        # amounts, in place of the face heat above: no clamp, and no other form where a share
+        # falls below its floor or a row's shares miss its exact change (the step is refused).
+        release, booked = exact_face_heat(state, stage, p, xp=xp)
+        valid &= booked
+        stage = stage._replace(face_dissipated_energy_pJ=state.face_dissipated_energy_pJ + release)
     if p.junction_heat_trapezoid.shape[0]:  # trapezoid_nonnegative@1 (a static choice).
         # The tableau's explicit weights (delta, 1 - delta), delta < 0, book a negative
         # junction heat increment where a junction's power falls by more than 59% in a
@@ -1936,7 +2371,13 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
         # every explicit stage), averaged with stage 0's. Only those heat fields change; the
         # state is the tableau's. Junctions keep their own switch above.
         whole = {k: v for k, v in hook.items() if k != "conductances"}  # N2: whole heat rates.
-        end_rates, end_ok, *_ = explicit_rates(stage, potential, control, p, xp=xp, **whole)
+        at = potential
+        if crossing:  # Fix (A): as every explicit stage's rates.
+            at, solved = crossing_potential(
+                stage, control, p, xp=xp, kinds=kinds, structure=structure
+            )
+            valid &= solved
+        end_rates, end_ok, *_ = explicit_rates(stage, at, control, p, xp=xp, **whole)
         valid &= end_ok
         start_rates = explicit[0]
         if n2:  # Stage 0's explicit rates hold the remainder alone: the start's whole rates.
@@ -1957,8 +2398,21 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
     valid &= domain_valid(stage, p, p.active, xp=xp, structure=structure)
     for value in stage:
         valid &= xp.all(xp.isfinite(value))
+    extra = ()
+    if labels is not None:  # FR-42 (static): the labelled rows' transfers; nothing else changes.
+        if stages == 2 and not n2:  # The Euler IMEX: its one explicit stage, weights >= 0.
+            terms = one_way_fluxes(state, start, control, p, labels, xp=xp)
+            weight = dt * explicit_matrix[last, 0]
+            direct = {k: (weight * f, weight * b) for k, (f, b) in terms.items()}
+            transfers = step_transfers(state, start, stage, None, control, p, dt, labels, xp=xp,
+                                       direct=direct)  # fmt: skip
+        else:
+            end, _ = crossing_potential(stage, control, p, xp=xp, kinds=kinds, structure=structure)
+            transfers = step_transfers(state, start, stage, end, control, p, dt, labels, xp=xp)
+        extra = (transfers,)
     if membrane_process is None:
-        return jax.tree.map(lambda old, new: xp.where(valid, new, old), state, stage), valid
+        kept = jax.tree.map(lambda old, new: xp.where(valid, new, old), state, stage)
+        return (kept, valid, *extra)
     # The process's applied transfer (the tableau's explicit weights: the exact
     # amount change it made) and its heat, the trapezoid of its start power and
     # its power at the end state and last-stage potentials.
@@ -1977,7 +2431,7 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
     heat = 0.5 * dt * (processes[0].heat + end.heat)
     valid &= end.valid & xp.all(xp.isfinite(heat)) & xp.all(xp.isfinite(transfer))
     new = jax.tree.map(lambda old, new: xp.where(valid, new, old), state, stage)
-    return new, valid, (transfer, heat)
+    return (new, valid, (transfer, heat), *extra)
 
 
 def junction_heat_rate(state, potential, control, p, *, xp=jnp):
@@ -2012,13 +2466,18 @@ def junction_heat_rate(state, potential, control, p, *, xp=jnp):
     return 1e-3 * species_sum(flux * mu, xp=xp)
 
 
-def checked_step(state, dt, control, p, active, *, structure=None):
-    """RK4 for an empty tableau (reference runs); otherwise the declared IMEX step."""
+def checked_step(state, dt, control, p, active, *, structure=None, labels=None):
+    """RK4 for an empty tableau (reference runs); otherwise the declared IMEX step. With `labels`
+    (FR-42) the IMEX step also returns its transfers; RK4 refuses them in version 1."""
     if p.imex_explicit.shape[0] == 0:
+        if labels is not None:
+            raise ConfigError(f"{FR42_REFUSAL}: RK4 refuses labels in version 1")
         if structure is None:
             return rk4_checked_step(rhs, domain_valid, state, dt, control, p, active)
         bound = _bound_checks(structure)
         return rk4_checked_step(bound.rhs, bound.domain_valid, state, dt, control, p, active)
+    if labels is not None:
+        return imex_step(state, dt, control, p, structure=structure, labels=labels)
     return imex_step(state, dt, control, p, structure=structure)
 
 
@@ -2047,6 +2506,8 @@ def check_definition(spec, *, structure=None):
             "Heat bookings are @3's structure's (heat_bookings); this family runs @3 without "
             "one, so it refuses them"
         )
+    if exact_faces(structure):  # D280: the faces' exact booking's scope (version 1).
+        _check_exact_faces(m)
     kinds = _kinds(structure)
     for kind in kinds:  # §7.4 (k): a kind's definition checks, ahead of @3's.
         if kind.check_definition is not None:
@@ -2054,6 +2515,12 @@ def check_definition(spec, *, structure=None):
     _check_stage_rows(spec, kinds)
     _check_held_rows(spec, kinds)
     state, p = initial_values(compact, structure=structure)
+    if series_junctions(structure) and np.any(getattr(p, "passive_on_junction", False)):
+        raise ConfigError(  # FR-30, v1 (D262): the kinds' junction routes are not wired.
+            f"A kind's passive route on a {SERIES_GATE_LAW_ID} junction takes its own route "
+            "factor through the gates (its residuals per gate), never the ionic conductance; that "
+            "route factor is not built (v1, D262)"
+        )
     controls = control_values(compact, [c.time for c in compact.experiment.changes])
     control_type = kind_types(structure).Control if structure is not None else Control
     if kinds:
@@ -2799,8 +3266,21 @@ class StepChecks(first.StepChecks):
                 rates.append(float(kind.bound_rate(self.spec, declaration)))
         return max(rates)
 
+    @cached_property
+    def junction_rate(self):
+        """The junction gates' relaxation-rate bound: the one-gate law's (first's), or each series
+        gate's largest over the voltage domain (FR-30)."""
+        if declares_series_junctions(self.spec.model):
+            return series_rate_bound(self.spec)
+        return first.junction_gate_rate_bound(self.spec)
+
     def __call__(self, steps):
         spec, step = self.spec, np.max(steps, initial=0)
+        if declares_series_junctions(spec.model):  # FR-30, v1 (D262).
+            if spec.execution.solver == "rk4":
+                raise ConfigError(SERIES_RK4_REFUSAL)
+            if getattr(spec, "projective", None) is not None:
+                raise ConfigError(SERIES_PROJECTIVE_REFUSAL)
         if spec.execution.solver == "rk4":
             tissue.check_steps(spec, steps, None)
             laws, bound = self.gated_laws, self.rk4_bound
@@ -2954,6 +3434,120 @@ def trapezoid_fields(structure):
             if (role := kind_registry.energy_role(kind, name)) is not None and role.role == "heat"
         ]
     return tuple(out)
+
+
+# exact_free_energy_heat@1 on @3's faces (D280; docs/CORE_SEAMS_DESIGN.md §6.5): the passive
+# routes' booking of INNER_MODEL_V4_DESIGN §7.5, version 1, for faces. Its sign rule's and raw-sum
+# bound's factor is the passive routes' (kinds/passive_routes.RAW_SUM_FACTOR).
+EXACT_FACE_RAW_SUM_FACTOR = 16.0
+
+
+def exact_faces(structure):
+    """Whether the structure picks exact_free_energy_heat@1 for @3's faces: a static switch,
+    False for every definition that does not list it, so today's programs are unchanged."""
+    return structure is not None and (
+        (inner_laws.FACES, EXACT_FREE_ENERGY_HEAT) in structure.heat_bookings
+    )
+
+
+def _check_exact_faces(model):
+    """The faces' exact booking's scope (version 1, as the passive routes'): every row a face
+    carries (a species with a positive diffusivity on it, at each of its end nodes) is neutral,
+    lies at two finite nodes (a held bath's row is never one) and is moved in the step by faces
+    alone (moved_nodes). Operators' in-step writers are the composite's admission
+    (pump_composite.exact_face_row_errors)."""
+    valence = dict(zip(model.species_ids, model.valence, strict=True))
+    held = {o.id for o in model.extracellular if o.reservoir}
+    movers = moved_nodes(model)
+    for face in model.faces:
+        for species, diffusivity in zip(model.species_ids, face.diffusivity_m2_per_s, strict=True):
+            if not diffusivity:
+                continue
+            if valence[species]:
+                raise ConfigError(
+                    f"Face {face.id} carries the charged row {species}; "
+                    f"{EXACT_FREE_ENERGY_HEAT} books neutral rows only (version 1)"
+                )
+            bath = next((n for n in (face.sender, face.receiver) if n in held), None)
+            if bath is not None:
+                raise ConfigError(
+                    f"Face {face.id} carries {species} to the held bath {bath}; "
+                    f"{EXACT_FREE_ENERGY_HEAT} books faces between finite nodes (version 1)"
+                )
+            for node in (face.sender, face.receiver):
+                others = [w for w in movers.get((species, node), ()) if not w.startswith("face ")]
+                if others:
+                    raise ConfigError(
+                        f"Face {face.id} carries {species} at {node}, which {others[0]} also "
+                        f"moves in the step; {EXACT_FREE_ENERGY_HEAT} books rows that faces "
+                        "alone move (version 1)"
+                    )
+
+
+def exact_face_heat(start, end, p, *, xp=jnp):
+    """exact_free_energy_heat@1 over one step: (each face's heat [face] in pJ, booked), from the
+    step's start and end states.
+
+    Each face's share of a row it carries is the amount it moved, sender to receiver, times the
+    difference of the row's divided-difference potentials at its two ends, each from that node's
+    start and end amounts in the ledger's own form (passive_permeation.divided_potential_RT):
+    Q = 1e-3 RT moved (mu-bar_sender - mu-bar_receiver). Where faces alone move a row (the
+    definition's check, which also keeps held baths out), a node's shares sum to its exact
+    free-energy change, so the energy ledger closes to rounding for those rows.
+
+    booked is False, and the step refused, where a share lies below its floor,
+    -RAW_SUM_FACTOR eps (|mu-bar_s| + |mu-bar_r| + 2) |moved| RT (the passive routes' sign rule,
+    INNER_MODEL_V4_DESIGN §7.5 as amended 17 November 2026), or where a finite node's shares miss
+    its exact change by more than RAW_SUM_FACTOR eps times its terms and its inputs' rounding (the
+    raw-sum bound). No clamp and no other form: a falling face heat is also the dissipation
+    check's."""
+    s = tissue.field_layout(p).surface
+    eps = np.finfo(float).eps
+    volume = xp.where(p.outside_active, p.extracellular_volume, 1.0)[None, :]
+    reference = xp.where(p.outside_active, p.extracellular_amount_reference, 1.0)
+    i0, i1 = start.extracellular_amount_increment, end.extracellular_amount_increment
+    n0, n1 = reference + i0, reference + i1
+    mu = exact_kernel.divided_potential_RT(n0, n1, volume, xp=xp)  # [species, outside node]
+    carried = s.face_active[None, :] & (s.face_factor > 0)  # [species, face]
+    moved = xp.where(carried, end.face_transferred - start.face_transferred, 0.0)
+    mu_s, mu_r = mu[:, s.face_sender], mu[:, s.face_receiver]
+    shares = 1e-3 * R * p.temperature * moved * (mu_s - mu_r)
+    terms = (xp.abs(mu_s) + xp.abs(mu_r) + 2.0) * xp.abs(moved)  # RT fmol.
+    floor = -(EXACT_FACE_RAW_SUM_FACTOR * eps * 1e-3 * R) * p.temperature * terms
+    positive = xp.all(xp.where(carried, shares >= floor, True))
+    zero = xp.zeros_like(n0)
+
+    def at_ends(values):  # [species, face] -> [species, outside node], at both ends of each face.
+        return scatter(values, zero, (s.face_sender,), xp=xp) + scatter(
+            values, zero, (s.face_receiver,), xp=xp
+        )
+
+    # Raw sums at each node a face carries a row to (finite nodes, by the definition's check; a held
+    # bath's change would be its supply): the shares' potential times the faces' net change,
+    # against the row's exact change of G.
+    rows = (at_ends(xp.where(carried, 1.0, 0.0)) > 0) & ~p.reservoir[None, :]
+    safe0, safe1 = xp.where(n0 > 0, n0, 1.0), xp.where(n1 > 0, n1, 1.0)
+    g0 = xp.where(n0 > 0, n0 * (xp.log(safe0 / volume) - 1.0), 0.0)
+    g1 = xp.where(n1 > 0, n1 * (xp.log(safe1 / volume) - 1.0), 0.0)
+    net = scatter(moved, zero, (s.face_receiver,), xp=xp) - scatter(
+        moved, zero, (s.face_sender,), xp=xp
+    )
+    residual = xp.abs(mu * net - (g1 - g0))
+    own = (
+        xp.abs(g0)
+        + xp.abs(g1)
+        + scatter(xp.abs(mu_s * moved), zero, (s.face_sender,), xp=xp)
+        + scatter(xp.abs(mu_r * moved), zero, (s.face_receiver,), xp=xp)
+    )
+    cumulative = xp.where(
+        carried, xp.abs(start.face_transferred) + xp.abs(end.face_transferred), 0.0
+    )
+    inputs = xp.abs(mu) * (xp.abs(n0) + xp.abs(n1) + xp.abs(i0) + xp.abs(i1) + at_ends(cumulative))
+    within = xp.all(
+        xp.where(rows, residual <= EXACT_FACE_RAW_SUM_FACTOR * eps * (own + inputs), True)
+    )
+    heat = species_sum(xp.where(carried, shares, 0.0), xp=xp)  # A7: the species fold.
+    return heat, positive & within
 
 
 def check_values(state, spec, steps=None, *, structure=None):
@@ -3387,12 +3981,16 @@ def view_declarations(structure):
     where the reference is a field of the structure's layout). A structure without kinds gets the
     module's own objects."""
     kinds = _kinds(structure)
-    if not kinds:
+    if not kinds and not series_junctions(structure):
         names = (*_VIEW_MAPS, "VIEW_LAYERS", "VIEW_AXIS_SETS", *_RECORD_ROLES)
         return {name: globals()[name] for name in names}
     types = kind_types(structure)
     present = {*types.STATE_TYPE._fields, *types.OBSERVATION_FIELDS}
     merged = {name: dict(globals()[name]) for name in _VIEW_MAPS}
+    if series_junctions(structure):  # FR-30: the gates' factors; junction_gate, their product.
+        for name, value in zip(("UNITS", "RECORD_KINDS", "RECORD_LAYERS"),
+                               ("1", "level", "channels"), strict=True):  # fmt: skip
+            merged[name][SERIES_GATES] = value
     layers, axis_sets = list(VIEW_LAYERS), {}
     diagnostics, references = list(RECORD_DIAGNOSTICS), dict(RECORD_REFERENCES)
     for kind in kinds:
@@ -3449,7 +4047,9 @@ RECORD_NOTES = MappingProxyType(
 # B1's door (docs/CORE_SEAMS_DESIGN.md §4.3): what channel_availability records where a population
 # declares factors, and FR-34's record of the value its flux runs at.
 ROUTED_CHANNEL_NOTE = (
-    "the held availability, before the routing door. An operator's write to the availability "
+    "the held availability, before the routing door: the control @3 receives, which in a "
+    "composite is its control view (the operators' factors and writes, as held_schedules holds "
+    "them), never the composite's stored controls. An operator's write to the availability "
     "enters here, through the held value; a population that declares factors runs, at every "
     "stage, at this times its sources' factors (a left fold in declared order), which enter "
     "through the door; their product, the value its flux follows, is "
@@ -3457,9 +4057,11 @@ ROUTED_CHANNEL_NOTE = (
 )
 EFFECTIVE_AVAILABILITY_NOTE = (
     "the effective availability, the value each population's flux runs at: the held "
-    "availability (channel_availability, which carries an operator's writes) times its sources' "
-    "factors at the row's read state, a left fold in declared order (B1's door); recorded only "
-    "where a population declares factors, since elsewhere it is channel_availability"
+    "availability (channel_availability: the control @3 receives, which carries an operator's "
+    "writes and, in a composite, its control view's factors; never the composite's stored "
+    "controls) times its sources' factors at the row's read state, a left fold in declared "
+    "order (B1's door); recorded only where a population declares factors, since elsewhere it "
+    "is channel_availability"
 )
 
 
@@ -3573,7 +4175,9 @@ def summarize(history, diagnostics, spec):
         "time_integrator": spec.execution.solver,
         "gate_integrator": "rk4" if spec.execution.solver == "rk4" else GATE_INTEGRATOR_ID,
         "state_fields": list(STATE_TYPE._fields),
-        "junction_law": junction_gate.RELAXATION_LAW_ID,
+        "junction_law": SERIES_GATE_LAW_ID
+        if declares_series_junctions(spec.model)
+        else junction_gate.RELAXATION_LAW_ID,
         "pump_law": pump.LAW_ID,
         "calcium_pump_law": calcium_atpase.LAW_ID,
         "channel_laws": {c.id: c.kinetic_law for c in spec.model.channels},
@@ -3616,7 +4220,117 @@ def structure(model):
         heat_bookings=getattr(model, "heat_bookings", ()),  # Seam D (§6.1): () by default.
         free_amount_reads=_free_amount_reads(model),  # P1 (§17): () by default.
         kind_ledgers=_kind_ledgers(model),  # E (§7.3): () by default.
+        junction_series_kinds=_series_kinds(model),  # FR-30 (D262): () by default.
+        crossing_junctions=crossing_junctions(model),  # Fix (A) (D273): () by default.
     )
+
+
+def crossing_junctions(model):
+    """Fix (A) (D273): the IDs, sorted, of a parsed model's junctions that join two capacitor
+    components where at least one floats, from its topology as numerics/surface_field.bind reads
+    it: a membrane joins its cell and its outside node into one component; a component holding a
+    reservoir is held, the one holding the closure's gauge has a fixed offset, and every other
+    floats. Host side and static; () for a world whose junctions all join held components."""
+    cells = getattr(model, "cells", ())
+    outside = getattr(model, "extracellular", ())
+    parent = {node.id: node.id for node in (*cells, *outside)}
+
+    def root(node):
+        while parent[node] != node:
+            node = parent[node]
+        return node
+
+    for membrane in getattr(model, "membranes", ()):
+        if membrane.inside in parent and membrane.outside in parent:
+            parent[root(membrane.outside)] = root(membrane.inside)
+    held = {root(node.id) for node in outside if getattr(node, "reservoir", False)}
+    gauge = getattr(model, "gauge_reference", None)
+    fixed = held | ({root(gauge)} if gauge in parent else set())
+    return tuple(
+        sorted(
+            j.id
+            for j in getattr(model, "junctions", ())
+            if j.sender in parent
+            and j.receiver in parent
+            and root(j.sender) != root(j.receiver)
+            and (root(j.sender) not in fixed or root(j.receiver) not in fixed)
+        )
+    )
+
+
+SERIES_RK4_REFUSAL = (
+    f"{SERIES_GATE_LAW_ID} runs on the IMEX tableaux in v1 (D262): RK4 would integrate "
+    "junction_gate apart from its gates, while the IMEX step sets it to their product at every "
+    "stage"
+)
+SERIES_PROJECTIVE_REFUSAL = (
+    f"{SERIES_GATE_LAW_ID} runs on the fine engine in v1 (D262): execution.projective's settling "
+    "test reads one junction gate's kinetics"
+)
+SERIES_STRUCTURE_REFUSAL = (
+    f"{SERIES_GATE_LAW_ID} runs in @3 alone in v1, through its structure's implementation "
+    "(registry.get_model), which holds the gates; a path without that structure, a composite's or "
+    "a water family's, would run them as one gate, so it refuses them (FR-30, D262)"
+)
+
+
+def series_initial_values(spec):
+    """FR-30: (each gate's initial factor [series_gate, edge_slot], each gate's parameters
+    [series_gate, SERIES_PARAMETER_SLOTS, edge_slot], zero-padded) of a series world's junctions;
+    padded edge slots hold 0, as a closed contact's junction_gate does."""
+    edges, gates = spec.execution.edge_capacity, series_gates.GATE_COUNT
+    factors = np.zeros((gates, edges))
+    parameters = np.zeros((gates, SERIES_PARAMETER_SLOTS, edges))
+    for i, j in enumerate(spec.model.junctions):
+        for k, g in enumerate(j.gates):
+            factors[k, i] = g.initial
+            parameters[k, : len(g.parameters), i] = g.parameters
+    return factors, parameters
+
+
+def series_parameters(p, kinds):
+    """Each gate's parameters as its kind's NamedTuple of [edge_slot] arrays, from the layout."""
+    out = []
+    for k, kind in enumerate(kinds):
+        names = series_parameter_type(kind)._fields
+        values = [p.junction_series_parameters[k, n] for n in range(len(names))]
+        out.append(series_parameter_type(kind)(*values))
+    return tuple(out)
+
+
+def series_parameter_type(kind):
+    """A series gate kind's parameter type (the law's own)."""
+    return {
+        "threshold_relaxation": junction_gate.Parameters,
+        "boltzmann_eyring": series_gates.BoltzmannEyring,
+    }[kind]
+
+
+# junction_gate equals its gates' product to this many ulps of 1 (it is computed from them).
+SERIES_PRODUCT_ULPS = 8.0
+
+
+def series_domain_valid(state, p, structure, *, xp=jnp):
+    """FR-30: every active junction's gates in [their residual, 1], padding at 0, and
+    junction_gate their product (S2: it is computed from them, never integrated)."""
+    gates = getattr(state, SERIES_GATES)
+    kinds = structure.junction_series_kinds
+    parameters = series_parameters(p, kinds)
+    valid = True
+    for k, (kind, values) in enumerate(zip(kinds, parameters, strict=True)):
+        inside = (gates[k] >= series_gates.residual_of(kind, values)) & (gates[k] <= 1)
+        valid = valid & xp.all(xp.where(p.junction_active, inside, gates[k] == 0))
+    product = series_gates.conductance(tuple(gates[k] for k in range(len(kinds))), xp=xp)
+    product = xp.where(p.junction_active, product, 0.0)
+    eps = SERIES_PRODUCT_ULPS * float(np.finfo(np.float64).eps)
+    return valid & xp.all(xp.abs(state.junction_gate - product) <= eps)
+
+
+def _series_kinds(model):
+    """FR-30: the gate kinds of the junctions' junction_series_gates@1 (the parse holds every
+    junction to one law and every series junction to one kind per gate), or ()."""
+    series = [j for j in model.junctions if j.law == SERIES_GATE_LAW_ID]
+    return tuple(g.kind for g in series[0].gates) if series else ()
 
 
 def _kind_ledgers(model):
@@ -3776,12 +4490,14 @@ TODAYS_TYPES = KindTypes(
 
 
 @cache
-def _kind_types(fields, registry):
+def _kind_types(fields, registry, series=False):
     """fields: ((kind ID, the bound kind's KindFields), ...) in canonical order. Classes are cached
     by field set (§7.4 (j); (n) 5): structures whose kinds carry the same fields share them, and a
     kind bound to fields other than its static ones (a declaration-dependent variant) names its
-    extra fields in the classes' deterministic names."""
-    if not fields:
+    extra fields in the classes' deterministic names. series (FR-30, D262): the structure's
+    junctions take junction_series_gates@1, whose gates are a state field (SERIES_GATES, after the
+    kinds' state fields) and whose parameters a layout field (SERIES_PARAMETERS)."""
+    if not fields and not series:
         return TODAYS_TYPES
 
     def label(kind_id, own):
@@ -3798,14 +4514,19 @@ def _kind_types(fields, registry):
         return "_" + re.sub(r"\W", "_", kind_id) + extra
 
     suffix = "".join(label(kind_id, own) for kind_id, own in fields)  # Deterministic.
+    suffix += "_" + SERIES_GATES if series else ""
     axes = dict(STATE_AXES)
     for kind_id, own in fields:
         for name, name_axes in own.state_axes:  # Not `field`: the field-solver module's name.
             if name in axes:
                 raise ValueError(f"Kind {kind_id}'s state field {name} is already declared")
             axes[name] = list(name_axes)
+    series_state = (SERIES_GATES,) if series else ()
+    if series:
+        axes[SERIES_GATES] = list(SERIES_GATES_AXES)
     state = NamedTuple("SurfacePumpChannelState" + suffix, [(k, object) for k in axes])
     layout_extra = [name for _, own in fields for name in own.layout_fields]
+    layout_extra += [SERIES_PARAMETERS] if series else []
     layout = NamedTuple(
         "SurfacePumpChannelLayout" + suffix,
         [(k, object) for k in (*LAYOUT_TYPE._fields, *layout_extra)],
@@ -3828,6 +4549,7 @@ def _kind_types(fields, registry):
     columns = (
         *OBSERVATION_FIELDS[:today_state],
         *(name for _, own in fields for name, _ in own.state_axes),
+        *series_state,
         *OBSERVATION_FIELDS[today_state:],
         *(column for _, own in fields for column in own.readout_columns),
     )
@@ -3850,15 +4572,16 @@ def kind_types(structure):
             kind.state_axes, kind.layout_fields, kind.control_fields, kind.readout_columns
         )
         fields.append((kind_id, own))
+    series = series_junctions(structure)
     if routes_into_channels(structure):
-        return _routed_kind_types(tuple(fields), registry)
-    return _kind_types(tuple(fields), registry)
+        return _routed_kind_types(tuple(fields), registry, series)
+    return _kind_types(tuple(fields), registry, series)
 
 
 @cache
-def _routed_kind_types(fields, registry):
+def _routed_kind_types(fields, registry, series=False):
     """_kind_types' classes with one more observation column, EFFECTIVE_AVAILABILITY, last."""
-    types = _kind_types(fields, registry)
+    types = _kind_types(fields, registry, series)
     columns = (*types.OBSERVATION_FIELDS, EFFECTIVE_AVAILABILITY)
     observations = make_dataclass(
         types.Observations.__name__ + "_" + EFFECTIVE_AVAILABILITY,
@@ -3932,7 +4655,13 @@ class InnerImplementation:
         return self.structure.gate_rows
 
     def junction_kinetics(self, voltage, p, *, xp=jnp):
-        """The declared junction law's kinetics at junction voltages (junction_gate.Rates)."""
+        """The declared junction law's kinetics at junction voltages (junction_gate.Rates); a
+        series law's gates have one Rates each, so it refuses there (FR-30, D262)."""
+        if series_junctions(self.structure):
+            raise ConfigError(
+                f"{SERIES_GATE_LAW_ID} has one Rates per gate: its gates' kinetics are the "
+                "law's own (junction_series_gates.kinetics), not one junction Rates"
+            )
         return junction_gate.kinetics(voltage, kinetic.junction_parameters(p), xp=xp)
 
 

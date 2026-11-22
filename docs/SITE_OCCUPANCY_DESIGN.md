@@ -175,7 +175,7 @@ ligand: Langmuir's model of localized binding (Langmuir 1918). It is declared on
 | Item | Content | Units |
 | --- | --- | --- |
 | Identity | A functional unit ID and an opaque catalogue reference, null or `{"catalogue": id, "entry": key}`: membrane state's population form (v2 §3) | – |
-| Owner | A patch with its face, `outside` (the patch's outside node) or `inside` (the patch's cell); or a contact with its side, `first` or `second` (@3's `junction_sender` or `junction_receiver`) | – |
+| Owner | A patch with its face, `outside` (the patch's outside node) or `inside` (the patch's cell); or a contact with its side, `first` or `second` (@3's `junction_sender` or `junction_receiver`); or a finite outside node's own surface, `{"node": N}`, facing N, binding only, in no cell (FR-28, D268; [NODE_SURFACE_SITES_DESIGN.md](NODE_SURFACE_SITES_DESIGN.md)) | – |
 | Copies N | The population's abundance on that owner: copies of the functional unit | units |
 | Sites per copy ν | The stoichiometry: identical sites per copy, an integer ≥ 1 | – |
 | Accessible fraction α | The static fraction of the stoichiometric sites that can be occupied (§2.3) | – |
@@ -363,7 +363,7 @@ The values are illustrative and synthetic.
 - **`destination`** admits one value in version 1, `"cell"`: the patch's own cell. The key exists so
   that FR-1 and FR-2 add destinations without changing the form (§2.4).
 - **The experiment** adds `site_controls`: per population and route (`binding`, `internalisation`), a
-  piecewise-constant multiplier m ≥ 0 from time 0, changing at exact multiples of dt.
+  piecewise-constant multiplier m ≥ 0 from time 0, changing on the clock's grid (D283).
   - A zero multiplier switches the route off (D136): a blocking antibody, a washout, an inhibitor of
     uptake.
   - A binding multiplier scales k_on and k_off together, so the equilibrium is unchanged, as D152's

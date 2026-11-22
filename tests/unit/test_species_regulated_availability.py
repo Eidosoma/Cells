@@ -344,7 +344,7 @@ REFUSALS = {
                 dict(time=0.0055, enabled=0)
             )
         ),
-        "exact multiple of dt",
+        "on the clock's grid",
     ),
     "switch outside the horizon": (
         _edit(
@@ -360,7 +360,7 @@ REFUSALS = {
                 dict(state_id="s", cell_id="cell_0", time=0.0055, value=0.5)
             )
         ),
-        "exact multiple of dt",
+        "on the clock's grid",
     ),
     "write outside the horizon": (
         _edit(
@@ -1297,7 +1297,52 @@ def self_routed():
     return parse_spec(raw)
 
 
-def test_version_2_evaluates_a_route_its_target_moves_at_the_half_steps_midpoint(monkeypatch):
+def _autoregulated_transcription(monkeypatch):
+    """The row templated_polymerisation@1 (FR-38's found defect, the lead's ruling of 22 November
+    2026): A1 to 10 s with its coupling's source moved from X to R, transcription's own product,
+    which R's loss and completions move inside each of transcription's half-steps; R starts at the
+    Hill activation's K, 1e-8 mM. Before the operator declared half_step_rows the composite never
+    saw the route as self-moved, so k_I's factor was a left-endpoint rule: order 1, as planted
+    here. With it, the cumulative initiations converge at order 2. NumPy half-steps of the
+    operator alone, about 3 s with the world's build, no world compiled."""
+    from validation.gene_regulation import worlds
+
+    raw = worlds.a1(end=10.0)
+    (block,) = [op for op in raw["model"]["operators"] if op["law"] == LAW_V2]
+    block["species"] = [dict(id="R", catalogue=None, evidence=None)]
+    coupling = block["couplings"][0]
+    coupling.update(source=dict(species="R"), half_saturation_mM=1e-8)
+    coupling["target"]["operating_range"] = [0.0, 1e-6]
+    raw["model"]["cells"][0]["initial_amount_fmol"]["R"] = 1e-8  # 1e-8 mM in its 1 pL.
+    spec = parse_spec(raw)
+    target = worlds.POLYMERISATION
+    assert pump_composite.self_moved_targets(spec.model) == {target}
+    model = get_model(spec.model)
+    assert model.structure_key[3:] == (("midpoint", (target,)),)
+    state, p = model.initial_values(spec)
+    operator = next(o for o in model.operators if o.LAW_ID == target)
+    control = model.CONTROL_TYPE(*(v[0] for v in cs.control_values(spec, [0.0])))
+
+    def orders(per_second):
+        made = []
+        for n in per_second:
+            current = state
+            for _ in range(20 * n):
+                current, ok = model._half_step(operator, current, 1 / (2 * n), control, p, xp=np)
+                assert bool(ok)
+            made.append(float(np.asarray(current.poly_initiated_fmol)[0]))
+        gaps = [abs(a - b) for a, b in zip(made, made[1:], strict=False)]
+        return [np.log2(a / b) for a, b in zip(gaps, gaps[1:], strict=False)]
+
+    assert min(orders((1, 2, 4, 8))) >= 1.9
+    monkeypatch.setattr(model, "midpoint", frozenset())
+    assert max(orders((1, 2, 4))) < 1.2
+
+
+@pytest.mark.parametrize("target", ["scheduled_species_turnover@1", "templated_polymerisation@1"])
+def test_version_2_evaluates_a_route_its_target_moves_at_the_half_steps_midpoint(
+    monkeypatch, target
+):
     """A route whose source its own target moves (the independent Lean project's finding: first
     order, a gain of 0.58928135 fmol at 8 steps against 1 - ln(3/2)): the composite evaluates its
     factor at the target half-step's midpoint, from a predictor over h/2 (pump_composite's
@@ -1305,7 +1350,9 @@ def test_version_2_evaluates_a_route_its_target_moves_at_the_half_steps_midpoint
     by nothing else), under 1 s, no world compiled. Four refinements of the one-second ramp
     converge at order at least 1.9; the record holds the midpoint's factor; the S route keeps its
     booking; a composition without such a route (routed) keeps its key. Planted: the midpoint off,
-    order 1."""
+    order 1. The second row is _autoregulated_transcription's."""
+    if target == "templated_polymerisation@1":
+        return _autoregulated_transcription(monkeypatch)
     spec = parse_spec(routed())
     assert pump_composite.self_moved_targets(spec.model) == frozenset()
     assert get_model(spec.model).structure_key[3:] == ()
@@ -1674,3 +1721,163 @@ def test_version_2_reads_the_newcomers_occupancy_after_its_reset():
         after, p, sfx.TURNOVER, "turnover_rate", xp=np, quantities=reader
     )
     assert bool(ok) and float(factor[0]) == 0.1 + 0.9 * theta
+
+
+def receptor_routed(theta0, enabled=1):
+    """The tester's receptor-controlled reaction (D264 finding 1): the face-free world's cell_0
+    holds X0 at 1e-3 mM, and D152's convert X0 -> P (mass action, k 0.2/s) in cell_0 is routed by
+    @2 from the receptor r0's occupied fraction (site_fraction, basal 0); r0's binding is off, so
+    its theta holds at theta0. enabled: the coupling's switch."""
+    from validation.tissue import species_reactions_fixtures as rfx
+
+    raw = ofx.face_free_sites(
+        [ofx.population("r0", theta0=theta0)], controls={("r0", "binding"): [(0.0, 0.0)]}
+    )
+    for name, profile in (("X0", {"cell_0": 1e-3}), ("P", None)):
+        raw = add_inventory_species(
+            raw, name, trace_mM=1e-9, diffusivity_m2_per_s=1e-10, floor_fmol=1e-20,
+            concentrations_mM=profile,
+        )  # fmt: skip
+    species = [rfx.species("X0", moieties={"Q": 1}), rfx.species("P", moieties={"Q": 1}, mu=-1.0)]
+    reaction = rfx.mass_action("convert", {"cells": ["cell_0"]}, {"X0": 1}, {"P": 1}, 0.2)
+    raw = rfx.with_reactions(raw, species, [reaction], [("convert", None, [(0.0, 1.0)])])
+    target = dict(
+        operator="local_species_reactions@1",
+        control="reaction_multiplier",
+        ids=["convert"],
+        evaluation="target_half_steps",
+        operating_range=[0.0, 1.0],
+    )
+    entry = dict(id="receptor", target=target, law="site_fraction", basal=0.0,
+                 source={"site_population": "r0", "quantity": "occupied_fraction"})  # fmt: skip
+    raw = rf.with_coupling(
+        raw, species=[], couplings=[entry], switches={"receptor": [(0.0, enabled)]}
+    )
+    block(raw)["law"] = LAW_V2
+    rank = {ofx.LAW: 0, LAW_V2: 1, "local_species_reactions@1": 2}
+    raw["model"]["operators"].sort(key=lambda b: rank.get(b["law"], -1))
+    return raw
+
+
+def test_a_routed_targets_exported_rate_is_the_rate_its_step_runs_at(monkeypatch):
+    """D264 finding 1 (a tester's report; host only, about 1 s). A receptor-routed reaction's
+    exported rate (reaction_rate_fmol_per_s) read 0.000200 fmol/s in all three controls, where its
+    product accumulated at 0, 0.000080 and 0.000200: the observer took the scheduled multiplier,
+    not the routed one. The composite now observes a routed target with its routes' factors at the
+    row's state (pump_composite's observe_history). In each control the exported rate at t = 0
+    is k n theta-factor, and it equals the product one target half-step makes, per second (to
+    the step's own depletion). Planted, the routes left out of the observer: the empty receptor
+    exports the unrouted 0.000200 again. Turnover and the unit producer observe their state only,
+    and @3's channels are observed at the control view, so they need no change."""
+    k, n = 0.2, 1e-3  # 1/s; fmol, X0 in cell_0 (1e-3 mM in 1 pL).
+    h = 1e-6
+    for theta0, enabled, factor in ((0.0, 1, 0.0), (0.4, 1, 0.4), (0.4, 0, 1.0)):
+        spec = parse_spec(receptor_routed(theta0, enabled))
+        model = get_model(spec.model)
+        state, p = model.initial_values(spec)
+        history = type(state)(*(np.asarray(v)[None] for v in state))
+        observed = model.observe_history(np.array([0.0]), history, p, np.array([0.0]), spec)
+        exported = float(np.asarray(observed.reaction_rate_fmol_per_s)[0, 0])
+        assert exported == pytest.approx(k * n * factor, rel=1e-12, abs=1e-30), theta0
+        reactions = next(o for o in model.operators if o.LAW_ID == "local_species_reactions@1")
+        control = model.CONTROL_TYPE(*(v[0] for v in cs.control_values(spec, [0.0])))
+        stepped, ok = model._half_step(reactions, state, h, control, p, xp=np)
+        row = list(spec.model.species_ids).index("P")
+        made = float(np.asarray(stepped.reaction_produced_fmol)[row, 0]) / h
+        assert bool(ok) and made == pytest.approx(exported, rel=1e-6, abs=1e-30), theta0
+    spec = parse_spec(receptor_routed(0.0))
+    model = get_model(spec.model)
+    state, p = model.initial_values(spec)
+    monkeypatch.setattr(model, "rate_routes", {})
+    history = type(state)(*(np.asarray(v)[None] for v in state))
+    observed = model.observe_history(np.array([0.0]), history, p, np.array([0.0]), spec)
+    assert float(np.asarray(observed.reaction_rate_fmol_per_s)[0, 0]) == pytest.approx(k * n)
+
+
+def _clamp_world(source):
+    """FR-34's maintained twin example (validation/channel_readouts/example.py, a composite:
+    kir_0 and leak_1, the same count on one patch), both scheduled at availability 1, with leak_1
+    held at a factor of 0.5 by `source`: "write", species_regulated_availability@1 (a Hill
+    activation of R at its own concentration, exactly 0.5); "door", the routing door (a planted
+    factor source, 0.5)."""
+    from tests import kind_fixtures as kf
+    from validation.channel_readouts import example
+
+    raw = example.world()
+    for entry in raw["experiment"]["channel_controls"]:
+        if entry["channel_id"] == example.HALF:
+            entry["schedule"] = [dict(time=0.0, availability=1.0)]
+    if source == "write":
+        raw = add_inventory_species(
+            raw, rf.REGULATOR, trace_mM=1e-9, diffusivity_m2_per_s=1e-10, floor_fmol=1e-20,
+            concentrations_mM={"cell_0": 1e-3},
+        )  # fmt: skip
+        entry = rf.hill_coupling(
+            "hold", "channel", [example.HALF], rf.REGULATOR, "hill_activation", 1e-3, 1.0
+        )
+        return rf.with_coupling(raw, species=[rf.REGULATOR], couplings=[entry])
+    raw = kf.declare_routing(raw, factors={"f_a": 0.5})
+    channel = next(c for c in raw["model"]["channels"] if c["id"] == example.HALF)
+    channel["factors"] = ["f_a"]
+    return raw
+
+
+@pytest.mark.parametrize("source", ("write", "door"))
+def test_a_composites_clamped_current_runs_at_its_effective_availability(source):
+    """D265 finding 1 (a fourth review; host only, about 1 s each): in a composite, a channel
+    population's current at a declared voltage is the composite's clamped_channel_flux, which
+    hands @3 the control and layout views the step runs at (clamp_inputs). leak_1 is held at a
+    factor of 0.5 by an @1 write or by the routing door, kir_0 at 1, the same count:
+    - at the cell's own voltage the clamped flux is the recorded channel_flux_fmol_s, bit for bit;
+    - at -50 mV leak_1's current is exactly half of kir_0's;
+    - for the write, @3's helper given the stored control and layout (the reviewer's path, 11.10328
+      pA for 5.55164) loses the factor: leak_1's current equals kir_0's."""
+    from cells.models import surface_pump_v3 as v3
+    from cells.registry import kind_registry
+    from tests import kind_fixtures as kf
+    from validation.channel_readouts import example
+
+    with kind_registry.scope(kf.registry(kf.factor_source())):
+        spec = parse_spec(_clamp_world(source))
+        model = get_model(spec.model)
+        state, p = model.initial_values(spec)
+        control = model.CONTROL_TYPE(*(v[0] for v in cs.control_values(spec, [0.0])))
+        history = type(state)(*(np.asarray(v)[None] for v in state))
+        observed = model.observe_history(np.array([0.0]), history, p, np.array([0.0]), spec)
+        own = np.asarray(observed.membrane_voltage_V)[0]
+        flux, _ = model.clamped_channel_flux(state, control, p, own)
+        assert np.array_equal(flux, np.asarray(observed.channel_flux_fmol_s)[0])
+        ids = [c.id for c in spec.model.channels]
+        full, half = ids.index(example.FULL), ids.index(example.HALF)
+        _, current = model.clamped_channel_flux(state, control, p, -0.05)
+        assert current[full] != 0 and current[half] == 0.5 * current[full]
+        if source == "write":
+            inner = model.inner
+            stored = v3.clamped_channel_flux(
+                inner.inner_state(state), inner.inner_control(control), inner.inner_layout(p),
+                -0.05, xp=np, structure=inner.structure,
+            )[1]  # fmt: skip
+            assert stored[half] == stored[full] == 2 * current[half]
+
+
+def test_a_composites_clamped_kinds_are_the_steps_own_rates():
+    """D265 finding 1's check of the kinds (host only, about 2 s): in a composite with kinds
+    (crossrev's FR-4 declared world: passive routes, the rapid proton buffer, transporters), the
+    composite's clamped_kind at each route's own patch voltage is the step's own passive flux
+    (the composite readouts' passive_transferred derivative), bit for bit."""
+    from cells.kinds import passive_routes
+    from validation.tissue import composite_crossrev as crossrev
+
+    spec = parse_spec(crossrev._worlds("kinds", all_steps=False)["fr4_declared"])
+    model = get_model(spec.model)
+    state, p = model.initial_values(spec)
+    control = model.CONTROL_TYPE(*(v[0] for v in cs.control_values(spec, [0.0])))
+    values = model.readouts(state, control, p, xp=np)
+    potentials = np.asarray(values.ionic.field.potential_V)
+    _, _, view = model.clamp_inputs(state, control, p)
+    volts = (
+        potentials[np.asarray(view.passive_inside)] - potentials[np.asarray(view.passive_outside)]
+    )
+    flux, _ = model.clamped_kind(passive_routes.clamped_flux, state, control, p, volts)
+    assert np.any(flux != 0)
+    assert np.array_equal(flux, np.asarray(values.derivative.passive_transferred))

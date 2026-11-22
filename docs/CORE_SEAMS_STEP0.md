@@ -1030,3 +1030,797 @@ identical in code to ef9fc1a8. It ran on the gate lane under its lock, 13:57–1
   - This caps explicit steps wherever a route draws protons from a buffered outside node. It
     matters for mitochondria and for strong proton pumps.
   - It goes to seam C (the binding closure) and @3's owner. No fix is proposed yet.
+
+## 9. P1′: P1's ladder under the general closure (D234)
+
+### 9.1 Criterion (20 November 2026, written and committed before any run)
+
+**Why.** MT-1's host waits for P1′ (D234; CORE_LAWS_ROADMAP §2.3, item A1; MITOCHONDRIA_DESIGN §2.3
+and §3.6). An engine gap decided P1 (§8): the face weights' predictor at a buffered node, which
+refused every rung above 3.37 µs. 9e181b08 fixed that gap for the general closure `rapid_binding@1`
+only. P1′ reruns P1's ladder with the buffers declared that way and asks P1's question per host. Does
+today's IMEX handle the ΔΨ mode at the steps MT-1 needs (branch E)? Or is branch I (an implicit cycle
+block) or branch X (the exact charged booking) needed? It edits no file under `src/`.
+
+**Engine models:**
+- host C: `resolved_pump_composite@1` over `resolved_pump_tissue@3`, with `cell_owned_compartments@1`;
+- host P: `resolved_pump_tissue@3`;
+- on both:
+  - `cells.transporter@1`'s population axis, running the proton law's general form;
+  - `cells.rapid_proton_buffer@1`, declaring the general closure `rapid_binding@1`;
+  - IMEX ARS(2,2,2), `imex_ars222_face_electromigration@1`;
+  - in reading (b), `step_doubled_energy@1` (X2).
+
+**The worlds** are P1's (§5.2 and both amendments: n = 4, capacity × 500, leak and K⁺ route at 0,
+the start 5 mV past the pump's static head), ported to today's module layout and otherwise
+unchanged, except for three declared changes:
+1. **The buffers as the general closure.**
+   - Each binder, B_c at the cell and B_L at the lumen, is one form holding one more H, with its
+     protonated potential.
+   - The read is `rapid_binding@1` on H at both nodes, with the world's own k_on of 10⁷ /mM/s.
+   - At equilibrium it gives version 1's free h (`test_rapid_binding_world.py`, within 10⁻¹²).
+2. **The pump under a probe ID, on the population axis.**
+   - **Why a probe ID.** The shipped `cells.proton_atp_mass_action_positive@1` reads version 1's
+     buffer only, so binding refuses it at a closure node ("a mover at a closure node reads the
+     closure"). Version 1's layout runs that law by name only.
+   - **What the probe ID is.** The shipped law, with its reads set to `rapid_binding@1` and its
+     forms to "base".
+     - A scoped law registry in the probe holds it; it is never shipped.
+     - Its kinetics, domain, general form and step terms are the shipped law's own objects.
+   - **Its entry** is the kind's own one-to-one map of P1's entry: N is the cell, and the held fuel
+     sits at N.
+   - MT-1's laws will declare this read (the roadmap's L1).
+3. **Host P's error is measured.** P1 recorded only its refusals. P1′ measures it against the
+   engine's own finest arm (below).
+
+**Seen before this criterion, at parse only, with nothing stepped:**
+- both hosts' worlds parse, and the structure lists the buffer in `free_amount_reads`, so the
+  predictor takes P1's form;
+- ΣG/C at the start is 8.55 × 10³ /s on host C and 3.29 × 10³ /s on host P (over the cell's two
+  patches), as at P1;
+- the definition-time ceilings are as at P1:
+  - the kind's bound at rung 0.289 on both hosts;
+  - host P's face term at rung 0.108.
+
+**Host P first, on two ladders:**
+- **(P-a), P1's face:** area 10⁻¹⁰ m², length 10⁻⁸ m, D 10⁻¹⁰ m²/s for Na, K, Cl and the trace
+  rows, and 0 for H and the binders. This is the comparison with P1. Its face term caps it at 0.108.
+- **(P-b), the face's D at a hundredth (10⁻¹² m²/s).** Its face term moves to rung 10.8, so the ladder
+  reaches the cycle's own limits.
+  - The face is the outer membrane's mode, not the ΔΨ mode. Its ceiling for MT-1 is
+    1/(2 max_s p_s A_OM/V_IMS), with p_s each row's permeability.
+  - That ceiling is reported as a host-P term, to be evaluated with MT-1's permeabilities.
+
+**Then host C's two-cycle arm, if it fits about half a day.** This is P1's host C world with two
+populations of the probe law on the bounding patch:
+- **A:** n = 4, at P1's capacity;
+- **B:** n = 2, its capacity set so that the two charge currents cancel 10 mV past A's head.
+  There, A runs in reverse and B forward: a non-equilibrium steady state, V_ss, as respiration
+  against synthesis.
+- **The start** is 5 mV past V_ss, on the side away from B's head.
+- **ΣG/C** is the two slopes at the start, Σ n² F² J₁/RT over C_b, with J₁ each population's reverse
+  one-way flux.
+- **Each rung** runs ten relaxation times at V_ss.
+- **The reference** is P1's Radau integration with the two laws summed. Its code reduces to P1's
+  with B's capacity at 0, which is checked before any run.
+
+**The ladder:** dt·ΣG/C at the start of 0.01, 0.02, 0.05, 0.1, 0.2, 0.28 (just below the kind's
+bound), 0.5, 1 and 2.
+- Host P adds 0.0025 and 0.005, its reference arms.
+- Each rung runs ten relaxation times at the head (V_ss for the two-cycle arm), or until it is
+  refused.
+- Records are taken every steps//200 steps, and at the end.
+
+**Two readings per rung, each its own run:**
+- **(a) today's energy check,** P1's configuration;
+- **(b) X2 at the cap 2 × 10⁻³,** MT-1's registered configuration (D224). The cap is today's energy
+  rtol, as FR-8 rung 1's.
+
+**Recorded per rung and reading:**
+- admitted or refused, and the refusing check by its message;
+- **for a validity-flag refusal ("domain failure"):** dt·`membrane_rate` at the failing step's
+  start, recomputed at the last accepted row.
+  - Above `EXPLICIT_STEP_BOUND`, the refusal is the per-stage rule.
+  - Otherwise it is "the validity flag, unattributed", P1's verdict form.
+- `max_energy_balance_relative` against ENERGY_RTOL;
+- in (b), X2's summary;
+- **the error:** the largest |V_b(engine) − V_b(reference)| over the records, relative to the start's
+  offset.
+  - **Host C:** against P1's Radau reference (the lumen's charge and both nodes' proton
+    equivalents, the buffers at equilibrium).
+  - **Host P:** against its own 0.0025 arm, at matched times. The bound holds where the observed
+    order from the 0.0025, 0.005 and 0.01 arms is at least 1, and the reference's error bound is its
+    difference from the 0.005 arm.
+
+**The decision rules, stated before the run, per host:**
+- **The limits.** L_stage, L_ledger, L_X2 and L_other are each the largest admitted rung below the
+  first refusal by:
+  - the per-stage rule;
+  - today's energy ledger, in (a);
+  - X2, any of its refusals named, in (b);
+  - any other check, named.
+
+  L_err is the largest rung whose error is within 10⁻³ of the offset, every finer rung included.
+- **The effective limit.**
+  - In (a), L_eff = min(L_stage, L_ledger, L_err, L_other), P1's rule.
+  - In (b), L_eff(X2) = min(L_stage, L_X2, L_err, L_other).
+- **Branch E** holds on the host if L_eff(X2) ≥ 0.05, MT-1's configuration. P1's reading (a) is
+  reported beside it. 0.05 is the explicit limit that MITOCHONDRIA_DESIGN §2.3's cost for E assumes.
+- **Branch I** holds if L_eff(X2) < 0.05 and what binds is the ΔΨ mode itself, a limit an implicit
+  cycle block would lift:
+  - the per-stage rule;
+  - a validity refusal attributed to it;
+  - the error.
+- **"Not decided by the ΔΨ mode"** if, below 0.05, another check binds first. That includes the
+  face term at a face of the probe's choosing, an engine gap, or a definition-time bound. It is
+  named, with what lifting it would take.
+- **Branch X** is indicated if the energy check binds first:
+  - in (a), if the ledger refuses before every other check, P1's rule;
+  - in (b), if X2's per-row cap ("exceeds the registration's cap") does, FR-8 rung 1's trigger form.
+- **The kind's definition-time bound** (rung 0.289 here, below the stage rule's 1) is reported as a
+  ceiling. Above 0.05 it caps E's range, and its conservatism belongs to each law's `bound_rate`.
+
+**Steps for MT-1, reported as information.** Each host's L_eff(X2) is converted with
+MITOCHONDRIA_DESIGN §2.3's table: dt = L_eff/(ΣG/C) for J₁ = 1, 10 and 100 mM/s (n = 10, lumped).
+With it come the cost of 300 s of protocol, at that note's 3.6 ms per step.
+
+**How it runs:**
+- from a clean snapshot of this criterion's commit;
+- on the light CPUs at nice 10, through `scripts/run_detached.sh` with a memory cap;
+- with 900 s per rung;
+- **a timeout is not a result:** the rung is re-run once, and a second timeout is reported as one.
+
+The probe is scratch, as P1's was: `p1prime/` in the @3 owner's workspace, with its sha256 recorded
+in the result.
+
+**Amendment 1 to §9.1 (20 November 2026), committed before host C's two-cycle arm runs.**
+- **What was found.** A development smoke at an off-ladder rung (0.03), not a rung of the ladder,
+  found the two-cycle world as declared refused at definition: "Initial resolved
+  channel/junction/pump domain invalid".
+  - With the currents cancelling 10 mV past A's head, B's capacity is 13.8 fmol/s, 3.3 times A's.
+    The two populations' draw then lies past what the initial domain admits, as P1's thousandfold
+    capacity did (§5.2's second amendment).
+  - Host-side parses with nothing stepped admit B up to 10.4 fmol/s.
+- **The change.** V_ss moves to 5 mV past A's head, which needs B at 4.4 fmol/s.
+  - The start stays 5 mV past V_ss toward A's head, which is A's head itself.
+  - ΣG/C is then about 4.0 × 10³ /s at the start and about 8.6 × 10³ /s at V_ss, P1's start value.
+  - Each rung still runs ten relaxation times at V_ss.
+- **The same smoke, at host P (P-a) and rung 0.03 in reading (b),** was refused by X2 at accepted
+  step 1: "a held step's change exceeds today's bound at its row". It is reported with the results
+  and changes nothing here.
+- **The windows' width is 16 steps,** an execution choice that changes no row. With JAX's persistent
+  compilation cache, every rung of one arm and reading then reuses one compiled program. It is
+  recorded with the run.
+
+**Amendment 2 to §9.1 (20 November 2026), committed before host P's ladders run.**
+- **What was found.** A second development smoke, on (P-b) at off-ladder rungs 0.03 and 0.04 in
+  reading (a), was refused by the host's dissipation check: "Resolved pump dissipation cannot be
+  negative or decrease". The first smoke's X2 refusal, on (P-a) at 0.03, saw flows of 40.5 pJ after
+  one 9 µs step.
+- **What dominates host P's world: the face's gradient, not the cycle.**
+  - P1's host P lumen keeps FR-4's lumen composition (Na 10, K 140, Cl 10 mM), while the bath holds
+    Na 145, K 5 and Cl 110 mM.
+  - So its face carries a large initial gradient. The lumen exchanges with the bath at
+    D·A/(L·V) = 1.5 × 10⁴ /s, with a diffusion potential behind it.
+  - That transient is the outer membrane's own and has nothing to do with the ΔΨ mode. An IMS
+    equilibrated with its buffer, MT-1's host P, has no such gradient.
+- **The change, for (P-b) only.** Its lumen starts at the bath's Na, K and Cl, the rows its face
+  moves. Its H and its binder keep the lumen's values, and the face moves neither.
+  - (P-b) then isolates the ΔΨ mode on host P.
+  - (P-a) stays P1's world exactly, the comparison with P1.
+
+**Amendment 3 to §9.1 (20 November 2026), execution only, committed before any rung's result.**
+Two first launches were stopped by the @3 owner before any rung finished. Their folders are kept as
+stopped.
+- **Why.** The light CPUs are oversubscribed tonight. The probe's process got about a tenth of its
+  CPU. The 0.0025 reference arm (8,460 steps, every step recorded) could not finish within 900 s.
+- **The changes:**
+  - each rung's limit rises to 3,600 s, and a timeout is still not a result;
+  - the reference arms are recorded every 4 steps, which holds every rung's record times;
+  - the windows are 128 steps wide;
+  - (P-b) runs before (P-a), since it isolates the ΔΨ mode.
+- **What does not change:** the worlds, the ladder, the readings and the rules.
+
+**Amendment 4 to §9.1 (20 November 2026), committed before its arm runs: the source's own
+activity.** This is the lead's request, from the mitochondria lane's appendix (branch mito-lane,
+1eaf2310, `docs/MITOCHONDRIA_LAWS_APPENDIX.md`).
+- **Why.** The appendix estimates, at the source's X_F1, a desk estimate and not a measurement:
+  - the synthase's one-way flux J⁺: 1.4–3.4 mol s⁻¹ (L mito)⁻¹ at 150 mV, and 39–98 at 180 mV;
+  - q²F²J⁺/(RT·C_IM): 7 × 10⁴–1.7 × 10⁵ /s at 150 mV, and 2–5 × 10⁶ /s at 180 mV.
+
+  MITOCHONDRIA_DESIGN §2.3's table stops at 0.1 mol s⁻¹ L⁻¹. The ladder's rungs are dimensionless,
+  so this arm checks what changes with scale: the closure's envelope, the predictor, the absolute
+  floors.
+- **Arm S** is (P-b)'s world, with the pump's capacity raised by f so that ΣG/C at the start is
+  1.7 × 10⁵ /s (S150) or 5 × 10⁶ /s (S180). Those are the upper ends of the two estimates, taken
+  over the cell's capacitance as the rungs are.
+  - **The offset falls** so that the start's net flux is (P-b)'s: e^a − 1 = (e^{a₀} − 1)/f. The
+    closure's envelope reads the stage's net transport, so it sees what (P-b)'s sees. ΣG/C follows
+    the one-way flux, so it takes the source's value.
+  - **The values:** f = 108 with an offset of 68 µV (S150); f = 3,214 with an offset of 2.3 µV
+    (S180).
+  - **Its runs:** rungs 0.01, 0.05 and 0.28 in reading (b), MT-1's configuration, and the 0.0025
+    reference arm in reading (a).
+  - **Its reading:** by the same rules, each limit converted to an absolute step,
+    dt = rung/(ΣG/C).
+  - It runs beside the ladder, on another light CPU at nice 10, from the same snapshot. The probe is
+    `p1p_scale.py`, which leaves the others unchanged.
+- **Host P's outer membrane, the lead's second question.** This is a statement, not a change. P1′'s
+  host-P arms assume a face that moves no row the IMS's closure holds.
+  - The face moves Na, K, Cl and the trace rows; H and the binder stay.
+  - `check_closure_rows` refuses a face at a row the closure holds. MT-1's host P needs ATP, ADP
+    and Pi to cross the outer membrane, and in the IMS they are closure rows.
+  - The options and their costs are reported with the results.
+
+**Amendment 5 to §9.1 (20 November 2026), execution only, committed before any rung's result.**
+The third launch was stopped by the @3 owner before any rung finished, and arm S's first launch
+likewise. Their folders are kept as stopped.
+- **Why.** A profile of one off-ladder rung, (P-b) at 0.1 in reading (a), found the host's per-row
+  checks and records spending 200 of 225 s in the general closure's Newton solve.
+  - That solve runs in Python per row on the host, about 0.13 s a call.
+  - The device rollout is a small part of the time.
+  - At the light CPUs' share tonight, about a fifth of a CPU, (P-b)'s ladder alone would take
+    about six hours.
+- **The changes:**
+  - **The device row checks** (`row_checks="device"`). The arrays, records and verdicts are host
+    mode's. The device decides each window's rows, and a window near a bound goes back to the
+    host's check (WINDOW_DEVICE_CHECKS_DESIGN §9). All three worlds are admitted.
+  - **Host P's records at common times:** every multiple of 1.4/(ΣG/C at the start), the least
+    common multiple of the admitted rungs' steps.
+    - Every rung and the reference arms record the same physical times, 16 over the run, plus the
+      run's end.
+    - Host P's error is read at those times. They replace amendment 3's record strides.
+  - **Host C's two-cycle arm** records every steps//50 steps, since its Radau reference is read at
+    any time.
+- **What does not change:** the worlds, the ladder, the readings and the rules.
+
+### 9.2 Results (20 November 2026)
+
+**The runs.**
+- **Source:** the clean snapshot of e8e1c973, the criterion's last amendment. Its `src/` is main
+  0804a342's.
+- **The ladder:** unit `cells-at3-p1prime-e8e1c973`, light CPU 22 at nice 10, 00:54–03:38 UTC.
+  (P-b) ran first, then (P-a), then the two-cycle arm.
+- **Arm S:** its own unit on light CPU 6, 00:54–01:43 UTC.
+- Every rung finished at its first attempt, and none timed out. The launches stopped under
+  amendments 3 and 5 are kept as stopped and hold no rung's result.
+- **Evidence:** `/mnt/workspaces/Cells/core-pass-at3-20261118/p1prime/`.
+  - `out-e8e1c973/` holds each rung's record and log, and each arm's reading (`read_*.json`).
+  - `out-scale-e8e1c973/` holds arm S.
+  - `diag-late/` holds the diagnosis below.
+  - `SHA256SUMS` holds the probe's hashes (p1p_probe.py 99800d42…, p1p_worlds.py 162b0345…,
+    p1p_law.py d3b4fb6b…, p1p_scale.py 9b433d7f…).
+
+**Host P, (P-b): the ΔΨ mode alone.** ΣG/C is 3.29 × 10³ /s at the start, so rung 0.01 is 3.04 µs
+and ten relaxation times are 2,115 steps.
+
+| Rung | (a) | Error / offset | Ledger, relative | (b): X2 |
+| --- | --- | --- | --- | --- |
+| 0.0025, 0.005 | admitted (references) | — | 6.1 × 10⁻⁶, 1.3 × 10⁻⁵ | — |
+| 0.01 | admitted | 7.9 × 10⁻⁶ | 2.3 × 10⁻⁵ | order condition: median q 0.93 over 2,092 counted |
+| 0.02 | admitted | 3.0 × 10⁻⁵ | 3.5 × 10⁻⁵ | order condition: 0.88 over 1,043 |
+| 0.05 | admitted | 1.6 × 10⁻⁴ | 6.6 × 10⁻⁵ | order condition: 1.16 over 416 |
+| 0.1 | admitted | 5.8 × 10⁻⁴ | 1.4 × 10⁻⁴ | order condition: 1.82 over 208 |
+| 0.2 | admitted | 2.3 × 10⁻³ | 4.3 × 10⁻⁴ | order condition: 3.34 over 106 |
+| 0.28 | admitted | 4.7 × 10⁻³ | 8.0 × 10⁻⁴ | held cap: 36 out-of-band held, cap 8 (73 counted) |
+| 0.5, 1, 2 | refused at definition: the kind's bound | | | the same |
+
+- **Second order:** the error grows 3.7–4.0 times per doubling. The reference's bound is
+  1.7 × 10⁻⁶ of the offset.
+- **No other refusal:** no per-stage, validity or ledger refusal. Today's ledger stays under half
+  its tolerance of 2 × 10⁻³.
+- **(a):** L_err 0.1 and L_other 0.28 (the kind's bound); the stage rule and the ledger never
+  refuse. L_eff = 0.1.
+- **(b):** X2 refuses from the first rung, so L_eff(X2) < 0.01.
+
+**Host P, (P-a): P1's world.** The same ΣG/C, steps and references.
+
+| Rung | (a) | Error / offset | Ledger, relative | (b): X2 |
+| --- | --- | --- | --- | --- |
+| 0.0025, 0.005 | admitted (references) | — | 6.8 × 10⁻⁴, 1.3 × 10⁻³ | — |
+| 0.01 | admitted | 2.2 × 10⁻³ | 1.5 × 10⁻³ | admitted: median q 4.05 over 211 counted, 1 held |
+| 0.02 | admitted | 5.2 × 10⁻³ | 1.4 × 10⁻³ | admitted: 4.09 over 119, 1 held |
+| 0.05 | ledger: "Resolved pump accounting failed: energy" | | | X2's cap at accepted step 1: Σ\|a\| 0.69 pJ, flows 62 pJ |
+| 0.1 | ledger | | | the dissipation check: "cannot be negative or decrease" |
+| 0.2 to 2 | refused at definition: the face term's bound (0.108) | | | the same |
+
+- **First order.** At every arm the error is 0.30 × (rung − 0.0025) of the offset: 2.24 × 10⁻³ and
+  5.23 × 10⁻³ measured at 0.01 and 0.02, and the reference's own bound is 7.5 × 10⁻⁴.
+- **The face carries it.** (P-b) has the same ΔΨ mode, and its error is 280 times smaller at 0.01
+  and second order. The arms differ only in the face and the lumen's start.
+  - In (P-a), P1's face exchanges FR-4's lumen with the bath at 1.5 × 10⁴ /s.
+  - In (P-b), the lumen starts at the bath's composition, and the face's D is a hundredth.
+  - Whether the initial gradient's transient or the face weights frozen over a step make the error
+    first order was not traced.
+- **P1's gap is closed on host P.** (P-a) runs at 0.02 (6.1 µs) in both readings, past P1's
+  3.37 µs.
+- **(a):** L_err is below 0.01, since no rung lies within 10⁻³. L_ledger and L_other are both 0.02.
+  So L_eff < 0.01.
+- **(b):** L_err is below 0.01, and L_X2 and L_other are both 0.02. So L_eff(X2) < 0.01.
+- Amendment 1's smoke, (P-a) at 0.03 in (b), was refused at step 1 as well: "a held step's change
+  exceeds today's bound at its row". Both refusals fall at the first step, inside the face's
+  transient.
+
+**Host C, the two-cycle arm.**
+- ΣG/C is 4.04 × 10³ /s at the start, so rung 0.01 is 2.47 µs. It is about 8.6 × 10³ /s at V_ss.
+- The reference is Radau. With B's capacity at 0 it equals P1's, a difference of 0.0 V, checked
+  before any run.
+
+| Rung | (a) | Error / offset | Ledger, relative | (b): X2 |
+| --- | --- | --- | --- | --- |
+| 0.01 | admitted | 1.0 × 10⁻⁵ | 6.8 × 10⁻⁷ | order condition: median q 1.27 over 465 counted |
+| 0.02 | admitted | 4.2 × 10⁻⁵ | 2.7 × 10⁻⁶ | order condition: 2.41 over 233 |
+| 0.05 | admitted | 2.7 × 10⁻⁴ | 1.7 × 10⁻⁵ | held cap: 47 held, cap 8 (93 counted) |
+| 0.1 | admitted | 1.1 × 10⁻³ | 6.5 × 10⁻⁵ | held cap: 19 held, cap 8 (47 counted) |
+| 0.2 to 2 | refused at definition: the kind's bound | | | the same |
+
+- **Second order:** 4.1 times per doubling, and 6.4 times for 2.5.
+- **(a):** L_err 0.05 (1.13 × 10⁻³ at 0.1) and L_other 0.1. So L_eff = 0.05.
+- **(b):** X2 refuses from the first rung, so L_eff(X2) < 0.01.
+
+**Arm S: the source's stiffness** (amendment 4). Each cell gives the step, then the result.
+
+| Rung | S150: ΣG/C 1.7 × 10⁵ /s, f = 108, offset 68 µV | S180: 5 × 10⁶ /s, f = 3,214, offset 2.3 µV |
+| --- | --- | --- |
+| 0.0025 (a), the reference | 14.7 ns: admitted | 0.50 ns: admitted |
+| 0.01 (b) | 58.8 ns: order condition, median q 0.92 over 1,011 counted; error 1.3 × 10⁻⁵ | 2.0 ns: order condition, 1.00 over 1,001; error 7.8 × 10⁻⁶ |
+| 0.05 (b) | 0.29 µs: order condition, 0.57 over 203; error 3.6 × 10⁻⁴ | 10 ns: order condition, 0.64 over 201; error 2.3 × 10⁻⁴ |
+| 0.28 (b) | refused at definition: the kind's bound, about rung 0.14 in arm S's units | the same |
+
+- **Accurate where it runs.** The errors are small and second order: 27.7 times for 5 on S150.
+- **Its offset had to be small.** A development check during the arm's runs confirmed what
+  amendment 4's design assumed. S150's capacity at (P-b)'s 5 mV offset is refused at definition by
+  the closure's envelope ("Initial resolved channel/junction/pump domain invalid").
+- **The reading:** L_eff(X2) < 0.01, decided by X2's order condition, with L_err ≥ 0.05. The kind's
+  bound caps the step at 0.8 µs on S150 and 27 ns on S180.
+
+**Every reading (b) but (P-a)'s is decided by a floor under X2's count rule.** This is a
+development diagnosis after the ladder, information only (`diag_late.py`). It takes X2's own
+doubled step over a whole rung-0.01 run and splits each step's change as d = s + e and
+d'' = s/4 + e: s is the integration error, and e is the part the half steps carry whole.
+- **s falls with the relaxation,** on (P-b) from 1.4 × 10⁻¹¹ to 4 × 10⁻¹⁴ pJ a step.
+- **e does not.** It stays at about 10⁻¹² pJ a step through the run, random in sign: 0.6–1.2 ×
+  10⁻¹² on (P-b) and on the two-cycle arm.
+- **X2 counts a step where |d''| > 1000 eps M,** here 0.4–4 × 10⁻¹⁴ pJ. So once s falls below e,
+  after the first tenth to third of a run at rung 0.01, every counted step has q ≈ 1, and the
+  run's median falls below 3.5.
+  - At coarser rungs, with fewer steps in all, the out-of-band steps exceed the held cap instead.
+  - In arm S, e dominates from the first step (`diag_q.py`), since its offsets are 70 to 2,000 times
+    smaller.
+- **e does not accumulate.** Its sum over (P-b)'s run is 1.1 × 10⁻¹⁰ pJ, 7 × 10⁻⁹ of the flows,
+  and every row's check passes to the end.
+- **It is not the general closure.** (P-b)'s world under version 1's buffer and the shipped law
+  shows the same, three times larger (3 × 10⁻¹² pJ).
+- **It needs a moving state.** At the pump's static head it is absent (2 × 10⁻¹⁹ pJ,
+  `diag_noise.py`).
+- **Its source is not traced.** It is about 4 × 10⁴ eps M.
+  - M is built from flows and increments. So rounding at the scale of the stored totals is not
+    excluded; a buffered row's total is tens of thousands of times its free amount.
+  - The static head does not exclude it either, since identical inputs round identically.
+  - If it is that rounding, it may not be removable at its source, and the count rule's floor is
+    the remedy.
+- **(P-a) passes X2 at 0.01 and 0.02,** counting only a tenth of its steps (211 of 2,115). Its
+  face's flows, 62 pJ by the first step at 0.05, put the count threshold above 10⁻¹¹ pJ, over the
+  floor.
+- **Lifting it is X2's matter, not the IMEX's.** Either the floor is removed at its source once it
+  is traced, or the count rule gets a floor that holds this part.
+  - The second changes X2's registered rule, so it needs the lead's ruling.
+  - Reading (b) is then run again: about an hour and a half of one light CPU.
+
+**The reading per host, by the rules as written.**
+- **Host P: not decided by the ΔΨ mode.**
+  - (P-b): X2's order condition binds at every rung in (b). Reading (a) gives L_eff = 0.1, set by
+    the error.
+  - (P-a): the face's first-order error binds below 0.01 in both readings, before the ledger (0.05)
+    and X2's cap (0.05).
+- **Host C: not decided by the ΔΨ mode.** X2's order condition, then its held cap, binds at every
+  rung in (b). Reading (a) gives L_eff = 0.05, set by the error.
+- **Branch I is not indicated on either host.** No arm had a per-stage or validity refusal, and the
+  ΔΨ mode's own error binds only at 0.1 (P-b) and at 0.05 (the two-cycle arm).
+- **Branch X: indicated on (P-a) by the rule's own wording, and on no other arm.**
+  - On (P-a) the ledger is the first check to refuse in (a), at 0.05. In (b), X2's first refusal is
+    its per-row cap, also at 0.05. The stage rule never refuses. This is §8's "ledger first".
+  - The error binds below both. But the error is a measurement, not a check that refuses, and the
+    rule as written does not ask which of L_eff's terms binds first.
+  - **The @3 owner's attribution:** both refusals fall in the face's start transient, not in the ΔΨ
+    mode. (b)'s comes at accepted step 1, and (a)'s within the first window of 128 steps, before
+    any record. (P-b) has the same ΔΨ mode without the face's gradient, and its ledger stays under
+    0.4 of the tolerance up to 0.28.
+  - Whether this triggers A3 (branch X) is the lead's ruling.
+  - The ledger and X2's cap never refused on (P-b) or on the two-cycle arm.
+- **The kind's bound** lies at rung 0.289 on (P-b), where 0.28 runs and 0.5 is refused; between 0.1
+  and 0.2 on the two-cycle arm; and at about 0.14 in arm S's units.
+- **If X2's floor is lifted** and reading (b) then follows (a), both hosts give branch E: 0.1 on host
+  P and 0.05 on host C, the latter exactly at the threshold.
+
+**Steps for MT-1, information.** MITOCHONDRIA_DESIGN §2.3's table, n = 10 lumped. Each cell gives
+the step and the cost of 300 s of protocol at 3.6 ms a step, before X2's two extra half steps.
+
+| J₁ (mM/s) | ΣG/C | (b) as it stands: L < 0.01 | (a), host C: 0.05 | (a), host P (P-b): 0.1 |
+| --- | --- | --- | --- | --- |
+| 1 | 555 /s | < 18 µs: > 17 h | 90 µs: 3.3 h | 180 µs: 1.7 h |
+| 10 | 5.5 × 10³ /s | < 1.8 µs: > 170 h | 9 µs: 33 h | 18 µs: 17 h |
+| 100 | 5.5 × 10⁴ /s | < 0.18 µs: > 1,700 h | 0.9 µs: 330 h | 1.8 µs: 170 h |
+
+- **The table does not separate the hosts.** The factor of two between its last two columns is the
+  ladder's spacing and its units.
+  - Interpolated at second order, the error limits are about 0.13 on (P-b) and 0.095 on the
+    two-cycle arm, in the rungs' units, ΣG/C at the start.
+  - At the operating point, (P-b)'s rate is 0.47 times its start's and the two-cycle arm's is 2.1
+    times. In those units the limits are about 0.06 and 0.2.
+
+- **At the source's own activity (arm S), branch E is out of reach on either host.**
+  - In arm S the kind's bound alone caps the step at 0.8 µs at 150 mV and 27 ns at 180 mV. 300 s
+    then takes 3.7 × 10⁸ to 1.1 × 10¹⁰ steps, about 370 to 11,000 CPU-hours. At 0.05 the steps are
+    0.29 µs and 10 ns.
+  - Bringing E to hours or tens of hours needs J₁ declared at the table's 1–10 mM/s, 30 to 9,000
+    times lower: a departure for the user. Otherwise MT-1 needs branch I.
+- **Host P's outer membrane caps the step by itself.**
+  - The face's explicit bound is 1/(2 max_s p_s A_OM/V_IMS). A_OM/V_IMS = γ/V_i is the @3 owner's
+    reading of the source's Eq. 13, which was not read here; the mitochondria lane should confirm
+    it.
+  - At the source's p_Pi = 327 µm/s, γ = 5.99 µm⁻¹ and V_i = 0.0715
+    (`validation/mitochondria/beard2005_cardiac.py`, mito-lane 1eaf2310), it is
+    1/(2 × 2.7 × 10⁴ /s) = 18 µs. For p_A = 85 µm/s it is 70 µs.
+  - 18 µs means at least 16 h for 300 s. Host C has no outer membrane.
+
+**Host P's outer membrane: the lead's question.**
+- **What P1′ assumed.** Its host-P arms use a face that moves no closure row: Na, K, Cl and the
+  traces cross; H and the binder have D = 0.
+- **What MT-1 needs.** ATP, ADP and Pi must cross, and in the IMS they are closure rows, which
+  `check_closure_rows` refuses at a face.
+- **The options, with the @3 owner's estimates:**
+  1. **A face that reads the closure.** It moves a closure row's total at its free amounts on both
+     sides, and keeps H⁺ and Mg²⁺ binding in the IMS. @3's face path, the face law's read and their
+     tests: 2–4 days.
+  2. **Outer-membrane uniports.** They need a host for kinds between two outside nodes, which does
+     not exist: 4–6 days.
+  3. **No closure in the IMS.** No engine cost. It is a declared departure: the IMS's nucleotides
+     and Pi stay unbound, and the laws read totals at the IMS end.
+  4. **Host C, with the IMS merged into the owner.** There is no outer membrane at all. The
+     departures are the outer membrane's permeation and cytochrome c in the IMS, which makes
+     respiration two cycles.
+
+**Recommendation for the host: host C for MT-1,** with MITOCHONDRIA_DESIGN §1.1's two-cycle
+respiration.
+1. **P1′ does not separate the hosts on the ΔΨ mode.**
+   - On (P-b) and on the two-cycle arm, both are second order, with no stage, validity or ledger
+     refusal.
+   - Reading (a) clears 0.05 on both: 0.1 on host P and 0.05 on host C.
+   - Reading (b) is blocked on both by the same floor under X2's count rule.
+2. **At the source's activity, E is out of reach on both hosts.**
+   - Arm S ran on host P's world. The limits it meets, the kind's bound and the step's scale, belong
+     to the law and to ΣG/C, so they hold on host C as well.
+   - The rules, which are dimensionless, do not indicate branch I: the ΔΨ mode is handled accurately
+     up to 0.05–0.1 of its rate. At the source's activity that rate is so high that explicit steps
+     cost hundreds to thousands of CPU-hours. So branch I is needed on cost, not by the rules.
+   - So MT-1 needs branch I or a declared lower activity.
+   - Branch I's implicit cycle block is local on host C. On host P it needs the global form, another
+     solver ID, unbuilt (MITOCHONDRIA_DESIGN §2.3).
+3. **Host P's outer membrane adds three costs that host C does not have:**
+   - a face path for closure rows (option 1, 2–4 days) or a departure;
+   - a step cap of about 18 µs at the source's permeabilities;
+   - in P1's own face world, a first-order error that binds below rung 0.01.
+
+   Neither host-P arm is MT-1's host P. (P-a)'s face starts with a gradient, and (P-b)'s is 100
+   times slower than the source's outer membrane. So the third cost is untested in MT-1's case. One
+   information-only run would test it: (P-a)'s face with the lumen at the bath, rungs 0.005 to 0.05
+   in (a), about 15 minutes of one light CPU. It is offered, not run. Reason 3 stands without it, on
+   the closure rows and the step cap.
+
+Host P stays the topology of the isolated organelle and of bacteria, and it handles the ΔΨ mode as
+well as host C. If the lead prefers it for MT-1, it needs option 1 or 3 for the outer membrane, the
+face's step cap accepted or the permeabilities declared lower, and branch E only at a declared lower
+activity.
+
+**On either host,** X2's floor should be traced before MT-1b's registered runs, since registered
+runs must select X2. Whether MT-1's worlds meet the floor depends on their M: X2's count threshold
+grows with a run's flows. Tracing it needs a buffer-free control and a split of R by term: about
+half a day, and minutes of one light CPU.
+
+### 9.3 Two follow-ups: the floor's trace, and host P's face in MT-1's case
+
+**Criterion (20 November 2026), written and committed before either runs.** These follow the lead's
+go after §9.2. Both are development runs and information. Nothing under `src/` changes, and nothing
+in X2: its count rule is registered, so a change to it is the user's.
+
+**A. The floor under X2's count rule (§9.2).**
+- **R split by term on (P-b).** The whole run at rung 0.01 (2,115 steps) is stepped from the same
+  start, as X2 does it: each step whole and as two half steps, through the model's checked step.
+  - R is split at the step's start and at both ends: the cells' and the outside nodes' chemical
+    terms; the electric term; the dissipation accumulators (membrane, junction, face, channel,
+    pump); the work accumulators (metabolic, reservoir, electrode); and each kind's heat, work and
+    stored terms.
+  - The split must sum to R within 10⁻¹⁵ pJ at every evaluation. Otherwise it is not read.
+  - Each term gets §9.2's s and e. **The source** is the term whose removal from R lowers the run's
+    median |e| at least tenfold.
+- **On the two-cycle arm** (473 steps at 0.01), the closure's stored term is set against the rest
+  of R, in the same way.
+- **The buffer-free control.** (P-b)'s world at a 5 µV offset, so that the pump moves little H
+  against the free pools, is run at rung 0.01 twice:
+  - with the buffers as declared;
+  - with both binders' totals at a millionth of their declared values, and the proton equivalents
+    taken from the same pH.
+
+  The source is confirmed if the median |e| falls at least a hundredfold without the buffers.
+- **One FR-8 arm, a development run: W0 at 1 ms (arm W0-1).** None was named, so this is the @3
+  owner's choice.
+  - It runs from the frozen snapshot of d03ca463, through FR-8 rung 1's own definition and windowed
+    runner (`rung1.definition`, `run_windowed`, row checks on the device). It is the registered
+    control's world, its dose at 20 s and its write at 40 s included.
+  - Each step's values are kept as X2's check receives them (R, R'', F, M).
+  - **It must reproduce the registered summary** (745 counted steps, median 4.006), or it is not
+    read.
+  - **Read per second of the run:** the medians of s and e against 1000 eps M. Does the floor
+    appear in the calm stretches (0–20 s, 22–40 s, 42–60 s), and with what margin under the count
+    threshold?
+- **The fix's shape** is reported with the source. Nothing is changed.
+
+**B. Host P's face in MT-1's case, arm (P-c).**
+- **The world:** (P-a)'s face (D 10⁻¹⁰ m²/s on Na, K, Cl and the traces) with (P-b)'s lumen at the
+  bath's composition.
+- **The rungs:** 0.0025 and 0.005 (the references), 0.01, 0.02 and 0.05, in reading (a). Each runs
+  ten relaxation times, from the same snapshot (e8e1c973) and probe, with amendment 5's records.
+- **Read by §9.1's host-P rules:** the error against its 0.0025 arm, the observed order, L_err, the
+  ledger, and any refusal.
+- **What it decides, as information.** (P-a)'s first-order error, which binds below 0.01, may come
+  from the face's start gradient. Then (P-c) is second order, like (P-b). Or it may come from the
+  face at MT-1's rate. Then it persists in (P-c).
+
+**How they run:** detached units with memory caps on the light CPUs at nice 10, with their scripts
+in the @3 owner's workspace and the scripts' hashes recorded with the results.
+
+**Amendment 1 to §9.3 (20 November 2026).** This comes after part A's split, its two controls at
+5 µV, the two-cycle arm's split and the FR-8 arm ran, and before the runs it adds. Part B ran
+unchanged.
+- **What was found.**
+  - The split holds: on (P-b) it sums to R within 3.5 × 10⁻¹⁸ pJ.
+  - **The removal rule cannot pick the source.** Each active term carries its own change, 10⁻⁸ to
+    10⁻⁷ pJ a step at 5 mV, which the half steps also carry whole and which cancels only in R. So
+    removing any active term raises R's median |e| by orders of magnitude.
+  - **The control at a millionth of the binders is refused at its first step** by the validity
+    flag ("trial/endpoint domain failure", dt·rate 0.01, unattributed). It gives no e.
+  - **The buffered control at 5 µV keeps the floor:** median |e| 8.0 × 10⁻¹³ pJ at a thousandth
+    of (P-b)'s offset.
+- **The changes.**
+  - **The source is identified by each term's rounding scale.**
+    - At every 20th state of (P-b)'s run at 0.01, each term is evaluated twice: on the device (the
+      split's compiled program) and on the host (numpy, with the same formulas, and each kind's
+      ledger terms with xp=np).
+    - The source is the term whose two evaluations differ, at the median, within a factor of three
+      of R's median |e|. Every other term's must differ by at most a hundredth of it.
+  - **The control's binders go to a thousandth** of their declared values, at 5 µV.
+    - The buffer then still holds about 400 times the free H at the cell and about 38 times at the
+      lumen, and its bulk term falls about a thousandfold.
+    - The source is confirmed if the median |e| falls at least a hundredfold.
+    - If this world is also refused before its first step's result, a hundredth is run instead,
+      confirmed by a tenfold fall.
+- **What does not change:** part A's other runs and their readings, and part B.
+
+### 9.4 Results of §9.3 (20 November 2026)
+
+**The runs.** All ran detached on light CPUs at nice 10, 04:27–04:45 UTC, and each finished at its
+first attempt. The evidence is in `/mnt/workspaces/Cells/core-pass-at3-20261118/p1prime/`:
+`out-face-10259262/` (part B), `floor-10259262/` and `floor2-0d3c845e/` (part A's split, controls
+and rounding probe), and `w0-10259262/` (the FR-8 arm). Each run's log records its scripts' hashes,
+and `SHA256SUMS` holds the final versions.
+
+**A. The floor's source: the closure's stored term, a bulk value rounded at its own scale.**
+- **The split** (§9.3) sums to R within 3.5 × 10⁻¹⁸ pJ on (P-b). Its removal rule picks nothing, as
+  amendment 1 states.
+- **The control confirms the source.**
+  - (P-b)'s world at 5 µV keeps the floor: median |e| 8.0 × 10⁻¹³ pJ, against 9.0 × 10⁻¹³ at 5 mV.
+    So the floor does not scale with the motion.
+  - With both binders at a thousandth, the median |e| is 4.6 × 10⁻¹⁹ pJ: a fall of 1.7 million
+    times, against the hundredfold the criterion asks.
+- **The term-by-term probe does not meet amendment 1's rule as written.**
+  - On the device and on the host, the closure's stored term is computed with the same operations.
+    The two agree to 8.9 × 10⁻¹⁶ pJ at the median, a thousandth of the floor.
+  - They disagree at a few states, by up to 3.2 × 10⁻¹² pJ.
+  - It is still the only term whose evaluations ever differ by more than 5 × 10⁻¹⁸ pJ.
+  - **Read after the fact, the signature:** the two evaluations differ by whole units in the last
+    place of the closure's bulk values. The median difference is exactly one unit at the lumen's
+    4.23 pJ term (2⁻⁵⁰ pJ). The largest is exactly seven units at the cell's 3,583 pJ term
+    (7 × 2⁻⁴¹ pJ). R's differences match them.
+- **The mechanism.**
+  - The closure's ledger term is S_c(now) − S_c(start). S_c is the binding free energy of the bound
+    protons: −3,583 pJ at the cell under the general closure, and −7,312 pJ under version 1's
+    buffer.
+  - It is evaluated whole and then the start is subtracted. So R carries S_c rounded to its own
+    unit in the last place: 4.5 × 10⁻¹³ pJ at 3,583 pJ, and 9.1 × 10⁻¹³ pJ at 7,312 pJ.
+  - **The rounding is drawn afresh whenever the term itself moves by about a unit in a step.**
+    - In (P-b) it moves about 10⁻⁷ pJ a step at 5 mV and 4 × 10⁻¹⁰ at 5 µV, far above its unit.
+      The floor is then about two units under the general closure (9 × 10⁻¹³ pJ) and about three
+      under version 1's (3 × 10⁻¹² pJ).
+    - With the binders at a thousandth, the bulk is 1.72 pJ (a unit of 2.2 × 10⁻¹⁶ pJ), and the
+      term moves less than 4 × 10⁻¹⁹ pJ a step. So its rounding is rarely redrawn. That is why the
+      fall is 1.7 million times, not the bulk's 2,000.
+    - At the pump's static head nothing moves, and the floor is absent.
+  - X2's M counts the term's change, |S_c(now) − S_c(start)|, not its size. So X2's count threshold
+    (1000 eps M, about 2 × 10⁻¹⁴ pJ here) lies 40 times below the floor.
+- **FR-8's worlds do not hit it.**
+  - W0-1 from the frozen snapshot of d03ca463 reproduces its registered summary exactly: 745
+    counted steps, median 4.0057.
+  - All 745 counted steps fall in its first second. Through the 59 calm seconds, the dose at 20 s
+    and the write at 40 s included, no step is counted.
+  - There, e is 4 × 10⁻¹⁶ to 1.5 × 10⁻¹⁴ pJ: about 0.27 eps M, 3,700 times under the count
+    threshold. That is rounding at M's own scale, which is X2's design assumption. W0 declares no
+    binding closure: its definition has no stage read.
+  - H2 was not diagnosed. Its clearance is inferred from its registered passes.
+  - All 66 FR-8 rung-1 arms that ran to completion passed X2, and none of the refused arms was
+    refused by it. In 48 the median lies in 4.00–4.13; in 18 no step was counted.
+- **The thousandth control at 5 µV would still fail the order condition.** Its median |e|,
+  4.6 × 10⁻¹⁹ pJ, is about 800 eps M and near its threshold (5.7 × 10⁻¹⁹), and its signal is
+  smaller still. The general point: X2's count rule assumes R rounds at about eps M, and it fails
+  wherever one of R's terms is evaluated at a scale far above M.
+- **The fix's shape.** Nothing is changed.
+  1. **At the source, the binding owner's** (`kinds/proton_buffer.py`'s ledger terms,
+     `laws/reactions/rapid_binding.py`'s booked term).
+     - Book the closure's term as a change formed from increments, as the tissue's chemical term
+       does for stored rows ("stable changes avoid subtracting bulk energies").
+     - One way: the forms' changes from the free ligands' log-changes, not as differences of bulk
+       amounts. Another: an integral of the closure's free potentials over the totals' increments.
+     - R is then expected to round at the change's scale, and X2 to work as registered. Neither is
+       shown. The forms come from a solve on bulk totals, so whether their changes can be formed
+       without bulk rounding is the binding owner's design question. 1–2 days with its tests is a
+       guess for the binding owner to confirm.
+  2. **In X2, the user's call, since the rule is registered.**
+     - M counts each kind's bulk terms as evaluated, |S_c(now)| and |S_c(start)|. The count
+       threshold and the row floor then follow R's real rounding.
+     - The cost: in a buffered world, at fine steps, few or no steps are counted. Here the count
+       threshold would be about 10⁻⁹ pJ, above every step's doubled difference at rung 0.01, so the
+       order condition is not applied there. X2's row floor grows to about 2.5 eps k × 7,000 pJ:
+       about 8 × 10⁻⁹ pJ over 2,115 steps, or 6 × 10⁻⁷ of the flows.
+  - **The first is preferred.** It would keep X2's sensitivity in buffered worlds, which MT-1 is
+    (its H⁺ and Mg²⁺ on the adenylates and Pi, and a matrix buffer). The second is the fallback if
+    the first cannot reach the change's scale.
+  - **Not traced:** the residual of about 800 eps M in the thousandth control.
+
+**B. Host P's face in MT-1's case: second order, no cost in accuracy.** Arm (P-c) is (P-a)'s face,
+at 1.5 × 10⁴ /s, with the lumen at the bath's composition.
+
+| Rung | (a) | Error / offset | Ledger, relative |
+| --- | --- | --- | --- |
+| 0.0025, 0.005 | admitted (references) | — | 4.4 × 10⁻⁷, 6.6 × 10⁻⁷ |
+| 0.01 | admitted | 3.8 × 10⁻⁶ | 1.3 × 10⁻⁶ |
+| 0.02 | admitted | 1.6 × 10⁻⁵ | 4.0 × 10⁻⁶ |
+| 0.05 | admitted | 1.1 × 10⁻⁴ | 2.3 × 10⁻⁵ |
+
+- **Second order:** 4.4 times per doubling, and 6.6 times for 2.5. The reference's bound is
+  7.1 × 10⁻⁷ of the offset. There are no refusals, and L_err ≥ 0.05.
+- **So (P-a)'s first-order error needs a concentration gradient across the face.** A fast face
+  alone is harmless: (P-c)'s is as fast as (P-a)'s, and lies between the source's outer-membrane
+  rates for adenylates and Pi.
+- **What (P-c) does not show.**
+  - Its face carries no concentration gradient. The lumen starts at the bath's Na, K and Cl, and
+    the pump moves only H, which the face does not carry. The face carries only the small exchange
+    the field drives.
+  - MT-1's outer membrane carries standing, driven gradients of ATP, ADP and Pi. Whether a face
+    with a driven gradient keeps second order is untested.
+  - An arm where a face-moved row is also driven across the inner membrane would test it. It is
+    offered, not run.
+- **So the third of §9.2's host-P costs shrinks to that untested case.** The other two stand: the
+  closure rows across the face (§9.2's options), and the face's step bound (rung 0.108 here; about
+  18 µs at the source's p_Pi, by the @3 owner's reading of Eq. 13).
+
+### 9.5 The fix's evidence: the closure's booked term from increments (264bca94)
+
+**Criterion (20 November 2026), written and committed before the run.** The binding owner built
+the fix that §9.4 preferred, on branch `core-pass-binding-x2floor` at 264bca94.
+- **What it changes:** the general closure's ledger term (`proton_buffer.ledger_terms`) is now
+  formed from increments by `rapid_binding.booked_change_pJ`, with the start's free ligands in a new
+  layout field, `binding_initial_u`.
+- **What it leaves alone:** the read, the solve, every state, and version 1's buffer.
+- The lead asks the @3 owner for its evidence.
+
+**Source.**
+- Clean snapshots of 264bca94, and of its parent d9342fcf as the baseline. The baseline isolates
+  the fix from main's other changes since e8e1c973.
+- §9.3's scripts are used unchanged (`diag_split.py`, `p1p_probe.py` and their imports, at their
+  recorded hashes).
+
+**Runs, each on both snapshots:**
+1. §9.3's split on (P-b) at rung 0.01, from the same start: per-step s and e, R's median |e|, X2's
+   count threshold, and the split's sum against R.
+2. The control: the same at 5 µV, where the floor was 8.0 × 10⁻¹³ pJ.
+3. X2 itself: (P-b) at rung 0.01 in reading (b), with the probe's registered configuration (cap
+   2 × 10⁻³, device row checks).
+
+**The reading.**
+- **The fix removes the floor** if, on 264bca94, R's median |e| on (P-b) is at most 10 eps M (M at
+  its median), a hundredfold under the count threshold. The baseline is expected to keep the floor,
+  about 9 × 10⁻¹³ pJ, near 4 × 10⁴ eps M.
+- **X2's order condition holds as registered** if run 3 is admitted on 264bca94. If X2 refuses it,
+  the condition is named.
+- **The states are unchanged** if, between the two snapshots, every term but the closure's stored
+  term has the same per-step d within 10⁻¹⁸ pJ, at every step.
+- **The control is information.** Its median |e| is reported against eps M and against
+  8.0 × 10⁻¹³ pJ. Its signal is about 10⁻¹⁹ pJ, and §9.4 found a residual near 800 eps M at a
+  thousandth of the binders.
+
+**How it runs:** one detached unit on a light CPU at nice 10, with the scripts' hashes in its log.
+
+**Results (20 November 2026).** Every reading the criterion set holds.
+- **The runs.**
+  - Unit `cells-at3-p1prime-fix`, light CPU 22 at nice 10, 05:14–05:33 UTC.
+  - Clean snapshots of 264bca94 and d9342fcf, with empty patches. They were frozen with
+    `validation/source_snapshot.py` from temporary detached checkouts, removed afterwards.
+  - Evidence: `/mnt/workspaces/Cells/core-pass-at3-20261118/p1prime/fix-4cc53c54/`.
+
+| (P-b) at rung 0.01 | Fix (264bca94) | Parent (d9342fcf) |
+| --- | --- | --- |
+| R's median \|e\|, 5 mV | 1.4 × 10⁻¹⁷ pJ, 0.58 eps M | 9.0 × 10⁻¹³ pJ, 3.7 × 10⁴ eps M |
+| R's median \|e\|, 5 µV (control) | 9.0 × 10⁻²¹ pJ, 0.38 eps M | 8.0 × 10⁻¹³ pJ |
+| X2, reading (b) | admitted: median q 3.768 over 521 counted, none held | refused: the order condition, median 0.9345 over 2,092 |
+
+- **The fix removes the floor.**
+  - R's median |e| falls 64,000 times, to 0.58 eps M, against the criterion's limit of 10 eps M.
+    The parent keeps the floor exactly as on e8e1c973.
+  - At 5 µV it falls 88 million times, to 0.38 eps M. There, the split's own count gives 75
+    counted steps with median q 3.71.
+- **X2's order condition holds as registered.** On the fix, (P-b) at 0.01 is admitted in reading
+  (b).
+  - 521 steps are counted, with median step ratio 3.768; none is held, against a cap of 11.
+  - The largest row ratio is 0.59. The integration error is at most 2.2 × 10⁻⁵ of the flows, against
+    the cap of 2 × 10⁻³.
+  - On the parent, the same rung is refused by the order condition, as in §9.2.
+- **The states are unchanged.**
+  - Between the fix and its parent, every term but the closure's stored term has bitwise equal d
+    and d'' at every step of both arms.
+  - The stored term's per-step changes differ by at most 3.4 × 10⁻¹² pJ, which is the removed
+    rounding.
+  - The split sums to R within 3.5 × 10⁻¹⁸ pJ on both.
+- **Not tested here:** whether §9.4's residual, near 800 eps M at a thousandth of the binders, was
+  the old term's. The other rungs of P1′'s reading (b), on both hosts and in arm S, are not rerun
+  on the fix.
+
+**Note (20 November 2026), committed before the run: P1′'s reading (b) again, on the fix.** This
+follows the lead's request after the results above. It is information for the user's host
+question.
+- **Source:** the clean snapshot of 264bca94. P1′'s probe is unchanged (`p1p_probe.py` and
+  `p1p_scale.py` at their recorded hashes), with §9.1's worlds and amendments.
+- **What runs:**
+  - **(P-b):** reading (b) at every rung, 0.01 to 2, and its reference arms, 0.005 and 0.0025 in
+    reading (a).
+  - **The two-cycle arm:** reading (b) at every rung, 0.01 to 2. Its reference is Radau.
+  - **Arm S, S150 and S180:** reading (b) at 0.01, 0.05 and 0.28, and the 0.0025 reference in
+    reading (a), as amendment 4 set them.
+  - (P-a) is not rerun. Its face's first-order error binds below 0.01 in both readings (§9.2).
+- **The reading:** §9.1's rules, unchanged. Per arm, L_eff(X2) = min(L_stage, L_X2, L_err,
+  L_other), and branch E holds if it is at least 0.05. The rung reported is L_eff(X2). Arm S's
+  limits are also given as absolute steps.
+- **How:** two detached units on light CPUs at nice 10: (P-b) then the two-cycle arm on one, arm S
+  on the other. Each rung has 3,600 s, and a timeout is re-run once and is never a result.
+
+**Results of the rerun (20 November 2026): reading (b) gives branch E on both hosts.**
+- **The runs.**
+  - Two units on light CPUs 22 and 23 at nice 10, from the clean snapshot of 264bca94, 05:35–06:16
+    UTC. Every rung finished at its first attempt.
+  - The evidence is in `rerunb-1b0446c3/` ((P-b) and the two-cycle arm) and `reruns-1b0446c3/` (arm
+    S), under `/mnt/workspaces/Cells/core-pass-at3-20261118/p1prime/`.
+  - Each arm is read by `reading_b.py`, whose hash is in `SHA256SUMS`.
+- **The trajectories are unchanged.** Every error matches P1′'s on e8e1c973 to the printed digits:
+  (P-b) 7.90 × 10⁻⁶ at 0.01; the two-cycle arm 1.03 × 10⁻⁵; S150 1.29 × 10⁻⁵.
+
+| Arm | X2 in reading (b) | L_eff(X2), set by | Branch | Step at L_eff(X2) |
+| --- | --- | --- | --- | --- |
+| (P-b), host P | admits 0.01–0.28: medians 3.72–4.03, at most 1 held; integration error at most 8.0 × 10⁻⁴ of the flows | 0.1, the error (5.8 × 10⁻⁴ at 0.1, 2.3 × 10⁻³ at 0.2) | E | 30 µs at ΣG/C 3.29 × 10³ /s |
+| Two-cycle arm, host C | admits 0.01–0.1: medians 4.02–4.25, none held | 0.05, the error (2.7 × 10⁻⁴ at 0.05, 1.13 × 10⁻³ at 0.1) | E, exactly at the threshold | 12 µs at ΣG/C 4.04 × 10³ /s (start) |
+| S150 | admits 0.01 and 0.05: medians 4.02, 4.08 | 0.05, the kind's bound (0.28 refused at definition) | E | 0.29 µs at 1.7 × 10⁵ /s |
+| S180 | admits 0.01 and 0.05: medians 4.03, 4.16 | 0.05, the kind's bound | E | 10 ns at 5 × 10⁶ /s |
+
+- **The definition-time bounds are as before.** The kind's bound refuses 0.5 and up on (P-b), 0.2
+  and up on the two-cycle arm, and 0.28 in arm S.
+- **No other check refuses.** No arm has a stage-rule, validity or ledger refusal.
+- **Branch I is not indicated, and branch X is not indicated,** on (P-b), on the two-cycle arm, or
+  in arm S.
+- **For MT-1:** §9.2's reading (a) columns of the MT-1 table now hold for reading (b), its own
+  configuration, with that table's caveat on units.
+  - Host P at 0.1: 1.7, 17 and 170 h per 300 s for J₁ = 1, 10 and 100 mM/s.
+  - Host C at 0.05: 3.3, 33 and 330 h.
+- **At the source's own activity (arm S),** branch E holds by the rules, at steps of 0.29 µs and
+  10 ns. 300 s still costs about 1,000 to 30,000 CPU-hours at the note's 3.6 ms a step. So branch I,
+  or a declared lower activity, is still needed on cost.
+- **The host question.** On P1′'s own criterion the hosts still come out equal for the ΔΨ mode.
+  Host P's outer-membrane costs (§9.2 and §9.4) and host C's departures are unchanged by this
+  rerun.

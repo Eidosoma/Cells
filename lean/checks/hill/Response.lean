@@ -54,4 +54,17 @@ theorem ordered_availabilities (enabled : Bool) {basal K n x y : ℝ} (hb : basa
 
 #print axioms ordered_availabilities
 
+/-- At Hill exponent one, zero basal fraction and a positive scheduled maximum,
+reciprocal availability is affine in the source density. This lets two measured
+endpoints determine an intermediate prediction. -/
+theorem reciprocal_unit_inhibition {maximum K density : ℝ}
+    (hm : 0 < maximum) (hK : 0 < K) (hd : 0 < density) :
+    1 / (maximum * factor false K 1 density) = (K + density) / (maximum * K) := by
+  rw [(factors_eq_hill hK hd 1).2]
+  simp only [hill, Real.rpow_one, zero_mul, add_zero]
+  have hp : 0 < 1 + density / K := by positivity
+  field_simp [hm.ne', hK.ne', hp.ne']
+
+#print axioms reciprocal_unit_inhibition
+
 end CellsProofs.Checks.Hill

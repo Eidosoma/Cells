@@ -1,10 +1,10 @@
 # Screenshots of the viewer
 
 Pictures of the Cells visualizer for the project's README and other documents. Each is
-1600 by 1000 pixels, WebP, taken in headless Chrome from the `visualizer` branch on
-16 November 2026, with the page's own fonts loaded. They show the page as a visitor sees
-it, with nothing added. The first four were taken at `dc566524`; the human's cell and
-E. coli's at `e7cbe990`, whose map states main `9a15108e`. (The human's cell was first
+1600 by 1000 pixels, WebP, taken in headless Chrome with the page's own fonts loaded.
+They show the page as a visitor sees it, with nothing added. The first six were taken
+from the `visualizer` branch on 16 November 2026. The first four used `dc566524`. The
+human and E. coli views used `e7cbe990`, whose map states main `9a15108e`. (The human's cell was first
 taken at `fe6f1fb5`, whose map stated a revision of main that was amended before it was
 pushed; that frame was taken again.)
 
@@ -16,6 +16,7 @@ pushed; that frame was taken again.)
 | `protein-atlas-human-shelves.webp` | The human's own proteins in the Protein atlas: 20,414 proteins on six stacked shelves, a shelf for each membrane, with families that open | The reviewed entries of UniProt's human reference proteome, release 2026_04 (CC BY 4.0); a protein's place is what its entry states |
 | `cell-view-human-structures.webp` | The Cell view under the human's names: the generic cell that Cells models, cut open and drawn as one of a layer. The nucleus is opened like a globe, to show its double envelope, its pores, its chromatin and its nucleolus; round it lie the endoplasmic reticulum, the Golgi apparatus, ribosomes and mitochondria. Each name carries the dot of its status: the nucleus, the Golgi apparatus and the ribosomes are planned parts, illustration only, with nothing of them in the engine yet. No human cell type is modelled; the heart and the body are placeholder outlines | The engine map, whose statuses come from the project's record, and the species' file. The shapes, sizes and counts of the structures are the picture's choice, and each panel says so |
 | `cell-view-ecoli.webp` | The Cell view of *E. coli*: a rod-shaped bacterium about 1 by 2 µm, cut open, with its two membranes and the wall between them, 3 of its 1 to 5 flagella, 120 of its 200 to 500 fimbriae, its ribosomes and its free chromosome. *E. coli* is proposed, not modelled: nothing of it is in the engine, and the picture shows where the capabilities of Cells would have a place in it. The page says so on the picture and in the top bar | The species' own file: sizes and counts read from open papers and from UniProt, each with its source (`docs/ECOLI.md`). Flagella, fimbriae, the wall and the chromosome are scenery; where the picture chose a number, the part's panel says so |
+| `cells-eidosoma-scope.webp` | The opening Scope view with Planarian and One cell selected, the cell cut open and its parts labelled. | Captured from the public viewer on 21 November 2026, release `v53`. [cells.eidosoma.ai](https://cells.eidosoma.ai/) |
 
 To take them again: the picture aids of `tools/check_layers.mjs` (`picture`),
 `tools/check_cellflux.mjs`, `tools/check_look.mjs` and `tools/check_shelves.mjs`

@@ -118,7 +118,7 @@ operator's own fields.
   - So every step is neutral by construction: its charge is Σ_f a_f (Σ_s z_s ν_sf), with every
     inner sum an exact integer zero.
   - Every species must stay positive (D150's trace rule).
-  - A time is an exact multiple of dt, with 0 < t ≤ the end time, and times increase strictly for
+  - A time is on the clock's grid (k * dt to within 4 ulps; D283), with 0 < t ≤ the end time, and times increase strictly for
     each bath. The initial composition is the bath's declared one, so an event at time 0 is refused.
 - **Per-world control data.** The held content in force at each change time, [species, outside].
   These are never closed-over constants (D150's crossrev rule). The batch signature carries the

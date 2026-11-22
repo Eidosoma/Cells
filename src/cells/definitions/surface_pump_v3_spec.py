@@ -26,17 +26,20 @@ dt (q_start + q_end) / 2 from the junction powers at the step's start and end
 states, which cannot be negative; trajectories and every other booking are the
 default's (models/surface_pump_v3.imex_step).
 
-Seam D (docs/CORE_SEAMS_DESIGN.md §6.1-6.2): an optional model key ``heat_bookings``,
-{mover class: booking ID}, picks the heat booking of @3's other mover classes (``channels``,
-``membranes``, ``pumps``, ``calcium_pumps``) and of each declared kind's routes (by the kind's
-namespaced ID), beyond the tableau, which books every class by default and is never listed.
-Each class admits what models/inner_laws.OWN_HEAT_BOOKINGS (or the kind's heat_bookings)
-lists: today ``trapezoid_nonnegative@1``, booked once in the core for every class
-(models/surface_pump_v3.trapezoid_fields). Junctions keep ``junction_heat_booking`` and are
-refused here. The key is omitted at its default, so every definition of today's keeps its
-fingerprint and its structure. The water and replacement families run @3 through compositions
-whose inner carries the structure, so they book what is picked as well (the lead, 19 November
-2026); a caller that checks @3 without its structure refuses a booking rather than ignore it.
+Seam D (docs/CORE_SEAMS_DESIGN.md §6.1-6.2): an optional model key ``heat_bookings``, {mover class:
+booking ID}, picks the heat booking of @3's other mover classes (``channels``, ``membranes``,
+``pumps``, ``calcium_pumps``) and of each declared kind's routes (by the kind's namespaced ID),
+beyond the tableau, which books every class by default and is never listed. Each class admits what
+models/inner_laws.OWN_HEAT_BOOKINGS (or the kind's heat_bookings) lists:
+``trapezoid_nonnegative@1``, booked once in the core for every class
+(models/surface_pump_v3.trapezoid_fields), and, for ``faces`` alone, ``exact_free_energy_heat@1``
+(D280): each face books the exact free-energy release of the neutral rows it moves, and a face that
+carries a charged row, touches a held bath, or carries a row another mover moves in the step, is
+refused under it (models/surface_pump_v3.exact_face_heat). Junctions keep ``junction_heat_booking``
+and are refused here. The key is omitted at its default, so every definition of today's keeps its
+fingerprint and its structure. The water and replacement families run @3 through compositions whose
+inner carries the structure, so they book what is picked as well (the lead, 19 November 2026); a
+caller that checks @3 without its structure refuses a booking rather than ignore it.
 
 The gate laws are the existing Cells kinetics under neutral IDs (the stage-B
 proposals in stage-b-plan-20261108-01): Kv1.5 m*h (laws/channels/voltage_gates.py),
@@ -60,6 +63,8 @@ from cells.definitions import surface_pump_spec as first
 from cells.definitions import surface_pump_v2_spec as second
 from cells.definitions.spec_values import fraction, identifier
 from cells.definitions.specs import ConfigError, _fields, _integer, _number
+from cells.laws.junctions import junction_gate
+from cells.laws.junctions import junction_series_gates as series_gates
 from cells.numerics import surface_imex as imex
 from cells.registry import kind_registry
 from cells.registry import species_registry as registry
@@ -73,6 +78,8 @@ NALEAK_LAW_ID = "naleak_always_open@1"
 DEFAULT_JUNCTION_HEAT = "explicit_tableau"
 TRAPEZOID_JUNCTION_HEAT = "trapezoid_nonnegative@1"
 JUNCTION_HEAT_BOOKINGS = (DEFAULT_JUNCTION_HEAT, TRAPEZOID_JUNCTION_HEAT)
+# Seam D's exact booking for @3's faces (D280; INNER_MODEL_V4_DESIGN §7.5's name and version 1).
+EXACT_FREE_ENERGY_HEAT = "exact_free_energy_heat@1"
 # Today's five channel laws, the full catalogue's (structure None), by name: codes 0-2 are those of
 # laws/channels/sodium_channels.LAW_CODES, whose dispatch that path reuses; 3 and 4 are gate-free
 # leaks. Padding slots are inactive, not a code. The full-catalogue dispatch, its domain and the
@@ -428,6 +435,104 @@ def _kind_schedules(registry, declared, given, base):
     return tuple(out)
 
 
+# --- FR-30 (D262): junctions whose gate is junction_series_gates@1, development only ----------
+
+SERIES_GATE_LAW_ID = series_gates.LAW_ID
+SERIES_DEVELOPMENT = (
+    f"{SERIES_GATE_LAW_ID} is development only until a voltage series qualifies it: its "
+    "junction's gate declares development: true, and a registered or judged result whose "
+    "definition carries it is not admissible (D262)"
+)
+
+
+def series_gate_parameters(gate):
+    """A parsed SeriesGate's parameters as its kind's NamedTuple (the law's own types)."""
+    kind_type = {
+        "threshold_relaxation": junction_gate.Parameters,
+        "boltzmann_eyring": series_gates.BoltzmannEyring,
+    }[gate.kind]
+    return kind_type(*gate.parameters)
+
+
+def parse_series_gate(block):
+    """A junction_series_gates@1 gate block: {law, development: true, gates: [fast, slow]}, each
+    gate {kind, its kind's parameters by name, initial}. Returns @1's admission tuple: the
+    junction's minimum and initial conductance (the products of the gates' residuals and initial
+    factors), its class and its extra fields. Every gate lies on the law's own domain at 0 V."""
+    _fields(block, {"law", "development", "gates"}, "series junction gate")
+    if block["development"] is not True:
+        raise ConfigError(SERIES_DEVELOPMENT)
+    raw = block["gates"]
+    if type(raw) is not list or len(raw) != series_gates.GATE_COUNT:
+        raise ConfigError(
+            f"A series junction declares its {series_gates.GATE_COUNT} gates "
+            f"({', '.join(series_gates.GATES)}) as a list"
+        )
+    gates = []
+    for name, g in zip(series_gates.GATES, raw, strict=True):
+        if not isinstance(g, dict) or g.get("kind") not in series_gates.KINDS:
+            raise ConfigError(
+                f"Series junction gate {name}'s kind is one of {', '.join(series_gates.KINDS)}"
+            )
+        names = kinetic.series_parameter_names(g["kind"])
+        _fields(g, {"kind", "initial", *names}, f"series junction gate {name}")
+        values = tuple(_number(g[k], f"series junction gate {name}'s {k}") for k in names)
+        gates.append(kinetic.SeriesGate(g["kind"], values, _number(g["initial"], "initial")))
+    kinds = tuple(g.kind for g in gates)
+    parameters = tuple(series_gate_parameters(g) for g in gates)
+    initial = tuple(np.asarray(g.initial, dtype=float) for g in gates)
+    if not bool(
+        series_gates.domain_valid(
+            initial, np.asarray(0.0), parameters, np.asarray(1.0), kinds=kinds, xp=np
+        )
+    ):
+        raise ConfigError(
+            "A series junction's gates lie on the law's domain: each parameter finite and in "
+            "range, and each initial factor in [its residual, 1] (the law's domain_valid)"
+        )
+    pairs = zip(kinds, parameters, strict=True)
+    residuals = [series_gates.residual_of(kind, values) for kind, values in pairs]
+    return (
+        float(np.prod(residuals)),
+        float(np.prod([g.initial for g in gates])),
+        kinetic.SeriesJunction,
+        dict(gates=tuple(gates), development=True),
+    )
+
+
+def series_junction_errors(model):
+    """v1's refusals for series junctions (D262), at parse: a world's junctions all take one gate
+    law; and a series junction carries no neutral species, since its factor is the ionic
+    conductance, while a neutral species needs its own route factor (its residuals per gate,
+    FR-30 design §7), which is not built."""
+    series = [j for j in model.junctions if isinstance(j, kinetic.SeriesJunction)]
+    if not series:
+        return
+    if len(series) != len(model.junctions):
+        raise ConfigError(
+            f"A world's junctions take one gate law: {SERIES_GATE_LAW_ID} on every junction or "
+            "on none (v1, D262)"
+        )
+    kinds = {tuple(g.kind for g in j.gates) for j in series}
+    if len(kinds) != 1:
+        raise ConfigError(
+            f"A world's {SERIES_GATE_LAW_ID} junctions declare the same kind for each gate (v1)"
+        )
+    neutral = [z == 0 for z in model.valence]
+    for j in series:
+        carried = sorted(
+            s
+            for s, z0, value in zip(model.species_ids, neutral, j.permeability_m_per_s, strict=True)
+            if z0 and value
+        )
+        if carried:
+            raise ConfigError(
+                f"Junction {j.id} ({SERIES_GATE_LAW_ID}) carries neutral species {carried}: its "
+                "factor is the ionic conductance, and a neutral species needs its own route "
+                "factor (its residuals per gate), which is not built (v1, D262)"
+            )
+
+
 def parse(data):
     raw = copy.deepcopy(data)
     m, e, x = raw.get("model"), raw.get("experiment"), raw.get("execution")
@@ -479,7 +584,10 @@ def parse(data):
     solver = x.get("solver")
     if solver in imex.IMPLICIT_CONDUCTANCE_IDS:
         x["solver"] = imex.ARS222_ID
-    base = second.parse(raw)
+    # FR-30 (D262): @3 alone admits junction_series_gates@1; @1's and @2's parses refuse it.
+    with first.admitting({SERIES_GATE_LAW_ID: parse_series_gate}):
+        base = second.parse(raw)
+    series_junction_errors(base.model)
     ids, z = base.model.species_ids, base.model.valence
     parsed = tuple(parse_channel(c, ids, z, {p.id for p in base.model.membranes}) for c in channels)
     parsed = tuple(
@@ -553,6 +661,7 @@ def parse(data):
             or channel_factors(spec.model)
             or any(c.kinetic_law not in LAW_CODES for c in spec.model.channels)
             or spec.model.heat_bookings  # Seam D: the structure holds the picks.
+            or any(isinstance(j, kinetic.SeriesJunction) for j in spec.model.junctions)  # FR-30.
         )
         check_definition(spec, structure=structure(spec.model) if declared else None)
     except (ArithmeticError, ValueError) as error:

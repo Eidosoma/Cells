@@ -47,6 +47,12 @@ def parse(entry, world):
         raise ConfigError(
             "experiment: a replacement needs a population (execution mode population)"
         )
+    if isinstance(entry, dict) and "fraction" in entry:  # FR-35 (D261): a partial exchange
+        raise ConfigError(
+            "experiment: a replacement exchanges the whole pool and takes no fraction; a partial "
+            "exchange is a withdrawal, {index, kind: withdrawal, times_s, fraction, buffer} "
+            "(cells.pool_withdrawal@1), its buffer the counts in the withdrawn volume"
+        )
     if set(entry) != KEYS:
         raise ConfigError(f"experiment: a replacement's keys are {sorted(KEYS)}")
     index = bounded_integer(entry["index"], "experiment: schedule index", minimum=0,
@@ -74,8 +80,51 @@ def parse(entry, world):
             f"experiment: a replacement leaves held places as they are, so {held}, which the "
             "assemblies take up, could never be washed out: declare it finite (FR-20's Q3)"
         )
+    refuse_unlimited_sources(world, "a replacement", "pool")
     transfer._refuse_above_c_ext(world, finite, pool)
     return division.Schedule(index, "replacement", None, times, None, None, None, pool)
+
+
+def unlimited_sources(world):
+    """{held place: [the finite places it reaches]}: each held pool place that takes part in a step
+    with a finite place, directly or through steps whose other places are held. Such a reservoir
+    is an unlimited source (or sink) that a wash leaves active (D263)."""
+    held = {p.name for p in world.places if p.phase == "pool" and p.held}
+    finite = {p.name for p in world.places if not p.held}
+    steps = [{name for name, _ in (*s.reactants, *s.products)} for s in world.steps]
+    out = {}
+    for source in sorted(held):
+        seen, frontier = {source}, [source]
+        while frontier:
+            place = frontier.pop()
+            for names in steps:
+                if place in names:
+                    for other in sorted(names - seen):
+                        seen.add(other)
+                        if other in held:
+                            frontier.append(other)
+        if seen & finite:
+            out[source] = sorted(seen & finite)
+    return out
+
+
+def refuse_unlimited_sources(world, what, key):
+    """D263 (fail closed): a wash is refused while any held reservoir stays an active source of a
+    finite place, since that place's species could never be washed out. FR-20's Q3 is its case of
+    a held species with a membrane or lumen place; this also takes a held species that the
+    assemblies take up by a step (a site binding it), and a finite species made from a held one.
+    The version-1 limit: every held source that reaches a finite place is refused, a held fuel or
+    precursor making a pool species included, until a world can declare its intended sources."""
+    sources = unlimited_sources(world)
+    if sources:
+        source, reached = next(iter(sources.items()))
+        raise ConfigError(
+            f"experiment: {what} washes the pool's finite places, but the held {source} stays an "
+            f"unlimited source through the world's steps, reaching {reached}, so the wash would "
+            f"be silently partial (D263). Version 1 refuses every held source that reaches a "
+            f"finite place, a held fuel or precursor included: declare it finite, with its count "
+            f"in `{key}`"
+        )
 
 
 def removed_and_supplied(world, old, new):

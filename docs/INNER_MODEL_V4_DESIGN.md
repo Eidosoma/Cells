@@ -1907,6 +1907,8 @@ active), with check_onsets' refusal kept.
     route did not make. The accepted cost: FR-4's acidified compartment, pumped and leaked, keeps
     its energy-ledger step limit (dt·G/C_b ≈ 0.05, declared by its worlds) until a pump booking by
     the same divided differences is designed, a later item;
+  - **@3's faces (D280):** a definition may pick the same booking for its faces, under the same
+    version-1 scope (CORE_SEAMS_DESIGN §6.5);
   - **charged species (outside version 1):** the electrical part is the capacitor energy's change, exact for the
     linear capacitor through the step's mean patch voltage (V̄ Δq), split in the same way. The
     implicit patch, the first charged consumer, fixes it in its own module (FR45's
@@ -2537,7 +2539,7 @@ the fourth reuse case.
   - Physical time and crossing-time interpretation come from the numerical plan.
 - **A step context.** Each plan receives the interval [t, t + dt], its stage times, and the next
   compulsory event boundary: a dose, a regulatory write or a timed event.
-  - Fixed-step runs read it and change nothing; the event-time rule (exact multiples of dt) stays.
+  - Fixed-step runs read it and change nothing; the event-time rule (on the clock's grid, D283) stays.
   - A future coarse step must stop at that boundary.
 - **Today's coarse and stationary paths handle restricted sets of fields.** They read the roles to
   refuse what they cannot treat.
