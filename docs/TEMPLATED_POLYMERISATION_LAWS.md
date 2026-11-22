@@ -1426,6 +1426,6 @@ the class rows (D288). Docs only, before the code that builds on it.*
    - Labelling at completion (§9.1) stays declared, on the class axis, until the label owner holds
      the hold's own shares (D296).
 6. **The survival readout** (§9.8) is the requester's answer to (c) and (e).
-7. **A limit:** a labelled species carries at most 16 labels, the label owner's MAX_LABELS. So
+7. **A limit:** a labelled species carries at most the label owner's MAX_LABELS labels. So
    producer identity crossed with the window labels must fit within it.
 8. **Route 2 stands** (erratum B).
