@@ -30,8 +30,10 @@ this note; it is read and cited properly when the piece is built. Evidence:
 | --- | --- | --- |
 | **P1** (the previous owner's), `probe_gard_rates` | @1's pair-consistent GARD rates against the same world declared in @2, on 4,000 random states of 8 types, in both of the factor's branches | The rates agree to 3.1 × 10⁻¹⁵ relative, but only about 13% of them are bitwise equal, and 0 of 256,000 shared draws per case select a different channel. So §7.3's bitwise branch does not apply as built (§5.2) |
 | **P2** (the previous owner's), `probe_continuum_identity` | Whether the factored flux equals "the law applied to the products" under three continuous count arithmetics | The finding, re-measured as P2b. P2 divided each gap by the net flux, which vanishes near equilibrium, so its ratios for B and C are inflated |
-| **P2b** (S), `probe_continuum_identity_fwd` | P2 with each gap divided by the one-way fluxes a⁺ + a⁻, at n in [10, 100] and [10³, 10⁵] | Arithmetic A (Kurtz's limit: powers, and Stirling's F) is an identity to 1 × 10⁻¹⁴ at both scales. B (gamma interpolation) fails at every order: 4–20% at n ≈ 10–100, 5 × 10⁻⁴ to 2 × 10⁻³ at n ≈ 10³–10⁵. C (falling factorials with Stirling's F) holds at first order per species, and fails for 2A + B → C (10% and 1 × 10⁻³) and for the membrane (3% and 6 × 10⁻⁵). Both failures are O(1/n). So A is the one consistent arithmetic (§1.3, §6.2) |
+| **P2b** (S), `probe_continuum_identity_fwd` | P2 with each gap divided by the one-way fluxes a⁺ + a⁻, at n in [10, 100] and [10³, 10⁵] | Arithmetic A (Kurtz's limit: powers, and Stirling's F) is an identity to 1 × 10⁻¹⁴ at both scales. B (gamma interpolation) fails at every order probed: 4–20% at n ≈ 10–100, 5 × 10⁻⁴ to 2 × 10⁻³ at n ≈ 10³–10⁵. C (falling factorials with Stirling's F) holds at first order per species, and fails for 2A + B → C (10% and 1 × 10⁻³) and for the membrane (3% and 6 × 10⁻⁵). Both failures are O(1/n). So A is the one consistent arithmetic (§1.3, §6.2) |
 | **P3** (the previous owner's script, run by S at 0e54aa2a) | The exact kernel's throughput: A + B ⇌ C in the pool, 64 lanes, CPU 7 | 45,000 events/s at Ω = 10³ and 64,000 at Ω = 10⁴, after 15–38 s of compiling. The CPU was shared with a job at 79%, so these are conservative. They price §5.3's ensembles |
+| **P2c** (S), `probe_sparse_and_offset` | Arithmetic A in the membrane with the declared offset kept, x = n/(N − c) at c = 1 | An identity to 4 × 10⁻¹⁵ at both scales, so keeping c costs nothing (§6.2) |
+| **P4** (S), the same file | A closed dimerization, 2A ⇌ B: the exact stationary mean of n_A, by enumerating exp(−F_disc), against the rate equations' fixed point, at T = 12 to 12,000 with the concentrations fixed | The gap is a constant 0.072 molecule: 2.0% at T = 12, then 0.2%, 0.02% and 0.002%. A sparse world's mean can sit close to the limit, so the sparse plant fails on each replica's spread, not on the mean alone (§5.1) |
 
 ## 0. Summary: the recommendations, and the decisions asked
 
@@ -41,7 +43,7 @@ this note; it is read and cited properly when the piece is built. Evidence:
 | 2 | The continuous count arithmetic | A: Kurtz's limit (n^a, m → n, Stirling's form of every ln k!). B: gamma interpolation of the discrete forms. C: falling factorials on real counts | **A,** keeping the declared measure's offset c in N − c. It is the only one in which the factored flux equals the products' law (P2b) | 1.3, 6.2 |
 | 3 | Where each law's limit lives | H1: a limit hook in each law's own declaration and module. H2: separate limit declarations under a new interface | **H1,** with the existing `FORMULAS` untouched | 1.4, 6.5 |
 | 4 | The integrator | I-A: explicit Tsitouras 5(4) with dense output and a stiffness stop. I-B: a Rosenbrock method (Rodas4) with dense output and an exact Jacobian by forward differentiation. I-C: SciPy's `solve_ivp` on the host | **I-B.** It is stiff-safe (FR-39's open pore is a fast sub-dynamics), keeps moieties to rounding, is deterministic and runs in lanes. I-A is the cheaper start if FR-39 adds I-B later | 6.1 |
-| 5 | The envelope | E1: every place a rate reads holds at least n_min, at the founder and at every accepted step. E2: E1, plus places rising from zero | **E1 in version 1.** n_min is the smallest rung that passes Protocol D | 1.5, 6.6 |
+| 5 | The envelope | E1: every place a rate reads holds at least n_min, at the founder and at every accepted step. E2: E1, plus places rising from zero | **E1 in version 1.** n_min is the smallest rung at which every Protocol D world passes its per-rung budget | 1.5, 6.6 |
 | 6 | Lift Phase A's count-change refusal in exact events | L0: keep it. L1: the clock moves onto the device, with σ from F and areas that change at events | **L1, as its own slice.** Without it, no exact-event world has a varying hazard, so (d)'s clock can be checked only against closed forms | 3.6, 6.3 |
 | 7 | A held tension over a changing area | T1: the hold does σ·dA of work on every area-changing step, which shifts those steps' rates. T2: refuse area-changing steps under a hold, in both representations | **T2 in version 1.** T1 is new physics for the laws sheet, and no consumer needs it yet | 2.3, 6.7 |
 | 8 | The GARD limit's fission | G1: compare up to @1's first fission, with no engine change. G2: add a size-threshold division to @2 | **G2.** §7.3 names D1 fission, and OL9's ladder starts from it. G1 is its first tier | 5.2, 6.8 |
@@ -86,7 +88,7 @@ never written, so every existing definition, fingerprint and record stays as it 
   "stream": {"seed": 1, "environment": 0, "lineage": 0, "branch": 0},
   "representation": {
     "id": "cells.rate_equations@1",
-    "envelope": {"min_count": 1000, "provenance": "Protocol D's smallest passing rung, <tag>"},
+    "envelope": {"min_count": 1000, "provenance": "Protocol D, criterion B's smallest passing rung, <tag>"},
     "integrator": {"id": "rosenbrock_rodas4_dense@1", "rtol": 1e-8, "atol_count": 1e-3,
                    "step_limit": 1000000}
   }
@@ -202,7 +204,7 @@ fails item 1.
 | `cells.ideal_mixing@1` | Admitted | The tables (μ°, ln X, the offset c) | A traceable continuum value: Stirling's form of the declared F_id |
 | `cells.regular_mixing@1` | Admitted | `state` (y = χn and S = n·y, by serial folds, traceable) | Its value S/(2N), three lines |
 | `cells.osmotic_lumen@1` | Admitted | `free_energy`, `log_volume` and `tension`, which compute in float64 and trace already | To verify at build: safe to differentiate (its logarithms already take the guarded form); the kink as a restart (§3.2) |
-| `cells.bilayer_geometry@1` | Admitted | `log_constants`, the area, the radius and the closure cost | W as a real number. The floor becomes part of the envelope: W ≥ max(W_floor, envelope) |
+| `cells.bilayer_geometry@1` | Admitted | `log_constants`, the area, the radius and the closure cost | W as a real number. The floor keeps its exact meaning, apart from the envelope: a fission with a daughter below W_floor is refused, with the parent kept (§3.4), and a vesicle approaching W_floor has already left the envelope |
 | `cells.shared_pool@1` | Admitted, at most 64 slots (§6.9) | Slots, founders, keys and the additive F | The pool's coupling in the Jacobian. The world-level selection map is not used |
 | `cells.shear_fission@1` | Admitted | Admission (stress, then v ≤ k^(−1/2)), the floor test, keys, continuation and the booking | The mean split, with the complement rule (§3.4) |
 | `cells.serial_transfer@1` | Admitted | Its draws on domain 6, its keep rule and its booking | F_cont in the booking |
@@ -222,7 +224,7 @@ fails item 1.
   lies outside the envelope. All three are admitted, so one world runs in both representations, and
   the record states that the token does not apply inside the envelope.
 - `exchange_encounter`: the extent at a real W.
-- `vesicle_floor`: part of the envelope (above).
+- `vesicle_floor`: its exact meaning, kept apart from the envelope (§3.4).
 
 ### 1.5 The envelope (E1)
 
@@ -235,7 +237,8 @@ fails item 1.
 - **At run time:** an accepted step whose state has such a place below n_min ends the run
   `outside_envelope` at the crossing (§3.2), recorded and never repaired. A trial stage below
   n_min/2 rejects the step, which is retried smaller.
-- **n_min** is declared with its provenance: Protocol D's smallest passing rung (§5.1).
+- **n_min** is declared with its provenance: the smallest rung at which every Protocol D world
+  passes its per-rung budget, B (§5.1).
 - **Exact zeros against sparse counts:** an exact zero in a place no rate reads is inert. A zero in
   a place some step can feed (a product starting from nothing) is refused at parse in version 1.
   E2, admitting places that rise from zero, is a later option (§6.6).
@@ -407,8 +410,13 @@ crossing-time check (§5.1, P-D5).
      rule).
    - A declared distribution of sizes (a later token value) would split in proportion to each
      daughter's area. It is refused until that token exists.
-3. **The floor:** each daughter must be within the envelope, or the fission is refused and recorded,
-   with the parent kept.
+3. **The floor and the envelope are separate tests.**
+   - **The floor is physics:** a daughter below W_floor refuses the fission, which is recorded with
+     the parent kept, as in exact events.
+   - **The envelope is the representation's limit:** a daughter at or above the floor but outside the
+     envelope would be born in exact events, so (d) does not refuse the fission. It stops the run
+     `outside_envelope` when that daughter is followed (single lineage) or lives (population). An
+     unfollowed daughter leaves for the sink, and its envelope does not matter.
 4. **Keys** in daughter order. Continuation is `first`, or `uniform` from domain 3: the same draw as
    the exact run's.
 5. **The booking** is §2.1's.
@@ -427,8 +435,14 @@ daughters take free slots in slot order, and a full set stops the run `slots_ful
   - during a hold's interval [start_s, end_s), with σ = σ_hold (Phase A's);
   - always, with σ from F, the osmotic lumen's tension (new). The parse requires σ_max ≤ σ_β/4, so
     the law's domain, σ ≤ σ_β/4, holds on every trajectory that has not lysed.
-- **H_v is a component of the ODE state,** under the same error control, with an absolute tolerance
-  registered at 1 × 10⁻¹⁰. A crossing time's error is then about 10⁻¹⁰/k_v.
+- **H_v is integrated by the same stages as the state, but kept out of step selection.** It never
+  feeds back into the state, so a pore world takes exactly the steps of its pore-free twin until the
+  first opening (§3.6).
+  - Its accuracy comes from the state's own control: H's integrand is a smooth function of the
+    controlled state, so its error per step is of the method's order.
+  - Its own embedded error estimate is monitored at every step. A run whose H error passes
+    1 × 10⁻¹⁰ absolute is refused, never silently inaccurate. A crossing time's error is then about
+    10⁻¹⁰/k_v.
 - **The opening** fires at the crossing H_v = E_v (§3.2). Phase A's outcome follows: rupture through
   the release, with cause `pore`.
 - **The hazard and σ_max both stand** (D287). Whichever crosses first acts.
@@ -457,9 +471,13 @@ daughters take free slots in slot order, and a full set stops the run `slots_ful
   - **Under L1,** exact events run a varying σ (from F) and area, with H piecewise linear between
     events and its crossing exact (VESICLE_PORES_LAWS §5). The paired difference t*_a − t*_d per
     vesicle then shrinks as N^(−1/2) (Protocol D, world D7).
-- **Pores against no pores.** One world run in (d) with the pore law and without it is identical,
-  bit for bit, until the first opening: a test row. In exact events the two share every chemistry
-  draw until then (VESICLE_PORES_DESIGN §3.2).
+- **Pores against no pores, in worlds with σ from F.** One such world run in (d) with the pore law
+  and without it is identical, bit for bit, until the first opening, because H stays out of step
+  selection (§3.5) and the hazard adds no stop. This is a test row.
+  - A world with a hold has no pore-free twin: Phase A's cross-checks require the pore law wherever
+    there is a hold.
+  - In exact events the two share every chemistry draw until the first opening
+    (VESICLE_PORES_DESIGN §3.2).
 
 ### 3.7 What (d) draws
 
@@ -539,7 +557,7 @@ Each is refused at parse, by name, with its reason, unless marked as a run-time 
 | **D5** | Two vesicles on one finite pool, one swollen and tense, one isotonic and floppy, exchanging amphiphile through the pool: A1's mechanism at small scale | Plus `cells.shared_pool@1` | Per rung |
 | **D6** | A floppy vesicle divided at declared shear times (k = 2, continuation `first`). Its v at each shear time lies at least 5 standard deviations below 2^(−1/2) in the exact runs, so admission is never random there | Plus `cells.shear_fission@1` | Per rung |
 | **D7** | D4 with the pore law, σ from F, paired by E (needs L1). Under L0: D7′, Phase A's held, fixed-area world, paired by E, which reduces to the regression identity (§3.5) | Plus `cells.pore_nucleation@1` (and `cells.tension_hold@1` for D7′) | Per rung (D7′: exact) |
-| **D0** | The sparse plant: D2's family at N₀ = 8, `multinomial_less_one` with `extinct`, Σ K ρ = 0.5 (shrinking). Exact lineages go extinct with positive probability, and the rate equations never do | As D2 | Planted only |
+| **D0** | The sparse plant: a closed dilute dimerization, 2A ⇌ B, at T = n_A + 2n_B = 12 with q·T = 4 (P4's world). Its exact mean comes from enumerating exp(−F_disc) exactly, and its spread from M = 256 exact runs. (A mostly linear world, such as a GARD-like membrane, would not serve: for linear propensities the exact mean obeys the rate equations, absorption at zero included) | `cells.stochastic_mass_action@1`, `cells.ideal_mixing@1` | Planted only |
 
 **Rungs and replicas.**
 - **D1–D3:** Ω or N₀ ∈ {250, 1000, 4000, 16000}, with M = 256 replicas per rung.
@@ -565,6 +583,17 @@ Each is refused at parse, by name, with its reason, unless marked as a run-time 
   - Single trajectories deviate from the limit by O(Ω^(−1/2)) (Kurtz; van Kampen's expansion, from
     memory). So this tolerance scales as 1/√N, and the slope is the trajectories' order of
     convergence, ½.
+- **B, the error budget at each rung, every world** (§7.1: "a declared error budget that shrinks
+  with size").
+  - **The mean:** |e_k| ≤ z*·SE_k + b·s_y/n_k, where n_k is the rung's smallest enveloped founder
+    count and b = 2 (declared, uncited).
+  - **Each replica:** the 99th percentile over replicas of the largest |y_a − y_d|/s_y over the
+    times is at most c_r/√n_k, with c_r = 5 (declared, uncited). Poisson-like fluctuations give
+    about 3.3/√n there, so c_r leaves room for fluctuations up to 1.5 times Poisson's.
+  - **A world outside the envelope is held to the envelope's budget,** b/n_min and c_r/√n_min,
+    because that is the representation's promise everywhere it admits.
+  - **The constants' sensitivity is reported:** each world's smallest b and c_r that would pass.
+  - B is defined at a single rung, so it is what fixes n_min and judges D0.
 - **M, means converge, every world.** For each registered (observable, time), e_k = mean_a − y_d,
   with SE_k from the replicas.
   - **Pass:** at the top rung K, |e_K| ≤ z*·(SE_K² + SE_(K−1)²/4)^(1/2) + |e_(K−1)|/2, with
@@ -601,9 +630,14 @@ Each is refused at parse, by name, with its reason, unless marked as a run-time 
     - a crossing with an analytic root (§3.6's growing area), to τ_c.
   - **Lane invariance:** a world's records are bitwise the same alone, in a batch of 8 lanes, and in
     another lane order. (d)'s sums use the serial folds (D182), as the exact kernel's do.
-  - **Identities:** the regression identity (§3.5), and pores against no pores (§3.6).
+  - **Identities:** the regression identity (§3.5), and pores against no pores in worlds with σ from
+    F (§3.6).
 
-**The envelope's n_min** is the smallest rung at which every world passes, stated with the tag.
+**The envelope's n_min** is n_k at the smallest rung where every world passes B, with P and M
+passing over the ladder. It is rounded up and stated with the tag.
+- The qualification's own (d) runs declare `min_count` = 10, below every rung's smallest count,
+  with the provenance "Protocol D's qualification runs".
+- D1's smallest rung has founders of 25 to 125.
 
 **The planted failures.** Each is O(1), and each must fail its criterion. Plants of order 1/N vanish
 in the limit and are not used: a factor at each direction's own state, the measure's offset, and
@@ -611,11 +645,11 @@ falling factorials against powers.
 
 | Plant | Where | Must fail |
 | --- | --- | --- |
-| **P-D1:** the envelope check disabled | D0 | M (exact lineages go extinct). With the check on, D0 is refused at parse: §7.1's "a sparse case admitted" |
+| **P-D1:** the envelope check disabled | D0 | B at the envelope's budget. Each replica fails by far: a relative spread of about 0.5 against c_r/√n_min. The mean fails too: 2.0% by P4, against b/n_min, with the exact side enumerated, so SE = 0. With the check on, D0 is refused at parse: §7.1's "a sparse case admitted" |
 | **P-D2:** a reactant's power off by one in mass action's limit, (n/X)² for a first-order reactant | D1 | The limit's check, items 1 and 4, at registration. With the check off, M |
-| **P-D3:** one factor entry's β × 1.5, in (d)'s layout only | D2 | M |
+| **P-D3:** the largest entry of D2's matrix × 1.5, in (d)'s layout only. Its effect on the means is computed in (d) alone before the tag, and must exceed 10 times the top rung's budget, or the plant is resized | D2 | M and B |
 | **P-D4:** the Laplace factor doubled (σ = Δp·R), in (d) only | D4 | E (the lysis time) |
-| **P-D5:** each crossing snapped to its step's end | D4, and N's crossing test | N at τ_c, and E |
+| **P-D5:** each crossing snapped to its step's end | N's crossing test | N, at τ_c. E's statistical tolerance need not catch it |
 | **P-D6:** the heat's sign flipped | Any | L (closure) |
 | **P-D7:** one species' μ° shifted by 0.5 k_BT, in F_cont only | Any | The limit's check, item 1 (the identity), at registration |
 
@@ -660,6 +694,9 @@ reported beside it.
     Any other divergence fails.
   - **Expected coincidences:** about 2C × 3 × 10⁻¹⁵ ≈ 5 × 10⁻¹⁴ per event (S, from P1). The
     registered bound is at most 1 in the whole set.
+  - **Its premise, checked first:** @1 and @2 draw the same uniforms for the same seed words. P1
+    measured rates only. Protocol G's first check runs both kernels with `uniforms: true` and
+    compares the first events' (u₁, u₂) bitwise.
 - **T-dist (distributional, at registered tolerances):** the physical measure's report, and the
   fallback if the lead rules T-path out.
 
@@ -702,6 +739,10 @@ from the join's (N + 1)/N. It has no pass or fail unless the lead rules one.
 So about 2.5–4.5 CPU-hours in all, as detached jobs on the light CPUs (AGENTS.md: a run over 10
 minutes is detached, with durable logs).
 
+**A premise of that price.** The vesicle rungs' cost is extrapolated from P3's pool-only world. An
+exact-only smoke run at the top rung (2.1 × 10⁵ amphiphiles) reads no comparison, so it can run
+before the tag, and would firm up S5's price.
+
 ### 5.4 What the protocols do not claim
 
 - **The anchors' scale.** (d)'s accuracy at 10⁵ molecules and above is extrapolated from the rungs
@@ -710,8 +751,8 @@ minutes is detached, with durable logs).
 - **Phase B.** The open pore's dynamics are not qualified here.
 - **An independent ODE reference.** §7.2's code-blind ODE reference (OL5's) would add a check of
   (d)'s arithmetic against equations, not code. Whether OL5's set carries it is OL5's to say. If
-  the lead wants it for OL6, §1.3 and §2 are written to stand alone as its sheet, and the sheet is
-  tagged before code.
+  the lead wants it for OL6, §1.3 and §2 give its equations, but not each term's continuum form
+  written out. Those would be added as a sheet, tagged before code.
 
 ## 6. Options, with recommendations and prices
 
@@ -736,12 +777,12 @@ method changes no world.
 
 | Option | Rule | P2b (gap over a⁺ + a⁻; n ≈ 10–100, then 10³–10⁵) | Verdict |
 | --- | --- | --- | --- |
-| **A** | Powers for falling factorials, Stirling's form for ln k!, m → n | 1 × 10⁻¹⁴ at both scales, at every order, in the membrane too | **Recommended:** the one arithmetic in which the factored flux is the products' law |
-| B | Gamma interpolation, Γ(n + 1)/Γ(n − a + 1), with F in ln Γ, so μ = ψ(n + 1) | 4–20%, then 5 × 10⁻⁴ to 2 × 10⁻³, at every order | Exact for the propensities at integers, but its F's gradient is not its finite difference, so the continuous ledger would not close |
+| **A** | Powers for falling factorials, Stirling's form for ln k!, m → n | 1 × 10⁻¹⁴ at both scales, at every order probed (1 to 3 in a dilute phase, 2 in the membrane); 4 × 10⁻¹⁵ with the offset kept (P2c) | **Recommended:** the one arithmetic in which the factored flux is the products' law |
+| B | Gamma interpolation, Γ(n + 1)/Γ(n − a + 1), with F in ln Γ, so μ = ψ(n + 1) | 4–20%, then 5 × 10⁻⁴ to 2 × 10⁻³, at every order probed | Exact for the propensities at integers, but its F's gradient is not its finite difference, so the continuous ledger would not close |
 | C | Falling factorials on real counts, with Stirling's F | Identity at first order per species; 10% and 1 × 10⁻³ at 2A + B → C; 3% and 6 × 10⁻⁵ in the membrane | Breaks at order 2. It is what `log_falling` gives on real counts, so mass action's exact kernel is not reused as it is (§1.4) |
 
 **A sub-choice within A:** keep the declared measure's offset c in N − c, or drop it as the
-textbook limit does. The identity holds either way (S). Keeping it carries the declared measure's
+textbook limit does. The identity holds either way (S; P2c gives 4 × 10⁻¹⁵ at c = 1). Keeping it carries the declared measure's
 meaning at no cost, so it is recommended.
 
 ### 6.3 Lifting Phase A's count-change refusal in exact events
@@ -914,7 +955,8 @@ and G2's operator). Its format page and `test_library_pages` move in the same la
 2. **Arithmetic A,** keeping the measure's offset.
 3. **H1,** with `FORMULAS` untouched and the limits' formulas written only into (d)'s records.
 4. **The integrator:** I-B (Rodas4) now, or I-A now and I-B in Phase B.
-5. **The envelope:** E1, with n_min taken from Protocol D's smallest passing rung.
+5. **The envelope:** E1, with n_min taken from the smallest rung at which every Protocol D world
+   passes its per-rung budget (criterion B), and B's declared constants, b = 2 and c_r = 5.
 6. **L1 inside OL6,** or L0 with the exact-event clock moved into Phase B.
 7. **T2 for version 1.** Should T1, the hold's work on area changes, go to the laws sheet's owner?
 8. **G2 inside OL6,** or G1 now and G2 at OL9's start.
