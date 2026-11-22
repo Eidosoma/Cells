@@ -370,6 +370,33 @@ def test_release_steps_inside_c5s_scope_are_admitted_and_outside_it_refused(syst
             parse_spec(raw)
 
 
+def test_a_stage_reaching_a_signed_held_total_is_refused_by_the_reads_guard(monkeypatch):
+    """The read's precondition by construction (positive_held_totals; host only, one parse, about
+    2 s). S4's state 0 with its cell's H total set negative, at minus half pi2's total: pi2's
+    release form (H -1) keeps the joint margin at half pi2's total, positive, so the margin admits
+    the state, and the guard refuses it on the total's own sign. Planted, the guard lifted: the read
+    admits a stage at a non-positive held total, unrefused."""
+    raw, _ = reference_cell("S4", 0)
+    spec = parse_spec(raw)
+    _, state, p, _ = host(spec)
+    ids = list(spec.model.species_ids)
+    h, pi2 = ids.index("H"), ids.index("pi2")
+    held = amounts(state, p)
+    target = -0.5 * held[pi2, 0]  # fmol in the cell
+    signed = state._replace(amount_increment=state.amount_increment.copy())
+    signed.amount_increment[h, 0] = target - p.amount_reference[h, 0]
+    assert amounts(signed, p)[h, 0] < 0
+    assert bool(proton_buffer.stage_read(state, p, xp=np)[1])
+    assert not bool(proton_buffer.stage_read(signed, p, xp=np)[1])
+    monkeypatch.setattr(
+        proton_buffer,
+        "positive_held_totals",
+        lambda total_l, held, *, xp: xp.ones(total_l.shape[1], bool),
+    )
+    with np.errstate(all="ignore"):
+        assert bool(proton_buffer.stage_read(signed, p, xp=np)[1])  # Unrefused without the guard.
+
+
 def test_the_release_scope_names_what_c5_does_not_cover():
     """The scope at the unit level: S7's mgx and S4's pi2 lie inside it; a release step in Mg, and
     a binder with two release steps (whose mixed-sign form is also reached by two paths), lie
