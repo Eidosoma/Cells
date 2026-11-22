@@ -9,15 +9,22 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
 2026, with every earlier run summary and its evidence links, is preserved in
 [the archived progress file](docs/history/PROGRESS_BEFORE_2026-11-08.md).
 
-## Open FR and core work (count for D273's hold, 21 November 2026, evening)
+## Open FR and core work (22 November 2026, 12:18 UTC)
 
-The paused lanes (origin of life, gene regulation's own work, mitochondria) resume when this list is
-shorter (D273). Landing now or next: G4 with FR-25's reader fixes and its follow-ups, FR-25's
-tolerance registration and judged run, FR-28, the binding guard. Building: D1 for FR-33. Decided,
-to build: the floating-junction fix (A). Waiting on downloads: FR-30's benchmark, FR-7 item 4. Open,
-unscheduled: FR-1, FR-2, FR-3, FR-6, FR-11, FR-13, FR-14, FR-15, FR-16, FR-17, FR-8's rung 2,
-crossrev-renewal, the Phase 0 runner's review. Deferred: FR-26's L, FR-36, the unwindowed-clock
-refusal. Blocked: FR-31.
+- **Landed since the 21 November count:**
+  - G4, with FR-25's reader fixes;
+  - FR-25's registered comparison (final verdict D282: inconclusive, 30 of 32 pass, none failed);
+  - FR-28, the binding guard, D1 for FR-33, the floating-junction fix (A), F2 (an opt-in exact face
+    heat), FR-37's example, and FR-33's first test (two named regions joined by one face; 7d70d63b).
+- **Landing next:**
+  - the OL5 precision fix, then GARD @2's range fixes;
+- **Building:** FR-38 at full scope (D284); the near-event snap (D283), which lands first.
+- **Waiting on downloads:** FR-30's benchmark.
+- **Open, unscheduled:** FR-1, FR-2, FR-3, FR-6, FR-11, FR-13, FR-14, FR-15, FR-16, FR-17, FR-8's rung
+  2, F1 (after an MG0c rerun), crossrev renewal, and the Phase 0 runner's review.
+- **Deferred:** FR-26's L, FR-36.
+- **Blocked:** FR-31.
+- **Paused lanes:** they resume with free agents (D277).
 
 ## Current position
 

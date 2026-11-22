@@ -25,7 +25,7 @@ import numpy as np
 
 from cells.models.assembly_lineages_v2 import MODEL_ID, PHASE_EXCHANGE
 from cells.models.assembly_lineages_v2.interfaces import ReactionLaw
-from cells.models.assembly_lineages_v2.mass_action import entry_sum, gather
+from cells.models.assembly_lineages_v2.mass_action import entry_sum, log_falling
 from cells.modules import Citation
 
 # The registration call is the registry's own (the surface exports it in module stage 1).
@@ -42,11 +42,10 @@ def geometric_log_direction(view, locus_membrane, log_extent_dilute, offset, xp)
     (as mass action's, at the firing state), the membrane reactants' normalisation 1/ff(N − c, r),
     and the geometric extent on m, ln(E(m)·ρ0) = view.log_encounter (−inf where E(m) = 0); −inf
     where the direction cannot fire."""
-    lf = view.log_factorial
     n, k = view.counts, view.coeff
     finite = view.membrane | view.dilute
     feasible = xp.all(xp.where(finite, n >= k, True), axis=1)
-    log_ff = gather(lf, n, xp) - gather(lf, n - k, xp)
+    log_ff = log_falling(n, k, xp)  # OL5's precision fix: no log-factorial differences
     kf = k.astype(np.float64)
     terms = (
         xp.where(view.dilute, log_ff - kf * view.log_X, 0.0)
@@ -57,9 +56,7 @@ def geometric_log_direction(view, locus_membrane, log_extent_dilute, offset, xp)
     r = entry_sum(xp.where(view.membrane, k, 0), xp)
     M = view.membrane_total - offset + xp.zeros_like(r)  # N − c, per step.
     defined = (r == 0) | ((M - r) >= 0)
-    normalisation = xp.where(
-        r >= 1, -(gather(lf, M, xp) - gather(lf, xp.where(defined, M - r, 0), xp)), 0.0
-    )
+    normalisation = xp.where(r >= 1, -log_falling(xp.where(defined, M, r), r, xp), 0.0)
     return xp.where(feasible & defined, activity + normalisation + view.log_encounter, -xp.inf)
 
 

@@ -8960,3 +8960,73 @@ recommendations.
 - **FR-25's final triple** (registered at 97c6359c) runs all three steps from one frozen snapshot of the
   tagged main, rather than mixing in earlier runs (the lead's call on the GR agent's question).
 
+## D282: FR-25's final verdict: inconclusive under the registered rule, 30 of 32 pass, none failed
+
+2026-11-22, about 11:26 UTC. The registered sequence (D270, D271, D280) is complete.
+- The rule, the table, the first retry and the final retry were each tagged before their comparison.
+- The final retry made pol T=100 ready, and it passes at both instances.
+- A1 stays inconclusive at both instances. C_tx_3's observed order moved 3.94, then 3.69, then 1.49.
+- 30 of 32 worlds-by-set pass, and none failed. Under the rule FR-25 is inconclusive, and the rule
+  makes this final.
+- A1 carries the request's induction and decay under the regulator switch, so the request's central
+  claim is not judged. The passing worlds cover the chains' amounts, extents and heats against G2.
+- Any further test of A1 would be a new registration after these results, and is the user's decision.
+
+## D283: Near-event times snap to the clock's instant on clocks without windows
+
+2026-11-22, about 12:35 UTC. The user: "get adviser in on both those question but we want to be ambitous".
+Decided with the advisor: option 2 of the three the @3 owner priced after the extension's gate failed,
+reversing the lead's recommendation to drop it.
+- **The rule:** on clocks without windows, an event within the clock's same-instant tolerance (4 ulps) of
+  a coarse point is that point.
+  - One predicate serves every on-the-grid check: events, control schedules, label switches, and wash and
+    intervention times.
+  - An event just outside the tolerance that would still make a degenerate step is refused as an author
+    error, in a band the owner states.
+- **Windowed clocks:** the owner either states why they refuse rather than snap, or adopts the same rule.
+- **Not silent:** the record carries both the declared and the applied time, and the fingerprint stays on
+  the declared definition.
+- **Checkpoints:** a checkpoint written on the old grid is refused or handled on resume.
+- **First, a scan** of the worlds that validation drivers build behind judged results (FR-25, FR-8, MG0c
+  and others). A hit goes back to the user.
+- **What moves:**
+  - no registered world is affected (the extension's own scan);
+  - the seven test files' worlds lose their one-ulp step and move at rounding.
+- **No opt-in strict mode** (option 3).
+- **Order:** it lands before FR-38's engine piece, which adds grid consumers.
+
+## D284: FR-38 at full scope, finishing with a registered comparison
+
+2026-11-22. The same words, decided with the advisor; the scope is the gene regulation lane's full path
+plus two pieces.
+- **The engine piece** goes in `templated_polymerisation@1`, in place under D148, with a sheet amendment
+  tagged before code:
+  - a terminal hold per chain, split by p into two fate rows, with exact energy and no driven work;
+  - the machine held or released, as a declared per-chain option;
+  - p from a constant, a schedule or a state factor, its source recorded;
+  - declarable initial hold occupancy;
+  - counters and a per-producer ledger;
+  - producer identity across restart.
+- **The cohort, two ways:**
+  - release into label rows by schedule (D1);
+  - recovery from the counters, on the host.
+
+  The two must agree. The hold's occupancy carries a class axis (size one by default), so a label switch
+  can sit at completion or at release.
+- **The observation reader** goes in `src/cells/assays`:
+  - per-copy detection thresholds, with the copy distribution a named input;
+  - roster denominators that keep IDs;
+  - named two-colour statistics.
+- **Law form:** the sheet states it, including any affinity factor, and the acceptance world states its
+  distance from the requester's far-from-equilibrium limit. Amounts and potentials are not chosen to hit
+  a tolerance.
+- **The finish:** a registered comparison against code-blind references.
+  - Its rule is tagged before the runs, and disclosed as written after FR-25's outcome.
+  - Until then, the routes are development status.
+- **Waiting on the requester:**
+  - (c) what "replacement" means, and (e) whether the cohort is marked at completion or at release; these
+    block only their own pieces;
+  - (a) is covered by the option;
+  - (b) keeps the default, no binding energy;
+  - (d) defaults to one gene per producer.
+

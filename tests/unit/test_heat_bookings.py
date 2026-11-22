@@ -5,6 +5,8 @@ test_heat_bookings_probe.py, the booked heat's form in test_heat_bookings_formul
 - the key's parse, round trip and default (omitted, so no fingerprint or structure moves), and its
   refusals: junctions, the tableau listed, a class that admits nothing, RK4, and a caller that
   checks @3 without its structure;
+- the faces' exact booking (exact_free_energy_heat@1, D280) refuses a face that carries a charged
+  row, touches a held bath, or carries a row another mover moves in the step (version 1's scope);
 - the dissipation check and the run view read declared energy roles, with today's suffix rule as
   the default.
 """
@@ -21,9 +23,11 @@ from cells.laws.electrochemistry import F, R
 from cells.models import surface_pump_v3
 from cells.registry import kind_registry
 from cells.registry.models import get_model
+from validation.tissue import secreted_species_fixtures as sfx
 from validation.tissue import surface_pump_v3_fixtures as fx
 
 TRAPEZOID = spec3.TRAPEZOID_JUNCTION_HEAT
+EXACT = spec3.EXACT_FREE_ENERGY_HEAT
 SOLVER = "imex_ars222_face_electromigration@1"
 DISSIPATION_REFUSAL = "dissipation cannot be negative or decrease"
 
@@ -93,6 +97,33 @@ def probe_world(v0, *, bookings=None, rung=RUNG, steps=None):
     return raw
 
 
+FACE_RATE = 1.0  # 1/s: each node's exchange rate through the face, D A / (L V) at V = 1 pL.
+
+
+def face_world(low_mM=sfx.TRACE_mM, bookings=None, *, steps=5):
+    """The faces' booking world (D280): two 1 pL outside nodes joined by one face that diffuses
+    the neutral inventory row S at FACE_RATE, S at 1 mM in n1 and at low_mM elsewhere (its trace
+    by default), as resolved_pump_tissue@3 itself: the fixture's composite has no operators."""
+    area, length = 1e-10, 1e-5
+    rest = {} if low_mM == sfx.TRACE_mM else dict(n2=low_mM, cell_0=low_mM, bath=low_mM)
+    raw = sfx.world(
+        nodes=(("n1", 1.0), ("n2", 1.0)),
+        contacts=(("contact_1", "cell_0", "n1"), ("contact_2", "cell_0", "n2")),
+        faces=(("face_12", "n1", "n2", area, length),),
+        dt=1e-3,
+        end=1e-3 * steps,
+        observation_times=[0.0, 1e-3 * steps],
+        diffusivity=FACE_RATE * length * 1e-15 / area,
+        concentrations_mM={"n1": 1.0, **rest},
+    )
+    m = raw["model"]
+    assert m.pop("operators") == []
+    m["id"] = m.pop("inner_model")
+    if bookings is not None:
+        m[spec3.HEAT_BOOKINGS_KEY] = dict(bookings)
+    return raw
+
+
 def _clear_compiled():
     """A fresh trace: compiled steps are cached by structure (surface_pump_v3._implementation)."""
     jax.clear_caches()
@@ -125,13 +156,46 @@ def test_the_default_is_omitted_and_the_key_round_trips():
             {"channels": "exact_free_energy_heat@1"},
             "admit trapezoid_nonnegative@1 beyond the tableau",
         ),
-        ({"faces": TRAPEZOID}, "neither one of @3's own mover classes"),
+        ({"walls": TRAPEZOID}, "neither one of @3's own mover classes"),
         ({"channels": 1}, "maps mover classes to booking IDs"),
+        ({"faces": TRAPEZOID}, "faces admit exact_free_energy_heat@1 beyond the tableau"),
     ],
 )
 def test_heat_bookings_refusals(bookings, message):
     with pytest.raises(ConfigError, match=message):
         parse_spec(probe_world(CROSSING, bookings=bookings))
+
+
+def _charged_face_row(raw):
+    raw["model"]["faces"][0]["diffusivity_m2_per_s"]["Na"] = 1e-10
+
+
+def _membrane_also_moves(raw):
+    patch = next(p for p in raw["model"]["membranes"] if p["id"] == "contact_2")
+    patch["permeability_m_per_s"][sfx.SPECIES] = 1e-9
+
+
+def _face_to_the_bath(raw):
+    face = dict(raw["model"]["faces"][0], id="face_2b", sender="n2", receiver="bath")
+    raw["model"]["faces"].append(face)
+    raw["execution"]["face_capacity"] = 2
+
+
+@pytest.mark.parametrize(
+    "edit,message",
+    [
+        (_charged_face_row, "carries the charged row Na; exact_free_energy_heat@1 books neutral"),
+        (_membrane_also_moves, "which membrane contact_2 also moves in the step"),
+        (_face_to_the_bath, "carries S to the held bath bath; .* between finite nodes"),
+    ],
+)
+def test_the_faces_exact_booking_refuses_rows_outside_its_scope(edit, message):
+    raw = face_world(bookings={"faces": EXACT})
+    edit(raw)
+    with pytest.raises(ConfigError, match=message):
+        parse_spec(raw)
+    raw["model"].pop(spec3.HEAT_BOOKINGS_KEY)  # The same world books the tableau without it.
+    parse_spec(raw)
 
 
 def test_rk4_refuses_a_booking():

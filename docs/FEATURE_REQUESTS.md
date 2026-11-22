@@ -30,7 +30,7 @@ and a general feature, never one built for one study (D144).
 | [FR-22](#fr-22--checkpoint-and-resume-for-the-stochastic-assembly-runner) | Checkpoint and resume for the stochastic assembly runner, qualified around a wash | **High** (user, 20 November 2026; D237) | **Qualified around a wash** (landed with FR-21's site step, 4fb9922b): FR-20's `test_a_cut_around_each_replacement_resumes_bitwise`, with a redo-or-skip plant. Rung P landed earlier (99770fce) | None |
 | [FR-23](#fr-23--timed-bath-changes-beside-binding-sites-on-distinct-finite-nodes) | Timed bath changes beside binding sites on distinct finite nodes | **High** (user, 20 November 2026; D239) | **Built (development, D244), landed 4e3d1899:** `site_occupancy@1` beside the bath schedule by scoped reads, and the trace rule on scheduled compositions | A dose into a finite compartment is not covered (FR-27) |
 | [FR-24](#fr-24--binding-site-occupancy-as-an-input-to-reaction-rates) | Binding-site occupancy as an input to reaction rates | **High** (user, 20 November 2026; D239) | **Landed** (merge 260e2ed5, tag `fr24-fr27-fr26-landed-2026-11-21`): `site_occupancy@1`'s readable quantities and @2's site source, through the contract's R3; junction targets refused in version 1 | None |
-| [FR-25](#fr-25--a-reusable-one-gene-expression-unit) | A reusable one-gene expression unit, verified against independent references | **High** (user, 20 November 2026; D239) | **Registered acceptance scored: inconclusive under the rule** (D278): 28 of 32 worlds-by-set pass against G2 (worst gap 0.40 of tolerance); 4 inconclusive after the declared retry (A1, pol T=100); no failure | The second and final retry is registered (97c6359c, D280): the triple (0.5, 0.25, 0.125) for A1 and pol T=100 from one snapshot, then a table tag and judgement |
+| [FR-25](#fr-25--a-reusable-one-gene-expression-unit) | A reusable one-gene expression unit, verified against independent references | **High** (user, 20 November 2026; D239) | **Final verdict: inconclusive under the registered rule** (D282): 30 of 32 worlds-by-set pass against G2, none failed; A1, the induction-and-decay world, stays inconclusive (one readout's order never settled) | The registered sequence is spent; a further test of A1 needs a new registration, disclosed as after the results (the user's call) |
 | [FR-26](#fr-26--owned-state-when-a-cell-is-replaced) | Owned state when a cell is replaced: the incoming cell from its template, environment-owned material kept, departing material recorded | **High** (user, 20 November 2026; D239) | **Landed as W** (merge 87f1ebef, the same tag): `site_occupant_replacement@1`, D152's occupant rule and @2's C′; an occupancy within 4 ulps of empty or full is refused (the trace convention) | None for version 1 (W landed). L, one lifecycle shared with division, is not now (D268): designed with its first division consumer |
 | [FR-27](#fr-27--a-timed-partial-wash-of-a-finite-compartment) | A timed partial wash of a finite compartment: collect a fraction of its liquid into a recorded sample, refill with a declared buffer, leave bound material in place | **High** (decided by the lead with the advisor under the user's delegation, 20 November 2026; D245) | **Landed** (merge 5fc1364f, the same tag): `scheduled_compartment_wash@1` | None |
 | [FR-28](#fr-28--binding-sites-owned-by-a-compartments-surface) | Binding sites owned by a compartment's own surface, such as a vessel wall, with no cell | Normal (D245) | **Landed** (72274a53, tag fr28-node-sites-landed-2026-11-22): a node owner `{"node": N}`, counts as for every population, checker-accepted on the merged head; the wash-timing docs clarified (6b28ec55) | None |
@@ -38,11 +38,12 @@ and a general feature, never one built for one study (D144).
 | [FR-30](#fr-30--homotypic-cx43-junctions-with-two-relaxation-times) | Homotypic Cx43 junctions with two relaxation times | **High,** inherited from FR-16's connexin catalogue (D225, D249) | The series gates' functions **landed** (merge 12c18db1, tag `fr30-series-gates-landed-2026-11-21`; kind `threshold_relaxation` or `boltzmann_eyring`); not registered. No openly licensed homotypic Cx43 voltage series found | All four registered papers are undetermined (D276, section 13.2); a metadata-only search for a source with two-exponential step decays at four or more voltages is running (D280). Development-only until a benchmark passes |
 | [FR-31](#fr-31--vesicle-rupture-during-a-steady-tension-hold) | Vesicle rupture during a steady tension hold: an optional rupture event competing in time | Low (D230, D248); the note before OL9 registers | Requested; a design note first | Blocked on rupture rates against tension, and on OL6 |
 | [FR-32](#fr-32--a-dopc-swelling-validation-record-for-the-water-operator) | A DOPC swelling validation record for the water operator | Low (D248) | Requested | Folded into the next water-operator landing |
-| [FR-33](#fr-33--regional-labelled-protein-readouts-redistribution-against-degradation) | Regional labelled-protein readouts: inside a measured region, outside it and across the whole cell | High (D228, D248) | **Two-way tracing landed** through D1, label families in the species registry (3c30082e), checker-accepted: redistribution keeps the labelled total and degradation lowers it by exactly the clearance, to rounding; charged log-mean faces refused. Regional readouts and the one-way tracer (ce2a3d9c) with D265's fixes (d48d40dd) | The in-cell case (two compartments of one cell) needs an engine path held for the user (D277); FR-36's age-selective loss can build on D1 |
+| [FR-33](#fr-33--regional-labelled-protein-readouts-redistribution-against-degradation) | Regional labelled-protein readouts: inside a measured region, outside it and across the whole cell | High (D228, D248) | **Two-way tracing landed** through D1, label families in the species registry (3c30082e), checker-accepted: redistribution keeps the labelled total and degradation lowers it by exactly the clearance, to rounding; charged log-mean faces refused. Regional readouts and the one-way tracer (ce2a3d9c) with D265's fixes (d48d40dd) | **The requester's first test landed** (7d70d63b, checker-accepted): two named regions joined by one face, with transfer and local-loss control. The in-cell compartment path stays priced (1.5 to 2 days), if a later test needs it |
 | [FR-34](#fr-34--channel-population-readouts-count-availability-and-signed-current) | Channel population readouts: surface count, availability and signed current at a declared voltage, with units and sign convention | **High** (user, 20 November 2026; D251) | **Landed, composites included:** opt-in flux and current readouts with fixed-voltage evaluation (81a29442); a composite's own clamped_channel_flux and clamped_kind at the step's control and layout views (07022ddf, D265 finding 1, checker-confirmed) | None |
 | [FR-35](#fr-35--timed-partial-withdrawal-of-an-assembly-populations-exterior-pool) | Timed partial withdrawal of an assembly population's well-mixed exterior pool: each molecule withdrawn independently, a declared buffer supplied, sites and particles kept | **High** (user, 21 November 2026) | **Landed** (merge b521a11c, tag `fr35-withdrawal-landed-2026-11-21`): `cells.pool_withdrawal@1` (D261) | None. Landed (b521a11c, with D263's fixes); the independent acceptance and a 4,000-stream ensemble passed |
 | [FR-36](#fr-36--age--and-region-selective-loss-within-a-species-row) | Age- and region-selective loss within a species row | FR-25's reviewer (21 November 2026) | **Deferred (D273).** Today's tools cover completion-time cohorts in one well-mixed pool with age-independent loss (cohort.py) and FR-33's regional export and one-way tracer | Reopens on a requester's readout needing age-dependent loss: D1 (label families) and D2 (an ageing operator), 2.5 to 4 days |
 | [FR-37](#fr-37--sampling-a-liquid-whose-dye-is-unevenly-distributed) | Sampling a liquid whose dye is unevenly distributed: a draw from chosen parts of an unevenly mixed liquid | **High** (user, 21 November 2026; D274) | **Shown with existing operators** (2bba6043, validation/sampling/uneven_draw.py): per-region wash events; the three cases match, with all 10 fmol accounted for; checker-accepted. Mixing is declared, not simulated (D246), and the sample is a host-side sum | Predicting the per-region split from the port, flow and timing needs an advection operator on faces, with the wash's face refusal lifted (about 3 to 5 days): built only if the requester asks |
+| [FR-38](#fr-38--rna-release-from-its-template-into-two-pools-with-different-lifetimes) | RNA release from its template into two pools with different lifetimes, with per-producer accounting, a release-window cohort and explicit measurement denominators | A user (22 November 2026) | **Building at full scope (D284).** A terminal hold in `templated_polymerisation@1`, split by p into two fate rows, with exact energy and no driven work; the cohort by label rows and by counters; a reader in `src/cells/assays` | The sheet amendment comes first. The finish is a registered comparison against code-blind references. Questions (c) replacement and (e) which cohort are with the requester |
 
 ## FR-1 — A closed internal compartment on the shared inventory
 
@@ -1196,6 +1197,22 @@ differences.
   any new run, for example a second finer triple for pol T=100 and a treatment of superconvergent
   readouts such as A1's C_tx_3; or bring ΔG and u into scope with a later registration.
 
+**FR-25's final verdict (22 November 2026, 11:26 UTC): inconclusive under the registered rule; 30 of 32
+worlds-by-set pass, none failed (D282).**
+- **The final retry,** registered at fr25-rule-retry2-registered-2026-11-22, with its table at
+  fr25-retry2-table-registered-2026-11-22 and all from one snapshot:
+  - pol T=100 is now ready and passes at both instances (largest gap 0.358 of tolerance; a planted
+    failure fails);
+  - A1 stays inconclusive at both. C_tx_3's observed order was 3.94, then 3.69, then 1.49 across the three
+    triples, never settling inside [1.5, 3.5].
+- The OL builder recomputed the final table with 0 differences. Verdicts: fr25-judge/verdicts-retry2.json,
+  sha256 bbd41afb329b7ec2546236b124662ca1bb3355adc68b60664fe7e72ecf1e722a.
+- **Plainly:** A1 is the world that carries the request's induction and decay under a regulator switch, so
+  that world is not judged. The 30 passing worlds-by-set cover the polymerase-limited, ribosome-limited and
+  two-gene chains against G2, within 3 times the step-error estimate at the scheme's formal order.
+- The registered sequence is spent. Any further test of A1 needs a new registration, which would come
+  after these results and must say so.
+
 ## FR-26 — Owned state when a cell is replaced
 
 - **The request (user, 20 November 2026; D239).** Define what happens to owned state when a cell
@@ -1307,6 +1324,20 @@ held_out.json sha256 98dc834067563bf768557d1e6e8b7e198b1d7e2d08178c06ceac4c075ab
 - With Lin, Desplantez and Moreno already undetermined, the registered order is exhausted. What follows
   is the user's decision (D277).
 
+**The Xu et al. 2013 extraction (22 November 2026, 11:05 UTC), under section 13.3.** Sealed: held_out.json
+sha256 afa1f3e7c406580f3631205094a4633b3ba696bf02f6c85ccd6191c2d339f943; fit.json 49f36c4798c6871672a48d558aad08fd3a4085cd28540239af5edace41c077a1.
+- The paper reports two on-rates per voltage, K = (1 - P_open)/tau, from two-exponential fits, but not
+  the time constants themselves. P_open is neither reported per voltage nor defined, so the law's times
+  cannot be mapped onto the paper's rates without inference. The times appear only in one example at
+  -120 mV.
+- **The lead's ruling**, made blind to every value: the strict reading applies. Section 13 judges
+  relaxation times, and rule 2's "read the way the paper reads its data" cannot be applied without the
+  paper's P_open.
+- The extractor's legibility principle, stated before reading, stands. Corner fragments are not
+  counted, since accepting them after opening would be post hoc.
+- So Xu 2013 is undetermined. The checker confirms it before Lin et al. 2010 is read, and Lin 2010's PDF
+  comes from the user.
+
 ## FR-31 — Vesicle rupture during a steady tension hold
 
 - **The request (the same review; D248).** The assembly model tests rupture only at a state change.
@@ -1367,6 +1398,29 @@ books its own driving force, so opposing label gradients book heat where the uns
 D1's guarantee covers material and ledgers. A measurement that attributes physical heat to provenance
 labels alone remains open, so a label family's face heat is not to be read as the unlabelled species'
 heat.
+
+**The requester's answer (22 November 2026, 12:04 UTC, relayed by the user).** "Two named regions of the
+same cell joined by one bidirectional face are sufficient for our first test." They ask that both region
+identities and volumes be preserved, and that donor label, receiver label, whole-cell label and cumulative
+local clearance be reported in the same units at the same times.
+- Pure transfer, with labelled production off, should conserve the total label, and the receiver's gain
+  should match the donor's loss.
+- A separate local-loss control should keep the receiver flat, with clearance accounting for the missing
+  label.
+- The in-cell compartment path (priced at about 1.5 to 2 days) is not needed for this test. The kinds owner
+  builds the two-region example on D1, with no engine change, and an independent checker writes the
+  acceptance from these words.
+
+**The first test landed (7d70d63b, tag fr33-first-test-landed-2026-11-22).** `validation/regions/example.py`
+(`first_test(case)`) gives two named regions of 1 pL each joined by one face. It reports donor, receiver,
+whole-cell label (defined as donor plus receiver) and the donor's cumulative clearance, in fmol at the same
+times.
+- In transfer, the total is conserved and the receiver's gain equals the donor's loss.
+- In the local-loss control, the receiver stays flat and clearance equals the donor's loss.
+- The receiver starts at trace under F2's exact face heat.
+- The independent checker passed every check within 1.42e-14 fmol, and its planted failure failed.
+- The regions are nodes facing the cell, not compartments of it; the requester accepted that for this
+  test.
 
 ## FR-34 — Channel population readouts: count, availability and signed current
 
@@ -1503,3 +1557,109 @@ with 2 and 1.5.
 - **The remaining experimental gap:** the dye left in each original region after a finite draw.
 - **Not covered:** predicting how much liquid a physical port draws from each region remains a
   separate engine capability.
+
+## FR-38 — RNA release from its template into two pools with different lifetimes
+
+- **The request (a user, 22 November 2026).** Add a reusable configuration to the one-gene expression
+  unit (FR-25's `templated_polymerisation@1`) for RNA that stays attached to its template briefly after
+  transcription, then enters one of two pools with different lifetimes. Both pools count in the RNA
+  measurement while their molecules survive.
+  1. **Release.** A completed chain enters an attached pool owned by its producer. With mean dwell
+     tau > 0 and durable fraction 0 ≤ p ≤ 1, the exits are p/tau and (1 − p)/tau. p is evaluated when
+     the chain leaves the template, from a declared input or state. Each released pool has its own loss
+     rate.
+  2. **Accounting per producer:** arrivals, still attached, cumulative releases into each pool, survivors
+     in each pool and cumulative loss. Initial RNA plus arrivals equals attached, surviving and lost RNA.
+     Producer identity across replacement and restart needs its own acceptance.
+  3. **The same RNA over time:** of the molecules released in a stated window and still present at its
+     end, the fraction surviving at a later time.
+  4. **Measurement denominators.**
+     - The detection threshold applies per gene copy, before averaging.
+     - Sample, cell and spot IDs are kept, and a confirmed zero-site cell counts in the per-cell average.
+     - A counted spot without brightness leaves the paired result incomplete.
+     - Brightness per called spot is reported apart from total signal per roster cell.
+     - A two-colour result names its statistic: ratio of pooled means, or mean of within-cell ratios.
+- **The requester's acceptance examples.**
+  - 80 attached chains, an exit half-life of 1 h and p = 0.75: at 1 h, 40 are attached and 40 released,
+    30 into the durable pool and 10 into the short-lived one. With half-lives of 2 h and 0.5 h, 24.852814
+    and 5.000000 survive.
+  - One cell with three spots of 10, one with one spot of 50 and one with none: 20 per spot, 30 as the
+    mean of the positive cells' means, 80/3 per roster cell.
+  - Two cells at (2, 1) and (6, 9): a ratio of pooled means of 0.8, and a mean of within-cell ratios of
+    1.3333.
+- **Reproduced (12:18 UTC).** The requester's three commands pass at their pinned revision 40c3185e and on
+  main 62ef3d6f, with identical native results.
+  - Their native replay runs `local_species_reactions@1` on stand-alone fixture nodes: four fractions,
+    including 0 and 1, each with a matched blank.
+  - Its largest pool error is 1.06e-6 transcript equivalents at 60 s and 1.32e-7 at 30 s, a ratio of 8.0
+    (third order). The inventory error is at most 8.5e-14.
+  - The package states no licence. It is kept as evidence under
+    /mnt/workspaces/Cells/fr38-rna-residence-20261122/ (zip sha256 4f564ba7…), uncommitted, and nothing
+    from it is copied into src/.
+- **Status: under assessment.** The replay shows the reaction operator on stand-alone nodes, not the gene
+  unit. The template operator refuses another writer on its rows, so connecting completions to the pools
+  is likely an engine change in `templated_polymerisation@1`, with a sheet amendment tagged before code.
+  - The gene regulation lane is pricing the build.
+  - Open questions for the requester:
+    - (a) whether an attached chain keeps its polymerase until release;
+    - (b) the release step's energy;
+    - (c) what "replacement" means for producer identity.
+- **Guards against building to the test.**
+  - The pools are species rows that the engine integrates, compared with independent references; never
+    a formula in a reader.
+  - p comes only from a constant, a schedule, or an existing factor form on an engine state, and its
+    source is stamped in the record.
+  - The reference's history model (its readiness function) stays out of the engine and validation.
+  - New routes are development status.
+  - The measurement layer is passive (`src/cells/assays`): it states its assumptions and never feeds back
+    into the simulation.
+
+**The gene regulation lane's desk assessment (12:22 UTC; no engine code).**
+- **The suggested route is refused.** A `local_species_reactions@1` reaction on a chain's product row is
+  refused at parse: "templated_polymerisation@1 ... is the one writer of its listed rows". The requester's
+  split works only on stand-alone fixture nodes. The parse script is
+  /mnt/workspaces/Cells/gene-regulation-20261120/fr38/refusal_check.py.
+- **The replay's energy is driven work.** The fixture's species all have mu°/RT = 0, and every route is
+  driven mass action, which books a driven-only node's dG as signed work with zero heat. Moves into a
+  fuller pool (Durable and Lost outgrowing Resident in the chase) book positive work, which the
+  dissipation check does not see. The ledger closes, but nothing physical pays for those moves.
+- **The proposed shape:** an in-place opt-in to `templated_polymerisation@1` (D148), with a sheet amendment
+  tagged before code.
+  - A finished chain waits in a terminal hold owned by its chain, carrying only its residues' standard
+    term. Release into a fate row has dG = RT ln a_fate. That is today's product-release term split across
+    the durable and short-lived rows, so it is downhill below 1 M, with no new energy object.
+  - An attached species row would instead gain a concentration term and could run uphill.
+  - Initial hold occupancy is declarable (the 80-chain case), and the model gives the requester's 40, 30,
+    24.852814 and 5.000000 analytically.
+  - Each pool's loss is an existing degradation route.
+  - New counters: the hold, cumulative releases per fate, and a per-producer ledger.
+  - p comes from a constant, a per-chain schedule, or a routable factor on an engine state (B1′, at the
+    midpoint when release moves its own source), each recorded.
+- **Not an FR-36 D2 case:** the held transcript is producer-owned occupancy, not a free pool, so D2's
+  progression operator stays the general home for ageing and label families.
+- **Prices (agent-days):**
+  - the sheet amendment 0.75;
+  - the hold without a machine 1.5–2 (with a machine 1–1.25);
+  - p as a constant and schedule 0.5, from a state factor 0.75;
+  - initial hold 0.25;
+  - counters, export and the per-producer ledger 0.75;
+  - the host-side release-window cohort 0.25–0.5;
+  - the observation layer 1–1.25;
+  - tests and gate 1–1.5;
+  - producer identity across replacement 1–2, depending on the requester's answer.
+- **Totals:** the minimal path (hold without a machine, constant and scheduled p, counters, host cohort,
+  observation layer, tests) is 5–6 days; the full path 7–9.5.
+- **A fourth question for the requester:** (d) is each producer one gene in one cell, with its own fate
+  rows, or do several producers feed shared pools, which would need label families?
+
+**Decided (D284, 12:35 UTC): the full scope, finishing with a registered comparison.**
+- **The engine piece,** with a sheet amendment tagged before code:
+  - a terminal hold per chain, with the machine held or released as a declared option;
+  - p from a constant, a schedule or a state factor;
+  - counters, a per-producer ledger, and identity across restart.
+- **The cohort, two ways that must agree:** label rows by schedule, and recovery from the counters.
+- **The observation reader** in `src/cells/assays`.
+- **A fifth question for the requester:** (e) is the window cohort marked when chains complete, as the
+  package README's "completion-time cohort" reads, or when they are released, as the request body says?
+  The two differ whenever the dwell matters. A pulse label marks at synthesis.
+- **Only (c) and (e) block anything,** and each blocks only its own piece.

@@ -5,6 +5,13 @@ is 1/2 dt (q_start + q_end) from the powers at the step's start and end states, 
 non-negative, and the state is the tableau run's bit for bit. A declared kind's heat field (the
 planted conversion kind, declared heat and monotone and admitting the trapezoid) is booked by the
 same code; a kind that admits nothing is refused.
+
+The faces' exact booking (exact_free_energy_heat@1, D280; CORE_SEAMS_DESIGN §6.5), on the trace
+start that the tableau's face heat refuses (SECRETED_SPECIES_TRANSPORT_DESIGN §11.4): the default
+refuses its energy ledger at row 1, the exact booking closes it to rounding at every row, and the
+state is the default's bit for bit, at the trace and at 0.1 mM; a share planted below its floor
+refuses the step. Host NumPy steps of @3 (no compile), under a second for these rows on one core:
+the booking's claims at the step the engine runs, which the compiled runner shares.
 """
 
 import copy
@@ -17,6 +24,7 @@ import pytest
 
 from cells.definitions import surface_pump_v3_spec as spec3
 from cells.definitions.specs import ConfigError, parse_spec
+from cells.execution.errors import NumericalError
 from cells.execution.schedule import control_values
 from cells.models import surface_pump_v3
 from cells.registry import kind_registry
@@ -25,10 +33,13 @@ from tests import kind_fixtures as kf
 from tests.unit.test_heat_bookings import (
     CROSSED_STEPS,
     CROSSING,
+    EXACT,
     TRAPEZOID,
     _clear_compiled,
+    face_world,
     probe_world,
 )
+from validation.tissue import secreted_species_fixtures as sfx
 
 
 def _steps(raw, count):
@@ -112,3 +123,80 @@ def test_a_kinds_declared_heat_is_booked_by_the_same_trapezoid():
                 parse_spec(_conversion_world({kf.CONVERSION_ID: TRAPEZOID}))
     finally:
         _clear_compiled()
+
+
+# ------------------------------------------------------------------ the faces' exact booking (D280)
+
+
+def _host_steps(raw, count):
+    """count steps of @3 on the host (NumPy), from the world's initial state: (spec, model, rows,
+    p), each step valid."""
+    spec = parse_spec(raw)
+    model = get_model(spec.model)
+    state, p = model.initial_values(spec)
+    c = control_values(spec, [0.0])
+    control = type(c)(*(np.asarray(v)[0] for v in c))
+    rows = [state]
+    for _ in range(count):
+        state, valid = model.imex_step(state, spec.execution.dt, control, p, xp=np)
+        assert bool(valid)
+        rows.append(state)
+    return spec, model, rows, p
+
+
+def _stacked(rows):
+    return type(rows[0])(
+        *(np.stack([np.asarray(getattr(r, k)) for r in rows]) for k in rows[0]._fields)
+    )
+
+
+@pytest.mark.parametrize("low_mM,tableau_passes", [(sfx.TRACE_mM, False), (0.1, True)])
+def test_the_exact_face_booking_closes_the_energy_ledger_and_keeps_the_state(
+    low_mM, tableau_passes
+):
+    count = 5
+    spec, model, plain, _ = _host_steps(face_world(low_mM, steps=count), count)
+    spec_x, model_x, exact, p = _host_steps(
+        face_world(low_mM, {"faces": EXACT}, steps=count), count
+    )
+    assert surface_pump_v3.exact_faces(model_x.structure)
+    assert not surface_pump_v3.exact_faces(model.structure)
+    steps = np.arange(count + 1)
+    if tableau_passes:
+        model.check_values(_stacked(plain), spec, steps=steps)
+    else:  # The tableau's face heat at the trace start (SECRETED_SPECIES §11.4).
+        with pytest.raises(NumericalError, match="accounting failed: energy"):
+            model.check_values(_stacked(plain), spec, steps=steps)
+    model_x.check_values(_stacked(exact), spec_x, steps=steps)
+    eps = np.finfo(float).eps
+    for row in exact[1:]:  # The energy ledger to rounding: the release is the ledger's own term.
+        flows = float(np.abs(np.asarray(row.face_dissipated_energy_pJ)).sum())
+        assert flows > 0 and abs(float(model_x.balances(row, p)["energy"])) <= 64 * eps * flows
+    heat = np.asarray(_stacked(exact).face_dissipated_energy_pJ)
+    assert np.all(np.diff(heat, axis=0) > 0)
+    for a, b in zip(plain, exact, strict=True):  # Only the face heat's booking changes.
+        for name in a._fields:
+            if name != "face_dissipated_energy_pJ":
+                np.testing.assert_array_equal(
+                    np.asarray(getattr(a, name)), np.asarray(getattr(b, name))
+                )
+
+
+def test_a_share_below_its_floor_refuses_the_step():
+    """No clamp and no other form: an end state planted past the two nodes' swap books a negative
+    share and is refused; one short of equilibrium books a positive heat."""
+    spec, _, (start,), p = _host_steps(face_world(0.5, {"faces": EXACT}, steps=1), 0)
+    s = list(spec.model.species_ids).index(sfx.SPECIES)
+    n1, n2 = (
+        [o.id for o in spec.model.extracellular].index("n1"),
+        [o.id for o in spec.model.extracellular].index("n2"),
+    )
+    for moved, booked in ((0.2, True), (0.6, False)):  # fmol: 0.25 reaches 0.75 mM each, 0.5 swaps.
+        increment = np.array(start.extracellular_amount_increment)
+        increment[s, n1] -= moved
+        increment[s, n2] += moved
+        transferred = np.array(start.face_transferred)
+        transferred[s, 0] += moved
+        end = start._replace(extracellular_amount_increment=increment, face_transferred=transferred)
+        heat, ok = surface_pump_v3.exact_face_heat(start, end, p, xp=np)
+        assert bool(ok) is booked and (float(np.asarray(heat).sum()) > 0) is booked

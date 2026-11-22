@@ -106,15 +106,39 @@ def constants(world):
     )
 
 
+PI_50 = "3.1415926535897932384626433832795028841971693993751"
+
+
+def delta_constants(world):
+    """(ln(c_ext/c0), ln(N_A c0 · sphere), N_A c_ext · sphere): change_between's constants, each
+    computed from the inputs' float64 values in 50-digit decimal arithmetic and rounded once (OL5's
+    precision fix, 22 November 2026). A sum of the float constants (c0 − c2, c0 + c3) would round
+    near 50 twice; and the last one, N_A c_ext V_sph = N x at the kink, enters a tense change times
+    about 1.5 N |dW|/W, so each of its roundings shows."""
+    from decimal import Decimal, localcontext
+
+    with localcontext() as context:
+        context.prec = 50
+        c0 = Decimal(world.units.standard_concentration_mM) / 1000
+        c_ext = Decimal(outside_mM(world)) / 1000
+        half = Decimal(world.geometry[1]["area_quantum_m2"]) / 2
+        sphere = half * half.sqrt() / (6 * Decimal(PI_50).sqrt()) * 1000  # V_sph [L] per W^1.5
+        avogadro = Decimal(AVOGADRO)
+        return (float((c_ext / c0).ln()), float((avogadro * c0 * sphere).ln()),
+                float(avogadro * c_ext * sphere))  # fmt: skip
+
+
 def layout(data, world, capacity):
-    """(lumen [P] int64, quanta [P] int64, constants [4] float64)."""
+    """(lumen [P] int64, quanta [P] int64, constants [7] float64): constants() then
+    delta_constants()."""
     from cells.models.assembly_lineages_v2 import geometry
 
     lumen = np.zeros(capacity, dtype=np.int64)
     for i, place in enumerate(world.places):
         if place.phase == "lumen":
             lumen[i] = 1
-    return (lumen, geometry.place_quanta(world, capacity), np.asarray(constants(world)))
+    return (lumen, geometry.place_quanta(world, capacity),
+            np.asarray(constants(world) + delta_constants(world)))  # fmt: skip
 
 
 def log_branches(nl, w, c, xp):
@@ -169,16 +193,53 @@ def value(counts, tables, term_layout):
 
 
 def delta(term_state, term_layout, view, change, xp):
-    """F_osm(n + change) − F_osm(n) for each step's change at its entries ([R, K] -> [R])."""
+    """F_osm(n + change) − F_osm(n) for each step's change at its entries ([R, K] -> [R]), by
+    change_between."""
     lumen, quanta, c = term_layout
     n_lumen, footprint = term_state
     d_lumen = entry_sum(lumen[view.places] * change, xp)
     d_quanta = entry_sum(quanta[view.places] * change, xp)
-    after_lumen = xp.maximum(n_lumen + d_lumen, 0)
-    after_quanta = footprint + d_quanta
-    before = free_energy(n_lumen + xp.zeros_like(d_lumen), footprint + xp.zeros_like(d_quanta), c,
-                         xp)  # fmt: skip
-    return free_energy(after_lumen, after_quanta, c, xp) - before
+    before_lumen = n_lumen + xp.zeros_like(d_lumen)
+    before_quanta = footprint + xp.zeros_like(d_quanta)
+    after_lumen = xp.maximum(before_lumen + d_lumen, 0)
+    return change_between(before_lumen, before_quanta, after_lumen, before_quanta + d_quanta, c, xp)
+
+
+def change_between(n0, w0, n1, w1, c, xp):
+    """F_osm(n1, w1) − F_osm(n0, w0), incrementally, where both states hold lumen molecules in a
+    membrane (OL5's precision fix, 22 November 2026). Two values of F_osm, each up to 1e6 k_BT,
+    differed by subtraction before, which left about 1e-10 in the reverse of an exit; here each
+    branch's change is formed from the small differences themselves:
+    - floppy (V = N/(N_A c_ext)): F = N (1 + ln(c_ext/c0)) − N ln N, so
+      ΔF = dN (1 + ln(c_ext/c0)) − dN ln N1 − N0 log1p(dN/N0);
+    - tense (V = V_sph(W)): F = −N ln(N_A c0 sphere W^1.5) + N_A c_ext sphere W^1.5, so
+      ΔF = −dN ln(N_A c0 sphere W1^1.5) − 1.5 N0 log1p(dW/W0)
+           + N_A c_ext sphere W0^1.5 expm1(1.5 log1p(dW/W0)), with x0 = V_sph/V_osm at the start;
+    - across the kink, the end state's branch from the start state, plus the two branches' gap at
+      the start, N0 (x0 − 1 − ln x0) ≥ 0: added when the start is floppy and the end tense,
+      subtracted the other way.
+    The branch of each state is log_volume's (log_branches: tense where ln V_osm > ln V_sph). A
+    state with an empty lumen, or lumen molecules and no membrane, takes the difference of the two
+    values as before (free_energy: 0, or +inf)."""
+    regular = (n0 > 0) & (n1 > 0) & (w0 > 0) & (w1 > 0)
+    direct = free_energy(n1, w1, c, xp) - free_energy(n0, w0, c, xp)
+    nn0 = xp.where(regular, n0, 1).astype(np.float64)
+    nn1 = xp.where(regular, n1, 1).astype(np.float64)
+    ww0 = xp.where(regular, w0, 1).astype(np.float64)
+    ww1 = xp.where(regular, w1, 1).astype(np.float64)
+    dn, dw = nn1 - nn0, ww1 - ww0  # exact: small integers
+    log_osm0, log_sph0 = log_branches(nn0, ww0, c, xp)
+    log_osm1, log_sph1 = log_branches(nn1, ww1, c, xp)
+    tense0, tense1 = log_osm0 > log_sph0, log_osm1 > log_sph1
+    log_w = xp.log1p(dw / ww0)  # ln(W1/W0)
+    floppy = dn * (1.0 + c[4]) - dn * xp.log(nn1) - nn0 * xp.log1p(dn / nn0)
+    held0 = c[6] * ww0 * xp.sqrt(ww0)  # N_A c_ext V_sph(W0) = N0 x0
+    tense = (-dn * (c[5] + 1.5 * xp.log(ww1)) - 1.5 * nn0 * log_w
+             + held0 * xp.expm1(1.5 * log_w))  # fmt: skip
+    log_x0 = xp.log(held0 / nn0)
+    gap = nn0 * (xp.expm1(log_x0) - log_x0)  # F of the other branch at the start, less its own
+    across = xp.where(tense1 & ~tense0, gap, xp.where(tense0 & ~tense1, -gap, 0.0))
+    return xp.where(regular, xp.where(tense1, tense, floppy) + across, direct)
 
 
 def tension(n_lumen, footprint, world_kT, q, c, xp):

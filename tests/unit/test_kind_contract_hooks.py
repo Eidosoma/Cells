@@ -230,8 +230,18 @@ def test_heat_bookings_default_to_none_listed_and_admit_each_class_s_own():
     trapezoid = dict(BASE, junction_heat_booking=TRAPEZOID)
     both = ((inner_laws.CHANNELS, TRAPEZOID), (inner_laws.JUNCTIONS, TRAPEZOID))
     assert inner_laws.InnerStructure(**trapezoid, heat_bookings=both).heat_bookings == both
-    # Each of @3's own classes admits the trapezoid, whose power is never negative (the lead).
-    own = tuple(sorted((mover, TRAPEZOID) for mover in inner_laws.OWN_HEAT_BOOKINGS))
+    # Each of @3's own classes but faces admits the trapezoid, whose power is never negative (the
+    # lead); faces admit the exact booking alone (D280).
+    own = tuple(
+        sorted(
+            (mover, TRAPEZOID)
+            for mover, admitted in inner_laws.OWN_HEAT_BOOKINGS.items()
+            if TRAPEZOID in admitted
+        )
+    )
+    assert inner_laws.OWN_HEAT_BOOKINGS[inner_laws.FACES] == (EXACT,)
+    faces = ((inner_laws.FACES, EXACT),)
+    assert inner_laws.InnerStructure(**BASE, heat_bookings=faces).heat_bookings == faces
     assert {mover for mover, _ in own} == {
         "calcium_pumps",
         "channels",
@@ -257,6 +267,7 @@ def test_heat_bookings_default_to_none_listed_and_admit_each_class_s_own():
             "membranes admit": ((inner_laws.MEMBRANES, EXACT),),
             "pumps admit": ((inner_laws.PUMPS, EXACT),),
             "calcium_pumps admit": ((inner_laws.CALCIUM_PUMPS, EXACT),),
+            "faces admit": ((inner_laws.FACES, TRAPEZOID),),
             "junctions book": ((inner_laws.JUNCTIONS, TRAPEZOID),),
             "nor a declared kind": (("tests.undeclared@1", EXACT),),
             "admits no heat booking": ((PLANTED_ID, TRAPEZOID),),

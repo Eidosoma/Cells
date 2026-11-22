@@ -4,7 +4,9 @@
   world's own data (planted: a factor at each direction's own state, a power propensity, a
   one-sided composition term; each fails by far more than rounding).
 - The reverse is the products' mass action, against textbook formulas written here (planted: the
-  power propensity).
+  power propensity); at counts in the thousands the activities keep double precision, each falling
+  factorial a sum of direct logarithms (OL5's precision fix; planted: the log-factorial table's
+  differences, 5e-12 off at OL2-1's registered state).
 - Catalysis is kinetic only: a closed world's stationary law, solved from the kernel's own rates,
   is exp(−F)/Z with and without catalysts (planted: the factor at each direction's own state moves
   it); a world with every rate constant doubled draws the same channels at exactly half the times.
@@ -243,6 +245,24 @@ def test_the_reverse_from_F_is_the_products_mass_action():
         )
     assert planted[r] == pytest.approx(0.7 * 7 * 7 / X_pool, rel=1e-13)  # n²: caught
     assert planted[r] != pytest.approx(plus[r], rel=1e-3)
+    # OL5's precision fix: at OL2-1's registered counts (r1's worst, n = 1672 of N = 1847 in the
+    # membrane) the dimerisation and the leave keep double precision; the table's differences,
+    # lgamma(n + 1) − lgamma(n − 1), missed by 5e-12.
+    big = {"L@pool": 7, "S@pool": 5, "L@membrane": 1672, "P@membrane": 175, "D@membrane": 0,
+           "L@lumen": 2, "S@lumen": 1}  # fmt: skip
+    wide = spec_of(world(regular=False, catalysis=False), molecules=4096)
+    plus, minus = rates_at(wide, big)
+    N = 1672 + 175
+    r = ids.index("dimerise")
+    assert plus[r] == pytest.approx(1.0 * 1672 * 175 / N, rel=2e-15)
+    r = ids.index("join_L")
+    assert minus[r] == pytest.approx(10.0 * math.exp(mu["L@membrane"] - mu["L@pool"]) * 1672,
+                                     rel=2e-15)  # fmt: skip
+    n1, M = 1672, 1847
+    tabled = math.exp(
+        (math.lgamma(n1 + 1) - math.lgamma(n1 - 1)) - (math.lgamma(M + 1) - math.lgamma(M))
+    )
+    assert abs(tabled / (n1 * (n1 - 1) / M) - 1) > 1e-12  # planted: the table's differences
 
 
 # ------------------------------------------------------------------ catalysis is kinetic only

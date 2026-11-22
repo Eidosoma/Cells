@@ -11,8 +11,11 @@
 #      tool's;
 #   4. G2's ten rows on the regenerated set;
 #   5. OL1's probe driver frozen from TREE, run on OL1's registered inputs, and compared with OL1's
-#      landing set probes-3e39bcc5 by the checkout's tool (arrays bitwise, JSON leaf by leaf but
-#      for provenance, other files byte for byte).
+#      landing set by the checkout's tool (arrays bitwise, JSON leaf by leaf but for provenance,
+#      other files byte for byte). The set is probes-48c8d2a9, renewed for OL5's precision fix
+#      (D281): direct logarithms in the rates moved OL1's rates and event times by rounding (18
+#      array files, no integer array; its compare-vs-3e39bcc5.json), and OL1's six rows pass on
+#      it. probes-3e39bcc5, the set it renews, is kept.
 # Steps 1-4 are D188 move 2's invariance_m2.sh, on these CPUs. The frozen evidence stays under
 # /mnt/workspaces/Cells; EVIDENCE overrides its root.
 # Usage (a run_detached unit's command): scripts/assembly_lineages_invariance.sh TREE OUT
@@ -79,9 +82,10 @@ mkdir -p "$OUT/ol1"
   "$OUT/ol1/probes" > "$OUT/ol1/run.log" 2>&1)
 rc=$?; log "5 OL1's probe driver exit $rc"
 [ $rc -eq 0 ] || fail "5 failed"
-"$PY" -I "$TOOL" "$E/ol1-laws-20261117/probes-3e39bcc5/probes" "$OUT/ol1/probes" \
-  "$OUT/ol1/compare-vs-3e39bcc5.json" > "$OUT/ol1/compare.log" 2>&1
-rc=$?; log "5 OL1 compare with probes-3e39bcc5 exit $rc: $(tail -n 1 "$OUT/ol1/compare.log")"
+OL1_SET=probes-48c8d2a9
+"$PY" -I "$TOOL" "$E/ol1-laws-20261117/$OL1_SET/probes" "$OUT/ol1/probes" \
+  "$OUT/ol1/compare-vs-$OL1_SET.json" > "$OUT/ol1/compare.log" 2>&1
+rc=$?; log "5 OL1 compare with $OL1_SET exit $rc: $(tail -n 1 "$OUT/ol1/compare.log")"
 echo $rc > "$OUT/done"
 log "done $rc"
 exit $rc
