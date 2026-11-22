@@ -1307,6 +1307,20 @@ held_out.json sha256 98dc834067563bf768557d1e6e8b7e198b1d7e2d08178c06ceac4c075ab
 - With Lin, Desplantez and Moreno already undetermined, the registered order is exhausted. What follows
   is the user's decision (D277).
 
+**The Xu et al. 2013 extraction (22 November 2026, 11:05 UTC), under section 13.3.** Sealed: held_out.json
+sha256 afa1f3e7c406580f3631205094a4633b3ba696bf02f6c85ccd6191c2d339f943; fit.json 49f36c4798c6871672a48d558aad08fd3a4085cd28540239af5edace41c077a1.
+- The paper reports two on-rates per voltage, K = (1 - P_open)/tau, from two-exponential fits, but not
+  the time constants themselves. P_open is neither reported per voltage nor defined, so the law's times
+  cannot be mapped onto the paper's rates without inference. The times appear only in one example at
+  -120 mV.
+- **The lead's ruling**, made blind to every value: the strict reading applies. Section 13 judges
+  relaxation times, and rule 2's "read the way the paper reads its data" cannot be applied without the
+  paper's P_open.
+- The extractor's legibility principle, stated before reading, stands. Corner fragments are not
+  counted, since accepting them after opening would be post hoc.
+- So Xu 2013 is undetermined. The checker confirms it before Lin et al. 2010 is read, and Lin 2010's PDF
+  comes from the user.
+
 ## FR-31 — Vesicle rupture during a steady tension hold
 
 - **The request (the same review; D248).** The assembly model tests rupture only at a state change.
