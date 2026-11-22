@@ -1,0 +1,46 @@
+{
+ "kind": "cells.gene_regulation.fr25_rule_amendment@1",
+ "amends": "validation/gene_regulation/fr25_rule.json (tag fr25-rule-registered-2026-11-22)",
+ "amends_sha256": "8702ee55cbb9e95c3219eeeaa64205b58caecc9d30f150cd5d7b13c0dee62809",
+ "decision": "D280: the user approved the advisor's recommendation, one more registered finer triple, then final",
+ "second_retry": {
+  "worlds_by_set": [
+   [
+    "test instance",
+    "A1"
+   ],
+   [
+    "Spirin's E_pep",
+    "A1"
+   ],
+   [
+    "test instance",
+    "pol T=100"
+   ],
+   [
+    "Spirin's E_pep",
+    "pol T=100"
+   ]
+  ],
+  "steps_s": [
+   0.5,
+   0.25,
+   0.125
+  ],
+  "judged_step_s": 0.125,
+  "estimate": "|y(0.25) - y(0.125)| / (2^p - 1), as the rule",
+  "order": "log2(max|y(0.5) - y(0.25)| / max|y(0.25) - y(0.125)|), as the rule"
+ },
+ "unchanged": {
+  "order_window": {
+   "low": "p - 0.5",
+   "high": 3.5
+  },
+  "factor_of_safety": 3.0,
+  "floor_of_scale": 1e-09,
+  "order_declared": "as the rule: A1 p = 2 for every class; A1-M p = 3, heat 2",
+  "cap": 3.5
+ },
+ "final": "after this second retry the verdict is final: a world still inconclusive stays inconclusive, and none is retried again",
+ "orders_seen": "the first retry's orders were seen before this amendment: A1's C_tx_3 at 3.69 (above the cap 3.5, declared p = 2) and pol T=100's E_tx and F_pol at 2.40 (below p - 0.5 = 2.5, declared p = 3), at both test instances; the table tags fr25-table-registered-2026-11-22 and fr25-retry-table-registered-2026-11-22, and D278's scoring (28 of 32 passed, 4 inconclusive) were seen too"
+}
