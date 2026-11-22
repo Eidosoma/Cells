@@ -6,7 +6,7 @@ Browse Cells engine laws by scientific topic. Each claim links its Lean proofs, 
 
 <!-- generated: claims-index -->
 
-Direct Lean claims cover [50 of 51 laws](COVERAGE.md#registered-laws) and [30 of 31 operators](COVERAGE.md#registered-operators).
+Direct Lean claims cover [51 of 51 laws](COVERAGE.md#registered-laws) and [31 of 31 operators](COVERAGE.md#registered-operators).
 
 | Category | Registered laws with proof | Claims with proof | Numerical checks | Claims with biological evidence |
 | --- | ---: | ---: | --- | ---: |
@@ -14,7 +14,7 @@ Direct Lean claims cover [50 of 51 laws](COVERAGE.md#registered-laws) and [30 of
 | [Ion channels and junctions](COVERAGE.md#category-channels-and-junctions) | 15 of 15 | 15 of 15 | 15 checked | 14 |
 | [Pumps and cotransport](COVERAGE.md#category-pumps-and-cotransport) | 13 of 13 | 8 of 8 | 8 checked | 8 |
 | [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 3 of 3 | 13 of 13 | 12 checked · 1 failed | 10 |
-| [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 13 of 14 | 22 of 22 | 21 checked · 1 failed | 16 |
+| [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 14 of 14 | 26 of 26 | 24 checked · 2 failed | 18 |
 | [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 1 of 1 | 26 of 26 | 26 checked | 19 |
 | [Cell physiology](COVERAGE.md#category-cell-physiology) | — | 3 of 3 | 3 checked | 3 |
 
@@ -22,9 +22,11 @@ Direct Lean claims cover [50 of 51 laws](COVERAGE.md#registered-laws) and [30 of
 
 Each category opens its detailed claim table on GitHub, including registered laws still awaiting a proof. A single claim can cover several laws. The last column counts claims with a recorded measurement or literature finding, including partial evidence. Each numerical result applies to the cases in its linked record. [All registered laws](COVERAGE.md#registered-laws) · [Design notes](ENGINE_LAW_VERIFICATION.md) · [Voltage pilot closeout](../reports/BIO003_PILOT_CLOSEOUT.md)
 
-The repaired wash now closes Na, K and Cl counters exactly at both tested fractions. The public composite channel clamp also reproduces the current at the patch’s own voltage. The two remaining numerical failures concern GARD version 1 heat and the sign of a rapid-binding inventory margin. The tissue host tested for the binding case requires positive held totals. [Wash and clamp replays](PROGRESS.md#d272-wash-clamp-retests) · [Current failures](COVERAGE.md#failing-numerical-checks) · [Earlier results and other review findings](PROGRESS.md#main-review-d264-d266)
+Three claims have failing numerical checks. GARD v1 can refuse a reversible event. GARD v2 repairs that case but can report a stalled lineage at an admitted coefficient with a finite positive event rate. Its range check also records a lost subnormal and a capacity limit. The third claim concerns the sign of a rapid-binding inventory margin. The tissue host tested for that case requires positive held totals. [Current failures](COVERAGE.md#failing-numerical-checks) · [GARD v2 reproducer](PROGRESS.md#gard-v2-range) · [Wash and clamp repairs](PROGRESS.md#d272-wash-clamp-retests)
 
 ## Biological evidence
+
+At the same growth rate, measured fractions of mRNA-bound ribosomes in *E. coli* ranged from 31% to 65% across three nutrient limitations. In hamster cells, tracer measurements followed residues in unfinished and released protein separately. These experiments give observables for the two polymerisation balances. A quantitative Cells comparison still needs matched conditions and pool definitions. [Machine occupancy](claims/polymerisation-machines.md) · [Residues in transit and released](claims/polymerisation-residues.md)
 
 In a matched Cells control, a donor loses the same amount of labelled protein under transfer and degradation. A receiver gain or a clearance record distinguishes the mechanisms. Imaging of PSD-95 shows label spreading from one spine to two neighbors. The fate of the original label across the whole neuron over 48 hours remains open. Representing a neutral tracer by separate species rows can also change the heat attributed to mixing. [Matched donors](claims/transfer-or-degradation.md) · [Whole-cell balance](claims/regional-pulse-balance.md) · [Neutral label diffusion](claims/neutral-label-diffusion.md) · [Effect on booked heat](claims/label-mixing-power.md)
 
@@ -466,11 +468,19 @@ For assembly exchange, compare entry and exit rates at every three-species compo
 "$cells_python" -B checks/reservoir_exchange.py
 ```
 
-For the two GARD laws, compare both directions of each transfer and each four-event cycle against exact rational rates. The full run also exercises two cases where subtracting a large diagonal coefficient loses the remaining catalyst. It exits with status 1 when the passive law refuses a valid event. The controls-only command runs the ordinary comparisons and two passing one-event controls. [Driver](checks/gard_catalysis.py) · [Findings and membrane measurements](PROGRESS.md#19-november-2026--gard-catalysis-on-reversible-transfers)
+For the original GARD laws, compare both directions of each transfer and each four-event cycle against exact rational rates. The full run also exercises two cases where subtracting a large diagonal coefficient loses the remaining catalyst. It exits with status 1 when the passive law refuses a valid event. The controls-only command runs the ordinary comparisons and two passing one-event controls. [Driver](checks/gard_catalysis.py) · [Findings and membrane measurements](PROGRESS.md#19-november-2026--gard-catalysis-on-reversible-transfers)
 
 ```bash
 "$cells_python" -B checks/gard_catalysis.py
 "$cells_python" -B checks/gard_catalysis.py --controls-only
+```
+
+For the GARD v2 two-word cache, replay the repaired reversible event, signed updates and precision guard. The separate range command exits with status 1 while admitted exponent or explicit-capacity cases fail. For templated polymerisation, check the two balances across every saved row of three compiled worlds, including two chains competing for one machine pool. [Cache precision](PROGRESS.md#gard-v2-cache) · [Range findings](PROGRESS.md#gard-v2-range) · [Polymerisation balances and measurements](PROGRESS.md#polymerisation-balances)
+
+```bash
+"$cells_python" -B checks/gard_cache.py
+"$cells_python" -B checks/gard_cache.py --range
+"$cells_python" -B checks/polymerisation_balances.py
 ```
 
 For ideal and regular assembly mixing, one command checks the 592 registered probe states under both count measures and rebooks four compiled trajectories. It compares the activity curves with Shaw’s 25 DOPC measurements and Parker’s independent crystal-onset endpoint. [Driver](checks/assembly_mixing.py) · [Fit, assumptions and results](PROGRESS.md#19-november-2026--ideal-and-regular-assembly-mixing)

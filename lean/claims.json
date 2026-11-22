@@ -22,6 +22,92 @@
     "cells.shared_pool@1": "molecular-assembly"
   },
   "comparisons": {
+    "gard-cache-reversibility": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@1"
+      ],
+      "laws": [
+        "cells.reservoir_exchange@1",
+        "cells.gard_catalysis_pair_consistent@2"
+      ],
+      "engine_revision": "6b28ec55368011de79dce85e6172b5844b77a287",
+      "record_revision": "d6db91d64f5c90d8e4857873052f4e667eba7469",
+      "sources": {
+        "TwoSum, founder fold, event update and reverse factor": "src/cells/models/assembly_lineages/gard.py#L291-L357",
+        "Row precision and count guards": "src/cells/models/assembly_lineages/gard.py#L359-L396",
+        "Public engine model and execution parser": "src/cells/models/assembly_lineages/spec.py",
+        "Compiled propensities and event handling": "src/cells/models/assembly_lineages/kernel.py",
+        "Public lineage runner and closure": "src/cells/models/assembly_lineages/runner.py",
+        "Compiled rate table probe": "validation/assembly_lineages/probes.py#L210",
+        "Declared two-type worlds": "tests/assembly_lineage_fixtures.py",
+        "Original regression with a dropped low word": "tests/unit/test_assembly_lineages_kernel.py#L139-L172"
+      },
+      "record_inputs": {
+        "Precision proof and numerical-domain witnesses": "lean/CellsProofs/Chemistry/GardCache.lean",
+        "Stress-world construction and comparison": "lean/checks/gard_catalysis.py"
+      },
+      "driver": "lean/checks/gard_cache.py",
+      "record": "lean/PROGRESS.md#gard-v2-cache"
+    },
+    "gard-cache-domain": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@1"
+      ],
+      "laws": [
+        "cells.reservoir_exchange@1",
+        "cells.gard_catalysis_pair_consistent@2"
+      ],
+      "engine_revision": "6b28ec55368011de79dce85e6172b5844b77a287",
+      "record_revision": "d6db91d64f5c90d8e4857873052f4e667eba7469",
+      "sources": {
+        "Finite-input check and exact fold": "src/cells/models/assembly_lineages/gard.py",
+        "Molecule capacity and default bucket": "src/cells/models/assembly_lineages/spec.py#L358-L371",
+        "Type bucket sizes": "src/cells/models/assembly_lineages/family.py#L28-L54",
+        "Independent declared fission-size limit": "src/cells/models/assembly_lineages/fission.py#L94-L102",
+        "Stalled event branch": "src/cells/models/assembly_lineages/kernel.py#L338-L352",
+        "Lineage result and energy ledger": "src/cells/models/assembly_lineages/runner.py",
+        "Independent rational join and leave propensities": "validation/gard/references/kernels.py#L233-L304",
+        "Two-type world and explicit execution capacity": "tests/assembly_lineage_fixtures.py"
+      },
+      "record_inputs": {
+        "Precision proof and numerical-domain witnesses": "lean/CellsProofs/Chemistry/GardCache.lean",
+        "Stress-world construction and comparison": "lean/checks/gard_catalysis.py"
+      },
+      "driver": "lean/checks/gard_cache.py",
+      "record": "lean/PROGRESS.md#gard-v2-range"
+    },
+    "polymerisation-balances": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [],
+      "operators": [
+        "cells.templated_polymerisation@1"
+      ],
+      "engine_revision": "6b28ec55368011de79dce85e6172b5844b77a287",
+      "record_revision": "d6db91d64f5c90d8e4857873052f4e667eba7469",
+      "sources": {
+        "Stage layout, active stages and bound residue counts": "src/cells/operators/templated_polymerisation.py#L700-L742",
+        "Half-step changes, cumulative counters and ledgers": "src/cells/operators/templated_polymerisation.py#L862-L1004",
+        "Public windowed simulation": "src/cells/execution/windows.py",
+        "A1 and the competing two-chain world": "validation/gene_regulation/worlds.py#L299-L416",
+        "Compiled histories and per-chain readouts": "validation/gene_regulation/engine_run.py#L162-L175",
+        "Stage, pool and product output fields": "validation/gene_regulation/engine_run.py#L267-L289",
+        "Truncating the original worlds": "validation/gene_regulation/kernel.py#L22-L36",
+        "Independent copy-to-fmol conversion": "validation/gene_regulation/sheet_check.py#L90-L97",
+        "Existing polymerisation regressions": "tests/unit/test_templated_polymerisation.py#L91-L100"
+      },
+      "record_inputs": {
+        "Stage and pool proofs": "lean/CellsProofs/Chemistry/Polymerisation.lean",
+        "Ribosome occupancy and pulse-label measurements": "lean/checks/data/polymerisation_pool_measurements.json"
+      },
+      "driver": "lean/checks/polymerisation_balances.py",
+      "record": "lean/PROGRESS.md#polymerisation-balances"
+    },
     "wall-wash-stand-in": {
       "kind": "engine",
       "models": [
@@ -2787,6 +2873,194 @@
     }
   },
   "claims": [
+    {
+      "id": "gard-cache-reversibility",
+      "category": "molecular-assembly",
+      "title": "GARD v2 preserves the smaller catalyst on a reverse event within the precision bound",
+      "statement": "On a row’s integer grid, every signed update within the 106-bit bound produces the canonical high and low words for the new sum. Refolding the same counts recovers the same cache, and removing the moving molecule restores the parent’s rounded numerator.",
+      "assumptions": [
+        "The catalyst coefficients are nonnegative multiples of the row’s least tick. The parser bounds the largest coefficient times the molecule capacity to fewer than 2¹⁰⁶ ticks. Count products use at most 2²⁰ molecules and each coefficient part has at most 33 significant bits.",
+        "Rounding selects a nearest 53-bit word. TwoSum returns that rounded sum and its exact error. Applying this theorem to hardware requires finite intermediates and preservation of low words. The compiled exponent counterexamples are recorded in the companion claim."
+      ],
+      "uses": [
+        "gard-pair-heat"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.gard_catalysis_pair_consistent@2"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.GardCache.grid_model_exists": "lean/CellsProofs/Chemistry/GardCache.lean",
+          "CellsProofs.Chemistry.GardCache.round_word": "lean/CellsProofs/Chemistry/GardCache.lean",
+          "CellsProofs.Chemistry.GardCache.high_error": "lean/CellsProofs/Chemistry/GardCache.lean",
+          "CellsProofs.Chemistry.GardCache.row_in_budget": "lean/CellsProofs/Chemistry/GardCache.lean",
+          "CellsProofs.Chemistry.GardCache.add_exact": "lean/CellsProofs/Chemistry/GardCache.lean",
+          "CellsProofs.Chemistry.GardCache.fold_exact": "lean/CellsProofs/Chemistry/GardCache.lean",
+          "CellsProofs.Chemistry.GardCache.reverse_high": "lean/CellsProofs/Chemistry/GardCache.lean",
+          "CellsProofs.Chemistry.GardCache.split_product_word": "lean/CellsProofs/Chemistry/GardCache.lean",
+          "CellsProofs.Chemistry.GardCache.stress_reverse": "lean/CellsProofs/Chemistry/GardCache.lean"
+        },
+        "sources": {
+          "Mathlib finite-sum inequality, used to bound each weighted composition": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/Order/BigOperators/Group/Finset.lean#L102-L113",
+          "Mathlib least-witness principle, used to construct the nearest-word grid model": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Data/Nat/Find.lean#L56-L74",
+          "Ogita, Rump and Oishi, Theorem 3.4. The published TwoSum interface is an explicit assumption of the Cells specialization": "https://doi.org/10.1137/030601818"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "gard-cache-reversibility"
+        ],
+        "result": "The 2⁵⁴ stress event returned factors 2 and 2 and zero heat. All 22 signed updates matched the exact row and a fresh compiled fold. A 106-bit row passed and a 107-bit row was refused. The largest count was checked at the cache-function entry point."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "The underlying composition-dependent entry and exit rates can be measured. The numerical precision of the two-word representation is checked against exact arithmetic.",
+        "unit": "Dimensionless multiplier and kT per event",
+        "evidence": []
+      }
+    },
+    {
+      "id": "gard-cache-domain",
+      "category": "molecular-assembly",
+      "title": "GARD v2 also needs a representable exponent and a reachable molecule capacity",
+      "statement": "The significand-width guard alone admits a row whose rounded high word overflows binary64. At the other extreme the grid model requires the smallest positive tick to survive. The public parser also imposes a smaller effective fission-size limit than its explicit capacity range.",
+      "assumptions": [
+        "The overflow witness uses coefficient 2¹⁰²³, two molecules of that type, one of a second type and capacity eight. The underlying exchange uses finite rates. The lower-end witness uses one coefficient at 2⁻¹⁰⁷⁴.",
+        "The capacity comparison explicitly supplies the molecule capacity, using two types throughout. It checks parser behavior independently of either exponent example."
+      ],
+      "uses": [
+        "gard-cache-reversibility"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.gard_catalysis_pair_consistent@2"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.GardCache.one_tick": "lean/CellsProofs/Chemistry/GardCache.lean",
+          "CellsProofs.Chemistry.GardCache.exponent_counterexample": "lean/CellsProofs/Chemistry/GardCache.lean"
+        },
+        "sources": {
+          "Cells high-word and unit-tick definitions": "lean/CellsProofs/Chemistry/GardCache.lean",
+          "IEEE binary64 input guard and the row-width calculation": "https://github.com/Eidosoma/Cells/blob/6b28ec55368011de79dce85e6172b5844b77a287/src/cells/models/assembly_lineages/gard.py#L359-L396"
+        }
+      },
+      "numerical": {
+        "status": "failed",
+        "comparisons": [
+          "gard-cache-domain"
+        ],
+        "result": "With an exact total propensity rounding to 25,165,824, the admitted four-bit row returned NaN cache words, zero events, a stalled status and a passing empty ledger. At 2⁻¹⁰⁷⁴ NumPy preserved one tick and compiled CPU returned zero. Explicit capacity 4,097 was refused by the default 4,096 type bucket."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "The examples test numerical domain handling and parser reachability. No organism-specific catalyst range is assigned.",
+        "unit": "Binary exponent, row bits and molecule count",
+        "evidence": []
+      }
+    },
+    {
+      "id": "polymerisation-machines",
+      "category": "molecular-assembly",
+      "title": "Free and engaged polymerases or ribosomes sum to their machine pool",
+      "statement": "For any finite collection of chains sharing one pool, a stage update preserves free machines plus the sum of all its occupied stages. Only initiation and final release move a machine between the free and engaged pools.",
+      "assumptions": [
+        "The same signed extents update the stages, free machines and cumulative counters in each accepted half-step. Each chain has m ≥ 1 stages and length L = m r. Padded stages are inactive.",
+        "Each chain draws from one declared machine pool. All chains using that pool enter its balance, including chains already in progress."
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.templated_polymerisation@1"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.Polymerisation.engaged_change": "lean/CellsProofs/Chemistry/Polymerisation.lean",
+          "CellsProofs.Chemistry.Polymerisation.pool_step": "lean/CellsProofs/Chemistry/Polymerisation.lean"
+        },
+        "sources": {
+          "Mathlib sum_range_succ, used to telescope stage movements": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Group/Finset/Basic.lean#L498-L505",
+          "Cells stage layout, cumulative exits and residue ledger": "https://github.com/Eidosoma/Cells/blob/6b28ec55368011de79dce85e6172b5844b77a287/src/cells/operators/templated_polymerisation.py#L1378-L1387"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "polymerisation-balances"
+        ],
+        "result": "Across 183 compiled rows the maximum pool residual was 5.80 × 10⁻¹⁹ fmol. Omitting one competing chain from the two-gene pool produced a 4.88 × 10⁻⁸ fmol discrepancy."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Bound and unbound ribosome populations in the same preparation, with a known total and a stated definition of engagement.",
+        "unit": "Fraction of the total ribosome pool in the experiment and fmol of machines in Cells",
+        "evidence": [
+          {
+            "dataset_id": "li2018_ribosome_engagement",
+            "manifest": "lean/checks/data/polymerisation_pool_measurements.json",
+            "citation": "Li et al. (2018), Nature Microbiology",
+            "doi": "10.1038/s41564-018-0199-2",
+            "locator": "Figure 1e, Table 1 and supplementary Table S1.",
+            "context": "At a common growth rate of 0.09 per hour, mRNA-bound E. coli ribosomes accounted for 31 ± 3%, 51 ± 3% and 65 ± 4% of the pool under carbon, nitrogen and phosphorus limitation, respectively.",
+            "role": "descriptive",
+            "uncertainty": "Mean ± SEM across three biological replicates. Free subunits and free assembled ribosomes both enter the unbound pool. Bound particles can include stalled or initiating ribosomes.",
+            "assessment": "The paired occupancy measurements establish condition dependence at matched growth. Both fractions share a denominator. An independent conservation test requires absolute counts and defined pool boundaries.",
+            "report": "lean/PROGRESS.md#polymerisation-balances"
+          }
+        ]
+      }
+    },
+    {
+      "id": "polymerisation-residues",
+      "category": "molecular-assembly",
+      "title": "Stage exits account for residues in unfinished chains and released products",
+      "statement": "Per chain, residues added at all stage exits equal the increase in residues held in unfinished chains plus the residues carried by cumulative releases. The update also holds from a nonempty initial stage distribution.",
+      "assumptions": [
+        "The same signed extents update the stages, free machines and cumulative counters in each accepted half-step. Each chain has m ≥ 1 stages and length L = m r. Padded stages are inactive.",
+        "Stage indices start at zero and stage j holds j r residues per occupied complex. The release counter counts completed products even when a separate degradation route later consumes them."
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.templated_polymerisation@1"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.Polymerisation.transit_change": "lean/CellsProofs/Chemistry/Polymerisation.lean",
+          "CellsProofs.Chemistry.Polymerisation.residue_step": "lean/CellsProofs/Chemistry/Polymerisation.lean"
+        },
+        "sources": {
+          "Mathlib sum_range_succ, used to telescope stage movements": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Group/Finset/Basic.lean#L498-L505",
+          "Cells stage layout, cumulative exits and residue ledger": "https://github.com/Eidosoma/Cells/blob/6b28ec55368011de79dce85e6172b5844b77a287/src/cells/operators/templated_polymerisation.py#L1378-L1387"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "polymerisation-balances"
+        ],
+        "result": "The largest residue residual across 183 rows was 3.39 × 10⁻²⁰ fmol. A one-stage chain retained zero residues in transit while releasing 6.55 × 10⁻⁵ fmol of residues alongside an eight-stage chain."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Incorporated tracer partitioned between nascent chains and released protein in a matched preparation.",
+        "unit": "Counts per minute per unit of polysome OD₂₆₀ and seconds in the tracer study, fmol of residues in Cells",
+        "evidence": [
+          {
+            "dataset_id": "stanners1968_nascent_released_label",
+            "manifest": "lean/checks/data/polymerisation_pool_measurements.json",
+            "citation": "Stanners (1968), Biophysical Journal",
+            "doi": "10.1016/S0006-3495(68)86487-2",
+            "locator": "Figure 4 and Table II, experiments 1–4.",
+            "context": "The radiolabelled valine signals in soluble completed protein and polysome-associated nascent chains crossed at 34, 32, 40 and 32.5 s in four hamster-cell experiments.",
+            "role": "descriptive",
+            "uncertainty": "Signals share a polysome optical-density normalization and include a correction for label attached outside nascent chains. The paper’s 23 ± 2 s transit time is a model-derived estimate.",
+            "assessment": "The study resolves the two measured tracer pools. Relating its timing to the simulation requires matching the label pulse, precursor activity and sampling definitions.",
+            "report": "lean/PROGRESS.md#polymerisation-balances"
+          }
+        ]
+      }
+    },
     {
       "id": "label-mixing-power",
       "category": "tissue-and-conservation",
