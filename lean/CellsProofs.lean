@@ -22,6 +22,7 @@ import CellsProofs.Chemistry.MitochondrialCycles
 import CellsProofs.Chemistry.MitochondrialReactions
 import CellsProofs.Chemistry.MitochondrialStall
 import CellsProofs.Chemistry.Polymerisation
+import CellsProofs.Chemistry.ProducerReplacement
 import CellsProofs.Chemistry.TerminalRelease
 import CellsProofs.Chemistry.PopulationUnits
 import CellsProofs.Chemistry.PrescribedShell
