@@ -164,6 +164,12 @@ Owners are those of docs/CORE_SEAMS_STEP0.md §4.2.
   - D2 is a new module that no current world composes.
   - C runs host-side.
 - **Crossrev's sets and G1's worlds**, so their gates need no declared difference.
+- **In a world that does declare a family**, material transport and every ledger are exact: the
+  rows' moves sum to the unsplit species' move. But each row's heat is booked as its own row's, so
+  a family's booked face heat can differ from the unsplit species' (the Lean lane, 22 November
+  2026). At a parent of 1 mM on both sides, with labels at 0.9/0.1 and 0.1/0.9, the unsplit species
+  books no face heat, and the two rows book 2 × 0.8 ln 9 RT per unit of the face's rate constant.
+  Physical heat attributable to the labels alone is unverified.
 
 ## Price, in agent-days
 
