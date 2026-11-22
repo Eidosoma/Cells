@@ -11584,5 +11584,83 @@
     "part"
    ]
   ]
- }
+ },
+ "organelles": [
+  {
+   "id": "nucleus",
+   "species": "thalecress",
+   "label": "Nucleus",
+   "named": {
+    "text": "Thale cress's species file: its cell holds a nucleus.",
+    "part": "nucleus",
+    "file": "data/species/thalecress.json"
+   },
+   "no_size": "Looked for on 20 November 2026, in one search: a size of the nucleus in a leaf cell of the thale cress, in papers whose terms allow commercial use. None was read, so it stands on the shelf as a card, not a shape."
+  },
+  {
+   "id": "endoplasmic-reticulum",
+   "species": "thalecress",
+   "label": "Endoplasmic reticulum",
+   "named": {
+    "text": "Thale cress's species file: its cell holds an endoplasmic reticulum.",
+    "part": "er",
+    "file": "data/species/thalecress.json"
+   },
+   "no_size": "Looked for on 20 November 2026, in one search: a size of a sheet of the endoplasmic reticulum (its thickness) in a leaf cell of the thale cress, in papers whose terms allow commercial use. None was read, so it stands on the shelf as a card, not a shape. On 20 November 2026 a review's general figure for the sheets was read (Perkins and Allan 2021); it names no species, and by the narrow reading of how far a general figure reaches it stands on the human's shelf alone."
+  },
+  {
+   "id": "golgi-apparatus",
+   "species": "thalecress",
+   "label": "Golgi apparatus",
+   "named": {
+    "text": "Thale cress's species file: its cell holds a Golgi apparatus.",
+    "part": "golgi",
+    "file": "data/species/thalecress.json"
+   },
+   "no_size": "Looked for on 20 November 2026, in one search: a size of a Golgi cisterna or stack (its width) in a leaf cell of the thale cress, in papers whose terms allow commercial use. None was read, so it stands on the shelf as a card, not a shape. On 20 November 2026 a review's general figure for mammalian cells was read (Martínez-Alonso and others 2013); it does not reach this species."
+  },
+  {
+   "id": "mitochondrion",
+   "species": "thalecress",
+   "label": "Mitochondrion",
+   "named": {
+    "text": "Thale cress's species file: its cell holds mitochondria.",
+    "part": "mitochondria",
+    "file": "data/species/thalecress.json"
+   },
+   "no_size": "Looked for on 20 November 2026, in one search: a size of a mitochondrion (its width and length) in a leaf cell of the thale cress, in papers whose terms allow commercial use. None was read, so it stands on the shelf as a card, not a shape."
+  },
+  {
+   "id": "chloroplast",
+   "species": "thalecress",
+   "label": "Chloroplast",
+   "named": {
+    "text": "Thale cress's species file: its cell holds chloroplasts.",
+    "part": "chloroplasts",
+    "file": "data/species/thalecress.json"
+   },
+   "size": {
+    "shape": "lens",
+    "across_um": [
+     5.6
+    ],
+    "label": "chloroplasts",
+    "text": "its species' file states its cell's chloroplasts 5.6 µm across (cell.parts.organelle_sizes)",
+    "sources": [
+     "thalecress:tolleter2024"
+    ]
+   }
+  },
+  {
+   "id": "vacuole",
+   "species": "thalecress",
+   "label": "Vacuole",
+   "named": {
+    "text": "Thale cress's species file: its cell holds a vacuole.",
+    "part": "vacuole",
+    "file": "data/species/thalecress.json"
+   },
+   "no_size": "Looked for on 20 November 2026: its species' file gives the vacuole's share of the leaf's cellular volume (84%), not a size of its own. Its paper, read again that day, gives that share for the leaf's skin and mesophyll cells together, with the vacuole taken as what remains of their volume, and no share for the palisade cell whose volume the file states; so no width can honestly be worked from it, and it stands on the shelf as a card, not a shape."
+  }
+ ]
 }

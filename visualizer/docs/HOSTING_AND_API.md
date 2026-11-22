@@ -113,7 +113,8 @@ The page is fetched at every address. Beside it:
 | Address | Fetched beside the page | Raw | gzip / brotli | Basis |
 | --- | --- | ---: | ---: | --- |
 | Scope, the site's first entry | the planarian's looping run and the parts its flux draws, about 5 files | about 120 KB (bound 133,000) | about 33 KB / 27 KB | the fetch budget, and the five files the flux draws, from the code |
-| Experiments landing (`lens=experiments`) | `cards.json` and the first band's two stills | 238,040 (3 files) | 95,827 / 90,498 | measured by the gate, 19 November 2026 |
+| Experiments landing (`lens=experiments`) | `cards.json` (the cards' faces) and the first band's two stills | 141,289 (3 files; bound 156,000) | 89,777 / 87,175 | raw measured by `fetches`, 20 November 2026, the cards split into faces and details; compressed, summed from a staged release's `.gz` and `.br` copies, the stills sent as they are; the faces are 67,327 of it raw, and 15,815 / 13,213 compressed (the cards whole were 189,140 the same morning) |
+| A card's detail (`select=card:fr1`) | the faces, `cards.details.json` (every card whole, once) and the stills near the screen | 347,697 (5 files; bound 383,000) | 136,632 / 128,950 | raw measured by `fetches`, 20 November 2026; compressed, summed the same way; the details are 186,709 raw, and 27,156 / 22,076 compressed |
 | The tumour tissue's card (`part=gap-junction-tissue-sheet`) | the sheet's and the line's runs and parts | 2,817,063 (10 files) | not measured | measured by the gate |
 | The assembly (`example=gard`) | its two files | 275,894 | 102,181 / 86,765 | the fetch budget, and file sizes |
 | A single run of the networks | its own file | under 40,000 | | the fetch budget |
@@ -464,7 +465,8 @@ Nobody outside is known to be waiting for an API today; that is the owner's to s
 Every published file already names its format, which is versioned: `cells.visualizer.replay@1`,
 `replay_part@1`, `replay_parts@1`, `species_proteins@1`, `species_protein_members@1`,
 `species_protein_names@1`, `machine_bench@1`, `machine@1`, `machine-shape@1`, `assembly_run@1`,
-`experiment_cards@1`; inside a replay, the engine's own `cells.run_view@1`. Each has a contract
+`experiment_cards@1` (since 20 November 2026 `experiment_cards@2`, the cards' faces, and `experiment_card_details@1`,
+each card whole, fetched the first time a card's detail is asked for); inside a replay, the engine's own `cells.run_view@1`. Each has a contract
 under `schema/`. What is missing is what makes files an interface:
 
 | Needed | Proposal |
@@ -911,6 +913,26 @@ certificates or accounts.
   opens the root page and `/r/<id>/` at three addresses each in headless Chrome, and holds five things: no request to
   another host, no missing file, no console error, the host profile read, and a tab press that keeps the address. It
   records bytes as sent beside raw.
+- **What the site says of itself** (20 November 2026, for Version 53). Each release's `index.html` and `root.html` carry,
+  from the About words the staged page carries (`data/site/about.json`, which the staging holds equal to the tracked file),
+  a title and a description; `https://cells.eidosoma.ai/` as canonical (`SITE` in `tools/stage_site.mjs`, the one place the
+  address is stated); link-preview tags with the release's own `share.jpg` (1200 by 630, the page's scene with no words);
+  structured data for the site and its source code, whose one name is Eidosoma, an organisation, as the site's publisher
+  and the code's author; and the About text as HTML ahead of the page for a reader with no script (the source code linked,
+  its licence not). While the page loads, a visitor with script sees none of it (the owner's choice, 20 November 2026,
+  after the text was measured covering the window for some 2 seconds on a good line and 4 to 5 on a slow one): a cover
+  in the page's own background (`siteStyle`, its colours read from the page's own sheet, light or dark from the first
+  paint, as the sheet's own rules) with one ring in the window's middle, still and slowly fading where less motion is
+  asked for, and a status in the page's own loading words; the text is hidden, out of the keyboard's reach. The page
+  puts both away once it has drawn (`src/ui/about.js`). If it has not drawn 20 seconds after the cover's first paint, the
+  cover lets the About words through by its sheet alone (`COVER_WAIT`), and the page puts them away if it draws after
+  all. A reader with no script gets the words at once and no cover (`<noscript>` in the head holds a style), and a
+  reader of the raw HTML finds them as text; the site adds no script that runs, so the release's inline-script hashes
+  are the page's own. A visitor whose script is blocked by a policy (an extension's) rather than switched off gets the
+  cover, then the words after 20 seconds. Each release holds `robots.txt` (everything allowed, `/r/` never
+  closed, the sitemap named), `sitemap.xml` (the root) and `llms.txt` (the site for an agent); `--release` writes those three
+  at the site's root before the pointer, each beside and moved into place, and removes them where a release has none.
+  `tools/check_site.mjs` holds each of them, on both pages, the cover on a slow line by the browser's own throttling.
 - **`deploy/`** is an example container (Caddy with a rate-limit module, in two forms: behind a proxy, or with its own
   certificate). It has not been validated or started.
 - **`tests/stage_site.test.mjs`** runs in `npm test`, in about a second.

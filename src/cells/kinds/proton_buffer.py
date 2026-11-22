@@ -86,6 +86,16 @@ declaration:
   its total. So the margin never refuses an admitted world today: it is the exact condition, kept
   fail-closed, for when totals at or below zero are admitted. Its vertices are the layout's
   binding_margin_vertices, and a network past the enumeration's caps is refused at the definition.
+- **Every held total is positive at every stage, by construction** (positive_held_totals; the
+  lead's decision of 21 November 2026, on the Lean lane's finding). @3 holds every stored amount
+  positive at the checked states (the parse, the predictor's totals and each step's end), but a
+  tableau's intermediate stages are read before any such check. With release forms a signed total
+  can leave the margin within an ulp of 0, where its float sign misclassifies it (the Lean lane's
+  three rel1 cases). So the read refuses any held total <= 0 at any stage, on the total's own sign,
+  before the margin is consulted. It refuses through the read's validity, the engine's existing
+  failed-read path: the step is refused as a domain failure, whose message does not name the read
+  (no host-side reason reaches it from the compiled stage). Nothing is NaN-poisoned. No admitted
+  world reaches it, so every registered world keeps its values.
 - A form below its base in some ligand makes a release step, a unit step whose bound form holds
   count <= 0 in its ligand. Amendment C5 registers seven release-step cases, and the envelope
   bounds their kinetic lag, the cross-row drives included, within its first order's registered
@@ -714,8 +724,15 @@ def _general_solve(amounts, p, xp):
     u, ok = binding.free_ligands(total_l, total_b, p.binding_log_beta, p.binding_counts,
                                  p.binding_present, held, comp_l, comp_b,
                                  vertices=p.binding_margin_vertices, xp=xp)
+    ok = ok & positive_held_totals(total_l, held, xp=xp)  # By construction (module docstring).
     valid = xp.all(xp.where(xp.any(held, axis=0), ok, True))
     return u, valid, total_l, total_b, held, member, safe_v
+
+
+def positive_held_totals(total_l, held, *, xp):
+    """[node] whether every ligand total the closure holds at the node is positive (and so finite):
+    the read's precondition, by construction at every stage (module docstring)."""
+    return xp.all(xp.where(held, total_l > 0, True), axis=0)
 
 
 def _general_terms(p, amounts, xp):

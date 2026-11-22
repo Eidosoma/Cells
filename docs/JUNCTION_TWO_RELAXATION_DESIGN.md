@@ -335,6 +335,241 @@ The search for an open-access voltage series is not priced.
 5. **The units of A** in Sahu and Bera's Table 2 are not printed. Is a source needed before any
    gating charge is quoted?
 
+## 13. Registered benchmark: Lin, Crye and Veenstra (2003), before the paper is opened
+
+**Entry of 22:16 UTC on 21 November 2026.** Written by the @3 owner, FR-30's integrator, at the
+lead's direction under the user's delegation (D273). Nobody on this project has yet opened the
+paper (Circ Res, doi:10.1161/01.RES.0000093379.61888.35); the user is downloading it. The rules
+below are fixed before it is read, and the commit carrying them is tagged
+`fr30-lin2003-registered-2026-11-21`. Any change after the paper is opened is a dated amendment
+that says what had been seen.
+
+**What has been read about it (disclosure).**
+- Nothing of its content. The project's files only name it: docs/DECISIONS.md, where the lead
+  chooses it as the first benchmark, and FR-30's row in docs/FEATURE_REQUESTS.md. I read only the
+  citation in each.
+- lean/claims/incoming/biological-evidence.md cites a different paper from the same laboratory
+  (Lin and Veenstra 2007). I have not read that entry.
+- **Notes that name it, which I have not opened.** A search of /mnt/workspaces/Cells's notes
+  (.md, .txt) for the second author's name and the DOI found three files. They may describe its
+  content:
+  - the FR-7 agent's notes, `fr7-loop-20261119/u2-compartment/NOTES.md`;
+  - a full text that agent fetched in its FR-30 search, of a 2005 paper from the same laboratory:
+    `fr7-loop-20261119/u2-compartment/fr30-search/lin2005_PMC2752676.txt`;
+  - the lead's notes, `d172-restructure-20261115-01/LEAD-NOTES.md`.
+
+  I saw only their names. The fitter does not open them (rule 5). The other matches were
+  simulation output (visualizer JSON), where the letters occur by chance in encoded data.
+- From training data I recall the paper's title, approximately "Regulation of connexin43 gap
+  junctional conductance by ventricular action potentials". I also recall that it concerns Cx43
+  junctional conductance and its transjunctional-voltage dependence in cell pairs. I recall no
+  figure, protocol, voltage, time constant, amplitude or conductance value from it.
+
+**One paper.** Labs cannot be pooled, so the fit and the held-out test both come from this paper's
+own data.
+
+**The host: the law clamped, not an @3 world.**
+- The prediction is the law's clamped evaluation, `junction_series_gates.advance_clamped`, at each
+  held transjunctional voltage V_j. The junction voltage is imposed, as Lin's dual whole-cell
+  clamp imposes each cell's voltage, and each gate relaxes exactly at that voltage.
+- This mirrors the experiment and does not depend on fix (A).
+- @3 cannot impose V_j. Its reservoirs hold outside nodes only, and no operator holds a cell's
+  voltage.
+- `series_world()`, FR-30's development host, is the @3 closed fixture. Its junction crosses two
+  floating capacitor components and conducts from t = 0, and there the junction converges at
+  first order (about 1.2 under N2). Judging on it would require (A) to land first.
+- An @3 world whose cells each face their own reservoir has no floating component, and it may
+  carry the fitted law as a numerics check against the clamped evaluation. It is not the
+  benchmark.
+
+**1. The split rule.**
+- **The data unit:** a V_j step (signed, mV) at which the paper reports the junctional
+  conductance's decay. Its values may be its relaxation times and their amplitudes, and its
+  steady-state conductance. They may come as values in the text or tables, as plotted points
+  (digitized), or as traces (digitized, then fitted by the extractor with the paper's own form).
+- **The order:** the extractor lists, for each polarity, the distinct |V_j| magnitudes at which
+  the paper reports relaxation data, sorted ascending.
+- **Held out:** the interior magnitudes at even rank (the 2nd, 4th, 6th, ...).
+  - The smallest and the largest magnitudes always stay in training, so every held-out voltage is
+    an interpolation.
+  - With exactly three magnitudes, the 2nd is held out.
+  - With two or fewer, the benchmark is undetermined and is reported so.
+- **Polarities:** where the paper reports both, the same magnitudes are held out at both.
+- **Every observable at a held-out voltage is held out:** its relaxation times, amplitudes and
+  steady-state conductance. Steady-state points at magnitudes without relaxation data follow the
+  same rank rule on their own sorted list.
+- **The files:** the extractor applies the rule mechanically and writes `train.json` and
+  `held_out.json`. A dated entry records the held-out file's SHA-256 before the fitter starts.
+
+**2. The judged observables, as the series gates predict them.** At each held-out V_j:
+- the two relaxation times, τ_fast and τ_slow;
+- their amplitudes, A_fast and A_slow, as fractions of the initial conductance;
+- the steady-state conductance, G_ss/G_0, normalized as the paper normalizes it.
+
+The prediction is read the way the paper reads its data.
+- The law's conductance trace is computed for the paper's step protocol: its holding level, step
+  duration and sampling, which the extractor records from the methods. Each gate starts at its
+  steady state at the holding voltage.
+- That trace is fitted with the paper's two-exponential form, window and offset rule.
+- The product of two relaxing gates carries a third rate, λ₁ + λ₂. So the fitted times of the
+  predicted trace are compared, not the gates' own rates.
+
+**3. The fit.** The fitter fits junction_series_gates@1 to `train.json` only. It chooses each
+gate's kind (threshold_relaxation or boltzmann_eyring) and its parameters, residuals included,
+and states the kinds before scoring.
+
+**4. The pass rule.**
+- **Each comparison at a held-out voltage:**
+  - a relaxation time passes if |ln(predicted/observed)| ≤ ln 1.25;
+  - an amplitude passes if |predicted − observed| ≤ 0.10 of G_0;
+  - G_ss/G_0 passes if |predicted − observed| ≤ 0.05.
+  - In each case, twice the paper's reported SEM at that voltage replaces the tolerance where it
+    is wider.
+- **The benchmark passes** if all three hold:
+  - every G_ss comparison passes;
+  - each of τ_fast, τ_slow, A_fast and A_slow passes at more than half of the held-out voltages;
+  - at least 75% of all relaxation comparisons pass.
+- **Undetermined** if fewer than two held-out voltages carry both relaxation times.
+- **Cannot predict** if the fitted law leaves its domain at a held-out voltage.
+- The in-sample fit is reported, not judged.
+
+**5. Roles.**
+- **The extractor** (one agent) reads the paper, records the protocol, digitizes, applies the
+  split and records the hash. It does not fit.
+- **The fitter** (another agent) does not open the paper, `held_out.json` or the three notes
+  named above. It works from `train.json`, which carries the protocol and the held-out voltages but
+  none of their values, and writes `predictions.json`.
+- **The checker** (a third agent) scores `predictions.json` against `held_out.json` by rule 4 and
+  writes the verdict. Disagreements go to the lead.
+
+**6. What it decides.**
+- A pass is evidence for the law's voltage dependence under this paper's conditions only.
+- It does not lift D262's development flag. That stays until the lead and the user decide.
+
+### 13.1 Amendment of 23:16 UTC on 21 November 2026: Lin undetermined; three fallbacks, in order, before any is opened
+
+Written by the @3 owner, FR-30's fitter, at the lead's direction (D276). Nobody has opened the three
+papers below. They sit in `/mnt/datasets/Cells/papers/incoming/<name>/`, and the commit carrying
+this amendment is tagged `fr30-fallbacks-registered-2026-11-21`.
+
+**Lin, Crye and Veenstra (2003) is undetermined.**
+- The paper fits each step's decay with a single exponential, and it reports one τ per |V_j|.
+  It gives no τ_slow, no amplitudes and no step-end conductance.
+- So no held-out voltage carries both relaxation times, and rule 4 makes the result
+  undetermined.
+- Its held-out file is sealed, with its digest on main (36ccc20d, D276).
+- Nothing from Lin is reinterpreted, re-split or re-scored under the rules below. I have seen no
+  value from it.
+
+**The fallbacks, in this order.** Each is extracted only if the one before it is undetermined.
+1. Desplantez et al. (2004), Pflügers Arch 448:363 (`desplantez-2004`).
+2. Moreno et al. (2002), Circ Res 90:450 (`moreno-2002`).
+3. Snipas et al. (2020), Biophys J 119:1640 (`snipas-2020`).
+
+§13's split rule, judged observables, pass rule and roles apply to each, completed by the points
+below. If all three are undetermined, the benchmark is undetermined, and the lead decides what
+follows.
+
+**What has been read about them (disclosure).**
+- **Moreno et al. (2002).** This record already carries two of its values: 0.25 and 3.18 s at
+  60 mV, as a review reports them (§2.2 and this note's summary table). I have read those lines,
+  so 60 mV is not a blind voltage for me (point 8 below).
+- **Desplantez et al. (2004) and Snipas et al. (2020).** I have seen no content from either.
+  From training data I recall only their approximate subjects: Cx43 and Cx45 junctional gating
+  for Desplantez, and a kinetic model of Cx43 gating for Snipas. I recall no values.
+- **Files that name these papers, which I have not opened:**
+  - docs/DECISIONS.md, the lead's entries;
+  - the FR-7 agent's `fr7-loop-20261119/u2-compartment/NOTES.md`;
+  - a full text that agent fetched, `fr7-loop-20261119/u2-compartment/fr30-search/maciunas2023_PMC10491658.txt`.
+
+**Points the Lin extraction showed §13 leaves open, fixed now without any value.**
+1. **Only decays are ranked.** The ranked data units are the inactivation decays at steps away
+   from the holding level.
+   - Recovery steps, for example a return to 0 mV after a step, are not ranked and never held
+     out.
+   - Recovery data may enter training only, through the law's own prediction of the recovery
+     protocol as recorded.
+2. **Polarity.** Where decays are reported by |V_j|, as pooled or polarity-averaged values, each
+   |V_j| is one data unit, and the law is predicted at that magnitude. Where the paper reports each
+   polarity, §13's rule holds: the same magnitudes are held out at both polarities.
+3. **Ramp-derived steady state.** Conductance derived from a voltage ramp does not stand in for a
+   step-end G_ss, and it is not judged. It may enter training only, through the law's own
+   prediction of the recorded ramp.
+4. **SD or SEM.** The widening rule uses twice the SEM. Where the paper reports an SD with n, the
+   SEM is SD/√n. An SD without n, or a range, does not widen a tolerance.
+5. **One time constant at a voltage.** A held-out voltage that carries one reported τ gives no
+   relaxation comparison. Its G_ss, if reported, is still judged. Rule 4's "both relaxation
+   times" condition stands.
+6. **Homotypic Cx43 only.** Only homotypic Cx43–Cx43 data are extracted. Heterotypic and other
+   connexins' data, which Desplantez et al. also report, are excluded from the files.
+7. **The holding level and protocol** are recorded by the extractor. The fitter predicts each
+   step from the law's steady state at the holding level, as §13 says.
+8. **A voltage already seen is not held out.**
+   - A magnitude whose values the fitter has already seen stays in training: for Moreno et al.,
+     60 mV.
+   - The rank rule then runs over the remaining interior magnitudes.
+   - If this leaves fewer magnitudes than §13 needs, the paper is undetermined.
+
+**The fitter's exclusions, added to §13's.** The fitter does not open:
+- the scratch folder `cx43-search/` in the shared session scratchpad;
+- each paper's sealed digitizer scripts;
+- the three files named above;
+- the papers themselves.
+
+The fitter works from `train.json` alone.
+
+### 13.2 Entry of 00:34 UTC on 22 November 2026: Sahu and Bera (2013) under §13 and §13.1, and a rule for missing amplitudes
+
+Written by the @3 owner, FR-30's fitter, at the lead's direction under the user's overnight
+delegation (D277). All four registered papers are undetermined, each confirmed by the checker:
+- Lin: single-exponential decays only;
+- Desplantez: the second exponential is "data not shown";
+- Moreno: both times at only three magnitudes;
+- Snipas: ramps only, no step decays.
+
+The lead proposed Sahu and Bera (2013), PLoS ONE, doi:10.1371/journal.pone.0060506 (PMC3607587,
+CC BY). The Lean lane pointed to it. This commit is tagged `fr30-sahu2013-registered-2026-11-22`.
+
+**Disclosure: this paper is not unread.**
+- It was read for this note on 20 November 2026. §2.1 records its protocol, its Table 2 and its
+  own statements, and §4.2 says what a fit to it can be. FR-30's law cites it
+  (`junction_series_gates.LAW`, with its departures).
+- I have read §2.1, §4.2 and the law's citation, in this note and in that module. So I have seen:
+  - the protocol: N2a cell pairs, dual whole-cell clamp, steps from −120 to +120 mV in 20 mV
+    increments of 20 s each;
+  - Table 2's wild-type Cx43 row: per polarity, Gmin, V0 and A of a steady-state Boltzmann, with
+    the two decay times 70 ± 5 and 931 ± 54 ms;
+  - the paper's statement that the decays were fitted at −100 mV.
+- I have not opened the paper itself. The lead's message relayed the Lean lane's pointer.
+
+**§13 with §13.1's fixes, unchanged, decides it before extraction: undetermined.**
+- **Relaxation data:** both times are reported at one voltage only, −100 mV.
+  - §13's rank rule therefore has one magnitude, and with two or fewer the paper is undetermined.
+  - That magnitude has also been seen, so by §13.1's point 8 it stays in training. No relaxation
+    voltage is left to hold out.
+- **The steady state:** the record already carries the steady-state Boltzmann's parameters for
+  each polarity. Those determine G_ss at every step voltage, so no G_ss magnitude is unseen either
+  (§13.1's point 8).
+- So the paper cannot be a held-out test of the law. It stays what §4.2 calls it: a development
+  record that reproduces its own inputs. No extraction under §13 is needed for this paper, and none
+  would change this.
+
+**A rule for missing amplitudes, decided now for any later paper and without its values.** It
+applies when a paper reports both relaxation times at held-out voltages but no amplitudes.
+- **Judged:** the two times, and G_ss where the paper reports it.
+- **Recorded as not reported:** the amplitude observables. No amplitude is inferred, for example
+  from a figure's trace shape, and none is counted as passing or failing.
+- **The pass rule** then counts the reported observables only:
+  - every reported G_ss comparison passes;
+  - τ_fast and τ_slow each pass at more than half of the held-out voltages;
+  - at least 75% of the τ comparisons pass.
+- **The principle:** the pass rule judges what the source reports. Dropping an unreported
+  observable neither raises nor lowers the bar on the reported ones.
+- **Unchanged:** a paper with one time per voltage stays undetermined (§13.1's point 5).
+
+**What follows** is the user's and the lead's decision: another paper with step decays at several
+magnitudes, registered and sealed the same way, or FR-30 staying development only.
+
 ## Sources
 
 - **Read:**

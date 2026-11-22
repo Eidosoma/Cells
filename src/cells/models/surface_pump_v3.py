@@ -1949,6 +1949,35 @@ def stage_junction_gates(
     return advanced, ok
 
 
+def crosses_floating(structure):
+    """Fix (A) (D273): whether a junction joins two capacitor components where one floats (the
+    structure's crossing_junctions; static)."""
+    return structure is not None and bool(structure.crossing_junctions)
+
+
+def crossing_potential(state, control, p, *, xp=jnp, kinds=(), structure=None):
+    """Fix (A) (D273): a stage state's quasi-static potentials and their validity, solved as
+    readouts solves the step start's: the field at the state's charges, with the stage read and the
+    routing door, and each floating component's offset by current balance at the state's own
+    junction openings. Where a junction joins capacitor components and one floats, the stage solve's
+    offsets follow from current balance with a lagged junction current, and its junction converges
+    at first order; the explicit rates (and N2's stage junction gates) read these instead."""
+    from cells.execution.schedule import SurfaceControl
+
+    read = _stage_read(state, p, kinds, xp=xp)[0] if kinds else state
+    if kinds and structure.routes:  # §7.4 (n): the routing door, as readouts opens it.
+        control = _route(structure, kinds, read, control, p, xp=xp)[0]
+    values = _field_values(
+        state,
+        read,
+        SurfaceControl(control.membrane, control.junction * state.junction_gate),
+        p,
+        xp=xp,
+    )
+    potential = values.potential_V
+    return potential, xp.all(xp.isfinite(potential)) & values.converged
+
+
 def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure=None):
     """surface_pump_v2.imex_step with channel currents and exponential stage gates.
 
@@ -1998,6 +2027,7 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
     coefficient = implicit_matrix[-1, -1] * dt
     laplacian = imex.face_laplacian(weight, s, xp=xp)
     n2 = implicit_conductances(p)  # N2 (D235, static): the routes' slopes join the operator.
+    crossing = crosses_floating(structure)  # Fix (A) (D273, static): () for every other world.
     if n2:
         conductances, ok = operator_time_conductances(
             StepStart(state, first_values, start),
@@ -2071,23 +2101,49 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
         )
         stage, valid = stage._replace(channel_gate=gate), valid & ok
         if n2:  # (a): the junction gates by their exponential update, as the channel gates.
-            stage, ok = stage_junctions(
+            fraction = entity_sum(explicit_matrix[i], axis=None, xp=xp)
+            moved, ok = stage_junctions(
                 stage,
                 state,
                 start_junction,
                 potential,
                 control.junction,
-                entity_sum(explicit_matrix[i], axis=None, xp=xp),
+                fraction,
                 dt,
                 p,
                 xp=xp,
                 structure=structure,
             )
+            if crossing:  # Fix (A): the gates again, at the moved stage's quasi-static potentials.
+                quasi, solved = crossing_potential(
+                    moved, control, p, xp=xp, kinds=kinds, structure=structure
+                )
+                moved, ok = stage_junctions(
+                    stage,
+                    state,
+                    start_junction,
+                    quasi,
+                    control.junction,
+                    fraction,
+                    dt,
+                    p,
+                    xp=xp,
+                    structure=structure,
+                )
+                valid &= solved
+            stage = moved
             valid &= ok
         elif series_junctions(structure):  # FR-30 (S2): the tableau moved the gates; the product.
             stage = series_stage(stage, state, p, xp=xp)
         if i < stages - 1:
-            rates, ok, *process = explicit_rates(stage, potential, control, p, xp=xp, **hook)
+            if crossing:  # Fix (A): the rates at the stage state's quasi-static potentials.
+                at, solved = crossing_potential(
+                    stage, control, p, xp=xp, kinds=kinds, structure=structure
+                )
+                valid &= solved
+            else:
+                at = potential
+            rates, ok, *process = explicit_rates(stage, at, control, p, xp=xp, **hook)
             processes += process
             explicit.append(rates)
             explicit_states.append(stage)
@@ -2161,7 +2217,13 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
         # every explicit stage), averaged with stage 0's. Only those heat fields change; the
         # state is the tableau's. Junctions keep their own switch above.
         whole = {k: v for k, v in hook.items() if k != "conductances"}  # N2: whole heat rates.
-        end_rates, end_ok, *_ = explicit_rates(stage, potential, control, p, xp=xp, **whole)
+        at = potential
+        if crossing:  # Fix (A): as every explicit stage's rates.
+            at, solved = crossing_potential(
+                stage, control, p, xp=xp, kinds=kinds, structure=structure
+            )
+            valid &= solved
+        end_rates, end_ok, *_ = explicit_rates(stage, at, control, p, xp=xp, **whole)
         valid &= end_ok
         start_rates = explicit[0]
         if n2:  # Stage 0's explicit rates hold the remainder alone: the start's whole rates.
@@ -3871,6 +3933,40 @@ def structure(model):
         free_amount_reads=_free_amount_reads(model),  # P1 (§17): () by default.
         kind_ledgers=_kind_ledgers(model),  # E (§7.3): () by default.
         junction_series_kinds=_series_kinds(model),  # FR-30 (D262): () by default.
+        crossing_junctions=crossing_junctions(model),  # Fix (A) (D273): () by default.
+    )
+
+
+def crossing_junctions(model):
+    """Fix (A) (D273): the IDs, sorted, of a parsed model's junctions that join two capacitor
+    components where at least one floats, from its topology as numerics/surface_field.bind reads
+    it: a membrane joins its cell and its outside node into one component; a component holding a
+    reservoir is held, the one holding the closure's gauge has a fixed offset, and every other
+    floats. Host side and static; () for a world whose junctions all join held components."""
+    cells = getattr(model, "cells", ())
+    outside = getattr(model, "extracellular", ())
+    parent = {node.id: node.id for node in (*cells, *outside)}
+
+    def root(node):
+        while parent[node] != node:
+            node = parent[node]
+        return node
+
+    for membrane in getattr(model, "membranes", ()):
+        if membrane.inside in parent and membrane.outside in parent:
+            parent[root(membrane.outside)] = root(membrane.inside)
+    held = {root(node.id) for node in outside if getattr(node, "reservoir", False)}
+    gauge = getattr(model, "gauge_reference", None)
+    fixed = held | ({root(gauge)} if gauge in parent else set())
+    return tuple(
+        sorted(
+            j.id
+            for j in getattr(model, "junctions", ())
+            if j.sender in parent
+            and j.receiver in parent
+            and root(j.sender) != root(j.receiver)
+            and (root(j.sender) not in fixed or root(j.receiver) not in fixed)
+        )
     )
 
 

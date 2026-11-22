@@ -11,7 +11,8 @@
 // Each size case, in the light theme and in the dark one (THEMES, "light,dark" unless set): the site's first entry fetches
 // nothing of the landing. As the landing opens (nothing kept from an earlier visit) only the first band's cards stand;
 // each later band shows its head (its label, its words), its count and its control (a button with aria-expanded and
-// aria-controls, in the file's words), and nothing of it is drawn or fetched; the landing fetches the cards once and only
+// aria-controls, in the file's words), and nothing of it is drawn or fetched; the landing fetches the cards' faces once
+// (never their details) and only
 // the stills near the screen, and no run and no model; the not-run line and the cards' revisions stand at the foot, under
 // the folded bands. A real press on each control shows its cards under its head (their stills fetched only near the
 // screen), a second press folds them and a third shows them again (nothing fetched twice). Then, with every band open:
@@ -25,8 +26,15 @@
 // one place in every view, clear of the view's other controls, and returns to the landing with the same bands open, where
 // it was scrolled, with the keyboard on the card it left; a card asked for by its detail's address, from the List, and by
 // the way back opens its band first, the other bands staying folded; the List lists every card, folded or not; a
-// standing's detail opens by a press, with its own address, and by that address; the rows' card lists its rows; the
-// not-run line opens the view it names.
+// standing's detail opens by a press, with its own address, and by that address, and the cards' details are fetched the
+// first time a detail is asked for and once; the rows' card lists its rows; the
+// not-run line opens the view it names. Last, at each size, About and the first-visit line (src/ui/about.js), on a first
+// visit as every run of a check is: where the line stands (the site's first view, the landing) it covers nothing the
+// page put over the picture and no name the view shows, else it waits out of sight (always on a phone); the bar's About
+// button opens About in the panel's place (its heading, the focus, every view a door, the source code in a new tab),
+// Escape gives the view back and the focus to the button, the name in the bar's corner and the panel's close button
+// work, a door opens its view; the line once closed stays closed, `#about` opens About, where storage is refused the
+// line shows again, and with less motion it does not move.
 //
 // Every wait is on the page's own state (what it shows, what it fetched, where it scrolled), never a fixed time after a
 // load or a press. The one fixed wait is before anything is judged: a fresh browser's first page is loaded, given six
@@ -66,7 +74,9 @@ const check = (name, ok, detail = "") => {
   console.log(`${ok ? "pass" : "FAIL"}  ${name}${detail ? `  (${String(detail).slice(0, 400)})` : ""}`);
 };
 const note = (text) => console.log(`note  ${text}`);
-const cards = JSON.parse(readFileSync(path.join(ROOT, "data", "replays", "cards.json"), "utf8"));
+const cards = JSON.parse(readFileSync(path.join(ROOT, "data", "replays", "cards.json"), "utf8")); // the cards' faces
+const wholeCards = new Map(JSON.parse(readFileSync(path.join(ROOT, "data", "replays", "cards.details.json"), "utf8")).cards.map((card) => [card.id, card])); // each card whole
+const ABOUT_WORDS = JSON.parse(readFileSync(path.join(ROOT, "data", "site", "about.json"), "utf8")); // the About words (src/ui/about.js)
 // The landing as its model reads the file: the first band stands open, every later band folds behind its control.
 const landing = landingOf(cards);
 const FIRST = landing.bands[0];
@@ -207,9 +217,9 @@ try {
     writeFileSync(path.join(OUT, `${NAME}-${name}.png`), Buffer.from(shot.data, "base64"));
   };
   const mouse = (type, x, y) => page("Input.dispatchMouseEvent", { type, x, y, button: "left", buttons: type === "mouseReleased" ? 0 : 1, clickCount: 1 });
-  /** A real press at the middle of what `expression` finds. */
+  /** A real press at the middle of what `expression` finds. A tab is brought into sight in its row first, as a visitor scrolls the row of a phone to it. */
   const press = async (expression) => {
-    const at = await evaluate(`(() => { const el = ${expression}; if (!el) return null; const r = el.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; })()`);
+    const at = await evaluate(`(() => { const el = ${expression}; if (!el) return null; if (el.closest?.(".switch")) el.scrollIntoView({ block: "nearest", inline: "nearest" }); const r = el.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; })()`);
     if (!at) return false;
     if (PHONE) {
       await page("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x: at.x, y: at.y }] });
@@ -391,7 +401,7 @@ try {
       check(`${theme}: as the landing opens only the first band's ${FIRST.cards.length} cards stand, and each later band shows its head, its count and its control, folded, none of its cards made`, drawn && standAs(opening, new Set()) && opening.slice(1).every((band) => band.made === 0) && (await shownCards()).length === FIRST.cards.length, describeBands(opening));
       check(`${theme}: each band's head says its label and its words, as the file gives them`, opening.every((band, n) => band.label === landing.bands[n].label && band.says === landing.bands[n].says), JSON.stringify(opening.map((band) => [band.label, band.says?.slice(0, 30)])));
       const got = beside(from);
-      check(`${theme}: it fetched the cards once, and no run and no model`, got.filter((one) => one === "/cards.json").length === 1 && !got.some((one) => one.startsWith("/runs/") || one.startsWith("/models/")), got.join(", "));
+      check(`${theme}: it fetched the cards' faces once, not their details, and no run and no model`, got.filter((one) => one === "/cards.json").length === 1 && !got.includes("/cards.details.json") && !got.some((one) => one.startsWith("/runs/") || one.startsWith("/models/")), got.join(", "));
       // The stills fetched are those near the screen of the first band's cards: none of a folded band's, none far below.
       const stills = await stillsNow();
       const firstIds = new Set(FIRST.cards.map((card) => card.id));
@@ -672,6 +682,7 @@ try {
         await until(FIRST_DRAWN, 30000);
         await pressControl(bandHolding(landing, standing.id).id, true);
         await bring(`${cardEl(standing.id)}?.querySelector(".landing-open")`);
+        const detailFrom = asked.length;
         await press(`${cardEl(standing.id)}.querySelector(".landing-open")`);
         await until(`!${R}.querySelector("cells-panel").hidden && ${R}.querySelector("cells-panel h2")?.textContent === ${JSON.stringify(standing.title)} && new URL(location.href).searchParams.get("select") === ${JSON.stringify(CARD + standing.id)}`, 10000);
         const panel = await evaluate(`(() => { const p = ${R}.querySelector("cells-panel"); return { title: p.querySelector("h2")?.textContent || "", text: p.textContent, links: [...p.querySelectorAll("a")].map((a) => a.href).filter((href) => /\\/blob\\/[0-9a-f]{40}\\//.test(href)).length, doors: [...p.querySelectorAll(".panel-door button")].map((b) => b.textContent), select: new URL(location.href).searchParams.get("select") }; })()`);
@@ -680,6 +691,17 @@ try {
         await picture(`detail-${standing.id}`);
         await key("Escape", "Escape", 27);
         check("Escape closes the detail, and the address no longer names it", await until(`${R}.querySelector("cells-panel").hidden && !new URL(location.href).searchParams.get("select")`, 10000));
+        // The cards' details are fetched the first time a detail is asked for, and once: a second detail asks for nothing more.
+        const other = landing.bands.flatMap((band) => band.cards).find((card) => card.id !== standing.id && bandHolding(landing, card.id) === FIRST);
+        if (other) {
+          await bring(`${cardEl(other.id)}?.querySelector(".landing-more")`);
+          await press(`${cardEl(other.id)}.querySelector(".landing-more")`);
+          await until(`${R}.querySelector("cells-panel h2")?.textContent === ${JSON.stringify(other.title)}`, 10000);
+          await key("Escape", "Escape", 27);
+          await until(`${R}.querySelector("cells-panel").hidden`, 10000);
+        }
+        const detailsAsked = asked.slice(detailFrom).filter((one) => one === "/cards.details.json").length;
+        check(`a card's detail fetches the cards' details the first time one is asked for, and once (${other ? `two details opened: ${standing.id}, ${other.id}` : "one detail opened"})`, detailsAsked === 1, `${detailsAsked} times`);
         await fresh(`lens=experiments&select=${CARD}${standing.id}`);
         const byAddress = await until(`${R}.querySelector("cells-panel h2")?.textContent === ${JSON.stringify(standing.title)}`, 30000);
         check(`and by its address (select=${CARD}${standing.id})`, byAddress && (await evaluate(`${V}.state.landing`)));
@@ -703,7 +725,7 @@ try {
         const reloaded = await evaluate(`${V}.state.lens`);
         check("the tab left, the address keeps no card's detail and no lens= of the landing's, and a reload opens the tab pressed", new URLSearchParams(named).get("select") === CARD + standing.id && !/[?&](lens|select)=/.test(left.search) && left.hash === "#cell" && reloaded === "cell", JSON.stringify({ named, ...left, reloaded }));
       }
-      const rowsCard = cards.cards.find((card) => card.kind === "rows");
+      const rowsCard = wholeCards.get(cards.cards.find((card) => card.kind === "rows")?.id); // its rows' references are in its detail
       if (rowsCard) {
         await fresh(`lens=experiments&select=${CARD}${rowsCard.id}`);
         await until(`${R}.querySelector("cells-panel h2")?.textContent === ${JSON.stringify(rowsCard.title)}`, 30000);
@@ -724,6 +746,90 @@ try {
         check("the not-run line says where what never ran stands, in the file's words, and opens that view", line === cards.not_run.says && lens, line);
       }
       check("no console error through every view and back", !errorsNow().length, errorsNow().join(" | "));
+
+      // ------------------------------------------------------------ About and the first-visit line (src/ui/about.js)
+      // Every run of a check is a first visit (its browser's profile is new, and removed after it): the line is looked at
+      // where it stands in the site's first view and on the landing, then About is opened, closed and opened again in
+      // every way, and the line's closing is held last, kept and refused.
+      const LINE = `${V}.about`;
+      const lineState = () => evaluate(`(() => { const a = ${LINE}, l = a.line, r = l.getBoundingClientRect(), f = ${V}.frame.getBoundingClientRect(), bar = ${V}.bar.getBoundingClientRect(); const box = { left: r.left - f.left, top: r.top - f.top, right: r.right - f.left, bottom: r.bottom - f.top }; const over = a.taken().filter((t) => { const gx = t.gapX ?? 8, gy = t.gapY ?? 8; return !(box.right + gx <= t.left || box.left >= t.right + gx || box.bottom + gy <= t.top || box.top >= t.bottom + gy); }); return { open: Boolean(a.lineOpen), placed: a.placed, seen: a.lineOpen && getComputedStyle(l).visibility === "visible", inert: l.inert, box: [box.left, box.top, box.right, box.bottom].map(Math.round), under: r.top >= bar.bottom, over: over.length, words: l.textContent.replace(/\\s+/g, " ").trim() }; })()`);
+      const lineHolds = (state) => state.open && (state.placed === "none" ? !state.seen && state.inert : state.seen && !state.inert && state.under && state.over === 0);
+      for (const [where, query] of [["the site's first view", ""], ["the landing", "lens=experiments"]]) {
+        await fresh(query);
+        await until(`Boolean(${V}.current) && ${LINE}.placed !== null`, 30000);
+        await stable(`${LINE}.placed`, 5000);
+        const state = await lineState();
+        check(`a first visit, ${where}: the line is there, and where it stands it is under the bar and covers nothing the page put over the picture (8 px clear) and no name the view shows (as clear as a name keeps of a card); where no band is free (and on a phone) it waits out of sight and out of the keyboard's reach`, lineHolds(state) && (!PHONE || state.placed === "none"), JSON.stringify(state));
+        note(`  the line, ${WIDTH} by ${HEIGHT}, ${where}: ${state.placed === "none" ? (PHONE ? "waits (a phone)" : "waits (no band under the bar is free)") : `stands at ${state.box.join(", ")}`}`);
+        await picture(`line-${query ? "landing" : "first"}`);
+      }
+      // The button: after List in the bar, its words "About", pressed as a button is pressed.
+      await fresh("");
+      await until(`Boolean(${V}.current) && ${LINE}.placed !== null`, 30000);
+      const button = await evaluate(`(() => { const b = ${LINE}.button, list = ${V}.indexButton, r = b.getBoundingClientRect(), l = list.getBoundingClientRect(); return { words: b.textContent, pressed: b.getAttribute("aria-pressed"), after: b.previousElementSibling === list, inBar: b.closest(".bar") === ${V}.bar, row: Math.abs((r.top + r.bottom) / 2 - (l.top + l.bottom) / 2) < 2, size: [Math.round(r.width), Math.round(r.height)], inside: r.right <= innerWidth + 0.5 }; })()`);
+      check("the About button stands in the bar after List, in its row and inside the window, its words About, not pressed", button.words === "About" && button.pressed === "false" && button.after && button.inBar && button.row && button.inside && (!PHONE || (button.size[0] >= 44 && button.size[1] >= 44)), JSON.stringify(button));
+      const lens = await evaluate(`${V}.state.lens`);
+      await press(`${LINE}.button`);
+      await until(`${V}.state.about && !${R}.querySelector("cells-panel").hidden`, 10000);
+      await sleep(300);
+      const opened = await evaluate(`(() => { const p = ${R}.querySelector("cells-panel"), links = [...p.querySelectorAll("a")]; const source = links.find((a) => a.textContent.startsWith("Source code")); return { heading: p.querySelector("h2")?.textContent, focus: ${R}.activeElement === p.querySelector("h2"), pressed: ${LINE}.button.getAttribute("aria-pressed"), doors: [...p.querySelectorAll("[data-door]")].map((b) => b.dataset.door), source: source ? { href: source.href, target: source.target, rel: source.rel, name: source.textContent } : null, licence: links.find((a) => /licen[cs]e/i.test(a.textContent + a.href))?.href || null, credit: p.querySelector(".about-credit")?.textContent || null, line: ${LINE}.lineOpen, kept: (() => { try { return localStorage.getItem("cells-visualizer.intro.closed"); } catch { return "refused"; } })(), hasPanel: ${V}.frame.classList.contains("has-panel"), lens: ${V}.state.lens }; })()`);
+      check("pressed, About opens in the panel's place: its heading, the focus on it, every view a door, the source code in a new tab (noopener noreferrer) and no licence link, the credit line; the line closes and stays closed", opened.heading === "Cells" && opened.focus && opened.pressed === "true" && opened.doors.length === (await evaluate(`${V}.views.length`)) && opened.source?.href === "https://github.com/Eidosoma/Cells" && opened.source.target === "_blank" && opened.source.rel === "noopener noreferrer" && opened.licence === null && opened.credit === ABOUT_WORDS.credit.text && !opened.line && opened.kept === "closed" && opened.hasPanel && opened.lens === lens, JSON.stringify(opened));
+      await picture("about-open");
+      await key("Escape", "Escape", 27);
+      await until(`!${V}.state.about`, 5000);
+      const closed = await evaluate(`({ about: ${V}.state.about, panel: ${R}.querySelector("cells-panel").hidden, focus: ${R}.activeElement === ${LINE}.button, lens: ${V}.state.lens, hasPanel: ${V}.frame.classList.contains("has-panel"), pressed: ${LINE}.button.getAttribute("aria-pressed") })`);
+      check("Escape closes it as any panel closes, gives the view back as it was, and the focus to the About button", !closed.about && closed.panel && closed.focus && closed.lens === lens && !closed.hasPanel && closed.pressed === "false", JSON.stringify(closed));
+      // The name in the bar's corner (where it is in sight), and the panel's own close button.
+      const brandSeen = await evaluate(`(() => { const r = ${LINE}.brand.parentElement.getBoundingClientRect(); return r.width > 2 && r.height > 2; })()`); // the name's box, which the squeeze makes 1 px
+      if (brandSeen) {
+        await press(`${LINE}.brand`);
+        const byName = await until(`${V}.state.about`, 5000);
+        await press(`${R}.querySelector("cells-panel .about-head .icon-button")`);
+        const shut = await until(`!${V}.state.about && ${R}.querySelector("cells-panel").hidden`, 5000);
+        check("the name Cells in the bar's corner opens About too, and its close button closes it", byName && shut);
+      } else note("  the name in the bar's corner is out of sight at this width (the bar is squeezed): About is the bar's button alone");
+      // A door: the view it names opens, as its tab would, and About closes.
+      await press(`${LINE}.button`);
+      await until(`${V}.state.about`, 5000);
+      const door = (await evaluate(`${V}.views.map((v) => v.id)`)).find((id) => id !== lens && id !== "experiments");
+      await evaluate(`${R}.querySelector('cells-panel [data-door=${JSON.stringify(door)}]').scrollIntoView({ block: "center" })`);
+      await press(`${R}.querySelector('cells-panel [data-door=${JSON.stringify(door)}]')`);
+      const through = await until(`${V}.state.lens === ${JSON.stringify(door)} && !${V}.state.about`, 15000);
+      check(`a door in About opens its view (${door}), as its tab does, and About closes`, through && (await evaluate(`location.hash`)) === `#${door}`, await evaluate(`JSON.stringify({ lens: ${V}.state.lens, about: ${V}.state.about, hash: location.hash })`));
+      // Closed, the line stays closed in this browser.
+      await navigate("");
+      await until(`Boolean(${V}.current) && ${LINE}.about !== null`, 30000);
+      check("the line, closed, stays closed on the next visit in this browser", !(await evaluate(`${LINE}.lineOpen`)));
+      // The address names About: #about opens it over the site's first view, and opening it closes the line.
+      await page("Page.navigate", { url: "about:blank" });
+      await forget();
+      await page("Page.navigate", { url: `${base}#about` });
+      await until(`Boolean(${V}?.current) && ${V}.state.about`, 30000);
+      const byAddress = await evaluate(`({ about: ${V}.state.about, lens: ${V}.state.lens, first: ${V}.views[0].id, line: ${LINE}.lineOpen, panel: !${R}.querySelector("cells-panel").hidden, hash: location.hash })`);
+      check("#about opens About over the first view, and the line with it is closed", byAddress.about && byAddress.lens === byAddress.first && byAddress.panel && !byAddress.line && byAddress.hash === "#about", JSON.stringify(byAddress));
+      // Where the browser keeps nothing, the line shows again on every visit, and closing it breaks nothing.
+      errors.length = 0;
+      const refusing = await page("Page.addScriptToEvaluateOnNewDocument", { source: `Object.defineProperty(window, "localStorage", { configurable: true, get() { throw new DOMException("refused by the check", "SecurityError"); } });` });
+      await navigate("");
+      await until(`Boolean(${V}.current) && ${LINE}.placed !== null`, 30000);
+      const before = await evaluate(`${LINE}.lineOpen`);
+      // Where it stands once its place has settled (the view's names come in its first frames), its × is pressed; where it waits, it is closed as its × closes it.
+      if ((await stable(`${LINE}.placed`, 5000)) !== "none") await press(`${LINE}.line.querySelector(".intro-close")`);
+      else await evaluate(`${LINE}.closeLine({ keep: true })`);
+      const gone = await until(`!${LINE}.lineOpen`, 5000);
+      await navigate("");
+      await until(`Boolean(${V}.current) && ${LINE}.about !== null`, 30000);
+      const again = await evaluate(`${LINE}.lineOpen`);
+      check("where storage is refused, the line shows, closes without an error, and shows again on the next visit", before && gone && again && !errorsNow().length, JSON.stringify({ before, gone, again, errors: errorsNow() }));
+      await page("Page.removeScriptToEvaluateOnNewDocument", { identifier: refusing.identifier });
+      // With less motion asked for, the line does not move.
+      await page("Emulation.setEmulatedMedia", { features: [{ name: "prefers-reduced-motion", value: "reduce" }] });
+      await fresh("");
+      await until(`Boolean(${V}.current) && ${LINE}.placed !== null`, 30000);
+      const still = await evaluate(`getComputedStyle(${LINE}.line).transitionDuration.split(",").every((d) => parseFloat(d) === 0)`);
+      await page("Emulation.setEmulatedMedia", { features: [{ name: "prefers-reduced-motion", value: "no-preference" }] });
+      check("with less motion asked for, the line does not move", still);
+      check("no console error through About and the line", !errorsNow().length, errorsNow().join(" | "));
     }
   }
 } catch (error) {

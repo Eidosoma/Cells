@@ -144,6 +144,14 @@ class CellsPanel extends HTMLElement {
     this.scrollTop = 0;
   }
 
+  /** Words of their own in the panel's place, made by the caller (About, src/ui/about.js): its head and its body. */
+  showOwn(children) {
+    if (children.every((child, k) => this.children[k] === child) && this.children.length === children.length && !this.hidden) return;
+    this.replaceChildren(...children);
+    this.hidden = false;
+    this.scrollTop = 0;
+  }
+
   connections(model, entity) {
     const groups = new Map();
     for (const link of model.links(entity.id)) {

@@ -1,0 +1,230 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "title": "cells.experiment_package@1: the manifest of an experiment's source package",
+ "$comment": "Written by tools/check_package.py --schema from its field table; do not edit by hand. The field names are those of the engine's lead, who keeps the specification (20 November 2026). A reader ignores a field it does not know (within a major). schema/EXPERIMENT_PACKAGE.md is the contract, and the validator holds what no schema says.",
+ "description": "The manifest of an experiment's source package (experiment_package.json at the run folder's top).",
+ "type": "object",
+ "required": [
+  "format",
+  "level",
+  "experiment",
+  "visibility",
+  "licence",
+  "packages"
+ ],
+ "properties": {
+  "format": {
+   "description": "The manifest's format and major version. A reader of @1 reads @1 only.",
+   "const": "cells.experiment_package@1"
+  },
+  "level": {
+   "description": "Which level of package this is: source, the run folder as the engine writes it. The play level comes in the next round.",
+   "enum": [
+    "source"
+   ]
+  },
+  "experiment": {
+   "description": "The experiment the packages are runs of, in its own words.",
+   "type": "object",
+   "required": [
+    "id",
+    "title"
+   ],
+   "properties": {
+    "id": {
+     "description": "The experiment's id, one for each source package: the public id, and what other files point at. A run's id is <experiment id>--<arm>, with the seed where there is one.",
+     "type": "string",
+     "minLength": 1,
+     "pattern": "^[a-z0-9]+([.-][a-z0-9]+)*$"
+    },
+    "group": {
+     "description": "The id under which a catalogue gathers this package with the other source packages of one experiment (its sweeps, each a package with an id of its own).",
+     "type": "string",
+     "minLength": 1,
+     "pattern": "^[a-z0-9]+([.-][a-z0-9]+)*$"
+    },
+    "title": {
+     "description": "The experiment's name, in a few words.",
+     "type": "string",
+     "minLength": 1
+    },
+    "asks": {
+     "description": "What the experiment asks, in one sentence.",
+     "type": "string",
+     "minLength": 1
+    },
+    "plain": {
+     "description": "What it does, in plain sentences.",
+     "type": "string",
+     "minLength": 1
+    },
+    "status": {
+     "description": "The owner's own words for the runs' standing (a development run, not judged, say). For an experiment of the public record the page reads its standing from the record, and shows these words only where the record has none.",
+     "type": "string",
+     "minLength": 1
+    },
+    "sources": {
+     "description": "Where the experiment is stated: documents of the engine's repository, at its revision.",
+     "type": "array",
+     "items": {
+      "description": "One source.",
+      "type": "object",
+      "required": [
+       "path"
+      ],
+      "properties": {
+       "path": {
+        "description": "The document's path in the engine's repository (never a path of a machine).",
+        "type": "string",
+        "minLength": 1
+       },
+       "where": {
+        "description": "Where in it, in words.",
+        "type": "string",
+        "minLength": 1
+       }
+      }
+     }
+    },
+    "citation": {
+     "description": "What the experiment replicates or reads from, as it is cited.",
+     "type": "object",
+     "required": [
+      "text"
+     ],
+     "properties": {
+      "text": {
+       "description": "The citation as written.",
+       "type": "string",
+       "minLength": 1
+      },
+      "doi": {
+       "description": "Its DOI.",
+       "type": "string",
+       "minLength": 1
+      }
+     }
+    }
+   }
+  },
+  "engine": {
+   "description": "The engine's provenance, copied from the runs' own records: its revision, its snapshot and whether its tree was clean, and no more. The manifest adds no digest of its own. Where given, each run's view must agree with it, and so must its run.json where it has one.",
+   "type": "object",
+   "properties": {
+    "revision": {
+     "description": "The engine's revision that ran: each view's run.source.revision and each run.json's revision (a short form of the same is the same).",
+     "type": "string",
+     "minLength": 1,
+     "pattern": "^[0-9a-f]{7,40}$"
+    },
+    "snapshot": {
+     "description": "The execution snapshot it ran from, by name: each run.json's snapshot.",
+     "type": "string",
+     "minLength": 1
+    },
+    "clean": {
+     "description": "Whether the engine's tree was clean: each run.json's clean, and the opposite of each view's run.source.dirty.",
+     "type": "boolean"
+    }
+   }
+  },
+  "made": {
+   "description": "The day the package was written (YYYY-MM-DD).",
+   "type": "string",
+   "minLength": 1,
+   "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+  },
+  "visibility": {
+   "description": "Who may see the package: public, or private. A tool that stages a page, a site or an API refuses a private package (the next round).",
+   "enum": [
+    "public",
+    "private"
+   ]
+  },
+  "licence": {
+   "description": "The licence the package is given under, by its SPDX identifier where it has one (CC-BY-4.0, say). Words and numbers read from a source keep that source's terms.",
+   "type": "string",
+   "minLength": 1
+  },
+  "summary": {
+   "description": "The experiment's summary of its sweeps (cells.experiment_summary@1), by its path relative to the manifest.",
+   "type": "string",
+   "minLength": 1,
+   "pattern": "^(?!\\.\\.?(/|$))(?!.*/\\.\\.?(/|$))[A-Za-z0-9._-]+(/[A-Za-z0-9._-]+)*$"
+  },
+  "packages": {
+   "description": "The packages, one for each arm, in the order a reader lists them.",
+   "type": "array",
+   "minItems": 1,
+   "items": {
+    "description": "One package.",
+    "type": "object",
+    "required": [
+     "arm",
+     "kind",
+     "path"
+    ],
+    "properties": {
+     "arm": {
+      "description": "The arm's id. One arm once, in packages and refused together.",
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[a-z0-9]+([.-][a-z0-9]+)*$"
+     },
+     "kind": {
+      "description": "How the package is read: cells.run_view@1 (a folder that holds the engine's view.json and the arrays it names), or cells.assembly_view@1 (the assembly's, written by its model's own writer). A reader names a package of a kind it does not read and reads the rest.",
+      "type": "string",
+      "minLength": 1
+     },
+     "path": {
+      "description": "The package's folder, relative to the manifest. In @1 it is the folder named as its arm, directly in the run folder.",
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!\\.\\.?(/|$))(?!.*/\\.\\.?(/|$))[A-Za-z0-9._-]+(/[A-Za-z0-9._-]+)*$"
+     },
+     "sidecars": {
+      "description": "The quantities the experiment's driver states beside the run (cells.experiment_quantity@1, cells.experiment_criterion@1), each by its plain file name in the package's folder, in the order they are played. Where the run's own run.json lists its sidecars, these are the same names, each once.",
+      "type": "array",
+      "items": {
+       "description": "One sidecar's plain file name: lower-case letters, digits, underscores and hyphens, then .json.",
+       "type": "string",
+       "minLength": 1,
+       "pattern": "^[a-z0-9_-]+\\.json$"
+      }
+     },
+     "label": {
+      "description": "The arm's name in words.",
+      "type": "string",
+      "minLength": 1
+     }
+    }
+   }
+  },
+  "refused": {
+   "description": "Picks an engine check refused: each a folder named as its arm, holding REFUSED.json and no view.",
+   "type": "array",
+   "items": {
+    "description": "One refused pick.",
+    "type": "object",
+    "required": [
+     "arm",
+     "file"
+    ],
+    "properties": {
+     "arm": {
+      "description": "The pick's arm: its folder's name.",
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[a-z0-9]+([.-][a-z0-9]+)*$"
+     },
+     "file": {
+      "description": "The refusal's file, by its plain name in the arm's folder (REFUSED.json).",
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!\\.+$)[A-Za-z0-9._-]+$"
+     }
+    }
+   }
+  }
+ }
+}

@@ -22,4 +22,5 @@
 - **A fixture qualification: FAIL (10 November).** One case passes, one fails, one is not evaluable.
 - **Fixture parity rungs pass (10 November).** Two protocols, judged once each.
 - **A fixture run judged in parts (10 November).** One part passes and one fails.
+- **A fixture comparison of two arms passes (10 November).** All 11 rows are within their bands.
 - **The fixture's protocol registered (10 November), before any judged run.**

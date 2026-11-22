@@ -1,6 +1,10 @@
 # Binding sites owned by a finite node's own surface (FR-28): design note
 
-**Status: desk note, proposed, not built.** The operators owner wrote it at the lead's request on
+**Status: decided (D268, option A, a plain `{"node": N}`, matrix sites covered, @2 refused in
+version 1) and built on branch `fr28-node-sites` (development, 21 November 2026).** The note below is
+the desk note as decided.
+
+**Earlier status: desk note, proposed, not built.** The operators owner wrote it at the lead's request on
 20 November 2026 (FR-28, D245, normal priority). The user wants the options discussed before a new
 system is built. Nothing here is coded, and integration would grant no acceptance (D143).
 

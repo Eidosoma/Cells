@@ -522,3 +522,28 @@ def test_it_registers_with_its_run_view():
         (0.5, {"outside": "well"}, "wash"),
         (1.5, {"outside": "well"}, "wash"),
     ]
+
+
+def test_a_draw_from_chosen_regions_of_an_uneven_liquid():
+    """FR-37 (D274), its synthetic test with existing operators (validation/sampling/uneven_draw.py;
+    host only, the composite's own event maps on the bound state, about 1 s): two 100 pL regions,
+    each a finite node, 8 and 2 fmol of S above the buffer's background; 100 pL collected by
+    per-region wash events, refilled with buffer at the background.
+    - unmixed, all 100 pL from A: sample 8, left 0 and 2;
+    - mixed (declared, 5 and 5), 50 pL from each: sample 5, left 2.5 and 2.5;
+    - the port's, 75 pL from A and 25 from B: sample 6.5, left 2 and 1.5.
+    Each reports the drawn volumes, the sample and its concentration, the remainders and the refill
+    separately, and accounts for the 10 fmol within rounding."""
+    from validation.sampling import uneven_draw as draw
+
+    expected = {"unmixed": (8.0, (0.0, 2.0)), "mixed": (5.0, (2.5, 2.5)), "port": (6.5, (2.0, 1.5))}
+    for case, (sample, left) in expected.items():
+        out = draw.report(case)
+        assert sum(out["drawn_pL"].values()) == 100.0
+        assert out["sample_above_background_fmol"] == pytest.approx(sample, abs=1e-12), case
+        assert out["sample_mM"] == pytest.approx(out["sample_fmol"] / 100.0, rel=1e-15)
+        for region, amount in zip(draw.REGIONS, left, strict=True):
+            got = out["remainder_above_background_fmol"][region]
+            assert got == pytest.approx(amount, abs=1e-12), (case, region)
+        assert out["refill_supplied_fmol"] == pytest.approx(draw.BACKGROUND_mM * 100.0, rel=1e-12)
+        assert abs(out["account_residual_fmol"]) <= 1e-15, case

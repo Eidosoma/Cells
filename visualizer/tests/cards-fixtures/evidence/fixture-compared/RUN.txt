@@ -1,0 +1,2 @@
+A fixture comparison, run once, 10 November 2026.
+revision: main 4444444444444444444444444444444444444444, frozen beside it.

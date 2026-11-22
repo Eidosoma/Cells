@@ -19,11 +19,12 @@ else is read, and each reading names the file and the field it came from.
 | --- | --- | --- |
 | `data/replays/cards.source.json` (`cells.visualizer.experiment_cards_source@1`) | Hand | The bands' typed words; each card's id, band, kind, title, `asks` (or `shows`), and its locators: `map` (a map part), `standing` (a catalogue outcome, a catalogue stop or a model-system entry, where the card reads no map part), `answer`, `record` (PROGRESS.md entries and verdict files), `switch`, `cite`, `rows`, `replay`; `none` (why a card has no level, where the map states none); `left_out` (each experiment part of the map that is on no card, with why) |
 | `data/replays/cards.readings.json` (`cells.visualizer.experiment_cards_readings@1`) | `tools/build_cards.py --gather` (generated: do not edit) | What was read from the record, card by card, each reading with the locator it answers (`read`), its file and field; the revisions found on main (`on_main`); the sources whose place was not found word for word (`unplaced`) |
-| `data/replays/cards.json` (`cells.visualizer.experiment_cards@1`) | `tools/build_cards.py` (generated: do not edit) | The cards, below |
+| `data/replays/cards.json` (`cells.visualizer.experiment_cards@2`) | `tools/build_cards.py` (generated: do not edit) | The cards' faces: what the landing draws and the List and the search read, below. Fetched as the landing first opens |
+| `data/replays/cards.details.json` (`cells.visualizer.experiment_card_details@1`) | `tools/build_cards.py`, from the same build (generated: do not edit) | Each card whole, below: its detail. One file for every card (the artifact's link holds at most 511 files), fetched the first time a card's detail is asked for, and once |
 
 ```bash
-python3 tools/build_cards.py                                   # the cards, from tracked files only
-python3 tools/build_cards.py --check                           # fails if cards.json is stale (npm test runs it)
+python3 tools/build_cards.py                                   # the cards' faces and details, from tracked files only
+python3 tools/build_cards.py --check                           # fails if either file is stale (npm test runs it)
 python3 tools/build_cards.py --gather --evidence DIR --repo DIR  # reads the record, then writes both files
 python3 tools/build_cards.py --check --evidence DIR --repo DIR   # also fails if the readings are stale
 python3 tools/build_cards.py --gather --evidence DIR --repo DIR --revision HEAD
@@ -79,13 +80,16 @@ A change of the map's words alone (same revision) needs only `python3 tools/buil
 - **A verdict** (`record[].verdict`): read from the run's own file in the saved run folders, named by
   its folder (`run.evidence`) and its folders one by one (`run.within`), never by a path.
   - `count`: `passed` of `of`, in the record's own unit (`judged criteria`, `criteria`, `judged items`,
-    `items`, `rows`, `cases`, `protocols`, `judged runs`, `judged quantities` …), with `from` (the file and
+    `items`, `rows`, `cases`, `protocols`, `judged runs`, `judged quantities`, `compared rows` …), with `from` (the file and
     the field it was counted from; `from.files`, optional, where one verdict is read from several files,
     `from.file` then naming the first). The readers, one for each layout of verdict file: `criteria`
     (the entries whose `judged` is true), `items` (a mapping, the judged ones where any says), `list` (a
     list of items), `named` (names each with a verdict), `rows` (with its tally), `tally` (the file's own
-    passed, failed and not-evaluable numbers; `count.not_evaluable`, optional, holds the last), `one` (a
-    single verdict), and several files of one verdict each. The gathering confirms the count against
+    passed, failed and not-evaluable numbers; `count.not_evaluable`, optional, holds the last), `compared`
+    (a comparison's own tables, named in `tables` as dotted paths: each table's `compared` and `failed`
+    numbers, or in a table of quantities each quantity's, summed; `of` is their compared rows and `passed`
+    their compared rows less the failed, and a file that says it passed with a failed row is refused; FR-7's
+    F4 since 20 November 2026), `one` (a single verdict), and several files of one verdict each. The gathering confirms the count against
     the run's `reading.json` or its registered protocol's entries where the source names one, and
     against any count the PROGRESS.md entry words in the same noun (`confirmed_by`).
     - Where the entry words a different count and nothing confirms the file's, `count` is null and
@@ -112,10 +116,32 @@ A change of the map's words alone (same revision) needs only `python3 tools/buil
   pass, passes, passed, fail, fails, failed, verdict or acceptance, whatever its outcome; each is on a
   card's `record` or in the source file's `entries_left_out`, with a reason.
 
-## The format (`cells.visualizer.experiment_cards@1`)
+## The two files: the faces and the details (20 November 2026)
 
-Top level: `format`, `note`, `built_from` (`map.revision` and `as_of`; `record.revision`), `bands`,
-`not_run`, `listing`, `cards`.
+Until 20 November 2026 one file, `cells.visualizer.experiment_cards@1`, held every card whole, and the landing fetched it
+whole as it opened: 189 kB with thirty cards, growing with each. Since then the build writes two files, from one build:
+
+- **`cards.json`, the faces** (`cells.visualizer.experiment_cards@2`): the top level below (`bands`, `not_run`, `listing`,
+  `built_from`), `details` (the name of the details' file beside it, `cards.details.json`), and `cards`, each card's face:
+  the card whole with every field the face does not read left out (`tools/build_cards.py`, `face_of`). A face keeps `id`,
+  `band`, `kind`, `title`, `asks`, `shows`; of `standing`, `first`, `says`, `none`, `status`, `level` and `part`; of
+  `record`, the entries with a verdict, each with `says`, its verdict's `passed`, `count` (`passed`, `of`, `unit`,
+  `not_evaluable`) and `day.date`, and its `scope.says`; of `answer`, `answer`, `label` and `text`; `replay` whole (what a
+  press opens, the still, the runs); and of `rows`, each row's `id` and `passed`. Every value of a face is the whole
+  card's own, and the landing draws the same face from either (the tests hold both). The landing's List and search read
+  a card's id, title and part; `llms.txt` (the site's) its title, level and verdict lines: all on the face.
+- **`cards.details.json`, the details** (`cells.visualizer.experiment_card_details@1`): `format`, `note`, `built_from`,
+  and `cards`, every card whole as below, in the faces' order. A card's detail (its "more", a card without a replay
+  pressed, the List, an address `select=card:<id>`) waits for this file, fetched once the first time one is asked for;
+  where it cannot be fetched, the detail says what the face says, and that the rest could not be fetched.
+
+The faces were 67 kB on 20 November 2026 (the whole, 187 kB).
+
+## The top level and a card whole (until 20 November 2026 `cells.visualizer.experiment_cards@1`)
+
+The faces' top level (`cards.json`): `format`, `note`, `built_from` (`map.revision` and `as_of`; `record.revision`),
+`bands`, `not_run`, `listing`, `details`, `cards`. `bands`, `not_run` and `listing` stand in the faces only; the details
+(`cards.details.json`) hold `format`, `note`, `built_from` and `cards`, each card whole as `cards` below says.
 
 - **`bands`**, in this order, each `{id, label, says, control?, cards}` (the card ids, in their order). `control`
   (optional, typed in the source file) is the words of the control a band folds behind on the landing: what the band
@@ -174,7 +200,9 @@ own files under `visualizer/`), a place in its words, and a revision of main in 
 
 ## Rules the tests hold (`tests/experiment_cards.test.mjs`)
 
-- The cards are what the tool writes from tracked files and the readings (`--check`).
+- The cards are what the tool writes from tracked files and the readings (`--check`): both files.
+- Each face is its whole card with fields left out, every value the card's own, and the landing draws the same face
+  from either; the List's and `llms.txt`'s words are on the face; the faces are under half the whole.
 - Four bands in order; every card in one band, of one kind, with a standing (`says`) or the stated
   reason for none (`none`).
 - Every source carries a full revision the gathering found on main; no file names a path of a
@@ -199,8 +227,8 @@ own files under `visualizer/`), a place in its words, and a revision of main in 
   source's place is not.
 - A rerun, when one is filled in, says it is a rerun and never calls itself the judged run.
 - One command moves the record forward (`--revision`), writing the new revision into the source file.
-- The gathering, on small fixtures (`tests/cards-fixtures/`): judged rows only are counted; the layouts `tally`, `named`
-  and several files are read; a count worded otherwise is left off, and stands where the protocol's
+- The gathering, on small fixtures (`tests/cards-fixtures/`): judged rows only are counted; the layouts `tally`, `named`,
+  `compared` and several files are read, and a comparison that passes with a failed row is refused; a count worded otherwise is left off, and stands where the protocol's
   entries confirm it, with the record's words beside it and the tool's note on a criterion judged in
   parts; the judged entries are listed; a snapshot off main names no revision; a day is the named line's; a
   clock time leaves a heading; the paragraph is read at its revision; the full check fails when a run's

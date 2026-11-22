@@ -209,6 +209,7 @@ def test_structure_of_definitions():
         pump_laws=(kinetic_pump.LAW_ID, calcium_atpase.LAW_ID),
         fuel_kinds=(inner_laws.MAINTAINED_FUEL_ID,),
         junction_heat_booking=spec3.DEFAULT_JUNCTION_HEAT,
+        crossing_junctions=("junction_0",),  # Fix (A): its junction joins floating components.
     )
     bare = parse_spec(fixtures.definition("release", solver=ARS, channels=False))
     assert surface_pump_v3.structure(bare.model).declared_channel_laws == ()
