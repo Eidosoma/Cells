@@ -214,6 +214,23 @@ def survival(t, n, Q, D, t1, t2, ts):
     )
 
 
+def label_survival(t, labelled, t2, ts):
+    """FR-38's survival readout by route 1 (erratum C, D289): from an engine series of the amount
+    one label marks on the output grid (engine_run's label_<row>_<label>, the window's label,
+    whose window closes at t2), the members alive at t2, the same molecules alive at ts >= t2, and
+    their ratio, None at a zero denominator. The label must receive no arrivals in [t2, ts], as a
+    window's label used once does not: the engine's labels follow the molecules, so no grid error
+    enters. Refused on an invalid series or window."""
+    check_counters(t, n=labelled)
+    _, i2, i3 = _window(t, t2, t2, ts)
+    alive, later = labelled[i2], labelled[i3]
+    return dict(
+        alive_at_window_end=alive,
+        alive_at_sample=later,
+        ratio=None if alive == 0 else later / alive,
+    )
+
+
 def turnover_control(points_per_hour=60):
     """FR-25's turnover control on exact counters: (completed in hour 1, surviving at 1 h, at 2 h).
     Expected 100 ln 2 = 69.31, 50 and 25 copies."""

@@ -5,7 +5,8 @@ of §9.8's routes. Development, not judged: the registered comparison against co
 references comes after (D284).
 
 It reads an engine_run.py directory of R1's runs (worlds.release_names(), at the test instance and
-dt worlds.R1_DT) and writes release_check.json there; with --part R2, a directory of R2's runs
+dt worlds.R1_DT) and writes release_check.json there. R1L is R1 at p = 0.75 with FR-42's labels on
+its fate rows (erratum C); with --part R2, a directory of R2's runs
 (worlds.r2_names() and r2_check_names() beside A1, at A1's step), writing release_check_r2.json.
 It exits 1 when any check fails. R2's checks are its identities and energy, its route-2 cohort
 (§9.12, reading 8), and the addendum's development check: its total RNA and protein approaching
@@ -30,12 +31,23 @@ number:
 - **The requester's six-decimal figures:** within half a unit of the last digit, 5e-7 copies.
 - **The zero-rate route** at p = 0 and 1: its releases and H_rel exactly 0.0 at every output, and
   its fate row the blank's within 3e-8 relative, above zero (the trace floor).
-- **The two cohort routes** (§9.8) agree within route 2's grid error (cohort.grid_error) plus the
-  label rows' departure. Each label row's loss reads its own potential, so the class rows are not
-  neutral labels (erratum B, §9.13): their sum departs from the unlabelled row by at most about
-  1e-8 relative at R1, the size of the e^(y_f) term, and route 1 is provisional until FR-42's
-  share labels (D289) replace the class rows. It is checked here: each fate's class total minus
-  the labelled blank's against the unlabelled row minus its blank's, within 3e-8 relative.
+- **Route 1 on shares** (§9.8 as erratum C amends it, D289): the labelled run's fate row times its
+  window label's share, engine_run's label_<row>_cohort, with no blank, since a cohort starts at
+  exactly zero as a share and the loss is computed once on the physical row.
+  - **R1L is R1 with labels:** every readout but the label exports, and every check, is the
+    unlabelled run's bit for bit, and each row's label amounts sum to the row within the shares'
+    rounding (128 eps of the row).
+  - **Against the closed forms:** SURVIVORS (the loss's (1 - e^(y_f)), as for the survivors) plus
+    the share update's split, k_f h^2/(12 tau) relative (erratum C: numerics/label_shares.advance
+    errs by (a k' - a' k) h^3/12 per half-step h, and in R1 the arrivals decay with the hold, a' =
+    -a/tau, at a near-constant loss rate k_f). Both terms come from stated error terms, not from a
+    run's gap.
+  - **The two routes** (§9.8) agree within route 2's grid error (cohort.grid_error) plus that
+    bound on route 1.
+  - **The survival readout** (the requester's answer to (c) and (e)): the window's members alive
+    at its end, the same molecules an hour later, and their ratio, None at a zero denominator, by
+    route 1 (cohort.label_survival) against e^(-k_f 3600 s) within twice route 1's bound, and by
+    route 2 (cohort.survival) within the counts' grid errors.
 
 Run: python -m validation.gene_regulation.release_check DIR
 """
@@ -68,7 +80,8 @@ LIMIT = dict(
 SET = "test instance"
 RID = worlds.RELEASE
 FATE_ROWS = dict(durable="R", short_lived="R_s")
-LABEL_ROWS = dict(zip(("durable", "short_lived"), worlds.R1_LABEL_ROWS, strict=True))
+LABEL_ROWS = dict(zip(("durable", "short_lived"), worlds.R1_LABEL_ROWS, strict=True))  # R1S's.
+SHARES = 128 * 2.0**-52  # A row's label amounts against the row: the shares' domain allows 64 ulps.
 
 
 def _path(directory, name):
@@ -279,50 +292,82 @@ def energy(checks, name, run):
     checks.add(f"{name}: every heat class non-decreasing", least >= 0.0, smallest=least)
 
 
+def split_bound(fate, dt):
+    """Route 1's relative error from the share update's split (erratum C): k_f h^2/(12 tau) at the
+    half-step h = dt/2, the arrivals into the fate decaying with the hold (a' = -a/tau) at a
+    near-constant loss rate k_f (numerics/label_shares.advance's (a k' - a' k) h^3/12)."""
+    r = sheet.RELEASE
+    k = float(r["k_durable" if fate == "durable" else "k_short"])
+    h = dt / 2
+    return k * h * h / (12.0 * float(r["tau"]))
+
+
 def cohorts(checks, runs, machine):
-    """§9.8's two routes for the releases in R1's window at p = 0.75: route 1, the label rows
-    minus the labelled blank's; route 2, cohort.py on the unlabelled run's counters. Each fate's
-    class total, minus the labelled blank's, is the unlabelled row minus its blank's, within the
-    label rows' departure (at most about 1e-8, §9.8)."""
+    """§9.8's two routes for the releases in R1's window at p = 0.75 (erratum C): route 1 on shares,
+    the labelled run's label_<row>_cohort, with no blank; route 2, cohort.py on the unlabelled
+    run's counters. R1L is R1 with labels: every other readout and every check bit for bit."""
     t1, t2 = worlds.R1_WINDOW
-    plain, plain_blank = runs[f"R1 p=0.75 {machine}"], runs[f"R1 blank {machine}"]
-    labelled, blank = runs[f"R1L p=0.75 {machine}"], runs[f"R1L blank {machine}"]
-    x, xl, xb = plain["readouts"], labelled["readouts"], blank["readouts"]
-    xpb = plain_blank["readouts"]
+    base, window = worlds.R1_LABELS
+    plain, labelled = runs[f"R1 p=0.75 {machine}"], runs[f"R1L p=0.75 {machine}"]
+    x, xl = plain["readouts"], labelled["readouts"]
+    physical = {k: v for k, v in xl.items() if not k.startswith("label_")}
+    differ = sorted(k for k in set(x) | set(physical) if x.get(k) != physical.get(k))
+    same = not differ and labelled["checks"] == plain["checks"]
+    checks.add(
+        f"R1L p=0.75 {machine}: every readout and check the unlabelled run's, bit for bit",
+        same,
+        differing=differ[:5],
+    )
     worst = max(
-        _relative(
-            xl[f"n_{RID}_{f}"][i] - xb[f"n_{RID}_{f}"][i], x[f"n_{row}"][i] - xpb[f"n_{row}"][i]
-        )
-        for f, row in FATE_ROWS.items()
-        for i in range(1, len(plain["t"]))
+        abs(xl[f"label_{row}_{base}"][i] + xl[f"label_{row}_{window}"][i] - x[f"n_{row}"][i])
+        / x[f"n_{row}"][i]
+        for row in FATE_ROWS.values()
+        for i in range(len(plain["t"]))
     )
     checks.add(
-        f"R1L p=0.75 {machine}: each fate's class total, the unlabelled row",
-        worst <= SURVIVORS,
+        f"R1L p=0.75 {machine}: each fate row's label amounts sum to the row",
+        worst <= SHARES,
         largest_relative=worst,
     )
+    starts = [xl[f"label_{row}_{window}"][plain["t"].index(t1)] for row in FATE_ROWS.values()]
+    checks.add(f"R1L p=0.75 {machine}: the cohort starts at exactly zero", starts == [0.0, 0.0])
     for f, row in FATE_ROWS.items():
+        bound = SURVIVORS + split_bound(f, labelled["dt_s"])
+        cohort1 = [v / COPY_FMOL for v in xl[f"label_{row}_{window}"]]
+        t, n, Q, D = cohort.read(plain["path"], row)  # Its own pool's counters.
         for ts in (t2, 2 * t2):
             i = plain["t"].index(ts)
-            route1 = (xl[f"n_{LABEL_ROWS[f]}"][i] - xb[f"n_{LABEL_ROWS[f]}"][i]) / COPY_FMOL
-            t, n, Q, D = cohort.read(plain["path"], row)  # Its own pool's counters.
+            route1 = cohort1[i]
             _, route2, _ = cohort.survivors(t, n, Q, D, t1, t2, ts)
             error = cohort.grid_error(t, n, Q, D, t1, t2, ts)
             route2, error = route2 / COPY_FMOL, (math.inf if error is None else error / COPY_FMOL)
             exact = window_cohort(0.75, f, t1, t2, ts)
             checks.add(
                 f"R1L p=0.75 {machine}: route 1's {f} cohort at {ts:g} s, the closed form",
-                _relative(route1, exact) <= SURVIVORS,
+                _relative(route1, exact) <= bound,
                 copies=route1,
                 closed_form=exact,
+                bound=bound,
             )
             checks.add(
                 f"R1 p=0.75 {machine}: the two routes' {f} cohort at {ts:g} s",
-                abs(route1 - route2) <= error + SURVIVORS * abs(route1),
+                abs(route1 - route2) <= error + bound * abs(route1),
                 route1=route1,
                 route2=route2,
                 grid_error=error,
             )
+        counted = cohort.label_survival(plain["t"], cohort1, t2, 2 * t2)
+        k = float(sheet.RELEASE["k_durable" if f == "durable" else "k_short"])
+        expected = math.exp(-k * t2)
+        checks.add(
+            f"R1L p=0.75 {machine}: route 1's {f} survival, alive at {t2:g} s and at {2 * t2:g} s",
+            counted["ratio"] is not None and _relative(counted["ratio"], expected) <= 2 * bound,
+            alive_copies=counted["alive_at_window_end"],
+            later_copies=counted["alive_at_sample"],
+            ratio=counted["ratio"],
+            closed_form_ratio=expected,
+            bound=2 * bound,
+        )
         survival(checks, f"R1 p=0.75 {machine}", plain["path"], row, f)
 
 
@@ -499,7 +544,7 @@ def check(directory):
             limits(checks, name, run, blank, p)
             idle(checks, name, run, blank, p)
             energy(checks, name, run)
-        for name in (f"R1 blank {machine}", f"R1L p=0.75 {machine}", f"R1L blank {machine}"):
+        for name in (f"R1 blank {machine}", f"R1L p=0.75 {machine}"):
             identities(checks, name, runs[name], machine)
             energy(checks, name, runs[name])
         cohorts(checks, runs, machine)

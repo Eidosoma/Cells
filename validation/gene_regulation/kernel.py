@@ -3,6 +3,11 @@ worlds.py advanced without compiling it, two half-steps of dt/2 per step as the 
 step takes them. Every row the operator lists is impermeant and its world has no channel, so the
 inner step leaves them and the operator's fields unchanged: these half-steps are the world's
 dynamics for them. Development, not judged.
+
+A world that declares FR-42's labels (neutral_arrival_labels@1, D289) is advanced as the composite
+advances it: each half-step takes the step's arrival labels and the label owner advances the
+shares from its moves (species_labels.advance), each step's label resolved as the owner's control
+resolves it (arrival_controls).
 """
 
 import copy
@@ -11,8 +16,9 @@ from types import SimpleNamespace
 
 import numpy as np
 
+from cells.definitions import pump_composite_spec as cs
 from cells.definitions.specs import parse_spec
-from cells.operators import OPERATORS
+from cells.operators import OPERATORS, species_labels
 from cells.operators import templated_polymerisation as polymerisation
 from cells.registry.models import get_model
 from validation.gene_regulation import worlds
@@ -62,9 +68,18 @@ def controls(raw, declaration, only=None):
     )
 
 
+def label_owner(spec):
+    """(the label owner, its declaration, its schedule), or None where the world declares none."""
+    for op, declaration, schedule in cs.entries(spec):
+        if op.LABEL_OWNER:
+            return op, declaration, schedule
+    return None
+
+
 def run(raw, *, only=None, record=False):
     """(spec, layout, {step: state} at every output, per-half-step increments of the chains' and
-    degradations' heats when `record`) of raw's horizon, rates held at their time-0 values."""
+    degradations' heats when `record`) of raw's horizon, rates held at their time-0 values; with
+    FR-42's labels, the shares advanced as the composite advances them (module docstring)."""
     spec = parse_spec(raw)
     state, p = get_model(spec.model).initial_values(spec)
     state = type(state)(*(np.asarray(v) for v in state))
@@ -73,10 +88,19 @@ def run(raw, *, only=None, record=False):
     dt = spec.execution.dt
     wanted = {int(round(float(t) / dt)) for t in spec.experiment.observation_times}
     steps = int(round(float(spec.experiment.end_time) / dt))
+    owner = label_owner(spec)
+    if owner is not None:
+        times = [k * dt for k in range(steps)]
+        arrivals = species_labels.arrival_controls(owner[1], owner[2], times)
     states, increments = {0: state}, []
     for k in range(1, steps + 1):
         for _ in range(2):
-            new, ok = OP.half_step(state, dt / 2, control, p, xp=np)
+            if owner is None:
+                new, ok = OP.half_step(state, dt / 2, control, p, xp=np)
+            else:
+                labels = (p.label_rows, arrivals[k - 1])
+                new, ok, moves = OP.half_step(state, dt / 2, control, p, xp=np, labels=labels)
+                new = owner[0].advance(state, new, moves, p, xp=np)
             if not bool(ok):
                 raise RuntimeError(f"the half-step was refused at step {k}")
             if record:  # The chains', degradations' and releases' heat increments.

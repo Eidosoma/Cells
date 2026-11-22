@@ -155,6 +155,12 @@ combination as the booked move, for the share owner's update: out (draws, forwar
 polymer, re-synthesis's monomers, each transfer direction's consumed side) and into at the arrival
 label (releases, products and fate releases, forward degradation's monomers, re-synthesis's
 polymer, each transfer direction's produced side). Without labels nothing of it is traced.
+- **Marked at release** (FR-38's cohort, the requester's answer to (e)): a release joins its fate
+  row's arrival label, so labels on the fate rows give §9.8's route 1 on shares (erratum C) with
+  no blank. Marked at completion, the class axis serves until the label owner holds the hold's
+  shares (D296).
+- **A limit:** a labelled species carries at most 16 labels (neutral_arrival_labels@1's
+  MAX_LABELS), so producer identity crossed with the window labels must fit within it.
 
 Refused at the definition
 -------------------------

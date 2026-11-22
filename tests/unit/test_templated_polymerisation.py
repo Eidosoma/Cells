@@ -22,7 +22,7 @@ from cells.definitions.specs import ConfigError, parse_spec
 from cells.operators import templated_polymerisation as polymerisation
 from cells.registry import kind_registry
 from cells.registry.models import get_model
-from validation.gene_regulation import engine_run, kernel, worlds
+from validation.gene_regulation import engine_run, kernel, release_check, worlds
 
 EPS = np.finfo(float).eps
 
@@ -286,28 +286,45 @@ def test_the_release_keeps_its_identities_and_sits_on_its_limit(p, machine, k_I,
 
 
 def _labelled(at, k_I):
-    """R1's labelled world at p = 0.75 (§9.8's route 1), the label held at class 2 from t = 0;
-    labelled at completion, the hold has both classes, class 1 holding R1's 80 copies."""
-    raw = worlds.r1(0.75, labelled=True, initiation=k_I)
+    """R1's labelled world at p = 0.75. At release, to 40 s, route 1 on shares (erratum C): FR-42's
+    labels on R and R_s, the releases in [0, 20 s) joining the cohort. At completion, to 60 s, the
+    class axis (§9.1), the label held at class 2 from t = 0, the hold in both classes, class 1
+    holding R1's 80 copies."""
+    if at == "release":
+        raw = kernel.truncated(worlds.r1(0.75, initiation=k_I), 40.0)
+        return worlds.with_share_labels(raw, window=(0.0, 20.0))
+    raw = worlds.r1(0.75, classes=True, initiation=k_I)
     _control(raw, worlds.LABEL)["schedule"] = [dict(time=0.0, value=2.0)]
-    if at == "completion":
-        _release(raw).update(label=dict(id=worlds.LABEL, at="completion"), initial_copies=[80, 0])
+    _release(raw).update(label=dict(id=worlds.LABEL, at="completion"), initial_copies=[80, 0])
     return kernel.truncated(raw, 60.0)
 
 
 @pytest.mark.parametrize("at", ["release", "completion"])
-def test_the_label_puts_each_molecule_in_its_class(at):
-    """FR-38, about 0.3 s a row, no world compiled: the class axis (§9.1). Labelled at release, the
-    hold keeps one class and every release enters class 2's rows, bit for bit the unlabelled
-    run's releases. Labelled at completion, with arrivals (A1's k_I), every arrival enters hold
-    class 2, while class 1's starting copies leave into class 1's rows alone."""
-    _, end, _, _, _ = _ends(_labelled(at, K_I if at == "completion" else 0.0))
+def test_the_label_marks_each_molecule(at):
+    """FR-38, no world compiled: about 1.5 s at release, 0.6 s at completion.
+    - Labelled at release, on shares (FR-42, D289; erratum C), with the label owner's own update
+      (species_labels.advance) as the composite applies it: every physical field bit for bit the
+      unlabelled run's, the cohort at exactly zero before its first release, each row's shares
+      summing to 1, and route 1, R's row times its cohort share, on the window's closed form
+      within the survivors' bound plus the update's split, k_f h^2/(12 tau).
+    - Labelled at completion, the class axis (§9.1; until the label owner holds the hold's shares,
+      D296), with arrivals (A1's k_I): every arrival enters hold class 2, while class 1's starting
+      copies leave into class 1's rows alone."""
+    start, end, layout, spec, _ = _ends(_labelled(at, K_I if at == "completion" else 0.0))
     hold, released = end.poly_hold_fmol[0], end.poly_hold_released_fmol[0]  # [class], [class, fate]
     if at == "release":
-        _, plain, _, _, _ = _ends(kernel.truncated(worlds.r1(0.75), 60.0))
-        assert hold[1] == 0.0 and np.all(released[0] == 0.0)
-        assert np.array_equal(released[1], plain.poly_hold_released_fmol[0, 0])
-        assert hold[0] == plain.poly_hold_fmol[0, 0]
+        _, plain, _, _, _ = _ends(kernel.truncated(worlds.r1(0.75), 40.0))
+        for name in type(plain)._fields:
+            assert np.array_equal(getattr(end, name), getattr(plain, name)), name
+        shares = end.label_share[:, :, 0]  # [R, R_s][base, cohort]
+        assert np.all(np.abs(shares.sum(axis=1) - 1.0) <= 64 * EPS)
+        rows = list(spec.model.species_ids)
+        n = layout.amount_reference[rows.index("R"), 0] + end.amount_increment[rows.index("R"), 0]
+        route1 = float(n * shares[0, 1]) / polymerisation.COPY_FMOL
+        exact = release_check.window_cohort(0.75, "durable", 0.0, 20.0, 40.0)
+        bound = release_check.SURVIVORS + release_check.split_bound("durable", spec.execution.dt)
+        assert abs(route1 - exact) <= bound * exact
+        assert start.label_share[0, 1, 0] == 0.0 < float(end.label_share[0, 1, 0])
         return
     H0 = 80 * polymerisation.COPY_FMOL
     A = float(end.poly_released_fmol[0])

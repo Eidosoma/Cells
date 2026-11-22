@@ -38,6 +38,12 @@ its development check's and A1, at A1's 0.5 s; "switch" is R1S's (worlds.r1s), a
 export the release's readouts: the
 hold H_<release>, its releases int_Q_<release>_<fate>, each fate's class total n_<release>_<fate>
 and its heat class H_rel_<release>_<fate>, and the hold's term in G_minus_G0 (the sheet's §9).
+
+A world that declares FR-42's labels (neutral_arrival_labels@1, D289) also exports each labelled
+row's amount carrying each of its labels at the exported cell, label_<row>_<label>: the row's
+amount times the label's share, keyed by the species' and label's IDs. In R1L that is §9.8's route
+1 on shares (erratum C): label_R_cohort and label_R_s_cohort, the window's releases still present,
+with no blank. A label never changes a physical readout.
 """
 
 import argparse
@@ -64,7 +70,8 @@ from validation.gene_regulation import worlds
 
 ROOT = Path(__file__).resolve().parents[2]
 SHEET_TAG = "gr1-sheet-2026-11-20b"
-RELEASE_SHEET_TAG = "gr1-sheet-fr38-erratum-a2-2026-11-22"  # The sheet's §9, as amended (FR-38).
+RELEASE_SHEET_TAG = "gr1-sheet-fr38-erratum-c-2026-11-22"  # The sheet's §9, as amended (FR-38).
+LABELS = "neutral_arrival_labels@1"  # FR-42's label owner (D289).
 POLICY = WindowPolicy(window_steps=10000, recording="observations")
 DIGITS = 60
 
@@ -234,6 +241,15 @@ def exported_cell(spec, block, cell=None):
     return cell
 
 
+def labelled(spec):
+    """((species, its labels), ...) that FR-42's label owner declares, in its order; () where the
+    world declares none."""
+    for d in spec.model.operators:
+        if d.law == LABELS:
+            return tuple((s.id, s.labels) for s in d.species)
+    return ()
+
+
 def readouts(spec, states, cell=None):
     """(times, {readout: [value per output]}, checks) of one run, at the exported cell
     (exported_cell), which checks names as exported_cell."""
@@ -278,6 +294,7 @@ def readouts(spec, states, cell=None):
     def put(name, value):
         out.setdefault(name, []).append(float(value))
 
+    shared = labelled(spec)
     g0 = None
     for t in times:
         s = states[int(round(t / dt))]
@@ -288,6 +305,12 @@ def readouts(spec, states, cell=None):
         }
         for row in rows:
             put(f"n_{row}", amounts[row])
+        if shared:  # FR-42 (D289): each labelled row's amount by label, the row times its share.
+            share = np.asarray(s.label_share)  # [labelled species, label, cell]
+            for j, (row, names) in enumerate(shared):
+                n = float(reference[species.index(row), at] + increment[species.index(row), at])
+                for k, name in enumerate(names):
+                    put(f"label_{row}_{name}", n * float(share[j, k, at]))
         free = np.asarray(s.poly_free_machines_fmol)
         for i in here["pool"]:
             put(f"F_{block.pools[i].id}", free[i])
