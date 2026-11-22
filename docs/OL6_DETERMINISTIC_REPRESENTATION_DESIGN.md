@@ -511,4 +511,204 @@ Each is refused at parse, by name, with its reason, unless marked as a run-time 
     makes promotion and demotion a later milestone.
 12. **A declared size distribution at division** (§3.4), until its token exists.
 
-<!-- §5 onward follows -->
+## 5. The qualification protocols, registered before any reading
+
+### 5.0 Registration
+
+- **What is tagged.** This section's text, as amended by the lead's decisions, together with the
+  world generators, seeds, rungs, times, observables, tolerances and plants as code in `validation/`
+  (proposed: `validation/assembly_lineages_v2/limit_qualification.py`). It is tagged before any
+  comparison of (d) with exact events is computed.
+- **What is not a reading.** (d)'s development tests against closed forms (criterion N, below) and
+  the limit's check (§1.4) read no exact-event comparison, so they may run before the tag.
+- **Who runs it.** Proposed: the builder, at the tag, one detached job per protocol (§5.3). The lead
+  may instead assign a checker, as for D287's sealed extractor.
+- **Where it goes.** Verdicts as JSON beside the runs, and a summary in PROGRESS.
+
+### 5.1 Protocol D: the deterministic representation against exact events
+
+**The worlds.** Each names its engine models.
+
+| World | What it is | Laws | Family |
+| --- | --- | --- | --- |
+| **D1** | Dilute chemistry in a finite pool: A + B ⇌ C and 2A ⇌ D, the second for order 2 in one species (P2b's sensitive case). Volume ∝ Ω, founders (0.5, 0.3, 0.1, 0.1)·Ω, and one inert membrane molecule that no rate reads | `cells.stochastic_mass_action@1`, `cells.ideal_mixing@1` | Density-dependent in Ω |
+| **D2** | A membrane exchanging 4 types with a held pool, catalysed (β from GARD's lognormal, a recorded seed), plus one membrane step A + B ⇌ C at order 2 in the membrane. Σ K ρ = 1.5, so N roughly doubles over the horizon. `multinomial`, `kept`. Founder N₀ = Ω | Plus `cells.transition_state_factor@1` | Density-dependent in N₀ |
+| **D3** | 3 types between a finite pool (volume ∝ Ω) and a membrane (founder ∝ Ω), with regular mixing (χ = ±1.5), relaxing to equilibrium | Plus `cells.regular_mixing@1` | Density-dependent in Ω |
+| **D4** | A vesicle swelling to lysis. A permeant solute enters an osmotic lumen that holds an impermeant one, and amphiphiles join from a held pool. The tension rises through the kink to σ_max | `cells.bilayer_geometry@1`, `cells.phase_exchange@1`, `cells.membrane_permeation@1`, `cells.osmotic_lumen@1`, ideal mixing | Not density-dependent (V_sph ∝ N^(3/2); the closure cost is constant): per-rung criteria only |
+| **D5** | Two vesicles on one finite pool, one swollen and tense, one isotonic and floppy, exchanging amphiphile through the pool: A1's mechanism at small scale | Plus `cells.shared_pool@1` | Per rung |
+| **D6** | A floppy vesicle divided at declared shear times (k = 2, continuation `first`). Its v at each shear time lies at least 5 standard deviations below 2^(−1/2) in the exact runs, so admission is never random there | Plus `cells.shear_fission@1` | Per rung |
+| **D7** | D4 with the pore law, σ from F, paired by E (needs L1). Under L0: D7′, Phase A's held, fixed-area world, paired by E, which reduces to the regression identity (§3.5) | Plus `cells.pore_nucleation@1` (and `cells.tension_hold@1` for D7′) | Per rung (D7′: exact) |
+| **D0** | The sparse plant: D2's family at N₀ = 8, `multinomial_less_one` with `extinct`, Σ K ρ = 0.5 (shrinking). Exact lineages go extinct with positive probability, and the rate equations never do | As D2 | Planted only |
+
+**Rungs and replicas.**
+- **D1–D3:** Ω or N₀ ∈ {250, 1000, 4000, 16000}, with M = 256 replicas per rung.
+- **D4–D7:** vesicles of diameter 25, 50 and 100 nm, which is N ≈ 1.3 × 10⁴, 5.2 × 10⁴ and
+  2.1 × 10⁵ amphiphiles at 0.3 nm² per leaflet. Their lumens are near 1 M, so N_L ≈ 5 × 10³,
+  3.9 × 10⁴ and 3.1 × 10⁵ (S). M = 128 replicas per rung.
+- **Seeds and times:** seeds 1 to M, environment 0, lineage 0, branch 0. Each world has 8
+  observation times over its horizon, registered.
+- **Observables:**
+  - D1–D3: the count per Ω of every enveloped place;
+  - D4–D7: A, V, σ and the lumen's counts;
+  - every world: W_res per Ω;
+  - D4 and D7: the event time per replica.
+- **The scale.** Each observable's founder value, or its registered scale where the founder's is 0,
+  is its scale s_y.
+
+**The criteria (S).**
+- **P, pathwise, density families only.**
+  - D_k is the root mean square, over replicas, times and observables, of (y_a − y_d)/s_y at rung
+    k.
+  - **Pass:** the least-squares slope of ln D_k against ln Ω_k over the four rungs lies in
+    [−0.65, −0.35].
+  - Single trajectories deviate from the limit by O(Ω^(−1/2)) (Kurtz; van Kampen's expansion, from
+    memory). So this tolerance scales as 1/√N, and the slope is the trajectories' order of
+    convergence, ½.
+- **M, means converge, every world.** For each registered (observable, time), e_k = mean_a − y_d,
+  with SE_k from the replicas.
+  - **Pass:** at the top rung K, |e_K| ≤ z*·(SE_K² + SE_(K−1)²/4)^(1/2) + |e_(K−1)|/2, with
+    z* = 4.5.
+  - **Why:** the limit's bias is O(1/N), so it falls by 4 per rung. A model error ε does not fall,
+    and fails once ε exceeds about 2z* combined SE.
+  - **No bias constant is guessed.** The top rung must show at most half the previous rung's error,
+    within noise: an observed order of at least ½, with 1 expected.
+  - **False alarms:** z* = 4.5 is two-sided 6.8 × 10⁻⁶ per comparison. At up to 200 registered
+    comparisons per world, that is at most 0.14% per world.
+  - **Power:** SE at the top density rung (Ω = 16,000, M = 256) is about 5 × 10⁻⁴ of the scale, so
+    a mean shifted by more than about 6.4 × 10⁻³ of its scale fails. At the top vesicle rung it is
+    about 1 × 10⁻² (S). Every plant below is O(1).
+  - **The bias's order** across all rungs is also reported, as a description.
+- **E, events (D4 and D7).**
+  - Criterion M applies to mean(T_a) − t*_d, for the lysis time and the opening time.
+  - The spread must fall with N: SD_K ≤ 0.75·SD_(K−1), with 0.5 expected.
+  - **Under L1** (D7, paired by E): the same two tests on Δ = T_a − t*_d per vesicle, using
+    RMS(Δ).
+  - **Censoring:** each world is chosen so that no replica is censored at a horizon of (d)'s t* plus
+    10 standard deviations. A censored replica is reported, and fails its world.
+- **L, ledgers.**
+  - (d) alone, every run: closure within §2.2's tolerance, the per-step dissipation margin, and
+    moieties to 1 × 10⁻¹².
+  - Across representations: W_res per Ω, and the hold's work per opening, are observables under M.
+- **N, numerics, (d) alone** (development tests; §5.0):
+  - **Tolerance:** at rtol = 10⁻⁶, 10⁻⁸ and 10⁻¹⁰, the error against a run at 10⁻¹² falls at least
+    50-fold per 100-fold in rtol.
+  - **Closed forms:**
+    - a first-order network against its matrix exponential (the test's SciPy, not `src/`), to
+      10⁻⁷ relative at rtol 10⁻⁹;
+    - D3's end state against F_cont's minimum, to 10⁻⁸;
+    - a crossing with an analytic root (§3.6's growing area), to τ_c.
+  - **Lane invariance:** a world's records are bitwise the same alone, in a batch of 8 lanes, and in
+    another lane order. (d)'s sums use the serial folds (D182), as the exact kernel's do.
+  - **Identities:** the regression identity (§3.5), and pores against no pores (§3.6).
+
+**The envelope's n_min** is the smallest rung at which every world passes, stated with the tag.
+
+**The planted failures.** Each is O(1), and each must fail its criterion. Plants of order 1/N vanish
+in the limit and are not used: a factor at each direction's own state, the measure's offset, and
+falling factorials against powers.
+
+| Plant | Where | Must fail |
+| --- | --- | --- |
+| **P-D1:** the envelope check disabled | D0 | M (exact lineages go extinct). With the check on, D0 is refused at parse: §7.1's "a sparse case admitted" |
+| **P-D2:** a reactant's power off by one in mass action's limit, (n/X)² for a first-order reactant | D1 | The limit's check, items 1 and 4, at registration. With the check off, M |
+| **P-D3:** one factor entry's β × 1.5, in (d)'s layout only | D2 | M |
+| **P-D4:** the Laplace factor doubled (σ = Δp·R), in (d) only | D4 | E (the lysis time) |
+| **P-D5:** each crossing snapped to its step's end | D4, and N's crossing test | N at τ_c, and E |
+| **P-D6:** the heat's sign flipped | Any | L (closure) |
+| **P-D7:** one species' μ° shifted by 0.5 k_BT, in F_cont only | Any | The limit's check, item 1 (the identity), at registration |
+
+Each plant runs through a scoped registry or a planted layout, as the exact kernel's plants do.
+
+### 5.2 Protocol G: the GARD limit
+
+**What it is.** A consistency check by construction, not a D138 comparison (D199's U6(a)). §7.3's
+configuration in @2 reproduces G1's GARD law set.
+
+**The law the claim is against:** G1's registered default, `cells.gard_catalysis_pair_consistent@1`,
+the cached form P1 compared. Its exact-cache successor, `…pair_consistent@2` (D244, D246), is
+reported beside it.
+
+**The @2 world** (§7.3's configuration; P1's construction):
+- types T_i, with held pool places at ρ_i. With c0 = 1 mM, ln(held/c0) is ln ρ_i;
+- one join per type, mass action with `count_on_m` at the membrane locus, k_f = K_i·kb_i;
+- μ°_sol = 0 and μ°_bil = −ln K_i, so k⁻ = kb_i;
+- the transition-state factor with ΔΔG‡_ij = log1p(β_ij);
+- ideal mixing, no geometry, a single lineage;
+- fission: none in @2 today (G1), or D1 (G2, §6.8).
+
+**The measures (D215).**
+- **Exact,** `multinomial_less_one` with `extinct`: the claim.
+- **Physical,** `multinomial` with `kept`: a report. It differs at O(1/N): the join's extent is
+  N + 1 against N, and the last molecule is kept.
+
+**The tiers.**
+- **T-bit, §7.3's first branch, does not apply as built.**
+  - P1 found about 13% of rates bitwise equal, and a largest relative difference of
+    3.1 × 10⁻¹⁵.
+  - The two kernels differ by construction. @1 multiplies, kf_rho × N × g. @2 exponentiates a sum
+    of logarithms, k_f·exp(ln θ + ln E + ln g).
+  - ΔΔG‡ = log1p(β) does not return β exactly for about 13% of entries (P1).
+  - Making the two bitwise would need a GARD-only product kernel in @2: building for one
+    experiment, rejected (D144).
+- **T-path (proposed).**
+  - Under shared streams (one seed's words; @2's domain 1 is @1's derivation, `streams.py`), the
+    channel sequences are identical, and event times agree to 1 × 10⁻¹² relative.
+  - A divergence at an event is a **threshold coincidence** when u₂·a₀ lies within 64 ulps of a
+    prefix boundary in either kernel. It is counted and allowed, and ends that seed's comparison.
+    Any other divergence fails.
+  - **Expected coincidences:** about 2C × 3 × 10⁻¹⁵ ≈ 5 × 10⁻¹⁴ per event (S, from P1). The
+    registered bound is at most 1 in the whole set.
+- **T-dist (distributional, at registered tolerances):** the physical measure's report, and the
+  fallback if the lead rules T-path out.
+
+**The scope of each option.**
+- **G1:** each seed from its founder to @1's first fission, both kernels run with `trace`.
+- **G2:** through 50 fissions, with @2's size-threshold division drawing @1's partition uniforms
+  (domain 2, the parent's key, counter 0; floor(N/2) to the first daughter; floor-to-first), and
+  the first daughter followed.
+
+**The worlds.**
+- C = 8, with 16 matrices β = exp(−4 + 4Z) (GARD's lognormal), from recorded seeds. K_i and kb_i
+  are drawn as P1 draws them, with Σ K_i ρ_i = 100 and N_split = 80. Founders are uniform from 1 to
+  9 per type, with 64 seeds per matrix.
+- Plus 4 matrices with one entry of 10⁵, so that the factor takes its count-weighted-mean branch
+  (κ > κ_limit), as in P1's second case.
+
+**The physical measure's report.** The distributions of the time to the first fission and the
+composition at fission (and H at fission under G2), against @1's, with their predicted O(1/N) shift
+from the join's (N + 1)/N. It has no pass or fail unless the lead rules one.
+
+**The β plant.**
+- **The plant:** the largest entry of each matrix × 1.5, in the @2 world only.
+- **Its power is computed at registration from @1 alone,** from the matrix and its plant, both run
+  in @1, and never from the comparison. It is the fraction of seeds whose channel sequences
+  diverge, beyond rounding, within the first growth.
+- **Required:** at least 99% per matrix for T-path.
+- **For T-dist,** the plant is the largest entry × 4, and it must shift the registered statistic by
+  at least 5 SE at the registered sample size, again computed from @1 alone.
+- A plant that cannot reach its power is resized before the tag, never after.
+
+### 5.3 The cost (P3, conservative)
+
+| Protocol | Events | CPU time on one light CPU (at 5 × 10⁴ events/s) |
+| --- | --- | --- |
+| D1–D3 | About 1.5–3 events per replica per unit of Ω, over 4 rungs summing to 21,250, × 256 replicas × 3 worlds: about 5 × 10⁷ | About 20 min, plus about 1 min of compiling per structure |
+| D4–D7 | About 2.5 events per amphiphile per replica, over rungs summing to 2.75 × 10⁵, × 128 replicas × 4 worlds: about 3.5 × 10⁸ | About 2 h |
+| G (G1, then G2 through 50 fissions), with @1's runs and the plants' power | About 10⁷ | Minutes; compiling dominates |
+| (d)'s own runs | A few thousand steps each | Seconds |
+
+So about 2.5–3 CPU-hours in all, as detached jobs on the light CPUs (AGENTS.md: a run over 10
+minutes is detached, with durable logs).
+
+### 5.4 What the protocols do not claim
+
+- **The anchors' scale.** (d)'s accuracy at 10⁵ molecules and above is extrapolated from the rungs
+  by the limit's theory (a bias of order 1/N), not measured. The anchors themselves are OL7's
+  (D138).
+- **Phase B.** The open pore's dynamics are not qualified here.
+- **An independent ODE reference.** §7.2's code-blind ODE reference (OL5's) would add a check of
+  (d)'s arithmetic against equations, not code. Whether OL5's set carries it is OL5's to say. If
+  the lead wants it for OL6, §1.3 and §2 are written to stand alone as its sheet, and the sheet is
+  tagged before code.
+
+<!-- §6 onward follows -->
