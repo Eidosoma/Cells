@@ -391,6 +391,16 @@ def test_survivors_are_bounded_by_the_pool_and_coarse_grids_are_flagged(tmp_path
     t, n, Q, D = _fast_turnover([k * 0.1 for k in range(81)])  # Resolved: within its grid error.
     _, labelled, _ = cohort.survivors(t, n, Q, D, 0.0, 8.0)
     assert abs(labelled - -math.expm1(-8.0)) <= cohort.grid_error(t, n, Q, D, 0.0, 8.0)
+    # FR-38's survival readout (the requester's answer): FR-25's turnover control, 100 copies with
+    # a one-hour half-life, the first hour's completions alive at 1 h and 2 h, and their ratio, a
+    # half; None where nothing was completed.
+    hour, k = 3600.0, math.log(2) / 3600.0
+    t = [i * 60.0 for i in range(121)]
+    n, made = [100.0] * len(t), [100 * k * s for s in t]
+    counted = cohort.survival(t, n, made, made, 0.0, hour, 2 * hour)
+    assert counted["alive_at_window_end"] == pytest.approx(50.0, rel=1e-4)
+    assert counted["ratio"] == pytest.approx(0.5, rel=1e-12)
+    assert cohort.survival(t, n, [0.0] * len(t), made, 0.0, hour, 2 * hour)["ratio"] is None
 
 
 # (case, the counters' edit, t1, t2, ts, the refusal's words).
@@ -524,20 +534,45 @@ def _record(raw, tmp_path, cell=None):
     return path, values
 
 
-def test_a_lossless_product_reads_a_zero_loss_series(tmp_path):
+def _release_world():
+    """R1 at p = 0.5 to 60 s, its short-lived fate R_s with no loss route (deg_R_s dropped)."""
+    raw = kernel.truncated(worlds.r1(0.5), 60.0)
+    block = kernel.block(raw)
+    block["degradations"] = [d for d in block["degradations"] if d["polymer"] != "R_s"]
+    raw["experiment"]["polymerisation_controls"] = [
+        c for c in raw["experiment"]["polymerisation_controls"] if c["route_id"] != "deg_R_s"
+    ]
+    return raw
+
+
+# (case, the lossless world, its lossless row, a world whose row's loss route is declared, it).
+LOSSLESS = [
+    ("protein", lambda: _protein_world(lossless=True), "P", _protein_world, "P"),
+    # The Lean lane's finding (22 November 2026): a release's fate row without a loss route
+    # read as a product's does, its zero series exported.
+    ("release fate", _release_world, "R_s", _release_world, "R"),
+]
+
+
+@pytest.mark.parametrize(("case", "lossless", "row", "lossy", "declared"), LOSSLESS,
+                         ids=[c[0] for c in LOSSLESS])  # fmt: skip
+def test_a_lossless_product_reads_a_zero_loss_series(
+    case, lossless, row, lossy, declared, tmp_path
+):
     """D265, finding 7: with the protein's degradation route removed the export omitted int_D_P,
-    and the reader raised KeyError; a declared loss route's missing counter is still refused."""
-    path, values = _record(_protein_world(lossless=True), tmp_path)
-    assert values["int_D_P"] == [0.0] * len(values["n_P"])
-    t, n, Q, D = cohort.read(path, "P")
+    and the reader raised KeyError; likewise a release's fate row (int_D_R_s); a declared loss
+    route's missing counter is still refused."""
+    path, values = _record(lossless(), tmp_path)
+    assert values[f"int_D_{row}"] == [0.0] * len(values[f"n_{row}"])
+    t, n, Q, D = cohort.read(path, row)
     completed, surviving, _ = cohort.survivors(t, n, Q, D, 0.0, 60.0)
-    assert surviving == completed > 0  # Nothing is lost.
-    lossy, _ = _record(_protein_world(), tmp_path)
+    assert completed > 0 and surviving == pytest.approx(completed, rel=1e-12)  # Nothing is lost.
+    lossy, _ = _record(lossy(), tmp_path)
     record = json.loads(lossy.read_text())
-    del record["readouts"]["int_D_P"]
+    del record["readouts"][f"int_D_{declared}"]
     lossy.write_text(json.dumps(record))
-    with pytest.raises(ValueError, match="deg_P"):
-        cohort.read(lossy, "P")
+    with pytest.raises(ValueError, match=f"deg_{declared}"):
+        cohort.read(lossy, declared)
 
 
 def test_the_reader_resolves_the_chain_at_the_exported_cell(tmp_path):

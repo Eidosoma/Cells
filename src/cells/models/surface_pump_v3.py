@@ -1982,13 +1982,30 @@ def label_errors(p, rows, *, structure=None, solver=None):
     for r in rows:
         if valence[r] != 0 and faces.any():
             errors.append(f"{FR42_REFUSAL}: charged row {r} on a logmean face has no one-way form")
-        channels = getattr(p, "channel_permeability", None)
-        if channels is not None and np.any(np.asarray(channels)[r] != 0):
-            errors.append(f"{FR42_REFUSAL}: row {r} crosses a channel population")
-        pumped = [np.asarray(getattr(p, k))[r] for k in ("stoichiometry", "calcium_stoichiometry")
-                  if hasattr(p, k)]  # fmt: skip
-        if any(np.any(v != 0) for v in pumped):
-            errors.append(f"{FR42_REFUSAL}: row {r} is moved by a pump")
+        # A channel carries row r where its relative permeability [species, channel] is nonzero,
+        # on an active population with a permeability (FR-42's fix: species row, not channel).
+        relative = getattr(p, "channel_relative_permeability", None)
+        if relative is not None and np.asarray(relative).shape[-1]:
+            carried = np.asarray(relative)[r] != 0
+            carried &= np.asarray(p.channel_active, dtype=bool) & (
+                np.asarray(p.channel_permeability) > 0
+            )
+            if np.any(carried):
+                errors.append(f"{FR42_REFUSAL}: row {r} crosses a channel population")
+        # A pump moves row r where its stoichiometry [species, membrane] is nonzero at a patch with
+        # a capacity.
+        pumps = (
+            ("stoichiometry", "pump_capacity"),
+            ("calcium_stoichiometry", "calcium_pump_capacity"),
+        )
+        for stoichiometry, capacity in pumps:
+            if hasattr(p, stoichiometry):
+                moved = np.asarray(getattr(p, stoichiometry))[r] != 0
+                if hasattr(p, capacity):
+                    moved &= np.asarray(getattr(p, capacity)) > 0
+                if np.any(moved):
+                    errors.append(f"{FR42_REFUSAL}: row {r} is moved by a pump")
+                    break
     return errors
 
 
