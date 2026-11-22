@@ -8,7 +8,9 @@ D150's neutral species S as the washed tracer.
   no face, holds S; two site populations face it, on a specimen cell's patch and on a stand-in
   cell's patch for the vessel wall. Their constants put 60 fmol free, 30 bound to the specimen and
   10 to the wall at equilibrium at 60 nM free (K_d = 60 nM for both, the wall's binding ten times
-  faster).
+  faster). These are the declared start, steady until a wash, so they are the stocks at the wash
+  event. A saved row after the wash is a step later, one dt, and its bound stocks have begun to
+  re-equilibrate. With wall="node" the wall's sites are owned by the well itself (FR-28).
 * with_wash: the operator's block and its `compartment_wash_events` on any composite definition.
 """
 
