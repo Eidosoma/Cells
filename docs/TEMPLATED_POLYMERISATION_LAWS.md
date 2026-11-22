@@ -1282,7 +1282,7 @@ tagged before R2's code and references):
 | Symbol | Value | Unit | Meaning | Source |
 | --- | --- | --- | --- | --- |
 | `H0` | 80 | copies | R1's initial hold | The requester |
-| `tau` | 5193.8 | s | 3600/ln 2: an exit half-life of 1 h | The requester |
+| `tau` | 5193.7 | s | 3600/ln 2: an exit half-life of 1 h | The requester |
 | `p_cases` | 0, 0.25, 0.75, 1 | 1 | R1's durable fractions | The requester |
 | `k_durable` | ln 2/7200 | s⁻¹ | A half-life of 2 h | The requester |
 | `k_short` | ln 2/1800 | s⁻¹ | A half-life of 0.5 h | The requester |
