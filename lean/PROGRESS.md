@@ -1,5 +1,30 @@
 # Cells proof comparisons
 
+<a id="fr33-regional-tracer"></a>
+
+## 21 November 2026 · Where the original protein label goes after a pulse
+
+The FR-33 tracer splits a node’s outflow according to the cohort’s share across the start and end of each accepted step. Lean starts from the tracer’s linear equations. It proves that the cohort’s change in any fixed region plus its local clearance equals labelled transfer across its boundary. For a closed cell after the pulse ends, **label inside + label in the rest of the cell + clearance since the pulse = label present at the pulse endpoint**. New synthesis can continue under a different label. Each route must record one-way movement. A two-way net flux alone can hide exchange of labels in opposite directions. [Lean proof](CellsProofs/Tissue/RegionalTracer.lean#L47-L108) · [Solver and bookings](https://github.com/Eidosoma/Cells/blob/d48d40dd1ce03c1093a1c27e775cd2e8239ccf34/validation/regions/readouts.py#L534-L548)
+
+On engine `d48d40dd`, the compiled `resolved_pump_composite@1` example on `resolved_pump_tissue@3` exercised compartment ownership, one-way exchange and first-order turnover. Across 501 rows the donor cohort’s largest whole-cell balance residual was **5.20 × 10⁻¹⁸ fmol** for 0.001 fmol initially labelled. The tracer’s donor transfer matched the sampled engine counter at every output. For the cohort made during the pulse, 5.327 × 10⁻⁵ fmol had already cleared by the 0.25 s switch. Using only subsequent clearance closed its balance to **2.71 × 10⁻¹⁹ fmol** across the remaining 251 rows, while the cell continued to synthesize protein. These are accounting residuals against the computed trace. The route split at a mixing node is a time discretization. [Comparison](checks/regional_tracer.py) · [Pulse and chase fixture](https://github.com/Eidosoma/Cells/blob/d48d40dd1ce03c1093a1c27e775cd2e8239ccf34/validation/regions/example.py#L49-L73)
+
+<a id="fr33-matched-donors"></a>
+
+### What distinguishes transfer from degradation
+
+Lean proves that one-way transfer and pure clearance give the same entire donor trace for the same starting amount and rate. For positive time, rate and starting amount, the receiver gain in the transfer arm equals the clearance in the degradation arm. In the compiled control the donors agreed exactly at all 11 outputs. Both started at 0.001 fmol and held 0.000606531 fmol at 0.5 s. [Two-control proof](CellsProofs/Tissue/RegionalTracer.lean#L119-L146) · [Maintained Cells control](../validation/compartment_transfer/README.md)
+
+| Control at 0.5 s | Receiver gain (fmol) | Cumulative loss (fmol) |
+| --- | ---: | ---: |
+| Internal transfer | 0.000393469 | 0 |
+| Local degradation | 0 | 0.000393469 |
+
+<a id="fr33-evidence"></a>
+
+Gray et al. photoactivated PSD-95 in one dendritic spine and observed fluorescence fall there and rise in two neighboring spines. Their green/red ratios measure redistribution in those spines. Uchigashima et al. mapped pre-existing and nascent PSD-95 at 3,239–4,402 synaptic regions per neuron in three neurons after a two-hour interval. Neither observation measures the old label in the source, its full complement and the whole neuron across a 48-hour chase. The protein in the Cells study request is unnamed. PSD-95 provides a comparison for the mechanism, and its imaging data supply no fitted Cells rate. [Gray et al., Fig. 4A](https://doi.org/10.1371/journal.pbio.0040370.g004) · [Uchigashima et al., Fig. 6](https://pmc.ncbi.nlm.nih.gov/articles/PMC12606364/#Fig6) · [Measurement records](checks/data/regional_tracer_measurements.json)
+
+Run `checks/regional_tracer.py` with the Cells CPU environment and the checkout’s `src` and root on `PYTHONPATH`. Run `tests/unit/test_region_readouts.py` and `tests/unit/test_compartment_transfer_example.py` for the ten engine regressions. The frozen run is recorded under `lean-fr33-cohorts-20261121`. [Reproducible comparison](checks/regional_tracer.py) · [Regional regression cases](../tests/unit/test_region_readouts.py) · [Matched-donor control](../tests/unit/test_compartment_transfer_example.py)
+
 <a id="matched-buffer-heat"></a>
 
 ## 21 November 2026 · Finite-pool heat when the buffer matches the starting concentration

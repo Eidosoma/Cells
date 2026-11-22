@@ -1,0 +1,26 @@
+{
+  "gray2006_psd95_exchange": {
+    "doi": "10.1371/journal.pbio.0040370",
+    "figure": "https://doi.org/10.1371/journal.pbio.0040370.g004",
+    "panel": "4A",
+    "preparation": "Dendritic spines in living mouse neocortex",
+    "observable": "Green fluorescence from photoactivated PSD-95 divided by the red structural signal in each imaged spine",
+    "source_spines_in_example": 1,
+    "neighbor_spines_in_example": 2,
+    "source_change": "decrease",
+    "neighbor_change": "increase after source activation",
+    "scope": "The plotted ratios establish local redistribution. Converting them to amounts requires calibrations and coverage of the diffuse pool and other spines. No amplitudes have been digitized."
+  },
+  "uchigashima2025_psd95_map": {
+    "doi": "10.1038/s41467-025-65813-w",
+    "figure": "https://pmc.ncbi.nlm.nih.gov/articles/PMC12606364/#Fig6",
+    "supplement": "https://pmc-oa-opendata.s3.amazonaws.com/PMC12606364.1/41467_2025_65813_MOESM1_ESM.pdf#page=19",
+    "locator": "Figure 6a–e and Supplementary Figure 9d",
+    "preparation": "Reconstructed pyramidal neurons in mouse somatosensory cortex",
+    "observable": "Pre-existing and nascent PSD-95 fluorescence at identified synapses",
+    "pulse_chase_interval_h": 2,
+    "cells_mapped": 3,
+    "synaptic_regions_per_cell_range": [3239, 4402],
+    "scope": "Endpoint maps compare the two labels across synapses of individual neurons. They omit a matched initial and final whole-neuron amount of the old label, including the diffuse pool."
+  }
+}
