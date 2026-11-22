@@ -10,25 +10,6 @@ import numpy as np
 from validation.gene_regulation.sheet_check import COPY_FMOL
 
 
-def run_owner(folder):
-    """Run the Cells fixture once and retain its returned readouts alongside its checkpoint."""
-    from validation.gene_regulation import engine_run, replace_restart
-
-    folder.mkdir(parents=True, exist_ok=False)
-    source, patch = engine_run.provenance(folder)
-    if patch is not None:
-        (folder / "checkout.patch").write_text(patch)
-    report = replace_restart.check(folder)
-    report.update(engine_run.late_sources(folder, source))
-    # Four verdicts in the first development fixture are NumPy booleans.
-    for name, value in report["verdicts"].items():
-        if isinstance(value, np.bool_):
-            report["verdicts"][name] = bool(value)
-    path = folder / "owner-return.json"
-    path.write_text(json.dumps(report, indent=2, allow_nan=False) + "\n")
-    return path
-
-
 def balance(steps, *terms):
     """Check the signed fmol terms against cumulative binary64 rounding over these steps."""
     gap = math.fsum(terms)
@@ -44,7 +25,10 @@ def label_agreement(old, recorded):
 def compare(path):
     report = json.loads(path.read_text())
     assert report["kind"] == "cells.gene_regulation.replace_restart@1"
-    assert report["passed"] and all(report["verdicts"].values()), report["verdicts"]
+    verdicts = report["verdicts"]
+    assert report["passed"] is True and verdicts and all(v is True for v in verdicts.values()), (
+        verdicts
+    )
     folder = path.parent / "checkpoint"
     manifest = json.loads((folder / "manifest.json").read_text())
     spec, clock = manifest["spec"], manifest["clock"]
@@ -81,6 +65,7 @@ def compare(path):
         counters = 0
         for group in ("chain", "release", "degradation"):
             offset = state[f"poly_rep_{group}_birth_fmol"]
+            assert np.isfinite(offset).all()
             np.testing.assert_array_equal(offset, state[f"poly_rep_{group}_departed_fmol"])
             counters += offset.size
         born_a = float(state["poly_rep_chain_birth_fmol"][0, 2])
@@ -131,7 +116,7 @@ def compare(path):
         replacement_s=event["time"],
         checkpoint_s=clock["time"],
         resumed_samples_s=report["resumed_outputs_s"],
-        native_verdicts=len(report["verdicts"]),
+        native_verdicts=len(verdicts),
         birth_offsets_checked=counters,
         departing_label_amounts_checked=old.size + len(labels),
         max_fate_label_error_fmol=float(np.max(np.abs(old - recorded))),
@@ -144,8 +129,6 @@ def compare(path):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("path", type=Path, help="saved result JSON, or a fresh folder with --run")
-    parser.add_argument("--run", action="store_true", help="run the owner's development fixture")
+    parser.add_argument("path", type=Path, help="Cells replace_restart.json beside checkpoint/")
     args = parser.parse_args()
-    record = run_owner(args.path) if args.run else args.path
-    print(json.dumps(compare(record), indent=2, allow_nan=False))
+    print(json.dumps(compare(args.path), indent=2, allow_nan=False))
