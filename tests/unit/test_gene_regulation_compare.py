@@ -193,6 +193,14 @@ def test_the_producing_chain_is_resolved_from_the_product():
     ):
         with pytest.raises(ValueError, match=words):
             cohort.producing_chain(chain_map, product, chain)
+    # FR-38: with a release, a fate row's inflow is the release's (§9.8's route 2), never the
+    # chain's completions, which join its hold, though the durable fate is the chain's product.
+    fates = [dict(durable="R", short_lived="R_s")]
+    tx = dict(id="tx", product="R", release=dict(id="rel", fates=fates))
+    makes, counters = cohort.producers([tx, dict(id="tl", product="P")])
+    assert makes == {"rel_durable": "R", "rel_short_lived": "R_s", "tl": "P"}
+    assert cohort.producing_chain(makes, "R") == "rel_durable"
+    assert counters["rel_short_lived"] == "int_Q_rel_short_lived" and "tx" not in counters
 
 
 @pytest.mark.skipif(not (SAVED_JSON.exists() and SAVED_CSV.exists()),
