@@ -597,6 +597,14 @@ LOSSLESS = [
     # The Lean lane's finding (22 November 2026): a release's fate row without a loss route
     # read as a product's does, its zero series exported.
     ("release fate", _release_world, "R_s", _release_world, "R"),
+    # And with FR-42's labels on the fate rows: the label owner moves nothing (about 1 s).
+    (
+        "labelled fate",
+        lambda: worlds.with_share_labels(_release_world(), window=(0.0, 30.0)),
+        "R_s",
+        _release_world,
+        "R",
+    ),
 ]
 
 
