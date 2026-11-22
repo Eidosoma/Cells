@@ -44,6 +44,30 @@ theorem log_draw (u a : ℕ) :
   unfold logFactorial
   linarith
 
+/-- Ordered draws from a feasible count can be priced one logarithm at a time. -/
+theorem sum_log_draws (n k : ℕ) (fits : k ≤ n) :
+    (∑ j ∈ Finset.range k, Real.log ((n - j : ℕ) : ℝ)) = Real.log (n.descFactorial k : ℝ) := by
+  induction k with
+  | zero => simp
+  | succ k ih =>
+    have last : 0 < n - k := by omega
+    have rest : n.descFactorial k ≠ 0 := fun h => by
+      have := Nat.descFactorial_eq_zero_iff_lt.mp h
+      omega
+    rw [Finset.sum_range_succ, ih (by omega), Nat.descFactorial_succ, Nat.cast_mul,
+      Real.log_mul (Nat.cast_ne_zero.mpr last.ne') (Nat.cast_ne_zero.mpr rest), add_comm]
+
+/-- The engine sums three masked terms, including the empty side and an exactly exhausted side. -/
+theorem three_log_draws (n k : ℕ) (arity : k ≤ 3) (fits : k ≤ n) :
+    (∑ j ∈ Finset.range 3, if j < k then Real.log ((n - j : ℕ) : ℝ) else 0) =
+      logFactorial n - logFactorial (n - k) := by
+  have mask : (Finset.range 3).filter (fun j => j < k) = Finset.range k := by
+    ext j
+    simp only [Finset.mem_filter, Finset.mem_range]
+    omega
+  rw [← Finset.sum_filter, mask, sum_log_draws n k fits]
+  simpa only [Nat.sub_add_cancel fits] using log_draw (n - k) k
+
 def memCount (mem : Finset S) (n : S → ℕ) : ℕ := ∑ i ∈ mem, n i
 
 def idealEnergy (mem : Finset S) (c : ℕ) (μ logX : S → ℝ) (n : S → ℕ) : ℝ :=
