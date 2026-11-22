@@ -453,3 +453,40 @@ def test_a_label_family_shows_redistribution_and_degradation_exactly():
         for k, state in enumerate(states):
             parts = [readouts.node_records(spec, layout, state, w)[0] for w in (label, unlabelled)]
             assert family["inside_fmol"][k] == float((parts[0] + parts[1])[nodes.index(base.CELL)])
+
+
+def test_fr33s_first_test_two_named_regions_joined_by_one_face():
+    """FR-33's first test, as its requester asked (validation/regions/example.first_test; one
+    compiled program, two runs of 200 steps, about 18 s on a light CPU): two named regions, donor
+    and receiver, joined by one bidirectional face, with the label family P. At every saved time,
+    in fmol, to rounding:
+    - pure transfer (the face open, no clearance): the label total is conserved, the receiver's
+      gain is the donor's loss, and nothing is cleared;
+    - the local-loss control (the face closed, clearance at the donor): the receiver stays flat,
+      and the cumulative clearance accounts for the donor's missing label.
+    Each region keeps its ID and declared volume in the record, and "whole-cell label" is stated
+    there as the sum over the two regions."""
+    eps = np.finfo(float).eps
+    for case in example.FIRST_TEST_CASES:
+        record = example.first_test(case)
+        assert record["regions"] == [dict(id=r, node=r, volume_pL=example.FIRST_TEST_VOLUME_pL)
+                                     for r in example.FIRST_TEST_REGIONS]  # fmt: skip
+        assert record["units"] == "fmol"
+        assert record["definitions"]["whole_cell_label_fmol"] == example.WHOLE_CELL_LABEL
+        donor, receiver = record["donor_label_fmol"], record["receiver_label_fmol"]
+        whole, cleared = record["whole_cell_label_fmol"], record["cleared_fmol"]
+        assert len(record["times_s"]) == len(donor) == len(receiver) == len(whole) == len(cleared)
+        for k in range(len(donor)):
+            tol = 64 * eps * (abs(donor[0]) + abs(receiver[0]) + abs(donor[k]) + abs(receiver[k]))
+            assert whole[k] == donor[k] + receiver[k]
+            if case == "transfer":
+                assert cleared[k] == 0.0
+                assert abs(whole[k] - whole[0]) <= tol
+                assert abs((receiver[k] - receiver[0]) - (donor[0] - donor[k])) <= tol
+            else:
+                assert receiver[k] == receiver[0]
+                assert abs((donor[0] - donor[k]) - (cleared[k] - cleared[0])) <= tol + 64 * eps * (
+                    abs(cleared[k])
+                )
+        moved = donor[0] - donor[-1]
+        assert moved > 0.05, case  # Transfer, or clearance, actually happened.
