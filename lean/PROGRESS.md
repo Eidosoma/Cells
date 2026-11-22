@@ -1,5 +1,23 @@
 # Cells proof comparisons
 
+<a id="fr38-terminal-inventories"></a>
+
+## 22 November 2026 · Polymerase and RNA inventories at terminal release
+
+In FR-38, a completed RNA enters a hold before it detaches into one of two fates. A chain with the `returned` policy frees its polymerase at completion. A chain with the `held` policy frees it at detachment. Lean proves conservation of the shared machine pool for any finite collection of chains with either policy. It also proves the residue balance through detachment. With initially empty stages and counters, residues supplied at stage exits plus residues already in the initial hold equal residues in unfinished chains, completed RNA still held, and all RNA detached so far. The two fates sum to total detachment at each update, even when their fractions change. [Lean proof](CellsProofs/Chemistry/TerminalRelease.lean) · [Engine ledgers](https://github.com/Eidosoma/Cells/blob/fc07c545836b155928aeca3e9ba74528d6e3b66d/src/cells/operators/templated_polymerisation.py#L1992-L2012)
+
+The compiled R1S development worlds started with 80 held RNAs. They switched completion class at 20 s and durable fraction from 0.75 to 0.25 at 40 s. Across 31 saved times per policy, the largest absolute residuals were 1.55 × 10⁻²⁰ fmol of machines and 8.94 × 10⁻²⁰ fmol of residues. Independently reconstructed terminal-hold and fate-row balances also closed. Counting the initial hold under the opposite machine policy produced an 80-machine error with either policy. The frozen run `lean-release-inventories-20261122` records the inputs in `evidence` and the observed maxima in `inventories.json`. [Compiled replay](checks/terminal_release.py)
+
+Harden et al. observed purified *E. coli* polymerase remaining on DNA more than four seconds after RNA departure in 87 of 100 selected traces. A separate set of recordings detected a second, antisense RNA in 78 of 114 traces with reverse polymerase motion and 5 of 257 without it. These observations distinguish RNA departure, DNA retention and productive reuse. They leave the return time to the Cells free pool unresolved. [Primary study, Figures 1 and 3](https://pmc.ncbi.nlm.nih.gov/articles/PMC6978322/) · [Counts and denominators](checks/data/harden2020_polymerase_retention.json)
+
+<a id="fr38-lossless-fate"></a>
+
+## 22 November 2026 · Missing zero-loss counter for a release fate
+
+Two compiled R1 worlds split RNA equally between `R` and `R_s`. Each world omitted one degradation route and set the other route’s rate to zero. New synthesis was off. The initial hold supplied both fates. Over ten seconds each fate gained exactly the reported detachment of 1.2776562362330652 × 10⁻¹⁰ fmol in both worlds. All six saved times per world closed the amount balance within 3.44 × 10⁻²⁷ fmol.
+
+When `deg_R` was omitted, the cohort reader recovered both surviving amounts. When `deg_R_s` was omitted, the exporter still wrote the amount and detachment of `R_s` but omitted `int_D_R_s`. The reader refused that fate. The exporter constructs its lossless set from each chain’s primary product, while the reader resolves each physical release fate as a producer. Extending the exporter’s existing local zero-loss rule to eligible release fate rows would supply the evidence the reader requires. This is a host reporting failure. The physical inventories passed in both worlds. The same frozen run records both controls and the refusal in `lossless.json`. The replay command `checks/terminal_release.py --lossless` exits with status 1 while a fate is unreadable. [Exporter](https://github.com/Eidosoma/Cells/blob/fc07c545836b155928aeca3e9ba74528d6e3b66d/validation/gene_regulation/engine_run.py#L266-L274) · [Cohort reader](https://github.com/Eidosoma/Cells/blob/fc07c545836b155928aeca3e9ba74528d6e3b66d/validation/gene_regulation/cohort.py#L274-L306) · [Reproducer](checks/terminal_release.py)
+
 <a id="fr31-area-bounds"></a>
 
 ## 22 November 2026 · FR-31 survival across vesicle sizes
