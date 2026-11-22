@@ -64,9 +64,14 @@ FATE_ROWS = dict(durable="R", short_lived="R_s")
 LABEL_ROWS = dict(zip(("durable", "short_lived"), worlds.R1_LABEL_ROWS, strict=True))
 
 
+def _path(directory, name):
+    return Path(directory) / engine_run.slug(SET) / f"{engine_run.slug(name)}.json"
+
+
 def _load(directory, name):
-    path = Path(directory) / engine_run.slug(SET) / f"{engine_run.slug(name)}.json"
-    return json.loads(path.read_text())
+    run = json.loads(_path(directory, name).read_text())
+    run["path"] = str(_path(directory, name))
+    return run
 
 
 def closed_forms(p, t):
@@ -293,8 +298,7 @@ def cohorts(checks, runs, machine):
         for ts in (t2, 2 * t2):
             i = plain["t"].index(ts)
             route1 = (xl[f"n_{LABEL_ROWS[f]}"][i] - xb[f"n_{LABEL_ROWS[f]}"][i]) / COPY_FMOL
-            t, n = plain["t"], x[f"n_{row}"]
-            Q, D = x[f"int_Q_{RID}_{f}"], x[f"int_D_{row}"]
+            t, n, Q, D = cohort.read(plain["path"], row)  # Its own pool's counters.
             _, route2, _ = cohort.survivors(t, n, Q, D, t1, t2, ts)
             error = cohort.grid_error(t, n, Q, D, t1, t2, ts)
             route2, error = route2 / COPY_FMOL, (math.inf if error is None else error / COPY_FMOL)
@@ -319,11 +323,9 @@ def r2_cohorts(checks, name, run):
     counters for R1's window, sampled at its end and an hour later, reported with its grid error,
     which must be estimable at R2's outputs."""
     t1, t2 = worlds.R1_WINDOW
-    x = run["readouts"]
     for f, row in FATE_ROWS.items():
         for ts in (t2, 2 * t2):
-            t, n = run["t"], x[f"n_{row}"]
-            Q, D = x[f"int_Q_{RID}_{f}"], x[f"int_D_{row}"]
+            t, n, Q, D = cohort.read(run["path"], row)  # Its own pool's counters.
             completed, surviving, _ = cohort.survivors(t, n, Q, D, t1, t2, ts)
             error = cohort.grid_error(t, n, Q, D, t1, t2, ts)
             checks.add(
