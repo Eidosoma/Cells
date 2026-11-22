@@ -168,13 +168,15 @@ def test_the_limit_check_passes_on_the_generic_probes_and_catches_two_plants():
 
 def test_each_limit_tends_to_its_exact_form_as_one_over_the_counts():
     rng = np.random.default_rng(5)
-    for measure, last, regular, catalysis in balance.PROBES[:4:3]:
+    probes = [balance.PROBES[3], balance.PROBES[11]]  # both measures, c = 0 and c = 1
+    assert {p[0] for p in probes} == {"multinomial", "multinomial_less_one"}
+    for measure, last, regular, catalysis in probes:
         raw = balance.probe_world(rng, measure, last, regular=regular, catalysis=catalysis)
         out = rate_equations.parity(raw, rng)
         assert out["identical"] or out["order"] >= 0.9, out
 
 
-def test_a_linear_network_follows_its_matrix_exponential():
+def test_a_linear_network_follows_its_matrix_exponential(tmp_path):
     times = (0.25, 0.5, 1.0, 2.0)
     spec = parse_spec(as_representation(definition(linear_world(), horizon=2.0,
                                                    observations=times)))  # fmt: skip
@@ -190,6 +192,19 @@ def test_a_linear_network_follows_its_matrix_exponential():
         expected = expm(rates * t) @ start
         assert np.max(np.abs(counts[:3] - expected) / expected) < 1e-7
     run.check_books()
+    # The records (FORMAT_RATE_EQUATIONS.md), through the family's own write_run.
+    import json
+
+    from cells.models.assembly_lineages_v2 import records
+
+    records.write_run(tmp_path / "bundle", run)
+    record = json.loads((tmp_path / "bundle" / "run.json").read_text())
+    assert record["format"] == "cells.rate_equations_run@1" and record["status"] == "complete"
+    assert record["engine_models"]["representation"] == "cells.rate_equations@1"
+    assert record["ledger"]["closes"] and record["moieties"]["closes"]
+    assert all(law["limit_formulas"] for law in record["laws"])
+    saved = np.load(tmp_path / "bundle" / "rows.npz")
+    assert np.array_equal(saved["counts"], run.rows["counts"])
 
 
 def test_a_closed_membrane_relaxes_to_f_cont_s_minimum_with_its_books_closed():
