@@ -391,6 +391,16 @@ def test_survivors_are_bounded_by_the_pool_and_coarse_grids_are_flagged(tmp_path
     t, n, Q, D = _fast_turnover([k * 0.1 for k in range(81)])  # Resolved: within its grid error.
     _, labelled, _ = cohort.survivors(t, n, Q, D, 0.0, 8.0)
     assert abs(labelled - -math.expm1(-8.0)) <= cohort.grid_error(t, n, Q, D, 0.0, 8.0)
+    # FR-38's survival readout (the requester's answer): FR-25's turnover control, 100 copies with
+    # a one-hour half-life, the first hour's completions alive at 1 h and 2 h, and their ratio, a
+    # half; None where nothing was completed.
+    hour, k = 3600.0, math.log(2) / 3600.0
+    t = [i * 60.0 for i in range(121)]
+    n, made = [100.0] * len(t), [100 * k * s for s in t]
+    counted = cohort.survival(t, n, made, made, 0.0, hour, 2 * hour)
+    assert counted["alive_at_window_end"] == pytest.approx(50.0, rel=1e-4)
+    assert counted["ratio"] == pytest.approx(0.5, rel=1e-12)
+    assert cohort.survival(t, n, [0.0] * len(t), made, 0.0, hour, 2 * hour)["ratio"] is None
 
 
 # (case, the counters' edit, t1, t2, ts, the refusal's words).

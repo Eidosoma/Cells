@@ -323,6 +323,30 @@ def cohorts(checks, runs, machine):
                 route2=route2,
                 grid_error=error,
             )
+        survival(checks, f"R1 p=0.75 {machine}", plain["path"], row, f)
+
+
+def survival(checks, name, path, row, fate):
+    """The requester's survival readout (FR-38's (c) and (e), 22 November 2026) by route 2: the
+    window's members alive at its end, the same alive an hour later, and their ratio, against the
+    closed forms' ratio, e^(-k_f 3600 s), within the counts' grid errors."""
+    t1, t2 = worlds.R1_WINDOW
+    t, n, Q, D = cohort.read(path, row)
+    counted = cohort.survival(t, n, Q, D, t1, t2, 2 * t2)
+    k = float(sheet.RELEASE["k_durable" if fate == "durable" else "k_short"])
+    expected = math.exp(-k * t2)
+    alive, later = counted["alive_at_window_end"], counted["alive_at_sample"]
+    errors = [counted["grid_error_at_window_end"], counted["grid_error_at_sample"]]
+    bound = math.inf if None in errors else (errors[1] + expected * errors[0]) / alive
+    checks.add(
+        f"{name}: route 2's {fate} survival, alive at {t2:g} s and at {2 * t2:g} s",
+        counted["ratio"] is not None and abs(counted["ratio"] - expected) <= bound,
+        alive_copies=alive / COPY_FMOL,
+        later_copies=later / COPY_FMOL,
+        ratio=counted["ratio"],
+        closed_form_ratio=expected,
+        bound=bound,
+    )
 
 
 def r2_cohorts(checks, name, run):
@@ -342,6 +366,7 @@ def r2_cohorts(checks, name, run):
                 surviving_copies=surviving / COPY_FMOL,
                 grid_error_copies=None if error is None else error / COPY_FMOL,
             )
+        survival(checks, name, run["path"], row, f)
 
 
 def approach(checks, runs, machine):
