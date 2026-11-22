@@ -139,7 +139,7 @@ gradient, and m becomes n:
 - This is the cycle kind's factored form (CORE_SEAMS §3.2: J = k a S (1 − e^{ΔG/RT})), and §1.2
   (d)'s J = Σ s θ⁺ (1 − e^{ΔF/k_BT}).
 - J_r and ΔF_r have opposite signs for every step at every state, so each step dissipates:
-  −J_r ΔF_r ≥ 0. (d) can check that per channel (§2.1). The exact kernel cannot, because its event
+  −J_r ΔF_r ≥ 0. (d) can check that per channel (§2.2). The exact kernel cannot, because its event
   heats are signed.
 - dn/dt = Σ_r ν_r J_r, and each held place's net supply integrates −Σ_r ν_r,p J_r.
 
@@ -201,7 +201,7 @@ fails item 1.
 | `cells.transition_state_factor@1` | Admitted | `log_factor` on a continuous view: z = βn and the counts are float64 already (`state`), and with consumed 0 the factor is g(n), in either branch, cached or count-weighted mean | — |
 | `cells.ideal_mixing@1` | Admitted | The tables (μ°, ln X, the offset c) | A traceable continuum value: Stirling's form of the declared F_id |
 | `cells.regular_mixing@1` | Admitted | `state` (y = χn and S = n·y, by serial folds, traceable) | Its value S/(2N), three lines |
-| `cells.osmotic_lumen@1` | Admitted | `free_energy`, `log_volume` and `tension`, which compute in float64 and trace already | Verified safe to differentiate; the kink as a restart (§3.2) |
+| `cells.osmotic_lumen@1` | Admitted | `free_energy`, `log_volume` and `tension`, which compute in float64 and trace already | To verify at build: safe to differentiate (its logarithms already take the guarded form); the kink as a restart (§3.2) |
 | `cells.bilayer_geometry@1` | Admitted | `log_constants`, the area, the radius and the closure cost | W as a real number. The floor becomes part of the envelope: W ≥ max(W_floor, envelope) |
 | `cells.shared_pool@1` | Admitted, at most 64 slots (§6.9) | Slots, founders, keys and the additive F | The pool's coupling in the Jacobian. The world-level selection map is not used |
 | `cells.shear_fission@1` | Admitted | Admission (stress, then v ≤ k^(−1/2)), the floor test, keys, continuation and the booking | The mean split, with the complement rule (§3.4) |
@@ -291,9 +291,10 @@ sinks.
 - **The event bookings close exactly** (each is defined from F_cont).
 - **The continuous part closes to the integrator's error, not to rounding.** The residual is the
   quadrature error of ∫ Σ_r J_r ν_r·μ dt along the numerical solution.
-  - Its linear part, Σ μ° n, closes to rounding: Runge–Kutta and Rosenbrock steps integrate linear
-    functionals of the state exactly (S). So the residual comes from F's nonlinear terms only, and
-    scales with their change, not with F's size.
+  - Its linear part, Σ μ° n, closes to rounding (S). Runge–Kutta and Rosenbrock steps integrate
+    linear functionals of the state exactly, given that Q is a component of the state and, for
+    Rosenbrock, the Jacobian is exact, Q's row included. So the residual comes from F's nonlinear
+    terms only, and scales with their change, not with F's size.
   - **Registered tolerance:** |residual| ≤ 100 × rtol × max(1, Σ|bookings|) + 64 ε (|F_cont(n_t)| +
     |F_cont(n_0)|), with ε float64's epsilon. A run beyond it is refused, as the exact runner
     refuses one whose books do not close.
@@ -576,7 +577,8 @@ Each is refused at parse, by name, with its reason, unless marked as a run-time 
     comparisons per world, that is at most 0.14% per world.
   - **Power:** SE at the top density rung (Ω = 16,000, M = 256) is about 5 × 10⁻⁴ of the scale, so
     a mean shifted by more than about 6.4 × 10⁻³ of its scale fails. At the top vesicle rung it is
-    about 1 × 10⁻² (S). Every plant below is O(1).
+    a few × 10⁻³ for A and V, and larger for σ, whose relative fluctuation the kink amplifies (S).
+    Every plant below is O(1).
   - **The bias's order** across all rungs is also reported, as a description.
 - **E, events (D4 and D7).**
   - Criterion M applies to mean(T_a) − t*_d, for the lysis time and the opening time.
@@ -693,11 +695,11 @@ from the join's (N + 1)/N. It has no pass or fail unless the lead rules one.
 | Protocol | Events | CPU time on one light CPU (at 5 × 10⁴ events/s) |
 | --- | --- | --- |
 | D1–D3 | About 1.5–3 events per replica per unit of Ω, over 4 rungs summing to 21,250, × 256 replicas × 3 worlds: about 5 × 10⁷ | About 20 min, plus about 1 min of compiling per structure |
-| D4–D7 | About 2.5 events per amphiphile per replica, over rungs summing to 2.75 × 10⁵, × 128 replicas × 4 worlds: about 3.5 × 10⁸ | About 2 h |
+| D4–D7 | About 2.5 events per amphiphile per replica, over rungs summing to 2.75 × 10⁵, × 128 replicas × 4 worlds: about 3.5 × 10⁸. The lumen's permeation events can double that | About 2–4 h |
 | G (G1, then G2 through 50 fissions), with @1's runs and the plants' power | About 10⁷ | Minutes; compiling dominates |
 | (d)'s own runs | A few thousand steps each | Seconds |
 
-So about 2.5–3 CPU-hours in all, as detached jobs on the light CPUs (AGENTS.md: a run over 10
+So about 2.5–4.5 CPU-hours in all, as detached jobs on the light CPUs (AGENTS.md: a run over 10
 minutes is detached, with durable logs).
 
 ### 5.4 What the protocols do not claim
@@ -840,7 +842,7 @@ Refused in version 1 (§3.8). Supporting them later is about 0.5 agent-day.
 | **S2, vesicles** | Geometry at real W; the osmotic lumen, safely differentiated; crossings (bracketing, Illinois, the re-step); lysis at σ_max through the release; the kink's restart; the shared pool, up to 64 slots; shear fission's mean split; serial transfer; the same-instant refusals | 1.25–1.75 |
 | **S3, the clock in (d)** | H per vesicle; E from domain 7; the opening's crossing and the rupture; the edges of a hold as stops; σ from F, with σ_max ≤ σ_β/4; area changes (T2 under a hold); the daughters' clocks; the regression and pore/no-pore identities | 0.5–0.75 |
 | **S4, L1** | The exact kernel's clock on the device for worlds with σ from F or area changes, by static dispatch (Phase A's worlds keep the host clock and their bits); the invariance gate; OL5's runs2 compare; FR-31's records compared | 1–1.5 |
-| **S5, Protocol D** | The registration tag; the driver; the detached runs (about 2.5 CPU-hours); the verdicts and plants; PROGRESS | 1–1.25 |
+| **S5, Protocol D** | The registration tag; the driver; the detached runs (about 2.5–4.5 CPU-hours); the verdicts and plants; PROGRESS | 1–1.25 |
 | **S6, Protocol G (G1)** | The driver; @1 and @2 traces; both measures; the plant's power from @1; the report | 0.5–0.75 |
 | **S7, G2** | @2's size-threshold division, and Protocol G through fissions | 1–1.5 |
 
