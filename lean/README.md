@@ -6,28 +6,31 @@ Browse Cells engine laws by scientific topic. Each claim links its Lean proofs, 
 
 <!-- generated: claims-index -->
 
-Direct Lean claims cover [50 of 51 laws](COVERAGE.md#registered-laws) and [30 of 31 operators](COVERAGE.md#registered-operators).
+Direct Lean claims cover [51 of 51 laws](COVERAGE.md#registered-laws) and [31 of 31 operators](COVERAGE.md#registered-operators).
 
 | Category | Registered laws with proof | Claims with proof | Numerical checks | Claims with biological evidence |
 | --- | ---: | ---: | --- | ---: |
-| [Membrane transport and osmosis](COVERAGE.md#category-membrane-transport) | 5 of 5 | 8 of 8 | 8 checked | 8 |
+| [Membrane transport and osmosis](COVERAGE.md#category-membrane-transport) | 5 of 5 | 10 of 10 | 10 checked | 9 |
 | [Ion channels and junctions](COVERAGE.md#category-channels-and-junctions) | 15 of 15 | 15 of 15 | 15 checked | 14 |
 | [Pumps and cotransport](COVERAGE.md#category-pumps-and-cotransport) | 13 of 13 | 8 of 8 | 8 checked | 8 |
 | [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 3 of 3 | 13 of 13 | 12 checked · 1 failed | 10 |
-| [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 13 of 13 | 22 of 22 | 21 checked · 1 failed | 16 |
-| [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 1 of 1 | 22 of 22 | 22 checked | 16 |
+| [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 14 of 14 | 28 of 28 | 26 checked · 2 failed | 18 |
+| [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 1 of 1 | 26 of 26 | 26 checked | 19 |
 | [Cell physiology](COVERAGE.md#category-cell-physiology) | — | 3 of 3 | 3 checked | 3 |
-| [Laws awaiting a category](COVERAGE.md#uncategorized-laws) | 0 of 1 | — | — | 0 |
 
 <!-- /generated -->
 
 Each category opens its detailed claim table on GitHub, including registered laws still awaiting a proof. A single claim can cover several laws. The last column counts claims with a recorded measurement or literature finding, including partial evidence. Each numerical result applies to the cases in its linked record. [All registered laws](COVERAGE.md#registered-laws) · [Design notes](ENGINE_LAW_VERIFICATION.md) · [Voltage pilot closeout](../reports/BIO003_PILOT_CLOSEOUT.md)
 
-The repaired wash now closes Na, K and Cl counters exactly at both tested fractions. The public composite channel clamp also reproduces the current at the patch’s own voltage. The two remaining numerical failures concern GARD version 1 heat and the sign of a rapid-binding inventory margin. The tissue host tested for the binding case requires positive held totals. [Wash and clamp replays](PROGRESS.md#d272-wash-clamp-retests) · [Current failures](COVERAGE.md#failing-numerical-checks) · [Earlier results and other review findings](PROGRESS.md#main-review-d264-d266)
+Three claims have failing numerical checks. GARD v1 can refuse a reversible event. GARD v2 repairs that case but can report a stalled lineage at an admitted coefficient with a finite positive event rate. Its range check also records a lost subnormal and a capacity limit. The third claim concerns the sign of a rapid-binding inventory margin. The tissue host tested for that case requires positive held totals. [Current failures](COVERAGE.md#failing-numerical-checks) · [GARD v2 reproducer](PROGRESS.md#gard-v2-range) · [Wash and clamp repairs](PROGRESS.md#d272-wash-clamp-retests)
 
 ## Biological evidence
 
-In a matched Cells control, a donor loses the same amount of labelled protein under transfer and degradation. A receiver gain or a clearance record distinguishes the mechanisms. Imaging of PSD-95 shows label spreading from one spine to two neighbors. The fate of the original label across the whole neuron over 48 hours remains open. [Matched donors](claims/transfer-or-degradation.md) · [Whole-cell balance and biological evidence](claims/regional-pulse-balance.md)
+The osmotic volume law has **mixed biological evidence**. Fujiwara and Yanagisawa’s liposomes shrank to about 25% of their starting volume, against 24.56% in Cells without fitting. Wolfisberg’s four later volumes were below prediction. In Bhatia’s vesicle, the uncertainty in the outer contour spans the difference after accounting for the inward tube. [Three preparations side by side](PROGRESS.md#intact-vesicle-deflation) · [Generated claim and primary sources](claims/osmotic-vesicle-volume.md#biological-evidence)
+
+At the same growth rate, measured fractions of mRNA-bound ribosomes in *E. coli* ranged from 31% to 65% across three nutrient limitations. In hamster cells, tracer measurements followed residues in unfinished and released protein separately. These experiments give observables for the two polymerisation balances. A quantitative Cells comparison still needs matched conditions and pool definitions. [Machine occupancy](claims/polymerisation-machines.md) · [Residues in transit and released](claims/polymerisation-residues.md)
+
+In a matched Cells control, a donor loses the same amount of labelled protein under transfer and degradation. A receiver gain or a clearance record distinguishes the mechanisms. Imaging of PSD-95 shows label spreading from one spine to two neighbors. The fate of the original label across the whole neuron over 48 hours remains open. Representing a neutral tracer by separate species rows can also change the heat attributed to mixing. [Matched donors](claims/transfer-or-degradation.md) · [Whole-cell balance](claims/regional-pulse-balance.md) · [Neutral label diffusion](claims/neutral-label-diffusion.md) · [Effect on booked heat](claims/label-mixing-power.md)
 
 At 0 mV, the published Kv1.5 activation curves predict 72.1% retained current at pH 6.8 if both preparations share a maximum conductance. A separate pulse in the same study gave 74.5 ± 1.9% (SEM). Applying only the measured midpoint shift to the default Cells gate gives 40.5%. [Kv1.5 pH comparison](claims/kv15-ph-activation.md)
 
@@ -37,17 +40,19 @@ The biological review identifies three engine opportunities with measured target
 
 The Cx43 polarity measurements bound the error of the registered single-gate law. The registered two-gate law satisfies the predicted amplitude relation on synthetic clamps and runs in the tissue host under its development flag. Resolving the mixed amplitude in a measured Cx43 trace remains open. [Measurements](PROGRESS.md#cx43-series-gates) · [Compiled comparison and host replay](PROGRESS.md#nov21-registered-series-and-withdrawal)
 
-A serial dilution experiment follows free fluorescein through three successive exchanges. The catalog gives the measured concentrations alongside the ideal series, including the discrepancy at the third 80% wash. [Measured dilution and its scope](PROGRESS.md#nov21-wash)
+A serial dilution experiment follows free fluorescein through three successive exchanges, including the discrepancy at the third 80% wash. For uneven sampling, a separate experiment measured approximately 75% and 25% of stock dye concentration in two outlets carrying equal flow. Measuring the dye left in each region after a finite draw would test the Cells remainder prediction. [Measured dilution](PROGRESS.md#nov21-wash) · [Two-region draws and dye measurements](claims/two-region-sampling.md)
 
 For partial pool withdrawal, one passive splitter collected a mean of 45.0% of each droplet’s beads in a nominal one-third branch. Another retained 28.2% of beads at a mean liquid fraction of about 27.2%. A test of count variance still needs particle counts and liquid volume measured on the same split. [Count proof and measurements](claims/pool-withdrawal.md) · [Paired-data search and heat proof](PROGRESS.md#fr35-withdrawal-energy) · [Biological disagreements for Cells](PROGRESS.md#nov21-biological-disagreements)
 
 For finite-pool washes, tracer measurements distinguish what leaves the exterior, what survives inside a vesicle, and what can later enter another membrane. [Washout and redistribution measurements](claims/pool-replacement.md#biological-evidence)
 
+For a wash of a solid surface, the first saved step can already include tracer released from the wall. An albumin experiment measured both rinse liquid and the final surface residue. The time course of release in that preparation remains open. [Wall retention and measured albumin recovery](claims/wall-wash-retention.md)
+
 Yeast mitochondrial ATP synthase provides a measured example of reversal. The enzyme switched from hydrolysis to synthesis as the proton gradient increased. Cells captures the shift between the lowest and highest ATP loads. The comparison also records the four intermediate measurements outside the combined interpolation limits. [Mitochondrial stall and biological evidence](claims/mitochondrial-stall-heat.md#biological-evidence)
 
 The catalog gives each measurement, its primary source and the part of the law it tests. **Partial evidence** means the literature measures a relevant part of the claim and a full biological verdict remains open. **Not assessable** means a recorded comparison has too much uncertainty for a verdict. The studies and their figures are linked in each row. [Literature review](claims/incoming/biological-evidence.md) · [Pump flux, charge and ATP measurements](claims/incoming/pump-charge-evidence.md) · [PGI worksheet audit](claims/incoming/pgi-evidence.md) · [Publisher’s PGI workbook and spectra](https://mdpi-res.com/metabolites/metabolites-02-00818/article_deploy/metabolites-02-00818-s001.zip)
 
-Same-temperature rupture rates now give FR-31 a three-tension comparison. A separate tracer experiment tests vesicle shrinkage, and a single-ribosome study supplies a measured time to protein release. [Measurements, engine replay and outstanding questions](PROGRESS.md#vesicle-and-translation-evidence)
+Three measured rupture rates at each of two temperatures give FR-31 a comparison for first rupture. A complete rupture returns each molecule to its destination in both assembly runners. [Rate measurements](claims/vesicle-lysis-threshold.md#biological-evidence) · [Rupture receipts in Lean and Cells](claims/vesicle-lysis-returns.md) · [Independent translation-timing data screened by Search](claims/incoming/translation-release-evidence.md#fr-40-screening-for-independent-timing-data)
 
 ## Maintaining the claims
 
@@ -201,6 +206,13 @@ cells_python=${CELLS_PYTHON:-python}
 
 <details>
 <summary>Commands for individual comparisons</summary>
+
+Run the OL5 comparison for single-event osmotic energies, short reaction products and measured vesicle deflation. Select one calculation with `--case energy`, `--case draws`, `--case deflation` (Bhatia) or `--case intact-deflation` (Fujiwara and Yanagisawa). The release check reads the saved diagnostic events and the matching final or lysis rows in four runs. Pass `--output DIRECTORY` to retain its bundles. [Energy proof](claims/vesicle-event-energy.md) · [Release proof](claims/vesicle-lysis-returns.md) · [OL5 replay differences](PROGRESS.md#ol5-six-replays)
+
+```bash
+"$cells_python" -B checks/vesicle_events.py
+"$cells_python" -B checks/vesicle_release.py
+```
 
 For mitochondrial respiration and ATP delivery, check the seven reaction columns, charge on each side and the material booked in a world with a finite matrix and intermembrane space. The results link complex I proton measurements and a bovine ATP synthase structure to the counts the model assumes. [Mitochondrial balance and measurements](PROGRESS.md#mitochondrial-cycle-accounting)
 
@@ -467,11 +479,19 @@ For assembly exchange, compare entry and exit rates at every three-species compo
 "$cells_python" -B checks/reservoir_exchange.py
 ```
 
-For the two GARD laws, compare both directions of each transfer and each four-event cycle against exact rational rates. The full run also exercises two cases where subtracting a large diagonal coefficient loses the remaining catalyst. It exits with status 1 when the passive law refuses a valid event. The controls-only command runs the ordinary comparisons and two passing one-event controls. [Driver](checks/gard_catalysis.py) · [Findings and membrane measurements](PROGRESS.md#19-november-2026--gard-catalysis-on-reversible-transfers)
+For the original GARD laws, compare both directions of each transfer and each four-event cycle against exact rational rates. The full run also exercises two cases where subtracting a large diagonal coefficient loses the remaining catalyst. It exits with status 1 when the passive law refuses a valid event. The controls-only command runs the ordinary comparisons and two passing one-event controls. [Driver](checks/gard_catalysis.py) · [Findings and membrane measurements](PROGRESS.md#19-november-2026--gard-catalysis-on-reversible-transfers)
 
 ```bash
 "$cells_python" -B checks/gard_catalysis.py
 "$cells_python" -B checks/gard_catalysis.py --controls-only
+```
+
+For the GARD v2 two-word cache, replay the repaired reversible event, signed updates and precision guard. The separate range command exits with status 1 while admitted exponent or explicit-capacity cases fail. For templated polymerisation, check the two balances across every saved row of three compiled worlds, including two chains competing for one machine pool. [Cache precision](PROGRESS.md#gard-v2-cache) · [Range findings](PROGRESS.md#gard-v2-range) · [Polymerisation balances and measurements](PROGRESS.md#polymerisation-balances)
+
+```bash
+"$cells_python" -B checks/gard_cache.py
+"$cells_python" -B checks/gard_cache.py --range
+"$cells_python" -B checks/polymerisation_balances.py
 ```
 
 For ideal and regular assembly mixing, one command checks the 592 registered probe states under both count measures and rebooks four compiled trajectories. It compares the activity curves with Shaw’s 25 DOPC measurements and Parker’s independent crystal-onset endpoint. [Driver](checks/assembly_mixing.py) · [Fit, assumptions and results](PROGRESS.md#19-november-2026--ideal-and-regular-assembly-mixing)

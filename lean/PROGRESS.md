@@ -1,5 +1,149 @@
 # Cells proof comparisons
 
+<a id="vesicle-lysis-returns"></a>
+
+## 22 November 2026 · Molecules returned by a terminal rupture
+
+The assembly record gives two states at a rupturing step. The diagnostic event gives the pool after the triggering step. The end row for a single lineage, or the matching lysis row in a population, gives the pool after the vesicle empties. Lean proves that applying the individual returns to the first state increases each finite pool by its total receipt. A held pool keeps its count and its signed reservoir supply decreases by that receipt. Summing receipts over the destinations recovers the entire cargo. [Lean proof](CellsProofs/Chemistry/VesicleRelease.lean) · [R9 record definition](../validation/assembly_lineages_v2/FORMAT_OL2.md#L545)
+
+On engine `87e81f56`, all four compiled `cells.assembly_lineages@2` runs closed their energy accounts and their serialized records reconciled by place name. In both modes, one lipid had already detached into the pool. Four membrane lipids and two lumen lipids returned to that same place, giving **1 + 6 = 7**. Counting the receipt a second time would give 13. The two impermeant tracer molecules increased a finite pool by two. With a held destination they reduced signed supply by two and booked **9.210340371976182 kT** of reservoir work. The other population slot survived. These controls cover event-triggered lysis. [Run and check the four bundles](checks/vesicle_release.py) · [Lineage release](https://github.com/Eidosoma/Cells/blob/87e81f56366b5d06bd2abd45ebd2bb45a70f8b25/src/cells/models/assembly_lineages_v2/runner.py#L492) · [Population release](https://github.com/Eidosoma/Cells/blob/87e81f56366b5d06bd2abd45ebd2bb45a70f8b25/src/cells/models/assembly_lineages_v2/population.py#L700)
+
+<a id="intact-vesicle-deflation"></a>
+
+### Which vesicle measurements agree with the equilibrium volume?
+
+| Preparation and measured quantity | Experimental result | Cells comparison |
+| --- | --- | --- |
+| Fujiwara and Yanagisawa, five DOPE/DOPC liposomes. Final volume relative to starting volume, 70 to 285 mOsm/L. | About 0.25, from the reported fourfold inverse-volume plateau. Paired measurements on an individual liposome support GFP retention. | **0.2456** with the prepared osmolarities and fixed osmoles, without fitting. Compatible at the reported precision. [Study](https://doi.org/10.1021/sb4001917) · [Tracer and volume, Fig. S3](https://doi.org/10.1021/sb4001917.s001) |
+| Wolfisberg et al., one weakly adhered POPC vesicle. Volume relative to the spherical capacity at the measured area. | **0.30** at 58 mOsm/L. All four later measurements lay below the respective predictions. | **0.4393** at that point after calibrating to the first observation. [Figure 2B and inputs](checks/data/wolfisberg2025_vesicle.json) |
+| Bhatia et al., one trapped vesicle with an inward tube. Final lumen relative to the measured start, 66 to 72 mM. | At most **0.756** using the central outer contour. Subtracting a straight cylindrical tube gives an estimated **0.705**. | **0.917** assuming retained osmoles. The reported ±1,000 µm³ outer-volume uncertainty spans the roughly 950 µm³ difference. [Geometry and uncertainties](#bhatia-vesicle-deflation) |
+
+The new compiled endpoint replay gave an initial-to-final ratio of **4.071428571428582**. The five-volume plateau and the paired GFP plot have different observations. The reported linear fit in the latter has R² = 0.9987. The error of an individual retention estimate and the retention of smaller osmoles remain open. [Replay inputs and prior result](checks/data/fujiwara2014_vesicle.json) · [Deflation driver](checks/vesicle_events.py) · [Biological evidence and scope](claims/incoming/vesicle-osmosis-evidence.md)
+
+<a id="ol5-event-energy"></a>
+
+## 22 November 2026 · Osmotic energy booked by a single vesicle event
+
+The fixed-area law uses the smaller of the equilibrium osmotic volume and the spherical volume allowed by the membrane. Lean proves that the incremental energy equals the final free energy minus the initial free energy for any two positive counts and footprints. The proof covers both sides of the volume limit, both directions across it and an exactly full vesicle. At a branch switch the correction is proportional to `x − 1 − log x`, where `x` is spherical volume divided by free osmotic volume at the start. This is nonnegative and vanishes at the boundary. Pricing an event and then reversing it sums to zero in exact arithmetic. The empty lumen and the infinite energy of solute without membrane have separate engine checks. [Event proof](CellsProofs/Chemistry/VesicleEvent.lean) · [Underlying energy](CellsProofs/Chemistry/Vesicle.lean) · [Incremental engine formula](https://github.com/Eidosoma/Cells/blob/329e9e395ac117998657a21eb827192d34314107/src/cells/models/assembly_lineages_v2/lumen.py#L193-L242)
+
+On `cells.assembly_lineages@2`, the comparison prices 169 distinct directed state pairs. These include 13 crossings in each direction, the saved transitions of a 96-event public run and 18 four-event cycles. The reference uses 70-digit physical volumes and subtracts the absolute energies before rounding the result. The old compiled calculation had a maximum error of **1.70 × 10⁻¹⁰ kT**. On OL5 candidate `329e9e39` it was **1.07 × 10⁻¹⁴ kT**. The maximum reverse-pair residual and the maximum closed-cycle residual were both **5.33 × 10⁻¹⁵ kT**. The synthetic controls exactly on the branch boundary agreed to the displayed float64 precision. [CPU comparison, energy case](checks/vesicle_events.py) · [Engine fixture](https://github.com/Eidosoma/Cells/blob/329e9e395ac117998657a21eb827192d34314107/tests/unit/test_assembly_lineages_v2_lumen.py#L141-L231)
+
+<a id="ol5-short-draws"></a>
+
+### Ordered draws in a reaction rate
+
+The engine sums at most three logarithms to price draws without replacement. Lean connects the masked sum to Mathlib’s descending factorial for every feasible count, including a zero-arity side and an exactly exhausted side. On 46 feasible inputs through 2²⁰ molecules, both the mass-action and phase-exchange directions were within **3.55 × 10⁻¹⁵** of the logarithm of the exact integer product. Both backends masked all six impossible draws. The previous table-difference calculation had a maximum absolute log error of **1.20 × 10⁻⁹** on the same synthetic inputs. These cases isolate the rate factors. The registered OL5 verdict has its own runner and tolerances. [Rate proof](CellsProofs/Chemistry/AssemblyKinetics.lean) · [Engine log products](https://github.com/Eidosoma/Cells/blob/329e9e395ac117998657a21eb827192d34314107/src/cells/models/assembly_lineages_v2/mass_action.py#L76-L90) · [OL5 decision](https://github.com/Eidosoma/Cells/blob/329e9e395ac117998657a21eb827192d34314107/docs/DECISIONS.md#L8945)
+
+<a id="ol5-six-replays"></a>
+
+### Six existing drivers before and after the OL5 change
+
+All six full drivers exited successfully on both frozen revisions. The earlier checkout was `40c3185e`. Its engine source matches the parent of the numerical change. Candidate `329e9e39` includes the declared probe renewal. Ten previous comparison records across eight claims cite the three changed engine files. The table counts differing scalar output fields across the current driver reports. Each row keeps its earlier comparison and biological evidence.
+
+| Driver | Fields compared | Fields changed | Example of what moved |
+| --- | ---: | ---: | --- |
+| Assembly kinetics | 73 | 4 | A two-molecule leave rate went from 0.9999999999999997 to 1 per second. Three clock-probe energy residuals changed in the last digits. |
+| Confined binding | 18 | 3 | The predicted three-partner occupancy changed from 0.5250000000000004 to 0.5249999999999995 in the bulk-loading comparison. |
+| Pool replacement | 72 | 0 | Byte-identical pulse, wash and capacity report. |
+| Shared pool | 33 | 2 | Only the two reported closure residuals changed. |
+| Vesicle | 149 | 0 | Byte-identical trajectory, measurement and rupture report. |
+| Vesicle exchange | 84 | 15 | The largest reported balance residual across the eight edge sets rose from 1.42 × 10⁻¹⁴ to 2.04 × 10⁻¹⁴ kT. |
+
+The frozen run `lean-ol5-event-energy-20261122` contains `six-replays.json` (both statuses per driver), `six-differences.json` (every changed field and its before/after values), `before-events.json` and `candidate-events.json`. The earlier engine exits 1 on the new precision checks and the candidate exits 0. [Rate and energy driver](checks/vesicle_events.py) · [Declared changes](https://github.com/Eidosoma/Cells/blob/329e9e395ac117998657a21eb827192d34314107/src/cells/models/assembly_lineages_v2/exchange.py#L39-L61)
+
+<a id="bhatia-vesicle-deflation"></a>
+
+### What the outer contour measures after osmotic deflation
+
+Bhatia et al. imaged one giant vesicle before and after transfer from 66 to 72 mM. Figure 2 gives about 1,300 µm² and 4,500 µm³ initially. After deflation the outer contour enclosed 3,400.9 ± 1,000 µm³, including bath-origin liquid in an inward tube. The central measurements put the final lumen at **at most 0.756 of the starting volume**, independent of tube shape. A straight cylinder 18 µm long and 4 µm in diameter gives about 226 µm² of membrane and displaces about 226 µm³. Including it gives an estimated final area of 1,330 µm² and a lumen fraction of **0.705**. The tube dimensions have no independent uncertainty estimate. [Figure 2, p. 7363](https://doi.org/10.1039/D0SM00155D) · [Movie S1 identifies the bath](https://www.rsc.org/suppdata/d0/sm/d0sm00155d/d0sm00155d1.pdf#page=2)
+
+Assuming initial osmotic balance, conserved internal solute and fixed membrane area, the compiled comparison predicts **4,125 µm³**, or **0.917** of the measured starting volume. The cylinder estimate is about 950 µm³ lower, within the quoted ±1,000 µm³ on the outer volume alone. Even the starting central measurements give a reduced volume of 1.021 against a spherical maximum of 1. The authors estimate about 25% uncertainty in reconstructed area and 33% in volume. This specimen leaves the quantitative model comparison unresolved. Figure 4 used a separate 92 to 117 mM exchange. Its internal concentration was inferred from volume under a conserved-solute assumption. [Measurements and assumptions](checks/data/bhatia2020_vesicle_deflation.json) · [Figures 2 and 4](https://www.mpikg.mpg.de/th/people/dimova/publications/Bhatia%2020%20SoftMater.pdf#page=5)
+
+<a id="gard-v2-cache"></a>
+
+## 22 November 2026 · GARD v2 preserves the smaller catalyst
+
+For `cells.gard_catalysis_pair_consistent@2`, measure each row sum in units of its lowest set bit. Lean proves that the parser’s 106-bit precision bound puts every legal composition on a grid where the two compensation terms add exactly. The proof covers a signed update, successive updates, founder/daughter folds and recovery of the reverse numerator. It uses the published error-free TwoSum contract and nearest rounding. A finite exponent range and preservation of low words are additional device requirements. The proof allows either choice at a tie and constructs a model satisfying its arithmetic assumptions. [Lean proof](CellsProofs/Chemistry/GardCache.lean) · [Engine arithmetic](https://github.com/Eidosoma/Cells/blob/6b28ec55368011de79dce85e6172b5844b77a287/src/cells/models/assembly_lineages/gard.py#L291-L357) · [TwoSum, Theorem 3.4](https://doi.org/10.1137/030601818)
+
+On the original stress case (diagonal 2⁵⁴, other catalyst 1), the compiled host returned join and reverse factors **2 and 2** and exactly **0 kT** of heat. Version 1’s recorded false refusal remains in its own claim. Across 22 signed updates, each cache matched a fresh fold byte for byte and its two words summed to the rational reference. All adjacent factor pairs matched bit for bit, including the empty-parent boundary. A 106-bit row was admitted and a 107-bit row refused. The 2²⁰ count case exercised the compiled cache directly. At the larger counts a multiplier differed by one float64 spacing from a scalar evaluation that rounds the division separately. [Compiled comparison](checks/gard_cache.py) · [Version 1 record](claims/gard-pair-heat.md)
+
+<a id="gard-v2-range"></a>
+
+### Two exponent limits and an explicit-capacity refusal
+
+| Input | Expected | Compiled Cells result |
+| --- | --- | --- |
+| Two molecules with coefficient 2¹⁰²², capacity 8 | Finite cache and positive event rate | One event, with a finite cache |
+| Same composition with coefficient 2¹⁰²³ | A valid event with finite rates or a domain refusal | Parser admitted a four-bit row. Both cache words became NaN. The run returned `stalled`, zero events and a passing empty heat ledger |
+| Single coefficient 2⁻¹⁰⁷⁴ and one molecule | Preserve one tick or refuse the value | NumPy preserved it and the compiled CPU cache returned zero. Both factors round to one at this scale |
+| Two types and an explicit molecule capacity equal to fission size | 4,096 and 4,097 are both within the declared 2²⁰ limit | 4,096 parsed. At 4,097 the default type-bucket lookup raised a configuration error despite the explicit capacity |
+
+The independent rational propensity sum in the overflow case rounds to **25,165,824** in the model’s nominal inverse-time units. The half-sized control gives 12,582,912. The row-bit guard measures the width of the significand. This example also needs a bound on its physical exponent. The capacity finding arises earlier, when Python evaluates the default argument to the execution dictionary lookup. Run `checks/gard_cache.py --range` for all three findings. A nonzero exit preserves them in the numerical-failures table. [Precision guard](https://github.com/Eidosoma/Cells/blob/6b28ec55368011de79dce85e6172b5844b77a287/src/cells/models/assembly_lineages/gard.py#L359-L396) · [Execution parser](https://github.com/Eidosoma/Cells/blob/6b28ec55368011de79dce85e6172b5844b77a287/src/cells/models/assembly_lineages/spec.py#L358-L371) · [Reproducer](checks/gard_cache.py)
+
+<a id="polymerisation-balances"></a>
+
+## 22 November 2026 · Free machines, unfinished chains and released products
+
+One machine moves into the first stage at initiation and returns to its pool on the last exit. For any finite set of chains sharing a pool, Lean proves that internal stage transfers cancel. It also proves that the residues added at stage exits equal those still in unfinished chains plus those in released products, relative to the starting ledger. Stage j, counted from zero, carries j times the residues per stage. Both identities hold for arbitrary stage extents, including the SSPRK half-step used by the operator. [Proofs](CellsProofs/Chemistry/Polymerisation.lean) · [Engine update](https://github.com/Eidosoma/Cells/blob/6b28ec55368011de79dce85e6172b5844b77a287/src/cells/operators/templated_polymerisation.py#L862-L889) · [Native balances](https://github.com/Eidosoma/Cells/blob/6b28ec55368011de79dce85e6172b5844b77a287/src/cells/operators/templated_polymerisation.py#L1378-L1387)
+
+Three 30 s CPU worlds on `resolved_pump_composite@1` exercised the two-route A1 model, competing chains and a one-stage chain beside an eight-stage chain. Across 183 saved rows the largest machine residual was **5.80 × 10⁻¹⁹ fmol** and the largest residue residual **3.39 × 10⁻²⁰ fmol of residues**. In the two-gene control, leaving one chain out of the shared machine pool produced a 4.88 × 10⁻⁸ fmol error. The one-stage chain retained zero residues in transit and released 6.55 × 10⁻⁵ fmol of residues. Source and run records for both new comparisons are in `lean-gard-poly-balances-20261122`. [Compiled comparisons](checks/polymerisation_balances.py)
+
+Li et al. measured 31 ± 3%, 51 ± 3% and 65 ± 4% of ribosomes bound to mRNA at the same measured growth rate under carbon, nitrogen and phosphorus limitation respectively (mean ± SEM, three biological replicates). Bound and unbound shares have a common denominator. These data constrain how engagement changes with the preparation. Stanners separately measured label in nascent and completed proteins in hamster cells. The signals crossed at 34, 32, 40 and 32.5 s. A quantitative test of that time course would need the experimental tracer normalization. Neither dataset was used to fit these synthetic worlds. [Li et al., Fig. 1e and Table 1](https://doi.org/10.1038/s41564-018-0199-2) · [Stanners, Fig. 4 and Table II](https://doi.org/10.1016/S0006-3495(68)86487-2) · [Measurement records](checks/data/polymerisation_pool_measurements.json)
+
+<a id="fr33-label-energy"></a>
+
+## 21 November 2026 · FR-33, heat booked when neutral labels mix
+
+Two neutral labels can cross a face in opposite directions while the total tracer stays still. For any finite collection of strictly positive label fractions with common diffusivity, Lean proves that resolving labels adds a nonnegative term to the ideal face power. The term is zero exactly when every label has the same fraction on both sides. The reduction from the Cells neutral face uses its logarithmic quotient or equal-concentration branch for every active row and the parent. An optional check identifies the term with Mathlib’s relative-entropy function. [Proof](CellsProofs/Transport/LabelMixingPower.lean) · [Mathlib equivalence](checks/mixing/KLFun.lean)
+
+The accepted step books heat from applied fluxes and predicted weights. With positive weights this booking is zero exactly when every applied flux is zero. Combining two rows with their summed weights removes a nonnegative square. An independently simulated parent predicts its own weight. We therefore ran both representations through the public two-node world. The table gives cumulative face heat after 1 s at a 10 ms step. Label amounts summed to the parent at both nodes throughout, within 3 × 10⁻¹⁴ fmol. [Accepted-step booking](https://github.com/Eidosoma/Cells/blob/ee0b8106406eb26e57ab1b0c34e16ed6c3f83a2b/src/cells/models/surface_pump_v3.py#L2119-L2134) · [Comparison](checks/label_mixing_power.py)
+
+| Gradients | Parent (pJ) | Separate labels (pJ) |
+| --- | ---: | ---: |
+| Opposing 90:10 fractions, equal totals | 0 | 1.47315444 |
+| Same fractions, twofold total gradient | 0.33000851 | 0.33000851 |
+| Different fractions and different totals | 0.11645669 | 0.51387347 |
+
+Across 800 accepted CPU float64 steps the largest difference between a recorded heat increment and its independent reconstruction was 3.68 × 10⁻¹⁶ pJ. In the opposing case a 5 ms step gave 1.47318357 pJ against the analytic continuous free-energy loss of 1.47319327 pJ. D1 users who split one chemical species into separate rows for tracking should keep this change in calculated heat explicit. Its interpretation as measurable heat from a label alone remains open. The frozen numerical record is `lean-label-energy-wall-20261121/label-energy.json`. [Parent and label transport](#fr33-label-diffusion)
+
+<a id="fr28-wall-wash"></a>
+
+## 21 November 2026 · FR-28, bound tracer at a wash and at the next reading
+
+A draw removes a fraction of the free tracer. Applying that fraction to the whole inventory overestimates the sample by the same fraction of the bound stock. Lean proves retention at the event, inventory closure during later exchange, and the sign of the first binding rate after dilution at an initially equilibrated surface. [Proof](CellsProofs/Tissue/WallWash.lean) · [Compiled comparison](checks/wall_wash.py)
+
+The operator candidate `9917e3d9` started with 60 fmol free, 10 on the wall and 30 on the specimen. A half wash collected **30 fmol** and the refill supplied 0.0000005 fmol. All eight site-state fields were byte-identical across the event. The post-wash wall rate was −2.99999995 fmol/s. At the next recorded step, 10 ms later, the wall held **9.97015402 fmol** and the specimen held 29.99100988 fmol. Their releases raised the liquid to 30.03883660 fmol. Node ownership and an inert stand-in yielded identical traces. A concentration-matched refill gave zero wall rate. A whole draw collected 60 fmol and left 40 fmol bound at the instant of exchange. The frozen numerical record is `lean-label-energy-wall-20261121/wall-wash.json`. [Wash and counters](https://github.com/Eidosoma/Cells/blob/9917e3d9567993e1019c8caafa89f8653ee6ea9b/src/cells/operators/wash_schedule.py#L438-L501) · [Candidate well](https://github.com/Eidosoma/Cells/blob/9917e3d9567993e1019c8caafa89f8653ee6ea9b/validation/tissue/wash_schedule_fixtures.py#L56-L81)
+
+Robinson et al. separately counted labelled albumin in removed urine, six water rinses and the final disk. A separate five-hour experiment on the same plastic at pH 5 and 87 mg/L yielded **8.759 µg** in pooled liquid and **22.96 ng/cm²** on the disk (0.22%, four replicates). That pool included the original sample, rinses and pipette tip. These measurements support separate liquid and surface accounting. Testing the simulated release rate requires known rinse times and a way to distinguish desorption from liquid carried over between rinses. [Rinse series, Fig. S3](https://stacks.cdc.gov/view/cdc/50419/cdc_50419_DS2.pdf#page=4) · [Surface data, Table S2](https://stacks.cdc.gov/view/cdc/50419/cdc_50419_DS2.pdf#page=7) · [Liquid data, Table S4](https://stacks.cdc.gov/view/cdc/50419/cdc_50419_DS2.pdf#page=9) · [Measurement record](checks/data/robinson2014_wall_wash.json)
+
+<a id="fr28-main-stand-in"></a>
+
+The existing wall stand-in on main at `587ba787` reproduced every reported half-wash value from the FR-28 candidate. The independent run returned 30 fmol collected, 10 fmol on the wall at exchange, 9.97015402 fmol there 10 ms later and a zero maximum inventory residual. Run `checks/wall_wash.py --stand-in-only` for this case. The separate node-ownership comparison above uses `9917e3d9`. [Main well definition](https://github.com/Eidosoma/Cells/blob/587ba7873ac7c3112c00639687d7d86ee186c6fd/validation/tissue/wash_schedule_fixtures.py#L55-L88)
+
+<a id="fr33-label-diffusion"></a>
+
+## 21 November 2026 · FR-33 D1, diffusion of a label and its complement
+
+For a neutral tracer with a common Fick coefficient, summing the fluxes of any finite set of labels recovers the parent flux. Opposing gradients can move labels even when the parent is stationary. Lean proves this for ideal Fick transport, neutral constant-field permeation and the Cells neutral face when every row and the parent use the logarithmic quotient or have equal end concentrations. The small nonzero-gradient polynomial branch has a numerical check. [Proof](CellsProofs/Transport/LabelDiffusion.lean) · [Compiled comparison](checks/label_diffusion.py)
+
+In the two-node world at `1295a7d7`, total tracer on the right stayed at 1 fmol. Right-hand labelled tracer rose from 0.1 to 0.299998884 fmol at 1 s, against 0.3 analytically. The sum of both labels equalled the parent at both nodes on all 101 rows. On a separate face with valence +1, +10 mV from left to right and opposing 90:10 label fractions, the row sum was 2.72590648 × 10⁻⁵ fmol/s versus 3.74339294 × 10⁻⁵ fmol/s for the parent. Lean gives their ratio exactly as (8/5)/ln(9), about **0.7281913813**. Independent charged faces therefore change the total flux in this case. Gray et al. observed labelled PSD-95 leaving a spine and appearing in two neighboring spines. The measurement supports redistribution and leaves the equal-mobility assumption untested. [Engine face](https://github.com/Eidosoma/Cells/blob/1295a7d794feb508bdf565ca2244aff3380b27d6/src/cells/numerics/surface_transport.py#L280-L301) · [Gray et al., Fig. 4A](https://doi.org/10.1371/journal.pbio.0040370.g004)
+
+<a id="fr37-regional-sampling"></a>
+
+## 21 November 2026 · FR-37, when a dye draw represents the chamber
+
+For two internally well-mixed regions and a nonempty draw, Lean proves that sample and chamber concentrations agree exactly when the two concentrations agree or the same fraction of each region is withdrawn. A larger draw fraction from the richer region enriches the sample. Each region’s final amount plus its collected amount equals its initial amount plus its refill. The local draw volumes are inputs. [Proof](CellsProofs/Tissue/RegionalSampling.lean) · [Compiled comparison](checks/regional_sampling.py) · [Cells example at the tested revision](https://github.com/Eidosoma/Cells/blob/ee0b8106406eb26e57ab1b0c34e16ed6c3f83a2b/validation/sampling/uneven_draw.py)
+
+| Starting excess A / B (fmol) | Draw A / B (pL) | Collected excess (fmol) | Excess left A / B (fmol) | Sample excess (mM) |
+| --- | --- | ---: | --- | ---: |
+| 8 / 2 | 100 / 0 | 8 | 0 / 2 | 0.080 |
+| 5 / 5, initially mixed | 50 / 50 | 5 | 2.5 / 2.5 | 0.050 |
+| 8 / 2 | 75 / 25 | 6.5 | 2 / 1.5 | 0.065 |
+
+Each region held 100 pL. All three compiled runs closed the gross local inventory at every recorded time. The refill supplied 10⁻¹⁰ fmol of background dye per draw. The rounded zero in the first row was 8.27 × 10⁻¹⁸ fmol above background. Cells took the regional draw volumes as declared. Johnson et al. measured enrichment independently in a physical flow experiment. Equal outlet flow gave approximately 75% and 25% of stock dye concentration in the two branches, with 50% expected under complete mixing. The experiment measured two flowing outlets. An independent measurement of the dye remaining in each region after a finite draw is still open. [Johnson et al., Fig. 5a and paragraph 33](https://doi.org/10.1029/2005JB004087) · [Measurement record](checks/data/johnson2006_branch_dye.json)
+
+Run the two comparison scripts with the Cells CPU environment and the tested checkout’s `src` and root on `PYTHONPATH`. The sampling script uses the FR-37 example from `ee0b8106`, which has the same engine source as `1295a7d7`. Frozen run directory `lean-label-diffusion-sampling-20261121` contains the JSON results and test logs.
+
 <a id="fr33-regional-tracer"></a>
 
 ## 21 November 2026 · Where the original protein label goes after a pulse
