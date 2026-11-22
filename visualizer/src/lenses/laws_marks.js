@@ -197,13 +197,13 @@ export function mergeTubes(curves, radius, segments = 40) {
  * The camera's view that frames a box of the scene, seen from a given side: the box's corners
  * all inside the picture, with a margin, and the box centred (by a few steps of projection).
  */
-export function fitView(box, { fov = 34, aspect = 1.6, azimuth = 0.16, polar = 1.42, margin = 0.06 } = {}) {
+export function fitView(box, { fov = 34, aspect = 1.6, azimuth = 0.16, polar = 1.42, margin = 0.06, points = null } = {}) {
   const camera = new THREE.PerspectiveCamera(fov, aspect, 0.1, 10000);
   const target = box.getCenter(new THREE.Vector3());
   const size = box.getSize(new THREE.Vector3());
   let distance = (Math.max(size.x / aspect, size.y) / 2 / Math.tan((fov * Math.PI) / 360)) * 1.3 + size.z;
-  const corners = [];
-  for (const x of [box.min.x, box.max.x]) for (const y of [box.min.y, box.max.y]) for (const z of [box.min.z, box.max.z]) corners.push(new THREE.Vector3(x, y, z));
+  const corners = points?.length ? points : [];
+  if (!corners.length) for (const x of [box.min.x, box.max.x]) for (const y of [box.min.y, box.max.y]) for (const z of [box.min.z, box.max.z]) corners.push(new THREE.Vector3(x, y, z));
   const point = new THREE.Vector3(), right = new THREE.Vector3(), up = new THREE.Vector3();
   for (let step = 0; step < 6; step++) {
     const sin = Math.sin(polar);

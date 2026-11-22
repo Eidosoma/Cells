@@ -20,7 +20,7 @@ import { CellLens, defaultSpecies, MODELLED } from "../lenses/cell.js";
 import { ProteinLens, defaultAtlas, inSpecies } from "../lenses/proteins.js";
 import { loadBeside } from "../lenses/protein_shelves.js";
 import { ReplayLens } from "../lenses/replay.js";
-import { LawsLens } from "../lenses/laws.js";
+import { makeLawsView } from "../lenses/laws_atlas.js";
 import { doorsFor as lawsDoors, textSections as lawsSections, textDescribe as lawsDescribe } from "../lenses/laws_card.js";
 import { LAWS_CSS } from "../lenses/laws_styles.js";
 import { MachinesLens } from "../lenses/machines.js";
@@ -58,7 +58,7 @@ const LENSES = [
   // The Laws library (schema/LAWS_LIBRARY.md). "owns": the ids it makes itself, so that an address or a link from
   // another view opens it; "doorsFor": the doors it offers on other views' parts; "textSections" and "textDescribe":
   // its list and panel where no 3D can be drawn; "styles": its legend's swatches.
-  { id: "laws", label: "Laws", short: "Laws", needs: (scene) => scene.laws?.pieces?.length, owns: (id) => id.startsWith("laws:"), doorsFor: lawsDoors, textSections: lawsSections, textDescribe: lawsDescribe, styles: LAWS_CSS, make: (stage, model, labels) => new LawsLens(stage, model, labels) },
+  { id: "laws", label: "Laws", short: "Laws", needs: (scene) => scene.laws?.pieces?.length, owns: (id) => id.startsWith("laws:"), doorsFor: lawsDoors, textSections: lawsSections, textDescribe: lawsDescribe, styles: LAWS_CSS, make: makeLawsView },
   // "hidden": a page exported without the Experiments view keeps its replays, since the cell view's flux reads a species' looping run from them.
   // It opens on its landing, a page of cards (src/ui/landing.js), whose styles it brings.
   { id: "experiments", label: "Experiments", short: "Runs", needs: (scene) => scene.replays?.runs?.length && !scene.replays.hidden, styles: LANDING_CSS, make: (stage, model, labels) => new ReplayLens(stage, model, labels) },
@@ -150,7 +150,7 @@ class CellsViewer extends HTMLElement {
     this.viewCard = h("div", { class: "view card", id: "cells-view", hidden: true });
     // In every view the Experiments tab opens from its landing (a run, a part, a model system's view), one control in one
     // place, under the bar at the left, leads back to all experiments; the view's card stands under it (styles.js .has-back).
-    this.backButton = h("button", { class: "exp-back pill-button", type: "button", hidden: true, "aria-label": "All experiments", onclick: () => this.showLanding() }, h("span", { class: "exp-back-chevron", "aria-hidden": "true" }), h("span", {}, "All experiments"));
+    this.backButton = h("button", { class: "exp-back pill-button", type: "button", hidden: true, "aria-label": "All experiments", onclick: () => this.state.lens === "experiments" ? this.showLanding() : this.current?.back?.() }, h("span", { class: "exp-back-chevron", "aria-hidden": "true" }), h("span", {}, "All experiments"));
     // A sweep's chart, where the experiment shown has one: a card of its own at the right of a wide window (on a phone it stands in the experiment's card).
     this.sweepCard = h("section", { class: "sweep-card card", hidden: true, "aria-label": "Sweep" });
     // On a phone with a panel open the view's card folds behind this button under the bar, so that the picture keeps
@@ -329,12 +329,13 @@ class CellsViewer extends HTMLElement {
       else if (!own && !(wanted === "experiments" && select && !select.startsWith("tissue:"))) this.state.part = openingPart(this.model.raw.replays);
     }
     this.setLens(this.views.some((lens) => lens.id === wanted) ? wanted : this.views[0].id);
+    if (wanted === "laws") this.current?.restore?.(query);
     // A stage named and not drawn cannot be entered: its card opens, over the species at the stage it opens on.
     const named = query.get("stage") && this.lenses.get("cell") ? stageFromAddress(query.get("stage"), this.lenses.get("cell").file).open : null;
     if (named && this.state.lens === "cell") this.select(`stage:${this.lenses.get("cell").file.id}.${named}`);
     if (query.get("size")) this.current?.setSizeMode?.(query.get("size"));
     // The protein atlas: the units of Cells' law inventory ("units") or the species' own proteins ("own").
-    if (query.get("show")) this.current?.setMode?.(query.get("show"), { user: true });
+    if (query.get("show") && !(wanted === "laws" && this.current?.restore)) this.current?.setMode?.(query.get("show"), { user: true });
     if (query.get("colour")) this.current?.setColourBy?.(query.get("colour"));
     if (query.get("scale")) this.current?.goToScale?.(query.get("scale"), true);
     if (query.get("isolate")) this.setIsolate(query.get("isolate"));
@@ -440,6 +441,9 @@ class CellsViewer extends HTMLElement {
         lens.onChrome = () => {
           if (this.current === lens) this.renderChrome();
         };
+        if (lens.address && id === "laws") lens.onAddress = () => {
+          if (this.current === lens) this.writeAddress({ laws: lens.address(), select: lens.selected });
+        };
         // A view whose parts change under an open panel (another run is loaded) asks for it again.
         lens.onPanel = () => {
           if (this.current === lens) this.renderPanel();
@@ -481,7 +485,7 @@ class CellsViewer extends HTMLElement {
     if (!this.shows(this.state.selected)) this.state.selected = null;
     for (const button of this.switchBox.children) button.setAttribute("aria-pressed", String(button.dataset.lens === id));
     this.showPressedTab();
-    if (fromUser) this.writeAddress({ lens: id, select: changed ? selection : undefined });
+    if (fromUser) this.writeAddress({ lens: id, select: changed ? selection : undefined, laws: id === "laws" ? this.current?.address?.() : undefined });
     this.renderChrome();
     this.renderPanel();
     this.stage?.invalidate();
@@ -772,7 +776,7 @@ class CellsViewer extends HTMLElement {
    * own (a view changes what it shows by its own controls). In a frame that keeps its address (a published artifact's)
    * nothing is written and nothing breaks; there only the outer link's #name reaches the page, read as a view's id alone.
    */
-  writeAddress({ lens, select = undefined, views = false } = {}) {
+  writeAddress({ lens, select = undefined, views = false, laws } = {}) {
     try {
       const url = new URL(location.href);
       if (lens) {
@@ -780,6 +784,14 @@ class CellsViewer extends HTMLElement {
         url.hash = lens;
       }
       if (views) for (const key of ["run", "part", "example", "time", "record", "layers", "strength", "play"]) url.searchParams.delete(key);
+      if (lens && lens !== "laws") for (const key of ["lawModel", "lawFamily", "lawOrigin", "lawWhere", "trace", "compare"]) url.searchParams.delete(key);
+      if (laws) {
+        if (["declared", "design", "all"].includes(url.searchParams.get("show"))) url.searchParams.delete("show");
+        for (const [key, value] of Object.entries(laws)) {
+          if (value) url.searchParams.set(key, value);
+          else url.searchParams.delete(key);
+        }
+      }
       if (select === null || (views && !select)) url.searchParams.delete("select");
       else if (select) url.searchParams.set("select", select);
       history.replaceState(null, "", url);
@@ -960,7 +972,9 @@ class CellsViewer extends HTMLElement {
     this.renderSpecies(chrome);
     this.viewCard.hidden = !chrome.view && !chrome.card && !chrome.run;
     // The way back to all experiments, in every view the tab opens from its landing.
-    const back = this.state.lens === "experiments" && !this.state.landing;
+    const backLabel = this.state.lens === "experiments" && !this.state.landing ? "All experiments" : chrome.back;
+    const back = Boolean(backLabel);
+    if (back) { this.backButton.lastElementChild.textContent = backLabel; this.backButton.setAttribute("aria-label", backLabel); }
     this.backButton.hidden = !back;
     this.frame.classList.toggle("has-back", back);
     this.frame.classList.toggle("on-landing", this.state.lens === "experiments" && this.state.landing);
@@ -2000,10 +2014,11 @@ class CellsViewer extends HTMLElement {
       this.pressedLabel = null;
       if (this.stage.rig.dragged || event.button > 0) return;
       if (label) {
-        this.select(label);
+        if (!this.current.openOnMap?.(label)) this.select(label);
         return;
       }
       const hit = this.stage.pick(event.clientX, event.clientY, this.current.pickRoots);
+      if (this.current.openOnMap?.(hit?.id)) return;
       this.current.picked?.(hit); // where it was pressed: a foot that has a machine is looked at closer there
       this.select(hit?.id || null);
     });

@@ -50,6 +50,13 @@ test("the composite's operators drawn are the manifest's, and nothing else is dr
   }
 });
 
+test("the transcription-site assay is filed with its measurements and links to the expression operator", () => {
+  const owners = scene.entities.filter((entity) => entity.files?.includes("src/cells/assays/transcription_sites.py"));
+  assert.deepEqual(owners.map((entity) => entity.id), ["exp.transcription_sites"]);
+  assert.ok(scene.relations.some((relation) => relation.from === owners[0].id
+    && relation.to === "op.templated_polymerisation@1" && relation.kind === "reads"));
+});
+
 test("a model, law, kind or family operator is drawn as declared only if the manifest declares it; the older families' IDs are not drawn", () => {
   const models = new Set(manifest.models.map((model) => model.declared_id));
   // Laws, kinds and a family's own operators (an interface other than the composite's) are drawn on the part that holds their file.

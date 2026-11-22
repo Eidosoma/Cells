@@ -280,3 +280,36 @@ Nothing else had to change for the engine's runs: the adapter (above) writes the
 twice, it writes the same bytes; a test holds the committed file to it). Two lineages of 120 fissions
 in one environment, by the rules the tool's opening comment states with their sources. It is marked
 as an example, names no engine model, and is not any published study's run.
+
+## Vesicle replays in recorded seconds
+
+The vesicle entry reads `cells.visualizer.assembly_run@2`. The adapter dispatches on
+`run.json` format and reads the bundle using the viewer's standard-library NPZ reader.
+The source contract is the engine's published FORMAT.md, FORMAT_OL2.md and FORMAT_PORES.md.
+The caller supplies the standing and its source. The two included files are development
+runs on OL5's registered inputs with a row at every committed event. Their output records
+the clean execution revision, world ID, run qualifier and digests of the three files read.
+The adapter verifies the digests against the bundle manifest and enforces a 1,000,000-byte
+limit per adapted file. Raw bundles stay outside Git.
+
+| Output | Meaning and source |
+| --- | --- |
+| `places`, `species` | Recorded place indices, species, phases, finite or held status, held concentration and available catalogue identity. A held pool place has no molecular count. |
+| `channels`, `trace` | Each signed event code maps to the channel's own forward or reverse reactants and products, indexed by place. Event times are saved in seconds at their original precision. A same-species transfer can be shown moving between its stated phases. |
+| `rows` | Saved time, event index and named row kind. Each changed slot carries its place counts, footprint in quanta, and recorded volume in L and tension in N/m where present. The first row supplies every slot. A null slot has become vacant. A repeated slot state may be omitted. Population pool counts are a separate row field. |
+| `shears` | Every shear attempt, outcome, schedule, recorded parent key and counts, shear work in kT, and, for a split, all daughter keys, counts, birth-lysis flags and the followed daughter index. A refused attempt leaves the parent in place. |
+| `releases` | The osmotic lysis record supplies the threshold cause, triggering tension, limit and returned counts by pool place. Pore events supply their own cause, carrier, slot, time, hold, tension, area and returned counts. |
+| `holds` | Recorded hold index, start, end and applied tension. The population's survival staircase counts the founder vesicles still present after each recorded rupture. It has no fitted curve. |
+| `development` | The lead's standing, geometry, OL5 comparison and experiment-judging words. A pore bundle also carries the rupture law's own standing. |
+
+The cursor chooses the last saved row at or before the playhead. All rows at a shared
+timestamp retain their original order. The last intact threshold row and the post-release
+end row have the same time and are independently inspectable. Between rows, molecular
+counts can be read by replaying the recorded channel stoichiometry. Geometry samples hold
+until their next row. The diagram maps footprint to displayed area and lumen volume to
+displayed volume. The renderer supplies the shell, lipid packing, solute positions, directions
+of travel, daughter markers and release shapes.
+
+The optional molecular illustration uses the wwPDB LBN ideal conformer. The stored reference
+contains the coordinates in ångströms and bonds of the 52 heavy atoms. The run's species
+labels are carried independently. [wwPDB POPC chemical component](https://www.rcsb.org/ligand/LBN)

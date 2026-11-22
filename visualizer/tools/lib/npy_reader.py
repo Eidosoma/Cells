@@ -6,7 +6,7 @@ giving the element type, the order and the shape) followed by the raw values.
 
 Only what saved Cells runs use is supported: little-endian or single-byte numbers and
 booleans, and little-endian fixed-width Unicode text ('<U<n>', as the engine's relationship
-tables write their string ids), in C order. Anything else, text in another byte order
+tables write their string ids), in C order. The vesicle adapter can also request column-major arrays in row-major order. Anything else, text in another byte order
 included, raises ``ValueError`` and says what it met.
 """
 
@@ -17,6 +17,7 @@ import struct
 import sys
 import zipfile
 from array import array
+from itertools import product
 from math import prod
 
 MAGIC = b"\x93NUMPY"
@@ -50,7 +51,7 @@ class Array:
         return f"Array({self.descr}, shape={self.shape})"
 
 
-def read_npy(raw, name="array"):
+def read_npy(raw, name="array", *, allow_fortran=False):
     """Parse the bytes of one .npy file."""
     if raw[:6] != MAGIC:
         raise ValueError(f"{name}: not a .npy file")
@@ -64,11 +65,12 @@ def read_npy(raw, name="array"):
     else:
         raise ValueError(f"{name}: .npy version {major} is not supported")
     header = ast.literal_eval(raw[start : start + length].decode("utf-8" if major == 3 else "latin1"))
-    if header.get("fortran_order"):
+    if header.get("fortran_order") and not allow_fortran:
         raise ValueError(f"{name}: Fortran order is not supported")
     descr, shape = header["descr"], tuple(header["shape"])
     if isinstance(descr, str) and descr[1:2] == "U":
-        return _read_text(raw[start + length :], descr, shape, name)
+        parsed = _read_text(raw[start + length :], descr, shape, name)
+        return _row_major(parsed, header.get("fortran_order"))
     code = CODES.get(descr)
     if code is None:
         raise ValueError(f"{name}: element type {descr} is not supported")
@@ -80,7 +82,17 @@ def read_npy(raw, name="array"):
     values.frombytes(data)
     if sys.byteorder == "big" and values.itemsize > 1:
         values.byteswap()
-    return Array(descr, shape, values)
+    return _row_major(Array(descr, shape, values), header.get("fortran_order"))
+
+
+def _row_major(parsed, fortran):
+    if fortran and len(parsed.shape) > 1:
+        strides = [prod(parsed.shape[:i]) for i in range(len(parsed.shape))]
+        indices = product(*(range(n) for n in parsed.shape))
+        values = parsed.values
+        ordered = (values[sum(i * stride for i, stride in zip(index, strides))] for index in indices)
+        parsed.values = array(values.typecode, ordered) if isinstance(values, array) else list(ordered)
+    return parsed
 
 
 def _read_text(body, descr, shape, name):
@@ -102,7 +114,7 @@ def _read_text(body, descr, shape, name):
     return Array(descr, shape, values)
 
 
-def read_npz(path, names=None):
+def read_npz(path, names=None, *, allow_fortran=False):
     """{name: Array} for the members of a .npz file (all of them, or only ``names``)."""
     out = {}
     with zipfile.ZipFile(path) as archive:
@@ -110,7 +122,7 @@ def read_npz(path, names=None):
         for name in members if names is None else names:
             if name not in members:
                 raise ValueError(f"{path}: no array called {name}")
-            out[name] = read_npy(archive.read(members[name]), name)
+            out[name] = read_npy(archive.read(members[name]), name, allow_fortran=allow_fortran)
     return out
 
 

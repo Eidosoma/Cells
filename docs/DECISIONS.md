@@ -9511,3 +9511,32 @@ from the checker's read-only inventories (/mnt/workspaces/Cells/arch-inventories
    event report FR-38's step 5 needs, then the leak @2, which is still ready before the face's item 1.
 8. **OL6 has a new owner,** from the Phase A builder's handover. Its design note comes before code.
 
+## D304: OL6 at full scope, and the GARD limit judged pathwise to rounding (the user)
+
+2026-11-22, about 21:32 UTC. The user answered two questions on OL6's design note
+(docs/OL6_DETERMINISTIC_REPRESENTATION_DESIGN.md, tag ol6-design-note-2026-11-22).
+1. **"Full scope", priced at 7.25–10 agent-days.** It covers:
+   - the deterministic representation, chosen in execution.representation over the same world id;
+   - Kurtz's limit for the continuous counts;
+   - each law's limit as a hook on its own declaration;
+   - a Rosenbrock integrator with dense output and a strict envelope;
+   - Protocol D against exact events;
+   - the hazard clock in both representations, with Phase A's count-change refusal lifted in exact
+     events as its own slice;
+   - a size-threshold division for version 2;
+   - Protocol G, the GARD limit.
+   OL6's original 3–5 days predate OL2's third milestone and OL3, whose populations, divisions and lysis
+   crossings the representation must carry. Version 1 still refuses: area-changing steps under a held
+   tension, checkpoints in the deterministic representation, and `free_energy_form: continuum`, which
+   OL1's registered conventions refuse.
+2. **"Pathwise to rounding"** replaces section 7.3's "bitwise" tier. Probe P1 shows that the two GARD
+   kernels' rates agree within 3.1e-15 but only about 13% are bitwise equal. The tier asks for identical
+   channel sequences, with coincidences near a decision boundary counted and reported. Distributional
+   agreement at registered tolerances stays the second tier, and a planted change to one β entry must
+   fail.
+- The lead's rulings on the note's other recommendations: accepted as written. The names
+  `cells.rate_equations@1`, `cells.assembly_representation@1`, `rosenbrock_rodas4_dense@1` and
+  `cells.size_threshold_division@1` are accepted. Each protocol is run at its tag by an independent
+  checker, not the builder. The representation's contract is written so that it can serve as the
+  first instance of the general level-of-detail contract (D299 item 4).
+
