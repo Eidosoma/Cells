@@ -2215,6 +2215,8 @@ finite node.
 - **The run:** from the state-4 start, ADP stepped to 1.3 mM at 60 s and held, to 240 s.
   **Erratum 2 (item 4):** depletion starts at 60 s; the window with matrix O₂ below 0.37 nM is
   excluded from scoring; the P50 crossing is expected near 160.4 s, not near the run's end.
+  **Erratum 3:** the window is re-derived on the O₂ flux (opening near 195.8 s), and the collapse
+  from the P50 crossing to the window takes transient bands.
 - **Outputs:** as G7's, every 10 ms for 2 s after the step, then every 0.5 s.
 - **Why 6.3 nL (S):** at MR1-MT2's state-3 O₂ flux, 1.640 × 10⁻³ mol s⁻¹ (L mito)⁻¹ at [Pi]e
   10 mM, that holds about 100 s of O₂. The matrix O₂ then falls through the source's P50 of
@@ -2275,6 +2277,7 @@ predictions. The engine computes its own start state, as before (G5's erratum).
      - The mechanism is the build's (**S**): for example, the node held at 26 µM until 60 s, then
        finite.
    - **The O₂ window: excluded while the matrix's free O₂ is below 10⁻³ × P50, 0.37 nM.**
+     (Superseded by erratum 3: the reason below fails at this threshold.)
      - It reads the O₂ that complex IV reads, at N (G6).
      - While it is open, every judged readout of world (d) is excluded from scoring and reported.
      - **The reason:** below P50 the O₂ flux is first order in O₂, so there it falls under 0.1% of
@@ -2307,6 +2310,46 @@ predictions. The engine computes its own start state, as before (G5's erratum).
      - cytochrome c's reduced fraction, NADH's fraction and pH;
      - the O₂ flux outside the window;
      - the concentration readouts only above their floors.
+
+### Erratum 3 (22 November 2026): the O₂ window's criterion and the anoxic collapse
+
+R2's window check on its run of record (world (d)) found that erratum 2's stated reason for the O₂
+window does not hold at its threshold. This erratum re-derives the window and declares how the
+anoxic collapse is judged. Each reason is stated in advance, not chosen to pass; R2 re-scores with
+these rules (`rescore.py`, no rerun).
+
+1. **The finding.**
+   - At 10⁻³ × P50 (0.373 nM, t = 189.20 s in R2's world (d)), the O₂ flux is 7.07 × 10⁻⁶ mol s⁻¹
+     (L mito)⁻¹. That is 0.43% of the state-3 flux (1.638 × 10⁻³), not 0.1%.
+   - The flux falls to 0.1% only near O₂_N ≈ 0.10 nM (2.7 × 10⁻⁴ × P50), at t ≈ 195.8 s.
+   - **Why:** by then cytochrome c is fully reduced (0.213 → 1.000) and ΔΨ has collapsed (168.6 →
+     37.6 mV), and both raise complex IV's forward term. Complex IV's law also carries [O₂]^¼ beside
+     1/(1 + k_O₂/[O₂]) (k_O₂ = 120 µM). So near zero O₂ the flux is not first order with the
+     state-3 coefficient, and erratum 2's derivation of 0.37 nM fails.
+2. **The window, re-derived on the flux itself.** World (d)'s judged readouts are excluded from the
+   time the reference's O₂ flux first falls below 0.1% of its state-3 value, to the run's end.
+   - **The reason** is erratum 2's item 3: 0.1% of the state-3 flux is the flux band's absolute
+     floor, below which the flux is under its own resolution. Defined on the flux, the window's
+     reason holds by construction, whatever the flux's order in O₂.
+   - **The time** is fixed at registration from the reference alone: about 195.8 s in R2's run of
+     record (O₂_N ≈ 0.10 nM). The engine is scored up to the same time.
+   - It replaces erratum 2's O₂ threshold (0.37 nM) and its reason.
+3. **The anoxic collapse is a transient, judged with transient bands.**
+   - **Onset:** the matrix O₂ crosses P50 (0.373 µM), the source's own half-maximal point, where
+     respiration turns O₂-limited (t ≈ 160.5 s in R2). **End:** the window's opening.
+   - **Bands:** the registration's transient rule (the draft's tolerances): a tenth of each judged
+     readout's excursion over the collapse, fixed from the reference alone. For ΔΨ, 135.7 mV at the
+     onset and 33.4 mV at the window in R2, so its band is 10.2 mV.
+   - **The reason:** during the collapse the readouts move fast. Near 189 s ΔΨ falls at about
+     1.1 mV s⁻¹.
+     - So the plateau band (0.05 mV) there judges a shift of about 45 ms in the collapse's timing.
+     - The trace check's 0.245 band at t = 189.0 s (37.840 against 37.827 mV) is a shift of about
+       12 ms.
+     - A plateau band on a transient judges timing at a resolution the protocol registers for no
+       readout. The transient rule is the registration's own, so no new parameter enters.
+   - **Why score the collapse rather than exclude it:** it keeps the O₂ law's plant, P-c (the 2005
+     k_O₂), on judged rows. R2's re-scoring reports whether P-c still misses by at least 3 bands
+     under these bands, as the plant rule requires before registration.
 
 ### R2's readings, confirmed or corrected
 
