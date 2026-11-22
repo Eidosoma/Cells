@@ -9301,3 +9301,26 @@ value:
   zero-size fields when no replacement is declared, as a D148 case 2 like FR-38's release fields. The proof
   is the programs check and optin_check before and after, with every physical field bitwise.
 
+## D297: The rupture blind test's stage 2 is sealed; set 2 reads from Shibly et al.'s corrected Fig. 1C
+
+2026-11-22, about 16:27 UTC. Recorded before any scoring; the lead has seen no held-out value.
+- **The sealed file:** /mnt/workspaces/Cells/pores-extraction-20261122/held_out.json, sha256
+  20a0c4a534a28ab2748d96f0c5de0cf81d38e2a47283c4f2aea94b0c9647468b. Stage 2 began at 16:04:16 UTC, after
+  the predictions' tag (6d718ae2, 16:03:26). The extractor did not open the predictions.
+- **Set 2 uses the corrected Fig. 1C.** Its SEs and control readings come from the figure in the
+  journal's correction (Biophys J 112:1290, 2017, doi:10.1016/j.bpj.2017.03.001, PMC5376104), which
+  replaced the original panel.
+  - The corrected figure reproduces all six tabulated osmotic rates within 0.005 in ln k.
+  - Its control tensions match stage 1b's, so the registered conditions and predictions are unaffected.
+  - Disclosed: the extractor first read the original panel and found it inconsistent with the tables. Those
+    readings are sealed separately (superseded_original_fig1c.json, sha256 d27cb33b…) and are not for
+    scoring.
+- **The quoted count matches S2-6** (4.3 mN/m, ΔC₀ = 2.8 mM) unambiguously. S2-6 is reported, not scored
+  (D293 item 6).
+- **Set 2's controls:** three, reported only. None lies at 6.5 mN/m.
+- **The tables print two significant figures,** a rounding of up to about 0.05 in ln k. The registered
+  s_dig = 0 for tabulated rates stands unchanged, since the corrected figure agrees with the printed values
+  within 0.005.
+- **Set 1:** read from the vector coordinates, with centres at the cap midpoints. The six fit points
+  re-read within 0.0005 of the data file. S1-6 is reported only.
+
