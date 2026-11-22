@@ -73,27 +73,41 @@ def entry_sum(values, xp):
     return folds.total(xp.swapaxes(values, 0, 1), xp)
 
 
+MAX_SIDE = 3  # D152: at most three molecules a side, so a falling factorial has at most 3 factors
+
+
+def log_falling(n, k, xp):
+    """ln ff(n, k) = ln n + ln(n − 1) + ... (k factors, 0 ≤ k ≤ 3; D152), each logarithm taken
+    directly. A difference of two log-factorials, lf[n] − lf[n − k], carries the table's rounding
+    at ln n! (about 1e4 at a few thousand molecules: up to 5e-12 in OL5's registered worlds); these
+    k logarithms keep the counts' double precision (OL5's precision fix, 22 November 2026). Where
+    n < k a factor is not positive and the value is −inf; every caller masks that state."""
+    nf = n.astype(np.float64)
+    out = xp.zeros_like(nf)
+    for j in range(MAX_SIDE):
+        out = out + xp.where(k > j, safe_log(nf - j, xp), 0.0)
+    return out
+
+
 def membrane_factor(view, offset, xp):
     """ln [E(m) / ff(N − c, r)] for a membrane locus, in its cancelled form (module docstring)."""
-    lf = view.log_factorial
     k = view.coeff
     r = entry_sum(xp.where(view.membrane, k, 0), xp)
     r_star = entry_sum(xp.where(view.membrane, view.consumed, 0), xp)
     M = view.membrane_total - offset + xp.zeros_like(r)  # N − c, per step.
-    head = gather(lf, M, xp)
     cancelled = xp.where(
         r >= 1,
-        -(head - gather(lf, M - r + 1, xp)),
+        -log_falling(M, r - 1, xp),
         safe_log((M + 1).astype(np.float64), xp),
     )
     # Where N − c < r, ff(N − c, r) = 0: the factor is +inf where E(m) > 0 (the singular state of
-    # @1's measure, declared) and never a value read from a clipped table index.
+    # @1's measure, declared) and never a value of a factor that is not positive.
     defined = (M - r) >= 0
     numerator = M - r_star + 1
     general = xp.where(
         defined,
         safe_log(numerator.astype(np.float64), xp)
-        - xp.where(defined, head - gather(lf, M - r, xp), 0.0),
+        - xp.where(defined, log_falling(xp.where(defined, M, r), r, xp), 0.0),
         xp.where(numerator > 0, xp.inf, -xp.inf),
     )
     return xp.where(r_star == r, cancelled, general)
@@ -107,11 +121,10 @@ def log_direction(view, locus_membrane, log_extent_dilute, offset, xp):
 
     view: the direction's View (kernel.py); locus_membrane [R]: the step's locus is the membrane;
     log_extent_dilute [R]: ln X of a dilute locus; offset: c."""
-    lf = view.log_factorial
     n, k = view.counts, view.coeff
     finite = view.membrane | view.dilute
     feasible = xp.all(xp.where(finite, n >= k, True), axis=1)
-    log_ff = gather(lf, n, xp) - gather(lf, n - k, xp)
+    log_ff = log_falling(n, k, xp)
     kf = k.astype(np.float64)
     terms = (
         xp.where(view.dilute, log_ff - kf * view.log_X, 0.0)

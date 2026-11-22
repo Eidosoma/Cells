@@ -3,7 +3,9 @@
 
 Each claim with a planted error it must catch (D187):
 - L1: F_osm is its closed form, and V(n) = min(N_L/(N_A c_ext), V_sph(A)) is F's minimiser over
-  V ≤ V_sph (planted: a lumen species left out of N_L, whose V is not the minimiser);
+  V ≤ V_sph (planted: a lumen species left out of N_L, whose V is not the minimiser); its change
+  under a step, at tens of thousands of lumen molecules, is exact to double precision in each
+  branch and across the kink (OL5's precision fix; planted: two values of F subtracted);
 - L3: σ is Laplace's Δp·R/2, zero while floppy and continuous at the kink (planted: Δp·R); the
   host accessor of OL5's kernel probe (lumen.host_derived) gives W, A, R, V_osm, V_sph, V and σ by
   the kernel's own expressions, V and σ bitwise those of host_volume_L and host_tension (planted:
@@ -192,6 +194,40 @@ def test_the_osmotic_volume_is_f_s_minimiser_and_its_tension_is_laplace_s():
     n_mem = 9
     kink = NA * c_ext * v_sph_L(n_mem)  # N_L at V_osm = V_sph
     assert 6 < kink < 8  # so N_L = 6 is floppy and N_L = 8 tense in this world
+    # OL5's precision fix: F_osm's change at large counts, exactly (50 digits, from the inputs'
+    # float64 values) in each branch and across the kink, by lumen molecules and by footprint.
+    from decimal import Decimal, localcontext
+
+    c = term_layout[2]
+    with localcontext() as context:
+        context.prec = 50
+        pi = Decimal(lumen.PI_50)
+
+        def f_exact(n_l, w_q):
+            half = Decimal(Q) * w_q / 2
+            v_sph = half * half.sqrt() / (6 * pi.sqrt()) * 1000
+            v = min(Decimal(n_l) / (Decimal(NA) * Decimal(c_ext)), v_sph)
+            return -n_l * (Decimal(NA) * Decimal(1.0) * v).ln() + Decimal(NA) * Decimal(c_ext) * v
+
+        w_q = 60 * 3334  # W = 200,040 quanta: the kink near N_L = 56,600
+        n_kink = int(NA * c_ext * v_sph_L(3334))
+        w_cross = next(w for w in range(w_q, 2 * w_q, 60)
+                       if NA * c_ext * v_sph_L((w - 60) // 60) < n_kink < NA * c_ext
+                       * v_sph_L(w // 60))  # fmt: skip
+        cases = [(40000, w_q, 39999, w_q), (80000, w_q, 80000, w_q - 60),  # floppy; tense
+                 (n_kink, w_q, n_kink + 1, w_q), (n_kink + 1, w_q, n_kink, w_q),  # across, by N_L
+                 (n_kink, w_cross, n_kink, w_cross - 60)]  # across, by W  # fmt: skip
+        for n0, w0, n1, w1 in cases:
+            got = lumen.change_between(*(np.asarray([x]) for x in (n0, w0, n1, w1)), c, np)[0]
+            want = f_exact(n1, w1) - f_exact(n0, w0)
+            assert abs(Decimal(float(got)) - want) <= Decimal("2e-14")  # k_BT: 5e-15 at most
+        two_values = (
+            lumen.free_energy(np.asarray([80000]), np.asarray([w_q - 60]), c, np)
+            - lumen.free_energy(np.asarray([80000]), np.asarray([w_q]), c, np)
+        )[0]
+        assert abs(
+            Decimal(float(two_values)) - (f_exact(80000, w_q - 60) - f_exact(80000, w_q))
+        ) > Decimal("1e-12")  # planted: the two values subtracted
 
 
 def test_the_osmotic_verdict_holds_and_a_closed_world_relaxes_to_exp_minus_f():
