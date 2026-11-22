@@ -1,6 +1,6 @@
 {
  "kind": "cells.gene_regulation.fr38_rule@1",
- "status": "DRAFT for the lead: to be tagged before the judged runs launch. Written after FR-38's development runs and the references' landing; no run was compared with the references, and the builder has not read them",
+ "status": "DRAFT for the lead, revised for D289 (FR-42, option A): route 1 is judged on shares once Stage 1 lands and FR-38's class rows are replaced by shares; to be tagged after routed p's round, before the judged runs launch. No run was compared with the references, and the builder has not read them",
  "sheet": {
   "law": "docs/TEMPLATED_POLYMERISATION_LAWS.md §9, the release (FR-38, D284)",
   "tags": [
@@ -8,7 +8,8 @@
    "gr1-sheet-fr38-r2-2026-11-22",
    "gr1-sheet-fr38-tau-2026-11-22",
    "gr1-sheet-fr38-erratum-a-2026-11-22",
-   "gr1-sheet-fr38-erratum-a2-2026-11-22"
+   "gr1-sheet-fr38-erratum-a2-2026-11-22",
+   "erratum B (§9.13), the tag the lead gives it"
   ]
  },
  "references": "FR-38's code-blind references, tag gr-refs-fr38-2026-11-22, read through their interface by the comparison's reader, never by the builder",
@@ -28,12 +29,10 @@
     "R1 p=1 held",
     "R1 blank returned",
     "R1L p=0.75 returned",
-    "R1L blank returned",
     "R1 blank held",
-    "R1L p=0.75 held",
-    "R1L blank held"
+    "R1L p=0.75 held"
    ],
-   "what": "§9.9's R1 with erratum A (§9.12): the chain at k_I = 0, its release at tau = 3600/ln 2 s and constant p, the fates R and R_s at the trace c_R, each with its own loss; the four fractions with each machine option, the matched blank, and the labelled pair of §9.8's route 1",
+   "what": "§9.9's R1 with erratum A (§9.12): the chain at k_I = 0, its release at tau = 3600/ln 2 s and constant p, the fates R and R_s at the trace c_R, each with its own loss; the four fractions with each machine option, the matched blank, and route 1's labelled run, whose fate rows carry share labels (D289) in place of FR-38's class rows",
    "steps_s": [
     2.0,
     1.0,
@@ -49,7 +48,7 @@
     14400.0
    ],
    "compared_times_reason": "the sheet's five outputs (§9.9; the lead's ruling, 22 November 2026)",
-   "matched_blank": "the same world with H(0) = 0, everything else equal (§9.12, reading 3): one per machine option serves every p, since at H = 0 the release moves nothing and books nothing, whatever p and the machine (the blanks at the four p and both options are bit-identical on the operator's NumPy kernel)",
+   "matched_blank": "the same world with H(0) = 0, everything else equal (§9.12, reading 3): one per machine option serves every p, since at H = 0 the release moves nothing and books nothing, whatever p and the machine (the blanks at the four p and both options are bit-identical on the operator's NumPy kernel). It serves the survivors (§9.12, reading 4); route 1 needs none on shares",
    "survivors": "each fate row minus the matched blank's, at the compared times: the released molecules still present (§9.10, §9.12 reading 4), judged as an amount",
    "cohort": {
     "window_s": [
@@ -62,8 +61,8 @@
      3600.0,
      7200.0
     ],
-    "route_1": "R1L's class-2 rows R_c2 and R_s_c2 minus the labelled blank's (§9.8, R-F1), at p = 0.75, with each machine option; judged as an amount",
-    "route_2": "validation/gene_regulation/cohort.py on the unlabelled run's own pool, n_F, int_Q_<release>_<fate> and int_D_F, at its outputs every 60 s, at p = 0.75, with each machine option"
+    "route_1": "R1L at p = 0.75, with each machine option: each fate row's share in the window's label times the row, n_F s_window(ts), with the shares of D289 (FR-42's option A): the loss is computed once on the physical row and split by its shares, so the cohort needs no blank and has no departure (erratum B). Judged as an amount, p = 3",
+    "route_2": "the host-side check: validation/gene_regulation/cohort.py on the unlabelled run's own pool, n_F, int_Q_<release>_<fate> and int_D_F, at its outputs every 60 s, at p = 0.75, with each machine option. It must agree with route 1 within its grid error (§9.8), and it is judged against the references with the tolerance below"
    }
   },
   "R2": {
@@ -135,7 +134,8 @@
     "G_minus_G0, with the hold's standard term (§9.5)"
    ],
    "cohort": [
-    "route 1 (R1 only) and route 2, per fate, at each sample time"
+    "route 1 (R1 only): n_F s_window per fate, from the share labels (D289)",
+    "route 2: cohort.py per fate, at each sample time"
    ]
   },
   "class_matching": "by exact name first for the hold, H_<release> and H_<release>_<k>, which are occupancy, then by prefix: n_ and F_ amount; C_, E_ and W_ occupancy; int_ extent; H_ heat; G_minus_G0 free energy"
@@ -175,7 +175,7 @@
    "world": "R1",
    "readout_class": "cohort, route 1",
    "p": 3,
-   "reason": "a difference of two fate rows' amounts: SSPRK(3,3) on the operator's own variables, third order; R1 composes no other operator, and the inner step leaves its rows"
+   "reason": "a share of a fate row times the row, both third-order: SSPRK(3,3) on the operator's own variables, third order; R1 composes no other operator, and the inner step leaves its rows"
   },
   {
    "world": "R2",
@@ -230,6 +230,7 @@
   "a run is inconclusive if any readout's order falls outside its window",
   "a run fails if any readout fails",
   "a run passes if every readout passes and every compared time is matched",
+  "route 1 and route 2 agree within route 2's grid error, a check on each labelled run, reported with the verdicts",
   "derived quantities (survivors, route 1) are judged with the run they are derived for",
   "FR-38's comparison passes only when every run of R1 and R2 passes"
  ],
@@ -258,7 +259,8 @@
   "a lint run printed lines 17-42 of FR-25's references/run.py, its imports and one comment line, to the builder; FR-38's references were never read",
   "R2's cohort window: the builder chose R1's, [0, 3600 s) sampled at 3600 and 7200 s, before the references' was known; the lead confirmed it matches theirs",
   "the sheet's errata A and A2 settled the references' readings and their two findings, R-F1 and R-F2, before this rule, so that engine and references read one sheet",
-  "this rule's soundness rests on its tolerance coming from the engine's step error alone, with the floor and route 2's grid error, never from a gap to the references"
+  "this rule's soundness rests on its tolerance coming from the engine's step error alone, with the floor and route 2's grid error, never from a gap to the references",
+  "erratum B (§9.13) retracted erratum A's 'physical' for the class rows' departure, and D289 (FR-42's option A) replaces the class rows by share labels before this comparison; the class-row development runs (R1L at da21173d) were read, and no share-labelled run existed when this revision was written"
  ],
  "orders_seen": "none: every development run of a release world was at a single step (R1 at 2 s, R2 at 0.5 s), so no observed order was seen before this rule"
 }
