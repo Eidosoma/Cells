@@ -22,9 +22,40 @@
     "cells.shared_pool@1": "molecular-assembly"
   },
   "comparisons": {
+    "fr38-lossless-fate-repair": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [],
+      "operators": [
+        "cells.templated_polymerisation@1"
+      ],
+      "engine_revision": "fe6d25e9eee7a7d0422568fd356a57e67ef03301",
+      "record_revision": "632eedae0971b33c3ec53c9fd52fee1635e32bdd",
+      "sources": {
+        "Compiled window execution": "src/cells/execution/windows.py",
+        "R1 and R1S development worlds": "validation/gene_regulation/worlds.py#L519-L591",
+        "Observation horizon and grid": "validation/gene_regulation/kernel.py#L23-L38",
+        "Compiled history collection": "validation/gene_regulation/engine_run.py#L169-L181",
+        "Release route and fate layout": "src/cells/operators/templated_polymerisation.py#L312-L345",
+        "Public export of zero losses": "validation/gene_regulation/engine_run.py#L265-L278",
+        "Detachment counters for each fate": "validation/gene_regulation/engine_run.py#L395-L416",
+        "Local producer resolution and loss-counter requirement": "validation/gene_regulation/cohort.py#L240-L308",
+        "Survivor calculation": "validation/gene_regulation/cohort.py#L142-L162",
+        "Writing the zero at each observation": "validation/gene_regulation/engine_run.py#L312-L317",
+        "Product and release-fate regressions": "tests/unit/test_gene_regulation_compare.py#L541-L568"
+      },
+      "record_inputs": {
+        "Exact single-fate balance": "lean/CellsProofs/Chemistry/TerminalRelease.lean"
+      },
+      "driver": "lean/checks/terminal_release.py",
+      "record": "lean/PROGRESS.md#fr38-lossless-fate-repair"
+    },
     "fr38-release-heat": {
       "kind": "engine",
-      "engine_revision": "e924f450ad74a878eda6727ac255527ec5d74ff7",
+      "engine_revision": "fe6d25e9eee7a7d0422568fd356a57e67ef03301",
       "record_revision": "b475c62fbfbcb913f12498b71681e8cbf057d433",
       "models": [
         "resolved_pump_composite@1",
@@ -52,7 +83,7 @@
     },
     "mt1b-charge-components": {
       "kind": "engine",
-      "engine_revision": "e924f450ad74a878eda6727ac255527ec5d74ff7",
+      "engine_revision": "fe6d25e9eee7a7d0422568fd356a57e67ef03301",
       "record_revision": "b475c62fbfbcb913f12498b71681e8cbf057d433",
       "models": [
         "resolved_pump_tissue@3"
@@ -4208,11 +4239,12 @@
         }
       },
       "numerical": {
-        "status": "failed",
+        "status": "checked",
         "comparisons": [
+          "fr38-lossless-fate-repair",
           "fr38-lossless-fate-export"
         ],
-        "result": "Both fates gained 1.2776562362330652 × 10⁻¹⁰ fmol in each compiled world. The reader recovered three of four fate records. Omitting the short-lived fate’s degradation route removed int_D_R_s from the export. The reader refused the fourth record. Every physical amount balance closed."
+        "result": "The repaired exporter and public cohort reader recovered all four fate records. Each fate retained 1.2776562362330652 × 10⁻¹⁰ fmol in each compiled world, equal to its detachment and amount gain. Before the repair, the same physical balances closed and only three records were readable."
       },
       "biology": {
         "status": "open",

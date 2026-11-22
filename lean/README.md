@@ -14,7 +14,7 @@ Direct Lean claims cover [51 of 51 laws](COVERAGE.md#registered-laws) and [31 of
 | [Ion channels and junctions](COVERAGE.md#category-channels-and-junctions) | 15 of 15 | 15 of 15 | 15 checked | 14 |
 | [Pumps and cotransport](COVERAGE.md#category-pumps-and-cotransport) | 13 of 13 | 9 of 9 | 8 checked · 1 open | 9 |
 | [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 3 of 3 | 15 of 15 | 12 checked · 1 failed · 2 open | 11 |
-| [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 14 of 14 | 32 of 32 | 29 checked · 2 failed · 1 open | 19 |
+| [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 14 of 14 | 32 of 32 | 30 checked · 1 failed · 1 open | 19 |
 | [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 1 of 1 | 26 of 26 | 26 checked | 19 |
 | [Cell physiology](COVERAGE.md#category-cell-physiology) | — | 3 of 3 | 3 checked | 3 |
 
@@ -22,7 +22,7 @@ Direct Lean claims cover [51 of 51 laws](COVERAGE.md#registered-laws) and [31 of
 
 Each category opens its detailed claim table on GitHub, including registered laws still awaiting a proof. A single claim can cover several laws. The last column counts claims with a recorded measurement or literature finding, including partial evidence. Each numerical result applies to the cases in its linked record. [All registered laws](COVERAGE.md#registered-laws) · [Design notes](ENGINE_LAW_VERIFICATION.md) · [Voltage pilot closeout](../reports/BIO003_PILOT_CLOSEOUT.md)
 
-Three claims have failing checks. GARD v1 can refuse a reversible event, and the rapid-binding inventory margin can have the wrong sign in a fixture. The tested tissue host requires positive held totals. In the third case, an RNA release fate gains the correct amount, but a missing zero-loss record prevents the cohort reader from reporting its survivors. GARD v2 passes all nine range and capacity checks. [Current failures](COVERAGE.md#failing-numerical-checks) · [Lossless RNA export and control](PROGRESS.md#fr38-lossless-fate) · [GARD repair and original failure](PROGRESS.md#gard-v2-range-repair) · [Wash and clamp repairs](PROGRESS.md#d272-wash-clamp-retests)
+Two claims have failing checks. GARD v1 can refuse a reversible event, and the rapid-binding inventory margin can have the wrong sign in a fixture. The tested tissue host requires positive held totals. GARD v2 passes all nine range and capacity checks. The repaired RNA exporter now reports survivors for all four lossless fate records. [Current failures](COVERAGE.md#failing-numerical-checks) · [Lossless RNA export repair and original failure](PROGRESS.md#fr38-lossless-fate-repair) · [GARD repair and original failure](PROGRESS.md#gard-v2-range-repair) · [Wash and clamp repairs](PROGRESS.md#d272-wash-clamp-retests)
 
 FR-42 has an exact design result for neutral arrival-time labels. Sharing the physical loss preserves the pooled inventory. With quadratic loss, the surviving new cohort is ¼ at time one, while subtraction of a separate blank gives 1/12. The compiled comparison will become possible when Cells implements the share-based labels. [Cohort proof and remaining checks](claims/fr42-cohort-shares.md)
 
@@ -520,7 +520,7 @@ For the GARD v2 two-word cache, replay the reversible event, signed updates and 
 "$cells_python" -B checks/polymerisation_balances.py
 ```
 
-For a chain with a terminal RNA hold, check both machine-return policies through a change of class and a change of fate fraction. The second command asks the public cohort reader for surviving RNA in both lossless fates. It exits with status 1 if a fate record is unreadable. [Machine and residue balances](PROGRESS.md#fr38-terminal-inventories) · [Lossless fate export](PROGRESS.md#fr38-lossless-fate)
+For a chain with a terminal RNA hold, check both machine-return policies through a change of class and a change of fate fraction. The second command asks the public cohort reader for surviving RNA in both lossless fates. It exits with status 1 if a fate record is unreadable. [Machine and residue balances](PROGRESS.md#fr38-terminal-inventories) · [Lossless fate export repair](PROGRESS.md#fr38-lossless-fate-repair)
 
 ```bash
 "$cells_python" -B checks/terminal_release.py
