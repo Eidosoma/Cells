@@ -9413,3 +9413,27 @@ compatibility - we're still in heavy dev not even at alpha".
   resolution" and "empty cohort". All eight saved R1/R2 survival comparisons passed with finite bounds,
   so no saved result moves.
 
+## D301: The architecture items' first cases: FR-38's replace-and-restart, then M3; the site/sink level-of-detail pair
+
+2026-11-22, about 17:22 UTC. The lead chooses under D299 ("as you suggest", "as you see fit in the queue"),
+from the checker's read-only inventories (/mnt/workspaces/Cells/arch-inventories-20261122/INVENTORIES.md).
+- **The evolving-cell case:**
+  - **First:** FR-38's producer across replacement and restart, the gene unit beside
+    scheduled_cell_replacement@1 with labels. It needs an accounting term and a definition-time occupant
+    rule, priced at 1–2 agent-days once the label branches land (FR-38 step 4).
+  - **A finding:** main admits the gene unit beside replacement but defines nothing for a replaced slot's
+    chains, hold, machines or counters. A temporary refusal closes that now, until step 4 defines it.
+  - **Next on the backlog:** composition M3, turnover beside water and beside partition or insertion,
+    reading the current volume and masks. It is the cheapest case with a changing volume: declared reads
+    only, 2–2.5 agent-days plus references.
+- **The first static level-of-detail pair: site binding against exchange's saturable sink.**
+  - The pair shares a ligand and the same node-to-cell ends, both run in the engine, and each is judged
+    (FR-3, FR-1). Its validity measure is ε, with an error of order ε.
+  - With it comes the general contract: one representation per scope, chosen at definition, refused when
+    both are declared; out-of-range use and unsupported readouts refused; an automated comparison. The
+    detailed form is the default and the reduced form is opt-in.
+  - About 4.5–6.5 agent-days in all. Queued after FR-42 and FR-38 land.
+  - **D214's finite fuel** remains named as a level-of-detail consumer, to follow on the same contract.
+  - **R2 against A1** is the in-lane alternative after FR-38's comparison, with its default reversed so the
+    detailed form leads.
+
