@@ -1932,6 +1932,9 @@ section plans the build. It decides nothing new, except where flagged at its end
     face touches. It solves that bath's forms once per held composition with the closure's
     constants, and again at a scheduled bath event such as the ADP step.
   - @3's reservoir work (the @3 owner) values those baths' supply at each row's free potential.
+  - **G3 holds the bath's free H⁺ (10⁻⁷·¹ M), not an H total** (the face builder's note). So the
+    held bath's solve takes free H⁺ as given, solves the other free ligands (Mg²⁺) from their held
+    totals, and lets the bath's H total follow.
 - **Bitwise.** A static switch per held bath that a forms face touches, at `surface_pump_v3`'s
   reservoir work (1e-3 Σ μ·supplied); no registered world has such a bath.
 - **Checks.**
@@ -1946,19 +1949,35 @@ section plans the build. It decides nothing new, except where flagged at its end
   - Its host is `cells.passive_routes@1`, in `kinds/passive_routes.py` (the kinds owner).
   - `registry/species_registry.check_closure_rows` refuses it where rapid_binding@1 holds H⁺.
     Step 0's world showed this.
-- **The change (S):** `proton_constant_field_leak@2`, which declares `reads=("rapid_binding@1",)`.
-  - It takes free h at both ends from the general closure's stage read, which already writes the
-    free ligand × V into the held H row. That is the value the kernel reads at B4's nodes, so the
-    kernel is unchanged.
-  - `passive_routes` hosts @2 beside @1, and `check_closure_rows` admits it by its reads, as it
-    admits kinds' movers.
+- **The change (the kinds owner's review, 22 November 2026):** `proton_constant_field_leak@2`.
+  - It lives in a new inert law module that imports the unedited kernel and joins the model's
+    `law_homes`.
+  - It shares @1's `passive_leak` mask and fields, and the dispatch maps both IDs to the leak
+    kernel.
+  - It declares `reads=("rapid_binding@1",)` and takes free h at both ends from the closure's stage
+    read, which already writes the free ligand × V into the held H row.
+  - Its parse check is the ligand row at the route's closure nodes.
+- **What admission needs.** "`check_closure_rows` then admits it" fails twice in today's code:
+  - `RouteLaw` has no `reads` field. The fix is a defaulted `reads=()`, host-side.
+  - `_closure_mover_errors` needs `role_species`, which `passive_routes` lacks, and it resolves
+    modes through `cycle_changes`, which raises `TypeError` for anything but a `CycleLaw`.
+  - The clean fix is a route-law branch in `species_registry`'s admission (the binding owner's
+    file). It admits a route law whose reads name the closure, whose one carried row is the
+    closure ligand's base form, and which crosses between its two ends.
 - **The same capability as the face's IMS read,** so the two are designed and reviewed together.
-- **Bitwise.** A new law ID: @1 is unchanged, and no registered world declares @2.
+- **Bitwise holds under three conditions:** @2 adds no fields, `reads` defaults to `()`, and no
+  registered world declares @2.
 - **Checks,** as rows in `test_rapid_binding_world.py`:
   - at a general-closure node, @2 is admitted and @1 refused;
   - its flux equals the GHK flux at the closure's free h at both ends;
-  - the energy ledger closes with the closure's S_c.
-- **Price:** 1–1.5 agent-days (the kinds owner, reviewed by the binding owner).
+  - the energy ledger closes with the closure's S_c;
+  - @2 equals @1 bit for bit in a world with no closure (about 10–20 s), and the row states
+    whether @2 is admitted at B4's nodes;
+  - an admission row refuses @2 where its row is not the closure's ligand;
+  - the IMS's step at 16 µs with the leak at free h, as a row, or covered by the argument that
+    dh/dH_total ≤ 1 keeps B7's charge slope in charge.
+- **Price:** 1.5–2 agent-days for the kinds owner, plus about half a day for the binding owner's
+  admission branch. That branch may come to the robustness agent under leave.
 
 **4. The forms-aware lag drive.**
 - **Today.**
@@ -1985,18 +2004,28 @@ section plans the build. It decides nothing new, except where flagged at its end
 
 **5. The capacitor/held-bath parse change: not needed** (item 0).
 
+**The solver.** MT-1b runs on today's ARS(2,2,2) with implicit face electromigration
+(`imex_ars222_face_electromigration@1`), the solver its dt ladder ran at 16 µs. It does not declare
+N2, because N2 has nothing to move in MT-1b:
+- N2 makes @3's own constant-field routes implicit: patch permeabilities, channel populations and
+  junctions. MT-1b has none of these.
+- Its cycles, its leak and its uncoupler are kinds, which N2 leaves explicit.
+- The face's electromigration is implicit already.
+So a forms face under N2 can stay refused in version 1, as the face builder plans.
+
 **The order:**
 1. items 1 and 2 together (the face path and its bath);
 2. item 3, in parallel once the closure read's form is agreed;
 3. item 4, after item 1 provides the per-form drive;
 4. then MT-1b's worlds and C1's checks.
 
-**Total:** about 6.5–9 agent-days across three owners (the @3 owner's estimate), each landing gated,
-or stacked (D229 rule 2).
+**Total:** about 7.5–10 agent-days across three owners: item 1 3–5, item 2 about 1, item 3 2–2.5
+and item 4 about 1.5 (the @3 and kinds owners' estimates). Each landing is gated, or stacked (D229
+rule 2).
 
 **Builder.** A separate face builder works under the @3 owner's leave, and the @3 owner reviews the
-seams. The binding lane is unstaffed, so its parts of items 2 and 4 may come to the robustness agent
-under leave (the lead's assignment). The kinds owner's review of item 3 is pending.
+seams. The binding lane is unstaffed, so its parts of items 2, 3 and 4 may come to the robustness
+agent under leave (the lead's assignment). The kinds owner reviewed item 3 (above).
 
 **Also for MT-1b's worlds** (declaration values, not decisions):
 - each species' declared background at or below 1 pM (erratum 2);
