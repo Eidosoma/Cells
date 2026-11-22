@@ -133,7 +133,11 @@ def log_direction(view, locus_membrane, log_extent_dilute, offset, xp):
     )
     activity = entry_sum(terms, xp)
     extent = xp.where(locus_membrane, membrane_factor(view, offset, xp), log_extent_dilute)
-    return xp.where(feasible, activity + extent, -xp.inf)
+    # Mask both operands before the sum: at an infeasible direction activity can be −inf and the
+    # extent +inf, and −inf + inf raises NumPy's invalid-value warning before the mask applies. A
+    # feasible direction's operands pass through unchanged, so its value is bit for bit the same.
+    return xp.where(feasible, xp.where(feasible, activity, 0.0) + xp.where(feasible, extent, 0.0),
+                    -xp.inf)
 
 
 FORMULAS = {
