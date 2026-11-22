@@ -2,8 +2,8 @@
 
 *Status: draft, 22 November 2026, by the OL builder (D287), for the lead's review and the tag
 `pores-sheet-<date>`. It carries the lead's rulings of 22 November 2026: on η_m's absolute scale
-(§7), the scored tolerance (§8), held-out set 2 (§8), the extrapolation rule (§4) and Tanaka et al.
-cited only (§4, §11). Nothing here is registered. §11 lists the sources still to be read before the
+(§7), the scored tolerance (§8), held-out set 2 and its scoring (§8), the extrapolation rule (§4)
+and Tanaka et al. cited only (§4, §11). Nothing here is registered. §11 lists the sources still to be read before the
 tag.*
 
 **What this sheet is.**
@@ -282,10 +282,14 @@ with C = A·ν_A, and E_A = 27 kJ/mol fixed.
       is far above the tensions at which these vesicles rupture.
     - So the stated difference does not fix σ_osm without the paper's own model, and the paper's
       estimate of it is a result.
-    - **Points with no osmotic difference are scored,** at σ = σ_ex.
-    - **Points under an osmotic difference are reported, not scored:** the law's prediction at
-      σ_ex, and the tension σ* at which the law gives the read rate. σ* − σ_ex is then the osmotic
-      tension the law implies.
+    - **Points with no osmotic difference are scored two-sided,** at σ = σ_ex.
+    - **Points under an osmotic difference are scored one-sided** (the lead's ruling, 22 November
+      2026). A swelling osmotic condition only adds tension, σ_osm ≥ 0, so the read rate must lie
+      at or above the law's prediction at σ_ex, less the tolerance (the rule below).
+      - At stage 1 the extractor confirms from the paper's methods that the condition swells the
+        vesicles. If it does not, these points are reported only.
+    - **σ\*,** the tension at which the law gives each read rate, is reported, unscored. σ* − σ_ex
+      is then the osmotic tension the law implies.
   - **Disclosure.** FR-31's entry quotes one survival count from Shibly et al.: 8 of 19 vesicles at
     40 s and 2 of 19 at 110 s.
     - The extractor identifies its condition, and that point is reported, not scored.
@@ -295,16 +299,21 @@ with C = A·ν_A, and E_A = 27 kJ/mol fixed.
 held-out set:
 1. **Conditions.** The extractor reads the conditions only, and the vesicle radii for both sets:
    - set 1: each column's 10⁶/T position and its tensions;
-   - set 2: the tensions, the osmotic differences and the temperature.
+   - set 2: the tensions, the osmotic differences, the temperature, and whether each osmotic
+     condition swells the vesicles (from the methods).
 
    The fitted law's predictions, ln k_pred with its s_pred and s_T, are then computed, recorded and
    tagged. The references and the engine compute them independently, and must agree to 10⁻¹² in
    ln k.
 2. **Values.** The extractor then reads each held-out point's rate and its standard error.
 
-**The rule.** A held-out point passes when:
+**The rule.** With the tolerance
 
-    |ln k_pred − ln k_read| ≤ t₀.₉₇₅,₂ · (s_read² + s_dig² + s_T² + s_pred²)^(1/2)
+    τ = t₀.₉₇₅,₂ · (s_read² + s_dig² + s_T² + s_pred²)^(1/2)
+
+a held-out point scored two-sided passes when |ln k_pred − ln k_read| ≤ τ. Set 1's points and set
+2's control points are scored this way. Set 2's swelling osmotic points are scored one-sided: they
+pass when ln k_read ≥ ln k_pred(σ_ex) − τ.
 
 The scored tolerance is fixed here, before either extraction (the lead's rulings, 22 November
 2026):
