@@ -43,6 +43,7 @@ and a general feature, never one built for one study (D144).
 | [FR-35](#fr-35--timed-partial-withdrawal-of-an-assembly-populations-exterior-pool) | Timed partial withdrawal of an assembly population's well-mixed exterior pool: each molecule withdrawn independently, a declared buffer supplied, sites and particles kept | **High** (user, 21 November 2026) | **Landed** (merge b521a11c, tag `fr35-withdrawal-landed-2026-11-21`): `cells.pool_withdrawal@1` (D261) | None. Landed (b521a11c, with D263's fixes); the independent acceptance and a 4,000-stream ensemble passed |
 | [FR-36](#fr-36--age--and-region-selective-loss-within-a-species-row) | Age- and region-selective loss within a species row | FR-25's reviewer (21 November 2026) | **Deferred (D273).** Today's tools cover completion-time cohorts in one well-mixed pool with age-independent loss (cohort.py) and FR-33's regional export and one-way tracer | Reopens on a requester's readout needing age-dependent loss: D1 (label families) and D2 (an ageing operator), 2.5 to 4 days |
 | [FR-37](#fr-37--sampling-a-liquid-whose-dye-is-unevenly-distributed) | Sampling a liquid whose dye is unevenly distributed: a draw from chosen parts of an unevenly mixed liquid | **High** (user, 21 November 2026; D274) | **Shown with existing operators** (2bba6043, validation/sampling/uneven_draw.py): per-region wash events; the three cases match, with all 10 fmol accounted for; checker-accepted. Mixing is declared, not simulated (D246), and the sample is a host-side sum | Predicting the per-region split from the port, flow and timing needs an advection operator on faces, with the wash's face refusal lifted (about 3 to 5 days): built only if the requester asks |
+| [FR-38](#fr-38--rna-release-from-its-template-into-two-pools-with-different-lifetimes) | RNA release from its template into two pools with different lifetimes, with per-producer accounting, a release-window cohort and explicit measurement denominators | A user (22 November 2026) | **Under assessment.** The requester's reference reproduces at 40c3185e and on main (native replay error 1.06e-6 at 60 s, 1.3e-7 at 30 s); the gene unit itself has no release step | The gene regulation lane prices the build; three questions for the requester (machine holding, release energy, what "replacement" means) |
 
 ## FR-1 — A closed internal compartment on the shared inventory
 
@@ -1545,3 +1546,59 @@ with 2 and 1.5.
 - **The remaining experimental gap:** the dye left in each original region after a finite draw.
 - **Not covered:** predicting how much liquid a physical port draws from each region remains a
   separate engine capability.
+
+## FR-38 — RNA release from its template into two pools with different lifetimes
+
+- **The request (a user, 22 November 2026).** Add a reusable configuration to the one-gene expression
+  unit (FR-25's `templated_polymerisation@1`) for RNA that stays attached to its template briefly after
+  transcription, then enters one of two pools with different lifetimes. Both pools count in the RNA
+  measurement while their molecules survive.
+  1. **Release.** A completed chain enters an attached pool owned by its producer. With mean dwell
+     tau > 0 and durable fraction 0 ≤ p ≤ 1, the exits are p/tau and (1 − p)/tau. p is evaluated when
+     the chain leaves the template, from a declared input or state. Each released pool has its own loss
+     rate.
+  2. **Accounting per producer:** arrivals, still attached, cumulative releases into each pool, survivors
+     in each pool and cumulative loss. Initial RNA plus arrivals equals attached, surviving and lost RNA.
+     Producer identity across replacement and restart needs its own acceptance.
+  3. **The same RNA over time:** of the molecules released in a stated window and still present at its
+     end, the fraction surviving at a later time.
+  4. **Measurement denominators.**
+     - The detection threshold applies per gene copy, before averaging.
+     - Sample, cell and spot IDs are kept, and a confirmed zero-site cell counts in the per-cell average.
+     - A counted spot without brightness leaves the paired result incomplete.
+     - Brightness per called spot is reported apart from total signal per roster cell.
+     - A two-colour result names its statistic: ratio of pooled means, or mean of within-cell ratios.
+- **The requester's acceptance examples.**
+  - 80 attached chains, an exit half-life of 1 h and p = 0.75: at 1 h, 40 are attached and 40 released,
+    30 into the durable pool and 10 into the short-lived one. With half-lives of 2 h and 0.5 h, 24.852814
+    and 5.000000 survive.
+  - One cell with three spots of 10, one with one spot of 50 and one with none: 20 per spot, 30 as the
+    mean of the positive cells' means, 80/3 per roster cell.
+  - Two cells at (2, 1) and (6, 9): a ratio of pooled means of 0.8, and a mean of within-cell ratios of
+    1.3333.
+- **Reproduced (12:18 UTC).** The requester's three commands pass at their pinned revision 40c3185e and on
+  main 62ef3d6f, with identical native results.
+  - Their native replay runs `local_species_reactions@1` on stand-alone fixture nodes: four fractions,
+    including 0 and 1, each with a matched blank.
+  - Its largest pool error is 1.06e-6 transcript equivalents at 60 s and 1.32e-7 at 30 s, a ratio of 8.0
+    (third order). The inventory error is at most 8.5e-14.
+  - The package states no licence. It is kept as evidence under
+    /mnt/workspaces/Cells/fr38-rna-residence-20261122/ (zip sha256 4f564ba7…), uncommitted, and nothing
+    from it is copied into src/.
+- **Status: under assessment.** The replay shows the reaction operator on stand-alone nodes, not the gene
+  unit. The template operator refuses another writer on its rows, so connecting completions to the pools
+  is likely an engine change in `templated_polymerisation@1`, with a sheet amendment tagged before code.
+  - The gene regulation lane is pricing the build.
+  - Open questions for the requester:
+    - (a) whether an attached chain keeps its polymerase until release;
+    - (b) the release step's energy;
+    - (c) what "replacement" means for producer identity.
+- **Guards against building to the test.**
+  - The pools are species rows that the engine integrates, compared with independent references; never
+    a formula in a reader.
+  - p comes only from a constant, a schedule, or an existing factor form on an engine state, and its
+    source is stamped in the record.
+  - The reference's history model (its readiness function) stays out of the engine and validation.
+  - New routes are development status.
+  - The measurement layer is passive (`src/cells/assays`): it states its assumptions and never feeds back
+    into the simulation.
