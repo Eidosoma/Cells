@@ -252,8 +252,13 @@ class Declared:
 @dataclass(frozen=True)
 class Family:
     """A label family (D1, docs/COHORT_LABELS_DESIGN.md): its ID and its rows, two or more of the
-    model's species that label one species' material. Each row stays an ordinary row, so every law,
-    ledger and energy term is unchanged; check_families holds the rows to one species' terms."""
+    model's species that label one species' material. Each row stays an ordinary row, and
+    check_families holds the rows to one species' terms. Material transport and every ledger are
+    then exact: the rows' moves sum to the unsplit species' move. Each row's heat is booked as its
+    own row's, though, so a family's booked face heat can differ from the unsplit species' (the
+    Lean lane, 22 November 2026: opposing label gradients book J RT ln(a/b) per row where the
+    unsplit species, at equal totals, books none). Physical heat attributable to the labels alone
+    is unverified."""
 
     id: str
     rows: tuple
