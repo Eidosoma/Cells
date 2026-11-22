@@ -537,6 +537,10 @@ Common to both:
   `schedule_uses`: `gap`, `transfer`) and `_time` (the time a gap gives, NaN for a transfer draw);
   a gap past the horizon is drawn too.
 - **Step events:** `event_time`, `event_lysed`, `event_heat_kT` and `event_reservoir_work_kT`.
+  A lysing step's `event_heat_kT` and `event_reservoir_work_kT` are the step's own. The same
+  event's release is booked separately: in a single lineage in `run.json`'s `osmotic.lysis`
+  (`release_heat_kT`, `release_reservoir_work_kT`), in a population in that event's `lyses` entry
+  (`at_birth` false). The event's total is the sum.
 - **`shear_events`:** `{time, schedule, not_admitted, attempts, pool_after, slots_after}`, in time
   and schedule order. An attempt is `{slot, key, counter, outcome, uniforms_offset,
   uniforms_count}`, with `outcome` one of `split`, `refused_floor`, `refused_volume`,
@@ -545,7 +549,8 @@ Common to both:
   (`counter` −1, `uniforms_count` 0), as does a `slots_full` attempt. A drawing attempt's block,
   the used prefix, is `attempt_uniforms[uniforms_offset : uniforms_offset + uniforms_count]`. A
   split adds `daughters` (`{key, slot, counts, lysed_at_birth}`), `shear_work_kT`, `heat_kT`,
-  `reservoir_work_kT` and `sink_kT`. In a single lineage a daughter's `slot` is 0 for the followed
+  `reservoir_work_kT` and `sink_kT`. An attempt that does not split books nothing: no shear work,
+  heat, reservoir work or sink (its entry carries none of them). In a single lineage a daughter's `slot` is 0 for the followed
   one and null otherwise, and the attempt adds `followed` (its daughter index) and `pool_after`.
   In a population every daughter's `slot` is the slot it took (a birth-lysed daughter's too), and
   the attempt's heat and reservoir work include its births beyond σ_max (attribution: the lyses'
