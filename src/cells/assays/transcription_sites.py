@@ -13,24 +13,19 @@ from numbers import Integral, Real
 import numpy as np
 from scipy.special import betainc, gammainc
 
-
-class IncompleteObservation(ValueError):
-    """The tables do not pair every counted site, or every rostered cell, with one measurement.
-
-    `issues` holds every offending record at once, each a dict with its `kind` and IDs, so a
-    table can be corrected in one pass. Malformed values raise a plain ValueError instead.
-    """
-
-    def __init__(self, issues):
-        self.issues = tuple(issues)
-        named = [
-            f"{issue['kind']}({', '.join(f'{k}={v!r}' for k, v in issue.items() if k != 'kind')})"
-            for issue in self.issues[:6]
-        ]
-        if len(self.issues) > 6:
-            named.append(f"and {len(self.issues) - 6} more")
-        count = len(self.issues)
-        super().__init__(f"Incomplete observation, {count} issue(s): " + "; ".join(named))
+_WITHHELD = "withheld: the observation is incomplete (see `incomplete`)"
+_PAIRED = (
+    "mean_brightness_per_called_site",
+    "called_signal_per_roster_cell",
+    "mean_of_positive_cell_mean_brightness",
+)
+_SIGNAL_STATISTICS = (
+    "numerator_mean",
+    "denominator_mean",
+    "cells_with_positive_denominator",
+    "ratio_of_pooled_means",
+    "mean_of_within_cell_ratios",
+)
 
 
 def _identity(value, what):
@@ -44,6 +39,12 @@ def _identity(value, what):
 def _order(identity):
     """Sort key for IDs that mix integers and strings; integers come first."""
     return isinstance(identity, str), identity
+
+
+def _issue_order(issue):
+    """Sort key for incomplete-observation records: channel, kind, then cell and spot IDs."""
+    spot = _order(issue["spot"]) if "spot" in issue else ()
+    return issue.get("channel", ""), issue["kind"], _order(issue["cell"]), spot
 
 
 def _count(value, what):
@@ -80,38 +81,43 @@ def summarize_called_sites(roster, spots):
     other samples. Samples are never pooled: give each preparation its own sample ID.
 
     The result maps each sample ID to a record carrying that ID and:
-    - roster_cells, positive_cells (at least one called site) and zero_site_cells;
-    - called_sites, the counted spots, and called_sites_per_roster_cell;
+    - complete, and incomplete: the offending IDs by kind, empty when the sample is complete;
+    - roster_cells, positive_cells (at least one declared site) and zero_site_cells;
+    - called_sites, the declared count, and called_sites_per_roster_cell;
     - mean_brightness_per_called_site, pooled over the sample's called spots;
     - called_signal_per_roster_cell, the summed spot brightness divided by all roster cells,
       zero-site cells included;
     - mean_of_positive_cell_mean_brightness, each positive cell's own mean spot brightness,
       averaged over positive cells;
-    - cells: per cell, its spot IDs, called sites, summed brightness (called_signal) and mean
-      brightness (None for a zero-site cell).
-    A statistic without a denominator is None, with its reason under `undefined`. Samples, cells
-    and spot IDs are sorted, and sums are exactly rounded, so row order does not matter.
+    - cells: per cell, its declared called sites, spot IDs, summed brightness (called_signal)
+      and mean brightness (None for a zero-site cell).
+    A statistic without a denominator is None, with its reason under `undefined`. Samples,
+    cells, spot IDs and incomplete records are sorted, and sums are exactly rounded, so row
+    order does not matter.
 
-    An incomplete table is refused, not summarized. Each of these raises IncompleteObservation,
-    which names every offending ID at once:
-    - a spot that matches no roster cell;
-    - a duplicated cell or spot;
-    - a spot whose brightness is None;
-    - a cell whose declared count differs from its spot rows.
-    One incomplete sample refuses the whole call. A partial summary would invite an average over
-    whatever survived. Refusal makes any exclusion an explicit act of the calling analysis, for
-    example removing a cell from the roster. The other readouts here likewise refuse rather than
-    substitute a missing observation. Malformed values raise a plain ValueError: booleans, NaN
-    or infinite brightness (None, not NaN, marks an unmeasured spot), negative or non-integer
-    counts, blank IDs, rows of the wrong width and an empty roster.
+    An incomplete sample is reported and marked incomplete. Each of these makes its sample
+    incomplete and is named in `incomplete` by kind:
+    - unmatched_spot: a spot that matches no roster cell;
+    - unmeasured_spot: a spot whose brightness is None;
+    - count_mismatch: a cell whose declared count differs from its spot rows.
+    The counts that do not depend on brightness stay valid and are reported: roster, positive
+    and zero-site cells, declared called sites and sites per roster cell. Every brightness-paired
+    value, per sample and per cell, is withheld as None with the reason under `undefined`. It is
+    never averaged over the spots that survived, which would pass a subset off as the sample.
+    Complete samples are reported in full, whatever the other samples hold. A spot from a sample
+    with no roster rows gets its own incomplete record, with no roster cells.
+
+    Input errors raise ValueError: duplicated cell or spot IDs, blank or non-integer IDs,
+    booleans, NaN or infinite brightness (None, not NaN, marks an unmeasured spot), negative or
+    non-integer counts, rows of the wrong width and an empty roster.
     """
-    declared, issues = {}, []
+    declared, duplicated = {}, []
     for row in roster:
         sample, cell, sites = _fields(row, 3, "roster")
         key = _identity(sample, "A sample ID"), _identity(cell, "A cell ID")
         sites = _count(sites, "A declared number of called sites")
         if key in declared:
-            issues.append(dict(kind="duplicated_cell", sample=key[0], cell=key[1]))
+            duplicated.append(key)
         declared[key] = sites
     if not declared:
         raise ValueError("An empty roster has no per-cell denominator")
@@ -123,21 +129,24 @@ def summarize_called_sites(roster, spots):
             _identity(cell, "A cell ID"),
             _identity(spot, "A spot ID"),
         )
-        value = None if value is None else _finite(value, "A spot brightness")
-        where = dict(sample=key[0], cell=key[1], spot=key[2])
         if key in brightness:
-            issues.append(dict(kind="duplicated_spot", **where))
-        elif key[:2] not in declared:
-            issues.append(dict(kind="unmatched_spot", **where))
-        elif value is None:
-            issues.append(dict(kind="unmeasured_spot", **where))
-        brightness.setdefault(key, value)
-    recorded = {key: [] for key in declared}
-    for sample, cell, spot in brightness:
-        recorded.get((sample, cell), []).append(spot)
+            duplicated.append(key)
+        brightness[key] = None if value is None else _finite(value, "A spot brightness")
+    if duplicated:
+        shown = ", ".join(map(repr, duplicated[:10]))
+        raise ValueError(f"Each cell and spot is listed once; {len(duplicated)} repeat: {shown}")
+    recorded, issues = {key: [] for key in declared}, {}
+    for (sample, cell, spot), value in brightness.items():
+        where = dict(sample=sample, cell=cell, spot=spot)
+        if (sample, cell) not in declared:
+            issues.setdefault(sample, []).append(dict(kind="unmatched_spot", **where))
+            continue
+        recorded[sample, cell].append(spot)
+        if value is None:
+            issues.setdefault(sample, []).append(dict(kind="unmeasured_spot", **where))
     for (sample, cell), sites in declared.items():
         if len(recorded[sample, cell]) != sites:
-            issues.append(
+            issues.setdefault(sample, []).append(
                 dict(
                     kind="count_mismatch",
                     sample=sample,
@@ -146,50 +155,64 @@ def summarize_called_sites(roster, spots):
                     spot_records=len(recorded[sample, cell]),
                 )
             )
-    if issues:
-        raise IncompleteObservation(issues)
-    samples = {}
+    samples = {sample: [] for sample in issues}
     for sample, cell in declared:
         samples.setdefault(sample, []).append(cell)
     return {
-        sample: _sample_record(sample, sorted(cells, key=_order), recorded, brightness)
+        sample: _sample_record(
+            sample,
+            sorted(cells, key=_order),
+            (declared, recorded, brightness),
+            sorted(issues.get(sample, ()), key=_issue_order),
+        )
         for sample, cells in sorted(samples.items(), key=lambda item: _order(item[0]))
     }
 
 
-def _sample_record(sample, cell_ids, recorded, brightness):
+def _sample_record(sample, cell_ids, tables, incomplete):
+    declared, recorded, brightness = tables
+    complete = not incomplete
     cells, values = [], []
     for cell in cell_ids:
+        sites = declared[sample, cell]
         spot_ids = tuple(sorted(recorded[sample, cell], key=_order))
-        own = [brightness[sample, cell, spot] for spot in spot_ids]
+        own = [brightness[sample, cell, spot] for spot in spot_ids] if complete else []
         values += own
-        signal = math.fsum(own)
+        signal = math.fsum(own) if complete else None
         cells.append(
             dict(
                 cell=cell,
-                called_sites=len(own),
+                called_sites=sites,
                 spot_ids=spot_ids,
                 called_signal=signal,
-                mean_brightness=signal / len(own) if own else None,
+                mean_brightness=signal / sites if complete and sites else None,
             )
         )
-    total, sites = math.fsum(values), len(values)
+    roster_cells = len(cells)
+    sites = sum(record["called_sites"] for record in cells)
     positive = [record["mean_brightness"] for record in cells if record["called_sites"]]
+    total = math.fsum(values)
     undefined = {}
-    if not sites:
+    if not roster_cells:
+        undefined["called_sites_per_roster_cell"] = "the sample has no roster cell"
+    if not complete:
+        undefined.update(dict.fromkeys(_PAIRED, _WITHHELD))
+    elif not sites:
         undefined["mean_brightness_per_called_site"] = "the sample has no called site"
         undefined["mean_of_positive_cell_mean_brightness"] = "no roster cell has a called site"
     return dict(
         sample=sample,
-        roster_cells=len(cells),
+        complete=complete,
+        incomplete=tuple(incomplete),
+        roster_cells=roster_cells,
         positive_cells=len(positive),
-        zero_site_cells=len(cells) - len(positive),
+        zero_site_cells=roster_cells - len(positive),
         called_sites=sites,
-        called_sites_per_roster_cell=sites / len(cells),
-        mean_brightness_per_called_site=total / sites if sites else None,
-        called_signal_per_roster_cell=total / len(cells),
+        called_sites_per_roster_cell=sites / roster_cells if roster_cells else None,
+        mean_brightness_per_called_site=total / sites if complete and sites else None,
+        called_signal_per_roster_cell=total / roster_cells if complete else None,
         mean_of_positive_cell_mean_brightness=(
-            math.fsum(positive) / len(positive) if positive else None
+            math.fsum(positive) / len(positive) if complete and positive else None
         ),
         cells=tuple(cells),
         undefined=undefined,
@@ -213,10 +236,15 @@ def two_channel_ratios(cell_ids, numerator, denominator):
     cells concerned, is under `undefined`. The channel means and the number of cells with a
     positive denominator are reported too.
 
-    Both channels must cover exactly the roster. A missing, unrostered or unmeasured (None)
-    signal raises IncompleteObservation, naming every such cell and channel, for the reasons
-    given in `summarize_called_sites`. Malformed values raise a plain ValueError: booleans,
-    NaN, infinities, blank or duplicated roster IDs and an empty roster.
+    Both channels must cover exactly the roster. Each of these makes the record incomplete and
+    is named in `incomplete` with its kind, channel and cell:
+    - missing_signal: a roster cell with no signal in a channel;
+    - unmeasured_signal: a signal that is None;
+    - unrostered_signal: a signal for a cell off the roster.
+    An incomplete record keeps `complete` False and reports the roster. Every signal statistic,
+    both ratios included, is withheld as None with the reason under `undefined`, never computed
+    from the cells that survived. Input errors raise ValueError: booleans, NaN, infinities, blank
+    or duplicated roster IDs, a channel that is not a mapping and an empty roster.
     """
     roster = [_identity(cell, "A roster cell ID") for cell in cell_ids]
     if not roster or len(set(roster)) != len(roster):
@@ -235,10 +263,17 @@ def two_channel_ratios(cell_ids, numerator, denominator):
                 signals[channel, cell] = _finite(mapping[cell], f"A {channel} signal")
         issues += [
             dict(kind="unrostered_signal", channel=channel, cell=cell)
-            for cell in sorted(keys - set(roster), key=_order)
+            for cell in keys - set(roster)
         ]
+    record = dict(
+        complete=not issues,
+        incomplete=tuple(sorted(issues, key=_issue_order)),
+        roster_cells=len(roster),
+        cell_ids=tuple(sorted(roster, key=_order)),
+    )
     if issues:
-        raise IncompleteObservation(issues)
+        withheld = dict.fromkeys(_SIGNAL_STATISTICS, _WITHHELD)
+        return record | dict.fromkeys(_SIGNAL_STATISTICS) | dict(undefined=withheld)
     top = [signals["numerator", cell] for cell in roster]
     bottom = [signals["denominator", cell] for cell in roster]
     pooled_top, pooled_bottom = math.fsum(top), math.fsum(bottom)
@@ -255,9 +290,7 @@ def two_channel_ratios(cell_ids, numerator, denominator):
             f"{len(nonpositive)} cell(s) have a nonpositive denominator signal: {nonpositive!r}"
         )
     cells = len(roster)
-    return dict(
-        roster_cells=cells,
-        cell_ids=tuple(sorted(roster, key=_order)),
+    return record | dict(
         numerator_mean=pooled_top / cells,
         denominator_mean=pooled_bottom / cells,
         cells_with_positive_denominator=cells - len(nonpositive),

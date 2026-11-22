@@ -10,7 +10,6 @@ import numpy as np
 import pytest
 
 from cells.assays.transcription_sites import (
-    IncompleteObservation,
     called_sites_from_counts,
     expected_called_sites,
     summarize_called_sites,
@@ -21,15 +20,22 @@ from cells.assays.transcription_sites import (
 ROSTER = [("s1", "c1", 3), ("s1", "c2", 1), ("s1", "c3", 0)]
 SPOTS = [("s1", "c1", f"p{i}", 10) for i in range(3)] + [("s1", "c2", "p0", 50)]
 MEANS, COPIES = [0.0, 0.2, 5.0, 12.0], [1, 4, 2, 0.5]
+PAIRED = (
+    "mean_brightness_per_called_site",
+    "called_signal_per_roster_cell",
+    "mean_of_positive_cell_mean_brightness",
+)
 
 
 def _plain(value):
-    """Only int, finite float, str and None, inside dicts and tuples: no NumPy scalar, no NaN."""
+    """Only bool, int, finite float, str and None, in dicts and tuples: no NumPy scalar or NaN."""
     if isinstance(value, dict):
         return all(_plain(v) for v in value.values())
     if isinstance(value, tuple):
         return all(_plain(v) for v in value)
-    return type(value) in (int, str, type(None)) or (type(value) is float and math.isfinite(value))
+    return type(value) in (bool, int, str, type(None)) or (
+        type(value) is float and math.isfinite(value)
+    )
 
 
 def test_spot_averaging_example_keeps_ids_and_the_zero_site_cell():
@@ -41,6 +47,7 @@ def test_spot_averaging_example_keeps_ids_and_the_zero_site_cell():
     assert [record[key] for key in counts] == [3, 2, 1, 4]
     assert record["called_sites_per_roster_cell"] == 4 / 3
     assert record["sample"] == "s1" and record["undefined"] == {}
+    assert record["complete"] is True and record["incomplete"] == ()
     assert [cell["spot_ids"] for cell in record["cells"]] == [("p0", "p1", "p2"), ("p0",), ()]
     assert record["cells"][2] == dict(
         cell="c3", called_sites=0, spot_ids=(), called_signal=0.0, mean_brightness=None
@@ -54,6 +61,7 @@ def test_two_channel_example_names_each_statistic():
     assert result["mean_of_within_cell_ratios"] == 4 / 3
     assert round(result["mean_of_within_cell_ratios"], 4) == 1.3333
     assert (result["numerator_mean"], result["denominator_mean"]) == (4.0, 5.0)
+    assert result["complete"] is True and result["incomplete"] == ()
     assert result["undefined"] == {} and _plain(result)
 
 
@@ -86,43 +94,61 @@ def test_samples_stay_separate_and_row_order_does_not_matter():
 
 
 @pytest.mark.parametrize(
-    "roster,spots,issues",
+    "spots,sample,issues,counts",
     [
-        (ROSTER, SPOTS + [("s1", "c4", "p0", 5)], [("unmatched_spot", "s1", "c4", "p0")]),
-        (ROSTER, SPOTS + [("s9", "c1", "p0", 5)], [("unmatched_spot", "s9", "c1", "p0")]),
-        (ROSTER + [("s1", "c3", 0)], SPOTS, [("duplicated_cell", "s1", "c3")]),
-        (ROSTER, SPOTS + [("s1", "c2", "p0", 50)], [("duplicated_spot", "s1", "c2", "p0")]),
-        (ROSTER, SPOTS[:3] + [("s1", "c2", "p0", None)], [("unmeasured_spot", "s1", "c2", "p0")]),
-        (ROSTER, SPOTS[1:], [("count_mismatch", "s1", "c1", 3, 2)]),
-        (ROSTER, SPOTS + [("s1", "c3", "p0", 7)], [("count_mismatch", "s1", "c3", 0, 1)]),
+        (SPOTS + [("s1", "c4", "p0", 5)], "s1", [("unmatched_spot", "s1", "c4", "p0")], (3, 1, 4)),
+        (SPOTS + [("s9", "c1", "p0", 5)], "s9", [("unmatched_spot", "s9", "c1", "p0")], (0, 0, 0)),
+        (
+            SPOTS[:3] + [("s1", "c2", "p0", None)],
+            "s1",
+            [("unmeasured_spot", "s1", "c2", "p0")],
+            (3, 1, 4),
+        ),
+        (SPOTS[1:], "s1", [("count_mismatch", "s1", "c1", 3, 2)], (3, 1, 4)),
+        (SPOTS + [("s1", "c3", "p0", 7)], "s1", [("count_mismatch", "s1", "c3", 0, 1)], (3, 1, 4)),
     ],
     ids=[
         "unrostered-cell",
         "unrostered-sample",
-        "duplicated-cell",
-        "duplicated-spot",
         "unmeasured-spot",
         "counted-site-without-spot",
         "spot-beyond-count",
     ],
 )
-def test_incomplete_tables_are_refused_naming_the_offending_ids(roster, spots, issues):
-    with pytest.raises(IncompleteObservation) as caught:
-        summarize_called_sites(roster, spots)
-    assert [tuple(issue.values()) for issue in caught.value.issues] == issues
+def test_an_incomplete_sample_keeps_its_counts_and_withholds_paired_values(
+    spots, sample, issues, counts
+):
+    result = summarize_called_sites(ROSTER, spots)
+    record = result[sample]
+    assert record["complete"] is False
+    assert [tuple(issue.values()) for issue in record["incomplete"]] == issues
+    assert (record["roster_cells"], record["zero_site_cells"], record["called_sites"]) == counts
+    expected_rate = counts[2] / counts[0] if counts[0] else None
+    assert record["called_sites_per_roster_cell"] == expected_rate
+    for name in PAIRED:
+        assert record[name] is None and record["undefined"][name].startswith("withheld")
+    for cell in record["cells"]:
+        assert cell["called_signal"] is None and cell["mean_brightness"] is None
+    assert _plain(record)
+    if sample != "s1":
+        assert result["s1"] == summarize_called_sites(ROSTER, SPOTS)["s1"]
 
 
-def test_one_incomplete_sample_refuses_the_whole_call_listing_every_issue():
+def test_an_incomplete_sample_leaves_the_complete_ones_whole():
     roster = ROSTER + [("s2", "c1", 2)]
     spots = SPOTS + [("s2", "c1", "p0", None), ("s2", "c5", "p0", 3)]
-    with pytest.raises(IncompleteObservation) as caught:
-        summarize_called_sites(roster, spots)
-    kinds = [issue["kind"] for issue in caught.value.issues]
-    assert kinds == ["unmeasured_spot", "unmatched_spot", "count_mismatch"]
-    assert caught.value.issues[2] == dict(
+    result = summarize_called_sites(roster, spots)
+    assert result["s1"] == summarize_called_sites(ROSTER, SPOTS)["s1"]
+    other = result["s2"]
+    kinds = [issue["kind"] for issue in other["incomplete"]]
+    assert kinds == ["count_mismatch", "unmatched_spot", "unmeasured_spot"]
+    assert other["incomplete"][0] == dict(
         kind="count_mismatch", sample="s2", cell="c1", declared_sites=2, spot_records=1
     )
-    assert "cell='c5'" in str(caught.value)
+    assert other["cells"] == (
+        dict(cell="c1", called_sites=2, spot_ids=("p0",), called_signal=None, mean_brightness=None),
+    )
+    assert summarize_called_sites(roster[::-1], spots[::-1]) == result
 
 
 @pytest.mark.parametrize(
@@ -144,12 +170,13 @@ def test_one_incomplete_sample_refuses_the_whole_call_listing_every_issue():
         (ROSTER, SPOTS[:3] + [("s1", "c2", "p0", "50")]),
         (ROSTER, SPOTS[:3] + [("s1", "c2", 50)]),
         (ROSTER, SPOTS[:3] + [("s1", "c2", np.bool_(True), 50)]),
+        (ROSTER + [("s1", "c3", 0)], SPOTS),
+        (ROSTER, SPOTS + [("s1", "c2", "p0", 50)]),
     ],
 )
-def test_malformed_tables_are_invalid_not_incomplete(roster, spots):
-    with pytest.raises(ValueError) as caught:
+def test_input_errors_are_refused(roster, spots):
+    with pytest.raises(ValueError):
         summarize_called_sites(roster, spots)
-    assert not isinstance(caught.value, IncompleteObservation)
 
 
 def test_two_channel_statistics_without_a_positive_denominator_are_none_with_a_reason():
@@ -174,12 +201,24 @@ def test_two_channel_statistics_without_a_positive_denominator_are_none_with_a_r
         ({"a": 2}, {"a": 1, "b": 9}, [("missing_signal", "numerator", "b")]),
         ({"a": 2, "b": 6, "z": 1}, {"a": 1, "b": 9}, [("unrostered_signal", "numerator", "z")]),
         ({"a": 2, "b": 6}, {"a": None, "b": 9}, [("unmeasured_signal", "denominator", "a")]),
+        (
+            {"z": 1, "a": 2},
+            {"a": None, "b": 9},
+            [
+                ("unmeasured_signal", "denominator", "a"),
+                ("missing_signal", "numerator", "b"),
+                ("unrostered_signal", "numerator", "z"),
+            ],
+        ),
     ],
 )
-def test_channels_must_cover_exactly_the_roster(top, bottom, issues):
-    with pytest.raises(IncompleteObservation) as caught:
-        two_channel_ratios(["a", "b"], top, bottom)
-    assert [tuple(issue.values()) for issue in caught.value.issues] == issues
+def test_a_channel_off_the_roster_gives_an_incomplete_record(top, bottom, issues):
+    result = two_channel_ratios(["b", "a"], top, bottom)
+    assert result["complete"] is False and result["cell_ids"] == ("a", "b")
+    assert [tuple(issue.values()) for issue in result["incomplete"]] == issues
+    assert result["ratio_of_pooled_means"] is None and result["mean_of_within_cell_ratios"] is None
+    assert result["undefined"]["mean_of_within_cell_ratios"].startswith("withheld")
+    assert _plain(result)
 
 
 @pytest.mark.parametrize(
@@ -192,10 +231,9 @@ def test_channels_must_cover_exactly_the_roster(top, bottom, issues):
         (["a"], [("a", 1)], {"a": 1}),
     ],
 )
-def test_malformed_channels_are_invalid_not_incomplete(cells, top, bottom):
-    with pytest.raises(ValueError) as caught:
+def test_channel_input_errors_are_refused(cells, top, bottom):
+    with pytest.raises(ValueError):
         two_channel_ratios(cells, top, bottom)
-    assert not isinstance(caught.value, IncompleteObservation)
 
 
 def _poisson(mean, size=400):
