@@ -43,7 +43,7 @@ scripts/run_detached.sh viz-declarations-<revision> 3G --cpus 12-15,28-31 --oom-
 Then the file is copied here byte for byte. Nothing edits it by hand. A reader checks `kind`
 first and refuses another major.
 
-The file here was written on 20 November 2026 from main `93fc8c2c` (a clean checkout): 61
-pieces (32 laws, 5 kinds, 24 operators), 11 models and 127 legacy model IDs. The run's own
-line of output, which gives its totals (61 pieces, 11 models, 127 legacy model IDs) and `dirty:
-false`, is kept in its unit's journal.
+The V54 manifest was written on 22 November 2026 from a clean checkout of main
+`cbe54031d0f3a98c1e846fe48259eab6c60b4d59`. It contains 51 laws, 5 kinds and 31 operators
+across 11 active models, plus 127 legacy model IDs. The original export is in
+`/mnt/workspaces/Cells/visualizer-analysis/declarations-cbe54031/declarations.json`.

@@ -88,6 +88,7 @@ export function mountView({ make, styles = "" }) {
       this.stage.onPalette((palette) => this.lens.applyPalette?.(palette));
       this.lens.onChrome = () => this.renderChrome();
       this.lens.activate();
+      this.lens.restore?.(new URLSearchParams(location.search));
       this.canvas.setAttribute("aria-label", this.lens.chrome?.().card?.heading || "The view");
       this.renderBar();
       this.renderChrome();
@@ -125,6 +126,9 @@ export function mountView({ make, styles = "" }) {
     /** The legend card, from the view's chrome: what each mark drawn now stands for. */
     renderChrome() {
       const chrome = this.lens.chrome?.() || {};
+      if (this.lens.id === "laws" && chrome.card?.own) {
+        this.bar.replaceChildren(h("b", {}, chrome.card.heading), chrome.back ? h("button",{type:"button",onclick:()=>this.lens.back()},chrome.back) : h("span"), ...chrome.card.own());
+      }
       this.timeline.hidden = !chrome.timeline;
       this.frame.classList.toggle("has-timeline", Boolean(chrome.timeline));
       if (chrome.timeline) this.timeline.bind(chrome.timeline.player, chrome.timeline);
@@ -152,7 +156,7 @@ export function mountView({ make, styles = "" }) {
       this.canvas.addEventListener("pointerup", (event) => {
         if (!down || Math.hypot(event.clientX - down.x, event.clientY - down.y) > 5) return;
         const hit = this.stage.pick(event.clientX, event.clientY, this.lens.pickRoots);
-        this.select(hit?.id || null);
+        if (!this.lens.openOnMap?.(hit?.id)) this.select(hit?.id || null);
       });
       this.canvas.addEventListener("pointermove", (event) => this.lens.setHover?.(this.stage.pick(event.clientX, event.clientY, this.lens.pickRoots)?.id || null));
       // As the viewer gives keys to a view (src/ui/viewer.js): ] or Page Down to the next part, [ or Page Up to the one before; the arrows turn the camera.

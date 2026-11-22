@@ -783,7 +783,7 @@ def gather(source, tracked: Tracked, repository: Repository, evidence: Evidence 
     judged = [said(node.lead(), "PROGRESS.md") for node in bullets(progress[progress.index("\n## Runs"):]) if node.lead() and JUDGED_LEAD.search(plain(node.lead()))]
     cards = {}
     unplaced = []
-    revisions = {tracked.map_revision}
+    revisions = set()
     for card in source["cards"]:
         where = f"card {card['id']}"
         reading = {}
@@ -826,18 +826,25 @@ def gather(source, tracked: Tracked, repository: Repository, evidence: Evidence 
                         unplaced.append({"card": card["id"], "part": card["map"], "path": item["path"], "where": item["where"], "revision": revision, "missing": "place"})
         revisions |= named_revisions(card, tracked)
         cards[card["id"]] = reading
-    checked = []
+    # A map update can follow the frozen experiment record. Only the map may use that
+    # later revision, and it must be on the same published main history as the record.
+    map_revision = tracked.map_revision
+    if not repository.on_main(map_revision, main) and not (
+        repository.on_main(main, map_revision) and repository.on_main(map_revision, "refs/remotes/origin/main")
+    ):
+        raise Breach(f"the map revision {map_revision[:8]} is outside the main history of the record {main[:8]}")
+    checked = {map_revision}
     for revision in sorted(revisions):
         full = repository.full(revision)
         if not repository.on_main(full, main):
             raise Breach(f"{full[:8]} is named on a card and is not on main {main[:8]}")
-        checked.append(full)
+        checked.add(full)
     return {
         "format": READINGS_FORMAT,
         "note": "What tools/build_cards.py --gather read from the record for the Experiments landing's cards: each reading with the file and field it came from, and the locator it answered (read). Written by the tool; never edited by hand.",
         "record": {"revision": main},
         "map": {"revision": tracked.map_revision},
-        "on_main": checked,
+        "on_main": sorted(checked),
         "judged_entries": judged,
         "unplaced": [{key: without_clock(value) if key == "where" else value for key, value in item.items()} for item in unplaced],
         "cards": cards,

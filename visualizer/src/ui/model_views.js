@@ -7,3 +7,4 @@
 //   import "../lenses/<view>_entry.js";
 
 import "../lenses/lineage_entry.js";
+import "../lenses/vesicle.js";

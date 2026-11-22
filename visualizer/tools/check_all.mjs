@@ -72,6 +72,8 @@ const SUITE = [
   { name: "origin-dark", tool: "check_origin.mjs", args: [pictures], env: { CASE: "main", NAME: "origin-dark", THEME: "dark" }, minutes: 2 },
   { name: "origin-short", tool: "check_origin.mjs", args: [pictures], env: { CASE: "main", NAME: "origin-short", WIDTH: "1040", HEIGHT: "640" }, minutes: 2 },
   { name: "origin-phone", tool: "check_origin.mjs", args: [pictures], env: { CASE: "phone", NAME: "origin-phone" }, minutes: 2 },
+  { name: "origin-vesicles", tool: "check_origin.mjs", args: [pictures], env: { CASE: "vesicle", NAME: "origin-vesicles" }, minutes: 1 },
+  { name: "origin-vesicles-phone", tool: "check_origin.mjs", args: [pictures], env: { CASE: "vesicle", NAME: "origin-vesicles-phone", PHONE: "1", WIDTH: "390", HEIGHT: "844" }, minutes: 1 },
   { name: "origin-address", tool: "check_origin.mjs", args: [pictures], env: { CASE: "address", NAME: "origin-address" }, minutes: 2 },
   { name: "origin-pair", tool: "check_origin.mjs", args: [pictures], env: { CASE: "pair", NAME: "origin-pair" }, minutes: 1 },
   // The engine's own runs: the page's where GARD's entry names them, else two adapted from their folder on a check-only scene ("skip" where neither is at hand).
@@ -136,6 +138,8 @@ const SUITE = [
   { name: "look-loss", tool: "check_look.mjs", args: ["loss"], minutes: 6 },
   // The Laws library (tools/check_laws.mjs): presses, keys, the card's search and Family, the Engine view's door and the way back, a lost context; the address, and what it leaves behind; a 360 px phone; no 3D.
   { name: "laws-main", tool: "check_laws.mjs", args: [pictures], env: { CASE: "main", NAME: "laws-main" }, minutes: 3 },
+  { name: "laws-atlas", tool: "check_laws.mjs", args: [pictures], env: { CASE: "atlas" }, minutes: 1 },
+  { name: "laws-atlas-phone", tool: "check_laws.mjs", args: [pictures], env: { CASE: "atlas-phone", THEME: "dark" }, minutes: 1 },
   { name: "laws-address", tool: "check_laws.mjs", args: [pictures], env: { CASE: "address", NAME: "laws-address" }, minutes: 1 },
   { name: "laws-phone", tool: "check_laws.mjs", args: [pictures], env: { CASE: "phone", NAME: "laws-phone" }, minutes: 1 },
   { name: "laws-text", tool: "check_laws.mjs", args: [pictures], env: { CASE: "text", NAME: "laws-text" }, minutes: 1 },

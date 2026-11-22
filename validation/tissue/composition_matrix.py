@@ -1096,7 +1096,7 @@ RULES = (
     dict(
         rule="a slot of templated_polymerisation@1 that replacement@1 replaces takes each "
         "newcomer's values from the operator's templates, and no donor copy enters or leaves one",
-        laws=("templated_polymerisation@1", REPLACEMENT_1),
+        laws=("templated_polymerisation@1", REPLACEMENT_1, REPLACEMENT_2),
         level="data",
         check=OPS + "templated_polymerisation.py::check_occupants",
         test=TESTS + "test_templated_polymerisation.py::test_the_release_refuses",
@@ -1105,7 +1105,9 @@ RULES = (
         "and holds leave with it, and a newcomer's rates are its own (D244's occupant rule). "
         "Refused: a newcomer without its template's value, a template that is not a replacement "
         "template, a value for no schedule its newcomers take, a founder's change at or after "
-        "its death, and a donor copy into or from a slot of the operator (version 1.1)",
+        "its death, a donor copy into or from a slot of the operator (version 1.1), and any "
+        "replacement version but @1 (@2 behind the declarations' refusal: water provides the "
+        "volumes it reads as declared)",
     ),
     dict(
         rule="no coupling target or regulatory state on a replaced slot",

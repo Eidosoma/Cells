@@ -25,13 +25,21 @@ Proof sources [Mathlib exponential convexity and strict convexity, imported for 
 
 ## Numerical comparison
 
-**Open.** Four synthetic calculations passed. With mean area 2 and range 1 to 3, the lower and upper bounds are 1/4 and 5/16 at the selected exposure. Two cohorts give 5/16 and 9/32. Equal areas and zero exposure give equality. An FR-31 engine comparison is pending.
+**Checked.** Four synthetic checks cover distinct and identical areas and zero exposure. At one second, two equally weighted founders in the compiled shared-pool runner give 0.3577327717421851 from their recorded hazards. The mean-area lower bound is 0.3561630590540235 and the upper chord is 0.3577327717421859. The calculation uses rate-implied probabilities.
 
 **Reference calculation**
 
 [Declared area scaling and fixed-tension survival](https://github.com/Eidosoma/Cells/blob/e4b729acf7e784cd088a3a9f05da4de42d5e8dd2/docs/VESICLE_PORES_LAWS.md#5-the-area-and-the-clock) · [Finite-cohort survival bound and endpoint construction](https://github.com/Eidosoma/Cells/blob/e4b729acf7e784cd088a3a9f05da4de42d5e8dd2/lean/CellsProofs/Chemistry/VesicleArea.lean) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/e4b729acf7e784cd088a3a9f05da4de42d5e8dd2/lean/checks/vesicle_area.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/e4b729acf7e784cd088a3a9f05da4de42d5e8dd2/lean/PROGRESS.md#fr31-area-bounds)
 
 [Evidence checkpoint e4b729acf7e7](https://github.com/Eidosoma/Cells/commit/e4b729acf7e784cd088a3a9f05da4de42d5e8dd2)
+
+**Engine** `cells.assembly_lineages@2`, `cells.pore_nucleation@1`
+
+**Operators** `cells.tension_hold@1`
+
+[Pore rate and temperature slope](https://github.com/Eidosoma/Cells/blob/f51a3b07d302fb177b166b1568155084ffb8e1c1/src/cells/models/assembly_lineages_v2/pore_nucleation.py#L58) · [Tension domain and hold payer](https://github.com/Eidosoma/Cells/blob/f51a3b07d302fb177b166b1568155084ffb8e1c1/src/cells/models/assembly_lineages_v2/tension_hold.py#L88) · [Clock, opening and release](https://github.com/Eidosoma/Cells/blob/f51a3b07d302fb177b166b1568155084ffb8e1c1/src/cells/models/assembly_lineages_v2/pore_clock.py#L69) · [Single-lineage pore event](https://github.com/Eidosoma/Cells/blob/f51a3b07d302fb177b166b1568155084ffb8e1c1/src/cells/models/assembly_lineages_v2/runner.py#L363) · [Population pore event](https://github.com/Eidosoma/Cells/blob/f51a3b07d302fb177b166b1568155084ffb8e1c1/src/cells/models/assembly_lineages_v2/population.py#L670) · [Per-founder random stream and threshold inputs](https://github.com/Eidosoma/Cells/blob/f51a3b07d302fb177b166b1568155084ffb8e1c1/src/cells/models/assembly_lineages_v2/streams.py) · [Geometry and area in both runners](https://github.com/Eidosoma/Cells/blob/f51a3b07d302fb177b166b1568155084ffb8e1c1/src/cells/models/assembly_lineages_v2/geometry.py) · [Closed-form work oracle, founder worlds and both public run modes](https://github.com/Eidosoma/Cells/blob/f51a3b07d302fb177b166b1568155084ffb8e1c1/tests/unit/test_assembly_lineages_v2_pores.py) · [Base assembly run definition](https://github.com/Eidosoma/Cells/blob/f51a3b07d302fb177b166b1568155084ffb8e1c1/tests/assembly_lineage_v2_fixtures.py) · [Exact rate, heat and recorded cutoff proof](https://github.com/Eidosoma/Cells/blob/870c9353c92b7e614f25a768f2dabecf7b81d49c/lean/CellsProofs/Chemistry/VesiclePore.lean) · [Common-exposure survival bounds](https://github.com/Eidosoma/Cells/blob/870c9353c92b7e614f25a768f2dabecf7b81d49c/lean/CellsProofs/Chemistry/VesicleArea.lean) · [Measured pore observables](https://github.com/Eidosoma/Cells/blob/870c9353c92b7e614f25a768f2dabecf7b81d49c/lean/checks/data/dopc_pore_observables.json) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/870c9353c92b7e614f25a768f2dabecf7b81d49c/lean/checks/vesicle_pore.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/870c9353c92b7e614f25a768f2dabecf7b81d49c/lean/PROGRESS.md#fr31-pore-rate-heat)
+
+[Tested engine f51a3b07d302](https://github.com/Eidosoma/Cells/commit/f51a3b07d302fb177b166b1568155084ffb8e1c1) · [Evidence checkpoint 870c9353c92b](https://github.com/Eidosoma/Cells/commit/870c9353c92b7e614f25a768f2dabecf7b81d49c)
 
 ## Biological evidence
 

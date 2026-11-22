@@ -1,7 +1,7 @@
 {
   "view": "laws",
-  "title": "Laws Library Preview",
-  "description": "Every piece the Cells engine declares, on a wall of shelves, with the models that declare them, read from the engine's declarations manifest: the Laws library of Cells, standing alone.",
+  "title": "Cells Laws Atlas",
+  "description": "Explore the Cells law families, trace declared connections, and compare the pieces shared by two models.",
   "boot": "Loading the Laws library…",
   "scene": {
     "from": "data/architecture/architecture.scene.json",
