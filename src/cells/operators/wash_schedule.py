@@ -90,6 +90,7 @@ from cells.definitions.specs import ConfigError, _fields
 from cells.laws.electrochemistry import R
 from cells.models import surface_pump as first
 from cells.numerics import ideal_mixing
+from cells.numerics.clock_instants import on_grid  # D283's one predicate.
 from cells.numerics.species_sums import entity_sum, species_sum
 from cells.operators.contract import Operator, Read
 
@@ -238,7 +239,7 @@ def parse_events(raw, base, declaration):
         time = _finite(entry["time"], "a wash time")
         if not 0.0 < time < end:
             raise ConfigError(f"{LAW_ID}: a wash lies after time 0 and before the end time")
-        if int(round(time / dt)) * dt != time:
+        if on_grid(time, dt) is None:
             raise ConfigError(f"{LAW_ID}: a wash time must be an exact multiple of dt (k * dt)")
         node = identifier(entry["node"])
         if node not in declaration.nodes:

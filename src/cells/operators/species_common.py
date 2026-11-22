@@ -45,6 +45,7 @@ import numpy as np
 from cells.definitions import pump_composite_spec as composite_spec
 from cells.definitions.spec_values import identifier
 from cells.definitions.specs import ConfigError, _fields
+from cells.numerics.clock_instants import on_grid  # D283's one predicate.
 from cells.registry import species_registry as registry
 
 REPLACEMENT_LAW = "scheduled_cell_replacement@1"
@@ -351,7 +352,7 @@ def parse_schedules(raw, base, routes, law, key, parse_values):
         changes = []
         for change in entry["schedule"]:
             time = _time(change.get("time") if isinstance(change, dict) else None, key)
-            if time != round(time / dt) * dt:
+            if on_grid(time, dt) is None:
                 raise ConfigError(
                     f"{law}: a schedule change must be an exact multiple of dt (k * dt)"
                 )

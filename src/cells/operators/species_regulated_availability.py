@@ -139,6 +139,7 @@ from cells.definitions import pump_composite_spec as composite_spec
 from cells.definitions.spec_values import identifier
 from cells.definitions.specs import ConfigError, _fields, _number
 from cells.laws.reactions import hill_factors
+from cells.numerics.clock_instants import on_grid  # D283's one predicate.
 from cells.numerics.species_sums import entity_sum
 from cells.operators import membrane_state
 from cells.operators import species_common as common
@@ -900,7 +901,7 @@ def _event_time(value, what, base, *, at_zero=False):
     change time). An exact multiple of dt, refused here with its own message."""
     dt, end = base.execution.dt, base.experiment.end_time
     time = _number(value, f"{LAW_ID}: {what}")
-    if time != round(time / dt) * dt:
+    if on_grid(time, dt) is None:
         raise ConfigError(f"{LAW_ID}: {what} must be an exact multiple of dt (k * dt)")
     if not (0.0 <= time if at_zero else 0.0 < time) or not time < end:
         bound = "0 <= t < end" if at_zero else "0 < t < end"

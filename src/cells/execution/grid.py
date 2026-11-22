@@ -36,17 +36,12 @@ import numpy as np
 from cells.definitions.specs import ConfigError, _integer
 from cells.execution.resources import trace_bytes
 from cells.execution.schedule import control_values
+from cells.numerics.clock_instants import (  # noqa: F401 (D283's one predicate)
+    ROUNDING_ULPS,
+    on_grid,
+    same_instant,
+)
 from cells.registry.models import get_model
-
-# Two times are one instant to within the rounding of two products of declared steps (each
-# product and each step's binary value round by half an ulp; 4 ulps holds them with margin).
-ROUNDING_ULPS = 4
-
-
-def same_instant(a, b):
-    """Whether a and b differ by at most ROUNDING_ULPS ulps of the larger."""
-    return abs(a - b) <= ROUNDING_ULPS * math.ulp(max(abs(a), abs(b)))
-
 
 # The near-miss band (D283): an event more than ROUNDING_ULPS from a point of the clock but within
 # NEAR_MISS of the step it would split off is refused. Such a sub-step, a millionth of its step or
@@ -58,14 +53,6 @@ def same_instant(a, b):
 # panel's nested boundary 2**-40 s after its intervention, so it is exempt; like every time, it
 # snaps where it is within the tolerance of a point.
 NEAR_MISS = 1e-6
-
-
-def on_grid(time, dt):
-    """D283's one predicate for a clock without windows: the point k * dt that `time` is, exactly or
-    within the same-instant tolerance, or None. Every check that asks whether a time is on the
-    step grid asks this."""
-    point = round(time / dt) * dt
-    return point if point == time or same_instant(point, time) else None
 
 
 def near_miss(time, point, step):
@@ -106,11 +93,20 @@ def applied_definition(spec):
     changed = {c.time for c in spec.experiment.changes}
     snapped = {d: a for d, a in grid.snapped if d in changed}  # The events'; refinements stay.
     rows = [t for t in spec.experiment.observation_times if grid.instant(t) != t]
-    if not snapped and not rows:
-        return spec, ()
+    dt = spec.execution.dt
     raw = spec.to_dict()
     pairs = [(t, grid.instant(t)) for t in rows]
-    raw["experiment"] = _snap_times(raw["experiment"], snapped.get, pairs)
+    # D283 stage 2: the operators' own schedule times (their declarations, in the model block or
+    # the experiment's), which their checks admit within the same-instant tolerance of k * dt
+    # (on_grid), take that point too, so each operator's event map reads the instant the clock
+    # steps at; the clock's own snaps first (a fine point's included).
+    raw["experiment"] = _snap_times(
+        raw["experiment"], lambda v: snapped.get(v, on_grid(v, dt)), pairs
+    )
+    model = _snap_times(raw["model"], lambda v: on_grid(v, dt), pairs)
+    if not pairs:
+        return spec, ()
+    raw["model"] = model
     if rows:  # A row declared at a snapped instant is that point's row.
         raw["experiment"]["observation_times"] = [
             grid.instant(t) for t in raw["experiment"]["observation_times"]

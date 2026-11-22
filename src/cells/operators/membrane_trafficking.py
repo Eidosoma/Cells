@@ -111,6 +111,7 @@ from cells.definitions.specs import ConfigError, _fields, _number
 from cells.laws.electrochemistry import CHARGE_PER_FMOL, F, R
 from cells.models import pump_composite_adapter as adapter
 from cells.models import surface_pump as first
+from cells.numerics.clock_instants import on_grid  # D283's one predicate.
 from cells.numerics.extracellular_field import scatter
 from cells.numerics.species_sums import entity_sum, species_sum
 from cells.operators import compartments, membrane_state
@@ -349,7 +350,7 @@ def _changes(raw, what, route, dt, end):
                 f"{LAW_ID}: route {route} has a negative {what} rate; the direction is the "
                 "schedule's (retrieval or recycling), so every rate is >= 0"
             )
-        if time != round(time / dt) * dt:
+        if on_grid(time, dt) is None:
             raise ConfigError(f"{LAW_ID}: a schedule change must be an exact multiple of dt")
         if not 0.0 <= time < end:
             raise ConfigError(f"{LAW_ID}: a schedule change lies at or beyond the end time")

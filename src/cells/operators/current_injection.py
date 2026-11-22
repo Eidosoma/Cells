@@ -46,6 +46,7 @@ from cells.definitions.specs import ConfigError, _fields
 from cells.laws.electrochemistry import CHARGE_PER_FMOL
 from cells.models import pump_composite_adapter as adapter
 from cells.models import surface_tissue as tissue
+from cells.numerics.clock_instants import on_grid  # D283's one predicate.
 from cells.numerics.species_sums import entity_sum, species_sum
 from cells.operators.contract import Operator
 from cells.registry.species_registry import NamedRow
@@ -343,7 +344,7 @@ class ElectrodeCurrentInjection(Operator):
         dt = spec.execution.dt
         for g in schedule:
             for c in g:
-                if c.time != round(c.time / dt) * dt:
+                if on_grid(c.time, dt) is None:
                     raise ConfigError("A current change must be an exact multiple of dt (k * dt)")
 
     def species_identities(self, declaration):
