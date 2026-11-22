@@ -45,7 +45,7 @@ and a general feature, never one built for one study (D144).
 | [FR-37](#fr-37--sampling-a-liquid-whose-dye-is-unevenly-distributed) | Sampling a liquid whose dye is unevenly distributed: a draw from chosen parts of an unevenly mixed liquid | **High** (user, 21 November 2026; D274) | **Shown with existing operators** (2bba6043, validation/sampling/uneven_draw.py): per-region wash events; the three cases match, with all 10 fmol accounted for; checker-accepted. Mixing is declared, not simulated (D246), and the sample is a host-side sum | Predicting the per-region split from the port, flow and timing needs an advection operator on faces, with the wash's face refusal lifted (about 3 to 5 days): built only if the requester asks |
 | [FR-38](#fr-38--rna-release-from-its-template-into-two-pools-with-different-lifetimes) | RNA release from its template into two pools with different lifetimes, with per-producer accounting, a release-window cohort and explicit measurement denominators | A user (22 November 2026) | **Building at full scope (D284).** A terminal hold in `templated_polymerisation@1`, split by p into two fate rows, with exact energy and no driven work; the cohort by label rows and by counters; a reader in `src/cells/assays` | The sheet amendment comes first. The finish is a registered comparison against code-blind references. Questions (c) replacement and (e) which cohort are with the requester |
 | [FR-39](#fr-39--a-vesicle-that-survives-transient-pores) | A vesicle that survives transient pores: repeated opening and resealing with partial cargo loss | **High** (user, via the Lean lane, 22 November 2026; D286) | **Requested.** Cells ends a lineage at terminal lysis | A design note shared with FR-31: tension-driven pore opening that either reseals after leaking or ruptures |
-| [FR-40](#fr-40--a-single-ribosome-translation-timing-benchmark) | A single-ribosome translation timing benchmark: 406 s from first detectable nascent chain to release | **High** (user, via the Lean lane, 22 November 2026; D286) | **Recorded.** The 406 s observation is kept; the speed comparison stays unscored until the paper's runoff timing is reconciled | A desk note: the detection model, an independent speed, and how a comparison with `templated_polymerisation@1` would be registered |
+| [FR-40](#fr-40--a-single-ribosome-translation-timing-benchmark) | A single-ribosome translation timing benchmark: 406 s from first detectable nascent chain to release | **High** (user, via the Lean lane, 22 November 2026; D286) | **Desk note landed** (022a5d2a). With only the paper's own speeds, which conflict, a comparison is a calibration, not a validation | A metadata-only search for a matched-condition speed or a multi-length reporter series; the spread test needs no speed |
 | [FR-41](#fr-41--vesicle-shrinkage-validation-records) | Vesicle shrinkage validation records for the osmotic lumen law | **High** (user, via the Lean lane, 22 November 2026; D286) | **One agreement:** Fujiwara et al. 2014, about one quarter of the initial volume measured against 24.56% from Cells' equilibrium replay, unfitted | Small-osmole retention stays open: a search for paired retention and volume data |
 
 ## FR-1 — A closed internal compartment on the shared inventory
@@ -1719,6 +1719,21 @@ with 2 and 1.5.
   - the detection model (where along the chain the nascent signal becomes detectable);
   - which independent speed could be used;
   - how a comparison would be registered before any reading.
+
+**The desk note (docs/TRANSLATION_TIMING_NOTE.md, 022a5d2a).**
+- **The prediction:** the translation law's mean from detection at codon d to release is (L − d)/(v_eff).
+  With detection at about 8 of 24 SunTag peptides (codon 245), that is 393 s at the paper's 3.1 codons/s,
+  and at least 446 s at its histogram's bound.
+- **The verdict:** with only the paper's own speeds, which contradict each other by at least 13%, a
+  comparison could only be a calibration. A validation needs an independent speed under matched
+  conditions, plus d from the intensity calibration alone, both fixed before reading.
+- **Two tests need no speed:**
+  - interval ratios between reporters of different lengths with the same tag and leader, which this paper
+    lacks;
+  - the spread, about 3% under the per-codon law. A broader spread would be recorded as a non-claim about
+    homogeneity, not fitted.
+- **The next step:** a metadata-only search for a matched-condition speed, or for a multi-length reporter
+  series.
 
 ## FR-41 — Vesicle shrinkage validation records
 
