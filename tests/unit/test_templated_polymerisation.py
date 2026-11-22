@@ -256,8 +256,10 @@ def test_a_replacement_takes_the_occupants_chains_and_hold_and_restarts_its_coun
     half-steps. Nothing due: the state bit for bit. Due: complexes and hold 0, every machine free,
     each removal counter the amount that left, mu°_res (W + L H) the free energy leaving, every
     birth value the counter's, the residue and machine ledgers at rounding, and the founder's
-    per-producer identity (item 4). A stale count is refused. The controls: the due count steps at
-    120 s and T's values hold from then. A donor copy into the slot is refused (check_occupants)."""
+    per-producer identity (item 4). With labels (FR-42's pool reporter, erratum E) the same state
+    and the emptied holds reported, zeros when nothing is due. A stale count is refused. The
+    controls: the due count steps at 120 s and T's values hold from then. A donor copy into the
+    slot is refused (check_occupants)."""
     from dataclasses import replace
     from types import SimpleNamespace
 
@@ -283,6 +285,13 @@ def test_a_replacement_takes_the_occupants_chains_and_hold_and_restarts_its_coun
     after, ok = op.event(state, due(1.0), p, xp=np)
     assert bool(ok) and int(after.poly_rep_applied[0]) == 1
     C, H = state.poly_complexes_fmol[0], float(np.sum(state.poly_hold_fmol))
+    # FR-42's pool reporter (erratum E): with labels it reports the holds it empties, in order.
+    rows = np.array([0])
+    assert op.event(state, due(0.0), p, xp=np, labels=rows)[2].tolist() == [0.0]
+    labelled, ok_l, removed = op.event(state, due(1.0), p, xp=np, labels=rows)
+    assert removed.tolist() == [H] and all(
+        np.array_equal(a, b) for a, b in zip(labelled, after, strict=True)
+    )
     assert C.sum() > 0 and H > 0
     assert not np.any(after.poly_complexes_fmol) and not np.any(after.poly_hold_fmol)
     assert np.array_equal(after.poly_free_machines_fmol, p.poly_pool_total_fmol)

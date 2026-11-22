@@ -1452,16 +1452,24 @@ def _spread(hot, mask, *, xp):
     return (xp.where(mask, 1.0, 0.0) @ hot) > 0
 
 
+def hold_report(state, release_due, p, *, xp):
+    """[release] the holds the event empties, H summed over the class axis from the state before
+    it where the release's slot is due, 0 elsewhere: its label_pools' entries, in order (FR-42's
+    pool reporter's report; erratum E, §9.18)."""
+    return xp.where(release_due, entity_sum(state.poly_hold_fmol, axis=1, xp=xp), 0.0)
+
+
 def poly_event(state, control, p, *, xp=jnp):
     """Amendment S's event (§9.16, item 2), at the start of the step leaving an event time: on each
     replaced slot whose next replacement is due, its chains in progress and its holds leave
     (counted, with the standard free energy leaving with them, never as heat), its pools' machines
     are all free, and each counter's value becomes the newcomer's birth value, the departed
     generation's totals recorded. It reads only its own state and its control, so its place among
-    the events does not matter. (state, None) statically without a replacement; nothing due: the
+    the events does not matter. Returns (state, valid, removed): removed the holds it emptied
+    (hold_report). (state, None, None) statically without a replacement; nothing due: the
     start state, bitwise."""
     if not replacing(p):
-        return state, None
+        return state, None, None
     applied = state.poly_rep_applied
     count = getattr(control, REPLACEMENTS_DUE)
     due = count == applied + 1  # [replaced slot]
@@ -1523,7 +1531,7 @@ def poly_event(state, control, p, *, xp=jnp):
     valid &= xp.all(xp.isfinite(energy_out))
     flowing = xp.any(due)  # Nothing due: the start state, bitwise.
     selected = type(state)(*(xp.where(flowing, a, b) for a, b in zip(new, state, strict=True)))
-    return selected, valid
+    return selected, valid, hold_report(state, release_due, p, xp=xp)
 
 
 def _bind_releases(declaration, layout, listed, chains):
@@ -2520,8 +2528,16 @@ class TemplatedPolymerisation(Operator):
             p.poly_chain_kappa.shape[0] + p.poly_deg_length.shape[0] + p.poly_tr_share.shape[0]
         ) == 0
 
-    def event(self, state, control, p, *, xp):
-        return poly_event(state, control, p, xp=xp)
+    def event(self, state, control, p, *, xp, labels=None):
+        """Amendment S's event (poly_event). labels (FR-42's pool reporter, erratum E; static):
+        the call then also returns removed [release], the holds it emptied (hold_report), zeros
+        without a replacement."""
+        state, valid, removed = poly_event(state, control, p, xp=xp)
+        if labels is None:
+            return state, valid
+        if removed is None:  # Statically no replacement: it empties no hold.
+            removed = xp.zeros(p.poly_rel_rate.shape[0])
+        return state, valid, removed
 
     def half_step(self, state, h, control, p, *, xp, labels=None):
         """labels (FR-42, D289, D296; static): (rows, arrival, source); the call then returns
