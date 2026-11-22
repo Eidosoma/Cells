@@ -48,6 +48,7 @@ from cells.models.assembly_lineages_v2 import (
     ledger,
     lumen,
     model,
+    pore_clock,
     streams,
 )
 from cells.models.assembly_lineages_v2.spec import world_id
@@ -87,6 +88,7 @@ class WorldRun:
     population: dict | None = None  # OL2 milestone 3: the shared pool's report (population.py)
     start: object = "fresh"  # FR-22 rung P: "fresh", or a run from a checkpoint's start record
     resume: dict | None = None  # the host's state a checkpoint keeps, when the run `stopped`
+    pores: dict | None = None  # FR-31: the pore clock's events, draws and causes (pore_clock.py)
 
     def checkpoint(self):
         """The checkpoint of a population run stopped at an exact event count (checkpoints.py)."""
@@ -182,6 +184,11 @@ class _World:
             self.diagnostic = {"draws": [], "heat": [], "work": [], "jumps": [],
                                "schedule_draws": [], "key": 0, "counter": 0,
                                "lysed_at_stop": False, "ended_by_stop": False}  # fmt: skip
+        # FR-31: the vesicle's pore clock (pore_clock.Vesicle), or None for a world without the
+        # pore law; its rupture, once it fires: (the pore row's index, the record, the state
+        # after, the reservoirs' change, F after, its heat, |heat|, its reservoir work, the hold's)
+        self.pores = None
+        self.rupture = None
 
     def extra(self):
         return (self.jump.copy(), self.shear, self.sink, self.magnitude)
@@ -349,20 +356,54 @@ def _shear(specs, host_layouts, holders, plans, lanes, layout, due, initial, dev
     return jax.device_put(host, device), layout
 
 
-def refuse_unbuilt(spec):
-    """FR-31 Phase A, slice 1: the declarations parse, but the pore clock is not built yet, so a
-    world that declares a hazard is refused here rather than run without its clock."""
-    if spec.model.world.hazard is not None:
-        raise ConfigError(
-            f"world: hazard: {spec.model.world.hazard[0]}'s clock is not built yet (FR-31 Phase A, "
-            "slice 2): the world is refused rather than run without it"
-        )
+PORE_STOP = "pore"  # FR-31: a lane's plan entry for its vesicle's rupture time (pore_clock.py)
+
+
+def _pore(specs, host_layouts, holders, plans, lanes, layout, due, device):
+    """FR-31: each due lane's vesicle ruptures at its t* (pore_clock.py). The draw that crossed
+    the stop is discarded and counted (a device that ended inert was advanced to it), the opening
+    and the release are booked on a pore row, and the lane ends lysed."""
+    import jax
+
+    host = jax.tree_util.tree_map(np.array, lanes)
+    horizons = np.array(layout.horizon)
+    for i in due:
+        spec, holder, layout_i = specs[i], holders[i], host_layouts[i]
+        world = spec.model.world
+        stop, _ = plans[i].pop(0)
+        holder.observe(stop)  # Observations before the stop see the state before the rupture.
+        age = int(host.age[i]) + 1  # The draw that crossed the stop: discarded, and counted.
+        key = int(host.occupant[i])
+        d = holder.diagnostic
+        if d is not None:
+            d["draws"].append((key, age - 1, diagnostic.DISCARDED_AT_PORE))
+            d["key"], d["counter"], d["lysed_at_stop"] = key, age, True
+        clock, counts = holder.pores, host.counts[i].copy()
+        work, heat_open, delta_f = pore_clock.opening(world, clock.area, clock.hold.sigma)
+        added, took, returned, work_return = pore_clock.release(world, layout_i, counts)
+        after = counts.copy()
+        after[[j for j, p in enumerate(world.places) if p.phase in ("membrane", "lumen")]] = 0
+        after += added
+        tables = model.tables(spec)
+        f_open = (ledger.state_free_energy(counts, tables, world.terms, layout_i.terms)
+                  + geometry.closure_kT(world) + delta_f)  # fmt: skip
+        f_after = ledger.state_free_energy(after, tables, world.terms, layout_i.terms)
+        q_release = -(f_after - f_open) + work_return
+        record = pore_clock.event(world, clock, heat_open, work, q_release, returned, work_return)
+        holder.row(pore_clock.PORE_ROW, holder.events, stop, holder.fired.copy(), *holder.booked)
+        heat = heat_open + q_release
+        holder.rupture = (len(holder.rows), record, after, took, f_after, heat,
+                          abs(heat_open) + abs(q_release), work_return, work)  # fmt: skip
+        host.age[i], host.time[i] = age, stop
+        host.status[i] = kernel.LYSED
+        horizons[i] = spec.experiment.time_horizon_s
+    layout = layout._replace(horizon=jax.device_put(horizons, device))
+    return jax.device_put(host, device), layout
 
 
 def run(spec, *, start=None, stop=None):
     """One world, fresh or (a population, FR-22 rung P) from a checkpoint `start`, to its end or to
     an exact stop at `stop` events (population.run)."""
-    refuse_unbuilt(spec)
     if spec.execution.mode == "population":  # OL2 milestone 3 (population.py)
         from cells.models.assembly_lineages_v2 import population
 
@@ -394,8 +435,6 @@ def run_lanes(specs):
         )
     if any(s.execution.mode != MODE for s in specs):
         raise ConfigError(f"run_lanes runs {MODE} worlds")
-    for s in specs:
-        refuse_unbuilt(s)
     structures = {model.structure(s) for s in specs}
     if len(structures) != 1:
         raise ConfigError("Lanes share one structure (capacities, laws, conventions, recording)")
@@ -426,6 +465,17 @@ def run_lanes(specs):
     host_layouts = [model.layout(s) for s in specs]
     planned = [_plan(s, h.base_key) for s, h in zip(specs, host_layouts, strict=True)]
     plans = [p for p, _ in planned]  # OL3: each lane's schedule stops (division.py)
+    # FR-31: each pore world's vesicle clock (its founder, key 0), its rupture time a stop; a world
+    # that declares the pore law declares no division, so its plan holds that one stop at most.
+    clocks = [
+        pore_clock.Vesicle(s, h.base_key, 0, model.founder(s))
+        if s.model.world.hazard is not None
+        else None
+        for s, h in zip(specs, host_layouts, strict=True)
+    ]
+    for plan, clock, s in zip(plans, clocks, specs, strict=True):
+        if clock is not None and clock.time <= s.experiment.time_horizon_s:
+            plan.append((clock.time, [PORE_STOP]))
     stops = [
         layout_i._replace(horizon=np.float64(plan[0][0])) if plan else layout_i
         for layout_i, plan in zip(host_layouts, plans, strict=True)
@@ -448,6 +498,8 @@ def run_lanes(specs):
         for holder, spec, layout_i in zip(holders, specs, host_layouts, strict=True):
             if spec.model.world.division is not None:
                 holder.energy = _vesicle_energy(spec, layout_i)
+        for holder, clock in zip(holders, clocks, strict=True):
+            holder.pores = clock
         chunks = 0
         while True:
             status = np.asarray(lanes.status)
@@ -456,6 +508,13 @@ def run_lanes(specs):
                 due = [i for i in range(L) if plans[i] and int(status[i]) in held]
                 if not due:
                     break
+                pores = [i for i in due if holders[i].pores is not None]  # FR-31: a rupture
+                if pores:
+                    lanes, layout = _pore(specs, host_layouts, holders, plans, lanes, layout,
+                                          pores, device)  # fmt: skip
+                    due = [i for i in due if holders[i].pores is None]
+                    if not due:
+                        continue
                 lanes, layout = _shear(specs, host_layouts, holders, plans, lanes, layout, due,
                                        initial, device)  # fmt: skip
                 continue
@@ -577,6 +636,8 @@ def _osmotic_report(world, counts, lysis):
 def _assemble(spec, structure, layout, verdict, report, holder, final, timings):
     world = spec.model.world
     status = kernel.STATUS[int(final["status"])]
+    if holder.pores is not None and status == "inert":  # FR-31: a living vesicle's clock runs
+        status = "complete"
     count_change, supply_change = changes(layout, structure)
     start = holder.start
     places = len(world.places)
@@ -619,14 +680,28 @@ def _assemble(spec, structure, layout, verdict, report, holder, final, timings):
     work = np.asarray([r[6] for r in rows], dtype=np.float64)
     work_mag = np.asarray([r[7] for r in rows], dtype=np.float64)
     lysis = None
-    if status == "lysed":  # OL2 milestone 2: the release, booked on the end row (§0.2d item 7).
+    if status == "lysed" and holder.rupture is None:  # OL2 milestone 2: the release, booked on
+        # the end row (§0.2d item 7)
         counts, supplied, f, heat, heat_mag, work, work_mag, lysis = _release(
             world, layout, tables, counts, supplied, f, heat, heat_mag, work, work_mag,
             float(final["time"]),
         )  # fmt: skip
+    hold_work = None
+    if holder.pores is not None:  # FR-31: the rupture, from its pore row on (pore_clock.py)
+        hold_work = np.zeros((len(rows), len(spec.experiment.tension_holds)))
+        if holder.rupture is not None:
+            r, _, after, took, f_after, q, q_mag, w_r, w = holder.rupture
+            counts[r:], supplied[r:], f[r:] = after, supplied[r:] + took, f_after
+            heat[r:] += q
+            heat_mag[r:] += q_mag
+            work[r:] += w_r
+            work_mag[r:] += abs(w_r)
+            hold_work[r:, 0] = w
     booked, booked_mag = work, work_mag
     if divides:  # The shear work is done on the lineage; the sink takes F_v (§0.2d item 7).
         booked, booked_mag = work + shear - sink, work_mag + fission_mag
+    if hold_work is not None:  # FR-31: the hold's work is done on the vesicle (its payer's)
+        booked, booked_mag = booked + hold_work.sum(axis=1), booked_mag + np.abs(hold_work).sum(1)
     residual = ledger.residual(heat, booked, f, f[0])
     tolerance = ledger.closure_tolerance(heat_mag, booked_mag, f, f[0])
     closes = bool(np.all(np.abs(residual) <= tolerance))
@@ -677,6 +752,12 @@ def _assemble(spec, structure, layout, verdict, report, holder, final, timings):
                 holder.attempts, world, status, lysis_time if status == "lysed" else end_time
             ),
         }
+    pores = None
+    if hold_work is not None:  # FR-31: the hold's work column, and the clock's report
+        row_arrays["tension_hold_work_kT"] = hold_work
+        events = [] if holder.rupture is None else [holder.rupture[1]]
+        pores = {"events": events, "causes": {"pore": len(events)},
+                 "draws": [holder.pores.draw()]}  # fmt: skip
     osmotic_report = None
     if world.conventions.lumen_volume == "osmotic":  # OL2 milestone 2's rows and report.
         rows_v = [lumen.host_volume_L(world, c[:places]) for c in counts]
@@ -708,6 +789,9 @@ def _assemble(spec, structure, layout, verdict, report, holder, final, timings):
             spec, layout, holder, status, start["counts"], counts[-1], world_id(world),
             np.concatenate(holder.draws) if holder.draws else None,
         )  # fmt: skip
+        if pores is not None:  # FR-31: its fate at a pore stop, its events and its draws
+            body |= {"fates": list(diagnostic.PORE_FATES), "pore_events": pores["events"]}
+            arrays |= pore_clock.draw_arrays(pores["draws"])
         record = {"body": body, "arrays": arrays}
     return WorldRun(
         spec=spec,
@@ -725,4 +809,5 @@ def _assemble(spec, structure, layout, verdict, report, holder, final, timings):
         osmotic=osmotic_report,
         division=division_report,
         diagnostic=record,
+        pores=pores,
     )

@@ -88,6 +88,14 @@ def eta_m(temperature_k, e_a_j_per_mol, eta_298=ETA_298_PA_S_M):
     return eta_298 * (t / T_REF_K) * math.exp(e_a_j_per_mol / R * (1.0 / t - 1.0 / T_REF_K))
 
 
+def log_site_density(log_nu_a, gamma_n, e_a_j_per_mol, eta_298=ETA_298_PA_S_M):
+    """ln n_s (n_s per m²), the sheet's §7 closed form, which no temperature enters:
+    n_s = 4π·η₂₉₈·ν_A·exp(−E_A/(R·298.15 K)) / (π^(1/2)·Γ·k_B^(−1/2)·298.15 K)."""
+    return (math.log(4.0 * math.pi * eta_298) + log_nu_a - e_a_j_per_mol / (R * T_REF_K)
+            - 0.5 * math.log(math.pi) - math.log(gamma_n) + 0.5 * math.log(K_B)
+            - math.log(T_REF_K))  # fmt: skip
+
+
 def collapse_rate(sigma_n_per_m, temperature_k, gamma_n, e_a_j_per_mol, eta_298=ETA_298_PA_S_M):
     """P = (σ_β·σ)^(1/2)/ζ, with ζ = 4π·η_m(T): the event pair's reverse rate (s⁻¹; the sheet's
     §7)."""

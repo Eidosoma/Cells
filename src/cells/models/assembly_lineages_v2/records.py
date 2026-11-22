@@ -35,6 +35,7 @@ from cells.models.assembly_lineages_v2 import (
     kernel,
     ledger,
     model,
+    pore_clock,
     runner,
 )
 from cells.models.assembly_lineages_v2 import spec as world_spec
@@ -187,6 +188,18 @@ DIVISION_BASES = {
     "at its schedule time",
     "fission": DIVISION_BASE,
 }
+# FR-31's records, written only by a world that declares the pore law (pore_clock.py).
+PORE_RECORDS = {
+    "tension_hold_work_kT": _record(
+        "row", ["row", "hold"], "k_BT", "cumulative",
+        "each hold's work, sigma pi r_c^2 at each pore's opening (run.json tension_hold names "
+        "each column's hold and payer, in order)",
+    ),
+}  # fmt: skip
+PORE_BASE = (
+    "; a world with the pore law adds a pore row (row_kind pore) at each rupture, at its time, "
+    "holding the released state"
+)
 SCHEDULED_DRAW = (
     "two uniforms per draw, (u1, u2), from the occupant's event stream (domain 1, its carrier "
     "key) at counter = the occupant's draws since its birth: each committed event's, and the draw "
@@ -345,9 +358,7 @@ def run_record(run, world_id):
         "check": {"probe": run.verdict, "world": run.world_report},
         "mode": spec.execution.mode,
         "stream": world_spec.stream_identity(spec),
-        "ssa": kernel.SSA_CONVENTION
-        if run.division is None
-        else {**kernel.SSA_CONVENTION, "draw": SCHEDULED_DRAW},
+        "ssa": _ssa(run),
         "lifecycle": _lifecycle(run),
         "ledger": {**ledger.CONVENTIONS, "closure": run.closure},
         "source": _source(),
@@ -361,7 +372,7 @@ def run_record(run, world_id):
             "temperature_K": world.units.temperature_K,
             "kT_J": world.units.kT_J,
             "horizon_s": spec.experiment.time_horizon_s,
-            "bases": BASES if run.division is None else DIVISION_BASES,
+            "bases": _bases(run),
         },
         "places": places_table(world),
         "channels": kernel.channel_table(world),
@@ -375,6 +386,31 @@ def run_record(run, world_id):
         **({"osmotic": run.osmotic} if run.osmotic is not None else {}),
         **({"division": _division_record(run)} if run.division is not None else {}),
         **({"population": _population_record(run)} if run.population is not None else {}),
+        **(_pore_records(run) if run.pores is not None else {}),
+    }
+
+
+def _ssa(run):
+    out = kernel.SSA_CONVENTION if run.division is None else {**kernel.SSA_CONVENTION,
+                                                               "draw": SCHEDULED_DRAW}  # fmt: skip
+    if run.pores is not None:  # FR-31: the clock's rule beside the draw's
+        out = {**out, "pore_clock": pore_clock.CLOCK}
+    return out
+
+
+def _bases(run):
+    out = BASES if run.division is None else DIVISION_BASES
+    if run.pores is not None:  # FR-31: the pore row
+        out = {**out, "row": out["row"] + PORE_BASE}
+    return out
+
+
+def _pore_records(run):
+    """FR-31: run.json's `pores` (the law, its parameters, the events and their causes) and
+    `tension_hold` (each hold with its payer)."""
+    return {
+        "pores": pore_clock.block(run.spec, run.pores["events"], run.pores["causes"]),
+        "tension_hold": pore_clock.holds_block(run.spec),
     }
 
 
@@ -405,6 +441,13 @@ POPULATION_RECORDS = {
 
 
 def _lifecycle(run):
+    out = _mode_lifecycle(run)
+    if run.pores is not None:  # FR-31: the clock's statuses and order
+        out = pore_clock.lifecycle(out, population=run.population is not None)
+    return out
+
+
+def _mode_lifecycle(run):
     if run.population is not None:  # a population ends slots_full too; a lysis frees one slot
         statuses = {**kernel.LIFECYCLE_OSMOTIC["statuses"]}
         statuses["lysed"] = ("never a population's end: a lysis frees its slot, books one row, "
@@ -460,6 +503,17 @@ def _population_record(run):
 
 
 def _declared(run, name):
+    if run.pores is not None:  # FR-31: the hold's column, and the pore row's legend entry
+        if name in PORE_RECORDS:
+            return PORE_RECORDS[name]
+        if name == "row_kind":
+            out = _declared_by_mode(run, name)
+            legend = {**out["legend"], str(pore_clock.PORE_ROW): pore_clock.PORE_ROW_KIND}
+            return {**out, "legend": legend}
+    return _declared_by_mode(run, name)
+
+
+def _declared_by_mode(run, name):
     table = {**RECORDS, **GEOMETRY_RECORDS}
     if run.population is not None:
         from cells.models.assembly_lineages_v2 import population
@@ -499,8 +553,10 @@ def population_tables(directory, run):
     from cells.models.assembly_lineages import keys
     from cells.models.assembly_lineages_v2 import (
         OSMOTIC_LUMEN,
+        PORE_NUCLEATION,
         SHARED_POOL,
         SHEAR_FISSION,
+        TENSION_HOLD,
         population,
     )
     from cells.records import relations as rel
@@ -524,9 +580,16 @@ def population_tables(directory, run):
                   source=f"source:transfer/{t['schedule']}")
         for t in run.population["transfers"]
     ]  # fmt: skip
+    ruptured = {}  # FR-31: each rupture by its vesicle's key, its lysis by the pore law
+    if run.pores is not None:
+        ruptured = {e["key"]: e for e in run.pores["events"]}
     events += [
         rel.Event(life.end_event, life.end_time, "lysis", OSMOTIC_LUMEN, scheduled=False, step=-1,
                   at=life.id, source="")
+        if life.key not in ruptured
+        else rel.Event(life.end_event, life.end_time, "lysis", PORE_NUCLEATION, scheduled=False,
+                       step=-1, at=life.id,
+                       source=f"source:tension_hold/{ruptured[life.key]['hold']}")
         for life in lives
         if life.end_reason == "lysed"
     ]  # fmt: skip
@@ -577,6 +640,14 @@ def population_tables(directory, run):
         ]  # fmt: skip
         records = rel.records_in(directory, [ARRAYS], {"schedule_work_kT": "cumulative"},
                                  times="row_time")  # fmt: skip
+    if run.pores is not None:  # FR-31: each hold pays its column
+        sources += [rel.Source(h["payer"], "schedule", "energy", TENSION_HOLD,
+                               payer_of="tension_hold_work_kT")
+                    for h in pore_clock.holds_block(run.spec)]  # fmt: skip
+        kinds = {"tension_hold_work_kT": "cumulative"}
+        if run.population["schedule_columns"]:
+            kinds["schedule_work_kT"] = "cumulative"
+        records = rel.records_in(directory, [ARRAYS], kinds, times="row_time")
     out = {"lives": lives, "events": events, "nodes": nodes, "sources": sources,
            "records": records}  # fmt: skip
     if edges:

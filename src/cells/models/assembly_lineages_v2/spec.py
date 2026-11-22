@@ -774,5 +774,7 @@ def stream_identity(spec):
     later = x.mode == POPULATION or any(  # domain 5 is drawn, or domain 6
         s.rate is not None or s.kind == "transfer" for s in spec.experiment.schedules
     )
+    if spec.model.world.hazard is not None:  # FR-31: domain 7 is drawn too
+        return streams.pore_identity(x.seed, x.environment, x.lineage, x.branch, scheduled=later)
     build = streams.scheduled_identity if later else streams.identity
     return build(x.seed, x.environment, x.lineage, x.branch)

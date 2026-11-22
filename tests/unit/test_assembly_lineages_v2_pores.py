@@ -16,8 +16,10 @@ These parse only: none compiles a world, and the file runs in a few seconds.
 """
 
 import copy
+import functools
 import math
 
+import numpy as np
 import pytest
 
 from cells.definitions.specs import ConfigError, parse_spec
@@ -166,8 +168,6 @@ def test_a_pore_world_parses_round_trips_and_names_its_pieces(population):
     log_nu, gamma, e_a, eta = law.parameters(world)
     assert (gamma, e_a, eta) == (GAMMA, E_A, ETA_298)
     assert log_nu == pytest.approx(34.0 - math.log(Q * K_L * N_L / 2.0), rel=1e-15)
-    with pytest.raises(ConfigError, match="clock is not built yet"):  # slice 1: no behaviour yet
-        runner.run(spec)
     planted = copy.deepcopy(d)  # a hold without its pore law
     del planted["model"]["world"]["hazard"]
     with pytest.raises(ConfigError, match="only reader in Phase A is the pore law"):
@@ -293,3 +293,240 @@ def test_every_refusal_of_phase_a(case):
     with pytest.raises(ConfigError, match=message):
         parse_spec(d)
     assert parse_spec(pore_definition()).model.world.hazard is not None  # the control parses
+
+
+# ------------------------------------------------------------------ the clock and the rupture
+
+K_B, N_AV = 1.380649e-23, 6.02214076e23
+AREA = Q * K_L * N_L / 2.0  # m², the founder's
+
+
+def sheet_time(spec, key=0, area=AREA, start=0.0):
+    """(t*, E, ln k_v) from the sheet alone (§2, §4, §5): E = -ln u from domain 7 (the key,
+    counter 0), k_v = A nu_A sigma^(1/2) T^(-3/2) exp(-E_A/(R T)) exp(-pi Gamma^2/(sigma k_B T))."""
+    from cells.models.assembly_lineages_v2 import streams
+
+    stream = streams.stream_key_data(model.layout(spec).base_key, key, "pore")
+    energy = -math.log(float(streams.uniforms(stream, 0, 1)[0]))
+    hazard = spec.model.world.hazard[1]
+    sigma = spec.experiment.tension_holds[0].sigma
+    log_k = (math.log(area) + math.log(hazard["nu_A"][0]) + 0.5 * math.log(sigma)
+             - 1.5 * math.log(T_K) - E_A / (K_B * N_AV * T_K)
+             - math.pi * GAMMA**2 / (sigma * K_B * T_K))  # fmt: skip
+    return start + energy / math.exp(log_k), energy, log_k
+
+
+def sheet_opening(spec, area=AREA, eta=ETA_298):
+    """(w, q_open) in k_BT from the sheet's §3 and §7: w = sigma pi r_c^2 / k_BT, and
+    q_open = ln(A n_s) - sigma_beta/sigma with n_s's closed form at 298.15 K."""
+    nu = spec.model.world.hazard[1]["nu_A"][0]
+    sigma = spec.experiment.tension_holds[0].sigma
+    r_c = GAMMA / sigma
+    w = sigma * math.pi * r_c**2 / (K_B * T_K)
+    n_s = (4 * math.pi * eta * nu * math.exp(-E_A / (K_B * N_AV * 298.15))
+           / (math.sqrt(math.pi) * GAMMA * K_B**-0.5 * 298.15))  # fmt: skip
+    delta_f = 2 * math.pi * r_c * GAMMA / (K_B * T_K) - math.log(area * n_s)
+    return w, -delta_f + w
+
+
+@functools.cache
+def single_run(idle=False, eta=ETA_298, horizon=5.0, plant=None):
+    """One held vesicle (running chemistry, or idle with every rate zero), in the diagnostic
+    mode; `plant` names a planted error."""
+    w = pore_world()
+    w["hazard"]["eta_298_Pa_s_m"]["value"] = eta
+    if idle:
+        w["founder"].update({"A@pool": 0, "B@pool": 0, "S@pool": 0, "S@lumen": 0})
+    d = pore_definition(w, horizon=horizon, uniforms=True)
+    d["experiment"]["diagnostic"] = True
+    spec = parse_spec(d)
+    if plant == "release_from_the_closed_state":  # the release ignores the open pore's dF
+        from cells.models.assembly_lineages_v2 import pore_clock
+
+        real = pore_clock.opening
+        with pytest.MonkeyPatch.context() as patch:
+            patch.setattr(pore_clock, "opening", lambda *a: real(*a)[:2] + (0.0,))
+            return spec, runner.run(spec)
+    return spec, runner.run(spec)
+
+
+@pytest.mark.parametrize("idle", [False, True])
+def test_a_held_vesicle_ruptures_at_its_threshold_and_its_books_close(idle):
+    spec, run = single_run(idle)
+    t_star, energy, log_k = sheet_time(spec)
+    assert run.status == "lysed" and run.closure["holds"]
+    (event,) = run.pores["events"]
+    assert event["time_s"] == pytest.approx(t_star, rel=1e-13)
+    assert event["threshold_E"] == pytest.approx(energy, rel=1e-14) and event["counter"] == 0
+    assert math.log(event["rate_per_s"]) == pytest.approx(log_k, abs=1e-12)
+    kinds, times = run.rows["row_kind"], run.rows["row_time"]
+    assert kinds[-2:].tolist() == [9, 2] and times[-1] == times[-2] == event["time_s"]
+    # The released state: the vesicle empty, its molecules at their pool places, totals kept.
+    # The lane's own state (run.final) is the state at t*, before the release.
+    names = [p.name for p in spec.model.world.places]
+    before, after = run.final["counts"][: len(names)], run.rows["place_count"][-1]
+    vesicle = {"L@membrane": "L@pool", "S@lumen": "S@pool"}
+    for place, pool in vesicle.items():
+        i, j = names.index(place), names.index(pool)
+        assert after[i] == 0 and after[j] == before[j] + before[i]
+        assert event["release"]["returned"].get(pool, 0) == before[i]
+    # The hold's work, the opening's heat, and the row's heat as the event's two parts.
+    w, q_open = sheet_opening(spec)
+    hold = run.rows["tension_hold_work_kT"]
+    assert hold[:-2].tolist() == [[0.0]] * (len(hold) - 2)
+    assert hold[-2:, 0] == pytest.approx([w, w], rel=1e-13) and event["work_kT"] == hold[-1, 0]
+    assert event["opening_heat_kT"] == pytest.approx(q_open, abs=1e-10)
+    heat = run.rows["event_heat_kT"]  # the pore row's, over the device's sum at its last event
+    assert heat[-2] - float(run.final["heat"]) == pytest.approx(
+        event["opening_heat_kT"] + event["release"]["release_heat_kT"], abs=1e-12
+    )
+    # The diagnostic record: the crossing draw discarded at the pore, no step event lysed.
+    body, arrays = run.diagnostic["body"], run.diagnostic["arrays"]
+    assert body["fates"][-1] == "discarded_at_pore" and arrays["draw_fate"][-1] == 3
+    assert not arrays["event_lysed"].any() and body["pore_events"] == run.pores["events"]
+    assert arrays["pore_draw_threshold"].tolist() == [event["threshold_E"]]
+    assert arrays["pore_draw_time"].tolist() == [event["time_s"]]
+
+
+def test_eta_moves_the_opening_and_the_release_apart_and_a_closed_state_release_is_refused():
+    """eta_298 sets the opening's dF and so its heat (the sheet's §7), and the release from the
+    open state takes the difference back: the event's heat, its time and the books are unchanged
+    (planted: a release booked from the closed state, which the ledger refuses)."""
+    spec, base = single_run()
+    _, scaled = single_run(eta=10 * ETA_298)
+    (a,), (b,) = base.pores["events"], scaled.pores["events"]
+    assert b["time_s"] == a["time_s"] and b["work_kT"] == a["work_kT"]
+    assert b["opening_heat_kT"] - a["opening_heat_kT"] == pytest.approx(math.log(10), abs=1e-12)
+    assert b["release"]["release_heat_kT"] - a["release"]["release_heat_kT"] == pytest.approx(
+        -math.log(10), abs=1e-12
+    )
+    assert scaled.closure["holds"]
+    assert scaled.rows["event_heat_kT"][-1] == pytest.approx(
+        base.rows["event_heat_kT"][-1], abs=1e-12
+    )
+    _, planted = single_run(plant="release_from_the_closed_state")
+    assert planted.status == "refused" and not planted.closure["holds"]
+
+
+def test_a_vesicle_alive_at_the_horizon_ends_complete_and_the_bundle_reads_back(tmp_path):
+    """A horizon before t*: no rupture, no pore row, the hold's column zero, and idle chemistry
+    ends complete, never inert (Q3). The ruptured run's bundle reads back with its pores and
+    tension_hold blocks, the pore stream in its identity, and the pore row's legend."""
+    from cells.models.assembly_lineages_v2 import records
+
+    spec, ruptured = single_run(idle=True)
+    t_star = ruptured.pores["events"][0]["time_s"]
+    _, alive = single_run(idle=True, horizon=t_star / 2)
+    assert alive.status == "complete" and alive.pores["events"] == []
+    assert 9 not in alive.rows["row_kind"] and not alive.rows["tension_hold_work_kT"].any()
+    assert alive.rows["row_time"][-1] == t_star / 2 and alive.closure["holds"]
+    records.write_run(tmp_path / "bundle", ruptured)
+    _, record, arrays = records.read(tmp_path / "bundle")
+    assert record["pores"]["events"] == ruptured.pores["events"]
+    assert record["pores"]["causes"] == {"pore": 1, "threshold": 0}
+    assert record["tension_hold"] == [
+        {
+            "index": 0,
+            "sigma_N_per_m": SIGMA,
+            "start_s": 0.0,
+            "end_s": 50.0,
+            "payer": "source:tension_hold/0",
+        }
+    ]
+    assert record["stream"]["domains"]["pore"] == 7 and "pore_clock" in record["ssa"]
+    assert record["records"]["row_kind"]["legend"]["9"] == "pore"
+    assert "lysed" in record["lifecycle"]["statuses"] and record["end"]["status"] == "lysed"
+    assert arrays["tension_hold_work_kT"].shape == (len(arrays["row_time"]), 1)
+
+
+FOUNDERS = ((0, AREA), (1 << 32, Q * K_L * (N_L + 2) / 2.0))  # (key, area) of slots 0 and 1
+
+
+@functools.cache
+def population_run(idle=False, horizon=5.0, transfer=None):
+    """Two held vesicles on one pool (running chemistry, or idle), in the diagnostic mode, with a
+    transfer keeping one of them when `transfer` gives its time."""
+    w = pore_world(population=True)
+    if idle:
+        w["founder"].update({"A@pool": 0, "B@pool": 0, "S@pool": 0})
+        for founder in w["population"]["founders"]:
+            founder["S@lumen"] = 0
+    d = pore_definition(w, horizon=horizon, uniforms=True)
+    d["experiment"]["diagnostic"] = True
+    if transfer is not None:
+        d["experiment"]["schedules"] = [{"index": 3, "kind": "transfer", "times_s": [transfer],
+                                         "K_keep": 1, "fresh_pool": [3, 5, 4, 1]}]  # fmt: skip
+    spec = parse_spec(d)
+    return spec, runner.run(spec)
+
+
+@pytest.mark.parametrize("idle", [False, True])
+def test_each_vesicle_of_a_population_ruptures_at_its_own_threshold(idle, tmp_path):
+    """Each founder's rupture time is its own E/k_v (domain 7 at its key, its area), its slot is
+    freed on its pore row, the hold's column sums the openings and the books close. A population
+    whose vesicles have all ruptured ends inert when its chemistry is idle, complete when its pool
+    goes on (Q3). Each rupture is a lysis by the pore law, paid by the hold's source."""
+    from cells.models.assembly_lineages_v2 import records
+    from cells.records import relations as rel
+
+    spec, run = population_run(idle)
+    events = {e["key"]: e for e in run.pores["events"]}
+    assert set(events) == {key for key, _ in FOUNDERS} and run.closure["holds"]
+    for slot, (key, area) in enumerate(FOUNDERS):
+        t_star, energy, _ = sheet_time(spec, key=key, area=area)
+        e = events[key]
+        assert e["slot"] == slot and e["time_s"] == pytest.approx(t_star, rel=1e-13)
+        assert e["threshold_E"] == pytest.approx(energy, rel=1e-14)
+        w, q_open = sheet_opening(spec, area=area)
+        assert e["work_kT"] == pytest.approx(w, rel=1e-13)
+        assert e["opening_heat_kT"] == pytest.approx(q_open, abs=1e-10)
+        (r,) = np.flatnonzero((run.rows["row_kind"] == 9) & (run.rows["row_time"] == e["time_s"]))
+        assert run.rows["slot_key"][r, slot] == -1 and not run.rows["slot_count"][r, slot].any()
+        assert run.rows["slot_key"][r - 1, slot] == key
+    works = sum(e["work_kT"] for e in events.values())
+    assert run.rows["tension_hold_work_kT"][-1, 0] == pytest.approx(works, rel=1e-13)
+    assert run.status == ("inert" if idle else "complete")
+    totals = run.rows["pool_count"] + run.rows["slot_count"].sum(axis=1)
+    moiety = {"L": "l", "S": "s", "A": "a", "B": "a"}  # A and B interconvert
+    places = [moiety[p.species] for p in spec.model.world.places]
+    for name in set(places):  # a closed world: each moiety's total is kept through the ruptures
+        column = totals[:, [i for i, x in enumerate(places) if x == name]].sum(axis=1)
+        assert (column == column[0]).all()
+    assert (run.diagnostic["arrays"]["draw_fate"] == 3).sum() == 2
+    records.write_run(tmp_path / "p", run)
+    _, tables = rel.read(tmp_path / "p")
+    lyses = [e for e in tables["events"] if e.kind == "lysis"]
+    assert len(lyses) == 2 and {(e.by, e.source) for e in lyses} == {
+        (PORE_NUCLEATION, "source:tension_hold/0")
+    }
+    (payer,) = [s for s in tables["sources"] if s.id == "source:tension_hold/0"]
+    assert payer.payer_of == "tension_hold_work_kT" and payer.declared_by == TENSION_HOLD
+
+
+def test_a_population_s_clocks_end_with_their_vesicles_and_ties_are_refused(monkeypatch):
+    """A transfer that removes a vesicle before its t* takes its rupture with it; a vesicle alive
+    at the horizon with idle chemistry ends complete. A rupture time shared with a schedule stop,
+    or with another vesicle's (planted: one threshold for every key), is refused at the start."""
+    from cells.models.assembly_lineages_v2 import pore_clock
+
+    spec, run = population_run(transfer=0.03)
+    (event,) = run.pores["events"]
+    (removed,) = [life for life in run.population["lives"] if life["end_reason"] == "removed"]
+    assert event["key"] != removed["key"] and run.closure["holds"]
+    t_star = sheet_time(spec, key=event["key"], area=dict(FOUNDERS)[event["key"]])[0]
+    assert event["time_s"] == pytest.approx(t_star, rel=1e-13)
+    _, alive = population_run(idle=True, horizon=0.05)
+    assert alive.status == "complete" and alive.pores["events"] == []
+    assert alive.rows["slot_key"][-1].tolist()[:2] == [key for key, _ in FOUNDERS]
+    _, ruptured = population_run(idle=True)
+    d = pore_definition(pore_world(population=True), uniforms=True)
+    first = min(e["time_s"] for e in ruptured.pores["events"])
+    d["experiment"]["schedules"] = [{"index": 1, "kind": "replacement", "times_s": [first],
+                                     "pool": [3, 5, 4, 1]}]  # fmt: skip
+    with pytest.raises(ConfigError, match="the time of a schedule stop"):
+        runner.run(parse_spec(d))
+    d = pore_definition(pore_world(population=True), uniforms=True)
+    d["model"]["world"]["population"]["founders"][1]["L@membrane"] = N_L  # equal areas
+    monkeypatch.setattr(pore_clock, "threshold", lambda *a: (0.5, math.log(2.0)))
+    with pytest.raises(ConfigError, match="Two vesicles' pores open at the same time"):
+        runner.run(parse_spec(d))
