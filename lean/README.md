@@ -6,7 +6,7 @@ Browse Cells engine laws by scientific topic. Each claim links its Lean proofs, 
 
 <!-- generated: claims-index -->
 
-Direct Lean claims cover [50 of 50 laws](COVERAGE.md#registered-laws) and [30 of 30 operators](COVERAGE.md#registered-operators).
+Direct Lean claims cover [50 of 51 laws](COVERAGE.md#registered-laws) and [30 of 31 operators](COVERAGE.md#registered-operators).
 
 | Category | Registered laws with proof | Claims with proof | Numerical checks | Claims with biological evidence |
 | --- | ---: | ---: | --- | ---: |
@@ -17,6 +17,7 @@ Direct Lean claims cover [50 of 50 laws](COVERAGE.md#registered-laws) and [30 of
 | [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 13 of 13 | 22 of 22 | 21 checked · 1 failed | 16 |
 | [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 1 of 1 | 20 of 20 | 20 checked | 14 |
 | [Cell physiology](COVERAGE.md#category-cell-physiology) | — | 3 of 3 | 3 checked | 3 |
+| [Laws awaiting a category](COVERAGE.md#uncategorized-laws) | 0 of 1 | — | — | 0 |
 
 <!-- /generated -->
 

@@ -8,8 +8,9 @@
     "cells.constant_field@1": "src/cells/laws/routes/constant_field.py#L13",
     "cells.cytochrome_c_oxygen_proton_cycle@1": "src/cells/laws/cycles/cytochrome_c_oxygen_proton_cycle.py#L72",
     "cells.electrogenic_nucleotide_exchange@1": "src/cells/laws/cycles/electrogenic_nucleotide_exchange.py#L57",
-    "cells.gard_catalysis_pair_consistent@1": "src/cells/models/assembly_lineages/gard.py#L211",
-    "cells.gard_catalysis_single_event@1": "src/cells/models/assembly_lineages/gard.py#L177",
+    "cells.gard_catalysis_pair_consistent@1": "src/cells/models/assembly_lineages/gard.py#L212",
+    "cells.gard_catalysis_pair_consistent@2": "src/cells/models/assembly_lineages/gard.py#L402",
+    "cells.gard_catalysis_single_event@1": "src/cells/models/assembly_lineages/gard.py#L178",
     "cells.gate_factor@1": "src/cells/models/assembly_lineages_v2/gate_factor.py#L145",
     "cells.held_reductant_supply@1": "src/cells/laws/cycles/held_reductant_supply.py#L72",
     "cells.ideal_mixing@1": "src/cells/models/assembly_lineages_v2/ideal_mixing.py#L109",
@@ -69,7 +70,7 @@
     "cells.scheduled_bath_composition@1": "src/cells/operators/bath_schedule.py#L552",
     "cells.scheduled_cell_replacement@1": "src/cells/operators/cell_replacement.py#L613",
     "cells.scheduled_cell_replacement@2": "src/cells/operators/cell_replacement_v2.py#L398",
-    "cells.scheduled_compartment_wash@1": "src/cells/operators/wash_schedule.py#L533",
+    "cells.scheduled_compartment_wash@1": "src/cells/operators/wash_schedule.py#L536",
     "cells.scheduled_membrane_insertion@1": "src/cells/operators/membrane_insertion.py#L566",
     "cells.scheduled_membrane_insertion@2": "src/cells/operators/membrane_insertion_v2.py#L263",
     "cells.scheduled_membrane_trafficking@1": "src/cells/operators/membrane_trafficking.py#L826",
@@ -77,10 +78,11 @@
     "cells.scheduled_species_turnover@1": "src/cells/operators/species_turnover.py#L452",
     "cells.serial_transfer@1": "src/cells/models/assembly_lineages_v2/transfer.py#L118",
     "cells.shear_fission@1": "src/cells/models/assembly_lineages_v2/division.py#L346",
-    "cells.site_occupancy@1": "src/cells/operators/site_occupancy.py#L1274",
-    "cells.site_occupant_replacement@1": "src/cells/operators/site_occupancy.py#L1843",
+    "cells.site_occupancy@1": "src/cells/operators/site_occupancy.py#L1300",
+    "cells.site_occupant_replacement@1": "src/cells/operators/site_occupancy.py#L1875",
     "cells.size_threshold_fission@1": "src/cells/models/assembly_lineages/fission.py#L71",
-    "cells.species_regulated_availability@1": "src/cells/operators/species_regulated_availability.py#L1706",
-    "cells.species_regulated_availability@2": "src/cells/operators/species_regulated_availability.py#L1912"
+    "cells.species_regulated_availability@1": "src/cells/operators/species_regulated_availability.py#L1719",
+    "cells.species_regulated_availability@2": "src/cells/operators/species_regulated_availability.py#L1925",
+    "cells.templated_polymerisation@1": "src/cells/operators/templated_polymerisation.py#L1081"
   }
 }
