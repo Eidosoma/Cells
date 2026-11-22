@@ -1,5 +1,13 @@
 # Cells proof comparisons
 
+<a id="fr31-pore-endpoint-repair"></a>
+
+## 22 November 2026 · Pore-clock repair on public main
+
+On public Cells `0a1c1b0d`, the original FR-31 reproducer passed at all three adjacent binary64 cutoffs in both the single-lineage and population runners of `cells.assembly_lineages@2`. At the middle cutoff, 1.4042194113471334 s, the founder still had 2.42287768366 × 10⁻¹⁷ s to go. Both runners kept it alive there and at the preceding cutoff, then recorded rupture at the following cutoff. The independent control with exactly sufficient exposure still ruptured at equality. Every tested ledger closed. The repaired clock decides whether exposure is sufficient from the exact binary inputs and records the event time in binary64. [Public repair](https://github.com/Eidosoma/Cells/blob/0a1c1b0dc8145c9c313c02a4ed57cfe5433b2efe/src/cells/models/assembly_lineages_v2/pore_clock.py#L82-L105) · [Original failed run and exact inequality](https://github.com/Eidosoma/Cells/blob/870c9353c92b7e614f25a768f2dabecf7b81d49c/lean/PROGRESS.md#fr31-pore-endpoint)
+
+The rate and temperature calculations, threshold controls, host heat and population survival outputs exactly matched the earlier run. The three native endpoint tests also passed. The frozen run `lean-fr38-marked-fates-20261122` stores the public source in `base-0a1c1b0d`, the full replay in `pore.json` and the native test result in `pore-tests.log`. [Unchanged reproducer](checks/vesicle_pore.py) · [Rate, heat and survival comparisons](#fr31-pore-rate-heat)
+
 <a id="fr38-marked-fates"></a>
 
 ## 22 November 2026 · Marked RNA at detachment and after label reuse
@@ -42,6 +50,8 @@ Harden et al. observed purified *E. coli* polymerase remaining on DNA more than 
 
 ## 22 November 2026 · Missing zero-loss counter for a release fate
 
+This section records the failure on `fc07c545`. The later labelled replay recovered all four fate records. [Public repair and replay](#fr38-marked-fates)
+
 Two compiled R1 worlds split RNA equally between `R` and `R_s`. Each world omitted one degradation route and set the other route’s rate to zero. New synthesis was off. The initial hold supplied both fates. Over ten seconds each fate gained exactly the reported detachment of 1.2776562362330652 × 10⁻¹⁰ fmol in both worlds. All six saved times per world closed the amount balance within 3.44 × 10⁻²⁷ fmol.
 
 When `deg_R` was omitted, the cohort reader recovered both surviving amounts. When `deg_R_s` was omitted, the exporter still wrote the amount and detachment of `R_s` but omitted `int_D_R_s`. The reader refused that fate. The exporter constructs its lossless set from each chain’s primary product, while the reader resolves each physical release fate as a producer. Extending the exporter’s existing local zero-loss rule to eligible release fate rows would supply the evidence the reader requires. This is a host reporting failure. The physical inventories passed in both worlds. The same frozen run records both controls and the refusal in `lossless.json`. The replay command `checks/terminal_release.py --lossless` exits with status 1 while a fate is unreadable. [Exporter](https://github.com/Eidosoma/Cells/blob/fc07c545836b155928aeca3e9ba74528d6e3b66d/validation/gene_regulation/engine_run.py#L266-L274) · [Cohort reader](https://github.com/Eidosoma/Cells/blob/fc07c545836b155928aeca3e9ba74528d6e3b66d/validation/gene_regulation/cohort.py#L274-L306) · [Reproducer](checks/terminal_release.py)
@@ -59,6 +69,8 @@ The published D298 verdict stands. Its five scored first-rupture rates from the 
 <a id="fr31-pore-endpoint"></a>
 
 ### A rounded cutoff changes a founder’s fate
+
+This section records the failure on `f51a3b07`. The same reproducer passed on public main after the clock repair. [Public retest](#fr31-pore-endpoint-repair)
 
 The normal founder draw gives E = 0.3793660256513666 at k = 0.9385151108578917 s⁻¹. A hold beginning at 1 s and ending at 1.4042194113471334 s falls short of the exact crossing by 2.4228776836614065 × 10⁻¹⁷ s using those binary64 inputs. Both runners recorded the founder’s rupture at the cutoff, and both ledgers closed. At the immediately preceding binary64 cutoff both kept the founder alive. At the immediately following cutoff both recorded rupture, as the exact comparison predicts. A separate control with exactly sufficient exposure also ruptures at equality. The cutoff in the failing case was deliberately chosen next to the crossing. Its frequency in ordinary simulations is unknown. [Clock implementation](../src/cells/models/assembly_lineages_v2/pore_clock.py#L69) · [Exact inequality for the recorded inputs](CellsProofs/Chemistry/VesiclePore.lean)
 
