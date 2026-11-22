@@ -42,6 +42,12 @@ VIEW_KINDS = {
         "required": ["molecules", "assembly"],
         "labels": {"molecules": "Molecules", "assembly": "One assembly", "population": "Population", "lineage": "Lineages"},
     },
+    "vesicle": {
+        "run_format": "cells.visualizer.assembly_run@2",
+        "levels": ["vesicle", "membrane", "molecule"],
+        "required": ["vesicle"],
+        "labels": {"vesicle": "Vesicle", "membrane": "Membrane", "molecule": "Molecule"},
+    },
 }
 CLOCKS = ("fission", "second")  # a run's time.base (schema/ASSEMBLY_RUN.md); compared with it, never a rate
 RUN_KINDS = ("example", "development", "experiment")

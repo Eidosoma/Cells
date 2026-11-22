@@ -2,7 +2,7 @@
 // the view as the viewer will hold it, with its legend's swatches.
 
 import { mountView } from "./shell.js";
-import { LawsLens } from "../lenses/laws.js";
+import { makeLawsView } from "../lenses/laws_atlas.js";
 import { LAWS_CSS } from "../lenses/laws_styles.js";
 
-mountView({ make: (stage, model, labels) => new LawsLens(stage, model, labels), styles: LAWS_CSS });
+mountView({ make: makeLawsView, styles: LAWS_CSS });

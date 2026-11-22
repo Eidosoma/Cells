@@ -150,3 +150,35 @@ test("words that must not stand: no engine record name outside the contract's ta
   const table = contract.slice(contract.indexOf(heading));
   for (const name of records.filter((item) => contract.includes(item))) assert.ok(table.includes(name) && contract.indexOf(name) >= contract.indexOf(heading), `${name} stands only in the contract's table`);
 });
+
+test("the vesicle replay keeps the intact threshold sample and released state at one instant and both children at a split", async () => {
+  const { VesicleRun } = await import("../src/lenses/vesicle_run.js");
+  const model = JSON.parse(readFileSync(path.join(ROOT, "data/models/origin-vesicles.json"), "utf8"));
+  const runs = model.runs.map((r) => {
+    const bytes = readFileSync(path.join(ROOT, r.file));
+    assert.ok(bytes.length <= 1_000_000);
+    return new VesicleRun(JSON.parse(bytes));
+  });
+  const lysis = runs.find((r) => r.file.releases.some((e) => e.cause === "threshold"));
+  const growth = runs.find((r) => r.file.shears.length);
+  const t = lysis.end,
+    row = lysis.rows.findLastIndex((r) => r.t === t && r.slots[0].membrane_footprint_quanta > 0),
+    intact = lysis.at(t, 0, row);
+  assert.equal(lysis.at(t).sample.lumen_volume_L, 0);
+  assert.ok(intact.sample.lumen_volume_L > 0);
+  assert.equal(intact.sample.tension_N_per_m, lysis.file.releases[0].tension_N_per_m);
+  assert.equal(lysis.file.trace.time.length, 49);
+  assert.equal(growth.file.trace.time.length, 922);
+  assert.deepEqual(
+    growth.events.map((e) => e.outcome),
+    ["split", "split", "refused_floor", "split", "refused_floor"],
+  );
+  for (const e of growth.file.shears.filter((e) => e.outcome === "split")) {
+    assert.deepEqual(e.daughters[e.followed].counts, growth.at(e.time).sample.counts);
+    for (const p of [...growth.membrane, ...growth.lumen])
+      assert.equal(
+        e.daughters.reduce((n, d) => n + d.counts[p.index], 0),
+        e.parent_counts[p.index],
+      );
+  }
+});

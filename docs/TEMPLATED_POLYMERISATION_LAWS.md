@@ -1769,3 +1769,18 @@ At run time: x_E > X_DOM at an export in use, a non-positive amount, a non-finit
   1–1.5 more.
 - **(b1):** about 4–4.75 with its owners' reviews, with driven work and a second door.
 - **(b2):** about 4.5 with the @3 owner's review, and the wrong physics.
+
+### 9.18 Erratum E: an emptied hold takes the base label, and what leaves is recorded by label
+
+*22 November 2026, for the kinds owner's replacement event report (FR-38's step 5; D296). Docs only,
+before the code that builds on it.*
+
+1. **§9.16, item 7:** at the event the label owner gives the replaced slot's labelled rows the
+   label in force there, the newcomer's, and each hold this operator empties the base label. An
+   empty hold holds no material, so no later share depends on it; its next arrivals set its shares.
+2. **What leaves is recorded.** Each event reports only its own material: replacement@1 the slots
+   whose rows it swapped, this operator the holds it emptied (their amounts before the event,
+   summed over the class axis, one per release in label_pools order). The label owner records the
+   departing material by label, the pre-event amount times its shares just before the event, in
+   cumulative records from t = 0, rows and holds apart, so the two events still commute (§9.16,
+   item 2). Removal stays apart from degradation, booked to the departing producer's label.

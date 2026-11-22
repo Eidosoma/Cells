@@ -6,11 +6,17 @@ code at fa19d80c and is replaced whole. The lead ruled on 17 November 2026 that 
 file is the whole truth of what the engine declares, and that what no active registry declares
 comes off the wall.
 
-The library is a view of its own. It shows every piece the engine declares on a wall, shelved
-by interface: channel, cycle, route and junction laws; kinds; the composite's operators by their
-part of the step. In front of the wall stand the racks, one for each active model with rows,
-each piece in its slot; a model family with no rows stands as a closed case on the plinth. This
-file fixes the list they are drawn from, and what may be said of each piece.
+## Navigating the library
+
+The opening atlas gives each family an island and each model a dock. An arc groups all memberships between one model and one family. Opening it lists the direct declarations and the paths through a host kind or an inner model. Hollow pins represent design notes. The catalogue filter can show those notes or the declared pieces separately. Large families keep a fixed footprint. Their inspector and search can reach every piece.
+
+Select a piece to unfold its model memberships, requirements and fields. The connection selector can also show owned state and incompatible operators. Read and write targets come directly from the declaration. The field inspector can lead to another operator when the Engine map explicitly lists the edge and its field at the same revision. An empty or unextracted declaration retains the explanation in its original inspector.
+
+Pin a second model to compare two sets of piece IDs. A piece present in both appears once in the central disc. The side discs hold the two differences. Selecting a disc's piece opens its declaration and offers its connections. Back restores the previous view. The address preserves the model pair, family, traced piece and mapped Scope or Engine entrance.
+
+Scope entrances use an explicit `shown_as` edge from an inventory unit to the selected capability, followed by an exact declared law named by that unit. The atlas identifies the contributing unit in the piece inspector. The inventory mapping describes a catalogue relationship.
+
+The original shelf and rack drawing is available with `?lens=laws&lawLayout=shelves`. Its rack slots, free codes and other marks are described below.
 
 ## Files
 

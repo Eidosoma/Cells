@@ -903,6 +903,19 @@ _COMPARTMENTS_FIRST = tuple(
 # The compartment wash is off both lists too; its pairs with trafficking are refused there first.
 _WASH_FIRST = tuple(pair for pair in _TRAFFICKING_OFF if WASH in pair)
 
+# templated_polymerisation@1 refuses every composition that holds a cell replacement, @1 or @2, in
+# either order (templated_polymerisation.check_replacement; D301, until FR-38's step 4), and so
+# site_occupant_replacement@1 too, whose closure holds @1.
+POLYMERISATION = "templated_polymerisation@1"
+_REPLACING = tuple(
+    law
+    for law in LAWS
+    if law != POLYMERISATION and any(x.startswith(family(REPLACEMENT_1)) for x in closure(law))
+)
+_POLYMERISATION_PAIRS = tuple(
+    pair for law in _REPLACING for pair in ((POLYMERISATION, law), (law, POLYMERISATION))
+)
+
 # population_unit_turnover@1 refuses every other writer of population units, in either order
 # (population_unit_turnover.check_writers).
 _UNIT_WRITERS = tuple(
@@ -1092,6 +1105,21 @@ RULES = (
         "newcomer without its template's multiplier, a donor copy there (version 1.1), a "
         "founder's change after its death, a template that is not a replacement template, and a "
         "multiplier for no route its newcomers take",
+    ),
+    dict(
+        rule="templated_polymerisation@1 refuses replacement@1 and @2 until FR-38's step 4",
+        laws=(POLYMERISATION, REPLACEMENT_1, REPLACEMENT_2, OCCUPANT),
+        level="law",
+        check=OPS + "templated_polymerisation.py::check_replacement",
+        test=TESTS + "test_templated_polymerisation.py::test_the_release_refuses",
+        tag=REAL,
+        why="A replacement swaps a slot's rows at its event, but nothing yet defines the replaced "
+        "slot's chains in progress, hold, machines or counters (D301, temporary). FR-38's step 4, "
+        "replacement accounting in the operator (D296), defines them. It marks the pairs the "
+        "declarations admit (@1, and site_occupant_replacement@1, which requires @1) and stands "
+        "behind their refusals of @2 (water provides the volumes it reads as declared)",
+        marks=tuple(pair for pair in _POLYMERISATION_PAIRS if not errors(sequence(*pair))),
+        behind=tuple(pair for pair in _POLYMERISATION_PAIRS if errors(sequence(*pair))),
     ),
     dict(
         rule="no coupling target or regulatory state on a replaced slot",
