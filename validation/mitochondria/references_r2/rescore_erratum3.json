@@ -1,0 +1,1586 @@
+{
+ "schema": "cells.mito_r2_rescore@2",
+ "provenance": {
+  "kind": "snapshot",
+  "snapshot": "/mnt/workspaces/Cells/mito-refs-r2-20261122/snapshot-a5c62a312b92",
+  "git_revision": "a5c62a312b92ab88e482e1d1f6075aa2a573ccb8",
+  "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "clean": true,
+  "files": [
+   "tests/unit/test_mito_r2_identities.py",
+   "validation/mitochondria/references_r2/README.md",
+   "validation/mitochondria/references_r2/__init__.py",
+   "validation/mitochondria/references_r2/constants.py",
+   "validation/mitochondria/references_r2/declaration.json",
+   "validation/mitochondria/references_r2/model.py",
+   "validation/mitochondria/references_r2/protocol.py",
+   "validation/mitochondria/references_r2/rescore.py",
+   "validation/mitochondria/references_r2/run.py",
+   "validation/mitochondria/references_r2/steady.py"
+  ]
+ },
+ "run": "run-989959fe5012",
+ "run_revision": "989959fe5012066140cf2c37a96370feef550864",
+ "run_interface_sha256": "5cd70f474a46e678abd571d8515b18750dcb2432fa6e963c29e6f9ae98323847",
+ "documents": {
+  "laws_appendix": "docs/MITOCHONDRIA_LAWS_APPENDIX.md at tag mito-laws-appendix-2026-11-20b",
+  "design": "docs/MITOCHONDRIA_DESIGN.md at tag mito-mt1b-face-design-2026-11-22 (section 7, the MT-1b draft, the face note)",
+  "world_declaration": "docs/MITOCHONDRIA_DESIGN.md at tag mito-mt1b-declaration-erratum-2026-11-22, the declaration of record: 'MT-1b's world declaration' (G1-G7, first tagged as mito-mt1b-world-declaration-2026-11-22) with the face note's section 6 erratum and G5's erratum (the I_NP rule)",
+  "erratum_2": "docs/MITOCHONDRIA_DESIGN.md at tag mito-mt1b-declaration-erratum-2-2026-11-22, 'Erratum 2': the declaration of record for this run",
+  "erratum_3": "docs/MITOCHONDRIA_DESIGN.md at tag mito-mt1b-declaration-erratum-3-2026-11-22, 'Erratum 3': the scoring of record (W3(d)'s window and collapse)"
+ },
+ "scoring": {
+  "window": {
+   "world": "d",
+   "rule": "from the time the reference's O2 flux first falls below the fraction of its state-3 value, to the run's end",
+   "fraction_of_state3": 0.001,
+   "state3_from": {
+    "world": "a",
+    "segment": "state3"
+   },
+   "source": "world declaration erratum 3 (tag mito-mt1b-declaration-erratum-3-2026-11-22), item 2: the window on the flux itself, fixed at registration from the reference alone (about 195.8 s); it replaces erratum 2's 0.37 nM threshold. R2's readings: the state-3 value is world (a)'s state-3 plateau O2 flux (1.638e-3, the value erratum 3 quotes); the crossing time is log-linear in the flux between the reference's two outputs around it"
+  },
+  "collapse": {
+   "world": "d",
+   "onset": {
+    "reading": "O2_N",
+    "below_M": 3.73e-07
+   },
+   "end": "the window's opening",
+   "band": "a tenth of each judged readout's excursion (max - min) over the collapse in the reference",
+   "source": "world declaration erratum 3 (tag mito-mt1b-declaration-erratum-3-2026-11-22), item 3: the anoxic collapse from the matrix O2's P50 crossing (0.373 uM, about 160.5 s) to the window, judged with the registration's transient bands; for dPsi about 10.2 mV. R2's reading: the excursion is taken over the reference's outputs in the collapse and its two ends, each end linear in the readout between the outputs around it"
+  },
+  "expected_P50_crossing_s": {
+   "value": 160.4,
+   "P50_M": 3.73e-07,
+   "source": "world declaration erratum 2 (tag mito-mt1b-declaration-erratum-2-2026-11-22), item 4: a prediction R2's run reports against"
+  },
+  "superseded": {
+   "excluded_window_erratum_2": {
+    "reading": "O2_N",
+    "below_M": 3.73e-10,
+    "source": "erratum 2, item 4; superseded by world declaration erratum 3 (tag mito-mt1b-declaration-erratum-3-2026-11-22)"
+   }
+  }
+ },
+ "scoring_fixed_from_reference": {
+  "state3_O2_flux": 0.001637712125964779,
+  "window_opens_s": 195.79269591288428,
+  "collapse_onset_s": 160.49402388062828,
+  "transient_bands": {
+   "dpsi_mV": 10.225328124346806,
+   "pH_N": 0.0006217871941236908,
+   "pH_P": 0.0021040786065983142,
+   "NADH_fraction": 0.022058581385207988,
+   "cytc_reduced_fraction": 0.001638434365987662,
+   "O2_flux": 7.793143632562724e-05,
+   "K_N": 0.00021406420014053184,
+   "Pi_N": 0.00012335468502751908,
+   "ATP_N": 0.00014575576115056176
+  }
+ },
+ "bands": {
+  "note": "the MT-1b draft's plateau bands (MR1-MT2's), with erratum 2's absolute floors on concentration readouts: band = max(relative band x |value|, floor). The drift rule asks a change below a tenth of the band over the last 10 s",
+  "dpsi_mV": 0.05,
+  "pH": 0.0005,
+  "fraction": 0.0005,
+  "relative": 0.001,
+  "floors": {
+   "ATP_N": 1e-05,
+   "ADP_N": 1e-05,
+   "Pi_N": 1e-05,
+   "K_N": 0.00015,
+   "ATP_P": 1.3e-06,
+   "ADP_P": 1.3e-06,
+   "AMP_P": 1.3e-06,
+   "source": "world declaration erratum 2 (tag mito-mt1b-declaration-erratum-2-2026-11-22), item 3: 0.1% of each pool's declared total (ATP_N and ADP_N of A_tot 10 mM, Pi_N of the bath's 10 mM, K_N of the bath's 150 mM, the IMS adenylates of the bath's 1.3 mM ADP); the O2 flux band has no absolute floor (R2's reading: item 3 floors concentration readouts, and item 4's window covers the O2 flux's vanishing tail)"
+  },
+  "judged_weight": "world declaration erratum 2 (tag mito-mt1b-declaration-erratum-2-2026-11-22), item 7: dPsi (plateaus and transients), cytochrome c's reduced fraction, NADH's fraction, pH, the O2 flux outside the window, and concentrations above their floors only"
+ },
+ "rebuild": {
+  "worst_relative_difference_from_stored_readouts": 4.997545681108536e-10,
+  "note": "the interface stores readouts at 10 significant digits"
+ },
+ "trace_check": {
+  "traces_M": {
+   "ADP_trace": 1e-15,
+   "ATP_trace": 1e-15,
+   "AMP_trace": 1e-15
+  },
+  "worst_over_band": 0.04379660629268756,
+  "passes": true,
+  "per_world": {
+   "a": {
+    "dpsi_mV": {
+     "worst_over_band": 0.04379660629268756,
+     "segment": "inhibitor",
+     "branch": "inhibitor",
+     "t": 307.5,
+     "in_collapse": false,
+     "value_declared": 80.9804507368908,
+     "value_other": 80.98264056720544
+    },
+    "pH_N": {
+     "worst_over_band": 0.00016702965233150735,
+     "segment": "inhibitor",
+     "branch": "inhibitor",
+     "t": 300.26,
+     "in_collapse": false,
+     "value_declared": 7.085420962792617,
+     "value_other": 7.085421046307443
+    },
+    "pH_P": {
+     "worst_over_band": 0.002270141390425806,
+     "segment": "state3",
+     "branch": null,
+     "t": 60.01,
+     "in_collapse": false,
+     "value_declared": 7.091353280721022,
+     "value_other": 7.091352145650327
+    },
+    "NADH_fraction": {
+     "worst_over_band": 0.002008005079656705,
+     "segment": "state3",
+     "branch": null,
+     "t": 62.0,
+     "in_collapse": false,
+     "value_declared": 0.3627430310920456,
+     "value_other": 0.36274202708950576
+    },
+    "cytc_reduced_fraction": {
+     "worst_over_band": 0.005344407466134626,
+     "segment": "inhibitor",
+     "branch": "inhibitor",
+     "t": 300.35,
+     "in_collapse": false,
+     "value_declared": 0.8286052939621745,
+     "value_other": 0.8286079661659076
+    },
+    "O2_flux": {
+     "worst_over_band": 0.0032426374211662005,
+     "segment": "state4_b",
+     "branch": null,
+     "t": 180.01,
+     "in_collapse": false,
+     "value_declared": 0.0016076001259302682,
+     "value_other": 0.0016076053387945948
+    },
+    "K_N": {
+     "worst_over_band": 0.00015157995114129392,
+     "segment": "inhibitor",
+     "branch": "inhibitor",
+     "t": 300.62,
+     "in_collapse": false,
+     "value_declared": 0.15508611496387847,
+     "value_other": 0.15508609145593275
+    },
+    "Pi_N": {
+     "worst_over_band": 0.0008106869396271031,
+     "segment": "inhibitor",
+     "branch": "inhibitor",
+     "t": 300.5,
+     "in_collapse": false,
+     "value_declared": 0.009820073841517379,
+     "value_other": 0.009820081948386775
+    },
+    "ATP_N": {
+     "worst_over_band": 0.004277305815135815,
+     "segment": "inhibitor",
+     "branch": "inhibitor",
+     "t": 300.54,
+     "in_collapse": false,
+     "value_declared": 0.0033618881877278935,
+     "value_other": 0.003361845414669742
+    }
+   },
+   "b": {
+    "dpsi_mV": {
+     "worst_over_band": 0.00442417632626757,
+     "segment": "state3",
+     "branch": null,
+     "t": 60.15,
+     "in_collapse": false,
+     "value_declared": 99.725107640349,
+     "value_other": 99.72532884916531
+    },
+    "pH_N": {
+     "worst_over_band": 0.00010617314494254515,
+     "segment": "state3",
+     "branch": null,
+     "t": 60.03,
+     "in_collapse": false,
+     "value_declared": 7.097166396241043,
+     "value_other": 7.097166449327616
+    },
+    "pH_P": {
+     "worst_over_band": 0.0031521334840078907,
+     "segment": "state3",
+     "branch": null,
+     "t": 67.0,
+     "in_collapse": false,
+     "value_declared": 7.110615714960725,
+     "value_other": 7.110617291027467
+    },
+    "NADH_fraction": {
+     "worst_over_band": 1.0700700325827484e-05,
+     "segment": "state4_a",
+     "branch": null,
+     "t": 0.0,
+     "in_collapse": false,
+     "value_declared": 0.7586665090331677,
+     "value_other": 0.7586665143835178
+    },
+    "cytc_reduced_fraction": {
+     "worst_over_band": 0.0003934793539328574,
+     "segment": "state3",
+     "branch": null,
+     "t": 60.14,
+     "in_collapse": false,
+     "value_declared": 0.07640816459628029,
+     "value_other": 0.07640836133595726
+    },
+    "O2_flux": {
+     "worst_over_band": 0.00019636096787921847,
+     "segment": "state3",
+     "branch": null,
+     "t": 60.01,
+     "in_collapse": false,
+     "value_declared": 0.0029956114649808256,
+     "value_other": 0.002995610876759659
+    },
+    "K_N": {
+     "worst_over_band": 8.756861276277582e-05,
+     "segment": "state3",
+     "branch": null,
+     "t": 64.0,
+     "in_collapse": false,
+     "value_declared": 0.15091013195466832,
+     "value_other": 0.1509101187396774
+    },
+    "Pi_N": {
+     "worst_over_band": 0.0007676168695472384,
+     "segment": "state3",
+     "branch": null,
+     "t": 64.0,
+     "in_collapse": false,
+     "value_declared": 0.00990574229890407,
+     "value_other": 0.009905734622735375
+    },
+    "ATP_N": {
+     "worst_over_band": 3.526264813729762e-05,
+     "segment": "state4_b",
+     "branch": null,
+     "t": 180.01,
+     "in_collapse": false,
+     "value_declared": 3.238517101594476e-05,
+     "value_other": 3.2385523642426135e-05
+    }
+   },
+   "c": {
+    "dpsi_mV": {
+     "worst_over_band": 0.00223200589289263,
+     "segment": "state3",
+     "branch": null,
+     "t": 66.0,
+     "in_collapse": false,
+     "value_declared": 193.87647532653273,
+     "value_other": 193.87636372623808
+    },
+    "pH_N": {
+     "worst_over_band": 2.9456607819611236e-05,
+     "segment": "state3",
+     "branch": null,
+     "t": 60.01,
+     "in_collapse": false,
+     "value_declared": 7.072658725609476,
+     "value_other": 7.072658710881172
+    },
+    "pH_P": {
+     "worst_over_band": 0.0024791428003823057,
+     "segment": "state3",
+     "branch": null,
+     "t": 60.01,
+     "in_collapse": false,
+     "value_declared": 7.090852812105097,
+     "value_other": 7.090851572533697
+    },
+    "NADH_fraction": {
+     "worst_over_band": 0.00025347041310297413,
+     "segment": "state4_b",
+     "branch": null,
+     "t": 180.03,
+     "in_collapse": false,
+     "value_declared": 0.7577352385534534,
+     "value_other": 0.7577351118182468
+    },
+    "cytc_reduced_fraction": {
+     "worst_over_band": 0.0005192559753841586,
+     "segment": "state4_b",
+     "branch": null,
+     "t": 180.02,
+     "in_collapse": false,
+     "value_declared": 0.11571616355825767,
+     "value_other": 0.11571642318624537
+    },
+    "O2_flux": {
+     "worst_over_band": 0.006031052475420077,
+     "segment": "state4_b",
+     "branch": null,
+     "t": 180.02,
+     "in_collapse": false,
+     "value_declared": 0.00020220317936997154,
+     "value_other": 0.00020220439886795702
+    },
+    "K_N": {
+     "worst_over_band": 8.773314549113658e-06,
+     "segment": "state3",
+     "branch": null,
+     "t": 60.13,
+     "in_collapse": false,
+     "value_declared": 0.1597172435224208,
+     "value_other": 0.15971724492367043
+    },
+    "Pi_N": {
+     "worst_over_band": 4.240181747383608e-05,
+     "segment": "state4_b",
+     "branch": null,
+     "t": 180.19,
+     "in_collapse": false,
+     "value_declared": 0.008994516531887774,
+     "value_other": 0.0089945161078696
+    },
+    "ATP_N": {
+     "worst_over_band": 0.00010895050972514751,
+     "segment": "state4_b",
+     "branch": null,
+     "t": 180.01,
+     "in_collapse": false,
+     "value_declared": 0.009779428918292027,
+     "value_other": 0.00977942782878693
+    }
+   },
+   "d": {
+    "dpsi_mV": {
+     "worst_over_band": 0.010130316014738128,
+     "segment": "state3_O2_exhaustion",
+     "branch": null,
+     "t": 156.0,
+     "in_collapse": false,
+     "value_declared": 145.30299003044732,
+     "value_other": 145.30248351464658
+    },
+    "pH_N": {
+     "worst_over_band": 0.000333670404347492,
+     "segment": "state3_O2_exhaustion",
+     "branch": null,
+     "t": 195.5,
+     "in_collapse": true,
+     "value_declared": 7.090181884985831,
+     "value_other": 7.090181677513846
+    },
+    "pH_P": {
+     "worst_over_band": 0.002773111571746666,
+     "segment": "state3_O2_exhaustion",
+     "branch": null,
+     "t": 195.5,
+     "in_collapse": true,
+     "value_declared": 7.118985067288512,
+     "value_other": 7.118990902133244
+    },
+    "NADH_fraction": {
+     "worst_over_band": 0.011158532041477542,
+     "segment": "state3_O2_exhaustion",
+     "branch": null,
+     "t": 158.5,
+     "in_collapse": false,
+     "value_declared": 0.5410418562971647,
+     "value_other": 0.5410474355631855
+    },
+    "cytc_reduced_fraction": {
+     "worst_over_band": 0.014728153766130347,
+     "segment": "state3_O2_exhaustion",
+     "branch": null,
+     "t": 152.5,
+     "in_collapse": false,
+     "value_declared": 0.811303880058966,
+     "value_other": 0.8113112441358491
+    },
+    "O2_flux": {
+     "worst_over_band": 0.022885759619289164,
+     "segment": "state3_O2_exhaustion",
+     "branch": null,
+     "t": 160.0,
+     "in_collapse": false,
+     "value_declared": 0.000827638498097099,
+     "value_other": 0.0008276195569613798
+    },
+    "K_N": {
+     "worst_over_band": 0.0003497943677697642,
+     "segment": "state3_O2_exhaustion",
+     "branch": null,
+     "t": 195.5,
+     "in_collapse": true,
+     "value_declared": 0.15342518414609277,
+     "value_other": 0.15342525902454432
+    },
+    "Pi_N": {
+     "worst_over_band": 0.003806688120625012,
+     "segment": "state3_O2_exhaustion",
+     "branch": null,
+     "t": 158.5,
+     "in_collapse": false,
+     "value_declared": 0.008100060380208681,
+     "value_other": 0.008100098447089888
+    },
+    "ATP_N": {
+     "worst_over_band": 0.008217909445865437,
+     "segment": "state3_O2_exhaustion",
+     "branch": null,
+     "t": 155.5,
+     "in_collapse": false,
+     "value_declared": 0.003058392681706703,
+     "value_other": 0.003058310502612244
+    }
+   }
+  },
+  "at_plateau_ends": {
+   "worst_over_band": 0.04379660520186235,
+   "passes": true,
+   "per_world": {
+    "a": {
+     "dpsi_mV": {
+      "worst_over_band": 0.04379660520186235,
+      "segment": "inhibitor",
+      "branch": "inhibitor",
+      "t": 420.0,
+      "in_collapse": false,
+      "value_declared": 80.9804507369155,
+      "value_other": 80.9826405671756
+     },
+     "pH_N": {
+      "worst_over_band": 0.00012397202020508757,
+      "segment": "state3",
+      "branch": null,
+      "t": 180.0,
+      "in_collapse": false,
+      "value_declared": 7.092470905736992,
+      "value_other": 7.092470967723002
+     },
+     "pH_P": {
+      "worst_over_band": 0.0012303107155275939,
+      "segment": "state3",
+      "branch": null,
+      "t": 180.0,
+      "in_collapse": false,
+      "value_declared": 7.096038216836935,
+      "value_other": 7.096037601681577
+     },
+     "NADH_fraction": {
+      "worst_over_band": 0.0020044592454748766,
+      "segment": "state3",
+      "branch": null,
+      "t": 180.0,
+      "in_collapse": false,
+      "value_declared": 0.35931639678979355,
+      "value_other": 0.3593153945601708
+     },
+     "cytc_reduced_fraction": {
+      "worst_over_band": 0.0004607952355795142,
+      "segment": "uncoupler",
+      "branch": "uncoupler",
+      "t": 420.0,
+      "in_collapse": false,
+      "value_declared": 0.0782944705181964,
+      "value_other": 0.07829470091581418
+     },
+     "O2_flux": {
+      "worst_over_band": 0.002137668641390944,
+      "segment": "state3",
+      "branch": null,
+      "t": 180.0,
+      "in_collapse": false,
+      "value_declared": 0.001637712125964779,
+      "value_other": 0.0016377156268506342
+     },
+     "K_N": {
+      "worst_over_band": 0.00013907272453317726,
+      "segment": "state3",
+      "branch": null,
+      "t": 180.0,
+      "in_collapse": false,
+      "value_declared": 0.1528096415638757,
+      "value_other": 0.1528096203122225
+     },
+     "Pi_N": {
+      "worst_over_band": 0.0007414574444003507,
+      "segment": "uncoupler",
+      "branch": "uncoupler",
+      "t": 420.0,
+      "in_collapse": false,
+      "value_declared": 0.009992743602530031,
+      "value_other": 0.009992751017104475
+     },
+     "ATP_N": {
+      "worst_over_band": 0.0011050073156840257,
+      "segment": "state3",
+      "branch": null,
+      "t": 180.0,
+      "in_collapse": false,
+      "value_declared": 0.00711399154188226,
+      "value_other": 0.007113980491809103
+     }
+    },
+    "b": {
+     "dpsi_mV": {
+      "worst_over_band": 0.004383978113935427,
+      "segment": "state3",
+      "branch": null,
+      "t": 180.0,
+      "in_collapse": false,
+      "value_declared": 99.72213580225112,
+      "value_other": 99.72235500115681
+     },
+     "pH_N": {
+      "worst_over_band": 7.917196320761377e-05,
+      "segment": "state3",
+      "branch": null,
+      "t": 180.0,
+      "in_collapse": false,
+      "value_declared": 7.097371587564377,
+      "value_other": 7.097371627150358
+     },
+     "pH_P": {
+      "worst_over_band": 0.0031521333774264804,
+      "segment": "state3",
+      "branch": null,
+      "t": 180.0,
+      "in_collapse": false,
+      "value_declared": 7.11061571496066,
+      "value_other": 7.110617291027348
+     },
+     "NADH_fraction": {
+      "worst_over_band": 2.1734568706933457e-09,
+      "segment": "state3",
+      "branch": null,
+      "t": 180.0,
+      "in_collapse": false,
+      "value_declared": 4.414438891512511e-08,
+      "value_other": 4.414547564356046e-08
+     },
+     "cytc_reduced_fraction": {
+      "worst_over_band": 0.0003852381740276911,
+      "segment": "state3",
+      "branch": null,
+      "t": 180.0,
+      "in_collapse": false,
+      "value_declared": 0.07640197243528782,
+      "value_other": 0.07640216505437483
+     },
+     "O2_flux": {
+      "worst_over_band": 3.9199941638221825e-05,
+      "segment": "state3",
+      "branch": null,
+      "t": 180.0,
+      "in_collapse": false,
+      "value_declared": 0.0029898085600314323,
+      "value_other": 0.0029898084428311112
+     },
+     "K_N": {
+      "worst_over_band": 8.756849615616906e-05,
+      "segment": "state3",
+      "branch": null,
+      "t": 180.0,
+      "in_collapse": false,
+      "value_declared": 0.15091013195562156,
+      "value_other": 0.15091011874064825
+     },
+     "Pi_N": {
+      "worst_over_band": 0.0007676158505706686,
+      "segment": "state3",
+      "branch": null,
+      "t": 180.0,
+      "in_collapse": false,
+      "value_declared": 0.009905742299466879,
+      "value_other": 0.009905734623308373
+     },
+     "ATP_N": {
+      "worst_over_band": 3.087160410392576e-05,
+      "segment": "state3",
+      "branch": null,
+      "t": 180.0,
+      "in_collapse": false,
+      "value_declared": 3.158972957638873e-05,
+      "value_other": 3.159003829242977e-05
+     }
+    },
+    "c": {
+     "dpsi_mV": {
+      "worst_over_band": 0.0022320046821278083,
+      "segment": "state3",
+      "branch": null,
+      "t": 180.0,
+      "in_collapse": false,
+      "value_declared": 193.87647532648703,
+      "value_other": 193.87636372625292
+     },
+     "pH_N": {
+      "worst_over_band": 2.823181688427212e-06,
+      "segment": "state4_b",
+      "branch": null,
+      "t": 300.0,
+      "in_collapse": false,
+      "value_declared": 7.072757165392967,
+      "value_other": 7.072757163981376
+     },
+     "pH_P": {
+      "worst_over_band": 0.002447170272645849,
+      "segment": "state3",
+      "branch": null,
+      "t": 180.0,
+      "in_collapse": false,
+      "value_declared": 7.090916131492689,
+      "value_other": 7.090914907907552
+     },
+     "NADH_fraction": {
+      "worst_over_band": 0.0002412851811683936,
+      "segment": "state3",
+      "branch": null,
+      "t": 180.0,
+      "in_collapse": false,
+      "value_declared": 0.7577813660008788,
+      "value_other": 0.7577812453582882
+     },
+     "cytc_reduced_fraction": {
+      "worst_over_band": 7.72059377540657e-05,
+      "segment": "state3",
+      "branch": null,
+      "t": 180.0,
+      "in_collapse": false,
+      "value_declared": 0.1140838773928762,
+      "value_other": 0.11408391599584508
+     },
+     "O2_flux": {
+      "worst_over_band": 0.0022432389138120163,
+      "segment": "state3",
+      "branch": null,
+      "t": 180.0,
+      "in_collapse": false,
+      "value_declared": 0.00019656636110427722,
+      "value_other": 0.0001965668020495876
+     },
+     "K_N": {
+      "worst_over_band": 3.250308342434936e-06,
+      "segment": "state4_b",
+      "branch": null,
+      "t": 300.0,
+      "in_collapse": false,
+      "value_declared": 0.1597107296024787,
+      "value_other": 0.15971073012158782
+     },
+     "Pi_N": {
+      "worst_over_band": 4.906215884947773e-06,
+      "segment": "state4_b",
+      "branch": null,
+      "t": 300.0,
+      "in_collapse": false,
+      "value_declared": 0.008997247595910755,
+      "value_other": 0.008997247546848596
+     },
+     "ATP_N": {
+      "worst_over_band": 9.696128639574696e-05,
+      "segment": "state3",
+      "branch": null,
+      "t": 180.0,
+      "in_collapse": false,
+      "value_declared": 0.009780316228298117,
+      "value_other": 0.009780315258685253
+     }
+    },
+    "d": {
+     "dpsi_mV": {
+      "worst_over_band": 2.0364961414998106e-05,
+      "segment": "state4_a",
+      "branch": null,
+      "t": 60.0,
+      "in_collapse": false,
+      "value_declared": 194.70537876262176,
+      "value_other": 194.70537978086983
+     },
+     "pH_N": {
+      "worst_over_band": 3.2734348565099936e-06,
+      "segment": "state4_a",
+      "branch": null,
+      "t": 60.0,
+      "in_collapse": false,
+      "value_declared": 7.0727571656183175,
+      "value_other": 7.0727571639816
+     },
+     "pH_P": {
+      "worst_over_band": 1.624655965315469e-08,
+      "segment": "state4_a",
+      "branch": null,
+      "t": 60.0,
+      "in_collapse": false,
+      "value_declared": 7.100000000008131,
+      "value_other": 7.100000000000008
+     },
+     "NADH_fraction": {
+      "worst_over_band": 1.0700699437649064e-05,
+      "segment": "state4_a",
+      "branch": null,
+      "t": 60.0,
+      "in_collapse": false,
+      "value_declared": 0.7586665090331676,
+      "value_other": 0.7586665143835173
+     },
+     "cytc_reduced_fraction": {
+      "worst_over_band": 9.02910377020838e-06,
+      "segment": "state4_a",
+      "branch": null,
+      "t": 60.0,
+      "in_collapse": false,
+      "value_declared": 0.11379596732400434,
+      "value_other": 0.11379596280945245
+     },
+     "O2_flux": {
+      "worst_over_band": 0.00011178701876371669,
+      "segment": "state4_a",
+      "branch": null,
+      "t": 60.0,
+      "in_collapse": false,
+      "value_declared": 0.00019331859314423392,
+      "value_other": 0.00019331857153372472
+     },
+     "K_N": {
+      "worst_over_band": 3.7499788920687284e-06,
+      "segment": "state4_a",
+      "branch": null,
+      "t": 60.0,
+      "in_collapse": false,
+      "value_declared": 0.1597107295225969,
+      "value_other": 0.15971073012150877
+     },
+     "Pi_N": {
+      "worst_over_band": 1.5918742019005447e-06,
+      "segment": "state4_a",
+      "branch": null,
+      "t": 60.0,
+      "in_collapse": false,
+      "value_declared": 0.008997247562734094,
+      "value_other": 0.008997247546815352
+     },
+     "ATP_N": {
+      "worst_over_band": 2.2229881130320095e-06,
+      "segment": "state4_a",
+      "branch": null,
+      "t": 60.0,
+      "in_collapse": false,
+      "value_declared": 0.009787392419492304,
+      "value_other": 0.009787392441722186
+     }
+    }
+   }
+  },
+  "collapse": {
+   "worst_over_band": 0.002773111571746666,
+   "per_world": {
+    "d": {
+     "dpsi_mV": {
+      "worst_over_band": 0.0012907695088131574,
+      "segment": "state3_O2_exhaustion",
+      "branch": null,
+      "t": 195.5,
+      "in_collapse": true,
+      "value_declared": 33.56415679391076,
+      "value_other": 33.550958252150245
+     },
+     "pH_N": {
+      "worst_over_band": 0.000333670404347492,
+      "segment": "state3_O2_exhaustion",
+      "branch": null,
+      "t": 195.5,
+      "in_collapse": true,
+      "value_declared": 7.090181884985831,
+      "value_other": 7.090181677513846
+     },
+     "pH_P": {
+      "worst_over_band": 0.002773111571746666,
+      "segment": "state3_O2_exhaustion",
+      "branch": null,
+      "t": 195.5,
+      "in_collapse": true,
+      "value_declared": 7.118985067288512,
+      "value_other": 7.118990902133244
+     },
+     "NADH_fraction": {
+      "worst_over_band": 0.00023720061021218083,
+      "segment": "state3_O2_exhaustion",
+      "branch": null,
+      "t": 160.5,
+      "in_collapse": true,
+      "value_declared": 0.5965600198616019,
+      "value_other": 0.5965652521705669
+     },
+     "cytc_reduced_fraction": {
+      "worst_over_band": 0.0006379530788439569,
+      "segment": "state3_O2_exhaustion",
+      "branch": null,
+      "t": 160.5,
+      "in_collapse": true,
+      "value_declared": 0.9836501984355865,
+      "value_other": 0.9836512436798348
+     },
+     "O2_flux": {
+      "worst_over_band": 0.0002362024239155947,
+      "segment": "state3_O2_exhaustion",
+      "branch": null,
+      "t": 160.5,
+      "in_collapse": true,
+      "value_declared": 0.0007803897944302371,
+      "value_other": 0.0007803713868360778
+     },
+     "K_N": {
+      "worst_over_band": 0.0003497943677697642,
+      "segment": "state3_O2_exhaustion",
+      "branch": null,
+      "t": 195.5,
+      "in_collapse": true,
+      "value_declared": 0.15342518414609277,
+      "value_other": 0.15342525902454432
+     },
+     "Pi_N": {
+      "worst_over_band": 0.0002845858727213867,
+      "segment": "state3_O2_exhaustion",
+      "branch": null,
+      "t": 160.5,
+      "in_collapse": true,
+      "value_declared": 0.008475678077683665,
+      "value_other": 0.008475713182684358
+     },
+     "ATP_N": {
+      "worst_over_band": 0.0003152828054953797,
+      "segment": "state3_O2_exhaustion",
+      "branch": null,
+      "t": 160.5,
+      "in_collapse": true,
+      "value_declared": 0.0014569503645921556,
+      "value_other": 0.0014569044103068629
+     }
+    }
+   }
+  },
+  "focus": {
+   "a_inhibitor_branch": {
+    "dpsi_mV": {
+     "worst_over_band": 0.04379660629268756,
+     "segment": "inhibitor",
+     "branch": "inhibitor",
+     "t": 307.5,
+     "in_collapse": false,
+     "value_declared": 80.9804507368908,
+     "value_other": 80.98264056720544
+    },
+    "pH_N": {
+     "worst_over_band": 0.00016702965233150735,
+     "segment": "inhibitor",
+     "branch": "inhibitor",
+     "t": 300.26,
+     "in_collapse": false,
+     "value_declared": 7.085420962792617,
+     "value_other": 7.085421046307443
+    },
+    "pH_P": {
+     "worst_over_band": 0.0007316027677006787,
+     "segment": "inhibitor",
+     "branch": "inhibitor",
+     "t": 376.5,
+     "in_collapse": false,
+     "value_declared": 7.1071760351691795,
+     "value_other": 7.107175669367796
+    },
+    "NADH_fraction": {
+     "worst_over_band": 0.0016908067625998058,
+     "segment": "inhibitor",
+     "branch": "inhibitor",
+     "t": 300.25,
+     "in_collapse": false,
+     "value_declared": 0.6055384661602805,
+     "value_other": 0.6055376207568992
+    },
+    "cytc_reduced_fraction": {
+     "worst_over_band": 0.005344407466134626,
+     "segment": "inhibitor",
+     "branch": "inhibitor",
+     "t": 300.35,
+     "in_collapse": false,
+     "value_declared": 0.8286052939621745,
+     "value_other": 0.8286079661659076
+    },
+    "O2_flux": {
+     "worst_over_band": 0.0,
+     "segment": "inhibitor",
+     "branch": "inhibitor",
+     "t": 300.0,
+     "in_collapse": false,
+     "value_declared": 0.0,
+     "value_other": 0.0
+    },
+    "K_N": {
+     "worst_over_band": 0.00015157995114129392,
+     "segment": "inhibitor",
+     "branch": "inhibitor",
+     "t": 300.62,
+     "in_collapse": false,
+     "value_declared": 0.15508611496387847,
+     "value_other": 0.15508609145593275
+    },
+    "Pi_N": {
+     "worst_over_band": 0.0008106869396271031,
+     "segment": "inhibitor",
+     "branch": "inhibitor",
+     "t": 300.5,
+     "in_collapse": false,
+     "value_declared": 0.009820073841517379,
+     "value_other": 0.009820081948386775
+    },
+    "ATP_N": {
+     "worst_over_band": 0.004277305815135815,
+     "segment": "inhibitor",
+     "branch": "inhibitor",
+     "t": 300.54,
+     "in_collapse": false,
+     "value_declared": 0.0033618881877278935,
+     "value_other": 0.003361845414669742
+    }
+   },
+   "b_first_2_s": {
+    "dpsi_mV": {
+     "worst_over_band": 2.5549184954343218e-05,
+     "segment": "state4_a",
+     "branch": null,
+     "t": 0.87,
+     "in_collapse": false,
+     "value_declared": 114.53548246486211,
+     "value_other": 114.53548374232136
+    },
+    "pH_N": {
+     "worst_over_band": 3.426578132348368e-06,
+     "segment": "state4_a",
+     "branch": null,
+     "t": 0.01,
+     "in_collapse": false,
+     "value_declared": 7.061777759206117,
+     "value_other": 7.061777757492828
+    },
+    "pH_P": {
+     "worst_over_band": 3.7356251425535447e-07,
+     "segment": "state4_a",
+     "branch": null,
+     "t": 1.97,
+     "in_collapse": false,
+     "value_declared": 7.119474465016729,
+     "value_other": 7.119474465203511
+    },
+    "NADH_fraction": {
+     "worst_over_band": 1.0700700325827484e-05,
+     "segment": "state4_a",
+     "branch": null,
+     "t": 0.0,
+     "in_collapse": false,
+     "value_declared": 0.7586665090331677,
+     "value_other": 0.7586665143835178
+    },
+    "cytc_reduced_fraction": {
+     "worst_over_band": 9.029103603674926e-06,
+     "segment": "state4_a",
+     "branch": null,
+     "t": 0.0,
+     "in_collapse": false,
+     "value_declared": 0.11379596732400431,
+     "value_other": 0.1137959628094525
+    },
+    "O2_flux": {
+     "worst_over_band": 0.00011178700965011574,
+     "segment": "state4_a",
+     "branch": null,
+     "t": 0.0,
+     "in_collapse": false,
+     "value_declared": 0.00019331859314423376,
+     "value_other": 0.00019331857153372632
+    },
+    "K_N": {
+     "worst_over_band": 3.7599379996899398e-06,
+     "segment": "state4_a",
+     "branch": null,
+     "t": 0.02,
+     "in_collapse": false,
+     "value_declared": 0.15994373586925237,
+     "value_other": 0.1599437364706309
+    },
+    "Pi_N": {
+     "worst_over_band": 5.700490600391016e-06,
+     "segment": "state4_a",
+     "branch": null,
+     "t": 1.97,
+     "in_collapse": false,
+     "value_declared": 0.009934296098635994,
+     "value_other": 0.009934296041631088
+    },
+    "ATP_N": {
+     "worst_over_band": 7.414318031057076e-06,
+     "segment": "state4_a",
+     "branch": null,
+     "t": 0.62,
+     "in_collapse": false,
+     "value_declared": 0.0020835170733975172,
+     "value_other": 0.0020835171475406975
+    }
+   }
+  },
+  "run_scored_it_at": {
+   "worst_over_band": 0.24483608522729128,
+   "at_plateau_ends": 0.04379660520186235,
+   "rules": "erratum 2 (the run's own scoring)"
+  }
+ },
+ "plants": {
+  "P-a": {
+   "what": "the exchange's shares at 0.35 and 0.70, in Eq. 14's printed two-fraction form",
+   "reproduces_saved_plateau_ends_d": true,
+   "saved_plateau_ends_d_max_difference_bands": 0.0,
+   "world_d": {
+    "dpsi_mV": {
+     "worst_over_band": 56.09489120300566,
+     "segment": "state3_O2_exhaustion",
+     "branch": null,
+     "t": 159.5,
+     "in_collapse": false,
+     "value_declared": 137.68449843146047,
+     "value_other": 134.87975387131019
+    },
+    "pH_N": {
+     "worst_over_band": 1.6499908864648916,
+     "segment": "state3_O2_exhaustion",
+     "branch": null,
+     "t": 154.5,
+     "in_collapse": false,
+     "value_declared": 7.097870177528589,
+     "value_other": 7.098695172971821
+    },
+    "pH_P": {
+     "worst_over_band": 1.052684489504685,
+     "segment": "state3_O2_exhaustion",
+     "branch": null,
+     "t": 160.0,
+     "in_collapse": false,
+     "value_declared": 7.097797396101811,
+     "value_other": 7.098323738346563
+    },
+    "NADH_fraction": {
+     "worst_over_band": 27.006417406039372,
+     "segment": "state3_O2_exhaustion",
+     "branch": null,
+     "t": 160.0,
+     "in_collapse": false,
+     "value_declared": 0.5831217721407074,
+     "value_other": 0.5966249808437271
+    },
+    "cytc_reduced_fraction": {
+     "worst_over_band": 51.319558282393764,
+     "segment": "state3_O2_exhaustion",
+     "branch": null,
+     "t": 153.5,
+     "in_collapse": false,
+     "value_declared": 0.8474661342304325,
+     "value_other": 0.8731259133716294
+    },
+    "O2_flux": {
+     "worst_over_band": 57.67746816392815,
+     "segment": "state3_O2_exhaustion",
+     "branch": null,
+     "t": 160.0,
+     "in_collapse": false,
+     "value_declared": 0.000827638498097099,
+     "value_other": 0.0007799024049718622
+    },
+    "K_N": {
+     "worst_over_band": 1.9003405411877696,
+     "segment": "state3_O2_exhaustion",
+     "branch": null,
+     "t": 154.5,
+     "in_collapse": false,
+     "value_declared": 0.15090049282254078,
+     "value_other": 0.1506137304983449
+    },
+    "Pi_N": {
+     "worst_over_band": 9.917153731680248,
+     "segment": "state3_O2_exhaustion",
+     "branch": null,
+     "t": 160.0,
+     "in_collapse": false,
+     "value_declared": 0.008385314025245743,
+     "value_other": 0.008484485562562545
+    },
+    "ATP_N": {
+     "worst_over_band": 44.26409327296966,
+     "segment": "state3_O2_exhaustion",
+     "branch": null,
+     "t": 156.5,
+     "in_collapse": false,
+     "value_declared": 0.0026768073926131887,
+     "value_other": 0.002234166459883492
+    }
+   },
+   "world_d_worst_over_band": 57.67746816392815,
+   "collapse": {
+    "dpsi_mV": {
+     "worst_over_band": 0.7153622145109174,
+     "segment": "state3_O2_exhaustion",
+     "branch": null,
+     "t": 178.0,
+     "in_collapse": true,
+     "value_declared": 86.27711962388528,
+     "value_other": 78.96230625275179
+    },
+    "pH_N": {
+     "worst_over_band": 0.31759660501693854,
+     "segment": "state3_O2_exhaustion",
+     "branch": null,
+     "t": 178.0,
+     "in_collapse": true,
+     "value_declared": 7.091615569951848,
+     "value_other": 7.091418092449952
+    },
+    "pH_P": {
+     "worst_over_band": 0.7267414766738186,
+     "segment": "state3_O2_exhaustion",
+     "branch": null,
+     "t": 178.0,
+     "in_collapse": true,
+     "value_declared": 7.107897585797431,
+     "value_other": 7.109426706991028
+    },
+    "NADH_fraction": {
+     "worst_over_band": 0.6136006650852956,
+     "segment": "state3_O2_exhaustion",
+     "branch": null,
+     "t": 160.5,
+     "in_collapse": true,
+     "value_declared": 0.5965600198616019,
+     "value_other": 0.6100951800704036
+    },
+    "cytc_reduced_fraction": {
+     "worst_over_band": 3.1290828872079994,
+     "segment": "state3_O2_exhaustion",
+     "branch": null,
+     "t": 160.5,
+     "in_collapse": true,
+     "value_declared": 0.9836501984355865,
+     "value_other": 0.988776995372012
+    },
+    "O2_flux": {
+     "worst_over_band": 0.6136797280038849,
+     "segment": "state3_O2_exhaustion",
+     "branch": null,
+     "t": 160.5,
+     "in_collapse": true,
+     "value_declared": 0.0007803897944302371,
+     "value_other": 0.0007325648517829741
+    },
+    "K_N": {
+     "worst_over_band": 0.3816742689055843,
+     "segment": "state3_O2_exhaustion",
+     "branch": null,
+     "t": 160.5,
+     "in_collapse": true,
+     "value_declared": 0.15128631216534874,
+     "value_other": 0.15120460936826124
+    },
+    "Pi_N": {
+     "worst_over_band": 0.797575599728612,
+     "segment": "state3_O2_exhaustion",
+     "branch": null,
+     "t": 160.5,
+     "in_collapse": true,
+     "value_declared": 0.008475678077683665,
+     "value_other": 0.008574062764573823
+    },
+    "ATP_N": {
+     "worst_over_band": 2.2142209611677206,
+     "segment": "state3_O2_exhaustion",
+     "branch": null,
+     "t": 160.5,
+     "in_collapse": true,
+     "value_declared": 0.0014569503645921556,
+     "value_other": 0.001134214903041626
+    }
+   },
+   "collapse_worst_over_band": 3.1290828872079994,
+   "worlds_a_to_c_worst_over_band_saved": 109.51187375630099,
+   "worst_over_band": 109.51187375630099,
+   "caught": true,
+   "at_plateau_ends_saved": 3.446939091911468
+  },
+  "P-b": {
+   "what": "the exchange's activity x 1.01",
+   "reproduces_saved_plateau_ends_d": true,
+   "saved_plateau_ends_d_max_difference_bands": 6.938893903907228e-13,
+   "world_d": {
+    "dpsi_mV": {
+     "worst_over_band": 38.10240733871808,
+     "segment": "state3_O2_exhaustion",
+     "branch": null,
+     "t": 156.0,
+     "in_collapse": false,
+     "value_declared": 145.30299003044732,
+     "value_other": 143.39786966351141
+    },
+    "pH_N": {
+     "worst_over_band": 0.7953490824377241,
+     "segment": "state3_O2_exhaustion",
+     "branch": null,
+     "t": 150.5,
+     "in_collapse": false,
+     "value_declared": 7.096894827102033,
+     "value_other": 7.097292501643252
+    },
+    "pH_P": {
+     "worst_over_band": 0.6094368973639204,
+     "segment": "state3_O2_exhaustion",
+     "branch": null,
+     "t": 178.0,
+     "in_collapse": true,
+     "value_declared": 7.107897585797431,
+     "value_other": 7.109179888935246
+    },
+    "NADH_fraction": {
+     "worst_over_band": 43.31326425109538,
+     "segment": "state3_O2_exhaustion",
+     "branch": null,
+     "t": 158.5,
+     "in_collapse": false,
+     "value_declared": 0.5410418562971647,
+     "value_other": 0.5626984884227124
+    },
+    "cytc_reduced_fraction": {
+     "worst_over_band": 58.72906819867496,
+     "segment": "state3_O2_exhaustion",
+     "branch": null,
+     "t": 152.5,
+     "in_collapse": false,
+     "value_declared": 0.811303880058966,
+     "value_other": 0.8406684141583035
+    },
+    "O2_flux": {
+     "worst_over_band": 87.34551380534053,
+     "segment": "state3_O2_exhaustion",
+     "branch": null,
+     "t": 160.0,
+     "in_collapse": false,
+     "value_declared": 0.000827638498097099,
+     "value_other": 0.0007553479882357275
+    },
+    "K_N": {
+     "worst_over_band": 0.9232189235945767,
+     "segment": "state3_O2_exhaustion",
+     "branch": null,
+     "t": 151.0,
+     "in_collapse": false,
+     "value_declared": 0.15122086638771448,
+     "value_other": 0.15108125642222298
+    },
+    "Pi_N": {
+     "worst_over_band": 14.848941771617405,
+     "segment": "state3_O2_exhaustion",
+     "branch": null,
+     "t": 158.0,
+     "in_collapse": false,
+     "value_declared": 0.008002826291806387,
+     "value_other": 0.008151315709522561
+    },
+    "ATP_N": {
+     "worst_over_band": 32.721664297590074,
+     "segment": "state3_O2_exhaustion",
+     "branch": null,
+     "t": 155.0,
+     "in_collapse": false,
+     "value_declared": 0.0032492085898018835,
+     "value_other": 0.0029219919468259827
+    }
+   },
+   "world_d_worst_over_band": 87.34551380534053,
+   "collapse": {
+    "dpsi_mV": {
+     "worst_over_band": 0.6000297616242177,
+     "segment": "state3_O2_exhaustion",
+     "branch": null,
+     "t": 178.0,
+     "in_collapse": true,
+     "value_declared": 86.27711962388528,
+     "value_other": 80.14161842690406
+    },
+    "pH_N": {
+     "worst_over_band": 0.5625817578929168,
+     "segment": "state3_O2_exhaustion",
+     "branch": null,
+     "t": 161.0,
+     "in_collapse": true,
+     "value_declared": 7.096149494635914,
+     "value_other": 7.095799688503209
+    },
+    "pH_P": {
+     "worst_over_band": 0.6094368973639204,
+     "segment": "state3_O2_exhaustion",
+     "branch": null,
+     "t": 178.0,
+     "in_collapse": true,
+     "value_declared": 7.107897585797431,
+     "value_other": 7.109179888935246
+    },
+    "NADH_fraction": {
+     "worst_over_band": 0.9022760738982549,
+     "segment": "state3_O2_exhaustion",
+     "branch": null,
+     "t": 160.5,
+     "in_collapse": true,
+     "value_declared": 0.5965600198616019,
+     "value_other": 0.6164629500696125
+    },
+    "cytc_reduced_fraction": {
+     "worst_over_band": 2.2824753123713815,
+     "segment": "state3_O2_exhaustion",
+     "branch": null,
+     "t": 160.5,
+     "in_collapse": true,
+     "value_declared": 0.9836501984355865,
+     "value_other": 0.9873898844268942
+    },
+    "O2_flux": {
+     "worst_over_band": 0.8983549700086984,
+     "segment": "state3_O2_exhaustion",
+     "branch": null,
+     "t": 160.5,
+     "in_collapse": true,
+     "value_declared": 0.0007803897944302371,
+     "value_other": 0.0007103797012871935
+    },
+    "K_N": {
+     "worst_over_band": 0.5301065018581783,
+     "segment": "state3_O2_exhaustion",
+     "branch": null,
+     "t": 161.0,
+     "in_collapse": true,
+     "value_declared": 0.15136570189317178,
+     "value_other": 0.15147917871748134
+    },
+    "Pi_N": {
+     "worst_over_band": 1.0835160276062965,
+     "segment": "state3_O2_exhaustion",
+     "branch": null,
+     "t": 160.5,
+     "in_collapse": true,
+     "value_declared": 0.008475678077683665,
+     "value_other": 0.008609334855991309
+    },
+    "ATP_N": {
+     "worst_over_band": 1.2348339097299827,
+     "segment": "state3_O2_exhaustion",
+     "branch": null,
+     "t": 160.5,
+     "in_collapse": true,
+     "value_declared": 0.0014569503645921556,
+     "value_other": 0.0012769662081849379
+    }
+   },
+   "collapse_worst_over_band": 2.2824753123713815,
+   "worlds_a_to_c_worst_over_band_saved": 9.873333065302745,
+   "worst_over_band": 87.34551380534053,
+   "caught": true,
+   "at_plateau_ends_saved": 8.502516936818667
+  },
+  "P-c": {
+   "what": "the 2005 k_O2, 1.0e-6 M (appendix 9: the 2005 PDF prints 1.0e-6 for k_O2)",
+   "reproduces_saved_plateau_ends_d": true,
+   "saved_plateau_ends_d_max_difference_bands": 0.0,
+   "world_d": {
+    "dpsi_mV": {
+     "worst_over_band": 367.641541415324,
+     "segment": "state3_O2_exhaustion",
+     "branch": null,
+     "t": 154.5,
+     "in_collapse": false,
+     "value_declared": 148.56430060636723,
+     "value_other": 166.94637767713343
+    },
+    "pH_N": {
+     "worst_over_band": 10.404575790015969,
+     "segment": "state3_O2_exhaustion",
+     "branch": null,
+     "t": 153.5,
+     "in_collapse": false,
+     "value_declared": 7.097684234930628,
+     "value_other": 7.09248194703562
+    },
+    "pH_P": {
+     "worst_over_band": 6.202088969822321,
+     "segment": "state3_O2_exhaustion",
+     "branch": null,
+     "t": 174.5,
+     "in_collapse": true,
+     "value_declared": 7.103613985130376,
+     "value_other": 7.116663667847998
+    },
+    "NADH_fraction": {
+     "worst_over_band": 186.2780960108348,
+     "segment": "state3_O2_exhaustion",
+     "branch": null,
+     "t": 156.0,
+     "in_collapse": false,
+     "value_declared": 0.47341578437108905,
+     "value_other": 0.38027673636567166
+    },
+    "cytc_reduced_fraction": {
+     "worst_over_band": 1223.8090615634783,
+     "segment": "state3_O2_exhaustion",
+     "branch": null,
+     "t": 153.5,
+     "in_collapse": false,
+     "value_declared": 0.8474661342304325,
+     "value_other": 0.23556160344869334
+    },
+    "O2_flux": {
+     "worst_over_band": 288.1328933698578,
+     "segment": "state3_O2_exhaustion",
+     "branch": null,
+     "t": 160.0,
+     "in_collapse": false,
+     "value_declared": 0.000827638498097099,
+     "value_other": 0.0005891686229760983
+    },
+    "K_N": {
+     "worst_over_band": 12.225988974788047,
+     "segment": "state3_O2_exhaustion",
+     "branch": null,
+     "t": 153.5,
+     "in_collapse": false,
+     "value_declared": 0.15097877111435526,
+     "value_other": 0.15282463590542641
+    },
+    "Pi_N": {
+     "worst_over_band": 62.82334207722934,
+     "segment": "state3_O2_exhaustion",
+     "branch": null,
+     "t": 155.0,
+     "in_collapse": false,
+     "value_declared": 0.007474102022515962,
+     "value_other": 0.0068458686017436685
+    },
+    "ATP_N": {
+     "worst_over_band": 338.9711138353182,
+     "segment": "state3_O2_exhaustion",
+     "branch": null,
+     "t": 154.5,
+     "in_collapse": false,
+     "value_declared": 0.0034359449045779714,
+     "value_other": 0.006825656042931154
+    }
+   },
+   "world_d_worst_over_band": 1223.8090615634783,
+   "collapse": {
+    "dpsi_mV": {
+     "worst_over_band": 5.827740105959804,
+     "segment": "state3_O2_exhaustion",
+     "branch": null,
+     "t": 174.5,
+     "in_collapse": true,
+     "value_declared": 106.87841264841698,
+     "value_other": 47.287857841562364
+    },
+    "pH_N": {
+     "worst_over_band": 2.819480884379398,
+     "segment": "state3_O2_exhaustion",
+     "branch": null,
+     "t": 172.5,
+     "in_collapse": true,
+     "value_declared": 7.092545168456629,
+     "value_other": 7.090792051348646
+    },
+    "pH_P": {
+     "worst_over_band": 6.202088969822321,
+     "segment": "state3_O2_exhaustion",
+     "branch": null,
+     "t": 174.5,
+     "in_collapse": true,
+     "value_declared": 7.103613985130376,
+     "value_other": 7.116663667847998
+    },
+    "NADH_fraction": {
+     "worst_over_band": 3.4971609214781276,
+     "segment": "state3_O2_exhaustion",
+     "branch": null,
+     "t": 162.5,
+     "in_collapse": true,
+     "value_declared": 0.645542785556419,
+     "value_other": 0.7226851943600132
+    },
+    "cytc_reduced_fraction": {
+     "worst_over_band": 6.012314615077754,
+     "segment": "state3_O2_exhaustion",
+     "branch": null,
+     "t": 160.5,
+     "in_collapse": true,
+     "value_declared": 0.9836501984355865,
+     "value_other": 0.9935009813200598
+    },
+    "O2_flux": {
+     "worst_over_band": 3.5983033827801805,
+     "segment": "state3_O2_exhaustion",
+     "branch": null,
+     "t": 162.5,
+     "in_collapse": true,
+     "value_declared": 0.0006081674539740332,
+     "value_other": 0.0003277465030186105
+    },
+    "K_N": {
+     "worst_over_band": 2.848902527361079,
+     "segment": "state3_O2_exhaustion",
+     "branch": null,
+     "t": 173.0,
+     "in_collapse": true,
+     "value_declared": 0.15261326431096886,
+     "value_other": 0.15322311235176675
+    },
+    "Pi_N": {
+     "worst_over_band": 4.098861825726199,
+     "segment": "state3_O2_exhaustion",
+     "branch": null,
+     "t": 162.0,
+     "in_collapse": true,
+     "value_declared": 0.008726146248109497,
+     "value_other": 0.009231760057593274
+    },
+    "ATP_N": {
+     "worst_over_band": 3.8431946465670928,
+     "segment": "state3_O2_exhaustion",
+     "branch": null,
+     "t": 161.5,
+     "in_collapse": true,
+     "value_declared": 0.0012457314942742371,
+     "value_other": 0.0006855637333140864
+    }
+   },
+   "collapse_worst_over_band": 6.202088969822321,
+   "worlds_a_to_c_worst_over_band_saved": 354.3847711038443,
+   "worst_over_band": 1223.8090615634783,
+   "caught": true,
+   "at_plateau_ends_saved": 235.59386629676234
+  }
+ },
+ "o2_window_check": {
+  "superseded_threshold_M": 3.73e-10,
+  "crossing_s": 189.19799536676695,
+  "O2_flux_at_threshold": 7.070561158096493e-06,
+  "state3_O2_flux": 0.001637712125964779,
+  "fraction_of_state3": 0.004317340664453597
+ }
+}

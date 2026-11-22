@@ -518,10 +518,38 @@ def _declared_terms(p, amounts, *, xp):
     return xp.where(buffered, term - 1e-3 * R * p.temperature * protons * standard, 0.0)
 
 
+# The host path's last general term: (layout, stored increments, change). The host row checks
+# value one accepted row twice (balances, then channel_magnitudes), so the second call returns a
+# copy of the first's array and the closure is solved once: bit-identical by construction. It is
+# reused only for the same layout object and bitwise-equal increments; device traces never reach it.
+_HOST_CHANGE = []
+
+
+def _host_general_change(state, p):
+    increments = tuple(
+        np.asarray(a) for a in (state.amount_increment, state.extracellular_amount_increment)
+    )
+    if (
+        _HOST_CHANGE
+        and _HOST_CHANGE[0] is p
+        and all(
+            a.dtype == b.dtype and a.shape == b.shape and a.tobytes() == b.tobytes()
+            for a, b in zip(_HOST_CHANGE[1], increments, strict=True)
+        )
+    ):
+        return _HOST_CHANGE[2].copy()
+    change = _general_change(state, p, np)
+    _HOST_CHANGE[:] = (p, tuple(a.copy() for a in increments), np.array(change, copy=True))
+    return change
+
+
 def ledger_terms(state, p, *, xp):
     """The declared term's change since the start, as stored free energy (rule (a)). The general
-    closure books phase 1's S_c (CORE_SEAMS §19 as amended), @3 its ideal terms on the rows."""
+    closure books phase 1's S_c (CORE_SEAMS §19 as amended), @3 its ideal terms on the rows. On the
+    host the general term is reused for a repeated row (_HOST_CHANGE)."""
     if _is_general(p):
+        if xp is np:
+            return dict(stored_pJ=_host_general_change(state, p))
         return dict(stored_pJ=_general_change(state, p, xp))
     return dict(
         stored_pJ=_declared_terms(p, _amounts(state, p, xp), xp=xp) - p.proton_buffer_initial_pJ

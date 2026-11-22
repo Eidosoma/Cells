@@ -1876,6 +1876,171 @@ R2, the judged reference, integrates the same declared equations (D280).
 - R2's own stiff integrator does not depend on the engine's solver route (D290).
 - So R2's author can start once (a) or (b) is ruled and this note is accepted.
 
+### 7. The build plan (22 November 2026): files, owners, bitwise, checks and price
+
+**Scope.** The user approved this face, reading the IMS closure at 180 mV (D288), with the held
+buffer as option (a) (the lead's ruling). The cycles stay explicit, at about 16 µs (D302). This
+section plans the build. It decides nothing new, except where flagged at its end. It goes to the
+@3, binding and kinds owners for review before any code.
+
+**0. The first parse, already done (development, S): no parse change is needed.**
+- **The test.** Step 0's world (MT-1b's world without its outer membrane), with its plasma patch
+  removed, has the matrix and the IMS as one capacitor component with no capacitor to the bath.
+  - With today's face law carrying K⁺ (a row no closure holds) from the IMS to the held bath, it
+    parses.
+  - Without the face it is refused: "Floating capacitor components require an outside return path
+    to a clamp/gauge" (`numerics/surface_field.bind`).
+- **So the field law already admits the topology** through a charged face path to a clamp. G5's
+  condition is the field's own floating-offset solve, by current balance through that face.
+- **The composite's floating-component refusal** (`pump_composite_adapter.check_field_inputs`)
+  applies only to operators that change capacitances or activity masks, and MT-1b declares none.
+- **Its build check:** the same parse with the forms law (a row; the forms face is charged too).
+
+**1. The forms law, `logmean_electrodiffusion_forms@1` (§2–4).**
+- **Files and owners** (the @3 owner's review, 22 November 2026):
+  - a new law module, `laws/routes/logmean_electrodiffusion_forms.py`, beside today's face law;
+  - electromigration in the IMEX's implicit operator: `numerics/surface_imex.py` (`face_weights`,
+    `drift_flux`). The Σ_f z_f² W_f term goes there, not in `surface_pump_v3`;
+  - the explicit face fluxes: `numerics/surface_transport.py`;
+  - the field's face term and the floating-offset solve: `numerics/surface_field.py` and
+    `tissue_field.py`;
+  - the face-law dispatch: `models/inner_laws.py` (`FACE_ROUTE_LAW_ID`);
+  - per-form heat and the per-form explicit bound, in @3's face booking and step rule;
+  - its admission on faces in `definitions/surface_tissue_spec.py`, which today accepts only
+    `logmean_electrodiffusion@1`;
+  - `analysis/stationary.py` and `execution/state.py` read `face_factor`. Each must refuse a forms
+    face statically or support it;
+  - the IMS's free forms are read through the binding owner's export (`forms_from_free`,
+    `free_amount_reads`).
+- **Bitwise (the @3 owner's ruling).**
+  - Forms faces are their own entity set, with their own layout fields and sender and receiver
+    indices, statically absent unless declared. They are not a per-face branch in today's face
+    arrays.
+  - So plain faces and the implicit operator stay bitwise by construction (D148 case 2), and no
+    registered world declares a forms face.
+- **FR-42.** A labelled row on a forms face is refused in `label_errors` in version 1, since FR-42's
+  face one-way term assumes one face factor per row. Whichever lands second adds the line.
+- **Checks.** §5's rows, then the gate: crossrev, tiers 1+2, G1 and FR's bitwise set. Also a
+  degenerate-equivalence row: a forms face that declares one form equal to its row reproduces
+  today's log-mean face, bitwise where the arithmetic matches, otherwise at rounding.
+- **Price:** likely 3–5 agent-days, with the implicit operator and the floating solve in it (the @3
+  owner).
+
+**2. The held buffer, option (a) (§3).**
+- **Files and owners:**
+  - `kinds/proton_buffer.py` (the binding owner) lifts its held-bath refusal for a bath that a forms
+    face touches. It solves that bath's forms once per held composition with the closure's
+    constants, and again at a scheduled bath event such as the ADP step.
+  - @3's reservoir work (the @3 owner) values those baths' supply at each row's free potential.
+  - **G3 holds the bath's free H⁺ (10⁻⁷·¹ M), not an H total** (the face builder's note). So the
+    held bath's solve takes free H⁺ as given, solves the other free ligands (Mg²⁺) from their held
+    totals, and lets the bath's H total follow.
+- **Bitwise.** A static switch per held bath that a forms face touches, at `surface_pump_v3`'s
+  reservoir work (1e-3 Σ μ·supplied); no registered world has such a bath.
+- **Checks.**
+  - §5's (a) rows;
+  - one row where a scheduled bath event re-solves the bath's forms;
+  - one row showing that a bath without a forms face stays bitwise.
+- **Price:** about 1 agent-day (§5), split between the two owners.
+
+**3. The leak and the uncoupler reading the closure (G1's Eq. 19 at h_P, erratum 2's item 1).**
+- **Today.** `proton_constant_field_leak@1` is a route law with no declared reads.
+  - Its kernel is `laws/transport/proton_leak.py`, the FR-4/FR-5 owner's, which is never edited.
+  - Its host is `cells.passive_routes@1`, in `kinds/passive_routes.py` (the kinds owner).
+  - `registry/species_registry.check_closure_rows` refuses it where rapid_binding@1 holds H⁺.
+    Step 0's world showed this.
+- **The change (the kinds owner's review, 22 November 2026):** `proton_constant_field_leak@2`.
+  - It lives in a new inert law module that imports the unedited kernel and joins the model's
+    `law_homes`.
+  - It shares @1's `passive_leak` mask and fields, and the dispatch maps both IDs to the leak
+    kernel.
+  - It declares `reads=("rapid_binding@1",)` and takes free h at both ends from the closure's stage
+    read, which already writes the free ligand × V into the held H row.
+  - Its parse check is the ligand row at the route's closure nodes.
+- **What admission needs.** "`check_closure_rows` then admits it" fails twice in today's code:
+  - `RouteLaw` has no `reads` field. The fix is a defaulted `reads=()`, host-side.
+  - `_closure_mover_errors` needs `role_species`, which `passive_routes` lacks, and it resolves
+    modes through `cycle_changes`, which raises `TypeError` for anything but a `CycleLaw`.
+  - The clean fix is a route-law branch in `species_registry`'s admission (the binding owner's
+    file). It admits a route law whose reads name the closure, whose one carried row is the
+    closure ligand's base form, and which crosses between its two ends.
+- **The same capability as the face's IMS read,** so the two are designed and reviewed together.
+- **Bitwise holds under three conditions:** @2 adds no fields, `reads` defaults to `()`, and no
+  registered world declares @2.
+- **Checks,** as rows in `test_rapid_binding_world.py`:
+  - at a general-closure node, @2 is admitted and @1 refused;
+  - its flux equals the GHK flux at the closure's free h at both ends;
+  - the energy ledger closes with the closure's S_c;
+  - @2 equals @1 bit for bit in a world with no closure (about 10–20 s), and the row states
+    whether @2 is admitted at B4's nodes;
+  - an admission row refuses @2 where its row is not the closure's ligand;
+  - the IMS's step at 16 µs with the leak at free h, as a row, or covered by the argument that
+    dh/dH_total ≤ 1 keeps B7's charge slope in charge.
+- **Price:** 1.5–2 agent-days for the kinds owner, plus about half a day for the binding owner's
+  admission branch. That branch may come to the robustness agent under leave.
+
+**4. The forms-aware lag drive.**
+- **Today.**
+  - The closure's stage check estimates its lag from the node rates by rows, and enters a binder
+    row's drive into its base form (`kinds/proton_buffer._general_stage`,
+    `laws/reactions/rapid_binding.lag_first_order`).
+  - At the ADP step the face brings 92% of its ADP as MgADP. So the row convention reads 1.41 ×
+    10⁻³ log10 for the first ~100 µs, above the 1 × 10⁻³ budget, and the step is refused.
+  - With the face's moves taken as the forms they are, the worst is 4.0 × 10⁻⁴. That is Step 0's
+    development estimate, along a path that includes the IMS kinase.
+- **The change:**
+  - `lag_first_order` takes an optional species-level drive beside the row drives (the binding
+    owner: `proton_buffer.py`, `rapid_binding.py`).
+  - The forms face passes its per-form fluxes at the stage to the stage check (the @3 owner: the
+    plumbing of `surface_pump_v3._stage_checks`).
+  - Every other mover keeps the row convention.
+- **Bitwise.** Static: without a forms face the same function runs on the same inputs.
+- **Checks.**
+  - A row in `test_rapid_binding_kernel.py`: when every move enters its base form, the forms drive
+    equals the row drive bitwise.
+  - A row in `test_rapid_binding_world.py`: a forms face's step at a bath step stays within the
+    budget where the row drive refuses.
+- **Price:** about 1 agent-day (the binding owner), plus half a day (the @3 owner).
+
+**5. The capacitor/held-bath parse change: not needed** (item 0).
+
+**The solver.** MT-1b runs on today's ARS(2,2,2) with implicit face electromigration
+(`imex_ars222_face_electromigration@1`), the solver its dt ladder ran at 16 µs. It does not declare
+N2, because N2 has nothing to move in MT-1b:
+- N2 makes @3's own constant-field routes implicit: patch permeabilities, channel populations and
+  junctions. MT-1b has none of these.
+- Its cycles, its leak and its uncoupler are kinds, which N2 leaves explicit.
+- The face's electromigration is implicit already.
+So a forms face under N2 can stay refused in version 1, as the face builder plans.
+
+**The order:**
+1. items 1 and 2 together (the face path and its bath);
+2. item 3, in parallel once the closure read's form is agreed;
+3. item 4, after item 1 provides the per-form drive;
+4. then MT-1b's worlds and C1's checks.
+
+**Total:** about 7.5–10 agent-days across three owners: item 1 3–5, item 2 about 1, item 3 2–2.5
+and item 4 about 1.5 (the @3 and kinds owners' estimates). Each landing is gated, or stacked (D229
+rule 2).
+
+**Builder.** A separate face builder works under the @3 owner's leave, and the @3 owner reviews the
+seams. The binding lane is unstaffed, so its parts of items 2, 3 and 4 may come to the robustness
+agent under leave (the lead's assignment). The kinds owner reviewed item 3 (above).
+
+**Also for MT-1b's worlds** (declaration values, not decisions):
+- each species' declared background at or below 1 pM (erratum 2);
+- per-species ledger floors suited to the source's activities. On Step 0's world, head 2's floors
+  (1 × 10⁻¹⁶ fmol for H) refused a long run ("accounting failed: local"). The parse caps a floor
+  at 1 × 10⁻¹⁰ fmol and requires each declared background's floor to equal its row's.
+
+**Flags that would need a decision:**
+1. **The leak as a transporter population instead of @2.** Mass action in place of GHK changes Eq.
+   19's form, so it would need a G1 erratum.
+2. **The ledger floors.** If 1 × 10⁻¹⁰ fmol, the parse cap, proves too tight over 300 s at the
+   source's activities, the cap itself is a decision.
+3. **A future operator.** A later declaration that adds a capacitance-changing operator would meet
+   the composite's floating-component refusal.
+
 ## MT-1b's implicit cycle block: the cycles' slopes in N2's operator (design, 22 November 2026)
 
 **Status: a design, before code (D290; D235's branch I for MT-2).** The user chose implicit cycles

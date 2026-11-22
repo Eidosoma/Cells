@@ -2539,7 +2539,7 @@ the fourth reuse case.
   - Physical time and crossing-time interpretation come from the numerical plan.
 - **A step context.** Each plan receives the interval [t, t + dt], its stage times, and the next
   compulsory event boundary: a dose, a regulatory write or a timed event.
-  - Fixed-step runs read it and change nothing; the event-time rule (exact multiples of dt) stays.
+  - Fixed-step runs read it and change nothing; the event-time rule (on the clock's grid, D283) stays.
   - A future coarse step must stop at that boundary.
 - **Today's coarse and stationary paths handle restricted sets of fields.** They read the roles to
   refuse what they cannot treat.

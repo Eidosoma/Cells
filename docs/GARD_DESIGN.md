@@ -348,7 +348,7 @@ enumeration (evidence: `/mnt/workspaces/Cells/verify-gard-beard-20261116/`).
 | Many species | @3's cap of 16, raised on need (D165); A7's fold costs +4% at 150 species on the L4 (D182) | Not needed in option A: N_G is the family's own axis. The registry gets an indexed type family |
 | Populations on the GPU | `cells.ensemble`: stable world-ID ranges, a seed per arm, multi-GPU queues, pause and resume (GPU_ENSEMBLES.md) | Lanes over (matrix × landmark × branch), masked when finished. Population mode is exact by independent clocks between fissions, because a held reservoir decouples the exchange; fissions commit in time order (**S**) |
 | Checkpoints and branching | The assembly checkpoints keep the pending event and the stream identity, and resume without resampling; the CLI's `branch` "continue[s] with explicitly changed future inputs". The composite's checkpoint refuses random state (`io.py`) | Landmarks at post-fission states, where nothing is pending; futures as branch-keyed worlds |
-| Division | `isopotential_partition@1`: prescribed, deterministic fraction, scheduled at exact multiples of dt, fresh slots, no reuse (S5 §6.2) | State-triggered, stochastic, repeated fission with slot reuse and carrier-keyed lineage: the endogenous lifecycle's open items in miniature (CURRENT_PLAN.md, "Gate: lifecycle operators") |
+| Division | `isopotential_partition@1`: prescribed, deterministic fraction, scheduled on the clock's grid (D283), fresh slots, no reuse (S5 §6.2) | State-triggered, stochastic, repeated fission with slot reuse and carrier-keyed lineage: the endogenous lifecycle's open items in miniature (CURRENT_PLAN.md, "Gate: lifecycle operators") |
 | Lineage | S5's record shape (carrier_id, slot, kind, parent_carrier, sibling, birth_s, death_s, successors, route) shared with replacement's | The same shape, written by the run at scale (§5.2), with the followed daughter and the split |
 | Thermodynamics | D152's passive and driven classes, exact ΔG bookings and the dissipation check | The stochastic-law contract of §2.4 |
 | Observers and analysis | Run-view records, saved outputs, `validation/` analysis | H on the device; F12, F32 and compotypes in `validation/` |
@@ -460,7 +460,7 @@ cross-check, using numbers from the open paper under D186.
 | Option | For | Against |
 | --- | --- | --- |
 | **(F1) A stochastic family beside the assembly kernels** (`cells/assembly_lineages/`, `cells.assembly_lineages@1`), its laws and operators declared and registered as modules in their own namespace (D185) | It reuses proven patterns: keyed streams, pending-event checkpoints, the host oracle and the ensemble queue. Event-driven. The composite and its qualifications are untouched | A second runner shape beside the composite's fixed-step one |
-| (F2) Kinds and operators in the composite over @3 | One runner | Kinds need IMEX and a fixed dt (§7.4 (k) 3). Operator events sit at exact multiples of dt, not at state triggers. The checkpoint refuses random state. The species cap binds. Amphiphiles have no charge or voltage role. This is option B's route, later |
+| (F2) Kinds and operators in the composite over @3 | One runner | Kinds need IMEX and a fixed dt (§7.4 (k) 3). Operator events sit on the clock's grid (D283), not at state triggers. The checkpoint refuses random state. The species cap binds. Amphiphiles have no charge or voltage role. This is option B's route, later |
 
 **Recommended: (F1).**
 - **Clean (D142):** entities, laws, operators and observers are separate objects; the environment
@@ -546,7 +546,7 @@ leaves are saved only on request; the totals carry them.
 ### 5.3 Where the run view v1 does not fit (for its owner)
 
 1. **Events from the run.** `living_intervals` and `view_events` are computed on the host from the
-   definition's schedule, at exact multiples of dt. Fissions here are state-triggered and
+   definition's schedule, on the clock's grid (D283). Fissions here are state-triggered and
    stochastic, so their events must come from the run's saved fission table.
 2. **Event tables as arrays.** 100 fissions across 10⁴ lanes are 10⁶ events, too many for
    `view.json`. The view should name the fission table as an event record. JSON events stay for
