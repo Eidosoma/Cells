@@ -1897,18 +1897,34 @@ section plans the build. It decides nothing new, except where flagged at its end
 - **Its build check:** the same parse with the forms law (a row; the forms face is charged too).
 
 **1. The forms law, `logmean_electrodiffusion_forms@1` (§2–4).**
-- **Files and owners:**
+- **Files and owners** (the @3 owner's review, 22 November 2026):
   - a new law module, `laws/routes/logmean_electrodiffusion_forms.py`, beside today's face law;
-  - the face path in `models/surface_pump_v3.py` (the @3 owner): per-form stage fluxes, the face
-    Laplacian's Σ_f z_f² W_f, per-form heat, and the per-form explicit bound;
-  - its admission on faces in `definitions/surface_tissue_spec.py` (the @3 owner), which today
-    accepts only `logmean_electrodiffusion@1`;
-  - the IMS's free forms read through the binding owner's export (`forms_from_free`,
+  - electromigration in the IMEX's implicit operator: `numerics/surface_imex.py` (`face_weights`,
+    `drift_flux`). The Σ_f z_f² W_f term goes there, not in `surface_pump_v3`;
+  - the explicit face fluxes: `numerics/surface_transport.py`;
+  - the field's face term and the floating-offset solve: `numerics/surface_field.py` and
+    `tissue_field.py`;
+  - the face-law dispatch: `models/inner_laws.py` (`FACE_ROUTE_LAW_ID`);
+  - per-form heat and the per-form explicit bound, in @3's face booking and step rule;
+  - its admission on faces in `definitions/surface_tissue_spec.py`, which today accepts only
+    `logmean_electrodiffusion@1`;
+  - `analysis/stationary.py` and `execution/state.py` read `face_factor`. Each must refuse a forms
+    face statically or support it;
+  - the IMS's free forms are read through the binding owner's export (`forms_from_free`,
     `free_amount_reads`).
-- **Bitwise.** A static switch: only a face that declares the forms law takes the path, and no
-  registered world does.
-- **Checks.** §5's rows, then the gate: crossrev, tiers 1+2, G1 and FR's bitwise set.
-- **Price:** the @3 owner's 2–4 agent-days (§5).
+- **Bitwise (the @3 owner's ruling).**
+  - Forms faces are their own entity set, with their own layout fields and sender and receiver
+    indices, statically absent unless declared. They are not a per-face branch in today's face
+    arrays.
+  - So plain faces and the implicit operator stay bitwise by construction (D148 case 2), and no
+    registered world declares a forms face.
+- **FR-42.** A labelled row on a forms face is refused in `label_errors` in version 1, since FR-42's
+  face one-way term assumes one face factor per row. Whichever lands second adds the line.
+- **Checks.** §5's rows, then the gate: crossrev, tiers 1+2, G1 and FR's bitwise set. Also a
+  degenerate-equivalence row: a forms face that declares one form equal to its row reproduces
+  today's log-mean face, bitwise where the arithmetic matches, otherwise at rounding.
+- **Price:** likely 3–5 agent-days, with the implicit operator and the floating solve in it (the @3
+  owner).
 
 **2. The held buffer, option (a) (§3).**
 - **Files and owners:**
@@ -1916,8 +1932,12 @@ section plans the build. It decides nothing new, except where flagged at its end
     face touches. It solves that bath's forms once per held composition with the closure's
     constants, and again at a scheduled bath event such as the ADP step.
   - @3's reservoir work (the @3 owner) values those baths' supply at each row's free potential.
-- **Bitwise.** A static switch on the baths a forms face touches; no registered world has one.
-- **Checks.** §5's (a) rows, plus one row where a scheduled bath event re-solves the bath's forms.
+- **Bitwise.** A static switch per held bath that a forms face touches, at `surface_pump_v3`'s
+  reservoir work (1e-3 Σ μ·supplied); no registered world has such a bath.
+- **Checks.**
+  - §5's (a) rows;
+  - one row where a scheduled bath event re-solves the bath's forms;
+  - one row showing that a bath without a forms face stays bitwise.
 - **Price:** about 1 agent-day (§5), split between the two owners.
 
 **3. The leak and the uncoupler reading the closure (G1's Eq. 19 at h_P, erratum 2's item 1).**
@@ -1971,7 +1991,12 @@ section plans the build. It decides nothing new, except where flagged at its end
 3. item 4, after item 1 provides the per-form drive;
 4. then MT-1b's worlds and C1's checks.
 
-**Total:** about 5.5–8 agent-days across three owners, each landing gated, or stacked (D229 rule 2).
+**Total:** about 6.5–9 agent-days across three owners (the @3 owner's estimate), each landing gated,
+or stacked (D229 rule 2).
+
+**Builder.** A separate face builder works under the @3 owner's leave, and the @3 owner reviews the
+seams. The binding lane is unstaffed, so its parts of items 2 and 4 may come to the robustness agent
+under leave (the lead's assignment). The kinds owner's review of item 3 is pending.
 
 **Also for MT-1b's worlds** (declaration values, not decisions):
 - each species' declared background at or below 1 pM (erratum 2);
