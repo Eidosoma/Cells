@@ -74,15 +74,22 @@ def _spread(x):
 BOUND_ROUNDING = 1e-12  # Relative: the survivors' allowance above the pool from rounding alone.
 
 
+def same_instant(a, b):
+    """Whether two times name one instant of the clock: the window edges' predicate, a seam like
+    templated_polymerisation.grid_time's for D283's same-instant snap. Until it lands, equal
+    times; D283 widens both to the clock's predicate."""
+    return a == b
+
+
 def _window(t, t1, t2, ts):
-    """(i1, i2, i3) of t1 <= t2 <= ts, each an output time (D264, finding 6)."""
+    """(i1, i2, i3) of t1 <= t2 <= ts, each an output time (D264, finding 6; same_instant)."""
     if not t1 <= t2 <= ts:
         raise ValueError(f"the window needs t1 <= t2 <= ts, not {t1}, {t2} and {ts}")
-    index = {v: i for i, v in enumerate(t)}
-    missing = [x for x in (t1, t2, ts) if x not in index]
+    found = [next((i for i, v in enumerate(t) if same_instant(v, x)), None) for x in (t1, t2, ts)]
+    missing = [x for x, i in zip((t1, t2, ts), found, strict=True) if i is None]
     if missing:
         raise ValueError(f"{missing[0]} s is not an output time")
-    return index[t1], index[t2], index[ts]
+    return tuple(found)
 
 
 def check_counters(t, n=None, Q=None, D=None):
@@ -180,12 +187,12 @@ def grid_error(t, n, Q, D, t1, t2, ts=None):
     ts = t2 if ts is None else ts
     check_counters(t, n, Q, D)
     i1, i2, i3 = _window(t, t1, t2, ts)
-    keep = [i for i in range(len(t)) if i % 2 == 0 or t[i] in (t1, t2, ts)]
+    keep = [i for i in range(len(t)) if i % 2 == 0 or i in (i1, i2, i3)]
     if all(i in keep for i in range(i1, i3 + 1)):
         return None
     fine = _cohort(t, n, Q, D, i1, i2, i3)[0]
     pick = [[seq[i] for i in keep] for seq in (t, n, Q, D)]
-    c1, c2, c3 = (pick[0].index(x) for x in (t1, t2, ts))
+    c1, c2, c3 = (keep.index(i) for i in (i1, i2, i3))
     coarse = _cohort(*pick, c1, c2, c3)[0]
     return abs(fine - coarse)
 
