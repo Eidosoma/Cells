@@ -9149,3 +9149,55 @@ priority". The evidence branch was merged unedited at 81916b5d.
 - **Scoring:** an independent checker writes FR-42's acceptance from the requester's words, including
   its reference case dN/dt = −N², built with the engine's own second-order mass action.
 
+## D290: MT-1b keeps 180 mV and the source's activities, through an implicit cycle block
+
+2026-11-22, about 15:10 UTC. The robustness agent priced D288's choice.
+- **Explicit cycles cannot run it.** At 180 mV with the source's activities, the cycle kind's explicit
+  bound is 27 ns. 300 s of protocol is then about 1.1e10 steps: about 19,400 CPU-hours on the device
+  step alone, which is years of wall time, since one trajectory runs on one core.
+- **The user chose to build the implicit cycle block** (D235's branch I, which MT-2 needs anyway): the
+  cycles' slope conductances in N2's implicit operator, with a design note first. The outer-membrane face
+  (18 µs bound) then limits the step: about 1–4 days per world on a lane, provided the runner path's
+  per-step overhead comes down from 168 ms towards the device step's 6.3 ms. That overhead is being
+  examined.
+- **The order:**
+  1. the face's design note, then the cycle block's;
+  2. the face build and gate, then the cycle block's;
+  3. MT-1b's worlds and the pre-registration checks;
+  4. registration, then the judged run.
+  R2's code-blind references start once the face note fixes the declared equations.
+
+## D291: FR-30's section 13.3 candidates are all undetermined
+
+2026-11-22, about 15:10 UTC. The lead's rulings, made blind to every value.
+- **Lin et al. 2010** (J Mol Cell Cardiol 48:238) is undetermined on two separate grounds.
+  - The Xu 2013 ruling (the strict reading) extends to it. It reports closing rates
+    k_on = (1 − P_open)/tau from fitted exponentials, without P_open per voltage, so the law's relaxation
+    times cannot be mapped without inference.
+  - Its only kinetic data are neonatal atrial myocytes, with similar Cx40 and Cx43. That is neither
+    ventricular nor Cx43-dominated, so it falls outside section 13.3's native admission.
+- **Ek-Vitorín et al. 2018** (IJMS 19:1659) is undetermined under rule 1. Its decays come from ±80 mV
+  pulses only, which is one magnitude, and wild-type Cx43 has a steady state only.
+- With Xu 2013 also undetermined, section 13.3's registered candidates are exhausted. The extractor's
+  files are under /mnt/workspaces/Cells/fr30-lin2010-benchmark/ and fr30-ekvitorin2018-benchmark/, with
+  the held-out files sealed empty.
+- **What follows is the user's decision.** FR-30 can stay development-only, with its gating law built and
+  unjudged, or another metadata-only search round can look for two-exponential step decays at four or
+  more voltages.
+
+## D292: FR-30 gets one more metadata-only search; FR-41 gets a data-only retention check
+
+2026-11-22, about 15:11 UTC. The user's choices.
+- **FR-30:** one more metadata-only search, with values unread, broadened to any Cx43 preparation with
+  two-exponential voltage-step decays at four or more voltages. A registration (a section 13.4 entry)
+  comes before any extraction. If nothing qualifies, FR-30 stays development-only.
+- **FR-41: a data-only check of whether calcein is retained during shrinkage,** in Akui 2021 and Ahumada
+  2015/2017.
+  - The analysis was fixed by the lead, blind to every value, before any reading:
+    /mnt/workspaces/Cells/fr41-retention-20261122/rule.md, sha256
+    9ae86b4028451d91663a40cdae1c8821a64b8dfcf4f121f1cc7922e3a6292d0f.
+  - It is evidence for Cells' retention assumption, not a validation of Cells: no Cells prediction is
+    scored.
+  - The Sonnet extractor reads the values, since the Opus extractor was stopped by a safeguard false
+    positive on Akui's methods; the user moved that task to Sonnet.
+

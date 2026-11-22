@@ -46,7 +46,7 @@ and a general feature, never one built for one study (D144).
 | [FR-38](#fr-38--rna-release-from-its-template-into-two-pools-with-different-lifetimes) | RNA release from its template into two pools with different lifetimes, with per-producer accounting, a release-window cohort and explicit measurement denominators | A user (22 November 2026) | **Building at full scope (D284).** A terminal hold in `templated_polymerisation@1`, split by p into two fate rows, with exact energy and no driven work; the cohort by label rows and by counters; a reader in `src/cells/assays` | The sheet amendment comes first. The finish is a registered comparison against code-blind references. Questions (c) replacement and (e) which cohort are with the requester |
 | [FR-39](#fr-39--a-vesicle-that-survives-transient-pores) | A vesicle that survives transient pores: repeated opening and resealing with partial cargo loss | **High** (user, via the Lean lane, 22 November 2026; D286) | **Requested.** Cells ends a lineage at terminal lysis | A design note shared with FR-31: tension-driven pore opening that either reseals after leaking or ruptures |
 | [FR-40](#fr-40--a-single-ribosome-translation-timing-benchmark) | A single-ribosome translation timing benchmark: 406 s from first detectable nascent chain to release | **High** (user, via the Lean lane, 22 November 2026; D286) | **Desk note landed** (022a5d2a). With only the paper's own speeds, which conflict, a comparison is a calibration, not a validation | A metadata-only search for a matched-condition speed or a multi-length reporter series; the spread test needs no speed |
-| [FR-41](#fr-41--vesicle-shrinkage-validation-records) | Vesicle shrinkage validation records for the osmotic lumen law | **High** (user, via the Lean lane, 22 November 2026; D286) | **One agreement:** Fujiwara et al. 2014, about one quarter of the initial volume measured against 24.56% from Cells' equilibrium replay, unfitted | Small-osmole retention: no paired same-vesicle study found; the nearest are Akui 2021 (analysis-only licence) and Ahumada 2015 (not open). The next step is the user's |
+| [FR-41](#fr-41--vesicle-shrinkage-validation-records) | Vesicle shrinkage validation records for the osmotic lumen law | **High** (user, via the Lean lane, 22 November 2026; D286) | **One agreement, retention open:** shrinkage matches (24.56% against about 25%). The data-only retention check is undetermined for all three sources; the one point estimate (gel-phase LUVs) suggests partial release | Parked until a study with paired, tabulated volume and small-solute retention appears |
 | [FR-42](#fr-42--neutral-arrival-time-labels-that-leave-the-dynamics-unchanged) | Neutral arrival-time labels that leave the dynamics unchanged: loss computed once per physical population and shared by label | **High** (a user, 22 November 2026) | **Building, option A (D289):** labels as share vectors on the physical row, in three stages (desk note fa4b9d9e) | Stage 1 (pools) by the kinds owner, with the gene regulation lane's one-way reports; FR-38's class rows move onto shares before its registered comparison |
 
 ## FR-1 — A closed internal compartment on the shared inventory
@@ -1342,6 +1342,12 @@ sha256 afa1f3e7c406580f3631205094a4633b3ba696bf02f6c85ccd6191c2d339f943; fit.jso
 - So Xu 2013 is undetermined. The checker confirms it before Lin et al. 2010 is read, and Lin 2010's PDF
   comes from the user.
 
+**Section 13.3's candidates (22 November 2026, 15:10 UTC; D291).** Lin et al. 2010 is undetermined: the
+Xu ruling extends to its on-rates without P_open, and its atrial myocytes fall outside the native
+admission. Ek-Vitorín et al. 2018 is undetermined under rule 1, with one magnitude only. The registered
+candidates are exhausted. The next step is the user's: FR-30 stays development-only, or a further
+metadata-only search.
+
 ## FR-31 — Vesicle rupture during a steady tension hold
 
 - **The request (the same review; D248).** The assembly model tests rupture only at a state change.
@@ -1761,6 +1767,19 @@ with 2 and 1.5.
   - Emami et al. 2018 (PMC6303272): a small glucose analogue entering GUVs during deflation.
 - The ranked list, the near misses and the searches tried are in
   /mnt/workspaces/Cells/fr41-search-20261122/candidates.md.
+
+**The data-only retention check (D292; 15:13 UTC): undetermined for all three sources.** It used the
+analysis rule fixed before any value was read (rule.md sha256 9ae86b40…; results.json sha256 2b003647…).
+- **Akui 2021:** calcein and diameter appear only as boxplots, with no mean or standard error in the text,
+  so the rule cannot be applied. The authors state qualitatively that calcein stays inside.
+- **Ahumada 2015:** DPPC:SM retention under the 1.4 M NaCl shock has a point estimate of 0.66, from the
+  reported maximum release against the isotonic release. The paper leaves "±" and n undefined, so no 95%
+  interval exists. No reading of them gives "retained".
+- **Ahumada 2017:** shock-only release appears in traces only.
+- **Overall:** no source shows retention near 1. The one number, from 400 nm gel-phase vesicles at 25 °C,
+  points to about a third of the calcein released. That may not carry over to fluid giant vesicles.
+- **Cells' retention assumption stays open.** FR-41 is parked until a study with paired, tabulated data
+  appears.
 
 ## FR-42 — Neutral arrival-time labels that leave the dynamics unchanged
 
