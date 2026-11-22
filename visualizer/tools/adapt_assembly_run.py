@@ -27,7 +27,10 @@ What it keeps to:
   * run.json states no standing (judged or not). The standing is given on the command line, with
     where it is recorded, and the file says so.
 
-Standard library only.
+For cells.assembly_lineages.run@2 this command reads the vesicle tables in FORMAT.md,
+FORMAT_OL2.md and FORMAT_PORES.md and writes cells.visualizer.assembly_run@2. Its filename
+uses the run qualifier. The public output retains the manifest's file digests and the engine
+revision. The input folder's name is local. Standard library only.
 """
 
 from __future__ import annotations
@@ -44,6 +47,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE / "lib"))
 from npy_reader import read_npz  # noqa: E402  (the viewer's own reader)
+import vesicle_bundle  # noqa: E402
 
 VIEW_FORMAT = "cells.visualizer.assembly_run@1"
 RUN_FORMAT = "cells.assembly_lineages.run@1"
@@ -503,20 +507,30 @@ def main(argv=None):
             if relative.is_absolute():
                 need(relative.resolve().is_relative_to(root), f"{name}: the run folder is not under --evidence")
                 relative = relative.resolve().relative_to(root)
-            folder = RunFolder(root, relative.as_posix())
-            adapted = folder.adapt(standing)
-            entry_path = Path(args.entries) / f"{adapted['law_set']}.json"
-            need(entry_path.is_file(), f"{name}: the run is of the law set {adapted['law_set']!r}, and the viewer has no entry {entry_path.name}")
-            entry = json.loads(entry_path.read_text(encoding="utf-8"))
-            data = file_of(adapted, entry)
+            path = (root / relative).resolve()
+            need(path.is_relative_to(root), "the run folder must be under --evidence")
+            need((path / "run.json").is_file(), f"{name}: it has no run.json")
+            if read_json(path / "run.json").get("format") == "cells.assembly_lineages.run@2":
+                data = vesicle_bundle.adapt(path, standing)
+                filename = f"vesicle-{data['id'][:8]}.json"
+            else:
+                folder = RunFolder(root, relative.as_posix())
+                adapted = folder.adapt(standing)
+                entry_path = Path(args.entries) / f"{adapted['law_set']}.json"
+                need(entry_path.is_file(), f"{name}: the run is of the law set {adapted['law_set']!r}, and the viewer has no entry {entry_path.name}")
+                entry = json.loads(entry_path.read_text(encoding="utf-8"))
+                data = file_of(adapted, entry)
+                filename = f"{adapted['law_set']}-{adapted['run']['id']}.json"
             text = json.dumps(data, ensure_ascii=False, separators=(",", ":")) + "\n"
+            need(data["format"] != "cells.visualizer.assembly_run@2" or len(text.encode("utf-8")) <= 1_000_000,
+                 "the vesicle replay exceeds 1 MB")
             out.mkdir(parents=True, exist_ok=True)
-            target = out / f"{adapted['law_set']}-{adapted['run']['id']}.json"
+            target = out / filename
             target.write_text(text, encoding="utf-8")
             written.append((target, len(text.encode("utf-8")), hashlib.sha256(text.encode("utf-8")).hexdigest()[:12]))
         for target, size, digest in written:
             print(f"wrote {target} ({size / 1024:.0f} KB, sha256 {digest})")
-    except Refused as error:
+    except (Refused, vesicle_bundle.VesicleError) as error:
         print(f"adapt_assembly_run: {error}", file=sys.stderr)
         return 1
     return 0

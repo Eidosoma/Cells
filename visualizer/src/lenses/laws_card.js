@@ -489,14 +489,16 @@ export function doorsFor(entity, scene) {
   const library = libraryOf(scene.laws);
   if (!library) return [];
   const out = [];
+  const mapped = mappedCellLaws(scene).get(entity.id);
+  if (mapped?.size) out.push({ label: `Explore ${mapped.size} mapped ${mapped.size === 1 ? "piece" : "pieces"} in the Laws atlas`, lens: "laws", value: "cell/" + entity.id });
   const count = library.inBox(entity.id).length;
   if (count) out.push({ label: `Show its ${count} declared piece${count === 1 ? "" : "s"} in the Laws library`, lens: "laws", value: entity.id });
   const operator = entity.id.startsWith("op.") ? library.piece(entity.id.slice(3)) : null;
-  if (operator?.declared?.piece === "operator") out.push({ label: `Open ${operator.id} on the Laws library's wall`, lens: "laws", value: pageId(operator.id) });
+  if (operator?.declared?.piece === "operator") out.push({ label: `Explore ${operator.id} in the Laws atlas`, lens: "laws", value: pageId(operator.id) });
   const undeclared = [];
   for (const law of unitLaws(entity)) {
     const piece = library.piece(law);
-    if (piece?.where === "declared") out.push({ label: `Open ${piece.id} on the Laws library's wall`, lens: "laws", value: pageId(piece.id) });
+    if (piece?.where === "declared") out.push({ label: `Explore ${piece.id} in the Laws atlas`, lens: "laws", value: pageId(piece.id) });
     else undeclared.push(law);
   }
   // The laws no active model declares, named as the unit's panel names them: a line for each mark's
@@ -512,6 +514,29 @@ export function doorsFor(entity, scene) {
 export function unitLaws(entity) {
   if (entity?.kind !== "unit") return [];
   return (entity.sections || []).filter((section) => section.key === "laws").flatMap((section) => (section.items || []).map((item) => item.label)).filter(Boolean);
+}
+
+const cellMappings = new WeakMap();
+/** The map explicitly depicts a unit at a capability, and its inventory names a declared piece. */
+export function mappedCellLaws(scene) {
+  if (!scene?.laws) return new Map();
+  if (cellMappings.has(scene)) return cellMappings.get(scene);
+  const result = new Map(),
+    units = new Map((scene.entities || []).map((e) => [e.id, e]));
+  const library = libraryOf(scene.laws);
+  for (const { kind, from, to } of scene.relations || []) {
+    if (kind !== "shown_as" || !units.get(to) || !library) continue;
+    for (const law of unitLaws(units.get(from))) {
+      const piece = library.piece(law);
+      if (!piece?.declared) continue;
+      if (!result.has(to)) result.set(to, new Map());
+      const pieces = result.get(to);
+      if (!pieces.has(piece.id)) pieces.set(piece.id, new Set());
+      pieces.get(piece.id).add(from);
+    }
+  }
+  cellMappings.set(scene, result);
+  return result;
 }
 
 /** The list that stands in where 3D cannot be drawn, and the keyboard's way in: every piece by family, the models, and what is not shown. */

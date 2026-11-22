@@ -103,14 +103,14 @@ class CellsLegend extends HTMLElement {
       : null;
     const rows = items.map((item) =>
       h(
-        "button",
+        item.passive ? "div" : "button",
         {
           // A key with no count (a model system's view, src/ui/entry_views.js) is neither empty nor counted.
-          class: "legend-item" + (isolate === item.id ? " is-on" : "") + (item.count || item.count === undefined ? "" : " is-empty"),
-          type: "button",
+          class: "legend-item" + (!item.passive && isolate === item.id ? " is-on" : "") + (item.count || item.count === undefined ? "" : " is-empty"),
+          type: item.passive ? null : "button",
           title: item.description,
-          "aria-pressed": isolate === item.id ? "true" : "false",
-          onclick: () => emit(this, "cells-isolate", isolate === item.id ? null : item.id),
+          "aria-pressed": item.passive ? null : String(isolate === item.id),
+          onclick: item.passive ? null : () => emit(this, "cells-isolate", isolate === item.id ? null : item.id),
         },
         statusSwatch(item.swatch),
         h("span", { class: "legend-label" }, item.label),

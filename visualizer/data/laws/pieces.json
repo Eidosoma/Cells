@@ -2,12 +2,12 @@
  "format": "cells.visualizer.laws@2",
  "stamp": {
   "generator": "visualizer/tools/extract_laws.py",
-  "read": "Read from the engine's declarations at main 93fc8c2c",
+  "read": "Read from the engine's declarations at main cbe54031",
   "manifest": {
    "path": "data/engine/declarations.json",
    "kind": "cells.declarations@2",
-   "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265",
-   "short": "93fc8c2c",
+   "revision": "cbe54031d0f3a98c1e846fe48259eab6c60b4d59",
+   "short": "cbe54031",
    "dirty": false,
    "origin": "git checkout"
   },
@@ -189,6 +189,7 @@
       "moved_rows",
       "parse",
       "rates",
+      "readouts",
       "routed_controls",
       "stage_term",
       "structure_entry",
@@ -208,11 +209,15 @@
      ],
      "model_key": "passive_routes",
      "record_kinds": {
+      "passive_current_A": "rate",
       "passive_dissipated_energy_pJ": "cumulative",
+      "passive_flux_fmol_s": "rate",
       "passive_transferred": "cumulative"
      },
      "record_layers": {
+      "passive_current_A": "membrane",
       "passive_dissipated_energy_pJ": "membrane",
+      "passive_flux_fmol_s": "membrane",
       "passive_transferred": "membrane"
      }
     },
@@ -227,7 +232,7 @@
      "cells.proton_constant_field_leak@1"
     ],
     "ledgers": null,
-    "line": 955,
+    "line": 1106,
     "models": [
      "cells.resolved_pump_composite@1",
      "cells.resolved_pump_tissue@3"
@@ -251,6 +256,18 @@
     "reads": null,
     "requires": null,
     "signs": {
+     "passive_current_A": {
+      "confirmed": "the kinds owner, from the code (FR-34, 20 November 2026)",
+      "from": "inside",
+      "says": "outward-positive, in A: positive charge moving from the route's inside end (its patch's cell) to its outside end, the route's share of the patch's membrane_current_A; 0 on a junction's route, which crosses no patch; 0 on a route that does not ask (readout false)",
+      "to": "outside"
+     },
+     "passive_flux_fmol_s": {
+      "confirmed": "the kinds owner, from the code (FR-34, 20 November 2026)",
+      "from": "outside",
+      "says": "inward-positive: a positive amount moves from the route's outside end (its patch's outside node, or its junction's receiver) into its inside end (its patch's cell, or its junction's sender); the rate at the observed row, 0 on a route that does not ask (readout false)",
+      "to": "inside"
+     },
      "passive_transferred": {
       "confirmed": "the core's owner, from the code (core-next, 16 November 2026)",
       "from": "outside",
@@ -262,7 +279,9 @@
     "status_source": null,
     "test": null,
     "units": {
+     "passive_current_A": "A",
      "passive_dissipated_energy_pJ": "pJ",
+     "passive_flux_fmol_s": "fmol/s",
      "passive_transferred": "fmol"
     },
     "version": 1,
@@ -511,7 +530,7 @@
      "cells.rapid_binding@1"
     ],
     "ledgers": null,
-    "line": 998,
+    "line": 1041,
     "models": [
      "cells.resolved_pump_composite@1",
      "cells.resolved_pump_tissue@3"
@@ -622,6 +641,7 @@
      "model_key": "transporters",
      "record_kinds": {
       "cycle_count": "cumulative",
+      "cycle_current_A": "rate",
       "cycle_dissipated_energy_pJ": "cumulative",
       "cycle_free_energy_J_mol": "level",
       "cycle_held_drive_J_mol": "level",
@@ -640,6 +660,7 @@
      },
      "record_layers": {
       "cycle_count": "pumps",
+      "cycle_current_A": "pumps",
       "cycle_dissipated_energy_pJ": "pumps",
       "cycle_free_energy_J_mol": "pumps",
       "cycle_held_drive_J_mol": "pumps",
@@ -662,13 +683,22 @@
     "interface": "cells.kind@1",
     "kernels": null,
     "laws": [
+     "cells.adenylate_kinase@1",
      "cells.atp_driven_transporter_mass_action_positive@1",
+     "cells.cytochrome_c_oxygen_proton_cycle@1",
+     "cells.electrogenic_nucleotide_exchange@1",
+     "cells.held_reductant_supply@1",
      "cells.na2_anion_symport_diagram@1",
      "cells.na_anion_symport_factored@1",
-     "cells.proton_atp_mass_action_positive@1"
+     "cells.nadh_ubiquinone_proton_cycle@1",
+     "cells.phosphate_proton_symport@1",
+     "cells.potassium_proton_exchange@1",
+     "cells.proton_atp_mass_action_positive@1",
+     "cells.proton_coupled_atp_synthesis_cycle@1",
+     "cells.ubiquinol_cytochrome_c_proton_cycle@1"
     ],
     "ledgers": null,
-    "line": 2746,
+    "line": 2932,
     "models": [
      "cells.resolved_pump_composite@1",
      "cells.resolved_pump_tissue@3"
@@ -707,6 +737,12 @@
       "says": "a positive count is a mode's forward cycles, each changing the population's rows by its per-cycle counts (the population set's per_cycle), from its N end towards its P end; held rows' maintenance restores them (cycle_supplied_fmol)",
       "to": "P"
      },
+     "cycle_current_A": {
+      "confirmed": "the kinds owner, from the code (FR-34, 20 November 2026)",
+      "from": "inside",
+      "says": "outward-positive, in A: positive charge moving from the population's host's end a (its patch's cell) to its end b, e times the charge its modes move from N to P per second, turned where N is end b: its share of the patch's membrane_current_A; the rate at the observed row, 0 where the population does not ask (current_readout false) or is absent",
+      "to": "outside"
+     },
      "cycle_membrane_potential_V": {
       "minus": "N",
       "plus": "P",
@@ -738,6 +774,7 @@
     "test": null,
     "units": {
      "cycle_count": "fmol",
+     "cycle_current_A": "A",
      "cycle_dissipated_energy_pJ": "pJ",
      "cycle_free_energy_J_mol": "J/mol",
      "cycle_held_drive_J_mol": "J/mol",
@@ -755,6 +792,236 @@
      "transporter_fuel_supplied_fmol": "fmol",
      "transporter_metabolic_work_pJ": "pJ"
     },
+    "version": 1,
+    "writes": null
+   }
+  },
+  {
+   "id": "cells.adenylate_kinase@1",
+   "family": "cycle",
+   "where": "declared",
+   "box": {
+    "id": "laws.respiration",
+    "label": "Respiration and ATP synthesis"
+   },
+   "declared": {
+    "changes": [
+     {
+      "mode": "phosphotransfer",
+      "per_cycle": -2,
+      "role": "ADP@P"
+     },
+     {
+      "mode": "phosphotransfer",
+      "per_cycle": 1,
+      "role": "ATP@P"
+     },
+     {
+      "mode": "phosphotransfer",
+      "per_cycle": 1,
+      "role": "AMP@P"
+     }
+    ],
+    "controls": null,
+    "declared_host": "cells.transporter@1",
+    "declared_id": "cells.adenylate_kinase@1",
+    "doc": null,
+    "energy": null,
+    "family": "cells.resolved_pump_tissue@3",
+    "fields": {
+     "charge_bound": null,
+     "cycle": {
+      "diagram": null,
+      "flux_terms": [],
+      "fuel_roles": [],
+      "kinetics": "monomial",
+      "modes": [
+       [
+        "phosphotransfer",
+        [
+         -2,
+         1,
+         1
+        ]
+       ]
+      ],
+      "monomial": {
+       "rates": [
+        {
+         "constants": [],
+         "factors": [
+          {
+           "power": -1.0,
+           "terms": [
+            {
+             "eta": 0.0,
+             "k": {
+              "factor": 1.0,
+              "parameter": "K_MgATP",
+              "power": -1
+             },
+             "orders": [
+              [
+               {
+                "end": "P",
+                "form": "free",
+                "role": "Mg"
+               },
+               1.0
+              ]
+             ]
+            }
+           ]
+          }
+         ],
+         "log_k": {
+          "dg_kj_mol": 0.0,
+          "offset": 0.0,
+          "protons": 0,
+          "rt_term": 0.9442671013210124,
+          "scale": 1.0
+         },
+         "orders": [
+          [
+           {
+            "end": "P",
+            "form": "free",
+            "role": "ADP"
+           },
+           2.0
+          ]
+         ],
+         "share": 1,
+         "zeta": 0.0
+        }
+       ],
+       "read_roles": [
+        [
+         "Mg",
+         2
+        ]
+       ],
+       "standard_state_mM": 1000.0
+      },
+      "parameters": [
+       {
+        "high": null,
+        "integer": false,
+        "low": null,
+        "name": "K_MgATP",
+        "positive": true,
+        "unit": "M"
+       }
+      ],
+      "ph_bands": [],
+      "roles": [
+       [
+        "ADP",
+        -3
+       ],
+       [
+        "ATP",
+        -4
+       ],
+       [
+        "AMP",
+        -2
+       ]
+      ],
+      "rows": [
+       [
+        "ADP",
+        "P"
+       ],
+       [
+        "ATP",
+        "P"
+       ],
+       [
+        "AMP",
+        "P"
+       ]
+      ],
+      "saturation": [],
+      "temperature_K": null
+     },
+     "domain_valid": null,
+     "forms": "base",
+     "fuel_kinds": [],
+     "kinetics": null,
+     "loop_term": null,
+     "material_bound": null,
+     "material_term": null,
+     "moves": [],
+     "stage_term": null
+    },
+    "host": "cells.transporter@1",
+    "id": "cells.adenylate_kinase@1",
+    "interface": "cells.cycle_law@1",
+    "kernels": {},
+    "laws": null,
+    "ledgers": null,
+    "line": 72,
+    "models": [
+     "cells.resolved_pump_composite@1",
+     "cells.resolved_pump_tissue@3"
+    ],
+    "module": "cells.laws.cycles.adenylate_kinase",
+    "module_path": "src/cells/laws/cycles/adenylate_kinase.py",
+    "name": "adenylate_kinase",
+    "namespace": "cells",
+    "owns": null,
+    "piece": "law",
+    "provenance": {
+     "citation": {
+      "departures": [
+       "Eq. 18 declared in base forms with the source's rate (D236): the prefactor (1 + [Mg2+]_P/K_MgATP) keeps its rate on totals",
+       "K_base matched at the source's state-3 buffer (D236), declared: the source states no free Mg2+ in the intermembrane space"
+      ],
+      "licence": "CC BY (both works); the constants are Table 1's (the 2006 correction) and Table 2's",
+      "place": "the appendix's §7 (Eqs. 17 and 18; Table 1's K_AK, X_AK and K_MgATP)",
+      "source": "D. A. Beard's model of oxidative phosphorylation, as declared in docs/MITOCHONDRIA_LAWS_APPENDIX.md at tag mito-laws-appendix-2026-11-20b (D236)",
+      "works": [
+       {
+        "authors": [
+         "Beard DA"
+        ],
+        "doi": "10.1371/journal.pcbi.0010036",
+        "title": "A biophysical model of the mitochondrial respiratory system and oxidative phosphorylation",
+        "url": null,
+        "year": 2005
+       },
+       {
+        "authors": [
+         "Beard DA"
+        ],
+        "doi": "10.1371/journal.pcbi.0020008",
+        "title": "A biophysical model of the mitochondrial respiratory system and oxidative phosphorylation (correction, Table 1)",
+        "url": null,
+        "year": 2006
+       }
+      ]
+     },
+     "source": null,
+     "tag": "cited"
+    },
+    "provides": null,
+    "reads": [
+     {
+      "mode": "current",
+      "name": "rapid_binding@1",
+      "scoped": false,
+      "stage": "inner"
+     }
+    ],
+    "requires": null,
+    "signs": {
+     "moves": "inward-positive, per forward cycle"
+    },
+    "status": null,
+    "status_source": null,
+    "test": null,
+    "units": {},
     "version": 1,
     "writes": null
    }
@@ -978,6 +1245,91 @@
     "status": null,
     "status_source": null,
     "test": null,
+    "units": {},
+    "version": 1,
+    "writes": null
+   }
+  },
+  {
+   "id": "cells.bilayer_geometry@1",
+   "family": "law",
+   "where": "declared",
+   "box": {
+    "id": "models.assembly_lineages_v2",
+    "label": "Assemblies with phases and reactions (OL1)"
+   },
+   "declared": {
+    "changes": null,
+    "controls": null,
+    "declared_host": "cells.assembly_lineages@2",
+    "declared_id": "cells.bilayer_geometry@1",
+    "doc": null,
+    "energy": null,
+    "family": "cells.assembly_lineages@2",
+    "fields": {
+     "data": [
+      "area_per_leaflet",
+      "area_quantum_m2",
+      "vesicle_floor"
+     ],
+     "formulas": {
+      "area": "A = q W / 2 (m^2)",
+      "extent": "insertion_area and permeation_area: E(m) = A(m); diffusion_radius: E(m) = 4 pi R(m); each times rho0 = N_A c0 (molecules per m^3); W(m) = W(n) - sum_e k_e (n_e - m_e)",
+      "floor": "a pair whose step changes W, with an end state below W_floor, has rate 0",
+      "footprint": "W(n) = sum_i n_i k_i quanta (an exact integer), k_i the quanta of species i's area per molecule per leaflet",
+      "free_energy": "C_close per living vesicle (a constant: no rate)",
+      "radius": "R = (A / 4 pi)^(1/2) (m), the area-equivalent radius",
+      "sphere": "V_sph = A^(3/2) / (6 sqrt(pi)) (m^3)"
+     }
+    },
+    "host": "cells.assembly_lineages@2",
+    "id": "cells.bilayer_geometry@1",
+    "interface": "cells.assembly_geometry@1",
+    "kernels": {
+     "data_to_dict": {
+      "function": "cells.models.assembly_lineages_v2.geometry.data_to_dict",
+      "line": 180,
+      "module_path": "src/cells/models/assembly_lineages_v2/geometry.py"
+     },
+     "parse_data": {
+      "function": "cells.models.assembly_lineages_v2.geometry.parse_data",
+      "line": 86,
+      "module_path": "src/cells/models/assembly_lineages_v2/geometry.py"
+     }
+    },
+    "laws": null,
+    "ledgers": null,
+    "line": 267,
+    "models": [
+     "cells.assembly_lineages@2"
+    ],
+    "module": "cells.models.assembly_lineages_v2.geometry",
+    "module_path": "src/cells/models/assembly_lineages_v2/geometry.py",
+    "name": "bilayer_geometry",
+    "namespace": "cells",
+    "owns": null,
+    "piece": "law",
+    "provenance": {
+     "citation": {
+      "departures": [
+       "areas in integer quanta of a declared quantum, each rounded to the nearest one",
+       "the area-equivalent radius for a floppy vesicle is a declared approximation"
+      ],
+      "licence": "no numbers taken",
+      "place": "the bilayer's area from its molecules' footprints; the closure cost per vesicle",
+      "source": "docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md §2.2, §4.1, §0.2c rules 4, 5 and 8, §0.2d items 1 and 2 (Helfrich's closure cost and the sphere's geometry, cited from memory there)",
+      "works": []
+     },
+     "source": null,
+     "tag": "cited"
+    },
+    "provides": null,
+    "reads": null,
+    "requires": null,
+    "signs": {},
+    "status": null,
+    "status_source": null,
+    "test": "tests/unit/test_assembly_lineages_v2_geometry.py::test_insertion_area_at_equal_quanta_is_count_on_m_at_c_1",
     "units": {},
     "version": 1,
     "writes": null
@@ -1217,6 +1569,604 @@
    }
   },
   {
+   "id": "cells.cytochrome_c_oxygen_proton_cycle@1",
+   "family": "cycle",
+   "where": "declared",
+   "box": {
+    "id": "laws.respiration",
+    "label": "Respiration and ATP synthesis"
+   },
+   "declared": {
+    "changes": [
+     {
+      "mode": "reduction",
+      "per_cycle": -1,
+      "role": "O2@N"
+     },
+     {
+      "mode": "reduction",
+      "per_cycle": -4,
+      "role": "c_red@P"
+     },
+     {
+      "mode": "reduction",
+      "per_cycle": 4,
+      "role": "c_ox@P"
+     },
+     {
+      "mode": "reduction",
+      "per_cycle": -8,
+      "role": "H@N"
+     },
+     {
+      "mode": "reduction",
+      "per_cycle": 4,
+      "role": "H@P"
+     }
+    ],
+    "controls": null,
+    "declared_host": "cells.transporter@1",
+    "declared_id": "cells.cytochrome_c_oxygen_proton_cycle@1",
+    "doc": null,
+    "energy": null,
+    "family": "cells.resolved_pump_tissue@3",
+    "fields": {
+     "charge_bound": null,
+     "cycle": {
+      "diagram": null,
+      "flux_terms": [],
+      "fuel_roles": [],
+      "kinetics": "monomial",
+      "modes": [
+       [
+        "reduction",
+        [
+         -1,
+         -4,
+         4,
+         -8,
+         4
+        ]
+       ]
+      ],
+      "monomial": {
+       "rates": [
+        {
+         "constants": [],
+         "factors": [
+          {
+           "power": 1.0,
+           "terms": [
+            {
+             "eta": 0.0,
+             "k": "k_O2",
+             "orders": [
+              [
+               {
+                "end": "N",
+                "form": "free",
+                "role": "O2"
+               },
+               -1.0
+              ]
+             ]
+            }
+           ]
+          },
+          {
+           "power": 1.0,
+           "terms": [
+            {
+             "eta": 0.0,
+             "k": 1.0,
+             "orders": [
+              [
+               {
+                "end": "P",
+                "form": "free",
+                "role": "c_ox"
+               },
+               1.0
+              ],
+              [
+               {
+                "end": "P",
+                "form": "free",
+                "role": "c_red"
+               },
+               -1.0
+              ]
+             ]
+            }
+           ]
+          }
+         ],
+         "log_k": {
+          "dg_kj_mol": -245.88,
+          "offset": -0.6931471805599453,
+          "protons": -4,
+          "rt_term": 0.0,
+          "scale": 0.25
+         },
+         "orders": [
+          [
+           {
+            "end": "P",
+            "form": "free",
+            "role": "c_red"
+           },
+           1.0
+          ],
+          [
+           {
+            "end": "N",
+            "form": "free",
+            "role": "O2"
+           },
+           0.25
+          ],
+          [
+           {
+            "end": "N",
+            "form": "free",
+            "role": "H"
+           },
+           2.0
+          ],
+          [
+           {
+            "end": "P",
+            "form": "free",
+            "role": "H"
+           },
+           -1.0
+          ]
+         ],
+         "share": 4,
+         "zeta": 1.0
+        }
+       ],
+       "read_roles": [],
+       "standard_state_mM": 1000.0
+      },
+      "parameters": [
+       {
+        "high": null,
+        "integer": false,
+        "low": null,
+        "name": "k_O2",
+        "positive": true,
+        "unit": "M"
+       }
+      ],
+      "ph_bands": [],
+      "roles": [
+       [
+        "O2",
+        0
+       ],
+       [
+        "c_red",
+        2
+       ],
+       [
+        "c_ox",
+        3
+       ],
+       [
+        "H",
+        1
+       ]
+      ],
+      "rows": [
+       [
+        "O2",
+        "N"
+       ],
+       [
+        "c_red",
+        "P"
+       ],
+       [
+        "c_ox",
+        "P"
+       ],
+       [
+        "H",
+        "N"
+       ],
+       [
+        "H",
+        "P"
+       ]
+      ],
+      "saturation": [],
+      "temperature_K": null
+     },
+     "domain_valid": null,
+     "forms": "base",
+     "fuel_kinds": [],
+     "kinetics": null,
+     "loop_term": null,
+     "material_bound": null,
+     "material_term": null,
+     "moves": [],
+     "stage_term": null
+    },
+    "host": "cells.transporter@1",
+    "id": "cells.cytochrome_c_oxygen_proton_cycle@1",
+    "interface": "cells.cycle_law@1",
+    "kernels": {},
+    "laws": null,
+    "ledgers": null,
+    "line": 72,
+    "models": [
+     "cells.resolved_pump_composite@1",
+     "cells.resolved_pump_tissue@3"
+    ],
+    "module": "cells.laws.cycles.cytochrome_c_oxygen_proton_cycle",
+    "module_path": "src/cells/laws/cycles/cytochrome_c_oxygen_proton_cycle.py",
+    "name": "cytochrome_c_oxygen_proton_cycle",
+    "namespace": "cells",
+    "owns": null,
+    "piece": "law",
+    "provenance": {
+     "citation": {
+      "departures": [
+       "per O2, twice Eq. 9's turnover per 1/2 O2, for integer counts",
+       "three laws for the appendix's one redox_driven_proton_cycle@1 (the lead's ruling 1)"
+      ],
+      "licence": "CC BY (both works); the constants are Table 1's (the 2006 correction) and Table 2's",
+      "place": "the appendix's §1.3 (Eqs. 8 and 9; Table 2's Delta G°_C4; Table 1's k_O2)",
+      "source": "D. A. Beard's model of oxidative phosphorylation, as declared in docs/MITOCHONDRIA_LAWS_APPENDIX.md at tag mito-laws-appendix-2026-11-20b (D236)",
+      "works": [
+       {
+        "authors": [
+         "Beard DA"
+        ],
+        "doi": "10.1371/journal.pcbi.0010036",
+        "title": "A biophysical model of the mitochondrial respiratory system and oxidative phosphorylation",
+        "url": null,
+        "year": 2005
+       },
+       {
+        "authors": [
+         "Beard DA"
+        ],
+        "doi": "10.1371/journal.pcbi.0020008",
+        "title": "A biophysical model of the mitochondrial respiratory system and oxidative phosphorylation (correction, Table 1)",
+        "url": null,
+        "year": 2006
+       }
+      ]
+     },
+     "source": null,
+     "tag": "cited"
+    },
+    "provides": null,
+    "reads": [
+     {
+      "mode": "current",
+      "name": "rapid_binding@1",
+      "scoped": false,
+      "stage": "inner"
+     }
+    ],
+    "requires": null,
+    "signs": {
+     "moves": "inward-positive, per forward cycle"
+    },
+    "status": null,
+    "status_source": null,
+    "test": null,
+    "units": {},
+    "version": 1,
+    "writes": null
+   }
+  },
+  {
+   "id": "cells.electrogenic_nucleotide_exchange@1",
+   "family": "cycle",
+   "where": "declared",
+   "box": {
+    "id": "laws.respiration",
+    "label": "Respiration and ATP synthesis"
+   },
+   "declared": {
+    "changes": [
+     {
+      "mode": "exchange",
+      "per_cycle": -1,
+      "role": "ATP@N"
+     },
+     {
+      "mode": "exchange",
+      "per_cycle": 1,
+      "role": "ATP@P"
+     },
+     {
+      "mode": "exchange",
+      "per_cycle": -1,
+      "role": "ADP@P"
+     },
+     {
+      "mode": "exchange",
+      "per_cycle": 1,
+      "role": "ADP@N"
+     }
+    ],
+    "controls": null,
+    "declared_host": "cells.transporter@1",
+    "declared_id": "cells.electrogenic_nucleotide_exchange@1",
+    "doc": null,
+    "energy": null,
+    "family": "cells.resolved_pump_tissue@3",
+    "fields": {
+     "charge_bound": null,
+     "cycle": {
+      "diagram": null,
+      "flux_terms": [],
+      "fuel_roles": [],
+      "kinetics": "monomial",
+      "modes": [
+       [
+        "exchange",
+        [
+         -1,
+         1,
+         -1,
+         1
+        ]
+       ]
+      ],
+      "monomial": {
+       "rates": [
+        {
+         "constants": [],
+         "factors": [
+          {
+           "power": 1.0,
+           "terms": [
+            {
+             "eta": {
+              "offset": 0.0,
+              "parameter": "theta_P",
+              "scale": 1.0
+             },
+             "k": 1.0,
+             "orders": [
+              [
+               {
+                "end": "P",
+                "form": "free",
+                "role": "ATP"
+               },
+               1.0
+              ],
+              [
+               {
+                "end": "P",
+                "form": "free",
+                "role": "ADP"
+               },
+               -1.0
+              ]
+             ]
+            }
+           ]
+          },
+          {
+           "power": 1.0,
+           "terms": [
+            {
+             "eta": {
+              "offset": -1.0,
+              "parameter": "theta_P",
+              "scale": 1.0
+             },
+             "k": 1.0,
+             "orders": [
+              [
+               {
+                "end": "N",
+                "form": "free",
+                "role": "ATP"
+               },
+               1.0
+              ],
+              [
+               {
+                "end": "N",
+                "form": "free",
+                "role": "ADP"
+               },
+               -1.0
+              ]
+             ]
+            }
+           ]
+          },
+          {
+           "power": 1.0,
+           "terms": [
+            {
+             "eta": 0.0,
+             "k": "k_mADP",
+             "orders": [
+              [
+               {
+                "end": "P",
+                "form": "free",
+                "role": "ADP"
+               },
+               -1.0
+              ]
+             ]
+            }
+           ]
+          }
+         ],
+         "log_k": 0.0,
+         "orders": [
+          [
+           {
+            "end": "N",
+            "form": "free",
+            "role": "ATP"
+           },
+           1.0
+          ],
+          [
+           {
+            "end": "N",
+            "form": "free",
+            "role": "ADP"
+           },
+           -1.0
+          ]
+         ],
+         "share": 1,
+         "zeta": {
+          "offset": -1.0,
+          "parameter": "theta_P",
+          "scale": 1.0
+         }
+        }
+       ],
+       "read_roles": [],
+       "standard_state_mM": 1000.0
+      },
+      "parameters": [
+       {
+        "high": 1.0,
+        "integer": false,
+        "low": 0.0,
+        "name": "theta_P",
+        "positive": false,
+        "unit": "1"
+       },
+       {
+        "high": null,
+        "integer": false,
+        "low": null,
+        "name": "k_mADP",
+        "positive": true,
+        "unit": "M"
+       }
+      ],
+      "ph_bands": [],
+      "roles": [
+       [
+        "ATP",
+        -4
+       ],
+       [
+        "ADP",
+        -3
+       ]
+      ],
+      "rows": [
+       [
+        "ATP",
+        "N"
+       ],
+       [
+        "ATP",
+        "P"
+       ],
+       [
+        "ADP",
+        "P"
+       ],
+       [
+        "ADP",
+        "N"
+       ]
+      ],
+      "saturation": [],
+      "temperature_K": null
+     },
+     "domain_valid": null,
+     "forms": "base",
+     "fuel_kinds": [],
+     "kinetics": null,
+     "loop_term": null,
+     "material_bound": null,
+     "material_term": null,
+     "moves": [],
+     "stage_term": null
+    },
+    "host": "cells.transporter@1",
+    "id": "cells.electrogenic_nucleotide_exchange@1",
+    "interface": "cells.cycle_law@1",
+    "kernels": {},
+    "laws": null,
+    "ledgers": null,
+    "line": 57,
+    "models": [
+     "cells.resolved_pump_composite@1",
+     "cells.resolved_pump_tissue@3"
+    ],
+    "module": "cells.laws.cycles.electrogenic_nucleotide_exchange",
+    "module_path": "src/cells/laws/cycles/electrogenic_nucleotide_exchange.py",
+    "name": "electrogenic_nucleotide_exchange",
+    "namespace": "cells",
+    "owns": null,
+    "piece": "law",
+    "provenance": {
+     "citation": {
+      "departures": [
+       "the voltage shares as one parameter, theta_N = 1 - theta_P"
+      ],
+      "licence": "CC BY (both works); the constants are Table 1's (the 2006 correction) and Table 2's",
+      "place": "the appendix's §3 (Eq. 14; Table 1's k_mADP)",
+      "source": "D. A. Beard's model of oxidative phosphorylation, as declared in docs/MITOCHONDRIA_LAWS_APPENDIX.md at tag mito-laws-appendix-2026-11-20b (D236)",
+      "works": [
+       {
+        "authors": [
+         "Beard DA"
+        ],
+        "doi": "10.1371/journal.pcbi.0010036",
+        "title": "A biophysical model of the mitochondrial respiratory system and oxidative phosphorylation",
+        "url": null,
+        "year": 2005
+       },
+       {
+        "authors": [
+         "Beard DA"
+        ],
+        "doi": "10.1371/journal.pcbi.0020008",
+        "title": "A biophysical model of the mitochondrial respiratory system and oxidative phosphorylation (correction, Table 1)",
+        "url": null,
+        "year": 2006
+       }
+      ]
+     },
+     "source": null,
+     "tag": "cited"
+    },
+    "provides": null,
+    "reads": [
+     {
+      "mode": "current",
+      "name": "rapid_binding@1",
+      "scoped": false,
+      "stage": "inner"
+     }
+    ],
+    "requires": null,
+    "signs": {
+     "moves": "inward-positive, per forward cycle"
+    },
+    "status": null,
+    "status_source": null,
+    "test": null,
+    "units": {},
+    "version": 1,
+    "writes": null
+   }
+  },
+  {
    "id": "cells.gard_catalysis_pair_consistent@1",
    "family": "law",
    "where": "declared",
@@ -1237,6 +2187,7 @@
      "data": [
       "catalysis_matrix"
      ],
+     "domain": null,
      "energy_role": "passive",
      "form": "pair-consistent",
      "formulas": {
@@ -1256,43 +2207,43 @@
     "kernels": {
      "data_to_dict": {
       "function": "cells.models.assembly_lineages.gard.data_to_dict",
-      "line": 102,
+      "line": 106,
       "module_path": "src/cells/models/assembly_lineages/gard.py"
      },
      "factors": {
       "function": "cells.models.assembly_lineages.gard.factors_pair_consistent",
-      "line": 143,
+      "line": 147,
       "module_path": "src/cells/models/assembly_lineages/gard.py"
      },
      "layout": {
       "function": "cells.models.assembly_lineages.gard.layout",
-      "line": 106,
+      "line": 110,
       "module_path": "src/cells/models/assembly_lineages/gard.py"
      },
      "parse_data": {
       "function": "cells.models.assembly_lineages.gard.parse_data",
-      "line": 79,
+      "line": 83,
       "module_path": "src/cells/models/assembly_lineages/gard.py"
      },
      "probe": {
       "function": "cells.models.assembly_lineages.gard.probe",
-      "line": 114,
+      "line": 118,
       "module_path": "src/cells/models/assembly_lineages/gard.py"
      },
      "state": {
       "function": "cells.models.assembly_lineages.gard.state",
-      "line": 120,
+      "line": 124,
       "module_path": "src/cells/models/assembly_lineages/gard.py"
      },
      "update": {
       "function": "cells.models.assembly_lineages.gard.update",
-      "line": 126,
+      "line": 130,
       "module_path": "src/cells/models/assembly_lineages/gard.py"
      }
     },
     "laws": null,
     "ledgers": null,
-    "line": 208,
+    "line": 212,
     "models": [
      "cells.assembly_lineages@1"
     ],
@@ -1328,6 +2279,124 @@
    }
   },
   {
+   "id": "cells.gard_catalysis_pair_consistent@2",
+   "family": "law",
+   "where": "declared",
+   "box": {
+    "id": "laws.gard_catalysis",
+    "label": "GARD catalysis (comparison)"
+   },
+   "declared": {
+    "changes": null,
+    "controls": null,
+    "declared_host": "cells.assembly_lineages@1",
+    "declared_id": "cells.gard_catalysis_pair_consistent@2",
+    "doc": null,
+    "energy": null,
+    "family": "cells.assembly_lineages@1",
+    "fields": {
+     "comparison_only": true,
+     "data": [
+      "catalysis_matrix"
+     ],
+     "energy_role": "passive",
+     "form": "pair-consistent",
+     "formulas": {
+      "domain": "every row i: max_j beta_ij * S < 2^(q_i + 106), S the fission size and q_i the lowest set bit among the row's nonzero entries; a world beyond it is refused at parse",
+      "g_join_i(n)": "1 + x_i / N, on n (the state without the moving molecule), x_i = hi_i, the correctly rounded (beta n)_i; 1 when N = 0",
+      "g_leave_i(n)": "1 + fl((beta n)_i - beta_ii) / (N - 1), on n - e_i, the difference formed exactly from (hi, lo) and rounded once, when N >= 2 and n_i >= 1; 1 otherwise (the last molecule leaves uncatalysed; a type with n_i = 0 has no leave)",
+      "last_molecule": "the last molecule's leave (N = 1, n_i = 1) carries 1: no catalyst remains",
+      "replay": "a replay that recomputes beta n in rationals and rounds once agrees bit for bit: the cache equals a fresh fold at every event",
+      "state": "(hi, lo) with hi + lo = beta n exactly and hi = fl(beta n): a serial fold over j in declared order of (beta_ij - low_ij) n_j and low_ij n_j, low_ij being beta_ij below its top 33 bits (so each product is exact for n_j <= 2^20), each added by two error-free two-sums; computed for the founder and for each followed daughter",
+      "update": "after an event of type i with sign s (+1 join, -1 leave): (hi, lo) <- (hi, lo) + s * beta[:, i], by two error-free two-sums, exactly"
+     },
+     "law_set": "gard",
+     "note": "GARD comparison law set (D192, D197): for comparison with the Plastic Heredity preprint's reconstructed GARD only; Cells' own origin-of-life laws are derived from physical chemistry. The pair-consistent form, passive, with its cache of beta n held exactly within a declared budget, so the factor cancels from every transfer pair bit for bit; a world beyond the budget is refused at parse. @1 keeps its cached subtraction and its bits (D148)."
+    },
+    "host": "cells.assembly_lineages@1",
+    "id": "cells.gard_catalysis_pair_consistent@2",
+    "interface": "cells.rate_factor_law@1",
+    "kernels": {
+     "data_to_dict": {
+      "function": "cells.models.assembly_lineages.gard.data_to_dict",
+      "line": 106,
+      "module_path": "src/cells/models/assembly_lineages/gard.py"
+     },
+     "domain": {
+      "function": "cells.models.assembly_lineages.gard.domain_exact",
+      "line": 398,
+      "module_path": "src/cells/models/assembly_lineages/gard.py"
+     },
+     "factors": {
+      "function": "cells.models.assembly_lineages.gard.factors_exact",
+      "line": 360,
+      "module_path": "src/cells/models/assembly_lineages/gard.py"
+     },
+     "layout": {
+      "function": "cells.models.assembly_lineages.gard.layout_exact",
+      "line": 311,
+      "module_path": "src/cells/models/assembly_lineages/gard.py"
+     },
+     "parse_data": {
+      "function": "cells.models.assembly_lineages.gard.parse_data",
+      "line": 83,
+      "module_path": "src/cells/models/assembly_lineages/gard.py"
+     },
+     "probe": {
+      "function": "cells.models.assembly_lineages.gard.probe",
+      "line": 118,
+      "module_path": "src/cells/models/assembly_lineages/gard.py"
+     },
+     "state": {
+      "function": "cells.models.assembly_lineages.gard.state_exact",
+      "line": 329,
+      "module_path": "src/cells/models/assembly_lineages/gard.py"
+     },
+     "update": {
+      "function": "cells.models.assembly_lineages.gard.update_exact",
+      "line": 354,
+      "module_path": "src/cells/models/assembly_lineages/gard.py"
+     }
+    },
+    "laws": null,
+    "ledgers": null,
+    "line": 439,
+    "models": [
+     "cells.assembly_lineages@1"
+    ],
+    "module": "cells.models.assembly_lineages.gard",
+    "module_path": "src/cells/models/assembly_lineages/gard.py",
+    "name": "gard_catalysis_pair_consistent",
+    "namespace": "cells",
+    "owns": null,
+    "piece": "law",
+    "provenance": {
+     "citation": {
+      "departures": [
+       "the factor of a transfer is evaluated on the assembly without the moving molecule, so a transfer and its reverse see the same catalysts (GARD_DESIGN §1.4, 2)",
+       "beta n is held exactly, as a pair of float64 words, within a declared budget (D246)"
+      ],
+      "licence": "CC BY 4.0 (the preprint); numbers cited under D186",
+      "place": "Appendix F, 'Common state, kinetics and environment': b_i = 1 + (beta x)_i / N",
+      "source": "Segre, Ben-Eli and Lancet (2000), PNAS 97:4112; Plastic Heredity preprint v5.0, Appendix F (Zenodo 10.5281/zenodo.22143269)",
+      "works": []
+     },
+     "source": null,
+     "tag": "cited"
+    },
+    "provides": null,
+    "reads": null,
+    "requires": null,
+    "signs": {},
+    "status": null,
+    "status_source": null,
+    "test": "tests/unit/test_assembly_lineages_kernel.py::test_the_exact_cache_keeps_the_reverse_factor",
+    "units": {},
+    "version": 2,
+    "writes": null
+   }
+  },
+  {
    "id": "cells.gard_catalysis_single_event@1",
    "family": "law",
    "where": "declared",
@@ -1348,6 +2417,7 @@
      "data": [
       "catalysis_matrix"
      ],
+     "domain": null,
      "energy_role": "driven",
      "form": "single-event",
      "formulas": {
@@ -1367,43 +2437,43 @@
     "kernels": {
      "data_to_dict": {
       "function": "cells.models.assembly_lineages.gard.data_to_dict",
-      "line": 102,
+      "line": 106,
       "module_path": "src/cells/models/assembly_lineages/gard.py"
      },
      "factors": {
       "function": "cells.models.assembly_lineages.gard.factors_single_event",
-      "line": 137,
+      "line": 141,
       "module_path": "src/cells/models/assembly_lineages/gard.py"
      },
      "layout": {
       "function": "cells.models.assembly_lineages.gard.layout",
-      "line": 106,
+      "line": 110,
       "module_path": "src/cells/models/assembly_lineages/gard.py"
      },
      "parse_data": {
       "function": "cells.models.assembly_lineages.gard.parse_data",
-      "line": 79,
+      "line": 83,
       "module_path": "src/cells/models/assembly_lineages/gard.py"
      },
      "probe": {
       "function": "cells.models.assembly_lineages.gard.probe",
-      "line": 114,
+      "line": 118,
       "module_path": "src/cells/models/assembly_lineages/gard.py"
      },
      "state": {
       "function": "cells.models.assembly_lineages.gard.state",
-      "line": 120,
+      "line": 124,
       "module_path": "src/cells/models/assembly_lineages/gard.py"
      },
      "update": {
       "function": "cells.models.assembly_lineages.gard.update",
-      "line": 126,
+      "line": 130,
       "module_path": "src/cells/models/assembly_lineages/gard.py"
      }
     },
     "laws": null,
     "ledgers": null,
-    "line": 174,
+    "line": 178,
     "models": [
      "cells.assembly_lineages@1"
     ],
@@ -1431,6 +2501,410 @@
     "status": null,
     "status_source": null,
     "test": "tests/unit/test_assembly_lineages_kernel.py::test_a_row_for_column_update_is_caught",
+    "units": {},
+    "version": 1,
+    "writes": null
+   }
+  },
+  {
+   "id": "cells.gate_factor@1",
+   "family": "law",
+   "where": "declared",
+   "box": {
+    "id": "models.assembly_lineages_v2",
+    "label": "Assemblies with phases and reactions (OL1)"
+   },
+   "declared": {
+    "changes": null,
+    "controls": null,
+    "declared_host": "cells.assembly_lineages@2",
+    "declared_id": "cells.gate_factor@1",
+    "doc": null,
+    "energy": null,
+    "family": "cells.assembly_lineages@2",
+    "fields": {
+     "catalysing_phases": [
+      "membrane"
+     ],
+     "data": [
+      "forms",
+      "entries"
+     ],
+     "energy_role": "passive",
+     "energy_source": null,
+     "evaluated_on": "common_state",
+     "formulas": {
+      "common_state": "m = min(n, n + nu) elementwise, evaluated afresh from n",
+      "denominator": "the gate's own forms only: the wall's other molecules, binding sites included, do not dilute it",
+      "g_r(m)": "sum_{j in gate} m_j exp(ddG_rj) / sum_{j in gate} m_j, weight 1 for a form without an entry for r; 1 where the gate is absent at m; the same factor for both directions",
+      "state": "n, the counts (exact in float64)"
+     }
+    },
+    "host": "cells.assembly_lineages@2",
+    "id": "cells.gate_factor@1",
+    "interface": "cells.rate_factor_law@2",
+    "kernels": {
+     "data_to_dict": {
+      "function": "cells.models.assembly_lineages_v2.gate_factor.data_to_dict",
+      "line": 86,
+      "module_path": "src/cells/models/assembly_lineages_v2/gate_factor.py"
+     },
+     "layout": {
+      "function": "cells.models.assembly_lineages_v2.gate_factor.layout",
+      "line": 93,
+      "module_path": "src/cells/models/assembly_lineages_v2/gate_factor.py"
+     },
+     "log_factor": {
+      "function": "cells.models.assembly_lineages_v2.gate_factor.log_factor",
+      "line": 121,
+      "module_path": "src/cells/models/assembly_lineages_v2/gate_factor.py"
+     },
+     "parse_data": {
+      "function": "cells.models.assembly_lineages_v2.gate_factor.parse_data",
+      "line": 48,
+      "module_path": "src/cells/models/assembly_lineages_v2/gate_factor.py"
+     },
+     "state": {
+      "function": "cells.models.assembly_lineages_v2.gate_factor.state",
+      "line": 107,
+      "module_path": "src/cells/models/assembly_lineages_v2/gate_factor.py"
+     },
+     "update": {
+      "function": "cells.models.assembly_lineages_v2.gate_factor.update",
+      "line": 112,
+      "module_path": "src/cells/models/assembly_lineages_v2/gate_factor.py"
+     }
+    },
+    "laws": null,
+    "ledgers": null,
+    "line": 145,
+    "models": [
+     "cells.assembly_lineages@2"
+    ],
+    "module": "cells.models.assembly_lineages_v2.gate_factor",
+    "module_path": "src/cells/models/assembly_lineages_v2/gate_factor.py",
+    "name": "gate_factor",
+    "namespace": "cells",
+    "owns": null,
+    "piece": "law",
+    "provenance": {
+     "citation": {
+      "departures": [
+       "the fractions are over the gate's declared forms only, not every wall molecule"
+      ],
+      "licence": "no numbers taken",
+      "place": "a gate's forms speed or slow a step by ddG; its open fraction is over its own forms",
+      "source": "docs/ASSEMBLY_SHELL_DESIGN.md §4.3, option G2 (FR-21; D244, D246); transition-state theory as cells.transition_state_factor@1 cites it",
+      "works": []
+     },
+     "source": null,
+     "tag": "cited"
+    },
+    "provides": null,
+    "reads": null,
+    "requires": null,
+    "signs": {},
+    "status": null,
+    "status_source": null,
+    "test": "tests/unit/test_assembly_lineages_v2_geometry.py::test_a_shell_s_rates_follow_its_declared_conductance_alone",
+    "units": {},
+    "version": 1,
+    "writes": null
+   }
+  },
+  {
+   "id": "cells.held_reductant_supply@1",
+   "family": "cycle",
+   "where": "declared",
+   "box": {
+    "id": "laws.respiration",
+    "label": "Respiration and ATP synthesis"
+   },
+   "declared": {
+    "changes": [
+     {
+      "mode": "reduction",
+      "per_cycle": -1,
+      "role": "S_red@N"
+     },
+     {
+      "mode": "reduction",
+      "per_cycle": -1,
+      "role": "NAD@N"
+     },
+     {
+      "mode": "reduction",
+      "per_cycle": 1,
+      "role": "S_ox@N"
+     },
+     {
+      "mode": "reduction",
+      "per_cycle": 1,
+      "role": "NADH@N"
+     },
+     {
+      "mode": "reduction",
+      "per_cycle": 1,
+      "role": "H@N"
+     }
+    ],
+    "controls": null,
+    "declared_host": "cells.transporter@1",
+    "declared_id": "cells.held_reductant_supply@1",
+    "doc": null,
+    "energy": null,
+    "family": "cells.resolved_pump_tissue@3",
+    "fields": {
+     "charge_bound": null,
+     "cycle": {
+      "diagram": null,
+      "flux_terms": [],
+      "fuel_roles": [
+       "S_red",
+       "S_ox"
+      ],
+      "kinetics": "monomial",
+      "modes": [
+       [
+        "reduction",
+        [
+         -1,
+         -1,
+         1,
+         1,
+         1
+        ]
+       ]
+      ],
+      "monomial": {
+       "rates": [
+        {
+         "constants": [
+          "r"
+         ],
+         "factors": [
+          {
+           "power": -1.0,
+           "terms": [
+            {
+             "eta": 0.0,
+             "k": {
+              "factor": 1000.0,
+              "parameter": "k_Pi1",
+              "power": -1
+             },
+             "orders": [
+              [
+               {
+                "end": "N",
+                "form": "total",
+                "role": "Pi"
+               },
+               1.0
+              ]
+             ]
+            }
+           ]
+          },
+          {
+           "power": 1.0,
+           "terms": [
+            {
+             "eta": 0.0,
+             "k": {
+              "factor": 1000.0,
+              "parameter": "k_Pi2",
+              "power": -1
+             },
+             "orders": [
+              [
+               {
+                "end": "N",
+                "form": "total",
+                "role": "Pi"
+               },
+               1.0
+              ]
+             ]
+            }
+           ]
+          }
+         ],
+         "log_k": 0.0,
+         "orders": [
+          [
+           {
+            "end": "N",
+            "form": "free",
+            "role": "NAD"
+           },
+           1.0
+          ]
+         ],
+         "share": 1,
+         "zeta": 0.0
+        }
+       ],
+       "read_roles": [
+        [
+         "Pi",
+         -2
+        ]
+       ],
+       "standard_state_mM": 1000.0
+      },
+      "parameters": [
+       {
+        "high": null,
+        "integer": false,
+        "low": null,
+        "name": "r",
+        "positive": true,
+        "unit": "1"
+       },
+       {
+        "high": null,
+        "integer": false,
+        "low": null,
+        "name": "k_Pi1",
+        "positive": true,
+        "unit": "mM"
+       },
+       {
+        "high": null,
+        "integer": false,
+        "low": null,
+        "name": "k_Pi2",
+        "positive": true,
+        "unit": "mM"
+       }
+      ],
+      "ph_bands": [],
+      "roles": [
+       [
+        "S_red",
+        0
+       ],
+       [
+        "NAD",
+        -1
+       ],
+       [
+        "S_ox",
+        0
+       ],
+       [
+        "NADH",
+        -2
+       ],
+       [
+        "H",
+        1
+       ]
+      ],
+      "rows": [
+       [
+        "S_red",
+        "N"
+       ],
+       [
+        "NAD",
+        "N"
+       ],
+       [
+        "S_ox",
+        "N"
+       ],
+       [
+        "NADH",
+        "N"
+       ],
+       [
+        "H",
+        "N"
+       ]
+      ],
+      "saturation": [],
+      "temperature_K": null
+     },
+     "domain_valid": null,
+     "forms": "base",
+     "fuel_kinds": [
+      "maintained_held_rows@1"
+     ],
+     "kinetics": null,
+     "loop_term": null,
+     "material_bound": null,
+     "material_term": null,
+     "moves": [],
+     "stage_term": null
+    },
+    "host": "cells.transporter@1",
+    "id": "cells.held_reductant_supply@1",
+    "interface": "cells.cycle_law@1",
+    "kernels": {},
+    "laws": null,
+    "ledgers": null,
+    "line": 72,
+    "models": [
+     "cells.resolved_pump_composite@1",
+     "cells.resolved_pump_tissue@3"
+    ],
+    "module": "cells.laws.cycles.held_reductant_supply",
+    "module_path": "src/cells/laws/cycles/held_reductant_supply.py",
+    "name": "held_reductant_supply",
+    "namespace": "cells",
+    "owns": null,
+    "piece": "law",
+    "provenance": {
+     "citation": {
+      "departures": [
+       "Eq. 1 balanced on the held pair (D236): its forward term is kept, and its backward term is the balanced one",
+       "declared, not cited (D236): Delta G°_S = 0 at pH 7, the named set's anchor, and the held pair's ratio, 10^-0.10 r, the world's"
+      ],
+      "licence": "CC BY (both works); the constants are Table 1's (the 2006 correction) and Table 2's",
+      "place": "the appendix's §6 (Eq. 1; Table 1's X_DH, r, k_Pi1 and k_Pi2)",
+      "source": "D. A. Beard's model of oxidative phosphorylation, as declared in docs/MITOCHONDRIA_LAWS_APPENDIX.md at tag mito-laws-appendix-2026-11-20b (D236)",
+      "works": [
+       {
+        "authors": [
+         "Beard DA"
+        ],
+        "doi": "10.1371/journal.pcbi.0010036",
+        "title": "A biophysical model of the mitochondrial respiratory system and oxidative phosphorylation",
+        "url": null,
+        "year": 2005
+       },
+       {
+        "authors": [
+         "Beard DA"
+        ],
+        "doi": "10.1371/journal.pcbi.0020008",
+        "title": "A biophysical model of the mitochondrial respiratory system and oxidative phosphorylation (correction, Table 1)",
+        "url": null,
+        "year": 2006
+       }
+      ]
+     },
+     "source": null,
+     "tag": "cited"
+    },
+    "provides": null,
+    "reads": [
+     {
+      "mode": "current",
+      "name": "rapid_binding@1",
+      "scoped": false,
+      "stage": "inner"
+     }
+    ],
+    "requires": null,
+    "signs": {
+     "moves": "inward-positive, per forward cycle"
+    },
+    "status": null,
+    "status_source": null,
+    "test": null,
     "units": {},
     "version": 1,
     "writes": null
@@ -1615,6 +3089,106 @@
    }
   },
   {
+   "id": "junction_series_gates@1",
+   "family": "junction",
+   "where": "declared",
+   "box": {
+    "id": "laws.junctions",
+    "label": "Gap junctions"
+   },
+   "declared": {
+    "changes": [],
+    "controls": null,
+    "declared_host": "resolved_pump_tissue@3",
+    "declared_id": "junction_series_gates@1",
+    "doc": null,
+    "energy": null,
+    "family": "cells.resolved_pump_tissue@3",
+    "fields": {
+     "gate_count": 2,
+     "gated": true,
+     "max_abs_voltage_V": 0.12
+    },
+    "host": "cells.resolved_pump_tissue@3",
+    "id": "cells.junction_series_gates@1",
+    "interface": "cells.junction_law@1",
+    "kernels": {
+     "conductance": {
+      "function": "cells.laws.junctions.junction_series_gates.conductance",
+      "line": 136,
+      "module_path": "src/cells/laws/junctions/junction_series_gates.py"
+     },
+     "domain_valid": {
+      "function": "cells.laws.junctions.junction_series_gates.domain_valid",
+      "line": 172,
+      "module_path": "src/cells/laws/junctions/junction_series_gates.py"
+     },
+     "kinetics": {
+      "function": "cells.laws.junctions.junction_series_gates.kinetics",
+      "line": 104,
+      "module_path": "src/cells/laws/junctions/junction_series_gates.py"
+     },
+     "rhs": {
+      "function": "cells.laws.junctions.junction_series_gates.rhs",
+      "line": 111,
+      "module_path": "src/cells/laws/junctions/junction_series_gates.py"
+     }
+    },
+    "laws": null,
+    "ledgers": null,
+    "line": 221,
+    "models": [
+     "cells.resolved_pump_composite@1",
+     "cells.resolved_pump_tissue@3"
+    ],
+    "module": "cells.laws.junctions.junction_series_gates",
+    "module_path": "src/cells/laws/junctions/junction_series_gates.py",
+    "name": "junction_series_gates",
+    "namespace": "cells",
+    "owns": null,
+    "piece": "law",
+    "provenance": {
+     "citation": {
+      "departures": [
+       "threshold_relaxation's rates are junction_voltage_relaxation@1's own, cited there",
+       "the boltzmann_eyring gate is one Boltzmann in |V|, symmetric in polarity, where the paper fits each polarity",
+       "A is a fitted slope, with no gating charge derived from it",
+       "development only until a voltage series qualifies it (D262)"
+      ],
+      "licence": "no numbers taken: the law is a form, and its gates' parameters are a definition's values; the article is CC BY",
+      "place": "docs/JUNCTION_TWO_RELAXATION_DESIGN.md §2.1 and §4",
+      "source": "two voltage gates in series, each a two-state gate with a residual conductance (docs/JUNCTION_TWO_RELAXATION_DESIGN.md, option (A)), for the two relaxation times one decay of homotypic Cx43 junctions shows (G. Sahu and A. K. Bera, 2013, PLoS ONE 8(3): e60506, doi:10.1371/journal.pone.0060506, read for the design note)",
+      "works": [
+       {
+        "authors": [
+         "Giriraj Sahu",
+         "Amal Kanti Bera"
+        ],
+        "doi": "10.1371/journal.pone.0060506",
+        "title": "Contribution of Intracellular Calcium and pH in Ischemic Uncoupling of Cardiac Gap Junction Channels Formed of Connexins 43, 40, and 45: A Critical Function of C-Terminal Domain",
+        "url": null,
+        "year": 2013
+       }
+      ]
+     },
+     "source": null,
+     "tag": "cited"
+    },
+    "provides": null,
+    "reads": [],
+    "requires": null,
+    "signs": {},
+    "status": null,
+    "status_source": null,
+    "test": null,
+    "units": {
+     "max_abs_voltage_V": "V"
+    },
+    "version": 1,
+    "writes": null
+   }
+  },
+  {
    "id": "junction_voltage_relaxation@1",
    "family": "junction",
    "where": "declared",
@@ -1631,6 +3205,8 @@
     "energy": null,
     "family": "cells.resolved_pump_tissue@3",
     "fields": {
+     "conductance": null,
+     "gate_count": 1,
      "gated": true,
      "max_abs_voltage_V": 0.12
     },
@@ -2564,6 +4140,83 @@
    }
   },
   {
+   "id": "cells.membrane_permeation@1",
+   "family": "law",
+   "where": "declared",
+   "box": {
+    "id": "models.assembly_lineages_v2",
+    "label": "Assemblies with phases and reactions (OL1)"
+   },
+   "declared": {
+    "changes": null,
+    "controls": null,
+    "declared_host": "cells.assembly_lineages@2",
+    "declared_id": "cells.membrane_permeation@1",
+    "doc": null,
+    "energy": null,
+    "family": "cells.assembly_lineages@2",
+    "fields": {
+     "energy_role": "passive",
+     "energy_source": null,
+     "extent": "geometric",
+     "formulas": {
+      "forward": "a+(n) = P_s A(m) rho0 theta+(n): the entry, theta+ the pool's activity alone, A(m) = q W(m)/2 (m^2), rho0 = N_A c0 (molecules per m^3)",
+      "reverse": "the exit: the same law applied to the products, k- = P_s exp(sum nu mu°), the same extent; the lumen enters only through F"
+     },
+     "rate_key": {
+      "diffusion_radius": "permeability_m_per_s",
+      "insertion_area": "permeability_m_per_s"
+     },
+     "split": "encounter"
+    },
+    "host": "cells.assembly_lineages@2",
+    "id": "cells.membrane_permeation@1",
+    "interface": "cells.reaction_law@1",
+    "kernels": {
+     "log_direction": {
+      "function": "cells.models.assembly_lineages_v2.exchange.geometric_log_direction",
+      "line": 40,
+      "module_path": "src/cells/models/assembly_lineages_v2/exchange.py"
+     }
+    },
+    "laws": null,
+    "ledgers": null,
+    "line": 40,
+    "models": [
+     "cells.assembly_lineages@2"
+    ],
+    "module": "cells.models.assembly_lineages_v2.permeation",
+    "module_path": "src/cells/models/assembly_lineages_v2/permeation.py",
+    "name": "membrane_permeation",
+    "namespace": "cells",
+    "owns": null,
+    "piece": "law",
+    "provenance": {
+     "citation": {
+      "departures": [
+       "declared as the entry only, one molecule of one species"
+      ],
+      "licence": "no numbers taken",
+      "place": "a solute crosses the membrane between the pool and the lumen, at P_s A",
+      "source": "docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md §0.2b rule 6, §0.2c rules 2 and 3, §0.2d items 2 and 4",
+      "works": []
+     },
+     "source": null,
+     "tag": "cited"
+    },
+    "provides": null,
+    "reads": null,
+    "requires": null,
+    "signs": {},
+    "status": null,
+    "status_source": null,
+    "test": "tests/unit/test_assembly_lineages_v2_geometry.py::test_permeation_and_diffusion_radius_rates_are_their_closed_forms",
+    "units": {},
+    "version": 1,
+    "writes": null
+   }
+  },
+  {
    "id": "cells.na2_anion_symport_diagram@1",
    "family": "cycle",
    "where": "declared",
@@ -3345,6 +4998,267 @@
    }
   },
   {
+   "id": "cells.nadh_ubiquinone_proton_cycle@1",
+   "family": "cycle",
+   "where": "declared",
+   "box": {
+    "id": "laws.respiration",
+    "label": "Respiration and ATP synthesis"
+   },
+   "declared": {
+    "changes": [
+     {
+      "mode": "oxidation",
+      "per_cycle": -1,
+      "role": "NADH@N"
+     },
+     {
+      "mode": "oxidation",
+      "per_cycle": -1,
+      "role": "Q@N"
+     },
+     {
+      "mode": "oxidation",
+      "per_cycle": 1,
+      "role": "NAD@N"
+     },
+     {
+      "mode": "oxidation",
+      "per_cycle": 1,
+      "role": "QH2@N"
+     },
+     {
+      "mode": "oxidation",
+      "per_cycle": -5,
+      "role": "H@N"
+     },
+     {
+      "mode": "oxidation",
+      "per_cycle": 4,
+      "role": "H@P"
+     }
+    ],
+    "controls": null,
+    "declared_host": "cells.transporter@1",
+    "declared_id": "cells.nadh_ubiquinone_proton_cycle@1",
+    "doc": null,
+    "energy": null,
+    "family": "cells.resolved_pump_tissue@3",
+    "fields": {
+     "charge_bound": null,
+     "cycle": {
+      "diagram": null,
+      "flux_terms": [],
+      "fuel_roles": [],
+      "kinetics": "monomial",
+      "modes": [
+       [
+        "oxidation",
+        [
+         -1,
+         -1,
+         1,
+         1,
+         -5,
+         4
+        ]
+       ]
+      ],
+      "monomial": {
+       "rates": [
+        {
+         "constants": [],
+         "factors": [],
+         "log_k": {
+          "dg_kj_mol": -69.37,
+          "offset": 0.0,
+          "protons": -1,
+          "rt_term": 0.0,
+          "scale": 1.0
+         },
+         "orders": [
+          [
+           {
+            "end": "N",
+            "form": "free",
+            "role": "NADH"
+           },
+           1.0
+          ],
+          [
+           {
+            "end": "N",
+            "form": "free",
+            "role": "Q"
+           },
+           1.0
+          ],
+          [
+           {
+            "end": "N",
+            "form": "free",
+            "role": "QH2"
+           },
+           -1.0
+          ],
+          [
+           {
+            "end": "N",
+            "form": "free",
+            "role": "H"
+           },
+           5.0
+          ],
+          [
+           {
+            "end": "P",
+            "form": "free",
+            "role": "H"
+           },
+           -4.0
+          ]
+         ],
+         "share": 1,
+         "zeta": 4.0
+        }
+       ],
+       "read_roles": [],
+       "standard_state_mM": 1000.0
+      },
+      "parameters": [],
+      "ph_bands": [],
+      "roles": [
+       [
+        "NADH",
+        -2
+       ],
+       [
+        "Q",
+        0
+       ],
+       [
+        "NAD",
+        -1
+       ],
+       [
+        "QH2",
+        0
+       ],
+       [
+        "H",
+        1
+       ]
+      ],
+      "rows": [
+       [
+        "NADH",
+        "N"
+       ],
+       [
+        "Q",
+        "N"
+       ],
+       [
+        "NAD",
+        "N"
+       ],
+       [
+        "QH2",
+        "N"
+       ],
+       [
+        "H",
+        "N"
+       ],
+       [
+        "H",
+        "P"
+       ]
+      ],
+      "saturation": [],
+      "temperature_K": null
+     },
+     "domain_valid": null,
+     "forms": "base",
+     "fuel_kinds": [],
+     "kinetics": null,
+     "loop_term": null,
+     "material_bound": null,
+     "material_term": null,
+     "moves": [],
+     "stage_term": null
+    },
+    "host": "cells.transporter@1",
+    "id": "cells.nadh_ubiquinone_proton_cycle@1",
+    "interface": "cells.cycle_law@1",
+    "kernels": {},
+    "laws": null,
+    "ledgers": null,
+    "line": 39,
+    "models": [
+     "cells.resolved_pump_composite@1",
+     "cells.resolved_pump_tissue@3"
+    ],
+    "module": "cells.laws.cycles.nadh_ubiquinone_proton_cycle",
+    "module_path": "src/cells/laws/cycles/nadh_ubiquinone_proton_cycle.py",
+    "name": "nadh_ubiquinone_proton_cycle",
+    "namespace": "cells",
+    "owns": null,
+    "piece": "law",
+    "provenance": {
+     "citation": {
+      "departures": [
+       "three laws for the appendix's one redox_driven_proton_cycle@1 (the lead's ruling 1)"
+      ],
+      "licence": "CC BY (both works); the constants are Table 1's (the 2006 correction) and Table 2's",
+      "place": "the appendix's §1.1 (Eqs. 2 and 3; Table 2's Delta G°_C1)",
+      "source": "D. A. Beard's model of oxidative phosphorylation, as declared in docs/MITOCHONDRIA_LAWS_APPENDIX.md at tag mito-laws-appendix-2026-11-20b (D236)",
+      "works": [
+       {
+        "authors": [
+         "Beard DA"
+        ],
+        "doi": "10.1371/journal.pcbi.0010036",
+        "title": "A biophysical model of the mitochondrial respiratory system and oxidative phosphorylation",
+        "url": null,
+        "year": 2005
+       },
+       {
+        "authors": [
+         "Beard DA"
+        ],
+        "doi": "10.1371/journal.pcbi.0020008",
+        "title": "A biophysical model of the mitochondrial respiratory system and oxidative phosphorylation (correction, Table 1)",
+        "url": null,
+        "year": 2006
+       }
+      ]
+     },
+     "source": null,
+     "tag": "cited"
+    },
+    "provides": null,
+    "reads": [
+     {
+      "mode": "current",
+      "name": "rapid_binding@1",
+      "scoped": false,
+      "stage": "inner"
+     }
+    ],
+    "requires": null,
+    "signs": {
+     "moves": "inward-positive, per forward cycle"
+    },
+    "status": null,
+    "status_source": null,
+    "test": null,
+    "units": {},
+    "version": 1,
+    "writes": null
+   }
+  },
+  {
    "id": "nak_atp_mass_action_positive@1",
    "family": "cycle",
    "where": "declared",
@@ -3609,6 +5523,116 @@
    }
   },
   {
+   "id": "cells.osmotic_lumen@1",
+   "family": "law",
+   "where": "declared",
+   "box": {
+    "id": "models.assembly_lineages_v2",
+    "label": "Assemblies with phases and reactions (OL1)"
+   },
+   "declared": {
+    "changes": null,
+    "controls": null,
+    "declared_host": "cells.assembly_lineages@2",
+    "declared_id": "cells.osmotic_lumen@1",
+    "doc": null,
+    "energy": null,
+    "family": "cells.assembly_lineages@2",
+    "fields": {
+     "data": [
+      "outside_osmolarity_mM"
+     ],
+     "formulas": {
+      "F_osm": "-N_L ln(N_A c0 V(n)) + N_A c_ext V(n) (k_BT), 0 at an empty lumen; with the ideal term's lumen part at X = 1 it is the lumen's F",
+      "lysis": "an event whose end state has sigma > sigma_max ends the life lysed; its molecules return to their pool places and the closure cost is released (one ledger row)",
+      "tension": "sigma = max(0, dp R / 2), dp = k_BT (N_L / V - N_A c_ext), R = (A / 4 pi)^(1/2)",
+      "volume": "V(n) = min(N_L / (N_A c_ext), V_sph(A(n))) (L): N_L every lumen species, c_ext the outside's total osmolarity (mol/L, held), V_sph = A^(3/2) / (6 sqrt(pi)) from A = q W / 2"
+     },
+     "part": "excess",
+     "phases": [
+      "lumen",
+      "membrane"
+     ]
+    },
+    "host": "cells.assembly_lineages@2",
+    "id": "cells.osmotic_lumen@1",
+    "interface": "cells.free_energy_term@1",
+    "kernels": {
+     "data_to_dict": {
+      "function": "cells.models.assembly_lineages_v2.lumen.data_to_dict",
+      "line": 87,
+      "module_path": "src/cells/models/assembly_lineages_v2/lumen.py"
+     },
+     "delta": {
+      "function": "cells.models.assembly_lineages_v2.lumen.delta",
+      "line": 195,
+      "module_path": "src/cells/models/assembly_lineages_v2/lumen.py"
+     },
+     "layout": {
+      "function": "cells.models.assembly_lineages_v2.lumen.layout",
+      "line": 131,
+      "module_path": "src/cells/models/assembly_lineages_v2/lumen.py"
+     },
+     "parse_data": {
+      "function": "cells.models.assembly_lineages_v2.lumen.parse_data",
+      "line": 69,
+      "module_path": "src/cells/models/assembly_lineages_v2/lumen.py"
+     },
+     "state": {
+      "function": "cells.models.assembly_lineages_v2.lumen.state",
+      "line": 177,
+      "module_path": "src/cells/models/assembly_lineages_v2/lumen.py"
+     },
+     "update": {
+      "function": "cells.models.assembly_lineages_v2.lumen.update",
+      "line": 182,
+      "module_path": "src/cells/models/assembly_lineages_v2/lumen.py"
+     },
+     "value": {
+      "function": "cells.models.assembly_lineages_v2.lumen.value",
+      "line": 188,
+      "module_path": "src/cells/models/assembly_lineages_v2/lumen.py"
+     }
+    },
+    "laws": null,
+    "ledgers": null,
+    "line": 324,
+    "models": [
+     "cells.assembly_lineages@2"
+    ],
+    "module": "cells.models.assembly_lineages_v2.lumen",
+    "module_path": "src/cells/models/assembly_lineages_v2/lumen.py",
+    "name": "osmotic_lumen",
+    "namespace": "cells",
+    "owns": null,
+    "piece": "law",
+    "provenance": {
+     "citation": {
+      "departures": [
+       "water is fast: the volume minimises F at fixed solute counts",
+       "c_ext is held; for a finite pool that is a declared approximation, and a run reports the pool's drift against it"
+      ],
+      "licence": "no numbers taken",
+      "place": "the lumen's ideal solutes in a volume that water sets at once, against a held outside",
+      "source": "docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md §2.2, §4.1, §0.2b rules 2 and 3, §0.2c rules 6-8, §0.2d item 3 (van 't Hoff's osmotic pressure and Laplace's law, cited from memory there)",
+      "works": []
+     },
+     "source": null,
+     "tag": "cited"
+    },
+    "provides": null,
+    "reads": null,
+    "requires": null,
+    "signs": {},
+    "status": null,
+    "status_source": null,
+    "test": "tests/unit/test_assembly_lineages_v2_lumen.py::test_the_osmotic_volume_is_f_s_minimiser_and_its_tension_is_laplace_s",
+    "units": {},
+    "version": 1,
+    "writes": null
+   }
+  },
+  {
    "id": "passive_constant_field_permeation@1",
    "family": "route",
    "where": "declared",
@@ -3740,6 +5764,587 @@
     "status": null,
     "status_source": null,
     "test": null,
+    "units": {},
+    "version": 1,
+    "writes": null
+   }
+  },
+  {
+   "id": "cells.phase_exchange@1",
+   "family": "law",
+   "where": "declared",
+   "box": {
+    "id": "models.assembly_lineages_v2",
+    "label": "Assemblies with phases and reactions (OL1)"
+   },
+   "declared": {
+    "changes": null,
+    "controls": null,
+    "declared_host": "cells.assembly_lineages@2",
+    "declared_id": "cells.phase_exchange@1",
+    "doc": null,
+    "energy": null,
+    "family": "cells.assembly_lineages@2",
+    "fields": {
+     "energy_role": "passive",
+     "energy_source": null,
+     "extent": "geometric",
+     "formulas": {
+      "diffusion_radius": "k = D_i (m^2/s), E(m) = 4 pi R(m) (m)",
+      "forward": "a+(n) = k E(m) rho0 theta+(n): theta+ the pool's activity (n/X_pool, or c/c0 when held), rho0 = N_A c0 (molecules per m^3), m = n",
+      "insertion_area": "k = k_ins (m/s), E(m) = A(m) (m^2)",
+      "reverse": "the leave: the same law applied to the products, k- = k exp(sum nu mu°), the same extent on m; the membrane molecule's activity ff(n_i, 1)/ff(N - c, 1) at the firing state"
+     },
+     "rate_key": {
+      "diffusion_radius": "diffusivity_m2_per_s",
+      "insertion_area": "insertion_velocity_m_per_s"
+     },
+     "split": "encounter"
+    },
+    "host": "cells.assembly_lineages@2",
+    "id": "cells.phase_exchange@1",
+    "interface": "cells.reaction_law@1",
+    "kernels": {
+     "log_direction": {
+      "function": "cells.models.assembly_lineages_v2.exchange.geometric_log_direction",
+      "line": 40,
+      "module_path": "src/cells/models/assembly_lineages_v2/exchange.py"
+     }
+    },
+    "laws": null,
+    "ledgers": null,
+    "line": 78,
+    "models": [
+     "cells.assembly_lineages@2"
+    ],
+    "module": "cells.models.assembly_lineages_v2.exchange",
+    "module_path": "src/cells/models/assembly_lineages_v2/exchange.py",
+    "name": "phase_exchange",
+    "namespace": "cells",
+    "owns": null,
+    "piece": "law",
+    "provenance": {
+     "citation": {
+      "departures": [
+       "declared as the join only, one molecule of one species",
+       "the area-equivalent radius for a floppy vesicle is a declared approximation"
+      ],
+      "licence": "no numbers taken",
+      "place": "a molecule joins a membrane from the pool; the leave is the reverse, from F",
+      "source": "docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md §2.5, §0.2b rule 1, §0.2c rules 2 and 3, §0.2d item 2 (reaction-limited insertion by area; Smoluchowski's diffusion-limited rate, cited from memory there)",
+      "works": []
+     },
+     "source": null,
+     "tag": "cited"
+    },
+    "provides": null,
+    "reads": null,
+    "requires": null,
+    "signs": {},
+    "status": null,
+    "status_source": null,
+    "test": "tests/unit/test_assembly_lineages_v2_geometry.py::test_insertion_area_at_equal_quanta_is_count_on_m_at_c_1",
+    "units": {},
+    "version": 1,
+    "writes": null
+   }
+  },
+  {
+   "id": "cells.phosphate_proton_symport@1",
+   "family": "cycle",
+   "where": "declared",
+   "box": {
+    "id": "laws.respiration",
+    "label": "Respiration and ATP synthesis"
+   },
+   "declared": {
+    "changes": [
+     {
+      "mode": "import",
+      "per_cycle": -1,
+      "role": "Pi@P"
+     },
+     {
+      "mode": "import",
+      "per_cycle": 1,
+      "role": "Pi@N"
+     },
+     {
+      "mode": "import",
+      "per_cycle": -2,
+      "role": "H@P"
+     },
+     {
+      "mode": "import",
+      "per_cycle": 2,
+      "role": "H@N"
+     }
+    ],
+    "controls": null,
+    "declared_host": "cells.transporter@1",
+    "declared_id": "cells.phosphate_proton_symport@1",
+    "doc": null,
+    "energy": null,
+    "family": "cells.resolved_pump_tissue@3",
+    "fields": {
+     "charge_bound": null,
+     "cycle": {
+      "diagram": null,
+      "flux_terms": [],
+      "fuel_roles": [],
+      "kinetics": "monomial",
+      "modes": [
+       [
+        "import",
+        [
+         -1,
+         1,
+         -2,
+         2
+        ]
+       ]
+      ],
+      "monomial": {
+       "rates": [
+        {
+         "constants": [],
+         "factors": [
+          {
+           "power": 1.0,
+           "terms": [
+            {
+             "eta": 0.0,
+             "k": {
+              "factor": 0.001,
+              "parameter": "k_PiHt",
+              "power": 1
+             },
+             "orders": [
+              [
+               {
+                "end": "P",
+                "form": "H2PO4",
+                "role": "Pi"
+               },
+               -1.0
+              ]
+             ]
+            }
+           ]
+          }
+         ],
+         "log_k": 0.0,
+         "orders": [
+          [
+           {
+            "end": "N",
+            "form": "free",
+            "role": "H"
+           },
+           1.0
+          ]
+         ],
+         "share": 1,
+         "zeta": 0.0
+        }
+       ],
+       "read_roles": [],
+       "standard_state_mM": 1000.0
+      },
+      "parameters": [
+       {
+        "high": null,
+        "integer": false,
+        "low": null,
+        "name": "k_PiHt",
+        "positive": true,
+        "unit": "mM"
+       }
+      ],
+      "ph_bands": [],
+      "roles": [
+       [
+        "Pi",
+        -2
+       ],
+       [
+        "H",
+        1
+       ]
+      ],
+      "rows": [
+       [
+        "Pi",
+        "P"
+       ],
+       [
+        "Pi",
+        "N"
+       ],
+       [
+        "H",
+        "P"
+       ],
+       [
+        "H",
+        "N"
+       ]
+      ],
+      "saturation": [],
+      "temperature_K": null
+     },
+     "domain_valid": null,
+     "forms": "base",
+     "fuel_kinds": [],
+     "kinetics": null,
+     "loop_term": null,
+     "material_bound": null,
+     "material_term": null,
+     "moves": [],
+     "stage_term": null
+    },
+    "host": "cells.transporter@1",
+    "id": "cells.phosphate_proton_symport@1",
+    "interface": "cells.cycle_law@1",
+    "kernels": {},
+    "laws": null,
+    "ledgers": null,
+    "line": 50,
+    "models": [
+     "cells.resolved_pump_composite@1",
+     "cells.resolved_pump_tissue@3"
+    ],
+    "module": "cells.laws.cycles.phosphate_proton_symport",
+    "module_path": "src/cells/laws/cycles/phosphate_proton_symport.py",
+    "name": "phosphate_proton_symport",
+    "namespace": "cells",
+    "owns": null,
+    "piece": "law",
+    "provenance": {
+     "citation": {
+      "departures": [
+       "Eq. 16 balanced in frame B (D236): its forward term is kept, and its backward term is the balanced one"
+      ],
+      "licence": "CC BY (both works); the constants are Table 1's (the 2006 correction) and Table 2's",
+      "place": "the appendix's §4 (Eqs. 15 and 16; Table 1's k_PiHt)",
+      "source": "D. A. Beard's model of oxidative phosphorylation, as declared in docs/MITOCHONDRIA_LAWS_APPENDIX.md at tag mito-laws-appendix-2026-11-20b (D236)",
+      "works": [
+       {
+        "authors": [
+         "Beard DA"
+        ],
+        "doi": "10.1371/journal.pcbi.0010036",
+        "title": "A biophysical model of the mitochondrial respiratory system and oxidative phosphorylation",
+        "url": null,
+        "year": 2005
+       },
+       {
+        "authors": [
+         "Beard DA"
+        ],
+        "doi": "10.1371/journal.pcbi.0020008",
+        "title": "A biophysical model of the mitochondrial respiratory system and oxidative phosphorylation (correction, Table 1)",
+        "url": null,
+        "year": 2006
+       }
+      ]
+     },
+     "source": null,
+     "tag": "cited"
+    },
+    "provides": null,
+    "reads": [
+     {
+      "mode": "current",
+      "name": "rapid_binding@1",
+      "scoped": false,
+      "stage": "inner"
+     }
+    ],
+    "requires": null,
+    "signs": {
+     "moves": "inward-positive, per forward cycle"
+    },
+    "status": null,
+    "status_source": null,
+    "test": null,
+    "units": {},
+    "version": 1,
+    "writes": null
+   }
+  },
+  {
+   "id": "cells.potassium_proton_exchange@1",
+   "family": "cycle",
+   "where": "declared",
+   "box": {
+    "id": "laws.respiration",
+    "label": "Respiration and ATP synthesis"
+   },
+   "declared": {
+    "changes": [
+     {
+      "mode": "exchange",
+      "per_cycle": -1,
+      "role": "K@P"
+     },
+     {
+      "mode": "exchange",
+      "per_cycle": 1,
+      "role": "K@N"
+     },
+     {
+      "mode": "exchange",
+      "per_cycle": -1,
+      "role": "H@N"
+     },
+     {
+      "mode": "exchange",
+      "per_cycle": 1,
+      "role": "H@P"
+     }
+    ],
+    "controls": null,
+    "declared_host": "cells.transporter@1",
+    "declared_id": "cells.potassium_proton_exchange@1",
+    "doc": null,
+    "energy": null,
+    "family": "cells.resolved_pump_tissue@3",
+    "fields": {
+     "charge_bound": null,
+     "cycle": {
+      "diagram": null,
+      "flux_terms": [],
+      "fuel_roles": [],
+      "kinetics": "monomial",
+      "modes": [
+       [
+        "exchange",
+        [
+         -1,
+         1,
+         -1,
+         1
+        ]
+       ]
+      ],
+      "monomial": {
+       "rates": [
+        {
+         "constants": [],
+         "factors": [],
+         "log_k": 0.0,
+         "orders": [
+          [
+           {
+            "end": "P",
+            "form": "free",
+            "role": "K"
+           },
+           1.0
+          ],
+          [
+           {
+            "end": "N",
+            "form": "free",
+            "role": "H"
+           },
+           1.0
+          ]
+         ],
+         "share": 1,
+         "zeta": 0.0
+        }
+       ],
+       "read_roles": [],
+       "standard_state_mM": 1000.0
+      },
+      "parameters": [],
+      "ph_bands": [],
+      "roles": [
+       [
+        "K",
+        1
+       ],
+       [
+        "H",
+        1
+       ]
+      ],
+      "rows": [
+       [
+        "K",
+        "P"
+       ],
+       [
+        "K",
+        "N"
+       ],
+       [
+        "H",
+        "N"
+       ],
+       [
+        "H",
+        "P"
+       ]
+      ],
+      "saturation": [],
+      "temperature_K": null
+     },
+     "domain_valid": null,
+     "forms": "base",
+     "fuel_kinds": [],
+     "kinetics": null,
+     "loop_term": null,
+     "material_bound": null,
+     "material_term": null,
+     "moves": [],
+     "stage_term": null
+    },
+    "host": "cells.transporter@1",
+    "id": "cells.potassium_proton_exchange@1",
+    "interface": "cells.cycle_law@1",
+    "kernels": {},
+    "laws": null,
+    "ledgers": null,
+    "line": 23,
+    "models": [
+     "cells.resolved_pump_composite@1",
+     "cells.resolved_pump_tissue@3"
+    ],
+    "module": "cells.laws.cycles.potassium_proton_exchange",
+    "module_path": "src/cells/laws/cycles/potassium_proton_exchange.py",
+    "name": "potassium_proton_exchange",
+    "namespace": "cells",
+    "owns": null,
+    "piece": "law",
+    "provenance": {
+     "citation": {
+      "departures": [],
+      "licence": "CC BY (both works); the constants are Table 1's (the 2006 correction) and Table 2's",
+      "place": "the appendix's §5 (Eq. 21)",
+      "source": "D. A. Beard's model of oxidative phosphorylation, as declared in docs/MITOCHONDRIA_LAWS_APPENDIX.md at tag mito-laws-appendix-2026-11-20b (D236)",
+      "works": [
+       {
+        "authors": [
+         "Beard DA"
+        ],
+        "doi": "10.1371/journal.pcbi.0010036",
+        "title": "A biophysical model of the mitochondrial respiratory system and oxidative phosphorylation",
+        "url": null,
+        "year": 2005
+       },
+       {
+        "authors": [
+         "Beard DA"
+        ],
+        "doi": "10.1371/journal.pcbi.0020008",
+        "title": "A biophysical model of the mitochondrial respiratory system and oxidative phosphorylation (correction, Table 1)",
+        "url": null,
+        "year": 2006
+       }
+      ]
+     },
+     "source": null,
+     "tag": "cited"
+    },
+    "provides": null,
+    "reads": [
+     {
+      "mode": "current",
+      "name": "rapid_binding@1",
+      "scoped": false,
+      "stage": "inner"
+     }
+    ],
+    "requires": null,
+    "signs": {
+     "moves": "inward-positive, per forward cycle"
+    },
+    "status": null,
+    "status_source": null,
+    "test": null,
+    "units": {},
+    "version": 1,
+    "writes": null
+   }
+  },
+  {
+   "id": "cells.prescribed_shell@1",
+   "family": "law",
+   "where": "declared",
+   "box": {
+    "id": "models.assembly_lineages_v2",
+    "label": "Assemblies with phases and reactions (OL1)"
+   },
+   "declared": {
+    "changes": null,
+    "controls": null,
+    "declared_host": "cells.assembly_lineages@2",
+    "declared_id": "cells.prescribed_shell@1",
+    "doc": null,
+    "energy": null,
+    "family": "cells.assembly_lineages@2",
+    "fields": {
+     "data": [
+      "area_m2"
+     ],
+     "formulas": {
+      "area": "A_sh, declared (m^2): the wall's counts set neither it nor the lumen",
+      "conductance": "G_s = P_s A_sh (m^3/s) for each permeant, independent of the wall's inventory, the site count and the lumen",
+      "extent": "cells.shell_permeation@1: E = A_sh rho0, a constant of the world, rho0 = N_A c0 (molecules per m^3)",
+      "free_energy": "no term of its own: no closure cost, no tension",
+      "lumen": "V_lumen, declared (phases.lumen.volume_L)"
+     }
+    },
+    "host": "cells.assembly_lineages@2",
+    "id": "cells.prescribed_shell@1",
+    "interface": "cells.assembly_geometry@1",
+    "kernels": {
+     "data_to_dict": {
+      "function": "cells.models.assembly_lineages_v2.prescribed_shell.data_to_dict",
+      "line": 78,
+      "module_path": "src/cells/models/assembly_lineages_v2/prescribed_shell.py"
+     },
+     "parse_data": {
+      "function": "cells.models.assembly_lineages_v2.prescribed_shell.parse_data",
+      "line": 51,
+      "module_path": "src/cells/models/assembly_lineages_v2/prescribed_shell.py"
+     }
+    },
+    "laws": null,
+    "ledgers": null,
+    "line": 108,
+    "models": [
+     "cells.assembly_lineages@2"
+    ],
+    "module": "cells.models.assembly_lineages_v2.prescribed_shell",
+    "module_path": "src/cells/models/assembly_lineages_v2/prescribed_shell.py",
+    "name": "prescribed_shell",
+    "namespace": "cells",
+    "owns": null,
+    "piece": "law",
+    "provenance": {
+     "citation": {
+      "departures": [
+       "one shell type per world in version 1: its area and lumen are world constants"
+      ],
+      "licence": "no numbers taken",
+      "place": "a prescribed protein shell owns a lumen and an exchange area, both declared",
+      "source": "docs/ASSEMBLY_SHELL_DESIGN.md §4.2 (FR-21; D244, D246)",
+      "works": []
+     },
+     "source": null,
+     "tag": "cited"
+    },
+    "provides": null,
+    "reads": null,
+    "requires": null,
+    "signs": {},
+    "status": null,
+    "status_source": null,
+    "test": "tests/unit/test_assembly_lineages_v2_geometry.py::test_a_shell_s_rates_follow_its_declared_conductance_alone",
     "units": {},
     "version": 1,
     "writes": null
@@ -4073,6 +6678,269 @@
    }
   },
   {
+   "id": "cells.proton_coupled_atp_synthesis_cycle@1",
+   "family": "cycle",
+   "where": "declared",
+   "box": {
+    "id": "laws.respiration",
+    "label": "Respiration and ATP synthesis"
+   },
+   "declared": {
+    "changes": [
+     {
+      "mode": "synthesis",
+      "per_cycle": -1,
+      "role": "ADP@N"
+     },
+     {
+      "mode": "synthesis",
+      "per_cycle": -1,
+      "role": "Pi@N"
+     },
+     {
+      "mode": "synthesis",
+      "per_cycle": 1,
+      "role": "ATP@N"
+     },
+     {
+      "mode": "synthesis",
+      "per_cycle": 2,
+      "role": "H@N"
+     },
+     {
+      "mode": "synthesis",
+      "per_cycle": -3,
+      "role": "H@P"
+     }
+    ],
+    "controls": null,
+    "declared_host": "cells.transporter@1",
+    "declared_id": "cells.proton_coupled_atp_synthesis_cycle@1",
+    "doc": null,
+    "energy": null,
+    "family": "cells.resolved_pump_tissue@3",
+    "fields": {
+     "charge_bound": null,
+     "cycle": {
+      "diagram": null,
+      "flux_terms": [],
+      "fuel_roles": [],
+      "kinetics": "monomial",
+      "modes": [
+       [
+        "synthesis",
+        [
+         -1,
+         -1,
+         1,
+         2,
+         -3
+        ]
+       ]
+      ],
+      "monomial": {
+       "rates": [
+        {
+         "constants": [
+          "K_MgADP",
+          {
+           "factor": 1.0,
+           "parameter": "K_MgATP",
+           "power": -1
+          }
+         ],
+         "factors": [],
+         "log_k": {
+          "dg_kj_mol": 36.03,
+          "offset": 0.0,
+          "protons": 0,
+          "scale": 1.0
+         },
+         "orders": [
+          [
+           {
+            "end": "N",
+            "form": "MgADP",
+            "role": "ADP"
+           },
+           1.0
+          ],
+          [
+           {
+            "end": "N",
+            "form": "total",
+            "role": "Pi"
+           },
+           1.0
+          ],
+          [
+           {
+            "end": "P",
+            "form": "free",
+            "role": "H"
+           },
+           3.0
+          ],
+          [
+           {
+            "end": "N",
+            "form": "free",
+            "role": "H"
+           },
+           -3.0
+          ]
+         ],
+         "share": 1,
+         "zeta": -3.0
+        }
+       ],
+       "read_roles": [],
+       "standard_state_mM": 1000.0
+      },
+      "parameters": [
+       {
+        "high": null,
+        "integer": false,
+        "low": null,
+        "name": "K_MgADP",
+        "positive": true,
+        "unit": "M"
+       },
+       {
+        "high": null,
+        "integer": false,
+        "low": null,
+        "name": "K_MgATP",
+        "positive": true,
+        "unit": "M"
+       }
+      ],
+      "ph_bands": [],
+      "roles": [
+       [
+        "ADP",
+        -3
+       ],
+       [
+        "Pi",
+        -2
+       ],
+       [
+        "ATP",
+        -4
+       ],
+       [
+        "H",
+        1
+       ]
+      ],
+      "rows": [
+       [
+        "ADP",
+        "N"
+       ],
+       [
+        "Pi",
+        "N"
+       ],
+       [
+        "ATP",
+        "N"
+       ],
+       [
+        "H",
+        "N"
+       ],
+       [
+        "H",
+        "P"
+       ]
+      ],
+      "saturation": [],
+      "temperature_K": null
+     },
+     "domain_valid": null,
+     "forms": "base",
+     "fuel_kinds": [],
+     "kinetics": null,
+     "loop_term": null,
+     "material_bound": null,
+     "material_term": null,
+     "moves": [],
+     "stage_term": null
+    },
+    "host": "cells.transporter@1",
+    "id": "cells.proton_coupled_atp_synthesis_cycle@1",
+    "interface": "cells.cycle_law@1",
+    "kernels": {},
+    "laws": null,
+    "ledgers": null,
+    "line": 58,
+    "models": [
+     "cells.resolved_pump_composite@1",
+     "cells.resolved_pump_tissue@3"
+    ],
+    "module": "cells.laws.cycles.proton_coupled_atp_synthesis_cycle",
+    "module_path": "src/cells/laws/cycles/proton_coupled_atp_synthesis_cycle.py",
+    "name": "proton_coupled_atp_synthesis_cycle",
+    "namespace": "cells",
+    "owns": null,
+    "piece": "law",
+    "provenance": {
+     "citation": {
+      "departures": [
+       "Eq. 11 balanced in frame B (D236): its forward term is kept, and its backward term is the balanced one",
+       "n_A = 3 fixed in the counts (Table 1), a declared limit until affine counts exist"
+      ],
+      "licence": "CC BY (both works); the constants are Table 1's (the 2006 correction) and Table 2's",
+      "place": "the appendix's §2 (Eqs. 10 and 11; Table 2's Delta G°_ATP; Table 1's K_MgATP, K_MgADP)",
+      "source": "D. A. Beard's model of oxidative phosphorylation, as declared in docs/MITOCHONDRIA_LAWS_APPENDIX.md at tag mito-laws-appendix-2026-11-20b (D236)",
+      "works": [
+       {
+        "authors": [
+         "Beard DA"
+        ],
+        "doi": "10.1371/journal.pcbi.0010036",
+        "title": "A biophysical model of the mitochondrial respiratory system and oxidative phosphorylation",
+        "url": null,
+        "year": 2005
+       },
+       {
+        "authors": [
+         "Beard DA"
+        ],
+        "doi": "10.1371/journal.pcbi.0020008",
+        "title": "A biophysical model of the mitochondrial respiratory system and oxidative phosphorylation (correction, Table 1)",
+        "url": null,
+        "year": 2006
+       }
+      ]
+     },
+     "source": null,
+     "tag": "cited"
+    },
+    "provides": null,
+    "reads": [
+     {
+      "mode": "current",
+      "name": "rapid_binding@1",
+      "scoped": false,
+      "stage": "inner"
+     }
+    ],
+    "requires": null,
+    "signs": {
+     "moves": "inward-positive, per forward cycle"
+    },
+    "status": null,
+    "status_source": null,
+    "test": null,
+    "units": {},
+    "version": 1,
+    "writes": null
+   }
+  },
+  {
    "id": "rapid_binding@1",
    "family": "binding",
    "where": "declared",
@@ -4106,7 +6974,7 @@
      },
      "envelope": {
       "function": "cells.laws.reactions.rapid_binding.lag_first_order",
-      "line": 432,
+      "line": 478,
       "module_path": "src/cells/laws/reactions/rapid_binding.py"
      },
      "free_amounts": {
@@ -4116,13 +6984,13 @@
      },
      "free_energy": {
       "function": "cells.laws.reactions.rapid_binding.free_energy_pJ",
-      "line": 615,
+      "line": 661,
       "module_path": "src/cells/laws/reactions/rapid_binding.py"
      }
     },
     "laws": null,
     "ledgers": null,
-    "line": 626,
+    "line": 672,
     "models": [
      "cells.resolved_pump_composite@1",
      "cells.resolved_pump_tissue@3"
@@ -4313,7 +7181,7 @@
     "kernels": {},
     "laws": null,
     "ledgers": null,
-    "line": 64,
+    "line": 76,
     "models": [
      "cells.assembly_lineages@1"
     ],
@@ -4349,6 +7217,161 @@
    }
   },
   {
+   "id": "cells.shared_pool@1",
+   "family": "law",
+   "where": "declared",
+   "box": {
+    "id": "models.assembly_lineages_v2",
+    "label": "Assemblies with phases and reactions (OL1)"
+   },
+   "declared": {
+    "changes": null,
+    "controls": null,
+    "declared_host": "cells.assembly_lineages@2",
+    "declared_id": "cells.shared_pool@1",
+    "doc": null,
+    "energy": null,
+    "family": "cells.assembly_lineages@2",
+    "fields": {
+     "data": [
+      "slots",
+      "founders"
+     ],
+     "formulas": {
+      "free_energy": "F = F(pool) + sum over living slots of F_v(slot), F_v the vesicle's own F with its closure cost",
+      "groups": "the pool, then slots 0 to K - 1, in slot order; a step with a membrane or lumen place is every slot's, the others the pool's; a group's channels are its steps forward, then reverse",
+      "lysis": "a slot's event whose end state has sigma > sigma_max: its molecules to their pool places, its closure cost released, its slot freed; one row books q = -(F(after) - F(before)) + w",
+      "selection": "u1, u2, u3 from domain 5 (carrier word 0) at the world's draw count: tau = -ln u1 / a0; the group the first whose running total exceeds min(u2 a0, nextafter(a0, 0)); the channel the first in it whose running total exceeds min(u3 a_g, nextafter(a_g, 0)); serial folds throughout"
+     }
+    },
+    "host": "cells.assembly_lineages@2",
+    "id": "cells.shared_pool@1",
+    "interface": "cells.population_structure@1",
+    "kernels": {
+     "data_to_dict": {
+      "function": "cells.models.assembly_lineages_v2.population.data_to_dict",
+      "line": 98,
+      "module_path": "src/cells/models/assembly_lineages_v2/population.py"
+     },
+     "parse_data": {
+      "function": "cells.models.assembly_lineages_v2.population.parse_data",
+      "line": 65,
+      "module_path": "src/cells/models/assembly_lineages_v2/population.py"
+     }
+    },
+    "laws": null,
+    "ledgers": null,
+    "line": 125,
+    "models": [
+     "cells.assembly_lineages@2"
+    ],
+    "module": "cells.models.assembly_lineages_v2.population",
+    "module_path": "src/cells/models/assembly_lineages_v2/population.py",
+    "name": "shared_pool",
+    "namespace": "cells",
+    "owns": null,
+    "piece": "law",
+    "provenance": {
+     "citation": {
+      "departures": [
+       "c_ext is held: for a finite pool a declared approximation, its drift reported"
+      ],
+      "licence": "no numbers taken",
+      "place": "one world-level SSA over K vesicle slots on one pool",
+      "source": "docs/ORIGIN_OF_LIFE_OL2_OL3_CHECK.md §1.8; docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md §0.2c rules 13-15 and §0.2d items 5-7 (the shared pool, R5); docs/RELATIONSHIPS_DESIGN.md §1.3-§1.4 (P-b, keys)",
+      "works": []
+     },
+     "source": null,
+     "tag": "cited"
+    },
+    "provides": null,
+    "reads": null,
+    "requires": null,
+    "signs": {},
+    "status": null,
+    "status_source": null,
+    "test": "tests/unit/test_assembly_lineages_v2_population.py::test_one_slot_has_the_single_rate_table",
+    "units": {},
+    "version": 1,
+    "writes": null
+   }
+  },
+  {
+   "id": "cells.shell_permeation@1",
+   "family": "law",
+   "where": "declared",
+   "box": {
+    "id": "models.assembly_lineages_v2",
+    "label": "Assemblies with phases and reactions (OL1)"
+   },
+   "declared": {
+    "changes": null,
+    "controls": null,
+    "declared_host": "cells.assembly_lineages@2",
+    "declared_id": "cells.shell_permeation@1",
+    "doc": null,
+    "energy": null,
+    "family": "cells.assembly_lineages@2",
+    "fields": {
+     "energy_role": "passive",
+     "energy_source": null,
+     "extent": "geometric",
+     "formulas": {
+      "conductance": "G_s = P_s A_sh, a constant of the world",
+      "forward": "a+(n) = P_s A_sh rho0 theta+(n): the entry, theta+ the pool's activity alone, A_sh the shell's declared area (m^2), rho0 = N_A c0 (molecules per m^3)",
+      "reverse": "the exit: the same law applied to the products, k- = P_s exp(sum nu mu°), the same extent; the lumen enters only through F"
+     },
+     "rate_key": "permeability_m_per_s",
+     "split": "encounter"
+    },
+    "host": "cells.assembly_lineages@2",
+    "id": "cells.shell_permeation@1",
+    "interface": "cells.reaction_law@1",
+    "kernels": {
+     "log_direction": {
+      "function": "cells.models.assembly_lineages_v2.exchange.geometric_log_direction",
+      "line": 40,
+      "module_path": "src/cells/models/assembly_lineages_v2/exchange.py"
+     }
+    },
+    "laws": null,
+    "ledgers": null,
+    "line": 47,
+    "models": [
+     "cells.assembly_lineages@2"
+    ],
+    "module": "cells.models.assembly_lineages_v2.shell_permeation",
+    "module_path": "src/cells/models/assembly_lineages_v2/shell_permeation.py",
+    "name": "shell_permeation",
+    "namespace": "cells",
+    "owns": null,
+    "piece": "law",
+    "provenance": {
+     "citation": {
+      "departures": [
+       "declared as the entry only, one molecule of one species"
+      ],
+      "licence": "no numbers taken",
+      "place": "a solute crosses a prescribed shell between the pool and its lumen, at P_s A_sh",
+      "source": "docs/ASSEMBLY_SHELL_DESIGN.md §4.2 (FR-21; D244, D246)",
+      "works": []
+     },
+     "source": null,
+     "tag": "cited"
+    },
+    "provides": null,
+    "reads": null,
+    "requires": null,
+    "signs": {},
+    "status": null,
+    "status_source": null,
+    "test": "tests/unit/test_assembly_lineages_v2_geometry.py::test_a_shell_s_rates_follow_its_declared_conductance_alone",
+    "units": {},
+    "version": 1,
+    "writes": null
+   }
+  },
+  {
    "id": "cells.stochastic_mass_action@1",
    "family": "law",
    "where": "declared",
@@ -4367,6 +7390,7 @@
     "fields": {
      "energy_role": "passive",
      "energy_source": null,
+     "extent": "locus",
      "formulas": {
       "extent": "E(m) = X_locus = N_A V_locus c0 for a dilute locus; N(m) - c + 1 for the membrane (membrane_kinetics count_on_m)",
       "forward": "a+(n) = k_f E(m) prod_dilute ff(n_p, a_p)/X_p^a_p prod_held (c_s/c0)^a_s prod_membrane ff(n_i, a_i)/ff(N - c, r), m = min(n, n + nu)",
@@ -4375,6 +7399,7 @@
       "reverse": "the same law applied to the products, with k- = k_f exp(sum_p nu_p mu°_p), times exp(F_ex(n) - F_ex(n - nu)) for the excess terms; identical to the pair rule a-(n + nu) = s(m) theta+(n) exp(F(n + nu) - F(n) - w)",
       "units": "k_f in 1/s (the activity form, D152's forward_rate_per_s)"
      },
+     "rate_key": "forward_rate_per_s",
      "split": "encounter"
     },
     "host": "cells.assembly_lineages@2",
@@ -4383,13 +7408,13 @@
     "kernels": {
      "log_direction": {
       "function": "cells.models.assembly_lineages_v2.mass_action.log_direction",
-      "line": 102,
+      "line": 116,
       "module_path": "src/cells/models/assembly_lineages_v2/mass_action.py"
      }
     },
     "laws": null,
     "ledgers": null,
-    "line": 143,
+    "line": 156,
     "models": [
      "cells.assembly_lineages@2"
     ],
@@ -4477,38 +7502,38 @@
     "kernels": {
      "data_to_dict": {
       "function": "cells.models.assembly_lineages_v2.transition_state.data_to_dict",
-      "line": 99,
+      "line": 144,
       "module_path": "src/cells/models/assembly_lineages_v2/transition_state.py"
      },
      "layout": {
       "function": "cells.models.assembly_lineages_v2.transition_state.layout",
-      "line": 106,
+      "line": 151,
       "module_path": "src/cells/models/assembly_lineages_v2/transition_state.py"
      },
      "log_factor": {
       "function": "cells.models.assembly_lineages_v2.transition_state.log_factor",
-      "line": 130,
+      "line": 195,
       "module_path": "src/cells/models/assembly_lineages_v2/transition_state.py"
      },
      "parse_data": {
       "function": "cells.models.assembly_lineages_v2.transition_state.parse_data",
-      "line": 53,
+      "line": 77,
       "module_path": "src/cells/models/assembly_lineages_v2/transition_state.py"
      },
      "state": {
       "function": "cells.models.assembly_lineages_v2.transition_state.state",
-      "line": 118,
+      "line": 173,
       "module_path": "src/cells/models/assembly_lineages_v2/transition_state.py"
      },
      "update": {
       "function": "cells.models.assembly_lineages_v2.transition_state.update",
-      "line": 124,
+      "line": 181,
       "module_path": "src/cells/models/assembly_lineages_v2/transition_state.py"
      }
     },
     "laws": null,
     "ledgers": null,
-    "line": 154,
+    "line": 227,
     "models": [
      "cells.assembly_lineages@2"
     ],
@@ -4554,6 +7579,337 @@
    }
   },
   {
+   "id": "cells.ubiquinol_cytochrome_c_proton_cycle@1",
+   "family": "cycle",
+   "where": "declared",
+   "box": {
+    "id": "laws.respiration",
+    "label": "Respiration and ATP synthesis"
+   },
+   "declared": {
+    "changes": [
+     {
+      "mode": "oxidation",
+      "per_cycle": -1,
+      "role": "QH2@N"
+     },
+     {
+      "mode": "oxidation",
+      "per_cycle": 1,
+      "role": "Q@N"
+     },
+     {
+      "mode": "oxidation",
+      "per_cycle": -2,
+      "role": "c_ox@P"
+     },
+     {
+      "mode": "oxidation",
+      "per_cycle": 2,
+      "role": "c_red@P"
+     },
+     {
+      "mode": "oxidation",
+      "per_cycle": -2,
+      "role": "H@N"
+     },
+     {
+      "mode": "oxidation",
+      "per_cycle": 4,
+      "role": "H@P"
+     }
+    ],
+    "controls": null,
+    "declared_host": "cells.transporter@1",
+    "declared_id": "cells.ubiquinol_cytochrome_c_proton_cycle@1",
+    "doc": null,
+    "energy": null,
+    "family": "cells.resolved_pump_tissue@3",
+    "fields": {
+     "charge_bound": null,
+     "cycle": {
+      "diagram": null,
+      "flux_terms": [],
+      "fuel_roles": [],
+      "kinetics": "monomial",
+      "modes": [
+       [
+        "oxidation",
+        [
+         -1,
+         1,
+         -2,
+         2,
+         -2,
+         4
+        ]
+       ]
+      ],
+      "monomial": {
+       "rates": [
+        {
+         "constants": [],
+         "factors": [
+          {
+           "power": -1.0,
+           "terms": [
+            {
+             "eta": 0.0,
+             "k": {
+              "factor": 1000.0,
+              "parameter": "k_Pi3",
+              "power": -1
+             },
+             "orders": [
+              [
+               {
+                "end": "N",
+                "form": "total",
+                "role": "Pi"
+               },
+               1.0
+              ]
+             ]
+            }
+           ]
+          },
+          {
+           "power": 1.0,
+           "terms": [
+            {
+             "eta": 0.0,
+             "k": {
+              "factor": 1000.0,
+              "parameter": "k_Pi4",
+              "power": -1
+             },
+             "orders": [
+              [
+               {
+                "end": "N",
+                "form": "total",
+                "role": "Pi"
+               },
+               1.0
+              ]
+             ]
+            }
+           ]
+          }
+         ],
+         "log_k": {
+          "dg_kj_mol": -32.53,
+          "offset": 0.0,
+          "protons": 2,
+          "rt_term": 0.0,
+          "scale": 0.5
+         },
+         "orders": [
+          [
+           {
+            "end": "N",
+            "form": "free",
+            "role": "QH2"
+           },
+           0.5
+          ],
+          [
+           {
+            "end": "N",
+            "form": "free",
+            "role": "Q"
+           },
+           -0.5
+          ],
+          [
+           {
+            "end": "P",
+            "form": "free",
+            "role": "c_ox"
+           },
+           1.0
+          ],
+          [
+           {
+            "end": "N",
+            "form": "free",
+            "role": "H"
+           },
+           1.0
+          ],
+          [
+           {
+            "end": "P",
+            "form": "free",
+            "role": "H"
+           },
+           -2.0
+          ]
+         ],
+         "share": 2,
+         "zeta": 1.0
+        }
+       ],
+       "read_roles": [
+        [
+         "Pi",
+         -2
+        ]
+       ],
+       "standard_state_mM": 1000.0
+      },
+      "parameters": [
+       {
+        "high": null,
+        "integer": false,
+        "low": null,
+        "name": "k_Pi3",
+        "positive": true,
+        "unit": "mM"
+       },
+       {
+        "high": null,
+        "integer": false,
+        "low": null,
+        "name": "k_Pi4",
+        "positive": true,
+        "unit": "mM"
+       }
+      ],
+      "ph_bands": [],
+      "roles": [
+       [
+        "QH2",
+        0
+       ],
+       [
+        "Q",
+        0
+       ],
+       [
+        "c_ox",
+        3
+       ],
+       [
+        "c_red",
+        2
+       ],
+       [
+        "H",
+        1
+       ]
+      ],
+      "rows": [
+       [
+        "QH2",
+        "N"
+       ],
+       [
+        "Q",
+        "N"
+       ],
+       [
+        "c_ox",
+        "P"
+       ],
+       [
+        "c_red",
+        "P"
+       ],
+       [
+        "H",
+        "N"
+       ],
+       [
+        "H",
+        "P"
+       ]
+      ],
+      "saturation": [],
+      "temperature_K": null
+     },
+     "domain_valid": null,
+     "forms": "base",
+     "fuel_kinds": [],
+     "kinetics": null,
+     "loop_term": null,
+     "material_bound": null,
+     "material_term": null,
+     "moves": [],
+     "stage_term": null
+    },
+    "host": "cells.transporter@1",
+    "id": "cells.ubiquinol_cytochrome_c_proton_cycle@1",
+    "interface": "cells.cycle_law@1",
+    "kernels": {},
+    "laws": null,
+    "ledgers": null,
+    "line": 68,
+    "models": [
+     "cells.resolved_pump_composite@1",
+     "cells.resolved_pump_tissue@3"
+    ],
+    "module": "cells.laws.cycles.ubiquinol_cytochrome_c_proton_cycle",
+    "module_path": "src/cells/laws/cycles/ubiquinol_cytochrome_c_proton_cycle.py",
+    "name": "ubiquinol_cytochrome_c_proton_cycle",
+    "namespace": "cells",
+    "owns": null,
+    "piece": "law",
+    "provenance": {
+     "citation": {
+      "departures": [
+       "Eq. 24 restored as phi_Pi x Eq. 7 (D236): its forward term is Eq. 24's times 1e-7 M / h_N",
+       "three laws for the appendix's one redox_driven_proton_cycle@1 (the lead's ruling 1)"
+      ],
+      "licence": "CC BY (both works); the constants are Table 1's (the 2006 correction) and Table 2's",
+      "place": "the appendix's §1.2 (Eqs. 6, 7 and 24; Table 2's Delta G°_C3; Table 1's k_Pi3, k_Pi4)",
+      "source": "D. A. Beard's model of oxidative phosphorylation, as declared in docs/MITOCHONDRIA_LAWS_APPENDIX.md at tag mito-laws-appendix-2026-11-20b (D236)",
+      "works": [
+       {
+        "authors": [
+         "Beard DA"
+        ],
+        "doi": "10.1371/journal.pcbi.0010036",
+        "title": "A biophysical model of the mitochondrial respiratory system and oxidative phosphorylation",
+        "url": null,
+        "year": 2005
+       },
+       {
+        "authors": [
+         "Beard DA"
+        ],
+        "doi": "10.1371/journal.pcbi.0020008",
+        "title": "A biophysical model of the mitochondrial respiratory system and oxidative phosphorylation (correction, Table 1)",
+        "url": null,
+        "year": 2006
+       }
+      ]
+     },
+     "source": null,
+     "tag": "cited"
+    },
+    "provides": null,
+    "reads": [
+     {
+      "mode": "current",
+      "name": "rapid_binding@1",
+      "scoped": false,
+      "stage": "inner"
+     }
+    ],
+    "requires": null,
+    "signs": {
+     "moves": "inward-positive, per forward cycle"
+    },
+    "status": null,
+    "status_source": null,
+    "test": null,
+    "units": {},
+    "version": 1,
+    "writes": null
+   }
+  },
+  {
    "id": "cell_owned_compartments@1",
    "family": "no-part",
    "where": "declared",
@@ -4586,7 +7942,7 @@
     "kernels": null,
     "laws": null,
     "ledgers": [],
-    "line": 603,
+    "line": 638,
     "models": [
      "cells.resolved_pump_composite@1"
     ],
@@ -5462,7 +8818,7 @@
     "kernels": null,
     "laws": null,
     "ledgers": [],
-    "line": 1279,
+    "line": 1369,
     "models": [
      "cells.resolved_pump_composite@1"
     ],
@@ -5655,7 +9011,7 @@
      "membrane_capacitance_entity",
      "population_abundance_entity"
     ],
-    "line": 182,
+    "line": 193,
     "models": [
      "cells.resolved_pump_composite@1"
     ],
@@ -5706,6 +9062,156 @@
     },
     "version": 1,
     "writes": {}
+   }
+  },
+  {
+   "id": "cells.pool_replacement@1",
+   "family": "operator",
+   "where": "declared",
+   "box": {
+    "id": "models.assembly_lineages_v2",
+    "label": "Assemblies with phases and reactions (OL1)"
+   },
+   "declared": {
+    "changes": null,
+    "controls": null,
+    "declared_host": "cells.assembly_lineages@2",
+    "declared_id": "cells.pool_replacement@1",
+    "doc": null,
+    "energy": null,
+    "family": "cells.assembly_lineages@2",
+    "fields": {
+     "contract": {
+      "booking": "the sink takes F of the old pool; the schedule's work column takes F of the fresh pool (source:replacement/<index>)",
+      "draw": "none: the schedule's stream (domain 6, its declared index) is never drawn",
+      "keep": "every living assembly, as it stands: its places, key, sub-lineage and life",
+      "pool": "the finite pool places take the declared composition; held places, c_ext and the pool's volume are unchanged; the fresh pool's solutes may not exceed c_ext",
+      "trigger": "a declared replacement time, which no other stop shares: a shear, a transfer or another replacement at the same declared time is refused at parse, and a Poisson shear drawn at it is refused at the run's start"
+     },
+     "energy_role": "work: the fresh pool's F (its schedule); sink: the old pool's F",
+     "reads": "the pool's finite places",
+     "rules": {
+      "keep": [
+       "every living assembly, as it stands"
+      ]
+     },
+     "stream": "none: the schedule's stream is reserved by its index and never drawn",
+     "writes": "the pool's finite places"
+    },
+    "host": "cells.assembly_lineages@2",
+    "id": "cells.pool_replacement@1",
+    "interface": "cells.assembly_operator@1",
+    "kernels": {},
+    "laws": null,
+    "ledgers": null,
+    "line": 149,
+    "models": [
+     "cells.assembly_lineages@2"
+    ],
+    "module": "cells.models.assembly_lineages_v2.replacement",
+    "module_path": "src/cells/models/assembly_lineages_v2/replacement.py",
+    "name": "pool_replacement",
+    "namespace": "cells",
+    "owns": null,
+    "piece": "operator",
+    "provenance": {
+     "citation": {
+      "departures": [
+       "the replacement's own dissipation is not modelled"
+      ],
+      "licence": "no numbers taken",
+      "place": "the exterior of an assembly population replaced at a declared time, every assembly kept, the exchange booked as schedule work and a sink",
+      "source": "docs/ASSEMBLY_WASHOUT_DESIGN.md (FR-20, approved by the user in D240); docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md §0.2d item 6 (the transfer's pool step)",
+      "works": []
+     },
+     "source": null,
+     "tag": "cited"
+    },
+    "provides": null,
+    "reads": null,
+    "requires": null,
+    "signs": {},
+    "status": null,
+    "status_source": null,
+    "test": "tests/unit/test_assembly_lineages_v2_replacement.py::test_a_replacement_keeps_every_slot_and_replaces_the_pool",
+    "units": {},
+    "version": 1,
+    "writes": null
+   }
+  },
+  {
+   "id": "cells.pool_withdrawal@1",
+   "family": "operator",
+   "where": "declared",
+   "box": {
+    "id": "models.assembly_lineages_v2",
+    "label": "Assemblies with phases and reactions (OL1)"
+   },
+   "declared": {
+    "changes": null,
+    "controls": null,
+    "declared_host": "cells.assembly_lineages@2",
+    "declared_id": "cells.pool_withdrawal@1",
+    "doc": null,
+    "energy": null,
+    "family": "cells.assembly_lineages@2",
+    "fields": {
+     "contract": {
+      "booking": "the sink takes F(before; V) - F(kept; (1-f)V); the schedule's work column takes F(buffer; fV) (source:withdrawal/<index>); the heat ledger takes the mixing heat F(kept; (1-f)V) + F(buffer; fV) - F(after; V), never negative",
+      "draw": "each molecule of each finite pool place leaves independently with probability f: place j's block of n_j uniforms on the schedule's stream (domain 6, its declared index) at draw number w P_f + j, w the schedule's washes already applied; molecule i leaves when u_i < f",
+      "keep": "every living assembly, as it stands: its places, key, sub-lineage and life",
+      "pool": "the kept molecules plus the buffer's declared counts, in the pool's own volume; held places, c_ext and the volume are unchanged; refused before the draw when a place's pre-wash count plus its buffer count exceeds molecule_capacity",
+      "trigger": "a declared withdrawal time, which no other stop shares: a shear, a transfer, a replacement or another withdrawal at the same declared time is refused at parse, and a Poisson shear drawn at it is refused at the run's start"
+     },
+     "energy_role": "sink: F(before) - F(kept at (1-f)V); work: the buffer's F at fV (its schedule); heat: the mixing heat",
+     "reads": "the pool's finite places, the schedule's stream",
+     "rules": {
+      "draw": [
+       "each molecule independently with probability f, per-place blocks"
+      ]
+     },
+     "stream": "schedule: domain 6 by the schedule's declared index, one block per finite pool place per wash at draw number w P_f + j",
+     "writes": "the pool's finite places"
+    },
+    "host": "cells.assembly_lineages@2",
+    "id": "cells.pool_withdrawal@1",
+    "interface": "cells.assembly_operator@1",
+    "kernels": {},
+    "laws": null,
+    "ledgers": null,
+    "line": 223,
+    "models": [
+     "cells.assembly_lineages@2"
+    ],
+    "module": "cells.models.assembly_lineages_v2.withdrawal",
+    "module_path": "src/cells/models/assembly_lineages_v2/withdrawal.py",
+    "name": "pool_withdrawal",
+    "namespace": "cells",
+    "owns": null,
+    "piece": "operator",
+    "provenance": {
+     "citation": {
+      "departures": [
+       "the pool's volume is a world constant; the withdrawn volume is fV"
+      ],
+      "licence": "no numbers taken",
+      "place": "a fraction of a population's well-mixed pool drawn off molecule by molecule, the same volume of buffer added, the exchange booked as a sink, schedule work and mixing heat",
+      "source": "docs/ASSEMBLY_WITHDRAWAL_DESIGN.md (FR-35, decided by the lead in D261); docs/COMPARTMENT_WASH_DESIGN.md §2 (FR-27's liquid exchange, one mechanism)",
+      "works": []
+     },
+     "source": null,
+     "tag": "cited"
+    },
+    "provides": null,
+    "reads": null,
+    "requires": null,
+    "signs": {},
+    "status": null,
+    "status_source": null,
+    "test": "tests/unit/test_assembly_lineages_v2_replacement.py::test_a_withdrawal_keeps_every_slot_draws_each_molecule_and_closes_its_books",
+    "units": {},
+    "version": 1,
+    "writes": null
    }
   },
   {
@@ -5760,7 +9266,7 @@
      "unit_chain",
      "unit_conversion"
     ],
-    "line": 743,
+    "line": 751,
     "models": [
      "cells.resolved_pump_composite@1"
     ],
@@ -5908,7 +9414,7 @@
     "ledgers": [
      "lumen_fill"
     ],
-    "line": 401,
+    "line": 420,
     "models": [
      "cells.resolved_pump_composite@1"
     ],
@@ -6187,7 +9693,7 @@
      "bath_dose_free_energy",
      "bath_neutrality"
     ],
-    "line": 541,
+    "line": 552,
     "models": [
      "cells.resolved_pump_composite@1"
     ],
@@ -6455,7 +9961,7 @@
     "kernels": null,
     "laws": null,
     "ledgers": [],
-    "line": 346,
+    "line": 398,
     "models": [
      "cells.resolved_pump_composite@1"
     ],
@@ -6638,6 +10144,162 @@
    }
   },
   {
+   "id": "scheduled_compartment_wash@1",
+   "family": "event",
+   "where": "declared",
+   "box": null,
+   "declared": {
+    "changes": null,
+    "controls": [
+     "wash_count",
+     "wash_fraction",
+     "wash_buffer_mM"
+    ],
+    "declared_host": "resolved_pump_composite@1",
+    "declared_id": "scheduled_compartment_wash@1",
+    "doc": null,
+    "energy": {
+     "heat": [],
+     "work": []
+    },
+    "family": "cells.resolved_pump_composite@1",
+    "fields": {
+     "class_name": "ScheduledCompartmentWash",
+     "closes": [],
+     "declaration_only": false,
+     "experiment_keys": [
+      "compartment_wash_events"
+     ],
+     "parts": [
+      "event"
+     ],
+     "record_kinds": {
+      "wash_applied": "cumulative",
+      "wash_buffer_free_energy_pJ": "cumulative",
+      "wash_collected_fmol": "cumulative",
+      "wash_energy_magnitude_pJ": "cumulative",
+      "wash_last_mixing_heat_pJ": "level",
+      "wash_mixing_heat_pJ": "cumulative",
+      "wash_sample_free_energy_pJ": "cumulative",
+      "wash_supplied_fmol": "cumulative"
+     },
+     "record_layers": {},
+     "retires": false,
+     "step_method": null
+    },
+    "host": "cells.resolved_pump_composite@1",
+    "id": "cells.scheduled_compartment_wash@1",
+    "interface": "cells.operator@1",
+    "kernels": null,
+    "laws": null,
+    "ledgers": [
+     "wash_ions"
+    ],
+    "line": 536,
+    "models": [
+     "cells.resolved_pump_composite@1"
+    ],
+    "module": "cells.operators.wash_schedule",
+    "module_path": "src/cells/operators/wash_schedule.py",
+    "name": "scheduled_compartment_wash",
+    "namespace": "cells",
+    "owns": {
+     "wash_applied": [
+      "extracellular_slot"
+     ],
+     "wash_buffer_free_energy_pJ": [
+      "extracellular_slot"
+     ],
+     "wash_collected_fmol": [
+      "species",
+      "extracellular_slot"
+     ],
+     "wash_energy_magnitude_pJ": [
+      "extracellular_slot"
+     ],
+     "wash_last_mixing_heat_pJ": [
+      "extracellular_slot"
+     ],
+     "wash_mixing_heat_pJ": [
+      "extracellular_slot"
+     ],
+     "wash_sample_free_energy_pJ": [
+      "extracellular_slot"
+     ],
+     "wash_supplied_fmol": [
+      "species",
+      "extracellular_slot"
+     ]
+    },
+    "piece": "operator",
+    "provenance": null,
+    "provides": [],
+    "reads": [
+     {
+      "mode": "fixed",
+      "name": "extracellular_volume",
+      "scoped": true,
+      "stage": "event"
+     },
+     {
+      "mode": "fixed",
+      "name": "extracellular_amount_reference",
+      "scoped": true,
+      "stage": "event"
+     },
+     {
+      "mode": "fixed",
+      "name": "outside_active",
+      "scoped": true,
+      "stage": "event"
+     }
+    ],
+    "requires": {
+     "kinds": [],
+     "laws": []
+    },
+    "signs": {
+     "wash_collected_fmol": {
+      "from": "node",
+      "says": "the samples taken from the node's liquid, out of the world to their sink",
+      "to": "exterior"
+     },
+     "wash_supplied_fmol": {
+      "from": "exterior",
+      "says": "the buffer supplied to the node's liquid, into the world from its source",
+      "to": "node"
+     }
+    },
+    "status": null,
+    "status_source": null,
+    "test": null,
+    "units": {
+     "extracellular_amount_increment": null,
+     "extracellular_amount_reference": "fmol",
+     "extracellular_volume": "pL",
+     "outside_active": "1",
+     "wash_applied": "1",
+     "wash_buffer_free_energy_pJ": "pJ",
+     "wash_buffer_mM": "mM",
+     "wash_collected_fmol": "fmol",
+     "wash_count": null,
+     "wash_energy_magnitude_pJ": "pJ",
+     "wash_fraction": null,
+     "wash_last_mixing_heat_pJ": "pJ",
+     "wash_mixing_heat_pJ": "pJ",
+     "wash_sample_free_energy_pJ": "pJ",
+     "wash_supplied_fmol": "fmol"
+    },
+    "version": 1,
+    "writes": {
+     "extracellular_amount_increment": [
+      "wash_collected_fmol",
+      "wash_supplied_fmol"
+     ]
+    }
+   }
+  },
+  {
    "id": "scheduled_membrane_insertion@1",
    "family": "event-split",
    "where": "declared",
@@ -6680,7 +10342,7 @@
     "kernels": null,
     "laws": null,
     "ledgers": [],
-    "line": 468,
+    "line": 566,
     "models": [
      "cells.resolved_pump_composite@1"
     ],
@@ -7200,7 +10862,7 @@
     "kernels": null,
     "laws": null,
     "ledgers": [],
-    "line": 459,
+    "line": 519,
     "models": [
      "cells.resolved_pump_composite@1"
     ],
@@ -7223,6 +10885,12 @@
     "provenance": null,
     "provides": [],
     "reads": [
+     {
+      "mode": "current",
+      "name": "membrane_area",
+      "scoped": false,
+      "stage": "split"
+     },
      {
       "mode": "fixed",
       "name": "volume",
@@ -7250,12 +10918,6 @@
      {
       "mode": "fixed",
       "name": "membrane_active",
-      "scoped": false,
-      "stage": "split"
-     },
-     {
-      "mode": "fixed",
-      "name": "membrane_area",
       "scoped": false,
       "stage": "split"
      }
@@ -7349,7 +11011,7 @@
     "kernels": null,
     "laws": null,
     "ledgers": [],
-    "line": 425,
+    "line": 452,
     "models": [
      "cells.resolved_pump_composite@1"
     ],
@@ -7456,6 +11118,169 @@
    }
   },
   {
+   "id": "cells.serial_transfer@1",
+   "family": "operator",
+   "where": "declared",
+   "box": {
+    "id": "models.assembly_lineages_v2",
+    "label": "Assemblies with phases and reactions (OL1)"
+   },
+   "declared": {
+    "changes": null,
+    "controls": null,
+    "declared_host": "cells.assembly_lineages@2",
+    "declared_id": "cells.serial_transfer@1",
+    "doc": null,
+    "energy": null,
+    "family": "cells.assembly_lineages@2",
+    "fields": {
+     "contract": {
+      "booking": "the sink takes F of the removed vesicles and of the old pool; the schedule's work column takes F of the fresh pool (source:transfer/<index>)",
+      "draw": "one uniform per living assembly, in slot order, each its own draw on the schedule's stream (domain 6, its declared index) at its counter; it draws even when every assembly is kept",
+      "keep": "the K_keep smallest uniforms, ties by slot: a uniform sample without replacement; all of them if fewer live",
+      "pool": "the finite pool places take the declared fresh composition; held places and c_ext are unchanged; the fresh pool's solutes may not exceed c_ext",
+      "slots": "kept assemblies keep their slots; the removed end `removed` and their slots free",
+      "trigger": "a declared transfer time; same-time events in schedule-index order"
+     },
+     "energy_role": "work: the fresh pool's F (its schedule); sink: the removed vesicles' and the old pool's F",
+     "reads": "the living slots, in slot order",
+     "rules": {
+      "keep": [
+       "the K_keep smallest uniforms, ties by slot"
+      ]
+     },
+     "stream": "schedule: domain 6 by the schedule's declared index, one draw per living assembly",
+     "writes": "the slots kept and removed; the pool's finite places"
+    },
+    "host": "cells.assembly_lineages@2",
+    "id": "cells.serial_transfer@1",
+    "interface": "cells.assembly_operator@1",
+    "kernels": {},
+    "laws": null,
+    "ledgers": null,
+    "line": 118,
+    "models": [
+     "cells.assembly_lineages@2"
+    ],
+    "module": "cells.models.assembly_lineages_v2.transfer",
+    "module_path": "src/cells/models/assembly_lineages_v2/transfer.py",
+    "name": "serial_transfer",
+    "namespace": "cells",
+    "owns": null,
+    "piece": "operator",
+    "provenance": {
+     "citation": {
+      "departures": [
+       "the transfer's own dissipation is not modelled"
+      ],
+      "licence": "no numbers taken",
+      "place": "a uniform sample of K_keep living assemblies and a fresh pool, booked as schedule work",
+      "source": "docs/ORIGIN_OF_LIFE_OL2_OL3_CHECK.md §2.6; docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md §0.2d item 6 (serial transfer, the shared pool's bottleneck)",
+      "works": []
+     },
+     "source": null,
+     "tag": "cited"
+    },
+    "provides": null,
+    "reads": null,
+    "requires": null,
+    "signs": {},
+    "status": null,
+    "status_source": null,
+    "test": "tests/unit/test_assembly_lineages_v2_population.py::test_a_transfer_keeps_a_uniform_sample_and_refreshes_the_pool",
+    "units": {},
+    "version": 1,
+    "writes": null
+   }
+  },
+  {
+   "id": "cells.shear_fission@1",
+   "family": "operator",
+   "where": "declared",
+   "box": {
+    "id": "models.assembly_lineages_v2",
+    "label": "Assemblies with phases and reactions (OL1)"
+   },
+   "declared": {
+    "changes": null,
+    "controls": null,
+    "declared_host": "cells.assembly_lineages@2",
+    "declared_id": "cells.shear_fission@1",
+    "doc": null,
+    "energy": null,
+    "family": "cells.assembly_lineages@2",
+    "fields": {
+     "contract": {
+      "booking": "shear work = sum_j F_v(d_j) - F_v(parent), F_v a vesicle's own F with its closure cost; the sink takes the unfollowed daughters' F_v; a followed daughter beyond sigma_max lyses at birth, booked as a lysis (§0.2d items 7 and 10.3)",
+      "c3x": "rank the membrane molecules (by species in declared order) by their uniforms, ties by list position; c_t the smallest c >= c_(t-1) minimising |k S_c - t W|; block t is ranked molecules c_(t-1)+1..c_t; the k further uniforms' argsort (ties by index) is pi, and block t goes to daughter pi(t) (§0.2c rule 9)",
+      "clock": "the draw that crosses a schedule time is discarded and counted: the occupant's next draw is at the next counter, its wait measured from the schedule time (§0.2d item 6)",
+      "continuation": "first, or uniform: floor(u k) with u the continuation stream's draw at counter 0 (domain 3); the others leave for the sink",
+      "draw": "domain 2, the parent's carrier key, counter = its attempts that drew (from 0): a block of N + k + N_L uniforms, rule 9's N + k then rule 10's N_L",
+      "keys": "the daughters take the lineage counter's next k keys in daughter order (keys.py's rule; single lineage: sub-lineage 0); the followed daughter becomes the slot's occupant and draws its own event stream (its key, domain 1) from counter 0 (§0.2d item 10.6)",
+      "lumen": "p_j = V_sph(A_j) / sum_l V_sph(A_l); a lumen molecule with uniform u goes to daughter pi(t) for the smallest t with u < sum_(s<=t) p_pi(s), the last cumulative weight 1 (§0.2c rule 10)",
+      "order": "the stress test (when declared), then 36 pi k V^2 <= A^3; then one draw; the split; the floor test; the fission applied, or refused and recorded with the parent kept (§0.2d item 10.2). An assembly failing the stress or v test neither draws nor advances its counter",
+      "trigger": "a declared shear schedule time: the assembly alive at its start is tested; same-time events in schedule-index order (§0.2d item 10.1)"
+     },
+     "energy_role": "work: the split's change in F, from the shear (its schedule)",
+     "reads": "the assembly's counts, its footprint and its lumen volume (current)",
+     "rules": {
+      "continuation": [
+       "first",
+       "uniform"
+      ],
+      "outcomes": [
+       "split",
+       "refused_stress",
+       "refused_volume",
+       "refused_floor"
+      ]
+     },
+     "stream": "fission: domain 2 by the parent's key; continuation: domain 3, counter 0",
+     "writes": "the slot's composition: the followed daughter replaces the parent"
+    },
+    "host": "cells.assembly_lineages@2",
+    "id": "cells.shear_fission@1",
+    "interface": "cells.assembly_operator@1",
+    "kernels": {},
+    "laws": null,
+    "ledgers": null,
+    "line": 346,
+    "models": [
+     "cells.assembly_lineages@2"
+    ],
+    "module": "cells.models.assembly_lineages_v2.division",
+    "module_path": "src/cells/models/assembly_lineages_v2/division.py",
+    "name": "shear_fission",
+    "namespace": "cells",
+    "owns": null,
+    "piece": "operator",
+    "provenance": {
+     "citation": {
+      "departures": [
+       "equal target areas (k equal spheres) in the first worlds",
+       "declared shear times in this version; Poisson times come with the shared pool"
+      ],
+      "licence": "no numbers taken",
+      "place": "geometric admission at shear events, a split at equal target areas, booked as work",
+      "source": "docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md §4, §0.2c rules 9-13, §0.2d items 6, 7 and 10; docs/ORIGIN_OF_LIFE_OL2_OL3_CHECK.md §2.1-§2.5 (division under shear, D2)",
+      "works": []
+     },
+     "source": null,
+     "tag": "cited"
+    },
+    "provides": null,
+    "reads": null,
+    "requires": null,
+    "signs": {},
+    "status": null,
+    "status_source": null,
+    "test": "tests/unit/test_assembly_lineages_v2_division.py::test_c3x_and_the_lumen_split_are_rule_9_and_10_s_laws",
+    "units": {},
+    "version": 1,
+    "writes": null
+   }
+  },
+  {
    "id": "site_occupancy@1",
    "family": "split",
    "where": "declared",
@@ -7503,7 +11328,7 @@
      "site_bound_entity",
      "site_moiety_entity"
     ],
-    "line": 1177,
+    "line": 1300,
     "models": [
      "cells.resolved_pump_composite@1"
     ],
@@ -7554,7 +11379,7 @@
      {
       "mode": "fixed",
       "name": "extracellular_volume",
-      "scoped": false,
+      "scoped": true,
       "stage": "split"
      },
      {
@@ -7578,7 +11403,7 @@
      {
       "mode": "fixed",
       "name": "extracellular_amount_reference",
-      "scoped": false,
+      "scoped": true,
       "stage": "split"
      }
     ],
@@ -7621,6 +11446,114 @@
      ],
      "extracellular_amount_increment": [
       "site_bound_net_fmol"
+     ]
+    }
+   }
+  },
+  {
+   "id": "site_occupant_replacement@1",
+   "family": "event",
+   "where": "declared",
+   "box": null,
+   "declared": {
+    "changes": null,
+    "controls": [
+     "site_replacement_count",
+     "site_arrival_occupancy"
+    ],
+    "declared_host": "resolved_pump_composite@1",
+    "declared_id": "site_occupant_replacement@1",
+    "doc": null,
+    "energy": {
+     "heat": [],
+     "work": []
+    },
+    "family": "cells.resolved_pump_composite@1",
+    "fields": {
+     "class_name": "SiteOccupantReplacement",
+     "closes": [],
+     "declaration_only": false,
+     "experiment_keys": [],
+     "parts": [
+      "event"
+     ],
+     "record_kinds": {
+      "site_arrived_fmol": "cumulative",
+      "site_departed_fmol": "cumulative",
+      "site_replacement_applied": "cumulative",
+      "site_replacement_energy_magnitude_pJ": "cumulative",
+      "site_replacement_free_energy_pJ": "cumulative"
+     },
+     "record_layers": {},
+     "retires": false,
+     "step_method": null
+    },
+    "host": "cells.resolved_pump_composite@1",
+    "id": "cells.site_occupant_replacement@1",
+    "interface": "cells.operator@1",
+    "kernels": null,
+    "laws": null,
+    "ledgers": [],
+    "line": 1875,
+    "models": [
+     "cells.resolved_pump_composite@1"
+    ],
+    "module": "cells.operators.site_occupancy",
+    "module_path": "src/cells/operators/site_occupancy.py",
+    "name": "site_occupant_replacement",
+    "namespace": "cells",
+    "owns": {
+     "site_arrived_fmol": [
+      "site_population"
+     ],
+     "site_departed_fmol": [
+      "site_population"
+     ],
+     "site_replacement_applied": [
+      "cell_slot"
+     ],
+     "site_replacement_energy_magnitude_pJ": [
+      "site_population"
+     ],
+     "site_replacement_free_energy_pJ": [
+      "site_population"
+     ]
+    },
+    "piece": "operator",
+    "provenance": null,
+    "provides": [],
+    "reads": [],
+    "requires": {
+     "kinds": [],
+     "laws": [
+      "scheduled_cell_replacement@1",
+      "site_occupancy@1"
+     ]
+    },
+    "signs": {},
+    "status": null,
+    "status_source": null,
+    "test": null,
+    "units": {
+     "site_arrival_occupancy": null,
+     "site_arrived_fmol": "fmol",
+     "site_bound_increment_fmol": "fmol",
+     "site_departed_fmol": "fmol",
+     "site_free_increment_fmol": "fmol",
+     "site_replacement_applied": "1",
+     "site_replacement_count": null,
+     "site_replacement_energy_magnitude_pJ": "pJ",
+     "site_replacement_free_energy_pJ": "pJ"
+    },
+    "version": 1,
+    "writes": {
+     "site_bound_increment_fmol": [
+      "site_departed_fmol",
+      "site_arrived_fmol"
+     ],
+     "site_free_increment_fmol": [
+      "site_departed_fmol",
+      "site_arrived_fmol"
      ]
     }
    }
@@ -7743,7 +11676,7 @@
     "kernels": null,
     "laws": null,
     "ledgers": [],
-    "line": 1412,
+    "line": 1719,
     "models": [
      "cells.resolved_pump_composite@1"
     ],
@@ -7892,7 +11825,7 @@
     "kernels": null,
     "laws": null,
     "ledgers": [],
-    "line": 1618,
+    "line": 1925,
     "models": [
      "cells.resolved_pump_composite@1"
     ],
@@ -7997,6 +11930,227 @@
     },
     "version": 2,
     "writes": {}
+   }
+  },
+  {
+   "id": "templated_polymerisation@1",
+   "family": "split",
+   "where": "declared",
+   "box": null,
+   "declared": {
+    "changes": null,
+    "controls": [
+     "polymerisation_initiation_rate",
+     "polymerisation_degradation_rate",
+     "polymerisation_transfer_capacity",
+     "polymerisation_release_fraction",
+     "polymerisation_release_class"
+    ],
+    "declared_host": "resolved_pump_composite@1",
+    "declared_id": "templated_polymerisation@1",
+    "doc": null,
+    "energy": {
+     "heat": [
+      "poly_dissipated_energy_pJ"
+     ],
+     "work": []
+    },
+    "family": "cells.resolved_pump_composite@1",
+    "fields": {
+     "class_name": "TemplatedPolymerisation",
+     "closes": [],
+     "declaration_only": false,
+     "experiment_keys": [
+      "polymerisation_controls"
+     ],
+     "parts": [
+      "split"
+     ],
+     "record_kinds": {
+      "poly_chain_heat_pJ": "cumulative",
+      "poly_complexes_fmol": "amount",
+      "poly_consumed_fmol": "cumulative",
+      "poly_degradation_heat_pJ": "cumulative",
+      "poly_degraded_fmol": "cumulative",
+      "poly_energy_magnitude_pJ": "cumulative",
+      "poly_free_machines_fmol": "amount",
+      "poly_hold_fmol": "amount",
+      "poly_hold_released_fmol": "cumulative",
+      "poly_initiated_fmol": "cumulative",
+      "poly_produced_fmol": "cumulative",
+      "poly_release_heat_pJ": "cumulative",
+      "poly_released_fmol": "cumulative",
+      "poly_stage_exits_fmol": "cumulative",
+      "poly_standard_energy_pJ": "cumulative",
+      "poly_transfer_heat_pJ": "cumulative",
+      "poly_transferred_fmol": "cumulative"
+     },
+     "record_layers": {},
+     "retires": false,
+     "step_method": "ssprk33_stage_condition_exact_bookings@1"
+    },
+    "host": "cells.resolved_pump_composite@1",
+    "id": "cells.templated_polymerisation@1",
+    "interface": "cells.operator@1",
+    "kernels": null,
+    "laws": null,
+    "ledgers": [
+     "poly_machines",
+     "poly_residues"
+    ],
+    "line": 1610,
+    "models": [
+     "cells.resolved_pump_composite@1"
+    ],
+    "module": "cells.operators.templated_polymerisation",
+    "module_path": "src/cells/operators/templated_polymerisation.py",
+    "name": "templated_polymerisation",
+    "namespace": "cells",
+    "owns": {
+     "poly_chain_heat_pJ": [
+      "poly_chain"
+     ],
+     "poly_complexes_fmol": [
+      "poly_chain",
+      "poly_stage"
+     ],
+     "poly_consumed_fmol": [
+      "species",
+      "cell_slot"
+     ],
+     "poly_degradation_heat_pJ": [
+      "poly_degradation"
+     ],
+     "poly_degraded_fmol": [
+      "poly_degradation"
+     ],
+     "poly_dissipated_energy_pJ": [
+      "cell_slot"
+     ],
+     "poly_energy_magnitude_pJ": [
+      "cell_slot"
+     ],
+     "poly_free_machines_fmol": [
+      "poly_pool"
+     ],
+     "poly_hold_fmol": [
+      "poly_release",
+      "poly_class"
+     ],
+     "poly_hold_released_fmol": [
+      "poly_release",
+      "poly_class",
+      "poly_fate"
+     ],
+     "poly_initiated_fmol": [
+      "poly_chain"
+     ],
+     "poly_produced_fmol": [
+      "species",
+      "cell_slot"
+     ],
+     "poly_release_heat_pJ": [
+      "poly_release",
+      "poly_class",
+      "poly_fate"
+     ],
+     "poly_released_fmol": [
+      "poly_chain"
+     ],
+     "poly_stage_exits_fmol": [
+      "poly_chain"
+     ],
+     "poly_standard_energy_pJ": [
+      "cell_slot"
+     ],
+     "poly_transfer_heat_pJ": [
+      "poly_transfer"
+     ],
+     "poly_transferred_fmol": [
+      "poly_transfer"
+     ]
+    },
+    "piece": "operator",
+    "provenance": null,
+    "provides": [],
+    "reads": [
+     {
+      "mode": "fixed",
+      "name": "volume",
+      "scoped": false,
+      "stage": "split"
+     },
+     {
+      "mode": "fixed",
+      "name": "extracellular_volume",
+      "scoped": false,
+      "stage": "split"
+     },
+     {
+      "mode": "fixed",
+      "name": "active",
+      "scoped": false,
+      "stage": "split"
+     },
+     {
+      "mode": "fixed",
+      "name": "outside_active",
+      "scoped": false,
+      "stage": "split"
+     },
+     {
+      "mode": "fixed",
+      "name": "membrane_active",
+      "scoped": false,
+      "stage": "split"
+     }
+    ],
+    "requires": {
+     "kinds": [],
+     "laws": []
+    },
+    "signs": {},
+    "status": null,
+    "status_source": null,
+    "test": null,
+    "units": {
+     "active": "1",
+     "amount_increment": null,
+     "extracellular_volume": "pL",
+     "membrane_active": "1",
+     "outside_active": "1",
+     "poly_chain_heat_pJ": "pJ",
+     "poly_complexes_fmol": "fmol",
+     "poly_consumed_fmol": "fmol",
+     "poly_degradation_heat_pJ": "pJ",
+     "poly_degraded_fmol": "fmol",
+     "poly_dissipated_energy_pJ": "pJ",
+     "poly_energy_magnitude_pJ": "pJ",
+     "poly_free_machines_fmol": "fmol",
+     "poly_hold_fmol": "fmol",
+     "poly_hold_released_fmol": "fmol",
+     "poly_initiated_fmol": "fmol",
+     "poly_produced_fmol": "fmol",
+     "poly_release_heat_pJ": "pJ",
+     "poly_released_fmol": "fmol",
+     "poly_stage_exits_fmol": "fmol",
+     "poly_standard_energy_pJ": "pJ",
+     "poly_transfer_heat_pJ": "pJ",
+     "poly_transferred_fmol": "fmol",
+     "polymerisation_degradation_rate": null,
+     "polymerisation_initiation_rate": null,
+     "polymerisation_release_class": null,
+     "polymerisation_release_fraction": null,
+     "polymerisation_transfer_capacity": null,
+     "volume": "pL"
+    },
+    "version": 1,
+    "writes": {
+     "amount_increment": [
+      "poly_produced_fmol",
+      "poly_consumed_fmol"
+     ]
+    }
    }
   },
   {
@@ -8332,6 +12486,13 @@
       }
      },
      {
+      "declared_id": "junction_series_gates@1",
+      "id": "cells.junction_series_gates@1",
+      "piece": "law",
+      "role": "junction law",
+      "slot": null
+     },
+     {
       "declared_id": "junction_voltage_relaxation@1",
       "id": "cells.junction_voltage_relaxation@1",
       "piece": "law",
@@ -8538,6 +12699,13 @@
       "slot": null
      },
      {
+      "declared_id": "scheduled_compartment_wash@1",
+      "id": "cells.scheduled_compartment_wash@1",
+      "piece": "operator",
+      "role": "operator",
+      "slot": null
+     },
+     {
       "declared_id": "scheduled_membrane_insertion@1",
       "id": "cells.scheduled_membrane_insertion@1",
       "piece": "operator",
@@ -8580,6 +12748,13 @@
       "slot": null
      },
      {
+      "declared_id": "site_occupant_replacement@1",
+      "id": "cells.site_occupant_replacement@1",
+      "piece": "operator",
+      "role": "operator",
+      "slot": null
+     },
+     {
       "declared_id": "species_regulated_availability@1",
       "id": "cells.species_regulated_availability@1",
       "piece": "operator",
@@ -8589,6 +12764,13 @@
      {
       "declared_id": "species_regulated_availability@2",
       "id": "cells.species_regulated_availability@2",
+      "piece": "operator",
+      "role": "operator",
+      "slot": null
+     },
+     {
+      "declared_id": "templated_polymerisation@1",
+      "id": "cells.templated_polymerisation@1",
       "piece": "operator",
       "role": "operator",
       "slot": null
@@ -8737,6 +12919,13 @@
       "slot": null
      },
      {
+      "declared_id": "cells.gard_catalysis_pair_consistent@2",
+      "id": "cells.gard_catalysis_pair_consistent@2",
+      "piece": "law",
+      "role": "law",
+      "slot": null
+     },
+     {
       "declared_id": "cells.gard_catalysis_single_event@1",
       "id": "cells.gard_catalysis_single_event@1",
       "piece": "law",
@@ -8781,6 +12970,20 @@
     "next_code": null,
     "rows": [
      {
+      "declared_id": "cells.bilayer_geometry@1",
+      "id": "cells.bilayer_geometry@1",
+      "piece": "law",
+      "role": "law",
+      "slot": null
+     },
+     {
+      "declared_id": "cells.gate_factor@1",
+      "id": "cells.gate_factor@1",
+      "piece": "law",
+      "role": "law",
+      "slot": null
+     },
+     {
       "declared_id": "cells.ideal_mixing@1",
       "id": "cells.ideal_mixing@1",
       "piece": "law",
@@ -8788,8 +12991,50 @@
       "slot": null
      },
      {
+      "declared_id": "cells.membrane_permeation@1",
+      "id": "cells.membrane_permeation@1",
+      "piece": "law",
+      "role": "law",
+      "slot": null
+     },
+     {
+      "declared_id": "cells.osmotic_lumen@1",
+      "id": "cells.osmotic_lumen@1",
+      "piece": "law",
+      "role": "law",
+      "slot": null
+     },
+     {
+      "declared_id": "cells.phase_exchange@1",
+      "id": "cells.phase_exchange@1",
+      "piece": "law",
+      "role": "law",
+      "slot": null
+     },
+     {
+      "declared_id": "cells.prescribed_shell@1",
+      "id": "cells.prescribed_shell@1",
+      "piece": "law",
+      "role": "law",
+      "slot": null
+     },
+     {
       "declared_id": "cells.regular_mixing@1",
       "id": "cells.regular_mixing@1",
+      "piece": "law",
+      "role": "law",
+      "slot": null
+     },
+     {
+      "declared_id": "cells.shared_pool@1",
+      "id": "cells.shared_pool@1",
+      "piece": "law",
+      "role": "law",
+      "slot": null
+     },
+     {
+      "declared_id": "cells.shell_permeation@1",
+      "id": "cells.shell_permeation@1",
       "piece": "law",
       "role": "law",
       "slot": null
@@ -8806,6 +13051,34 @@
       "id": "cells.transition_state_factor@1",
       "piece": "law",
       "role": "law",
+      "slot": null
+     },
+     {
+      "declared_id": "cells.pool_replacement@1",
+      "id": "cells.pool_replacement@1",
+      "piece": "operator",
+      "role": "operator",
+      "slot": null
+     },
+     {
+      "declared_id": "cells.pool_withdrawal@1",
+      "id": "cells.pool_withdrawal@1",
+      "piece": "operator",
+      "role": "operator",
+      "slot": null
+     },
+     {
+      "declared_id": "cells.serial_transfer@1",
+      "id": "cells.serial_transfer@1",
+      "piece": "operator",
+      "role": "operator",
+      "slot": null
+     },
+     {
+      "declared_id": "cells.shear_fission@1",
+      "id": "cells.shear_fission@1",
+      "piece": "operator",
+      "role": "operator",
       "slot": null
      }
     ],
@@ -8875,6 +13148,14 @@
  ],
  "not_extracted": [
   {
+   "interface": "cells.assembly_geometry@1",
+   "key": "energy"
+  },
+  {
+   "interface": "cells.assembly_operator@1",
+   "key": "energy"
+  },
+  {
    "interface": "cells.binding_law@1",
    "key": "energy"
   },
@@ -8925,6 +13206,10 @@
   {
    "interface": "cells.operator@1",
    "key": "test"
+  },
+  {
+   "interface": "cells.population_structure@1",
+   "key": "energy"
   },
   {
    "interface": "cells.rate_factor_law@1",
@@ -9581,41 +13866,44 @@
   }
  ],
  "counts": {
-  "pieces": 61,
+  "pieces": 87,
   "by_piece": {
    "kind": 5,
-   "law": 32,
-   "operator": 24
+   "law": 51,
+   "operator": 31
   },
   "by_interface": {
+   "cells.assembly_geometry@1": 2,
+   "cells.assembly_operator@1": 4,
    "cells.binding_law@1": 1,
    "cells.channel_law@1": 11,
-   "cells.cycle_law@1": 6,
+   "cells.cycle_law@1": 15,
    "cells.exchange_law@1": 1,
-   "cells.free_energy_term@1": 2,
-   "cells.junction_law@1": 1,
+   "cells.free_energy_term@1": 3,
+   "cells.junction_law@1": 2,
    "cells.kind@1": 5,
    "cells.lineage_operator@1": 2,
-   "cells.operator@1": 22,
-   "cells.rate_factor_law@1": 2,
-   "cells.rate_factor_law@2": 1,
-   "cells.reaction_law@1": 1,
+   "cells.operator@1": 25,
+   "cells.population_structure@1": 1,
+   "cells.rate_factor_law@1": 3,
+   "cells.rate_factor_law@2": 2,
+   "cells.reaction_law@1": 4,
    "cells.route_law@1": 6
   },
   "by_family": {
    "channel": 11,
-   "cycle": 6,
+   "cycle": 15,
    "route": 6,
-   "junction": 1,
+   "junction": 2,
    "binding": 1,
-   "law": 7,
+   "law": 16,
    "kind": 5,
-   "split": 11,
+   "split": 12,
    "event-split": 6,
-   "event": 2,
+   "event": 4,
    "process": 1,
    "no-part": 2,
-   "operator": 2,
+   "operator": 6,
    "design-channel": 8,
    "design-cycle": 2,
    "design-junction": 1,
@@ -9630,6 +13918,6 @@
   },
   "designed": 13,
   "legacy": 127,
-  "not_extracted": 17
+  "not_extracted": 20
  }
 }

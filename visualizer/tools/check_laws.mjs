@@ -51,8 +51,9 @@ import { unitLaws } from "../src/lenses/laws_card.js";
 
 const outDir = process.argv[2] ? path.resolve(process.argv[2]) : null;
 if (outDir) await mkdir(outDir, { recursive: true });
-const CASE = process.env.CASE || "main";
-const PHONE = CASE === "phone";
+const CASE = process.env.CASE || "atlas";
+const ATLAS = CASE === "atlas" || CASE === "atlas-phone";
+const PHONE = CASE === "phone" || CASE === "atlas-phone";
 const WIDTH = Number(process.env.WIDTH || (PHONE ? 360 : 1440)), HEIGHT = Number(process.env.HEIGHT || (PHONE ? 780 : 900));
 const NAME = process.env.NAME || `laws-${CASE}`;
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -184,7 +185,7 @@ try {
     note(`wrote ${path.join(outDir, `${name}.png`)}`);
   };
   const open = async (query) => {
-    await page("Page.navigate", { url: `${base}?${query}` });
+    await page("Page.navigate", { url: `${process.env.CHECK_BASE || base}?${ATLAS ? "" : "lawLayout=shelves&"}${query}` });
     const up = await until(CASE === "text" ? `Boolean(${V}?.model)` : `Boolean(${V}?.current)`, 240);
     await sleep(1500);
     return up;
@@ -202,7 +203,109 @@ try {
   const barAt = (id) =>
     evaluate(`(() => { const v = ${V}, p = v.current.barPoint(${JSON.stringify(id)}).clone(); const q = v.stage.project(p, p.clone()); const r = v.canvas.getBoundingClientRect(); return { x: r.left + q.x, y: r.top + q.y }; })()`);
 
-  if (CASE === "main") {
+  if (ATLAS) {
+    await open("lens=laws&still=1");
+    const root = V + ".shadowRoot";
+    const choose = (name, value) =>
+      evaluate(
+        `(() => { const el=${root}.querySelector('[data-atlas-control="${name}"]'); el.value=${JSON.stringify(value)}; el.dispatchEvent(new Event("change",{bubbles:true})); })()`,
+      );
+    const tap = (selector) => evaluate(`${root}.querySelector(${JSON.stringify(selector)}).click()`);
+    const phoneMenu = async () => {
+      if (PHONE && !(await evaluate(V + ".state.viewOpen"))) await tap(".view-toggle");
+    };
+    check(
+      "the Laws tab opens the family atlas",
+      await evaluate(L + '.mode==="atlas" && ' + L + ".drawing.anchors.size > " + L + ".library.pieces.length"),
+    );
+    await shot(NAME + "-map");
+    const bridge = await evaluate(
+      `(()=>{const v=${V},l=v.current,r=v.canvas.getBoundingClientRect();for(const b of l.graph.bundles.values()){const p=l.drawing.anchors.get(b.id);if(!p)continue;const q=v.stage.project(p,p.clone()),x=q.x+r.left,y=q.y+r.top;if(v.shadowRoot.elementFromPoint(x,y)===v.canvas && v.stage.pick(x,y,l.pickRoots)?.id===b.id)return {x,y,id:b.id};}return null;})()`,
+    );
+    check("a bridge can be picked in the rendered viewport", Boolean(bridge));
+    if (bridge) {
+      await click(bridge.x, bridge.y);
+      check(
+        "a pointer press opens the bridge membership groups",
+        await evaluate(`${V}.state.selected===${JSON.stringify(bridge.id)} && ${L}.describe(${JSON.stringify(bridge.id)}).opens.some(g=>g.count>0)`),
+      );
+      await tap(".exp-back");
+    }
+    await phoneMenu();
+    await choose("model", "");
+    check(
+      "the overview counts every nonempty model–family bridge",
+      await evaluate(root + '.querySelector(".laws-tally").textContent.startsWith(' + L + '.graph.bundles.size+" bridges")'),
+    );
+    await choose("origin", "design");
+    check(
+      "the design-note filter has its own URL and shows only design entries",
+      await evaluate(`new URL(location.href).searchParams.get("lawWhere")==="design" && ${L}.filtered().length===${L}.library.counts().where.design && ${L}.filtered().every(p=>!p.declared)`),
+    );
+    await choose("origin", "all");
+    await tap('[data-atlas-action="example"]');
+    check(
+      "the example opens the declared piece with its own URL",
+      await evaluate(L + '.mode==="wiring" && new URL(location.href).searchParams.get("trace")===' + L + ".trace"),
+    );
+    await phoneMenu();
+    await choose("relation", "writes");
+    check(
+      "the write filter only draws declared targets",
+      await evaluate("Object.values(" + L + '.traceLayers()).flat().every(e=>e.verb==="writes") && ' + L + ".traceLayers().fields.length>0"),
+    );
+    await choose("relation", "main");
+    if (PHONE && (await evaluate(V + ".state.viewOpen"))) await tap(".view-toggle");
+    await shot(NAME + "-wiring");
+    await phoneMenu();
+    await choose("neighbour", "laws:field/site_occupant_replacement%401/writes/site_bound_increment_fmol");
+    check(
+      "the written field points to its receiving operator",
+      await evaluate(
+        L + ".describe(" + L + '.selected)?.opens.some(g=>g.title.includes("Engine map")&&g.items.some(e=>e.id==="laws:site_occupancy@1"))',
+      ),
+    );
+    await tap(".exp-back");
+    await phoneMenu();
+    await choose("model", "resolved_pump_water@2");
+    await choose("compare", "resolved_pump_replacement@1");
+    check(
+      "comparison displays each of the two models’ pieces once",
+      await evaluate(
+        `(()=>{const l=${L}, g=l.graph.compare(l.primary,l.other);return l.mode==="compare" && g.flat().length===new Set(g.flat().map(p=>p.id)).size && [...${root}.querySelectorAll(".laws-sets strong")].every((n,i)=>+n.textContent===g[i].length)})()`,
+      ),
+    );
+    if (PHONE && (await evaluate(V + ".state.viewOpen"))) await tap(".view-toggle");
+    await shot(NAME + "-compare");
+    const url = await evaluate("location.search.slice(1)");
+    await open(url);
+    check(
+      "reloading the comparison preserves the pair",
+      await evaluate(L + '.mode==="compare" && ' + L + '.primary==="resolved_pump_water@2" && ' + L + '.other==="resolved_pump_replacement@1"'),
+    );
+    await phoneMenu();
+    await choose("piece", "scheduled_cell_replacement@1");
+    await phoneMenu();
+    await tap('[data-atlas-action="trace"]');
+    await tap(".exp-back");
+    check(
+      "returning to the pair restores the inspected piece",
+      await evaluate(L + '.mode==="compare" && ' + L + '.selected==="laws:scheduled_cell_replacement@1"'),
+    );
+    await open("lens=cell&select=cap.channels&still=1");
+    const mapped = await evaluate(
+      `[...${root}.querySelectorAll(".panel-door button")].find(b=>b.textContent.includes("mapped")&&b.textContent.includes("Laws atlas"))?.textContent`,
+    );
+    check("the cell view offers its inventory mapping", Boolean(mapped));
+    if (mapped)
+      await evaluate(
+        `[...${root}.querySelectorAll(".panel-door button")].find(b=>b.textContent.includes("mapped")&&b.textContent.includes("Laws atlas")).click()`,
+      );
+    check(
+      "the cell opens exactly its mapped pieces",
+      await until(L + '.anatomy==="cap.channels" && ' + L + ".filtered().length===" + L + '.cellMap.get("cap.channels").size'),
+    );
+  } else if (CASE === "main") {
     // ---------------------------------------------------------- the fifth view, with its room clear of the cards
     check("the page opens on lens=laws", await open("lens=laws"));
     let s = await state();
@@ -397,9 +500,9 @@ try {
     await open("select=unit.U09");
     let unit = await state();
     const unitDoors = await evaluate(`[...${V}.shadowRoot.querySelectorAll("cells-panel .panel-door")].map((door) => ({ text: door.textContent, button: Boolean(door.querySelector("button")) }))`);
-    check("a unit's panel has a door onto its declared law, and says of each other law that no active model declares it, with no door", unitDoors.some((door) => door.button && /^Open kv1p5_mh@1 on the Laws library's wall/.test(door.text)) && unitDoors.filter((door) => !door.button).length === 1 && /^No active model declares these laws of this unit: kv1p5_ml_dynamic_m@1, kv1p5s_ml_slow_dynamic_m@1\./.test(unitDoors.find((door) => !door.button).text), JSON.stringify([unit.lens, unitDoors]));
+    check("a unit's panel has a door onto its declared law, and says of each other law that no active model declares it, with no door", unitDoors.some((door) => door.button && /^Explore kv1p5_mh@1 in the Laws atlas/.test(door.text)) && unitDoors.filter((door) => !door.button).length === 1 && /^No active model declares these laws of this unit: kv1p5_ml_dynamic_m@1, kv1p5s_ml_slow_dynamic_m@1\./.test(unitDoors.find((door) => !door.button).text), JSON.stringify([unit.lens, unitDoors]));
     await shot(`${NAME}-unit-doors`);
-    const unitDoor = await placeOf(`[...root.querySelectorAll("cells-panel .panel-door button")].find((button) => /^Open kv1p5_mh@1 on the Laws library's wall/.test(button.textContent))`);
+    const unitDoor = await placeOf(`[...root.querySelectorAll("cells-panel .panel-door button")].find((button) => /^Explore kv1p5_mh@1 in the Laws atlas/.test(button.textContent))`);
     if (unitDoor) await click(unitDoor.x, unitDoor.y, 2200);
     unit = await state();
     check("the unit's door opens the library on that law, chosen", unit.lens === "laws" && (await evaluate(`${L}.selected`)) === "laws:kv1p5_mh@1" && /kv1p5_mh@1/.test(unit.panel), JSON.stringify([unit.lens, unit.selected]));
@@ -420,7 +523,7 @@ try {
       const id = PORT_DECLARED.units[0];
       await open(`select=unit.${id}`);
       const doors = await evaluate(`[...${V}.shadowRoot.querySelectorAll("cells-panel .panel-door")].map((door) => ({ text: door.textContent, button: Boolean(door.querySelector("button")) }))`);
-      check(`unit.${id}: ${PORT_DECLARED.law}, which the table marks "${PORT_DECLARED.mark}" and the manifest declares, opens its door, and the mark's words are not said`, doors.some((door) => door.button && new RegExp(`^Open ${literally(PORT_DECLARED.law)} on the Laws library's wall`).test(door.text.trim())) && !doors.some((door) => !door.button && door.text.includes(PORT_DECLARED.law)), JSON.stringify(doors));
+      check(`unit.${id}: ${PORT_DECLARED.law}, which the table marks "${PORT_DECLARED.mark}" and the manifest declares, opens its door, and the mark's words are not said`, doors.some((door) => door.button && new RegExp(`^Explore ${literally(PORT_DECLARED.law)} in the Laws atlas`).test(door.text.trim())) && !doors.some((door) => !door.button && door.text.includes(PORT_DECLARED.law)), JSON.stringify(doors));
       await shot(`${NAME}-unit-${id}-declared`);
     }
     // What the view leaves behind: the Cell view opened after it is as the Cell view opened alone.

@@ -715,6 +715,7 @@
     { "entry": "B1′, the operator rate route", "why": "Development, not judged: the landing of the coupling operator's version 2, with its gates." }
   ],
   "left_out": [
+    { "part": "exp.transcription_sites", "why": "The Engine entry describes a measurement reader. The packaged experiments contain no transcription-site replay." },
     { "part": "exp.excitable_sheet", "why": "The lead's inventory of 18 November 2026 gives it no run records: it stays on the Engine map. Asked of the lead." },
     { "part": "exp.syn3a", "why": "The map calls it Designed; its capability probes ran the engine on a vesicle. Asked of the lead." },
     { "part": "exp.reuse_cases", "why": "Designed: its one case that holds today is FR-6's first acceptance, on FR-6's card." },
