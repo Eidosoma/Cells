@@ -7,6 +7,7 @@ import CellsProofs.Chemistry.BindingFeasibility
 import CellsProofs.Chemistry.BindingResponse
 import CellsProofs.Chemistry.BindingVertices
 import CellsProofs.Chemistry.Enzyme
+import CellsProofs.Chemistry.GardCache
 import CellsProofs.Chemistry.GardCatalysis
 import CellsProofs.Chemistry.LineageFission
 import CellsProofs.Chemistry.PoolWithdrawal
@@ -15,6 +16,7 @@ import CellsProofs.Chemistry.MatchedBuffer
 import CellsProofs.Chemistry.MitochondrialCycles
 import CellsProofs.Chemistry.MitochondrialReactions
 import CellsProofs.Chemistry.MitochondrialStall
+import CellsProofs.Chemistry.Polymerisation
 import CellsProofs.Chemistry.PopulationUnits
 import CellsProofs.Chemistry.PrescribedShell
 import CellsProofs.Chemistry.ReservoirExchange

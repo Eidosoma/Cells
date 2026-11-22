@@ -1,5 +1,36 @@
 # Cells proof comparisons
 
+<a id="gard-v2-cache"></a>
+
+## 22 November 2026 · GARD v2 preserves the smaller catalyst
+
+For `cells.gard_catalysis_pair_consistent@2`, measure each row sum in units of its lowest set bit. Lean proves that the parser’s 106-bit precision bound puts every legal composition on a grid where the two compensation terms add exactly. The proof covers a signed update, successive updates, founder/daughter folds and recovery of the reverse numerator. It uses the published error-free TwoSum contract and nearest rounding. A finite exponent range and preservation of low words are additional device requirements. The proof allows either choice at a tie and constructs a model satisfying its arithmetic assumptions. [Lean proof](CellsProofs/Chemistry/GardCache.lean) · [Engine arithmetic](https://github.com/Eidosoma/Cells/blob/6b28ec55368011de79dce85e6172b5844b77a287/src/cells/models/assembly_lineages/gard.py#L291-L357) · [TwoSum, Theorem 3.4](https://doi.org/10.1137/030601818)
+
+On the original stress case (diagonal 2⁵⁴, other catalyst 1), the compiled host returned join and reverse factors **2 and 2** and exactly **0 kT** of heat. Version 1’s recorded false refusal remains in its own claim. Across 22 signed updates, each cache matched a fresh fold byte for byte and its two words summed to the rational reference. All adjacent factor pairs matched bit for bit, including the empty-parent boundary. A 106-bit row was admitted and a 107-bit row refused. The 2²⁰ count case exercised the compiled cache directly. At the larger counts a multiplier differed by one float64 spacing from a scalar evaluation that rounds the division separately. [Compiled comparison](checks/gard_cache.py) · [Version 1 record](claims/gard-pair-heat.md)
+
+<a id="gard-v2-range"></a>
+
+### Two exponent limits and an explicit-capacity refusal
+
+| Input | Expected | Compiled Cells result |
+| --- | --- | --- |
+| Two molecules with coefficient 2¹⁰²², capacity 8 | Finite cache and positive event rate | One event, with a finite cache |
+| Same composition with coefficient 2¹⁰²³ | A valid event with finite rates or a domain refusal | Parser admitted a four-bit row. Both cache words became NaN. The run returned `stalled`, zero events and a passing empty heat ledger |
+| Single coefficient 2⁻¹⁰⁷⁴ and one molecule | Preserve one tick or refuse the value | NumPy preserved it and the compiled CPU cache returned zero. Both factors round to one at this scale |
+| Two types and an explicit molecule capacity equal to fission size | 4,096 and 4,097 are both within the declared 2²⁰ limit | 4,096 parsed. At 4,097 the default type-bucket lookup raised a configuration error despite the explicit capacity |
+
+The independent rational propensity sum in the overflow case rounds to **25,165,824** in the model’s nominal inverse-time units. The half-sized control gives 12,582,912. The row-bit guard measures the width of the significand. This example also needs a bound on its physical exponent. The capacity finding arises earlier, when Python evaluates the default argument to the execution dictionary lookup. Run `checks/gard_cache.py --range` for all three findings. A nonzero exit preserves them in the numerical-failures table. [Precision guard](https://github.com/Eidosoma/Cells/blob/6b28ec55368011de79dce85e6172b5844b77a287/src/cells/models/assembly_lineages/gard.py#L359-L396) · [Execution parser](https://github.com/Eidosoma/Cells/blob/6b28ec55368011de79dce85e6172b5844b77a287/src/cells/models/assembly_lineages/spec.py#L358-L371) · [Reproducer](checks/gard_cache.py)
+
+<a id="polymerisation-balances"></a>
+
+## 22 November 2026 · Free machines, unfinished chains and released products
+
+One machine moves into the first stage at initiation and returns to its pool on the last exit. For any finite set of chains sharing a pool, Lean proves that internal stage transfers cancel. It also proves that the residues added at stage exits equal those still in unfinished chains plus those in released products, relative to the starting ledger. Stage j, counted from zero, carries j times the residues per stage. Both identities hold for arbitrary stage extents, including the SSPRK half-step used by the operator. [Proofs](CellsProofs/Chemistry/Polymerisation.lean) · [Engine update](https://github.com/Eidosoma/Cells/blob/6b28ec55368011de79dce85e6172b5844b77a287/src/cells/operators/templated_polymerisation.py#L862-L889) · [Native balances](https://github.com/Eidosoma/Cells/blob/6b28ec55368011de79dce85e6172b5844b77a287/src/cells/operators/templated_polymerisation.py#L1378-L1387)
+
+Three 30 s CPU worlds on `resolved_pump_composite@1` exercised the two-route A1 model, competing chains and a one-stage chain beside an eight-stage chain. Across 183 saved rows the largest machine residual was **5.80 × 10⁻¹⁹ fmol** and the largest residue residual **3.39 × 10⁻²⁰ fmol of residues**. In the two-gene control, leaving one chain out of the shared machine pool produced a 4.88 × 10⁻⁸ fmol error. The one-stage chain retained zero residues in transit and released 6.55 × 10⁻⁵ fmol of residues. Source and run records for both new comparisons are in `lean-gard-poly-balances-20261122`. [Compiled comparisons](checks/polymerisation_balances.py)
+
+Li et al. measured 31 ± 3%, 51 ± 3% and 65 ± 4% of ribosomes bound to mRNA at the same measured growth rate under carbon, nitrogen and phosphorus limitation respectively (mean ± SEM, three biological replicates). Bound and unbound shares have a common denominator. These data constrain how engagement changes with the preparation. Stanners separately measured label in nascent and completed proteins in hamster cells. The signals crossed at 34, 32, 40 and 32.5 s. A quantitative test of that time course would need the experimental tracer normalization. Neither dataset was used to fit these synthetic worlds. [Li et al., Fig. 1e and Table 1](https://doi.org/10.1038/s41564-018-0199-2) · [Stanners, Fig. 4 and Table II](https://doi.org/10.1016/S0006-3495(68)86487-2) · [Measurement records](checks/data/polymerisation_pool_measurements.json)
+
 <a id="fr33-label-energy"></a>
 
 ## 21 November 2026 · FR-33, heat booked when neutral labels mix
