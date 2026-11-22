@@ -397,3 +397,9 @@ run cannot have one, because the composite's field refresh needs a held bath in 
 
 **Open.** The lead is reviewing a fix that re-solves the stage offsets by current balance. Evidence:
 `/mnt/workspaces/Cells/junction-order-20261121/`.
+
+**Fixed (22 November 2026, b8e786d4; D273, D276).** Fix (A) landed: junctions crossing floating
+capacitor components now converge at second order under ARS(2,2,2) and N2. The second builder's
+independent study measured 2.00 to 2.02 for the junction gate, transfer and heat, against 1.07 to 1.26
+at the base. The interim limit stated above no longer applies. replacement_padded's junction gate moved
+by 2.6e-11 relative, with G1's baseline renewed in the same landing.
