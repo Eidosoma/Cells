@@ -326,7 +326,8 @@
   "/mnt/workspaces/Cells/core-pass-kinds-20261118/gate-b31fa020/tiers/measure/measured.json",
   "/mnt/workspaces/Cells/ol3-engine-20261119/measure-5a82e9b7/measured.json",
   "/mnt/workspaces/Cells/refs-stack-20261122/tiers-measured-ca4f02aa/measured.json",
-  "/mnt/workspaces/Cells/ol3-engine-20261119/tiers-2764f0dd/measured.json"
+  "/mnt/workspaces/Cells/ol3-engine-20261119/tiers-2764f0dd/measured.json",
+  "/mnt/workspaces/Cells/ol3-engine-20261119/tiers-gard-69d53f88/measured.json"
  ],
  "measured_provenance": [
   {
@@ -2765,6 +2766,13 @@
    "root": "/mnt/workspaces/Cells/ol3-engine-20261119/tree-2764f0dd",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-22T04:14:16+00:00"
+  },
+  {
+   "git_revision": "69d53f8893e343e633f49ef37b742ff336d3a1fa",
+   "dirty": false,
+   "root": "/mnt/workspaces/Cells/ol3-engine-20261119/tree-gard-69d53f88",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-22T11:06:44+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -3111,7 +3119,7 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_spec.py",
-    "seconds": 1.97,
+    "seconds": 2.02,
     "exit_code": 0,
     "counts": {
      "passed": 26
@@ -6496,7 +6504,7 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_kernel.py",
-    "seconds": 52.34,
+    "seconds": 50.75,
     "exit_code": 0,
     "counts": {
      "passed": 10
