@@ -22,10 +22,13 @@ run's bit for bit. It holds:
   clearance in a cell (turnover, exact) and a reaction source and sink at an outside node. The
   cell's cohort matches the analytic solution at rounding, at the window's two boundaries too
   (arrivals in the step that starts at its start join it; in the step that starts at its end they
-  do not), and a checkpoint resumes bit for bit through a snapshot;
+  do not), with its label reused for a second window, and a checkpoint resumes bit for bit
+  through a snapshot;
 - C, a second population with its own loss, unlabelled (check 3).
 
-Definitions refused, each naming the FR-42 stage that lifts it (parses only).
+Definitions refused, each naming the FR-42 stage that lifts it (parses only): in-step movers (a
+face, a membrane and a junction route, a transporter kind's role and finite fuel), exchange, a
+passive reaction, a bath schedule, D1's families, a second owner and malformed declarations.
 """
 
 import copy
@@ -184,7 +187,9 @@ def test_the_split_is_second_order_when_the_rates_vary():
 
 H = 1 / 64  # dt, exact in binary, so every time below is a grid point exactly.
 TS, TE, END = 16 * H, 32 * H, 64 * H  # S's window [0.25, 0.5) and the end, 1.0 s.
-OBSERVE = [0.0, TS, TS + H, TE, TE + H, END]
+TR = 48 * H  # The cohort's label reused from 0.75 s to the end: its older material survives.
+WINDOWS = ((TS, TE), (TR, END))
+OBSERVE = [0.0, TS, TS + H, TE, TE + H, TR, END]
 # The -N^2 reference in five independent pools: 2A -> B at k = 0.5 /(mM s) in the 1 pL cell, so
 # dN/dt = -N^2 in fmol and s, each A's per-molecule loss rate its concentration in mM per s:
 # (mM, labels, the cell's initial shares).
@@ -243,7 +248,7 @@ def labelled(raw):
     return with_labels(
         raw,
         [*pools, ("S", ["base", "cohort", "empty"], {"ecs_0": {"base": 0.25, "cohort": 0.75}})],
-        [("S", [(0.0, "base"), (TS, "cohort"), (TE, "base")])],
+        [("S", [(0.0, "base"), (TS, "cohort"), (TE, "base"), (TR, "cohort")])],
     )
 
 
@@ -257,9 +262,14 @@ def runs():
 def test_labels_leave_every_record_of_the_unlabelled_run(runs):
     """Every field, observation and diagnostic, bit for bit (FR-42's check 1 and check 3: C, the
     unlabelled population, keeps its own trajectory; so does each labelled one)."""
-    _, labelled_run, plain = runs
+    from cells.records import run_view
+    from cells.registry.models import get_model
+
+    spec, labelled_run, plain = runs
     same_physics(labelled_run, plain)
     assert np.all(np.asarray(labelled_run.observations.label_closure_relative) <= 64 * EPS)
+    # The run view takes the owner's two axes' sets and its label switches as events.
+    run_view.prepare(spec, layout=get_model(spec.model).initial_values(spec)[1])
 
 
 def test_minus_n_squared_keeps_the_shares_and_the_cohort_is_a_quarter(runs):
@@ -279,23 +289,32 @@ def test_minus_n_squared_keeps_the_shares_and_the_cohort_is_a_quarter(runs):
     assert abs(n[-1] * share[-1, 1, 1, 0] - 0.25) < 1e-6
 
 
+def arrived(t, rate, loss):
+    """What a constant arrival rate into each of WINDOWS (the arrivals of the steps that start in
+    it) leaves at t under a first-order loss: each window's own, carried to t."""
+    return sum(
+        (rate / loss)
+        * -math.expm1(-loss * min(max(t - a, 0.0), b - a))
+        * math.exp(-loss * max(t - b, 0.0))
+        for a, b in WINDOWS
+    )
+
+
 def cell_cohort(t):
-    """The window's production in the cell, cleared at K (the arrivals of the steps that start in
-    [TS, TE))."""
-    made = (P / K) * -math.expm1(-K * min(max(t - TS, 0.0), TE - TS))
-    return made * math.exp(-K * max(t - TE, 0.0))
+    """The windows' production in the cell, cleared at K."""
+    return arrived(t, P, K)
 
 
 def node_cohort(t):
-    """The node's initial 3/4 and the window's source, each lost at SINK."""
-    made = (SOURCE / SINK) * -math.expm1(-SINK * min(max(t - TS, 0.0), TE - TS))
-    return 0.75 * 0.5 * math.exp(-SINK * t) + made * math.exp(-SINK * max(t - TE, 0.0))
+    """The node's initial 3/4 and the windows' source, each lost at SINK."""
+    return 0.75 * 0.5 * math.exp(-SINK * t) + arrived(t, SOURCE, SINK)
 
 
 def test_a_window_follows_its_cohort_exactly_at_both_boundaries(runs):
-    """FR-42's check 2, with older material present: in the cell, where turnover's half-steps and
-    the update are both exact, at rounding of the analytic solution; at the node, at SSPRK(3,3)'s
-    accuracy."""
+    """FR-42's check 2, with older material present, and the label reused for a second window, so
+    its first window's survivors count with the second's arrivals: in the cell, where turnover's
+    half-steps and the update are both exact, at rounding of the analytic solution; at the node,
+    at SSPRK(3,3)'s accuracy."""
     spec, labelled_run, _ = runs
     s, j = list(spec.model.species_ids).index("S"), len(POOLS)
     obs = labelled_run.observations
@@ -310,6 +329,7 @@ def test_a_window_follows_its_cohort_exactly_at_both_boundaries(runs):
     assert cell[1] == 0.0  # At the window's start nothing has arrived yet.
     assert cell[2] == pytest.approx((P / K) * -math.expm1(-K * H), rel=1e-13)  # Its first step.
     assert cell[4] == pytest.approx(cell[3] * math.exp(-K * H), rel=1e-13)  # The end's step: none.
+    assert cell[5] == pytest.approx(cell[3] * math.exp(-K * (TR - TE)), rel=1e-13)  # Survivors.
     shares = np.asarray(obs.label_share)[:, j, :, 0]
     assert np.all(shares[:, 2:] == 0.0)  # The empty label and the padding.
     assert np.all(np.abs(shares.sum(axis=1) - 1) <= 64 * EPS)  # All of S's material.
@@ -350,7 +370,51 @@ def family(raw):
     return with_labels(raw, [("L", ["base"], {})])
 
 
+def mover(kind):
+    """S moved by a membrane or a junction route; a transporter kind's moved role Y, or its finite
+    fuel's ATP (tests/unit/test_transporter_kind.py's held world)."""
+    from cells.definitions import pump_composite_spec as cs
+    from cells.kinds import transporter
+    from tests.unit import test_transporter_kind as tk
+
+    if kind in ("role", "fuel"):
+        fuel = dict(tk.population()["fuel"], kind=transporter.FINITE)
+        raw = cs.frozen_definition(tk.held_world(tk.population(fuel=fuel)))
+        return with_labels(raw, [("Y" if kind == "role" else "ATP", ["base"], {})])
+    cells = (("cell_0", 1.0), ("cell_1", 1.0))
+    contacts = (("contact_0", "cell_0", "ecs_0"), ("contact_1", "cell_1", "ecs_0"))
+    raw = fx.world(
+        cells=cells,
+        contacts=contacts,
+        junctions=(("gj_0", "cell_0", "cell_1"),),
+        faces=(),
+        concentrations_mM={"cell_0": 1.0},
+        end=0.004,
+        dt=1e-3,
+    )
+    for entity in raw["model"]["membranes" if kind == "membrane" else "junctions"]:
+        if entity["id"] in ("contact_0", "gj_0"):
+            entity["permeability_m_per_s"]["S"] = 1e-12
+    return labelled_s(raw)
+
+
 REFUSED = {
+    "a membrane route moves it (stage 2)": (
+        lambda: mover("membrane"),
+        r"moved inside the inner step by membrane contact_0.*FR-42's stage 2",
+    ),
+    "a junction route moves it (stage 2)": (
+        lambda: mover("junction"),
+        r"moved inside the inner step by junction gj_0.*FR-42's stage 2",
+    ),
+    "a kind moves its role (stage 2)": (
+        lambda: mover("role"),
+        r"Y is moved inside the inner step by cells.transporter@1 .*FR-42's stage 2",
+    ),
+    "a kind moves its finite fuel (stage 2)": (
+        lambda: mover("fuel"),
+        r"ATP is moved inside the inner step by cells.transporter@1 .*FR-42's stage 2",
+    ),
     "a face moves it (stage 2)": (
         lambda: labelled_s(fx.world(end=0.004, dt=1e-3)),
         r"moved inside the inner step by face face_0.*FR-42's stage 2",

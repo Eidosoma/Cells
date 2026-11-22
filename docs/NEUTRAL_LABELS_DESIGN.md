@@ -240,7 +240,9 @@ survivors at T are the arrivals of its window's steps, each carried by exp(âˆ’âˆ
 
 **Refused in stage 1** (fail closed; each refusal names the stage that lifts it):
 - **Stage 2:** a labelled species moved inside the inner step, by a face, a route, a channel, a
-  pump, a kind or an in-step process (registry `moved_in_step`).
+  pump, a kind or an in-step process (registry `moved_in_step`). Rows refuse a face, a membrane
+  and a junction route, and a transporter kind's moved role and finite fuel. Today's pumps hold
+  their fuel as parameters, so no fuel row of theirs is moved.
 - **Stage 3:** exchange on a labelled species, and a passive reaction route on a labelled row.
   The reactions refuse the second themselves.
 - **No stage plans these yet:**
@@ -248,10 +250,24 @@ survivors at T are the arrivals of its window's steps, each carried by exp(âˆ’âˆ
   - events that write amounts;
   - closers, retirers, and providers of the amount references, such as a bath schedule.
 - **D1's families:** a world that declares them admits only turnover and declarations beside them
-  (D1's own refusal). Shares replace family rows.
+  (D1's own refusal), so the label owner never meets a family row and reads no family. Shares
+  replace family rows.
+- **The composition matrix** (docs/PUMP_COMPOSITE.md) marks the law-level refusals "d" and lists
+  the data-level ones.
 - **Not refused:** RK4 on the coupled path. It is vacuous, since a coupled RK4 composition already
   refuses every split-only part, so no reporter runs there.
 
 **What moves: nothing.** Worlds without the operator keep their programs, which crossrev and G1
 check in the gate. In labelled worlds every physical field, observation and diagnostic is the
 unlabelled run's, bit for bit, in each test row.
+- **FR-42's check 1 as rows:** five pools in one labelled run against one unlabelled run, not one
+  run per label count. The pools are independent, so each is its own initial state labelled its
+  own way.
+- **D1's and FR-33's examples, before and after:** all 422 history and observation arrays of their
+  five worlds are bit for bit main's, and so are their diagnostics.
+- **Templated polymerisation's reports (824da76b),** checked in a scratch merge only:
+  - every record is bit for bit the unlabelled run's;
+  - the shares sum to 1 within 1.1e-16;
+  - the closure is within 1e-16.
+- **The reactions' rule:** a species on both sides of one route counts its net, so a catalytic
+  copy is never relabelled. Stage 3's owners inherit that rule.
