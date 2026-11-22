@@ -1126,9 +1126,10 @@ reference package that states no licence; nothing of it is copied here).
   the product's standard potential (μ°_F = μ°_prod) and its moiety weights. They are rows: other
   mechanisms may read them, and §4.4's degradation acts on each with its own rate.
 - **One producer per fate row** (version 1; question d). A fate row is written by one chain only. A
-  second chain naming it is refused. Shared fate rows need either label families per producer
-  (COHORT_LABELS_DESIGN option D1) or the host-side cohort of §9.8, which apportions a shared pool
-  only under first-order, age-independent loss.
+  second chain naming it is refused. Shared fate rows would need producer labels on FR-42's shares
+  (D296: each chain a label source, its own schedule naming its producer's label; erratum D) or
+  the host-side cohort of §9.8, which apportions a shared pool only under first-order,
+  age-independent loss.
 - **The class axis and the label switch** (question e).
   - A declared class schedule ψ_ρ(t) ∈ {1, …, K_ρ}, piecewise constant on the clock's grid
     (D283), labels the molecules at one of two transitions, `label_at`:
@@ -1346,8 +1347,8 @@ tagged before R2's code and references):
 2. **No release energy** beyond the residues' standard term (question b). If a retention or binding
    free energy is declared later, it is a new term of §9.5.
 3. **No replacement semantics** for the hold or the fates (question c).
-4. **One producer per fate row** (question d). Shared rows need §9.1's label families or §9.8's
-   host-side route.
+4. **One producer per fate row** (question d). Shared rows would need producer labels on FR-42's
+   shares or §9.8's host-side route (erratum D).
 5. **Neither label transition is the default reading** of the requester's "release window"
    (question e). Both are declared, and the requester names the one meant.
 6. **No observation layer** here. Per-copy detection, roster denominators and two-colour statistics
@@ -1429,3 +1430,16 @@ the class rows (D288). Docs only, before the code that builds on it.*
 7. **A limit:** a labelled species carries at most the label owner's MAX_LABELS labels. So
    producer identity crossed with the window labels must fit within it.
 8. **Route 2 stands** (erratum B).
+
+### 9.15 Erratum D: producer labels on shares, not label families
+
+*22 November 2026, after D300 retired D1's own-potential label families. Docs only.*
+
+1. **§9.1 and §9.11 (item 4)** named D1's label families per producer as one way to share a fate
+   row between producers. D1's families are retired (D300): each family row carried its own
+   potential, so a label changed the physics (erratum B's departure, in another form).
+2. **Producer labels on FR-42's shares replace them** (D296). Each chain is a label source, and the
+   label owner's schedule may name a chain, so a producer's label (its cell, occupant generation
+   and chain, crossed with the window) marks its material without changing the physics.
+3. **One producer per fate row stays version 1's rule.** A second chain naming a fate row is still
+   refused; sharing one is a later extension, now on shares.
