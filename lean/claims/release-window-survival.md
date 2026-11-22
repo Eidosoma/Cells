@@ -36,7 +36,7 @@ Uses [Neutral arrival-time cohorts share one physical loss rate](fr42-cohort-sha
 
 ## Numerical comparison
 
-**Checked.** Across three compiled RNA runs all 39 physical readouts matched bit for bit. The two marked intervals released 1.02212491320 × 10⁻¹⁰ fmol into the two fates. Reusing a label reproduced the sum of the two separately marked cohorts to within 1.30 × 10⁻²⁶ fmol. The counter reconstruction’s maximum relative error for the short-lived fate was 4.80 × 10⁻⁸ on a two-second output grid and 2.93 × 10⁻⁹ on a half-second grid. The independent point-release example retained 6 of 8 at chase. The separate FR-42 tissue comparison checked the same window semantics with production and clearance. The FR-38 comparison followed the same producer throughout. Replacement and restart remain a separate comparison.
+**Checked.** Across three compiled RNA runs all 39 physical readouts matched bit for bit. The two marked intervals released 1.02212491320 × 10⁻¹⁰ fmol into the two fates. Reusing a label reproduced the sum of the two separately marked cohorts to within 1.30 × 10⁻²⁶ fmol. The counter reconstruction’s maximum relative error for the short-lived fate was 4.80 × 10⁻⁸ on a two-second output grid and 2.93 × 10⁻⁹ on a half-second grid. The independent point-release example retained 6 of 8 at chase. The separate FR-42 tissue comparison checked the same window semantics with production and clearance. This window comparison followed the same producer throughout. A separate [producer replacement and restart comparison](producer-replacement-rna.md) follows both generations on the development engine.
 
 **Reference calculation**
 

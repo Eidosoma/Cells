@@ -14,7 +14,7 @@ Direct Lean claims cover [52 of 52 laws](COVERAGE.md#registered-laws) and [33 of
 | [Ion channels and junctions](COVERAGE.md#category-channels-and-junctions) | 15 of 15 | 15 of 15 | 15 checked | 14 |
 | [Pumps and cotransport](COVERAGE.md#category-pumps-and-cotransport) | 13 of 13 | 8 of 8 | 8 checked | 8 |
 | [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 3 of 3 | 16 of 16 | 15 checked · 1 failed | 12 |
-| [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 15 of 15 | 34 of 34 | 33 checked · 1 failed | 22 |
+| [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 15 of 15 | 35 of 35 | 33 checked · 1 failed · 1 open | 23 |
 | [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 1 of 1 | 26 of 26 | 26 checked | 19 |
 | [Cell physiology](COVERAGE.md#category-cell-physiology) | — | 3 of 3 | 3 checked | 3 |
 
@@ -26,11 +26,13 @@ Two numerical claims have recorded failures. The original reversible GARD v1 law
 
 FR-42’s neutral arrival-time labels now have a proof and a compiled comparison. With constant loss and arrivals, every positive final amount up to the available supply determines a unique loss exponent. The label amounts sum to the physical pool. Enabling labels preserved all 42 shared history fields and 76 shared observations bit for bit in the tested tissue. With quadratic loss, the new cohort held 0.24999987 fmol at one second, against the exact ¼ fmol. [Finite-step proof and checks](claims/fr42-survival-exponent.md) · [Quadratic cohort and blank](claims/fr42-cohort-shares.md)
 
-FR-38 marks RNA when it detaches from its template. Lean proves that every marked release is accounted for across the durable and short-lived fates. In three compiled runs, all 39 shared physical readouts matched bit for bit. Reusing one label in two windows reproduced the sum of the separately marked survivors within 1.30 × 10⁻²⁶ fmol. [Proof, compiled comparison and chase denominator](claims/release-window-survival.md)
+FR-38 marks RNA when it detaches from its template. Lean proves that every marked release is accounted for across the durable and short-lived fates. In three compiled runs, all 39 shared physical readouts matched bit for bit. Reusing one label in two windows reproduced the sum of the separately marked survivors within 1.30 × 10⁻²⁶ fmol. A second proof accounts for the departing producer’s RNA at replacement. On the development branch, all three resumed readouts matched the uninterrupted run. Public main still refuses this composition. [Release windows](claims/release-window-survival.md) · [Producer replacement and restart](claims/producer-replacement-rna.md)
 
 ## Biological evidence
 
 How long does released RNA survive? A purified bacterial assay measured the fraction detached, a human ACTB time course gave a 3.35 min chromatin-association half-time, and yeast ASH1 counts declined with a reported half-life of 6.1 ± 2.8 min in 21 cells. Each measurement answers a different part of the question. The Cells chase fraction still needs a cohort marked at detachment and counted again after its marking window closes. [Three measurements, denominators and sources](claims/release-window-survival.md#biological-evidence)
+
+After delivery, placental lactogen RNA remained detectable in maternal plasma in 4 of 13 women at two hours. A separate group had 0 of 8 detectable at 24 hours. These measurements give a biological target for extracellular retention once Cells can track RNA outside a replaced producer. [Measurements and limits](claims/producer-replacement-rna.md#biological-evidence)
 
 In two mock-treated mouse dendritic-cell replicates, heavy-labelled Actn1 accounted for 17.19% and 10.11% of the paired isotope signal at five hours. The two measurements show how to observe a cohort fraction. Amino-acid recycling limits how closely that fraction follows newly made protein. A common loss rate across cohorts remains open. [Measurements and source accessions](claims/fr42-cohort-shares.md#biological-evidence)
 
@@ -531,6 +533,8 @@ For a chain with a terminal RNA hold, check both machine-return policies as the 
 "$cells_python" -B checks/terminal_release.py
 "$cells_python" -B checks/terminal_release.py --lossless
 ```
+
+On a Cells revision with the replacement fixture, run `python -m validation.gene_regulation.replace_restart --out NEW_DIRECTORY`. In the same Cells environment, `python checks/producer_replacement.py NEW_DIRECTORY/replace_restart.json` checks the saved counters and labels. Keep the JSON beside the run’s `checkpoint/` directory. [Results and public admission status](PROGRESS.md#fr38-producer-replacement)
 
 For ideal and regular assembly mixing, one command checks the 592 registered probe states under both count measures and rebooks four compiled trajectories. It compares the activity curves with Shaw’s 25 DOPC measurements and Parker’s independent crystal-onset endpoint. [Driver](checks/assembly_mixing.py) · [Fit, assumptions and results](PROGRESS.md#19-november-2026--ideal-and-regular-assembly-mixing)
 

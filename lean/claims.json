@@ -22,6 +22,41 @@
     "cells.shared_pool@1": "molecular-assembly"
   },
   "comparisons": {
+    "fr38-producer-checkpoint": {
+      "kind": "reference",
+      "models": [],
+      "laws": [],
+      "record_revision": "36f778812782bc352a9fe3666c579b85bc87ca28",
+      "sources": {
+        "Per-producer counters and replacement balance": "docs/TEMPLATED_POLYMERISATION_LAWS.md#L1483-L1515",
+        "Division of the event reports between the two owners": "docs/TEMPLATED_POLYMERISATION_LAWS.md#L1773-L1787",
+        "Cells writes the numerical state and clock to its checkpoint": "src/cells/records/io.py#L86",
+        "Reference copy-to-fmol conversion": "validation/gene_regulation/sheet_check.py#L96"
+      },
+      "record_inputs": {
+        "Exact per-producer balance and label partition": "lean/CellsProofs/Chemistry/ProducerReplacement.lean"
+      },
+      "driver": "lean/checks/producer_replacement.py",
+      "record": "lean/PROGRESS.md#fr38-producer-replacement"
+    },
+    "fr38-producer-public-admission": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [],
+      "engine_revision": "0a1c1b0dc8145c9c313c02a4ed57cfe5433b2efe",
+      "record_revision": "36f778812782bc352a9fe3666c579b85bc87ca28",
+      "sources": {
+        "Public guard on templated polymerisation with replacement": "src/cells/operators/templated_polymerisation.py#L969",
+        "Definition with a replacement and expected refusal": "tests/unit/test_templated_polymerisation.py#L181",
+        "RNA fixture": "validation/gene_regulation/worlds.py#L543",
+        "Replacement template and event fixture": "validation/tissue/secreted_species_fixtures.py"
+      },
+      "driver": "tests/unit/test_templated_polymerisation.py",
+      "record": "lean/PROGRESS.md#fr38-producer-replacement"
+    },
     "fr38-terminal-inventories": {
       "kind": "engine",
       "models": [
@@ -3587,7 +3622,7 @@
           "fr38-lossless-fate-export",
           "fr42-neutral-survival"
         ],
-        "result": "Across three compiled RNA runs all 39 physical readouts matched bit for bit. The two marked intervals released 1.02212491320 × 10⁻¹⁰ fmol into the two fates. Reusing a label reproduced the sum of the two separately marked cohorts to within 1.30 × 10⁻²⁶ fmol. The counter reconstruction’s maximum relative error for the short-lived fate was 4.80 × 10⁻⁸ on a two-second output grid and 2.93 × 10⁻⁹ on a half-second grid. The independent point-release example retained 6 of 8 at chase. The separate FR-42 tissue comparison checked the same window semantics with production and clearance. The FR-38 comparison followed the same producer throughout. Replacement and restart remain a separate comparison."
+        "result": "Across three compiled RNA runs all 39 physical readouts matched bit for bit. The two marked intervals released 1.02212491320 × 10⁻¹⁰ fmol into the two fates. Reusing a label reproduced the sum of the two separately marked cohorts to within 1.30 × 10⁻²⁶ fmol. The counter reconstruction’s maximum relative error for the short-lived fate was 4.80 × 10⁻⁸ on a two-second output grid and 2.93 × 10⁻⁹ on a half-second grid. The independent point-release example retained 6 of 8 at chase. The separate FR-42 tissue comparison checked the same window semantics with production and clearance. This window comparison followed the same producer throughout. A separate [producer replacement and restart comparison](producer-replacement-rna.md) follows both generations on the development engine."
       },
       "biology": {
         "status": "open",
@@ -4201,6 +4236,72 @@
             "uncertainty": "Signals share a polysome optical-density normalization and include a correction for label attached outside nascent chains. The paper’s 23 ± 2 s transit time is a model-derived estimate.",
             "assessment": "The study resolves the two measured tracer pools. Relating its timing to the simulation requires matching the label pulse, precursor activity and sampling definitions.",
             "report": "lean/PROGRESS.md#polymerisation-balances"
+          }
+        ]
+      }
+    },
+    {
+      "id": "producer-replacement-rna",
+      "category": "molecular-assembly",
+      "title": "RNA removed at replacement is accounted for under its departing producer",
+      "statement": "For one cell, generation and chain, the initial hold and fate stocks plus completions equal the final hold and fate stocks plus degradation. At replacement each departing stock keeps its pre-event label, including any material supplied with the base label. The newcomer’s production counters measure increments since its own birth.",
+      "assumptions": [
+        "One producer supplies the two fate rows during its lifetime. Every detachment and degradation is included. The intracellular balance assumes no external mover.",
+        "Replacement removes the whole hold and the two fate rows. The holds and rows have disjoint owners. Each occupied pool’s label shares sum to one, and a newcomer has no share of previously labelled material.",
+        "A generation’s counter is the difference of the cumulative values at observation and birth. The live state holds the latest departed total. Reading each departure directly requires a saved observation before that record is overwritten."
+      ],
+      "uses": [
+        "release-window-survival",
+        "scheduled-cell-replacement"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.templated_polymerisation@1",
+          "cells.scheduled_cell_replacement@1",
+          "cells.neutral_arrival_labels@1"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.ProducerReplacement.at_birth": "lean/CellsProofs/Chemistry/ProducerReplacement.lean",
+          "CellsProofs.Chemistry.ProducerReplacement.generation_totals": "lean/CellsProofs/Chemistry/ProducerReplacement.lean",
+          "CellsProofs.Chemistry.ProducerReplacement.generation_balance": "lean/CellsProofs/Chemistry/ProducerReplacement.lean",
+          "CellsProofs.Chemistry.ProducerReplacement.disjoint_removals": "lean/CellsProofs/Chemistry/ProducerReplacement.lean",
+          "CellsProofs.Chemistry.ProducerReplacement.removal_total": "lean/CellsProofs/Chemistry/ProducerReplacement.lean",
+          "CellsProofs.Chemistry.ProducerReplacement.absent_at_removal": "lean/CellsProofs/Chemistry/ProducerReplacement.lean"
+        },
+        "sources": {
+          "Mathlib finite telescoping sum, specialized to generation counter increments": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Group/Finset/Basic.lean#L859-L864",
+          "Mathlib sum over a disjoint union, specialized to each label’s removal": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Group/Finset/Basic.lean#L113-L116",
+          "Mathlib multiplication distributed over a finite sum": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Ring/Finset.lean#L48-L52",
+          "Cells replacement and birth-counter definitions": "https://github.com/Eidosoma/Cells/blob/0a1c1b0dc8145c9c313c02a4ed57cfe5433b2efe/docs/TEMPLATED_POLYMERISATION_LAWS.md#L1483-L1515",
+          "Mathlib interchange of finite sums for summing removals across labels": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Group/Finset/Sigma.lean#L116-L119"
+        }
+      },
+      "numerical": {
+        "status": "open",
+        "comparisons": [
+          "fr38-producer-checkpoint",
+          "fr38-producer-public-admission"
+        ],
+        "result": "Public main at 0a1c1b0d correctly refused this composition. On development revision 4099775c, the native JSON recorded nine passing verdicts and the checkpoint restart reproduced the step histories bit for bit. The independent replay checked seven birth offsets and twelve departing amounts by label. The largest hold or fate balance residual was 1.02 × 10⁻²¹ fmol. Swapping the founder’s marked durable RNA into the newcomer’s label preserved total mass while misassigning 4.11 × 10⁻⁸ fmol. The repaired report writer preserved all 217 checkpoint arrays byte for byte relative to the first development replay. The positive comparison on public main and extracellular RNA retention remain open."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Source-specific RNA measured before and after a change of producer, distinguishing removal from degradation and any RNA remaining outside the cell.",
+        "unit": "RNA in fmol by producer in Cells. The plasma study reports copies per mL and the number of women with detectable RNA.",
+        "finding": "Placental lactogen RNA remained detectable in some maternal plasma samples after delivery. The time and source tissue are identifiable. The age of each molecule, its cell of origin and the contributions of release near delivery remain unresolved.",
+        "evidence": [
+          {
+            "dataset_id": "ng-2003-postpartum-hpl",
+            "manifest": "lean/checks/data/ng2003_postpartum_rna.json",
+            "citation": "Ng et al. (2003), PNAS 100, 4748–4753",
+            "doi": "10.1073/pnas.0637450100",
+            "locator": "Figure 4C for two hours and Figure 4A for the separate 24-hour group, with the accompanying Results.",
+            "context": "Paired maternal plasma samples at term, one before delivery and one afterwards. The two-hour group had a median 24,499 hPL mRNA copies/mL before delivery.",
+            "role": "descriptive",
+            "uncertainty": "The Wilson 95% interval for the two-hour detection fraction, calculated from the published counts, is 12.7–57.6%. In the four detectable pairs, concentrations declined by approximately 66–97% from their own baselines.",
+            "assessment": "At two hours 4 of 13 women had detectable hPL RNA. A separate group had 0 of 8 detectable at 24 hours. These observations constrain how long a source-specific signal can remain detectable in plasma. Connecting them to the engine requires an extracellular compartment with measured transfer and clearance.",
+            "report": "lean/PROGRESS.md#fr38-producer-replacement"
           }
         ]
       }
