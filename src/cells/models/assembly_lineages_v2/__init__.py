@@ -56,6 +56,11 @@ GATE_FACTOR = "cells.gate_factor@1"
 PORE_NUCLEATION = "cells.pore_nucleation@1"
 TENSION_HOLD = "cells.tension_hold@1"
 
+# OL6 (D304; docs/OL6_DETERMINISTIC_REPRESENTATION_DESIGN.md): the deterministic representation of the
+# same laws, chosen by a definition's `execution.representation` over the same world. A definition
+# that declares none runs as exact events, as before.
+RATE_EQUATIONS = "cells.rate_equations@1"
+
 # The family's interfaces, declared in its row of the static model table (registry/model_table.py).
 # @1's three stay @1's: a transfer is now a step (not cells.exchange_law@1's single-molecule
 # exchange), and a rate factor here is one factor per step pair on its common state (a new major of
@@ -67,6 +72,7 @@ GEOMETRY_INTERFACE = "cells.assembly_geometry@1"  # OL2: a geometry kind (§0.2c
 OPERATOR_INTERFACE = "cells.assembly_operator@1"  # OL3: an operator of the family's lineages.
 POPULATION_INTERFACE = "cells.population_structure@1"  # OL2 milestone 3 (§0.2c rule 15).
 HAZARD_INTERFACE = "cells.assembly_hazard@1"  # FR-31: a vesicle's hazard on a clock.
+REPRESENTATION_INTERFACE = "cells.assembly_representation@1"  # OL6: a level of detail (D304)
 
 MODE = "single_lineage"  # OL1: one assembly per world, no fission (OL3 adds division).
 POPULATION = "population"  # OL2 milestone 3: K slots sharing one pool (population.py).
