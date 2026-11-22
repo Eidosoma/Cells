@@ -9054,3 +9054,21 @@ its manifest sha256 is 5cc8f280….
   - A third judging would be a new registration after these results, and is the user's call.
 - A planted failure (the partition probe's eq_N5_k3 + 1) fails, as it must.
 
+## D286: The Lean lane's biological findings go into the high-priority list
+
+2026-11-22, about 13:32 UTC. The user relayed the Lean lane's findings with "from lean get into high
+priority". The evidence branch was merged unedited at 81916b5d.
+- **FR-31 goes from Low to High.** Karal and Yamazaki's tension series is the data it was waiting for.
+  The next step is a design note shared with FR-39, then a registered test of a declared rupture law,
+  fitted on the end tensions and predicting the middle. The middle values were read before registration,
+  and that is disclosed. OL6 remains a dependency.
+- **FR-39 (new, High):** a vesicle that survives transient pores, with partial cargo loss.
+- **FR-40 (new, High):** a single-ribosome translation timing benchmark. The 406 s observation is kept,
+  and the speed comparison stays unscored until reconciled.
+- **FR-41 (new, High):** vesicle shrinkage validation records. One agreement is unfitted (24.56% against
+  about 25%). Small-osmole retention stays open.
+- **Owners:**
+  - the FR-31 and FR-39 design note goes to the OL builder, at the desk;
+  - the FR-40 desk note goes to the gene regulation references' author, from the sheet's laws;
+  - FR-41's search waits for a free agent.
+

@@ -36,7 +36,7 @@ and a general feature, never one built for one study (D144).
 | [FR-28](#fr-28--binding-sites-owned-by-a-compartments-surface) | Binding sites owned by a compartment's own surface, such as a vessel wall, with no cell | Normal (D245) | **Landed** (72274a53, tag fr28-node-sites-landed-2026-11-22): a node owner `{"node": N}`, counts as for every population, checker-accepted on the merged head; the wash-timing docs clarified (6b28ec55) | None |
 | [FR-29](#fr-29--an-optional-proton-return-mode-for-atp-driven-proton-pumps) | An optional proton-return mode for ATP-driven proton pumps, tested on the yeast vacuolar pump | Normal, started first of D248's four (D248) | **Investigated, no build (D268).** The return mode failed its registered test, and no form tested fits Fig. 3's curves and the pH 3.1 bound together (D258) | Reopens on a difference current at vacuolar pH 3.1 to 3.5 under Fig. 3's protocol |
 | [FR-30](#fr-30--homotypic-cx43-junctions-with-two-relaxation-times) | Homotypic Cx43 junctions with two relaxation times | **High,** inherited from FR-16's connexin catalogue (D225, D249) | The series gates' functions **landed** (merge 12c18db1, tag `fr30-series-gates-landed-2026-11-21`; kind `threshold_relaxation` or `boltzmann_eyring`); not registered. No openly licensed homotypic Cx43 voltage series found | All four registered papers are undetermined (D276, section 13.2); a metadata-only search for a source with two-exponential step decays at four or more voltages is running (D280). Development-only until a benchmark passes |
-| [FR-31](#fr-31--vesicle-rupture-during-a-steady-tension-hold) | Vesicle rupture during a steady tension hold: an optional rupture event competing in time | Low (D230, D248); the note before OL9 registers | Requested; a design note first | Blocked on rupture rates against tension, and on OL6 |
+| [FR-31](#fr-31--vesicle-rupture-during-a-steady-tension-hold) | Vesicle rupture during a steady tension hold: an optional rupture event competing in time | **High** (user, 22 November 2026; D286; was Low, D230, D248) | **Data in hand:** Karal and Yamazaki's first-rupture rates at three tensions and two temperatures (the Lean lane) | A design note with FR-39, then a registered law test (fit the end tensions, predict the middle); OL6 remains a dependency |
 | [FR-32](#fr-32--a-dopc-swelling-validation-record-for-the-water-operator) | A DOPC swelling validation record for the water operator | Low (D248) | Requested | Folded into the next water-operator landing |
 | [FR-33](#fr-33--regional-labelled-protein-readouts-redistribution-against-degradation) | Regional labelled-protein readouts: inside a measured region, outside it and across the whole cell | High (D228, D248) | **Two-way tracing landed** through D1, label families in the species registry (3c30082e), checker-accepted: redistribution keeps the labelled total and degradation lowers it by exactly the clearance, to rounding; charged log-mean faces refused. Regional readouts and the one-way tracer (ce2a3d9c) with D265's fixes (d48d40dd) | **The requester's first test landed** (7d70d63b, checker-accepted): two named regions joined by one face, with transfer and local-loss control. The in-cell compartment path stays priced (1.5 to 2 days), if a later test needs it |
 | [FR-34](#fr-34--channel-population-readouts-count-availability-and-signed-current) | Channel population readouts: surface count, availability and signed current at a declared voltage, with units and sign convention | **High** (user, 20 November 2026; D251) | **Landed, composites included:** opt-in flux and current readouts with fixed-voltage evaluation (81a29442); a composite's own clamped_channel_flux and clamped_kind at the step's control and layout views (07022ddf, D265 finding 1, checker-confirmed) | None |
@@ -44,6 +44,9 @@ and a general feature, never one built for one study (D144).
 | [FR-36](#fr-36--age--and-region-selective-loss-within-a-species-row) | Age- and region-selective loss within a species row | FR-25's reviewer (21 November 2026) | **Deferred (D273).** Today's tools cover completion-time cohorts in one well-mixed pool with age-independent loss (cohort.py) and FR-33's regional export and one-way tracer | Reopens on a requester's readout needing age-dependent loss: D1 (label families) and D2 (an ageing operator), 2.5 to 4 days |
 | [FR-37](#fr-37--sampling-a-liquid-whose-dye-is-unevenly-distributed) | Sampling a liquid whose dye is unevenly distributed: a draw from chosen parts of an unevenly mixed liquid | **High** (user, 21 November 2026; D274) | **Shown with existing operators** (2bba6043, validation/sampling/uneven_draw.py): per-region wash events; the three cases match, with all 10 fmol accounted for; checker-accepted. Mixing is declared, not simulated (D246), and the sample is a host-side sum | Predicting the per-region split from the port, flow and timing needs an advection operator on faces, with the wash's face refusal lifted (about 3 to 5 days): built only if the requester asks |
 | [FR-38](#fr-38--rna-release-from-its-template-into-two-pools-with-different-lifetimes) | RNA release from its template into two pools with different lifetimes, with per-producer accounting, a release-window cohort and explicit measurement denominators | A user (22 November 2026) | **Building at full scope (D284).** A terminal hold in `templated_polymerisation@1`, split by p into two fate rows, with exact energy and no driven work; the cohort by label rows and by counters; a reader in `src/cells/assays` | The sheet amendment comes first. The finish is a registered comparison against code-blind references. Questions (c) replacement and (e) which cohort are with the requester |
+| [FR-39](#fr-39--a-vesicle-that-survives-transient-pores) | A vesicle that survives transient pores: repeated opening and resealing with partial cargo loss | **High** (user, via the Lean lane, 22 November 2026; D286) | **Requested.** Cells ends a lineage at terminal lysis | A design note shared with FR-31: tension-driven pore opening that either reseals after leaking or ruptures |
+| [FR-40](#fr-40--a-single-ribosome-translation-timing-benchmark) | A single-ribosome translation timing benchmark: 406 s from first detectable nascent chain to release | **High** (user, via the Lean lane, 22 November 2026; D286) | **Recorded.** The 406 s observation is kept; the speed comparison stays unscored until the paper's runoff timing is reconciled | A desk note: the detection model, an independent speed, and how a comparison with `templated_polymerisation@1` would be registered |
+| [FR-41](#fr-41--vesicle-shrinkage-validation-records) | Vesicle shrinkage validation records for the osmotic lumen law | **High** (user, via the Lean lane, 22 November 2026; D286) | **One agreement:** Fujiwara et al. 2014, about one quarter of the initial volume measured against 24.56% from Cells' equilibrium replay, unfitted | Small-osmole retention stays open: a search for paired retention and volume data |
 
 ## FR-1 — A closed internal compartment on the shared inventory
 
@@ -1356,6 +1359,18 @@ and 12 °C, DOPC vesicle survival fell from 50% at 92 s to 12.5% at 268 s (doi:1
 fixed rupture threshold cannot produce continuing failures under a held load, so FR-31 needs rupture
 rates across tensions, as it already states.
 
+**The tension series is in hand (the Lean lane, 22 November 2026; raised to high priority by the user, D286).**
+- **The data:** Karal and Yamazaki's Figure 2a (doi:10.1063/1.4930108) gives first-rupture rates for pure DOPC
+  vesicles at 7.0, 7.5 and 8.0 mN/m, at about 25 °C and 32 °C, from 3 independent experiments of 20
+  vesicles per setting. At 25 °C the rates are 0.00263, 0.00556 and 0.0153 s⁻¹. The cited log-rate readings
+  are in `lean/checks/data/karal2015_rupture_rates.json` (merged at 81916b5d).
+- **The test it allows:** fit a declared rupture law on the two end tensions and predict the middle one, at
+  each temperature. Interpolating linearly in log rate overpredicts the middle by 14% at 25 °C and 21% at
+  32 °C.
+- **Disclosure:** the middle values were read by the Lean lane and the lead before any law was registered.
+  The law's form is fixed before fitting, and only the end tensions enter the fit.
+- **Still needed:** the deterministic representation (OL6). A design note comes first, shared with FR-39.
+
 ## FR-32 — A DOPC swelling validation record for the water operator
 
 - **The request (the same review; D248).** The tissue water operator's compliance, fitted to one
@@ -1676,3 +1691,43 @@ with 2 and 1.5.
 - **A disclosure for that comparison's rule.** On 22 November the lead showed the builder the references'
   R1 survivors at p = 0.75 and 1 h, to 10 digits, before any comparison, then withdrew them as a build
   target.
+
+## FR-39 — A vesicle that survives transient pores
+
+- **The request (the Lean lane's evidence, relayed by the user, 22 November 2026; D286).** One study imaged the
+  same vesicle opening and resealing three times, each closure within one second (eLife 03695, Figure 5).
+  Another shows a tracer escaping during a pore opening (PMC5406380, Figure 4).
+- **What Cells does today:** it ends the lineage at terminal lysis.
+- **What it needs:** an outcome in which the vesicle survives a pore and keeps some of its cargo. The pore
+  opens under tension, leaks until the tension relaxes, then reseals.
+- **The first step:** a design note shared with FR-31. It covers pore opening under tension, leakage
+  while the pore is open, resealing, and rupture, with the existing release and energy accounting. It
+  also covers the deterministic representation (OL6) for giant vesicles.
+
+## FR-40 — A single-ribosome translation timing benchmark
+
+- **The request (the Lean lane's evidence, relayed by the user, 22 November 2026; D286).** Yan et al.
+  (PMC4889334, Figure S2) followed a 1,462-codon reporter in live U2OS cells. Across 44 single-ribosome
+  events, the mean from first detectable nascent chain to release was 406 s.
+- **The discrepancy:** the paper's separately reported elongation speed, 3.1 ± 0.14 codons/s, implies a
+  mean runoff of 7.86 min. Its histogram gives a lower bound of 8.93 min.
+- **The ruling for now:** keep the 406 s observation, and leave the speed comparison unscored until the
+  sample or timing correction is reconciled. The evidence note is
+  `lean/claims/incoming/translation-release-evidence.md`.
+- **The first step:** a desk note covering:
+  - what `templated_polymerisation@1` predicts for this interval;
+  - the detection model (where along the chain the nascent signal becomes detectable);
+  - which independent speed could be used;
+  - how a comparison would be registered before any reading.
+
+## FR-41 — Vesicle shrinkage validation records
+
+- **The evidence (the Lean lane, relayed by the user, 22 November 2026; D286).** In Fujiwara et al. 2014
+  (doi:10.1021/sb4001917), five giant DOPE/DOPC liposomes, at 70 mOsm/L inside, reached about one quarter
+  of their initial volume at 285 mOsm/L outside.
+  - Cells' compiled equilibrium replay at f1783c55 (`cells.osmotic_lumen@1`) gives 24.56%, unfitted.
+  - A paired GFP and volume track in the same liposome (Figure S3) supports the protein's retention during
+    shrinkage.
+  - The cited values and the replay are in `lean/checks/data/fujiwara2014_vesicle.json`.
+- **Open:** the retention of smaller osmoles, including in the Lean lane's earlier Bhatia comparison.
+- **The next step:** a search for paired small-solute retention and volume data.
