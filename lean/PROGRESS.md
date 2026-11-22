@@ -1,5 +1,26 @@
 # Cells proof comparisons
 
+<a id="vesicle-birth-returns"></a>
+
+## 22 November 2026 · Reconstructing rupture at birth from the shear records
+
+A single-lineage shear records the pool before its followed daughter empties. A population shear records the pool after all daughters that ruptured at that stop have emptied. Lean reuses the R9 release proof to sum the receipts of the selected daughters at each destination. The finite receipt is bounded by the final count, so subtracting it recovers the earlier pool. Adding the held receipt to the final signed reservoir supply recovers the earlier supply. A daughter sent to the single-lineage sink contributes no receipt. The proof assumes each daughter and source place is listed once and the release flags identify the retained daughters that ruptured. [Lean proof](CellsProofs/Chemistry/VesicleBirth.lean) · [R10 record definition](../validation/assembly_lineages_v2/FORMAT_OL2.md#L570)
+
+Six compiled `cells.assembly_lineages@2` runs on `b99d6315` closed their energy accounts. The reader matched daughter keys, counts, row times, heat and reservoir work in the saved bundles. [Comparison driver](checks/vesicle_birth.py)
+
+| Case | Saved result |
+| --- | --- |
+| The followed daughter ruptures, with a finite or held tracer pool | The shear row has 20 pool lipids. The end row has 26. The five returned tracers raise the finite pool from 0 to 5 or reduce held supply by 5. |
+| Only the unfollowed daughter ruptures | The retained daughter stays in slot 0. The sister leaves with six lipids and six tracers. The finite lipid pool stays at 20 and the finite tracer pool at 0. |
+| Two parents split at the same stop, with a finite or held tracer pool | Two distinct daughters occupy slot 2 in succession. Their receipts contain six and five tracers. The final lipid pool of 32 recovers the starting 20 after subtracting both receipts. |
+| Two daughters of one three-way split rupture | Each returns six lipids. The two held tracer receipts of five and six reduce supply by 11. The split attributes the two release work terms and the lysis rows book them once. |
+
+The same reader checked both shears in the archived `ol3_shear_probe_run` on `e6571f88`. At 0.01 s no daughter ruptured. At 0.02 s, seven ruptures raised the finite lipid pool from 270 to 2,359 and the solute pool from 0 to 55,631. The held lipid pool kept its count and its signed supply fell by 356. The first individual return contained 293 finite lipids and 7,975 solute molecules. The reader reconciled every intervening split and release row. [Registered probe runner](../validation/assembly_lineages_v2/probes2.py) · [Engine revision](https://github.com/Eidosoma/Cells/commit/e6571f88ead17ef235bd4fb2c1f26f387f7c1967)
+
+Six planted errors were rejected, including swapped keys in the reused slot, a credit for the unfollowed sister, a reversed held-supply sign, doubled release work, and reading either runner’s shear pool at the wrong point. Reordering the lookup entries with the keys intact preserved the result.
+
+**Biological scope.** Deshpande et al. imaged a DOPC-based liposome splitting at a Y-junction. One daughter remained intact while the other ruptured. Figure 3b pairs the two retained daughters’ tracer signals in successful divisions. Figure 4 reports external dye spreading averaged across events. A calibrated measurement of the parent, both daughters and the surrounding liquid in the same asymmetric rupture remains open. [Sibling fates, Fig. 1d](https://ceesdekkerlab.nl/wp-content/uploads/2019/08/Mechanical-division-of-cell-sized-liposomes.pdf#page=2) · [Paired daughter signals, Fig. 3b](https://ceesdekkerlab.nl/wp-content/uploads/2019/08/Mechanical-division-of-cell-sized-liposomes.pdf#page=5) · [External fluorescence, Fig. 4](https://ceesdekkerlab.nl/wp-content/uploads/2019/08/Mechanical-division-of-cell-sized-liposomes.pdf#page=6)
+
 <a id="vesicle-lysis-returns"></a>
 
 ## 22 November 2026 · Molecules returned by a terminal rupture

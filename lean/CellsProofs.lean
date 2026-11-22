@@ -29,6 +29,7 @@ import CellsProofs.Chemistry.VesicleEvent
 import CellsProofs.Chemistry.VesicleExchange
 import CellsProofs.Chemistry.VesiclePopulation
 import CellsProofs.Chemistry.VesicleRelease
+import CellsProofs.Chemistry.VesicleBirth
 import CellsProofs.Tissue.BathSchedule
 import CellsProofs.Tissue.CellReplacement
 import CellsProofs.Tissue.CompartmentWash
