@@ -335,7 +335,10 @@
   "/mnt/workspaces/Cells/ol3-engine-20261119/tiers-gard-69d53f88/measured.json",
   "/mnt/workspaces/Cells/gene-regulation-20261120/fr38/timed-6e639426/measure/measured.json",
   "/mnt/workspaces/Cells/xc0-landing-20261122/measured-fast/measured.json",
-  "/mnt/workspaces/Cells/xc0-landing-20261122/tiers-measured-regen-ef04ddb1/measured.json"
+  "/mnt/workspaces/Cells/xc0-landing-20261122/tiers-measured-regen-ef04ddb1/measured.json",
+  "/mnt/workspaces/Cells/core-pass-at3-20261118/c-snap2/measure/measure-4165d5b9/measure/measured.json",
+  "/mnt/workspaces/Cells/pores-phase-a-20261122/tiers-f5bdb371/out/measure/measured.json",
+  "/mnt/workspaces/Cells/core-pass-kinds-20261118/measure-98da063b/measure/measured.json"
  ],
  "measured_provenance": [
   {
@@ -2844,6 +2847,30 @@
    "root": "/mnt/workspaces/Cells/xc0-landing-20261122/snapshot-ef04ddb1",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-22T16:15:20+00:00"
+  },
+  {
+   "git_revision": "4165d5b928a8149a208d46a298f0f94da71ecda1",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/core-pass-at3-20261118/snapshot-4165d5b9",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-22T18:04:52+00:00"
+  },
+  {
+   "git_revision": "f5bdb3715f2f9b7e316df15a485f6498c89194ad",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/pores-phase-a-20261122/snapshot-f5bdb371",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-22T16:25:28+00:00"
+  },
+  {
+   "git_revision": "98da063b2edaf26704f0d15b049f14cae85a9feb",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/core-pass-kinds-20261118/snapshot-98da063b",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-22T18:26:20+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -3206,7 +3233,7 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_v2_registration.py",
-    "seconds": 10.19,
+    "seconds": 8.59,
     "exit_code": 0,
     "counts": {
      "passed": 6
@@ -3532,10 +3559,10 @@
    },
    {
     "file": "tests/unit/test_cell_owned_compartments.py",
-    "seconds": 10.34,
+    "seconds": 10.09,
     "exit_code": 0,
     "counts": {
-     "passed": 206
+     "passed": 218
     }
    },
    {
@@ -5394,10 +5421,10 @@
    },
    {
     "file": "tests/unit/test_pump_composite_contract.py",
-    "seconds": 4.73,
+    "seconds": 13.3,
     "exit_code": 0,
     "counts": {
-     "passed": 18
+     "passed": 33
     }
    },
    {
@@ -5899,10 +5926,10 @@
    },
    {
     "file": "tests/unit/test_species_registry_movers.py",
-    "seconds": 3.37,
+    "seconds": 0.52,
     "exit_code": 0,
     "counts": {
-     "passed": 7
+     "passed": 6
     }
    },
    {
@@ -6678,6 +6705,14 @@
     }
    },
    {
+    "file": "tests/unit/test_assembly_lineages_v2_pores.py",
+    "seconds": 63.16,
+    "exit_code": 0,
+    "counts": {
+     "passed": 34
+    }
+   },
+   {
     "file": "tests/unit/test_assembly_lineages_v2_replacement.py",
     "seconds": 58.85,
     "exit_code": 0,
@@ -7285,6 +7320,30 @@
     }
    },
    {
+    "file": "tests/unit/test_neutral_arrival_labels.py",
+    "seconds": 54.26,
+    "exit_code": 0,
+    "counts": {
+     "passed": 26
+    }
+   },
+   {
+    "file": "tests/unit/test_neutral_labels_resume.py",
+    "seconds": 59.83,
+    "exit_code": 0,
+    "counts": {
+     "passed": 1
+    }
+   },
+   {
+    "file": "tests/unit/test_neutral_labels_transport.py",
+    "seconds": 60.12,
+    "exit_code": 0,
+    "counts": {
+     "passed": 2
+    }
+   },
+   {
     "file": "tests/unit/test_ool_references_engine_layout.py",
     "seconds": 32.04,
     "exit_code": 0,
@@ -7453,11 +7512,19 @@
     }
    },
    {
-    "file": "tests/unit/test_region_readouts.py",
-    "seconds": 84.4,
+    "file": "tests/unit/test_region_label_shares.py",
+    "seconds": 62.42,
     "exit_code": 0,
     "counts": {
-     "passed": 11
+     "passed": 2
+    }
+   },
+   {
+    "file": "tests/unit/test_region_readouts.py",
+    "seconds": 38.76,
+    "exit_code": 0,
+    "counts": {
+     "passed": 9
     }
    },
    {

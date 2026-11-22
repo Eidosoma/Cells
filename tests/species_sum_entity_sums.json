@@ -768,7 +768,7 @@
   ],
   [
    "operators/species_labels.py",
-   "advance_inner",
+   "advance_nodes",
    "entity_sum(into, axis=1, xp=xp)"
   ],
   [

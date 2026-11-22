@@ -60,6 +60,7 @@ from cells.execution.errors import NumericalError
 from cells.models import pump_composite_adapter as pump3
 from cells.models.surface_pump import DOMAIN_MESSAGE
 from cells.models.surface_pump_checks import row_checks
+from cells.numerics.clock_instants import ON_THE_GRID, on_grid  # D283's one predicate.
 from cells.numerics.fixed_step import rk4_checked_step
 from cells.operators.contract import (
     COMMUTING,
@@ -1292,10 +1293,17 @@ class Composition:
         self.label_pools = {
             op: k for k, op in enumerate(o for o in self.label_reporters_in_order if o.LABEL_POOLS)
         }
+        # D296: the events that report the slots they replace (static: by their signature).
+        self.label_events = frozenset(
+            op for op in self.events if self.label_owner is not None and takes_labels(op.event)
+        )
         # FR-42's stage 2: the inner step reports its one-way transfers where it takes labels=
-        # (static: by the inner implementation's signature; none without an owner).
-        self.inner_reports_labels = self.label_owner is not None and takes_labels(
-            self.inner.checked_step
+        # (static: by the inner implementation's signature; none without an owner, and none beside
+        # declared kinds, whose one-way hook comes later).
+        self.inner_reports_labels = (
+            self.label_owner is not None
+            and takes_labels(self.inner.checked_step)
+            and not getattr(inner, "KINDS", ())
         )
         self.coupled = any(op.SPLIT and op.RK4 == "coupled" for op in operators) or (
             self.process_operator is not None
@@ -1627,7 +1635,14 @@ class Composition:
                 if lifecycle:
                     keywords["lifecycle"] = self._lifecycle
                 before = current
-                current, ok = op.event(current, control, p, xp=xp, **keywords)
+                if op in self.label_events:  # Static (D296): its replaced slots' labels.
+                    rows = self.label_owner.rows(p)
+                    current, ok, replaced = op.event(
+                        current, control, p, xp=xp, labels=rows, **keywords
+                    )
+                    current = self.label_owner.advance_event(current, replaced, control, p, xp=xp)
+                else:
+                    current, ok = op.event(current, control, p, xp=xp, **keywords)
                 valid = _and(valid, ok)
                 if lifecycle:
                     valid = _and(valid, self._history_kept(before, current, xp=xp))
@@ -1652,7 +1667,6 @@ class Composition:
         # FR-42's stage 2 (static): an IMEX inner step that reports gives the label owner its
         # transfers; RK4's (an empty tableau) is refused beside a labelled in-step mover.
         if self.inner_reports_labels and p.imex_explicit.shape[0]:
-            before = current
             current, ok, applied, heat = self._labelled_inner(
                 current, inputs, dt, process, control, p, xp=xp
             )
@@ -2002,10 +2016,10 @@ class Composition:
         dt, end = spec.execution.dt, spec.experiment.end_time
         for op, _, schedule in entries(spec):
             if op.EVENT and any(
-                not 0 < t < end or int(round(t / dt)) * dt != t for t in op.schedule_times(schedule)
+                not 0 < t < end or on_grid(t, dt) is None for t in op.schedule_times(schedule)
             ):
                 raise ConfigError(
-                    f"{op.LAW_ID} event times must be exact multiples of dt inside the horizon"
+                    f"{op.LAW_ID} event times must lie inside the horizon and {ON_THE_GRID}"
                 )
         small = compact(spec)
         state, p = self.initial_values(small)

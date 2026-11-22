@@ -1,5 +1,5 @@
-"""neutral_arrival_labels@1 (FR-42 stage 1, D289): neutral arrival-time labels as shares of a
-physical row (operators/species_labels.py, numerics/label_shares.py).
+"""neutral_arrival_labels@1 (FR-42, D289): neutral arrival-time labels as shares of a physical row
+(operators/species_labels.py, numerics/label_shares.py).
 
 The share update alone, in NumPy (no world; about 2 s):
 - exact for a constant per-molecule rate with arrivals, and the shares kept bit for bit without
@@ -7,12 +7,18 @@ The share update alone, in NumPy (no world; about 2 s):
 - its domain on random and extreme inputs: zero shares, tiny amounts, a large survival exponent and
   16 labels;
 - its order when the rates vary within an application: the split between old and new material is
-  off by (a' k - a k') h^3 / 12, halving by 8 with h.
+  off by (a' k - a k') h^3 / 12, halving by 8 with h;
+- carried material arriving with its source's shares (stage 2's transfers), at second order;
+- a reporter's pools and sources (D296), and a replaced cell's rows and pool entries taking the
+  newcomer label (replacement@1).
 
-One compiled world, run labelled and unlabelled, and one resume (three compiles, about 70 s;
-FR-42's own checks as engine rows, so a regression in the composite's hook or a reporter shows
-here). Every physical field, observation and diagnostic of the labelled run is the unlabelled
-run's bit for bit. It holds:
+Host rows on parsed worlds (no compile; a few seconds): exchange's export and a passive reaction
+route report the material they move (stage 3), and a replaced slot takes the newcomer label.
+
+One compiled world, run labelled and unlabelled (two compiles, about 80 s on a light CPU; FR-42's
+own checks as engine rows, so a regression in the composite's hook or a reporter shows here).
+Every physical field, observation and diagnostic of the labelled run is the unlabelled run's bit for
+bit. It holds:
 - the reference case dN/dt = -N^2 (2A -> B mass action, local_species_reactions@1) in five
   independent pools: one label, the reference's two (older and new, 2:1), several unequal with an
   empty one, and two near the edges of the range (dt L = 0.9 under the stage condition, and the
@@ -22,13 +28,14 @@ run's bit for bit. It holds:
   clearance in a cell (turnover, exact) and a reaction source and sink at an outside node. The
   cell's cohort matches the analytic solution at rounding, at the window's two boundaries too
   (arrivals in the step that starts at its start join it; in the step that starts at its end they
-  do not), with its label reused for a second window, and a checkpoint resumes bit for bit
-  through a snapshot;
+  do not), with its label reused for a second window;
 - C, a second population with its own loss, unlabelled (check 3).
+Its resume through a snapshot is in tests/unit/test_neutral_labels_resume.py, and the routes' rows
+(stage 2) in tests/unit/test_neutral_labels_transport.py.
 
-Definitions refused, each naming the FR-42 stage that lifts it (parses only): in-step movers (a
-face, a membrane and a junction route, a transporter kind's role and finite fuel), exchange, a
-passive reaction, a bath schedule, D1's families, a second owner and malformed declarations.
+Definitions refused (parses only): a transporter kind's role and finite fuel beside labels (until
+the kinds' hook), a bath schedule, a retired label family (D300), a second owner, an arrival off the
+grid, an undeclared label, shares that do not sum to one and a held bath node.
 """
 
 import copy
@@ -315,6 +322,25 @@ def test_a_pool_carries_its_shares_and_takes_its_new_material_by_label():
     assert new.label_closure_relative[0] <= 4 * EPS
 
 
+def test_a_replaced_cells_pool_takes_the_newcomer_label():
+    """D296 (the gene regulation lane's request), in NumPy: at a replaced cell the label owner sets
+    the rows' and the pool entries' shares to the label in force, the newcomer's; elsewhere they
+    are kept bit for bit."""
+    from types import SimpleNamespace
+
+    from cells.operators import species_labels as labels
+
+    start, _, _, layout = pool_half_step(made=0.0, released=0.0, degraded=0.0)
+    layout.label_pool_cells = np.array([[0]])
+    arrival = SimpleNamespace(label_arrival=np.array([[0.0, 1.0]]))  # "cohort" is in force.
+    kept = labels.advance_event(start, np.array([False]), arrival, layout, xp=np)
+    assert bits(kept.label_share) == bits(start.label_share)
+    assert bits(kept.label_pool_share) == bits(start.label_pool_share)
+    new = labels.advance_event(start, np.array([True]), arrival, layout, xp=np)
+    assert new.label_share[0, :, 0].tolist() == [0.0, 1.0]
+    assert new.label_pool_share[0, :, 0].tolist() == [0.0, 1.0]
+
+
 def test_each_source_takes_its_own_schedule_or_its_species(monkeypatch):
     """D296's per-source arrivals (species_labels.source_controls): a source with a schedule of
     its own takes it, by step index; another takes its species' window; a source of an unlabelled
@@ -342,6 +368,100 @@ def test_each_source_takes_its_own_schedule_or_its_species(monkeypatch):
     assert out[:, 0, 0].argmax(axis=1).tolist() == [0, 0, 2, 2, 2]  # Its own: from 0.2 on.
     assert out[:, 0, 1].argmax(axis=1).tolist() == [0, 0, 1, 1, 1]  # Its species' window.
     assert not out[:, 0, 2].any()  # Q is not labelled.
+
+
+def replaced_world():
+    """One cell whose occupant a template replaces at 2 ms, S labelled, its arrivals joining
+    "newcomer" from that step."""
+    raw = fx.world(faces=(), concentrations_mM={"cell_0": 1.0}, end=0.004, dt=1e-3)
+    template = fx.template(raw, "cell_0", "fresh", s_mM=2.0)
+    raw = fx.with_replacement(raw, [template], [(0.002, "cell_0", "fresh", "carrier_1")])
+    return labelled_s(raw, labels=("base", "newcomer"), arrivals=[("S", [(0.002, "newcomer")])])
+
+
+def stage_three_world(kind):
+    """S labelled in the face-free world: secreted by exchange (first-order export into ecs_0), or
+    relaxing with P through a passive route in the cell (P labelled too)."""
+    raw = face_free()
+    if kind == "exchange":
+        raw = fx.with_exchange(
+            raw,
+            [("secrete", "contact_0", "export", "first_order")],
+            [("secrete", "cell_0", [(0.0, 5.0)])],
+        )
+        return labelled_s(raw, initial={"cell_0": {"base": 0.25, "new": 0.75}})
+    raw = add_inventory_species(
+        raw, "P", trace_mM=1e-3, diffusivity_m2_per_s=fx.D_S, floor_fmol=fx.FLOOR_FMOL
+    )
+    raw = rfx.with_reactions(
+        raw,
+        [rfx.species("S", moieties={"X": 1}), rfx.species("P", moieties={"X": 1}, mu=-1.0)],
+        [rfx.passive("relax", {"cells": ["cell_0"]}, {"S": 1}, {"P": 1}, 50.0)],
+        rfx.always(["relax"]),
+    )
+    return with_labels(
+        raw,
+        [("S", ["base", "new"], {"cell_0": {"base": 0.25, "new": 0.75}}), ("P", ["base"], {})],
+    )
+
+
+@pytest.mark.parametrize("kind", ["exchange", "passive"])
+def test_stage_three_reports_follow_the_material(kind):
+    """FR-42's stage 3 (the lead's leaves for exchange's and the reactions' files; NumPy, no world
+    compiled): with labels each half-step's state and validity are bit for bit the unlabelled
+    call's; the owner's update closes at rounding and keeps the shares a partition. Exchange's
+    export carries the cell's shares to the node; the passive route's reverse flux makes new S
+    at S's arrival label (the base), which dilutes the labelled share, and its forward flux makes
+    new P at P's."""
+    from cells.definitions import pump_composite_spec as cs
+    from cells.registry.models import get_model
+
+    spec = parse_spec(stage_three_world(kind))
+    model = get_model(spec.model)
+    state, p = model.initial_values(spec)
+    control = model.CONTROL_TYPE(*(np.asarray(v)[0] for v in cs.control_values(spec, [0.0])))
+    (op,) = [o for o in model.operators if o in model.label_reporters]
+    labels = model.label_owner.labels(control, p)
+    for _ in range(20):
+        plain, ok = op.half_step(state, 5e-4, control, p, xp=np)
+        new, ok2, moves = op.half_step(state, 5e-4, control, p, xp=np, labels=labels)
+        assert bool(ok) and bool(ok2)
+        assert all(bits(a) == bits(b) for a, b in zip(plain, new, strict=True))
+        state = model.label_owner.advance(state, new, moves, p, xp=np)
+    assert np.asarray(state.label_closure_relative).max() <= 64 * EPS
+    for shares in (np.asarray(state.label_share), np.asarray(state.label_outside_share)):
+        assert np.all(shares >= 0) and np.abs(shares.sum(axis=1) - 1).max() <= 64 * EPS
+    if kind == "exchange":
+        node = np.asarray(state.label_outside_share)[0, :, 1]  # ecs_0, after the bath.
+        assert node[1] > 0.5  # The cell's 3/4 arrived over the node's own unlabelled trace.
+        assert np.asarray(state.label_share)[0, :, 0].tolist() == [0.25, 0.75]  # Kept exactly.
+    else:
+        shares = np.asarray(state.label_share)[:, :, 0]
+        assert 0.5 < shares[0, 1] < 0.75  # S: diluted by its base material made from P.
+        assert shares[1].tolist() == [1.0, 0.0]  # P: its own arrival label, the base.
+
+
+def test_a_replaced_slot_takes_the_newcomer_label():
+    """D296 (the lead's leave for replacement@1's event, in NumPy, no world compiled): with labels
+    the event's state and validity are bit for bit the unlabelled call's, it reports the slot it
+    replaced, and the owner gives that slot's S the label in force at the event, the newcomer's."""
+    from cells.definitions import pump_composite_spec as cs
+    from cells.registry.models import get_model
+
+    spec = parse_spec(replaced_world())
+    model = get_model(spec.model)
+    state, p = model.initial_values(spec)
+    controls = cs.control_values(spec, [0.002])
+    control = model.CONTROL_TYPE(*(np.asarray(v)[0] for v in controls))
+    op = model.operators[0]
+    plain, ok = op.event(state, control, p, xp=np)
+    new, ok2, replaced = op.event(state, control, p, xp=np, labels=p.label_rows)
+    assert bool(ok) and bool(ok2) and replaced.tolist() == [True]
+    assert all(bits(a) == bits(b) for a, b in zip(plain, new, strict=True))
+    owner = model.label_owner
+    assert np.asarray(state.label_share)[0, :, 0].tolist() == [1.0, 0.0]
+    after = owner.advance_event(new, replaced, control, p, xp=np)
+    assert np.asarray(after.label_share)[0, :, 0].tolist() == [0.0, 1.0]
 
 
 # ------------------------------------------------------------------ one compiled world
@@ -496,21 +616,6 @@ def test_a_window_follows_its_cohort_exactly_at_both_boundaries(runs):
     assert np.all(np.abs(shares.sum(axis=1) - 1) <= 64 * EPS)  # All of S's material.
 
 
-def test_a_labelled_checkpoint_resumes_bit_for_bit(runs, tmp_path):
-    """Through a written snapshot, from inside the window (the cohort's share nonzero), so the
-    resumed steps carry the shares and cross the window's end (one compile)."""
-    from cells.records.io import load_snapshot, write_snapshot
-
-    _, labelled_run, _ = runs
-    checkpoint = labelled_run.checkpoint_at(TS + H)
-    assert np.asarray(checkpoint.state.label_share)[len(POOLS), 1, 0] > 0
-    write_snapshot(tmp_path / "checkpoint", labelled_run.spec, checkpoint)
-    loaded = load_snapshot(tmp_path / "checkpoint")
-    resumed = run(loaded.spec, loaded.checkpoint)
-    for a, b in zip(resumed.history, labelled_run.history, strict=True):
-        assert bits(a) == bits(np.asarray(b)[checkpoint.step_index :])
-
-
 # ------------------------------------------------------------------ refused definitions
 
 
@@ -522,86 +627,29 @@ def labelled_s(raw, labels=("base", "new"), initial=None, arrivals=()):
     return with_labels(raw, [("S", list(labels), initial or {})], arrivals)
 
 
-def family(raw):
-    for name in ("L", "U"):
-        raw = add_inventory_species(
-            raw, name, trace_mM=1e-3, diffusivity_m2_per_s=fx.D_S, floor_fmol=fx.FLOOR_FMOL
-        )
-    raw["model"]["label_families"] = [{"id": "fam", "rows": ["L", "U"]}]
-    return with_labels(raw, [("L", ["base"], {})])
-
-
 def mover(kind):
-    """S moved by a membrane or a junction route; a transporter kind's moved role Y, or its finite
-    fuel's ATP (tests/unit/test_transporter_kind.py's held world)."""
+    """A transporter kind's moved role Y, or its finite fuel's ATP, labelled
+    (tests/unit/test_transporter_kind.py's held world): kinds report from their hook, after @3's
+    side."""
     from cells.definitions import pump_composite_spec as cs
     from cells.kinds import transporter
     from tests.unit import test_transporter_kind as tk
 
-    if kind in ("role", "fuel"):
-        fuel = dict(tk.population()["fuel"], kind=transporter.FINITE)
-        raw = cs.frozen_definition(tk.held_world(tk.population(fuel=fuel)))
-        return with_labels(raw, [("Y" if kind == "role" else "ATP", ["base"], {})])
-    cells = (("cell_0", 1.0), ("cell_1", 1.0))
-    contacts = (("contact_0", "cell_0", "ecs_0"), ("contact_1", "cell_1", "ecs_0"))
-    raw = fx.world(
-        cells=cells,
-        contacts=contacts,
-        junctions=(("gj_0", "cell_0", "cell_1"),),
-        faces=(),
-        concentrations_mM={"cell_0": 1.0},
-        end=0.004,
-        dt=1e-3,
-    )
-    for entity in raw["model"]["membranes" if kind == "membrane" else "junctions"]:
-        if entity["id"] in ("contact_0", "gj_0"):
-            entity["permeability_m_per_s"]["S"] = 1e-12
-    return labelled_s(raw)
+    fuel = dict(tk.population()["fuel"], kind=transporter.FINITE)
+    raw = cs.frozen_definition(tk.held_world(tk.population(fuel=fuel)))
+    return with_labels(raw, [("Y" if kind == "role" else "ATP", ["base"], {})])
 
 
 REFUSED = {
-    "a membrane route moves it (stage 2)": (
-        lambda: mover("membrane"),
-        r"moved inside the inner step by membrane contact_0.*FR-42's stage 2",
-    ),
-    "a junction route moves it (stage 2)": (
-        lambda: mover("junction"),
-        r"moved inside the inner step by junction gj_0.*FR-42's stage 2",
-    ),
-    "a kind moves its role (stage 2)": (
+    "a kind moves its role (until the kinds' hook)": (
         lambda: mover("role"),
-        r"Y is moved inside the inner step by cells.transporter@1 .*FR-42's stage 2",
+        r"Y is moved inside the inner step by cells.transporter@1 .*beside declared kinds, "
+        "until their hook",
     ),
-    "a kind moves its finite fuel (stage 2)": (
+    "a kind moves its finite fuel (until the kinds' hook)": (
         lambda: mover("fuel"),
-        r"ATP is moved inside the inner step by cells.transporter@1 .*FR-42's stage 2",
-    ),
-    "a face moves it (stage 2)": (
-        lambda: labelled_s(fx.world(end=0.004, dt=1e-3)),
-        r"moved inside the inner step by face face_0.*FR-42's stage 2",
-    ),
-    "exchange moves it (stage 3)": (
-        lambda: labelled_s(
-            fx.with_exchange(
-                face_free(),
-                [("secrete", "contact_0", "export", "first_order")],
-                [("secrete", "cell_0", [(0.0, 0.1)])],
-            )
-        ),
-        r"scheduled_species_exchange@1 beside .*FR-42's stage 3 adds them",
-    ),
-    "a passive reaction moves it (stage 3)": (
-        lambda: labelled_s(
-            rfx.with_reactions(
-                add_inventory_species(
-                    face_free(), "P", trace_mM=1e-3, diffusivity_m2_per_s=fx.D_S, floor_fmol=1e-20
-                ),
-                [rfx.species("S", moieties={"X": 1}), rfx.species("P", moieties={"X": 1})],
-                [rfx.passive("relax", {"cells": ["cell_0"]}, {"S": 1}, {"P": 1}, 1.0)],
-                rfx.always(["relax"]),
-            )
-        ),
-        r"reaction relax is a passive route on labelled S.*FR-42's stage 3",
+        r"ATP is moved inside the inner step by cells.transporter@1 .*beside declared kinds, "
+        "until their hook",
     ),
     "a bath schedule changes amounts": (
         lambda: labelled_s(
@@ -614,9 +662,11 @@ REFUSED = {
         ),
         r"its view changes species amounts \(no FR-42 stage plans it yet\)",
     ),
-    "beside D1's label families": (
-        lambda: family(face_free()),
-        r"neutral_arrival_labels@1 is composed beside label families",
+    "a retired label family (D300)": (
+        lambda: dict(
+            face_free(), model=dict(face_free()["model"], label_families=[{"id": "f", "rows": []}])
+        ),
+        r"unknown=\['label_families'\]",
     ),
     "a second label owner": (
         lambda: labelled_s(labelled_s(face_free())),
@@ -624,7 +674,7 @@ REFUSED = {
     ),
     "a switch off the grid": (
         lambda: labelled_s(face_free(), arrivals=[("S", [(0.0, "base"), (1.5e-3, "new")])]),
-        r"exact multiple of dt",
+        r"a label switch must be on the clock's grid \(within 4 ulps of k \* dt\) \(S at 0.0015\)",
     ),
     "a switch to an undeclared label": (
         lambda: labelled_s(face_free(), arrivals=[("S", [(0.0, "other")])]),
@@ -642,7 +692,7 @@ REFUSED = {
 
 
 @pytest.mark.parametrize("case", sorted(REFUSED))
-def test_a_labelled_definition_is_refused_where_stage_1_cannot_follow_it(case):
+def test_a_labelled_definition_is_refused_where_labels_cannot_follow_it(case):
     make, message = REFUSED[case]
     with pytest.raises(ConfigError, match=message):
         parse_spec(make())
