@@ -1932,6 +1932,9 @@ section plans the build. It decides nothing new, except where flagged at its end
     face touches. It solves that bath's forms once per held composition with the closure's
     constants, and again at a scheduled bath event such as the ADP step.
   - @3's reservoir work (the @3 owner) values those baths' supply at each row's free potential.
+  - **G3 holds the bath's free H⁺ (10⁻⁷·¹ M), not an H total** (the face builder's note). So the
+    held bath's solve takes free H⁺ as given, solves the other free ligands (Mg²⁺) from their held
+    totals, and lets the bath's H total follow.
 - **Bitwise.** A static switch per held bath that a forms face touches, at `surface_pump_v3`'s
   reservoir work (1e-3 Σ μ·supplied); no registered world has such a bath.
 - **Checks.**
@@ -2000,6 +2003,15 @@ section plans the build. It decides nothing new, except where flagged at its end
 - **Price:** about 1 agent-day (the binding owner), plus half a day (the @3 owner).
 
 **5. The capacitor/held-bath parse change: not needed** (item 0).
+
+**The solver.** MT-1b runs on today's ARS(2,2,2) with implicit face electromigration
+(`imex_ars222_face_electromigration@1`), the solver its dt ladder ran at 16 µs. It does not declare
+N2, because N2 has nothing to move in MT-1b:
+- N2 makes @3's own constant-field routes implicit: patch permeabilities, channel populations and
+  junctions. MT-1b has none of these.
+- Its cycles, its leak and its uncoupler are kinds, which N2 leaves explicit.
+- The face's electromigration is implicit already.
+So a forms face under N2 can stay refused in version 1, as the face builder plans.
 
 **The order:**
 1. items 1 and 2 together (the face path and its bath);
