@@ -15,10 +15,9 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
   - G4, with FR-25's reader fixes;
   - FR-25's registered comparison (final verdict D282: inconclusive, 30 of 32 pass, none failed);
   - FR-28, the binding guard, D1 for FR-33, the floating-junction fix (A), F2 (an opt-in exact face
-    heat), and FR-37's example.
+    heat), FR-37's example, and FR-33's first test (two named regions joined by one face; 7d70d63b).
 - **Landing next:**
   - the OL5 precision fix, then GARD @2's range fixes;
-  - FR-33's first test (two named regions joined by one face), after its independent acceptance.
 - **Assessing:** FR-38 (RNA release into two pools).
 - **Held for the user:** extending the near-event refusal to clocks without windows. Its gate found seven
   test files with events one ulp from a step.
