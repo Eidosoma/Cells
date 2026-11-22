@@ -1405,8 +1405,9 @@ limits. D269: free activities and interpolation errors are checked before any ch
 stoichiometry; the paper's coupling is 2.9 ± 0.2 H⁺/ATP.
 
 **What was seen before this rule, disclosed.** A desk probe on the Lean lane's manifest
-(`lean/checks/data/mitochondrial_stall.json`: each entry's Q, stall and interpolation limit), on
-total quotients with a constant conversion to the free quotient. Evidence:
+(`lean/checks/data/mitochondrial_stall.json` at main 587ba787, last changed in f0783ad9: each
+entry's Q, stall and interpolation limit), on total quotients with a constant conversion to the free
+quotient. Evidence:
 `/mnt/workspaces/Cells/mito-resume-20261121/stall-stage-a/` (`refit.py`, `curvature.py` and
 `rule_status.py`, each with its JSON).
 - **The anchor decides the count.** With each of the ten entries as the single anchor (n = 3, added
@@ -1467,10 +1468,12 @@ their citation only (D186); no file is committed.
 - **Temperature:** the registry rows' 298.15 K (D236). The assay's temperature is recorded; with a
   common Δψ it moves only the offset.
 - **Arm 1:** Table S4's corrected stalls.
-- **Arm 2, only if every entry's rate points are reported:** each stall re-derived by fitting the
-  law's own J(ΔpH) at that entry's conditions to its rate points, one amplitude per entry, after the
-  paper's uncoupled-hydrolysis correction applied the same way to every entry. If the correction
-  cannot be reproduced from what is reported, arm 2 is not run, and that is recorded.
+- **Arm 2, reported, not judged, and only if every entry's rate points are reported:** each stall
+  re-derived as the zero of the law's own J(ΔpH) shape at that entry's conditions, fitted to its
+  rate points with the zero's position and one amplitude free, after the paper's
+  uncoupled-hydrolysis correction applied the same way to every entry. The paper's σ_i are kept. If
+  the correction cannot be reproduced from what is reported, arm 2 is not run, and that is
+  recorded.
 
 **The rule.**
 - **n stays 3.** The law's counts fix it (n_A = 3, a declared limit until affine counts exist, a
@@ -1483,11 +1486,11 @@ their citation only (D186); no file is committed.
   L_i = 3 × (entry i's predicted stall), the load in decades of the effective quotient (in one
   medium, log₁₀ Q_i plus a constant), weights 1/σ_i², and c's standard error from the normal
   equations without χ² scaling: |c| < 2 SE(c). The unweighted fit is reported.
-- **The verdict.** Arm 1 is read first.
-  - The item closes as explained if (i) or (ii) holds in arm 1 ("explained by the per-entry
-    conditions"), or, failing that, in arm 2 ("explained by the conditions and the interpolation").
+- **The verdict reads arm 1 only.**
+  - The item closes as explained if (i) or (ii) holds ("explained by the per-entry conditions").
   - Otherwise it is recorded as an unexplained feature of the reconstituted yeast assay: a
     validation target, not a defect of the law.
+  - Arm 2's (i) and (ii) are reported beside it, as information on the interpolation.
   - Either way the engine is unchanged. The verdict and its numbers go to the Lean lane's claim
     through the lead.
 
@@ -1559,6 +1562,11 @@ each node's buffer), and the supply's pair held at its declared ratio.
   4. **host C,** which D235 did not choose.
 - **Recommended (S): option 1.** The kinase and the exchange read free forms at P, and the base-form
   laws read the closure.
+- **The face law is ruled:** `logmean_electrodiffusion@1`, provided the lane shows it reduces to
+  the source's p·Δc at zero potential difference; its runs report the potential across the outer
+  membrane (the roadmap's D234 rulings). The appendix's §8 declares a Fick flux for each form, which
+  sums to Eq. 13's totals exactly, and leaves the IMS's free H⁺, K⁺ and Mg²⁺ to the world. So W2's
+  open point is the closure-row path alone, with that declaration.
 - **Its step cap:** about 18 µs at the source's p_Pi and 70 µs at p_A, lowered with W1's
   permeabilities.
 - A face carrying a driven gradient is untested for order (CORE_SEAMS_STEP0 §9.4 B). C1 tests it.
@@ -1575,7 +1583,8 @@ complex IV's population if its law admits one, or permeation from the buffer.
 
 ### The protocol
 
-§7's steps run on the step grid. Each mechanism is on main and is checked in C1 before
+§7's steps run on the step grid. Each mechanism below was read from main's code and docstrings
+(steps 2 and 4 from comments only); none has been parsed in a world. C1 checks each before
 registration.
 1. **The ADP step,** 0 → 1.3 mM → 0 in the buffer, by `scheduled_bath_composition@1` on the held
    buffer. Its composition with declared kinds is checked first (§7).
@@ -1605,17 +1614,19 @@ Its author must not have read the engine. Who writes it is fixed with the choice
     at 10⁹ or more; the ADP_STEP row of `references/proposal.json`).
 - **Against:**
   - It has no uncoupler, inhibitor or O₂-exhaustion step.
-  - Its IMS free Mg²⁺ is held at the buffer's, as a declared input. The engine's IMS closure solves
-    it.
-  - Its outer membrane is Eq. 13 on totals. That matches W2's option 1 or 3 only after a check.
+  - Its IMS free Mg²⁺ is held at the buffer's. The appendix leaves that to the world (its §8), so
+    MT-1b's world must declare the same rule, or R1 must take the world's.
+  - Its outer membrane is Eq. 13 on totals, which the appendix's per-form fluxes sum to exactly. The
+    engine's face reduces to them only at zero outer-membrane potential, which its runs report
+    (W2).
   - It is also MT-2's reference, so one error would pass both milestones.
 - **The 6.78 limit.** `xf1_scaling` (on `mito-references`) finds that X_F1 can be lowered up to 6.78
   times while frame B's fit to the published curves stays within 10% of its own (3.36 against
   3.10).
   - Within the limit, MT-1b stays close to MT-2's behaviour.
   - But only X_F1 is scaled, and the explicit step stays near the source's. Scaled from P1′'s
-    bounds, if the synthase alone sets them (S): about 5 µs at 150 mV and 0.2 µs at 180 mV, at
-    least tens of CPU-hours for 300 s. So MT-1b could not run on today's solver.
+    bounds, if the synthase alone sets them (S): about 5 µs at 150 mV and 0.2 µs at 180 mV, so
+    about 60 and 1,500 CPU-hours for 300 s at P1′'s runner rate.
   - Past the limit (30 times and more, W1), the fit departs: 4.81 at 30 times, 17.3 at 300 times.
     MT-1b does not judge that fit.
 
@@ -1651,12 +1662,13 @@ never from the engine.
 - **Plateaus:** MR1-MT2's bands. ΔΨ ±0.05 mV; pH ±0.0005; NADH's and cytochrome c's fractions
   ±0.0005; O₂ flux and the matrix's K⁺, Pi and ATP ±0.1%. Their basis is a third of the published
   figures' 1-px resolution.
-  - An IMEX step's fixed point is the equations' steady state (S), so plateaus do not depend on dt.
-    The drift rule above covers the approach.
+  - An IMEX step's fixed point should be the equations' steady state (S, asserted, not shown here).
+    The registered run's dt/2 repeat covers the plateaus too, and the drift rule covers the
+    approach.
 - **Transients:** a stated physical scale per readout, a tenth of its excursion in the step, fixed
   at registration from the reference alone. MR1's ADP_STEP row proposed ΔΨ 0.2 mV and NADH 0.002.
   - The dt is chosen in C1 so that the engine's Richardson estimate at it is below a third of each
-    band. The registered run repeats at dt/2 as a check.
+    band. The registered run repeats at dt/2 as a check, plateaus included.
 - **Ledgers:** material, charge and energy close at every step. The matrix's Mg²⁺ total and charge
   invariant drift less than 10⁻⁹ relative (MR1's INV row).
 - **Thermodynamics:** every process's dissipation is non-negative at every plateau (MR1's THERMO
