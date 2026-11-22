@@ -1967,6 +1967,20 @@ def stage_junction_gates(
 FR42_REFUSAL = "FR-42 (labelled rows inside @3's step)"
 
 
+class LabelView(NamedTuple):
+    """FR-42: one end of a step as the labelled rows' one-way terms read it, @3's own
+    (one_way_fluxes) and a kind's (its label_transfers hook takes the start and the end): the
+    structure's state; its kinds' stage read (the state itself without kinds); its node potentials
+    (V, cells then outside nodes); and the control the stage's rates see there (the routing
+    door's where routes are declared, else the step's). On the Euler IMEX the end carries only its
+    state, for the booked nets: its fluxes are the start's, weighted."""
+
+    state: object
+    read: object = None
+    potentials: object = None
+    control: object = None
+
+
 def label_errors(p, rows, *, structure=None, solver=None):
     """FR-42's refusals at the definition (host side, the layout's values): the reasons the
     labelled rows `rows` cannot be carried, or []."""
@@ -2009,10 +2023,11 @@ def label_errors(p, rows, *, structure=None, solver=None):
     return errors
 
 
-def one_way_fluxes(state, potential, control, p, rows, *, xp=jnp):
-    """FR-42: the labelled rows' one-way fluxes (fmol/s) at a state and its potentials, as
-    (forward, backward) per entity kind [m, entity], in the transport law's own directions: faces
-    sender to receiver, membranes cell to outside, junctions sender to receiver. Faces carry
+def one_way_fluxes(view, p, rows, *, xp=jnp):
+    """FR-42: the labelled rows' one-way fluxes (fmol/s) at one end of a step (a LabelView: its
+    read's amounts, its potentials and its control), as (forward, backward) per entity kind
+    [m, entity], in the transport law's own directions: faces sender to receiver, membranes cell
+    to outside, junctions sender to receiver. Faces carry
     uncharged rows (W ln(a/b) = c (a - b), c = face_factor / MOL_PER_FMOL, so c a and c b);
     membranes and junctions the constant-field law's two terms, opening x B(-x) c_from and
     B(x) c_to (laws/junctions/selective)."""
@@ -2021,12 +2036,12 @@ def one_way_fluxes(state, potential, control, p, rows, *, xp=jnp):
     idx = xp.asarray(rows)
     s = tissue.field_layout(p).surface
     n = p.active.size
-    ci, co = physical_amounts(state, p)
+    ci, co = physical_amounts(view.read, p)
     ci = xp.where(p.active, ci / p.volume, 1.0)
     co = xp.where(p.outside_active, co / p.extracellular_volume, 1.0)
     z = p.valence[idx]
     rt = R * p.temperature
-    cell, outside = potential[:n], potential[n:]
+    cell, outside = view.potentials[:n], view.potentials[n:]
 
     def route(c_from, c_to, dv, area, permeability, opening, active):
         x = z * F * xp.where(active, dv, 0.0) / rt
@@ -2042,7 +2057,7 @@ def one_way_fluxes(state, potential, control, p, rows, *, xp=jnp):
         cell[s.membrane_cell] - outside[s.membrane_outside],
         s.membrane_area,
         s.membrane_permeability,
-        control.membrane,
+        view.control.membrane,
         s.membrane_active,
     )
     junction = route(
@@ -2051,7 +2066,7 @@ def one_way_fluxes(state, potential, control, p, rows, *, xp=jnp):
         cell[s.junction_sender] - cell[s.junction_receiver],
         s.junction_area,
         s.junction_permeability,
-        control.junction * state.junction_gate,
+        view.control.junction * view.state.junction_gate,
         s.junction_active,
     )
     c = xp.where(s.face_active, s.face_factor[idx] / MOL_PER_FMOL, 0.0)
@@ -2062,17 +2077,17 @@ def one_way_fluxes(state, potential, control, p, rows, *, xp=jnp):
     return dict(face=face, membrane=membrane, junction=junction)
 
 
-def step_transfers(start_state, start_potential, end_state, end_potential, control, p, dt, rows,
-                   *, xp=jnp, direct=None):  # fmt: skip
-    """FR-42: the step's transfers (module comment above): the trapezoid of the start and end
-    one-way fluxes (or `direct`, the Euler IMEX's combined stage terms), plus the gap to the booked
-    net on the side its sign gives."""
+def step_transfers(start, end, p, dt, rows, *, xp=jnp, direct=None):
+    """FR-42: the step's transfers (module comment above) between its two ends (LabelViews): the
+    trapezoid of the start and end one-way fluxes (or `direct`, the Euler IMEX's combined stage
+    terms, the end then carrying only its state), plus the gap to the booked net (the end state's
+    accumulators less the start's) on the side its sign gives."""
     idx = xp.asarray(rows)
     s = tissue.field_layout(p).surface
     n = p.active.size
     if direct is None:
-        a = one_way_fluxes(start_state, start_potential, control, p, rows, xp=xp)
-        b = one_way_fluxes(end_state, end_potential, control, p, rows, xp=xp)
+        a = one_way_fluxes(start, p, rows, xp=xp)
+        b = one_way_fluxes(end, p, rows, xp=xp)
         sums = {k: tuple(0.5 * dt * (a[k][i] + b[k][i]) for i in (0, 1)) for k in a}
     else:
         sums = direct
@@ -2086,7 +2101,7 @@ def step_transfers(start_state, start_potential, end_state, end_potential, contr
     transfers = []
     for kind in ("face", "membrane", "junction"):
         forward, backward = sums[kind]
-        net = (getattr(end_state, booked[kind]) - getattr(start_state, booked[kind]))[idx]
+        net = (getattr(end.state, booked[kind]) - getattr(start.state, booked[kind]))[idx]
         gap = net - (forward - backward)
         source, destination = nodes[kind]
         transfers.append((forward + xp.maximum(gap, 0.0), source, destination))
@@ -2100,13 +2115,9 @@ def crosses_floating(structure):
     return structure is not None and bool(structure.crossing_junctions)
 
 
-def crossing_potential(state, control, p, *, xp=jnp, kinds=(), structure=None):
-    """Fix (A) (D273): a stage state's quasi-static potentials and their validity, solved as
-    readouts solves the step start's: the field at the state's charges, with the stage read and the
-    routing door, and each floating component's offset by current balance at the state's own
-    junction openings. Where a junction joins capacitor components and one floats, the stage solve's
-    offsets follow from current balance with a lagged junction current, and its junction converges
-    at first order; the explicit rates (and N2's stage junction gates) read these instead."""
+def crossing_view(state, control, p, *, xp=jnp, kinds=(), structure=None):
+    """(LabelView, valid): crossing_potential's solve with the read and the routed control it
+    solves at, so FR-42's end of a step reads what the stage rates read."""
     from cells.execution.schedule import SurfaceControl
 
     read = _stage_read(state, p, kinds, xp=xp)[0] if kinds else state
@@ -2120,7 +2131,19 @@ def crossing_potential(state, control, p, *, xp=jnp, kinds=(), structure=None):
         xp=xp,
     )
     potential = values.potential_V
-    return potential, xp.all(xp.isfinite(potential)) & values.converged
+    valid = xp.all(xp.isfinite(potential)) & values.converged
+    return LabelView(state, read, potential, control), valid
+
+
+def crossing_potential(state, control, p, *, xp=jnp, kinds=(), structure=None):
+    """Fix (A) (D273): a stage state's quasi-static potentials and their validity, solved as
+    readouts solves the step start's: the field at the state's charges, with the stage read and the
+    routing door, and each floating component's offset by current balance at the state's own
+    junction openings. Where a junction joins capacitor components and one floats, the stage solve's
+    offsets follow from current balance with a lagged junction current, and its junction converges
+    at first order; the explicit rates (and N2's stage junction gates) read these instead."""
+    view, valid = crossing_view(state, control, p, xp=xp, kinds=kinds, structure=structure)
+    return view.potentials, valid
 
 
 def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure=None, labels=None):
@@ -2400,15 +2423,18 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
         valid &= xp.all(xp.isfinite(value))
     extra = ()
     if labels is not None:  # FR-42 (static): the labelled rows' transfers; nothing else changes.
+        routed = control
+        if kinds and structure.routes:  # The routing door at the start, as readouts opens it.
+            routed = _route(structure, kinds, read, control, p, xp=xp)[0]
+        begin = LabelView(state, read, start, routed)
         if stages == 2 and not n2:  # The Euler IMEX: its one explicit stage, weights >= 0.
-            terms = one_way_fluxes(state, start, control, p, labels, xp=xp)
+            terms = one_way_fluxes(begin, p, labels, xp=xp)
             weight = dt * explicit_matrix[last, 0]
             direct = {k: (weight * f, weight * b) for k, (f, b) in terms.items()}
-            transfers = step_transfers(state, start, stage, None, control, p, dt, labels, xp=xp,
-                                       direct=direct)  # fmt: skip
+            transfers = step_transfers(begin, LabelView(stage), p, dt, labels, xp=xp, direct=direct)
         else:
-            end, _ = crossing_potential(stage, control, p, xp=xp, kinds=kinds, structure=structure)
-            transfers = step_transfers(state, start, stage, end, control, p, dt, labels, xp=xp)
+            end, _ = crossing_view(stage, control, p, xp=xp, kinds=kinds, structure=structure)
+            transfers = step_transfers(begin, end, p, dt, labels, xp=xp)
         extra = (transfers,)
     if membrane_process is None:
         kept = jax.tree.map(lambda old, new: xp.where(valid, new, old), state, stage)
