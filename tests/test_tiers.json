@@ -331,7 +331,8 @@
   "/mnt/workspaces/Cells/fr33-first-test-20261122/tiers-measured-6675f74b/measured.json",
   "/mnt/workspaces/Cells/ol3-engine-20261119/tiers-0816feb1/measured.json",
   "/mnt/workspaces/Cells/fr38-rna-residence-20261122/refs/tiers-measured-05725b23/measured.json",
-  "/mnt/workspaces/Cells/fr38-rna-residence-20261122/reader/tiers-measured-832bb821/measured.json"
+  "/mnt/workspaces/Cells/fr38-rna-residence-20261122/reader/tiers-measured-832bb821/measured.json",
+  "/mnt/workspaces/Cells/ol3-engine-20261119/tiers-gard-69d53f88/measured.json"
  ],
  "measured_provenance": [
   {
@@ -2809,6 +2810,13 @@
    "root": "/mnt/workspaces/Cells/fr38-rna-residence-20261122/reader/snapshot-head-832bb821",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-22T13:09:42+00:00"
+  },
+  {
+   "git_revision": "69d53f8893e343e633f49ef37b742ff336d3a1fa",
+   "dirty": false,
+   "root": "/mnt/workspaces/Cells/ol3-engine-20261119/tree-gard-69d53f88",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-22T11:06:44+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -3155,7 +3163,7 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_spec.py",
-    "seconds": 1.97,
+    "seconds": 2.02,
     "exit_code": 0,
     "counts": {
      "passed": 26
@@ -6548,7 +6556,7 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_kernel.py",
-    "seconds": 52.34,
+    "seconds": 50.75,
     "exit_code": 0,
     "counts": {
      "passed": 10
