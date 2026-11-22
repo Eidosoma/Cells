@@ -518,6 +518,58 @@ follows.
 
 The fitter works from `train.json` alone.
 
+### 13.2 Entry of 00:34 UTC on 22 November 2026: Sahu and Bera (2013) under §13 and §13.1, and a rule for missing amplitudes
+
+Written by the @3 owner, FR-30's fitter, at the lead's direction under the user's overnight
+delegation (D277). All four registered papers are undetermined, each confirmed by the checker:
+- Lin: single-exponential decays only;
+- Desplantez: the second exponential is "data not shown";
+- Moreno: both times at only three magnitudes;
+- Snipas: ramps only, no step decays.
+
+The lead proposed Sahu and Bera (2013), PLoS ONE, doi:10.1371/journal.pone.0060506 (PMC3607587,
+CC BY). The Lean lane pointed to it. This commit is tagged `fr30-sahu2013-registered-2026-11-22`.
+
+**Disclosure: this paper is not unread.**
+- It was read for this note on 20 November 2026. §2.1 records its protocol, its Table 2 and its
+  own statements, and §4.2 says what a fit to it can be. FR-30's law cites it
+  (`junction_series_gates.LAW`, with its departures).
+- I have read §2.1, §4.2 and the law's citation, in this note and in that module. So I have seen:
+  - the protocol: N2a cell pairs, dual whole-cell clamp, steps from −120 to +120 mV in 20 mV
+    increments of 20 s each;
+  - Table 2's wild-type Cx43 row: per polarity, Gmin, V0 and A of a steady-state Boltzmann, with
+    the two decay times 70 ± 5 and 931 ± 54 ms;
+  - the paper's statement that the decays were fitted at −100 mV.
+- I have not opened the paper itself. The lead's message relayed the Lean lane's pointer.
+
+**§13 with §13.1's fixes, unchanged, decides it before extraction: undetermined.**
+- **Relaxation data:** both times are reported at one voltage only, −100 mV.
+  - §13's rank rule therefore has one magnitude, and with two or fewer the paper is undetermined.
+  - That magnitude has also been seen, so by §13.1's point 8 it stays in training. No relaxation
+    voltage is left to hold out.
+- **The steady state:** the record already carries the steady-state Boltzmann's parameters for
+  each polarity. Those determine G_ss at every step voltage, so no G_ss magnitude is unseen either
+  (§13.1's point 8).
+- So the paper cannot be a held-out test of the law. It stays what §4.2 calls it: a development
+  record that reproduces its own inputs. No extraction under §13 is needed for this paper, and none
+  would change this.
+
+**A rule for missing amplitudes, decided now for any later paper and without its values.** It
+applies when a paper reports both relaxation times at held-out voltages but no amplitudes.
+- **Judged:** the two times, and G_ss where the paper reports it.
+- **Recorded as not reported:** the amplitude observables. No amplitude is inferred, for example
+  from a figure's trace shape, and none is counted as passing or failing.
+- **The pass rule** then counts the reported observables only:
+  - every reported G_ss comparison passes;
+  - τ_fast and τ_slow each pass at more than half of the held-out voltages;
+  - at least 75% of the τ comparisons pass.
+- **The principle:** the pass rule judges what the source reports. Dropping an unreported
+  observable neither raises nor lowers the bar on the reported ones.
+- **Unchanged:** a paper with one time per voltage stays undetermined (§13.1's point 5).
+
+**What follows** is the user's and the lead's decision: another paper with step decays at several
+magnitudes, registered and sealed the same way, or FR-30 staying development only.
+
 ## Sources
 
 - **Read:**
