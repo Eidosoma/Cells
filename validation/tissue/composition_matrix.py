@@ -1094,6 +1094,20 @@ RULES = (
         "multiplier for no route its newcomers take",
     ),
     dict(
+        rule="a slot of templated_polymerisation@1 that replacement@1 replaces takes each "
+        "newcomer's values from the operator's templates, and no donor copy enters or leaves one",
+        laws=("templated_polymerisation@1", REPLACEMENT_1),
+        level="data",
+        check=OPS + "templated_polymerisation.py::check_occupants",
+        test=TESTS + "test_templated_polymerisation.py::test_the_release_refuses",
+        tag=REAL,
+        why="The sheet's §9.16 (amendment S, FR-38's step 4): the departing occupant's chains "
+        "and holds leave with it, and a newcomer's rates are its own (D244's occupant rule). "
+        "Refused: a newcomer without its template's value, a template that is not a replacement "
+        "template, a value for no schedule its newcomers take, a founder's change at or after "
+        "its death, and a donor copy into or from a slot of the operator (version 1.1)",
+    ),
+    dict(
         rule="no coupling target or regulatory state on a replaced slot",
         laws=(COUPLING, REPLACEMENT_1),
         level="data",

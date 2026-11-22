@@ -163,6 +163,25 @@ without a label owner every call is today's):
 - **A limit:** a labelled species carries at most neutral_arrival_labels@1's MAX_LABELS labels, so
   producer identity crossed with the window labels must fit within it.
 
+Replacement (the sheet's §9.16, amendment S; FR-38's step 4)
+--------------------------------------------------------------
+Beside scheduled_cell_replacement@1, an event part acts at the start of the step leaving each event
+time on every replaced slot (a cell that an event replaces and where this operator has a pool,
+chain, degradation or transfer), reading only its own state and its control, the replacements due
+per replaced slot (replacement@1's own count), so its place among the events does not matter:
+- its chains in progress leave (complexes to 0), counted in poly_rep_chains_removed_fmol and their
+  residues in poly_rep_residues_removed_fmol (W^rem); its holds leave (H to 0), counted in
+  poly_rep_hold_removed_fmol (H^rem); the standard free energy leaving with them, mu°_res (W + L H),
+  in poly_rep_removed_energy_pJ, never as heat; its pools' machines are all free (F to M);
+- every cumulative counter stays cumulative; its value at the event becomes the newcomer's birth
+  value (poly_rep_*_birth_fmol), and the departed generation's own totals are recorded
+  (poly_rep_*_departed_fmol), so the newcomer's counters start at zero;
+- the residue ledger counts W^rem and the hold's counts H^rem; the rows are replacement@1's.
+The occupant rule: an optional `templates` key, [{template_id, rates: {schedule ID: value}}], gives
+each newcomer's k_I, k, capacity and scheduled p, constant through its life (control_values).
+Without an event on a slot of this operator every such field is zero-size and the event returns its
+state with no validity term, so the programs are today's (D148 case 2).
+
 Refused at the definition
 -------------------------
 - a charged, permeable or unlisted row;
@@ -171,7 +190,12 @@ Refused at the definition
 - a transfer that is not a reaction (a sign missing), and a degradation whose polymer a chain makes
   at another length;
 - another writer of a listed row: an author, D152's reactions or an in-step mover;
-- dt kappa > 1, dt k_D > 1, dt k_I c_T F/F > 1 for a gene's template, and dt/tau > 1;
+- beside a replacement (check_occupants): a version other than replacement@1; a donor copy into or
+  from a slot of this operator (version 1.1); a template that is not a replacement template; a
+  newcomer whose template gives no value for a schedule of its slot; a template value for no such
+  schedule; a schedule change of a replaced slot at or after its founder's death;
+- dt kappa > 1, dt k_D > 1, dt k_I c_T F/F > 1 for a gene's template, and dt/tau > 1, newcomers'
+  values included;
 - a release's fate rows that break the rules above, more than one pair of them, fate rows
   labelled unalike by FR-42's owner, and a held hold that the pool cannot staff;
 - more than the species cap.
@@ -841,7 +865,7 @@ def _templates(raw, declaration):
     out = []
     for entry in raw:
         _fields(entry, {"template_id", "rates"}, f"{LAW_ID} template")
-        tid = identifier(entry["template_id"], f"{LAW_ID}: a template's template_id")
+        tid = identifier(entry["template_id"])
         rates = entry["rates"]
         if type(rates) is not dict or not rates:
             raise ConfigError(f"{LAW_ID}: template {tid}'s rates are a non-empty object")
@@ -1405,8 +1429,9 @@ def occupant_controls(spec, declaration, values, column, times):
         for k, v in enumerate(lives):
             end = lives[k + 1].time if k + 1 < len(lives) else math.inf
             live = (times >= v.time) & (times < end)
-            for name in routes.get(slot, ()):
-                values[live, column[name]] = rates[v.template][name]
+            for name in routes.get(slot, ()):  # A missing value: check_occupants refuses it.
+                if name in rates.get(v.template, {}):
+                    values[live, column[name]] = rates[v.template][name]
     return due
 
 
