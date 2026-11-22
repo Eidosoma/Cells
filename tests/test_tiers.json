@@ -339,7 +339,8 @@
   "/mnt/workspaces/Cells/core-pass-at3-20261118/c-snap2/measure/measure-4165d5b9/measure/measured.json",
   "/mnt/workspaces/Cells/pores-phase-a-20261122/tiers-f5bdb371/out/measure/measured.json",
   "/mnt/workspaces/Cells/mito-refs-r2-20261122/tiers-6ff9372981d2-cpu23/measured.json/measured.json",
-  "/mnt/workspaces/Cells/core-pass-kinds-20261118/measure-98da063b/measure/measured.json"
+  "/mnt/workspaces/Cells/core-pass-kinds-20261118/measure-98da063b/measure/measured.json",
+  "/mnt/workspaces/Cells/pores-endpoint-20261122/tiers-14c87f3c/measure/measured.json"
  ],
  "measured_provenance": [
   {
@@ -2879,6 +2880,14 @@
    "root": "/mnt/workspaces/Cells/core-pass-kinds-20261118/snapshot-98da063b",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-22T18:26:20+00:00"
+  },
+  {
+   "git_revision": "14c87f3ce741e791351761a5458dd7ed8430d24c",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/pores-endpoint-20261122/snapshot-14c87f3c",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-22T21:23:25+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -6722,10 +6731,10 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_v2_pores.py",
-    "seconds": 63.16,
+    "seconds": 65.94,
     "exit_code": 0,
     "counts": {
-     "passed": 34
+     "passed": 37
     }
    },
    {

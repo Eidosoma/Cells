@@ -35,7 +35,9 @@ New file for a new feature. Each claim with a planted error it must catch (D187)
 World-compiling cost: one single-lineage program and one population program (K = 3), about 20
 runs, most of them a second or two once compiled; 81.7 s for the whole file on a shared light
 CPU, most of it the first run's geometry probe verdict, world report and compile (the timed lane's
-row is in tests/test_tiers.json). Reason: the claims are the runs' own clocks, books and records.
+row is in tests/test_tiers.json). The endpoint rows add 16 runs on those programs, without the
+diagnostic, 0.10-0.22 s per row on a shared light CPU. Reason: the claims are the runs' own
+clocks, books and records.
 """
 
 import copy
