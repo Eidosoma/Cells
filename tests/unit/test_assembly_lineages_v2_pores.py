@@ -22,6 +22,10 @@ New file for a new feature. Each claim with a planted error it must catch (D187)
   end statuses (Q3), each moiety conserved, the relations' lysis events by the pore law paid by
   the hold; a transfer taking a removed vesicle's clock with it; a tie with a schedule stop, or
   between two vesicles (planted: one threshold for every key), refused;
+- the clock's endpoints decided exactly (the Lean lane's case, 22 November 2026): a founder whose
+  t* rounds onto the hold's end, or the horizon, from an exact crossing beyond it survives in both
+  modes, and one binary64 step either side the exact and rounded decisions agree (planted at that
+  cut: the rounded comparison t* <= cut, main's before the fix, which ruptures it);
 - the pair's identity on its probe and at the world's states (planted: eta_m without its T
   factor, refused);
 - FR-22's rung P: cuts before and between the ruptures resumed bitwise, the clocks in the host's
@@ -37,6 +41,7 @@ row is in tests/test_tiers.json). Reason: the claims are the runs' own clocks, b
 import copy
 import functools
 import math
+from fractions import Fraction
 
 import numpy as np
 import pytest
@@ -550,6 +555,44 @@ def test_a_population_s_clocks_end_with_their_vesicles_and_ties_are_refused(monk
     monkeypatch.setattr(pore_clock, "threshold", lambda *a: (0.5, math.log(2.0)))
     with pytest.raises(ConfigError, match="Two vesicles' pores open at the same time"):
         runner.run(parse_spec(d))
+
+
+@pytest.mark.parametrize("cut", ["before", "at", "after"])
+def test_the_clock_decides_its_endpoints_exactly(cut, monkeypatch):
+    """The Lean lane's case (22 November 2026). Held from 1 s, the founder's t* = 1 + E/k_v rounds
+    onto 1.4042194113471334 s, while its exact crossing, from the same binary E and k_v, lies
+    2.4e-17 s beyond it. Both endpoints are decided exactly (FORMAT_PORES.md, "The clock"): with
+    the hold's end, or the horizon, at that t* the founder survives, in both modes; one binary64
+    step either side, the exact and the rounded decisions agree (planted at the middle cut: the
+    rounded comparison t* <= cut, main's before the fix, which ruptures it in all four runs)."""
+    from cells.models.assembly_lineages_v2 import pore_clock
+
+    _, base = single_run()  # E and k_v as the engine draws and records them
+    (e,) = base.pores["events"]
+    energy, rate = e["threshold_E"], e["rate_per_s"]
+    t_star = 1.0 + energy / rate  # the engine's t* from 1 s, as it rounds
+    cuts = {"before": math.nextafter(t_star, -math.inf), "at": t_star,
+            "after": math.nextafter(t_star, math.inf)}  # fmt: skip
+    exact = Fraction(1.0) + Fraction(energy) / Fraction(rate)
+    assert (exact <= Fraction(cuts[cut])) == (cut == "after")
+    assert (t_star == cuts[cut] and exact > Fraction(cuts[cut])) == (cut == "at")  # on the edge
+
+    def founder(population, at_end):
+        """The founder's ruptures, (t, E, k_v), with the cut as the hold's end or the horizon."""
+        end, horizon = (cuts[cut], 2.0) if at_end else (50.0, cuts[cut])
+        d = pore_definition(pore_world(population=population), start=1.0, end=end,
+                            horizon=horizon, uniforms=True)  # fmt: skip
+        run = runner.run(parse_spec(d))
+        assert run.closure["holds"]
+        return [(x["time_s"], x["threshold_E"], x["rate_per_s"]) for x in run.pores["events"]
+                if x["key"] == 0]  # fmt: skip
+
+    modes = [(population, at_end) for population in (False, True) for at_end in (True, False)]
+    ruptured = [[(t_star, energy, rate)]] * len(modes)
+    assert [founder(*m) for m in modes] == (ruptured if cut == "after" else [[]] * len(modes))
+    if cut == "at":  # planted: the rounded comparison
+        monkeypatch.setattr(pore_clock, "reaches", lambda e, k, s, c: s + float(e) / k <= c)
+        assert [founder(*m) for m in modes] == ruptured
 
 
 # ------------------------------------------------------------------ the pair check, checkpoints
