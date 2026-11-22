@@ -25,6 +25,7 @@ import CellsProofs.Chemistry.SingleSiteBinding
 import CellsProofs.Chemistry.SiteOccupancy
 import CellsProofs.Chemistry.SpeciesTurnover
 import CellsProofs.Chemistry.Vesicle
+import CellsProofs.Chemistry.VesicleEvent
 import CellsProofs.Chemistry.VesicleExchange
 import CellsProofs.Chemistry.VesiclePopulation
 import CellsProofs.Tissue.BathSchedule

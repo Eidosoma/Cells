@@ -1,5 +1,44 @@
 # Cells proof comparisons
 
+<a id="ol5-event-energy"></a>
+
+## 22 November 2026 · Osmotic energy booked by a single vesicle event
+
+The fixed-area law uses the smaller of the equilibrium osmotic volume and the spherical volume allowed by the membrane. Lean proves that the incremental energy equals the final free energy minus the initial free energy for any two positive counts and footprints. The proof covers both sides of the volume limit, both directions across it and an exactly full vesicle. At a branch switch the correction is proportional to `x − 1 − log x`, where `x` is spherical volume divided by free osmotic volume at the start. This is nonnegative and vanishes at the boundary. Pricing an event and then reversing it sums to zero in exact arithmetic. The empty lumen and the infinite energy of solute without membrane have separate engine checks. [Event proof](CellsProofs/Chemistry/VesicleEvent.lean) · [Underlying energy](CellsProofs/Chemistry/Vesicle.lean) · [Incremental engine formula](https://github.com/Eidosoma/Cells/blob/329e9e395ac117998657a21eb827192d34314107/src/cells/models/assembly_lineages_v2/lumen.py#L193-L242)
+
+On `cells.assembly_lineages@2`, the comparison prices 169 distinct directed state pairs. These include 13 crossings in each direction, the saved transitions of a 96-event public run and 18 four-event cycles. The reference uses 70-digit physical volumes and subtracts the absolute energies before rounding the result. The old compiled calculation had a maximum error of **1.70 × 10⁻¹⁰ kT**. On OL5 candidate `329e9e39` it was **1.07 × 10⁻¹⁴ kT**. The maximum reverse-pair residual and the maximum closed-cycle residual were both **5.33 × 10⁻¹⁵ kT**. The synthetic controls exactly on the branch boundary agreed to the displayed float64 precision. [CPU comparison, energy case](checks/vesicle_events.py) · [Engine fixture](https://github.com/Eidosoma/Cells/blob/329e9e395ac117998657a21eb827192d34314107/tests/unit/test_assembly_lineages_v2_lumen.py#L141-L231)
+
+<a id="ol5-short-draws"></a>
+
+### Ordered draws in a reaction rate
+
+The engine sums at most three logarithms to price draws without replacement. Lean connects the masked sum to Mathlib’s descending factorial for every feasible count, including a zero-arity side and an exactly exhausted side. On 46 feasible inputs through 2²⁰ molecules, both the mass-action and phase-exchange directions were within **3.55 × 10⁻¹⁵** of the logarithm of the exact integer product. Both backends masked all six impossible draws. The previous table-difference calculation had a maximum absolute log error of **1.20 × 10⁻⁹** on the same synthetic inputs. These cases isolate the rate factors. The registered OL5 verdict has its own runner and tolerances. [Rate proof](CellsProofs/Chemistry/AssemblyKinetics.lean) · [Engine log products](https://github.com/Eidosoma/Cells/blob/329e9e395ac117998657a21eb827192d34314107/src/cells/models/assembly_lineages_v2/mass_action.py#L76-L90) · [OL5 decision](https://github.com/Eidosoma/Cells/blob/329e9e395ac117998657a21eb827192d34314107/docs/DECISIONS.md#L8945)
+
+<a id="ol5-six-replays"></a>
+
+### Six existing drivers before and after the OL5 change
+
+All six full drivers exited successfully on both frozen revisions. The earlier checkout was `40c3185e`. Its engine source matches the parent of the numerical change. Candidate `329e9e39` includes the declared probe renewal. Ten previous comparison records across eight claims cite the three changed engine files. The table counts differing scalar output fields across the current driver reports. Each row keeps its earlier comparison and biological evidence.
+
+| Driver | Fields compared | Fields changed | Example of what moved |
+| --- | ---: | ---: | --- |
+| Assembly kinetics | 73 | 4 | A two-molecule leave rate went from 0.9999999999999997 to 1 per second. Three clock-probe energy residuals changed in the last digits. |
+| Confined binding | 18 | 3 | The predicted three-partner occupancy changed from 0.5250000000000004 to 0.5249999999999995 in the bulk-loading comparison. |
+| Pool replacement | 72 | 0 | Byte-identical pulse, wash and capacity report. |
+| Shared pool | 33 | 2 | Only the two reported closure residuals changed. |
+| Vesicle | 149 | 0 | Byte-identical trajectory, measurement and rupture report. |
+| Vesicle exchange | 84 | 15 | The largest reported balance residual across the eight edge sets rose from 1.42 × 10⁻¹⁴ to 2.04 × 10⁻¹⁴ kT. |
+
+The frozen run `lean-ol5-event-energy-20261122` contains `six-replays.json` (both statuses per driver), `six-differences.json` (every changed field and its before/after values), `before-events.json` and `candidate-events.json`. The earlier engine exits 1 on the new precision checks and the candidate exits 0. [Rate and energy driver](checks/vesicle_events.py) · [Declared changes](https://github.com/Eidosoma/Cells/blob/329e9e395ac117998657a21eb827192d34314107/src/cells/models/assembly_lineages_v2/exchange.py#L39-L61)
+
+<a id="bhatia-vesicle-deflation"></a>
+
+### What the outer contour measures after osmotic deflation
+
+Bhatia et al. imaged one giant vesicle before and after transfer from 66 to 72 mM. Figure 2 gives about 1,300 µm² and 4,500 µm³ initially. After deflation the outer contour enclosed 3,400.9 ± 1,000 µm³, including bath-origin liquid in an inward tube. The central measurements put the final lumen at **at most 0.756 of the starting volume**, independent of tube shape. A straight cylinder 18 µm long and 4 µm in diameter gives about 226 µm² of membrane and displaces about 226 µm³. Including it gives an estimated final area of 1,330 µm² and a lumen fraction of **0.705**. The tube dimensions have no independent uncertainty estimate. [Figure 2, p. 7363](https://doi.org/10.1039/D0SM00155D) · [Movie S1 identifies the bath](https://www.rsc.org/suppdata/d0/sm/d0sm00155d/d0sm00155d1.pdf#page=2)
+
+Assuming initial osmotic balance, conserved internal solute and fixed membrane area, the compiled comparison predicts **4,125 µm³**, or **0.917** of the measured starting volume. The cylinder estimate is about 950 µm³ lower, within the quoted ±1,000 µm³ on the outer volume alone. Even the starting central measurements give a reduced volume of 1.021 against a spherical maximum of 1. The authors estimate about 25% uncertainty in reconstructed area and 33% in volume. This specimen leaves the quantitative model comparison unresolved. Figure 4 used a separate 92 to 117 mM exchange. Its internal concentration was inferred from volume under a conserved-solute assumption. [Measurements and assumptions](checks/data/bhatia2020_vesicle_deflation.json) · [Figures 2 and 4](https://www.mpikg.mpg.de/th/people/dimova/publications/Bhatia%2020%20SoftMater.pdf#page=5)
+
 <a id="gard-v2-cache"></a>
 
 ## 22 November 2026 · GARD v2 preserves the smaller catalyst
