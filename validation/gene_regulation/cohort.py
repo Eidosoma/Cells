@@ -33,7 +33,9 @@ and 1.32977e-5 fmol surviving, while the pool grew by 2.70386e-6 fmol.
 record's own definition names the chain that makes each product row, so the completions are that
 chain's: for the mRNA R in A1, transcription's (tx), not translation's (tl). A chain named that
 does not make the product is refused, and so is a product that no chain or several chains make,
-unless one of them is named. The A1 export's CSV holds tx (making R) and tl (making P).
+unless one of them is named. The A1 export's CSV holds tx (making R) and tl (making P). With a
+release (the sheet's §9, FR-38), a fate row's inflow is the release's into it, not the chain's
+completions, which join the hold (`producers`): this is §9.8's route 2, per fate pool.
 
 **The check.** FR-25's turnover control: 100 copies at steady state, a one-hour half-life and
 production of 100 ln 2 copies per hour. Of the 69.31 copies completed in the first hour, 50 remain
@@ -72,15 +74,22 @@ def _spread(x):
 BOUND_ROUNDING = 1e-12  # Relative: the survivors' allowance above the pool from rounding alone.
 
 
+def same_instant(a, b):
+    """Whether two times name one instant of the clock: the window edges' predicate, a seam like
+    templated_polymerisation.grid_time's for D283's same-instant snap. Until it lands, equal
+    times; D283 widens both to the clock's predicate."""
+    return a == b
+
+
 def _window(t, t1, t2, ts):
-    """(i1, i2, i3) of t1 <= t2 <= ts, each an output time (D264, finding 6)."""
+    """(i1, i2, i3) of t1 <= t2 <= ts, each an output time (D264, finding 6; same_instant)."""
     if not t1 <= t2 <= ts:
         raise ValueError(f"the window needs t1 <= t2 <= ts, not {t1}, {t2} and {ts}")
-    index = {v: i for i, v in enumerate(t)}
-    missing = [x for x in (t1, t2, ts) if x not in index]
+    found = [next((i for i, v in enumerate(t) if same_instant(v, x)), None) for x in (t1, t2, ts)]
+    missing = [x for x, i in zip((t1, t2, ts), found, strict=True) if i is None]
     if missing:
         raise ValueError(f"{missing[0]} s is not an output time")
-    return index[t1], index[t2], index[ts]
+    return tuple(found)
 
 
 def check_counters(t, n=None, Q=None, D=None):
@@ -178,12 +187,12 @@ def grid_error(t, n, Q, D, t1, t2, ts=None):
     ts = t2 if ts is None else ts
     check_counters(t, n, Q, D)
     i1, i2, i3 = _window(t, t1, t2, ts)
-    keep = [i for i in range(len(t)) if i % 2 == 0 or t[i] in (t1, t2, ts)]
+    keep = [i for i in range(len(t)) if i % 2 == 0 or i in (i1, i2, i3)]
     if all(i in keep for i in range(i1, i3 + 1)):
         return None
     fine = _cohort(t, n, Q, D, i1, i2, i3)[0]
     pick = [[seq[i] for i in keep] for seq in (t, n, Q, D)]
-    c1, c2, c3 = (pick[0].index(x) for x in (t1, t2, ts))
+    c1, c2, c3 = (keep.index(i) for i in (i1, i2, i3))
     coarse = _cohort(*pick, c1, c2, c3)[0]
     return abs(fine - coarse)
 
@@ -228,6 +237,26 @@ def producing_chain(makes, product, chain=None):
     return found[0]
 
 
+def producers(chains):
+    """({producer: the row it fills}, {producer: its inflow's readout}) of a record's chains at the
+    exported cell: a chain fills its product through its completions, int_Q_<chain>. A chain with
+    a release (the sheet's §9, FR-38) fills no row at completion, which joins its hold: each of its
+    fate rows is filled by the release, named <release>_<fate> (with _<class> where it has several
+    classes), through int_Q_<release>_<fate> (_<class>), the class's own counter."""
+    makes, counters = {}, {}
+    for c in chains:
+        release = c.get("release")
+        if release is None:
+            makes[c["id"]], counters[c["id"]] = c["product"], f"int_Q_{c['id']}"
+            continue
+        classes = release["fates"]
+        for k, pair in enumerate(classes):
+            for fate, row in pair.items():
+                name = f"{release['id']}_{fate}" + (f"_{k + 1}" if len(classes) > 1 else "")
+                makes[name], counters[name] = row, f"int_Q_{name}"
+    return makes, counters
+
+
 def exported_cell(record, block):
     """The cell an engine_run.py record exports (D264's record names it), or for a record without
     one the single cell of its routes, the single-cell format (D265, finding 8)."""
@@ -251,8 +280,9 @@ def read(path, product="P", chain=None):
         (block,) = [o for o in r["definition"]["model"]["operators"] if o["law"] == POLYMERISATION]
         cell = exported_cell(r, block)
         pool_cell = {q["id"]: q["cell"] for q in block["pools"]}
-        local = {c["id"]: c["product"] for c in block["chains"] if pool_cell[c["pool"]] == cell}
-        elsewhere = {c["id"]: pool_cell[c["pool"]] for c in block["chains"] if c["id"] not in local}
+        here = [c for c in block["chains"] if pool_cell[c["pool"]] == cell]
+        local, counters = producers(here)
+        elsewhere = {c["id"]: pool_cell[c["pool"]] for c in block["chains"] if c not in here}
         if chain in elsewhere:
             raise ValueError(
                 f"chain {chain} is in {elsewhere[chain]}; the record exports {cell} (D265)"
@@ -272,7 +302,7 @@ def read(path, product="P", chain=None):
                 f"the record lacks int_D_{product}: no loss route of {product} at {cell} is "
                 "declared, but the record does not establish zero loss (re-export it)"
             )
-        return r["t"], x[f"n_{product}"], x[f"int_Q_{chain}"], loss
+        return r["t"], x[f"n_{product}"], x[counters[chain]], loss
     producing_chain(CSV_CHAINS, product, chain)
     if product not in CSV_COLUMNS:
         raise ValueError(f"the A1 export holds the products {sorted(CSV_COLUMNS)}, not {product}")

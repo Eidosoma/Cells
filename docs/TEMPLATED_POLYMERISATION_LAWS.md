@@ -1231,20 +1231,28 @@ them bit for bit. Replacement waits for the requester's answer (question c).
 ### 9.8 The release-window cohort, by two routes
 
 Of the molecules released into fate f during [t1, t2], the amount still present at ts ≥ t2:
-1. **Label rows.** With `label_at` = `release`, ψ selects class 2 during [t1, t2) and class 1
-   otherwise. The cohort is F^f_ρ,2(ts) minus the matched blank's F^f_ρ,2(ts), for any loss law
-   (erratum A, R-F1). The blank is the same world with H(0) = 0. It removes the class-2 rows' own
-   starting trace and that trace's loss, which F^f_ρ,2(ts) − F^f_ρ,2(0) leaves in.
+1. **Label rows, provisional pending FR-42** (erratum B). With `label_at` = `release`, ψ selects
+   class 2 during [t1, t2) and class 1 otherwise. The cohort is F^f_ρ,2(ts) minus the matched
+   blank's F^f_ρ,2(ts) (erratum A, R-F1). The blank is the same world with H(0) = 0. It removes the
+   class-2 rows' own starting trace and that trace's loss, which F^f_ρ,2(ts) − F^f_ρ,2(0) leaves
+   in. The subtraction is exact only for a loss linear in the amount, not for any loss law
+   (erratum B): FR-42's reference case, a loss of −N², breaks it.
 2. **Host-side.** `validation/gene_regulation/cohort.py` on each fate pool's own counters, n_F^f,
    ∫Q^f and ∫D_F^f. It is exact for first-order, age-independent loss in a well-mixed pool, up to
    its grid error.
 
 Under §9.2's laws both routes apply, and they must agree within the host-side route's grid error.
-The label rows' sum departs from the unlabelled row by at most about 10⁻⁸ relative at R1, the
-size of the e^(y_f) term (erratum A2). Each label row's loss reads its own potential (§9.2), so the
-departure is physical, not an error. It is well inside the two routes' agreement bound (the lead's
-ruling, 22 November 2026: the label rows are the operator's own, not the registry's label
-families).
+The label rows' sum departs from the unlabelled row (erratum B):
+- **The factor.** A class row k of a fate with total N reads its own potential (§9.2). Its loss
+  factor is therefore 1 − e^(y_f) (N/n_k)^(1/L), where e^(y_f) is the population's, not
+  1 − e^(y_f).
+- **At R1,** e^(y_f) ≈ 9.4 × 10⁻⁹, so the departure is at most about 10⁻⁸ relative (erratum A2).
+  That is well inside the two routes' agreement bound.
+- **In general** it is not small. Near the domain bound, y_f → x_dom, it reaches percent level for
+  a small class.
+- **Not physical for a neutral label.** The departure would be physical only for a chemically
+  distinct label. For a neutral arrival-time label, as here, it is an artefact of separate rows,
+  which FR-42 asks labels never to have. Erratum B retracts erratum A's "physical".
 
 ### 9.9 The release worlds
 
@@ -1364,3 +1372,20 @@ findings, R-F1 (§9.8) and R-F2 (§9.10), in place, and the readings below.*
    R2.
 9. **R1's domain** leaves out elongation, which has no complexes there: §9.6's and §3.5's bounds
    hold at the routes in use.
+
+### 9.13 Erratum B: the label rows are not neutral labels
+
+*22 November 2026, after FR-42 (neutral arrival-time labels; the lead's request), docs only.*
+
+1. **Retracted:** erratum A's statement that the label rows' departure is "physical, not an
+   error". It is physical only for a chemically distinct label. §9.1's class rows are meant as
+   neutral arrival-time labels, and a neutral label must leave the loss, the free energy and the
+   heat of its physical population unchanged (FR-42).
+2. **The departure's general form** (§9.8): a class row's loss factor is 1 − e^(y_f) (N/n_k)^(1/L),
+   with N the fate's total and n_k the row's amount. The bound of about 10⁻⁸ holds at R1 alone,
+   where e^(y_f) ≈ 9.4 × 10⁻⁹.
+3. **Route 1 is provisional, pending FR-42.** Its blank subtraction is exact only for a loss linear
+   in the amount. The user decides whether FR-38's label rows are replaced under FR-42 before the
+   registered comparison.
+4. **Route 2 stands.** cohort.py reads the run's own per-molecule loss, which is FR-42's method on
+   the host.

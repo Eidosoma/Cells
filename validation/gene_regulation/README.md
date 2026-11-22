@@ -6,10 +6,12 @@ which this folder's tools read as data only.
 
 | Tool | What it does |
 | --- | --- |
-| `worlds.py` | The sheet's A1 and A1-M's fifteen worlds, at any potential set |
+| `worlds.py` | The sheet's A1 and A1-M's fifteen worlds, at any potential set; FR-38's release worlds R1 (with its labelled pair), R2 (with the addendum's development check) and R1S |
 | `engine_run.py` | Runs worlds, exporting the sheet's §6 readouts per cell by ID, except each move's ΔG and A1's u(t) (below), with a receipt of the source |
 | `compare.py` | An engine run against G2's interface at G2's required times |
-| `cohort.py` | Window survivors from the counters: one well-mixed pool, loss independent of age |
+| `cohort.py` | Window survivors from the counters: one well-mixed pool, loss independent of age; a fate row's inflow is its release's (FR-38, §9.8's route 2) |
+| `release_check.py` | FR-38's checks of R1, R2 and R1S runs: the requester's limit, the identities, energy and both cohort routes |
+| `optin_check.py` | The release opt-in's before/after dump of every registered FR-25 definition, and its D148 verdict |
 | `rna_readouts.py` | Per-cell RNA readouts and FR-25's two controls |
 | `restart_example.py` | A restart at a rate change |
 | `kernel.py` | The operator's own half-steps in NumPy, used by the tests |
@@ -31,6 +33,12 @@ At each output, per cell by ID, under G2's interface names:
   - each route's heat `H_route_<route>`, their sum and the booked total;
   - `G_minus_G0`, from the state alone.
 - **J_bar_<chain>** in A1-M's worlds, at their full horizon.
+- **The release** (FR-38, the sheet's §9), only in a world that declares one, per release and fate
+  (`durable`, `short_lived`): the hold `H_<release>` (and `H_<release>_<k>` per class where it has
+  several), the releases `int_Q_<release>_<fate>` (`_<k>` per class), each fate's class total
+  `n_<release>_<fate>`, and its heat class `H_rel_<release>_<fate>`. `E_<chain>` counts a held hold
+  among the engaged machines; a fate row other than its chain's product has its own loss class,
+  `H_deg_<row>` (§9.12); and `G_minus_G0` includes the hold's standard term.
 
 **Not exported**, though G2 publishes them:
 - each move's ΔG, `dG_tx`, `dG_tl`, `dG_rel_R`, `dG_rel_P`, `dG_deg_R`, `dG_deg_P` and `dG_rc`;
