@@ -1,0 +1,167 @@
+{
+ "format": "ool_references.fuel_design@1",
+ "registered": "2026-11-20",
+ "source": "docs/ORIGIN_OF_LIFE_FUEL_DESIGN.md at tag ol4-fuel-note-2026-11-20",
+ "rulings": "lead, 20 November 2026: Q1 zero drive is mu_F = mu_W with held potentials including their activities; Q2 every arm compared by total variation, modality reported under the registered definition, the bimodal (d) world chosen by an exact search at M 14-16, the edge regime a reported counter-example, comparable amphiphile counts; Q3 V1 in this registration, the composed population run later; Q4 the switching time from the engine's table; Q5 the driven-law refusal is the builder's registration test; Q6 a constructed set with gamma = 0",
+ "conventions": [
+  {
+   "condensed_measure": "multinomial",
+   "last_molecule": "kept"
+  }
+ ],
+ "rows": {
+  "OL4-1": "The pair identity with fuel: ln a+ - ln a- = -Delta F + w, w = -Sum_held nu mu (fuel note \u00a75 check 1), with the forward form and the reverse rates; in worlds without geometry and in a vesicle world (V1)",
+  "OL4-2": "The cycle's drive: Sum ln(a+/a-) = mu_F - mu_W around every fuel cycle and 0 around every other (\u00a75 check 3); Kolmogorov fails by exactly the drive",
+  "OL4-3": "Closure with fuel: F(n_t) - F(n_0) = W - Q at every row, held and finite fuel, and the payers' split W = Sum_h mu_h supplied_h (\u00a75 check 2)",
+  "OL4-4": "Moieties: Sum M n - Sum_held M supplied constant for the block and the fuel (\u00a75 check 5)",
+  "OL4-5": "True equilibrium: at mu_F = mu_W the stationary law is exp(-F)/Z, with beta > 0 and beta = 0 (\u00a75 check 4); and with finite fuel; and in a vesicle (V1)",
+  "OL4-6": "The driven steady state: the law against the reference's, the fuel flux, mean heat rate = J A (\u00a75 check 6), and on one long run the heat identity and the flux by a z-test",
+  "OL4-7": "Modality (reported, registered definition) and the mean switching time from the engine's table (\u00a73 (d))",
+  "OL4-8": "\u00a72.3's closed form, exact, with its nulls (equilibrium, beta = 0, the dividing null) and (d0); no engine record",
+  "OL4-9": "The registered refusals (L1: a factor on a pool-only step)"
+ },
+ "roles": {
+  "kernel": [
+   "ol4_fd_kernel",
+   "ol4_fd_heldB",
+   "ol4_fd_d0",
+   "ol4_fd_null",
+   "ol4_fd_finite"
+  ],
+  "tables": [
+   "ol4_fd_edge",
+   "ol4_fd_edge_beta0",
+   "ol4_fd_finite",
+   "ol4_fd_ness",
+   "ol4_fd_ness_beta0",
+   "ol4_fd_zero",
+   "ol4_fd_zero_beta0"
+  ],
+  "vkernel": [
+   "ol4_fv_kernel"
+  ],
+  "vtables": [
+   "ol4_fv_closed"
+  ],
+  "runs": [
+   "ol4_run_fuel_held",
+   "ol4_run_fuel_finite",
+   "ol4_run_heldF",
+   "ol4_run_heldB",
+   "ol4_run_d0",
+   "ol4_run_null",
+   "ol4_run_ness_long"
+  ],
+  "refusals": [
+   "refuse_factor_on_pool_step"
+  ]
+ },
+ "ledger_runs": {
+  "ol4_run_fuel_held": {
+   "world": "ol4_fd_kernel",
+   "max_events": 2000,
+   "row_every": 100,
+   "t_end": 1000000000.0,
+   "seed": 401
+  },
+  "ol4_run_fuel_finite": {
+   "world": "ol4_fd_finite",
+   "max_events": 2000,
+   "row_every": 100,
+   "t_end": 1000000000.0,
+   "seed": 402
+  },
+  "ol4_run_heldF": {
+   "world": "ol4_fd_heldF",
+   "max_events": 2000,
+   "row_every": 100,
+   "t_end": 1000000000.0,
+   "seed": 403
+  },
+  "ol4_run_heldB": {
+   "world": "ol4_fd_heldB",
+   "max_events": 2000,
+   "row_every": 100,
+   "t_end": 1000000000.0,
+   "seed": 404
+  },
+  "ol4_run_d0": {
+   "world": "ol4_fd_d0",
+   "max_events": 2000,
+   "row_every": 100,
+   "t_end": 1000000000.0,
+   "seed": 405
+  },
+  "ol4_run_null": {
+   "world": "ol4_fd_null",
+   "max_events": 2000,
+   "row_every": 100,
+   "t_end": 1000000000.0,
+   "seed": 406
+  }
+ },
+ "ness_run": {
+  "id": "ol4_run_ness_long",
+  "world": "ol4_fd_ness",
+  "max_events": 200000,
+  "row_every": 10000,
+  "t_end": 1000000000000.0,
+  "seed": 407
+ },
+ "switch_start": {},
+ "tolerances": {
+  "kernel": "64u(4 + |ln a+| + |ln a-| + |dF|) per edge; 64u(rates + Sum |ln a| + |target|) per cycle",
+  "closure": "OL1-5's derived bound",
+  "payers": "2(16 u E (1 + max|mu|) + 4 u Sum|mu s|)",
+  "moieties": "exact integers",
+  "equilibrium_tv": 1e-10,
+  "driven_tv": 1e-09,
+  "flux_and_heat_rtol": 1e-08,
+  "switching_rtol": 1e-07,
+  "vesicle_log_atol": 1e-08,
+  "vesicle_forward_rtol": 1e-12,
+  "vesicle_tv": 1e-07,
+  "z_crit": 3.290526731491926,
+  "alpha": 0.001,
+  "min_power": 0.99
+ },
+ "modality": {
+  "definition": "clusters of local maxima of the law of (L1@membrane, L2@membrane) over the 8-neighbourhood, ties merged, peaks >= 1/20 of the largest; kinds one_central, two_interior, two_edge, one_offcentre, other",
+  "switch_regions": "share f = L1/(L1 + L2) with L1 + L2 >= 2: R1 f >= 3/4, R2 f <= 1/4"
+ },
+ "closed_form": {
+  "sample_seed": 2026112001,
+  "sample_size": 4000,
+  "planted": [
+   "two_for_four",
+   "T_for_T2",
+   "drop_E1_one"
+  ]
+ },
+ "search": {
+  "what": "evidence/search in the OL5 fuel staging folder: search_interior.py, candidates.py and their JSON-line outputs",
+  "pick": {
+   "M": "15",
+   "e1": "1/8",
+   "e2": "1",
+   "k2": "1/2",
+   "kf": "10",
+   "kj": "10",
+   "X": "15/4",
+   "beta": "6",
+   "thF": "32"
+  },
+  "edge": {
+   "M": "12",
+   "e1": "1/8",
+   "e2": "1/8",
+   "k2": "1/10",
+   "kf": "10",
+   "kj": "10",
+   "X": "4",
+   "beta": "20",
+   "thF": "2048"
+  }
+ },
+ "magnitudes": {}
+}
