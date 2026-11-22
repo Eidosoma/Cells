@@ -463,6 +463,24 @@ at 1 fails; birth-lysed daughters take a slot and free it; simultaneous schedule
 between them; a time at t_end applies and a later one does not. The lineage-order test now expects
 a permuted order to fail.
 
+### Amendment 7 (19 November 2026): the division inputs
+
+The engine's division block needs a declared continuation (`first`, follow daughter 0, or
+`uniform`) and an optional critical stress. The registered inputs declared neither, so
+`designs/ol3_division.json` now records the values the references already assume. No other input
+changes, and this is still before any OL3 engine output.
+- **`ol3_lineage`: continuation `first`.** It is the stand-in's choice. It is also the only value
+  the registered replay admits, since the stream layout of §0.2c rule 14 and §0.2d items 6 and 10
+  has no continuation draw. A `uniform` continuation would draw a uniform that the replay reports
+  as unrecognised.
+- **No continuation is declared for the population worlds,** where every daughter lives (§4.4).
+- **Nothing is lost in law.** C3x's π gives the blocks to the daughters in a uniformly random
+  order (§0.2c rule 9), so daughter 0 already holds a uniformly drawn block.
+- **No OL3 world declares a critical stress,** so no stress test applies. Admission is
+  v ≤ k^(−1/2) alone, as the references implement it.
+- **The followed daughter is still read from the record and not checked** against the
+  declaration. G1's `daughter_continuation@1` carries that claim (zero-power list).
+
 ## What could not be confirmed from the sources
 
 - **The design's §2.2 table writes F in the continuum (Stirling) form.** Textbook mass action
