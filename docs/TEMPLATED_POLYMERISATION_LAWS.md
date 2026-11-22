@@ -1443,3 +1443,117 @@ the class rows (D288). Docs only, before the code that builds on it.*
    and chain, crossed with the window) marks its material without changing the physics.
 3. **One producer per fate row stays version 1's rule.** A second chain naming a fate row is still
    refused; sharing one is a later extension, now on shares.
+
+### 9.16 Amendment S: the producer across replacement (FR-38's step 4; D296, D301)
+
+*Proposed 22 November 2026 by the gene-regulation lane, for the tag before any code. It answers
+question (c) with the requester's clarification of 22 November (docs/FEATURE_REQUESTS.md, FR-38),
+replaces §9.7's "Replacement waits" and §9.11's item 3, and lifts D301's temporary refusal. A
+definition without a replacement keeps §0–§9.15 bit for bit.*
+
+1. **Scope.**
+   - `templated_polymerisation@1` composes with `scheduled_cell_replacement@1`, whose events
+     replace a slot's occupant by a newcomer from an isolated template.
+   - Refused in version 1, each at the definition:
+     - a donor copy into a slot that holds a pool of this operator, or from one (D152 defers its
+       own donor copies to version 1.1);
+     - `scheduled_cell_replacement@2`, as the declarations already refuse it: water provides the
+       volumes this operator reads as declared.
+   - A replaced slot's chains, releases, degradations and transfers are those whose cell it is. A
+     pool and its chains share one cell, so an occupant takes its whole gene unit with it.
+2. **The event.** At the start of the step leaving t_e, the step in which replacement@1 swaps the
+   slot's rows, this operator's own event part acts on every replaced slot c:
+   - **The chains in progress leave.** Every chain ρ at c sets C_ρ,j → 0. Its counters gain the
+     chains removed Σ_j C_ρ,j and the residues removed W_ρ = r_ρ Σ_j (j − 1) C_ρ,j (§1.2).
+   - **The hold leaves.** Every release of such a chain sets H_ρ → 0, and its hold-removed counter
+     gains H_ρ.
+   - **The newcomer's machines are all free.** Every pool q at c sets F_q → M_q. Machines carry no
+     free energy (§1.2), so this books nothing.
+   - **The free energy leaving with them** is μ°_ρ,res (W_ρ + L_ρ H_ρ). It is booked in a removal
+     counter of its own, not as heat.
+   - **The event reads only its own state and controls:** the replacements due at each slot,
+     known from replacement@1's events at the definition. So it does not depend on the order of
+     the two events in the operator list.
+   - **The rows are replacement@1's.** It removes the occupant's amounts and supplies the
+     template's (`replacement_removed_fmol`, `replacement_supplied_fmol`), with their chemical and
+     capacitor free energy (`replacement_free_energy_pJ`). The rows' standard term
+     Σ_s μ°'_s Δn_s at the swap is booked by neither operator. D152's owned standard term has the
+     same gap, since its operator has no event part either. The engine's energy ledger closes all
+     the same, because each owned standard term is an accumulator of its operator's own moves.
+     Item 5 states the account with the swap computed from replacement@1's records.
+3. **Generations and counters.**
+   - A slot's occupants are its generations: the founder g = 0, then each newcomer g + 1,
+     replacement@1's `generation`. A producer is (cell, generation, chain), preserved across
+     restart and cell reordering, as IDs.
+   - Every counter of §4.7 and §9.7 stays cumulative from t = 0: initiations, stage exits,
+     arrivals A_ρ = ∫Q_ρ, releases ∫Q^f_ρ, each degradation's ∫D and each transfer's extent. Removal
+     is counted apart from degradation, by the counters of item 2.
+   - **The newcomer's counters start at zero.** Per chain, release, degradation and transfer of a
+     replaced slot, the operator holds each cumulative counter's value at the current generation's
+     birth (0 for the founder). At each event it records the departing generation's own totals,
+     the counter at its death minus that birth value, and the counter's value becomes the
+     newcomer's birth value. The newcomer's own counters are the cumulative counters minus it. State
+     holds the latest departed generation's totals; earlier ones stay in the records at their
+     events' steps.
+4. **The identities across events.** Each holds at every step; the removal terms are cumulative
+   from t = 0.
+   - **Machines:** F_q + engaged − M_q = 0, as in §9.7. After an event every machine at c is free.
+   - **Residues in transit, per chain:** r_ρ ∫S_ρ = W_ρ + L_ρ A_ρ + W^rem_ρ.
+   - **The hold, per release:** H_ρ(0) + A_ρ = H_ρ + Σ_f ∫Q^f_ρ + H^rem_ρ.
+   - **Per producer,** for generation g of chain ρ between its birth t_b and its death t_d, with
+     one producer per fate row (§9.11, item 4) and no other mover of it (a transport, FR-42's
+     stage 2, adds its own term):
+     H_ρ(t_b) + A_g = H^rem_g + Σ_f [R^f_g + ∫_{t_b}^{t_d} D_F^f], where
+     - A_g is the arrivals of its life, and H_ρ(t_b) = 0 for a newcomer;
+     - H^rem_g is its hold at t_d, which the event removes;
+     - R^f_g = n_F^f(t_d) − n_F^f(t_b) is the net RNA it added to fate row f. Replacement@1 removes
+       n_F^f(t_d) at the event and supplies the template's n_F^f(t_b) of the next generation;
+     - so initial plus arrivals equals attached, surviving, lost and removed RNA, with removal
+       booked to the departing generation and apart from degradation.
+
+     A living generation's identity is §9.7's, from t_b.
+5. **The energy account.**
+   G(t) − G(0) + Σ H + Σ_events (G^out − G^in) = 0, where:
+   - G^out is the departing occupant's G within §3.4's scope: its rows' terms at removal, from
+     replacement@1's removed amounts, plus item 2's transit and hold terms, from this operator's
+     removal counter;
+   - G^in is the newcomer's, its template's rows at supply. Its transit and hold are empty.
+
+   Each class of Σ H stays non-negative and non-decreasing inside the domain (§3.5, §9.6). The event
+   books no heat.
+6. **The newcomer's rates (the occupant rule, D244).**
+   - An optional `templates` key gives them: {template_id, rates: {route ID: value}} for a
+     replacement template whose newcomers fill a slot of this operator. A route here is a chain's
+     k_I, a degradation's k, a transfer's capacity, or a scheduled release's p.
+   - Each route of a replaced slot takes its template's value from the newcomer's birth.
+   - Refused at the definition:
+     - a route of a replaced slot without its template's value;
+     - a template value for no route its newcomers take;
+     - a template that is not a replacement template;
+     - a schedule change of a replaced slot's route after its founder's death. In version 1 a
+       newcomer's values are its template's, constant through its life.
+   - The gene's copies T, the chains' structure and the pools' machines M are declared per slot,
+     so the newcomer has the founder's.
+   - A definition without the key keeps its declaration, to_dict and fingerprint byte for byte.
+7. **Labels (D296; the label owner's side).**
+   - The producer's label is a label source's schedule, the chain's, naming (cell, generation,
+     chain) from each generation's birth.
+   - At the event the label owner gives the replaced slot's labelled rows and this operator's hold
+     pools the label in force there, the newcomer's. The departing material leaves with its shares.
+   - RNA retained in an extracellular compartment keeps its producer's label, through FR-42's stage
+     2 transport.
+   - Labels change no physics.
+8. **Restart.** Item 2's and item 3's counters, and the replacements applied per slot, are state.
+   So a checkpoint and resume carry them bit for bit, and the controls come from the definition.
+9. **Static.** Without replacement@1 in the composition, or with no event on a slot of this
+   operator, every new field is zero-size. The event part then returns its state unchanged with no
+   validity term, so no program gains an equation. Under D148's case 2 (D296), the proof is the
+   programs check and `validation/gene_regulation/optin_check.py` before and after, with every
+   physical field bitwise.
+10. **What it does not claim.**
+    - **No biology** in the departure: that an occupant's chains in progress and its hold leave
+      with it is the requester's reading of replacement, declared. A newcomer that inherits a
+      chain is not modelled.
+    - **No donor copies** (item 1), and **no `scheduled_cell_replacement@2`**.
+    - **No standard term for the rows' swap** in the engine's bookings (item 2). It is a gap
+      shared with D152, reported to the lead.
