@@ -43,7 +43,7 @@ and a general feature, never one built for one study (D144).
 | [FR-35](#fr-35--timed-partial-withdrawal-of-an-assembly-populations-exterior-pool) | Timed partial withdrawal of an assembly population's well-mixed exterior pool: each molecule withdrawn independently, a declared buffer supplied, sites and particles kept | **High** (user, 21 November 2026) | **Landed** (merge b521a11c, tag `fr35-withdrawal-landed-2026-11-21`): `cells.pool_withdrawal@1` (D261) | None. Landed (b521a11c, with D263's fixes); the independent acceptance and a 4,000-stream ensemble passed |
 | [FR-36](#fr-36--age--and-region-selective-loss-within-a-species-row) | Age- and region-selective loss within a species row | FR-25's reviewer (21 November 2026) | **Deferred (D273).** Today's tools cover completion-time cohorts in one well-mixed pool with age-independent loss (cohort.py) and FR-33's regional export and one-way tracer | Reopens on a requester's readout needing age-dependent loss: D1 (label families) and D2 (an ageing operator), 2.5 to 4 days |
 | [FR-37](#fr-37--sampling-a-liquid-whose-dye-is-unevenly-distributed) | Sampling a liquid whose dye is unevenly distributed: a draw from chosen parts of an unevenly mixed liquid | **High** (user, 21 November 2026; D274) | **Shown with existing operators** (2bba6043, validation/sampling/uneven_draw.py): per-region wash events; the three cases match, with all 10 fmol accounted for; checker-accepted. Mixing is declared, not simulated (D246), and the sample is a host-side sum | Predicting the per-region split from the port, flow and timing needs an advection operator on faces, with the wash's face refusal lifted (about 3 to 5 days): built only if the requester asks |
-| [FR-38](#fr-38--rna-release-from-its-template-into-two-pools-with-different-lifetimes) | RNA release from its template into two pools with different lifetimes, with per-producer accounting, a release-window cohort and explicit measurement denominators | A user (22 November 2026) | **Under assessment.** The requester's reference reproduces at 40c3185e and on main (native replay error 1.06e-6 at 60 s, 1.3e-7 at 30 s); the gene unit itself has no release step | The gene regulation lane prices the build; three questions for the requester (machine holding, release energy, what "replacement" means) |
+| [FR-38](#fr-38--rna-release-from-its-template-into-two-pools-with-different-lifetimes) | RNA release from its template into two pools with different lifetimes, with per-producer accounting, a release-window cohort and explicit measurement denominators | A user (22 November 2026) | **Assessed, awaiting the user's go.** The reference reproduces at 40c3185e and on main. Their suggested route is refused (one writer per row), and their replay's energy is driven work. The proposal is a terminal hold in `templated_polymerisation@1`, split by p into two fate rows, with exact energy and no new energy object | The minimal path is 5–6 agent-days, the full one 7–9.5. Four questions for the requester: machine holding, release energy, what "replacement" means, and one gene per producer |
 
 ## FR-1 — A closed internal compartment on the shared inventory
 
@@ -1602,3 +1602,41 @@ with 2 and 1.5.
   - New routes are development status.
   - The measurement layer is passive (`src/cells/assays`): it states its assumptions and never feeds back
     into the simulation.
+
+**The gene regulation lane's desk assessment (12:22 UTC; no engine code).**
+- **The suggested route is refused.** A `local_species_reactions@1` reaction on a chain's product row is
+  refused at parse: "templated_polymerisation@1 ... is the one writer of its listed rows". The requester's
+  split works only on stand-alone fixture nodes. The parse script is
+  /mnt/workspaces/Cells/gene-regulation-20261120/fr38/refusal_check.py.
+- **The replay's energy is driven work.** The fixture's species all have mu°/RT = 0, and every route is
+  driven mass action, which books a driven-only node's dG as signed work with zero heat. Moves into a
+  fuller pool (Durable and Lost outgrowing Resident in the chase) book positive work, which the
+  dissipation check does not see. The ledger closes, but nothing physical pays for those moves.
+- **The proposed shape:** an in-place opt-in to `templated_polymerisation@1` (D148), with a sheet amendment
+  tagged before code.
+  - A finished chain waits in a terminal hold owned by its chain, carrying only its residues' standard
+    term. Release into a fate row has dG = RT ln a_fate. That is today's product-release term split across
+    the durable and short-lived rows, so it is downhill below 1 M, with no new energy object.
+  - An attached species row would instead gain a concentration term and could run uphill.
+  - Initial hold occupancy is declarable (the 80-chain case), and the model gives the requester's 40, 30,
+    24.852814 and 5.000000 analytically.
+  - Each pool's loss is an existing degradation route.
+  - New counters: the hold, cumulative releases per fate, and a per-producer ledger.
+  - p comes from a constant, a per-chain schedule, or a routable factor on an engine state (B1′, at the
+    midpoint when release moves its own source), each recorded.
+- **Not an FR-36 D2 case:** the held transcript is producer-owned occupancy, not a free pool, so D2's
+  progression operator stays the general home for ageing and label families.
+- **Prices (agent-days):**
+  - the sheet amendment 0.75;
+  - the hold without a machine 1.5–2 (with a machine 1–1.25);
+  - p as a constant and schedule 0.5, from a state factor 0.75;
+  - initial hold 0.25;
+  - counters, export and the per-producer ledger 0.75;
+  - the host-side release-window cohort 0.25–0.5;
+  - the observation layer 1–1.25;
+  - tests and gate 1–1.5;
+  - producer identity across replacement 1–2, depending on the requester's answer.
+- **Totals:** the minimal path (hold without a machine, constant and scheduled p, counters, host cohort,
+  observation layer, tests) is 5–6 days; the full path 7–9.5.
+- **A fourth question for the requester:** (d) is each producer one gene in one cell, with its own fate
+  rows, or do several producers feed shared pools, which would need label families?
