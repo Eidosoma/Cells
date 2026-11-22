@@ -467,7 +467,9 @@ class World:
         mus = ctl.bath["mu_tuple"]
         n_bath = len(Jf) - (1 if ctl.o2 == "node" else 0)
         dy[k + 2] = sum(Jf[i] * mus[i] for i in range(n_bath))
-        dy[k + 3:k + 11] = [in_H, fK, in_Mg, in_ATP, in_ADP, fAMP, in_Pi, fO2]
+        # In_O2 counts the O2 the held bath supplies; from W3(d)'s node, the flow is internal.
+        dy[k + 3:k + 11] = [in_H, fK, in_Mg, in_ATP, in_ADP, fAMP, in_Pi,
+                            fO2 if ctl.o2 == "bath" else 0.0]
         dy[k + 11] = jC4
         dy[k + 12] = jS
         return np.array(dy)
@@ -561,6 +563,7 @@ class World:
         """A = sum over forms of n (mu deg + ln c - 1) + C_IM f dPsi^2 / 2, RT mol (L mito)-1.
 
         The held pair and the held bath are reservoirs outside A; W3(d)'s O2 node is inside it.
+        ``o2`` is kept for the callers' signature; the node counts in either mode.
         """
         N, P = self.forms(y)
         total = 0.0
@@ -568,9 +571,10 @@ class World:
             for name, c in forms.items():
                 if c > 0.0:
                     total += water * c * (self.form_mu0(name, side) + math.log(c) - 1.0)
-        if o2 == "node":
-            c = float(y[IDX["O2_node"]])
-            total += self.node_water * c * (math.log(c) - 1.0)
+        # W3(d)'s O2 node is inside A in either mode: held constant while the bath supplies O2,
+        # so the ledger stays the same function of the state across the switch at 60 s.
+        c = float(y[IDX["O2_node"]])
+        total += self.node_water * c * (math.log(c) - 1.0)
         total += 0.5 * self.C_IM * self.f_mV * float(y[0]) ** 2
         return total
 
@@ -588,8 +592,10 @@ class World:
         g = lambda name: float(y[IDX[name]])  # noqa: E731
         Wx, Wi = self.W_x, self.W_i
         qN, qP = self.row_charge(y)
-        o2_total = Wx * g("O2_N") + Wi * g("O2_P") + g("O2_used")
-        o2_total += self.node_water * g("O2_node") if o2 == "node" else -g("In_O2")
+        # The O2 node is counted in either mode (held constant while the bath supplies O2), and
+        # In_O2 is the bath's supply alone, so the invariant holds across W3(d)'s switch.
+        o2_total = (Wx * g("O2_N") + Wi * g("O2_P") + g("O2_used")
+                    + self.node_water * g("O2_node") - g("In_O2"))
         return {
             "NAD_tot": g("NADH") + g("NAD"),
             "Q_tot": g("QH2") + g("Q"),
