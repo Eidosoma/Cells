@@ -45,7 +45,7 @@ import numpy as np
 from cells.definitions import pump_composite_spec as composite_spec
 from cells.definitions.spec_values import identifier
 from cells.definitions.specs import ConfigError, _fields
-from cells.numerics.clock_instants import on_grid  # D283's one predicate.
+from cells.numerics.clock_instants import ON_THE_GRID, on_grid  # D283's one predicate.
 from cells.registry import species_registry as registry
 
 REPLACEMENT_LAW = "scheduled_cell_replacement@1"
@@ -322,7 +322,7 @@ def parse_schedules(raw, base, routes, law, key, parse_values):
     outside-node route has exactly one schedule, with carrier_id null; a cell-side route needs
     its founder's (carrier_id its cell ID); newcomers' schedules are optional and checked against
     their lives with the definition. Founder and node schedules start at time 0; every change is
-    an exact multiple of dt inside the horizon, in increasing order.
+    on the clock's grid (D283) inside the horizon, in increasing order.
     """
     if type(raw) is not list:
         raise ConfigError(f"{key} requires an explicit list")
@@ -353,9 +353,7 @@ def parse_schedules(raw, base, routes, law, key, parse_values):
         for change in entry["schedule"]:
             time = _time(change.get("time") if isinstance(change, dict) else None, key)
             if on_grid(time, dt) is None:
-                raise ConfigError(
-                    f"{law}: a schedule change must be an exact multiple of dt (k * dt)"
-                )
+                raise ConfigError(f"{law}: a schedule change must be {ON_THE_GRID}")
             if not 0.0 <= time <= end:
                 raise ConfigError(f"{law}: a schedule change lies outside the horizon")
             changes.append((time, parse_values(route, change)))

@@ -84,7 +84,7 @@ species-only world, where this operator is the only energy flow, judged at round
 test per law are the guards of record.
 
 Schedule `reaction_controls` (§2.1): per reaction (site null) and optionally per site, a
-piecewise-constant multiplier m >= 0 from time 0, changing at exact multiples of dt inside the
+piecewise-constant multiplier m >= 0 from time 0, changing on the clock's grid (D283) inside the
 horizon; on a passive reaction it scales both directions. A route takes its site's schedule, else
 its reaction's.
 
@@ -121,7 +121,7 @@ from cells.definitions.specs import ConfigError, _fields
 from cells.laws.electrochemistry import R
 from cells.laws.reactions.mass_action import reversible_flux
 from cells.models import pump_composite_adapter as adapter
-from cells.numerics.clock_instants import on_grid  # D283's one predicate.
+from cells.numerics.clock_instants import ON_THE_GRID, on_grid  # D283's one predicate.
 from cells.numerics.species_sums import entity_sum, species_sum
 from cells.operators import species_common as common
 from cells.operators.contract import Operator, Read
@@ -723,9 +723,7 @@ def _changes(raw, base, what):
         _fields(change, {"time", "multiplier"}, f"{CONTROLS_KEY} change")
         time = _number(change["time"], f"a change time of {what}")
         if on_grid(time, dt) is None:
-            raise ConfigError(
-                f"{LAW_ID}: a schedule change must be an exact multiple of dt (k * dt)"
-            )
+            raise ConfigError(f"{LAW_ID}: a schedule change must be {ON_THE_GRID}")
         if not 0.0 <= time <= end:
             raise ConfigError(f"{LAW_ID}: a schedule change lies outside the horizon")
         changes.append((time, _number(change["multiplier"], f"a multiplier of {what}", low=0)))

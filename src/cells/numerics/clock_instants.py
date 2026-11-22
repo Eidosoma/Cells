@@ -9,6 +9,9 @@ import math
 
 ROUNDING_ULPS = 4
 
+# The refusals' words for a time that on_grid does not admit (every operator's grid check).
+ON_THE_GRID = f"on the clock's grid (within {ROUNDING_ULPS} ulps of k * dt)"
+
 
 def same_instant(a, b):
     """Whether a and b differ by at most ROUNDING_ULPS ulps of the larger."""
@@ -18,6 +21,7 @@ def same_instant(a, b):
 def on_grid(time, dt):
     """D283's one predicate for steps of dt: the point k * dt that `time` is, exactly or within the
     same-instant tolerance, or None. Every check that asks whether a time is on the step grid asks
-    this, and every event map reads the point it returns (the runner's applied copy)."""
+    this. The clock snaps such a time, as an event, onto the point, and the runner's applied copy
+    (cells.execution.grid.applied_definition) declares it there, so every event map reads it."""
     point = round(time / dt) * dt
     return point if point == time or same_instant(point, time) else None

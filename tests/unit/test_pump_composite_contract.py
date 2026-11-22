@@ -11,9 +11,13 @@
   classes that break the declarations (heat or work suffixes, RK4 modes, entity
   writes without accumulators, B1′'s rate-route declarations); rate routes when a
   composition is built and at the definition (an undeclared control, a source after its target).
+* The operators' grid (D283 stage 2): per operator family, an event time within the clock's
+  same-instant tolerance of its point k * dt is admitted and its applied copy is the k * dt
+  definition; past the tolerance it is refused.
 """
 
 import copy
+import math
 from types import MappingProxyType
 
 import jax
@@ -23,6 +27,7 @@ import pytest
 from cells.definitions import pump_composite_spec as cs
 from cells.definitions.specs import ConfigError, parse_spec
 from cells.execution.batch import BatchSpec, WorldSpec, parse_batch
+from cells.execution.grid import EVENT_TIME_KEYS, applied_definition
 from cells.execution.schedule import control_values as scheduled_controls
 from cells.models import (
     cell_replacement,
@@ -32,6 +37,7 @@ from cells.models import (
     surface_pump_water_v2,
 )
 from cells.models import pump_composite_adapter as pump3
+from cells.numerics.clock_instants import on_grid
 from cells.operators import OPERATORS
 from cells.operators.contract import Operator, Read, check_declarations, factor_reads
 from cells.registry.models import get_model
@@ -521,8 +527,195 @@ def test_event_times_off_the_dt_grid_are_refused_for_any_event_operator():
     (event,) = schedule.data
     shifted = cs.OperatorSchedule(schedule.law, (replace(event, time=event.time + 1e-4),))
     bad = replace(spec, experiment=replace(spec.experiment, operators=(shifted,)))
-    with pytest.raises(ConfigError, match="exact multiples of dt"):
+    with pytest.raises(ConfigError, match="on the clock's grid"):
         get_model(spec.model).check_definition(bad)
+
+
+# ---------------------------------------------------------------- the operators' grid (D283)
+
+
+def _appended(raw, schedule, time, **fields):
+    """(raw with a change at `time` appended to the schedule list schedule(raw), time)."""
+    schedule(raw).append(dict(time=time, **fields))
+    return raw, time
+
+
+def _bath():
+    from tests.unit import test_bath_schedule as t
+
+    return t.definition(), t.EVENT  # 10 ms on the 1 ms clock.
+
+
+def _wash():
+    from tests.unit import test_wash_schedule as t
+
+    return t.washed(), t.T_E  # 1 s on the 10 ms clock (a power of two: ulps differ either side).
+
+
+def _injection():
+    from tests.unit import test_current_injection_runs as t
+
+    return t.definition([(0, 1e-12), (2, 0.0)]), 2 * t.DT
+
+
+def _trafficking():
+    from tests.unit import test_membrane_trafficking as t
+
+    raw = t.one_route()
+    return _appended(raw, lambda r: r["experiment"]["trafficking_controls"][0]["recycling"],
+                     2e-3, rate_m2_per_s=0.0)  # fmt: skip
+
+
+def _unit_turnover():
+    from tests.unit import test_population_unit_turnover as t
+
+    raw = t.definition(*t.base_routes())
+    return _appended(raw, lambda r: r["experiment"]["unit_turnover_controls"][0]["schedule"],
+                     2e-3, assembly_rate_per_s=1.0, removal_rate_per_s=1.0)  # fmt: skip
+
+
+def _sites():
+    from tests.unit import test_site_occupancy as t
+
+    raw = t.world()
+    return _appended(raw, lambda r: r["experiment"]["site_controls"][0]["schedule"], 2e-3,
+                     multiplier=1.0)  # fmt: skip
+
+
+def _exchange():
+    from tests.unit import test_species_exchange as t
+
+    raw = t.definition()
+    return _appended(raw, lambda r: r["experiment"]["exchange_controls"][1]["schedule"], 2e-3,
+                     rate=0.1)  # fmt: skip
+
+
+def _turnover():
+    from tests.unit import test_species_turnover as t
+
+    raw = t.definition()
+    return _appended(raw, lambda r: r["experiment"]["turnover_controls"][1]["schedule"], 2e-3,
+                     rate=0.1)  # fmt: skip
+
+
+def _reactions():
+    from tests.unit import test_species_reactions_refusals as t
+    from validation.tissue import species_reactions_fixtures as reactions
+
+    raw = reactions.enzyme_network()
+    return _appended(raw, lambda r: t.controls(r, "supply")["schedule"], 2e-3, multiplier=1.0)
+
+
+def _regulated():
+    from tests.unit import test_species_regulated_availability as t
+
+    raw = t.base()
+    return _appended(raw, lambda r: r["experiment"]["coupling_controls"][0]["schedule"], 2e-3,
+                     enabled=0)  # fmt: skip
+
+
+def _polymerisation():
+    from validation.gene_regulation import worlds
+
+    raw = worlds.a1()
+    schedule = raw["experiment"]["polymerisation_controls"][0]["schedule"]
+    return _appended(raw, lambda r: schedule, 4 * 0.5, value=schedule[0]["value"])
+
+
+def _divided(**kwargs):
+    from tests import partition_fixtures as t
+
+    return t.divided(**kwargs), t.EVENT  # 2 ms on the 1 ms clock.
+
+
+def _insertion():
+    from tests import membrane_insertion_fixtures as t
+
+    return t.with_operators(t.cleft_cell(), t.furrow_insertion(onset=2e-3)), 2e-3
+
+
+def _replacement():
+    raw, _, _ = frozen_worlds()["replacement"]
+    return cs.frozen_definition(raw), 0.005  # 5 ms on the 1 ms clock.
+
+
+# Per operator family (each with its own grid check, or the composite's check of event operators),
+# a valid world with one of the operator's event times at its point k * dt.
+ON_GRID_ROWS = {
+    "bath_schedule": _bath,
+    "wash_schedule": _wash,
+    "current_injection": _injection,
+    "membrane_trafficking": _trafficking,
+    "population_unit_turnover": _unit_turnover,
+    "site_occupancy": _sites,
+    "species_exchange": _exchange,
+    "species_turnover": _turnover,
+    "species_reactions": _reactions,
+    "species_regulated_availability": _regulated,
+    "templated_polymerisation": _polymerisation,
+    "partition": _divided,
+    "bridge_closure (its start with its division)": lambda: _divided(bridge=("linear", 0.004)),
+    "membrane_insertion (its onset with its rate change)": _insertion,
+    "cell_replacement": _replacement,
+}
+
+
+def _admitted(raw):
+    """The parsed definition, through its composition's checks (where the injection's, the
+    bridge's and the event operators' grid checks run)."""
+    spec = parse_spec(raw)
+    get_model(spec.model).check_definition(spec)
+    return spec
+
+
+def _ulps(time, n):
+    """time moved by n ulps (up for n > 0)."""
+    for _ in range(abs(n)):
+        time = math.nextafter(time, math.copysign(math.inf, n))
+    return time
+
+
+def _retimed(raw, old, new):
+    """(a copy of raw with every experiment event time equal to `old` set to `new`, how many): a
+    bridge's start moves with its division's time, an insertion's onset with its rate change."""
+    out, moved = copy.deepcopy(raw), []
+
+    def walk(value):
+        if isinstance(value, dict):
+            for key, item in value.items():
+                if key in EVENT_TIME_KEYS and type(item) in (int, float) and item == old:
+                    value[key] = new
+                    moved.append(key)
+                else:
+                    walk(item)
+        elif isinstance(value, list):
+            for item in value:
+                walk(item)
+
+    walk(out["experiment"])
+    return out, len(moved)
+
+
+@pytest.mark.parametrize("family", sorted(ON_GRID_ROWS))
+def test_an_event_time_within_4_ulps_of_its_point_is_that_point_for_every_operator(family):
+    """D283 stage 2: an operator's event time one ulp either side of its point k * dt is admitted
+    (on_grid), and the applied copy that the runner runs is the definition declared at k * dt, so
+    it runs at k * dt, while the declared fingerprint stays the declared time's. Five ulps off,
+    past the tolerance, it is refused in the clock's words. Parse-level (no world compiles)."""
+    raw, point = ON_GRID_ROWS[family]()
+    assert on_grid(point, raw["execution"]["dt"]) == point  # The row's time is a point exactly.
+    exact = _admitted(raw)
+    for n in (1, -1):
+        near = _ulps(point, n)
+        moved, count = _retimed(raw, point, near)
+        assert count, "the row moves its operator's event"
+        spec = _admitted(moved)
+        applied, snaps = applied_definition(spec)
+        assert snaps == ((near, point),)
+        assert spec.fingerprint != exact.fingerprint
+        assert applied.fingerprint == exact.fingerprint
+    with pytest.raises(ConfigError, match="on the clock's grid"):
+        _admitted(_retimed(raw, point, _ulps(point, 5))[0])
 
 
 # ---------------------------------------------------------------- ownership (v2 §1.2-§1.4)

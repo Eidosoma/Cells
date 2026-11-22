@@ -60,7 +60,7 @@ from cells.execution.errors import NumericalError
 from cells.models import pump_composite_adapter as pump3
 from cells.models.surface_pump import DOMAIN_MESSAGE
 from cells.models.surface_pump_checks import row_checks
-from cells.numerics.clock_instants import on_grid  # D283's one predicate.
+from cells.numerics.clock_instants import ON_THE_GRID, on_grid  # D283's one predicate.
 from cells.numerics.fixed_step import rk4_checked_step
 from cells.operators.contract import (
     COMMUTING,
@@ -1936,7 +1936,7 @@ class Composition:
                 not 0 < t < end or on_grid(t, dt) is None for t in op.schedule_times(schedule)
             ):
                 raise ConfigError(
-                    f"{op.LAW_ID} event times must be exact multiples of dt inside the horizon"
+                    f"{op.LAW_ID} event times must lie inside the horizon and {ON_THE_GRID}"
                 )
         small = compact(spec)
         state, p = self.initial_values(small)

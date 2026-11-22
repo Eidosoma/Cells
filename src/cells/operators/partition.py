@@ -8,7 +8,7 @@ from each parent patch, population and contact to one slot in each daughter. A p
 the area fraction a_k of its first daughter. A population takes its patch's fraction, and a
 contact map carries its own a_e. Mismatch carriers (transference numbers) are needed when some
 a_k differs from f. Schedule (`partition_events`): at most one event per division, with its time
-(an exact multiple of dt inside the horizon) and the daughters' carrier IDs.
+(on the clock's grid inside the horizon, D283) and the daughters' carrier IDs.
 
 Slots and anchors (§3.2). Daughters take fresh declared slots, closed by this operator until
 their division; the parent's slots close at it. Every daughter anchor is its fraction of the

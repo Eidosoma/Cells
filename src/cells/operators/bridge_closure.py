@@ -42,7 +42,7 @@ import numpy as np
 from cells.definitions import pump_composite_spec as composite_spec
 from cells.definitions.spec_values import identifier
 from cells.definitions.specs import ConfigError, _fields, _number
-from cells.numerics.clock_instants import on_grid  # D283's one predicate.
+from cells.numerics.clock_instants import ON_THE_GRID, on_grid  # D283's one predicate.
 from cells.operators import partition
 from cells.operators.contract import Operator
 
@@ -200,7 +200,7 @@ def check_definition(spec, declaration, schedule, model):
                 f"({when.get(division.id)!r}), not {start.get(b.junction_id)!r}"
             )
         if b.junction_id in start and on_grid(start[b.junction_id], dt) is None:
-            raise ConfigError("A bridge's start is an exact multiple of dt")
+            raise ConfigError(f"A bridge's start must be {ON_THE_GRID}")
         for later in divisions.divisions:
             if later.parent not in ends:
                 continue

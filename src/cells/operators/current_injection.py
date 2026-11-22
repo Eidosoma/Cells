@@ -24,7 +24,7 @@ and the charge f_s I h of each carrier sums to I h. Bookings, exact for each hal
   declared layout's terms are used, as before, bit for bit.
 Refusal: a half-step in which a cell could not supply a removed carrier (its amount would
 not stay positive). No electrode: statically idle. No current in a step: the half-step
-selects the start state. Current changes are exact multiples of dt. A composition with a
+selects the start state. Current changes lie on the clock's grid (D283). A composition with a
 volume owner (water) is refused (CONFLICTS_VIEW volume): the source's work would miss water's
 dilution term of the injected amounts.
 Departures from the v2 note, accepted by the lead (12 November):
@@ -46,7 +46,7 @@ from cells.definitions.specs import ConfigError, _fields
 from cells.laws.electrochemistry import CHARGE_PER_FMOL
 from cells.models import pump_composite_adapter as adapter
 from cells.models import surface_tissue as tissue
-from cells.numerics.clock_instants import on_grid  # D283's one predicate.
+from cells.numerics.clock_instants import ON_THE_GRID, on_grid  # D283's one predicate.
 from cells.numerics.species_sums import entity_sum, species_sum
 from cells.operators.contract import Operator
 from cells.registry.species_registry import NamedRow
@@ -345,7 +345,7 @@ class ElectrodeCurrentInjection(Operator):
         for g in schedule:
             for c in g:
                 if on_grid(c.time, dt) is None:
-                    raise ConfigError("A current change must be an exact multiple of dt (k * dt)")
+                    raise ConfigError(f"A current change must be {ON_THE_GRID}")
 
     def species_identities(self, declaration):
         """Its electrodes' carrier species, each a NamedRow (no catalogue, no evidence, no

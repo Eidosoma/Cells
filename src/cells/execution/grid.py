@@ -61,13 +61,20 @@ def near_miss(time, point, step):
     return not same_instant(point, time) and abs(time - point) <= NEAR_MISS * step
 
 
+# The keys under which an experiment declares event times: every schedule's "time", a bridge's
+# "start_time" (bridge_closure@1) and an insertion's "onset_time" (membrane_insertion@1 and @2).
+# An explicit set, never a *_time pattern: experiment.end_time is no event. A key missed here
+# fails closed: the applied copy keeps its event off the point, and applied_definition refuses it.
+EVENT_TIME_KEYS = frozenset({"time", "start_time", "onset_time"})
+
+
 def _snap_times(value, snap, pairs):
-    """`value` with every number under a "time" key replaced by snap(it) where snap gives a point
-    (recording (declared, applied)); lists and dicts walked, everything else kept."""
+    """`value` with every number under an EVENT_TIME_KEYS key replaced by snap(it) where snap gives
+    a point (recording (declared, applied)); lists and dicts walked, everything else kept."""
     if isinstance(value, dict):
         out = {}
         for k, v in value.items():
-            if k == "time" and isinstance(v, (int, float)) and not isinstance(v, bool):
+            if k in EVENT_TIME_KEYS and isinstance(v, (int, float)) and not isinstance(v, bool):
                 applied = snap(float(v))
                 if applied is not None and applied != v:
                     pairs.append((float(v), applied))
@@ -86,27 +93,23 @@ def applied_definition(spec):
     its clock snaps (EventGrid(spec).snapped) replaced by the point, re-parsed. The runner runs
     this copy, so every control lookup, observation and operator sees the instant the clock steps
     at; the declared definition keeps its fingerprint, record and manifest. Without a snap, `spec`
-    itself."""
+    itself.
+
+    The operators' own schedules are among these events (D283 stage 2): each operator reports its
+    times (schedule_times) into the experiment's changes, and its grid check admits a time within
+    the same-instant tolerance of k * dt (numerics.clock_instants.on_grid), which the clock snaps
+    onto k * dt, so the copy declares it there."""
     from cells.definitions.specs import parse_spec
 
     grid = EventGrid(spec)
     changed = {c.time for c in spec.experiment.changes}
     snapped = {d: a for d, a in grid.snapped if d in changed}  # The events'; refinements stay.
     rows = [t for t in spec.experiment.observation_times if grid.instant(t) != t]
-    dt = spec.execution.dt
+    if not snapped and not rows:
+        return spec, ()
     raw = spec.to_dict()
     pairs = [(t, grid.instant(t)) for t in rows]
-    # D283 stage 2: the operators' own schedule times (their declarations, in the model block or
-    # the experiment's), which their checks admit within the same-instant tolerance of k * dt
-    # (on_grid), take that point too, so each operator's event map reads the instant the clock
-    # steps at; the clock's own snaps first (a fine point's included).
-    raw["experiment"] = _snap_times(
-        raw["experiment"], lambda v: snapped.get(v, on_grid(v, dt)), pairs
-    )
-    model = _snap_times(raw["model"], lambda v: on_grid(v, dt), pairs)
-    if not pairs:
-        return spec, ()
-    raw["model"] = model
+    raw["experiment"] = _snap_times(raw["experiment"], snapped.get, pairs)
     if rows:  # A row declared at a snapped instant is that point's row.
         raw["experiment"]["observation_times"] = [
             grid.instant(t) for t in raw["experiment"]["observation_times"]

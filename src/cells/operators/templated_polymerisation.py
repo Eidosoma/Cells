@@ -179,6 +179,7 @@ from cells.definitions.specs import ConfigError, _fields, _number
 from cells.laws.electrochemistry import R
 from cells.models import pump_composite_adapter as adapter
 from cells.models import surface_pump as first
+from cells.numerics.clock_instants import ON_THE_GRID, on_grid  # D283's one predicate.
 from cells.numerics.species_sums import entity_sum, species_sum
 from cells.operators import species_common as common
 from cells.operators import species_reactions
@@ -840,8 +841,6 @@ def grid_time(time, dt):
     and class switches among them. It is one of two seams for D283's same-instant snap; the other
     is the host-side cohort's window edges (validation/gene_regulation/cohort.same_instant). D283's
     stage 2 widens it to the clock's predicate (cells.numerics.clock_instants.on_grid)."""
-    from cells.numerics.clock_instants import on_grid
-
     return on_grid(time, dt)  # D283: the clock's one predicate, the same-instant tolerance.
 
 
@@ -892,7 +891,7 @@ def parse_schedule(raw, base, declaration):
             if index == 0 and time != 0.0:
                 raise ConfigError(f"{LAW_ID}: route {name}'s schedule starts at 0")
             if grid_time(time, dt) is None:
-                raise ConfigError(f"{LAW_ID}: a schedule change is an exact multiple of dt")
+                raise ConfigError(f"{LAW_ID}: a schedule change must be {ON_THE_GRID}")
             if index > 0 and not 0.0 < time < end:
                 raise ConfigError(f"{LAW_ID}: a schedule change lies inside 0 < t < end")
             value = _number(change["value"], f"{LAW_ID}: route {name}'s value")

@@ -111,7 +111,7 @@ from cells.definitions.spec_values import identifier
 from cells.definitions.specs import ConfigError, _fields, _number
 from cells.models import pump_composite_adapter as adapter
 from cells.models import surface_pump as first
-from cells.numerics.clock_instants import on_grid  # D283's one predicate.
+from cells.numerics.clock_instants import ON_THE_GRID, on_grid  # D283's one predicate.
 from cells.numerics.species_sums import entity_sum, species_sum
 from cells.operators import membrane_state, species_reactions
 from cells.operators import species_common as common
@@ -323,7 +323,7 @@ def parse_schedule(raw, base, declaration):
             if index == 0 and time != 0.0:
                 raise ConfigError(f"{LAW_ID}: route {name}'s schedule starts at 0")
             if on_grid(time, dt) is None:
-                raise ConfigError(f"{LAW_ID}: a schedule change is an exact multiple of dt")
+                raise ConfigError(f"{LAW_ID}: a schedule change must be {ON_THE_GRID}")
             if index > 0 and not 0.0 < time < end:
                 raise ConfigError(f"{LAW_ID}: a schedule change lies inside 0 < t < end")
             parsed.append(
