@@ -9269,3 +9269,17 @@ The lead's rulings, made blind to every held-out value:
      data mark.
    - It applies to the error bars read there.
 
+## D295: The vesicle area for set 2's osmotic rows: a declared premise
+
+2026-11-22, about 15:55 UTC. Stage 1c (stage1c_conditions.json sha256 7f99f680…): Karal et al. 2015 PRE's methods
+state no GUV size, and Levadny et al. 2013 is unobtainable. The lead's ruling, made blind to every held-out
+value:
+- **The area ratio for set 2's osmotic rows is 1,** under a declared premise. Shibly et al.'s vesicles
+  and the fit data's come from one laboratory, by one micropipette method in the same period, so their
+  size distributions are taken as equal.
+- **s_area** is the propagation of Shibly's stated ±0.2 µm on its mean r0 of about 13.5 µm:
+  2 × 0.2/13.5, about 0.03 in ln k.
+- **The premise is stated beside each set-2 verdict,** as the identity "first rupture is first opening"
+  is. A set-2 failure may come from a size difference between preparations rather than from the law.
+- **Set 1 is unaffected,** since its area cancels.
+
