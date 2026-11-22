@@ -58,6 +58,10 @@ test("a published page carries the listed experiments' runs and the runs its sce
   const byCards = publishedReplays(parted, scene, { experiments: ["old"] });
   assert.deepEqual(byCards.runs.map((run) => run.id), ["old--a", "loop--planarian", "old-part--p"]);
   assert.deepEqual(byCards.experiments.map((item) => item.id), ["old", "loop", "old-part"]);
+  const withModels = { ...scene, models: [{ id: "new-model", view: { kind: "vesicle" }, runs: [{}] }] };
+  const withCard = publishedReplays(parted, withModels, { experiments: [], entries: ["gard", "new-model", "absent"] });
+  assert.deepEqual(withCard.doors, [{ entry: "gard" }, { entry: "new-model" }]);
+  assert.deepEqual(parted.doors, [{ entry: "gard" }], "the archived catalogue keeps its own doors");
   assert.equal(publishedReplays(parted, scene, { experiments: [] }).runs.length, 1, "a listing of none carries only the runs the scene names");
 });
 
@@ -83,7 +87,7 @@ test("the page's overlay holds the replication's entry and GARD's door, each sou
   const overlay = readJson("data/replays/overlay.json"), selection = readJson("data/replays/selection.json");
   // The landing lists from the cards; the overlay says nothing of listing (18 November 2026).
   assert.deepEqual(Object.entries(overlay.experiments).filter(([, entry]) => "listed" in entry).map(([id]) => id), []);
-  assert.deepEqual(overlay.doors, [{ entry: "gard" }]);
+  assert.deepEqual(overlay.doors, [{ entry: "gard" }, { entry: "origin-vesicles" }]);
   const entry = overlay.experiments["gap-junction-linear-network"];
   // Its runs open on the quantity the driver states beside each (concentration.json), else on the amount; the two forms' units are said, never converted.
   // Its card on the landing opens on the part `opens.part` names (the tumour tissue's sheet since 19 November 2026, when the user asked for it; its line until then).

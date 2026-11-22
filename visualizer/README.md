@@ -413,12 +413,12 @@ must bve configurable as well based on our different species as we add them".
 The Experiments tab opens on a landing of cards that shows everything Cells has run, in
 four bands, each card with its standing in the record's words (the user chose the layout
 on 18 November 2026; the site's first entry is Scope, as before). A visitor first sees the
-first band, the two examples to start with; every later band stands folded behind its own
+first band, the three examples to start with; every later band stands folded behind its own
 control (19 November 2026):
 
 | Band | Cards | What stands in it |
 | --- | --- | --- |
-| Examples to start with | 2 | The tumour tissue (the gap-junction work: the line, the ladder, the sheet and the networks, 50 runs; "Development work, not judged (D138)" first on it) and the assembly (the engine's two development runs of the model system, in its own view) |
+| Examples to start with | 3 | The tumour tissue (the gap-junction work: the line, the ladder, the sheet and the networks, 50 runs; "Development work, not judged (D138)" first on it), the assembly (the engine's two development runs of the model system, in its own view), and **A vesicle’s life** (two development runs showing growth and shear division in one vesicle and threshold lysis in another) |
 | Judged under a registered protocol | 19 | Everything the record has judged under a registered protocol, experiment or qualification, passed or failed, side by side, each card with its own level from the Engine map: E07-v1 (38 judged runs; its answer: the disc did not renew), the judged acceptances of FR-1, FR-3, FR-4, FR-5, FR-6 (two) and FR-10, FR-7's first closed loop (its comparison F4 against R-loop, both arms and its persistence rows; F3's comparison is queued), the morphogenesis gates MG0, MG0c and MG1 (its failed first run beside the pass), the secreted-species qualification D150, cell division, the BETSE parity ladder (rung 1's failed first run beside the passes), osmotic water and volume, cell replacement, the composite on the L4 (Implemented and guarded: its judged run's Q7 failed and stands), fixed points, and projective stepping (Failed qualification) |
 | Development runs | 6 | The turnover pre-screen (21 runs), the secreted-species run and the planarian loop (1 each), the origin-of-life laws (six rows against references, landed for development and not judged), and the heredity pilot W1 and the conduction probe (the map states no level for either, and each card says so first) |
 | Invented numbers | 1 | A test sheet of the viewer's own: no engine ran |
@@ -478,8 +478,8 @@ in one line, a press away from it.
   link there. Every address that worked before (`run=`, `select=run:`, `part=`,
   `example=`) opens its view without the landing.
 - **What each address fetches.** The landing fetches `cards.json`, the cards' faces (what
-  a card's face says, and what the List and the search read), and, as it opens, the two
-  examples' stills; a later band's stills only once it is shown and they come near the
+  a card's face says, and what the List and the search read), and, as it opens, the featured
+  cards' stills; a later band's stills only once it is shown and they come near the
   screen: no run and no model. The cards whole (`cards.details.json`, one file for every
   card, written by `tools/build_cards.py` beside the faces) are fetched the first time a
   card's detail is asked for, and once (20 November 2026: the faces are 67 kB, the whole
@@ -529,7 +529,7 @@ A replay draws what a run saved, and nothing else.
 - **The format is the viewer's side of D154.** `schema/RUN_VIEW.md` fixes it. When the
   engine writes its own view file, the adapter is replaced and the view stays.
 
-**The two examples to start with** were the page's whole list from Version 27 (17
+**The original two examples** were the page's whole list from Version 27 (17
 November 2026; the user chose them for the page) until the landing: the gap-junction work
 (its networks of a linear model, after Grodstein, Mathews and Levin (2026): 30 runs of the
 engine, 16 in the Norton form and 14 as the preprint writes the model; and its tumour
@@ -540,8 +540,7 @@ system, played in the tab's place).
   (`data/replays/cards.json`): the export publishes those experiments' runs, their parts
   and the runs the scene names (the planarian's loop, which the Cell view's flux reads),
   and the catalogue's overlay says nothing of listing. Its `doors` name the model systems'
-  entries (the assembly, shown in the Experiments tab's place with its own levels, clock
-  and panels). 112 runs are packaged in all, and all are published.
+  entries (GARD and the Cells vesicles, each with its own levels and clock). 112 runs are packaged in all, and all are published.
 - **A run's parts.** A run's records for the quantity layers are in files of their own
   beside it, each under 1 MB, fetched when a layer is switched on. In the published page
   the parts of each run of an experiment whose overlay entry says `parts_together`

@@ -782,6 +782,7 @@ def gather(source, tracked: Tracked, repository: Repository, evidence: Evidence 
     # on a card or left out with a reason (tests/experiment_cards.test.mjs holds it).
     judged = [said(node.lead(), "PROGRESS.md") for node in bullets(progress[progress.index("\n## Runs"):]) if node.lead() and JUDGED_LEAD.search(plain(node.lead()))]
     cards = {}
+    entry_revisions = set()
     unplaced = []
     revisions = set()
     for card in source["cards"]:
@@ -807,12 +808,24 @@ def gather(source, tracked: Tracked, repository: Repository, evidence: Evidence 
         if runs:
             reading["runs"] = runs
         stamped = []
+        standing = card.get("standing") or {}
+        # A model view can land after the frozen judged record. Its own citation belongs to the revision that contains it.
+        entry_revision = standing.get("revision") if standing.get("from") == "entry" else None
+        entry_sources = []
+        if entry_revision:
+            if repository.full(entry_revision) != entry_revision or not repository.on_main(entry_revision, "refs/remotes/origin/main"):
+                raise Breach(f"{where}: an entry standing must name a full revision on published main")
+            entry_sources = tracked.entry(standing["entry"], where)["modelled"]["record"]
+            entry_revisions.add(entry_revision)
         for found in sources_to_stamp(card, tracked):
-            if not repository.exists(main, found["path"]):
-                raise Breach(f"{where}: {found['path']} is not at {main[:8]}")
-            if found.get("where") and not place_found(repository.read(main, found["path"]), found["where"]):
-                unplaced.append({"card": card["id"], **found, "revision": main})
-            stamped.append({**found, "revision": main})
+            revision = entry_revision if found in entry_sources else main
+            if not repository.exists(revision, found["path"]):
+                raise Breach(f"{where}: {found['path']} is not at {revision[:8]}")
+            if found.get("where") and not place_found(repository.read(revision, found["path"]), found["where"]):
+                if entry_revision and found in entry_sources:
+                    raise Breach(f"{where}: {found['where']} is not in {found['path']} at {revision[:8]}")
+                unplaced.append({"card": card["id"], **found, "revision": revision})
+            stamped.append({**found, "revision": revision})
         if stamped:
             reading["stamped"] = stamped
         if card.get("map"):
@@ -833,7 +846,7 @@ def gather(source, tracked: Tracked, repository: Repository, evidence: Evidence 
         repository.on_main(main, map_revision) and repository.on_main(map_revision, "refs/remotes/origin/main")
     ):
         raise Breach(f"the map revision {map_revision[:8]} is outside the main history of the record {main[:8]}")
-    checked = {map_revision}
+    checked = {map_revision, *entry_revisions}
     for revision in sorted(revisions):
         full = repository.full(revision)
         if not repository.on_main(full, main):
@@ -1007,6 +1020,12 @@ def build(source, readings, tracked: Tracked):
         if card["band"] not in BANDS or card["kind"] not in KINDS:
             raise Breach(f"{where}: band {card['band']!r} or kind {card['kind']!r} is not the format's")
         reading = readings["cards"].get(card["id"], {})
+        standing = card.get("standing") or {}
+        if standing.get("from") == "entry" and standing.get("revision"):
+            references = tracked.entry(standing["entry"], where)["modelled"]["record"]
+            revision = standing["revision"]
+            if not all({**ref, "revision": revision} in reading.get("stamped", []) for ref in references):
+                raise Breach(f"{where}: the entry sources do not match its standing revision: gather again")
         for key in ("record", "switch", "rows"):
             typed = card.get(key)
             got = reading.get(key)

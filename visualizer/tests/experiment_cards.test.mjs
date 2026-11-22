@@ -150,8 +150,13 @@ test("four bands in order, each card in one, of one of three kinds, with a stand
       for (const row of card.rows) assert.ok(row.id && row.claim && typeof row.passed === "boolean" && FULL.test(row.reference.revision), JSON.stringify(row));
     }
   }
-  // The examples to start with are the two the page has today, and the invented numbers stand alone.
-  assert.deepEqual(cards.bands[0].cards, ["tumour-tissue", "assembly"]);
+  // The landing opens with the three featured replays, and the invented numbers stand alone.
+  assert.deepEqual(cards.bands[0].cards, ["tumour-tissue", "assembly", "vesicle-life"]);
+  const vesicle = byId.get("vesicle-life");
+  const entry = JSON.parse(readFileSync(path.join(ROOT, "data/models/origin-vesicles.json"), "utf8"));
+  assert.equal(vesicle.standing.says, entry.modelled.text);
+  assert.deepEqual(vesicle.replay.opens, { entry: entry.id });
+  assert.equal(vesicle.replay.runs, entry.runs.length);
   assert.deepEqual(cards.bands[3].cards, ["test-sheet"]);
   // Each later band folds on the landing behind a control in the file's words (19 November 2026), carried from the source
   // as typed; a band may leave them out (the landing then makes a plain control from its label).

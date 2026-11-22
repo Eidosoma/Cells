@@ -14,10 +14,11 @@
   {
    "id": "examples",
    "label": "Examples to start with",
-   "says": "Two experiments to start with, each opening a view of its own.",
+   "says": "Open a replay to explore its recorded runs.",
    "cards": [
     "tumour-tissue",
-    "assembly"
+    "assembly",
+    "vesicle-life"
    ]
   },
   {
@@ -108,7 +109,8 @@
    "example-sheet"
   ],
   "entries": [
-   "gard"
+   "gard",
+   "origin-vesicles"
   ]
  },
  "details": "cards.details.json",
@@ -268,6 +270,46 @@
     "still": {
      "light": "stills/assembly.light.jpg",
      "dark": "stills/assembly.dark.jpg",
+     "width": 640,
+     "height": 384
+    }
+   }
+  },
+  {
+   "id": "vesicle-life",
+   "band": "examples",
+   "kind": "replay",
+   "title": "A vesicle’s life",
+   "asks": "What happens to a lipid vesicle as it grows, divides or bursts?",
+   "standing": {
+    "says": "Development run of Cells' engine (cells.assembly_lineages@2), not judged.",
+    "status": null,
+    "level": null
+   },
+   "record": [],
+   "replay": {
+    "opens": {
+     "entry": "origin-vesicles"
+    },
+    "experiments": [],
+    "run_labels": [
+     "Growth and shear division",
+     "Osmotic lumen and threshold lysis"
+    ],
+    "runs": 2,
+    "runs_from": [
+     {
+      "entry": "origin-vesicles",
+      "runs": 2,
+      "from": {
+       "file": "data/models/origin-vesicles.json",
+       "field": "runs"
+      }
+     }
+    ],
+    "still": {
+     "light": "stills/vesicle-life.light.jpg",
+     "dark": "stills/vesicle-life.dark.jpg",
      "width": 640,
      "height": 384
     }

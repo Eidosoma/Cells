@@ -9,7 +9,7 @@
     {
       "id": "examples",
       "label": "Examples to start with",
-      "says": "Two experiments to start with, each opening a view of its own."
+      "says": "Open a replay to explore its recorded runs."
     },
     {
       "id": "judged",
@@ -76,6 +76,19 @@
         "opens": { "entry": "gard" },
         "experiments": [],
         "still": {"light": "stills/assembly.light.jpg", "dark": "stills/assembly.dark.jpg", "width": 640, "height": 384}
+      }
+    },
+    {
+      "id": "vesicle-life",
+      "band": "examples",
+      "kind": "replay",
+      "title": "A vesicle’s life",
+      "asks": "What happens to a lipid vesicle as it grows, divides or bursts?",
+      "standing": { "from": "entry", "entry": "origin-vesicles", "revision": "7049da98a024233a59ac15829f62f54783e64fdb" },
+      "replay": {
+        "opens": { "entry": "origin-vesicles" },
+        "experiments": [],
+        "still": {"light": "stills/vesicle-life.light.jpg", "dark": "stills/vesicle-life.dark.jpg", "width": 640, "height": 384}
       }
     },
     {

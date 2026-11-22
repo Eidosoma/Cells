@@ -445,7 +445,7 @@ export const LANDING_CSS = /* css */ `
 .landing-fold-words { min-width: 0; overflow-wrap: anywhere; }
 .landing-fold-count { flex: none; min-width: 24px; padding: 1px 8px; border-radius: 999px; font-size: 12px; font-variant-numeric: tabular-nums; text-align: center; color: var(--fg); background: color-mix(in srgb, var(--fg) 9%, transparent); }
 @media (prefers-reduced-motion: no-preference) { .landing-fold-chevron { transition: transform .16s ease; } }
-.landing-band.is-first .landing-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); }
+.landing-band.is-first .landing-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); }
 .landing-card { position: relative; display: grid; gap: 7px; align-content: start; min-width: 0; padding: 12px 14px 10px; border-radius: 12px; background: var(--bg-raised); box-shadow: 0 0 0 1px var(--line), 0 10px 30px -22px rgb(0 0 0 / .45); }
 .landing-card:hover { box-shadow: 0 0 0 1px var(--edge), 0 10px 30px -22px rgb(0 0 0 / .45); }
 .landing-card.is-chosen { box-shadow: 0 0 0 2px var(--fg); }

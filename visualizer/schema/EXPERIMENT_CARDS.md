@@ -67,8 +67,9 @@ A change of the map's words alone (same revision) needs only `python3 tools/buil
   (`level_withheld`, an optional field of the first round, is no longer written.)
 - **A catalogue standing** (`from: "catalogue"`): the experiment's `outcome.status` (as `says`) and
   `outcome.text` (as `text`), with its sources; or, for a catalogue stop (`none`), the stop's label.
-- **An entry's standing** (`from: "entry"`, the assembly): the model-system entry's `modelled.text`
-  and `state` (`data/models/<id>.json`), its scoped words unchanged.
+- **An entry's standing** (`from: "entry"`): the model-system entry's `modelled.text`
+  and `state` (`data/models/<id>.json`). An entry landed after the frozen experiment record can give
+  `standing.revision`, a full commit on published main containing its citation.
 - **An answer** (`answer`): the catalogue's `outcome` of a judged experiment (`judged`, `answer`,
   `label`, `text`), kept apart from the standing so that two dates never show; its status string is
   not copied.
@@ -148,8 +149,7 @@ The faces' top level (`cards.json`): `format`, `note`, `built_from` (`map.revisi
   holds, true of every card in it, read after the control's "Show" or "Hide" and beside the band's count of cards. A
   band without it gets a plain control from its own label. The rule on typed words holds for it: outside the judged
   band's own words it says neither judged nor qualified.
-  1. `examples`, "Examples to start with": the tumour tissue and the assembly. "Example" names these two
-     and nothing else.
+  1. `examples`, "Examples to start with": the tumour tissue, the GARD assembly and **A vesicle’s life**, in that order.
   2. `judged`, "Judged under a registered protocol": everything the record has judged or put to a
      registered qualification, passed or failed, side by side. Its `says`: "Each card here was judged
      under a registered protocol, experiment or qualification. Passes and failures stand side by side,
@@ -189,7 +189,7 @@ The faces' top level (`cards.json`): `format`, `note`, `built_from` (`map.revisi
   the card's opening view for each theme, as paths beside the page (`stills/<card>.<theme>.jpg`), and their size in
   pixels; null where a card has none. The stills are made by `tools/make_stills.mjs` into `data/replays/stills/`, with
   their record (`stills.json`: each still's card, address, size and checksum, the page's revision and the renderer);
-  the export publishes them beside the page, and the landing fetches each only when it comes near the screen.
+  a separately captured pair records its own date, revision and renderer on its two stills. The export publishes each image beside the page for loading when its card comes near the screen.
 - **`rerun`** is room for a replay made again later, through the engine's run-view writer, of a run
   that has a standing (two judged feature-request worlds are expected). It is null today. When filled
   it is `{revision, says, replay}`: a rerun at a named revision of main, saying so in its own words.
@@ -343,7 +343,7 @@ Rows:
 - The first band of the file stands open, drawn large; every later band stands folded as the landing first opens:
   its head (its label, its `says` and how many cards it holds) with one control, a button whose words are the band's
   `control` (decided on 19 November 2026, when the user asked that the judged band stand behind a control so that a
-  visitor first sees the two examples). The rule is the band's place in the file, never its id, so a band the landing
+  visitor first sees the featured examples). The rule is the band's place in the file, never its id, so a band the landing
   has not seen folds the same way. A folded band's cards are not drawn, reached or fetched. A card asked for (by its
   detail's address, from the List, or by the way back from its view) opens its band first. Which bands a visitor
   opened is kept in the browser's own storage, where it may be kept.

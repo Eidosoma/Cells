@@ -98,7 +98,7 @@ export function createServer({ scene = DEFAULT_SCENE, runs = DEFAULT_RUNS, offli
       }
       if (url.pathname === "/") {
         const preparedScene = await list();
-        const content = await buildPage({ preparedScene, runsDir: runs, three: offline ? THREE_LOCAL : THREE_CDN });
+        const content = await buildPage({ preparedScene, runsDir: runs, cardsPath: cards, three: offline ? THREE_LOCAL : THREE_CDN });
         const html = wrap(content, { theme: url.searchParams.get("theme"), head: REPORTER });
         response.writeHead(200, {
           "content-type": "text/html; charset=utf-8",

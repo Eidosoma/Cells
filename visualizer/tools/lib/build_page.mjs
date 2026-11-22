@@ -457,6 +457,15 @@ export async function landingFiles({ cardsPath = DEFAULT_CARDS, stillsDir = DEFA
 }
 
 /** The page content, as published: no doctype, html, head or body tags of its own. */
+/** Model replays ship with the scene. A saved run index can predate the model links on today's experiment cards. */
+export function withModelDoors(index, scene, listing) {
+  if (!index || !listing?.entries?.length) return index;
+  const existing = new Set((index.doors || []).map((door) => door.entry));
+  const available = new Set((scene.models || []).filter((model) => model.view && model.runs?.length).map((model) => model.id));
+  const additions = listing.entries.filter((id) => available.has(id) && !existing.has(id));
+  return additions.length ? { ...index, doors: [...(index.doors || []), ...additions.map((entry) => ({ entry }))] } : index;
+}
+
 /**
  * The replays a published page carries: the experiments the landing lists (`listing.experiments` of the cards' file:
  * schema/EXPERIMENT_CARDS.md, since 18 November 2026) and their parts, and the runs the scene itself names (a species'
@@ -465,6 +474,7 @@ export async function landingFiles({ cardsPath = DEFAULT_CARDS, stillsDir = DEFA
  * says nothing of listing is then carried whole.
  */
 export function publishedReplays(index, scene, listing = null) {
+  index = withModelDoors(index, scene, listing);
   const byCards = Array.isArray(listing?.experiments);
   if (!index || (!byCards && !index.experiments?.some((item) => "listed" in item))) return index;
   const text = JSON.stringify(scene);
@@ -488,7 +498,9 @@ export async function buildPage({ scenePath = DEFAULT_SCENE, preparedScene, thre
   if (lawPortPath && !data.law_port && (await modified(lawPortPath)) !== null) data.law_port = JSON.parse(await readFile(lawPortPath, "utf8"));
   if (cataloguePath && !data.catalogue && (await modified(cataloguePath)) !== null) data.catalogue = JSON.parse(await readFile(cataloguePath, "utf8"));
   if (aboutPath && !data.about && (await modified(aboutPath)) !== null) data.about = JSON.parse(await readFile(aboutPath, "utf8"));
-  const replays = made !== undefined ? made : published ? publishedReplays(await readReplays(runsDir), data, (await readCards(cardsPath))?.listing) : await readReplays(runsDir);
+  const listing = (await readCards(cardsPath))?.listing;
+  const index = made !== undefined ? made : await readReplays(runsDir);
+  const replays = published && made === undefined ? publishedReplays(index, data, listing) : withModelDoors(index, data, listing);
   // A page without the Experiments view (hideExperiments) keeps its replays and says the view is hidden: the cell view's flux
   // finds a species' looping run among them.
   if (replays) data.replays = hideExperiments ? { ...replays, hidden: true } : replays;

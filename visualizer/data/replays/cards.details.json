@@ -326,6 +326,58 @@
    }
   },
   {
+   "id": "vesicle-life",
+   "band": "examples",
+   "kind": "replay",
+   "title": "A vesicle’s life",
+   "asks": "What happens to a lipid vesicle as it grows, divides or bursts?",
+   "standing": {
+    "from": "entry",
+    "entry": "origin-vesicles",
+    "label": "Cells vesicles",
+    "status": null,
+    "level": null,
+    "state": "modelled",
+    "as_of": null,
+    "says": "Development run of Cells' engine (cells.assembly_lineages@2), not judged.",
+    "sources": [
+     {
+      "path": "visualizer/schema/ASSEMBLY_RUN.md",
+      "where": "Vesicle replays in recorded seconds",
+      "revision": "7049da98a024233a59ac15829f62f54783e64fdb"
+     }
+    ]
+   },
+   "record": [],
+   "replay": {
+    "opens": {
+     "entry": "origin-vesicles"
+    },
+    "experiments": [],
+    "run_labels": [
+     "Growth and shear division",
+     "Osmotic lumen and threshold lysis"
+    ],
+    "runs": 2,
+    "runs_from": [
+     {
+      "entry": "origin-vesicles",
+      "runs": 2,
+      "from": {
+       "file": "data/models/origin-vesicles.json",
+       "field": "runs"
+      }
+     }
+    ],
+    "still": {
+     "light": "stills/vesicle-life.light.jpg",
+     "dark": "stills/vesicle-life.dark.jpg",
+     "width": 640,
+     "height": 384
+    }
+   }
+  },
+  {
    "id": "e07-v1",
    "band": "judged",
    "kind": "replay",

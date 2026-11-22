@@ -23,6 +23,7 @@
   "5ab4326abbbed07f025bc5e9d1f590f19fbafd50",
   "621e2bebd42be75c5b4a442a4b0900b5acde5ff0",
   "628a3d0b5b417683b73eaabb300f22cc327beeed",
+  "7049da98a024233a59ac15829f62f54783e64fdb",
   "718405b287d0d5623d522d4e7ca0523a7d151722",
   "7688e9f466dbd2f9756f94b944732de5c0587932",
   "776824f77ed857cf72275d66b9f341f1cd69414b",
@@ -271,6 +272,15 @@
      "path": "docs/DECISIONS.md",
      "where": "D199: The origin-of-life engine's first decisions, and relationship tracking",
      "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
+    }
+   ]
+  },
+  "vesicle-life": {
+   "stamped": [
+    {
+     "path": "visualizer/schema/ASSEMBLY_RUN.md",
+     "where": "Vesicle replays in recorded seconds",
+     "revision": "7049da98a024233a59ac15829f62f54783e64fdb"
     }
    ]
   },

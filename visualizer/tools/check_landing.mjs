@@ -89,7 +89,7 @@ const firstWords = (card) => String(card.standing?.first || standingWords(card).
 
 // ---------------------------------------------------------------- the page, served as the local preview serves it
 const asked = [];
-const server = createServer({ offline: true, runs: DEFAULT_RUNS, log: () => {} });
+const server = createServer({ offline: true, runs: process.env.RUNS || DEFAULT_RUNS, log: () => {} });
 server.on("request", (request) => asked.push(new URL(request.url, "http://localhost").pathname));
 await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
 const base = `http://127.0.0.1:${server.address().port}/`;
@@ -400,6 +400,11 @@ try {
       const opening = await bandsNow();
       check(`${theme}: as the landing opens only the first band's ${FIRST.cards.length} cards stand, and each later band shows its head, its count and its control, folded, none of its cards made`, drawn && standAs(opening, new Set()) && opening.slice(1).every((band) => band.made === 0) && (await shownCards()).length === FIRST.cards.length, describeBands(opening));
       check(`${theme}: each band's head says its label and its words, as the file gives them`, opening.every((band, n) => band.label === landing.bands[n].label && band.says === landing.bands[n].says), JSON.stringify(opening.map((band) => [band.label, band.says?.slice(0, 30)])));
+      const faceRects = await evaluate(`[...${R}.querySelectorAll(".landing-band.is-first .landing-card")].map(e=>{const r=e.getBoundingClientRect();return [Math.round(r.left),Math.round(r.top)];})`);
+      if (WIDTH >= 1200 || PHONE) {
+        const axis = PHONE ? 0 : 1;
+        check(`${theme}: the featured cards share a ${PHONE ? "column" : "row"}`, faceRects.length === FIRST.cards.length && faceRects.every(r=>r[axis]===faceRects[0][axis]), JSON.stringify(faceRects));
+      }
       const got = beside(from);
       check(`${theme}: it fetched the cards' faces once, not their details, and no run and no model`, got.filter((one) => one === "/cards.json").length === 1 && !got.includes("/cards.details.json") && !got.some((one) => one.startsWith("/runs/") || one.startsWith("/models/")), got.join(", "));
       // The stills fetched are those near the screen of the first band's cards: none of a folded band's, none far below.

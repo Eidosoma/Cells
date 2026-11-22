@@ -21,11 +21,11 @@
   },
   {
    "id": "experiments",
-   "says": "The Experiments tab as it opens, on its landing (18 November 2026): the cards and the stills near the screen, and no file of runs/ or models/. Since 19 November 2026 every band but the first stands folded as it opens, so only the first band's stills are near the screen; the same day the tumour tissue's still became the sheet's, a larger picture, and the bound was set a tenth above that measure (3 files, 238,040 bytes). On 20 November 2026 the cards gained FR-7's first closed loop and the map's words at main 93fc8c2c, which took the landing 1,102 bytes past that bound; it was set again a tenth above the day's measure (3 files, 263,102 bytes, of which the cards 189,140). Later that day the cards were split into their faces (cards.json, what the landing draws, fetched as it opens) and their details (cards.details.json, fetched the first time a card's detail is asked for: the row card-detail); the landing then fetched 3 files, 141,289 bytes (the faces 67,327), and its bound was set a tenth above that measure. The details are never fetched as it opens.",
+   "says": "The Experiments tab as it opens, on its landing (18 November 2026): the cards and the stills near the screen, and no file of runs/ or models/. Since 19 November 2026 every band but the first stands folded as it opens, so only the first band's stills are near the screen; the same day the tumour tissue's still became the sheet's, a larger picture, and the bound was set a tenth above that measure (3 files, 238,040 bytes). On 20 November 2026 the cards gained FR-7's first closed loop and the map's words at main 93fc8c2c, which took the landing 1,102 bytes past that bound; it was set again a tenth above the day's measure (3 files, 263,102 bytes, of which the cards 189,140). Later that day the cards were split into their faces (cards.json, what the landing draws, fetched as it opens) and their details (cards.details.json, fetched the first time a card's detail is asked for: the row card-detail); the landing then fetched 3 files, 141,289 bytes (the faces 67,327), and its bound was set a tenth above that measure. The third featured replay adds one themed vesicle still. With all three cards visible the files total 159,263 bytes in light and 161,801 bytes in dark.",
    "query": "lens=experiments",
    "must": ["cards.json", "stills/*"],
    "allowed": ["cards.json", "stills/*"],
-   "bytes": 156000
+   "bytes": 178000
   },
   {
    "id": "card-detail",
@@ -50,6 +50,15 @@
    "must": ["models/gard/*"],
    "allowed": ["models/gard/*"],
    "bytes": 304000
+  },
+  {
+   "id": "vesicle-life",
+   "says": "The featured vesicle replay opens its two saved lives.",
+   "query": "lens=experiments&example=origin-vesicles",
+   "must": ["models/origin-vesicles/vesicle-3014a196.json", "models/origin-vesicles/vesicle-01fe390a.json"],
+   "allowed": ["models/origin-vesicles/*.json"],
+   "files": 2,
+   "bytes": 244000
   },
   {
    "id": "networks-pair",
