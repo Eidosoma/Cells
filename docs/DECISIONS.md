@@ -9437,3 +9437,30 @@ from the checker's read-only inventories (/mnt/workspaces/Cells/arch-inventories
   - **R2 against A1** is the in-lane alternative after FR-38's comparison, with its default reversed so the
     detailed form leads.
 
+## D302: The implicit cycle block is dropped; the half-step energy check is now the cost driver
+
+2026-11-22, about 19:37 UTC. The user chose "Drop the block", on the robustness agent's measurements.
+- **The measurements** (MT-1b's state-4 world, explicit cycles, today's solver, windowed runner, device
+  row checks):
+  - 16 µs passes every check through the protocol's inhibitor event, at more than 100 times inside the
+    declared bands by FR-25's step-error form;
+  - X2's order condition binds between 16 and 18.25 µs;
+  - the block would buy at most about 1.14 times, or 1.3–1.5 times with the face present.
+  D290's premise of 5e6 /s was about 115 times too stiff; the cycles' ΣG/C is 4.35e4 /s, about 98%
+  of it from the synthase. MT-2 has the same stiffness. MT-1b runs explicitly at about 16 µs.
+- **The cost now:**
+  - X2, the half-step energy check, costs about 57 ms per step against 7.3 ms for the device step alone.
+    At 16 µs that is about 300 CPU-h per 300 s world, against 38 without X2.
+  - X2's per-step cost also grows with run length (39.6 to 53.7 ms per step from 512 to 2,560 steps).
+    One candidate is the record's per-window concatenation.
+  - The next item-3 target (D299) is a cheaper X2 with the same guarantee, profiled at length and designed
+    before code.
+- **Findings recorded for the backlog:**
+  - **At a replacement swap,** neither replacement@1 nor templated_polymerisation@1 books the rows'
+    standard term Σμ°Δn, and D152's reactions share the gap. The energy ledger still closes, because the
+    owned terms are accumulators, but replacement_free_energy_pJ understates what leaves and arrives. This
+    is a desk reading.
+  - **FR-38's extracellular retention** of the producer ID is not admitted in version 1. The one-writer rule
+    refuses any other mover of a gene-unit row, so no fate row can leave its cell. It needs a designed
+    door.
+
