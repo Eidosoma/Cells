@@ -55,12 +55,16 @@ answer, relayed by the user on 22 November 2026: "Two named regions of the same 
 bidirectional face are sufficient for our first test"). Two named regions, `donor` and `receiver`,
 finite nodes of FIRST_TEST_VOLUME_pL each, joined by one bidirectional face. The protein is the
 label family P (D1): `P_L` labelled, 1 mM in the donor, and `P_U` unlabelled, 1 mM in the
-receiver, each 0.1 mM elsewhere. No labelled production is declared.
-- **Case "transfer":** the face open, no clearance. The label total is conserved and the receiver's
-  gain is the donor's loss.
+receiver, each at the usual 1e-9 mM trace elsewhere, so the receiver starts with no label. The face
+books its heat exactly (heat_bookings: faces exact_free_energy_heat@1, F2), which keeps the energy
+ledger closed from a trace start. No labelled production is declared.
+- **Case "transfer":** the face open, and no turnover at all. The label total is conserved and the
+  receiver's gain is the donor's loss.
 - **Case "local_loss",** the local-loss control: the face closed (zero diffusivity for both rows)
   and turnover clearing both rows at the donor, alike. The receiver stays flat, and the cumulative
-  clearance accounts for the donor's missing label.
+  clearance accounts for the donor's missing label. Turnover is declared in this case only: F2's
+  version 1 refuses an operator's in-step writer on a row an exact face carries, so the open face
+  and turnover on the same rows cannot share a world.
 - **The record's "whole-cell label"** is the label summed over the two regions. The regions are
   nodes joined by a face, not compartments of a cell, so that sum is the definition, stated in the
   record. The cell's own small label, which nothing moves, is not counted.
@@ -191,9 +195,10 @@ WHOLE_CELL_LABEL = (
 
 
 def first_test_world(case, *, dt=1e-3, steps=200):
-    """FR-33's first test (module docstring): case "transfer" (the face open, no clearance) or
-    "local_loss" (the face closed for both rows, turnover clearing both at the donor, alike). The
-    two cases differ only in data, so they share one compiled program."""
+    """FR-33's first test (module docstring): case "transfer" (the face open, no turnover) or
+    "local_loss" (the face closed for both rows, turnover clearing both at the donor, alike). Each
+    starts the label at the usual trace outside its own region, with the face's heat booked
+    exactly (F2)."""
     if case not in FIRST_TEST_CASES:
         raise ValueError(f"the case is one of {FIRST_TEST_CASES}")
     donor, receiver = FIRST_TEST_REGIONS
@@ -211,21 +216,21 @@ def first_test_world(case, *, dt=1e-3, steps=200):
         diffusivity=diffusivity,
     )
     for name, node in (("P_L", donor), ("P_U", receiver)):
-        others = {n: 0.1 for n in (base.CELL, *FIRST_TEST_REGIONS) if n != node}
         raw = add_inventory_species(
             raw,
             name,
             trace_mM=base.fx.TRACE_mM,
             diffusivity_m2_per_s=diffusivity,
             floor_fmol=base.fx.FLOOR_FMOL,
-            concentrations_mM={node: 1.0, **others},
+            concentrations_mM={node: 1.0},  # The usual trace elsewhere.
         )
     m = raw["model"]
     m["label_families"] = [copy.deepcopy(FAMILY)]
-    if case == "local_loss":  # The face closed for both rows, alike.
-        (face,) = m["faces"]
-        face["diffusivity_m2_per_s"].update({r: 0.0 for r in FAMILY["rows"]})
-    rate = FIRST_TEST_CLEARANCE if case == "local_loss" else 0.0
+    m["heat_bookings"] = {"faces": "exact_free_energy_heat@1"}  # F2: exact from a trace start.
+    if case == "transfer":
+        return raw
+    (face,) = m["faces"]  # The local-loss control: the face closed for both rows, alike.
+    face["diffusivity_m2_per_s"].update({r: 0.0 for r in FAMILY["rows"]})
     m["operators"].append(dict(
         law=base.fx.TURNOVER,
         species=[dict(id=r, catalogue=None, evidence=None) for r in FAMILY["rows"]],
@@ -234,9 +239,10 @@ def first_test_world(case, *, dt=1e-3, steps=200):
         templates=[],
     ))  # fmt: skip
     raw["experiment"]["turnover_controls"] = [
-        dict(route_id=f"clear_{r}", carrier_id=None, schedule=[dict(time=0.0, rate=rate)])
+        dict(route_id=f"clear_{r}", carrier_id=None,
+             schedule=[dict(time=0.0, rate=FIRST_TEST_CLEARANCE)])
         for r in FAMILY["rows"]
-    ]
+    ]  # fmt: skip
     return raw
 
 

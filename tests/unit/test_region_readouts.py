@@ -456,10 +456,11 @@ def test_a_label_family_shows_redistribution_and_degradation_exactly():
 
 
 def test_fr33s_first_test_two_named_regions_joined_by_one_face():
-    """FR-33's first test, as its requester asked (validation/regions/example.first_test; one
-    compiled program, two runs of 200 steps, about 18 s on a light CPU): two named regions, donor
-    and receiver, joined by one bidirectional face, with the label family P. At every saved time,
-    in fmol, to rounding:
+    """FR-33's first test, as its requester asked (validation/regions/example.first_test; two
+    compiled programs, since only the local-loss control declares turnover, and two runs of 200
+    steps, about 30 s on a light CPU): two named regions, donor and receiver, joined by one
+    bidirectional face, with the label family P, the receiver starting with no label (the usual
+    trace) and the face's heat booked exactly (F2). At every saved time, in fmol, to rounding:
     - pure transfer (the face open, no clearance): the label total is conserved, the receiver's
       gain is the donor's loss, and nothing is cleared;
     - the local-loss control (the face closed, clearance at the donor): the receiver stays flat,
