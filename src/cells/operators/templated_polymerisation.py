@@ -146,6 +146,15 @@ The release (the sheet's §9)
   traced, so every such definition's physical fields are bitwise today's (D148; the lead's ruling of
   22 November 2026: the programs differ by the empty fields only).
 
+Labels (FR-42, D289)
+--------------------
+The physics stays on each row's physical total. Given labels (rows, arrival), the half-step also
+returns its one-way moves for the labelled rows (one_way_moves), from the same SSPRK(3,3)
+combination as the booked move, for the share owner's update: out (draws, forward degradation's
+polymer, re-synthesis's monomers, each transfer direction's consumed side) and into at the arrival
+label (releases, products and fate releases, forward degradation's monomers, re-synthesis's
+polymer, each transfer direction's produced side). Without labels nothing of it is traced.
+
 Refused at the definition
 -------------------------
 - a charged, permeable or unlisted row;
@@ -1223,7 +1232,7 @@ def release_flux(c, hold, fraction, label, p, *, xp):
     return flux, xp.all(xp.where(flux > 0, c_fate <= STANDARD_MM, True))
 
 
-def fluxes(n, free, complexes, controls, p, volume, *, xp, hold=None):
+def fluxes(n, free, complexes, controls, p, volume, *, xp, hold=None, one_way=False):
     """Every route's flux at amounts n [k, cell] (fmol), free machines [pool] and complexes
     [chain, stage], and with a release its hold [release, class]; with the affinities its domain
     reads and the unidirectional rates its stage condition reads."""
@@ -1277,6 +1286,9 @@ def fluxes(n, free, complexes, controls, p, volume, *, xp, hold=None):
     ).T @ p.poly_tr_cell
     routes = (j_init, j_stage, j_deg, j_tr)
     info = dict(ok=ok, stage=stage, lam_pool=p.poly_chain_pool.T @ lam, used=used)
+    if one_way:  # Static (FR-42): the two-sided routes' one-way parts, for labelled rows.
+        info |= dict(deg_forward=deg_rate * polymer, tr_forward=forward, tr_backward=backward)
+        info["deg_backward"] = info["deg_forward"] * xp.exp(y)
     if releasing(p):
         j_rel, release_ok = release_flux(c, hold, controls[3], controls[4], p, xp=xp)
         routes += (j_rel,)
@@ -1400,8 +1412,10 @@ def route_heats(n0, dn, d_transit, extents, volume, active, p, rt, *, xp):
     return (*heats, xp.where(on_release[:, None, None], release, 0.0))
 
 
-def poly_half_step(state, controls, h, p, *, xp=jnp):
-    """(state after h, valid): SSPRK(3,3) on the operator's variables, every move booked."""
+def poly_half_step(state, controls, h, p, *, xp=jnp, labels=None):
+    """(state after h, valid): SSPRK(3,3) on the operator's variables, every move booked. With
+    labels (FR-42, D289; static), (state, valid, moves): moves (one_way_moves) from the same
+    combination of the stages' one-way fluxes as the booked move."""
     rows, active = p.poly_rows, p.active
     volume = xp.where(active, p.volume, 1.0)
     n0 = xp.where(active[None, :], p.amount_reference[rows] + state.amount_increment[rows], 1.0)
@@ -1430,11 +1444,12 @@ def poly_half_step(state, controls, h, p, *, xp=jnp):
             valid &= xp.all(h * p.poly_rel_rate <= THETA)
         return valid
 
-    j1, i1 = fluxes(n0, f0, c0, controls, p, volume, xp=xp, hold=hold0)
+    one_way = labels is not None
+    j1, i1 = fluxes(n0, f0, c0, controls, p, volume, xp=xp, hold=hold0, one_way=one_way)
     d1 = move(j1)
     y2 = (n0 + h * d1[0], f0 + h * d1[1], c0 + h * d1[2])
     hold2 = hold0 + h * d1[5] if rel else None
-    j2, i2 = fluxes(*y2, controls, p, volume, xp=xp, hold=hold2)
+    j2, i2 = fluxes(*y2, controls, p, volume, xp=xp, hold=hold2, one_way=one_way)
     d2 = move(j2)
     y3 = (
         n0 + h * (d1[0] + d2[0]) / 4,
@@ -1442,7 +1457,7 @@ def poly_half_step(state, controls, h, p, *, xp=jnp):
         c0 + h * (d1[2] + d2[2]) / 4,
     )
     hold3 = hold0 + h * (d1[5] + d2[5]) / 4 if rel else None
-    j3, i3 = fluxes(*y3, controls, p, volume, xp=xp, hold=hold3)
+    j3, i3 = fluxes(*y3, controls, p, volume, xp=xp, hold=hold3, one_way=one_way)
     extents = tuple(h * (a + b + 4 * c) / 6 for a, b, c in zip(j1, j2, j3, strict=True))
     dn, d_free, d_complexes, produced, consumed, *d_hold = move(extents)
     dn = xp.where(active[None, :], dn, 0.0)
@@ -1521,7 +1536,50 @@ def poly_half_step(state, controls, h, p, *, xp=jnp):
     if rel:
         valid &= xp.all(xp.isfinite(hold1) & (hold1 >= 0))
     valid &= own_valid(selected, xp=xp)
-    return selected, valid
+    if not one_way:
+        return selected, valid
+    parts = {k: h * (i1[k] + i2[k] + 4 * i3[k]) / 6 for k in ONE_WAY_PARTS}
+    out, into = one_way_moves(extents, parts, labels, p, xp=xp)
+    on = active[None, :] & flowing  # Nothing moves where the start state is kept.
+    return selected, valid, (xp.where(on, out, 0.0), xp.where(on[:, None, :], into, 0.0), ())
+
+
+ONE_WAY_PARTS = ("deg_forward", "deg_backward", "tr_forward", "tr_backward")
+
+
+def one_way_moves(extents, parts, labels, p, *, xp):
+    """(out [m, cell], into [m, label, cell]) of the labelled rows over a half-step (FR-42's
+    interface, D289): each row's one-way consumption, which the share owner splits by the row's
+    shares, and its one-way production at the label its window names. labels is (rows [m], the
+    composite's species indices; arrival [m, label], one-hot). Out: chain draws, forward
+    degradation's polymer (k n), backward degradation's monomers (k n e^y, re-synthesis), and each
+    transfer direction's consumed side. Into: chain releases, products and fate releases, forward
+    degradation's monomers, re-synthesis's polymer, and each transfer direction's produced side.
+    Into minus out is each row's booked move, at rounding."""
+    rows, arrival = labels
+    j_init, j_stage, j_deg, j_tr = extents[:4]
+    s_total = entity_sum(j_stage, axis=1, xp=xp)
+    completed = entity_sum(xp.where(p.poly_chain_last, j_stage, 0.0), axis=1, xp=xp)
+    r = p.poly_chain_r[:, None]
+    chain_in = r * s_total[:, None] * p.poly_chain_releases + completed[:, None] * (
+        _completed_rows(p, xp=xp)
+    )
+    chain_out = r * s_total[:, None] * p.poly_chain_draws
+    length = p.poly_deg_length[:, None]
+    fwd, bwd = parts["deg_forward"][:, None], parts["deg_backward"][:, None]
+    deg_out = fwd * p.poly_deg_polymer + length * bwd * p.poly_deg_monomers
+    deg_in = length * fwd * p.poly_deg_monomers + bwd * p.poly_deg_polymer
+    made = xp.where(p.poly_tr_nu > 0, p.poly_tr_nu, 0.0)
+    taken = xp.where(p.poly_tr_nu < 0, -p.poly_tr_nu, 0.0)
+    forward, backward = parts["tr_forward"][:, None], parts["tr_backward"][:, None]
+    tr_out, tr_in = forward * taken + backward * made, forward * made + backward * taken
+    out = chain_out.T @ p.poly_chain_cell + deg_out.T @ p.poly_deg_cell + tr_out.T @ p.poly_tr_cell
+    into = chain_in.T @ p.poly_chain_cell + deg_in.T @ p.poly_deg_cell + tr_in.T @ p.poly_tr_cell
+    if releasing(p):  # Fate releases, at the arrival label (labels marked at release).
+        fates = entity_sum(extents[4][..., None] * p.poly_rel_fate, axis=(1, 2), xp=xp)
+        into = into + fates.T @ (p.poly_rel_chain @ p.poly_chain_cell)
+    pick = xp.where(p.poly_rows[None, :] == xp.asarray(rows)[:, None], 1.0, 0.0)  # [m, k]
+    return pick @ out, arrival[:, :, None] * (pick @ into)[:, None, :]
 
 
 def _on_species(full, rows, values, *, xp):
@@ -1940,9 +1998,13 @@ class TemplatedPolymerisation(Operator):
             p.poly_chain_kappa.shape[0] + p.poly_deg_length.shape[0] + p.poly_tr_share.shape[0]
         ) == 0
 
-    def half_step(self, state, h, control, p, *, xp):
+    def half_step(self, state, h, control, p, *, xp, labels=None):
+        """labels (FR-42, D289; static): (rows, arrival); the call then returns (state, valid,
+        moves), one_way_moves's. Without it, today's call."""
         controls = tuple(getattr(control, name) for name in self.CONTROL_FIELDS)
-        return poly_half_step(state, controls, h, p, xp=xp)
+        if labels is None:
+            return poly_half_step(state, controls, h, p, xp=xp)
+        return poly_half_step(state, controls, h, p, xp=xp, labels=labels)
 
     def control_valid(self, control, p, *, xp):
         valid = xp.asarray(True)

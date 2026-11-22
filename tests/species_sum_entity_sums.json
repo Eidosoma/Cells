@@ -1195,6 +1195,21 @@
    "operators/templated_polymerisation.py",
    "own_magnitudes",
    "entity_sum(p.poly_rel_hold0_fmol, axis=1, xp=xp)"
+  ],
+  [
+   "operators/templated_polymerisation.py",
+   "one_way_moves",
+   "entity_sum(j_stage, axis=1, xp=xp)"
+  ],
+  [
+   "operators/templated_polymerisation.py",
+   "one_way_moves",
+   "entity_sum(xp.where(p.poly_chain_last, j_stage, 0.0), axis=1, xp=xp)"
+  ],
+  [
+   "operators/templated_polymerisation.py",
+   "one_way_moves",
+   "entity_sum(extents[4][..., None] * p.poly_rel_fate, axis=(1, 2), xp=xp)"
   ]
  ]
 }

@@ -315,3 +315,46 @@ def test_the_label_puts_each_molecule_in_its_class(at):
     assert A > 0 and hold[0] == pytest.approx(H0 * np.exp(-60.0 / tau), rel=1e-10)
     assert abs(H0 - hold[0] - np.sum(released[0])) <= _identity_bound(H0)
     assert abs(A - hold[1] - np.sum(released[1])) <= _identity_bound(A, hold[1])
+
+
+# FR-42's one-way moves (D289): (world, its labelled rows, seconds at dt/2 a half-step).
+MOVES = [("pol T=5", ("R", "N", "M", "ATP"), 30.0), ("R1 held", ("R", "R_s", "M"), 60.0)]
+
+
+@pytest.mark.parametrize(("world", "labelled", "seconds"), MOVES)
+def test_the_one_way_moves_close_each_labelled_row(world, labelled, seconds):
+    """FR-42 (D289), about 0.3 s a row, no world compiled: with labels the half-step's state is
+    bit for bit the unlabelled call's, and its moves are non-negative, at the arrival label alone,
+    with no transfers in stage 1, and close each labelled row and cell: n1 - n0 = sum into - out.
+    pol T=5 moves rows by draws, completions, both degradation directions (R's re-synthesis among
+    them) and both transfer directions; R1 with A1's k_I by arrivals and fate releases."""
+    if world == "pol T=5":
+        raw = kernel.truncated(worlds.world(world), seconds)
+    else:
+        raw = kernel.truncated(worlds.r1(0.75, machine="held", initiation=K_I), seconds)
+    spec = parse_spec(raw)
+    state, layout = get_model(spec.model).initial_values(spec)
+    state = type(state)(*(np.asarray(v) for v in state))
+    (block,) = [d for d in spec.model.operators if d.law == worlds.POLYMERISATION]
+    control = kernel.controls(raw, block)
+    rows = np.array([list(spec.model.species_ids).index(r) for r in labelled])
+    arrival = np.zeros((len(rows), 3))
+    arrival[:, 1] = 1.0  # The window names label 1 of 3.
+    reference = np.asarray(layout.amount_reference)[rows]
+    h = spec.execution.dt / 2
+    regrown = 0.0
+    for _ in range(int(round(seconds / h))):
+        plain, ok = kernel.OP.half_step(state, h, control, layout, xp=np)
+        new, ok2, (out, into, transfers) = kernel.OP.half_step(
+            state, h, control, layout, xp=np, labels=(rows, arrival)
+        )
+        assert bool(ok) and bool(ok2) and transfers == ()
+        assert all(np.array_equal(a, b) for a, b in zip(plain, new, strict=True))
+        assert np.all(out >= 0) and np.all(into >= 0) and np.all(into[:, [0, 2]] == 0)
+        n0 = reference + state.amount_increment[rows]
+        n1 = reference + new.amount_increment[rows]
+        gap = np.abs((n1 - n0) - (np.sum(into, axis=1) - out))
+        assert np.all(gap <= 64 * EPS * np.maximum.reduce([np.abs(n1), out, into[:, 1]]) + 1e-30)
+        regrown += float(into[0, 1, 0]) if world == "pol T=5" else 0.0
+        state = new
+    assert world != "pol T=5" or regrown > 0  # R's one-way gains: completions and re-synthesis.
