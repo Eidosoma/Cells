@@ -1297,7 +1297,52 @@ def self_routed():
     return parse_spec(raw)
 
 
-def test_version_2_evaluates_a_route_its_target_moves_at_the_half_steps_midpoint(monkeypatch):
+def _autoregulated_transcription(monkeypatch):
+    """The row templated_polymerisation@1 (FR-38's found defect, the lead's ruling of 22 November
+    2026): A1 to 10 s with its coupling's source moved from X to R, transcription's own product,
+    which R's loss and completions move inside each of transcription's half-steps; R starts at the
+    Hill activation's K, 1e-8 mM. Before the operator declared half_step_rows the composite never
+    saw the route as self-moved, so k_I's factor was a left-endpoint rule: order 1, as planted
+    here. With it, the cumulative initiations converge at order 2. NumPy half-steps of the
+    operator alone, about 3 s with the world's build, no world compiled."""
+    from validation.gene_regulation import worlds
+
+    raw = worlds.a1(end=10.0)
+    (block,) = [op for op in raw["model"]["operators"] if op["law"] == LAW_V2]
+    block["species"] = [dict(id="R", catalogue=None, evidence=None)]
+    coupling = block["couplings"][0]
+    coupling.update(source=dict(species="R"), half_saturation_mM=1e-8)
+    coupling["target"]["operating_range"] = [0.0, 1e-6]
+    raw["model"]["cells"][0]["initial_amount_fmol"]["R"] = 1e-8  # 1e-8 mM in its 1 pL.
+    spec = parse_spec(raw)
+    target = worlds.POLYMERISATION
+    assert pump_composite.self_moved_targets(spec.model) == {target}
+    model = get_model(spec.model)
+    assert model.structure_key[3:] == (("midpoint", (target,)),)
+    state, p = model.initial_values(spec)
+    operator = next(o for o in model.operators if o.LAW_ID == target)
+    control = model.CONTROL_TYPE(*(v[0] for v in cs.control_values(spec, [0.0])))
+
+    def orders(per_second):
+        made = []
+        for n in per_second:
+            current = state
+            for _ in range(20 * n):
+                current, ok = model._half_step(operator, current, 1 / (2 * n), control, p, xp=np)
+                assert bool(ok)
+            made.append(float(np.asarray(current.poly_initiated_fmol)[0]))
+        gaps = [abs(a - b) for a, b in zip(made, made[1:], strict=False)]
+        return [np.log2(a / b) for a, b in zip(gaps, gaps[1:], strict=False)]
+
+    assert min(orders((1, 2, 4, 8))) >= 1.9
+    monkeypatch.setattr(model, "midpoint", frozenset())
+    assert max(orders((1, 2, 4))) < 1.2
+
+
+@pytest.mark.parametrize("target", ["scheduled_species_turnover@1", "templated_polymerisation@1"])
+def test_version_2_evaluates_a_route_its_target_moves_at_the_half_steps_midpoint(
+    monkeypatch, target
+):
     """A route whose source its own target moves (the independent Lean project's finding: first
     order, a gain of 0.58928135 fmol at 8 steps against 1 - ln(3/2)): the composite evaluates its
     factor at the target half-step's midpoint, from a predictor over h/2 (pump_composite's
@@ -1305,7 +1350,9 @@ def test_version_2_evaluates_a_route_its_target_moves_at_the_half_steps_midpoint
     by nothing else), under 1 s, no world compiled. Four refinements of the one-second ramp
     converge at order at least 1.9; the record holds the midpoint's factor; the S route keeps its
     booking; a composition without such a route (routed) keeps its key. Planted: the midpoint off,
-    order 1."""
+    order 1. The second row is _autoregulated_transcription's."""
+    if target == "templated_polymerisation@1":
+        return _autoregulated_transcription(monkeypatch)
     spec = parse_spec(routed())
     assert pump_composite.self_moved_targets(spec.model) == frozenset()
     assert get_model(spec.model).structure_key[3:] == ()
