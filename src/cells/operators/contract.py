@@ -194,6 +194,45 @@ Declarations (class attributes):
   process moves inside the inner step, which an operator with ``PROCESS`` declares;
   ``species_moieties``, the net row change of each move it makes, which the registry's
   check_moieties holds to the model's moieties (docs/GENE_REGULATION_DESIGN.md §7.6).
+* Neutral arrival-time labels (FR-42, D289; operators/species_labels.py): a label owner
+  (``LABEL_OWNER``, part-less, at most one per composition) holds each labelled species' shares,
+  which the composite advances after every applied half-step of a reporter. A reporter is a split
+  part whose ``half_step`` takes ``labels=None`` (reports_labels). Given ``labels=(rows,
+  arrival)``, rows [m] the labelled species' rows and arrival [m, label] one-hot, the label the
+  step's window names, it returns ``(state, valid, moves)``: its state and validity bit for bit
+  the unlabelled call's, and moves = (out [m, node], into [m, label, node], transfers), from the
+  same combination as its booked move. out is the one-way amount each labelled row lost at each
+  node, into the one-way amount it gained by label (new material at the arrival label, material
+  that keeps its labels at theirs), and transfers () until transport reports (FR-42's stage 2).
+  The node axis is the cells, then the outside nodes; a reporter that acts at cells only may give
+  its cells alone. Without labels nothing of it is traced.
+  - **The inner step** (FR-42's stage 2): an inner implementation whose ``checked_step`` and
+    ``imex_step`` take ``labels=rows`` returns its usual tuple with its transfers appended:
+    ``((amount [m, entity], source [entity], destination [entity]), ...)``, one entry per
+    direction per entity kind, each amount >= 0 over the step, nodes on the axis above. The label
+    owner carries each transfer's source shares to its destination.
+  - **Pools and sources** (D296): a reporter may declare ``label_pools(declaration)``, ((pool id,
+    species, cell id or None), ...), each entry holding one labelled species' material outside
+    the species axis (a release hold), whose shares the label owner holds; and
+    ``label_sources(declaration)``, ((source id, species, cell id or None), ...), the entities that
+    make new material (its chains), whose arrival label the owner's schedule may set per source.
+    Whether it may is static, by class: ``LABEL_SOURCES`` and ``LABEL_POOLS``. A reporter with
+    ``LABEL_SOURCES`` always takes a third element, ``labels=(rows, arrival, source_arrival)``,
+    source_arrival [S, label] one-hot, S at least its sources (padding past them): source s's label
+    this step. A reporter with ``LABEL_POOLS`` always returns a fourth part, possibly empty,
+    ``moves = (out, into, transfers, pools)``, ``pools = (n0, n1,
+    into, out, carried)``: its pool entries' amounts at the half-step's start and end [P], the
+    new material entering them by label [P, label] and their losses [P], each >= 0; and carried,
+    ``(amount [E] >= 0, source [E], destination [E])``, material that keeps its labels between
+    sites: a row site j N + k (labelled row j at node k, N nodes) or one of its pool entries,
+    M N + p (M labelled rows). Every move is counted once: a row's or pool's change is its into
+    minus out plus carried in minus carried out, at rounding. Without pools and sources the
+    argument and moves are as above, and nothing of them is traced.
+  - **An event that replaces a slot's amounts** (D296: replacement@1) reports it: an ``event``
+    that takes ``labels=rows`` returns ``(state, valid, replaced [cell])``, the slots whose
+    amounts it replaced. The departing material leaves with its shares; the owner gives each
+    replaced slot's labelled material the label in force for its species at that step (the
+    newcomer label).
 * The run view (docs/RUN_VIEW_DESIGN.md §3; cells/records/run_view.py reads them, host side only):
   - ``VIEW_LAYERS``: its layers, each {"id", "label", "representation"}; None: undeclared,
     which the run-view writer refuses;
@@ -302,6 +341,17 @@ def factor_reads(operator):
     )
 
 
+def takes_labels(method):
+    """Whether a step method takes the keyword labels= (FR-42, module docstring)."""
+    return "labels" in inspect.signature(method).parameters
+
+
+def reports_labels(operator):
+    """Whether a split part reports its one-way moves to a label owner (FR-42, module
+    docstring): its half_step takes labels=."""
+    return operator.SPLIT and takes_labels(operator.half_step)
+
+
 def part_stages(operator):
     """The stages at which an operator's own parts run: event (its event map), split (its
     half-steps) and inner (its in-step process)."""
@@ -399,6 +449,11 @@ class Operator:
     RECORD_REFERENCES = MappingProxyType({})
     # A declaration with no part and no field (module docstring; check_declarations).
     DECLARATION_ONLY = False
+    # FR-42 (module docstring): a part-less owner of label shares, advanced by the composite from
+    # its reporters' moves; and, for a reporter, whether it may declare sources and pools (D296).
+    LABEL_OWNER = False
+    LABEL_SOURCES = False
+    LABEL_POOLS = False
 
     @classmethod
     def observed_columns(cls):
@@ -517,6 +572,16 @@ class Operator:
         ((species id, "cell" | "outside"), ...); read by core/species_registry.moved_in_step,
         which the coupling operator's instantaneous admission uses (D176, "moved by the step").
         An operator without an in-step process moves nothing in the step: ()."""
+        return ()
+
+    def label_pools(self, declaration):
+        """FR-42's pools (D296; module docstring): ((pool id, species, cell id or None), ...), the
+        entries of its own state that hold a labelled species' material, in a fixed order; ()."""
+        return ()
+
+    def label_sources(self, declaration):
+        """FR-42's sources (D296; module docstring): ((source id, species, cell id or None), ...),
+        the entities whose new material the owner may label per source, in a fixed order; ()."""
         return ()
 
     def species_identities(self, declaration):
@@ -851,13 +916,19 @@ def check_declarations(operator):
         and not (
             (operator.ACCEPTS_WRITES and operator.VIEW_FIELDS)
             or (operator.STATE_AXES and set(operator.STATE_AXES) <= set(operator.ACCEPTS_WRITES))
+            or (operator.LABEL_OWNER and operator.STATE_AXES)
         )
     ):
         raise ValueError(
             f"{name}: an operator contributes at least one part, or is a state owner that "
             "provides views of fields later operators write (ACCEPTS_WRITES), or owns only "
-            "fields later operators write, or is a declaration (DECLARATION_ONLY)"
+            "fields later operators write, or owns label shares (LABEL_OWNER), or is a "
+            "declaration (DECLARATION_ONLY)"
         )
+    if operator.LABEL_OWNER and (operator.EVENT or operator.SPLIT or operator.PROCESS):
+        raise ValueError(f"{name}: a label owner has no part; the composite advances its shares")
+    if (operator.LABEL_SOURCES or operator.LABEL_POOLS) and not reports_labels(operator):
+        raise ValueError(f"{name}: sources and pools are a label reporter's (FR-42, D296)")
     for field in operator.STATE_AXES:
         booked = field in operator.HEAT_FIELDS or field in operator.WORK_FIELDS
         if field.endswith((HEAT_SUFFIX, WORK_SUFFIX)) != booked:

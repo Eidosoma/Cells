@@ -120,6 +120,10 @@ EXEMPT = {
     "validation/betse/fresh_rerun/workers.py": SAME
     + " (restart.npz written and read in one process)",
     "validation/tissue/open_calcium_bath_trajectory_oracle.py": SAME + " (the oracle's own state)",
+    "validation/mitochondria/references_r2/steady.py": SAME
+    + " (R2, MT-1b's code-blind reference: start_state solves the anchored start state with R2's"
+    " own solver from a freshly settled state; it reads no saved Cells state and runs no Cells "
+    "engine)",
     # The probe itself.
     "validation/continuity/probe.py": PROBE,
 }
