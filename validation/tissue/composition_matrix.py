@@ -1356,13 +1356,13 @@ RULES = (
         "moved_in_step)",
     ),
     dict(
-        rule="FR-42 stage 1's labels refuse closers, retirers, amount-view providers, events that "
-        "write species amounts, and split writers of them that do not report",
+        rule="FR-42's labels refuse closers, retirers, amount-view providers, events that write "
+        "species amounts without reporting, and split writers of them that do not report",
         laws=(LABELS, *sorted({law for pair in _LABEL_PAIRS for law in pair} - {LABELS})),
         level="law",
         check=OPS + "species_labels.py::operator_errors",
         test=TESTS + "test_neutral_arrival_labels.py::"
-        "test_a_labelled_definition_is_refused_where_stage_1_cannot_follow_it",
+        "test_a_labelled_definition_is_refused_where_labels_cannot_follow_it",
         tag=REAL,
         why="The shares follow only one-way moves that a reporter states (operators/contract.py), "
         "so a part that changes amounts without them is refused, naming the FR-42 stage that "
@@ -1379,7 +1379,7 @@ RULES = (
         level="data",
         check=OPS + "species_labels.py::in_step_errors",
         test=TESTS + "test_neutral_arrival_labels.py::"
-        "test_a_labelled_definition_is_refused_where_stage_1_cannot_follow_it",
+        "test_a_labelled_definition_is_refused_where_labels_cannot_follow_it",
         tag=REAL,
         why="Where the inner step takes labels= it reports its uncharged faces' and its routes' "
         "one-way transfers (FR-42's stage 2); a charged face, a channel, a pump, a kind or an "

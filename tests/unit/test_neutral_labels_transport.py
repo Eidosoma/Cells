@@ -1,7 +1,7 @@
 """FR-42's stage 2 as engine rows: labels carried by @3's routes (D289), against plain rows of the
 same material in the same world, whose transport is linear in each row and so the exact
 reference. The routes' world compiled twice, labelled and as its unlabelled twin, about 60 s
-(FR-33's two cases, the faces' rows, are in tests/unit/test_region_readouts.py).
+(FR-33's two cases, the faces' rows, are in tests/unit/test_region_label_shares.py).
 
 - **Routes:** Q labelled a and b as shares, beside Q_a and Q_b as plain rows. It moves between
   two cells by a junction and from each cell to their outside node by a membrane route

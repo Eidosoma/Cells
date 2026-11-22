@@ -306,7 +306,7 @@ Refused, each naming why:
 - kinds, which wait for their hook after @3's side;
 - RK4 beside any followed mover.
 
-**Measured against exact rows** (tests/unit/test_region_readouts.py and
+**Measured against exact rows** (tests/unit/test_region_label_shares.py and
 tests/unit/test_neutral_labels_transport.py; @3's side merged).
 - **The method:** each case runs plain rows of the same material in the same world. Transport is
   linear in each row, so those rows are the exact reference.

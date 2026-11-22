@@ -344,8 +344,8 @@ def in_step_errors(spec, declaration, reports):
     inner_reports_labels). Where it does, an uncharged face and the membrane and junction routes
     (REPORTED_MOVERS) are followed, except under RK4; every other in-step mover is refused: a
     charged face (no one-way form), a channel or a pump (no FR-42 stage plans them yet), a kind
-    (its hook follows @3's side) and an operator's in-step process. Without a reporting inner step,
-    stage 1's refusal of every in-step mover."""
+    (its hook follows @3's side) and an operator's in-step process. Without a reporting inner step
+    (beside declared kinds, or a step that takes no labels), every in-step mover is refused."""
     m, inner = species_registry.inner_movers(spec)
     valence = dict(zip(m.species_ids, m.valence, strict=True))
     moved = species_registry.moved_in_step(spec)
@@ -363,7 +363,8 @@ def in_step_errors(spec, declaration, reports):
                 "a charged face has no one-way form, channels, pumps and in-step processes "
                 "wait for a later stage, and kinds for their hook"
                 if reports
-                else "faces and routes report from FR-42's stage 2"
+                else "this composition's inner step reports none: beside declared kinds, until "
+                "their hook, or where its step takes no labels"
             )
             errors.append(
                 f"{LAW_ID}: {s.id} is moved inside the inner step by {', '.join(refused)}, "

@@ -1,5 +1,5 @@
-"""neutral_arrival_labels@1 (FR-42 stage 1, D289): neutral arrival-time labels as shares of a
-physical row (operators/species_labels.py, numerics/label_shares.py).
+"""neutral_arrival_labels@1 (FR-42, D289): neutral arrival-time labels as shares of a physical row
+(operators/species_labels.py, numerics/label_shares.py).
 
 The share update alone, in NumPy (no world; about 2 s):
 - exact for a constant per-molecule rate with arrivals, and the shares kept bit for bit without
@@ -7,12 +7,18 @@ The share update alone, in NumPy (no world; about 2 s):
 - its domain on random and extreme inputs: zero shares, tiny amounts, a large survival exponent and
   16 labels;
 - its order when the rates vary within an application: the split between old and new material is
-  off by (a' k - a k') h^3 / 12, halving by 8 with h.
+  off by (a' k - a k') h^3 / 12, halving by 8 with h;
+- carried material arriving with its source's shares (stage 2's transfers), at second order;
+- a reporter's pools and sources (D296), and a replaced cell's rows and pool entries taking the
+  newcomer label (replacement@1).
 
-One compiled world, run labelled and unlabelled, and one resume (three compiles, about 70 s;
-FR-42's own checks as engine rows, so a regression in the composite's hook or a reporter shows
-here). Every physical field, observation and diagnostic of the labelled run is the unlabelled
-run's bit for bit. It holds:
+Host rows on parsed worlds (no compile; a few seconds): exchange's export and a passive reaction
+route report the material they move (stage 3), and a replaced slot takes the newcomer label.
+
+One compiled world, run labelled and unlabelled (two compiles, about 80 s on a light CPU; FR-42's
+own checks as engine rows, so a regression in the composite's hook or a reporter shows here).
+Every physical field, observation and diagnostic of the labelled run is the unlabelled run's bit for
+bit. It holds:
 - the reference case dN/dt = -N^2 (2A -> B mass action, local_species_reactions@1) in five
   independent pools: one label, the reference's two (older and new, 2:1), several unequal with an
   empty one, and two near the edges of the range (dt L = 0.9 under the stage condition, and the
@@ -22,13 +28,14 @@ run's bit for bit. It holds:
   clearance in a cell (turnover, exact) and a reaction source and sink at an outside node. The
   cell's cohort matches the analytic solution at rounding, at the window's two boundaries too
   (arrivals in the step that starts at its start join it; in the step that starts at its end they
-  do not), with its label reused for a second window, and a checkpoint resumes bit for bit
-  through a snapshot;
+  do not), with its label reused for a second window;
 - C, a second population with its own loss, unlabelled (check 3).
+Its resume through a snapshot is in tests/unit/test_neutral_labels_resume.py, and the routes' rows
+(stage 2) in tests/unit/test_neutral_labels_transport.py.
 
-Definitions refused, each naming the FR-42 stage that lifts it (parses only): in-step movers (a
-face, a membrane and a junction route, a transporter kind's role and finite fuel), exchange, a
-passive reaction, a bath schedule, D1's families, a second owner and malformed declarations.
+Definitions refused (parses only): a transporter kind's role and finite fuel beside labels (until
+the kinds' hook), a bath schedule, a retired label family (D300), a second owner, an arrival off the
+grid, an undeclared label, shares that do not sum to one and a held bath node.
 """
 
 import copy
@@ -609,21 +616,6 @@ def test_a_window_follows_its_cohort_exactly_at_both_boundaries(runs):
     assert np.all(np.abs(shares.sum(axis=1) - 1) <= 64 * EPS)  # All of S's material.
 
 
-def test_a_labelled_checkpoint_resumes_bit_for_bit(runs, tmp_path):
-    """Through a written snapshot, from inside the window (the cohort's share nonzero), so the
-    resumed steps carry the shares and cross the window's end (one compile)."""
-    from cells.records.io import load_snapshot, write_snapshot
-
-    _, labelled_run, _ = runs
-    checkpoint = labelled_run.checkpoint_at(TS + H)
-    assert np.asarray(checkpoint.state.label_share)[len(POOLS), 1, 0] > 0
-    write_snapshot(tmp_path / "checkpoint", labelled_run.spec, checkpoint)
-    loaded = load_snapshot(tmp_path / "checkpoint")
-    resumed = run(loaded.spec, loaded.checkpoint)
-    for a, b in zip(resumed.history, labelled_run.history, strict=True):
-        assert bits(a) == bits(np.asarray(b)[checkpoint.step_index :])
-
-
 # ------------------------------------------------------------------ refused definitions
 
 
@@ -649,13 +641,15 @@ def mover(kind):
 
 
 REFUSED = {
-    "a kind moves its role (stage 2)": (
+    "a kind moves its role (until the kinds' hook)": (
         lambda: mover("role"),
-        r"Y is moved inside the inner step by cells.transporter@1 .*FR-42's stage 2",
+        r"Y is moved inside the inner step by cells.transporter@1 .*beside declared kinds, "
+        "until their hook",
     ),
-    "a kind moves its finite fuel (stage 2)": (
+    "a kind moves its finite fuel (until the kinds' hook)": (
         lambda: mover("fuel"),
-        r"ATP is moved inside the inner step by cells.transporter@1 .*FR-42's stage 2",
+        r"ATP is moved inside the inner step by cells.transporter@1 .*beside declared kinds, "
+        "until their hook",
     ),
     "a bath schedule changes amounts": (
         lambda: labelled_s(
@@ -698,7 +692,7 @@ REFUSED = {
 
 
 @pytest.mark.parametrize("case", sorted(REFUSED))
-def test_a_labelled_definition_is_refused_where_stage_1_cannot_follow_it(case):
+def test_a_labelled_definition_is_refused_where_labels_cannot_follow_it(case):
     make, message = REFUSED[case]
     with pytest.raises(ConfigError, match=message):
         parse_spec(make())
