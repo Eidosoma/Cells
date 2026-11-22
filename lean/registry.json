@@ -9,7 +9,7 @@
     "cells.cytochrome_c_oxygen_proton_cycle@1": "src/cells/laws/cycles/cytochrome_c_oxygen_proton_cycle.py#L72",
     "cells.electrogenic_nucleotide_exchange@1": "src/cells/laws/cycles/electrogenic_nucleotide_exchange.py#L57",
     "cells.gard_catalysis_pair_consistent@1": "src/cells/models/assembly_lineages/gard.py#L212",
-    "cells.gard_catalysis_pair_consistent@2": "src/cells/models/assembly_lineages/gard.py#L402",
+    "cells.gard_catalysis_pair_consistent@2": "src/cells/models/assembly_lineages/gard.py#L439",
     "cells.gard_catalysis_single_event@1": "src/cells/models/assembly_lineages/gard.py#L178",
     "cells.gate_factor@1": "src/cells/models/assembly_lineages_v2/gate_factor.py#L145",
     "cells.held_reductant_supply@1": "src/cells/laws/cycles/held_reductant_supply.py#L72",
@@ -33,10 +33,10 @@
     "cells.nak_atp_mass_action_positive@1": "src/cells/laws/pumps/nak_atp_mass_action_positive.py#L153",
     "cells.naleak_always_open@1": "src/cells/laws/channels/naleak_always_open.py#L13",
     "cells.nav1p2_m3h_regularized@1": "src/cells/laws/channels/nav1p2_m3h_regularized.py#L47",
-    "cells.osmotic_lumen@1": "src/cells/models/assembly_lineages_v2/lumen.py#L220",
+    "cells.osmotic_lumen@1": "src/cells/models/assembly_lineages_v2/lumen.py#L324",
     "cells.passive_constant_field_permeation@1": "src/cells/laws/routes/constant_field_permeation.py#L141",
     "cells.passive_neutral_permeation@1": "src/cells/laws/routes/passive_permeation.py#L97",
-    "cells.phase_exchange@1": "src/cells/models/assembly_lineages_v2/exchange.py#L81",
+    "cells.phase_exchange@1": "src/cells/models/assembly_lineages_v2/exchange.py#L78",
     "cells.phosphate_proton_symport@1": "src/cells/laws/cycles/phosphate_proton_symport.py#L50",
     "cells.potassium_proton_exchange@1": "src/cells/laws/cycles/potassium_proton_exchange.py#L23",
     "cells.prescribed_shell@1": "src/cells/models/assembly_lineages_v2/prescribed_shell.py#L108",
@@ -48,7 +48,7 @@
     "cells.reservoir_exchange@1": "src/cells/models/assembly_lineages/exchange.py#L76",
     "cells.shared_pool@1": "src/cells/models/assembly_lineages_v2/population.py#L125",
     "cells.shell_permeation@1": "src/cells/models/assembly_lineages_v2/shell_permeation.py#L47",
-    "cells.stochastic_mass_action@1": "src/cells/models/assembly_lineages_v2/mass_action.py#L143",
+    "cells.stochastic_mass_action@1": "src/cells/models/assembly_lineages_v2/mass_action.py#L156",
     "cells.transition_state_factor@1": "src/cells/models/assembly_lineages_v2/transition_state.py#L227",
     "cells.ubiquinol_cytochrome_c_proton_cycle@1": "src/cells/laws/cycles/ubiquinol_cytochrome_c_proton_cycle.py#L68"
   },
@@ -83,6 +83,6 @@
     "cells.size_threshold_fission@1": "src/cells/models/assembly_lineages/fission.py#L71",
     "cells.species_regulated_availability@1": "src/cells/operators/species_regulated_availability.py#L1719",
     "cells.species_regulated_availability@2": "src/cells/operators/species_regulated_availability.py#L1925",
-    "cells.templated_polymerisation@1": "src/cells/operators/templated_polymerisation.py#L1081"
+    "cells.templated_polymerisation@1": "src/cells/operators/templated_polymerisation.py#L1610"
   }
 }

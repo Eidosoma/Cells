@@ -119,6 +119,7 @@ export function inSpecies(entity, proteins, id) {
   const atlas = atlasOf(proteins, id);
   if (!entity || entity.kind !== "unit" || !atlas || atlas.reference) return entity;
   const own = entity.species?.[atlas.id] || {};
+  const evidence = proteins.unitEvidence?.get(atlas.id)?.units?.[entity.id] || own;
   const word = (proteins.findings || []).find((item) => item.id === own.finding) || null;
   // In a quiet atlas a unit that differs is drawn faint, and the same faint mark says so in words.
   const quiet = quietAtlas(proteins, atlas);
@@ -127,11 +128,11 @@ export function inSpecies(entity, proteins, id) {
   const sections = (entity.sections || [])
     .filter((section) => section.key !== "products")
     .map((section) => (section.key === "laws" ? { ...section, note: LAWS_NOTE } : section));
-  sections.splice(sections.findIndex((section) => section.key === "laws") + 1, 0, { key: "products", title: `${atlas.label} gene products`, items: own.items || [] });
+  sections.splice(sections.findIndex((section) => section.key === "laws") + 1, 0, { key: "products", title: `${atlas.label} gene products`, items: evidence.items || [] });
   return {
     ...entity,
     chips: [...(entity.chips || []), { label: said, title: word?.description || proteins.no_entry, swatch }],
-    finding: { title: atlas.label, organism: atlas.organism, swatch, text: word?.sentence || proteins.no_entry, note: own.note || null, more: word?.more || null },
+    finding: { title: atlas.label, organism: atlas.organism, swatch, text: word?.sentence || proteins.no_entry, note: evidence.note || null, more: word?.more || null },
     sections,
     sign: swatch && !quiet ? { swatch, title: said } : null,
     faint: Boolean(swatch) && quiet,

@@ -333,7 +333,9 @@
   "/mnt/workspaces/Cells/fr38-rna-residence-20261122/refs/tiers-measured-05725b23/measured.json",
   "/mnt/workspaces/Cells/fr38-rna-residence-20261122/reader/tiers-measured-832bb821/measured.json",
   "/mnt/workspaces/Cells/ol3-engine-20261119/tiers-gard-69d53f88/measured.json",
-  "/mnt/workspaces/Cells/gene-regulation-20261120/fr38/timed-6e639426/measure/measured.json"
+  "/mnt/workspaces/Cells/gene-regulation-20261120/fr38/timed-6e639426/measure/measured.json",
+  "/mnt/workspaces/Cells/xc0-landing-20261122/measured-fast/measured.json",
+  "/mnt/workspaces/Cells/xc0-landing-20261122/tiers-measured-regen-ef04ddb1/measured.json"
  ],
  "measured_provenance": [
   {
@@ -2826,6 +2828,22 @@
    "root": "/mnt/workspaces/Cells/gene-regulation-20261120/fr38/snapshot-full-6e639426",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-22T14:09:49+00:00"
+  },
+  {
+   "git_revision": "ef04ddb17b429ffb609bf8b260cd4b79b3243387",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/xc0-landing-20261122/snapshot-ef04ddb1",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-22T16:13:08+00:00"
+  },
+  {
+   "git_revision": "ef04ddb17b429ffb609bf8b260cd4b79b3243387",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/xc0-landing-20261122/snapshot-ef04ddb1",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-22T16:15:20+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -6312,6 +6330,14 @@
     "counts": {
      "passed": 2
     }
+   },
+   {
+    "file": "tests/unit/test_xenopus_xc0_references.py",
+    "seconds": 6.03,
+    "exit_code": 0,
+    "counts": {
+     "passed": 5
+    }
    }
   ],
   "2": [
@@ -7916,6 +7942,14 @@
     "exit_code": 0,
     "counts": {
      "passed": 2
+    }
+   },
+   {
+    "file": "tests/unit/test_xenopus_xc0_references_regenerate.py",
+    "seconds": 182.47,
+    "exit_code": 0,
+    "counts": {
+     "passed": 6
     }
    }
   ],

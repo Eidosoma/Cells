@@ -17,6 +17,7 @@ export function busyReasons(viewer) {
   if (lens?.pending) reasons.push("a run is on its way");
   if (lens?.fetching?.size) reasons.push("a layer's records are on their way");
   if (lens?.mounted?.opening) reasons.push("a family is opening");
+  if (viewer?.panelEvidence?.status === "loading") reasons.push("the unit evidence is loading");
   if (viewer?.landingView?.fetching) reasons.push("the landing's cards are on their way");
   if (viewer?.landingView?.detailsFetching) reasons.push("the cards' details are on their way");
   const stage = viewer?.stage;

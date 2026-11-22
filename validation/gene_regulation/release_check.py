@@ -373,7 +373,10 @@ def cohorts(checks, runs, machine):
 def survival(checks, name, path, row, fate):
     """The requester's survival readout (FR-38's (c) and (e), 22 November 2026) by route 2: the
     window's members alive at its end, the same alive an hour later, and their ratio, against the
-    closed forms' ratio, e^(-k_f 3600 s), within the counts' grid errors."""
+    closed forms' ratio, e^(-k_f 3600 s), within the counts' grid errors. It fails closed (the
+    Lean lane's finding at a6acbc27): an empty cohort (none alive at the window's end, an
+    undefined ratio) is reported as such, and counts whose grid error cannot be estimated (outputs
+    too far apart) as insufficient resolution; neither passes."""
     t1, t2 = worlds.R1_WINDOW
     t, n, Q, D = cohort.read(path, row)
     counted = cohort.survival(t, n, Q, D, t1, t2, 2 * t2)
@@ -381,16 +384,22 @@ def survival(checks, name, path, row, fate):
     expected = math.exp(-k * t2)
     alive, later = counted["alive_at_window_end"], counted["alive_at_sample"]
     errors = [counted["grid_error_at_window_end"], counted["grid_error_at_sample"]]
-    bound = math.inf if None in errors else (errors[1] + expected * errors[0]) / alive
-    checks.add(
-        f"{name}: route 2's {fate} survival, alive at {t2:g} s and at {2 * t2:g} s",
-        counted["ratio"] is not None and abs(counted["ratio"] - expected) <= bound,
+    what = f"{name}: route 2's {fate} survival, alive at {t2:g} s and at {2 * t2:g} s"
+    detail = dict(
         alive_copies=alive / COPY_FMOL,
         later_copies=later / COPY_FMOL,
         ratio=counted["ratio"],
         closed_form_ratio=expected,
-        bound=bound,
     )
+    if counted["ratio"] is None:
+        checks.add(what, False, status="empty cohort", **detail)
+        return
+    if None in errors:
+        checks.add(what, False, status="insufficient resolution", **detail)
+        return
+    bound = (errors[1] + expected * errors[0]) / alive
+    ok = abs(counted["ratio"] - expected) <= bound
+    checks.add(what, ok, status="compared", bound=bound, **detail)
 
 
 def r2_cohorts(checks, name, run):

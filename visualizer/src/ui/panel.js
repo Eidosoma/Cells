@@ -24,7 +24,7 @@ const INVERSE = {
 const SHOWN = 7;
 
 class CellsPanel extends HTMLElement {
-  show({ model, entity }) {
+  show({ model, entity, evidence, retry }) {
     this.replaceChildren();
     this.hidden = !entity;
     if (!entity) return;
@@ -62,6 +62,8 @@ class CellsPanel extends HTMLElement {
         )
       );
     }
+    if (evidence?.status === "loading") body.append(h("p", { role: "status" }, "Loading this species’ unit evidence…"));
+    if (evidence?.status === "error") body.append(h("p", { role: "status" }, "This species’ unit evidence could not be loaded. ", h("button", { type: "button", class: "link-button", onclick: retry }, "Retry")));
     if (entity.facts?.length) {
       body.append(
         h("dl", { class: "facts" }, entity.facts.map(([label, value]) => [h("dt", {}, label), h("dd", {}, value)]))

@@ -12,6 +12,7 @@ import { mkdtemp, mkdir, writeFile, rm } from "node:fs/promises";
 import os from "node:os";
 import { buildPage, ROOT, THREE_CDN, DEFAULT_SCENE } from "../tools/lib/build_page.mjs";
 import { validate, SceneModel } from "../src/scene/model.js";
+import { inSpecies } from "../src/lenses/proteins.js";
 
 const scene = JSON.parse(await readFile(DEFAULT_SCENE, "utf8"));
 const overlay = JSON.parse(await readFile(path.join(ROOT, "data", "architecture", "overlay.json"), "utf8"));
@@ -385,6 +386,33 @@ test("the page carries the replay catalogue, and the runs themselves only when a
     assert.ok(!linked.includes('<script type="application/json" data-replay='), "by default a run stays in its own file beside the page");
     const inline = await buildPage({ runsDir: runs, inlineRuns: true });
     assert.ok(inline.includes('<script type="application/json" data-replay="x--arm--seed1">'), "a standalone page carries its runs");
+    const model = new SceneModel(sceneOf(linked));
+    const files = model.raw.proteins.evidence_files;
+    const embedded = new Map([...inline.matchAll(/<script type="application\/json" data-file="([^"]+\/unit-evidence\.json)">(.*?)<\/script>/gs)].map(([, file, json]) => [file, JSON.parse(json)]));
+    assert.deepEqual([...embedded.keys()].sort(), Object.values(files).sort());
+    assert.ok(!linked.includes('/unit-evidence.json">'), "a web page loads the detailed evidence on selection");
+    for (const [species, file] of Object.entries(files)) {
+      const units = scene.entities.filter((entity) => entity.kind === "unit" && entity.species?.[species]);
+      let reads = 0;
+      const read = (requested) => {
+        assert.equal(requested, file);
+        reads++;
+        return embedded.get(requested);
+      };
+      const entry = model.requestUnitEvidence(units[0].id, species, read);
+      assert.equal(model.requestUnitEvidence(units[1].id, species, read), entry);
+      await entry.ready;
+      assert.equal(entry.status, "ready");
+      assert.equal(reads, 1);
+      for (const unit of units) {
+        const summary = model.get(unit.id).species[species];
+        assert.equal(summary.items, undefined);
+        assert.deepEqual({ ...summary, ...entry.units[unit.id] }, unit.species[species]);
+        const shown = inSpecies(model.get(unit.id), model.raw.proteins, species);
+        assert.deepEqual(shown.finding, inSpecies(unit, scene.proteins, species).finding);
+        assert.deepEqual(shown.sections.find((section) => section.key === "products").items, unit.species[species].items);
+      }
+    }
     // A page exported without the Experiments view keeps its replays (the cell view's flux reads a species' looping run from
     // them) and says the view is hidden; the page's list of views offers Experiments only where it is not.
     assert.equal(sceneOf(linked).replays.hidden, undefined, "by default the view is offered");

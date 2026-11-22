@@ -28,7 +28,7 @@ from pathlib import Path
 import pytest
 
 from cells.definitions.specs import parse_spec
-from validation.gene_regulation import cohort, compare, engine_run, kernel, worlds
+from validation.gene_regulation import cohort, compare, engine_run, kernel, release_check, worlds
 from validation.gene_regulation import sheet_check as sheet
 
 REFERENCES = compare.References()
@@ -373,6 +373,52 @@ def _fast_turnover(times, n0=100.0, k=1.0, P=1.0):
     n = [n0 * math.exp(-k * s) + P / k * -math.expm1(-k * s) for s in times]
     Q = [P * s for s in times]
     return list(times), n, Q, [q + n0 - m for q, m in zip(Q, n, strict=True)]
+
+
+K_SHORT = math.log(2) / 1800.0  # R1's short-lived loss (1/s).
+# The route-2 survival check fails closed (the Lean lane's finding at a6acbc27): (case, outputs
+# every s, release rate in copies/s during R1's window, first-order loss 1/s, ok, status).
+SURVIVAL = [
+    ("sparse", 3600, 1 / 360, 0.0, False, "insufficient resolution"),
+    ("resolved lossless", 60, 1 / 360, 0.0, False, "compared"),
+    ("empty cohort", 60, 0.0, K_SHORT, False, "empty cohort"),
+    ("resolved first-order", 60, 1 / 360, K_SHORT, True, "compared"),
+]
+
+
+@pytest.mark.parametrize(("case", "every", "inflow", "loss", "ok", "status"), SURVIVAL,
+                         ids=[c[0] for c in SURVIVAL])  # fmt: skip
+def test_the_survival_check_fails_closed(case, every, inflow, loss, ok, status, tmp_path):
+    """release_check.survival on synthetic counters of R1's short-lived fate R_s (a trace of 10
+    copies, the window's releases at `inflow`, first-order loss), against e^(-k_s 3600 s) = 1/4,
+    no world compiled. Outputs too far apart for a grid error are insufficient resolution, not a
+    pass (a lossless ratio of 1 passed before); an empty cohort is reported, not raised (it was a
+    ZeroDivisionError); a resolved lossless cohort fails as compared; a first-order one passes."""
+    from cells.operators.templated_polymerisation import COPY_FMOL
+
+    t1, t2 = worlds.R1_WINDOW
+    t = [float(x) for x in range(0, int(2 * t2) + 1, every)]
+    n0 = 10.0
+
+    def alive(s):
+        made = inflow * min(s, t2)
+        if loss == 0.0:
+            return n0 + made
+        inside = n0 * math.exp(-loss * min(s, t2)) - inflow / loss * math.expm1(-loss * min(s, t2))
+        return inside * math.exp(-loss * max(s - t2, 0.0))
+
+    n = [alive(s) * COPY_FMOL for s in t]
+    Q = [inflow * min(s, t2) * COPY_FMOL for s in t]
+    D = [0.0 if loss == 0.0 else n0 * COPY_FMOL + q - x for q, x in zip(Q, n, strict=True)]
+    readouts = {"n_R_s": n, "int_Q_tx_release_short_lived": Q, "int_D_R_s": D}
+    path = tmp_path / "record.json"
+    path.write_text(json.dumps(dict(definition=worlds.r1(0.75), cell="cell_0", t=t,
+                                    readouts=readouts)))  # fmt: skip
+    checks = release_check.Checks()
+    release_check.survival(checks, case, path, "R_s", "short_lived")
+    (row,) = checks.rows
+    assert (row["ok"], row["status"]) == (ok, status), row
+    assert row["closed_form_ratio"] == pytest.approx(0.25, rel=1e-12)
 
 
 def test_survivors_are_bounded_by_the_pool_and_coarse_grids_are_flagged(tmp_path, capsys):

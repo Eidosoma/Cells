@@ -9245,3 +9245,171 @@ The lead's rulings, which are made blind to every held-out value and extend VESI
   the extractor, and they concern S1-6, which is unscored. The extractor's other exposures carry no held-out
   value.
 
+## D294: The rupture blind test's stage-1b rulings
+
+2026-11-22, about 15:53 UTC. The extractor's stage 1b (stage1b_conditions.json sha256 0feca192…) found:
+- set 2's three control points (Shibly's Fig. 1C, open squares) at 7.0, 7.5 and 8.0 mN/m, reprinted from
+  Levadny et al. 2013, with n, temperature and solutions not stated;
+- that Levadny et al. 2013 could not be obtained.
+The lead's rulings, made blind to every held-out value:
+1. **The controls are reported, not scored.** They sit at the fit points' tensions and come from the
+   method paper of the fit data's laboratory, so they may overlap the fit data. Without a copy, their
+   independence cannot be shown. This replaces D293's two-sided scoring of the controls. A prediction at
+   6.5 mN/m with ΔC₀ = 0 is also recorded, reported only, in case stage 2 finds a control there.
+2. **Set 2's scored content is the osmotic rows, one-sided** (D287, D293), less the point the quoted
+   count matches.
+3. **Karal's vesicle radius,** for the osmotic rows' area ratio (D293 item 4). In a stage 1c, the
+   extractor reads only the methods of Karal et al. 2015 (Phys Rev E 92:012708, the Shizuoka repository's
+   free copy), a paper from the same laboratory using the same micropipette method, for the GUV radius
+   range. Karal, Levadnyy and Yamazaki 2016 stays unopened, since it may reanalyse the temperature series.
+4. **The controls' temperature** is reported at 298.15 K with δT = 1 K, as for Shibly's own rows.
+5. **Fig. 1C's digitising error.**
+   - It is s_dig = max(0.03, the ln k span of 2 pixels on the panel's y-axis).
+   - The pixel scale comes from the axis calibration at stage 2. That is axis metadata, read before any
+     data mark.
+   - It applies to the error bars read there.
+
+## D295: The vesicle area for set 2's osmotic rows: a declared premise
+
+2026-11-22, about 15:55 UTC. Stage 1c (stage1c_conditions.json sha256 7f99f680…): Karal et al. 2015 PRE's methods
+state no GUV size, and Levadny et al. 2013 is unobtainable. The lead's ruling, made blind to every held-out
+value:
+- **The area ratio for set 2's osmotic rows is 1,** under a declared premise. Shibly et al.'s vesicles
+  and the fit data's come from one laboratory, by one micropipette method in the same period, so their
+  size distributions are taken as equal.
+- **s_area** is the propagation of Shibly's stated ±0.2 µm on its mean r0 of about 13.5 µm:
+  2 × 0.2/13.5, about 0.03 in ln k.
+- **The premise is stated beside each set-2 verdict,** as the identity "first rupture is first opening"
+  is. A set-2 failure may come from a size difference between preparations rather than from the law.
+- **Set 1 is unaffected,** since its area cancels.
+
+## D296: FR-42's label state lives in the label owner (option b); FR-38's replacement accounting in the operator
+
+2026-11-22, about 16:09 UTC. The user: "lets go as you suggest regarding the label".
+- **Label state lives in the label owner** (`neutral_arrival_labels@1`), through a contract addition:
+  - reporters declare the pools they own, such as the release hold;
+  - the owner holds those pools' label shares;
+  - moves carry a pools part;
+  - arrivals can be keyed by source, so that a chain's products join its producer label (cell, generation,
+    chain).
+
+  So every unlabelled program stays unchanged (D289). The kinds owner designs it and prices it beside
+  stage 2. If it proves too costly, the fallback is operator-held shares as a D148 case 2, which goes back
+  to the user.
+- **FR-38's replacement accounting** (per-producer removal counters, per-generation counter starts, the
+  operator's EVENT part) is the gene unit's own physical bookkeeping, not label state. It may add
+  zero-size fields when no replacement is declared, as a D148 case 2 like FR-38's release fields. The proof
+  is the programs check and optin_check before and after, with every physical field bitwise.
+
+## D297: The rupture blind test's stage 2 is sealed; set 2 reads from Shibly et al.'s corrected Fig. 1C
+
+2026-11-22, about 16:27 UTC. Recorded before any scoring; the lead has seen no held-out value.
+- **The sealed file:** /mnt/workspaces/Cells/pores-extraction-20261122/held_out.json, sha256
+  20a0c4a534a28ab2748d96f0c5de0cf81d38e2a47283c4f2aea94b0c9647468b. Stage 2 began at 16:04:16 UTC, after
+  the predictions' tag (6d718ae2, 16:03:26). The extractor did not open the predictions.
+- **Set 2 uses the corrected Fig. 1C.** Its SEs and control readings come from the figure in the
+  journal's correction (Biophys J 112:1290, 2017, doi:10.1016/j.bpj.2017.03.001, PMC5376104), which
+  replaced the original panel.
+  - The corrected figure reproduces all six tabulated osmotic rates within 0.005 in ln k.
+  - Its control tensions match stage 1b's, so the registered conditions and predictions are unaffected.
+  - Disclosed: the extractor first read the original panel and found it inconsistent with the tables. Those
+    readings are sealed separately (superseded_original_fig1c.json, sha256 d27cb33b…) and are not for
+    scoring.
+- **The quoted count matches S2-6** (4.3 mN/m, ΔC₀ = 2.8 mM) unambiguously. S2-6 is reported, not scored
+  (D293 item 6).
+- **Set 2's controls:** three, reported only. None lies at 6.5 mN/m.
+- **The tables print two significant figures,** a rounding of up to about 0.05 in ln k. The registered
+  s_dig = 0 for tabulated rates stands unchanged, since the corrected figure agrees with the printed values
+  within 0.005.
+- **Set 1:** read from the vector coordinates, with centres at the cap midpoints. The six fit points
+  re-read within 0.0005 of the data file. S1-6 is reported only.
+
+## D298: The vesicle-rupture blind test passes: set 1 five of five, set 2 five of five (one-sided, weak)
+
+2026-11-22, about 16:39 UTC. The independent checker scored the registered predictions
+(pores-predictions-registered-2026-11-22, sha256 8f72193b…) against the sealed held-out values
+(held_out.json 20a0c4a5…) under VESICLE_PORES_LAWS §8, D293–D295 and D297. The score file is
+/mnt/workspaces/Cells/review-check-20261121/pores/score.json, sha256 a4b452d6…. A planted failure fails.
+
+**Set 1, Karal and Yamazaki's other temperature columns, two-sided: 5 of 5 pass.**
+- **In range:** S1-1 (38 °C, 7.5 mN/m) has residual −0.200 against τ 0.252, the closest at 0.79 τ. S1-2
+  (35 °C, 7.0) is −0.009 against 0.263, and S1-3 (30 °C, 7.0) is +0.032 against 0.257.
+- **Extrapolated below the viscosity data:** S1-4 (18 °C, 7.5) is −0.035 against 0.231, and S1-5
+  (18 °C, 8.0) is +0.173 against 0.241.
+- **Reported only:** S1-6 (12 °C, 8.0) is +0.287 against 0.264. It would fail by 0.023. It was
+  unscored because FR-31's entry had quoted that condition.
+
+**Set 2, Shibly et al.'s osmotic rows, one-sided: 5 of 5 pass.** These are weak tests: the read rates lie
+5.6 to 15.4 in ln k above the law at the external tension, as any added osmotic tension allows. The law
+implies total tensions of 7.1 to 8.2 mN/m, an osmotic tension of about 2.6 to 3.9 mN/m (reported, not
+scored). S2-6 (the quoted count) and the three controls are reported only. The controls would pass
+two-sided.
+
+**What this does and does not show.**
+- The line-tension law, with the membrane viscosity's temperature dependence (E_A = 27 kJ/mol) and a
+  constant line tension, fitted on the six read points, predicts first-rupture rates at three other
+  temperatures within the registered tolerance, including two below the viscosity data's range.
+- The tolerance is wide: t(0.975, 2) = 4.303 on three experiments per setting, so τ is about 0.25 in
+  ln k, or about 28% in rate.
+- The in-sample misfit stands as disclosed: the law over-predicts the 7.5 mN/m points by 14% to 28%,
+  with χ² = 98.6 on 4 degrees of freedom.
+- **Both declared premises go with every verdict:**
+  - a pipette-held vesicle's first rupture is its first opening, though pores under suction can reclose;
+  - for set 2, equal vesicle sizes across the two papers.
+- The Lean lane had viewed the figure before the test (D287).
+
+## D299: An external review's four architecture items, adopted into the queue
+
+2026-11-22, about 16:57 UTC. An external reviewer, relayed by the user, asked the next architecture work
+to focus on four items. The user: "lets go on 2. as you suggest put it on our backlog / 3. as you guys
+suggest / 4. lets go on this as you see fit in the queue".
+1. **Finish FR-42's neutral-label separation** (in progress, D289 and D296):
+   - one physical population, with labels as passive shares;
+   - FR-38's and FR-33's consumers moved onto it;
+   - verified across label count, nonlinear loss, transport and restart.
+
+   What remains is one independent acceptance on the stacked head: transport with face heat (F2 on),
+   restart mid-transfer and with pools, replacement, and a reused label. D1's own-potential family rows
+   stay as they are until the user decides their future.
+2. **One small evolving-cell integration case, on the backlog.**
+   - A read-only inventory ranks the composition matrix's refused volume and lifecycle combinations by
+     the approved items they block, preferring a missing declared read or accounting term over a new law.
+   - The lead chooses from it.
+   - It uses the declared-read and ownership contracts, and unsupported combinations stay explicitly
+     refused. It may extend to a lifecycle event, such as FR-38's replace-and-restart.
+3. **Affordable realistic-duration runs,** judged by end-to-end cost per simulated biological duration at
+   a stated accuracy, fixed before timing with the registered step-error estimate. Ensemble throughput,
+   interacting-tissue size and biological duration are reported separately.
+   - The dt ladder names the limit that binds the step, and whether the implicit cycle block relaxes it.
+     The block's go returns to the user with those numbers (D290's premise was about 115 times too stiff).
+   - Also in this item: the runner overhead (the bit-identical closure reuse), the step-cost growth with
+     run length, and device row checks proven against the host checks.
+   - Ensemble throughput is measured first on the existing batch and vector CPU paths. The GPU planner
+     stays held until those numbers are in.
+4. **One executable static level-of-detail pair, queued by the lead.**
+   - The first pair is chosen from the read-only inventory: both versions through one physical interface,
+     a validity measure, declared conserved quantities, supported readouts, a validity range and error
+     limits.
+   - The reduced version is opt-in, the choice is made at definition and never at run time, out-of-range
+     use is refused, and the one-writer rule prevents double counting.
+   - The general level-of-detail contract follows from it.
+
+## D300: D1's own-potential label families are retired; no backwards compatibility before alpha
+
+2026-11-22, about 16:59 UTC. The user: "retire them as soon as possible, we don't want old backwards
+compatibility - we're still in heavy dev not even at alpha".
+- **D1's families are removed,** with their checks, sums and D1-only paths, in the kinds owner's stacked
+  FR-42 landing.
+  - Their consumers (FR-33's first test and tracer, and FR-38's labelled cohort) are on FR-42's neutral
+    shares.
+  - D1-only tests are removed in one batch, with a removal list (D224).
+  - Crossrev and G1 must stay identical, since no registered world uses D1 families.
+- **The general rule before alpha:** a superseded mechanism is retired as soon as its replacement lands,
+  with no compatibility path or opt-in for the old behaviour. Registered and judged results stay
+  reproducible through their tags, frozen snapshots and records (D148), not by keeping old code.
+- **Also recorded:** the Lean lane found FR-38's release_check accepting a survival ratio of 1.00 where 0.25
+  is predicted, on a 0, 1 and 2 h grid. A grid error that could not be estimated became an infinite
+  tolerance, and an empty cohort raised ZeroDivisionError. The fix fails closed, with "insufficient
+  resolution" and "empty cohort". All eight saved R1/R2 survival comparisons passed with finite bounds,
+  so no saved result moves.
+
