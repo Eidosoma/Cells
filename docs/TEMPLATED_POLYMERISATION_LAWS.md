@@ -1260,6 +1260,24 @@ It is run at four fractions, p ∈ {0, 0.25, 0.75, 1}, beside a matched blank (H
 - both machine options;
 - A1's horizon and outputs.
 
+**Addendum: R2's rows and translation, a declared choice** (the lead's ruling, 22 November 2026,
+tagged before R2's code and references):
+- **The fate rows, in R1 and R2.** The durable fate is A1's R. The short-lived fate is a new row
+  R_s with R's chemistry: R's μ° and moiety weights (§9.1). "The inventory trace" is the sheet's
+  trace c_R = 1.0 × 10⁻¹² mM, so R_s starts there, as R does.
+- **The fates' losses.** deg_R takes the durable rate k_d. A new degradation deg_R_s, with deg_R's
+  form and standard free energy, takes the short-lived rate k_s.
+- **Translation.** Two chains, `tl` templated by R and `tl_s` templated by R_s. Each has A1's
+  translation parameters (§5.1), and both share the ribosome pool and make P. The two fates are
+  one chemistry, so both are translatable.
+- **A development check, not an acceptance row.** Set both fates' loss rates to A1's k_R.
+  - Each chain's initiation is linear in its template, so translation's initiation sees the total
+    RNA, R + R_s.
+  - R2's total RNA and protein then follow A1's, delayed by the hold. They approach A1's as τ
+    shrinks, with either machine option.
+  - They differ from A1's by the hold, by R_s's starting trace, and by each fate's own factor
+    (1 − e^(y_f)) (§9.10).
+
 <!-- release -->
 | Symbol | Value | Unit | Meaning | Source |
 | --- | --- | --- | --- | --- |
@@ -1303,6 +1321,8 @@ It is run at four fractions, p ∈ {0, 0.25, 0.75, 1}, beside a matched blank (H
    (question e). Both are declared, and the requester names the one meant.
 6. **No observation layer** here. Per-copy detection, roster denominators and two-colour statistics
    are `src/cells/assays`, built separately.
+7. **R2's translation is a declared choice,** not a biological claim (§9.9's addendum): two chains,
+   one per fate row, because both fates are one chemistry.
 
 **The requester's questions,** carried to their answer:
 - (a) does an attached chain keep its machine;
