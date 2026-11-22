@@ -49,7 +49,7 @@
     "cells.reservoir_exchange@1": "src/cells/models/assembly_lineages/exchange.py#L76",
     "cells.shared_pool@1": "src/cells/models/assembly_lineages_v2/population.py#L126",
     "cells.shell_permeation@1": "src/cells/models/assembly_lineages_v2/shell_permeation.py#L47",
-    "cells.stochastic_mass_action@1": "src/cells/models/assembly_lineages_v2/mass_action.py#L156",
+    "cells.stochastic_mass_action@1": "src/cells/models/assembly_lineages_v2/mass_action.py#L160",
     "cells.transition_state_factor@1": "src/cells/models/assembly_lineages_v2/transition_state.py#L227",
     "cells.ubiquinol_cytochrome_c_proton_cycle@1": "src/cells/laws/cycles/ubiquinol_cytochrome_c_proton_cycle.py#L68"
   },
