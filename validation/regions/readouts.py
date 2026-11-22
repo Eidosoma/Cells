@@ -226,6 +226,9 @@ REFUSED = {
     "scheduled_bath_composition@1": "sets held baths' compositions at its events",
     "scheduled_membrane_trafficking@1": "moves membrane, and the charges on it, between nodes",
     "scheduled_compartment_wash@1": "collects and refills every free species at its nodes",
+    # Gene regulation's option A (G4): a recorded exception naming the table's owner.
+    "templated_polymerisation@1": "makes, degrades and recharges species at its routes' cells; "
+    "neither tool reads its counters",
 }
 
 

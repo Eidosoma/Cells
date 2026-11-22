@@ -826,6 +826,39 @@ def _tags():
     for key, value in list(tags.items()):
         if COUPLING in key and COUPLING_2 not in key:
             tags[tuple(COUPLING_2 if part == COUPLING else part for part in key)] = value
+    # templated_polymerisation@1 (gene regulation's option A, G4; a recorded exception naming the
+    # operators owner): it declares common.CONFLICTS_VIEW, as turnover does, and reads the declared
+    # volumes and masks at its routes' cells (fluxes, poly_half_step). None is shown nominal.
+    poly = "templated_polymerisation@1"
+    volumes = "Its rates and exact dG read the declared cell volumes (fluxes, poly_half_step)"
+    masks = "It reads the declared masks at its routes' cells, as common.CONFLICTS_VIEW declares"
+    for name in ("volume", "extracellular_volume"):
+        tags[("reads", poly, WATER, name)] = (REAL, volumes, ())
+    for lumen in (LUMEN_1, LUMEN_2):
+        tags[("reads", poly, lumen, "extracellular_volume")] = (
+            REAL,
+            volumes + "; a lumen changes its node's volume (not shown nominal)",
+            (),
+        )
+    for name in ("outside_active", "membrane_active"):
+        tags[("reads", poly, INSERTION_1, name)] = (
+            REAL,
+            masks + "; insertion@1 opens onset nodes and patches (not shown nominal)",
+            (),
+        )
+        tags[("reads-closed", poly, INSERTION_2, name)] = (
+            REAL,
+            masks + "; insertion@2 closes onset nodes and patches until their onset (not shown "
+            "nominal)",
+            (),
+        )
+    for name in ("active", "membrane_active"):
+        tags[("reads-closed", poly, PARTITION, name)] = (
+            REAL,
+            masks + "; the partition retires its cells, whose rows its routes write (not shown "
+            "nominal)",
+            (),
+        )
     return tags
 
 
