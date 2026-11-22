@@ -6,6 +6,15 @@ the wash's terms). The review's well (60 fmol free, 30 on the specimen's sites, 
 is half washed with buffer at the tracer's trace at t_e. The row at t_e is the state before the
 wash; from the next row on, the sample holds 30, the ions are unchanged bit for bit, and the four
 amounts (free, both sites' bound, the sample less the supply) sum to 100 fmol on every row.
+
+Which time each stock is read at (the Lean lane's request):
+- **At the wash event, t_e = 0.02 s.** The history's row at t_e is the state the wash acts on, so
+  the wall's 10 fmol and the specimen's 30 are read there.
+- **The first saved row after it is 0.01 s later, at 0.03 s.** The wash books the sample at the
+  event, so its 30 fmol is exact on that row and every later one. The two populations' bound stocks
+  on that row are not the event's: they have begun to re-equilibrate with the halved free tracer.
+  The wall's relaxation time is about 1 / (k_off + k_on c) = 1 / (0.6 + 0.3) per s, about 1.1 s
+  (**S**), so 0.01 s is a small part of it.
 """
 
 from decimal import Decimal
@@ -62,9 +71,12 @@ def test_a_nodes_own_wall_runs_as_the_stand_in_did():
     """FR-28 (D268, option A; docs/NODE_SURFACE_SITES_DESIGN.md §8's compiled pair): the review's
     well with its wall owned by the node, and the same well with the review's stand-in cell, each
     washed by half at 0.05 s and run to 0.1 s at 10 ms through the runner (its host checks on every
-    accepted row). The request says the numbers are unaffected: the well's free tracer and both
-    populations' R, B and bound net are bitwise equal on every row; the heat at the well, the work
-    and the magnitudes, from two programs of different shape, within 16 ulps; free, bound and the
+    accepted row). The rows compared are the history's accepted steps: the row at 0.05 s holds the
+    stock the wash acts on, and the first row after the wash is 0.01 s later, at 0.06 s, when the
+    wall has begun to re-equilibrate. The request says the numbers are unaffected: the well's free
+    tracer and both populations' R, B and bound net are bitwise equal on every row; the heat at
+    the well, the work and the magnitudes, from two programs of different shape, within 16 ulps;
+    free, bound and the
     sample sum to 100 fmol within 1e-12 on every row. Two compiles: about 25 s on a quiet CPU (its
     tier row is measured on the timed lane). Its reason (D224): the request's statement that the
     numbers are unaffected needs the runner."""
