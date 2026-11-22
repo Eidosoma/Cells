@@ -43,7 +43,7 @@ and a general feature, never one built for one study (D144).
 | [FR-35](#fr-35--timed-partial-withdrawal-of-an-assembly-populations-exterior-pool) | Timed partial withdrawal of an assembly population's well-mixed exterior pool: each molecule withdrawn independently, a declared buffer supplied, sites and particles kept | **High** (user, 21 November 2026) | **Landed** (merge b521a11c, tag `fr35-withdrawal-landed-2026-11-21`): `cells.pool_withdrawal@1` (D261) | None. Landed (b521a11c, with D263's fixes); the independent acceptance and a 4,000-stream ensemble passed |
 | [FR-36](#fr-36--age--and-region-selective-loss-within-a-species-row) | Age- and region-selective loss within a species row | FR-25's reviewer (21 November 2026) | **Deferred (D273).** Today's tools cover completion-time cohorts in one well-mixed pool with age-independent loss (cohort.py) and FR-33's regional export and one-way tracer | Reopens on a requester's readout needing age-dependent loss: D1 (label families) and D2 (an ageing operator), 2.5 to 4 days |
 | [FR-37](#fr-37--sampling-a-liquid-whose-dye-is-unevenly-distributed) | Sampling a liquid whose dye is unevenly distributed: a draw from chosen parts of an unevenly mixed liquid | **High** (user, 21 November 2026; D274) | **Shown with existing operators** (2bba6043, validation/sampling/uneven_draw.py): per-region wash events; the three cases match, with all 10 fmol accounted for; checker-accepted. Mixing is declared, not simulated (D246), and the sample is a host-side sum | Predicting the per-region split from the port, flow and timing needs an advection operator on faces, with the wash's face refusal lifted (about 3 to 5 days): built only if the requester asks |
-| [FR-38](#fr-38--rna-release-from-its-template-into-two-pools-with-different-lifetimes) | RNA release from its template into two pools with different lifetimes, with per-producer accounting, a release-window cohort and explicit measurement denominators | A user (22 November 2026) | **Building at full scope (D284).** A terminal hold in `templated_polymerisation@1`, split by p into two fate rows, with exact energy and no driven work; the cohort by label rows and by counters; a reader in `src/cells/assays` | The sheet amendment comes first. The finish is a registered comparison against code-blind references. Questions (c) replacement and (e) which cohort are with the requester |
+| [FR-38](#fr-38--rna-release-from-its-template-into-two-pools-with-different-lifetimes) | RNA release from its template into two pools with different lifetimes, with per-producer accounting, a release-window cohort and explicit measurement denominators | A user (22 November 2026) | **Engine core landed as development** (6926491d): hold, two fates, machine option, constant or scheduled p, counters, ledgers and restart; checker-accepted; reader landed (b99d6315) | On FR-42 stage 1: shares replace the class rows; producer identity (cell, generation, chain) across replacement, per the requester's clarification; routed p; then the registered comparison |
 | [FR-39](#fr-39--a-vesicle-that-survives-transient-pores) | A vesicle that survives transient pores: repeated opening and resealing with partial cargo loss | **High** (user, via the Lean lane, 22 November 2026; D286) | **Requested.** Cells ends a lineage at terminal lysis | A design note shared with FR-31: tension-driven pore opening that either reseals after leaking or ruptures |
 | [FR-40](#fr-40--a-single-ribosome-translation-timing-benchmark) | A single-ribosome translation timing benchmark: 406 s from first detectable nascent chain to release | **High** (user, via the Lean lane, 22 November 2026; D286) | **Desk note landed** (022a5d2a). With only the paper's own speeds, which conflict, a comparison is a calibration, not a validation | A metadata-only search for a matched-condition speed or a multi-length reporter series; the spread test needs no speed |
 | [FR-41](#fr-41--vesicle-shrinkage-validation-records) | Vesicle shrinkage validation records for the osmotic lumen law | **High** (user, via the Lean lane, 22 November 2026; D286) | **One agreement, retention open:** shrinkage matches (24.56% against about 25%). The data-only retention check is undetermined for all three sources; the one point estimate (gel-phase LUVs) suggests partial release | Parked until a study with paired, tabulated volume and small-solute retention appears |
@@ -1698,6 +1698,47 @@ with 2 and 1.5.
 - **A disclosure for that comparison's rule.** On 22 November the lead showed the builder the references'
   R1 survivors at p = 0.75 and 1 h, to 10 digits, before any comparison, then withdrew them as a build
   target.
+
+**The requester's clarification (22 November 2026, 15:21 UTC, relayed by the user).** It answers
+questions (c) and (e).
+- **The cohort:**
+  - A molecule is marked when it detaches from its template during [t0, t1). A molecule that finished
+    transcription before t0 qualifies if it detaches in the window, and a release exactly at t1 belongs to
+    the next window.
+  - Template completion, release and uptake of a synthesis tracer are three distinct events. So the
+    window marks at release.
+- **Survival:**
+  - Count the cohort members alive at t1, then how many of those same molecules are alive at t2. Report both
+    counts and their ratio; a zero denominator gives an undefined fraction. (For example, 10 released, 8
+    alive at t1 and 6 at t2 give 6/8 = 75%.)
+  - Under FR-42, adding a tracking label preserves the physical trajectory and the energy ledger.
+- **Replacement:**
+  - A producer is identified by cell ID, occupant generation and expression-chain ID, preserved across
+    restart and cell reordering.
+  - On replacement, removed intracellular RNA is booked to the departing generation, and removal is
+    recorded separately from degradation.
+  - The newcomer starts its own production counters at zero.
+  - RNA retained in an extracellular compartment keeps its original producer ID.
+- **Their acceptance test:** replace a producer midway through a chase, then restart. The readout still
+  distinguishes the two generations' RNA and reproduces the uninterrupted run's cohort counts.
+- **How it is built:** the release-marked cohort already exists. Producer identity becomes a neutral label
+  on FR-42's shares, (cell, generation, chain), so RNA that leaves the cell keeps it. The replacement
+  booking is in templated_polymerisation@1 and the replacement operator, after FR-42 stage 1.
+
+**The machine options are declared choices, not validated biology (the Lean lane's evidence, 16:09 UTC).**
+- In Harden et al. 2020 (PMC6978322, Figs. 1 and 3), purified E. coli polymerase stayed on the DNA after
+  the RNA left in 87 of 100 selected traces. Separate recordings showed that a retained polymerase could
+  make another RNA.
+- The study leaves open when the polymerase becomes available to other templates. So neither of Cells'
+  options, returned at completion or held until release, is quantitatively validated by it.
+- Retention with reinitiation on the same template is a third behaviour that Cells does not model. It
+  would be a future option, built only on a requester's need.
+
+**An export defect, found by the Lean lane (being fixed).** In a 10 s R1 run with no loss route declared
+for a fate, the exporter omitted that fate's int_D, so the cohort reader refused its survivors. The
+exporter's zero-loss rule covered chain products but not release-fate rows. The fix extends it to
+eligible local release-fate rows, class rows included, and the reader keeps requiring an explicit loss
+series. The physical balances were unaffected.
 
 ## FR-39 — A vesicle that survives transient pores
 

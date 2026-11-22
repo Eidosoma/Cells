@@ -1,0 +1,20 @@
+{
+  "study": "Harden et al. (2020), Nature Communications 11, 448",
+  "doi": "10.1038/s41467-019-14208-9",
+  "source": "https://pmc.ncbi.nlm.nih.gov/articles/PMC6978322/",
+  "preparation": "Single-molecule measurements with purified E. coli RNA polymerase and a DNA reporter in vitro.",
+  "retention": {
+    "figure": "1c–e, without heparin",
+    "denominator": "Molecules with visible labelled core polymerase when the sense RNA probe arrived, pooled across two experiments.",
+    "observable": "Polymerase signal still at the DNA spot more than four seconds after the sense transcript probe left.",
+    "count": 87,
+    "total": 100
+  },
+  "secondary_transcription": {
+    "figure": "3a,c and accompanying Results",
+    "observable": "Antisense transcript probe appeared at the same spot in separate recordings, grouped by polymerase motion toward the promoter.",
+    "with_reverse_motion": {"count": 78, "total": 114},
+    "without_reverse_motion": {"count": 5, "total": 257}
+  },
+  "interpretation": "RNA departure, persistence of polymerase on DNA, and synthesis of another RNA can be distinguished. The secondary-transcription denominators are separate motion-selected groups. The experiment gives no time for return to a well-mixed free polymerase pool."
+}

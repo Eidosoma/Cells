@@ -17,7 +17,9 @@ import copy
 import numpy as np
 import pytest
 
+from cells.definitions import pump_composite_spec as cs
 from cells.definitions.specs import ConfigError, parse_spec
+from cells.operators import templated_polymerisation as polymerisation
 from cells.registry import kind_registry
 from cells.registry.models import get_model
 from validation.gene_regulation import engine_run, kernel, worlds
@@ -46,6 +48,8 @@ def _G(state, p, spec):
         r = c.residues // c.stages
         transit[c.id] = float(r * sum(j * state.poly_complexes_fmol[i, j] for j in range(c.stages)))
         residue[c.id] = mu[c.product] / c.residues  # c0 = 1000 mM: mu°_res at 1 M.
+    for i, (c, _) in enumerate(polymerisation.releases_of(block)):  # The hold: L mu°_res each.
+        transit[c.id] += c.residues * float(np.sum(state.poly_hold_fmol[i]))
     g = engine_run.free_energy(amounts, transit, mu, residue, 1.0, block.c0_mM)
     rt = 1e-3 * 8.314462618 * spec.model.temperature_K
     size = sum(abs(n) * rt * (abs(mu[k]) + abs(np.log(n / block.c0_mM)) + 1) for k, n in
@@ -115,9 +119,19 @@ def test_a_product_above_one_molar_at_a_chain_in_use_is_refused():
     assert not bool(ok)
 
 
+def _release_in_a1(short_lived):
+    """An edit of A1's block: transcription releasing into R and `short_lived` (FR-38)."""
+
+    def edit(b):
+        b["chains"][0]["release"] = worlds._release(0.75, "returned", [80], [("R", short_lived)])
+
+    return edit
+
+
 # The declaration's refusals: (edit of A1's block, words of the refusal).
 REFUSALS = [
     (lambda b: b["chains"][0].update(stages=7), "divide"),
+    (_release_in_a1("P"), "writes 'P', a fate row"),  # One producer per fate row.
     (lambda b: b["degradations"][0].update(standard_free_energy={"dG": 1.0}), "dG_RT"),
     (lambda b: b["degradations"][0]["standard_free_energy"].update(basis="other"), "basis"),
     (lambda b: b["transfers"][0].update(standard_free_energy={"dG_RT": float("nan")}), "finite"),
@@ -149,3 +163,155 @@ def test_the_cited_entries_reach_the_registry_which_refuses_a_perturbed_one():
     kernel.block(bad)["degradations"][0]["standard_free_energy"]["dG_kJ_mol"] *= 1 + 1e-9
     with pytest.raises(ConfigError, match="one authority for each standard free energy"):
         parse_spec(bad)
+
+
+# ------------------------------------------------------------------ the release (§9, FR-38)
+
+K_I = float(worlds.sheet.A1["k_I_tx"])
+
+
+def _release(raw):
+    return kernel.block(raw)["chains"][0]["release"]
+
+
+def _control(raw, route):
+    return next(c for c in raw["experiment"]["polymerisation_controls"] if c["route_id"] == route)
+
+
+# R1's refusals (§9.1-§9.6): (edit of R1's raw definition at p = 0.75, words of the refusal).
+RELEASE_REFUSALS = [
+    (lambda raw: _release(raw).update(machine="kept"), "machine is one of"),
+    (lambda raw: _release(raw).update(durable_fraction=1.5), "durable_fraction"),
+    (lambda raw: _release(raw).update(fates=[dict(durable="R", short_lived="R")]), "distinct"),
+    (lambda raw: _release(raw)["fates"][0].update(short_lived="N"), "none of its draws"),
+    (lambda raw: _release(raw)["fates"][0].update(short_lived="M"), "another standard_mu_RT"),
+    (lambda raw: _release(raw).update(label=dict(id="l", at="release")), "label is null"),
+    (lambda raw: _release(raw).update(machine="held", initial_copies=[2e4]), "cannot hold"),
+    (lambda raw: _release(raw).update(dwell_s=1.0), "dt/tau"),
+    (
+        lambda raw: (
+            _release(raw).update(durable_fraction="scheduled"),
+            raw["experiment"]["polymerisation_controls"].append(
+                dict(route_id=worlds.RELEASE, schedule=[dict(time=0.0, value=1.2)])
+            ),
+        ),
+        "durable fraction is in",
+    ),
+]
+
+
+@pytest.mark.parametrize(("edit", "words"), RELEASE_REFUSALS)
+def test_the_release_refuses(edit, words):
+    raw = worlds.r1(0.75)
+    edit(raw)
+    with pytest.raises(ConfigError, match=words):
+        parse_spec(raw)
+
+
+def _identity_bound(*terms):
+    return 64 * EPS * max(abs(t) for t in terms) + 1e-30
+
+
+# R1 on the kernel for 60 s at dt 2 s: (p, machine, transcription's k_I, p's source).
+RELEASES = [
+    (0.75, "returned", 0.0, "constant"),
+    (1.0, "held", 0.0, "constant"),
+    (0.0, "held", K_I, "constant"),
+    (0.25, "returned", K_I, "scheduled"),
+]
+
+
+@pytest.mark.parametrize(("p", "machine", "k_I", "source"), RELEASES)
+def test_the_release_keeps_its_identities_and_sits_on_its_limit(p, machine, k_I, source):
+    """FR-38, about 0.3 s a row, no world compiled: R1's world (worlds.r1) on the kernel, whose
+    rows with k_I > 0 bring arrivals into the hold. The hold's, each fate row's and the machines'
+    identities (§9.7); at k_I = 0 the hold and releases on their closed forms (§9.10, no affinity
+    factor); at p = 0 or 1 the zero-rate route's counter and heat exactly 0.0; G's identity with
+    the hold's term (§9.5), the routes' heats summing to the booked heat, and no heat increment
+    below zero. A chain without a release keeps today's form, and this one round-trips. A
+    scheduled p reaches the controls at its changes (cs.control_values)."""
+    raw = kernel.truncated(worlds.r1(p, machine=machine, initiation=k_I), 60.0)
+    if source == "scheduled":
+        _release(raw)["durable_fraction"] = "scheduled"
+        schedule = [dict(time=0.0, value=p), dict(time=30.0, value=1.0)]
+        raw["experiment"]["polymerisation_controls"].append(
+            dict(route_id=worlds.RELEASE, schedule=schedule)
+        )
+        values = cs.control_values(parse_spec(raw), [0.0, 28.0, 30.0, 58.0])
+        assert list(values.polymerisation_release_fraction[:, 0]) == [p, p, 1.0, 1.0]
+        assert list(values.polymerisation_release_class[:, 0]) == [1.0] * 4
+        schedule.pop()  # The kernel holds the time-0 values.
+    start, end, layout, spec, increments = _ends(raw, record=True)
+    (block,) = [d for d in spec.model.operators if d.law == worlds.POLYMERISATION]
+    assert type(block.chains[0]) is polymerisation.ReleasingChain
+    assert parse_spec(spec.to_dict()).model.operators == spec.model.operators
+    (a1,) = [d for d in parse_spec(worlds.a1(end=60.0)).model.operators if d.law == block.law]
+    assert type(a1.chains[0]) is polymerisation.Chain
+    assert "release" not in polymerisation.declaration_to_dict(a1)["chains"][0]
+    species = list(spec.model.species_ids)
+
+    def n(state, row):
+        i = species.index(row)
+        return float(layout.amount_reference[i, 0] + state.amount_increment[i, 0])
+
+    H0, H = float(start.poly_hold_fmol[0, 0]), float(end.poly_hold_fmol[0, 0])
+    A = float(end.poly_released_fmol[0])
+    Q = end.poly_hold_released_fmol[0, 0]  # [fate]
+    assert (k_I > 0) == (A > 0)
+    assert abs(H0 + A - H - Q[0] - Q[1]) <= _identity_bound(H0, A, H, *Q)
+    for f, row in enumerate(("R", "R_s")):
+        lost = float(end.poly_degraded_fmol[f])
+        gained = n(end, row) - n(start, row)
+        assert abs(gained - Q[f] + lost) <= _identity_bound(n(end, row), Q[f], lost)
+    M = float(layout.poly_pool_total_fmol[0])
+    engaged = float(np.sum(end.poly_complexes_fmol)) + (H if machine == "held" else 0.0)
+    assert abs(float(end.poly_free_machines_fmol[0]) + engaged - M) <= _identity_bound(M)
+    if k_I == 0.0:
+        tau = float(worlds.sheet.RELEASE["tau"])
+        assert H == pytest.approx(H0 * np.exp(-60.0 / tau), rel=1e-10)
+        out = -np.expm1(-60.0 / tau) * H0
+        assert Q[0] == pytest.approx(p * out, rel=1e-10)
+        assert Q[1] == pytest.approx((1.0 - p) * out, rel=1e-10)
+    if p in (0.0, 1.0):
+        zero = 0 if p == 0.0 else 1
+        assert Q[zero] == 0.0 and end.poly_release_heat_pJ[0, 0, zero] == 0.0
+    total = float(np.sum(end.poly_dissipated_energy_pJ))
+    routes = sum(float(np.sum(getattr(end, k))) for k in (
+        "poly_chain_heat_pJ", "poly_degradation_heat_pJ", "poly_release_heat_pJ"))  # fmt: skip
+    bookings = float(np.sum(end.poly_energy_magnitude_pJ))
+    assert abs(routes - total) <= 64 * EPS * bookings
+    (g1, size), (g0, _) = _G(end, layout, spec), _G(start, layout, spec)
+    assert abs(total + float(g1 - g0)) <= 64 * EPS * (size + bookings)
+    assert min(float(np.min(x)) for x in increments) >= 0.0
+
+
+def _labelled(at, k_I):
+    """R1's labelled world at p = 0.75 (§9.8's route 1), the label held at class 2 from t = 0;
+    labelled at completion, the hold has both classes, class 1 holding R1's 80 copies."""
+    raw = worlds.r1(0.75, labelled=True, initiation=k_I)
+    _control(raw, worlds.LABEL)["schedule"] = [dict(time=0.0, value=2.0)]
+    if at == "completion":
+        _release(raw).update(label=dict(id=worlds.LABEL, at="completion"), initial_copies=[80, 0])
+    return kernel.truncated(raw, 60.0)
+
+
+@pytest.mark.parametrize("at", ["release", "completion"])
+def test_the_label_puts_each_molecule_in_its_class(at):
+    """FR-38, about 0.3 s a row, no world compiled: the class axis (§9.1). Labelled at release, the
+    hold keeps one class and every release enters class 2's rows, bit for bit the unlabelled
+    run's releases. Labelled at completion, with arrivals (A1's k_I), every arrival enters hold
+    class 2, while class 1's starting copies leave into class 1's rows alone."""
+    _, end, _, _, _ = _ends(_labelled(at, K_I if at == "completion" else 0.0))
+    hold, released = end.poly_hold_fmol[0], end.poly_hold_released_fmol[0]  # [class], [class, fate]
+    if at == "release":
+        _, plain, _, _, _ = _ends(kernel.truncated(worlds.r1(0.75), 60.0))
+        assert hold[1] == 0.0 and np.all(released[0] == 0.0)
+        assert np.array_equal(released[1], plain.poly_hold_released_fmol[0, 0])
+        assert hold[0] == plain.poly_hold_fmol[0, 0]
+        return
+    H0 = 80 * polymerisation.COPY_FMOL
+    A = float(end.poly_released_fmol[0])
+    tau = float(worlds.sheet.RELEASE["tau"])
+    assert A > 0 and hold[0] == pytest.approx(H0 * np.exp(-60.0 / tau), rel=1e-10)
+    assert abs(H0 - hold[0] - np.sum(released[0])) <= _identity_bound(H0)
+    assert abs(A - hold[1] - np.sum(released[1])) <= _identity_bound(A, hold[1])
