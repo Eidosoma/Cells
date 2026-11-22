@@ -1,8 +1,9 @@
 """Operator templated_polymerisation@1: templated polymerisation, its products' degradation and its
 monomers' recharging, on the shared species inventory (gene regulation's option A, D235; FR-25).
 
-The declared equations are docs/TEMPLATED_POLYMERISATION_LAWS.md (tag gr1-sheet-2026-11-20b); the
-design is docs/GENE_REGULATION_DESIGN.md §7. Development, not judged: A's protocol (G6) judges it
+The declared equations are docs/TEMPLATED_POLYMERISATION_LAWS.md (tag gr1-sheet-2026-11-20b; its
+§9, the release, to tag gr1-sheet-fr38-erratum-a2-2026-11-22); the design is
+docs/GENE_REGULATION_DESIGN.md §7. Development, not judged: A's protocol (G6) judges it
 against the code-blind references of validation/gene_regulation/references/.
 
 Declaration
@@ -51,8 +52,9 @@ rows: {id, dwell_s, machine, durable_fraction, fates, label, initial_copies}.
   degradation, alike across the classes (its form, cited dG° and schedule). They are this
   operator's own label rows, not the registry's label families (D1; the lead's ruling of 22
   November 2026): a fate's loss reads its row's own potential through (1 - e^(y_f)), so the class
-  rows' sum departs from one unlabelled row by that term, about 1e-8 relative at R1. The departure
-  is physical, not an error, and well inside the two cohort routes' agreement bound (§9.8).
+  rows' sum departs from one unlabelled row by at most about 1e-8 relative at R1, the size of that
+  term. The departure is physical, not an error, and well inside the two cohort routes' agreement
+  bound (§9.8).
 - initial_copies: H(0) per hold class (K, or one where the label is at release), in copies. With
   "held", every pool's free machines start at M - sum H(0) of its held chains, which must be >= 0.
 A chain without the key is today's Chain, so its definition, signature and fingerprint are today's.
