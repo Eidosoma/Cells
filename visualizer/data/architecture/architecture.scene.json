@@ -4,35 +4,35 @@
  "title": "Cells architecture",
  "caveat": "Capabilities vary by model, and whole-cell integration is ongoing. No single run uses every part drawn here.",
  "meta": {
-  "as_of": "2026-11-20",
-  "generated_at": "2026-11-20T22:03:14Z",
-  "revision": "93fc8c2c",
-  "revision_date": "2026-11-20",
+  "as_of": "2026-11-22",
+  "generated_at": "2026-11-22T16:24:59Z",
+  "revision": "cbe54031",
+  "revision_date": "2026-11-22",
   "dirty": false,
   "generator": "visualizer/tools/extract_architecture.py",
-  "source_base_url": "https://github.com/Eidosoma/Cells/blob/93fc8c2cd217dbac9c2f6381d201f5acdb020265/",
+  "source_base_url": "https://github.com/Eidosoma/Cells/blob/cbe54031d0f3a98c1e846fe48259eab6c60b4d59/",
   "own_source_base_url": "https://github.com/Eidosoma/Cells/blob/visualizer/",
   "declarations": {
    "kind": "cells.declarations@2",
-   "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265",
+   "revision": "cbe54031d0f3a98c1e846fe48259eab6c60b4d59",
    "pieces": {
     "kind": 5,
-    "law": 32,
-    "operator": 24
+    "law": 51,
+    "operator": 31
    },
    "models": 11,
    "legacy_models": 127
   },
   "counts": {
-   "engine_files": 262,
-   "engine_files_placed": 262,
-   "engine_files_read": 583,
+   "engine_files": 292,
+   "engine_files_placed": 292,
+   "engine_files_read": 613,
    "engine_files_legacy": 321,
-   "parts": 270,
-   "relations": 1064,
+   "parts": 274,
+   "relations": 1118,
    "by_kind": {
-    "operator": 22,
-    "component": 158,
+    "operator": 25,
+    "component": 159,
     "state": 6,
     "gate": 8,
     "capability": 23,
@@ -41,10 +41,10 @@
    },
    "by_status": {
     "qualified": 49,
-    "landed": 50,
+    "landed": 55,
     "established": 46,
-    "planned": 27,
-    "designed": 22,
+    "planned": 28,
+    "designed": 20,
     "failed": 1,
     "unstated": 70,
     "external": 5
@@ -550,20 +550,20 @@
     ]
    },
    "gained": {
-    "added": 103,
+    "added": 140,
     "removed": 125,
     "where": [
      [
       "operators",
-      32
+      36
+     ],
+     [
+      "models/assembly_lineages_v2",
+      28
      ],
      [
       "models/assembly_lineages",
-      15
-     ],
-     [
-      "kinds",
-      12
+      16
      ]
     ],
     "review": {
@@ -575,7 +575,7 @@
      "covers_all": false
     }
    },
-   "checked_at": "93fc8c2c"
+   "checked_at": "cbe54031"
   },
   "counts": {
    "units": 48,
@@ -21893,6 +21893,58 @@
    ]
   },
   {
+   "id": "op.scheduled_compartment_wash@1",
+   "label": "Scheduled compartment wash",
+   "kind": "operator",
+   "group": "operators",
+   "status": "landed",
+   "as_of": "2026-11-22",
+   "plain": "A scheduled event draws a fraction of a finite compartment’s liquid and replaces it with buffer. The operator records what was collected and supplied. Bound material stays in place.",
+   "detail": "scheduled_compartment_wash@1: timed partial washes of finite compartments (FR-27; D245, D246).",
+   "facts": [
+    [
+     "Law",
+     "scheduled_compartment_wash@1"
+    ],
+    [
+     "Class",
+     "ScheduledCompartmentWash"
+    ],
+    [
+     "Parts of the step",
+     "event map"
+    ],
+    [
+     "Schedule in a definition",
+     "compartment_wash_events"
+    ],
+    [
+     "Own ledgers",
+     "wash_ions"
+    ],
+    [
+     "State it owns",
+     "8 fields"
+    ],
+    [
+     "Reads as declared",
+     "extracellular_volume, extracellular_amount_reference, outside_active"
+    ]
+   ],
+   "sources": [
+    {
+     "path": "src/cells/operators/wash_schedule.py"
+    },
+    {
+     "path": "docs/FEATURE_REQUESTS.md",
+     "where": "FR-27 — A timed partial wash of a finite compartment"
+    }
+   ],
+   "files": [
+    "src/cells/operators/wash_schedule.py"
+   ]
+  },
+  {
    "id": "op.scheduled_membrane_insertion@1",
    "label": "Membrane insertion",
    "kind": "operator",
@@ -22182,7 +22234,7 @@
     ],
     [
      "Reads as declared",
-     "volume, extracellular_volume, active, outside_active, membrane_active, membrane_area"
+     "volume, extracellular_volume, active, outside_active, membrane_active"
     ]
    ],
    "sources": [
@@ -22402,6 +22454,46 @@
    ]
   },
   {
+   "id": "op.site_occupant_replacement@1",
+   "label": "Binding-site occupancy at cell replacement",
+   "kind": "operator",
+   "group": "operators",
+   "status": "landed",
+   "as_of": "2026-11-22",
+   "plain": "When a cell is replaced, this operator sets the incoming occupant’s binding-site populations from its template and records the material that arrived and departed. Environment-owned sites keep their occupancy.",
+   "detail": "site_occupant_replacement@1, W (the section's comment above): an event map at replacement@1's event steps that resets the covered site populations through site_occupancy@1's accepted writes, with the departed and arrived records and the site free energy's jump, closed in the owner's ledgers (external terms) and @3's energy ledger. It reads no view and writes no @3 row. The reads of the site quantities stay exact (R3): it has only an event part, and events run before every split part's first half, so a routed target reads the newcomer's occupancy from the step leaving the event (a writer with a split part would need R3's order check extended to writers).",
+   "facts": [
+    [
+     "Law",
+     "site_occupant_replacement@1"
+    ],
+    [
+     "Class",
+     "SiteOccupantReplacement"
+    ],
+    [
+     "Parts of the step",
+     "event map"
+    ],
+    [
+     "State it owns",
+     "5 fields"
+    ]
+   ],
+   "sources": [
+    {
+     "path": "src/cells/operators/site_occupancy.py"
+    },
+    {
+     "path": "docs/FEATURE_REQUESTS.md",
+     "where": "FR-26 — Owned state when a cell is replaced"
+    }
+   ],
+   "files": [
+    "src/cells/operators/site_occupancy.py"
+   ]
+  },
+  {
    "id": "op.species_regulated_availability@1",
    "label": "Regulated availability",
    "kind": "operator",
@@ -22595,6 +22687,85 @@
    ]
   },
   {
+   "id": "op.templated_polymerisation@1",
+   "label": "One-gene expression and RNA release",
+   "kind": "operator",
+   "group": "operators",
+   "status": "landed",
+   "as_of": "2026-11-22",
+   "plain": "The composite tissue model can express one gene. Completed RNA can stay attached to its template, then enter a durable or a short-lived pool. Counters distinguish RNA still attached from cumulative releases. The registered test of the base unit (FR-25) was inconclusive overall. Thirty of 32 comparisons passed, and the two induction-and-decay comparisons were inconclusive. The release extension (FR-38) has passed development checks. Its registered comparison and tracking a producer across cell replacement are pending.",
+   "detail": "Operator templated_polymerisation@1: templated polymerisation, its products' degradation and its monomers' recharging, on the shared species inventory (gene regulation's option A, D235; FR-25).",
+   "facts": [
+    [
+     "Law",
+     "templated_polymerisation@1"
+    ],
+    [
+     "Class",
+     "TemplatedPolymerisation"
+    ],
+    [
+     "Parts of the step",
+     "split half-steps"
+    ],
+    [
+     "Step method",
+     "ssprk33_stage_condition_exact_bookings@1"
+    ],
+    [
+     "Under an RK4 inner step",
+     "split"
+    ],
+    [
+     "Schedule in a definition",
+     "polymerisation_controls"
+    ],
+    [
+     "Heat booked in",
+     "poly_dissipated_energy_pJ"
+    ],
+    [
+     "Own ledgers",
+     "poly_machines, poly_residues"
+    ],
+    [
+     "State it owns",
+     "18 fields"
+    ],
+    [
+     "Reads as declared",
+     "volume, extracellular_volume, active, outside_active, membrane_active"
+    ]
+   ],
+   "sources": [
+    {
+     "path": "src/cells/operators/templated_polymerisation.py"
+    },
+    {
+     "path": "docs/FEATURE_REQUESTS.md",
+     "where": "FR-25 — A reusable one-gene expression unit"
+    },
+    {
+     "path": "docs/DECISIONS.md",
+     "where": "D282: FR-25's final verdict"
+    },
+    {
+     "path": "docs/FEATURE_REQUESTS.md",
+     "where": "FR-38 — RNA release from its template into two pools with different lifetimes"
+    },
+    {
+     "path": "docs/TEMPLATED_POLYMERISATION_LAWS.md"
+    },
+    {
+     "path": "docs/DECISIONS.md",
+     "where": "D296: FR-42's label state lives in the label owner"
+    }
+   ],
+   "files": [
+    "src/cells/operators/templated_polymerisation.py"
+   ]
+  },
+  {
    "id": "compute.cpu",
    "label": "CPU, float64",
    "kind": "component",
@@ -22759,7 +22930,7 @@
     ],
     [
      "Lines of Python",
-     "2,049"
+     "2,062"
     ]
    ],
    "sources": [
@@ -22799,7 +22970,7 @@
     "validation/energy_step_doubling/recorder_x.py",
     "validation/energy_step_doubling/tools.sha256"
    ],
-   "weight": 2049
+   "weight": 2062
   },
   {
    "id": "exec.specs",
@@ -22811,11 +22982,11 @@
    "facts": [
     [
      "Files",
-     "18"
+     "19"
     ],
     [
      "Lines of Python",
-     "5,899"
+     "6,289"
     ],
     [
      "Model identifiers",
@@ -22846,7 +23017,7 @@
      "where": "D188's move 2 landed on main (18 November 2026)."
     }
    ],
-   "weight": 5899
+   "weight": 6289
   },
   {
    "id": "exec.registry",
@@ -22925,7 +23096,7 @@
     ],
     [
      "Lines of Python",
-     "201"
+     "205"
     ]
    ],
    "sources": [
@@ -22994,7 +23165,7 @@
    "files": [
     "src/cells/modules/__init__.py"
    ],
-   "weight": 201
+   "weight": 205
   },
   {
    "id": "exec.declarations",
@@ -23016,11 +23187,11 @@
     ],
     [
      "Read by this map",
-     "cells.declarations@2, written at 93fc8c2c"
+     "cells.declarations@2, written at cbe54031"
     ],
     [
      "Laws, kinds and operators",
-     "32, 5 and 24"
+     "51, 5 and 31"
     ],
     [
      "Active models",
@@ -23130,7 +23301,7 @@
     ],
     [
      "Lines of Python",
-     "167"
+     "197"
     ]
    ],
    "sources": [
@@ -23163,7 +23334,7 @@
    "files": [
     "src/cells/registry/model_table.py"
    ],
-   "weight": 167
+   "weight": 197
   },
   {
    "id": "exec.layout",
@@ -23358,7 +23529,7 @@
     ],
     [
      "Lines of Python",
-     "718"
+     "911"
     ]
    ],
    "sources": [
@@ -23375,7 +23546,7 @@
     "src/cells/execution/resources.py",
     "src/cells/execution/state.py"
    ],
-   "weight": 718
+   "weight": 911
   },
   {
    "id": "exec.schedule",
@@ -23455,7 +23626,7 @@
     ],
     [
      "Lines of Python",
-     "1,037"
+     "1,048"
     ]
    ],
    "sources": [
@@ -23472,7 +23643,7 @@
     "src/cells/execution/runner.py",
     "src/cells/execution/windows.py"
    ],
-   "weight": 1037
+   "weight": 1048
   },
   {
    "id": "exec.batch",
@@ -23624,7 +23795,7 @@
     ],
     [
      "Lines of Python",
-     "2,605"
+     "2,610"
     ]
    ],
    "sources": [
@@ -23673,7 +23844,7 @@
    "files": [
     "src/cells/records/run_view.py"
    ],
-   "weight": 2605
+   "weight": 2610
   },
   {
    "id": "exec.relations",
@@ -23691,7 +23862,7 @@
     ],
     [
      "Lines of Python",
-     "2,252"
+     "2,274"
     ]
    ],
    "sources": [
@@ -23739,7 +23910,7 @@
     "validation/relationships/lineage_summaries.py",
     "validation/relationships/second_consumer.py"
    ],
-   "weight": 2252
+   "weight": 2274
   },
   {
    "id": "fr.loop_packages",
@@ -23858,7 +24029,7 @@
     ],
     [
      "Lines of Python",
-     "1,224"
+     "1,230"
     ]
    ],
    "sources": [
@@ -23904,7 +24075,7 @@
     "validation/execution/window_check_probe.py",
     "validation/execution/window_row_checks_runs.py"
    ],
-   "weight": 1224
+   "weight": 1230
   },
   {
    "id": "exec.gpu_production",
@@ -24041,7 +24212,7 @@
     ],
     [
      "Lines of Python",
-     "1,031"
+     "1,037"
     ]
    ],
    "sources": [
@@ -24069,7 +24240,7 @@
     "src/cells/records/io.py",
     "src/cells/records/window_io.py"
    ],
-   "weight": 1031
+   "weight": 1037
   },
   {
    "id": "exec.continuity",
@@ -24227,7 +24398,7 @@
     ],
     [
      "Lines of Python",
-     "123"
+     "164"
     ]
    ],
    "sources": [
@@ -24239,7 +24410,7 @@
    "files": [
     "src/cells/numerics/surface_imex.py"
    ],
-   "weight": 123
+   "weight": 164
   },
   {
    "id": "num.field",
@@ -24711,21 +24882,32 @@
    "kind": "component",
    "group": "laws",
    "status": "established",
-   "plain": "Gated channels between neighbouring cells, and the law by which a new cell forms its junctions over time. Since 18 November 2026 the tissue model's junction law stands in a module of its own, which this part's gate module re-imports for the older families; that module is in the part of the tissue model's declared laws. A two-state voltage gate, a floor of open fraction for each species, and combining a junction's two sides by minimum or mean as well as by product were requested on 17 November 2026 by the gap-junction work, and await the user's go (FR-16); on 18 November 2026 they were scheduled with the owners whose files they touch, after those owners' current work, and they are not started (D219).",
+   "as_of": "2026-11-22",
+   "plain": "Gap junctions connect neighbouring cells. The series-gate law models how the two sides of a junction respond to voltage. It supports threshold relaxation and Boltzmann–Eyring gating. The Cx43 comparison awaits registration. Per-species floors and the proposed minimum and mean rules for combining gates remain open.",
    "detail": "Continuous physical-time junction conductance from the BETSE v1.5.0 rate equations.",
    "facts": [
     [
      "Files",
-     "5"
+     "6"
     ],
     [
      "Lines of Python",
-     "184"
+     "446"
+    ],
+    [
+     "Laws it declares",
+     "1"
     ]
+   ],
+   "members": [
+    {
+     "label": "junction_series_gates@1",
+     "detail": "law, declared in junction_series_gates.py"
+    }
    ],
    "sources": [
     {
-     "path": "docs/CELL_REPLACEMENT.md"
+     "path": "src/cells/laws/junctions/junction_series_gates.py"
     },
     {
      "path": "docs/FEATURE_REQUESTS.md",
@@ -24733,21 +24915,21 @@
     },
     {
      "path": "docs/FEATURE_REQUESTS.md",
-     "where": "D219: scheduled with the F owner, after its per-law extractions, and with the @3 owner. Not started."
+     "where": "FR-30 — Homotypic Cx43 junctions with two relaxation times"
     },
     {
-     "path": "docs/DECISIONS.md",
-     "where": "D219: The gap-junction replication's next bundle and two judged comparisons"
+     "path": "docs/CELL_REPLACEMENT.md"
     }
    ],
    "files": [
     "src/cells/laws/junctions/__init__.py",
     "src/cells/laws/junctions/junction_formation.py",
     "src/cells/laws/junctions/junction_gate.py",
+    "src/cells/laws/junctions/junction_series_gates.py",
     "src/cells/laws/junctions/passive.py",
     "src/cells/laws/junctions/selective.py"
    ],
-   "weight": 184
+   "weight": 446
   },
   {
    "id": "laws.cotransport",
@@ -24764,7 +24946,7 @@
     ],
     [
      "Lines of Python",
-     "119"
+     "176"
     ]
    ],
    "sources": [
@@ -24776,7 +24958,7 @@
     "src/cells/laws/routes/__init__.py",
     "src/cells/laws/routes/k_anion_symport.py"
    ],
-   "weight": 119
+   "weight": 176
   },
   {
    "id": "laws.reactions",
@@ -24845,56 +25027,94 @@
    "label": "Respiration and ATP synthesis",
    "kind": "component",
    "group": "laws",
-   "status": "designed",
-   "as_of": "2026-11-20",
-   "plain": "Mitochondria that respire and make ATP, in the tissue model. The direction was decided on 16 November 2026 (D193): one law set for mitochondria and for bacteria such as E. coli and JCVI-syn3A, with every cycle in one thermodynamic form; one effective mitochondrion per cell first; isolated heart mitochondria first, then mitochondria in a heart cell. Its equations and parameters come from Beard's published model of 2005, with its 2006 correction. A probe of the stiff membrane-potential mode comes first. The user approved a comparison three ways: an independent reference, the published model run unchanged outside the engine, and a comparison over the source's steady-state and low-oxygen protocols. The laws would join the tissue model as declared kinds, with a cell-owned compartment as the matrix inside a cell. About 23 to 46 agent-days, built in step 4 of the order the user set the same evening (D194). Designed; no engine code. On 17 November 2026 the user confirmed that the level of detail is chosen per research question (D210): one lumped mitochondrion of identical members per cell first, which stays the reference that individual mitochondria must reduce to, then classes, then individuals. Individual mitochondria, with fission and fusion, are to come sooner: their design now, and its dependencies pulled forward. The ATP synthesis law is also the first molecular machine's; Beard's printed form of it fails the engine's step-0 screen, so the user rules on a departure first (D209). An addendum to its design, proposed and read-only, with options, sets out individual mitochondria: static ones, N per cell with no events, are admitted as compartments today; dynamic ones, with fission, fusion, removal and inheritance, need new doors, random draws, geometry as state and the next version of the relationship tables. It recommends handing these requirements to the formats' owners now, a check soon, and the doors after the core-seams pass. On 19 November 2026 the user chose option 2 of the core-laws roadmap (D234): a new mitochondria lane writes the mitochondrial laws and their validation, its first milestone, MT-1, one isolated cardiac mitochondrion, lumped, on the tissue model @3. On 20 November 2026 host P was chosen for MT-1 and MT-2, and MT-1 is to run on today's solver at declared activities (D235). What main holds of it by 20 November 2026 is groundwork: the cycle kind's fourth kinetic form, monomial, with no law of that form yet; a named potential set of the species registry, with its moieties; and a code-blind reference of Beard's model (a part of its own, Mitochondria references (MR1)). Beard's repairs stay the user's (D209). Designed; no mitochondrial law is on main, and no mitochondrion runs in the modular engine yet. Today the earlier tissue families exchange ions with mitochondria passively, and respiration is not modelled.",
+   "status": "landed",
+   "as_of": "2026-11-22",
+   "plain": "The pump tissue model can represent an isolated mitochondrion. Its inner-membrane cycle laws describe electron transport, ATP synthesis and metabolite exchange. All ten laws in the component comparison fell within the registered reference bands. The integrated organelle test, MT-1b, is still in development.",
+   "facts": [
+    [
+     "Files",
+     "10"
+    ],
+    [
+     "Lines of Python",
+     "679"
+    ],
+    [
+     "Laws it declares",
+     "9"
+    ]
+   ],
+   "members": [
+    {
+     "label": "cells.adenylate_kinase@1",
+     "detail": "law, declared in adenylate_kinase.py"
+    },
+    {
+     "label": "cells.cytochrome_c_oxygen_proton_cycle@1",
+     "detail": "law, declared in cytochrome_c_oxygen_proton_cycle.py"
+    },
+    {
+     "label": "cells.electrogenic_nucleotide_exchange@1",
+     "detail": "law, declared in electrogenic_nucleotide_exchange.py"
+    },
+    {
+     "label": "cells.held_reductant_supply@1",
+     "detail": "law, declared in held_reductant_supply.py"
+    },
+    {
+     "label": "cells.nadh_ubiquinone_proton_cycle@1",
+     "detail": "law, declared in nadh_ubiquinone_proton_cycle.py"
+    },
+    {
+     "label": "cells.phosphate_proton_symport@1",
+     "detail": "law, declared in phosphate_proton_symport.py"
+    },
+    {
+     "label": "cells.potassium_proton_exchange@1",
+     "detail": "law, declared in potassium_proton_exchange.py"
+    },
+    {
+     "label": "cells.proton_coupled_atp_synthesis_cycle@1",
+     "detail": "law, declared in proton_coupled_atp_synthesis_cycle.py"
+    },
+    {
+     "label": "cells.ubiquinol_cytochrome_c_proton_cycle@1",
+     "detail": "law, declared in ubiquinol_cytochrome_c_proton_cycle.py"
+    }
+   ],
    "sources": [
     {
-     "path": "docs/DECISIONS.md",
-     "where": "D193: Mitochondria: the direction, and the comparison approved"
-    },
-    {
-     "path": "docs/MITOCHONDRIA_DESIGN.md",
-     "where": "0. The choices, in plain terms"
-    },
-    {
-     "path": "docs/DECISIONS.md",
-     "where": "D194: The order after 16 November"
-    },
-    {
-     "path": "docs/DECISIONS.md",
-     "where": "D210: Mitochondria: the level of detail is chosen per research question; individuals sooner"
-    },
-    {
-     "path": "docs/DECISIONS.md",
-     "where": "D209: Molecular machines: M0 now, then M1 (FR-13)"
-    },
-    {
-     "path": "docs/MITOCHONDRIA_DESIGN.md",
-     "where": "Individual mitochondria (addendum, 17 November 2026)"
-    },
-    {
-     "path": "docs/MITOCHONDRIA_DESIGN.md",
-     "where": "Status: proposed, read-only, with options (D210)"
-    },
-    {
-     "path": "docs/DECISIONS.md",
-     "where": "D234: Option 2 of the core-laws roadmap, and gene regulation's design begins"
-    },
-    {
-     "path": "docs/DECISIONS.md",
-     "where": "D235: FR-8 builds N2 then C; mitochondria on host P; gene regulation's option A"
-    },
-    {
-     "path": "docs/CORE_LAWS_ROADMAP.md",
-     "where": "Decided, 19 November 2026 (D234)."
+     "path": "docs/MITOCHONDRIA_LAWS_APPENDIX.md"
     },
     {
      "path": "PROGRESS.md",
-     "where": "The mitochondria engine groundwork and the X2 floor fix (20 November 2026, early morning)."
+     "where": "Mitochondria laws, head 2 landed"
+    },
+    {
+     "path": "validation/mitochondria/component_comparison.py"
+    },
+    {
+     "path": "docs/MITOCHONDRIA_DESIGN.md",
+     "where": "MT-1b's world declaration"
+    },
+    {
+     "path": "docs/DECISIONS.md",
+     "where": "D290: MT-1b keeps 180 mV"
     }
    ],
-   "weight": 0
+   "files": [
+    "src/cells/laws/cycles/adenylate_kinase.py",
+    "src/cells/laws/cycles/cytochrome_c_oxygen_proton_cycle.py",
+    "src/cells/laws/cycles/electrogenic_nucleotide_exchange.py",
+    "src/cells/laws/cycles/held_reductant_supply.py",
+    "src/cells/laws/cycles/mitochondria_source.py",
+    "src/cells/laws/cycles/nadh_ubiquinone_proton_cycle.py",
+    "src/cells/laws/cycles/phosphate_proton_symport.py",
+    "src/cells/laws/cycles/potassium_proton_exchange.py",
+    "src/cells/laws/cycles/proton_coupled_atp_synthesis_cycle.py",
+    "src/cells/laws/cycles/ubiquinol_cytochrome_c_proton_cycle.py"
+   ],
+   "weight": 679
   },
   {
    "id": "laws.mechanics",
@@ -25131,28 +25351,20 @@
    "label": "Gene regulation in tissue",
    "kind": "component",
    "group": "laws",
-   "status": "designed",
-   "as_of": "2026-11-20",
-   "plain": "Designed; no engine code. Gene networks that set how much of each protein is made, coupled to the tissue's physiology. On 19 November 2026 the user lifted D145's hold for a design only (D234): transcription and translation as physics, regulatory networks as declared laws, and how they are verified, its options coming to the user before any engine code is written. The design note, proposed on 20 November 2026, is desk work, with no engine code and no runs, and sets out options A to D for a first milestone. Option A was chosen the same day (D235): one gene, open loop and deterministic, expression as templated polymerisation with its ATP cost, judged against exact references only, to start when seats free, after the note is refreshed against main; the note's other questions remain open.",
+   "status": "planned",
+   "as_of": "2026-11-22",
+   "plain": "Tissue-scale gene regulation would couple networks of genes to cell physiology. The Engine already has a one-gene expression operator. Its card describes the RNA release mechanism and the evidence for that smaller system.",
    "sources": [
     {
-     "path": "README.md",
-     "where": "Where things stand: New biology in the engine"
+     "path": "docs/GENE_REGULATION_DESIGN.md"
     },
     {
-     "path": "docs/GRN_WETLAB_VALIDATION.md"
+     "path": "docs/FEATURE_REQUESTS.md",
+     "where": "FR-25 — A reusable one-gene expression unit"
     },
     {
-     "path": "docs/GENE_REGULATION_DESIGN.md",
-     "where": "Status: proposed, 20 November 2026, for the lead and the advisor, then the user (D234 item 2)."
-    },
-    {
-     "path": "docs/DECISIONS.md",
-     "where": "D234: Option 2 of the core-laws roadmap, and gene regulation's design begins"
-    },
-    {
-     "path": "docs/DECISIONS.md",
-     "where": "D235: FR-8 builds N2 then C; mitochondria on host P; gene regulation's option A"
+     "path": "docs/FEATURE_REQUESTS.md",
+     "where": "FR-38 — RNA release from its template into two pools with different lifetimes"
     }
    ],
    "weight": 0
@@ -25191,7 +25403,7 @@
     ],
     [
      "Lines of Python",
-     "1,497"
+     "1,540"
     ],
     [
      "Model identifiers",
@@ -25357,7 +25569,7 @@
      "path": "tests/unit/test_surface_pump_v3_registry_laws.py"
     }
    ],
-   "weight": 1497
+   "weight": 1540
   },
   {
    "id": "laws.kinds",
@@ -25482,7 +25694,7 @@
     ],
     [
      "Lines of Python",
-     "716"
+     "733"
     ]
    ],
    "sources": [
@@ -25544,7 +25756,7 @@
     "src/cells/registry/__init__.py",
     "src/cells/registry/laws.py"
    ],
-   "weight": 716
+   "weight": 733
   },
   {
    "id": "laws.gard_catalysis",
@@ -25562,16 +25774,20 @@
     ],
     [
      "Lines of Python",
-     "250"
+     "495"
     ],
     [
      "Laws it declares",
-     "2"
+     "3"
     ]
    ],
    "members": [
     {
      "label": "cells.gard_catalysis_pair_consistent@1",
+     "detail": "law, declared in gard.py"
+    },
+    {
+     "label": "cells.gard_catalysis_pair_consistent@2",
      "detail": "law, declared in gard.py"
     },
     {
@@ -25603,7 +25819,7 @@
    "files": [
     "src/cells/models/assembly_lineages/gard.py"
    ],
-   "weight": 250
+   "weight": 495
   },
   {
    "id": "laws.origin_laws",
@@ -25620,7 +25836,7 @@
     ],
     [
      "Lines of Python",
-     "694"
+     "780"
     ],
     [
      "Laws it declares",
@@ -25679,7 +25895,7 @@
     "src/cells/models/assembly_lineages_v2/regular_mixing.py",
     "src/cells/models/assembly_lineages_v2/transition_state.py"
    ],
-   "weight": 694
+   "weight": 780
   },
   {
    "id": "laws.transporters",
@@ -25696,7 +25912,7 @@
     ],
     [
      "Lines of Python",
-     "6,837"
+     "7,195"
     ],
     [
      "Laws it declares",
@@ -25852,7 +26068,7 @@
     "src/cells/laws/reactions/rapid_binding.py",
     "src/cells/laws/reactions/rapid_proton_buffer.py"
    ],
-   "weight": 6837
+   "weight": 7195
   },
   {
    "id": "laws.route_factors",
@@ -25936,7 +26152,7 @@
     ],
     [
      "Lines of Python",
-     "1,940"
+     "2,314"
     ]
    ],
    "sources": [
@@ -25998,7 +26214,7 @@
     "src/cells/numerics/species_sums.py",
     "src/cells/registry/species_registry.py"
    ],
-   "weight": 1940
+   "weight": 2314
   },
   {
    "id": "laws.fuel",
@@ -26071,7 +26287,7 @@
     ],
     [
      "Lines of Python",
-     "1,485"
+     "1,637"
     ],
     [
      "Laws it declares",
@@ -26194,7 +26410,7 @@
     "src/cells/laws/routes/passive_permeation.py",
     "src/cells/laws/transport/proton_leak.py"
    ],
-   "weight": 1485
+   "weight": 1637
   },
   {
    "id": "laws.levels_of_detail",
@@ -26287,7 +26503,7 @@
     ],
     [
      "Lines of Python",
-     "5,263"
+     "6,463"
     ],
     [
      "Model identifiers",
@@ -26368,7 +26584,7 @@
     "src/cells/models/surface_pump_v2.py",
     "src/cells/models/surface_pump_v3.py"
    ],
-   "weight": 5263
+   "weight": 6463
   },
   {
    "id": "models.water",
@@ -26479,7 +26695,7 @@
     ],
     [
      "Lines of Python",
-     "3,257"
+     "3,546"
     ],
     [
      "Model identifiers",
@@ -26541,7 +26757,7 @@
     "src/cells/models/pump_composite.py",
     "src/cells/models/pump_composite_adapter.py"
    ],
-   "weight": 3257
+   "weight": 3546
   },
   {
    "id": "models.modular",
@@ -26944,11 +27160,11 @@
    "facts": [
     [
      "Files",
-     "27"
+     "28"
     ],
     [
      "Lines of Python",
-     "6,150"
+     "6,392"
     ],
     [
      "Model identifiers",
@@ -27006,7 +27222,7 @@
      "where": "OL1 landed: the origin-of-life laws, `cells.assembly_lineages@2` (18 November 2026)."
     }
    ],
-   "weight": 6150
+   "weight": 6392
   },
   {
    "id": "models.assembly_lineages_v2",
@@ -27019,21 +27235,77 @@
    "facts": [
     [
      "Files",
-     "17"
+     "38"
     ],
     [
      "Lines of Python",
-     "3,760"
+     "11,987"
     ],
     [
      "Model identifiers",
      "1"
+    ],
+    [
+     "Laws it declares",
+     "8"
+    ],
+    [
+     "Family operators it declares",
+     "4"
     ]
    ],
    "members": [
     {
      "label": "cells.assembly_lineages@2",
      "detail": "__init__.py"
+    },
+    {
+     "label": "cells.bilayer_geometry@1",
+     "detail": "law, declared in geometry.py"
+    },
+    {
+     "label": "cells.gate_factor@1",
+     "detail": "law, declared in gate_factor.py"
+    },
+    {
+     "label": "cells.membrane_permeation@1",
+     "detail": "law, declared in permeation.py"
+    },
+    {
+     "label": "cells.osmotic_lumen@1",
+     "detail": "law, declared in lumen.py"
+    },
+    {
+     "label": "cells.phase_exchange@1",
+     "detail": "law, declared in exchange.py"
+    },
+    {
+     "label": "cells.prescribed_shell@1",
+     "detail": "law, declared in prescribed_shell.py"
+    },
+    {
+     "label": "cells.shared_pool@1",
+     "detail": "law, declared in population.py"
+    },
+    {
+     "label": "cells.shell_permeation@1",
+     "detail": "law, declared in shell_permeation.py"
+    },
+    {
+     "label": "cells.pool_replacement@1",
+     "detail": "operator (cells.assembly_operator@1), declared in replacement.py"
+    },
+    {
+     "label": "cells.pool_withdrawal@1",
+     "detail": "operator (cells.assembly_operator@1), declared in withdrawal.py"
+    },
+    {
+     "label": "cells.serial_transfer@1",
+     "detail": "operator (cells.assembly_operator@1), declared in transfer.py"
+    },
+    {
+     "label": "cells.shear_fission@1",
+     "detail": "operator (cells.assembly_operator@1), declared in division.py"
     }
    ],
    "sources": [
@@ -27073,7 +27345,7 @@
      "path": "tests/unit/test_assembly_lineages_v2_ledger.py"
     }
    ],
-   "weight": 3760
+   "weight": 11987
   },
   {
    "id": "models.origin_engine",
@@ -27258,7 +27530,7 @@
     ],
     [
      "Lines of Python",
-     "1,582"
+     "1,713"
     ]
    ],
    "sources": [
@@ -27311,7 +27583,7 @@
     "src/cells/operators/contract.py",
     "src/cells/registry/operators.py"
    ],
-   "weight": 1582
+   "weight": 1713
   },
   {
    "id": "op.scoped_composition",
@@ -27888,11 +28160,11 @@
    "facts": [
     [
      "Files",
-     "6"
+     "8"
     ],
     [
      "Lines of Python",
-     "1,533"
+     "2,058"
     ]
    ],
    "sources": [
@@ -27955,11 +28227,13 @@
     "validation/fr7/__init__.py",
     "validation/fr7/chain_comparison.py",
     "validation/fr7/chain_mapper.py",
+    "validation/fr7/compartment_comparison.py",
+    "validation/fr7/compartment_mapper.py",
     "validation/fr7/loop_comparison.py",
     "validation/fr7/loop_mapper.py",
     "validation/fr7/unit_turnover_fixtures.py"
    ],
-   "weight": 1533
+   "weight": 2058
   },
   {
    "id": "exp.parity",
@@ -28609,6 +28883,39 @@
    "weight": 0
   },
   {
+   "id": "exp.transcription_sites",
+   "label": "Transcription-site measurements",
+   "kind": "component",
+   "group": "experiments",
+   "status": "landed",
+   "as_of": "2026-11-22",
+   "plain": "This reader measures saved observations. It reports mean brightness per detected site and total detected signal per roster cell, including cells with zero detected sites. It also reports two-channel ratios. Incomplete observations are marked as such.",
+   "detail": "Called transcription sites: roster denominators, two-channel ratios and per-copy detection.",
+   "facts": [
+    [
+     "Files",
+     "1"
+    ],
+    [
+     "Lines of Python",
+     "500"
+    ]
+   ],
+   "sources": [
+    {
+     "path": "src/cells/assays/transcription_sites.py"
+    },
+    {
+     "path": "docs/FEATURE_REQUESTS.md",
+     "where": "FR-38 — RNA release from its template into two pools with different lifetimes"
+    }
+   ],
+   "files": [
+    "src/cells/assays/transcription_sites.py"
+   ],
+   "weight": 500
+  },
+  {
    "id": "exp.two_task",
    "label": "Two-task readout",
    "kind": "component",
@@ -28822,11 +29129,11 @@
    "facts": [
     [
      "Files",
-     "358"
+     "359"
     ],
     [
      "Lines of Python",
-     "93,608"
+     "94,037"
     ]
    ],
    "sources": [
@@ -28847,7 +29154,7 @@
      "where": "The FR worlds."
     }
    ],
-   "weight": 93608
+   "weight": 94037
   },
   {
    "id": "val.division",
@@ -28863,7 +29170,7 @@
     ],
     [
      "Lines of Python",
-     "11,328"
+     "11,337"
     ]
    ],
    "sources": [
@@ -28871,7 +29178,7 @@
      "path": "validation/division/REFERENCES_USAGE.md"
     }
    ],
-   "weight": 11328
+   "weight": 11337
   },
   {
    "id": "val.morpho",
@@ -28887,10 +29194,10 @@
     ],
     [
      "Lines of Python",
-     "9,336"
+     "9,339"
     ]
    ],
-   "weight": 9336
+   "weight": 9339
   },
   {
    "id": "val.reactions",
@@ -29158,11 +29465,11 @@
    "facts": [
     [
      "Files",
-     "101"
+     "142"
     ],
     [
      "Lines of Python",
-     "8,216"
+     "11,586"
     ]
    ],
    "sources": [
@@ -29196,7 +29503,7 @@
      "path": "tests/unit/test_ool_references_ol3.py"
     }
    ],
-   "weight": 8216
+   "weight": 11586
   },
   {
    "id": "val.core_seams",
@@ -29277,11 +29584,11 @@
    "facts": [
     [
      "Files",
-     "15"
+     "18"
     ],
     [
      "Lines of Python",
-     "2,720"
+     "4,758"
     ]
    ],
    "sources": [
@@ -29341,7 +29648,7 @@
      "where": "The fourth review's fixes, FR-7 F2 and FR-7's references (19–20 November 2026)."
     }
    ],
-   "weight": 2720
+   "weight": 4758
   },
   {
    "id": "val.mitochondria",
@@ -29349,67 +29656,34 @@
    "kind": "component",
    "group": "references",
    "status": "landed",
-   "as_of": "2026-11-20",
-   "plain": "A reference outside the engine, not a model in it: the engine has no mitochondrial law yet. MR1 is an independent reference for the isolated cardiac mitochondrion of Beard's published model of 2005, as corrected in 2006, written from the two papers alone, without reading the engine's code, before any engine code for mitochondria existed; nothing of it imports the engine. It holds the model as data, a checked compiler of its expressions, the published protocols, an audit of each process's Gibbs energy, the published curves read from the article's figures with their uncertainties, and proposed comparison rows for a first engine milestone, which are a proposal, not a registration. It reproduces the published curves to about the precision of their digitisation. Its audit finds the paper's ATP synthase flux dissipating negatively at the paper's own state-3 points, a finding the core-laws roadmap does not count as independent, since its brief allowed the design note that already names it; its repair table shows that one printed equation is a typo, the restored form being what the paper ran. The repairs are the user's to rule on (D209), and the record gives its registration as waiting for the user's ruling on its declared departures. It landed on main on 20 November 2026, for the mitochondria lane the user set up on 19 November 2026 (D234), whose second milestone, MT-2, it serves. Implemented and guarded: two tests on main check its integrity and its reproduction of the published curves.",
+   "as_of": "2026-11-22",
+   "plain": "MR1 independently reconstructs Beard’s isolated cardiac mitochondrion from the published equations and checks the published curves against their digitisation uncertainty. The component references test individual engine laws. MR1 also supplies a model-level reference for MT-2.",
    "facts": [
     [
      "Files",
-     "10"
+     "34"
     ],
     [
      "Lines of Python",
-     "1,673"
+     "8,214"
     ]
    ],
    "sources": [
     {
-     "path": "validation/mitochondria/references/README.md",
-     "where": "It was built before any engine code for mitochondria existed."
+     "path": "validation/mitochondria/references/README.md"
+    },
+    {
+     "path": "validation/mitochondria/references/components/README.md"
+    },
+    {
+     "path": "validation/mitochondria/references/mr1_mt2_registration.md"
     },
     {
      "path": "PROGRESS.md",
-     "where": "mito-references-landed-2026-11-20"
-    },
-    {
-     "path": "PROGRESS.md",
-     "where": "Tagged, not yet landed"
-    },
-    {
-     "path": "PROGRESS.md",
-     "where": "The night's landings, 20 November 2026 (core, FR and the mitochondria groundwork)."
-    },
-    {
-     "path": "docs/CORE_LAWS_ROADMAP.md",
-     "where": "Decided, 19 November 2026 (D234)."
-    },
-    {
-     "path": "docs/DECISIONS.md",
-     "where": "D234: Option 2 of the core-laws roadmap, and gene regulation's design begins"
-    },
-    {
-     "path": "docs/DECISIONS.md",
-     "where": "D235: FR-8 builds N2 then C; mitochondria on host P; gene regulation's option A"
-    },
-    {
-     "path": "tests/unit/test_mito_references_integrity.py"
-    },
-    {
-     "path": "tests/unit/test_mito_references_reproduction.py"
+     "where": "Mitochondria laws, head 2 landed"
     }
    ],
-   "files": [
-    "validation/mitochondria/references/README.md",
-    "validation/mitochondria/references/__init__.py",
-    "validation/mitochondria/references/audit.py",
-    "validation/mitochondria/references/beard2005_model.json",
-    "validation/mitochondria/references/digitize.py",
-    "validation/mitochondria/references/model.py",
-    "validation/mitochondria/references/proposal.json",
-    "validation/mitochondria/references/published_targets.json",
-    "validation/mitochondria/references/reproduce.py",
-    "validation/mitochondria/references/sources.py"
-   ],
-   "weight": 1673
+   "weight": 8214
   },
   {
    "id": "val.lean_proofs",
@@ -29421,11 +29695,11 @@
    "facts": [
     [
      "Files",
-     "110"
+     "344"
     ],
     [
      "Lines of Python",
-     "4,120"
+     "14,598"
     ]
    ],
    "sources": [
@@ -29466,7 +29740,7 @@
      "where": "Corrected 19 November 2026 from the Lean proofs project's finding"
     }
    ],
-   "weight": 4120
+   "weight": 14598
   },
   {
    "id": "val.fr_references",
@@ -29603,7 +29877,7 @@
     ],
     [
      "Lines of Python",
-     "720"
+     "723"
     ]
    ],
    "sources": [
@@ -29632,7 +29906,7 @@
     "validation/protocol_models.py",
     "validation/results_baseline.py"
    ],
-   "weight": 720
+   "weight": 723
   },
   {
    "id": "val.tiers",
@@ -29644,19 +29918,19 @@
    "facts": [
     [
      "Files",
-     "935"
+     "963"
     ],
     [
      "Lines of Python",
-     "248,349"
+     "260,726"
     ],
     [
      "Tier 1 test files",
-     "422"
+     "433"
     ],
     [
      "Tier 2 test files",
-     "184"
+     "200"
     ],
     [
      "Tier 3 test files",
@@ -29718,7 +29992,7 @@
      "path": "tests/unit/test_tier_fold.py"
     }
    ],
-   "weight": 248349
+   "weight": 260726
   },
   {
    "id": "val.results_gate",
@@ -29735,7 +30009,7 @@
     ],
     [
      "Lines of Python",
-     "3,044"
+     "3,051"
     ]
    ],
    "sources": [
@@ -29837,7 +30111,7 @@
      "path": "tests/unit/test_gates_gate.py"
     }
    ],
-   "weight": 3044
+   "weight": 3051
   },
   {
    "id": "val.gate_controls",
@@ -29913,19 +30187,20 @@
    "facts": [
     [
      "Files",
-     "3"
+     "4"
     ],
     [
      "Lines of Python",
-     "237"
+     "275"
     ]
    ],
    "files": [
     "src/cells/analysis/__init__.py",
     "src/cells/analysis/cli.py",
-    "src/cells/numerics/__init__.py"
+    "src/cells/numerics/__init__.py",
+    "src/cells/numerics/ideal_mixing.py"
    ],
-   "weight": 237
+   "weight": 275
   },
   {
    "id": "val.other",
@@ -29937,14 +30212,14 @@
    "facts": [
     [
      "Files",
-     "346"
+     "434"
     ],
     [
      "Lines of Python",
-     "62,273"
+     "75,412"
     ]
    ],
-   "weight": 62273
+   "weight": 75412
   },
   {
    "id": "state.compartment",
@@ -30632,41 +30907,25 @@
    "kind": "capability",
    "group": "biology",
    "status": "established",
+   "as_of": "2026-11-22",
    "representation": "simulated",
    "runs_in": [
-    "resolved"
+    "resolved",
+    "composite"
    ],
    "part": "mitochondria",
    "scale": "cell",
-   "plain": "Mitochondria exchange ions with the cytoplasm and carry their own voltage. Respiration and ATP synthesis are not modelled. This runs in the earlier tissue families only, and moves into the composite model when a use needs it (D167). Designed, not yet on main: a compartment identity that lets one law address a species in the cytosol, a lysosome or a mitochondrion alike; and, decided on 16 November 2026 (D193), respiration and ATP synthesis in the tissue model, one effective mitochondrion per cell first, built in step 4 of the order the user set the same evening (D194). On 17 November 2026 the user confirmed that the level of detail is chosen per research question, and asked for individual mitochondria, with fission and fusion, sooner (D210): their design now, with the lumped mitochondrion as the reference they must reduce to. An addendum to its design, proposed and read-only, sets out the options. No mitochondrion runs in the modular engine yet.",
+   "plain": "Earlier tissue families model mitochondrial ion exchange and voltage. In the modular pump tissue model, the isolated-organelle representation now includes respiration and ATP synthesis. The Engine entry gives the component evidence and the status of the whole-organelle comparison.",
    "sources": [
     {
-     "path": "docs/README.md",
-     "where": "Finite mitochondrial ion/voltage coupling"
+     "path": "docs/MITOCHONDRIA_DESIGN.md"
     },
     {
-     "path": "docs/DECISIONS.md",
-     "where": "D167: The feature-request order and the staged move of old-family physics are adopted"
+     "path": "PROGRESS.md",
+     "where": "Mitochondria laws, head 2 landed"
     },
     {
-     "path": "docs/ARCHITECTURE.md",
-     "where": "Ownership, geometry and solver invalidation"
-    },
-    {
-     "path": "docs/DECISIONS.md",
-     "where": "D193: Mitochondria: the direction, and the comparison approved"
-    },
-    {
-     "path": "docs/DECISIONS.md",
-     "where": "D194: The order after 16 November"
-    },
-    {
-     "path": "docs/DECISIONS.md",
-     "where": "D210: Mitochondria: the level of detail is chosen per research question; individuals sooner"
-    },
-    {
-     "path": "docs/MITOCHONDRIA_DESIGN.md",
-     "where": "Individual mitochondria (addendum, 17 November 2026)"
+     "path": "docs/MITOCHONDRIA_LAWS_APPENDIX.md"
     }
    ]
   },
@@ -30718,22 +30977,22 @@
    "kind": "capability",
    "group": "biology",
    "status": "planned",
+   "as_of": "2026-11-22",
    "representation": "illustration",
    "part": "genome",
    "scale": "cell",
-   "plain": "Gene networks that set how much of each protein is made, coupled to the tissue. Planned; the full track is held (D145), its hold lifted on 19 November 2026 for a design note only (D234).",
+   "plain": "Networks that regulate gene expression across a tissue are planned. The one-gene expression and RNA release operator runs in the composite tissue model.",
    "sources": [
     {
-     "path": "README.md",
-     "where": "Where things stand: New biology in the engine"
+     "path": "docs/GENE_REGULATION_DESIGN.md"
     },
     {
-     "path": "docs/CURRENT_PLAN.md",
-     "where": "Status on 14 November 2026, and the working order (D156)"
+     "path": "docs/FEATURE_REQUESTS.md",
+     "where": "FR-25 — A reusable one-gene expression unit"
     },
     {
-     "path": "docs/DECISIONS.md",
-     "where": "D234: Option 2 of the core-laws roadmap, and gene regulation's design begins"
+     "path": "docs/FEATURE_REQUESTS.md",
+     "where": "FR-38 — RNA release from its template into two pools with different lifetimes"
     }
    ]
   },
@@ -78804,6 +79063,13 @@
   },
   {
    "from": "op.ideal_osmosis_linear_compliance_water@1",
+   "to": "op.scheduled_compartment_wash@1",
+   "kind": "conflicts",
+   "weight": 1,
+   "label": "extracellular_volume"
+  },
+  {
+   "from": "op.ideal_osmosis_linear_compliance_water@1",
    "to": "op.scheduled_membrane_trafficking@1",
    "kind": "conflicts",
    "weight": 1,
@@ -78840,6 +79106,13 @@
   {
    "from": "op.ideal_osmosis_linear_compliance_water@1",
    "to": "op.species_regulated_availability@2",
+   "kind": "conflicts",
+   "weight": 2,
+   "label": "volume, extracellular_volume"
+  },
+  {
+   "from": "op.ideal_osmosis_linear_compliance_water@1",
+   "to": "op.templated_polymerisation@1",
    "kind": "conflicts",
    "weight": 2,
    "label": "volume, extracellular_volume"
@@ -78908,6 +79181,13 @@
    "label": "active"
   },
   {
+   "from": "op.isopotential_partition@1",
+   "to": "op.templated_polymerisation@1",
+   "kind": "conflicts",
+   "weight": 1,
+   "label": "active"
+  },
+  {
    "from": "op.local_species_reactions@1",
    "to": "op.restricted_cleft_lumen@1",
    "kind": "conflicts",
@@ -78957,13 +79237,6 @@
    "label": "both provide channel_abundance, membrane_area, membrane_capacitance"
   },
   {
-   "from": "op.membrane_entity_state@1",
-   "to": "op.scheduled_species_exchange@1",
-   "kind": "conflicts",
-   "weight": 1,
-   "label": "membrane_area"
-  },
-  {
    "from": "op.population_unit_turnover@1",
    "to": "op.restricted_cleft_lumen@1",
    "kind": "conflicts",
@@ -79007,6 +79280,13 @@
   },
   {
    "from": "op.restricted_cleft_lumen@1",
+   "to": "op.scheduled_compartment_wash@1",
+   "kind": "conflicts",
+   "weight": 1,
+   "label": "extracellular_volume"
+  },
+  {
+   "from": "op.restricted_cleft_lumen@1",
    "to": "op.scheduled_membrane_trafficking@1",
    "kind": "conflicts",
    "weight": 1,
@@ -79043,6 +79323,13 @@
   {
    "from": "op.restricted_cleft_lumen@1",
    "to": "op.species_regulated_availability@2",
+   "kind": "conflicts",
+   "weight": 1,
+   "label": "extracellular_volume"
+  },
+  {
+   "from": "op.restricted_cleft_lumen@1",
+   "to": "op.templated_polymerisation@1",
    "kind": "conflicts",
    "weight": 1,
    "label": "extracellular_volume"
@@ -79056,6 +79343,13 @@
   },
   {
    "from": "op.restricted_cleft_lumen@2",
+   "to": "op.scheduled_compartment_wash@1",
+   "kind": "conflicts",
+   "weight": 1,
+   "label": "extracellular_volume"
+  },
+  {
+   "from": "op.restricted_cleft_lumen@2",
    "to": "op.scheduled_membrane_trafficking@1",
    "kind": "conflicts",
    "weight": 1,
@@ -79095,6 +79389,20 @@
    "kind": "conflicts",
    "weight": 1,
    "label": "extracellular_volume"
+  },
+  {
+   "from": "op.restricted_cleft_lumen@2",
+   "to": "op.templated_polymerisation@1",
+   "kind": "conflicts",
+   "weight": 1,
+   "label": "extracellular_volume"
+  },
+  {
+   "from": "op.scheduled_bath_composition@1",
+   "to": "op.scheduled_compartment_wash@1",
+   "kind": "conflicts",
+   "weight": 1,
+   "label": "extracellular_amount_reference"
   },
   {
    "from": "op.scheduled_bath_composition@1",
@@ -79139,6 +79447,20 @@
    "label": "outside_active, membrane_active"
   },
   {
+   "from": "op.scheduled_compartment_wash@1",
+   "to": "op.scheduled_membrane_insertion@1",
+   "kind": "conflicts",
+   "weight": 2,
+   "label": "extracellular_amount_reference, outside_active"
+  },
+  {
+   "from": "op.scheduled_compartment_wash@1",
+   "to": "op.scheduled_membrane_insertion@2",
+   "kind": "conflicts",
+   "weight": 1,
+   "label": "outside_active"
+  },
+  {
    "from": "op.scheduled_membrane_insertion@1",
    "to": "op.scheduled_membrane_trafficking@1",
    "kind": "conflicts",
@@ -79181,6 +79503,13 @@
    "label": "outside_active, membrane_active"
   },
   {
+   "from": "op.scheduled_membrane_insertion@1",
+   "to": "op.templated_polymerisation@1",
+   "kind": "conflicts",
+   "weight": 2,
+   "label": "outside_active, membrane_active"
+  },
+  {
    "from": "op.scheduled_membrane_insertion@2",
    "to": "op.scheduled_membrane_trafficking@1",
    "kind": "conflicts",
@@ -79218,6 +79547,13 @@
   {
    "from": "op.scheduled_membrane_insertion@2",
    "to": "op.species_regulated_availability@2",
+   "kind": "conflicts",
+   "weight": 2,
+   "label": "outside_active, membrane_active"
+  },
+  {
+   "from": "op.scheduled_membrane_insertion@2",
+   "to": "op.templated_polymerisation@1",
    "kind": "conflicts",
    "weight": 2,
    "label": "outside_active, membrane_active"
@@ -80003,6 +80339,13 @@
    "label": "its first case will be checked against the finite-fuel reference"
   },
   {
+   "from": "laws.grn",
+   "to": "op.templated_polymerisation@1",
+   "kind": "extends",
+   "weight": 1,
+   "label": "would build on one-gene expression"
+  },
+  {
    "from": "laws.human_cardiac",
    "to": "laws.calcium",
    "kind": "extends",
@@ -80464,6 +80807,12 @@
    "weight": 1
   },
   {
+   "from": "cap.mitochondria",
+   "to": "laws.respiration",
+   "kind": "implements",
+   "weight": 1
+  },
+  {
    "from": "cap.pumps",
    "to": "laws.pumps",
    "kind": "implements",
@@ -80502,6 +80851,12 @@
   {
    "from": "cap.replacement",
    "to": "op.scheduled_cell_replacement@1",
+   "kind": "implements",
+   "weight": 1
+  },
+  {
+   "from": "cap.replacement",
+   "to": "op.site_occupant_replacement@1",
    "kind": "implements",
    "weight": 1
   },
@@ -80959,6 +81314,12 @@
    "weight": 1
   },
   {
+   "from": "op.scheduled_compartment_wash@1",
+   "to": "models.composite",
+   "kind": "operator_of",
+   "weight": 1
+  },
+  {
    "from": "op.scheduled_membrane_insertion@1",
    "to": "models.composite",
    "kind": "operator_of",
@@ -80995,6 +81356,12 @@
    "weight": 1
   },
   {
+   "from": "op.site_occupant_replacement@1",
+   "to": "models.composite",
+   "kind": "operator_of",
+   "weight": 1
+  },
+  {
    "from": "op.species_regulated_availability@1",
    "to": "models.composite",
    "kind": "operator_of",
@@ -81002,6 +81369,12 @@
   },
   {
    "from": "op.species_regulated_availability@2",
+   "to": "models.composite",
+   "kind": "operator_of",
+   "weight": 1
+  },
+  {
+   "from": "op.templated_polymerisation@1",
    "to": "models.composite",
    "kind": "operator_of",
    "weight": 1
@@ -81061,6 +81434,13 @@
    "kind": "provides",
    "weight": 1,
    "label": "channel_abundance"
+  },
+  {
+   "from": "exp.transcription_sites",
+   "to": "op.templated_polymerisation@1",
+   "kind": "reads",
+   "weight": 1,
+   "label": "can measure saved per-copy expression counts"
   },
   {
    "from": "op.restricted_cleft_lumen@1",
@@ -81124,6 +81504,13 @@
    "kind": "reads",
    "weight": 1,
    "label": "channel_abundance"
+  },
+  {
+   "from": "op.scheduled_species_exchange@1",
+   "to": "op.membrane_entity_state@1",
+   "kind": "reads",
+   "weight": 1,
+   "label": "membrane_area"
   },
   {
    "from": "op.species_regulated_availability@2",
@@ -81221,6 +81608,18 @@
   {
    "from": "op.scheduled_membrane_trafficking@1",
    "to": "op.membrane_entity_state@1",
+   "kind": "requires",
+   "weight": 1
+  },
+  {
+   "from": "op.site_occupant_replacement@1",
+   "to": "op.scheduled_cell_replacement@1",
+   "kind": "requires",
+   "weight": 1
+  },
+  {
+   "from": "op.site_occupant_replacement@1",
+   "to": "op.site_occupancy@1",
    "kind": "requires",
    "weight": 1
   },
@@ -82186,7 +82585,7 @@
    "from": "exec.io",
    "to": "exec.state",
    "kind": "uses",
-   "weight": 5
+   "weight": 7
   },
   {
    "from": "exec.io",
@@ -82414,7 +82813,7 @@
    "from": "exec.specs",
    "to": "exec.registry",
    "kind": "uses",
-   "weight": 4
+   "weight": 5
   },
   {
    "from": "exec.specs",
@@ -82426,7 +82825,7 @@
    "from": "exec.specs",
    "to": "exec.state",
    "kind": "uses",
-   "weight": 1
+   "weight": 2
   },
   {
    "from": "exec.specs",
@@ -82442,9 +82841,15 @@
   },
   {
    "from": "exec.specs",
+   "to": "laws.declarations",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
+   "from": "exec.specs",
    "to": "laws.junctions",
    "kind": "uses",
-   "weight": 4
+   "weight": 9
   },
   {
    "from": "exec.specs",
@@ -82528,13 +82933,13 @@
    "from": "exec.specs",
    "to": "num.imex",
    "kind": "uses",
-   "weight": 1
+   "weight": 2
   },
   {
    "from": "exec.specs",
    "to": "num.other",
    "kind": "uses",
-   "weight": 1
+   "weight": 2
   },
   {
    "from": "exec.specs",
@@ -82726,7 +83131,7 @@
    "from": "laws.declarations",
    "to": "laws.junctions",
    "kind": "uses",
-   "weight": 1
+   "weight": 2
   },
   {
    "from": "laws.declarations",
@@ -82784,9 +83189,15 @@
   },
   {
    "from": "laws.junctions",
-   "to": "laws.declarations",
+   "to": "exec.modules",
    "kind": "uses",
    "weight": 1
+  },
+  {
+   "from": "laws.junctions",
+   "to": "laws.declarations",
+   "kind": "uses",
+   "weight": 2
   },
   {
    "from": "laws.junctions",
@@ -82852,7 +83263,7 @@
    "from": "laws.origin_laws",
    "to": "models.assembly_lineages_v2",
    "kind": "uses",
-   "weight": 8
+   "weight": 9
   },
   {
    "from": "laws.passive_permeation",
@@ -82913,6 +83324,18 @@
    "to": "laws.declarations",
    "kind": "uses",
    "weight": 2
+  },
+  {
+   "from": "laws.respiration",
+   "to": "exec.modules",
+   "kind": "uses",
+   "weight": 10
+  },
+  {
+   "from": "laws.respiration",
+   "to": "laws.transporters",
+   "kind": "uses",
+   "weight": 9
   },
   {
    "from": "laws.route_factors",
@@ -83134,11 +83557,17 @@
    "from": "models.assembly_lineages_v2",
    "to": "exec.io",
    "kind": "uses",
-   "weight": 1
+   "weight": 3
   },
   {
    "from": "models.assembly_lineages_v2",
    "to": "exec.modules",
+   "kind": "uses",
+   "weight": 13
+  },
+  {
+   "from": "models.assembly_lineages_v2",
+   "to": "exec.relations",
    "kind": "uses",
    "weight": 1
   },
@@ -83152,7 +83581,7 @@
    "from": "models.assembly_lineages_v2",
    "to": "exec.specs",
    "kind": "uses",
-   "weight": 8
+   "weight": 19
   },
   {
    "from": "models.assembly_lineages_v2",
@@ -83164,7 +83593,7 @@
    "from": "models.assembly_lineages_v2",
    "to": "laws.origin_laws",
    "kind": "uses",
-   "weight": 2
+   "weight": 5
   },
   {
    "from": "models.assembly_lineages_v2",
@@ -83176,19 +83605,25 @@
    "from": "models.assembly_lineages_v2",
    "to": "laws.template",
    "kind": "uses",
-   "weight": 13
+   "weight": 33
   },
   {
    "from": "models.assembly_lineages_v2",
    "to": "models.assembly_lineages",
    "kind": "uses",
-   "weight": 8
+   "weight": 20
   },
   {
    "from": "models.assembly_lineages_v2",
    "to": "num.blas_pin",
    "kind": "uses",
    "weight": 1
+  },
+  {
+   "from": "models.assembly_lineages_v2",
+   "to": "op.contract",
+   "kind": "uses",
+   "weight": 4
   },
   {
    "from": "models.composite",
@@ -83330,9 +83765,21 @@
   },
   {
    "from": "models.pump_tissue",
+   "to": "fr.compartment_ph",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
+   "from": "models.pump_tissue",
    "to": "laws.channels",
    "kind": "uses",
    "weight": 3
+  },
+  {
+   "from": "models.pump_tissue",
+   "to": "laws.cotransport",
+   "kind": "uses",
+   "weight": 1
   },
   {
    "from": "models.pump_tissue",
@@ -83350,11 +83797,17 @@
    "from": "models.pump_tissue",
    "to": "laws.junctions",
    "kind": "uses",
-   "weight": 7
+   "weight": 8
   },
   {
    "from": "models.pump_tissue",
    "to": "laws.kinds",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
+   "from": "models.pump_tissue",
+   "to": "laws.passive_permeation",
    "kind": "uses",
    "weight": 1
   },
@@ -84655,6 +85108,54 @@
    "weight": 1
   },
   {
+   "from": "op.scheduled_compartment_wash@1",
+   "to": "exec.registry",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
+   "from": "op.scheduled_compartment_wash@1",
+   "to": "exec.specs",
+   "kind": "uses",
+   "weight": 4
+  },
+  {
+   "from": "op.scheduled_compartment_wash@1",
+   "to": "laws.electrodiffusion",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
+   "from": "op.scheduled_compartment_wash@1",
+   "to": "laws.species_identity",
+   "kind": "uses",
+   "weight": 2
+  },
+  {
+   "from": "op.scheduled_compartment_wash@1",
+   "to": "laws.template",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
+   "from": "op.scheduled_compartment_wash@1",
+   "to": "models.pump_tissue",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
+   "from": "op.scheduled_compartment_wash@1",
+   "to": "num.other",
+   "kind": "uses",
+   "weight": 2
+  },
+  {
+   "from": "op.scheduled_compartment_wash@1",
+   "to": "op.contract",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
    "from": "op.scheduled_membrane_insertion@1",
    "to": "exec.registry",
    "kind": "uses",
@@ -84686,7 +85187,19 @@
   },
   {
    "from": "op.scheduled_membrane_insertion@1",
+   "to": "models.resolved",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
+   "from": "op.scheduled_membrane_insertion@1",
    "to": "num.field",
+   "kind": "uses",
+   "weight": 2
+  },
+  {
+   "from": "op.scheduled_membrane_insertion@1",
+   "to": "num.other",
    "kind": "uses",
    "weight": 1
   },
@@ -84826,7 +85339,7 @@
    "from": "op.scheduled_species_exchange@1",
    "to": "exec.specs",
    "kind": "uses",
-   "weight": 2
+   "weight": 4
   },
   {
    "from": "op.scheduled_species_exchange@1",
@@ -84997,6 +85510,72 @@
    "weight": 1
   },
   {
+   "from": "op.templated_polymerisation@1",
+   "to": "exec.registry",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
+   "from": "op.templated_polymerisation@1",
+   "to": "exec.specs",
+   "kind": "uses",
+   "weight": 4
+  },
+  {
+   "from": "op.templated_polymerisation@1",
+   "to": "laws.electrodiffusion",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
+   "from": "op.templated_polymerisation@1",
+   "to": "laws.kinds",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
+   "from": "op.templated_polymerisation@1",
+   "to": "laws.species_identity",
+   "kind": "uses",
+   "weight": 2
+  },
+  {
+   "from": "op.templated_polymerisation@1",
+   "to": "laws.template",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
+   "from": "op.templated_polymerisation@1",
+   "to": "models.composite",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
+   "from": "op.templated_polymerisation@1",
+   "to": "models.pump_tissue",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
+   "from": "op.templated_polymerisation@1",
+   "to": "op.contract",
+   "kind": "uses",
+   "weight": 2
+  },
+  {
+   "from": "op.templated_polymerisation@1",
+   "to": "op.local_species_reactions@1",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
+   "from": "op.templated_polymerisation@1",
+   "to": "op.scheduled_species_turnover@1",
+   "kind": "uses",
+   "weight": 1
+  },
+  {
    "from": "models.composite",
    "to": "models.pump_tissue",
    "kind": "wraps",
@@ -85151,6 +85730,13 @@
    "label": "scales the junction availability"
   },
   {
+   "from": "op.scheduled_compartment_wash@1",
+   "to": "state.extracellular_environment",
+   "kind": "writes",
+   "weight": 1,
+   "label": "extracellular_amount_increment"
+  },
+  {
    "from": "op.scheduled_membrane_insertion@1",
    "to": "op.membrane_entity_state@1",
    "kind": "writes",
@@ -85261,6 +85847,13 @@
    "kind": "writes",
    "weight": 1,
    "label": "extracellular_amount_increment"
+  },
+  {
+   "from": "op.site_occupant_replacement@1",
+   "to": "op.site_occupancy@1",
+   "kind": "writes",
+   "weight": 2,
+   "label": "site_bound_increment_fmol, site_free_increment_fmol"
   },
   {
    "from": "op.species_regulated_availability@1",
@@ -85275,6 +85868,13 @@
    "kind": "writes",
    "weight": 1,
    "label": "scales the junction availability"
+  },
+  {
+   "from": "op.templated_polymerisation@1",
+   "to": "state.compartment",
+   "kind": "writes",
+   "weight": 1,
+   "label": "amount_increment"
   }
  ],
  "timeline": null,

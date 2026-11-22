@@ -698,7 +698,9 @@ test("a piece's panel says what the manifest states of it, links its files at th
       const form = entity.sections.find((section) => section.title === "Its general form");
       for (const said of form.items) assert.doesNotMatch(`${said.label} ${said.detail}`, /[{}[\]"]|null|undefined/, `${piece.id}: ${said.label}`);
       for (const [key, value] of Object.entries(d.fields.cycle)) if (value === null) assert.ok(!form.items.some((said) => said.label.includes(key)), `${piece.id}: ${key} is null and says nothing`);
-      assert.equal(entity.sections.find((section) => section.title === "Its general form: its parameters").items.length, d.fields.cycle.parameters.length, piece.id);
+      const parameters = entity.sections.find((section) => section.title === "Its general form: its parameters");
+      const names = d.fields.cycle.parameters.map((parameter) => parameter.name);
+      assert.deepEqual(parameters?.items.map((item) => item.label), names.length ? names : undefined, piece.id);
     }
   }
   const formOf = (id) => Object.fromEntries(lens.describe(`laws:${id}`).sections.find((section) => section.title === "Its general form").items.map((said) => [said.label, said.detail]));

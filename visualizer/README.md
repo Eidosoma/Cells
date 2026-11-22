@@ -460,7 +460,8 @@ in one line, a press away from it.
   python3 tools/build_cards.py --gather --evidence /mnt/workspaces/Cells --repo <engine checkout> --revision HEAD
   ```
   The gathering runs again when the record moves, when a locator changes, or when the map
-  is merged forward.
+  is merged forward. For a map-only refresh, omit `--revision HEAD`. That keeps the
+  experiment record pinned and checks the newer map against `origin/main`.
 - **Every judged entry of the record is placed.** The gathering lists every entry of
   `PROGRESS.md`'s runs that reports a judged run or a registered qualification; each is on
   a card or in the source file's `entries_left_out` with its reason, and a test holds it.
@@ -1265,8 +1266,11 @@ all 112 runs, in 341 files).
    laws, at 4dda2285, after the core-seams pass's first landings (seam F's laws as
    modules among them), on 19 November at 1ca5eada, after seams A, C and D, FR-2's first
    version and FR-8's stage 0, and on 20 November at 93fc8c2c, after FR-7's first closed loop,
-   the step-doubled energy check and the mitochondria work's groundwork: 270 parts and 1064
-   relations, which it states.
+   the step-doubled energy check and the mitochondria work's groundwork. V54 reads
+   `cbe54031` (22 November). Its Engine map places all 292 active engine files across 274
+   parts and 1,118 relations. One-gene expression and RNA release link to their declared
+   operator in Laws. The measurement reader has its own entry. The respiration and gap
+   junction entries show which comparisons their laws have undergone.
 4. The real-click checks in headless Chrome: `npm run check:all` runs every scenario of
    `check:input`, `check:species`, `check:shelves`, `check:layers`, `check:look`,
    `check:flux`, `check:machine` and `check:laws` once, four at a time, and writes a log
