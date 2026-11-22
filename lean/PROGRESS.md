@@ -1,5 +1,23 @@
 # Cells proof comparisons
 
+<a id="gard-v2-range-repair"></a>
+
+## 22 November 2026 · GARD v2 range repair
+
+The corrected range comparison exercises `cells.assembly_lineages@1` with the version 2 pair-consistent catalysis law named explicitly. On the engine containing `228a5ef9`, all nine cases passed. At fission size eight the coefficient 2¹⁰¹⁶ produced one event, finite cache words and a closed ledger. Its exact reference propensity rounds to 196,608. The parser refused 2¹⁰¹⁷ at the strict upper boundary and also refused the former 2¹⁰²² control and the original 2¹⁰²³ overflow witness. The compiled cache preserved the smallest normal tick, 2⁻¹⁰²². The parser refused both 2⁻¹⁰⁷⁴ and the next float above 2⁻¹⁰²², whose lowest set bit is subnormal. Explicit capacities 4,096 and 4,097 both resolved to the value requested. [Range driver](checks/gard_cache.py) · [Engine repair](https://github.com/Eidosoma/Cells/commit/228a5ef9)
+
+On the pre-repair engine the same nine expectations produced six differences, including admission of the two formerly finite high-power cases. The original overflow witness again stopped with zero events and NaN cache words. The within-range cache and reverse-event report on the repaired engine matched the original passing report byte for byte. The original failing range comparison remains pinned to its own driver and engine. [Original failure](#gard-v2-range) · [Within-range checks](#gard-v2-cache)
+
+Lean proves that every nonzero integer multiple of a positive grid tick has magnitude at least that tick. It also proves that the parser’s strict upper bound leaves space below the largest finite binary64 value for any exact intermediate bounded by six times the row maximum. The six-times bound is an assumption of this lemma. The compiled checks cover the named boundary cases. [Range lemmas](CellsProofs/Chemistry/GardRange.lean)
+
+<a id="fr42-cohort-shares"></a>
+
+## 22 November 2026 · FR-42 arrival-time cohorts under a common loss rate
+
+For a well-mixed physical population of size `N`, a cohort of size `n` receives the share `J(N)·n/N` of the population’s loss. The empty population has zero loss. Lean proves that the shares sum to the physical loss and that one shared loss step preserves the pooled total for any number of labels, including an unlabelled remainder. Any readout evaluated solely from the physical totals before and after the step therefore also agrees. Energy and heat must use those pooled inputs for this result to apply. [Lean proof](CellsProofs/Chemistry/ArrivalCohort.lean) · [FR-42 design target](../docs/FEATURE_REQUESTS.md#fr-42--neutral-arrival-time-labels-that-leave-the-dynamics-unchanged)
+
+For quadratic loss, Lean verifies the derivative and initial value of the survivor curve `b / (1 + a·t)` for a cohort starting at `b` in a pool starting at `a`. With two old units and one new unit, the total at time one is 3/4 and the new cohort holds 1/4. The separate two-unit blank ends at 2/3, giving a difference of 1/12. Computing the initial loss separately for the two labels would give 5 against the physical value of 9. This is an exact design comparison. The FR-42 engine comparison stays open until the share-based labels exist. Window boundaries, label reuse and integration tolerances belong to that comparison. [FR-38 erratum B](../docs/TEMPLATED_POLYMERISATION_LAWS.md#913-erratum-b-the-label-rows-are-not-neutral-labels)
+
 <a id="vesicle-birth-returns"></a>
 
 ## 22 November 2026 · Reconstructing rupture at birth from the shear records

@@ -8,6 +8,8 @@ import CellsProofs.Chemistry.BindingResponse
 import CellsProofs.Chemistry.BindingVertices
 import CellsProofs.Chemistry.Enzyme
 import CellsProofs.Chemistry.GardCache
+import CellsProofs.Chemistry.GardRange
+import CellsProofs.Chemistry.ArrivalCohort
 import CellsProofs.Chemistry.GardCatalysis
 import CellsProofs.Chemistry.LineageFission
 import CellsProofs.Chemistry.PoolWithdrawal

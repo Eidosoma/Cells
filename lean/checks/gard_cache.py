@@ -122,7 +122,7 @@ def within_range():
     )
 
 
-def exponent_case(exponent):
+def exponent_case(exponent, *, refusal=None):
     beta = [[2.0**exponent, 0.0], [0.0, 0.0]]
     counts = (2, 1)
     rate = Fraction(1, 2**1000)
@@ -140,7 +140,9 @@ def exponent_case(exponent):
     try:
         spec = make_world(beta, 8, counts, leave=[float(rate)] * 2)
     except ConfigError as err:
-        return answer | dict(parse="refused", reason=str(err), passed=True)
+        return answer | dict(
+            parse="refused", reason=str(err), passed=refusal is not None and refusal in str(err)
+        )
     d = gard.layout_exact({gard.FIELD: beta}, 2)
     n = np.asarray(counts, dtype=float)
     with np.errstate(over="ignore", invalid="ignore"):
@@ -160,28 +162,37 @@ def exponent_case(exponent):
         run_status=run.status,
         events=len(times),
         ledger_holds=bool(run.closure["holds"]),
-        passed=passed,
+        passed=bool(refusal is None and passed and run.closure["holds"]),
     )
 
 
-def tiny_tick():
-    tick = math.ulp(0.0)
+def tick_case(tick, *, refusal=None):
     beta = [[0.0, tick], [0.0, 0.0]]
     try:
         make_world(beta, 8, (0, 1))
     except ConfigError as err:
-        return dict(parse="refused", reason=str(err), passed=True)
+        return dict(
+            tick=tick.hex(),
+            parse="refused",
+            reason=str(err),
+            passed=refusal is not None and refusal in str(err),
+        )
     d = gard.layout_exact({gard.FIELD: beta}, 2)
     n = np.array([0.0, 1.0])
     host = np.asarray(gard.state_exact(n, d, np))
     compiled = np.asarray(state_jit(n, d))
     return dict(
+        tick=tick.hex(),
         parse="admitted",
         row_bits=gard.bits_needed(beta[0], 8),
         exact_high=tick.hex(),
         numpy_high=float(host[0, 0]).hex(),
         compiled_high=float(compiled[0, 0]).hex(),
-        passed=bool(host[0, 0] == compiled[0, 0] == tick and host[1, 0] == compiled[1, 0] == 0),
+        passed=bool(
+            refusal is None
+            and host[0, 0] == compiled[0, 0] == tick
+            and host[1, 0] == compiled[1, 0] == 0
+        ),
     )
 
 
@@ -189,7 +200,7 @@ def explicit_capacity(size):
     """The fission and molecule limits both include this size. Only parse the definition."""
     beta = [[1.0, 0.0], [0.0, 1.0]]
     try:
-        make_world(beta, size, (1, 1))
+        spec = make_world(beta, size, (1, 1))
     except ConfigError as err:
         return dict(
             size=size,
@@ -198,7 +209,14 @@ def explicit_capacity(size):
             reason=str(err),
             passed=False,
         )
-    return dict(size=size, row_bits=gard.bits_needed(beta[0], size), parse="admitted", passed=True)
+    actual = spec.execution.molecule_capacity
+    return dict(
+        size=size,
+        row_bits=gard.bits_needed(beta[0], size),
+        parse="admitted",
+        resolved_capacity=actual,
+        passed=actual == size,
+    )
 
 
 if __name__ == "__main__":
@@ -213,15 +231,21 @@ if __name__ == "__main__":
     if jax.default_backend() != "cpu":
         raise RuntimeError("The comparison uses CPU float64")
     if args.range:
+        upper = "not below 2^1020"
+        lower = "below the normal range"
+        normal = 2.0**-1022
         result = dict(
-            finite_control=exponent_case(1022),
-            overflow=exponent_case(1023),
-            smallest_tick=tiny_tick(),
+            finite_control=exponent_case(1016),
+            upper_boundary=exponent_case(1017, refusal=upper),
+            former_control=exponent_case(1022, refusal=upper),
+            overflow=exponent_case(1023, refusal=upper),
+            smallest_normal_tick=tick_case(normal),
+            normal_with_subnormal_low_bit=tick_case(
+                math.nextafter(normal, math.inf), refusal=lower
+            ),
+            smallest_tick=tick_case(math.ulp(0.0), refusal=lower),
             capacity_control=explicit_capacity(4096),
             explicit_capacity=explicit_capacity(4097),
-        )
-        assert (
-            result["finite_control"]["parse"] == "admitted" and result["finite_control"]["passed"]
         )
         print(json.dumps(result, indent=2, allow_nan=False))
         raise SystemExit(0 if all(row["passed"] for row in result.values()) else 1)
