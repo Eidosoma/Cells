@@ -808,6 +808,9 @@ def q6_signature(name, context):
 # ------------------------------------------------------------------ Q6_refusals
 
 # The checks a refusal may name, by a phrase of their messages (one label per check).
+# Disclosed repair of this judged tool (22 November 2026): "replaced slot" took FR-26's words
+# (a305c4c2 narrowed the check and reworded it, so the old phrase named nothing), and "schedule
+# grid" D283 stage 2's. Labels and EXPECTED_CHECKS are unchanged.
 CHECKS = (
     ("ligand charged", "neutral species only"),
     ("ligand undeclared", "does not declare"),
@@ -830,7 +833,7 @@ CHECKS = (
     ("internalisation owner", "only an outward-facing patch"),
     ("compartment", "internalises from compartment"),
     ("destination", "destination is one of"),
-    ("replaced slot", "replaces; version 1 has no occupant rule"),
+    ("replaced slot", "replaces; its occupants need"),
     ("RK4", "refuses RK4"),
     ("schedule missing", "every route needs a schedule; missing"),
     ("schedule start", "starts at time 0"),

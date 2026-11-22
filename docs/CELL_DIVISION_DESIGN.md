@@ -258,7 +258,7 @@ still shows where that leads (for example
 | Kind | **Event map** (at the start of the step leaving an event time); **split process** (half-steps around the inner step, on its own variables); **in-step membrane process** (through @3's existing opt-in membrane-process hook, as `resolved_pump_water@2`'s symport) |
 | Ledgers | Terms added to the inner ledgers, its own ledgers, and the magnitudes for their rounding bounds |
 | Domain and refusal | Its validity conditions. Any failure refuses the whole step, which returns the start state |
-| Schedule | Event times (exact multiples of dt) and rate schedules, checked at the definition |
+| Schedule | Event times (on the clock's grid, D283) and rate schedules, checked at the definition |
 
 **The entity adapter.** The view fields for @3 are its layout names: `volume`,
 `extracellular_volume`, `membrane_area`, `membrane_capacitance`, `initial_cell_charge_C`

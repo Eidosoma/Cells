@@ -335,7 +335,7 @@ why the energy guard needs a species-only world (§7).
 
 **Schedule.** `turnover_controls`, piecewise constant per route:
 - production P (fmol/s) or clearance k (1/s);
-- changes at exact multiples of dt.
+- changes on the clock's grid (D283).
 
 These are per-world control data, never closed-over constants. Cell-side routes are keyed by
 carrier, not slot (§5.2): a slot's controls follow its occupant, and a newcomer takes its
