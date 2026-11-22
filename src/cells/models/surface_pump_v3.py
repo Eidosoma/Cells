@@ -1005,9 +1005,12 @@ def _field_values(state, read, control, p, *, xp):
     ci, co = physical_amounts(read, p)
     q = tissue.charge_increment(state, p, xp=xp)
     n = p.active.size
+    # Today's operation order (crossrev compares the program text): the cells' concentrations,
+    # then the outside nodes'.
+    ci = xp.where(p.active, ci / p.volume, 1.0)
     co = xp.where(p.outside_active, co / p.extracellular_volume, 1.0)
     return field.solve(
-        xp.where(p.active, ci / p.volume, 1.0),
+        ci,
         co,
         p.initial_cell_charge_C + q[:n],
         p.initial_outside_charge_C + q[n:],
