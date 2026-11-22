@@ -495,7 +495,7 @@ same mechanism, and the closure is its rapid limit. Both take K from the registr
 | --- | --- | --- | --- | --- |
 | Tableau (the default) | The tableau's quadrature of the dissipation rate | No. ARS(2,2,2)'s δ < 0 books a negative increment where a power falls by more than about 59% within a step (cardiac §3.8) | Within `ENERGY_RTOL`, second order | Every route |
 | `trapezoid_nonnegative@1` | ½ dt (q_start + q_end), each power non-negative at its own state | Yes, by construction | Within `ENERGY_RTOL`, second order | Junctions (`surface_pump_v3.py`:1202–1213); the opt-in membrane process (:1240) |
-| `exact_free_energy_heat@1` | Each route's divided-difference share of each row's exact free-energy decrease | A step with a negative share is refused ("negative exact share") | To rounding | Neutral passive routes alone on their rows (§7.5) |
+| `exact_free_energy_heat@1` | Each route's divided-difference share of each row's exact free-energy decrease | A step with a negative share is refused ("negative exact share") | To rounding | Neutral passive routes alone on their rows (§7.5); @3's faces, where a definition picks it (D280, §6.5) |
 
 - **Selection.**
   - Each law declares the bookings it admits.
@@ -577,6 +577,61 @@ same mechanism, and the closure is its rapid limit. Both take K from the registr
     there was not checked (mitochondria §2.3).
   - So that arm first checks the parse. If the parse is refused, the arm waits for A.
 - P1 is mitochondria's own probe, run early: the lead's call.
+
+### 6.5 Faces: `exact_free_energy_heat@1` (D280, 22 November 2026)
+
+- **Why.** Under the tableau a face books RT J²/W, with the log-mean weight W at the step's
+  half-step predicted amounts. Over a step that fills a node from its trace, that midpoint log
+  understates the time-averaged driving force by 1 − ln 2 per unit moved: about 4% of that step's
+  heat, however small the trace. At row 1 the energy bound is 2e-8 pJ plus 2e-3 of the flows so
+  far, which are that one step's, so the run is refused there ("accounting failed: energy"). A node starting below about
+  one to two steps' transfer fails; the boundary scales with the exchange rate × dt × the source
+  concentration. This is SECRETED_SPECIES_TRANSPORT_DESIGN §11.4's known limit of 13 November;
+  the 22 November probe and its evidence are in `/mnt/workspaces/Cells/trace-face-20261122/`.
+- **What it books** (the user's go, D280): `heat_bookings: {"faces": "exact_free_energy_heat@1"}`.
+  - Each face books, per step, each row's exact free-energy release.
+  - That release is the amount the face moved, sender to receiver, times the difference of the
+    row's divided-difference potentials at the face's two end nodes.
+  - Each node's potential comes from its start and end amounts in the ledger's own form
+    (`passive_permeation.divided_potential_RT`).
+  - This is INNER_MODEL_V4_DESIGN §7.5's version 1, as the passive routes book it
+    (`models/surface_pump_v3.exact_face_heat`).
+  - The cost is one divided potential per outside node and species per step, only in worlds that
+    pick it.
+- **Its scope, refused outside it (version 1).**
+  - Every row a face carries must be neutral, and faces alone may move it in the step.
+  - A face that carries a charged row, or a row that a membrane, channel, pump, declared kind or
+    an operator's in-step process also moves, is refused at definition
+    (`surface_pump_v3._check_exact_faces`; `pump_composite.exact_face_row_errors`).
+  - A face that touches a held bath is refused too, as the passive routes' scope holds ("a held
+    bath's row is never one"). In development a plain held bath closed the ledger to 8.9e-16 of
+    the flows, its pinned amount giving the reservoir's potential. A scheduled bath (FR-10) was not
+    tried, so admitting baths is a later step with its own row.
+  - IMEX solvers only, since RK4 refuses every booking option.
+- **No clamp and no other form.** The step is refused where:
+  - a share falls below its floor (§7.5's sign rule, as amended 17 November);
+  - or a finite node's shares miss its exact change beyond their rounding (the raw-sum bound).
+
+  A falling face heat is also the dissipation check's to refuse. So an overshooting step is
+  refused, never booked by the always-positive form.
+- **What changes.** The state is the default's bit for bit; only the face heat field changes. The
+  default is omitted, so every registered definition keeps its fingerprint, structure and
+  program (D148).
+- **The energy ledger becomes an identity for those rows.**
+  - The booked heat is the ledger's own chemical change of the rows that faces alone move, so for
+    them the ledger closes to rounding by construction.
+  - It therefore no longer tests the face law's flux–force relation, which the tableau's form does
+    to its quadrature.
+  - The material ledger, and the face law's own tests, still cover the flux.
+- **Label families (D1).** Each row of a family books its own exact release, so a family's face
+  heat is the sum of its rows'. That sum can differ from the unsplit species' heat: with the
+  parent even and opposing label gradients, the rows book their releases where the unsplit
+  species books none (COHORT_LABELS_DESIGN; the D1 caveat, 4d1a4248). Physical heat attributable
+  to the labels alone stays unverified.
+- **Not done.**
+  - F1, the same booking as the default for neutral face rows, waits for an MG0c rerun: MG0c's
+    judged accounting criteria read the energy residual.
+  - Charged face rows are §6.3's branch X.
 
 ## 7. Seam E: finite fuel's core part
 

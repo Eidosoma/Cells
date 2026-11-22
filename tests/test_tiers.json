@@ -326,7 +326,8 @@
   "/mnt/workspaces/Cells/core-pass-kinds-20261118/gate-b31fa020/tiers/measure/measured.json",
   "/mnt/workspaces/Cells/ol3-engine-20261119/measure-5a82e9b7/measured.json",
   "/mnt/workspaces/Cells/refs-stack-20261122/tiers-measured-ca4f02aa/measured.json",
-  "/mnt/workspaces/Cells/ol3-engine-20261119/tiers-2764f0dd/measured.json"
+  "/mnt/workspaces/Cells/ol3-engine-20261119/tiers-2764f0dd/measured.json",
+  "/mnt/workspaces/Cells/faces-exact-heat-20261122/tiers-measured-3630debc/measured.json"
  ],
  "measured_provenance": [
   {
@@ -2765,6 +2766,14 @@
    "root": "/mnt/workspaces/Cells/ol3-engine-20261119/tree-2764f0dd",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-22T04:14:16+00:00"
+  },
+  {
+   "git_revision": "3630debc9d0892432984441671d8008913cf9952",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/faces-exact-heat-20261122/snapshot-head-3630debc",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-22T10:54:22+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -4424,10 +4433,10 @@
    },
    {
     "file": "tests/unit/test_heat_bookings.py",
-    "seconds": 3.88,
+    "seconds": 4.25,
     "exit_code": 0,
     "counts": {
-     "passed": 10
+     "passed": 14
     }
    },
    {
@@ -4568,7 +4577,7 @@
    },
    {
     "file": "tests/unit/test_kind_contract_hooks.py",
-    "seconds": 2.87,
+    "seconds": 3.03,
     "exit_code": 0,
     "counts": {
      "passed": 13
@@ -6967,10 +6976,10 @@
    },
    {
     "file": "tests/unit/test_heat_bookings_formula.py",
-    "seconds": 36.14,
+    "seconds": 35.09,
     "exit_code": 0,
     "counts": {
-     "passed": 2
+     "passed": 5
     }
    },
    {
