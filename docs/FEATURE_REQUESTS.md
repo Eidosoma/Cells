@@ -38,7 +38,7 @@ and a general feature, never one built for one study (D144).
 | [FR-30](#fr-30--homotypic-cx43-junctions-with-two-relaxation-times) | Homotypic Cx43 junctions with two relaxation times | **High,** inherited from FR-16's connexin catalogue (D225, D249) | The series gates' functions **landed** (merge 12c18db1, tag `fr30-series-gates-landed-2026-11-21`; kind `threshold_relaxation` or `boltzmann_eyring`); not registered. No openly licensed homotypic Cx43 voltage series found | All four registered papers are undetermined (D276, section 13.2); a metadata-only search for a source with two-exponential step decays at four or more voltages is running (D280). Development-only until a benchmark passes |
 | [FR-31](#fr-31--vesicle-rupture-during-a-steady-tension-hold) | Vesicle rupture during a steady tension hold: an optional rupture event competing in time | Low (D230, D248); the note before OL9 registers | Requested; a design note first | Blocked on rupture rates against tension, and on OL6 |
 | [FR-32](#fr-32--a-dopc-swelling-validation-record-for-the-water-operator) | A DOPC swelling validation record for the water operator | Low (D248) | Requested | Folded into the next water-operator landing |
-| [FR-33](#fr-33--regional-labelled-protein-readouts-redistribution-against-degradation) | Regional labelled-protein readouts: inside a measured region, outside it and across the whole cell | High (D228, D248) | **Two-way tracing landed** through D1, label families in the species registry (3c30082e), checker-accepted: redistribution keeps the labelled total and degradation lowers it by exactly the clearance, to rounding; charged log-mean faces refused. Regional readouts and the one-way tracer (ce2a3d9c) with D265's fixes (d48d40dd) | The in-cell case (two compartments of one cell) needs an engine path held for the user (D277); FR-36's age-selective loss can build on D1 |
+| [FR-33](#fr-33--regional-labelled-protein-readouts-redistribution-against-degradation) | Regional labelled-protein readouts: inside a measured region, outside it and across the whole cell | High (D228, D248) | **Two-way tracing landed** through D1, label families in the species registry (3c30082e), checker-accepted: redistribution keeps the labelled total and degradation lowers it by exactly the clearance, to rounding; charged log-mean faces refused. Regional readouts and the one-way tracer (ce2a3d9c) with D265's fixes (d48d40dd) | The requester's first test: two named regions joined by one face (donor, receiver, whole and cumulative clearance at the same times; pure transfer and a local-loss control), built on D1 by the kinds owner; the in-cell compartment path is not needed for it |
 | [FR-34](#fr-34--channel-population-readouts-count-availability-and-signed-current) | Channel population readouts: surface count, availability and signed current at a declared voltage, with units and sign convention | **High** (user, 20 November 2026; D251) | **Landed, composites included:** opt-in flux and current readouts with fixed-voltage evaluation (81a29442); a composite's own clamped_channel_flux and clamped_kind at the step's control and layout views (07022ddf, D265 finding 1, checker-confirmed) | None |
 | [FR-35](#fr-35--timed-partial-withdrawal-of-an-assembly-populations-exterior-pool) | Timed partial withdrawal of an assembly population's well-mixed exterior pool: each molecule withdrawn independently, a declared buffer supplied, sites and particles kept | **High** (user, 21 November 2026) | **Landed** (merge b521a11c, tag `fr35-withdrawal-landed-2026-11-21`): `cells.pool_withdrawal@1` (D261) | None. Landed (b521a11c, with D263's fixes); the independent acceptance and a 4,000-stream ensemble passed |
 | [FR-36](#fr-36--age--and-region-selective-loss-within-a-species-row) | Age- and region-selective loss within a species row | FR-25's reviewer (21 November 2026) | **Deferred (D273).** Today's tools cover completion-time cohorts in one well-mixed pool with age-independent loss (cohort.py) and FR-33's regional export and one-way tracer | Reopens on a requester's readout needing age-dependent loss: D1 (label families) and D2 (an ageing operator), 2.5 to 4 days |
@@ -1397,6 +1397,18 @@ books its own driving force, so opposing label gradients book heat where the uns
 D1's guarantee covers material and ledgers. A measurement that attributes physical heat to provenance
 labels alone remains open, so a label family's face heat is not to be read as the unlabelled species'
 heat.
+
+**The requester's answer (22 November 2026, 12:04 UTC, relayed by the user).** "Two named regions of the
+same cell joined by one bidirectional face are sufficient for our first test." They ask that both region
+identities and volumes be preserved, and that donor label, receiver label, whole-cell label and cumulative
+local clearance be reported in the same units at the same times.
+- Pure transfer, with labelled production off, should conserve the total label, and the receiver's gain
+  should match the donor's loss.
+- A separate local-loss control should keep the receiver flat, with clearance accounting for the missing
+  label.
+- The in-cell compartment path (priced at about 1.5 to 2 days) is not needed for this test. The kinds owner
+  builds the two-region example on D1, with no engine change, and an independent checker writes the
+  acceptance from these words.
 
 ## FR-34 — Channel population readouts: count, availability and signed current
 
