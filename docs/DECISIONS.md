@@ -9540,3 +9540,55 @@ from the checker's read-only inventories (/mnt/workspaces/Cells/arch-inventories
   checker, not the builder. The representation's contract is written so that it can serve as the
   first instance of the general level-of-detail contract (D299 item 4).
 
+## D305: D302's cost corrected, and MT-1b's long runs refused by a fixed global-charge bound (an engine gap)
+
+2026-11-22, about 22:19 UTC. The robustness agent's successor reconciled D302 and D303 on Step 0's
+world: state 4, a steady start, faceless and event-free, at 16 µs. Evidence:
+`/mnt/workspaces/Cells/mito-step0-20261122/RECONCILE.md` and `reconcile/`.
+1. **X2 costs about 20 ms per step at length, not 57.**
+   - Today's check alone costs 7.3–8.0 ms per step, so X2 costs about 2.6 times as much, not 8.
+   - A 300 s world at 16 µs (1.875e7 steps) takes about 100–110 core-hours with X2, against 38–42
+     without. D302's 300 is withdrawn, and so is the lead's later statement that the timing table
+     confirmed it.
+   - **The cause:** D302's 57 ms and the table's 59 and 68 ms each included a one-time recompile of
+     78–100 s. `energy_check.doubled_step` caches the doubled step under the whole definition's
+     digest, which includes the end time and max_steps, so each new run length recompiles X2's rollout.
+     Keying that cache on what the step reads is a small engine fix, on the backlog.
+   - **Four measurements agree:**
+     - 19.7 ms per step, the median over 251 windows of a 64,756-step replay;
+     - 20.2 ms, the marginal between warm runs;
+     - 19.4 ms over the long run's fast windows;
+     - 19.6 ms from growth_x2's 1,280→2,560 marginal.
+   - **Two side findings:**
+     - D302's "growth with length" was the same artefact.
+     - A window with any ledger above half its bound is re-checked on the host, at about 180 ms per
+       step.
+   - **Caveats:**
+     - No run has passed 64,756 steps, 0.35% of a 300 s world.
+     - x2/breakdown.json's 52 ms for the doubled step is unexplained, so a cheaper X2 is not designed
+       from it until it is.
+2. **The long run was refused by the global charge ledger at step 64,756 (1.04 s)**, with every material
+   floor at the parse cap.
+   - **The mechanism:** MT-1b's bath is a held reservoir behind host P's closed plasma patch, so no
+     charge crosses the boundary. The global charge residual is then the bath electrode's charge, which
+     carries the zero-mean rounding fluctuation of the matrix and IMS net ionic charge, up to 2.8e-25 C.
+   - **The bound:** 3e-25 C plus an allowance on the charge moved through the boundary. That charge is
+     the residual itself, so the bound never rises.
+   - **It refuses whatever X2 or the floors do.** Today's check takes the bit-identical trajectory. Long
+     runs of any world with a held bath behind a closed patch meet the same fixed bound.
+   - **This is an engine gap:** surface_field's component rule of 9 November gives a floating component
+     a rounding allowance, under which this residual stays at most 0.1% of it. A component grounded
+     through a held bath was never given the same allowance.
+   - The bound is a tolerance, so the fix is the user's decision (asked now).
+3. **The material floors fit a 300 s world at the parse cap of 1e-10 fmol.**
+   - The per-row residual maxima grow as n^0.67–n^0.83, reaching 7.2e-15 fmol at 6.4e4 steps. They
+     extrapolate to about 1e-12 fmol at 300 s, at most 1% of the cap; the cap fails only for growth of
+     n^1.68 or faster.
+   - Head 2's floors (1e-16 fmol for H) refuse at step 28,438, very probably H where its magnitude
+     dips. That was very probably the first long run's refusal.
+   - A 1e6-step check under today's check (about 2 h) follows once item 2 is fixed.
+4. **D303's item 1 is settled:**
+   - "about 19 ms" is confirmed;
+   - the floors do not reopen the implicit block, since they fit at the cap;
+   - the global charge refuses whichever block runs (an inference).
+
