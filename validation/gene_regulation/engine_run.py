@@ -282,9 +282,11 @@ def readouts(spec, states, cell=None):
     # D265, finding 7: a product of the cell's chains with no loss route there, and named by no
     # other operator, is established as lossless, and exported with a zero loss series. A
     # release's fate rows (FR-38, the sheet's §9; every class's) are filled by its chain as a
-    # product is, so the rule covers them too (the Lean lane's finding, 22 November 2026).
+    # product is, so the rule covers them too (the Lean lane's finding, 22 November 2026). FR-42's
+    # label owner names species but moves no material, so it is no other mover.
     lost = {block.degradations[i].polymer for i in here["degradation"]}
-    others = {getattr(x, "id", x) for op in spec.model.operators if op.law != worlds.POLYMERISATION
+    others = {getattr(x, "id", x) for op in spec.model.operators
+              if op.law not in (worlds.POLYMERISATION, LABELS)
               for x in getattr(op, "species", ())}  # fmt: skip
     releases = [
         (i, c, r) for i, (c, r) in enumerate(polymerisation.releases_of(block)) if c.cell == cell
