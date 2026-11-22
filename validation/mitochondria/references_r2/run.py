@@ -34,6 +34,7 @@ WORLDS = ("a", "b", "c", "d")
 DELIVERED_RTOL = 1e-11
 LADDER = (1e-6, 1e-7, 1e-8, 1e-9, 1e-10, 1e-11, 1e-12)
 BDF_RTOLS = (1e-10,)
+NONREQUIRED_BUDGET_S = 600.0  # CPU seconds per world for a non-required rung
 READOUTS = (
     "dpsi_mV", "pH_N", "pH_P", "NADH_fraction", "cytc_reduced_fraction", "QH2_fraction",
     "O2_flux", "ATP_export_exchange", "ATP_export_outer", "outer_potential_mV",
@@ -85,11 +86,11 @@ def table(rows, keys):
     return {k: np.array([r["readouts"][k] for r in rows]) for k in keys}
 
 
-def run_all(world, start, rtol, method, worlds, log):
+def run_all(world, start, rtol, method, worlds, log, budget_s=None):
     out = {}
     for name in worlds:
         t0 = time.process_time()
-        res = protocol.run_world(world, name, start, rtol, method)
+        res = protocol.run_world(world, name, start, rtol, method, budget_s)
         rows, ref = protocol.evaluate_records(world, res)
         out[name] = dict(result=res, rows=rows, ref=ref)
         log("world %s, %s rtol %.0e: %d outputs, %d RHS calls, %.1f s CPU" % (
@@ -108,6 +109,8 @@ def convergence(world, runs, ref_key, keys, bands):
             continue
         per_world = {}
         for name in ref:
+            if name not in run:
+                continue
             keep = protocol.scored(world, ref[name]["rows"])
             a = table(run[name]["rows"], keys)
             b = table(ref[name]["rows"], keys)
@@ -344,13 +347,19 @@ def main(argv=None):
             plan += [("BDF", rtol) for rtol in BDF_RTOLS]
         for method, rtol in plan:
             key = "%s %.0e" % (method, rtol)
-            try:
+            if key in required:
                 runs[key] = run_all(world, start, rtol, method, WORLDS, log)
-            except Exception as error:  # noqa: BLE001 (a non-required rung is recorded)
-                if key in required:
-                    raise
-                ladder_failures[key] = repr(error)
-                log("%s failed, recorded: %r" % (key, error))
+                continue
+            # A non-required rung runs world by world under a CPU budget; a world that fails or
+            # runs past it is recorded and left out of that rung's comparison.
+            runs[key] = {}
+            for name in WORLDS:
+                try:
+                    runs[key].update(run_all(world, start, rtol, method, (name,), log,
+                                             budget_s=NONREQUIRED_BUDGET_S))
+                except Exception as error:  # noqa: BLE001 (recorded, not fatal)
+                    ladder_failures["%s, world %s" % (key, name)] = repr(error)
+                    log("%s, world %s failed, recorded: %r" % (key, name, error))
         delivered = runs["Radau %.0e" % DELIVERED_RTOL]
         keys = list(READOUTS)
         conv = {}
@@ -474,7 +483,7 @@ def main(argv=None):
             stream.write("\n")
         arrays = {}
         for key, run in runs.items():
-            for name in WORLDS:
+            for name in run:
                 tag = key.replace(" ", "_") + "_" + name
                 arrays[tag + "_t"] = np.array([r["t"] for r in run[name]["result"]["records"]])
                 arrays[tag + "_y"] = np.array([r["y"] for r in run[name]["result"]["records"]])

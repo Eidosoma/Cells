@@ -78,14 +78,23 @@ def output_grid(t0, t1, out):
     return np.unique(np.round(grid, 9))
 
 
-def integrate(world, y0, t0, t1, ctl, t_eval, rtol, method="Radau"):
+class BudgetExceeded(RuntimeError):
+    """A run with a CPU budget (a non-required rung) ran past it."""
+
+
+def integrate(world, y0, t0, t1, ctl, t_eval, rtol, method="Radau", deadline=None):
     """One segment from its start state, the solver restarted at t0.
 
     The right-hand side is autonomous, so the segment runs in its own time, t - t0. After a step
     that moves a trace row by many decades, the first steps can then shrink far below the
     spacing of floating-point times near t0 and grow geometrically from there.
     """
-    fun = lambda t, y: world.rhs(t, y, ctl)  # noqa: E731
+    def fun(t, y):
+        if deadline is not None and time.process_time() > deadline:
+            raise BudgetExceeded("CPU budget exceeded at t = %.6g s of segment [%g, %g]"
+                                 % (t0 + t, t0, t1))
+        return world.rhs(t, y, ctl)
+
     local = None if t_eval is None else np.asarray(t_eval, dtype=float) - t0
     if local is not None:
         local[0] = max(local[0], 0.0)
@@ -125,9 +134,13 @@ def schedule(world, name):
     return segs
 
 
-def run_world(world, name, start, rtol, method="Radau"):
-    """Run world ``name`` from the declared start; return its output records and costs."""
+def run_world(world, name, start, rtol, method="Radau", budget_s=None):
+    """Run world ``name`` from the declared start; return its output records and costs.
+
+    ``budget_s``: a CPU budget for the whole world (non-required rungs only); past it the run
+    raises BudgetExceeded."""
     out = world.declaration["protocol"]["output"]
+    deadline = None if budget_s is None else time.process_time() + budget_s
     stats = []
     records = []
     y0 = np.array(start, dtype=float)
@@ -138,7 +151,7 @@ def run_world(world, name, start, rtol, method="Radau"):
         ctl = model.Controls(world, **kwargs)
         y_start = main_end if branch else y_cur
         grid = output_grid(t0, t1, out)
-        sol, st = integrate(world, y_start, t0, t1, ctl, grid, rtol, method)
+        sol, st = integrate(world, y_start, t0, t1, ctl, grid, rtol, method, deadline)
         stats.append(dict(segment=seg, branch=branch, **st))
         for k, t in enumerate(sol.t):
             side = "start" if k == 0 else ("end" if k == len(sol.t) - 1 else "inside")
