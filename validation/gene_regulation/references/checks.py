@@ -393,3 +393,161 @@ def check_all(data: dict) -> None:
     check_noise(data)
     check_plants(data)
     check_summaries(data)
+
+
+# ---- amendment R (§9): the release references, R1 -------------------------------------------
+RELEASE_FILES = ("release_inputs", "release_r1")
+R1_OUT = [0.0, 1800.0, 3600.0, 7200.0, 14400.0]
+R1_P = (0.0, 0.25, 0.75, 1.0)
+R1_READOUTS = ("F_pol", "E_tx", "C_sum_tx", "W_tx", "hold_tx", "int_Q_tx", "int_Qf_d1",
+               "int_Qf_s1", "n_Rd1", "n_Rs1", "int_D_Rd1", "int_D_Rs1", "n_M", "G_minus_G0",
+               "H_rel_d", "H_rel_s", "H_deg_Fd", "H_deg_Fs", "dG_rel_Rd1", "dG_rel_Rs1",
+               "dG_deg_Rd1", "dG_deg_Rs1", "CO_d", "CO_s", "LR_d", "LR_s", "DL_d", "DL_s")
+
+
+def load_release(folder: Path = INTERFACE) -> dict:
+    return {name: json.loads((Path(folder) / f"{name}.json").read_text())
+            for name in RELEASE_FILES}
+
+
+def _r1_limit(p: float, t: float) -> dict:
+    """§9.10's closed forms in copies, in floats (the interface holds them at 50 digits)."""
+    ln2 = math.log(2.0)
+    ke, kf = ln2 / 3600, {"d": ln2 / 7200, "s": ln2 / 1800}
+    pi = {"d": p, "s": 1.0 - p}
+    H = 80 * math.exp(-ke * t)
+    out = {"hold": H, "released": 80 - H}
+    for f in "ds":
+        out[f"released_{f}"] = pi[f] * (80 - H)
+        out[f"survivors_{f}"] = pi[f] * 80 * ke * (math.exp(-ke * t) - math.exp(-kf[f] * t)) / (
+            kf[f] - ke)
+        out[f"cohort_{f}"] = (pi[f] * ke * 80 * math.exp(-kf[f] * t)
+                              * math.expm1((kf[f] - ke) * 3600) / (kf[f] - ke))
+    return out
+
+
+def check_release_complete(rel: dict) -> None:
+    inp, r1 = rel["release_inputs"], rel["release_r1"]
+    require(inp["sheet"]["tag"] == "gr1-sheet-fr38-2026-11-22", "release: the sheet's tag")
+    cases = r1["cases"]
+    keys = [(c["kind"], c["decl"]["machine"], c["decl"]["p"] if c["kind"] == "case" else None)
+            for c in cases]
+    want = [(k, m, p) for m in ("returned", "held")
+            for k, p in [("blank", None)] + [("case", p) for p in R1_P]]
+    require(sorted(map(str, keys)) == sorted(map(str, want)), f"release R1: cases {keys}")
+    for c in cases:
+        require(c["t"] == R1_OUT, f"release R1 {c['decl']}: outputs {c['t']}")
+        for k in R1_READOUTS:
+            require(k in c["readouts"] and len(c["readouts"][k]) == 5,
+                    f"release R1 {c['kind']} {c['decl']['machine']}: readout {k}")
+        for k in ("hold", "per_producer", "fate_Rd1", "fate_Rs1"):
+            require(len(c["per_output_residuals"][k]) == 5, f"release R1: residual {k}")
+    require(len(r1["limit_checks"]) == 8 and len(r1["cohorts"]) == 8, "release R1: checks")
+    require(set(r1["requester_figures"]) >= {"held", "released", "released_durable",
+                                            "released_short", "surviving_durable",
+                                            "surviving_short"}, "release R1: requester figures")
+    require(r1["variant_recharging"]["case"]["decl"]["p"] == 0.75, "release R1: variant")
+
+
+def check_release_identities(rel: dict, tol: float = 1e-12) -> None:
+    """§9.7's identities recomputed from the stored outputs; scales at t_end (14,400 s)."""
+    M = None
+    for c in rel["release_r1"]["cases"]:
+        r = {k: np.asarray(v, float) for k, v in c["readouts"].items()}
+        H, A = r["hold_tx"], r["int_Q_tx"]
+        scale = H[0] + A[-1] or r["n_Rd1"][0] + r["n_Rs1"][0]  # the blank: the fates' trace
+        hold = H[0] + A - H - r["int_Qf_d1"] - r["int_Qf_s1"]
+        per = H[0] + A - (H + (r["n_Rd1"] - r["n_Rd1"][0]) + (r["n_Rs1"] - r["n_Rs1"][0])
+                          + r["int_D_Rd1"] + r["int_D_Rs1"])
+        label = f"release R1 {c['kind']} p={c['decl']['p']} {c['decl']['machine']}"
+        for name, res in (("hold", hold), ("per_producer", per)):
+            lv = np.max(np.abs(res)) / scale
+            require(lv <= tol, f"{label}: {name} identity at {lv:.3e}")
+            require(np.allclose(res, c["per_output_residuals"][name], rtol=0, atol=tol * scale),
+                    f"{label}: stored {name} residual")
+        for f in ("d", "s"):
+            n, Q, D = r[f"n_R{f}1"], r[f"int_Qf_{f}1"], r[f"int_D_R{f}1"]
+            lv = np.max(np.abs(n - n[0] - Q + D)) / (n[0] + Q[-1])
+            require(lv <= tol, f"{label}: fate R{f}1 identity at {lv:.3e}")
+        if M is None:
+            M = r["F_pol"][0] + r["E_tx"][0]
+        lv = np.max(np.abs(r["F_pol"] + r["E_tx"] - M)) / M
+        require(lv <= tol, f"{label}: machines at {lv:.3e}")
+        held = c["decl"]["machine"] == "held"
+        require(np.allclose(r["E_tx"], r["C_sum_tx"] + (H if held else 0.0), rtol=1e-15,
+                            atol=0), f"{label}: §9.3's E_tx")
+
+
+def check_release_limit(rel: dict) -> None:
+    r1 = rel["release_r1"]
+    for key, chk in r1["limit_checks"].items():
+        p = chk["p"]
+        for row in chk["rows"]:
+            lim = _r1_limit(p, row["t"])
+            for k in ("hold", "released"):
+                require(math.isclose(float(row[k]["limit"]), lim[k], rel_tol=1e-12,
+                                     abs_tol=1e-12), f"limit {key} t={row['t']}: {k}")
+            for f in ("d", "s"):
+                fr = row[f"fate_{f}"]
+                L = lim[f"survivors_{f}"]
+                require(math.isclose(float(fr["limit_survivors"]), L, rel_tol=1e-12,
+                                     abs_tol=1e-12), f"limit {key} t={row['t']}: survivors {f}")
+                run = fr["run"]
+                for k in ("n_F", "n_F_minus_blank", "released_still_present"):
+                    d = run[k] - float(fr["limit_survivors"])
+                    require(math.isclose(fr["absolute_distance_copies"][k], d, rel_tol=1e-6,
+                                         abs_tol=1e-13), f"limit {key}: distance {f} {k}")
+                require(math.isclose(run["n_F_minus_blank"], run["released_still_present"],
+                                     rel_tol=1e-11, abs_tol=1e-12),
+                        f"limit {key} t={row['t']}: n_F − blank ≠ the tracker LR ({f})")
+                if L > 0 and row["t"] > 0:
+                    dist = abs(fr["relative_distance"]["released_still_present"])
+                    require(dist <= 3e-8, f"limit {key} t={row['t']}: {f} at {dist:.2e}")
+    figs = r1["requester_figures"]
+    for k, v in figs.items():
+        if isinstance(v, dict) and "requester" in v:
+            d = (v["run_copies"] - float(v["requester"])) / float(v["requester"])
+            require(math.isclose(v["relative_distance"], d, rel_tol=1e-6, abs_tol=1e-15),
+                    f"requester figure {k}")
+
+
+def check_release_cohort(rel: dict) -> None:
+    for key, coh in rel["release_r1"]["cohorts"].items():
+        p = float(key.split(",")[0].split("=")[1])
+        for f, rows in coh.items():
+            for row in rows:
+                lim = _r1_limit(p, row["ts"])[f"cohort_{f}"]
+                require(math.isclose(float(row["first_order_limit"]), lim, rel_tol=1e-12,
+                                     abs_tol=1e-12), f"cohort {key} {f}: closed form")
+                require(math.isclose(row["route1_sheet_minus_route2"],
+                                     row["route1_sheet"] - row["route2_exact"], rel_tol=1e-9,
+                                     abs_tol=1e-15), f"cohort {key} {f}: route 1 − route 2")
+                require(abs(row["route1_blank"] - row["route2_exact"])
+                        <= 1e-10 * max(row["route2_exact"], 1e-300) + 1e-13,
+                        f"cohort {key} {f} ts={row['ts']}: route 1 against the blank ≠ route 2")
+
+
+def check_release_summaries(rel: dict) -> None:
+    r1 = rel["release_r1"]
+    recs = [*r1["cases"], r1["variant_recharging"]["case"]]
+    for c in recs:
+        s = c["summary"]
+        label = f"release R1 {c['kind']} p={c['decl']['p']} {c['decl']['machine']}"
+        require(s["identity_worst"] <= 1e-12, f"{label}: identity {s['identity_worst']}")
+        require(s["convergence_worst"] is not None and s["convergence_worst"] <= 1e-9,
+                f"{label}: convergence {s['convergence_worst']}")
+        require(s["heat_min_increment_rel"] >= -1e-12, f"{label}: a heat class decreased")
+        for k, v in s["domain"].items():
+            require(v <= (0.0 if k == "lna_F_max" else -1.0), f"{label}: domain {k} at {v}")
+        if "label_run" in c:
+            lr = c["label_run"]
+            require(lr["identity_worst"] <= 1e-12 and lr["convergence_worst"] <= 1e-9,
+                    f"{label}: the label run's precision")
+
+
+def check_release_all(rel: dict) -> None:
+    check_release_complete(rel)
+    check_release_identities(rel)
+    check_release_limit(rel)
+    check_release_cohort(rel)
+    check_release_summaries(rel)
