@@ -171,7 +171,7 @@ RELEASE_PLANTED = [
     ("R2's second translation chain", ("release_r2", "runs", 1, "readouts", "int_Q_tl_s", 200),
      _times(1 + 1e-9), checks.check_release_r2),
     ("R2's development check", ("release_r2", "development_check", 2, "distance_to_A1", "P"),
-     _times(1e-3), checks.check_release_r2),
+     _times(1e3), checks.check_release_r2),
 ]
 
 

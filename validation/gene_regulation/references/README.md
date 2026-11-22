@@ -314,54 +314,73 @@ symbols, refused outside §3.3's ranges.
 
 ## Amendment R (§9): the release worlds
 
-These are written from `docs/TEMPLATED_POLYMERISATION_LAWS.md` at tag `gr1-sheet-fr38-2026-11-22`,
-§9 read against §0–§8, and from this package's G2 references. Under the same code-blind rule as G2,
-no engine code and none of the lane's tools were read.
+These are written from `docs/TEMPLATED_POLYMERISATION_LAWS.md`, with §9 read against §0–§8 at two
+tags:
+- `gr1-sheet-fr38-2026-11-22`;
+- `gr1-sheet-fr38-r2-2026-11-22`, whose addendum to §9.9 fixes R2's rows and translation, gives
+  "the inventory trace" a number, and adds §9.11's item 7.
 
-- **R1** (§9.9) is built.
-- **R2** waits for the sheet's addendum on its translation, which is to be tagged.
+They also draw on this package's G2 references. Under the same code-blind rule as G2, no engine
+code and none of the lane's tools were read.
 
 | File | What it holds |
 | --- | --- |
-| `release.py` | `ReleaseSystem` on the G2 model, R1's world, the integrator, the readouts, §9.7's identities, and §9.10's limit in decimal arithmetic |
+| `release.py` | `ReleaseSystem` on the G2 model (model.py unchanged), R1's and R2's worlds, the integrator, the readouts, §9.7's identities, and §9.10's limit in decimal arithmetic |
 | `release_run.py` | The driver, with G2's run receipts (`run.provenance()`) |
-| `interface/release_inputs.json` | §9.9's declared values, methods, tolerances and the run's receipt |
+| `interface/release_inputs.json` | §9.9's declared values, the tags, methods, tolerances and the run's receipt |
 | `interface/release_r1.json` | Every R1 case at its outputs, the limit checks, the requester's figures, the cohorts and the recharging variant |
+| `interface/release_r2.json` | R2 with both machine options, every readout at A1's outputs, the identities' residuals at every output, route 2's cohort, and the addendum's development check |
 
-**What R1 computes.**
-- The cases: p ∈ {0, 0.25, 0.75, 1} and the matched blank (H(0) = 0), each with `returned` and with
+**The rows** (the addendum, in R1 and R2):
+- the durable fate is A1's row R, lost by deg_R at k_d;
+- the short-lived fate is R_s, with R's chemistry, lost by deg_R_s at k_s;
+- both start at c_R = 10⁻¹² mM;
+- in the two-class label runs, class 2's rows are R_c2 and R_s_c2 (reading R7).
+
+**R1** (§9.9):
+- **Cases:** p ∈ {0, 0.25, 0.75, 1} and the matched blank (H(0) = 0), each with `returned` and with
   `held`.
-- Two runs per case:
-  - **one class:** the reference;
-  - **two classes, labelled at release:** class 2 during [0, 3,600 s], which is §9.8's route 1.
+- **Two runs per case:**
+  - one class: the reference;
+  - two classes labelled at release, class 2 during [0, 3,600 s], which is §9.8's route 1.
 - **Outputs** at 0, 1,800, 3,600, 7,200 and 14,400 s. The solver restarts every 60 s, and every
   switch lies on that grid.
-- **Readouts:**
-  - every row;
-  - F_pol, and E_tx, which under `held` is §9.3's ΣC + H (`C_sum_tx` is the complexes alone);
-  - the hold;
-  - §9.7's counters: arrivals ∫Q, ∫Q^f per fate, the fate amounts and ∫D_F per fate row;
-  - G − G(0), the heats, and each move's ΔG;
-  - the residuals of the hold, fate-row and per-producer identities at every output.
+
+**R2** (§9.9 and its addendum):
+- A1 with transcription's chain declaring §9: τ = 3600/ln 2 s, p = 0.75, H(0) = 0.
+- Translation is two chains: `tl` on R and `tl_s` on R_s. Each has A1's parameters, and both share
+  the ribosomes and make P.
+- It runs with `returned` and with `held`, at A1's horizon and outputs.
+
+**The readouts:**
+- every row, F_pol (and F_rib in R2);
+- E_tx, which under `held` is §9.3's ΣC + H, with `C_sum_tx` holding the complexes alone;
+- the hold;
+- §9.7's counters: arrivals ∫Q_tx, ∫Q^f per fate (`int_Qf_d1`, `int_Qf_s1`), the fate amounts, and
+  ∫D per fate row;
+- G − G(0), the heats, and each move's ΔG;
+- the residuals of the hold, fate-row and per-producer identities at every output.
 
 **Three exact trackers** run in the one-class runs and do not feed back:
-- **CO_f:** the release-window cohort under first-order, age-independent loss. This is §9.8's route
-  2 with no grid.
+- **CO_f:** the release-window cohort under first-order, age-independent loss. This is §9.8's
+  route 2 with no grid.
 - **LR_f:** the released molecules still present.
-- **DL_f:** LR_f's distance from the requester's limit, integrated directly as
-  DL′ = −k_f DL + k_f e^(y_f) LR.
+- **DL_f:** LR_f's distance from the first-order value with the same releases, integrated directly
+  as DL′ = −k_f DL + k_f e^(y_f) LR. In R1 that value is the requester's limit.
 
-**Precision.**
-- Every run is DOP853 at rtol 2.5 × 10⁻¹², checked at 2.5 × 10⁻¹⁴.
-  - **Convergence:** at most 1.8 × 10⁻¹² of scale, and 1.8 × 10⁻¹¹ in the label runs (the sheet
-    allows 10⁻⁹).
-  - **Identities:** at most 5.0 × 10⁻¹⁵, and 3.0 × 10⁻¹⁴ in the label runs (the sheet allows
-    10⁻¹²).
-  - **Heats:** no class ever decreases.
-  - **Domain:** y_f ≤ −18.4676 and ln(c_F/c°) ≤ −23.43.
-- The limit is computed at 50 digits.
+**Precision.** Every run is DOP853 at rtol 2.5 × 10⁻¹², checked at 2.5 × 10⁻¹⁴. The limit is
+computed at 50 digits.
 
-### The requester's limit (§9.10), at p = 0.75 and t = 1 h
+| Runs | Convergence (sheet: 10⁻⁹ of scale) | Identities (sheet: 10⁻¹²) |
+| --- | --- | --- |
+| R1 | ≤ 1.8e-12 (the recharging variant 3.3e-12) | ≤ 4.5e-15 (the recharging variant 4.6e-13, its energy identity) |
+| R1's label runs | ≤ 1.8e-11 | ≤ 2.9e-14 |
+| R2 | ≤ 6.1e-12 | ≤ 5.5e-15 |
+
+No heat class ever decreases. The domain holds with margin: in R1, y_f ≤ −18.4676 and
+ln(c_F/c°) ≤ −23.43; in R2, y ≤ −11.96 and ln(c_F/c°) ≤ −21.15.
+
+### R1: the requester's limit (§9.10), at p = 0.75 and t = 1 h
 
 | Figure | Requester | References (copies) | Relative distance |
 | --- | --- | --- | --- |
@@ -388,7 +407,7 @@ The released molecules still present sit above the limit because of §4.4's fact
 - The largest distance over every case is 1.54 × 10⁻⁸.
 - The tracker LR, n_F minus the matched blank, and the integrated distance DL agree to 10⁻¹².
 
-### The release-window cohort (§9.8), [0, 3,600 s] sampled at 3,600 and 7,200 s
+### R1: the release-window cohort (§9.8), [0, 3,600 s] sampled at 3,600 and 7,200 s
 
 - **Route 2, exact:** above the first-order closed form by at most 1.9 × 10⁻⁸, from the same loss
   factor.
@@ -402,33 +421,72 @@ The released molecules still present sit above the limit because of §4.4's fact
     F_2(0)(1 − S(ts)).
   - This is finding R-F1.
 
+### R2
+
+At t = 3 h (t_off):
+
+| | `returned` | `held` |
+| --- | --- | --- |
+| Hold (copies) | 461.4 | 444.8 |
+| R | 329.9 | 321.0 |
+| R_s | 50.4 | 48.9 |
+| P | 119,273 | 116,341 |
+| F_pol | 9,997.5 | 9,552.8 (the hold keeps about 447 polymerases engaged) |
+
+Route 2's exact window cohort, given as an addition since §9.9 declares no cohort for R2, in copies:
+
+| | Durable, 1 h | Durable, 2 h | Short-lived, 1 h | Short-lived, 2 h |
+| --- | --- | --- | --- | --- |
+| `returned` | 67.1382 | 47.4739 | 16.3361 | 4.0840 |
+| `held` | 66.4124 | 46.9607 | 16.1461 | 4.0365 |
+
+**The addendum's development check,** reported and not an acceptance row:
+- Both fates' loss rates are set to A1's k_R, and R2's total RNA (R + R_s) and P are compared with
+  G2's A1.
+- The largest distance over the horizon, relative to A1's largest value:
+
+  | τ | Total RNA | P |
+  | --- | --- | --- |
+  | 60 s | 0.121 | 0.021 |
+  | 6 s | 0.0163 | 0.0021 |
+  | 0.6 s | 0.0016 | 0.00021 |
+
+- The distance falls in proportion to τ, the same with either machine option. R2 approaches A1 as
+  the addendum says.
+
 ### Readings of §9
 
-These are sent to the lead for the sheet's fixes. None was resolved from code.
+These were sent to the lead. None was resolved from code.
 
 - **R1, R1's routes.** §9.9 does not list them. They are the chain (k_I = 0, so nothing completes),
-  its release and the fates' losses. There is no recharging, translation or regulator, and R and P
-  stay at their traces.
+  its release and the fates' losses. There is no recharging, translation or regulator, and P stays
+  at its trace.
   - §9.10's "y_f ≈ −18.48 at every fate amount" supports this reading: it needs M near A1's 0.05 mM,
     and recharging would draw M down within minutes.
   - **A reported variant** adds A1's recharging. Its distance from the limit is 8.97 × 10⁻¹⁰ and
     3.01 × 10⁻⁹ at 1 h, about half.
-- **R2, "the inventory trace"** (§9.9), is not defined in the sheet. It is taken as A1's product
-  trace, 1.0 × 10⁻¹² mM: 10⁻¹² fmol in 1 pL, or 6.0 × 10⁻⁴ molecules, in every fate row.
+- **R2, "the inventory trace".** It was undefined at the first tag and read as c_R = 10⁻¹² mM. The
+  addendum confirms that value.
 - **R3, the limit's survivors** are the released molecules still present (§9.10's "of those").
   - They are compared as n_F minus the matched blank, which equals the tracker LR.
   - The fate row n_F itself also holds the trace's survivors. It sits 5.2 × 10⁻⁷ to 9.5 × 10⁻⁵ from
     the limit (1.7 × 10⁻⁵ and 3.0 × 10⁻⁵ at 1 h, p = 0.75), not about 10⁻⁸. This is finding R-F2.
 - **R4, the matched blank** has H(0) = 0 and is otherwise equal: the same machine option and class
   count. With nothing released, p has no effect.
-- **R5, the heat classes.** §9.5 names H_rel,ρ,f per fate, but not the class for a fate's loss. The
-  references use H_deg,Fd and H_deg,Fs, one per fate and summed over classes, and G's identity sums
-  every class.
+- **R5, the heat classes.** The durable fate's loss is deg_R, so it books into H_deg,R. deg_R_s's
+  class is not named, and the references book it into H_deg,R_s.
+  - The release heats are §9.5's H_rel,ρ,f per fate, summed over classes.
+  - In R2, H_tl sums `tl` and `tl_s`, as the two-gene world's classes sum over genes.
+  - G's identity sums every class.
 - **R6, E_tx under `held`** is §9.3's E_ρ = ΣC + ΣH, and `C_sum_tx` keeps the complexes alone.
-- **R7, the label schedule** is read at each segment's start. A release during [0, 3,600 s) enters
-  class 2, and the switch at 3,600 s lies on the grid.
-- **R8, R1's domain** lists the moves in use: the fates' losses (y_f ≤ x_dom) and the release
-  (c_F ≤ c°). Elongation has no complexes in R1.
+- **R7, the label runs.** The schedule is read at each segment's start, so a release during
+  [0, 3,600 s) enters class 2. Class 2's rows, which the addendum does not name, are R_c2 and
+  R_s_c2, of R's chemistry, at the trace, with their fate's loss rate.
+- **R8, R2's initial hold** is not declared, so H(0) = 0.
+- **R9, R2's cohort.** §9.9 declares the cohort for R1 only.
+  - The references give R2's route 2 exactly, as an addition.
+  - Route 1 needs label rows, and whether R2's class-2 rows are translated is not ruled, so it is not
+    computed. The R2 world refuses two classes.
 
 **Findings:**
 - **R-F1, §9.8's route 1.** "F^f_ρ,2(ts) − F^f_ρ,2(0) is the cohort, for any loss law" misses the
@@ -441,5 +499,5 @@ These are sent to the lead for the sheet's fixes. None was resolved from code.
   limit, 24.852813742386.
 
 **Regenerating.** `python -m validation.gene_regulation.references.release_run --out DIR`, from a
-source snapshot, takes about 30 s on one core. The committed interface came from revision
-`85668e36` by snapshot, with a clean status and an empty patch.
+source snapshot, takes about three minutes on one free core. The committed interface's revision and
+receipt are in `interface/release_inputs.json`.
