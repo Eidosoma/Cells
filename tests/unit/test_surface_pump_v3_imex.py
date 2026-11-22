@@ -220,3 +220,22 @@ def test_labelled_step_reports_non_negative_one_way_transfers(arm, solver):
         rk4 = fixtures.definition(arm, solver="rk4")
         spec4, state4, p4, control4 = initial(rk4)
         surface_pump_v3.checked_step(state4, dt, control4, p4, p4.active, labels=rows)
+
+
+@pytest.mark.parametrize(
+    "channels, species, channel_refused, pump_refused",
+    [
+        (False, "Cl", False, False),  # No channel population: nothing to index, no refusal.
+        (True, "K", True, True),  # Carried by the fixture's channels and its Na/K pump.
+        (True, "Cl", False, False),  # Not carried by any channel or pump.
+    ],
+)
+def test_label_errors_read_the_species_rows(channels, species, channel_refused, pump_refused):
+    """FR-42's refusals read [species, ...] rows: channel_relative_permeability on active
+    populations, and the pumps' stoichiometry at patches with a capacity (host side only)."""
+    spec, _, p, _ = initial(
+        fixtures.definition("release", solver=imex.ARS222_ID, channels=channels)
+    )
+    errors = surface_pump_v3.label_errors(p, (spec.model.species_ids.index(species),))
+    assert any("channel population" in e for e in errors) == channel_refused
+    assert any("moved by a pump" in e for e in errors) == pump_refused
