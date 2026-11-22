@@ -9324,3 +9324,37 @@ value:
 - **Set 1:** read from the vector coordinates, with centres at the cap midpoints. The six fit points
   re-read within 0.0005 of the data file. S1-6 is reported only.
 
+## D298: The vesicle-rupture blind test passes: set 1 five of five, set 2 five of five (one-sided, weak)
+
+2026-11-22, about 16:39 UTC. The independent checker scored the registered predictions
+(pores-predictions-registered-2026-11-22, sha256 8f72193b…) against the sealed held-out values
+(held_out.json 20a0c4a5…) under VESICLE_PORES_LAWS §8, D293–D295 and D297. The score file is
+/mnt/workspaces/Cells/review-check-20261121/pores/score.json, sha256 a4b452d6…. A planted failure fails.
+
+**Set 1, Karal and Yamazaki's other temperature columns, two-sided: 5 of 5 pass.**
+- **In range:** S1-1 (38 °C, 7.5 mN/m) has residual −0.200 against τ 0.252, the closest at 0.79 τ. S1-2
+  (35 °C, 7.0) is −0.009 against 0.263, and S1-3 (30 °C, 7.0) is +0.032 against 0.257.
+- **Extrapolated below the viscosity data:** S1-4 (18 °C, 7.5) is −0.035 against 0.231, and S1-5
+  (18 °C, 8.0) is +0.173 against 0.241.
+- **Reported only:** S1-6 (12 °C, 8.0) is +0.287 against 0.264. It would fail by 0.023. It was
+  unscored because FR-31's entry had quoted that condition.
+
+**Set 2, Shibly et al.'s osmotic rows, one-sided: 5 of 5 pass.** These are weak tests: the read rates lie
+5.6 to 15.4 in ln k above the law at the external tension, as any added osmotic tension allows. The law
+implies total tensions of 7.1 to 8.2 mN/m, an osmotic tension of about 2.6 to 3.9 mN/m (reported, not
+scored). S2-6 (the quoted count) and the three controls are reported only. The controls would pass
+two-sided.
+
+**What this does and does not show.**
+- The line-tension law, with the membrane viscosity's temperature dependence (E_A = 27 kJ/mol) and a
+  constant line tension, fitted on the six read points, predicts first-rupture rates at three other
+  temperatures within the registered tolerance, including two below the viscosity data's range.
+- The tolerance is wide: t(0.975, 2) = 4.303 on three experiments per setting, so τ is about 0.25 in
+  ln k, or about 28% in rate.
+- The in-sample misfit stands as disclosed: the law over-predicts the 7.5 mN/m points by 14% to 28%,
+  with χ² = 98.6 on 4 degrees of freedom.
+- **Both declared premises go with every verdict:**
+  - a pipette-held vesicle's first rupture is its first opening, though pores under suction can reclose;
+  - for set 2, equal vesicle sizes across the two papers.
+- The Lean lane had viewed the figure before the test (D287).
+
