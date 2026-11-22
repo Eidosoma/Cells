@@ -9301,3 +9301,60 @@ value:
   zero-size fields when no replacement is declared, as a D148 case 2 like FR-38's release fields. The proof
   is the programs check and optin_check before and after, with every physical field bitwise.
 
+## D297: The rupture blind test's stage 2 is sealed; set 2 reads from Shibly et al.'s corrected Fig. 1C
+
+2026-11-22, about 16:27 UTC. Recorded before any scoring; the lead has seen no held-out value.
+- **The sealed file:** /mnt/workspaces/Cells/pores-extraction-20261122/held_out.json, sha256
+  20a0c4a534a28ab2748d96f0c5de0cf81d38e2a47283c4f2aea94b0c9647468b. Stage 2 began at 16:04:16 UTC, after
+  the predictions' tag (6d718ae2, 16:03:26). The extractor did not open the predictions.
+- **Set 2 uses the corrected Fig. 1C.** Its SEs and control readings come from the figure in the
+  journal's correction (Biophys J 112:1290, 2017, doi:10.1016/j.bpj.2017.03.001, PMC5376104), which
+  replaced the original panel.
+  - The corrected figure reproduces all six tabulated osmotic rates within 0.005 in ln k.
+  - Its control tensions match stage 1b's, so the registered conditions and predictions are unaffected.
+  - Disclosed: the extractor first read the original panel and found it inconsistent with the tables. Those
+    readings are sealed separately (superseded_original_fig1c.json, sha256 d27cb33b…) and are not for
+    scoring.
+- **The quoted count matches S2-6** (4.3 mN/m, ΔC₀ = 2.8 mM) unambiguously. S2-6 is reported, not scored
+  (D293 item 6).
+- **Set 2's controls:** three, reported only. None lies at 6.5 mN/m.
+- **The tables print two significant figures,** a rounding of up to about 0.05 in ln k. The registered
+  s_dig = 0 for tabulated rates stands unchanged, since the corrected figure agrees with the printed values
+  within 0.005.
+- **Set 1:** read from the vector coordinates, with centres at the cap midpoints. The six fit points
+  re-read within 0.0005 of the data file. S1-6 is reported only.
+
+## D298: The vesicle-rupture blind test passes: set 1 five of five, set 2 five of five (one-sided, weak)
+
+2026-11-22, about 16:39 UTC. The independent checker scored the registered predictions
+(pores-predictions-registered-2026-11-22, sha256 8f72193b…) against the sealed held-out values
+(held_out.json 20a0c4a5…) under VESICLE_PORES_LAWS §8, D293–D295 and D297. The score file is
+/mnt/workspaces/Cells/review-check-20261121/pores/score.json, sha256 a4b452d6…. A planted failure fails.
+
+**Set 1, Karal and Yamazaki's other temperature columns, two-sided: 5 of 5 pass.**
+- **In range:** S1-1 (38 °C, 7.5 mN/m) has residual −0.200 against τ 0.252, the closest at 0.79 τ. S1-2
+  (35 °C, 7.0) is −0.009 against 0.263, and S1-3 (30 °C, 7.0) is +0.032 against 0.257.
+- **Extrapolated below the viscosity data:** S1-4 (18 °C, 7.5) is −0.035 against 0.231, and S1-5
+  (18 °C, 8.0) is +0.173 against 0.241.
+- **Reported only:** S1-6 (12 °C, 8.0) is +0.287 against 0.264. It would fail by 0.023. It was
+  unscored because FR-31's entry had quoted that condition.
+
+**Set 2, Shibly et al.'s osmotic rows, one-sided: 5 of 5 pass.** These are weak tests: the read rates lie
+5.6 to 15.4 in ln k above the law at the external tension, as any added osmotic tension allows. The law
+implies total tensions of 7.1 to 8.2 mN/m, an osmotic tension of about 2.6 to 3.9 mN/m (reported, not
+scored). S2-6 (the quoted count) and the three controls are reported only. The controls would pass
+two-sided.
+
+**What this does and does not show.**
+- The line-tension law, with the membrane viscosity's temperature dependence (E_A = 27 kJ/mol) and a
+  constant line tension, fitted on the six read points, predicts first-rupture rates at three other
+  temperatures within the registered tolerance, including two below the viscosity data's range.
+- The tolerance is wide: t(0.975, 2) = 4.303 on three experiments per setting, so τ is about 0.25 in
+  ln k, or about 28% in rate.
+- The in-sample misfit stands as disclosed: the law over-predicts the 7.5 mN/m points by 14% to 28%,
+  with χ² = 98.6 on 4 degrees of freedom.
+- **Both declared premises go with every verdict:**
+  - a pipette-held vesicle's first rupture is its first opening, though pores under suction can reclose;
+  - for set 2, equal vesicle sizes across the two papers.
+- The Lean lane had viewed the figure before the test (D287).
+
