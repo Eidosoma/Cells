@@ -357,6 +357,18 @@ tests/unit/test_neutral_labels_transport.py; @3's side merged).
   species at the event step, the newcomer label.
   - The departing material leaves with its own shares.
   - A donor copy's material is newcomer material too. It does not inherit the donor's shares.
+- **What leaves is recorded** (erratum E, TEMPLATED_POLYMERISATION_LAWS §9.18; FR-38's step 5).
+  - Each event reports only its own material, so the two still commute: replacement@1 the slots
+    whose rows it swapped, and a pool reporter's event the amounts it emptied from its pools
+    (`removed [P]`, in label_pools order).
+  - The owner records by label the amount before the event times its shares just before it,
+    cumulative from t = 0: `label_removed_fmol` [labelled species, label, cell] for the rows,
+    `label_pool_removed_fmol` [pool reporter, label, pool] for the pools. An emptied pool entry
+    takes the base label. replacement@1's report no longer touches the pools.
+  - Both records are zero-size unless a replacing event is declared (D148 case 2), and restart
+    carries them as state. Beside a replacing event, a pool reporter whose event takes no labels
+    is refused (fail-closed).
+  - The gene unit's `removed` report comes with FR-38's step 4 branch.
 - **Producer identity across generations:** a source's schedule may switch its label at the event
   time.
 - **Still refused:** replacement@2 (its event does not report). So is a template that would make a
