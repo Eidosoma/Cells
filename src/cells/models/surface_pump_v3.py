@@ -700,6 +700,7 @@ def presence_gated(p, structure, *, xp=jnp):
 
 
 KindRates = kind_registry.KindRates  # The kind contract's (§8.5 of docs/CORE_SEAMS_DESIGN.md).
+LabelView = kind_registry.LabelView  # The kind contract's too: FR-42's end of a step.
 OWN_SINK = kind_registry.qualified(MODEL_ID)  # @3 as the sink of its channel field (B1's door).
 # FR-34's record of the effective availability: recorded only where the door routes into @3's
 # channels (routes_into_channels), the one place it differs from channel_availability.
@@ -1965,20 +1966,6 @@ def stage_junction_gates(
 # a stage-weighted one-way amount negative where a flux falls by more than 59% within a step.
 
 FR42_REFUSAL = "FR-42 (labelled rows inside @3's step)"
-
-
-class LabelView(NamedTuple):
-    """FR-42: one end of a step as the labelled rows' one-way terms read it, @3's own
-    (one_way_fluxes) and a kind's (its label_transfers hook takes the start and the end): the
-    structure's state; its kinds' stage read (the state itself without kinds); its node potentials
-    (V, cells then outside nodes); and the control the stage's rates see there (the routing
-    door's where routes are declared, else the step's). On the Euler IMEX the end carries only its
-    state, for the booked nets: its fluxes are the start's, weighted."""
-
-    state: object
-    read: object = None
-    potentials: object = None
-    control: object = None
 
 
 def label_errors(p, rows, *, structure=None, solver=None):

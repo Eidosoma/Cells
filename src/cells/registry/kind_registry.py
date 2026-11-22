@@ -58,6 +58,7 @@ __all__ = (
     "KindRates",
     "KindView",
     "KindRegistry",
+    "LabelView",
     "PartitionRole",
     "Schedule",
     "active",
@@ -477,6 +478,20 @@ class KindRates(NamedTuple):
     membrane_flux: object = None
     valid: object = True
     stored_pJ_s: object = None
+
+
+class LabelView(NamedTuple):
+    """FR-42: one end of a step as the labelled rows' one-way terms read it: @3's own
+    (models/surface_pump_v3.one_way_fluxes) and a kind's (its label_transfers hook takes the start
+    and the end). It holds the structure's state; its kinds' stage read (the state itself without
+    kinds); its node potentials (V, cells then outside nodes); and the control the stage's rates
+    see there (the routing door's where routes are declared, else the step's). On the Euler IMEX
+    the end carries only its state, for the booked nets: its fluxes are the start's, weighted."""
+
+    state: object
+    read: object = None
+    potentials: object = None
+    control: object = None
 
 
 class KindView(NamedTuple):
