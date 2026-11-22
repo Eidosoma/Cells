@@ -569,7 +569,9 @@ Common to both:
 
   At a birth beyond σ_max, a shear event's `pool_after` (the diagnostic record's state after the
   event, above) reads differently in the two modes. Its `slots_after` reads the same in both: the
-  living slots after the event, so a birth-lysed daughter is never in it.
+  living slots after the event, so a birth-lysed daughter is never in it. So that section's
+  sentence, "the state once its attempts and their births beyond σ_max ... are applied", holds for
+  both of a population's fields, and in a single lineage for `slots_after` only.
   - In a population, `pool_after` is the pool after the whole event. Each birth lysis has freed
     its slot (a later attempt's daughter in the same event can take it) and returned its molecules:
     its `lyses` entry, `at_birth` true, matched to the daughter by `key`. The pool before those
