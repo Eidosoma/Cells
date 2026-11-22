@@ -9072,3 +9072,37 @@ priority". The evidence branch was merged unedited at 81916b5d.
   - the FR-40 desk note goes to the gene regulation references' author, from the sheet's laws;
   - FR-41's search waits for a free agent.
 
+## D287: Vesicle pores (FR-31, FR-39): the user's four decisions, and the lead's rulings
+
+2026-11-22, about 14:25 UTC. The design note is docs/VESICLE_PORES_DESIGN.md (64e9f8e7).
+
+**The user chose:**
+1. **Phase A (FR-31, rupture under a held tension): go, with code-blind references.**
+   - A laws sheet, tagged before code, written from primary papers read directly.
+   - The engine build, and references in parallel.
+2. **A blind test, plus a search.**
+   - The six points already read (Karal and Yamazaki, 25 °C and 32 °C at 7.0, 7.5 and 8.0 mN/m) are fit
+     rows, reported as a disclosed comparison with no pass or fail. Both classical forms fitted on the end
+     tensions over-predict the read middle, by 14% to 28%.
+   - The held-out set is the figure's other temperature columns. The sheet states how the prefactor and
+     line tension depend on temperature, with sources, before extraction. The tolerance (the stated
+     standard errors at their small n, plus a declared digitising error) is fixed before a sealed
+     extractor reads them.
+   - The Lean lane has already viewed the figure, and that is disclosed. No Cells agent opens the
+     Karal PDF before then.
+   - A metadata-only search for another tension series runs alongside.
+   - Given the in-sample misfit, a blind failure is likely. It would be recorded, and the law would ship
+     as development status.
+3. **A held tension becomes a general, declared boundary** (cells.tension_hold@1). It is a work source,
+   with a named payer and a work column, as shear has (U2, D199).
+4. **OL6 comes right after Phase A,** with the same owner, then FR-39's pore episodes.
+
+**The lead's rulings, with the advisor (the user may overrule):**
+- **The law:** line-tension nucleation only. Opening forms an event pair under it, so there is no second
+  exemption, and the exponential form is not built into the engine.
+- **The hazard is per membrane area.** A per-vesicle rate belongs to a preparation.
+- **One line tension per composition,** shared by opening and the open pore's dynamics.
+- **Exact-event worlds** get rupture only. Transient pores need OL6.
+- **sigma_max stays** as registered in every world. In worlds with pores it carries its own cause label
+  and count.
+
