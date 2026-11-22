@@ -22,7 +22,7 @@ Files: `src/cells/definitions/cell_replacement_spec.py` (definition),
 
 ## The operation, `scheduled_cell_replacement@1`
 
-An event names a time (an exact multiple of dt inside the horizon), a slot (a cell),
+An event names a time (on the clock's grid inside the horizon; D283), a slot (a cell),
 a declared template and a new carrier ID. At the start of the step leaving the event
 time:
 

@@ -808,6 +808,13 @@ def q6_signature(name, context):
 # ------------------------------------------------------------------ Q6_refusals
 
 # The checks a refusal may name, by a phrase of their messages (one label per check).
+# Disclosed repair of this judged tool (22 November 2026): "replaced slot" took FR-26's words
+# (a305c4c2 narrowed the check and reworded it, so the old phrase named nothing), and "schedule
+# grid" D283 stage 2's; their labels are unchanged. The class view_conflict_bath_schedule is
+# retired (the lead's ruling, 22 November 2026): FR-23 (D244, e7a54539, 20 November, after the
+# judged run at 1b838d75) admits site occupancy beside the bath schedule through door S's scoped
+# reads, so its view conflict no longer exists and its planted world is refused only by the bath
+# schedule's step rule, another check. Q6's registered results stay reproducible at their tags.
 CHECKS = (
     ("ligand charged", "neutral species only"),
     ("ligand undeclared", "does not declare"),
@@ -830,7 +837,7 @@ CHECKS = (
     ("internalisation owner", "only an outward-facing patch"),
     ("compartment", "internalises from compartment"),
     ("destination", "destination is one of"),
-    ("replaced slot", "replaces; version 1 has no occupant rule"),
+    ("replaced slot", "replaces; its occupants need"),
     ("RK4", "refuses RK4"),
     ("schedule missing", "every route needs a schedule; missing"),
     ("schedule start", "starts at time 0"),
@@ -946,13 +953,6 @@ def _compartment():
                                                      owner="cell_0")])
 
 
-def _bath_schedule():
-    from validation.tissue import bath_schedule_fixtures as bf
-
-    return bf.with_bath_schedule(af.build(_w()), ["bath"], bf.CARGO,
-                                 [(0.1, ["bath"], {"cargo": 1e-9})])
-
-
 def _threshold(w):
     """W with its trace at exactly 1e-6 K_d (q1_fast's K_d is 1e-3 mM) and every node at or
     above it."""
@@ -1031,7 +1031,6 @@ def refusal_classes():
         "unknown_key": ("definition", pop(colour="red"), same),
         "duplicate_population": ("definition", lambda: _engine_edit(W, lambda raw: _site_block(
             raw)["populations"].append(copy.deepcopy(_first_pop(raw)))), same),
-        "view_conflict_bath_schedule": ("definition", _bath_schedule, same),
         "view_conflict_water": ("structure", ("ideal_osmosis_linear_compliance_water@1",
                                               so.LAW_ID),
                                 ("scheduled_species_exchange@1", so.LAW_ID)),
@@ -1056,7 +1055,7 @@ EXPECTED_CHECKS = {
     "schedule_horizon": "schedule horizon", "schedule_negative": "schedule negative",
     "schedule_static_parameter": "schedule route", "unknown_key": "unknown key",
     "duplicate_population": "duplicate population",
-    "view_conflict_bath_schedule": "view conflict", "view_conflict_water": "view conflict",
+    "view_conflict_water": "view conflict",
     "stationary_analysis": "stationary analysis", "stage_condition": None,
 }
 
