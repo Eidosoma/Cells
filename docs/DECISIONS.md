@@ -9106,3 +9106,23 @@ priority". The evidence branch was merged unedited at 81916b5d.
 - **sigma_max stays** as registered in every world. In worlds with pores it carries its own cause label
   and count.
 
+## D288: The user's decisions on FR-38's labels, FR-41, MT-1b and the optional re-tests
+
+2026-11-22, about 14:43 UTC.
+1. **FR-38's labels are rebuilt under FR-42.**
+   - FR-38's engine core lands as development once its gate passes, with its class rows (K > 1) marked
+     not neutral.
+   - FR-42's share-based labels replace those rows, and FR-38's registered comparison waits for that.
+   - Erratum B (81fc3ebb) retracts erratum A's "physical" for a neutral label's departure and marks
+     route 1 provisional. Route 2, the counters through cohort.py, stands: it reads the run's own
+     per-molecule loss.
+2. **FR-41: Akui et al. 2021, with Ahumada et al. 2015 downloaded by the user.**
+   - Akui is a sealed extraction and a disclosed, weak test. Its licence (CC BY-NC-ND) allows analysis
+     only, so only bare cited numbers are used, never committed material. Its volumes come from other
+     experiments.
+   - Ahumada is evaluated when it arrives.
+3. **MT-1b: the outer-membrane face that reads the IMS closure is built, and the judged run keeps 180 mV**
+   with a larger CPU budget rather than scaled activities. The mitochondria lane resumes with a free
+   agent (D277).
+4. **No optional re-tests now.** FR-25's A1 stays inconclusive (D282) and OL5 stays at 9 of 10 (D285).
+
