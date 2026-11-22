@@ -1266,6 +1266,14 @@ file is sealed: held_out.json sha256 48f061c074414b6ea8b1a88e64964110fa05edc5abf
 - So the extractor reports both "undetermined" conditions (rules 1 and 4). The checker confirms them
   before Moreno et al. 2002 is opened, and no fitter sees these files.
 
+**The Moreno et al. 2002 extraction (22 November 2026, 00:09 UTC), under section 13.1.** The held-out
+file is sealed: held_out.json sha256 f98f88124ee8e88c3adbd76fb08a08c62c788da98b371aba8fcf29f23bdd0a9d; fit.json f46e8f37b928eec8c0c680f7065037756e6fd6c877cb5f53e5965f623ab907c5.
+- For wild-type homotypic Cx43, Table 2 prints both decay time constants at only three magnitudes (60,
+  80 and 100 mV), in N2a cells and in oocytes. The smallest and largest stay in training, so at most one
+  magnitude can be held out.
+- That is rule 4's "undetermined" condition, resting on a printed table rather than on legibility. The
+  checker confirms it before Snipas et al. 2020 is opened.
+
 ## FR-31 — Vesicle rupture during a steady tension hold
 
 - **The request (the same review; D248).** The assembly model tests rupture only at a state change.

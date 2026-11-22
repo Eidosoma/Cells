@@ -313,7 +313,9 @@
   "/mnt/workspaces/Cells/wash-unchanged-20261121/tiers/measured-86018b1a/measured.json",
   "/mnt/workspaces/Cells/core-pass-kinds-20261118/gate-737ec83c/tiers-lead/measured.json",
   "/mnt/workspaces/Cells/core-pass-at3-20261118/cfix/measure-4cc30449/measure/measured.json",
-  "/mnt/workspaces/Cells/fr37-uneven-draw-20261121/gate-ee0b8106/tiers/measure/measured.json"
+  "/mnt/workspaces/Cells/fr37-uneven-draw-20261121/gate-ee0b8106/tiers/measure/measured.json",
+  "/mnt/workspaces/Cells/core-pass-kinds-20261118/gate-77419476/tiers/measure/measured.json",
+  "/mnt/workspaces/Cells/fr28-node-sites-20261121/gate-9917e3d9/tiers/measure/measured.json"
  ],
  "measured_provenance": [
   {
@@ -2650,6 +2652,22 @@
    "root": "/mnt/workspaces/Cells/fr37-uneven-draw-20261121/snapshot-ee0b8106",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-21T22:38:22+00:00"
+  },
+  {
+   "git_revision": "77419476e30078f9ba4cf1bcd3a97264e59a3dfc",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/core-pass-kinds-20261118/snapshot-77419476",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-21T21:53:09+00:00"
+  },
+  {
+   "git_revision": "9917e3d9567993e1019c8caafa89f8653ee6ea9b",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/fr28-node-sites-20261121/snapshot-9917e3d9",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-21T22:52:26+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -5232,10 +5250,10 @@
    },
    {
     "file": "tests/unit/test_rapid_binding_kernel.py",
-    "seconds": 9.59,
+    "seconds": 10.34,
     "exit_code": 0,
     "counts": {
-     "passed": 85
+     "passed": 88
     }
    },
    {
@@ -5416,10 +5434,10 @@
    },
    {
     "file": "tests/unit/test_site_occupancy.py",
-    "seconds": 5.98,
+    "seconds": 6.18,
     "exit_code": 0,
     "counts": {
-     "passed": 67
+     "passed": 69
     }
    },
    {
@@ -7172,10 +7190,10 @@
    },
    {
     "file": "tests/unit/test_rapid_binding_world.py",
-    "seconds": 21.21,
+    "seconds": 24.28,
     "exit_code": 0,
     "counts": {
-     "passed": 22
+     "passed": 23
     }
    },
    {
@@ -7672,10 +7690,10 @@
    },
    {
     "file": "tests/unit/test_wash_schedule_runs.py",
-    "seconds": 35.69,
+    "seconds": 76.17,
     "exit_code": 0,
     "counts": {
-     "passed": 3
+     "passed": 4
     }
    },
    {

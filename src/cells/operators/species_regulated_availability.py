@@ -1089,6 +1089,13 @@ def _site_layout(spec, declaration, routes):
                 )
             k = ids.index(coupling.source)
             home, cell = entities[k][1], cells[routes[i]["cell"]]
+            if home is None:  # FR-28 (D268): a node's own sites belong to no cell.
+                raise ConfigError(
+                    f"{LAW_ID_V2}: coupling {coupling.id} reads site population "
+                    f"{coupling.source}, a node's own sites, which belong to no cell; a site "
+                    "source is read in its element's cell, and no @2 target lives at a node "
+                    "(version 1)"
+                )
             if home != cell:
                 raise ConfigError(
                     f"{LAW_ID_V2}: coupling {coupling.id} reads site population {coupling.source}, "

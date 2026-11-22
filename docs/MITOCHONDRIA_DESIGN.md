@@ -7,7 +7,10 @@ the same day; design only, no engine code. Written on branch
 D172's landing. It gives the user options with recommendations, and asks the D138 question (§9.1).
 
 **Addendum, 17 November 2026 (D210):** individual mitochondria, static and dynamic, with options, in
-the final section.
+the section after the sources.
+
+**21 November 2026:** the synthase stall check's rule, registered before its data are read (D269),
+and MT-1b's registration as a draft, not registered, in the last two sections.
 
 **The request.** The user, 16 November 2026, through the lead: "Lets start Mitochandria design now".
 The lead's brief asks for a design note with options, not code. The user's standing rule for a new
@@ -1383,3 +1386,331 @@ creation 1.5–2; relations as interval edges 1–1.5; references and a protocol
 - **External, 17 November 2026:** one web search and two pages through a page-reading tool, for Twig
   et al. 2008 and Katajisto et al. 2015. Numbers only; searches used titles and scientific terms.
   **Cited, not read:** Twig et al. 2006.
+
+## The synthase stall check: the registered rule (21 November 2026)
+
+**Status: a rule registered before the per-entry data are read (D269; the lead's go, 21 November
+2026).** Docs only, on branch `mito-stall-rule-mt1b-draft` from main fff62169; the lead's tag
+registers it. Nothing under `src/` or `validation/` changes, and the driver is built only once the
+data are in. **S** marks this section's own derivation or arithmetic.
+
+**The question.** Petersen et al. (2012) measured the stall of purified yeast mitochondrial ATP
+synthase in proteoliposomes at an imposed 60 mV, at ten loads Q = [ATP]/([ADP][Pi]) (Table S4,
+corrected for uncoupled hydrolysis; doi:10.1073/pnas.1202799109). The Lean lane's comparison
+(`lean/claims/mitochondrial-stall-heat.md`; `yeast_synthase` in
+`lean/checks/mitochondrial_stall.py`) sets the offset at the single entry at Q = 5.79. The endpoint
+shift then matches the law's three protons (0.745 pH unit predicted, 0.74 observed), and four
+intermediate entries fall 0.068–0.078 pH unit below the line, outside the added interpolation
+limits. D269: free activities and interpolation errors are checked before any change of
+stoichiometry; the paper's coupling is 2.9 ± 0.2 H⁺/ATP.
+
+**What was seen before this rule, disclosed.** A desk probe on the Lean lane's manifest
+(`lean/checks/data/mitochondrial_stall.json` at main 587ba787, last changed in f0783ad9: each
+entry's Q, stall and interpolation limit), on total quotients with a constant conversion to the free
+quotient. Evidence:
+`/mnt/workspaces/Cells/mito-resume-20261121/stall-stage-a/` (`refit.py`, `curvature.py` and
+`rule_status.py`, each with its JSON).
+- **The anchor decides the count.** With each of the ten entries as the single anchor (n = 3, added
+  limits), between 0 and 5 of the other nine fall outside. The 0.068–0.078 figures belong to the
+  anchor at Q = 5.79, which lies 0.046 pH unit above the weighted line.
+- **Both fits include 3.**
+  - Unweighted, through all ten: n = 2.87 ± 0.18, which reproduces the paper's 2.9 ± 0.2.
+  - Weighted by the interpolation limits, read as standard deviations: n = 3.01 ± 0.14, or ± 0.21
+    scaled by χ².
+  - 8/3 is about one standard error from the unweighted fit, so these data do not select n.
+- **The quadratic: a description made after the fact.**
+  - With n = 3 and one fitted offset, the residuals' signs run + − + − − − − + + + with Q ascending,
+    and χ² is 19.0 on 9 degrees of freedom.
+  - A quadratic term in log₁₀ Q brings χ² to 3.1, with c = 0.078 ± 0.020 per decade² (weighted).
+    Unweighted it is 0.078 ± 0.019; leaving out any one entry gives 0.069 to 0.096.
+  - Ten points cannot separate curvature from an offset between measurement series.
+  - A constant n changes only the slope, so no change of stoichiometry removes this pattern.
+- **On the manifest as it stands, both criteria below fail:** (i) by 0.051 pH unit (the entry at
+  Q = 0.095 against the second at Q = 1.87), and (ii) with c at 4.0 standard errors.
+
+**What free activities mean for the engine (the laws appendix's §0 and §2; S).**
+- The law's x reads ATP⁴⁻, ADP³⁻, HPO₄²⁻ and h_N at N, h_P at P, and Δψ = φ_P − φ_N. Its binding
+  set has Mg²⁺ on ATP and ADP and H⁺ on phosphate, nothing more.
+- At stall, with ΔpH = pH_N − pH_P and n_A = 3:
+  ΔpH_stall = log₁₀(Q_b)/n_A + pH_N/n_A − Δψ/(RT ln 10/F) + ΔG°_F/(n_A RT ln 10),
+  where Q_b = Q (1 + [Mg²⁺]_N/K_MgADP)(1 + h_N/k_dH)/(1 + [Mg²⁺]_N/K_MgATP) and Q is the total
+  quotient.
+- In one medium the conversion, pH_N and Δψ are common to every entry, so they cancel from the
+  shifts, which follow log₁₀ Q/3 alone. Free activities move the shifts only through what differs
+  between entries:
+  - catalytic-side pH: 0.1–0.2 pH unit gives 0.03–0.07 at a fixed Q_b;
+  - free Mg²⁺, through Q_b;
+  - Δψ: 1.8–4.1 mV gives 0.03–0.07, at 59.16 mV per pH unit (298.15 K).
+
+**The mapping.** N is the external medium, where F₁ sits; P is the lumen. ΔpH is the paper's
+pH_out − pH_in. Δψ is the imposed diffusion potential, lumen positive.
+
+**The data, requested** through the lead's brief, from the Lean lane through the user. Numbers with
+their citation only (D186); no file is committed.
+- Per entry: total ATP, ADP, phosphate and Mg²⁺; K⁺ on both sides (for Δψ); catalytic-side pH;
+  temperature; the measurement series.
+- Per entry, where reported: the rate points and the uncoupled-hydrolysis correction behind its
+  interpolated stall.
+- The paper's definition of its quotient. If it is not the total concentrations in the assay medium,
+  the reader records the definition, and the driver converts it to totals before the engine's
+  closure.
+- A quantity not reported per entry takes the paper's stated common value; one not stated at all is
+  declared and listed. The Lean lane owns the manifest, and the driver reads it at a named commit
+  with `git show`.
+
+**The computation, built only after the data are in.**
+- **Engine models:** `proton_coupled_atp_synthesis_cycle@1` on `cells.transporter@1` in
+  `resolved_pump_tissue@3`, with `rapid_binding@1` and the `beard2005@2` potential set. The engine
+  only evaluates, through the cycle kind's numpy path at a world's start, as the Lean driver does;
+  no step is taken. The engine revision is recorded at run time.
+- **Per entry,** the predicted stall is the ΔpH at which the engine's x is zero at that entry's
+  conditions, found by bracketing; d_i is the observed stall minus the predicted one.
+- **Temperature:** the registry rows' 298.15 K (D236). The assay's temperature is recorded; with a
+  common Δψ it moves only the offset.
+- **Arm 1:** Table S4's corrected stalls.
+- **Arm 2, reported, not judged, and only if every entry's rate points are reported:** each stall
+  re-derived as the zero of the law's own J(ΔpH) shape at that entry's conditions, fitted to its
+  rate points with the zero's position and one amplitude free, after the paper's
+  uncoupled-hydrolysis correction applied the same way to every entry. The paper's σ_i are kept. If
+  the correction cannot be reproduced from what is reported, arm 2 is not run, and that is
+  recorded.
+
+**The rule.**
+- **n stays 3.** The law's counts fix it (n_A = 3, a declared limit until affine counts exist, a
+  held item), and the check fits no n. A free-slope fit is reported, not judged.
+- **Only the load dependence is judged.** One common offset is free. It carries ΔG°_F at 298.15 K,
+  the assay's temperature and Δψ's calibration, and is reported, not judged.
+- **(i) Every residual within its own limit:** some common offset b gives |d_i − b| ≤ σ_i for every
+  entry, that is max(d_i − σ_i) ≤ min(d_i + σ_i), with σ_i the entry's reported interpolation limit.
+- **(ii) The quadratic below two standard errors:** the weighted fit d_i = b + c (L_i − L̄)², with
+  L_i = 3 × (entry i's predicted stall), the load in decades of the effective quotient (in one
+  medium, log₁₀ Q_i plus a constant), weights 1/σ_i², and c's standard error from the normal
+  equations without χ² scaling: |c| < 2 SE(c). The unweighted fit is reported.
+- **The verdict reads arm 1 only.**
+  - The item closes as explained if (i) or (ii) holds ("explained by the per-entry conditions").
+  - Otherwise it is recorded as an unexplained feature of the reconstituted yeast assay: a
+    validation target, not a defect of the law.
+  - Arm 2's (i) and (ii) are reported beside it, as information on the interpolation.
+  - Either way the engine is unchanged. The verdict and its numbers go to the Lean lane's claim
+    through the lead.
+
+**What it does not claim.**
+- The cardiac model's n_A: the law's 3 is Beard's Table 1 value, and these are measurements on the
+  yeast enzyme. They test the 1/n load dependence.
+- The absolute stall: the offset is not judged.
+- Binding outside the engine's set (Mg²⁺ on phosphate, K⁺ on the nucleotides, ionic strength). It
+  matters only if phosphate or salts differed between entries, and is then listed as a limit.
+- Differences of Δψ between entries that the tables do not report.
+
+## MT-1b's registration: DRAFT (21 November 2026)
+
+**Status: DRAFT, NOT REGISTERED AND NOT TAGGED.** Desk only, on the same branch. It registers
+nothing. It sets out the user's choices for the morning, with recommendations. The registration is
+written after those choices and C1's checks, and tagged by the lead before any engine organelle
+output exists. **S** marks this draft's own reading, arithmetic or proposal.
+
+**What MT-1b is** (CORE_LAWS_ROADMAP §2.4; §5.2 and §7 here; D235 item 2). Cells' own organelle in
+a medium, on host P. It runs §7's respiratory-control protocol at declared activities on today's
+solver, judged against an independent integration of the same declared equations. It reproduces no
+published model; that is MT-2. Roadmap estimate: 3–5 agent-days, plus CPU.
+
+**Engine models** (the roadmap's list, brought to main fff62169):
+- `resolved_pump_composite@1` over `resolved_pump_tissue@3`, with @3's IMEX ARS(2,2,2), with or
+  without N2 (`imex_ars222_implicit_conductances@1`, landed 03fe5119: the membranes' and junctions'
+  slope conductances; the cycles stay explicit);
+- `cells.transporter@1` hosting head 1's and head 2's nine laws, with its availability schedules
+  (`transporter_controls`);
+- `cells.passive_routes@1` with `proton_constant_field_leak@1`: the leak, and the uncoupler on its
+  own patch;
+- `cells.rapid_proton_buffer@1` declaring `rapid_binding@1` at N and P (H⁺ and Mg²⁺ on ATP, ADP, Pi
+  and a buffer), on `beard2005@2`;
+- the outer membrane as a face (W2);
+- `scheduled_bath_composition@1` for the ADP step;
+- `step_doubled_energy@1` (X2) in every registered run.
+
+### The worlds
+
+**The start: head 2's host-P test world** (`host_p_world` in `tests/unit/test_mito_cycle_laws.py`).
+It has `beard2005@2`'s rows at 298.15 K, the nine laws (seven across the inner membrane, the supply
+at N and the kinase at P), the closure at the matrix and the IMS (H⁺ and Mg²⁺ on ADP, ATP, Pi and
+each node's buffer), and the supply's pair held at its declared ratio.
+
+**What it lacks for MT-1b (S):**
+- **Its layout is FR-4's.** The matrix cell also faces the held bath through a plasma patch, and
+  the IMS, FR-4's lumen, has no outer membrane. Host P (§1.1) needs the matrix facing the IMS only,
+  and a face from the IMS to the held buffer.
+- **Its capacities** are 10⁻¹⁵ fmol/s, chosen to keep two steps bounded, not declared activities.
+- **It has no leak and no O₂ supply.** Its volumes and capacitance are FR-4's.
+- **Parameters, proposed:** Table 1 (2006) as head 2's populations carry it, with W1's activities.
+  The set is declared, not the source's, so MT-1b reproduces no published model.
+
+**W1, the declared activities.**
+- P1′ (CORE_SEAMS_STEP0 §9.2): at the source's activity, the kind's bound alone caps the step at
+  0.8 µs at 150 mV and 27 ns at 180 mV. That is 370 to 11,000 CPU-hours for 300 s.
+- Branch E in hours to tens of hours needs J₁ at 1–10 mM/s, 30 to 9,000 times lower.
+- So MT-1b declares its activities in that range, from C1's step study. It applies to every fast
+  law, not only the synthase: the exchange, the carriers, the kinase and the outer membrane.
+
+**W2, the outer membrane: the user's decision.** Option 1 is an engine build not yet decided (D277).
+- ATP, ADP, AMP and Pi must cross it. In the IMS they are closure rows, which `check_closure_rows`
+  refuses at a face (CORE_SEAMS_STEP0 §9.2; still so at fff62169).
+- The @3 owner's options:
+  1. **a face that reads the closure:** 2–4 days, an engine build;
+  2. **outer-membrane uniports:** 4–6 days, which needs a new host;
+  3. **no closure in the IMS:** no engine cost, but a declared departure. The IMS's nucleotides and
+     Pi are unbound, and the laws read totals at P;
+  4. **host C,** which D235 did not choose.
+- **Recommended (S): option 1.** The kinase and the exchange read free forms at P, and the base-form
+  laws read the closure.
+- **The face law is ruled:** `logmean_electrodiffusion@1`, provided the lane shows it reduces to
+  the source's p·Δc at zero potential difference; its runs report the potential across the outer
+  membrane (the roadmap's D234 rulings). The appendix's §8 declares a Fick flux for each form, which
+  sums to Eq. 13's totals exactly, and leaves the IMS's free H⁺, K⁺ and Mg²⁺ to the world. So W2's
+  open point is the closure-row path alone, with that declaration.
+- **Its step cap:** about 18 µs at the source's p_Pi and 70 µs at p_A, lowered with W1's
+  permeabilities.
+- A face carrying a driven gradient is untested for order (CORE_SEAMS_STEP0 §9.4 B). C1 tests it.
+
+**W3, the protocol's worlds:**
+- (a) the main world, with a held buffer;
+- (b) the uncoupled control;
+- (c) the exchange off, whose effect must exceed the declared budget (§7's controls);
+- (d) a finite-buffer variant for O₂ exhaustion.
+
+State 4 uses a declared ADP trace, bounded against the judged effect (the roadmap's ruling, D233's
+pattern). How O₂ is held at N, as the source holds it at 26 µM, is checked in C1: a held row of
+complex IV's population if its law admits one, or permeation from the buffer.
+
+### The protocol
+
+§7's steps run on the step grid. Each mechanism below was read from main's code and docstrings
+(steps 2 and 4 from comments only); none has been parsed in a world. C1 checks each before
+registration.
+1. **The ADP step,** 0 → 1.3 mM → 0 in the buffer, by `scheduled_bath_composition@1` on the held
+   buffer. Its composition with declared kinds is checked first (§7).
+2. **The uncoupler step.** A second inner-membrane patch carries only the leak, at the uncoupled
+   permeability. Its availability steps from 0 to 1: a passive route's opening is its patch's
+   availability, at most 1.
+3. **The inhibitor step.** Complex IV's availability is set to 0 by its `transporter_controls`
+   schedule. The reversed synthase and exchange then spend the buffer's ATP.
+4. **O₂ exhaustion** in W3(d): O₂ falls through the declared P50 range.
+
+Each plateau runs until its drift over a declared final window is below a tenth of its band.
+
+**Readouts:** ΔΨ; both sides' pH; NADH's and cytochrome c's reduced fractions; O₂ flux; ATP export;
+each cycle's rate; every ledger.
+
+### The reference: options for the user
+
+Its author must not have read the engine. Who writes it is fixed with the choice.
+
+**R1: MR1's frame-B arm at declared activities.** This is MR1-MT2's arm (tag
+`mito-mr1-mt2-registration-2026-11-20`), with W1's activities as overrides.
+- **For:**
+  - It exists and is code-blind, and its arm matches the appendix term by term.
+  - Its steady states come from a 50-digit Newton solve: integration agrees within 4.7 × 10⁻¹³
+    relative.
+  - It already runs the ADP step in the rapid Mg²⁺ limit (`reproduce.adp_step_time_course`, X_MgA
+    at 10⁹ or more; the ADP_STEP row of `references/proposal.json`).
+- **Against:**
+  - It has no uncoupler, inhibitor or O₂-exhaustion step.
+  - Its IMS free Mg²⁺ is held at the buffer's. The appendix leaves that to the world (its §8), so
+    MT-1b's world must declare the same rule, or R1 must take the world's.
+  - Its outer membrane is Eq. 13 on totals, which the appendix's per-form fluxes sum to exactly. The
+    engine's face reduces to them only at zero outer-membrane potential, which its runs report
+    (W2).
+  - It is also MT-2's reference, so one error would pass both milestones.
+- **The 6.78 limit.** `xf1_scaling` (on `mito-references`) finds that X_F1 can be lowered up to 6.78
+  times while frame B's fit to the published curves stays within 10% of its own (3.36 against
+  3.10).
+  - Within the limit, MT-1b stays close to MT-2's behaviour.
+  - But only X_F1 is scaled, and the explicit step stays near the source's. Scaled from P1′'s
+    bounds, if the synthase alone sets them (S): about 5 µs at 150 mV and 0.2 µs at 180 mV, so
+    about 60 and 1,500 CPU-hours for 300 s at P1′'s runner rate.
+  - Past the limit (30 times and more, W1), the fit departs: 4.81 at 30 times, 17.3 at 300 times.
+    MT-1b does not judge that fit.
+
+**R2: a fresh code-blind integration of MT-1b's declared equations** (§5.2 and the roadmap §2.4 as
+written).
+- **For:**
+  - It is the plan's own reference.
+  - It covers every protocol step and transient, with the engine's closure at N and P as declared.
+  - It is independent of MR1, so MT-1b and MT-2 keep separate references. R1 and R2 can then check
+    each other at the plateaus where their equations coincide.
+- **Against:**
+  - It needs a new agent seat, and the lanes are at the cap.
+  - It takes about 2–4 agent-days (S).
+  - It waits for W1 and W2, since it integrates the same declared equations.
+
+**R3: MR1 extended by its own agent,** with a rapid-binding switch (the IMS free Mg²⁺ solved), the
+other three steps and W1's activities.
+- **For:** it reuses MR1's verified accounting (frame B, Eq. 22, its invariants and plants), and it
+  is cheaper than R2: about 1–2 agent-days (S).
+- **Against:**
+  - It is coupled to MT-2 in the same way as R1.
+  - It adds new code in `references/` beside a registered arm.
+  - Its author's brief included this note (the roadmap's D234 rulings). That only touched Eq. 11's
+    finding, which is now settled.
+
+**Recommended (S): R2 judged, with R1's plateaus at the same activities reported beside it.** That
+checks both references, as D193 judges R1 against R2 for MT-2. If no seat frees, R3.
+
+### Tolerances, plants and checks
+
+**Tolerances** follow D193's rule: from the reference's convergence or a stated physical scale,
+never from the engine.
+- **Plateaus:** MR1-MT2's bands. ΔΨ ±0.05 mV; pH ±0.0005; NADH's and cytochrome c's fractions
+  ±0.0005; O₂ flux and the matrix's K⁺, Pi and ATP ±0.1%. Their basis is a third of the published
+  figures' 1-px resolution.
+  - An IMEX step's fixed point should be the equations' steady state (S, asserted, not shown here).
+    The registered run's dt/2 repeat covers the plateaus too, and the drift rule covers the
+    approach.
+- **Transients:** a stated physical scale per readout, a tenth of its excursion in the step, fixed
+  at registration from the reference alone. MR1's ADP_STEP row proposed ΔΨ 0.2 mV and NADH 0.002.
+  - The dt is chosen in C1 so that the engine's Richardson estimate at it is below a third of each
+    band. The registered run repeats at dt/2 as a check, plateaus included.
+- **Ledgers:** material, charge and energy close at every step. The matrix's Mg²⁺ total and charge
+  invariant drift less than 10⁻⁹ relative (MR1's INV row).
+- **Thermodynamics:** every process's dissipation is non-negative at every plateau (MR1's THERMO
+  row).
+
+**Plants.** Each must miss by at least 3 bands on a judged row, the references' margin.
+- **P-a:** the exchange's shares at 0.35 and 0.70, not summing to one (MR1's P4: a zero offset of
+  0.05 FΔΨ).
+- **P-b:** a 1% coefficient change, the exchange's activity × 1.01. MR1's P5 found 4 to 9 bands on
+  its grid.
+- **P-c:** the 2005 k_O₂ (MR1's P2), caught on O₂ exhaustion.
+- P-a and P-b are rerun in the reference at W1's activities before registration. A plant that misses
+  by fewer than 3 bands is replaced, before any engine output.
+
+**C1: the checks before registration.** These are development runs, not judged, on light CPUs.
+None takes a test lane ahead of FR and core.
+- The worlds parse with W2's option, and every population is admitted.
+- Steps 1–4's mechanisms compose with the declared kinds.
+- **A dt study at W1's activities,** on plain ARS and on N2: second order, with no stage, validity
+  or ledger refusal. It includes the face's order under a driven gradient, the untested case above.
+- **X2's count check at the worlds' flows.**
+  - X2's count threshold is 1000 eps M, and M grows with a run's flows (CORE_SEAMS_STEP0 §9.2,
+    §9.4).
+  - The binding closure's floor, which blocked P1′'s reading (b), was removed at its source
+    (4802dc9a: R's median |e| fell from 9 × 10⁻¹³ to 1.4 × 10⁻¹⁷ pJ).
+  - C1 records, per world at the chosen dt: the counted steps; the median order ratio (near 4 at
+    second order); the held count against its cap; and the largest integration error against its
+    cap.
+  - If X2 would refuse, MT-1b is not registered, and the finding goes to the user.
+- **The registered runs' cost,** from C1's step rate (S: P1′'s runner did about 10⁶ steps per
+  CPU-hour). Runs of 10 minutes or more go detached.
+
+### Held, and the morning's choices
+
+**MT-2's engine run is held for the user (D277).**
+- At Beard's synthase activity it needs the cycles' and faces' slope conductances in N2's operator
+  (D235 item 2).
+- N2 landed with membranes and junctions only. That build is not designed.
+- MR2, the published model run out of process, can start now that MR1 is registered (the roadmap's
+  §2.4).
+
+**The user's choices in the morning:**
+- W2's outer membrane: option 1, 3, or another;
+- the reference: R1, R2 or R3;
+- W1's activity range, declared for MT-1b.
