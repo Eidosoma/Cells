@@ -674,7 +674,7 @@ REFUSED = {
     ),
     "a switch off the grid": (
         lambda: labelled_s(face_free(), arrivals=[("S", [(0.0, "base"), (1.5e-3, "new")])]),
-        r"exact multiple of dt",
+        r"a label switch must be on the clock's grid \(within 4 ulps of k \* dt\) \(S at 0.0015\)",
     ),
     "a switch to an undeclared label": (
         lambda: labelled_s(face_free(), arrivals=[("S", [(0.0, "other")])]),

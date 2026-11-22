@@ -17,12 +17,13 @@ of their own with their own potentials, which D300 retired.
 
 Schedule `label_arrivals`: [{species, schedule: [{time, label}, ...]}], at most one per species: the
 label that each step's arrivals join, piecewise constant from its first change (the base before it
-and for a species with no schedule). A change is an exact multiple of dt inside the horizon, and
-changes increase strictly. A window [start, end) for label L is a change to L at start and one
-back at end. Each step's label is the one in force at the step's start, resolved by step index
-with execution/grid.py's same_instant (the predicate D283 names for label switches), so arrivals
-during the step that starts at a window's start join it and during the step that starts at its
-end do not. A label reused later keeps its older material, which survives with the rest.
+and for a species with no schedule). A change is a point of the clock's grid (D283's on_grid:
+k * dt, or within its same-instant tolerance of it) inside the horizon, and changes increase
+strictly. A window [start, end) for label L is a change to L at start and one back at end. Each
+step's label is the one in force at the step's start, resolved by step index with D283's
+same_instant (numerics/clock_instants.py, the predicate it names for label switches), so arrivals
+during the step that starts at a window's start join it and during the step that starts at its end
+do not. A label reused later keeps its older material, which survives with the rest.
 
 State, present only in a composition that declares this operator: `label_share` [labelled species,
 label, cell] and `label_outside_share` [..., outside node], each row's shares at each node (padded
@@ -68,9 +69,9 @@ import numpy as np
 from cells.definitions import pump_composite_spec as composite_spec
 from cells.definitions.spec_values import identifier
 from cells.definitions.specs import ConfigError, _fields
-from cells.execution.grid import same_instant
 from cells.models import inner_laws
 from cells.numerics import label_shares
+from cells.numerics.clock_instants import ON_THE_GRID, on_grid, same_instant  # D283's predicate.
 from cells.numerics.species_sums import entity_sum
 from cells.operators.contract import Operator, reports_labels, takes_labels
 from cells.registry import species_registry
@@ -232,10 +233,13 @@ def parse_arrivals(raw, base, declaration):
             if type(time) not in (int, float) or not np.isfinite(time):
                 raise ConfigError(f"{SCHEDULE_KEY} requires a finite time")
             time = float(time)
-            if time != round(time / dt) * dt or not 0.0 <= time <= end:
+            if on_grid(time, dt) is None:
                 raise ConfigError(
-                    f"{LAW_ID}: a label switch is an exact multiple of dt (k * dt) inside the "
-                    f"horizon ({species.id} at {time!r})"
+                    f"{LAW_ID}: a label switch must be {ON_THE_GRID} ({species.id} at {time!r})"
+                )
+            if not 0.0 <= time <= end:
+                raise ConfigError(
+                    f"{LAW_ID}: a label switch lies outside the horizon ({species.id} at {time!r})"
                 )
             if label not in species.labels:
                 raise ConfigError(f"{LAW_ID}: {species.id} has no label {label!r}")
@@ -256,8 +260,8 @@ def arrival_index(changes, times):
     """[time] the position, among a species' labels, of the label in force at each step start of
     `times` (increasing), given its changes ((time, position), ...) in increasing time and the
     base (0) before the first. A change applies from the first step that starts at it or after it,
-    a start at the same instant (grid.same_instant) included: a window's start is its first step,
-    and its end the first step it does not hold."""
+    a start at the same instant (clock_instants.same_instant) included: a window's start is its
+    first step, and its end the first step it does not hold."""
     times = np.asarray(times, dtype=np.float64)
     index = np.zeros(times.shape, dtype=np.int64)
     for at, position in changes:
