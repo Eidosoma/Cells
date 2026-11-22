@@ -140,7 +140,12 @@ def test_the_exact_cache_keeps_the_reverse_factor():
     """@2 on the stress world from (A, B) = (0, 1): A's join carries 1 + 1/1 = 2, and its reverse
     from (1, 1) carries 1 + ((2^54 + 1) - 2^54)/1 = 2, so the first event's heat is the exchange
     law's and the ledger closes. Planted: the cache's low word dropped, which makes that reverse
-    factor 1 (the catalyst lost, as in @1's single word): the ledger fails to close."""
+    factor 1 (the catalyst lost, as in @1's single word): the ledger fails to close. A rate that
+    is not finite is a fault, refused, never reported as a stall (the Lean proofs project's
+    finding of 22 November 2026); a zero total with finite rates is a stall."""
+    with pytest.raises(FloatingPointError, match="not a stall"):
+        runner._refuse_a_fault_as_a_stall({"rates": np.array([np.nan, 1.0]), "events": 0})
+    runner._refuse_a_fault_as_a_stall({"rates": np.zeros(4), "events": 3})
     the_world = world(count=2, size=8, beta=STRESS, transfer_constant=1.0, supply=1.0,
                       leave_rate=[1.0, 1 / 32])  # fmt: skip
     the_world["founder"] = [0, 1]
