@@ -65,7 +65,7 @@ CHAIN, ROWS = "tx", worlds.R1_LABELLED  # Transcription; its fate rows R and R_s
 G0, G1 = f"{worlds.CELL}-g0-{CHAIN}", f"{worlds.CELL}-g1-{CHAIN}"  # (cell, generation, chain).
 COHORT = f"{G0}-cohort"  # g0's releases in [0, W): the window crossed with the producer.
 LABELS = ("base", COHORT, G0, G1)  # The base first (the newcomer template's material).
-EPS = np.finfo(float).eps
+EPS = float(np.finfo(float).eps)
 
 
 def chase_world(*, labelled=True):
@@ -244,6 +244,7 @@ def check(out):
         "5 g0's identity": abs(ids["g0"]["residual_fmol"]) <= ids["g0"]["bound_fmol"],
         "5 g1's identity": abs(ids["g1"]["residual_fmol"]) <= ids["g1"]["bound_fmol"],
     }
+    verdicts = {name: bool(ok) for name, ok in verdicts.items()}
     return dict(
         kind="cells.gene_regulation.replace_restart@1",
         world=dict(
