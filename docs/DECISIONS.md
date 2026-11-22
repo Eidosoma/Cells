@@ -8960,3 +8960,15 @@ recommendations.
 - **FR-25's final triple** (registered at 97c6359c) runs all three steps from one frozen snapshot of the
   tagged main, rather than mixing in earlier runs (the lead's call on the GR agent's question).
 
+## D282: FR-25's final verdict: inconclusive under the registered rule, 30 of 32 pass, none failed
+
+2026-11-22, about 11:26 UTC. The registered sequence (D270, D271, D280) is complete.
+- The rule, the table, the first retry and the final retry were each tagged before their comparison.
+- The final retry made pol T=100 ready, and it passes at both instances.
+- A1 stays inconclusive at both instances. C_tx_3's observed order moved 3.94, then 3.69, then 1.49.
+- 30 of 32 worlds-by-set pass, and none failed. Under the rule FR-25 is inconclusive, and the rule
+  makes this final.
+- A1 carries the request's induction and decay under the regulator switch, so the request's central
+  claim is not judged. The passing worlds cover the chains' amounts, extents and heats against G2.
+- Any further test of A1 would be a new registration after these results, and is the user's decision.
+
