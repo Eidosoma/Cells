@@ -71,6 +71,7 @@ from cells.operators.contract import (
     part_stages,
     reads_of,
     reports_labels,
+    takes_labels,
 )
 from cells.registry import kind_registry, species_registry
 
@@ -1278,8 +1279,23 @@ class Composition:
         # FR-42 (D289): the label owner and the split parts that report their one-way moves to it
         # (static: without an owner no half-step call changes).
         self.label_owner = next((op for op in operators if op.LABEL_OWNER), None)
-        self.label_reporters = frozenset(
-            op for op in self.splits if self.label_owner is not None and reports_labels(op)
+        self.label_reporters_in_order = tuple(
+            op for op in operators if self.label_owner is not None and reports_labels(op)
+        )
+        self.label_reporters = frozenset(self.label_reporters_in_order)
+        # D296: each source reporter's and pool reporter's position among them (static), the
+        # label owner's axes (species_labels.reporters).
+        self.label_sources = {
+            op: k
+            for k, op in enumerate(o for o in self.label_reporters_in_order if o.LABEL_SOURCES)
+        }
+        self.label_pools = {
+            op: k for k, op in enumerate(o for o in self.label_reporters_in_order if o.LABEL_POOLS)
+        }
+        # FR-42's stage 2: the inner step reports its one-way transfers where it takes labels=
+        # (static: by the inner implementation's signature; none without an owner).
+        self.inner_reports_labels = self.label_owner is not None and takes_labels(
+            self.inner.checked_step
         )
         self.coupled = any(op.SPLIT and op.RK4 == "coupled" for op in operators) or (
             self.process_operator is not None
@@ -1633,9 +1649,17 @@ class Composition:
             checked, current = self._control_factor_checks(current, p, xp=xp)
             valid = _and(valid, checked)
         inputs = self.inner.barrier(inputs, xp=xp)
-        if process is None:
+        # FR-42's stage 2 (static): an IMEX inner step that reports gives the label owner its
+        # transfers; RK4's (an empty tableau) is refused beside a labelled in-step mover.
+        if self.inner_reports_labels and p.imex_explicit.shape[0]:
+            before = current
+            current, ok, applied, heat = self._labelled_inner(
+                current, inputs, dt, process, control, p, xp=xp
+            )
+        elif process is None:
             moved, ok = self.inner.checked_step(inputs[0], dt, inputs[1], inputs[2], p.active)
             moved, ok = self.inner.barrier((moved, ok), xp=xp)
+            current = current._replace(**moved._asdict())
         else:
             moved, ok, (applied, heat) = self.inner.imex_step(
                 inputs[0],
@@ -1646,7 +1670,7 @@ class Composition:
                 membrane_process=process.process(control, p),
             )
             moved, ok, applied, heat = self.inner.barrier((moved, ok, applied, heat), xp=xp)
-        current = current._replace(**moved._asdict())
+            current = current._replace(**moved._asdict())
         last = None
         for op in reversed(splits):
             current, ok_half = self._half_step(op, current, h, control, p, xp=xp)
@@ -1666,6 +1690,33 @@ class Composition:
         return state._replace(**selected), valid
 
     imex_step = split_step
+
+    def _labelled_inner(self, current, inputs, dt, process, control, p, *, xp):
+        """(state, valid, applied, heat): the inner step with labels (FR-42's stage 2), its
+        transfers advancing the label owner's shares; applied and heat as the process gives them
+        (None without one)."""
+        labels = self.label_owner.rows(p)
+        applied = heat = None
+        if process is None:
+            moved, ok, transfers = self.inner.checked_step(
+                inputs[0], dt, inputs[1], inputs[2], p.active, labels=labels
+            )
+            moved, ok, transfers = self.inner.barrier((moved, ok, transfers), xp=xp)
+        else:
+            moved, ok, (applied, heat), transfers = self.inner.imex_step(
+                inputs[0],
+                dt,
+                inputs[1],
+                inputs[2],
+                xp=xp,
+                membrane_process=process.process(control, p),
+                labels=labels,
+            )
+            moved, ok, applied, heat, transfers = self.inner.barrier(
+                (moved, ok, applied, heat, transfers), xp=xp
+            )
+        end = current._replace(**moved._asdict())
+        return self.label_owner.advance_inner(current, end, transfers, p, xp=xp), ok, applied, heat
 
     def _inner_keyword(self, op):
         """{"inner": the inner implementation object} for an operator that declares USES_INNER,
@@ -1691,9 +1742,10 @@ class Composition:
             moves where op reports to one (FR-42, D289; otherwise today's call)."""
             if not labelled:
                 return op.half_step(at, h, control, p, xp=xp, **keywords)
-            labels = self.label_owner.labels(control, p)
+            labels = self.label_owner.labels(control, p, self.label_sources.get(op))
             new, ok, moves = op.half_step(at, h, control, p, xp=xp, labels=labels, **keywords)
-            return self.label_owner.advance(at, new, moves, p, xp=xp), ok
+            pool = self.label_pools.get(op)
+            return self.label_owner.advance(at, new, moves, p, xp=xp, pool=pool), ok
 
         routes = self.rate_routes.get(op)
         if routes and op.LAW_ID in self.midpoint:  # Static: a self-moved route's target.

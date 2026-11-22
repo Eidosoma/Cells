@@ -271,3 +271,72 @@ unlabelled run's, bit for bit, in each test row.
   - the closure is within 1e-16.
 - **The reactions' rule:** a species on both sides of one route counts its net, so a catalytic
   copy is never relabelled. Stage 3's owners inherit that rule.
+
+## 8. Stage 2 (transport), and pools and sources (D296): the label owner's side
+
+**The inner step's report** is the @3 owner's side, to the rule the lead confirmed.
+- Faces and routes report their one-way amounts over the step:
+  - for an uncharged face, c a and c b;
+  - for a constant-field route, the GHK terms.
+- Under ARS222 and N2, those amounts are the trapezoid of the start and end fluxes, plus the O(dt³)
+  gap to the booked net, added to the side whose sign it has. So forward − backward equals the
+  booked net at rounding, both are ≥ 0, and both are second order.
+- Under the Euler IMEX, the stage terms are combined directly. RK4 refuses labels.
+
+**The transfer update** (numerics/label_shares.advance_transfers).
+- Each node is advanced by stage 1's kernel. Its arrivals carry their sources' shares: first at the
+  step's start (predictor), then at the mean of start and predicted end (corrector).
+- **Order:** second order. Measured against the exact linear exchange of three nodes, the error
+  falls 3.9 to 4.0 times per halving.
+- **Domain:** non-negative, and the shares sum to 1.
+- **Exactness:** exact, at rounding, where no source's shares change.
+
+**The composite** (models/pump_composite.py `_labelled_inner`). Where the inner step takes
+`labels=` (static, by its signature) and the tableau is IMEX, the inner step returns its transfers,
+and the owner advances the shares from them. Without a label owner, or before @3's side lands,
+today's call is unchanged.
+
+**What stage 2 admits.** Where the inner step reports, it admits:
+- an uncharged face;
+- a membrane route and a junction route (constant_field@1).
+
+Refused, each naming why:
+- a charged face, which has no one-way form;
+- channels, pumps and operators' in-step processes;
+- kinds, which wait for their hook after @3's side;
+- RK4 beside any followed mover.
+
+**Pools and sources** (D296, operators/contract.py).
+- **Reporter flags:** a reporter flags `LABEL_POOLS` or `LABEL_SOURCES` (static). It declares its
+  pools, `label_pools`, entries of its own state holding a labelled species' material (the
+  release hold), and its sources, `label_sources` (its chains).
+- **Sources:** the owner's schedule may name a source. Each step a source reporter receives its
+  sources' arrival labels, `source_arrival`. A source without its own switch takes its species'
+  window.
+- **Pools:** a pool reporter returns a pools part:
+  - its pools' start and end amounts;
+  - new material into them by label;
+  - their losses;
+  - `carried`, material that keeps its labels between sites, row sites (j N + k) and its pool
+    entries.
+- **The owner holds** `label_pool_share` [pool reporter, label, pool entry]. It advances a pool
+  reporter's rows and pools together as sites, through the same predictor-corrector. A site with
+  no move keeps its shares bit for bit, and the closure diagnostic covers both.
+- **Limits:** labels may number up to 64 per species (producer × window). The domain's allowance is
+  128 ulps.
+- **Rows** (NumPy, no world):
+  - a release carries the hold's shares;
+  - a completion enters the hold at its label;
+  - with no release the row keeps its shares bit for bit;
+  - each source takes its own schedule, or its species' window.
+
+**Replacement** (approved, D284 and D296; the lead's leave for a minimal hunk in the replacement
+operator's file) comes after this.
+- Its event reports the departing occupant's material leaving with its shares, and the newcomer's
+  arriving at a newcomer label.
+- Until then, labels are refused beside replacement.
+
+**What moves.** Worlds without the owner: nothing. Labelled worlds: the owner gains
+`label_pool_share` and the control `label_source_arrival`, both empty where no reporter declares
+pools or sources. So a stage-1 labelled checkpoint (development; none registered) does not
+resume across this change.

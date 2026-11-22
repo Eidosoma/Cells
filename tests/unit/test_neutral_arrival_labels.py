@@ -85,7 +85,12 @@ def same_physics(labelled, plain):
         assert bits(getattr(labelled.observations, name)) == bits(value), name
     assert labelled.diagnostics == plain.diagnostics
     extra = set(type(labelled.history)._fields) - set(type(plain.history)._fields)
-    assert extra == {"label_share", "label_outside_share", "label_closure_relative"}
+    assert extra == {
+        "label_share",
+        "label_outside_share",
+        "label_closure_relative",
+        "label_pool_share",
+    }
 
 
 # ------------------------------------------------------------------ the share update alone
@@ -181,6 +186,162 @@ def test_the_split_is_second_order_when_the_rates_vary():
     assert np.allclose(errors[:-1] / errors[1:], 8.0, rtol=0.05)
     leading = (a0 * k1 - a1 * k0) * 0.0125**3 / 12
     assert abs(errors[-1] / leading - 1) < 0.02
+
+
+def test_transport_carries_the_sources_shares_at_second_order():
+    """FR-42's stage 2 kernel (label_shares.advance_transfers), against the exact linear exchange
+    of three nodes in a chain with a loss at the last (the matrix exponential): each step's one-way
+    amounts are the exact integrals, and node 0's initial material is followed as a label. The
+    error falls 4-fold per halving (3.9 to 4.0 here); shares sum to 1; equal shares everywhere are
+    kept at rounding."""
+    from scipy.linalg import expm
+
+    rates = np.array([[0.0, 2.0, 0.0], [0.7, 0.0, 1.3], [0.0, 0.4, 0.0]])  # [source, destination].
+    generator = rates.T - np.diag(rates.sum(axis=1) + [0.0, 0.0, 0.5])
+    n0 = np.array([1.0, 0.3, 0.6])
+    nodes, weights = np.polynomial.legendre.leggauss(30)
+    edges = [(a, b) for a in range(3) for b in range(3) if rates[a, b]]
+
+    def run_to(end, h, shares):
+        n = n0
+        for _ in range(int(round(end / h))):
+            t = 0.5 * h * (nodes + 1)
+            held = (
+                0.5
+                * h
+                * sum(w * (expm(generator * ti) @ n) for w, ti in zip(weights, t, strict=True))
+            )
+            transfers = tuple(
+                (np.array([[rates[a, b] * held[a]]]), np.array([a]), np.array([b]))
+                for a, b in edges
+            )
+            n1 = expm(generator * h) @ n
+            shares = ls.advance_transfers(
+                shares,
+                n[None],
+                n1[None],
+                transfers,
+                np.ones((1, 2), bool),
+                np.zeros(3, bool),
+                xp=np,
+            )
+            n = n1
+        return shares, n
+
+    exact = expm(generator * 2.0) @ (n0 * [1.0, 0.0, 0.0])
+    errors = []
+    for h in (0.2, 0.1, 0.05, 0.025):
+        shares, n = run_to(2.0, h, np.array([[[0.0, 1.0, 1.0], [1.0, 0.0, 0.0]]]))
+        assert np.all(np.abs(shares.sum(axis=1) - 1) <= 4 * EPS)
+        errors.append(np.max(np.abs(shares[0, 1] * n - exact)))
+    errors = np.asarray(errors)
+    assert np.allclose(errors[:-1] / errors[1:], 4.0, rtol=0.05)
+    same = np.array([[[0.25, 0.25, 0.25], [0.75, 0.75, 0.75]]])
+    assert np.max(np.abs(run_to(0.4, 0.1, same)[0] - same)) <= 4 * EPS
+
+
+# ------------------------------------------------------------------ pools and sources (D296)
+
+
+POOL_STATE = (
+    "amount_increment",
+    "extracellular_amount_increment",
+    "label_share",
+    "label_outside_share",
+    "label_closure_relative",
+    "label_pool_share",
+)
+
+
+def pool_half_step(made, released, degraded, *, pool0=0.5, pool_shares=(0.4, 0.6)):
+    """One labelled row R (base, cohort) at one cell and a reporter's one pool entry (a hold) of
+    R in it: made enters the pool at the cohort label (a completion marked at completion), released
+    is carried from the pool to the row, degraded leaves the row. (start, end, moves, layout)."""
+    from collections import namedtuple
+    from types import SimpleNamespace
+
+    state = namedtuple("State", POOL_STATE)(
+        np.array([[0.0]]),
+        np.zeros((1, 0)),
+        np.array([[[1.0], [0.0]]]),
+        np.zeros((1, 2, 0)),
+        np.zeros(1),
+        np.array([[[pool_shares[0]], [pool_shares[1]]]]),
+    )
+    layout = SimpleNamespace(
+        label_rows=np.array([0]),
+        label_present=np.ones((1, 2), bool),
+        amount_reference=np.array([[1.0]]),
+        extracellular_amount_reference=np.zeros((1, 0)),
+        active=np.array([True]),
+        outside_active=np.zeros(0, bool),
+        reservoir=np.zeros(0, bool),
+        label_pool_rows=np.array([[0]]),
+        label_pool_present=np.ones((1, 2, 1), bool),
+    )
+    end = state._replace(amount_increment=np.array([[released - degraded]]))
+    pools = (
+        np.array([pool0]),
+        np.array([pool0 + made - released]),
+        np.array([[0.0, made]]),
+        np.zeros(1),
+        (np.array([released]), np.array([1]), np.array([0])),  # Pool site M N + 0 = 1 to row 0.
+    )
+    moves = (np.array([[degraded]]), np.zeros((1, 2, 1)), (), pools)
+    return state, end, moves, layout
+
+
+def test_a_pool_carries_its_shares_and_takes_its_new_material_by_label():
+    """D296's owner update, in NumPy (no world): a release carries the hold's shares into the
+    row; a completion enters the hold at its label; the rows and the pool close at rounding. With
+    no release the row keeps its shares bit for bit; with no completion and no loss the row's new
+    shares are its old material and the hold's, mixed (u = 0: exact)."""
+    from cells.operators import species_labels as labels
+
+    start, end, moves, layout = pool_half_step(made=0.2, released=0.0, degraded=0.1)
+    new = labels.advance(start, end, moves, layout, xp=np, pool=0)
+    assert bits(new.label_share) == bits(start.label_share)
+    expected = np.array([0.5 * 0.4, 0.5 * 0.6 + 0.2]) / 0.7  # The pool lost nothing: u = 0.
+    assert np.allclose(new.label_pool_share[0, :, 0], expected, rtol=1e-15, atol=0)
+    start, end, moves, layout = pool_half_step(made=0.0, released=0.3, degraded=0.0)
+    new = labels.advance(start, end, moves, layout, xp=np, pool=0)
+    expected = np.array([1.0 + 0.3 * 0.4, 0.3 * 0.6]) / 1.3  # The pool's shares are unchanged.
+    assert np.allclose(new.label_share[0, :, 0], expected, rtol=1e-15, atol=0)
+    assert bits(new.label_pool_share) == bits(start.label_pool_share)  # Nothing arrived there.
+    start, end, moves, layout = pool_half_step(made=0.2, released=0.3, degraded=0.1)
+    new = labels.advance(start, end, moves, layout, xp=np, pool=0)
+    for shares in (new.label_share, new.label_pool_share):
+        assert np.all(shares >= 0) and np.abs(shares.sum(axis=1) - 1).max() <= 4 * EPS
+    assert new.label_closure_relative[0] <= 4 * EPS
+
+
+def test_each_source_takes_its_own_schedule_or_its_species(monkeypatch):
+    """D296's per-source arrivals (species_labels.source_controls): a source with a schedule of
+    its own takes it, by step index; another takes its species' window; a source of an unlabelled
+    species, and padding, take none."""
+    from types import SimpleNamespace
+
+    from cells.operators import species_labels as labels
+
+    reporter = SimpleNamespace(
+        label_sources=lambda d: (
+            ("chain_a", "R", "cell_0"),
+            ("chain_b", "R", "cell_0"),
+            ("q", "Q", None),
+        )
+    )
+    monkeypatch.setattr(labels, "reporters", lambda spec, flag: ((reporter, None),))
+    declaration = labels.Labels(LAW, (labels.Labelled("R", ("base", "w", "chain_a:w"), ()),))
+    schedule = (
+        (("R", ""), ((0.0, "base"), (0.2, "w"))),
+        (("R", "chain_a"), ((0.0, "base"), (0.2, "chain_a:w"))),
+    )
+    times = np.arange(5) * 0.1
+    out = labels.source_controls(None, declaration, schedule, times)
+    assert out.shape == (5, 1, 3, 3)
+    assert out[:, 0, 0].argmax(axis=1).tolist() == [0, 0, 2, 2, 2]  # Its own: from 0.2 on.
+    assert out[:, 0, 1].argmax(axis=1).tolist() == [0, 0, 1, 1, 1]  # Its species' window.
+    assert not out[:, 0, 2].any()  # Q is not labelled.
 
 
 # ------------------------------------------------------------------ one compiled world
