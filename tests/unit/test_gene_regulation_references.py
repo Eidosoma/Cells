@@ -9,9 +9,10 @@ with validation/gene_regulation/references/checks.py and without the code that w
 - the window rates J̄, §5.2's closed forms at every set and their gaps, §5.1's scalar formulas
   and steady states, the R-noise band and its verdicts, the plants' margins and summaries;
 - that a planted error in each kind of stored number is caught;
-- amendment R (§9): the release references' R1 (complete, §9.7's identities recomputed from the
-  stored outputs, the requester's limit and the cohort recomputed, the precision summaries), and a
-  planted error in each kind of stored number caught.
+- amendment R (§9 and its R2 addendum): the release references' R1 and R2 (complete, §9.7's
+  identities recomputed from the stored outputs, the requester's limit and the cohort recomputed,
+  the precision summaries, the development check's shape), and a planted error in each kind of
+  stored number caught.
 
 About 1 s; nothing here imports the engine (the last test imports run.py, hence scipy). Regeneration is
 `python -m validation.gene_regulation.references.run` (an hour or more, detached).
@@ -136,7 +137,7 @@ def test_receipt_records_untracked_executed_source(tmp_path, monkeypatch):
     assert "?? untracked_exec.py" in src["status"]
 
 
-# ---- amendment R (§9, tag gr1-sheet-fr38-2026-11-22): the release references, R1 -------------
+# ---- amendment R (§9 at gr1-sheet-fr38-2026-11-22, its R2 addendum at gr1-sheet-fr38-r2-...) --
 @pytest.fixture(scope="module")
 def rel():
     return checks.load_release()
@@ -152,7 +153,7 @@ RELEASE_PLANTED = [
      checks.check_release_identities),
     ("a release counter", (*CASE, "readouts", "int_Qf_s1", 3), _times(1 + 1e-9),
      checks.check_release_identities),
-    ("a fate loss", ("release_r1", "cases", 3, "readouts", "int_D_Rd1", 4), _times(1 + 1e-6),
+    ("a fate loss", ("release_r1", "cases", 3, "readouts", "int_D_R", 4), _times(1 + 1e-6),
      checks.check_release_identities),
     ("a held machine", (*CASE, "readouts", "F_pol", 1), _times(1 + 1e-9),
      checks.check_release_identities),
@@ -165,6 +166,12 @@ RELEASE_PLANTED = [
      _times(1 + 1e-6), checks.check_release_cohort),
     ("a convergence summary", ("release_r1", "cases", 5, "summary", "convergence_worst"),
      _plus(1e-8), checks.check_release_summaries),
+    ("R2's short-lived row", ("release_r2", "runs", 0, "readouts", "n_R_s", 120),
+     _times(1 + 1e-9), checks.check_release_r2),
+    ("R2's second translation chain", ("release_r2", "runs", 1, "readouts", "int_Q_tl_s", 200),
+     _times(1 + 1e-9), checks.check_release_r2),
+    ("R2's development check", ("release_r2", "development_check", 2, "distance_to_A1", "P"),
+     _times(1e-3), checks.check_release_r2),
 ]
 
 

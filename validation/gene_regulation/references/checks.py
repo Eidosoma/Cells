@@ -396,13 +396,16 @@ def check_all(data: dict) -> None:
 
 
 # ---- amendment R (§9): the release references, R1 -------------------------------------------
-RELEASE_FILES = ("release_inputs", "release_r1")
+RELEASE_FILES = ("release_inputs", "release_r1", "release_r2")
 R1_OUT = [0.0, 1800.0, 3600.0, 7200.0, 14400.0]
 R1_P = (0.0, 0.25, 0.75, 1.0)
 R1_READOUTS = ("F_pol", "E_tx", "C_sum_tx", "W_tx", "hold_tx", "int_Q_tx", "int_Qf_d1",
-               "int_Qf_s1", "n_Rd1", "n_Rs1", "int_D_Rd1", "int_D_Rs1", "n_M", "G_minus_G0",
-               "H_rel_d", "H_rel_s", "H_deg_Fd", "H_deg_Fs", "dG_rel_Rd1", "dG_rel_Rs1",
-               "dG_deg_Rd1", "dG_deg_Rs1", "CO_d", "CO_s", "LR_d", "LR_s", "DL_d", "DL_s")
+               "int_Qf_s1", "n_R", "n_R_s", "int_D_R", "int_D_R_s", "n_M", "G_minus_G0",
+               "H_rel_d", "H_rel_s", "H_deg_R", "H_deg_R_s", "dG_rel_R", "dG_rel_R_s",
+               "dG_deg_R", "dG_deg_R_s", "CO_d", "CO_s", "LR_d", "LR_s", "DL_d", "DL_s")
+R2_READOUTS = R1_READOUTS + ("F_rib", "E_tl", "E_tl_s", "W_tl", "W_tl_s", "int_Q_tl",
+                             "int_Q_tl_s", "n_P", "int_D_P", "n_X", "u", "H_tx", "H_tl",
+                             "H_deg_P", "H_rc", "int_J_C")
 
 
 def load_release(folder: Path = INTERFACE) -> dict:
@@ -428,7 +431,9 @@ def _r1_limit(p: float, t: float) -> dict:
 
 def check_release_complete(rel: dict) -> None:
     inp, r1 = rel["release_inputs"], rel["release_r1"]
-    require(inp["sheet"]["tag"] == "gr1-sheet-fr38-2026-11-22", "release: the sheet's tag")
+    require(inp["sheet"]["tag"] == "gr1-sheet-fr38-2026-11-22"
+            and inp["sheet_addendum"]["tag"] == "gr1-sheet-fr38-r2-2026-11-22",
+            "release: the sheet's tags")
     cases = r1["cases"]
     keys = [(c["kind"], c["decl"]["machine"], c["decl"]["p"] if c["kind"] == "case" else None)
             for c in cases]
@@ -440,7 +445,7 @@ def check_release_complete(rel: dict) -> None:
         for k in R1_READOUTS:
             require(k in c["readouts"] and len(c["readouts"][k]) == 5,
                     f"release R1 {c['kind']} {c['decl']['machine']}: readout {k}")
-        for k in ("hold", "per_producer", "fate_Rd1", "fate_Rs1"):
+        for k in ("hold", "per_producer", "fate_R", "fate_R_s"):
             require(len(c["per_output_residuals"][k]) == 5, f"release R1: residual {k}")
     require(len(r1["limit_checks"]) == 8 and len(r1["cohorts"]) == 8, "release R1: checks")
     require(set(r1["requester_figures"]) >= {"held", "released", "released_durable",
@@ -455,20 +460,20 @@ def check_release_identities(rel: dict, tol: float = 1e-12) -> None:
     for c in rel["release_r1"]["cases"]:
         r = {k: np.asarray(v, float) for k, v in c["readouts"].items()}
         H, A = r["hold_tx"], r["int_Q_tx"]
-        scale = H[0] + A[-1] or r["n_Rd1"][0] + r["n_Rs1"][0]  # the blank: the fates' trace
+        scale = H[0] + A[-1] or r["n_R"][0] + r["n_R_s"][0]  # the blank: the fates' trace
         hold = H[0] + A - H - r["int_Qf_d1"] - r["int_Qf_s1"]
-        per = H[0] + A - (H + (r["n_Rd1"] - r["n_Rd1"][0]) + (r["n_Rs1"] - r["n_Rs1"][0])
-                          + r["int_D_Rd1"] + r["int_D_Rs1"])
+        per = H[0] + A - (H + (r["n_R"] - r["n_R"][0]) + (r["n_R_s"] - r["n_R_s"][0])
+                          + r["int_D_R"] + r["int_D_R_s"])
         label = f"release R1 {c['kind']} p={c['decl']['p']} {c['decl']['machine']}"
         for name, res in (("hold", hold), ("per_producer", per)):
             lv = np.max(np.abs(res)) / scale
             require(lv <= tol, f"{label}: {name} identity at {lv:.3e}")
             require(np.allclose(res, c["per_output_residuals"][name], rtol=0, atol=tol * scale),
                     f"{label}: stored {name} residual")
-        for f in ("d", "s"):
-            n, Q, D = r[f"n_R{f}1"], r[f"int_Qf_{f}1"], r[f"int_D_R{f}1"]
+        for f, row in (("d", "R"), ("s", "R_s")):
+            n, Q, D = r[f"n_{row}"], r[f"int_Qf_{f}1"], r[f"int_D_{row}"]
             lv = np.max(np.abs(n - n[0] - Q + D)) / (n[0] + Q[-1])
-            require(lv <= tol, f"{label}: fate R{f}1 identity at {lv:.3e}")
+            require(lv <= tol, f"{label}: fate {row} identity at {lv:.3e}")
         if M is None:
             M = r["F_pol"][0] + r["E_tx"][0]
         lv = np.max(np.abs(r["F_pol"] + r["E_tx"] - M)) / M
@@ -545,9 +550,63 @@ def check_release_summaries(rel: dict) -> None:
                     f"{label}: the label run's precision")
 
 
+def check_release_r2(rel: dict, tol: float = 1e-12) -> None:
+    """R2 (the addendum): complete, §9.7's and §4.8's identities recomputed from the stored
+    trajectories, the precision summaries, and the development check's shape."""
+    r2 = rel["release_r2"]
+    require(sorted(r["machine"] for r in r2["runs"]) == ["held", "returned"], "R2: runs")
+    for run in r2["runs"]:
+        label = f"R2 {run['machine']}"
+        r = {k: np.asarray(v, float) for k, v in run["readouts"].items()}
+        require(len(r["t"]) == 361 and r["t"][-1] == 21600.0, f"{label}: A1's outputs")
+        for k in R2_READOUTS:
+            require(k in r and len(r[k]) == 361, f"{label}: readout {k}")
+        H, A = r["hold_tx"], r["int_Q_tx"]
+        scale = H[0] + A[-1]
+        checks_ = {
+            "hold": H[0] + A - H - r["int_Qf_d1"] - r["int_Qf_s1"],
+            "per_producer": H[0] + A - (H + (r["n_R"] - r["n_R"][0]) + (r["n_R_s"] - r["n_R_s"][0])
+                                        + r["int_D_R"] + r["int_D_R_s"])}
+        for name, res in checks_.items():
+            lv = np.max(np.abs(res)) / scale
+            require(lv <= tol, f"{label}: {name} identity at {lv:.3e}")
+            require(np.allclose(res, run["per_output_residuals"][name], rtol=0, atol=tol * scale),
+                    f"{label}: stored {name} residual")
+        for f, row in (("d", "R"), ("s", "R_s")):
+            n, Q, D = r[f"n_{row}"], r[f"int_Qf_{f}1"], r[f"int_D_{row}"]
+            require(np.max(np.abs(n - n[0] - Q + D)) / (n[0] + Q[-1]) <= tol,
+                    f"{label}: fate {row} identity")
+        n, Q, D = r["n_P"], r["int_Q_tl"] + r["int_Q_tl_s"], r["int_D_P"]
+        require(np.max(np.abs(n - n[0] - Q + D)) / (n[0] + Q[-1]) <= tol,
+                f"{label}: P's identity over both translation chains")
+        for q, E in (("pol", r["E_tx"]), ("rib", r["E_tl"] + r["E_tl_s"])):
+            M = r[f"F_{q}"][0] + E[0]
+            require(np.max(np.abs(r[f"F_{q}"] + E - M)) / M <= tol, f"{label}: machines {q}")
+        held = run["machine"] == "held"
+        require(np.allclose(r["E_tx"], r["C_sum_tx"] + (H if held else 0.0), rtol=1e-15,
+                            atol=0), f"{label}: §9.3's E_tx")
+        Hsum = sum(r[h] for h in ("H_tx", "H_tl", "H_deg_R", "H_deg_R_s", "H_deg_P", "H_rc",
+                                  "H_rel_d", "H_rel_s"))
+        require(np.max(np.abs(r["G_minus_G0"] + Hsum)) / Hsum[-1] <= tol, f"{label}: energy")
+        s = run["summary"]
+        require(s["identity_worst"] <= tol and s["convergence_worst"] <= 1e-9
+                and s["heat_min_increment_rel"] >= -1e-12, f"{label}: precision summary")
+        for k, v in s["domain"].items():
+            require(v <= (0.0 if k == "lna_F_max" else -1.0), f"{label}: domain {k} at {v}")
+    dev = r2["development_check"]
+    for machine in ("returned", "held"):
+        rows = sorted((d for d in dev if d["machine"] == machine), key=lambda d: -d["tau_s"])
+        require([d["tau_s"] for d in rows] == [60.0, 6.0, 0.6], f"R2 dev check {machine}: τ")
+        for item in ("RNA", "P"):
+            ds = [d["distance_to_A1"][item] for d in rows]
+            require(ds[0] > ds[1] > ds[2], f"R2 dev check {machine}: {item} does not approach "
+                                           f"A1 as τ shrinks: {ds}")
+
+
 def check_release_all(rel: dict) -> None:
     check_release_complete(rel)
     check_release_identities(rel)
     check_release_limit(rel)
     check_release_cohort(rel)
     check_release_summaries(rel)
+    check_release_r2(rel)

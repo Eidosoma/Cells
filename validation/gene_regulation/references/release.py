@@ -1,31 +1,33 @@
 """References for the sheet's amendment R: a release step with two fates (§9, FR-38).
 
-Source: docs/TEMPLATED_POLYMERISATION_LAWS.md at tag gr1-sheet-fr38-2026-11-22, §9 read against
-§0–§8. Nothing here reads engine code or the lane's tools.
+Source: docs/TEMPLATED_POLYMERISATION_LAWS.md at tag gr1-sheet-fr38-r2-2026-11-22 (§9, its
+addendum on R2's rows and translation included), read against §0–§8. Nothing here reads engine
+code or the lane's tools.
 
-The release worlds of §9.9 are built on this package's G2 model (model.py, unchanged). R1 is
-built here. R2 is held until the sheet's addendum on R2's translation is tagged. A
-`ReleaseSystem` adds to a G2 world:
+The release worlds of §9.9, R1 and R2, are built on this package's G2 model (model.py,
+unchanged). A `ReleaseSystem` adds to a G2 world:
 - §9.1's hold H_ρ (one class: the label is set at release);
-- the fate rows: R<f><k> for fate f in {d, s} and class k, each a row of L_R residues with the
-  product's standard potential and moiety weights;
+- the fate rows (§9.9's addendum): the durable fate is A1's row R, and the short-lived fate is a
+  row R_s with R's chemistry. Both start at the trace c_R. With two label classes (§9.8's route
+  1), class 2's rows are R_c2 and R_s_c2, also of R's chemistry;
 - §9.2's release, Q^f = π_f H/τ with π_d = p and π_s = 1 − p, into the class ψ(t) names;
-- the fates' losses, by §4.4's law with each row's own rate;
+- the fates' losses (§4.4's law): deg_R takes k_d and deg_R_s takes k_s;
 - §9.3's machine option: `returned` (back at completion) or `held` (back at release);
 - §9.5's energy (the hold's standard term in G; release and loss heats in their own classes);
 - with one class, three exact trackers that do not feed back:
   - CO_f, the release-window cohort under first-order, age-independent loss;
   - LR_f, the released molecules still present;
-  - DL_f = LR_f − (the requester's limit), integrated directly.
+  - DL_f, LR_f's distance from the first-order value with the same releases, integrated directly.
+    In R1 that value is the requester's limit.
 
-The fate rows are named with a leading "R" because they carry the product's chemistry (§9.1), so
-the G2 model's potentials, G and moiety weights apply to them unchanged.
+R2's translation (the addendum) is two chains, `tl` templated by R and `tl_s` by R_s, each with
+A1's parameters, sharing the ribosome pool and making P.
 """
 
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from decimal import Decimal, localcontext
 
 import numpy as np
@@ -34,6 +36,7 @@ from scipy.integrate import DOP853
 from . import model, sheet
 
 SHEET_TAG_R = "gr1-sheet-fr38-2026-11-22"
+SHEET_TAG_R2 = "gr1-sheet-fr38-r2-2026-11-22"
 LN2 = math.log(2.0)
 FPC = model.FMOL_PER_COPY
 RT = model.RT_KJ
@@ -49,8 +52,10 @@ WINDOW = (0.0, 3600.0)  # the release-window cohort's window, s
 T_SAMPLE = (3600.0, 7200.0)  # the cohort's samples, s
 P_R2 = 0.75
 GRID_R1 = 60.0  # R1's internal grid: every switch and output lies on it
-TRACE_mM = sheet.A1["c_R"]  # reading R2: "the inventory trace" is A1's product trace
+TRACE_mM = sheet.A1["c_R"]  # the addendum: "the inventory trace" is c_R = 1.0e-12 mM
 FATES = ("d", "s")
+FATE_ROW = {("d", 1): "R", ("s", 1): "R_s", ("d", 2): "R_c2", ("s", 2): "R_s_c2"}
+LOSS_HEAT = {"d": "H_deg_R", "s": "H_deg_R_s"}
 
 
 @dataclass(frozen=True)
@@ -89,13 +94,16 @@ class ReleaseDecl:
 
 
 def fate_rows(classes: int) -> list[str]:
-    return [f"R{f}{k}" for f in FATES for k in range(1, classes + 1)]
+    return [FATE_ROW[(f, k)] for k in range(1, classes + 1) for f in FATES]
 
 
 def _fates(decl: ReleaseDecl, V: float, L: int):
+    """The fate rows other than R (A1's own row, already at the trace), at the trace, and every
+    fate row's loss."""
     trace = float(Decimal(TRACE_mM)) * V
-    rows = {s: trace for s in fate_rows(decl.classes)}
-    degs = tuple(model.Degradation(s, decl.k_fate(s[1]), L, "M", "R_res") for s in rows)
+    rows = {s: trace for s in fate_rows(decl.classes) if s != "R"}
+    degs = tuple(model.Degradation(FATE_ROW[(f, k)], decl.k_fate(f), L, "M", "R_res")
+                 for k in range(1, decl.classes + 1) for f in FATES)
     return rows, degs
 
 
@@ -117,6 +125,23 @@ def r1_world(decl: ReleaseDecl, recharging: bool = False) -> model.World:
                        model._fl(a["V_C"]), lengths)
 
 
+def r2_world(decl: ReleaseDecl) -> model.World:
+    """§9.9's R2 with its addendum: A1 (§5.1) with transcription's chain declaring §9; deg_R at
+    k_d and deg_R_s at k_s; translation as two chains, `tl` on R and `tl_s` on R_s."""
+    if decl.classes != 1:
+        raise ValueError("R2 declares no label classes: whether class-2 rows are templates is "
+                         "not ruled")
+    w = model.a1_world()
+    fr, degs = _fates(decl, w.V, sheet.A1["L_R"])
+    rows0 = {**w.rows0, **fr}
+    tl = next(r for r in w.routes if r.kind == "tl")
+    routes = (*w.routes, replace(tl, name="tl_s", template_row="R_s"))
+    others = tuple(g for g in w.degradations if g.row != "R")  # deg_P stays; deg_R is a fate's
+    lengths = {**w.lengths, **{s: sheet.A1["L_R"] for s in fr}}
+    return replace(w, name="R2", rows0=rows0, routes=routes, degradations=degs + others,
+                   lengths=lengths)
+
+
 class ReleaseSystem(model.System):
     """A G2 world with one chain declaring §9's release step."""
 
@@ -125,6 +150,7 @@ class ReleaseSystem(model.System):
             raise ValueError(f"refused declaration: {decl}")  # §9.6
         self.decl = decl
         self.fates = fate_rows(decl.classes)
+        self.fate_of = {FATE_ROW[key]: key for key in FATE_ROW if FATE_ROW[key] in self.fates}
         self.trackers = decl.classes == 1
         self._psi = 1
         self._in_window = False
@@ -139,29 +165,29 @@ class ReleaseSystem(model.System):
         d = self.decl
         base_heat = [h for h in self.HEAT_CLASSES if h in self.heat_classes]
         names = [n for n in self.names if n not in base_heat]
-        names += [f"H:{d.route}"] + [f"RQ:{s[1:]}" for s in self.fates]
+        names += [f"H:{d.route}"] + [f"RQ:{f}{k}" for f, k in self.fate_of.values()]
         if self.trackers:
             names += [f"{x}:{f}" for x in ("CO", "LR", "DL") for f in FATES]
-        has_R_deg = any(g.row in ("R", "R1", "R2") for g in self.world.degradations)
         has_P_deg = any(g.row == "P" for g in self.world.degradations)
         keep = {"H_tx": True, "H_tl": any(r.kind == "tl" for r in self.routes),
-                "H_deg_R": has_R_deg, "H_deg_P": has_P_deg, "H_rc": self.world.recharging}
+                "H_deg_R": True, "H_deg_P": has_P_deg, "H_rc": self.world.recharging}
         self.heat_classes = [h for h in self.HEAT_CLASSES if keep[h]] + [
-            "H_rel_d", "H_rel_s", "H_deg_Fd", "H_deg_Fs"]
+            "H_deg_R_s", "H_rel_d", "H_rel_s"]
         names += self.heat_classes
         self.names = names
         self.ix = {n: i for i, n in enumerate(names)}
         self.ns = len(names)
-        self.flux_names = list(self.flux_names) + [f"Qf:{s[1:]}" for s in self.fates]
+        self.flux_names = list(self.flux_names) + [f"Qf:{f}{k}"
+                                                   for f, k in self.fate_of.values()]
         self.fx = {n: i for i, n in enumerate(self.flux_names)}
         self.iH = self.ix[f"H:{d.route}"]
         N = super()._motion_matrix()
         pool = next(r.pool for r in self.routes if r.name == d.route)
-        for s in self.fates:
-            c = self.fx[f"Qf:{s[1:]}"]
+        for s, (f, k) in self.fate_of.items():
+            c = self.fx[f"Qf:{f}{k}"]
             N[self.iH, c] -= 1.0
             N[self.ix[f"d:{s}"], c] += 1.0
-            N[self.ix[f"RQ:{s[1:]}"], c] += 1.0
+            N[self.ix[f"RQ:{f}{k}"], c] += 1.0
             if d.machine == "held":
                 N[self.ix[f"dF:{pool}"], c] += 1.0  # §9.3: the machine returns at release
         return N
@@ -219,8 +245,8 @@ class ReleaseSystem(model.System):
         for g in self.world.degradations:
             xd = ch[f"x_deg:{g.row}"]
             J[k] = g.k * amt[g.row] * -math.expm1(xd / g.L)
-            if g.row in self.fates:
-                h = "H_deg_Fd" if g.row[1] == "d" else "H_deg_Fs"
+            if g.row in self.fate_of:
+                h = LOSS_HEAT[self.fate_of[g.row][0]]
             else:
                 h = "H_deg_R" if g.monomer == "M" else "H_deg_P"
             heat[h] += J[k] * (-xd * RT)
@@ -232,10 +258,10 @@ class ReleaseSystem(model.System):
             heat["H_rc"] += J[k] * (-x_rc * RT)
             k += 1
         out = y[self.iH] / d.tau  # §9.2, no affinity factor
-        for s in self.fates:
-            q = d.frac(s[1]) * out if int(s[2:]) == self._psi else 0.0
-            J[self.fx[f"Qf:{s[1:]}"]] = q
-            heat[f"H_rel_{s[1]}"] += q * (-ch["lna"][s] * RT)  # −ΔG^rel_f = −RT ln(c_F/c°)
+        for s, (f, cls) in self.fate_of.items():
+            q = d.frac(f) * out if cls == self._psi else 0.0
+            J[self.fx[f"Qf:{f}{cls}"]] = q
+            heat[f"H_rel_{f}"] += q * (-ch["lna"][s] * RT)  # −ΔG^rel_f = −RT ln(c_F/c°)
         return J, heat, u
 
     def rhs(self, t: float, y: np.ndarray, P_X: float) -> np.ndarray:
@@ -250,7 +276,7 @@ class ReleaseSystem(model.System):
         if self.trackers:
             L = self.rel_route.L
             for f in FATES:
-                row = f"R{f}1"
+                row = FATE_ROW[(f, 1)]
                 kf = self.decl.k_fate(f)
                 eps = math.exp(ch[f"x_deg:{row}"] / L)  # e^(y_f)
                 kappa = kf * (1.0 - eps)  # the pool's per-capita loss rate
@@ -381,8 +407,8 @@ def readouts(sysm: ReleaseSystem, sol: dict) -> dict:
         out[f"int_S_{r.name}"] = Y[:, sysm.ix[f"S:{r.name}"]].copy()
         out[f"int_Q_{r.name}"] = Y[:, sysm.ix[f"Q:{r.name}"]].copy()  # §9.7: arrivals A_ρ
     out[f"hold_{d.route}"] = Y[:, sysm.iH].copy()
-    for s in sysm.fates:
-        out[f"int_Qf_{s[1:]}"] = Y[:, sysm.ix[f"RQ:{s[1:]}"]].copy()  # release into each fate
+    for f, k in sysm.fate_of.values():
+        out[f"int_Qf_{f}{k}"] = Y[:, sysm.ix[f"RQ:{f}{k}"]].copy()  # release into each fate
     for g in w.degradations:
         out[f"int_D_{g.row}"] = Y[:, sysm.ix[f"D:{g.row}"]].copy()
     if w.recharging:
@@ -398,9 +424,8 @@ def readouts(sysm: ReleaseSystem, sol: dict) -> dict:
     for key, name in (("x_tx", "dG_tx"), ("x_tl", "dG_tl"), ("x_rc", "dG_rc")):
         if key in chem[0]:
             out[name] = np.array([c[key] for c in chem]) * RT
-    for r in sysm.routes:
-        if r.name != d.route:
-            out[f"dG_rel_{r.product}"] = np.array([c[f"x_rel:{r.product}"] for c in chem]) * RT
+    for p in sorted({r.product for r in sysm.routes if r.name != d.route}):
+        out[f"dG_rel_{p}"] = np.array([c[f"x_rel:{p}"] for c in chem]) * RT
     for s in sysm.fates:
         out[f"dG_rel_{s}"] = np.array([c["lna"][s] for c in chem]) * RT  # §9.5's ΔG^rel_f
     for g in w.degradations:
@@ -423,18 +448,18 @@ def identities(sysm: ReleaseSystem, ro: dict) -> dict:
         res[f"residues_{r.name}"] = (r.r * S - W - r.L * Q, r.r * S[-1])
         Wdef = r.r * sum(j * ro[f"C_{r.name}_{j + 1}"] for j in range(r.m))
         res[f"W_definition_{r.name}"] = (W - Wdef, r.r * S[-1])
-        if r.name != d.route:
-            p = r.product
-            D = ro.get(f"int_D_{p}", 0.0)
-            n = ro[f"n_{p}"]
-            res[f"products_{p}"] = (n - n[0] - Q + D, n[0] + Q[-1])
+    for p in sorted({r.product for r in sysm.routes if r.name != d.route}):  # P: tl and tl_s
+        Q = sum(ro[f"int_Q_{r.name}"] for r in sysm.routes if r.product == p)
+        D = ro.get(f"int_D_{p}", 0.0)
+        n = ro[f"n_{p}"]
+        res[f"products_{p}"] = (n - n[0] - Q + D, n[0] + Q[-1])
     H, A = ro[f"hold_{d.route}"], ro[f"int_Q_{d.route}"]
     Hs = H[0] + A[-1]
-    released = sum(ro[f"int_Qf_{s[1:]}"] for s in sysm.fates)
+    released = sum(ro[f"int_Qf_{f}{k}"] for f, k in sysm.fate_of.values())
     res["hold"] = (H[0] + A - H - released, Hs)
     attached_surviving_lost = H.copy()
-    for s in sysm.fates:
-        n, Qf, D = ro[f"n_{s}"], ro[f"int_Qf_{s[1:]}"], ro[f"int_D_{s}"]
+    for s, (f, k) in sysm.fate_of.items():
+        n, Qf, D = ro[f"n_{s}"], ro[f"int_Qf_{f}{k}"], ro[f"int_D_{s}"]
         res[f"fate_{s}"] = (n - n[0] - Qf + D, n[0] + Qf[-1])
         attached_surviving_lost = attached_surviving_lost + (n - n[0]) + D
     res["per_producer"] = (H[0] + A - attached_surviving_lost, Hs)
@@ -461,7 +486,7 @@ def levels(ids: dict) -> dict:
 
 # ---- the requester's limit (§9.10), in decimal arithmetic -----------------------------------
 def limit(p: float, times, prec: int = 50) -> dict:
-    """§9.10's closed forms in copies: hold, releases per fate, survivors per fate, and the
+    """§9.10's closed forms in copies (R1): hold, releases per fate, survivors per fate, and the
     window cohort over WINDOW sampled at each time ≥ its end; with k_e = 1/τ = ln 2/3600 s⁻¹."""
     with localcontext() as ctx:
         ctx.prec = prec
