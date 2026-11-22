@@ -10,6 +10,7 @@ import CellsProofs.Chemistry.Enzyme
 import CellsProofs.Chemistry.GardCache
 import CellsProofs.Chemistry.GardRange
 import CellsProofs.Chemistry.ArrivalCohort
+import CellsProofs.Chemistry.ArrivalSurvival
 import CellsProofs.Chemistry.ArrivalWindow
 import CellsProofs.Chemistry.GardCatalysis
 import CellsProofs.Chemistry.LineageFission

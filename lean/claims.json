@@ -93,6 +93,39 @@
       "driver": "lean/checks/vesicle_area.py",
       "record": "lean/PROGRESS.md#fr31-area-bounds"
     },
+    "fr42-neutral-survival": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [],
+      "operators": [
+        "cells.neutral_arrival_labels@1",
+        "cells.local_species_reactions@1",
+        "cells.scheduled_species_turnover@1"
+      ],
+      "engine_revision": "73afa19b5ddcb50405280d6d46207a25c41fec24",
+      "record_revision": "7e41a441b51b5a84ec57febb04b1e7a8f801674d",
+      "sources": {
+        "Finite-step bisection, allocation and empty-row handling": "src/cells/numerics/label_shares.py#L64",
+        "Label declarations, schedules and share update": "src/cells/operators/species_labels.py",
+        "Composite half-step calls the label owner": "src/cells/models/pump_composite.py#L1752",
+        "One-way reaction reports": "src/cells/operators/species_reactions.py#L1692",
+        "Turnover reports": "src/cells/operators/species_turnover.py#L611",
+        "Summation along the label axis": "src/cells/numerics/species_sums.py",
+        "Compiled twin worlds, window integrals and tolerances": "tests/unit/test_neutral_arrival_labels.py#L465",
+        "Composite tissue and production/clearance fixture": "validation/tissue/secreted_species_fixtures.py",
+        "Reaction fixture and schedules": "validation/tissue/species_reactions_fixtures.py"
+      },
+      "record_inputs": {
+        "Exact endpoint and normalized label amounts": "lean/CellsProofs/Chemistry/ArrivalSurvival.lean",
+        "Quadratic cohort and blank reference": "lean/CellsProofs/Chemistry/ArrivalCohort.lean",
+        "Paired Actn1 isotope signals and GEO sample accessions": "lean/checks/data/jovanovic2015_actn1.json"
+      },
+      "driver": "lean/checks/arrival_survival.py",
+      "record": "lean/PROGRESS.md#fr42-neutral-survival"
+    },
     "fr42-window-reference": {
       "kind": "reference",
       "models": [],
@@ -3516,12 +3549,13 @@
         }
       },
       "numerical": {
-        "status": "open",
+        "status": "checked",
         "comparisons": [
           "fr42-window-reference",
-          "fr38-release-class-window"
+          "fr38-release-class-window",
+          "fr42-neutral-survival"
         ],
-        "result": "For 10 releases, 8 remain at close and 6 later, giving 6/8. The reused label ends with 3 old plus 1 new. The compiled FR-38 development fixture routed all five steps to the expected classes in both fates with zero new chain completions. Its host reconstruction added both surviving histories within 2 × 10⁻¹⁴ relative tolerance. The FR-42 share-based engine and label-neutral energy comparison remain open."
+        "result": "The point-release reference retained 6 of 8 at chase and 3 old plus 1 new at reuse. The FR-38 development fixture routed five steps to the selected classes in both fates. In the separate FR-42 compiled tissue, the cell cohort contained 0.08295689561 fmol at reopening and 0.16721168136 fmol at the end. Seven observations matched the analytic window integral within 2.78 × 10⁻¹⁷ fmol in the cell and 1.37 × 10⁻¹¹ fmol outside. Following released RNA itself through a replacement remains open."
       },
       "biology": {
         "status": "open",
@@ -3557,6 +3591,9 @@
       ],
       "formal": {
         "status": "proved",
+        "about": [
+          "cells.neutral_arrival_labels@1"
+        ],
         "theorems": {
           "CellsProofs.Chemistry.ArrivalCohort.empty_label": "lean/CellsProofs/Chemistry/ArrivalCohort.lean",
           "CellsProofs.Chemistry.ArrivalCohort.sum_shares": "lean/CellsProofs/Chemistry/ArrivalCohort.lean",
@@ -3570,20 +3607,88 @@
         "sources": {
           "FR-42 design requirement": "https://github.com/Eidosoma/Cells/blob/184fc81cdfc0ea1b04eded5152c6cbbd2d5ea956/docs/FEATURE_REQUESTS.md#fr-42--neutral-arrival-time-labels-that-leave-the-dynamics-unchanged",
           "D289 adopts share vectors on the physical population": "https://github.com/Eidosoma/Cells/blob/4e944a5634adafe1944235e540c6a7f0e564a144/docs/DECISIONS.md#d289-fr-42-is-built-as-option-a-labels-as-share-vectors-on-the-physical-row",
-        "FR-38 erratum B on class rows and the blank": "https://github.com/Eidosoma/Cells/blob/184fc81cdfc0ea1b04eded5152c6cbbd2d5ea956/docs/TEMPLATED_POLYMERISATION_LAWS.md#913-erratum-b-the-label-rows-are-not-neutral-labels",
+          "FR-38 erratum B on class rows and the blank": "https://github.com/Eidosoma/Cells/blob/184fc81cdfc0ea1b04eded5152c6cbbd2d5ea956/docs/TEMPLATED_POLYMERISATION_LAWS.md#913-erratum-b-the-label-rows-are-not-neutral-labels",
           "Mathlib division of a finite sum, imported for the cohort balance": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Field.lean#L22",
           "Mathlib quotient derivative, imported for the survivor curve": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/Calculus/Deriv/Inv.lean#L143"
         }
       },
       "numerical": {
-        "status": "open",
-        "comparisons": [],
-        "result": "At time one the new cohort contains 1/4 unit, one third of the 3/4-unit pool. Blank subtraction gives 1/12 unit. An FR-42 engine replay is pending, including window endpoints, cohort reuse and physical energy accounting. FR-38 registration waits for the share-based labels under D288."
+        "status": "checked",
+        "comparisons": [
+          "fr42-neutral-survival"
+        ],
+        "result": "Five quadratic-loss pools kept their shares bit for bit. At one second, the three-unit pool held 0.7499996135 fmol including 0.2499998712 fmol from the new cohort, within 10⁻⁶ fmol of 3/4 and 1/4. The analytical two-unit blank gives a difference of 1/12 fmol. All 42 shared history fields and 76 shared observations, including energy records, matched bit for bit when labels were enabled. Diagnostics agreed."
       },
       "biology": {
         "status": "open",
-        "observable": "The surviving amount from an identified arrival cohort together with the physical pool total under the same loss conditions.",
-        "unit": "Amount per cohort and total pool amount",
+        "observable": "The surviving fraction of an identified arrival cohort within the same physical pool, paired with that pool’s total at the observation time.",
+        "unit": "Fraction of paired isotope signal",
+        "finding": "In mock-treated mouse dendritic cells the 5 h Actn1 heavy fractions were 17.19% and 10.11%. The paired channel sum supplies the denominator. Recycling limits how precisely the heavy fraction measures newly made protein.",
+        "evidence": [
+          {
+            "dataset_id": "jovanovic-2015-actn1-mock",
+            "manifest": "lean/checks/data/jovanovic2015_actn1.json",
+            "citation": "Jovanovic et al. (2015), Science 347, 1259038",
+            "doi": "10.1126/science.1259038",
+            "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE59792",
+            "locator": "Figure 1B, Figure 3F and GEO GSE59792, Actn1, paired 5 h MOCK medium and heavy samples.",
+            "context": "Pulse SILAC after an isotope switch in mouse dendritic cells. The four samples have proteome-normalized iBAQ signals.",
+            "role": "descriptive",
+            "observed": 0.13649927,
+            "uncertainty": "Sample SD 0.050071 across the two paired fractions. Both isotope channels were present in both replicates.",
+            "assessment": "Within-replicate normalization cancels in H/(H+M). Its denominator is computed from the same two measurements. Recycled precursor can enter newly made protein. A common loss rate and the quadratic-loss example remain untested by this measurement.",
+            "report": "lean/PROGRESS.md#fr42-neutral-survival"
+          }
+        ]
+      }
+    },
+    {
+      "id": "fr42-survival-exponent",
+      "category": "reactions-and-binding",
+      "title": "A positive endpoint determines one neutral-label survival exponent",
+      "statement": "With nonnegative old stock and gross arrivals, every positive endpoint up to their sum has exactly one nonnegative loss exponent. At that exponent the label amounts are nonnegative, sum to the endpoint and give shares that sum to one. An occupied pool receiving no arrivals keeps its shares.",
+      "assumptions": [
+        "One well-mixed physical pool has a common constant per-molecule loss rate and constant arrival rates per label during the step. The dimensionless exponent is the loss rate times the step duration.",
+        "Initial shares are nonnegative, include all material, and sum to one. Gross arrivals into each label are nonnegative. At zero loss all old material and all arrivals survive.",
+        "The inferred exponent describes one step in exact arithmetic. A completely empty pool cannot identify a rate. Inferring a rate over multiple steps with varying loss or arrivals is a separate problem."
+      ],
+      "uses": [
+        "fr42-cohort-shares"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.neutral_arrival_labels@1"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.ArrivalSurvival.no_loss": "lean/CellsProofs/Chemistry/ArrivalSurvival.lean",
+          "CellsProofs.Chemistry.ArrivalSurvival.phi_pos": "lean/CellsProofs/Chemistry/ArrivalSurvival.lean",
+          "CellsProofs.Chemistry.ArrivalSurvival.endAmount_decreases": "lean/CellsProofs/Chemistry/ArrivalSurvival.lean",
+          "CellsProofs.Chemistry.ArrivalSurvival.survival_exponent_unique": "lean/CellsProofs/Chemistry/ArrivalSurvival.lean",
+          "CellsProofs.Chemistry.ArrivalSurvival.labelAmount_nonneg": "lean/CellsProofs/Chemistry/ArrivalSurvival.lean",
+          "CellsProofs.Chemistry.ArrivalSurvival.empty_label": "lean/CellsProofs/Chemistry/ArrivalSurvival.lean",
+          "CellsProofs.Chemistry.ArrivalSurvival.no_arrivals": "lean/CellsProofs/Chemistry/ArrivalSurvival.lean",
+          "CellsProofs.Chemistry.ArrivalSurvival.sum_labelAmounts": "lean/CellsProofs/Chemistry/ArrivalSurvival.lean",
+          "CellsProofs.Chemistry.ArrivalSurvival.sum_normalized": "lean/CellsProofs/Chemistry/ArrivalSurvival.lean"
+        },
+        "sources": {
+          "Mathlib strict convexity of the exponential, imported": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/Convex/SpecificFunctions/Basic.lean#L37",
+          "Mathlib's strictly ordered secant slopes, specialized to exponential arrival survival": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/Convex/Slope.lean#L290",
+          "Mathlib continuity of the derivative-extended secant at zero, imported": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/Calculus/DSlope.lean#L107",
+          "Mathlib intermediate value theorem, imported to establish existence": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Topology/Order/IntermediateValue.lean#L478"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "fr42-neutral-survival"
+        ],
+        "result": "NumPy and CPU JAX recovered eight constructed exponents from 0 to 1,000 within 2 × 10⁻¹⁴ absolute plus 2 × 10⁻¹³ relative tolerance. The largest absolute share error was 1.11 × 10⁻¹⁶. An empty-row control kept its stored shares. Seven cell-cohort observations in the compiled world agreed with the constant-rate integral within 2.78 × 10⁻¹⁷ fmol."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Independent gross arrivals, physical pool amounts at the two step endpoints, and survivor amounts for each labelled cohort under a common constant loss rate.",
+        "unit": "Amount per cohort and physical pool in a shared unit",
         "evidence": []
       }
     },
