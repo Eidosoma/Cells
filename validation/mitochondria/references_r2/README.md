@@ -352,6 +352,18 @@ registration's transient bands ("a tenth of its excursion in the step"):
    - World (d)'s O2 bookkeeping is one function of the state across its switch at 60 s
      (989959fe).
 
+9. **The window's stated reason, checked** (the lead's request). Erratum 2 opens the window at
+   1e-3 x P50 because the O2 flux there falls under 0.1% of its state-3 value. Under the declared
+   law it does not.
+   - Where the matrix O2 crosses 0.373 nM (t = 189.20 s), the O2 flux is 7.07e-6 mol s^-1
+     (L mito)^-1. That is 0.43% of the state-3 flux (1.638e-3), 4.3 times the 0.1% floor.
+   - It falls under 0.1% only near O2_N = 0.10 nM (2.7e-4 x P50), at t = 195.8 s.
+   - **The reason:** complex IV's O2 factor, 1/(1 + k_O2/[O2]), falls 1.8e-5-fold from state 3
+     (1.1e-6-fold with the exponent's [O2]^(1/4)). But cytochrome c is then fully reduced
+     (0.213 -> 1.000) and dPsi has collapsed (168.6 -> 37.6 mV). Both raise complex IV's forward
+     term, so near zero O2 the flux is not first order in O2 with the state-3 coefficient.
+   - `rescore.py` reports this check (`o2_window_check`) from the saved outputs.
+
 **Runs kept in /mnt/workspaces/Cells/mito-refs-r2-20261122:**
 - run-61779e22529d: the first declaration's run of record.
 - run-9161a49405ed: stopped at the BDF crawl; FAILURE.json.
@@ -369,6 +381,7 @@ registration's transient bands ("a tenth of its excursion in the step"):
 | `steady.py` | Steady states by Newton in ln variables with the seven inventories imposed; the continuation in [Pi]e; the anchored start state |
 | `protocol.py` | The schedule (G7), the integration with restarts, the output grid, the drift rule and the ledger closure |
 | `run.py` | The full run: start state, four worlds, the tolerance ladder, BDF, the trace check; writes `interface.json`, `full.npz` and `RECEIPT.json` |
+| `rescore.py` | Re-scores a run of record from its saved states (`full.npz`) under the committed declaration, integrating nothing again: the trace check at every scored output time, at plateau ends and for the focus classes, and the O2 window check. With the scoring unchanged it reproduces the run's own trace check exactly (checked on run-989959fe5012, in 3.7 s) |
 | `interface.json` | The run of record's outputs, copied byte for byte (compact JSON, 3.6 MB). It holds every declared readout at G7's output times for each world; each process's dissipation and each invariant's drift over time; the start state and its anchor; the plateaus with the drift rule and the Newton check; W3(d)'s P50 crossing and window; the stall check; the convergence ladder; the trace check and the plants |
 | `RECEIPT.json` | That run's receipt: the snapshot's Git revision (989959fe) and clean patch, the environment, times and the outputs' digests |
 
