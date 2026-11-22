@@ -43,7 +43,7 @@ and a general feature, never one built for one study (D144).
 | [FR-35](#fr-35--timed-partial-withdrawal-of-an-assembly-populations-exterior-pool) | Timed partial withdrawal of an assembly population's well-mixed exterior pool: each molecule withdrawn independently, a declared buffer supplied, sites and particles kept | **High** (user, 21 November 2026) | **Landed** (merge b521a11c, tag `fr35-withdrawal-landed-2026-11-21`): `cells.pool_withdrawal@1` (D261) | None. Landed (b521a11c, with D263's fixes); the independent acceptance and a 4,000-stream ensemble passed |
 | [FR-36](#fr-36--age--and-region-selective-loss-within-a-species-row) | Age- and region-selective loss within a species row | FR-25's reviewer (21 November 2026) | **Deferred (D273).** Today's tools cover completion-time cohorts in one well-mixed pool with age-independent loss (cohort.py) and FR-33's regional export and one-way tracer | Reopens on a requester's readout needing age-dependent loss: D1 (label families) and D2 (an ageing operator), 2.5 to 4 days |
 | [FR-37](#fr-37--sampling-a-liquid-whose-dye-is-unevenly-distributed) | Sampling a liquid whose dye is unevenly distributed: a draw from chosen parts of an unevenly mixed liquid | **High** (user, 21 November 2026; D274) | **Shown with existing operators** (2bba6043, validation/sampling/uneven_draw.py): per-region wash events; the three cases match, with all 10 fmol accounted for; checker-accepted. Mixing is declared, not simulated (D246), and the sample is a host-side sum | Predicting the per-region split from the port, flow and timing needs an advection operator on faces, with the wash's face refusal lifted (about 3 to 5 days): built only if the requester asks |
-| [FR-38](#fr-38--rna-release-from-its-template-into-two-pools-with-different-lifetimes) | RNA release from its template into two pools with different lifetimes, with per-producer accounting, a release-window cohort and explicit measurement denominators | A user (22 November 2026) | **Assessed, awaiting the user's go.** The reference reproduces at 40c3185e and on main. Their suggested route is refused (one writer per row), and their replay's energy is driven work. The proposal is a terminal hold in `templated_polymerisation@1`, split by p into two fate rows, with exact energy and no new energy object | The minimal path is 5–6 agent-days, the full one 7–9.5. Four questions for the requester: machine holding, release energy, what "replacement" means, and one gene per producer |
+| [FR-38](#fr-38--rna-release-from-its-template-into-two-pools-with-different-lifetimes) | RNA release from its template into two pools with different lifetimes, with per-producer accounting, a release-window cohort and explicit measurement denominators | A user (22 November 2026) | **Building at full scope (D284).** A terminal hold in `templated_polymerisation@1`, split by p into two fate rows, with exact energy and no driven work; the cohort by label rows and by counters; a reader in `src/cells/assays` | The sheet amendment comes first. The finish is a registered comparison against code-blind references. Questions (c) replacement and (e) which cohort are with the requester |
 
 ## FR-1 — A closed internal compartment on the shared inventory
 
@@ -1651,3 +1651,15 @@ with 2 and 1.5.
   observation layer, tests) is 5–6 days; the full path 7–9.5.
 - **A fourth question for the requester:** (d) is each producer one gene in one cell, with its own fate
   rows, or do several producers feed shared pools, which would need label families?
+
+**Decided (D284, 12:35 UTC): the full scope, finishing with a registered comparison.**
+- **The engine piece,** with a sheet amendment tagged before code:
+  - a terminal hold per chain, with the machine held or released as a declared option;
+  - p from a constant, a schedule or a state factor;
+  - counters, a per-producer ledger, and identity across restart.
+- **The cohort, two ways that must agree:** label rows by schedule, and recovery from the counters.
+- **The observation reader** in `src/cells/assays`.
+- **A fifth question for the requester:** (e) is the window cohort marked when chains complete, as the
+  package README's "completion-time cohort" reads, or when they are released, as the request body says?
+  The two differ whenever the dwell matters. A pulse label marks at synthesis.
+- **Only (c) and (e) block anything,** and each blocks only its own piece.

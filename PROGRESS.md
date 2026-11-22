@@ -18,9 +18,7 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
     heat), FR-37's example, and FR-33's first test (two named regions joined by one face; 7d70d63b).
 - **Landing next:**
   - the OL5 precision fix, then GARD @2's range fixes;
-- **Assessing:** FR-38 (RNA release into two pools).
-- **Held for the user:** extending the near-event refusal to clocks without windows. Its gate found seven
-  test files with events one ulp from a step.
+- **Building:** FR-38 at full scope (D284); the near-event snap (D283), which lands first.
 - **Waiting on downloads:** FR-30's benchmark.
 - **Open, unscheduled:** FR-1, FR-2, FR-3, FR-6, FR-11, FR-13, FR-14, FR-15, FR-16, FR-17, FR-8's rung
   2, F1 (after an MG0c rerun), crossrev renewal, and the Phase 0 runner's review.
