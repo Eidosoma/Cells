@@ -7,7 +7,7 @@ model RHS knows about the world axis. Scalar RK4 and observer contracts apply.
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from time import perf_counter
 from types import MappingProxyType
 from typing import Mapping
@@ -29,7 +29,7 @@ from cells.definitions.specs import (
 from cells.execution import blas_threads, phases
 from cells.execution.devices import execution_device
 from cells.execution.errors import NumericalError
-from cells.execution.grid import EventGrid, refinement_times
+from cells.execution.grid import applied_definition, refinement_times
 from cells.execution.resources import trace_bytes
 from cells.execution.runner import (
     RunResult,
@@ -183,6 +183,10 @@ class BatchPlan:
     grids: tuple[np.ndarray, ...]
     estimated_working_bytes: int
     padded_step_bound: int
+    # D283: the batch as it runs, each world its applied copy (applied_definition; spec itself
+    # where no clock snaps), and each world's snaps. The results keep the declared worlds.
+    applied: BatchSpec | None = None
+    snapped: object = field(default_factory=dict)
 
 
 def plan_batch(spec: BatchSpec) -> BatchPlan:
@@ -210,18 +214,17 @@ def plan_batch(spec: BatchSpec) -> BatchPlan:
             limit_bytes=spec.max_working_bytes,
             stage="estimate",
         )
-    grids = []
+    grids, applied, snapped = [], [], {}
     for world in spec.worlds:
         try:
-            if EventGrid(world.simulation).snapped:  # D283: the batch path runs declared worlds.
-                raise ConfigError(
-                    "The batch path does not run a definition whose clock snaps an event onto a "
-                    "point (D283); run it through the scalar runner"
-                )
-            grids.append(timeline(world.simulation))
+            simulation, pairs = applied_definition(world.simulation)  # D283: as run does.
+            grids.append(timeline(simulation))
         except (ConfigError, NumericalError) as exc:
             raise type(exc)(f"World {world.world_id}: {exc}") from exc
-    return BatchPlan(spec, tuple(grids), working, padded)
+        applied.append(WorldSpec(world.world_id, simulation))
+        snapped[world.world_id] = pairs
+    runs = replace(spec, worlds=tuple(applied)) if any(snapped.values()) else spec
+    return BatchPlan(spec, tuple(grids), working, padded, runs, MappingProxyType(snapped))
 
 
 def _checkpoint_map(spec, checkpoints):
@@ -387,7 +390,7 @@ def _run_batch(spec, checkpoints, timing_repeats, record):
     record.start("preparation")
     _integer(timing_repeats, "timing_repeats", maximum=10)
     plan = plan_batch(spec)
-    spec = plan.spec
+    declared, spec = plan.spec, plan.applied or plan.spec  # D283: runs applied, records declared.
     if checkpoints is not None:
         _checkpoint_map(spec, checkpoints)
     model = get_model(spec.worlds[0].simulation.model)
@@ -518,11 +521,19 @@ def _run_batch(spec, checkpoints, timing_repeats, record):
             event_index(s, float(times[i][-1])),
         )
         results[world.world_id] = RunResult(
-            s, ending, checkpoint.step_index, times[i], path, observations, {}, diagnostics
+            declared.worlds[i].simulation,  # The declared world (D283); s is its applied copy.
+            ending,
+            checkpoint.step_index,
+            times[i],
+            path,
+            observations,
+            {},
+            diagnostics,
+            snapped_events=plan.snapped[world.world_id],
         )
     finished = perf_counter()
     return BatchResult(
-        spec,
+        declared,
         MappingProxyType(results),
         {
             "preparation_seconds": prepared - started,
