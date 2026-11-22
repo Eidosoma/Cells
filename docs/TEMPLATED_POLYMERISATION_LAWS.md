@@ -1492,9 +1492,10 @@ definition without a replacement keeps §0–§9.15 bit for bit.*
      replaced slot, the operator holds each cumulative counter's value at the current generation's
      birth (0 for the founder). At each event it records the departing generation's own totals,
      the counter at its death minus that birth value, and the counter's value becomes the
-     newcomer's birth value. The newcomer's own counters are the cumulative counters minus it. State
-     holds the latest departed generation's totals; earlier ones stay in the records at their
-     events' steps.
+     newcomer's birth value. The newcomer's own counters are the cumulative counters minus it.
+   - State holds only the latest departed generation's totals. An earlier generation's totals are
+     in the records only where an output follows its death before the slot's next event; the
+     definition does not require one (a declared limit of version 1).
 4. **The identities across events.** Each holds at every step; the removal terms are cumulative
    from t = 0.
    - **Machines:** F_q + engaged − M_q = 0, as in §9.7. After an event every machine at c is free.
@@ -1512,6 +1513,10 @@ definition without a replacement keeps §0–§9.15 bit for bit.*
        booked to the departing generation and apart from degradation.
 
      A living generation's identity is §9.7's, from t_b.
+   - **Moieties** (§1.4, §4.8): each total over the rows, the residues in transit and the hold
+     changes only at events, by what they supply less what they remove. The rows' parts are
+     replacement@1's supplied and removed records. The transit's and the hold's are item 2's
+     removal counters: W^rem_ρ residues and L_ρ H^rem_ρ residues.
 5. **The energy account.**
    G(t) − G(0) + Σ H + Σ_events (G^out − G^in) = 0, where:
    - G^out is the departing occupant's G within §3.4's scope: its rows' terms at removal, from
@@ -1540,8 +1545,10 @@ definition without a replacement keeps §0–§9.15 bit for bit.*
      chain) from each generation's birth.
    - At the event the label owner gives the replaced slot's labelled rows and this operator's hold
      pools the label in force there, the newcomer's. The departing material leaves with its shares.
-   - RNA retained in an extracellular compartment keeps its producer's label, through FR-42's stage
-     2 transport.
+   - **Extracellular RNA is not admitted in version 1.** `check_writers` refuses every other
+     mover of a listed row: another author such as exchange, and an in-step mover such as a face.
+     So no fate row leaves its cell, and the requester's retention of a producer's label outside
+     the cell needs a transport door that this amendment does not define.
    - Labels change no physics.
 8. **Restart.** Item 2's and item 3's counters, and the replacements applied per slot, are state.
    So a checkpoint and resume carry them bit for bit, and the controls come from the definition.
@@ -1556,4 +1563,6 @@ definition without a replacement keeps §0–§9.15 bit for bit.*
       chain is not modelled.
     - **No donor copies** (item 1), and **no `scheduled_cell_replacement@2`**.
     - **No standard term for the rows' swap** in the engine's bookings (item 2). It is a gap
-      shared with D152, reported to the lead.
+      shared with D152 on a desk reading (its docstring and its having no event part, no run),
+      reported to the lead.
+    - **No extracellular retention** (item 7).
