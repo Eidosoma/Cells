@@ -1,5 +1,13 @@
 # Cells proof comparisons
 
+<a id="fr38-lossless-fate-repair"></a>
+
+## 22 November 2026 · Both lossless RNA fates now report their survivors
+
+The exporter repair merged at `36225a79` includes local release fates in the existing zero-loss rule. On engine `fe6d25e9`, the original compiled reproducer recovered all four fate records, up from three. In both ten-second worlds the reader returned 1.2776562362330652 × 10⁻¹⁰ fmol surviving for each fate, equal to its measured gain and cumulative detachment. The recorded amounts and physical releases matched the old run. The direct-product and release-fate regression rows also passed. The current frozen replay in `lean-release-energy-charge-20261122` records `repaired-lossless.json`. [Repair and regression](https://github.com/Eidosoma/Cells/commit/36225a79) · [Original failure and matched control](#fr38-lossless-fate)
+
+The heat comparisons below use two physical RNA fates and one unlabelled class. Erratum C assigns neutral cohort labels to shares of their physical pools. The separate FR-42 share-based comparison remains open. [Release-law erratum C](https://github.com/Eidosoma/Cells/blob/fe6d25e9eee7a7d0422568fd356a57e67ef03301/docs/TEMPLATED_POLYMERISATION_LAWS.md#914-erratum-c-route-1-on-shares)
+
 <a id="fr38-release-energy"></a>
 
 ## 22 November 2026 · Heat booked at RNA detachment
@@ -34,7 +42,7 @@ Harden et al. observed purified *E. coli* polymerase remaining on DNA more than 
 
 <a id="fr38-lossless-fate"></a>
 
-## 22 November 2026 · Missing zero-loss counter for a release fate
+## 22 November 2026 · Original missing zero-loss counter for a release fate
 
 Two compiled R1 worlds split RNA equally between `R` and `R_s`. Each world omitted one degradation route and set the other route’s rate to zero. New synthesis was off. The initial hold supplied both fates. Over ten seconds each fate gained exactly the reported detachment of 1.2776562362330652 × 10⁻¹⁰ fmol in both worlds. All six saved times per world closed the amount balance within 3.44 × 10⁻²⁷ fmol.
 
