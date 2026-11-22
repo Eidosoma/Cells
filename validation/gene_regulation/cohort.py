@@ -51,6 +51,10 @@ import json
 import math
 from pathlib import Path
 
+# D283: the window edges' predicate is the clock's one same-instant predicate (it was a seam here,
+# equal times, until D283 landed), as templated_polymerisation.grid_time reads on_grid.
+from cells.numerics.clock_instants import same_instant
+
 
 def _integral(t, n, i, j):
     """The integral of n over [t_i, t_j] on the output grid, by Simpson's rule on uniform pairs of
@@ -72,13 +76,6 @@ def _spread(x):
 
 
 BOUND_ROUNDING = 1e-12  # Relative: the survivors' allowance above the pool from rounding alone.
-
-
-def same_instant(a, b):
-    """Whether two times name one instant of the clock: the window edges' predicate, a seam like
-    templated_polymerisation.grid_time's for D283's same-instant snap. Until it lands, equal
-    times; D283 widens both to the clock's predicate."""
-    return a == b
 
 
 def _window(t, t1, t2, ts):
@@ -211,6 +208,23 @@ def survival(t, n, Q, D, t1, t2, ts):
         ratio=None if alive == 0 else later / alive,
         grid_error_at_window_end=grid_error(t, n, Q, D, t1, t2, t2),
         grid_error_at_sample=grid_error(t, n, Q, D, t1, t2, ts),
+    )
+
+
+def label_survival(t, labelled, t2, ts):
+    """FR-38's survival readout by route 1 (erratum C, D289): from an engine series of the amount
+    one label marks on the output grid (engine_run's label_<row>_<label>, the window's label,
+    whose window closes at t2), the members alive at t2, the same molecules alive at ts >= t2, and
+    their ratio, None at a zero denominator. The label must receive no arrivals in [t2, ts], as a
+    window's label used once does not: the engine's labels follow the molecules, so no grid error
+    enters. Refused on an invalid series or window."""
+    check_counters(t, n=labelled)
+    _, i2, i3 = _window(t, t2, t2, ts)
+    alive, later = labelled[i2], labelled[i3]
+    return dict(
+        alive_at_window_end=alive,
+        alive_at_sample=later,
+        ratio=None if alive == 0 else later / alive,
     )
 
 

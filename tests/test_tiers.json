@@ -340,7 +340,9 @@
   "/mnt/workspaces/Cells/pores-phase-a-20261122/tiers-f5bdb371/out/measure/measured.json",
   "/mnt/workspaces/Cells/mito-refs-r2-20261122/tiers-6ff9372981d2-cpu23/measured.json/measured.json",
   "/mnt/workspaces/Cells/core-pass-kinds-20261118/measure-98da063b/measure/measured.json",
-  "/mnt/workspaces/Cells/gene-regulation-20261120/fr38/replacement-refusal/timed-db21a62e/measure/measured.json"
+  "/mnt/workspaces/Cells/gene-regulation-20261120/fr38/replacement-refusal/timed-db21a62e/measure/measured.json",
+  "/mnt/workspaces/Cells/gene-regulation-20261120/fr42/runs/timed-924fb120/measure/measured.json",
+  "/mnt/workspaces/Cells/pores-endpoint-20261122/tiers-14c87f3c/measure/measured.json"
  ],
  "measured_provenance": [
   {
@@ -2888,6 +2890,22 @@
    "root": "/mnt/workspaces/Cells/gene-regulation-20261120/fr38/replacement-refusal/snapshot-db21a62e",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-22T18:21:09+00:00"
+  },
+  {
+   "git_revision": "924fb120e1060c087d9c7e27136e7ee0a83e3369",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/gene-regulation-20261120/fr42/runs/snapshot-924fb120",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-22T21:02:20+00:00"
+  },
+  {
+   "git_revision": "14c87f3ce741e791351761a5458dd7ed8430d24c",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/pores-endpoint-20261122/snapshot-14c87f3c",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-22T21:23:25+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -4429,10 +4447,10 @@
    },
    {
     "file": "tests/unit/test_gene_regulation_compare.py",
-    "seconds": 15.91,
+    "seconds": 17.51,
     "exit_code": 0,
     "counts": {
-     "passed": 39
+     "passed": 45
     }
    },
    {
@@ -6255,10 +6273,10 @@
    },
    {
     "file": "tests/unit/test_templated_polymerisation.py",
-    "seconds": 6.13,
+    "seconds": 8.84,
     "exit_code": 0,
     "counts": {
-     "passed": 33
+     "passed": 37
     }
    },
    {
@@ -6731,10 +6749,10 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_v2_pores.py",
-    "seconds": 63.16,
+    "seconds": 65.94,
     "exit_code": 0,
     "counts": {
-     "passed": 34
+     "passed": 37
     }
    },
    {

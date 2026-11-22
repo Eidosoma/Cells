@@ -58,6 +58,18 @@ work role: an applied protocol, a pipette's, so it lives in the experiment, not 
   counter 0. E = −ln u.
 - **The rupture time.** t* = start_s + E/k_v(σ), when t* ≤ end_s; otherwise the vesicle does not
   rupture in the hold. A t* past the horizon is no event of the run.
+- **Exact endpoints.** Both comparisons are decided exactly, as rationals of the binary64 values of
+  E, k_v (the `rate_per_s` an event records), start_s and the cutoff:
+  - t* ≤ end_s as E/k_v ≤ end_s − start_s, and t* ≤ the horizon as E/k_v ≤ horizon − start_s;
+  - the t* the host schedules and records stays the float64 value of start_s + E/k_v;
+  - from one start (Phase A's one hold), rounding never carries a crossing across a cutoff. It can
+    only round it onto the cutoff, and only there does the exact rule decide otherwise than
+    t* ≤ cutoff: a t* equal to its cutoff is an event when the exact crossing is at or before it,
+    and not when the crossing lies beyond;
+  - a vesicle that the hold's end decides this way does not rupture in the hold: its `t_star` is
+    null and its `pore_draw_time` inf;
+  - the case is the Lean lane's finding of 22 November 2026: a founder ruptured at a hold end that
+    its exact crossing passes by 2.4 × 10⁻¹⁷ s.
 - **The stop.** t* is a stop of the host:
   - the chemistry draw that crosses it is discarded and counted, as at a schedule stop;
   - a device that ends `inert` before t* is advanced to it;
@@ -66,7 +78,14 @@ work role: an applied protocol, a pipette's, so it lives in the experiment, not 
   `complete` at the horizon, never `inert`. A population whose vesicles have all ruptured may end
   `inert`.
 - **Same-time stops** are refused at the run's start: a t* equal to another vesicle's, or to a
-  schedule stop's time (FR-20's rule).
+  schedule stop's time (FR-20's rule). The times are compared as recorded, in float64, with exact
+  equality:
+  - Relations read the recorded times, so two crossings that round to one t* are one time there.
+    An exact tie also rounds to one t*, so this refuses it too.
+  - Rounding never reverses two crossings from one start, so stops that are not refused run in
+    their exact order.
+  - D283's same-instant band (4 ulps) is not used. It is for declared times on a fixed step's
+    grid, and this clock has no grid.
 - **The stream identity** of a pore world adds `domains.pore = 7` and `carriers.pore` to the
   identity its mode would state. Every other run's identity is unchanged.
 
