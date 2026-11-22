@@ -1,0 +1,572 @@
+{
+  "schema": "cells.mito_r2_declaration@2",
+  "note": "Every number R2 integrates, each with its place in the declared documents. R2 read no source paper, engine code, engine output or other reference's code: every value below is copied from the documents at the named tags, or derived from them as stated.",
+  "documents": {
+    "laws_appendix": "docs/MITOCHONDRIA_LAWS_APPENDIX.md at tag mito-laws-appendix-2026-11-20b",
+    "design": "docs/MITOCHONDRIA_DESIGN.md at tag mito-mt1b-face-design-2026-11-22 (section 7, the MT-1b draft, the face note)",
+    "world_declaration": "docs/MITOCHONDRIA_DESIGN.md at tag mito-mt1b-declaration-erratum-2026-11-22, the declaration of record: 'MT-1b's world declaration' (G1-G7, first tagged as mito-mt1b-world-declaration-2026-11-22) with the face note's section 6 erratum and G5's erratum (the I_NP rule)",
+    "erratum_2": "docs/MITOCHONDRIA_DESIGN.md at tag mito-mt1b-declaration-erratum-2-2026-11-22, 'Erratum 2': the declaration of record for this run",
+    "erratum_3": "docs/MITOCHONDRIA_DESIGN.md at tag mito-mt1b-declaration-erratum-3-2026-11-22, 'Erratum 3': the scoring of record (W3(d)'s window and collapse)"
+  },
+  "readings": {
+    "column": "Table 1 (2006) 'with Pi control' column; complex III under Eq. 24 restored as phi_Pi x Eq. 7 (appendix 1.2). Confirmed (world declaration, R2's readings)",
+    "binding_set": "Mg2+ on ATP and ADP, H+ on Pi and on the matrix buffer B_x, nothing on AMP (appendix 0; G1). Confirmed",
+    "eq20": "the passive K+ and Mg2+ fluxes across the inner membrane are absent (G1). Confirmed",
+    "dpsi": "free state, C_IM dPsi/dt = sum_k q_k J_k. Confirmed",
+    "face": "J_f = gamma p [(c_e - c_P) + z_f v L(c_e, c_P)], v = F(phi_e - phi_P)/RT, into the IMS per unit mitochondrial volume. Confirmed",
+    "face_potential": "phi_IMS - phi_bath from zero net outer-membrane current over the permeant forms and ions (G5; face note 6 erratum)",
+    "bath_speciation": "option (a): free pH held; free Mg2+ from Mg_tot through K_MgATP and K_MgADP (G3)",
+    "bath_valuation": "the held bath's supply valued at each row's free potential (option (a)). Confirmed",
+    "o2_supply": "G6 (ii), the lead's ruling: O2 held in the bath, supplied through the face at p_Pi and across the inner membrane at P_O2; a declared departure R2 shares",
+    "leak": "constant-field H+ (Eq. 19) on the IMS's own free H+, h_P, the P side of the inner membrane: world declaration erratum 2 (tag mito-mt1b-declaration-erratum-2-2026-11-22), item 1",
+    "A_IM": "R2's reading, accepted by the lead (22 November 2026): A_IM = C/(1 uF cm-2) exactly, with C = C_IM F per litre of mitochondria (world declaration 0 prints 6.513e-8 m2 for 1 pL, rounded)",
+    "controls_b_c": "R2's reading, accepted by the lead (22 November 2026): controls (b) and (c) run (a)'s main schedule (0-300 s) from the declared start; the branches are world (a)'s",
+    "anchor": "G7 with G5's erratum: the matrix charge inventory is the dynamics' conserved matrix charge, I_N = C_IM dPsi + W_x sum_N z_row c_row over frame B's rows (the matrix buffer's base charge, a constant, left out); its value is the one whose state-4 steady state at [Pi]e = 0 has pH_N = 7.1418, computed as the limit [Pi]e -> 0 with the declared traces. The seventh inventory, I_NP = W_x sum_N z c + W_i sum_P z c, is set by zero outer-membrane potential at the anchor state and again at the start state",
+    "o2_node": "R2's reading, accepted by the lead (22 November 2026): W3(d)'s O2 node is finite from t = 0",
+    "P_O2": "R2's reading, accepted by the lead (22 November 2026): P_O2 = 9.9e-5 m s-1 as printed"
+  },
+  "temperature_K": {
+    "value": 298.15,
+    "source": "appendix 0 (D236); world declaration 0"
+  },
+  "parameters": {
+    "X_C1": {
+      "value": 0.36923,
+      "unit": "mol s-1 M-1 (L mito)-1",
+      "source": "appendix 9, with Pi control"
+    },
+    "X_C3": {
+      "value": 0.091737,
+      "unit": "mol s-1 M-1 (L mito)-1",
+      "source": "appendix 9"
+    },
+    "k_Pi3": {
+      "value": 0.19172,
+      "unit": "mM",
+      "source": "appendix 9"
+    },
+    "k_Pi4": {
+      "value": 25.31,
+      "unit": "mM",
+      "source": "appendix 9"
+    },
+    "X_C4": {
+      "value": 3.2562e-05,
+      "unit": "mol s-1 M-1 (L mito)-1",
+      "source": "appendix 9"
+    },
+    "k_O2": {
+      "value": 0.00012,
+      "unit": "M",
+      "source": "appendix 9"
+    },
+    "X_F1": {
+      "value": 150.93,
+      "unit": "mol s-1 M-2 (L mito)-1",
+      "source": "appendix 9"
+    },
+    "n_A": {
+      "value": 3,
+      "unit": "1",
+      "source": "appendix 9"
+    },
+    "K_MgATP": {
+      "value": 2.4e-05,
+      "unit": "M",
+      "source": "appendix 9"
+    },
+    "K_MgADP": {
+      "value": 0.000347,
+      "unit": "M",
+      "source": "appendix 9"
+    },
+    "k_dH": {
+      "value": 1.7783e-07,
+      "unit": "M",
+      "source": "appendix 9"
+    },
+    "X_ANT": {
+      "value": 0.0079204,
+      "unit": "mol s-1 (L mito)-1",
+      "source": "appendix 9"
+    },
+    "k_mADP": {
+      "value": 3.5e-06,
+      "unit": "M",
+      "source": "appendix 9"
+    },
+    "theta_P": {
+      "value": 0.35,
+      "unit": "1",
+      "source": "appendix 3 (Eq. 14)"
+    },
+    "theta_N": {
+      "value": 0.65,
+      "unit": "1",
+      "source": "appendix 3 (Eq. 14)"
+    },
+    "X_PiHt": {
+      "value": 339430.0,
+      "unit": "mol s-1 M-1 (L mito)-1",
+      "source": "appendix 9"
+    },
+    "k_PiHt": {
+      "value": 0.45082,
+      "unit": "mM",
+      "source": "appendix 9"
+    },
+    "X_KH": {
+      "value": 29802000.0,
+      "unit": "mol s-1 M-2 (L mito)-1",
+      "source": "appendix 9"
+    },
+    "X_DH": {
+      "value": 0.09183,
+      "unit": "mol s-1 M-1 (L mito)-1",
+      "source": "appendix 9"
+    },
+    "r": {
+      "value": 4.5807,
+      "unit": "1",
+      "source": "appendix 9"
+    },
+    "k_Pi1": {
+      "value": 0.13413,
+      "unit": "mM",
+      "source": "appendix 9"
+    },
+    "k_Pi2": {
+      "value": 0.67668,
+      "unit": "mM",
+      "source": "appendix 9"
+    },
+    "K_AK": {
+      "value": 0.4331,
+      "unit": "1",
+      "source": "appendix 9"
+    },
+    "X_AK": {
+      "value": 1000000.0,
+      "unit": "mol s-1 M-2 (L mito)-1",
+      "source": "appendix 9"
+    },
+    "p_A": {
+      "value": 85.0,
+      "unit": "um s-1",
+      "source": "appendix 9"
+    },
+    "p_Pi": {
+      "value": 327.0,
+      "unit": "um s-1",
+      "source": "appendix 9"
+    },
+    "gamma": {
+      "value": 5.99,
+      "unit": "um-1",
+      "source": "appendix 9"
+    },
+    "NAD_tot": {
+      "value": 2.97,
+      "unit": "mM, matrix water",
+      "source": "appendix 9"
+    },
+    "Q_tot": {
+      "value": 1.35,
+      "unit": "mM, counted in matrix water (Eq. 22)",
+      "source": "appendix 0 and 9"
+    },
+    "cytC_tot": {
+      "value": 2.7,
+      "unit": "mM, IMS water",
+      "source": "appendix 9; world declaration G7 'Cytochrome c'"
+    },
+    "A_tot": {
+      "value": 10.0,
+      "unit": "mM, matrix water",
+      "source": "appendix 9"
+    },
+    "Mg_tot_N": {
+      "value": 5.0,
+      "unit": "mM, matrix water",
+      "source": "appendix 9 (D236); world declaration G1"
+    },
+    "dG0_C1_pH7": {
+      "value": -69.37,
+      "unit": "kJ mol-1",
+      "source": "appendix 1.1 (Table 2)"
+    },
+    "dG0_C3_pH7": {
+      "value": -32.53,
+      "unit": "kJ mol-1",
+      "source": "appendix 1.2 (Table 2)"
+    },
+    "dG0_C4_pH7_per_half_O2": {
+      "value": -122.94,
+      "unit": "kJ mol-1",
+      "source": "appendix 1.3 (Table 2)"
+    },
+    "dG0_ATP_pH7": {
+      "value": 36.03,
+      "unit": "kJ mol-1",
+      "source": "appendix 2 (Table 2)"
+    },
+    "supply_reference_pH": {
+      "value": 7.1,
+      "unit": "1",
+      "source": "appendix 6 (D236)"
+    },
+    "supply_pair_exponent": {
+      "value": -0.1,
+      "unit": "1",
+      "source": "appendix 6: S_red/S_ox = 10^-0.10 r"
+    },
+    "state3_Mg_tot_match": {
+      "value": 5.0,
+      "unit": "mM",
+      "source": "appendix 7, the matched state-3 buffer"
+    },
+    "state3_ADP_tot_match": {
+      "value": 1.3,
+      "unit": "mM",
+      "source": "appendix 7, the matched state-3 buffer"
+    }
+  },
+  "world": {
+    "W_x": {
+      "value": 0.6435,
+      "unit": "L matrix water (L mito)-1",
+      "source": "world declaration 0 and G2"
+    },
+    "W_i": {
+      "value": 0.0715,
+      "unit": "L IMS water (L mito)-1",
+      "source": "world declaration 0 and G2"
+    },
+    "C_IM": {
+      "value": 6.75e-06,
+      "unit": "mol (L mito)-1 mV-1",
+      "source": "world declaration 0 (the 2006-corrected value)"
+    },
+    "X_Hle": {
+      "value": 250.0,
+      "unit": "mol s-1 mV-1 M-1 (L mito)-1",
+      "source": "world declaration G1: J = X_Hle dPsi (h_P e^u - h_N)/(e^u - 1)"
+    },
+    "uncoupler_factor": {
+      "value": 30.0,
+      "unit": "1",
+      "source": "world declaration G1: the uncoupler patch at 30 x the leak's P_H A_IM"
+    },
+    "buffer_N_total": {
+      "value": 0.04,
+      "unit": "M, matrix water",
+      "source": "world declaration G1: one-site B_x, 40.0 mM"
+    },
+    "buffer_N_pK": {
+      "value": 7.1,
+      "unit": "1",
+      "source": "world declaration G1: pK 7.10"
+    },
+    "buffer_P_total": {
+      "value": 0.0,
+      "unit": "M, IMS water",
+      "source": "world declaration G1: no IMS buffer"
+    },
+    "buffer_P_pK": {
+      "value": 7.1,
+      "unit": "1",
+      "source": "unused (no IMS buffer)"
+    },
+    "p_H_free": {
+      "value": 327.0,
+      "unit": "um s-1",
+      "source": "world declaration G4: p_Pi"
+    },
+    "p_K_free": {
+      "value": 327.0,
+      "unit": "um s-1",
+      "source": "world declaration G4: p_Pi"
+    },
+    "p_Mg_free": {
+      "value": 327.0,
+      "unit": "um s-1",
+      "source": "world declaration G4: p_Pi"
+    },
+    "p_O2_face": {
+      "value": 327.0,
+      "unit": "um s-1",
+      "source": "world declaration G6 (ii) and G7 (d): the face at p_Pi"
+    },
+    "P_O2_inner": {
+      "value": 9.9e-05,
+      "unit": "m s-1",
+      "source": "world declaration G6 (ii): passive neutral permeation across the inner membrane"
+    },
+    "C_area": {
+      "value": 0.01,
+      "unit": "F m-2 (1 uF cm-2)",
+      "source": "world declaration 0: A_IM at 1 uF cm-2"
+    },
+    "exchange_form": {
+      "value": "declared",
+      "source": "appendix 3: the declared form J = S (1 - e^x). 'printed' (Eq. 14's two-fraction form) is plant P-a's option only (the lead's ruling of 22 November 2026)"
+    }
+  },
+  "bath": {
+    "pH": {
+      "value": 7.1,
+      "unit": "1, free H+ held",
+      "source": "world declaration G3"
+    },
+    "K": {
+      "value": 0.15,
+      "unit": "M",
+      "source": "world declaration G3"
+    },
+    "Mg_tot": {
+      "value": 0.005,
+      "unit": "M",
+      "source": "world declaration G3"
+    },
+    "Pi_tot": {
+      "value": 0.01,
+      "unit": "M",
+      "source": "world declaration G3"
+    },
+    "O2": {
+      "value": 2.6e-05,
+      "unit": "M",
+      "source": "world declaration G6 (ii)"
+    },
+    "ADP_state3": {
+      "value": 0.0013,
+      "unit": "M",
+      "source": "world declaration G3 and G7"
+    },
+    "ADP_trace": {
+      "value": 1e-12,
+      "unit": "M",
+      "source": "1 pM: world declaration erratum 2 (tag mito-mt1b-declaration-erratum-2-2026-11-22), item 2"
+    },
+    "ATP_trace": {
+      "value": 1e-12,
+      "unit": "M",
+      "source": "1 pM: world declaration erratum 2 (tag mito-mt1b-declaration-erratum-2-2026-11-22), item 2"
+    },
+    "AMP_trace": {
+      "value": 1e-12,
+      "unit": "M",
+      "source": "1 pM: world declaration erratum 2 (tag mito-mt1b-declaration-erratum-2-2026-11-22), item 2"
+    },
+    "ADP_atp_bath": {
+      "value": 0.0005,
+      "unit": "M",
+      "source": "world declaration G7: the inhibitor branch's bath, ADP 0.5 mM (the uncoupler branch takes it too, the lead's ruling)"
+    },
+    "ATP_atp_bath": {
+      "value": 0.00087,
+      "unit": "M",
+      "source": "world declaration G7: ATP 0.87 mM"
+    }
+  },
+  "finite_O2": {
+    "node_water": {
+      "value": 6300.0,
+      "unit": "L (L mito)-1: 6.3 nL per pL",
+      "source": "world declaration G7, W3(d)"
+    },
+    "O2_start": {
+      "value": 2.6e-05,
+      "unit": "M",
+      "source": "world declaration G7, W3(d)"
+    }
+  },
+  "anchor": {
+    "pH_N": {
+      "value": 7.1418,
+      "unit": "1",
+      "source": "world declaration G7: the matrix charge inventory anchored to pH_x = 7.1418 at state 4, [Pi]e = 0"
+    },
+    "Pi_e_limit": {
+      "value": [
+        1e-09,
+        1e-12,
+        1e-15
+      ],
+      "unit": "M",
+      "source": "R2: [Pi]e = 0 taken as the limit of these, each a steady state in ln variables"
+    },
+    "I_NP_rule": {
+      "value": "zero_potential_each",
+      "source": "world declaration G5 erratum (tag mito-mt1b-declaration-erratum-2026-11-22): zero outer-membrane potential at the anchor ([Pi]e -> 0) and again at the start ([Pi]e = 10 mM), each IMS at its own bath's free ions"
+    },
+    "I_N_check": {
+      "value": 0.0851185587,
+      "unit": "mol (L mito)-1",
+      "source": "world declaration G5 erratum: R2's anchor value, recorded as a check only"
+    }
+  },
+  "protocol": {
+    "source": "world declaration G7 (R2's proposal as accepted)",
+    "main": [
+      {
+        "name": "state4_a",
+        "t0": 0.0,
+        "t1": 60.0,
+        "bath": "trace"
+      },
+      {
+        "name": "state3",
+        "t0": 60.0,
+        "t1": 180.0,
+        "bath": "state3"
+      },
+      {
+        "name": "state4_b",
+        "t0": 180.0,
+        "t1": 300.0,
+        "bath": "trace"
+      }
+    ],
+    "branches": [
+      {
+        "name": "uncoupler",
+        "t0": 300.0,
+        "t1": 420.0,
+        "bath": "atp_bath",
+        "a_unc": 1.0
+      },
+      {
+        "name": "inhibitor",
+        "t0": 300.0,
+        "t1": 420.0,
+        "bath": "atp_bath",
+        "a_C4": 0.0
+      }
+    ],
+    "controls": {
+      "a": {},
+      "b": {
+        "a_unc": 1.0
+      },
+      "c": {
+        "a_ANT": 0.0
+      },
+      "d": {}
+    },
+    "world_d": [
+      {
+        "name": "state4_a",
+        "t0": 0.0,
+        "t1": 60.0,
+        "bath": "trace",
+        "o2": "bath"
+      },
+      {
+        "name": "state3_O2_exhaustion",
+        "t0": 60.0,
+        "t1": 240.0,
+        "bath": "state3",
+        "o2": "node"
+      }
+    ],
+    "output": {
+      "fine_dt_s": 0.01,
+      "fine_window_s": 2.0,
+      "coarse_dt_s": 0.5
+    },
+    "drift_window_s": 10.0,
+    "world_d_source": "O2 depletion starts at 60 s, so 0-60 s is a true state-4 plateau: the lead's ruling of 22 November 2026, for the world declaration's erratum 2 (tag pending)"
+  },
+  "bands": {
+    "note": "the MT-1b draft's plateau bands (MR1-MT2's), with erratum 2's absolute floors on concentration readouts: band = max(relative band x |value|, floor). The drift rule asks a change below a tenth of the band over the last 10 s",
+    "dpsi_mV": 0.05,
+    "pH": 0.0005,
+    "fraction": 0.0005,
+    "relative": 0.001,
+    "floors": {
+      "ATP_N": 1e-05,
+      "ADP_N": 1e-05,
+      "Pi_N": 1e-05,
+      "K_N": 0.00015,
+      "ATP_P": 1.3e-06,
+      "ADP_P": 1.3e-06,
+      "AMP_P": 1.3e-06,
+      "source": "world declaration erratum 2 (tag mito-mt1b-declaration-erratum-2-2026-11-22), item 3: 0.1% of each pool's declared total (ATP_N and ADP_N of A_tot 10 mM, Pi_N of the bath's 10 mM, K_N of the bath's 150 mM, the IMS adenylates of the bath's 1.3 mM ADP); the O2 flux band has no absolute floor (R2's reading: item 3 floors concentration readouts, and item 4's window covers the O2 flux's vanishing tail)"
+    },
+    "judged_weight": "world declaration erratum 2 (tag mito-mt1b-declaration-erratum-2-2026-11-22), item 7: dPsi (plateaus and transients), cytochrome c's reduced fraction, NADH's fraction, pH, the O2 flux outside the window, and concentrations above their floors only"
+  },
+  "start_guess": {
+    "note": "R2's first guesses for the Newton steady states; the start state itself is the anchored steady state (G7), so these reach no output",
+    "dpsi_mV": 180.0,
+    "pH_N": 7.15,
+    "K_N": 0.14,
+    "ATP_N_fraction": 0.5,
+    "Pi_N": 0.005,
+    "NADH_fraction": 0.5,
+    "QH2_fraction": 0.5,
+    "cytc_red_fraction": 0.5
+  },
+  "integration": {
+    "concentration_floor": {
+      "rule": "the smallest declared trace (ADP, ATP and AMP in the bath)",
+      "source": "world declaration erratum 2 (tag mito-mt1b-declaration-erratum-2-2026-11-22), item 2: the floor scales with the trace, so the error control stays relative down to the smallest trace"
+    }
+  },
+  "scoring": {
+    "window": {
+      "world": "d",
+      "rule": "from the time the reference's O2 flux first falls below the fraction of its state-3 value, to the run's end",
+      "fraction_of_state3": 0.001,
+      "state3_from": {
+        "world": "a",
+        "segment": "state3"
+      },
+      "source": "world declaration erratum 3 (tag mito-mt1b-declaration-erratum-3-2026-11-22), item 2: the window on the flux itself, fixed at registration from the reference alone (about 195.8 s); it replaces erratum 2's 0.37 nM threshold. R2's readings: the state-3 value is world (a)'s state-3 plateau O2 flux (1.638e-3, the value erratum 3 quotes); the crossing time is log-linear in the flux between the reference's two outputs around it"
+    },
+    "collapse": {
+      "world": "d",
+      "onset": {
+        "reading": "O2_N",
+        "below_M": 3.73e-07
+      },
+      "end": "the window's opening",
+      "band": "a tenth of each judged readout's excursion (max - min) over the collapse in the reference",
+      "source": "world declaration erratum 3 (tag mito-mt1b-declaration-erratum-3-2026-11-22), item 3: the anoxic collapse from the matrix O2's P50 crossing (0.373 uM, about 160.5 s) to the window, judged with the registration's transient bands; for dPsi about 10.2 mV. R2's reading: the excursion is taken over the reference's outputs in the collapse and its two ends, each end linear in the readout between the outputs around it"
+    },
+    "expected_P50_crossing_s": {
+      "value": 160.4,
+      "P50_M": 3.73e-07,
+      "source": "world declaration erratum 2 (tag mito-mt1b-declaration-erratum-2-2026-11-22), item 4: a prediction R2's run reports against"
+    },
+    "superseded": {
+      "excluded_window_erratum_2": {
+        "reading": "O2_N",
+        "below_M": 3.73e-10,
+        "source": "erratum 2, item 4; superseded by world declaration erratum 3 (tag mito-mt1b-declaration-erratum-3-2026-11-22)"
+      }
+    }
+  },
+  "plants": {
+    "source": "the MT-1b draft's plants, each to miss by at least 3 bands on a judged row; P-a's printed form: the lead's ruling of 22 November 2026, for the world declaration's erratum 2 (tag pending)",
+    "P-a": {
+      "what": "the exchange's shares at 0.35 and 0.70, in Eq. 14's printed two-fraction form",
+      "overrides": {
+        "theta_N": 0.7,
+        "exchange_form": "printed"
+      }
+    },
+    "P-b": {
+      "what": "the exchange's activity x 1.01",
+      "overrides": {
+        "X_ANT": 0.007999603999999999
+      }
+    },
+    "P-c": {
+      "what": "the 2005 k_O2, 1.0e-6 M (appendix 9: the 2005 PDF prints 1.0e-6 for k_O2)",
+      "overrides": {
+        "k_O2": 1e-06
+      }
+    }
+  }
+}
