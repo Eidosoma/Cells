@@ -1,0 +1,646 @@
+{
+ "schema": "xenopus_xc0_declared_inputs@2",
+ "date_utc": "2026-11-19",
+ "status": "FROZEN FOR THE REFERENCES",
+ "supersedes": "declared_inputs@1 of 13:21 UTC",
+ "conventions": {
+  "units": "SI for geometry, permeability and potentials; mM for concentrations; fmol for amounts; 1 mM in 1 pL is 1 fmol",
+  "activity_coefficients": "1 (ideal solution): concentrations stand for activities everywhere, including in every free energy",
+  "CHARGE_PER_FMOL_C": 9.648533212000001e-11,
+  "charge_anchor_rule": "cell: fixed_charge_equivalent_fmol = C_total V0 / CHARGE_PER_FMOL - sum_i z_i n_i; initial_charge_C = CHARGE_PER_FMOL (fixed_charge_equivalent_fmol + sum_i z_i n_i) = C_total V0. Extracellular nodes (bath, local): fixed_charge_equivalent_fmol = - sum_i z_i n_i; initial_charge_C = 0 (the cleft_egg pattern). C_total is the sum of the patches' capacitances",
+  "sign_convention": "V is the cell's inside potential minus the outside node's potential; N is the inside end, P the outside end of every population and route",
+  "R_J_per_mol_K": 8.314462618,
+  "F_C_per_mol": 96485.33212
+ },
+ "temperature_K": {
+  "value": 291.15,
+  "celsius": 18.0,
+  "basis": "top of the 14-18 C housing range stated in the 2013 Methods; impalement temperature unstated",
+  "bracket_K": [
+   287.15,
+   291.15
+  ]
+ },
+ "preparation_card": {
+  "id": "xenopus.ectoderm_cell.st15.nominal",
+  "location": "validation-side data (cells.preparation_card@1, validator in validation/); the world definition cites this id in its provenance",
+  "organism": "Xenopus laevis",
+  "cell_type": "surface ectoderm cell (nominal single cell)",
+  "stage": "Nieuwkoop-Faber 15 for the voltage targets; the ion set was measured at cleavage stages (declared stage-transfer assumption)"
+ },
+ "geometry": {
+  "shape": "sphere",
+  "radius_m": 2.5e-05,
+  "volume_m3": 6.544984694978736e-14,
+  "volume_pL": 65.44984694978736,
+  "area_m2": 7.853981633974483e-09,
+  "specific_capacitance_F_per_m2": 0.01,
+  "total_capacitance_F": 7.853981633974483e-11,
+  "basis": "radius and capacitance nominal (no source read; 1 uF/cm2 is the conventional bilayer value); the checks are scale-free except the diffusion time of C8"
+ },
+ "species": [
+  {
+   "id": "Na",
+   "valence": 1
+  },
+  {
+   "id": "K",
+   "valence": 1
+  },
+  {
+   "id": "Cl",
+   "valence": -1
+  },
+  {
+   "id": "A",
+   "valence": -1
+  },
+  {
+   "id": "B",
+   "valence": -1
+  }
+ ],
+ "species_notes": "A (impermeant anion, assumed, set by electroneutrality) and B (butyrate) need no standard potential: a transported or impermeant anion needs none (kinds owner); every species has an initial amount at every node, a permeability entry (0 if impermeant) on every patch and a material_balance_atol_fmol entry",
+ "ion_sets": {
+  "primary": {
+   "cytosol_mM": {
+    "Na": 21.0,
+    "K": 90.0,
+    "Cl": 30.0,
+    "A": 81.0
+   },
+   "why": "the primary microelectrode measurement (Gillespie 1983, abstract); the second-hand 2016 table's K = 51 mM is below the level at which the same source reports embryos dying, and its Na = 38 mM has no stage; Cl = 30 mM is the 128-cell value, nearest to stage 15"
+  },
+  "bracket_Cl_high": {
+   "cytosol_mM": {
+    "Na": 21.0,
+    "K": 90.0,
+    "Cl": 60.0,
+    "A": 51.0
+   },
+   "why": "the authors' quoted value and the egg-to-4-cell value"
+  },
+  "bracket_second_hand_table": {
+   "cytosol_mM": {
+    "Na": 38.0,
+    "K": 51.0,
+    "Cl": 30.0,
+    "A": 59.0
+   },
+   "why": "Chernet et al. 2016, Table 1, cited there to Gillespie; stage unknown"
+  }
+ },
+ "nodes": {
+  "cell": {
+   "id": "cell",
+   "volume_pL": 65.44984694978736,
+   "initial_amount_fmol": {
+    "Na": 1374.4467859455344,
+    "K": 5890.486225480862,
+    "Cl": 1963.4954084936207,
+    "A": 5301.431057948081,
+    "B": 0.006544984694978736
+   },
+   "fixed_charge_equivalent_fmol": -0.03256031341328572,
+   "initial_charge_C": -3.1415926535897935e-12
+  },
+  "bath": {
+   "node": {
+    "id": "outside_bath",
+    "volume_pL": 1000.0,
+    "initial_amount_fmol": {
+     "Na": 9900.0,
+     "K": 200.0,
+     "Cl": 10100.0,
+     "A": 0.0,
+     "B": 0.0
+    },
+    "fixed_charge_equivalent_fmol": -0.0,
+    "initial_charge_C": 0.0,
+    "reservoir": true,
+    "boundary_potential_V": 0.0
+   },
+   "medium": "0.1x MMR, pH 7.8",
+   "basis": "Na 9.9, K 0.2 from the 2016 table; Cl 10.1 chosen to keep the ions neutral without the omitted Ca (0.3) and Mg (0.2); the 2013 text says 10 mM and the 2016 table 11.1",
+   "cl_bracket_mM": [
+    10.0,
+    11.1
+   ]
+  },
+  "bath_70Cl": {
+   "node": {
+    "id": "outside_bath",
+    "volume_pL": 1000.0,
+    "initial_amount_fmol": {
+     "Na": 69800.0,
+     "K": 200.0,
+     "Cl": 70000.0,
+     "A": 0.0,
+     "B": 0.0
+    },
+    "fixed_charge_equivalent_fmol": -0.0,
+    "initial_charge_C": 0.0,
+    "reservoir": true,
+    "boundary_potential_V": 0.0
+   },
+   "cation_options": "primary: a sodium salt (Na 69.8 mM, shown); alternative: an inert monovalent cation Ch of 59.9 mM added as a sixth species (the paper does not state the cation); both are run and the verdict reported for each"
+  },
+  "bath_butyrate_dose": {
+   "node": {
+    "id": "outside_bath",
+    "volume_pL": 1000.0,
+    "initial_amount_fmol": {
+     "Na": 19900.0,
+     "K": 200.0,
+     "Cl": 10100.0,
+     "A": 0.0,
+     "B": 10000.0
+    },
+    "fixed_charge_equivalent_fmol": -0.0,
+    "initial_charge_C": 0.0,
+    "reservoir": true,
+    "boundary_potential_V": 0.0
+   },
+   "medium": "0.1x MMR + 10 mM sodium butyrate",
+   "note": "exposure time unpublished; uptake claims state their time"
+  },
+  "local": {
+   "node": {
+    "id": "outside_local",
+    "volume_pL": 10.0,
+    "initial_amount_fmol": {
+     "Na": 910.0,
+     "K": 40.0,
+     "Cl": 590.0,
+     "A": 360.0,
+     "B": 0.0
+    },
+    "fixed_charge_equivalent_fmol": -0.0,
+    "initial_charge_C": 0.0,
+    "reservoir": false,
+    "boundary_potential_V": 0.0
+   },
+   "basis": "Gillespie mid-blastula intercellular Na 91, K 4, Cl 59 mM; A 36 mM is the derived balancing anion; Ca omitted; volume nominal"
+  }
+ },
+ "face": {
+  "id": "access",
+  "sender": "outside_local",
+  "receiver": "outside_bath",
+  "area_m2": 1e-10,
+  "length_m": 0.0001,
+  "diffusivity_m2_per_s": {
+   "Na": 1.33e-09,
+   "K": 1.96e-09,
+   "Cl": 2.03e-09,
+   "A": 0.0,
+   "B": 1e-09
+  },
+  "law": "logmean_electrodiffusion@1",
+  "basis": "cleft_egg's pattern (a finite node with one face to the held bath); free-solution diffusivities as cleft_egg uses for Na, K, Cl; B's is nominal; A is impermeant to the face by declaration; geometry nominal"
+ },
+ "membranes": [
+  {
+   "id": "m_main",
+   "inside": "cell",
+   "outside": "outside",
+   "area_fraction": 0.6,
+   "area_m2": 4.712388980384689e-09,
+   "capacitance_F": 4.71238898038469e-11,
+   "law": "constant_field@1",
+   "permeability_m_per_s": {
+    "Na": 5.44e-10,
+    "K": 0.0,
+    "Cl": 1.49e-10,
+    "A": 0.0,
+    "B": 0.0
+   },
+   "pump": {
+    "law": "nak_atp_mass_action_positive@1",
+    "stoichiometry": {
+     "Na": -3,
+     "K": 2
+    },
+    "capacity_fmol_per_s": 0.005,
+    "km_na_mM": 10.0,
+    "km_k_mM": 1.0,
+    "km_atp_mM": 0.5,
+    "metabolism": {
+     "kind": "maintained_chemical_reservoirs@1",
+     "atp_mM": 1.5,
+     "adp_mM": 0.1,
+     "pi_mM": 0.1,
+     "delta_g0_J_per_mol": -37000.0
+    },
+    "availability": "0 in C1-C4, C5 as stated, 1 in C7 pump runs"
+   },
+   "hosts": [
+    "symporter population (cells.transporter@1)"
+   ],
+   "availability_schedule": "1"
+  },
+  {
+   "id": "m_kleak",
+   "inside": "cell",
+   "outside": "outside",
+   "area_fraction": 0.2,
+   "area_m2": 1.5707963267948966e-09,
+   "capacitance_F": 1.5707963267948968e-11,
+   "law": "constant_field@1",
+   "permeability_m_per_s": {
+    "Na": 0.0,
+    "K": 1.741e-09,
+    "Cl": 0.0,
+    "A": 0.0,
+    "B": 0.0
+   },
+   "availability_schedule": "1",
+   "note": "the K leak sits on its own patch because the Kir route's host patch must have zero constant-field permeability for K"
+  },
+  {
+   "id": "m_kir",
+   "inside": "cell",
+   "outside": "outside",
+   "area_fraction": 0.1,
+   "area_m2": 7.853981633974483e-10,
+   "capacitance_F": 7.853981633974484e-12,
+   "law": "constant_field@1",
+   "permeability_m_per_s": {
+    "Na": 0.0,
+    "K": 0.0,
+    "Cl": 0.0,
+    "A": 0.0,
+    "B": 0.0
+   },
+   "hosts": [
+    "route kir_0 (cells.passive_routes, law kir4p1_linear_driving_force@1)"
+   ],
+   "availability_schedule": "0 or 1 per arm (the Kir4.1 arm is 1)"
+  },
+  {
+   "id": "m_glycine",
+   "inside": "cell",
+   "outside": "outside",
+   "area_fraction": 0.1,
+   "area_m2": 7.853981633974483e-10,
+   "capacitance_F": 7.853981633974484e-12,
+   "law": "constant_field@1",
+   "permeability_m_per_s": {
+    "Na": 0.0,
+    "K": 0.0,
+    "Cl": "P_GlyR calibration parameter, grid 1e-9, 3e-9, 1e-8, 3e-8 m/s",
+    "A": 0.0,
+    "B": 0.0
+   },
+   "availability_schedule": "0 (control) or 1 (GlyR F99A, constitutively open); no channel population, no ivermectin",
+   "note": "Cl-only patch; Cl- cannot be a channel population on main"
+  }
+ ],
+ "kir_route": {
+  "kind": "cells.passive_routes@1 (a new route law; a version 2 or one more dispatched name, the kinds owner's file)",
+  "entry": {
+   "id": "kir_0",
+   "patch": "m_kir",
+   "law": "kir4p1_linear_driving_force@1",
+   "species": "K",
+   "g_ref_S_per_m2": "calibration parameter, grid 0.1, 0.3, 1, 3 S/m2",
+   "k_ref_mM": 5.0,
+   "v_half_V": 0.01,
+   "slope_V": 0.01
+  },
+  "sourcing": {
+   "g_ref": "free calibration parameter, no source",
+   "k_ref": "nominal reference concentration, no source",
+   "v_half_and_slope": "nominal, no source: no open-access source with Kir4.1 numbers was found",
+   "form": "the sqrt(K_o) scaling and E_K-referenced rectification are the standard description of inward rectifiers (historical primary literature not read)"
+  }
+ },
+ "symporter_v1": {
+  "kind": "cells.transporter@1 (general layout, population axis)",
+  "law": "na_monocarboxylate_symport_factored@1",
+  "host": "m_main",
+  "orientation": "N = inside end; forward cycle imports",
+  "roles": {
+   "Na": 1,
+   "B": -1
+  },
+  "rows": [
+   [
+    "Na",
+    "P"
+   ],
+   [
+    "Na",
+    "N"
+   ],
+   [
+    "B",
+    "P"
+   ],
+   [
+    "B",
+    "N"
+   ]
+  ],
+  "modes": [
+   [
+    "import",
+    [
+     "-n_Na",
+     "n_Na",
+     -1,
+     1
+    ]
+   ]
+  ],
+  "parameters": {
+   "n_Na": 2,
+   "K_Na_mM": 30.0,
+   "hill_Na": 2,
+   "K_B_mM": 0.1,
+   "hill_B": 1
+  },
+  "parameter_ranges": {
+   "n_Na": [
+    1,
+    4
+   ]
+  },
+  "capacity_fmol_per_s": {
+   "base": 0.01,
+   "vito_c_arm": "0.01 x f_VitoC with f_VitoC in [0,1] a free declared factor of that arm, grid 0, 0.25, 0.5, 0.75; folded into capacity_fmol_s, never the form"
+  },
+  "sourcing": "n_Na = 2 rests on the Coady et al. 2007 abstract for lactate and propionate (SMCT1, human SLC5A8); butyrate and the Xenopus ortholog are not covered, so n = 2 is an assumption. K_Na, hill_Na, K_B and the capacity: NO SOURCE, nominal placeholders"
+ },
+ "symporter_v2": {
+  "law": "na_monocarboxylate_symport_diagram@1",
+  "host": "m_main",
+  "rate_scale_omega_per_s": 1.0,
+  "standard_state_mM": 1000.0,
+  "states": [
+   "S0 empty, outward facing",
+   "S1 Na bound",
+   "S2 Na2 bound",
+   "S3 Na2 B bound, outward facing",
+   "S4 Na2 B bound, inward facing",
+   "S5 Na2 bound, inward facing",
+   "S6 Na bound, inward facing",
+   "S7 empty, inward facing"
+  ],
+  "edges": [
+   {
+    "id": "e1",
+    "source": 0,
+    "target": 1,
+    "forward": {
+     "k0_per_s": 100000.0,
+     "orders": [
+      [
+       "Na",
+       "P",
+       1
+      ]
+     ]
+    },
+    "backward": {
+     "k0_per_s": 3000.0,
+     "orders": []
+    },
+    "q": 0.2
+   },
+   {
+    "id": "e2",
+    "source": 1,
+    "target": 2,
+    "forward": {
+     "k0_per_s": 100000.0,
+     "orders": [
+      [
+       "Na",
+       "P",
+       1
+      ]
+     ]
+    },
+    "backward": {
+     "k0_per_s": 3000.0,
+     "orders": []
+    },
+    "q": 0.2
+   },
+   {
+    "id": "e3",
+    "source": 2,
+    "target": 3,
+    "forward": {
+     "k0_per_s": 100000.0,
+     "orders": [
+      [
+       "B",
+       "P",
+       1
+      ]
+     ]
+    },
+    "backward": {
+     "k0_per_s": 10.0,
+     "orders": []
+    },
+    "q": -0.1
+   },
+   {
+    "id": "e4",
+    "source": 3,
+    "target": 4,
+    "forward": {
+     "k0_per_s": 90.0,
+     "orders": []
+    },
+    "backward": {
+     "k0_per_s": 12.0,
+     "orders": []
+    },
+    "q": 0.4
+   },
+   {
+    "id": "e5",
+    "source": 4,
+    "target": 5,
+    "forward": {
+     "k0_per_s": 200.0,
+     "orders": []
+    },
+    "backward": {
+     "k0_per_s": 100000.0,
+     "orders": [
+      [
+       "B",
+       "N",
+       1
+      ]
+     ]
+    },
+    "q": -0.5
+   },
+   {
+    "id": "e6",
+    "source": 5,
+    "target": 6,
+    "forward": {
+     "k0_per_s": 200.0,
+     "orders": []
+    },
+    "backward": {
+     "k0_per_s": 100000.0,
+     "orders": [
+      [
+       "Na",
+       "N",
+       1
+      ]
+     ]
+    },
+    "q": 0.4
+   },
+   {
+    "id": "e7",
+    "source": 6,
+    "target": 7,
+    "forward": {
+     "k0_per_s": 200.0,
+     "orders": []
+    },
+    "backward": {
+     "k0_per_s": 100000.0,
+     "orders": [
+      [
+       "Na",
+       "N",
+       1
+      ]
+     ]
+    },
+    "q": 0.4
+   },
+   {
+    "id": "e8",
+    "source": 7,
+    "target": 0,
+    "forward": {
+     "k0_per_s": 30.0,
+     "orders": []
+    },
+    "backward": {
+     "k0_per_s": 20.0,
+     "orders": []
+    },
+    "q": 0.0
+   }
+  ],
+  "mode": {
+   "id": "import",
+   "cycle": [
+    [
+     "e1",
+     1
+    ],
+    [
+     "e2",
+     1
+    ],
+    [
+     "e3",
+     1
+    ],
+    [
+     "e4",
+     1
+    ],
+    [
+     "e5",
+     1
+    ],
+    [
+     "e6",
+     1
+    ],
+    [
+     "e7",
+     1
+    ],
+    [
+     "e8",
+     1
+    ]
+   ],
+   "counts": {
+    "Na_P": -2,
+    "Na_N": 2,
+    "B_P": -1,
+    "B_N": 1
+   }
+  },
+  "electric_distance_rule": "q_e is the charge (in units of e) moved from P toward N by traversing edge e forward, a fraction of the field; with a symmetric barrier zeta_forward = -0.5 q_e and zeta_backward = +0.5 q_e, so zeta_forward - zeta_backward = -q_e; the rate of an edge is k0 prod a^order exp(zeta psi), a = c / 1000 mM, psi = F V / RT",
+  "charge_sum_check": "sum of q_e = 0.2+0.2-0.1+0.4-0.5+0.4+0.4+0 = 1.0 = n - 1, the charge moved P to N per cycle (each ion's displacement sums to 1: Na 0.2+0.4+0.4 per ion over its edges, B 0.1+0.4+0.5)",
+  "detailed_balance_check": "product of forward k0 = 1e5*1e5*1e5*90*200*200*200*30 = 2.16e25; product of backward k0 = 3e3*3e3*10*12*1e5*1e5*1e5*20 = 2.16e25; the constants are those of a transport-only cycle (no free energy source), so the ratio is exactly 1",
+  "implied_dissociation_mM": {
+   "Na_P": 30.0,
+   "B_P": 0.1,
+   "Na_N": 2.0,
+   "B_N": 3.0
+  },
+  "sourcing": "NO SOURCE for any constant: the constants and electric distances are nominal and consistent (detailed balance, charge), not literature; Gopal et al. 2004, cited by the 2013 paper for voltage-dependent uptake, was not read"
+ },
+ "junction": {
+  "id": "junction_0",
+  "sender": "cell_1",
+  "receiver": "cell_2",
+  "law": "constant_field@1",
+  "area_m2": 1e-11,
+  "permeability_m_per_s": {
+   "Na": 1e-06,
+   "K": 1e-06,
+   "Cl": 1e-06,
+   "A": 0.0,
+   "B": 0.0
+  },
+  "gate": {
+   "law": "junction_voltage_relaxation@1",
+   "threshold_voltage_V": 0.015,
+   "minimum_open_fraction": 1.0,
+   "initial_gate": 1.0
+  },
+  "availability": 1.0,
+  "basis": "nominal (about 5 nS); the gate is inert: minimum_open_fraction 1.0 parses (the @3 owner) and with initial_gate 1.0 keeps the gate exactly 1 inside the law's voltage domain |V| <= 0.120 V; the BETSE-derived rate equations decide nothing"
+ },
+ "two_cell_P2": "two cells of the geometry above, cell_2 differing per claim only as C5 states; each cell has its own patches; both face the same outside node",
+ "execution": {
+  "solver": "imex_ars222_face_electromigration@1",
+  "field_solver": "capacitive_reduction_gauged_damped_newton@2",
+  "precision": "float64",
+  "dt_s": 0.0001,
+  "closure": "resolved_capacitor_components_current_continuity@1",
+  "material_balance_atol_fmol": {
+   "Na": 1e-09,
+   "K": 1e-09,
+   "Cl": 1e-09,
+   "A": 1e-09,
+   "B": 1e-09
+  },
+  "end_time_s": "per claim",
+  "note": "at moderate steps the energy check can refuse the small local node (FR-18); X2 is the opt-in for registered runs"
+ },
+ "sources_not_found": [
+  "Kir4.1 coefficients (g_ref, V_half, slope, K_ref)",
+  "symporter K_Na, hill_Na, K_B, capacity",
+  "diagram constants and electric distances",
+  "leak permeabilities for an embryonic cell (the oocyte values are placeholders)",
+  "pump parameters",
+  "cell size at stage 15",
+  "local node volume and face geometry",
+  "P_GlyR and the F99A expression level",
+  "the cation balancing 70 mM Cl-",
+  "Vito-C residual activity"
+ ],
+ "frozen_for_the_references": "19 November 2026, 13:35 UTC"
+}
