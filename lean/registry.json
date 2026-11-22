@@ -9,7 +9,7 @@
     "cells.cytochrome_c_oxygen_proton_cycle@1": "src/cells/laws/cycles/cytochrome_c_oxygen_proton_cycle.py#L72",
     "cells.electrogenic_nucleotide_exchange@1": "src/cells/laws/cycles/electrogenic_nucleotide_exchange.py#L57",
     "cells.gard_catalysis_pair_consistent@1": "src/cells/models/assembly_lineages/gard.py#L212",
-    "cells.gard_catalysis_pair_consistent@2": "src/cells/models/assembly_lineages/gard.py#L402",
+    "cells.gard_catalysis_pair_consistent@2": "src/cells/models/assembly_lineages/gard.py#L439",
     "cells.gard_catalysis_single_event@1": "src/cells/models/assembly_lineages/gard.py#L178",
     "cells.gate_factor@1": "src/cells/models/assembly_lineages_v2/gate_factor.py#L145",
     "cells.held_reductant_supply@1": "src/cells/laws/cycles/held_reductant_supply.py#L72",

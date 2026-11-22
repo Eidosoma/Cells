@@ -6,8 +6,8 @@ On a row’s integer grid, every signed update within the 106-bit bound produces
 
 ## Assumptions
 
-- The catalyst coefficients are nonnegative multiples of the row’s least tick. The parser bounds the largest coefficient times the molecule capacity to fewer than 2¹⁰⁶ ticks. Count products use at most 2²⁰ molecules and each coefficient part has at most 33 significant bits.
-- Rounding selects a nearest 53-bit word. TwoSum returns that rounded sum and its exact error. Applying this theorem to hardware requires finite intermediates and preservation of low words. The compiled exponent counterexamples are recorded in the companion claim.
+- The catalyst coefficients are nonnegative multiples of each row’s least tick. The parser bounds the largest coefficient times the fission size to fewer than 2¹⁰⁶ ticks. Count products use at most 2²⁰ molecules and each coefficient part has at most 33 significant bits.
+- Rounding selects a nearest 53-bit word. TwoSum returns that rounded sum and its exact error. Hardware also needs finite intermediates and preservation of low words. The companion range comparison records the new guards and the earlier counterexamples.
 
 ## Lean proof
 
@@ -31,7 +31,13 @@ Uses [Pair-consistent catalysis preserves the heat of a reversible transfer](gar
 
 ## Numerical comparison
 
-**Checked.** The 2⁵⁴ stress event returned factors 2 and 2 and zero heat. All 22 signed updates matched the exact row and a fresh compiled fold. A 106-bit row passed and a 107-bit row was refused. The largest count was checked at the cache-function entry point.
+**Checked.** The 2⁵⁴ stress event returned factors 2 and 2 and zero heat. All 22 signed updates matched the exact row and a fresh compiled fold. A 106-bit row passed and a 107-bit row was refused. The largest count was checked at the cache-function entry point. The repaired engine reproduced the complete earlier passing report byte for byte.
+
+**Engine** `cells.assembly_lineages@1`, `cells.reservoir_exchange@1`, `cells.gard_catalysis_pair_consistent@2`
+
+[TwoSum, founder fold, event update and reverse factor](https://github.com/Eidosoma/Cells/blob/184fc81cdfc0ea1b04eded5152c6cbbd2d5ea956/src/cells/models/assembly_lineages/gard.py#L298-L371) · [Public engine model and execution parser](https://github.com/Eidosoma/Cells/blob/184fc81cdfc0ea1b04eded5152c6cbbd2d5ea956/src/cells/models/assembly_lineages/spec.py) · [Compiled propensities and event handling](https://github.com/Eidosoma/Cells/blob/184fc81cdfc0ea1b04eded5152c6cbbd2d5ea956/src/cells/models/assembly_lineages/kernel.py) · [Public lineage runner and closure](https://github.com/Eidosoma/Cells/blob/184fc81cdfc0ea1b04eded5152c6cbbd2d5ea956/src/cells/models/assembly_lineages/runner.py) · [Compiled rate table probe](https://github.com/Eidosoma/Cells/blob/184fc81cdfc0ea1b04eded5152c6cbbd2d5ea956/validation/assembly_lineages/probes.py#L210) · [Declared two-type worlds](https://github.com/Eidosoma/Cells/blob/184fc81cdfc0ea1b04eded5152c6cbbd2d5ea956/tests/assembly_lineage_fixtures.py) · [Original regression with a dropped low word](https://github.com/Eidosoma/Cells/blob/184fc81cdfc0ea1b04eded5152c6cbbd2d5ea956/tests/unit/test_assembly_lineages_kernel.py#L139-L172) · [Row precision, upper exponent and least-tick guards](https://github.com/Eidosoma/Cells/blob/184fc81cdfc0ea1b04eded5152c6cbbd2d5ea956/src/cells/models/assembly_lineages/gard.py#L398-L428) · [Explicit molecule capacity at parse](https://github.com/Eidosoma/Cells/blob/184fc81cdfc0ea1b04eded5152c6cbbd2d5ea956/src/cells/models/assembly_lineages/spec.py#L360-L375) · [Parser regression for precision, exponent and capacity](https://github.com/Eidosoma/Cells/blob/184fc81cdfc0ea1b04eded5152c6cbbd2d5ea956/tests/unit/test_assembly_lineages_spec.py) · [Precision proof and numerical-domain witnesses](https://github.com/Eidosoma/Cells/blob/76418bab8488f24e041b511701b2376811358db8/lean/CellsProofs/Chemistry/GardCache.lean) · [Stress-world construction and comparison](https://github.com/Eidosoma/Cells/blob/76418bab8488f24e041b511701b2376811358db8/lean/checks/gard_catalysis.py) · [Upper margin and least nonzero grid tick](https://github.com/Eidosoma/Cells/blob/76418bab8488f24e041b511701b2376811358db8/lean/CellsProofs/Chemistry/GardRange.lean) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/76418bab8488f24e041b511701b2376811358db8/lean/checks/gard_cache.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/76418bab8488f24e041b511701b2376811358db8/lean/PROGRESS.md#gard-v2-range-repair)
+
+[Tested engine 184fc81cdfc0](https://github.com/Eidosoma/Cells/commit/184fc81cdfc0ea1b04eded5152c6cbbd2d5ea956) · [Evidence checkpoint 76418bab8488](https://github.com/Eidosoma/Cells/commit/76418bab8488f24e041b511701b2376811358db8)
 
 **Engine** `cells.assembly_lineages@1`, `cells.reservoir_exchange@1`, `cells.gard_catalysis_pair_consistent@2`
 

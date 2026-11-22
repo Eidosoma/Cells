@@ -383,6 +383,37 @@
       "driver": "lean/checks/vesicle_exchange.py",
       "record": "lean/PROGRESS.md#ol5-six-replays"
     },
+    "gard-cache-repair": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@1"
+      ],
+      "laws": [
+        "cells.reservoir_exchange@1",
+        "cells.gard_catalysis_pair_consistent@2"
+      ],
+      "engine_revision": "184fc81cdfc0ea1b04eded5152c6cbbd2d5ea956",
+      "record_revision": "76418bab8488f24e041b511701b2376811358db8",
+      "sources": {
+        "TwoSum, founder fold, event update and reverse factor": "src/cells/models/assembly_lineages/gard.py#L298-L371",
+        "Public engine model and execution parser": "src/cells/models/assembly_lineages/spec.py",
+        "Compiled propensities and event handling": "src/cells/models/assembly_lineages/kernel.py",
+        "Public lineage runner and closure": "src/cells/models/assembly_lineages/runner.py",
+        "Compiled rate table probe": "validation/assembly_lineages/probes.py#L210",
+        "Declared two-type worlds": "tests/assembly_lineage_fixtures.py",
+        "Original regression with a dropped low word": "tests/unit/test_assembly_lineages_kernel.py#L139-L172",
+        "Row precision, upper exponent and least-tick guards": "src/cells/models/assembly_lineages/gard.py#L398-L428",
+        "Explicit molecule capacity at parse": "src/cells/models/assembly_lineages/spec.py#L360-L375",
+        "Parser regression for precision, exponent and capacity": "tests/unit/test_assembly_lineages_spec.py"
+      },
+      "record_inputs": {
+        "Precision proof and numerical-domain witnesses": "lean/CellsProofs/Chemistry/GardCache.lean",
+        "Stress-world construction and comparison": "lean/checks/gard_catalysis.py",
+        "Upper margin and least nonzero grid tick": "lean/CellsProofs/Chemistry/GardRange.lean"
+      },
+      "driver": "lean/checks/gard_cache.py",
+      "record": "lean/PROGRESS.md#gard-v2-range-repair"
+    },
     "gard-cache-reversibility": {
       "kind": "engine",
       "models": [
@@ -410,6 +441,38 @@
       },
       "driver": "lean/checks/gard_cache.py",
       "record": "lean/PROGRESS.md#gard-v2-cache"
+    },
+    "gard-range-repair": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@1"
+      ],
+      "laws": [
+        "cells.reservoir_exchange@1",
+        "cells.gard_catalysis_pair_consistent@2"
+      ],
+      "engine_revision": "184fc81cdfc0ea1b04eded5152c6cbbd2d5ea956",
+      "record_revision": "76418bab8488f24e041b511701b2376811358db8",
+      "sources": {
+        "Finite-input check and exact fold": "src/cells/models/assembly_lineages/gard.py",
+        "Type bucket sizes": "src/cells/models/assembly_lineages/family.py#L28-L54",
+        "Independent declared fission-size limit": "src/cells/models/assembly_lineages/fission.py#L94-L102",
+        "Stalled event branch": "src/cells/models/assembly_lineages/kernel.py#L338-L352",
+        "Lineage result and energy ledger": "src/cells/models/assembly_lineages/runner.py",
+        "Independent rational join and leave propensities": "validation/gard/references/kernels.py#L233-L304",
+        "Two-type world and explicit execution capacity": "tests/assembly_lineage_fixtures.py",
+        "Row precision, upper exponent and least-tick guards": "src/cells/models/assembly_lineages/gard.py#L398-L428",
+        "Explicit molecule capacity at parse": "src/cells/models/assembly_lineages/spec.py#L360-L375",
+        "Finite check in the public event runner": "src/cells/models/assembly_lineages/runner.py#L381",
+        "Parser regression for precision, exponent and capacity": "tests/unit/test_assembly_lineages_spec.py"
+      },
+      "record_inputs": {
+        "Precision proof and numerical-domain witnesses": "lean/CellsProofs/Chemistry/GardCache.lean",
+        "Stress-world construction and comparison": "lean/checks/gard_catalysis.py",
+        "Upper margin and least nonzero grid tick": "lean/CellsProofs/Chemistry/GardRange.lean"
+      },
+      "driver": "lean/checks/gard_cache.py",
+      "record": "lean/PROGRESS.md#gard-v2-range-repair"
     },
     "gard-cache-domain": {
       "kind": "engine",
@@ -3235,6 +3298,48 @@
   },
   "claims": [
     {
+      "id": "fr42-cohort-shares",
+      "category": "reactions-and-binding",
+      "title": "Neutral arrival-time cohorts share one physical loss rate",
+      "statement": "Allocating one well-mixed population’s loss among cohorts in proportion to their amounts preserves the total loss, the total after one step, and readouts evaluated on those pooled totals. For quadratic loss, a tracked cohort and the difference from an independently evolved blank can give different answers.",
+      "assumptions": [
+        "The finite inventory includes the unlabelled remainder. The physical rate J(N) is computed once on the total N, with J(0) = 0. A cohort of size n receives J(N)·n/N for an occupied pool and zero for an empty pool.",
+        "The step identity uses a common step size. Applying the readout identity to energy or heat requires the engine to evaluate these quantities from the physical pool.",
+        "The exact example starts with two old units and one new unit, with no further arrivals, and uses N′ = −N². The comparison blank begins with only the two old units."
+      ],
+      "formal": {
+        "status": "proved",
+        "theorems": {
+          "CellsProofs.Chemistry.ArrivalCohort.empty_label": "lean/CellsProofs/Chemistry/ArrivalCohort.lean",
+          "CellsProofs.Chemistry.ArrivalCohort.sum_shares": "lean/CellsProofs/Chemistry/ArrivalCohort.lean",
+          "CellsProofs.Chemistry.ArrivalCohort.step_total": "lean/CellsProofs/Chemistry/ArrivalCohort.lean",
+          "CellsProofs.Chemistry.ArrivalCohort.pooled_readout": "lean/CellsProofs/Chemistry/ArrivalCohort.lean",
+          "CellsProofs.Chemistry.ArrivalCohort.quadratic_share": "lean/CellsProofs/Chemistry/ArrivalCohort.lean",
+          "CellsProofs.Chemistry.ArrivalCohort.remaining_initial": "lean/CellsProofs/Chemistry/ArrivalCohort.lean",
+          "CellsProofs.Chemistry.ArrivalCohort.remaining_derivative": "lean/CellsProofs/Chemistry/ArrivalCohort.lean",
+          "CellsProofs.Chemistry.ArrivalCohort.quadratic_example": "lean/CellsProofs/Chemistry/ArrivalCohort.lean"
+        },
+        "sources": {
+          "FR-42 design requirement": "https://github.com/Eidosoma/Cells/blob/184fc81cdfc0ea1b04eded5152c6cbbd2d5ea956/docs/FEATURE_REQUESTS.md#fr-42--neutral-arrival-time-labels-that-leave-the-dynamics-unchanged",
+          "D289 adopts share vectors on the physical population": "https://github.com/Eidosoma/Cells/blob/4e944a5634adafe1944235e540c6a7f0e564a144/docs/DECISIONS.md#d289-fr-42-is-built-as-option-a-labels-as-share-vectors-on-the-physical-row",
+        "FR-38 erratum B on class rows and the blank": "https://github.com/Eidosoma/Cells/blob/184fc81cdfc0ea1b04eded5152c6cbbd2d5ea956/docs/TEMPLATED_POLYMERISATION_LAWS.md#913-erratum-b-the-label-rows-are-not-neutral-labels",
+          "Mathlib division of a finite sum, imported for the cohort balance": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Field.lean#L22",
+          "Mathlib quotient derivative, imported for the survivor curve": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/Calculus/Deriv/Inv.lean#L143"
+        }
+      },
+      "numerical": {
+        "status": "open",
+        "comparisons": [],
+        "result": "At time one the new cohort contains 1/4 unit, one third of the 3/4-unit pool. Blank subtraction gives 1/12 unit. An FR-42 engine replay is pending, including window endpoints, cohort reuse and physical energy accounting. FR-38 registration waits for the share-based labels under D288."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "The surviving amount from an identified arrival cohort together with the physical pool total under the same loss conditions.",
+        "unit": "Amount per cohort and total pool amount",
+        "evidence": []
+      }
+    },
+    {
       "id": "vesicle-birth-returns",
       "category": "molecular-assembly",
       "title": "Daughter rupture at birth can be reconstructed from the shear records",
@@ -3481,8 +3586,8 @@
       "title": "GARD v2 preserves the smaller catalyst on a reverse event within the precision bound",
       "statement": "On a row’s integer grid, every signed update within the 106-bit bound produces the canonical high and low words for the new sum. Refolding the same counts recovers the same cache, and removing the moving molecule restores the parent’s rounded numerator.",
       "assumptions": [
-        "The catalyst coefficients are nonnegative multiples of the row’s least tick. The parser bounds the largest coefficient times the molecule capacity to fewer than 2¹⁰⁶ ticks. Count products use at most 2²⁰ molecules and each coefficient part has at most 33 significant bits.",
-        "Rounding selects a nearest 53-bit word. TwoSum returns that rounded sum and its exact error. Applying this theorem to hardware requires finite intermediates and preservation of low words. The compiled exponent counterexamples are recorded in the companion claim."
+        "The catalyst coefficients are nonnegative multiples of each row’s least tick. The parser bounds the largest coefficient times the fission size to fewer than 2¹⁰⁶ ticks. Count products use at most 2²⁰ molecules and each coefficient part has at most 33 significant bits.",
+        "Rounding selects a nearest 53-bit word. TwoSum returns that rounded sum and its exact error. Hardware also needs finite intermediates and preservation of low words. The companion range comparison records the new guards and the earlier counterexamples."
       ],
       "uses": [
         "gard-pair-heat"
@@ -3512,9 +3617,10 @@
       "numerical": {
         "status": "checked",
         "comparisons": [
+          "gard-cache-repair",
           "gard-cache-reversibility"
         ],
-        "result": "The 2⁵⁴ stress event returned factors 2 and 2 and zero heat. All 22 signed updates matched the exact row and a fresh compiled fold. A 106-bit row passed and a 107-bit row was refused. The largest count was checked at the cache-function entry point."
+        "result": "The 2⁵⁴ stress event returned factors 2 and 2 and zero heat. All 22 signed updates matched the exact row and a fresh compiled fold. A 106-bit row passed and a 107-bit row was refused. The largest count was checked at the cache-function entry point. The repaired engine reproduced the complete earlier passing report byte for byte."
       },
       "biology": {
         "status": "open",
@@ -3526,11 +3632,11 @@
     {
       "id": "gard-cache-domain",
       "category": "molecular-assembly",
-      "title": "GARD v2 also needs a representable exponent and a reachable molecule capacity",
-      "statement": "The significand-width guard alone admits a row whose rounded high word overflows binary64. At the other extreme the grid model requires the smallest positive tick to survive. The public parser also imposes a smaller effective fission-size limit than its explicit capacity range.",
+      "title": "GARD v2 guards the cache exponent range and honors explicit molecule capacity",
+      "statement": "The 106-bit width condition alone admits overflow. With the repaired upper and lower exponent guards, an exact intermediate of magnitude at most six times the row bound fits below the binary64 maximum, and any nonzero exact integer multiple of the row tick is at least one normal tick in magnitude. The parser resolves the tested explicit molecule capacities on either side of the default bucket limit.",
       "assumptions": [
-        "The overflow witness uses coefficient 2¹⁰²³, two molecules of that type, one of a second type and capacity eight. The underlying exchange uses finite rates. The lower-end witness uses one coefficient at 2⁻¹⁰⁷⁴.",
-        "The capacity comparison explicitly supplies the molecule capacity, using two types throughout. It checks parser behavior independently of either exponent example."
+        "The row bound is its largest coefficient times the fission size. Lean assumes the six-times bound on an intermediate and integer-grid membership. It proves their arithmetic consequences. The original one-tick and overflow witnesses explain the extra guards.",
+        "The range replay uses a two-type world at fission size eight for the exponent cases. It exercises the parser, NumPy and the compiled CPU kernel. The explicit capacity cases use matched fission sizes of 4,096 and 4,097."
       ],
       "uses": [
         "gard-cache-reversibility"
@@ -3542,19 +3648,23 @@
         ],
         "theorems": {
           "CellsProofs.Chemistry.GardCache.one_tick": "lean/CellsProofs/Chemistry/GardCache.lean",
-          "CellsProofs.Chemistry.GardCache.exponent_counterexample": "lean/CellsProofs/Chemistry/GardCache.lean"
+          "CellsProofs.Chemistry.GardCache.exponent_counterexample": "lean/CellsProofs/Chemistry/GardCache.lean",
+          "CellsProofs.Chemistry.GardRange.upper_margin": "lean/CellsProofs/Chemistry/GardRange.lean",
+          "CellsProofs.Chemistry.GardRange.grid_floor": "lean/CellsProofs/Chemistry/GardRange.lean"
         },
         "sources": {
-          "Cells high-word and unit-tick definitions": "lean/CellsProofs/Chemistry/GardCache.lean",
-          "IEEE binary64 input guard and the row-width calculation": "https://github.com/Eidosoma/Cells/blob/6b28ec55368011de79dce85e6172b5844b77a287/src/cells/models/assembly_lineages/gard.py#L359-L396"
+          "Cells exact upper and lower parser guards": "https://github.com/Eidosoma/Cells/blob/184fc81cdfc0ea1b04eded5152c6cbbd2d5ea956/src/cells/models/assembly_lineages/gard.py#L398-L428",
+          "Mathlib integer absolute-value lower bound, used for the positive grid tick": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/Order/Group/Unbundled/Int.lean#L83",
+          "Original width-only guard for the historical witnesses": "https://github.com/Eidosoma/Cells/blob/6b28ec55368011de79dce85e6172b5844b77a287/src/cells/models/assembly_lineages/gard.py#L359-L396"
         }
       },
       "numerical": {
-        "status": "failed",
+        "status": "checked",
         "comparisons": [
+          "gard-range-repair",
           "gard-cache-domain"
         ],
-        "result": "With an exact total propensity rounding to 25,165,824, the admitted four-bit row returned NaN cache words, zero events, a stalled status and a passing empty ledger. At 2⁻¹⁰⁷⁴ NumPy preserved one tick and compiled CPU returned zero. Explicit capacity 4,097 was refused by the default 4,096 type bucket."
+        "result": "The repaired engine passed all nine cases. At size eight, 2¹⁰¹⁶ ran one event with a closed ledger. The upper boundary and two larger powers were refused. NumPy and compiled CPU preserved 2⁻¹⁰²², and the parser refused both inputs with subnormal low bits. Explicit capacities 4,096 and 4,097 resolved as requested. Six expectations differ on the earlier engine, where the original overflowing row stalled at a finite positive exact-reference rate."
       },
       "biology": {
         "status": "open",

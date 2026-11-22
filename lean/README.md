@@ -13,8 +13,8 @@ Direct Lean claims cover [51 of 51 laws](COVERAGE.md#registered-laws) and [31 of
 | [Membrane transport and osmosis](COVERAGE.md#category-membrane-transport) | 5 of 5 | 10 of 10 | 10 checked | 9 |
 | [Ion channels and junctions](COVERAGE.md#category-channels-and-junctions) | 15 of 15 | 15 of 15 | 15 checked | 14 |
 | [Pumps and cotransport](COVERAGE.md#category-pumps-and-cotransport) | 13 of 13 | 8 of 8 | 8 checked | 8 |
-| [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 3 of 3 | 13 of 13 | 12 checked · 1 failed | 10 |
-| [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 14 of 14 | 29 of 29 | 27 checked · 2 failed | 19 |
+| [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 3 of 3 | 14 of 14 | 12 checked · 1 failed · 1 open | 10 |
+| [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 14 of 14 | 29 of 29 | 28 checked · 1 failed | 19 |
 | [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 1 of 1 | 26 of 26 | 26 checked | 19 |
 | [Cell physiology](COVERAGE.md#category-cell-physiology) | — | 3 of 3 | 3 checked | 3 |
 
@@ -22,7 +22,9 @@ Direct Lean claims cover [51 of 51 laws](COVERAGE.md#registered-laws) and [31 of
 
 Each category opens its detailed claim table on GitHub, including registered laws still awaiting a proof. A single claim can cover several laws. The last column counts claims with a recorded measurement or literature finding, including partial evidence. Each numerical result applies to the cases in its linked record. [All registered laws](COVERAGE.md#registered-laws) · [Design notes](ENGINE_LAW_VERIFICATION.md) · [Voltage pilot closeout](../reports/BIO003_PILOT_CLOSEOUT.md)
 
-Three claims have failing numerical checks. GARD v1 can refuse a reversible event. GARD v2 repairs that case but can report a stalled lineage at an admitted coefficient with a finite positive event rate. Its range check also records a lost subnormal and a capacity limit. The third claim concerns the sign of a rapid-binding inventory margin. The tissue host tested for that case requires positive held totals. [Current failures](COVERAGE.md#failing-numerical-checks) · [GARD v2 reproducer](PROGRESS.md#gard-v2-range) · [Wash and clamp repairs](PROGRESS.md#d272-wash-clamp-retests)
+Two claims have failing numerical checks. GARD v1 can refuse a reversible event, and the rapid-binding inventory margin can have the wrong sign in a fixture. The tested tissue host requires positive held totals. GARD v2 now passes all nine range and capacity checks, including the case where an earlier version reported a stalled lineage. [Current failures](COVERAGE.md#failing-numerical-checks) · [GARD repair and original failure](PROGRESS.md#gard-v2-range-repair) · [Wash and clamp repairs](PROGRESS.md#d272-wash-clamp-retests)
+
+FR-42 has an exact design result for neutral arrival-time labels. Sharing the physical loss preserves the pooled inventory. With quadratic loss, the surviving new cohort is ¼ at time one, while subtraction of a separate blank gives 1/12. The compiled comparison will become possible when Cells implements the share-based labels. [Cohort proof and remaining checks](claims/fr42-cohort-shares.md)
 
 ## Biological evidence
 
@@ -54,7 +56,7 @@ Yeast mitochondrial ATP synthase provides a measured example of reversal. The en
 
 The catalog gives each measurement, its primary source and the part of the law it tests. **Partial evidence** means the literature measures a relevant part of the claim and a full biological verdict remains open. **Not assessable** means a recorded comparison has too much uncertainty for a verdict. The studies and their figures are linked in each row. [Literature review](claims/incoming/biological-evidence.md) · [Pump flux, charge and ATP measurements](claims/incoming/pump-charge-evidence.md) · [PGI worksheet audit](claims/incoming/pgi-evidence.md) · [Publisher’s PGI workbook and spectra](https://mdpi-res.com/metabolites/metabolites-02-00818/article_deploy/metabolites-02-00818-s001.zip)
 
-Three measured rupture rates at each of two temperatures give FR-31 a comparison for first rupture. A complete rupture returns each molecule to its destination in both assembly runners. [Rate measurements](claims/vesicle-lysis-threshold.md#biological-evidence) · [Rupture receipts in Lean and Cells](claims/vesicle-lysis-returns.md) · [Independent translation-timing data screened by Search](claims/incoming/translation-release-evidence.md#fr-40-screening-for-independent-timing-data)
+Three measured rupture rates at each of two temperatures give FR-31 a disclosed comparison for first rupture. Evans and Smith describe an independent vesicle lifetime assay. Linking a particular constant-tension series to its vesicle sizes, exposure times and censoring remains open. A complete rupture returns each molecule to its destination in both assembly runners. [Rate measurements](claims/vesicle-lysis-threshold.md#biological-evidence) · [Independent study search](claims/incoming/vesicle-osmosis-evidence.md#independent-fixed-tension-series) · [Rupture receipts in Lean and Cells](claims/vesicle-lysis-returns.md) · [Independent translation-timing data screened by Search](claims/incoming/translation-release-evidence.md#fr-40-screening-for-independent-timing-data)
 
 ## Maintaining the claims
 
@@ -494,7 +496,7 @@ For the original GARD laws, compare both directions of each transfer and each fo
 "$cells_python" -B checks/gard_catalysis.py --controls-only
 ```
 
-For the GARD v2 two-word cache, replay the repaired reversible event, signed updates and precision guard. The separate range command exits with status 1 while admitted exponent or explicit-capacity cases fail. For templated polymerisation, check the two balances across every saved row of three compiled worlds, including two chains competing for one machine pool. [Cache precision](PROGRESS.md#gard-v2-cache) · [Range findings](PROGRESS.md#gard-v2-range) · [Polymerisation balances and measurements](PROGRESS.md#polymerisation-balances)
+For the GARD v2 two-word cache, replay the reversible event, signed updates and precision guard. The separate range command checks an admitted finite-rate event, upper and lower exponent boundaries, and explicit capacity on both sides of 4,096. It exits with status 1 if any of its nine expectations fails. For templated polymerisation, check the two balances across every saved row of three compiled worlds, including two chains competing for one machine pool. [Cache precision](PROGRESS.md#gard-v2-cache) · [Repaired and historical range checks](PROGRESS.md#gard-v2-range-repair) · [Polymerisation balances and measurements](PROGRESS.md#polymerisation-balances)
 
 ```bash
 "$cells_python" -B checks/gard_cache.py
