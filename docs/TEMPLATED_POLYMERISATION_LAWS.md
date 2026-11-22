@@ -1240,10 +1240,11 @@ Of the molecules released into fate f during [t1, t2], the amount still present 
    its grid error.
 
 Under §9.2's laws both routes apply, and they must agree within the host-side route's grid error.
-The label rows' sum departs from the unlabelled row by the e^(y_f) term, about 10⁻⁸ relative at
-R1. Each label row's loss reads its own potential (§9.2), so the departure is physical, not an
-error. It is well inside the two routes' agreement bound (the lead's ruling, 22 November 2026: the
-label rows are the operator's own, not the registry's label families).
+The label rows' sum departs from the unlabelled row by at most about 10⁻⁸ relative at R1, the
+size of the e^(y_f) term (erratum A2). Each label row's loss reads its own potential (§9.2), so the
+departure is physical, not an error. It is well inside the two routes' agreement bound (the lead's
+ruling, 22 November 2026: the label rows are the operator's own, not the registry's label
+families).
 
 ### 9.9 The release worlds
 
@@ -1347,7 +1348,8 @@ builder and the references read one sheet before the registered comparison. It s
 findings, R-F1 (§9.8) and R-F2 (§9.10), in place, and the readings below.*
 
 1. **R1's routes.** The chain at k_I = 0, its release, and the fates' two degradations: no
-   recharging, translation or regulator. N, M and Pi stand at A1's initial state; §9.10's y_f ≈
+   recharging, translation or regulator. N, M and Pi start at A1's initial state and are moved
+   only by the routes in use (the fates' losses return NMPs to M; erratum A2). §9.10's y_f ≈
    −18.48 reads M at A1's 0.05 mM.
 2. **The inventory trace** is the sheet's c_R, 1.0 × 10⁻¹² mM (§9.9's addendum).
 3. **The matched blank** is the same world with H(0) = 0, everything else equal.
