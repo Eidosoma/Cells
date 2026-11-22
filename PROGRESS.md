@@ -19,11 +19,11 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
 - **Landing next:**
   - the OL5 precision fix, then GARD @2's range fixes;
 - **Building:** FR-38 at full scope (D284); the near-event snap (D283), which lands first.
+- **High priority, new (D286):** FR-31 (data in hand), FR-39, FR-40 and FR-41, from the Lean lane's findings.
 - **Waiting on downloads:** FR-30's benchmark.
 - **Open, unscheduled:** FR-1, FR-2, FR-3, FR-6, FR-11, FR-13, FR-14, FR-15, FR-16, FR-17, FR-8's rung
   2, F1 (after an MG0c rerun), crossrev renewal, and the Phase 0 runner's review.
 - **Deferred:** FR-26's L, FR-36.
-- **Blocked:** FR-31.
 - **Paused lanes:** they resume with free agents (D277).
 
 ## Current position

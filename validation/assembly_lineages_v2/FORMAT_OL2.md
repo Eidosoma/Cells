@@ -541,6 +541,17 @@ Common to both:
   event's release is booked separately: in a single lineage in `run.json`'s `osmotic.lysis`
   (`release_heat_kT`, `release_reservoir_work_kT`), in a population in that event's `lyses` entry
   (`at_birth` false). The event's total is the sum.
+
+  A lysing step's counts read the same way. At a step with `event_lysed` true, `event_vesicle_after`
+  and `event_pool_after` are the step's own state: after the step and before the release, with the
+  vesicle still full. The release's molecules are in the same record's `returned` (`osmotic.lysis`
+  or the `lyses` entry), by pool place, and they total the vesicle's counts. The pool after the
+  whole event is `event_pool_after` plus `returned` at the finite pool places, matched by name. A
+  held place's count does not change: its reservoir takes the molecules back, booked in
+  `release_reservoir_work_kT`. The record keeps both pools: the step's own in `event_pool_after`,
+  and the pool after the event in records.npz. In a single lineage that is the end row, also
+  `diagnostic.json`'s `states.final` (the vesicle then empty); in a population it is that lysis's
+  row (`row_kind` `lysis`).
 - **`shear_events`:** `{time, schedule, not_admitted, attempts, pool_after, slots_after}`, in time
   and schedule order. An attempt is `{slot, key, counter, outcome, uniforms_offset,
   uniforms_count}`, with `outcome` one of `split`, `refused_floor`, `refused_volume`,

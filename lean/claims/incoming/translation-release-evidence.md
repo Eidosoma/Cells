@@ -1,0 +1,19 @@
+# Timing nascent-chain detection and release
+
+Yan et al. followed translation of a 1,462-codon reporter in live human U2OS cells. With the Emi1 long initiation leader, the interval from the first detectable nascent-chain fluorescence to abrupt signal loss at release averaged **406 s across 44 single-ribosome events**. The analysis included events shorter than 12 minutes. The supplement gives no uncertainty for the mean duration. From the fluorescence detection threshold the authors inferred that about 245 codons had already been translated. The observed interval therefore covers approximately **1,217 codons**. The reported single-ribosome speed of 3.0 codons/s was calculated from this same duration. [Yan et al., Figure 7](https://pmc.ncbi.nlm.nih.gov/articles/PMC4889334/#fig7) · [Supplemental methods, pp. 4–5](https://pmc-oa-opendata.s3.amazonaws.com/PMC4889334.2/mmc1.pdf#page=4)
+
+## Can a separate experiment predict the 406 seconds?
+
+The authors report **3.1 ± 0.14 codons/s** from a separate assay of the same coding sequence under a different initiation leader. The clock in that assay runs from inhibition of new initiation until the final ribosome disappears. Using the published speed as a constant effective speed would give 1,217/3.1 = **393 s**. The paper leaves the uncertainty convention for ±0.14 unspecified. It estimates an additional positional uncertainty of about 5% because the final ribosome can start downstream of the first codon. [Figure 2 and Figure S2E](https://pmc.ncbi.nlm.nih.gov/articles/PMC4889334/#figs2) · [Runoff calculation, pp. 3–4](https://pmc-oa-opendata.s3.amazonaws.com/PMC4889334.2/mmc1.pdf#page=3)
+
+The histogram permits a direct check on that speed. Reading the nine nonempty bars in Figure S2E gives the following counts. The open-ended final group alone contains 15 sites. The caption says the displayed times already include the 60 s drug-entry correction. [Published histogram](https://pmc-oa-opendata.s3.amazonaws.com/PMC4889334.2/figs2.jpg) · [Figure S2E caption](https://pmc.ncbi.nlm.nih.gov/articles/PMC4889334/#figs2)
+
+| Lower edge of runoff time, min | 2 | 4 | 6 | 8 | 10 | 12 | 14 | 16 | 18 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| Plotted translation sites | 3 | 20 | 31 | 40 | 21 | 14 | 5 | 3 | 15 |
+
+Even assigning every site its bin's lower edge gives **1,358/152 = 8.93 min**. The published calculation divides 1,462 by the corrected mean disappearance time. A rate of 3.1 codons/s would require a corrected mean of **7.86 min**. The figure and calculation thus need clarification about the sample or the time correction before 393 s can serve as an independent prediction. The bar counts are readings from the graph. The underlying event times would resolve the comparison.
+
+## What to compare in Cells
+
+`templated_polymerisation@1` records stage occupancies and cumulative release. Its effective elongation speed is the declared speed multiplied by a factor for substrate saturation and reaction affinity. To compare the measured timing, start at the stage corresponding to detectable fluorescence, follow release of that cohort, and apply the study's 12-minute observation cutoff. The experiment supplies a target for translation timing. The total residue inventory and the fraction of all cellular ribosomes engaged are different observables. [Stage rates](https://github.com/Eidosoma/Cells/blob/f1783c558a79379d9aab846a48165b4833f2282f/src/cells/operators/templated_polymerisation.py#L810) · [Release counter](https://github.com/Eidosoma/Cells/blob/f1783c558a79379d9aab846a48165b4833f2282f/src/cells/operators/templated_polymerisation.py#L995)

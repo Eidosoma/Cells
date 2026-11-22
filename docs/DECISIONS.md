@@ -9030,3 +9030,45 @@ plus two pieces.
   - (b) keeps the default, no binding energy;
   - (d) defaults to one gene per producer.
 
+## D285: OL5's second judging, after D281's precision fix: 9 of 10 rows pass
+
+2026-11-22, about 13:14 UTC. The second builder re-judged OL5's probe roles with its unchanged adapter, at
+the registered 1e-12 precision. The run was frozen from main e6571f88, which carries D281's fix (a)+(b);
+its manifest sha256 is 5cc8f280….
+- **The verdict file says this is a second judging,** after an engine fix prompted by the first. D279's
+  6 of 10 stands as the first result. Verdicts: verdicts-e6571f88.json, sha256
+  2598e017131773d741e462a027fc912f71fe44acf338e56f01c54c592fda1db9.
+- **Three of the four earlier failures now pass:**
+  - OL2-1's forward log residual is 4.4e-15 and 1.0e-14 (it was 5.07e-12);
+  - OL2-4's and OL3-2's event times replay exactly.
+- **OL2-3 fails, on a convention, not a residual.** Its event times now match exactly. That uncovers a
+  difference that the first judging's list, which stopped at five time differences, had hidden: the
+  lysing event's pool.
+  - The engine records the step's own pool, [30, 0], and the released molecules separately: 1,470 of L1
+    and 61,178 of S.
+  - The references expect the pool after the whole event, [1500, 61178], which is the same total.
+  - FORMAT_OL2 states R7 and R8 but is silent on this pool. A reading R9 (the lysing step's pool includes
+    the returned molecules) makes OL2-3 pass. That check is information only and is not scored.
+- **The result stands at 9 of 10.**
+  - FORMAT_OL2 states R9 next, so that any later judging reads it.
+  - A third judging would be a new registration after these results, and is the user's call.
+- A planted failure (the partition probe's eq_N5_k3 + 1) fails, as it must.
+
+## D286: The Lean lane's biological findings go into the high-priority list
+
+2026-11-22, about 13:32 UTC. The user relayed the Lean lane's findings with "from lean get into high
+priority". The evidence branch was merged unedited at 81916b5d.
+- **FR-31 goes from Low to High.** Karal and Yamazaki's tension series is the data it was waiting for.
+  The next step is a design note shared with FR-39, then a registered test of a declared rupture law,
+  fitted on the end tensions and predicting the middle. The middle values were read before registration,
+  and that is disclosed. OL6 remains a dependency.
+- **FR-39 (new, High):** a vesicle that survives transient pores, with partial cargo loss.
+- **FR-40 (new, High):** a single-ribosome translation timing benchmark. The 406 s observation is kept,
+  and the speed comparison stays unscored until reconciled.
+- **FR-41 (new, High):** vesicle shrinkage validation records. One agreement is unfitted (24.56% against
+  about 25%). Small-osmole retention stays open.
+- **Owners:**
+  - the FR-31 and FR-39 design note goes to the OL builder, at the desk;
+  - the FR-40 desk note goes to the gene regulation references' author, from the sheet's laws;
+  - FR-41's search waits for a free agent.
+
