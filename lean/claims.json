@@ -46,8 +46,8 @@
         "resolved_pump_tissue@3"
       ],
       "laws": [],
-      "engine_revision": "0a1c1b0dc8145c9c313c02a4ed57cfe5433b2efe",
-      "record_revision": "36f778812782bc352a9fe3666c579b85bc87ca28",
+      "engine_revision": "1e72a71b2d08408ce007276a187041a5e197cfad",
+      "record_revision": "2f6f4808e861935a9933feb3027f66d008eda7e3",
       "sources": {
         "Public guard on templated polymerisation with replacement": "src/cells/operators/templated_polymerisation.py#L969",
         "Definition with a replacement and expected refusal": "tests/unit/test_templated_polymerisation.py#L181",
@@ -4283,7 +4283,7 @@
           "fr38-producer-checkpoint",
           "fr38-producer-public-admission"
         ],
-        "result": "Public main at 0a1c1b0d correctly refused this composition. On development revision 4099775c, the native JSON recorded nine passing verdicts and the checkpoint restart reproduced the step histories bit for bit. The independent replay checked seven birth offsets and twelve departing amounts by label. The largest hold or fate balance residual was 1.02 × 10⁻²¹ fmol. Swapping the founder’s marked durable RNA into the newcomer’s label preserved total mass while misassigning 4.11 × 10⁻⁸ fmol. The repaired report writer preserved all 217 checkpoint arrays byte for byte relative to the first development replay. The positive comparison on public main and extracellular RNA retention remain open."
+        "result": "Public main at 1e72a71b correctly refused this composition. On development revision 4099775c, the native JSON recorded nine passing verdicts and the checkpoint restart reproduced the step histories bit for bit. The independent replay checked seven birth offsets and twelve departing amounts by label. The largest hold or fate balance residual was 1.02 × 10⁻²¹ fmol. Swapping the founder’s marked durable RNA into the newcomer’s label preserved total mass while misassigning 4.11 × 10⁻⁸ fmol. The repaired report writer preserved all 217 checkpoint arrays byte for byte relative to the first development replay. The positive comparison on public main and extracellular RNA retention remain open."
       },
       "biology": {
         "status": "open",

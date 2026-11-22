@@ -29,7 +29,7 @@ Uses [Marked RNA is accounted for in both release fates, including after label r
 
 ## Numerical comparison
 
-**Open.** Public main at 0a1c1b0d correctly refused this composition. On development revision 4099775c, the native JSON recorded nine passing verdicts and the checkpoint restart reproduced the step histories bit for bit. The independent replay checked seven birth offsets and twelve departing amounts by label. The largest hold or fate balance residual was 1.02 × 10⁻²¹ fmol. Swapping the founder’s marked durable RNA into the newcomer’s label preserved total mass while misassigning 4.11 × 10⁻⁸ fmol. The repaired report writer preserved all 217 checkpoint arrays byte for byte relative to the first development replay. The positive comparison on public main and extracellular RNA retention remain open.
+**Open.** Public main at 1e72a71b correctly refused this composition. On development revision 4099775c, the native JSON recorded nine passing verdicts and the checkpoint restart reproduced the step histories bit for bit. The independent replay checked seven birth offsets and twelve departing amounts by label. The largest hold or fate balance residual was 1.02 × 10⁻²¹ fmol. Swapping the founder’s marked durable RNA into the newcomer’s label preserved total mass while misassigning 4.11 × 10⁻⁸ fmol. The repaired report writer preserved all 217 checkpoint arrays byte for byte relative to the first development replay. The positive comparison on public main and extracellular RNA retention remain open.
 
 **Reference calculation**
 
@@ -39,9 +39,9 @@ Uses [Marked RNA is accounted for in both release fates, including after label r
 
 **Engine** `resolved_pump_composite@1`, `resolved_pump_tissue@3`
 
-[Public guard on templated polymerisation with replacement](https://github.com/Eidosoma/Cells/blob/0a1c1b0dc8145c9c313c02a4ed57cfe5433b2efe/src/cells/operators/templated_polymerisation.py#L969) · [Definition with a replacement and expected refusal](https://github.com/Eidosoma/Cells/blob/0a1c1b0dc8145c9c313c02a4ed57cfe5433b2efe/tests/unit/test_templated_polymerisation.py#L181) · [RNA fixture](https://github.com/Eidosoma/Cells/blob/0a1c1b0dc8145c9c313c02a4ed57cfe5433b2efe/validation/gene_regulation/worlds.py#L543) · [Replacement template and event fixture](https://github.com/Eidosoma/Cells/blob/0a1c1b0dc8145c9c313c02a4ed57cfe5433b2efe/validation/tissue/secreted_species_fixtures.py) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/36f778812782bc352a9fe3666c579b85bc87ca28/tests/unit/test_templated_polymerisation.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/36f778812782bc352a9fe3666c579b85bc87ca28/lean/PROGRESS.md#fr38-producer-replacement)
+[Public guard on templated polymerisation with replacement](https://github.com/Eidosoma/Cells/blob/1e72a71b2d08408ce007276a187041a5e197cfad/src/cells/operators/templated_polymerisation.py#L969) · [Definition with a replacement and expected refusal](https://github.com/Eidosoma/Cells/blob/1e72a71b2d08408ce007276a187041a5e197cfad/tests/unit/test_templated_polymerisation.py#L181) · [RNA fixture](https://github.com/Eidosoma/Cells/blob/1e72a71b2d08408ce007276a187041a5e197cfad/validation/gene_regulation/worlds.py#L543) · [Replacement template and event fixture](https://github.com/Eidosoma/Cells/blob/1e72a71b2d08408ce007276a187041a5e197cfad/validation/tissue/secreted_species_fixtures.py) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/2f6f4808e861935a9933feb3027f66d008eda7e3/tests/unit/test_templated_polymerisation.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/2f6f4808e861935a9933feb3027f66d008eda7e3/lean/PROGRESS.md#fr38-producer-replacement)
 
-[Tested engine 0a1c1b0dc814](https://github.com/Eidosoma/Cells/commit/0a1c1b0dc8145c9c313c02a4ed57cfe5433b2efe) · [Evidence checkpoint 36f778812782](https://github.com/Eidosoma/Cells/commit/36f778812782bc352a9fe3666c579b85bc87ca28)
+[Tested engine 1e72a71b2d08](https://github.com/Eidosoma/Cells/commit/1e72a71b2d08408ce007276a187041a5e197cfad) · [Evidence checkpoint 2f6f4808e861](https://github.com/Eidosoma/Cells/commit/2f6f4808e861935a9933feb3027f66d008eda7e3)
 
 ## Biological evidence
 
