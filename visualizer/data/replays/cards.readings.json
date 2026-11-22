@@ -5,7 +5,7 @@
   "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
  },
  "map": {
-  "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265"
+  "revision": "cbe54031d0f3a98c1e846fe48259eab6c60b4d59"
  },
  "on_main": [
   "05a8d1934e785ea9a575fbe5673569f589bdbc42",
@@ -31,7 +31,6 @@
   "82452a0eacd192f912035fb8bca39f0bea49d589",
   "840488e0bfe29ee1e28e91e11cb105fe9e42a896",
   "90392025b4b102dcd18dab0e7c2de4b66191f1c8",
-  "93fc8c2cd217dbac9c2f6381d201f5acdb020265",
   "95f30b5533366bd72fa6f047f989c2b9f61226a0",
   "a4b2db3d0c2f1114121f612579e4dfde2cb64bd5",
   "a4ec17a23b6ce0ee5a7e4eaeadad09da361a9e06",
@@ -40,6 +39,7 @@
   "acd4ead96a3e96af70adc7387ec1a02991dff543",
   "ba8694f87cc2b0831ce45f51eb726235f6d05cc4",
   "ca70d4a68456559e37e4c86218203d4c2fe62839",
+  "cbe54031d0f3a98c1e846fe48259eab6c60b4d59",
   "cecfb13dc9b9c037cc1b8d88773674e69d811f86",
   "cfbe7122ede8af49b6362d8ebb122f0b5287844a",
   "e8ded038e23426adfd348930794f480567e3506d",
@@ -125,7 +125,7 @@
    "part": "laws.inventory_coupling",
    "path": "docs/DECISIONS.md",
    "where": "D155 and D156",
-   "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265",
+   "revision": "cbe54031d0f3a98c1e846fe48259eab6c60b4d59",
    "missing": "place"
   },
   {
@@ -141,7 +141,7 @@
    "part": "exp.parity",
    "path": "PROGRESS.md",
    "where": "Plan table",
-   "revision": "93fc8c2cd217dbac9c2f6381d201f5acdb020265",
+   "revision": "cbe54031d0f3a98c1e846fe48259eab6c60b4d59",
    "missing": "place"
   },
   {

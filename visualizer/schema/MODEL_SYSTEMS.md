@@ -59,6 +59,7 @@ and a view of its own.
   | `view.kind` | Its levels, in order | Required | Their labels where the file gives none | Its runs' format |
   | --- | --- | --- | --- | --- |
   | `assembly` | `molecules`, `assembly`, `population`, `lineage` | `molecules`, `assembly` | Molecules, One assembly, Population, Lineages | `cells.visualizer.assembly_run@1` (`ASSEMBLY_RUN.md`) |
+  | `vesicle` | `vesicle`, `membrane`, `molecule` | `vesicle` | Vesicle, Membrane, Molecule | `cells.visualizer.assembly_run@2` (`ASSEMBLY_RUN.md`) |
 
   A kind not in this table is a breach, and so is a level not in its kind's list, or one out of
   order. A further kind (an RNA world, say) is a row of this table, with the view that draws it.
