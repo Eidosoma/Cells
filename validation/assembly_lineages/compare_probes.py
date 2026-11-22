@@ -1,7 +1,8 @@
 """Compare a regenerated probe set with a frozen one, file by file: the invariance gate's comparison
-for cells.assembly_lineages@1 (against probes-c6dd5956) and @2 (OL1's, against probes-3e39bcc5),
-moved into the checkout with OL2's invariance gate (docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md §0.2c
-rule 16; scripts/assembly_lineages_invariance.sh). It was frozen at
+for cells.assembly_lineages@1 (against probes-c6dd5956) and @2 (OL1's, against probes-48c8d2a9,
+renewed from probes-3e39bcc5 by D281), moved into the checkout with OL2's invariance gate
+(docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md §0.2c rule 16; scripts/assembly_lineages_invariance.sh). It
+was frozen at
 /mnt/workspaces/Cells/ol1-laws-20261117/tools/compare_probes.py; the one change is the exemption of
 roles.json's checksums of JSON files (below).
 
