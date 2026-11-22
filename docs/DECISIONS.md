@@ -8942,3 +8942,21 @@ recommendations.
 - **Disk cleanup approved:** the listed scratch copies and idle worktrees are removed. Old run folders
   are archived to /mnt/datasets with a link left at each old path, so cited paths still resolve.
 
+## D281: OL5's precision fix, (a) plus (b), approved; FR-25's final triple from one snapshot
+
+2026-11-22, about 10:29 UTC.
+- **OL5's precision fix.** The user, "lets go as you suggest a + b", on the lead's recommendation after the
+  checks. The four OL5 failures are the engine's arithmetic, not conditioning: the references are exact,
+  the activities come from log-factorial table differences, and the osmotic ΔF from a difference of large
+  energies.
+  - (a) computes ln ff(n, k) as a direct sum of logs (k <= 3) in mass_action and exchange.
+  - (b) computes lumen.delta's ΔF_osm incrementally with log1p/expm1.
+  - (a) moves OL1's probe bits, so OL1's probe set is renewed in the same landing as a declared
+    renewal, and OL1's registered rows are rerun on it. Invariance steps 1 to 4 stay bitwise.
+  - OL5's judged run is then repeated and judged by the unchanged adapter at the registered 1e-12, with
+    nothing loosened.
+  - R7 and R8 are confirmed from the engine's code, and FORMAT now states them (1dcdda1b), so D279's 6
+    passes stand.
+- **FR-25's final triple** (registered at 97c6359c) runs all three steps from one frozen snapshot of the
+  tagged main, rather than mixing in earlier runs (the lead's call on the GR agent's question).
+
