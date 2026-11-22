@@ -832,11 +832,11 @@ def declaration_to_dict(d):
 
 
 def grid_time(time, dt):
-    """The clock's instant that `time` names on steps of dt, or None where it names none: the one
-    predicate every grid consumer of this operator reads (its schedules' change times, among them
-    a release's durable fraction and class switches, and the host-side cohort's window edges,
-    validation/gene_regulation/cohort.py). Until D283's snap lands, a time names the coarse point
-    it equals exactly; D283 widens it to the clock's same-instant predicate here alone."""
+    """The clock's instant that `time` names on steps of dt, or None where it names none: the
+    predicate this operator's schedules read for their change times, a release's durable fraction
+    and class switches among them. It is one of two seams for D283's same-instant snap; the other
+    is the host-side cohort's window edges (validation/gene_regulation/cohort.same_instant). Until
+    the snap lands, a time names the coarse point it equals exactly; D283 widens both."""
     point = round(time / dt) * dt
     return point if time == point else None
 

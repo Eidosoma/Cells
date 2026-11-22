@@ -34,7 +34,8 @@ polymer is made by transcription or translation; a transfer is recharging (rc).
 Run: PYTHONPATH=src:. JAX_ENABLE_X64=1 python -m validation.gene_regulation.engine_run
 [--worlds NAME ... | all | release | release2] [--sets LABEL ...] [--dt S] [--end S] --out DIR.
 "release" is R1's runs (worlds.release_names(), FR-38), at dt worlds.R1_DT; "release2" is R2's,
-its development check's and A1, at A1's 0.5 s. Both export the release's readouts: the
+its development check's and A1, at A1's 0.5 s; "switch" is R1S's (worlds.r1s), at R1's dt. All
+export the release's readouts: the
 hold H_<release>, its releases int_Q_<release>_<fate>, each fate's class total n_<release>_<fate>
 and its heat class H_rel_<release>_<fate>, and the hold's term in G_minus_G0 (the sheet's §9).
 """
@@ -63,6 +64,7 @@ from validation.gene_regulation import worlds
 
 ROOT = Path(__file__).resolve().parents[2]
 SHEET_TAG = "gr1-sheet-2026-11-20b"
+RELEASE_SHEET_TAG = "gr1-sheet-fr38-erratum-a2-2026-11-22"  # The sheet's §9, as amended (FR-38).
 POLICY = WindowPolicy(window_steps=10000, recording="observations")
 DIGITS = 60
 
@@ -470,10 +472,16 @@ def main(argv=None):
         all=worlds.names(),
         release=worlds.release_names(),
         release2=[*worlds.r2_names(), *worlds.r2_check_names(), "A1"],
+        switch=["R1S returned", "R1S held"],
     ).get(args.worlds[0] if len(args.worlds) == 1 else None, args.worlds)
     record = dict(
         what="The engine's development runs of option A (G4). Development, not judged.",
         sheet_tag=SHEET_TAG,
+        **(
+            {"release_sheet_tag": RELEASE_SHEET_TAG}
+            if any(n.startswith(("R1", "R2")) for n in names)  # R1, R1L, R1S, R2 and R2A.
+            else {}
+        ),
         **source,
         python=platform.python_version(),
         dt_s=args.dt,

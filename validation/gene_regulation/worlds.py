@@ -555,6 +555,36 @@ def r1(
     return _finish(raw, block, rates)
 
 
+R1S_TIMES = (600.0, 900.0, 1800.0)  # psi's switch, p's change and the end, s.
+
+
+def r1s(machine, *, dt=R1_DT, symbols=None):
+    """A compiled check of the class axis labelled at completion and of a scheduled p, each changed
+    mid-run (development; not one of §9.9's worlds): R1 with A1's k_I, so that completions arrive,
+    its hold in two classes with class 1 holding R1's 80 copies; psi = 2 until R1S_TIMES[0], then
+    1; p = 0.75 until R1S_TIMES[1], then 0.25; to R1S_TIMES[2], outputs every R1_EVERY s."""
+    switch, change, end = R1S_TIMES
+    k_I = _f(sheet.A1, "k_I_tx")
+    raw = r1(0.75, machine=machine, labelled=True, initiation=k_I, dt=dt, symbols=symbols)
+    chain = next(c for c in raw["model"]["operators"][-1]["chains"] if "release" in c)
+    chain["release"].update(
+        label=dict(id=LABEL, at="completion"),
+        initial_copies=[float(sheet.RELEASE["H0"]), 0.0],
+        durable_fraction="scheduled",
+    )
+    controls = raw["experiment"]["polymerisation_controls"]
+    next(c for c in controls if c["route_id"] == LABEL)["schedule"] = _schedule(
+        [(0.0, 2.0), (switch, 1.0)], "value"
+    )
+    fraction = _schedule([(0.0, 0.75), (change, 0.25)], "value")
+    controls.append(dict(route_id=RELEASE, schedule=fraction))
+    e = raw["experiment"]
+    e["end_time"] = end
+    e["observation_times"] = [t for t in e["observation_times"] if t <= end]
+    raw["execution"]["max_steps"] = int(math.ceil(end / dt)) + 8
+    return raw
+
+
 def release_names():
     """R1's runs (§9.9): the four fractions with each machine option, the matched blanks, and the
     labelled pair of the release-window cohort's route 1 at p = 0.75."""
@@ -593,6 +623,8 @@ def world(name, *, dt=0.5, symbols=None, end=None):
         return a1(dt=dt, end=end, symbols=symbols)
     if name.startswith(("R1 ", "R1L ")) and end is None:
         return _r1_world(name, dt, symbols)
+    if name.startswith("R1S ") and end is None:
+        return r1s(name.split(" ")[1], dt=dt, symbols=symbols)
     if name.startswith("R2 "):
         return r2(name.split(" ")[1], dt=dt, end=end, symbols=symbols)
     if name.startswith("R2A "):

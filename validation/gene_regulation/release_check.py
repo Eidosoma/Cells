@@ -12,7 +12,13 @@ It exits 1 when any check fails. R2's checks are its identities and energy, its 
 A1's as tau shrinks.
 
 The tolerances were written before the acceptance runs, after one development run (R1 p=0.75
-returned) had been read. They come from §9.10's distance and the step's error, not from that run:
+returned) had been read. They come from §9.10's distance and the step's error, not from that run.
+Two were revised after the first development set of R1 (all its 14 runs) had been read, each a
+checker fault, not a loosening against a measured gap: G's identity bound gained the moving rows'
+G terms (the blanks' rounding of those terms, about 2e-16 pJ, exceeded a bound scaled by their
+tiny bookings alone), and the class-total check compares each run minus its own blank (a
+labelled run carries two traces, an unlabelled one one). Neither revision changed a tolerance's
+number:
 - **Identities** (per producer, the hold's, each fate row's, the machines'): rounding alone,
   |residual| <= FLOOR_FMOL + ROUNDING x steps x the largest term, with ROUNDING = 8 eps. G's
   identity and the routes' heats against the booked heat: ROUNDING x steps x (the bookings'
@@ -375,6 +381,68 @@ def check_r2(directory):
     return _write(directory, "release_check_r2.json", checks)
 
 
+def switches(checks, name, run):
+    """R1S (worlds.r1s): psi switched at completion and p changed mid-run, compiled. While psi = 2
+    every arrival joins hold class 2, and after the switch none does, so class 2's hold and
+    releases are int_Q_tx up to the switch; class 1's are its 80 copies and the arrivals after
+    it; and each fate's share of every interval's releases is that interval's p, 0.75 and then
+    0.25. Each at rounding."""
+    x, steps = run["readouts"], run["steps"]
+    switch, change, _ = worlds.R1S_TIMES
+    t, A = run["t"], x["int_Q_tx"]
+    at = t.index(switch)
+    worst = dict(class_2=0.0, class_1=0.0, share=0.0)
+    H0 = x[f"H_{RID}_1"][0]
+    for i, now in enumerate(t):
+        kept = {
+            k: x[f"H_{RID}_{k}"][i] + sum(x[f"int_Q_{RID}_{f}_{k}"][i] for f in FATE_ROWS)
+            for k in (1, 2)
+        }
+        joined = A[min(i, at)]
+        later = A[i] - A[min(i, at)]
+        worst["class_2"] = max(worst["class_2"], abs(kept[2] - joined) / _bound(steps, A[i]))
+        worst["class_1"] = max(
+            worst["class_1"], abs(kept[1] - H0 - later) / _bound(steps, H0, A[i], kept[1])
+        )
+        if i == 0:
+            continue
+        out = {
+            f: sum(x[f"int_Q_{RID}_{f}_{k}"][i] - x[f"int_Q_{RID}_{f}_{k}"][i - 1] for k in (1, 2))
+            for f in FATE_ROWS
+        }
+        p = 0.75 if now <= change else 0.25
+        share = out["durable"] / (out["durable"] + out["short_lived"])
+        worst["share"] = max(worst["share"], abs(share - p))
+    checks.add(
+        f"{name}: class 2 holds the arrivals before the switch, and only those",
+        worst["class_2"] <= 1.0,
+        largest_over_bound=worst["class_2"],
+    )
+    checks.add(
+        f"{name}: class 1 holds its 80 copies and the arrivals after the switch",
+        worst["class_1"] <= 1.0,
+        largest_over_bound=worst["class_1"],
+    )
+    checks.add(
+        f"{name}: each interval's releases split by its p",
+        worst["share"] <= 1e-12,
+        largest=worst["share"],
+    )
+
+
+def check_switch(directory):
+    """R1S at each machine option: its identities, energy and switches."""
+    directory = Path(directory)
+    checks = Checks()
+    for machine in ("returned", "held"):
+        name = f"R1S {machine}"
+        run = _load(directory, name)
+        identities(checks, name, run, machine)
+        energy(checks, name, run)
+        switches(checks, name, run)
+    return _write(directory, "release_check_switch.json", checks)
+
+
 def _write(directory, file, checks):
     record = dict(
         kind="cells.gene_regulation.release_check@1",
@@ -415,9 +483,9 @@ def check(directory):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("directory")
-    parser.add_argument("--part", choices=("R1", "R2"), default="R1")
+    parser.add_argument("--part", choices=("R1", "R2", "switch"), default="R1")
     args = parser.parse_args(argv)
-    record = (check if args.part == "R1" else check_r2)(args.directory)
+    record = dict(R1=check, R2=check_r2, switch=check_switch)[args.part](args.directory)
     print(f"{len(record['checks'])} checks, {len(record['failed'])} failed")
     for name in record["failed"]:
         print("FAILED", name)
