@@ -1292,6 +1292,10 @@ class Composition:
         self.label_pools = {
             op: k for k, op in enumerate(o for o in self.label_reporters_in_order if o.LABEL_POOLS)
         }
+        # D296: the events that report the slots they replace (static: by their signature).
+        self.label_events = frozenset(
+            op for op in self.events if self.label_owner is not None and takes_labels(op.event)
+        )
         # FR-42's stage 2: the inner step reports its one-way transfers where it takes labels=
         # (static: by the inner implementation's signature; none without an owner).
         self.inner_reports_labels = self.label_owner is not None and takes_labels(
@@ -1627,7 +1631,14 @@ class Composition:
                 if lifecycle:
                     keywords["lifecycle"] = self._lifecycle
                 before = current
-                current, ok = op.event(current, control, p, xp=xp, **keywords)
+                if op in self.label_events:  # Static (D296): its replaced slots' labels.
+                    rows = self.label_owner.rows(p)
+                    current, ok, replaced = op.event(
+                        current, control, p, xp=xp, labels=rows, **keywords
+                    )
+                    current = self.label_owner.advance_event(current, replaced, control, p, xp=xp)
+                else:
+                    current, ok = op.event(current, control, p, xp=xp, **keywords)
                 valid = _and(valid, ok)
                 if lifecycle:
                     valid = _and(valid, self._history_kept(before, current, xp=xp))

@@ -41,13 +41,20 @@ per-molecule rate within the half-step, second-order otherwise; without arrivals
 kept bit for bit). The physical state and validity are the reporter's, bit for bit, so a labelled
 run's physical fields and records equal the unlabelled run's.
 
-Refused in stage 1 (fail closed), each refusal naming the FR-42 stage that lifts it:
-- a labelled species moved inside the inner step (registry moved_in_step: faces, routes, channels,
-  pumps, kinds and in-step processes), which report from stage 2;
+Stage 2 and D296 (docs/NEUTRAL_LABELS_DESIGN.md section 8): where the inner step takes labels=,
+its faces' and routes' one-way transfers carry their sources' shares (advance_inner); a pool
+reporter's pools are advanced with its rows as sites (advance_pools); a source reporter receives
+each source's arrival label (source_controls); and replacement@1's event reports the slots it
+replaced, which take the newcomer label (advance_event).
+
+Refused (fail closed), each refusal naming the FR-42 stage that lifts it:
+- a labelled species moved inside the inner step (registry moved_in_step) by anything the inner
+  step does not report: every mover before @3's side lands (stage 2); afterwards a charged face,
+  a channel, a pump, a kind or an in-step process, and RK4 beside a followed mover;
 - an operator whose split part writes species amounts without reporting, except exchange whose
   routes name no labelled species (exchange reports from stage 3);
-- an event that writes species amounts, a closer or retirer of slots, and a provider of the amount
-  references (no FR-42 stage plans them yet).
+- an event that writes species amounts without reporting the slots it replaced, a closer or
+  retirer of slots, and a provider of the amount references (no FR-42 stage plans them yet).
 A second label owner is refused by the composite's parser, as a second declaration of its schedule
 key. Reporters refuse their own unreported cases (reactions: a passive route on a labelled row,
 which reports from stage 3). RK4 on the coupled path needs no refusal: a coupled RK4 composition
@@ -65,7 +72,7 @@ from cells.definitions.specs import ConfigError, _fields
 from cells.execution.grid import same_instant
 from cells.numerics import label_shares
 from cells.numerics.species_sums import entity_sum
-from cells.operators.contract import Operator, reports_labels
+from cells.operators.contract import Operator, reports_labels, takes_labels
 from cells.registry import species_registry
 
 LAW_ID = "neutral_arrival_labels@1"
@@ -314,13 +321,16 @@ def operator_errors(spec, declaration):
     for op, other, _ in composite_spec.entries(spec):
         if op.LABEL_OWNER:
             continue
-        writes = set(AMOUNT_FIELDS) & {*op.ENTITY_WRITES, *op.EVENT_REPLACES, *op.STATE_RESETS}
+        replaces = set(AMOUNT_FIELDS) & {*op.EVENT_REPLACES, *op.STATE_RESETS}
+        writes = set(AMOUNT_FIELDS) & set(op.ENTITY_WRITES) - replaces
         where = f"{op.LAW_ID} beside {LAW_ID}"
         if op.RETIRES or op.CLOSES:
             errors.append(f"{where}: it closes or retires slots ({NOT_PLANNED})")
         elif set(AMOUNT_VIEWS) & set(op.VIEW_FIELDS):
             errors.append(f"{where}: its view changes species amounts ({NOT_PLANNED})")
-        elif writes and op.EVENT:
+        elif replaces and not (op.EVENT and takes_labels(op.event)):
+            errors.append(f"{where}: its events write species amounts ({NOT_PLANNED})")
+        elif writes and op.EVENT and not op.SPLIT:
             errors.append(f"{where}: its events write species amounts ({NOT_PLANNED})")
         elif writes and op.SPLIT and not reports_labels(op):
             routed = {r.species for r in getattr(other, "routes", ())}
@@ -582,6 +592,15 @@ def advance_pools(start, end, moves, p, pool, *, xp=jnp):
     )
 
 
+def advance_event(end, replaced, control, p, *, xp=jnp):
+    """end with each replaced slot's (replaced [cell]) labelled shares set to the label in force
+    for its species this step, the newcomer label (D296): the departing material left with its
+    own."""
+    newcomer = control.label_arrival[:, :, None]  # [m, label, 1] one-hot.
+    share = xp.where(replaced[None, None, :], newcomer, end.label_share)
+    return end._replace(label_share=share)
+
+
 def advance_inner(start, end, transfers, p, *, xp=jnp):
     """end with the label shares advanced over the inner step's transport (FR-42's stage 2), from
     its transfers ((amount [m, entity], source [entity], destination [entity]), ..., nodes on the
@@ -803,6 +822,9 @@ class NeutralArrivalLabels(Operator):
 
     def advance_inner(self, start, end, transfers, p, *, xp):
         return advance_inner(start, end, transfers, p, xp=xp)
+
+    def advance_event(self, end, replaced, control, p, *, xp):
+        return advance_event(end, replaced, control, p, xp=xp)
 
     def rate_checks(self, state, control, p, valid, *, xp):
         return valid & labels_domain_valid(state, p, xp=xp)

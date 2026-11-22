@@ -330,11 +330,19 @@ Refused, each naming why:
   - with no release the row keeps its shares bit for bit;
   - each source takes its own schedule, or its species' window.
 
-**Replacement** (approved, D284 and D296; the lead's leave for a minimal hunk in the replacement
-operator's file) comes after this.
-- Its event reports the departing occupant's material leaving with its shares, and the newcomer's
-  arriving at a newcomer label.
-- Until then, labels are refused beside replacement.
+**Replacement** (D284 and D296; the lead's leave for a minimal hunk in replacement@1's file).
+- **The event reports what it replaced.** replacement@1's event takes `labels=rows` and also
+  returns the slots it replaced. Its state and validity are bit for bit the unlabelled call's.
+- **The owner relabels each replaced slot:** its labelled shares become the label in force for the
+  species at the event step, the newcomer label.
+  - The departing material leaves with its own shares.
+  - A donor copy's material is newcomer material too. It does not inherit the donor's shares.
+- **Producer identity across generations:** a source's schedule may switch its label at the event
+  time.
+- **Still refused:** replacement@2 (its event does not report). So is a template that would make a
+  labelled species membrane-permeable, which replacement@1's own check already refuses as a new
+  leak.
+- **The composition matrix** admits replacement@1 beside the owner.
 
 **What moves.** Worlds without the owner: nothing. Labelled worlds: the owner gains
 `label_pool_share` and the control `label_source_arrival`, both empty where no reporter declares

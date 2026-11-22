@@ -228,6 +228,11 @@ Declarations (class attributes):
     M N + p (M labelled rows). Every move is counted once: a row's or pool's change is its into
     minus out plus carried in minus carried out, at rounding. Without pools and sources the
     argument and moves are as above, and nothing of them is traced.
+  - **An event that replaces a slot's amounts** (D296: replacement@1) reports it: an ``event``
+    that takes ``labels=rows`` returns ``(state, valid, replaced [cell])``, the slots whose
+    amounts it replaced. The departing material leaves with its shares; the owner gives each
+    replaced slot's labelled material the label in force for its species at that step (the
+    newcomer label).
 * The run view (docs/RUN_VIEW_DESIGN.md §3; cells/records/run_view.py reads them, host side only):
   - ``VIEW_LAYERS``: its layers, each {"id", "label", "representation"}; None: undeclared,
     which the run-view writer refuses;

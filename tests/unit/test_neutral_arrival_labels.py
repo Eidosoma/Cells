@@ -344,6 +344,38 @@ def test_each_source_takes_its_own_schedule_or_its_species(monkeypatch):
     assert not out[:, 0, 2].any()  # Q is not labelled.
 
 
+def replaced_world():
+    """One cell whose occupant a template replaces at 2 ms, S labelled, its arrivals joining
+    "newcomer" from that step."""
+    raw = fx.world(faces=(), concentrations_mM={"cell_0": 1.0}, end=0.004, dt=1e-3)
+    template = fx.template(raw, "cell_0", "fresh", s_mM=2.0)
+    raw = fx.with_replacement(raw, [template], [(0.002, "cell_0", "fresh", "carrier_1")])
+    return labelled_s(raw, labels=("base", "newcomer"), arrivals=[("S", [(0.002, "newcomer")])])
+
+
+def test_a_replaced_slot_takes_the_newcomer_label():
+    """D296 (the lead's leave for replacement@1's event, in NumPy, no world compiled): with labels
+    the event's state and validity are bit for bit the unlabelled call's, it reports the slot it
+    replaced, and the owner gives that slot's S the label in force at the event, the newcomer's."""
+    from cells.definitions import pump_composite_spec as cs
+    from cells.registry.models import get_model
+
+    spec = parse_spec(replaced_world())
+    model = get_model(spec.model)
+    state, p = model.initial_values(spec)
+    controls = cs.control_values(spec, [0.002])
+    control = model.CONTROL_TYPE(*(np.asarray(v)[0] for v in controls))
+    op = model.operators[0]
+    plain, ok = op.event(state, control, p, xp=np)
+    new, ok2, replaced = op.event(state, control, p, xp=np, labels=p.label_rows)
+    assert bool(ok) and bool(ok2) and replaced.tolist() == [True]
+    assert all(bits(a) == bits(b) for a, b in zip(plain, new, strict=True))
+    owner = model.label_owner
+    assert np.asarray(state.label_share)[0, :, 0].tolist() == [1.0, 0.0]
+    after = owner.advance_event(new, replaced, control, p, xp=np)
+    assert np.asarray(after.label_share)[0, :, 0].tolist() == [0.0, 1.0]
+
+
 # ------------------------------------------------------------------ one compiled world
 
 H = 1 / 64  # dt, exact in binary, so every time below is a grid point exactly.

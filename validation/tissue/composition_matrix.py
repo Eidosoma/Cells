@@ -38,7 +38,7 @@ from cells.operators import compartments as compartments_operator
 from cells.operators import membrane_trafficking as trafficking_operator
 from cells.operators import partition as partition_operator
 from cells.operators import species_labels as labels_operator
-from cells.operators.contract import reports_labels
+from cells.operators.contract import reports_labels, takes_labels
 
 ROOT = Path(__file__).resolve().parents[2]
 DOC = ROOT / "docs" / "PUMP_COMPOSITE.md"
@@ -919,16 +919,14 @@ def _labels_refuse(law):
     event that writes species amounts, or a split part that writes them without reporting (exchange
     only where its routes name a labelled species, a condition on the data)."""
     op = OPERATORS[law]
-    writes = set(labels_operator.AMOUNT_FIELDS) & {
-        *op.ENTITY_WRITES,
-        *op.EVENT_REPLACES,
-        *op.STATE_RESETS,
-    }
+    replaces = set(labels_operator.AMOUNT_FIELDS) & {*op.EVENT_REPLACES, *op.STATE_RESETS}
+    writes = set(labels_operator.AMOUNT_FIELDS) & set(op.ENTITY_WRITES) - replaces
     return bool(
         op.RETIRES
         or op.CLOSES
         or set(labels_operator.AMOUNT_VIEWS) & set(op.VIEW_FIELDS)
-        or (writes and op.EVENT)
+        or (replaces and not (op.EVENT and takes_labels(op.event)))
+        or (writes and op.EVENT and not op.SPLIT)
         or (writes and op.SPLIT and not reports_labels(op) and law != EXCHANGE)
     )
 
