@@ -197,6 +197,23 @@ def grid_error(t, n, Q, D, t1, t2, ts=None):
     return abs(fine - coarse)
 
 
+def survival(t, n, Q, D, t1, t2, ts):
+    """FR-38's survival readout (the requester's answer to (c) and (e), 22 November 2026): of the
+    material completed or released during [t1, t2), the members alive at t2, those same molecules
+    alive at ts >= t2, and their ratio, None at a zero denominator; each count with its grid error
+    (None where it cannot be estimated). The window's edges are output times, so a release in the
+    step that starts at t2 belongs to the next window."""
+    _, alive, _ = survivors(t, n, Q, D, t1, t2, t2)
+    _, later, _ = survivors(t, n, Q, D, t1, t2, ts)
+    return dict(
+        alive_at_window_end=alive,
+        alive_at_sample=later,
+        ratio=None if alive == 0 else later / alive,
+        grid_error_at_window_end=grid_error(t, n, Q, D, t1, t2, t2),
+        grid_error_at_sample=grid_error(t, n, Q, D, t1, t2, ts),
+    )
+
+
 def turnover_control(points_per_hour=60):
     """FR-25's turnover control on exact counters: (completed in hour 1, surviving at 1 h, at 2 h).
     Expected 100 ln 2 = 69.31, 50 and 25 copies."""
@@ -330,6 +347,7 @@ def main(argv=None):
     try:
         completed, surviving, grew = survivors(t, n, Q, D, args.t1, args.t2, args.ts)
         error = grid_error(t, n, Q, D, args.t1, args.t2, args.ts)
+        counted = survival(t, n, Q, D, args.t1, args.t2, args.t2 if args.ts is None else args.ts)
         known = None
         if args.rate is not None:
             known = known_rate(t, Q, args.rate, args.t1, args.t2, args.ts)
@@ -340,6 +358,9 @@ def main(argv=None):
         surviving_fmol=surviving,
         pool_change_fmol=grew,
         grid_error_fmol=error,
+        alive_at_window_end_fmol=counted["alive_at_window_end"],
+        alive_at_sample_fmol=counted["alive_at_sample"],
+        survival_ratio=counted["ratio"],
     )
     if error is None:
         out["time_resolution"] = (
