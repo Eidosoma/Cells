@@ -1578,8 +1578,9 @@ each node's buffer), and the supply's pair held at its declared ratio.
     estimate (10 CPU-hours needs activities 1,100 times lower).
   - So the cycles' slope conductances join N2's implicit operator: D235's build for MT-2, branch I
     of §8 (M2's 6–9 agent-days). Its design is the last section of this note.
-  - Under that route the face's 18 µs binds: about 1–4 days a world, detached on a lane, if the
-    runner path's overhead falls toward the device step's.
+  - Under that route the face's 18 µs binds. With the windowed runner's device row checks (12.5 ms
+    a step on head 2's world), that is about 58 CPU-hours, 2.4 days a world, detached on a lane,
+    before X2's half steps.
   - Still unpriced: the fast chemistry's explicit material bounds at the source's activity (the
     IMS kinase runs at 44 times respiration). C1 measures them on MT-1b's world.
 
@@ -1866,6 +1867,8 @@ R2, the judged reference, integrates the same declared equations (D280).
   - the buffer's treatment, (a) or (b);
   - the free ions' crossing (§2);
   - the outer membrane's potential (§3).
+  - **Erratum (22 November 2026):** §3 does not define that potential. φ_IMS − φ_buffer is set by
+    zero net outer-membrane current (the lead's ruling), as MT-1b's world declaration states (G5).
 - **The rest is fixed already:**
   - the laws: the appendix at tag `mito-laws-appendix-2026-11-20b`, with its §12;
   - the source's activities at 180 mV (D288);
@@ -1882,9 +1885,15 @@ note comes first, for the lead and the @3 owner. It builds on N2
 N2 section, and `validation/long_duration/RUNG1_20261119.md`). **S** marks this note's own proposal.
 Read at main 38cc2eae.
 
-**Why.** With the cycles explicit, the kind's electrogenic slope caps the step at 27 ns at 180 mV
-(P1′'s arm S: the kind's bound near rung 0.14, with ΣG/C = 5 × 10⁶ /s; CORE_SEAMS_STEP0 §9.2). 300 s
-then costs about 19,400 CPU-hours (the MT-1b draft's W1 table).
+**Why.** With the cycles explicit, the electrogenic slope at the source's activity caps the step
+near 27 ns at 180 mV, so 300 s costs about 19,400 CPU-hours (the MT-1b draft's W1 table).
+- **That figure is a proxy's.** P1′'s arm S scaled FR-4's proton pump until ΣG/C reached the
+  source's 5 × 10⁶ /s, and its cap was the pump law's definition-time bound, near rung 0.14
+  (CORE_SEAMS_STEP0 §9.2).
+- **MT-1b's own cycles are monomial (K6).** The definition-time kind bound
+  (`transporter._population_bound_rate`) covers factored kinetics only. The monomial cycles are
+  bounded per stage instead: the stage term takes each population's closed-form slope dJ/dψ at
+  the stage's potentials (`_population_stage_term`). Step 0 measures their own ΣG/C.
 
 ### 1. What N2 does today
 
@@ -1897,16 +1906,17 @@ then costs about 19,400 CPU-hours (the MT-1b draft's W1 table).
 - **The species move with the same W,** so material and charge stay exact.
 - **The remainder stays explicit.** Its derivative in dv vanishes at the operator time.
 - **Each part's heat** is booked with its own tableau weights.
-- **What N2 leaves explicit.** The kinds' electrogenic currents stay explicit; under N2 the stage
-  rule counts the kinds' terms alone. So the cycles keep the 27 ns cap.
+- **What N2 leaves explicit.** The kinds' electrogenic currents stay explicit. Under N2 the stage
+  rule counts the kinds' terms alone, and the kind and calcium bounds stay (N2's comment). So the
+  cycles keep their cap.
 
 ### 2. The block
 
 **The split, per cycle population.** For each electrogenic cycle population of `cells.transporter@1`
 (complexes I, III and IV, the synthase, the nucleotide exchange):
 - its cycle rate is split as J_c(dv) = W_c dv + [J_c(dv) − W_c dv];
-- W_c = ∂J_c/∂(dv) is frozen at the same operator time, from the kind's exact closed-form slopes
-  (K6's monomial kernel, the slopes its stage term uses);
+- W_c = ∂J_c/∂(dv) is frozen at the same operator time, from the kind's closed-form slope (the
+  `d_j_d_psi` its stage term already forms);
 - its patch's charge conductance gains G_c = CHARGE_PER_FMOL q_c W_c, where q_c is the charge moved
   per turnover;
 - its rows move by ν (W_c dv) at the implicit stages and by ν × the remainder at the explicit ones,
@@ -1916,8 +1926,11 @@ then costs about 19,400 CPU-hours (the MT-1b draft's W1 table).
 **Only the non-negative slope goes implicit (S).** A cycle's slope can be negative: far from
 equilibrium, the monomial's voltage factor e^{θqu} can make dI/dV < 0.
 - The implicit part takes W_c⁺, the part with q_c W_c ≥ 0, so the operator stays SPD.
-- The rest stays in the explicit remainder, which the stage rule counts as it counts today's terms.
-- The split is exact for any frozen W.
+- The rest stays in the explicit remainder. The split is exact for any frozen W.
+- **The remainder's own rule.** Away from the operator time the remainder's slope is not zero. So
+  under the new ID the per-stage rule counts, per population, its stage slope less the frozen
+  implicit slope, |q_c (dJ_c/dψ − W_c⁺)| over C. Any definition-time bound on an implicit slope
+  (a factored kind's B7 term) likewise counts only the part that stays explicit.
 
 **Its kind hook.** An optional hook, `implicit_slopes(read, potentials, control, p)`, returns W per
 population.
@@ -1936,7 +1949,19 @@ registered N2 worlds keep their programs.
 **With the face.** The face's forms add Σ_f z_f² W_f to the face Laplacian (the face note's §4). The
 cycles add patch conductances. Both sit in the same SPD operator.
 
-### 3. What stays explicit, and the first measurement
+### 3. Events, what stays explicit, and the first measurement
+
+**Events (RUNG1's lesson).**
+- §7's protocol has scheduled events: the ADP step's two edges, the uncoupler step and the inhibitor
+  step. O₂ exhaustion is a continuous world.
+- Each event, and t = 0, kicks the fast ΔΨ mode: about 0.2 µs at 180 mV, so dt·ΣG/C ≈ 90 at 18 µs.
+- N2's own rung work met this. From t = 0 the dissipation check refused N2's third step. The judged
+  N2 arm then ran with C's 1 ms fine window around its cue (RUNG1 §10.13 and §10.20; tags
+  `fr8-c-judged-2026-11-20` and `fr8-n2c-judged-2026-11-21`).
+- **So the block runs with C's fine windows** (`execution.fine_windows`) at t = 0 and around each
+  event. Their width and fine step come from Step 0's ΣG/C.
+- The qualification ladder includes an event, with and without its window.
+
 
 - **Still explicit:**
   - the kinds' material slopes (D4's material term, dt × material ≤ the bound);
@@ -1947,10 +1972,13 @@ cycles add patch conductances. Both sit in the same SPD operator.
   18 µs. Candidates are the NADH and quinone pools, the protons through the closure, and the IMS
   kinase at 44 times respiration. Implicit electrical slopes do not lift that.
 - **Step 0, with its criterion written first** (development, light CPUs, about half a day to a day):
-  - **The world:** head 2's host-P world with the source's capacities, at MR1-MT2's state 3 and
-    state 4 near 180 mV.
-  - **What it evaluates:** the electrical bound (the kind's stage term over C), the material term,
-    the face's bound and the closure's lag.
+  - **The world:** head 2's host-P world with the source's capacities, at MR1-MT2's states. The
+    worst case is the highest ΔΨ, state 4 at [Pi]e = 10 mM (194.7 mV), beside state 3 at
+    [Pi]e = 10 mM (169.0 mV).
+  - **What it evaluates:**
+    - the monomial cycles' own ΣG/C, from the stage term over C;
+    - the material term, the face's bound and the closure's lag;
+    - the size of C's windows around an event.
   - **If the material and face bounds allow about 10 µs or more,** this electrical block is enough.
   - **If not,** the block must also take the cycles' material slopes: a linearly implicit material
     block per node, the scope of §8's original branch I. A new estimate goes to the lead before any
@@ -1968,8 +1996,10 @@ cycles add patch conductances. Both sit in the same SPD operator.
   - a world without slope-declaring kinds runs bit for bit as N2 under the new ID;
   - planted: the linear part's charge without its rows' material move is refused.
 - **The qualification**, after the build, on MT-1b's world (development, light CPUs): a ladder from
-  1 µs to the binding bound (the face's 18 µs if Step 0 allows), as RUNG1's I3. It measures order
-  against a fine reference, X2's count and cap, and the ledgers. The registration then fixes dt.
+  1 µs to the binding bound (the face's 18 µs if Step 0 allows), as RUNG1's I3.
+  - It measures order against a fine reference, X2's count and cap, and the ledgers.
+  - It crosses one scheduled event, the ADP step, with and without C's window.
+  - The registration then fixes dt and the windows.
 
 ### 5. The price, against the earlier 6–9 agent-days
 
@@ -1987,9 +2017,172 @@ with no Newton (**S**):
 | If Step 0 finds material stiffness binding, the material block on top | 3–4 more (about 8–9 in all, the earlier range) |
 
 **The judged run under this route.**
-- **The step's cost** (`/mnt/workspaces/Cells/mito-mt1b-20261122/`): on the windowed runner with
-  device row checks it is about 19 ms a step on head 2's world, against 6.3 ms for the device step
-  alone and about 170 ms with host row checks.
-- **So 300 s at the face's 18 µs** (1.7 × 10⁷ steps) is about 90 CPU-hours, before X2's extra half
-  steps. That is about 4 days a world, detached on a lane, unless the device checks' own closure
-  solves are shared (the lead's side item).
+- **The step's cost** on head 2's world (`/mnt/workspaces/Cells/mito-mt1b-20261122/`, light CPU
+  7), as a slope over 300 and 1,500 steps, so each run's fixed cost cancels:
+  - 12.5 ms a step on the windowed runner with device row checks;
+  - against 6.3 ms for the device step alone;
+  - and 170–270 ms with host row checks.
+- **So 300 s at the face's 18 µs** (1.7 × 10⁷ steps) is about 58 CPU-hours, about 2.4 days a
+  world, detached on a lane, with device row checks.
+- That is before X2's two half steps per step, which roughly triple the stepping part (not
+  measured).
+
+## MT-1b's world declaration (22 November 2026)
+
+**Status: declared, for the lead's tag.** Both the engine's MT-1b worlds and R2 build from it (the
+lead's request, after R2's reading found the laws fixed but no runnable world).
+- **Every value has its source or its reason:**
+  - the source is Beard (2005), PLoS Comput Biol 1(4):e36, with its 2006 correction, 2(1):e8;
+  - both are CC BY, read through `validation/mitochondria/beard2005_cardiac.py`, which keeps each
+    number with its place in the source;
+  - **S** marks a value this declaration chooses, with its reason.
+- The laws are the appendix's at tag `mito-laws-appendix-2026-11-20b`; the outer membrane is the
+  face note's (tag `mito-mt1b-face-design-2026-11-22`, option (a)).
+
+### 0. Scale and units
+
+| Quantity | Value | Source or reason |
+| --- | --- | --- |
+| Mitochondrial volume V_mito | 1 pL, one lumped organelle | **S**: the engine's fmol and pL; every source quantity is per litre of mitochondria, so the scale cancels |
+| Matrix water W_x | 0.6435 per unit V_mito: 0.6435 pL | Table 1 (2006), V_x; footnote f, 90% of 0.715 |
+| IMS water W_i | 0.0715 per unit V_mito: 0.0715 pL | Table 1 (2006), V_i; footnote f, 10% of 0.715 (the lane's reading note, Q10) |
+| Temperature | 298.15 K | D236; the lane's `DECLARED` |
+| Inner-membrane capacitance | C_IM = 6.75 × 10⁻⁶ mol (L mito)⁻¹ mV⁻¹, so C = 6.513 × 10⁻¹⁰ F for 1 pL | Table 1 (2006) |
+| Outer-membrane area A_OM | γ V_mito = 5.99 µm⁻¹ × 1,000 µm³ = 5,990 µm² | Table 1, γ, per unit mitochondrial volume (Q09) |
+| Inner-membrane area A_IM | 6.513 × 10⁻⁸ m², C at 1 µF cm⁻² | **S**: the source gives no area. Only P × A enters the leak, so it scales P alone |
+
+**C_IM is the corrected value.** The 2005 PDF printed 1.0 × 10⁻⁶ (`TABLE_1`'s `printed_2005`), and
+the 2006 correction prints 6.75 × 10⁻⁶. So §2.3's 6.75 × 10⁻⁶ is the corrected figure, not an
+earlier one.
+
+### G1. The appendix's §12 items
+
+- **The leak (Eq. 19).**
+  - The source: J_Hle = X_Hle ΔΨ (H_e e^u − H_x)/(e^u − 1), with u = FΔΨ/RT. That is the
+    constant-field (GHK) flux for H⁺.
+  - X_Hle = 250.00 mol s⁻¹ mV⁻¹ M⁻¹ (L mito)⁻¹ (Table 1 (2006), with Pi control).
+  - The engine: `proton_constant_field_leak@1` on the inner-membrane patch, with P_H A_IM = X_Hle
+    RT/F per litre of mitochondria (term by term, **S**). That is 6.423 × 10⁻¹² m³ s⁻¹ for 1 pL, so
+    P_H = 9.862 × 10⁻⁵ m s⁻¹ at A_IM (RT/F = 25.693 mV).
+- **The uncoupler patch** (§7's step 2; not in the source).
+  - A second inner-membrane patch carries only `proton_constant_field_leak@1`, with P_unc A = 30 ×
+    the leak's P_H A_IM, and its availability steps 0 → 1.
+  - **S:** the factor's purpose is to drop ΔΨ below the synthase's stall so that synthesis reverses,
+    which is §7's test. R2 reports the uncoupled steady state's ΔΨ and the synthase's direction
+    before registration. If synthesis does not reverse, the factor rises to 100 before
+    registration.
+- **The matrix buffer.**
+  - The source: 1/r_buff = (100 M⁻¹)[H⁺]_x (text after Eq. 22; `BUFFER_PER_M`). That is a buffering
+    capacity of ln 10 / (100 M⁻¹) = 23.03 mM per pH unit at every pH (**S**).
+  - **The engine's closure holds one-site buffers,** so the matrix declares one buffer row B_x under
+    the closure, with pK 7.10 and total 40.0 mM. That total gives the source's 23.03 mM per pH at
+    the pK (**S**).
+  - The operating matrix pH is 7.07–7.14 at MR1-MT2's twelve states. Within 0.1 pH of the pK the
+    capacity is 98.7% of the source's, 89.0% within 0.3 and 73.0% within 0.5.
+  - This is a declared departure from the source. R2 integrates the same buffer, so the judged
+    comparison does not see it; MT-2 reports it.
+- **The IMS buffer: none.** The source holds [H⁺]_i = [H⁺]_e (text after Eq. 21). The IMS's pH
+  follows the bath through the face's H⁺ (G4), and the IMS closure binds H⁺ on phosphate only.
+- **Passive K⁺ (Eq. 20): absent,** since X_K = 0 in both columns (Table 1).
+- **Passive Mg²⁺ across the inner membrane: absent.** The source's fits set the passive K⁺ and
+  Mg²⁺ fluxes to zero (`PROTOCOL`), so the matrix Mg²⁺ total is conserved at 5 mM (D236).
+
+### G2. The water volumes
+
+- W_x = 0.6435 and W_i = 0.0715 per unit of mitochondrial volume. Both are Table 1's own values
+  (2006), not only the 90/10 split.
+- With W_i, the face's explicit bound at p_Pi is 1/(2 γ p_Pi / W_i) = 18.3 µs, P1′'s figure.
+
+### G3. The held bath
+
+**Its composition** is the source's protocol (`PROTOCOL`):
+- **Free pH 7.10 held:** the free proton concentration is held at 10^−7.1 M, not a proton total
+  (the lead's ruling). No bath buffer is needed for a held free proton.
+- **K⁺:** 150 mM.
+- **Mg²⁺:** total 5.0 mM. Its free part is solved at the bath's speciation (option (a)).
+- **Pi total: 10 mM.**
+  - **S:** that is the top of the source's 0–10 mM sweep, and the Pi of MR1's ADP-step time
+    course.
+  - One Pi keeps R2's world and the engine's single. Other Pi values are later worlds.
+- **ADP:** 1.3 mM in state 3 (the source).
+
+**Traces** (**S**), where the source has exactly zero: ADP, ATP and AMP at 1 nM (10⁻⁶ mM) each.
+- At exactly zero a form's potential is −∞ and the energy ledger is undefined.
+- 1 nM is positive and small against every saturation constant: k_mADP = 3.5 µM, K_MgATP = 24 µM.
+- **R2 checks it before registration:** the same run with traces 1,000 times smaller must move no
+  judged readout by more than a tenth of its band. Otherwise the trace falls before registration.
+
+### G4. The outer membrane for the free ions
+
+- **The source:** H⁺ and K⁺ "rapidly equilibrate across the outer membrane", with [H⁺]_i = [H⁺]_e
+  and [K⁺]_i = [K⁺]_e (text after Eq. 21). The IMS's free Mg²⁺ is no state in the source (Q26), and
+  MR1 holds it at the buffer's free Mg²⁺.
+- **Declared (S):** free H⁺, K⁺ and Mg²⁺ cross the face as log-mean electrodiffusion at
+  p = p_Pi = 327 µm s⁻¹, the source's fastest outer-membrane permeability.
+  - Their equilibration time, W_i / (γ p), is 36.5 µs, far below every readout's time scale. So
+    the IMS sits at the bath's free H⁺, K⁺ and Mg²⁺, as the source assumes.
+  - No faster permeability is introduced, so the face's step bound stays P1′'s 18.3 µs.
+- **No counter-ion crosses (S).** The source has no Cl⁻. The bath and the IMS carry the fixed
+  charges that balance their declared ions at the start (the engine's fixed-charge equivalents).
+  The outer membrane's potential then follows G5.
+
+### G5. The outer membrane's potential
+
+φ_IMS − φ_bath is set by zero net outer-membrane current (the lead's ruling), over the permeant
+forms and ions. The outer membrane carries no capacitance. The face note's §6 carries an erratum
+pointing here.
+
+### G6. O₂ at N
+
+- Held at 2.6 × 10⁻⁵ M (20 mmHg, as the source states it for the matrix; `PROTOCOL`) in worlds
+  (a)–(c), C1's default.
+- W3(d) makes it finite (G7).
+
+### G7. The protocol (§7)
+
+**Against the source.** The source fits steady states only: Bose et al.'s states 4 and 3 at
+[Pi]e 0–10 mM, and the low-O₂ sweep. It reports no transient, so every time below is ours.
+- R2's plateaus are of the order of MR1's ADP-step course (`reproduce.adp_step_time_course`: from
+  state 4, ADP on for 60 s, then off for 120 s).
+- Its 60 s and 120 s plateaus carry no claim from the source. The drift rule decides them.
+
+**Accepted from R2's proposal, with what this declaration adds:**
+
+| Item | Declared | Source or reason |
+| --- | --- | --- |
+| Start state | R2's steady state 4 at [Pi]e = 10 mM, at the declared inventories: the matrix Mg²⁺ total 5 mM (D236), and the matrix charge inventory anchored as MR1-MT2's (the source's Fig. 4D matrix pH at state 4, [Pi]e = 0) but computed with G1's buffer. R2 records the numbers, and the engine starts from them | **S**; MR1-MT2's anchoring |
+| State 4 | 0–60 s | R2 |
+| ADP step | 1.3 mM total in the bath, 60–180 s | the source's ADP; R2's times |
+| Back to state 4 | the ADP trace, 180–300 s | R2 |
+| The uncoupler (step 2) | a branch from the 300 s state: the uncoupler patch on (G1), 120 s | R2's branch; §7 |
+| The inhibitor (step 3) | a branch from the 300 s state: complex IV's availability 0, and the bath switched to ADP 0.5 mM with ATP 0.87 mM, 120 s | §7. The bath is the source's only buffer carrying ATP, its low-O₂ cytochrome c protocol (`PROTOCOL`): the reversed synthase and exchange spend that ATP |
+| Branches | each judged at matching times since its own start from its own 300 s state | **S** |
+| Outputs | every 10 ms for 2 s after each step, then every 0.5 s | R2 |
+| Drift rule | a plateau counts as steady when every judged readout changes by less than a tenth of its band over its last 10 s. R2 reports whether each plateau meets it; one that does not lengthens before registration | **S**, the MT-1b draft's drift rule made concrete |
+| Control (b) | the uncoupler patch on from t = 0; otherwise (a)'s schedule | §7's controls |
+| Control (c) | the nucleotide exchange's availability 0 from t = 0; otherwise (a)'s schedule | §7's controls |
+
+**W3(d), O₂ exhaustion.** The held bath stays held for every row but O₂, which lives in its own
+finite node.
+- **The O₂ node:** O₂ only, 6.3 nL per pL of mitochondria, starting at 26 µM.
+- **The route:** a face to the IMS and the inner membrane's `passive_neutral_permeation@1`, both
+  fast: equilibration under 1 ms.
+- **The run:** from the state-4 start, ADP stepped to 1.3 mM at 60 s and held.
+- **Why 6.3 nL (S):** at MR1-MT2's state-3 O₂ flux, 1.640 × 10⁻³ mol s⁻¹ (L mito)⁻¹ at [Pi]e
+  10 mM, that holds about 100 s of O₂. The matrix O₂ then falls through the source's P50 of
+  0.373 µM near the run's end.
+
+**Cytochrome c's volume.** cytC_tot = 2.70 mM per matrix water (Table 1; MR1's published reading,
+Q05). So the IMS holds 1.737 fmol, 24.3 mM of its 0.0715 pL. Steady states do not depend on this
+choice, but transients do, so R2 and the engine take the same one.
+
+### R2's readings, confirmed or corrected
+
+| R2's reading | Verdict |
+| --- | --- |
+| The "with Pi control" column | **Confirmed:** the source's final model (Eq. 24), the appendix's column |
+| The binding table | **Confirmed** (appendix §0): Mg²⁺ on ATP and ADP, H⁺ on phosphate, nothing on AMP, no Mg²⁺ on phosphate. Add G1's matrix buffer B_x |
+| Eq. 20 absent | **Confirmed:** X_K = 0 in both columns |
+| ΔΨ free | **Confirmed:** C_IM dΔΨ/dt follows the net charge current; nothing clamps it |
+| The face law J_f = γ p [(c_e − c_P) + z_f v L_f] | **Confirmed,** with L_f = logmean(c_f,e, c_f,P) and v = F(φ_e − φ_P)/RT. It is positive into the IMS, per unit mitochondrial volume. It equals the engine's log-mean electrodiffusion with D A/L = γ p V_mito, and the free ions of G4 take the same form |
+| Option (a)'s supply at the free potentials | **Confirmed** (the lead's ruling): a binder row's supply at its free base's μ̃, a ligand row's at its free ligand's μ̃ |
