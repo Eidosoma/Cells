@@ -13,13 +13,243 @@
   "law_categories": {
     "cells.adenylate_kinase@1": "reactions-and-binding",
     "cells.bilayer_geometry@1": "molecular-assembly",
+    "cells.gard_catalysis_pair_consistent@2": "molecular-assembly",
     "cells.held_reductant_supply@1": "reactions-and-binding",
     "cells.membrane_permeation@1": "membrane-transport",
     "cells.osmotic_lumen@1": "membrane-transport",
+    "cells.passive_neutral_permeation@1": "membrane-transport",
     "cells.phase_exchange@1": "molecular-assembly",
     "cells.shared_pool@1": "molecular-assembly"
   },
   "comparisons": {
+    "gard-cache-reversibility": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@1"
+      ],
+      "laws": [
+        "cells.reservoir_exchange@1",
+        "cells.gard_catalysis_pair_consistent@2"
+      ],
+      "engine_revision": "6b28ec55368011de79dce85e6172b5844b77a287",
+      "record_revision": "d6db91d64f5c90d8e4857873052f4e667eba7469",
+      "sources": {
+        "TwoSum, founder fold, event update and reverse factor": "src/cells/models/assembly_lineages/gard.py#L291-L357",
+        "Row precision and count guards": "src/cells/models/assembly_lineages/gard.py#L359-L396",
+        "Public engine model and execution parser": "src/cells/models/assembly_lineages/spec.py",
+        "Compiled propensities and event handling": "src/cells/models/assembly_lineages/kernel.py",
+        "Public lineage runner and closure": "src/cells/models/assembly_lineages/runner.py",
+        "Compiled rate table probe": "validation/assembly_lineages/probes.py#L210",
+        "Declared two-type worlds": "tests/assembly_lineage_fixtures.py",
+        "Original regression with a dropped low word": "tests/unit/test_assembly_lineages_kernel.py#L139-L172"
+      },
+      "record_inputs": {
+        "Precision proof and numerical-domain witnesses": "lean/CellsProofs/Chemistry/GardCache.lean",
+        "Stress-world construction and comparison": "lean/checks/gard_catalysis.py"
+      },
+      "driver": "lean/checks/gard_cache.py",
+      "record": "lean/PROGRESS.md#gard-v2-cache"
+    },
+    "gard-cache-domain": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@1"
+      ],
+      "laws": [
+        "cells.reservoir_exchange@1",
+        "cells.gard_catalysis_pair_consistent@2"
+      ],
+      "engine_revision": "6b28ec55368011de79dce85e6172b5844b77a287",
+      "record_revision": "d6db91d64f5c90d8e4857873052f4e667eba7469",
+      "sources": {
+        "Finite-input check and exact fold": "src/cells/models/assembly_lineages/gard.py",
+        "Molecule capacity and default bucket": "src/cells/models/assembly_lineages/spec.py#L358-L371",
+        "Type bucket sizes": "src/cells/models/assembly_lineages/family.py#L28-L54",
+        "Independent declared fission-size limit": "src/cells/models/assembly_lineages/fission.py#L94-L102",
+        "Stalled event branch": "src/cells/models/assembly_lineages/kernel.py#L338-L352",
+        "Lineage result and energy ledger": "src/cells/models/assembly_lineages/runner.py",
+        "Independent rational join and leave propensities": "validation/gard/references/kernels.py#L233-L304",
+        "Two-type world and explicit execution capacity": "tests/assembly_lineage_fixtures.py"
+      },
+      "record_inputs": {
+        "Precision proof and numerical-domain witnesses": "lean/CellsProofs/Chemistry/GardCache.lean",
+        "Stress-world construction and comparison": "lean/checks/gard_catalysis.py"
+      },
+      "driver": "lean/checks/gard_cache.py",
+      "record": "lean/PROGRESS.md#gard-v2-range"
+    },
+    "polymerisation-balances": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [],
+      "operators": [
+        "cells.templated_polymerisation@1"
+      ],
+      "engine_revision": "6b28ec55368011de79dce85e6172b5844b77a287",
+      "record_revision": "d6db91d64f5c90d8e4857873052f4e667eba7469",
+      "sources": {
+        "Stage layout, active stages and bound residue counts": "src/cells/operators/templated_polymerisation.py#L700-L742",
+        "Half-step changes, cumulative counters and ledgers": "src/cells/operators/templated_polymerisation.py#L862-L1004",
+        "Public windowed simulation": "src/cells/execution/windows.py",
+        "A1 and the competing two-chain world": "validation/gene_regulation/worlds.py#L299-L416",
+        "Compiled histories and per-chain readouts": "validation/gene_regulation/engine_run.py#L162-L175",
+        "Stage, pool and product output fields": "validation/gene_regulation/engine_run.py#L267-L289",
+        "Truncating the original worlds": "validation/gene_regulation/kernel.py#L22-L36",
+        "Independent copy-to-fmol conversion": "validation/gene_regulation/sheet_check.py#L90-L97",
+        "Existing polymerisation regressions": "tests/unit/test_templated_polymerisation.py#L91-L100"
+      },
+      "record_inputs": {
+        "Stage and pool proofs": "lean/CellsProofs/Chemistry/Polymerisation.lean",
+        "Ribosome occupancy and pulse-label measurements": "lean/checks/data/polymerisation_pool_measurements.json"
+      },
+      "driver": "lean/checks/polymerisation_balances.py",
+      "record": "lean/PROGRESS.md#polymerisation-balances"
+    },
+    "wall-wash-stand-in": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [],
+      "operators": [
+        "cells.scheduled_compartment_wash@1",
+        "cells.site_occupancy@1"
+      ],
+      "engine_revision": "587ba7873ac7c3112c00639687d7d86ee186c6fd",
+      "record_revision": "a86c914fa3e0021c8b5c6335f8c402cf264c80ba",
+      "sources": {
+        "Stand-in geometry and initial stocks": "validation/tissue/wash_schedule_fixtures.py#L55-L88",
+        "Gross collection and refill": "src/cells/operators/wash_schedule.py#L420-L501",
+        "Binding and release rates on main": "src/cells/operators/site_occupancy.py#L901-L906",
+        "Scheduled controls at the event": "src/cells/definitions/pump_composite_spec.py#L258-L280",
+        "Accepted history and checkpoint": "src/cells/execution/runner.py",
+        "Main well regression": "tests/unit/test_wash_schedule_runs.py#L26-L59"
+      },
+      "record_inputs": {
+        "Wash retention and rate identities": "lean/CellsProofs/Tissue/WallWash.lean"
+      },
+      "driver": "lean/checks/wall_wash.py",
+      "record": "lean/PROGRESS.md#fr28-main-stand-in"
+    },
+    "label-mixing-power": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [
+        "logmean_electrodiffusion@1"
+      ],
+      "engine_revision": "ee0b8106406eb26e57ab1b0c34e16ed6c3f83a2b",
+      "record_revision": "a710e377ea87a865af46a1e6b2d7cf3574ff5aa3",
+      "sources": {
+        "Neutral face and instantaneous power": "src/cells/numerics/surface_transport.py#L283-L302",
+        "Logarithmic mean and series threshold": "src/cells/numerics/extracellular_field.py#L48-L69",
+        "Predicted face conductances": "src/cells/numerics/surface_imex.py#L109-L135",
+        "Applied flux and cumulative heat": "src/cells/models/surface_pump_v3.py#L2111-L2134",
+        "Diffusion rate, two nodes and explicit labels": "validation/regions/example.py#L45-L105",
+        "Accepted-step histories": "validation/regions/readouts.py#L269-L290",
+        "Pointwise surface comparison inputs": "validation/tissue/surface_fixtures.py",
+        "Baseline concentration for inactive species": "validation/tissue/secreted_species_fixtures.py#L29-L33"
+      },
+      "record_inputs": {
+        "Mixing power and accepted-step proofs": "lean/CellsProofs/Transport/LabelMixingPower.lean",
+        "Neutral face reduction": "lean/CellsProofs/Transport/LabelDiffusion.lean",
+        "Optional Mathlib relative-entropy equivalence": "lean/checks/mixing/KLFun.lean"
+      },
+      "driver": "lean/checks/label_mixing_power.py",
+      "record": "lean/PROGRESS.md#fr33-label-energy"
+    },
+    "wall-wash-retention": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [],
+      "operators": [
+        "cells.scheduled_compartment_wash@1",
+        "cells.site_occupancy@1"
+      ],
+      "engine_revision": "9917e3d9567993e1019c8caafa89f8653ee6ea9b",
+      "record_revision": "a86c914fa3e0021c8b5c6335f8c402cf264c80ba",
+      "sources": {
+        "Liquid sample, refill and ledgers": "src/cells/operators/wash_schedule.py#L420-L501",
+        "Surface binding rate and sign convention": "src/cells/operators/site_occupancy.py#L927-L932",
+        "Scheduled controls at the event": "src/cells/definitions/pump_composite_spec.py#L258-L280",
+        "Accepted history and checkpoint": "src/cells/execution/runner.py",
+        "Node and stand-in well fixtures": "validation/tissue/wash_schedule_fixtures.py#L56-L115",
+        "Well geometry and initial free tracer": "validation/tissue/secreted_species_fixtures.py",
+        "Node versus stand-in regression": "tests/unit/test_wash_schedule_runs.py#L61-L93"
+      },
+      "record_inputs": {
+        "Retention and subsequent release": "lean/CellsProofs/Tissue/WallWash.lean",
+        "Finite-pool wash identity": "lean/CellsProofs/Tissue/CompartmentWash.lean",
+        "Albumin rinse and residual measurements": "lean/checks/data/robinson2014_wall_wash.json"
+      },
+      "driver": "lean/checks/wall_wash.py",
+      "record": "lean/PROGRESS.md#fr28-wall-wash"
+    },
+    "neutral-label-diffusion": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [
+        "logmean_electrodiffusion@1"
+      ],
+      "engine_revision": "1295a7d794feb508bdf565ca2244aff3380b27d6",
+      "record_revision": "9a39ed6f20c95e17809b594a9800a41633d8c552",
+      "sources": {
+        "Face flux and electric driving force": "src/cells/numerics/surface_transport.py#L281-L296",
+        "Logarithmic mean and series threshold": "src/cells/numerics/extracellular_field.py",
+        "Implicit face weights": "src/cells/numerics/surface_imex.py#L109-L135",
+        "Two finite nodes and explicit label rows": "validation/regions/example.py#L73-L102",
+        "Per-node history and amount reconstruction": "validation/regions/readouts.py#L269-L315",
+        "Surface component inputs": "validation/tissue/surface_fixtures.py",
+        "Regression for exchange hidden in net records": "tests/unit/test_region_readouts.py#L138-L152"
+      },
+      "record_inputs": {
+        "Label proofs": "lean/CellsProofs/Transport/LabelDiffusion.lean",
+        "Cells face law": "lean/CellsProofs/Transport/LogMeanFace.lean",
+        "Neutral permeation proof": "lean/CellsProofs/Transport/NeutralPermeation.lean",
+        "Imaging measurement record": "lean/checks/data/regional_tracer_measurements.json"
+      },
+      "driver": "lean/checks/label_diffusion.py",
+      "record": "lean/PROGRESS.md#fr33-label-diffusion"
+    },
+    "two-region-sampling": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [],
+      "operators": [
+        "cells.scheduled_compartment_wash@1"
+      ],
+      "engine_revision": "ee0b8106406eb26e57ab1b0c34e16ed6c3f83a2b",
+      "record_revision": "9a39ed6f20c95e17809b594a9800a41633d8c552",
+      "sources": {
+        "Pre-refill sample, refill and amount update": "src/cells/operators/wash_schedule.py#L415-L494",
+        "FR-37 two-region worlds and public runner": "validation/sampling/uneven_draw.py",
+        "Well-mixed wash fixture": "validation/tissue/wash_schedule_fixtures.py#L30-L37",
+        "Finite-node tissue fixture": "validation/tissue/secreted_species_fixtures.py#L92",
+        "Regional collection and remainder regression": "tests/unit/test_wash_schedule.py#L527"
+      },
+      "record_inputs": {
+        "Regional sampling proof": "lean/CellsProofs/Tissue/RegionalSampling.lean",
+        "Single-region inventory proof": "lean/CellsProofs/Tissue/CompartmentWash.lean",
+        "Two-outlet dye measurement": "lean/checks/data/johnson2006_branch_dye.json"
+      },
+      "driver": "lean/checks/regional_sampling.py",
+      "record": "lean/PROGRESS.md#fr37-regional-sampling"
+    },
     "regional-pulse-balance": {
       "kind": "engine",
       "models": [
@@ -2643,6 +2873,416 @@
     }
   },
   "claims": [
+    {
+      "id": "gard-cache-reversibility",
+      "category": "molecular-assembly",
+      "title": "GARD v2 preserves the smaller catalyst on a reverse event within the precision bound",
+      "statement": "On a row’s integer grid, every signed update within the 106-bit bound produces the canonical high and low words for the new sum. Refolding the same counts recovers the same cache, and removing the moving molecule restores the parent’s rounded numerator.",
+      "assumptions": [
+        "The catalyst coefficients are nonnegative multiples of the row’s least tick. The parser bounds the largest coefficient times the molecule capacity to fewer than 2¹⁰⁶ ticks. Count products use at most 2²⁰ molecules and each coefficient part has at most 33 significant bits.",
+        "Rounding selects a nearest 53-bit word. TwoSum returns that rounded sum and its exact error. Applying this theorem to hardware requires finite intermediates and preservation of low words. The compiled exponent counterexamples are recorded in the companion claim."
+      ],
+      "uses": [
+        "gard-pair-heat"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.gard_catalysis_pair_consistent@2"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.GardCache.grid_model_exists": "lean/CellsProofs/Chemistry/GardCache.lean",
+          "CellsProofs.Chemistry.GardCache.round_word": "lean/CellsProofs/Chemistry/GardCache.lean",
+          "CellsProofs.Chemistry.GardCache.high_error": "lean/CellsProofs/Chemistry/GardCache.lean",
+          "CellsProofs.Chemistry.GardCache.row_in_budget": "lean/CellsProofs/Chemistry/GardCache.lean",
+          "CellsProofs.Chemistry.GardCache.add_exact": "lean/CellsProofs/Chemistry/GardCache.lean",
+          "CellsProofs.Chemistry.GardCache.fold_exact": "lean/CellsProofs/Chemistry/GardCache.lean",
+          "CellsProofs.Chemistry.GardCache.reverse_high": "lean/CellsProofs/Chemistry/GardCache.lean",
+          "CellsProofs.Chemistry.GardCache.split_product_word": "lean/CellsProofs/Chemistry/GardCache.lean",
+          "CellsProofs.Chemistry.GardCache.stress_reverse": "lean/CellsProofs/Chemistry/GardCache.lean"
+        },
+        "sources": {
+          "Mathlib finite-sum inequality, used to bound each weighted composition": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/Order/BigOperators/Group/Finset.lean#L102-L113",
+          "Mathlib least-witness principle, used to construct the nearest-word grid model": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Data/Nat/Find.lean#L56-L74",
+          "Ogita, Rump and Oishi, Theorem 3.4. The published TwoSum interface is an explicit assumption of the Cells specialization": "https://doi.org/10.1137/030601818"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "gard-cache-reversibility"
+        ],
+        "result": "The 2⁵⁴ stress event returned factors 2 and 2 and zero heat. All 22 signed updates matched the exact row and a fresh compiled fold. A 106-bit row passed and a 107-bit row was refused. The largest count was checked at the cache-function entry point."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "The underlying composition-dependent entry and exit rates can be measured. The numerical precision of the two-word representation is checked against exact arithmetic.",
+        "unit": "Dimensionless multiplier and kT per event",
+        "evidence": []
+      }
+    },
+    {
+      "id": "gard-cache-domain",
+      "category": "molecular-assembly",
+      "title": "GARD v2 also needs a representable exponent and a reachable molecule capacity",
+      "statement": "The significand-width guard alone admits a row whose rounded high word overflows binary64. At the other extreme the grid model requires the smallest positive tick to survive. The public parser also imposes a smaller effective fission-size limit than its explicit capacity range.",
+      "assumptions": [
+        "The overflow witness uses coefficient 2¹⁰²³, two molecules of that type, one of a second type and capacity eight. The underlying exchange uses finite rates. The lower-end witness uses one coefficient at 2⁻¹⁰⁷⁴.",
+        "The capacity comparison explicitly supplies the molecule capacity, using two types throughout. It checks parser behavior independently of either exponent example."
+      ],
+      "uses": [
+        "gard-cache-reversibility"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.gard_catalysis_pair_consistent@2"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.GardCache.one_tick": "lean/CellsProofs/Chemistry/GardCache.lean",
+          "CellsProofs.Chemistry.GardCache.exponent_counterexample": "lean/CellsProofs/Chemistry/GardCache.lean"
+        },
+        "sources": {
+          "Cells high-word and unit-tick definitions": "lean/CellsProofs/Chemistry/GardCache.lean",
+          "IEEE binary64 input guard and the row-width calculation": "https://github.com/Eidosoma/Cells/blob/6b28ec55368011de79dce85e6172b5844b77a287/src/cells/models/assembly_lineages/gard.py#L359-L396"
+        }
+      },
+      "numerical": {
+        "status": "failed",
+        "comparisons": [
+          "gard-cache-domain"
+        ],
+        "result": "With an exact total propensity rounding to 25,165,824, the admitted four-bit row returned NaN cache words, zero events, a stalled status and a passing empty ledger. At 2⁻¹⁰⁷⁴ NumPy preserved one tick and compiled CPU returned zero. Explicit capacity 4,097 was refused by the default 4,096 type bucket."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "The examples test numerical domain handling and parser reachability. No organism-specific catalyst range is assigned.",
+        "unit": "Binary exponent, row bits and molecule count",
+        "evidence": []
+      }
+    },
+    {
+      "id": "polymerisation-machines",
+      "category": "molecular-assembly",
+      "title": "Free and engaged polymerases or ribosomes sum to their machine pool",
+      "statement": "For any finite collection of chains sharing one pool, a stage update preserves free machines plus the sum of all its occupied stages. Only initiation and final release move a machine between the free and engaged pools.",
+      "assumptions": [
+        "The same signed extents update the stages, free machines and cumulative counters in each accepted half-step. Each chain has m ≥ 1 stages and length L = m r. Padded stages are inactive.",
+        "Each chain draws from one declared machine pool. All chains using that pool enter its balance, including chains already in progress."
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.templated_polymerisation@1"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.Polymerisation.engaged_change": "lean/CellsProofs/Chemistry/Polymerisation.lean",
+          "CellsProofs.Chemistry.Polymerisation.pool_step": "lean/CellsProofs/Chemistry/Polymerisation.lean"
+        },
+        "sources": {
+          "Mathlib sum_range_succ, used to telescope stage movements": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Group/Finset/Basic.lean#L498-L505",
+          "Cells stage layout, cumulative exits and residue ledger": "https://github.com/Eidosoma/Cells/blob/6b28ec55368011de79dce85e6172b5844b77a287/src/cells/operators/templated_polymerisation.py#L1378-L1387"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "polymerisation-balances"
+        ],
+        "result": "Across 183 compiled rows the maximum pool residual was 5.80 × 10⁻¹⁹ fmol. Omitting one competing chain from the two-gene pool produced a 4.88 × 10⁻⁸ fmol discrepancy."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Bound and unbound ribosome populations in the same preparation, with a known total and a stated definition of engagement.",
+        "unit": "Fraction of the total ribosome pool in the experiment and fmol of machines in Cells",
+        "evidence": [
+          {
+            "dataset_id": "li2018_ribosome_engagement",
+            "manifest": "lean/checks/data/polymerisation_pool_measurements.json",
+            "citation": "Li et al. (2018), Nature Microbiology",
+            "doi": "10.1038/s41564-018-0199-2",
+            "locator": "Figure 1e, Table 1 and supplementary Table S1.",
+            "context": "At a common growth rate of 0.09 per hour, mRNA-bound E. coli ribosomes accounted for 31 ± 3%, 51 ± 3% and 65 ± 4% of the pool under carbon, nitrogen and phosphorus limitation, respectively.",
+            "role": "descriptive",
+            "uncertainty": "Mean ± SEM across three biological replicates. Free subunits and free assembled ribosomes both enter the unbound pool. Bound particles can include stalled or initiating ribosomes.",
+            "assessment": "The paired occupancy measurements establish condition dependence at matched growth. Both fractions share a denominator. An independent conservation test requires absolute counts and defined pool boundaries.",
+            "report": "lean/PROGRESS.md#polymerisation-balances"
+          }
+        ]
+      }
+    },
+    {
+      "id": "polymerisation-residues",
+      "category": "molecular-assembly",
+      "title": "Stage exits account for residues in unfinished chains and released products",
+      "statement": "Per chain, residues added at all stage exits equal the increase in residues held in unfinished chains plus the residues carried by cumulative releases. The update also holds from a nonempty initial stage distribution.",
+      "assumptions": [
+        "The same signed extents update the stages, free machines and cumulative counters in each accepted half-step. Each chain has m ≥ 1 stages and length L = m r. Padded stages are inactive.",
+        "Stage indices start at zero and stage j holds j r residues per occupied complex. The release counter counts completed products even when a separate degradation route later consumes them."
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.templated_polymerisation@1"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.Polymerisation.transit_change": "lean/CellsProofs/Chemistry/Polymerisation.lean",
+          "CellsProofs.Chemistry.Polymerisation.residue_step": "lean/CellsProofs/Chemistry/Polymerisation.lean"
+        },
+        "sources": {
+          "Mathlib sum_range_succ, used to telescope stage movements": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Group/Finset/Basic.lean#L498-L505",
+          "Cells stage layout, cumulative exits and residue ledger": "https://github.com/Eidosoma/Cells/blob/6b28ec55368011de79dce85e6172b5844b77a287/src/cells/operators/templated_polymerisation.py#L1378-L1387"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "polymerisation-balances"
+        ],
+        "result": "The largest residue residual across 183 rows was 3.39 × 10⁻²⁰ fmol. A one-stage chain retained zero residues in transit while releasing 6.55 × 10⁻⁵ fmol of residues alongside an eight-stage chain."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Incorporated tracer partitioned between nascent chains and released protein in a matched preparation.",
+        "unit": "Counts per minute per unit of polysome OD₂₆₀ and seconds in the tracer study, fmol of residues in Cells",
+        "evidence": [
+          {
+            "dataset_id": "stanners1968_nascent_released_label",
+            "manifest": "lean/checks/data/polymerisation_pool_measurements.json",
+            "citation": "Stanners (1968), Biophysical Journal",
+            "doi": "10.1016/S0006-3495(68)86487-2",
+            "locator": "Figure 4 and Table II, experiments 1–4.",
+            "context": "The radiolabelled valine signals in soluble completed protein and polysome-associated nascent chains crossed at 34, 32, 40 and 32.5 s in four hamster-cell experiments.",
+            "role": "descriptive",
+            "uncertainty": "Signals share a polysome optical-density normalization and include a correction for label attached outside nascent chains. The paper’s 23 ± 2 s transit time is a model-derived estimate.",
+            "assessment": "The study resolves the two measured tracer pools. Relating its timing to the simulation requires matching the label pulse, precursor activity and sampling definitions.",
+            "report": "lean/PROGRESS.md#polymerisation-balances"
+          }
+        ]
+      }
+    },
+    {
+      "id": "label-mixing-power",
+      "category": "tissue-and-conservation",
+      "title": "Resolving neutral labels can increase the heat booked for diffusion",
+      "statement": "At a neutral Fick face, the sum of label powers exceeds or equals the parent power. Equality holds exactly when the label fractions agree at both ends. An accepted-step face booking with positive weights is zero exactly when every applied flux is zero.",
+      "assumptions": [
+        "The two end concentrations, all normalized label fractions and the common mobility and temperature factor are strictly positive. The exact Cells face reduction uses its logarithmic quotient or equal-concentration branch on every row and the parent.",
+        "The timestep booking uses the applied mean flux and its predicted weight. The two-row square identity combines the two weights by addition. A separately simulated parent uses the weight predicted for its own concentration.",
+        "The trajectory comparison runs a closed, two-node neutral system with the same physical concentrations in both representations."
+      ],
+      "uses": [
+        "neutral-label-diffusion",
+        "extracellular-face-dissipation"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.logmean_electrodiffusion@1"
+        ],
+        "theorems": {
+          "CellsProofs.Transport.LabelMixingPower.neutral_face_power": "lean/CellsProofs/Transport/LabelMixingPower.lean",
+          "CellsProofs.Transport.LabelMixingPower.power_difference": "lean/CellsProofs/Transport/LabelMixingPower.lean",
+          "CellsProofs.Transport.LabelMixingPower.power_order_and_equality": "lean/CellsProofs/Transport/LabelMixingPower.lean",
+          "CellsProofs.Transport.LabelMixingPower.booking_zero_iff": "lean/CellsProofs/Transport/LabelMixingPower.lean",
+          "CellsProofs.Transport.LabelMixingPower.booking_difference_two": "lean/CellsProofs/Transport/LabelMixingPower.lean"
+        },
+        "sources": {
+          "Mathlib strict logarithmic inequality for the equality condition": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/SpecialFunctions/Log/Basic.lean#L242-L246",
+          "Mathlib non-strict logarithmic bound for each term": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/SpecialFunctions/Log/Basic.lean#L288-L292",
+          "Mathlib relative-entropy function, identified in the optional check": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/InformationTheory/KullbackLeibler/KLFun.lean#L45-L51"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "label-mixing-power"
+        ],
+        "result": "Across 800 accepted steps the largest reconstruction error was 3.68 × 10⁻¹⁶ pJ. Opposing labels booked 1.47315444 pJ in 1 s and the parent booked zero. With the same label fractions both booked 0.33000851 pJ."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Heat of mixing for independently characterized neutral tracers with equal mobility. Interpreting the extra booking for labels used solely to track provenance remains open.",
+        "unit": "pJ of heat over a specified interval",
+        "evidence": []
+      }
+    },
+    {
+      "id": "wall-wash-retention",
+      "category": "tissue-and-conservation",
+      "title": "A wash collects free tracer while surface-bound tracer can release later",
+      "statement": "A finite-volume wash collects the draw fraction of the free stock and preserves each bound stock at the event. At a previously equilibrated surface, dilution initiates net release. Free, bound, collected and supplied tracer satisfy one inventory through subsequent exchange.",
+      "assumptions": [
+        "A well-mixed compartment is refilled to its original volume. Only free tracer is accessible to the instantaneous draw. The wall and specimen each hold a separately tracked bound stock.",
+        "For the strict release sign, the wash fraction, association rate and vacant site amount are positive, the buffer is more dilute than the free tracer, and the pre-wash surface is in binding equilibrium. The numerical well has unit binding multiplier and no internalisation."
+      ],
+      "uses": [
+        "compartment-wash",
+        "site-occupancy-stages"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.scheduled_compartment_wash@1",
+          "cells.site_occupancy@1"
+        ],
+        "theorems": {
+          "CellsProofs.Tissue.WallWash.event_retention": "lean/CellsProofs/Tissue/WallWash.lean",
+          "CellsProofs.Tissue.WallWash.inventory": "lean/CellsProofs/Tissue/WallWash.lean",
+          "CellsProofs.Tissue.WallWash.whole_stock_bias": "lean/CellsProofs/Tissue/WallWash.lean",
+          "CellsProofs.Tissue.WallWash.rate_after_draw": "lean/CellsProofs/Tissue/WallWash.lean",
+          "CellsProofs.Tissue.WallWash.release_after_dilution": "lean/CellsProofs/Tissue/WallWash.lean"
+        },
+        "sources": {
+          "Finite compartment draw and refill": "lean/CellsProofs/Tissue/CompartmentWash.lean"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "wall-wash-retention",
+          "wall-wash-stand-in"
+        ],
+        "result": "Main’s stand-in and both FR-28 wall owners collected 30 fmol from 60 free. The wall held 10 fmol at the event and 9.97015402 fmol 10 ms later. Both candidate owners yielded identical traces. A matched buffer gave zero wall rate."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Tracer recovered in each wash and on the surface, with the time between dilution and measurement.",
+        "unit": "µg in pooled liquid and ng/cm² on the disk in the experiment, fmol and fmol/s in Cells",
+        "evidence": [
+          {
+            "dataset_id": "robinson2014_albumin_wall_wash",
+            "manifest": "lean/checks/data/robinson2014_wall_wash.json",
+            "citation": "Robinson et al. (2014), Clinica Chimica Acta",
+            "doi": "10.1016/j.cca.2014.01.035",
+            "locator": "Supplementary Figure S3 and Tables S2 and S4, material 7.",
+            "context": "The authors counted labelled albumin in six successive rinses and on the final disk. A separate pH 5 endpoint yielded 8.759 µg in pooled liquid and 22.96 ng/cm² on polyethylene terephthalate (0.22%, four replicates).",
+            "role": "descriptive",
+            "uncertainty": "The rinse series has no per-rinse dwell time or error bars. The tabulated endpoint pools the starting sample, rinses and pipette tip and has no condition-specific uncertainty.",
+            "assessment": "Independent recovery of tracer in liquid and on the surface is measured. The instantaneous bound fraction and the synthetic release constant remain open.",
+            "report": "lean/PROGRESS.md#fr28-wall-wash"
+          }
+        ]
+      }
+    },
+    {
+      "id": "neutral-label-diffusion",
+      "category": "tissue-and-conservation",
+      "title": "Neutral label fluxes add and labels can exchange across a face with zero parent flux",
+      "statement": "For any finite partition of a neutral tracer, the sum of its label fluxes equals the parent flux under a common linear diffusion coefficient. With opposing 90:10 label fractions, a charged Cells face at fixed nonzero voltage instead gives a row sum (8/5)/ln(9) times the unsplit flux.",
+      "assumptions": [
+        "Labels partition the material, share transport coefficients and experience the same voltage. Concentrations at both ends of each active logarithmic-mean face are positive and RT is positive.",
+        "The ideal Fick and neutral constant-field statements are exact over the reals. On the Cells face the exact neutral reduction uses equal concentrations or |(a−b)/(a+b)| ≥ 10⁻⁴ on every label and the parent. The small nonzero-gradient polynomial has a compiled comparison.",
+        "The charged example holds voltage fixed and changes only the representation of the tracer. Its ratio applies when the unsplit flux is nonzero."
+      ],
+      "uses": [
+        "extracellular-face-direction",
+        "neutral-permeation"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.logmean_electrodiffusion@1",
+          "cells.passive_neutral_permeation@1"
+        ],
+        "theorems": {
+          "CellsProofs.Transport.LabelDiffusion.fick_sum": "lean/CellsProofs/Transport/LabelDiffusion.lean",
+          "CellsProofs.Transport.LabelDiffusion.opposing_labels": "lean/CellsProofs/Transport/LabelDiffusion.lean",
+          "CellsProofs.Transport.LabelDiffusion.neutral_permeation_sum": "lean/CellsProofs/Transport/LabelDiffusion.lean",
+          "CellsProofs.Transport.LabelDiffusion.neutral_face_eq_fick": "lean/CellsProofs/Transport/LabelDiffusion.lean",
+          "CellsProofs.Transport.LabelDiffusion.neutral_face_sum": "lean/CellsProofs/Transport/LabelDiffusion.lean",
+          "CellsProofs.Transport.LabelDiffusion.charged_opposing_ratio": "lean/CellsProofs/Transport/LabelDiffusion.lean",
+          "CellsProofs.Transport.LabelDiffusion.charged_ratio_bounds": "lean/CellsProofs/Transport/LabelDiffusion.lean"
+        },
+        "sources": {
+          "Mathlib finite-sum distributivity, imported for common Fick mobility": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Ring/Finset.lean#L50-L52",
+          "Mathlib lower bound for log(1+x), specialized to x = 8": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/SpecialFunctions/Log/Deriv.lean#L333-L337",
+          "Cells logarithmic-mean face, specialized to separate label rows": "lean/CellsProofs/Transport/LogMeanFace.lean"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "neutral-label-diffusion"
+        ],
+        "result": "Both nodes’ explicit labels summed to the parent at all 101 times. The right label reached 0.299998884 fmol at 1 s against 0.3 analytically. The compiled +1, +10 mV face gave a split-to-parent flux ratio of 0.7281913813014701."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Redistribution of a labelled molecular species, with matched diffusion coefficients and independently measured parent and label fluxes.",
+        "unit": "Relative fluorescence in the experiment and fmol in the simulation",
+        "evidence": [
+          {
+            "dataset_id": "gray2006_psd95_exchange",
+            "manifest": "lean/checks/data/regional_tracer_measurements.json",
+            "citation": "Gray et al. (2006), PLOS Biology",
+            "doi": "10.1371/journal.pbio.0040370",
+            "locator": "Figure 4A.",
+            "context": "Photoactivated PSD-95 in one dendritic spine fell while green fluorescence increased in two nearby spines.",
+            "role": "descriptive",
+            "uncertainty": "Green fluorescence was normalized to red fluorescence. The panel supplies no calibrated amount or common diffusion coefficient for the label and its complement.",
+            "assessment": "Label redistribution is observed. Equal mobility, the parent flux and the charged-face ratio remain unmeasured in this preparation.",
+            "report": "lean/PROGRESS.md#fr33-label-diffusion"
+          }
+        ]
+      }
+    },
+    {
+      "id": "two-region-sampling",
+      "category": "tissue-and-conservation",
+      "title": "A two-region sample represents the chamber under proportional withdrawal or equal concentrations",
+      "statement": "A finite draw has the chamber’s mean concentration exactly when the starting concentrations match or each region contributes the same fraction of its own volume. If region A is richer, drawing a larger fraction of A enriches the sample. Collected tracer and the dye left in each region account for the initial inventories and refill.",
+      "assumptions": [
+        "There are two internally well-mixed regions of positive volume, and the total drawn volume is positive. Each local draw lies between zero and its available volume. A zero local draw has no event.",
+        "Each draw uses the pre-refill concentration, with no concurrent transport. The amount-above-background example uses a common background for the two initial regions and the refill. The local draw volumes and initial mixing are declared."
+      ],
+      "uses": [
+        "compartment-wash"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.scheduled_compartment_wash@1"
+        ],
+        "theorems": {
+          "CellsProofs.Tissue.RegionalSampling.inventory": "lean/CellsProofs/Tissue/RegionalSampling.lean",
+          "CellsProofs.Tissue.RegionalSampling.excess_and_refill": "lean/CellsProofs/Tissue/RegionalSampling.lean",
+          "CellsProofs.Tissue.RegionalSampling.concentration_bias": "lean/CellsProofs/Tissue/RegionalSampling.lean",
+          "CellsProofs.Tissue.RegionalSampling.representative_iff": "lean/CellsProofs/Tissue/RegionalSampling.lean",
+          "CellsProofs.Tissue.RegionalSampling.enrichment_iff": "lean/CellsProofs/Tissue/RegionalSampling.lean"
+        },
+        "sources": {
+          "Cells single-region wash inventory, summed across a finite set": "lean/CellsProofs/Tissue/CompartmentWash.lean#L16",
+          "Mathlib fraction equality for nonzero denominators, imported for the two-region criterion": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/GroupWithZero/Units/Basic.lean#L426-L427"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "two-region-sampling"
+        ],
+        "result": "The three compiled 100 pL draws collected 8, 5 and 6.5 fmol above background. The corresponding regional remainders were (0, 2), (2.5, 2.5) and (2, 1.5) fmol within rounding. The compiled local inventories closed at all three recorded times in every case."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Collected dye and both post-draw regional amounts in a finite vessel with measured source concentrations and draw volumes.",
+        "unit": "Fraction of stock dye concentration",
+        "evidence": [
+          {
+            "dataset_id": "johnson2006_branch_dye",
+            "manifest": "lean/checks/data/johnson2006_branch_dye.json",
+            "citation": "Johnson, Brown and Stockman (2006), Journal of Geophysical Research",
+            "doi": "10.1029/2005JB004087",
+            "locator": "Methods paragraph 19 and continuous flow test 1, paragraph 33 and Figure 5a.",
+            "context": "Equal rates of 1 g/L Rhodamine dye solution and distilled water fed a rough-walled glass fracture replica. The researchers measured each outlet flow and dye concentration.",
+            "role": "descriptive",
+            "uncertainty": "The authors give rounded values for the half-flow case. Those values carry no reported concentration error bar.",
+            "assessment": "At equal outlet flow the two branches measured about 75% and 25% of stock concentration. This supports enrichment in a physical flow system. The regional remainders after a finite draw remain unmeasured.",
+            "report": "lean/PROGRESS.md#fr37-regional-sampling"
+          }
+        ]
+      }
+    },
     {
       "id": "regional-pulse-balance",
       "category": "tissue-and-conservation",

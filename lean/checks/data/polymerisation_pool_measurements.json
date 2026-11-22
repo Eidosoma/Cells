@@ -1,0 +1,28 @@
+{
+  "machine_pool": {
+    "dataset_id": "li2018_ribosome_engagement",
+    "doi": "10.1038/s41564-018-0199-2",
+    "source": "https://pmc.ncbi.nlm.nih.gov/articles/PMC6278830/",
+    "supplement": "https://media.springernature.com/full/springer-static/esm/art%3A10.1038%2Fs41564-018-0199-2/MediaObjects/41564_2018_199_MOESM1_ESM.pdf#page=23",
+    "locator": "Figure 1e, Table 1 and supplementary Table S1, with fraction definitions in section 3B4",
+    "preparation": "E. coli NCM3722 at the same measured growth rate of 0.09 per hour",
+    "biological_replicates": 3,
+    "conditions": [
+      {"limitation": "carbon", "unbound_fraction": 0.69, "bound_fraction": 0.31, "bound_sem": 0.03},
+      {"limitation": "nitrogen", "unbound_fraction": 0.49, "bound_fraction": 0.51, "bound_sem": 0.03},
+      {"limitation": "phosphorus", "unbound_fraction": 0.35, "bound_fraction": 0.65, "bound_sem": 0.04}
+    ],
+    "interpretation": "Both fractions share the total ribosome normalization. Free assembled ribosomes and subunits enter the unbound pool. Bound particles can include initiating or paused ribosomes. The measurements describe occupancy in each preparation. The absolute pool size during a Cells run remains untested."
+  },
+  "residue_pool": {
+    "dataset_id": "stanners1968_nascent_released_label",
+    "doi": "10.1016/S0006-3495(68)86487-2",
+    "source": "https://pmc.ncbi.nlm.nih.gov/articles/PMC1367374/",
+    "locator": "Figure 4 and Table II, experiments 1 through 4",
+    "preparation": "Growing Syrian hamster embryo cells at 37 degrees C",
+    "measured_crossover_s": [34, 32, 40, 32.5],
+    "observable": "Time when incorporated radiolabelled valine in soluble completed protein reached the signal in polysome-associated nascent chains, each in counts per minute per unit polysome OD260.",
+    "uncertainty": "The four values are separate experiments. The nascent signal includes the authors’ correction for label retained on polysomes outside nascent chains.",
+    "interpretation": "The authors derive a mean transit time of 23 ± 2 s from a model. The measured crossover is a different observable. Testing the Cells time course against it requires corresponding tracer inputs, precursor specific activity and normalization."
+  }
+}
