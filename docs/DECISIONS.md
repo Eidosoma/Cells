@@ -8862,3 +8862,24 @@ regulation and origin of life last".
 - **The Lean lane** publishes its own work. The lead scans its commits after they land and does not
   merge its branches tonight.
 
+## D278: FR-25's registered acceptance scored inconclusive; the next step is the user's
+
+2026-11-22, about 01:53 UTC. The registered sequence ran as D270 and D271 set it:
+- the rule was tagged before any run;
+- the fresh runs came from the tagged snapshot;
+- the table was tagged before any comparison;
+- the declared retry's table was tagged before its comparison;
+- the OL builder judged independently.
+
+**Result:** 28 of 32 worlds-by-set pass, every judged readout within 0.40 of its tolerance. 4 are
+inconclusive after the one declared retry: A1 at both test instances (order 3.69, above the cap) and pol
+T=100 at both (order 2.40, below p - 0.5). No world failed. Under the registered rule FR-25 is
+inconclusive, recorded as scored.
+
+**Coverage:** G2's per-move ΔG and A1's u(t) are published but not exported by the engine, so a pass
+would not cover them. The lane README's claim that engine_run exports every readout of the sheet's
+section 6 is corrected to match.
+
+**Held for the user (D277):** record FR-25 as inconclusive, or register a revised rule before any new
+runs, or bring ΔG and u into scope with a later registration.
+

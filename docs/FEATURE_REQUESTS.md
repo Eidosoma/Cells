@@ -30,7 +30,7 @@ and a general feature, never one built for one study (D144).
 | [FR-22](#fr-22--checkpoint-and-resume-for-the-stochastic-assembly-runner) | Checkpoint and resume for the stochastic assembly runner, qualified around a wash | **High** (user, 20 November 2026; D237) | **Qualified around a wash** (landed with FR-21's site step, 4fb9922b): FR-20's `test_a_cut_around_each_replacement_resumes_bitwise`, with a redo-or-skip plant. Rung P landed earlier (99770fce) | None |
 | [FR-23](#fr-23--timed-bath-changes-beside-binding-sites-on-distinct-finite-nodes) | Timed bath changes beside binding sites on distinct finite nodes | **High** (user, 20 November 2026; D239) | **Built (development, D244), landed 4e3d1899:** `site_occupancy@1` beside the bath schedule by scoped reads, and the trace rule on scheduled compositions | A dose into a finite compartment is not covered (FR-27) |
 | [FR-24](#fr-24--binding-site-occupancy-as-an-input-to-reaction-rates) | Binding-site occupancy as an input to reaction rates | **High** (user, 20 November 2026; D239) | **Landed** (merge 260e2ed5, tag `fr24-fr27-fr26-landed-2026-11-21`): `site_occupancy@1`'s readable quantities and @2's site source, through the contract's R3; junction targets refused in version 1 | None |
-| [FR-25](#fr-25--a-reusable-one-gene-expression-unit) | A reusable one-gene expression unit, verified against independent references | **High** (user, 20 November 2026; D239) | **G4's readers not for scoring until D259's fixes land** (RNA counter selection, the comparison's skipped samples, the known-rate control, the receipt's provenance). Folded into gene regulation's option A (D235): equation sheet tagged, references under way | G4's operator exposes the unit as a reusable component |
+| [FR-25](#fr-25--a-reusable-one-gene-expression-unit) | A reusable one-gene expression unit, verified against independent references | **High** (user, 20 November 2026; D239) | **Registered acceptance scored: inconclusive under the rule** (D278): 28 of 32 worlds-by-set pass against G2 (worst gap 0.40 of tolerance); 4 inconclusive after the declared retry (A1, pol T=100); no failure | The user's choice: record as inconclusive, or register a revised rule before new runs (D278) |
 | [FR-26](#fr-26--owned-state-when-a-cell-is-replaced) | Owned state when a cell is replaced: the incoming cell from its template, environment-owned material kept, departing material recorded | **High** (user, 20 November 2026; D239) | **Landed as W** (merge 87f1ebef, the same tag): `site_occupant_replacement@1`, D152's occupant rule and @2's C′; an occupancy within 4 ulps of empty or full is refused (the trace convention) | None for version 1 (W landed). L, one lifecycle shared with division, is not now (D268): designed with its first division consumer |
 | [FR-27](#fr-27--a-timed-partial-wash-of-a-finite-compartment) | A timed partial wash of a finite compartment: collect a fraction of its liquid into a recorded sample, refill with a declared buffer, leave bound material in place | **High** (decided by the lead with the advisor under the user's delegation, 20 November 2026; D245) | **Landed** (merge 5fc1364f, the same tag): `scheduled_compartment_wash@1` | None |
 | [FR-28](#fr-28--binding-sites-owned-by-a-compartments-surface) | Binding sites owned by a compartment's own surface, such as a vessel wall, with no cell | Normal (D245) | **Option A decided (D268):** a node owner `{"node": N}`, counts as for every population; matrix sites covered; @2 refused from reading it in version 1 | Being built by the operators owner; an independent acceptance from the request's words before it lands |
@@ -1172,6 +1172,29 @@ explored.
     2.01673e-5 fmol completed and 1.32977e-5 fmol survived, while the pool grew by 2.70386e-6 fmol.
     No field today identifies which population lost material under age- or region-selective loss.
     That needs labelled cohorts or regions (FR-33).
+
+**FR-25's registered acceptance, scored (22 November 2026, 01:53 UTC): inconclusive under the rule; no world
+failed.** The rule (fr25-rule-registered-2026-11-22), the table (fr25-table-registered-2026-11-22) and the
+declared retry's table (fr25-retry-table-registered-2026-11-22) were each tagged before any comparison
+with G2. The OL builder judged independently, recomputing both tables with its own code with 0
+differences.
+- **28 of 32 worlds-by-set pass:** 16 at dt 0.5 and 12 more at the retry's dt 0.25. Every required time
+  is matched, and every judged readout is within its tolerance; the largest gap is 0.399 of tolerance.
+  The effective factor against the Richardson estimate has a median of about 0.99. A planted failure
+  was caught in each round.
+- **4 are inconclusive after the one declared retry:** A1 at both test instances (C_tx_3's observed order
+  3.69, above the 3.5 cap) and pol T=100 at both (E_tx and F_pol at 2.40, below 2.5, rising from 2.26).
+  So FR-25 does not pass under the registered rule.
+- **What a pass covers:** G2's trajectories in the registered readout classes, within 3 times the
+  step-error estimate at the scheme's formal order. It does not cover each move's ΔG (dG_*) or A1's u(t),
+  which G2 publishes but the engine does not export, nor the engine-only route extents, which G2 does not
+  publish. Corners and interior points stay with G6.
+- **Verdicts:** fr25-judge/verdicts.json (sha256
+  ac6e44cc2b4c90051bce215a9ace737be0200c0e7d5d31604dbbf8da3d171461) and verdicts-retry.json (sha256
+  2c001ef3f6355b46dd4731234905ce3269409da0993414da098699f8955455b4), in the OL builder's workspace.
+- **The next step is the user's (D277):** record FR-25 as inconclusive; or register a revised rule before
+  any new run, for example a second finer triple for pol T=100 and a treatment of superconvergent
+  readouts such as A1's C_tx_3; or bring ΔG and u into scope with a later registration.
 
 ## FR-26 — Owned state when a cell is replaced
 
