@@ -711,4 +711,224 @@ minutes is detached, with durable logs).
   the lead wants it for OL6, §1.3 and §2 are written to stand alone as its sheet, and the sheet is
   tagged before code.
 
-<!-- §6 onward follows -->
+## 6. Options, with recommendations and prices
+
+### 6.1 The integrator
+
+**The starting point.** The engine has classical fixed-step RK4 (`numerics/fixed_step.py`) and one
+specialised IMEX method (`numerics/surface_imex.py`). Neither has a dense output or locates events.
+diffrax is not installed, and the dependencies are pinned. Every option therefore builds or borrows
+a stepper with a dense output.
+
+| Option | What | For | Against | Price, within S1 |
+| --- | --- | --- | --- | --- |
+| **I-A** | Explicit Tsitouras 5(4) (from memory), with its 4th-order dense output, PI step control, and a stiffness detector that stops the run | The least code (about 300 lines), the cheapest step, lanes and the device; keeps linear invariants | Stiffness. A 100 nm oleate vesicle's pool relaxes about 10–100 times faster than its composition (S, at the CAC), which is mild. FR-39's open pore is "a deterministic sub-dynamics, and a fast one" (VESICLE_PORES_DESIGN §3.5), which is not | 0.5–0.75 |
+| **I-B** | Rosenbrock, Rodas4 (Hairer and Wanner 1996, from memory: 6 stages, order 4 with an embedded order 3, L-stable, stiffly accurate, a dense output of order 3). Its Jacobian is the forward derivative of the flux, which reuses the laws. One LU per step, lanes vmapped | Stiff-safe. Keeps moieties to rounding, because the Jacobian is exact (§2.4). Deterministic. One integrator for OL6 and Phase B | More code (about 500 lines); an LU per step (dense, at most about 600 unknowns in version 1); the Jacobian costs one forward pass per unknown | 1–1.25 |
+| **I-C** | SciPy's `solve_ivp` (Radau, BDF or LSODA) on the host, with its event location | The least code (0.25–0.5) and a mature solver | Host only: no lanes and no device (ARCHITECTURE's target: execution stays GPU-native). Its bits depend on SciPy 1.18.1 and BLAS threads, and its events follow SciPy's own tolerances. It is not the engine's own. SciPy's place is `validation/`, as a cross-check | Rejected for `src/` |
+
+**Recommended: I-B.** I-A is the cheaper start only if the lead accepts adding I-B in Phase B (about
+1 day then). The method is declared apart from the representation (`integrator.id`), so a later
+method changes no world.
+
+### 6.2 The continuous count arithmetic
+
+| Option | Rule | P2b (gap over a⁺ + a⁻; n ≈ 10–100, then 10³–10⁵) | Verdict |
+| --- | --- | --- | --- |
+| **A** | Powers for falling factorials, Stirling's form for ln k!, m → n | 1 × 10⁻¹⁴ at both scales, at every order, in the membrane too | **Recommended:** the one arithmetic in which the factored flux is the products' law |
+| B | Gamma interpolation, Γ(n + 1)/Γ(n − a + 1), with F in ln Γ, so μ = ψ(n + 1) | 4–20%, then 5 × 10⁻⁴ to 2 × 10⁻³, at every order | Exact for the propensities at integers, but its F's gradient is not its finite difference, so the continuous ledger would not close |
+| C | Falling factorials on real counts, with Stirling's F | Identity at first order per species; 10% and 1 × 10⁻³ at 2A + B → C; 3% and 6 × 10⁻⁵ in the membrane | Breaks at order 2. It is what `log_falling` gives on real counts, so mass action's exact kernel is not reused as it is (§1.4) |
+
+**A sub-choice within A:** keep the declared measure's offset c in N − c, or drop it as the
+textbook limit does. The identity holds either way (S). Keeping it carries the declared measure's
+meaning at no cost, so it is recommended.
+
+### 6.3 Lifting Phase A's count-change refusal in exact events
+
+| Option | Exact events | What qualifies (d)'s clock | Price |
+| --- | --- | --- | --- |
+| **L0** | Keep Phase A's worlds only: a hold, and a fixed area | D7′ (the regression identity) and closed forms within (d). FR-39's Phase B must then build the exact-event clock itself, since its row asks for the episode "qualified against exact events at sizes both can run" (VESICLE_PORES_DESIGN §4) | 0 |
+| **L1** | The device carries H per vesicle when a world declares the hazard with σ from F or with area changes. Each event adds k_v(n)·τ to H. A candidate crossing t_c = t + (E − H)/k_v(n) is compared with the chemistry draw's time; the draw that crosses it is discarded and counted (`discarded_at_pore`), and the pore fires at t_c, exactly, since H is piecewise linear. σ from F is admitted (w = 0 at the opening), and area changes are admitted, except under a hold (T2) | D7, paired by E, with RMS(Δt*) falling as N^(−1/2) | 1–1.5, with the invariance gate, OL5's runs2 compare and FR-31's records compared |
+
+**The bitwise care under L1 (S).** Phase A's worlds (a hold, a fixed area) keep the host clock,
+t* = start + E/k_v, by static dispatch. A device clock would reach the same time by summing k_v·τ
+over events, which can move FR-31's registered records in their last bits.
+
+**Recommended: L1, as its own slice (S4),** after (d)'s clock (S3) and before Protocol D's D7.
+
+### 6.4 What (d) is: R1 or R2
+
+- **R1:** the world declares `free_energy_form: continuum`.
+  - One physics then has two world ids, and the qualification pairs worlds that differ in a token.
+  - The exact kernel refuses `continuum`, and (d) would refuse `discrete`.
+  - Un-reserving the token collides with a test and with OL5's registered menu (§1.1).
+- **R2:** a representation over the same world (§1.1). **Recommended.**
+
+### 6.5 Where each law's limit lives: H1 or H2
+
+- **H1:** each law's declaration gains an optional limit.
+  - The limit is a kernel, plus formulas written only into (d)'s records.
+  - `ReactionLaw`, `RateFactorLaw` and `FreeEnergyTerm` each gain one optional field.
+  - The declarations manifest (`cells.declarations@2`) lists each law's own fields and kernels, so
+    its format page and `test_library_pages` move in the same landing. That is not a run record.
+  - The existing `FORMULAS`, which `records._law` writes into every run record, are untouched.
+  - A law without a limit is refused in (d).
+- **H2:** a new interface, `cells.large_count_limit@1`, with one declaration per law in a module of
+  its own.
+  - No existing interface changes.
+  - There are two declarations per law, with a risk of drift, which the limit's check (item 4)
+    catches.
+- **Recommended: H1.** One declaration has two executions, as ARCHITECTURE's levels of detail and
+  the engine design's §2.3 ask. The price is the same.
+
+### 6.6 The envelope: E1 or E2
+
+- **E1 (§1.5):** strict and enforceable.
+  - It refuses a founder with a fed place at 0, such as a DOPA-free vesicle that will take up DOPA.
+  - **Recommended for version 1.**
+- **E2:** admits a place rising from 0 while every rate it enters is first-order in it, so the rate
+  equations give its mean exactly (S: a linear propensity's mean obeys the rate equation).
+  - It needs a per-place linearity test, from the Jacobian's structure, and its own plant.
+  - About 0.5 agent-day, when a consumer needs it.
+
+### 6.7 A held tension over a changing area: T1 or T2
+
+- **T1:** the hold does σ·ΔA on every area-changing step.
+  - The work enters the pair's rate ratio, so held vesicles take up amphiphile at σ·a_L/2 per
+    molecule.
+  - It is consistent physics, but new to the laws sheet, whose §3 books only the opening's work. It
+    needs the sheet's amendment and a ruling.
+  - No consumer needs it: DOPC's monomer exchange is negligible over a pipette hold.
+  - About 0.5 agent-day, plus the sheet.
+- **T2:** refuse area-changing steps under a hold, in both representations, as Phase A has them.
+  **Recommended for version 1.**
+
+### 6.8 The GARD limit's fission: G1 or G2
+
+- **G1:** no engine change. Protocol G's driver compares @1 and @2 traces up to @1's first fission.
+  0.5–0.75 agent-day.
+- **G2:** @2 gains a size-threshold division.
+  - It is a general, state-triggered division: N reaches N_split after a join. Its partition is
+    `exact_fraction`, with @1's draw layout on domain 2, floor-to-first and continuation `first`,
+    plus keys and records behind D148's opt-ins. A world with a geometry refuses it in version 1,
+    since D2 is the physical division.
+  - **Its users:** OL9's ladder starts from the GARD limit with D1 fission, and Syn3A's F14
+    ("state-triggered division with a stochastic partition", the engine design's preamble) is the
+    next.
+  - In (d) its trigger would be one more crossing, although GARD's scale lies outside the envelope.
+  - **The name:** @1's `cells.size_threshold_fission@1` is hosted by @1, so @2's needs its own ID,
+    proposed `cells.size_threshold_division@1` under `cells.assembly_operator@1`.
+  - Adds 1–1.5 agent-days.
+- **Recommended: G2 in OL6,** since §7.3 names D1, with G1 as its first tier. The alternative is G1
+  now and G2 at OL9's start; the lead's choice.
+
+### 6.9 A population's linear algebra
+
+- **Dense, version 1.** The unknowns are D = K·P_v + P_pool. At K = 64 and P_v = 8, D ≈ 520, and
+  one LU is about 5 × 10⁷ flops, roughly 10 ms per step on one CPU (S, an estimate).
+- **Later.** The Jacobian is an arrowhead (each vesicle couples only to the pool), so a block solve
+  costs O(K·P_v³ + P_pool³). About 0.5 agent-day, when a world needs more than 64 slots.
+
+### 6.10 Checkpoints
+
+Refused in version 1 (§3.8). Supporting them later is about 0.5 agent-day.
+
+### 6.11 Slices and prices
+
+| Slice | Content | Agent-days |
+| --- | --- | --- |
+| **S1, the core** | The declaration and its parse; Stirling's ideal term and regular mixing's value; μ by differentiation; mass action's limit; the factor and the geometric laws on continuous views; the factored flux; the limit's check (4 items); the integrator (I-B) in `numerics/`, with dense output and step control; stops; rows; the continuous ledger, moieties and the second-law margin; the envelope; records (run.json's `representation`, real arrays, a FORMAT page); the refusals; the closed-form tests | 2–2.5 |
+| **S2, vesicles** | Geometry at real W; the osmotic lumen, safely differentiated; crossings (bracketing, Illinois, the re-step); lysis at σ_max through the release; the kink's restart; the shared pool, up to 64 slots; shear fission's mean split; serial transfer; the same-instant refusals | 1.25–1.75 |
+| **S3, the clock in (d)** | H per vesicle; E from domain 7; the opening's crossing and the rupture; the edges of a hold as stops; σ from F, with σ_max ≤ σ_β/4; area changes (T2 under a hold); the daughters' clocks; the regression and pore/no-pore identities | 0.5–0.75 |
+| **S4, L1** | The exact kernel's clock on the device for worlds with σ from F or area changes, by static dispatch (Phase A's worlds keep the host clock and their bits); the invariance gate; OL5's runs2 compare; FR-31's records compared | 1–1.5 |
+| **S5, Protocol D** | The registration tag; the driver; the detached runs (about 2.5 CPU-hours); the verdicts and plants; PROGRESS | 1–1.25 |
+| **S6, Protocol G (G1)** | The driver; @1 and @2 traces; both measures; the plant's power from @1; the report | 0.5–0.75 |
+| **S7, G2** | @2's size-threshold division, and Protocol G through fissions | 1–1.5 |
+
+**The totals:**
+- **The OL6 row as designed:** S1 + S2 + S5 + S6 = **4.75–6.25**, against the row's 3–5. The
+  populations, divisions and lysis crossings that OL2's third milestone and OL3 added after that
+  estimate are the difference.
+- **With the clock for FR-39** (S3 + S4): **6.25–8.5.**
+- **With G2:** **7.25–10.**
+
+**The cheaper variants:**
+- I-A for I-B saves about 0.5 now, and adds about 1 in Phase B.
+- L0 for L1 saves 1–1.5, and moves the exact-event clock into Phase B, which needs it for its own
+  qualification.
+- G1 alone defers 1–1.5 to OL9.
+
+**Gates:**
+- Each slice that touches `src/` runs tiers 1 and 2 (D223, D229).
+- The invariance gate runs at S4 and S7, where @2's exact paths change, and once at S1 as proof that
+  none did.
+- A new test file that compiles a world states its seconds and its reason (D224).
+
+**The order:** S1, then S2. S6 can run beside them, since it has no engine code. Then S3, S4 and S5
+(D7 needs S4). S7 is last.
+
+## 7. D148: what stays bitwise, and the traps
+
+**Every exact-event world's records stay bitwise.** That covers:
+- OL1–OL5's registered sets and OL5's judged runs;
+- @1's sets, G1's 113 worlds and crossrev;
+- FR's set;
+- FR-31's blind-test records.
+
+(d) is a new path. S4 and S7 change exact paths only behind static dispatch.
+
+**The handover's traps, applied:**
+- **Module-level tuples written into bundles** (`diagnostic.FATES`, `population.ROW_KINDS`,
+  `streams.DOMAINS` and `identity()`, `kernel.STATUS` and `LIFECYCLE`): (d) declares its own, and
+  none gains an entry. S4 reuses `discarded_at_pore`, already declared in pore worlds.
+- **What a checkpoint digests:** (d) refuses checkpoints. S4's device clock adds the hazard's state
+  only in worlds that declare it. A checkpointed pore world's document then gains it, as Phase A's
+  gained its clocks.
+- **The device program** (`kernel.Structure`, `Layout` and `Lane`): S1–S3 do not touch them. S4 and
+  S7 add fields only behind static dispatch, absent where undeclared, as `Layout.geometry = ()` is.
+- **Parse messages:**
+  - no existing message changes, and the `continuum` refusal is kept;
+  - H1 adds no law to an existing interface's "registered: …" list;
+  - G2 adds an operator, so whether any stored message lists the family's operators is checked at
+    S7;
+  - new refusals appear only under (d)'s parse.
+- **A defaulted dataclass field:** `Execution` and `Experiment` keep their fields. (d) parses into
+  its own execution record, so the repr of every exact-event spec is unchanged.
+- **`FORMULAS`:** unchanged. The limits' formulas are written only into (d)'s records.
+- **Float identities:** the exact paths stay textually identical.
+
+**What is not a run record but changes:** the declarations manifest (H1's fields, the new interface
+and G2's operator). Its format page and `test_library_pages` move in the same landing.
+
+**The proof:**
+- the invariance gate (`scripts/assembly_lineages_invariance.sh`, five steps, about 30 minutes);
+- OL5's runs2 compare, in all four roles;
+- at S4, FR-31's pore records, compared before and after.
+
+## 8. Questions for the lead
+
+1. **R2:** (d) as a representation chosen by `execution.representation`, with the `continuum` token
+   kept refused as it is. Does any of OL1's registered refusal inputs declare `continuum`? This note
+   did not open them.
+2. **Arithmetic A,** keeping the measure's offset.
+3. **H1,** with `FORMULAS` untouched and the limits' formulas written only into (d)'s records.
+4. **The integrator:** I-B (Rodas4) now, or I-A now and I-B in Phase B.
+5. **The envelope:** E1, with n_min taken from Protocol D's smallest passing rung.
+6. **L1 inside OL6,** or L0 with the exact-event clock moved into Phase B.
+7. **T2 for version 1.** Should T1, the hold's work on area changes, go to the laws sheet's owner?
+8. **G2 inside OL6,** or G1 now and G2 at OL9's start.
+9. **§7.3's wording:** T-path in place of T-bit (§5.2).
+10. **Scope and price:** 4.75–6.25 agent-days for the row as designed, 6.25–8.5 with the clock and
+    7.25–10 with G2 (§6.11). Which slices are OL6's, and which go to Phase B or OL9?
+11. **Who runs each protocol at its tag:** the builder, or a checker?
+12. **An independent ODE reference** for (d)'s arithmetic (§5.4), or the chain from exact events to
+    OL5's references alone?
+13. **D301's general contract.** OL6 uses its terms. If that contract lands first, OL6 adopts it;
+    if OL6 lands first, its declaration is the contract's first instance. Who coordinates with
+    D301's owner?
+14. **The names, all proposals:** `cells.rate_equations@1` (the representation),
+    `cells.assembly_representation@1` (its interface), `rosenbrock_rodas4_dense@1` (the method) and
+    `cells.size_threshold_division@1` (G2's operator).
+
+**Incidental, reported and not fixed:** P3's run printed a host `RuntimeWarning` at
+`mass_action.py:136` ("invalid value encountered in add"). An infeasible −inf meets a singular +inf
+before the `where` masks it. It is harmless but noisy.
