@@ -668,6 +668,12 @@ REFUSED = {
         ),
         r"its view changes species amounts \(no FR-42 stage plans it yet\)",
     ),
+    "a retired label family (D300)": (
+        lambda: dict(
+            face_free(), model=dict(face_free()["model"], label_families=[{"id": "f", "rows": []}])
+        ),
+        r"unknown=\['label_families'\]",
+    ),
     "a second label owner": (
         lambda: labelled_s(labelled_s(face_free())),
         r"Two operators declare the same experiment key",

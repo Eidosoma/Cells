@@ -436,7 +436,8 @@ def test_the_synapse_label_follows_its_exact_rows_by_shares():
     which each law moves exactly:
     - at every step and node the shares give P_L's amount within 2e-6 of its scale (the share
       update's and @3's trapezoid's second order);
-    - pure redistribution (no clearance): the label's total is stable at rounding;
+    - pure redistribution (no clearance): the label's total is stable at rounding (by the world's
+      symmetry; in general it holds to the share update's second order);
     - degradation (clearance in syn_1, alike on P, P_L and P_U): the label's total falls as
       P_L's does, within the same bound."""
     eps = np.finfo(float).eps
@@ -462,7 +463,8 @@ def test_fr33s_first_test_two_named_regions_joined_by_one_face():
     FR-42's shares of the protein row P (D300 retired D1's families), the receiver starting with no
     label (the usual trace) and the face's heat booked exactly (F2). At every saved time, in fmol:
     - pure transfer (the face open, no clearance): the label total is conserved and the receiver's
-      gain is the donor's loss, at rounding, and nothing is cleared;
+      gain is the donor's loss, at rounding (by the world's symmetry; in general to the share
+      update's second order), and nothing is cleared;
     - the local-loss control (the face closed, clearance at the donor): the receiver stays flat,
       and the cumulative clearance accounts for the donor's missing label, at rounding;
     - the label by shares gives the exact row P_L's amounts within 2e-6 of its scale (the share

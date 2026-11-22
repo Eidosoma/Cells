@@ -1,12 +1,14 @@
 """FR-42's stage 2 as engine rows: labels carried by @3's routes (D289), against plain rows of the
 same material in the same world, whose transport is linear in each row and so the exact
-reference. One compiled world, about 30 s (FR-33's two cases, the faces' rows, are in
-tests/unit/test_region_readouts.py).
+reference. The routes' world compiled twice, labelled and as its unlabelled twin, about 60 s
+(FR-33's two cases, the faces' rows, are in tests/unit/test_region_readouts.py).
 
 - **Routes:** Q labelled a and b as shares, beside Q_a and Q_b as plain rows. It moves between
   two cells by a junction and from each cell to their outside node by a membrane route
   (constant_field@1, linear in each end for an uncharged row), and the shares follow the exact
-  rows within 2e-6 at every node, at the share update's and @3's trapezoid's second order.
+  rows within 2e-6 at every node, at the share update's and @3's trapezoid's second order, and the
+  labelled run's records are its unlabelled twin's bit for bit. (The label's total over the nodes
+  holds to that second order in general; here it held at rounding, 3.7e-16, with no loss.)
 - **RK4:** labels moved in the step are refused under RK4 (parses only).
 """
 
@@ -73,10 +75,31 @@ def routes_world(*, dt=1e-3, steps=100):
 def test_routes_carry_the_shares_with_the_exact_rows():
     """The junction and the membrane routes' one-way transfers (@3's side) carry Q's shares: at
     every saved time and node, Q times its share a matches the plain row Q_a within 2e-6 of Q_a's
-    scale, and the closure diagnostic reads rounding."""
+    scale, and the closure diagnostic reads rounding. The world run without the label owner, its
+    twin, has every history field, observation and diagnostic of the labelled run bit for bit:
+    @3's transfers are non-zero here, and change nothing physical."""
+    import copy
+
+    from cells.execution.runner import run
     from cells.registry.models import get_model
 
-    spec = parse_spec(routes_world())
+    raw = routes_world()
+    twin = copy.deepcopy(raw)
+    twin["model"]["operators"] = [o for o in twin["model"]["operators"] if o["law"] != LAW]
+    del twin["experiment"]["label_arrivals"]
+    labelled, plain = run(parse_spec(raw)), run(parse_spec(twin))
+    for name in type(plain.history)._fields:
+        assert (
+            np.asarray(getattr(labelled.history, name)).tobytes()
+            == np.asarray(getattr(plain.history, name)).tobytes()
+        ), name
+    for name, value in vars(plain.observations).items():
+        assert (
+            np.asarray(getattr(labelled.observations, name)).tobytes()
+            == np.asarray(value).tobytes()
+        ), name
+    assert labelled.diagnostics == plain.diagnostics
+    spec = parse_spec(raw)
     times, states = readouts.runs(spec)
     _, layout = get_model(spec.model).initial_values(spec)
     shared, reference = readouts.world_map(spec, "Q"), readouts.world_map(spec, "Q_a")

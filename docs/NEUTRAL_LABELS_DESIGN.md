@@ -306,16 +306,24 @@ Refused, each naming why:
 - kinds, which wait for their hook after @3's side;
 - RK4 beside any followed mover.
 
-**Measured against exact rows** (tests/unit/test_neutral_labels_transport.py; @3's side
-ac9f03e7, merged).
+**Measured against exact rows** (tests/unit/test_region_readouts.py and
+tests/unit/test_neutral_labels_transport.py; @3's side merged).
 - **The method:** each case runs plain rows of the same material in the same world. Transport is
   linear in each row, so those rows are the exact reference.
 - **FR-33's first test, rebuilt on shares** (validation/regions/example.first_test):
-  - **Transfer:** the shares follow D1's P_L within 5.4e-7 of the label's scale, and 1.4e-7 at half
-    the step: 4.0 per halving, second order. The label summed over the two regions holds at
-    rounding.
+  - **Transfer:** the shares follow P_L within 5.4e-7 of the label's scale, and 1.4e-7 at half the
+    step: 4.0 per halving, second order.
   - **Local loss:** the shares and the cleared label match at rounding.
-- **Routes:** a junction and two membrane routes carry the shares within the same bound.
+- **Routes:** a junction and two membrane routes carry the shares within the same bound (8.3e-10
+  for label a's total).
+- **A label's total over the nodes** holds to the update's second order in general. It is not
+  conserved by construction, since each node's shares are normalised on their own. In the worlds
+  measured it held at rounding: by symmetry in FR-33's, and within 3.7e-16 in the routes' world,
+  which has no loss.
+- **Labelled and unlabelled twins,** with every report non-zero: FR-33's transfer (a face), the
+  routes (a junction and patches), exchange's export and a passive S ↔ P route. Each was run with
+  and without the label owner. Every history field, observation and diagnostic is bit for bit
+  equal, and the closure diagnostic reads at most 1e-16. The routes' twin is a test row.
 - **Inner reporting** stays off beside declared kinds: @3's step refuses `labels` there until the
   kinds' hook lands.
 
