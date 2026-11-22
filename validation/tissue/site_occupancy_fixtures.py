@@ -31,6 +31,7 @@ def population(
     face="outside",
     contact=None,
     side=None,
+    node=None,
     copies=1e5,
     sites_per_copy=1,
     alpha=0.5,
@@ -43,7 +44,11 @@ def population(
     catalogue=None,
 ):
     owner = (
-        dict(contact=contact, side=side) if contact is not None else dict(patch=patch, face=face)
+        dict(node=node)
+        if node is not None
+        else dict(contact=contact, side=side)
+        if contact is not None
+        else dict(patch=patch, face=face)
     )
     return dict(
         id=pid,
@@ -145,7 +150,14 @@ def with_occupant(raw, templates):
 
 
 def replaced_sites(
-    populations, occupants=None, *, t_e=0.005, dt=1e-3, end=0.01, observation_times=None
+    populations,
+    occupants=None,
+    *,
+    t_e=0.005,
+    dt=1e-3,
+    end=0.01,
+    observation_times=None,
+    slot="cell_1",
 ):
     """Two cells on the bath joined by the gated junction j0, each with a contact patch on the
     finite node ecs_0 (contact_0, contact_1), S at 1 uM everywhere; cell_1 replaced at t_e by a
@@ -164,7 +176,7 @@ def replaced_sites(
         trace_mM=TRACE_mM,
         concentrations_mM=dict(cell_0=1e-3, cell_1=1e-3, ecs_0=1e-3),
     )
-    template = fx.template(raw, "cell_1", "T", s_mM=1e-3)
-    raw = fx.with_replacement(raw, [template], [(t_e, "cell_1", "T", "c1_new")])
+    template = fx.template(raw, slot, "T", s_mM=1e-3)
+    raw = fx.with_replacement(raw, [template], [(t_e, slot, "T", f"{slot}_new")])
     raw = with_site_occupancy(raw, populations)
     return raw if occupants is None else with_occupant(raw, {"T": occupants})

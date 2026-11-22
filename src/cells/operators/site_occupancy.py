@@ -2,12 +2,15 @@
 
 A site population is a population of identical, independent, single-occupancy sites on one owner,
 facing one free pool and binding one neutral ligand (§1.1). Its owner is a membrane patch, facing
-its outside node (`outside`) or its cell (`inside`), or a contact, facing one of its two cells
-(`first`: the junction's sender, `second`: its receiver). Its stoichiometric count is copies N x
+its outside node (`outside`) or its cell (`inside`), a contact, facing one of its two cells
+(`first`: the junction's sender, `second`: its receiver), or a finite outside node's own surface
+(`{"node": N}`, FR-28, D268's option A: a vessel wall, a coated bottom, beads or a matrix in the
+node; it faces N, binds only and belongs to no cell, so replacement@1 and W never touch it and @2's
+site source refuses it; docs/NODE_SURFACE_SITES_DESIGN.md). Its stoichiometric count is copies N x
 sites per copy nu, and its accessible capacity S = alpha nu N / N_f fmol, with the static accessible
 fraction alpha (§2.3) and N_f = 602,214,076 sites per fmol (exact). Its state is the free accessible
-sites R and the bound amount B (fmol), anchored increments from R0 = S - B0 and B0 = theta0 S, so
-R + B = S, the moiety identity (§1.1). The free ligand stays in @3's rows at the facing node (one
+sites R and the bound amount B (fmol), anchored increments from R0 = S - B0 and B0 = theta0 S, so R
++ B = S, the moiety identity (§1.1). The free ligand stays in @3's rows at the facing node (one
 material ledger, §1.4); a population takes no species row.
 
 The laws (§2):
@@ -77,6 +80,7 @@ TRACE_LIMIT = 1e-6  # A ligand's trace at most 1e-6 K_d of every population bind
 TRACE_RTOL = 1e-12  # A node declared at its trace, to representation (amount / volume).
 DESTINATIONS = ("cell",)  # Version 1: the patch's own cell (§2.4).
 FACES, SIDES = ("outside", "inside"), ("first", "second")
+SURFACE = "surface"  # A node owner's fixed facing (FR-28): its own sites face only the node.
 COMPARTMENTS_LAW = "cell_owned_compartments@1"
 BATH_LAW = "scheduled_bath_composition@1"
 WASH_LAW = "scheduled_compartment_wash@1"
@@ -207,6 +211,16 @@ def _owner(raw, m, pid):
         raise ConfigError(f"{LAW_ID}: population {pid}'s owner is an object")
     patches = {p.id: p for p in m.membranes}
     contacts = {j.id for j in m.junctions}
+    if set(raw) == {"node"}:  # FR-28 (D268, option A): a finite outside node's own surface.
+        node = identifier(raw["node"])
+        if node not in {c.id for c in m.extracellular}:
+            where = (
+                "a cell, whose sites sit on its patches"
+                if node in {c.id for c in m.cells}
+                else "unknown"
+            )
+            raise ConfigError(f"{LAW_ID}: population {pid}'s node {node!r} is {where}")
+        return "node", node, SURFACE
     if set(raw) == {"patch", "face"}:
         patch = identifier(raw["patch"])
         if patch not in patches:
@@ -221,11 +235,16 @@ def _owner(raw, m, pid):
         if raw["side"] not in SIDES:
             raise ConfigError(f"{LAW_ID}: a contact population faces one of its sides {SIDES}")
         return "contact", contact, raw["side"]
-    raise ConfigError(f"{LAW_ID}: population {pid}'s owner is {{patch, face}} or {{contact, side}}")
+    raise ConfigError(
+        f"{LAW_ID}: population {pid}'s owner is {{patch, face}}, {{contact, side}} or {{node}} (a "
+        "node's own sites face only the node: no face or side beside it)"
+    )
 
 
 def facing_node(m, population):
     """(kind, node id) of the free pool a population faces (§1.1)."""
+    if population.owner_kind == "node":
+        return OUTSIDE, population.owner_id
     if population.owner_kind == "patch":
         patch = next(p for p in m.membranes if p.id == population.owner_id)
         if population.facing == "outside":
@@ -237,7 +256,10 @@ def facing_node(m, population):
 
 def population_cell(m, population):
     """The cell a population belongs to: its patch's own cell, whichever face it binds from, or
-    the cell on its side of a contact (R3's locality, FR-24)."""
+    the cell on its side of a contact (R3's locality, FR-24); None for a node's own sites
+    (FR-28)."""
+    if population.owner_kind == "node":
+        return None
     if population.owner_kind == "patch":
         return next(p for p in m.membranes if p.id == population.owner_id).inside
     junction = next(j for j in m.junctions if j.id == population.owner_id)
@@ -376,6 +398,8 @@ def occupancy_to_dict(declaration):
         raise ConfigError("Require explicit immutable site occupancy declaration types")
 
     def owner(p):
+        if p.owner_kind == "node":
+            return dict(node=p.owner_id)
         if p.owner_kind == "patch":
             return dict(patch=p.owner_id, face=p.facing)
         return dict(contact=p.owner_id, side=p.facing)
@@ -521,6 +545,8 @@ def check_slots(spec, declaration):
     m = spec.model
     occupant = occupant_of(spec) is not None
     for p in declaration.populations:
+        if p.owner_kind == "node":
+            continue  # FR-28: a node's own sites sit on no slot.
         if p.owner_kind == "patch":
             cells = {next(q for q in m.membranes if q.id == p.owner_id).inside}
         else:
@@ -1772,7 +1798,13 @@ def bind_occupant(spec, sites):
     layout = dict(
         site_replaced=np.asarray([p.id in covered for p in sites.populations], dtype=bool),
         site_population_cell=np.asarray(
-            [cells.index(population_cell(m, p)) for p in sites.populations], dtype=np.int64
+            # A node's own sites (FR-28) take the padding index 0: the event selects by
+            # site_replaced before it reads the index (docs/NODE_SURFACE_SITES_DESIGN.md §3).
+            [
+                0 if population_cell(m, p) is None else cells.index(population_cell(m, p))
+                for p in sites.populations
+            ],
+            dtype=np.int64,
         ),
     )
     return state, layout
