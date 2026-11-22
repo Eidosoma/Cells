@@ -80,7 +80,22 @@ Three checks close on them:
 
 ## Readings taken
 
-The lead confirmed or ruled each reading on 22 November 2026, and the world declaration records it:
+The first two items are R2's own readings and go to the lead with this delivery. The lead confirmed
+or ruled every other reading on 22 November 2026, and the world declaration records it:
+- **The leak's and the uncoupler's P-side H+ (R2's reading; not yet put to the lead).**
+  - G1 prints Eq. 19 with H_e, the external H+. R2 reads it with the IMS's own free H+, h_P,
+    following appendix 0: "Here every P-side quantity is the IMS's own".
+  - It is material where the IMS departs from the bath. At the uncoupled plateaus pH_P sits
+    0.009-0.019 above the bath's 7.10, so the dominant flux there differs by 2-4% between the two
+    readings.
+- **Smaller readings, all in `declaration.json` or the code:**
+  - the trace check redoes the anchor and the start state at the smaller traces. That is where
+    its changes at t = 0 come from;
+  - the branches' ATP bath changes only ADP and ATP. Pi, Mg2+ (total), K+ and the free pH stay as
+    declared, and AMP keeps its trace;
+  - each step time is output twice, as the earlier segment's end (left limit) and the later
+    segment's start (right limit);
+  - errors are judged against the plateau bands at every output time, transients included.
 - **Parameters:** the Table 1 (2006) "with Pi control" column.
 - **Binding:** the appendix's binding table plus B_x.
 - **Absent routes:** Eq. 20 (passive K+).
@@ -280,30 +295,39 @@ Per world, the worst judged error over its band, with the readout where it sits:
 
 1. **The trace check fails at the declared 1 nM.** The worst change is 1.39 bands against the
    allowed 0.1 (G3). The run of record is therefore of record for the current declaration only. A
-   re-declared trace needs this run repeated (about 15 minutes on one light CPU). The failures are
-   of two kinds:
-   - **Effects that scale with the trace.**
+   re-declared trace needs this run repeated (about 15 minutes on one light CPU). The convergence
+   ladder covers the 1 nM world only; the smaller-trace arm ran at the delivered tolerance alone.
+   What the evidence shows:
+   - **Established: an effect that scales with the trace.**
      - State 4's ADP trace sustains a phosphorylation flux of about 1e-4 of respiration.
-     - It moves the state-4 O2 flux by 0.11 band in every world, and NADH and dPsi by 0.01-0.03
-       band.
-     - A lower trace removes it. In a development check at 1 pM against 1 fM, world (c)'s worst fell
-       to 0.006 band.
-   - **Relative bands on readouts that go toward zero.** No trace level fixes these:
-     - the matrix ATP late in the inhibitor branch (about 6 uM): ATP_N 0.37 and dPsi 0.10 band at
-       t = 375 s;
-     - world (b)'s early transient: ATP_N 0.14 band;
-     - world (d) after O2 is spent: O2 flux 1.39 band (about 1e-10 mol s^-1 (L mito)^-1), ATP_N
-       1.0 and dPsi 0.56 band.
-     - In the 1 pM against 1 fM check these stayed: ATP_N 0.16 band in (a)'s inhibitor branch, and
-       O2 flux 0.72 band in (d)'s tail.
-     - They need an absolute floor on the band or an excluded window. The engine-against-R2
-       comparison meets the same issue there.
+     - It moves the state-4 O2 flux by 0.11 band in every world (at t = 0, between the two
+       algebraic start states), and NADH and dPsi by 0.01-0.03 band.
+     - A lower trace removes it: in a development check at 1 pM against 1 fM, world (c)'s worst
+       fell to 0.006 band.
+   - **Established: a relative band on a vanishing readout.** In world (d) after O2 is spent:
+     - O2 flux moves 1.39 band, at about 1e-10 mol s^-1 (L mito)^-1;
+     - ATP_N moves 1.0 band and dPsi 0.56 band;
+     - at 1 pM against 1 fM, the O2 flux still moved 0.72 band.
+     - No trace level fixes this. It needs an absolute floor on the band, or an excluded window,
+       and the engine-against-R2 comparison meets the same issue there.
+   - **Undetermined:**
+     - **(a)'s inhibitor branch:** ATP_N moves 0.37 band and dPsi 0.10 band at t = 375 s, with the
+       matrix ATP near 6 uM. At 1 pM against 1 fM its worst moved, to ATP_N 0.16 band 5 s into the
+       branch.
+     - **(b)'s early transient:** ATP_N moves 0.14 band at 175 uM, which is not near zero. Its
+       1 fM arm failed (finding 7), so it was not tested.
+     - The 1 fM arm runs six decades below the relative-control floor, with no convergence
+       evidence of its own.
 2. **W3(d)'s O2 runs out earlier than G7 states.** G7 states that O2 crosses the P50 (0.373 uM)
    near the run's end. In R2:
    - the 6.3 nL node supplies the state-3 flux until about 150 s;
    - the matrix O2 crosses 0.373 uM at 153.3 s;
    - for the last 75 s the organelle is anoxic, with dPsi held at 32.3 mV by the reversed synthase
      until the matrix ATP is spent.
+   - **W3(d)'s 0-60 s segment fails the drift rule,** at 14 times a tenth of a band. Lengthening
+     cannot fix it: under the accepted reading the O2 node is finite from t = 0, so state 4 drains
+     it from the start. G7 lengthens a failing plateau before registration. The lead must either
+     exempt (d)'s plateaus from the rule or start the node's depletion at 60 s.
 3. **The uncoupler branch reverses the synthase at steady state,** with the ATP bath (G1 (i)). The
    uncoupled plateau's dPsi, 100.89 mV, is 0.37 mV below the synthase's stall at its
    concentrations, and J_F1 = -2.6e-4 mol s^-1 (L mito)^-1. The margin is small; the reversal is
@@ -322,7 +346,13 @@ Per world, the worst judged error over its band, with the readout where it sits:
      in its declared form, which stays balanced for any shares. That plant needs the printed
      two-fraction form, as its own switch.
    - P-b (X_ANT x 1.01) and P-c (the 2005 k_O2) can be planted as parameter overrides.
-6. **A limit of the integrator at very low traces.**
+6. **What `interface.json` leaves out.**
+   - Per time, it carries the total dissipation, the energy residual and the two charge drifts.
+   - Per run part, it carries each invariant's largest drift and the energy closure.
+   - It does not carry each process's dissipation or each material row's ledger over time. The run
+     folder's `full.npz` holds every state at every output time, so both can be recomputed. They
+     belong in the rerun a trace ruling forces.
+7. **A limit of the integrator at very low traces.**
    - At 1e-15 M, an accepted trace row can undershoot to non-positive within atol. A Jacobian is
      then evaluated at an invalid state, and SciPy refuses it. This happened in world (b) at 1 fM,
      in the development check only.
