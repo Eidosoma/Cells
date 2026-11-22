@@ -1297,9 +1297,12 @@ class Composition:
             op for op in self.events if self.label_owner is not None and takes_labels(op.event)
         )
         # FR-42's stage 2: the inner step reports its one-way transfers where it takes labels=
-        # (static: by the inner implementation's signature; none without an owner).
-        self.inner_reports_labels = self.label_owner is not None and takes_labels(
-            self.inner.checked_step
+        # (static: by the inner implementation's signature; none without an owner, and none beside
+        # declared kinds, whose one-way hook comes later).
+        self.inner_reports_labels = (
+            self.label_owner is not None
+            and takes_labels(self.inner.checked_step)
+            and not getattr(inner, "KINDS", ())
         )
         self.coupled = any(op.SPLIT and op.RK4 == "coupled" for op in operators) or (
             self.process_operator is not None
@@ -1663,7 +1666,6 @@ class Composition:
         # FR-42's stage 2 (static): an IMEX inner step that reports gives the label owner its
         # transfers; RK4's (an empty tableau) is refused beside a labelled in-step mover.
         if self.inner_reports_labels and p.imex_explicit.shape[0]:
-            before = current
             current, ok, applied, heat = self._labelled_inner(
                 current, inputs, dt, process, control, p, xp=xp
             )

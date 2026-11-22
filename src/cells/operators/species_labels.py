@@ -12,9 +12,8 @@ more distinct IDs (at most MAX_LABELS), the first its **base**, which holds unla
 initial material unless declared otherwise, and every arrival outside a window); and `initial`, a
 list, possibly empty, of {node, shares: {label: fraction}}: a cell's or finite outside node's
 starting shares, each fraction in [0, 1] and their sum 1 within SUM_ULPS ulps (every node not
-listed starts at the base). A species is labelled once. A world that declares D1's label families
-(registry/species_registry.py) is refused by the registry's family check, which admits only
-turnover and declarations beside them: a family's rows are separate rows, and shares replace them.
+listed starts at the base). A species is labelled once. Shares replaced D1's label families, rows
+of their own with their own potentials, which D300 retired.
 
 Schedule `label_arrivals`: [{species, schedule: [{time, label}, ...]}], at most one per species: the
 label that each step's arrivals join, piecewise constant from its first change (the base before it
@@ -70,6 +69,7 @@ from cells.definitions import pump_composite_spec as composite_spec
 from cells.definitions.spec_values import identifier
 from cells.definitions.specs import ConfigError, _fields
 from cells.execution.grid import same_instant
+from cells.models import inner_laws
 from cells.numerics import label_shares
 from cells.numerics.species_sums import entity_sum
 from cells.operators.contract import Operator, reports_labels, takes_labels
@@ -82,12 +82,13 @@ SUM_ULPS = 8  # A declared node's shares sum to 1 within this many ulps.
 AMOUNT_FIELDS = ("amount_increment", "extracellular_amount_increment")
 AMOUNT_VIEWS = ("amount_reference", "extracellular_amount_reference")
 # FR-42's stage 2: the inner step's movers whose one-way transfers it reports (@3's side), by mover
-# kind: the uncharged face and the membrane and junction routes, each linear in each end
-# (species_registry's row-linear laws).
+# kind: the uncharged face (logmean_electrodiffusion@1, Fick's for an uncharged row) and the
+# membrane and junction routes (constant_field@1, GHK at the shared voltage), each linear in each
+# end.
 REPORTED_MOVERS = {
-    "face": species_registry.ROW_LINEAR_UNCHARGED_FACE,
-    "membrane": species_registry.ROW_LINEAR_ROUTE,
-    "junction": species_registry.ROW_LINEAR_ROUTE,
+    "face": inner_laws.FACE_ROUTE_LAW_ID,
+    "membrane": inner_laws.MEMBRANE_ROUTE_LAW_ID,
+    "junction": inner_laws.MEMBRANE_ROUTE_LAW_ID,
 }
 NOT_PLANNED = "no FR-42 stage plans it yet"
 
@@ -103,6 +104,7 @@ LAYOUT_FIELDS = (
     "label_present",  # [labelled species, label] bool: the declared labels (padding False).
     "label_pool_rows",  # [pool owner, pool] int64: the entry's labelled species, -1 if none.
     "label_pool_present",  # [pool owner, label, pool] bool: its species' labels (else the base).
+    "label_pool_cells",  # [pool owner, pool] int64: the entry's cell, -1 for none (D296).
 )
 
 
@@ -440,10 +442,14 @@ def bind(spec, declaration):
     position = {s.id: j for j, s in enumerate(declaration.species)}
     size = max(map(len, pools), default=0)
     pool_rows = np.full((len(pools), size), -1, dtype=np.int64)
+    pool_cells = np.full((len(pools), size), -1, dtype=np.int64)
+    cell_ids = [c.id for c in m.cells]
     pool_present = np.zeros((len(pools), width, size), dtype=bool)
     pool_present[:, 0, :] = True  # An unlabelled species' entry, or padding: the base alone.
     for r, entries in enumerate(pools):
-        for k, (_, name, _) in enumerate(entries):
+        for k, (_, name, cell) in enumerate(entries):
+            if cell in cell_ids:
+                pool_cells[r, k] = cell_ids.index(cell)
             if name in position:
                 pool_rows[r, k] = position[name]
                 pool_present[r, :, k] = present[position[name]]
@@ -454,6 +460,7 @@ def bind(spec, declaration):
         label_present=present,
         label_pool_rows=pool_rows,
         label_pool_present=pool_present,
+        label_pool_cells=pool_cells,
     )
     state = dict(
         label_share=share,
@@ -586,12 +593,20 @@ def advance_pools(start, end, moves, p, pool, *, xp=jnp):
 
 
 def advance_event(end, replaced, control, p, *, xp=jnp):
-    """end with each replaced slot's (replaced [cell]) labelled shares set to the label in force
-    for its species this step, the newcomer label (D296): the departing material left with its
-    own."""
+    """end with each replaced slot's (replaced [cell]) labelled shares, its rows' and its pool
+    entries', set to the label in force for their species this step, the newcomer label (D296;
+    an entry of an unlabelled species keeps the base): the departing material left with its own."""
     newcomer = control.label_arrival[:, :, None]  # [m, label, 1] one-hot.
     share = xp.where(replaced[None, None, :], newcomer, end.label_share)
-    return end._replace(label_share=share)
+    pools = p.label_pool_rows  # [pool owner, pool] its species, -1 for none.
+    base = (xp.arange(control.label_arrival.shape[1]) == 0).astype(float)  # The base label.
+    arrival = xp.where(
+        (pools >= 0)[:, :, None], control.label_arrival[xp.maximum(pools, 0)], base
+    )  # [pool owner, pool, label]
+    cells = p.label_pool_cells
+    hit = (cells >= 0) & replaced[xp.maximum(cells, 0)]  # [pool owner, pool]
+    pool_share = xp.where(hit[:, None, :], xp.swapaxes(arrival, 1, 2), end.label_pool_share)
+    return end._replace(label_share=share, label_pool_share=pool_share)
 
 
 def advance_inner(start, end, transfers, p, *, xp=jnp):

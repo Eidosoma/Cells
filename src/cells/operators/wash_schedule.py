@@ -130,6 +130,10 @@ REFUSED = {
     "scheduled_membrane_insertion@2": "opens and retires nodes and patches",
     "restricted_cleft_lumen@1": "fills a lumen node with bath fluid as it grows",
     "restricted_cleft_lumen@2": "fills a lumen node with bath fluid as it grows",
+    # FR-42 (D289; the lead's direction): the label owner refuses a wash, an event writing species
+    # amounts that does not report them (no FR-42 stage plans it yet).
+    "neutral_arrival_labels@1": "follows labelled material only through reported moves, and a "
+    "wash reports none (no FR-42 stage plans it yet)",
 }
 IONS_SAME = "same_as_compartment"
 FLOOR_FMOL = 1e-12  # The own ledger's floor (each ion's sample against its supply: exactly 0).

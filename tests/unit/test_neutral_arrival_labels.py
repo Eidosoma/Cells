@@ -315,6 +315,25 @@ def test_a_pool_carries_its_shares_and_takes_its_new_material_by_label():
     assert new.label_closure_relative[0] <= 4 * EPS
 
 
+def test_a_replaced_cells_pool_takes_the_newcomer_label():
+    """D296 (the gene regulation lane's request), in NumPy: at a replaced cell the label owner sets
+    the rows' and the pool entries' shares to the label in force, the newcomer's; elsewhere they
+    are kept bit for bit."""
+    from types import SimpleNamespace
+
+    from cells.operators import species_labels as labels
+
+    start, _, _, layout = pool_half_step(made=0.0, released=0.0, degraded=0.0)
+    layout.label_pool_cells = np.array([[0]])
+    arrival = SimpleNamespace(label_arrival=np.array([[0.0, 1.0]]))  # "cohort" is in force.
+    kept = labels.advance_event(start, np.array([False]), arrival, layout, xp=np)
+    assert bits(kept.label_share) == bits(start.label_share)
+    assert bits(kept.label_pool_share) == bits(start.label_pool_share)
+    new = labels.advance_event(start, np.array([True]), arrival, layout, xp=np)
+    assert new.label_share[0, :, 0].tolist() == [0.0, 1.0]
+    assert new.label_pool_share[0, :, 0].tolist() == [0.0, 1.0]
+
+
 def test_each_source_takes_its_own_schedule_or_its_species(monkeypatch):
     """D296's per-source arrivals (species_labels.source_controls): a source with a schedule of
     its own takes it, by step index; another takes its species' window; a source of an unlabelled
@@ -616,52 +635,20 @@ def labelled_s(raw, labels=("base", "new"), initial=None, arrivals=()):
     return with_labels(raw, [("S", list(labels), initial or {})], arrivals)
 
 
-def family(raw):
-    for name in ("L", "U"):
-        raw = add_inventory_species(
-            raw, name, trace_mM=1e-3, diffusivity_m2_per_s=fx.D_S, floor_fmol=fx.FLOOR_FMOL
-        )
-    raw["model"]["label_families"] = [{"id": "fam", "rows": ["L", "U"]}]
-    return with_labels(raw, [("L", ["base"], {})])
-
-
 def mover(kind):
-    """S moved by a membrane or a junction route; a transporter kind's moved role Y, or its finite
-    fuel's ATP (tests/unit/test_transporter_kind.py's held world)."""
+    """A transporter kind's moved role Y, or its finite fuel's ATP, labelled
+    (tests/unit/test_transporter_kind.py's held world): kinds report from their hook, after @3's
+    side."""
     from cells.definitions import pump_composite_spec as cs
     from cells.kinds import transporter
     from tests.unit import test_transporter_kind as tk
 
-    if kind in ("role", "fuel"):
-        fuel = dict(tk.population()["fuel"], kind=transporter.FINITE)
-        raw = cs.frozen_definition(tk.held_world(tk.population(fuel=fuel)))
-        return with_labels(raw, [("Y" if kind == "role" else "ATP", ["base"], {})])
-    cells = (("cell_0", 1.0), ("cell_1", 1.0))
-    contacts = (("contact_0", "cell_0", "ecs_0"), ("contact_1", "cell_1", "ecs_0"))
-    raw = fx.world(
-        cells=cells,
-        contacts=contacts,
-        junctions=(("gj_0", "cell_0", "cell_1"),),
-        faces=(),
-        concentrations_mM={"cell_0": 1.0},
-        end=0.004,
-        dt=1e-3,
-    )
-    for entity in raw["model"]["membranes" if kind == "membrane" else "junctions"]:
-        if entity["id"] in ("contact_0", "gj_0"):
-            entity["permeability_m_per_s"]["S"] = 1e-12
-    return labelled_s(raw)
+    fuel = dict(tk.population()["fuel"], kind=transporter.FINITE)
+    raw = cs.frozen_definition(tk.held_world(tk.population(fuel=fuel)))
+    return with_labels(raw, [("Y" if kind == "role" else "ATP", ["base"], {})])
 
 
 REFUSED = {
-    "a membrane route moves it (stage 2)": (
-        lambda: mover("membrane"),
-        r"moved inside the inner step by membrane contact_0.*FR-42's stage 2",
-    ),
-    "a junction route moves it (stage 2)": (
-        lambda: mover("junction"),
-        r"moved inside the inner step by junction gj_0.*FR-42's stage 2",
-    ),
     "a kind moves its role (stage 2)": (
         lambda: mover("role"),
         r"Y is moved inside the inner step by cells.transporter@1 .*FR-42's stage 2",
@@ -669,10 +656,6 @@ REFUSED = {
     "a kind moves its finite fuel (stage 2)": (
         lambda: mover("fuel"),
         r"ATP is moved inside the inner step by cells.transporter@1 .*FR-42's stage 2",
-    ),
-    "a face moves it (stage 2)": (
-        lambda: labelled_s(fx.world(end=0.004, dt=1e-3)),
-        r"moved inside the inner step by face face_0.*FR-42's stage 2",
     ),
     "a bath schedule changes amounts": (
         lambda: labelled_s(
@@ -684,10 +667,6 @@ REFUSED = {
             )
         ),
         r"its view changes species amounts \(no FR-42 stage plans it yet\)",
-    ),
-    "beside D1's label families": (
-        lambda: family(face_free()),
-        r"neutral_arrival_labels@1 is composed beside label families",
     ),
     "a second label owner": (
         lambda: labelled_s(labelled_s(face_free())),

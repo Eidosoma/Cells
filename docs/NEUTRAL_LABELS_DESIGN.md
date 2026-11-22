@@ -306,6 +306,19 @@ Refused, each naming why:
 - kinds, which wait for their hook after @3's side;
 - RK4 beside any followed mover.
 
+**Measured against exact rows** (tests/unit/test_neutral_labels_transport.py; @3's side
+ac9f03e7, merged).
+- **The method:** each case runs plain rows of the same material in the same world. Transport is
+  linear in each row, so those rows are the exact reference.
+- **FR-33's first test, rebuilt on shares** (validation/regions/example.first_test):
+  - **Transfer:** the shares follow D1's P_L within 5.4e-7 of the label's scale, and 1.4e-7 at half
+    the step: 4.0 per halving, second order. The label summed over the two regions holds at
+    rounding.
+  - **Local loss:** the shares and the cleared label match at rounding.
+- **Routes:** a junction and two membrane routes carry the shares within the same bound.
+- **Inner reporting** stays off beside declared kinds: @3's step refuses `labels` there until the
+  kinds' hook lands.
+
 **Pools and sources** (D296, operators/contract.py).
 - **Reporter flags:** a reporter flags `LABEL_POOLS` or `LABEL_SOURCES` (static). It declares its
   pools, `label_pools`, entries of its own state holding a labelled species' material (the
@@ -373,3 +386,23 @@ unlabelled calls'. Without labels nothing of theirs is traced. The owner's closu
 rounding for both.
 
 **Kinds** (transporters, passive-route kinds) report after the @3 owner's stage hook lands.
+
+## 10. D1's label families retired (D300)
+
+The user's direction: D1's families, separate rows with their own potentials, are removed rather
+than kept beside shares. "We don't want old backwards compatibility — we're still in heavy dev, not
+even at alpha."
+
+**Removed:**
+- **The species registry's families:** the `label_families` key, `Family`, `family_of`,
+  `family_rows` and `check_families`, with its operator check and the row-linear constants. The
+  labels owner names the reported movers' laws itself.
+- **The region export's family path:** summed rows, `host_transport`, and the hosts' records.
+
+**Replaced:**
+- **FR-33's examples run on shares:** the first test, and the synapse acceptance. Plain rows of the
+  same material ride beside as the exact reference.
+- **The readouts read a label's amounts from the shares** (`readouts.label_nodes`), and classify the
+  owner as moving no amount.
+
+**No registered world declared a family:** no definition in the repository names `label_families`.
