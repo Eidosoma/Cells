@@ -627,8 +627,11 @@ def parse(data):
     # face_capacity, which counts today's faces, is widened for their parse alone; the forms faces
     # then leave `faces` for their own entity set (forms_faces).
     declared_faces = x.get("face_capacity")
+    faces = m.get("faces")  # A malformed list is the base parse's to refuse.
     forms_count = sum(
-        1 for f in m.get("faces", ()) if isinstance(f, dict) and f.get("law") == forms_law.LAW_ID
+        1
+        for f in (faces if isinstance(faces, list) else ())
+        if isinstance(f, dict) and f.get("law") == forms_law.LAW_ID
     )
     if forms_count and type(declared_faces) is int:
         x["face_capacity"] = declared_faces + forms_count

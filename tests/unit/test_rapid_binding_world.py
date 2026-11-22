@@ -669,21 +669,28 @@ def test_version_1_refuses_a_forms_face_where_its_paths_are_not_built(case, mess
             run_view.prepare(spec, run_view.Request(), layout=p)
 
 
-def forms_world(*, law=FORMS, carry=("B_L", "H", "K", "Na", "Cl"), receiver_holds=True):
+def forms_world(*, law=FORMS, carry=("B_L", "H", "K", "Na", "Cl"), receiver_holds=True,
+                stronger=0.0, protons=1.0):  # fmt: skip
     """lumen_general's world (the general closure at the cell and the lumen, no movers) with a
     second finite outside node, lumen_1, holding B_L under the closure too, at 80% of the lumen's
     B_L, K and Cl and neutral on its own (it has no capacitor), joined to the lumen by a face of
     `law` carrying `carry`. The face is lumen_1's only path, so its potential is set by zero net
     face current (G5's condition), on the floor field solver. receiver_holds False: lumen_1's
-    closure holds no B_L (a one-ended binder)."""
+    closure holds no B_L (a one-ended binder). stronger: HB_L's standard potential lowered by this
+    many RT. protons: lumen_1's H total as a fraction of the lumen's. The lumen's protons are almost
+    all bound (HB_L is about 6% of B_L there), so with equal H totals HB_L hardly differs between
+    the nodes; protons below 1 gives the bound form a gradient comparable to the base's."""
     raw = lumen_general()
     m, x = raw["model"], raw["execution"]
+    if stronger:
+        b_l = next(e for e in m["species"] if e["id"] == "B_L")
+        b_l["forms"][0]["standard_mu_RT"] -= stronger
     lumen = next(n for n in m["extracellular"] if n["id"] == fr.LUMEN)
     other = copy.deepcopy(lumen)
     other["id"] = "lumen_1"
     z = {s["id"]: s["valence"] for s in m["species"]}
     other["initial_amount_fmol"] = {
-        s: a * (0.8 if s in ("B_L", "K", "Cl") else 1.0)
+        s: a * (0.8 if s in ("B_L", "K", "Cl") else protons if s == "H" else 1.0)
         for s, a in lumen["initial_amount_fmol"].items()
     }
     other["initial_charge_C"] = 0.0
@@ -729,9 +736,11 @@ def test_the_forms_kernel_sums_to_the_totals_difference_and_rests_at_equal_forms
 
 
 def test_a_forms_face_moves_a_binder_as_its_forms_and_every_ledger_closes():
-    """The face note's §5 rows on a forms face between two closure nodes, three host steps:
-    - B_L moves as its forms (B_L, HB_L) at the closure's free forms, HB_L carrying its proton;
-      the rows H, K, Na and Cl as themselves (free H at both ends);
+    """The face note's §5 rows on a forms face between two closure nodes, four host steps, lumen_1
+    at half the lumen's H total so that the bound form has a gradient:
+    - B_L moves as its forms (B_L, HB_L) at the closure's free forms, HB_L carrying its proton (the
+      H row's transfer is its free H's and HB_L's, the bound share above a thousandfold); the rows
+      H, K, Na and Cl as themselves (free H at both ends);
     - every ledger closes (check_values: the material ledgers with the bound H carried, the energy
       ledger with the closure's S_c and the movers' heat), and each step's heat is non-negative;
     - lumen_1, whose only path is the face, sits where the face's net current is zero (G5's
@@ -741,13 +750,17 @@ def test_a_forms_face_moves_a_binder_as_its_forms_and_every_ledger_closes():
     from cells.laws.routes import logmean_electrodiffusion_forms as forms_law
     from cells.models import surface_pump_v3 as inner
 
-    spec, impl, states = host_steps(forms_world(), 3)
+    spec, impl, states = host_steps(forms_world(protons=0.5), 4)
     p = impl.initial_values(spec)[1]
     names = forms_law.movers(spec.model, (np.asarray(p.binding_rows), np.asarray(p.binding_counts),
                                           np.asarray(p.binding_present), 1)).names  # fmt: skip
     assert names[-2:] == ("B_L:B_L", "B_L:HB_L") and list(p.forms_face_form_movers) == [9, 10]
     moved = states[-1].forms_face_transferred[:, 0]
-    assert moved[9] != 0 and moved[10] != 0 and moved[5] == 0  # B_L as its forms, not as a row.
+    assert moved[5] == 0 and moved[10] > 1e-2 * moved[9] > 0  # B_L as its forms, HB_L carried.
+    rows = inner.forms_row_transfers(states[-1], p, xp=np)[:, 0]
+    h = list(spec.model.species_ids).index("H")
+    assert abs(rows[h] - (moved[3] + moved[10])) <= 4 * EPS * abs(moved[10])
+    assert moved[10] > 1e3 * abs(moved[3])  # The bound form carries the protons, not the free H.
     heat = [s.forms_face_dissipated_energy_pJ[0] for s in states]
     assert all(b >= a for a, b in zip(heat, heat[1:], strict=False)) and heat[-1] > 0
     history = impl.STATE_TYPE(*(np.stack(v) for v in zip(*states, strict=True)))
