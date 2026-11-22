@@ -14,8 +14,11 @@ the two must agree to 10⁻¹² in ln k.
 - s_pred² = J·Σ·Jᵀ, J = (1, −π/(k_B·T·σ)), Σ the unscaled covariance of (ln C, Γ²);
 - s_T = |∂ln k/∂T|·δT, ∂ln k/∂T = E_A/(R·T²) + σ_β/(σ·T) − 3/(2T), with δT = 0.5 K for set 1 (a
   column's position) and 1 K for set 2 (25 ± 1 °C; D293 item 1, D294 item 4);
-- s_dig: 0.03 for set 1; for set 2, max(0.03, the ln k span of 2 pixels on Fig. 1C's y-axis), set
-  at stage 2 from the axis calibration (D294 item 5), so recorded here as its rule and its floor;
+- s_dig: 0.03 for set 1; 0 for set 2's osmotic rows, whose rates are tabulated (§8; the lead's
+  ruling of 22 November 2026: D294 item 5's Fig. 1C rule governs only how s_read is read from the
+  bars); for set 2's controls, digitised from Fig. 1C, max(0.03, the ln k span of 2 pixels on its
+  y-axis), set at stage 2 from the axis calibration (D294 item 5), so recorded as its rule and
+  floor;
 - s_area, set 2's only: 0.03 (D295: Shibly's ±0.2 µm on r0 ≈ 13.5 µm, 2 × 0.2/13.5);
 - t₀.₉₇₅,₂ = 4.303. s_read is stage 2's.
 
@@ -48,6 +51,7 @@ IN_RANGE_K = (297.0, 334.0)  # E_A's range, 298-333 K, with 1 K at each end (§4
 SET1_DT_K = 0.5  # a column's position on the 10⁶/T axis (§8)
 SET1_S_DIG = 0.03  # the vertical reading (§8; D293 item 7)
 SET2_T_K, SET2_DT_K = 298.15, 1.0  # 25 ± 1 °C (D293 item 1; D294 item 4 for the controls)
+SET2_S_DIG_TABULATED = 0.0  # the osmotic rows' rates are tabulated (§8; the lead, 22 November)
 SET2_S_DIG = {"floor": 0.03, "rule": "max(0.03, the ln k span of 2 pixels on Fig. 1C's y-axis), "
               "the pixel scale from the axis calibration at stage 2 (D294 item 5)"}  # fmt: skip
 SET2_S_AREA = 0.03  # D295: 2 x 0.2/13.5, Shibly's stated ±0.2 µm on r0 of about 13.5 µm
@@ -135,7 +139,7 @@ def predictions(fit, stage1, stage1b):
                          "(D293 item 6)")  # fmt: skip
         out.append(_point(
             fit, birge, p["id"], shibly, p["sigma_ex_mN_m"] * 1e-3, SET2_T_K, SET2_DT_K,
-            "one_sided", SET2_S_DIG, SET2_S_AREA, flags, set=2, dC0_mM=p["dC0_mM"],
+            "one_sided", SET2_S_DIG_TABULATED, SET2_S_AREA, flags, set=2, dC0_mM=p["dC0_mM"],
             area_ratio=1.0,
         ))  # fmt: skip
     controls = [(c["id"], c["sigma_ex_mN_m"]) for c in stage1b["set2_controls"]["control_points"]]
