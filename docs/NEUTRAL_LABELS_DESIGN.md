@@ -348,3 +348,28 @@ Refused, each naming why:
 `label_pool_share` and the control `label_source_arrival`, both empty where no reporter declares
 pools or sources. So a stage-1 labelled checkpoint (development; none registered) does not
 resume across this change.
+
+## 9. Stage 3: exchange and the reactions' passive routes (the lead's leaves)
+
+**Exchange** (scheduled_species_exchange@1).
+- Its half-step sums each route's amount moved over its palindrome, stage by stage. It reports that
+  sum as a transfer from the route's source to its destination: an export from the cell to its
+  outside node, an import back. The transfer carries the source's shares.
+- The owner advances such a reporter on the combined node axis, as it does the inner step
+  (`advance_nodes`).
+
+**The reactions' passive routes** (local_species_reactions@1).
+- Each route's forward and reverse extents are the SSPRK(3,3) combination of its stages' one-way
+  rates, combined as its extent is from its net rates. A driven route's are its extent and 0,
+  bitwise as before. A passive route's are its two unidirectional fluxes.
+- The forward extent consumes max(−ν, 0) and makes max(ν, 0), the reverse the opposite. So a species
+  on both sides of a route counts its net in each direction.
+- Chemistry makes new molecules, so products join their species' arrival label. A passive route's
+  reverse flux re-makes its reactants at theirs.
+- The refusal of a passive route on a labelled row is gone.
+
+**What stays the same:** with labels, both operators' states and validity are bit for bit the
+unlabelled calls'. Without labels nothing of theirs is traced. The owner's closure diagnostic reads
+rounding for both.
+
+**Kinds** (transporters, passive-route kinds) report after the @3 owner's stage hook lands.

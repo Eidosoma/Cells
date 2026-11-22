@@ -353,6 +353,68 @@ def replaced_world():
     return labelled_s(raw, labels=("base", "newcomer"), arrivals=[("S", [(0.002, "newcomer")])])
 
 
+def stage_three_world(kind):
+    """S labelled in the face-free world: secreted by exchange (first-order export into ecs_0), or
+    relaxing with P through a passive route in the cell (P labelled too)."""
+    raw = face_free()
+    if kind == "exchange":
+        raw = fx.with_exchange(
+            raw,
+            [("secrete", "contact_0", "export", "first_order")],
+            [("secrete", "cell_0", [(0.0, 5.0)])],
+        )
+        return labelled_s(raw, initial={"cell_0": {"base": 0.25, "new": 0.75}})
+    raw = add_inventory_species(
+        raw, "P", trace_mM=1e-3, diffusivity_m2_per_s=fx.D_S, floor_fmol=fx.FLOOR_FMOL
+    )
+    raw = rfx.with_reactions(
+        raw,
+        [rfx.species("S", moieties={"X": 1}), rfx.species("P", moieties={"X": 1}, mu=-1.0)],
+        [rfx.passive("relax", {"cells": ["cell_0"]}, {"S": 1}, {"P": 1}, 50.0)],
+        rfx.always(["relax"]),
+    )
+    return with_labels(
+        raw,
+        [("S", ["base", "new"], {"cell_0": {"base": 0.25, "new": 0.75}}), ("P", ["base"], {})],
+    )
+
+
+@pytest.mark.parametrize("kind", ["exchange", "passive"])
+def test_stage_three_reports_follow_the_material(kind):
+    """FR-42's stage 3 (the lead's leaves for exchange's and the reactions' files; NumPy, no world
+    compiled): with labels each half-step's state and validity are bit for bit the unlabelled
+    call's; the owner's update closes at rounding and keeps the shares a partition. Exchange's
+    export carries the cell's shares to the node; the passive route's reverse flux makes new S
+    at S's arrival label (the base), which dilutes the labelled share, and its forward flux makes
+    new P at P's."""
+    from cells.definitions import pump_composite_spec as cs
+    from cells.registry.models import get_model
+
+    spec = parse_spec(stage_three_world(kind))
+    model = get_model(spec.model)
+    state, p = model.initial_values(spec)
+    control = model.CONTROL_TYPE(*(np.asarray(v)[0] for v in cs.control_values(spec, [0.0])))
+    (op,) = [o for o in model.operators if o in model.label_reporters]
+    labels = model.label_owner.labels(control, p)
+    for _ in range(20):
+        plain, ok = op.half_step(state, 5e-4, control, p, xp=np)
+        new, ok2, moves = op.half_step(state, 5e-4, control, p, xp=np, labels=labels)
+        assert bool(ok) and bool(ok2)
+        assert all(bits(a) == bits(b) for a, b in zip(plain, new, strict=True))
+        state = model.label_owner.advance(state, new, moves, p, xp=np)
+    assert np.asarray(state.label_closure_relative).max() <= 64 * EPS
+    for shares in (np.asarray(state.label_share), np.asarray(state.label_outside_share)):
+        assert np.all(shares >= 0) and np.abs(shares.sum(axis=1) - 1).max() <= 64 * EPS
+    if kind == "exchange":
+        node = np.asarray(state.label_outside_share)[0, :, 1]  # ecs_0, after the bath.
+        assert node[1] > 0.5  # The cell's 3/4 arrived over the node's own unlabelled trace.
+        assert np.asarray(state.label_share)[0, :, 0].tolist() == [0.25, 0.75]  # Kept exactly.
+    else:
+        shares = np.asarray(state.label_share)[:, :, 0]
+        assert 0.5 < shares[0, 1] < 0.75  # S: diluted by its base material made from P.
+        assert shares[1].tolist() == [1.0, 0.0]  # P: its own arrival label, the base.
+
+
 def test_a_replaced_slot_takes_the_newcomer_label():
     """D296 (the lead's leave for replacement@1's event, in NumPy, no world compiled): with labels
     the event's state and validity are bit for bit the unlabelled call's, it reports the slot it
@@ -611,29 +673,6 @@ REFUSED = {
     "a face moves it (stage 2)": (
         lambda: labelled_s(fx.world(end=0.004, dt=1e-3)),
         r"moved inside the inner step by face face_0.*FR-42's stage 2",
-    ),
-    "exchange moves it (stage 3)": (
-        lambda: labelled_s(
-            fx.with_exchange(
-                face_free(),
-                [("secrete", "contact_0", "export", "first_order")],
-                [("secrete", "cell_0", [(0.0, 0.1)])],
-            )
-        ),
-        r"scheduled_species_exchange@1 beside .*FR-42's stage 3 adds them",
-    ),
-    "a passive reaction moves it (stage 3)": (
-        lambda: labelled_s(
-            rfx.with_reactions(
-                add_inventory_species(
-                    face_free(), "P", trace_mM=1e-3, diffusivity_m2_per_s=fx.D_S, floor_fmol=1e-20
-                ),
-                [rfx.species("S", moieties={"X": 1}), rfx.species("P", moieties={"X": 1})],
-                [rfx.passive("relax", {"cells": ["cell_0"]}, {"S": 1}, {"P": 1}, 1.0)],
-                rfx.always(["relax"]),
-            )
-        ),
-        r"reaction relax is a passive route on labelled S.*FR-42's stage 3",
     ),
     "a bath schedule changes amounts": (
         lambda: labelled_s(
