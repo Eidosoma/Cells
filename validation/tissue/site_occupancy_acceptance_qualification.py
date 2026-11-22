@@ -834,7 +834,7 @@ CHECKS = (
     ("RK4", "refuses RK4"),
     ("schedule missing", "every route needs a schedule; missing"),
     ("schedule start", "starts at time 0"),
-    ("schedule grid", "exact multiple of dt"),
+    ("schedule grid", "on the clock's grid"),
     ("schedule horizon", "outside the horizon"),
     ("schedule negative", "must be >= 0"),
     ("schedule route", "names no declared route"),

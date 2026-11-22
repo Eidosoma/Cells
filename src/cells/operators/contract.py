@@ -110,7 +110,7 @@ Declarations (class attributes):
   that opens, closes or retires slots (``CLOSES``, ``RETIRES`` or a provided activity
   mask): no closer resets a kind's per-slot fields, which would be left stale.
 * Schedule: ``EXPERIMENT_KEYS`` (its schedule in the definition's experiment),
-  parsed and checked at the definition (event times are exact multiples of dt).
+  parsed and checked at the definition (event times on the clock's grid, D283).
 * Ownership (docs/PUMP_COMPOSITE_V2_DESIGN.md §1.2–§1.4), checked when a
   composition is built and recorded in its field map:
   - observation columns: its own are its state fields and ``READOUT_COLUMNS``;

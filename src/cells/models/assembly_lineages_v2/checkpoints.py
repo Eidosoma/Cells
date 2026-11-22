@@ -34,6 +34,13 @@ single-lineage run's checkpoint (rung S) is refused too, until a consumer needs 
 and cells.relations needs an order between same-time events for that (RELATIONSHIPS_DESIGN,
 relations@2's requirements; the lead's ruling: cut before or after such an event).
 
+**A world with the pore law** (FR-31, pore_clock.py) keeps its clocks: the host's document adds
+each living vesicle's `{slot, key, threshold_E, counter, t_star}`, and a restart rebuilds each
+clock from its key and counts, refusing one that is not the definition's. A rupture is a host stop,
+not a committed event, and it stays out of the applied stops, which count the schedule's. A cut
+at a rupture's time, applied or pending, is refused, as a cut at a lysing event is. Each segment's
+ruptures are its own; the threshold draws are the first segment's.
+
 **The resumed run** (population.run's start) continues the world: its rows count events from the
 world's start, its periodic rows keep the world's cadence, its sums and bookings continue the
 checkpoint's, and its ledger is referenced to the world's own initial F. Its fission and transfer
@@ -139,6 +146,16 @@ def make(run):
             "first row would sit at the lysis's time, which needs cells.relations' order between "
             "same-time events; cut one event before or after it"
         )
+    if run.pores is not None:  # FR-31: nor at a rupture's time, applied or pending
+        time = float(lane["time"])
+        ruptures = [e["time_s"] for e in run.pores["events"]]
+        ruptures += [clock["t_star"] for clock in run.resume["doc"]["pores"]]
+        if time in ruptures:
+            raise ConfigError(
+                f"A cut at {time} s, a vesicle's rupture time, is refused: the resumed run's first "
+                "row would sit at the rupture's time, which needs cells.relations' order between "
+                "same-time events; cut one event before or after it"
+            )
     host = {
         "arrays": {k: np.asarray(v).copy() for k, v in run.resume["arrays"].items()},
         "doc": json.loads(json.dumps(run.resume["doc"])),

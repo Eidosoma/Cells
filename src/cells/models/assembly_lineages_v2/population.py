@@ -51,6 +51,7 @@ from cells.models.assembly_lineages_v2 import (
     SHEAR_FISSION,
     division,
     kernel,
+    pore_clock,
     streams,
 )
 from cells.models.assembly_lineages_v2.interfaces import PopulationStructure
@@ -362,7 +363,12 @@ class _Context:
         world = spec.model.world
         self.K = world.population["slots"]
         self.columns = [s.index for s in spec.experiment.schedules]
-        self.extra = np.zeros(EXTRA + len(self.columns))
+        # FR-31: one work column per hold, after the schedules' (none in a world without one)
+        self.holds = [h.index for h in spec.experiment.tension_holds]
+        self.extra = np.zeros(EXTRA + len(self.columns) + len(self.holds))
+        self.pore_events = []  # FR-31: each rupture's record (pore_clock.event), in order
+        self.stop_kinds = []  # FR-31: each applied stop's kind, "schedule" or "pore", in order
+        self.clocks, self.pore_draws, self.pore_check = {}, [], None  # FR-31 (run sets them)
         self.lineage = np.where(state.alive, np.arange(self.K), -1)  # each slot's sub-lineage
         self.count = {i: 0 for i in range(founders)}  # each sub-lineage's last key count
         self.next_sub = founders
@@ -430,6 +436,8 @@ class _Context:
                "transfers": self.transfers_before + len(self.transfers),
                "replacements": self.replacements_before + len(self.replacements),
                "applied_stops": applied, "splits": splits, "lives": living}  # fmt: skip
+        if self.holds:  # FR-31: each living vesicle's clock (pore_clock.clock_record)
+            doc["pores"] = [pore_clock.clock_record(v) for _, v in sorted(self.clocks.items())]
         return {"arrays": arrays, "doc": doc}
 
     def _born(self, slot, key, time, kind, parent, lineage, event, root=None, share=float("nan")):
@@ -538,8 +546,27 @@ def run(spec, *, start=None, stop=None):
     start_state = state.copy()
     ctx.world_report = world_report
     ctx.schedule_draws = list(schedule_draws)
+    # FR-31: each living vesicle's pore clock, by slot, and its rupture a stop (pore_clock.py)
+    clocks, pending = {}, []
+    if world.hazard is not None:
+        clocks = {
+            int(k): pore_clock.Vesicle(spec, layout.base_key, state.keys[k], state.slots[k], slot=k)
+            for k in np.flatnonzero(state.alive)
+        }
+        if admitted is not None:  # the checkpoint's clocks, each its definition's, or refused
+            pore_clock.refuse_other_clocks(clocks, admitted[2]["doc"]["pores"])
+        pending = sorted((v.time, k) for k, v in clocks.items() if v.time <= horizon)
+        pore_clock.refuse_same_time([clocks[k] for _, k in pending], [t for t, _ in plan])
+        # the threshold draws are made when the run first holds a vesicle: a resumed run's
+        # vesicles drew in the run that wrote its checkpoint (checkpoints.py)
+        ctx.pore_draws = [clocks[k].draw() for k in sorted(clocks)] if admitted is None else []
+        # the pair's check at the definition's founders' areas, the same in every segment (a
+        # resumed run may hold no vesicle)
+        areas = [pore_clock.area_m2(world, f) for f in founders]
+        ctx.pore_check = {"probe": balance.pore_verdict(),
+                          "world": balance.pore_world_report(spec, areas)}  # fmt: skip
     stack = functools.partial(jax.tree_util.tree_map, lambda x: np.asarray(x)[None])
-    first = plan[0][0] if plan else horizon
+    first = _next_stop(plan, pending, horizon)
     limit = layout.event_limit if stop is None else np.int64(min(int(layout.event_limit), stop))
     layouts = stack(layout._replace(horizon=np.float64(first), event_limit=limit))
     ms = stack(m)
@@ -571,17 +598,35 @@ def run(spec, *, start=None, stop=None):
             state = _State(host.pool, host.slots, host.alive, state.keys, host.supplied)
             _lyse(world, layout, state, ctx, world_f, int(host.lysed_slot), float(host.time),
                   int(host.events))  # fmt: skip
+        elif (
+            status in (kernel.COMPLETE, kernel.INERT)
+            and pending
+            and (not plan or pending[0][0] < plan[0][0])
+        ):  # FR-31: a vesicle's rupture at its t*; the draw that crossed it is discarded, counted
+            stop_time, k = pending.pop(0)
+            state = _State(host.pool, host.slots, host.alive, state.keys, host.supplied)
+            _rupture(spec, layout, state, ctx, world_f, clocks.pop(k), int(host.events))
+            ctx.stop_kinds.append("pore")
+            nxt = _next_stop(plan, pending, horizon)
+            layouts = layouts._replace(horizon=np.asarray([nxt]))
+            going = kernel.RUNNING if stop_time < horizon else status  # a stop at t_end holds
+            host = host._replace(time=np.float64(stop_time), status=np.int32(going))
         elif status in (kernel.COMPLETE, kernel.INERT) and plan:
             stop_time, stop_events = plan.pop(0)  # the draw that crossed it is discarded, counted
             applied += 1
             state = _State(host.pool, host.slots, host.alive, state.keys, host.supplied)
             full = _shear_stop(spec, layout, state, ctx, world_f, vesicle_f, stop_time,
                                stop_events, int(host.events))  # fmt: skip
+            if clocks:  # FR-31: a transfer's removed vesicles take their clocks with them
+                ctx.stop_kinds.append("schedule")
+                clocks = {k: v for k, v in clocks.items()
+                          if state.alive[k] and int(state.keys[k]) == v.key}  # fmt: skip
+                pending = [(t, k) for t, k in pending if k in clocks]
             if full:
                 end_status = "slots_full"
                 host = host._replace(time=np.float64(stop_time))
                 break
-            nxt = plan[0][0] if plan else horizon
+            nxt = _next_stop(plan, pending, horizon)
             layouts = layouts._replace(horizon=np.asarray([nxt]))
             going = kernel.RUNNING if stop_time < horizon else status  # a stop at t_end holds
             host = host._replace(time=np.float64(stop_time), status=np.int32(going))
@@ -597,6 +642,7 @@ def run(spec, *, start=None, stop=None):
             host = jax.tree_util.tree_map(lambda a: np.array(a)[0], lanes)
             break
     run_seconds = perf_counter() - started
+    ctx.clocks = clocks  # FR-31: the living vesicles' clocks, for a checkpoint's host document
     final = jax.tree_util.tree_map(lambda a: np.array(a)[0], lanes)
     if end_status is not None:
         final = host
@@ -604,6 +650,43 @@ def run(spec, *, start=None, stop=None):
     return _assemble(spec, structure, layout, m, verdict, start_state, state, ctx, events, draws,
                      ctx.schedule_draws, final, end_status, world_f, run_seconds, origin,
                      applied, stop)  # fmt: skip
+
+
+def _next_stop(plan, pending, horizon):
+    """The device's horizon: the next schedule stop's time, or (FR-31) an earlier vesicle's
+    rupture time, or the experiment's horizon."""
+    nxt = plan[0][0] if plan else horizon
+    if pending and pending[0][0] < nxt:
+        return pending[0][0]
+    return nxt
+
+
+def _rupture(spec, layout, state, ctx, world_f, clock, n_events):
+    """FR-31: a vesicle's rupture at its t* on the host (pore_clock.py): the opening, then the
+    release from the open state, booked as one pore row; its slot frees and the world goes on."""
+    world = spec.model.world
+    s, time = clock.slot, clock.time
+    before = world_f(state)
+    work, heat_open, delta_f = pore_clock.opening(world, clock.area, clock.hold.sigma)
+    added, took, returned, work_return = pore_clock.release(world, layout, state.slots[s])
+    state.pool = state.pool + added
+    state.supplied = state.supplied + took
+    state.slots[s] = 0
+    state.alive[s] = False
+    q_release = -(world_f(state) - (before + delta_f)) + work_return
+    heat = heat_open + q_release
+    ctx.extra[[E_HEAT, E_HEAT_MAG, E_WORK, E_WORK_MAG]] += [
+        heat, abs(heat_open) + abs(q_release), work_return, abs(work_return)
+    ]  # fmt: skip
+    ctx.extra[E_MAG] += abs(work)
+    ctx.extra[EXTRA + len(ctx.columns) + ctx.holds.index(clock.hold.index)] += work
+    ctx.pore_events.append(
+        pore_clock.event(world, clock, heat_open, work, q_release, returned, work_return)
+    )
+    ctx.end(s, time, "lysed", f"event:lysis/{clock.key}")
+    state.keys[s] = -1
+    ctx.lineage[s] = -1
+    ctx.stops.append((n_events, pore_clock.PORE_ROW, time, state.copy(), ctx.extra.copy()))
 
 
 def _lyse(world, layout, state, ctx, world_f, s, time, n_events, at_birth=False):
@@ -615,6 +698,8 @@ def _lyse(world, layout, state, ctx, world_f, s, time, n_events, at_birth=False)
     q = -(world_f(state) - before) + w
     record |= {"time_s": time, "slot": s, "key": key, "event": n_events, "release_heat_kT": q,
                "at_birth": at_birth}  # fmt: skip
+    if world.hazard is not None:  # FR-31: a pore world labels each lysis by its cause
+        record["cause"] = "threshold"
     ctx.extra[[E_HEAT, E_HEAT_MAG, E_WORK, E_WORK_MAG]] += [q, abs(q), w, abs(w)]
     ctx.lyses.append(record)
     ctx.end(s, time, "lysed", f"event:lysis/{key}")
@@ -876,6 +961,8 @@ def _assemble(spec, structure, layout, m, verdict, start, state, ctx, events, dr
     world = spec.model.world
     places = len(world.places)
     status = end_status or STATUS[int(final.status)]
+    if world.hazard is not None and status == "inert" and state.alive.any():
+        status = "complete"  # FR-31: a living vesicle's clock runs (pore_clock.py)
     codes = np.concatenate(events[0::2]) if events else np.zeros((0, 2), dtype=np.int64)
     values = np.concatenate(events[1::2]) if events else np.zeros((0, 5))
     count_change, supply_change = single.changes(layout, structure)
@@ -902,7 +989,7 @@ def _assemble(spec, structure, layout, m, verdict, start, state, ctx, events, dr
     # In event order, then time order: an observation at or after a stop with no event between
     # sees the stop's state; at one time, a stop before an observation (as the single lineage).
     order = {START: 0, PERIODIC: 1, SHEAR: 2, LYSIS: 2, TRANSFER: 2, REPLACEMENT: 2, WITHDRAWAL: 2,
-             OBSERVED: 3, END: 4}  # fmt: skip
+             pore_clock.PORE_ROW: 2, OBSERVED: 3, END: 4}  # fmt: skip
     marks.sort(key=lambda x: (x[0], x[2], order[x[1]], x[3]))
     replay, e = start.copy(), 0
     extra = origin["extra"].copy() if resumed else np.zeros_like(ctx.extra)
@@ -922,7 +1009,7 @@ def _assemble(spec, structure, layout, m, verdict, start, state, ctx, events, dr
                 vesicle = replay.slots[g - 1] if g > 0 else np.zeros_like(replay.pool)
                 after_events.append((vesicle[:places].copy(), replay.pool[:places].copy()))
             e += 1
-        if kind in (SHEAR, LYSIS, TRANSFER, REPLACEMENT, WITHDRAWAL):
+        if kind in (SHEAR, LYSIS, TRANSFER, REPLACEMENT, WITHDRAWAL, pore_clock.PORE_ROW):
             replay, extra = ctx.stops[at][3].copy(), ctx.stops[at][4]
         device = values[n - 1, 1:] if n > 0 else sums
         rows.append((kind, n + k0, t, replay.copy(), device, extra.copy()))
@@ -934,12 +1021,15 @@ def _assemble(spec, structure, layout, m, verdict, start, state, ctx, events, dr
     f = np.asarray([world_f(r[3]) for r in rows])
     device = np.stack([r[4] for r in rows])
     extra = np.stack([r[5] for r in rows])
-    columns = extra[:, EXTRA:]
+    columns = extra[:, EXTRA : EXTRA + len(ctx.columns)]
     heat = device[:, 0] + extra[:, E_HEAT]
     heat_mag = device[:, 1] + extra[:, E_HEAT_MAG]
     work = device[:, 2] + extra[:, E_WORK]
     booked = work + columns.sum(axis=1) - extra[:, E_SINK]
     booked_mag = device[:, 3] + extra[:, E_WORK_MAG] + extra[:, E_MAG]
+    holds = extra[:, EXTRA + len(ctx.columns) :]  # FR-31: each hold's work column
+    if ctx.holds:  # the holds' work is done on the vesicles (their payers')
+        booked = booked + holds.sum(axis=1)
     if not np.allclose(columns.sum(axis=1), extra[:, E_SHEAR] + extra[:, E_TRANSFER],
                        rtol=1e-12, atol=1e-9):  # fmt: skip
         raise AssertionError(
@@ -987,6 +1077,8 @@ def _assemble(spec, structure, layout, m, verdict, start, state, ctx, events, dr
     if ctx.columns:
         row_arrays |= {"schedule_work_kT": columns, "shear_work_kT": extra[:, E_SHEAR],
                        "discarded_free_energy_kT": extra[:, E_SINK]}  # fmt: skip
+    if ctx.holds:  # FR-31
+        row_arrays["tension_hold_work_kT"] = holds
     closure = {"checked": True, "holds": closes,
                "max_abs_residual_kT": float(np.max(np.abs(residual))),
                "tolerance_rtol": ledger.RTOL, "refused": refused,
@@ -1044,6 +1136,10 @@ def _assemble(spec, structure, layout, m, verdict, start, state, ctx, events, dr
         if withdraws:
             report["numbering"]["withdrawals"] = ctx.withdrawals_before
     timings = {"run_seconds": run_seconds, "events": int(len(codes)), "lanes": 1}
+    pores = None
+    if world.hazard is not None:  # FR-31: the clock's report (records.py's pores block)
+        pores = {"events": ctx.pore_events, "draws": ctx.pore_draws, "check": ctx.pore_check,
+                 "causes": {"pore": len(ctx.pore_events), "threshold": len(ctx.lyses)}}  # fmt: skip
     record = None
     if diagnose:  # §0.2d item 10.5 (diagnostic.py)
         from cells.models.assembly_lineages_v2 import diagnostic
@@ -1056,6 +1152,14 @@ def _assemble(spec, structure, layout, m, verdict, start, state, ctx, events, dr
             offsets=None if not resumed else {"events": k0, "counter": int(origin["counter"]),
                                               "heat": float(sums[0]), "work": float(sums[2])},
         )  # fmt: skip
+        if pores is not None:  # FR-31: each draw that crossed a pore stop, the events, the draws
+            fates = arrays["draw_fate"]
+            spent = np.flatnonzero(~committed)  # one per applied stop, in order, then the end's
+            for j, kind in enumerate(ctx.stop_kinds):
+                if kind == "pore":
+                    fates[spent[j]] = diagnostic.DISCARDED_AT_PORE
+            body |= {"fates": list(diagnostic.PORE_FATES), "pore_events": pores["events"]}
+            arrays |= pore_clock.draw_arrays(pores["draws"])
         record = {"body": body, "arrays": arrays}
     begun = {"checkpoint": origin["start"]["checkpoint"], "time": t0} if resumed else "fresh"
     halted = None if resume is None else {"events": stop, "fissions": resume["doc"]["splits"]}
@@ -1067,7 +1171,7 @@ def _assemble(spec, structure, layout, m, verdict, start, state, ctx, events, dr
         timings=timings, division=None, diagnostic=record, population=report,
         osmotic=single._osmotic_report(world, row_arrays["pool_count"], None)
         if world.conventions.lumen_volume == "osmotic" else None,
-        start=origin["start"], resume=resume,
+        start=origin["start"], resume=resume, pores=pores,
     )  # fmt: skip
 
 

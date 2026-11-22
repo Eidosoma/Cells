@@ -247,7 +247,7 @@ CASES = {
     # The schedule.
     "off the grid": (
         lambda raw: controls(raw, "supply")["schedule"].append(dict(time=0.0015, multiplier=1.0)),
-        "exact multiple of dt",
+        "on the clock's grid",
     ),
     "beyond the horizon": (
         lambda raw: controls(raw, "supply")["schedule"].append(dict(time=1.0, multiplier=1.0)),

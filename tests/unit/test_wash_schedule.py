@@ -97,7 +97,7 @@ REFUSALS = {
     "an exact zero": (lambda: washed(events=[_event(buffer={S: 0.0})]), "an exact zero"),
     "a fraction of 0": (lambda: washed(events=[_event(fraction=0.0)]), "fraction lies in"),
     "a fraction above 1": (lambda: washed(events=[_event(fraction=1.5)]), "fraction lies in"),
-    "a time off the grid": (lambda: washed(events=[_event(time=1.005)]), "multiple of dt"),
+    "a time off the grid": (lambda: washed(events=[_event(time=1.005)]), "on the clock's grid"),
     "a time at 0": (lambda: washed(events=[_event(time=0.0)]), "after time 0"),
     "a time at the end": (lambda: washed(events=[_event(time=2.0)]), "before the end time"),
     "times not increasing": (

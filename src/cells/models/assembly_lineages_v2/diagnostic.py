@@ -22,6 +22,10 @@ from cells.models.assembly_lineages_v2 import division, kernel, streams
 
 FATES = ("committed", "discarded_at_schedule", "ended_run")
 COMMITTED, DISCARDED, ENDED = range(3)
+# FR-31: a pore world's fates add the draw that crosses a pore stop (pore_clock.py); every other
+# record's fates are FATES, unchanged.
+PORE_FATES = (*FATES, "discarded_at_pore")
+DISCARDED_AT_PORE = 3
 USES = ("gap", "transfer")
 
 

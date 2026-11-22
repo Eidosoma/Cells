@@ -451,7 +451,7 @@ SCHEDULE_REFUSALS = {
         lambda c: c[0]["schedule"].append(
             dict(time=0.0105, assembly_rate_per_s=1.0, removal_rate_per_s=1.0)
         ),
-        "exact multiple of dt",
+        "on the clock's grid",
     ),
     "past the end": (
         lambda c: c[0]["schedule"].append(

@@ -229,7 +229,7 @@ REFUSALS = [
     (dict(baths=("ecs_0",), events=[]), "finite node"),
     (dict(events=[(0.0, ["bath"], {"cargo": DOSE})]), "after time 0"),
     (dict(events=[(0.05, ["bath"], {"cargo": DOSE})]), "before the end time"),
-    (dict(events=[(EVENT + DT / 3, ["bath"], {"cargo": DOSE})]), "exact multiple of dt"),
+    (dict(events=[(EVENT + DT / 3, ["bath"], {"cargo": DOSE})]), "on the clock's grid"),
     (dict(events=[(EVENT, ["bath"], {"nope": 1.0})]), "undeclared formula unit"),
     (dict(events=[(EVENT, ["ecs_0"], {"cargo": DOSE})]), "unscheduled bath"),
     (dict(events=[(EVENT, ["bath"], {"cargo": -2e-3})]), "non-positive"),

@@ -336,6 +336,8 @@
   "/mnt/workspaces/Cells/gene-regulation-20261120/fr38/timed-6e639426/measure/measured.json",
   "/mnt/workspaces/Cells/xc0-landing-20261122/measured-fast/measured.json",
   "/mnt/workspaces/Cells/xc0-landing-20261122/tiers-measured-regen-ef04ddb1/measured.json",
+  "/mnt/workspaces/Cells/core-pass-at3-20261118/c-snap2/measure/measure-4165d5b9/measure/measured.json",
+  "/mnt/workspaces/Cells/pores-phase-a-20261122/tiers-f5bdb371/out/measure/measured.json",
   "/mnt/workspaces/Cells/core-pass-kinds-20261118/measure-98da063b/measure/measured.json"
  ],
  "measured_provenance": [
@@ -2847,6 +2849,22 @@
    "utc": "2026-11-22T16:15:20+00:00"
   },
   {
+   "git_revision": "4165d5b928a8149a208d46a298f0f94da71ecda1",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/core-pass-at3-20261118/snapshot-4165d5b9",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-22T18:04:52+00:00"
+  },
+  {
+   "git_revision": "f5bdb3715f2f9b7e316df15a485f6498c89194ad",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/pores-phase-a-20261122/snapshot-f5bdb371",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-22T16:25:28+00:00"
+  },
+  {
    "git_revision": "98da063b2edaf26704f0d15b049f14cae85a9feb",
    "dirty": false,
    "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -3215,7 +3233,7 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_v2_registration.py",
-    "seconds": 10.19,
+    "seconds": 8.59,
     "exit_code": 0,
     "counts": {
      "passed": 6
@@ -5403,10 +5421,10 @@
    },
    {
     "file": "tests/unit/test_pump_composite_contract.py",
-    "seconds": 4.73,
+    "seconds": 13.3,
     "exit_code": 0,
     "counts": {
-     "passed": 18
+     "passed": 33
     }
    },
    {
@@ -6684,6 +6702,14 @@
     "exit_code": 0,
     "counts": {
      "passed": 11
+    }
+   },
+   {
+    "file": "tests/unit/test_assembly_lineages_v2_pores.py",
+    "seconds": 63.16,
+    "exit_code": 0,
+    "counts": {
+     "passed": 34
     }
    },
    {
