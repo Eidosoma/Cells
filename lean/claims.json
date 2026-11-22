@@ -22,6 +22,247 @@
     "cells.shared_pool@1": "molecular-assembly"
   },
   "comparisons": {
+    "ol5-event-energy": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@2"
+      ],
+      "laws": [
+        "cells.osmotic_lumen@1",
+        "cells.bilayer_geometry@1"
+      ],
+      "engine_revision": "329e9e395ac117998657a21eb827192d34314107",
+      "record_revision": "ad1f96418722d25876b38b5a5f38996512d6a32c",
+      "sources": {
+        "Native step, regular energy change and boundary fallback": "src/cells/models/assembly_lineages_v2/lumen.py#L193-L242",
+        "Spherical area and radius": "src/cells/models/assembly_lineages_v2/geometry.py",
+        "Public compiled lineage": "src/cells/models/assembly_lineages_v2/runner.py",
+        "Registered event and term execution": "src/cells/models/assembly_lineages_v2/kernel.py",
+        "Moving bilayer fixture": "tests/unit/test_assembly_lineages_v2_lumen.py",
+        "World and execution definition": "tests/assembly_lineage_v2_fixtures.py"
+      },
+      "record_inputs": {
+        "Vesicle event proof": "lean/CellsProofs/Chemistry/VesicleEvent.lean",
+        "Equilibrium energy and volume": "lean/CellsProofs/Chemistry/Vesicle.lean",
+        "Public trajectory, physical constants and independent volume calculation": "lean/checks/vesicle.py"
+      },
+      "driver": "lean/checks/vesicle_events.py",
+      "record": "lean/PROGRESS.md#ol5-event-energy"
+    },
+    "ol5-short-draws": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@2"
+      ],
+      "laws": [
+        "cells.stochastic_mass_action@1",
+        "cells.phase_exchange@1"
+      ],
+      "engine_revision": "329e9e395ac117998657a21eb827192d34314107",
+      "record_revision": "ad1f96418722d25876b38b5a5f38996512d6a32c",
+      "sources": {
+        "Three-term log product and mass-action direction": "src/cells/models/assembly_lineages_v2/mass_action.py#L76-L136",
+        "Phase-exchange direction": "src/cells/models/assembly_lineages_v2/exchange.py#L39-L61",
+        "Arity limit of three on either side": "src/cells/models/assembly_lineages_v2/world.py",
+        "Host log-factorial table used by the earlier engine": "src/cells/models/assembly_lineages/ledger.py#L77-L80"
+      },
+      "record_inputs": {
+        "Log of the descending factorial and finite masked sum": "lean/CellsProofs/Chemistry/AssemblyKinetics.lean"
+      },
+      "driver": "lean/checks/vesicle_events.py",
+      "record": "lean/PROGRESS.md#ol5-short-draws"
+    },
+    "bhatia-vesicle-deflation": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@2"
+      ],
+      "laws": [
+        "cells.osmotic_lumen@1",
+        "cells.bilayer_geometry@1"
+      ],
+      "engine_revision": "329e9e395ac117998657a21eb827192d34314107",
+      "record_revision": "ad1f96418722d25876b38b5a5f38996512d6a32c",
+      "sources": {
+        "Osmotic equilibrium volume": "src/cells/models/assembly_lineages_v2/lumen.py",
+        "Membrane geometry": "src/cells/models/assembly_lineages_v2/geometry.py",
+        "Compiled lineage runner": "src/cells/models/assembly_lineages_v2/runner.py",
+        "Pinned vesicle fixture, geometry, concentrations": "tests/unit/test_assembly_lineages_v2_lumen.py",
+        "World and execution definition": "tests/assembly_lineage_v2_fixtures.py"
+      },
+      "record_inputs": {
+        "Bhatia single-vesicle geometry and bath": "lean/checks/data/bhatia2020_vesicle_deflation.json",
+        "64-osmole compiled comparison at a specified cap density": "lean/checks/vesicle.py",
+        "Geometric outer-volume bound": "lean/CellsProofs/Chemistry/Vesicle.lean"
+      },
+      "driver": "lean/checks/vesicle_events.py",
+      "record": "lean/PROGRESS.md#bhatia-vesicle-deflation"
+    },
+    "ol5-replay-assembly-kinetics": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@2"
+      ],
+      "laws": [
+        "cells.stochastic_mass_action@1",
+        "cells.transition_state_factor@1",
+        "cells.ideal_mixing@1",
+        "cells.regular_mixing@1"
+      ],
+      "engine_revision": "329e9e395ac117998657a21eb827192d34314107",
+      "record_revision": "ad1f96418722d25876b38b5a5f38996512d6a32c",
+      "sources": {
+        "Ordered draws and cancelled membrane denominator": "src/cells/models/assembly_lineages_v2/mass_action.py",
+        "Rate factor on the common state": "src/cells/models/assembly_lineages_v2/transition_state.py",
+        "Forward and reverse rate assembly": "src/cells/models/assembly_lineages_v2/kernel.py",
+        "World balance probe": "src/cells/models/assembly_lineages_v2/balance.py",
+        "Independent rational draw and factor": "validation/ool/references/laws.py",
+        "Independent rate tolerance": "validation/ool/references/detailed_balance.py",
+        "Registered boundary world": "validation/ool/references/designs/ol1_boundary.world.json",
+        "assembly lineage v2 fixtures": "tests/assembly_lineage_v2_fixtures.py",
+        "probes": "validation/assembly_lineages_v2/probes.py",
+        "ol1 wa.world": "validation/ool/references/designs/ol1_wa.world.json",
+        "ol1 kernel probe states": "validation/ool/references/designs/ol1_kernel_probe_states.json",
+        "ol1 boundary probe states": "validation/ool/references/designs/ol1_boundary_probe_states.json"
+      },
+      "record_inputs": {
+        "assembly mixing": "lean/checks/assembly_mixing.py"
+      },
+      "driver": "lean/checks/assembly_kinetics.py",
+      "record": "lean/PROGRESS.md#ol5-six-replays"
+    },
+    "ol5-replay-confined-binding": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@2"
+      ],
+      "laws": [
+        "cells.stochastic_mass_action@1",
+        "cells.ideal_mixing@1"
+      ],
+      "engine_revision": "329e9e395ac117998657a21eb827192d34314107",
+      "record_revision": "ad1f96418722d25876b38b5a5f38996512d6a32c",
+      "sources": {
+        "Pool encounters": "src/cells/models/assembly_lineages_v2/mass_action.py",
+        "Concentration extent": "src/cells/models/assembly_lineages_v2/model.py",
+        "Pool standard potential and factorial": "src/cells/models/assembly_lineages_v2/ideal_mixing.py",
+        "assembly lineage v2 fixtures": "tests/assembly_lineage_v2_fixtures.py",
+        "probes": "validation/assembly_lineages_v2/probes.py"
+      },
+      "record_inputs": {
+        "shon2012 confined binding": "lean/checks/data/shon2012_confined_binding.json"
+      },
+      "driver": "lean/checks/confined_binding.py",
+      "record": "lean/PROGRESS.md#ol5-six-replays"
+    },
+    "ol5-replay-pool-replacement": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@2"
+      ],
+      "laws": [
+        "cells.shared_pool@1",
+        "cells.ideal_mixing@1"
+      ],
+      "engine_revision": "329e9e395ac117998657a21eb827192d34314107",
+      "record_revision": "ad1f96418722d25876b38b5a5f38996512d6a32c",
+      "sources": {
+        "Declared per-count capacity": "src/cells/models/assembly_lineages_v2/spec.py",
+        "Fresh replacement composition": "src/cells/models/assembly_lineages_v2/replacement.py",
+        "Serial transfer and shared fresh-pool step": "src/cells/models/assembly_lineages_v2/transfer.py",
+        "Transfer and replacement work": "src/cells/models/assembly_lineages_v2/population.py",
+        "Discrete ideal free energy": "src/cells/models/assembly_lineages_v2/ideal_mixing.py",
+        "Clipped log-factorial access": "src/cells/models/assembly_lineages_v2/mass_action.py",
+        "Three-phase world and pool ordering": "tests/unit/test_assembly_lineages_v2_replacement.py"
+      },
+      "record_inputs": {
+        "Independent discrete ideal-bath energy": "lean/checks/vesicle_population.py"
+      },
+      "driver": "lean/checks/pool_replacement.py",
+      "record": "lean/PROGRESS.md#ol5-six-replays"
+    },
+    "ol5-replay-shared-pool": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@2"
+      ],
+      "laws": [
+        "cells.shared_pool@1",
+        "cells.phase_exchange@1",
+        "cells.membrane_permeation@1",
+        "cells.bilayer_geometry@1",
+        "cells.ideal_mixing@1"
+      ],
+      "engine_revision": "329e9e395ac117998657a21eb827192d34314107",
+      "record_revision": "ad1f96418722d25876b38b5a5f38996512d6a32c",
+      "sources": {
+        "Shared-pool output assembly": "src/cells/models/assembly_lineages_v2/population.py",
+        "Osmotic volume parameters": "src/cells/models/assembly_lineages_v2/lumen.py",
+        "Dispatch by execution mode": "src/cells/models/assembly_lineages_v2/runner.py",
+        "assembly lineage v2 fixtures": "tests/assembly_lineage_v2_fixtures.py",
+        "test assembly lineages v2 geometry": "tests/unit/test_assembly_lineages_v2_geometry.py"
+      },
+      "record_inputs": {
+        "vesicle exchange measurements": "lean/checks/data/vesicle_exchange_measurements.json"
+      },
+      "driver": "lean/checks/shared_pool.py",
+      "record": "lean/PROGRESS.md#ol5-six-replays"
+    },
+    "ol5-replay-vesicle": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@2"
+      ],
+      "laws": [
+        "cells.bilayer_geometry@1",
+        "cells.osmotic_lumen@1",
+        "cells.ideal_mixing@1",
+        "cells.phase_exchange@1",
+        "cells.membrane_permeation@1"
+      ],
+      "engine_revision": "329e9e395ac117998657a21eb827192d34314107",
+      "record_revision": "ad1f96418722d25876b38b5a5f38996512d6a32c",
+      "sources": {
+        "Repaired tension at the cap": "src/cells/models/assembly_lineages_v2/lumen.py",
+        "Tension test at each event": "src/cells/models/assembly_lineages_v2/kernel.py",
+        "Volume and tension in the run record": "src/cells/models/assembly_lineages_v2/runner.py",
+        "assembly lineage v2 fixtures": "tests/assembly_lineage_v2_fixtures.py",
+        "test assembly lineages v2 lumen": "tests/unit/test_assembly_lineages_v2_lumen.py"
+      },
+      "record_inputs": {
+        "kucerka2011 popc": "lean/checks/data/kucerka2011_popc.json",
+        "wolfisberg2025 vesicle": "lean/checks/data/wolfisberg2025_vesicle.json",
+        "shibly2016 swelling": "lean/checks/data/shibly2016_swelling.json",
+        "vesicle rupture holds": "lean/checks/data/vesicle_rupture_holds.json"
+      },
+      "driver": "lean/checks/vesicle.py",
+      "record": "lean/PROGRESS.md#ol5-six-replays"
+    },
+    "ol5-replay-vesicle-exchange": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@2"
+      ],
+      "laws": [
+        "cells.phase_exchange@1",
+        "cells.membrane_permeation@1",
+        "cells.bilayer_geometry@1",
+        "cells.ideal_mixing@1"
+      ],
+      "engine_revision": "329e9e395ac117998657a21eb827192d34314107",
+      "record_revision": "ad1f96418722d25876b38b5a5f38996512d6a32c",
+      "sources": {
+        "Directional activities and geometric factor": "src/cells/models/assembly_lineages_v2/exchange.py",
+        "Area or radius on the common footprint": "src/cells/models/assembly_lineages_v2/kernel.py",
+        "assembly lineage v2 fixtures": "tests/assembly_lineage_v2_fixtures.py",
+        "test assembly lineages v2 geometry": "tests/unit/test_assembly_lineages_v2_geometry.py"
+      },
+      "record_inputs": {
+        "vesicle exchange measurements": "lean/checks/data/vesicle_exchange_measurements.json"
+      },
+      "driver": "lean/checks/vesicle_exchange.py",
+      "record": "lean/PROGRESS.md#ol5-six-replays"
+    },
     "gard-cache-reversibility": {
       "kind": "engine",
       "models": [
@@ -2874,6 +3115,157 @@
   },
   "claims": [
     {
+      "id": "vesicle-event-energy",
+      "category": "membrane-transport",
+      "title": "The osmotic energy of a vesicle event is independent of its path",
+      "statement": "The incremental change equals the difference between the final and initial equilibrium energies for both membrane regimes and both crossing directions. A forward event followed by its exact reverse has zero net osmotic energy.",
+      "assumptions": [
+        "The lumen count, membrane footprint, bath density, molecular standard and footprint-to-volume coefficient are positive. Bath and standard remain fixed during the event. Fractional footprint powers and logarithms use exact reals.",
+        "The volume is the smaller of the osmotic volume and the membrane's spherical cap. At equality the numerical law selects the slack branch. The empty or membraneless fallback has separate numerical cases."
+      ],
+      "uses": [
+        "osmotic-vesicle-volume"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.osmotic_lumen@1"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.VesicleEvent.cap_eq_sqrt": "lean/CellsProofs/Chemistry/VesicleEvent.lean",
+          "CellsProofs.Chemistry.VesicleEvent.slack_change_eq": "lean/CellsProofs/Chemistry/VesicleEvent.lean",
+          "CellsProofs.Chemistry.VesicleEvent.taut_change_eq": "lean/CellsProofs/Chemistry/VesicleEvent.lean",
+          "CellsProofs.Chemistry.VesicleEvent.gap_eq": "lean/CellsProofs/Chemistry/VesicleEvent.lean",
+          "CellsProofs.Chemistry.VesicleEvent.gap_nonneg": "lean/CellsProofs/Chemistry/VesicleEvent.lean",
+          "CellsProofs.Chemistry.VesicleEvent.gap_at_boundary": "lean/CellsProofs/Chemistry/VesicleEvent.lean",
+          "CellsProofs.Chemistry.VesicleEvent.log_select": "lean/CellsProofs/Chemistry/VesicleEvent.lean",
+          "CellsProofs.Chemistry.VesicleEvent.change_eq": "lean/CellsProofs/Chemistry/VesicleEvent.lean",
+          "CellsProofs.Chemistry.VesicleEvent.round_trip": "lean/CellsProofs/Chemistry/VesicleEvent.lean"
+        },
+        "sources": {
+          "Mathlib log_rpow, specialized to the three-halves footprint exponent": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/SpecialFunctions/Pow/Real.lean#L469",
+          "Mathlib log_le_sub_one_of_pos bounds the branch correction": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/SpecialFunctions/Log/Basic.lean#L288",
+          "Incremental energy in the Cells candidate": "https://github.com/Eidosoma/Cells/blob/329e9e395ac117998657a21eb827192d34314107/src/cells/models/assembly_lineages_v2/lumen.py#L193-L242"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "ol5-event-energy"
+        ],
+        "result": "On 169 directed pairs including 26 regime crossings, the maximum compiled CPU error was 1.07 × 10⁻¹⁴ kT compared with 1.70 × 10⁻¹⁰ on the earlier engine. Maximum disagreement around the eighteen four-event cycles was 5.33 × 10⁻¹⁵ kT."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Reversible osmotic work across a specified change in internal solute and membrane area, with a measured bath and starting and ending states.",
+        "unit": "kT per event",
+        "evidence": []
+      }
+    },
+    {
+      "id": "three-log-draws",
+      "category": "molecular-assembly",
+      "title": "A short sum of logarithms prices ordered reaction draws",
+      "statement": "For a feasible number of ordered draws, summing one logarithm per draw gives the logarithm of the falling factorial. The engine's three-term mask therefore equals the log-factorial difference for every admitted reaction order.",
+      "assumptions": [
+        "Counts and arities are natural numbers with 0 ≤ k ≤ 3 and k ≤ n. The exact-real sum excludes every inactive term. The numerical controls also exercise infeasible sides masked by the callers.",
+        "The isolated dilute reactant has unit concentration scale and encounter extent. The earlier catalog covers the additional membrane normalization and excess free energy."
+      ],
+      "uses": [
+        "assembly-stochastic-encounter"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.stochastic_mass_action@1",
+          "cells.phase_exchange@1"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.AssemblyKinetics.sum_log_draws": "lean/CellsProofs/Chemistry/AssemblyKinetics.lean",
+          "CellsProofs.Chemistry.AssemblyKinetics.three_log_draws": "lean/CellsProofs/Chemistry/AssemblyKinetics.lean"
+        },
+        "sources": {
+          "Mathlib descending-factorial recursion, imported": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Data/Nat/Factorial/Basic.lean#L316",
+          "Existing Cells log-draw identity": "lean/CellsProofs/Chemistry/AssemblyKinetics.lean#L33",
+          "Three-term calculation and feasible-side mask": "https://github.com/Eidosoma/Cells/blob/329e9e395ac117998657a21eb827192d34314107/src/cells/models/assembly_lineages_v2/mass_action.py#L76-L136"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "ol5-short-draws"
+        ],
+        "result": "Across 46 feasible count–arity pairs through 2²⁰ molecules, both backends and both direction kernels agreed with the log of the integer product to 3.55 × 10⁻¹⁵. All six infeasible pairs returned a masked direction. The earlier maximum log error was 1.20 × 10⁻⁹."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Counts and occupancy for a finite number of accessible reaction partners. Measured examples are recorded with the parent encounter claim.",
+        "unit": "Log of a dimensionless count product",
+        "evidence": []
+      }
+    },
+    {
+      "id": "vesicle-deflation-geometry",
+      "category": "membrane-transport",
+      "title": "An inward membrane tube reduces the lumen inside a vesicle’s outer contour",
+      "statement": "Subtracting a nonnegative volume of bath-origin liquid inside an inward tube puts the lumen volume fraction at or below the outer-contour fraction. Geometry measured on the same vesicle can bound a fixed-area osmotic comparison.",
+      "assumptions": [
+        "The initial vesicle has positive volume and no inward tube. At the endpoint the tube occupies a nonnegative volume within the outer contour. The upper bound is independent of its shape.",
+        "The numerical osmometer assumes initial osmotic balance at 66 mM, conserved internal solute and fixed area across the 72 mM challenge. The optional straight-cylinder estimate uses approximate reported dimensions."
+      ],
+      "uses": [
+        "osmotic-vesicle-volume"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.osmotic_lumen@1",
+          "cells.bilayer_geometry@1"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.Vesicle.invagination_bounds": "lean/CellsProofs/Chemistry/Vesicle.lean"
+        },
+        "sources": {
+          "Cells outer-volume bound and fixed-area equilibrium": "lean/CellsProofs/Chemistry/Vesicle.lean",
+          "Figure 2 geometry and compartment definitions": "https://doi.org/10.1039/D0SM00155D"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "bhatia-vesicle-deflation"
+        ],
+        "result": "A compiled 64-osmole world matched to the measured dimensionless loading predicts 4,125 µm³ at the specimen scale. The central outer-volume bound is 0.756 of the measured starting volume. A straight-cylinder estimate gives 0.705."
+      },
+      "biology": {
+        "status": "not_assessable",
+        "observable": "Volume and total membrane area of the same vesicle before and after an identified osmotic bath change, including the liquid inside its inward tube.",
+        "unit": "µm³ for volume and µm² for area",
+        "evidence": [
+          {
+            "dataset_id": "bhatia2020_single_vesicle_deflation@1",
+            "manifest": "lean/checks/data/bhatia2020_vesicle_deflation.json",
+            "citation": "Bhatia, Robinson and Dimova (2020), Soft Matter",
+            "doi": "10.1039/D0SM00155D",
+            "locator": "Figure 2, p. 7363. The Movie S1 caption in the publisher supplement, pp. 2–3, identifies the 66 to 72 mM transfer.",
+            "context": "The same vesicle initially enclosed about 4,500 µm³. Its final outer contour enclosed 3,400.9 ± 1,000 µm³ and contained an inward tube about 18 µm long and 4 µm across.",
+            "role": "held_out_from_fitting",
+            "evaluation": [
+              "Outer volume as an upper bound on the final lumen",
+              "Straight circular tube as a stated geometric approximation"
+            ],
+            "excluded": [
+              "The separate Figure 4 transfer and its inferred internal concentration",
+              "Independent retention of internal osmoles"
+            ],
+            "uncertainty": "The reported errors are about 25% for reconstructed area and 33% for volume. No statistical interpretation for the printed ± or independent tube-dimension errors is given.",
+            "assessment": "The central tube-corrected lumen is about 950 µm³ below the 4,125 µm³ prediction. The reported outer-volume uncertainty alone spans that difference. The internal solute inventory was inferred.",
+            "report": "lean/PROGRESS.md#bhatia-vesicle-deflation"
+          }
+        ]
+      }
+    },
+    {
       "id": "gard-cache-reversibility",
       "category": "molecular-assembly",
       "title": "GARD v2 preserves the smaller catalyst on a reverse event within the precision bound",
@@ -3666,6 +4058,7 @@
       "numerical": {
         "status": "checked",
         "comparisons": [
+          "ol5-replay-pool-replacement",
           "fresh-pool-capacity-nov21",
           "fresh-pool-capacity"
         ],
@@ -4785,6 +5178,7 @@
       "numerical": {
         "status": "checked",
         "comparisons": [
+          "ol5-replay-vesicle-exchange",
           "vesicle-exchange-rates"
         ],
         "result": "Doubling radius gave 4× area-limited insertion and 2× diffusion-limited capture. Across both transport steps, eight compiled configurations tested finite and held baths and both counting measures. All 40 blocked directions had zero rate. Across 64 active pairs the largest free-energy residual was 1.43 × 10⁻¹⁴ k_BT."
@@ -4853,6 +5247,7 @@
       "numerical": {
         "status": "checked",
         "comparisons": [
+          "ol5-replay-vesicle-exchange",
           "vesicle-exchange-rates",
           "vesicle-permeation-size"
         ],
@@ -4929,6 +5324,7 @@
       "numerical": {
         "status": "checked",
         "comparisons": [
+          "ol5-replay-shared-pool",
           "shared-pool-record-repair",
           "shared-pool-report-recheck",
           "shared-pool-inventory",
@@ -5048,6 +5444,7 @@
       "numerical": {
         "status": "checked",
         "comparisons": [
+          "ol5-replay-vesicle",
           "osmotic-vesicle-volume"
         ],
         "result": "Two compiled trajectories each crossed between 34 slack and 64 tense records. Across both runs the relative volume error stayed below 1.07 × 10⁻¹⁴, tension error below 2.24 × 10⁻¹⁷ N/m, and osmotic energy error below 2.54 × 10⁻¹⁴ k_BT against a 70-digit reference. Separate 64-osmole worlds reproduce the macroscopic reduced-volume and tension-per-radius predictions at matched density."
@@ -5141,6 +5538,7 @@
       "numerical": {
         "status": "checked",
         "comparisons": [
+          "ol5-replay-vesicle",
           "vesicle-lysis-repair",
           "vesicle-lysis-hold-recheck",
           "vesicle-lysis-threshold"
@@ -7023,7 +7421,7 @@
       },
       "numerical": {
         "status": "checked",
-        "comparisons": ["assembly-kinetics", "confined-binding"],
+        "comparisons": ["ol5-replay-assembly-kinetics", "ol5-replay-confined-binding", "assembly-kinetics", "confined-binding"],
         "result": "The reference and engine agreed on ordinary rates and zero and singular patterns across 594 compositions under both count measures. Three boundary conventions were checked on six additional states. The pool kernel reproduced the two-state occupancy formula at one, two and three partners."
       },
       "biology": {
@@ -7081,6 +7479,7 @@
       "numerical": {
         "status": "checked",
         "comparisons": [
+          "ol5-replay-assembly-kinetics",
           "transition-state-factor-repair",
           "assembly-transition-state-factor-nov20",
           "assembly-kinetics"

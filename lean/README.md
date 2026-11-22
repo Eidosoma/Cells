@@ -10,11 +10,11 @@ Direct Lean claims cover [51 of 51 laws](COVERAGE.md#registered-laws) and [31 of
 
 | Category | Registered laws with proof | Claims with proof | Numerical checks | Claims with biological evidence |
 | --- | ---: | ---: | --- | ---: |
-| [Membrane transport and osmosis](COVERAGE.md#category-membrane-transport) | 5 of 5 | 8 of 8 | 8 checked | 8 |
+| [Membrane transport and osmosis](COVERAGE.md#category-membrane-transport) | 5 of 5 | 10 of 10 | 10 checked | 9 |
 | [Ion channels and junctions](COVERAGE.md#category-channels-and-junctions) | 15 of 15 | 15 of 15 | 15 checked | 14 |
 | [Pumps and cotransport](COVERAGE.md#category-pumps-and-cotransport) | 13 of 13 | 8 of 8 | 8 checked | 8 |
 | [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 3 of 3 | 13 of 13 | 12 checked · 1 failed | 10 |
-| [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 14 of 14 | 26 of 26 | 24 checked · 2 failed | 18 |
+| [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 14 of 14 | 27 of 27 | 25 checked · 2 failed | 18 |
 | [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 1 of 1 | 26 of 26 | 26 checked | 19 |
 | [Cell physiology](COVERAGE.md#category-cell-physiology) | — | 3 of 3 | 3 checked | 3 |
 
@@ -25,6 +25,8 @@ Each category opens its detailed claim table on GitHub, including registered law
 Three claims have failing numerical checks. GARD v1 can refuse a reversible event. GARD v2 repairs that case but can report a stalled lineage at an admitted coefficient with a finite positive event rate. Its range check also records a lost subnormal and a capacity limit. The third claim concerns the sign of a rapid-binding inventory margin. The tissue host tested for that case requires positive held totals. [Current failures](COVERAGE.md#failing-numerical-checks) · [GARD v2 reproducer](PROGRESS.md#gard-v2-range) · [Wash and clamp repairs](PROGRESS.md#d272-wash-clamp-retests)
 
 ## Biological evidence
+
+An osmotic deflation study measured the same vesicle before and after a 66 to 72 mM bath change. An inward membrane tube makes the outer contour an upper bound on the final lumen. The measured volume uncertainty spans the gap between the tube-corrected estimate and the Cells prediction. [Measured geometry and model comparison](claims/vesicle-deflation-geometry.md)
 
 At the same growth rate, measured fractions of mRNA-bound ribosomes in *E. coli* ranged from 31% to 65% across three nutrient limitations. In hamster cells, tracer measurements followed residues in unfinished and released protein separately. These experiments give observables for the two polymerisation balances. A quantitative Cells comparison still needs matched conditions and pool definitions. [Machine occupancy](claims/polymerisation-machines.md) · [Residues in transit and released](claims/polymerisation-residues.md)
 
@@ -202,6 +204,12 @@ cells_python=${CELLS_PYTHON:-python}
 
 <details>
 <summary>Commands for individual comparisons</summary>
+
+Run the OL5 comparison for single-event osmotic energies, short reaction products and measured vesicle deflation. Select one calculation with `--case energy`, `--case draws` or `--case deflation`. The six existing drivers were also replayed on both frozen engines. [Energy proof](claims/vesicle-event-energy.md) · [Reaction rates](claims/three-log-draws.md) · [Replay differences](PROGRESS.md#ol5-six-replays)
+
+```bash
+"$cells_python" -B checks/vesicle_events.py
+```
 
 For mitochondrial respiration and ATP delivery, check the seven reaction columns, charge on each side and the material booked in a world with a finite matrix and intermembrane space. The results link complex I proton measurements and a bovine ATP synthase structure to the counts the model assumes. [Mitochondrial balance and measurements](PROGRESS.md#mitochondrial-cycle-accounting)
 
