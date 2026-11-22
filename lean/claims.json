@@ -22,6 +22,113 @@
     "cells.shared_pool@1": "molecular-assembly"
   },
   "comparisons": {
+    "fr38-survival-repair": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [],
+      "operators": [
+        "cells.templated_polymerisation@1"
+      ],
+      "engine_revision": "57c3cb909db5ebe9a24b90f3d78d7c6a182fd72b",
+      "record_revision": "cecbe3627a7a9a0bc37ae7a4b3d2b5f29f828c78",
+      "sources": {
+        "Public window counts and estimated discretization error": "validation/gene_regulation/cohort.py#L142-L218",
+        "Saved release counters and local row resolution": "validation/gene_regulation/cohort.py#L255-L320",
+        "R1/R2 half-lives": "validation/gene_regulation/sheet_check.py#L955-L962",
+        "R1 development world": "validation/gene_regulation/worlds.py#L519-L558",
+        "Per-fate export": "validation/gene_regulation/engine_run.py#L393-L416",
+        "Operator producing the cumulative release counters": "src/cells/operators/templated_polymerisation.py",
+        "Repaired public verdict and its two refusal reasons": "validation/gene_regulation/release_check.py#L329-L358",
+        "Four checker regression cases": "tests/unit/test_gene_regulation_compare.py#L377-L422"
+      },
+      "record_inputs": {
+        "Cohort identity and error propagation": "lean/CellsProofs/Chemistry/ArrivalWindow.lean"
+      },
+      "driver": "lean/checks/release_survival.py",
+      "record": "lean/PROGRESS.md#fr38-survival-readout"
+    },
+    "fr38-survival-original": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [],
+      "operators": [
+        "cells.templated_polymerisation@1"
+      ],
+      "engine_revision": "ce0ce9b26492e7b4b7e4170104294b7338fb9e1a",
+      "record_revision": "cecbe3627a7a9a0bc37ae7a4b3d2b5f29f828c78",
+      "sources": {
+        "Public window counts and estimated discretization error": "validation/gene_regulation/cohort.py#L142-L218",
+        "Saved release counters and local row resolution": "validation/gene_regulation/cohort.py#L255-L320",
+        "Verdict before the repair": "validation/gene_regulation/release_check.py#L329-L349",
+        "R1/R2 half-lives": "validation/gene_regulation/sheet_check.py#L955-L962",
+        "R1 development world": "validation/gene_regulation/worlds.py#L519-L558",
+        "Per-fate export": "validation/gene_regulation/engine_run.py#L393-L416",
+        "Operator producing the cumulative release counters": "src/cells/operators/templated_polymerisation.py"
+      },
+      "record_inputs": {
+        "Cohort identity and error propagation": "lean/CellsProofs/Chemistry/ArrivalWindow.lean"
+      },
+      "driver": "lean/checks/release_survival.py",
+      "record": "lean/PROGRESS.md#fr38-survival-readout"
+    },
+    "mt1b-outer-admission": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [
+        "cells.nadh_ubiquinone_proton_cycle@1",
+        "cells.ubiquinol_cytochrome_c_proton_cycle@1",
+        "cells.cytochrome_c_oxygen_proton_cycle@1",
+        "cells.proton_coupled_atp_synthesis_cycle@1",
+        "cells.electrogenic_nucleotide_exchange@1",
+        "cells.phosphate_proton_symport@1",
+        "cells.potassium_proton_exchange@1",
+        "cells.logmean_electrodiffusion@1"
+      ],
+      "engine_revision": "57c3cb909db5ebe9a24b90f3d78d7c6a182fd72b",
+      "record_revision": "cecbe3627a7a9a0bc37ae7a4b3d2b5f29f828c78",
+      "sources": {
+        "Seven-cycle host and its public start": "tests/unit/test_mito_cycle_laws.py#L85-L144",
+        "Compartment topology and held bath": "validation/compartment_ph_engine/definitions.py#L118-L175",
+        "Public parser": "src/cells/definitions/specs.py",
+        "Time stepping": "src/cells/execution/runner.py",
+        "Floating field and charge allowance": "src/cells/numerics/surface_field.py#L34-L65",
+        "Node charges and compiled face transfer ledger": "src/cells/models/surface_pump_v3.py",
+        "Form valences and transport admission": "src/cells/registry/species_registry.py#L1493-L1550",
+        "Admission for rows with several forms": "src/cells/registry/species_registry.py#L1620-L1652",
+        "Closure rows at a face": "src/cells/registry/species_registry.py#L1809-L1852",
+        "Definition of capacitor topology and start-state charge": "docs/MITOCHONDRIA_DESIGN.md#g5-the-outer-membranes-potential"
+      },
+      "record_inputs": {
+        "Form flux translated to stored row charge": "lean/CellsProofs/Chemistry/MitochondrialCharge.lean",
+        "Seven-cycle fixture": "lean/checks/mitochondrial_cycles.py"
+      },
+      "driver": "lean/checks/mitochondrial_outer_face.py",
+      "record": "lean/PROGRESS.md#mt1b-outer-admission"
+    },
+    "fr31-osmotic-measurements": {
+      "kind": "reference",
+      "models": [],
+      "laws": [],
+      "record_revision": "cecbe3627a7a9a0bc37ae7a4b3d2b5f29f828c78",
+      "sources": {
+        "Area scaling and survival at a fixed tension": "docs/VESICLE_PORES_LAWS.md#5-the-area-and-the-clock",
+        "Published verdict of the separate registered blind test": "docs/DECISIONS.md#d298-the-vesicle-rupture-blind-test-passes-set-1-five-of-five-set-2-five-of-five-one-sided-weak"
+      },
+      "record_inputs": {
+        "Neutral DOPC plateau and linked ruptures": "lean/checks/data/shibly2016_swelling.json",
+        "Charged vesicle rupture and independent swelling groups": "lean/checks/data/saha2020_osmotic_rupture.json"
+      },
+      "driver": "lean/checks/vesicle_area.py",
+      "record": "lean/PROGRESS.md#fr31-osmotic-rupture"
+    },
     "fr38-lossless-fate-repair": {
       "kind": "engine",
       "models": [
@@ -3578,20 +3685,23 @@
           "CellsProofs.Chemistry.MitochondrialCharge.inventory_change": "lean/CellsProofs/Chemistry/MitochondrialCharge.lean",
           "CellsProofs.Chemistry.MitochondrialCharge.conserved_iff": "lean/CellsProofs/Chemistry/MitochondrialCharge.lean",
           "CellsProofs.Chemistry.MitochondrialCharge.zero_current_iff": "lean/CellsProofs/Chemistry/MitochondrialCharge.lean",
-          "CellsProofs.Chemistry.MitochondrialCharge.anchor_ne": "lean/CellsProofs/Chemistry/MitochondrialCharge.lean"
+          "CellsProofs.Chemistry.MitochondrialCharge.anchor_ne": "lean/CellsProofs/Chemistry/MitochondrialCharge.lean",
+          "CellsProofs.Chemistry.MitochondrialCharge.form_flux_charge": "lean/CellsProofs/Chemistry/MitochondrialCharge.lean"
         },
         "sources": {
           "Cells inner-cycle charge columns specialized to arbitrary signed extents": "lean/CellsProofs/Chemistry/MitochondrialCycles.lean",
           "Mathlib finite sum distribution, imported for the weighted row balance": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Group/Finset/Basic.lean#L267-L269",
-          "Cells G5 and the seventh inventory": "https://github.com/Eidosoma/Cells/blob/e924f450ad74a878eda6727ac255527ec5d74ff7/docs/MITOCHONDRIA_DESIGN.md#g5-the-outer-membranes-potential"
+          "Cells G5 and the seventh inventory": "https://github.com/Eidosoma/Cells/blob/e924f450ad74a878eda6727ac255527ec5d74ff7/docs/MITOCHONDRIA_DESIGN.md#g5-the-outer-membranes-potential",
+          "Mathlib exchange of finite sums, imported for form and ligand fluxes": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Group/Finset/Sigma.lean#L112-L121"
         }
       },
       "numerical": {
         "status": "open",
         "comparisons": [
+          "mt1b-outer-admission",
           "mt1b-charge-components"
         ],
-        "result": "Seven compiled inner cycles cancelled to within 6.31 × 10⁻²⁴ fmol of charge equivalents. The generic passive face balanced a moving salt pair and independently matched −8.19039 mV for an unequal gradient. Forcing zero voltage in the latter left a current equivalent to 0.001 fmol of charge per second. An integrated MT-1b start-state and per-form outer-boundary replay is pending."
+        "result": "In two compiled seven-cycle worlds with a potassium-only outer face, combined charge changed by at most 1.27 × 10⁻¹⁸ fmol of charge equivalents. Initial IMS-minus-bath voltage was 0 mV at matched K and −85.61293 mV at a 140:5 gradient. The public parser admits K and AMP individually and refuses five other declared rows. Full per-form outer transport and the MT-1b anchor/start comparison remain open. The separate generic two-ion face and seven-cycle tests are linked below."
       },
       "biology": {
         "status": "open",
@@ -3637,13 +3747,14 @@
           "Mathlib exponential convexity and strict convexity, imported for survival": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/Convex/SpecificFunctions/Basic.lean#L37-L60",
           "Mathlib finite Jensen inequality and its strict form, specialized to initial cohort weights": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/Convex/Jensen.lean#L63-L100",
           "D293 records a separate area allowance across preparations for the registered blind test": "https://github.com/Eidosoma/Cells/blob/562cc9b4ec5225089feee26cab3ad2ef42405e02/docs/DECISIONS.md#d293-the-rupture-blind-tests-stage-1-rulings-made-before-any-prediction-or-held-out-value",
-        "Cells tagged FR-31 law sheet, area scaling and survival": "https://github.com/Eidosoma/Cells/blob/57cf9a4ed0b68454232a3c531c14e1b725853955/docs/VESICLE_PORES_LAWS.md#5-the-area-and-the-clock"
+          "Cells tagged FR-31 law sheet, area scaling and survival": "https://github.com/Eidosoma/Cells/blob/57cf9a4ed0b68454232a3c531c14e1b725853955/docs/VESICLE_PORES_LAWS.md#5-the-area-and-the-clock"
         }
       },
       "numerical": {
         "status": "open",
         "comparisons": [
-          "fr31-area-reference"
+          "fr31-area-reference",
+          "fr31-osmotic-measurements"
         ],
         "result": "Four synthetic calculations passed. With mean area 2 and range 1 to 3, the lower and upper bounds are 1/4 and 5/16 at the selected exposure. Two cohorts give 5/16 and 9/32. Equal areas and zero exposure give equality. An FR-31 engine comparison is pending."
       },
@@ -3651,6 +3762,76 @@
         "status": "open",
         "observable": "Initial vesicle areas from the same at-risk population, held tension, and time to first rupture or censoring per vesicle. Linked observations would quantify the mean-area approximation.",
         "unit": "Surviving fraction at a stated exposure",
+        "evidence": [
+          {
+            "dataset_id": "shibly2016_dopc_rupture_traces@1",
+            "manifest": "lean/checks/data/shibly2016_swelling.json",
+            "citation": "Shibly et al. (2016), Biophysical Journal",
+            "doi": "10.1016/j.bpj.2016.09.043",
+            "locator": "Figure 4A, with Figure 4B as the pre-equilibrium comparison",
+            "context": "Neutral DOPC vesicles at 25 ± 1 °C, held at 4 mN/m aspiration after a 3 mM osmotic difference.",
+            "role": "descriptive",
+            "uncertainty": "The paper gives 0.0086 ± 0.0002 for fractional plateau radius change (17 vesicles), without identifying the statistic here. The mean area modulus is 218 ± 26 mN/m (SD).",
+            "assessment": "Relative radius and rupture are paired on displayed traces. Individual absolute areas and complete event or censor times are still missing.",
+            "report": "lean/PROGRESS.md#fr31-osmotic-rupture"
+          },
+          {
+            "dataset_id": "saha2020_charged_vesicle_rupture@1",
+            "manifest": "lean/checks/data/saha2020_osmotic_rupture.json",
+            "citation": "Saha, Shibly and Yamazaki (2020), Journal of Physical Chemistry B",
+            "doi": "10.1021/acs.jpcb.0c03681",
+            "locator": "Figure 1B and Table 1 for rupture, Figure 2 and Table 3 for swelling",
+            "context": "DOPG/DOPC 40:60 vesicles in 150 mM NaCl at 25 ± 1 °C. The rupture group used 12 mOsm/L and the closest swelling group used 13 ± 5 mOsm/L.",
+            "role": "descriptive",
+            "uncertainty": "Rates are means and SDs of 4–5 repeats, each with 20–25 vesicles. Geometry-based osmotic tension at 13 mOsm/L was 3.0 ± 0.1 mN/m. The ±5 mOsm/L is estimated osmolarity error.",
+            "assessment": "Rupture rate rose 6.52-fold over the applied 3.5–4.5 mN/m range. The independent swelling estimate comes from a different cohort. Rate-matched tension uses the rupture data themselves.",
+            "report": "lean/PROGRESS.md#fr31-osmotic-rupture"
+          }
+        ],
+        "finding": "Shibly et al. link relative swelling and rupture in selected neutral-DOPC traces. Saha et al. compare charged-vesicle rupture and swelling in separate cohorts. Neither supplies absolute starting areas with outcomes across the full at-risk cohort."
+      }
+    },
+    {
+      "id": "release-survival-readout",
+      "category": "molecular-assembly",
+      "title": "A finite error bound for survival after an RNA release window",
+      "statement": "For a positive measured count at window close, a proposed survival fraction can be checked against the two counts. The change in the later count contributes its absolute error and the uncertainty in the close count contributes that error times the proposed fraction.",
+      "assumptions": [
+        "The same cohort is followed through the chase, with common nonnegative survival factors and no new members. Their product is the expected ratio.",
+        "Both count uncertainties bound absolute errors in the same amount unit. The engine estimates these from a coarser grid. A missing estimate leaves the numerical comparison unresolved, and an empty cohort has no survival ratio."
+      ],
+      "uses": [
+        "release-window-survival"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.templated_polymerisation@1"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.ArrivalWindow.count_residual_le": "lean/CellsProofs/Chemistry/ArrivalWindow.lean",
+          "CellsProofs.Chemistry.ArrivalWindow.ratio_residual_iff": "lean/CellsProofs/Chemistry/ArrivalWindow.lean",
+          "CellsProofs.Chemistry.ArrivalWindow.chase_ratio_error": "lean/CellsProofs/Chemistry/ArrivalWindow.lean"
+        },
+        "sources": {
+          "Mathlib triangle inequality specialized to the two count errors": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/Order/Group/Abs.lean#L73-L78",
+          "Mathlib absolute value of a quotient": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/Order/Field/Basic.lean#L648-L652",
+          "Mathlib nonnegative product of chase factors": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/Order/BigOperators/Ring/Finset.lean#L30-L34",
+          "Cells count and ratio definitions": "https://github.com/Eidosoma/Cells/blob/57c3cb909db5ebe9a24b90f3d78d7c6a182fd72b/validation/gene_regulation/cohort.py#L200-L216"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "fr38-survival-repair",
+          "fr38-survival-original"
+        ],
+        "result": "The repaired checker gave the expected four control verdicts. Three samples yielded insufficient resolution, a resolved ratio of 1 failed against ¼, an empty cohort was identified, and the turnover control passed. All eight R1/R2 ratios reread from compiled exports passed with finite estimated error. The previous checker gave a false pass and raised on the empty cohort."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "The same release-marked molecules counted at the end of the window and again after the chase, with uncertainties on both counts.",
+        "unit": "Surviving fraction (0–1)",
         "evidence": []
       }
     },

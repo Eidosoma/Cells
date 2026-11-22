@@ -14,7 +14,7 @@ Direct Lean claims cover [51 of 51 laws](COVERAGE.md#registered-laws) and [31 of
 | [Ion channels and junctions](COVERAGE.md#category-channels-and-junctions) | 15 of 15 | 15 of 15 | 15 checked | 14 |
 | [Pumps and cotransport](COVERAGE.md#category-pumps-and-cotransport) | 13 of 13 | 9 of 9 | 8 checked · 1 open | 9 |
 | [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 3 of 3 | 15 of 15 | 12 checked · 1 failed · 2 open | 11 |
-| [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 14 of 14 | 32 of 32 | 30 checked · 1 failed · 1 open | 19 |
+| [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 14 of 14 | 33 of 33 | 31 checked · 1 failed · 1 open | 20 |
 | [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 1 of 1 | 26 of 26 | 26 checked | 19 |
 | [Cell physiology](COVERAGE.md#category-cell-physiology) | — | 3 of 3 | 3 checked | 3 |
 
@@ -26,11 +26,13 @@ Two claims have failing checks. GARD v1 can refuse a reversible event, and the r
 
 FR-42 has an exact design result for neutral arrival-time labels. Sharing the physical loss preserves the pooled inventory. With quadratic loss, the surviving new cohort is ¼ at time one, while subtraction of a separate blank gives 1/12. The compiled comparison will become possible when Cells implements the share-based labels. [Cohort proof and remaining checks](claims/fr42-cohort-shares.md)
 
-FR-38’s development release operator now directs material from an existing template hold to the class active at detachment. The compiled fixture exercised two separate windows with the same label, for both RNA fates. Lean proves that a reused label carries its older survivors and that the chase denominator is the cohort alive at window close. Bellecourt et al. measured released and template-associated RNA separately. Measuring survival of that same released cohort remains open. [Release windows, compiled comparison and biological evidence](claims/release-window-survival.md)
+FR-38’s development release operator now directs material from an existing template hold to the class active at detachment. The compiled fixture exercised two separate windows with the same label, for both RNA fates. Lean proves that a reused label carries its older survivors and that the chase denominator is the cohort alive at window close. Bellecourt et al. measured released and template-associated RNA separately. The public survival checker now identifies empty and undersampled cohorts. All eight saved R1/R2 ratios had finite estimated error and passed. Biological counts of the same released molecules at both times remain open. [Release windows](claims/release-window-survival.md) · [Survival error bound and repaired checker](claims/release-survival-readout.md)
 
 ## Biological evidence
 
-RNA release has a checked energy balance. Over 60 mixed half-steps with synthesis and degradation active, Cells booked the free-energy change within 3.83 × 10⁻¹⁹ pJ. Available release experiments measure the amount of RNA that detaches. In mitochondria, the combined matrix and intermembrane-space charge has a proof and component checks. The full MT-1b replay and a direct measurement of its isolated preparation’s outer voltage remain open. [RNA heat and experimental scope](claims/terminal-release-heat.md) · [Mitochondrial charge and cellular pH evidence](claims/mitochondrial-combined-charge.md)
+Neutral DOPC traces follow swelling and rupture on the same vesicles. The intact cohort’s absolute sizes and event times would allow a direct area–survival comparison. A charged-vesicle study separately measured swelling-derived tension and rupture rates. The registered D298 score is linked with its one-sided osmotic criterion. [Vesicle measurements, assumptions and verdict](PROGRESS.md#fr31-osmotic-rupture)
+
+RNA release has a checked energy balance. Over 60 mixed half-steps with synthesis and degradation active, Cells booked the free-energy change within 3.83 × 10⁻¹⁹ pJ. Available release experiments measure the amount of RNA that detaches. Two seven-cycle mitochondrial worlds retained combined matrix and intermembrane-space charge with a potassium-only outer face. The outer face still refuses H, Mg, ADP, ATP and Pi in this fixture. The full MT-1b replay and a direct measurement of its isolated preparation’s outer voltage remain open. [RNA heat and experimental scope](claims/terminal-release-heat.md) · [Mitochondrial charge and cellular pH evidence](claims/mitochondrial-combined-charge.md)
 
 During mechanical division of a liposome, one daughter can rupture while its sibling survives. Cells now reconciles the returned material in both runners. The experiment measured sibling fluorescence and external dye spreading in separate analyses. A same-event measurement of where the ruptured daughter’s contents went remains open. [Rupture at birth](claims/vesicle-birth-returns.md) · [Sibling fates, Fig. 1d](https://ceesdekkerlab.nl/wp-content/uploads/2019/08/Mechanical-division-of-cell-sized-liposomes.pdf#page=2)
 
@@ -508,6 +510,7 @@ For FR-31, run the four synthetic cohort-size checks. For FR-42, run the point-r
 
 ```bash
 "$cells_python" -B checks/vesicle_area.py
+"$cells_python" -B checks/vesicle_area.py --osmotic-evidence
 "$cells_python" -B checks/arrival_windows.py --reference-only
 "$cells_python" -B checks/arrival_windows.py
 ```
@@ -532,6 +535,14 @@ To reconstruct release heat with synthesis and degradation active, or to replay 
 ```bash
 "$cells_python" -B checks/release_energy.py
 "$cells_python" -B checks/mitochondrial_charge.py
+"$cells_python" -B checks/mitochondrial_outer_face.py
+```
+
+The RNA survival command runs four controls through the public checker. The optional directories contain the saved R1 and R2 exports, each with a `test-instance/` subdirectory. [Comparison and original failure](PROGRESS.md#fr38-survival-readout)
+
+```bash
+"$cells_python" -B checks/release_survival.py
+"$cells_python" -B checks/release_survival.py --records "$r1_dir" "$r2_dir"
 ```
 
 For ideal and regular assembly mixing, one command checks the 592 registered probe states under both count measures and rebooks four compiled trajectories. It compares the activity curves with Shaw’s 25 DOPC measurements and Parker’s independent crystal-onset endpoint. [Driver](checks/assembly_mixing.py) · [Fit, assumptions and results](PROGRESS.md#19-november-2026--ideal-and-regular-assembly-mixing)

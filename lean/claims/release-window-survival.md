@@ -14,15 +14,15 @@ Half-open arrival windows assign releases at a shared boundary exactly once. In 
 
 **Proved**
 
-- [CellsProofs.Chemistry.ArrivalWindow.at_start](../CellsProofs/Chemistry/ArrivalWindow.lean#L16)
-- [CellsProofs.Chemistry.ArrivalWindow.at_end](../CellsProofs/Chemistry/ArrivalWindow.lean#L17)
-- [CellsProofs.Chemistry.ArrivalWindow.adjacent](../CellsProofs/Chemistry/ArrivalWindow.lean#L20)
-- [CellsProofs.Chemistry.ArrivalWindow.add_histories](../CellsProofs/Chemistry/ArrivalWindow.lean#L32)
-- [CellsProofs.Chemistry.ArrivalWindow.reuse](../CellsProofs/Chemistry/ArrivalWindow.lean#L39)
-- [CellsProofs.Chemistry.ArrivalWindow.chase_only](../CellsProofs/Chemistry/ArrivalWindow.lean#L44)
-- [CellsProofs.Chemistry.ArrivalWindow.chase_fraction](../CellsProofs/Chemistry/ArrivalWindow.lean#L54)
-- [CellsProofs.Chemistry.ArrivalWindow.empty_fraction](../CellsProofs/Chemistry/ArrivalWindow.lean#L59)
-- [CellsProofs.Chemistry.ArrivalWindow.release_example](../CellsProofs/Chemistry/ArrivalWindow.lean#L63)
+- [CellsProofs.Chemistry.ArrivalWindow.at_start](../CellsProofs/Chemistry/ArrivalWindow.lean#L18)
+- [CellsProofs.Chemistry.ArrivalWindow.at_end](../CellsProofs/Chemistry/ArrivalWindow.lean#L19)
+- [CellsProofs.Chemistry.ArrivalWindow.adjacent](../CellsProofs/Chemistry/ArrivalWindow.lean#L22)
+- [CellsProofs.Chemistry.ArrivalWindow.add_histories](../CellsProofs/Chemistry/ArrivalWindow.lean#L34)
+- [CellsProofs.Chemistry.ArrivalWindow.reuse](../CellsProofs/Chemistry/ArrivalWindow.lean#L41)
+- [CellsProofs.Chemistry.ArrivalWindow.chase_only](../CellsProofs/Chemistry/ArrivalWindow.lean#L46)
+- [CellsProofs.Chemistry.ArrivalWindow.chase_fraction](../CellsProofs/Chemistry/ArrivalWindow.lean#L56)
+- [CellsProofs.Chemistry.ArrivalWindow.empty_fraction](../CellsProofs/Chemistry/ArrivalWindow.lean#L61)
+- [CellsProofs.Chemistry.ArrivalWindow.release_example](../CellsProofs/Chemistry/ArrivalWindow.lean#L65)
 
 Proof sources [Mathlib product over the successor range, imported for survival across a chase](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Group/Finset/Basic.lean#L503) · [FR-42 boundary and reuse requirements](https://github.com/Eidosoma/Cells/blob/57cf9a4ed0b68454232a3c531c14e1b725853955/docs/FEATURE_REQUESTS.md#fr-42--neutral-arrival-time-labels-that-leave-the-dynamics-unchanged) · [FR-38 clarification of release, survivors and the chase denominator](https://github.com/Eidosoma/Cells/blob/57cf9a4ed0b68454232a3c531c14e1b725853955/docs/FEATURE_REQUESTS.md#fr-38--rna-release-from-its-template-into-two-pools-with-different-lifetimes)
 
