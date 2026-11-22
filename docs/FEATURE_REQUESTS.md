@@ -1725,6 +1725,21 @@ questions (c) and (e).
   on FR-42's shares, (cell, generation, chain), so RNA that leaves the cell keeps it. The replacement
   booking is in templated_polymerisation@1 and the replacement operator, after FR-42 stage 1.
 
+**The machine options are declared choices, not validated biology (the Lean lane's evidence, 16:09 UTC).**
+- In Harden et al. 2020 (PMC6978322, Figs. 1 and 3), purified E. coli polymerase stayed on the DNA after
+  the RNA left in 87 of 100 selected traces. Separate recordings showed that a retained polymerase could
+  make another RNA.
+- The study leaves open when the polymerase becomes available to other templates. So neither of Cells'
+  options, returned at completion or held until release, is quantitatively validated by it.
+- Retention with reinitiation on the same template is a third behaviour that Cells does not model. It
+  would be a future option, built only on a requester's need.
+
+**An export defect, found by the Lean lane (being fixed).** In a 10 s R1 run with no loss route declared
+for a fate, the exporter omitted that fate's int_D, so the cohort reader refused its survivors. The
+exporter's zero-loss rule covered chain products but not release-fate rows. The fix extends it to
+eligible local release-fate rows, class rows included, and the reader keeps requiring an explicit loss
+series. The physical balances were unaffected.
+
 ## FR-39 — A vesicle that survives transient pores
 
 - **The request (the Lean lane's evidence, relayed by the user, 22 November 2026; D286).** One study imaged the

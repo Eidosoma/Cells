@@ -9283,3 +9283,21 @@ value:
   is. A set-2 failure may come from a size difference between preparations rather than from the law.
 - **Set 1 is unaffected,** since its area cancels.
 
+## D296: FR-42's label state lives in the label owner (option b); FR-38's replacement accounting in the operator
+
+2026-11-22, about 16:09 UTC. The user: "lets go as you suggest regarding the label".
+- **Label state lives in the label owner** (`neutral_arrival_labels@1`), through a contract addition:
+  - reporters declare the pools they own, such as the release hold;
+  - the owner holds those pools' label shares;
+  - moves carry a pools part;
+  - arrivals can be keyed by source, so that a chain's products join its producer label (cell, generation,
+    chain).
+
+  So every unlabelled program stays unchanged (D289). The kinds owner designs it and prices it beside
+  stage 2. If it proves too costly, the fallback is operator-held shares as a D148 case 2, which goes back
+  to the user.
+- **FR-38's replacement accounting** (per-producer removal counters, per-generation counter starts, the
+  operator's EVENT part) is the gene unit's own physical bookkeeping, not label state. It may add
+  zero-size fields when no replacement is declared, as a D148 case 2 like FR-38's release fields. The proof
+  is the programs check and optin_check before and after, with every physical field bitwise.
+
