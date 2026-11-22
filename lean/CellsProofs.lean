@@ -10,6 +10,7 @@ import CellsProofs.Chemistry.Enzyme
 import CellsProofs.Chemistry.GardCache
 import CellsProofs.Chemistry.GardRange
 import CellsProofs.Chemistry.ArrivalCohort
+import CellsProofs.Chemistry.ArrivalWindow
 import CellsProofs.Chemistry.GardCatalysis
 import CellsProofs.Chemistry.LineageFission
 import CellsProofs.Chemistry.PoolWithdrawal
@@ -27,6 +28,7 @@ import CellsProofs.Chemistry.SingleSiteBinding
 import CellsProofs.Chemistry.SiteOccupancy
 import CellsProofs.Chemistry.SpeciesTurnover
 import CellsProofs.Chemistry.Vesicle
+import CellsProofs.Chemistry.VesicleArea
 import CellsProofs.Chemistry.VesicleEvent
 import CellsProofs.Chemistry.VesicleExchange
 import CellsProofs.Chemistry.VesiclePopulation

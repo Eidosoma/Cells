@@ -1,5 +1,31 @@
 # Cells proof comparisons
 
+<a id="fr31-area-bounds"></a>
+
+## 22 November 2026 · FR-31 survival across vesicle sizes
+
+At a common exposure `q` (per-area rupture rate integrated over the hold), a vesicle of fixed area `A` survives with probability `exp(−qA)`. For the initial population, let `m` be the weighted mean area. Lean proves the lower bound `exp(−qm)` by Mathlib’s finite Jensen inequality. At positive exposure the inequality is strict when two positive-weight areas differ. If each area lies between `L` and `U` with `L < U`, the upper bound is
+
+`((U − m) exp(−qL) + (m − L) exp(−qU)) / (U − L)`.
+
+A population at the two endpoints with those weights attains the upper bound. When the range has zero width, the single-area survival is exact. For spherical vesicles, the mean area is 4π times the mean of squared radii. Applying the bound to an experiment requires the initial cohort’s mean area and actual area limits. The bounds concern survival at a common exposure. Comparing fitted rupture rates or estimating an experimental discrepancy would require further data. [Tagged laws sheet, §5](https://github.com/Eidosoma/Cells/blob/c79e8ca4/docs/VESICLE_PORES_LAWS.md#5-the-area-and-the-clock) · [Lean proof](CellsProofs/Chemistry/VesicleArea.lean)
+
+Four synthetic cases used a 60-digit exponential calculation against exact fractions. With equal counts at scaled areas 1 and 3 and exposure ln 2, survival is 5/16 against 1/4 from the mean area, and reaches the upper bound. Counts 1, 2, 1 at areas 1, 2, 3 give 9/32 between the same bounds. Equal areas and a zero-exposure control give equality. The experimental series and scoring rule remain those in D287. [Synthetic inputs and checks](checks/vesicle_area.py) · [Area and lifetime data search](claims/incoming/vesicle-osmosis-evidence.md#independent-fixed-tension-series)
+
+<a id="fr42-release-windows"></a>
+
+## 22 November 2026 · Release windows, chase survival and reuse of a label
+
+For a timestamped release, the left edge of a window counts and the right edge belongs to the next window. Each physical population assigns the same interval survival factor to its older material and to releases at the interval’s start. Lean proves that the contents of a reused label are the sum of the surviving histories. During a chase the original cohort is multiplied by the successive survival factors. Its denominator is the amount alive at window close, and a zero denominator gives an undefined fraction. [Lean proof](CellsProofs/Chemistry/ArrivalWindow.lean) · [Requester’s release and survival definitions](https://github.com/Eidosoma/Cells/blob/57cf9a4e/docs/FEATURE_REQUESTS.md#fr-38--rna-release-from-its-template-into-two-pools-with-different-lifetimes)
+
+In the point-release example, 4 units finish synthesis in the first window and 10 detach in it. Of those 10, 8 survive to close and 6 to the chase sample, giving 6/8. At the end of the second use of the label, 3 old and 1 new unit remain. A separate host comparison has continuous production and uniform loss. Its interval totals give 5 surviving at close and 2.5 one interval later, with 6.25 across the reused label at the last sample. With the same total production, moving all arrivals to the interval’s start gives about 3.466 at close, while moving them arbitrarily close to the end approaches 6.931. The host calculation explicitly spreads production within each saved interval. [Reference calculations and compiled replay](checks/arrival_windows.py) · [Cells host counter reconstruction](https://github.com/Eidosoma/Cells/blob/57cf9a4e/validation/gene_regulation/cohort.py#L123)
+
+The five-step compiled `resolved_pump_composite@1` fixture runs `cells.templated_polymerisation@1` in the `resolved_pump_tissue@3` host. At step starts 0, 2, 4, 6 and 8 s, the selected FR-38 release classes were 1, 2, 1, 2 and 1. Every newly detached molecule entered the selected class in both fates. The initial template hold supplied the releases and new chain completions stayed at zero. The host read the exported release counters. First-window survival from 4 to 6 s was 0.9998075 for the durable fate and 0.9992301 for the short-lived fate. In both, the two reconstructed surviving amounts summed to one integration across the gap within 2 × 10⁻¹⁴ relative tolerance. These are development class rows. FR-42’s physical and energy neutrality still needs a comparison against the share-based engine. Producer identity across replacement and restart is also pending. [Compiled operator](https://github.com/Eidosoma/Cells/blob/57cf9a4e/src/cells/operators/templated_polymerisation.py#L1209) · [FR-42 design and acceptance](https://github.com/Eidosoma/Cells/blob/57cf9a4e/docs/NEUTRAL_LABELS_DESIGN.md#6-the-requesters-acceptance-checks-and-how-each-would-be-built)
+
+Bellecourt et al. counted released terminator-length RNA separately from RNA still associated with the template. Their reported wild-type release plateau in reducing conditions was 94 ± 2%. The denominator was all terminator-length RNA at sampling. This supplies an observable for detachment. It gives neither paired single-molecule completion and release times nor the fraction of the released cohort alive later. [Primary study, Figure 5A](https://pmc.ncbi.nlm.nih.gov/articles/PMC6402830/#F5) · [Measurement and denominator](checks/data/bellecourt2019_rna_release.json)
+
+The evidence run `lean-area-windows-20261122` records `area.json` and `windows.json` from the frozen source. Both drivers write their results as JSON.
+
 <a id="gard-v2-range-repair"></a>
 
 ## 22 November 2026 · GARD v2 range repair
