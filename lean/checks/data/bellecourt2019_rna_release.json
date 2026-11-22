@@ -1,0 +1,20 @@
+{
+  "study": "Bellecourt et al. (2019), Journal of Molecular Biology 431, 696–713",
+  "doi": "10.1016/j.jmb.2019.01.003",
+  "source": "https://pmc.ncbi.nlm.nih.gov/articles/PMC6402830/#F5",
+  "locator": "Figure 5A and accompanying Results, with the time course in Figure S5",
+  "preparation": "In vitro bacterial transcription at the hisL terminator. RNA was labelled before the chase.",
+  "observable": "Released terminator-length RNA as a fraction of all terminator-length RNA at sampling. A separate signal measured departure of polymerase.",
+  "wild_type_reducing": {
+    "unit": "percent RNA released",
+    "value": 94,
+    "uncertainty": 2,
+    "uncertainty_type": "reported standard error",
+    "plateau_sampling_seconds": [
+      120,
+      240,
+      480
+    ]
+  },
+  "role": "Descriptive evidence that transcript release can be recorded separately from RNA synthesis. Individual detachment times and later survival of the same released molecules were not measured."
+}

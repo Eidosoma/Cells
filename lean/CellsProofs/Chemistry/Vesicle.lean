@@ -79,10 +79,16 @@ theorem sphere_area {a : ℝ} (ha : 0 ≤ a) :
 
 def volume (n c cap : ℝ) := min (n / c) cap
 
+/-- Bath fluid in an invagination occupies part of the volume inside the outer contour. -/
+theorem invagination_bounds {outer bathInside initial : ℝ} (hi : 0 < initial)
+    (hn : 0 ≤ bathInside) (hfits : bathInside ≤ outer) :
+    0 ≤ (outer - bathInside) / initial ∧ (outer - bathInside) / initial ≤ outer / initial :=
+  ⟨div_nonneg (sub_nonneg.mpr hfits) hi.le, div_le_div_of_nonneg_right (sub_le_self _ hn) hi.le⟩
+
 /-- The part of the fixed-count free energy that depends on volume. -/
 def energy (n c standard v : ℝ) := -n * Real.log (standard * v) + c * v
 
-private theorem energy_gap (n c : ℝ) {standard v u : ℝ}
+theorem energy_gap (n c : ℝ) {standard v u : ℝ}
     (hs : 0 < standard) (hv : 0 < v) (hu : 0 < u) :
     energy n c standard v - energy n c standard u =
       n * (v / u - 1 - Real.log (v / u)) + (c - n / u) * (v - u) := by
