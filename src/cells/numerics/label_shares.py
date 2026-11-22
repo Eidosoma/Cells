@@ -54,7 +54,7 @@ from cells.numerics.species_sums import entity_sum
 # of it is below double precision's resolution of u.
 ITERATIONS = 96
 SERIES_BELOW = 1e-8  # phi(u) = 1 - u/2 + u^2/6 below it (relative error below 1e-24).
-SHARE_ULPS = 64  # The domain's rounding allowance on a row's sum of shares, in ulps of 1.
+SHARE_ULPS = 128  # The domain's rounding allowance on a row's sum of shares (up to 64 labels).
 EPS = math.ulp(1.0)
 
 
@@ -100,16 +100,54 @@ def advance(shares, n0, n1, into, present, *, xp=jnp):
 
     shares [m, label, node] at its start; n0 and n1 [m, node] the rows' amounts at its start and
     end (the engine's); into [m, label, node] the one-way gains by label; present [m, label] the
-    declared labels. Where nothing arrived the start's shares are kept bit for bit."""
-    gained = xp.where(present[:, :, None], into, 0.0)
+    declared labels, or [m, label, node] per node (sites of several species). Where nothing
+    arrived the start's shares are kept bit for bit."""
+    declared = present if present.ndim == 3 else present[:, :, None]
+    gained = xp.where(declared, into, 0.0)
     arrived = entity_sum(gained, axis=1, xp=xp)
     u = survival_exponent(n0, n1, arrived, xp=xp)
     x = (n0 * xp.exp(-u))[:, None, :] * shares + gained * phi(u, xp=xp)[:, None, :]
-    x = xp.where(present[:, :, None], x, 0.0)
+    x = xp.where(declared, x, 0.0)
     total = entity_sum(x, axis=1, xp=xp)
     moved = (arrived > 0) & (total > 0)
     out = x / xp.where(moved, total, 1.0)[:, None, :]
     return xp.where(moved[:, None, :], out, shares)
+
+
+def _scatter_nodes(base, index, values, *, xp):
+    """base [..., node] with values [..., entity] added at the nodes `index` [entity] names."""
+    if xp is jnp:
+        return base.at[..., index].add(values)
+    out = xp.array(base, copy=True)
+    xp.add.at(xp.moveaxis(out, -1, 0), xp.asarray(index), xp.moveaxis(values, -1, 0))
+    return out
+
+
+def carried(shares, transfers, *, xp=jnp):
+    """(into [m, label, node], out [m, node]): each transfer (amount [m, entity], source [entity],
+    destination [entity]) arriving at its destination apportioned by its source's shares, and
+    leaving its source. The node axis is the shares' (cells, then outside nodes)."""
+    m, width, nodes = shares.shape
+    into, out = xp.zeros((m, width, nodes)), xp.zeros((m, nodes))
+    for amount, source, destination in transfers:
+        into = _scatter_nodes(into, destination, amount[:, None, :] * shares[:, :, source], xp=xp)
+        out = _scatter_nodes(out, source, amount, xp=xp)
+    return into, out
+
+
+def advance_transfers(shares, n0, n1, transfers, present, held, *, xp=jnp, into=None):
+    """The shares after a step of transport between nodes (FR-42's stage 2): each node advanced by
+    advance(), its arrivals carrying their sources' shares, first at the step's start
+    (predictor), then at the mean of start and predicted end (corrector): second order in the
+    step, non-negative, and exact (at rounding) where no source's shares change. held [node]:
+    nodes whose shares are kept (held baths). into [m, label, node]: new material arriving
+    besides the transfers, by label (D296's sources and pools), or None."""
+    fixed = 0.0 if into is None else into
+    arriving, _ = carried(shares, transfers, xp=xp)
+    predicted = advance(shares, n0, n1, arriving + fixed, present, xp=xp)
+    arriving, _ = carried(0.5 * (shares + predicted), transfers, xp=xp)
+    new = advance(shares, n0, n1, arriving + fixed, present, xp=xp)
+    return xp.where(held[None, None, :], shares, new)
 
 
 def closure_residual(n0, n1, into, out, *, xp=jnp):
@@ -119,9 +157,11 @@ def closure_residual(n0, n1, into, out, *, xp=jnp):
 
 
 def domain_valid(shares, present, *, xp=jnp):
-    """Shares finite, each in [0, 1], 0 at every undeclared label, and each row's summing to 1
-    within SHARE_ULPS ulps (zero shares allowed)."""
+    """Shares finite, each in [0, 1], 0 at every undeclared label (present [m, label] or
+    [m, label, node]), and each row's summing to 1 within SHARE_ULPS ulps (zero shares
+    allowed)."""
+    declared = present if present.ndim == 3 else present[:, :, None]
     inside = (shares >= 0) & (shares <= 1)
     ok = xp.all(xp.isfinite(shares))
-    ok &= xp.all(xp.where(present[:, :, None], inside, shares == 0))
+    ok &= xp.all(xp.where(declared, inside, shares == 0))
     return ok & xp.all(xp.abs(entity_sum(shares, axis=1, xp=xp) - 1.0) <= SHARE_ULPS * EPS)

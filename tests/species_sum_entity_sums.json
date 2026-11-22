@@ -763,6 +763,16 @@
   ],
   [
    "operators/species_labels.py",
+   "advance_pools",
+   "entity_sum(fixed + arriving, axis=1, xp=xp)"
+  ],
+  [
+   "operators/species_labels.py",
+   "advance_inner",
+   "entity_sum(into, axis=1, xp=xp)"
+  ],
+  [
+   "operators/species_labels.py",
    "advance",
    "entity_sum(i, axis=1, xp=xp)"
   ],

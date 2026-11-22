@@ -240,7 +240,9 @@ survivors at T are the arrivals of its window's steps, each carried by exp(−�
 
 **Refused in stage 1** (fail closed; each refusal names the stage that lifts it):
 - **Stage 2:** a labelled species moved inside the inner step, by a face, a route, a channel, a
-  pump, a kind or an in-step process (registry `moved_in_step`).
+  pump, a kind or an in-step process (registry `moved_in_step`). Rows refuse a face, a membrane
+  and a junction route, and a transporter kind's moved role and finite fuel. Today's pumps hold
+  their fuel as parameters, so no fuel row of theirs is moved.
 - **Stage 3:** exchange on a labelled species, and a passive reaction route on a labelled row.
   The reactions refuse the second themselves.
 - **No stage plans these yet:**
@@ -248,10 +250,93 @@ survivors at T are the arrivals of its window's steps, each carried by exp(−�
   - events that write amounts;
   - closers, retirers, and providers of the amount references, such as a bath schedule.
 - **D1's families:** a world that declares them admits only turnover and declarations beside them
-  (D1's own refusal). Shares replace family rows.
+  (D1's own refusal), so the label owner never meets a family row and reads no family. Shares
+  replace family rows.
+- **The composition matrix** (docs/PUMP_COMPOSITE.md) marks the law-level refusals "d" and lists
+  the data-level ones.
 - **Not refused:** RK4 on the coupled path. It is vacuous, since a coupled RK4 composition already
   refuses every split-only part, so no reporter runs there.
 
 **What moves: nothing.** Worlds without the operator keep their programs, which crossrev and G1
 check in the gate. In labelled worlds every physical field, observation and diagnostic is the
 unlabelled run's, bit for bit, in each test row.
+- **FR-42's check 1 as rows:** five pools in one labelled run against one unlabelled run, not one
+  run per label count. The pools are independent, so each is its own initial state labelled its
+  own way.
+- **D1's and FR-33's examples, before and after:** all 422 history and observation arrays of their
+  five worlds are bit for bit main's, and so are their diagnostics.
+- **Templated polymerisation's reports (824da76b),** checked in a scratch merge only:
+  - every record is bit for bit the unlabelled run's;
+  - the shares sum to 1 within 1.1e-16;
+  - the closure is within 1e-16.
+- **The reactions' rule:** a species on both sides of one route counts its net, so a catalytic
+  copy is never relabelled. Stage 3's owners inherit that rule.
+
+## 8. Stage 2 (transport), and pools and sources (D296): the label owner's side
+
+**The inner step's report** is the @3 owner's side, to the rule the lead confirmed.
+- Faces and routes report their one-way amounts over the step:
+  - for an uncharged face, c a and c b;
+  - for a constant-field route, the GHK terms.
+- Under ARS222 and N2, those amounts are the trapezoid of the start and end fluxes, plus the O(dt³)
+  gap to the booked net, added to the side whose sign it has. So forward − backward equals the
+  booked net at rounding, both are ≥ 0, and both are second order.
+- Under the Euler IMEX, the stage terms are combined directly. RK4 refuses labels.
+
+**The transfer update** (numerics/label_shares.advance_transfers).
+- Each node is advanced by stage 1's kernel. Its arrivals carry their sources' shares: first at the
+  step's start (predictor), then at the mean of start and predicted end (corrector).
+- **Order:** second order. Measured against the exact linear exchange of three nodes, the error
+  falls 3.9 to 4.0 times per halving.
+- **Domain:** non-negative, and the shares sum to 1.
+- **Exactness:** exact, at rounding, where no source's shares change.
+
+**The composite** (models/pump_composite.py `_labelled_inner`). Where the inner step takes
+`labels=` (static, by its signature) and the tableau is IMEX, the inner step returns its transfers,
+and the owner advances the shares from them. Without a label owner, or before @3's side lands,
+today's call is unchanged.
+
+**What stage 2 admits.** Where the inner step reports, it admits:
+- an uncharged face;
+- a membrane route and a junction route (constant_field@1).
+
+Refused, each naming why:
+- a charged face, which has no one-way form;
+- channels, pumps and operators' in-step processes;
+- kinds, which wait for their hook after @3's side;
+- RK4 beside any followed mover.
+
+**Pools and sources** (D296, operators/contract.py).
+- **Reporter flags:** a reporter flags `LABEL_POOLS` or `LABEL_SOURCES` (static). It declares its
+  pools, `label_pools`, entries of its own state holding a labelled species' material (the
+  release hold), and its sources, `label_sources` (its chains).
+- **Sources:** the owner's schedule may name a source. Each step a source reporter receives its
+  sources' arrival labels, `source_arrival`. A source without its own switch takes its species'
+  window.
+- **Pools:** a pool reporter returns a pools part:
+  - its pools' start and end amounts;
+  - new material into them by label;
+  - their losses;
+  - `carried`, material that keeps its labels between sites, row sites (j N + k) and its pool
+    entries.
+- **The owner holds** `label_pool_share` [pool reporter, label, pool entry]. It advances a pool
+  reporter's rows and pools together as sites, through the same predictor-corrector. A site with
+  no move keeps its shares bit for bit, and the closure diagnostic covers both.
+- **Limits:** labels may number up to 64 per species (producer × window). The domain's allowance is
+  128 ulps.
+- **Rows** (NumPy, no world):
+  - a release carries the hold's shares;
+  - a completion enters the hold at its label;
+  - with no release the row keeps its shares bit for bit;
+  - each source takes its own schedule, or its species' window.
+
+**Replacement** (approved, D284 and D296; the lead's leave for a minimal hunk in the replacement
+operator's file) comes after this.
+- Its event reports the departing occupant's material leaving with its shares, and the newcomer's
+  arriving at a newcomer label.
+- Until then, labels are refused beside replacement.
+
+**What moves.** Worlds without the owner: nothing. Labelled worlds: the owner gains
+`label_pool_share` and the control `label_source_arrival`, both empty where no reporter declares
+pools or sources. So a stage-1 labelled checkpoint (development; none registered) does not
+resume across this change.

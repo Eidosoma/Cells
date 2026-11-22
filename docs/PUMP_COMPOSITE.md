@@ -165,30 +165,30 @@ Row: the earlier operator in the list; column: the later. ✓ admitted by the de
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | **1** | · | ✓ | R | ✓ | R | R | R | R | R | R | R | R | R | R | R | R | ✓ | R | R | R | R | R | ✓ | R | R | R |
 | **2** | ✓ | · | R | ✓ | R | R | R | R | R | R | R | R | R | R | R | R | ✓ | R | R | R | R | R | ✓ | R | R | R |
-| **3** | R | R | · | R | ✓ | R | R | R | R | R | R | R | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | R | R | ✓ | ✓ | ✓ | ✓ | ✓ |
-| **4** | ✓ | ✓ | R | · | R | R | R | R | R | R | R | R | R | R | R | R | ✓ | R | R | R | R | R | ✓ | R | R | R |
-| **5** | R | R | ✓ | R | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | d | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| **3** | R | R | · | R | ✓ | R | R | R | R | R | R | R | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | R | R | ✓ | d | ✓ | ✓ | ✓ |
+| **4** | ✓ | ✓ | R | · | R | R | R | R | R | R | R | R | R | R | R | R | ✓ | R | R | R | R | R | d | R | R | R |
+| **5** | R | R | ✓ | R | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | d | ✓ | ✓ | d | ✓ | ✓ | ✓ |
 | **6** | R | R | R | R | ✓ | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | d | ✓ | ✓ | ✓ | R | ✓ | ✓ | ✓ | ✓ |
-| **7** | R | R | R | R | ✓ | ✓ | · | ✓ | R | R | R | R | R | R | R | n | R | R | R | R | n | R | ✓ | n | R | R |
-| **8** | R | R | R | R | ✓ | ✓ | ✓ | · | R | R | R | R | R | R | R | n | R | R | R | R | n | R | ✓ | n | R | R |
-| **9** | R | R | R | R | ✓ | ✓ | R | R | · | ✓ | d | d | R | R | R | R | R | R | R | R | R | R | ✓ | R | R | ✓ |
+| **7** | R | R | R | R | ✓ | ✓ | · | ✓ | R | R | R | R | R | R | R | n | R | R | R | R | n | R | d | n | R | R |
+| **8** | R | R | R | R | ✓ | ✓ | ✓ | · | R | R | R | R | R | R | R | n | R | R | R | R | n | R | d | n | R | R |
+| **9** | R | R | R | R | ✓ | ✓ | R | R | · | ✓ | d | d | R | R | R | R | R | R | R | R | R | R | d | R | R | ✓ |
 | **10** | R | R | R | R | ✓ | ✓ | R | R | ✓ | · | d | d | R | R | R | R | R | R | R | R | R | R | ✓ | R | R | ✓ |
-| **11** | R | R | R | R | ✓ | ✓ | R | R | ✓ | ✓ | · | ✓ | R | R | R | n | R | R | R | R | n | R | ✓ | n | R | R |
-| **12** | R | R | R | R | ✓ | ✓ | R | R | ✓ | ✓ | ✓ | · | R | R | R | n | R | R | R | R | n | R | ✓ | n | R | R |
+| **11** | R | R | R | R | ✓ | ✓ | R | R | ✓ | ✓ | · | ✓ | R | R | R | n | R | R | R | R | n | R | d | n | R | R |
+| **12** | R | R | R | R | ✓ | ✓ | R | R | ✓ | ✓ | ✓ | · | R | R | R | n | R | R | R | R | n | R | d | n | R | R |
 | **13** | R | R | ✓ | R | ✓ | ✓ | R | R | R | R | R | R | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | **14** | R | R | ✓ | R | ✓ | n | R | R | R | R | R | R | ✓ | · | ✓ | ✓ | ✓ | ✓ | ✓ | R | n | ✓ | ✓ | ✓ | ✓ | ✓ |
 | **15** | R | R | ✓ | R | ✓ | ✓ | R | R | R | R | R | R | ✓ | ✓ | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | **16** | R | R | ✓ | R | ✓ | ✓ | n | n | R | R | n | n | ✓ | ✓ | ✓ | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | R | ✓ | ✓ |
-| **17** | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | R | R | R | R | R | R | ✓ | ✓ | ✓ | ✓ | · | ✓ | ✓ | R | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| **17** | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | R | R | R | R | R | R | ✓ | ✓ | ✓ | ✓ | · | ✓ | ✓ | R | ✓ | ✓ | d | ✓ | ✓ | ✓ |
 | **18** | R | R | ✓ | R | ✓ | d | R | R | R | R | R | R | ✓ | ✓ | ✓ | ✓ | ✓ | · | d | ✓ | ✓ | d | d | ✓ | d | d |
-| **19** | R | R | ✓ | R | ✓ | ✓ | R | R | R | R | R | R | ✓ | ✓ | ✓ | ✓ | ✓ | d | · | d | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| **19** | R | R | ✓ | R | ✓ | ✓ | R | R | R | R | R | R | ✓ | ✓ | ✓ | ✓ | ✓ | d | · | d | ✓ | ✓ | d | ✓ | ✓ | ✓ |
 | **20** | R | R | R | R | d | ✓ | R | R | R | R | R | R | ✓ | d | ✓ | ✓ | R | ✓ | d | · | R | R | d | d | d | d |
-| **21** | R | R | R | R | ✓ | ✓ | n | n | R | R | n | n | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | d | · | R | ✓ | ✓ | ✓ | ✓ |
+| **21** | R | R | R | R | ✓ | ✓ | n | n | R | R | n | n | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | d | · | R | d | ✓ | ✓ | ✓ |
 | **22** | R | R | ✓ | R | ✓ | R | R | R | R | R | R | R | ✓ | ✓ | ✓ | ✓ | ✓ | d | ✓ | R | R | · | ✓ | ✓ | ✓ | ✓ |
-| **23** | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | d | ✓ | d | ✓ | ✓ | · | ✓ | ✓ | ✓ |
+| **23** | ✓ | ✓ | d | d | d | ✓ | d | d | d | ✓ | d | d | ✓ | ✓ | ✓ | ✓ | d | d | d | d | d | ✓ | · | ✓ | d | d |
 | **24** | R | R | ✓ | R | ✓ | ✓ | n | n | R | R | n | n | ✓ | ✓ | ✓ | R | ✓ | ✓ | ✓ | d | ✓ | ✓ | ✓ | · | ✓ | ✓ |
-| **25** | R | R | ✓ | R | ✓ | ✓ | R | R | R | R | R | R | ✓ | ✓ | ✓ | ✓ | ✓ | d | ✓ | d | ✓ | ✓ | ✓ | ✓ | · | ✓ |
-| **26** | R | R | ✓ | R | ✓ | ✓ | R | R | ✓ | ✓ | R | R | ✓ | ✓ | ✓ | ✓ | ✓ | d | ✓ | d | ✓ | ✓ | ✓ | ✓ | ✓ | · |
+| **25** | R | R | ✓ | R | ✓ | ✓ | R | R | R | R | R | R | ✓ | ✓ | ✓ | ✓ | ✓ | d | ✓ | d | ✓ | ✓ | d | ✓ | · | ✓ |
+| **26** | R | R | ✓ | R | ✓ | ✓ | R | R | ✓ | ✓ | R | R | ✓ | ✓ | ✓ | ✓ | ✓ | d | ✓ | d | ✓ | ✓ | d | ✓ | ✓ | · |
 
 **Refusals from the declarations**, with the number of ordered pairs each refuses:
 
@@ -376,6 +376,8 @@ Row: the earlier operator in the list; column: the later. ✓ admitted by the de
 | D152 refuses RK4 | 15 | data | `src/cells/operators/species_reactions.py::LocalSpeciesReactions.check_definition` | `tests/unit/test_species_reactions_refusals.py::test_rk4_is_refused_with_its_reasons` | real | Version 1's bookings are exact and checked at rounding under IMEX; D150's RK4 worlds stay the transport's sharp reference, and no consumer needs it (D152 §4.6) |
 | population_unit_turnover@1 refuses every other writer of population units | 21, 7, 9, 11, 20 | law, marks 21→20 | `src/cells/operators/population_unit_turnover.py::check_writers` | `tests/unit/test_population_unit_turnover.py::test_the_writers_of_units_and_precursor` | real | It removes every unit of its populations at k_r, the declared ones included (FR-7's unit producer, F1), so a second writer's moves (FR-2's trafficking, insertion, the partition) would mix with that removal; version 1 is their one writer. It marks the pairs the declarations admit and stands behind their refusals of the rest |
 | a unit producer's precursor row has no writer but turnover's supply | 21, 15, 13, 14 | data | `src/cells/operators/population_unit_turnover.py::check_writers` | `tests/unit/test_population_unit_turnover.py::test_a_d152_reaction_on_the_precursor_and_an_in_step_mover_are_refused` | real | Two writers of one row are admitted only as split parts with exact half-steps in declared order (the lead's ruling of 19 November 2026): turnover's supply beside the producer's consumption, Strang-split. A row that a D152 reaction writes is refused, mirroring D152's one local-kinetics writer per row, and so are another operator that declares the precursor (species_exchange@1 among them) and an in-step mover of it: the inner model's movers and any operator's in-step process (species_registry.moved_in_step) |
+| FR-42 stage 1's labels refuse closers, retirers, amount-view providers, events that write species amounts, and split writers of them that do not report | 23, 5, 9, 21, 8, 12, 17, 3, 4, 26, 7, 11, 20, 19, 25 | law, marks 23→3, 3→23, 23→4, 4→23, 23→5, 5→23, 23→7, 7→23, 23→8, 8→23, 23→9, 9→23, 23→11, 11→23, 23→12, 12→23, 23→17, 17→23, 23→19, 19→23, 23→20, 20→23, 23→21, 21→23, 23→25, 25→23, 23→26, 26→23 | `src/cells/operators/species_labels.py::operator_errors` | `tests/unit/test_neutral_arrival_labels.py::test_a_labelled_definition_is_refused_where_stage_1_cannot_follow_it` | real | The shares follow only one-way moves that a reporter states (operators/contract.py), so a part that changes amounts without them is refused, naming the FR-42 stage that lifts it; templated polymerisation joins the reporters with the gene regulation lane's side. It marks the pairs the declarations admit and stands behind their refusals of the rest |
+| FR-42 stage 1's labels refuse a labelled species moved in the step, by exchange or by a passive reaction route | 23, 14, 15 | data | `src/cells/operators/species_labels.py::check_labels` | `tests/unit/test_neutral_arrival_labels.py::test_a_labelled_definition_is_refused_where_stage_1_cannot_follow_it` | real | Faces, routes, kinds and in-step processes (species_registry.moved_in_step) report one-way moves from FR-42's stage 2, exchange and passive routes from stage 3 (species_reactions.check_labelled_routes refuses the latter) |
 
 <!-- composition-matrix: end -->
 
