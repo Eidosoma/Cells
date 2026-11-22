@@ -163,15 +163,79 @@ def run_world(world, name, start, rtol, method="Radau", budget_s=None):
     return dict(world=name, rtol=rtol, method=method, records=records, stats=stats)
 
 
-def scored(world, rows):
-    """The output records that scoring keeps: those outside the declared excluded window (W3(d)'s
-    anoxic tail, where the declared reading falls below the declared floor; erratum 2)."""
-    window = world.declaration.get("scoring", {}).get("excluded_window", {})
-    floor = window.get("below_M")
-    if floor is None:
-        return np.ones(len(rows), dtype=bool)
-    key = window["reading"]
-    return np.array([r["readouts"][key] >= floor for r in rows])
+def _crossing(t, y, level, after=-np.inf):
+    """The first time after ``after`` at which a positive readout falls below ``level``, log-linear
+    in the readout between the two outputs around it; None if it never does."""
+    idx = np.nonzero((t > after) & (y < level))[0]
+    if not len(idx) or idx[0] == 0:
+        return None
+    i = idx[0]
+    a, b = np.log(y[i - 1]), np.log(y[i])
+    return float(t[i - 1] + (t[i] - t[i - 1]) * (a - np.log(level)) / (a - b))
+
+
+class Scoring:
+    """Erratum 3's scoring, with the times and transient bands it fixes from the reference alone.
+
+    - W3(d)'s window: world (d)'s outputs from the time the reference's O2 flux first falls below
+      the declared fraction of its state-3 value (world (a)'s state-3 plateau) are excluded.
+    - The anoxic collapse: world (d)'s outputs from the matrix O2's P50 crossing to the window are
+      judged with transient bands, a tenth of each judged readout's excursion over the collapse in
+      the reference (its outputs there and its two ends, linear in the readout between outputs).
+    Every other output takes its plateau band, with erratum 2's floors on concentrations.
+    ``reference`` maps world names to the reference run's evaluated rows.
+    """
+
+    def __init__(self, world, reference):
+        self.world = world
+        sc = world.declaration["scoring"]
+        win, col = sc["window"], sc["collapse"]
+        src = win["state3_from"]
+        ends = [r for r in reference[src["world"]]["rows"]
+                if r["segment"] == src["segment"] and r["side"] == "end" and r["branch"] is None]
+        self.state3_flux = ends[-1]["readouts"]["O2_flux"]
+        self.window_world = win["world"]
+        self.collapse_world = col["world"]
+        rows = reference[self.window_world]["rows"]
+        t = np.array([r["t"] for r in rows])
+        flux = np.array([r["readouts"]["O2_flux"] for r in rows])
+        self.t_window = _crossing(t, flux, win["fraction_of_state3"] * self.state3_flux)
+        rows = reference[self.collapse_world]["rows"]
+        t = np.array([r["t"] for r in rows])
+        o2 = np.array([r["readouts"][col["onset"]["reading"]] for r in rows])
+        self.t_onset = _crossing(t, o2, col["onset"]["below_M"])
+        t_end = self.t_window if self.t_window is not None else np.inf
+        inside = (t >= self.t_onset) & (t < t_end)
+        self.transient = {}
+        for key in JUDGED:
+            v = np.array([r["readouts"][key] for r in rows])
+            vals = list(v[inside]) + [float(np.interp(self.t_onset, t, v))]
+            if self.t_window is not None:
+                vals.append(float(np.interp(self.t_window, t, v)))
+            self.transient[key] = (max(vals) - min(vals)) / 10.0
+
+    def keep(self, name, rows):
+        """The outputs scoring keeps: all but world (d)'s from the window's opening."""
+        if name != self.window_world or self.t_window is None:
+            return np.ones(len(rows), dtype=bool)
+        return np.array([r["t"] < self.t_window for r in rows])
+
+    def in_collapse(self, name, rows):
+        if name != self.collapse_world:
+            return np.zeros(len(rows), dtype=bool)
+        t_end = self.t_window if self.t_window is not None else np.inf
+        return np.array([self.t_onset <= r["t"] < t_end for r in rows])
+
+    def bands(self, name, key, rows, reference_values):
+        """Each output's band for a judged readout: transient in the collapse, plateau elsewhere."""
+        out = np.array(band(self.world, key, np.asarray(reference_values)), dtype=float)
+        out = np.broadcast_to(out, np.shape(reference_values)).copy()
+        out[self.in_collapse(name, rows)] = max(self.transient[key], 1e-300)
+        return out
+
+    def describe(self):
+        return {"state3_O2_flux": self.state3_flux, "window_opens_s": self.t_window,
+                "collapse_onset_s": self.t_onset, "transient_bands": dict(self.transient)}
 
 
 def evaluate_records(world, result):

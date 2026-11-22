@@ -5,7 +5,8 @@
     "laws_appendix": "docs/MITOCHONDRIA_LAWS_APPENDIX.md at tag mito-laws-appendix-2026-11-20b",
     "design": "docs/MITOCHONDRIA_DESIGN.md at tag mito-mt1b-face-design-2026-11-22 (section 7, the MT-1b draft, the face note)",
     "world_declaration": "docs/MITOCHONDRIA_DESIGN.md at tag mito-mt1b-declaration-erratum-2026-11-22, the declaration of record: 'MT-1b's world declaration' (G1-G7, first tagged as mito-mt1b-world-declaration-2026-11-22) with the face note's section 6 erratum and G5's erratum (the I_NP rule)",
-    "erratum_2": "docs/MITOCHONDRIA_DESIGN.md at tag mito-mt1b-declaration-erratum-2-2026-11-22, 'Erratum 2': the declaration of record for this run"
+    "erratum_2": "docs/MITOCHONDRIA_DESIGN.md at tag mito-mt1b-declaration-erratum-2-2026-11-22, 'Erratum 2': the declaration of record for this run",
+    "erratum_3": "docs/MITOCHONDRIA_DESIGN.md at tag mito-mt1b-declaration-erratum-3-2026-11-22, 'Erratum 3': the scoring of record (W3(d)'s window and collapse)"
   },
   "readings": {
     "column": "Table 1 (2006) 'with Pi control' column; complex III under Eq. 24 restored as phi_Pi x Eq. 7 (appendix 1.2). Confirmed (world declaration, R2's readings)",
@@ -513,15 +514,37 @@
     }
   },
   "scoring": {
-    "excluded_window": {
-      "reading": "O2_N",
-      "below_M": 3.73e-10,
-      "source": "world declaration erratum 2 (tag mito-mt1b-declaration-erratum-2-2026-11-22), item 4: every judged readout of world (d) is excluded while the matrix's free O2 (the O2 that complex IV reads) is below 1e-3 x P50; P50 = 0.373 uM (G7), so 0.373 nM, printed rounded as 0.37 nM (R2's reading)"
+    "window": {
+      "world": "d",
+      "rule": "from the time the reference's O2 flux first falls below the fraction of its state-3 value, to the run's end",
+      "fraction_of_state3": 0.001,
+      "state3_from": {
+        "world": "a",
+        "segment": "state3"
+      },
+      "source": "world declaration erratum 3 (tag mito-mt1b-declaration-erratum-3-2026-11-22), item 2: the window on the flux itself, fixed at registration from the reference alone (about 195.8 s); it replaces erratum 2's 0.37 nM threshold. R2's readings: the state-3 value is world (a)'s state-3 plateau O2 flux (1.638e-3, the value erratum 3 quotes); the crossing time is log-linear in the flux between the reference's two outputs around it"
+    },
+    "collapse": {
+      "world": "d",
+      "onset": {
+        "reading": "O2_N",
+        "below_M": 3.73e-07
+      },
+      "end": "the window's opening",
+      "band": "a tenth of each judged readout's excursion (max - min) over the collapse in the reference",
+      "source": "world declaration erratum 3 (tag mito-mt1b-declaration-erratum-3-2026-11-22), item 3: the anoxic collapse from the matrix O2's P50 crossing (0.373 uM, about 160.5 s) to the window, judged with the registration's transient bands; for dPsi about 10.2 mV. R2's reading: the excursion is taken over the reference's outputs in the collapse and its two ends, each end linear in the readout between the outputs around it"
     },
     "expected_P50_crossing_s": {
       "value": 160.4,
       "P50_M": 3.73e-07,
       "source": "world declaration erratum 2 (tag mito-mt1b-declaration-erratum-2-2026-11-22), item 4: a prediction R2's run reports against"
+    },
+    "superseded": {
+      "excluded_window_erratum_2": {
+        "reading": "O2_N",
+        "below_M": 3.73e-10,
+        "source": "erratum 2, item 4; superseded by world declaration erratum 3 (tag mito-mt1b-declaration-erratum-3-2026-11-22)"
+      }
     }
   },
   "plants": {

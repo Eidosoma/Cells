@@ -99,9 +99,9 @@ def run_all(world, start, rtol, method, worlds, log, budget_s=None):
     return out
 
 
-def convergence(world, runs, ref_key, keys, bands):
+def convergence(world, runs, ref_key, keys, scoring):
     """Each run's largest error against the reference run, per world and readout, over the
-    output times that scoring keeps (outside the declared excluded window)."""
+    output times that scoring keeps, against the scoring's band at each output."""
     ref = runs[ref_key]
     report = {}
     for key, run in runs.items():
@@ -111,13 +111,14 @@ def convergence(world, runs, ref_key, keys, bands):
         for name in ref:
             if name not in run:
                 continue
-            keep = protocol.scored(world, ref[name]["rows"])
+            rows = ref[name]["rows"]
+            keep = scoring.keep(name, rows)
             a = table(run[name]["rows"], keys)
-            b = table(ref[name]["rows"], keys)
+            b = table(rows, keys)
             entry = {}
             for k in keys:
                 if k in protocol.JUDGED:
-                    err = protocol.judged_error(world, k, a[k], b[k])
+                    err = np.abs(a[k] - b[k]) / scoring.bands(name, k, rows, b[k])
                     entry[k] = {"max_error_over_band": float(np.max(err[keep])),
                                 "max_error_over_band_all_times": float(np.max(err))}
                 else:
@@ -129,26 +130,32 @@ def convergence(world, runs, ref_key, keys, bands):
     return report
 
 
-def compare_runs(world, base, other, bands, where=None):
-    """The largest change of each judged readout from ``base`` to ``other``, over its band, at
-    the scored output times (optionally only those ``where`` selects), with its place."""
+def compare_runs(world, base, other, scoring, where=None):
+    """The largest change of each judged readout from ``base`` to ``other``, over the scoring's
+    band at each output, at the output times scoring keeps (optionally only those ``where``
+    selects), with its place."""
     out = {}
     worst = 0.0
     for name in base:
+        if name not in other:
+            continue
         rows = base[name]["rows"]
-        keep = protocol.scored(world, rows)
+        keep = scoring.keep(name, rows)
         if where is not None:
             keep &= np.array([where(name, r) for r in rows])
         if not keep.any():
             continue
         A = table(rows, protocol.JUDGED)
         B = table(other[name]["rows"], protocol.JUDGED)
+        collapse = scoring.in_collapse(name, rows)
         entry = {}
         for k in protocol.JUDGED:
-            err = np.where(keep, protocol.judged_error(world, k, B[k], A[k]), -1.0)
+            err = np.abs(B[k] - A[k]) / scoring.bands(name, k, rows, A[k])
+            err = np.where(keep, err, -1.0)
             i = int(np.argmax(err))
             entry[k] = {"worst_over_band": float(err[i]), "segment": rows[i]["segment"],
                         "branch": rows[i]["branch"], "t": rows[i]["t"],
+                        "in_collapse": bool(collapse[i]),
                         "value_declared": float(A[k][i]), "value_other": float(B[k][i])}
             worst = max(worst, float(err[i]))
         out[name] = entry
@@ -241,27 +248,19 @@ def plateau_newton_check(world, run, bands):
     return out
 
 
-def w3d_report(world, run):
-    """World (d): when the matrix O2 crosses P50 and when the scoring window opens (erratum 2)."""
+def w3d_report(world, run, scoring):
+    """World (d): the P50 crossing, the window's opening and the collapse's transient bands, each
+    fixed from this reference (erratum 3)."""
     rows = run["rows"]
     sc = world.declaration["scoring"]
-    p50 = sc["expected_P50_crossing_s"]["P50_M"]
-    floor = sc["excluded_window"]["below_M"]
-    t = np.array([r["t"] for r in rows])
-    o2 = np.array([r["readouts"]["O2_N"] for r in rows])
-
-    def crossing(level):
-        i = int(np.argmax(o2 < level))
-        if not o2[i] < level:
-            return None
-        # Linear in ln O2 between the two output times around the crossing.
-        a, b = np.log(o2[i - 1]), np.log(o2[i])
-        return float(t[i - 1] + (t[i] - t[i - 1]) * (a - np.log(level)) / (a - b))
-
-    return {"P50_M": p50, "P50_crossing_s": crossing(p50),
+    return {"P50_M": sc["collapse"]["onset"]["below_M"],
+            "P50_crossing_s": scoring.t_onset,
             "expected_P50_crossing_s": sc["expected_P50_crossing_s"]["value"],
-            "window_floor_M": floor, "window_opens_s": crossing(floor),
-            "excluded_outputs": int(np.sum(~protocol.scored(world, rows)))}
+            "window_opens_s": scoring.t_window,
+            "state3_O2_flux": scoring.state3_flux,
+            "excluded_outputs": int(np.sum(~scoring.keep("d", rows))),
+            "collapse_outputs": int(np.sum(scoring.in_collapse("d", rows))),
+            "transient_bands": dict(scoring.transient)}
 
 
 def uncoupler_stall(run):
@@ -361,11 +360,13 @@ def main(argv=None):
                     ladder_failures["%s, world %s" % (key, name)] = repr(error)
                     log("%s, world %s failed, recorded: %r" % (key, name, error))
         delivered = runs["Radau %.0e" % DELIVERED_RTOL]
+        scoring = protocol.Scoring(world, delivered)
+        log("scoring (erratum 3): %s" % json.dumps(scoring.describe()))
         keys = list(READOUTS)
         conv = {}
         if not a.quick:
             ref_key = "Radau %.0e" % min(LADDER)
-            conv = convergence(world, runs, ref_key, keys, bands)
+            conv = convergence(world, runs, ref_key, keys, scoring)
             # The delivered run's own error: against the tighter run, and against BDF.
             log("ladder, worst judged error over band: %s" % json.dumps(
                 {k: "%.2e" % v for k, v in worst_judged(conv).items()}))
@@ -376,8 +377,8 @@ def main(argv=None):
         world_small = model.World(decl, overrides=small)
         start_small = settle_and_start(world_small, a.rule, log)["start"]
         small_runs = run_all(world_small, start_small, DELIVERED_RTOL, "Radau", WORLDS, log)
-        trace, worst_trace = compare_runs(world, delivered, small_runs, bands)
-        trace_ends, worst_trace_ends = compare_runs(world, delivered, small_runs, bands,
+        trace, worst_trace = compare_runs(world, delivered, small_runs, scoring)
+        trace_ends, worst_trace_ends = compare_runs(world, delivered, small_runs, scoring,
                                                     where=lambda n, r: r["side"] == "end")
         log("trace check: worst change %.3e of a band (must stay below 0.1); %.3e at plateau "
             "ends" % (worst_trace, worst_trace_ends))
@@ -385,10 +386,10 @@ def main(argv=None):
         # (b)'s early transient, the first 2 s.
         focus = {
             "a_inhibitor_branch": compare_runs(
-                world, {"a": delivered["a"]}, {"a": small_runs["a"]}, bands,
+                world, {"a": delivered["a"]}, {"a": small_runs["a"]}, scoring,
                 where=lambda n, r: r["branch"] == "inhibitor")[0].get("a"),
             "b_first_2_s": compare_runs(
-                world, {"b": delivered["b"]}, {"b": small_runs["b"]}, bands,
+                world, {"b": delivered["b"]}, {"b": small_runs["b"]}, scoring,
                 where=lambda n, r: r["t"] <= 2.0)[0].get("b"),
         }
         # The plants (the MT-1b draft): each the whole chain with its overrides, scored as the
@@ -401,8 +402,8 @@ def main(argv=None):
                 pworld = model.World(decl, overrides=plant["overrides"])
                 pstart = settle_and_start(pworld, a.rule, log)["start"]
                 pruns = run_all(pworld, pstart, DELIVERED_RTOL, "Radau", WORLDS, log)
-                per, worst = compare_runs(world, delivered, pruns, bands)
-                per_end, worst_end = compare_runs(world, delivered, pruns, bands,
+                per, worst = compare_runs(world, delivered, pruns, scoring)
+                per_end, worst_end = compare_runs(world, delivered, pruns, scoring,
                                                   where=lambda n, r: r["side"] == "end")
                 plants[pname] = {"what": plant["what"], "overrides": plant["overrides"],
                                  "worst_over_band": worst, "caught": bool(worst >= 3.0),
@@ -461,7 +462,7 @@ def main(argv=None):
             },
             "worlds": {name: world_payload(world, delivered[name]) for name in WORLDS},
             "uncoupler_stall": uncoupler_stall(delivered["a"]),
-            "w3d": w3d_report(world, delivered["d"]),
+            "w3d": w3d_report(world, delivered["d"], scoring),
             "convergence": {
                 "reference": None if a.quick else "Radau %.0e" % min(LADDER),
                 "failed_runs": ladder_failures,
@@ -475,6 +476,7 @@ def main(argv=None):
                                                 "per_world": trace_ends},
                             "focus": focus},
             "scoring": decl.get("scoring"),
+            "scoring_fixed_from_reference": scoring.describe(),
             "plants": plants,
             "appendix_values_reproduced": not failures,
         }
