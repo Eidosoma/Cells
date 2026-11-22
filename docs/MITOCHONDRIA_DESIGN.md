@@ -2145,6 +2145,22 @@ pointing here.
   checks of 21 November). So the build's first parse of MT-1b's world checks it.
 - If it is refused, the floating component's offset solve (the field's own, with fix (A)'s scope)
   is the place G5's condition goes.
+- **Erratum (22 November 2026): the start state's seventh conserved quantity.** R2's author found
+  it; the rule is the lead's ruling.
+  - **The finding.** G5 (zero net outer-membrane current) with G4 (no counter-ion) conserves a
+    seventh quantity: the matrix-plus-IMS row charge, I_NP = W_x Σ_N z c + W_i Σ_P z c. G7 anchored
+    only I_N, the matrix's charge inventory, so the start state was underdetermined. Different
+    choices of I_NP move it by tens of ΔΨ bands.
+  - **The rule.** I_NP is set by zero outer-membrane potential at the anchor state ([Pi]e → 0,
+    pH_x = 7.1418) and again at the start state ([Pi]e = 10 mM). Each IMS sits at its own bath's
+    free ions, as G4 intends and the source assumes.
+  - **Its consequence within the protocol, stated for the registration.** I_NP is conserved, so the
+    IMS's row charge follows C_IM·ΔΨ. Per 10 mV of ΔΨ that is about 0.94 mM in W_i, about 0.7 mM
+    of it in K_P, and about 0.1 mV of outer-membrane potential. It is a modelling consequence of
+    "no counter-ion".
+  - **A check, not an input.** R2's anchor value is I_N = 0.0851185587 mol (L mito)⁻¹. The engine
+    computes its own start state from this rule, never from R2's numbers. This replaces G7's "R2
+    records the numbers, and the engine starts from them".
 
 ### G6. O₂ at N
 
@@ -2176,7 +2192,7 @@ pointing here.
 
 | Item | Declared | Source or reason |
 | --- | --- | --- |
-| Start state | R2's steady state 4 at [Pi]e = 10 mM, at the declared inventories: the matrix Mg²⁺ total 5 mM (D236), and the matrix charge inventory anchored as MR1-MT2's, to pH_x = 7.1418 at state 4, [Pi]e = 0 (`mr1_mt2_registration.json`, `charge_inventory_definition`), but computed with G1's buffer. R2 records the numbers, and the engine starts from them | **S**; MR1-MT2's anchoring |
+| Start state | R2's steady state 4 at [Pi]e = 10 mM, at the declared inventories: the matrix Mg²⁺ total 5 mM (D236), and the matrix charge inventory anchored as MR1-MT2's, to pH_x = 7.1418 at state 4, [Pi]e = 0 (`mr1_mt2_registration.json`, `charge_inventory_definition`), but computed with G1's buffer. R2 records the numbers, and the engine starts from them. **Erratum (G5):** I_NP is set by zero outer-membrane potential at the anchor and start states, and the engine computes its own start state from that rule; R2's numbers are a check | **S**; MR1-MT2's anchoring |
 | State 4 | 0–60 s | R2 |
 | ADP step | 1.3 mM total in the bath, 60–180 s | the source's ADP; R2's times |
 | Back to state 4 | the ADP trace, 180–300 s | R2 |
