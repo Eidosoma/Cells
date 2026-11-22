@@ -147,7 +147,8 @@ Then:
 - **Its physical basis: a micropipette.**
   - The suction pressure ΔP sets σ = ΔP·R_p/[2(1 − R_p/R_v)] by mechanical equilibrium, with R_p
     the pipette's radius and R_v that of the vesicle's outer segment.
-    - Kwok and Evans 1981 state it in diameters as their Eq. 2, 4T = D_p·ΔP/(1 − D_p/D_v).
+    - Kwok and Evans 1981 state it in diameters as their Eq. 2, 4T̄ = D_p·ΔP/(1 − D_p/D_c), in
+      their notation (checked on the page image).
     - Evans and Smith (Appendix A) and Evans et al. 2003 use it.
   - "Tension clamps … held fixed until rupture" are the experiment this boundary represents (Evans
     and Smith, §2.3).
@@ -172,15 +173,21 @@ Then:
     room temperature. No source fixes b and l₀ for DOPC.
   - **No measurement found.** A metadata search (Europe PMC, 22 November 2026) found no direct
     measurement of a pore edge tension against temperature.
+    - Karatekin et al. 2003 and Portet and Dimova 2010 (read directly) measure DOPC's edge tension
+      at room temperature only. Karatekin et al. judge a local warming of 3–4 °C unlikely to
+      matter away from a phase transition.
   - **The classical theory** takes the edge energy as a material constant of the composition. Evans
     and Smith fit one ε per composition, at room temperature.
 - **The damping's temperature: ζ ∝ η_m(T), with η_m(T) ∝ T·exp(E_A/(R·T)) and E_A = 27 kJ/mol.**
   - **The molecular-scale law.** DOPC's lipid lateral diffusion over 298–333 K has an apparent
     activation energy of 27 kJ/mol (Filippov, Orädd and Lindblom 2003, Table 1, pure DOPC; read
     directly).
-  - **D to η_m.** Saffman and Delbrück 1975 (read directly) give D_T = k_BT·b_T (their Eq. 2). In
-    each of their cases the mobility is b_T = (1/(4π·μh))·(a logarithm), their Eqs. 6–9, with
-    μh = η_m the membrane's surface viscosity.
+  - **D to η_m.** Saffman and Delbrück 1975 (read directly; equations checked on the page images)
+    give D_T = k_BT·b_T (their Eq. 2).
+    - For the case they judge appropriate, a finite viscosity μ′ of the outer liquid, the
+      mobility is b_T = (1/(4π·μh))·(log(μh/(μ′a)) − γ) (their Eq. 8).
+    - So D_T = (k_BT/(4π·μh))·(log(μh/(μ′a)) − γ) (their Eq. 10), with μh = η_m the membrane's
+      surface viscosity.
     - So D ∝ k_BT/η_m, with the logarithm's slow variation neglected (declared).
     - Fitzgerald et al. 2023 (read directly) find that lipid and protein diffusion are well
       described through Saffman and Delbrück by surface viscosities of 2–4 × 10⁻¹⁰ Pa·s·m.
@@ -373,6 +380,11 @@ The scored tolerance is fixed here, before either extraction (the lead's rulings
   the read middle by 14–28% (D286, D287). This sheet's form, Evans and Smith's (B.2.1) with §4's
   temperature law, was declared before any fit with it.
 - The author's earlier desk fits used the plain forms (VESICLE_PORES_DESIGN §2.1).
+- **Both sets rest on an uncited identity** (§2): that a pipette-held vesicle's first rupture is
+  its first opening.
+  - Under a held suction pressure, a pore can be stabilised and reclose (Moroz and Nelson 1997).
+  - So a failure in either set, including a one-sided failure in set 2, could come from pores
+    that reclose, not from the law. The record states this beside each verdict.
 
 ## 9. What the references compute
 
@@ -432,6 +444,14 @@ From this sheet alone, with the six fit rows and, later, the extractor's reading
   dependent propensities and delays. *J Chem Phys* 127:214107 (arXiv:0708.0370v2). Eq. 3,
   Definition 1 and §V.
 
+**Read directly in the PMC page's text, for §4's edge-tension check:**
+- **Karatekin E, Sandre O, Guitouni H, Borghi N, Puech PH, Brochard-Wyart F (2003).** Cascades of
+  transient pores in giant vesicles: line tension and transport. *Biophys J* 84:1734–1749,
+  doi:10.1016/S0006-3495(03)74981-9 (PMC1302742). DOPC edge tension at room temperature.
+- **Portet T, Dimova R (2010).** A new method for measuring edge tensions and stability of lipid
+  bilayers: effect of membrane composition. *Biophys J* 99:3264–3273,
+  doi:10.1016/j.bpj.2010.09.032 (PMC2980741). Edge tensions at room temperature.
+
 **Read directly in the PMC page's text, after a first reading through a summariser:**
 - **Filippov A, Orädd G, Lindblom G (2003).** The effect of cholesterol on the lateral diffusion of
   phospholipids in oriented bilayers. *Biophys J* 84:3079, doi:10.1016/S0006-3495(03)70033-2
@@ -464,7 +484,8 @@ so they are for analysis and citation only.
   - pores that grow and lyse the vesicle at larger tensions;
   - its account of Zhelev and Needham's pores, stabilised under a held suction pressure.
 - **Saffman PG, Delbrück M (1975).** Brownian motion in biological membranes. *PNAS* 72:3111–3113,
-  doi:10.1073/pnas.72.8.3111. Eqs. 2 and 6–9.
+  doi:10.1073/pnas.72.8.3111. Eqs. 2, 8 and 10, checked on the page images. Freeman et al.'s Eq. 3
+  and Kwok and Evans's Eq. 2 were checked on the page images too.
 
 **Named by the read sources, not read** (paywalled; the user's choice, D287). None carries a claim
 here:
