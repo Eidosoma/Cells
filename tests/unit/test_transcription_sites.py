@@ -79,6 +79,10 @@ def test_samples_stay_separate_and_row_order_does_not_matter():
     }
     assert summarize_called_sites(roster[::-1], spots[::-1]) == result
     assert _plain(result[0]) and _plain(other)
+    # NumPy-typed tables, as real tables often arrive, give the same plain record.
+    i = np.int64
+    typed = summarize_called_sites([(i(0), i(7), i(1))], [(i(0), i(7), i(3), np.float64(2.5))])
+    assert typed == summarize_called_sites([(0, 7, 1)], [(0, 7, 3, 2.5)]) and _plain(typed[0])
 
 
 @pytest.mark.parametrize(
@@ -239,10 +243,15 @@ def test_per_copy_threshold_matches_directly_summed_probabilities(threshold, fan
 def test_negative_binomial_tends_to_poisson_as_the_fano_factor_tends_to_one():
     poisson = expected_called_sites(MEANS, COPIES, threshold=3, distribution="poisson")
     near = expected_called_sites(
-        MEANS, COPIES, threshold=3, distribution="negative_binomial", fano_factor=1 + 1e-9
+        np.array(MEANS),
+        np.array(COPIES),
+        threshold=np.int64(3),
+        distribution="negative_binomial",
+        fano_factor=np.float64(1 + 1e-9),
     )
     for key in ("called_sites_per_cell", "visible_chains_per_cell"):
         assert near[key] == pytest.approx(poisson[key], rel=1e-7)
+    assert _plain(near)
 
 
 def test_thresholding_a_copy_average_is_not_per_copy_detection():
@@ -315,6 +324,11 @@ def test_expected_sites_refuse_an_unnamed_family_or_invalid_input(change):
     call = dict(means=[1.0, 2.0], copies=[2, 1], threshold=2, distribution="poisson") | change
     with pytest.raises(ValueError):
         expected_called_sites(call.pop("means"), call.pop("copies"), **call)
+
+
+def test_the_copy_distribution_has_no_default():
+    with pytest.raises(TypeError):
+        expected_called_sites(np.array([1.0, 2.0]), np.array([2, 1]), threshold=2)
 
 
 @pytest.mark.parametrize(

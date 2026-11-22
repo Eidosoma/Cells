@@ -92,7 +92,7 @@ def summarize_called_sites(roster, spots):
     A statistic without a denominator is None, with its reason under `undefined`. Samples, cells
     and spot IDs are sorted, and sums are exactly rounded, so row order does not matter.
 
-    An incomplete table is refused, not summarised. Each of these raises IncompleteObservation,
+    An incomplete table is refused, not summarized. Each of these raises IncompleteObservation,
     which names every offending ID at once:
     - a spot that matches no roster cell;
     - a duplicated cell or spot;
@@ -391,8 +391,8 @@ def expected_called_sites(
       a Fano factor of 2F - 1.
 
     `mean_chains_per_copy` gives the mean number of attached chains on one gene copy, one
-    entry per copy class (for example per allele or per promoter state). It is a molecule count,
-    not an amount, and never a per-cell or population average over copies with different means.
+    entry per copy class (for example per allele). It is a molecule count, not an amount, and
+    never a per-cell or population average over copies with different means.
     `copies_per_cell` gives the mean number of copies of each class per cell. Fractional values
     express a population average of copy number, since only expectations are formed.
 
