@@ -1,0 +1,130 @@
+{
+ "kind": "cells.gene_regulation.fr25_rule@1",
+ "steps_s": [
+  2.0,
+  1.0,
+  0.5
+ ],
+ "judged_step_s": 0.5,
+ "sets": [
+  "test instance",
+  "Spirin's E_pep"
+ ],
+ "worlds": "the sixteen of worlds.names()",
+ "classes": {
+  "amount": [
+   "n_",
+   "F_"
+  ],
+  "occupancy": [
+   "C_",
+   "E_",
+   "W_"
+  ],
+  "extent": [
+   "int_"
+  ],
+  "heat": [
+   "H_"
+  ],
+  "free_energy": [
+   "G_minus_G0"
+  ],
+  "release_rate": [
+   "J_bar_"
+  ]
+ },
+ "order_declared": [
+  {
+   "world_kind": "A1",
+   "readout_class": "amount",
+   "p": 2,
+   "reason": "the split step: the regulator's turnover and the coupling's routed factor act in their own parts around the operator, Strang's second order"
+  },
+  {
+   "world_kind": "A1",
+   "readout_class": "extent",
+   "p": 2,
+   "reason": "the split step: the regulator's turnover and the coupling's routed factor act in their own parts around the operator, Strang's second order"
+  },
+  {
+   "world_kind": "A1",
+   "readout_class": "free_energy",
+   "p": 2,
+   "reason": "the split step: the regulator's turnover and the coupling's routed factor act in their own parts around the operator, Strang's second order"
+  },
+  {
+   "world_kind": "A1",
+   "readout_class": "heat",
+   "p": 2,
+   "reason": "the split step: the regulator's turnover and the coupling's routed factor act in their own parts around the operator, Strang's second order"
+  },
+  {
+   "world_kind": "A1",
+   "readout_class": "occupancy",
+   "p": 2,
+   "reason": "the split step: the regulator's turnover and the coupling's routed factor act in their own parts around the operator, Strang's second order"
+  },
+  {
+   "world_kind": "A1",
+   "readout_class": "release_rate",
+   "p": 2,
+   "reason": "the split step: the regulator's turnover and the coupling's routed factor act in their own parts around the operator, Strang's second order"
+  },
+  {
+   "world_kind": "A1-M",
+   "readout_class": "amount",
+   "p": 3,
+   "reason": "SSPRK(3,3) on the operator's own variables, third order; the inner step leaves them"
+  },
+  {
+   "world_kind": "A1-M",
+   "readout_class": "extent",
+   "p": 3,
+   "reason": "SSPRK(3,3) on the operator's own variables, third order; the inner step leaves them"
+  },
+  {
+   "world_kind": "A1-M",
+   "readout_class": "free_energy",
+   "p": 3,
+   "reason": "G is a function of the state, which is third order: SSPRK(3,3) on the operator's own variables, third order; the inner step leaves them"
+  },
+  {
+   "world_kind": "A1-M",
+   "readout_class": "heat",
+   "p": 2,
+   "reason": "each route's heat is its share of the exact total by divided-difference potentials (the average-vector-field split), a second-order discrete gradient. The development runs showed it: pol T=100's H_rc at order 1.98 (2.5e-7 at dt 1.0, 6.3e-8 at dt 0.5), the recharging route near its equilibrium"
+  },
+  {
+   "world_kind": "A1-M",
+   "readout_class": "occupancy",
+   "p": 3,
+   "reason": "SSPRK(3,3) on the operator's own variables, third order; the inner step leaves them"
+  },
+  {
+   "world_kind": "A1-M",
+   "readout_class": "release_rate",
+   "p": 3,
+   "reason": "SSPRK(3,3) on the operator's own variables, third order; the inner step leaves them"
+  }
+ ],
+ "factor_of_safety": 3.0,
+ "factor_source": "Roache PJ (1994) Perspective: a method for uniform reporting of grid refinement studies. J. Fluids Eng. 116:405-413: the grid-convergence index GCI = Fs |e|/(r^p - 1), with factor of safety Fs = 3 for two grids at an assumed order and 1.25 for three or more grids at an observed order. Checked against secondary sources (NASA NPARC's grid-convergence tutorial; Phillips and Roy 2014, J. Fluids Eng.); the 1994 paper itself was not reached",
+ "floor_of_scale": 1e-09,
+ "order_window": {
+  "low": "p - 0.5",
+  "high": 3.5
+ },
+ "retry": {
+  "steps": [
+   1.0,
+   0.5,
+   0.25
+  ],
+  "once": true,
+  "judged_step": 0.25,
+  "worlds": "inconclusive only"
+ },
+ "not_blind": "the development gaps (872a6a8e runs, dt 0.5 and 1.0 s) were read before this rule; its soundness rests on its tolerance coming from step error alone; the judged runs are fresh, at G4's landed head, which differs from those runs only in its summation order",
+ "orders_seen": "the development orders (between the dt 1.0 and 0.5 s gaps to G2) were seen before the window was set to [p - 0.5, 3.5]: of 696 readouts above the floor, the largest order is 3.38, and four sit below p - 0.5, pol T=100's F_pol and E_tx at 2.466 at both test instances. Under this rule, such a world is inconclusive and takes the retry"
+}
