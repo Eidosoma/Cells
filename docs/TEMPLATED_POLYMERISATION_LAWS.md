@@ -1231,18 +1231,31 @@ them bit for bit. Replacement waits for the requester's answer (question c).
 ### 9.8 The release-window cohort, by two routes
 
 Of the molecules released into fate f during [t1, t2], the amount still present at ts ≥ t2:
-1. **Label rows, provisional pending FR-42** (erratum B). With `label_at` = `release`, ψ selects
-   class 2 during [t1, t2) and class 1 otherwise. The cohort is F^f_ρ,2(ts) minus the matched
-   blank's F^f_ρ,2(ts) (erratum A, R-F1). The blank is the same world with H(0) = 0. It removes the
-   class-2 rows' own starting trace and that trace's loss, which F^f_ρ,2(ts) − F^f_ρ,2(0) leaves
-   in. The subtraction is exact only for a loss linear in the amount, not for any loss law
-   (erratum B): FR-42's reference case, a loss of −N², breaks it.
+1. **Shares** (FR-42's neutral arrival-time labels, D289; erratum C). The label marks the
+   release. FR-42's label owner labels each fate row, its base label first, and its arrival
+   schedule names the window's label during [t1, t2) and the base otherwise.
+   - A release joins the label in force at the start of its step.
+   - The cohort is F^f_ρ(ts) s^f_w(ts), the fate row times its window label's share.
+   - **No blank.** A cohort's share starts at exactly zero. The fate's loss is computed once on
+     the physical row and shared by its labels, so there is no class-row departure (erratum B).
+   - **Its error is the share update's split.** It is exact for a constant per-molecule loss rate
+     and constant arrivals within a half-step. Otherwise it errs by (a k′ − a′ k) h³/12 per
+     half-step h, which is second order over a run. In R1 the arrivals into fate f decay with the
+     hold (a′ = −a/τ) at a nearly constant loss rate k_f. So route 1 lies within k_f h²/(12 τ),
+     relative, of the cohort the update would give exactly.
 2. **Host-side.** `validation/gene_regulation/cohort.py` on each fate pool's own counters, n_F^f,
    ∫Q^f and ∫D_F^f. It is exact for first-order, age-independent loss in a well-mixed pool, up to
    its grid error.
 
-Under §9.2's laws both routes apply, and they must agree within the host-side route's grid error.
-The label rows' sum departs from the unlabelled row (erratum B):
+Under §9.2's laws both routes apply, and they must agree within the host-side route's grid error
+plus route 1's split.
+
+**The survival readout** (the requester's answer to questions (c) and (e)): the window's members
+alive at t2, the same molecules alive at a later ts, and their ratio, undefined at a zero
+denominator. Route 1 reads its cohort at both times. Route 2 computes both from the counters.
+
+**The class rows** (§9.1's K_ρ > 1) remain for labels marked at completion, until FR-42's label
+owner holds the hold's own shares (D296). Their sum departs from the unlabelled row (erratum B):
 - **The factor.** A class row k of a fate with total N reads its own potential (§9.2). Its loss
   factor is therefore 1 − e^(y_f) (N/n_k)^(1/L), where e^(y_f) is the population's, not
   1 − e^(y_f).
@@ -1366,8 +1379,10 @@ findings, R-F1 (§9.8) and R-F2 (§9.10), in place, and the readings below.*
 5. **The heat classes.** deg_R books to H_deg,R and deg_R_s to its own class, H_deg,R_s. H_rel is
    per fate. H_tl sums tl and tl_s.
 6. **The engaged machines** E_tx are ΣC + ΣH under `held` and ΣC under `returned` (§9.3).
-7. **The label.** ψ is read at the start of each step, so a release in [t1, t2) enters class 2.
-   Class 2's rows are R_c2 (durable) and R_s_c2 (short-lived).
+7. **The label** (as erratum C amends it). The window's label is the one in force at the start of
+   each step, resolved by step index from the label owner's schedule. So a release in [t1, t2)
+   joins it, and a release in the step that starts at t2 does not. R1L labels R and R_s (base,
+   cohort) and has no class rows.
 8. **R2's hold** starts empty, H(0) = 0. **R2's cohort** is route 2 alone; route 1 is not computed in
    R2.
 9. **R1's domain** leaves out elongation, which has no complexes there: §9.6's and §3.5's bounds
@@ -1389,3 +1404,28 @@ findings, R-F1 (§9.8) and R-F2 (§9.10), in place, and the readings below.*
    registered comparison.
 4. **Route 2 stands.** cohort.py reads the run's own per-molecule loss, which is FR-42's method on
    the host.
+
+### 9.14 Erratum C: route 1 on shares
+
+*22 November 2026, after FR-42's stage 1 (D289) and the user's decision that FR-42's shares replace
+the class rows (D288). Docs only, before the code that builds on it.*
+
+1. **Route 1 moves to shares** (§9.8). R1L's fate rows carry FR-42's labels, with the window
+   marked at release, in place of the class rows R_c2 and R_s_c2. The cohort is the fate row times
+   its window label's share, with no blank.
+2. **Reading 7** (§9.12) reads the window's label from the label owner's schedule at the start of
+   each step.
+3. **R1L's blank is dropped.** The matched blank stays for the survivors (§9.10; §9.12, reading 4).
+4. **Route 1 is second order.** Its error is the share update's split (§9.8), not the
+   operator's third-order step. In R1 the split is k_f h²/(12 τ), relative: below 6.2 × 10⁻⁹ at
+   R1's step of 2 s. FR-38's registered comparison declares p = 2 for route 1.
+5. **The requester's answer to (e) marks the window at release** (§9.11, question e).
+   - A molecule that detaches from its template during [t0, t1) belongs to the cohort, even if it
+     finished transcription before t0.
+   - One released exactly at t1 belongs to the next window.
+   - Labelling at completion (§9.1) stays declared, on the class axis, until the label owner holds
+     the hold's own shares (D296).
+6. **The survival readout** (§9.8) is the requester's answer to (c) and (e).
+7. **A limit:** a labelled species carries at most 16 labels, the label owner's MAX_LABELS. So
+   producer identity crossed with the window labels must fit within it.
+8. **Route 2 stands** (erratum B).
