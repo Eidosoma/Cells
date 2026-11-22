@@ -603,8 +603,10 @@ same mechanism, and the closure is its rapid limit. Both take K from the registr
   - A face that carries a charged row, or a row that a membrane, channel, pump, declared kind or
     an operator's in-step process also moves, is refused at definition
     (`surface_pump_v3._check_exact_faces`; `pump_composite.exact_face_row_errors`).
-  - A held bath's row qualifies. Its amount is pinned, so its divided potential is the reservoir's
-    potential, at which the reservoir work books its supply.
+  - A face that touches a held bath is refused too, as the passive routes' scope holds ("a held
+    bath's row is never one"). In development a plain held bath closed the ledger to 8.9e-16 of
+    the flows, its pinned amount giving the reservoir's potential. A scheduled bath (FR-10) was not
+    tried, so admitting baths is a later step with its own row.
   - IMEX solvers only, since RK4 refuses every booking option.
 - **No clamp and no other form.** The step is refused where:
   - a share falls below its floor (§7.5's sign rule, as amended 17 November);

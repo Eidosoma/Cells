@@ -34,12 +34,12 @@ models/inner_laws.OWN_HEAT_BOOKINGS (or the kind's heat_bookings) lists:
 ``trapezoid_nonnegative@1``, booked once in the core for every class
 (models/surface_pump_v3.trapezoid_fields), and, for ``faces`` alone, ``exact_free_energy_heat@1``
 (D280): each face books the exact free-energy release of the neutral rows it moves, and a face that
-carries a charged row, or a row another mover moves in the step, is refused under it
-(models/surface_pump_v3.exact_face_heat). Junctions keep ``junction_heat_booking`` and are refused
-here. The key is omitted at its default, so every definition of today's keeps its fingerprint and
-its structure. The water and replacement families run @3 through compositions whose inner carries
-the structure, so they book what is picked as well (the lead, 19 November 2026); a caller that
-checks @3 without its structure refuses a booking rather than ignore it.
+carries a charged row, touches a held bath, or carries a row another mover moves in the step, is
+refused under it (models/surface_pump_v3.exact_face_heat). Junctions keep ``junction_heat_booking``
+and are refused here. The key is omitted at its default, so every definition of today's keeps its
+fingerprint and its structure. The water and replacement families run @3 through compositions whose
+inner carries the structure, so they book what is picked as well (the lead, 19 November 2026); a
+caller that checks @3 without its structure refuses a booking rather than ignore it.
 
 The gate laws are the existing Cells kinetics under neutral IDs (the stage-B
 proposals in stage-b-plan-20261108-01): Kv1.5 m*h (laws/channels/voltage_gates.py),

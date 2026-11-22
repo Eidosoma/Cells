@@ -3289,11 +3289,12 @@ def exact_faces(structure):
 
 def _check_exact_faces(model):
     """The faces' exact booking's scope (version 1, as the passive routes'): every row a face
-    carries (a species with a positive diffusivity on it, at each of its end nodes) is neutral and
-    moved in the step by faces alone (moved_nodes). A held bath's row qualifies: its amount is
-    pinned, so its divided potential is the reservoir's potential, which the reservoir work books.
-    Operators' in-step writers are the composite's admission (pump_composite)."""
+    carries (a species with a positive diffusivity on it, at each of its end nodes) is neutral,
+    lies at two finite nodes (a held bath's row is never one) and is moved in the step by faces
+    alone (moved_nodes). Operators' in-step writers are the composite's admission
+    (pump_composite.exact_face_row_errors)."""
     valence = dict(zip(model.species_ids, model.valence, strict=True))
+    held = {o.id for o in model.extracellular if o.reservoir}
     movers = moved_nodes(model)
     for face in model.faces:
         for species, diffusivity in zip(model.species_ids, face.diffusivity_m2_per_s, strict=True):
@@ -3303,6 +3304,12 @@ def _check_exact_faces(model):
                 raise ConfigError(
                     f"Face {face.id} carries the charged row {species}; "
                     f"{EXACT_FREE_ENERGY_HEAT} books neutral rows only (version 1)"
+                )
+            bath = next((n for n in (face.sender, face.receiver) if n in held), None)
+            if bath is not None:
+                raise ConfigError(
+                    f"Face {face.id} carries {species} to the held bath {bath}; "
+                    f"{EXACT_FREE_ENERGY_HEAT} books faces between finite nodes (version 1)"
                 )
             for node in (face.sender, face.receiver):
                 others = [w for w in movers.get((species, node), ()) if not w.startswith("face ")]
@@ -3322,9 +3329,8 @@ def exact_face_heat(start, end, p, *, xp=jnp):
     difference of the row's divided-difference potentials at its two ends, each from that node's
     start and end amounts in the ledger's own form (passive_permeation.divided_potential_RT):
     Q = 1e-3 RT moved (mu-bar_sender - mu-bar_receiver). Where faces alone move a row (the
-    definition's check), a node's shares sum to its exact free-energy change, so the energy ledger
-    closes to rounding for those rows. A held bath's amount is pinned, so its divided potential is
-    the reservoir's potential at which the reservoir work books its supply.
+    definition's check, which also keeps held baths out), a node's shares sum to its exact
+    free-energy change, so the energy ledger closes to rounding for those rows.
 
     booked is False, and the step refused, where a share lies below its floor,
     -RAW_SUM_FACTOR eps (|mu-bar_s| + |mu-bar_r| + 2) |moved| RT (the passive routes' sign rule,
@@ -3353,8 +3359,9 @@ def exact_face_heat(start, end, p, *, xp=jnp):
             values, zero, (s.face_receiver,), xp=xp
         )
 
-    # Raw sums at each finite node a face carries a row to (a held bath's change is its supply):
-    # the shares' potential times the faces' net change, against the row's exact change of G.
+    # Raw sums at each node a face carries a row to (finite nodes, by the definition's check; a held
+    # bath's change would be its supply): the shares' potential times the faces' net change,
+    # against the row's exact change of G.
     rows = (at_ends(xp.where(carried, 1.0, 0.0)) > 0) & ~p.reservoir[None, :]
     safe0, safe1 = xp.where(n0 > 0, n0, 1.0), xp.where(n1 > 0, n1, 1.0)
     g0 = xp.where(n0 > 0, n0 * (xp.log(safe0 / volume) - 1.0), 0.0)

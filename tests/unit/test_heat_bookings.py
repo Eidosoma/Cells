@@ -6,7 +6,7 @@ test_heat_bookings_probe.py, the booked heat's form in test_heat_bookings_formul
   refusals: junctions, the tableau listed, a class that admits nothing, RK4, and a caller that
   checks @3 without its structure;
 - the faces' exact booking (exact_free_energy_heat@1, D280) refuses a face that carries a charged
-  row, or a row another mover moves in the step (version 1's scope);
+  row, touches a held bath, or carries a row another mover moves in the step (version 1's scope);
 - the dissipation check and the run view read declared energy roles, with today's suffix rule as
   the default.
 """
@@ -175,11 +175,18 @@ def _membrane_also_moves(raw):
     patch["permeability_m_per_s"][sfx.SPECIES] = 1e-9
 
 
+def _face_to_the_bath(raw):
+    face = dict(raw["model"]["faces"][0], id="face_2b", sender="n2", receiver="bath")
+    raw["model"]["faces"].append(face)
+    raw["execution"]["face_capacity"] = 2
+
+
 @pytest.mark.parametrize(
     "edit,message",
     [
         (_charged_face_row, "carries the charged row Na; exact_free_energy_heat@1 books neutral"),
         (_membrane_also_moves, "which membrane contact_2 also moves in the step"),
+        (_face_to_the_bath, "carries S to the held bath bath; .* between finite nodes"),
     ],
 )
 def test_the_faces_exact_booking_refuses_rows_outside_its_scope(edit, message):

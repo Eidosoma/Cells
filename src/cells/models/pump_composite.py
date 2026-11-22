@@ -1941,7 +1941,7 @@ class Composition:
         state, p = self.initial_values(small)
         exact = exact_row_errors(pairs, spec, p) if writing else []
         if self.process_operator is not None:  # D280: the faces' exact booking (static).
-            exact += exact_face_row_errors(pairs, spec, self.inner.structure)
+            exact += exact_face_row_errors(pairs, spec, getattr(self.inner, "structure", None))
         if exact:
             raise ConfigError("Invalid operator composition: " + "; ".join(exact))
         if self.field_inputs:
