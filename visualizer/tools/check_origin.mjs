@@ -12,6 +12,7 @@
 //            a pair); a real press on a lipid's head chooses its type, and ] steps a fission. The
 //            Laws library and back: the view plays again as it was, and nothing of it stays on the
 //            library. The Cell view opened after it is as the Cell view opened alone.
+//   vesicle  the saved vesicle life, divided daughters, threshold crossing and released state, bilayer and molecular reference.
 //   phone    the same at a phone's width: the first tab's short name keeps the bar to one row, the
 //            card folds to one line that names the model system, apart from the rail's button, and
 //            one press on it opens the card with the switch, the word, the packing and both selects
@@ -270,7 +271,78 @@ try {
   };
   const look = () => evaluate(`(() => { const v = ${V}, st = v.stage, r = st.renderer; return { sun: st.sun.position.toArray().map((x) => +x.toFixed(3)), shadow: st.sun.castShadow, limits: { ...st.rig.limits }, environment: Boolean(st.scene.environment), exposure: +r.toneMappingExposure.toFixed(3), toneMapping: r.toneMapping, bloom: st.finish?.bloom?.strength ?? 0, insets: st.insets || {}, sky: +st.sky.intensity.toFixed(3), fog: Boolean(st.scene.fog), children: st.scene.children.length }; })()`);
 
-  if (CASE === "main" || CASE === "phone") {
+  if (CASE === "vesicle") {
+    await open("entry=origin-vesicles&still=1", false);
+    const ready = await until(`${L}?.id === "vesicle"`, 90);
+    check("the vesicle entry opens its own saved run", ready);
+    if (!ready) throw Error(await evaluate(`${V}.shadowRoot.querySelector("#cells-view")?.textContent || "No vesicle view"`));
+    const select = (label, expression) =>
+      evaluate(
+        `(() => {const e=${V}.shadowRoot.querySelector('select[aria-label="${label}"]');e.value=${expression};e.dispatchEvent(new Event("change",{bubbles:true}));})()`,
+      );
+    const lookAt = async (name) => {
+      const hide = PHONE && (await evaluate(`${V}.state.viewOpen`));
+      if (hide) await evaluate(`${V}.shadowRoot.querySelector(".view-toggle").click()`);
+      await shot(NAME + "-" + name);
+      if (hide) await evaluate(`${V}.shadowRoot.querySelector(".view-toggle").click()`);
+    };
+    if (PHONE) await evaluate(`if(!${V}.state.viewOpen) ${V}.shadowRoot.querySelector(".view-toggle").click()`);
+    check(
+      "both development runs are navigable",
+      await evaluate(`${L}.entries.length>=2 && ${L}.run.file.development.says.includes("not judged.")`),
+    );
+    if (PHONE) {
+      await evaluate(`${V}.shadowRoot.querySelector(".view-toggle").click()`);
+      check("the run's full standing is visible with the phone card folded", await evaluate(`(() => { const c=${V}.shadowRoot.querySelector(".caveat");return c.getBoundingClientRect().height>0 && c.textContent===${L}.run.file.development.says; })()`));
+      await evaluate(`${V}.shadowRoot.querySelector(".view-toggle").click()`);
+    }
+    await lookAt("life");
+    await evaluate(`${L}.player.play()`);
+    check("the clock advances in recorded seconds", await until(`0 < ${L}.player.time && ${L}.player.time < 2`, 12));
+    await evaluate(`${L}.seek(0)`);
+    check(
+      "picking the membrane explains the footprint and recorded species",
+      await evaluate(
+        `(() => {const part=${L}.describe("vesicle:membrane");return part.facts.some(([k,v])=>k==="Membrane counts"&&v.includes("L1"));})()`,
+      ),
+    );
+    await select("Go to event", '"0"');
+    check(
+      "the first shear identifies both daughters and the continuing lineage",
+      await evaluate(`${L}.player.time===5 && ${L}.eventRead.textContent.includes("continues") && ${L}.scene.daughter.visible`),
+    );
+    await lookAt("split");
+    await select("Replay", `${L}.entries.find(e=>e.run.file.releases.some(r=>r.cause==="threshold")).run.file.id`);
+    await select("Colour by", '"tension"');
+    await evaluate(`[...${V}.shadowRoot.querySelectorAll(".v-boundary button")].find(b=>b.textContent==="Last intact state").click()`);
+    check(
+      "the intact threshold sample has a lumen and its recorded triggering tension",
+      await evaluate(
+        `${L}.scene.whole.visible && ${L}.scene.liquid.visible && ${L}.run.at(${L}.player.time,0,${L}.inspectRow).sample.tension_N_per_m===${L}.run.file.releases[0].tension_N_per_m`,
+      ),
+    );
+    await lookAt("intact");
+    await evaluate(`[...${V}.shadowRoot.querySelectorAll(".v-boundary button")].find(b=>b.textContent==="Released state").click()`);
+    check(
+      "the same instant shows threshold release and the returned pool molecules",
+      await evaluate(`${L}.scene.release.visible && !${L}.scene.whole.visible && ${L}.eventRead.textContent.includes("61,178")`),
+    );
+    await lookAt("lysis");
+    await evaluate(`${L}.goToScale("membrane")`);
+    check(
+      "the section draws both headgroup surfaces and tails",
+      await evaluate(
+        `${L}.scene.patch.visible && ${L}.scene.section.heads.count>100 && ${L}.scene.section.tails.count===${L}.scene.section.heads.count`,
+      ),
+    );
+    await lookAt("membrane");
+    await evaluate(`${L}.goToScale("molecule")`);
+    check(
+      "the molecular close-up draws the reference atoms and labels the source",
+      await evaluate(`${L}.scene.molecule.visible && ${V}.shadowRoot.querySelector("#cells-view").textContent.includes("wwPDB")`),
+    );
+    await lookAt("molecule");
+  } else if (CASE === "main" || CASE === "phone") {
     // ---------------------------------------------------------- the view in the first tab's place, playing the marked example
     check("entry=gard opens the origin-of-life view in the first tab's place", await open("entry=gard"));
     let s = await state();

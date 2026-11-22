@@ -1,0 +1,28 @@
+{
+ "format": "cells.visualizer.model_system@1",
+ "id": "origin-vesicles",
+ "label": "Cells vesicles",
+ "is": "A model of lipid vesicles",
+ "plain": "Follow the life of a vesicle in Cells' origin-of-life engine. See which molecules cross its membrane, how its lumen changes, and what happens at a shear or a burst.",
+ "group": "Origin of life",
+ "order": 99,
+ "made": "2026-11-22",
+ "modelled": {
+  "state": "modelled",
+  "model": "cells.assembly_lineages@2",
+  "text": "Development run of Cells' engine (cells.assembly_lineages@2), not judged.",
+  "record": [{"path":"visualizer/schema/ASSEMBLY_RUN.md","where":"Vesicle replays in recorded seconds"}],
+  "design": "docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md"
+ },
+ "view": {"kind":"vesicle"},
+ "levels": [
+  {"id":"vesicle","label":"Vesicle","shows":"A life and its recorded events in seconds."},
+  {"id":"membrane","label":"Membrane","shows":"A cut through the two molecular leaflets."},
+  {"id":"molecule","label":"Molecule","shows":"The molecular structure reference used to illustrate membrane packing."}
+ ],
+ "clock": {"base":"second","says":"Seconds from the saved run."},
+ "runs": [
+  {"file":"data/origin/vesicle-3014a196.json","label":"Growth and shear division","kind":"development"},
+  {"file":"data/origin/vesicle-01fe390a.json","label":"Osmotic swelling and lysis","kind":"development"}
+ ]
+}

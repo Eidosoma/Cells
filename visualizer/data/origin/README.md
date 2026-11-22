@@ -1,6 +1,9 @@
 # The assembly view's run files
 
-Two kinds of file, each in the form of `schema/ASSEMBLY_RUN.md`.
+The replay files use the contracts in `schema/ASSEMBLY_RUN.md`.
+
+- **`vesicle-<id>.json`** holds one recorded life of a Cells vesicle. The two OL5 development runs show growth with shear division and osmotic swelling with threshold lysis. The adapter preserves seconds, place counts, geometry samples and release causes. Their model entry is `data/models/origin-vesicles.json`.
+- **`reference-popc.json`** supplies the 52 heavy atoms and bonds of an ideal POPC conformer for the molecular close-up. The replay carries the run's own membrane species labels independently. [wwPDB Chemical Component Dictionary, LBN](https://www.rcsb.org/ligand/LBN)
 
 - **`gard-pair-consistent-<id>.json` and `gard-single-event-<id>.json`: the engine's own pair of GARD
   runs,** written by `tools/adapt_assembly_run.py` from the engine's final set

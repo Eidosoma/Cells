@@ -756,6 +756,13 @@ connect to the Engine"; and of the ten ideas shown: "Lets do them all except wai
 
 ## Origin of life
 
+Choose **Cells vesicles** in the **Origin of life** group of the Scope switch, or open
+`?entry=origin-vesicles`. The first replay follows amphiphile exchange and one daughter through shear divisions.
+The second follows the osmotic lumen to threshold lysis. Its **Last intact state** and **Released state**
+buttons show two observations at the same recorded time. The **Membrane** and **Molecule** levels magnify
+the illustrated bilayer and its molecular reference. The readout gives the run's own species, counts,
+footprint, volume and tension. Both replays carry their development standing.
+
 GARD's assembly has a view of its own (`src/lenses/lineage.js`), on this page since 17
 November 2026: choosing "GARD assembly" under "Origin of life" in the switch, or
 `entry=gard` in the address, shows it in the first tab's place (`src/lenses/

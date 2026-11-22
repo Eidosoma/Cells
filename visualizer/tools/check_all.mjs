@@ -72,6 +72,8 @@ const SUITE = [
   { name: "origin-dark", tool: "check_origin.mjs", args: [pictures], env: { CASE: "main", NAME: "origin-dark", THEME: "dark" }, minutes: 2 },
   { name: "origin-short", tool: "check_origin.mjs", args: [pictures], env: { CASE: "main", NAME: "origin-short", WIDTH: "1040", HEIGHT: "640" }, minutes: 2 },
   { name: "origin-phone", tool: "check_origin.mjs", args: [pictures], env: { CASE: "phone", NAME: "origin-phone" }, minutes: 2 },
+  { name: "origin-vesicles", tool: "check_origin.mjs", args: [pictures], env: { CASE: "vesicle", NAME: "origin-vesicles" }, minutes: 1 },
+  { name: "origin-vesicles-phone", tool: "check_origin.mjs", args: [pictures], env: { CASE: "vesicle", NAME: "origin-vesicles-phone", PHONE: "1", WIDTH: "390", HEIGHT: "844" }, minutes: 1 },
   { name: "origin-address", tool: "check_origin.mjs", args: [pictures], env: { CASE: "address", NAME: "origin-address" }, minutes: 2 },
   { name: "origin-pair", tool: "check_origin.mjs", args: [pictures], env: { CASE: "pair", NAME: "origin-pair" }, minutes: 1 },
   // The engine's own runs: the page's where GARD's entry names them, else two adapted from their folder on a check-only scene ("skip" where neither is at hand).

@@ -173,3 +173,54 @@ test("the engine's two runs of one world: each a small file the view reads, the 
     done();
   }
 });
+
+test("the held population preserves carrier identity, release time and returned counts and refuses a missing record", async () => {
+  const { VesicleRun } = await import("../src/lenses/vesicle_run.js");
+  const dir = mkdtempSync(path.join(tmpdir(), "vesicle-bundle-"));
+  try {
+    for (const [fault, message] of [
+      ["", null],
+      ["key", /carrier key/],
+      ["record", /no membrane_footprint_quanta/],
+      ["hold", /applied tension/],
+      ["duplicate", /duplicate rupture/],
+    ]) {
+      const made = py([
+        "-c",
+        "import runpy,sys;runpy.run_path(sys.argv[1])['pore_fixture'](sys.argv[2],sys.argv[3])",
+        MAKE,
+        path.join(dir, "input"),
+        fault,
+      ]);
+      assert.equal(made.status, 0, made.stderr);
+      const out = path.join(dir, "adapted" + fault);
+      const r = py([TOOL, "--evidence", dir, "--out", out, "--standing", "development", "--standing-from", "fixture", "input"]);
+      if (message) {
+        assert.equal(r.status, 1);
+        assert.match(r.stderr, message);
+        continue;
+      }
+      assert.equal(r.status, 0, r.stderr);
+      const data = JSON.parse(readFileSync(path.join(out, readdirSync(out)[0]), "utf8"));
+      const run = new VesicleRun(data);
+      assert.deepEqual(
+        [0, 1.99, 2, 6.99, 7].map((t) => run.survivors(t)),
+        [2, 2, 1, 1, 0],
+      );
+      assert.equal(run.at(0, 1).sample.key, "4294967296");
+      assert.deepEqual([run.at(0, 1).sample.membrane_footprint_quanta, run.at(2, 0).sample.membrane_footprint_quanta], [8, 4]);
+      assert.equal(run.at(2, 1).sample, null);
+      assert.deepEqual(
+        data.releases.map((e) => [e.cause, e.slot, e.returned["L@pool"]]),
+        [
+          ["pore", 1, 8],
+          ["pore", 0, 4],
+        ],
+      );
+      assert.equal(run.at(1, 0).hold.sigma_N_per_m, 0.001);
+      assert.equal(run.at(1, 0).sample.lumen_volume_L, undefined);
+    }
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});

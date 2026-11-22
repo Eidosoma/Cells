@@ -1,5 +1,13 @@
 # Origin of life in the viewer: GARD, the options, and a recommendation
 
+**Cells' own vesicles, 22 November 2026.** The Scope switch now offers **Cells vesicles**
+in the Origin of life group. Its growth and threshold-lysis replays come from
+`cells.assembly_lineages@2`. The clock counts seconds and the quantity layers use the run's
+saved rows. Select **Last intact state** at lysis to inspect the triggering tension, then
+**Released state** for the returned material at the same time. GARD retains its own comparison
+entry and fission clock. The data contract and the limits of the molecular illustration are
+in [Vesicle replays in recorded seconds](../schema/ASSEMBLY_RUN.md#vesicle-replays-in-recorded-seconds).
+
 Ideas and options for the user, 16 November 2026; the view the user chose is now built standing alone,
 with a preview page (see "Status", below). **When this was written nothing of GARD was in Cells'
 engine; since 17 November 2026 its first part is on main (see "The record", under the protocell).** The engine's
