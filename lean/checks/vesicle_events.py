@@ -1,4 +1,4 @@
-"""Short mass-action products, finite osmotic energy changes and one measured deflation."""
+"""Short mass-action products, finite osmotic energy changes and measured vesicle deflations."""
 
 import argparse
 import json
@@ -225,15 +225,35 @@ def deflation():
     )
 
 
+def intact_deflation():
+    study = json.loads((DATA / "fujiwara2014_vesicle.json").read_text())["study"]
+    inside, outside = study["initial_internal_mOsm_L"], study["final_external_mOsm_L"]
+    start, _ = bath_world(inside, inside)
+    end, _ = bath_world(inside, outside)
+    measured_inverse = study["figure_3"]["reported_plateau_ratio_approx"]
+    tracer = study["figure_S3"]["rightmost_circle_plot_reading_approx"]
+    return dict(
+        measured_final_over_initial_approx=1 / measured_inverse,
+        compiled_final_over_initial=end / start,
+        compiled_initial_over_final=start / end,
+        ideal_final_over_initial=inside / outside,
+        gfp_amount_over_initial_approx=tracer["current_over_initial_GFP_concentration"]
+        / tracer["initial_over_current_volume"],
+        passed=math.isclose(end / start, inside / outside, rel_tol=3e-14),
+    )
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--case", choices=("all", "draws", "energy", "deflation"), default="all")
+    cases = {
+        "draws": draws,
+        "energy": energy,
+        "deflation": deflation,
+        "intact-deflation": intact_deflation,
+    }
+    parser.add_argument("--case", choices=("all", *cases), default="all")
     case = parser.parse_args().case
     jax.config.update("jax_enable_x64", True)
-    results = {
-        name: fn()
-        for name, fn in (("draws", draws), ("energy", energy), ("deflation", deflation))
-        if case in ("all", name)
-    }
+    results = {name: fn() for name, fn in cases.items() if case in ("all", name)}
     print(json.dumps(results, indent=2, allow_nan=False))
     raise SystemExit(int(any(not part["passed"] for part in results.values())))

@@ -1,5 +1,25 @@
 # Cells proof comparisons
 
+<a id="vesicle-lysis-returns"></a>
+
+## 22 November 2026 · Molecules returned by a terminal rupture
+
+The assembly record gives two states at a rupturing step. The diagnostic event gives the pool after the triggering step. The end row for a single lineage, or the matching lysis row in a population, gives the pool after the vesicle empties. Lean proves that applying the individual returns to the first state increases each finite pool by its total receipt. A held pool keeps its count and its signed reservoir supply decreases by that receipt. Summing receipts over the destinations recovers the entire cargo. [Lean proof](CellsProofs/Chemistry/VesicleRelease.lean) · [R9 record definition](../validation/assembly_lineages_v2/FORMAT_OL2.md#L545)
+
+On engine `87e81f56`, all four compiled `cells.assembly_lineages@2` runs closed their energy accounts and their serialized records reconciled by place name. In both modes, one lipid had already detached into the pool. Four membrane lipids and two lumen lipids returned to that same place, giving **1 + 6 = 7**. Counting the receipt a second time would give 13. The two impermeant tracer molecules increased a finite pool by two. With a held destination they reduced signed supply by two and booked **9.210340371976182 kT** of reservoir work. The other population slot survived. These controls cover event-triggered lysis. [Run and check the four bundles](checks/vesicle_release.py) · [Lineage release](https://github.com/Eidosoma/Cells/blob/87e81f56366b5d06bd2abd45ebd2bb45a70f8b25/src/cells/models/assembly_lineages_v2/runner.py#L492) · [Population release](https://github.com/Eidosoma/Cells/blob/87e81f56366b5d06bd2abd45ebd2bb45a70f8b25/src/cells/models/assembly_lineages_v2/population.py#L700)
+
+<a id="intact-vesicle-deflation"></a>
+
+### Which vesicle measurements agree with the equilibrium volume?
+
+| Preparation and measured quantity | Experimental result | Cells comparison |
+| --- | --- | --- |
+| Fujiwara and Yanagisawa, five DOPE/DOPC liposomes. Final volume relative to starting volume, 70 to 285 mOsm/L. | About 0.25, from the reported fourfold inverse-volume plateau. Paired measurements on an individual liposome support GFP retention. | **0.2456** with the prepared osmolarities and fixed osmoles, without fitting. Compatible at the reported precision. [Study](https://doi.org/10.1021/sb4001917) · [Tracer and volume, Fig. S3](https://doi.org/10.1021/sb4001917.s001) |
+| Wolfisberg et al., one weakly adhered POPC vesicle. Volume relative to the spherical capacity at the measured area. | **0.30** at 58 mOsm/L. All four later measurements lay below the respective predictions. | **0.4393** at that point after calibrating to the first observation. [Figure 2B and inputs](checks/data/wolfisberg2025_vesicle.json) |
+| Bhatia et al., one trapped vesicle with an inward tube. Final lumen relative to the measured start, 66 to 72 mM. | At most **0.756** using the central outer contour. Subtracting a straight cylindrical tube gives an estimated **0.705**. | **0.917** assuming retained osmoles. The reported ±1,000 µm³ outer-volume uncertainty spans the roughly 950 µm³ difference. [Geometry and uncertainties](#bhatia-vesicle-deflation) |
+
+The new compiled endpoint replay gave an initial-to-final ratio of **4.071428571428582**. The five-volume plateau and the paired GFP plot have different observations. The reported linear fit in the latter has R² = 0.9987. The error of an individual retention estimate and the retention of smaller osmoles remain open. [Replay inputs and prior result](checks/data/fujiwara2014_vesicle.json) · [Deflation driver](checks/vesicle_events.py) · [Biological evidence and scope](claims/incoming/vesicle-osmosis-evidence.md)
+
 <a id="ol5-event-energy"></a>
 
 ## 22 November 2026 · Osmotic energy booked by a single vesicle event
