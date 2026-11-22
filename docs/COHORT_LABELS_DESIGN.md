@@ -1,5 +1,17 @@
 # Cohorts and age classes within a species row: design options (FR-33, FR-25's follow-up)
 
+**Status, 22 November 2026: D1 retired (D300).**
+- D1's label families, declared rows of one species with their own potentials, were removed from
+  the species registry at the user's direction: "we don't want old backwards compatibility — we're
+  still in heavy dev, not even at alpha".
+- **Their replacement:** FR-42's neutral labels, shares of one physical row
+  (docs/NEUTRAL_LABELS_DESIGN.md; D289, D296).
+- **FR-33's examples now run on shares,** with plain rows of the same material as their exact
+  reference.
+- Registered results reproduce through their tags and snapshots.
+
+The rest of this note is the design history as written.
+
 ## The gap
 
 **What the records name today:**

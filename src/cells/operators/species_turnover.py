@@ -67,6 +67,12 @@ species need per-species Newton tolerances first (§8).
 Idle: no route, statically idle; no positive rate in a half-step, the start state is selected;
 untouched entries are selected, never offset by zero, so @3's ion rows are bitwise unchanged. The
 face diffusivity that carries the species is the effective (FRAP) kind (§6).
+
+Labels (FR-42, D289; operators/species_labels.py): a reporter. Given labels (rows, arrival), the
+half-step also returns its one-way moves for the labelled rows (one_way_moves): out, the clearance
+it booked; into, the production it booked, at the label the step's window names. The physics is
+unchanged: the labelled call's state is bit for bit the unlabelled one's, and without labels
+nothing of it is traced.
 """
 
 from dataclasses import dataclass
@@ -303,8 +309,9 @@ def _node_update(increment, anchor, volume, mask, production, clearance, h, temp
     )
 
 
-def turnover_half_step(state, rate, h, p, *, xp=jnp):
-    """(state after h of turnover, every written amount finite and positive)."""
+def turnover_half_step(state, rate, h, p, *, xp=jnp, labels=None):
+    """(state after h of turnover, every written amount finite and positive); with labels (FR-42,
+    D289; static), also its one-way moves (one_way_moves)."""
     rows = p.turnover_rows
     k, n, o = rows.shape[0], p.active.size, p.outside_active.size
     row, node = p.turnover_route_row, p.turnover_route_node
@@ -402,7 +409,29 @@ def turnover_half_step(state, rate, h, p, *, xp=jnp):
     flowing = xp.any(rate > 0)  # No positive rate: select the start state (bitwise idle).
     selected = type(state)(*(xp.where(flowing, a, b) for a, b in zip(new, state, strict=True)))
     valid = ok_cell & ok_outside & _own_valid(selected, xp=xp)
-    return selected, valid
+    if labels is None:
+        return selected, valid
+    moves = one_way_moves(rows, (prod, clr, out_clr), labels, xp=xp)
+    return selected, valid, tuple(xp.where(flowing, m, 0.0) for m in moves[:2]) + ((),)
+
+
+def one_way_moves(rows, booked, labels, *, xp):
+    """(out [m, node], into [m, label, node], ()) of the labelled rows over a half-step (FR-42's
+    interface, operators/contract.py; the node axis the cells, then the outside nodes): out the
+    clearance booked, into the production booked, at the arrival label. booked: (produced,
+    cleared) [turnover rows, cell] and cleared [turnover rows, outside node], zero where untouched.
+    Into minus out is each row's booked move, at rounding."""
+    produced, cleared, outside_cleared = booked
+    label_rows, arrival = labels
+    match = rows[None, :] == xp.asarray(label_rows)[:, None]  # [m, turnover rows]
+    own, at = xp.any(match, axis=1)[:, None], xp.argmax(match, axis=1)
+
+    def pick(values):
+        return xp.where(own, values[at], 0.0)
+
+    out = xp.concatenate((pick(cleared), pick(outside_cleared)), axis=1)
+    made = xp.concatenate((pick(produced), xp.zeros_like(pick(outside_cleared))), axis=1)
+    return out, arrival[:, :, None] * made[:, None, :], ()
 
 
 def _own_valid(state, *, xp):
@@ -579,8 +608,12 @@ class ScheduledSpeciesTurnover(Operator):
     def statically_idle(self, p):
         return p.turnover_route_node.shape[0] == 0
 
-    def half_step(self, state, h, control, p, *, xp):
-        return turnover_half_step(state, control.turnover_rate, h, p, xp=xp)
+    def half_step(self, state, h, control, p, *, xp, labels=None):
+        """labels (FR-42, D289; static): (rows, arrival); the call then also returns its one-way
+        moves. Without it, today's call."""
+        if labels is None:
+            return turnover_half_step(state, control.turnover_rate, h, p, xp=xp)
+        return turnover_half_step(state, control.turnover_rate, h, p, xp=xp, labels=labels)
 
     def control_valid(self, control, p, *, xp):
         rate = control.turnover_rate

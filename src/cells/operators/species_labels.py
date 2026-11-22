@@ -1,0 +1,858 @@
+"""Operator neutral_arrival_labels@1: neutral arrival-time labels as shares of a physical row.
+
+FR-42 (docs/FEATURE_REQUESTS.md), option A of docs/NEUTRAL_LABELS_DESIGN.md (D289), stage 1: pools.
+A neutral label records when otherwise identical units entered a pool, so the cohort that arrived
+during a window can be followed. Each labelled species stays one physical row of @3's species axis,
+which every law, energy term and heat booking reads as today; the labels are shares of it, which no
+law reads. So labelling never changes the dynamics, the energy or a record of the physical state,
+and a cohort can start at exactly zero (a share, not a stored amount).
+
+Declaration: `species`, each {id, labels, initial}: a species of the model; its labels, one or
+more distinct IDs (at most MAX_LABELS), the first its **base**, which holds unlabelled material (all
+initial material unless declared otherwise, and every arrival outside a window); and `initial`, a
+list, possibly empty, of {node, shares: {label: fraction}}: a cell's or finite outside node's
+starting shares, each fraction in [0, 1] and their sum 1 within SUM_ULPS ulps (every node not
+listed starts at the base). A species is labelled once. Shares replaced D1's label families, rows
+of their own with their own potentials, which D300 retired.
+
+Schedule `label_arrivals`: [{species, schedule: [{time, label}, ...]}], at most one per species: the
+label that each step's arrivals join, piecewise constant from its first change (the base before it
+and for a species with no schedule). A change is a point of the clock's grid (D283's on_grid:
+k * dt, or within its same-instant tolerance of it) inside the horizon, and changes increase
+strictly. A window [start, end) for label L is a change to L at start and one back at end. Each
+step's label is the one in force at the step's start, resolved by step index with D283's
+same_instant (numerics/clock_instants.py, the predicate it names for label switches), so arrivals
+during the step that starts at a window's start join it and during the step that starts at its end
+do not. A label reused later keeps its older material, which survives with the rest.
+
+State, present only in a composition that declares this operator: `label_share` [labelled species,
+label, cell] and `label_outside_share` [..., outside node], each row's shares at each node (padded
+labels 0, the presence mask bound in `label_present`); `label_closure_relative` [labelled species],
+a diagnostic: the largest closure residual of any reporter's half-step so far
+(label_shares.closure_residual), relative to the amounts involved. It measures each reporter's own
+consistency, its booked move against its reported one-way parts, at rounding; that no other mover
+touched the row is the definition's refusals' to hold, not this record's.
+
+The update (the composite, models/pump_composite.py `_half_step`): after each applied half-step of a
+reporter (contract.reports_labels: turnover, the reactions' driven routes, and templated
+polymerisation with the gene regulation lane's side), the shares are advanced from the half-step's
+start and end amounts and its moves (numerics/label_shares.advance: exact for a constant
+per-molecule rate within the half-step, second-order otherwise; without arrivals the shares are
+kept bit for bit). The physical state and validity are the reporter's, bit for bit, so a labelled
+run's physical fields and records equal the unlabelled run's.
+
+Stage 2 and D296 (docs/NEUTRAL_LABELS_DESIGN.md section 8): where the inner step takes labels=,
+its faces' and routes' one-way transfers carry their sources' shares (advance_inner); a pool
+reporter's pools are advanced with its rows as sites (advance_pools); a source reporter receives
+each source's arrival label (source_controls); and replacement@1's event reports the slots it
+replaced, which take the newcomer label (advance_event).
+
+Refused (fail closed), each refusal naming the FR-42 stage that lifts it:
+- a labelled species moved inside the inner step (registry moved_in_step) by anything the inner
+  step does not report: every mover before @3's side lands (stage 2); afterwards a charged face,
+  a channel, a pump, a kind or an in-step process, and RK4 beside a followed mover;
+- an operator whose split part writes species amounts without reporting (turnover, exchange,
+  reactions and templated polymerisation report; FR-42's stage 3 added exchange and the reactions'
+  passive routes);
+- an event that writes species amounts without reporting the slots it replaced, a closer or
+  retirer of slots, and a provider of the amount references (no FR-42 stage plans them yet).
+A second label owner is refused by the composite's parser, as a second declaration of its schedule
+key. RK4 on the coupled path needs no refusal: a coupled RK4 composition refuses every split-only
+part, so no reporter runs there.
+"""
+
+from dataclasses import dataclass
+
+import jax.numpy as jnp
+import numpy as np
+
+from cells.definitions import pump_composite_spec as composite_spec
+from cells.definitions.spec_values import identifier
+from cells.definitions.specs import ConfigError, _fields
+from cells.models import inner_laws
+from cells.numerics import label_shares
+from cells.numerics.clock_instants import ON_THE_GRID, on_grid, same_instant  # D283's predicate.
+from cells.numerics.species_sums import entity_sum
+from cells.operators.contract import Operator, reports_labels, takes_labels
+from cells.registry import species_registry
+
+LAW_ID = "neutral_arrival_labels@1"
+SCHEDULE_KEY = "label_arrivals"
+MAX_LABELS = 64  # Producer x window labels (D296) need more than one window's few.
+SUM_ULPS = 8  # A declared node's shares sum to 1 within this many ulps.
+AMOUNT_FIELDS = ("amount_increment", "extracellular_amount_increment")
+AMOUNT_VIEWS = ("amount_reference", "extracellular_amount_reference")
+# FR-42's stage 2: the inner step's movers whose one-way transfers it reports (@3's side), by mover
+# kind: the uncharged face (logmean_electrodiffusion@1, Fick's for an uncharged row) and the
+# membrane and junction routes (constant_field@1, GHK at the shared voltage), each linear in each
+# end.
+REPORTED_MOVERS = {
+    "face": inner_laws.FACE_ROUTE_LAW_ID,
+    "membrane": inner_laws.MEMBRANE_ROUTE_LAW_ID,
+    "junction": inner_laws.MEMBRANE_ROUTE_LAW_ID,
+}
+NOT_PLANNED = "no FR-42 stage plans it yet"
+
+STATE_AXES = {
+    "label_share": ["label_species", "label_slot", "cell_slot"],
+    "label_outside_share": ["label_species", "label_slot", "extracellular_slot"],
+    "label_closure_relative": ["label_species"],
+    # D296: each pool reporter's (LABEL_POOLS, in declared order) pool entries' shares.
+    "label_pool_share": ["label_pool_owner", "label_slot", "label_pool"],
+}
+LAYOUT_FIELDS = (
+    "label_rows",  # [labelled species] int64: their rows of the model's species axis.
+    "label_present",  # [labelled species, label] bool: the declared labels (padding False).
+    "label_pool_rows",  # [pool owner, pool] int64: the entry's labelled species, -1 if none.
+    "label_pool_present",  # [pool owner, label, pool] bool: its species' labels (else the base).
+    "label_pool_cells",  # [pool owner, pool] int64: the entry's cell, -1 for none (D296).
+)
+
+
+@dataclass(frozen=True)
+class Labelled:
+    id: str
+    labels: tuple  # Label IDs, the base first.
+    initial: tuple  # ((node id, ((label, fraction), ...)), ...), in declared order.
+
+
+@dataclass(frozen=True)
+class Labels:
+    law: str
+    species: tuple  # Labelled, ...
+
+
+# ------------------------------------------------------------------ definition
+
+
+def _fraction(value, what):
+    if type(value) not in (int, float) or not np.isfinite(value) or not 0 <= value <= 1:
+        raise ConfigError(f"{LAW_ID}: {what} is a share in [0, 1]")
+    return float(value)
+
+
+def parse_labels(raw, base):
+    _fields(raw, {"law", "species"}, "neutral arrival labels")
+    if raw["law"] != LAW_ID:
+        raise ConfigError("Neutral arrival labels require law " + LAW_ID)
+    if type(raw["species"]) is not list or not raw["species"]:
+        raise ConfigError(f"{LAW_ID} lists its labelled species in a non-empty list")
+    m = base.model
+    cells = {c.id for c in m.cells}
+    outside = {c.id: c for c in m.extracellular}
+    out = []
+    for entry in raw["species"]:
+        _fields(entry, {"id", "labels", "initial"}, f"{LAW_ID} species")
+        name = identifier(entry["id"])
+        if name not in m.species_ids:
+            raise ConfigError(f"{LAW_ID} labels a species the model does not declare: {name!r}")
+        labels = entry["labels"]
+        if (
+            type(labels) is not list
+            or not 1 <= len(labels) <= MAX_LABELS
+            or len(set(labels)) != len(labels)
+        ):
+            raise ConfigError(
+                f"{LAW_ID}: species {name} lists 1 to {MAX_LABELS} distinct labels, its base first"
+            )
+        labels = tuple(identifier(label) for label in labels)
+        if type(entry["initial"]) is not list:
+            raise ConfigError(f"{LAW_ID}: species {name}'s initial shares are a list")
+        initial, seen = [], set()
+        for item in entry["initial"]:
+            _fields(item, {"node", "shares"}, f"{LAW_ID} initial shares")
+            node = item["node"]
+            if node in outside and outside[node].reservoir:
+                raise ConfigError(
+                    f"{LAW_ID}: {name}'s shares at {node}, a held bath, whose composition is held"
+                )
+            if node not in cells and node not in outside:
+                raise ConfigError(f"{LAW_ID}: {name}'s shares at an undeclared node {node!r}")
+            if node in seen:
+                raise ConfigError(f"{LAW_ID}: {name}'s shares at {node} are declared twice")
+            seen.add(node)
+            shares = item["shares"]
+            if not isinstance(shares, dict) or not shares or set(shares) - set(labels):
+                raise ConfigError(f"{LAW_ID}: {name}'s shares at {node} name its own labels")
+            values = tuple(
+                (label, _fraction(v, f"{name}'s share {label} at {node}"))
+                for label, v in shares.items()
+            )
+            if abs(sum(v for _, v in values) - 1.0) > SUM_ULPS * label_shares.EPS:
+                raise ConfigError(f"{LAW_ID}: {name}'s shares at {node} sum to 1")
+            initial.append((node, values))
+        out.append(Labelled(name, labels, tuple(initial)))
+    if len({s.id for s in out}) != len(out):
+        raise ConfigError(f"{LAW_ID} labels a species twice")
+    return Labels(LAW_ID, tuple(out))
+
+
+def labels_to_dict(declaration):
+    if type(declaration) is not Labels or any(type(s) is not Labelled for s in declaration.species):
+        raise ConfigError("Require explicit immutable neutral arrival label declaration types")
+    return dict(
+        law=declaration.law,
+        species=[
+            dict(
+                id=s.id,
+                labels=list(s.labels),
+                initial=[dict(node=node, shares=dict(values)) for node, values in s.initial],
+            )
+            for s in declaration.species
+        ],
+    )
+
+
+def parse_arrivals(raw, base, declaration):
+    """(((species, source), ((time, label), ...)), ...), sorted, from the label_arrivals list
+    (module docstring): source "" for a species' own schedule, or a reporter's source ID (D296);
+    nested tuples, so the definition stays hashable. A source's existence is checked with the
+    composition (check_labels)."""
+    if type(raw) is not list:
+        raise ConfigError(f"{SCHEDULE_KEY} requires an explicit list")
+    by_id = {s.id: s for s in declaration.species}
+    dt, end = base.execution.dt, base.experiment.end_time
+    schedules = {}
+    for entry in raw:
+        keys = {"species", "source", "schedule"} if "source" in entry else {"species", "schedule"}
+        _fields(entry, keys, f"{SCHEDULE_KEY} entry")
+        species = by_id.get(entry["species"])
+        if species is None:
+            raise ConfigError(f"{SCHEDULE_KEY} names a species not labelled: {entry['species']!r}")
+        source = identifier(entry["source"]) if "source" in entry else ""
+        if (species.id, source) in schedules:
+            raise ConfigError(
+                f"{LAW_ID}: one arrival schedule per species and source ({species.id} {source})"
+            )
+        if type(entry["schedule"]) is not list or not entry["schedule"]:
+            raise ConfigError(f"{LAW_ID}: {species.id}'s arrival schedule lists its changes")
+        changes = []
+        for change in entry["schedule"]:
+            _fields(change, {"time", "label"}, f"{SCHEDULE_KEY} change")
+            time, label = change["time"], change["label"]
+            if type(time) not in (int, float) or not np.isfinite(time):
+                raise ConfigError(f"{SCHEDULE_KEY} requires a finite time")
+            time = float(time)
+            if on_grid(time, dt) is None:
+                raise ConfigError(
+                    f"{LAW_ID}: a label switch must be {ON_THE_GRID} ({species.id} at {time!r})"
+                )
+            if not 0.0 <= time <= end:
+                raise ConfigError(
+                    f"{LAW_ID}: a label switch lies outside the horizon ({species.id} at {time!r})"
+                )
+            if label not in species.labels:
+                raise ConfigError(f"{LAW_ID}: {species.id} has no label {label!r}")
+            changes.append((time, label))
+        times = [t for t, _ in changes]
+        if any(b <= a for a, b in zip(times, times[1:], strict=False)):
+            raise ConfigError(f"{LAW_ID}: {species.id}'s switch times increase strictly")
+        schedules[(species.id, source)] = tuple(changes)
+    return tuple(sorted(schedules.items()))
+
+
+def species_schedules(schedule):
+    """{species: changes} of the species' own schedules."""
+    return {name: changes for (name, source), changes in schedule if not source}
+
+
+def arrival_index(changes, times):
+    """[time] the position, among a species' labels, of the label in force at each step start of
+    `times` (increasing), given its changes ((time, position), ...) in increasing time and the
+    base (0) before the first. A change applies from the first step that starts at it or after it,
+    a start at the same instant (clock_instants.same_instant) included: a window's start is its
+    first step, and its end the first step it does not hold."""
+    times = np.asarray(times, dtype=np.float64)
+    index = np.zeros(times.shape, dtype=np.int64)
+    for at, position in changes:
+        first = int(np.searchsorted(times, at, side="left"))
+        if first > 0 and same_instant(float(times[first - 1]), at):
+            first -= 1
+        index[first:] = position
+    return index
+
+
+def arrival_controls(declaration, schedule, times):
+    """[time, labelled species, label] one-hot: the label each step's arrivals join."""
+    width = max(len(s.labels) for s in declaration.species)
+    out = np.zeros((len(times), len(declaration.species), width))
+    for j, s in enumerate(declaration.species):
+        own = species_schedules(schedule).get(s.id, ())
+        changes = tuple((t, s.labels.index(label)) for t, label in own)
+        out[np.arange(len(times)), j, arrival_index(changes, times)] = 1.0
+    return out
+
+
+def reporters(spec, flag):
+    """(operator, declaration) of the composition's reporters with `flag` (LABEL_SOURCES or
+    LABEL_POOLS), in declared order: their positions are the owner's axes'."""
+    return tuple(
+        (op, declaration)
+        for op, declaration, _ in composite_spec.entries(spec)
+        if getattr(op, flag) and reports_labels(op)
+    )
+
+
+def source_controls(spec, declaration, schedule, times):
+    """[time, source reporter, source, label] one-hot (D296): each declared source's label this
+    step, its own schedule's where it has one, else its species' (and zeros for a source of an
+    unlabelled species and for padding)."""
+    labelled = {s.id: (j, s) for j, s in enumerate(declaration.species)}
+    width = max(len(s.labels) for s in declaration.species)
+    species = arrival_controls(declaration, schedule, times)
+    owners = reporters(spec, "LABEL_SOURCES")
+    sources = [op.label_sources(d) for op, d in owners]
+    out = np.zeros((len(times), len(owners), max(map(len, sources), default=0), width))
+    own = {key: changes for key, changes in schedule}
+    for r, declared in enumerate(sources):
+        for k, (source, name, _) in enumerate(declared):
+            if name not in labelled:
+                continue
+            j, entry = labelled[name]
+            if (name, source) not in own:
+                out[:, r, k, :] = species[:, j, :]
+                continue
+            changes = tuple((t, entry.labels.index(label)) for t, label in own[(name, source)])
+            out[np.arange(len(times)), r, k, arrival_index(changes, times)] = 1.0
+    return out
+
+
+def operator_errors(spec):
+    """The fail-closed refusals of the composition's operators (module docstring), as messages."""
+    errors = []
+    for op, _, _ in composite_spec.entries(spec):
+        if op.LABEL_OWNER:
+            continue
+        replaces = set(AMOUNT_FIELDS) & {*op.EVENT_REPLACES, *op.STATE_RESETS}
+        writes = set(AMOUNT_FIELDS) & set(op.ENTITY_WRITES) - replaces
+        where = f"{op.LAW_ID} beside {LAW_ID}"
+        if op.RETIRES or op.CLOSES:
+            errors.append(f"{where}: it closes or retires slots ({NOT_PLANNED})")
+        elif set(AMOUNT_VIEWS) & set(op.VIEW_FIELDS):
+            errors.append(f"{where}: its view changes species amounts ({NOT_PLANNED})")
+        elif replaces and not (op.EVENT and takes_labels(op.event)):
+            errors.append(f"{where}: its events write species amounts ({NOT_PLANNED})")
+        elif writes and op.EVENT and not op.SPLIT:
+            errors.append(f"{where}: its events write species amounts ({NOT_PLANNED})")
+        elif writes and op.SPLIT and not reports_labels(op):
+            errors.append(
+                f"{where}: it writes species amounts without reporting its one-way moves "
+                f"({NOT_PLANNED})"
+            )
+    return errors
+
+
+def in_step_errors(spec, declaration, reports):
+    """Stage 2's refusals of a labelled species moved inside the inner step, as messages. reports:
+    the inner step reports its one-way transfers (it takes labels=; the composition's
+    inner_reports_labels). Where it does, an uncharged face and the membrane and junction routes
+    (REPORTED_MOVERS) are followed, except under RK4; every other in-step mover is refused: a
+    charged face (no one-way form), a channel or a pump (no FR-42 stage plans them yet), a kind
+    (its hook follows @3's side) and an operator's in-step process. Without a reporting inner step
+    (beside declared kinds, or a step that takes no labels), every in-step mover is refused."""
+    m, inner = species_registry.inner_movers(spec)
+    valence = dict(zip(m.species_ids, m.valence, strict=True))
+    moved = species_registry.moved_in_step(spec)
+    rk4 = spec.execution.solver == "rk4"
+    errors = []
+    for s in declaration.species:
+        followed, refused = [], []
+        for kind, law, entities in inner.get(s.id, ()):
+            ok = REPORTED_MOVERS.get(kind) == law and (kind != "face" or valence[s.id] == 0)
+            (followed if reports and ok else refused).append(f"{kind} {', '.join(entities)}")
+        names = [*moved[s.id]["cell"], *moved[s.id]["outside"]]
+        refused += list(dict.fromkeys(n for n in names if n.endswith("(its in-step process)")))
+        if refused:
+            later = (
+                "a charged face has no one-way form, channels, pumps and in-step processes "
+                "wait for a later stage, and kinds for their hook"
+                if reports
+                else "this composition's inner step reports none: beside declared kinds, until "
+                "their hook, or where its step takes no labels"
+            )
+            errors.append(
+                f"{LAW_ID}: {s.id} is moved inside the inner step by {', '.join(refused)}, "
+                f"which do not report one-way moves ({later})"
+            )
+        if followed and rk4:
+            errors.append(
+                f"{LAW_ID}: {s.id} is moved inside the inner step by {', '.join(followed)}, and "
+                "version 1 follows labels through the IMEX step only, not RK4 (FR-42)"
+            )
+    return errors
+
+
+def check_labels(spec, declaration, model=None):
+    """The definition's refusals (module docstring); model: the composition (its inner step's
+    reporting decides stage 2's admission)."""
+    reports = bool(getattr(model, "inner_reports_labels", False))
+    errors = in_step_errors(spec, declaration, reports) + operator_errors(spec)
+    errors += source_errors(spec, schedule_of(spec))
+    if errors:
+        raise ConfigError("; ".join(errors))
+
+
+def schedule_of(spec):
+    """The owner's parsed schedule in a composition."""
+    return next(schedule for op, _, schedule in composite_spec.entries(spec) if op.LABEL_OWNER)
+
+
+def source_errors(spec, schedule):
+    """D296: each source a schedule names is a source reporter's, of the species it names."""
+    declared = {
+        (name, source)
+        for op, d in reporters(spec, "LABEL_SOURCES")
+        for source, name, _ in op.label_sources(d)
+    }
+    return [
+        f"{LAW_ID}: label_arrivals names source {source!r} of {name}, which no reporter declares "
+        "(label_sources)"
+        for (name, source), _ in schedule
+        if source and (name, source) not in declared
+    ]
+
+
+def labelled_species(spec):
+    """The species a composition's label owner labels (a frozenset; empty without one): for a
+    reporter's own refusals of the cases it does not report."""
+    return frozenset(
+        s.id
+        for op, declaration, _ in composite_spec.entries(spec)
+        if op.LABEL_OWNER
+        for s in declaration.species
+    )
+
+
+def bind(spec, declaration):
+    m, x = spec.model, spec.execution
+    species = list(m.species_ids)
+    cells = [c.id for c in m.cells]
+    outside = [c.id for c in m.extracellular]
+    count = len(declaration.species)
+    width = max(len(s.labels) for s in declaration.species)
+    present = np.zeros((count, width), dtype=bool)
+    share = np.zeros((count, width, x.capacity))
+    outside_share = np.zeros((count, width, x.extracellular_capacity))
+    share[:, 0, :] = 1.0
+    outside_share[:, 0, :] = 1.0
+    for j, s in enumerate(declaration.species):
+        present[j, : len(s.labels)] = True
+        for node, values in s.initial:
+            target, k = (share, cells.index(node)) if node in cells else (outside_share, None)
+            k = outside.index(node) if k is None else k
+            target[j, :, k] = 0.0
+            for label, value in values:
+                target[j, s.labels.index(label), k] = value
+    pools = [op.label_pools(d) for op, d in reporters(spec, "LABEL_POOLS")]
+    position = {s.id: j for j, s in enumerate(declaration.species)}
+    size = max(map(len, pools), default=0)
+    pool_rows = np.full((len(pools), size), -1, dtype=np.int64)
+    pool_cells = np.full((len(pools), size), -1, dtype=np.int64)
+    cell_ids = [c.id for c in m.cells]
+    pool_present = np.zeros((len(pools), width, size), dtype=bool)
+    pool_present[:, 0, :] = True  # An unlabelled species' entry, or padding: the base alone.
+    for r, entries in enumerate(pools):
+        for k, (_, name, cell) in enumerate(entries):
+            if cell in cell_ids:
+                pool_cells[r, k] = cell_ids.index(cell)
+            if name in position:
+                pool_rows[r, k] = position[name]
+                pool_present[r, :, k] = present[position[name]]
+    pool_share = np.zeros((len(pools), width, size))
+    pool_share[:, 0, :] = 1.0  # A pool's material starts unlabelled.
+    layout = dict(
+        label_rows=np.asarray([species.index(s.id) for s in declaration.species], dtype=np.int64),
+        label_present=present,
+        label_pool_rows=pool_rows,
+        label_pool_present=pool_present,
+        label_pool_cells=pool_cells,
+    )
+    state = dict(
+        label_share=share,
+        label_outside_share=outside_share,
+        label_closure_relative=np.zeros(count),
+        label_pool_share=pool_share,
+    )
+    return state, layout
+
+
+# ------------------------------------------------------------------ the update
+
+
+def amounts(state, p, *, xp):
+    """([labelled, cell], [labelled, outside node]) amounts, and the increments' magnitudes."""
+    rows = p.label_rows
+    cell_increment = state.amount_increment[rows]
+    node_increment = state.extracellular_amount_increment[rows]
+    return (
+        p.amount_reference[rows] + cell_increment,
+        p.extracellular_amount_reference[rows] + node_increment,
+        xp.abs(cell_increment),
+        xp.abs(node_increment),
+    )
+
+
+def _all_nodes(values, p, *, xp):
+    """values [..., node], padded with zeros at the outside nodes when a reporter at cells only
+    gives its cells alone (the contract)."""
+    cells, nodes = p.active.shape[0], p.outside_active.shape[0]
+    if values.shape[-1] == cells and nodes:
+        return xp.concatenate((values, xp.zeros(values.shape[:-1] + (nodes,))), axis=-1)
+    return values
+
+
+def advance(start, end, moves, p, *, xp=jnp, pool=None):
+    """end with the label shares advanced by one reporter's applied half-step from start, given
+    its moves (out [m, node], into [m, label, node], transfers): label_shares.advance at the cells
+    and the outside nodes, and the closure diagnostic's running maximum. The node axis is the cells
+    then the outside nodes, or the cells alone (contract). A pool reporter (LABEL_POOLS; pool: its
+    position among them) gives a fourth part, its pools' (advance_pools)."""
+    if pool is not None:
+        return advance_pools(start, end, moves, p, pool, xp=xp)
+    out, into, transfers = moves
+    out, into = _all_nodes(out, p, xp=xp), _all_nodes(into, p, xp=xp)
+    if transfers:  # Static: a reporter that moves material between nodes (exchange's routes).
+        return advance_nodes(start, end, out, into, transfers, p, xp=xp)
+    cells = p.active.shape[0]
+    present = p.label_present
+    c0, o0, ci0, oi0 = amounts(start, p, xp=xp)
+    c1, o1, ci1, oi1 = amounts(end, p, xp=xp)
+    shares = (start.label_share, start.label_outside_share)
+    parts = ((c0, c1, ci0, ci1, p.active), (o0, o1, oi0, oi1, p.outside_active & ~p.reservoir))
+    ends = (slice(None, cells), slice(cells, None))
+    new, worst = [], start.label_closure_relative
+    for share, (n0, n1, i0, i1, mask), part in zip(shares, parts, ends, strict=True):
+        o, i = out[..., part], into[..., part]
+        new.append(label_shares.advance(share, n0, n1, i, present, xp=xp))
+        residual = label_shares.closure_residual(n0, n1, i, o, xp=xp)
+        scale = n0 + n1 + entity_sum(i, axis=1, xp=xp) + o + i0 + i1
+        relative = xp.where(mask[None, :], residual / xp.where(scale > 0, scale, 1.0), 0.0)
+        worst = xp.maximum(worst, xp.max(relative, axis=1, initial=0.0))
+    return end._replace(
+        label_share=new[0], label_outside_share=new[1], label_closure_relative=worst
+    )
+
+
+def _sites(rows, pools, *, xp):
+    """[label, site]: the rows' [m, label, node] as sites j N + k, then the pools' [label, P]."""
+    m, width, nodes = rows.shape
+    flat = xp.reshape(xp.transpose(rows, (1, 0, 2)), (width, m * nodes))
+    return xp.concatenate((flat, pools), axis=1)
+
+
+def advance_pools(start, end, moves, p, pool, *, xp=jnp):
+    """advance() for a pool reporter (D296), at its position `pool` among them: its rows and its
+    pools advanced together as sites (label_shares.advance_transfers: carried material arrives
+    with its source's shares, predictor-corrector), and the closure diagnostic over both."""
+    out, into, transfers, (n0p, n1p, intop, outp, (amount, source, destination)) = moves
+    if transfers:
+        raise ConfigError(f"{LAW_ID}: a reporter's transfers are its pools' carried part (D296)")
+    cells, size = p.active.shape[0], n0p.shape[0]
+    out, into = _all_nodes(out, p, xp=xp), _all_nodes(into, p, xp=xp)
+    m, width = p.label_present.shape
+    nodes = out.shape[-1]
+    c0, o0, ci0, oi0 = amounts(start, p, xp=xp)
+    c1, o1, ci1, oi1 = amounts(end, p, xp=xp)
+    n0 = xp.concatenate((xp.reshape(xp.concatenate((c0, o0), axis=1), (-1,)), n0p))[None]
+    n1 = xp.concatenate((xp.reshape(xp.concatenate((c1, o1), axis=1), (-1,)), n1p))[None]
+    rows = xp.concatenate((start.label_share, start.label_outside_share), axis=2)
+    shares = _sites(rows, start.label_pool_share[pool, :, :size], xp=xp)[None]
+    present = xp.broadcast_to(p.label_present[:, :, None], (m, width, nodes))
+    present = _sites(present, p.label_pool_present[pool, :, :size], xp=xp)[None]
+    fixed = _sites(into, xp.transpose(intop), xp=xp)[None]
+    held = xp.concatenate(
+        (xp.tile(xp.concatenate((xp.zeros_like(p.active), p.reservoir)), m), xp.zeros(size, bool))
+    )
+    carried = ((amount[None, :], source, destination),) if amount.shape[0] else ()
+    new = label_shares.advance_transfers(shares, n0, n1, carried, present, held, xp=xp, into=fixed)[
+        0
+    ]
+    arriving, leaving = label_shares.carried(shares, carried, xp=xp)
+    lost = xp.concatenate((xp.reshape(out, (-1,)), outp))[None] + leaving
+    residual = label_shares.closure_residual(n0, n1, fixed + arriving, lost, xp=xp)[0]
+    scale = (n0 + n1 + entity_sum(fixed + arriving, axis=1, xp=xp) + lost)[0]
+    increments = xp.concatenate((ci0 + ci1, oi0 + oi1), axis=1)
+    scale = scale + xp.concatenate((xp.reshape(increments, (-1,)), xp.zeros(size)))
+    live = xp.concatenate(
+        (xp.tile(xp.concatenate((p.active, p.outside_active & ~p.reservoir)), m), n0p >= 0)
+    )
+    relative = xp.where(live, residual / xp.where(scale > 0, scale, 1.0), 0.0)
+    worst = xp.max(xp.reshape(relative[: m * nodes], (m, nodes)), axis=1, initial=0.0)
+    owner = p.label_pool_rows[pool, :size][None, :] == xp.arange(m)[:, None]  # [m, P]
+    worst = xp.maximum(
+        worst, xp.max(xp.where(owner, relative[m * nodes :][None, :], 0.0), axis=1, initial=0.0)
+    )
+    rows_new = xp.transpose(xp.reshape(new[:, : m * nodes], (width, m, nodes)), (1, 0, 2))
+    pools_new = new[:, m * nodes :]
+    if xp is jnp:
+        pool_share = start.label_pool_share.at[pool, :, :size].set(pools_new)
+    else:
+        pool_share = np.array(start.label_pool_share, copy=True)
+        pool_share[pool, :, :size] = pools_new
+    return end._replace(
+        label_share=rows_new[:, :, :cells],
+        label_outside_share=rows_new[:, :, cells:],
+        label_closure_relative=xp.maximum(start.label_closure_relative, worst),
+        label_pool_share=pool_share,
+    )
+
+
+def advance_event(end, replaced, control, p, *, xp=jnp):
+    """end with each replaced slot's (replaced [cell]) labelled shares, its rows' and its pool
+    entries', set to the label in force for their species this step, the newcomer label (D296;
+    an entry of an unlabelled species keeps the base): the departing material left with its own."""
+    newcomer = control.label_arrival[:, :, None]  # [m, label, 1] one-hot.
+    share = xp.where(replaced[None, None, :], newcomer, end.label_share)
+    pools = p.label_pool_rows  # [pool owner, pool] its species, -1 for none.
+    base = (xp.arange(control.label_arrival.shape[1]) == 0).astype(float)  # The base label.
+    arrival = xp.where(
+        (pools >= 0)[:, :, None], control.label_arrival[xp.maximum(pools, 0)], base
+    )  # [pool owner, pool, label]
+    cells = p.label_pool_cells
+    hit = (cells >= 0) & replaced[xp.maximum(cells, 0)]  # [pool owner, pool]
+    pool_share = xp.where(hit[:, None, :], xp.swapaxes(arrival, 1, 2), end.label_pool_share)
+    return end._replace(label_share=share, label_pool_share=pool_share)
+
+
+def advance_inner(start, end, transfers, p, *, xp=jnp):
+    """end with the label shares advanced over the inner step's transport (FR-42's stage 2), from
+    its transfers ((amount [m, entity], source [entity], destination [entity]), ..., nodes on the
+    combined axis, cells then outside nodes): advance_nodes with no other move."""
+    return advance_nodes(start, end, 0.0, 0.0, transfers, p, xp=xp)
+
+
+def advance_nodes(start, end, out, into, transfers, p, *, xp=jnp):
+    """end with the label shares advanced over one application with transfers between nodes:
+    label_shares.advance_transfers on the combined node axis (out [m, node] and into [m, label,
+    node] its other one-way moves, 0 for none; held baths kept), and the closure diagnostic's
+    running maximum."""
+    cells = p.active.shape[0]
+    c0, o0, ci0, oi0 = amounts(start, p, xp=xp)
+    c1, o1, ci1, oi1 = amounts(end, p, xp=xp)
+    n0, n1 = xp.concatenate((c0, o0), axis=1), xp.concatenate((c1, o1), axis=1)
+    shares = xp.concatenate((start.label_share, start.label_outside_share), axis=2)
+    held = xp.concatenate((xp.zeros_like(p.active), p.reservoir))
+    fixed = into + xp.zeros_like(shares)
+    new = label_shares.advance_transfers(
+        shares, n0, n1, transfers, p.label_present, held, xp=xp, into=fixed
+    )
+    arriving, leaving = label_shares.carried(shares, transfers, xp=xp)
+    into, out = fixed + arriving, out + leaving
+    residual = label_shares.closure_residual(n0, n1, into, out, xp=xp)
+    scale = n0 + n1 + entity_sum(into, axis=1, xp=xp) + out
+    scale = scale + xp.concatenate((ci0 + ci1, oi0 + oi1), axis=1)
+    live = xp.concatenate((p.active, p.outside_active & ~p.reservoir))
+    relative = xp.where(live[None, :], residual / xp.where(scale > 0, scale, 1.0), 0.0)
+    worst = xp.maximum(start.label_closure_relative, xp.max(relative, axis=1, initial=0.0))
+    return end._replace(
+        label_share=new[:, :, :cells],
+        label_outside_share=new[:, :, cells:],
+        label_closure_relative=worst,
+    )
+
+
+def labels_domain_valid(state, p, *, xp):
+    """The shares' domain (label_shares.domain_valid) at every node, and the diagnostic finite
+    and non-negative."""
+    present = p.label_present
+    closure = state.label_closure_relative
+    return (
+        label_shares.domain_valid(state.label_share, present, xp=xp)
+        & label_shares.domain_valid(state.label_outside_share, present, xp=xp)
+        & label_shares.domain_valid(state.label_pool_share, p.label_pool_present, xp=xp)
+        & xp.all(xp.isfinite(closure) & (closure >= 0))
+    )
+
+
+# ------------------------------------------------------------------ the operator
+
+
+class NeutralArrivalLabels(Operator):
+    LAW_ID = LAW_ID
+    LABEL_OWNER = True
+    IDENTITY_ROLE = "user"  # It labels species others declare.
+    STATE_AXES = STATE_AXES
+    LAYOUT_FIELDS = LAYOUT_FIELDS
+    CONTROL_FIELDS = ("label_arrival", "label_source_arrival")
+    EXPERIMENT_KEYS = (SCHEDULE_KEY,)
+    VIEW_LAYERS = (
+        {"id": "labels", "label": "Neutral arrival labels", "representation": "simulated"},
+    )
+    UNITS = {
+        "label_share": "1",
+        "label_outside_share": "1",
+        "label_closure_relative": "1",
+        "label_pool_share": "1",
+    }
+    RECORD_KINDS = {
+        "label_share": "level",
+        "label_outside_share": "level",
+        "label_closure_relative": "level",
+        "label_pool_share": "level",
+    }
+    RECORD_DIAGNOSTICS = ("label_closure_relative",)
+
+    def view_sets(self, spec, declaration):
+        """The run view's sets of its axes: the labelled species; the label positions (each
+        species' labels in declared order, the base first; padding past its own); the pool
+        reporters; and their pool positions (each reporter's label_pools in order)."""
+        width = max(len(s.labels) for s in declaration.species)
+        owners = reporters(spec, "LABEL_POOLS")
+        pools = {op.LAW_ID: [entry[0] for entry in op.label_pools(d)] for op, d in owners}
+        size = max(map(len, pools.values()), default=0)
+        return {
+            "label_pool_owner": {
+                "id": "label_pool_owner",
+                "ids": tuple(op.LAW_ID for op, _ in owners),
+                "holds": "pool reporter",
+            },
+            "label_pool": {
+                "id": "label_pool",
+                "ids": tuple(f"pool_{k}" for k in range(size)),
+                "holds": "pool position, each reporter's pools in declared order",
+                "pools": pools,
+            },
+            "label_species": {
+                "id": "label_species",
+                "ids": tuple(s.id for s in declaration.species),
+                "holds": "labelled species",
+                "carries": tuple(s.id for s in declaration.species),
+            },
+            "label_slot": {
+                "id": "label_slot",
+                "ids": tuple(f"label_{k}" for k in range(width)),
+                "holds": "label position, each labelled species' labels in declared order",
+                "labels": {s.id: list(s.labels) for s in declaration.species},
+            },
+        }
+
+    def view_events(self, spec, declaration, schedule):
+        """Each label switch, at its labelled species (the entry at time 0 sets the start), with
+        its source where it names one. It decides no cell's life, so there are no births or
+        retirements."""
+        layer = self.VIEW_LAYERS[0]["id"]
+        events = [
+            dict(
+                time=float(t),
+                kind="label switch",
+                layer=layer,
+                at={"label_species": name},
+                label=f"{name}: arrivals join {label}" + (f" from {source}" if source else ""),
+            )
+            for (name, source), changes in schedule
+            for t, label in changes
+        ]
+        return tuple(sorted(events, key=lambda e: (e["time"], e["label"])))
+
+    # ------------------------------------------------------------ definition
+
+    def parse(self, raw, base, inner_model):
+        return parse_labels(raw, base)
+
+    def to_dict(self, declaration, base):
+        return labels_to_dict(declaration)
+
+    def parse_schedule(self, raw, base, declaration):
+        return parse_arrivals(raw[SCHEDULE_KEY], base, declaration)
+
+    def schedule_to_dict(self, schedule, base, declaration):
+        return {
+            SCHEDULE_KEY: [
+                dict(
+                    species=name,
+                    **({"source": source} if source else {}),
+                    schedule=[dict(time=t, label=label) for t, label in changes],
+                )
+                for (name, source), changes in schedule
+            ]
+        }
+
+    def schedule_times(self, schedule):
+        return tuple(t for _, changes in schedule for t, _ in changes)
+
+    def value_at(self, schedule, time):
+        """Each schedule's label in force at `time` (None before its first change), by species
+        and source."""
+        out = []
+        for key, changes in schedule:
+            before = [label for t, label in changes if t <= time]
+            out.append((key, before[-1] if before else None))
+        return tuple(out)
+
+    def control_values(self, spec, declaration, schedule, records, indices, times):
+        return (
+            arrival_controls(declaration, schedule, times),
+            source_controls(spec, declaration, schedule, times),
+        )
+
+    def check_definition(self, spec, declaration, schedule, model):
+        check_labels(spec, declaration, model)
+
+    def batch_signature(self, declaration):
+        """The labelled species and their label counts; IDs, shares and schedules are data."""
+        return (LAW_ID, tuple((s.id, len(s.labels)) for s in declaration.species))
+
+    def working_size(self, spec):
+        (declaration,) = (d for op, d, _ in composite_spec.entries(spec) if op.LAW_ID == LAW_ID)
+        x = spec.execution
+        width = max(len(s.labels) for s in declaration.species)
+        size = len(declaration.species) * width * (x.capacity + x.extracellular_capacity)
+        return 8 * 6 * size
+
+    def summary(self, spec, declaration, schedule, history):
+        return {
+            "label_law": LAW_ID,
+            "labelled_species": {
+                s.id: dict(
+                    labels=list(s.labels),
+                    base=s.labels[0],
+                    initial={node: dict(values) for node, values in s.initial},
+                    arrivals=[
+                        dict(time=t, label=label)
+                        for t, label in species_schedules(schedule).get(s.id, ())
+                    ],
+                    source_arrivals={
+                        source: [dict(time=t, label=label) for t, label in changes]
+                        for (name, source), changes in schedule
+                        if source and name == s.id
+                    },
+                )
+                for s in declaration.species
+            },
+            "label_update": "shares of each physical row, advanced after each reporter's "
+            "half-step from its one-way moves (numerics/label_shares.advance)",
+        }
+
+    # ------------------------------------------------------------ binding
+
+    def initial_values(self, spec, declaration, schedule, inner_state, inner_layout):
+        return bind(spec, declaration)
+
+    # ------------------------------------------------------------ the composite's calls
+
+    def labels(self, control, p, source=None):
+        """A reporter's labels argument (contract): (the labelled rows, this step's arrival), and
+        a source reporter's sources' arrivals (D296; source: its position among them)."""
+        if source is None:
+            return p.label_rows, control.label_arrival
+        return p.label_rows, control.label_arrival, control.label_source_arrival[source]
+
+    def advance(self, start, end, moves, p, *, xp, pool=None):
+        return advance(start, end, moves, p, xp=xp, pool=pool)
+
+    def rows(self, p):
+        """The inner step's labels argument (FR-42's stage 2): the labelled rows."""
+        return p.label_rows
+
+    def advance_inner(self, start, end, transfers, p, *, xp):
+        return advance_inner(start, end, transfers, p, xp=xp)
+
+    def advance_event(self, end, replaced, control, p, *, xp):
+        return advance_event(end, replaced, control, p, xp=xp)
+
+    def rate_checks(self, state, control, p, valid, *, xp):
+        return valid & labels_domain_valid(state, p, xp=xp)
+
+    def domain_valid(self, state, p, valid, *, xp):
+        own = labels_domain_valid(state, p, xp=xp)
+        return own if valid is None else valid & own
