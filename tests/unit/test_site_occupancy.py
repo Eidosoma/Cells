@@ -663,3 +663,131 @@ def test_no_population_is_statically_idle():
     _, p = model.initial_values(spec)
     op = next(o for o in model.operators if o.LAW_ID == so.LAW_ID)
     assert op.statically_idle(p)
+
+
+# ------------------------------------------------------------------ FR-28: a node's own sites
+
+
+def _node_sites_refusals():
+    """FR-28's refusals (D268, option A; docs/NODE_SURFACE_SITES_DESIGN.md §7), each a world."""
+    from validation.tissue import wash_schedule_fixtures as wfx
+
+    def edited(edit):
+        raw = wfx.well(wall="node")
+        sites = next(o for o in raw["model"]["operators"] if o["law"] == so.LAW_ID)
+        edit(next(q for q in sites["populations"] if q["id"] == "wall_sites"))
+        return raw
+
+    def internalising(q):
+        q["internalisation"] = dict(rate_per_s=0.01, destination="cell")
+
+    return {
+        "a held bath": (lambda: edited(lambda q: q.update(owner=dict(node="bath"))), "held bath"),
+        "an unknown node": (
+            lambda: edited(lambda q: q.update(owner=dict(node="pond"))),
+            "is unknown",
+        ),
+        "a cell as a node": (
+            lambda: edited(lambda q: q.update(owner=dict(node="specimen"))),
+            "is a cell, whose sites sit on its patches",
+        ),
+        "a face beside the node": (
+            lambda: edited(lambda q: q.update(owner=dict(node="well", face="outside"))),
+            "no face or side beside it",
+        ),
+        "an internalisation route": (
+            lambda: edited(internalising),
+            "only an outward-facing patch population may",
+        ),
+    }
+
+
+def test_a_nodes_own_sites_are_the_stand_ins_layout_and_round_trip():
+    """FR-28 (D268, option A; host only, about 1 s): the review's well with its wall owned by the
+    node, against the same well with the review's stand-in cell. Every site layout array is
+    bitwise the same, since the layout reads the facing pool, never the owner; the declaration
+    round-trips; the summary records the owner kind node; the population belongs to no cell. Each
+    refusal of the note's §7 fires, @2's included."""
+    from validation.tissue import wash_schedule_fixtures as wfx
+
+    node, stand_in = (parse_spec(wfx.well(wall=w)) for w in ("node", "stand-in"))
+    for spec in (node, stand_in):
+        assert parse_spec(cs.to_dict(spec)) == spec
+    p_node = get_model(node.model).initial_values(node)[1]
+    p_stand = get_model(stand_in.model).initial_values(stand_in)[1]
+    fields = [f for f in type(p_node)._fields if f.startswith("site_")]
+    assert len(fields) > 10
+    for f in fields:
+        a, b = np.asarray(getattr(p_node, f)), np.asarray(getattr(p_stand, f))
+        assert a.dtype == b.dtype and a.shape == b.shape and a.tobytes() == b.tobytes(), f
+    sites = next(d for o, d, _ in cs.entries(node) if o.LAW_ID == so.LAW_ID)
+    wall = next(q for q in sites.populations if q.id == "wall_sites")
+    assert (wall.owner_kind, wall.owner_id, wall.facing) == ("node", "well", so.SURFACE)
+    assert so.population_cell(node.model, wall) is None
+    owner = next(e for e in so.identity_block(sites)["site_populations"] if e["id"] == "wall_sites")
+    assert owner["owner"] == dict(kind="node", id="well", facing=so.SURFACE)
+    for build, message in _node_sites_refusals().values():
+        with pytest.raises(ConfigError, match=message):
+            parse_spec(build())
+    from validation.tissue import regulated_availability_fixtures as rf
+
+    raw = wfx.well(wall="node")
+    raw = add_turnover_target(raw)
+    entry = dict(
+        id="c_wall",
+        target=dict(operator=fx.TURNOVER, control="turnover_rate", ids=["make_x"],
+                    evaluation="target_half_steps", operating_range=[0.0, 1.0]),
+        source={"site_population": "wall_sites", "quantity": "occupied_fraction"},
+        law="site_fraction", basal=0.1,
+    )  # fmt: skip
+    raw = rf.with_coupling(raw, species=[], couplings=[entry])
+    next(b for b in raw["model"]["operators"] if b["law"] == rf.LAW)["law"] = (
+        "species_regulated_availability@2"
+    )
+    rank = {so.LAW_ID: 0, "species_regulated_availability@2": 1, fx.TURNOVER: 2}
+    raw["model"]["operators"].sort(key=lambda b: rank.get(b["law"], -1))
+    with pytest.raises(ConfigError, match="a node's own sites, which belong to no cell"):
+        parse_spec(raw)
+
+
+def add_turnover_target(raw):
+    """The specimen cell's production of S (route make_x), a target for @2's row above."""
+    return fx.with_turnover(raw, [("make_x", "specimen", "production")],
+                            [("make_x", "specimen", [(0.0, 1e-9)])])  # fmt: skip
+
+
+def test_a_nodes_own_sites_are_left_by_a_replacement_at_cell_0(monkeypatch):
+    """FR-28's aliasing row (docs/NODE_SURFACE_SITES_DESIGN.md §8; host only, about 1 s). cell_0,
+    index 0 (W's padding index), is replaced beside a node-owned wall at ecs_0, the node its
+    population o0 faces. After the event maps at t_e:
+    - o0 is reset to its template, within W's 4 ulps;
+    - the wall's R and B are bitwise unchanged, and its departed, arrived and jump entries are 0;
+    - the summed departed is o0's B before the event, so it excludes the wall;
+    - the owner's bound ledger closes with W's terms.
+    Planted, the wall read as cell_0's (site_replaced true at its padding index 0): the event resets
+    it and books its B as departed."""
+    pops = [sfx.population("o0", patch="contact_0", theta0=0.4),
+            sfx.population("wall", node="ecs_0", theta0=0.5)]  # fmt: skip
+    raw = sfx.replaced_sites(pops, {"o0": (0.9, 1.0, None)}, slot="cell_0")
+    spec, model, state, p, control, after = _w_event(raw)
+    w_index, o_index = 1, 0
+    bound0 = np.asarray(p.site_bound_anchor_fmol) + np.asarray(state.site_bound_increment_fmol)
+    bound1 = np.asarray(p.site_bound_anchor_fmol) + np.asarray(after.site_bound_increment_fmol)
+    capacity = np.asarray(p.site_capacity_fmol)
+    assert bound1[o_index] == pytest.approx(0.9 * capacity[o_index], rel=4 * np.finfo(float).eps)
+    for name in ("site_bound_increment_fmol", "site_free_increment_fmol"):
+        assert (
+            np.asarray(getattr(after, name))[w_index] == np.asarray(getattr(state, name))[w_index]
+        )
+    for name in ("site_departed_fmol", "site_arrived_fmol", "site_replacement_free_energy_pJ"):
+        assert np.asarray(getattr(after, name))[w_index] == 0.0
+    assert float(np.sum(np.asarray(after.site_departed_fmol))) == bound0[o_index]
+    sites = next(o for o in model.operators if o.LAW_ID == so.LAW_ID)
+    ledgers = model._own_ledgers(sites, after, p, xp=np)
+    assert not np.any(ledgers["site_bound_entity"]) and not np.any(ledgers["site_moiety_entity"])
+    planted = p._replace(site_replaced=np.asarray(p.site_replaced).copy())
+    planted.site_replaced[w_index] = True
+    again = state
+    for op in model.events:
+        again, _ = op.event(again, control, planted, xp=np)
+    assert np.asarray(again.site_departed_fmol)[w_index] == bound0[w_index] != 0.0

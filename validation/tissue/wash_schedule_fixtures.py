@@ -37,11 +37,12 @@ def with_wash(raw, nodes, events, *, ions=SAME):
     return out
 
 
-def _sites(site, bound):
+def _sites(site, bound, node=None):
     return sfx.population(
         site["id"],
         patch=site["patch"],
         face="outside",
+        node=node,
         copies=site["capacity"] * SITES_PER_FMOL,  # S = alpha nu N / N_f with alpha = nu = 1.
         sites_per_copy=1,
         alpha=1.0,
@@ -56,20 +57,26 @@ def well(
     *,
     free=60.0,
     specimen=30.0,
-    wall=10.0,
+    wall_bound=10.0,
     sites=True,
+    wall="stand-in",
     volume=V_WELL,
     dt=0.01,
     end=2.0,
     observation_times=None,
 ):
     """The well (`volume` pL) with `free` fmol of S and, with `sites`, the two populations at
-    `specimen` and `wall` fmol bound; S at its trace elsewhere."""
+    `specimen` and `wall` fmol bound; S at its trace elsewhere. wall: "stand-in", the wall's sites
+    on an inert stand-in cell's patch (the review's world), or "node", owned by the well's own
+    surface (FR-28, D268), with no stand-in cell."""
+    stand_in = wall == "stand-in"
     raw = fx.world(
-        cells=(("specimen", 1.0), ("wall_surface", 1.0)),
+        cells=(("specimen", 1.0), ("wall_surface", 1.0)) if stand_in else (("specimen", 1.0),),
         nodes=(("well", volume),),
         baths=("bath",),
-        contacts=(("specimen_face", "specimen", "well"), ("wall_face", "wall_surface", "well")),
+        contacts=(("specimen_face", "specimen", "well"), ("wall_face", "wall_surface", "well"))
+        if stand_in
+        else (("specimen_face", "specimen", "well"),),
         faces=(),
         dt=dt,
         end=end,
@@ -79,5 +86,8 @@ def well(
     )
     if not sites:
         return raw
-    populations = [_sites(SPECIMEN, specimen), _sites(WALL, wall)]
+    populations = [
+        _sites(SPECIMEN, specimen),
+        _sites(WALL, wall_bound, node=None if stand_in else "well"),
+    ]
     return sfx.with_site_occupancy(raw, populations, ligands=[sfx.ligand(trace_mM=TRACE_mM)])
