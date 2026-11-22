@@ -31,10 +31,11 @@ number:
 - **The zero-rate route** at p = 0 and 1: its releases and H_rel exactly 0.0 at every output, and
   its fate row the blank's within 3e-8 relative, above zero (the trace floor).
 - **The two cohort routes** (§9.8) agree within route 2's grid error (cohort.grid_error) plus the
-  label rows' departure. That departure is physical: each label row's loss reads its own
-  potential, so the label rows' sum departs from the unlabelled row by at most about 1e-8 relative
-  at R1, the size of the e^(y_f) term (erratum A2). It is checked here: each fate's class total
-  minus the labelled blank's against the unlabelled row minus its blank's, within 3e-8 relative.
+  label rows' departure. Each label row's loss reads its own potential, so the class rows are not
+  neutral labels (erratum B, §9.13): their sum departs from the unlabelled row by at most about
+  1e-8 relative at R1, the size of the e^(y_f) term, and route 1 is provisional until FR-42's
+  share labels (D289) replace the class rows. It is checked here: each fate's class total minus
+  the labelled blank's against the unlabelled row minus its blank's, within 3e-8 relative.
 
 Run: python -m validation.gene_regulation.release_check DIR
 """
