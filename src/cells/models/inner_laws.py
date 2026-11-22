@@ -39,6 +39,7 @@ from types import MappingProxyType
 from cells.definitions.kinetic_pump_spec import METABOLISM_ID
 from cells.definitions.surface_pump_v3_spec import (
     DEFAULT_JUNCTION_HEAT,
+    EXACT_FREE_ENERGY_HEAT,
     MODEL_ID,
     TRAPEZOID_JUNCTION_HEAT,
 )
@@ -64,15 +65,21 @@ RK4_POTASSIUM_STEP_S = kv1p5_mh.RK4_STEP_S
 # Heat bookings (docs/CORE_SEAMS_DESIGN.md §6.1): the tableau books every mover class by default
 # and is never listed; @3's own mover classes, and the bookings each admits beyond it: the
 # trapezoid for channels, as ruled there, for junctions, today's junction_heat_booking, and for
-# membranes, pumps and calcium pumps, whose power is never negative (the lead, 18 November 2026).
+# membranes, pumps and calcium pumps, whose power is never negative (the lead, 18 November 2026);
+# and for faces the exact booking alone, their neutral rows' exact free-energy release (D280; added
+# at the lead's word, a recorded exception in this file; surface_pump_v3.exact_face_heat).
 # A declared kind's routes are the class its namespaced ID names, admitting its heat_bookings.
 TABLEAU_HEAT_BOOKING = DEFAULT_JUNCTION_HEAT
 CHANNELS, JUNCTIONS = "channels", "junctions"
 MEMBRANES, PUMPS, CALCIUM_PUMPS = "membranes", "pumps", "calcium_pumps"
+FACES = "faces"
 OWN_HEAT_BOOKINGS = MappingProxyType(
     {
-        mover: (TRAPEZOID_JUNCTION_HEAT,)
-        for mover in (CHANNELS, JUNCTIONS, MEMBRANES, PUMPS, CALCIUM_PUMPS)
+        **{
+            mover: (TRAPEZOID_JUNCTION_HEAT,)
+            for mover in (CHANNELS, JUNCTIONS, MEMBRANES, PUMPS, CALCIUM_PUMPS)
+        },
+        FACES: (EXACT_FREE_ENERGY_HEAT,),
     }
 )
 

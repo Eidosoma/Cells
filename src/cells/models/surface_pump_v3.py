@@ -62,6 +62,7 @@ import numpy as np
 
 from cells.definitions.specs import ConfigError
 from cells.definitions.surface_pump_v3_spec import (
+    EXACT_FREE_ENERGY_HEAT,
     GATED_CODES,
     LAW_CODES,
     MODEL_ID,
@@ -83,6 +84,7 @@ from cells.laws.junctions.selective import selective_flux
 from cells.laws.pumps import calcium_atpase
 from cells.laws.pumps import kinetic_pump as pump
 from cells.laws.pumps import kinetic_pump_binding as pumps
+from cells.laws.routes import passive_permeation as exact_kernel
 from cells.laws.routes import patch_electrodiffusion as constant_field_route
 from cells.models import inner_laws
 from cells.models import surface_kinetic as kinetic
@@ -2192,6 +2194,13 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
         + 1e-3 * species_sum(mu * (dt * applied("reservoir_supplied")), xp=xp),
         electrode_work_pJ=state.electrode_work_pJ + 1e12 * p.boundary_V * electrode,
     )
+    if exact_faces(structure):  # exact_free_energy_heat@1 (D280, a static choice).
+        # Each face books its rows' exact free-energy release from the nodes' start and end
+        # amounts, in place of the face heat above: no clamp, and no other form where a share
+        # falls below its floor or a row's shares miss its exact change (the step is refused).
+        release, booked = exact_face_heat(state, stage, p, xp=xp)
+        valid &= booked
+        stage = stage._replace(face_dissipated_energy_pJ=state.face_dissipated_energy_pJ + release)
     if p.junction_heat_trapezoid.shape[0]:  # trapezoid_nonnegative@1 (a static choice).
         # The tableau's explicit weights (delta, 1 - delta), delta < 0, book a negative
         # junction heat increment where a junction's power falls by more than 59% in a
@@ -2334,6 +2343,8 @@ def check_definition(spec, *, structure=None):
             "Heat bookings are @3's structure's (heat_bookings); this family runs @3 without "
             "one, so it refuses them"
         )
+    if exact_faces(structure):  # D280: the faces' exact booking's scope (version 1).
+        _check_exact_faces(m)
     kinds = _kinds(structure)
     for kind in kinds:  # §7.4 (k): a kind's definition checks, ahead of @3's.
         if kind.check_definition is not None:
@@ -3260,6 +3271,113 @@ def trapezoid_fields(structure):
             if (role := kind_registry.energy_role(kind, name)) is not None and role.role == "heat"
         ]
     return tuple(out)
+
+
+# exact_free_energy_heat@1 on @3's faces (D280; docs/CORE_SEAMS_DESIGN.md §6.5): the passive
+# routes' booking of INNER_MODEL_V4_DESIGN §7.5, version 1, for faces. Its sign rule's and raw-sum
+# bound's factor is the passive routes' (kinds/passive_routes.RAW_SUM_FACTOR).
+EXACT_FACE_RAW_SUM_FACTOR = 16.0
+
+
+def exact_faces(structure):
+    """Whether the structure picks exact_free_energy_heat@1 for @3's faces: a static switch,
+    False for every definition that does not list it, so today's programs are unchanged."""
+    return structure is not None and (
+        (inner_laws.FACES, EXACT_FREE_ENERGY_HEAT) in structure.heat_bookings
+    )
+
+
+def _check_exact_faces(model):
+    """The faces' exact booking's scope (version 1, as the passive routes'): every row a face
+    carries (a species with a positive diffusivity on it, at each of its end nodes) is neutral and
+    moved in the step by faces alone (moved_nodes). A held bath's row qualifies: its amount is
+    pinned, so its divided potential is the reservoir's potential, which the reservoir work books.
+    Operators' in-step writers are the composite's admission (pump_composite)."""
+    valence = dict(zip(model.species_ids, model.valence, strict=True))
+    movers = moved_nodes(model)
+    for face in model.faces:
+        for species, diffusivity in zip(model.species_ids, face.diffusivity_m2_per_s, strict=True):
+            if not diffusivity:
+                continue
+            if valence[species]:
+                raise ConfigError(
+                    f"Face {face.id} carries the charged row {species}; "
+                    f"{EXACT_FREE_ENERGY_HEAT} books neutral rows only (version 1)"
+                )
+            for node in (face.sender, face.receiver):
+                others = [w for w in movers.get((species, node), ()) if not w.startswith("face ")]
+                if others:
+                    raise ConfigError(
+                        f"Face {face.id} carries {species} at {node}, which {others[0]} also "
+                        f"moves in the step; {EXACT_FREE_ENERGY_HEAT} books rows that faces "
+                        "alone move (version 1)"
+                    )
+
+
+def exact_face_heat(start, end, p, *, xp=jnp):
+    """exact_free_energy_heat@1 over one step: (each face's heat [face] in pJ, booked), from the
+    step's start and end states.
+
+    Each face's share of a row it carries is the amount it moved, sender to receiver, times the
+    difference of the row's divided-difference potentials at its two ends, each from that node's
+    start and end amounts in the ledger's own form (passive_permeation.divided_potential_RT):
+    Q = 1e-3 RT moved (mu-bar_sender - mu-bar_receiver). Where faces alone move a row (the
+    definition's check), a node's shares sum to its exact free-energy change, so the energy ledger
+    closes to rounding for those rows. A held bath's amount is pinned, so its divided potential is
+    the reservoir's potential at which the reservoir work books its supply.
+
+    booked is False, and the step refused, where a share lies below its floor,
+    -RAW_SUM_FACTOR eps (|mu-bar_s| + |mu-bar_r| + 2) |moved| RT (the passive routes' sign rule,
+    INNER_MODEL_V4_DESIGN §7.5 as amended 17 November 2026), or where a finite node's shares miss
+    its exact change by more than RAW_SUM_FACTOR eps times its terms and its inputs' rounding (the
+    raw-sum bound). No clamp and no other form: a falling face heat is also the dissipation
+    check's."""
+    s = tissue.field_layout(p).surface
+    eps = np.finfo(float).eps
+    volume = xp.where(p.outside_active, p.extracellular_volume, 1.0)[None, :]
+    reference = xp.where(p.outside_active, p.extracellular_amount_reference, 1.0)
+    i0, i1 = start.extracellular_amount_increment, end.extracellular_amount_increment
+    n0, n1 = reference + i0, reference + i1
+    mu = exact_kernel.divided_potential_RT(n0, n1, volume, xp=xp)  # [species, outside node]
+    carried = s.face_active[None, :] & (s.face_factor > 0)  # [species, face]
+    moved = xp.where(carried, end.face_transferred - start.face_transferred, 0.0)
+    mu_s, mu_r = mu[:, s.face_sender], mu[:, s.face_receiver]
+    shares = 1e-3 * R * p.temperature * moved * (mu_s - mu_r)
+    terms = (xp.abs(mu_s) + xp.abs(mu_r) + 2.0) * xp.abs(moved)  # RT fmol.
+    floor = -(EXACT_FACE_RAW_SUM_FACTOR * eps * 1e-3 * R) * p.temperature * terms
+    positive = xp.all(xp.where(carried, shares >= floor, True))
+    zero = xp.zeros_like(n0)
+
+    def at_ends(values):  # [species, face] -> [species, outside node], at both ends of each face.
+        return scatter(values, zero, (s.face_sender,), xp=xp) + scatter(
+            values, zero, (s.face_receiver,), xp=xp
+        )
+
+    # Raw sums at each finite node a face carries a row to (a held bath's change is its supply):
+    # the shares' potential times the faces' net change, against the row's exact change of G.
+    rows = (at_ends(xp.where(carried, 1.0, 0.0)) > 0) & ~p.reservoir[None, :]
+    safe0, safe1 = xp.where(n0 > 0, n0, 1.0), xp.where(n1 > 0, n1, 1.0)
+    g0 = xp.where(n0 > 0, n0 * (xp.log(safe0 / volume) - 1.0), 0.0)
+    g1 = xp.where(n1 > 0, n1 * (xp.log(safe1 / volume) - 1.0), 0.0)
+    net = scatter(moved, zero, (s.face_receiver,), xp=xp) - scatter(
+        moved, zero, (s.face_sender,), xp=xp
+    )
+    residual = xp.abs(mu * net - (g1 - g0))
+    own = (
+        xp.abs(g0)
+        + xp.abs(g1)
+        + scatter(xp.abs(mu_s * moved), zero, (s.face_sender,), xp=xp)
+        + scatter(xp.abs(mu_r * moved), zero, (s.face_receiver,), xp=xp)
+    )
+    cumulative = xp.where(
+        carried, xp.abs(start.face_transferred) + xp.abs(end.face_transferred), 0.0
+    )
+    inputs = xp.abs(mu) * (xp.abs(n0) + xp.abs(n1) + xp.abs(i0) + xp.abs(i1) + at_ends(cumulative))
+    within = xp.all(
+        xp.where(rows, residual <= EXACT_FACE_RAW_SUM_FACTOR * eps * (own + inputs), True)
+    )
+    heat = species_sum(xp.where(carried, shares, 0.0), xp=xp)  # A7: the species fold.
+    return heat, positive & within
 
 
 def check_values(state, spec, steps=None, *, structure=None):

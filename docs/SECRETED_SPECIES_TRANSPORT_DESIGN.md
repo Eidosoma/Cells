@@ -1439,6 +1439,9 @@ stays in every later row.
     unseen.
   - The species-only world and the NumPy ΔG test per law certify the laws.
   - Production worlds should also start from a resolved switch-on.
+  - **Since 22 November 2026 (D280),** a world may instead pick the faces' exact booking
+    (CORE_SEAMS_DESIGN §6.5). Under it, a switch-on from the trace closes the energy ledger to
+    rounding where faces alone move the species.
 
 ### 11.5 Amendments and rulings
 

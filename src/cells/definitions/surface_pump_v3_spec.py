@@ -26,17 +26,20 @@ dt (q_start + q_end) / 2 from the junction powers at the step's start and end
 states, which cannot be negative; trajectories and every other booking are the
 default's (models/surface_pump_v3.imex_step).
 
-Seam D (docs/CORE_SEAMS_DESIGN.md §6.1-6.2): an optional model key ``heat_bookings``,
-{mover class: booking ID}, picks the heat booking of @3's other mover classes (``channels``,
-``membranes``, ``pumps``, ``calcium_pumps``) and of each declared kind's routes (by the kind's
-namespaced ID), beyond the tableau, which books every class by default and is never listed.
-Each class admits what models/inner_laws.OWN_HEAT_BOOKINGS (or the kind's heat_bookings)
-lists: today ``trapezoid_nonnegative@1``, booked once in the core for every class
-(models/surface_pump_v3.trapezoid_fields). Junctions keep ``junction_heat_booking`` and are
-refused here. The key is omitted at its default, so every definition of today's keeps its
-fingerprint and its structure. The water and replacement families run @3 through compositions
-whose inner carries the structure, so they book what is picked as well (the lead, 19 November
-2026); a caller that checks @3 without its structure refuses a booking rather than ignore it.
+Seam D (docs/CORE_SEAMS_DESIGN.md §6.1-6.2): an optional model key ``heat_bookings``, {mover class:
+booking ID}, picks the heat booking of @3's other mover classes (``channels``, ``membranes``,
+``pumps``, ``calcium_pumps``) and of each declared kind's routes (by the kind's namespaced ID),
+beyond the tableau, which books every class by default and is never listed. Each class admits what
+models/inner_laws.OWN_HEAT_BOOKINGS (or the kind's heat_bookings) lists:
+``trapezoid_nonnegative@1``, booked once in the core for every class
+(models/surface_pump_v3.trapezoid_fields), and, for ``faces`` alone, ``exact_free_energy_heat@1``
+(D280): each face books the exact free-energy release of the neutral rows it moves, and a face that
+carries a charged row, or a row another mover moves in the step, is refused under it
+(models/surface_pump_v3.exact_face_heat). Junctions keep ``junction_heat_booking`` and are refused
+here. The key is omitted at its default, so every definition of today's keeps its fingerprint and
+its structure. The water and replacement families run @3 through compositions whose inner carries
+the structure, so they book what is picked as well (the lead, 19 November 2026); a caller that
+checks @3 without its structure refuses a booking rather than ignore it.
 
 The gate laws are the existing Cells kinetics under neutral IDs (the stage-B
 proposals in stage-b-plan-20261108-01): Kv1.5 m*h (laws/channels/voltage_gates.py),
@@ -75,6 +78,8 @@ NALEAK_LAW_ID = "naleak_always_open@1"
 DEFAULT_JUNCTION_HEAT = "explicit_tableau"
 TRAPEZOID_JUNCTION_HEAT = "trapezoid_nonnegative@1"
 JUNCTION_HEAT_BOOKINGS = (DEFAULT_JUNCTION_HEAT, TRAPEZOID_JUNCTION_HEAT)
+# Seam D's exact booking for @3's faces (D280; INNER_MODEL_V4_DESIGN §7.5's name and version 1).
+EXACT_FREE_ENERGY_HEAT = "exact_free_energy_heat@1"
 # Today's five channel laws, the full catalogue's (structure None), by name: codes 0-2 are those of
 # laws/channels/sodium_channels.LAW_CODES, whose dispatch that path reuses; 3 and 4 are gate-free
 # leaks. Padding slots are inactive, not a code. The full-catalogue dispatch, its domain and the

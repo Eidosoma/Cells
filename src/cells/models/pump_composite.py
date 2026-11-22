@@ -561,6 +561,31 @@ def exact_row_errors(entries, spec, p):
     return errors
 
 
+def exact_face_row_errors(entries, spec, structure):
+    """D280, the operators' half for @3's faces: where the inner structure picks
+    exact_free_energy_heat@1 for faces (surface_pump_v3.exact_faces), no operator's in-step
+    process writes a row a face carries (a species with a positive diffusivity, at either end
+    node), as exact_row_errors holds for exact passive routes: the face's exact share would
+    average over a change it did not make."""
+    writers = operator_writers(entries, spec) if pump3.ionic.exact_faces(structure) else {}
+    if not writers:
+        return []
+    errors, m = [], spec.model
+    for face in m.faces:
+        for species, diffusivity in zip(m.species_ids, face.diffusivity_m2_per_s, strict=True):
+            if not diffusivity:
+                continue
+            for node in (face.sender, face.receiver):
+                for law in writers.get((species, node), ()):
+                    errors.append(
+                        f"{law} moves {species} at every {_node_kind(spec, node)} node in the "
+                        f"step (its in-step process), and face {face.id} books {species} at "
+                        f"{node} exactly ({pump3.ionic.EXACT_FREE_ENERGY_HEAT}, D280); version 1 "
+                        "refuses this"
+                    )
+    return errors
+
+
 class ViewChange(NamedTuple):
     """One change of a view field in a composition (view_changes): the changer's position in the
     declared order, the changer, the stage, and whether that stage is the changer's own declared
@@ -1915,6 +1940,8 @@ class Composition:
         small = compact(spec)
         state, p = self.initial_values(small)
         exact = exact_row_errors(pairs, spec, p) if writing else []
+        if self.process_operator is not None:  # D280: the faces' exact booking (static).
+            exact += exact_face_row_errors(pairs, spec, self.inner.structure)
         if exact:
             raise ConfigError("Invalid operator composition: " + "; ".join(exact))
         if self.field_inputs:
