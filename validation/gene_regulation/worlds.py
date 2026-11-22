@@ -299,25 +299,43 @@ def _finish(raw, block, rates, *, extra_operators=(), extra_controls=None):
 def a1(*, dt=0.5, end=None, every=60.0, symbols=None):
     """The sheet's A1 (§5.1): one gene, open loop, phase 1 to t_off and production of X off
     after, to `end` (the sheet's t_end by default), observed every `every` seconds."""
+    return _a1(dt=dt, end=end, every=every, symbols=symbols)
+
+
+def _a1(*, dt, end, every, symbols, release=None):
+    """A1's definition (a1); with `release`, R2's (r2): {machine, rates, dwell_s}."""
     a = sheet.A1
     symbols = test_instance() if symbols is None else symbols
     end = _f(a, "t_end") if end is None else float(end)
+    rows = A1_ROWS if release is None else A1_ROWS + ("R_s",)
     start = {row: _f(a, f"c_{row}") for row in A1_ROWS}
+    lengths = {"R": int(a["L_R"]), "P": int(a["L_P"])}
+    if release is not None:  # R2's short-lived row: R's chemistry, at R's trace (§9.9, §9.12).
+        start["R_s"] = _f(a, "c_R")
+        lengths["R_s"] = lengths["R"]
     raw = _skeleton(dt=dt, end=end, every=every, start=start, volume=_f(a, "V"))
     L_R, L_P = int(a["L_R"]), int(a["L_P"])
-    mu = potentials_RT(symbols, {"R": ("R_res", L_R), "P": ("P_res", L_P)})
-    raw = _with_registry(raw, mu, _moieties(A1_ROWS, {"R": L_R, "P": L_P}))
+    residues = {row: ("P_res" if row == "P" else "R_res", n) for row, n in lengths.items()}
+    mu = potentials_RT(symbols, residues)
+    raw = _with_registry(raw, mu, _moieties(rows, lengths))
     raw = cs.frozen_definition(raw)
     kJ = {k: symbols[k] * sheet.RT for k in ("E_pd", "E_pep")}
+    chains = [_transcription("tx", "R", a["T_copies"], L_R), _translation()]
+    degradations = [
+        _degradation("deg_R", "R", L_R, "M", kJ["E_pd"]),
+        _degradation("deg_P", "P", L_P, "A", kJ["E_pep"]),
+    ]
+    if release is not None:  # §9.9's addendum: tl_s on R_s, and R_s's own loss.
+        chains[0]["release"] = _release(0.75, release["machine"], [0.0], [("R", "R_s")])
+        chains[0]["release"]["dwell_s"] = release["dwell_s"]
+        chains.append(_translation("tl_s", "R_s"))
+        degradations.append(_degradation("deg_R_s", "R_s", L_R, "M", kJ["E_pd"]))
     block = _block(
         mu,
-        A1_ROWS,
+        rows,
         {"pol": a["M_pol"], "rib": a["M_rib"]},
-        [_transcription("tx", "R", a["T_copies"], L_R), _translation()],
-        [
-            _degradation("deg_R", "R", L_R, "M", kJ["E_pd"]),
-            _degradation("deg_P", "P", L_P, "A", kJ["E_pep"]),
-        ],
+        chains,
+        degradations,
         [_recharging(symbols)],
     )
     t_off = _f(a, "t_off")
@@ -370,7 +388,39 @@ def a1(*, dt=0.5, end=None, every=60.0, symbols=None):
         "deg_P": [(0.0, _f(a, "k_P"))],
         "recharge": [(0.0, _f(a, "V_C"))],
     }
+    if release is not None:
+        rates["tl_s"] = [(0.0, _f(a, "k_I_tl"))]
+        rates["deg_R"] = [(0.0, release["rates"][0])]
+        rates["deg_R_s"] = [(0.0, release["rates"][1])]
     return _finish(raw, block, rates, extra_operators=(turnover, coupling), extra_controls=controls)
+
+
+def r2(machine, *, fates="sheet", shrink=1, dt=0.5, end=None, every=60.0, symbols=None):
+    """The sheet's R2 (§9.9, its addendum and §9.12): A1 with transcription's release at tau =
+    3600/ln 2 s and p = 0.75 into R (durable) and R_s (short-lived), H(0) = 0, the fates' rates
+    R1's, translation by tl on R and tl_s on R_s with A1's parameters, at a machine option.
+    fates="A1" sets both fates' rates to A1's k_R and shrink divides tau: the addendum's
+    development check, whose total RNA and protein approach A1's as tau shrinks."""
+    a, r = sheet.A1, sheet.RELEASE
+    if fates == "sheet":
+        rates = (float(r["k_durable"]), float(r["k_short"]))
+    elif fates == "A1":
+        rates = (_f(a, "k_R"), _f(a, "k_R"))
+    else:
+        raise ValueError(f"fates is 'sheet' or 'A1', not {fates!r}")
+    release = dict(machine=machine, rates=rates, dwell_s=float(r["tau"]) / shrink)
+    return _a1(dt=dt, end=end, every=every, symbols=symbols, release=release)
+
+
+def r2_names():
+    """R2's runs (§9.9): each machine option."""
+    return [f"R2 {machine}" for machine in ("returned", "held")]
+
+
+def r2_check_names():
+    """The addendum's development check: both fates at A1's k_R, tau divided by 1, 10 and 100,
+    with each machine option, beside A1."""
+    return [f"R2A tau/{k} {m}" for m in ("returned", "held") for k in (1, 10, 100)]
 
 
 # ------------------------------------------------------------------ A1-M (§5.2)
@@ -442,6 +492,91 @@ def ribosome_limited(n_R, *, dt=0.5, symbols=None):
     return _finish(raw, block, rates)
 
 
+# ------------------------------------------------------------------ R1 (§9.9, FR-38)
+
+RELEASE = "tx_release"
+LABEL = "tx_label"
+R1_ROWS = ("N", "M", "Pi", "R", "R_s")
+R1_LABEL_ROWS = ("R_c2", "R_s_c2")  # Class 2's fate rows: the window's releases (§9.12).
+R1_DT = 2.0  # s: dt kappa_tx = 2/3 <= 1; the hold's and fates' rates times dt are below 1e-3.
+R1_EVERY = 60.0  # s: outputs every minute, the sheet's five among them (the cohort's grid).
+R1_WINDOW = (0.0, 3600.0)  # The release-window cohort's [t1, t2] (§9.9).
+
+
+def _release(p, machine, copies, fates, label=None):
+    """Transcription's release block (§9.9): tau = 3600/ln 2 s and constant p."""
+    return dict(
+        id=RELEASE,
+        dwell_s=float(sheet.RELEASE["tau"]),
+        machine=machine,
+        durable_fraction=float(p),
+        fates=[dict(durable=d, short_lived=s) for d, s in fates],
+        label=label,
+        initial_copies=[float(c) for c in copies],
+    )
+
+
+def r1(
+    p, *, machine="returned", blank=False, labelled=False, initiation=0.0, dt=R1_DT, symbols=None
+):
+    """The sheet's R1 (§9.9 and its R2 addendum), the requester's hold: one 1 pL cell with one
+    chain of A1's transcription at k_I = 0, its release at tau = 3600/ln 2 s and constant p into
+    the durable row R and the short-lived row R_s, H(0) = 80 copies (0 in the matched blank), M_pol
+    = A1's; R and R_s at the sheet's trace c_R, each degraded at its own rate; N, M and Pi at A1's
+    initial state, at a potential set (the test instance by default); outputs every R1_EVERY s to
+    14,400 s. labelled: §9.8's route 1, a second class of fate rows (R_c2, R_s_c2) that the
+    releases in R1_WINDOW enter, the label marking the release. initiation: transcription's k_I
+    (mM^-1 s^-1), 0 in R1; the tests set A1's, so that completions arrive in the hold."""
+    a, r = sheet.A1, sheet.RELEASE
+    symbols = test_instance() if symbols is None else symbols
+    rows = R1_ROWS + (R1_LABEL_ROWS if labelled else ())
+    start = {row: _f(a, f"c_{row}") for row in ("N", "M", "Pi")}
+    start |= dict.fromkeys(rows[3:], _f(a, "c_R"))
+    end = float(r["t_out"][-1])
+    raw = _skeleton(dt=dt, end=end, every=R1_EVERY, start=start, volume=_f(a, "V"))
+    L_R = int(a["L_R"])
+    polymers = {row: L_R for row in rows[3:]}
+    mu = potentials_RT(symbols, {row: ("R_res", L_R) for row in polymers})
+    raw = cs.frozen_definition(_with_registry(raw, mu, _moieties(rows, polymers)))
+    E_pd_kJ = symbols["E_pd"] * sheet.RT
+    fates = [("R", "R_s")] + ([R1_LABEL_ROWS] if labelled else [])
+    label = dict(id=LABEL, at="release") if labelled else None
+    chain = _transcription("tx", "R", a["T_copies"], L_R)
+    chain["release"] = _release(p, machine, [0 if blank else r["H0"]], fates, label)
+    rates = {"tx": [(0.0, float(initiation))]}
+    degradations = []
+    for row, fate in zip(rows[3:], ("k_durable", "k_short") * 2, strict=False):
+        degradations.append(_degradation(f"deg_{row}", row, L_R, "M", E_pd_kJ))
+        rates[f"deg_{row}"] = [(0.0, float(r[fate]))]
+    block = _block(mu, rows, {"pol": a["M_pol"]}, [chain], degradations, [])
+    if labelled:
+        t1, t2 = R1_WINDOW
+        rates[LABEL] = [(0.0, 2.0), (t2, 1.0)] if t1 == 0 else [(0.0, 1.0), (t1, 2.0), (t2, 1.0)]
+    return _finish(raw, block, rates)
+
+
+def release_names():
+    """R1's runs (§9.9): the four fractions with each machine option, the matched blanks, and the
+    labelled pair of the release-window cohort's route 1 at p = 0.75."""
+    out = []
+    for machine in ("returned", "held"):
+        out += [f"R1 p={_p(p)} {machine}" for p in sheet.RELEASE["p_cases"]]
+        out += [f"R1 blank {machine}", f"R1L p=0.75 {machine}", f"R1L blank {machine}"]
+    return out
+
+
+def _p(value):
+    return format(float(value), "g")
+
+
+def _r1_world(name, dt, symbols):
+    """R1's world by its name (release_names())."""
+    kind, case, machine = name.split(" ")
+    blank = case == "blank"
+    p = 0.75 if blank else float(case.split("=")[1])
+    return r1(p, machine=machine, blank=blank, labelled=kind == "R1L", dt=dt, symbols=symbols)
+
+
 def names():
     """The sixteen worlds, in G2's order."""
     return (
@@ -456,6 +591,14 @@ def world(name, *, dt=0.5, symbols=None, end=None):
     """The raw definition of a world by its name (names())."""
     if name == "A1":
         return a1(dt=dt, end=end, symbols=symbols)
+    if name.startswith(("R1 ", "R1L ")) and end is None:
+        return _r1_world(name, dt, symbols)
+    if name.startswith("R2 "):
+        return r2(name.split(" ")[1], dt=dt, end=end, symbols=symbols)
+    if name.startswith("R2A "):
+        _, shrink, machine = name.split(" ")
+        shrink = int(shrink.split("/")[1])
+        return r2(machine, fates="A1", shrink=shrink, dt=dt, end=end, symbols=symbols)
     if end is not None:
         raise ValueError("only A1 takes another horizon")
     if name == "two-gene":

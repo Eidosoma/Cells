@@ -951,6 +951,27 @@ A1M = dict(
     window_rib=D(120),
 )
 SWEEP = (1, 2, 5, 10, 20, 50, 100)
+# The release worlds' table (§9.9, FR-38): R1's hold, dwell, fractions, fates' rates and outputs.
+RELEASE = dict(
+    H0=D(80),
+    tau=D(3600) / D(2).ln(),
+    p_cases=(D(0), D("0.25"), D("0.75"), D(1)),
+    k_durable=D(2).ln() / D(7200),
+    k_short=D(2).ln() / D(1800),
+    t_out=(D(0), D(1800), D(3600), D(7200), D(14400)),
+)
+
+
+def _release_value(typed, value):
+    """Whether a typed release entry is the value: a list of numbers, ln 2/N, or a number to its
+    digits."""
+    t = typed.replace("−", "-").replace(",", " ").split()
+    if isinstance(value, tuple):
+        return len(t) == len(value) and all(D(a) == b for a, b in zip(t, value, strict=True))
+    found = re.fullmatch(r"ln 2/(\d+)", typed.strip())
+    if found:
+        return D(2).ln() / D(found.group(1)) == value
+    return _digits_ok(typed, value)
 
 
 def x_values(c, mu, L_R, L_P):
@@ -1198,6 +1219,21 @@ def sheet_errors(path=SHEET):
     sweep = re.search(r"<!-- sweep -->(.*?)<!-- /sweep -->", text, re.S)
     if not sweep or [int(v) for v in re.findall(r"\d+", sweep.group(1))] != list(SWEEP):
         out.append(f"the sweep is not {list(SWEEP)}")
+    block = _marked(text, "release")
+    if block is None:
+        out.append("the sheet has no marked release table")
+    else:
+        _, rows = _table(block)
+        seen = set()
+        for row in rows:
+            key = _id(row[0])
+            seen.add(key)
+            if key not in RELEASE:
+                out.append(f"release: {key!r} is not one of this check's")
+            elif not _release_value(row[1], RELEASE[key]):
+                out.append(f"release: {key} typed {row[1]}, declared here {RELEASE[key]}")
+        if seen != set(RELEASE):
+            out.append(f"release: the sheet types {sorted(seen)}, not {sorted(RELEASE)}")
     return out
 
 
