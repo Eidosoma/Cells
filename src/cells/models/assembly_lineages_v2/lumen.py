@@ -192,6 +192,26 @@ def value(counts, tables, term_layout):
     return float(free_energy(np.sum(n * lumen), np.sum(n * quanta), c, np))
 
 
+def limit_value(counts, tables, term_layout, xp):
+    """OL6: F_osm at real counts (the design note's §1.4). F_osm is a closed form in (N_L, W) that
+    holds no factorial (the lumen's ln n! are the ideal term's), so its large-count limit is
+    itself, at real N_L and W. Its logarithms take the guarded form (log_branches, free_energy),
+    so its gradient is finite wherever N_L > 0 and W > 0, as inside every envelope. At the kink
+    V_osm = V_sph, μ is continuous (V minimises F at fixed solutes) and its derivative jumps: the
+    representation restarts its integration there."""
+    lumen, quanta, c = term_layout
+    n = counts.astype(np.float64)
+    return free_energy(xp.sum(n * lumen), xp.sum(n * quanta), c, xp)
+
+
+LIMIT_FORMULAS = {
+    "F_osm": "-N_L ln(N_A c0 V(n)) + N_A c_ext V(n) at real N_L and W (the same closed form)",
+    "volume": "V(n) = min(N_L / (N_A c_ext), V_sph(A(n))), A = q W / 2, W = sum_i k_i n_i real",
+    "kink": "mu is continuous at V_osm = V_sph and its derivative jumps: a restart of the "
+    "integration (a crossing of ln V_osm - ln V_sph)",
+}
+
+
 def delta(term_state, term_layout, view, change, xp):
     """F_osm(n + change) − F_osm(n) for each step's change at its entries ([R, K] -> [R]), by
     change_between."""
@@ -349,6 +369,8 @@ TERM = law_registry.BUILTIN.register(
         value=value,
         delta=delta,
         formulas=FORMULAS,
+        limit=limit_value,  # OL6 (H1, D304)
+        limit_formulas=LIMIT_FORMULAS,
     )
 )
 assert TERM.law_id == OSMOTIC_LUMEN

@@ -11,28 +11,58 @@ events, as before.
     J_r(n) = s_r(n) θ⁺_r(n) (1 − e^{ΔF_r}),   ΔF_r = ν_r·μ(n) − w_r,   μ = ∇F_cont,
 
 with s, θ⁺ from each law's declared limit (arithmetic A: ff(n, a) → n^a, ff(N − c, r) → (N − c)^r,
-m → n) and F_cont the terms' declared limits (Stirling's form of the declared F). μ is F_cont's
-gradient by differentiation; w_r is the held places' work, as the exact kernel's. So −J_r ΔF_r ≥ 0
-for every step at every state. J is evaluated in the factored form (i), with −expm1, which has no
-cancellation near equilibrium; the limit's check compares it with the products' law (ii).
+m → n; a geometric law's extent at the real footprint W(n)) and F_cont the terms' declared limits
+(Stirling's form of the declared F; the osmotic lumen's closed form at real N_L and W). μ is
+F_cont's gradient by differentiation; w_r is the held places' work, as the exact kernel's. So
+−J_r ΔF_r ≥ 0 for every step at every state. J is evaluated in the factored form (i), with
+−expm1, which has no cancellation near equilibrium; the limit's check compares it with the
+products' law (ii).
 
-**The state** (§1.6): y = [n, supplied, Q, W]: the counts of every place (held places stay 0), each
-held place's net supply, the heat Q and the reservoir work W (k_BT), all integrated by the same
-stages; n, Q and W under the step control, the supplies not (a linear quadrature, kept exactly).
+**The state** (§1.6): y = [pool, vesicles, supplied, Q, W]. In a single lineage `pool` is the
+world's every place and there is no vesicle block (S1's layout); in a population
+(cells.shared_pool@1, at most 64 slots, §6.9) `pool` holds the pool's places and each slot holds
+its vesicle's membrane and lumen places. `supplied` is each held place's net supply, Q the heat
+and W the reservoir work (k_BT), all integrated by the same stages; the counts, Q and W under the
+step control, the supplies not (a linear quadrature, kept exactly). Every slot's flux is the
+single assembly's at its vesicle with the pool, the pool's own steps at the pool with an empty
+vesicle (as population.py's rates).
 
 **The integrator** is declared apart (rosenbrock_rodas4_dense@1, numerics/rosenbrock_dense.py),
 with its Jacobian the forward derivative of this module's right-hand side, so linear invariants (the
 moieties) are kept to rounding.
 
+**Stops and crossings** (§3.1, §3.2). The integrator lands exactly on every observation time,
+schedule time (declared or drawn) and the horizon; at a stop the schedule's operators act in
+schedule-index order, and an observation at that time sees the state after them. A crossing is a
+guard with a direction: an enveloped place's count − min_count (downward: the run stops
+`outside_envelope`), a vesicle's footprint − W_floor (downward: the exact floor is a barrier the
+rate equations do not carry, so the same stop), its tension − σ_max (upward: lysis, §3.3) and
+ln V_osm − ln V_sph (either way: the lumen's kink, a restart, so the method keeps its order past
+μ's kink). After each accepted step every guard is evaluated on the step's dense output at its ends
+and 8 interior points; the earliest bracket's root is located by the Illinois method, the step is
+re-taken from its start to the root, and the guard is evaluated again at the re-stepped state (a
+secant on the step repeats it, at most 4 times, or the run stops `stalled`). Two crossings within
+clock_instants.same_instant of each other, or a crossing at a stop, are refused (FR-20's rule).
+
+**The operators** (§3.3, §3.4): a lysis is the release (the vesicle's molecules to their pool
+places, a held place's reservoir taking them back with its work, the closure cost released), one
+booking q = −(F_cont(after) − F_cont(before)) + w_r; a single lineage ends `lysed`, a population's
+slot frees. Shear fission at its stops: the exact operator's admission on the continuous state,
+then the mean split (each daughter n/k of every vesicle place, the last the complement), the floor
+test (refused, the parent kept), keys and continuation as the exact operator's (domain 3), and the
+booking Σ_j F_v(d_j) − F_v(parent). A serial transfer draws as the exact operator does (domain 6)
+and books F_cont.
+
 **The envelope** (§1.5, E1): every finite place a rate reads holds at least `min_count`, at the
 founder (else refused at parse) and at every accepted step (else the run stops `outside_envelope`
 at the located crossing). A step whose end state is below min_count/2 is rejected and retried.
 
-**The ledger** (§2): at every row F_cont(n_t) − F_cont(n_0) = W − Q, to the integrator's tolerance;
-every moiety to rounding; and the second law per step, −J_r ΔF_r ≥ 0, at every accepted state.
+**The ledger** (§2): at every row F_cont(n_t) − F_cont(n_0) = W − Q − S (W summed over payers, S
+the sinks), to the integrator's tolerance; every moiety to rounding; and the second law per step,
+−J_r ΔF_r ≥ 0, at every accepted state. A run whose books do not close is refused.
 
-**This slice (S1)** runs a single lineage without a geometry: OL1's laws. Geometry, populations,
-division, schedules (S2) and the pore clock (S3) are refused with the slice that brings them.
+**Slices:** S1 (OL1's laws) and S2 (vesicles: geometry, the osmotic lumen, lysis, the shared pool,
+shear fission, serial transfer). The pore clock and held tensions (S3) are refused here.
 """
 
 import functools
@@ -46,11 +76,15 @@ import numpy as np
 
 from cells.definitions.specs import ConfigError, SimulationSpec, bounded_integer, require_fields
 from cells.models.assembly_lineages_v2 import (
+    BILAYER_GEOMETRY,
     IDEAL_MIXING,
     MODE,
     MODEL_ID,
+    POPULATION,
     RATE_EQUATIONS,
+    geometry,
     kernel,
+    lumen,
     model,
     streams,
 )
@@ -58,6 +92,7 @@ from cells.models.assembly_lineages_v2 import world as world_rules
 from cells.models.assembly_lineages_v2.interfaces import AssemblyRepresentation
 from cells.modules import Citation, CitedWork
 from cells.numerics import rosenbrock_dense as rd
+from cells.numerics.clock_instants import same_instant
 
 # The registration call is the registry's own (the surface exports it in module stage 1).
 from cells.registry import laws as law_registry
@@ -66,10 +101,10 @@ TEST = "tests/unit/test_assembly_lineages_v2_rate_equations.py"
 METHODS = (rd.METHOD_ID,)
 STATUSES = ("complete", "lysed", "outside_envelope", "stalled", "step_limit", "slots_full")
 READOUTS = (
-    "the counts of every place, real, at the start, each observation time and the end",
+    "the counts of every place, real, at the start, each observation time, each event and the end",
     "each held place's net supply",
-    "the heat Q and the reservoir work W (k_BT), and F_cont at each row",
-    "vesicle-level events with their times (lysis, division, rupture), as their slices land",
+    "the heat Q and the work W by payer (k_BT), the sinks, and F_cont at each row",
+    "vesicle-level events with their times: lysis, division, transfer",
 )
 REFUSED_READOUTS = (
     "event traces and their uniforms (trace, uniforms)",
@@ -84,6 +119,8 @@ EXECUTION_REQUIRED = {"backend", "precision", "mode", "stream", "representation"
 EXACT_ONLY = ("molecule_capacity", "chunk_events", "unroll")
 RTOL_RANGE = (1e-13, 1e-3)
 EPS = float(np.finfo(np.float64).eps)
+MAX_SLOTS = 64  # §6.9: a population's linear algebra is dense in version 1
+REFUSED_SCHEDULES = ("replacement", "withdrawal")  # §1.4: their means come later (0.5 agent-day)
 
 FORMULAS = {
     "flux": "J_r = s_r(n) theta+_r(n) (1 - exp(dF_r)), dF_r = nu_r . mu(n) - w_r, mu = grad F_cont",
@@ -91,8 +128,22 @@ FORMULAS = {
     "Stirling's form of the declared F (each law's and term's declared limit)",
     "state": "dn/dt = sum_r nu_r J_r; d supplied_p/dt = -sum_r nu_r,p J_r (held p); "
     "dQ/dt = -sum_r J_r dF_r >= 0; dW/dt = sum_r J_r w_r",
-    "closure": "F_cont(n_t) - F_cont(n_0) = W - Q at every row, to the integrator's tolerance",
+    "closure": "F_cont(n_t) - F_cont(n_0) = W - Q - S at every row, to the integrator's tolerance",
     "envelope": "every finite place a rate reads holds at least min_count",
+    "geometry": "cells.bilayer_geometry@1 at real W = sum_i k_i n_i: the extents at W(n) (consumed "
+    "0, so W(m) = W(n)); the closure cost once per living vesicle, in F_cont's value; the floor "
+    "refuses a fission with a daughter below W_floor, and a vesicle reaching W_floor stops the run "
+    "outside_envelope",
+    "population": "F_cont = F(pool) + sum over living slots of [F(pool + slot) - F(pool) + C]; a "
+    "slot's flux is the single assembly's at its vesicle with the pool, the pool's steps at the "
+    "pool with an empty vesicle",
+    "crossings": "guards on the dense output at a step's ends and 8 interior points; the earliest "
+    "root by the Illinois method, the step re-taken to it, the guard checked again (a secant, at "
+    "most 4 times)",
+    "lysis": "the crossing sigma = sigma_max; the release, booked q = -(F_cont(after) - "
+    "F_cont(before)) + w_r",
+    "fission": "the mean split: each daughter n/k of every vesicle place, the last the complement; "
+    "shear work sum_j F_v(d_j) - F_v(parent), F_v with the closure cost",
 }
 
 REPRESENTATION = law_registry.BUILTIN.register(
@@ -127,9 +178,12 @@ REPRESENTATION = law_registry.BUILTIN.register(
             "reduction": "the large-count limit of the same declared laws, term by term",
         },
         preserves={
-            "exactly": ("the world id, its laws, terms, founder and units", "every moiety, to "
-                        "rounding", "F_cont's minima, and so every end state that is one"),
-            "to_tolerance": ("the ledger's closure, F_cont(n_t) - F_cont(n_0) = W - Q",),
+            "exactly": (
+                "the world id, its laws, terms, founder and units",
+                "every moiety, to rounding",
+                "F_cont's minima, and so every end state that is one",
+            ),
+            "to_tolerance": ("the ledger's closure, F_cont(n_t) - F_cont(n_0) = W - Q - S",),
         },  # fmt: skip
         supports={"readouts": READOUTS, "refused": REFUSED_READOUTS},
         qualified={
@@ -201,11 +255,8 @@ def parse_execution(raw, model_spec):
     spec_rules._keys(raw, EXECUTION_KEYS, EXECUTION_REQUIRED, "execution")
     if raw["backend"] not in ("cpu", "gpu") or raw["precision"] != "float64":
         raise ConfigError("execution: backend cpu or gpu, precision float64")
-    if raw["mode"] != MODE:
-        raise ConfigError(
-            f"execution: {RATE_EQUATIONS} runs mode {MODE} in this slice (S1); a population "
-            "comes with S2"
-        )
+    if raw["mode"] not in (MODE, POPULATION):
+        raise ConfigError(f"execution: {RATE_EQUATIONS} runs mode {MODE} or {POPULATION}")
     stream = raw["stream"]
     require_fields(stream, spec_rules.STREAM_KEYS, "execution: stream")
     words = {}
@@ -293,20 +344,35 @@ def execution_to_dict(x):
 
 
 def refusals(world, experiment, execution):
-    """Version 1's refusals for this slice (the note's §4), each by name, after the world and the
-    experiment parse as they do for exact events."""
+    """Version 1's refusals (the note's §4), each by name, after the world and the experiment
+    parse as they do for exact events."""
+    from cells.models.assembly_lineages_v2 import spec as spec_rules
+
+    spec_rules._mode_refusals(world, execution.mode)
     later = (
-        ("geometry", world.geometry is not None, "a geometry comes with S2"),
-        ("population", world.population is not None, "a population comes with S2"),
-        ("division", world.division is not None, "division comes with S2"),
         ("hazard", world.hazard is not None, "the pore clock comes with S3"),
-        ("schedules", bool(experiment.schedules), "schedules come with S2"),
         ("tension_holds", bool(experiment.tension_holds), "a held tension comes with S3"),
     )
     for name, declared, reason in later:
         if declared:
             raise ConfigError(f"{RATE_EQUATIONS}: the world's {name} is refused in this slice: "
                               f"{reason}")  # fmt: skip
+    if world.geometry is not None and world.geometry[0] != BILAYER_GEOMETRY:
+        raise ConfigError(
+            f"{RATE_EQUATIONS}: the geometry {world.geometry[0]} is refused in version 1 (FR-21's "
+            "shell, its permeation and its gate: about 0.25 agent-day when a consumer needs them)"
+        )
+    if world.population is not None and world.population["slots"] > MAX_SLOTS:
+        raise ConfigError(
+            f"{RATE_EQUATIONS}: a population of {world.population['slots']} slots is refused: at "
+            f"most {MAX_SLOTS} in version 1 (dense linear algebra, the note's §6.9)"
+        )
+    for schedule in experiment.schedules:
+        if schedule.kind in REFUSED_SCHEDULES:
+            raise ConfigError(
+                f"{RATE_EQUATIONS}: a {schedule.kind} schedule is refused in version 1 (its mean "
+                "and booking come later, the note's §1.4)"
+            )
     if world.role is not None:
         raise ConfigError(
             f"{RATE_EQUATIONS}: a world with world_role {world.role!r} is refused: its singular "
@@ -328,22 +394,29 @@ def refusals(world, experiment, execution):
                 "in this representation"
             )
     envelope = enveloped(world)
-    for i, place in enumerate(world.places):
-        if envelope[i] and world.founder[i] < execution.min_count:
-            raise ConfigError(
-                f"{RATE_EQUATIONS}: the founder's {place.name} holds {world.founder[i]}, below the "
-                f"envelope's min_count {execution.min_count:g}: the representation is valid only "
-                "where every count a rate reads is large (a place rising from 0 is refused in "
-                "version 1)"
-            )
+    founders = [("the founder", world.founder)]
+    if world.population is not None:
+        pool = np.asarray(world.founder)
+        founders = [(f"founder {i}", pool + np.asarray(v))
+                    for i, v in enumerate(world.population["founders"])]  # fmt: skip
+    for label, counts in founders:
+        for i, place in enumerate(world.places):
+            if envelope[i] and counts[i] < execution.min_count:
+                raise ConfigError(
+                    f"{RATE_EQUATIONS}: {label}'s {place.name} holds {counts[i]}, below the "
+                    f"envelope's min_count {execution.min_count:g}: the representation is valid "
+                    "only where every count a rate reads is large (a place rising from 0 is "
+                    "refused in version 1)"
+                )
 
 
 def enveloped(world):
     """[places] bool: the finite places some rate reads (§1.5): every place of a step, and every
-    membrane place when a step has the membrane locus or a rate factor reads the membrane."""
+    membrane place when a step has the membrane locus, a rate factor reads the membrane, or a
+    geometric extent reads the footprint W."""
     index = {p.name: i for i, p in enumerate(world.places)}
     out = [False] * len(world.places)
-    membrane_read = world.rate_factor is not None
+    membrane_read = world.rate_factor is not None or world.geometry is not None
     for step in world.steps:
         for name, _ in (*step.reactants, *step.products):
             out[index[name]] = True
@@ -360,9 +433,9 @@ def enveloped(world):
 
 
 class Problem:
-    """One world's arithmetic in this representation: its layout (the exact builders', reused),
-    its laws' limits and the matrices of the ODE. Built from any parsed spec of the world, exact or
-    not (the limit's check uses exact specs too)."""
+    """One assembly's arithmetic in this representation, at a whole-world state n [P]: its layout
+    (the exact builders', reused), its laws' limits and the ODE's matrices. Built from any parsed
+    spec of the world, exact or not (the limit's check uses exact specs too)."""
 
     def __init__(self, spec):
         world = spec.model.world
@@ -387,6 +460,7 @@ class Problem:
         self.nu_finite = np.where(held[None, :], 0.0, nu)
         self.nu_held = np.where(held[None, :], nu, 0.0)
         self.held = held
+        self.held_mu = model.place_arrays(world, self.P)[5]
         self.membrane = np.asarray(self.tables.membrane, dtype=bool)
         self.finite = np.asarray(self.tables.finite, dtype=bool)
         mask = np.zeros(self.P, dtype=bool)
@@ -399,10 +473,30 @@ class Problem:
             for name, count in world.species_by_id(place.species).moiety_counts().items():
                 matrix[names.index(name), i] = count
         self.moiety_names, self.moieties = tuple(names), matrix
+        # S2: a vesicle's places, its footprint, its lumen and its closure cost.
+        vesicle = np.zeros(self.P, dtype=bool)
+        pool_of = np.full(self.P, -1, dtype=np.int64)
+        pools = {p.species: i for i, p in enumerate(world.places) if p.phase == world_rules.POOL}
+        for i, place in enumerate(world.places):
+            if place.phase in (world_rules.MEMBRANE, world_rules.LUMEN) and not place.held:
+                vesicle[i] = True
+                pool_of[i] = pools.get(place.species, -1)
+        self.vesicle, self.pool_of = vesicle, pool_of
+        self.bilayer = world.geometry is not None and world.geometry[0] == BILAYER_GEOMETRY
+        self.osmotic = self.bilayer and world.conventions.lumen_volume == "osmotic"
+        self.closure = geometry.closure_kT(world) if self.bilayer else 0.0
+        if self.bilayer:
+            g = lay.geometry
+            self.quanta = np.asarray(g[0], dtype=np.float64)
+            self.floor = float(g[6])
+            self.lumen_mask = np.asarray(g[7], dtype=np.float64)
+            self.lumen_c = np.asarray(g[8], dtype=np.float64)
+            self.sigma_max, self.kT, self.q = float(g[9]), float(g[10]), float(g[11])
 
     # -- the terms and the forces
     def free_energy(self, n, xp=jnp, terms=None):
-        """F_cont(n) (k_BT): the declared terms' limits; `terms` selects a subset by index."""
+        """F_cont(n) (k_BT): the declared terms' limits (no closure cost); `terms` selects a
+        subset by index."""
         chosen = range(len(self.terms)) if terms is None else terms
         total = 0.0
         for i in chosen:
@@ -419,13 +513,18 @@ class Problem:
         return jax.grad(lambda m: self.free_energy(m, terms=range(1, len(self.terms))))(n)
 
     def view(self, n, forward):
-        """The laws' View at real counts n with the common state m = n (consumed 0)."""
+        """The laws' View at real counts n with the common state m = n (consumed 0), and, with a
+        bilayer, each geometric law's extent at the real footprint W(n) = W(m)."""
         totals = jnp.stack([
             jnp.sum(jnp.where(self.finite & (np.asarray(self.layout.place_phase) == p), n, 0.0))
             for p in range(3)
         ])  # fmt: skip
         v = kernel.view(n, totals, self.layout, self.offset, forward, jnp)
-        return v._replace(consumed=jnp.zeros_like(v.consumed))
+        v = v._replace(consumed=jnp.zeros_like(v.consumed))
+        if self.bilayer:
+            footprint = jnp.sum(n * self.quanta)
+            v = v._replace(log_encounter=kernel.encounter_extent(footprint, self.layout, v, jnp))
+        return v
 
     def log_direction(self, n, forward):
         """ln (a / k_f) of each step's direction at n, from each law's limit and the factor's."""
@@ -458,37 +557,26 @@ class Problem:
         log_a = self.log_direction(n, False) + np.asarray(self.layout.log_ratio)
         return log_a + jnp.asarray(self.nu_finite) @ self.excess_potentials(n)
 
-    # -- the ODE
-    def split(self, y):
-        P = self.P
-        return y[:P], y[P : 2 * P], y[2 * P], y[2 * P + 1]
+    # -- a vesicle's derived quantities, on the host (numpy), of whole-world states [..., P]
+    def footprint(self, n):
+        return np.asarray(n) @ self.quanta
 
-    def rhs(self, y):
-        n = self.split(y)[0]
-        j, d_f = self.flux(n)
-        dn = jnp.asarray(self.nu_finite).T @ j
-        supplied = -(jnp.asarray(self.nu_held).T @ j)
-        heat = -jnp.sum(j * d_f)
-        work = jnp.sum(j * np.asarray(self.layout.step_work))
-        return jnp.concatenate((dn, supplied, jnp.stack((heat, work))))
+    def tension(self, n):
+        n = np.asarray(n, dtype=np.float64)
+        return lumen.tension(n @ self.lumen_mask, n @ self.quanta, self.kT, self.q, self.lumen_c,
+                             np)  # fmt: skip
 
-    def initial(self):
-        n = np.zeros(self.P)
-        n[: len(self.world.places)] = np.asarray(self.world.founder, dtype=np.float64)
-        n[self.held] = 0.0
-        return np.concatenate((n, np.zeros(self.P), np.zeros(2)))
+    def kink(self, n):
+        """ln V_osm − ln V_sph: positive where tense, negative where floppy."""
+        n = np.asarray(n, dtype=np.float64)
+        log_osm, log_sph = lumen.log_branches(n @ self.lumen_mask, n @ self.quanta, self.lumen_c,
+                                              np)  # fmt: skip
+        return log_osm - log_sph
 
-    def weight(self):
-        """The step control's weights: the finite counts, Q and W; not the supplies."""
-        w = np.concatenate((self.finite.astype(np.float64), np.zeros(self.P), np.ones(2)))
-        return w
-
-    def margin(self, y):
-        """min over enveloped places of (n_p − min_count), on the host."""
-        n = np.asarray(y[: self.P])
-        if not self.enveloped.any():
-            return math.inf
-        return float(np.min(n[self.enveloped])) - self.spec.execution.min_count
+    def volume_L(self, n):
+        n = np.asarray(n, dtype=np.float64)
+        return float(np.exp(lumen.log_volume(n @ self.lumen_mask, n @ self.quanta, self.lumen_c,
+                                             np)))  # fmt: skip
 
 
 # ------------------------------------------------------------------ the limit's check
@@ -499,44 +587,41 @@ CHECK_STATES = 16
 IDENTITY_ATOL = 1e-9  # ln units, as the exact kernel's check (balance.ATOL)
 
 
-def limit_check(problem, rng, states=CHECK_STATES, low=1e2, high=1e4):
+def limit_check(problem, rng, states=CHECK_STATES, low=1e2, high=1e4, draw=None):
     """The limit's check (§1.4) on one problem: (1) the factored form equals the products' law,
     (2) μ equals central differences of F_cont, (3) −J_r ΔF_r ≥ 0. Returns the worst of each;
-    raises ConfigError if one fails. Eager evaluation (no compile)."""
+    raises ConfigError if one fails. Eager evaluation (no compile). `draw(rng)` gives a state [P]
+    (default: every finite place uniform in [low, high])."""
     worst = {"identity": 0.0, "potential": 0.0, "dissipation_margin": math.inf, "states": 0}
     places = len(problem.world.places)
     finite = np.flatnonzero(problem.finite[:places])
     active = np.asarray(problem.layout.step_active)
+    drawn = []
     for _ in range(states):
-        n = np.zeros(problem.P)
-        n[finite] = rng.uniform(low, high, finite.size)
-        nj = jnp.asarray(n)
-        j, d_f = problem.flux(nj)
-        forward = problem.log_direction(nj, True)
-        reverse = problem.log_reverse(nj)
-        both = active & np.isfinite(np.asarray(forward)) & np.isfinite(np.asarray(reverse))
-        gap = np.abs(np.asarray(reverse - forward - d_f))[both]
-        worst["identity"] = max(worst["identity"], float(gap.max(initial=0.0)))
-        mu = np.asarray(problem.potentials(nj))
-        for p in finite:
-            delta = 1e-4 * n[p]
-            up, down = n.copy(), n.copy()
-            up[p] += delta
-            down[p] -= delta
-            numeric = (float(problem.free_energy(jnp.asarray(up)))
-                       - float(problem.free_energy(jnp.asarray(down)))) / (2 * delta)  # fmt: skip
-            worst["potential"] = max(worst["potential"], abs(mu[p] - numeric) / (1 + abs(mu[p])))
-        product = -np.asarray(j * d_f)
-        scale = np.abs(product) + 1e-300
-        worst["dissipation_margin"] = min(worst["dissipation_margin"],
-                                          float(np.min(product / scale, initial=1.0)))  # fmt: skip
-        worst["states"] += 1
+        if draw is None:
+            n = np.zeros(problem.P)
+            n[finite] = rng.uniform(low, high, finite.size)
+        else:
+            n = draw(rng)
+        drawn.append(n)
+    out = _check_program(problem, tuple(finite.tolist()))(jnp.asarray(np.stack(drawn)))
+    j, d_f, forward, reverse, mu, numeric = (np.asarray(a) for a in out)
+    both = active[None, :] & np.isfinite(forward) & np.isfinite(reverse)
+    gap = np.abs(reverse[both] - forward[both] - d_f[both])  # masked first: no inf - inf
+    worst["identity"] = float(gap.max(initial=0.0))
+    mu = mu[:, finite]
+    worst["potential"] = float(np.max(np.abs(mu - numeric) / (1 + np.abs(mu)), initial=0.0))
+    product = -(j * d_f)
+    worst["dissipation_margin"] = float(np.min(product / (np.abs(product) + 1e-300), initial=1.0))
+    worst["states"] = len(drawn)
     failed = []
     if worst["identity"] > IDENTITY_ATOL:
         failed.append(f"the factored flux is not the products' law (largest gap "
                       f"{worst['identity']:.3g} in ln units)")  # fmt: skip
     if worst["potential"] > 1e-6:
-        failed.append(f"mu is not F_cont's gradient (largest relative gap {worst['potential']:.3g})")
+        failed.append(
+            f"mu is not F_cont's gradient (largest relative gap {worst['potential']:.3g})"
+        )
     if worst["dissipation_margin"] < -64 * EPS:
         failed.append("a step's -J dF is negative")
     if failed:
@@ -544,38 +629,75 @@ def limit_check(problem, rng, states=CHECK_STATES, low=1e2, high=1e4):
     return worst
 
 
+def _check_program(problem, finite):
+    """The check's arithmetic at a batch of states [S, P], compiled once per call (the planted
+    tests change a problem's laws in place, so nothing is cached): the flux and ΔF, both forms'
+    logarithms, μ by differentiation, and μ by central differences of F_cont's value at
+    δ = 10⁻⁴ n at each finite place."""
+    places = np.asarray(finite, dtype=np.int64)
+
+    def one(n):
+        j, d_f = problem.flux(n)
+        forward = problem.log_direction(n, True)
+        reverse = problem.log_reverse(n)
+        mu = problem.potentials(n)
+        delta = 1e-4 * n[places]
+        shift = jnp.zeros((places.size, n.shape[0])).at[jnp.arange(places.size), places].set(delta)
+        f_up = jax.vmap(problem.free_energy)(n[None, :] + shift)
+        f_down = jax.vmap(problem.free_energy)(n[None, :] - shift)
+        return j, d_f, forward, reverse, mu, (f_up - f_down) / (2.0 * delta)
+
+    return jax.jit(jax.vmap(one))
+
+
+def vesicle_draw(problem, low=1e3, high=1e5):
+    """A state draw for a vesicle world's check: every finite place uniform in [low, high], then
+    the lumen's solutes scaled so that ln V_osm − ln V_sph is uniform in [−1, 1], so the draws lie
+    on both sides of the lumen's kink (the osmotic term's μ is checked on both branches)."""
+    places = len(problem.world.places)
+    finite = np.flatnonzero(problem.finite[:places])
+    lumen_places = np.flatnonzero(problem.lumen_mask[:places] > 0) if problem.osmotic else []
+
+    def draw(rng):
+        n = np.zeros(problem.P)
+        n[finite] = rng.uniform(low, high, finite.size)
+        if len(lumen_places):
+            n[lumen_places] *= math.exp(rng.uniform(-1.0, 1.0) - problem.kink(n))
+        return n
+
+    return draw
+
+
 def parity(problem_spec, rng, scales=(1e2, 1e3, 1e4)):
     """Item 4 (§1.4): each law's limit against the exact kernel's forward rates at integer states
     scaled by λ: the largest gap in ln a⁺ falls as 1/λ (fitted order at least 0.9), or is
-    rounding at every λ (identical forms). `problem_spec` is an exact spec's definition dict."""
+    rounding at every λ (identical forms). `problem_spec` is an exact spec's definition dict, parsed
+    once at the largest state's molecule capacity (the forward rates take their logarithms
+    directly, so the capacity selects no value)."""
     from cells.definitions.specs import parse_spec
     from cells.models.assembly_lineages_v2 import balance
 
-    world_places = None
-    base = None
+    raw = dict(problem_spec)
+    raw["execution"] = dict(problem_spec["execution"])
+    places = parse_spec(raw).model.world.places
+    base = rng.integers(3, 13, len(places))
+    states = [(base * scale).astype(np.int64) for scale in scales]
+    membrane = max(sum(int(c) for c, p in zip(counts, places, strict=True) if p.phase == "membrane")
+                   for counts in states)  # fmt: skip
+    raw["execution"]["molecule_capacity"] = int(max(max(c.max() for c in states), membrane)) + 8
+    problem = Problem(parse_spec(raw))
+    kf = np.asarray(problem.layout.kf)
+    active = np.asarray(problem.layout.step_active) & (kf > 0)
+    fulls = np.zeros((len(states), problem.P), dtype=np.int64)
+    fulls[:, : len(places)] = np.stack(states)
+    fulls[:, problem.held] = 0
+    limits = jax.jit(jax.vmap(lambda n: problem.log_direction(n, True)))(
+        jnp.asarray(fulls.astype(np.float64))
+    )
     gaps = []
-    for scale in scales:
-        raw = dict(problem_spec)
-        raw["execution"] = dict(problem_spec["execution"])
-        spec0 = parse_spec(raw)
-        world_places = len(spec0.model.world.places)
-        if base is None:
-            base = rng.integers(3, 13, world_places)
-        counts = (base * scale).astype(np.int64)
-        membrane = sum(int(c) for c, p in zip(counts, spec0.model.world.places, strict=True)
-                       if p.phase == "membrane")  # fmt: skip
-        raw["execution"]["molecule_capacity"] = int(max(counts.max(), membrane)) + 8
-        spec = parse_spec(raw)
-        problem = Problem(spec)
-        full = np.zeros(problem.P, dtype=np.int64)
-        full[:world_places] = counts
-        full[problem.held] = 0
+    for full, log_a in zip(fulls, np.asarray(limits), strict=True):
         exact = balance.host_log_rates(full, problem.layout, problem.structure)[: problem.R]
-        kf = np.asarray(problem.layout.kf)
-        active = np.asarray(problem.layout.step_active) & (kf > 0)
-        limit = np.log(np.where(active, kf, 1.0)) + np.asarray(
-            problem.log_direction(jnp.asarray(full.astype(np.float64)), True)
-        )
+        limit = np.log(np.where(active, kf, 1.0)) + log_a
         both = active & np.isfinite(exact) & np.isfinite(limit)
         gaps.append(float(np.max(np.abs(exact[both] - limit[both]), initial=0.0)))
     if max(gaps) <= 1e-12:
@@ -606,27 +728,223 @@ def generic_probes():
     return tuple(out)
 
 
+OSMOTIC_PROBES = ("multinomial", "multinomial_less_one")  # with regular mixing and catalysis
+
+
 @functools.cache
 def _generic_verdict():
-    """The check on generic_probes(): every order up to three, held species, both measures,
-    regular mixing and catalysis. Cached per process."""
+    """The limit's four items (§1.4) on generic probe worlds, before every run (cached per
+    process): items 1-3 at real states and item 4, parity with the exact kernel at λ-scaled
+    integer states, on generic_probes() (every order up to three, held species, both measures,
+    regular mixing and catalysis) and on balance's osmotic probe in both measures (the geometric
+    laws' extents, the lumen's mass action and the osmotic term, its check's states on both sides
+    of the kink). Refuses (ConfigError) when an item fails."""
     from cells.definitions.specs import parse_spec
     from cells.models.assembly_lineages_v2 import balance
 
     rng = np.random.default_rng(CHECK_SEED)
-    out = {"identity": 0.0, "potential": 0.0, "dissipation_margin": math.inf, "worlds": 0}
-    for measure, last, regular, catalysis in generic_probes():
-        raw = balance.probe_world(rng, measure, last, regular=regular, catalysis=catalysis)
-        worst = limit_check(Problem(parse_spec(raw)), rng, states=4)
+    out = {"identity": 0.0, "potential": 0.0, "dissipation_margin": math.inf, "worlds": 0,
+           "parity_orders": [], "parity_identical": 0}  # fmt: skip
+    worlds = [(balance.probe_world(rng, measure, last, regular=regular, catalysis=catalysis),
+               False) for measure, last, regular, catalysis in generic_probes()]  # fmt: skip
+    worlds += [(balance.osmotic_probe_world(rng, measure, "insertion_area", regular=True,
+                                            catalysis=True), True)
+               for measure in OSMOTIC_PROBES]  # fmt: skip
+    for raw, vesicle in worlds:
+        problem = Problem(parse_spec(raw))
+        draw = vesicle_draw(problem) if vesicle else None
+        worst = limit_check(problem, rng, states=4, draw=draw)
         out["identity"] = max(out["identity"], worst["identity"])
         out["potential"] = max(out["potential"], worst["potential"])
         out["dissipation_margin"] = min(out["dissipation_margin"], worst["dissipation_margin"])
+        tends = parity(raw, rng)
+        if tends["identical"]:
+            out["parity_identical"] += 1
+        else:
+            out["parity_orders"].append(tends["order"])
         out["worlds"] += 1
     return out
 
 
 def verdict():
     return dict(_generic_verdict())
+
+
+# ------------------------------------------------------------------ the continuous state
+
+
+class Shape:
+    """The continuous state's layout over a Problem (the note's §1.6): y = [pool (P), slots (K × V),
+    supplied (P), Q, W]. A single lineage has no slot block, and its `pool` is the whole world (S1's
+    layout); a population's pool holds the pool's places and each slot its vesicle's V places."""
+
+    def __init__(self, problem):
+        p, world = problem, problem.world
+        self.problem = p
+        self.population = world.population is not None
+        self.K = world.population["slots"] if self.population else 1
+        self.places = np.flatnonzero(p.vesicle) if self.population else np.zeros(0, dtype=int)
+        self.V = self.places.size
+        P = p.P
+        self.blocks = self.K * self.V if self.population else 0
+        self.size = 2 * P + self.blocks + 2
+        self.supply_at, self.heat_at = P + self.blocks, 2 * P + self.blocks
+        pool_place = np.zeros(P, dtype=bool)
+        pool_place[: len(world.places)] = [pl.phase == world_rules.POOL for pl in world.places]
+        self.pool_place = pool_place if self.population else np.ones(P, dtype=bool)
+        lay = p.layout
+        vesicle_step = np.zeros(p.R, dtype=bool)
+        for r, step in enumerate(world.steps):
+            names = [name for name, _ in (*step.reactants, *step.products)]
+            vesicle_step[r] = any(world.places[world.place_index(n)].phase != world_rules.POOL
+                                  for n in names)  # fmt: skip
+        self.vesicle_step = vesicle_step & np.asarray(lay.step_active)
+        self.pool_step = ~vesicle_step & np.asarray(lay.step_active)
+        self.nu_pool = np.where(self.pool_place[None, :], p.nu_finite, 0.0)
+        self.nu_slot = p.nu_finite[:, self.places]
+        founders = world.population["founders"] if self.population else ()
+        self.safe = np.zeros(P)  # a dead slot's stand-in state (constant: no derivative)
+        if founders:
+            self.safe[: len(world.places)] = np.asarray(world.founder) + np.asarray(founders[0])
+
+    def split(self, y):
+        """(pool [P], slots [K, V], supplied [P], Q, W)."""
+        P, b = self.problem.P, self.blocks
+        slots = y[P : P + b].reshape((self.K, self.V)) if self.population else None
+        return y[:P], slots, y[P + b : 2 * P + b], y[2 * P + b], y[2 * P + b + 1]
+
+    def full(self, pool, slots, xp=jnp):
+        """[K, P]: each slot's whole-world state, its vesicle with the pool."""
+        out = xp.zeros((self.K, self.problem.P), dtype=pool.dtype) + pool[None, :]
+        if xp is jnp:
+            return out.at[:, self.places].add(slots)
+        out[:, self.places] += slots
+        return out
+
+    def assemblies(self, y, alive):
+        """[(slot, whole-world state [P])] of the living assemblies, on the host."""
+        y = np.asarray(y)
+        pool, slots = self.split(y)[:2]
+        if not self.population:
+            return [(0, pool)] if alive[0] else []
+        full = self.full(pool, slots, np)
+        return [(int(k), full[k]) for k in np.flatnonzero(alive)]
+
+    def rhs(self, y, alive):
+        p = self.problem
+        pool, slots, _, _, _ = self.split(y)
+        work = np.asarray(p.layout.step_work)
+        if not self.population:
+            j, d_f = p.flux(pool)
+            dn = jnp.asarray(p.nu_finite).T @ j
+            supplied = -(jnp.asarray(p.nu_held).T @ j)
+            heat = -jnp.sum(j * d_f)
+            return jnp.concatenate((dn, supplied, jnp.stack((heat, jnp.sum(j * work)))))
+        full = self.full(pool, slots)
+        safe = jnp.where(alive[:, None], full, jnp.asarray(self.safe)[None, :])
+        j, d_f = jax.vmap(p.flux)(safe)
+        on = alive[:, None] & self.vesicle_step[None, :]
+        j, d_f = jnp.where(on, j, 0.0), jnp.where(on, d_f, 0.0)
+        pool_only = jnp.where(jnp.asarray(self.pool_place), pool, 0.0)
+        j0, d0 = p.flux(pool_only)
+        j0, d0 = jnp.where(self.pool_step, j0, 0.0), jnp.where(self.pool_step, d0, 0.0)
+        total = j0 + jnp.sum(j, axis=0)
+        d_pool = jnp.asarray(self.nu_pool).T @ total
+        d_slots = (j @ jnp.asarray(self.nu_slot)).reshape(-1)
+        supplied = -(jnp.asarray(p.nu_held).T @ total)
+        heat = -(jnp.sum(j0 * d0) + jnp.sum(j * d_f))
+        books = jnp.stack((heat, jnp.sum(total * work)))
+        return jnp.concatenate((d_pool, d_slots, supplied, books))
+
+    def initial(self):
+        """(y, alive): the founders."""
+        p, world = self.problem, self.problem.world
+        n = np.zeros(p.P)
+        n[: len(world.places)] = np.asarray(world.founder, dtype=np.float64)
+        n[p.held] = 0.0
+        if not self.population:
+            return np.concatenate((n, np.zeros(p.P), np.zeros(2))), np.ones(1, dtype=bool)
+        founders = world.population["founders"]
+        slots = np.zeros((self.K, self.V))
+        for i, vesicle in enumerate(founders):
+            full = np.zeros(p.P)
+            full[: len(world.places)] = vesicle
+            slots[i] = full[self.places]
+        alive = np.arange(self.K) < len(founders)
+        return np.concatenate((n, slots.reshape(-1), np.zeros(p.P), np.zeros(2))), alive
+
+    def weight(self):
+        """The step control's weights: the finite counts, Q and W; not the supplies."""
+        p = self.problem
+        pool = (p.finite & self.pool_place).astype(np.float64)
+        return np.concatenate((pool, np.ones(self.blocks), np.zeros(p.P), np.ones(2)))
+
+    def free_energy(self, y, alive, f):
+        """F_cont of a world state, with the closure cost per living vesicle (host floats); `f` is
+        the compiled Problem.free_energy."""
+        p = self.problem
+        if not self.population:
+            pool = np.asarray(self.split(y)[0])
+            return float(f(pool)) + (p.closure if p.bilayer and alive[0] else 0.0)
+        pool, slots = (np.asarray(a) for a in self.split(y)[:2])
+        pool_only = np.where(self.pool_place, pool, 0.0)
+        base = float(f(pool_only))
+        full = self.full(pool, slots, np)
+        parts = [base] + [float(f(full[k])) - base + p.closure for k in np.flatnonzero(alive)]
+        return math.fsum(parts)
+
+
+# ------------------------------------------------------------------ crossings
+
+
+@dataclass(frozen=True)
+class Crossing:
+    """A located root of a guard (§3.2): its name, the slot, θ in the step and the time."""
+
+    guard: str
+    slot: int
+    theta: float
+    time: float
+
+
+GUARDS = {  # name: (direction, the handler's kind)
+    "envelope": ("down", "stop"),
+    "floor": ("down", "stop"),
+    "lysis": ("up", "lysis"),
+    "kink": ("either", "restart"),
+}
+THETAS = np.linspace(0.0, 1.0, 10)  # a step's ends and 8 interior points
+RESTEPS = 4
+
+
+def _crosses(direction, a, b):
+    if direction == "down":
+        return a >= 0 > b
+    if direction == "up":
+        return a <= 0 < b
+    return (a > 0) != (b > 0)
+
+
+def _locate(guard_at, theta_low, theta_high, g_low, g_high, tolerance=1e-13):
+    """The Illinois method on θ in [theta_low, theta_high], where g_low and g_high have opposite
+    sides: the root of a guard on the dense output (§3.2). Returns the θ on g_high's side."""
+    side = 0
+    for _ in range(200):
+        theta = (theta_low * g_high - theta_high * g_low) / (g_high - g_low)
+        g = guard_at(theta)
+        if (g > 0) == (g_low > 0) and g != 0:
+            theta_low, g_low = theta, g
+            if side == -1:
+                g_high /= 2.0
+            side = -1
+        else:
+            theta_high, g_high = theta, g
+            if side == 1:
+                g_low /= 2.0
+            side = 1
+        if theta_high - theta_low <= tolerance:
+            break
+    return theta_high
 
 
 # ------------------------------------------------------------------ the run
@@ -642,6 +960,7 @@ class RateEquationsRun:
     moieties: dict
     dissipation: dict
     check: dict
+    events: list = field(default_factory=list)
     timings: dict = field(default_factory=dict)
 
     def check_books(self):
@@ -652,172 +971,632 @@ class RateEquationsRun:
             raise ConfigError(f"{RATE_EQUATIONS}: a moiety did not close: {self.moieties}")
 
 
-class _Rows:
-    def __init__(self, problem):
-        self.problem, self.kinds, self.times, self.states = problem, [], [], []
-
-    def add(self, kind, time, y):
-        self.kinds.append(kind)
-        self.times.append(float(time))
-        self.states.append(np.asarray(y, dtype=np.float64).copy())
-
-    def arrays(self):
-        p = self.problem
-        places = len(p.world.places)
-        states = np.stack(self.states)
-        return {
-            "row_kind": np.asarray(self.kinds),
-            "row_time_s": np.asarray(self.times),
-            "counts": states[:, :places],
-            "supplied": states[:, p.P : p.P + places],
-            "heat_kT": states[:, 2 * p.P],
-            "work_kT": states[:, 2 * p.P + 1],
-        }
-
-
-def _locate(margin_at, theta_low, theta_high, g_low, g_high, tolerance=1e-13):
-    """The Illinois method on θ in [theta_low, theta_high], g_low ≥ 0 > g_high: the root of a
-    guard on the dense output (§3.2)."""
-    side = 0
-    for _ in range(200):
-        theta = (theta_low * g_high - theta_high * g_low) / (g_high - g_low)
-        g = margin_at(theta)
-        if g >= 0:
-            theta_low, g_low = theta, g
-            if side == -1:
-                g_high /= 2.0
-            side = -1
-        else:
-            theta_high, g_high = theta, g
-            if side == 1:
-                g_low /= 2.0
-            side = 1
-        if theta_high - theta_low <= tolerance:
-            break
-    return theta_high
-
-
 _PROGRAMS = {}
 
 
 def _program(spec):
-    """(problem, step, norm, dense, flux, the world's own check) for one definition, compiled once
-    per process and kept by its fingerprint, as the exact kernel keeps a program per structure."""
-    key = spec.fingerprint
+    """The compiled pieces of one world at one execution's capacities and tolerances, kept by
+    them (as the exact kernel keeps a program per structure; the experiment and the stream are the
+    run's, read on the host), with the world's own limit check."""
+    from cells.models.assembly_lineages_v2 import spec as spec_rules
+
+    x = spec.execution
+    key = (spec_rules.world_id(spec.model.world), x.place_capacity, x.step_capacity, x.rtol,
+           x.atol_count)  # fmt: skip
     if key not in _PROGRAMS:
         problem = Problem(spec)
+        shape = Shape(problem)
         x = spec.execution
-        rhs = problem.rhs
-        jac = jax.jacfwd(rhs)
-        weight = jnp.asarray(problem.weight())
-        atol, rtol = x.atol_count, x.rtol
-        _PROGRAMS[key] = (
-            problem,
-            jax.jit(lambda y, h: rd.step(rhs, jac, y, h)),
-            jax.jit(lambda err, y0, y1: rd.error_norm(err, y0, y1, rtol, atol, weight)),
-            jax.jit(rd.dense),
-            jax.jit(problem.flux),
-            limit_check(problem, np.random.default_rng(CHECK_SEED)),
-        )
+        weight = jnp.asarray(shape.weight())
+        rtol, atol = x.rtol, x.atol_count
+
+        def one_step(y, h, alive):
+            def f(z):
+                return shape.rhs(z, alive)
+
+            return rd.step(f, jax.jacfwd(f), y, h)
+
+        def dissipation(y, alive):
+            pool, slots = shape.split(y)[:2]
+            if not shape.population:
+                j, d_f = problem.flux(pool)
+                on = jnp.ones_like(j, dtype=bool)
+            else:
+                full = jnp.where(alive[:, None], shape.full(pool, slots),
+                                 jnp.asarray(shape.safe)[None, :])  # fmt: skip
+                j, d_f = jax.vmap(problem.flux)(full)
+                on = alive[:, None] & shape.vesicle_step[None, :]
+            product = jnp.where(on, -(j * d_f), 0.0)
+            return jnp.min(jnp.where(on, product / (jnp.abs(product) + 1e-300), 1.0))
+
+        draw = vesicle_draw(problem) if problem.bilayer else None
+        own = limit_check(problem, np.random.default_rng(CHECK_SEED), draw=draw)
+        _PROGRAMS[key] = {
+            "problem": problem,
+            "shape": shape,
+            "step": jax.jit(one_step),
+            "norm": jax.jit(lambda err, y0, y1: rd.error_norm(err, y0, y1, rtol, atol, weight)),
+            "dense": jax.jit(jax.vmap(rd.dense, in_axes=(None, None, 0))),
+            "free_energy": jax.jit(problem.free_energy),
+            "dissipation": jax.jit(dissipation),
+            "check": own,
+        }
     return _PROGRAMS[key]
 
 
-def run(spec):
-    """One world in this representation, from its founder to the end of its lifecycle."""
-    started = perf_counter()
-    x, e = spec.execution, spec.experiment
-    generic = verdict()
-    problem, step, norm, dense, flux, own = _program(spec)
-    rhs = problem.rhs
-    weight = jnp.asarray(problem.weight())
-    atol = x.atol_count
-    horizon = float(e.time_horizon_s)
-    observed = sorted({float(t) for t in e.observation_times_s if 0.0 < t <= horizon})
-    stops = sorted(set(observed) | {horizon})
-    rows = _Rows(problem)
-    y = jnp.asarray(problem.initial())
-    rows.add("start", 0.0, y)
-    t, status = 0.0, None
-    accepted = rejected = 0
-    dissipation = math.inf
-    h = rd.initial_step(rhs, y, x.rtol, atol, weight, stops[0]) if stops[0] > 0 else horizon
-    compile_done = None
-    for stop in stops:
-        while t < stop and status is None:
-            landing = t + h >= stop
-            hh = stop - t if landing else h
-            result = step(y, hh)
-            if compile_done is None:
-                compile_done = perf_counter()
-            err = float(norm(result.error, y, result.y))
-            y_new = np.asarray(result.y)
+class _Run:
+    """One run's host loop (§3): stops, crossings, the operators and the books."""
+
+    def __init__(self, spec):
+        self.spec, self.x, self.e = spec, spec.execution, spec.experiment
+        prog = _program(spec)
+        self.prog, self.p, self.shape = prog, prog["problem"], prog["shape"]
+        self.world = spec.model.world
+        x = self.x
+        self.base_key = streams.base_key_data(x.seed, x.environment, x.lineage, x.branch)
+        self.y, self.alive = self.shape.initial()
+        self.y = jnp.asarray(self.y)
+        self.t, self.status, self.stop_reason = 0.0, None, None
+        self.accepted = self.rejected = self.restarts = self.located = 0
+        self.dissipation = math.inf
+        self.horizon = float(self.e.time_horizon_s)
+        # The host's bookings (k_BT): event heat, reservoir work at events, shear and transfer
+        # work by schedule, and the sinks.
+        self.booked = {"heat": 0.0, "reservoir": 0.0, "shear": {}, "transfer": {}, "sink": 0.0}
+        self.moiety_out = np.zeros(len(self.p.moiety_names))  # what left with the sinks, net
+        self.events, self.rows = [], []
+        self.keys = np.where(self.alive, np.arange(self.shape.K, dtype=np.int64) << 32, -1)
+        self.next_key = 1  # a single lineage's next carrier key (kernel.initial's)
+        self.count = {i: 0 for i in range(int(self.alive.sum()))}  # sub-lineages' last counts
+        self.lineage = np.where(self.alive, np.arange(self.shape.K), -1)
+        self.next_sub = int(self.alive.sum())
+        self.generation = np.zeros(self.shape.K, dtype=np.int64)
+        self.transfer_counter = {}
+        self.h = None
+        self.just = set()  # guards crossed at the current time (no immediate re-crossing)
+        self.tied = []  # crossings at the located one's instant
+
+    # -- rows and books
+    def row(self, kind):
+        self.rows.append((kind, self.t, np.asarray(self.y, dtype=np.float64).copy(),
+                          self.alive.copy(), self.keys.copy(), self._booked_total(),
+                          self.moiety_out.copy()))  # fmt: skip
+
+    def _booked_total(self):
+        b = self.booked
+        return (b["heat"], b["reservoir"], math.fsum(b["shear"].values()),
+                math.fsum(b["transfer"].values()), b["sink"])  # fmt: skip
+
+    def world_f(self, y=None, alive=None):
+        y = self.y if y is None else y
+        alive = self.alive if alive is None else alive
+        return self.shape.free_energy(np.asarray(y), alive, self.prog["free_energy"])
+
+    def vesicle_f(self, pool, vesicle):
+        """F_v: a vesicle's own F_cont with the pool, less the pool's alone, plus its closure cost
+        (whole-world vectors; the pool's places of `vesicle` are ignored)."""
+        f = self.prog["free_energy"]
+        pool_only = np.where(self.p.vesicle, 0.0, pool)
+        with_vesicle = pool_only + np.where(self.p.vesicle, vesicle, 0.0)
+        return float(f(with_vesicle)) - float(f(pool_only)) + self.p.closure
+
+    # -- guards
+    def guards(self, states):
+        """{name: [T, C] values} of every guard at whole-world states [T, ...] of y."""
+        T = states.shape[0]
+        shape, p = self.shape, self.p
+        out = {}
+        pools, slots = [], []
+        for y in states:
+            pool, s = shape.split(y)[:2]
+            pools.append(pool)
+            slots.append(s)
+        pools = np.stack(pools)
+        living = np.flatnonzero(self.alive)
+        if shape.population:
+            full = np.stack([shape.full(pool, s, np) for pool, s in zip(pools, slots,
+                                                                         strict=True)])  # fmt: skip
+            full = full[:, living]  # [T, L, P]
+        else:
+            full = pools[:, None, :] if self.alive[0] else np.zeros((T, 0, p.P))
+        margin = full - self.x.min_count
+        env = np.where(p.enveloped[None, None, :], margin, np.inf)
+        if shape.population:
+            pool_env = np.where((p.enveloped & shape.pool_place)[None, :],
+                                pools - self.x.min_count, np.inf)  # fmt: skip
+            env = np.where(shape.pool_place[None, None, :], np.inf, env)
+            columns = [pool_env.min(axis=1)] + [env[:, i].min(axis=1) for i in range(len(living))]
+            out["envelope"] = (np.stack(columns, axis=1), [-1, *living.tolist()])
+        else:
+            out["envelope"] = (env.min(axis=2) if full.shape[1] else np.full((T, 0), np.inf),
+                               [0] if full.shape[1] else [])  # fmt: skip
+        if p.bilayer and full.shape[1]:
+            slots_of = living.tolist() if shape.population else [0]
+            out["floor"] = (full @ p.quanta - p.floor, slots_of)
+            if p.osmotic:
+                out["lysis"] = (p.tension(full) - p.sigma_max, slots_of)
+                out["kink"] = (p.kink(full), slots_of)
+        return out
+
+    def tolerance(self, name):
+        """A guard's tolerance at the re-stepped state (§3.2 step 4): ten times the step control's
+        own tolerance on the guard's scale (counts for the envelope and the floor, σ_max for
+        lysis, 1 for the kink's logarithm)."""
+        p, x = self.p, self.x
+        scale = {"envelope": x.min_count, "floor": getattr(p, "floor", 1.0),
+                 "lysis": getattr(p, "sigma_max", 1.0), "kink": 1.0}[name]  # fmt: skip
+        absolute = x.atol_count if name in ("envelope", "floor") else 0.0
+        return 10.0 * (absolute + x.rtol * scale)
+
+    def crossing(self, y, result, hh, landing, stop):
+        """The earliest crossing within an accepted step, or None (§3.2 steps 1 and 2)."""
+        states = np.array(self.prog["dense"](y, result, jnp.asarray(THETAS)))
+        states[0], states[-1] = np.asarray(y), np.asarray(result.y)
+        values = self.guards(states)
+        found = []
+        for name, (g, slots) in values.items():
+            direction = GUARDS[name][0]
+            for c, slot in enumerate(slots):
+                col = g[:, c]
+                for i in range(len(THETAS) - 1):
+                    a, b = col[i], col[i + 1]
+                    if i == 0 and (name, slot) in self.just:
+                        continue  # the crossing just handled at this time
+                    if _crosses(direction, a, b):
+                        found.append((name, c, slot, i))
+                        break
+        if not found:
+            return None
+        located = []
+        for name, c, slot, i in found:
+
+            def at(theta, name=name, c=c):
+                state = np.asarray(self.prog["dense"](y, result, jnp.asarray([theta])))
+                return float(self.guards(state)[name][0][0, c])
+
+            ga, gb = values[name][0][i, c], values[name][0][i + 1, c]
+            theta = THETAS[i + 1] if gb == 0 else _locate(at, THETAS[i], THETAS[i + 1], ga, gb)
+            located.append(Crossing(name, slot, float(theta), self.t + float(theta) * hh))
+        located.sort(key=lambda c: (c.time, c.guard, c.slot))
+        first = located[0]
+        tied = [c for c in located if same_instant(c.time, first.time)]
+        events = [c for c in tied if GUARDS[c.guard][1] == "lysis"]
+        if len(events) > 1:
+            raise ConfigError(
+                f"{RATE_EQUATIONS}: two lyses at one instant (slots {events[0].slot} and "
+                f"{events[1].slot}, t = {first.time!r} s): relations have no order between "
+                "same-time events (FR-20's rule)"
+            )
+        if events and landing and same_instant(first.time, stop):
+            raise ConfigError(
+                f"{RATE_EQUATIONS}: a lysis of slot {events[0].slot} falls at the stop "
+                f"t = {stop!r} s: relations have no order between same-time events"
+            )
+        self.tied = tied[1:]  # crossings at the same instant, handled with the first
+        return first
+
+    def restep(self, y, hh, crossing):
+        """The step re-taken from its start to the root (§3.2 steps 3 and 4): (state, θ) with the
+        guard within its tolerance, or None (the run stops stalled)."""
+        name, slot = crossing.guard, crossing.slot
+        tolerance = self.tolerance(name)
+        theta, previous = crossing.theta, None
+        for _ in range(RESTEPS + 1):
+            again = self.prog["step"](y, theta * hh, jnp.asarray(self.alive))
+            values = self.guards(np.asarray(again.y)[None, :])[name]
+            g = float(values[0][0, values[1].index(slot)])
+            if abs(g) <= tolerance and bool(again.finite):
+                return again.y, theta
+            if previous is not None and g != previous[1]:
+                theta, previous = theta - g * (theta - previous[0]) / (g - previous[1]), (theta, g)
+            else:
+                previous = (theta, g)
+                theta = theta * (1.0 - 1e-6) if theta > 0 else 1e-9
+            theta = min(max(theta, 0.0), 1.0)
+        return None
+
+    # -- the loop
+    def integrate(self, stop):
+        """Advance to `stop` (or to the run's end), locating every crossing on the way."""
+        x, prog = self.x, self.prog
+        while self.t < stop and self.status is None:
+            if self.h is None:
+                self.h = rd.initial_step(lambda z: self.shape.rhs(z, jnp.asarray(self.alive)),
+                                         self.y, x.rtol, x.atol_count, self.shape.weight(),
+                                         stop - self.t)  # fmt: skip
+            landing = self.t + self.h >= stop
+            hh = stop - self.t if landing else self.h
+            alive = jnp.asarray(self.alive)
+            result = prog["step"](self.y, hh, alive)
+            err = float(prog["norm"](result.error, self.y, result.y))
             ok = bool(result.finite) and err <= 1.0
-            if ok and problem.margin(y_new) < -0.5 * x.min_count:
-                ok, err = False, 4.0 ** rd.ORDER  # inside the envelope's half: retry at h/4
+            if ok and self._below_half(result.y):
+                ok, err = False, 4.0**rd.ORDER  # inside the envelope's half: retry at h/4
             if not ok:
-                rejected += 1
-                h = rd.next_step(hh, err if math.isfinite(err) else math.inf, True)
-                if h <= 16 * EPS * max(abs(t), horizon):
-                    status = "stalled"
+                self.rejected += 1
+                self.h = rd.next_step(hh, err if math.isfinite(err) else math.inf, True)
+                if self.h <= 16 * EPS * max(abs(self.t), self.horizon):
+                    self.status = "stalled"
                 continue
-            if problem.margin(y_new) < 0:  # leaves the envelope within this step: locate it
-                g0 = problem.margin(np.asarray(y))
-                theta = _locate(lambda th: problem.margin(np.asarray(dense(y, result, th))),
-                                0.0, 1.0, g0, problem.margin(y_new))  # fmt: skip
-                again = step(y, theta * hh)
-                t, y = t + theta * hh, again.y
-                accepted += 1
-                rows.add("outside_envelope", t, y)
-                status = "outside_envelope"
-                break
-            t = stop if landing else t + hh
-            y = result.y
-            accepted += 1
-            j, d_f = flux(problem.split(y)[0])
-            product = -np.asarray(j * d_f)
-            dissipation = min(dissipation, float(np.min(product / (np.abs(product) + 1e-300),
-                                                         initial=1.0)))  # fmt: skip
-            if accepted >= x.step_limit:
-                status = "step_limit"
-            h = rd.next_step(hh, err, False)
-        if status is not None:
+            crossing = self.crossing(self.y, result, hh, landing, stop)
+            self.h = rd.next_step(hh, err, False)
+            if crossing is not None:
+                located = self.restep(self.y, hh, crossing)
+                if located is None:
+                    self.status = "stalled"
+                    break
+                self.y, theta = located
+                self.t = self.t + theta * hh
+                self.accepted += 1
+                self.located += 1
+                self.handle(crossing)
+                continue
+            self.t = stop if landing else self.t + hh
+            self.y = result.y
+            self.just = set()
+            self.accepted += 1
+            self.dissipation = min(self.dissipation,
+                                   float(prog["dissipation"](self.y, alive)))  # fmt: skip
+            if self.accepted >= x.step_limit:
+                self.status = "step_limit"
+
+    def _below_half(self, y):
+        for name, (g, _) in self.guards(np.asarray(y)[None, :]).items():
+            if name == "envelope" and g.size and g.min() < -0.5 * self.x.min_count:
+                return True
+        return False
+
+    def handle(self, crossing):
+        """A located crossing, with any others at the same instant (restarts and stops; two events
+        there are refused): the lysis acts first, then a stop ends the run."""
+        tied = [crossing, *self.tied]
+        self.just = {(c.guard, c.slot) for c in tied}
+        kinds = [GUARDS[c.guard][1] for c in tied]
+        self.restarts += kinds.count("restart")
+        for c in tied:
+            if GUARDS[c.guard][1] == "lysis":
+                self.lyse(c.slot, "threshold")
+        stops = [c for c in tied if GUARDS[c.guard][1] == "stop"]
+        if stops and self.status is None:
+            self.row("outside_envelope")
+            self.status, self.stop_reason = "outside_envelope", stops[0].guard
+
+    # -- the operators
+    def release(self, slot):
+        """A vesicle's molecules to their pool places (a held place's reservoir takes them back,
+        with its work) and its slot emptied; returns (returned {place: amount}, w_r)."""
+        p, shape, world = self.p, self.shape, self.world
+        y = np.asarray(self.y, dtype=np.float64).copy()
+        pool, slots = shape.split(y)[:2]
+        pool, supplied = pool.copy(), y[shape.supply_at : shape.supply_at + p.P].copy()
+        if shape.population:
+            vesicle = np.zeros(p.P)
+            vesicle[shape.places] = slots[slot]
+        else:
+            vesicle = np.where(p.vesicle, pool, 0.0)
+            pool = np.where(p.vesicle, 0.0, pool)
+        returned, work = {}, 0.0
+        for i in np.flatnonzero(p.vesicle):
+            amount = float(vesicle[i])
+            j = int(p.pool_of[i])
+            if amount == 0.0:
+                continue
+            name = world.places[j].name
+            returned[name] = returned.get(name, 0.0) + amount
+            if p.held[j]:
+                supplied[j] -= amount
+                work -= amount * float(p.held_mu[j])
+            else:
+                pool[j] += amount
+        y[: p.P] = pool
+        if shape.population:
+            block = y[p.P : p.P + shape.blocks].reshape((shape.K, shape.V))
+            block[slot] = 0.0
+            y[p.P : p.P + shape.blocks] = block.reshape(-1)
+        y[shape.supply_at : shape.supply_at + p.P] = supplied
+        self.y = jnp.asarray(y)
+        return returned, work
+
+    def lyse(self, slot, cause, *, at_birth=False):
+        """§3.3: the release, booked as one row, q = −(F_cont(after) − F_cont(before)) + w_r."""
+        before = self.world_f()
+        sigma = None
+        for s, n in self.shape.assemblies(self.y, self.alive):
+            if s == slot:
+                sigma = float(self.p.tension(n))
+        returned, w = self.release(slot)
+        self.alive = self.alive.copy()
+        self.alive[slot] = False
+        q = -(self.world_f() - before) + w
+        self.booked["heat"] += q
+        self.booked["reservoir"] += w
+        self.events.append({"kind": "lysis", "time_s": self.t, "slot": int(slot),
+                            "key": int(self.keys[slot]), "cause": cause, "at_birth": at_birth,
+                            "sigma_N_per_m": sigma, "sigma_max_N_per_m": self.p.sigma_max,
+                            "returned": returned, "release_heat_kT": q,
+                            "release_reservoir_work_kT": w})  # fmt: skip
+        self.keys[slot] = -1
+        self.row("lysis")
+        if not self.shape.population:
+            self.status = "lysed"
+
+    def stop_events(self, events):
+        """A stop's scheduled events, in schedule-index order (§3.1), on the assemblies alive at
+        each one's start."""
+        by_index = {s.index: s for s in self.e.schedules}
+        for event in events:
+            schedule = by_index[event[1]]
+            if schedule.kind == "transfer":
+                self.transfer(schedule)
+            else:
+                self.shear(event)
+            if self.status is not None:
+                return
+
+    def shear(self, event):
+        """§3.4: each living assembly's attempt at a shear event, in slot order."""
+        from cells.models.assembly_lineages import keys as keys_rules
+        from cells.models.assembly_lineages_v2 import division
+
+        time, index, k, stress = event
+        p, shape, world = self.p, self.shape, self.world
+        critical = world.division["critical_stress_Pa"]
+        for slot, n in self.shape.assemblies(self.y, self.alive):
+            parent = int(self.keys[slot])
+            record = {"kind": "fission", "time_s": time, "schedule": index, "k": k,
+                      "slot": slot, "parent": parent,
+                      "parent_counts": n[: len(world.places)].tolist()}  # fmt: skip
+            if critical is not None and not stress >= critical[0]:
+                self.events.append(record | {"outcome": "refused_stress"})
+                continue
+            footprint = float(p.footprint(n))
+            if not division.admitted_volume(p.volume_L(n), footprint, p.q, k):
+                self.events.append(record | {"outcome": "refused_volume"})
+                continue
+            free = [int(s) for s in np.flatnonzero(~self.alive)] if shape.population else []
+            if shape.population and len(free) < k - 1:
+                self.events.append(record | {"outcome": "slots_full"})
+                self.row("slots_full")
+                self.status = "slots_full"
+                return
+            vesicle = np.where(p.vesicle, n, 0.0)
+            share = vesicle / k
+            daughters = [share.copy() for _ in range(k - 1)]
+            daughters.append(vesicle - (k - 1) * share)  # the last takes the complement
+            if any(float(d @ p.quanta) < p.floor for d in daughters):
+                self.events.append(record | {"outcome": "refused_floor"})
+                continue
+            pool = np.where(p.vesicle, 0.0, n)
+            if shape.population:
+                followed = -1
+                next_key = keys_rules.key(int(self.lineage[slot]),
+                                          self.count[int(self.lineage[slot])] + 1)  # fmt: skip
+            else:
+                followed = 0
+                if world.division["continuation"] == "uniform":
+                    key = streams.stream_key_data(self.base_key, parent, "continuation")
+                    followed = int(np.floor(float(streams.uniforms(key, 0, 1)[0]) * k))
+                next_key = self.next_key
+            keys = [next_key + j for j in range(k)]
+            energies = [self.vesicle_f(pool, d) for d in daughters]
+            work = math.fsum(energies) - self.vesicle_f(pool, vesicle)
+            lysed = [bool(p.tension(pool + d) > p.sigma_max) for d in daughters]
+            sink = 0.0
+            if not shape.population:
+                sink = math.fsum(e for j, e in enumerate(energies) if j != followed)
+                for j, d in enumerate(daughters):
+                    if j != followed:
+                        self.moiety_out += p.moieties @ d
+                y = np.asarray(self.y).copy()
+                y[: p.P] = pool + daughters[followed]
+                self.y = jnp.asarray(y)
+                self.keys[0] = keys[followed]
+                self.next_key += k
+                homes = [0]
+            else:
+                sub = int(self.lineage[slot])
+                self.count[sub] += k
+                homes = [slot, *free[: k - 1]]
+                y = np.asarray(self.y).copy()
+                block = y[p.P : p.P + shape.blocks].reshape((shape.K, shape.V))
+                for j, home in enumerate(homes):
+                    block[home] = daughters[j][shape.places]
+                    self.alive[home], self.keys[home] = True, keys[j]
+                    self.generation[home] = self.generation[slot] + 1
+                    if j > 0:
+                        self.lineage[home] = self.next_sub
+                        self.count[self.next_sub] = 0
+                        self.next_sub += 1
+                y[p.P : p.P + shape.blocks] = block.reshape(-1)
+                self.y = jnp.asarray(y)
+            self.booked["shear"][index] = self.booked["shear"].get(index, 0.0) + work
+            self.booked["sink"] += sink
+            self.events.append(record | {"outcome": "split", "keys": keys, "followed": followed,
+                                         "homes": homes, "shear_work_kT": work, "sink_kT": sink,
+                                         "lysed_at_birth": lysed,
+                                         "daughters": [d[: len(world.places)].tolist()
+                                                       for d in daughters]})  # fmt: skip
+            self.row("shear")
+            living = homes if shape.population else [0]
+            for j, home in enumerate(homes if shape.population else [0]):
+                if lysed[j if shape.population else followed]:
+                    self.lyse(home, "threshold", at_birth=True)
+            if self.status is not None:
+                return
+            self.envelope_after(living)
+            if self.status is not None:
+                return
+
+    def envelope_after(self, slots):
+        """After an operator: a living assembly outside the envelope stops the run (§3.4)."""
+        for name, (g, columns) in self.guards(np.asarray(self.y)[None, :]).items():
+            if name not in ("envelope", "floor"):
+                continue
+            for c, slot in enumerate(columns):
+                if (slot in slots or slot == -1) and g[0, c] < 0:
+                    self.row("outside_envelope")
+                    self.status, self.stop_reason = "outside_envelope", name
+                    return
+
+    def transfer(self, schedule):
+        """cells.serial_transfer@1 (transfer.py's draws on domain 6): the kept sample, the removed
+        vesicles to the sink with the old pool, the fresh pool paid by the schedule's work."""
+        from cells.models.assembly_lineages_v2 import transfer
+
+        p, shape = self.p, self.shape
+        living = [int(s) for s in np.flatnonzero(self.alive)]
+        counter = self.transfer_counter.get(schedule.index, 0)
+        kept, drawn, self.transfer_counter[schedule.index] = transfer.sample(
+            self.base_key, schedule, counter, living, schedule.keep
+        )
+        y = np.asarray(self.y, dtype=np.float64).copy()
+        pool, slots = shape.split(y)[:2]
+        pool_only = np.where(shape.pool_place, pool, 0.0)
+        old_pool = float(self.prog["free_energy"](pool_only))
+        removed = [s for s in living if s not in kept]
+        full = shape.full(pool, slots, np)
+        vesicles = [float(self.prog["free_energy"](full[s])) - old_pool + p.closure
+                    for s in removed]  # fmt: skip
+        self.moiety_out += p.moieties @ pool_only
+        for s in removed:
+            self.moiety_out += p.moieties @ (full[s] - pool_only)
+        fresh = transfer.fresh_vector(self.world, schedule, p.P).astype(np.float64)
+        finite_pool = shape.pool_place & p.finite
+        new_pool = np.where(finite_pool, fresh, pool)
+        self.moiety_out -= p.moieties @ np.where(finite_pool, fresh, 0.0)
+        y[: p.P] = new_pool
+        block = y[p.P : p.P + shape.blocks].reshape((shape.K, shape.V))
+        for s in removed:
+            block[s] = 0.0
+            self.alive[s], self.keys[s], self.lineage[s] = False, -1, -1
+        y[p.P : p.P + shape.blocks] = block.reshape(-1)
+        self.y = jnp.asarray(y)
+        work = float(self.prog["free_energy"](np.where(shape.pool_place, new_pool, 0.0)))
+        sink = math.fsum(vesicles) + old_pool
+        self.booked["sink"] += sink
+        self.booked["transfer"][schedule.index] = (self.booked["transfer"].get(schedule.index, 0.0)
+                                                   + work)  # fmt: skip
+        self.events.append({"kind": "transfer", "time_s": self.t, "schedule": schedule.index,
+                            "draws": [list(d[:3]) for d in drawn], "kept": kept,
+                            "removed": removed, "sink_kT": sink, "work_kT": work})  # fmt: skip
+        self.row("transfer")
+        self.envelope_after(kept)
+
+
+def run(spec):
+    """One world in this representation, from its founders to the end of its lifecycle."""
+    from cells.models.assembly_lineages_v2 import runner
+
+    started = perf_counter()
+    generic = verdict()
+    state = _Run(spec)
+    setup_done = perf_counter()
+    plan, draws = runner._plan(spec, state.base_key)  # domain 6's draws, as exact
+    horizon = state.horizon
+    observed = sorted({float(t) for t in spec.experiment.observation_times_s if 0.0 < t <= horizon})
+    times = sorted({t for t, _ in plan} | set(observed) | {horizon})
+    scheduled = dict(plan)
+    state.row("start")
+    for stop in times:
+        state.integrate(stop)
+        if state.status is not None:
             break
+        if stop in scheduled:
+            state.just = set()
+            state.stop_events(scheduled[stop])
+            if state.status is not None:
+                break
         if stop in observed:
-            rows.add("observed", t, y)
-    if status is None:
-        status = "complete"
-    if status != "outside_envelope":
-        rows.add("end", t, y)
-    arrays = rows.arrays()
-    ledger, moiety = _books(problem, rows, x)
+            state.row("observed")
+    if state.status is None:
+        state.status = "complete"
+    if state.status not in ("outside_envelope", "lysed", "slots_full"):
+        state.row("end")
+    arrays = _arrays(state)
+    ledger, moiety = _books(state)
     finished = perf_counter()
-    return RateEquationsRun(
+    out = RateEquationsRun(
         spec=spec,
-        status=status,
+        status=state.status,
         rows=arrays,
-        statistics={"accepted": accepted, "rejected": rejected, "method": x.method,
-                    "rtol": x.rtol, "atol_count": x.atol_count, "end_time_s": t},
+        statistics={"accepted": state.accepted, "rejected": state.rejected,
+                    "restarts": state.restarts, "crossings": state.located,
+                    "method": state.x.method,
+                    "rtol": state.x.rtol, "atol_count": state.x.atol_count, "end_time_s": state.t,
+                    "stop_reason": state.stop_reason, "schedule_draws": [list(d) for d in draws]},
         ledger=ledger,
         moieties=moiety,
-        dissipation={"smallest_margin": dissipation, "tolerance": -64 * EPS,
-                     "holds": dissipation >= -64 * EPS},
-        check={"generic": generic, "world": own},
+        dissipation={"smallest_margin": state.dissipation, "tolerance": -64 * EPS,
+                     "holds": state.dissipation >= -64 * EPS},
+        check={"generic": generic, "world": state.prog["check"]},
+        events=state.events,
         timings={"run_seconds": finished - started,
-                 "compile_seconds": (compile_done or finished) - started},
+                 "setup_seconds": setup_done - started},
     )  # fmt: skip
+    out.check_books()  # a run whose books do not close is refused, as the exact runner's
+    return out
 
 
-def _books(problem, rows, x):
+def _arrays(state):
+    """The rows (FORMAT_RATE_EQUATIONS.md): the counts of every place (single lineage) or the pool
+    and each slot's vesicle (population), held supplies, the continuous heat and reservoir work,
+    the bookings at events, and the sinks."""
+    p, shape = state.p, state.shape
+    places = len(p.world.places)
+    kinds, times, ys, alive, keys, booked, _ = zip(*state.rows, strict=True)
+    ys = np.stack(ys)
+    booked = np.asarray(booked, dtype=np.float64)
+    out = {
+        "row_kind": np.asarray(kinds),
+        "row_time_s": np.asarray(times),
+        "supplied": ys[:, shape.supply_at : shape.supply_at + places],
+        "heat_kT": ys[:, shape.heat_at] + booked[:, 0],
+        "work_kT": ys[:, shape.heat_at + 1] + booked[:, 1] + booked[:, 2] + booked[:, 3],
+        "continuous_heat_kT": ys[:, shape.heat_at],
+        "reservoir_work_kT": ys[:, shape.heat_at + 1] + booked[:, 1],
+        "shear_work_kT": booked[:, 2],
+        "transfer_work_kT": booked[:, 3],
+        "sink_kT": booked[:, 4],
+        "alive": np.stack(alive),
+        "keys": np.stack(keys),
+    }
+    if shape.population:
+        out["pool_counts"] = ys[:, :places]
+        block = ys[:, p.P : p.P + shape.blocks].reshape((len(ys), shape.K, shape.V))
+        slots = np.zeros((len(ys), shape.K, p.P))
+        slots[:, :, shape.places] = block
+        out["slot_counts"] = slots[:, :, :places]
+    else:
+        out["counts"] = ys[:, :places]
+    return out
+
+
+def _books(state):
     """The closure (§2.2) and the moieties (§2.4) at every row."""
-    p = problem
-    f = np.asarray([float(p.free_energy(jnp.asarray(s[: p.P]))) for s in rows.states])
-    heat = np.asarray([s[2 * p.P] for s in rows.states])
-    work = np.asarray([s[2 * p.P + 1] for s in rows.states])
-    residual = (f - f[0]) - (work - heat)
-    tolerance = 100 * x.rtol * np.maximum(1.0, np.abs(heat) + np.abs(work)) + 64 * EPS * (
-        np.abs(f) + abs(f[0])
+    p, shape, x = state.p, state.shape, state.x
+    f = np.asarray([shape.free_energy(y, alive, state.prog["free_energy"])
+                    for _, _, y, alive, _, _, _ in state.rows])  # fmt: skip
+    ys = np.stack([r[2] for r in state.rows])
+    booked = np.asarray([r[5] for r in state.rows], dtype=np.float64)
+    heat = ys[:, shape.heat_at] + booked[:, 0]
+    work = ys[:, shape.heat_at + 1] + booked[:, 1] + booked[:, 2] + booked[:, 3]
+    sink = booked[:, 4]
+    residual = (f - f[0]) - (work - heat - sink)
+    scale = np.abs(ys[:, shape.heat_at]) + np.abs(ys[:, shape.heat_at + 1])
+    events = np.abs(booked).sum(axis=1)
+    tolerance = 100 * x.rtol * np.maximum(1.0, scale + events) + 64 * EPS * (
+        np.abs(f) + abs(f[0]) + events
     )
-    totals = np.asarray([p.moieties @ s[: p.P] - p.moieties @ s[p.P : 2 * p.P] for s in rows.states])
+    totals = []
+    for _, _, y, alive, _, _, out in state.rows:
+        pool, slots, supplied = shape.split(y)[:3]
+        total = p.moieties @ pool - p.moieties @ supplied + out
+        if shape.population:
+            full = np.zeros((shape.K, p.P))
+            full[:, shape.places] = slots
+            total = total + p.moieties @ full[alive].sum(axis=0)
+        totals.append(total)
+    totals = np.asarray(totals)
     drift = np.abs(totals - totals[0]) / np.maximum(1.0, np.abs(totals[0]))
     ledger = {
         "free_energy_kT": f.tolist(),
@@ -851,6 +1630,9 @@ def simulation_spec(model_spec, experiment, execution):
 # ------------------------------------------------------------------ records
 
 RUN_FORMAT = "cells.rate_equations_run@1"
+NO_LIMIT_HOOK = {  # the representation's rule for what declares no limit kernel (§1.4)
+    BILAYER_GEOMETRY: {"rule": FORMULAS["geometry"]},
+}
 
 
 def write_run(directory, run, *, provenance=None):
@@ -868,10 +1650,11 @@ def write_run(directory, run, *, provenance=None):
     world = spec.model.world
     used = components(spec)
     registry = law_registry.active()
-    laws = [
-        {**exact_records._law(law_id), "limit_formulas": registry.lookup(law_id).limit_formulas}
-        for law_id in used["laws"]
-    ]
+    laws = []
+    for law_id in used["laws"]:
+        formulas = getattr(registry.lookup(law_id), "limit_formulas", None)
+        laws.append({**exact_records._law(law_id),
+                     "limit_formulas": formulas or NO_LIMIT_HOOK[law_id]})  # fmt: skip
     block = execution_to_dict(spec.execution)["representation"]
     record = {
         "format": RUN_FORMAT,
@@ -889,6 +1672,7 @@ def write_run(directory, run, *, provenance=None):
         "conventions": conventions_rules.to_dict(world.conventions),
         "laws": laws,
         "status": run.status,
+        "events": run.events,
         "ledger": run.ledger,
         "moieties": run.moieties,
         "dissipation": run.dissipation,
@@ -899,6 +1683,7 @@ def write_run(directory, run, *, provenance=None):
         "timings": run.timings,
         "provenance": provenance,
     }  # fmt: skip
-    (out / "run.json").write_text(json.dumps(record, indent=1, sort_keys=True, default=float) + "\n")
+    text = json.dumps(record, indent=1, sort_keys=True, default=float)
+    (out / "run.json").write_text(text + "\n")
     np.savez(out / "rows.npz", **{k: np.asarray(v) for k, v in run.rows.items()})
     return out
