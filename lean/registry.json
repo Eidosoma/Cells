@@ -33,7 +33,7 @@
     "cells.nak_atp_mass_action_positive@1": "src/cells/laws/pumps/nak_atp_mass_action_positive.py#L153",
     "cells.naleak_always_open@1": "src/cells/laws/channels/naleak_always_open.py#L13",
     "cells.nav1p2_m3h_regularized@1": "src/cells/laws/channels/nav1p2_m3h_regularized.py#L47",
-    "cells.osmotic_lumen@1": "src/cells/models/assembly_lineages_v2/lumen.py#L220",
+    "cells.osmotic_lumen@1": "src/cells/models/assembly_lineages_v2/lumen.py#L263",
     "cells.passive_constant_field_permeation@1": "src/cells/laws/routes/constant_field_permeation.py#L141",
     "cells.passive_neutral_permeation@1": "src/cells/laws/routes/passive_permeation.py#L97",
     "cells.phase_exchange@1": "src/cells/models/assembly_lineages_v2/exchange.py#L81",
