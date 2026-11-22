@@ -253,4 +253,262 @@ fails item 1.
 **Not carried:** event counters, channel counts, rates, the factor's and terms' incremental states
 (recomputed at every evaluation, which is cheap), and the log-factorial table.
 
-<!-- §2 onward follows -->
+## 2. The ledgers in continuous form
+
+### 2.1 The state function and the bookings
+
+**The state function** is F_cont(n): the declared terms' continuum values (§1.3), plus the closure
+cost once per living vesicle. A held place has no term.
+
+**The continuous bookings.** Each is a component of the ODE state, integrated by the same stages
+under the same error control, and never formed by difference:
+- **Heat:** dQ/dt = −Σ_r J_r ΔF_r. Every term is at least 0, so Q never falls between events.
+  The exact kernel's event heats are signed. In the limit their mean rate tends to this one, since
+  ln(a⁺/a⁻) → −ΔF_r (S).
+- **Reservoir work:** dW_res/dt = Σ_r J_r w_r, with w_r = −Σ_held ν μ_held, as the exact kernel's.
+- **The held places' supplies:** d(supplied_p)/dt = −Σ_r ν_r,p J_r.
+
+**The event bookings** are exact differences of F_cont, each as the exact runner books it:
+- **A lysis**, by σ_max or by a pore: one booking, q = −(F_cont(after) − F_cont(before)) + w_r. The
+  release moves the vesicle's amounts to their pool places and drops its closure cost, and w_r is
+  the reservoir work of held places that take molecules back (§0.2d item 7).
+- **A pore's opening** (Phase A's booking, unchanged):
+  - **Under a hold:** q_open = −ΔF_open + w, with ΔF_open = 2σ_β/σ − ln(A·n_s) and
+    w = σπr_c² = σ_β/σ, booked in `tension_hold_work_kT` and paid by `source:tension_hold/<i>`.
+  - **With σ from F:** w = 0 and ΔF_open = σ_β/σ − ln(A·n_s) (VESICLE_PORES_LAWS §7, to leading
+    order in r_c/R_v). So q_open = ln(A·n_s) − σ_β/σ = ln(k_v/P), as under a hold.
+  - **Either way,** the rupture's release is taken from the open state, so ΔF_open cancels in the
+    event's total: −(F_cont(after) − F_cont(n)) + w + w_r.
+- **A division:** shear work Σ_j F_v(d_j) − F_v(parent), which holds (k − 1)·C_close. The sink takes
+  the unfollowed daughters' F_v in a single lineage.
+- **A serial transfer:** the sink takes F_removed + F(old pool), and the schedule's work column takes
+  F(fresh pool).
+
+### 2.2 How they close
+
+At every row: **F_cont(n_t) − F_cont(n_0) = W(t) − Q(t) − S(t)**, W summed over payers and S the
+sinks.
+- **The event bookings close exactly** (each is defined from F_cont).
+- **The continuous part closes to the integrator's error, not to rounding.** The residual is the
+  quadrature error of ∫ Σ_r J_r ν_r·μ dt along the numerical solution.
+  - Its linear part, Σ μ° n, closes to rounding: Runge–Kutta and Rosenbrock steps integrate linear
+    functionals of the state exactly (S). So the residual comes from F's nonlinear terms only, and
+    scales with their change, not with F's size.
+  - **Registered tolerance:** |residual| ≤ 100 × rtol × max(1, Σ|bookings|) + 64 ε (|F_cont(n_t)| +
+    |F_cont(n_0)|), with ε float64's epsilon. A run beyond it is refused, as the exact runner
+    refuses one whose books do not close.
+- **The second law per step:** −J_r ΔF_r ≥ −64 ε |J_r ΔF_r| at every stage of every accepted step.
+  The smallest margin is recorded. This is a check (d) can make per channel and (a) cannot.
+
+### 2.3 Work by payer, including the held tension
+
+| Payer | Continuous | At events |
+| --- | --- | --- |
+| Reservoirs (held places) | Σ_r J_r w_r | The release's w_r |
+| `source:tension_hold/<i>` | None under T2 (§6.7) | σπr_c² at each opening |
+| `source:shear/<i>` | — | Σ_j F_v(d_j) − F_v(parent) |
+| `source:transfer/<i>` | — | F(fresh pool) |
+
+**A held tension over a changing area (the advisor's point; a ruling Phase A never faced).**
+- At a held σ, the boundary does σ·dA as the membrane's area changes. A step that changes W by ΔW_r
+  would then carry w_r ⊃ σ·q·ΔW_r/(2 k_BT). That work enters the pair's rate ratio: the hold pulls
+  amphiphiles in, by σ·a_L/2 per molecule, about 0.36 k_BT at 10 mN/m and 0.3 nm² (§2.5's
+  number).
+- Phase A never met this case, because its pore law refuses every step that changes a membrane
+  place. The laws sheet's §3 books the hold's work only at an opening.
+- **Version 1 keeps that boundary (T2):** a world with a hold refuses area-changing steps in both
+  representations. T1, the work on every area-changing step, needs a laws-sheet amendment and a
+  ruling (§6.7).
+
+### 2.4 Moieties
+
+- Every step conserves every declared moiety (seam E's check at parse), so moiety totals are linear
+  invariants of dn/dt = Σ ν J, once the held reservoirs' supplies are counted.
+- **They close to rounding,** not to the integrator's tolerance. Any Runge–Kutta step keeps linear
+  invariants. A Rosenbrock step keeps them when its Jacobian is exact: L·f(n) ≡ 0 gives L·∂f/∂n ≡ 0,
+  so every stage's increment satisfies L·k_i = 0 (S). Forward differentiation gives the exact
+  Jacobian.
+- **Registered:** a relative residual of at most 1 × 10⁻¹² per moiety at every row, counted per
+  moiety and never per species (the handover's pitfall).
+- **The events conserve them exactly:** the mean split's last daughter takes the complement, and
+  releases and transfers move whole amounts.
+
+### 2.5 Comparing the ledgers of the two representations
+
+- **F differs between them by more than the limit's O(1/N):**
+  - Stirling's correction: ln n! − (n ln n − n) = ½ ln(2πn) + O(1/n) per finite place (from
+    memory). That is O(ln n) per place.
+  - Fluctuations: E[F_disc(n_t)] − F_disc(E[n_t]) ≈ ½ Σ_p Var(n_p)/n_p, which is O(1) per place
+    (S, a second-order expansion).
+- **So Protocol D compares the counts and the works per unit Ω, not F or Q.** The heats then agree
+  through each representation's own closure.
+
+## 3. Events in a continuous world
+
+### 3.1 Stops
+
+The integrator lands exactly on each declared time, truncating its step there. The declared times
+are:
+- observation times;
+- each schedule's times: declared shear times, Poisson shear times drawn on domain 6, and transfer
+  times;
+- each hold's start and end, where k_v jumps;
+- the horizon.
+
+At a stop the operators act in schedule-index order (§0.2d item 10.1). A declared time equal to the
+horizon applies.
+
+### 3.2 Crossings: solved, never snapped
+
+A crossing is a guard g(t, y) with a direction, whose root is an event:
+
+| Guard | Direction | Handler |
+| --- | --- | --- |
+| σ_v − σ_max (a vesicle's tension) | Upward | Lysis by threshold (§3.3) |
+| H_v − E_v (a vesicle's pore clock) | Upward | Opening, then rupture (§3.5) |
+| Every enveloped place's count − n_min | Downward | Stop `outside_envelope` |
+| ln V_osm − ln V_sph (the lumen's branch) | Either | None: restart the integration there, so the method keeps its order past μ's kink |
+
+**How a root is found** (S; the methods from memory):
+1. After each accepted step, each guard is evaluated on the step's dense output, at its ends and at
+   8 interior points, to bracket sign changes. A guard that changes sign twice within one step is
+   bracketed by the interior points. The step controller makes this rare.
+2. The earliest bracket's root is located on the dense output by the Illinois method (modified
+   regula falsi), to max(4 ulps of t, τ_c). τ_c is the crossing tolerance, registered.
+3. The step is then re-taken from its start to the root, with h′ = t* − t_n, so the state at t*
+   carries the method's own order and not the dense output's lower one.
+4. The guard is evaluated again at the re-stepped state. If |g| is still beyond its tolerance, a
+   secant on h′ repeats step 3, at most 4 times, or else the run stops `stalled`.
+
+**Ties are refused, as in exact events (FR-20's rule: relations have no order between same-time
+events).** That covers two vesicles' roots within D283's `same_instant` of each other, and a root
+within `same_instant` of a stop.
+
+**The planted error** of this design is the snap. A root moved to the end of its step must fail the
+crossing-time check (§5.1, P-D5).
+
+### 3.3 Lysis at σ_max
+
+- **Exact events:** an event whose end state has σ > σ_max fires, and ends the life `lysed`.
+- **(d):** the crossing σ(t) = σ_max, upward. This is the limit of the exact rule, since the exact
+  overshoot is one event's change, O(1/N).
+- **The handler** is the release (§2.1), with cause `threshold`. In a population the slot frees and
+  the run goes on. In a single lineage the run ends `lysed`.
+
+### 3.4 Division at a shear stop (`cells.shear_fission@1`)
+
+1. **Admission,** on the continuous state at the stop: the stress test, then v ≤ k^(−1/2), as the
+   exact operator's.
+2. **The split is the mean of §0.2c rules 9 and 10.**
+   - At equal target areas, C3x's daughters are exchangeable, and the lumen's multinomial weights
+     are 1/k. So each daughter takes n/k of every place.
+   - The last daughter takes the complement, so the daughters sum exactly to the parent (S5 §3.3's
+     rule).
+   - A declared distribution of sizes (a later token value) would split in proportion to each
+     daughter's area. It is refused until that token exists.
+3. **The floor:** each daughter must be within the envelope, or the fission is refused and recorded,
+   with the parent kept.
+4. **Keys** in daughter order. Continuation is `first`, or `uniform` from domain 3: the same draw as
+   the exact run's.
+5. **The booking** is §2.1's.
+
+**What (d) cannot say:** its daughters are identical, so the composition's fluctuation at division,
+and with it H similarity, F12 and composomes, are unsupported readouts (§4). In a population,
+daughters take free slots in slot order, and a full set stops the run `slots_full` before the split.
+
+### 3.5 The hazard clock in (d)
+
+- **The threshold.** Each vesicle draws E_v = −ln u from domain 7 (its key, counter 0) when the run
+  first holds it: a founder at the start, a daughter at its birth. H_v starts at 0 then.
+  - **The daughters' clocks (S):** a daughter is a new vesicle with its own opening process; the
+    parent's ends at the division.
+- **The rate.** dH_v/dt = k_v(A_v(n(t)), σ_v(t), T) while the hazard is in force:
+  - during a hold's interval [start_s, end_s), with σ = σ_hold (Phase A's);
+  - always, with σ from F, the osmotic lumen's tension (new). The parse requires σ_max ≤ σ_β/4, so
+    the law's domain, σ ≤ σ_β/4, holds on every trajectory that has not lysed.
+- **H_v is a component of the ODE state,** under the same error control, with an absolute tolerance
+  registered at 1 × 10⁻¹⁰. A crossing time's error is then about 10⁻¹⁰/k_v.
+- **The opening** fires at the crossing H_v = E_v (§3.2). Phase A's outcome follows: rupture through
+  the release, with cause `pore`.
+- **The hazard and σ_max both stand** (D287). Whichever crosses first acts.
+- **Area changes are admitted in (d),** lifting Phase A's refusal there, except under a hold (T2).
+  The edges of a hold are stops, and the lumen's kink is a restart.
+- **The regression identity, a test row.** A Phase A world (a hold, and no step that changes a
+  membrane place) gives t* = start_s + E/k_v with the same domain-7 E (`pore_clock.rupture_time`),
+  to the crossing tolerance.
+- **FR-39's Phase B** adds the open pore's radius as a further per-vesicle variable, switched on at
+  the opening and off at resealing, through the same crossing and per-vesicle machinery. It is not
+  built in OL6. So "opening" and "rupture" stay one event in version 1, as Phase A ruled.
+
+### 3.6 Paired runs on the pore stream
+
+- **What pairs.** Exact and (d) runs of one world with one stream draw the same E for the same
+  vesicle key:
+  - founders always (key i:0);
+  - daughters when the vesicle-level events occur in the same order in both runs, since keys follow
+    world event order (the relations rule, s′·2³² + 1).
+- **What the pairing qualifies depends on L0 or L1 (§6.3):**
+  - **Under L0** (Phase A's refusal kept in exact events), only constant σ and A exist in exact
+    events. The pairing then checks the stream's identity and the crossing solver: (d)'s t*
+    against Phase A's exact one. A varying k_v is checked only within (d), against closed forms.
+    One such form is an area that grows exponentially by insertion, which gives H(t) in closed
+    form.
+  - **Under L1,** exact events run a varying σ (from F) and area, with H piecewise linear between
+    events and its crossing exact (VESICLE_PORES_LAWS §5). The paired difference t*_a − t*_d per
+    vesicle then shrinks as N^(−1/2) (Protocol D, world D7).
+- **Pores against no pores.** One world run in (d) with the pore law and without it is identical,
+  bit for bit, until the first opening: a test row. In exact events the two share every chemistry
+  draw until then (VESICLE_PORES_DESIGN §3.2).
+
+### 3.7 What (d) draws
+
+- Domain 7: the pore thresholds.
+- Domain 6: Poisson shear gaps, and a transfer's sampling.
+- Domain 3: the `uniform` continuation.
+
+It never draws on domains 1, 2 or 5 (the events, the partition and the world's selection). The
+stream identity records only the domains drawn, as now.
+
+### 3.8 Checkpoints
+
+Refused in version 1. FR-22's rung P is defined on exact events. A later option saves t, y, the
+next h and the controller's memory at an accepted step, and restarts bit for bit.
+
+### 3.9 The lifecycle in (d)
+
+(d) declares its own table, so `kernel.STATUS` and `LIFECYCLE` do not change:
+- `complete`: the horizon was reached;
+- `lysed`: a single lineage's vesicle lysed, by σ_max or by a pore;
+- `outside_envelope`: an enveloped place crossed n_min;
+- `stalled`: h fell below its floor, or no smaller step avoids a non-finite stage;
+- `step_limit`: the integrator's guard was reached;
+- `slots_full`: a population.
+
+Equilibrium is not a stop: the state holds, and the run completes at the horizon.
+
+## 4. What version 1 refuses
+
+Each is refused at parse, by name, with its reason, unless marked as a run-time stop:
+
+1. **A law without a declared limit** (H1), and every law §1.4 lists as refused in (d): FR-21's
+   shell, its permeation and its gate; FR-20's replacement; FR-35's withdrawal.
+2. **A founder outside the envelope** (§1.5), including a place that some step can feed starting
+   at 0 (E2 is later). Leaving the envelope during a run is a stop, `outside_envelope`.
+3. **Event-level readouts:** `trace`, `uniforms` and the diagnostic record, when true. Channel
+   counts are never written. The relations record keeps its vesicle-level events: lysis, division
+   and rupture.
+4. **Readouts that measure discreteness:** H similarity, F12, composomes and extinction statistics,
+   in (d)'s records and in any analysis that reads a (d) bundle (`validation/` checks the bundle's
+   representation).
+5. **A world with `world_role: probe`,** whose singular rate is a statement about integer states.
+6. **Area-changing steps under a hold** (T2), in both representations, as Phase A has them now.
+7. **A pore world with σ from F whose σ_max exceeds σ_β/4.**
+8. **Same-time events:** two crossings within `same_instant`, or a crossing at a stop (run time,
+   refused as FR-20's rule refuses them).
+9. **Checkpoint cuts and restarts** (§3.8).
+10. **A population of more than 64 slots** (§6.9), and labels (FR-42's shares).
+11. **Mixed representations,** whether a world part in each, or a switch during a run. ARCHITECTURE
+    makes promotion and demotion a later milestone.
+12. **A declared size distribution at division** (§3.4), until its token exists.
+
+<!-- §5 onward follows -->
