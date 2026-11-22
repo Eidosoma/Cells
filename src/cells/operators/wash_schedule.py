@@ -90,6 +90,7 @@ from cells.definitions.specs import ConfigError, _fields
 from cells.laws.electrochemistry import R
 from cells.models import surface_pump as first
 from cells.numerics import ideal_mixing
+from cells.numerics.clock_instants import ON_THE_GRID, on_grid  # D283's one predicate.
 from cells.numerics.species_sums import entity_sum, species_sum
 from cells.operators.contract import Operator, Read
 
@@ -130,6 +131,10 @@ REFUSED = {
     "scheduled_membrane_insertion@2": "opens and retires nodes and patches",
     "restricted_cleft_lumen@1": "fills a lumen node with bath fluid as it grows",
     "restricted_cleft_lumen@2": "fills a lumen node with bath fluid as it grows",
+    # FR-42 (D289; the lead's direction): the label owner refuses a wash, an event writing species
+    # amounts that does not report them (no FR-42 stage plans it yet).
+    "neutral_arrival_labels@1": "follows labelled material only through reported moves, and a "
+    "wash reports none (no FR-42 stage plans it yet)",
 }
 IONS_SAME = "same_as_compartment"
 FLOOR_FMOL = 1e-12  # The own ledger's floor (each ion's sample against its supply: exactly 0).
@@ -238,8 +243,8 @@ def parse_events(raw, base, declaration):
         time = _finite(entry["time"], "a wash time")
         if not 0.0 < time < end:
             raise ConfigError(f"{LAW_ID}: a wash lies after time 0 and before the end time")
-        if int(round(time / dt)) * dt != time:
-            raise ConfigError(f"{LAW_ID}: a wash time must be an exact multiple of dt (k * dt)")
+        if on_grid(time, dt) is None:
+            raise ConfigError(f"{LAW_ID}: a wash time must be {ON_THE_GRID}")
         node = identifier(entry["node"])
         if node not in declaration.nodes:
             raise ConfigError(f"{LAW_ID}: a wash names a node it does not declare, {node!r}")

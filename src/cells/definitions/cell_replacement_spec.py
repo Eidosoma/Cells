@@ -24,8 +24,9 @@ parser. The model adds ``replacement``:
 
 The experiment adds ``replacement_events``: each a time, a slot (cell ID), the
 newcomer kind (NEWCOMER_KINDS), a template ID or null, a donor cell ID or null and
-a new carrier ID. Event times are exact multiples of dt (k * dt as a float
-product) inside the horizon, at most one per slot and time. Newcomer kinds:
+a new carrier ID. Event times lie on the clock's grid (k * dt as a float product, to
+within the clock's same-instant tolerance, D283) inside the horizon, at most one per
+slot and time. Newcomer kinds:
 
 * ``isolated_template``: the newcomer is a declared template (no donor);
 * ``donor_copy``: an inheritance route (division by a neighbour). The newcomer
@@ -61,6 +62,7 @@ from cells.definitions import surface_pump_v3_spec as ionic
 from cells.definitions.spec_values import fraction, identifier, positive, signed_number
 from cells.definitions.specs import ConfigError, _fields, _integer, _number
 from cells.laws.junctions.junction_formation import LAW_ID as FORMATION_LAW_ID
+from cells.numerics import clock_instants
 
 MODEL_ID = "resolved_pump_replacement@1"
 OPERATION_LAW_ID = "scheduled_cell_replacement@1"
@@ -419,9 +421,9 @@ def check_donor_on_slot(donor, slot, model):
 
 
 def on_grid(time, dt):
-    """True when time is exactly k * dt for an integer k (the event grid's own test)."""
-    k = round(time / dt)
-    return k * dt == time
+    """True when time is k * dt for an integer k, to within the clock's same-instant tolerance
+    (D283's one predicate, numerics.clock_instants.on_grid; the clock snaps it onto k * dt)."""
+    return clock_instants.on_grid(time, dt) is not None
 
 
 def exact_event_times(steps, dt):
@@ -452,7 +454,10 @@ def parse_events(raw, base, templates, *, template_volume="slot"):
         template = None if row["template"] is None else identifier(row["template"])
         donor = None if row["donor"] is None else identifier(row["donor"])
         if not 0 < time < end or not on_grid(time, dt):
-            raise ConfigError("Replacement event times must be k * dt strictly inside the horizon")
+            raise ConfigError(
+                "Replacement event times must be strictly inside the horizon and "
+                + clock_instants.ON_THE_GRID
+            )
         if kind not in NEWCOMER_KINDS:
             raise ConfigError("Replacement newcomer must be one of " + ", ".join(NEWCOMER_KINDS))
         if slot not in order or (template is not None and template not in names):

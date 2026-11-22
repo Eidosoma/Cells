@@ -49,6 +49,13 @@ PRESCRIBED_SHELL = "cells.prescribed_shell@1"
 SHELL_PERMEATION = "cells.shell_permeation@1"
 GATE_FACTOR = "cells.gate_factor@1"
 
+# FR-31's Phase A (D287; docs/VESICLE_PORES_LAWS.md, tagged pores-laws-sheet-registered-2026-11-22):
+# a pore's nucleation hazard per membrane area (a world's `hazard`), and a tension held over a
+# declared interval, an applied protocol (the experiment's `tension_holds`). A world that declares
+# neither runs as before.
+PORE_NUCLEATION = "cells.pore_nucleation@1"
+TENSION_HOLD = "cells.tension_hold@1"
+
 # The family's interfaces, declared in its row of the static model table (registry/model_table.py).
 # @1's three stay @1's: a transfer is now a step (not cells.exchange_law@1's single-molecule
 # exchange), and a rate factor here is one factor per step pair on its common state (a new major of
@@ -59,6 +66,7 @@ FREE_ENERGY_INTERFACE = "cells.free_energy_term@1"
 GEOMETRY_INTERFACE = "cells.assembly_geometry@1"  # OL2: a geometry kind (§0.2c rule 15).
 OPERATOR_INTERFACE = "cells.assembly_operator@1"  # OL3: an operator of the family's lineages.
 POPULATION_INTERFACE = "cells.population_structure@1"  # OL2 milestone 3 (§0.2c rule 15).
+HAZARD_INTERFACE = "cells.assembly_hazard@1"  # FR-31: a vesicle's hazard on a clock.
 
 MODE = "single_lineage"  # OL1: one assembly per world, no fission (OL3 adds division).
 POPULATION = "population"  # OL2 milestone 3: K slots sharing one pool (population.py).

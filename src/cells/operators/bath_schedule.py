@@ -77,6 +77,7 @@ from cells.laws.electrochemistry import CHARGE_PER_FMOL, R
 from cells.models import pump_composite_adapter as adapter
 from cells.models import surface_pump as first
 from cells.numerics import osmotic_water as water_law
+from cells.numerics.clock_instants import ON_THE_GRID, on_grid  # D283's one predicate.
 from cells.numerics.species_sums import entity_sum, species_sum
 from cells.operators import species_common as common
 from cells.operators.contract import Change, Operator
@@ -265,8 +266,8 @@ def parse_events(raw, base, declaration):
                 f"{LAW_ID}: an event lies after time 0 and before the end time (the declared "
                 "composition is the initial one)"
             )
-        if int(round(time / dt)) * dt != time:
-            raise ConfigError(f"{LAW_ID}: an event time must be an exact multiple of dt (k * dt)")
+        if on_grid(time, dt) is None:
+            raise ConfigError(f"{LAW_ID}: an event time must be {ON_THE_GRID}")
         if type(entry["baths"]) is not list or not entry["baths"]:
             raise ConfigError(f"{LAW_ID}: an event names the baths it sets")
         baths = tuple(identifier(b) for b in entry["baths"])

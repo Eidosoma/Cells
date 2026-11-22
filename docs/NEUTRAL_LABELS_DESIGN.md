@@ -306,6 +306,27 @@ Refused, each naming why:
 - kinds, which wait for their hook after @3's side;
 - RK4 beside any followed mover.
 
+**Measured against exact rows** (tests/unit/test_region_label_shares.py and
+tests/unit/test_neutral_labels_transport.py; @3's side merged).
+- **The method:** each case runs plain rows of the same material in the same world. Transport is
+  linear in each row, so those rows are the exact reference.
+- **FR-33's first test, rebuilt on shares** (validation/regions/example.first_test):
+  - **Transfer:** the shares follow P_L within 5.4e-7 of the label's scale, and 1.4e-7 at half the
+    step: 4.0 per halving, second order.
+  - **Local loss:** the shares and the cleared label match at rounding.
+- **Routes:** a junction and two membrane routes carry the shares within the same bound (8.3e-10
+  for label a's total).
+- **A label's total over the nodes** holds to the update's second order in general. It is not
+  conserved by construction, since each node's shares are normalised on their own. In the worlds
+  measured it held at rounding: by symmetry in FR-33's, and within 3.7e-16 in the routes' world,
+  which has no loss.
+- **Labelled and unlabelled twins,** with every report non-zero: FR-33's transfer (a face), the
+  routes (a junction and patches), exchange's export and a passive S ↔ P route. Each was run with
+  and without the label owner. Every history field, observation and diagnostic is bit for bit
+  equal, and the closure diagnostic reads at most 1e-16. The routes' twin is a test row.
+- **Inner reporting** stays off beside declared kinds: @3's step refuses `labels` there until the
+  kinds' hook lands.
+
 **Pools and sources** (D296, operators/contract.py).
 - **Reporter flags:** a reporter flags `LABEL_POOLS` or `LABEL_SOURCES` (static). It declares its
   pools, `label_pools`, entries of its own state holding a labelled species' material (the
@@ -330,13 +351,66 @@ Refused, each naming why:
   - with no release the row keeps its shares bit for bit;
   - each source takes its own schedule, or its species' window.
 
-**Replacement** (approved, D284 and D296; the lead's leave for a minimal hunk in the replacement
-operator's file) comes after this.
-- Its event reports the departing occupant's material leaving with its shares, and the newcomer's
-  arriving at a newcomer label.
-- Until then, labels are refused beside replacement.
+**Replacement** (D284 and D296; the lead's leave for a minimal hunk in replacement@1's file).
+- **The event reports what it replaced.** replacement@1's event takes `labels=rows` and also
+  returns the slots it replaced. Its state and validity are bit for bit the unlabelled call's.
+- **The owner relabels each replaced slot:** its labelled shares become the label in force for the
+  species at the event step, the newcomer label.
+  - The departing material leaves with its own shares.
+  - A donor copy's material is newcomer material too. It does not inherit the donor's shares.
+- **Producer identity across generations:** a source's schedule may switch its label at the event
+  time.
+- **Still refused:** replacement@2 (its event does not report). So is a template that would make a
+  labelled species membrane-permeable, which replacement@1's own check already refuses as a new
+  leak.
+- **The composition matrix** admits replacement@1 beside the owner.
 
 **What moves.** Worlds without the owner: nothing. Labelled worlds: the owner gains
 `label_pool_share` and the control `label_source_arrival`, both empty where no reporter declares
 pools or sources. So a stage-1 labelled checkpoint (development; none registered) does not
 resume across this change.
+
+## 9. Stage 3: exchange and the reactions' passive routes (the lead's leaves)
+
+**Exchange** (scheduled_species_exchange@1).
+- Its half-step sums each route's amount moved over its palindrome, stage by stage. It reports that
+  sum as a transfer from the route's source to its destination: an export from the cell to its
+  outside node, an import back. The transfer carries the source's shares.
+- The owner advances such a reporter on the combined node axis, as it does the inner step
+  (`advance_nodes`).
+
+**The reactions' passive routes** (local_species_reactions@1).
+- Each route's forward and reverse extents are the SSPRK(3,3) combination of its stages' one-way
+  rates, combined as its extent is from its net rates. A driven route's are its extent and 0,
+  bitwise as before. A passive route's are its two unidirectional fluxes.
+- The forward extent consumes max(−ν, 0) and makes max(ν, 0), the reverse the opposite. So a species
+  on both sides of a route counts its net in each direction.
+- Chemistry makes new molecules, so products join their species' arrival label. A passive route's
+  reverse flux re-makes its reactants at theirs.
+- The refusal of a passive route on a labelled row is gone.
+
+**What stays the same:** with labels, both operators' states and validity are bit for bit the
+unlabelled calls'. Without labels nothing of theirs is traced. The owner's closure diagnostic reads
+rounding for both.
+
+**Kinds** (transporters, passive-route kinds) report after the @3 owner's stage hook lands.
+
+## 10. D1's label families retired (D300)
+
+The user's direction: D1's families, separate rows with their own potentials, are removed rather
+than kept beside shares. "We don't want old backwards compatibility — we're still in heavy dev, not
+even at alpha."
+
+**Removed:**
+- **The species registry's families:** the `label_families` key, `Family`, `family_of`,
+  `family_rows` and `check_families`, with its operator check and the row-linear constants. The
+  labels owner names the reported movers' laws itself.
+- **The region export's family path:** summed rows, `host_transport`, and the hosts' records.
+
+**Replaced:**
+- **FR-33's examples run on shares:** the first test, and the synapse acceptance. Plain rows of the
+  same material ride beside as the exact reference.
+- **The readouts read a label's amounts from the shares** (`readouts.label_nodes`), and classify the
+  owner as moving no amount.
+
+**No registered world declared a family:** no definition in the repository names `label_families`.

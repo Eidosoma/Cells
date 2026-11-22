@@ -91,6 +91,13 @@ needs a representation change, such as re-anchoring a depleted pool or a scale p
 Idle: no route, statically idle; no positive rate in a half-step, the start state is selected;
 untouched entries are selected, never offset by zero. The face diffusivity that carries the species
 between nodes is the effective (FRAP) kind (§6).
+
+Labels (FR-42's stage 3, D289; operators/species_labels.py): a reporter. Given labels (rows,
+arrival), the half-step also returns its one-way moves for the labelled rows (one_way_moves):
+each route's amount moved over the palindrome, summed stage by stage, as a transfer from its
+source to its destination (an export from the cell to the node, an import back), which carries
+the source's shares. The physics is unchanged: the labelled call's state is bit for bit the
+unlabelled one's, and without labels nothing of it is traced.
 """
 
 from collections import Counter
@@ -351,8 +358,9 @@ def route_areas(membrane_area, p, *, xp):
     return membrane_area[xp.argmax(joins, axis=1)]
 
 
-def _stage(inc_c, inc_o, acc, which, h, control, p, area, *, xp):
-    """One exact stage over h on the operator's rows: (inc_c, inc_o, acc, valid).
+def _stage(inc_c, inc_o, acc, which, h, control, p, area, *, xp, track=False):
+    """One exact stage over h on the operator's rows: (inc_c, inc_o, acc, valid); with track
+    (FR-42, static) also each route's moved amount, >= 0.
 
     which: FIRST_ORDER_EXPORT, FLUX_EXPORT, FIRST_ORDER_IMPORT or (SATURABLE_IMPORT, rank).
     acc: the per-route (moved, work, magnitude) accumulators. area: each route's patch area, the
@@ -419,6 +427,8 @@ def _stage(inc_c, inc_o, acc, which, h, control, p, area, *, xp):
         xp.where(active, work_acc + work, work_acc),
         xp.where(active, magnitude_acc + magnitude, magnitude_acc),
     )
+    if track:
+        return new_c, new_o, acc, valid, moved
     return new_c, new_o, acc, valid
 
 
@@ -433,10 +443,11 @@ def stages(p):
     )
 
 
-def exchange_half_step(state, control, h, p, *, xp=jnp, area=None):
+def exchange_half_step(state, control, h, p, *, xp=jnp, area=None, labels=None):
     """(state after h of exchange, validity): every written amount finite and positive, and every
     saturable solve converged. area: each route's current patch area (route_areas), or None for
-    the declared area bound at the definition."""
+    the declared area bound at the definition. With labels (FR-42, D289; static), also its
+    one-way moves (one_way_moves)."""
     area = p.exchange_route_area_m2 if area is None else area
     rows = p.exchange_rows
     inc_c = state.amount_increment[rows]
@@ -449,8 +460,17 @@ def exchange_half_step(state, control, h, p, *, xp=jnp, area=None):
         *((s, 0.5 * h) for s in reversed(sequence[:-1])),
     )
     valid = xp.asarray(True)
+    carried = xp.zeros_like(state.exchange_moved_fmol) if labels is not None else None
     for which, length in plan:
-        inc_c, inc_o, acc, ok = _stage(inc_c, inc_o, acc, which, length, control, p, area, xp=xp)
+        if labels is None:
+            inc_c, inc_o, acc, ok = _stage(
+                inc_c, inc_o, acc, which, length, control, p, area, xp=xp
+            )
+        else:
+            inc_c, inc_o, acc, ok, moved = _stage(
+                inc_c, inc_o, acc, which, length, control, p, area, xp=xp, track=True
+            )
+            carried = carried + moved
         valid &= ok
     new = state._replace(
         amount_increment=set_rows(state.amount_increment, rows, inc_c, xp=xp),
@@ -463,7 +483,26 @@ def exchange_half_step(state, control, h, p, *, xp=jnp, area=None):
     )
     flowing = xp.any(control.exchange_rate > 0)  # No positive rate: the start state, bitwise.
     selected = type(state)(*(xp.where(flowing, a, b) for a, b in zip(new, state, strict=True)))
-    return selected, valid & _own_valid(selected, p, xp=xp)
+    if labels is None:
+        return selected, valid & _own_valid(selected, p, xp=xp)
+    moves = one_way_moves(xp.where(flowing, carried, 0.0), labels, p, xp=xp)
+    return selected, valid & _own_valid(selected, p, xp=xp), moves
+
+
+def one_way_moves(carried, labels, p, *, xp):
+    """(out, into, transfers) of the labelled rows over a half-step (FR-42's interface,
+    operators/contract.py; nodes on the combined axis, cells then outside nodes): no new material
+    and no loss, every route's moved amount a transfer from its source to its destination (an
+    export from its cell to its outside node, an import back), carrying the source's shares."""
+    label_rows, arrival = labels[0], labels[1]
+    m, n = xp.asarray(label_rows).shape[0], p.active.shape[0]
+    nodes = n + p.outside_active.shape[0]
+    export = p.exchange_route_code < FIRST_ORDER_IMPORT
+    cell, outside = p.exchange_route_cell, n + p.exchange_route_outside
+    own = p.exchange_route_species[None, :] == xp.asarray(label_rows)[:, None]  # [m, route]
+    amount = xp.where(own, carried[None, :], 0.0)
+    transfer = (amount, xp.where(export, cell, outside), xp.where(export, outside, cell))
+    return xp.zeros((m, nodes)), xp.zeros((m, arrival.shape[1], nodes)), (transfer,)
 
 
 def _own_valid(state, p, *, xp):
@@ -653,11 +692,14 @@ class ScheduledSpeciesExchange(Operator):
     def statically_idle(self, p):
         return p.exchange_route_cell.shape[0] == 0
 
-    def half_step(self, state, h, control, p, *, xp, view=None):
+    def half_step(self, state, h, control, p, *, xp, view=None, labels=None):
         """view: the reader view the composite passes where an operator changes membrane_area
-        (D191's current read; C1: none otherwise, and the declared area is read)."""
+        (D191's current read; C1: none otherwise, and the declared area is read). labels (FR-42,
+        D289; static): (rows, arrival); the call then also returns its one-way moves."""
         area = None if view is None else route_areas(view.membrane_area, p, xp=xp)
-        return exchange_half_step(state, control, h, p, xp=xp, area=area)
+        if labels is None:
+            return exchange_half_step(state, control, h, p, xp=xp, area=area)
+        return exchange_half_step(state, control, h, p, xp=xp, area=area, labels=labels)
 
     def control_valid(self, control, p, *, xp):
         rate, km = control.exchange_rate, control.exchange_saturation_mM

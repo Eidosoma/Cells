@@ -40,7 +40,7 @@ carry", on its branch at cf11924a). It refuses a run as a loop unless:
 ## 2. How a loop is made
 
 **The periodic drive** comes from operators the engine already has. Each schedules piecewise
-constant values at exact multiples of dt, so a periodic schedule is just a repeated one:
+constant values on the clock's grid (D283), so a periodic schedule is just a repeated one:
 - `electrode_current_injection@1`: a current train (pacing);
 - `scheduled_bath_composition@1`: bath doses (a periodic ion or nutrient step);
 - D150's schedules (`scheduled_species_turnover@1`, `scheduled_species_exchange@1`): rates.

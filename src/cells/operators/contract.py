@@ -110,7 +110,7 @@ Declarations (class attributes):
   that opens, closes or retires slots (``CLOSES``, ``RETIRES`` or a provided activity
   mask): no closer resets a kind's per-slot fields, which would be left stale.
 * Schedule: ``EXPERIMENT_KEYS`` (its schedule in the definition's experiment),
-  parsed and checked at the definition (event times are exact multiples of dt).
+  parsed and checked at the definition (event times on the clock's grid, D283).
 * Ownership (docs/PUMP_COMPOSITE_V2_DESIGN.md §1.2–§1.4), checked when a
   composition is built and recorded in its field map:
   - observation columns: its own are its state fields and ``READOUT_COLUMNS``;
@@ -228,6 +228,11 @@ Declarations (class attributes):
     M N + p (M labelled rows). Every move is counted once: a row's or pool's change is its into
     minus out plus carried in minus carried out, at rounding. Without pools and sources the
     argument and moves are as above, and nothing of them is traced.
+  - **An event that replaces a slot's amounts** (D296: replacement@1) reports it: an ``event``
+    that takes ``labels=rows`` returns ``(state, valid, replaced [cell])``, the slots whose
+    amounts it replaced. The departing material leaves with its shares; the owner gives each
+    replaced slot's labelled material the label in force for its species at that step (the
+    newcomer label).
 * The run view (docs/RUN_VIEW_DESIGN.md §3; cells/records/run_view.py reads them, host side only):
   - ``VIEW_LAYERS``: its layers, each {"id", "label", "representation"}; None: undeclared,
     which the run-view writer refuses;

@@ -1443,3 +1443,329 @@ the class rows (D288). Docs only, before the code that builds on it.*
    and chain, crossed with the window) marks its material without changing the physics.
 3. **One producer per fate row stays version 1's rule.** A second chain naming a fate row is still
    refused; sharing one is a later extension, now on shares.
+
+### 9.16 Amendment S: the producer across replacement (FR-38's step 4; D296, D301)
+
+*Proposed 22 November 2026 by the gene-regulation lane, for the tag before any code. It answers
+question (c) with the requester's clarification of 22 November (docs/FEATURE_REQUESTS.md, FR-38),
+replaces §9.7's "Replacement waits" and §9.11's item 3, and lifts D301's temporary refusal. A
+definition without a replacement keeps §0–§9.15 bit for bit.*
+
+1. **Scope.**
+   - `templated_polymerisation@1` composes with `scheduled_cell_replacement@1`, whose events
+     replace a slot's occupant by a newcomer from an isolated template.
+   - Refused in version 1, each at the definition:
+     - a donor copy into a slot that holds a pool of this operator, or from one (D152 defers its
+       own donor copies to version 1.1);
+     - `scheduled_cell_replacement@2`, as the declarations already refuse it: water provides the
+       volumes this operator reads as declared.
+   - A replaced slot's chains, releases, degradations and transfers are those whose cell it is. A
+     pool and its chains share one cell, so an occupant takes its whole gene unit with it.
+2. **The event.** At the start of the step leaving t_e, the step in which replacement@1 swaps the
+   slot's rows, this operator's own event part acts on every replaced slot c:
+   - **The chains in progress leave.** Every chain ρ at c sets C_ρ,j → 0. Its counters gain the
+     chains removed Σ_j C_ρ,j and the residues removed W_ρ = r_ρ Σ_j (j − 1) C_ρ,j (§1.2).
+   - **The hold leaves.** Every release of such a chain sets H_ρ → 0, and its hold-removed counter
+     gains H_ρ.
+   - **The newcomer's machines are all free.** Every pool q at c sets F_q → M_q. Machines carry no
+     free energy (§1.2), so this books nothing.
+   - **The free energy leaving with them** is μ°_ρ,res (W_ρ + L_ρ H_ρ). It is booked in a removal
+     counter of its own, not as heat.
+   - **The event reads only its own state and controls:** the replacements due at each slot,
+     known from replacement@1's events at the definition. So it does not depend on the order of
+     the two events in the operator list.
+   - **The rows are replacement@1's.** It removes the occupant's amounts and supplies the
+     template's (`replacement_removed_fmol`, `replacement_supplied_fmol`), with their chemical and
+     capacitor free energy (`replacement_free_energy_pJ`). The rows' standard term
+     Σ_s μ°'_s Δn_s at the swap is booked by neither operator. D152's owned standard term has the
+     same gap, since its operator has no event part either. The engine's energy ledger closes all
+     the same, because each owned standard term is an accumulator of its operator's own moves.
+     Item 5 states the account with the swap computed from replacement@1's records.
+3. **Generations and counters.**
+   - A slot's occupants are its generations: the founder g = 0, then each newcomer g + 1,
+     replacement@1's `generation`. A producer is (cell, generation, chain), preserved across
+     restart and cell reordering, as IDs.
+   - Every counter of §4.7 and §9.7 stays cumulative from t = 0: initiations, stage exits,
+     arrivals A_ρ = ∫Q_ρ, releases ∫Q^f_ρ, each degradation's ∫D and each transfer's extent. Removal
+     is counted apart from degradation, by the counters of item 2.
+   - **The newcomer's counters start at zero.** Per chain, release, degradation and transfer of a
+     replaced slot, the operator holds each cumulative counter's value at the current generation's
+     birth (0 for the founder). At each event it records the departing generation's own totals,
+     the counter at its death minus that birth value, and the counter's value becomes the
+     newcomer's birth value. The newcomer's own counters are the cumulative counters minus it.
+   - State holds only the latest departed generation's totals. An earlier generation's totals are
+     in the records only where an output follows its death before the slot's next event; the
+     definition does not require one (a declared limit of version 1).
+4. **The identities across events.** Each holds at every step; the removal terms are cumulative
+   from t = 0.
+   - **Machines:** F_q + engaged − M_q = 0, as in §9.7. After an event every machine at c is free.
+   - **Residues in transit, per chain:** r_ρ ∫S_ρ = W_ρ + L_ρ A_ρ + W^rem_ρ.
+   - **The hold, per release:** H_ρ(0) + A_ρ = H_ρ + Σ_f ∫Q^f_ρ + H^rem_ρ.
+   - **Per producer,** for generation g of chain ρ between its birth t_b and its death t_d, with
+     one producer per fate row (§9.11, item 4) and no other mover of it (a transport, FR-42's
+     stage 2, adds its own term):
+     H_ρ(t_b) + A_g = H^rem_g + Σ_f [R^f_g + ∫_{t_b}^{t_d} D_F^f], where
+     - A_g is the arrivals of its life, and H_ρ(t_b) = 0 for a newcomer;
+     - H^rem_g is its hold at t_d, which the event removes;
+     - R^f_g = n_F^f(t_d) − n_F^f(t_b) is the net RNA it added to fate row f. Replacement@1 removes
+       n_F^f(t_d) at the event and supplies the template's n_F^f(t_b) of the next generation;
+     - so initial plus arrivals equals attached, surviving, lost and removed RNA, with removal
+       booked to the departing generation and apart from degradation.
+
+     A living generation's identity is §9.7's, from t_b.
+   - **Moieties** (§1.4, §4.8): each total over the rows, the residues in transit and the hold
+     changes only at events, by what they supply less what they remove. The rows' parts are
+     replacement@1's supplied and removed records. The transit's and the hold's are item 2's
+     removal counters: W^rem_ρ residues and L_ρ H^rem_ρ residues.
+5. **The energy account.**
+   G(t) − G(0) + Σ H + Σ_events (G^out − G^in) = 0, where:
+   - G^out is the departing occupant's G within §3.4's scope: its rows' terms at removal, from
+     replacement@1's removed amounts, plus item 2's transit and hold terms, from this operator's
+     removal counter;
+   - G^in is the newcomer's, its template's rows at supply. Its transit and hold are empty.
+
+   Each class of Σ H stays non-negative and non-decreasing inside the domain (§3.5, §9.6). The event
+   books no heat.
+6. **The newcomer's rates (the occupant rule, D244).**
+   - An optional `templates` key gives them: {template_id, rates: {route ID: value}} for a
+     replacement template whose newcomers fill a slot of this operator. A route here is a chain's
+     k_I, a degradation's k, a transfer's capacity, or a scheduled release's p.
+   - Each route of a replaced slot takes its template's value from the newcomer's birth.
+   - Refused at the definition:
+     - a route of a replaced slot without its template's value;
+     - a template value for no route its newcomers take;
+     - a template that is not a replacement template;
+     - a schedule change of a replaced slot's route after its founder's death. In version 1 a
+       newcomer's values are its template's, constant through its life.
+   - The gene's copies T, the chains' structure and the pools' machines M are declared per slot,
+     so the newcomer has the founder's.
+   - A definition without the key keeps its declaration, to_dict and fingerprint byte for byte.
+7. **Labels (D296; the label owner's side).**
+   - The producer's label is a label source's schedule, the chain's, naming (cell, generation,
+     chain) from each generation's birth.
+   - At the event the label owner gives the replaced slot's labelled rows and this operator's hold
+     pools the label in force there, the newcomer's. The departing material leaves with its shares.
+   - **Extracellular RNA is not admitted in version 1.** `check_writers` refuses every other
+     mover of a listed row: another author such as exchange, and an in-step mover such as a face.
+     So no fate row leaves its cell, and the requester's retention of a producer's label outside
+     the cell needs a transport door that this amendment does not define.
+   - Labels change no physics.
+8. **Restart.** Item 2's and item 3's counters, and the replacements applied per slot, are state.
+   So a checkpoint and resume carry them bit for bit, and the controls come from the definition.
+9. **Static.** Without replacement@1 in the composition, or with no event on a slot of this
+   operator, every new field is zero-size. The event part then returns its state unchanged with no
+   validity term, so no program gains an equation. Under D148's case 2 (D296), the proof is the
+   programs check and `validation/gene_regulation/optin_check.py` before and after, with every
+   physical field bitwise.
+10. **What it does not claim.**
+    - **No biology** in the departure: that an occupant's chains in progress and its hold leave
+      with it is the requester's reading of replacement, declared. A newcomer that inherits a
+      chain is not modelled.
+    - **No donor copies** (item 1), and **no `scheduled_cell_replacement@2`**.
+    - **No standard term for the rows' swap** in the engine's bookings (item 2). It is a gap
+      shared with D152 on a desk reading (its docstring and its having no event part, no run),
+      reported to the lead.
+    - **No extracellular retention** (item 7).
+
+### 9.17 Amendment T: extracellular retention, options and the choice (FR-38; D284, D303)
+
+*Proposed 22 November 2026 by the gene-regulation lane, for the tag before any code. The lead's
+review approved option (a) with two changes, folded in: only a driven export in version 1
+(§9.17.2), and several producers admitted into one node row (§9.17.3). The requester asks that "RNA retained in an extracellular compartment keeps its original
+producer ID", and D284 is full scope, so D303 restores it to FR-38. When tagged, this amendment
+supersedes amendment S's extracellular bullet (§9.16, item 7) and its non-claim (§9.16, item 10). A
+definition without an export keeps §0–§9.16 bit for bit.*
+
+**Where Cells stands.** `check_writers` makes this operator the one writer of its listed rows:
+- it refuses another author of one (exchange and turnover declare their species);
+- it refuses a D152 reaction that writes one;
+- it refuses an in-step mover of one at a cell (a face, a membrane, junction or channel route, a
+  kind, an in-step process).
+
+A listed row also has zero membrane, junction and channel permeability (species_common). So
+today no admitted path carries a fate row out of its cell.
+
+#### 9.17.1 The options: which mover carries a fate row out of its cell
+
+**(a) This operator owns the export (recommended).**
+- It gains `exports`: each a fate row, or a product, of a chain at a patch's inside cell, moved
+  across that patch into its outside node, a finite extracellular node.
+- It gains `outside_degradations`: the exported row's loss at that node, to its monomers at the
+  node, which is the retention's lifetime.
+- It stays the one writer, now at the node too (refusals, below).
+- It reports each export to FR-42's label owner as a transfer from (row, cell) to (row, node),
+  as exchange does at stage 3, so the shares ride with the material.
+- **Files and owners.** All in the gene-regulation lane:
+  - this sheet;
+  - src/cells/operators/templated_polymerisation.py;
+  - validation/gene_regulation/ (worlds, engine_run's export, cohort, release_check, optin_check);
+  - tests/unit/test_templated_polymerisation.py and test_gene_regulation_compare.py;
+  - the lane's rules in validation/tissue/composition_matrix.py.
+
+  On FR-42's stack (core-pass-kinds-26), the label owner (species_labels.py, the kinds owner)
+  already consumes a split reporter's transfers, from exchange's stage-3 report. So it needs only
+  a review, not a change. No other owner's src changes.
+
+**(b1) A door for exchange.** check_writers would admit `scheduled_species_exchange@1`'s export
+routes of a fate row as a second mover. The per-producer identity would read exchange's booked
+one-way flows (`exchange_moved_fmol` per route).
+- **Files and owners:**
+  - this operator's check_writers and the matrix (the gene-regulation lane);
+  - exchange's identity of the row, agreed through the species registry (one authority per
+    species; the registry's owner);
+  - exchange itself, unchanged but reviewed by its owner (D150's operator).
+- **The retention's loss needs a second door.** Exchange has no loss, so the loss at the node
+  would be either turnover's clearance, another author admitted the same way, or this operator's
+  outside degradation.
+- **The energy is driven work.** Exchange books each move's exact ΔG as signed work, with no heat
+  (its docstring: a first-order export can run uphill). An export into a retaining node that
+  fills past the cell's concentration then books positive work that nothing pays for. That is
+  the contrast §9.5 draws with the requester's replay.
+
+**(b2) A door for a face.** An in-step face between the cell and the node would carry the row, as
+FR-42's stage 2 reports for uncharged faces (F2's exact heat applies).
+- **Files and owners:**
+  - this operator's check_writers (the gene-regulation lane);
+  - the @3 owner's faces and their per-species transfer records, which the identity would read;
+  - the registry's moved_in_step.
+- **Physically unsuitable.** A face is free diffusion between nodes. A cell's RNA crossing its
+  membrane is not diffusion through an open face, and the face would also carry every other
+  diffusible row of the cell.
+
+**The recommendation is (a).**
+- It keeps the one-writer rule, so every identity of §4.8, §9.7 and §9.16 stays exact, with the
+  export's counter added.
+- Its energy is heat by the operator's own law form, with no unpaid work.
+- It needs no change in another owner's src.
+- (b1) reuses exchange, but brings driven work, a second door for the loss and two more owners'
+  reviews.
+- (b2) is the wrong physics for RNA.
+
+#### 9.17.2 The export law, under (a)
+
+Per export e of row F from cell c into node o, across patch π (inside c, outside o):
+
+J_E = k_E n_F,c φ_E (1 − e^(x_E)),  x_E = [μ_F,o − μ_F,c + Σ_k ν_k μ_k,c] / RT.
+
+- **The coupling** ν is declared data: the cell's rows the move consumes and releases per molecule
+  exported, for example one ATP to ADP and Pi for a vesicular export. In version 1 it is non-empty:
+  only a driven export is admitted (the lead's choice (i), 22 November 2026). RNA export from cells
+  is generally active, vesicular or transporter-driven.
+- **φ_E** is the product, over the consumed coupling rows, of c/(K + c), with K declared for each.
+- This is §4's one-sided form, as for the stage exits and the degradations: at an export in use,
+  x_E ≤ X_DOM = −1, and a state outside it is refused, never repaired (§3.5). A driven export
+  stays far inside that domain while the coupling's affinity pays for the gradient.
+- **Why the passive form is refused.** With an empty coupling, x_E = ln(c_F,o / c_F,c), so the
+  domain refuses a node filled past c_F,c / e. That is exactly the requester's chase: the cell's
+  RNA decays while the retained RNA persists, so c_F,o / c_F,c rises through 1/e and the run would
+  be refused mid-chase, where the replacement test lives. **(ii), a follow-on on request:** the
+  passive form's own two-sided law, export and re-import, with both one-way moves reported to the
+  labels.
+- **Energy:** heat H_E = J_E (−x_E RT) ≥ 0, booked exactly from the state by the half-step's
+  divided-difference potentials, as every route's is (§3.4). F's standard term cancels between
+  the two nodes; the coupling's rows carry theirs, booked as a transfer's are. No work.
+- **The rate k_E** is scheduled in `polymerisation_controls` under the export's ID. dt k_E ≤ 1 is
+  checked at the definition. Under amendment S, a replaced slot's export takes its newcomer's k_E
+  from the template (§9.16, item 6).
+- **The outside degradation** is §4.4's law at node o, with o's volume and its rows. Its monomers
+  stay at o (an extracellular RNase's products). G gains o's rows: §3.4's G extends over the
+  nodes the operator writes.
+
+#### 9.17.3 The per-producer identity across export
+
+For generation g of chain ρ, with one producer per fate row (§9.11, item 4), and each export from
+a fate row of ρ (in what follows f runs over the fate rows and e over their exports):
+
+H_ρ(t_b) + A_g = H^rem_g + Σ_f [R^f_g + ∫_{t_b}^{t_d} D_F^f] + Σ_e ∫_{t_b}^{t_d} E_e.
+
+The exports over its life are counted from §9.16's birth values, with the export counters among
+them. At node o, with this operator its one writer:
+
+n_o(t) = n_o(0) + Σ_e ∫_0^t E_e − ∫_0^t D_o.
+
+This holds over every generation and every producer exporting into o. Replacement@1 swaps cells
+only, so an event leaves o untouched. **Exported RNA survives its producer's replacement, retained
+with its label.**
+
+**Several producers may share one node row** (the lead's review, 22 November 2026). A shared
+extracellular space is the natural tissue case, and producer labels on FR-42's shares exist so that
+one row can hold several producers' RNA. Each export route belongs to one chain, so its counter ∫E_e
+is that chain's exports, and §9.16's birth values split it by generation. Nothing in the node's
+balance or the identities above needs one producer per node row; the fate rows keep §9.11's one
+producer each.
+
+#### 9.17.4 The label, on FR-42's shares (D289, D296)
+
+- The label owner labels a species at every node, so the node's row carries the fate row's labels.
+- Each export is reported as a transfer that carries the source's shares (cell c's) into o, and
+  the outside loss as o's out.
+- The producer's label (cell, generation, chain) set at the chain's completions (§9.16, item 7)
+  therefore rides into o.
+- At replacement the label owner gives the replaced cell's rows the newcomer label. Node o is not
+  replaced, so the departed generation's label stays on its exported RNA.
+
+#### 9.17.5 Readouts, each by two routes that must agree
+
+1. **Extracellular RNA by producer.**
+   - Route 1: n_o times the producer's share at o.
+   - Route 2, host-side: each producer's exports, its chain's export counter over each
+     generation's life, carried by o's own per-molecule loss, ∫D_o over n_o from the counters
+     (cohort.py's form, exact for first-order, age-independent loss in a well-mixed node, up to its
+     grid error). The node's loss is shared by every producer's RNA at one per-molecule rate.
+   - **A row with two producers into one node:** two cells, each with its own chain and fate row
+     of the same species, exporting into one finite node. Each producer's RNA there, by both
+     routes, and their sum the node's row.
+2. **The release-marked cohort's survival at o.**
+   - Route 1: n_o times the window's share. A molecule released in [t1, t2) keeps that label
+     through export.
+   - Route 2: two pools in series. The cohort in the fate row leaves by loss and export at the
+     run's own per-molecule rates, and its exported part then decays at o's.
+   - The survival readout of §9.8 applies at o: the members alive at t2, the same molecules alive
+     at a later ts, and their ratio, undefined at a zero denominator.
+3. **RNA at o from a generation replaced later.**
+   - Route 1: the departed generation's producer share at o after its death.
+   - Route 2: route 2 of readout 1, restricted to that generation's window [t_b, t_d).
+
+#### 9.17.6 Refusals
+
+At the definition:
+- an export of a row that is no fate row or product of a chain at the patch's inside cell;
+- a patch whose outside node is a held bath (secretion into it is clearance), or is not finite;
+- any other writer or mover of the exported row at its node: an author such as exchange or
+  turnover, a D152 reaction, or an in-step mover such as a face or a kind (retention is the
+  one-writer rule extended to the node);
+- an export whose coupling is empty (the passive form, §9.17.2: follow-on (ii));
+- a coupling row that is not a listed row of the cell, or a consumed one without its K;
+- dt k_E > 1, and an outside degradation's dt k > 1;
+- a provider of the volumes, as today (CONFLICTS_VIEW).
+
+At run time: x_E > X_DOM at an export in use, a non-positive amount, a non-finite value.
+
+#### 9.17.7 Bitwise (D148's case 2)
+
+- Without `exports` and `outside_degradations`, every new array is zero-size, and no export or
+  outside computation is traced.
+- The new outside accumulators are sized by the exported nodes, not by the extracellular capacity,
+  so they are zero-size too.
+- The proof is the programs check and optin_check's 128 definitions before and after, with every
+  physical field bitwise and only the new empty fields added (its verdict learns them).
+- **First probe, before any field:** the class-level declaration of the new write target (the
+  nodes' amounts among ENTITY_WRITES). As the EVENT flag was probed for §9.16, it is checked
+  against optin_check's definitions and programs dumps. If it moves anything for a definition
+  without exports, the lead decides before the build.
+
+#### 9.17.8 The price, in agent-days
+
+- **(a):**
+  - this amendment 0.5;
+  - the export, its coupling, its heat and its domain 1.5–2;
+  - the outside degradation and the nodes' accumulators and ledgers 0.75–1;
+  - the label transfer 0.25;
+  - the readouts' routes 1 and 2 (cohort.py's series form), with the two-producer row, 1–1.25;
+  - tests, optin and the gate 0.75–1.
+
+  In all about 4.75–6, after step 4 (§9.16) and alongside step 5.
+- **(ii), on request:** the passive form's two-sided law and its re-import's reports, about
+  1–1.5 more.
+- **(b1):** about 4–4.75 with its owners' reviews, with driven work and a second door.
+- **(b2):** about 4.5 with the @3 owner's review, and the wrong physics.

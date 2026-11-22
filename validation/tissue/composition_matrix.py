@@ -38,7 +38,7 @@ from cells.operators import compartments as compartments_operator
 from cells.operators import membrane_trafficking as trafficking_operator
 from cells.operators import partition as partition_operator
 from cells.operators import species_labels as labels_operator
-from cells.operators.contract import reports_labels
+from cells.operators.contract import reports_labels, takes_labels
 
 ROOT = Path(__file__).resolve().parents[2]
 DOC = ROOT / "docs" / "PUMP_COMPOSITE.md"
@@ -916,20 +916,18 @@ _UNIT_PAIRS = tuple(pair for law in _UNIT_WRITERS for pair in ((PRODUCER, law), 
 def _labels_refuse(law):
     """Whether FR-42 stage 1's label owner refuses `law` whatever the definition
     (species_labels.operator_errors): a closer or retirer, a provider of the amount references, an
-    event that writes species amounts, or a split part that writes them without reporting (exchange
-    only where its routes name a labelled species, a condition on the data)."""
+    event that writes species amounts without reporting what it replaced, or a split part that
+    writes them without reporting."""
     op = OPERATORS[law]
-    writes = set(labels_operator.AMOUNT_FIELDS) & {
-        *op.ENTITY_WRITES,
-        *op.EVENT_REPLACES,
-        *op.STATE_RESETS,
-    }
+    replaces = set(labels_operator.AMOUNT_FIELDS) & {*op.EVENT_REPLACES, *op.STATE_RESETS}
+    writes = set(labels_operator.AMOUNT_FIELDS) & set(op.ENTITY_WRITES) - replaces
     return bool(
         op.RETIRES
         or op.CLOSES
         or set(labels_operator.AMOUNT_VIEWS) & set(op.VIEW_FIELDS)
-        or (writes and op.EVENT)
-        or (writes and op.SPLIT and not reports_labels(op) and law != EXCHANGE)
+        or (replaces and not (op.EVENT and takes_labels(op.event)))
+        or (writes and op.EVENT and not op.SPLIT)
+        or (writes and op.SPLIT and not reports_labels(op))
     )
 
 
@@ -1358,13 +1356,13 @@ RULES = (
         "moved_in_step)",
     ),
     dict(
-        rule="FR-42 stage 1's labels refuse closers, retirers, amount-view providers, events that "
-        "write species amounts, and split writers of them that do not report",
+        rule="FR-42's labels refuse closers, retirers, amount-view providers, events that write "
+        "species amounts without reporting, and split writers of them that do not report",
         laws=(LABELS, *sorted({law for pair in _LABEL_PAIRS for law in pair} - {LABELS})),
         level="law",
         check=OPS + "species_labels.py::operator_errors",
         test=TESTS + "test_neutral_arrival_labels.py::"
-        "test_a_labelled_definition_is_refused_where_stage_1_cannot_follow_it",
+        "test_a_labelled_definition_is_refused_where_labels_cannot_follow_it",
         tag=REAL,
         why="The shares follow only one-way moves that a reporter states (operators/contract.py), "
         "so a part that changes amounts without them is refused, naming the FR-42 stage that "
@@ -1375,17 +1373,18 @@ RULES = (
         behind=tuple(pair for pair in _LABEL_PAIRS if errors(sequence(*pair))),
     ),
     dict(
-        rule="FR-42 stage 1's labels refuse a labelled species moved in the step, by exchange or "
-        "by a passive reaction route",
-        laws=(LABELS, EXCHANGE, REACTIONS),
+        rule="FR-42's labels refuse a labelled species moved in the step by what the inner step "
+        "does not report",
+        laws=(LABELS,),
         level="data",
-        check=OPS + "species_labels.py::check_labels",
+        check=OPS + "species_labels.py::in_step_errors",
         test=TESTS + "test_neutral_arrival_labels.py::"
-        "test_a_labelled_definition_is_refused_where_stage_1_cannot_follow_it",
+        "test_a_labelled_definition_is_refused_where_labels_cannot_follow_it",
         tag=REAL,
-        why="Faces, routes, kinds and in-step processes (species_registry.moved_in_step) report "
-        "one-way moves from FR-42's stage 2, exchange and passive routes from stage 3 "
-        "(species_reactions.check_labelled_routes refuses the latter)",
+        why="Where the inner step takes labels= it reports its uncharged faces' and its routes' "
+        "one-way transfers (FR-42's stage 2); a charged face, a channel, a pump, a kind or an "
+        "in-step process (species_registry.moved_in_step) is refused, and so is RK4 beside a "
+        "followed mover",
     ),
 )
 

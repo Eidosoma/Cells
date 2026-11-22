@@ -9413,3 +9413,101 @@ compatibility - we're still in heavy dev not even at alpha".
   resolution" and "empty cohort". All eight saved R1/R2 survival comparisons passed with finite bounds,
   so no saved result moves.
 
+## D301: The architecture items' first cases: FR-38's replace-and-restart, then M3; the site/sink level-of-detail pair
+
+2026-11-22, about 17:22 UTC. The lead chooses under D299 ("as you suggest", "as you see fit in the queue"),
+from the checker's read-only inventories (/mnt/workspaces/Cells/arch-inventories-20261122/INVENTORIES.md).
+- **The evolving-cell case:**
+  - **First:** FR-38's producer across replacement and restart, the gene unit beside
+    scheduled_cell_replacement@1 with labels. It needs an accounting term and a definition-time occupant
+    rule, priced at 1–2 agent-days once the label branches land (FR-38 step 4).
+  - **A finding:** main admits the gene unit beside replacement but defines nothing for a replaced slot's
+    chains, hold, machines or counters. A temporary refusal closes that now, until step 4 defines it.
+  - **Next on the backlog:** composition M3, turnover beside water and beside partition or insertion,
+    reading the current volume and masks. It is the cheapest case with a changing volume: declared reads
+    only, 2–2.5 agent-days plus references.
+- **The first static level-of-detail pair: site binding against exchange's saturable sink.**
+  - The pair shares a ligand and the same node-to-cell ends, both run in the engine, and each is judged
+    (FR-3, FR-1). Its validity measure is ε, with an error of order ε.
+  - With it comes the general contract: one representation per scope, chosen at definition, refused when
+    both are declared; out-of-range use and unsupported readouts refused; an automated comparison. The
+    detailed form is the default and the reduced form is opt-in.
+  - About 4.5–6.5 agent-days in all. Queued after FR-42 and FR-38 land.
+  - **D214's finite fuel** remains named as a level-of-detail consumer, to follow on the same contract.
+  - **R2 against A1** is the in-lane alternative after FR-38's comparison, with its default reversed so the
+    detailed form leads.
+
+## D302: The implicit cycle block is dropped; the half-step energy check is now the cost driver
+
+2026-11-22, about 19:37 UTC. The user chose "Drop the block", on the robustness agent's measurements.
+- **The measurements** (MT-1b's state-4 world, explicit cycles, today's solver, windowed runner, device
+  row checks):
+  - 16 µs passes every check through the protocol's inhibitor event, at more than 100 times inside the
+    declared bands by FR-25's step-error form;
+  - X2's order condition binds between 16 and 18.25 µs;
+  - the block would buy at most about 1.14 times, or 1.3–1.5 times with the face present.
+  D290's premise of 5e6 /s was about 115 times too stiff; the cycles' ΣG/C is 4.35e4 /s, about 98%
+  of it from the synthase. MT-2 has the same stiffness. MT-1b runs explicitly at about 16 µs.
+- **The cost now:**
+  - X2, the half-step energy check, costs about 57 ms per step against 7.3 ms for the device step alone.
+    At 16 µs that is about 300 CPU-h per 300 s world, against 38 without X2.
+  - X2's per-step cost also grows with run length (39.6 to 53.7 ms per step from 512 to 2,560 steps).
+    One candidate is the record's per-window concatenation.
+  - The next item-3 target (D299) is a cheaper X2 with the same guarantee, profiled at length and designed
+    before code.
+- **Findings recorded for the backlog:**
+  - **At a replacement swap,** neither replacement@1 nor templated_polymerisation@1 books the rows'
+    standard term Σμ°Δn, and D152's reactions share the gap. The energy ledger still closes, because the
+    owned terms are accumulators, but replacement_free_energy_pJ understates what leaves and arrives. This
+    is a desk reading.
+  - **FR-38's extracellular retention** of the producer ID is not admitted in version 1. The one-writer rule
+    refuses any other mover of a gene-unit row, so no fate row can leave its cell. It needs a designed
+    door.
+
+## D303: Corrections to D302, FR-38's extracellular retention restored, the face plan re-priced, and the evening's repairs
+
+2026-11-22, about 20:22 UTC.
+1. **D302's basis, qualified.** The 16 µs result, and the question put to the user, covered state 4
+   over at most 2,560 steps, not every MT-1b world.
+   - State 3 was refused at 16 µs (dissipation) and at 8 µs (X2's cap at its first step). The cause is not
+     established; the inference is the faceless IMS not being at steady state.
+   - A long run at the source's activities was refused under head 2's per-species ledger floors, and was
+     rerun with development floors.
+   - X2's cost at length measured about 19 ms per step, not 57. The CPU-h figure in D302 is corrected
+     when the timing table is in.
+   - The block stays dropped unless state 3 or the floors reopen it. Both tests are raised in priority. A
+     300 s world that fits under no admissible floor goes to the user, since floors are a tolerance.
+2. **FR-38's extracellular retention is restored to FR-38's scope.** D302 filed it for the backlog, and
+   amendment S marked it not admitted in version 1. That was wrong: the requester's clarification asks
+   that RNA retained in an extracellular compartment keeps its original producer ID, and D284 is full
+   scope. The one-writer rule refuses any other mover of a gene-unit row, so the door is designed as a
+   sheet amendment, tagged before code, with options and a recommendation. Amendment S's sentence is
+   superseded when that amendment is tagged.
+3. **MT-1b's face build plan** (bafe39ef) is re-priced from the 2–4 agent-days quoted at D288 to about
+   6.5–9, for four items:
+   - the forms law and face, 3–5 days, by a separate face builder under the @3 owner's leave;
+   - the held buffer, about 1 day;
+   - the leak @2, 1.5–2 days for the kinds owner plus about half a day in the binding owner's admission;
+   - the forms-aware lag drive, about 1.5 days.
+   The capacitor/held-bath parse change is not needed. Dropping the implicit block (D302) saved 4.5–5.5
+   days. The user has been told. The engine's builders stay blind to R2's code and outputs, and every
+   exposure is recorded for the comparison's registration.
+4. **FR-3's Q6 classifier repaired** (1adbb39e). replaced_slot's phrase is matched to today's message.
+   view_conflict_bath_schedule is retired: FR-23 (D244) admitted that pair through door S's scoped
+   reads. The repair is disclosed beside CHECKS, and the judged run stays reproducible at its tag.
+5. **FR-42's stacked acceptance** at core-pass-kinds-26 3f760925 passed every check buildable from the
+   public declarations, and all three planted failures were caught:
+   - transport by a face with F2 on, by contact patches and by junctions, order 2.00;
+   - exchange and reversible reactions; restart mid-transfer; replacement's rows; a reused label;
+   - D1's families refused.
+   Templated polymerisation's pools and sources come with the gene-regulation branch, so a second
+   acceptance runs on that head. Kinds' routes are refused until the kinds hook.
+6. **FR-42's kinds hook.** This is a separate optional kind hook, traced only with labels: it computes
+   the trapezoid and the gap at the step's start and end states, with per-kind `label_refusals` in place
+   of the blanket refusal. Passive routes and the transporter's flux-force forms report one-way moves;
+   the rectifier and net-flow modes are refused. The kinds owner takes 1–1.5 days and @3 half a day,
+   once the signature is agreed.
+7. **The kinds owner's queue** follows D277's order, FRs first: FR-42's kinds hook, then the replacement
+   event report FR-38's step 5 needs, then the leak @2, which is still ready before the face's item 1.
+8. **OL6 has a new owner,** from the Phase A builder's handover. Its design note comes before code.
+
