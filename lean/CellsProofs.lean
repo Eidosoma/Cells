@@ -7,6 +7,7 @@ import CellsProofs.Chemistry.BindingFeasibility
 import CellsProofs.Chemistry.BindingResponse
 import CellsProofs.Chemistry.BindingVertices
 import CellsProofs.Chemistry.Enzyme
+import CellsProofs.Chemistry.GardCache
 import CellsProofs.Chemistry.GardCatalysis
 import CellsProofs.Chemistry.LineageFission
 import CellsProofs.Chemistry.PoolWithdrawal
@@ -15,6 +16,7 @@ import CellsProofs.Chemistry.MatchedBuffer
 import CellsProofs.Chemistry.MitochondrialCycles
 import CellsProofs.Chemistry.MitochondrialReactions
 import CellsProofs.Chemistry.MitochondrialStall
+import CellsProofs.Chemistry.Polymerisation
 import CellsProofs.Chemistry.PopulationUnits
 import CellsProofs.Chemistry.PrescribedShell
 import CellsProofs.Chemistry.ReservoirExchange
@@ -23,6 +25,7 @@ import CellsProofs.Chemistry.SingleSiteBinding
 import CellsProofs.Chemistry.SiteOccupancy
 import CellsProofs.Chemistry.SpeciesTurnover
 import CellsProofs.Chemistry.Vesicle
+import CellsProofs.Chemistry.VesicleEvent
 import CellsProofs.Chemistry.VesicleExchange
 import CellsProofs.Chemistry.VesiclePopulation
 import CellsProofs.Tissue.BathSchedule
@@ -33,8 +36,10 @@ import CellsProofs.Tissue.DivisionBridge
 import CellsProofs.Tissue.MembraneInsertion
 import CellsProofs.Tissue.MembraneTrafficking
 import CellsProofs.Tissue.ReactionTransport
+import CellsProofs.Tissue.RegionalSampling
 import CellsProofs.Tissue.RegionalTracer
 import CellsProofs.Tissue.RestrictedLumen
+import CellsProofs.Tissue.WallWash
 import CellsProofs.Transport.ATPCycle
 import CellsProofs.Transport.ChargedPermeation
 import CellsProofs.Transport.ConditionedVoltage
@@ -43,6 +48,8 @@ import CellsProofs.Transport.ElectrogenicPumps
 import CellsProofs.Transport.InwardRectifier
 import CellsProofs.Transport.IonChannels
 import CellsProofs.Transport.JunctionGate
+import CellsProofs.Transport.LabelDiffusion
+import CellsProofs.Transport.LabelMixingPower
 import CellsProofs.Transport.LogMeanFace
 import CellsProofs.Transport.MixedMembrane
 import CellsProofs.Transport.NeutralPermeation

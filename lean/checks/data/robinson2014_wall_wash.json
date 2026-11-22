@@ -1,0 +1,31 @@
+{
+  "dataset_id": "robinson2014_albumin_wall_wash",
+  "doi": "10.1016/j.cca.2014.01.035",
+  "material": "Polyethylene terephthalate centrifuge tube disk, material 7",
+  "rinse_series": {
+    "source": "https://stacks.cdc.gov/view/cdc/50419/cdc_50419_DS2.pdf#page=4",
+    "locator": "Supplementary Figure S3 and Table S1",
+    "albumin_mg_L": 90,
+    "pH": 8,
+    "rinse_count": 6,
+    "rinse_volume_uL": 100,
+    "counted": "Starting urine removed from the disk, each rinse separately, then the disk itself.",
+    "timing": "Rinse dwell times and the delay to the final count were unspecified.",
+    "uncertainty": "Markers overlap at low activity and the figure has no error bars."
+  },
+  "five_hour_endpoint": {
+    "liquid_source": "https://stacks.cdc.gov/view/cdc/50419/cdc_50419_DS2.pdf#page=9",
+    "surface_source": "https://stacks.cdc.gov/view/cdc/50419/cdc_50419_DS2.pdf#page=7",
+    "locator": "Supplementary Tables S4 and S2, material 7, 87 mg/L column",
+    "albumin_mg_L": 87,
+    "pH": 5,
+    "incubation_h": 5,
+    "replicates": 4,
+    "pooled_liquid_albumin_ug": 8.759,
+    "disk_albumin_ng_cm2": 22.96,
+    "adsorbed_percent": 0.22,
+    "liquid_collection": "Removed urine, five water rinses and the pipette tip were counted together.",
+    "uncertainty": "The tables report group values without a condition-specific interval."
+  },
+  "scope": "These are separate experiments. Recovery in liquid and on the surface can be measured independently. Residual liquid and desorption can both contribute to a rinse. Timed surface release and the synthetic Cells binding parameters remain untested."
+}

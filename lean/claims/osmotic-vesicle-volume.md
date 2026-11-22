@@ -14,14 +14,14 @@ At fixed solute count, area and bath osmolarity, the equilibrium volume is the s
 
 **Proved**
 
-- [CellsProofs.Chemistry.Vesicle.energy_strict_min](../CellsProofs/Chemistry/Vesicle.lean#L95)
-- [CellsProofs.Chemistry.Vesicle.empty_lumen](../CellsProofs/Chemistry/Vesicle.lean#L116)
-- [CellsProofs.Chemistry.Vesicle.slack_stall](../CellsProofs/Chemistry/Vesicle.lean#L120)
-- [CellsProofs.Chemistry.Vesicle.slack_tension](../CellsProofs/Chemistry/Vesicle.lean#L129)
-- [CellsProofs.Chemistry.Vesicle.laplace](../CellsProofs/Chemistry/Vesicle.lean#L136)
-- [CellsProofs.Chemistry.Vesicle.reduced_volume](../CellsProofs/Chemistry/Vesicle.lean#L145)
-- [CellsProofs.Chemistry.Vesicle.tension_at_density](../CellsProofs/Chemistry/Vesicle.lean#L151)
-- [CellsProofs.Chemistry.Vesicle.capped_bath_change](../CellsProofs/Chemistry/Vesicle.lean#L156)
+- [CellsProofs.Chemistry.Vesicle.energy_strict_min](../CellsProofs/Chemistry/Vesicle.lean#L101)
+- [CellsProofs.Chemistry.Vesicle.empty_lumen](../CellsProofs/Chemistry/Vesicle.lean#L122)
+- [CellsProofs.Chemistry.Vesicle.slack_stall](../CellsProofs/Chemistry/Vesicle.lean#L126)
+- [CellsProofs.Chemistry.Vesicle.slack_tension](../CellsProofs/Chemistry/Vesicle.lean#L135)
+- [CellsProofs.Chemistry.Vesicle.laplace](../CellsProofs/Chemistry/Vesicle.lean#L142)
+- [CellsProofs.Chemistry.Vesicle.reduced_volume](../CellsProofs/Chemistry/Vesicle.lean#L151)
+- [CellsProofs.Chemistry.Vesicle.tension_at_density](../CellsProofs/Chemistry/Vesicle.lean#L157)
+- [CellsProofs.Chemistry.Vesicle.capped_bath_change](../CellsProofs/Chemistry/Vesicle.lean#L162)
 
 Direct proof subject `cells.osmotic_lumen@1`
 
@@ -30,6 +30,12 @@ Uses [Bilayer area is half the sum of the molecular footprints in its two leafle
 ## Numerical comparison
 
 **Checked.** Two compiled trajectories each crossed between 34 slack and 64 tense records. Across both runs the relative volume error stayed below 1.07 × 10⁻¹⁴, tension error below 2.24 × 10⁻¹⁷ N/m, and osmotic energy error below 2.54 × 10⁻¹⁴ k_BT against a 70-digit reference. Separate 64-osmole worlds reproduce the macroscopic reduced-volume and tension-per-radius predictions at matched density.
+
+**Engine** `cells.assembly_lineages@2`, `cells.bilayer_geometry@1`, `cells.osmotic_lumen@1`, `cells.ideal_mixing@1`, `cells.phase_exchange@1`, `cells.membrane_permeation@1`
+
+[Repaired tension at the cap](https://github.com/Eidosoma/Cells/blob/329e9e395ac117998657a21eb827192d34314107/src/cells/models/assembly_lineages_v2/lumen.py) · [Tension test at each event](https://github.com/Eidosoma/Cells/blob/329e9e395ac117998657a21eb827192d34314107/src/cells/models/assembly_lineages_v2/kernel.py) · [Volume and tension in the run record](https://github.com/Eidosoma/Cells/blob/329e9e395ac117998657a21eb827192d34314107/src/cells/models/assembly_lineages_v2/runner.py) · [assembly lineage v2 fixtures](https://github.com/Eidosoma/Cells/blob/329e9e395ac117998657a21eb827192d34314107/tests/assembly_lineage_v2_fixtures.py) · [test assembly lineages v2 lumen](https://github.com/Eidosoma/Cells/blob/329e9e395ac117998657a21eb827192d34314107/tests/unit/test_assembly_lineages_v2_lumen.py) · [kucerka2011 popc](https://github.com/Eidosoma/Cells/blob/ad1f96418722d25876b38b5a5f38996512d6a32c/lean/checks/data/kucerka2011_popc.json) · [wolfisberg2025 vesicle](https://github.com/Eidosoma/Cells/blob/ad1f96418722d25876b38b5a5f38996512d6a32c/lean/checks/data/wolfisberg2025_vesicle.json) · [shibly2016 swelling](https://github.com/Eidosoma/Cells/blob/ad1f96418722d25876b38b5a5f38996512d6a32c/lean/checks/data/shibly2016_swelling.json) · [vesicle rupture holds](https://github.com/Eidosoma/Cells/blob/ad1f96418722d25876b38b5a5f38996512d6a32c/lean/checks/data/vesicle_rupture_holds.json) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/ad1f96418722d25876b38b5a5f38996512d6a32c/lean/checks/vesicle.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/ad1f96418722d25876b38b5a5f38996512d6a32c/lean/PROGRESS.md#ol5-six-replays)
+
+[Tested engine 329e9e395ac1](https://github.com/Eidosoma/Cells/commit/329e9e395ac117998657a21eb827192d34314107) · [Evidence checkpoint ad1f96418722](https://github.com/Eidosoma/Cells/commit/ad1f96418722d25876b38b5a5f38996512d6a32c)
 
 **Engine** `cells.assembly_lineages@2`, `cells.bilayer_geometry@1`, `cells.osmotic_lumen@1`, `cells.ideal_mixing@1`, `cells.phase_exchange@1`, `cells.membrane_permeation@1`
 
