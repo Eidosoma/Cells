@@ -117,12 +117,26 @@ def layout(data, world, capacity):
     return (lumen, geometry.place_quanta(world, capacity), np.asarray(constants(world)))
 
 
+def log_branches(nl, w, c, xp):
+    """(ln V_osm, ln V_sph), both in L, of states with nl lumen molecules and footprint w (floats),
+    each taken at 1 where its count is 0: the two branches of V = min(V_osm, V_sph), shared by
+    log_volume, tension and host_derived."""
+    log_osm = xp.log(xp.where(nl > 0, nl, 1.0)) - c[2]
+    log_sph = c[3] + 1.5 * xp.log(xp.where(w > 0, w, 1.0))
+    return log_osm, log_sph
+
+
+def area_radius(w, q, xp):
+    """(A in m², R in m) of footprint w: A = q·W/2, the physical area first, then R = (A/4π)^½."""
+    area = q * w / 2.0
+    return area, xp.sqrt(area / (4.0 * math.pi))
+
+
 def log_volume(n_lumen, footprint, c, xp):
     """ln V (L) of states with N_L lumen molecules and footprint W; −inf at an empty lumen."""
     nl = n_lumen.astype(np.float64)
     w = footprint.astype(np.float64)
-    log_osm = xp.log(xp.where(nl > 0, nl, 1.0)) - c[2]
-    log_sph = c[3] + 1.5 * xp.log(xp.where(w > 0, w, 1.0))
+    log_osm, log_sph = log_branches(nl, w, c, xp)
     log_v = xp.minimum(log_osm, xp.where(w > 0, log_sph, -xp.inf))
     return xp.where(nl > 0, log_v, -xp.inf)
 
@@ -172,11 +186,9 @@ def tension(n_lumen, footprint, world_kT, q, c, xp):
     0 while floppy or at the kink (§0.2b rule 3)."""
     nl = n_lumen.astype(np.float64)
     w = footprint.astype(np.float64)
-    log_osm = xp.log(xp.where(nl > 0, nl, 1.0)) - c[2]
-    log_sph = c[3] + 1.5 * xp.log(xp.where(w > 0, w, 1.0))
+    log_osm, log_sph = log_branches(nl, w, c, xp)
     tense = (n_lumen > 0) & (footprint > 0) & (log_osm > log_sph)
-    area = q * w / 2.0  # m², the physical area first (module docstring)
-    radius = xp.sqrt(area / (4.0 * math.pi))
+    area, radius = area_radius(w, q, xp)  # m², the physical area first (module docstring)
     volume_m3 = 4.0 / 3.0 * math.pi * radius**3
     safe = xp.where(tense, volume_m3, 1.0)
     pressure = world_kT * (nl / safe - c[1] * 1e3)  # N_A c_ext in molecules per m³
@@ -204,6 +216,37 @@ def host_volume_L(world, counts):
     quanta = geometry.place_quanta(world, len(world.places))
     log_v = log_volume(np.sum(n * lumen), np.sum(n * quanta), np.asarray(constants(world)), np)
     return float(np.exp(log_v))
+
+
+DERIVED = ("W", "A_m2", "R_m", "V_osm_L", "V_sph_L", "V_L", "tension_N_per_m")
+
+
+def host_derived(world, counts):
+    """One state's derived geometry on the host, from the kernel's own expressions (log_branches,
+    area_radius, log_volume, tension): {W in quanta, A in m², R in m, V_osm, V_sph and V in L, σ in
+    N/m} (OL5's kernel probe; validation/assembly_lineages_v2/FORMAT_OL2.md). V_osm is 0 at an
+    empty lumen and V_sph 0 at W = 0; `counts` covers the world's places."""
+    from cells.models.assembly_lineages_v2 import geometry
+
+    n = np.asarray(counts, dtype=np.int64)
+    lumen = np.asarray([p.phase == "lumen" for p in world.places], dtype=np.int64)
+    quanta = geometry.place_quanta(world, len(world.places))
+    n_lumen, footprint = np.sum(n * lumen), np.sum(n * quanta)
+    c = np.asarray(constants(world))
+    q = world.geometry[1]["area_quantum_m2"]
+    log_osm, log_sph = log_branches(n_lumen.astype(np.float64), footprint.astype(np.float64), c,
+                                    np)  # fmt: skip
+    area, radius = area_radius(footprint.astype(np.float64), q, np)
+    kT = BOLTZMANN * world.units.temperature_K
+    return {
+        "W": int(footprint),
+        "A_m2": float(area),
+        "R_m": float(radius),
+        "V_osm_L": float(np.exp(log_osm)) if n_lumen > 0 else 0.0,
+        "V_sph_L": float(np.exp(log_sph)) if footprint > 0 else 0.0,
+        "V_L": float(np.exp(log_volume(n_lumen, footprint, c, np))),
+        "tension_N_per_m": float(tension(n_lumen, footprint, kT, q, c, np)),
+    }
 
 
 FORMULAS = {

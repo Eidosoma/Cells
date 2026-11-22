@@ -373,6 +373,9 @@ class _Context:
         self.transfers, self.transfer_counter, self.schedule_draws = [], {}, []
         self.replacements = []  # FR-20: each pool replacement's record (replacement.py)
         self.withdrawals = []  # FR-35: each pool withdrawal's record (withdrawal.py)
+        # OL5's run rows: each shear or transfer event's (time, schedule, the state after it, the
+        # slots living at its start), for the diagnostic record only (diagnostic.py).
+        self.scheduled_after = []
         # FR-35: each withdrawal schedule's washes applied (its draw counter w) and the world's
         # withdrawals before a resumed run: both derived from the applied stops, never stored.
         self.washes, self.withdrawals_before = {}, 0
@@ -629,8 +632,10 @@ def _shear_stop(spec, layout, state, ctx, world_f, vesicle_f, time, stop_events,
     world = spec.model.world
     places = len(world.places)
     for event in stop_events:
+        living = [int(x) for x in np.flatnonzero(state.alive)]
         if ctx.by_index[event[1]].kind == "transfer":
             _transfer(spec, layout, state, ctx, world_f, time, ctx.by_index[event[1]], n_events)
+            ctx.scheduled_after.append((time, event[1], state.copy(), living))
             continue
         if ctx.by_index[event[1]].kind == "replacement":
             _replace(spec, state, ctx, world_f, time, ctx.by_index[event[1]], n_events)
@@ -654,6 +659,7 @@ def _shear_stop(spec, layout, state, ctx, world_f, vesicle_f, time, stop_events,
             if a.counter >= 0:
                 ctx.fission_counter[parent] = counter + 1
             if a.outcome == "slots_full":
+                ctx.scheduled_after.append((time, event[1], state.copy(), living))
                 return True
             if a.outcome != "split":
                 continue
@@ -687,6 +693,7 @@ def _shear_stop(spec, layout, state, ctx, world_f, vesicle_f, time, stop_events,
             for j, slot in enumerate(homes):  # §0.2d item 10.3: born beyond sigma_max
                 if a.lysed[j]:
                     _lyse(world, layout, state, ctx, world_f, slot, time, n_events, at_birth=True)
+        ctx.scheduled_after.append((time, event[1], state.copy(), living))
     return False
 
 

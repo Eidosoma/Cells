@@ -25,7 +25,8 @@ Each claim with a planted error it must catch (D187):
 - P7: a transfer keeps the K_keep smallest of one uniform per living assembly (its own draws on the
   schedule's stream), removes the rest, refreshes the pool, books the sink and its work column, and
   the books close (planted: keeping the largest picks other slots); the fresh pool above c_ext is
-  refused.
+  refused. The diagnostic record states each draw's slot and the pool and slots after the transfer,
+  and each shear event the state after it (OL5's run rows).
 
 World-compiling cost: the division test's program (three runs) and the population program (one
 structure at K = 1, 3 and 4), 81.31 s for the whole file on the timed lane. Reason: the records,
@@ -102,6 +103,13 @@ def test_the_diagnostic_record_states_every_draw_and_rebuilds_the_rows(tmp_path)
     np.testing.assert_array_equal(
         block, division.block(layout.base_key, first["key"], 0, len(block))
     )
+    for stop in body["shear_events"]:  # the state after each shear event (OL5's run rows)
+        (attempt,) = stop["attempts"]
+        if attempt["outcome"] == "split":
+            followed = attempt["daughters"][attempt["followed"]]
+            assert stop["slots_after"] == [{"slot": 0, "key": followed["key"],
+                                            "counts": followed["counts"]}]  # fmt: skip
+            assert stop["pool_after"] == attempt["pool_after"]
     assert body["environment"]["jax_threefry_partitionable"] is True
     assert body["end"] == run.status and body["states"]["final"]["slots"][0]["key"] == 5
     records.write_run(tmp_path / "d", run)
@@ -345,6 +353,12 @@ def test_a_transfer_keeps_a_uniform_sample_and_refreshes_the_pool(tmp_path):
     assert [d[2] for d in t["draws"]] == us and [d[1] for d in t["draws"]] == [0, 1, 2]
     assert t["kept"] == [int(np.argmin(us))]  # the smallest; planted: the largest differs
     assert t["kept"] != [int(np.argmax(us))]
+    event = body["transfer_events"][0]  # OL5's run rows: each draw's slot, the state after
+    assert [(d["slot"], d["counter"], d["uniform"]) for d in event["draws"]] == list(
+        zip(range(3), range(3), us, strict=True)
+    )
+    assert event["pool_after"][:3] == [5, 2, 0]
+    assert [x["slot"] for x in event["slots_after"]] == t["kept"]
     assert sorted(t["removed"]) == sorted(set(range(3)) - set(t["kept"]))
     rows = run.rows
     after = np.flatnonzero(rows["row_kind"] == population.TRANSFER)[0]
