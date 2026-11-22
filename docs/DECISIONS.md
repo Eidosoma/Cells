@@ -9185,3 +9185,19 @@ priority". The evidence branch was merged unedited at 81916b5d.
   unjudged, or another metadata-only search round can look for two-exponential step decays at four or
   more voltages.
 
+## D292: FR-30 gets one more metadata-only search; FR-41 gets a data-only retention check
+
+2026-11-22, about 15:11 UTC. The user's choices.
+- **FR-30:** one more metadata-only search, with values unread, broadened to any Cx43 preparation with
+  two-exponential voltage-step decays at four or more voltages. A registration (a section 13.4 entry)
+  comes before any extraction. If nothing qualifies, FR-30 stays development-only.
+- **FR-41: a data-only check of whether calcein is retained during shrinkage,** in Akui 2021 and Ahumada
+  2015/2017.
+  - The analysis was fixed by the lead, blind to every value, before any reading:
+    /mnt/workspaces/Cells/fr41-retention-20261122/rule.md, sha256
+    9ae86b4028451d91663a40cdae1c8821a64b8dfcf4f121f1cc7922e3a6292d0f.
+  - It is evidence for Cells' retention assumption, not a validation of Cells: no Cells prediction is
+    scored.
+  - The Sonnet extractor reads the values, since the Opus extractor was stopped by a safeguard false
+    positive on Akui's methods; the user moved that task to Sonnet.
+
