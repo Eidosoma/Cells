@@ -120,7 +120,8 @@ SHOWN_LOCAL = {
     "ideal_osmosis_linear_compliance_water@1": "changes volumes, never amounts",
     "k_anion_symport_mass_action@1": "moves its charged potassium and anion in-step (read below)",
     # Gene regulation's option A (G4): a recorded exception naming the operators owner.
-    "templated_polymerisation@1": "makes, degrades and recharges species at its routes' cells",
+    "templated_polymerisation@1": "makes, degrades and recharges species at its routes' cells "
+    "(it writes only amount_increment)",
     LAW_ID: "is this law",
 }
 REFUSED = {

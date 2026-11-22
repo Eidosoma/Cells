@@ -8792,3 +8792,73 @@ user must declare and which Cells can calculate from the collection port, flow a
 - An independent checker writes the acceptance from the request's words before anything lands.
 - FR-28's landing after G4 comes first.
 
+## D275: FR-7 item 4's registered test scored inconclusive; no build now
+
+2026-11-21, about 23:07 UTC. The test was registered before the paper was read
+(fr7-item4-registered-2026-11-21), extracted and sealed (fr7-item4-extraction-sealed-2026-11-21),
+predicted blind (fr7-item4-predictions-2026-11-21) and scored by the second builder.
+- **Result:** d = −0.381, Welch's 95% interval [−0.656, −0.105], against ±ln 1.25. That is
+  inconclusive. Its direction agrees with the paper's finding that conductance per channel falls with
+  density.
+- **Information only:** a declared conducting-fraction form predicted the held-out cells better (rms
+  ln error 0.272 against the chain's 0.441).
+- **Decisions:**
+  - FR-7's chain is unchanged, and D218's refusal stands with its restated reason.
+  - Item 4 stays open.
+  - A conducting-fraction law is a candidate general model. It would need its own registered test on
+    data not used here: other cells, another paper, or the same paper's Kv1.4 family if it is
+    independent. Under D273's hold it waits.
+
+## D276: FR-30's benchmark on Lin 2003 is undetermined by its registered rule; the fallbacks are registered before they are read; fix (A) goes ahead
+
+2026-11-21, about 23:13 UTC, with the advisor.
+- **Lin, Crye and Veenstra 2003 reports single-exponential decays only.** That meets the
+  registration's "undetermined" condition: fewer than two held-out voltages carry both relaxation
+  times. The checker confirms it. Lin's held-out file stays sealed, and nothing is reinterpreted
+  after the fact.
+- **The fallbacks:** the @3 owner amends section 13 before anyone opens them. The same split, judged
+  observables and pass rule apply in a fixed order: Desplantez et al. 2004, then Moreno et al. 2002,
+  then Snipas et al. 2020. Each is extracted only if the one before is undetermined. The amendment is
+  tagged before any extraction.
+- **Fix (A) goes ahead** (amends D273). Its price is about 2.5 agent-days with charged kind routes
+  refused on crossing junctions in version 1; including them adds about a day, when FR-15 needs it.
+  - D273's two-day threshold is withdrawn. It assumed the parse-time refusal was a cheap route to the
+    same guarantee. Facts 2 and 3 show it is not: it would refuse the @3 conducting fixtures and
+    FR-30's development host, and it would have to evaluate replacement_padded's formation lag at
+    parse.
+  - **The three gating facts:**
+    - no tier verdict depends on the moved values; the one changed test counted the prototype's extra
+      solves;
+    - "never conducts" is declared;
+    - FR-30's development host is affected, and FR-15's planned hosts are not.
+  - **Added stop checks:** every frozen bitwise baseline (gate.sh, FR's landing set, the OL
+    invariance gate) is shown unmoved or renewed; the kinds refusal's reach is scanned first;
+    test_field_floor_held passes unedited, and existing test bodies stay as they are.
+  - The second builder reproduces the orders at base and head.
+
+## D277: Overnight delegation, and the order in which paused lanes resume
+
+2026-11-21, about 23:24 UTC. The user, going to bed: "good luck with the FRs, lean and core over night.
+you decide with adviser this question and the ones overnight except something significant", and
+"if there are free agents, I guess the FR list will take a while then start, mitochondria and gene
+regulation and origin of life last".
+- **The held junction study runs as option (a),** three plain commands. That removes the ambiguity
+  the safety check flagged, without overriding it. If one is refused again, it waits for the morning.
+- **Decided overnight with the advisor:** what is already decided runs without asking.
+  - FR-25's rule tag, fresh runs, table tag and judgement, including the declared retry.
+  - FR-30's next paper in the registered order, after the checker confirms the one before is
+    undetermined.
+  - Landings whose gates pass with no undeclared movement.
+- **Held for the user (significant):**
+  - a gate where crossrev or G1 moves an undeclared world;
+  - what to build after a failed or inconclusive verdict (the verdict itself is recorded as scored);
+  - any engine build not already decided: FR-37's advection, a conducting-fraction law, D2, kinds on
+    crossing junctions, the unwindowed-clock refusal;
+  - deletions, a content refusal, and a privacy-scan hit.
+- **Lane order:** FR and core work first. G4 takes the first free test lane after FR-28.
+- **Paused lanes resume only with free agents, in this order:** mitochondria, gene regulation's own
+  work, then origin of life last. Desk work first; nothing of theirs takes a test lane ahead of the
+  FR and core landings.
+- **The Lean lane** publishes its own work. The lead scans its commits after they land and does not
+  merge its branches tonight.
+

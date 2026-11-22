@@ -1111,6 +1111,18 @@ RULES = (
         "increment form reads an exactly empty pool reached from a positive anchor as NaN",
     ),
     dict(
+        rule="@2's site source reads no node-owned population (FR-28: a node's own sites belong "
+        "to no cell)",
+        laws=(COUPLING_2, SITES),
+        level="data",
+        check=OPS + "species_regulated_availability.py::_site_layout",
+        test=TESTS + "test_site_occupancy.py::"
+        "test_a_nodes_own_sites_are_the_stand_ins_layout_and_round_trip",
+        tag=REAL,
+        why="A site source is read in its element's cell, and no @2 target lives at a node "
+        "(D268, option A; docs/NODE_SURFACE_SITES_DESIGN.md §7)",
+    ),
+    dict(
         rule="a quantity a route reads (R3) has its owner in the composition, declared before the "
         "route's operator target",
         laws=(COUPLING_2, SITES, TURNOVER, REACTIONS, PRODUCER),

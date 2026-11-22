@@ -11,7 +11,7 @@ and a general feature, never one built for one study (D144).
 | [FR-3](#fr-3--the-site-occupancy-primitive) | The site-occupancy primitive | Priority 2 (the request's label; logged by the user, 14 November 2026) | **Milestone 1 landed** (15 November; [note](SITE_OCCUPANCY_DESIGN.md) §12, D169): `site_occupancy@1`, the contract fit and the run, with idle, restart, batch and controls. **Judged, 18 November 2026:** its protocol, `fr3-site-occupancy-v1` (registration 1b838d75), passed, 51 of 51 judged criteria, against the code-blind references; `site_occupancy@1`'s first judged acceptance | A shared SSPRK(3,3) block, FR-3's own milestone (INNER_MODEL_V4_DESIGN §15.3; main still has separate integrators in `site_occupancy.py` and `species_reactions.py`) |
 | [FR-5](#fr-5--state-conditioned-transfer-across-an-internal-membrane-with-leak-and-reseal) | State-conditioned transfer across an internal membrane, with leak and reseal | Priority 1, blocking (the request's label; logged 14 November 2026). It depends on FR-1 and FR-4 | Design accepted (§16 of [the FR-4/FR-5 note](COMPARTMENT_PH_TRANSFER_DESIGN.md)). Built and on main since fr45-next merged (16 November): the two source kinds, refusal 4 version 1.2, refusal 5 version 1.1 and FR-5's start part, for development, not judged. Its protocol, `fr5-transfer-v1`, is registered and judged on 17 November 2026: passed, 51 of 51 judged criteria (D195; tag fr5-v1-qualified-2026-11-17) | Done. The verdict's scope: `cell_owned_compartments@1` as built at 32a1d439 (refusal 4 v1.2, refusal 5 v1.1) |
 | [FR-6](#fr-6--species-driven-control-factors) | Species-driven control factors | Priority 2 (the request's label; logged 14 November 2026) | **Addressed by an accepted design (D155, D156; [the coupling note](INVENTORY_COUPLING_DESIGN.md)). Its operator, `species_regulated_availability@1`, is numerically qualified (15 November).** Three narrower items are recorded as consumer registrations. **A5″ judged, 18 November 2026:** its protocol, `fr6-a5pp-v1` (registration 555d8771), passed, 18 of 18 judged criteria, against the code-blind references: the gate-free channel target (item 1) driven through the regulatory state from a per-cell prior (item 3) **Item 2, the routing door, landed as B1′** (merge ee43b082, tag `b1prime-landed-2026-11-19`, on `species_regulated_availability@2`; development, not judged; D218) | B1′'s judged acceptance (none found: unverified); gated channel populations (A5′), leaks and pumps (item 1's rest) |
-| [FR-7](#fr-7--abundance-to-function-exposed-in-the-composite) | Abundance-to-function, exposed in the composite | Priority 3, ordering and not scope (the request's label; logged 14 November 2026) | Items 1-3 judged and passed on 20 November. **Item 4 reopened (D273):** Maverick and Tamkun 2022 measured channel counts and conductance in the same HEK cells, the condition D268 named | Item 4's test registered before the paper is read (the FR-7 agent); the paper downloaded by the user |
+| [FR-7](#fr-7--abundance-to-function-exposed-in-the-composite) | Abundance-to-function, exposed in the composite | Priority 3, ordering and not scope (the request's label; logged 14 November 2026) | Items 1-3 judged and passed on 20 November. **Item 4's registered test (Maverick and Tamkun 2022) scored inconclusive** (D275): d = −0.381, 95% [−0.656, −0.105] against ±0.223; the direction agrees with the paper | Item 4 open: more paired cells, or a declared conducting-fraction law with its own registered test on unused data. No build now (D273's hold) |
 | [FR-8](#fr-8--a-qualified-long-duration-mode) | A qualified long-duration mode | Priority 2 (the request's label; logged 14 November 2026) | **Stage 0 landed** (19 November, merge f5025e6f: the methods measured, the harness H2). **Rung 0** (the order drop through a switch) is registered and run: its first verdict was "instrument not validated"; under a blind amendment the cause is NaV activation unresolved at coarse steps, with R3's error now estimated (D224's ladder; landing). **Rung 1's C judged and passed** (20 November, tag `fr8-c-judged-2026-11-20`) Section 10.20's registered reading, N2 with C at a 100 ms step, passed (a), (b) and (c) on 21 November, re-judged independently (80de0788, tag `fr8-n2c-judged-2026-11-21`). | Rung 2. C's near-coincident-event refusal (core-pass-c-near-events) is gating; extending it to clocks without windows waits for its own decision (D272) |
 | [FR-9](#fr-9--raise-the-7-species-cap) | Raise the 7-species cap | Priority 2, **blocking for world design** (the request's label; logged 14 November 2026). Measured safe to 16 (the W4 probe) | **Landed** (14 November): `MAX_SPECIES` is 16, a D148 change to `species_common` with guard worlds of 8 or more species (D165) | None: closed (D165, merge 2161f39); the requester's species list comes with its world definition (unverified) |
 | [FR-10](#fr-10--a-dose-schedule-scheduled-bath-composition-in-the-pump-family) | A dose schedule: scheduled bath composition in the pump family | Priority 2, small (the request's label; logged 14 November 2026) | **Milestones 1 and 2 landed** (14–15 November; [note](BATH_SCHEDULE_DESIGN.md) §7–§8, D169): dose steps admitted only inside measured regions (neutral up and down, K up and Na down). Its protocol, `fr10-dose-schedule-v1`, is registered and judged on 17 November 2026: passed, 31 of 31 judged criteria (registration 407ba164), against the code-blind references R-faces, R-ion and R-records | Further ions and faster faces as each is measured |
@@ -20,7 +20,7 @@ and a general feature, never one built for one study (D144).
 | [FR-12](#fr-12--the-declarations-manifest-readable-by-the-viewer-d185) | The declarations manifest, readable by the viewer (D185) | Not stated (proposed by the visualizer session, 16 November 2026; logged 17 November) | **Landed:** `python -m cells declarations` writes the manifest (0154604f; merge 515ac020, seam F, D195). `cells.declarations@2` (merge 3891b802, D203) is the format in the engine (`FORMAT` in `registry/declarations.py`) and is read by the viewer (merge d8c56ea2) | None for the manifest; the command's help text still names @1 (a stale string, not fixed here) |
 | [FR-13](#fr-13--molecular-machines-individually-and-in-aggregate) | Molecular machines, individually and in aggregate, at a level of detail set by what is looked at | Not stated (the user's request, 17 November 2026; D204) | No machine model of FR-13's own yet (D209). **M0 done:** the viewer's catalogue (40317ef7, illustration). M1's ATP synthase: the mitochondria lane's inner-membrane laws on the cycle kind include a synthase (64565faa, development, not judged), and that lane is paused (D268) | M1's build plan ([the design note](MOLECULAR_MACHINES_DESIGN.md) §10) when the mitochondria lane resumes; U4 and U6 open (D209) |
 | [FR-14](#fr-14--declared-extension-of-laws-operators-and-models) | Declared extension of laws, operators and models (object-oriented) | Not stated (the user's request, 17 November 2026; D205) | Requested; not scoped. No declared extends link, inherited checks or version rule on main (a search of `src/cells/registry`, unverified beyond that); D205's check stands | Covered by FR-13's design note (U6 open, D209): options for a declared extends link, inherited checks and version rules |
-| [FR-15](#fr-15--junction-crossing-and-charged-species-in-the-species-operators) | Junction-crossing and charged species in the species operators | Not stated (found by the gap-junction replication, D207; 17 November 2026) | **Landed in two parts.** S1, charged species in `local_species_reactions@1` (merge ddb52790, tag `fr15-s1-landed-2026-11-19`, D148). P2, `passive_constant_field_permeation@1` on the passive-routes kind, on patches (merge ce39c904, tag `fr15-p2-landed-2026-11-20`). The first step (why `check_impermeant` refuses) was done earlier | Junction hosting of the charged route, waiting on the @3 owner's two answers (the law module's header: the floating-component residual, a junction_flux in KindRates); charged turnover routes (`scheduled_species_turnover@2`) when a consumer needs them |
+| [FR-15](#fr-15--junction-crossing-and-charged-species-in-the-species-operators) | Junction-crossing and charged species in the species operators | Not stated (found by the gap-junction replication, D207; 17 November 2026) | **Landed in two parts.** S1, charged species in `local_species_reactions@1` (merge ddb52790, tag `fr15-s1-landed-2026-11-19`, D148). P2, `passive_constant_field_permeation@1` on the passive-routes kind, on patches (merge ce39c904, tag `fr15-p2-landed-2026-11-20`). The first step (why `check_impermeant` refuses) was done earlier | Junction hosting of the charged route, waiting on the @3 owner's two answers (the law module's header: the floating-component residual, a junction_flux in KindRates); charged turnover routes (`scheduled_species_turnover@2`) when a consumer needs them; charged kind routes on junctions crossing floating components are refused in version 1 of fix (A), and included (+1 day) when FR-15 needs them (D276) |
 | [FR-16](#fr-16--junction-gating-and-availability) | Junction gating and availability: a two-state voltage gate, per-species floors, two-sided combination rules | Not stated (the same) | Requested; awaits the user's go (D219: not started). **F3 partly met through FR-30:** the series gates (merge 12c18db1: threshold_relaxation and boltzmann_eyring) landed. F4 (a per-species floor) and F5 (min and mean combination): not found on main (unverified) | F4 and F5 unscheduled; F3's held-out voltage test is FR-30's. A short design before any build |
 | [FR-17](#fr-17--field-solves-beyond-2048-nodes) | Field solves beyond 2048 nodes | Not stated (the same) | Requested; awaits the user's go (D219: not started). The cap stands: `FACTORED_MAX_NODES` is 2048 in `numerics/surface_field.py` (21 November) | The preprint's 3D table, and mitochondria (D210) unless condensing compartment nodes serves them |
 | [FR-18](#fr-18--the-composites-energy-check-at-moderate-step-sizes) | The composite's energy check at moderate step sizes (a finding for the core) | Not stated (the same) | **X2 landed** (merge fd894b91, `step_doubled_energy@1`, D224): an opt-in step-doubled energy check; criterion X registered (570df4fd). The default check is not loosened for one experiment; any review of its default tolerance: unverified | None unless the core reviews the default tolerance or the step-size advice (unverified) |
@@ -42,7 +42,7 @@ and a general feature, never one built for one study (D144).
 | [FR-34](#fr-34--channel-population-readouts-count-availability-and-signed-current) | Channel population readouts: surface count, availability and signed current at a declared voltage, with units and sign convention | **High** (user, 20 November 2026; D251) | **Landed, composites included:** opt-in flux and current readouts with fixed-voltage evaluation (81a29442); a composite's own clamped_channel_flux and clamped_kind at the step's control and layout views (07022ddf, D265 finding 1, checker-confirmed) | None |
 | [FR-35](#fr-35--timed-partial-withdrawal-of-an-assembly-populations-exterior-pool) | Timed partial withdrawal of an assembly population's well-mixed exterior pool: each molecule withdrawn independently, a declared buffer supplied, sites and particles kept | **High** (user, 21 November 2026) | **Landed** (merge b521a11c, tag `fr35-withdrawal-landed-2026-11-21`): `cells.pool_withdrawal@1` (D261) | None. Landed (b521a11c, with D263's fixes); the independent acceptance and a 4,000-stream ensemble passed |
 | [FR-36](#fr-36--age--and-region-selective-loss-within-a-species-row) | Age- and region-selective loss within a species row | FR-25's reviewer (21 November 2026) | **Deferred (D273).** Today's tools cover completion-time cohorts in one well-mixed pool with age-independent loss (cohort.py) and FR-33's regional export and one-way tracer | Reopens on a requester's readout needing age-dependent loss: D1 (label families) and D2 (an ageing operator), 2.5 to 4 days |
-| [FR-37](#fr-37--sampling-a-liquid-whose-dye-is-unevenly-distributed) | Sampling a liquid whose dye is unevenly distributed: a draw from chosen parts of an unevenly mixed liquid | **High** (user, 21 November 2026; D274) | Requested | First a runnable example with existing operators and the inputs analysis; otherwise the smallest addition (the operators owner). An independent acceptance is written from the request's words before landing |
+| [FR-37](#fr-37--sampling-a-liquid-whose-dye-is-unevenly-distributed) | Sampling a liquid whose dye is unevenly distributed: a draw from chosen parts of an unevenly mixed liquid | **High** (user, 21 November 2026; D274) | **Shown with existing operators** (2bba6043, validation/sampling/uneven_draw.py): per-region wash events; the three cases match, with all 10 fmol accounted for; checker-accepted. Mixing is declared, not simulated (D246), and the sample is a host-side sum | Predicting the per-region split from the port, flow and timing needs an advection operator on faces, with the wash's face refusal lifted (about 3 to 5 days): built only if the requester asks |
 
 ## FR-1 — A closed internal compartment on the shared inventory
 
@@ -581,6 +581,54 @@ download of the PDF and Supporting Material.
     abundance-to-function law, counted once there. It never reaches it through the coupling, whose
     factor is switchable regulation of availability.
   - **A pass** supports the premise as written.
+
+**Item 4's extraction, recorded before the fitter starts (21 November 2026, 23:00 UTC).** The extractor
+read Maverick and Tamkun 2022's Fig. 7C (YFP-Kv1.5: whole-cell conductance against whole-cell gating
+charge) exactly from the figure's vector drawing, and cross-checked it against Fig. 8A. There are 19 cells
+with per-cell pairs, so none of the registration's "not assessable" conditions holds. The count is the
+gating charge over the paper's 4.23 e0 per channel. 13 cells are in the fit set and the top 6 by count are
+held out; the held-out median count is 2.43 times the fit set's. The TIRF count is never paired with
+conductance in the paper, so the information-only secondary test cannot run. The files are in the
+workspace, outside the repository. SHA-256: held_out_conductance.json (sealed)
+815f7b9b800f4b6de56fa76c16bd3067fc99b9f0c5184ada934aefd1ccd70046; fit.json 6839555bee4adc5ff154003f81b6356ca82c185b3a983590f06dd00df3698947; held_out_counts.json
+5465e3b20da3c94339eb624ccd26b530ec9216a00f0cb0fd51d876281c0ff20d. The fitter sees only the fit rows, the held-out counts, the protocol
+and the notes, and records its predictions before the checker unseals.
+
+**The fitter's predictions, written before unsealing (21 November 2026).**
+/mnt/workspaces/Cells/fr7-maverick2022-test/fit/predictions.json, sha256
+`6027e2738278fe217787250cc781190779d9e793f71221a4184a4586b3e9e4f4`.
+- **Inputs:** fit.json and held_out_counts.json only. Their sha256 are recorded in the file, and
+  the sealed conductances were not read. The script is fit_chain.py beside it, sha256
+  `3626dd48207c29a69d3018fc42957d1435c7bdd0d550b8ef3662f80c35fdbb6b`.
+- **The chain's fit**, on the primary count (count_primary_gating_channels) for both sets:
+  ĝ = 1.2128 pS per gating channel (ĉ = −6.71479 in ln nS), fit-set spread s_fit = 0.2742 in ln
+  units, n = 13. Each held-out cell has G_pred = ĝ N.
+- **Information only:** the declared conducting-fraction form is fitted on the fit set alone and
+  sits in the file. The secondary-count and background-subtracted variants cannot run: no TIRF
+  count is paired with conductance, and the paper reports no background value.
+
+**Item 4's registered test, scored (21 November 2026, 23:07 UTC): inconclusive.** The checker's
+result, under the registered rule:
+- d = −0.381: held-out conductance per gating channel is 0.684 times the fit set's.
+- Welch's 95% interval is [−0.656, −0.105], against the margin ±ln 1.25 (±0.223). The interval
+  crosses the margin's lower edge, so it is neither wholly inside nor wholly outside it.
+- The direction agrees with the paper's headline (d < 0).
+
+Checks:
+- Every digest matches the committed records: extraction, predictions, inputs and the article.
+- The extraction reproduces byte for byte from the checker-only scripts.
+- The Lean lane's independent aggregates agree within reading precision: mean conducting fraction
+  0.250 ± 0.019 against 0.26 ± 0.01.
+
+Information only, not judged:
+- The chain's predictions are all high, with an rms ln error of 0.441; 5 of the 6 held-out cells lie
+  within their 95% prediction intervals.
+- The declared conducting-fraction form, fitted on the fit set alone, gives 0.272.
+
+Score: score.json, sha256 48958cd47f5fbcd2e725b1db263ababb7d5589034c3538942647fe5cfafb1d8c.
+**Consequence:** no engine change follows from the registered rule, and D218's refusal stands. Item 4
+stays open. A decision needs more paired cells (a narrower interval), or a declared conducting-fraction
+law with its own registered test on data not used here (D275).
 
 
 ## FR-8 — A qualified long-duration mode
@@ -1200,6 +1248,32 @@ single gate gives 50 ms, while seven N2a cell pairs showed two decay times, 70 �
 held-out voltage series; the published two-component fits leave its predicted mixed amplitude
 unmeasured. This still waits on the user's downloads.
 
+**The Lin, Crye and Veenstra 2003 extraction (21 November 2026, 23:13 UTC).** The extractor applied the
+registered split (tag fr30-lin2003-registered-2026-11-21) and sealed the held-out file:
+held_out.json sha256 0451caa00972a116673077293c3173378d78c7bde0609e697031aefe8defafdc; fit.json 434fd8104eaecedd68234a76aa607d1569b679ba1f315c636dbf5226545d3ebc.
+- The paper fits each step's decay with a single exponential. It reports one decay time per voltage
+  (Fig. 5B) and no slow time constant, amplitudes or step-end conductance at any voltage; a slower
+  phase is mentioned only as "data not shown".
+- So no held-out voltage carries both relaxation times, which is the registration's "undetermined"
+  condition. The checker confirms it.
+- The next paper is taken only under an amendment registered before it is read (D276).
+
+**The Desplantez et al. 2004 extraction (21 November 2026, 23:53 UTC), under section 13.1.** The held-out
+file is sealed: held_out.json sha256 48f061c074414b6ea8b1a88e64964110fa05edc5abfaec57c657cebdb7aae53d; fit.json 29cd94719305e3155a8bc34d93d2b3e74bdfcb1ed93d56fab74a20fec33b5be1.
+- For homotypic Cx43 the paper prints a legible decay time constant at only two magnitudes (Fig. 9B),
+  and 60 mV of those stays in training.
+- The second exponential is "data not shown", with no slow time constant or amplitude at any voltage.
+- So the extractor reports both "undetermined" conditions (rules 1 and 4). The checker confirms them
+  before Moreno et al. 2002 is opened, and no fitter sees these files.
+
+**The Moreno et al. 2002 extraction (22 November 2026, 00:09 UTC), under section 13.1.** The held-out
+file is sealed: held_out.json sha256 f98f88124ee8e88c3adbd76fb08a08c62c788da98b371aba8fcf29f23bdd0a9d; fit.json f46e8f37b928eec8c0c680f7065037756e6fd6c877cb5f53e5965f623ab907c5.
+- For wild-type homotypic Cx43, Table 2 prints both decay time constants at only three magnitudes (60,
+  80 and 100 mV), in N2a cells and in oocytes. The smallest and largest stay in training, so at most one
+  magnitude can be held out.
+- That is rule 4's "undetermined" condition, resting on a printed table rather than on legibility. The
+  checker confirms it before Snipas et al. 2020 is opened.
+
 ## FR-31 — Vesicle rupture during a steady tension hold
 
 - **The request (the same review; D248).** The assembly model tests rupture only at a state change.
@@ -1246,6 +1320,13 @@ gives 2.57% (PMC5112947). It stays routed to the next water-operator landing.
   - **The control:** the same fading donor signal under transfer and under local destruction, with
     only transfer increasing the receiver.
   - **A field** that names the population that lost material under region-selective loss.
+
+**The Lean lane's check of label rows (21 November 2026).** Two neutral labels summed to the parent
+tracer at both nodes across all 101 recorded times: the parent stayed at 1 fmol on the right while the
+labelled part rose from 0.1 to 0.299999 fmol. For a charged tracer on a log-mean face, splitting a +1
+tracer into opposing 90:10 label gradients at +10 mV carried 72.819% of the unsplit flux. The compiled
+face reproduces the proved ratio. So D1's guarantee covers independent neutral label rows with a shared
+diffusion coefficient, and charged log-mean faces stay outside it, as D1's design refuses them.
 
 ## FR-34 — Channel population readouts: count, availability and signed current
 
@@ -1357,4 +1438,28 @@ sampling variation. Biological validation of the heat remains open.
   - an assumed dye-rich region can reproduce a high reading;
   - predicting that such a region forms needs separate evidence;
   - measuring the dye left behind tests the explanation.
-- **Status:** requested, High.
+- **Status: shown with existing operators** (2bba6043; tag fr37-uneven-draw-landed-2026-11-21).
+  validation/sampling/uneven_draw.py gives each region its own scheduled_compartment_wash@1 event, at
+  fraction = drawn volume / region volume. It reproduces the three cases (8 and 2, 5 and 5, 6.5 and
+  3.5 fmol) and records the refill's buffer separately. The second builder wrote its own acceptance
+  and confirmed it.
+  - What a user declares: the regions and their volumes, the starting distribution, each region's
+    drawn volume and time, and the refill buffer.
+  - What Cells cannot calculate today: which parts of the liquid a port draws, since it has no bulk
+    flow. Mixing in the same world as the draw is also refused (D246), so the mixed case is a
+    declared state.
+  - The smallest addition for prediction: an advection operator on faces, with the wash's face
+    refusal lifted, about 3 to 5 agent-days.
+  - Each region's predicted remainder is what a measurement of the dye left behind would test.
+
+**The Lean lane's check (21 November 2026).** They proved that a two-region sample has the chamber's
+mean concentration exactly when the regions have equal concentrations or the draw removes the same
+fraction of each region. They also reproduced the three declared draws through the compiled runner at
+ee0b8106, regional remainders included: 8 fmol with 0 and 2 left; 5 fmol with 2.5 and 2.5; 6.5 fmol
+with 2 and 1.5.
+- **Experimental support:** their search found two outlets carrying equal flow that measured about 75%
+  and 25% of the stock dye concentration (Johnson et al., Fig. 5a and paragraph 33,
+  doi:10.1029/2005JB004087), which supports sampling enrichment.
+- **The remaining experimental gap:** the dye left in each original region after a finite draw.
+- **Not covered:** predicting how much liquid a physical port draws from each region remains a
+  separate engine capability.
