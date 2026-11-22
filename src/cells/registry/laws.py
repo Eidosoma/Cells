@@ -494,6 +494,9 @@ class RouteLaw(Law):
     charge_bound: str | None = None  # Its definition-time bound on a charged row.
     material_bound: str | None = None  # Its definition-time bound on a neutral row.
     forms: str | None = None  # "base": it moves base forms (CORE_SEAMS §5.2), or None.
+    # The stage reads it reads its rows through, as a cycle law's reads: () for every route law but
+    # one that reads a closure's free forms (MT-1b's leak @2 reads rapid_binding@1; host side).
+    reads: tuple = ()
 
     interface: ClassVar[str] = ROUTE_LAW
 
@@ -503,6 +506,8 @@ class RouteLaw(Law):
             out.append("its hosts name the entities its routes sit on")
         if not _named(self.basis):
             out.append("its basis says what it is")
+        if not (isinstance(self.reads, tuple) and all(map(_named, self.reads))):
+            out.append("its reads are a tuple of stage-read IDs")
         return out + _named_or_none(self, *STEP_TERMS) + _forms_errors(self)
 
 

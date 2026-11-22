@@ -90,6 +90,8 @@ MODELS = MappingProxyType(
                 "cells.laws.routes.inward_rectifier_linear_driving_force",  # The kinds owner's.
                 "cells.laws.routes.constant_field_permeation",  # FR-15 P2 (the operators owner's).
                 "cells.laws.transport.proton_leak",
+                # MT-1b's leak reading the general closure (face plan item 3; the kinds owner's).
+                "cells.laws.transport.proton_leak_v2",
                 # The transporter's two laws' modules: their declarations move in as inert LAWs
                 # (the kinds owner's, CORE_SEAMS §18); until then they register nothing here.
                 "cells.laws.pumps.atp_transporter",

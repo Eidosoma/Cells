@@ -36,6 +36,8 @@ OWN = {  # Each law's own module: its declarer.
     "logmean_electrodiffusion@1": "cells.laws.routes.logmean_electrodiffusion",
     "passive_neutral_permeation@1": "cells.laws.routes.passive_permeation",
     "proton_constant_field_leak@1": "cells.laws.transport.proton_leak",
+    # @1's kernel reading the general closure (MT-1b's face plan, item 3; the kinds owner's).
+    "proton_constant_field_leak@2": "cells.laws.transport.proton_leak_v2",
 }
 SHIMS = {  # Each older kernel module: the per-law module its names moved to, and those names.
     "cells.laws.channels.voltage_gates": (
