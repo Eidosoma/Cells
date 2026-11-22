@@ -1,10 +1,10 @@
 # Vesicle pores, Phase A: the declared laws (FR-31)
 
-*Status: draft, 22 November 2026, by the OL builder (D287), for the lead's review and the tag
-`pores-sheet-<date>`. It carries the lead's rulings of 22 November 2026: on η_m's absolute scale
-(§7), the scored tolerance (§8), held-out set 2 and its scoring (§8), the extrapolation rule (§4)
-and Tanaka et al. cited only (§4, §11). Nothing here is registered. §11 lists the sources still to
-be read before the tag.*
+*Status: proposed for the tag `pores-sheet-<date>`, 22 November 2026, by the OL builder (D287).
+It carries the lead's rulings of 22 November 2026: on η_m's absolute scale (§7), the scored
+tolerance (§8), held-out set 2 and its scoring (§8), the extrapolation rule (§4) and Tanaka et al.
+cited only (§4, §11). Every cited claim rests on a source read for this sheet (§11). What no read
+source carries is marked declared, uncited. Nothing here is registered.*
 
 **What this sheet is.**
 - **Its laws.** It states Phase A's laws in physical terms only: rupture under a held tension, a
@@ -23,10 +23,11 @@ be read before the tag.*
 **Words used.**
 - **Declared:** a form or value this sheet sets. **Declared, uncited:** a declared value with no
   source; it is ours.
-- **Cited:** read in a source. §11 says how each was read: directly in the full text, or through a
-  summariser of its page.
+- **Cited:** read in a source. §11 says how each was read: directly, in the full text or in its PMC
+  page's text.
 - **Derived:** computed here from declared and cited values.
-- **Pending:** to be read before the tag (§11).
+- **Named, not read:** a work a read source cites, which this sheet did not read. It carries no
+  claim here (§11).
 
 ## 0. Conventions
 
@@ -43,7 +44,9 @@ be read before the tag.*
 ## 1. The pore's energy and the barrier
 
 A circular pore of radius r in a membrane at tension σ (cited: Evans and Smith 2011, §3.1 and
-Appendix B.2; Farago and Santangelo 2005, Eqs. 1–3; Litster 1975 pending):
+Appendix B.2; Evans, Heinrich, Ludwig and Rawicz 2003, p. 2345; Farago and Santangelo 2005,
+Eqs. 1–3; Moroz and Nelson 1997, Eq. 1). Deryagin and Gutop 1962, Litster 1975 and Taupin et al.
+1975 are the originals the read sources name; they were not read:
 
     E(r) = 2πrΓ − πr²σ
 
@@ -64,6 +67,9 @@ Appendix B.2; Farago and Santangelo 2005, Eqs. 1–3; Litster 1975 pending):
 **Where it comes from.**
 - **The single-site rate is Evans and Smith's (B.2.1),** read directly: k_hole = k*₀·(σ/σ_β)^(1/2)·
   exp(−σ_β/σ), with the attempt frequency k*₀ = σ_β/ζ.
+  - Evans, Heinrich, Ludwig and Rawicz 2003 state the same form as their Eq. 3,
+    ν_hole = ν_δc·(σ/σ_c)^(1/2)·exp(−σ_c/σ), with σ_c = πε²/k_BT. They derive it "via Zeldovich"
+    from Kramers' overdamped escape rate.
   - It is Kramers' overdamped (Smoluchowski) escape rate over the cavitation landscape of §1:
     k = (D/l₀l_ts)·exp(−E_b/k_BT), with D = k_BT/ζ.
   - The confinement near r = 0 is l₀ ≈ k_BT/(2πΓ), and the barrier's thermal width is
@@ -72,6 +78,8 @@ Appendix B.2; Farago and Santangelo 2005, Eqs. 1–3; Litster 1975 pending):
 - **The damping is the membrane's.**
   - Evans and Smith: "fluctuations in hole radius r drive radially divergent collective flows
     impeded by a surface-shear viscosity η", and integrated over the membrane, ζ = 4π·η_m.
+    Evans et al. 2003 say the same: "membrane surface-shear viscosity η_m determines the damping of
+    circular fluctuations (i.e., ζ ≈ 4πη_m)".
   - Water's friction does not take over at this size. Ryham, Berezovik and Cohen 2011 (read
     directly) give the ratio of aqueous to membrane friction on a pore as F_s/F_m = 13.475·r, with
     r in µm, for water (1 cP) and a lipid viscosity of 1 P. Aqueous friction dominates only above
@@ -82,13 +90,32 @@ Appendix B.2; Farago and Santangelo 2005, Eqs. 1–3; Litster 1975 pending):
   whole.
   - The sheet takes independent sites at a density n_s per area (declared), so a vesicle of area A
     has k_v = A·j.
-  - The electroporation theory's per-area pore creation rate is the cited basis (Weaver and
-    Chizmadzhev 1996; Neu and Krassowska 1999; both pending).
+  - **The cited basis** is Freeman, Wang and Weaver 1994 (read directly).
+    - Their pore creation rate is ν₀·V_m·exp(−Δ/kT) (their Eq. 3), with ν₀ an attempt rate
+      density and V_m = h·A_m the membrane's volume. So the rate scales with the membrane's area.
+    - They add that "a rigorous basis for ν₀ is still lacking": their estimates span about ten
+      orders of magnitude.
+  - **Disclosed: a source that takes the other view.** Evans et al. 2003 "neglect the putative
+    factor N_d" for the number of defect sites, "which in any case merely remains a hidden
+    homogeneous constant that arbitrarily scales time". They cite conductance studies showing a
+    single defect state at a time.
+    - Within one preparation the choice changes nothing (§5). It matters only when the law is
+      carried to another vesicle size, and D287 rules per area.
+  - Weaver and Chizmadzhev 1996 and Neu and Krassowska 1999 are named, not read.
 - **Rupture follows opening.** Under a held tension a pore past r_c grows to rupture (§1). So the
   first-rupture rate of a held vesicle is k_v.
-  - Pending Zhelev and Needham 1993. Under a pipette, a pore can be stabilised as the vesicle
-    loses volume and the tension relaxes. The sheet's claim holds only where the hold keeps σ
-    fixed.
+  - **At a truly held σ this is cited.** Beyond the barrier "an unstable hole opens to cause
+    catastrophic failure of the membrane" (Evans et al. 2003). "For larger tensions it will grow
+    rapidly and lyse the vesicle" (Moroz and Nelson 1997).
+  - **A pipette holds σ only approximately once a pore opens.** Moroz and Nelson 1997 (read
+    directly) analyse Zhelev and Needham's experiments, in which the suction pressure is held
+    constant:
+    - electroporated pores about 1 µm across stay open for seconds and then snap shut;
+    - their account is that flow into the pipette lowers the tension at the vesicle.
+  - **So the identity is assumed, not cited** (declared, uncited): that the first rupture of a
+    pipette-held vesicle in the fit rows and held-out sets is its first opening.
+    - An opening that recloses would make the observed rate an effective one, below k_v.
+    - Zhelev and Needham 1993 is named, not read.
   - This is the data's observable: "complete aspiration of an individual vesicle marks rupture",
     and the "mean fitted rate of first rupture per intact vesicle per second" (the data file).
 - **The law's domain** (declared):
@@ -119,8 +146,9 @@ Then:
   never fires there: a declared lumen has no osmotic tension.
 - **Its physical basis: a micropipette.**
   - The suction pressure ΔP sets σ = ΔP·R_p/[2(1 − R_p/R_v)] by mechanical equilibrium, with R_p
-    the pipette's radius and R_v that of the vesicle's outer segment (Evans and Smith, Appendix A;
-    Kwok and Evans 1981 pending).
+    the pipette's radius and R_v that of the vesicle's outer segment.
+    - Kwok and Evans 1981 state it in diameters as their Eq. 2, 4T = D_p·ΔP/(1 − D_p/D_v).
+    - Evans and Smith (Appendix A) and Evans et al. 2003 use it.
   - "Tension clamps … held fixed until rupture" are the experiment this boundary represents (Evans
     and Smith, §2.3).
 - **The work.**
@@ -150,10 +178,12 @@ Then:
   - **The molecular-scale law.** DOPC's lipid lateral diffusion over 298–333 K has an apparent
     activation energy of 27 kJ/mol (Filippov, Orädd and Lindblom 2003, Table 1, pure DOPC; read
     directly).
-  - **D to η_m.** Saffman and Delbrück's relation, D ∝ k_BT/η_m, gives η_m from D. Its slowly
-    varying logarithm is neglected (declared; Saffman and Delbrück 1975 pending). Fitzgerald et
-    al. 2023 (read directly) find that lipid and protein diffusion are well described through
-    Saffman and Delbrück by surface viscosities of 2–4 × 10⁻¹⁰ Pa·s·m.
+  - **D to η_m.** Saffman and Delbrück 1975 (read directly) give D_T = k_BT·b_T (their Eq. 2). In
+    each of their cases the mobility is b_T = (1/(4π·μh))·(a logarithm), their Eqs. 6–9, with
+    μh = η_m the membrane's surface viscosity.
+    - So D ∝ k_BT/η_m, with the logarithm's slow variation neglected (declared).
+    - Fitzgerald et al. 2023 (read directly) find that lipid and protein diffusion are well
+      described through Saffman and Delbrück by surface viscosities of 2–4 × 10⁻¹⁰ Pa·s·m.
   - **Why the molecular scale.** The friction that damps a hole of nanometre radius acts at the
     molecular scale.
     - Fitzgerald et al. report that long-wavelength vesicle methods give membrane viscosities 20–40
@@ -414,20 +444,38 @@ From this sheet alone, with the six fit rows and, later, the extractor's reading
     committed files.
   - Analysis only: the disclosed alternative.
 
-**Pending: paywalled or scanned, requested from the user (D287):**
+**Read directly from the user's downloads,** filed read-only with a MANIFEST.txt in
+`/mnt/workspaces/Cells/pores-sheet-20261122/papers/user-downloads/`. Their licences are not CC,
+so they are for analysis and citation only.
+- **Evans E, Heinrich V, Ludwig F, Rawicz W (2003).** Dynamic tension spectroscopy and strength of
+  biomembranes. *Biophys J* 85:2342–2350, doi:10.1016/S0006-3495(03)74658-X. It gives:
+  - pp. 2345–2346: the cavitation barrier, its Eq. 3, the damping ζ ≈ 4πη_m, and the neglected
+    site factor N_d;
+  - its methods: the pipette's tension.
+- **Freeman SA, Wang MA, Weaver JC (1994).** Theory of electroporation of planar bilayer
+  membranes. *Biophys J* 67:42–56, doi:10.1016/S0006-3495(94)80453-9. It gives:
+  - Eq. 3, the creation rate ν₀·V_m·exp(−Δ/kT), with V_m = h·A_m;
+  - the remark on ν₀'s basis.
+- **Kwok R, Evans E (1981).** Thermoelasticity of large lecithin bilayer vesicles. *Biophys J*
+  35:637–652, doi:10.1016/S0006-3495(81)84817-5. Its Eq. 2, the pipette's tension.
+- **Moroz JD, Nelson P (1997).** Dynamically stabilized pores in bilayer membranes. *Biophys J*
+  72:2211–2216, doi:10.1016/S0006-3495(97)78864-7. It gives:
+  - Eq. 1;
+  - pores that grow and lyse the vesicle at larger tensions;
+  - its account of Zhelev and Needham's pores, stabilised under a held suction pressure.
+- **Saffman PG, Delbrück M (1975).** Brownian motion in biological membranes. *PNAS* 72:3111–3113,
+  doi:10.1073/pnas.72.8.3111. Eqs. 2 and 6–9.
+
+**Named by the read sources, not read** (paywalled; the user's choice, D287). None carries a claim
+here:
+- Deryagin and Gutop 1962;
 - Litster 1975, *Phys Lett A* 53:193;
 - Taupin, Dvolaitzky and Sauterey 1975, *Biochemistry* 14:4771;
 - Weaver and Chizmadzhev 1996, *Bioelectrochem Bioenerg* 41:135;
 - Neu and Krassowska 1999, *Phys Rev E* 59:3471;
-- Hänggi, Talkner and Borkovec 1990, *Rev Mod Phys* 62:251;
 - Kramers 1940, *Physica* 7:284;
-- Zhelev and Needham 1993, *BBA* 1147:89;
-- Freeman, Wang and Weaver 1994, *Biophys J* 67:42;
-- Kwok and Evans 1981, *Biophys J* 35:637;
-- Moroz and Nelson 1997, *Biophys J* 72:2211.
-
-**Pending: open, to fetch again:** Saffman and Delbrück 1975, *PNAS* 72:3111 (PMC432930), and
-Evans, Heinrich, Ludwig and Rawicz 2003, *Biophys J* 85:2342 (PMC1303459).
+- Hänggi, Talkner and Borkovec 1990, *Rev Mod Phys* 62:251;
+- Zhelev and Needham 1993, *BBA* 1147:89.
 
 **Not opened, to keep the test blind (D287):**
 - Karal and Yamazaki 2015, *J Chem Phys* 143:081103;
