@@ -329,7 +329,8 @@
   "/mnt/workspaces/Cells/ol3-engine-20261119/tiers-2764f0dd/measured.json",
   "/mnt/workspaces/Cells/faces-exact-heat-20261122/tiers-measured-3630debc/measured.json",
   "/mnt/workspaces/Cells/fr33-first-test-20261122/tiers-measured-6675f74b/measured.json",
-  "/mnt/workspaces/Cells/ol3-engine-20261119/tiers-0816feb1/measured.json"
+  "/mnt/workspaces/Cells/ol3-engine-20261119/tiers-0816feb1/measured.json",
+  "/mnt/workspaces/Cells/fr38-rna-residence-20261122/refs/tiers-measured-05725b23/measured.json"
  ],
  "measured_provenance": [
   {
@@ -2791,6 +2792,14 @@
    "root": "/mnt/workspaces/Cells/ol3-engine-20261119/tree-0816feb1",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-22T10:53:21+00:00"
+  },
+  {
+   "git_revision": "05725b23a73f78ad95f09bf818303d7e4b5fc0df",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/fr38-rna-residence-20261122/refs/snapshot-head-05725b23",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-22T13:25:01+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -4340,10 +4349,10 @@
    },
    {
     "file": "tests/unit/test_gene_regulation_references.py",
-    "seconds": 0.77,
+    "seconds": 1.57,
     "exit_code": 0,
     "counts": {
-     "passed": 19
+     "passed": 32
     }
    },
    {
