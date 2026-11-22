@@ -1,13 +1,13 @@
 <!-- Generated from lean/claims.json by scripts/generate_claims.py. -->
 
-# Stage exits account for residues in unfinished chains and released products
+# Stage exits account for residues in unfinished, terminally held and detached chains
 
-Per chain, residues added at all stage exits equal the increase in residues held in unfinished chains plus the residues carried by cumulative releases. The update also holds from a nonempty initial stage distribution.
+Per chain, residues supplied at stage exits equal the increase in residues in unfinished chains and terminally held RNA plus the residues carried by physical detachments. The update allows nonempty initial stages and holds.
 
 ## Assumptions
 
 - The same signed extents update the stages, free machines and cumulative counters in each accepted half-step. Each chain has m ≥ 1 stages and length L = m r. Padded stages are inactive.
-- Stage indices start at zero and stage j holds j r residues per occupied complex. The release counter counts completed products even when a separate degradation route later consumes them.
+- Stage j carries j r residues per occupied complex. Each completion moves L residues into a declared terminal hold. Each physical detachment moves L residues into its product fate. Cumulative detached RNA includes products subsequently degraded.
 
 ## Lean proof
 
@@ -15,14 +15,17 @@ Per chain, residues added at all stage exits equal the increase in residues held
 
 - [CellsProofs.Chemistry.Polymerisation.transit_change](../CellsProofs/Chemistry/Polymerisation.lean#L29)
 - [CellsProofs.Chemistry.Polymerisation.residue_step](../CellsProofs/Chemistry/Polymerisation.lean#L48)
+- [CellsProofs.Chemistry.TerminalRelease.hold_step](../CellsProofs/Chemistry/TerminalRelease.lean#L43)
+- [CellsProofs.Chemistry.TerminalRelease.fate_sum](../CellsProofs/Chemistry/TerminalRelease.lean#L35)
+- [CellsProofs.Chemistry.TerminalRelease.residue_step](../CellsProofs/Chemistry/TerminalRelease.lean#L48)
 
 Direct proof subject `cells.templated_polymerisation@1`
 
-Proof sources [Mathlib sum_range_succ, used to telescope stage movements](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Group/Finset/Basic.lean#L498-L505) · [Cells stage layout, cumulative exits and residue ledger](https://github.com/Eidosoma/Cells/blob/6b28ec55368011de79dce85e6172b5844b77a287/src/cells/operators/templated_polymerisation.py#L1378-L1387)
+Proof sources [Mathlib sum_range_succ, used to telescope stage movements](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Group/Finset/Basic.lean#L498-L505) · [Cells stage layout, cumulative exits and residue ledger](https://github.com/Eidosoma/Cells/blob/6b28ec55368011de79dce85e6172b5844b77a287/src/cells/operators/templated_polymerisation.py#L1378-L1387) · [Mathlib Finset.sum_add_distrib, used to sum complementary fate fractions](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Group/Finset/Basic.lean#L267-L269) · [Cells per-chain and per-release residue ledgers](https://github.com/Eidosoma/Cells/blob/fc07c545836b155928aeca3e9ba74528d6e3b66d/src/cells/operators/templated_polymerisation.py#L1992-L2012)
 
 ## Numerical comparison
 
-**Checked.** The largest residue residual across 183 rows was 3.39 × 10⁻²⁰ fmol. A one-stage chain retained zero residues in transit while releasing 6.55 × 10⁻⁵ fmol of residues alongside an eight-stage chain.
+**Checked.** The largest residue residual across 183 rows was 3.39 × 10⁻²⁰ fmol. A one-stage chain retained zero residues in transit while releasing 6.55 × 10⁻⁵ fmol of residues alongside an eight-stage chain. The combined stage, hold and physical detachment balance closed within 8.94 × 10⁻²⁰ fmol across 62 compiled rows.
 
 **Engine** `resolved_pump_composite@1`, `resolved_pump_tissue@3`
 
@@ -31,6 +34,14 @@ Proof sources [Mathlib sum_range_succ, used to telescope stage movements](https:
 [Stage layout, active stages and bound residue counts](https://github.com/Eidosoma/Cells/blob/6b28ec55368011de79dce85e6172b5844b77a287/src/cells/operators/templated_polymerisation.py#L700-L742) · [Half-step changes, cumulative counters and ledgers](https://github.com/Eidosoma/Cells/blob/6b28ec55368011de79dce85e6172b5844b77a287/src/cells/operators/templated_polymerisation.py#L862-L1004) · [Public windowed simulation](https://github.com/Eidosoma/Cells/blob/6b28ec55368011de79dce85e6172b5844b77a287/src/cells/execution/windows.py) · [A1 and the competing two-chain world](https://github.com/Eidosoma/Cells/blob/6b28ec55368011de79dce85e6172b5844b77a287/validation/gene_regulation/worlds.py#L299-L416) · [Compiled histories and per-chain readouts](https://github.com/Eidosoma/Cells/blob/6b28ec55368011de79dce85e6172b5844b77a287/validation/gene_regulation/engine_run.py#L162-L175) · [Stage, pool and product output fields](https://github.com/Eidosoma/Cells/blob/6b28ec55368011de79dce85e6172b5844b77a287/validation/gene_regulation/engine_run.py#L267-L289) · [Truncating the original worlds](https://github.com/Eidosoma/Cells/blob/6b28ec55368011de79dce85e6172b5844b77a287/validation/gene_regulation/kernel.py#L22-L36) · [Independent copy-to-fmol conversion](https://github.com/Eidosoma/Cells/blob/6b28ec55368011de79dce85e6172b5844b77a287/validation/gene_regulation/sheet_check.py#L90-L97) · [Existing polymerisation regressions](https://github.com/Eidosoma/Cells/blob/6b28ec55368011de79dce85e6172b5844b77a287/tests/unit/test_templated_polymerisation.py#L91-L100) · [Stage and pool proofs](https://github.com/Eidosoma/Cells/blob/d6db91d64f5c90d8e4857873052f4e667eba7469/lean/CellsProofs/Chemistry/Polymerisation.lean) · [Ribosome occupancy and pulse-label measurements](https://github.com/Eidosoma/Cells/blob/d6db91d64f5c90d8e4857873052f4e667eba7469/lean/checks/data/polymerisation_pool_measurements.json) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/d6db91d64f5c90d8e4857873052f4e667eba7469/lean/checks/polymerisation_balances.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/d6db91d64f5c90d8e4857873052f4e667eba7469/lean/PROGRESS.md#polymerisation-balances)
 
 [Tested engine 6b28ec553680](https://github.com/Eidosoma/Cells/commit/6b28ec55368011de79dce85e6172b5844b77a287) · [Evidence checkpoint d6db91d64f5c](https://github.com/Eidosoma/Cells/commit/d6db91d64f5c90d8e4857873052f4e667eba7469)
+
+**Engine** `resolved_pump_composite@1`, `resolved_pump_tissue@3`
+
+**Operators** `cells.templated_polymerisation@1`
+
+[Compiled window execution](https://github.com/Eidosoma/Cells/blob/fc07c545836b155928aeca3e9ba74528d6e3b66d/src/cells/execution/windows.py) · [R1 and R1S development worlds](https://github.com/Eidosoma/Cells/blob/fc07c545836b155928aeca3e9ba74528d6e3b66d/validation/gene_regulation/worlds.py#L519-L591) · [Observation horizon and grid](https://github.com/Eidosoma/Cells/blob/fc07c545836b155928aeca3e9ba74528d6e3b66d/validation/gene_regulation/kernel.py#L23-L38) · [Compiled history collection](https://github.com/Eidosoma/Cells/blob/fc07c545836b155928aeca3e9ba74528d6e3b66d/validation/gene_regulation/engine_run.py#L169-L181) · [Class and fate fluxes](https://github.com/Eidosoma/Cells/blob/fc07c545836b155928aeca3e9ba74528d6e3b66d/src/cells/operators/templated_polymerisation.py#L1201-L1224) · [Machine and residue ledgers](https://github.com/Eidosoma/Cells/blob/fc07c545836b155928aeca3e9ba74528d6e3b66d/src/cells/operators/templated_polymerisation.py#L1992-L2012) · [Held and engaged machines and class-specific releases](https://github.com/Eidosoma/Cells/blob/fc07c545836b155928aeca3e9ba74528d6e3b66d/validation/gene_regulation/engine_run.py#L381-L411) · [Copy-to-fmol conversion](https://github.com/Eidosoma/Cells/blob/fc07c545836b155928aeca3e9ba74528d6e3b66d/validation/gene_regulation/sheet_check.py#L90-L97) · [Exact stage inventory](https://github.com/Eidosoma/Cells/blob/f11bfae57c7d3db1ac632b313cdb05dd863063de/lean/CellsProofs/Chemistry/Polymerisation.lean) · [Exact hold and pool inventory](https://github.com/Eidosoma/Cells/blob/f11bfae57c7d3db1ac632b313cdb05dd863063de/lean/CellsProofs/Chemistry/TerminalRelease.lean) · [Polymerase retention and secondary transcription counts](https://github.com/Eidosoma/Cells/blob/f11bfae57c7d3db1ac632b313cdb05dd863063de/lean/checks/data/harden2020_polymerase_retention.json) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/f11bfae57c7d3db1ac632b313cdb05dd863063de/lean/checks/terminal_release.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/f11bfae57c7d3db1ac632b313cdb05dd863063de/lean/PROGRESS.md#fr38-terminal-inventories)
+
+[Tested engine fc07c545836b](https://github.com/Eidosoma/Cells/commit/fc07c545836b155928aeca3e9ba74528d6e3b66d) · [Evidence checkpoint f11bfae57c7d](https://github.com/Eidosoma/Cells/commit/f11bfae57c7d3db1ac632b313cdb05dd863063de)
 
 ## Biological evidence
 

@@ -14,7 +14,7 @@ Direct Lean claims cover [51 of 51 laws](COVERAGE.md#registered-laws) and [31 of
 | [Ion channels and junctions](COVERAGE.md#category-channels-and-junctions) | 15 of 15 | 15 of 15 | 15 checked | 14 |
 | [Pumps and cotransport](COVERAGE.md#category-pumps-and-cotransport) | 13 of 13 | 8 of 8 | 8 checked | 8 |
 | [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 3 of 3 | 15 of 15 | 12 checked · 1 failed · 2 open | 11 |
-| [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 14 of 14 | 30 of 30 | 28 checked · 1 failed · 1 open | 19 |
+| [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 14 of 14 | 31 of 31 | 28 checked · 2 failed · 1 open | 19 |
 | [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 1 of 1 | 26 of 26 | 26 checked | 19 |
 | [Cell physiology](COVERAGE.md#category-cell-physiology) | — | 3 of 3 | 3 checked | 3 |
 
@@ -22,7 +22,7 @@ Direct Lean claims cover [51 of 51 laws](COVERAGE.md#registered-laws) and [31 of
 
 Each category opens its detailed claim table on GitHub, including registered laws still awaiting a proof. A single claim can cover several laws. The last column counts claims with a recorded measurement or literature finding, including partial evidence. Each numerical result applies to the cases in its linked record. [All registered laws](COVERAGE.md#registered-laws) · [Design notes](ENGINE_LAW_VERIFICATION.md) · [Voltage pilot closeout](../reports/BIO003_PILOT_CLOSEOUT.md)
 
-Two claims have failing numerical checks. GARD v1 can refuse a reversible event, and the rapid-binding inventory margin can have the wrong sign in a fixture. The tested tissue host requires positive held totals. GARD v2 now passes all nine range and capacity checks, including the case where an earlier version reported a stalled lineage. [Current failures](COVERAGE.md#failing-numerical-checks) · [GARD repair and original failure](PROGRESS.md#gard-v2-range-repair) · [Wash and clamp repairs](PROGRESS.md#d272-wash-clamp-retests)
+Three claims have failing checks. GARD v1 can refuse a reversible event, and the rapid-binding inventory margin can have the wrong sign in a fixture. The tested tissue host requires positive held totals. In the third case, an RNA release fate gains the correct amount, but a missing zero-loss record prevents the cohort reader from reporting its survivors. GARD v2 passes all nine range and capacity checks. [Current failures](COVERAGE.md#failing-numerical-checks) · [Lossless RNA export and control](PROGRESS.md#fr38-lossless-fate) · [GARD repair and original failure](PROGRESS.md#gard-v2-range-repair) · [Wash and clamp repairs](PROGRESS.md#d272-wash-clamp-retests)
 
 FR-42 has an exact design result for neutral arrival-time labels. Sharing the physical loss preserves the pooled inventory. With quadratic loss, the surviving new cohort is ¼ at time one, while subtraction of a separate blank gives 1/12. The compiled comparison will become possible when Cells implements the share-based labels. [Cohort proof and remaining checks](claims/fr42-cohort-shares.md)
 
@@ -35,6 +35,8 @@ During mechanical division of a liposome, one daughter can rupture while its sib
 The osmotic volume law has **mixed biological evidence**. Fujiwara and Yanagisawa’s liposomes shrank to about 25% of their starting volume, against 24.56% in Cells without fitting. Wolfisberg’s four later volumes were below prediction. In Bhatia’s vesicle, the uncertainty in the outer contour spans the difference after accounting for the inward tube. [Three preparations side by side](PROGRESS.md#intact-vesicle-deflation) · [Generated claim and primary sources](claims/osmotic-vesicle-volume.md#biological-evidence)
 
 At the same growth rate, measured fractions of mRNA-bound ribosomes in *E. coli* ranged from 31% to 65% across three nutrient limitations. In hamster cells, tracer measurements followed residues in unfinished and released protein separately. These experiments give observables for the two polymerisation balances. A quantitative Cells comparison still needs matched conditions and pool definitions. [Machine occupancy](claims/polymerisation-machines.md) · [Residues in transit and released](claims/polymerisation-residues.md)
+
+In a purified *E. coli* experiment, polymerase remained on DNA after RNA release in 87 of 100 selected traces. Separate recordings also detected new RNA synthesis by retained polymerase. Both Cells options for returning polymerase conserve its pool. The experiment leaves open when that polymerase becomes available to other templates. [Measurement and both engine comparisons](PROGRESS.md#fr38-terminal-inventories) · [Harden et al., Figures 1 and 3](https://pmc.ncbi.nlm.nih.gov/articles/PMC6978322/)
 
 In a matched Cells control, a donor loses the same amount of labelled protein under transfer and degradation. A receiver gain or a clearance record distinguishes the mechanisms. Imaging of PSD-95 shows label spreading from one spine to two neighbors. The fate of the original label across the whole neuron over 48 hours remains open. Representing a neutral tracer by separate species rows can also change the heat attributed to mixing. [Matched donors](claims/transfer-or-degradation.md) · [Whole-cell balance](claims/regional-pulse-balance.md) · [Neutral label diffusion](claims/neutral-label-diffusion.md) · [Effect on booked heat](claims/label-mixing-power.md)
 
@@ -514,6 +516,13 @@ For the GARD v2 two-word cache, replay the reversible event, signed updates and 
 "$cells_python" -B checks/gard_cache.py
 "$cells_python" -B checks/gard_cache.py --range
 "$cells_python" -B checks/polymerisation_balances.py
+```
+
+For a chain with a terminal RNA hold, check both machine-return policies through a change of class and a change of fate fraction. The second command asks the public cohort reader for surviving RNA in both lossless fates. It exits with status 1 if a fate record is unreadable. [Machine and residue balances](PROGRESS.md#fr38-terminal-inventories) · [Lossless fate export](PROGRESS.md#fr38-lossless-fate)
+
+```bash
+"$cells_python" -B checks/terminal_release.py
+"$cells_python" -B checks/terminal_release.py --lossless
 ```
 
 For ideal and regular assembly mixing, one command checks the 592 registered probe states under both count measures and rebooks four compiled trajectories. It compares the activity curves with Shaw’s 25 DOPC measurements and Parker’s independent crystal-onset endpoint. [Driver](checks/assembly_mixing.py) · [Fit, assumptions and results](PROGRESS.md#19-november-2026--ideal-and-regular-assembly-mixing)

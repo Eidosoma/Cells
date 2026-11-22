@@ -2,12 +2,13 @@
 
 # Free and engaged polymerases or ribosomes sum to their machine pool
 
-For any finite collection of chains sharing one pool, a stage update preserves free machines plus the sum of all its occupied stages. Only initiation and final release move a machine between the free and engaged pools.
+For chains sharing a machine pool, each update preserves free machines plus stage occupancies and the terminal holds that still engage a machine. A chain frees a machine at completion under the returned policy and at detachment under the held policy.
 
 ## Assumptions
 
 - The same signed extents update the stages, free machines and cumulative counters in each accepted half-step. Each chain has m ≥ 1 stages and length L = m r. Padded stages are inactive.
 - Each chain draws from one declared machine pool. All chains using that pool enter its balance, including chains already in progress.
+- Each chain’s policy stays fixed through the update. The same physical detachment extent leaves the terminal hold and frees its machine under the held policy.
 
 ## Lean proof
 
@@ -15,14 +16,15 @@ For any finite collection of chains sharing one pool, a stage update preserves f
 
 - [CellsProofs.Chemistry.Polymerisation.engaged_change](../CellsProofs/Chemistry/Polymerisation.lean#L22)
 - [CellsProofs.Chemistry.Polymerisation.pool_step](../CellsProofs/Chemistry/Polymerisation.lean#L39)
+- [CellsProofs.Chemistry.TerminalRelease.pool_step](../CellsProofs/Chemistry/TerminalRelease.lean#L21)
 
 Direct proof subject `cells.templated_polymerisation@1`
 
-Proof sources [Mathlib sum_range_succ, used to telescope stage movements](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Group/Finset/Basic.lean#L498-L505) · [Cells stage layout, cumulative exits and residue ledger](https://github.com/Eidosoma/Cells/blob/6b28ec55368011de79dce85e6172b5844b77a287/src/cells/operators/templated_polymerisation.py#L1378-L1387)
+Proof sources [Mathlib sum_range_succ, used to telescope stage movements](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Group/Finset/Basic.lean#L498-L505) · [Cells stage layout, cumulative exits and residue ledger](https://github.com/Eidosoma/Cells/blob/6b28ec55368011de79dce85e6172b5844b77a287/src/cells/operators/templated_polymerisation.py#L1378-L1387) · [Mathlib Finset.sum_add_distrib, imported for sums of machine occupancies](https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Group/Finset/Basic.lean#L267-L269) · [Cells machine and terminal-hold ledgers](https://github.com/Eidosoma/Cells/blob/fc07c545836b155928aeca3e9ba74528d6e3b66d/src/cells/operators/templated_polymerisation.py#L1992-L2012)
 
 ## Numerical comparison
 
-**Checked.** Across 183 compiled rows the maximum pool residual was 5.80 × 10⁻¹⁹ fmol. Omitting one competing chain from the two-gene pool produced a 4.88 × 10⁻⁸ fmol discrepancy.
+**Checked.** Across 183 compiled rows the maximum pool residual was 5.80 × 10⁻¹⁹ fmol. Omitting one competing chain from the two-gene pool produced a 4.88 × 10⁻⁸ fmol discrepancy. A further 62 compiled rows with terminal holds closed within 1.55 × 10⁻²⁰ fmol. Applying the opposite policy to the initial hold misplaced 80 machines in either case.
 
 **Engine** `resolved_pump_composite@1`, `resolved_pump_tissue@3`
 
@@ -32,11 +34,19 @@ Proof sources [Mathlib sum_range_succ, used to telescope stage movements](https:
 
 [Tested engine 6b28ec553680](https://github.com/Eidosoma/Cells/commit/6b28ec55368011de79dce85e6172b5844b77a287) · [Evidence checkpoint d6db91d64f5c](https://github.com/Eidosoma/Cells/commit/d6db91d64f5c90d8e4857873052f4e667eba7469)
 
+**Engine** `resolved_pump_composite@1`, `resolved_pump_tissue@3`
+
+**Operators** `cells.templated_polymerisation@1`
+
+[Compiled window execution](https://github.com/Eidosoma/Cells/blob/fc07c545836b155928aeca3e9ba74528d6e3b66d/src/cells/execution/windows.py) · [R1 and R1S development worlds](https://github.com/Eidosoma/Cells/blob/fc07c545836b155928aeca3e9ba74528d6e3b66d/validation/gene_regulation/worlds.py#L519-L591) · [Observation horizon and grid](https://github.com/Eidosoma/Cells/blob/fc07c545836b155928aeca3e9ba74528d6e3b66d/validation/gene_regulation/kernel.py#L23-L38) · [Compiled history collection](https://github.com/Eidosoma/Cells/blob/fc07c545836b155928aeca3e9ba74528d6e3b66d/validation/gene_regulation/engine_run.py#L169-L181) · [Class and fate fluxes](https://github.com/Eidosoma/Cells/blob/fc07c545836b155928aeca3e9ba74528d6e3b66d/src/cells/operators/templated_polymerisation.py#L1201-L1224) · [Machine and residue ledgers](https://github.com/Eidosoma/Cells/blob/fc07c545836b155928aeca3e9ba74528d6e3b66d/src/cells/operators/templated_polymerisation.py#L1992-L2012) · [Held and engaged machines and class-specific releases](https://github.com/Eidosoma/Cells/blob/fc07c545836b155928aeca3e9ba74528d6e3b66d/validation/gene_regulation/engine_run.py#L381-L411) · [Copy-to-fmol conversion](https://github.com/Eidosoma/Cells/blob/fc07c545836b155928aeca3e9ba74528d6e3b66d/validation/gene_regulation/sheet_check.py#L90-L97) · [Exact stage inventory](https://github.com/Eidosoma/Cells/blob/f11bfae57c7d3db1ac632b313cdb05dd863063de/lean/CellsProofs/Chemistry/Polymerisation.lean) · [Exact hold and pool inventory](https://github.com/Eidosoma/Cells/blob/f11bfae57c7d3db1ac632b313cdb05dd863063de/lean/CellsProofs/Chemistry/TerminalRelease.lean) · [Polymerase retention and secondary transcription counts](https://github.com/Eidosoma/Cells/blob/f11bfae57c7d3db1ac632b313cdb05dd863063de/lean/checks/data/harden2020_polymerase_retention.json) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/f11bfae57c7d3db1ac632b313cdb05dd863063de/lean/checks/terminal_release.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/f11bfae57c7d3db1ac632b313cdb05dd863063de/lean/PROGRESS.md#fr38-terminal-inventories)
+
+[Tested engine fc07c545836b](https://github.com/Eidosoma/Cells/commit/fc07c545836b155928aeca3e9ba74528d6e3b66d) · [Evidence checkpoint f11bfae57c7d](https://github.com/Eidosoma/Cells/commit/f11bfae57c7d3db1ac632b313cdb05dd863063de)
+
 ## Biological evidence
 
-**Open.** Bound and unbound ribosome populations in the same preparation, with a known total and a stated definition of engagement.
+**Open.** Machine occupancy with a stated pool boundary, and separately measured RNA departure, polymerase persistence on DNA and new transcription.
 
-**Unit** Fraction of the total ribosome pool in the experiment and fmol of machines in Cells
+**Unit** Fractions of the stated experimental population, seconds for event timing and fmol of machines in Cells
 
 ### li2018_ribosome_engagement
 
@@ -47,5 +57,15 @@ At a common growth rate of 0.09 per hour, mRNA-bound E. coli ribosomes accounted
 Mean ± SEM across three biological replicates. Free subunits and free assembled ribosomes both enter the unbound pool. Bound particles can include stalled or initiating ribosomes.
 
 The paired occupancy measurements establish condition dependence at matched growth. Both fractions share a denominator. An independent conservation test requires absolute counts and defined pool boundaries. [Dataset manifest](../checks/data/polymerisation_pool_measurements.json) · [Comparison verdict](../PROGRESS.md#polymerisation-balances)
+
+### harden2020_polymerase_retention
+
+Purified E. coli polymerase remained at the DNA spot more than four seconds after sense RNA departure in 87 of 100 selected traces. A separate experiment detected antisense RNA in 78/114 traces with reverse motion and 5/257 without it. Figures 1c–e and 3a,c and accompanying Results. [Harden et al. (2020), Nature Communications 11, 448](https://doi.org/10.1038/s41467-019-14208-9)
+
+- **Evidence role** descriptive
+
+The 100 traces came from two experiments. The four-second threshold reflects frame timing. The secondary transcription counts have separate motion-selected denominators.
+
+These experiments distinguish RNA release, DNA retention and productive reuse. Return to a well-mixed free pool was unobserved. [Dataset manifest](../checks/data/harden2020_polymerase_retention.json) · [Comparison verdict](../PROGRESS.md#fr38-terminal-inventories)
 
 [Claim index](../README.md#proof-index) · [Editable register](../claims.json)

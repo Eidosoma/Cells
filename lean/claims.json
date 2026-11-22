@@ -22,6 +22,65 @@
     "cells.shared_pool@1": "molecular-assembly"
   },
   "comparisons": {
+    "fr38-terminal-inventories": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [],
+      "operators": [
+        "cells.templated_polymerisation@1"
+      ],
+      "engine_revision": "fc07c545836b155928aeca3e9ba74528d6e3b66d",
+      "record_revision": "f11bfae57c7d3db1ac632b313cdb05dd863063de",
+      "sources": {
+        "Compiled window execution": "src/cells/execution/windows.py",
+        "R1 and R1S development worlds": "validation/gene_regulation/worlds.py#L519-L591",
+        "Observation horizon and grid": "validation/gene_regulation/kernel.py#L23-L38",
+        "Compiled history collection": "validation/gene_regulation/engine_run.py#L169-L181",
+        "Class and fate fluxes": "src/cells/operators/templated_polymerisation.py#L1201-L1224",
+        "Machine and residue ledgers": "src/cells/operators/templated_polymerisation.py#L1992-L2012",
+        "Held and engaged machines and class-specific releases": "validation/gene_regulation/engine_run.py#L381-L411",
+        "Copy-to-fmol conversion": "validation/gene_regulation/sheet_check.py#L90-L97"
+      },
+      "record_inputs": {
+        "Exact stage inventory": "lean/CellsProofs/Chemistry/Polymerisation.lean",
+        "Exact hold and pool inventory": "lean/CellsProofs/Chemistry/TerminalRelease.lean",
+        "Polymerase retention and secondary transcription counts": "lean/checks/data/harden2020_polymerase_retention.json"
+      },
+      "driver": "lean/checks/terminal_release.py",
+      "record": "lean/PROGRESS.md#fr38-terminal-inventories"
+    },
+    "fr38-lossless-fate-export": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [],
+      "operators": [
+        "cells.templated_polymerisation@1"
+      ],
+      "engine_revision": "fc07c545836b155928aeca3e9ba74528d6e3b66d",
+      "record_revision": "f11bfae57c7d3db1ac632b313cdb05dd863063de",
+      "sources": {
+        "Compiled window execution": "src/cells/execution/windows.py",
+        "R1 and R1S development worlds": "validation/gene_regulation/worlds.py#L519-L591",
+        "Observation horizon and grid": "validation/gene_regulation/kernel.py#L23-L38",
+        "Compiled history collection": "validation/gene_regulation/engine_run.py#L169-L181",
+        "Release route and fate layout": "src/cells/operators/templated_polymerisation.py#L312-L345",
+        "Public export of zero losses": "validation/gene_regulation/engine_run.py#L262-L313",
+        "Detachment counters for each fate": "validation/gene_regulation/engine_run.py#L393-L411",
+        "Local producer resolution and loss-counter requirement": "validation/gene_regulation/cohort.py#L240-L308",
+        "Survivor calculation": "validation/gene_regulation/cohort.py#L142-L162"
+      },
+      "record_inputs": {
+        "Exact single-fate balance": "lean/CellsProofs/Chemistry/TerminalRelease.lean"
+      },
+      "driver": "lean/checks/terminal_release.py",
+      "record": "lean/PROGRESS.md#fr38-lossless-fate"
+    },
     "fr31-area-reference": {
       "kind": "reference",
       "models": [],
@@ -3833,10 +3892,11 @@
       "id": "polymerisation-machines",
       "category": "molecular-assembly",
       "title": "Free and engaged polymerases or ribosomes sum to their machine pool",
-      "statement": "For any finite collection of chains sharing one pool, a stage update preserves free machines plus the sum of all its occupied stages. Only initiation and final release move a machine between the free and engaged pools.",
+      "statement": "For chains sharing a machine pool, each update preserves free machines plus stage occupancies and the terminal holds that still engage a machine. A chain frees a machine at completion under the returned policy and at detachment under the held policy.",
       "assumptions": [
         "The same signed extents update the stages, free machines and cumulative counters in each accepted half-step. Each chain has m ≥ 1 stages and length L = m r. Padded stages are inactive.",
-        "Each chain draws from one declared machine pool. All chains using that pool enter its balance, including chains already in progress."
+        "Each chain draws from one declared machine pool. All chains using that pool enter its balance, including chains already in progress.",
+        "Each chain’s policy stays fixed through the update. The same physical detachment extent leaves the terminal hold and frees its machine under the held policy."
       ],
       "formal": {
         "status": "proved",
@@ -3845,24 +3905,28 @@
         ],
         "theorems": {
           "CellsProofs.Chemistry.Polymerisation.engaged_change": "lean/CellsProofs/Chemistry/Polymerisation.lean",
-          "CellsProofs.Chemistry.Polymerisation.pool_step": "lean/CellsProofs/Chemistry/Polymerisation.lean"
+          "CellsProofs.Chemistry.Polymerisation.pool_step": "lean/CellsProofs/Chemistry/Polymerisation.lean",
+          "CellsProofs.Chemistry.TerminalRelease.pool_step": "lean/CellsProofs/Chemistry/TerminalRelease.lean"
         },
         "sources": {
           "Mathlib sum_range_succ, used to telescope stage movements": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Group/Finset/Basic.lean#L498-L505",
-          "Cells stage layout, cumulative exits and residue ledger": "https://github.com/Eidosoma/Cells/blob/6b28ec55368011de79dce85e6172b5844b77a287/src/cells/operators/templated_polymerisation.py#L1378-L1387"
+          "Cells stage layout, cumulative exits and residue ledger": "https://github.com/Eidosoma/Cells/blob/6b28ec55368011de79dce85e6172b5844b77a287/src/cells/operators/templated_polymerisation.py#L1378-L1387",
+          "Mathlib Finset.sum_add_distrib, imported for sums of machine occupancies": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Group/Finset/Basic.lean#L267-L269",
+          "Cells machine and terminal-hold ledgers": "https://github.com/Eidosoma/Cells/blob/fc07c545836b155928aeca3e9ba74528d6e3b66d/src/cells/operators/templated_polymerisation.py#L1992-L2012"
         }
       },
       "numerical": {
         "status": "checked",
         "comparisons": [
-          "polymerisation-balances"
+          "polymerisation-balances",
+          "fr38-terminal-inventories"
         ],
-        "result": "Across 183 compiled rows the maximum pool residual was 5.80 × 10⁻¹⁹ fmol. Omitting one competing chain from the two-gene pool produced a 4.88 × 10⁻⁸ fmol discrepancy."
+        "result": "Across 183 compiled rows the maximum pool residual was 5.80 × 10⁻¹⁹ fmol. Omitting one competing chain from the two-gene pool produced a 4.88 × 10⁻⁸ fmol discrepancy. A further 62 compiled rows with terminal holds closed within 1.55 × 10⁻²⁰ fmol. Applying the opposite policy to the initial hold misplaced 80 machines in either case."
       },
       "biology": {
         "status": "open",
-        "observable": "Bound and unbound ribosome populations in the same preparation, with a known total and a stated definition of engagement.",
-        "unit": "Fraction of the total ribosome pool in the experiment and fmol of machines in Cells",
+        "observable": "Machine occupancy with a stated pool boundary, and separately measured RNA departure, polymerase persistence on DNA and new transcription.",
+        "unit": "Fractions of the stated experimental population, seconds for event timing and fmol of machines in Cells",
         "evidence": [
           {
             "dataset_id": "li2018_ribosome_engagement",
@@ -3875,6 +3939,18 @@
             "uncertainty": "Mean ± SEM across three biological replicates. Free subunits and free assembled ribosomes both enter the unbound pool. Bound particles can include stalled or initiating ribosomes.",
             "assessment": "The paired occupancy measurements establish condition dependence at matched growth. Both fractions share a denominator. An independent conservation test requires absolute counts and defined pool boundaries.",
             "report": "lean/PROGRESS.md#polymerisation-balances"
+          },
+          {
+            "dataset_id": "harden2020_polymerase_retention",
+            "manifest": "lean/checks/data/harden2020_polymerase_retention.json",
+            "citation": "Harden et al. (2020), Nature Communications 11, 448",
+            "doi": "10.1038/s41467-019-14208-9",
+            "locator": "Figures 1c–e and 3a,c and accompanying Results.",
+            "context": "Purified E. coli polymerase remained at the DNA spot more than four seconds after sense RNA departure in 87 of 100 selected traces. A separate experiment detected antisense RNA in 78/114 traces with reverse motion and 5/257 without it.",
+            "role": "descriptive",
+            "uncertainty": "The 100 traces came from two experiments. The four-second threshold reflects frame timing. The secondary transcription counts have separate motion-selected denominators.",
+            "assessment": "These experiments distinguish RNA release, DNA retention and productive reuse. Return to a well-mixed free pool was unobserved.",
+            "report": "lean/PROGRESS.md#fr38-terminal-inventories"
           }
         ]
       }
@@ -3882,11 +3958,11 @@
     {
       "id": "polymerisation-residues",
       "category": "molecular-assembly",
-      "title": "Stage exits account for residues in unfinished chains and released products",
-      "statement": "Per chain, residues added at all stage exits equal the increase in residues held in unfinished chains plus the residues carried by cumulative releases. The update also holds from a nonempty initial stage distribution.",
+      "title": "Stage exits account for residues in unfinished, terminally held and detached chains",
+      "statement": "Per chain, residues supplied at stage exits equal the increase in residues in unfinished chains and terminally held RNA plus the residues carried by physical detachments. The update allows nonempty initial stages and holds.",
       "assumptions": [
         "The same signed extents update the stages, free machines and cumulative counters in each accepted half-step. Each chain has m ≥ 1 stages and length L = m r. Padded stages are inactive.",
-        "Stage indices start at zero and stage j holds j r residues per occupied complex. The release counter counts completed products even when a separate degradation route later consumes them."
+        "Stage j carries j r residues per occupied complex. Each completion moves L residues into a declared terminal hold. Each physical detachment moves L residues into its product fate. Cumulative detached RNA includes products subsequently degraded."
       ],
       "formal": {
         "status": "proved",
@@ -3895,19 +3971,25 @@
         ],
         "theorems": {
           "CellsProofs.Chemistry.Polymerisation.transit_change": "lean/CellsProofs/Chemistry/Polymerisation.lean",
-          "CellsProofs.Chemistry.Polymerisation.residue_step": "lean/CellsProofs/Chemistry/Polymerisation.lean"
+          "CellsProofs.Chemistry.Polymerisation.residue_step": "lean/CellsProofs/Chemistry/Polymerisation.lean",
+          "CellsProofs.Chemistry.TerminalRelease.hold_step": "lean/CellsProofs/Chemistry/TerminalRelease.lean",
+          "CellsProofs.Chemistry.TerminalRelease.fate_sum": "lean/CellsProofs/Chemistry/TerminalRelease.lean",
+          "CellsProofs.Chemistry.TerminalRelease.residue_step": "lean/CellsProofs/Chemistry/TerminalRelease.lean"
         },
         "sources": {
           "Mathlib sum_range_succ, used to telescope stage movements": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Group/Finset/Basic.lean#L498-L505",
-          "Cells stage layout, cumulative exits and residue ledger": "https://github.com/Eidosoma/Cells/blob/6b28ec55368011de79dce85e6172b5844b77a287/src/cells/operators/templated_polymerisation.py#L1378-L1387"
+          "Cells stage layout, cumulative exits and residue ledger": "https://github.com/Eidosoma/Cells/blob/6b28ec55368011de79dce85e6172b5844b77a287/src/cells/operators/templated_polymerisation.py#L1378-L1387",
+          "Mathlib Finset.sum_add_distrib, used to sum complementary fate fractions": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Group/Finset/Basic.lean#L267-L269",
+          "Cells per-chain and per-release residue ledgers": "https://github.com/Eidosoma/Cells/blob/fc07c545836b155928aeca3e9ba74528d6e3b66d/src/cells/operators/templated_polymerisation.py#L1992-L2012"
         }
       },
       "numerical": {
         "status": "checked",
         "comparisons": [
-          "polymerisation-balances"
+          "polymerisation-balances",
+          "fr38-terminal-inventories"
         ],
-        "result": "The largest residue residual across 183 rows was 3.39 × 10⁻²⁰ fmol. A one-stage chain retained zero residues in transit while releasing 6.55 × 10⁻⁵ fmol of residues alongside an eight-stage chain."
+        "result": "The largest residue residual across 183 rows was 3.39 × 10⁻²⁰ fmol. A one-stage chain retained zero residues in transit while releasing 6.55 × 10⁻⁵ fmol of residues alongside an eight-stage chain. The combined stage, hold and physical detachment balance closed within 8.94 × 10⁻²⁰ fmol across 62 compiled rows."
       },
       "biology": {
         "status": "open",
@@ -3927,6 +4009,43 @@
             "report": "lean/PROGRESS.md#polymerisation-balances"
           }
         ]
+      }
+    },
+    {
+      "id": "release-fate-export",
+      "category": "molecular-assembly",
+      "title": "A lossless release fate gains all its detached RNA",
+      "statement": "For a fate row filled by a single release, amount gain equals cumulative detachment less loss. With established zero loss the gain equals the amount detached. The host comparison checks whether the exported fields let the cohort reader recover that surviving amount.",
+      "assumptions": [
+        "One local release feeds the named row. The initial amount is known, the counters start at zero, and all changes to the row are included.",
+        "Zero cumulative loss must be established for that cell and fate. The public reader requires an explicit loss time series."
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.templated_polymerisation@1"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.TerminalRelease.fate_balance_step": "lean/CellsProofs/Chemistry/TerminalRelease.lean",
+          "CellsProofs.Chemistry.TerminalRelease.lossless_gain": "lean/CellsProofs/Chemistry/TerminalRelease.lean"
+        },
+        "sources": {
+          "Cells release updates, specialized locally as the exact single-fate balance": "https://github.com/Eidosoma/Cells/blob/fc07c545836b155928aeca3e9ba74528d6e3b66d/src/cells/operators/templated_polymerisation.py#L1331-L1353",
+          "Public reader’s required loss series": "https://github.com/Eidosoma/Cells/blob/fc07c545836b155928aeca3e9ba74528d6e3b66d/validation/gene_regulation/cohort.py#L289-L306"
+        }
+      },
+      "numerical": {
+        "status": "failed",
+        "comparisons": [
+          "fr38-lossless-fate-export"
+        ],
+        "result": "Both fates gained 1.2776562362330652 × 10⁻¹⁰ fmol in each compiled world. The reader recovered three of four fate records. Omitting the short-lived fate’s degradation route removed int_D_R_s from the export. The reader refused the fourth record. Every physical amount balance closed."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Absolute gain of a separately tracked RNA fate, with an independent count of its detachments and losses over the same interval.",
+        "unit": "fmol of released RNA",
+        "evidence": []
       }
     },
     {
