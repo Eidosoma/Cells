@@ -7,17 +7,10 @@ section 6). It reproduces no published model; that is MT-2's.
 ## Status
 
 - **Outputs.** The committed `interface.json` and `RECEIPT.json` are the run of record of commit
-  61779e22, against the declaration before erratum 2. The results and findings below are that
-  run's.
-- **Erratum 2.** The lead's rulings of 22 November 2026 are implemented from commit b15dfcb1:
-  - traces at 1 pM, with the error control's floor scaled to the smallest trace;
-  - W3(d)'s O2 node from 60 s;
-  - a declared excluded window for scoring (its floor pending the erratum);
-  - ledgers over time in the interface;
-  - plant P-a's printed-exchange switch, and the three plants run in full;
-  - the trace check and the plants scored both at every output time and at plateau ends alone.
-  - The leak's reading is ruled: the IMS's own free H+.
-- **The rerun** waits for erratum 2's tag. Its results then replace this run's.
+  989959fe, against the world declaration's erratum 2 (tag
+  `mito-mt1b-declaration-erratum-2-2026-11-22`). The results and findings below are that run's.
+- **The previous run of record** (61779e22, against the declaration before erratum 2) is kept in
+  its run folder. Its findings led to erratum 2.
 
 ## Independence
 
@@ -27,7 +20,8 @@ R2 was written from the declared documents alone, each read at its tag with `git
 | --- | --- | --- |
 | `docs/MITOCHONDRIA_LAWS_APPENDIX.md` | `mito-laws-appendix-2026-11-20b` | Sections 0-10: frame B, the nine laws, their parameters (Table 1 (2006), with Pi control), the potentials, the band terms |
 | `docs/MITOCHONDRIA_DESIGN.md` | `mito-mt1b-face-design-2026-11-22` | Section 7's protocol, the MT-1b draft (worlds, readouts, bands), the face note (the outer membrane per form) |
-| `docs/MITOCHONDRIA_DESIGN.md` | `mito-mt1b-declaration-erratum-2026-11-22` | The world declaration (G1-G7), the face note's section 6 erratum and G5's erratum (the I_NP rule): the declaration of record |
+| `docs/MITOCHONDRIA_DESIGN.md` | `mito-mt1b-declaration-erratum-2026-11-22` | The world declaration (G1-G7), the face note's section 6 erratum and G5's erratum (the I_NP rule) |
+| `docs/MITOCHONDRIA_DESIGN.md` | `mito-mt1b-declaration-erratum-2-2026-11-22` | Erratum 2, the declaration of record for this run: the leak's h_P, 1 pM traces, the floored bands, W3(d)'s window and timing, the judged weight |
 
 R2 did not read engine code (`src/cells`), the mitochondria lane's builder branches, engine output,
 `validation/mitochondria/beard2005_cardiac.py`, the source papers, or MR1's code and data (only its
@@ -95,11 +89,11 @@ Three checks close on them:
 
 ## Readings taken
 
-The first two items are R2's own readings and go to the lead with this delivery. The lead confirmed
-or ruled every other reading on 22 November 2026, and the world declaration records it:
-- **The leak's and the uncoupler's P-side H+ (R2's reading; not yet put to the lead).**
-  - G1 prints Eq. 19 with H_e, the external H+. R2 reads it with the IMS's own free H+, h_P,
-    following appendix 0: "Here every P-side quantity is the IMS's own".
+The lead confirmed or ruled every reading on 22 November 2026; the world declaration and its two
+errata record them:
+- **The leak's and the uncoupler's P-side H+ (ruled, erratum 2 item 1).**
+  - G1 prints Eq. 19 with H_e, the external H+. Both read the IMS's own free H+, h_P, following
+    appendix 0: "Here every P-side quantity is the IMS's own".
   - It is material where the IMS departs from the bath. At the uncoupled plateaus pH_P sits
     0.009-0.019 above the bath's 7.10, so the dominant flux there differs by 2-4% between the two
     readings.
@@ -121,7 +115,15 @@ or ruled every other reading on 22 November 2026, and the world declaration reco
 - **Areas:** A_IM = C/(1 uF cm^-2) exactly. The declaration prints 6.513e-8 m2 for 1 pL, rounded.
   P_O2 = 9.9e-5 m s^-1 as printed.
 - **Controls (b) and (c)** run (a)'s main schedule (0-300 s) only. The branches are world (a)'s.
-- **W3(d):** the O2 node is finite from t = 0.
+- **W3(d)** (erratum 2, item 4):
+  - state 4 runs on the held bath's O2 for 0-60 s;
+  - from the ADP step at 60 s, the finite O2 node supplies O2;
+  - all of (d)'s judged readouts are excluded from scoring while the matrix's free O2 is below
+    1e-3 x P50. With P50 = 0.373 uM that is 0.373 nM, which the erratum prints rounded as 0.37 nM.
+- **Bands** (erratum 2, item 3): band = max(relative band x |value|, floor) for the concentration
+  readouts, with each floor at 0.1% of its pool. R2 reads the O2 flux's band as having no
+  absolute floor: item 3 floors concentration readouts, and item 4's window covers the flux's
+  vanishing tail.
 - **The start state** (G7 with G5's erratum). R2 found a seventh conserved quantity:
   - The matrix-plus-IMS row charge, I_NP = W_x sum_N z c + W_i sum_P z c, is conserved by zero net
     outer-membrane current and no counter-ion.
@@ -144,7 +146,8 @@ or ruled every other reading on 22 November 2026, and the world declaration reco
 
 **Controls (b) and (c):** the uncoupler on, or the exchange off, from t = 0.
 
-**World (d):** the O2 node (6.3 nL per pL, 26 uM), with the ADP step at 60 s held to 240 s.
+**World (d):** state 4 on the held bath's O2 for 0-60 s. Then the ADP step at 60 s, held to 240 s,
+with O2 from the finite node (6.3 nL per pL, 26 uM at 60 s).
 
 **Outputs:** each segment's start (right limit), every 10 ms for 2 s, then every 0.5 s, and its
 end (left limit).
@@ -164,8 +167,8 @@ its band.
   - Outputs come from the dense output at the declared times.
 - **Tolerances:**
   - rtol = 1e-11 for the delivered run;
-  - atol = rtol x 1e-9 M for every concentration, so the control is relative above 1e-9 M, trace
-    rows included;
+  - atol = rtol x the smallest declared trace (1 pM) for every concentration, so the control is
+    relative above it, trace rows included (erratum 2, item 2);
   - atol = rtol x 1 mV for dPsi;
   - the ledger states are quadratures outside the error control (atol 1). Their Jacobian columns
     are exactly zero, so their accuracy is that of the physical steps, and the energy ledger's
@@ -175,22 +178,22 @@ its band.
 ## Results (run of record)
 
 **The run.**
-- **Code:** commit `61779e22529d`, frozen as a clean snapshot (patch digest of the empty diff).
+- **Code:** commit `989959fe5012`, frozen as a clean snapshot (patch digest of the empty diff).
 - **Where:** on CPU 7, under `scripts/run_detached.sh`.
-- **Cost:** 860 s of wall time and 582 s of CPU.
+- **Cost:** 1353 s of wall time and 1353 s of CPU.
 - **Receipt:** `RECEIPT.json`, which also gives the run folder under /mnt/workspaces/Cells.
 
 **The start state** (G7 with G5's erratum).
-- **Inventories:** I_N = 8.511855873611e-02 mol (L mito)^-1 and I_NP = 9.459225452897e-02.
-- **Against the erratum's check value:** 4.24e-10 relative.
-- **Anchor at [Pi]e = 1e-09 M:** I_N 8.511854542095e-02, pH_N 7.1418000000, outer potential 2.0e-16 mV.
-- **Anchor at [Pi]e = 1e-12 M:** I_N 8.511855872281e-02, pH_N 7.1418000000, outer potential -3.7e-16 mV.
-- **Anchor at [Pi]e = 1e-15 M:** I_N 8.511855873611e-02, pH_N 7.1418000000, outer potential -3.4e-16 mV.
+- **Inventories:** I_N = 8.511897258107e-02 mol (L mito)^-1 and I_NP = 9.459266302585e-02.
+- **Against the erratum's check value:** 4.86e-06 relative.
+- **Anchor at [Pi]e = 1e-09 M:** I_N 8.511895711647e-02, pH_N 7.1418000000, outer potential 3.8e-16 mV.
+- **Anchor at [Pi]e = 1e-12 M:** I_N 8.511897256562e-02, pH_N 7.1418000000, outer potential 4.0e-16 mV.
+- **Anchor at [Pi]e = 1e-15 M:** I_N 8.511897258107e-02, pH_N 7.1418000000, outer potential 4.0e-16 mV.
 - **The state at [Pi]e = 10 mM:**
-  - dPsi 194.70436 mV; pH_N 7.072759; pH_P 7.100000; NADH 0.758661; cyt c reduced 0.113800.
-  - O2 flux 1.933402e-04 mol s^-1 (L mito)^-1; K_N 0.159710 M; Pi_N 8.997263e-03 M; ATP_N 9.787370e-03 M.
-  - Outer potential 9.6e-16 mV.
-- **Held over 600 s at state 4:** worst 1.2e-11 of a band.
+  - dPsi 194.70538 mV; pH_N 7.072757; pH_P 7.100000; NADH 0.758667; cyt c reduced 0.113796.
+  - O2 flux 1.933186e-04 mol s^-1 (L mito)^-1; K_N 0.159711 M; Pi_N 8.997248e-03 M; ATP_N 9.787392e-03 M.
+  - Outer potential 8.0e-17 mV.
+- **Held over 600 s at state 4:** worst 1.1e-11 of a band.
 
 **Plateaus** at each segment's end. The drift is the worst judged readout's change over the last
 10 s, over a tenth of its band. The Newton column is the worst judged distance from the algebraic
@@ -198,19 +201,19 @@ steady state with the same inventories, over the band.
 
 | World | Segment | dPsi mV | pH_N | pH_P | NADH | cyt c red | O2 flux | outer mV | drift | Newton |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| a | state4_a | 194.7044 | 7.07276 | 7.10000 | 0.75866 | 0.11380 | 1.9334e-04 | 0.000 | 2.5e-11 | 4.2e-12 |
-| a | state3 | 168.5937 | 7.09247 | 7.09604 | 0.35932 | 0.21299 | 1.6377e-03 | -0.266 | 4.1e-10 | 2.0e-12 |
-| a | state4_b | 194.7044 | 7.07276 | 7.10000 | 0.75866 | 0.11380 | 1.9334e-04 | -0.000 | 4.0e-11 | 3.7e-12 |
-| a | uncoupler | 100.8893 | 7.09698 | 7.10852 | 0.00000 | 0.07829 | 2.9911e-03 | 0.505 | 1.8e-09 | 1.1e-11 |
-| a | inhibitor | 80.9753 | 7.09089 | 7.10718 | 0.81771 | 0.99999 | 0.0000e+00 | 0.426 | 1.3e-09 | 1.9e-11 |
-| b | state4_a | 101.6904 | 7.09744 | 7.11948 | 0.00000 | 0.07859 | 2.9897e-03 | 1.152 | 1.7e-08 | 1.2e-11 |
-| b | state3 | 99.7217 | 7.09737 | 7.11061 | 0.00000 | 0.07640 | 2.9898e-03 | 0.628 | 5.0e-10 | 8.0e-12 |
-| b | state4_b | 101.6904 | 7.09744 | 7.11948 | 0.00000 | 0.07859 | 2.9897e-03 | 1.152 | 2.4e-08 | 2.4e-11 |
-| c | state4_a | 194.7053 | 7.07276 | 7.10000 | 0.75867 | 0.11380 | 1.9332e-04 | -0.000 | 2.0e-11 | 1.3e-12 |
-| c | state3 | 193.8766 | 7.07276 | 7.09092 | 0.75778 | 0.11408 | 1.9657e-04 | -0.537 | 1.1e-09 | 4.0e-12 |
-| c | state4_b | 194.7053 | 7.07276 | 7.10000 | 0.75867 | 0.11380 | 1.9332e-04 | -0.000 | 5.7e-11 | 4.1e-12 |
-| d | state4_a | 194.4632 | 7.07277 | 7.10003 | 0.75873 | 0.11776 | 1.9306e-04 | 0.002 | 1.4e+01 | - |
-| d | state3_O2_exhaustion | 32.2835 | 7.09015 | 7.11925 | 0.81745 | 1.00000 | 7.7899e-11 | 1.139 | 4.2e+04 | - |
+| a | state4_a | 194.7054 | 7.07276 | 7.10000 | 0.75867 | 0.11380 | 1.9332e-04 | 0.000 | 3.9e-11 | 4.5e-12 |
+| a | state3 | 168.5936 | 7.09247 | 7.09604 | 0.35932 | 0.21299 | 1.6377e-03 | -0.266 | 3.4e-10 | 4.2e-12 |
+| a | state4_b | 194.7054 | 7.07276 | 7.10000 | 0.75867 | 0.11380 | 1.9332e-04 | 0.000 | 3.6e-11 | 5.6e-12 |
+| a | uncoupler | 100.8897 | 7.09698 | 7.10852 | 0.00000 | 0.07829 | 2.9911e-03 | 0.505 | 3.6e-09 | 7.4e-12 |
+| a | inhibitor | 80.9805 | 7.09089 | 7.10718 | 0.81771 | 0.99999 | 0.0000e+00 | 0.426 | 4.6e-09 | 2.3e-12 |
+| b | state4_a | 101.6904 | 7.09744 | 7.11948 | 0.00000 | 0.07859 | 2.9897e-03 | 1.152 | 1.7e-09 | 3.3e-12 |
+| b | state3 | 99.7221 | 7.09737 | 7.11062 | 0.00000 | 0.07640 | 2.9898e-03 | 0.628 | 3.2e-10 | 8.8e-12 |
+| b | state4_b | 101.6904 | 7.09744 | 7.11948 | 0.00000 | 0.07859 | 2.9897e-03 | 1.152 | 1.2e-09 | 8.2e-12 |
+| c | state4_a | 194.7054 | 7.07276 | 7.10000 | 0.75867 | 0.11380 | 1.9332e-04 | -0.000 | 5.7e-11 | 3.6e-12 |
+| c | state3 | 193.8765 | 7.07276 | 7.09092 | 0.75778 | 0.11408 | 1.9657e-04 | -0.537 | 2.5e-09 | 2.2e-11 |
+| c | state4_b | 194.7054 | 7.07276 | 7.10000 | 0.75867 | 0.11380 | 1.9332e-04 | -0.000 | 3.2e-11 | 6.9e-13 |
+| d | state4_a | 194.7054 | 7.07276 | 7.10000 | 0.75867 | 0.11380 | 1.9332e-04 | 0.000 | 3.9e-11 | 4.5e-12 |
+| d | state3_O2_exhaustion | 32.2555 | 7.09015 | 7.11926 | 0.81745 | 1.00000 | 2.4544e-10 | 1.140 | 4.8e+04 | - |
 
 **Excursions** of each judged readout over each segment (max - min), as input for the
 registration's transient bands ("a tenth of its excursion in the step"):
@@ -218,22 +221,27 @@ registration's transient bands ("a tenth of its excursion in the step"):
 | World | Segment | dpsi_mV | pH_N | pH_P | NADH_fraction | cytc_reduced_fraction | O2_flux | K_N | Pi_N | ATP_N |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | a | state4_a | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| a | state3 | 26.11 | 0.01971 | 0.008644 | 0.3993 | 0.1001 | 0.001444 | 0.006901 | 0.002309 | 0.002673 |
-| a | state4_b | 26.11 | 0.01975 | 0.009421 | 0.3993 | 0.09981 | 0.001444 | 0.006901 | 0.002351 | 0.002673 |
-| a | uncoupler | 93.82 | 0.03332 | 0.01814 | 0.7587 | 0.2347 | 0.005061 | 0.008921 | 0.002625 | 0.009749 |
+| a | state3 | 26.11 | 0.01971 | 0.008647 | 0.3994 | 0.1002 | 0.001444 | 0.006901 | 0.002309 | 0.002673 |
+| a | state4_b | 26.11 | 0.01975 | 0.009423 | 0.3994 | 0.09981 | 0.001444 | 0.006901 | 0.002351 | 0.002673 |
+| a | uncoupler | 93.82 | 0.03332 | 0.01814 | 0.7587 | 0.2347 | 0.005061 | 0.008921 | 0.002624 | 0.009749 |
 | a | inhibitor | 113.7 | 0.01848 | 0.01762 | 0.2256 | 0.8862 | 0 | 0.006541 | 0.001234 | 0.009781 |
-| b | state4_a | 93.01 | 0.03732 | 0.01948 | 0.7587 | 0.2163 | 0.004118 | 0.009368 | 0.002973 | 0.00975 |
-| b | state3 | 1.969 | 0.0002872 | 0.009085 | 1.598e-08 | 0.002189 | 5.882e-06 | 2.183e-05 | 5.087e-06 | 5.631e-06 |
-| b | state4_b | 1.969 | 0.0002912 | 0.009086 | 1.598e-08 | 0.002189 | 5.53e-06 | 2.183e-05 | 5.087e-06 | 5.63e-06 |
-| c | state4_a | 0.0009157 | 2.27e-07 | 1.69e-07 | 5.845e-06 | 4.367e-06 | 2.166e-08 | 7.99e-08 | 3.339e-08 | 2.267e-08 |
-| c | state3 | 0.8287 | 0.0001007 | 0.009145 | 0.0009317 | 0.001903 | 8.677e-06 | 7.331e-06 | 3.82e-06 | 7.966e-06 |
-| c | state4_b | 0.8287 | 0.0001019 | 0.009144 | 0.000931 | 0.00192 | 8.882e-06 | 7.327e-06 | 3.837e-06 | 7.961e-06 |
-| d | state4_a | 0.2412 | 6.876e-06 | 2.615e-05 | 6.944e-05 | 0.003956 | 2.774e-07 | 2.513e-06 | 2.613e-07 | 5.867e-06 |
-| d | state3_O2_exhaustion | 162.2 | 0.02519 | 0.02789 | 0.4577 | 0.8822 | 0.001636 | 0.008862 | 0.002992 | 0.009781 |
+| b | state4_a | 93.02 | 0.03732 | 0.01948 | 0.7587 | 0.2163 | 0.004118 | 0.009368 | 0.002973 | 0.00975 |
+| b | state3 | 1.969 | 0.0002871 | 0.009082 | 1.597e-08 | 0.002188 | 5.88e-06 | 2.18e-05 | 5.071e-06 | 5.63e-06 |
+| b | state4_b | 1.968 | 0.0002911 | 0.009083 | 1.597e-08 | 0.002188 | 5.528e-06 | 2.18e-05 | 5.071e-06 | 5.629e-06 |
+| c | state4_a | 9e-07 | 1e-09 | 0 | 5.9e-09 | 4.3e-09 | 2.16e-11 | 1e-10 | 3.3e-11 | 2.3e-11 |
+| c | state3 | 0.8289 | 0.0001007 | 0.009147 | 0.000932 | 0.001903 | 8.68e-06 | 7.333e-06 | 3.821e-06 | 7.968e-06 |
+| c | state4_b | 0.8289 | 0.0001019 | 0.009147 | 0.0009313 | 0.00192 | 8.885e-06 | 7.329e-06 | 3.838e-06 | 7.964e-06 |
+| d | state4_a | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| d | state3_O2_exhaustion | 162.4 | 0.02519 | 0.02791 | 0.4579 | 0.8862 | 0.001637 | 0.008865 | 0.002994 | 0.009787 |
+
+**W3(d)** (erratum 2, item 4):
+- **P50:** the matrix O2 crosses 0.373 uM at 160.49 s; erratum 2 expected about 160.4 s.
+- **The scoring window** (O2_N below 0.373 nM) opens at 189.20 s. It excludes 102 output times
+  of world (d) from every score.
 
 **The uncoupler and the inhibitor** (G1's stall check):
-- **uncoupler:** dPsi 100.8893 mV, against the synthase's stall at 101.2561 mV (-0.3668). J_F1 = -2.6143e-04, J_ANT = -2.6143e-04: synthase reversed True.
-- **inhibitor:** dPsi 80.9753 mV, against the synthase's stall at 85.5551 mV (-4.5798). J_F1 = -3.9474e-04, J_ANT = -3.9474e-04: synthase reversed True.
+- **uncoupler:** dPsi 100.8897 mV, against the synthase's stall at 101.2566 mV (-0.3669). J_F1 = -2.6148e-04, J_ANT = -2.6148e-04: synthase reversed True.
+- **inhibitor:** dPsi 80.9805 mV, against the synthase's stall at 85.5584 mV (-4.5779). J_F1 = -3.9477e-04, J_ANT = -3.9477e-04: synthase reversed True.
 
 **Convergence.**
 - Each Radau tolerance and BDF is compared with Radau at rtol 1e-12 over every output time of
@@ -241,31 +249,15 @@ registration's transient bands ("a tenth of its excursion in the step"):
 - The table gives the worst judged readout's error over its plateau band. That is the strictest
   scale: transient bands are larger.
 
-Per world, the worst judged error over its band, with the readout where it sits:
-
 | Run | World a | World b | World c | World d |
 | --- | --- | --- | --- | --- |
-| Radau 1e-06 | 1.0e-03 (ATP_N) | 1.0e-03 (O2_flux) | 7.6e-04 (O2_flux) | 2.2e+00 (O2_flux) |
-| Radau 1e-07 | 1.0e-04 (O2_flux) | 9.5e-05 (O2_flux) | 8.3e-05 (O2_flux) | 1.9e-01 (O2_flux) |
-| Radau 1e-08 | 1.1e-05 (O2_flux) | 1.4e-05 (O2_flux) | 7.2e-06 (O2_flux) | 2.6e-02 (O2_flux) |
-| Radau 1e-09 | 9.8e-07 (O2_flux) | 1.4e-06 (O2_flux) | 7.9e-07 (O2_flux) | 3.5e-03 (O2_flux) |
-| Radau 1e-10 | 8.9e-08 (O2_flux) | 9.8e-08 (O2_flux) | 9.7e-08 (O2_flux) | 6.9e-04 (O2_flux) |
-| **Radau 1e-11 (delivered)** | **1.6e-08 (ATP_N)** | **1.9e-08 (ATP_N)** | **9.1e-09 (O2_flux)** | **3.5e-05 (O2_flux)** |
-| BDF 1e-10 (a second method) | 3.1e-06 (O2_flux) | 2.3e-06 (ATP_N) | 2.7e-06 (O2_flux) | 1.1e-02 (O2_flux) |
-
-- **The error falls about tenfold per decade of rtol.** The delivered run sits within 2e-8 of a band of
-  the 1e-12 run in worlds (a)-(c).
-- **BDF, an independent multistep method, agrees with it** within 3e-6 of a band in (a)-(c).
-- **World (d)'s worst errors sit at its anoxic tail** (t = 236-240 s).
-  - There O2 is about 5e-14 M, far below the 1e-9 M floor of relative control, and the O2 flux is
-    about 1e-10 mol s^-1 (L mito)^-1.
-  - Up to 150 s, before exhaustion, world (d)'s error is 3.6e-7 of a band (Radau 1e-11) and 3.1e-6
-    (BDF 1e-10).
-- **The start state's own error,** from taking [Pi]e = 0 as a limit:
-  - the start state computed from the 1e-12 M limit's I_N lies 1.8e-7 of a band from the delivered
-    one, which uses the 1e-15 M limit;
-  - the 1e-9 M limit's lies 1.8e-4 of a band away.
-  - So the limit is converged far below the bands.
+| Radau 1e-06 | 1.1e-03 (O2_flux) | 1.0e-03 (O2_flux) | 5.0e-04 (O2_flux) | 5.5e-02 (O2_flux) |
+| Radau 1e-07 | 9.8e-05 (O2_flux) | 9.5e-05 (O2_flux) | 8.3e-05 (O2_flux) | 6.4e-03 (O2_flux) |
+| Radau 1e-08 | 1.1e-05 (O2_flux) | 1.4e-05 (O2_flux) | 1.0e-05 (O2_flux) | 3.3e-04 (O2_flux) |
+| Radau 1e-09 | 1.0e-06 (O2_flux) | 1.4e-06 (O2_flux) | 1.4e-06 (O2_flux) | 1.5e-05 (O2_flux) |
+| Radau 1e-10 | 1.1e-07 (O2_flux) | 1.3e-07 (O2_flux) | 7.4e-08 (O2_flux) | 7.5e-07 (O2_flux) |
+| Radau 1e-11 | 7.9e-09 (O2_flux) | 1.1e-08 (O2_flux) | 1.1e-08 (O2_flux) | 4.4e-08 (O2_flux) |
+| BDF 1e-10 | 2.8e-06 (O2_flux) | not run (see failed runs) | 2.7e-06 (O2_flux) | 2.8e-06 (O2_flux) |
 
 **Ledgers** over every output time, per run part:
 - each invariant's drift is taken over the magnitude of its terms;
@@ -273,107 +265,99 @@ Per world, the worst judged error over its band, with the readout where it sits:
 
 | World | Part | Worst invariant drift | Energy residual / dissipation |
 | --- | --- | --- | --- |
-| a | main | 7.2e-14 (charge_NP) | 1.3e-14 |
-| a | uncoupler | 6.9e-14 (charge_NP) | 1.1e-14 |
-| a | inhibitor | 1.1e-13 (charge_NP) | 1.5e-14 |
-| b | main | 2.6e-13 (charge_NP) | 3.1e-15 |
-| c | main | 4.6e-14 (charge_NP) | 1.2e-14 |
-| d | main | 1.7e-14 (charge_NP) | 1.4e-14 |
+| a | main | 3.4e-14 (charge_NP) | 2.8e-15 |
+| a | uncoupler | 4.4e-14 (charge_NP) | 2.5e-15 |
+| a | inhibitor | 8.2e-14 (charge_NP) | 4.7e-15 |
+| b | main | 1.2e-13 (charge_NP) | 4.0e-15 |
+| c | main | 8.5e-14 (charge_NP) | 2.7e-15 |
+| d | main | 2.6e-14 (charge_NP) | 1.5e-15 |
 
 **The trace check** (G3).
-- Traces 1,000 times smaller, ADP_trace 1e-12, ATP_trace 1e-12, AMP_trace 1e-12 M: the whole chain again, from the start state.
-- Worst judged change: 1.39e+00 of a band, so the check FAILS (it must stay below 0.1).
+- Traces 1,000 times smaller, ADP_trace 1e-15, ATP_trace 1e-15, AMP_trace 1e-15 M: the whole chain again, from the start state, scored
+  with erratum 2's floored bands and its window.
+- Worst judged change: 2.45e-01 of a band, so the check FAILS (it must stay below 0.1).
 
-| World | Readout | Change / band | Where | At 1 nM | At 1 pM |
+| World | Readout | Change / band | Where | Declared traces | Traces / 1000 |
 | --- | --- | --- | --- | --- | --- |
-| a | ATP_N | 0.373 | inhibitor, t = 374.50 s | 5.92585e-06 | 5.92806e-06 |
-| a | O2_flux | 0.112 | state4_b, t = 181.86 s | 0.000193524 | 0.000193502 |
-| a | dpsi_mV | 0.102 | inhibitor, t = 375.00 s | 80.9753 | 80.9805 |
-| a | cytc_reduced_fraction | 0.014 | inhibitor, t = 300.02 s | 0.174469 | 0.174462 |
-| a | NADH_fraction | 0.011 | state4_b, t = 181.12 s | 0.745282 | 0.745287 |
-| b | ATP_N | 0.135 | state4_a, t = 0.88 s | 0.00017487 | 0.000174893 |
-| b | O2_flux | 0.112 | state4_a, t = 0.00 s | 0.00019334 | 0.000193319 |
-| b | dpsi_mV | 0.026 | state4_a, t = 0.87 s | 114.534 | 114.535 |
-| b | NADH_fraction | 0.011 | state4_a, t = 0.00 s | 0.758661 | 0.758667 |
-| c | O2_flux | 0.112 | state4_a, t = 0.00 s | 0.00019334 | 0.000193319 |
-| c | dpsi_mV | 0.020 | state4_a, t = 0.00 s | 194.704 | 194.705 |
-| c | NADH_fraction | 0.011 | state4_a, t = 0.00 s | 0.758661 | 0.758667 |
-| d | O2_flux | 1.391 | state3_O2_exhaustion, t = 240.00 s | 7.78988e-11 | 7.77904e-11 |
-| d | ATP_N | 0.996 | state3_O2_exhaustion, t = 175.50 s | 8.30678e-07 | 8.2985e-07 |
-| d | dpsi_mV | 0.562 | state3_O2_exhaustion, t = 221.50 s | 32.2849 | 32.2567 |
-| d | cytc_reduced_fraction | 0.030 | state3_O2_exhaustion, t = 145.50 s | 0.814212 | 0.814197 |
-| d | pH_P | 0.025 | state3_O2_exhaustion, t = 234.50 s | 7.11925 | 7.11926 |
-| d | NADH_fraction | 0.024 | state3_O2_exhaustion, t = 151.00 s | 0.529093 | 0.529081 |
-| d | Pi_N | 0.015 | state3_O2_exhaustion, t = 150.50 s | 0.00792162 | 0.0079215 |
+| a | dpsi_mV | 0.044 | inhibitor, t = 307.50 s | 80.9805 | 80.9826 |
+| d | dpsi_mV | 0.245 | state3_O2_exhaustion, t = 189.00 s | 37.8396 | 37.8273 |
+| d | O2_flux | 0.074 | state3_O2_exhaustion, t = 189.00 s | 7.38749e-06 | 7.38694e-06 |
+| d | cytc_reduced_fraction | 0.015 | state3_O2_exhaustion, t = 152.50 s | 0.811304 | 0.811311 |
+| d | NADH_fraction | 0.011 | state3_O2_exhaustion, t = 158.50 s | 0.541042 | 0.541047 |
+| d | pH_P | 0.011 | state3_O2_exhaustion, t = 189.00 s | 7.11808 | 7.11809 |
+
+- **At plateau ends alone:** worst 0.0438 of a band (passes).
+
+**The classes left undetermined at 1 nM** (erratum 2, item 4):
+- a_inhibitor_branch: worst dpsi_mV 0.0438 of a band at t = 307.50 s (80.9805 against 80.9826).
+- b_first_2_s: worst O2_flux 0.000112 of a band at t = 0.00 s (0.000193319 against 0.000193319).
+
+**Plants** (each the whole chain with its overrides; caught at 3 bands):
+
+| Plant | What | Worst change / band | Where | Caught | At plateau ends |
+| --- | --- | --- | --- | --- | --- |
+| P-a | the exchange's shares at 0.35 and 0.70, in Eq. 14's printed two-fraction form | 186 | world d, O2_flux, state3_O2_exhaustion, t = 189.00 s | True | 3.45 (True) |
+| P-b | the exchange's activity x 1.01 | 161 | world d, O2_flux, state3_O2_exhaustion, t = 189.00 s | True | 8.5 (True) |
+| P-c | the 2005 k_O2, 1.0e-6 M (appendix 9: the 2005 PDF prints 1.0e-6 for k_O2) | 1.22e+03 | world d, cytc_reduced_fraction, state3_O2_exhaustion, t = 153.50 s | True | 236 (True) |
 
 ## Findings for the registration
 
-1. **The trace check fails at the declared 1 nM.** The worst change is 1.39 bands against the
-   allowed 0.1 (G3). The run of record is therefore of record for the current declaration only. A
-   re-declared trace needs this run repeated (about 15 minutes on one light CPU). The convergence
-   ladder covers the 1 nM world only; the smaller-trace arm ran at the delivered tolerance alone.
-   What the evidence shows:
-   - **Established: an effect that scales with the trace.**
-     - State 4's ADP trace sustains a phosphorylation flux of about 1e-4 of respiration.
-     - It moves the state-4 O2 flux by 0.11 band in every world (at t = 0, between the two
-       algebraic start states), and NADH and dPsi by 0.01-0.03 band.
-     - A lower trace removes it: in a development check at 1 pM against 1 fM, world (c)'s worst
-       fell to 0.006 band.
-   - **Established: a relative band on a vanishing readout.** In world (d) after O2 is spent:
-     - O2 flux moves 1.39 band, at about 1e-10 mol s^-1 (L mito)^-1;
-     - ATP_N moves 1.0 band and dPsi 0.56 band;
-     - at 1 pM against 1 fM, the O2 flux still moved 0.72 band.
-     - No trace level fixes this. It needs an absolute floor on the band, or an excluded window,
-       and the engine-against-R2 comparison meets the same issue there.
-   - **Undetermined:**
-     - **(a)'s inhibitor branch:** ATP_N moves 0.37 band and dPsi 0.10 band at t = 375 s, with the
-       matrix ATP near 6 uM. At 1 pM against 1 fM its worst moved, to ATP_N 0.16 band 5 s into the
-       branch.
-     - **(b)'s early transient:** ATP_N moves 0.14 band at 175 uM, which is not near zero. Its
-       1 fM arm failed (finding 7), so it was not tested.
-     - The 1 fM arm runs six decades below the relative-control floor, with no convergence
-       evidence of its own.
-2. **W3(d)'s O2 runs out earlier than G7 states.** G7 states that O2 crosses the P50 (0.373 uM)
-   near the run's end. In R2:
-   - the 6.3 nL node supplies the state-3 flux until about 150 s;
-   - the matrix O2 crosses 0.373 uM at 153.3 s;
-   - for the last 75 s the organelle is anoxic, with dPsi held at 32.3 mV by the reversed synthase
-     until the matrix ATP is spent.
-   - **W3(d)'s 0-60 s segment fails the drift rule,** at 14 times a tenth of a band. Lengthening
-     cannot fix it: under the accepted reading the O2 node is finite from t = 0, so state 4 drains
-     it from the start. G7 lengthens a failing plateau before registration. The lead must either
-     exempt (d)'s plateaus from the rule or start the node's depletion at 60 s.
-3. **The uncoupler branch reverses the synthase at steady state,** with the ATP bath (G1 (i)). The
-   uncoupled plateau's dPsi, 100.89 mV, is 0.37 mV below the synthase's stall at its
-   concentrations, and J_F1 = -2.6e-4 mol s^-1 (L mito)^-1. The margin is small; the reversal is
-   not.
-4. **I_NP's consequences, as G5's erratum states them.**
-   - The outer membrane's potential moves:
-     - -0.27 mV at state 3;
-     - +0.51 and +0.43 mV in the uncoupler and inhibitor branches;
-     - +1.15 mV in control (b);
-     - -0.54 mV in control (c)'s state 3.
-   - K_P moves with it: 151.6 mM at state 3, 147.1 mM uncoupled, 143.4 mM in control (b).
-   - In control (c), with the exchange off, the bath's ADP gathers in the IMS. pH_P falls to 7.091 at
-     state 3, since the IMS must keep its charge.
-5. **Plants were not run.**
-   - P-a (shares 0.35 and 0.70) cannot be planted through `declaration.json`. R2 codes the exchange
-     in its declared form, which stays balanced for any shares. That plant needs the printed
-     two-fraction form, as its own switch.
-   - P-b (X_ANT x 1.01) and P-c (the 2005 k_O2) can be planted as parameter overrides.
-6. **What `interface.json` leaves out.**
-   - Per time, it carries the total dissipation, the energy residual and the two charge drifts.
-   - Per run part, it carries each invariant's largest drift and the energy closure.
-   - It does not carry each process's dissipation or each material row's ledger over time. The run
-     folder's `full.npz` holds every state at every output time, so both can be recomputed. They
-     belong in the rerun a trace ruling forces.
-7. **A limit of the integrator at very low traces.**
-   - At 1e-15 M, an accepted trace row can undershoot to non-positive within atol. A Jacobian is
-     then evaluated at an invalid state, and SciPy refuses it. This happened in world (b) at 1 fM,
-     in the development check only.
-   - The run of record (1 nM and 1 pM) never met it.
-   - If a lower trace is declared, the concentration floor (1e-9 M) should scale with it before the
-     rerun.
+1. **The trace check (1 pM against 1 fM, with erratum 2's floored bands and window).**
+   - **It passes at plateau ends** (worst 0.044 band), and in worlds (a)-(c) at every output time.
+   - **The two classes left undetermined at 1 nM now pass:**
+     - (a)'s inhibitor branch: worst dPsi 0.044 band at t = 307.5 s. Its depleted ATP_N now
+       sits under its 10 uM floor.
+     - (b)'s first 2 s: 1.1e-4 band. It was an effect that scales with the trace.
+   - **It fails only at world (d)'s last scored outputs before the window.**
+     - dPsi moves 0.245 band at t = 189.0 s (37.840 against 37.827 mV). The window opens at
+       189.2 s, during the anoxic collapse of dPsi.
+     - The O2 flux moves 0.074 band there.
+   - **Decision for the lead:** whether the window's opening needs a margin (an earlier threshold
+     or a time margin), or whether dPsi in the anoxic collapse is judged on a transient band.
+2. **W3(d).**
+   - The matrix O2 crosses P50 at 160.49 s; erratum 2 expected about 160.4 s.
+   - The window (O2_N below 0.373 nM) opens at 189.20 s and excludes 102 output times.
+   - The 0-60 s plateau meets the drift rule (3.9e-11 of a tenth band).
+3. **The plants are all caught, at plateau ends alone too.**
+
+   | Plant | At plateau ends | Readout there |
+   | --- | --- | --- |
+   | P-c (the 2005 k_O2) | 236 bands | (a)'s state-3 cytochrome c reduced fraction |
+   | P-b (X_ANT x 1.01) | 8.5 bands | (a)'s state-3 O2 flux |
+   | P-a (shares 0.35 and 0.70, printed form) | 3.45 bands | (a)'s state-3 O2 flux |
+
+   - P-a's margin is thin.
+   - Over all output times, P-a's and P-b's worst sit at (d)'s window edge (t = 189 s) and in (a)'s
+     inhibitor transient.
+4. **The convergence ladder is monotone.**
+   - The delivered rtol 1e-11 lies within 4.4e-8 of a band of the 1e-12 run, in every world.
+   - BDF, a second method, agrees within 2.8e-6 of a band in worlds (a), (c) and (d).
+   - On world (b), BDF crawls from t = 43.8 s (order 1, steps of about 1e-6 s) at the 1 pM floor of
+     relative control. It is recorded over its 600 s CPU budget. Radau (L-stable) runs that world
+     at every rung.
+5. **The start state.**
+   - I_N = 0.08511897258 mol (L mito)^-1 and I_NP = 0.09459266303.
+   - Erratum 2's check value, 0.0851185587, was R2's anchor at 1 nM traces. The 1 pM traces move
+     the anchor by 4.9e-6 relative.
+6. **The uncoupled synthase is reported, not scored** (erratum 2, item 6). dPsi 100.890 mV is
+   0.367 mV below its stall, 101.257 mV, and J_F1 = -2.61e-4 mol s^-1 (L mito)^-1.
+7. **I_NP's consequences, as erratum 2's item 5 states them.**
+   - The outer membrane's potential ranges from -0.54 mV (control (c), state 3) to +1.15 mV
+     (control (b)).
+   - K_P ranges over 143-153 mM.
+   - pH_P falls to 7.091 in control (c)'s state 3.
+8. **The ledgers close.**
+   - Each invariant drifts at most 1.2e-13 of its terms.
+   - The energy residual is at most 4.7e-15 of the dissipation, in every world.
+   - World (d)'s O2 bookkeeping is one function of the state across its switch at 60 s
+     (989959fe).
+
+**Runs kept in /mnt/workspaces/Cells/mito-refs-r2-20261122:**
+- run-61779e22529d: the first declaration's run of record.
+- run-9161a49405ed: stopped at the BDF crawl; FAILURE.json.
+- run-c027381bc8c4: complete, but superseded by (d)'s ledger fix; SUPERSEDED.json.
+- The development runs.
+- The test's measured tier row: tiers-989959fe5012/measured.json/measured.json (2.57 s, tier 1).
 
 ## Files
 
@@ -385,8 +369,8 @@ Per world, the worst judged error over its band, with the readout where it sits:
 | `steady.py` | Steady states by Newton in ln variables with the seven inventories imposed; the continuation in [Pi]e; the anchored start state |
 | `protocol.py` | The schedule (G7), the integration with restarts, the output grid, the drift rule and the ledger closure |
 | `run.py` | The full run: start state, four worlds, the tolerance ladder, BDF, the trace check; writes `interface.json`, `full.npz` and `RECEIPT.json` |
-| `interface.json` | The run of record's outputs, copied byte for byte (compact JSON, 3.0 MB): every declared readout at G7's output times for each world, the start state and its anchor, the plateaus with the drift rule and the Newton check, the ledgers, the stall check, the convergence ladder and the trace check |
-| `RECEIPT.json` | That run's receipt: the snapshot's Git revision (61779e22) and clean patch, the environment, times and the outputs' digests |
+| `interface.json` | The run of record's outputs, copied byte for byte (compact JSON, 3.6 MB). It holds every declared readout at G7's output times for each world; each process's dissipation and each invariant's drift over time; the start state and its anchor; the plateaus with the drift rule and the Newton check; W3(d)'s P50 crossing and window; the stall check; the convergence ladder; the trace check and the plants |
+| `RECEIPT.json` | That run's receipt: the snapshot's Git revision (989959fe) and clean patch, the environment, times and the outputs' digests |
 
 The fast test is `tests/unit/test_mito_r2_identities.py`, about 2 s of CPU. It checks:
 - the declared constants;
