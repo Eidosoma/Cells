@@ -1,5 +1,59 @@
 # Cells proof comparisons
 
+<a id="fr33-label-energy"></a>
+
+## 21 November 2026 · FR-33, heat booked when neutral labels mix
+
+Two neutral labels can cross a face in opposite directions while the total tracer stays still. For any finite collection of strictly positive label fractions with common diffusivity, Lean proves that resolving labels adds a nonnegative term to the ideal face power. The term is zero exactly when every label has the same fraction on both sides. The reduction from the Cells neutral face uses its logarithmic quotient or equal-concentration branch for every active row and the parent. An optional check identifies the term with Mathlib’s relative-entropy function. [Proof](CellsProofs/Transport/LabelMixingPower.lean) · [Mathlib equivalence](checks/mixing/KLFun.lean)
+
+The accepted step books heat from applied fluxes and predicted weights. With positive weights this booking is zero exactly when every applied flux is zero. Combining two rows with their summed weights removes a nonnegative square. An independently simulated parent predicts its own weight. We therefore ran both representations through the public two-node world. The table gives cumulative face heat after 1 s at a 10 ms step. Label amounts summed to the parent at both nodes throughout, within 3 × 10⁻¹⁴ fmol. [Accepted-step booking](https://github.com/Eidosoma/Cells/blob/ee0b8106406eb26e57ab1b0c34e16ed6c3f83a2b/src/cells/models/surface_pump_v3.py#L2119-L2134) · [Comparison](checks/label_mixing_power.py)
+
+| Gradients | Parent (pJ) | Separate labels (pJ) |
+| --- | ---: | ---: |
+| Opposing 90:10 fractions, equal totals | 0 | 1.47315444 |
+| Same fractions, twofold total gradient | 0.33000851 | 0.33000851 |
+| Different fractions and different totals | 0.11645669 | 0.51387347 |
+
+Across 800 accepted CPU float64 steps the largest difference between a recorded heat increment and its independent reconstruction was 3.68 × 10⁻¹⁶ pJ. In the opposing case a 5 ms step gave 1.47318357 pJ against the analytic continuous free-energy loss of 1.47319327 pJ. D1 users who split one chemical species into separate rows for tracking should keep this change in calculated heat explicit. Its interpretation as measurable heat from a label alone remains open. The frozen numerical record is `lean-label-energy-wall-20261121/label-energy.json`. [Parent and label transport](#fr33-label-diffusion)
+
+<a id="fr28-wall-wash"></a>
+
+## 21 November 2026 · FR-28, bound tracer at a wash and at the next reading
+
+A draw removes a fraction of the free tracer. Applying that fraction to the whole inventory overestimates the sample by the same fraction of the bound stock. Lean proves retention at the event, inventory closure during later exchange, and the sign of the first binding rate after dilution at an initially equilibrated surface. [Proof](CellsProofs/Tissue/WallWash.lean) · [Compiled comparison](checks/wall_wash.py)
+
+The operator candidate `9917e3d9` started with 60 fmol free, 10 on the wall and 30 on the specimen. A half wash collected **30 fmol** and the refill supplied 0.0000005 fmol. All eight site-state fields were byte-identical across the event. The post-wash wall rate was −2.99999995 fmol/s. At the next recorded step, 10 ms later, the wall held **9.97015402 fmol** and the specimen held 29.99100988 fmol. Their releases raised the liquid to 30.03883660 fmol. Node ownership and an inert stand-in yielded identical traces. A concentration-matched refill gave zero wall rate. A whole draw collected 60 fmol and left 40 fmol bound at the instant of exchange. The frozen numerical record is `lean-label-energy-wall-20261121/wall-wash.json`. [Wash and counters](https://github.com/Eidosoma/Cells/blob/9917e3d9567993e1019c8caafa89f8653ee6ea9b/src/cells/operators/wash_schedule.py#L438-L501) · [Candidate well](https://github.com/Eidosoma/Cells/blob/9917e3d9567993e1019c8caafa89f8653ee6ea9b/validation/tissue/wash_schedule_fixtures.py#L56-L81)
+
+Robinson et al. separately counted labelled albumin in removed urine, six water rinses and the final disk. A separate five-hour experiment on the same plastic at pH 5 and 87 mg/L yielded **8.759 µg** in pooled liquid and **22.96 ng/cm²** on the disk (0.22%, four replicates). That pool included the original sample, rinses and pipette tip. These measurements support separate liquid and surface accounting. Testing the simulated release rate requires known rinse times and a way to distinguish desorption from liquid carried over between rinses. [Rinse series, Fig. S3](https://stacks.cdc.gov/view/cdc/50419/cdc_50419_DS2.pdf#page=4) · [Surface data, Table S2](https://stacks.cdc.gov/view/cdc/50419/cdc_50419_DS2.pdf#page=7) · [Liquid data, Table S4](https://stacks.cdc.gov/view/cdc/50419/cdc_50419_DS2.pdf#page=9) · [Measurement record](checks/data/robinson2014_wall_wash.json)
+
+<a id="fr28-main-stand-in"></a>
+
+The existing wall stand-in on main at `587ba787` reproduced every reported half-wash value from the FR-28 candidate. The independent run returned 30 fmol collected, 10 fmol on the wall at exchange, 9.97015402 fmol there 10 ms later and a zero maximum inventory residual. Run `checks/wall_wash.py --stand-in-only` for this case. The separate node-ownership comparison above uses `9917e3d9`. [Main well definition](https://github.com/Eidosoma/Cells/blob/587ba7873ac7c3112c00639687d7d86ee186c6fd/validation/tissue/wash_schedule_fixtures.py#L55-L88)
+
+<a id="fr33-label-diffusion"></a>
+
+## 21 November 2026 · FR-33 D1, diffusion of a label and its complement
+
+For a neutral tracer with a common Fick coefficient, summing the fluxes of any finite set of labels recovers the parent flux. Opposing gradients can move labels even when the parent is stationary. Lean proves this for ideal Fick transport, neutral constant-field permeation and the Cells neutral face when every row and the parent use the logarithmic quotient or have equal end concentrations. The small nonzero-gradient polynomial branch has a numerical check. [Proof](CellsProofs/Transport/LabelDiffusion.lean) · [Compiled comparison](checks/label_diffusion.py)
+
+In the two-node world at `1295a7d7`, total tracer on the right stayed at 1 fmol. Right-hand labelled tracer rose from 0.1 to 0.299998884 fmol at 1 s, against 0.3 analytically. The sum of both labels equalled the parent at both nodes on all 101 rows. On a separate face with valence +1, +10 mV from left to right and opposing 90:10 label fractions, the row sum was 2.72590648 × 10⁻⁵ fmol/s versus 3.74339294 × 10⁻⁵ fmol/s for the parent. Lean gives their ratio exactly as (8/5)/ln(9), about **0.7281913813**. Independent charged faces therefore change the total flux in this case. Gray et al. observed labelled PSD-95 leaving a spine and appearing in two neighboring spines. The measurement supports redistribution and leaves the equal-mobility assumption untested. [Engine face](https://github.com/Eidosoma/Cells/blob/1295a7d794feb508bdf565ca2244aff3380b27d6/src/cells/numerics/surface_transport.py#L280-L301) · [Gray et al., Fig. 4A](https://doi.org/10.1371/journal.pbio.0040370.g004)
+
+<a id="fr37-regional-sampling"></a>
+
+## 21 November 2026 · FR-37, when a dye draw represents the chamber
+
+For two internally well-mixed regions and a nonempty draw, Lean proves that sample and chamber concentrations agree exactly when the two concentrations agree or the same fraction of each region is withdrawn. A larger draw fraction from the richer region enriches the sample. Each region’s final amount plus its collected amount equals its initial amount plus its refill. The local draw volumes are inputs. [Proof](CellsProofs/Tissue/RegionalSampling.lean) · [Compiled comparison](checks/regional_sampling.py) · [Cells example at the tested revision](https://github.com/Eidosoma/Cells/blob/ee0b8106406eb26e57ab1b0c34e16ed6c3f83a2b/validation/sampling/uneven_draw.py)
+
+| Starting excess A / B (fmol) | Draw A / B (pL) | Collected excess (fmol) | Excess left A / B (fmol) | Sample excess (mM) |
+| --- | --- | ---: | --- | ---: |
+| 8 / 2 | 100 / 0 | 8 | 0 / 2 | 0.080 |
+| 5 / 5, initially mixed | 50 / 50 | 5 | 2.5 / 2.5 | 0.050 |
+| 8 / 2 | 75 / 25 | 6.5 | 2 / 1.5 | 0.065 |
+
+Each region held 100 pL. All three compiled runs closed the gross local inventory at every recorded time. The refill supplied 10⁻¹⁰ fmol of background dye per draw. The rounded zero in the first row was 8.27 × 10⁻¹⁸ fmol above background. Cells took the regional draw volumes as declared. Johnson et al. measured enrichment independently in a physical flow experiment. Equal outlet flow gave approximately 75% and 25% of stock dye concentration in the two branches, with 50% expected under complete mixing. The experiment measured two flowing outlets. An independent measurement of the dye remaining in each region after a finite draw is still open. [Johnson et al., Fig. 5a and paragraph 33](https://doi.org/10.1029/2005JB004087) · [Measurement record](checks/data/johnson2006_branch_dye.json)
+
+Run the two comparison scripts with the Cells CPU environment and the tested checkout’s `src` and root on `PYTHONPATH`. The sampling script uses the FR-37 example from `ee0b8106`, which has the same engine source as `1295a7d7`. Frozen run directory `lean-label-diffusion-sampling-20261121` contains the JSON results and test logs.
+
 <a id="fr33-regional-tracer"></a>
 
 ## 21 November 2026 · Where the original protein label goes after a pulse
