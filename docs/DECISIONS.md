@@ -9394,3 +9394,22 @@ suggest / 4. lets go on this as you see fit in the queue".
      use is refused, and the one-writer rule prevents double counting.
    - The general level-of-detail contract follows from it.
 
+## D300: D1's own-potential label families are retired; no backwards compatibility before alpha
+
+2026-11-22, about 16:59 UTC. The user: "retire them as soon as possible, we don't want old backwards
+compatibility - we're still in heavy dev not even at alpha".
+- **D1's families are removed,** with their checks, sums and D1-only paths, in the kinds owner's stacked
+  FR-42 landing.
+  - Their consumers (FR-33's first test and tracer, and FR-38's labelled cohort) are on FR-42's neutral
+    shares.
+  - D1-only tests are removed in one batch, with a removal list (D224).
+  - Crossrev and G1 must stay identical, since no registered world uses D1 families.
+- **The general rule before alpha:** a superseded mechanism is retired as soon as its replacement lands,
+  with no compatibility path or opt-in for the old behaviour. Registered and judged results stay
+  reproducible through their tags, frozen snapshots and records (D148), not by keeping old code.
+- **Also recorded:** the Lean lane found FR-38's release_check accepting a survival ratio of 1.00 where 0.25
+  is predicted, on a 0, 1 and 2 h grid. A grid error that could not be estimated became an infinite
+  tolerance, and an empty cohort raised ZeroDivisionError. The fix fails closed, with "insufficient
+  resolution" and "empty cohort". All eight saved R1/R2 survival comparisons passed with finite bounds,
+  so no saved result moves.
+
