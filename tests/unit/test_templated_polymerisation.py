@@ -17,6 +17,7 @@ import copy
 import numpy as np
 import pytest
 
+from cells.definitions import pump_composite_spec as cs
 from cells.definitions.specs import ConfigError, parse_spec
 from cells.operators import templated_polymerisation as polymerisation
 from cells.registry import kind_registry
@@ -211,24 +212,35 @@ def _identity_bound(*terms):
     return 64 * EPS * max(abs(t) for t in terms) + 1e-30
 
 
-# R1 on the kernel for 60 s at dt 2 s: (p, machine, transcription's k_I).
+# R1 on the kernel for 60 s at dt 2 s: (p, machine, transcription's k_I, p's source).
 RELEASES = [
-    (0.75, "returned", 0.0),
-    (1.0, "held", 0.0),
-    (0.0, "held", K_I),
-    (0.25, "returned", K_I),
+    (0.75, "returned", 0.0, "constant"),
+    (1.0, "held", 0.0, "constant"),
+    (0.0, "held", K_I, "constant"),
+    (0.25, "returned", K_I, "scheduled"),
 ]
 
 
-@pytest.mark.parametrize(("p", "machine", "k_I"), RELEASES)
-def test_the_release_keeps_its_identities_and_sits_on_its_limit(p, machine, k_I):
+@pytest.mark.parametrize(("p", "machine", "k_I", "source"), RELEASES)
+def test_the_release_keeps_its_identities_and_sits_on_its_limit(p, machine, k_I, source):
     """FR-38, about 0.3 s a row, no world compiled: R1's world (worlds.r1) on the kernel, whose
     rows with k_I > 0 bring arrivals into the hold. The hold's, each fate row's and the machines'
     identities (§9.7); at k_I = 0 the hold and releases on their closed forms (§9.10, no affinity
     factor); at p = 0 or 1 the zero-rate route's counter and heat exactly 0.0; G's identity with
     the hold's term (§9.5), the routes' heats summing to the booked heat, and no heat increment
-    below zero. A chain without a release keeps today's form, and this one round-trips."""
+    below zero. A chain without a release keeps today's form, and this one round-trips. A
+    scheduled p reaches the controls at its changes (cs.control_values)."""
     raw = kernel.truncated(worlds.r1(p, machine=machine, initiation=k_I), 60.0)
+    if source == "scheduled":
+        _release(raw)["durable_fraction"] = "scheduled"
+        schedule = [dict(time=0.0, value=p), dict(time=30.0, value=1.0)]
+        raw["experiment"]["polymerisation_controls"].append(
+            dict(route_id=worlds.RELEASE, schedule=schedule)
+        )
+        values = cs.control_values(parse_spec(raw), [0.0, 28.0, 30.0, 58.0])
+        assert list(values.polymerisation_release_fraction[:, 0]) == [p, p, 1.0, 1.0]
+        assert list(values.polymerisation_release_class[:, 0]) == [1.0] * 4
+        schedule.pop()  # The kernel holds the time-0 values.
     start, end, layout, spec, increments = _ends(raw, record=True)
     (block,) = [d for d in spec.model.operators if d.law == worlds.POLYMERISATION]
     assert type(block.chains[0]) is polymerisation.ReleasingChain
