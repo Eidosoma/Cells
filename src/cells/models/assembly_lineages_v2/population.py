@@ -368,6 +368,7 @@ class _Context:
         self.extra = np.zeros(EXTRA + len(self.columns) + len(self.holds))
         self.pore_events = []  # FR-31: each rupture's record (pore_clock.event), in order
         self.stop_kinds = []  # FR-31: each applied stop's kind, "schedule" or "pore", in order
+        self.clocks, self.pore_draws, self.pore_check = {}, [], None  # FR-31 (run sets them)
         self.lineage = np.where(state.alive, np.arange(self.K), -1)  # each slot's sub-lineage
         self.count = {i: 0 for i in range(founders)}  # each sub-lineage's last key count
         self.next_sub = founders
@@ -435,6 +436,8 @@ class _Context:
                "transfers": self.transfers_before + len(self.transfers),
                "replacements": self.replacements_before + len(self.replacements),
                "applied_stops": applied, "splits": splits, "lives": living}  # fmt: skip
+        if self.holds:  # FR-31: each living vesicle's clock (pore_clock.clock_record)
+            doc["pores"] = [pore_clock.clock_record(v) for _, v in sorted(self.clocks.items())]
         return {"arrays": arrays, "doc": doc}
 
     def _born(self, slot, key, time, kind, parent, lineage, event, root=None, share=float("nan")):
@@ -475,11 +478,6 @@ def run(spec, *, start=None, stop=None):
         raise ConfigError(
             "This family's block draws need JAX's partitionable threefry: "
             "jax_threefry_partitionable is off, so the run is refused (§0.2d item 9)"
-        )
-    if spec.model.world.hazard is not None and (start is not None or stop is not None):
-        raise ConfigError(  # FR-31 Phase A: the clock's state in a checkpoint comes in slice 3
-            "A checkpoint of a world with the pore law keeps its clocks, which slice 3 builds: a "
-            "start or a stop is refused until then"
         )
     if stop is not None and (type(stop) is not int or not 1 <= stop < spec.experiment.event_limit):
         raise ConfigError(
@@ -555,9 +553,18 @@ def run(spec, *, start=None, stop=None):
             int(k): pore_clock.Vesicle(spec, layout.base_key, state.keys[k], state.slots[k], slot=k)
             for k in np.flatnonzero(state.alive)
         }
+        if admitted is not None:  # the checkpoint's clocks, each its definition's, or refused
+            pore_clock.refuse_other_clocks(clocks, admitted[2]["doc"]["pores"])
         pending = sorted((v.time, k) for k, v in clocks.items() if v.time <= horizon)
         pore_clock.refuse_same_time([clocks[k] for _, k in pending], [t for t, _ in plan])
-        ctx.pore_draws = [clocks[k].draw() for k in sorted(clocks)]
+        # the threshold draws are made when the run first holds a vesicle: a resumed run's
+        # vesicles drew in the run that wrote its checkpoint (checkpoints.py)
+        ctx.pore_draws = [clocks[k].draw() for k in sorted(clocks)] if admitted is None else []
+        # the pair's check at the definition's founders' areas, the same in every segment (a
+        # resumed run may hold no vesicle)
+        areas = [pore_clock.area_m2(world, f) for f in founders]
+        ctx.pore_check = {"probe": balance.pore_verdict(),
+                          "world": balance.pore_world_report(spec, areas)}  # fmt: skip
     stack = functools.partial(jax.tree_util.tree_map, lambda x: np.asarray(x)[None])
     first = _next_stop(plan, pending, horizon)
     limit = layout.event_limit if stop is None else np.int64(min(int(layout.event_limit), stop))
@@ -635,6 +642,7 @@ def run(spec, *, start=None, stop=None):
             host = jax.tree_util.tree_map(lambda a: np.array(a)[0], lanes)
             break
     run_seconds = perf_counter() - started
+    ctx.clocks = clocks  # FR-31: the living vesicles' clocks, for a checkpoint's host document
     final = jax.tree_util.tree_map(lambda a: np.array(a)[0], lanes)
     if end_status is not None:
         final = host
@@ -1130,7 +1138,7 @@ def _assemble(spec, structure, layout, m, verdict, start, state, ctx, events, dr
     timings = {"run_seconds": run_seconds, "events": int(len(codes)), "lanes": 1}
     pores = None
     if world.hazard is not None:  # FR-31: the clock's report (records.py's pores block)
-        pores = {"events": ctx.pore_events, "draws": ctx.pore_draws,
+        pores = {"events": ctx.pore_events, "draws": ctx.pore_draws, "check": ctx.pore_check,
                  "causes": {"pore": len(ctx.pore_events), "threshold": len(ctx.lyses)}}  # fmt: skip
     record = None
     if diagnose:  # §0.2d item 10.5 (diagnostic.py)

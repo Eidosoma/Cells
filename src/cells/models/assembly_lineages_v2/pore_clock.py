@@ -133,6 +133,26 @@ class Vesicle:
         return (self.key, self.counter, self.u, self.energy, self.time)
 
 
+def clock_record(vesicle):
+    """A living vesicle's clock as a checkpoint's host document keeps it (t* null when inf)."""
+    return {"slot": vesicle.slot, "key": vesicle.key, "threshold_E": vesicle.energy,
+            "counter": vesicle.counter,
+            "t_star": vesicle.time if math.isfinite(vesicle.time) else None}  # fmt: skip
+
+
+def refuse_other_clocks(clocks, saved):
+    """A restart's clocks, rebuilt from each living vesicle's key and counts, are the checkpoint's
+    (checkpoints.py), or the run is refused."""
+    from cells.definitions.specs import ConfigError
+
+    rebuilt = [clock_record(v) for _, v in sorted(clocks.items())]
+    if rebuilt != saved:
+        raise ConfigError(
+            "The checkpoint's pore clocks are not its definition's: the living vesicles' keys, "
+            "thresholds or rupture times differ"
+        )
+
+
 def event(world, vesicle, heat_open, work, q_release, returned, work_return):
     """A rupture's record (run.json's pores.events, the lead's ruling 3; the release records σ_hold
     and no σ_max)."""

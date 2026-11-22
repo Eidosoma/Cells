@@ -189,6 +189,7 @@ class _World:
         # after, the reservoirs' change, F after, its heat, |heat|, its reservoir work, the hold's)
         self.pores = None
         self.rupture = None
+        self.pore_check = None  # the pore's pair check (balance.pore_verdict, pore_world_report)
 
     def extra(self):
         return (self.jump.copy(), self.shear, self.sink, self.magnitude)
@@ -498,8 +499,11 @@ def run_lanes(specs):
         for holder, spec, layout_i in zip(holders, specs, host_layouts, strict=True):
             if spec.model.world.division is not None:
                 holder.energy = _vesicle_energy(spec, layout_i)
-        for holder, clock in zip(holders, clocks, strict=True):
+        for holder, clock, spec_i in zip(holders, clocks, specs, strict=True):
             holder.pores = clock
+            if clock is not None:  # FR-31: the pore's pair on the check's probe and the world's
+                world_check = balance.pore_world_report(spec_i, [clock.area])
+                holder.pore_check = {"probe": balance.pore_verdict(), "world": world_check}
         chunks = 0
         while True:
             status = np.asarray(lanes.status)
@@ -757,7 +761,7 @@ def _assemble(spec, structure, layout, verdict, report, holder, final, timings):
         row_arrays["tension_hold_work_kT"] = hold_work
         events = [] if holder.rupture is None else [holder.rupture[1]]
         pores = {"events": events, "causes": {"pore": len(events)},
-                 "draws": [holder.pores.draw()]}  # fmt: skip
+                 "draws": [holder.pores.draw()], "check": holder.pore_check}  # fmt: skip
     osmotic_report = None
     if world.conventions.lumen_volume == "osmotic":  # OL2 milestone 2's rows and report.
         rows_v = [lumen.host_volume_L(world, c[:places]) for c in counts]

@@ -11,8 +11,27 @@ New file for a new feature. Each claim with a planted error it must catch (D187)
 - every refusal Phase A owns, each by its own message: the area's geometry, a step that changes a
   membrane place's count (an isomerisation keeping the membrane's total included), a species with
   no pool to return to, the parameters' forms, the hold's form and count, the cross-checks (no
-  hold, no pore law, an osmotic lumen, sigma beyond sigma_beta/4).
-These parse only: none compiles a world, and the file runs in a few seconds.
+  hold, no pore law, an osmotic lumen, sigma beyond sigma_beta/4);
+- the clock in a single lineage, with chemistry running and idle: the rupture at t* = E/k_v from
+  the sheet alone (E from domain 7), its pore row and released state, the hold's work, the
+  opening's heat from the sheet's closed forms, the event's heat as its two parts, the books
+  closed, the crossing draw discarded at the pore; eta_298 moving only how the heat divides
+  (planted: a release booked from the closed state, which the ledger refuses); a vesicle alive at
+  the horizon ending complete; the bundle's pores, tension_hold and check blocks read back;
+- the clock in a population: each founder's own t* and freed slot, idle and running chemistry's
+  end statuses (Q3), each moiety conserved, the relations' lysis events by the pore law paid by
+  the hold; a transfer taking a removed vesicle's clock with it; a tie with a schedule stop, or
+  between two vesicles (planted: one threshold for every key), refused;
+- the pair's identity on its probe and at the world's states (planted: eta_m without its T
+  factor, refused);
+- FR-22's rung P: cuts before and between the ruptures resumed bitwise, the clocks in the host's
+  document; a cut at a pending rupture's time, and a restart whose clocks differ (planted: a
+  changed threshold draw), refused.
+
+World-compiling cost: one single-lineage program and one population program (K = 3), about 20
+runs, most of them a second or two once compiled; 81.7 s for the whole file on a shared light
+CPU, most of it the first run's geometry probe verdict, world report and compile (the timed lane's
+row is in tests/test_tiers.json). Reason: the claims are the runs' own clocks, books and records.
 """
 
 import copy
@@ -434,6 +453,7 @@ def test_a_vesicle_alive_at_the_horizon_ends_complete_and_the_bundle_reads_back(
         }
     ]
     assert record["stream"]["domains"]["pore"] == 7 and "pore_clock" in record["ssa"]
+    assert record["check"]["pores"]["probe"]["holds"]
     assert record["records"]["row_kind"]["legend"]["9"] == "pore"
     assert "lysed" in record["lifecycle"]["statuses"] and record["end"]["status"] == "lysed"
     assert arrays["tension_hold_work_kT"].shape == (len(arrays["row_time"]), 1)
@@ -443,15 +463,15 @@ FOUNDERS = ((0, AREA), (1 << 32, Q * K_L * (N_L + 2) / 2.0))  # (key, area) of s
 
 
 @functools.cache
-def population_run(idle=False, horizon=5.0, transfer=None):
+def population_run(idle=False, horizon=5.0, transfer=None, start=0.0):
     """Two held vesicles on one pool (running chemistry, or idle), in the diagnostic mode, with a
-    transfer keeping one of them when `transfer` gives its time."""
+    transfer keeping one of them when `transfer` gives its time, and the hold from `start`."""
     w = pore_world(population=True)
     if idle:
         w["founder"].update({"A@pool": 0, "B@pool": 0, "S@pool": 0})
         for founder in w["population"]["founders"]:
             founder["S@lumen"] = 0
-    d = pore_definition(w, horizon=horizon, uniforms=True)
+    d = pore_definition(w, horizon=horizon, uniforms=True, start=start)
     d["experiment"]["diagnostic"] = True
     if transfer is not None:
         d["experiment"]["schedules"] = [{"index": 3, "kind": "transfer", "times_s": [transfer],
@@ -530,3 +550,73 @@ def test_a_population_s_clocks_end_with_their_vesicles_and_ties_are_refused(monk
     monkeypatch.setattr(pore_clock, "threshold", lambda *a: (0.5, math.log(2.0)))
     with pytest.raises(ConfigError, match="Two vesicles' pores open at the same time"):
         runner.run(parse_spec(d))
+
+
+# ------------------------------------------------------------------ the pair check, checkpoints
+
+
+def test_the_pore_pair_keeps_its_identity_and_a_wrong_damping_law_is_refused(monkeypatch):
+    """The sheet's §7: ln k_v - ln P = -(dF - w)/k_BT on the check's probe (T from 260 to 380 K)
+    and at the world's own states, both recorded in run.json's check (planted: eta_m without its
+    T/298.15 factor, so P's temperature law no longer matches k_v's, which the probe refuses)."""
+    from cells.models.assembly_lineages_v2 import balance
+
+    verdict = balance.pore_verdict()
+    assert verdict["holds"] and verdict["probe"]["max_abs_deviation_ln"] <= balance.ATOL
+    _, run = single_run()
+    assert run.pores["check"]["probe"] == verdict
+    assert run.pores["check"]["world"]["max_abs_deviation_ln"] <= balance.ATOL
+    real = law.eta_m
+    monkeypatch.setattr(
+        law, "eta_m", lambda t, e_a, eta=ETA_298: real(t, e_a, eta) * law.T_REF_K / t
+    )
+    with pytest.raises(ConfigError, match="the pore's pair fails"):
+        balance._pore_verdict.__wrapped__()
+
+
+@pytest.mark.parametrize("where", ["before_both", "between", "after_both"])
+def test_a_resumed_pore_world_is_the_uninterrupted_world_after_the_cut(where, tmp_path,
+                                                                       monkeypatch):  # fmt: skip
+    """FR-22's rung P with the pore clock, the hold from 0.5 s: a cut before both ruptures, between
+    them, or after both (no vesicle left), written, read back and resumed, is the uninterrupted
+    world after the cut,
+    bitwise (rows, the hold's column, the trace, the uniforms, the lives, the final lane); the
+    host's document keeps each living vesicle's clock, and the two segments' ruptures are the
+    uninterrupted run's. Refused: a cut at a pending rupture's time, and a restart whose clocks are
+    not its definition's (planted: a threshold draw changed after the cut)."""
+    from cells.models.assembly_lineages_v2 import checkpoints, pore_clock
+    from tests.unit.test_assembly_lineages_v2_checkpoints import differences
+
+    spec, a = population_run(start=0.5)
+    for e in a.pores["events"]:  # the hold's start shifts each rupture time by 0.5 s
+        key = e["key"]
+        assert e["time_s"] == pytest.approx(
+            sheet_time(spec, key=key, area=dict(FOUNDERS)[key], start=0.5)[0], rel=1e-13
+        )
+    times = a.trace["event_time"]
+    first, second = sorted(e["time_s"] for e in a.pores["events"])
+    ruptured = {"before_both": 0, "between": 1, "after_both": 2}[where]
+    edge = (first, second, second)[ruptured]  # the cut: one event before it, or one after
+    k = int(np.searchsorted(times, edge)) + (1 if ruptured == 2 else -1)
+    assert 1 <= k < len(times) and (ruptured == 0 or times[k - 1] > first)
+    b1 = runner.run(spec, stop=k)
+    assert b1.status == "stopped" and len(b1.pores["events"]) == ruptured
+    living = sorted(clock["key"] for clock in b1.resume["doc"]["pores"])
+    assert living == sorted(life["key"] for life in b1.population["lives"]
+                            if life["end_reason"] == "censored")  # fmt: skip
+    checkpoints.write(tmp_path / "cut", b1.checkpoint())
+    saved = checkpoints.read(tmp_path / "cut")
+    b2 = runner.run(spec, start=saved)
+    assert differences(a, b1, b2, k) == [] and b2.closure["holds"]
+    assert b1.pores["events"] + b2.pores["events"] == a.pores["events"]
+    if ruptured == 2:  # no clock is left to plant against
+        assert b1.resume["doc"]["pores"] == [] and b2.pores["events"] == []
+        return
+    with monkeypatch.context() as patch:  # planted: the clocks rebuilt at the restart differ
+        draw = pore_clock.threshold
+        patch.setattr(pore_clock, "threshold", lambda *x: (0.5, draw(*x)[1] + 1.0))
+        with pytest.raises(ConfigError, match="pore clocks are not its definition's"):
+            runner.run(spec, start=saved)
+    b1.resume["doc"]["pores"][0]["t_star"] = float(b1.final["time"])
+    with pytest.raises(ConfigError, match="a vesicle's rupture time, is refused"):
+        b1.checkpoint()

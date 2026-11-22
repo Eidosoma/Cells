@@ -355,7 +355,7 @@ def run_record(run, world_id):
         "run": {"qualifier": run.qualifier, "start": run.start},
         "conventions": world_spec.conventions_rules.to_dict(world.conventions),
         "laws": [_law(law_id) for law_id in components["laws"]],
-        "check": {"probe": run.verdict, "world": run.world_report},
+        "check": _check(run),
         "mode": spec.execution.mode,
         "stream": world_spec.stream_identity(spec),
         "ssa": _ssa(run),
@@ -388,6 +388,13 @@ def run_record(run, world_id):
         **({"population": _population_record(run)} if run.population is not None else {}),
         **(_pore_records(run) if run.pores is not None else {}),
     }
+
+
+def _check(run):
+    out = {"probe": run.verdict, "world": run.world_report}
+    if run.pores is not None:  # FR-31: the pore's event pair, on its probe and the world's states
+        out["pores"] = run.pores["check"]
+    return out
 
 
 def _ssa(run):
