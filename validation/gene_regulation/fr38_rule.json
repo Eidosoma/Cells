@@ -1,0 +1,264 @@
+{
+ "kind": "cells.gene_regulation.fr38_rule@1",
+ "status": "DRAFT for the lead: to be tagged before the judged runs launch. Written after FR-38's development runs and the references' landing; no run was compared with the references, and the builder has not read them",
+ "sheet": {
+  "law": "docs/TEMPLATED_POLYMERISATION_LAWS.md §9, the release (FR-38, D284)",
+  "tags": [
+   "gr1-sheet-fr38-2026-11-22",
+   "gr1-sheet-fr38-r2-2026-11-22",
+   "gr1-sheet-fr38-tau-2026-11-22",
+   "gr1-sheet-fr38-erratum-a-2026-11-22",
+   "gr1-sheet-fr38-erratum-a2-2026-11-22"
+  ]
+ },
+ "references": "FR-38's code-blind references, tag gr-refs-fr38-2026-11-22, read through their interface by the comparison's reader, never by the builder",
+ "engine": "templated_polymerisation@1 with §9's release, at FR-38's landed head; every judged run is fresh, through validation/gene_regulation/engine_run.py, never a development run",
+ "set": "test instance",
+ "set_reason": "§9.9 runs R1 at the numeric test instance and R2 as A1 (§5.1); the sheet names no other potential set for §9",
+ "worlds": {
+  "R1": {
+   "runs": [
+    "R1 p=0 returned",
+    "R1 p=0.25 returned",
+    "R1 p=0.75 returned",
+    "R1 p=1 returned",
+    "R1 p=0 held",
+    "R1 p=0.25 held",
+    "R1 p=0.75 held",
+    "R1 p=1 held",
+    "R1 blank returned",
+    "R1L p=0.75 returned",
+    "R1L blank returned",
+    "R1 blank held",
+    "R1L p=0.75 held",
+    "R1L blank held"
+   ],
+   "what": "§9.9's R1 with erratum A (§9.12): the chain at k_I = 0, its release at tau = 3600/ln 2 s and constant p, the fates R and R_s at the trace c_R, each with its own loss; the four fractions with each machine option, the matched blank, and the labelled pair of §9.8's route 1",
+   "steps_s": [
+    2.0,
+    1.0,
+    0.5
+   ],
+   "judged_step_s": 0.5,
+   "outputs_s": "every 60 s to 14,400 s (worlds.R1_EVERY): the sheet's five among them, and route 2's grid",
+   "compared_times_s": [
+    0.0,
+    1800.0,
+    3600.0,
+    7200.0,
+    14400.0
+   ],
+   "compared_times_reason": "the sheet's five outputs (§9.9; the lead's ruling, 22 November 2026)",
+   "matched_blank": "the same world with H(0) = 0, everything else equal (§9.12, reading 3): one per machine option serves every p, since at H = 0 the release moves nothing and books nothing, whatever p and the machine (the blanks at the four p and both options are bit-identical on the operator's NumPy kernel)",
+   "survivors": "each fate row minus the matched blank's, at the compared times: the released molecules still present (§9.10, §9.12 reading 4), judged as an amount",
+   "cohort": {
+    "window_s": [
+     0.0,
+     3600.0
+    ],
+    "window_closed": "left: releases during [0, 3600 s)",
+    "membership": "read at the start of each step (psi's switch at 3600 s, §9.12 reading 7)",
+    "sampled_at_s": [
+     3600.0,
+     7200.0
+    ],
+    "route_1": "R1L's class-2 rows R_c2 and R_s_c2 minus the labelled blank's (§9.8, R-F1), at p = 0.75, with each machine option; judged as an amount",
+    "route_2": "validation/gene_regulation/cohort.py on the unlabelled run's own pool, n_F, int_Q_<release>_<fate> and int_D_F, at its outputs every 60 s, at p = 0.75, with each machine option"
+   }
+  },
+  "R2": {
+   "runs": [
+    "R2 returned",
+    "R2 held"
+   ],
+   "what": "§9.9's R2 with its addendum and §9.12: A1 with transcription's release at tau = 3600/ln 2 s and p = 0.75, H(0) = 0, the fates R and R_s at R1's rates, translation by tl on R and tl_s on R_s, with each machine option",
+   "steps_s": [
+    2.0,
+    1.0,
+    0.5
+   ],
+   "judged_step_s": 0.5,
+   "outputs_s": "A1's: every 60 s to 21,600 s (§9.9)",
+   "compared_times_s": "A1's outputs, every 60 s to 21,600 s",
+   "cohort": {
+    "window_s": [
+     0.0,
+     3600.0
+    ],
+    "window_closed": "left: releases during [0, 3600 s)",
+    "membership": "read at the start of each step",
+    "sampled_at_s": [
+     3600.0,
+     7200.0
+    ],
+    "window_source": "the lead's ruling, 22 November 2026: R1's window, which matches the references'",
+    "route_2": "cohort.py on each fate pool's counters at R2's outputs, with each machine option; route 1 is not computed in R2 (§9.12, reading 8)"
+   }
+  }
+ },
+ "quantities": {
+  "what": "every quantity the references publish that the engine exports, at the compared times, by the name mapping that the comparison's reader states at the tag; a published quantity the engine does not export is listed as not compared",
+  "engine_exports": {
+   "amount": [
+    "n_<row>",
+    "F_<pool>",
+    "n_<release>_<fate> (a fate's class total)",
+    "survivors: n_<fate row> minus the matched blank's"
+   ],
+   "occupancy": [
+    "H_<release> (the hold; H_<release>_<k> per class)",
+    "C_<chain>_<j>",
+    "E_<chain> (sum C, plus H where held: §9.12 reading 6)",
+    "W_<chain>"
+   ],
+   "extent": [
+    "int_Q_<chain> (arrivals)",
+    "int_Q_<release>_<fate> (_<k> per class)",
+    "int_D_<polymer>",
+    "int_D_route_<route>",
+    "int_J_I_<chain>",
+    "int_S_<chain>",
+    "int_J_C"
+   ],
+   "heat": [
+    "H_tx",
+    "H_tl (tl and tl_s)",
+    "H_deg_R",
+    "H_deg_P",
+    "H_deg_<fate row> (deg_R_s: H_deg_R_s, §9.12 reading 5)",
+    "H_rc",
+    "H_rel_<release>_<fate>",
+    "H_route_<route>",
+    "H_total"
+   ],
+   "free_energy": [
+    "G_minus_G0, with the hold's standard term (§9.5)"
+   ],
+   "cohort": [
+    "route 1 (R1 only) and route 2, per fate, at each sample time"
+   ]
+  },
+  "class_matching": "by exact name first for the hold, H_<release> and H_<release>_<k>, which are occupancy, then by prefix: n_ and F_ amount; C_, E_ and W_ occupancy; int_ extent; H_ heat; G_minus_G0 free energy"
+ },
+ "order_declared": [
+  {
+   "world": "R1",
+   "readout_class": "amount",
+   "p": 3,
+   "reason": "SSPRK(3,3) on the operator's own variables, third order; R1 composes no other operator, and the inner step leaves its rows"
+  },
+  {
+   "world": "R1",
+   "readout_class": "occupancy",
+   "p": 3,
+   "reason": "SSPRK(3,3) on the operator's own variables, third order; R1 composes no other operator, and the inner step leaves its rows"
+  },
+  {
+   "world": "R1",
+   "readout_class": "extent",
+   "p": 3,
+   "reason": "SSPRK(3,3) on the operator's own variables, third order; R1 composes no other operator, and the inner step leaves its rows"
+  },
+  {
+   "world": "R1",
+   "readout_class": "free_energy",
+   "p": 3,
+   "reason": "G is a function of the state, which is third order: SSPRK(3,3) on the operator's own variables, third order; R1 composes no other operator, and the inner step leaves its rows"
+  },
+  {
+   "world": "R1",
+   "readout_class": "heat",
+   "p": 2,
+   "reason": "each route's heat is its share of the exact total by divided-difference potentials (the average-vector-field split), a second-order discrete gradient, as in FR-25's rule"
+  },
+  {
+   "world": "R1",
+   "readout_class": "cohort, route 1",
+   "p": 3,
+   "reason": "a difference of two fate rows' amounts: SSPRK(3,3) on the operator's own variables, third order; R1 composes no other operator, and the inner step leaves its rows"
+  },
+  {
+   "world": "R2",
+   "readout_class": "amount",
+   "p": 2,
+   "reason": "the split step: A1's regulator turnover and the coupling's routed factor act in their own parts around the operator, Strang's second order, as in FR-25's rule for A1"
+  },
+  {
+   "world": "R2",
+   "readout_class": "occupancy",
+   "p": 2,
+   "reason": "the split step: A1's regulator turnover and the coupling's routed factor act in their own parts around the operator, Strang's second order, as in FR-25's rule for A1"
+  },
+  {
+   "world": "R2",
+   "readout_class": "extent",
+   "p": 2,
+   "reason": "the split step: A1's regulator turnover and the coupling's routed factor act in their own parts around the operator, Strang's second order, as in FR-25's rule for A1"
+  },
+  {
+   "world": "R2",
+   "readout_class": "heat",
+   "p": 2,
+   "reason": "the split step: A1's regulator turnover and the coupling's routed factor act in their own parts around the operator, Strang's second order, as in FR-25's rule for A1"
+  },
+  {
+   "world": "R2",
+   "readout_class": "free_energy",
+   "p": 2,
+   "reason": "the split step: A1's regulator turnover and the coupling's routed factor act in their own parts around the operator, Strang's second order, as in FR-25's rule for A1"
+  }
+ ],
+ "tolerance": {
+  "estimate": "per readout and run, from the engine's three runs at steps 4h, 2h and h: est = max over the compared times of |y(2h) - y(h)| / (2^p - 1), with p as declared",
+  "tolerance": "max(F est, floor_of_scale x scale), with scale = max over the compared times of |y(h)|",
+  "zero_scale": "where scale is 0 (an idle route's counter or heat, as int_Q_tx in R1 or the zero-rate fate at p = 0 or 1), the readout passes only where the reference is 0 at every compared time",
+  "at_the_floor": "where the tolerance is the floor, the readout is judged against the floor and its order check is skipped",
+  "order_check": "elsewhere, the observed order q = log2(max|y(4h) - y(2h)| / max|y(2h) - y(h)|) lies in order_window, else the run is inconclusive",
+  "cohort_route_2": "max(F g, floor_of_scale x scale), with g cohort.grid_error on the judged run's outputs: the host-side route's own error (§9.8), not a step error, so no order check",
+  "judged": "at step h: a readout passes where max over the compared times of |y(h) - reference| <= its tolerance",
+  "reported_not_judged": "per readout, its observed order q and its effective factor, F (2^q - 1)/(2^p - 1)"
+ },
+ "factor_of_safety": 3.0,
+ "factor_source": "Roache PJ (1994) Perspective: a method for uniform reporting of grid refinement studies. J. Fluids Eng. 116:405-413: the grid-convergence index GCI = Fs |e|/(r^p - 1), with factor of safety Fs = 3 for two grids at an assumed order and 1.25 for three or more grids at an observed order. Checked against secondary sources (NASA NPARC's grid-convergence tutorial; Phillips and Roy 2014, J. Fluids Eng.); the 1994 paper itself was not reached",
+ "floor_of_scale": 1e-09,
+ "floor_reason": "FR-25's floor; the lead confirms from the references' README, before the tag, that their resolution lies below it (the builder has not read it)",
+ "order_window": {
+  "low": "p - 0.5",
+  "high": 3.5
+ },
+ "verdicts": [
+  "a run is inconclusive if any readout's order falls outside its window",
+  "a run fails if any readout fails",
+  "a run passes if every readout passes and every compared time is matched",
+  "derived quantities (survivors, route 1) are judged with the run they are derived for",
+  "FR-38's comparison passes only when every run of R1 and R2 passes"
+ ],
+ "retry": {
+  "steps": [
+   1.0,
+   0.5,
+   0.25
+  ],
+  "once": true,
+  "judged_step": 0.25,
+  "runs": "inconclusive only"
+ },
+ "not_in_this_rule": [
+  "the requester's limit, 40/40/30/10, 24.852814 and 5.000000: the acceptance's (release_check.py and the independent checker's), not this comparison's",
+  "R1S and R2A, the development checks",
+  "routed p (B1′ release_fraction), its own round before this comparison: R1 and R2 declare a constant p",
+  "the observation reader of src/cells/assays",
+  "each move's dG and A1's u(t), not exported (as FR-25)",
+  "every potential set but the test instance"
+ ],
+ "not_blind": [
+  "the builder read FR-38's development runs before this rule: R1's development sets and acceptance set at dt 2 s (da21173d), R2 and R2A at dt 0.5 s (da21173d), R1S at dt 2 s (6e639426) and R1's restart at dt 0.5 s; each world at one step only",
+  "the builder read one development run (R1 p=0.75 returned, dt 2 s) before writing release_check.py's tolerances, and revised two of its bounds after the first R1 development set was read, each a checker fault (G's identity bound gained the moving rows' G terms; the class-total check pairs each run with its own blank); no tolerance's number changed. release_check.py is the acceptance, not this rule",
+  "the lead showed the builder the references' R1 survivors at p = 0.75 and 1 h, to 10 digits, before this comparison (the lead's disclosure, 22 November 2026); they are used in no code, test or tolerance",
+  "a lint run printed lines 17-42 of FR-25's references/run.py, its imports and one comment line, to the builder; FR-38's references were never read",
+  "R2's cohort window: the builder chose R1's, [0, 3600 s) sampled at 3600 and 7200 s, before the references' was known; the lead confirmed it matches theirs",
+  "the sheet's errata A and A2 settled the references' readings and their two findings, R-F1 and R-F2, before this rule, so that engine and references read one sheet",
+  "this rule's soundness rests on its tolerance coming from the engine's step error alone, with the floor and route 2's grid error, never from a gap to the references"
+ ],
+ "orders_seen": "none: every development run of a release world was at a single step (R1 at 2 s, R2 at 0.5 s), so no observed order was seen before this rule"
+}
