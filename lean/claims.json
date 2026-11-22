@@ -13,6 +13,7 @@
   "law_categories": {
     "cells.adenylate_kinase@1": "reactions-and-binding",
     "cells.bilayer_geometry@1": "molecular-assembly",
+    "cells.gard_catalysis_pair_consistent@2": "molecular-assembly",
     "cells.held_reductant_supply@1": "reactions-and-binding",
     "cells.membrane_permeation@1": "membrane-transport",
     "cells.osmotic_lumen@1": "membrane-transport",
