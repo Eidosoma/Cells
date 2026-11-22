@@ -88,6 +88,22 @@ def _within(counts, tables):
     return largest <= last and membrane - tables.offset <= last
 
 
+def lifted_to_floor(counts, membrane, quanta, floor):
+    """A probe state at or above the vesicle floor (§0.2c rule 5): a state whose footprint is below
+    `floor` gains the same number of molecules at every membrane place, the fewest that reach it;
+    any other state is returned as it is. The draw is unchanged, so a world whose states all stand
+    at its floor (the generic probe worlds: one molecule of the smallest area is the floor) checks
+    exactly the same pairs. Found by OL5's registered OL3 worlds (22 November 2026): floors of 200
+    to 1,500 quanta at one quantum a molecule, so no drawn state reached them, none of their joins
+    was paired, and the world report refused them (D263)."""
+    w = int(np.sum(counts[membrane] * quanta[membrane]))
+    if w >= floor:
+        return counts
+    out = counts.copy()
+    out[membrane] += -(-(floor - w) // int(np.sum(quanta[membrane])))
+    return out
+
+
 def deviations(spec, rng, states=STATES, max_count=MAX_COUNT):
     """ln a⁺(n) − ln a⁻(n') + ΔF − w for every step that can fire at `states` random states.
 
@@ -95,7 +111,10 @@ def deviations(spec, rng, states=STATES, max_count=MAX_COUNT):
     capacity) molecules per place, and a state or a result the world's table cannot hold is no
     pair. Before, a low-capacity world drew states above its capacity and checked none of them. A
     world of capacity 12 or more draws exactly as it did, and checks the same pairs unless a state's
-    membrane total passed its capacity (read from the clamped table before, skipped now)."""
+    membrane total passed its capacity (read from the clamped table before, skipped now).
+
+    A bilayer world's states stand at or above its vesicle floor (lifted_to_floor): below it every
+    channel that changes the footprint is zero, so such a state pairs none of them."""
     world = spec.model.world
     structure, layout, tables = model.structure(spec), model.layout(spec), model.tables(spec)
     terms = world.terms
@@ -103,9 +122,17 @@ def deviations(spec, rng, states=STATES, max_count=MAX_COUNT):
     R = structure.steps
     membrane = np.asarray([p.phase == "membrane" and not p.held for p in world.places])
     max_count = min(max_count, structure.molecules)
+    floor = None
+    if structure.geometry not in (None, PRESCRIBED_SHELL):
+        from cells.models.assembly_lineages_v2 import geometry as geometry_rules
+
+        quanta = geometry_rules.place_quanta(world, structure.places)
+        floor = (np.flatnonzero(membrane), quanta, geometry_rules.floor_quanta(world))
     found = []
     for _ in range(states):
         n = random_state(world, structure.places, rng, max_count)
+        if floor is not None:
+            n = lifted_to_floor(n, *floor)
         if not _within(n, tables):
             continue
         forward = host_log_rates(n, layout, structure)
