@@ -96,14 +96,31 @@ def scheduled_identity(seed, environment, lineage, branch):
     return out
 
 
+# FR-31 Phase A: the pore clock's thresholds (domain 7, carrier word the vesicle's key, counter its
+# pore draws from 0), by @1's derivation with its own number, as domains 5 and 6. Only a run that
+# draws on it states it (pore_identity), so every other run's identity is unchanged.
+PORE = MappingProxyType({"pore": 7})
+
+
+def pore_identity(seed, environment, lineage, branch, *, scheduled):
+    """identity(), or scheduled_identity() when domain 5 or 6 is drawn too, of a run that draws
+    on domain 7 (a world that declares the pore law)."""
+    build = scheduled_identity if scheduled else identity
+    out = build(seed, environment, lineage, branch)
+    out["domains"] = {**out["domains"], **dict(PORE)}
+    out["carriers"] = {**out.get("carriers", {}), "pore": "the vesicle's carrier key"}
+    return out
+
+
 def stream_key_data(base, carrier, domain):
     """An assembly's stream for one domain, as raw key data: @1's derivation for @1's numbers."""
-    if domain in LATER:
+    if domain in LATER or domain in PORE:
         import jax
         import jax.numpy as jnp
 
+        number = LATER[domain] if domain in LATER else PORE[domain]
         key = v1._fold64(v1._wrap(base), carrier)
-        return jax.random.key_data(jax.random.fold_in(key, jnp.uint32(LATER[domain])))
+        return jax.random.key_data(jax.random.fold_in(key, jnp.uint32(number)))
     if domain in RESERVED:
         raise ValueError(f"The {domain} stream domain is reserved: nothing draws from it yet")
     if domain not in V1_NAMES:

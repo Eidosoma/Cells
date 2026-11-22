@@ -1210,7 +1210,7 @@ On the core's gap-2 seams (INNER_MODEL_V4_DESIGN §7.4 (m), landed):
    route of @3's (`species_common.check_impermeant`). A kind's node moves are none of those, so
    ATP, ADP and Pi can be both regenerated and pumped. D152 runs as Strang halves around @3's
    step, and the pump runs inside it. The schedule m(t) is D152's own `reaction_controls`, which
-   change at exact multiples of dt.
+   change on the clock's grid (D283).
 2. **One authority for potentials: a gap (code).**
    - The pump reads μ°'/RT from the species registry (`species_registry.standard_potential`).
    - D152 parses its own `standard_mu_RT` and `standard_concentration_mM` per species and never

@@ -53,6 +53,7 @@ from cells.definitions.specs import (
 from cells.models.assembly_lineages_v2 import (
     FREE_ENERGY_INTERFACE,
     GEOMETRY_INTERFACE,
+    HAZARD_INTERFACE,
     IDEAL_MIXING,
     MASS_ACTION,
     MEMBRANE_PERMEATION,
@@ -79,6 +80,7 @@ EXPERIMENT_KEYS = {
     "uniforms",
     "schedules",
     "diagnostic",
+    "tension_holds",
 }
 EXECUTION_KEYS = {
     "backend",
@@ -118,6 +120,7 @@ class Experiment:
     uniforms: bool
     schedules: tuple = ()  # OL3: the shear schedules (division.py), by index.
     diagnostic: bool = False  # OL2 milestone 3: §0.2d item 10.5's record (diagnostic.py)
+    tension_holds: tuple = ()  # FR-31: the held tensions (tension_hold.py), by index.
 
 
 @dataclass(frozen=True)
@@ -259,6 +262,12 @@ def parse_world(raw):
         world = dataclasses.replace(
             world, division=division_rules.parse_data(raw["division"], world)
         )
+    if "hazard" in raw:  # FR-31 Phase A: a vesicle hazard (pore_nucleation.py), parsed last
+        block = raw["hazard"]
+        if not isinstance(block, dict) or "law" not in block:
+            raise ConfigError("world: hazard names its law")
+        law = _law(block["law"], HAZARD_INTERFACE, "hazard")
+        world = dataclasses.replace(world, hazard=(law.law_id, law.parse_data(block, world)))
     return world
 
 
@@ -532,6 +541,9 @@ def world_to_dict(world):
         out["population"] = population_rules.data_to_dict(world.population)
     if world.sites is not None:
         out["sites"] = world_rules.sites_to_dict(world.sites)
+    if world.hazard is not None:
+        law_id, data = world.hazard
+        out["hazard"] = registry.lookup(law_id).data_to_dict(data)
     return out
 
 
@@ -563,7 +575,8 @@ def _observations(raw, horizon):
 
 
 def parse_experiment(raw, world=None):
-    _keys(raw, EXPERIMENT_KEYS, EXPERIMENT_KEYS - {"schedules", "diagnostic"}, "experiment")
+    _keys(raw, EXPERIMENT_KEYS, EXPERIMENT_KEYS - {"schedules", "diagnostic", "tension_holds"},
+          "experiment")  # fmt: skip
     schedules = ()
     if "schedules" in raw:
         from cells.models.assembly_lineages_v2 import division as division_rules
@@ -581,7 +594,14 @@ def parse_experiment(raw, world=None):
         uniforms=_boolean(raw["uniforms"], "experiment: uniforms"),
         schedules=schedules,
         diagnostic=_boolean(raw.get("diagnostic", False), "experiment: diagnostic"),
+        tension_holds=_holds(raw["tension_holds"]) if "tension_holds" in raw else (),
     )
+
+
+def _holds(raw):
+    from cells.models.assembly_lineages_v2 import tension_hold
+
+    return tension_hold.parse(raw)
 
 
 def parse_execution(raw, model):
@@ -646,6 +666,10 @@ def parse(data):
     _mode_refusals(model.world, execution.mode)
     experiment = parse_experiment(raw["experiment"], model.world)
     _capacity_refusals(model.world, experiment, execution)
+    if model.world.hazard is not None or experiment.tension_holds:  # FR-31: the cross-checks
+        from cells.models.assembly_lineages_v2 import tension_hold
+
+        tension_hold.cross_checks(model.world, experiment.tension_holds)
     return SimulationSpec(model, experiment, execution)
 
 
@@ -663,6 +687,7 @@ def to_dict(spec):
             "uniforms": e.uniforms,
             **({"schedules": _schedules_to_dict(e.schedules)} if e.schedules else {}),
             **({"diagnostic": True} if e.diagnostic else {}),
+            **({"tension_holds": _holds_to_dict(e.tension_holds)} if e.tension_holds else {}),
         },
         "execution": {
             "backend": x.backend,
@@ -687,6 +712,12 @@ def _schedules_to_dict(schedules):
     from cells.models.assembly_lineages_v2 import division as division_rules
 
     return division_rules.schedule_to_dict(schedules)
+
+
+def _holds_to_dict(holds):
+    from cells.models.assembly_lineages_v2 import tension_hold
+
+    return tension_hold.to_dict(holds)
 
 
 def _capacity_refusals(world, experiment, execution):
@@ -743,5 +774,7 @@ def stream_identity(spec):
     later = x.mode == POPULATION or any(  # domain 5 is drawn, or domain 6
         s.rate is not None or s.kind == "transfer" for s in spec.experiment.schedules
     )
+    if spec.model.world.hazard is not None:  # FR-31: domain 7 is drawn too
+        return streams.pore_identity(x.seed, x.environment, x.lineage, x.branch, scheduled=later)
     build = streams.scheduled_identity if later else streams.identity
     return build(x.seed, x.environment, x.lineage, x.branch)

@@ -447,7 +447,7 @@ The values are illustrative and synthetic. The channel coupling is admitted once
   evidence). An ion's is null.
 - **The experiment** adds:
   - `coupling_controls`: one schedule per coupling, from time 0, of `enabled` ∈ {0, 1};
-  - `regulatory_writes`: (state, cell, time, value) entries, with the times exact multiples of dt
+  - `regulatory_writes`: (state, cell, time, value) entries, with the times on the clock's grid (D283)
     inside the horizon.
 
 **Parts.**

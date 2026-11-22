@@ -64,6 +64,7 @@ from cells.definitions.spec_values import identifier
 from cells.definitions.specs import ConfigError, _fields
 from cells.laws.electrochemistry import R as R_GAS
 from cells.models import pump_composite_adapter as adapter
+from cells.numerics.clock_instants import ON_THE_GRID, on_grid  # D283's one predicate.
 from cells.numerics.species_sums import entity_sum
 from cells.operators import species_common as common
 from cells.operators.contract import Operator, Read
@@ -451,8 +452,8 @@ def _changes(raw, base, what):
     for change in raw:
         _fields(change, {"time", "multiplier"}, f"{CONTROLS_KEY} change")
         time = _number(change["time"], f"a change time of {what}")
-        if time != round(time / dt) * dt:
-            raise ConfigError(f"{LAW_ID}: a schedule change must be an exact multiple of dt")
+        if on_grid(time, dt) is None:
+            raise ConfigError(f"{LAW_ID}: a schedule change must be {ON_THE_GRID}")
         if not 0.0 <= time <= end:
             raise ConfigError(f"{LAW_ID}: a schedule change lies outside the horizon")
         changes.append((time, _number(change["multiplier"], f"a multiplier of {what}", low=0.0)))

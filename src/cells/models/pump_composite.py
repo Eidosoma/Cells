@@ -60,6 +60,7 @@ from cells.execution.errors import NumericalError
 from cells.models import pump_composite_adapter as pump3
 from cells.models.surface_pump import DOMAIN_MESSAGE
 from cells.models.surface_pump_checks import row_checks
+from cells.numerics.clock_instants import ON_THE_GRID, on_grid  # D283's one predicate.
 from cells.numerics.fixed_step import rk4_checked_step
 from cells.operators.contract import (
     COMMUTING,
@@ -70,6 +71,8 @@ from cells.operators.contract import (
     monotone_heat,
     part_stages,
     reads_of,
+    reports_labels,
+    takes_labels,
 )
 from cells.registry import kind_registry, species_registry
 
@@ -1274,6 +1277,34 @@ class Composition:
         self.quantity_readers = quantity_readers(operators)
         self.domain_views = tuple(op for op in operators if op.VIEW_FOLLOWS_SPLIT)
         self.process_operator = next((op for op in operators if op.PROCESS), None)
+        # FR-42 (D289): the label owner and the split parts that report their one-way moves to it
+        # (static: without an owner no half-step call changes).
+        self.label_owner = next((op for op in operators if op.LABEL_OWNER), None)
+        self.label_reporters_in_order = tuple(
+            op for op in operators if self.label_owner is not None and reports_labels(op)
+        )
+        self.label_reporters = frozenset(self.label_reporters_in_order)
+        # D296: each source reporter's and pool reporter's position among them (static), the
+        # label owner's axes (species_labels.reporters).
+        self.label_sources = {
+            op: k
+            for k, op in enumerate(o for o in self.label_reporters_in_order if o.LABEL_SOURCES)
+        }
+        self.label_pools = {
+            op: k for k, op in enumerate(o for o in self.label_reporters_in_order if o.LABEL_POOLS)
+        }
+        # D296: the events that report the slots they replace (static: by their signature).
+        self.label_events = frozenset(
+            op for op in self.events if self.label_owner is not None and takes_labels(op.event)
+        )
+        # FR-42's stage 2: the inner step reports its one-way transfers where it takes labels=
+        # (static: by the inner implementation's signature; none without an owner, and none beside
+        # declared kinds, whose one-way hook comes later).
+        self.inner_reports_labels = (
+            self.label_owner is not None
+            and takes_labels(self.inner.checked_step)
+            and not getattr(inner, "KINDS", ())
+        )
         self.coupled = any(op.SPLIT and op.RK4 == "coupled" for op in operators) or (
             self.process_operator is not None
         )
@@ -1604,7 +1635,14 @@ class Composition:
                 if lifecycle:
                     keywords["lifecycle"] = self._lifecycle
                 before = current
-                current, ok = op.event(current, control, p, xp=xp, **keywords)
+                if op in self.label_events:  # Static (D296): its replaced slots' labels.
+                    rows = self.label_owner.rows(p)
+                    current, ok, replaced = op.event(
+                        current, control, p, xp=xp, labels=rows, **keywords
+                    )
+                    current = self.label_owner.advance_event(current, replaced, control, p, xp=xp)
+                else:
+                    current, ok = op.event(current, control, p, xp=xp, **keywords)
                 valid = _and(valid, ok)
                 if lifecycle:
                     valid = _and(valid, self._history_kept(before, current, xp=xp))
@@ -1626,9 +1664,16 @@ class Composition:
             checked, current = self._control_factor_checks(current, p, xp=xp)
             valid = _and(valid, checked)
         inputs = self.inner.barrier(inputs, xp=xp)
-        if process is None:
+        # FR-42's stage 2 (static): an IMEX inner step that reports gives the label owner its
+        # transfers; RK4's (an empty tableau) is refused beside a labelled in-step mover.
+        if self.inner_reports_labels and p.imex_explicit.shape[0]:
+            current, ok, applied, heat = self._labelled_inner(
+                current, inputs, dt, process, control, p, xp=xp
+            )
+        elif process is None:
             moved, ok = self.inner.checked_step(inputs[0], dt, inputs[1], inputs[2], p.active)
             moved, ok = self.inner.barrier((moved, ok), xp=xp)
+            current = current._replace(**moved._asdict())
         else:
             moved, ok, (applied, heat) = self.inner.imex_step(
                 inputs[0],
@@ -1639,7 +1684,7 @@ class Composition:
                 membrane_process=process.process(control, p),
             )
             moved, ok, applied, heat = self.inner.barrier((moved, ok, applied, heat), xp=xp)
-        current = current._replace(**moved._asdict())
+            current = current._replace(**moved._asdict())
         last = None
         for op in reversed(splits):
             current, ok_half = self._half_step(op, current, h, control, p, xp=xp)
@@ -1660,6 +1705,33 @@ class Composition:
 
     imex_step = split_step
 
+    def _labelled_inner(self, current, inputs, dt, process, control, p, *, xp):
+        """(state, valid, applied, heat): the inner step with labels (FR-42's stage 2), its
+        transfers advancing the label owner's shares; applied and heat as the process gives them
+        (None without one)."""
+        labels = self.label_owner.rows(p)
+        applied = heat = None
+        if process is None:
+            moved, ok, transfers = self.inner.checked_step(
+                inputs[0], dt, inputs[1], inputs[2], p.active, labels=labels
+            )
+            moved, ok, transfers = self.inner.barrier((moved, ok, transfers), xp=xp)
+        else:
+            moved, ok, (applied, heat), transfers = self.inner.imex_step(
+                inputs[0],
+                dt,
+                inputs[1],
+                inputs[2],
+                xp=xp,
+                membrane_process=process.process(control, p),
+                labels=labels,
+            )
+            moved, ok, applied, heat, transfers = self.inner.barrier(
+                (moved, ok, applied, heat, transfers), xp=xp
+            )
+        end = current._replace(**moved._asdict())
+        return self.label_owner.advance_inner(current, end, transfers, p, xp=xp), ok, applied, heat
+
     def _inner_keyword(self, op):
         """{"inner": the inner implementation object} for an operator that declares USES_INNER,
         else {} (static: every other call is unchanged)."""
@@ -1677,6 +1749,18 @@ class Composition:
         keywords = self._inner_keyword(op)
         if self._passes_view(op):
             keywords["view"] = self._view_for(op, p, xp=xp)(state)
+        labelled = op in self.label_reporters  # Static (FR-42): its moves advance the shares.
+
+        def applied(at, h, control):
+            """op's half-step from `at` as applied, with the label owner's shares advanced by its
+            moves where op reports to one (FR-42, D289; otherwise today's call)."""
+            if not labelled:
+                return op.half_step(at, h, control, p, xp=xp, **keywords)
+            labels = self.label_owner.labels(control, p, self.label_sources.get(op))
+            new, ok, moves = op.half_step(at, h, control, p, xp=xp, labels=labels, **keywords)
+            pool = self.label_pools.get(op)
+            return self.label_owner.advance(at, new, moves, p, xp=xp, pool=pool), ok
+
         routes = self.rate_routes.get(op)
         if routes and op.LAW_ID in self.midpoint:  # Static: a self-moved route's target.
             # The explicit midpoint (self_moved_targets): a predictor over h/2 with the factors
@@ -1686,14 +1770,14 @@ class Composition:
             start, routed0, _ = self._routed_control(op, routes, state, control, p, xp=xp)
             mid, ok0 = op.half_step(state, h / 2, start, p, xp=xp, **keywords)
             control, routed, records = self._routed_control(op, routes, mid, control, p, xp=xp)
-            new, ok = op.half_step(state, h, control, p, xp=xp, **keywords)
+            new, ok = applied(state, h, control)
             valid = _and(_and(routed0, ok0), _and(ok, routed))
             return _recorded(new, records, xp=xp), valid
         if routes:  # Static (B1′): its routed rates, from the state this half-step receives.
             control, routed, records = self._routed_control(op, routes, state, control, p, xp=xp)
-            new, ok = op.half_step(state, h, control, p, xp=xp, **keywords)
+            new, ok = applied(state, h, control)
             return _recorded(new, records, xp=xp), _and(ok, routed)
-        return op.half_step(state, h, control, p, xp=xp, **keywords)
+        return applied(state, h, control)
 
     def _routed_control(self, op, routes, state, control, p, *, xp):
         """(control with each of op's routed fields times its sources' factors, in declared
@@ -1932,10 +2016,10 @@ class Composition:
         dt, end = spec.execution.dt, spec.experiment.end_time
         for op, _, schedule in entries(spec):
             if op.EVENT and any(
-                not 0 < t < end or int(round(t / dt)) * dt != t for t in op.schedule_times(schedule)
+                not 0 < t < end or on_grid(t, dt) is None for t in op.schedule_times(schedule)
             ):
                 raise ConfigError(
-                    f"{op.LAW_ID} event times must be exact multiples of dt inside the horizon"
+                    f"{op.LAW_ID} event times must lie inside the horizon and {ON_THE_GRID}"
                 )
         small = compact(spec)
         state, p = self.initial_values(small)

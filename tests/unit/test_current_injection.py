@@ -84,7 +84,7 @@ def test_a_cell_that_cannot_supply_a_removed_carrier_refuses(bound):
         ({"K": 0.5, "M": 0.4}, [(0, 1e-12)], "sum to 1"),
         ({"K": 1.0, "Cl": 0.0}, [(0, 1e-12)], "positive"),
         ({"Cl": 1.0}, [(0, 1e-12)], "charged species"),
-        ({"K": 1.0}, [(0, 1e-12), (1.5, 0.0)], "multiple of dt"),
+        ({"K": 1.0}, [(0, 1e-12), (1.5, 0.0)], "on the clock's grid"),
     ],
 )
 def test_definition_refusals(carriers, currents, message):

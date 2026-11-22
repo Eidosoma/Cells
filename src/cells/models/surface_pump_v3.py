@@ -1951,6 +1951,149 @@ def stage_junction_gates(
     return advanced, ok
 
 
+# --- FR-42 (D289): labelled rows' one-way amounts over an inner step ---------------------------
+#
+# Labels are shares of a physical row; they follow material only through one-way amounts. With
+# `labels` (the labelled species' rows, static), imex_step and checked_step also return transfers:
+# per direction and entity kind, (amount [m, entity] fmol over the step, each >= 0, source and
+# destination node [entity] on the combined axis, cells then outside nodes). The state and validity
+# are the unlabelled call's bit for bit; without labels nothing is traced. Each entity's amounts are
+# the trapezoid of its one-way fluxes at the step's start and end states (the Euler IMEX, whose
+# weights are all >= 0, combines its one explicit stage directly), plus the gap to the booked move
+# (O(dt^3)) on the side its sign gives: forward - backward is the booked net at rounding, both stay
+# >= 0 and second order. ARS(2,2,2)'s explicit weights (delta, 1 - delta, 0), delta < 0, would make
+# a stage-weighted one-way amount negative where a flux falls by more than 59% within a step.
+
+FR42_REFUSAL = "FR-42 (labelled rows inside @3's step)"
+
+
+def label_errors(p, rows, *, structure=None, solver=None):
+    """FR-42's refusals at the definition (host side, the layout's values): the reasons the
+    labelled rows `rows` cannot be carried, or []."""
+    errors = []
+    if solver == "rk4" or getattr(p, "imex_explicit", np.zeros((1,))).shape[0] == 0:
+        errors.append(f"{FR42_REFUSAL}: RK4 refuses labels in version 1")
+    if structure is not None and structure.kinds:
+        errors.append(f"{FR42_REFUSAL}: declared kinds are refused until their one-way hook lands")
+    rows = list(rows)
+    s = tissue.field_layout(p).surface
+    valence = np.asarray(p.valence).reshape(len(p.valence), -1)[:, 0]
+    faces = np.asarray(s.face_active, dtype=bool)
+    for r in rows:
+        if valence[r] != 0 and faces.any():
+            errors.append(f"{FR42_REFUSAL}: charged row {r} on a logmean face has no one-way form")
+        # A channel carries row r where its relative permeability [species, channel] is nonzero,
+        # on an active population with a permeability (FR-42's fix: species row, not channel).
+        relative = getattr(p, "channel_relative_permeability", None)
+        if relative is not None and np.asarray(relative).shape[-1]:
+            carried = np.asarray(relative)[r] != 0
+            carried &= np.asarray(p.channel_active, dtype=bool) & (
+                np.asarray(p.channel_permeability) > 0
+            )
+            if np.any(carried):
+                errors.append(f"{FR42_REFUSAL}: row {r} crosses a channel population")
+        # A pump moves row r where its stoichiometry [species, membrane] is nonzero at a patch with
+        # a capacity.
+        pumps = (
+            ("stoichiometry", "pump_capacity"),
+            ("calcium_stoichiometry", "calcium_pump_capacity"),
+        )
+        for stoichiometry, capacity in pumps:
+            if hasattr(p, stoichiometry):
+                moved = np.asarray(getattr(p, stoichiometry))[r] != 0
+                if hasattr(p, capacity):
+                    moved &= np.asarray(getattr(p, capacity)) > 0
+                if np.any(moved):
+                    errors.append(f"{FR42_REFUSAL}: row {r} is moved by a pump")
+                    break
+    return errors
+
+
+def one_way_fluxes(state, potential, control, p, rows, *, xp=jnp):
+    """FR-42: the labelled rows' one-way fluxes (fmol/s) at a state and its potentials, as
+    (forward, backward) per entity kind [m, entity], in the transport law's own directions: faces
+    sender to receiver, membranes cell to outside, junctions sender to receiver. Faces carry
+    uncharged rows (W ln(a/b) = c (a - b), c = face_factor / MOL_PER_FMOL, so c a and c b);
+    membranes and junctions the constant-field law's two terms, opening x B(-x) c_from and
+    B(x) c_to (laws/junctions/selective)."""
+    from cells.laws.electrochemistry import bernoulli
+
+    idx = xp.asarray(rows)
+    s = tissue.field_layout(p).surface
+    n = p.active.size
+    ci, co = physical_amounts(state, p)
+    ci = xp.where(p.active, ci / p.volume, 1.0)
+    co = xp.where(p.outside_active, co / p.extracellular_volume, 1.0)
+    z = p.valence[idx]
+    rt = R * p.temperature
+    cell, outside = potential[:n], potential[n:]
+
+    def route(c_from, c_to, dv, area, permeability, opening, active):
+        x = z * F * xp.where(active, dv, 0.0) / rt
+        prefactor = area * permeability[idx] * opening / MOL_PER_FMOL
+        c_from, c_to = xp.where(active, c_from, 1.0), xp.where(active, c_to, 1.0)
+        forward = xp.where(active, prefactor * c_from * bernoulli(-x, xp=xp), 0.0)
+        backward = xp.where(active, prefactor * c_to * bernoulli(x, xp=xp), 0.0)
+        return forward, backward
+
+    membrane = route(
+        ci[idx][:, s.membrane_cell],
+        co[idx][:, s.membrane_outside],
+        cell[s.membrane_cell] - outside[s.membrane_outside],
+        s.membrane_area,
+        s.membrane_permeability,
+        control.membrane,
+        s.membrane_active,
+    )
+    junction = route(
+        ci[idx][:, s.junction_sender],
+        ci[idx][:, s.junction_receiver],
+        cell[s.junction_sender] - cell[s.junction_receiver],
+        s.junction_area,
+        s.junction_permeability,
+        control.junction * state.junction_gate,
+        s.junction_active,
+    )
+    c = xp.where(s.face_active, s.face_factor[idx] / MOL_PER_FMOL, 0.0)
+    face = (
+        c * xp.where(s.face_active, co[idx][:, s.face_sender], 0.0),
+        c * xp.where(s.face_active, co[idx][:, s.face_receiver], 0.0),
+    )
+    return dict(face=face, membrane=membrane, junction=junction)
+
+
+def step_transfers(start_state, start_potential, end_state, end_potential, control, p, dt, rows,
+                   *, xp=jnp, direct=None):  # fmt: skip
+    """FR-42: the step's transfers (module comment above): the trapezoid of the start and end
+    one-way fluxes (or `direct`, the Euler IMEX's combined stage terms), plus the gap to the booked
+    net on the side its sign gives."""
+    idx = xp.asarray(rows)
+    s = tissue.field_layout(p).surface
+    n = p.active.size
+    if direct is None:
+        a = one_way_fluxes(start_state, start_potential, control, p, rows, xp=xp)
+        b = one_way_fluxes(end_state, end_potential, control, p, rows, xp=xp)
+        sums = {k: tuple(0.5 * dt * (a[k][i] + b[k][i]) for i in (0, 1)) for k in a}
+    else:
+        sums = direct
+    nodes = dict(
+        face=(n + s.face_sender, n + s.face_receiver),
+        membrane=(s.membrane_cell, n + s.membrane_outside),
+        junction=(s.junction_sender, s.junction_receiver),
+    )
+    booked = dict(face="face_transferred", membrane="membrane_transferred",
+                  junction="junction_transferred")  # fmt: skip
+    transfers = []
+    for kind in ("face", "membrane", "junction"):
+        forward, backward = sums[kind]
+        net = (getattr(end_state, booked[kind]) - getattr(start_state, booked[kind]))[idx]
+        gap = net - (forward - backward)
+        source, destination = nodes[kind]
+        transfers.append((forward + xp.maximum(gap, 0.0), source, destination))
+        transfers.append((backward + xp.maximum(-gap, 0.0), destination, source))
+    return tuple(transfers)
+
+
 def crosses_floating(structure):
     """Fix (A) (D273): whether a junction joins two capacitor components where one floats (the
     structure's crossing_junctions; static)."""
@@ -1980,7 +2123,7 @@ def crossing_potential(state, control, p, *, xp=jnp, kinds=(), structure=None):
     return potential, xp.all(xp.isfinite(potential)) & values.converged
 
 
-def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure=None):
+def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure=None, labels=None):
     """surface_pump_v2.imex_step with channel currents and exponential stage gates.
 
     With a membrane_process (opt-in, module docstring) the call returns
@@ -1992,6 +2135,8 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
     hook["structure"] = structure
     processes = []
     kinds = _kinds(structure)
+    if labels is not None and kinds:  # FR-42 (static): kinds wait for their one-way hook.
+        raise ConfigError(f"{FR42_REFUSAL}: declared kinds are refused until their hook lands")
     f = tissue.field_layout(p)
     s, explicit_matrix, implicit_matrix = f.surface, p.imex_explicit, p.imex_implicit
     stages = explicit_matrix.shape[0]
@@ -2253,8 +2398,21 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
     valid &= domain_valid(stage, p, p.active, xp=xp, structure=structure)
     for value in stage:
         valid &= xp.all(xp.isfinite(value))
+    extra = ()
+    if labels is not None:  # FR-42 (static): the labelled rows' transfers; nothing else changes.
+        if stages == 2 and not n2:  # The Euler IMEX: its one explicit stage, weights >= 0.
+            terms = one_way_fluxes(state, start, control, p, labels, xp=xp)
+            weight = dt * explicit_matrix[last, 0]
+            direct = {k: (weight * f, weight * b) for k, (f, b) in terms.items()}
+            transfers = step_transfers(state, start, stage, None, control, p, dt, labels, xp=xp,
+                                       direct=direct)  # fmt: skip
+        else:
+            end, _ = crossing_potential(stage, control, p, xp=xp, kinds=kinds, structure=structure)
+            transfers = step_transfers(state, start, stage, end, control, p, dt, labels, xp=xp)
+        extra = (transfers,)
     if membrane_process is None:
-        return jax.tree.map(lambda old, new: xp.where(valid, new, old), state, stage), valid
+        kept = jax.tree.map(lambda old, new: xp.where(valid, new, old), state, stage)
+        return (kept, valid, *extra)
     # The process's applied transfer (the tableau's explicit weights: the exact
     # amount change it made) and its heat, the trapezoid of its start power and
     # its power at the end state and last-stage potentials.
@@ -2273,7 +2431,7 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
     heat = 0.5 * dt * (processes[0].heat + end.heat)
     valid &= end.valid & xp.all(xp.isfinite(heat)) & xp.all(xp.isfinite(transfer))
     new = jax.tree.map(lambda old, new: xp.where(valid, new, old), state, stage)
-    return new, valid, (transfer, heat)
+    return (new, valid, (transfer, heat), *extra)
 
 
 def junction_heat_rate(state, potential, control, p, *, xp=jnp):
@@ -2308,13 +2466,18 @@ def junction_heat_rate(state, potential, control, p, *, xp=jnp):
     return 1e-3 * species_sum(flux * mu, xp=xp)
 
 
-def checked_step(state, dt, control, p, active, *, structure=None):
-    """RK4 for an empty tableau (reference runs); otherwise the declared IMEX step."""
+def checked_step(state, dt, control, p, active, *, structure=None, labels=None):
+    """RK4 for an empty tableau (reference runs); otherwise the declared IMEX step. With `labels`
+    (FR-42) the IMEX step also returns its transfers; RK4 refuses them in version 1."""
     if p.imex_explicit.shape[0] == 0:
+        if labels is not None:
+            raise ConfigError(f"{FR42_REFUSAL}: RK4 refuses labels in version 1")
         if structure is None:
             return rk4_checked_step(rhs, domain_valid, state, dt, control, p, active)
         bound = _bound_checks(structure)
         return rk4_checked_step(bound.rhs, bound.domain_valid, state, dt, control, p, active)
+    if labels is not None:
+        return imex_step(state, dt, control, p, structure=structure, labels=labels)
     return imex_step(state, dt, control, p, structure=structure)
 
 
