@@ -1205,6 +1205,16 @@
    "operators/templated_polymerisation.py",
    "own_magnitudes",
    "entity_sum(p.poly_rel_hold0_fmol, axis=1, xp=xp)"
+  ],
+  [
+   "models/surface_pump_v3.py",
+   "_fold_forms_ledgers",
+   "entity_sum(state.forms_face_dissipated_energy_pJ, axis=None, xp=xp)"
+  ],
+  [
+   "models/surface_pump_v3.py",
+   "readouts",
+   "entity_sum(forms.dissipation_pJ_s, axis=None, xp=xp)"
   ]
  ]
 }

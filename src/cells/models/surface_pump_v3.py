@@ -3582,8 +3582,9 @@ def balances(state, p, *, structure=None):
 
 def forms_row_transfers(state, p, *, xp):
     """[species, forms face] each forms face's cumulative row transfer, sender -> receiver: its
-    movers' cumulative transfers through their stoichiometry."""
-    return xp.einsum("ms,mf->sf", p.forms_face_stoichiometry, state.forms_face_transferred)
+    movers' cumulative transfers through their stoichiometry, folded over the movers in order."""
+    moved = p.forms_face_stoichiometry[:, :, None] * state.forms_face_transferred[:, None, :]
+    return species_sum(moved, xp=xp)
 
 
 def _fold_forms_ledgers(result, state, p, *, xp):
@@ -3654,8 +3655,10 @@ def channel_magnitudes(row, p, *, xp=np, structure=None):
     )
     magnitudes = first.ledger_magnitudes(row, p, membrane, metabolic, xp=xp)
     if forms_faces_declared(structure):  # The forms faces' row transfers, at both their ends.
-        moved = xp.einsum(
-            "ms,mf->sf", xp.abs(p.forms_face_stoichiometry), xp.abs(row.forms_face_transferred)
+        moved = species_sum(
+            xp.abs(p.forms_face_stoichiometry)[:, :, None]
+            * xp.abs(row.forms_face_transferred)[:, None, :],
+            xp=xp,
         )
         zero = xp.zeros_like(row.extracellular_amount_increment)
         index = ledger_lists(structure).LEDGERS.index("outside")
