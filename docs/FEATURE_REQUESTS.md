@@ -1274,6 +1274,16 @@ file is sealed: held_out.json sha256 f98f88124ee8e88c3adbd76fb08a08c62c788da98b3
 - That is rule 4's "undetermined" condition, resting on a printed table rather than on legibility. The
   checker confirms it before Snipas et al. 2020 is opened.
 
+**The Snipas et al. 2020 extraction (22 November 2026, 00:31 UTC), the last fallback.** Sealed:
+held_out.json sha256 98dc834067563bf768557d1e6e8b7e198b1d7e2d08178c06ceac4c075ab2da4b; fit.json f93f9a6e4480df719b35219da2f4dab2854cd9b610d32046bb997017840e34d6.
+- For wild-type homotypic Cx43, the paper's own measured data are a voltage ramp (Fig. 4A) and
+  action-potential-like stimuli (Fig. 5D). It reports no step decay and no time constant at any voltage,
+  and its other curves are model output.
+- So rule 4's "undetermined" condition holds, resting on the text and captions alone; the checker
+  confirms it.
+- With Lin, Desplantez and Moreno already undetermined, the registered order is exhausted. What follows
+  is the user's decision (D277).
+
 ## FR-31 — Vesicle rupture during a steady tension hold
 
 - **The request (the same review; D248).** The assembly model tests rupture only at a state change.
