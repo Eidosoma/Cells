@@ -51,10 +51,11 @@ rows: {id, dwell_s, machine, durable_fraction, fates, label, initial_copies}.
   With K > 1 the class rows of each fate are labels: no chain templates from them, and each has one
   degradation, alike across the classes (its form, cited dG° and schedule). They are this
   operator's own label rows, not the registry's label families (D1; the lead's ruling of 22
-  November 2026): a fate's loss reads its row's own potential through (1 - e^(y_f)), so the class
-  rows' sum departs from one unlabelled row by at most about 1e-8 relative at R1, the size of that
-  term. The departure is physical, not an error, and well inside the two cohort routes' agreement
-  bound (§9.8).
+  November 2026). They are not neutral labels (the sheet's erratum B, §9.13): a class row's loss
+  reads its own potential, so its factor is 1 - e^(y_f) (N/n_k)^(1/L), with e^(y_f) the fate's
+  and N/n_k the fate's total over the row. The class rows' sum departs from one unlabelled row by
+  at most about 1e-8 relative at R1, and by up to percent level near the domain bound. FR-42's
+  share labels (D289) replace them.
 - initial_copies: H(0) per hold class (K, or one where the label is at release), in copies. With
   "held", every pool's free machines start at M - sum H(0) of its held chains, which must be >= 0.
 A chain without the key is today's Chain, so its definition, signature and fingerprint are today's.
