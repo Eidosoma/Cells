@@ -9126,3 +9126,26 @@ priority". The evidence branch was merged unedited at 81916b5d.
    agent (D277).
 4. **No optional re-tests now.** FR-25's A1 stays inconclusive (D282) and OL5 stays at 9 of 10 (D285).
 
+## D289: FR-42 is built as option A, labels as share vectors on the physical row
+
+2026-11-22, about 14:54 UTC. The user chose option A of docs/NEUTRAL_LABELS_DESIGN.md (fa4b9d9e).
+- **The design:** one physical population per row; labels are shares of it.
+  - Every law, the energy terms and the heat bookings read the physical population.
+  - Each one-way flux is split by its source's shares.
+  - A new cohort starts at exactly zero as a share.
+  - Windows resolve to step indices.
+- **The stages, 7–10 agent-days in all:**
+  1. pools: registry labels, @3's share state, and one-way reports from turnover and templated
+     polymerisation;
+  2. transport: faces and routes report one-way flows, and FR-33's first test is rebuilt on shares;
+  3. exchange, reactions and kinds, each by its own owner.
+- **Owners:** the kinds owner leads. The gene regulation lane adds templated polymerisation's one-way
+  reports, then replaces FR-38's class rows with shares before FR-38's registered comparison (D288).
+- **Bitwise and records:**
+  - worlds without labels keep their programs, and no registered world moves;
+  - labelled worlds get a new checkpoint field;
+  - D1's and FR-33's examples keep their material and transfer records, while their booked face heat
+    moves to the physical value.
+- **Scoring:** an independent checker writes FR-42's acceptance from the requester's words, including
+  its reference case dN/dt = −N², built with the engine's own second-order mass action.
+
