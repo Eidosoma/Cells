@@ -1361,6 +1361,13 @@ tracer into opposing 90:10 label gradients at +10 mV carried 72.819% of the unsp
 face reproduces the proved ratio. So D1's guarantee covers independent neutral label rows with a shared
 diffusion coefficient, and charged log-mean faces stay outside it, as D1's design refuses them.
 
+**A caveat on D1's heat (the Lean lane, 22 November 2026).** Splitting a neutral species into
+provenance labels preserves material transport exactly, but it can change the booked face heat. Each row
+books its own driving force, so opposing label gradients book heat where the unsplit species books none.
+D1's guarantee covers material and ledgers. A measurement that attributes physical heat to provenance
+labels alone remains open, so a label family's face heat is not to be read as the unlabelled species'
+heat.
+
 ## FR-34 — Channel population readouts: count, availability and signed current
 
 - **The request (a reviewer, relayed by the user on 20 November 2026; D251).** For membrane
