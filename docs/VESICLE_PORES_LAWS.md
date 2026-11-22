@@ -3,8 +3,8 @@
 *Status: draft, 22 November 2026, by the OL builder (D287), for the lead's review and the tag
 `pores-sheet-<date>`. It carries the lead's rulings of 22 November 2026: on η_m's absolute scale
 (§7), the scored tolerance (§8), held-out set 2 and its scoring (§8), the extrapolation rule (§4)
-and Tanaka et al. cited only (§4, §11). Nothing here is registered. §11 lists the sources still to be read before the
-tag.*
+and Tanaka et al. cited only (§4, §11). Nothing here is registered. §11 lists the sources still to
+be read before the tag.*
 
 **What this sheet is.**
 - **Its laws.** It states Phase A's laws in physical terms only: rupture under a held tension, a
