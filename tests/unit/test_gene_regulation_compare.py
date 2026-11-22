@@ -540,3 +540,24 @@ def test_the_reader_resolves_the_chain_at_the_exported_cell(tmp_path):
     assert Q == json.loads(path.read_text())["readouts"]["int_Q_tl"]
     with pytest.raises(ValueError, match="tl_1 is in cell_1"):
         cohort.read(path, "P", "tl_1")
+
+
+def test_the_per_cell_rna_readout_meets_its_two_controls():
+    """FR-25's backlog controls (validation/gene_regulation/rna_readouts.py), through the
+    operator's NumPy half-steps (no world compiled; about 4 s): the turnover control (the total
+    stays at 100; of 69.31 marked, 50 at the marked hour's end, 25 an hour later) and the
+    responding-cells control ([0, 0, 20, 20] against [10, 10, 10, 10] at a one-copy threshold)."""
+    from validation.gene_regulation import rna_readouts
+
+    turnover = rna_readouts.turnover_control()
+    found, expected = turnover["found"], turnover["expected"]
+    assert abs(found["total_min"] - 100.0) <= 1e-4 and abs(found["total_max"] - 100.0) <= 1e-4
+    for key in ("marked", "at_end", "hour_later"):
+        assert found[key] == pytest.approx(expected[key], rel=1e-5), key
+    groups = rna_readouts.responding_cells_control()
+    for name, mean, positive, positive_mean in (("A", 10.0, 0.5, 20.0), ("B", 10.0, 1.0, 10.0)):
+        g = groups[name]
+        assert g["new_per_cell"] == pytest.approx(g["expected_new"], rel=1e-5, abs=1e-9)
+        assert g["mean"] == pytest.approx(mean, rel=1e-5)
+        assert g["positive_fraction"] == positive
+        assert g["positive_mean"] == pytest.approx(positive_mean, rel=1e-5)
