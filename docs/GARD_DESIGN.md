@@ -416,6 +416,33 @@ as its own design, after the composition gaps and the endogenous lifecycle.
 
 **Recommended: (iii).**
 
+**The pair-consistent form's version 2** (`cells.gard_catalysis_pair_consistent@2`; D244, D246).
+@1 caches x = βn and forms a leave's factor from x_i − β_ii. With β_ii = 2^54 and one other
+catalyst, that subtraction loses the catalyst (the Lean proofs project's finding of 19 November
+2026). @1 keeps its bits (D148). Version 2 is the same law with its cache held exactly.
+- **The cache** is a pair of float64 words (hi, lo), hi = fl(x) and lo = x − hi.
+  - An event adds ±β[:, i] by two error-free two-sums: O(C), as @1.
+  - The founder and each daughter refold it from the counts. Each entry is split into its top 33
+    bits and the rest, so every product with a count up to 2^20 is exact.
+  - The leave forms x_i − β_ii exactly and rounds it once.
+  - So the join from m and the leave from m + e_i evaluate the same correctly rounded Σ_j β_ij m_j:
+    the factor cancels from every transfer pair bit for bit.
+- **The budget, proved.** Row i's values are multiples of 2^q_i, its entries' lowest set bit, and at
+  most max_j β_ij · S, with S the fission size. Below 2^(q_i + 106), each two-sum's error and the low
+  word are at most 2^(q_i + 52), so their sum is exact. At 107 bits a unit can be lost (a
+  constructed state loses one).
+- **Refused at parse beyond it.** The message names the bits needed. At fission size 80, 0.2% of
+  1,000 T2-02-like matrices (100 types, β = e^(−4 + 4Z)) need more; the median needs 98 bits. An
+  experiment that draws matrices records each refused draw and how it handled it (redrawn or
+  excluded), as its protocol declares, and never falls back silently to @1.
+- **Evidence:**
+  - the Lean project's own driver functions run under version 2, all four reverse-subtraction
+    cases included;
+  - the kernel against an oracle in rationals, on the stress world;
+  - a dropped low word, planted, which the ledger catches.
+
+  The Lean project's driver stays on @1 until that project points it at version 2.
+
 ### 4.5 The reference experiment
 
 | Option | Specification and access | Comparable quantities |

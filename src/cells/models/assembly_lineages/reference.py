@@ -7,7 +7,8 @@ events can be compared with common random variates (the capsid pattern, cells/as
 
 Its own choices, apart from the kernel's:
 - the rate factor's state is recomputed from the counts at every event (beta n, a serial fold
-  over the types), never updated incrementally;
+  over the types; for cells.gard_catalysis_pair_consistent@2, in rationals, rounded once, which
+  is what the kernel's exact cache gives), never updated incrementally;
 - only the declared types are evaluated (no capacity padding);
 - the channel is found by a scalar running total, and the split by a stable argsort.
 The products are formed in the kernel's declared order ((kf rho) N g; (kb n) g) and the folds are
@@ -16,10 +17,15 @@ exactly, times to a relative 1e-12.
 """
 
 import math
+from fractions import Fraction
 
 import numpy as np
 
-from cells.models.assembly_lineages import GARD_PAIR_CONSISTENT, GARD_SINGLE_EVENT
+from cells.models.assembly_lineages import (
+    GARD_PAIR_CONSISTENT,
+    GARD_PAIR_CONSISTENT_V2,
+    GARD_SINGLE_EVENT,
+)
 
 
 def _factors(form, counts, size, beta):
@@ -27,6 +33,8 @@ def _factors(form, counts, size, beta):
     count = len(counts)
     if form is None:
         return [1.0] * count, [1.0] * count
+    if form == GARD_PAIR_CONSISTENT_V2:
+        return _factors_exact(counts, size, beta)
     x = []
     for i in range(count):
         total = beta[i][0] * float(counts[0])
@@ -43,6 +51,24 @@ def _factors(form, counts, size, beta):
     return join, leave
 
 
+def _factors_exact(counts, size, beta):
+    """@2's pair-consistent factors: beta n in rationals, rounded once (float of a Fraction is
+    correctly rounded), and the leave's (beta n)_i - beta_ii likewise."""
+    count = len(counts)
+    x = [
+        sum((Fraction(beta[i][j]) * int(counts[j]) for j in range(count)), Fraction(0))
+        for i in range(count)
+    ]
+    join = [1.0 + float(x[i]) / size if size > 0 else 1.0 for i in range(count)]
+    leave = [
+        1.0 + float(x[i] - Fraction(beta[i][i])) / (size - 1.0)
+        if size > 1 and counts[i] > 0
+        else 1.0
+        for i in range(count)
+    ]
+    return join, leave
+
+
 def replay(spec, event_uniforms, partition_uniforms, continuation_uniform):
     """The lineage the declared convention gives from these uniforms.
 
@@ -50,7 +76,7 @@ def replay(spec, event_uniforms, partition_uniforms, continuation_uniform):
     "followed": [...], "similarity": [(h1, h2), ...], "status": str}."""
     world = spec.model.world
     form = spec.model.rate_factor
-    if form not in (None, GARD_SINGLE_EVENT, GARD_PAIR_CONSISTENT):
+    if form not in (None, GARD_SINGLE_EVENT, GARD_PAIR_CONSISTENT, GARD_PAIR_CONSISTENT_V2):
         raise ValueError(f"The oracle knows no rate factor {form}")
     count = world.types.count
     beta = [list(row) for row in world.data["catalysis_matrix"]] if form else None

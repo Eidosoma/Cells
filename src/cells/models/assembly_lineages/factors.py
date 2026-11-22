@@ -19,7 +19,10 @@ computes from the assembly's state. It declares:
   - factors(counts, size, state, data, xp): (join [C], leave [C]) at the current state;
 - `probe(rng, count)`: generic data on which the check classifies the law (not a world's data);
 - `formulas`: its factors, state and update in words and symbols, including the empty-assembly
-  and last-molecule cases, which a run record states so that a replay needs no code.
+  and last-molecule cases, which a run record states so that a replay needs no code;
+- `domain` (optional): (world) -> None, refusing with ConfigError, at parse, a world beyond the
+  law's numerical domain (spec.parse_model calls it on the declared law; D246). None when the law
+  has none, as for GARD's two version-1 forms.
 
 Without a rate-factor law the kernel's rates are the exchange law's, and its programs hold no
 factor code at all.
@@ -74,6 +77,7 @@ class RateFactorLaw(Law):
     comparison_only: bool
     note: str
     formulas: dict  # g_join_i, g_leave_i, the state and its update, as a replay needs them.
+    domain: Callable | None = None  # (world) -> None; refuses a world beyond it, at parse.
 
     interface: ClassVar[str] = RATE_FACTOR_INTERFACE
 
@@ -95,6 +99,8 @@ class RateFactorLaw(Law):
             out.append("its data names the law_data fields it reads")
         kernels = ("parse_data", "data_to_dict", "layout", "state", "update", "factors", "probe")
         out += [f"its {name} is callable" for name in kernels if not callable(getattr(self, name))]
+        if self.domain is not None and not callable(self.domain):
+            out.append("its domain is callable, or None")
         return out
 
 
