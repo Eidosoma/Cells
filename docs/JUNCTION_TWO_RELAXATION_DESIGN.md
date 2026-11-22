@@ -446,6 +446,78 @@ and states the kinds before scoring.
 - A pass is evidence for the law's voltage dependence under this paper's conditions only.
 - It does not lift D262's development flag. That stays until the lead and the user decide.
 
+### 13.1 Amendment of 23:16 UTC on 21 November 2026: Lin undetermined; three fallbacks, in order, before any is opened
+
+Written by the @3 owner, FR-30's fitter, at the lead's direction (D276). Nobody has opened the three
+papers below. They sit in `/mnt/datasets/Cells/papers/incoming/<name>/`, and the commit carrying
+this amendment is tagged `fr30-fallbacks-registered-2026-11-21`.
+
+**Lin, Crye and Veenstra (2003) is undetermined.**
+- The paper fits each step's decay with a single exponential, and it reports one τ per |V_j|.
+  It gives no τ_slow, no amplitudes and no step-end conductance.
+- So no held-out voltage carries both relaxation times, and rule 4 makes the result
+  undetermined.
+- Its held-out file is sealed, with its digest on main (36ccc20d, D276).
+- Nothing from Lin is reinterpreted, re-split or re-scored under the rules below. I have seen no
+  value from it.
+
+**The fallbacks, in this order.** Each is extracted only if the one before it is undetermined.
+1. Desplantez et al. (2004), Pflügers Arch 448:363 (`desplantez-2004`).
+2. Moreno et al. (2002), Circ Res 90:450 (`moreno-2002`).
+3. Snipas et al. (2020), Biophys J 119:1640 (`snipas-2020`).
+
+§13's split rule, judged observables, pass rule and roles apply to each, completed by the points
+below. If all three are undetermined, the benchmark is undetermined, and the lead decides what
+follows.
+
+**What has been read about them (disclosure).**
+- **Moreno et al. (2002).** This record already carries two of its values: 0.25 and 3.18 s at
+  60 mV, as a review reports them (§2.2 and this note's summary table). I have read those lines,
+  so 60 mV is not a blind voltage for me (point 8 below).
+- **Desplantez et al. (2004) and Snipas et al. (2020).** I have seen no content from either.
+  From training data I recall only their approximate subjects: Cx43 and Cx45 junctional gating
+  for Desplantez, and a kinetic model of Cx43 gating for Snipas. I recall no values.
+- **Files that name these papers, which I have not opened:**
+  - docs/DECISIONS.md, the lead's entries;
+  - the FR-7 agent's `fr7-loop-20261119/u2-compartment/NOTES.md`;
+  - a full text that agent fetched, `fr7-loop-20261119/u2-compartment/fr30-search/maciunas2023_PMC10491658.txt`.
+
+**Points the Lin extraction showed §13 leaves open, fixed now without any value.**
+1. **Only decays are ranked.** The ranked data units are the inactivation decays at steps away
+   from the holding level.
+   - Recovery steps, for example a return to 0 mV after a step, are not ranked and never held
+     out.
+   - Recovery data may enter training only, through the law's own prediction of the recovery
+     protocol as recorded.
+2. **Polarity.** Where decays are reported by |V_j|, as pooled or polarity-averaged values, each
+   |V_j| is one data unit, and the law is predicted at that magnitude. Where the paper reports each
+   polarity, §13's rule holds: the same magnitudes are held out at both polarities.
+3. **Ramp-derived steady state.** Conductance derived from a voltage ramp does not stand in for a
+   step-end G_ss, and it is not judged. It may enter training only, through the law's own
+   prediction of the recorded ramp.
+4. **SD or SEM.** The widening rule uses twice the SEM. Where the paper reports an SD with n, the
+   SEM is SD/√n. An SD without n, or a range, does not widen a tolerance.
+5. **One time constant at a voltage.** A held-out voltage that carries one reported τ gives no
+   relaxation comparison. Its G_ss, if reported, is still judged. Rule 4's "both relaxation
+   times" condition stands.
+6. **Homotypic Cx43 only.** Only homotypic Cx43–Cx43 data are extracted. Heterotypic and other
+   connexins' data, which Desplantez et al. also report, are excluded from the files.
+7. **The holding level and protocol** are recorded by the extractor. The fitter predicts each
+   step from the law's steady state at the holding level, as §13 says.
+8. **A voltage already seen is not held out.**
+   - A magnitude whose values the fitter has already seen stays in training: for Moreno et al.,
+     60 mV.
+   - The rank rule then runs over the remaining interior magnitudes.
+   - If this leaves fewer magnitudes than §13 needs, the paper is undetermined.
+
+**The fitter's exclusions, added to §13's.** The fitter does not open:
+- the scratch folder `cx43-search/` in the shared session scratchpad;
+- each paper's sealed digitizer scripts;
+- the three files named above;
+- the papers themselves.
+
+The fitter works from `train.json` alone.
+
 ## Sources
 
 - **Read:**
