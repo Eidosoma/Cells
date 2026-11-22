@@ -1,0 +1,32 @@
+{
+  "dataset_id": "fujiwara2014_vesicle_deflation@1",
+  "doi": "10.1021/sb4001917",
+  "supplement_doi": "10.1021/sb4001917.s001",
+  "study": {
+    "preparation": "Giant DOPE/DOPC liposomes with encapsulated macromolecules and a fluorescent protein tracer. Sucrose raises the exterior osmolarity.",
+    "initial_internal_mOsm_L": 70,
+    "final_external_mOsm_L": 285,
+    "figure_3": {
+      "observable": "Initial volume divided by final volume, estimated from mean diameters.",
+      "tracked_liposomes": 5,
+      "reported_plateau_ratio_approx": 4,
+      "reported_plateau_time_s_approx": 320
+    },
+    "figure_S3": {
+      "observable": "Relative GFP concentration and inverse relative volume, tracked on the same liposome for each symbol series.",
+      "rightmost_circle_plot_reading_approx": {"initial_over_current_volume": 3.3, "current_over_initial_GFP_concentration": 3.3},
+      "reported_fit_R_squared": 0.9987
+    },
+    "limits": "Figure S2 has individual 10-minute inverse volume ratios of roughly 3.3 to 4.9. The plateau summary has no reported standard error. S3 has no pointwise errors. GFP reports a macromolecular tracer. Small-solute retention and deviations from spherical volume reconstruction remain unresolved."
+  },
+  "cells_equilibrium_replay": {
+    "revision": "f1783c558a79379d9aab846a48165b4833f2282f",
+    "fixture": "lean/checks/vesicle.py::bath_world",
+    "model": "cells.assembly_lineages@2",
+    "law": "cells.osmotic_lumen@1",
+    "conditions": "Two static 64-osmole worlds with identical area, initially isotonic at spherical capacity. No exchange event fires. For this ideal solution one mOsm/L corresponds to one mM of counted particles.",
+    "initial_volume_over_capacity": 0.9999999999999932,
+    "final_volume_over_capacity": 0.245614035087717,
+    "initial_over_final_volume": 4.071428571428582
+  }
+}
