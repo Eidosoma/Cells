@@ -170,7 +170,8 @@ def comparison_text(check):
             raise ValueError(f"invalid source revision {revision!r}")
     links = [pinned_link(label, target, source) for label, target in check["sources"].items()]
     links.extend(
-        pinned_link(label, target, record) for label, target in check.get("record_inputs", {}).items()
+        pinned_link(label, target, record)
+        for label, target in check.get("record_inputs", {}).items()
     )
     links += [
         pinned_link("Comparison driver", check["driver"], record),
@@ -179,7 +180,7 @@ def comparison_text(check):
     revisions = [f"[Evidence checkpoint {record[:12]}]({REPOSITORY}/commit/{record})"]
     if check["kind"] == "engine":
         revisions.insert(0, f"[Tested engine {source[:12]}]({REPOSITORY}/commit/{source})")
-    lines = [f"**{kind}** {ids}"]
+    lines = [f"**{kind}** {ids}".rstrip()]
     if check.get("operators"):
         lines.append("**Operators** " + ", ".join(f"`{op}`" for op in check["operators"]))
     return "\n\n".join([*lines, " · ".join(links), " · ".join(revisions)])

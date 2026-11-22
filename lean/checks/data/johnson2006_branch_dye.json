@@ -1,0 +1,15 @@
+{
+  "dataset_id": "johnson2006_branch_dye",
+  "doi": "10.1029/2005JB004087",
+  "figure": "https://repository.geologyscience.ru/bitstream/handle/123456789/48089/John_06.pdf?sequence=1#page=8",
+  "locator": "Methods paragraph 19 and continuous flow test 1, paragraph 33 and Figure 5a",
+  "preparation": "Two steady inlets and two outlets of a transparent rough-walled fracture replica",
+  "inlet_concentration_g_per_L": [1.0, 0.0],
+  "inlet_flow_g_per_min": [2.0, 2.0],
+  "outlet_4_fraction_of_total_flow": 0.5,
+  "outlet_4_fraction_of_stock_concentration_approx": 0.75,
+  "outlet_2_fraction_of_stock_concentration_approx": 0.25,
+  "complete_mixing_fraction_of_stock": 0.5,
+  "measurement": "The investigators metered all four streams and measured outlet concentrations by conductivity. The two concentration fractions are the authors’ rounded values in paragraph 33. The rounding supplies no experimental error estimate.",
+  "scope": "Physical comparison for enrichment with an uneven source. The two outlets are continuous streams. Finite post-draw regional amounts and the volume drawn from each Cells region were unmeasured."
+}
