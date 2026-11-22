@@ -30,19 +30,24 @@
       ],
       "laws": [],
       "operators": [
-        "cells.templated_polymerisation@1"
+        "cells.templated_polymerisation@1",
+        "cells.neutral_arrival_labels@1"
       ],
-      "engine_revision": "fc07c545836b155928aeca3e9ba74528d6e3b66d",
-      "record_revision": "f11bfae57c7d3db1ac632b313cdb05dd863063de",
+      "engine_revision": "947ff262c7fba53b53b32a7c44394e84be3fa897",
+      "record_revision": "4404a1b3cd889ba7a9a75f18df0cdf479898cd73",
       "sources": {
+        "Compiled state collection": "validation/gene_regulation/engine_run.py#L178",
+        "R1, marking schedules and R1S": "validation/gene_regulation/worlds.py#L520",
+        "Run horizon and grid": "validation/gene_regulation/kernel.py#L35",
         "Compiled window execution": "src/cells/execution/windows.py",
-        "R1 and R1S development worlds": "validation/gene_regulation/worlds.py#L519-L591",
-        "Observation horizon and grid": "validation/gene_regulation/kernel.py#L23-L38",
-        "Compiled history collection": "validation/gene_regulation/engine_run.py#L169-L181",
-        "Class and fate fluxes": "src/cells/operators/templated_polymerisation.py#L1201-L1224",
-        "Machine and residue ledgers": "src/cells/operators/templated_polymerisation.py#L1992-L2012",
-        "Held and engaged machines and class-specific releases": "validation/gene_regulation/engine_run.py#L381-L411",
-        "Copy-to-fmol conversion": "validation/gene_regulation/sheet_check.py#L90-L97"
+        "Release extents and their label reports": "src/cells/operators/templated_polymerisation.py#L1565",
+        "Neutral label and pool update": "src/cells/operators/species_labels.py#L506",
+        "Survival and transfer of neutral shares": "src/cells/numerics/label_shares.py#L64",
+        "Composite applies the reporters' half-steps": "src/cells/models/pump_composite.py#L1752",
+        "RNA and hold amounts by label": "validation/gene_regulation/engine_run.py#L317",
+        "Physical counters for both fates": "validation/gene_regulation/engine_run.py#L429",
+        "Machine and residue ledgers": "src/cells/operators/templated_polymerisation.py#L2129",
+        "Copy-to-fmol conversion": "validation/gene_regulation/sheet_check.py#L90"
       },
       "record_inputs": {
         "Exact stage inventory": "lean/CellsProofs/Chemistry/Polymerisation.lean",
@@ -50,7 +55,7 @@
         "Polymerase retention and secondary transcription counts": "lean/checks/data/harden2020_polymerase_retention.json"
       },
       "driver": "lean/checks/terminal_release.py",
-      "record": "lean/PROGRESS.md#fr38-terminal-inventories"
+      "record": "lean/PROGRESS.md#fr38-marked-fates"
     },
     "fr38-lossless-fate-export": {
       "kind": "engine",
@@ -60,26 +65,31 @@
       ],
       "laws": [],
       "operators": [
-        "cells.templated_polymerisation@1"
+        "cells.templated_polymerisation@1",
+        "cells.neutral_arrival_labels@1"
       ],
-      "engine_revision": "fc07c545836b155928aeca3e9ba74528d6e3b66d",
-      "record_revision": "f11bfae57c7d3db1ac632b313cdb05dd863063de",
+      "engine_revision": "947ff262c7fba53b53b32a7c44394e84be3fa897",
+      "record_revision": "4404a1b3cd889ba7a9a75f18df0cdf479898cd73",
       "sources": {
+        "Compiled state collection": "validation/gene_regulation/engine_run.py#L178",
+        "R1, marking schedules and R1S": "validation/gene_regulation/worlds.py#L520",
+        "Run horizon and grid": "validation/gene_regulation/kernel.py#L35",
         "Compiled window execution": "src/cells/execution/windows.py",
-        "R1 and R1S development worlds": "validation/gene_regulation/worlds.py#L519-L591",
-        "Observation horizon and grid": "validation/gene_regulation/kernel.py#L23-L38",
-        "Compiled history collection": "validation/gene_regulation/engine_run.py#L169-L181",
-        "Release route and fate layout": "src/cells/operators/templated_polymerisation.py#L312-L345",
-        "Public export of zero losses": "validation/gene_regulation/engine_run.py#L262-L313",
-        "Detachment counters for each fate": "validation/gene_regulation/engine_run.py#L393-L411",
-        "Local producer resolution and loss-counter requirement": "validation/gene_regulation/cohort.py#L240-L308",
-        "Survivor calculation": "validation/gene_regulation/cohort.py#L142-L162"
+        "Release extents and their label reports": "src/cells/operators/templated_polymerisation.py#L1565",
+        "Neutral label and pool update": "src/cells/operators/species_labels.py#L506",
+        "Survival and transfer of neutral shares": "src/cells/numerics/label_shares.py#L64",
+        "Composite applies the reporters' half-steps": "src/cells/models/pump_composite.py#L1752",
+        "Zero-loss eligibility and export": "validation/gene_regulation/engine_run.py#L284",
+        "Physical release counters": "validation/gene_regulation/engine_run.py#L429",
+        "Cell-local selection of production and loss counters": "validation/gene_regulation/cohort.py#L305",
+        "Survivors from the exported counters": "validation/gene_regulation/cohort.py#L139"
       },
       "record_inputs": {
-        "Exact single-fate balance": "lean/CellsProofs/Chemistry/TerminalRelease.lean"
+        "Exact lossless gain": "lean/CellsProofs/Chemistry/TerminalRelease.lean",
+        "Window-marked detachment": "lean/CellsProofs/Chemistry/MarkedRelease.lean"
       },
       "driver": "lean/checks/terminal_release.py",
-      "record": "lean/PROGRESS.md#fr38-lossless-fate"
+      "record": "lean/PROGRESS.md#fr38-marked-fates"
     },
     "fr31-area-reference": {
       "kind": "reference",
@@ -130,17 +140,17 @@
       "kind": "reference",
       "models": [],
       "laws": [],
-      "record_revision": "e4b729acf7e784cd088a3a9f05da4de42d5e8dd2",
+      "record_revision": "4404a1b3cd889ba7a9a75f18df0cdf479898cd73",
       "sources": {
         "Half-open windows and within-run label reuse": "docs/FEATURE_REQUESTS.md#fr-42--neutral-arrival-time-labels-that-leave-the-dynamics-unchanged",
         "FR-38 release-marking and chase denominator": "docs/FEATURE_REQUESTS.md#fr-38--rna-release-from-its-template-into-two-pools-with-different-lifetimes",
         "Point-arrival recurrence and survival of the original cohort": "lean/CellsProofs/Chemistry/ArrivalWindow.lean",
-        "Host calculation for uniformly spread arrivals": "validation/gene_regulation/cohort.py#L123-L180"
+        "Host calculation for uniformly spread arrivals": "validation/gene_regulation/cohort.py#L139"
       },
       "driver": "lean/checks/arrival_windows.py",
-      "record": "lean/PROGRESS.md#fr42-release-windows"
+      "record": "lean/PROGRESS.md#fr38-marked-fates"
     },
-    "fr38-release-class-window": {
+    "fr38-neutral-release-windows": {
       "kind": "engine",
       "models": [
         "resolved_pump_composite@1",
@@ -148,24 +158,34 @@
       ],
       "laws": [],
       "operators": [
-        "cells.templated_polymerisation@1"
+        "cells.templated_polymerisation@1",
+        "cells.neutral_arrival_labels@1"
       ],
-      "engine_revision": "57cf9a4ed0b68454232a3c531c14e1b725853955",
-      "record_revision": "e4b729acf7e784cd088a3a9f05da4de42d5e8dd2",
+      "engine_revision": "947ff262c7fba53b53b32a7c44394e84be3fa897",
+      "record_revision": "4404a1b3cd889ba7a9a75f18df0cdf479898cd73",
       "sources": {
-        "One-way release from the template hold into the scheduled class and fate": "src/cells/operators/templated_polymerisation.py#L1201-L1224",
-        "Template hold and release classes in the R1 world": "validation/gene_regulation/worlds.py#L519-L558",
-        "Schedule controls on the engine grid": "src/cells/definitions/pump_composite_spec.py#L258",
-        "Public windowed engine execution": "src/cells/execution/windows.py",
-        "Compiled collection and class-specific release counters": "validation/gene_regulation/engine_run.py#L393-L411",
-        "Observation horizon and grid of the starting fixture": "validation/gene_regulation/kernel.py#L28-L36",
-        "Fate export and release-counter selection": "validation/gene_regulation/cohort.py#L240-L310"
+        "Compiled state collection": "validation/gene_regulation/engine_run.py#L178",
+        "R1, marking schedules and R1S": "validation/gene_regulation/worlds.py#L520",
+        "Run horizon and grid": "validation/gene_regulation/kernel.py#L35",
+        "Compiled window execution": "src/cells/execution/windows.py",
+        "Release extents and their label reports": "src/cells/operators/templated_polymerisation.py#L1565",
+        "Neutral label and pool update": "src/cells/operators/species_labels.py#L506",
+        "Survival and transfer of neutral shares": "src/cells/numerics/label_shares.py#L64",
+        "Composite applies the reporters' half-steps": "src/cells/models/pump_composite.py#L1752",
+        "Fate readouts and counters": "validation/gene_regulation/engine_run.py#L429",
+        "Exported RNA and hold amounts by label": "validation/gene_regulation/engine_run.py#L317",
+        "Independent window integral and grid comparison": "validation/gene_regulation/release_check.py#L112",
+        "Cohort from unlabelled counters": "validation/gene_regulation/cohort.py#L139",
+        "Sheet constants and the copy unit": "validation/gene_regulation/sheet_check.py"
       },
       "record_inputs": {
-        "Exact release-window and chase identities": "lean/CellsProofs/Chemistry/ArrivalWindow.lean"
+        "Marked detachment and survival bounds": "lean/CellsProofs/Chemistry/MarkedRelease.lean",
+        "Half-open windows and reuse": "lean/CellsProofs/Chemistry/ArrivalWindow.lean",
+        "Exact neutral shares": "lean/CellsProofs/Chemistry/ArrivalSurvival.lean",
+        "Two published RNA time courses and denominators": "lean/checks/data/rna_chase_observables.json"
       },
       "driver": "lean/checks/arrival_windows.py",
-      "record": "lean/PROGRESS.md#fr42-release-windows"
+      "record": "lean/PROGRESS.md#fr38-marked-fates"
     },
     "vesicle-birth-returns": {
       "kind": "engine",
@@ -374,14 +394,14 @@
       "operators": [
         "cells.tension_hold@1"
       ],
-      "engine_revision": "f51a3b07d302fb177b166b1568155084ffb8e1c1",
-      "record_revision": "870c9353c92b7e614f25a768f2dabecf7b81d49c",
+      "engine_revision": "0a1c1b0dc8145c9c313c02a4ed57cfe5433b2efe",
+      "record_revision": "1c3c422d32a6723d650b2f6d2bc5b531d4a3ff87",
       "sources": {
         "Pore rate and temperature slope": "src/cells/models/assembly_lineages_v2/pore_nucleation.py#L58",
         "Tension domain and hold payer": "src/cells/models/assembly_lineages_v2/tension_hold.py#L88",
-        "Clock, opening and release": "src/cells/models/assembly_lineages_v2/pore_clock.py#L69",
+        "Clock, opening and release": "src/cells/models/assembly_lineages_v2/pore_clock.py#L82",
         "Single-lineage pore event": "src/cells/models/assembly_lineages_v2/runner.py#L363",
-        "Population pore event": "src/cells/models/assembly_lineages_v2/population.py#L670",
+        "Population pore event": "src/cells/models/assembly_lineages_v2/population.py#L665",
         "Per-founder random stream and threshold inputs": "src/cells/models/assembly_lineages_v2/streams.py",
         "Geometry and area in both runners": "src/cells/models/assembly_lineages_v2/geometry.py",
         "Closed-form work oracle, founder worlds and both public run modes": "tests/unit/test_assembly_lineages_v2_pores.py",
@@ -393,7 +413,7 @@
         "Measured pore observables": "lean/checks/data/dopc_pore_observables.json"
       },
       "driver": "lean/checks/vesicle_pore.py",
-      "record": "lean/PROGRESS.md#fr31-pore-rate-heat"
+      "record": "lean/PROGRESS.md#fr31-pore-endpoint-repair"
     },
     "ol5-replay-assembly-kinetics": {
       "kind": "engine",
@@ -3519,18 +3539,24 @@
     {
       "id": "release-window-survival",
       "category": "reactions-and-binding",
-      "title": "A reused release-time label carries forward its older survivors",
-      "statement": "Half-open arrival windows assign releases at a shared boundary exactly once. In a well-mixed pool with common survival factors, the surviving amount after label reuse is the sum of the two separately followed release histories. The chase fraction uses the original cohort alive at window close.",
+      "title": "Marked RNA is accounted for in both release fates, including after label reuse",
+      "statement": "A detachment event marked in a half-open window belongs to exactly one of the two fates. In the continuous-amount model their gross amounts sum to the marked release even when the split changes. Each fate can have its own survival fraction. Reusing a label adds the survivors of both windows, and the chase fraction uses the original cohort alive at window close.",
       "assumptions": [
         "Time is indexed by step boundaries. In the exact event example a molecule is marked on detachment and experiences the following interval’s survival factor. Sampling is before any new releases at that sample boundary.",
         "Every member of the same physical pool experiences the same survival factor in each interval. For a physical chase each factor is in [0,1]. A reused label receives new material from nonoverlapping windows.",
-        "A zero denominator gives an undefined chase fraction. A host readout with only interval totals assumes a within-interval arrival profile. The synthetic counter comparison uses uniform arrivals and constant per-molecule loss."
+        "A zero denominator gives an undefined chase fraction. A host readout with only interval totals assumes a within-interval arrival profile. The synthetic counter comparison uses uniform arrivals and constant per-molecule loss.",
+        "Gross release is nonnegative. The durable fraction p lies in [0,1] and can vary by step. The short-lived fraction is 1 − p. Each fate has a survival fraction in [0,1]."
       ],
       "uses": [
-        "fr42-cohort-shares"
+        "fr42-cohort-shares",
+        "fr42-survival-exponent"
       ],
       "formal": {
         "status": "proved",
+        "about": [
+          "cells.templated_polymerisation@1",
+          "cells.neutral_arrival_labels@1"
+        ],
         "theorems": {
           "CellsProofs.Chemistry.ArrivalWindow.at_start": "lean/CellsProofs/Chemistry/ArrivalWindow.lean",
           "CellsProofs.Chemistry.ArrivalWindow.at_end": "lean/CellsProofs/Chemistry/ArrivalWindow.lean",
@@ -3540,28 +3566,34 @@
           "CellsProofs.Chemistry.ArrivalWindow.chase_only": "lean/CellsProofs/Chemistry/ArrivalWindow.lean",
           "CellsProofs.Chemistry.ArrivalWindow.chase_fraction": "lean/CellsProofs/Chemistry/ArrivalWindow.lean",
           "CellsProofs.Chemistry.ArrivalWindow.empty_fraction": "lean/CellsProofs/Chemistry/ArrivalWindow.lean",
-          "CellsProofs.Chemistry.ArrivalWindow.release_example": "lean/CellsProofs/Chemistry/ArrivalWindow.lean"
+          "CellsProofs.Chemistry.ArrivalWindow.release_example": "lean/CellsProofs/Chemistry/ArrivalWindow.lean",
+          "CellsProofs.Chemistry.MarkedRelease.event_partition": "lean/CellsProofs/Chemistry/MarkedRelease.lean",
+          "CellsProofs.Chemistry.MarkedRelease.marked_fates": "lean/CellsProofs/Chemistry/MarkedRelease.lean",
+          "CellsProofs.Chemistry.MarkedRelease.survivors_bounded": "lean/CellsProofs/Chemistry/MarkedRelease.lean"
         },
         "sources": {
           "Mathlib product over the successor range, imported for survival across a chase": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Group/Finset/Basic.lean#L503",
           "FR-42 boundary and reuse requirements": "https://github.com/Eidosoma/Cells/blob/57cf9a4ed0b68454232a3c531c14e1b725853955/docs/FEATURE_REQUESTS.md#fr-42--neutral-arrival-time-labels-that-leave-the-dynamics-unchanged",
-          "FR-38 clarification of release, survivors and the chase denominator": "https://github.com/Eidosoma/Cells/blob/57cf9a4ed0b68454232a3c531c14e1b725853955/docs/FEATURE_REQUESTS.md#fr-38--rna-release-from-its-template-into-two-pools-with-different-lifetimes"
+          "FR-38 clarification of release, survivors and the chase denominator": "https://github.com/Eidosoma/Cells/blob/57cf9a4ed0b68454232a3c531c14e1b725853955/docs/FEATURE_REQUESTS.md#fr-38--rna-release-from-its-template-into-two-pools-with-different-lifetimes",
+          "Mathlib finite partition into a predicate and its complement, imported for individual events": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Group/Finset/Basic.lean#L117-L124",
+          "Cells uses neutral RNA shares to mark at release": "https://github.com/Eidosoma/Cells/blob/947ff262c7fba53b53b32a7c44394e84be3fa897/docs/TEMPLATED_POLYMERISATION_LAWS.md#914-erratum-c-route-1-on-shares"
         }
       },
       "numerical": {
         "status": "checked",
         "comparisons": [
           "fr42-window-reference",
-          "fr38-release-class-window",
+          "fr38-neutral-release-windows",
+          "fr38-lossless-fate-export",
           "fr42-neutral-survival"
         ],
-        "result": "The point-release reference retained 6 of 8 at chase and 3 old plus 1 new at reuse. The FR-38 development fixture routed five steps to the selected classes in both fates. In the separate FR-42 compiled tissue, the cell cohort contained 0.08295689561 fmol at reopening and 0.16721168136 fmol at the end. Seven observations matched the analytic window integral within 2.78 × 10⁻¹⁷ fmol in the cell and 1.37 × 10⁻¹¹ fmol outside. Following released RNA itself through a replacement remains open."
+        "result": "Across three compiled RNA runs all 39 physical readouts matched bit for bit. The two marked intervals released 1.02212491320 × 10⁻¹⁰ fmol into the two fates. Reusing a label reproduced the sum of the two separately marked cohorts to within 1.30 × 10⁻²⁶ fmol. The counter reconstruction’s maximum relative error for the short-lived fate was 4.80 × 10⁻⁸ on a two-second output grid and 2.93 × 10⁻⁹ on a half-second grid. The independent point-release example retained 6 of 8 at chase. The separate FR-42 tissue comparison checked the same window semantics with production and clearance. The FR-38 comparison followed the same producer throughout. Replacement and restart remain a separate comparison."
       },
       "biology": {
         "status": "open",
         "observable": "Cohort membership requires the time of release from the template and survival of the same molecules to a later sample.",
         "unit": "Fraction (0–1)",
-        "finding": "Bellecourt et al. measured detachment separately from synthesis. Their released-RNA fraction has a different denominator from survival of a release-marked cohort.",
+        "finding": "Bellecourt et al. measured detachment among terminator-length RNAs. Ntini et al. measured chromatin association after a synthesis pulse, and Tutucci et al. counted yeast RNA during mitosis. A direct survival comparison still requires marking RNA at detachment and measuring the same cohort at window close and during chase.",
         "evidence": [
           {
             "dataset_id": "bellecourt-2019-hisl-release",
@@ -3575,6 +3607,30 @@
             "uncertainty": "The study reports ±0.02 for the wild-type release fraction under reducing conditions. Figure 5A pools the 120, 240 and 480 s samples.",
             "assessment": "This measures population detachment. Individual completion-to-release delays and later survival of the same released cohort remain unmeasured.",
             "report": "lean/PROGRESS.md#fr42-release-windows"
+          },
+          {
+            "dataset_id": "ntini-2023-actb-chromatin",
+            "manifest": "lean/checks/data/rna_chase_observables.json",
+            "citation": "Ntini et al. (2023), Cell Systems 14, 906–922.e6",
+            "doi": "10.1016/j.cels.2023.09.005",
+            "locator": "Figure 1, GEO GSE218726 and the authors’ transcript table, ACTB row ENSG00000075624.14.",
+            "context": "After an eight-minute synthesis pulse in MCF-7 cells, RNA was measured in chromatin and nucleoplasmic fractions at 0, 5, 10, 15 and 20 minutes.",
+            "role": "descriptive",
+            "uncertainty": "The transcript table gives a point estimate for this row.",
+            "assessment": "ACTB’s fitted chromatin-association half-time was 3.35 min. Each denominator pools the two recovered nuclear fractions. Relating these fractions to survival after detachment would require the size and subsequent fate of a cohort marked at release.",
+            "report": "lean/PROGRESS.md#fr38-marked-fates"
+          },
+          {
+            "dataset_id": "tutucci-2018-ash1-mitosis",
+            "manifest": "lean/checks/data/rna_chase_observables.json",
+            "citation": "Tutucci et al. (2018), Nature Methods 15, 81–89",
+            "doi": "10.1038/nmeth.4502",
+            "locator": "Figure 6b–c. The group estimate comes from panel c.",
+            "context": "Endogenously tagged ASH1 RNA spots were counted per cell in 21 yeast cells every two minutes, with times aligned to anaphase onset.",
+            "role": "descriptive",
+            "uncertainty": "The authors report ±2.8 min with the 6.1 min value. The type of uncertainty is unspecified.",
+            "assessment": "The mitotic decline in detected ASH1 spots had a reported half-life of 6.1 min. A per-cell count gives a population decay timescale. The release time and subsequent survival of a detachment-marked cohort remain unmeasured.",
+            "report": "lean/PROGRESS.md#fr38-marked-fates"
           }
         ]
       }
@@ -4059,7 +4115,7 @@
           "polymerisation-balances",
           "fr38-terminal-inventories"
         ],
-        "result": "Across 183 compiled rows the maximum pool residual was 5.80 × 10⁻¹⁹ fmol. Omitting one competing chain from the two-gene pool produced a 4.88 × 10⁻⁸ fmol discrepancy. A further 62 compiled rows with terminal holds closed within 1.55 × 10⁻²⁰ fmol. Applying the opposite policy to the initial hold misplaced 80 machines in either case."
+        "result": "Across 183 compiled observations the maximum pool residual was 5.80 × 10⁻¹⁹ fmol. Omitting one competing chain from the two-gene pool produced a 4.88 × 10⁻⁸ fmol discrepancy. On the neutral-label engine, 62 further observations across both terminal machine policies closed within 1.55 × 10⁻²⁰ fmol. Counting the initial hold under the opposite policy misplaced 80 machines in both cases."
       },
       "biology": {
         "status": "open",
@@ -4127,7 +4183,7 @@
           "polymerisation-balances",
           "fr38-terminal-inventories"
         ],
-        "result": "The largest residue residual across 183 rows was 3.39 × 10⁻²⁰ fmol. A one-stage chain retained zero residues in transit while releasing 6.55 × 10⁻⁵ fmol of residues alongside an eight-stage chain. The combined stage, hold and physical detachment balance closed within 8.94 × 10⁻²⁰ fmol across 62 compiled rows."
+        "result": "The largest residue residual across 183 observations was 3.39 × 10⁻²⁰ fmol. A one-stage chain retained zero residues in transit while releasing 6.55 × 10⁻⁵ fmol alongside an eight-stage chain. In the 62 neutral-label observations the combined stage, hold and detachment balance across both machine policies closed within 1.19 × 10⁻¹⁹ fmol."
       },
       "biology": {
         "status": "open",
@@ -4169,15 +4225,16 @@
         },
         "sources": {
           "Cells release updates, specialized locally as the exact single-fate balance": "https://github.com/Eidosoma/Cells/blob/fc07c545836b155928aeca3e9ba74528d6e3b66d/src/cells/operators/templated_polymerisation.py#L1331-L1353",
-          "Public reader’s required loss series": "https://github.com/Eidosoma/Cells/blob/fc07c545836b155928aeca3e9ba74528d6e3b66d/validation/gene_regulation/cohort.py#L289-L306"
+          "Public reader’s required loss series": "https://github.com/Eidosoma/Cells/blob/fc07c545836b155928aeca3e9ba74528d6e3b66d/validation/gene_regulation/cohort.py#L289-L306",
+          "Public zero-loss export for individual release fates": "https://github.com/Eidosoma/Cells/blob/947ff262c7fba53b53b32a7c44394e84be3fa897/validation/gene_regulation/engine_run.py#L284"
         }
       },
       "numerical": {
-        "status": "failed",
+        "status": "checked",
         "comparisons": [
           "fr38-lossless-fate-export"
         ],
-        "result": "Both fates gained 1.2776562362330652 × 10⁻¹⁰ fmol in each compiled world. The reader recovered three of four fate records. Omitting the short-lived fate’s degradation route removed int_D_R_s from the export. The reader refused the fourth record. Every physical amount balance closed."
+        "result": "The original compiled comparison recorded three readable fates out of four. After the public exporter repair, the reader recovered all four in the two labelled worlds. Each row gained 1.27765623623 × 10⁻¹⁰ fmol over ten seconds, including 7.66593665955 × 10⁻¹¹ fmol marked during [2, 8) s. The largest physical balance residual was below 3.44 × 10⁻²⁷ fmol."
       },
       "biology": {
         "status": "open",
@@ -5859,15 +5916,15 @@
         },
         "sources": {
           "Mathlib div_le_iff₀, specialized to the positive hazard": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/Order/GroupWithZero/Unbundled/Basic.lean#L1072",
-          "Cells inclusive threshold crossing": "https://github.com/Eidosoma/Cells/blob/f51a3b07d302fb177b166b1568155084ffb8e1c1/src/cells/models/assembly_lineages_v2/pore_clock.py#L5"
+          "Cells inclusive threshold crossing": "https://github.com/Eidosoma/Cells/blob/0a1c1b0dc8145c9c313c02a4ed57cfe5433b2efe/src/cells/models/assembly_lineages_v2/pore_clock.py#L82-L105"
         }
       },
       "numerical": {
-        "status": "failed",
+        "status": "checked",
         "comparisons": [
           "fr31-pore-hold-replay"
         ],
-        "result": "Both runners recorded rupture at 1.4042194113471334 s. The crossing falls 2.42288 × 10⁻¹⁷ s later for the same binary inputs. Both neighboring cutoffs and the exactly sufficient exposure control agree. Both ledgers close. The replay exits nonzero on the middle cut."
+        "result": "The original reproducer passed at all three adjacent cutoffs in both runners. At 1.4042194113471334 s the exact crossing is 2.42288 × 10⁻¹⁷ s later. Both runners kept the founder alive at that cutoff and the previous one, then recorded rupture at the following cutoff. The independent equality control ruptured at exactly sufficient exposure. Both ledgers closed. The recorded earlier failure is linked from the retest."
       },
       "biology": {
         "status": "open",

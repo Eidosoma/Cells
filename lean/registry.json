@@ -85,7 +85,7 @@
     "cells.size_threshold_fission@1": "src/cells/models/assembly_lineages/fission.py#L71",
     "cells.species_regulated_availability@1": "src/cells/operators/species_regulated_availability.py#L1720",
     "cells.species_regulated_availability@2": "src/cells/operators/species_regulated_availability.py#L1926",
-    "cells.templated_polymerisation@1": "src/cells/operators/templated_polymerisation.py#L1629",
+    "cells.templated_polymerisation@1": "src/cells/operators/templated_polymerisation.py#L1725",
     "cells.tension_hold@1": "src/cells/models/assembly_lineages_v2/tension_hold.py#L139"
   }
 }

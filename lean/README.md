@@ -14,7 +14,7 @@ Direct Lean claims cover [52 of 52 laws](COVERAGE.md#registered-laws) and [33 of
 | [Ion channels and junctions](COVERAGE.md#category-channels-and-junctions) | 15 of 15 | 15 of 15 | 15 checked | 14 |
 | [Pumps and cotransport](COVERAGE.md#category-pumps-and-cotransport) | 13 of 13 | 8 of 8 | 8 checked | 8 |
 | [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 3 of 3 | 16 of 16 | 15 checked · 1 failed | 12 |
-| [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 15 of 15 | 34 of 34 | 31 checked · 3 failed | 22 |
+| [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 15 of 15 | 34 of 34 | 33 checked · 1 failed | 22 |
 | [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 1 of 1 | 26 of 26 | 26 checked | 19 |
 | [Cell physiology](COVERAGE.md#category-cell-physiology) | — | 3 of 3 | 3 checked | 3 |
 
@@ -22,13 +22,15 @@ Direct Lean claims cover [52 of 52 laws](COVERAGE.md#registered-laws) and [33 of
 
 Each category opens its detailed claim table on GitHub, including registered laws still awaiting a proof. A single claim can cover several laws. The last column counts claims with a recorded measurement or literature finding, including partial evidence. Each numerical result applies to the cases in its linked record. [All registered laws](COVERAGE.md#registered-laws) · [Design notes](ENGINE_LAW_VERIFICATION.md) · [Voltage pilot closeout](../reports/BIO003_PILOT_CLOSEOUT.md)
 
-The generated list tracks each failing numerical comparison. In the Phase A pore clock, a cutoff rounded to the first rupture time changes a founder’s fate in both runners. Earlier comparisons document a reversible GARD v1 refusal, a rapid-binding inventory margin with the wrong sign, and a missing RNA zero-loss record. GARD v2 passed all nine range and capacity checks. [Current failures](COVERAGE.md#failing-numerical-checks) · [Pore endpoint reproducer](PROGRESS.md#fr31-pore-endpoint) · [RNA export and control](PROGRESS.md#fr38-lossless-fate) · [GARD repair](PROGRESS.md#gard-v2-range-repair) · [Wash and clamp repairs](PROGRESS.md#d272-wash-clamp-retests)
+Two numerical claims have recorded failures. The original reversible GARD v1 law can refuse an extreme catalyst ratio, and the rapid-binding solver can misclassify a ligand inventory at the limit of binary64 precision. Two earlier failures now pass on public Cells. The pore clock gives the correct fate at the disputed cutoff in both runners, and the RNA reader recovers all four lossless fate records. [Current failures](COVERAGE.md#failing-numerical-checks) · [Pore-clock retest](PROGRESS.md#fr31-pore-endpoint-repair) · [Lossless RNA retest](claims/release-fate-export.md) · [GARD v2 range checks](PROGRESS.md#gard-v2-range-repair)
 
 FR-42’s neutral arrival-time labels now have a proof and a compiled comparison. With constant loss and arrivals, every positive final amount up to the available supply determines a unique loss exponent. The label amounts sum to the physical pool. Enabling labels preserved all 42 shared history fields and 76 shared observations bit for bit in the tested tissue. With quadratic loss, the new cohort held 0.24999987 fmol at one second, against the exact ¼ fmol. [Finite-step proof and checks](claims/fr42-survival-exponent.md) · [Quadratic cohort and blank](claims/fr42-cohort-shares.md)
 
-FR-38’s development release operator now directs material from an existing template hold to the class active at detachment. The compiled fixture exercised two separate windows with the same label, for both RNA fates. Lean proves that a reused label carries its older survivors and that the chase denominator is the cohort alive at window close. Bellecourt et al. measured released and template-associated RNA separately. Measuring survival of that same released cohort remains open. [Release windows, compiled comparison and biological evidence](claims/release-window-survival.md)
+FR-38 marks RNA when it detaches from its template. Lean proves that every marked release is accounted for across the durable and short-lived fates. In three compiled runs, all 39 shared physical readouts matched bit for bit. Reusing one label in two windows reproduced the sum of the separately marked survivors within 1.30 × 10⁻²⁶ fmol. [Proof, compiled comparison and chase denominator](claims/release-window-survival.md)
 
 ## Biological evidence
+
+How long does released RNA survive? A purified bacterial assay measured the fraction detached, a human ACTB time course gave a 3.35 min chromatin-association half-time, and yeast ASH1 counts declined with a reported half-life of 6.1 ± 2.8 min in 21 cells. Each measurement answers a different part of the question. The Cells chase fraction still needs a cohort marked at detachment and counted again after its marking window closes. [Three measurements, denominators and sources](claims/release-window-survival.md#biological-evidence)
 
 In two mock-treated mouse dendritic-cell replicates, heavy-labelled Actn1 accounted for 17.19% and 10.11% of the paired isotope signal at five hours. The two measurements show how to observe a cohort fraction. Amino-acid recycling limits how closely that fraction follows newly made protein. A common loss rate across cohorts remains open. [Measurements and source accessions](claims/fr42-cohort-shares.md#biological-evidence)
 
@@ -506,7 +508,7 @@ For the original GARD laws, compare both directions of each transfer and each fo
 "$cells_python" -B checks/gard_catalysis.py --controls-only
 ```
 
-For FR-31, run the four synthetic cohort-size checks. For FR-42, compare point releases and interval counters, then replay the FR-38 development fixture and the labelled and unlabelled FR-42 tissue. The last command checks the finite-step math on NumPy and CPU JAX and recalculates the paired Actn1 fractions. [Area bounds](PROGRESS.md#fr31-area-bounds) · [Release windows](PROGRESS.md#fr42-release-windows) · [Compiled neutral labels](PROGRESS.md#fr42-neutral-survival)
+For FR-31, run the four synthetic cohort-size checks. The FR-38 commands compare point releases and interval counters, then run three compiled RNA worlds with marks in [2, 4) and [6, 8) s. The replay saves half-second observations and compares reconstruction on half-second and two-second grids. The last command checks FR-42 in the labelled and unlabelled tissue, tests its finite-step math on NumPy and CPU JAX, and recalculates the paired Actn1 fractions. [Area bounds](PROGRESS.md#fr31-area-bounds) · [Marked RNA windows](PROGRESS.md#fr38-marked-fates) · [Neutral tissue labels](PROGRESS.md#fr42-neutral-survival)
 
 ```bash
 "$cells_python" -B checks/vesicle_area.py
@@ -523,7 +525,7 @@ For the GARD v2 two-word cache, replay the reversible event, signed updates and 
 "$cells_python" -B checks/polymerisation_balances.py
 ```
 
-For a chain with a terminal RNA hold, check both machine-return policies through a change of class and a change of fate fraction. The second command asks the public cohort reader for surviving RNA in both lossless fates. It exits with status 1 if a fate record is unreadable. [Machine and residue balances](PROGRESS.md#fr38-terminal-inventories) · [Lossless fate export](PROGRESS.md#fr38-lossless-fate)
+For a chain with a terminal RNA hold, check both machine-return policies as the completion-marking window closes and the durable fraction changes. The second command asks the public reader for both physical and marked RNA in two lossless controls. [Machine and residue balances](claims/polymerisation-machines.md) · [Four fate records](claims/release-fate-export.md)
 
 ```bash
 "$cells_python" -B checks/terminal_release.py
