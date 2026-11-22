@@ -119,8 +119,32 @@ def with_law(the_world, law_id):
 # ------------------------------------------------------------------ the kernel identity
 
 
+def fresh_verdict():
+    """balance.verdict() in a fresh process with RuntimeWarning as an error. log_direction once
+    summed an infeasible direction's −inf activity and +inf extent before the feasibility mask,
+    which NumPy reports as an invalid value (four such entries in the verdict's probe). A fresh
+    process, because a warning already issued in this one is not issued again."""
+    import json
+    import os
+    import subprocess
+    import sys
+    from pathlib import Path
+
+    src = Path(__file__).resolve().parents[2] / "src"
+    env = {**os.environ, "PYTHONPATH": str(src), "OPENBLAS_NUM_THREADS": "1",
+           "JAX_PLATFORMS": "cpu", "JAX_ENABLE_X64": "1"}  # fmt: skip
+    code = ("import json; from cells.models.assembly_lineages_v2.balance import verdict; "
+            "v = verdict(); print(json.dumps({'holds': bool(v['holds']), 'probe': "
+            "{'pairs': int(v['probe']['pairs']), "
+            "'max_abs_deviation_ln': float(v['probe']['max_abs_deviation_ln'])}}))")  # fmt: skip
+    done = subprocess.run([sys.executable, "-W", "error::RuntimeWarning", "-c", code], env=env,
+                          capture_output=True, text=True, timeout=900)  # fmt: skip
+    assert done.returncode == 0, done.stderr[-3000:]
+    return json.loads(done.stdout.strip().splitlines()[-1])
+
+
 def test_the_kernel_identity_holds_on_its_probe_and_on_worlds():
-    verdict = balance.verdict()
+    verdict = fresh_verdict()  # The probe's verdict, with RuntimeWarning an error.
     assert verdict["holds"] and verdict["probe"]["max_abs_deviation_ln"] <= TOL
     assert verdict["probe"]["pairs"] > 10000
     for kw in ({}, {"measure": "multinomial_less_one", "last": "extinct"},
