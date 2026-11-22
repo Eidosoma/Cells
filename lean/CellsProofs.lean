@@ -17,10 +17,12 @@ import CellsProofs.Chemistry.PoolWithdrawal
 import CellsProofs.Chemistry.PoolWithdrawalEnergy
 import CellsProofs.Chemistry.MatchedBuffer
 import CellsProofs.Chemistry.MitochondrialCycles
+import CellsProofs.Chemistry.MitochondrialCharge
 import CellsProofs.Chemistry.MitochondrialReactions
 import CellsProofs.Chemistry.MitochondrialStall
 import CellsProofs.Chemistry.Polymerisation
 import CellsProofs.Chemistry.TerminalRelease
+import CellsProofs.Chemistry.ReleaseEnergy
 import CellsProofs.Chemistry.PopulationUnits
 import CellsProofs.Chemistry.PrescribedShell
 import CellsProofs.Chemistry.ReservoirExchange

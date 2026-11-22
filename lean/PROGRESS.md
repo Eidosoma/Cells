@@ -1,5 +1,27 @@
 # Cells proof comparisons
 
+<a id="fr38-release-energy"></a>
+
+## 22 November 2026 · Heat booked at RNA detachment
+
+FR-38 gives the held RNA and each physical fate the same standard energy per molecule at 1 M. Only the receiving row has a concentration-dependent energy. Writing `cap = volume × 1 M`, its concentration term is `RT n (ln(n/cap) − 1)`. Lean proves that its finite-step slope is nonpositive when both endpoint amounts are positive and at most `cap`, including a step with the same amount at both ends. Multiplying the opposite slope by each nonnegative detachment gives nonnegative heat for every split fraction. An inactive fate books zero release heat even while degradation changes its concentration. The conservation proof sums synthesis, detachment and degradation over any finite family of fate rows and counts the hold’s standard energy once. [Lean proof](CellsProofs/Chemistry/ReleaseEnergy.lean) · [Cells release law, §9.5–9.7](https://github.com/Eidosoma/Cells/blob/36b77006425c858c26727fa73181e7011d049a7c/docs/TEMPLATED_POLYMERISATION_LAWS.md#95-free-energy-and-heat)
+
+Three compiled R1 controls released RNA from the initial hold with new synthesis and degradation off. At fractions 0, ½ and 1, the largest discrepancy against a 65-digit endpoint calculation was 4.36 × 10⁻²² pJ over 18 saved states. A fourth compiled world had synthesis and both degradation routes active. Its durable fraction switched from 0 to ½ to 1. The comparison reconstructed the intermediate operator state of each compiled step to price the two half-steps separately. Over 60 half-steps, the largest discrepancy for release heat was 1.30 × 10⁻²² pJ. For the entire state-function balance it was 3.83 × 10⁻¹⁹ pJ. There were 40 fate half-steps in which the amount fell and its release booked exactly zero. Booking detachment a second time would add 1.17 × 10⁻⁷ pJ over the run. In a separate component check, equal release and loss of 10⁻¹³ fmol left the fate amount unchanged and still booked 8.91 × 10⁻¹² pJ of release heat. [Replay](checks/release_energy.py) · [Engine route booking](https://github.com/Eidosoma/Cells/blob/36b77006425c858c26727fa73181e7011d049a7c/src/cells/operators/templated_polymerisation.py#L1355-L1400)
+
+Bellecourt et al.’s wild-type RNA curve measures released terminator-length RNA divided by all terminator-length RNA. Its clock starts when elongation resumes upstream of the terminator. The plotted curve can constrain the combined arrival and release time course. Separate timing of completion is needed to isolate the dwell. It also supplies no measurement of release heat. [Primary study, Figure 6B](https://pmc.ncbi.nlm.nih.gov/articles/PMC6402830/#F6)
+
+<a id="mt1b-combined-charge"></a>
+
+## 22 November 2026 · The mitochondrial matrix and intermembrane-space charge
+
+At fixed water volumes, the inventory is the sum of each species’ valence times its amount in the matrix and intermembrane space (IMS). Lean proves that its change equals the net signed charge imported across the outer boundary when internal chemistry conserves charge. It specializes the existing proof for all seven inner-membrane cycles to arbitrary signed extents. On a conducting passive face, zero total current determines one voltage. This voltage can be nonzero while individual ions move. Fixing the matrix charge alone leaves the initial total undetermined. The MT-1b declaration imposes zero outer voltage at the anchor and start states. Conservation carries the initialized total through the subsequent trajectory. [Lean proof](CellsProofs/Chemistry/MitochondrialCharge.lean) · [G4 and G5 anchor rule](https://github.com/Eidosoma/Cells/blob/36b77006425c858c26727fa73181e7011d049a7c/docs/MITOCHONDRIA_DESIGN.md#g5-the-outer-membranes-potential)
+
+Two steps of the compiled seven-cycle world gave equal and opposite matrix and IMS charge changes within 6.31 × 10⁻²⁴ fmol of charge equivalents. A separate check exercised the generic compiled passive face with two mobile ions. Matched concentrations gave zero current. In the symmetric salt gradient the ions moved with total unsigned flux 0.002 fmol of charge equivalents per second and zero net charge flux. An unequal gradient required −8.19039 mV (IMS minus bath) for zero current to rounding. Forcing 0 mV in that control leaves an outward 0.001 fmol of charge equivalents per second. These are component results. The per-form outer-membrane closure and its coupling to the full MT-1b start state still need an integrated replay. [Comparison](checks/mitochondrial_charge.py) · [Component coverage](https://github.com/Eidosoma/Cells/blob/36b77006425c858c26727fa73181e7011d049a7c/validation/mitochondria/component_comparison.py#L35-L41)
+
+Cells Evidence found a preparation-specific measurement by Abrantes et al. In intact HeLa cells, bulk IMS and cytosolic pH gave an inferred IMS-minus-cytosol potential of +33 ± 11 mV under proton equilibrium. This leaves the isolated-mitochondrion bath anchor unmeasured. [Primary study, Figure 1E and equation 1](https://doi.org/10.1016/j.mito.2026.102218) · [Measurements and scope](checks/data/abrantes2026_outer_voltage.json)
+
+The frozen run `lean-release-energy-charge-20261122` records the compiled checks in `energy.json` and `charge.json` and their source revisions in `verification.json`.
+
 <a id="fr38-terminal-inventories"></a>
 
 ## 22 November 2026 · Polymerase and RNA inventories at terminal release
