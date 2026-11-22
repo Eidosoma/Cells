@@ -1577,7 +1577,7 @@ each node's buffer), and the supply's pair held at its declared ratio.
   - With explicit cycles the run takes years of wall time at 180 mV, consistent with the @3 owner's
     estimate (10 CPU-hours needs activities 1,100 times lower).
   - So the cycles' slope conductances join N2's implicit operator: D235's build for MT-2, branch I
-    of §8 (M2's 6–9 agent-days). Its own design note comes next.
+    of §8 (M2's 6–9 agent-days). Its design is the last section of this note.
   - Under that route the face's 18 µs binds: about 1–4 days a world, detached on a lane, if the
     runner path's overhead falls toward the device step's.
   - Still unpriced: the fast chemistry's explicit material bounds at the source's activity (the
@@ -1872,3 +1872,124 @@ R2, the judged reference, integrates the same declared equations (D280).
   - §7's protocol.
 - R2's own stiff integrator does not depend on the engine's solver route (D290).
 - So R2's author can start once (a) or (b) is ruled and this note is accepted.
+
+## MT-1b's implicit cycle block: the cycles' slopes in N2's operator (design, 22 November 2026)
+
+**Status: a design, before code (D290; D235's branch I for MT-2).** The user chose implicit cycles
+to keep ΔΨ at 180 mV with the source's activities. This is more than a day of engine work, so the
+note comes first, for the lead and the @3 owner. It builds on N2
+(`imex_ars222_implicit_conductances@1`, FR-8 rung 1; its design in `models/surface_pump_v3.py`'s
+N2 section, and `validation/long_duration/RUNG1_20261119.md`). **S** marks this note's own proposal.
+Read at main 38cc2eae.
+
+**Why.** With the cycles explicit, the kind's electrogenic slope caps the step at 27 ns at 180 mV
+(P1′'s arm S: the kind's bound near rung 0.14, with ΣG/C = 5 × 10⁶ /s; CORE_SEAMS_STEP0 §9.2). 300 s
+then costs about 19,400 CPU-hours (the MT-1b draft's W1 table).
+
+### 1. What N2 does today
+
+- **Each constant-field route** (a patch's own permeabilities, a channel population, a junction) is
+  split as J(dv) = W dv + [J(dv) − W dv]. W = dJ/d(dv) is frozen for the step at the tableau's
+  operator time, from the step start's prediction.
+- **The linear part is implicit.** Its charge current G dv, with G = CHARGE_PER_FMOL Σ_s z_s W_s
+  ≥ 0, is a Laplacian block beside the faces' in (C + a dt L) φ = q. One factorization serves the
+  step, and the matrix stays SPD.
+- **The species move with the same W,** so material and charge stay exact.
+- **The remainder stays explicit.** Its derivative in dv vanishes at the operator time.
+- **Each part's heat** is booked with its own tableau weights.
+- **What N2 leaves explicit.** The kinds' electrogenic currents stay explicit; under N2 the stage
+  rule counts the kinds' terms alone. So the cycles keep the 27 ns cap.
+
+### 2. The block
+
+**The split, per cycle population.** For each electrogenic cycle population of `cells.transporter@1`
+(complexes I, III and IV, the synthase, the nucleotide exchange):
+- its cycle rate is split as J_c(dv) = W_c dv + [J_c(dv) − W_c dv];
+- W_c = ∂J_c/∂(dv) is frozen at the same operator time, from the kind's exact closed-form slopes
+  (K6's monomial kernel, the slopes its stage term uses);
+- its patch's charge conductance gains G_c = CHARGE_PER_FMOL q_c W_c, where q_c is the charge moved
+  per turnover;
+- its rows move by ν (W_c dv) at the implicit stages and by ν × the remainder at the explicit ones,
+  so material and charge stay exact, as for N2's routes;
+- the neutral carriers (q_c = 0) and the kinase have no electrical part, and stay explicit.
+
+**Only the non-negative slope goes implicit (S).** A cycle's slope can be negative: far from
+equilibrium, the monomial's voltage factor e^{θqu} can make dI/dV < 0.
+- The implicit part takes W_c⁺, the part with q_c W_c ≥ 0, so the operator stays SPD.
+- The rest stays in the explicit remainder, which the stage rule counts as it counts today's terms.
+- The split is exact for any frozen W.
+
+**Its kind hook.** An optional hook, `implicit_slopes(read, potentials, control, p)`, returns W per
+population.
+- The transporter implements it from its kernel.
+- A kind without it adds nothing, so today's kinds and programs are unchanged.
+
+**Heat.** Each part's heat is booked as N2's routes' are: the remainder's at the explicit stages,
+the linear part's at the implicit ones. The cycle kind's existing booking (the tableau, or
+`trapezoid_nonnegative@1` where picked) applies to each part. The per-element dissipation check
+stands.
+
+**Its ID.** A new IMEX ID, as D147 asks of an implicit cycle block: N2 plus the declared kinds'
+slopes, `imex_ars222_implicit_kinds@1` (name **S**). N2's own ID is untouched, so FR-8's
+registered N2 worlds keep their programs.
+
+**With the face.** The face's forms add Σ_f z_f² W_f to the face Laplacian (the face note's §4). The
+cycles add patch conductances. Both sit in the same SPD operator.
+
+### 3. What stays explicit, and the first measurement
+
+- **Still explicit:**
+  - the kinds' material slopes (D4's material term, dt × material ≤ the bound);
+  - the face's diffusion: about 18 µs at the source's p_Pi (P1′);
+  - the general closure's lag;
+  - X2's order condition and its integration-error cap, which registered runs select.
+- **The risk (S).** At the source's activity the cycles' material relaxation may bind far below
+  18 µs. Candidates are the NADH and quinone pools, the protons through the closure, and the IMS
+  kinase at 44 times respiration. Implicit electrical slopes do not lift that.
+- **Step 0, with its criterion written first** (development, light CPUs, about half a day to a day):
+  - **The world:** head 2's host-P world with the source's capacities, at MR1-MT2's state 3 and
+    state 4 near 180 mV.
+  - **What it evaluates:** the electrical bound (the kind's stage term over C), the material term,
+    the face's bound and the closure's lag.
+  - **If the material and face bounds allow about 10 µs or more,** this electrical block is enough.
+  - **If not,** the block must also take the cycles' material slopes: a linearly implicit material
+    block per node, the scope of §8's original branch I. A new estimate goes to the lead before any
+    build.
+
+### 4. What stays bitwise (D148), the rows and the qualification
+
+- **Bitwise.** It is a new solver ID that nothing registered selects, so every registered program,
+  crossrev set, G1 world, FR set and FR-8's N2 world stays bitwise.
+- **Rows (D224),** in the existing `tests/unit/test_n2_implicit_conductances.py`:
+  - at every stage, a cycle population's rate equals its frozen-slope linear part plus its
+    remainder;
+  - material and charge are exact, and the ledgers close;
+  - a planted negative slope stays explicit and is counted by the stage rule;
+  - a world without slope-declaring kinds runs bit for bit as N2 under the new ID;
+  - planted: the linear part's charge without its rows' material move is refused.
+- **The qualification**, after the build, on MT-1b's world (development, light CPUs): a ladder from
+  1 µs to the binding bound (the face's 18 µs if Step 0 allows), as RUNG1's I3. It measures order
+  against a fine reference, X2's count and cap, and the ledgers. The registration then fixes dt.
+
+### 5. The price, against the earlier 6–9 agent-days
+
+That earlier figure (§8's M2) was a per-node Newton block. This design reuses N2's linearization,
+with no Newton (**S**):
+
+| Part | Agent-days |
+| --- | --- |
+| Step 0 | 0.5–1 |
+| The kind hook and the transporter's slopes at the operator time | about 1 |
+| The operator and remainder extension, with the stage rule | 1–1.5 |
+| The rows and the gate | about 1 |
+| The qualification ladder | about 1 |
+| **The electrical block** | **about 4.5–5.5** |
+| If Step 0 finds material stiffness binding, the material block on top | 3–4 more (about 8–9 in all, the earlier range) |
+
+**The judged run under this route.**
+- **The step's cost** (`/mnt/workspaces/Cells/mito-mt1b-20261122/`): on the windowed runner with
+  device row checks it is about 19 ms a step on head 2's world, against 6.3 ms for the device step
+  alone and about 170 ms with host row checks.
+- **So 300 s at the face's 18 µs** (1.7 × 10⁷ steps) is about 90 CPU-hours, before X2's extra half
+  steps. That is about 4 days a world, detached on a lane, unless the device checks' own closure
+  solves are shared (the lead's side item).
