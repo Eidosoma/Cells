@@ -570,6 +570,59 @@ applies when a paper reports both relaxation times at held-out voltages but no a
 **What follows** is the user's and the lead's decision: another paper with step decays at several
 magnitudes, registered and sealed the same way, or FR-30 staying development only.
 
+### 13.3 Entry of 10:40 UTC on 22 November 2026: three candidates in order, and native myocyte pairs, before any is read
+
+Written by the @3 owner, FR-30's fitter, at the lead's direction (D280, the source search). Nobody
+on this project has read these papers. The lead will fetch the open-access ones into their folders
+for the extractor after this commit, which is tagged `fr30-candidates3-registered-2026-11-22`.
+
+**The order.** Each paper is extracted only if the one before it is undetermined.
+1. **Xu et al. (2013)**, Front Pharmacol 4:44, doi:10.3389/fphar.2013.00044, PMC3625725, CC BY.
+   Neonatal mouse ventricular myocyte pairs, dual whole-cell clamp, the control arm only. It comes
+   from the same laboratory as Lin (2003), with different data.
+2. **Lin et al. (2010)**, J Mol Cell Cardiol 48:238, doi:10.1016/j.yjmcc.2009.05.014,
+   PMC2813328, a free author manuscript. Ventricular myocytes.
+3. **Ek-Vitorín et al. (2018)**, Int J Mol Sci 19:1659, doi:10.3390/ijms19061659, PMC6032060,
+   CC BY. Wild-type Cx43 in Rin43 cell pairs.
+
+§13's split rule, judged observables and pass rule apply unchanged to each, with §13.1's fixes and
+§13.2's missing-amplitude rule. If all three are undetermined, the lead and the user decide what
+follows.
+
+**What has been read about them (disclosure).** Only the source search's caption-level reading,
+which the lead relayed. It locates each paper's data and gives no value:
+- Xu et al.: fast and slow time constants, said to be in Fig 7D–F. The number of |V_j| magnitudes
+  is unknown.
+- Lin et al. (2010): fast and slow inactivation, said to be in Fig 5A–D.
+- Ek-Vitorín et al.: second-order decay fits, probably at a single ±80 mV. If so, it is
+  undetermined under §13's rank rule.
+
+Lin et al. (2005) (PMC2752676) is excluded as seen. The FR-7 agent's search fetched its full text
+(§13), and I have not opened it. The fitter also does not open the source search's notes on these
+papers.
+
+**Native myocyte pairs: admitted, under a separate and narrower claim.**
+- **The question.** Do native ventricular myocyte pairs count as "homotypic Cx43" under §13.1's
+  point 6? Their junctions are Cx43-dominated, but the composition of a native junction is not
+  controlled. Other connexins may be present, Cx45 above all in neonatal ventricle. They could
+  form heteromeric or heterotypic channels, whose transjunctional gating differs.
+- **Point 6 stays as written.** It was fixed so that a benchmark judges one channel type, and an
+  expression system with wild-type Cx43 alone (such as Ek-Vitorín's Rin43 pairs) meets it. A
+  native pair does not, since nothing in it shows that one channel type carries the current.
+- **The decision.** Native pairs are admitted, and their verdict is labelled "Cx43-dominated native
+  ventricular junctions", never "homotypic Cx43":
+  - **Pass:** evidence that the law, with fitted effective parameters, describes those native
+    junctions' voltage-dependent relaxation.
+  - **Not claimed:** that it describes homotypic Cx43 channels.
+  - **The parameters** fitted to native pairs are the native mixture's, and are not entered as
+    Cx43's.
+  - **Within a native paper:** only the control arm is extracted. No knockout, knockdown,
+    pharmacological or mutant arm is used, and no arm with another connexin's expression changed.
+- **Why admit rather than exclude.** FR-30's law serves tissue models (FR-16), whose junctions are
+  native, Cx43-dominated ones, so a native benchmark tests the law where it will be used. Stating
+  the narrower claim keeps the benchmark honest. Excluding native pairs would leave one candidate
+  that is probably undetermined, so the search would most likely end with no test at all.
+
 ## Sources
 
 - **Read:**
