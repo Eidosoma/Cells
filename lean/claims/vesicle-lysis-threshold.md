@@ -54,7 +54,19 @@ Uses [Bilayer area is half the sum of the molecular footprints in its two leafle
 
 **Open.** Intact fraction of a vesicle cohort over time at known tension. The numerical area-unit invariance is tested on identical physical states in the engine.
 
-**Unit** mN/m, seconds and fraction intact
+Under strong hypotonic swelling, three pores resealed successively in the same vesicle, each within one second. This measures a surviving-vesicle outcome relevant to FR-39. The assembly rule books terminal lysis once per lineage. [Oglęcka et al., Figure 5](https://elifesciences.org/articles/03695/figures#fig5)
+
+**Unit** mN/m, seconds, fraction intact and inverse seconds
+
+### karal2015_dopc_tension_series@1
+
+Survival during constant aspiration tension was fitted in pure DOPC vesicles. Two temperature columns have fitted first-rupture rates at 7.0, 7.5 and 8.0 mN/m. Figure 2a, journal page 081103-3. [Karal and Yamazaki (2015), Fig. 2a](https://doi.org/10.1063/1.4930108)
+
+- **Evidence role** descriptive
+
+Three independent experiments per setting, each with 20 vesicles. The plotted bars are standard errors across experiments. The linked data contain the digitized log rates and bar caps.
+
+At about 25 °C the three rates were 0.00263, 0.00556 and 0.0153 s⁻¹. At about 32 °C they were 0.00423, 0.00813 and 0.0230 s⁻¹. These are targets for the proposed FR-31 time-dependent rupture law. [Dataset manifest](../checks/data/karal2015_rupture_rates.json) · [Comparison verdict](../PROGRESS.md#vesicle-and-translation-evidence)
 
 ### karal2015_dopc_hold@1
 

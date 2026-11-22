@@ -43,11 +43,49 @@ Uses [Bilayer area is half the sum of the molecular footprints in its two leafle
 
 [Tested engine 9d03bd2bd907](https://github.com/Eidosoma/Cells/commit/9d03bd2bd907a3c48bb43679b8e05c392df9adac) · [Evidence checkpoint b2dea374a2d2](https://github.com/Eidosoma/Cells/commit/b2dea374a2d2bcba5c6eb860dd7e42bd263e628c)
 
+**Engine** `cells.assembly_lineages@2`, `cells.osmotic_lumen@1`, `cells.bilayer_geometry@1`
+
+[Osmotic equilibrium volume](https://github.com/Eidosoma/Cells/blob/87e81f56366b5d06bd2abd45ebd2bb45a70f8b25/src/cells/models/assembly_lineages_v2/lumen.py) · [Physical membrane area](https://github.com/Eidosoma/Cells/blob/87e81f56366b5d06bd2abd45ebd2bb45a70f8b25/src/cells/models/assembly_lineages_v2/geometry.py) · [Compiled single-lineage runner](https://github.com/Eidosoma/Cells/blob/87e81f56366b5d06bd2abd45ebd2bb45a70f8b25/src/cells/models/assembly_lineages_v2/runner.py) · [Fixed-osmole world fixture](https://github.com/Eidosoma/Cells/blob/87e81f56366b5d06bd2abd45ebd2bb45a70f8b25/tests/unit/test_assembly_lineages_v2_lumen.py) · [World and execution definition](https://github.com/Eidosoma/Cells/blob/87e81f56366b5d06bd2abd45ebd2bb45a70f8b25/tests/assembly_lineage_v2_fixtures.py) · [Two-bath 64-osmole comparison](https://github.com/Eidosoma/Cells/blob/7e126375842ef23f0eb29734847cfe1dffd5ac4c/lean/checks/vesicle.py) · [Study inputs and tracer measurements](https://github.com/Eidosoma/Cells/blob/7e126375842ef23f0eb29734847cfe1dffd5ac4c/lean/checks/data/fujiwara2014_vesicle.json) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/7e126375842ef23f0eb29734847cfe1dffd5ac4c/lean/checks/vesicle_events.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/7e126375842ef23f0eb29734847cfe1dffd5ac4c/lean/PROGRESS.md#intact-vesicle-deflation)
+
+[Tested engine 87e81f56366b](https://github.com/Eidosoma/Cells/commit/87e81f56366b5d06bd2abd45ebd2bb45a70f8b25) · [Evidence checkpoint 7e126375842e](https://github.com/Eidosoma/Cells/commit/7e126375842ef23f0eb29734847cfe1dffd5ac4c)
+
+**Engine** `cells.assembly_lineages@2`, `cells.osmotic_lumen@1`, `cells.bilayer_geometry@1`
+
+[Osmotic equilibrium volume](https://github.com/Eidosoma/Cells/blob/329e9e395ac117998657a21eb827192d34314107/src/cells/models/assembly_lineages_v2/lumen.py) · [Membrane geometry](https://github.com/Eidosoma/Cells/blob/329e9e395ac117998657a21eb827192d34314107/src/cells/models/assembly_lineages_v2/geometry.py) · [Compiled lineage runner](https://github.com/Eidosoma/Cells/blob/329e9e395ac117998657a21eb827192d34314107/src/cells/models/assembly_lineages_v2/runner.py) · [Pinned vesicle fixture, geometry, concentrations](https://github.com/Eidosoma/Cells/blob/329e9e395ac117998657a21eb827192d34314107/tests/unit/test_assembly_lineages_v2_lumen.py) · [World and execution definition](https://github.com/Eidosoma/Cells/blob/329e9e395ac117998657a21eb827192d34314107/tests/assembly_lineage_v2_fixtures.py) · [Bhatia single-vesicle geometry and bath](https://github.com/Eidosoma/Cells/blob/ad1f96418722d25876b38b5a5f38996512d6a32c/lean/checks/data/bhatia2020_vesicle_deflation.json) · [64-osmole compiled comparison at a specified cap density](https://github.com/Eidosoma/Cells/blob/ad1f96418722d25876b38b5a5f38996512d6a32c/lean/checks/vesicle.py) · [Geometric outer-volume bound](https://github.com/Eidosoma/Cells/blob/ad1f96418722d25876b38b5a5f38996512d6a32c/lean/CellsProofs/Chemistry/Vesicle.lean) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/ad1f96418722d25876b38b5a5f38996512d6a32c/lean/checks/vesicle_events.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/ad1f96418722d25876b38b5a5f38996512d6a32c/lean/PROGRESS.md#bhatia-vesicle-deflation)
+
+[Tested engine 329e9e395ac1](https://github.com/Eidosoma/Cells/commit/329e9e395ac117998657a21eb827192d34314107) · [Evidence checkpoint ad1f96418722](https://github.com/Eidosoma/Cells/commit/ad1f96418722d25876b38b5a5f38996512d6a32c)
+
 ## Biological evidence
 
-**Disagrees.** Equilibrium volume after a bath osmolarity change, measured relative to the same vesicle’s spherical capacity or its initial volume, as specified for each study.
+**Mixed.** Equilibrium volume after a bath osmolarity change, measured relative to the same vesicle’s spherical capacity or its initial volume, as specified for each study.
 
 **Unit** volume ratio
+
+### fujiwara2014_vesicle_deflation@1
+
+The five tracked liposomes started at 70 mOsm/L internally and shrank in a 285 mOsm/L bath. Final over initial volume is the reciprocal of the approximately fourfold inverse-volume plateau. A separate paired series follows GFP concentration and volume within the same liposome. Figures 2–3 and supplementary Figures S2–S3. [Fujiwara and Yanagisawa (2014), ACS Synthetic Biology](https://doi.org/10.1021/sb4001917)
+
+- **Evidence role** held out from fitting
+- **Evaluation** Plateau volume ratio using the prepared osmolarities, with no fitted parameter
+- **Excluded** The time taken to shrink, An independent inventory of smaller osmoles
+- **Observed** 0.25 volume ratio
+- **Predicted** 0.2456 volume ratio
+
+The plateau is approximate and has no stated standard error. Volumes were estimated from diameters. Individual ten-minute inverse volume ratios in Figure S2 span about 3.3–4.9.
+
+The intact-liposome plateau agrees at the reported precision. The paired GFP measurement supports retention of the protein during shrinkage. [Dataset manifest](../checks/data/fujiwara2014_vesicle.json) · [Comparison verdict](../PROGRESS.md#intact-vesicle-deflation)
+
+### bhatia2020_single_vesicle_deflation@1
+
+The same trapped vesicle was imaged across a 66 to 72 mM bath change. Bath-origin liquid in an inward tube contributes to the outer contour volume. The ratio here divides final lumen by the measured starting volume. Figure 2 and the Movie S1 caption in the supplement. [Bhatia, Robinson and Dimova (2020), Soft Matter](https://doi.org/10.1039/D0SM00155D)
+
+- **Evidence role** held out from fitting
+- **Evaluation** Outer-contour upper bound and a straight-cylinder estimate for the inward tube
+- **Excluded** The separate Figure 4 bath change, A direct measure of small-solute retention
+
+The final outer volume alone carries a stated uncertainty of about 1,000 µm³. The tube dimensions have no pointwise uncertainty.
+
+Inconclusive. The central outer-contour bound is 0.756. A cylindrical tube gives 0.705, versus a retained-osmole prediction of 0.917. The reported volume uncertainty spans the difference. [Dataset manifest](../checks/data/bhatia2020_vesicle_deflation.json) · [Comparison verdict](../PROGRESS.md#bhatia-vesicle-deflation)
 
 ### wolfisberg2025_deflation@1
 

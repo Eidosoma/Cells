@@ -22,6 +22,61 @@
     "cells.shared_pool@1": "molecular-assembly"
   },
   "comparisons": {
+    "vesicle-lysis-returns": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@2"
+      ],
+      "laws": [
+        "cells.osmotic_lumen@1",
+        "cells.shared_pool@1",
+        "cells.phase_exchange@1",
+        "cells.bilayer_geometry@1",
+        "cells.ideal_mixing@1"
+      ],
+      "engine_revision": "87e81f56366b5d06bd2abd45ebd2bb45a70f8b25",
+      "record_revision": "7e126375842ef23f0eb29734847cfe1dffd5ac4c",
+      "sources": {
+        "Single-lineage material return": "src/cells/models/assembly_lineages_v2/runner.py#L492",
+        "Population material return": "src/cells/models/assembly_lineages_v2/population.py#L700",
+        "Diagnostic event counts": "src/cells/models/assembly_lineages_v2/diagnostic.py",
+        "Published place table and bundle writer": "src/cells/models/assembly_lineages_v2/records.py",
+        "Tension at the triggering step": "src/cells/models/assembly_lineages_v2/lumen.py",
+        "R9 record definition": "validation/assembly_lineages_v2/FORMAT_OL2.md#L545",
+        "Osmotic world fixture": "tests/unit/test_assembly_lineages_v2_lumen.py",
+        "World and execution definition": "tests/assembly_lineage_v2_fixtures.py"
+      },
+      "record_inputs": {
+        "Release ledger proof": "lean/CellsProofs/Chemistry/VesicleRelease.lean"
+      },
+      "driver": "lean/checks/vesicle_release.py",
+      "record": "lean/PROGRESS.md#vesicle-lysis-returns"
+    },
+    "intact-vesicle-deflation": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@2"
+      ],
+      "laws": [
+        "cells.osmotic_lumen@1",
+        "cells.bilayer_geometry@1"
+      ],
+      "engine_revision": "87e81f56366b5d06bd2abd45ebd2bb45a70f8b25",
+      "record_revision": "7e126375842ef23f0eb29734847cfe1dffd5ac4c",
+      "sources": {
+        "Osmotic equilibrium volume": "src/cells/models/assembly_lineages_v2/lumen.py",
+        "Physical membrane area": "src/cells/models/assembly_lineages_v2/geometry.py",
+        "Compiled single-lineage runner": "src/cells/models/assembly_lineages_v2/runner.py",
+        "Fixed-osmole world fixture": "tests/unit/test_assembly_lineages_v2_lumen.py",
+        "World and execution definition": "tests/assembly_lineage_v2_fixtures.py"
+      },
+      "record_inputs": {
+        "Two-bath 64-osmole comparison": "lean/checks/vesicle.py",
+        "Study inputs and tracer measurements": "lean/checks/data/fujiwara2014_vesicle.json"
+      },
+      "driver": "lean/checks/vesicle_events.py",
+      "record": "lean/PROGRESS.md#intact-vesicle-deflation"
+    },
     "ol5-event-energy": {
       "kind": "engine",
       "models": [
@@ -3115,6 +3170,49 @@
   },
   "claims": [
     {
+      "id": "vesicle-lysis-returns",
+      "category": "molecular-assembly",
+      "title": "Terminal rupture accounts once for every molecule returned to its destination",
+      "statement": "Starting at the triggering step’s own pool, each finite pool gains the molecules returned to it. Each held pool keeps its count and its signed reservoir supply decreases by the receipt. Summing the receipts over destinations accounts for the entire contents of the ruptured vesicle.",
+      "assumptions": [
+        "The source list is the membrane and lumen places of the ruptured vesicle. Each appears once with its nonnegative count after the triggering step. Each has exactly one destination pool for its species.",
+        "The pool state used as the starting point already includes the triggering step. A destination has a fixed finite or held status during release. Counts lie in the engine’s admitted integer domain.",
+        "The four comparisons use step-triggered lysis. A population lysis row belongs to the affected slot at that event. The held tracer in these fixtures has no other route for exchange."
+      ],
+      "uses": [
+        "vesicle-lysis-threshold",
+        "shared-pool-inventory"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.osmotic_lumen@1",
+          "cells.shared_pool@1"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.VesicleRelease.release_ledger": "lean/CellsProofs/Chemistry/VesicleRelease.lean",
+          "CellsProofs.Chemistry.VesicleRelease.total_returned": "lean/CellsProofs/Chemistry/VesicleRelease.lean"
+        },
+        "sources": {
+          "Mathlib Finset.sum_ite_eq sums a receipt at its unique destination": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Group/Finset/Piecewise.lean#L142",
+          "Mathlib Finset.sum_add_distrib separates a source contribution from the remaining receipts": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Group/Finset/Basic.lean#L268"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "vesicle-lysis-returns"
+        ],
+        "result": "Four saved CPU runs reconciled by destination in single-lineage and population modes. Four membrane lipids and two lumen lipids returned to a pool holding one lipid, giving seven. Two impermeant tracers returned to a finite pool or reduced held supply by two with 9.210340371976182 kT of return work."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Paired counts in a vesicle and each recipient immediately across complete rupture, including the material recovered outside.",
+        "unit": "molecules per destination",
+        "evidence": []
+      }
+    },
+    {
       "id": "vesicle-event-energy",
       "category": "membrane-transport",
       "title": "The osmotic energy of a vesicle event is independent of its path",
@@ -5445,15 +5543,57 @@
         "status": "checked",
         "comparisons": [
           "ol5-replay-vesicle",
-          "osmotic-vesicle-volume"
+          "osmotic-vesicle-volume",
+          "intact-vesicle-deflation",
+          "bhatia-vesicle-deflation"
         ],
         "result": "Two compiled trajectories each crossed between 34 slack and 64 tense records. Across both runs the relative volume error stayed below 1.07 × 10⁻¹⁴, tension error below 2.24 × 10⁻¹⁷ N/m, and osmotic energy error below 2.54 × 10⁻¹⁴ k_BT against a 70-digit reference. Separate 64-osmole worlds reproduce the macroscopic reduced-volume and tension-per-radius predictions at matched density."
       },
       "biology": {
-        "status": "disagrees",
+        "status": "mixed",
         "observable": "Equilibrium volume after a bath osmolarity change, measured relative to the same vesicle’s spherical capacity or its initial volume, as specified for each study.",
         "unit": "volume ratio",
         "evidence": [
+          {
+            "dataset_id": "fujiwara2014_vesicle_deflation@1",
+            "manifest": "lean/checks/data/fujiwara2014_vesicle.json",
+            "citation": "Fujiwara and Yanagisawa (2014), ACS Synthetic Biology",
+            "doi": "10.1021/sb4001917",
+            "locator": "Figures 2–3 and supplementary Figures S2–S3.",
+            "context": "The five tracked liposomes started at 70 mOsm/L internally and shrank in a 285 mOsm/L bath. Final over initial volume is the reciprocal of the approximately fourfold inverse-volume plateau. A separate paired series follows GFP concentration and volume within the same liposome.",
+            "role": "held_out_from_fitting",
+            "evaluation": [
+              "Plateau volume ratio using the prepared osmolarities, with no fitted parameter"
+            ],
+            "excluded": [
+              "The time taken to shrink",
+              "An independent inventory of smaller osmoles"
+            ],
+            "observed": 0.25,
+            "predicted": 0.2456,
+            "uncertainty": "The plateau is approximate and has no stated standard error. Volumes were estimated from diameters. Individual ten-minute inverse volume ratios in Figure S2 span about 3.3–4.9.",
+            "assessment": "The intact-liposome plateau agrees at the reported precision. The paired GFP measurement supports retention of the protein during shrinkage.",
+            "report": "lean/PROGRESS.md#intact-vesicle-deflation"
+          },
+          {
+            "dataset_id": "bhatia2020_single_vesicle_deflation@1",
+            "manifest": "lean/checks/data/bhatia2020_vesicle_deflation.json",
+            "citation": "Bhatia, Robinson and Dimova (2020), Soft Matter",
+            "doi": "10.1039/D0SM00155D",
+            "locator": "Figure 2 and the Movie S1 caption in the supplement.",
+            "context": "The same trapped vesicle was imaged across a 66 to 72 mM bath change. Bath-origin liquid in an inward tube contributes to the outer contour volume. The ratio here divides final lumen by the measured starting volume.",
+            "role": "held_out_from_fitting",
+            "evaluation": [
+              "Outer-contour upper bound and a straight-cylinder estimate for the inward tube"
+            ],
+            "excluded": [
+              "The separate Figure 4 bath change",
+              "A direct measure of small-solute retention"
+            ],
+            "uncertainty": "The final outer volume alone carries a stated uncertainty of about 1,000 µm³. The tube dimensions have no pointwise uncertainty.",
+            "assessment": "Inconclusive. The central outer-contour bound is 0.756. A cylindrical tube gives 0.705, versus a retained-osmole prediction of 0.917. The reported volume uncertainty spans the difference.",
+            "report": "lean/PROGRESS.md#bhatia-vesicle-deflation"
+          },
           {
             "dataset_id": "wolfisberg2025_deflation@1",
             "manifest": "lean/checks/data/wolfisberg2025_vesicle.json",
@@ -5548,8 +5688,21 @@
       "biology": {
         "status": "open",
         "observable": "Intact fraction of a vesicle cohort over time at known tension. The numerical area-unit invariance is tested on identical physical states in the engine.",
-        "unit": "mN/m, seconds and fraction intact",
+        "unit": "mN/m, seconds, fraction intact and inverse seconds",
+        "finding": "Under strong hypotonic swelling, three pores resealed successively in the same vesicle, each within one second. This measures a surviving-vesicle outcome relevant to FR-39. The assembly rule books terminal lysis once per lineage. [Oglęcka et al., Figure 5](https://elifesciences.org/articles/03695/figures#fig5)",
         "evidence": [
+          {
+            "dataset_id": "karal2015_dopc_tension_series@1",
+            "manifest": "lean/checks/data/karal2015_rupture_rates.json",
+            "citation": "Karal and Yamazaki (2015), Fig. 2a",
+            "doi": "10.1063/1.4930108",
+            "locator": "Figure 2a, journal page 081103-3.",
+            "context": "Survival during constant aspiration tension was fitted in pure DOPC vesicles. Two temperature columns have fitted first-rupture rates at 7.0, 7.5 and 8.0 mN/m.",
+            "role": "descriptive",
+            "uncertainty": "Three independent experiments per setting, each with 20 vesicles. The plotted bars are standard errors across experiments. The linked data contain the digitized log rates and bar caps.",
+            "assessment": "At about 25 °C the three rates were 0.00263, 0.00556 and 0.0153 s⁻¹. At about 32 °C they were 0.00423, 0.00813 and 0.0230 s⁻¹. These are targets for the proposed FR-31 time-dependent rupture law.",
+            "report": "lean/PROGRESS.md#vesicle-and-translation-evidence"
+          },
           {
             "dataset_id": "karal2015_dopc_hold@1",
             "manifest": "lean/checks/data/vesicle_rupture_holds.json",

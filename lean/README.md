@@ -14,7 +14,7 @@ Direct Lean claims cover [51 of 51 laws](COVERAGE.md#registered-laws) and [31 of
 | [Ion channels and junctions](COVERAGE.md#category-channels-and-junctions) | 15 of 15 | 15 of 15 | 15 checked | 14 |
 | [Pumps and cotransport](COVERAGE.md#category-pumps-and-cotransport) | 13 of 13 | 8 of 8 | 8 checked | 8 |
 | [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 3 of 3 | 13 of 13 | 12 checked · 1 failed | 10 |
-| [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 14 of 14 | 27 of 27 | 25 checked · 2 failed | 18 |
+| [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 14 of 14 | 28 of 28 | 26 checked · 2 failed | 18 |
 | [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 1 of 1 | 26 of 26 | 26 checked | 19 |
 | [Cell physiology](COVERAGE.md#category-cell-physiology) | — | 3 of 3 | 3 checked | 3 |
 
@@ -26,7 +26,7 @@ Three claims have failing numerical checks. GARD v1 can refuse a reversible even
 
 ## Biological evidence
 
-An osmotic deflation study measured the same vesicle before and after a 66 to 72 mM bath change. An inward membrane tube makes the outer contour an upper bound on the final lumen. The measured volume uncertainty spans the gap between the tube-corrected estimate and the Cells prediction. [Measured geometry and model comparison](claims/vesicle-deflation-geometry.md)
+The osmotic volume law has **mixed biological evidence**. Fujiwara and Yanagisawa’s liposomes shrank to about 25% of their starting volume, against 24.56% in Cells without fitting. Wolfisberg’s four later volumes were below prediction. In Bhatia’s vesicle, the uncertainty in the outer contour spans the difference after accounting for the inward tube. [Three preparations side by side](PROGRESS.md#intact-vesicle-deflation) · [Generated claim and primary sources](claims/osmotic-vesicle-volume.md#biological-evidence)
 
 At the same growth rate, measured fractions of mRNA-bound ribosomes in *E. coli* ranged from 31% to 65% across three nutrient limitations. In hamster cells, tracer measurements followed residues in unfinished and released protein separately. These experiments give observables for the two polymerisation balances. A quantitative Cells comparison still needs matched conditions and pool definitions. [Machine occupancy](claims/polymerisation-machines.md) · [Residues in transit and released](claims/polymerisation-residues.md)
 
@@ -52,7 +52,7 @@ Yeast mitochondrial ATP synthase provides a measured example of reversal. The en
 
 The catalog gives each measurement, its primary source and the part of the law it tests. **Partial evidence** means the literature measures a relevant part of the claim and a full biological verdict remains open. **Not assessable** means a recorded comparison has too much uncertainty for a verdict. The studies and their figures are linked in each row. [Literature review](claims/incoming/biological-evidence.md) · [Pump flux, charge and ATP measurements](claims/incoming/pump-charge-evidence.md) · [PGI worksheet audit](claims/incoming/pgi-evidence.md) · [Publisher’s PGI workbook and spectra](https://mdpi-res.com/metabolites/metabolites-02-00818/article_deploy/metabolites-02-00818-s001.zip)
 
-Same-temperature rupture rates now give FR-31 a three-tension comparison. A separate tracer experiment tests vesicle shrinkage, and a single-ribosome study supplies a measured time to protein release. [Measurements, engine replay and outstanding questions](PROGRESS.md#vesicle-and-translation-evidence)
+Three measured rupture rates at each of two temperatures give FR-31 a comparison for first rupture. A complete rupture returns each molecule to its destination in both assembly runners. [Rate measurements](claims/vesicle-lysis-threshold.md#biological-evidence) · [Rupture receipts in Lean and Cells](claims/vesicle-lysis-returns.md) · [Independent translation-timing data screened by Search](claims/incoming/translation-release-evidence.md#fr-40-screening-for-independent-timing-data)
 
 ## Maintaining the claims
 
@@ -207,10 +207,11 @@ cells_python=${CELLS_PYTHON:-python}
 <details>
 <summary>Commands for individual comparisons</summary>
 
-Run the OL5 comparison for single-event osmotic energies, short reaction products and measured vesicle deflation. Select one calculation with `--case energy`, `--case draws` or `--case deflation`. The six existing drivers were also replayed on both frozen engines. [Energy proof](claims/vesicle-event-energy.md) · [Reaction rates](claims/three-log-draws.md) · [Replay differences](PROGRESS.md#ol5-six-replays)
+Run the OL5 comparison for single-event osmotic energies, short reaction products and measured vesicle deflation. Select one calculation with `--case energy`, `--case draws`, `--case deflation` (Bhatia) or `--case intact-deflation` (Fujiwara and Yanagisawa). The release check reads the saved diagnostic events and the matching final or lysis rows in four runs. Pass `--output DIRECTORY` to retain its bundles. [Energy proof](claims/vesicle-event-energy.md) · [Release proof](claims/vesicle-lysis-returns.md) · [OL5 replay differences](PROGRESS.md#ol5-six-replays)
 
 ```bash
 "$cells_python" -B checks/vesicle_events.py
+"$cells_python" -B checks/vesicle_release.py
 ```
 
 For mitochondrial respiration and ATP delivery, check the seven reaction columns, charge on each side and the material booked in a world with a finite matrix and intermembrane space. The results link complex I proton measurements and a bovine ATP synthase structure to the counts the model assumes. [Mitochondrial balance and measurements](PROGRESS.md#mitochondrial-cycle-accounting)
