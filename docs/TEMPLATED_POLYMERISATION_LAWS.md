@@ -1231,13 +1231,20 @@ them bit for bit. Replacement waits for the requester's answer (question c).
 ### 9.8 The release-window cohort, by two routes
 
 Of the molecules released into fate f during [t1, t2], the amount still present at ts ≥ t2:
-1. **Label rows.** With `label_at` = `release`, ψ selects class 2 during [t1, t2] and class 1
-   otherwise. Then F^f_ρ,2(ts) − F^f_ρ,2(0) is the cohort, for any loss law.
+1. **Label rows.** With `label_at` = `release`, ψ selects class 2 during [t1, t2) and class 1
+   otherwise. The cohort is F^f_ρ,2(ts) minus the matched blank's F^f_ρ,2(ts), for any loss law
+   (erratum A, R-F1). The blank is the same world with H(0) = 0. It removes the class-2 rows' own
+   starting trace and that trace's loss, which F^f_ρ,2(ts) − F^f_ρ,2(0) leaves in.
 2. **Host-side.** `validation/gene_regulation/cohort.py` on each fate pool's own counters, n_F^f,
    ∫Q^f and ∫D_F^f. It is exact for first-order, age-independent loss in a well-mixed pool, up to
    its grid error.
 
 Under §9.2's laws both routes apply, and they must agree within the host-side route's grid error.
+The label rows' sum departs from the unlabelled row by at most about 10⁻⁸ relative at R1, the
+size of the e^(y_f) term (erratum A2). Each label row's loss reads its own potential (§9.2), so the
+departure is physical, not an error. It is well inside the two routes' agreement bound (the lead's
+ruling, 22 November 2026: the label rows are the operator's own, not the registry's label
+families).
 
 ### 9.9 The release worlds
 
@@ -1260,11 +1267,29 @@ It is run at four fractions, p ∈ {0, 0.25, 0.75, 1}, beside a matched blank (H
 - both machine options;
 - A1's horizon and outputs.
 
+**Addendum: R2's rows and translation, a declared choice** (the lead's ruling, 22 November 2026,
+tagged before R2's code and references):
+- **The fate rows, in R1 and R2.** The durable fate is A1's R. The short-lived fate is a new row
+  R_s with R's chemistry: R's μ° and moiety weights (§9.1). "The inventory trace" is the sheet's
+  trace c_R = 1.0 × 10⁻¹² mM, so R_s starts there, as R does.
+- **The fates' losses.** deg_R takes the durable rate k_d. A new degradation deg_R_s, with deg_R's
+  form and standard free energy, takes the short-lived rate k_s.
+- **Translation.** Two chains, `tl` templated by R and `tl_s` templated by R_s. Each has A1's
+  translation parameters (§5.1), and both share the ribosome pool and make P. The two fates are
+  one chemistry, so both are translatable.
+- **A development check, not an acceptance row.** Set both fates' loss rates to A1's k_R.
+  - Each chain's initiation is linear in its template, so translation's initiation sees the total
+    RNA, R + R_s.
+  - R2's total RNA and protein then follow A1's, delayed by the hold. They approach A1's as τ
+    shrinks, with either machine option.
+  - They differ from A1's by the hold, by R_s's starting trace, and by each fate's own factor
+    (1 − e^(y_f)) (§9.10).
+
 <!-- release -->
 | Symbol | Value | Unit | Meaning | Source |
 | --- | --- | --- | --- | --- |
 | `H0` | 80 | copies | R1's initial hold | The requester |
-| `tau` | 5193.8 | s | 3600/ln 2: an exit half-life of 1 h | The requester |
+| `tau` | 5193.7 | s | 3600/ln 2: an exit half-life of 1 h | The requester |
 | `p_cases` | 0, 0.25, 0.75, 1 | 1 | R1's durable fractions | The requester |
 | `k_durable` | ln 2/7200 | s⁻¹ | A half-life of 2 h | The requester |
 | `k_short` | ln 2/1800 | s⁻¹ | A half-life of 0.5 h | The requester |
@@ -1288,6 +1313,9 @@ It is run at four fractions, p ∈ {0, 0.25, 0.75, 1}, beside a matched blank (H
     - each loss rate is k_f (1 − 9.4 × 10⁻⁹), and each survivor sits within about 10⁻⁸ of the
       limit, relative.
   - The limit's six-decimal figures stand at that distance.
+  - **The quantity compared** (erratum A, R-F2): the released molecules still present in fate f,
+    the fate row minus the matched blank's (§9.8). The fate rows themselves also carry their
+    starting trace, so they sit further from the limit, up to about 10⁻⁴ relative.
 - **No amount or potential was chosen to reach a tolerance.** R1's amounts and potentials are A1's
   and the requester's.
 
@@ -1303,6 +1331,8 @@ It is run at four fractions, p ∈ {0, 0.25, 0.75, 1}, beside a matched blank (H
    (question e). Both are declared, and the requester names the one meant.
 6. **No observation layer** here. Per-copy detection, roster denominators and two-colour statistics
    are `src/cells/assays`, built separately.
+7. **R2's translation is a declared choice,** not a biological claim (§9.9's addendum): two chains,
+   one per fate row, because both fates are one chemistry.
 
 **The requester's questions,** carried to their answer:
 - (a) does an attached chain keep its machine;
@@ -1310,3 +1340,27 @@ It is run at four fractions, p ∈ {0, 0.25, 0.75, 1}, beside a matched blank (H
 - (c) what "replacement" means for producer identity;
 - (d) one gene per producer;
 - (e) which transition the label switch marks.
+
+### 9.12 Erratum A: the readings where §9 was silent
+
+*22 November 2026, after the code-blind references (tag `gr-refs-fr38-2026-11-22`), so that the
+builder and the references read one sheet before the registered comparison. It settles their two
+findings, R-F1 (§9.8) and R-F2 (§9.10), in place, and the readings below.*
+
+1. **R1's routes.** The chain at k_I = 0, its release, and the fates' two degradations: no
+   recharging, translation or regulator. N, M and Pi start at A1's initial state and are moved
+   only by the routes in use (the fates' losses return NMPs to M; erratum A2). §9.10's y_f ≈
+   −18.48 reads M at A1's 0.05 mM.
+2. **The inventory trace** is the sheet's c_R, 1.0 × 10⁻¹² mM (§9.9's addendum).
+3. **The matched blank** is the same world with H(0) = 0, everything else equal.
+4. **The limit's survivors** are the released molecules still present: each fate row minus the
+   matched blank's (§9.10).
+5. **The heat classes.** deg_R books to H_deg,R and deg_R_s to its own class, H_deg,R_s. H_rel is
+   per fate. H_tl sums tl and tl_s.
+6. **The engaged machines** E_tx are ΣC + ΣH under `held` and ΣC under `returned` (§9.3).
+7. **The label.** ψ is read at the start of each step, so a release in [t1, t2) enters class 2.
+   Class 2's rows are R_c2 (durable) and R_s_c2 (short-lived).
+8. **R2's hold** starts empty, H(0) = 0. **R2's cohort** is route 2 alone; route 1 is not computed in
+   R2.
+9. **R1's domain** leaves out elongation, which has no complexes there: §9.6's and §3.5's bounds
+   hold at the routes in use.

@@ -541,6 +541,17 @@ Common to both:
   event's release is booked separately: in a single lineage in `run.json`'s `osmotic.lysis`
   (`release_heat_kT`, `release_reservoir_work_kT`), in a population in that event's `lyses` entry
   (`at_birth` false). The event's total is the sum.
+
+  A lysing step's counts read the same way. At a step with `event_lysed` true, `event_vesicle_after`
+  and `event_pool_after` are the step's own state: after the step and before the release, with the
+  vesicle still full. The release's molecules are in the same record's `returned` (`osmotic.lysis`
+  or the `lyses` entry), by pool place, and they total the vesicle's counts. The pool after the
+  whole event is `event_pool_after` plus `returned` at the finite pool places, matched by name. A
+  held place's count does not change: its reservoir takes the molecules back, booked in
+  `release_reservoir_work_kT`. The record keeps both pools: the step's own in `event_pool_after`,
+  and the pool after the event in records.npz. In a single lineage that is the end row, also
+  `diagnostic.json`'s `states.final` (the vesicle then empty); in a population it is that lysis's
+  row (`row_kind` `lysis`).
 - **`shear_events`:** `{time, schedule, not_admitted, attempts, pool_after, slots_after}`, in time
   and schedule order. An attempt is `{slot, key, counter, outcome, uniforms_offset,
   uniforms_count}`, with `outcome` one of `split`, `refused_floor`, `refused_volume`,
@@ -555,6 +566,28 @@ Common to both:
   In a population every daughter's `slot` is the slot it took (a birth-lysed daughter's too), and
   the attempt's heat and reservoir work include its births beyond σ_max (attribution: the lyses'
   rows book them once).
+
+  At a birth beyond σ_max, a shear event's `pool_after` (the diagnostic record's state after the
+  event, above) reads differently in the two modes. Its `slots_after` reads the same in both: the
+  living slots after the event, so a birth-lysed daughter is never in it. So that section's
+  sentence, "the state once its attempts and their births beyond σ_max ... are applied", holds for
+  both of a population's fields, and in a single lineage for `slots_after` only.
+  - In a population, `pool_after` is the pool after the whole event. Each birth lysis has freed
+    its slot (a later attempt's daughter in the same event can take it) and returned its molecules:
+    its `lyses` entry, `at_birth` true, matched to the daughter by `key`. The pool before those
+    lyses is `pool_after` minus their `returned` at the finite pool places. records.npz keeps both
+    states: each split's `shear` row before its births' lyses, and each lysis's `lysis` row after
+    it.
+  - In a single lineage, a followed daughter born beyond σ_max ends the run `lysed`, and
+    `pool_after` (the event's and the attempt's) is the pool before its release. Its molecules are
+    in neither `pool_after` nor `slots_after`; they are in `run.json`'s `osmotic.lysis.returned`.
+    The release's heat and reservoir work are in `osmotic.lysis` (a single lineage's split books 0
+    in `heat_kT` and `reservoir_work_kT`), and no step event is marked `event_lysed`. The pool
+    after the whole event is `pool_after` plus `returned` at the finite pool places, matched by name
+    (a held place's molecules go back to its reservoir). That pool is on records.npz's end row and
+    in `diagnostic.json`'s `states.final`; the `shear` row before it holds the state before the
+    release, the daughter still full. An unfollowed daughter born beyond σ_max leaves for the sink
+    as born and returns nothing to the pool.
 - **`transfer_events`** (a population): `{id, time_s, schedule, draws, kept, removed, sink_kT,
   work_kT, pool_after, slots_after}`, with `draws` `[{slot, counter, uniform}]`, `kept` and
   `removed` slots, the sink and the schedule's work.

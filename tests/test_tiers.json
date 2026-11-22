@@ -328,7 +328,11 @@
   "/mnt/workspaces/Cells/refs-stack-20261122/tiers-measured-ca4f02aa/measured.json",
   "/mnt/workspaces/Cells/ol3-engine-20261119/tiers-2764f0dd/measured.json",
   "/mnt/workspaces/Cells/faces-exact-heat-20261122/tiers-measured-3630debc/measured.json",
-  "/mnt/workspaces/Cells/fr33-first-test-20261122/tiers-measured-6675f74b/measured.json"
+  "/mnt/workspaces/Cells/fr33-first-test-20261122/tiers-measured-6675f74b/measured.json",
+  "/mnt/workspaces/Cells/ol3-engine-20261119/tiers-0816feb1/measured.json",
+  "/mnt/workspaces/Cells/fr38-rna-residence-20261122/refs/tiers-measured-05725b23/measured.json",
+  "/mnt/workspaces/Cells/fr38-rna-residence-20261122/reader/tiers-measured-832bb821/measured.json",
+  "/mnt/workspaces/Cells/ol3-engine-20261119/tiers-gard-69d53f88/measured.json"
  ],
  "measured_provenance": [
   {
@@ -2783,6 +2787,36 @@
    "root": "/mnt/workspaces/Cells/fr33-first-test-20261122/snapshot-head-6675f74b",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-22T12:21:37+00:00"
+  },
+  {
+   "git_revision": "0816feb15799bcd18d59c43a3705d9bc45bd6dd0",
+   "dirty": false,
+   "root": "/mnt/workspaces/Cells/ol3-engine-20261119/tree-0816feb1",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-22T10:53:21+00:00"
+  },
+  {
+   "git_revision": "05725b23a73f78ad95f09bf818303d7e4b5fc0df",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/fr38-rna-residence-20261122/refs/snapshot-head-05725b23",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-22T13:25:01+00:00"
+  },
+  {
+   "git_revision": "832bb821424b25740283dfe4e1fe599d4d9ed842",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/fr38-rna-residence-20261122/reader/snapshot-head-832bb821",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-22T13:09:42+00:00"
+  },
+  {
+   "git_revision": "69d53f8893e343e633f49ef37b742ff336d3a1fa",
+   "dirty": false,
+   "root": "/mnt/workspaces/Cells/ol3-engine-20261119/tree-gard-69d53f88",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-22T11:06:44+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -3129,7 +3163,7 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_spec.py",
-    "seconds": 1.97,
+    "seconds": 2.02,
     "exit_code": 0,
     "counts": {
      "passed": 26
@@ -4332,10 +4366,10 @@
    },
    {
     "file": "tests/unit/test_gene_regulation_references.py",
-    "seconds": 0.77,
+    "seconds": 1.57,
     "exit_code": 0,
     "counts": {
-     "passed": 19
+     "passed": 32
     }
    },
    {
@@ -6197,6 +6231,14 @@
     }
    },
    {
+    "file": "tests/unit/test_transcription_sites.py",
+    "seconds": 0.87,
+    "exit_code": 0,
+    "counts": {
+     "passed": 80
+    }
+   },
+   {
     "file": "tests/unit/test_two_task_diagnostic.py",
     "seconds": 3.14,
     "exit_code": 0,
@@ -6514,7 +6556,7 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_kernel.py",
-    "seconds": 52.34,
+    "seconds": 50.75,
     "exit_code": 0,
     "counts": {
      "passed": 10
@@ -6570,7 +6612,7 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_v2_kernel.py",
-    "seconds": 63.13,
+    "seconds": 61.7,
     "exit_code": 0,
     "counts": {
      "passed": 10
@@ -6586,7 +6628,7 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_v2_lumen.py",
-    "seconds": 28.9,
+    "seconds": 41.54,
     "exit_code": 0,
     "counts": {
      "passed": 13

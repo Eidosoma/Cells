@@ -90,6 +90,14 @@ Liu et al. measured passive retention after withdrawing liquid through side chan
 | Kv1.5 · Which baseline predicts the acidic pulse? | Measured retention at pH 6.8 was 74.5 ± 1.9% (SEM). Voltage alone gives 100%, the measured pH shift on the default gate gives 40.5%, and using both measured midpoints gives 69.5%. | Match the control midpoint and pulse protocol before interpreting the residual. [Kv1.5 pH comparison](claims/kv15-ph-activation.md) |
 | Mitochondrial ATP synthase · What explains the intermediate stalls? | The three-proton endpoint shift was 0.745 pH unit versus 0.74 observed. Four intermediate values were 0.068–0.078 pH unit below prediction. | Check free activities and interpolation errors before changing stoichiometry. The measured coupling was 2.9 ± 0.2 H⁺/ATP. [Stall comparison](claims/mitochondrial-stall-heat.md) |
 
+<a id="vesicle-and-translation-evidence"></a>
+
+### 22 November 2026 · Same-temperature rupture rates, retained tracer and translation timing
+
+Karal and Yamazaki's Figure 2a supplies FR-31's missing rupture-rate measurements at three tensions in pure DOPC. In a separate experiment, encapsulated GFP followed inverse volume as liposomes shrank. At engine `f1783c55`, the existing 64-osmole compiled fixture gave an inverse volume ratio of **4.0714**, against about **4** in the experiment. From `lean/` in the Cells CPU environment, reproduce the ratio with `from checks.vesicle import bath_world` and `bath_world(70, 70)[0] / bath_world(70, 285)[0]`. Both runs passed the fixture's closure and reference checks. [Rupture series and uncertainty](checks/data/karal2015_rupture_rates.json) · [Replay inputs and outputs](checks/data/fujiwara2014_vesicle.json) · [Experimental comparisons](claims/incoming/vesicle-osmosis-evidence.md)
+
+Search identified a measured **406 s** from first detectable nascent protein to release in 44 single-ribosome events. A separate runoff histogram in the paper sets a lower bound on the mean longer than the mean implied by its published speed. Translation timing remains unscored pending a reconciled rate and a Cells comparison with the same detection window. [Measurements, bin counts and calculation](claims/incoming/translation-release-evidence.md)
+
 <a id="binding-margin-vertices"></a>
 
 ## 21 November 2026 · Finite vertex tests for binding equilibria

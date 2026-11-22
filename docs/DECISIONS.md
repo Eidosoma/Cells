@@ -9030,3 +9030,79 @@ plus two pieces.
   - (b) keeps the default, no binding energy;
   - (d) defaults to one gene per producer.
 
+## D285: OL5's second judging, after D281's precision fix: 9 of 10 rows pass
+
+2026-11-22, about 13:14 UTC. The second builder re-judged OL5's probe roles with its unchanged adapter, at
+the registered 1e-12 precision. The run was frozen from main e6571f88, which carries D281's fix (a)+(b);
+its manifest sha256 is 5cc8f280….
+- **The verdict file says this is a second judging,** after an engine fix prompted by the first. D279's
+  6 of 10 stands as the first result. Verdicts: verdicts-e6571f88.json, sha256
+  2598e017131773d741e462a027fc912f71fe44acf338e56f01c54c592fda1db9.
+- **Three of the four earlier failures now pass:**
+  - OL2-1's forward log residual is 4.4e-15 and 1.0e-14 (it was 5.07e-12);
+  - OL2-4's and OL3-2's event times replay exactly.
+- **OL2-3 fails, on a convention, not a residual.** Its event times now match exactly. That uncovers a
+  difference that the first judging's list, which stopped at five time differences, had hidden: the
+  lysing event's pool.
+  - The engine records the step's own pool, [30, 0], and the released molecules separately: 1,470 of L1
+    and 61,178 of S.
+  - The references expect the pool after the whole event, [1500, 61178], which is the same total.
+  - FORMAT_OL2 states R7 and R8 but is silent on this pool. A reading R9 (the lysing step's pool includes
+    the returned molecules) makes OL2-3 pass. That check is information only and is not scored.
+- **The result stands at 9 of 10.**
+  - FORMAT_OL2 states R9 next, so that any later judging reads it.
+  - A third judging would be a new registration after these results, and is the user's call.
+- A planted failure (the partition probe's eq_N5_k3 + 1) fails, as it must.
+
+## D286: The Lean lane's biological findings go into the high-priority list
+
+2026-11-22, about 13:32 UTC. The user relayed the Lean lane's findings with "from lean get into high
+priority". The evidence branch was merged unedited at 81916b5d.
+- **FR-31 goes from Low to High.** Karal and Yamazaki's tension series is the data it was waiting for.
+  The next step is a design note shared with FR-39, then a registered test of a declared rupture law,
+  fitted on the end tensions and predicting the middle. The middle values were read before registration,
+  and that is disclosed. OL6 remains a dependency.
+- **FR-39 (new, High):** a vesicle that survives transient pores, with partial cargo loss.
+- **FR-40 (new, High):** a single-ribosome translation timing benchmark. The 406 s observation is kept,
+  and the speed comparison stays unscored until reconciled.
+- **FR-41 (new, High):** vesicle shrinkage validation records. One agreement is unfitted (24.56% against
+  about 25%). Small-osmole retention stays open.
+- **Owners:**
+  - the FR-31 and FR-39 design note goes to the OL builder, at the desk;
+  - the FR-40 desk note goes to the gene regulation references' author, from the sheet's laws;
+  - FR-41's search waits for a free agent.
+
+## D287: Vesicle pores (FR-31, FR-39): the user's four decisions, and the lead's rulings
+
+2026-11-22, about 14:25 UTC. The design note is docs/VESICLE_PORES_DESIGN.md (64e9f8e7).
+
+**The user chose:**
+1. **Phase A (FR-31, rupture under a held tension): go, with code-blind references.**
+   - A laws sheet, tagged before code, written from primary papers read directly.
+   - The engine build, and references in parallel.
+2. **A blind test, plus a search.**
+   - The six points already read (Karal and Yamazaki, 25 °C and 32 °C at 7.0, 7.5 and 8.0 mN/m) are fit
+     rows, reported as a disclosed comparison with no pass or fail. Both classical forms fitted on the end
+     tensions over-predict the read middle, by 14% to 28%.
+   - The held-out set is the figure's other temperature columns. The sheet states how the prefactor and
+     line tension depend on temperature, with sources, before extraction. The tolerance (the stated
+     standard errors at their small n, plus a declared digitising error) is fixed before a sealed
+     extractor reads them.
+   - The Lean lane has already viewed the figure, and that is disclosed. No Cells agent opens the
+     Karal PDF before then.
+   - A metadata-only search for another tension series runs alongside.
+   - Given the in-sample misfit, a blind failure is likely. It would be recorded, and the law would ship
+     as development status.
+3. **A held tension becomes a general, declared boundary** (cells.tension_hold@1). It is a work source,
+   with a named payer and a work column, as shear has (U2, D199).
+4. **OL6 comes right after Phase A,** with the same owner, then FR-39's pore episodes.
+
+**The lead's rulings, with the advisor (the user may overrule):**
+- **The law:** line-tension nucleation only. Opening forms an event pair under it, so there is no second
+  exemption, and the exponential form is not built into the engine.
+- **The hazard is per membrane area.** A per-vesicle rate belongs to a preparation.
+- **One line tension per composition,** shared by opening and the open pore's dynamics.
+- **Exact-event worlds** get rupture only. Transient pores need OL6.
+- **sigma_max stays** as registered in every world. In worlds with pores it carries its own cause label
+  and count.
+

@@ -36,7 +36,7 @@ and a general feature, never one built for one study (D144).
 | [FR-28](#fr-28--binding-sites-owned-by-a-compartments-surface) | Binding sites owned by a compartment's own surface, such as a vessel wall, with no cell | Normal (D245) | **Landed** (72274a53, tag fr28-node-sites-landed-2026-11-22): a node owner `{"node": N}`, counts as for every population, checker-accepted on the merged head; the wash-timing docs clarified (6b28ec55) | None |
 | [FR-29](#fr-29--an-optional-proton-return-mode-for-atp-driven-proton-pumps) | An optional proton-return mode for ATP-driven proton pumps, tested on the yeast vacuolar pump | Normal, started first of D248's four (D248) | **Investigated, no build (D268).** The return mode failed its registered test, and no form tested fits Fig. 3's curves and the pH 3.1 bound together (D258) | Reopens on a difference current at vacuolar pH 3.1 to 3.5 under Fig. 3's protocol |
 | [FR-30](#fr-30--homotypic-cx43-junctions-with-two-relaxation-times) | Homotypic Cx43 junctions with two relaxation times | **High,** inherited from FR-16's connexin catalogue (D225, D249) | The series gates' functions **landed** (merge 12c18db1, tag `fr30-series-gates-landed-2026-11-21`; kind `threshold_relaxation` or `boltzmann_eyring`); not registered. No openly licensed homotypic Cx43 voltage series found | All four registered papers are undetermined (D276, section 13.2); a metadata-only search for a source with two-exponential step decays at four or more voltages is running (D280). Development-only until a benchmark passes |
-| [FR-31](#fr-31--vesicle-rupture-during-a-steady-tension-hold) | Vesicle rupture during a steady tension hold: an optional rupture event competing in time | Low (D230, D248); the note before OL9 registers | Requested; a design note first | Blocked on rupture rates against tension, and on OL6 |
+| [FR-31](#fr-31--vesicle-rupture-during-a-steady-tension-hold) | Vesicle rupture during a steady tension hold: an optional rupture event competing in time | **High** (user, 22 November 2026; D286; was Low, D230, D248) | **Phase A approved (D287):** a laws sheet, then engine and code-blind references; a blind test on the figure's other temperature columns, plus a search | The OL builder writes the laws sheet from primary papers; OL6 follows Phase A, then FR-39 |
 | [FR-32](#fr-32--a-dopc-swelling-validation-record-for-the-water-operator) | A DOPC swelling validation record for the water operator | Low (D248) | Requested | Folded into the next water-operator landing |
 | [FR-33](#fr-33--regional-labelled-protein-readouts-redistribution-against-degradation) | Regional labelled-protein readouts: inside a measured region, outside it and across the whole cell | High (D228, D248) | **Two-way tracing landed** through D1, label families in the species registry (3c30082e), checker-accepted: redistribution keeps the labelled total and degradation lowers it by exactly the clearance, to rounding; charged log-mean faces refused. Regional readouts and the one-way tracer (ce2a3d9c) with D265's fixes (d48d40dd) | **The requester's first test landed** (7d70d63b, checker-accepted): two named regions joined by one face, with transfer and local-loss control. The in-cell compartment path stays priced (1.5 to 2 days), if a later test needs it |
 | [FR-34](#fr-34--channel-population-readouts-count-availability-and-signed-current) | Channel population readouts: surface count, availability and signed current at a declared voltage, with units and sign convention | **High** (user, 20 November 2026; D251) | **Landed, composites included:** opt-in flux and current readouts with fixed-voltage evaluation (81a29442); a composite's own clamped_channel_flux and clamped_kind at the step's control and layout views (07022ddf, D265 finding 1, checker-confirmed) | None |
@@ -44,6 +44,10 @@ and a general feature, never one built for one study (D144).
 | [FR-36](#fr-36--age--and-region-selective-loss-within-a-species-row) | Age- and region-selective loss within a species row | FR-25's reviewer (21 November 2026) | **Deferred (D273).** Today's tools cover completion-time cohorts in one well-mixed pool with age-independent loss (cohort.py) and FR-33's regional export and one-way tracer | Reopens on a requester's readout needing age-dependent loss: D1 (label families) and D2 (an ageing operator), 2.5 to 4 days |
 | [FR-37](#fr-37--sampling-a-liquid-whose-dye-is-unevenly-distributed) | Sampling a liquid whose dye is unevenly distributed: a draw from chosen parts of an unevenly mixed liquid | **High** (user, 21 November 2026; D274) | **Shown with existing operators** (2bba6043, validation/sampling/uneven_draw.py): per-region wash events; the three cases match, with all 10 fmol accounted for; checker-accepted. Mixing is declared, not simulated (D246), and the sample is a host-side sum | Predicting the per-region split from the port, flow and timing needs an advection operator on faces, with the wash's face refusal lifted (about 3 to 5 days): built only if the requester asks |
 | [FR-38](#fr-38--rna-release-from-its-template-into-two-pools-with-different-lifetimes) | RNA release from its template into two pools with different lifetimes, with per-producer accounting, a release-window cohort and explicit measurement denominators | A user (22 November 2026) | **Building at full scope (D284).** A terminal hold in `templated_polymerisation@1`, split by p into two fate rows, with exact energy and no driven work; the cohort by label rows and by counters; a reader in `src/cells/assays` | The sheet amendment comes first. The finish is a registered comparison against code-blind references. Questions (c) replacement and (e) which cohort are with the requester |
+| [FR-39](#fr-39--a-vesicle-that-survives-transient-pores) | A vesicle that survives transient pores: repeated opening and resealing with partial cargo loss | **High** (user, via the Lean lane, 22 November 2026; D286) | **Requested.** Cells ends a lineage at terminal lysis | A design note shared with FR-31: tension-driven pore opening that either reseals after leaking or ruptures |
+| [FR-40](#fr-40--a-single-ribosome-translation-timing-benchmark) | A single-ribosome translation timing benchmark: 406 s from first detectable nascent chain to release | **High** (user, via the Lean lane, 22 November 2026; D286) | **Desk note landed** (022a5d2a). With only the paper's own speeds, which conflict, a comparison is a calibration, not a validation | A metadata-only search for a matched-condition speed or a multi-length reporter series; the spread test needs no speed |
+| [FR-41](#fr-41--vesicle-shrinkage-validation-records) | Vesicle shrinkage validation records for the osmotic lumen law | **High** (user, via the Lean lane, 22 November 2026; D286) | **One agreement:** Fujiwara et al. 2014, about one quarter of the initial volume measured against 24.56% from Cells' equilibrium replay, unfitted | Small-osmole retention: no paired same-vesicle study found; the nearest are Akui 2021 (analysis-only licence) and Ahumada 2015 (not open). The next step is the user's |
+| [FR-42](#fr-42--neutral-arrival-time-labels-that-leave-the-dynamics-unchanged) | Neutral arrival-time labels that leave the dynamics unchanged: loss computed once per physical population and shared by label | **High** (a user, 22 November 2026) | **Requested.** Today's label rows (D1's families, FR-38's class rows) carry their own potentials, so labelling can move booked heat and, under a nonlinear loss, the trajectory | A desk assessment of share-based labels across families, turnover, templated polymerisation and faces. FR-38's cohort route 1 depends on it |
 
 ## FR-1 — A closed internal compartment on the shared inventory
 
@@ -1356,6 +1360,18 @@ and 12 °C, DOPC vesicle survival fell from 50% at 92 s to 12.5% at 268 s (doi:1
 fixed rupture threshold cannot produce continuing failures under a held load, so FR-31 needs rupture
 rates across tensions, as it already states.
 
+**The tension series is in hand (the Lean lane, 22 November 2026; raised to high priority by the user, D286).**
+- **The data:** Karal and Yamazaki's Figure 2a (doi:10.1063/1.4930108) gives first-rupture rates for pure DOPC
+  vesicles at 7.0, 7.5 and 8.0 mN/m, at about 25 °C and 32 °C, from 3 independent experiments of 20
+  vesicles per setting. At 25 °C the rates are 0.00263, 0.00556 and 0.0153 s⁻¹. The cited log-rate readings
+  are in `lean/checks/data/karal2015_rupture_rates.json` (merged at 81916b5d).
+- **The test it allows:** fit a declared rupture law on the two end tensions and predict the middle one, at
+  each temperature. Interpolating linearly in log rate overpredicts the middle by 14% at 25 °C and 21% at
+  32 °C.
+- **Disclosure:** the middle values were read by the Lean lane and the lead before any law was registered.
+  The law's form is fixed before fitting, and only the end tensions enter the fit.
+- **Still needed:** the deterministic representation (OL6). A design note comes first, shared with FR-39.
+
 ## FR-32 — A DOPC swelling validation record for the water operator
 
 - **The request (the same review; D248).** The tissue water operator's compliance, fitted to one
@@ -1663,3 +1679,130 @@ with 2 and 1.5.
   package README's "completion-time cohort" reads, or when they are released, as the request body says?
   The two differ whenever the dwell matters. A pulse label marks at synthesis.
 - **Only (c) and (e) block anything,** and each blocks only its own piece.
+
+**Progress (22 November 2026, 13:25 UTC).**
+- **Landed:**
+  - the sheet's amendment R (§9) with its R2 addendum and a tau fix (tags gr1-sheet-fr38-2026-11-22,
+    gr1-sheet-fr38-r2-2026-11-22 and gr1-sheet-fr38-tau-2026-11-22);
+  - the code-blind references for R1 and R2 (679fe885, tag gr-refs-fr38-2026-11-22). In R1, the
+    requester's 40/40/30/10 hold to rounding, and the survivors lie within 1.54e-8 of their limit.
+- **In progress:** the engine piece (the gene regulation lane) and an erratum settling the references'
+  readings, both before a registered comparison. The reader (`src/cells/assays/transcription_sites.py`) is
+  checker-accepted and in its gate.
+- **A disclosure for that comparison's rule.** On 22 November the lead showed the builder the references'
+  R1 survivors at p = 0.75 and 1 h, to 10 digits, before any comparison, then withdrew them as a build
+  target.
+
+## FR-39 — A vesicle that survives transient pores
+
+- **The request (the Lean lane's evidence, relayed by the user, 22 November 2026; D286).** One study imaged the
+  same vesicle opening and resealing three times, each closure within one second (eLife 03695, Figure 5).
+  Another shows a tracer escaping during a pore opening (PMC5406380, Figure 4).
+- **What Cells does today:** it ends the lineage at terminal lysis.
+- **What it needs:** an outcome in which the vesicle survives a pore and keeps some of its cargo. The pore
+  opens under tension, leaks until the tension relaxes, then reseals.
+- **The first step:** a design note shared with FR-31. It covers pore opening under tension, leakage
+  while the pore is open, resealing, and rupture, with the existing release and energy accounting. It
+  also covers the deterministic representation (OL6) for giant vesicles.
+
+## FR-40 — A single-ribosome translation timing benchmark
+
+- **The request (the Lean lane's evidence, relayed by the user, 22 November 2026; D286).** Yan et al.
+  (PMC4889334, Figure S2) followed a 1,462-codon reporter in live U2OS cells. Across 44 single-ribosome
+  events, the mean from first detectable nascent chain to release was 406 s.
+- **The discrepancy:** the paper's separately reported elongation speed, 3.1 ± 0.14 codons/s, implies a
+  mean runoff of 7.86 min. Its histogram gives a lower bound of 8.93 min.
+- **The ruling for now:** keep the 406 s observation, and leave the speed comparison unscored until the
+  sample or timing correction is reconciled. The evidence note is
+  `lean/claims/incoming/translation-release-evidence.md`.
+- **The first step:** a desk note covering:
+  - what `templated_polymerisation@1` predicts for this interval;
+  - the detection model (where along the chain the nascent signal becomes detectable);
+  - which independent speed could be used;
+  - how a comparison would be registered before any reading.
+
+**The desk note (docs/TRANSLATION_TIMING_NOTE.md, 022a5d2a).**
+- **The prediction:** the translation law's mean from detection at codon d to release is (L − d)/(v_eff).
+  With detection at about 8 of 24 SunTag peptides (codon 245), that is 393 s at the paper's 3.1 codons/s,
+  and at least 446 s at its histogram's bound.
+- **The verdict:** with only the paper's own speeds, which contradict each other by at least 13%, a
+  comparison could only be a calibration. A validation needs an independent speed under matched
+  conditions, plus d from the intensity calibration alone, both fixed before reading.
+- **Two tests need no speed:**
+  - interval ratios between reporters of different lengths with the same tag and leader, which this paper
+    lacks;
+  - the spread, about 3% under the per-codon law. A broader spread would be recorded as a non-claim about
+    homogeneity, not fitted.
+- **The next step:** a metadata-only search for a matched-condition speed, or for a multi-length reporter
+  series.
+
+## FR-41 — Vesicle shrinkage validation records
+
+- **The evidence (the Lean lane, relayed by the user, 22 November 2026; D286).** In Fujiwara et al. 2014
+  (doi:10.1021/sb4001917), five giant DOPE/DOPC liposomes, at 70 mOsm/L inside, reached about one quarter
+  of their initial volume at 285 mOsm/L outside.
+  - Cells' compiled equilibrium replay at f1783c55 (`cells.osmotic_lumen@1`) gives 24.56%, unfitted.
+  - A paired GFP and volume track in the same liposome (Figure S3) supports the protein's retention during
+    shrinkage.
+  - The cited values and the replay are in `lean/checks/data/fujiwara2014_vesicle.json`.
+- **Open:** the retention of smaller osmoles, including in the Lean lane's earlier Bhatia comparison.
+- **The next step:** a search for paired small-solute retention and volume data.
+
+**The search (14:25 UTC, metadata only; no values recorded).**
+- **No study measures** both the volume and the retention of a small internal solute (under 1 kDa) on the
+  same giant vesicles during hypertonic deflation. Several infer volume from the very dye they track, so
+  they count as one measurement, not two.
+- **The best candidates:**
+  - Akui et al. 2021 (iScience, doi:10.1016/j.isci.2021.102859, CC BY-NC-ND): giant POPC liposomes from the
+    reference group, with calcein imaged beside a protein at the end point. Its volumes come from other
+    experiments. Its licence makes it analysis-only.
+  - Ahumada et al. 2015 (doi:10.1016/j.chemphyslip.2015.05.001, not open): turbidity and calcein release
+    in the same gel-phase LUV preparation.
+  - Emami et al. 2018 (PMC6303272): a small glucose analogue entering GUVs during deflation.
+- The ranked list, the near misses and the searches tried are in
+  /mnt/workspaces/Cells/fr41-search-20261122/candidates.md.
+
+## FR-42 — Neutral arrival-time labels that leave the dynamics unchanged
+
+- **The request (a user, 22 November 2026; high priority by the user).** A neutral label records when
+  otherwise identical units entered a pool, so the cohort that arrived during a window can be followed.
+  Changing the number of labels must leave the total amount, the loss rate and the energy balance unchanged
+  throughout the run.
+  - **Loss:** computed once for each well-mixed population whose members share a per-molecule loss rate.
+    With N units, a label marking n of them, and a total loss flux J, the label is assigned J × n/N.
+    Unlabelled material counts as a share. An empty population has zero loss. Physically distinct
+    populations can each have their own loss law.
+  - **Energy:** chemical potentials, free energy and heat are computed from the physical populations
+    wherever the simulator models them. Subdividing a population by arrival time preserves them.
+  - **Windows:**
+    - arrivals count from a window's start up to, but excluding, its end;
+    - a new cohort starts at zero, even when the pool already holds material;
+    - its losses are followed after the window closes;
+    - a reused label accounts for the survival of its older material in the same run.
+- **The reference case.** In scaled units, dN/dt = −N², so N(t) = a/(1 + a t).
+  - Two units of older material, plus one newly labelled unit at t = 0. The initial loss rate is 9;
+    computing each label's loss separately would give 5 and change the trajectory.
+  - At t = 1 the total is 3/4. The new cohort is still one third of it, 1/4.
+  - A blank run with only the two older units ends at 2/3, so blank subtraction gives 1/12. It fails
+    because the added material raised the older material's loss rate.
+- **The acceptance checks:**
+  1. **One initial state, run unlabelled and then with one, two and several labels.** Include unequal
+     shares and an empty label, and a state near the edge of the supported concentration range, where the
+     loss rate is sensitive. At every comparison time the shares sum to the reference total. The total
+     loss, free energy and heat agree within declared tolerances.
+  2. **Arrivals at a window's start and at its end, with older material present.** Only the start-boundary
+     arrival enters the cohort. Its survivors agree with an independent calculation from the arrival history
+     and the run's own per-molecule loss rate.
+  3. **Two physical populations with different loss rates, one subdivided by arrival time.** Each keeps its
+     own reference trajectory, and the subdivided one's labels account for all its material.
+- **Where Cells stands:**
+  - D1's label families and FR-38's operator-local class rows are separate rows, each with its own
+    potential. So a label carries its own mixing term: the Lean lane found that D1's neutral labels can
+    change booked face heat, and FR-38's label rows depart from the unlabelled run by up to about 1e-8.
+  - FR-38's cohort route 1 subtracts a matched blank, which is exact only when the loss is linear in the
+    amount.
+  - docs/COHORT_LABELS_DESIGN.md's option B (labels inside a physical population, under nonlinear laws)
+    was deferred for want of a consumer. This request is that consumer.
+- **The first step:** a desk assessment. It covers share-based labels inside physical populations across
+  families, turnover, templated polymerisation and faces; what moves in registered worlds; and how FR-38's
+  cohort would use it.

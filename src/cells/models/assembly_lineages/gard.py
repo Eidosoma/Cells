@@ -280,6 +280,19 @@ LAWS = tuple(law_registry.BUILTIN.register(law) for law in (SINGLE_EVENT, PAIR_C
 BUDGET_BITS = 106
 SPLIT_BITS = 33  # An entry's top bits; the rest has at most 53 - 33 = 20.
 COUNT_BITS = 20  # So every count up to 2^20 multiplies either part exactly.
+# The range (the Lean proofs project's findings of 22 November 2026). The budget bounds a row's span
+# of bits, not where it sits:
+# - at the top, every value the cache holds is at most M = max_j beta_ij * S, and a two-sum's
+#   intermediates stay within 6M (s = a + b, then s - a and a - (s - bb)), as does the leave's
+#   (beta n)_i - beta_ii. So M < 2^TOP_BITS keeps every word finite, with a factor 2.6 to spare,
+#   where 2^1023 times a founder of 2 had made both words NaN and the run "stalled";
+# - at the bottom, an entry with a bit below 2^LOW_BITS (a subnormal part) is refused. Every value
+#   the cache holds is then a multiple of 2^LOW_BITS, products, sums, two-sum errors and low words
+#   alike, so no word is subnormal and the compiled cache's flush of subnormals (XLA's, where NumPy
+#   keeps them) changes nothing; the factors' quotients x/N can be subnormal only where they are
+#   added to 1, which absorbs them on either side.
+TOP_BITS = 1020
+LOW_BITS = -1022
 
 
 class ExactMatrix(NamedTuple):
@@ -363,16 +376,23 @@ def _lowest_bit(value):
     return int(exponent) - 53 + (whole & -whole).bit_length() - 1
 
 
+def _top_bits(entries, size):
+    """The t with max(entries) * size < 2^t, exactly: the bit just above the largest value the
+    cache holds (0 for no entries)."""
+    if not entries:
+        return 0
+    mantissa, exponent = np.frexp(max(entries))
+    top = int(np.ldexp(mantissa, 53)) * int(size)  # max * size = top * 2^(exponent - 53), exactly.
+    return top.bit_length() + int(exponent) - 53
+
+
 def bits_needed(row, size):
     """The bits row i's sums can span: from the lowest set bit among its nonzero entries up to
     max_j beta_ij * size, the largest value the cache holds (0 for a row of zeros)."""
     entries = [float(v) for v in row if v > 0]
     if not entries:
         return 0
-    lowest = min(_lowest_bit(v) for v in entries)
-    mantissa, exponent = np.frexp(max(entries))
-    top = int(np.ldexp(mantissa, 53)) * int(size)  # max * size = top * 2^(exponent - 53), exactly.
-    return top.bit_length() + int(exponent) - 53 - lowest
+    return _top_bits(entries, size) - min(_lowest_bit(v) for v in entries)
 
 
 def domain_exact(world):
@@ -384,6 +404,23 @@ def domain_exact(world):
             "which a count's products with the matrix are not exact"
         )
     for i, row in enumerate(world.data[FIELD]):
+        entries = [float(v) for v in row if v > 0]
+        lowest = min((_lowest_bit(v) for v in entries), default=0)
+        if lowest < LOW_BITS:
+            raise ConfigError(
+                f"{GARD_PAIR_CONSISTENT_V2}: {FIELD} row {i} has an entry with a bit at "
+                f"2^{lowest}, below the normal range (2^{LOW_BITS}): its cache would hold "
+                "subnormal words, which the compiled kernel flushes to zero and the host keeps. "
+                "Refused"
+            )
+        top = _top_bits(entries, size)
+        if top > TOP_BITS:
+            raise ConfigError(
+                f"{GARD_PAIR_CONSISTENT_V2}: {FIELD} row {i}'s largest value, its largest entry "
+                f"times the fission size {size}, is at least 2^{top - 1}: not below 2^{TOP_BITS}, "
+                "within which the cache's two-sums keep every word finite. Refused (a word that "
+                "overflows would make the rates NaN)"
+            )
         bits = bits_needed(row, size)
         if bits > BUDGET_BITS:
             raise ConfigError(
