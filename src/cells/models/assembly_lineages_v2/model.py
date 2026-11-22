@@ -17,7 +17,7 @@ import math
 import numpy as np
 
 from cells.models.assembly_lineages import ledger as v1_ledger
-from cells.models.assembly_lineages_v2 import MODEL_ID, SHEAR_FISSION, streams
+from cells.models.assembly_lineages_v2 import MODEL_ID, SHEAR_FISSION, TENSION_HOLD, streams
 from cells.models.assembly_lineages_v2 import world as world_rules
 from cells.models.assembly_lineages_v2.kernel import ENTRIES, Layout, Structure, Tables
 from cells.registry import laws as law_registry
@@ -293,4 +293,8 @@ def components(spec):
     if world.geometry is not None:
         laws.append(world.geometry[0])
     operators = [] if world.division is None else [SHEAR_FISSION]  # OL3 (division.py)
+    if world.hazard is not None:  # FR-31: the hazard, and the holds it reads (written only then)
+        laws.append(world.hazard[0])
+    if spec.experiment.tension_holds:
+        operators.append(TENSION_HOLD)
     return {"model": MODEL_ID, "laws": laws, "operators": operators}

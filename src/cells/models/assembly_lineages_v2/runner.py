@@ -349,9 +349,20 @@ def _shear(specs, host_layouts, holders, plans, lanes, layout, due, initial, dev
     return jax.device_put(host, device), layout
 
 
+def refuse_unbuilt(spec):
+    """FR-31 Phase A, slice 1: the declarations parse, but the pore clock is not built yet, so a
+    world that declares a hazard is refused here rather than run without its clock."""
+    if spec.model.world.hazard is not None:
+        raise ConfigError(
+            f"world: hazard: {spec.model.world.hazard[0]}'s clock is not built yet (FR-31 Phase A, "
+            "slice 2): the world is refused rather than run without it"
+        )
+
+
 def run(spec, *, start=None, stop=None):
     """One world, fresh or (a population, FR-22 rung P) from a checkpoint `start`, to its end or to
     an exact stop at `stop` events (population.run)."""
+    refuse_unbuilt(spec)
     if spec.execution.mode == "population":  # OL2 milestone 3 (population.py)
         from cells.models.assembly_lineages_v2 import population
 
@@ -383,6 +394,8 @@ def run_lanes(specs):
         )
     if any(s.execution.mode != MODE for s in specs):
         raise ConfigError(f"run_lanes runs {MODE} worlds")
+    for s in specs:
+        refuse_unbuilt(s)
     structures = {model.structure(s) for s in specs}
     if len(structures) != 1:
         raise ConfigError("Lanes share one structure (capacities, laws, conventions, recording)")
