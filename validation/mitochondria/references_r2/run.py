@@ -68,7 +68,7 @@ def settle_and_start(world, rule, log):
     ctl = model.Controls(world, bath="trace")
     y = world.guess_state(ctl)
     sol = solve_ivp(lambda t, q: world.rhs(t, q, ctl), (0.0, 3000.0), y, method="Radau",
-                    rtol=1e-8, atol=protocol.atol_vector(1e-8),
+                    rtol=1e-8, atol=protocol.atol_vector(1e-8, world.concentration_floor),
                     jac=lambda t, q: world.jac(t, q, ctl))
     if sol.status != 0:
         raise RuntimeError("settling failed: " + sol.message)
@@ -108,8 +108,9 @@ def run_all(world, start, rtol, method, worlds, log):
     return out
 
 
-def convergence(runs, ref_key, keys, bands):
-    """Each run's largest error against the reference run, per world and readout."""
+def convergence(world, runs, ref_key, keys, bands):
+    """Each run's largest error against the reference run, per world and readout, over the
+    output times that scoring keeps (outside the declared excluded window)."""
     ref = runs[ref_key]
     report = {}
     for key, run in runs.items():
@@ -117,20 +118,48 @@ def convergence(runs, ref_key, keys, bands):
             continue
         per_world = {}
         for name in ref:
+            keep = protocol.scored(world, ref[name]["rows"])
             a = table(run[name]["rows"], keys)
             b = table(ref[name]["rows"], keys)
             entry = {}
             for k in keys:
                 if k in protocol.JUDGED:
-                    entry[k] = {"max_error_over_band": float(np.max(judged_error(k, a[k], b[k],
-                                                                                bands)))}
+                    err = judged_error(k, a[k], b[k], bands)
+                    entry[k] = {"max_error_over_band": float(np.max(err[keep])),
+                                "max_error_over_band_all_times": float(np.max(err))}
                 else:
-                    scale = max(float(np.max(np.abs(b[k]))), 1e-300)
-                    err = float(np.max(np.abs(a[k] - b[k])) / scale)
+                    scale = max(float(np.max(np.abs(b[k][keep]))), 1e-300)
+                    err = float(np.max(np.abs(a[k][keep] - b[k][keep])) / scale)
                     entry[k] = {"max_error_over_max_abs": err}
             per_world[name] = entry
         report[key] = per_world
     return report
+
+
+def compare_runs(world, base, other, bands, where=None):
+    """The largest change of each judged readout from ``base`` to ``other``, over its band, at
+    the scored output times (optionally only those ``where`` selects), with its place."""
+    out = {}
+    worst = 0.0
+    for name in base:
+        rows = base[name]["rows"]
+        keep = protocol.scored(world, rows)
+        if where is not None:
+            keep &= np.array([where(name, r) for r in rows])
+        if not keep.any():
+            continue
+        A = table(rows, protocol.JUDGED)
+        B = table(other[name]["rows"], protocol.JUDGED)
+        entry = {}
+        for k in protocol.JUDGED:
+            err = np.where(keep, judged_error(k, B[k], A[k], bands), -1.0)
+            i = int(np.argmax(err))
+            entry[k] = {"worst_over_band": float(err[i]), "segment": rows[i]["segment"],
+                        "branch": rows[i]["branch"], "t": rows[i]["t"],
+                        "value_declared": float(A[k][i]), "value_other": float(B[k][i])}
+            worst = max(worst, float(err[i]))
+        out[name] = entry
+    return out, worst
 
 
 def worst_judged(conv):
@@ -149,6 +178,10 @@ def fmt(x):
     return float("%.10g" % x)
 
 
+def fmt6(x):
+    return float("%.6g" % x)
+
+
 def world_payload(world, run):
     rows = run["rows"]
     parts = []
@@ -165,10 +198,12 @@ def world_payload(world, run):
                 "ledgers": {
                     "energy_residual": [fmt(r["energy_residual"]) for r in rs],
                     "dissipation_cumulative": [fmt(r["D"]) for r in rs],
-                    "charge_N_drift": [fmt(r["invariants"]["charge_N"]
-                                           - run["ref"]["inv"]["charge_N"]) for r in rs],
-                    "charge_NP_drift": [fmt(r["invariants"]["charge_NP"]
-                                            - run["ref"]["inv"]["charge_NP"]) for r in rs],
+                    "dissipation_cumulative_by_process": {
+                        k: [fmt6(r["D_by_process"][k]) for r in rs]
+                        for k in model.PROCESSES + ("face",)},
+                    "invariant_drift": {
+                        k: [fmt6(r["invariants"][k] - run["ref"]["inv"][k]) for r in rs]
+                        for k in run["ref"]["inv"]},
                 },
                 "synthase_stall_mV": [fmt(r["stall_mV"]) for r in rs]}
         parts.append(part)
@@ -250,6 +285,10 @@ def main(argv=None):
                     choices=("zero_potential_each", "held_from_anchor", "held_from_start"),
                     help="I_NP's closure; the declared rule (G5 erratum) unless given")
     ap.add_argument("--quick", action="store_true", help="delivered tolerance only (a check)")
+    ap.add_argument("--plants", action="store_true",
+                    help="run the plants (always in a full run; with --quick only when given)")
+    ap.add_argument("--declaration", default=None,
+                    help="a declaration file other than the committed one (development only)")
     a = ap.parse_args(argv)
     out = Path(a.out)
     out.mkdir(parents=True, exist_ok=False)
@@ -265,11 +304,12 @@ def main(argv=None):
         logf.flush()
 
     try:
-        decl = constants.load_declaration()
+        decl = (constants.load_declaration(a.declaration) if a.declaration
+                else constants.load_declaration())
         declared_rule = decl["anchor"]["I_NP_rule"]["value"]
         if a.rule is None:
             a.rule = declared_rule
-        failures = constants.check_printed()
+        failures = constants.check_printed(constants.derived(decl))
         log("appendix values reproduced: %s" % (not failures))
         world = model.World(decl)
         bands = decl["bands"]
@@ -288,7 +328,7 @@ def main(argv=None):
             key = "%s %.0e" % (method, rtol)
             try:
                 runs[key] = run_all(world, start, rtol, method, WORLDS, log)
-            except RuntimeError as error:
+            except Exception as error:  # noqa: BLE001 (a non-required rung is recorded)
                 if key in required:
                     raise
                 ladder_failures[key] = repr(error)
@@ -298,32 +338,44 @@ def main(argv=None):
         conv = {}
         if not a.quick:
             ref_key = "Radau %.0e" % min(LADDER)
-            conv = convergence(runs, ref_key, keys, bands)
+            conv = convergence(world, runs, ref_key, keys, bands)
             # The delivered run's own error: against the tighter run, and against BDF.
             log("ladder, worst judged error over band: %s" % json.dumps(
                 {k: "%.2e" % v for k, v in worst_judged(conv).items()}))
-        # The trace check (G3): traces 1,000 times smaller, the whole chain again.
+        # The trace check (G3): traces 1,000 times smaller, the whole chain again, scored outside
+        # the declared excluded window (erratum 2).
         small = {k: decl["bath"][k]["value"] / 1000.0 for k in ("ADP_trace", "ATP_trace",
                                                                  "AMP_trace")}
         world_small = model.World(decl, overrides=small)
         start_small = settle_and_start(world_small, a.rule, log)["start"]
         small_runs = run_all(world_small, start_small, DELIVERED_RTOL, "Radau", WORLDS, log)
-        trace = {}
-        worst_trace = 0.0
-        for name in WORLDS:
-            rows_a = delivered[name]["rows"]
-            A = table(rows_a, protocol.JUDGED)
-            B = table(small_runs[name]["rows"], protocol.JUDGED)
-            entry = {}
-            for k in protocol.JUDGED:
-                err = judged_error(k, B[k], A[k], bands)
-                i = int(np.argmax(err))
-                entry[k] = {"worst_over_band": float(err[i]), "segment": rows_a[i]["segment"],
-                            "t": rows_a[i]["t"], "value_1nM": float(A[k][i]),
-                            "value_small": float(B[k][i])}
-                worst_trace = max(worst_trace, float(err[i]))
-            trace[name] = entry
+        trace, worst_trace = compare_runs(world, delivered, small_runs, bands)
         log("trace check: worst change %.3e of a band (must stay below 0.1)" % worst_trace)
+        # The classes left undetermined at 1 nM (erratum 2, item 4): (a)'s inhibitor branch and
+        # (b)'s early transient, the first 2 s.
+        focus = {
+            "a_inhibitor_branch": compare_runs(
+                world, {"a": delivered["a"]}, {"a": small_runs["a"]}, bands,
+                where=lambda n, r: r["branch"] == "inhibitor")[0].get("a"),
+            "b_first_2_s": compare_runs(
+                world, {"b": delivered["b"]}, {"b": small_runs["b"]}, bands,
+                where=lambda n, r: r["t"] <= 2.0)[0].get("b"),
+        }
+        # The plants (the MT-1b draft): each the whole chain with its overrides, scored as the
+        # judged comparison is; each must move a judged readout by at least 3 bands.
+        plants = {}
+        if not a.quick or a.plants:
+            for pname, plant in decl["plants"].items():
+                if pname == "source":
+                    continue
+                pworld = model.World(decl, overrides=plant["overrides"])
+                pstart = settle_and_start(pworld, a.rule, log)["start"]
+                pruns = run_all(pworld, pstart, DELIVERED_RTOL, "Radau", WORLDS, log)
+                per, worst = compare_runs(world, delivered, pruns, bands)
+                plants[pname] = {"what": plant["what"], "overrides": plant["overrides"],
+                                 "worst_over_band": worst, "caught": bool(worst >= 3.0),
+                                 "per_world": per}
+                log("plant %s: worst change %.3g bands (caught at 3)" % (pname, worst))
         # The interface.
         N, P = world.forms(start)
         ctl4 = model.Controls(world, bath="trace")
@@ -340,9 +392,10 @@ def main(argv=None):
                 "method": "scipy.integrate.solve_ivp Radau (implicit Runge-Kutta Radau IIA, "
                           "order 5), SciPy %s" % scipy.__version__,
                 "rtol": DELIVERED_RTOL,
-                "atol": "rtol x 1e-9 M for every concentration (relative control above 1e-9 "
-                        "M), rtol x 1 mV for dPsi; the ledger states are quadratures outside the "
-                        "error control (atol 1), their accuracy the physical steps' own",
+                "atol": "rtol x the smallest declared trace for every concentration "
+                        "(%.0e M: relative control above it), rtol x 1 mV for dPsi; the ledger "
+                        "states are quadratures outside the error control (atol 1), their "
+                        "accuracy the physical steps' own" % world.concentration_floor,
                 "jacobian": "forward differences over the physical columns (model.World.jac)",
                 "restarts": "one solve_ivp call per protocol segment, in the segment's own time "
                             "t - t0: the solver restarts at every scheduled step",
@@ -379,7 +432,10 @@ def main(argv=None):
                 "per_run": conv,
             },
             "trace_check": {"traces_M": small, "worst_over_band": worst_trace,
-                            "passes": bool(worst_trace < 0.1), "per_world": trace},
+                            "passes": bool(worst_trace < 0.1), "per_world": trace,
+                            "focus": focus},
+            "scoring": decl.get("scoring"),
+            "plants": plants,
             "appendix_values_reproduced": not failures,
         }
         with open(out / "interface.json", "w") as stream:

@@ -208,6 +208,11 @@ class World:
         self.K_T, self.K_D, self.k_dH = v["K_MgATP"], v["K_MgADP"], v["k_dH"]
         self.X_ANT, self.k_mADP = v["X_ANT"], v["k_mADP"]
         self.theta_P, self.theta_N = v["theta_P"], v["theta_N"]
+        self.exchange_form = v["exchange_form"]
+        if self.exchange_form not in ("declared", "printed"):
+            raise ValueError("exchange_form is 'declared' or 'printed' (plant P-a only)")
+        # The error control is relative above the smallest declared trace (erratum 2's rule).
+        self.concentration_floor = min(v["ADP_trace"], v["ATP_trace"], v["AMP_trace"])
         self.X_PiHt, self.k_PiHt = v["X_PiHt"], v["k_PiHt"] * mM
         self.X_KH = v["X_KH"]
         self.X_DH, self.r = v["X_DH"], v["r"]
@@ -341,12 +346,18 @@ class World:
         x = self.g0_F + log(ATP4_N / (ADP3_N * HPO4_N)) - lhN - self.n_A * g
         s = self.X_F1 * exp(-(self.g0_ATP - self.n_A * g)) * (K_D / K_T) * MgADP_N * Pi_N
         X["F1"], S["F1"], J["F1"] = x, s, -s * expm1(x)
-        # The exchange (3), shares theta_P + theta_N = 1.
+        # The exchange (3), shares theta_P + theta_N = 1. Plant P-a only: Eq. 14's printed
+        # two-fraction form, which is balanced only when the shares sum to one.
         a, b = ADP3_P, ATP4_P * exp(-self.theta_P * u)
         cc, d = ADP3_N, ATP4_N * exp(self.theta_N * u)
         s = ctl.a_ANT * self.X_ANT * a * d / ((a + b) * (cc + d)) / (1.0 + self.k_mADP / a)
         x = log(ATP4_P * ADP3_N / (ATP4_N * ADP3_P)) - u
-        X["ANT"], S["ANT"], J["ANT"] = x, s, -s * expm1(x)
+        if self.exchange_form == "printed":
+            j = (ctl.a_ANT * self.X_ANT * (a / (a + b) - cc / (cc + d))
+                 / (1.0 + self.k_mADP / a))
+        else:
+            j = -s * expm1(x)
+        X["ANT"], S["ANT"], J["ANT"] = x, s, j
         # The phosphate carrier (4), balanced in frame B: S = A16.
         s = self.X_PiHt * H2PO4_P * hN / (H2PO4_P + self.k_PiHt)
         x = log(HPO4_N / HPO4_P) + 2.0 * (lhN - lhP)

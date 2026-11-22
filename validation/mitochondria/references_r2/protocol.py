@@ -6,7 +6,8 @@ The schedule is the world declaration's G7, read from declaration.json:
   the inhibitor as separate 120 s branches from the 300 s state, each with the ATP bath;
 - controls (b) and (c): the uncoupler patch on, or the exchange off, from t = 0, on (a)'s main
   schedule (R2's reading: the branches are world (a)'s);
-- world (d): O2 in its own finite node from t = 0, the ADP step at 60 s held to 240 s.
+- world (d): state 4 with the held bath's O2 for 0-60 s; at 60 s the ADP step, held to 240 s, and
+  O2 from its own finite node (erratum 2: depletion starts at 60 s).
 
 Each segment is one solve_ivp call, so the integrator restarts at every scheduled step and no step
 lies inside an integration interval. Outputs: each segment's start (its right limit), every 10 ms
@@ -21,11 +22,11 @@ from scipy.integrate import solve_ivp
 from . import model
 
 # Each physical state's absolute tolerance is rtol times its floor, so the error control is
-# relative for every concentration above 1e-9 M (trace-level rows included) and for dPsi above
-# 1 mV. The ledger states are quadratures (their Jacobian columns are exactly zero): they start
-# at zero and take no part in the error control or the Newton test (atol 1), and their accuracy
-# is the physical steps' own, which the energy ledger's closure measures.
-CONCENTRATION_FLOOR = 1e-9
+# relative for every concentration above the world's smallest declared trace (erratum 2's rule;
+# trace-level rows included) and for dPsi above 1 mV. The ledger states are quadratures (their
+# Jacobian columns are exactly zero): they start at zero and take no part in the error control or
+# the Newton test (atol 1), and their accuracy is the physical steps' own, which the energy
+# ledger's closure measures.
 DPSI_FLOOR = 1.0
 LEDGER_ATOL = 1.0
 
@@ -42,9 +43,9 @@ JUDGED = {  # readout: (band key, kind): the MT-1b draft's plateau bands
 }
 
 
-def atol_vector(rtol):
+def atol_vector(rtol, concentration_floor):
     a = np.full(len(model.STATE), LEDGER_ATOL)
-    a[:model.NPHYS] = rtol * CONCENTRATION_FLOOR
+    a[:model.NPHYS] = rtol * concentration_floor
     a[model.IDX["dpsi"]] = rtol * DPSI_FLOOR
     return a
 
@@ -71,7 +72,8 @@ def integrate(world, y0, t0, t1, ctl, t_eval, rtol, method="Radau"):
     if local is not None:
         local[0] = max(local[0], 0.0)
         local[-1] = min(local[-1], t1 - t0)
-    kwargs = dict(method=method, t_eval=local, rtol=rtol, atol=atol_vector(rtol))
+    kwargs = dict(method=method, t_eval=local, rtol=rtol,
+                  atol=atol_vector(rtol, world.concentration_floor))
     if method in ("Radau", "BDF"):
         kwargs["jac"] = lambda t, y: world.jac(t, y, ctl)  # noqa: E731
     started = time.process_time()
@@ -90,7 +92,8 @@ def schedule(world, name):
     segs = []
     if name == "d":
         for seg in p["world_d"]:
-            segs.append((seg["name"], None, seg["t0"], seg["t1"], dict(base, bath=seg["bath"])))
+            segs.append((seg["name"], None, seg["t0"], seg["t1"],
+                         dict(base, bath=seg["bath"], o2=seg["o2"])))
         return segs
     for seg in p["main"]:
         segs.append((seg["name"], None, seg["t0"], seg["t1"], dict(base, bath=seg["bath"])))
@@ -129,6 +132,17 @@ def run_world(world, name, start, rtol, method="Radau"):
     return dict(world=name, rtol=rtol, method=method, records=records, stats=stats)
 
 
+def scored(world, rows):
+    """The output records that scoring keeps: those outside the declared excluded window (W3(d)'s
+    anoxic tail, where the declared reading falls below the declared floor; erratum 2)."""
+    window = world.declaration.get("scoring", {}).get("excluded_window", {})
+    floor = window.get("below_M")
+    if floor is None:
+        return np.ones(len(rows), dtype=bool)
+    key = window["reading"]
+    return np.array([r["readouts"][key] >= floor for r in rows])
+
+
 def evaluate_records(world, result):
     """Readouts and ledgers at every output record.
 
@@ -146,9 +160,11 @@ def evaluate_records(world, result):
         A, D, W = world.energy_terms(y, ctl.o2)
         if ref is None:
             ref = dict(inv=inv, A=A)
+        d_by = {k: float(y[model.IDX["D_" + k]]) for k in model.PROCESSES}
+        d_by["face"] = float(y[model.IDX["D_face"]])
         rows.append(dict(segment=rec["segment"], branch=rec["branch"], t=rec["t"],
                          side=rec["side"], controls=rec["controls"], readouts=r, invariants=inv,
-                         scales=world.invariant_scales(y, ctl.o2),
+                         scales=world.invariant_scales(y, ctl.o2), D_by_process=d_by,
                          A=A, D=D, W=W, energy_residual=(A - ref["A"]) + D - W,
                          stall_mV=world.synthase_stall_mV(y)))
     return rows, ref

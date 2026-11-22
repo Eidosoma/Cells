@@ -4,7 +4,8 @@
   "documents": {
     "laws_appendix": "docs/MITOCHONDRIA_LAWS_APPENDIX.md at tag mito-laws-appendix-2026-11-20b",
     "design": "docs/MITOCHONDRIA_DESIGN.md at tag mito-mt1b-face-design-2026-11-22 (section 7, the MT-1b draft, the face note)",
-    "world_declaration": "docs/MITOCHONDRIA_DESIGN.md at tag mito-mt1b-declaration-erratum-2026-11-22, the declaration of record: 'MT-1b's world declaration' (G1-G7, first tagged as mito-mt1b-world-declaration-2026-11-22) with the face note's section 6 erratum and G5's erratum (the I_NP rule)"
+    "world_declaration": "docs/MITOCHONDRIA_DESIGN.md at tag mito-mt1b-declaration-erratum-2026-11-22, the declaration of record: 'MT-1b's world declaration' (G1-G7, first tagged as mito-mt1b-world-declaration-2026-11-22) with the face note's section 6 erratum and G5's erratum (the I_NP rule)",
+    "erratum_2": "docs/MITOCHONDRIA_DESIGN.md at erratum 2's tag (pending): the lead's ruling of 22 November 2026, for the world declaration's erratum 2 (tag pending)"
   },
   "readings": {
     "column": "Table 1 (2006) 'with Pi control' column; complex III under Eq. 24 restored as phi_Pi x Eq. 7 (appendix 1.2). Confirmed (world declaration, R2's readings)",
@@ -16,7 +17,7 @@
     "bath_speciation": "option (a): free pH held; free Mg2+ from Mg_tot through K_MgATP and K_MgADP (G3)",
     "bath_valuation": "the held bath's supply valued at each row's free potential (option (a)). Confirmed",
     "o2_supply": "G6 (ii), the lead's ruling: O2 held in the bath, supplied through the face at p_Pi and across the inner membrane at P_O2; a declared departure R2 shares",
-    "leak": "constant-field H+ (Eq. 19 as G1 quotes it) on the IMS's own free H+ (appendix 0: every P-side quantity is the IMS's own)",
+    "leak": "constant-field H+ (Eq. 19 as G1 quotes it) on the IMS's own free H+, the P side of the inner membrane (appendix 0). Ruled: the lead's ruling of 22 November 2026, for the world declaration's erratum 2 (tag pending); erratum 2 corrects G1's printed H_e",
     "A_IM": "R2's reading, accepted by the lead (22 November 2026): A_IM = C/(1 uF cm-2) exactly, with C = C_IM F per litre of mitochondria (world declaration 0 prints 6.513e-8 m2 for 1 pL, rounded)",
     "controls_b_c": "R2's reading, accepted by the lead (22 November 2026): controls (b) and (c) run (a)'s main schedule (0-300 s) from the declared start; the branches are world (a)'s",
     "anchor": "G7 with G5's erratum: the matrix charge inventory is the dynamics' conserved matrix charge, I_N = C_IM dPsi + W_x sum_N z_row c_row over frame B's rows (the matrix buffer's base charge, a constant, left out); its value is the one whose state-4 steady state at [Pi]e = 0 has pH_N = 7.1418, computed as the limit [Pi]e -> 0 with the declared traces. The seventh inventory, I_NP = W_x sum_N z c + W_i sum_P z c, is set by zero outer-membrane potential at the anchor state and again at the start state",
@@ -304,6 +305,10 @@
       "value": 0.01,
       "unit": "F m-2 (1 uF cm-2)",
       "source": "world declaration 0: A_IM at 1 uF cm-2"
+    },
+    "exchange_form": {
+      "value": "declared",
+      "source": "appendix 3: the declared form J = S (1 - e^x). 'printed' (Eq. 14's two-fraction form, which balances only when theta_P + theta_N = 1) is plant P-a's option only: the lead's ruling of 22 November 2026, for the world declaration's erratum 2 (tag pending)"
     }
   },
   "bath": {
@@ -338,19 +343,19 @@
       "source": "world declaration G3 and G7"
     },
     "ADP_trace": {
-      "value": 1e-09,
+      "value": 1e-12,
       "unit": "M",
-      "source": "world declaration G3: 1 nM"
+      "source": "1 pM: the lead's ruling of 22 November 2026, for the world declaration's erratum 2 (tag pending)"
     },
     "ATP_trace": {
-      "value": 1e-09,
+      "value": 1e-12,
       "unit": "M",
-      "source": "world declaration G3: 1 nM"
+      "source": "1 pM: the lead's ruling of 22 November 2026, for the world declaration's erratum 2 (tag pending)"
     },
     "AMP_trace": {
-      "value": 1e-09,
+      "value": 1e-12,
       "unit": "M",
-      "source": "world declaration G3: 1 nM"
+      "source": "1 pM: the lead's ruling of 22 November 2026, for the world declaration's erratum 2 (tag pending)"
     },
     "ADP_atp_bath": {
       "value": 0.0005,
@@ -446,22 +451,22 @@
       "c": {
         "a_ANT": 0.0
       },
-      "d": {
-        "o2": "node"
-      }
+      "d": {}
     },
     "world_d": [
       {
         "name": "state4_a",
         "t0": 0.0,
         "t1": 60.0,
-        "bath": "trace"
+        "bath": "trace",
+        "o2": "bath"
       },
       {
         "name": "state3_O2_exhaustion",
         "t0": 60.0,
         "t1": 240.0,
-        "bath": "state3"
+        "bath": "state3",
+        "o2": "node"
       }
     ],
     "output": {
@@ -469,7 +474,8 @@
       "fine_window_s": 2.0,
       "coarse_dt_s": 0.5
     },
-    "drift_window_s": 10.0
+    "drift_window_s": 10.0,
+    "world_d_source": "O2 depletion starts at 60 s, so 0-60 s is a true state-4 plateau: the lead's ruling of 22 November 2026, for the world declaration's erratum 2 (tag pending)"
   },
   "bands": {
     "note": "the MT-1b draft's plateau bands (MR1-MT2's); the drift rule asks a change below a tenth of these over the last 10 s",
@@ -488,5 +494,40 @@
     "NADH_fraction": 0.5,
     "QH2_fraction": 0.5,
     "cytc_red_fraction": 0.5
+  },
+  "integration": {
+    "concentration_floor": {
+      "rule": "the smallest declared trace (ADP, ATP and AMP in the bath)",
+      "source": "R2's advice, ruled: the lead's ruling of 22 November 2026, for the world declaration's erratum 2 (tag pending). The error control is relative for every concentration above the floor"
+    }
+  },
+  "scoring": {
+    "excluded_window": {
+      "reading": "O2_N",
+      "below_M": null,
+      "source": "W3(d)'s anoxic tail, a declared excluded window for scoring: the trace check and every judged comparison skip output times where this reading is below the floor. The floor's value comes from erratum 2: the lead's ruling of 22 November 2026, for the world declaration's erratum 2 (tag pending)"
+    }
+  },
+  "plants": {
+    "source": "the MT-1b draft's plants, each to miss by at least 3 bands on a judged row; P-a's printed form: the lead's ruling of 22 November 2026, for the world declaration's erratum 2 (tag pending)",
+    "P-a": {
+      "what": "the exchange's shares at 0.35 and 0.70, in Eq. 14's printed two-fraction form",
+      "overrides": {
+        "theta_N": 0.7,
+        "exchange_form": "printed"
+      }
+    },
+    "P-b": {
+      "what": "the exchange's activity x 1.01",
+      "overrides": {
+        "X_ANT": 0.007999603999999999
+      }
+    },
+    "P-c": {
+      "what": "the 2005 k_O2, 1.0e-6 M (appendix 9: the 2005 PDF prints 1.0e-6 for k_O2)",
+      "overrides": {
+        "k_O2": 1e-06
+      }
+    }
   }
 }

@@ -180,3 +180,30 @@ def test_short_integration_closes_the_ledgers(world):
         A, D, W = world.energy_terms(y, ctl.o2)
         assert D > 0.0
         assert abs((A - A0) + D - W) <= 1e-8 * D
+
+
+def test_printed_exchange_is_the_declared_one_only_when_balanced():
+    # Plant P-a's switch (erratum 2): Eq. 14's printed two-fraction form equals the declared
+    # J = S (1 - e^x) when theta_P + theta_N = 1. With the plant's 0.35 and 0.70 its zero moves to
+    # x = 0.05 u, so between x = 0 and 0.05 u it runs against its own x.
+    rng = np.random.default_rng(RNG_SEED + 3)
+    declared = model.World()
+    printed = model.World(overrides={"exchange_form": "printed"})
+    planted = model.World(overrides={"exchange_form": "printed", "theta_N": 0.70})
+    for _ in range(30):
+        y = random_state(declared, rng)
+        ctl = model.Controls(declared)
+        j0 = declared.evaluate(list(y), ctl)["J"]["ANT"]
+        j1 = printed.evaluate(list(y), model.Controls(printed))["J"]["ANT"]
+        assert abs(j1 - j0) <= 1e-12 * declared.X_ANT
+        # Set dPsi so that the exchange's x = L - u is 0.025 u, a little past its equilibrium.
+        ev = declared.evaluate(list(y), ctl)
+        L = ev["x"]["ANT"] + ev["u"]
+        if abs(L) < 0.5:
+            continue
+        y[0] = L / 1.025 / declared.f_mV
+        ev = declared.evaluate(list(y), ctl)
+        assert abs(ev["x"]["ANT"] - 0.025 * ev["u"]) < 1e-9 * abs(ev["u"])
+        assert ev["J"]["ANT"] * ev["x"]["ANT"] < 0.0
+        ev = planted.evaluate(list(y), model.Controls(planted))
+        assert ev["J"]["ANT"] * ev["x"]["ANT"] > 0.0
