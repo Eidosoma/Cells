@@ -1569,7 +1569,7 @@ each node's buffer), and the supply's pair held at its declared ratio.
 
 | Route | Steps | Device step | With X2 (×3) | Today's runner path |
 | --- | --- | --- | --- | --- |
-| Explicit cycles at 180 mV (27 ns) | 1.1 × 10¹⁰ | ≈ 19,400 CPU-h | ≈ 58,000 CPU-h | ≈ 5 × 10⁵ CPU-h |
+| Explicit cycles at 180 mV (27 ns; P1′'s proxy, an upper-end estimate) | 1.1 × 10¹⁰ | ≈ 19,400 CPU-h | ≈ 58,000 CPU-h | ≈ 5 × 10⁵ CPU-h |
 | Explicit cycles at 150 mV (0.8 µs) | 3.8 × 10⁸ | ≈ 650 CPU-h | ≈ 2,000 CPU-h | ≈ 17,500 CPU-h |
 | Implicit cycles; the face's 18 µs binds | 1.7 × 10⁷ | ≈ 29 CPU-h | ≈ 87 CPU-h | ≈ 780 CPU-h |
 
@@ -2068,9 +2068,15 @@ earlier one.
   - A second inner-membrane patch carries only `proton_constant_field_leak@1`, with P_unc A = 30 ×
     the leak's P_H A_IM, and its availability steps 0 → 1.
   - **S:** the factor's purpose is to drop ΔΨ below the synthase's stall so that synthesis reverses,
-    which is §7's test. R2 reports the uncoupled steady state's ΔΨ and the synthase's direction
-    before registration. If synthesis does not reverse, the factor rises to 100 before
-    registration.
+    which is §7's test. R2 reports the uncoupled plateau's ΔΨ against the stall before
+    registration. If ΔΨ stays above the stall, the factor rises before registration.
+  - **The reversal's readout: for the lead.** With the bath's ATP at its trace, the matrix adenylate
+    pool is conserved and the exchange is 1:1. So at the uncoupled steady state the synthase's net
+    flux is about zero at any factor, and its sign is the trace's. Two ways:
+    - (i), proposed: give the uncoupler branch the inhibitor branch's bath, the source's ATP buffer
+      (ADP 0.5 mM, ATP 0.87 mM; G7). The reversed synthase then runs at a steady plateau;
+    - (ii): read the reversal on the transient: the synthase's sign, and its integrated reverse
+      turnover, over the seconds after the step.
 - **The matrix buffer.**
   - The source: 1/r_buff = (100 M⁻¹)[H⁺]_x (text after Eq. 22; `BUFFER_PER_M`). That is a buffering
     capacity of ln 10 / (100 M⁻¹) = 23.03 mM per pH unit at every pH (**S**).
@@ -2120,7 +2126,9 @@ earlier one.
 - **Declared (S):** free H⁺, K⁺ and Mg²⁺ cross the face as log-mean electrodiffusion at
   p = p_Pi = 327 µm s⁻¹, the source's fastest outer-membrane permeability.
   - Their equilibration time, W_i / (γ p), is 36.5 µs, far below every readout's time scale. So
-    the IMS sits at the bath's free H⁺, K⁺ and Mg²⁺, as the source assumes.
+    the IMS should sit at the bath's free H⁺, K⁺ and Mg²⁺, as the source assumes.
+  - That is asserted, not shown: phosphate's forms carry most of the protons across. R2 reports
+    pH_P and the outer membrane's potential at every plateau.
   - No faster permeability is introduced, so the face's step bound stays P1′'s 18.3 µs.
 - **No counter-ion crosses (S).** The source has no Cl⁻. The bath and the IMS carry the fixed
   charges that balance their declared ions at the start (the engine's fixed-charge equivalents).
@@ -2131,11 +2139,29 @@ earlier one.
 φ_IMS − φ_bath is set by zero net outer-membrane current (the lead's ruling), over the permeant
 forms and ions. The outer membrane carries no capacitance. The face note's §6 carries an erratum
 pointing here.
+- **A parse check for the build.** The matrix and the IMS form one capacitor component with no
+  held bath, since the face to the bath is no capacitor.
+- The composite's field refresh has required a held bath in every component (the floating-component
+  checks of 21 November). So the build's first parse of MT-1b's world checks it.
+- If it is refused, the floating component's offset solve (the field's own, with fix (A)'s scope)
+  is the place G5's condition goes.
 
 ### G6. O₂ at N
 
-- Held at 2.6 × 10⁻⁵ M (20 mmHg, as the source states it for the matrix; `PROTOCOL`) in worlds
-  (a)–(c), C1's default.
+- **The source:** 2.6 × 10⁻⁵ M (20 mmHg, as it states it for the matrix; `PROTOCOL`), held in
+  worlds (a)–(c), C1's default.
+- **"Held" at the matrix has no engine mechanism yet. It is open for the build:**
+  - (i): complex IV's population holds O₂, if its law admits a held row;
+  - (ii), proposed (**S**): O₂ in the held bath at 26 µM, supplied through the face at p_Pi and
+    across the inner membrane by `passive_neutral_permeation@1` at P_O₂ = 9.9 × 10⁻⁵ m s⁻¹ (P A =
+    6.4 × 10⁻¹² m³ s⁻¹ at A_IM). It equilibrates in about 0.1 ms. Its explicit bound at the
+    matrix, 1/(2 P A/W_x), is about 50 µs, above the face's 18.3 µs.
+  - **(ii)'s cost.** At the state-3 O₂ flux (1.64 fmol s⁻¹ per pL) the matrix O₂ sits about
+    1.1 µM, 4%, below the bath's: 0.84 µM across the face and 0.26 µM across the inner membrane.
+    Complex IV's O₂ factor, 1/(1 + k_O₂/[O₂]), then reads about 3.5% lower.
+    - R2 takes the same supply, so the judged comparison does not see it.
+    - Against the source's held 26 µM it is a declared departure, which MT-2 reports.
+    - (i) avoids it, if complex IV's law can hold O₂.
 - W3(d) makes it finite (G7).
 
 ### G7. The protocol (§7)
@@ -2150,7 +2176,7 @@ pointing here.
 
 | Item | Declared | Source or reason |
 | --- | --- | --- |
-| Start state | R2's steady state 4 at [Pi]e = 10 mM, at the declared inventories: the matrix Mg²⁺ total 5 mM (D236), and the matrix charge inventory anchored as MR1-MT2's (the source's Fig. 4D matrix pH at state 4, [Pi]e = 0) but computed with G1's buffer. R2 records the numbers, and the engine starts from them | **S**; MR1-MT2's anchoring |
+| Start state | R2's steady state 4 at [Pi]e = 10 mM, at the declared inventories: the matrix Mg²⁺ total 5 mM (D236), and the matrix charge inventory anchored as MR1-MT2's, to pH_x = 7.1418 at state 4, [Pi]e = 0 (`mr1_mt2_registration.json`, `charge_inventory_definition`), but computed with G1's buffer. R2 records the numbers, and the engine starts from them | **S**; MR1-MT2's anchoring |
 | State 4 | 0–60 s | R2 |
 | ADP step | 1.3 mM total in the bath, 60–180 s | the source's ADP; R2's times |
 | Back to state 4 | the ADP trace, 180–300 s | R2 |
@@ -2165,16 +2191,20 @@ pointing here.
 **W3(d), O₂ exhaustion.** The held bath stays held for every row but O₂, which lives in its own
 finite node.
 - **The O₂ node:** O₂ only, 6.3 nL per pL of mitochondria, starting at 26 µM.
-- **The route:** a face to the IMS and the inner membrane's `passive_neutral_permeation@1`, both
-  fast: equilibration under 1 ms.
-- **The run:** from the state-4 start, ADP stepped to 1.3 mM at 60 s and held.
+- **The route:** a face from the O₂ node to the IMS at p_Pi, and the inner membrane at G6 (ii)'s
+  P_O₂.
+- **The run:** from the state-4 start, ADP stepped to 1.3 mM at 60 s and held, to 240 s.
+- **Outputs:** as G7's, every 10 ms for 2 s after the step, then every 0.5 s.
 - **Why 6.3 nL (S):** at MR1-MT2's state-3 O₂ flux, 1.640 × 10⁻³ mol s⁻¹ (L mito)⁻¹ at [Pi]e
   10 mM, that holds about 100 s of O₂. The matrix O₂ then falls through the source's P50 of
   0.373 µM near the run's end.
 
-**Cytochrome c's volume.** cytC_tot = 2.70 mM per matrix water (Table 1; MR1's published reading,
-Q05). So the IMS holds 1.737 fmol, 24.3 mM of its 0.0715 pL. Steady states do not depend on this
-choice, but transients do, so R2 and the engine take the same one.
+**Cytochrome c.** cytC_tot = 2.70 mM is the concentration that complexes III and IV read at P
+(appendix §1.2–1.3 and §9; head 2's world holds 2.7 mM at the lumen). So the IMS holds 2.70 mM in
+its 0.0715 pL, 0.193 fmol, and its rows' changes divide by W_i.
+- That is MR1's V_i switch (Q05). MR1's published arm divides by V_x instead.
+- Steady states do not depend on it, but transients do. R2 takes W_i as the engine does, and MT-2
+  reports the difference from the published arm.
 
 ### R2's readings, confirmed or corrected
 
