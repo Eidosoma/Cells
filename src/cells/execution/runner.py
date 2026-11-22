@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import inspect
 import math
-from dataclasses import dataclass, replace
+from dataclasses import dataclass, field, replace
 from time import perf_counter
 from typing import Any
 
@@ -19,6 +19,7 @@ from cells.execution.devices import execution_device
 from cells.execution.errors import NumericalError as NumericalError
 from cells.execution.grid import (
     EventGrid,
+    applied_definition,
     checked_grid,
     require_refinement_model,
     require_scalar_path,
@@ -61,7 +62,8 @@ def timeline(spec: SimulationSpec, *, energy_check=False) -> np.ndarray:
     grid = EventGrid(spec)
     _trace_budget(spec, len(grid) - 1)
     times = np.fromiter(grid, dtype=np.float64, count=len(grid))
-    get_model(spec.model).check_steps(spec, np.diff(times), control_values(spec, times[:-1]))
+    applied = applied_definition(spec)[0]  # D283: the controls at the instants the clock steps at.
+    get_model(spec.model).check_steps(spec, np.diff(times), control_values(applied, times[:-1]))
     return times
 
 
@@ -90,7 +92,11 @@ def validate_checkpoint(
     if type(checkpoint.step_index) is not int or not 0 <= checkpoint.step_index < len(times):
         raise ConfigError("Checkpoint step index is outside the declared integration grid")
     if checkpoint.time != times[checkpoint.step_index]:
-        raise ConfigError("Checkpoint time does not match its accepted integration boundary")
+        raise ConfigError(
+            "Checkpoint time does not match its accepted integration boundary (a checkpoint "
+            "written before D283, on a clock that split a one-ulp step at an event the clock now "
+            "snaps, is refused here)"
+        )
     if type(checkpoint.event_index) is not int or checkpoint.event_index != event_index(
         spec, checkpoint.time
     ):
@@ -331,6 +337,9 @@ class RunResult:
     observations: Any
     timings: dict[str, float]
     diagnostics: dict[str, float]
+    # D283: each snapped event (declared, applied); () without one. Keyword-only, so the results
+    # that extend this one keep their positional fields.
+    snapped_events: tuple = field(default=(), kw_only=True)
 
     # Compatibility accessors for the original synthetic fixture. EMT uses
     # explicitly named regulatory coordinates through result.history instead.
@@ -385,17 +394,24 @@ def run(spec: SimulationSpec, checkpoint: Checkpoint | None = None) -> RunResult
     blas_threads.require_pinned("run")  # D190: refused unless every BLAS is at 1 thread.
     started = perf_counter()
     spec = parse_spec(spec.to_dict())  # Also validates specs constructed through the Python API.
+    # D283: the run steps on the applied copy (each snapped event at its point); the result keeps
+    # the declared definition, with the snaps. Without a snap, spec is unchanged.
+    declared, (spec, snapped) = spec, applied_definition(spec)
     if spec.projective is not None:  # Opt-in coarse mode; absent, nothing below changes.
         from cells.execution.projective import run_projective
 
-        return run_projective(spec, checkpoint, started=started)
-    grid = timeline(spec, energy_check=True)
-    checkpoint = initialise(spec) if checkpoint is None else checkpoint
-    checkpoint = with_energy_record(spec, checkpoint)  # Unchanged without the check.
-    validate_checkpoint(spec, checkpoint, grid, energy_check=True)
-    times = grid[checkpoint.step_index :]
-    requested = [t for t in spec.experiment.observation_times if t >= checkpoint.time]
-    return _run_segment(spec, checkpoint, times, requested, started=started)
+        result = run_projective(spec, checkpoint, started=started)
+    else:
+        grid = timeline(spec, energy_check=True)
+        checkpoint = initialise(spec) if checkpoint is None else checkpoint
+        checkpoint = with_energy_record(spec, checkpoint)  # Unchanged without the check.
+        validate_checkpoint(spec, checkpoint, grid, energy_check=True)
+        times = grid[checkpoint.step_index :]
+        requested = [t for t in spec.experiment.observation_times if t >= checkpoint.time]
+        result = _run_segment(spec, checkpoint, times, requested, started=started)
+    if snapped and isinstance(result, RunResult):
+        result = replace(result, spec=declared, snapped_events=snapped)
+    return result
 
 
 def _compiled(record, seconds):
