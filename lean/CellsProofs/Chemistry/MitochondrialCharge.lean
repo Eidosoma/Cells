@@ -1,4 +1,5 @@
 import CellsProofs.Chemistry.MitochondrialCycles
+import Mathlib.Algebra.BigOperators.Group.Finset.Sigma
 import Mathlib.Algebra.BigOperators.Ring.Finset
 import Mathlib.Tactic.FieldSimp
 
@@ -61,5 +62,15 @@ theorem zero_current_iff {ι : Type*} (forms : Finset ι) (weight z logRatio : �
 charge. Two states with the same matrix charge and different IMS charge have different totals. -/
 theorem anchor_ne {matrix ims₁ ims₂ : ℝ} (different : ims₁ ≠ ims₂) :
     matrix + ims₁ ≠ matrix + ims₂ := by simpa using different
+
+/-- A moving base form carries its bound ligands. Weighting each form's flux by its
+charge agrees with booking the base row once and the signed ligand totals separately. -/
+theorem form_flux_charge {ι κ : Type*} (forms : Finset ι) (ligands : Finset κ)
+    (baseCharge : ℝ) (charge : κ → ℝ) (bound : ι → κ → ℝ) (flux : ι → ℝ) :
+    (∑ f ∈ forms, (baseCharge + ∑ l ∈ ligands, charge l * bound f l) * flux f) =
+      baseCharge * (∑ f ∈ forms, flux f) +
+        ∑ l ∈ ligands, charge l * ∑ f ∈ forms, bound f l * flux f := by
+  simp_rw [add_mul, Finset.sum_mul, mul_assoc, Finset.sum_add_distrib, Finset.mul_sum]
+  exact congrArg (_ + ·) Finset.sum_comm
 
 end CellsProofs.Chemistry.MitochondrialCharge

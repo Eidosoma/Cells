@@ -1,4 +1,6 @@
 import Mathlib.Algebra.BigOperators.Group.Finset.Basic
+import Mathlib.Algebra.Order.BigOperators.Ring.Finset
+import Mathlib.Algebra.Order.Field.Basic
 import Mathlib.Data.Real.Basic
 import Mathlib.Tactic.NormNum
 import Mathlib.Tactic.Ring
@@ -70,5 +72,38 @@ theorem release_example :
     follow keep first 0 4 = 3 ∧ follow keep again 0 4 = 1 ∧
     follow keep (fun i => first i + again i) 0 4 = 4 := by
   norm_num [follow, marked, chaseFraction]
+
+/-- Absolute errors on the two measured counts bound the residual against a fixed survival factor. -/
+theorem count_residual_le {atClose atSample trueClose rate closeError sampleError : ℝ}
+    (hr : 0 ≤ rate) (hc : |atClose - trueClose| ≤ closeError)
+    (hs : |atSample - trueClose * rate| ≤ sampleError) :
+    |atSample - rate * atClose| ≤ sampleError + rate * closeError := by
+  calc
+    |atSample - rate * atClose| =
+        |(atSample - trueClose * rate) + rate * (trueClose - atClose)| := by
+            congr 1
+            ring
+    _ ≤ |atSample - trueClose * rate| + |rate * (trueClose - atClose)| := abs_add_le _ _
+    _ = |atSample - trueClose * rate| + rate * |atClose - trueClose| := by
+          rw [abs_mul, abs_of_nonneg hr, abs_sub_comm trueClose atClose]
+    _ ≤ sampleError + rate * closeError := add_le_add hs (mul_le_mul_of_nonneg_left hc hr)
+
+/-- With a positive measured count at close, testing the counts and testing the ratio agree. -/
+theorem ratio_residual_iff {atClose atSample rate bound : ℝ} (hc : 0 < atClose) :
+    |atSample / atClose - rate| ≤ bound / atClose ↔ |atSample - rate * atClose| ≤ bound := by
+  have quotient : (atSample - rate * atClose) / atClose = atSample / atClose - rate := by
+    rw [sub_div, mul_div_cancel_right₀ _ hc.ne']
+  rw [← quotient, abs_div, abs_of_pos hc, div_le_div_iff_of_pos_right hc]
+
+/-- The window cohort experiences each chase survival factor once. The numerical bound
+requires two actual bounds on count errors, in the same amount units as both counts. -/
+theorem chase_ratio_error {keep : ℕ → ℝ} (n : ℕ) {trueClose atClose atSample eClose eSample : ℝ}
+    (hkeep : ∀ i ∈ Finset.range n, 0 ≤ keep i) (hpos : 0 < atClose)
+    (hc : |atClose - trueClose| ≤ eClose)
+    (hs : |atSample - follow keep (fun _ => 0) trueClose n| ≤ eSample) :
+    |atSample / atClose - ∏ i ∈ Finset.range n, keep i| ≤
+      (eSample + (∏ i ∈ Finset.range n, keep i) * eClose) / atClose := by
+  rw [chase_only] at hs
+  exact (ratio_residual_iff hpos).2 (count_residual_le (Finset.prod_nonneg hkeep) hc hs)
 
 end CellsProofs.Chemistry.ArrivalWindow
