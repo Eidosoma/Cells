@@ -1,5 +1,19 @@
 # Cells proof comparisons
 
+<a id="rate-equation-flux"></a>
+
+## 23 November 2026 · Reaction direction and dissipation in the deterministic representation
+
+For `cells.rate_equations@1`, the driving free energy is the stoichiometric change in chemical potential minus reservoir work, in units of k_BT. An enabled reaction with positive forward factor runs forward when this quantity is negative, reverses when it is positive and stalls at zero. A disabled reaction or a zero forward factor gives zero flux at every force. Lean proves nonnegative instantaneous dissipation for each reaction and for any finite sum of them. The proof reuses the ATP-cycle direction lemmas and Mathlib’s finite sum of nonnegative terms. Time integration and floating-point accuracy have their own comparisons. [Lean proof](CellsProofs/Chemistry/RateEquations.lean) · [Engine flux](https://github.com/Eidosoma/Cells/blob/ddcf32c1050c6bda14e476b0ec22b7defa010db3/src/cells/models/assembly_lineages_v2/rate_equations.py#L614)
+
+In a compiled CPU float64 `cells.assembly_lineages@2` world, the two reactions A ⇌ B ⇌ C matched independent linear rates at five states within 1.10 × 10⁻¹¹ reaction events/s. Both stalled at equal counts, reversed across relative concentration changes of 10⁻⁹ and dissipated positive energy on both sides. Two unused slots returned zero. With A held at 2 mM and B at 4 mM, the engine gave ΔF = +0.69315 k_BT. Omitting the reservoir work gives −5.52146 k_BT and predicts the opposite direction. At equal 2 mM concentrations the residual force was −8.88 × 10⁻¹⁶ k_BT. [Compiled comparison](checks/rate_equation_flux.py)
+
+Eicher’s two extract courses started at F6P/G6P ratios of 5.168 and 0.0464. F6P fell by 3.787 mM in the first tube and rose by 1.172 mM in the second. The initial Cells flux had the corresponding sign in both cases when the ideal pair used the authors’ fitted equilibrium ratio of 0.286. This is an in-sample comparison of direction. The readings give changes over intervals, with no per-point uncertainty or calorimetry. [Eicher et al., Fig. 5](https://www.mdpi.com/2218-1989/2/4/818) · [Worksheet cells and measurements](checks/data/pgi_flux_direction.json)
+
+In a separate rabbit-muscle preparation at 30 °C and pH 8.5, kinetic parameters gave F6P/G6P = 0.32. With that as its input, the compiled reaction changed direction at 0.320. The independently measured equilibrium ratio in the same preparation was 0.30. The difference is +0.020. Table I gives no uncertainty for that endpoint, so the magnitude has no quantitative agreement verdict. The comparison uses each preparation’s own parameters. [Dyson and Noltmann, Table I and Fig. 13](https://doi.org/10.1016/S0021-9258(18)93559-3) · [Measurement record](checks/data/pgi_flux_direction.json)
+
+The run `lean-rate-equation-flux-20261123` records the frozen source, `rate-equation-flux.json`, `measurement-audit.json`, `axioms.log` and the verification results. Regenerate the numerical report with `python -B checks/rate_equation_flux.py` in the Cells CPU environment from the Lean README.
+
 <a id="forms-face-carriage"></a>
 
 ## 23 November 2026 · A moving binder carries its ligands
@@ -15,6 +29,8 @@ Two published experiments support carrier-assisted transport at different scales
 <a id="fr38-extracellular-producer"></a>
 
 ## 23 November 2026 · A producer’s RNA inside and outside after replacement
+
+The development fixture below passed 14 checks. The independent registered FR-38 comparison subsequently **failed R1**, including the blank and labelled route-1 readouts, and found **R2 inconclusive** on the observed convergence order. The lead requested a per-time diagnosis of route 1. The registered verdict stands. [Published verdict D313](https://github.com/Eidosoma/Cells/blob/81a98ca025ee662a0846aa13868dfc93fa87ea22/docs/DECISIONS.md#L9867) · [Diagnosis scope D314](https://github.com/Eidosoma/Cells/blob/c91107a498f5b9bc6d57cddc35016c46578d476a/docs/DECISIONS.md#L9912)
 
 For one producer label, each gross export carries the cell’s source share and each return carries the outside source share. Lean proves that adding the two balances cancels both transfers. Degradation on either side and material removed with the departing cell remain in the account. A second proof bounds the original producer’s RNA in the new cell by cumulative gross return after replacement, provided the new cell starts with zero of that label and has no other input of it. This holds for any number of steps. [Formal balances](CellsProofs/Chemistry/ProducerReplacement.lean)
 
