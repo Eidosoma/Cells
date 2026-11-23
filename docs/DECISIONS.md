@@ -10098,12 +10098,206 @@ references returned, against the code-blind references tagged fr43-part3-referen
   - G_ss fails at one voltage of two;
   - tau_slow passes at one of two, not more than half;
   - the 75% clause holds, at 3 of 4.
-- **The likely cause, a reading rather than a finding:** junction_series_gates@1 is symmetric in |V_j|, so one
-  parameter set predicts the same values at both polarities (D311's ruling, the law as declared). The data's
-  steady state differs between polarities. The in-sample fit already missed G_ss at -100 and -60 mV against +60 and
-  +100.
+- **What the fail does and does not show** (corrected 23 November; the first reading here overstated it):
+  - **The +-80 mV acceptance windows overlap for every observable:** tau_fast 0.47-3.77 s, tau_slow 12.1-16.8 s and
+    G_ss/G_0 0.4245-0.4339. So one |V_j|-symmetric prediction could have passed all six.
+  - **The fail shows that this fit missed, not that symmetry fails.** Its tau_slow (19.40 s) lies above both
+    polarities' observations.
+  - **The polarity difference is one study's indication:** G_ss/G_0 differs between -80 and +80 mV by about 2.6
+    combined SEM, tau_slow by 1.1 and tau_fast by 0.3. The in-sample fit's G_ss residuals at +-60 and +-100 mV
+    point the same way, from the same paper. One wet-lab experiment is never fully trusted (the user, 23 November).
 - **Disclosed:**
   - the checker wrote the reader erratum from value-free structure logs before reading any held-out value;
   - the lead ruled one parameter set after reading, masked, the Lean lane's line on polarity-symmetric gates
     (D317).
-- **FR-30's law stays development-only** (D262). What follows is the user's decision.
+- **FR-30's law stays development-only** (D262).
+- **The user's decision (23 November): a polarity-aware gate within FR-16, with a fresh blind benchmark on
+  Ek-Vitorin 2016, extractor first.**
+  - The FR-16 design starts by checking polarity dependence in independent sources, including whether the
+    benchmark's junction is homotypic. It does not open Ek-Vitorin 2016, which stays sealed for the benchmark.
+  - The law's form changes only if independent sources support it.
+
+## D321: speeding up current runs: the shared compile cache, cold where seconds are measured, and a first L4 timing for the gap-junction field
+
+2026-11-23, about 18:19 UTC. The user's two decisions on the speed-up note,
+/mnt/workspaces/Cells/speedup-20261123/NOTE.md. The note measured from a clean snapshot of main f721e1d8.
+- **The shared JAX compilation cache is adopted in two steps.**
+  - **Background:** it passed qualification on this machine's CPU on 20 November
+    (/mnt/workspaces/Cells/cache-qualify-20261119/run-1), with every output bitwise, and was never adopted.
+    - Warm, it cut G1 from 541 to 177 s and tiers 1+2 from 1,496 to 1,027 s.
+    - Today's sample of 12 G1 worlds, from all five families, is bitwise cold and warm.
+  - **Step 1, now, scripts only:**
+    - **Tier seconds are always measured with the cache disabled.** test_tiers.py enforces this, and fold refuses
+      a measurement without the cold marker. Measured warm, 77 tier-2 files would refile as tier 1, and even an
+      empty shared cache moves 27.
+    - **Gates are cold by default.** gate.sh, stack.sh, nightly_tiers.sh and the fr_landing scripts disable the
+      cache, log it and check that no entry appeared.
+    - run_detached.sh disables the cache in every unit that is not run with --jax-cache, so judged and
+      registered runs stay cold.
+    - **Development runs may opt in** with run_detached.sh --jax-cache. That uses one CPU-only folder per jaxlib
+      version and CPU model under /mnt/workspaces/Cells/jax-cache/, in JAX's default mode as qualified. A nightly
+      sweep caps it at 8 GB. JAX's own eviction under filelock is not adopted: it is unqualified and scans every
+      entry on each write.
+  - **Step 2, after a replay of about one lane-hour:**
+    - Gates read and write the cache. That saves about 15-20 minutes per full gate.
+    - The replay must cover two lanes writing from two trees at once, a case the qualification did not cover.
+    - The nightly full tier run stays cold, as the control.
+- **The gap-junction field on the L4: a measured timing first.**
+  - One windowed timing goes through the vector path, which is already admitted on a GPU, with no src change.
+  - It runs in a short block announced to the visualizer, after FR-43's GPU needs.
+  - The projected gain is 2-5x per point, not measured. The full qualification of the device row checks on the
+    GPU (about 1-1.5 agent-days and 1.5-2 L4-hours), and the tagged GJ-N1 amendment it would need, are decided
+    on the measured number.
+- **The lead's rulings:**
+  - **A routine fix:** configure_caches() stops turning a cache on implicitly for cells ensemble workers, and is
+    off on the GPU. That removes the path of the 8 November L4 bitwise failure.
+  - **Deferred:** resolved_pump_composite@1 in cells ensemble, since no current run uses cells ensemble, and the
+    assembly_lineages@2 ensemble adapter, which would gain no speed.
+
+## D322: OL6 Protocol G passes in both scopes
+
+2026-11-23, about 19:06 UTC. The independent checker's verdict under the tag ol6-protocol-g-registered-2026-11-23 is
+/mnt/workspaces/Cells/ol6-checker-20261123/verdict_protocol_g_both_scopes.json.
+- **The runs:**
+  - scope 1 ran at 3e50d48d;
+  - scope 2 (50 fissions) ran at 2263d11c, the first main head holding S7;
+  - both ran from clean frozen snapshots whose registered files are byte-identical to the tag.
+- **Tier 1 passes in both scopes:** 1,280 of 1,280 seeds.
+  - Scope 2 runs through the 50th trigger, 2,030-2,398 events.
+  - Every uniform, first daughter, trigger index and partition's uniforms are bitwise equal.
+  - There are no coincidences, and the largest time ratio is 0.167 against a threshold of 1.
+- **Tier 2 passes:** 180 statistics in scope 1 and 360 in scope 2. The largest |z| is 3.81 against a pass bound of
+  4.5. None is in the band, and none is censored.
+- **The plants are caught:**
+  - G-P1 in 64 of 64 seeds in every world, with counts equal to the registered power table;
+  - G-P2 in every world, with the smallest per-world largest |z| at 29.0 (scope 1) and 41.8 (scope 2). Its z
+    equals the registered power to 1e-15 and 5e-14.
+- **Independent checks:** the checker re-derived tier 1, tier 2 and the worlds with its own code, and spot-checked
+  the raw arrays outside the judge.
+- **Reported only (section 7):** paired on the same seeds, the physical measure moves the passage time by -1.80%
+  on average, negative in 20 of 20 worlds, against the predicted -1.75%.
+- **Not run:**
+  - @1 under pair_consistent@2, since "reported beside" has no procedure;
+  - a scope-2 physical arm.
+- **Disclosed:**
+  - the checker's event limit (8,192 events, 2.34 s), which the lead kept;
+  - a claim-and-skip change to the run driver;
+  - an I/O-only change to the judge after its first freeze, with its self-test identical;
+  - timing smokes on unregistered seeds 900001+.
+- **Protocol D's fail stands as D318.** It is to be re-registered after FR-43.
+
+## D323: FR-46, FR-47 and FR-48: the user's rulings with a reviewer's additions; FR-48 is built first, then FR-46, and FR-47 is registered before its build
+
+2026-11-23, about 19:10 UTC. These rule on the design note /mnt/workspaces/Cells/fr46-48-design-20261123/DESIGN.md, with its
+section 9. The user agreed with the recommendations and relayed a reviewer's comments, which are adopted.
+- **FR-48, a lumen standard potential (R1-R3):**
+  - The species owns an absolute `lumen` standard potential. Records report Delta = mu0_lumen - mu0_solution.
+  - The shell law keeps all of Delta on the exit.
+  - **What the qualification claims:** the equilibrium ratio, Binomial(N, 1/(1 + e^Delta)) at equal volumes, and
+    detailed balance. The relaxation time follows the law's rate convention and is not claimed.
+  - **Rows:** a nonzero solution potential, with a plant that reads the lumen value as an offset; and the undeclared
+    default.
+  - **Version 1** covers prescribed shells only, with the rest refused by name. The key is statically absent unless
+    declared (D148).
+- **FR-46, binding from a shell's inner face (R4-R6):**
+  - One face per complex, and shells only in version 1.
+  - **The face rule propagates faces by ligand moiety over every wall state,** from the stoichiometry, not from
+    declared pairs. A reviewer reproduced a carrier that passed the proposed check: the ligand went through a
+    ligand-bearing wall state that had no binding pair of its own.
+  - **Rows:**
+    - the reviewer's counterexample first, as a failing row;
+    - carriers with zero, one and two intermediates refused;
+    - a same-face isomerization admitted;
+    - a run-level row: a shell closed to the ligand keeps the lumen at zero.
+  - **Rule 3's recorded message** is revised in FR-46's own landing, with the one recorded string declared in probes2's
+    compare. All 22 historical refusal inputs still refuse.
+- **FR-47, shell exchange and washes in the deterministic representation (R7-R9, R11):**
+  - **Gates:** autonomous switching gates, meaning forms interconverting by a wall step. Gates driven by bound states
+    are refused in (d).
+  - **Zeros (E2):** true zeros for first-order tracer places, through the difference form.
+  - **Site binding** in (d) shell worlds is refused by name in version 1.
+  - **min_count 10** is recorded as the run setting only, not as a qualified n_min.
+  - **E2's derivative.** At an empty place, the flux's one-sided derivative must be the first-order law's, not the
+    zero that exp(safe_log(n)) gives, because the Rosenbrock stages use it.
+    - Rows test the flux and its one-sided derivative at an empty reactant and at an empty product.
+    - A row tests the step-halving order across a step that starts at zero, with the old factored form as its plant.
+    - A stated rule for stage or step results below zero at E2 places replaces the envelope's guard there.
+- **FR-47's qualification (R10, R12),** tagged before the build, with C9 and P9 (the heat against the reference's
+  closed form):
+  - **Zero uncertainty is classified from the reference, before the run.**
+    - Where the reference predicts a constant, every replica must match it, and one wrong replica fails.
+    - Where it predicts spread, identical replicas still face the spread test.
+    - A tolerance exists only where it is derived, for two routes to one constant by different arithmetic, as
+      release_check's bound is. The lead's earlier proposal of a declared rounding floor is withdrawn.
+    - **The same rule serves Protocol D's re-registration,** which must justify any excluded pair from the model, not
+      from the replicas.
+  - **C6's spread test** takes its fourth moment from the reference, or another justified spread test is chosen.
+  - **C8's slope** is claimed as measured only where 128 replicas resolve it by the reference's own estimate.
+    Elsewhere it is reported.
+  - **Seeds:** fresh seeds, disjoint from every probe and smoke seed, are named in the tag.
+  - **The judge** is first run on a file written by the references' own writer, on invented inputs.
+  - **FR-43 part 2's lessons apply:**
+    - the reference spec states the unit of every declared count;
+    - the references agent shows bitwise regeneration under other hash seeds;
+    - there is one tag, at the final head.
+- **Order:**
+  - FR-48, then FR-46, in one gate if both are ready together.
+  - FR-47's protocol and reference spec come next, and its build follows FR-48.
+  - Gates wait for FR-43's lanes.
+  - FR-47's exact ensemble, about 3 CPU-hours, runs after Protocol D's re-registration or on other CPUs.
+
+## D324: FR-43 part 2's registered comparisons pass: C2.3, C2.6/C2.7 and C2.8
+
+2026-11-23, about 19:24 UTC.
+- **The judgements:** the builder's, run against the code-blind references tagged fr43-part2-references-2026-11-23
+  (0172e1b9, under the spec's amendments 1 and 2) by CRITERIA.md, with a floor of 1e-8 and a band of [3.6, 4.4].
+  Each ran once, from a clean frozen snapshot.
+- **The records:** /mnt/workspaces/Cells/fr43-20261123/part2/registered-20261123/.
+- **C2.3, two writers on one shared stock at fixed volume (2A at 205dbaa5): passes in the sink and in the source.**
+  - The gene unit's books are judged, at ratios 4.004 (sink) and 4.009 (source).
+  - The other quantities fall below the floor at both steps. In the source, the network's books and route rate
+    agree at rounding, since X -> N does not read N.
+  - The planted 1%-fast network fails in n_N and in the network's books, at ratio 1.000.
+- **C2.6 and C2.7, the swelling cell (2B at ea813fae): pass, with every ratio judged.**
+  - amounts 3.930 and V 3.999;
+  - the engine's endpoint energy identity 4.006;
+  - F against the reference 4.017;
+  - water's heat 4.000, the bath's water work 3.999 and the network's heat 3.986.
+  - The plant that reads V0 is refused by the energy ledger.
+- **C2.8, the swelling pair (2B): passes.**
+  - n_W, the network's books and the network's rate are judged, at 4.000, 4.000 and 3.999.
+  - The rest fall below the floor.
+  - The two plants that read V0 (the gene unit and the network) fail in amounts by factors of 1.7e5 to 1.3e8,
+    at ratio 1.000.
+- **On record:**
+  - c23-judge-a8444119, as failed evidence. Its stage-1 reference read machines = 100 as fmol, the spec's
+    unstated unit, which amendment 2 fixed.
+  - c26-judge-3455afd2, as development evidence.
+  - The superseded reference tags fr43-part2-references-c23-2026-11-23 and fr43-part2-references-c26-c27-2026-11-23.
+- **2A and 2B land after their gates.**
+
+## D325: the gap-junction replication's GJ-L1 comparison passes
+
+2026-11-23, about 19:24 UTC. The GJ owner's registered engine run and judgement are in
+/mnt/workspaces/Cells/gap-junction-20261123/judged/.
+- **The verdict:** 57 of 57 real entries pass, 45 arms and 12 chains.
+  - The two plants, each scaling every junction permeability by 1.01 in the definition, are caught, with margins
+    of 2.0e9 and 1.0e3. They are the only failures, as required.
+  - No entry is inconclusive, so no retry is owed.
+  - The largest real margin, gap against tolerance, is 0.333 on the as-written arms. That is the registration's
+    expectation: the dt/4 error is about a third of its estimate, since the tolerance is three times the
+    estimate.
+- **The engine run:**
+  - one registered invocation (figure3, figure5, figure8, control and aswritten, at the 600 s horizon);
+  - from the clean snapshot of main 23593267, equal to the tag in src/ and validation/ except unrelated files;
+  - on CPU 8, under lane B's lock, paused by the holder's yields and never stopped;
+  - the table was built from the engine alone before any reference was read. Its sha256 is
+    672373c7a747c6c4791d14fe70ee9853bd7a30a2682de00185c19ed335c601df.
+- **The judgement:**
+  - from a clean snapshot of main 9eb9890a, with the judge unchanged since its tag;
+  - the interface is byte-identical to gj-linear-references-2026-11-23's;
+  - the verdict's sha256 is b3e9c1cc4185462341b81f72c38777a00004791153b660c13690969723f1a94f.
+- **The plants' isolation:** each plant's definition fingerprint differs from its reference arm's at every step taken
+  (plants-isolation.json), so a program cached per model computed the planted values.
+- **Next:** GJ-N1's 1D line runs now, about 8 CPU-hours. The 2D field waits for the sparse solver (FR-17's stage 1)
+  and a GJ-N1 amendment that names it.

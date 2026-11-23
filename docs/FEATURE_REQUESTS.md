@@ -2161,3 +2161,53 @@ outward flux, and the face and junction records. So equal flows in opposite dire
 This lets consumers check permeation and block separately.
 
 **Status (23 November):** logged.
+
+## Backlog: external tools to look at (logged by the user, 23 November 2026)
+
+The user logged these suggestions to look at later. None is scheduled or adopted.
+- **How any of them would enter:**
+  - External solvers and simulators run out of process, as references (AGENTS.md).
+  - A new runtime dependency in `src/cells` needs the user's approval. FR-17's stage 1 was approved with none.
+  - Data licences follow D173: permissively licensed data for judged or published results, under the
+    commercial open-source rule.
+- **The licences below are as suggested,** still to be verified.
+
+### B1. eQuilibrator 3.0 for consistent standard potentials at scale (relates to FR-43)
+- **The concern.** The species capacity is now 1,024 (FR-43 part 1). Standard potentials μ°/RT assembled
+  by hand from mixed literature tables can break Wegscheider loop closure, under which the standard free
+  energies around any reaction cycle sum to zero.
+- **The suggestion.**
+  - equilibrator-api (MIT) and equilibrator-cache on Zenodo (CC BY 4.0).
+  - Together they give component-contribution estimates of Δ_fG'° at a given pH, ionic strength,
+    temperature and pMg, with covariances, across KEGG and ChEBI metabolites.
+- **To look at:**
+  - a loop-closure check on the potential registry itself, independent of any data source;
+  - eQuilibrator as an out-of-process source of declared values, with their uncertainties and attribution;
+  - what estimates, rather than measurements, mean for judged runs.
+
+### B2. GPU sparse solves for FR-17's later stages (relates to FR-17 and D317)
+- **The suggestion.**
+  - Lineax (Apache-2.0): pure-JAX, matrix-free, preconditioned conjugate gradients on the CPU and the GPU.
+  - spineax (MIT) and NVIDIA's nvmath-python (Apache-2.0): both wrap NVIDIA cuDSS through XLA's FFI for a
+    float64 direct sparse Cholesky. The analysis is cached once per graph, with factorization and solve
+    each step.
+- **To look at, after FR-17's stage 1.**
+  - Stage 1 is the engine's own sparse reduction, with its own minimum-degree ordering and no new
+    dependency (D317). Later stages could compare against these tools as references.
+  - cuDSS itself ships under NVIDIA's own licence, which needs checking against the commercial
+    open-source rule.
+  - Iterative solves agree only to their tolerance, so qualification would include bitwise and
+    conservation checks.
+
+### B3. XLA command buffers on the GPU (relates to D321), and two Lean libraries
+- **The suggestion.**
+  - `resolved_pump_composite@1` wraps @3's step in `jax.lax.optimization_barrier`, which keeps compile
+    times short (src/cells/models/pump_composite.py). So each scan tick dispatches several sequential GPU
+    kernels.
+  - XLA's CUDA command buffers (CUDA Graphs), for example
+    `XLA_FLAGS=--xla_gpu_enable_command_buffer=FUSION,CUSTOM_CALL,WHILE`, may remove the host's launch
+    overhead without changing the modular compile.
+- **To look at:** a flag only, with no src change. It is a candidate variant for D321's L4 timing of the
+  gap-junction field, checked bitwise against the default.
+- **For the Lean lane:** SciLean and Physlib (Lean 4) offer idioms for ODE discretization and SI
+  thermodynamics. `lean/` is the Lean lane's, so this is passed to it, not acted on here.
