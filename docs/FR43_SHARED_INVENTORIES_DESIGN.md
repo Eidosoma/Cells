@@ -791,8 +791,8 @@ agent; they sit in the tests with their plants.
 **The user:** part 3's host, A or B (§3.7 recommends A).
 
 **The lead:**
-1. part 1: how far the cap rises, the fold's gate, the layout, and the trace estimate's correction
-   (§1.4, §1.6, §1.7);
+1. part 1: how far the cap rises, the fold's gate (with the species count of every recorded world
+   at landing), the layout, and the trace estimate's correction (§1.4, §1.6, §1.7);
 2. part 1: a reported dt limit for FR-43, the stiff integrator left as D152's door (§1.5);
 3. part 2: the extended two-writer rule with the registry's one authority (§2.2);
 4. part 2: reactions' current volume read under composition option A, the law ID kept (§2.3); and
@@ -802,8 +802,14 @@ agent; they sit in the tests with their plants.
 ## 6. Evidence and disclosures
 
 - **Scripts:** `probe/chain_world.py` (the chain world, the charged world), `probe/probe.py` (the run,
-  orders, jaxpr, rates and charged subcommands), `probe/doubling.py`, the queues `timed_small.sh`,
-  `timed_large.sh` and `timed_v2.sh`; each queue copied the scripts it ran beside its records.
+  orders, jaxpr, rates, charged and w4rest subcommands), `probe/doubling.py`, `probe/heat_check.py`,
+  `probe/gate_check.py`, `probe/part2_parse.py`, `probe/ops32.py` and `probe/ops_rows.py`; the
+  queues `timed_small.sh`, `timed_large.sh`, `timed_v2.sh` and `timed_v3.sh` (CPUs 4 and 5 under the
+  timed lock), `w4rest.sh` (stopped on the light CPUs, under 5% of a core each), `lane_batch.sh` and
+  `lane_ops1024.sh` (gate lane A under its lock) and `gpu_block.sh`; each queue copied the scripts it
+  ran beside its records. The first smoke, the order checks, the doubling, the guard set, the
+  library check, the heat check and part 2's parses ran on the light CPUs (6, 7 and 22) at nice 10,
+  both gate lanes being held then.
   `probe_v1.py` and `chain_world_v1.py` are the versions the first queues ran: their run records in
   `out/` are superseded by `out/v2/` and kept; `out/orders.json` and `out/jaxpr-*.json` are theirs,
   from code v2 kept unchanged.
