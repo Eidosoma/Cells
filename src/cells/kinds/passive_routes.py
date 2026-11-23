@@ -22,18 +22,21 @@ owner's, called here and never edited:
   membrane current. Its fields exist only in a definition that declares it (declared_fields), so
   a definition without it keeps today's fields and programs;
 - `passive_constant_field_permeation@1` (laws/routes/constant_field_permeation.py; FR-15 F2's
-  P2, the lead's rulings of 19 November 2026): a charged species' constant-field route at its own
-  valence on a membrane patch, reading the row's amounts at both ends (the leak's flux at any
-  z != 0); tableau-booked as the leak is, with its max-side slope conductance in the stage rule,
-  its material slope |dJ/dn| at each end in the material rule (material_term: a charged trace
-  row's bound, which @3's static bound cannot hold) and its flux in the membrane current. A row
-  whose free/total split a closure owns is refused on it (it reads amounts, not free forms), and
-  so is a junction host until the @3 owner rules on a kind's cell-to-cell current. Its field, and
-  its material_term, exist only in a definition that declares it (declared_fields), so a
-  definition without it keeps today's fields and programs.
+  P2, the lead's rulings of 19 November 2026, and its junction hosting, D310): a charged
+  species' constant-field route at its own valence on a membrane patch or a junction, reading the
+  row's amounts at both ends (the leak's flux at any z != 0); tableau-booked as the leak is. Its
+  max-side slope conductance G joins the stage rule (2G at each cell on a junction, @3's own
+  junction form), its material slopes the material rule (material_term: a charged trace row's
+  bound, which @3's static bound cannot hold) and, on a patch, its flux the membrane current. A
+  row whose free/total split a closure owns is refused on it (it reads amounts, not free forms),
+  and so is a junction that joins two capacitor components where one floats (version 1, D310:
+  the field solve's current balance there holds @3's own currents only). Its field, and its
+  material_term, exist only in a definition that declares it (declared_fields), so a definition
+  without it keeps today's fields and programs.
 
 The declaration (model key `passive_routes`, FR-4's form in validation/compartment_ph_engine/
-definitions.py), each route on one host (`patch`, or `junction` for the neutral law):
+definitions.py), each route on one host (`patch`, or `junction` for the neutral and charged
+laws):
 
     [{"id": "proton_leak_0", "patch": "bounding_0", "law": "proton_constant_field_leak@1",
       "permeability_m_per_s": 6e-7},
@@ -67,8 +70,9 @@ refuses any other route law it hosts.
 
 - **The flux,** inward from the host's outside end (a patch's outside node, a junction's receiver)
   to its inside end (a patch's cell, a junction's sender), at every explicit stage, on the read
-  amounts; the leak and the rectifier at the patch voltage phi_in - phi_out. Its opening is the
-  host's: a patch's availability, or a junction's gate times its availability.
+  amounts; the leak, the rectifier and the charged law at the host's voltage phi_in - phi_out (on
+  a junction, phi_sender - phi_receiver). Its opening is the host's: a patch's availability, or a
+  junction's gate times its availability.
 - **One law per species and route:** the host route's own constant-field permeability for a
   carried species must be zero. The neutral law carries valence-0 species only; the leak and the
   rectifier a valence +1 row; the charged law a charged row (z != 0) that no closure holds. The
@@ -95,9 +99,13 @@ refuses any other route law it hosts.
   kernel's conductance_S, max side) joins membrane_rate's per-stage refusal (stage_term), and so
   does the rectifier's |dI/dV| at the stage's potentials (slope_conductance_S), or, where
   membrane_rate has no potentials, its voltage-free bound at the stage's concentrations
-  (slope_bound_S), and the charged law's max-side slope (its conductance_S). The charged law's
-  material slope at each end (its material_slope_per_s, at the stage's amounts and potentials)
-  is the kind's material_term, which membrane_rate's material counterpart holds to the same bound.
+  (slope_bound_S), and the charged law's max-side slope (its conductance_S), twice that at each
+  cell on a junction (D310: a junction's charge mode relaxes at G (1/C_a + 1/C_b) <= 2G / min C,
+  @3's own junction term). The charged law's material slopes (its material_slope_per_s, at the
+  stage's amounts and potentials) are the kind's material_term, which membrane_rate's material
+  counterpart holds to the same bound: at each end, both ends' slopes summed where the other end
+  relaxes too (a cell, or a finite outside node: the Gershgorin row sum, the neutral law's form
+  at zero voltage), its own where the other end is a held bath (D310).
 - **FR-42's labels (D303 item 6; docs/NEUTRAL_LABELS_DESIGN.md §11):** the neutral, leak and
   charged kernels are linear in their two ends at a fixed voltage, so a route's one-way fluxes
   are its kernel with c_in = 0 (inward) and minus its kernel with c_out = 0 (outward)
@@ -338,11 +346,6 @@ def parse(entries, base):
         else:
             if law in LEAK_LAWS:
                 raise ConfigError(f"{MODEL_KEY} {rid}: the proton leak sits on a membrane patch")
-            if law == CHARGED_LAW_ID:
-                raise ConfigError(
-                    f"{MODEL_KEY} {rid}: {CHARGED_LAW_ID} sits on a membrane patch (a junction"
-                    " host waits for the @3 owner's ruling on a kind's cell-to-cell current, FR-15)"
-                )
             if host not in junctions:
                 raise ConfigError(f"{MODEL_KEY} {rid}: unknown junction {host!r}")
             inside, outside = junctions[host].sender, junctions[host].receiver
@@ -655,7 +658,9 @@ def _flux(state, potentials, control, p, *, xp, voltage=None):
 def _current(flux, p, *, xp):
     """[route] each route's electric current (A), outward-positive: positive charge from its
     inside end to its outside end, its share of @3's membrane_current_A (e species_sum(z x the
-    patches' outward flux)); 0 on a junction, which crosses no membrane patch."""
+    patches' outward flux)); 0 on a junction, which crosses no membrane patch (a charged junction
+    route's current between its cells is e z times its flux, outside membrane_current_A, as @3's
+    own junction routes' is)."""
     outward = xp.where(p.passive_on_junction, 0.0, -flux)
     return CHARGE_PER_FMOL * species_sum(p.valence * outward, xp=xp)
 
@@ -779,8 +784,10 @@ def clamped_flux(read, control, p, voltages_V, *, xp=np):
     """FR-34, current at a declared voltage: every route's flux [species, route] (fmol/s, inward)
     and current [route] (A, outward-positive) at the patch voltages phi_in - phi_out given [route]
     (V; a scalar applies to every route), at a state's read amounts and controls: the step's own
-    kernels, the potentials' voltage replaced by the one given. A junction's route is voltage-free
-    and carries no current. Pure: it records nothing, so no program or record changes."""
+    kernels, the potentials' voltage replaced by the one given. A junction's neutral route is
+    voltage-free; a charged one takes its entry as phi_sender - phi_receiver. A junction's route
+    carries no share of the membrane current (_current). Pure: it records nothing, so no program or
+    record changes."""
     voltage = xp.broadcast_to(xp.asarray(voltages_V, dtype=float), p.passive_inside.shape)
     flux = _flux(read, None, control, p, xp=xp, voltage=voltage).flux
     return flux, _current(flux, p, xp=xp)
@@ -948,7 +955,8 @@ def stage_term(read, potentials, control, p, *, xp):
     (the max-side slope does not depend on it). Each rectifier route's |dI/dV| joins it the same
     way: at the stage's patch voltage when the potentials are given, and its voltage-free bound at
     the stage's concentrations when they are not (the rectifier's slope turns negative, so its
-    magnitude is the term)."""
+    magnitude is the term). Each charged route's max-side slope G joins it at both of its host's
+    ends, as 2G at each cell on a junction (D310; @3's own junction form)."""
     c_in, c_out = _ends(read, p, xp)
     opening = _opening(read, control, p, xp)
     voltage = 0.0
@@ -969,12 +977,15 @@ def stage_term(read, potentials, control, p, *, xp):
             terms = _rectifier_terms(c_in, c_out, voltage, opening, p)
             magnitude = rectifier.slope_conductance_S(*terms, xp=xp)
         per_route = xp.where(p.passive_rectifier, species_sum(magnitude, xp=xp), per_route)
-    if _charged(p):  # Static: the charged law's max-side slope (FR-15 P2).
+    if _charged(p):  # Static: the charged law's max-side slope (FR-15 P2), 2G on a junction.
         slope = charged_law.conductance_S(
             c_in, c_out, voltage, p.valence, p.temperature, p.passive_area, p.passive_permeability,
             opening, xp=xp,
         )  # fmt: skip
-        per_route = xp.where(p.passive_charged, species_sum(slope, xp=xp), per_route)
+        # D310: a junction's charge mode relaxes at G (1/C_a + 1/C_b) <= 2G / min C, so each of
+        # its cells takes 2G, @3's own junction term (surface_pump.explicit_rate_bound).
+        hosted = xp.where(p.passive_on_junction, 2.0, 1.0)
+        per_route = xp.where(p.passive_charged, hosted * species_sum(slope, xp=xp), per_route)
     nodes = xp.zeros(p.active.size + p.outside_active.size)  # Cells, then outside nodes.
     inside = scatter(per_route, nodes, (p.passive_inside,), xp=xp)
     return inside + scatter(per_route, nodes, (p.passive_outside,), xp=xp)
@@ -983,10 +994,15 @@ def stage_term(read, potentials, control, p, *, xp):
 def material_term(read, potentials, control, p, *, xp):
     """D4 for the charged law (FR-15 P2): [cells, then outside nodes] the kind's material slope
     (1/s), per node the largest over the rows its charged routes move there of the sum over those
-    routes of |dJ/dn| at that end (the law's material_slope_per_s), at the stage's read amounts and
-    patch voltage. It follows the voltage with no assumed range: a charged trace row's bound,
-    which @3's static bound cannot hold. Only a definition that declares the charged law has this
-    hook (declared_fields).
+    routes of the route's material rate at that end, at the stage's read amounts and host voltage.
+    A route's two slopes are the law's material_slope_per_s, |dJ/dn_in| = A P m B(-x)/V_in and
+    |dJ/dn_out| = A P m B(x)/V_out. Where both ends relax (a junction's two cells, or a patch's
+    cell and a finite outside node), each end takes their sum, the Gershgorin row sum of the
+    route's two-row block, which is its mode's rate and at x = 0 the neutral law's L (D310); a
+    patch facing a held bath, whose row does not relax, keeps the cell's own slope (and the bath's
+    value is one material_rate drops). It follows the voltage with no assumed range: a charged
+    trace row's bound, which @3's static bound cannot hold. Only a definition that declares the
+    charged law has this hook (declared_fields).
 
     Without potentials it fails closed: +inf at every node a charged route touches, because
     |dJ/dn| = A P m B(-+x)/V grows without limit in |x|, so no voltage-free value bounds it (the
@@ -1008,9 +1024,13 @@ def material_term(read, potentials, control, p, *, xp):
         voltage, p.valence, p.temperature, p.passive_area, p.passive_permeability, opening,
         volume[p.passive_inside], volume[p.passive_outside], xp=xp,
     )  # fmt: skip
+    held = xp.concatenate((xp.zeros(p.active.size, dtype=bool), p.reservoir))  # Node axis.
+    free = ~held[p.passive_outside]  # [route]: the outside end relaxes (a cell or a finite node).
+    pair = to_in + to_out  # [species, route]: the two-row block's row sum (D310).
+    at_in, at_out = xp.where(free, pair, to_in), xp.where(free, pair, to_out)
     zero = xp.zeros((to_in.shape[0], volume.shape[0]))
-    inside = scatter(xp.where(p.passive_charged, to_in, 0.0), zero, (p.passive_inside,), xp=xp)
-    outside = scatter(xp.where(p.passive_charged, to_out, 0.0), zero, (p.passive_outside,), xp=xp)
+    inside = scatter(xp.where(p.passive_charged, at_in, 0.0), zero, (p.passive_inside,), xp=xp)
+    outside = scatter(xp.where(p.passive_charged, at_out, 0.0), zero, (p.passive_outside,), xp=xp)
     return xp.max(inside + outside, axis=0)
 
 
@@ -1036,10 +1056,14 @@ def check_definition(spec):
     row (the closure's proton row where a closure is declared), and @2 no end at a buffered node of
     B4's version-1 closure (it reads the general closure's free h), the rectifier a valence +1 row
     (its E reads both ends, whose initial amounts the host's parse admits only positive), the
-    charged law a charged row; the host route's own permeability for the carried row is zero;
-    route IDs are unique among the definition's entity IDs. A row a declared closure holds is
-    refused on the charged law by the species registry (check_amount_reading_routes, beside its
-    other closure rules: FR-15 P2, fail-closed), so this kind does no registry lookup."""
+    charged law a charged row, and on a junction only one that joins no floating capacitor
+    component (version 1, D310: such a component's offset is set by the field solve's current
+    balance, which holds @3's own face and junction currents, not a kind's; the scope is
+    surface_pump_v3.crossing_junctions', fix (A)'s); the host route's own permeability for the
+    carried row is zero; route IDs are unique among the definition's entity IDs. A row a declared
+    closure holds is refused on the charged law by the species registry
+    (check_amount_reading_routes, beside its other closure rules: FR-15 P2, fail-closed), so this
+    kind does no registry lookup."""
     m = spec.model
     kinds = dict(m.kinds)
     declaration = kinds[KIND_ID]
@@ -1047,6 +1071,7 @@ def check_definition(spec):
     junctions = {j.id: j for j in m.junctions}
     taken = {x.id for x in (*m.cells, *m.extracellular, *m.membranes, *m.junctions, *m.faces)}
     closure = kinds.get("cells.rapid_proton_buffer@1")
+    crossing = None  # The junctions that cross a floating component, read once where needed.
     for route in declaration:
         if route.id in taken:
             raise ConfigError(f"{MODEL_KEY} {route.id}: the ID is already an entity's")
@@ -1086,6 +1111,19 @@ def check_definition(spec):
                 f"{MODEL_KEY} {route.id}: {CHARGED_LAW_ID} carries a charged row, not the "
                 f"neutral {route.species} ({LAW_ID} carries neutral rows)"
             )
+        if route.law == CHARGED_LAW_ID and route.host_kind == "junction":
+            if crossing is None:
+                from cells.modules import crossing_junctions  # @3's, through the surface.
+
+                crossing = set(crossing_junctions(m))
+            if route.host in crossing:
+                raise ConfigError(
+                    f"{MODEL_KEY} {route.id}: {CHARGED_LAW_ID} on junction {route.host}, which "
+                    "joins two capacitor components where one floats, is refused in version 1 "
+                    "(D310): the field solve sets a floating component's offset by current "
+                    "balance over @3's own face and junction currents, which would miss this "
+                    "route's current"
+                )
         if _moves(route) and host.permeability_m_per_s[row]:
             raise ConfigError(
                 f"{MODEL_KEY} {route.id}: its {route.host_kind} {route.host} has its own "

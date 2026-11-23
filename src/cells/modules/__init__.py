@@ -29,7 +29,8 @@ whose path does not move, re-exporting what a law, kind or module needs from Cel
   JUNCTION_LAW (registry/laws.py);
 - the host table's readers (models/surface_pump_v3.py, the @3 owner's): HOST_KINDS, HostTable,
   Host, host_table, host_ends, host_voltage, host_scatter, host_node_conductance,
-  node_concentrations, declared_hosts and host_index, with moved_nodes (each row's in-step movers);
+  node_concentrations, declared_hosts and host_index, with moved_nodes (each row's in-step movers)
+  and crossing_junctions (the junctions that cross a floating capacitor component, fix (A)'s);
 - the parsing helpers: ConfigError, require_fields, finite_number and bounded_integer
   (definitions/specs.py), and parse_series, series_to_dict, qualified and declared_schedule
   (registry/kind_registry.py);
@@ -119,6 +120,7 @@ HOMES = MappingProxyType(
             "declared_hosts",
             "host_index",
             "moved_nodes",
+            "crossing_junctions",
         ),
         "cells.kinds.proton_buffer": ("free_log_sensitivity",),
     }
@@ -189,6 +191,7 @@ __all__ = (
     "declared_hosts",
     "host_index",
     "moved_nodes",
+    "crossing_junctions",
     "free_log_sensitivity",  # The general closure's derivative, for a kind's material term.
 )
 
