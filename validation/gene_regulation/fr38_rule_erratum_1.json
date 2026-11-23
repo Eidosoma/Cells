@@ -1,0 +1,243 @@
+{
+ "kind": "cells.gene_regulation.fr38_rule_erratum@1",
+ "erratum": 1,
+ "status": "For the lead's tag before any judged run (D308). It supplies the reader the rule names, with its name mapping, and states five rulings of the lead (23 November 2026). Every entry of the rule stands as tagged: no tolerance, floor, factor, order, step, world, time or verdict changes",
+ "amends": {
+  "rule": "validation/gene_regulation/fr38_rule.json",
+  "tag": "fr38-rule-registered-2026-11-23",
+  "sha256": "4394ad9263861c974dcad397c3481f1de1aadd584767c02c189a77ad79faeeab"
+ },
+ "gap": "The rule names 'the comparison's reader' and 'the name mapping that the comparison's reader states at the tag', and none existed at its tag. G4/FR-25's compare.py reads only G2's files (gr1-references-2026-11-20), and FR-25's registration.py cannot judge this rule's quantities: route 1's labels, the hold's class, the survivors and route 2 (D308)",
+ "reader": {
+  "module": "validation/gene_regulation/fr38_compare.py",
+  "written": "by the comparison's judge, from the interface files' keys and array shapes alone (fr38_compare structure prints them and no value), never from their values, the references' code, README or tests",
+  "interface": {
+   "tag": "gr-refs-fr38-2026-11-22",
+   "files": [
+    "validation/gene_regulation/references/interface/release_inputs.json",
+    "validation/gene_regulation/references/interface/release_r1.json",
+    "validation/gene_regulation/references/interface/release_r2.json"
+   ],
+   "unchanged": "the 13 interface files' blobs are the tag's at the engine revision 3f485ee9 and at main 8b2ad021, the base of this erratum"
+  },
+  "matching": "each engine run meets the reference case of its own declaration, never of its position: the machine option, and p with H0 > 0, or H0 = 0 for a blank; tau, both fates' rates, H0, the window and p are then checked against the run's own definition, to 1e-12 relative. R1L is R1 at p = 0.75 with labels, which change no physical readout, so its readouts meet p = 0.75's case. R2's runs are met by their machine option",
+  "units": "the readouts are G2's units (fmol, pJ), the engine's. limit_checks' and cohorts' amounts and R2's cohort_route2 are copies, as the interface's keys state, each converted by COPY_FMOL into fmol. check_units confirms both inside the interface alone before any comparison: limit_checks' fate rows times COPY_FMOL are the readouts' rows to 1e-9, and each cohort at its window's end lies between the window's releases times e^(-k t2) and the releases",
+  "compared_times": {
+   "R1": "the rule's five, 0, 1800, 3600, 7200 and 14400 s, for the readouts and the survivors",
+   "R2": "A1's outputs, every 60 s to 21,600 s (361)",
+   "cohort": "the rule's sample times, 3600 and 7200 s, for route 1 and route 2, where the references publish the cohort"
+  },
+  "derived": {
+   "survivors": "survivors_<row> on each R1 run with a hold (the four fractions and R1L): its fate row minus its machine option's blank at the same step; an amount, p = 3",
+   "route_1": "R1L's label_<row>_cohort against the references' route1_blank, their route 1 with the matched blank subtracted (their finding R-F1): the shares carry no trace, so the blank-free label row is the same quantity. route1_sheet, the formula before R-F1, is not compared; p = 2",
+   "route_2": "route2_<fate>: cohort.known_rate on the unlabelled run's int_Q_tx_release_<fate> at the fate's gross k (release_check.gross_rate, from the run's own definition), against R1's route2_exact at p = 0.75 and R2's cohort_route2, each with its tolerance per sample time (the rulings)"
+  },
+  "refusals": "a missing compared time, readout, case, support run or record, a record changed after its table, a non-finite value, a published readout neither mapped nor listed, or a differing declaration is refused, never read as a gap"
+ },
+ "mapping": {
+  "kind": "cells.gene_regulation.fr38_mapping@1",
+  "interface": {
+   "tag": "gr-refs-fr38-2026-11-22",
+   "files": [
+    "release_inputs.json",
+    "release_r1.json",
+    "release_r2.json"
+   ]
+  },
+  "worlds": {
+   "R1": {
+    "compared": {
+     "n_N": "n_N",
+     "n_M": "n_M",
+     "n_Pi": "n_Pi",
+     "n_R": "n_R",
+     "n_R_s": "n_R_s",
+     "F_pol": "F_pol",
+     "C_tx_1": "C_tx_1",
+     "C_tx_2": "C_tx_2",
+     "C_tx_3": "C_tx_3",
+     "C_tx_4": "C_tx_4",
+     "C_tx_5": "C_tx_5",
+     "C_tx_6": "C_tx_6",
+     "C_tx_7": "C_tx_7",
+     "C_tx_8": "C_tx_8",
+     "E_tx": "E_tx",
+     "W_tx": "W_tx",
+     "int_J_I_tx": "int_J_I_tx",
+     "int_S_tx": "int_S_tx",
+     "int_Q_tx": "int_Q_tx",
+     "int_D_R": "int_D_R",
+     "int_D_R_s": "int_D_R_s",
+     "G_minus_G0": "G_minus_G0",
+     "H_tx": "H_tx",
+     "H_deg_R": "H_deg_R",
+     "H_deg_R_s": "H_deg_R_s",
+     "H_tx_release": "hold_tx",
+     "int_Q_tx_release_durable": "int_Qf_d1",
+     "int_Q_tx_release_short_lived": "int_Qf_s1",
+     "H_rel_tx_release_durable": "H_rel_d",
+     "H_rel_tx_release_short_lived": "H_rel_s"
+    },
+    "derived": {
+     "route2_durable": "cohorts['p=0.75, <machine>'].d[ts].route2_exact (copies)",
+     "route2_short_lived": "cohorts['p=0.75, <machine>'].s[ts].route2_exact (copies)",
+     "survivors_R": "limit_checks['p=<p>, <machine>'].rows[t].fate_d.run.n_F_minus_blank (copies)",
+     "label_R_cohort": "cohorts['p=0.75, <machine>'].d[ts].route1_blank (copies)",
+     "survivors_R_s": "limit_checks['p=<p>, <machine>'].rows[t].fate_s.run.n_F_minus_blank (copies)",
+     "label_R_s_cohort": "cohorts['p=0.75, <machine>'].s[ts].route1_blank (copies)"
+    },
+    "not_compared": {
+     "t": "the time axis: matched at every compared time, not compared",
+     "dG_*": "each move's dG and A1's u(t) are not exported (the rule's not_in_this_rule)",
+     "u": "each move's dG and A1's u(t) are not exported (the rule's not_in_this_rule)",
+     "C_sum_*": "not an engine export: the engine exports each stage C_<chain>_j and E_<chain>",
+     "CO_d": "the interface's keys do not state these series' definitions; the rule's cohort is compared through cohorts' named routes at its sample times",
+     "CO_s": "the interface's keys do not state these series' definitions; the rule's cohort is compared through cohorts' named routes at its sample times",
+     "LR_d": "the interface's keys do not state these series' definitions; the rule's cohort is compared through cohorts' named routes at its sample times",
+     "LR_s": "the interface's keys do not state these series' definitions; the rule's cohort is compared through cohorts' named routes at its sample times",
+     "DL_d": "the interface's keys do not state these series' definitions; the rule's cohort is compared through cohorts' named routes at its sample times",
+     "DL_s": "the interface's keys do not state these series' definitions; the rule's cohort is compared through cohorts' named routes at its sample times",
+     "n_X": "not an engine export: R1 declares only the routes in use (§9.12 reading 1), so the engine's R1 holds no such row; the references carry A1's rows unmoved",
+     "n_A": "not an engine export: R1 declares only the routes in use (§9.12 reading 1), so the engine's R1 holds no such row; the references carry A1's rows unmoved",
+     "n_ATP": "not an engine export: R1 declares only the routes in use (§9.12 reading 1), so the engine's R1 holds no such row; the references carry A1's rows unmoved",
+     "n_ADP": "not an engine export: R1 declares only the routes in use (§9.12 reading 1), so the engine's R1 holds no such row; the references carry A1's rows unmoved",
+     "n_P": "not an engine export: R1 declares only the routes in use (§9.12 reading 1), so the engine's R1 holds no such row; the references carry A1's rows unmoved"
+    }
+   },
+   "R2": {
+    "compared": {
+     "n_X": "n_X",
+     "n_N": "n_N",
+     "n_M": "n_M",
+     "n_A": "n_A",
+     "n_ATP": "n_ATP",
+     "n_ADP": "n_ADP",
+     "n_Pi": "n_Pi",
+     "n_R": "n_R",
+     "n_P": "n_P",
+     "n_R_s": "n_R_s",
+     "F_pol": "F_pol",
+     "F_rib": "F_rib",
+     "C_tx_1": "C_tx_1",
+     "C_tx_2": "C_tx_2",
+     "C_tx_3": "C_tx_3",
+     "C_tx_4": "C_tx_4",
+     "C_tx_5": "C_tx_5",
+     "C_tx_6": "C_tx_6",
+     "C_tx_7": "C_tx_7",
+     "C_tx_8": "C_tx_8",
+     "E_tx": "E_tx",
+     "W_tx": "W_tx",
+     "int_J_I_tx": "int_J_I_tx",
+     "int_S_tx": "int_S_tx",
+     "int_Q_tx": "int_Q_tx",
+     "C_tl_1": "C_tl_1",
+     "C_tl_2": "C_tl_2",
+     "C_tl_3": "C_tl_3",
+     "C_tl_4": "C_tl_4",
+     "C_tl_5": "C_tl_5",
+     "C_tl_6": "C_tl_6",
+     "C_tl_7": "C_tl_7",
+     "C_tl_8": "C_tl_8",
+     "E_tl": "E_tl",
+     "W_tl": "W_tl",
+     "int_J_I_tl": "int_J_I_tl",
+     "int_S_tl": "int_S_tl",
+     "int_Q_tl": "int_Q_tl",
+     "C_tl_s_1": "C_tl_s_1",
+     "C_tl_s_2": "C_tl_s_2",
+     "C_tl_s_3": "C_tl_s_3",
+     "C_tl_s_4": "C_tl_s_4",
+     "C_tl_s_5": "C_tl_s_5",
+     "C_tl_s_6": "C_tl_s_6",
+     "C_tl_s_7": "C_tl_s_7",
+     "C_tl_s_8": "C_tl_s_8",
+     "E_tl_s": "E_tl_s",
+     "W_tl_s": "W_tl_s",
+     "int_J_I_tl_s": "int_J_I_tl_s",
+     "int_S_tl_s": "int_S_tl_s",
+     "int_Q_tl_s": "int_Q_tl_s",
+     "int_D_R": "int_D_R",
+     "int_D_R_s": "int_D_R_s",
+     "int_D_P": "int_D_P",
+     "int_J_C": "int_J_C",
+     "G_minus_G0": "G_minus_G0",
+     "H_tx": "H_tx",
+     "H_tl": "H_tl",
+     "H_deg_R": "H_deg_R",
+     "H_deg_P": "H_deg_P",
+     "H_rc": "H_rc",
+     "H_deg_R_s": "H_deg_R_s",
+     "H_tx_release": "hold_tx",
+     "int_Q_tx_release_durable": "int_Qf_d1",
+     "int_Q_tx_release_short_lived": "int_Qf_s1",
+     "H_rel_tx_release_durable": "H_rel_d",
+     "H_rel_tx_release_short_lived": "H_rel_s"
+    },
+    "derived": {
+     "route2_durable": "runs[<machine>].cohort_route2.d[ts].copies",
+     "route2_short_lived": "runs[<machine>].cohort_route2.s[ts].copies"
+    },
+    "not_compared": {
+     "t": "the time axis: matched at every compared time, not compared",
+     "dG_*": "each move's dG and A1's u(t) are not exported (the rule's not_in_this_rule)",
+     "u": "each move's dG and A1's u(t) are not exported (the rule's not_in_this_rule)",
+     "C_sum_*": "not an engine export: the engine exports each stage C_<chain>_j and E_<chain>",
+     "CO_d": "the interface's keys do not state these series' definitions; the rule's cohort is compared through cohorts' named routes at its sample times",
+     "CO_s": "the interface's keys do not state these series' definitions; the rule's cohort is compared through cohorts' named routes at its sample times",
+     "LR_d": "the interface's keys do not state these series' definitions; the rule's cohort is compared through cohorts' named routes at its sample times",
+     "LR_s": "the interface's keys do not state these series' definitions; the rule's cohort is compared through cohorts' named routes at its sample times",
+     "DL_d": "the interface's keys do not state these series' definitions; the rule's cohort is compared through cohorts' named routes at its sample times",
+     "DL_s": "the interface's keys do not state these series' definitions; the rule's cohort is compared through cohorts' named routes at its sample times"
+    }
+   }
+  },
+  "carried_by": {
+   "R1 p=<p> <machine>": "the compared readouts and survivors_<row>; route2_<fate> at p = 0.75",
+   "R1 blank <machine>": "the compared readouts (H0 = 0)",
+   "R1L p=0.75 <machine>": "the compared readouts against p = 0.75's case (labels change no physical readout), survivors_<row> and route 1",
+   "R2 <machine>": "the compared readouts and route2_<fate>"
+  },
+  "sections_not_compared": {
+   "cases[]: decl, kind, world": "the case's declaration, matched to the engine run's own",
+   "cases[] and runs[]: per_output_residuals, identity_levels, convergence, summary, label_run": "the references' own checks, not engine exports",
+   "limit_checks[]: hold, released, fate_<x>.run's released_into and n_F": "the readouts hold_tx, int_Qf_<x>1 and n_<row> in copies, each compared once as its readout",
+   "limit_checks[]: fate_<x>.run's released_still_present and distance_integrated": "the references' other routes to the survivors, which the rule defines as the row minus the blank",
+   "limit_checks[]: limits and distances; requester_figures": "the requester's limit, not this comparison's (the rule's not_in_this_rule)",
+   "cohorts[]: route1_sheet and the differences, ratios and limits": "route1_sheet is §9.8's formula before R-F1's blank; the rest are the references' own checks",
+   "cohorts[] at p other than 0.75": "the rule's cohort is at p = 0.75 only",
+   "variant_recharging; R2's development_check": "not worlds of the rule (R2A is its not_in_this_rule)",
+   "release_inputs.json": "declarations, methods and the references' own tolerances"
+  },
+  "engine_only": "int_D_route_*, H_route_*, H_total and H_routes_sum (the routes' own, which the references publish as classes); n_<release>_<fate> (the class totals, equal to n_R and n_R_s at K = 1); and R1L's label_* other than the cohort's",
+  "units": {
+   "readouts": "fmol and pJ, G2's units, the engine's",
+   "copies": "limit_checks' and cohorts' amounts and R2's cohort_route2, each times COPY_FMOL into fmol, each checked inside the interface before any comparison"
+  }
+ },
+ "rulings": {
+  "route_agreement": "section 9.8's bound: route 2's grid error (cohort.known_rate_error at the sample time) plus route 1's split (release_check.split_bound, k_f (dt/2)^2/(12 tau), times route 1), on each labelled run against its unlabelled twin at the judged step. It is reported with the verdicts and changes none (the lead, 23 November 2026, Q3)",
+  "route_2_per_sample_time": "each sample time is judged against its own tolerance, max(F g(ts), floor x |y(ts)|), with g(ts) cohort.known_rate_error at that time on the judged run's outputs (Q4)",
+  "retry_support_runs": "a retried run's matched blank (its machine option's) at the retry steps, for its survivors, and R1L's unlabelled twin (R1 p=0.75, the same machine option), for the route agreement, run beside it as support and are not judged in that role (Q5). A run of the rule that is itself inconclusive takes the retry as its own",
+  "precedence": "FR-25's (D278, D282; Q6): within a run, an out-of-window order makes it inconclusive (its estimate is not trusted), and it takes the retry; per world and overall, any failed run makes the verdict failed, else any inconclusive run makes it inconclusive, else it is passed",
+  "order": "no judged run before this erratum's tag: the registered order holds (Q2)"
+ },
+ "procedure": [
+  "this erratum is tagged before any judged run",
+  "the fresh runs come from a clean frozen snapshot of 3f485ee9 (scripts/gates/freeze_snapshot.py --scope full --require-clean), through engine_run.py at the test instance: R1's twelve (--worlds release) and R2's two (--worlds 'R2 returned' 'R2 held'), each at 2, 1 and 0.5 s into a fresh folder",
+  "fr38_compare table builds the table from those runs alone; its sha256 is recorded before any reference value is read",
+  "the retry, once, runs the runs the table finds inconclusive at 1, 0.5 and 0.25 s with their support runs, and its table is built and hashed the same way before any comparison",
+  "fr38_compare judge gives the verdicts, from a clean frozen snapshot of this erratum's tag"
+ ],
+ "checked_before_the_tag": [
+  "a synthetic end-to-end check, its engine records and its interface invented (closed forms with a step error at each declared order, under the interface's keys), with no engine run and no reference value: a consistent set passes at the declared orders; a model error, a zero-scale reference of 1e-300, a survivors' and a route-2 gap each fail their run alone; an order below its window is inconclusive, the judge refuses until the retry, and the retry with its support runs is judged at 0.25 s; a retry without its support, an unmapped published readout and a case at another tau are refused (/mnt/workspaces/Cells/fr38-judged-20261123/tools/synthetic_check.py)",
+  "on the interface itself, from the 14 runs' definitions alone (no engine run): check_units holds at 92 points, and every mapped quantity of every run resolves to one case, its declaration equal, every compared time present and every value finite (50,298 values), printing counts only"
+ ],
+ "not_blind": [
+  "before any run, the judge saw reference figures in the references' tag messages: git log -3 --format=%B gr-refs-fr38-2026-11-22 printed 679fe885's and 05725b23's messages, with R1's survivors at p = 0.75 and 1 h, the distance to the requester's limit, the references' convergence, identity and route-agreement levels, and R-F1's trace loss. The figures are listed in the verdict record's not_blind, not here, so that this file shows the builder none. None is in any tolerance: every tolerance is the rule's, from the engine's step error with its floor and route 2's grid error (D308)",
+  "git cat-file -p on the same tag reprinted that message's opening lines, with no further figure",
+  "git diff --stat gr-refs-fr38-2026-11-22 3f485ee9 over the references showed three code files changed after the tag (interior.py, run.py, sheet.py), by name and line count only; the interface files are the tag's",
+  "the judge wrote this reader from the interface's keys and array shapes (fr38_compare structure, and a scratch listing of the same before it, neither printing a value), at the lead's ruling (D308). check_units read values inside the reader and printed only its count of consistent points (92); the case and machine checks printed booleans and counts",
+  "the judge opened no interface value, no reference README, code or test, and no builder development run"
+ ]
+}
