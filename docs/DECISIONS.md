@@ -9713,3 +9713,41 @@ proposal (tag ol6-protocol-d-registered-2026-11-23).
   gated, and Protocol D's erratum 1, which makes D7 runnable under it. Protocol D's other worlds (D0-D6)
   and Protocol G's scope 1 can run now.
 
+
+## D310: FR-15 F2, charged trace species on junctions: option A, with the lead's rulings
+
+2026-11-23, about 11:45 UTC. The lead rules on docs/CHARGED_TRACE_SPECIES_DESIGN.md (7f3f6ccd, tag
+fr15-f2-design-landed-2026-11-23), under the user's go on the cancer lanes and the FRs (23 November).
+- **C1: option A.** `passive_constant_field_permeation@1` is hosted on junctions. This keeps the 19
+  November ruling and needs no per-stage material bound inside @3.
+- **C2: refused in version 1.** A junction that crosses a floating capacitor component is refused
+  explicitly. The refusal lands in the same change that lifts today's junction refusal, because fix (A)
+  (b8e786d4) relied on that refusal. No consumer has such a junction, so A2 waits for one.
+- **C3: the two-end sum** for a junction route's material term. It is the neutral law's form, and its
+  limit at zero voltage.
+- **C4: widen @1 in place.** The precedents are S1 and FR-19:
+  - no world declares the law;
+  - P2's header reserved junction hosting under @1;
+  - unchanged worlds stay bitwise (D148 case 2), and pre-alpha needs no second ID.
+- **C5 goes to the gap-junction replication's owner.** The microRNA's decay can be written now as the
+  closed conversion miR- -> D-. turnover@2 is needed only for exact exponential clearance.
+- **The @3 owner's two questions,** ruled by the lead as the note proposes:
+  1. a kind's cell-to-cell current enters the floating-component residual only on junctions that cross
+     a floating component; version 1 refuses those, so the residual is unchanged;
+  2. KindRates gets no `junction_flux` in version 1.
+- **The 19 November note is corrected:** the kind's charge term on a junction takes 2G at each cell.
+- **Sanctioned test change:** the junction-host refusal row in `tests/unit/test_passive_routes_kind.py`
+  becomes the crossing-junction refusal.
+- **P2's patch material term becomes the two-end sum where a patch faces a finite node,** in the same
+  build. The term is each end's own slope, so it can admit up to twice the stable step there. No
+  registered world declares the law, so nothing registered changes.
+- **Recorded for other lanes:**
+  - **FR-16:** F4's per-species floor must reach a kind's junction route, as a per-route floor.
+  - **The kinds lane:**
+    - the transporter's material term skips charged rows that cross, so a trace charged row moved by a
+      carrier (butyrate on the symporter) has no material bound;
+    - `site_occupancy@1` refuses a charged ligand (HDAC binding);
+    - from the Xenopus lane: `cells.na2_anion_symport_diagram@1` fixes zeta at 0 on four of its edges,
+      where XC0's version-2 design moves charge.
+- **The build** is A1, about 2.25 to 2.75 agent-days with its gates. It starts at the next free agent
+  slot.
