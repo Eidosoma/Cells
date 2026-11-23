@@ -2,7 +2,7 @@
  "kind": "cells.xenopus_bioelectric.xc0_rule_erratum@1",
  "erratum": 1,
  "amends": "validation/xenopus_bioelectric/xc0_rule.json, tagged xc0-rule-registered-2026-11-23 (98351456), kept as tagged; every entry it does not replace stands",
- "status": "For the lead's tag before the table is built (D308, D312). No table has been built and nothing compared. Its reader is the amended xc0_compare.py of this erratum (D308): the judge refuses unless this file's mapping is that module's",
+ "status": "For the lead's tag before the table is built (D308, D312). No table has been built and nothing compared. Its reader is the amended xc0_compare.py of this erratum (D308): the judge refuses unless this file's mapping is that module's. Revised before the tag (23 November 2026) on the reviewer's six questions, which the confirmer answered in SEMANTICS-2.md (semantics.answers), and with the reader's token guard",
  "decisions": "D312 (the lead, 23 November 2026): option B without the text; the semantics from a code-blind, value-silent confirmer, read from its one file alone; T1 and T2 unscored calibrations, reported with the verdict as unconstrained",
  "keys_stage": {
   "command": "xc0_compare keys validation/xenopus_bioelectric/references/designs/xc0_interface_bands.json keys.json (no --with-text), run inside a clean frozen snapshot of the tagged tree",
@@ -17,7 +17,12 @@
  "semantics": {
   "file": "/mnt/workspaces/Cells/xenopus-lane-20261119/xc0-confirm/SEMANTICS.md",
   "sha256": "56b5fd5c81d20e8eeca7704184eadabea89d1456c0ec069c0107f7fb1eb4c66d",
-  "read": "only this file of the confirmer's; not its check_numbers.out or script (the lead)"
+  "read": "only this file of the confirmer's; not its check_numbers.out or script (the lead)",
+  "answers": {
+   "file": "/mnt/workspaces/Cells/xenopus-lane-20261119/xc0-confirm/SEMANTICS-2.md",
+   "sha256": "fb33201b8965a6fd83af880209b35a274fb4acebfbdabdfaee4e5aaee4774778",
+   "read": "the confirmer's value-free answers to the reviewer's six questions, read by the reviewer who made this revision; not its check_numbers-2.out"
+  }
  },
  "mapping": {
   "rules": [
@@ -25,6 +30,11 @@
     "family": "^C0\\.E_(K|Na|Cl)$",
     "measure": "e_zero",
     "needs": [
+     "ion_set",
+     "exterior",
+     "T"
+    ],
+    "reads": [
      "ion_set",
      "exterior",
      "T"
@@ -37,12 +47,22 @@
      "ion_set",
      "exterior",
      "T"
+    ],
+    "reads": [
+     "ion_set",
+     "exterior",
+     "T"
     ]
    },
    {
     "family": "^C0\\.k_effect_sign_area$",
     "measure": "effect_sign",
     "needs": [
+     "ion_set",
+     "exterior",
+     "T"
+    ],
+    "reads": [
      "ion_set",
      "exterior",
      "T"
@@ -55,12 +75,22 @@
      "ion_set",
      "exterior",
      "T"
+    ],
+    "reads": [
+     "ion_set",
+     "exterior",
+     "T"
     ]
    },
    {
     "family": "^C0\\.cl_bound_area$",
     "measure": "cl_bound",
     "needs": [
+     "ion_set",
+     "exterior",
+     "T"
+    ],
+    "reads": [
      "ion_set",
      "exterior",
      "T"
@@ -73,12 +103,22 @@
      "ion_set",
      "exterior",
      "T"
+    ],
+    "reads": [
+     "ion_set",
+     "exterior",
+     "T"
     ]
    },
    {
     "family": "^C0\\.cl_i_threshold_V(-?[0-9.]+)$",
     "measure": "cl_threshold",
     "needs": [
+     "ion_set",
+     "exterior",
+     "T"
+    ],
+    "reads": [
      "ion_set",
      "exterior",
      "T"
@@ -91,12 +131,22 @@
      "ion_set",
      "exterior",
      "T"
+    ],
+    "reads": [
+     "ion_set",
+     "exterior",
+     "T"
     ]
    },
    {
     "family": "^C1\\.zero_(K|Cl)$",
     "measure": "e_zero",
     "needs": [
+     "ion_set",
+     "exterior",
+     "T"
+    ],
+    "reads": [
      "ion_set",
      "exterior",
      "T"
@@ -109,12 +159,22 @@
      "ion_set",
      "exterior",
      "T"
+    ],
+    "reads": [
+     "ion_set",
+     "exterior",
+     "T"
     ]
    },
    {
     "family": "^C1\\.kir_zero_at_EK$",
     "measure": "kir_current_ek",
     "needs": [
+     "ion_set",
+     "exterior",
+     "T"
+    ],
+    "reads": [
      "ion_set",
      "exterior",
      "T"
@@ -127,12 +187,22 @@
      "ion_set",
      "exterior",
      "T"
+    ],
+    "reads": [
+     "ion_set",
+     "exterior",
+     "T"
     ]
    },
    {
     "family": "^C1\\.kir_slope_u(-?[0-9.]+)$",
     "measure": "kir_slope_ek",
     "needs": [
+     "ion_set",
+     "exterior",
+     "T"
+    ],
+    "reads": [
      "ion_set",
      "exterior",
      "T"
@@ -144,12 +214,21 @@
     "needs": [
      "ion_set",
      "T"
+    ],
+    "reads": [
+     "ion_set",
+     "T"
     ]
    },
    {
     "family": "^C2\\.V_ghk_area$",
     "measure": "v_zero",
     "needs": [
+     "ion_set",
+     "exterior",
+     "T"
+    ],
+    "reads": [
      "ion_set",
      "exterior",
      "T"
@@ -162,12 +241,20 @@
      "ion_set",
      "exterior",
      "T"
+    ],
+    "reads": [
+     "ion_set",
+     "exterior",
+     "T"
     ]
    },
    {
     "family": "^C3\\.V_inf$",
     "measure": "c3_v_inf",
     "needs": [
+     "word"
+    ],
+    "reads": [
      "word"
     ]
    },
@@ -176,6 +263,9 @@
     "measure": "c3_g",
     "needs": [
      "word"
+    ],
+    "reads": [
+     "word"
     ]
    },
    {
@@ -183,12 +273,18 @@
     "measure": "tau_lin",
     "needs": [
      "word"
+    ],
+    "reads": [
+     "word"
     ]
    },
    {
     "family": "^C3\\.tau_doubling$",
     "measure": "c3_tau_doubling",
     "needs": [
+     "word"
+    ],
+    "reads": [
      "word"
     ]
    },
@@ -198,12 +294,21 @@
     "needs": [
      "word",
      "d"
+    ],
+    "reads": [
+     "word",
+     "d"
     ]
    },
    {
     "family": "^C3\\.ratio_t$",
     "measure": "ratio_t",
     "needs": [
+     "word",
+     "d",
+     "k"
+    ],
+    "reads": [
      "word",
      "d",
      "k"
@@ -216,6 +321,11 @@
      "word",
      "d",
      "k"
+    ],
+    "reads": [
+     "word",
+     "d",
+     "k"
     ]
    },
    {
@@ -225,12 +335,24 @@
      "ion_set",
      "exterior",
      "T"
+    ],
+    "reads": [
+     "ion_set",
+     "exterior",
+     "T"
     ]
    },
    {
     "family": "^C4\\.V_zero_glycine$",
     "measure": "v_zero",
     "needs": [
+     "ion_set",
+     "exterior",
+     "T",
+     "P",
+     "a"
+    ],
+    "reads": [
      "ion_set",
      "exterior",
      "T",
@@ -247,12 +369,26 @@
      "T",
      "g",
      "a"
+    ],
+    "reads": [
+     "ion_set",
+     "exterior",
+     "T",
+     "g",
+     "a"
     ]
    },
    {
     "family": "^C4\\.shift_kir$",
     "measure": "shift",
     "needs": [
+     "ion_set",
+     "exterior",
+     "T",
+     "g",
+     "a"
+    ],
+    "reads": [
      "ion_set",
      "exterior",
      "T",
@@ -267,6 +403,11 @@
      "ion_set",
      "exterior",
      "T"
+    ],
+    "reads": [
+     "ion_set",
+     "exterior",
+     "T"
     ]
    },
    {
@@ -276,12 +417,22 @@
      "ion_set",
      "exterior",
      "T"
+    ],
+    "reads": [
+     "ion_set",
+     "exterior",
+     "T"
     ]
    },
    {
     "family": "^C4\\.monotone_glycine$",
     "measure": "c4_monotone_glycine",
     "needs": [
+     "ion_set",
+     "exterior",
+     "T"
+    ],
+    "reads": [
      "ion_set",
      "exterior",
      "T"
@@ -295,64 +446,119 @@
      "exterior",
      "T",
      "V"
+    ],
+    "reads": [
+     "ion_set",
+     "exterior",
+     "T",
+     "V"
     ]
    },
    {
     "family": "^C5\\.V1_ss$",
     "measure": "c5_v1",
-    "needs": []
+    "needs": [],
+    "reads": [
+     "word",
+     "kir_g",
+     "x_gly",
+     "x"
+    ]
    },
    {
     "family": "^C5\\.V2_ss$",
     "measure": "c5_v2",
-    "needs": []
+    "needs": [],
+    "reads": [
+     "word",
+     "kir_g",
+     "x_gly",
+     "x"
+    ]
    },
    {
     "family": "^C5\\.tau_common$",
     "measure": "c5_tau_common",
-    "needs": []
+    "needs": [],
+    "reads": [
+     "word",
+     "kir_g",
+     "x_gly",
+     "x"
+    ]
    },
    {
     "family": "^C5\\.tau_diff$",
     "measure": "c5_tau_diff",
-    "needs": []
+    "needs": [],
+    "reads": [
+     "word",
+     "kir_g",
+     "x_gly",
+     "x"
+    ]
    },
    {
     "family": "^C5\\.V_limit$",
     "measure": "c5_v_limit",
-    "needs": []
+    "needs": [],
+    "reads": [
+     "word",
+     "kir_g",
+     "x_gly"
+    ]
    },
    {
     "family": "^C5\\.g_J$",
     "measure": "c5_g_j",
-    "needs": []
+    "needs": [],
+    "reads": [
+     "word",
+     "kir_g",
+     "x_gly"
+    ]
    },
    {
     "family": "^C5\\.g_m$",
     "measure": "c5_g_m",
     "needs": [
      "cell"
+    ],
+    "reads": [
+     "word",
+     "kir_g",
+     "x_gly",
+     "cell"
     ]
-   },
-   {
-    "family": "^C5\\.junction_charge_sum$",
-    "measure": "c5_junction_charge_sum",
-    "needs": []
    },
    {
     "family": "^C5\\.tau_fit_common$",
     "measure": "c5_tau_fit_common",
-    "needs": []
+    "needs": [],
+    "reads": [
+     "word",
+     "kir_g",
+     "x_gly"
+    ]
    },
    {
     "family": "^C5\\.tau_fit_diff$",
     "measure": "c5_tau_fit_diff",
-    "needs": []
+    "needs": [],
+    "reads": [
+     "word",
+     "kir_g",
+     "x_gly"
+    ]
    },
    {
     "family": "^C6\\.S_hill$",
     "measure": "sym_s_at",
     "needs": [
+     "NaP",
+     "BP"
+    ],
+    "reads": [
      "NaP",
      "BP"
     ]
@@ -361,6 +567,14 @@
     "family": "^C6\\.v1_V_stall$",
     "measure": "sym_stall",
     "needs": [
+     "n",
+     "Nain",
+     "Naout",
+     "BP",
+     "rB",
+     "T"
+    ],
+    "reads": [
      "n",
      "Nain",
      "Naout",
@@ -379,6 +593,14 @@
      "BP",
      "rB",
      "T"
+    ],
+    "reads": [
+     "n",
+     "Nain",
+     "Naout",
+     "BP",
+     "rB",
+     "T"
     ]
    },
    {
@@ -391,12 +613,29 @@
      "BP",
      "rB",
      "T"
+    ],
+    "reads": [
+     "n",
+     "Nain",
+     "Naout",
+     "BP",
+     "rB",
+     "T"
     ]
    },
    {
     "family": "^C6\\.v1_J_offset$",
     "measure": "sym_j",
     "needs": [
+     "n",
+     "Nain",
+     "Naout",
+     "BP",
+     "rB",
+     "T",
+     "off"
+    ],
+    "reads": [
      "n",
      "Nain",
      "Naout",
@@ -417,12 +656,30 @@
      "rB",
      "T",
      "off"
+    ],
+    "reads": [
+     "n",
+     "Nain",
+     "Naout",
+     "BP",
+     "rB",
+     "T",
+     "off"
     ]
    },
    {
     "family": "^C6\\.v1_sign_J_offset$",
     "measure": "sym_j",
     "needs": [
+     "n",
+     "Nain",
+     "Naout",
+     "BP",
+     "rB",
+     "T",
+     "off"
+    ],
+    "reads": [
      "n",
      "Nain",
      "Naout",
@@ -443,6 +700,15 @@
      "rB",
      "T",
      "off"
+    ],
+    "reads": [
+     "n",
+     "Nain",
+     "Naout",
+     "BP",
+     "rB",
+     "T",
+     "off"
     ]
    },
    {
@@ -452,6 +718,13 @@
      "n",
      "Nain",
      "Naout"
+    ],
+    "reads": [
+     "n",
+     "Nain",
+     "Naout",
+     "V",
+     "Vrest"
     ]
    },
    {
@@ -461,12 +734,24 @@
      "n",
      "Nain",
      "Naout"
+    ],
+    "reads": [
+     "n",
+     "Nain",
+     "Naout",
+     "V",
+     "Vrest"
     ]
    },
    {
     "family": "^C6\\.v1_capacity_ratio$",
     "measure": "sym_capacity_ratio",
     "needs": [
+     "word",
+     "f"
+    ],
+    "reads": [
+     "word",
      "f"
     ]
    },
@@ -474,6 +759,11 @@
     "family": "^C6\\.v2_V_stall$",
     "measure": "diag_stall",
     "needs": [
+     "NaP",
+     "BP",
+     "BN"
+    ],
+    "reads": [
      "NaP",
      "BP",
      "BN"
@@ -487,6 +777,28 @@
      "BP",
      "BN",
      "V"
+    ],
+    "reads": [
+     "NaP",
+     "BP",
+     "BN",
+     "V"
+    ]
+   },
+   {
+    "family": "^C6\\.v2_alt_set_ratio$",
+    "measure": "diag_ratio",
+    "needs": [
+     "NaP",
+     "BP",
+     "BN",
+     "V"
+    ],
+    "reads": [
+     "NaP",
+     "BP",
+     "BN",
+     "V"
     ]
    },
    {
@@ -494,12 +806,18 @@
     "measure": "pump_counts",
     "needs": [
      "word"
+    ],
+    "reads": [
+     "word"
     ]
    },
    {
     "family": "^C7\\.pump_cell_charge_per_fmol$",
     "measure": "pump_cell_charge_per_fmol",
-    "needs": []
+    "needs": [],
+    "reads": [
+     "word"
+    ]
    },
    {
     "family": "^C7\\.pump_dG_atp$",
@@ -508,6 +826,13 @@
      "ion_set",
      "exterior",
      "T"
+    ],
+    "reads": [
+     "ion_set",
+     "exterior",
+     "T",
+     "word",
+     "V"
     ]
    },
    {
@@ -517,6 +842,13 @@
      "ion_set",
      "exterior",
      "T"
+    ],
+    "reads": [
+     "ion_set",
+     "exterior",
+     "T",
+     "word",
+     "V"
     ]
    },
    {
@@ -526,6 +858,13 @@
      "ion_set",
      "exterior",
      "T"
+    ],
+    "reads": [
+     "ion_set",
+     "exterior",
+     "T",
+     "word",
+     "V"
     ]
    },
    {
@@ -535,6 +874,13 @@
      "ion_set",
      "exterior",
      "T"
+    ],
+    "reads": [
+     "ion_set",
+     "exterior",
+     "T",
+     "word",
+     "V"
     ]
    },
    {
@@ -544,12 +890,23 @@
      "ion_set",
      "exterior",
      "T"
+    ],
+    "reads": [
+     "ion_set",
+     "exterior",
+     "T",
+     "word",
+     "V"
     ]
    },
    {
     "family": "^C7\\.relax_dQ$",
     "measure": "c7_relax_dQ",
     "needs": [
+     "word",
+     "k"
+    ],
+    "reads": [
      "word",
      "k"
     ]
@@ -560,12 +917,25 @@
     "needs": [
      "word",
      "k"
+    ],
+    "reads": [
+     "word",
+     "k"
     ]
    },
    {
     "family": "^C7\\.sym_dG_chem$",
     "measure": "sym_dG_chem",
     "needs": [
+     "n",
+     "Nain",
+     "Naout",
+     "BP",
+     "rB",
+     "T",
+     "off"
+    ],
+    "reads": [
      "n",
      "Nain",
      "Naout",
@@ -586,12 +956,30 @@
      "rB",
      "T",
      "off"
+    ],
+    "reads": [
+     "n",
+     "Nain",
+     "Naout",
+     "BP",
+     "rB",
+     "T",
+     "off"
     ]
    },
    {
     "family": "^C7\\.sym_heat_per_cycle$",
     "measure": "sym_heat_per_cycle",
     "needs": [
+     "n",
+     "Nain",
+     "Naout",
+     "BP",
+     "rB",
+     "T",
+     "off"
+    ],
+    "reads": [
      "n",
      "Nain",
      "Naout",
@@ -612,12 +1000,30 @@
      "rB",
      "T",
      "off"
+    ],
+    "reads": [
+     "n",
+     "Nain",
+     "Naout",
+     "BP",
+     "rB",
+     "T",
+     "off"
     ]
    },
    {
     "family": "^C7\\.sym_heat_nonneg$",
     "measure": "sym_heat_nonneg",
     "needs": [
+     "n",
+     "Nain",
+     "Naout",
+     "BP",
+     "rB",
+     "T",
+     "off"
+    ],
+    "reads": [
      "n",
      "Nain",
      "Naout",
@@ -633,6 +1039,10 @@
     "needs": [
      "n",
      "word"
+    ],
+    "reads": [
+     "n",
+     "word"
     ]
    },
    {
@@ -641,12 +1051,20 @@
     "needs": [
      "ion_set",
      "T"
+    ],
+    "reads": [
+     "ion_set",
+     "T"
     ]
    },
    {
     "family": "^C8\\.a_dV_ghk_area$",
     "measure": "c8a_v_zero",
     "needs": [
+     "ion_set",
+     "T"
+    ],
+    "reads": [
      "ion_set",
      "T"
     ]
@@ -658,6 +1076,11 @@
      "ion_set",
      "exterior",
      "T"
+    ],
+    "reads": [
+     "ion_set",
+     "exterior",
+     "T"
     ]
    },
    {
@@ -665,17 +1088,26 @@
     "measure": "c8b_final_saved",
     "needs": [
      "word"
+    ],
+    "reads": [
+     "word"
     ]
    },
    {
     "family": "^C8\\.b_final_psi$",
     "measure": "c8b_psi_final_saved",
-    "needs": []
+    "needs": [],
+    "reads": [
+     "word"
+    ]
    },
    {
     "family": "^C8\\.bc_t_e$",
     "measure": "c8b_t_e_saved",
     "needs": [
+     "word"
+    ],
+    "reads": [
      "word"
     ]
    },
@@ -685,6 +1117,10 @@
     "needs": [
      "word",
      "t"
+    ],
+    "reads": [
+     "word",
+     "t"
     ]
    },
    {
@@ -692,17 +1128,20 @@
     "measure": "c8b_psi_at_saved",
     "needs": [
      "t"
+    ],
+    "reads": [
+     "t"
     ]
    }
   ],
   "not_run": [
    {
-    "family": "^C6\\.v2_early",
+    "family": "^C6\\.v2_early_ratio(_rest)?$",
     "reason": "not run on main: cells.na2_anion_symport_diagram@1 fixes zeta at 0 on e3/e5/e6/e7 (b_P, b_N, na2_N, na1_N), so DESIGN §3.4's charge placement cannot be declared and the early-uptake ratio, which depends on it, is not the design's (the lead, 23 November 2026; a declared zeta on every edge is queued with the kinds lane as a general feature)"
    },
    {
-    "family": "^C6\\.v2_(J|KA|king|ka)",
-    "reason": "not run on main: the King-Altman J depends on the charge placement (as above)"
+    "family": "^C6\\.v2_J_over_k$",
+    "reason": "not run on main: the King-Altman J/k depends on the charge placement (as above)"
    },
    {
     "family": "^C6\\.S_half$",
@@ -725,24 +1164,19 @@
     "reason": "its times need the generator's step count N: 'needs a value; not stated' (SEMANTICS.md, C5's fits)"
    },
    {
+    "family": "^C5\\.junction_charge_sum$",
+    "key_word": null,
+    "reason": "its run, window and statistic are not stated: the reference's two-cell model books no ionic charge, and SEMANTICS-2.md (question 2) leaves them to the lead's ruling"
+   },
+   {
     "family": "^C6\\.J_over_k_grid$",
     "key_word": null,
-    "reason": "the state behind 'dG_cyc far negative' (the N end, V) is not stated (SEMANTICS.md, reading 7: names and keys only)"
+    "reason": "the state of its J/k (unit 1; SEMANTICS-2.md, question 4) is not stated: the N end and V (SEMANTICS.md, reading 7: names and keys only)"
    },
    {
     "family": "^C6\\.v1_n1_(J|dJ_over_V)$",
     "key_word": null,
     "reason": "the n = 1 rows' other concentrations are not stated (SEMANTICS.md, reading 7: names and keys only)"
-   },
-   {
-    "family": "^C6\\.v1_capacity_ratio$",
-    "key_word": "a",
-    "reason": "state a's voltage: 'needs a value; not stated' (SEMANTICS.md, reading 7)"
-   },
-   {
-    "family": "^C6\\.v2_alt_set_ratio$",
-    "key_word": null,
-    "reason": "its second constant set: 'needs a value; not stated' (SEMANTICS.md, reading 7)"
    },
    {
     "family": "^C8\\.b_final_is_bath$",
@@ -752,13 +1186,23 @@
   ]
  },
  "coverage": {
-  "compared_rows_mapped": 7429,
-  "not_run": 242,
-  "not_mappable": 273,
-  "unmapped": 0,
-  "info_rows": 736,
-  "calibration_rows": 54,
-  "note": "the keys stage's 130 families: every compared row is mapped, not run (its engine reason) or not mappable (its SEMANTICS.md reason); none is unmapped"
+  "at_6f1b894e": {
+   "compared_rows_mapped": 7429,
+   "not_run": 242,
+   "not_mappable": 273,
+   "unmapped": 0,
+   "info_rows": 736,
+   "calibration_rows": 54
+  },
+  "this_revision": [
+   "C5.junction_charge_sum, 7 rows (SEMANTICS-2.md question 2's keys): mapped -> not mappable",
+   "C6.v1_capacity_ratio at state a, 5 rows (f 0 to 1): not mappable -> mapped",
+   "C6.v2_alt_set_ratio, each of its rows: not mappable -> mapped",
+   "the version-2 not-run patterns made exact (^C6\\.v2_J_over_k$, ^C6\\.v2_early_ratio(_rest)?$): the families the old patterns caught (SEMANTICS-2.md, question 6), so the not-run rows are unchanged",
+   "the token guard: a key carrying a token its rule does not read, or a word or value its builder does not know, is unmapped (no key of the documented grammar is)"
+  ],
+  "counts": "compared rows mapped 7,427 plus C6.v2_alt_set_ratio's rows; not run 242; not mappable 275 less those rows; info 736; calibration 54; unmapped 0 once check-keys passes. These are read from `xc0_compare check-keys` over the keys stage's keys.json, the lead's step before the tag: the reviewer who made this revision may not read xc0-run/",
+  "note": "the keys stage's 130 families: every compared row is mapped, not run (its engine reason) or not mappable (its SEMANTICS.md or SEMANTICS-2.md reason); none is unmapped"
  },
  "readings": {
   "corrected": [
@@ -771,8 +1215,18 @@
   "matched": [
    "C0 (reading 2): effect signs, cl_bound; cl_i_critical_area is the cl_threshold root at V_rest; cl_i_threshold_V<V> the same root at the family's fixed V; feasible_19p4_area holds iff V_rest - E_Cl >= 19.4 mV (T2's published magnitude) from the engine's roots",
    "C2 (reading 4): sign_dVdt_dV<off> is the sign of dV/dt at V_GHK + off (dvdt_offset)",
-   "C5 (reading 6): steady voltages, modes, V_limit (the root of dV1/dt + dV2/dt at a common V), g_J (the junction's slope conductance at V1 = V2, x1), g_m (a cell's slope conductance at its uncoupled zero), junction_charge_sum (from a run, the junction's charge into both cells from their amounts and the cumulative transfers of their own patches, channel populations and routes, each the engine's own record: membrane_ and channel_transferred outward, passive_transferred inward; refused where a pump has cycled; its largest |sum|), tau_fit_common and tau_fit_diff (from the steady state plus 0.002 V along the mode's eigenvector to tau_m, a(t) = v . (V - V_ss), -tau_m / ln(a(tau_m)/a(0)))",
-   "C6 (reading 7): offsets from the engine's own stall; Vrest_<exterior> at 291.15 K; version 2 with Na_N 21 mM and 291.15 K (the reference's fixed values); capacity state b; J at the stall, dJ/dV there (the probe's own derivative), J-/J+, x at the equilibrium ratio, S_hill from the probe's S at the P end"
+   "C5 (reading 6): steady voltages, modes, V_limit (the root of dV1/dt + dV2/dt at a common V), g_J (the junction's slope conductance at V1 = V2, x1), g_m (a cell's slope conductance at its uncoupled zero), tau_fit_common and tau_fit_diff (from the steady state plus 0.002 V along the mode's eigenvector to tau_m, a(t) = v . (V - V_ss), -tau_m / ln(a(tau_m)/a(0))); junction_charge_sum not mappable (revised)",
+   "C6 (reading 7): offsets from the engine's own stall; Vrest_<exterior> at 291.15 K; version 2 with Na_N 21 mM and 291.15 K (the reference's fixed values); capacity states a and b (revised); J at the stall and at the offsets in fmol/s at the declared base capacity, dJ/dV there in fmol/s/V (the probe's own derivative), J-/J+, x at the equilibrium ratio; S_hill the probe's S at the P end (confirmed, revised); version 2's second-set ratio as J-/J+ (revised)"
+  ],
+  "revised": [
+   "C3.Q_over_CV_error (SEMANTICS-2.md, question 1): the reference reads Q from no run; the row is the identity Q - C_total V at each observation of the +0.002 V step, and on the engine side it is read in the engine's own d0.002 step run of the scenario at its own t_k, the times of C3.ratio_t's d0.002 rows. c3_q_minus_cv reads exactly that: unchanged",
+   "C5.junction_charge_sum (question 2): the reference states no run, window or statistic; its two-cell model books no ionic charge, and its quantity (the signed sum over both cells of the charge the junction carries, over an unstated interval) leaves them to the lead's ruling. Not mappable until the lead rules; the engine's reading c5_junction_charge_sum (the largest |sum| over its run from V0 to 4 tau_common) stays in xc0_engine for that ruling",
+   "C6.S_hill (question 3): S = [1 + (K_Na/c_Na,P)^hill_Na]^-1 [1 + (K_B/c_B,P)^hill_B]^-1 at the P end, K and h the declared symporter_v1 parameters, the N end, V and T not entering: the factored law's saturation (laws/cycles/na_anion_symport_factored.py; forms.hill_log_saturation), which the world builds from those same declared parameters (xc0_worlds.symporter). Matched with no value: unchanged",
+   "C6's version-1 J families (question 4): J in fmol/s at the declared base capacity k0, not normalised by k (C6.v1_J_at_stall, C6.v1_J_offset, and C6.v1_sign_J_offset's aux), dJ/dV in fmol/s/V, C6.v1_eq_x of unit 1. The engine's probe reads J at that capacity (symport_world's default) and d_j_d_v per volt: unchanged",
+   "C6.J_over_k_grid (question 5): its reason no longer quotes a phrase that occurs only in DESIGN.md §4, claim C6, item 1, and not in SEMANTICS.md, the source the reason cited. Still not mappable: its J/k's N end and V are not stated",
+   "version 2 (question 6): C6.v2_alt_set_ratio is J-/J+ of the 8-state diagram with a second constant set that keeps detailed balance and the charge sum, so it is e^x at its key whatever the set: mapped to diag_ratio, the engine's diagram J-/J+ with the declared set. The not-run patterns are exact: ^C6\\.v2_J_over_k$ (the King-Altman J/k, the one family the old pattern caught) and ^C6\\.v2_early_ratio(_rest)?$",
+   "C6.v1_capacity_ratio at state a: J(f k0)/J(k0) does not depend on the voltage wherever J is not 0 (version 1's J+ = k a S and J- = J+ e^x both scale with k), so state a, whose voltage is not stated, is read at 0 V, where its x = n ln(Na_N/Na_P) + ln(B_N/B_P) is not 0: mapped",
+   "the token guard: each rule names the tokens it reads (mapping.rules[].reads); a key carrying another token, or a word or value its builder does not know, is unmapped, so check-keys, the manifest and the judge refuse it before any value is read, printing names and keys only"
   ]
  },
  "verdicts": [
@@ -896,9 +1350,10 @@
     "extra": {}
    }
   },
-  "C5": "two primary cells in the bath at 291.15 K, cell 2 carrying the scenario's element open (kir_g<g>: the route; x_gly<P>: GlyR), the junction at the key's multiple (x1 for g_J, V_limit, the fits and the charge sum)",
-  "C6_v2": "Na_N 21 mM and 291.15 K where the key names neither",
-  "symporter_scan": "a symporter world's roots scan -1 to 1 V (no channel is declared there, and with the keys' B ratios, to 1e-5, a stall can lie far beyond the scan of a world without channels, -0.2 to 0.15 V); points outside the law's domain are skipped"
+  "C5": "two primary cells in the bath at 291.15 K, cell 2 carrying the scenario's element open (kir_g<g>: the route; x_gly<P>: GlyR), the junction at the key's multiple (x1 for g_J, V_limit and the fits)",
+  "C6_v2": "Na_N 21 mM and 291.15 K, fixed (no version-2 key names either; the token guard refuses one that does)",
+  "symporter_scan": "a symporter world's roots scan -1 to 1 V (no channel is declared there, and with the keys' B ratios, to 1e-5, a stall can lie far beyond the scan of a world without channels, -0.2 to 0.15 V); points outside the law's domain are skipped",
+  "C6_capacity": "state b at its stated -0.0899 V; state a, whose voltage is not stated, at 0 V (the ratio does not depend on the voltage where J is not 0)"
  },
  "measures": {
   "feasible_19p4": "C0.feasible_19p4_area: V_rest - E_Cl >= 19.4 mV (T2's published magnitude), from the engine's\nzero-current voltage and its Cl- zero at the state.",
@@ -943,8 +1398,9 @@
   "c8b_t_e_saved": "C8 (b) (erratum 1), from the saved P1LB runs: final (the bare run's node concentration at 64 s), psi_final (its node potential), at and psi_at (the coupled run's at t), t_e (the coupled run's first time (c(t) - c_f)/(c(0) - c_f) falls to 1/e, c_f the bare run's 64 s value, linear between two observations). This one: t_e."
  },
  "procedure": [
+  "before the tag, the token guard over the keys stage's output: xc0_compare check-keys keys.json lists every compared row that is not mapped, not run or not mappable, and every key carrying a token its rule does not read (names and keys only), and exits 1 if any; its counts fill coverage.counts",
   "this erratum is tagged before the table is built",
-  "the manifest: xc0_compare manifest keys.json MANIFEST --calibrations (the keys stage's file above; T1 and T2's rows appended)",
+  "the manifest: xc0_compare manifest keys.json MANIFEST --calibrations (the keys stage's file above; T1 and T2's rows appended); it refuses, writing nothing, where check-keys would",
   "the four P1LB runs (c8b above) on a gate lane, then the table from the same clean frozen snapshot of the tagged tree: xc0_engine table MANIFEST OUT --x2-cap 0.002 --c8b RUNS under scripts/run_detached.sh, its sha256 recorded before the judge runs",
   "the judge from a clean frozen snapshot of this erratum's tag: xc0_compare judge TABLE VALUES BANDS OUT; on a refusal nothing is read",
   "the retry, once, as tagged (xc0_compare retry-manifest; xc0_engine table --retry; judge --retry); a C8b row's retry needs the runs at h/4",
@@ -961,12 +1417,18 @@
   "C5's junction charge sum, corrected before the tag: the patch record (membrane_transferred) leaves out a channel population's and a route's transfers, which the engine records in channel_transferred (outward) and passive_transferred (inward), so the first reading counted the route's charge as the junction's (3.3e-14 C at kir_g3 on invented inputs). With every own element booked the sum is at round-off in all three scenarios (3.1e-22 to 3.7e-22 C), while the junction moves 1.3e-14 C (kir_g3) and 1.3e-12 C (x_gly3e-8) into cell 1; each record's sign was confirmed against the amounts in a one-cell world (round-off) (dev/diag_junction_sum*.py, dev/probe_signs.py, dev/selftest_junction_sum.py)",
   "after that correction, the run readings through the changed trajectory() in a leaks-only, a route and a GlyR world (dev/selftest_trajectory_after_fix.py): C3's Q - C V in S1 (leaks), S6 (the route) and S3 (GlyR) and C7's identity in S2, each a finite number",
   "a split P1LB run equals its whole bitwise in t, c and psi on the invented input set (horizon shortened to 0.4 s, 41 observations), at h (0 to 0.2 s, then from its snapshot to 0.4 s) and at h/2, where the plan splits; the saved-run readings read the joined runs, each a number",
-  "the symporter's roots on -1 to 1 V: at each stall found, J is zero to round-off, and version 2's J-/J+ there is 1"
+  "the symporter's roots on -1 to 1 V: at each stall found, J is zero to round-off, and version 2's J-/J+ there is 1",
+  "revision (the reviewer, 23 November 2026, on SEMANTICS-2.md): xc0_compare.py's mapping and this file's mapping section regenerated together (scripts in the checks folder /mnt/workspaces/Cells/xenopus-lane-20261119/xc0-erratum1-rev/); check_rule passes, and refuses a mapping changed in memory (one rule's needs)",
+  "keys built from the documented grammar (SEMANTICS.md, SEMANTICS-2.md and REFERENCES_USAGE.md; a sample of 110 families and 4,426 keys, the keys stage's file not read) through the reader at 6f1b894e and at this revision: every key maps to the same measure and parameters, or is not run or not mappable as before, except C5.junction_charge_sum (7 keys: mapped to not mappable), C6.v1_capacity_ratio at state a (5 keys: not mappable to mapped) and C6.v2_alt_set_ratio (each sampled key: not mappable to mapped); the token guard refuses none of them",
+  "xc0_compare selfcheck from this tree: passed. Its cases now include the token guard (35 keys: unread tokens, unknown words and values, both pump voltage tags at once, another ion set on a pump key, a T token on an equilibrium-ratio key, NaN on a version-2 key, an unknown version-2 family) and the rows SEMANTICS-2.md settles; a key with an unread token is refused by the judge before any value is read, and check-keys lists it",
+  "the gate's guard set (scripts/gates/gate_steps.py GUARDS, eight files) with test_d147_drivers and test_species_registry, from this tree: 102 passed; scripts/library_pages.py --check: exit 0 (logs in the checks folder)",
+  "not run in this revision: the engine (no engine code changed and no world was built) and check-keys over the keys stage's keys.json (the reviewer may not read xc0-run/: the lead's step before the tag)"
  ],
  "not_blind": [
   "the builder read the confirmer's SEMANTICS.md (its digest above), which states definitions, keys and declared inputs and, by its check, no reference value; and the keys stage's output (family names, kinds, units and row keys)",
   "SEMANTICS.md's section 3 and readings repeat declared inputs (the ion sets, the bath, the leaks, P_GlyR and g_ref values, the 70 mM baths, 19.4 mV, 64 s and t in 1 to 64 s): inputs and published numbers, no reference value",
   "engine values at registered rows, printed while building on the invented input set: that set changes the ion sets, baths, leaks, the pump's metabolism and capacity and the symporter's K_Na and K_B, but a symporter key sets the concentrations, n and T, so the readings thermodynamics alone fixes are the engine's values at those rows. Printed: version 1's stall at n2|Nain21|Naout91|BP0.1|rB0.01|T291.15 and n4|Nain38|Naout91|BP10|rB1|T291.15 and version 2's at NaP19.9|BP0.1|BN0.0001 and NaP19.9|BP10|BN0.0001 (while widening the symporter scan); at n2|Nain21|Naout19.9|BP0.1|rB0.01|T291.15, J-/J+ and x at offset 0.01 V and the per-cycle dG_chem, dU_cap and heat at offset -0.01 V; x at the equilibrium ratio at n2|Nain21|Naout19.9|V-0.04; version 2's J-/J+ at NaP19.9|BP0.1|BN0.0001|V-0.04; the pump's and the symporter's cycle counts (the declared stoichiometries). None was compared with anything, and no reference value was seen",
-  "the erratum's development scripts (dev/selftest_erratum_static.py and dev/selftest_erratum_runs.py in the run folder) otherwise printed values at the invented input set's own states, residuals and checks (a root's J, a split run's bitwise equality); the builder knows of no other engine value printed at a registered row"
+  "the erratum's development scripts (dev/selftest_erratum_static.py and dev/selftest_erratum_runs.py in the run folder) otherwise printed values at the invented input set's own states, residuals and checks (a root's J, a split run's bitwise equality); the builder knows of no other engine value printed at a registered row",
+  "this revision's reviewer read SEMANTICS.md and SEMANTICS-2.md (digests above), REFERENCES_USAGE.md, this branch's rule, erratum, reader, engine readings and worlds, and src/; not keys.json or anything else under xc0-run/, the designs files, the references' generator, README or values, the declared inputs, or either check_numbers output. SEMANTICS-2.md names the symporter's declared K_Na, K_B and Hill numbers and S_hill's key tokens: declared inputs, no reference value. No engine ran and nothing was compared"
  ]
 }
