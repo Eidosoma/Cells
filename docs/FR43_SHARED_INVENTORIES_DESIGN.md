@@ -7,6 +7,54 @@ marks standard theory cited without being read for this note; it is read and cit
 piece is built. Evidence: `/mnt/workspaces/Cells/fr43-20261123/` (`probe/` holds the scripts, `out/`
 and `out/v2/` the records; `out/NOTES.log` lists every edit to the scripts between runs).
 
+## In short, for the user's review
+
+FR-43 asks for three general features of the composite's shared inventory. This note proposes each,
+measures the first, and lists the choices. Nothing is built until you have reviewed it; part 3's host
+is your decision, the rest the lead's rulings.
+
+**Part 1: networks larger than 16 species.** Today a world with a species operator stops at 16
+species, ions included. The cap was a precaution about the order of sums, not a physical limit. We
+ran FR-43's chain (a reversible chain of neutral species in one cell, with fast and slow steps) at
+16, 32, 256 and 1,024 species against its exact matrix-exponential solution:
+- every size reached the same accuracy (2 × 10⁻⁵ of the largest amount at a 5 ms step), with
+  material, charge and energy books closed to rounding, and the booked heat matched the exact
+  free-energy drop;
+- the order of sums does not bind: the sums the books rest on agree bit for bit on the host and the
+  device at every size, and the others add exact zeros or meet a ledger only within its tolerance;
+- idleness, restart and batches stay bit for bit above 16, and every operator that shares the cap
+  ran at 32 species with every check passing;
+- cost on one CPU core at 1,024 species: 3.5 min to compile (42 s with a looped sum), 0.44 s per
+  step, about 87 s per simulated second, 4 GB of memory;
+- fast steps are limited by accuracy, not stability: the step is about 0.1/k_fast. Much faster,
+  stiff chemistry would need a new integrator, which is not proposed now.
+
+**Proposal:** raise the cap to 1,024; compile long sums as a loop, so compile time and memory stay
+modest (worlds of 16 or fewer species keep their programs exactly); later, store reaction networks
+sparsely, which cuts the rate step 4.5 times at 256 species and 45 times at 1,024 in our benchmark.
+
+**Part 2: one pool spent and refilled by two processes.** Today the gene-expression unit refuses any
+other writer of its pools. A rule already admits two writers elsewhere: split steps in a declared
+order, each booking its own moves and energy. **Proposal:** extend it to the gene unit beside a
+reaction network; keep labelled and exported rows single-writer; and take the shared row's standard
+potential from the species registry only. We found that today two processes could book one row at
+two different potentials when the registry gives none. At changing volume, reactions read the
+current volume. Water already counts every row as an osmolyte, so the energy books close if the
+reactions book at that volume. A tracer halving its concentration as the volume doubles was checked
+with today's water operator. The checks are FR-43's: per-process books, an independent coupled
+calculation, and each process alone.
+
+**Part 3: a few integer units driving continuous chemistry (your decision).**
+- **A (recommended):** a declared hybrid representation in the assembly family. The units run as
+  exact events and the pools as continuous equations. It reuses the family's exact events, random
+  streams, integrator and pore clock, so event times are located to a declared tolerance. Est.
+  4.5–7 agent-days; it lifts two of OL6's version-1 refusals for this representation only, after
+  OL6's slice S7.
+- **B:** a new integer-population operator in the cell composite, where part 2's pools live. Event
+  times are only as accurate as the step, and the composite needs its first random streams and owned
+  state through division. Est. 5–8 agent-days.
+- In either, a declared rule gives a single unit to one of two daughters with equal probability.
+
 **The request.** FR-43, logged by the user on 23 November 2026 at very high priority, asks for three
 general features of the composite's shared inventory. Each is motivated by physics with public
 consumers:
@@ -55,7 +103,7 @@ chain), with `scheduled_species_turnover@1` (the charged world) and with
 | 2 | Sum order above 16 (limit (a)) | No new order rule. Every sum whose order a ledger, guard or promise rests on is already the explicit fold, bitwise host and device to 1,024. The shared modules' own sums either add exact zeros on the added rows or meet a ledger only at its tolerance. One stated limit: many charged rows (§1.3) | Lead | 1.3 |
 | 3 | Compile time (limit (b)) | The unrolled fold costs compile and memory above 256 (1,024 rows: 214 s and 4.0 GiB, against 42 s and 1.7 GiB for a `lax.scan` fold, saves bitwise equal). **A static gate:** the unrolled fold up to 16 terms, the scan above, so every world at 16 or fewer keeps its program text and crossrev is the proof. One fold everywhere waits for the next D148 round of reaction programs | Lead | 1.4 |
 | 4 | The step (limit (c)) | A reported dt limit, no new integrator in FR-43: the declared accuracy sets dt ≈ 0.1/k_fast in the probe's chain, below the stage condition's refusal at dt·L > 1. A stiff integrator stays D152's door, a separate law | Lead | 1.5 |
-| 5 | Dense against per-entry arrays | The dense [rows, route] arrays set the step's cost above 256 (0.43 s per step at 1,024; the rate kernel alone 88 times the per-entry form's). **A per-entry [R, K] layout,** entries in row order so physical fields stay bitwise, as a D148 case-2 change after the raise; not needed for correctness. Meanwhile the trace estimate, which counts the dense layout per step, is corrected (host-side admission only) | Lead | 1.6 |
+| 5 | Dense against per-entry arrays | The dense [rows, route] arrays set the step's cost above 256 (0.43 s per step at 1,024; the rate kernel alone 45 times the per-entry form's). **A per-entry [R, K] layout,** entries in row order so physical fields stay bitwise, as a D148 case-2 change after the raise; not needed for correctness. Meanwhile the trace estimate, which counts the dense layout per step, is corrected (host-side admission only) | Lead | 1.6 |
 | 6 | Two writers at fixed volume | Extend the 19 November two-writer rule (exact half-steps, own books, own ΔG, declared order) to the gene unit beside a D152 reaction: SSP half-steps of order three admitted beside exact ones; a registry potential required on the shared row (today's check compares none where the registry gives none); labelled and exported rows keep one writer | Lead | 2.2 |
 | 7 | Changing volume | D152's volume door, as composition M3 for reactions: `volume` and `extracellular_volume` read current at the split, C1's fallback keeping every other world's programs; the bookings at the half-step's volume, which water's dilution term already completes, since every row is an osmolyte | Lead | 2.3 |
 | 8 | Part 3's host | **A:** a declared per-scope hybrid representation in the assembly family (exact events for the population, rate equations for the pools), lifting OL6's refusals 9 and 11 for it. **B,** an integer-population operator in the composite, is the door for cell-scale worlds | **User** | 3 |
@@ -135,6 +183,19 @@ the first queue and 20.4 s in this one, so compile times carry about 25% of run-
 1.45 × 10⁻⁴, 1.63 × 10⁻⁵ and 1.93 × 10⁻⁶ at dt = 10, 5 and 2.5 ms, ratios 8.9 and 8.4: third order,
 SSPRK(3,3)'s, since @3's step is the identity on these rows and the split adds nothing here.
 
+**W4's idleness, restart and batches above 16** (S, `probe.py w4rest`, `out/w4rest/`; untimed, on gate
+lane A; the chain for 40 steps of 5 ms):
+
+| Rows, fold | D136 claim 2: the network at multiplier 0 against none | Restart in process / through a written snapshot | Two worlds batched (k_f × 1 and × 1.5): reversed batch / against the scalar runs |
+| --- | --- | --- | --- |
+| 32, unrolled | 22 of 22 fields bitwise | bitwise / bitwise | bitwise / 0 (bitwise) |
+| 32, scan | 22 of 22 fields bitwise | bitwise / bitwise | bitwise / 0 (bitwise) |
+| 256, unrolled | 22 of 22 fields bitwise | bitwise / bitwise | bitwise / 0 (bitwise) |
+| 256, scan | 22 of 22 fields bitwise | bitwise / bitwise | bitwise / 0 (bitwise) |
+
+The batches' device diagnostics are at rounding in all four (material 3 × 10⁻¹⁹ fmol, energy
+1–4 × 10⁻¹⁵ relative). So W4's P4, P6 and P7 hold above 16 in both folds.
+
 ### 1.3 Limit (a): the sum order (S)
 
 D148's promises rest on explicit species order wherever a quantity and its ledger meet (D182). The
@@ -213,7 +274,15 @@ cap, and folds by `lax.scan` (unroll 8) above. Every world at 16 or fewer specie
 text, so crossrev is the proof (D148 by construction), and the larger worlds get the scan. The order
 is one serial left fold either way, and §1.3's host-equals-device and scan-equals-fold checks hold
 at every size probed; `tests/unit/test_species_sums.py` gains rows at 17, 256 and 1,024 (no world;
-seconds in all). Two code paths in one helper is the price; folding them into one belongs to the
+seconds in all).
+
+**The gate's claim, checked** (S, `probe/gate_check.py`, `out/gate_check.json`). It holds only if no
+call site folds more than 16 terms in a world at 16 or fewer species, whatever axis it folds. Tracing
+crossrev's eleven world sets (tracing only) with `species_sum` wrapped to record each call's
+leading-axis length reached 54 call sites; the longest fold had 10 terms, and none had more than 16.
+So the gate leaves those worlds' programs as they are, and crossrev at landing is the proof. The gene
+unit's folds are over its own listed rows, at most the world's species, by reading; its worlds are
+not in crossrev's sets. Two code paths in one helper is the price; folding them into one belongs to the
 next D148 round that re-proves every reaction program anyway, the per-entry layout's (§1.6), with
 G1, crossrev's renewal and the derivative programs.
 
@@ -251,19 +320,33 @@ also needs the network's sparsity, which is the next section's question.
 species has about k routes, so every stage is O(k²) in work and memory, against O(R·K) for a per-entry
 form like the assembly kernel's [R, K] View (K = 6 entries per step).
 
-**The rate evaluation alone** (`out/v2/rates.json`): the chain's forward and reverse log terms at one
-node, as `route_rates` forms them, every array an argument as the engine binds its layout:
+**The rate evaluation alone** (`out/v4/rates.json`, CPU 4 under the timed lock): the chain's forward
+and reverse log terms at one node, as `route_rates` forms them, every array an argument as the engine
+binds its layout, placed on the device once before timing. (An earlier record, `out/v2/rates.json`,
+passed host arrays on every call and so timed their copies too: 88 times at 1,024. It is kept and
+superseded.)
 
 | Rows | Dense: µs per call / temporaries | Per entry: µs per call / temporaries | Ratio | Values bitwise equal |
 | --- | --- | --- | --- | --- |
-| 16 | 26 / 2.6 kB | 31 / 1.7 kB | 0.8 | Yes |
-| 32 | 57 / 13 kB | 57 / 4.0 kB | 1.0 | Yes |
-| 256 | 416 / 1.0 MB | 87 / 36 kB | 4.8 | Yes |
-| 1,024 | 14,858 / 16.7 MB | 168 / 147 kB | 88 | Yes |
+| 16 | 16 / 2.6 kB | 17 / 1.7 kB | 0.9 | Yes |
+| 32 | 29 / 13 kB | 30 / 4.0 kB | 1.0 | Yes |
+| 256 | 237 / 1.0 MB | 53 / 36 kB | 4.5 | Yes |
+| 1,024 | 5,898 / 16.7 MB | 131 / 147 kB | 45 | Yes |
 
 **In the runs** (§1.2) the step's cost grows about quadratically above 32 rows: 0.45 ms at 32,
 17.3 ms at 256 (38 times for 8 times the rows) and 436 ms at 1,024 (25 times for 4 times), in
 both folds alike. At 1,024 rows that is 87 s per simulated second at the declared accuracy.
+
+**Beyond 1,024, a profile** (`out/v3/`, the scan fold, 40 steps of 5 ms, the two sizes run at once on
+CPUs 4 and 5, so not comparable with §1.2's single runs):
+
+| Rows | Compile s | s per step | s per simulated s | Peak RSS GiB | Error / largest | Planted / largest |
+| --- | --- | --- | --- | --- | --- | --- |
+| 2,048 | 100.7 | 1.77 | 354 | 4.3 | 1.63e-5 | 1.58e-4 |
+| 4,096 | 276.6 | 10.2 | 2,038 | 14.5 | 1.63e-5 | 3.30e-4 |
+
+The answers stay at the declared accuracy, and the dense layout's cost (time and memory, about k²)
+is what grows.
 
 **The trace budget.** The runner's definition-time estimate (`execution/resources.trace_bytes`)
 counts the reactions' `working_size` per saved step, and that includes count × (6k + 16) words, the
@@ -295,11 +378,31 @@ reach, so it lands after that build or with its owner's leave):
    budget that 1.1 GiB fits).
 4. **Tests** (D224's costs stated at landing): the 32-row chain against its closed form, amounts
    and booked heat, with the planted link, as one row of the existing `test_species_cap_runs.py`
-   (about 20 s, nearly all compile; tier 2); the refusal test at 1,025 rows (parse only, about 2 s); the 1,024-row world for
-   20 steps as a tier-3 guard (about 1 min with the gate). The 256 and 1,024 records above stay a
-   detached benchmark, rerun at each later raise, never tier tests.
+   (about 20 s, nearly all compile; tier 2); the refusal test at 1,025 rows (parse only, about
+   2 s); the 1,024-row world for 20 steps as a tier-3 guard (about 1 min with the gate). The 256 and
+   1,024 records above stay a detached benchmark, rerun at each later raise, never tier tests.
 5. **Docs:** D150 §2.6 and §11.5, D152 §7.2 and its refusal lists, the operators' docstrings and
    FR-9's entry.
+
+**Every operator that reads the cap ran at 32 rows** (S, `probe/ops32.py`, `out/ops32.json`): one
+existing world of each, crossrev's acceptance worlds or the operator's fixture, padded with idle
+neutral rows to 32 species, through the runner with every host check on every row. All nine ran to
+their horizons:
+
+| World (operators) | Species before | Rows run | Material residual (fmol) | Energy residual (relative) |
+| --- | --- | --- | --- | --- |
+| FR-1 load and degrade (owned compartment, exchange, turnover) | 4 | 6 | 0 | 5.3e-16 |
+| FR-1 load and react (owned compartment, exchange, reactions) | 5 | 6 | 0 | 9.2e-16 |
+| FR-3 q5 inward (site occupancy) | 4 | 6 | 3.2e-27 | 6.4e-16 |
+| FR-3 q5 class switch (site occupancy, scheduled) | 4 | 20,001 | 4.2e-22 | 9.6e-14 |
+| FR-10 ion world (bath schedule) | 4 | 2,001 | 0 | 1.7e-5 |
+| FR-10 ledger world (bath schedule, RK4) | 4 | 61 | 0 | 5.9e-16 |
+| FR-6 A5″ (coupling, turnover) | 4 | 2,001 | 5.5e-15 | 1.5e-5 |
+| FR-7 Kir world (unit producer) | 5 | 31 | 2.2e-19 | 9.8e-6 |
+| Gene unit, polymerase-limited at 10 copies, 20 steps | 8 | 21 | 5.2e-26 | 8.8e-15 |
+
+The 10⁻⁵ energy residuals are the moving-ion worlds' own IMEX accuracy, inside their bounds as every
+row passed. At 1,024 rows: **[filled from out/ops1024 if it ran]**.
 
 **What the raise does not claim.** Worlds above 16 stay outside D150's and MG0c's judged scope until a
 protocol covers them, and integration grants no acceptance. The cost at 1,024 is one chain in one
