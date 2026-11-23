@@ -366,14 +366,10 @@
   "/mnt/workspaces/Cells/gap-junction-20261123/landing-refs-7e210906/tiers/measured.json",
   "/mnt/workspaces/Cells/fr30-benchmark-20261123/harness/measure-99951bef/measured.json",
   "/mnt/workspaces/Cells/ol6-20261122/tiers-3101d47a/measure/measured.json",
-<<<<<<< HEAD
-  "/mnt/workspaces/Cells/fr43-part3-20261123/tiers-e3a24b0b/measured.json",
-  "/mnt/workspaces/Cells/fr43-part3-20261123/tiers-90a60049/measured.json"
-=======
   "/mnt/workspaces/Cells/fr15-f2-a1-20261123/landing-dec9f0f8/tiers-measured/measured.json",
   "/mnt/workspaces/Cells/fr43-20261123/part1/tiers/run2/measured.json",
-  "/mnt/workspaces/Cells/fr43-20261123/part1/tiers/run3/measured.json"
->>>>>>> main
+  "/mnt/workspaces/Cells/fr43-20261123/part1/tiers/run3/measured.json",
+  "/mnt/workspaces/Cells/fr43-part3-20261123/tiers-90a60049/measured.json"
  ],
  "measured_provenance": [
   {
@@ -3122,22 +3118,6 @@
    "utc": "2026-11-23T11:53:41+00:00"
   },
   {
-<<<<<<< HEAD
-   "git_revision": "e3a24b0b61c49a608de42fe4ba734f2ba5ec80bd",
-   "dirty": false,
-   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-   "root": "/mnt/workspaces/Cells/fr43-part3-20261123/snapshot-e3a24b0b",
-   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
-   "utc": "2026-11-23T16:07:30+00:00"
-  },
-  {
-   "git_revision": "90a60049a2d032ae179c3a59ee494efb989493db",
-   "dirty": false,
-   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-   "root": "/mnt/workspaces/Cells/fr43-part3-20261123/snap-90a60049",
-   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
-   "utc": "2026-11-23T16:52:01+00:00"
-=======
    "git_revision": "dec9f0f8e2b1fb6f3bb5a905c7ba1cbf17c99552",
    "dirty": false,
    "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -3160,7 +3140,14 @@
    "root": "/mnt/workspaces/Cells/fr43-20261123/part1/snap-head-764d685a",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-23T15:47:23+00:00"
->>>>>>> main
+  },
+  {
+   "git_revision": "90a60049a2d032ae179c3a59ee494efb989493db",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/fr43-part3-20261123/snap-90a60049",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-23T16:52:01+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -3994,11 +3981,7 @@
    },
    {
     "file": "tests/unit/test_composition_matrix.py",
-<<<<<<< HEAD
     "seconds": 5.07,
-=======
-    "seconds": 4.93,
->>>>>>> main
     "exit_code": 0,
     "counts": {
      "passed": 6
