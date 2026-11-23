@@ -895,6 +895,33 @@ def bind(spec, declaration):
 # ------------------------------------------------------------------ definition checks
 
 
+WATER = "ideal_osmosis_linear_compliance_water@1"  # The one volume changer admitted (FR-43).
+
+
+def check_volume_changers(spec, law=LAW_ID):
+    """FR-43 / D315: `law` reads the volumes current at the split, and water is the one changer of
+    them admitted beside it. A restricted lumen (its lumen volumes) and replacement@2 (a newcomer's
+    volume written into water's state) stay refused until a probe covers them."""
+    for op, _, _ in composite_spec.entries(spec):
+        if op.LAW_ID in (law, WATER):
+            continue
+        if {"volume", "extracellular_volume"} & set(op.VIEW_FIELDS) or (
+            "volume_increment_pL" in op.ENTITY_WRITES
+        ):
+            raise ConfigError(
+                f"{law}: {op.LAW_ID} changes the volumes it reads; water is the one volume "
+                "changer admitted beside it (FR-43 / D315)"
+            )
+
+
+def row_volumes(op, view, model):
+    """The (cell, outside) volumes at an observed row: the view's where op reads them current (the
+    composite passes it views, FR-43), else None: the declared ones (network())."""
+    if view is None or op not in getattr(model, "view_readers", ()):
+        return None
+    return (np.asarray(view.volume), np.asarray(view.extracellular_volume))
+
+
 def written(declaration):
     """{(species, node id): reaction id} of every row a reaction writes (net coefficient != 0)."""
     by_id = {r.id: r for r in declaration.reactions}
@@ -1009,7 +1036,7 @@ class Network(NamedTuple):
     node: object  # [route] combined node index.
     size: int  # Cells plus outside slots (static).
     mask: object  # [node] active cells and finite outside nodes.
-    volume: object  # [node] pL, declared.
+    volume: object  # [node] pL: the view's current ones, else the declared ones (network()).
     route_volume: object  # [route] pL.
     alpha: object  # [rows, route].
     beta: object
@@ -1025,12 +1052,16 @@ class Network(NamedTuple):
     RT: object  # pJ/fmol.
 
 
-def network(p, multiplier, *, xp):
+def network(p, multiplier, *, xp, volumes=None):
+    """volumes: (cell, outside) pL, the view's current volumes where an operator of the composition
+    changes them (FR-43 / D315), else None: the declared ones bound at the definition (C1's
+    fallback, today's program)."""
     n = p.active.shape[0]
     size = n + p.outside_active.shape[0]
     node = xp.where(p.reaction_route_outside, n + p.reaction_route_node, p.reaction_route_node)
     mask = xp.concatenate((p.active, p.outside_active & ~p.reservoir))
-    volume = xp.concatenate((p.volume, p.extracellular_volume))
+    cell, outside = (p.volume, p.extracellular_volume) if volumes is None else volumes
+    volume = xp.concatenate((cell, outside))
     route_volume = volume[node]
     alpha, beta = p.reaction_reactants, p.reaction_products
     law = p.reaction_route_law
@@ -1172,10 +1203,11 @@ class Step(NamedTuple):
     valid: object
 
 
-def half_step_terms(state, multiplier, h, p, *, xp, one_way=False):
+def half_step_terms(state, multiplier, h, p, *, xp, one_way=False, volumes=None):
     """SSPRK(3,3) over h on the network (§4.2, Appendix A) and the bookings (§3.3): a Step; with
-    one_way (FR-42, static) (Step, each stage's one-way rates)."""
-    net = network(p, multiplier, xp=xp)
+    one_way (FR-42, static) (Step, each stage's one-way rates). volumes: network()'s, held fixed
+    over the half-step: its concentrations, rates, stage condition and bookings take them."""
+    net = network(p, multiplier, xp=xp, volumes=volumes)
     n = node_amounts(state, p, xp=xp)
     s1, ok1, l1, *g1 = stage_rates(n, net, p, h, xp=xp, one_way=one_way)
     y2 = n + h * _change(s1.rate, net, xp=xp)
@@ -1306,15 +1338,15 @@ def _split(values, n):
     return values[..., :n], values[..., n:]
 
 
-def reactions_half_step(state, multiplier, h, p, *, xp=jnp, labels=None):
+def reactions_half_step(state, multiplier, h, p, *, xp=jnp, labels=None, volumes=None):
     """(state after h of the network, validity): the network's rows and the operator's own fields,
     each entry selected where a route with a positive multiplier writes it, else its start value
     (never offset by a computed zero, §4.5). With labels (FR-42, D289; static), also its one-way
-    moves (one_way_moves)."""
+    moves (one_way_moves). volumes: the view's current volumes, or None (network())."""
     if labels is None:
-        step = half_step_terms(state, multiplier, h, p, xp=xp)
+        step = half_step_terms(state, multiplier, h, p, xp=xp, volumes=volumes)
     else:
-        step, gross = half_step_terms(state, multiplier, h, p, xp=xp, one_way=True)
+        step, gross = half_step_terms(state, multiplier, h, p, xp=xp, one_way=True, volumes=volumes)
     rows = p.reaction_rows
     n = p.active.shape[0]
     cell_rows, outside_rows = _split(step.written, n)
@@ -1402,12 +1434,14 @@ def one_way_moves(gross, multiplier, h, p, labels, *, xp=jnp):
     return out, arrival[:, :, None] * xp.where(own, made[at], 0.0)[:, None, :], ()
 
 
-def stage_report(state, control, p, dt):
+def stage_report(state, control, p, dt, volumes=None):
     """Host-side diagnosis of a refused step (§4.2): the largest h L over the three stages at this
     state and control (h = dt/2), the condition's verdict, and the largest dt that the start state's
-    own rates admit (dt L <= 1 at the first stage; the later stages can bind sooner)."""
-    step = half_step_terms(state, np.asarray(control.reaction_multiplier), 0.5 * dt, p, xp=np)
-    net = network(p, np.asarray(control.reaction_multiplier), xp=np)
+    own rates admit (dt L <= 1 at the first stage; the later stages can bind sooner). volumes: the
+    row's current volumes where they change (network()), else the declared ones."""
+    multiplier = np.asarray(control.reaction_multiplier)
+    step = half_step_terms(state, multiplier, 0.5 * dt, p, xp=np, volumes=volumes)
+    net = network(p, multiplier, xp=np, volumes=volumes)
     n = node_amounts(state, p, xp=np)
     rates = route_rates(n, net, p, xp=np)
     load = np.where(
@@ -1440,21 +1474,22 @@ class LocalSpeciesReactions(Operator):
     # so detailed balance is kept; docs/INVENTORY_COUPLING_DESIGN.md §2.1).
     ROUTABLE_CONTROLS = MappingProxyType({"reaction_multiplier": "rate"})
     EXPERIMENT_KEYS = (CONTROLS_KEY,)
-    # Concentrations and dG read the declared volumes; a closer counts as a mask's provider (S5);
-    # insertion@1 provides the outside mask and anchors (§1.4).
-    CONFLICTS_VIEW = (
-        "volume",
-        "extracellular_volume",
-        "active",
-        "outside_active",
-        "extracellular_amount_reference",
-    )
+    # The volumes are current reads at the split (FR-43 / D315; composition option A, D152 §7.3's
+    # volume door): where water changes them, each half-step's concentrations, rates, stage
+    # condition and bookings take the view's, held over the half-step; where no operator changes
+    # them the part receives no view and reads the declared ones (C1's fallback, today's program).
+    # Water is the one changer admitted (check_volume_changers). A closer counts as a mask's
+    # provider (S5), and insertion@1 provides the outside mask and anchors (§1.4): refused.
+    CONFLICTS_VIEW = ("active", "outside_active", "extracellular_amount_reference")
+    VIEW_READS = ("volume", "extracellular_volume")
     # Door S (docs/SCOPED_COMPOSITION_DESIGN.md §5): its outside reads are at finite nodes only
     # (node_amounts and reactions_domain_valid mask held baths), so a change at a held bath, such
     # as a bath dose, does not meet them.
     SCOPED_READS = {
-        name: Read("fixed", "split", scoped=True)
-        for name in ("extracellular_volume", "outside_active", "extracellular_amount_reference")
+        "volume": Read("current", "split"),
+        "extracellular_volume": Read("current", "split", scoped=True),
+        "outside_active": Read("fixed", "split", scoped=True),
+        "extracellular_amount_reference": Read("fixed", "split", scoped=True),
     }
     READOUT_COLUMNS = READOUT_COLUMNS
     ENTITY_WRITES = {
@@ -1609,6 +1644,7 @@ class LocalSpeciesReactions(Operator):
         common.check_species_cap(spec, LAW_ID)
         common.check_identities(spec, LAW_ID, tuple(s.identity for s in declaration.species))
         check_turnover_rows(spec, declaration)
+        check_volume_changers(spec)
         common.registry.check_shared_rows(spec, LAW_ID)
         check_replaced_slots(spec, declaration)
         route_tables(declaration, schedule, spec)  # FR-26: a founder's change after its death.
@@ -1616,7 +1652,7 @@ class LocalSpeciesReactions(Operator):
     def read_slots(self, spec, declaration):
         """Door S: every finite outside node (its domain reads them all; held baths are masked)."""
         finite = tuple(i for i, c in enumerate(spec.model.extracellular) if not c.reservoir)
-        return dict.fromkeys(self.SCOPED_READS, finite)
+        return dict.fromkeys((k for k, r in self.SCOPED_READS.items() if r.scoped), finite)
 
     def species_identities(self, declaration):
         """The species identities it declares (registry/species_registry.py, D176)."""
@@ -1719,12 +1755,16 @@ class LocalSpeciesReactions(Operator):
     def statically_idle(self, p):
         return p.reaction_route_node.shape[0] == 0
 
-    def half_step(self, state, h, control, p, *, xp, labels=None):
+    def half_step(self, state, h, control, p, *, xp, labels=None, view=None):
         """labels (FR-42, D289; static): (rows, arrival); the call then also returns its one-way
-        moves. Without it, today's call."""
+        moves. view: the reader view the composite passes where an operator changes the volumes
+        (FR-43 / D315), whose current volumes the half-step takes; without one (C1's fallback),
+        today's call."""
+        m = control.reaction_multiplier
+        volumes = None if view is None else (view.volume, view.extracellular_volume)
         if labels is None:
-            return reactions_half_step(state, control.reaction_multiplier, h, p, xp=xp)
-        return reactions_half_step(state, control.reaction_multiplier, h, p, xp=xp, labels=labels)
+            return reactions_half_step(state, m, h, p, xp=xp, volumes=volumes)
+        return reactions_half_step(state, m, h, p, xp=xp, labels=labels, volumes=volumes)
 
     def control_valid(self, control, p, *, xp):
         m = control.reaction_multiplier
@@ -1766,7 +1806,7 @@ class LocalSpeciesReactions(Operator):
     def observe(self, row, state, control, p, view, model, spec):
         columns = {k: getattr(state, k) for k in self.STATE_AXES}
         multiplier = np.asarray(control.reaction_multiplier)
-        net = network(p, multiplier, xp=np)
+        net = network(p, multiplier, xp=np, volumes=row_volumes(self, view, model))
         rates = route_rates(node_amounts(state, p, xp=np), net, p, xp=np)
         columns["reaction_rate_fmol_per_s"] = np.asarray(rates.rate)
         columns["reaction_affinity_RT"] = np.where(net.passive, rates.affinity, 0.0)
