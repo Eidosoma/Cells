@@ -1340,7 +1340,7 @@
    "atol": "1e-30 fmol (amounts, machines, complexes, extents) and pL (volume); 1e-20 pJ (heats and works)",
    "steps": 2675,
    "rhs_evaluations": 19677,
-   "wall_s": 2.4,
+   "wall_s": 2.7,
    "sampling": "integrated segment by segment between the reported times (and recharging's sign changes), so every reported value is a step end; no dense output"
   },
   "second": [
@@ -1435,7 +1435,7 @@
     "atol": "1e-30 fmol (amounts, machines, complexes, extents) and pL (volume); 1e-20 pJ (heats and works)",
     "steps": 4606,
     "rhs_evaluations": 33227,
-    "wall_s": 3.9,
+    "wall_s": 4.9,
     "difference_from_primary": {
      "amount_fmol.Na": {
       "e_max_normalised": 0.0,
@@ -1540,7 +1540,7 @@
  },
  "provenance": {
   "git": {
-   "revision": "6d1f76f575aab56a55a3c37bca701d37b9e243f9",
+   "revision": "d65d7a5f26c4ca5b5626735047eb6276e37ce46e",
    "dirty_code_and_input_paths": []
   },
   "python": "3.13.5",
