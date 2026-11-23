@@ -9920,7 +9920,7 @@ and its erratum 1 (tag fr38-rule-erratum-1-registered-2026-11-23, 57ff66b0).
 2. **OL6 Protocol D: erratum 2 for P-D1, using its registered closed form.**
    - P-D1's planted (d) run is refused by its own books (residual 7.26e-8 k_BT against 1.00e-8) before
      criterion B can read it. Under section 8, a plant not caught makes the protocol fail.
-   - The erratum has B read P-D1's (d) side from the registered  (), so no
+   - The erratum has B read P-D1's (d) side from the registered `pd1_closed_form` (`d0_stationary`), so no
      new number is introduced. P-D1 gets one attempt under it.
    - It also records the lead's ruling on P-D2(ii): its process computes the engine's generic verdict
      before entering its scope. That plant then reproduces the registered effect bit for bit
