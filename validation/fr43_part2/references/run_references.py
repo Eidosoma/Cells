@@ -11,16 +11,23 @@ primary and each second method.
 
 from __future__ import annotations
 
-import argparse
-import json
 import os
-import platform
-import subprocess
-import sys
-import time
 
-import numpy as np
-import scipy
+# One BLAS thread, set before numpy loads OpenBLAS: a threaded LU varies in its last bits from run
+# to run, which changes the step sequence (by about 1e-13 relative in the results). With one
+# thread a regeneration reproduces the files bitwise on the same platform and library versions.
+for _var in ("OPENBLAS_NUM_THREADS", "OMP_NUM_THREADS", "MKL_NUM_THREADS"):
+    os.environ[_var] = "1"
+
+import argparse  # noqa: E402
+import json  # noqa: E402
+import platform  # noqa: E402
+import subprocess  # noqa: E402
+import sys  # noqa: E402
+import time  # noqa: E402
+
+import numpy as np  # noqa: E402
+import scipy  # noqa: E402
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
@@ -118,10 +125,40 @@ def run_case(name: str) -> dict:
     return doc
 
 
+def summary() -> str:
+    """README.md's results table, from the files in out/."""
+    rows = ["| Case | Primary steps | Second method: largest e (quantity) | Identities: largest "
+            "residual |", "| --- | --- | --- | --- |"]
+    for name in CASES:
+        path = os.path.join(OUT, f"{name}.json")
+        if not os.path.exists(path):
+            continue
+        with open(path) as fh:
+            doc = json.load(fh)
+        m = doc["method"]
+        secs = []
+        for s in m["second"]:
+            q, v = max(s["difference_from_primary"].items(), key=lambda kv: kv[1]["e_max_normalised"])
+            label = s["integrator"].split(" ")[1] + f" {s['rtol']:g}"
+            secs.append(f"{label}: {v['e_max_normalised']:.1e} (`{q}`)")
+        chk = doc["checks"]
+        fmol = max(v for k, v in chk.items() if k.endswith("_fmol")) if any(
+            k.endswith("_fmol") for k in chk) else None
+        parts = [f"energy {chk['energy_identity_relative_to_scale']:.1e} of scale"]
+        if fmol is not None:
+            parts.insert(0, f"books, machines, residues, products, moieties {fmol:.1e} fmol")
+        rows.append(f"| {name} | {m['primary']['steps']} | {'; '.join(secs)} | {'; '.join(parts)} |")
+    return "\n".join(rows)
+
+
 def main(argv=None) -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--cases", nargs="*", default=list(CASES))
+    ap.add_argument("--summary", action="store_true", help="print README.md's results table")
     args = ap.parse_args(argv)
+    if args.summary:
+        print(summary())
+        return
     os.makedirs(OUT, exist_ok=True)
     for name in args.cases:
         t0 = time.time()

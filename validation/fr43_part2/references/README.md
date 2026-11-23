@@ -31,7 +31,11 @@ From the repository root:
 ```
 
 - `--cases C2.3-sink C2.6-swelling-cell ...` regenerates only those cases.
+- `--summary` prints the results table below from `out/`.
 - Each case takes 1–3 minutes on one core.
+- The runner pins BLAS to one thread before numpy loads. So a regeneration on the same platform and
+  library versions reproduces the files bitwise. A threaded OpenBLAS changes the step sequence in
+  its last bits, and the results by about 1e-13 relative.
 
 | Case | Serves | Output |
 | --- | --- | --- |
