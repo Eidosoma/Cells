@@ -1,0 +1,107 @@
+{
+ "kind": "cells.fr50_reference_spec@1",
+ "purpose": "FR-50 (protocol fr50-one-way-records-v1): code-blind absolute one-way fluxes and their records, per route, at declared states: kinds' passive routes and an ATP-driven transporter (phase 1), and @3's membrane route, junction, uncharged face and a blocked channel population (phase 2). Declared values and protocol only: no engine value is in this file.",
+ "readme": "README.md",
+ "laws": "LAWS.md",
+ "units": {
+  "time": "s",
+  "temperature": "K",
+  "amount": "fmol",
+  "volume": "pL",
+  "concentration": "mM (1 fmol/pL)",
+  "area": "m^2",
+  "permeability": "m/s",
+  "diffusivity": "m^2/s",
+  "length": "m",
+  "voltage": "V (V = phi_in - phi_out)",
+  "one_way_flux": "fmol/s",
+  "one_way_record": "fmol (routes); fmol of cycles (transporters)",
+  "transporter_capacity": "fmol of cycles per s",
+  "half_saturation": "mM",
+  "standard_potential": "mu0/(R T), dimensionless",
+  "stoichiometry": "integer",
+  "unblocked_fraction": "dimensionless"
+ },
+ "constants": {"F_C_per_mol": "6.02214076e23 * 1.602176634e-19", "R_J_per_mol_K": "6.02214076e23 * 1.380649e-23"},
+ "cases": {
+  "K1_neutral_zero_net": {
+   "phase": 1, "route": "neutral passive route on a patch (LAWS.md section 2), forward inward",
+   "T_K": "310", "P_m_per_s": "1e-9", "A_m2": "1e-10", "opening": "1",
+   "V_cell_pL": "1", "V_node_pL": "1", "c_cell_mM": "1e-3", "c_node_mM": "1e-3",
+   "record_times_s": {"rule": "t_i = 10 i, i = 0 ... 10"},
+   "requested": "forward and backward fluxes, and the records F(t_i), B(t_i)"
+  },
+  "K2_neutral_relaxation": {
+   "phase": 1, "route": "neutral passive route on a patch, forward inward", "trajectory": "LAWS.md section 5",
+   "T_K": "310", "P_m_per_s": "1e-7", "A_m2": "1e-10", "opening": "1",
+   "V_cell_pL": "1", "V_node_pL": "1", "c_cell_mM_at_0": "1e-3", "c_node_mM_at_0": "1e-6",
+   "record_times_s": {"rule": "t_i = 5 i, i = 0 ... 40"},
+   "requested": "c_cell(t_i), c_node(t_i), and F(t_i), B(t_i)"
+  },
+  "K3_charged_kernel": {
+   "phase": 1, "route": "constant-field route of a charged species of valence +1 on a patch, forward inward; a host evaluation at declared voltages, no trajectory",
+   "T_K": "310", "valence": 1, "P_m_per_s": "1e-8", "A_m2": "1e-10", "opening": "1",
+   "c_in_mM": "1e-6", "c_out_mM": "1e-5",
+   "voltages_V": ["-0.080", "-0.040", "0", "0.030"],
+   "requested": "forward and backward fluxes at each voltage, and their ratio"
+  },
+  "K4_transporter_equilibrium": {
+   "phase": 1, "route": "the ATP-driven transporter of LAWS.md section 3 at equilibrium, forward = forward cycles",
+   "T_K": "310", "stoichiometry": 1, "capacity_fmol_cycles_per_s": "1e-3", "availability": "1",
+   "K_mM": "0.25", "K_ATP_mM": "0.1", "c0_mM": "1",
+   "mu0_over_RT": {"ATP": "0", "ADP": "0", "Pi": "0"},
+   "fuel_mM": {"ATP": "1", "ADP": "0.5", "Pi": "0.5"},
+   "c_in_mM": "0.25", "c_out_mM": "1",
+   "record_times_s": {"rule": "t_i = 10 i, i = 0 ... 10"},
+   "requested": "dG_cyc/(R T) (it should be 0: report it), J+ and J-, and the records F(t_i), B(t_i)"
+  },
+  "K4h_transporter_off_equilibrium": {
+   "phase": 1, "route": "the same transporter, at a state off equilibrium; a host evaluation, no trajectory",
+   "T_K": "310", "stoichiometry": 1, "capacity_fmol_cycles_per_s": "1e-3", "availability": "1",
+   "K_mM": "0.25", "K_ATP_mM": "0.1", "c0_mM": "1",
+   "mu0_over_RT": {"ATP": "0", "ADP": "0", "Pi": "0"},
+   "fuel_mM": {"ATP": "1", "ADP": "0.5", "Pi": "0.5"},
+   "c_in_mM": "0.5", "c_out_mM": "1",
+   "requested": "dG_cyc/(R T), J+, J- and J-/J+"
+  },
+  "E1_membrane_route_at_reversal": {
+   "phase": 2, "route": "@3's membrane route of K (a patch's own permeability), forward outward, at V = E_K",
+   "T_K": "310", "valence": 1, "P_m_per_s": "1e-9", "A_m2": "1e-9", "availability": "1",
+   "c_in_mM": "140", "c_out_mM": "5.4", "V": "E_K = (R T / F) ln(c_out / c_in), to 50 digits",
+   "record_times_s": {"rule": "t_i = 0.01 i, i = 0 ... 10"},
+   "requested": "E_K, the forward and backward fluxes (equal), and the records F(t_i), B(t_i)"
+  },
+  "E2_junction_neutral": {
+   "phase": 2, "route": "a junction route of a neutral species between two cells, forward sender to receiver, at equal concentrations and equal potentials",
+   "T_K": "310", "P_m_per_s": "1e-9", "A_m2": "1e-12", "gate": "1", "availability": "1",
+   "c_sender_mM": "1e-3", "c_receiver_mM": "1e-3",
+   "record_times_s": {"rule": "t_i = 10 i, i = 0 ... 10"},
+   "requested": "the fluxes and the records"
+  },
+  "E3_face_uncharged": {
+   "phase": 2, "route": "an uncharged face between two finite outside nodes, forward sender to receiver, at equal concentrations",
+   "T_K": "310", "D_m2_per_s": "1e-10", "A_m2": "1e-10", "L_m": "1e-5",
+   "c_sender_mM": "1e-3", "c_receiver_mM": "1e-3",
+   "record_times_s": {"rule": "t_i = 10 i, i = 0 ... 10"},
+   "requested": "the fluxes and the records"
+  },
+  "E4_blocked_channel_at_reversal": {
+   "phase": 2, "route": "a gate-free K channel population (kleak_always_open@1) with FR-51's block, forward outward, at V = E_K",
+   "T_K": "310", "valence": 1, "P_m_per_s": "1e-8", "A_m2": "1e-9", "relative_permeability": "1", "abundance": "1", "open_fraction": "1", "availability": "1",
+   "c_in_mM": "140", "c_out_mM": "5.4", "V": "E_K, to 50 digits",
+   "block": {"blocker": {"valence": 2, "side": "inside", "concentration_mM": "1"}, "reference": {"reversal_of": "K"}, "modes": [{"weight": "1", "k0_mM": "1", "electrical_distance": "0.5"}]},
+   "record_times_s": {"rule": "t_i = 0.01 i, i = 0 ... 10"},
+   "requested": "E_K, u (it should be 1/2: report it), the forward and backward fluxes, and the records"
+  },
+  "E6_blocked_channel_off_reversal": {
+   "phase": 2, "route": "the same population at declared voltages off reversal; a host evaluation, no trajectory",
+   "T_K": "310", "valence": 1, "P_m_per_s": "1e-8", "A_m2": "1e-9", "relative_permeability": "1", "abundance": "1", "open_fraction": "1", "availability": "1",
+   "c_in_mM": "140", "c_out_mM": "5.4",
+   "block": {"blocker": {"valence": 2, "side": "inside", "concentration_mM": "1"}, "reference": {"reversal_of": "K"}, "modes": [{"weight": "1", "k0_mM": "1", "electrical_distance": "0.5"}]},
+   "voltages_V": ["-0.120", "-0.060", "-0.030", "0", "0.040"],
+   "availabilities": ["1", "0.5"],
+   "requested": "u, the forward and backward fluxes, their ratio and their difference at each voltage and each availability (the availability multiplies both directions, as o and u do)"
+  }
+ },
+ "format": "one JSON file per case, results/<case id>.json, every number as a decimal string of at least 20 significant digits, plus method and provenance"
+}
