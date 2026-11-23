@@ -10077,3 +10077,33 @@ references returned, against the code-blind references tagged fr43-part3-referen
 - **Disclosed:** the builder chose W3's window and phase band after its own engine and development runs. That is
   recorded in the registration's section 5.
 - **It lands after FR-43 part 1,** gated against main.
+
+## D320: FR-30's registered benchmark on Revilla 1999 fails: 4 of 6 comparisons, both misses at -80 mV
+
+2026-11-23, about 17:44 UTC. The independent checker's score, under section 13's rule 4 and D311.
+- **Provenance:**
+  - the registration is tag fr30-revilla1999-registered-2026-11-23, and the reader erratum is tag
+    fr30-revilla1999-reader-erratum-1-2026-11-23, which changes resolve's container step only;
+  - the score ran from a clean snapshot of 00bc183e;
+  - the inputs are predictions.json 20ca2a4a... and held_out.json e8368083..., both unchanged;
+  - the verdict is /mnt/workspaces/Cells/fr30-benchmark-20261123/verdict/checker_verdict.json (af9f402d...), with
+    the scorer's own verdict.json (c28010d5...);
+  - the checker recomputed all six comparisons without the scorer, and they agree.
+- **The six comparisons:**
+  - **-80 mV:** tau_fast passes (1.51 against 1.75 s, within 2 SEM). tau_slow fails (19.40 against 13.39 s, ln ratio
+    0.370, outside 2 SEM). G_ss/G_0 fails (0.397 against 0.478, off by 0.081, beyond 2 SEM's 0.053).
+  - **+80 mV:** tau_fast passes, through 2 SEM only (1.51 against 2.17 s). tau_slow passes (19.40 against 16.45 s).
+    G_ss/G_0 passes (0.397 against 0.384).
+- **Rule 4 as written also fails,** so the verdict does not rest on D311's "both" reading:
+  - G_ss fails at one voltage of two;
+  - tau_slow passes at one of two, not more than half;
+  - the 75% clause holds, at 3 of 4.
+- **The likely cause, a reading rather than a finding:** junction_series_gates@1 is symmetric in |V_j|, so one
+  parameter set predicts the same values at both polarities (D311's ruling, the law as declared). The data's
+  steady state differs between polarities. The in-sample fit already missed G_ss at -100 and -60 mV against +60 and
+  +100.
+- **Disclosed:**
+  - the checker wrote the reader erratum from value-free structure logs before reading any held-out value;
+  - the lead ruled one parameter set after reading, masked, the Lean lane's line on polarity-symmetric gates
+    (D317).
+- **FR-30's law stays development-only** (D262). What follows is the user's decision.
