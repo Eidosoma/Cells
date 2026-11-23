@@ -123,6 +123,10 @@ def _same(a, b):
 
 def test_each_division_keeps_protocol_g_s_contract(exact_run):
     spec, run = exact_run
+    again = parse_spec(spec.to_dict())  # the block round trips under `division`, by its law
+    assert again.model.world == spec.model.world and again.fingerprint == spec.fingerprint
+    assert spec.model.world.division is None and spec.to_dict()["model"]["world"]["division"] == (
+        world()["division"])  # fmt: skip
     f = run.size_division["fissions"]
     divisions = len(f["fission_time"])
     assert run.status == "event_limit" and divisions >= 3 and run.closure["holds"]
