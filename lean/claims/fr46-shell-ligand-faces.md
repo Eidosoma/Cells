@@ -24,7 +24,13 @@ Proof sources [D323 sealed-lumen and face-propagation contract](https://github.c
 
 ## Numerical comparison
 
-**Failed.** Development engine 61d823be admitted the carrier. The host kernel gave a positive rate for each of its four consecutive events. From one X outside, following these events left one X inside and zero outside while preserving X, Y and the wall scaffold. The otherwise identical sealed control with Y binding removed was admitted as expected.
+**Checked.** The original candidate 61d823be admitted the four-event carrier. After the face rule began following ligand already on a site through other binding events, the unchanged reproducer passed on d19b10c2 and cf5ddcff. Both refused the path through A, C and D and admitted the sealed control with Y binding removed. The owner’s regression also passed on cf5ddcff.
+
+**Engine** `cells.assembly_lineages@2`, `cells.prescribed_shell@1`, `cells.stochastic_mass_action@1`
+
+[Bound ligand followed through other binding events](https://github.com/Eidosoma/Cells/blob/cf5ddcff0054eac89a02f34c6cfe740ed5d833ce/src/cells/models/assembly_lineages_v2/spec.py#L456) · [Owner’s carrier refusal and sealed control](https://github.com/Eidosoma/Cells/blob/cf5ddcff0054eac89a02f34c6cfe740ed5d833ce/tests/unit/test_assembly_lineages_v2_shell_interior.py#L354) · [Prescribed-shell fixture](https://github.com/Eidosoma/Cells/blob/cf5ddcff0054eac89a02f34c6cfe740ed5d833ce/tests/unit/test_assembly_lineages_v2_geometry.py#L508) · [World definition and stoichiometric steps](https://github.com/Eidosoma/Cells/blob/cf5ddcff0054eac89a02f34c6cfe740ed5d833ce/tests/assembly_lineage_v2_fixtures.py) · [Exact four-event witness and sealed control](https://github.com/Eidosoma/Cells/blob/db1278778fa36e4f9376eea783d199783ded5b2f/lean/checks/chemistry/ShellLigandFaces.lean) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/db1278778fa36e4f9376eea783d199783ded5b2f/lean/checks/shell_ligand_faces.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/db1278778fa36e4f9376eea783d199783ded5b2f/lean/PROGRESS.md#fr46-shell-ligand-faces-replay)
+
+[Tested engine cf5ddcff0054](https://github.com/Eidosoma/Cells/commit/cf5ddcff0054eac89a02f34c6cfe740ed5d833ce) · [Evidence checkpoint db1278778fa3](https://github.com/Eidosoma/Cells/commit/db1278778fa36e4f9376eea783d199783ded5b2f)
 
 **Engine** `cells.assembly_lineages@2`, `cells.prescribed_shell@1`, `cells.stochastic_mass_action@1`
 

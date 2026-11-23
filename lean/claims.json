@@ -24,6 +24,46 @@
     "cells.rate_equations@1": "molecular-assembly"
   },
   "comparisons": {
+    "fr47-shell-wash-recovery-host": {
+      "kind": "engine",
+      "models": ["cells.assembly_lineages@2"],
+      "laws": ["cells.prescribed_shell@1", "cells.shell_permeation@1"],
+      "operators": ["cells.pool_replacement@1", "cells.pool_withdrawal@1"],
+      "engine_revision": "cf5ddcff0054eac89a02f34c6cfe740ed5d833ce",
+      "record_revision": "db1278778fa36e4f9376eea783d199783ded5b2f",
+      "sources": {
+        "Per-state host rates": "src/cells/models/assembly_lineages_v2/balance.py#L56",
+        "Forward and reverse shell rates": "src/cells/models/assembly_lineages_v2/kernel.py#L279",
+        "Full replacement and the finite pool": "src/cells/models/assembly_lineages_v2/transfer.py#L81",
+        "Removed and supplied counts": "src/cells/models/assembly_lineages_v2/replacement.py#L130",
+        "Threshold draw for each molecule": "src/cells/models/assembly_lineages_v2/withdrawal.py#L150",
+        "Shell fixture with an absolute lumen potential": "tests/unit/test_assembly_lineages_v2_shell_interior.py#L35"
+      },
+      "record_inputs": {
+        "Two-compartment mean and its unique trajectory": "lean/CellsProofs/Chemistry/ShellWashRecovery.lean",
+        "Analytic controls for both reads and the next draw": "lean/checks/chemistry/ShellWashRecovery.lean"
+      },
+      "driver": "lean/checks/shell_wash_recovery.py",
+      "record": "lean/PROGRESS.md#fr47-shell-wash-recovery"
+    },
+    "fr46-shell-carrier-repair": {
+      "kind": "engine",
+      "models": ["cells.assembly_lineages@2"],
+      "laws": ["cells.prescribed_shell@1", "cells.stochastic_mass_action@1"],
+      "engine_revision": "cf5ddcff0054eac89a02f34c6cfe740ed5d833ce",
+      "record_revision": "db1278778fa36e4f9376eea783d199783ded5b2f",
+      "sources": {
+        "Bound ligand followed through other binding events": "src/cells/models/assembly_lineages_v2/spec.py#L456",
+        "Owner’s carrier refusal and sealed control": "tests/unit/test_assembly_lineages_v2_shell_interior.py#L354",
+        "Prescribed-shell fixture": "tests/unit/test_assembly_lineages_v2_geometry.py#L508",
+        "World definition and stoichiometric steps": "tests/assembly_lineage_v2_fixtures.py"
+      },
+      "record_inputs": {
+        "Exact four-event witness and sealed control": "lean/checks/chemistry/ShellLigandFaces.lean"
+      },
+      "driver": "lean/checks/shell_ligand_faces.py",
+      "record": "lean/PROGRESS.md#fr46-shell-ligand-faces-replay"
+    },
     "fr46-shell-carrier-two-ligands": {
       "kind": "engine",
       "models": ["cells.assembly_lineages@2"],
@@ -10760,15 +10800,82 @@
         }
       },
       "numerical": {
-        "status": "failed",
-        "comparisons": ["fr46-shell-carrier-two-ligands"],
-        "result": "Development engine 61d823be admitted the carrier. The host kernel gave a positive rate for each of its four consecutive events. From one X outside, following these events left one X inside and zero outside while preserving X, Y and the wall scaffold. The otherwise identical sealed control with Y binding removed was admitted as expected."
+        "status": "checked",
+        "comparisons": ["fr46-shell-carrier-repair", "fr46-shell-carrier-two-ligands"],
+        "result": "The original candidate 61d823be admitted the four-event carrier. After the face rule began following ligand already on a site through other binding events, the unchanged reproducer passed on d19b10c2 and cf5ddcff. Both refused the path through A, C and D and admitted the sealed control with Y binding removed. The owner’s regression also passed on cf5ddcff."
       },
       "biology": {
         "status": "open",
         "observable": "Lumen tracer count over time in a closed shell with face-selective binding, with the initially free and wall-bound tracer inventories measured.",
         "unit": "molecules",
         "evidence": []
+      }
+    },
+    {
+      "id": "fr47-shell-wash-recovery",
+      "category": "molecular-assembly",
+      "title": "Tracer returns to a finite exterior pool after a wash",
+      "statement": "A full tracer-free wash leaves the retained lumen mean L and sets the exterior count to zero. With constant per-molecule rates k_in into the lumen and k_out back out, the exterior mean at elapsed time t is L k_out (1 − exp(−s t))/s, where s = k_in + k_out > 0. Its right derivative at the wash is k_out L. A later withdrawal of fraction f on the sampler’s word grid removes f times that recovered mean.",
+      "assumptions": [
+        "A finite set of tracers exchanges between two well-mixed compartments of fixed positive volume. Each tracer obeys the two-state forward equation between washes. Molecules removed by a wash stay absent. The interval has constant rates and conserves the surviving tracer.",
+        "The physical rates per second are k_in = P A / V_out and k_out = P A exp(Δ) / V_in, with volumes in m³, permeability P in m/s, area A in m² and Δ = (μ°lumen − μ°solution)/RT. A fixed gate can multiply both rates by the same factor.",
+        "A complete replacement exchanges the exterior for tracer-free medium. At the next fractional withdrawal, each exterior molecule has the declared removal probability, independently, under the sampler’s equal-weight word law. The fraction is exactly representable on its grid."
+      ],
+      "uses": ["prescribed-shell-rates", "scheduled-species-turnover", "pool-withdrawal"],
+      "formal": {
+        "status": "proved",
+        "about": ["cells.prescribed_shell@1", "cells.shell_permeation@1", "cells.pool_replacement@1", "cells.pool_withdrawal@1"],
+        "theorems": {
+          "CellsProofs.Chemistry.ShellWashRecovery.mean_flux": "lean/CellsProofs/Chemistry/ShellWashRecovery.lean",
+          "CellsProofs.Chemistry.ShellWashRecovery.exterior_derivative": "lean/CellsProofs/Chemistry/ShellWashRecovery.lean",
+          "CellsProofs.Chemistry.ShellWashRecovery.unique_on_interval": "lean/CellsProofs/Chemistry/ShellWashRecovery.lean",
+          "CellsProofs.Chemistry.ShellWashRecovery.recovery_curve": "lean/CellsProofs/Chemistry/ShellWashRecovery.lean",
+          "CellsProofs.Chemistry.ShellWashRecovery.initial_recovery": "lean/CellsProofs/Chemistry/ShellWashRecovery.lean",
+          "CellsProofs.Chemistry.ShellWashRecovery.recovery_bounds": "lean/CellsProofs/Chemistry/ShellWashRecovery.lean",
+          "CellsProofs.Chemistry.ShellWashRecovery.withdrawal_mean": "lean/CellsProofs/Chemistry/ShellWashRecovery.lean",
+          "CellsProofs.Chemistry.ShellWashRecovery.removed_after_recovery": "lean/CellsProofs/Chemistry/ShellWashRecovery.lean"
+        },
+        "sources": {
+          "Cells FR-47 draft rates, finite bath and wash actions": "https://github.com/Eidosoma/Cells/blob/c6d7667ec184e50e881a2cdfcb3075738892fb56/validation/assembly_lineages_v2/fr47_spec/SPEC.md#L37-L79",
+          "Mathlib ODE uniqueness on a closed time interval, imported and specialized to shell exchange": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/ODE/Gronwall.lean#L351-L364",
+          "Mathlib derivative of a finite sum, imported to close the mean equation": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/Calculus/Deriv/Add.lean#L184-L186",
+          "Cells constant-source interval solution, reused with source k_out times surviving total": "lean/CellsProofs/Chemistry/SpeciesTurnover.lean#L73",
+          "Cells conditional mean of the sampler, reused at each possible exterior count": "lean/CellsProofs/Chemistry/PoolWithdrawal.lean#L107"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": ["fr47-shell-wash-recovery-host"],
+        "result": "Synthetic exact-event host comparison on cf5ddcff. Replacement removed five exterior tracers and left seven in the lumen. The eight-state rate matrix gave exterior means of 1.3607043414 at 0.75 s and 2.8910229384 at 2 s. The native half-withdrawal averaged 1.4455114692 removed. All agreed with the formula within 10⁻¹² molecules. The FR-47 deterministic solver and registered qualification still require their own comparison."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Exterior tracer recovered after a full wash, paired with retained lumen tracer and subsequent exterior sampling, at measured compartment volumes and independently calibrated exchange rates.",
+        "unit": "molecules or calibrated concentration",
+        "evidence": [
+          {
+            "dataset_id": "boyer-2007-dppc-release",
+            "manifest": "lean/checks/data/shell_tracer_recovery.json",
+            "citation": "Boyer and Zasadzinski (2007)", "doi": "10.1021/nn7002025",
+            "locator": "Figure 2 and the buffer-control release half-time on page 179.",
+            "context": "Single-bilayer DPPC vesicles, carboxyfluorescein loaded at 20 mM, exterior dye removed by chromatography, pH 7.4, 37 °C.",
+            "role": "descriptive",
+            "uncertainty": "The half-time is a lower bound. A lysed-sample fluorescence reference gives total dye. Absolute retained counts and trapped aqueous volume are unavailable for this comparison.",
+            "assessment": "The post-wash release half-time exceeded 20 h. The suspension fluorescence tracks dye release. An independent exterior recovery curve and return rate remain open.",
+            "report": "lean/PROGRESS.md#fr47-shell-wash-recovery"
+          },
+          {
+            "dataset_id": "bachler-2021-finite-droplet-transfer",
+            "manifest": "lean/checks/data/shell_tracer_recovery.json",
+            "citation": "Bachler et al. (2021)", "doi": "10.1021/acs.analchem.0c04939",
+            "locator": "Figure 2A–B follows fluorescence. Figure 5B–C reports the paired LC–MS measurements and permeability fits.",
+            "context": "Two approximately 25 nL droplets across a symmetric DOPC bilayer, initially 50 µM rhodamine 6G on the donor side and dye-free buffer in the receiver, pH 6, incubation at 37 °C.",
+            "role": "descriptive",
+            "uncertainty": "The fluorescence series normalized the two signals to their sum. LC–MS measured the two separated droplets at each sampling time (N = 4). The authors report possible cooling during later sampling.",
+            "assessment": "The full-series apparent permeability was (6.28 ± 0.68) × 10⁻⁶ cm/s. These paired signals document finite-volume redistribution. Both permeability fits use the same experiment, and vesicle washout remains a separate measurement.",
+            "report": "lean/PROGRESS.md#fr47-shell-wash-recovery"
+          }
+        ]
       }
     },
     {

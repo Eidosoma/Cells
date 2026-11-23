@@ -14,7 +14,7 @@ Direct Lean claims cover [55 of 55 laws](COVERAGE.md#registered-laws) and [34 of
 | [Ion channels and junctions](COVERAGE.md#category-channels-and-junctions) | 15 of 15 | 15 of 15 | 15 checked | 14 |
 | [Pumps and cotransport](COVERAGE.md#category-pumps-and-cotransport) | 13 of 13 | 9 of 9 | 8 checked · 1 open | 9 |
 | [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 3 of 3 | 18 of 18 | 16 checked · 1 failed · 1 open | 13 |
-| [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 16 of 16 | 44 of 44 | 41 checked · 2 failed · 1 open | 27 |
+| [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 16 of 16 | 45 of 45 | 43 checked · 1 failed · 1 open | 28 |
 | [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 2 of 2 | 28 of 28 | 28 checked | 21 |
 | [Cell physiology](COVERAGE.md#category-cell-physiology) | — | 3 of 3 | 3 checked | 3 |
 
