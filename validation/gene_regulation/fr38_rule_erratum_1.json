@@ -1,7 +1,7 @@
 {
  "kind": "cells.gene_regulation.fr38_rule_erratum@1",
  "erratum": 1,
- "status": "For the lead's tag before any judged run (D308). It supplies the reader the rule names, with its name mapping, and states five rulings of the lead (23 November 2026). Every entry of the rule stands as tagged: no tolerance, floor, factor, order, step, world, time or verdict changes",
+ "status": "For the lead's tag before any judged run (D308). It supplies the reader the rule names, with its name mapping, and states six rulings of the lead (23 November 2026). Every other entry of the rule stands as tagged; the one judging change is the sixth ruling's, for the zero-rate fate's survivors, which the rule's zero_scale clause names",
  "amends": {
   "rule": "validation/gene_regulation/fr38_rule.json",
   "tag": "fr38-rule-registered-2026-11-23",
@@ -28,7 +28,7 @@
    "cohort": "the rule's sample times, 3600 and 7200 s, for route 1 and route 2, where the references publish the cohort"
   },
   "derived": {
-   "survivors": "survivors_<row> on each R1 run with a hold (the four fractions and R1L): its fate row minus its machine option's blank at the same step; an amount, p = 3",
+   "survivors": "survivors_<row> on each R1 run with a hold (the four fractions and R1L): its fate row minus its machine option's blank at the same step; an amount, p = 3, except at the zero-rate fate (the rulings)",
    "route_1": "R1L's label_<row>_cohort against the references' route1_blank, their route 1 with the matched blank subtracted (their finding R-F1): the shares carry no trace, so the blank-free label row is the same quantity. route1_sheet, the formula before R-F1, is not compared; p = 2",
    "route_2": "route2_<fate>: cohort.known_rate on the unlabelled run's int_Q_tx_release_<fate> at the fate's gross k (release_check.gross_rate, from the run's own definition), against R1's route2_exact at p = 0.75 and R2's cohort_route2, each with its tolerance per sample time (the rulings)"
   },
@@ -91,12 +91,12 @@
      "dG_*": "each move's dG and A1's u(t) are not exported (the rule's not_in_this_rule)",
      "u": "each move's dG and A1's u(t) are not exported (the rule's not_in_this_rule)",
      "C_sum_*": "not an engine export: the engine exports each stage C_<chain>_j and E_<chain>",
-     "CO_d": "the interface's keys do not state these series' definitions; the rule's cohort is compared through cohorts' named routes at its sample times",
-     "CO_s": "the interface's keys do not state these series' definitions; the rule's cohort is compared through cohorts' named routes at its sample times",
-     "LR_d": "the interface's keys do not state these series' definitions; the rule's cohort is compared through cohorts' named routes at its sample times",
-     "LR_s": "the interface's keys do not state these series' definitions; the rule's cohort is compared through cohorts' named routes at its sample times",
-     "DL_d": "the interface's keys do not state these series' definitions; the rule's cohort is compared through cohorts' named routes at its sample times",
-     "DL_s": "the interface's keys do not state these series' definitions; the rule's cohort is compared through cohorts' named routes at its sample times",
+     "CO_d": "the references' tracker series: route 2's exact cohort, compared at the sample times as cohorts' route2_exact (R1) and cohort_route2 (R2)",
+     "CO_s": "the references' tracker series: route 2's exact cohort, compared at the sample times as cohorts' route2_exact (R1) and cohort_route2 (R2)",
+     "LR_d": "the references' tracker series: the released molecules still present, equal by construction to limit_checks' n_F_minus_blank, compared as the survivors",
+     "LR_s": "the references' tracker series: the released molecules still present, equal by construction to limit_checks' n_F_minus_blank, compared as the survivors",
+     "DL_d": "the references' tracker series: a reference-side diagnostic, LR's distance from the first-order value",
+     "DL_s": "the references' tracker series: a reference-side diagnostic, LR's distance from the first-order value",
      "n_X": "not an engine export: R1 declares only the routes in use (§9.12 reading 1), so the engine's R1 holds no such row; the references carry A1's rows unmoved",
      "n_A": "not an engine export: R1 declares only the routes in use (§9.12 reading 1), so the engine's R1 holds no such row; the references carry A1's rows unmoved",
      "n_ATP": "not an engine export: R1 declares only the routes in use (§9.12 reading 1), so the engine's R1 holds no such row; the references carry A1's rows unmoved",
@@ -183,12 +183,12 @@
      "dG_*": "each move's dG and A1's u(t) are not exported (the rule's not_in_this_rule)",
      "u": "each move's dG and A1's u(t) are not exported (the rule's not_in_this_rule)",
      "C_sum_*": "not an engine export: the engine exports each stage C_<chain>_j and E_<chain>",
-     "CO_d": "the interface's keys do not state these series' definitions; the rule's cohort is compared through cohorts' named routes at its sample times",
-     "CO_s": "the interface's keys do not state these series' definitions; the rule's cohort is compared through cohorts' named routes at its sample times",
-     "LR_d": "the interface's keys do not state these series' definitions; the rule's cohort is compared through cohorts' named routes at its sample times",
-     "LR_s": "the interface's keys do not state these series' definitions; the rule's cohort is compared through cohorts' named routes at its sample times",
-     "DL_d": "the interface's keys do not state these series' definitions; the rule's cohort is compared through cohorts' named routes at its sample times",
-     "DL_s": "the interface's keys do not state these series' definitions; the rule's cohort is compared through cohorts' named routes at its sample times"
+     "CO_d": "the references' tracker series: route 2's exact cohort, compared at the sample times as cohorts' route2_exact (R1) and cohort_route2 (R2)",
+     "CO_s": "the references' tracker series: route 2's exact cohort, compared at the sample times as cohorts' route2_exact (R1) and cohort_route2 (R2)",
+     "LR_d": "the references' tracker series: the released molecules still present, equal by construction to limit_checks' n_F_minus_blank, compared as the survivors",
+     "LR_s": "the references' tracker series: the released molecules still present, equal by construction to limit_checks' n_F_minus_blank, compared as the survivors",
+     "DL_d": "the references' tracker series: a reference-side diagnostic, LR's distance from the first-order value",
+     "DL_s": "the references' tracker series: a reference-side diagnostic, LR's distance from the first-order value"
     }
    }
   },
@@ -220,8 +220,10 @@
   "route_2_per_sample_time": "each sample time is judged against its own tolerance, max(F g(ts), floor x |y(ts)|), with g(ts) cohort.known_rate_error at that time on the judged run's outputs (Q4)",
   "retry_support_runs": "a retried run's matched blank (its machine option's) at the retry steps, for its survivors, and R1L's unlabelled twin (R1 p=0.75, the same machine option), for the route agreement, run beside it as support and are not judged in that role (Q5). A run of the rule that is itself inconclusive takes the retry as its own",
   "precedence": "FR-25's (D278, D282; Q6): within a run, an out-of-window order makes it inconclusive (its estimate is not trusted), and it takes the retry; per world and overall, any failed run makes the verdict failed, else any inconclusive run makes it inconclusive, else it is passed",
-  "order": "no judged run before this erratum's tag: the registered order holds (Q2)"
+  "order": "no judged run before this erratum's tag: the registered order holds (Q2)",
+  "zero_rate_fate_survivors": "the four survivors at a zero-rate fate, survivors_R at p = 0 and survivors_R_s at p = 1, each with both machine options, are judged as zero, the zero_scale clause's intent, which names them. No molecule is released there, so the row minus its blank is the row's coupling through M, not a survivor. The scale is the row's own magnitude, max |n_F| of the judged run at the compared times. The test is |n_F - blank| <= floor_of_scale x that scale at every compared time, with the reference 0 at every compared time. The order check is skipped, as at_the_floor does, and the table states why (the lead, 23 November 2026)"
  },
+ "readings_confirmed": "the lead checked the reader's readings against the references' own definitions (their release code and README, semantics only, no values; 23 November 2026). CO_f is route 2's exact cohort, compared as route2_exact (R1) and cohort_route2 (R2). LR_f is the released molecules still present, equal by construction to n_F_minus_blank. DL_f is a reference-side diagnostic, LR's distance from the first-order value. Route 1 against route1_blank is right: route1_sheet is the label row minus its t = 0 value, which leaves the trace's dynamics in. R1L against p = 0.75's case, the cohort at its sample times only, and the survivors through n_F_minus_blank are right too",
  "procedure": [
   "this erratum is tagged before any judged run",
   "the fresh runs come from a clean frozen snapshot of 3f485ee9 (scripts/gates/freeze_snapshot.py --scope full --require-clean), through engine_run.py at the test instance: R1's twelve (--worlds release) and R2's two (--worlds 'R2 returned' 'R2 held'), each at 2, 1 and 0.5 s into a fresh folder",
@@ -230,7 +232,7 @@
   "fr38_compare judge gives the verdicts, from a clean frozen snapshot of this erratum's tag"
  ],
  "checked_before_the_tag": [
-  "a synthetic end-to-end check, its engine records and its interface invented (closed forms with a step error at each declared order, under the interface's keys), with no engine run and no reference value: a consistent set passes at the declared orders; a model error, a zero-scale reference of 1e-300, a survivors' and a route-2 gap each fail their run alone; an order below its window is inconclusive, the judge refuses until the retry, and the retry with its support runs is judged at 0.25 s; a retry without its support, an unmapped published readout, a case at another tau and a non-finite reference value are refused (/mnt/workspaces/Cells/fr38-judged-20261123/tools/synthetic_check.py)",
+  "a synthetic end-to-end check, its engine records and its interface invented (closed forms with a step error at each declared order, under the interface's keys), with no engine run and no reference value: a consistent set passes at the declared orders; a model error, a zero-scale reference of 1e-300, a survivors' and a route-2 gap each fail their run alone; an order below its window is inconclusive, the judge refuses until the retry, and the retry with its support runs is judged at 0.25 s; a retry without its support, an unmapped published readout, a case at another tau and a non-finite reference value are refused. At the zero-rate fate the survivors pass at 1e-12 of the row's magnitude, and fail at 1e-6 of it (the lead's planted case) and at a nonzero reference (/mnt/workspaces/Cells/fr38-judged-20261123/tools/synthetic_check.py)",
   "on the interface itself, from the 14 runs' definitions alone (no engine run): check_units holds at 92 points, and every mapped quantity of every run resolves to one case, its declaration equal, every compared time present and every value finite (50,298 values), printing counts only"
  ],
  "not_blind": [

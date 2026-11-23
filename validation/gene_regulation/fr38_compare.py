@@ -51,6 +51,13 @@ on each labelled run (erratum 1).
 **The judge** (`judge`) reads the references through this reader, per the rule and erratum 1.
 - A readout passes where its largest gap over the compared times is within its tolerance. At zero
   scale it passes only where the gap is exactly 0.
+- The zero-rate fate's survivors (survivors_R at p = 0, survivors_R_s at p = 1) are judged as zero
+  (erratum 1's ruling).
+  - No molecule is released into that fate, so the row minus its blank is the row's own coupling
+    through M, not a survivor.
+  - The engine's |y(h)| must lie within floor_of_scale times the row's own magnitude, max |n_F| of
+    the judged run at the compared times, and the reference must be 0 at every compared time.
+  - The order check is skipped, as at the floor.
 - Within a run, an out-of-window order makes the run inconclusive.
 - Per world and overall, any failed run makes the verdict failed; else any inconclusive run makes
   it inconclusive; else it is passed.
@@ -93,7 +100,14 @@ RENAMED = {  # The references' names for the release's own readouts: theirs, the
     "H_rel_d": f"H_rel_{RID}_durable",
     "H_rel_s": f"H_rel_{RID}_short_lived",
 }
-UNDEFINED = ("CO_d", "CO_s", "LR_d", "LR_s", "DL_d", "DL_s")
+TRACKERS = {  # The references' tracker series (the lead, from their definitions; no value read).
+    "CO": "route 2's exact cohort, compared at the sample times as cohorts' route2_exact (R1) and "
+    "cohort_route2 (R2)",
+    "LR": "the released molecules still present, equal by construction to limit_checks' "
+    "n_F_minus_blank, compared as the survivors",
+    "DL": "a reference-side diagnostic, LR's distance from the first-order value",
+}
+TRACKED = tuple(f"{k}_{x}" for k in TRACKERS for x in ("d", "s"))
 A1_ONLY = ("n_X", "n_A", "n_ATP", "n_ADP", "n_P")
 
 
@@ -128,9 +142,8 @@ def not_compared(world, key):
         return "each move's dG and A1's u(t) are not exported (the rule's not_in_this_rule)"
     if key.startswith("C_sum_"):
         return "not an engine export: the engine exports each stage C_<chain>_j and E_<chain>"
-    if key in UNDEFINED:
-        return ("the interface's keys do not state these series' definitions; the rule's cohort "
-                "is compared through cohorts' named routes at its sample times")  # fmt: skip
+    if key in TRACKED:
+        return f"the references' tracker series: {TRACKERS[key[:2]]}"
     if world == "R1" and key in A1_ONLY:
         return (
             "not an engine export: R1 declares only the routes in use (§9.12 reading 1), so "
@@ -188,7 +201,7 @@ def mapping():
                 compared=compared(w),
                 derived=derived(w),
                 not_compared={
-                    **{k: not_compared(w, k) for k in ("t", "dG_*", "u", "C_sum_*", *UNDEFINED)},
+                    **{k: not_compared(w, k) for k in ("t", "dG_*", "u", "C_sum_*", *TRACKED)},
                     **({k: not_compared(w, k) for k in A1_ONLY} if w == "R1" else {}),
                 },
             )  # fmt: skip
@@ -351,6 +364,34 @@ def entry(r, world, name, triple, times):
     )  # fmt: skip
 
 
+def idle_row(record):
+    """The fate row of a run's zero-rate fate, from its own declared p: R at p = 0, R_s at p = 1,
+    None otherwise (erratum 1's ruling)."""
+    p = float(declaration(record)["p"])
+    return "R" if p == 0 else "R_s" if p == 1 else None
+
+
+def idle(r, e, row_scale):
+    """Erratum 1's ruling on a zero-rate fate's survivors, judged as zero: the tolerance is
+    floor_of_scale times the row's own magnitude (max |n_F| of the judged run at the compared
+    times), the reference must be 0 at every compared time, and the order check is skipped."""
+    return dict(
+        e,
+        zero_rate_fate=True,
+        zero_scale=False,
+        at_floor=True,
+        in_window=True,
+        effective_factor=None,
+        row_scale=row_scale,
+        tolerance=r["floor_of_scale"] * row_scale,
+        order_check=(
+            "skipped, as at the floor: no molecule is released into a zero-rate fate, so the row "
+            "minus its blank is the row's coupling through M, whose step differences are rounding "
+            "(erratum 1)"
+        ),
+    )
+
+
 def route2_entry(r, record, fate, window, samples):
     """Route 2's tolerance per sample time (erratum 1): max(F g(ts), floor |y(ts)|), with g(ts)
     cohort.known_rate_error on the judged run's outputs; no order check."""
@@ -444,6 +485,9 @@ def table(directories, *, retry=False, only=None):
                 at = samples if klass(name) == "cohort, route 1" else times
                 ys = [values(runs, run, name, at, window) for runs in triple]
                 readouts[name] = entry(r, w, name, ys, at)
+                if name == f"survivors_{idle_row(triple[2][run])}":
+                    row = [_at(triple[2][run], f"n_{name[len('survivors_') :]}", t) for t in at]
+                    readouts[name] = idle(r, readouts[name], max(abs(v) for v in row))
             outside = sorted(n for n, e in readouts.items() if not e["in_window"])
             out[run] = dict(
                 world=w, status="inconclusive" if outside else "ready", outside_window=outside,
@@ -712,13 +756,20 @@ def judge(first, retry=None, refs=None, erratum=None):
                 )
                 continue
             gap = max(abs(a - b) for a, b in zip(x["engine"], ref[name], strict=True))
-            passed = gap == 0 if x["zero_scale"] else gap <= x["tolerance"]
+            zero_rate = x.get("zero_rate_fate", False)
+            reference_zero = all(v == 0 for v in ref[name]) if zero_rate else None
+            if zero_rate:  # Erratum 1's ruling: judged as zero against the row's own floor.
+                passed = reference_zero and gap <= x["tolerance"]
+            else:
+                passed = gap == 0 if x["zero_scale"] else gap <= x["tolerance"]
             results[name] = dict(
                 readout_class=x["readout_class"], p=x["p"], gap=gap, tolerance=x["tolerance"],
                 margin=gap / x["tolerance"] if x["tolerance"] else None, passed=passed,
                 at_floor=x["at_floor"], zero_scale=x["zero_scale"], order=x["order"],
                 in_window=x["in_window"], effective_factor=x["effective_factor"],
                 scale=x["scale"], estimate=x["estimate"], compared_times=len(x["compared_times"]),
+                zero_rate_fate=zero_rate, reference_zero=reference_zero,
+                row_scale=x.get("row_scale"),
             )  # fmt: skip
         failed = sorted(n for n, x in results.items() if not x["passed"])
         status = "inconclusive" if e["status"] == "inconclusive" else (
