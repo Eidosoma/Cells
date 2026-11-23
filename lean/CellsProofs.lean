@@ -49,6 +49,7 @@ import CellsProofs.Tissue.CellReplacement
 import CellsProofs.Tissue.CompartmentWash
 import CellsProofs.Tissue.CurrentInjection
 import CellsProofs.Tissue.DivisionBridge
+import CellsProofs.Tissue.IntegerSegregation
 import CellsProofs.Tissue.MembraneInsertion
 import CellsProofs.Tissue.MembraneTrafficking
 import CellsProofs.Tissue.ReactionTransport
