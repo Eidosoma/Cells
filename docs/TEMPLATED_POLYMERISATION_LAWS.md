@@ -1784,3 +1784,38 @@ before the code that builds on it.*
    departing material by label, the pre-event amount times its shares just before the event, in
    cumulative records from t = 0, rows and holds apart, so the two events still commute (§9.16,
    item 2). Removal stays apart from degradation, booked to the departing producer's label.
+
+### 9.19 Erratum F: the cohort is marked on the chain's own schedule, and leaves at the gross loss
+
+*23 November 2026, the lead's ruling (D306, item 3) on a split that an independent checker found.
+Docs only, tagged before FR-38's rule.*
+
+1. **The definition (§9.8).** FR-38's cohort is the molecules that detach from their template
+   during [t1, t2), in the requester's words "detaches from its template" and "the same molecules".
+   - It is marked on the chain's own label schedule, a label source's (D296): the window's label from
+     t1, the next label from t2.
+   - **A molecule re-synthesised from monomers is not a member.** A degradation's reverse one-way
+     move puts it in its row at the species' label in force, never at the chain's.
+2. **Why the species' own window is not the cohort.**
+   - A fate row's degradation is one-sided only in its booked net move, J_D = k n (1 − e^(y_f)).
+     Its one-way parts are the gross loss k n and the re-synthesis k n e^(y_f), and FR-42's label
+     owner follows each.
+   - So a window on the species' own arrivals also labels the molecules re-synthesised in it.
+   - Near the degradation's domain edge (e^(y_f) ≈ 0.34, the checker's world), that cohort held 70.10
+     copies at 240 s, against 59.42 for the template's releases alone: 18% more.
+   - On the chain's schedule the cohort met the template-only reference to 6.7 × 10⁻⁷, relative.
+3. **Route 2 (§9.8) uses the gross one-way loss.**
+   - A member leaves at the gross per-molecule rate k, whatever re-synthesis returns to its row.
+   - So route 2 carries the window's releases with the declared first-order k of their fate's loss
+     (cohort.py's known-rate form), not with the booked net loss ∫D_F / n_F = k (1 − e^(y_f)).
+   - It stays exact for a constant k in a well-mixed row, up to its grid error.
+4. **The two readings agree only where e^(y_f) ≪ 1:** the species window against the chain's
+   schedule, and the gross loss against the net.
+   - At the sheet's own state, e^(y_f) ≈ 9.4 × 10⁻⁹. There the two cohorts differ by 2.6 × 10⁻⁷
+     copies at 240 s (4.4 × 10⁻⁹ relative), and R1's and R2's closed forms stand.
+   - FR-38's rule judges the chain's schedule, with route 2 at the gross loss.
+5. **Unchanged:**
+   - the release marks at release (the requester's answer to (e));
+   - route 1's error is the share update's split (erratum C);
+   - under release-marking, a hold emptied at a replacement is recorded at the base label (erratum
+     E).
