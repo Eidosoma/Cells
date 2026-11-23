@@ -740,8 +740,8 @@ def _tags():
     # list) the volumes and the activity masks. C2 counts a writer of membrane state's accepted
     # state as changing every field membrane state provides; the producer changes the populations'
     # units, never an area or a capacitance. Its definition refuses every other writer of
-    # population units, and a precursor row that another writer than turnover's supply touches
-    # (RULES).
+    # population units, and a precursor row that another writer than turnover's supply and the
+    # gene unit touches (RULES).
     producer_code = (OPS + "population_unit_turnover.py::unit_half_step",)
     producer_cells = (
         "The producer's runtime reads are its cells' precursor amounts and volumes, its "
@@ -1356,7 +1356,8 @@ RULES = (
         behind=tuple(pair for pair in _UNIT_PAIRS if errors(sequence(*pair))),
     ),
     dict(
-        rule="a unit producer's precursor row has no writer but turnover's supply",
+        rule="a unit producer's precursor row has no writer but turnover's supply and the gene "
+        "unit",
         laws=(PRODUCER, REACTIONS, TURNOVER, EXCHANGE),
         level="data",
         check=OPS + "population_unit_turnover.py::check_writers",
@@ -1365,7 +1366,9 @@ RULES = (
         tag=REAL,
         why="Two writers of one row are admitted only as split parts with exact half-steps in "
         "declared order (the lead's ruling of 19 November 2026): turnover's supply beside the "
-        "producer's consumption, Strang-split. A row that a D152 reaction writes is refused, "
+        "producer's consumption, Strang-split, and the gene unit's production (FR-43 / D315, its "
+        "SSP half-steps; the row's potential the registry's, its supply's production_bound read "
+        "by R5). A row that a D152 reaction writes is refused, "
         "mirroring D152's one local-kinetics writer per row, and so are another operator that "
         "declares the precursor (species_exchange@1 among them) and an in-step mover of it: the "
         "inner model's movers and any operator's in-step process (species_registry."
