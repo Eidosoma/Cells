@@ -224,7 +224,8 @@ def information():
     """What the registered arithmetic gives at pairs the erratum leaves as registered (made-up
     values; the erratum's §4, disclosed and not changed), each with the lower rung bitwise exact,
     over 200 values from 0.1 to 10: one replica 1 ulp from (d); (d) alone 1 ulp off, up and down.
-    And replicas all equal at both rungs with (d) off, where the combined SE is 0."""
+    And replicas all equal at both rungs with (d) off, where the combined SE is 0; and how often a
+    constant column of made-up non-integer values has SE exactly 0 by rounding alone."""
     values = np.linspace(0.1, 10.0, 200)
 
     def z_at(top_replicas, d_top, v):
@@ -244,6 +245,17 @@ def information():
     flat = {"V": np.full((REPLICAS, 1), 1.0)}
     out["replicas all 1.0 at both rungs, (d) 2.0"] = {
         "z": _registered_z(flat, {"V": np.array([2.0])}, flat, {"V": np.array([2.0])})}
+    # how often a constant column's sum leaves no residue (SE exactly 0) by rounding alone, in the
+    # observables' [M, 8] layout, on made-up values from 1e-25 to 1e2
+    zero_se = {}
+    for m in (128, 256):
+        made_up = 10.0 ** np.random.default_rng(23).uniform(-25.0, 2.0, size=(500, TIMES))
+        count = 0
+        for row in made_up:
+            _, se = lq.mean_error({"V": np.tile(row, (m, 1))}, {"V": row})["V"]
+            count += int(np.sum(se == 0.0))
+        zero_se[f"M = {m}"] = {"constant_columns": int(made_up.size), "se_exactly_0": count}
+    out["constant columns, made-up values 1e-25 to 1e2, SE exactly 0"] = zero_se
     return out
 
 

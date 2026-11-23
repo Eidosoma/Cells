@@ -56,7 +56,7 @@ registered.
   - **With no pair left,** every top-rung error is 0. The registered function's largest z is then
     −∞, and M passes.
 - **Only bitwise agreement is exact.** A pair that differs anywhere by one ulp is judged as
-  registered (§4 shows what that gives).
+  registered (§5 shows what that gives).
 
 ## 3. Where it applies
 
@@ -67,7 +67,9 @@ registered.
   - No D0 pair can be exact anyway: (d)'s side at the registered times is the fixed point
     (n_A*, n_B*) = (3.558…, 4.221…), which is not an integer, and D0's replicas are integers.
 - **D6:** its registered verdict, a fail, stands. It is rescored under this erratum only as a
-  labelled, non-blind diagnostic.
+  labelled, non-blind diagnostic, by this erratum's own rule, the top rung's exactness.
+  - That set is not the checker's own set behind 2.293, which dropped the pairs exact at both rungs.
+  - It contains that set, so the diagnostic's largest z is at most 2.293.
 - **D1, D2, D4 and D7:** their passes stand, and they are not rescored.
   - The erratum only removes pairs from M's maximum, and leaves every other pair's excess bitwise as
     registered. So M's largest z can only fall.
@@ -75,7 +77,48 @@ registered.
 - **B is untouched.** It judges counts only (`is_count`). At an exact count, the registered
   `mean_error` already returns e = SE = 0 exactly (§1), and the replica part's |y_a − y_d| is 0.
 
-## 4. The synthetic checks
+## 4. D3's and D5's deterministic observables, from the code
+
+An observable that the exact process holds fixed by construction could agree with (d) to within an
+ulp, and not bitwise, only if the two representations reached it by different arithmetic. From the
+code alone, before any run:
+- **D3 has none.**
+  - Its observables are its six enveloped counts, U0–U2 in the pool and in the membrane
+    (`rate_equations.enveloped`), and its join steps move every one of them.
+  - It has no geometry, so no A, V or σ, and no held place, so no W_res.
+- **D5's observables** are L@pool, each slot's L@membrane, and each slot's A_m2, V_L and σ. I@lumen
+  and I@pool are not among them, because no step moves or reads I.
+- **Deterministic by construction:** slot 1's V_L and σ (`slot1:V_L`, `slot1:sigma_N_per_m`; the
+  floppy vesicle, x0 = 0.85), while it is floppy.
+  - `lumen.log_volume` is the minimum of ln V_osm = ln N_L − ln(N_A c_ext) and ln V_sph(W). While
+    floppy it returns ln V_osm, which reads N_L alone.
+  - `lumen.tension` is exactly 0.0 unless the vesicle is tense.
+  - N_L is I@lumen, which no event moves.
+- **The same function on the same inputs.**
+  - Both representations' values come from `limit_qualification.vesicle_derived(world, counts)`.
+    It calls `lumen.log_volume` and `lumen.tension` with numpy, on N_L = counts·is_lumen, for the
+    same world.
+  - An exact replica's N_L is its founder's integer.
+  - (d)'s N_L is that integer to the bit:
+    - its derivative is `j @ nu_slot` over a zero column, so ±0;
+    - while floppy (V_osm < V_sph), its Jacobian column is ±0 too. (d)'s μ is `jax.grad` of
+      F_cont, and the osmotic term's W-derivative passes through `jnp.minimum`'s unselected
+      branch, whose derivative is 0, so no rate reads N_L;
+    - so in Rodas4's LU of I/(γh) − J, that column's only nonzero is its own diagonal. Every stage
+      is ±0 there, and y + Σ b_j U_j keeps N_L;
+    - each observation row is the state of the step that lands on the observation time
+      (`integrate`'s hh = stop − t, then `row("observed")`), not the dense output, whose
+      (1 − θ)N_L + θN_L need not be N_L to the bit. `_arrays` copies the slot block.
+- **So slot 1's V_L and σ can only agree bitwise or differ for real.**
+  - If both are floppy, the pair is exact.
+  - If a slot 1 turned tense, its V and σ follow its own W.
+  - So §5's one-ulp exposure cannot arise at them. The checker's D6 finding is the same mechanism
+    in a single lineage.
+- **Every other D5 observable reads W or the pool's count,** which the exact process draws. That
+  covers A_m2 = qW/2, slot 0's V_L (V_sph(W) while tense) and σ, and the counts. Slot 0's N_L need
+  not stay exact in (d), because its Jacobian column is not zero; it is not an observable.
+
+## 5. The synthetic checks
 
 `python -m validation.assembly_lineages_v2.protocol_d_erratum_3 check` runs them on made-up columns
 only (128 replicas, 8 times, generator seed 3). Every check passed:
@@ -101,7 +144,7 @@ only (128 replicas, 8 times, generator seed 3). Every check passed:
 
 **What the registered arithmetic gives at pairs this erratum leaves as registered.** These come from
 `information`, on made-up values. They are disclosed, and not changed, since nothing else changes
-(§6). Each pair has K − 1 exact, over 200 values from 0.1 to 10:
+(§7). Each pair has K − 1 exact, over 200 values from 0.1 to 10:
 - **One replica 1 ulp off:** z ran from −11.2 to 11.3, with a median of 5.05. 129 were beyond 4.5
   and 82 beyond 6.
 - **(d) alone 1 ulp up,** every replica equal: z ran from −8.0 to 33.8, with a median of 7.5. 116
@@ -111,11 +154,23 @@ only (128 replicas, 8 times, generator seed 3). Every check passed:
 - **So rounding alone** can put a pair that agrees to within one ulp in the retry band, or fail it.
 
 **A zero combined SE is taken as no limit.**
-- This happens where the replicas are all equal at both rungs and their sums round nothing.
-- Replicas all at 1.0 against (d) at 2.0, at both rungs, give z = 0.
-- For counts, B judges such a pair.
+- **When it is zero.** From the formula, the combined SE is exactly 0 only where both rungs' SE are
+  0. That means every replica is equal at each rung and each rung's sum leaves no residue (barring
+  an underflow of SE², far below these observables' rounding).
+- **That holds at every integer- or zero-valued pair:**
+  - at the counts, which B judges;
+  - at a floppy vesicle's σ, exactly 0.0, which B does not judge (B reads counts only).
+- **It also holds, by rounding luck, at other values.** On made-up values from 10⁻²⁵ to 10² in the
+  observables' [M, 8] layout, 159 of 4,000 constant columns at M = 128 and 72 of 4,000 at M = 256
+  had SE exactly 0.
+- **What M then does.** Replicas all at 1.0 against (d) at 2.0, at both rungs, give z = 0. So M does
+  not judge a zero-SE pair. The lead has asked the checker to list every zero-SE, nonzero-error pair
+  by name in each world's verdict.
+- **In D5** this could happen at slot 1's σ, if (d)'s slot 1 turned tense while every replica stayed
+  floppy. Slot 1's V_L at that time would differ for real, and fail M unless its sums leave no
+  residue.
 
-## 5. What had been seen (disclosed, added to §12)
+## 6. What had been seen (disclosed, added to §12)
 
 - **Known, from the checker through the lead:**
   - D1, D2, D4 and D7 pass as registered;
@@ -123,8 +178,9 @@ only (128 replicas, 8 times, generator seed 3). Every check passed:
   - nothing of D0, D3 or D5 has been computed.
 - **This erratum's author** read none of the checker's outputs and ran no world of the protocol,
   exact or (d). Its probes and checks of the registered functions ran on made-up columns only.
+- **§4 is from the code alone.** No D3 or D5 run, exact or (d), was made or read for it.
 
-## 6. What does not change
+## 7. What does not change
 
 - B, P, E, L and N.
 - z* = 4.5 and the fail threshold of 6.
