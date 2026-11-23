@@ -10301,3 +10301,34 @@ section 9. The user agreed with the recommendations and relayed a reviewer's com
   (plants-isolation.json), so a program cached per model computed the planted values.
 - **Next:** GJ-N1's 1D line runs now, about 8 CPU-hours. The 2D field waits for the sparse solver (FR-17's stage 1)
   and a GJ-N1 amendment that names it.
+
+## D326: the gap-junction field on the L4 is measured; the user's decision is to place GJ-N1's field after the sparse solver lands
+
+2026-11-23, about 22:30 UTC. This follows D321's first item.
+- **The timing.** It is development only, with no outcome read, in /mnt/workspaces/Cells/speedup-20261123/l4-timing/.
+  - It ran from a clean snapshot of main 31fde682, which includes the field-path change d6d42b46.
+  - It ran GJ-N1's field at D = 1e-13 (dt 1/128 s): one world, 9 windows of 32 steps, through run_vector_windowed,
+    with no src change.
+  - The L4 took 21.2 ms per world-step after the first window, and 19.7 ms in steady windows. The same driver,
+    snapshot and arm on one CPU took 65.5 ms. That is 3.1x, inside the projected 2-5x.
+  - Compiling took 73.4 s on the L4 against 40.2 s on the CPU. Device memory peaked at 388 MB. An L4 run also keeps
+    one host CPU busy.
+  - **Agreement after 288 steps:** 31 of 39 state arrays are bitwise equal, and the other 8 differ by at most
+    4.3e-16 of their own array's scale.
+  - The block followed the GPU protocol (the gpu.reserved flag and the exclusive gpu.lock), with the visualizer on
+    hold. The lock was held for about 1.5 of the 10 allowed minutes.
+- **What it means for GJ-N1, as estimates:**
+  - the upper end of the search (2.56 million steps) would take about 47 h on one CPU, or about 15 h on the L4;
+  - with the sparse solve on a CPU, it would take about 30 h (amendment 1);
+  - the whole search would occupy the L4 for 40-55 hours one point at a time, and the visualizer uses the same
+    GPU.
+- **The user's decision:** time the sparse solver on both the CPU and the L4 once it lands, then choose the field's
+  placement on those numbers. The GPU qualification of the device row checks waits until then.
+  - Any GPU placement needs a further tagged GJ-N1 amendment before field points run.
+- **Disclosures for GJ-N1's record, made before any field point runs:**
+  - this timing ran the field for 288 steps (2.25 s simulated) and compared CPU and L4 state arrays for agreement
+    only;
+  - the GJ owner's development timings ran the 25 x 25 field for up to 36 s at D = 0 and 2.25 s at 1e-13. They
+    were window timing, host and trace checks, the bit check and the D148 guard dumps;
+  - no criterion was computed and no state was printed in either. The short field states saved in
+    probes/field-profile-01 and gj-fieldpath-20261123/d148 were never read.
