@@ -25,7 +25,15 @@ Uses [Marked RNA is accounted for in both release fates, including after label r
 
 ## Numerical comparison
 
-**Checked.** The repaired checker gave the expected four control verdicts. Three samples yielded insufficient resolution, a resolved ratio of 1 failed against ¼, an empty cohort was identified, and the turnover control passed. All eight R1/R2 ratios reread from compiled exports passed with finite estimated error. The previous checker gave a false pass and raised on the empty cohort. These eight development readouts use the original exports. The independent registered FR-38 comparison subsequently failed R1 and found R2 inconclusive.
+**Failed.** The erratum F reader reproduced all 6 control verdicts and the 8 saved development comparisons. Five controls met their mathematical expectations. One valid constant-rate turnover control gives a gross ratio of 0.25000000000000006 against a correctly rounded 0.25. The public checker refuses it with a zero grid bound even though both endpoint gross/net counts agree. A changed-rate control at 0.5 is correctly refused. The independent registered FR-38 verdict remains R1 failed and R2 inconclusive.
+
+**Engine** `resolved_pump_composite@1`, `resolved_pump_tissue@3`
+
+**Operators** `cells.templated_polymerisation@1`
+
+[Gross survivor counts and their grid errors](https://github.com/Eidosoma/Cells/blob/275b508f30ae32552bfcf154ca8849765c23672b/validation/gene_regulation/cohort.py#L204) · [Net-count comparison from booked counters](https://github.com/Eidosoma/Cells/blob/275b508f30ae32552bfcf154ca8849765c23672b/validation/gene_regulation/cohort.py#L298) · [Gross loss rate from the exported definition](https://github.com/Eidosoma/Cells/blob/275b508f30ae32552bfcf154ca8849765c23672b/validation/gene_regulation/release_check.py#L148) · [Public ratio and gross/net verdict](https://github.com/Eidosoma/Cells/blob/275b508f30ae32552bfcf154ca8849765c23672b/validation/gene_regulation/release_check.py#L411) · [Declared half-lives](https://github.com/Eidosoma/Cells/blob/275b508f30ae32552bfcf154ca8849765c23672b/validation/gene_regulation/sheet_check.py) · [Development world for the controls](https://github.com/Eidosoma/Cells/blob/275b508f30ae32552bfcf154ca8849765c23672b/validation/gene_regulation/worlds.py) · [Count-bound and ratio identities](https://github.com/Eidosoma/Cells/blob/7c9feb549f00f58432dfc0ac3e8567a289c61255/lean/CellsProofs/Chemistry/ArrivalWindow.lean) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/7c9feb549f00f58432dfc0ac3e8567a289c61255/lean/checks/release_survival.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/7c9feb549f00f58432dfc0ac3e8567a289c61255/lean/PROGRESS.md#fr38-survival-gross-net)
+
+[Tested engine 275b508f30ae](https://github.com/Eidosoma/Cells/commit/275b508f30ae32552bfcf154ca8849765c23672b) · [Evidence checkpoint 7c9feb549f00](https://github.com/Eidosoma/Cells/commit/7c9feb549f00f58432dfc0ac3e8567a289c61255)
 
 **Engine** `resolved_pump_composite@1`, `resolved_pump_tissue@3`
 

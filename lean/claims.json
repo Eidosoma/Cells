@@ -24,6 +24,77 @@
     "cells.rate_equations@1": "molecular-assembly"
   },
   "comparisons": {
+    "fr38-survival-gross-net": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [],
+      "operators": [
+        "cells.templated_polymerisation@1"
+      ],
+      "engine_revision": "275b508f30ae32552bfcf154ca8849765c23672b",
+      "record_revision": "7c9feb549f00f58432dfc0ac3e8567a289c61255",
+      "sources": {
+        "Gross survivor counts and their grid errors": "validation/gene_regulation/cohort.py#L204",
+        "Net-count comparison from booked counters": "validation/gene_regulation/cohort.py#L298",
+        "Gross loss rate from the exported definition": "validation/gene_regulation/release_check.py#L148",
+        "Public ratio and gross/net verdict": "validation/gene_regulation/release_check.py#L411",
+        "Declared half-lives": "validation/gene_regulation/sheet_check.py",
+        "Development world for the controls": "validation/gene_regulation/worlds.py"
+      },
+      "record_inputs": {
+        "Count-bound and ratio identities": "lean/CellsProofs/Chemistry/ArrivalWindow.lean"
+      },
+      "driver": "lean/checks/release_survival.py",
+      "record": "lean/PROGRESS.md#fr38-survival-gross-net"
+    },
+    "fr38-retention-window-repair": {
+      "kind": "engine",
+      "models": [],
+      "laws": [],
+      "operators": [],
+      "engine_revision": "275b508f30ae32552bfcf154ca8849765c23672b",
+      "record_revision": "7c9feb549f00f58432dfc0ac3e8567a289c61255",
+      "sources": {
+        "Error estimate for known-rate survival": "validation/gene_regulation/cohort.py#L187",
+        "Retention verdict by output": "validation/gene_regulation/replace_restart.py#L237",
+        "Sparse and finite native controls": "tests/unit/test_fr38_replace_restart.py#L49"
+      },
+      "record_inputs": {
+        "Pulse-timing proof": "lean/CellsProofs/Chemistry/ProducerReplacement.lean"
+      },
+      "driver": "lean/checks/producer_replacement.py",
+      "record": "lean/PROGRESS.md#fr38-retention-window-repair"
+    },
+    "fr38-restart-current": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [],
+      "operators": [
+        "cells.templated_polymerisation@1"
+      ],
+      "engine_revision": "2263d11ce5099fca1e58b9285ff4d302bb829fdf",
+      "record_revision": "7c9feb549f00f58432dfc0ac3e8567a289c61255",
+      "sources": {
+        "Unlabelled release world": "validation/gene_regulation/worlds.py#L519",
+        "Initial rates and copy scale": "validation/gene_regulation/sheet_check.py",
+        "Checkpoint at an accepted step": "src/cells/execution/runner.py#L362",
+        "Snapshot writing and reading": "src/cells/records/io.py#L86",
+        "RNA and machine ledgers": "src/cells/operators/templated_polymerisation.py#L1993",
+        "Tagged replacement identities": "docs/TEMPLATED_POLYMERISATION_LAWS.md#L1499"
+      },
+      "record_inputs": {
+        "Short observation schedule": "lean/checks/terminal_release.py",
+        "Conditional event proofs": "lean/CellsProofs/Chemistry/TerminalRelease.lean"
+      },
+      "driver": "lean/checks/release_restart.py",
+      "record": "lean/PROGRESS.md#fr38-retention-window-repair"
+    },
     "fr38-survival-repair": {
       "kind": "engine",
       "models": [
@@ -4333,12 +4404,13 @@
         }
       },
       "numerical": {
-        "status": "checked",
+        "status": "failed",
         "comparisons": [
+          "fr38-survival-gross-net",
           "fr38-survival-repair",
           "fr38-survival-original"
         ],
-        "result": "The repaired checker gave the expected four control verdicts. Three samples yielded insufficient resolution, a resolved ratio of 1 failed against ¼, an empty cohort was identified, and the turnover control passed. All eight R1/R2 ratios reread from compiled exports passed with finite estimated error. The previous checker gave a false pass and raised on the empty cohort. These eight development readouts use the original exports. The independent registered FR-38 comparison subsequently failed R1 and found R2 inconclusive."
+        "result": "The erratum F reader reproduced all 6 control verdicts and the 8 saved development comparisons. Five controls met their mathematical expectations. One valid constant-rate turnover control gives a gross ratio of 0.25000000000000006 against a correctly rounded 0.25. The public checker refuses it with a zero grid bound even though both endpoint gross/net counts agree. A changed-rate control at 0.5 is correctly refused. The independent registered FR-38 verdict remains R1 failed and R2 inconclusive."
       },
       "biology": {
         "status": "open",
@@ -4926,10 +4998,11 @@
       "numerical": {
         "status": "open",
         "comparisons": [
+          "fr38-restart-current",
           "fr38-restart-control",
           "fr38-producer-checkpoint"
         ],
-        "result": "Both unlabelled machine-return policies reproduced all 40 state fields byte for byte at four times after a disk checkpoint with occupied stages and hold. The [producer-labelled replacement replay](producer-replacement-rna.md) also checks the departing material and producer identity. An independent numerical reconstruction of the replacement event’s full residue and energy books remains open."
+        "result": "All 65 current state fields matched byte for byte at four times after a disk checkpoint with occupied stages and hold, for both machine-return policies. The historical replay checked 40 fields. The [producer-labelled replacement replay](producer-replacement-rna.md) checks the departing material and producer identity. The full replacement-event residue and energy reconstruction remains open."
       },
       "biology": {
         "status": "open",
@@ -5164,11 +5237,12 @@
         }
       },
       "numerical": {
-        "status": "failed",
+        "status": "checked",
         "comparisons": [
+          "fr38-retention-window-repair",
           "fr38-retention-resolution"
         ],
-        "result": "Public fd2bb88c handles the original sparse grid correctly. Adding only 3,300 and 3,600 s after the 3,000 s replacement produces a zero grid-error estimate at 4,800 s. The native reader then accepts a matching 1.707738-copy value with a 4.85 × 10⁻¹⁴-copy bound despite having no interior export sample. The regular 600 s fixture has several interior export samples."
+        "result": "On 275b508f all 6 readouts on 3 grids matched their expected verdicts. Adding only post-replacement samples leaves the matching and mismatching outputs at insufficient resolution with a null bound. An interior export sample distinguishes the 1.707738-copy match from the 100-copy mismatch. The earlier frozen comparison records the false acceptance on fd2bb88c."
       },
       "biology": {
         "status": "open",

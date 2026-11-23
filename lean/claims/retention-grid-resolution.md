@@ -20,7 +20,13 @@ Uses [RNA keeps its producer label through export, cell replacement and return](
 
 ## Numerical comparison
 
-**Failed.** Public fd2bb88c handles the original sparse grid correctly. Adding only 3,300 and 3,600 s after the 3,000 s replacement produces a zero grid-error estimate at 4,800 s. The native reader then accepts a matching 1.707738-copy value with a 4.85 × 10⁻¹⁴-copy bound despite having no interior export sample. The regular 600 s fixture has several interior export samples.
+**Checked.** On 275b508f all 6 readouts on 3 grids matched their expected verdicts. Adding only post-replacement samples leaves the matching and mismatching outputs at insufficient resolution with a null bound. An interior export sample distinguishes the 1.707738-copy match from the 100-copy mismatch. The earlier frozen comparison records the false acceptance on fd2bb88c.
+
+**Engine**
+
+[Error estimate for known-rate survival](https://github.com/Eidosoma/Cells/blob/275b508f30ae32552bfcf154ca8849765c23672b/validation/gene_regulation/cohort.py#L187) · [Retention verdict by output](https://github.com/Eidosoma/Cells/blob/275b508f30ae32552bfcf154ca8849765c23672b/validation/gene_regulation/replace_restart.py#L237) · [Sparse and finite native controls](https://github.com/Eidosoma/Cells/blob/275b508f30ae32552bfcf154ca8849765c23672b/tests/unit/test_fr38_replace_restart.py#L49) · [Pulse-timing proof](https://github.com/Eidosoma/Cells/blob/7c9feb549f00f58432dfc0ac3e8567a289c61255/lean/CellsProofs/Chemistry/ProducerReplacement.lean) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/7c9feb549f00f58432dfc0ac3e8567a289c61255/lean/checks/producer_replacement.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/7c9feb549f00f58432dfc0ac3e8567a289c61255/lean/PROGRESS.md#fr38-retention-window-repair)
+
+[Tested engine 275b508f30ae](https://github.com/Eidosoma/Cells/commit/275b508f30ae32552bfcf154ca8849765c23672b) · [Evidence checkpoint 7c9feb549f00](https://github.com/Eidosoma/Cells/commit/7c9feb549f00f58432dfc0ac3e8567a289c61255)
 
 **Engine**
 

@@ -25,7 +25,15 @@ Uses [Stage exits account for residues in unfinished, terminally held and detach
 
 ## Numerical comparison
 
-**Open.** Both unlabelled machine-return policies reproduced all 40 state fields byte for byte at four times after a disk checkpoint with occupied stages and hold. The [producer-labelled replacement replay](producer-replacement-rna.md) also checks the departing material and producer identity. An independent numerical reconstruction of the replacement event’s full residue and energy books remains open.
+**Open.** All 65 current state fields matched byte for byte at four times after a disk checkpoint with occupied stages and hold, for both machine-return policies. The historical replay checked 40 fields. The [producer-labelled replacement replay](producer-replacement-rna.md) checks the departing material and producer identity. The full replacement-event residue and energy reconstruction remains open.
+
+**Engine** `resolved_pump_composite@1`, `resolved_pump_tissue@3`
+
+**Operators** `cells.templated_polymerisation@1`
+
+[Unlabelled release world](https://github.com/Eidosoma/Cells/blob/2263d11ce5099fca1e58b9285ff4d302bb829fdf/validation/gene_regulation/worlds.py#L519) · [Initial rates and copy scale](https://github.com/Eidosoma/Cells/blob/2263d11ce5099fca1e58b9285ff4d302bb829fdf/validation/gene_regulation/sheet_check.py) · [Checkpoint at an accepted step](https://github.com/Eidosoma/Cells/blob/2263d11ce5099fca1e58b9285ff4d302bb829fdf/src/cells/execution/runner.py#L362) · [Snapshot writing and reading](https://github.com/Eidosoma/Cells/blob/2263d11ce5099fca1e58b9285ff4d302bb829fdf/src/cells/records/io.py#L86) · [RNA and machine ledgers](https://github.com/Eidosoma/Cells/blob/2263d11ce5099fca1e58b9285ff4d302bb829fdf/src/cells/operators/templated_polymerisation.py#L1993) · [Tagged replacement identities](https://github.com/Eidosoma/Cells/blob/2263d11ce5099fca1e58b9285ff4d302bb829fdf/docs/TEMPLATED_POLYMERISATION_LAWS.md#L1499) · [Short observation schedule](https://github.com/Eidosoma/Cells/blob/7c9feb549f00f58432dfc0ac3e8567a289c61255/lean/checks/terminal_release.py) · [Conditional event proofs](https://github.com/Eidosoma/Cells/blob/7c9feb549f00f58432dfc0ac3e8567a289c61255/lean/CellsProofs/Chemistry/TerminalRelease.lean) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/7c9feb549f00f58432dfc0ac3e8567a289c61255/lean/checks/release_restart.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/7c9feb549f00f58432dfc0ac3e8567a289c61255/lean/PROGRESS.md#fr38-retention-window-repair)
+
+[Tested engine 2263d11ce509](https://github.com/Eidosoma/Cells/commit/2263d11ce5099fca1e58b9285ff4d302bb829fdf) · [Evidence checkpoint 7c9feb549f00](https://github.com/Eidosoma/Cells/commit/7c9feb549f00f58432dfc0ac3e8567a289c61255)
 
 **Engine** `resolved_pump_composite@1`, `resolved_pump_tissue@3`
 
