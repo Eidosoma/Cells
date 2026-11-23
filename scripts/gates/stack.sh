@@ -46,6 +46,9 @@ HOSTPY=${HOSTPY:-python3}
 REPO=${REPO:-$HOME/Cells}
 RESTACK=${RESTACK:-1}
 export JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONDONTWRITEBYTECODE=1 JAX_ENABLE_X64=1
+# Cold, as gate.sh (D321 R2): the stack's gate and its bisect's reruns never use a compilation cache.
+export JAX_ENABLE_COMPILATION_CACHE=false
+unset JAX_COMPILATION_CACHE_DIR CELLS_JAX_CACHE
 steps() { "$HOSTPY" -I "$STEPS" "$@"; }
 log() { echo "$(date -u +%FT%TZ) $*" >> "$OUT/stack.log"; }
 short() { tr -d '\n' < "$1" | cut -c1-400; }
@@ -167,6 +170,8 @@ PRE_CPU=${PRELOCK_CPU:-23}
 # Until a lock is held, this script and all it starts stay on the pre-lock CPU (as gate.sh).
 taskset -cp "$PRE_CPU" $$ > /dev/null || { log "could not pin to CPU $PRE_CPU"; echo 2 > "$OUT/done"; exit 2; }
 log "stack $DECL into $OUT; repo $REPO; tool $G; restack $RESTACK"
+log "JAX's persistent compilation cache disabled in every process (JAX_ENABLE_COMPILATION_CACHE=false, \
+no cache folder; D321 R2)"
 steps stack-plan "$DECL" "$OUT" > "$OUT/plan.log" 2>&1 || { log "declaration refused: $(short "$OUT/plan.log")"; finish 2; }
 steps stack-build "$OUT" --repo "$REPO" --python "$PY" > "$OUT/build.log" 2>&1
 rc=$?; log "trial merges exit $rc: $(short "$OUT/build.log")"
@@ -212,6 +217,9 @@ else
   RUN="taskset -c $PRELOCK_CPU nice -n $(to_nice "$PRELOCK_NICE")"; RCPUS=$PRELOCK_CPU
   bisect
 fi
+if why=$(steps jax-entries "$OUT/bisect" 2>&1); then log "cold check after the bisect: $why"
+else log "stopped: JAX compilation cache entries appeared in the bisect's reruns (the cold check): $why"
+  finish 1; fi
 steps stack-blame "$OUT/bisect" "$N" "$OUT/blame.json" > "$OUT/blame.log" 2>&1
 log "blame: $(short "$OUT/blame.log")"
 if [ "$RESTACK" = 1 ]; then

@@ -1,0 +1,23 @@
+# The nightly sweep of this VM's shared JAX compilation cache (D321 step 1, option B):
+# scripts/jax_cache.py sweep. Definitions only: the lead installs them (copy both files to
+# ~/.config/systemd/user/, then `systemctl --user daemon-reload` and
+# `systemctl --user enable --now cells-jax-cache-sweep.timer`). A sweep on demand:
+# `systemctl --user start --no-block cells-jax-cache-sweep.service`; one that removes nothing:
+# `python3 -I ~/Cells/scripts/jax_cache.py sweep --dry-run`.
+[Unit]
+Description=Cells JAX compilation cache sweep (scripts/jax_cache.py sweep, cap 8G)
+
+[Service]
+Type=oneshot
+Slice=cells.slice
+WorkingDirectory=/mnt/workspaces/Cells
+Environment=PATH=/usr/local/bin:/usr/bin:/bin
+ExecStart=/usr/bin/python3 -I %h/Cells/scripts/jax_cache.py sweep --cap 8G
+# Host work only (reads, decompresses and deletes files): a light CPU, low priority, a small cap.
+MemoryMax=1G
+MemorySwapMax=0
+OOMScoreAdjust=200
+CPUAffinity=22-23
+Nice=10
+IOSchedulingClass=idle
+TimeoutStartSec=1h
