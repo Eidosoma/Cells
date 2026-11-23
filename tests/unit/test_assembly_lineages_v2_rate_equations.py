@@ -19,12 +19,14 @@ from scipy.linalg import expm
 from cells.definitions.specs import ConfigError, parse_spec
 from cells.models.assembly_lineages_v2 import (
     IDEAL_MIXING,
+    MASS_ACTION,
     REGULAR_MIXING,
     TRANSITION_STATE,
     balance,
     rate_equations,
     runner,
 )
+from cells.registry import laws as law_registry
 from tests.assembly_lineage_v2_fixtures import CONVENTIONS, definition, species, step
 
 jax.config.update("jax_enable_x64", True)
@@ -125,7 +127,7 @@ def _edit(path, value):
         (_edit(("execution", "representation", "envelope", "min_count"), 0.5), "min_count"),
         (_edit(("experiment", "trace"), True), "event-level readout"),
         (_edit(("model", "world", "founder", "C@pool"), 50), "below the envelope"),
-        (_edit(("execution", "mode"), "population"), "single_lineage"),
+        (_edit(("execution", "mode"), "population"), "mode population exactly when"),
     ],
 )
 def test_refusals(edit, words):
@@ -136,7 +138,7 @@ def test_refusals(edit, words):
 
 def test_the_limit_check_passes_on_the_generic_probes_and_catches_two_plants():
     verdict = rate_equations.verdict()
-    assert verdict["worlds"] == len(rate_equations.generic_probes()) == 4
+    assert verdict["worlds"] == len(rate_equations.generic_probes()) + 2 == 6
     assert verdict["identity"] <= rate_equations.IDENTITY_ATOL
     assert verdict["potential"] <= 1e-6 and verdict["dissipation_margin"] >= 0.0
     spec = parse_spec(as_representation(definition(membrane_world())))
@@ -147,7 +149,7 @@ def test_the_limit_check_passes_on_the_generic_probes_and_catches_two_plants():
     # P-D7: one species' μ° shifted by 0.5 k_BT in F_cont only.
     ideal = problem.terms[0]
     shifted = dataclasses.replace(
-        ideal, limit=lambda n, t, l, xp: ideal.limit(n, t, l, xp) + 0.5 * n[0]
+        ideal, limit=lambda n, t, lay, xp: ideal.limit(n, t, lay, xp) + 0.5 * n[0]
     )
     problem.terms = (shifted, *problem.terms[1:])
     with pytest.raises(ConfigError, match="not the products' law"):
@@ -167,13 +169,25 @@ def test_the_limit_check_passes_on_the_generic_probes_and_catches_two_plants():
 
 
 def test_each_limit_tends_to_its_exact_form_as_one_over_the_counts():
+    """Item 4, run before every run on the generic probes (both measures; the osmotic probe's
+    geometric and lumen laws too), and its planted failure: a limit off by a constant factor."""
+    verdict = rate_equations.verdict()
+    assert verdict["worlds"] == len(rate_equations.generic_probes()) + 2
+    assert len(verdict["parity_orders"]) + verdict["parity_identical"] == verdict["worlds"]
+    assert min(verdict["parity_orders"]) >= 0.9
     rng = np.random.default_rng(5)
-    probes = [balance.PROBES[3], balance.PROBES[11]]  # both measures, c = 0 and c = 1
-    assert {p[0] for p in probes} == {"multinomial", "multinomial_less_one"}
-    for measure, last, regular, catalysis in probes:
-        raw = balance.probe_world(rng, measure, last, regular=regular, catalysis=catalysis)
-        out = rate_equations.parity(raw, rng)
-        assert out["identical"] or out["order"] >= 0.9, out
+    raw = balance.probe_world(rng, "multinomial_less_one", "kept", regular=True, catalysis=True)
+    honest = law_registry.active().lookup(MASS_ACTION)
+    planted = dataclasses.replace(
+        honest, law_id="tests.limit_off_by_a_constant@1",
+        limit=lambda view, *rest: honest.limit(view, *rest) + 0.1,
+    )  # fmt: skip
+    for step_ in raw["model"]["world"]["steps"]:
+        if step_["law"] == MASS_ACTION:
+            step_["law"] = planted.law_id
+    with law_registry.scope(law_registry.BUILTIN.extended(planted)):
+        with pytest.raises(ConfigError, match="does not tend to its exact form"):
+            rate_equations.parity(raw, rng)
 
 
 def test_a_linear_network_follows_its_matrix_exponential(tmp_path):

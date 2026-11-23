@@ -98,3 +98,36 @@ def test_the_controller_meets_its_tolerance():
         h = rd.next_step(h, e, last_rejected)
     assert abs(float(y[0]) - logistic_exact(6.0)) < 1e-7
     assert accepted < 200
+
+
+def test_a_carried_quantity_is_of_order_four_and_leaves_the_steps_unchanged():
+    # Z' = y² along the logistic y, carried by the stages (OL6 S3, the hazard clock's H):
+    # ∫_0^t y² = ln(e^t + a) − ln(1 + a) − y(t) + y0, a = 1/y0 − 1 (y² = y − y').
+    def rate(y):
+        return y[0] ** 2
+
+    jac, grad = jax.jacfwd(logistic), jax.grad(rate)
+    one = jax.jit(lambda y, h: rd.step(logistic, jac, y, h))
+    carry = jax.jit(lambda y, h, stages: rd.quadrature(rate, grad, y, h, stages))
+    a, horizon, errors, dense_errors = 9.0, 4.0, [], []
+    for count in (10, 20, 40):
+        y, z, h, worst = jnp.asarray([0.1]), 0.0, horizon / count, 0.0
+        for k in range(count):
+            result = one(y, h)
+            carried = carry(y, h, result.stages)
+            t = (k + 0.5) * h
+            mid = float(rd.dense_carried(z, carried, 0.5))
+            exact_mid = math.log(math.exp(t) + a) - math.log(1 + a) - logistic_exact(t) + 0.1
+            worst = max(worst, abs(mid - exact_mid))
+            y, z = result.y, z + float(carried.increment)
+        exact = math.log(math.exp(horizon) + a) - math.log(1 + a) - logistic_exact(horizon) + 0.1
+        errors.append(abs(z - exact))
+        dense_errors.append(worst)
+    orders = [math.log2(errors[i] / errors[i + 1]) for i in range(2)]
+    dense_orders = [math.log2(dense_errors[i] / dense_errors[i + 1]) for i in range(2)]
+    assert min(orders) > 3.7, orders
+    assert min(dense_orders) > 2.7, dense_orders
+    # The step that carries a quantity is its twin's, bit for bit (the quantity reads y, never back).
+    plain = jax.jit(lambda y, h: rd.step(logistic, jac, y, h).y)
+    assert np.array_equal(np.asarray(plain(jnp.asarray([0.1]), 0.4)),
+                          np.asarray(one(jnp.asarray([0.1]), 0.4).y))  # fmt: skip
