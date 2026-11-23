@@ -40,6 +40,33 @@ as `exec 9> LOCK; flock 9` without a check run unlocked when their flock dies. S
   branch's row delta against the merge base is applied to main's record, in main's order. It refuses
   a row that both sides changed differently.
 
+**JAX's persistent compilation cache (D321, step 1).** Tier membership is decided by seconds, and a
+warm cache moves files across tiers, so everything that measures or gates runs cold by construction:
+- `test_tiers.py` disables the cache in every test process, whatever its caller's environment.
+  - `measure` marks its record `"jax_compilation_cache": "disabled"`, and `fold` and `tiers` refuse
+    a measurement without that marker. `--pre-marker-ok` takes one made before the marker existed.
+  - Only `run --jax-cache FOLDER` runs warm, and its record names the folder. That is for the cache
+    qualification's arms and, once step 2 is ruled, gates.
+- `gate.sh`, `stack.sh`, `nightly_tiers.sh` and `fr_landing_set.sh` (with the holder's queue units)
+  export `JAX_ENABLE_COMPILATION_CACHE=false`, drop any cache folder and log it. After each stage the
+  cold check (`gate_steps.py jax-entries`) refuses if an entry appeared under their outputs. That
+  stop is the gate's own fault, so a stack does not bisect it.
+- `scripts/run_detached.sh` disables the cache in every unit without `--jax-cache`, so registered and
+  judged runs stay cold.
+
+Development runs opt in per unit (`run_detached.sh --jax-cache`) or per command
+(`scripts/with_jax_cache.sh CMD`), never through an exported shell variable.
+- Both are CPU-only: they are refused with a visible GPU, since the L4's recorded bitwise failure
+  crossed this cache.
+- They use the qualified mode (every compile written, JAX's default store) in one folder per jaxlib
+  version and CPU model, `/mnt/workspaces/Cells/jax-cache/cpu-jaxlib<VERSION>-<CPU>`
+  (`scripts/jax_cache.py folder`).
+- `systemd/cells-jax-cache-sweep.*` (definitions only; the lead installs them) runs
+  `scripts/jax_cache.py sweep` nightly at 02:00 UTC:
+  - folders of another jaxlib or CPU go;
+  - entries that no longer decompress (a torn write) go;
+  - the least recently read entries above 8 GB go, down to 90% of it.
+
 GARD's @1 invariance gate comes in after OL2 lands, using OL2's
 `validation/assembly_lineages/compare_probes.py` (the lead's ruling, 18 November 2026).
 

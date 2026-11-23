@@ -34,6 +34,11 @@
 #      merged save.
 # FR's bitwise set and R1 stay their own units (fr_landing_set.sh; fingerprints_landing.sh, which
 # caches R1's base record per main revision in the same GATE_CACHE).
+# Cold (D321 R2): every process the gate starts runs with JAX's persistent compilation cache
+# disabled (JAX_ENABLE_COMPILATION_CACHE=false, no cache folder), whatever its caller's environment,
+# so its seconds and the tier record stay cold. After each stage that runs the engine (the pre-lock
+# tests, crossrev, tiers, G1) the cold check (gate_steps.py jax-entries) refuses the gate if a cache
+# entry appeared under its outputs: something turned the cache back on.
 #
 # Run the copy in the gate's own frozen base snapshot (BASE_S/scripts/gates/gate.sh), so a queued
 # gate's script never changes under it.
@@ -73,12 +78,19 @@ esac
 read -r -a CPU <<< "${CPUS//,/ }"
 I0=${CPU[0]}
 export JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONDONTWRITEBYTECODE=1 JAX_ENABLE_X64=1
+export JAX_ENABLE_COMPILATION_CACHE=false  # Cold (D321 R2), and no folder for anything to use:
+unset JAX_COMPILATION_CACHE_DIR CELLS_JAX_CACHE
 export REC C1 BASELINE TIERS CHECKS
 mkdir -p "$OUT"
 log() { echo "$(date -u +%FT%TZ) $*" >> "$OUT/gate.log"; }
 finish() { log "done status $1"; echo "$1" > "$OUT/done"; exit "$1"; }
 steps() { "$HOSTPY" -I "$STEPS" "$@"; }
 short() { tr -d '\n' < "$1" | cut -c1-400; }
+cold_check() {  # STAGE DIR: refused when a JAX compilation cache entry appeared under DIR (D321 R2).
+  local why
+  if why=$(steps jax-entries "$2" 2>&1); then log "cold check after $1: $why"; return 0; fi
+  log "stopped: JAX compilation cache entries appeared after $1 (the cold check): $why"; return 1
+}
 
 # PRELOCK_NICE is the niceness the pre-lock steps run at, not an increment: a gate started under
 # nice must not push them past it (nice -n adds to the caller's niceness).
@@ -135,6 +147,7 @@ prelock() {  # Steps 0-2; returns 1 at the first refusal.
   steps prelock-verdict "$P/subset.json" "$P/tests" "$P/tests-verdict.json" > "$P/tests-verdict.log" 2>&1
   rc=$?; log "prelock tests exit $rc ($(short "$P/select.log")): $(short "$P/tests-verdict.log")"
   [ $rc -eq 0 ] || { log "stopped at the pre-lock tests"; return 1; }
+  cold_check "the pre-lock tests" "$P" || return 1
   if [ -n "${SELECT:-}" ]; then  # 2a. A selection error or refusal runs the full tiers, never fewer.
     local map=$SELECT
     [ "$map" != auto ] || map=$GATE_CACHE/scope-map.json
@@ -164,6 +177,8 @@ if [ $LOCKED -eq 0 ]; then
 tiers $TIERS; additions from ${ADDITIONS_FROM:-none}; removals listed in ${REMOVED_OK_FILE:-none}; \
 crossrev differences declared in ${CROSSREV_EXPECTED:-none}; cache ${GATE_CACHE:-off}; checks $CHECKS; \
 selection ${SELECT:-off}; tool $G"
+  log "JAX's persistent compilation cache disabled in every process (JAX_ENABLE_COMPILATION_CACHE=false, \
+no cache folder; D321 R2)"
   if [ "$PRELOCK" != lane ]; then prelock || finish 1; fi
   if [ "${PRELOCK_ONLY:-0}" = 1 ]; then
     [ "$PRELOCK" != lane ] || { log "PRELOCK_ONLY needs PRELOCK=light"; finish 2; }
@@ -229,6 +244,7 @@ n=$("$HOSTPY" -I -c "import json,sys; d=json.load(open(sys.argv[1])); print(d['i
 'sets identical,', d['as_declared'], 'as declared')" "$X/verdict.json" 2>/dev/null || echo "no verdict")
 log "crossrev head vs base: $n, seconds $(( $(date +%s) - start )), exit $rc"
 [ $rc -eq 0 ] || { log "stopped at crossrev"; done_locked 1; }
+cold_check crossrev "$X" || done_locked 1
 }
 if [[ " $CHECKS " == *" crossrev "* ]]; then crossrev_stage; else log "crossrev not run (checks: $CHECKS)"; fi
 
@@ -241,6 +257,7 @@ TR=$(cat "$OUT/tiers-run" 2>/dev/null); TR=${TR:-$TIERS}
 rc=$?
 log "tiers 1+2 exit $rc seconds $(( $(date +%s) - start )): $(tail -n 1 "$OUT/tiers-1+2.log")"
 [ $rc -eq 0 ] || { log "stopped at tiers"; done_locked 1; }
+cold_check "the tiers" "$OUT/tiers-1+2" || done_locked 1
 
 # 5. G1
 if [[ " $CHECKS " != *" g1 "* ]]; then log "G1 not run (checks: $CHECKS)"; done_locked 0; fi
@@ -273,6 +290,7 @@ steps g1-merge "$G1/parts" "$G1/merged" >> "$G1/g1.log" 2>&1 || { log "G1 merge 
 rc=$?
 log "G1 compare exit $rc seconds $(( $(date +%s) - start )): $(tail -n 1 "$G1/compare-vs-c1.log")"
 [ $rc -eq 0 ] || { log "stopped at G1"; done_locked 1; }
+cold_check G1 "$G1" || done_locked 1
 if [ -n "$GATE_CACHE" ]; then
   log "G1 seconds for the next plan: $(steps g1-seconds "$G1/merged" "$GATE_CACHE/g1-seconds.json" 2>&1 | tail -n 1)"
 fi

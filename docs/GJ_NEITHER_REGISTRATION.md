@@ -302,3 +302,70 @@ result is reported, never judged.
 - Before the final commit, its first five outcomes were seen: D = 0 not normalized, and 1e-13,
   5e-14, 2.5e-14 and 1.25e-14 normalized, as in the historical log.
 - Nothing in this registration was set from them.
+
+## Amendment 1: the field's engine and field solver (draft, 23 November 2026, for the lead)
+
+**Status.** A draft for the lead's tag. It is written before any field point has run, and it changes
+nothing for the line. The user chose a faster path for the field (D317): bit-identical fixes plus a
+sparse node-space solve, the latter as FR-17's first stage. The registration's engine paragraph
+requires an amendment, tagged before the run, for any src change before a run. This is that
+amendment.
+
+**1. The engine under test, for the field.**
+- **The run's source:** a clean execution snapshot of main at or after the landing of the sparse
+  solver's qualification, and so at or after d6d42b46 (tag gj-fieldpath-merged-2026-11-23).
+- **d6d42b46's two fixes are bitwise identical under D148, so they change no registered number.**
+  - local_species_reactions@1 evaluates its Hill factors at the declared slots only, one branch
+    each.
+  - surface_pump_v3.crossing_junctions halves its union-find's paths.
+  - The evidence:
+    - the D148 guard: scalar runs with device checks, windowed runs and vector-window and batch
+      cohorts are physically identical on the reactions operator's crossrev worlds and on GJ-N1's
+      switch worlds, among them the 25 × 25 field at D = 0 and at 1e-13;
+    - G1, 113 of 113 identical;
+    - FR's bitwise set;
+    - crossrev changed only in program text and one new binding
+      (`/mnt/workspaces/Cells/gj-fieldpath-20261123/`).
+
+**2. The field's field solver.**
+- **The field runs with** `execution.field_solver = sparse_capacitive_reduction_gauged_damped_newton@1`
+  (docs/FIELD_SOLVER_INTERFACE_DESIGN.md §8), once that ID is qualified as §8.5 lists. Today it runs
+  with `capacitive_reduction_gauged_damped_newton@2`.
+- **The driver:** neither.py's field worlds (`coupled_world` and stage 1's `uncoupled_world` for
+  `shape="field"`) set that ID. The line keeps @2, as it ran.
+- **The code is tagged with this amendment.** The change lands with the solver, as a reader that
+  exists at its tag (D308).
+
+**3. What must hold before any field point runs.**
+- The solver is qualified against @2 (§8.5) on GJ-N1's field worlds, among others: a few windows at
+  D = 0 and at 1e-13, with state fields within the ledger tolerances.
+- Its bitwise status on these diagonal reductions is measured and reported.
+  - If it is bitwise identical to @2 there, the field's numbers are those @2 would give, by
+    construction.
+  - If it is not, the agreement found is recorded, and the verdict's convergence condition C (the
+    final bracket's ends at half step) still bounds the threshold's sensitivity to the integration.
+- The tier gate, G1 and FR's set pass at the solver's landing.
+
+**4. Unchanged:** the model, the geometry, the criterion, the bracket, the search and its tolerance,
+the step rule (dt × rate ≤ 0.04), the windows (32 steps), stage 1, the verdict (R, C, A), the
+references' specification, and BITSEY's role (reported, never judged).
+
+**5. The cost, re-estimated from measured steps** (one CPU, process CPU time, from
+`/mnt/workspaces/Cells/gap-junction-20261123/probes/field-profile-01/`):
+- **The windowed field step today, after d6d42b46:** 0.075 s with routes and 0.071 s at D = 0, against
+  0.142 s and 0.114 s before. The search would take about 160 CPU-hours, with its upper end at about
+  2.2 days.
+- **With the sparse solve** (about 33 ms less a step): about 42-45 ms a step. The search would take
+  about 90 CPU-hours, with its upper end (2.56 million steps) at about 30 h.
+- **Where it runs:** a gate lane under its lock, one point per CPU, as the lead assigns. The
+  critical path is the upper end.
+
+**6. The line's engine, for the record.**
+- **The judged line search ran from main 23593267** (`/mnt/workspaces/Cells/gap-junction-20261123/
+  judged/snapshot-23593267`), as the lead directed: "a clean frozen snapshot of main at or after
+  130cd928".
+- **Its src differs from the tag's** (db54d0f5) in `src/cells/models/assembly_lineages_v2/
+  rate_equations.py` alone. The GJ worlds do not run that model
+  (`judged/snapshot-diff-from-tag.txt`).
+- **It started at 19:19 UTC on 23 November,** before this amendment, under no src change that GJ-N1's
+  worlds run.

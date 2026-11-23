@@ -162,9 +162,11 @@ EOF
 chmod +x "$OUT/bin/python-rss"
 default_cache "$OUT/default-cache-before.json"
 E=()  # The current arm's environment.
-with_cache() {  # CACHE
-  E=(JAX_COMPILATION_CACHE_DIR="$1" JAX_PERSISTENT_CACHE_MIN_COMPILE_TIME_SECS=0
+TCACHE=  # The current arm's cache folder, for a tier runner that takes --jax-cache (empty: off).
+with_cache() {  # CACHE. Enabled explicitly: run_detached.sh units default to it off (D321).
+  E=(JAX_ENABLE_COMPILATION_CACHE=true JAX_COMPILATION_CACHE_DIR="$1" JAX_PERSISTENT_CACHE_MIN_COMPILE_TIME_SECS=0
      JAX_PERSISTENT_CACHE_MIN_ENTRY_SIZE_BYTES=0 JAX_RAISE_PERSISTENT_CACHE_ERRORS=true)
+  TCACHE=$1
 }
 entries() { if [ -d "$1" ]; then find "$1" -maxdepth 1 -name '*-cache' | wc -l; else echo 0; fi; }
 anon() { awk '$1 == "anon" {print $2}' "$CG/memory.stat" 2>/dev/null || echo 0; }
@@ -189,10 +191,14 @@ stage() {  # ARM NAME CACHE FUNCTION ARGS...: one stage, recorded in OUT/stages.
   log "$arm $name: $(tail -n 1 "$OUT/stages.jsonl")"
 }
 tiers_run() {  # TREE DIR TIERS WHICH CPUS CAP: one tier run in the arm's environment
-  local tree=$1 d=$2 tiers=$3 which=$4 cpus=$5 cap=$6
+  local tree=$1 d=$2 tiers=$3 which=$4 cpus=$5 cap=$6 cache=()
+  # A tree whose runner disables the cache unless told (D321 R1) is given the arm's folder; an older
+  # tree's runner takes it from the environment, as before.
+  if [ -n "$TCACHE" ] && grep -q -- '--jax-cache' "$tree/scripts/test_tiers.py"; then cache=(--jax-cache "$TCACHE"); fi
   # shellcheck disable=SC2086
   (cd "$tree" && env -u JAX_COMPILATION_CACHE_DIR PYTHONPATH="$tree/src:$tree" "${E[@]}" "$PY" -B \
-    scripts/test_tiers.py run --tiers "$tiers" --tier $which --out "$d" --cpus "$cpus" --cap "$cap" > "$d.log" 2>&1)
+    scripts/test_tiers.py run --tiers "$tiers" --tier $which --out "$d" --cpus "$cpus" --cap "$cap" \
+    "${cache[@]}" > "$d.log" 2>&1)
   log "tiers $d: $(tail -n 1 "$d.log" | cut -c1-200)"
 }
 per_id() {  # RUN RECORD LISTING...: the run read per test ID against OFF's record (test_tiers.py diff)
@@ -288,7 +294,7 @@ $(cat "$(dirname "$d")/replication/done" 2> /dev/null)"
 }
 
 # off: the reference, with the cache off.
-E=(JAX_ENABLE_COMPILATION_CACHE=false)
+E=(JAX_ENABLE_COMPILATION_CACHE=false); TCACHE=
 mkdir -p "$OUT/off"
 if [ -n "$GATE_RUN" ]; then
   freeze "$GATE_RUN" "$OUT/off/record.json" "$OUT/off/collected.json"

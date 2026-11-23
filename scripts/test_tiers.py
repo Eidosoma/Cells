@@ -31,6 +31,15 @@ files are timed individually and grouped into tiers:
            D229), each file's processes also record what they read of the tree, into
            DIR/<file> (scripts/gates/scope_inject; scripts/gates/scope.py builds the map)
 
+JAX's persistent compilation cache (D321 R1): every test process runs with it disabled
+(JAX_ENABLE_COMPILATION_CACHE=false, no cache folder), whatever the caller's environment, since tier
+membership is decided by seconds and a warm cache moves files across tiers (measured warm on 20
+November 2026, 77 of 189 tier-2 files fell under 20 s). measure always runs cold and marks its record
+"jax_compilation_cache": "disabled"; fold and tiers refuse a measurement without that marker
+(--pre-marker-ok takes one made before UNMARKED_UNTIL, when none could run warm). Only run takes
+--jax-cache FOLDER, for checks whose outcomes count and whose seconds do not (the cache
+qualification's arms, and gates once D321 step 2 is ruled in); its record names the folder.
+
 Tier 3 (D187): its rows hold no outcome (they hit the 90 s measuring cap), so each
 landing's final tier-3 table is frozen per test ID in tests/tier3_record.json, and a
 later tier-3 run is compared with it instead of re-running old code:
@@ -139,20 +148,45 @@ def _test_files():
     return sorted(str(p.relative_to(ROOT)) for p in (ROOT / "tests").rglob("test_*.py"))
 
 
-def _run_file(path, cpu, cap, log_dir, scope=None):
+CACHE_ENV = ("JAX_COMPILATION_CACHE_DIR", "JAX_PERSISTENT_CACHE_MIN_COMPILE_TIME_SECS",
+             "JAX_PERSISTENT_CACHE_MIN_ENTRY_SIZE_BYTES", "JAX_COMPILATION_CACHE_MAX_SIZE",
+             "CELLS_JAX_CACHE")
+COLD = "disabled"  # The cold marker: a record's "jax_compilation_cache" when the cache was off.
+# Before this marker existed (D321, 23 November 2026), the tier runner had no way to run warm and no
+# unit could opt in, so an unmarked measurement made before this time was cold. fold and tiers take
+# one only with --pre-marker-ok; any later unmarked measurement is refused.
+UNMARKED_UNTIL = "2026-11-24T12:00:00+00:00"
+
+
+def cache_environment(env, jax_cache=None):
+    """ENV with JAX's persistent compilation cache disabled (the default: tier seconds are cold,
+    D321 R1), or, for a run given --jax-cache, pointed at that folder with the qualified settings
+    (every compile written). A caller's own cache settings never reach a test process either way."""
+    env = {k: v for k, v in env.items() if k not in CACHE_ENV}
+    if jax_cache is None:
+        env["JAX_ENABLE_COMPILATION_CACHE"] = "false"
+    else:
+        env.update(JAX_ENABLE_COMPILATION_CACHE="true", JAX_COMPILATION_CACHE_DIR=str(jax_cache),
+                   JAX_PERSISTENT_CACHE_MIN_COMPILE_TIME_SECS="0",
+                   JAX_PERSISTENT_CACHE_MIN_ENTRY_SIZE_BYTES="0")
+    return env
+
+
+def _run_file(path, cpu, cap, log_dir, scope=None, jax_cache=None):
     """One test file under the standard gate environment.
 
     Scientific code is float64 (JAX_ENABLE_X64), and tests that write outputs or
     component evidence get their own directories under the run, never shared paths.
     The tiers are CPU-only by definition: no GPU is visible and JAX's platform is the
     CPU (JAX_PLATFORMS, which some tests assert), whatever the caller's environment.
+    JAX's persistent compilation cache is disabled unless the run names one (cache_environment).
     """
     slug = path.replace("/", "__")
     outputs = log_dir.parent / "outputs" / slug
     evidence = log_dir.parent / "evidence" / slug
     outputs.mkdir(parents=True, exist_ok=True)
     evidence.mkdir(parents=True, exist_ok=True)
-    env = dict(
+    env = cache_environment(dict(
         os.environ,
         PYTHONPATH=str(ROOT / "src"),
         CUDA_VISIBLE_DEVICES="",
@@ -160,7 +194,7 @@ def _run_file(path, cpu, cap, log_dir, scope=None):
         JAX_ENABLE_X64="1",
         CELLS_OUTPUT_ROOT=str(outputs),
         CELLS_COMPONENT_EVIDENCE=str(evidence),
-    )
+    ), jax_cache)
     if scope:  # The scope map's recorder (sitecustomize), in this file's processes only.
         env["PYTHONPATH"] = os.pathsep.join([str(ROOT / "scripts" / "gates" / "scope_inject"),
                                              env["PYTHONPATH"]])
@@ -207,7 +241,7 @@ def _run_file(path, cpu, cap, log_dir, scope=None):
     }
 
 
-def _parallel(files, cpus, cap, out_dir, record_path, header, scope=None):
+def _parallel(files, cpus, cap, out_dir, record_path, header, scope=None, jax_cache=None):
     log_dir = out_dir / "logs"
     log_dir.mkdir(parents=True, exist_ok=True)
     results, free = [], list(cpus)
@@ -215,7 +249,7 @@ def _parallel(files, cpus, cap, out_dir, record_path, header, scope=None):
     def task(path):
         cpu = free.pop()
         try:
-            return _run_file(path, cpu, cap, log_dir, scope)
+            return _run_file(path, cpu, cap, log_dir, scope, jax_cache)
         finally:
             free.append(cpu)
 
@@ -250,14 +284,35 @@ def measure(args):
         "cap_seconds": args.cap,
         "cpus": args.cpus,
         "file_count": len(files),
+        "jax_compilation_cache": COLD,  # Always: measure has no way to run warm (D321 R1).
     }
     _parallel(files, args.cpus, args.cap, out, out / "measured.json", header)
     print(out / "measured.json")
 
 
+def require_cold(records, sources, pre_marker_ok=False):
+    """Refuse (SystemExit) a measurement whose seconds may be warm (D321 R1): only a record marked
+    cold places a row by its seconds. An unmarked record made before UNMARKED_UNTIL, when no
+    measurement could run warm, passes with pre_marker_ok."""
+    for record, source in zip(records, sources, strict=True):
+        mark = record.get("jax_compilation_cache")
+        if mark == COLD:
+            continue
+        utc = record.get("provenance", {}).get("utc")
+        if mark is None and pre_marker_ok and utc and utc < UNMARKED_UNTIL:
+            continue
+        why = (f"it was measured with the compilation cache {mark!r}" if mark is not None else
+               "it has no cold marker (jax_compilation_cache), so its seconds may be warm")
+        raise SystemExit(f"refused: the measurement {source}: {why}. Tier seconds are measured with "
+                         f"the cache disabled (D321 R1): measure again with a scripts/test_tiers.py "
+                         f"that writes the marker" + ("" if pre_marker_ok or mark is not None else
+                         f", or pass --pre-marker-ok for a measurement made before {UNMARKED_UNTIL}"))
+
+
 def tiers(args):
     # Later measurements override earlier ones per file (e.g. a re-measured subset).
     records = [json.loads(Path(m).read_text()) for m in args.measured]
+    require_cold(records, args.measured, getattr(args, "pre_marker_ok", False))
     latest, sources, provenance = {}, [], []
     if args.base:
         # Keep an existing tiers record (whose paths may have been edited, e.g. after
@@ -419,6 +474,7 @@ def merge(args):
 def fold(args):
     record = json.loads(Path(args.record).read_text())
     measured = [json.loads(Path(m).read_text()) for m in args.measured]
+    require_cold(measured, args.measured, getattr(args, "pre_marker_ok", False))
     out = fold_rows(record, measured, args.measured, _test_files())
     Path(args.out).write_text(json.dumps(out, indent=1) + "\n")
     print({t: len(v) for t, v in out["tiers"].items()})
@@ -429,18 +485,22 @@ def run(args):
     wanted = [r for t in args.tier for r in doc["tiers"][str(t)]]
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
+    jax_cache = getattr(args, "jax_cache", None)  # Callers that build args by hand may omit it.
+    if jax_cache is not None:
+        jax_cache = Path(jax_cache).resolve()
     header = {
         "kind": "cells.test_tier_run@1",
         "provenance": _provenance(),
         "tiers": args.tier,
         "cap_seconds": args.cap,
+        "jax_compilation_cache": str(jax_cache) if jax_cache else COLD,
     }
-    scope = getattr(args, "scope_map", None)  # Callers that build args by hand may omit it.
+    scope = getattr(args, "scope_map", None)
     if scope:
         header["scope_map"] = str(Path(scope).resolve())
     results = _parallel(
         [r["file"] for r in wanted], args.cpus, args.cap, out, out / "run.json", header,
-        scope and Path(scope).resolve(),
+        scope and Path(scope).resolve(), jax_cache,
     )
     changed, increases = compare_with_record(results, {r["file"]: r for r in wanted})
     summary = {
@@ -723,7 +783,7 @@ def _run_doc(run_dir):
 
 
 def _collect_once(root, files, cpu, scratch):
-    env = dict(
+    env = cache_environment(dict(
         os.environ,
         PYTHONPATH=str(Path(root) / "src"),
         CUDA_VISIBLE_DEVICES="",
@@ -731,7 +791,7 @@ def _collect_once(root, files, cpu, scratch):
         JAX_ENABLE_X64="1",
         CELLS_OUTPUT_ROOT=str(scratch / "outputs"),
         CELLS_COMPONENT_EVIDENCE=str(scratch / "evidence"),
-    )
+    ))
     cmd = [sys.executable, "-B", "-m", "pytest", "-q", "-p", "no:cacheprovider"]
     cmd += ["--continue-on-collection-errors", "--collect-only", *files]
     if cpu is not None:
@@ -1037,6 +1097,9 @@ def main(argv=None):
     fo.add_argument("--record", required=True, help="the current tier record (main's)")
     fo.add_argument("--measured", required=True, nargs="+", help="measure's records, later win")
     fo.add_argument("--out", required=True)
+    for p in (t, fo):
+        p.add_argument("--pre-marker-ok", action="store_true",
+                       help=f"take an unmarked measurement made before {UNMARKED_UNTIL} (D321 R1)")
     me = sub.add_parser("merge", help="the three-way fold of a merge, by row delta")
     me.add_argument("--base", required=True, help="the merge base's record")
     me.add_argument("--ours", required=True, help="the branch's record")
@@ -1049,6 +1112,8 @@ def main(argv=None):
     r.add_argument("--cpus", type=cpus, default=[4, 5, 6, 7])
     r.add_argument("--cap", type=float, default=300.0)
     r.add_argument("--scope-map", help="record each file's reads of the tree into this folder")
+    r.add_argument("--jax-cache", help="run with JAX's persistent compilation cache in this folder "
+                   "(every compile written); default disabled. Never for tier seconds (D321)")
     c = sub.add_parser("collect", help="the test IDs of finished runs' files, from their tree")
     c.add_argument("--run", required=True, nargs="+", help="run folders on one tree")
     c.add_argument("--out", help="listing to write (default RUN/collected.json)")
