@@ -32,6 +32,7 @@ import CellsProofs.Chemistry.TerminalRelease
 import CellsProofs.Chemistry.ReleaseEnergy
 import CellsProofs.Chemistry.PopulationUnits
 import CellsProofs.Chemistry.PrescribedShell
+import CellsProofs.Chemistry.ShellEquilibrium
 import CellsProofs.Chemistry.ReservoirExchange
 import CellsProofs.Chemistry.SharedPool
 import CellsProofs.Chemistry.SingleSiteBinding

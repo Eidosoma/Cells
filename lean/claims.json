@@ -10700,6 +10700,51 @@
       }
     },
     {
+      "id": "fr48-shell-equilibrium",
+      "category": "molecular-assembly",
+      "title": "The lumen tracer count has a binomial equilibrium in a prescribed shell",
+      "statement": "Let Δ be the lumen standard potential minus the solution standard potential, both in units of RT. With N molecules and equal volumes, the binomial distribution with lumen probability p = 1/(1 + exp Δ) is normalized and satisfies detailed balance at every adjacent count. It is stationary in continuous time. The mean lumen count is Np. For N > 0 the ratio of mean inside to mean outside concentration is exp(−Δ).",
+      "assumptions": [
+        "A single conserved neutral tracer moves between a finite solution pool and a prescribed lumen of the same fixed positive volume. The only events changing its counts are single-molecule crossings. Both places use the same temperature and standard concentration.",
+        "At lumen count k the total entry rate is h(N−k). From k+1 the exit rate back to k is h(k+1) exp Δ. The common per-molecule rate h comes from permeability, area, volume and a fixed wall gate. A positive h permits crossings in both directions.",
+        "The expectation is over the count at equilibrium in physical time. Each count has the probability assigned by the normalized distribution, including the endpoints at zero and N."
+      ],
+      "uses": ["prescribed-shell-rates"],
+      "formal": {
+        "status": "proved",
+        "about": ["cells.prescribed_shell@1", "cells.shell_permeation@1"],
+        "theorems": {
+          "CellsProofs.Chemistry.ShellEquilibrium.common_shift": "lean/CellsProofs/Chemistry/ShellEquilibrium.lean",
+          "CellsProofs.Chemistry.ShellEquilibrium.inside_outside_odds": "lean/CellsProofs/Chemistry/ShellEquilibrium.lean",
+          "CellsProofs.Chemistry.ShellEquilibrium.countLaw_normalized": "lean/CellsProofs/Chemistry/ShellEquilibrium.lean",
+          "CellsProofs.Chemistry.ShellEquilibrium.count_mass": "lean/CellsProofs/Chemistry/ShellEquilibrium.lean",
+          "CellsProofs.Chemistry.ShellEquilibrium.detailed_balance": "lean/CellsProofs/Chemistry/ShellEquilibrium.lean",
+          "CellsProofs.Chemistry.ShellEquilibrium.stationary": "lean/CellsProofs/Chemistry/ShellEquilibrium.lean",
+          "CellsProofs.Chemistry.ShellEquilibrium.mean_inside_count": "lean/CellsProofs/Chemistry/ShellEquilibrium.lean",
+          "CellsProofs.Chemistry.ShellEquilibrium.mean_concentration_ratio": "lean/CellsProofs/Chemistry/ShellEquilibrium.lean"
+        },
+        "sources": {
+          "D323 absolute potentials, exit factor and scope": "https://github.com/Eidosoma/Cells/blob/9eb9890a91ad6049be9b2e5a1bfae7b383a464eb/docs/DECISIONS.md#L10193-L10201",
+          "Cells shell geometry and reverse rate": "https://github.com/Eidosoma/Cells/blob/9eb9890a91ad6049be9b2e5a1bfae7b383a464eb/src/cells/models/assembly_lineages_v2/kernel.py#L279-L298",
+          "Mathlib binomial probability mass function, imported and specialized to the lumen count": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Probability/ProbabilityMassFunction/Binomial.lean#L23-L56",
+          "Mathlib adjacent binomial coefficient recurrence, imported for detailed balance": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Data/Nat/Choose/Basic.lean#L204-L212",
+          "Cells real-valued point mass, reused from the pool-withdrawal proof": "lean/CellsProofs/Chemistry/PoolWithdrawalEnergy.lean#L16",
+          "Exact occupancy and potential-convention checks": "lean/checks/chemistry/ShellEquilibrium.lean"
+        }
+      },
+      "numerical": {
+        "status": "open",
+        "comparisons": [],
+        "result": "The FR-48 development test at d6555dd9 compares the kernel’s rates with the binomial law for distinct absolute potentials, equal potentials and the undeclared default. A comparison against the landed engine is pending."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Equilibrium counts of one conserved neutral tracer inside and outside an equal-volume compartment pair, with an independently determined transfer free energy at the same temperature.",
+        "unit": "molecules and dimensionless concentration ratio",
+        "evidence": []
+      }
+    },
+    {
       "id": "site-occupant-cargo",
       "category": "tissue-and-conservation",
       "title": "Replacing occupied sites accounts for departing and arriving bound ligand",

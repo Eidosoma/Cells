@@ -1,5 +1,13 @@
 # Cells proof comparisons
 
+<a id="fr48-shell-equilibrium"></a>
+
+## 23 November 2026 · Tracer equilibrium in a prescribed shell
+
+For `cells.shell_permeation@1` on `cells.prescribed_shell@1`, Lean checked the normalized count distribution for every fixed total, detailed balance across each entry/exit pair, and zero net probability flow for every count observable in continuous time. At equal volumes a lumen cost of ln 2 in units of RT gives a one-third fraction inside and a one-half ratio of mean concentrations. [Claim, assumptions and engine status](claims/fr48-shell-equilibrium.md)
+
+With two tracers the exact probabilities at zero, one and two inside are 4/9, 4/9 and 1/9. With no tracer the only state has mass one. Setting the solution potential to ln 2 and the absolute lumen potential to ln 4 distinguishes the correct fraction (1/3) from using the lumen value as an offset (1/5) or reversing the gap (2/3). After the build, run `lake env lean -DwarningAsError=true checks/chemistry/ShellEquilibrium.lean` from `lean/` to repeat the controls and print the proof axioms. [Exact checks](checks/chemistry/ShellEquilibrium.lean)
+
 <a id="passive-reaction-cycles"></a>
 
 ## 23 November 2026 · Equilibrium around a closed reaction cycle
