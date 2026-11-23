@@ -1,8 +1,8 @@
 # FR-43: shared inventories: sparse networks above 16 species, one pool with two writers, and a low-count population on continuous chemistry (design)
 
-**Status: proposed, 23 November 2026, for the user's review and then the lead's rulings.** Docs
-only: no engine code until then, and part 3's host is the user's decision (D142; the user sees
-options first). Branch `fr43-design` from main 92e18df4. **S** marks this note's own derivation or
+**Status, 23 November 2026.** The user selected the composite host (B) for part 3 after reviewing
+both options under D142. The five implementation rulings in §5 are with the lead. This note records
+the design and the user's answers. Branch `fr43-design` from main 92e18df4. **S** marks this note's own derivation or
 probe. "From memory" marks standard theory cited without being read for this note; it is read and
 cited properly when the piece is built. Evidence: `/mnt/workspaces/Cells/fr43-20261123/` (`probe/`
 holds the scripts; `out/`, `out/v2/`, `out/v3/`, `out/v4/`, `out/w4rest/` and `out/ops1024/` the
@@ -11,8 +11,8 @@ records; `out/NOTES.log` lists every edit to the scripts between runs).
 ## In short, for the user's review
 
 FR-43 asks for three general features of the composite's shared inventory. This note proposes each,
-measures the first, and lists the choices. Nothing is built until you have reviewed it; part 3's host
-is your decision, the rest the lead's rulings.
+measures the first, and lists the choices. The user selected B for part 3 so the integer population
+and existing operators share finite pools. Section 5 records the answers for the lead.
 
 **Part 1: networks larger than 16 species.** Today a world with a species operator stops at 16
 species, ions included. The cap was a precaution about the order of sums, not a physical limit. We
@@ -48,8 +48,8 @@ reactions book at that volume. A tracer halving its concentration as the volume 
 with today's water operator. The checks are FR-43's: per-process books, an independent coupled
 calculation, and each process alone.
 
-**Part 3: a few integer units driving continuous chemistry (your decision).**
-- **A (recommended):** a declared hybrid representation in the assembly family. The units run as
+**Part 3. The user chose B for integer units driving continuous chemistry.**
+- **A (original recommendation):** a declared hybrid representation in the assembly family. The units run as
   exact events and the pools as continuous equations. It reuses the family's exact events, random
   streams, integrator and pore clock, so event times are located to a declared tolerance. Est.
   5–8 agent-days, after OL6's slice S7. It lifts two of OL6's version-1 refusals for this
@@ -57,7 +57,7 @@ calculation, and each process alone.
   checkpoint) unless FR-43's world is a population. A membrane holding both kinds of place would be
   refused. Today's laws express the unit driving the transfer, or the pool driving the assembly,
   but not both in one world, so a small new factor is part of the price.
-- **B:** a new integer-population operator in the cell composite, where part 2's pools live. Event
+- **B (selected):** a new integer-population operator in the cell composite, where part 2's pools live. Event
   times are only as accurate as the step, and the composite needs its first random streams and owned
   state through division. Est. 5–8 agent-days.
 - In either, a declared rule gives a single unit to one of two daughters with equal probability.
@@ -90,6 +90,7 @@ consumers:
 | C2.5 | At changing volume: an impermeant tracer with its reactions disabled keeps its amount and halves its concentration when the volume doubles |
 | C2.6 | A concentration-dependent reaction against a reference evaluated at the evolving volume |
 | C2.7 | The work of changing volume in the energy balance |
+| C2.8 (requested in §5) | Both writers act on a shared pool while the volume changes |
 | C3.1 | Two free subunits form one active unit that transfers material between two finite pools; disassembly returns both subunits |
 | C3.2 | Free subunits plus twice the active count stay constant, and the two pools conserve their total |
 | C3.3 | Feedback off, constant rates: the probability of no active unit against the exact two-state solution |
@@ -113,7 +114,7 @@ chain), with `scheduled_species_turnover@1` (the charged world) and with
 | 5 | Dense against per-entry arrays | The dense [rows, route] arrays set the step's cost above 256 (0.43 s per step at 1,024; the rate kernel alone 45 times the per-entry form's). **A per-entry [R, K] layout,** entries in row order so physical fields stay bitwise, as a D148 case-2 change after the raise; not needed for correctness. Meanwhile the trace estimate, which counts the dense layout per step, is corrected (host-side admission only) | Lead | 1.6 |
 | 6 | Two writers at fixed volume | Extend the 19 November two-writer rule (exact half-steps, own books, own ΔG, declared order) to the gene unit beside a D152 reaction: SSP half-steps of order three admitted beside exact ones; a registry potential required on the shared row (today's check compares none where the registry gives none); labelled and exported rows keep one writer | Lead | 2.2 |
 | 7 | Changing volume | D152's volume door, as composition M3 for reactions: `volume` and `extracellular_volume` read current at the split, C1's fallback keeping every other world's programs; the bookings at the half-step's volume, which water's dilution term already completes, since every row is an osmolyte | Lead | 2.3 |
-| 8 | Part 3's host | **A:** a declared per-scope hybrid representation in the assembly family (exact events for the population, rate equations for the pools), lifting OL6's refusals 9 and 11 for it. **B,** an integer-population operator in the composite, is the door for cell-scale worlds | **User** | 3 |
+| 8 | Part 3's host | **B selected.** The integer-population operator shares the composite's finite pools with the existing operators. | **User decision, 23 November** | 3, 5 |
 | 9 | Part 3's split of one unit | A new declared token, independent segregation (each unit to the first recipient with probability f), beside S7's `exact_fraction`, whose contract stays untouched | Lead | 3.5 |
 
 ## 1. Part 1: networks above 16 species
@@ -573,6 +574,7 @@ Every host check passed (energy residual 1.1 × 10⁻⁷ relative, water's Heun 
 | C2.5 | The doubling world with the network declared and every multiplier zero: the tracer's amount bitwise constant, and its concentration n₀/V(t) at every row, halved where V crosses 2 V₀ | Bitwise and rounding |
 | C2.6 | A second-order reaction A + B → C (Σν ≠ 0, so the reaction also changes the osmolarity and with it the volume) in the swelling cell, against the reference integrating n and V together at the evolving volume, at dt and dt/2 | Second order, as above |
 | C2.7 | The energy ledger closes on every row with water's dilution, elastic, heat and bath-work terms and the reactions' bookings; plus an endpoint check: F(N_t, V_t) + U(V_t) − F(N₀, V₀) − U(V₀) equals the booked work (the reactions' and the bath's water work) less the booked heat (the reactions' and water's), to the ledger's bound | The ledger's own bound |
+| C2.8 (requested in §5) | Both writers use the evolving volume. Compare the shared amount, both rates and energy with a coupled reference. Using initial volume for one active writer must fail. | Step-halving against the reference and the ledger's own bound |
 | Plant | The reactions booking at V₀ (the declared volume) in the same world: C2.7's endpoint check must fail by the missed −RT ΔN ln(V/V₀) | – |
 
 **Two writers at changing volume.** "Repeat with changing volume" for part 2's two processes needs
@@ -588,7 +590,7 @@ reactions' 1.5–2. The lead may stage it: reactions beside water first (C2.5–
 - `species_reactions.py` and the registry function are the operators owner's.
 - The references (§4) are written by a code-blind agent from §4's list.
 
-## 3. Part 3: an integer population on continuous chemistry (options; the user decides)
+## 3. Part 3. An integer population on continuous chemistry (B selected)
 
 ### 3.1 The physics, in either host
 
@@ -746,6 +748,8 @@ single unit, which needs its own rule. The proposal, in either host:
 
 ### 3.7 Recommendation: A
 
+This was the design's initial recommendation on event timing. The user's decision for B is recorded in §5.
+
 - FR-43's part-3 checks are statements about exact events and their timing. A gives a located
   crossing under a declared bound and reuses the family's streams, keys, division and exact-event
   conventions; B gives event times only to the split's order and makes the composite stochastic for
@@ -801,16 +805,30 @@ agent; they sit in the tests with their plants.
 
 ## 5. Rulings and decisions asked
 
-**The user:** part 3's host, A or B (§3.7 recommends A).
+**User decision, 23 November 2026. Choose B for part 3.** The integer population and the existing
+composite operators must be able to act on the same finite pools in one world. Verify event times
+against the same-draw reference under step halving, and include a case where an existing writer
+changes the pool read by the integer clock and the integer state changes the subsequent pool flux.
 
-**The lead:**
-1. part 1: how far the cap rises, the fold's gate (with the species count of every recorded world
-   at landing), the layout, and the trace estimate's correction (§1.4, §1.6, §1.7);
-2. part 1: a reported dt limit for FR-43, the stiff integrator left as D152's door (§1.5);
-3. part 2: the extended two-writer rule with the registry's one authority (§2.2);
-4. part 2: reactions' current volume read under composition option A, the law ID kept (§2.3); and
-   whether the gene unit's read follows in the same FR or after;
-5. part 3: the split token (§3.5), and refusals 9 and 11 lifted for the hybrid only if A is chosen.
+**The user's answers for the lead.** The lead owns the five implementation rulings below.
+
+1. **Cap, sum order and layout (§§1.3–1.7).** Raise the cap to 1,024 total species including ions.
+   Keep the existing fold through 16 terms and use an ordered scan above 16. Record the species
+   counts and cross-revision checks at landing. Correct scalar and batch trace budgeting now,
+   counting fixed storage per resident copy and saved rows per time point. Stage the per-entry
+   sparse layout after the cap change and include a cancellation case before claiming equivalence.
+2. **Timestep (§1.5).** Report the step needed for the declared accuracy and the stage limit.
+   Document the measured range for the chain fixture. Leave a stiff integrator to a separate law.
+3. **Fixed-volume writers (§2.2).** Accept the declared split order, one standard potential in
+   the registry and separate material and energy accounts for each writer. Retain the single-writer
+   restriction on labelled and exported-product rows in this release.
+4. **Changing volume (§2.3).** Use composition option A for the reaction volume read and keep the
+   reaction law ID. Deliver current-volume reads for both the reaction and the gene unit in FR-43.
+   Add C2.8 with both writers active while volume changes. Check amounts, both rates and energy
+   against the independent reference, including a case that fails if one writer uses initial volume.
+5. **Integer partition (§§3.3–3.6).** Use `independent_segregation` and preserve the existing
+   `exact_fraction` contract. B requires no change to OL6 refusals 9 or 11. Schedule owned state
+   through division, verify exact integer conservation, and check a same-seed restart between events.
 
 ## 6. Evidence and disclosures
 
