@@ -346,14 +346,17 @@ def gene_rate_N(raw, spec, p, n, free, complexes, volume, times):
     return np.asarray(out)
 
 
-def engine_c28(world):
+def engine_c28(world, edit=None):
     """(samples [T] s, {quantity: [T]}, seconds) of the engine's run of worlds/<world>, every host
-    check on every accepted row, at the observation times."""
+    check on every accepted row, at the observation times. edit: None, or a function that changes
+    the raw world in place before it is parsed (a test's shorter horizon)."""
     from cells.definitions.specs import parse_spec
     from cells.execution.runner import run
     from cells.registry.models import get_model
 
     raw = json.loads((REFERENCES / "worlds" / world).read_text())
+    if edit is not None:
+        edit(raw)
     spec = parse_spec(raw)
     started = time.perf_counter()
     result = run(spec)
@@ -396,9 +399,9 @@ def engine_c28(world):
     return samples, values, seconds
 
 
-def planted_c28(writer, world):
+def planted_c28(writer, world, edit=None):
     """(values or None, refusal message or None): the run with `writer` on the declared volume V_0
-    (its half-step drops the view the composite passes)."""
+    (its half-step drops the view the composite passes); edit as engine_c28's."""
     import importlib
 
     import jax
@@ -416,7 +419,7 @@ def planted_c28(writer, world):
     cls.half_step = planted
     try:
         try:
-            return engine_c28(world)[1], None
+            return engine_c28(world, edit)[1], None
         except NumericalError as refusal:
             return None, str(refusal)[:400]
     finally:
