@@ -221,6 +221,8 @@ REFUSED = {
     REACTIONS: "is not read by the tracer (a reversible reaction's net record has no direction)",
     "site_occupancy@1": "binds and releases its ligands (a two-way exchange with bound pools)",
     "population_unit_turnover@1": "consumes its precursors into units",
+    "integer_unit_population@1": "moves species across its sites' patches, between cells and "
+    "outside nodes; the readouts do not read its transfers",
     "k_anion_symport_mass_action@1": "moves its potassium and anion across membranes in-step",
     "electrode_current_injection@1": "moves its carriers between the electrode and a cell",
     "scheduled_cell_replacement@1": "swaps a replaced cell's pools at its events",

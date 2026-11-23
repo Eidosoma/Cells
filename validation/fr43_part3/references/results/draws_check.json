@@ -1,0 +1,64 @@
+{
+ "kind": "cells.fr43_part3_reference_draws_check@1",
+ "rule": "spec/README.md, the random-draw protocol",
+ "compared_as": "float.hex strings, bit for bit, u1 and u2 of every draw of every world",
+ "routes": {
+  "scratch": {
+   "implementation": "Threefry-2x32-20 written out in this module; no JAX",
+   "worlds": {
+    "W1_two_subunits_feedback": {
+     "draws": 256,
+     "identical": true,
+     "first_mismatch": null
+    },
+    "W2_four_subunits_feedback": {
+     "draws": 256,
+     "identical": true,
+     "first_mismatch": null
+    },
+    "W3_two_way_turnover": {
+     "draws": 256,
+     "identical": true,
+     "first_mismatch": null
+    },
+    "W4_four_subunits_node_read": {
+     "draws": 256,
+     "identical": true,
+     "first_mismatch": null
+    }
+   },
+   "worlds_only_in_draws_json": [],
+   "identical": true
+  },
+  "jax": {
+   "implementation": "jax.random.key, fold_in and bits called by this module",
+   "jax_version": "0.11.1",
+   "jax_threefry_partitionable": true,
+   "worlds": {
+    "W1_two_subunits_feedback": {
+     "draws": 256,
+     "identical": true,
+     "first_mismatch": null
+    },
+    "W2_four_subunits_feedback": {
+     "draws": 256,
+     "identical": true,
+     "first_mismatch": null
+    },
+    "W3_two_way_turnover": {
+     "draws": 256,
+     "identical": true,
+     "first_mismatch": null
+    },
+    "W4_four_subunits_node_read": {
+     "draws": 256,
+     "identical": true,
+     "first_mismatch": null
+    }
+   },
+   "worlds_only_in_draws_json": [],
+   "identical": true
+  }
+ },
+ "identical": true
+}

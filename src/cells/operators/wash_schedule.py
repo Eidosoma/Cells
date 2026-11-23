@@ -143,6 +143,8 @@ REFUSED = {
     # amounts that does not report them (no FR-42 stage plans it yet).
     "neutral_arrival_labels@1": "follows labelled material only through reported moves, and a "
     "wash reports none (no FR-42 stage plans it yet)",
+    "integer_unit_population@1": "moves species across its sites' patches, between cells and "
+    "outside nodes, by transfers a wash does not read",
 }
 IONS_SAME = "same_as_compartment"
 FLOOR_FMOL = 1e-12  # The own ledger's floor (each ion's sample against its supply: exactly 0).
