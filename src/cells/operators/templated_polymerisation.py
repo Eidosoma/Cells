@@ -708,9 +708,9 @@ def parse_declaration(raw, base):
     )
     mu = []
     for e in entries:
-        value = _number(e["standard_mu_RT"], f"{LAW_ID}: {e['id']}'s standard_mu_RT")
-        if not math.isfinite(value):
-            raise ConfigError(f"{LAW_ID}: {e['id']}'s standard_mu_RT is finite")
+        value = e["standard_mu_RT"]  # Any finite mu°/RT at c0: a negative one is physical.
+        if not _finite(value):
+            raise ConfigError(f"{LAW_ID}: {e['id']}'s standard_mu_RT is a finite number")
         mu.append(float(value))
     listed = [s.id for s in identities]
     cells = [c.id for c in base.model.cells]
