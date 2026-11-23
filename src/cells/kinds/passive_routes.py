@@ -98,6 +98,12 @@ refuses any other route law it hosts.
   (slope_bound_S), and the charged law's max-side slope (its conductance_S). The charged law's
   material slope at each end (its material_slope_per_s, at the stage's amounts and potentials)
   is the kind's material_term, which membrane_rate's material counterpart holds to the same bound.
+- **FR-42's labels (D303 item 6; docs/NEUTRAL_LABELS_DESIGN.md §11):** the neutral, leak and
+  charged kernels are linear in their two ends at a fixed voltage, so a route's one-way fluxes
+  are its kernel with c_in = 0 (inward) and minus its kernel with c_out = 0 (outward)
+  (one_way_fluxes). label_transfers reports them over the step, the trapezoid of its two ends
+  plus the gap to passive_transferred; label_refusals refuses a labelled row a rectifier moves.
+  Neither is traced without labels.
 """
 
 from types import MappingProxyType
@@ -683,6 +689,80 @@ def rates(state, potentials, control, p, *, xp):
     )
 
 
+def one_way_fluxes(view, p, rows, *, xp):
+    """FR-42 (D303 item 6): each route's one-way fluxes of the labelled rows at one end of a step
+    (a LabelView: its read's amounts, its node potentials and its routed control), as (inward,
+    outward) [m, route] in fmol/s, each >= 0. The neutral, proton-leak and charged constant-field
+    kernels are linear in their two end concentrations at a fixed voltage, so the inward flux is
+    the kernel's with c_in = 0 and the outward one minus the kernel's with c_out = 0: inward less
+    outward is the kernel's own flux, at rounding, from the same kernels (no new law). A rectifier
+    route reports 0: its flux is not linear in its ends, and label_refusals refuses a labelled row
+    it moves."""
+    c_in, c_out = _ends(view.read, p, xp)
+    opening = _opening(view.read, view.control, p, xp)
+    voltage = view.potentials[p.passive_inside] - view.potentials[p.passive_outside]
+
+    def kernel(at_in, at_out):  # Each route's own law, inward-positive [species, route].
+        flux = xp.where(
+            p.passive_leak,
+            leak.flux_fmol_s(
+                at_in, at_out, voltage, p.temperature, p.passive_area, p.passive_permeability,
+                opening, xp=xp,
+            ),
+            passive.flux_fmol_s(
+                at_in, at_out, p.passive_area, p.passive_permeability, opening, xp=xp
+            ),
+        )  # fmt: skip
+        if _charged(p):  # Static, as in _flux.
+            moved = charged_law.flux_fmol_s(
+                at_in, at_out, voltage, p.valence, p.temperature, p.passive_area,
+                p.passive_permeability, opening, xp=xp,
+            )  # fmt: skip
+            flux = xp.where(p.passive_charged, moved, flux)
+        if _rectified(p):  # Static: never the rectifier's kernel (it reads both ends' logs).
+            flux = xp.where(p.passive_rectifier, 0.0, flux)
+        return flux
+
+    zero = xp.zeros_like(c_in)
+    idx = xp.asarray(rows)
+    return kernel(zero, c_out)[idx], -kernel(c_in, zero)[idx]
+
+
+def label_transfers(start, end, p, dt, rows, *, weight=None, xp):
+    """FR-42's kinds hook (D303 item 6; the contract in kind_registry.Kind): the routes' one-way
+    amounts of the labelled rows over one step, (inward [m, route], outside end, inside end) and
+    (outward, inside end, outside end), fmol, each >= 0, ends on the combined node axis. Each is
+    the trapezoid of the start's and end's one-way fluxes, or under the Euler IMEX `weight` times
+    the start's, plus the gap to the booked net passive_transferred (end less start, inward) on the
+    side its sign gives."""
+    inward, outward = one_way_fluxes(start, p, rows, xp=xp)
+    if weight is None:
+        at_end = one_way_fluxes(end, p, rows, xp=xp)
+        inward, outward = 0.5 * dt * (inward + at_end[0]), 0.5 * dt * (outward + at_end[1])
+    else:
+        inward, outward = weight * inward, weight * outward
+    moved = end.state.passive_transferred - start.state.passive_transferred
+    gap = moved[xp.asarray(rows)] - (inward - outward)
+    inward, outward = inward + xp.maximum(gap, 0.0), outward + xp.maximum(-gap, 0.0)
+    return (
+        (inward, p.passive_outside, p.passive_inside),
+        (outward, p.passive_inside, p.passive_outside),
+    )
+
+
+def label_refusals(declaration, species):
+    """FR-42 (D303 item 6): the labelled species (IDs) these routes cannot carry. Of its moved
+    rows (moved_rows: a route that moves its row), only an inward rectifier's: its flux
+    q(V - E)(V - E) reads both ends through E, so it has no one-way form. Every other route's law
+    is linear in its ends."""
+    return [
+        f"{route.id} runs {RECTIFIER_LAW_ID}, whose flux has no one-way form (its driving force "
+        f"reads both ends), and moves the labelled {route.species}"
+        for route in declaration
+        if isinstance(route, RectifierRoute) and _moves(route) and route.species in species
+    ]
+
+
 def readouts(state, read, potentials, control, p, *, xp):
     """FR-34: each asking route's flux [species, route] (fmol/s, inward-positive, as
     passive_transferred moves) and current [route] (A, outward-positive, its share of @3's
@@ -1148,5 +1228,7 @@ PASSIVE_ROUTES = BUILTIN.register(
         routed_controls=routed_controls,
         view=VIEW,
         view_sets=view_sets,
+        label_refusals=label_refusals,  # FR-42's hook (D303 item 6): traced only with labels.
+        label_transfers=label_transfers,
     )
 )
