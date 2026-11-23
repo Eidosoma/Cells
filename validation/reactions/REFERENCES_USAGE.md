@@ -74,9 +74,10 @@ not moiety-balanced and is neither a pure source (every ν ≥ 0) nor a pure sin
 passive reaction that is open, has factors or changes nothing; michaelis_menten reactants other
 than `{S: 1}`, a written catalyst, `k_cat` without a catalyst or `V_max` with one; non-positive
 K_M, Hill K or n, k_f or c0; negative rate constants. These are the reference's own domain
-checks. The engine's other refusals (charge, permeability, sites, schedules, the 16-species cap,
-7 before FR-9 / D165) are not modelled. Every function accepts a `Network` or its compiled form;
-`compiled.role` gives `"closed"`, `"source"` or `"sink"` per reaction.
+checks. The engine's other refusals (charge, permeability, sites, schedules, the species cap,
+1,024 since FR-43 / D315, 16 from FR-9 / D165 and 7 before) are not modelled. Every function
+accepts a `Network` or its compiled form; `compiled.role` gives `"closed"`, `"source"` or `"sink"`
+per reaction.
 
 ## Node kinetics and bookings: `network_reference` (`nr`)
 
@@ -353,8 +354,8 @@ The second implementation (the "variant") differs from the reference in its eval
   callables or `integrate_node(continue_from=...)`.
 - The chain has uniform volumes and constant multipliers. Its node heat and work are the
   reactions' only.
-- The 16-species cap (7 before FR-9 / D165) and the engine's definition-time refusals outside the
-  network itself are not modelled.
+- The species cap (1,024 since FR-43 / D315; 16 from FR-9 / D165, 7 before) and the engine's
+  definition-time refusals outside the network itself are not modelled.
 - `integrate_node` integrates each node separately, which suits a few nodes. For many coupled
   nodes use `integrate_chain`.
 - The design's prototype worlds B5, B6, B8, probe 2d's "smooth mixed world" and B4's chain

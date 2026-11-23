@@ -656,6 +656,50 @@ reactions' 1.5–2. The lead may stage it: reactions beside water first (C2.5–
 - `species_reactions.py` and the registry function are the operators owner's.
 - The references (§4) are written by a code-blind agent from §4's list.
 
+### 2.5 The gene unit beside the unit producer (a user's review, 23 November 2026)
+
+**The question.** `templated_polymerisation@1` (the gene unit) and `population_unit_turnover@1` (the
+unit producer) each refused the other as a writer of one row. Is there a supported contract for one
+of them adding a neutral stock and the other consuming it, with final = initial + input −
+consumption, also after a restart?
+
+**Supported (part 2A, D315).** Yes, under the two-writer rule of 19 November 2026 as part 2 extends
+it (§2.2):
+- Each writer is a split part in declared order: the gene unit's SSP half-steps of order three, the
+  producer's exact chain. Each books its own moves (the gene unit's `poly_produced_fmol` and
+  `poly_consumed_fmol`, the producer's `unit_consumed_fmol`) and their exact ΔG. So the stock's
+  amount is its start plus the gene unit's net books less the producer's consumption, at every
+  saved row, and a restart resumes every account with the state.
+- The shared row's standard potential comes from the species registry.
+  `species_registry.check_shared_rows` refuses a shared row without one.
+- Labelled rows (FR-42) and exported rows (amendment T) keep the gene unit as their one writer.
+  D152 beside the producer on a precursor stays refused (D152's one local writer).
+- **The producer's R5 bound** (the largest units its population can reach, which @3's checks read)
+  now counts every producer of the precursor. `supply_bound` sums turnover's routes and each
+  operator's `production_bound`: a rate in fmol/s. `check_spec_for` multiplies it by the horizon
+  once, and the step-size check (`check_rate_bound`) never reads it, so nothing is scaled twice.
+- A precursor the gene unit makes without a static bound (a degradation's monomers, a release's
+  fates, an export's coupling) is refused, with that reason.
+
+**The general feature it needed:** `production_bound(spec, declaration) → {(species, cell): fmol/s}`,
+an operator's largest rate of making a row, read with `getattr` (no contract change). The gene
+unit's comes from its laws (TEMPLATED_POLYMERISATION_LAWS.md §4):
+- a chain's release, κ_ρ C_ρ,m φ_ρ with φ ≤ 1 and C at most its pool's machines, is at most
+  κ_ρ M_pool;
+- a transfer's (recharging), V V_C times saturations and an affinity factor each at most 1, is at
+  most ν V_C V, at the cell's largest volume.
+
+**Fixture and tests.**
+- The fixture: `validation/tissue/shared_inventory_fixtures.unit_pair`, the ribosome-limited world.
+  Translation makes the neutral protein P. The producer assembles P into the units of a gate-free K
+  population, whose units carry no current.
+- The tests: `tests/unit/test_shared_inventory_unit_writers.py`:
+  - the definition both ways: admitted; refused without P's registry potential, on a precursor
+    made only by degradation, and with a D152 route on the precursor;
+  - R5 including the gene unit's supply, exactly once;
+  - the per-writer books at every saved row;
+  - a mid-run restart, in process and through a written snapshot, bit for bit the unbroken run.
+
 ## 3. Part 3. An integer population on continuous chemistry (B selected)
 
 ### 3.1 The physics, in either host
