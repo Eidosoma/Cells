@@ -6,9 +6,9 @@ docs/SHARED_INVENTORY_REACTIONS_DESIGN.md §1.1, §1.3, §1.4, §2.1, §2.2, §2
   (molecularity, coefficients, closure, sources and sinks, Michaelis-Menten's one substrate and its
   read-only catalyst, factors on driven laws only, every parameter's domain), the sites (a held
   bath, undeclared nodes) and the schedule (the dt grid, the horizon, time 0, coverage);
-* the composition: RK4; more than 16 species (D150's cap, FR-9 / D165); an identity that differs
-  from a D150 operator's, in either order; a turnover route on a row the network writes (a
-  catalyst's row is admitted); a cell route on a slot that replacement@1 replaces (outside routes
+* the composition: RK4; more than the species cap (D150's, 1,024 since FR-43 / D315); an identity
+  that differs from a D150 operator's, in either order; a turnover route on a row the network writes
+  (a catalyst's row is admitted); a cell route on a slot that replacement@1 replaces (outside routes
   compose); and every provider or closer of the declared volumes, masks and outside anchors, with
   the operators version 1 composes with admitted (the contract's structure check, and one refusal
   through the parser).

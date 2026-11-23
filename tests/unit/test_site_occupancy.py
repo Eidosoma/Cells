@@ -23,7 +23,7 @@ from cells.definitions import pump_composite_spec as cs
 from cells.definitions.specs import ConfigError, parse_spec
 from cells.models import pump_composite
 from cells.models import pump_composite_adapter as adapter
-from cells.operators import OPERATORS
+from cells.operators import OPERATORS, species_common
 from cells.operators import site_occupancy as so
 from cells.operators.contract import check_declarations
 from cells.registry.models import get_model
@@ -457,7 +457,9 @@ def test_the_stationary_analysis_does_not_admit_the_composite():
         stationary.problem(parse_spec(world()))
 
 
-def test_the_species_cap_is_checked():
+def test_the_species_cap_is_checked(monkeypatch):
+    """Its call to the cap (1,024 since FR-43 / D315), set to 16 here so the world stays small."""
+    monkeypatch.setattr(species_common, "MAX_SPECIES", 16)
     raw = world()
     for k in range(13):  # 4 + 13 = 17 species.
         name = f"N{k}"
