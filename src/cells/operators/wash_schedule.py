@@ -63,11 +63,15 @@ Refused at the definition (version 1):
   - the inner model's movers, through the core's join (species_registry.inner_movers): each
     patch's permeability, channels, pumps, faces, junctions and every declared kind's moved
     rows;
-  - each operator's routes: species exchange's routes through a patch facing the node, and a
-    site population's internalisation from it;
+  - each operator's routes: species exchange's routes through a patch facing the node, a
+    site population's internalisation from it, and the gene unit's exports into the node and
+    its outside degradations there (templated_polymerisation@1's amendment T; D327, the
+    fail-open fix: each refused by name, since both write the node's rows outside the wash's
+    books);
   - every operator's in-step process that moves a neutral species at an outside node;
   - every operator law not shown local (SHOWN_LOCAL), with its reason (REFUSED), and a law in
     no list, until it is classified;
+  The refusal names every path it finds, not only the first.
 - ions declared other than same_as_compartment;
 - a buffer that misses a neutral species, names another, or holds a concentration <= 0 or below a
   site ligand's trace;
@@ -97,12 +101,16 @@ from cells.operators.contract import Operator, Read
 LAW_ID = "scheduled_compartment_wash@1"
 EVENTS_KEY = "compartment_wash_events"
 EXCHANGE, SITES = "scheduled_species_exchange@1", "site_occupancy@1"
+POLYMERISATION = "templated_polymerisation@1"
+# The operator laws whose routes surface_crossings reads, route by route, rather than classing
+# the law whole (SHOWN_LOCAL, REFUSED).
+READ = (EXCHANGE, SITES, POLYMERISATION)
 # The inner movers on a membrane patch, by the core's join (species_registry.NODE_KINDS): their
 # entities are patch IDs. Faces' are face IDs and junctions' junction IDs (between cells); a
 # kind's movers name the nodes they move between.
 PATCH_MOVERS = ("membrane", "channel", "pump")
 # Operator laws shown to move no species across a node's surface (D263 finding 2), each with why;
-# EXCHANGE's and SITES' routes are read (surface_crossings), and every other law is refused.
+# READ's routes are read (surface_crossings), and every other law is refused.
 SHOWN_LOCAL = {
     "scheduled_species_turnover@1": "makes and clears species at its own cells and nodes",
     "local_species_reactions@1": "converts species at its own sites",
@@ -120,9 +128,9 @@ SHOWN_LOCAL = {
     "population_unit_turnover@1": "consumes precursors into units in cells",
     "ideal_osmosis_linear_compliance_water@1": "changes volumes, never amounts",
     "k_anion_symport_mass_action@1": "moves its charged potassium and anion in-step (read below)",
-    # Gene regulation's option A (G4): a recorded exception naming the operators owner.
-    "templated_polymerisation@1": "makes, degrades and recharges species at its routes' cells "
-    "(it writes only amount_increment)",
+    # templated_polymerisation@1 left this list for READ (D327, the fail-open fix): it was entered
+    # here as writing only amount_increment (gene regulation's option A, G4), and amendment T
+    # then gave it exports into finite nodes and outside degradations there.
     LAW_ID: "is this law",
 }
 REFUSED = {
@@ -306,8 +314,9 @@ def surface_crossings(spec, declaration):
     node's surface (the module docstring's refusals; fail closed): an inner mover whose entity is
     a patch facing the node, a face touching it, or the node itself, or which names no node or
     patch it is known to sit on; an exchange route through a patch facing it; a site population
-    internalising from it; an operator's in-step process moving the species at an outside node;
-    and an operator law neither read nor shown local."""
+    internalising from it; the gene unit's export into it and its outside degradation there
+    (D327), whatever the row's charge; an operator's in-step process moving the species at an
+    outside node; and an operator law neither read nor shown local."""
     from cells.definitions import pump_composite_spec as composite_spec
     from cells.registry import species_registry
 
@@ -356,6 +365,17 @@ def surface_crossings(spec, declaration):
                     found.append(
                         (population.ligand, facing, f"{SITES}'s internalisation {population.id}")
                     )
+        elif law == POLYMERISATION:
+            # Amendment T (D327, the fail-open fix): an export carries its row from its patch's
+            # cell into the patch's finite outside node, and an outside degradation writes a row
+            # an export carries there. Its other routes stay at its cells.
+            for export in other.exports:
+                if export.node in washed:
+                    found.append((export.row, export.node, f"{law}'s export {export.id}"))
+            for loss in other.outside_degradations:
+                if loss.node in washed:
+                    path = f"{law}'s outside degradation {loss.id}"
+                    found.append((loss.polymer, loss.node, path))
         elif law not in SHOWN_LOCAL:
             why = REFUSED.get(law, "is not classified (neither read nor shown local)")
             found.append(("any species", "any node", f"{law}, which {why}"))
@@ -382,16 +402,19 @@ def check_definition(spec, declaration):
     found = surface_crossings(spec, declaration)
     if found:
         species, node, path = found[0]
+        # Every path found is named (D327), so a path behind another is refused by name too.
+        also = "".join(f"; also {s} by {p} at node {n}" for s, n, p in found[1:])
         if path.startswith("patch "):
             raise ConfigError(
                 f"{LAW_ID}: {species} crosses {path}, which faces node {node}; its booking of a "
                 "step in the node's concentration is unmeasured, as a face's: refused in version 1"
+                + also
             )
         raise ConfigError(
             f"{LAW_ID}: {species} may cross node {node}'s surface by {path}; a washed node's "
             "species cross its surface by no declared path in version 1, since the step's "
             "booking is unmeasured and the wash's books do not see the exchange (D263; fail "
-            "closed: a path is refused until it is shown not to move the species)"
+            "closed: a path is refused until it is shown not to move the species)" + also
         )
 
 
