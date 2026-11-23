@@ -24,6 +24,42 @@
     "cells.rate_equations@1": "molecular-assembly"
   },
   "comparisons": {
+    "fr46-shell-carrier-two-ligands": {
+      "kind": "engine",
+      "models": ["cells.assembly_lineages@2"],
+      "laws": ["cells.prescribed_shell@1", "cells.stochastic_mass_action@1"],
+      "engine_revision": "61d823be7e3913f44a4dd497507a8e8256151584",
+      "record_revision": "69176ea710e804bccf611a6f95c155631c4d16a9",
+      "sources": {
+        "Declared-face binding and composition check": "src/cells/models/assembly_lineages_v2/spec.py#L421",
+        "Site pairs, including a wall species that also acts as a site": "src/cells/models/assembly_lineages_v2/world.py#L521",
+        "Host rate kernel at each state": "src/cells/models/assembly_lineages_v2/balance.py#L56",
+        "Prescribed shell fixture": "tests/unit/test_assembly_lineages_v2_geometry.py",
+        "World definition and stoichiometric steps": "tests/assembly_lineage_v2_fixtures.py"
+      },
+      "record_inputs": {
+        "Exact material accounting, four enabled events and sealed control": "lean/checks/chemistry/ShellLigandFaces.lean"
+      },
+      "driver": "lean/checks/shell_ligand_faces.py",
+      "record": "lean/PROGRESS.md#fr46-shell-ligand-faces"
+    },
+    "fr48-shell-equilibrium-cpu": {
+      "kind": "engine",
+      "models": ["cells.assembly_lineages@2"],
+      "laws": ["cells.prescribed_shell@1", "cells.shell_permeation@1"],
+      "engine_revision": "61d823be7e3913f44a4dd497507a8e8256151584",
+      "record_revision": "69176ea710e804bccf611a6f95c155631c4d16a9",
+      "sources": {
+        "Absolute standard potential at each phase": "src/cells/models/assembly_lineages_v2/world.py#L123",
+        "Shell rate and exit factor": "src/cells/models/assembly_lineages_v2/kernel.py#L279",
+        "Engine comparison driver, binomial probabilities and planted offset": "tests/unit/test_assembly_lineages_v2_geometry.py#L806"
+      },
+      "record_inputs": {
+        "Exact binomial law, stationarity and ratio": "lean/CellsProofs/Chemistry/ShellEquilibrium.lean"
+      },
+      "driver": "lean/checks/chemistry/ShellEquilibrium.lean",
+      "record": "lean/PROGRESS.md#fr48-shell-equilibrium"
+    },
     "fr43-integer-segregation": {
       "kind": "engine",
       "models": [
@@ -10700,6 +10736,42 @@
       }
     },
     {
+      "id": "fr46-shell-ligand-faces",
+      "category": "molecular-assembly",
+      "title": "A sealed shell excludes a ligand when its bound forms stay on one face",
+      "statement": "If every event conserves a ligand moiety and every possible transfer preserves its face, an initially ligand-free interior stays free through any finite event history. A ligand in the final free lumen has an initially occupied origin connected by transfers. Binding another ligand can carry the first one across a wall reaction.",
+      "assumptions": [
+        "Places include free pools and all wall forms. A nonnegative integer weight gives each place’s number of copies of the selected moiety per molecule. Every directed event consumes available molecules and balances their weighted counts. Include both directions of reversible reactions.",
+        "Each consumed place with positive moiety weight connects to every produced place carrying that moiety in the same event. Each such connection must preserve its face. This sufficient condition can conservatively connect distinct copies when a reaction carries several.",
+        "Every inner-accessible place, including bound complexes, starts with zero copies of the selected moiety. The free lumen place has positive weight. Other ligands may already be present inside."
+      ],
+      "formal": {
+        "status": "proved",
+        "about": ["cells.prescribed_shell@1", "cells.stochastic_mass_action@1"],
+        "theorems": {
+          "CellsProofs.Chemistry.ShellLigandFaces.face_along_path": "lean/CellsProofs/Chemistry/ShellLigandFaces.lean",
+          "CellsProofs.Chemistry.ShellLigandFaces.possible_origin": "lean/CellsProofs/Chemistry/ShellLigandFaces.lean",
+          "CellsProofs.Chemistry.ShellLigandFaces.sealed_lumen": "lean/CellsProofs/Chemistry/ShellLigandFaces.lean"
+        },
+        "sources": {
+          "D323 sealed-lumen and face-propagation contract": "https://github.com/Eidosoma/Cells/blob/9eb9890a91ad6049be9b2e5a1bfae7b383a464eb/docs/DECISIONS.md#L10202-L10212",
+          "Mathlib finite-path closure, imported and specialized to equality of ligand faces": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Logic/Relation.lean#L544-L546",
+          "Cells exact two-ligand carrier, same-face control and preloaded-site check": "lean/checks/chemistry/ShellLigandFaces.lean"
+        }
+      },
+      "numerical": {
+        "status": "failed",
+        "comparisons": ["fr46-shell-carrier-two-ligands"],
+        "result": "Development engine 61d823be admitted the carrier. The host kernel gave a positive rate for each of its four consecutive events. From one X outside, following these events left one X inside and zero outside while preserving X, Y and the wall scaffold. The otherwise identical sealed control with Y binding removed was admitted as expected."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Lumen tracer count over time in a closed shell with face-selective binding, with the initially free and wall-bound tracer inventories measured.",
+        "unit": "molecules",
+        "evidence": []
+      }
+    },
+    {
       "id": "fr48-shell-equilibrium",
       "category": "molecular-assembly",
       "title": "The lumen tracer count has a binomial equilibrium in a prescribed shell",
@@ -10733,9 +10805,9 @@
         }
       },
       "numerical": {
-        "status": "open",
-        "comparisons": [],
-        "result": "The FR-48 development test at d6555dd9 compares the kernel’s rates with the binomial law for distinct absolute potentials, equal potentials and the undeclared default. A comparison against the landed engine is pending."
+        "status": "checked",
+        "comparisons": ["fr48-shell-equilibrium-cpu"],
+        "result": "The frozen development engine at 61d823be matched the reference binomial probabilities within 10⁻¹² for 12 tracers at Δ = ln 2, equal potentials and the undeclared default. Its CPU test detected the incorrect offset interpretation and verified ledger closure from both extreme initial distributions."
       },
       "biology": {
         "status": "open",

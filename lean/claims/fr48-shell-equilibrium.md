@@ -31,7 +31,13 @@ Uses [Shell entry and exit depend on conductance and the gate’s own forms](pre
 
 ## Numerical comparison
 
-**Open.** The FR-48 development test at d6555dd9 compares the kernel’s rates with the binomial law for distinct absolute potentials, equal potentials and the undeclared default. A comparison against the landed engine is pending.
+**Checked.** The frozen development engine at 61d823be matched the reference binomial probabilities within 10⁻¹² for 12 tracers at Δ = ln 2, equal potentials and the undeclared default. Its CPU test detected the incorrect offset interpretation and verified ledger closure from both extreme initial distributions.
+
+**Engine** `cells.assembly_lineages@2`, `cells.prescribed_shell@1`, `cells.shell_permeation@1`
+
+[Absolute standard potential at each phase](https://github.com/Eidosoma/Cells/blob/61d823be7e3913f44a4dd497507a8e8256151584/src/cells/models/assembly_lineages_v2/world.py#L123) · [Shell rate and exit factor](https://github.com/Eidosoma/Cells/blob/61d823be7e3913f44a4dd497507a8e8256151584/src/cells/models/assembly_lineages_v2/kernel.py#L279) · [Engine comparison driver, binomial probabilities and planted offset](https://github.com/Eidosoma/Cells/blob/61d823be7e3913f44a4dd497507a8e8256151584/tests/unit/test_assembly_lineages_v2_geometry.py#L806) · [Exact binomial law, stationarity and ratio](https://github.com/Eidosoma/Cells/blob/69176ea710e804bccf611a6f95c155631c4d16a9/lean/CellsProofs/Chemistry/ShellEquilibrium.lean) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/69176ea710e804bccf611a6f95c155631c4d16a9/lean/checks/chemistry/ShellEquilibrium.lean) · [Recorded result](https://github.com/Eidosoma/Cells/blob/69176ea710e804bccf611a6f95c155631c4d16a9/lean/PROGRESS.md#fr48-shell-equilibrium)
+
+[Tested engine 61d823be7e39](https://github.com/Eidosoma/Cells/commit/61d823be7e3913f44a4dd497507a8e8256151584) · [Evidence checkpoint 69176ea710e8](https://github.com/Eidosoma/Cells/commit/69176ea710e804bccf611a6f95c155631c4d16a9)
 
 ## Biological evidence
 
