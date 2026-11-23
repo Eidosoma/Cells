@@ -18,8 +18,8 @@ whose path does not move, re-exporting what a law, kind or module needs from Cel
   law interfaces are built, and its ChannelLaw, CycleLaw, RouteLaw, BindingLaw and JunctionLaw,
   with Citation, the source a cited law gives, and CitedWork, a work it names (registry/laws.py);
   the operator template of a family's own operators, FamilyOperator (registry/operators.py); and
-  the kind contract's Kind, KindFields, KindView, KindRates and Schedule, with the roles its
-  fields declare, EnergyRole and PartitionRole, the host of an own axis, AxisHost, and an
+  the kind contract's Kind, KindFields, KindView, KindRates, LabelView and Schedule, with the
+  roles its fields declare, EnergyRole and PartitionRole, the host of an own axis, AxisHost, and an
   entity's binding for §5.2's admission, EntityBinding, with MOVES_END and MOVES_ENDS, a
   moves-only law's inside and its two ends, and a reaction-level standard free energy,
   FreeEnergyEntry, with TEMPERATURE_INDEPENDENT, the basis of a dG° given in kJ/mol
@@ -80,6 +80,7 @@ HOMES = MappingProxyType(
             "KindFields",
             "KindView",
             "KindRates",
+            "LabelView",
             "Schedule",
             "EnergyRole",
             "PartitionRole",
@@ -139,6 +140,7 @@ __all__ = (
     "KindFields",
     "KindView",
     "KindRates",
+    "LabelView",
     "Schedule",
     "EnergyRole",
     "PartitionRole",

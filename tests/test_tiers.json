@@ -343,7 +343,10 @@
   "/mnt/workspaces/Cells/gene-regulation-20261120/fr38/replacement-refusal/timed-db21a62e/measure/measured.json",
   "/mnt/workspaces/Cells/gene-regulation-20261120/fr42/runs/timed-924fb120/measure/measured.json",
   "/mnt/workspaces/Cells/pores-endpoint-20261122/tiers-14c87f3c/measure/measured.json",
-  "/mnt/workspaces/Cells/lead-tools/mass-action-mask/measure-497cf333/measured.json"
+  "/mnt/workspaces/Cells/lead-tools/mass-action-mask/measure-497cf333/measured.json",
+  "/mnt/workspaces/Cells/kinds-hook-20261122/measure-dc124c61/measured.json",
+  "/mnt/workspaces/Cells/kinds-hook-20261122/measure-8dce3dde/measured.json",
+  "/mnt/workspaces/Cells/kinds-hook-20261122/measure-32657ff7/measured.json"
  ],
  "measured_provenance": [
   {
@@ -2915,6 +2918,30 @@
    "root": "/mnt/workspaces/Cells/lead-tools/mass-action-mask/snapshot-497cf333",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-22T23:52:55+00:00"
+  },
+  {
+   "git_revision": "dc124c61ccac019e4db7cd5fc39b84b2d4705251",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/kinds-hook-20261122/snapshot-dc124c61",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-22T22:04:18+00:00"
+  },
+  {
+   "git_revision": "8dce3ddefc8137d33e0d604af9ca17555c5c51be",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/kinds-hook-20261122/snapshot-8dce3dde",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-22T22:33:06+00:00"
+  },
+  {
+   "git_revision": "32657ff725ff9e7d2b139a22d182ad8c2b4dcdd8",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/kinds-hook-20261122/snapshot-32657ff7",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-22T22:43:11+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -4718,7 +4745,7 @@
    },
    {
     "file": "tests/unit/test_kind_contract_hooks.py",
-    "seconds": 3.03,
+    "seconds": 3.02,
     "exit_code": 0,
     "counts": {
      "passed": 13
@@ -6956,7 +6983,7 @@
    },
    {
     "file": "tests/unit/test_cycle_kind.py",
-    "seconds": 42.3,
+    "seconds": 40.11,
     "exit_code": 0,
     "counts": {
      "passed": 50
@@ -7373,10 +7400,26 @@
    },
    {
     "file": "tests/unit/test_neutral_arrival_labels.py",
-    "seconds": 54.26,
+    "seconds": 62.03,
     "exit_code": 0,
     "counts": {
-     "passed": 26
+     "passed": 32
+    }
+   },
+   {
+    "file": "tests/unit/test_neutral_labels_events.py",
+    "seconds": 22.47,
+    "exit_code": 0,
+    "counts": {
+     "passed": 1
+    }
+   },
+   {
+    "file": "tests/unit/test_neutral_labels_kinds.py",
+    "seconds": 64.27,
+    "exit_code": 0,
+    "counts": {
+     "passed": 25
     }
    },
    {

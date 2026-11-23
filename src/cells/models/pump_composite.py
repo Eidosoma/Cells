@@ -1293,17 +1293,17 @@ class Composition:
         self.label_pools = {
             op: k for k, op in enumerate(o for o in self.label_reporters_in_order if o.LABEL_POOLS)
         }
-        # D296: the events that report the slots they replace (static: by their signature).
+        # D296: the events that report what they replace, the slots or (a pool reporter's) the
+        # pools they empty (erratum E; static: by their signature).
         self.label_events = frozenset(
             op for op in self.events if self.label_owner is not None and takes_labels(op.event)
         )
         # FR-42's stage 2: the inner step reports its one-way transfers where it takes labels=
-        # (static: by the inner implementation's signature; none without an owner, and none beside
-        # declared kinds, whose one-way hook comes later).
-        self.inner_reports_labels = (
-            self.label_owner is not None
-            and takes_labels(self.inner.checked_step)
-            and not getattr(inner, "KINDS", ())
+        # (static: by the inner implementation's signature; none without an owner). Declared
+        # kinds report theirs through their hook (D303 item 6), and the owner's definition check
+        # refuses what a kind cannot carry (species_labels.in_step_errors).
+        self.inner_reports_labels = self.label_owner is not None and takes_labels(
+            self.inner.checked_step
         )
         self.coupled = any(op.SPLIT and op.RK4 == "coupled" for op in operators) or (
             self.process_operator is not None
@@ -1635,12 +1635,15 @@ class Composition:
                 if lifecycle:
                     keywords["lifecycle"] = self._lifecycle
                 before = current
-                if op in self.label_events:  # Static (D296): its replaced slots' labels.
+                if op in self.label_events:  # Static (D296; erratum E): what it replaced.
                     rows = self.label_owner.rows(p)
-                    current, ok, replaced = op.event(
+                    current, ok, report = op.event(
                         current, control, p, xp=xp, labels=rows, **keywords
+                    )  # A pool reporter's event reports its emptied pools, any other its slots.
+                    pool = self.label_pools.get(op)
+                    current = self.label_owner.advance_event(
+                        before, current, report, control, p, xp=xp, pool=pool
                     )
-                    current = self.label_owner.advance_event(current, replaced, control, p, xp=xp)
                 else:
                     current, ok = op.event(current, control, p, xp=xp, **keywords)
                 valid = _and(valid, ok)
