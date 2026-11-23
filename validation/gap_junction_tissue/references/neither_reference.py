@@ -527,27 +527,50 @@ def cmd_search(args) -> int:
 
 
 def geometry_method(summary: dict, stage1_file: dict) -> str:
-    ends = summary["end_diagnostics"]
-    rate = max(v["max_abs_rate_end"] for group in ("nominal", "tighter") for v in ends[group].values())
-    explicit = summary["explicit"]
+    ends = summary["end_diagnostics"]  # nominal: diagnostics; tighter and explicit: {point, diag}
+    lo_d, hi_d = summary["bracket"]
+    sides = (("lo", lo_d), ("hi", hi_d))
+    point = {p["d"]: p for p in summary["points"]}
+    rate = {
+        side: max(
+            ends["nominal"][repr(d)]["max_abs_rate_end"],
+            *(ends[group][repr(d)]["diag"]["max_abs_rate_end"] for group in ("tighter", "explicit")),
+        )
+        for side, d in sides
+    }
+    nominal_margin = {side: point[d]["min_margin"] for side, d in sides}
+    margin_gap = {
+        side: max(
+            abs(ends[group][repr(d)]["point"]["min_margin"] - point[d]["min_margin"]) for group in ("tighter", "explicit")
+        )
+        for side, d in sides
+    }
     radau_gap = max(v["radau_rel_gap"] for v in stage1_file["stage1"].values())
-    sym = ""
-    if summary["geometry"] == "field":
-        sym = "; every end state is symmetric under y <-> z to within the integration tolerance"
-    return (
+    moving = [side for side in ("lo", "hi") if rate[side] > 1e-6]
+    text = (
         f"stage 2 integrated by scipy {scipy.__version__} BDF (variable-order backward differentiation) with the"
         f" analytic sparse Jacobian (checked against central differences), rtol {NOMINAL['rtol']:g}, atol"
         f" {NOMINAL['atol']:g}, over the full 20,000 s from stage 1's end states; stage 1 once by DOP853 at rtol"
         f" {STAGE1['rtol']:g}, atol {STAGE1['atol']:g} (Radau at rtol {STAGE1_CROSS['rtol']:g} agrees to"
         f" {radau_gap:.0e} relative); G/V = g_over_v_per_d x D on u only; outcome at t = 20,000 s: u > m + 2 in"
         " every cell and max m - min m <= 2 in every row; search: both ends of [0, 1e-13] first, then arithmetic"
-        " bisection until hi <= 1.001 lo, tested in exact rationals; tighter: both final ends rerun at rtol"
-        f" {NOMINAL['rtol'] / TIGHTER_FACTOR:g}, atol {NOMINAL['atol'] / TIGHTER_FACTOR:g}; independent check:"
-        f" both final ends rerun with explicit DOP853 at rtol {NOMINAL['rtol']:g}, atol {NOMINAL['atol']:g}"
-        f" (lo normalized: {str(explicit['lo_normalized']).lower()}, hi normalized:"
-        f" {str(explicit['hi_normalized']).lower()}); largest |dy/dt| at t = 20,000 s at the final ends"
-        f" {rate:.1e} per s{sym}"
+        f" bisection until hi <= 1.001 lo, tested in exact rationals ({len(summary['points'])} points); tighter:"
+        f" both final ends rerun at rtol {NOMINAL['rtol'] / TIGHTER_FACTOR:g}, atol"
+        f" {NOMINAL['atol'] / TIGHTER_FACTOR:g}; independent check: both final ends rerun with explicit DOP853 at"
+        f" rtol {NOMINAL['rtol']:g}, atol {NOMINAL['atol']:g}, which keeps both outcomes; at lo and hi the"
+        f" least margin u - m - 2 is {nominal_margin['lo']:.6g} and {nominal_margin['hi']:.6g}, and the tighter"
+        f" and explicit reruns move it by at most {margin_gap['lo']:.0e} and {margin_gap['hi']:.0e}; largest"
+        f" |dy/dt| at t = 20,000 s: {rate['lo']:.1e} per s at lo, {rate['hi']:.1e} per s at hi"
     )
+    if moving:
+        text += (
+            f" (at {' and '.join(moving)} the end state is still changing at t = 20,000 s; its outcome is the"
+            " state at that time, as the criterion defines)"
+        )
+    if summary["geometry"] == "field":
+        text += "; every end state is symmetric under y <-> z to within 1e-6 relative"
+    text += f"; run at {summary['provenance']['head'][:12]}"
+    return text
 
 
 def build_interface(spec: dict, run_dir: Path) -> dict:

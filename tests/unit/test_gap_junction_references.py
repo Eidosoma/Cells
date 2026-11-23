@@ -1,9 +1,13 @@
-"""Recompute the checks of the GJ-L1 linear references (validation/gap_junction_tissue/references).
+"""Recompute the checks of the gap-junction references (validation/gap_junction_tissue/references).
 
-Self-contained on purpose: the spec and the interface are read as data and the exact rational
-solve is re-implemented here (a different elimination order from the generator's), so nothing
-under validation/gap_junction_tissue/ is imported. About 0.1 s of checks (0.5 s for the file
-under pytest, collection included); no world is compiled.
+Task A, the GJ-L1 linear model: the exact rational solve is re-implemented here (a different
+elimination order from the generator's); about 0.1 s. Task B, the "neither" threshold: the
+interface's conditions, stage 1 and the line's two final ends, re-integrated with LSODA and an
+independent right-hand side; about 1-2 s, nearly all the line.
+
+Self-contained on purpose: the specs and the interfaces are read as data, so nothing under
+validation/gap_junction_tissue/ is imported. No world is compiled. The whole file takes about
+2.5 s under pytest.
 """
 
 from __future__ import annotations
@@ -226,3 +230,108 @@ def test_printed_recursion(data):
         assert len(refs["printed_recursion"][key]) == 10
         for f, x in zip(refs["printed_recursion"][key], values):
             assert f == float(x) and _correctly_rounded(f, x)
+
+
+# --------------------------------------------------------------------------- the "neither" threshold (task B)
+
+NEITHER_SPEC = REFS / "spec" / "neither.json"
+NEITHER = REFS / "interface" / "neither.json"
+NEITHER_TAG = "gj-neither-registered-2026-11-23"
+NEITHER_CELLS = {"line": 25, "field": 625}
+
+
+@pytest.fixture(scope="module")
+def neither():
+    return json.loads(NEITHER_SPEC.read_text()), json.loads(NEITHER.read_text())
+
+
+def _cell_rates(constants):
+    """model.equations for one cell, written out independently of the generator."""
+    c = constants
+    coef = [math.comb(6, i) * c["l"][i] for i in range(7)]
+
+    def rates(u, m, z):
+        ru, rm = (z / c["K_u"]) ** c["n_u"], (z / c["K_m"]) ** c["n_m"]
+        x = u / c["x0"]
+        poly = coef[6]
+        for a in coef[5::-1]:  # Horner: sum_i C(6, i) l_i x^i
+            poly = poly * x + a
+        bound = poly / (1 + x) ** 6
+        return (
+            c["g_u"] * (1 + c["lambda_u"] * ru) / (1 + ru) - c["k_u"] * u,
+            c["g_m"] * (1 + c["lambda_m"] * rm) / (1 + rm) - c["k_m"] * m,
+            c["g_z"] * m * bound - c["k_z"] * z,
+        )
+
+    return rates
+
+
+def test_neither_schema_and_echo(neither):
+    spec, refs = neither
+    assert list(refs) == list(spec["interface"]["keys"])
+    assert refs["format"] == spec["interface"]["format"] == "gap_junction_tissue.neither_references@1"
+    assert refs["registration"] == NEITHER_TAG
+    assert json.dumps(refs["model"]["constants"]) == json.dumps(spec["model"]["constants"])
+    assert refs["model"]["seeds"] == {k: spec["model"]["seeds"][k] for k in ("tumor", "healthy")}
+    assert list(refs["model"]) == ["constants", "seeds"]
+    assert {k: list(v) for k, v in refs["stage1"].items()} == {"tumor": ["u", "m", "z"], "healthy": ["u", "m", "z"]}
+    assert "line" in refs["geometries"] and set(refs["geometries"]) <= set(NEITHER_CELLS)
+    for geometry in refs["geometries"].values():
+        assert list(geometry) == ["bracket", "points", "tighter", "method"]
+        for point in geometry["points"]:
+            assert list(point) == ["d", "normalized", "epithelial_cells", "min_margin", "max_row_spread"]
+
+
+def test_neither_conditions(neither):
+    spec, refs = neither
+    first, last = spec["search"]["bracket"]
+    for name, geometry in refs["geometries"].items():
+        lo, hi = geometry["bracket"]
+        assert first < lo < hi < last
+        assert Fraction(hi) <= Fraction(1001, 1000) * Fraction(lo)  # hi <= (1 + 0.001) lo
+        points = geometry["points"]
+        ds = [p["d"] for p in points]
+        assert ds == sorted(set(ds))
+        outcome = {p["d"]: p["normalized"] for p in points}
+        assert outcome[first] is False and outcome[last] is True
+        assert [p["normalized"] for p in points] == sorted(p["normalized"] for p in points)  # monotone in d
+        assert max(d for d, o in outcome.items() if not o) == lo and min(d for d, o in outcome.items() if o) == hi
+        assert geometry["tighter"] == {"factor": 10, "lo_normalized": False, "hi_normalized": True}
+        for p in points:
+            assert p["normalized"] == (p["min_margin"] > 0 and p["max_row_spread"] <= 2)
+            assert (p["epithelial_cells"] == NEITHER_CELLS[name]) == (p["min_margin"] > 0)
+            assert name != "line" or p["max_row_spread"] == 0.0
+
+
+def test_neither_stage1_and_line_ends(neither):
+    """Stage 1, and the line's two final ends, recomputed with ODEPACK's LSODA (scipy odeint, banded
+    Jacobian by differences); the generator uses DOP853 and BDF. About 1.1 s, nearly all the line."""
+    np = pytest.importorskip("numpy")
+    integrate = pytest.importorskip("scipy.integrate")
+    spec, refs = neither
+    rates = _cell_rates(spec["model"]["constants"])
+    end = {}
+    for name in ("tumor", "healthy"):
+        seed = spec["model"]["seeds"][name]
+        end[name] = integrate.odeint(
+            lambda t, y: rates(*y), [seed[k] for k in "umz"], [0.0, 500.0], tfirst=True, rtol=1e-11, atol=1e-14,
+            mxstep=10**6,
+        )[-1]
+        expected = np.array([refs["stage1"][name][k] for k in "umz"])
+        assert np.all(np.abs(end[name] - expected) <= 1e-8 * np.abs(expected))
+    start = np.concatenate([end["tumor"] if k < 6 else end["healthy"] for k in range(25)])
+    g_over_v = spec["model"]["constants"]["g_over_v_per_d"]
+    for d, normalized in zip(refs["geometries"]["line"]["bracket"], (False, True)):
+
+        def fun(t, y, gv=g_over_v * d):
+            out = np.empty_like(y)
+            out[0::3], out[1::3], out[2::3] = rates(y[0::3], y[1::3], y[2::3])
+            flux = gv * (y[3::3] - y[0:-3:3])  # junction c_k - c_(k+1): G/V (u_k - u_(k+1)) leaves c_k
+            out[0:-3:3] += flux
+            out[3::3] -= flux
+            return out
+
+        y = integrate.odeint(
+            fun, start, [0.0, 20000.0], tfirst=True, ml=3, mu=3, rtol=1e-9, atol=1e-12, mxstep=10**6
+        )[-1]
+        assert bool(np.all(y[0::3] > y[1::3] + 2)) is normalized, d

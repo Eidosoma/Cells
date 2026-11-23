@@ -20,7 +20,7 @@ The references read only two inputs:
 |---|---|
 | `linear_reference.py` | The generator. It uses the standard library only and imports nothing from the engine or from this package. It reads the spec with `git show <tag>:validation/gap_junction_tissue/references/spec/linear.json`, solves every requested quantity exactly in `fractions.Fraction`, checks each one exactly (see Derivations), rounds once to binary64, and writes the interface. |
 | `interface/linear.json` | The references, format `gap_junction_tissue.linear_references@1`, in the schema of the spec's `interface`. |
-| `../../../tests/unit/test_gap_junction_references.py` | The test. It is self-contained: it reads the spec and the interface as data and re-implements the exact solve. It recomputes the schema, the declaration echoes, every network under all three readings (exact zero residuals, correct rounding, the declared bounds), the chains (the full balance under two port loads, the recursion and the closed form), the figure8 networks' Norton lines, the limits and the printed recursion. It does not repeat the tree reduction or eq. 2. Its checks take about 0.1 s; pytest reports 0.5 s for the file, collection included. |
+| `../../../tests/unit/test_gap_junction_references.py` | The test. It is self-contained: it reads the spec and the interface as data and re-implements the exact solve. It recomputes the schema, the declaration echoes, every network under all three readings (exact zero residuals, correct rounding, the declared bounds), the chains (the full balance under two port loads, the recursion and the closed form), the figure8 networks' Norton lines, the limits and the printed recursion. It does not repeat the tree reduction or eq. 2. Its task A checks take about 0.1 s. The task B checks are described below. |
 
 ### Regenerating
 
@@ -220,3 +220,151 @@ Both forms run from G_1 = 1 at G_GJ = G_eq,1 = 1. Each gives ten values, G_eq,1 
     5.9e-17), so the reading cannot change a comparison.
 - **The limits and the printed recursion.** They are correctly rounded in the same way. The schema
   gives them no accuracy field.
+
+## The "neither" threshold (task B)
+
+The specification is `spec/neither.json` at the tag `gj-neither-registered-2026-11-23`. That tag is
+the same commit as task A's.
+
+The references read only two inputs: the specification at that tag, read with `git show`, and the
+preprint. The names in the spec's `constants_source` record where the numbers came from, and the
+references do not follow them.
+
+### Files
+
+| File | What it is |
+|---|---|
+| `neither_reference.py` | The generator: stage 1, the search for each geometry, and the interface. It uses numpy and scipy only, and imports nothing from the engine or from this package. |
+| `interface/neither.json` | The references, format `gap_junction_tissue.neither_references@1`, in the schema of the spec's `interface`. |
+| `/mnt/workspaces/Cells/gj-references-20261123/run-b674113c/` | The run folder (outputs, not source). |
+
+The run folder holds:
+
+- `stage1.json`;
+- `line-points.jsonl` and `field-points.jsonl`: every integration, written as it finished, with its
+  diagnostics;
+- `line.json` and `field.json`: each search's bracket, tighter rerun, explicit check, end-state
+  diagnostics and provenance (the generator's head, which was clean);
+- the logs.
+
+### Regenerating
+
+Run from the repository root, with `PY="taskset -c 6 /mnt/workspaces/Cells/venv-cpu/bin/python -I"`,
+`RUN=<a new run folder>` and `OMP_NUM_THREADS=1`:
+
+```
+$PY validation/gap_junction_tissue/references/neither_reference.py stage1 --run-dir $RUN
+$PY validation/gap_junction_tissue/references/neither_reference.py search --geometry line --run-dir $RUN
+$PY validation/gap_junction_tissue/references/neither_reference.py search --geometry field --run-dir $RUN
+$PY validation/gap_junction_tissue/references/neither_reference.py interface --run-dir $RUN          # writes interface/neither.json
+$PY validation/gap_junction_tissue/references/neither_reference.py interface --run-dir $RUN --check  # compares byte for byte
+```
+
+The searches are deterministic. On CPU 6, which other jobs shared, they took 26 s for the line and
+2 min 51 s for the field (wall time, the tighter and explicit reruns included).
+
+### The model as implemented
+
+Each cell carries u (total miR200), m (Zeb mRNA) and z (ZEB protein):
+
+    du/dt = g_u H(z; K_u, n_u, lambda_u) - k_u u + sum over its junctions of (G/V) (u_j - u)
+    dm/dt = g_m H(z; K_m, n_m, lambda_m) - k_m m
+    dz/dt = g_z m P(X) / (1 + X)^6 - k_z z,   P(X) = sum_{i=0..6} C(6, i) l_i X^i,   X = u / x0
+    H(z; K, n, lambda) = (1 + lambda (z/K)^n) / (1 + (z/K)^n)
+
+- G/V = `g_over_v_per_d` x D. The generator checks that `g_over_v_per_d` equals 3 / (r L_GJ) from
+  `radius_m` and `junction_length_m`.
+- Only u crosses junctions.
+- The constants are used exactly as read.
+
+### Geometries
+
+- **line:** 25 cells, c0..c24 along z. The tumor is c0..c5. There are 24 junctions, c_k - c_(k+1).
+  Each cell is its own row.
+- **field:** 625 cells, c{y}_{z}. The tumor is the 36 cells with y < 6 and z < 6. There are 1,200
+  junctions between cells one lattice step apart, and no diagonals. Row z holds c0_z .. c24_z.
+- **The spec's `nodes`** (26 and 626) count the cells plus one held outside node. No equation uses
+  that node, and the lead confirmed on 23 November that it carries no physics here. It is not
+  modelled.
+- **Assertions:** the generator checks the counts of cells, junctions, tumor cells and neighbours,
+  and that the rows partition the cells.
+
+### The stages and the criterion
+
+**Stage 1** runs once. One tumor cell and one healthy cell, uncoupled, run 500 s from the seeds.
+- Integrator: DOP853 at rtol 1e-13, atol 1e-16.
+- Radau at rtol 1e-12 agrees with it to 6e-14 relative.
+
+**Stage 2** runs once for each D.
+- Every tumor cell starts at stage 1's tumor end state, and every healthy cell at its healthy one.
+- It runs coupled for 20,000 s, its clock starting from 0.
+
+**The criterion**, at t = 20,000 s: a point is normalized when u > m + 2 in every cell and
+max m - min m <= 2 in every row. Each point records:
+
+- `epithelial_cells`: the number of cells with u > m + 2;
+- `min_margin`: the least u - m - 2;
+- `max_row_spread`: the largest row spread of m.
+
+`normalized` follows from min_margin > 0 and max_row_spread <= 2. The generator asserts this.
+
+### The integrator and its checks
+
+- **The integrator.** Stage 2 uses scipy's `BDF` (variable order 1 to 5) with the analytic sparse
+  Jacobian, at rtol 1e-9 and atol 1e-12. It steps to exactly t = 20,000 s and keeps only the final
+  state.
+- **The Jacobian check.** Each search starts by checking the Jacobian against central differences.
+  It agrees to about 1e-9.
+- **The tighter rerun.** The spec requires both final bracket ends to be rerun at rtol 1e-10,
+  atol 1e-13.
+- **The explicit check.** Both final ends are also rerun with DOP853 at rtol 1e-9, atol 1e-12. This
+  is an explicit 8th-order Runge–Kutta method: no Jacobian and no implicit damping. It guards
+  against an implicit method damping a slowly growing mode near the threshold.
+- **The field's symmetry.** The field is symmetric under y <-> z, and every field end state is
+  checked to be so, to within 1e-6 relative. Rows stay rows of one z.
+- **Steadiness.** The run logs record |dy/dt| at t = 20,000 s for every point.
+
+### The search
+
+1. Run D = 0 and D = 1e-13 first. They must give not normalized and normalized.
+2. Bisect: mid = (lo + hi) / 2 replaces lo or hi by its outcome.
+3. Stop when hi <= 1.001 lo. The test is exact, on the rationals of the binary64 values.
+
+- Every point is integrated from stage 1's end state over the full 20,000 s.
+- The interface lists the points sorted by D. Bisection makes the outcomes monotone, and the
+  generator asserts it.
+
+| Geometry | lo (m²/s) | hi = x2 (m²/s) | hi/lo - 1 | Points |
+|---|---|---|---|---|
+| line | 7.171630859375002e-15 | 7.177734375000002e-15 | 8.5e-4 | 16 |
+| field | 1.8859863281250003e-15 | 1.8875122070312503e-15 | 8.1e-4 | 18 |
+
+**The tumor flips cell by cell.** Below the threshold, only the most exposed tumor cells have flipped
+by t = 20,000 s. Near it, the flips cascade inward, and whether the cascade finishes within 20,000 s
+decides the outcome.
+
+- At the line's lo, the end state is still changing: one cell is mid-flip, with |dy/dt| = 1.1e-3 per s.
+- The outcome is therefore a finite-horizon one: the state at t = 20,000 s, as the criterion defines it.
+- The tighter and explicit reruns move the least margin there by about 1e-6, and keep both outcomes.
+
+**In the field**, the lo end has flipped 8 of the 36 tumor cells, so 597 of 625 cells are epithelial.
+
+- It is nearly steady at t = 20,000 s: |dy/dt| = 8.0e-8 per s.
+- At hi, all 625 cells are epithelial.
+- The tighter and explicit reruns move the least margin by at most 5e-11, and keep both outcomes.
+
+### The test
+
+The task B part of `tests/unit/test_gap_junction_references.py` checks:
+
+- the schema and the echo of `model.constants` and `seeds`;
+- the interface's conditions: the stopping rule in exact rationals; lo not normalized and hi
+  normalized, in the points and at the tighter tolerance; the points monotone in D, with 0 not
+  normalized and 1e-13 normalized; each outcome consistent with its recorded numbers;
+- stage 1, recomputed with ODEPACK's LSODA (scipy `odeint`), to 1e-8 relative;
+- the line's two final ends, recomputed with LSODA from that stage 1, keeping their outcomes. LSODA
+  is a third integrator, besides the generator's BDF and DOP853, and the test uses its own
+  right-hand side.
+
+The field is not re-integrated in the test. The whole file takes about 2.5 s under pytest on a
+shared CPU 6, and the line recompute is nearly all of it (1.1–1.9 s, depending on the load).
