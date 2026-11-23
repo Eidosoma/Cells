@@ -42,12 +42,24 @@ number:
     errs by (a k' - a' k) h^3/12 per half-step h, and in R1 the arrivals decay with the hold, a' =
     -a/tau, at a near-constant loss rate k_f). Both terms come from stated error terms, not from a
     run's gap.
-  - **The two routes** (§9.8) agree within route 2's grid error (cohort.grid_error) plus that
-    bound on route 1.
+  - **The cohort** (erratum F, §9.19) is the molecules released from their template in the
+    window, marked on transcription's own label schedule (worlds.r1, labelled), so a molecule
+    re-synthesised from monomers is not a member.
+  - **Route 2** (erratum F) is cohort.py's known-rate form on the unlabelled run's releases into
+    each fate, carried at the fate's declared first-order rate k, the gross one-way loss
+    (gross_rate, from the run's own definition), not at the booked net loss int_D/n = k (1 -
+    e^(y_f)).
+  - **The two routes** (§9.8) agree within route 2's grid error (cohort.known_rate_error) plus
+    that bound on route 1.
   - **The survival readout** (the requester's answer to (c) and (e)): the window's members alive
     at its end, the same molecules an hour later, and their ratio, None at a zero denominator, by
     route 1 (cohort.label_survival) against e^(-k_f 3600 s) within twice route 1's bound, and by
-    route 2 (cohort.survival) within the counts' grid errors.
+    route 2 (cohort.known_survival), whose ratio is e^(-k 3600 s) by construction at the declared
+    k, against the sheet's k_f within the counts' grid errors. So that a record whose booked loss
+    is not its declared k is still caught where no route 1 is run (R2), route 2's counts must
+    also agree with the net reading (cohort.survival on the fate row's own n, int_Q and int_D)
+    within both grid errors plus SURVIVORS: erratum F's item 4, the two agree only where e^(y_f)
+    << 1, as at the sheet's state (about 9.4e-9; §9.10).
 
 Run: python -m validation.gene_regulation.release_check DIR
 """
@@ -131,6 +143,29 @@ class Checks:
 
 def _relative(value, expected):
     return abs(value - expected) / abs(expected) if expected else abs(value)
+
+
+def gross_rate(record, row):
+    """The declared first-order rate k (1/s) of fate row `row`'s loss at the record's exported
+    cell, the gross one-way loss of erratum F (§9.19): the sum over the row's degradations there of
+    each one's scheduled rate, from the record's own definition. Refused where a rate changes
+    during the run, since the known-rate form needs a constant k."""
+    raw = record["definition"]
+    (block,) = [o for o in raw["model"]["operators"] if o["law"] == worlds.POLYMERISATION]
+    cell = cohort.exported_cell(record, block)
+    routes = {d["id"] for d in block["degradations"] if d["polymer"] == row and d["cell"] == cell}
+    total = 0.0
+    for control in raw["experiment"]["polymerisation_controls"]:
+        if control["route_id"] not in routes:
+            continue
+        values = {float(change["value"]) for change in control["schedule"]}
+        if len(values) != 1:
+            raise ValueError(
+                f"{control['route_id']}'s rate changes during the run: the known-rate form needs "
+                "a constant k"
+            )
+        total += values.pop()
+    return total
 
 
 def _bound(steps, *terms):
@@ -302,9 +337,11 @@ def split_bound(fate, dt):
 
 
 def cohorts(checks, runs, machine):
-    """§9.8's two routes for the releases in R1's window at p = 0.75 (erratum C): route 1 on shares,
-    the labelled run's label_<row>_cohort, with no blank; route 2, cohort.py on the unlabelled
-    run's counters. R1L is R1 with labels: every other readout and every check bit for bit."""
+    """§9.8's two routes for the releases in R1's window at p = 0.75 (errata C and F): route 1 on
+    shares, the labelled run's label_<row>_cohort, marked on transcription's own schedule, with no
+    blank; route 2, cohort.py's known-rate form on the unlabelled run's releases at each fate's
+    gross k (gross_rate). R1L is R1 with labels: every other readout and every check bit for
+    bit."""
     t1, t2 = worlds.R1_WINDOW
     base, window = worlds.R1_LABELS
     plain, labelled = runs[f"R1 p=0.75 {machine}"], runs[f"R1L p=0.75 {machine}"]
@@ -333,12 +370,13 @@ def cohorts(checks, runs, machine):
     for f, row in FATE_ROWS.items():
         bound = SURVIVORS + split_bound(f, labelled["dt_s"])
         cohort1 = [v / COPY_FMOL for v in xl[f"label_{row}_{window}"]]
-        t, n, Q, D = cohort.read(plain["path"], row)  # Its own pool's counters.
+        t, _, Q, _ = cohort.read(plain["path"], row)  # Its own releases into the fate.
+        k = gross_rate(plain, row)
         for ts in (t2, 2 * t2):
             i = plain["t"].index(ts)
             route1 = cohort1[i]
-            _, route2, _ = cohort.survivors(t, n, Q, D, t1, t2, ts)
-            error = cohort.grid_error(t, n, Q, D, t1, t2, ts)
+            route2 = cohort.known_rate(t, Q, k, t1, t2, ts)
+            error = cohort.known_rate_error(t, Q, k, t1, t2, ts)
             route2, error = route2 / COPY_FMOL, (math.inf if error is None else error / COPY_FMOL)
             exact = window_cohort(0.75, f, t1, t2, ts)
             checks.add(
@@ -371,47 +409,66 @@ def cohorts(checks, runs, machine):
 
 
 def survival(checks, name, path, row, fate):
-    """The requester's survival readout (FR-38's (c) and (e), 22 November 2026) by route 2: the
-    window's members alive at its end, the same alive an hour later, and their ratio, against the
-    closed forms' ratio, e^(-k_f 3600 s), within the counts' grid errors. It fails closed (the
-    Lean lane's finding at a6acbc27): an empty cohort (none alive at the window's end, an
-    undefined ratio) is reported as such, and counts whose grid error cannot be estimated (outputs
-    too far apart) as insufficient resolution; neither passes."""
+    """The requester's survival readout (FR-38's (c) and (e), 22 November 2026) by route 2 at the
+    fate's gross k (erratum F; cohort.known_survival): the window's members alive at its end, the
+    same alive an hour later, and their ratio, against the closed forms' ratio, e^(-k_f 3600 s),
+    within the counts' grid errors. Its counts must also agree with the net reading on the row's
+    own counters (cohort.survival) within both grid errors plus SURVIVORS (the module docstring),
+    so that a record whose booked loss is not its declared k fails. It fails closed (the Lean
+    lane's finding at a6acbc27): an empty cohort (none alive at the window's end, an undefined
+    ratio) is reported as such, and counts whose grid error cannot be estimated (outputs too far
+    apart) as insufficient resolution; neither passes."""
     t1, t2 = worlds.R1_WINDOW
     t, n, Q, D = cohort.read(path, row)
-    counted = cohort.survival(t, n, Q, D, t1, t2, 2 * t2)
+    gross = gross_rate(json.loads(Path(path).read_text()), row)
+    counted = cohort.known_survival(t, Q, gross, t1, t2, 2 * t2)
+    net = cohort.survival(t, n, Q, D, t1, t2, 2 * t2)
     k = float(sheet.RELEASE["k_durable" if fate == "durable" else "k_short"])
     expected = math.exp(-k * t2)
     alive, later = counted["alive_at_window_end"], counted["alive_at_sample"]
-    errors = [counted["grid_error_at_window_end"], counted["grid_error_at_sample"]]
+    ends = ("window_end", "sample")
+    errors = [counted[f"grid_error_at_{e}"] for e in ends]
+    net_errors = [net[f"grid_error_at_{e}"] for e in ends]
     what = f"{name}: route 2's {fate} survival, alive at {t2:g} s and at {2 * t2:g} s"
     detail = dict(
         alive_copies=alive / COPY_FMOL,
         later_copies=later / COPY_FMOL,
         ratio=counted["ratio"],
         closed_form_ratio=expected,
+        gross_rate_per_s=gross,
+        net_alive_copies=net["alive_at_window_end"] / COPY_FMOL,
+        net_later_copies=net["alive_at_sample"] / COPY_FMOL,
     )
     if counted["ratio"] is None:
         checks.add(what, False, status="empty cohort", **detail)
         return
-    if None in errors:
+    if None in errors or None in net_errors:
         checks.add(what, False, status="insufficient resolution", **detail)
         return
     bound = (errors[1] + expected * errors[0]) / alive
     ok = abs(counted["ratio"] - expected) <= bound
-    checks.add(what, ok, status="compared", bound=bound, **detail)
+    gaps = [
+        abs(counted[f"alive_at_{e}"] - net[f"alive_at_{e}"])
+        - (a + b + SURVIVORS * counted[f"alive_at_{e}"])
+        for e, a, b in zip(ends, errors, net_errors, strict=True)
+    ]
+    agree = max(gaps) <= 0.0
+    checks.add(what, ok and agree, status="compared", bound=bound, net_agrees=agree, **detail)
 
 
 def r2_cohorts(checks, name, run):
-    """R2's release-window cohort by route 2 alone (§9.12, reading 8): cohort.py on each fate's
-    counters for R1's window, sampled at its end and an hour later, reported with its grid error,
-    which must be estimable at R2's outputs."""
+    """R2's release-window cohort by route 2 alone (§9.12, reading 8): cohort.py's known-rate form
+    on each fate's releases for R1's window at the fate's gross k (erratum F; gross_rate), sampled
+    at its end and an hour later, reported with its grid error, which must be estimable at R2's
+    outputs."""
     t1, t2 = worlds.R1_WINDOW
     for f, row in FATE_ROWS.items():
+        t, _, Q, _ = cohort.read(run["path"], row)  # Its own releases into the fate.
+        k = gross_rate(run, row)
+        completed = Q[t.index(t2)] - Q[t.index(t1)]
         for ts in (t2, 2 * t2):
-            t, n, Q, D = cohort.read(run["path"], row)  # Its own pool's counters.
-            completed, surviving, _ = cohort.survivors(t, n, Q, D, t1, t2, ts)
-            error = cohort.grid_error(t, n, Q, D, t1, t2, ts)
+            surviving = cohort.known_rate(t, Q, k, t1, t2, ts)
+            error = cohort.known_rate_error(t, Q, k, t1, t2, ts)
             checks.add(
                 f"{name}: route 2's {f} cohort at {ts:g} s",
                 error is not None and 0.0 <= surviving <= completed,

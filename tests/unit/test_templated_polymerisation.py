@@ -421,31 +421,67 @@ def test_the_release_keeps_its_identities_and_sits_on_its_limit(p, machine, k_I,
 PRODUCER = "cell_0-g0-tx"  # A producer's label: cell, occupant generation and chain (D296).
 
 
-def _labelled(at, k_I):
-    """R1's world at p = 0.75 to 40 s, labelled by shares (FR-42, D289, D296; erratum C): FR-42's
-    labels on R and R_s, the window [0, 20 s) marking the releases, or at completion the
-    completions, which the hold then carries into the fate rows; outputs every step. The producer
-    row marks at completion too, transcription's completions joining its producer label by its own
-    schedule (a source's, D296) from t = 0."""
-    raw = kernel.truncated(worlds.r1(0.75, initiation=k_I), 40.0)
+EDGE = 0.25  # e^(y_f) at the edge row's start: re-synthesis a quarter of the gross loss.
+
+
+def _r1(k_I, edge=False):
+    """R1's world at p = 0.75 to 40 s, outputs every step. With edge, near its fate rows'
+    degradation's domain edge (y_f <= X_DOM = -1), at e^(y_f) = EDGE at the start: E_pd = 0, so
+    that mu°_R = L mu°_res = 0 (a listed row's potential is >= 0, so E_pd cannot reach the edge
+    alone), and M's amount set so that y_f = E_pd/RT + ln(c_M/c0) - ln(c_R/c0)/L_R (§4.4, with
+    mu°_M = 0) is ln(EDGE), about 243 mM."""
+    if not edge:
+        raw = worlds.r1(0.75, initiation=k_I)
+    else:
+        a = worlds.sheet.A1
+        c0, length = worlds.C0_MM, int(a["L_R"])
+        symbols = dict(worlds.test_instance(), E_pd=Decimal(0))
+        c_M = c0 * EDGE * (float(a["c_R"]) / c0) ** (1.0 / length)
+        raw = _with_amount(worlds.r1(0.75, initiation=k_I, symbols=symbols), "M", c_M)
+    raw = kernel.truncated(raw, 40.0)
     raw["experiment"]["observation_times"] = [float(t) for t in range(0, 41, 2)]
+    return raw
+
+
+def _labelled(at, k_I, *, edge=False, chain="tx"):
+    """_r1's world labelled by shares (FR-42, D289, D296; errata C and F): FR-42's labels on R and
+    R_s, the window [0, 20 s) on transcription's own label schedule marking its releases, or at
+    completion its completions, which the hold then carries into the fate rows. With chain None
+    the window marks the species' own arrivals instead, re-synthesis among them. The producer row
+    marks at completion too, transcription's completions joining its producer label by its own
+    schedule (a source's, D296) from t = 0, beside the species' window."""
+    raw = _r1(k_I, edge)
     if at in ("completion", "producer"):
         _release(raw)["label"] = dict(at="completion")
     if at == "producer":
         labels = (*worlds.R1_LABELS, PRODUCER)
         sources = (("tx", "R", ((0.0, PRODUCER),)),)
         return worlds.with_share_labels(raw, window=(0.0, 20.0), labels=labels, sources=sources)
-    return worlds.with_share_labels(raw, window=(0.0, 20.0))
+    return worlds.with_share_labels(raw, window=(0.0, 20.0), chain=chain)
 
 
-@pytest.mark.parametrize("at", ["release", "completion", "producer"])
+def _cohort_copies(spec, layout, state, row="R"):
+    """A row's amount carrying the window's label (label 1), in copies, at the one cell."""
+    i = list(spec.model.species_ids).index(row)
+    n = layout.amount_reference[i, 0] + state.amount_increment[i, 0]
+    share = state.label_share[worlds.R1_LABELLED.index(row), 1, 0]
+    return float(n * share) / polymerisation.COPY_FMOL
+
+
+@pytest.mark.parametrize("at", ["release", "completion", "producer", "edge"])
 def test_the_label_marks_each_molecule(at):
-    """FR-38, no world compiled, about 1.5 s a row: labels on shares (FR-42, D289; erratum C), with
-    the label owner's own update (species_labels.advance) as the composite applies it. Every
-    physical field is the unlabelled run's bit for bit (a label at completion changes no physics),
-    each row's and the hold's shares sum to 1, and the cohort starts at exactly zero.
+    """FR-38, no world compiled, about 1.5 s a row (the edge row 3 s): labels on shares (FR-42,
+    D289; errata C and F), with the label owner's own update (species_labels.advance) as the
+    composite applies it. Every physical field is the unlabelled run's bit for bit (a label at
+    completion changes no physics), each row's and the hold's shares sum to 1, and the cohort
+    starts at exactly zero.
     - At release (k_I = 0): route 1, R's row times its cohort share, on the window's closed form
       within the survivors' bound plus the update's split, k_f h^2/(12 tau).
+    - At the degradation's domain edge (k_I = 0, e^(y_f) = 1/4; erratum F): route 1 on
+      transcription's own schedule equals route 2, cohort.known_rate on the run's own releases at
+      the gross k_d, within route 2's grid error (the same on every second output) plus the
+      split's error term and the shares' rounding. The window on the species' own arrivals counts
+      the re-synthesised molecules too, so it lies above that bound: it is not the cohort.
     - At completion (A1's k_I, D296): the hold's cohort, the window's completions still held, on
       route 2's known-rate calculation at the hold's exact exit rate 1/tau, from the run's own
       completions, within its grid error (the same on every second output) plus the survivors'
@@ -453,9 +489,9 @@ def test_the_label_marks_each_molecule(at):
     - A producer (step 3): transcription's own schedule puts all its completions at its producer
       label, so the hold's producer amount is every completion still held, the window's cohort
       takes none of them, and the hold carries the producer's label into both fate rows."""
-    k_I = 0.0 if at == "release" else K_I
-    spec, layout, states, _ = kernel.run(_labelled(at, k_I))
-    plain = kernel.run(kernel.truncated(worlds.r1(0.75, initiation=k_I), 40.0))[2][20]
+    k_I, edge = (0.0 if at in ("release", "edge") else K_I), at == "edge"
+    spec, layout, states, _ = kernel.run(_labelled(at, k_I, edge=edge))
+    plain = kernel.run(_r1(k_I, edge))[2][20]
     start, end = states[0], states[20]
     for name in type(plain)._fields:
         assert np.array_equal(getattr(end, name), getattr(plain, name)), name
@@ -463,15 +499,25 @@ def test_the_label_marks_each_molecule(at):
     assert np.all(np.abs(shares.sum(axis=1) - 1.0) <= 128 * EPS)
     assert abs(hold.sum() - 1.0) <= 128 * EPS
     assert start.label_share[0, 1, 0] == start.label_pool_share[0, 1, 0] == 0.0
-    rows = list(spec.model.species_ids)
-    n = layout.amount_reference[rows.index("R"), 0] + end.amount_increment[rows.index("R"), 0]
+    route1 = _cohort_copies(spec, layout, end)
     if at == "release":
-        route1 = float(n * shares[0, 1]) / polymerisation.COPY_FMOL
         exact = release_check.window_cohort(0.75, "durable", 0.0, 20.0, 40.0)
         bound = release_check.SURVIVORS + release_check.split_bound("durable", spec.execution.dt)
         assert abs(route1 - exact) <= bound * exact and hold[1] == 0.0
         return
     t = sorted(float(k) * spec.execution.dt for k in states)
+    if at == "edge":
+        released = [float(states[k].poly_hold_released_fmol[0, 0, 0]) / polymerisation.COPY_FMOL
+                    for k in sorted(states)]  # fmt: skip
+        k_d = float(worlds.sheet.RELEASE["k_durable"])
+        fine = cohort.known_rate(t, released, k_d, 0.0, 20.0, 40.0)
+        coarse = cohort.known_rate(t[::2], released[::2], k_d, 0.0, 20.0, 40.0)
+        split = release_check.split_bound("durable", spec.execution.dt)
+        bound = abs(fine - coarse) + (split + release_check.SHARES) * fine
+        assert abs(route1 - fine) <= bound
+        species = kernel.run(_labelled(at, k_I, edge=True, chain=None))
+        assert _cohort_copies(species[0], species[1], species[2][20]) - fine > bound
+        return
     made = [float(states[k].poly_released_fmol[0]) for k in sorted(states)]
     rate = 1.0 / float(worlds.sheet.RELEASE["tau"])
     marked, until = (2, 40.0) if at == "producer" else (1, 20.0)
