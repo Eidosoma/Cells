@@ -10002,3 +10002,31 @@ code and values for it, so it is no longer a blind judge for FR-38. The D313 ver
   - fresh runs and a new judge, with the non-blindness disclosed.
 
   Such a comparison on these worlds is weaker evidence than the first. The decision is the user's.
+
+## D317: Three choices of 23 November afternoon, and a disclosure for FR-30
+
+2026-11-23, about 15:20 UTC.
+1. **FR-38 (D316): a new registered comparison, after FR-43** (the user). The corrected rule is fixed first. Then come
+   fresh worlds, new code-blind references for the gross reading, and a new judge. It waits until FR-43's build
+   has its agents.
+2. **OL6 Protocol D: erratum 3 before D0, D3 and D5 are judged** (the user).
+   - D6 fails criterion M as registered through an arithmetic artifact. At three pre-shear times all 128 exact
+     replicas equal (d) bitwise, yet the registered mean_error's rounding gives z of about sqrt(128), against a
+     threshold of 6.
+   - The erratum excludes from M a pair that is exact at the top rung. D6's registered fail stands, and it is
+     rescored under the erratum only as a labelled diagnostic.
+   - **A plant cannot rescue the verdict:** Protocol D fails as registered through D6, and the full repair of M
+     belongs to a re-registration.
+   - **Zero-SE check:** the checker found no (observable, time) pair with a zero combined SE and a nonzero
+     error in D1, D2, D4 or D6.
+3. **GJ-N1's 2D field** (the user, on the owner's profiling). The registered cost was overstated: it is about
+   0.11 to 0.14 CPU-s per step, about 300 CPU-hours for the field search. The plan:
+   - first, two bitwise-identical engine fixes: the Hill evaluation's padded double branch, and the window
+     path's per-step overhead;
+   - then a sparse solve for the arrowhead-shaped field matrix, as part of FR-17, qualified against the dense
+     solve and named in a tagged GJ-N1 amendment before any field point runs;
+   - then the field runs on a gate lane.
+- **A disclosure for FR-30 (D311, section 13.5).** The lead ruled one parameter set for both polarities after
+  reading, with every number masked, the Lean lane's line that a polarity-symmetric gate misses one fitted curve
+  at 80 mV. The ruling follows the law as declared, junction_series_gates@1 being symmetric in |V_j|. It does not
+  tune toward a pass.
