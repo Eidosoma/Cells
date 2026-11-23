@@ -187,12 +187,18 @@ def test_a_kind_worlds_declarations_cover_its_kinds_fields():
 
 def test_the_passive_route_laws_declare_their_provenance():
     routes = inner_laws.ROUTE_LAWS
-    assert set(routes) == {inner_laws.MEMBRANE_ROUTE_LAW_ID, inner_laws.FACE_ROUTE_LAW_ID}
+    assert set(routes) == {
+        inner_laws.MEMBRANE_ROUTE_LAW_ID,
+        inner_laws.FACE_ROUTE_LAW_ID,
+        inner_laws.FORMS_FACE_ROUTE_LAW_ID,  # MT-1b's forms face (D288), parity with the face's.
+    }
     for law_id, law in routes.items():
         assert law.law_id == law_id and law.provenance in ("parity", "cited", "calibrated")
         assert law.basis
     assert routes[inner_laws.MEMBRANE_ROUTE_LAW_ID].hosts == ("membrane", "junction")
-    assert "not a reproduction" in routes[inner_laws.FACE_ROUTE_LAW_ID].basis
+    for face in (inner_laws.FACE_ROUTE_LAW_ID, inner_laws.FORMS_FACE_ROUTE_LAW_ID):
+        assert "not a reproduction" in routes[face].basis
+    assert routes[inner_laws.FORMS_FACE_ROUTE_LAW_ID].test  # Its degenerate-equivalence row.
 
 
 def records_and_layout(impl):

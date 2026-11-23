@@ -7,7 +7,9 @@ feeds no rate. Seeded errors of physical size, a per-step electrode leak of 1e-1
 of a step's transfer and a single mis-signed transfer, still fail the host and the
 device checks at the same row. Global charge allows its rounding per accepted step
 like the running ledgers: the seeded supply leaks now pass, and the stated
-persistent-leak and one-off floors are tested. reaction_transport@1: the allowance
+persistent-leak and one-off floors are tested. Its allowance is the larger of the moved
+charge's and the grounded components' rounding (D305), so where the held baths keep exchanging
+charge the checked bound is the moved-charge bound bit for bit. reaction_transport@1: the allowance
 grows linearly with the step count at the derived worst-case rate, and the
 resulting detection limit is stated. A pinned junction gate sets no gate-rate step
 bound.
@@ -356,6 +358,31 @@ def test_global_charge_detection_floor_is_stated():
         n = round(seconds / 1e-3)
         rounding = surface_pump.GLOBAL_CHARGE_ROUNDING + surface_pump.LEDGER_STEP_ROUNDING * EPS * n
         assert math.isclose(rounding, floor, rel_tol=0.02)
+
+
+@pytest.mark.parametrize("version", [1, 2, 3])
+def test_global_charge_bound_is_unchanged_where_charge_crosses_the_boundary(version, runs):
+    """Held-bath cells whose baths keep exchanging charge: every row's checked bound is the
+    moved-charge bound bit for bit, although each cell is grounded through its bath and the
+    grounded allowance is not zero (D305: the larger, not the sum)."""
+    model, spec, _, history, p = runs[version]
+    magnitudes = {1: surface_pump.pump_magnitudes, 2: surface_pump_v2.calcium_magnitudes}
+    magnitudes = magnitudes.get(version, surface_pump_v3.channel_magnitudes)
+    tol = np.asarray(spec.execution.material_balance_atol_fmol)
+    layout = surface_tissue.field_layout(p)
+    grounded = 0.0
+    for n in range(0, len(history.amount_increment), 10):
+        row = type(history)(*(v[n] for v in history))
+        m = magnitudes(row, p)
+        _, limits = model.ledger_limits(row, p, tol, 2e-3, steps=n, magnitudes=m)
+        moved = surface_pump.global_charge_bound(row, p) + (
+            surface_pump.LEDGER_STEP_ROUNDING * EPS * n * m[5]
+        )
+        assert limits[5] == moved, n
+        increment = surface_tissue.charge_increment_magnitude(row, p, xp=np)
+        grounded = surface_field.grounded_tolerance(increment, n, layout)
+        assert grounded <= surface_pump.LEDGER_STEP_ROUNDING * EPS * n * m[5], n
+    assert grounded > 0  # The cells are grounded components: the larger is taken, not 0.
 
 
 def test_work_ledger_bound_scales_with_the_row_step_count(runs):

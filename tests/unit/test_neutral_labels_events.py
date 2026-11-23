@@ -82,3 +82,137 @@ def test_a_replacement_records_what_left_by_label():
     kept = np.tile([0.0, 1.0, 0.0], (len(times), 1))  # cell_1's shares, bit for bit.
     assert np.asarray(share)[:, :, 1].tobytes() == kept.tobytes()
     assert np.asarray(obs.label_pool_removed_fmol).size == 0  # No pool reporter: zero-size.
+
+
+# ------------------------------------------------------------------ amendment G: derived producers
+
+
+def chase(kind):
+    """FR-38's step-5 world (validation/gene_regulation/replace_restart.py), its producer declared
+    `producers` and derived (amendment G), or hand-written correctly in the derivation's own
+    convention: each generation's label, then its window's, and the source's schedule."""
+    from cells.operators import species_labels as labels
+    from validation.gene_regulation import replace_restart as rr
+
+    raw = rr.chase_world()
+    owner = next(o for o in raw["model"]["operators"] if o["law"] == labels.LAW_ID)
+    arrivals = raw["experiment"]["label_arrivals"]
+    g0, g1 = rr.G0, rr.G1
+    if kind == "derived":
+        window = {"label": "cohort", "from": 0.0, "to": rr.W}
+        for entry in owner["species"]:
+            entry.update(labels=["base"], producers=[dict(source=rr.CHAIN, windows=[window])])
+        raw["experiment"]["label_arrivals"] = [e for e in arrivals if "source" not in e]
+        return raw
+    for entry in owner["species"]:
+        entry["labels"] = ["base", g0, f"{g0}-cohort", g1, f"{g1}-cohort"]
+    (own,) = (e for e in arrivals if e.get("source") == rr.CHAIN)
+    own["schedule"] = [
+        dict(time=0.0, label=f"{g0}-cohort"), dict(time=rr.W, label=g0), dict(time=rr.T_E, label=g1)
+    ]  # fmt: skip
+    return raw
+
+
+def test_derived_producer_labels_are_a_correct_hand_written_declaration_bit_for_bit():
+    """Amendment G (TEMPLATED_POLYMERISATION_LAWS §9.20, option (a); D307), host side, no compile:
+    on the step-5 world the owner derives transcription's producer labels, cell_0-g<k>-tx and
+    their cohort window's, and its source's schedule from replacement@1's occupants. The derived
+    definition binds to the hand-written one's types, initial state, layout and every control
+    array bit for bit, so the programs that run are unchanged. A definition round trip writes the
+    declared producers back, not the labels, and derives the same again (a resume reads the
+    definition)."""
+    import copy
+
+    from cells.definitions import pump_composite_spec as cs
+    from cells.operators import species_labels as labels
+    from cells.registry.models import get_model
+
+    bound = {}
+    for kind in ("derived", "hand-written"):
+        spec = parse_spec(chase(kind))
+        model = get_model(spec.model)
+        state, p = model.initial_values(spec)
+        controls = cs.control_values(spec, np.asarray(spec.experiment.observation_times))
+        bound[kind] = (spec, state, p, controls)
+    (spec, *mine), (_, *theirs) = bound.values()
+    for a, b in zip(mine, theirs, strict=True):
+        assert type(a)._fields == type(b)._fields
+        pairs = zip(a, b, strict=True)
+        assert all(np.asarray(x).tobytes() == np.asarray(y).tobytes() for x, y in pairs)
+    owner = next(d for op, d, _ in cs.entries(spec) if op.LABEL_OWNER)
+    expanded, schedules = labels.derived(spec, owner)
+    assert expanded.species[0].labels == (
+        "base", "cell_0-g0-tx", "cell_0-g0-tx-cohort", "cell_0-g1-tx", "cell_0-g1-tx-cohort"
+    )  # fmt: skip
+    own = ((0.0, "cell_0-g0-tx-cohort"), (1200.0, "cell_0-g0-tx"), (3000.0, "cell_0-g1-tx"))
+    assert schedules == ((("R", "tx"), own),)  # Transcription's: its source is R's (label_sources).
+    again = parse_spec(copy.deepcopy(spec.to_dict()))
+    declared = next(d for op, d, _ in cs.entries(again) if op.LABEL_OWNER)
+    assert declared == owner and labels.derived(again, declared) == (expanded, schedules)
+    assert "producers" in spec.to_dict()["model"]["operators"][-1]["species"][0]
+
+
+def test_derived_producer_labels_follow_cell_ids_and_events_not_the_cells_order(monkeypatch):
+    """Amendment G, the requester's identity (cell, generation, chain) across cell reordering: two
+    producer cells, one replaced twice. Listing the cells and their chains in the other order
+    derives the same labels and schedules, named by cell ID and numbered by event order (planted
+    occupants and sources, no world)."""
+    from types import SimpleNamespace
+
+    from cells.operators import species_common
+    from cells.operators import species_labels as labels
+
+    def life(cell, births):
+        return tuple(species_common.Occupant(cell, b, 0.0, "newcomer", None, None) for b in births)
+
+    lives = {"cell_a": life("cell_a", (0.0, 2.0, 5.0)), "cell_b": life("cell_b", (0.0,))}
+    chains = (("tx_a", "R", "cell_a"), ("tx_b", "R", "cell_b"))
+    entry = labels.Labelled(
+        "R", ("base",), (), (("tx_a", (("pulse", 1.0, 3.0),)), ("tx_b", ()))
+    )  # fmt: skip
+    declaration = labels.Labels(labels.LAW_ID, (entry,))
+    spec = SimpleNamespace(experiment=SimpleNamespace(end_time=8.0))
+    out = []
+    for order in (1, -1):
+        source = SimpleNamespace(label_sources=lambda d, o=order: chains[::o])
+        monkeypatch.setattr(labels, "reporters", lambda s, flag, r=source: ((r, None),))
+        reordered = dict(list(lives.items())[::order])
+        monkeypatch.setattr(species_common, "occupants", lambda s, r=reordered: r)
+        out.append(labels.derived(spec, declaration))
+    assert out[0] == out[1]
+    expanded, schedules = out[0]
+    assert expanded.species[0].labels == (
+        "base", "cell_a-g0-tx_a", "cell_a-g0-tx_a-pulse", "cell_a-g1-tx_a", "cell_a-g1-tx_a-pulse",
+        "cell_a-g2-tx_a", "cell_a-g2-tx_a-pulse", "cell_b-g0-tx_b",
+    )  # fmt: skip
+    assert dict(schedules)[("R", "tx_a")] == (
+        (0.0, "cell_a-g0-tx_a"), (1.0, "cell_a-g0-tx_a-pulse"), (2.0, "cell_a-g1-tx_a-pulse"),
+        (3.0, "cell_a-g1-tx_a"), (5.0, "cell_a-g2-tx_a"),
+    )  # fmt: skip
+    assert dict(schedules)[("R", "tx_b")] == ((0.0, "cell_b-g0-tx_b"),)
+
+
+def test_a_batch_of_producer_worlds_is_refused():
+    """Amendment G's batch limit, fail-closed: a producer world's label count follows its cells'
+    replacement events, which the batch's signature check cannot read, so version 1 batches it with
+    no other world. Two members whose producer cells see one and two events are refused by the
+    batch's own check, and so are two identical members; a batch of one parses (parses only)."""
+    from cells.definitions.specs import ConfigError
+    from cells.execution.batch import parse_batch
+    from validation.gene_regulation import replace_restart as rr
+
+    def batch(*worlds):
+        return dict(
+            schema_version=1, kind="independent_worlds",
+            worlds=[dict(world_id=k, simulation=w) for k, w in enumerate(worlds, start=1)],
+            execution=dict(mapping="lax_map", max_worlds=8, max_padded_steps=10**6,
+                           max_working_bytes=2**40),
+        )  # fmt: skip
+
+    twice = chase("derived")
+    events = twice["experiment"]["replacement_events"]
+    events.append(dict(events[0], time=rr.T_C, carrier_id=f"{events[0]['carrier_id']}_2"))
+    for pair in ((chase("derived"), twice), (chase("derived"), chase("derived"))):
+        with pytest.raises(ConfigError, match="matching model array axes"):
+            parse_batch(batch(*pair))
+    parse_batch(batch(chase("derived")))

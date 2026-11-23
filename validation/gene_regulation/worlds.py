@@ -517,13 +517,31 @@ def _release(p, machine, copies, fates, label=None):
     )
 
 
-def with_share_labels(raw, rows=R1_LABELLED, window=R1_WINDOW, labels=R1_LABELS, sources=()):
+def _source_row(raw, chain):
+    """The row whose labels a chain's new material takes (templated_polymerisation's
+    label_sources): its durable fate row with a release, else its product."""
+    (block,) = [o for o in raw["model"]["operators"] if o["law"] == POLYMERISATION]
+    (entry,) = [c for c in block["chains"] if c["id"] == chain]
+    release = entry.get("release")
+    return entry["product"] if release is None else release["fates"][0]["durable"]
+
+
+def with_share_labels(
+    raw, rows=R1_LABELLED, window=R1_WINDOW, labels=R1_LABELS, sources=(), chain=None
+):
     """raw with FR-42's label owner (neutral_arrival_labels@1, D289) on `rows`, each with
     `labels` (the base first, then the window's, then any others), every node starting at the
-    base, and the arrivals of [t1, t2) joining the window's label (erratum C: §9.8's route 1 on
-    shares). sources: ((chain, species, ((time, label), ...)), ...), a chain's own label schedule
-    (D296: a producer's label, its cell, generation and chain). The rows' physics is unchanged: no
-    law reads a share."""
+    base. The window [t1, t2) marks:
+    - with chain None, the species' own arrivals: every arrival into the rows during it joins the
+      window's label (erratum C), a degradation's re-synthesis from monomers among them;
+    - with a chain's ID, that chain's own label schedule (a label source's, D296): its products,
+      or with a release its fate releases, during it join the window's label, and each species'
+      own label is the base throughout. This is FR-38's cohort (erratum F, §9.19): the molecules
+      that detach from their template in the window. A molecule re-synthesised from monomers
+      takes its species' label, the base, so it is not a member.
+    sources: ((chain, species, ((time, label), ...)), ...), a chain's own label schedule (D296: a
+    producer's label, its cell, generation and chain); none of them for `chain`, whose schedule is
+    the window's. The rows' physics is unchanged: no law reads a share."""
     out = copy.deepcopy(raw)
     base, marked = labels[:2]
     t1, t2 = window
@@ -531,11 +549,17 @@ def with_share_labels(raw, rows=R1_LABELLED, window=R1_WINDOW, labels=R1_LABELS,
         dict(law=SHARE_LABELS, species=[dict(id=r, labels=list(labels), initial=[]) for r in rows])
     )
     changes = ([] if t1 == 0 else [(0.0, base)]) + [(t1, marked), (t2, base)]
+    own = {r: changes for r in rows}
+    if chain is not None:
+        if any(name == chain for name, _, _ in sources):
+            raise ValueError(f"chain {chain}'s own schedule is the window's: name it once")
+        own = {r: [(0.0, base)] for r in rows}
+        sources = ((chain, _source_row(out, chain), tuple(changes)), *sources)
     out["experiment"]["label_arrivals"] = [
-        dict(species=r, schedule=[dict(time=float(t), label=x) for t, x in changes]) for r in rows
+        dict(species=r, schedule=[dict(time=float(t), label=x) for t, x in own[r]]) for r in rows
     ] + [
-        dict(species=row, source=chain, schedule=[dict(time=float(t), label=x) for t, x in own])
-        for chain, row, own in sources
+        dict(species=row, source=name, schedule=[dict(time=float(t), label=x) for t, x in times])
+        for name, row, times in sources
     ]
     return out
 
@@ -549,8 +573,10 @@ def r1(
     = A1's; R and R_s at the sheet's trace c_R, each degraded at its own rate; N, M and Pi at A1's
     initial state, at a potential set (the test instance by default); outputs every R1_EVERY s to
     14,400 s.
-    - labelled: §9.8's route 1 on shares (erratum C): FR-42's labels on R and R_s, the releases in
-      R1_WINDOW joining the window's label, the label marking the release (with_share_labels).
+    - labelled: §9.8's route 1 on shares (errata C and F): FR-42's labels on R and R_s, the label
+      marking the release. Transcription's releases in R1_WINDOW join the window's label on its
+      own label schedule, and each row's own label is the base throughout, so a molecule
+      re-synthesised from monomers is not a member (with_share_labels, chain "tx").
     - initiation: transcription's k_I (mM^-1 s^-1), 0 in R1; the tests set A1's, so that
       completions arrive in the hold."""
     a, r = sheet.A1, sheet.RELEASE
@@ -576,7 +602,7 @@ def r1(
         rates[f"deg_{row}"] = [(0.0, float(r[fate]))]
     block = _block(mu, rows, {"pol": a["M_pol"]}, [chain], degradations, [])
     out = _finish(raw, block, rates)
-    return with_share_labels(out) if labelled else out
+    return with_share_labels(out, chain="tx") if labelled else out
 
 
 R1S_TIMES = (600.0, 900.0, 1800.0)  # The window's end, p's change and the end, s.
@@ -586,9 +612,10 @@ def r1s(machine, *, dt=R1_DT, symbols=None, labelled=True):
     """A compiled check of labels marked at completion and of a scheduled p, each changed mid-run
     (development; not one of §9.9's worlds): R1 with A1's k_I, so that completions arrive, its
     hold holding R1's 80 copies at the base; FR-42's labels on R and R_s (base, cohort), the hold
-    carrying them (label at completion, D296), completions in [0, R1S_TIMES[0]) joining the cohort;
-    p = 0.75 until R1S_TIMES[1], then 0.25; to R1S_TIMES[2], outputs every R1_EVERY s. labelled
-    False: the same world without the label owner, physically the same run."""
+    carrying them (label at completion, D296), transcription's completions in [0, R1S_TIMES[0])
+    joining the cohort on its own label schedule, each row's own label the base throughout
+    (erratum F); p = 0.75 until R1S_TIMES[1], then 0.25; to R1S_TIMES[2], outputs every R1_EVERY s.
+    labelled False: the same world without the label owner, physically the same run."""
     switch, change, end = R1S_TIMES
     k_I = _f(sheet.A1, "k_I_tx")
     raw = r1(0.75, machine=machine, initiation=k_I, dt=dt, symbols=symbols)
@@ -600,7 +627,7 @@ def r1s(machine, *, dt=R1_DT, symbols=None, labelled=True):
     e["end_time"] = end
     e["observation_times"] = [t for t in e["observation_times"] if t <= end]
     raw["execution"]["max_steps"] = int(math.ceil(end / dt)) + 8
-    return with_share_labels(raw, window=(0.0, switch)) if labelled else raw
+    return with_share_labels(raw, window=(0.0, switch), chain="tx") if labelled else raw
 
 
 def release_names():

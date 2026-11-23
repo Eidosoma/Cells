@@ -43,8 +43,9 @@ At each output, per cell by ID, under G2's interface names:
 - **FR-42's labels** (D289), only in a world that declares `neutral_arrival_labels@1`: each
   labelled row's amount carrying each of its labels, `label_<row>_<label>`, the row times the
   label's share, by the species' and label's IDs. A label changes no physical readout.
-  - In R1L, `label_R_cohort` and `label_R_s_cohort` are §9.8's route 1 on shares (erratum C): the
-    releases of R1's window still present, with no blank.
+  - In R1L, `label_R_cohort` and `label_R_s_cohort` are §9.8's route 1 on shares (errata C and
+    F): the releases of R1's window still present, with no blank, marked on transcription's own
+    label schedule, so a molecule re-synthesised from monomers is not a member.
   - **Limits:** a labelled species carries at most the label owner's MAX_LABELS labels, so
     producer identity crossed with the window labels must fit within it. RNA that leaves its cell
     cannot keep its label until FR-42's stage 2 moves labelled rows.
