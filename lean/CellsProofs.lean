@@ -10,7 +10,9 @@ import CellsProofs.Chemistry.Enzyme
 import CellsProofs.Chemistry.GardCache
 import CellsProofs.Chemistry.GardRange
 import CellsProofs.Chemistry.ArrivalCohort
+import CellsProofs.Chemistry.ArrivalSurvival
 import CellsProofs.Chemistry.ArrivalWindow
+import CellsProofs.Chemistry.MarkedRelease
 import CellsProofs.Chemistry.GardCatalysis
 import CellsProofs.Chemistry.LineageFission
 import CellsProofs.Chemistry.PoolWithdrawal
@@ -20,6 +22,7 @@ import CellsProofs.Chemistry.MitochondrialCycles
 import CellsProofs.Chemistry.MitochondrialReactions
 import CellsProofs.Chemistry.MitochondrialStall
 import CellsProofs.Chemistry.Polymerisation
+import CellsProofs.Chemistry.ProducerReplacement
 import CellsProofs.Chemistry.TerminalRelease
 import CellsProofs.Chemistry.PopulationUnits
 import CellsProofs.Chemistry.PrescribedShell
@@ -64,6 +67,7 @@ import CellsProofs.Transport.NeutralPermeation
 import CellsProofs.Transport.OsmoticWater
 import CellsProofs.Transport.PotassiumAnionSymport
 import CellsProofs.Transport.ProtonLeak
+import CellsProofs.Transport.BufferedProtonLeak
 import CellsProofs.Transport.RegulatedAvailability
 import CellsProofs.Transport.SodiumAnionSymport
 import CellsProofs.Transport.SodiumAnionDiagram

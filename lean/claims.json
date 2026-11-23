@@ -19,9 +19,46 @@
     "cells.osmotic_lumen@1": "membrane-transport",
     "cells.passive_neutral_permeation@1": "membrane-transport",
     "cells.phase_exchange@1": "molecular-assembly",
-    "cells.shared_pool@1": "molecular-assembly"
+    "cells.shared_pool@1": "molecular-assembly",
+    "cells.logmean_electrodiffusion_forms@1": "tissue-and-conservation",
+    "cells.rate_equations@1": "molecular-assembly"
   },
   "comparisons": {
+    "fr38-producer-checkpoint": {
+      "kind": "reference",
+      "models": [],
+      "laws": [],
+      "record_revision": "36f778812782bc352a9fe3666c579b85bc87ca28",
+      "sources": {
+        "Per-producer counters and replacement balance": "docs/TEMPLATED_POLYMERISATION_LAWS.md#L1483-L1515",
+        "Division of the event reports between the two owners": "docs/TEMPLATED_POLYMERISATION_LAWS.md#L1773-L1787",
+        "Cells writes the numerical state and clock to its checkpoint": "src/cells/records/io.py#L86",
+        "Reference copy-to-fmol conversion": "validation/gene_regulation/sheet_check.py#L96"
+      },
+      "record_inputs": {
+        "Exact per-producer balance and label partition": "lean/CellsProofs/Chemistry/ProducerReplacement.lean"
+      },
+      "driver": "lean/checks/producer_replacement.py",
+      "record": "lean/PROGRESS.md#fr38-producer-replacement"
+    },
+    "fr38-producer-public-admission": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [],
+      "engine_revision": "1e72a71b2d08408ce007276a187041a5e197cfad",
+      "record_revision": "2f6f4808e861935a9933feb3027f66d008eda7e3",
+      "sources": {
+        "Public guard on templated polymerisation with replacement": "src/cells/operators/templated_polymerisation.py#L969",
+        "Definition with a replacement and expected refusal": "tests/unit/test_templated_polymerisation.py#L181",
+        "RNA fixture": "validation/gene_regulation/worlds.py#L543",
+        "Replacement template and event fixture": "validation/tissue/secreted_species_fixtures.py"
+      },
+      "driver": "tests/unit/test_templated_polymerisation.py",
+      "record": "lean/PROGRESS.md#fr38-producer-replacement"
+    },
     "fr38-terminal-inventories": {
       "kind": "engine",
       "models": [
@@ -30,19 +67,24 @@
       ],
       "laws": [],
       "operators": [
-        "cells.templated_polymerisation@1"
+        "cells.templated_polymerisation@1",
+        "cells.neutral_arrival_labels@1"
       ],
-      "engine_revision": "fc07c545836b155928aeca3e9ba74528d6e3b66d",
-      "record_revision": "f11bfae57c7d3db1ac632b313cdb05dd863063de",
+      "engine_revision": "947ff262c7fba53b53b32a7c44394e84be3fa897",
+      "record_revision": "4404a1b3cd889ba7a9a75f18df0cdf479898cd73",
       "sources": {
+        "Compiled state collection": "validation/gene_regulation/engine_run.py#L178",
+        "R1, marking schedules and R1S": "validation/gene_regulation/worlds.py#L520",
+        "Run horizon and grid": "validation/gene_regulation/kernel.py#L35",
         "Compiled window execution": "src/cells/execution/windows.py",
-        "R1 and R1S development worlds": "validation/gene_regulation/worlds.py#L519-L591",
-        "Observation horizon and grid": "validation/gene_regulation/kernel.py#L23-L38",
-        "Compiled history collection": "validation/gene_regulation/engine_run.py#L169-L181",
-        "Class and fate fluxes": "src/cells/operators/templated_polymerisation.py#L1201-L1224",
-        "Machine and residue ledgers": "src/cells/operators/templated_polymerisation.py#L1992-L2012",
-        "Held and engaged machines and class-specific releases": "validation/gene_regulation/engine_run.py#L381-L411",
-        "Copy-to-fmol conversion": "validation/gene_regulation/sheet_check.py#L90-L97"
+        "Release extents and their label reports": "src/cells/operators/templated_polymerisation.py#L1565",
+        "Neutral label and pool update": "src/cells/operators/species_labels.py#L506",
+        "Survival and transfer of neutral shares": "src/cells/numerics/label_shares.py#L64",
+        "Composite applies the reporters' half-steps": "src/cells/models/pump_composite.py#L1752",
+        "RNA and hold amounts by label": "validation/gene_regulation/engine_run.py#L317",
+        "Physical counters for both fates": "validation/gene_regulation/engine_run.py#L429",
+        "Machine and residue ledgers": "src/cells/operators/templated_polymerisation.py#L2129",
+        "Copy-to-fmol conversion": "validation/gene_regulation/sheet_check.py#L90"
       },
       "record_inputs": {
         "Exact stage inventory": "lean/CellsProofs/Chemistry/Polymerisation.lean",
@@ -50,7 +92,7 @@
         "Polymerase retention and secondary transcription counts": "lean/checks/data/harden2020_polymerase_retention.json"
       },
       "driver": "lean/checks/terminal_release.py",
-      "record": "lean/PROGRESS.md#fr38-terminal-inventories"
+      "record": "lean/PROGRESS.md#fr38-marked-fates"
     },
     "fr38-lossless-fate-export": {
       "kind": "engine",
@@ -60,26 +102,31 @@
       ],
       "laws": [],
       "operators": [
-        "cells.templated_polymerisation@1"
+        "cells.templated_polymerisation@1",
+        "cells.neutral_arrival_labels@1"
       ],
-      "engine_revision": "fc07c545836b155928aeca3e9ba74528d6e3b66d",
-      "record_revision": "f11bfae57c7d3db1ac632b313cdb05dd863063de",
+      "engine_revision": "947ff262c7fba53b53b32a7c44394e84be3fa897",
+      "record_revision": "4404a1b3cd889ba7a9a75f18df0cdf479898cd73",
       "sources": {
+        "Compiled state collection": "validation/gene_regulation/engine_run.py#L178",
+        "R1, marking schedules and R1S": "validation/gene_regulation/worlds.py#L520",
+        "Run horizon and grid": "validation/gene_regulation/kernel.py#L35",
         "Compiled window execution": "src/cells/execution/windows.py",
-        "R1 and R1S development worlds": "validation/gene_regulation/worlds.py#L519-L591",
-        "Observation horizon and grid": "validation/gene_regulation/kernel.py#L23-L38",
-        "Compiled history collection": "validation/gene_regulation/engine_run.py#L169-L181",
-        "Release route and fate layout": "src/cells/operators/templated_polymerisation.py#L312-L345",
-        "Public export of zero losses": "validation/gene_regulation/engine_run.py#L262-L313",
-        "Detachment counters for each fate": "validation/gene_regulation/engine_run.py#L393-L411",
-        "Local producer resolution and loss-counter requirement": "validation/gene_regulation/cohort.py#L240-L308",
-        "Survivor calculation": "validation/gene_regulation/cohort.py#L142-L162"
+        "Release extents and their label reports": "src/cells/operators/templated_polymerisation.py#L1565",
+        "Neutral label and pool update": "src/cells/operators/species_labels.py#L506",
+        "Survival and transfer of neutral shares": "src/cells/numerics/label_shares.py#L64",
+        "Composite applies the reporters' half-steps": "src/cells/models/pump_composite.py#L1752",
+        "Zero-loss eligibility and export": "validation/gene_regulation/engine_run.py#L284",
+        "Physical release counters": "validation/gene_regulation/engine_run.py#L429",
+        "Cell-local selection of production and loss counters": "validation/gene_regulation/cohort.py#L305",
+        "Survivors from the exported counters": "validation/gene_regulation/cohort.py#L139"
       },
       "record_inputs": {
-        "Exact single-fate balance": "lean/CellsProofs/Chemistry/TerminalRelease.lean"
+        "Exact lossless gain": "lean/CellsProofs/Chemistry/TerminalRelease.lean",
+        "Window-marked detachment": "lean/CellsProofs/Chemistry/MarkedRelease.lean"
       },
       "driver": "lean/checks/terminal_release.py",
-      "record": "lean/PROGRESS.md#fr38-lossless-fate"
+      "record": "lean/PROGRESS.md#fr38-marked-fates"
     },
     "fr31-area-reference": {
       "kind": "reference",
@@ -93,21 +140,7 @@
       "driver": "lean/checks/vesicle_area.py",
       "record": "lean/PROGRESS.md#fr31-area-bounds"
     },
-    "fr42-window-reference": {
-      "kind": "reference",
-      "models": [],
-      "laws": [],
-      "record_revision": "e4b729acf7e784cd088a3a9f05da4de42d5e8dd2",
-      "sources": {
-        "Half-open windows and within-run label reuse": "docs/FEATURE_REQUESTS.md#fr-42--neutral-arrival-time-labels-that-leave-the-dynamics-unchanged",
-        "FR-38 release-marking and chase denominator": "docs/FEATURE_REQUESTS.md#fr-38--rna-release-from-its-template-into-two-pools-with-different-lifetimes",
-        "Point-arrival recurrence and survival of the original cohort": "lean/CellsProofs/Chemistry/ArrivalWindow.lean",
-        "Host calculation for uniformly spread arrivals": "validation/gene_regulation/cohort.py#L123-L180"
-      },
-      "driver": "lean/checks/arrival_windows.py",
-      "record": "lean/PROGRESS.md#fr42-release-windows"
-    },
-    "fr38-release-class-window": {
+    "fr42-neutral-survival": {
       "kind": "engine",
       "models": [
         "resolved_pump_composite@1",
@@ -115,24 +148,81 @@
       ],
       "laws": [],
       "operators": [
-        "cells.templated_polymerisation@1"
+        "cells.neutral_arrival_labels@1",
+        "cells.local_species_reactions@1",
+        "cells.scheduled_species_turnover@1"
       ],
-      "engine_revision": "57cf9a4ed0b68454232a3c531c14e1b725853955",
-      "record_revision": "e4b729acf7e784cd088a3a9f05da4de42d5e8dd2",
+      "engine_revision": "73afa19b5ddcb50405280d6d46207a25c41fec24",
+      "record_revision": "7e41a441b51b5a84ec57febb04b1e7a8f801674d",
       "sources": {
-        "One-way release from the template hold into the scheduled class and fate": "src/cells/operators/templated_polymerisation.py#L1201-L1224",
-        "Template hold and release classes in the R1 world": "validation/gene_regulation/worlds.py#L519-L558",
-        "Schedule controls on the engine grid": "src/cells/definitions/pump_composite_spec.py#L258",
-        "Public windowed engine execution": "src/cells/execution/windows.py",
-        "Compiled collection and class-specific release counters": "validation/gene_regulation/engine_run.py#L393-L411",
-        "Observation horizon and grid of the starting fixture": "validation/gene_regulation/kernel.py#L28-L36",
-        "Fate export and release-counter selection": "validation/gene_regulation/cohort.py#L240-L310"
+        "Finite-step bisection, allocation and empty-row handling": "src/cells/numerics/label_shares.py#L64",
+        "Label declarations, schedules and share update": "src/cells/operators/species_labels.py",
+        "Composite half-step calls the label owner": "src/cells/models/pump_composite.py#L1752",
+        "One-way reaction reports": "src/cells/operators/species_reactions.py#L1692",
+        "Turnover reports": "src/cells/operators/species_turnover.py#L611",
+        "Summation along the label axis": "src/cells/numerics/species_sums.py",
+        "Compiled twin worlds, window integrals and tolerances": "tests/unit/test_neutral_arrival_labels.py#L465",
+        "Composite tissue and production/clearance fixture": "validation/tissue/secreted_species_fixtures.py",
+        "Reaction fixture and schedules": "validation/tissue/species_reactions_fixtures.py"
       },
       "record_inputs": {
-        "Exact release-window and chase identities": "lean/CellsProofs/Chemistry/ArrivalWindow.lean"
+        "Exact endpoint and normalized label amounts": "lean/CellsProofs/Chemistry/ArrivalSurvival.lean",
+        "Quadratic cohort and blank reference": "lean/CellsProofs/Chemistry/ArrivalCohort.lean",
+        "Paired Actn1 isotope signals and GEO sample accessions": "lean/checks/data/jovanovic2015_actn1.json"
+      },
+      "driver": "lean/checks/arrival_survival.py",
+      "record": "lean/PROGRESS.md#fr42-neutral-survival"
+    },
+    "fr42-window-reference": {
+      "kind": "reference",
+      "models": [],
+      "laws": [],
+      "record_revision": "4404a1b3cd889ba7a9a75f18df0cdf479898cd73",
+      "sources": {
+        "Half-open windows and within-run label reuse": "docs/FEATURE_REQUESTS.md#fr-42--neutral-arrival-time-labels-that-leave-the-dynamics-unchanged",
+        "FR-38 release-marking and chase denominator": "docs/FEATURE_REQUESTS.md#fr-38--rna-release-from-its-template-into-two-pools-with-different-lifetimes",
+        "Point-arrival recurrence and survival of the original cohort": "lean/CellsProofs/Chemistry/ArrivalWindow.lean",
+        "Host calculation for uniformly spread arrivals": "validation/gene_regulation/cohort.py#L139"
       },
       "driver": "lean/checks/arrival_windows.py",
-      "record": "lean/PROGRESS.md#fr42-release-windows"
+      "record": "lean/PROGRESS.md#fr38-marked-fates"
+    },
+    "fr38-neutral-release-windows": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [],
+      "operators": [
+        "cells.templated_polymerisation@1",
+        "cells.neutral_arrival_labels@1"
+      ],
+      "engine_revision": "947ff262c7fba53b53b32a7c44394e84be3fa897",
+      "record_revision": "4404a1b3cd889ba7a9a75f18df0cdf479898cd73",
+      "sources": {
+        "Compiled state collection": "validation/gene_regulation/engine_run.py#L178",
+        "R1, marking schedules and R1S": "validation/gene_regulation/worlds.py#L520",
+        "Run horizon and grid": "validation/gene_regulation/kernel.py#L35",
+        "Compiled window execution": "src/cells/execution/windows.py",
+        "Release extents and their label reports": "src/cells/operators/templated_polymerisation.py#L1565",
+        "Neutral label and pool update": "src/cells/operators/species_labels.py#L506",
+        "Survival and transfer of neutral shares": "src/cells/numerics/label_shares.py#L64",
+        "Composite applies the reporters' half-steps": "src/cells/models/pump_composite.py#L1752",
+        "Fate readouts and counters": "validation/gene_regulation/engine_run.py#L429",
+        "Exported RNA and hold amounts by label": "validation/gene_regulation/engine_run.py#L317",
+        "Independent window integral and grid comparison": "validation/gene_regulation/release_check.py#L112",
+        "Cohort from unlabelled counters": "validation/gene_regulation/cohort.py#L139",
+        "Sheet constants and the copy unit": "validation/gene_regulation/sheet_check.py"
+      },
+      "record_inputs": {
+        "Marked detachment and survival bounds": "lean/CellsProofs/Chemistry/MarkedRelease.lean",
+        "Half-open windows and reuse": "lean/CellsProofs/Chemistry/ArrivalWindow.lean",
+        "Exact neutral shares": "lean/CellsProofs/Chemistry/ArrivalSurvival.lean",
+        "Two published RNA time courses and denominators": "lean/checks/data/rna_chase_observables.json"
+      },
+      "driver": "lean/checks/arrival_windows.py",
+      "record": "lean/PROGRESS.md#fr38-marked-fates"
     },
     "vesicle-birth-returns": {
       "kind": "engine",
@@ -341,14 +431,14 @@
       "operators": [
         "cells.tension_hold@1"
       ],
-      "engine_revision": "f51a3b07d302fb177b166b1568155084ffb8e1c1",
-      "record_revision": "870c9353c92b7e614f25a768f2dabecf7b81d49c",
+      "engine_revision": "0a1c1b0dc8145c9c313c02a4ed57cfe5433b2efe",
+      "record_revision": "1c3c422d32a6723d650b2f6d2bc5b531d4a3ff87",
       "sources": {
         "Pore rate and temperature slope": "src/cells/models/assembly_lineages_v2/pore_nucleation.py#L58",
         "Tension domain and hold payer": "src/cells/models/assembly_lineages_v2/tension_hold.py#L88",
-        "Clock, opening and release": "src/cells/models/assembly_lineages_v2/pore_clock.py#L69",
+        "Clock, opening and release": "src/cells/models/assembly_lineages_v2/pore_clock.py#L82",
         "Single-lineage pore event": "src/cells/models/assembly_lineages_v2/runner.py#L363",
-        "Population pore event": "src/cells/models/assembly_lineages_v2/population.py#L670",
+        "Population pore event": "src/cells/models/assembly_lineages_v2/population.py#L665",
         "Per-founder random stream and threshold inputs": "src/cells/models/assembly_lineages_v2/streams.py",
         "Geometry and area in both runners": "src/cells/models/assembly_lineages_v2/geometry.py",
         "Closed-form work oracle, founder worlds and both public run modes": "tests/unit/test_assembly_lineages_v2_pores.py",
@@ -360,7 +450,7 @@
         "Measured pore observables": "lean/checks/data/dopc_pore_observables.json"
       },
       "driver": "lean/checks/vesicle_pore.py",
-      "record": "lean/PROGRESS.md#fr31-pore-rate-heat"
+      "record": "lean/PROGRESS.md#fr31-pore-endpoint-repair"
     },
     "ol5-replay-assembly-kinetics": {
       "kind": "engine",
@@ -3438,6 +3528,81 @@
         "cells.scheduled_compartment_wash@1",
         "cells.site_occupancy@1"
       ]
+    },
+    "fr38-producer-export": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [],
+      "operators": [
+        "templated_polymerisation@1",
+        "scheduled_cell_replacement@1",
+        "neutral_arrival_labels@1"
+      ],
+      "engine_revision": "fd2bb88ce444b48344236024a2a18844f59041a4",
+      "record_revision": "d2258d4f81a5a6e4a04277b51df0217e0b044289",
+      "sources": {
+        "Native replacement and restart fixture": "validation/gene_regulation/replace_restart.py#L283",
+        "Known-rate reconstruction": "validation/gene_regulation/cohort.py#L170",
+        "Gross export counters and loss at the outside node": "src/cells/operators/templated_polymerisation.py#L2470",
+        "Derived producer labels": "src/cells/operators/species_labels.py#L296",
+        "Two producers at one node": "tests/unit/test_templated_polymerisation.py#L715"
+      },
+      "record_inputs": {
+        "Per-label conservation and cumulative return bound": "lean/CellsProofs/Chemistry/ProducerReplacement.lean"
+      },
+      "driver": "lean/checks/producer_replacement.py",
+      "record": "lean/PROGRESS.md#fr38-extracellular-producer"
+    },
+    "fr38-retention-resolution": {
+      "kind": "engine",
+      "models": [],
+      "laws": [],
+      "operators": [],
+      "engine_revision": "fd2bb88ce444b48344236024a2a18844f59041a4",
+      "record_revision": "d2258d4f81a5a6e4a04277b51df0217e0b044289",
+      "sources": {
+        "Error estimate for known-rate survival": "validation/gene_regulation/cohort.py#L187",
+        "Retention verdict by output": "validation/gene_regulation/replace_restart.py#L237",
+        "Sparse and finite native controls": "tests/unit/test_fr38_replace_restart.py#L49"
+      },
+      "record_inputs": {
+        "Pulse-timing proof": "lean/CellsProofs/Chemistry/ProducerReplacement.lean"
+      },
+      "driver": "lean/checks/producer_replacement.py",
+      "record": "lean/PROGRESS.md#fr38-pre-replacement-resolution"
+    },
+    "buffered-proton-reversal": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_tissue@3",
+        "resolved_pump_composite@1"
+      ],
+      "laws": [
+        "proton_constant_field_leak@2",
+        "proton_constant_field_leak@1"
+      ],
+      "operators": [],
+      "engine_revision": "fd2bb88ce444b48344236024a2a18844f59041a4",
+      "record_revision": "d2258d4f81a5a6e4a04277b51df0217e0b044289",
+      "sources": {
+        "Version-2 route and stage read": "src/cells/laws/transport/proton_leak_v2.py",
+        "Inward flux": "src/cells/laws/transport/proton_leak.py#L31",
+        "Clamped route flux": "src/cells/kinds/passive_routes.py#L778",
+        "General binding read": "src/cells/kinds/proton_buffer.py#L752",
+        "Buffered model and admission controls": "tests/unit/test_rapid_binding_world.py#L839",
+        "One-site starting inventory": "validation/compartment_ph_engine/parameters.py#L98"
+      },
+      "record_inputs": {
+        "Reversal and closure proof": "lean/CellsProofs/Transport/BufferedProtonLeak.lean",
+        "Reference flux helper": "lean/checks/proton_leak.py",
+        "Individual reversal voltages": "lean/checks/data/bertholet2019_proton_reversal.json",
+        "Compartment pH measurements": "lean/checks/data/cortese1992_ims_ph.json"
+      },
+      "driver": "lean/checks/ims_proton_leak.py",
+      "record": "lean/PROGRESS.md#mt1b-buffered-reversal"
     }
   },
   "claims": [
@@ -3486,18 +3651,24 @@
     {
       "id": "release-window-survival",
       "category": "reactions-and-binding",
-      "title": "A reused release-time label carries forward its older survivors",
-      "statement": "Half-open arrival windows assign releases at a shared boundary exactly once. In a well-mixed pool with common survival factors, the surviving amount after label reuse is the sum of the two separately followed release histories. The chase fraction uses the original cohort alive at window close.",
+      "title": "Marked RNA is accounted for in both release fates, including after label reuse",
+      "statement": "A detachment event marked in a half-open window belongs to exactly one of the two fates. In the continuous-amount model their gross amounts sum to the marked release even when the split changes. Each fate can have its own survival fraction. Reusing a label adds the survivors of both windows, and the chase fraction uses the original cohort alive at window close.",
       "assumptions": [
         "Time is indexed by step boundaries. In the exact event example a molecule is marked on detachment and experiences the following interval’s survival factor. Sampling is before any new releases at that sample boundary.",
         "Every member of the same physical pool experiences the same survival factor in each interval. For a physical chase each factor is in [0,1]. A reused label receives new material from nonoverlapping windows.",
-        "A zero denominator gives an undefined chase fraction. A host readout with only interval totals assumes a within-interval arrival profile. The synthetic counter comparison uses uniform arrivals and constant per-molecule loss."
+        "A zero denominator gives an undefined chase fraction. A host readout with only interval totals assumes a within-interval arrival profile. The synthetic counter comparison uses uniform arrivals and constant per-molecule loss.",
+        "Gross release is nonnegative. The durable fraction p lies in [0,1] and can vary by step. The short-lived fraction is 1 − p. Each fate has a survival fraction in [0,1]."
       ],
       "uses": [
-        "fr42-cohort-shares"
+        "fr42-cohort-shares",
+        "fr42-survival-exponent"
       ],
       "formal": {
         "status": "proved",
+        "about": [
+          "cells.templated_polymerisation@1",
+          "cells.neutral_arrival_labels@1"
+        ],
         "theorems": {
           "CellsProofs.Chemistry.ArrivalWindow.at_start": "lean/CellsProofs/Chemistry/ArrivalWindow.lean",
           "CellsProofs.Chemistry.ArrivalWindow.at_end": "lean/CellsProofs/Chemistry/ArrivalWindow.lean",
@@ -3507,27 +3678,34 @@
           "CellsProofs.Chemistry.ArrivalWindow.chase_only": "lean/CellsProofs/Chemistry/ArrivalWindow.lean",
           "CellsProofs.Chemistry.ArrivalWindow.chase_fraction": "lean/CellsProofs/Chemistry/ArrivalWindow.lean",
           "CellsProofs.Chemistry.ArrivalWindow.empty_fraction": "lean/CellsProofs/Chemistry/ArrivalWindow.lean",
-          "CellsProofs.Chemistry.ArrivalWindow.release_example": "lean/CellsProofs/Chemistry/ArrivalWindow.lean"
+          "CellsProofs.Chemistry.ArrivalWindow.release_example": "lean/CellsProofs/Chemistry/ArrivalWindow.lean",
+          "CellsProofs.Chemistry.MarkedRelease.event_partition": "lean/CellsProofs/Chemistry/MarkedRelease.lean",
+          "CellsProofs.Chemistry.MarkedRelease.marked_fates": "lean/CellsProofs/Chemistry/MarkedRelease.lean",
+          "CellsProofs.Chemistry.MarkedRelease.survivors_bounded": "lean/CellsProofs/Chemistry/MarkedRelease.lean"
         },
         "sources": {
           "Mathlib product over the successor range, imported for survival across a chase": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Group/Finset/Basic.lean#L503",
           "FR-42 boundary and reuse requirements": "https://github.com/Eidosoma/Cells/blob/57cf9a4ed0b68454232a3c531c14e1b725853955/docs/FEATURE_REQUESTS.md#fr-42--neutral-arrival-time-labels-that-leave-the-dynamics-unchanged",
-          "FR-38 clarification of release, survivors and the chase denominator": "https://github.com/Eidosoma/Cells/blob/57cf9a4ed0b68454232a3c531c14e1b725853955/docs/FEATURE_REQUESTS.md#fr-38--rna-release-from-its-template-into-two-pools-with-different-lifetimes"
+          "FR-38 clarification of release, survivors and the chase denominator": "https://github.com/Eidosoma/Cells/blob/57cf9a4ed0b68454232a3c531c14e1b725853955/docs/FEATURE_REQUESTS.md#fr-38--rna-release-from-its-template-into-two-pools-with-different-lifetimes",
+          "Mathlib finite partition into a predicate and its complement, imported for individual events": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Group/Finset/Basic.lean#L117-L124",
+          "Cells uses neutral RNA shares to mark at release": "https://github.com/Eidosoma/Cells/blob/947ff262c7fba53b53b32a7c44394e84be3fa897/docs/TEMPLATED_POLYMERISATION_LAWS.md#914-erratum-c-route-1-on-shares"
         }
       },
       "numerical": {
-        "status": "open",
+        "status": "checked",
         "comparisons": [
           "fr42-window-reference",
-          "fr38-release-class-window"
+          "fr38-neutral-release-windows",
+          "fr38-lossless-fate-export",
+          "fr42-neutral-survival"
         ],
-        "result": "For 10 releases, 8 remain at close and 6 later, giving 6/8. The reused label ends with 3 old plus 1 new. The compiled FR-38 development fixture routed all five steps to the expected classes in both fates with zero new chain completions. Its host reconstruction added both surviving histories within 2 × 10⁻¹⁴ relative tolerance. The FR-42 share-based engine and label-neutral energy comparison remain open."
+        "result": "Across three compiled RNA runs all 39 physical readouts matched bit for bit. The two marked intervals released 1.02212491320 × 10⁻¹⁰ fmol into the two fates. Reusing a label reproduced the sum of the two separately marked cohorts to within 1.30 × 10⁻²⁶ fmol. The counter reconstruction’s maximum relative error for the short-lived fate was 4.80 × 10⁻⁸ on a two-second output grid and 2.93 × 10⁻⁹ on a half-second grid. The independent point-release example retained 6 of 8 at chase. The separate FR-42 tissue comparison checked the same window semantics with production and clearance. This window comparison followed the same producer throughout. A separate [producer replacement and restart comparison](producer-replacement-rna.md) follows both generations on the development engine."
       },
       "biology": {
         "status": "open",
         "observable": "Cohort membership requires the time of release from the template and survival of the same molecules to a later sample.",
         "unit": "Fraction (0–1)",
-        "finding": "Bellecourt et al. measured detachment separately from synthesis. Their released-RNA fraction has a different denominator from survival of a release-marked cohort.",
+        "finding": "Bellecourt et al. measured detachment among terminator-length RNAs. Ntini et al. measured chromatin association after a synthesis pulse, and Tutucci et al. counted yeast RNA during mitosis. A direct survival comparison still requires marking RNA at detachment and measuring the same cohort at window close and during chase.",
         "evidence": [
           {
             "dataset_id": "bellecourt-2019-hisl-release",
@@ -3541,6 +3719,30 @@
             "uncertainty": "The study reports ±0.02 for the wild-type release fraction under reducing conditions. Figure 5A pools the 120, 240 and 480 s samples.",
             "assessment": "This measures population detachment. Individual completion-to-release delays and later survival of the same released cohort remain unmeasured.",
             "report": "lean/PROGRESS.md#fr42-release-windows"
+          },
+          {
+            "dataset_id": "ntini-2023-actb-chromatin",
+            "manifest": "lean/checks/data/rna_chase_observables.json",
+            "citation": "Ntini et al. (2023), Cell Systems 14, 906–922.e6",
+            "doi": "10.1016/j.cels.2023.09.005",
+            "locator": "Figure 1, GEO GSE218726 and the authors’ transcript table, ACTB row ENSG00000075624.14.",
+            "context": "After an eight-minute synthesis pulse in MCF-7 cells, RNA was measured in chromatin and nucleoplasmic fractions at 0, 5, 10, 15 and 20 minutes.",
+            "role": "descriptive",
+            "uncertainty": "The transcript table gives a point estimate for this row.",
+            "assessment": "ACTB’s fitted chromatin-association half-time was 3.35 min. Each denominator pools the two recovered nuclear fractions. Relating these fractions to survival after detachment would require the size and subsequent fate of a cohort marked at release.",
+            "report": "lean/PROGRESS.md#fr38-marked-fates"
+          },
+          {
+            "dataset_id": "tutucci-2018-ash1-mitosis",
+            "manifest": "lean/checks/data/rna_chase_observables.json",
+            "citation": "Tutucci et al. (2018), Nature Methods 15, 81–89",
+            "doi": "10.1038/nmeth.4502",
+            "locator": "Figure 6b–c. The group estimate comes from panel c.",
+            "context": "Endogenously tagged ASH1 RNA spots were counted per cell in 21 yeast cells every two minutes, with times aligned to anaphase onset.",
+            "role": "descriptive",
+            "uncertainty": "The authors report ±2.8 min with the 6.1 min value. The type of uncertainty is unspecified.",
+            "assessment": "The mitotic decline in detected ASH1 spots had a reported half-life of 6.1 min. A per-cell count gives a population decay timescale. The release time and subsequent survival of a detachment-marked cohort remain unmeasured.",
+            "report": "lean/PROGRESS.md#fr38-marked-fates"
           }
         ]
       }
@@ -3557,6 +3759,9 @@
       ],
       "formal": {
         "status": "proved",
+        "about": [
+          "cells.neutral_arrival_labels@1"
+        ],
         "theorems": {
           "CellsProofs.Chemistry.ArrivalCohort.empty_label": "lean/CellsProofs/Chemistry/ArrivalCohort.lean",
           "CellsProofs.Chemistry.ArrivalCohort.sum_shares": "lean/CellsProofs/Chemistry/ArrivalCohort.lean",
@@ -3570,20 +3775,88 @@
         "sources": {
           "FR-42 design requirement": "https://github.com/Eidosoma/Cells/blob/184fc81cdfc0ea1b04eded5152c6cbbd2d5ea956/docs/FEATURE_REQUESTS.md#fr-42--neutral-arrival-time-labels-that-leave-the-dynamics-unchanged",
           "D289 adopts share vectors on the physical population": "https://github.com/Eidosoma/Cells/blob/4e944a5634adafe1944235e540c6a7f0e564a144/docs/DECISIONS.md#d289-fr-42-is-built-as-option-a-labels-as-share-vectors-on-the-physical-row",
-        "FR-38 erratum B on class rows and the blank": "https://github.com/Eidosoma/Cells/blob/184fc81cdfc0ea1b04eded5152c6cbbd2d5ea956/docs/TEMPLATED_POLYMERISATION_LAWS.md#913-erratum-b-the-label-rows-are-not-neutral-labels",
+          "FR-38 erratum B on class rows and the blank": "https://github.com/Eidosoma/Cells/blob/184fc81cdfc0ea1b04eded5152c6cbbd2d5ea956/docs/TEMPLATED_POLYMERISATION_LAWS.md#913-erratum-b-the-label-rows-are-not-neutral-labels",
           "Mathlib division of a finite sum, imported for the cohort balance": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Field.lean#L22",
           "Mathlib quotient derivative, imported for the survivor curve": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/Calculus/Deriv/Inv.lean#L143"
         }
       },
       "numerical": {
-        "status": "open",
-        "comparisons": [],
-        "result": "At time one the new cohort contains 1/4 unit, one third of the 3/4-unit pool. Blank subtraction gives 1/12 unit. An FR-42 engine replay is pending, including window endpoints, cohort reuse and physical energy accounting. FR-38 registration waits for the share-based labels under D288."
+        "status": "checked",
+        "comparisons": [
+          "fr42-neutral-survival"
+        ],
+        "result": "Five quadratic-loss pools kept their shares bit for bit. At one second, the three-unit pool held 0.7499996135 fmol including 0.2499998712 fmol from the new cohort, within 10⁻⁶ fmol of 3/4 and 1/4. The analytical two-unit blank gives a difference of 1/12 fmol. All 42 shared history fields and 76 shared observations, including energy records, matched bit for bit when labels were enabled. Diagnostics agreed."
       },
       "biology": {
         "status": "open",
-        "observable": "The surviving amount from an identified arrival cohort together with the physical pool total under the same loss conditions.",
-        "unit": "Amount per cohort and total pool amount",
+        "observable": "The surviving fraction of an identified arrival cohort within the same physical pool, paired with that pool’s total at the observation time.",
+        "unit": "Fraction of paired isotope signal",
+        "finding": "In mock-treated mouse dendritic cells the 5 h Actn1 heavy fractions were 17.19% and 10.11%. The paired channel sum supplies the denominator. Recycling limits how precisely the heavy fraction measures newly made protein.",
+        "evidence": [
+          {
+            "dataset_id": "jovanovic-2015-actn1-mock",
+            "manifest": "lean/checks/data/jovanovic2015_actn1.json",
+            "citation": "Jovanovic et al. (2015), Science 347, 1259038",
+            "doi": "10.1126/science.1259038",
+            "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE59792",
+            "locator": "Figure 1B, Figure 3F and GEO GSE59792, Actn1, paired 5 h MOCK medium and heavy samples.",
+            "context": "Pulse SILAC after an isotope switch in mouse dendritic cells. The four samples have proteome-normalized iBAQ signals.",
+            "role": "descriptive",
+            "observed": 0.13649927,
+            "uncertainty": "Sample SD 0.050071 across the two paired fractions. Both isotope channels were present in both replicates.",
+            "assessment": "Within-replicate normalization cancels in H/(H+M). Its denominator is computed from the same two measurements. Recycled precursor can enter newly made protein. A common loss rate and the quadratic-loss example remain untested by this measurement.",
+            "report": "lean/PROGRESS.md#fr42-neutral-survival"
+          }
+        ]
+      }
+    },
+    {
+      "id": "fr42-survival-exponent",
+      "category": "reactions-and-binding",
+      "title": "A positive endpoint determines one neutral-label survival exponent",
+      "statement": "With nonnegative old stock and gross arrivals, every positive endpoint up to their sum has exactly one nonnegative loss exponent. At that exponent the label amounts are nonnegative, sum to the endpoint and give shares that sum to one. An occupied pool receiving no arrivals keeps its shares.",
+      "assumptions": [
+        "One well-mixed physical pool has a common constant per-molecule loss rate and constant arrival rates per label during the step. The dimensionless exponent is the loss rate times the step duration.",
+        "Initial shares are nonnegative, include all material, and sum to one. Gross arrivals into each label are nonnegative. At zero loss all old material and all arrivals survive.",
+        "The inferred exponent describes one step in exact arithmetic. A completely empty pool cannot identify a rate. Inferring a rate over multiple steps with varying loss or arrivals is a separate problem."
+      ],
+      "uses": [
+        "fr42-cohort-shares"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.neutral_arrival_labels@1"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.ArrivalSurvival.no_loss": "lean/CellsProofs/Chemistry/ArrivalSurvival.lean",
+          "CellsProofs.Chemistry.ArrivalSurvival.phi_pos": "lean/CellsProofs/Chemistry/ArrivalSurvival.lean",
+          "CellsProofs.Chemistry.ArrivalSurvival.endAmount_decreases": "lean/CellsProofs/Chemistry/ArrivalSurvival.lean",
+          "CellsProofs.Chemistry.ArrivalSurvival.survival_exponent_unique": "lean/CellsProofs/Chemistry/ArrivalSurvival.lean",
+          "CellsProofs.Chemistry.ArrivalSurvival.labelAmount_nonneg": "lean/CellsProofs/Chemistry/ArrivalSurvival.lean",
+          "CellsProofs.Chemistry.ArrivalSurvival.empty_label": "lean/CellsProofs/Chemistry/ArrivalSurvival.lean",
+          "CellsProofs.Chemistry.ArrivalSurvival.no_arrivals": "lean/CellsProofs/Chemistry/ArrivalSurvival.lean",
+          "CellsProofs.Chemistry.ArrivalSurvival.sum_labelAmounts": "lean/CellsProofs/Chemistry/ArrivalSurvival.lean",
+          "CellsProofs.Chemistry.ArrivalSurvival.sum_normalized": "lean/CellsProofs/Chemistry/ArrivalSurvival.lean"
+        },
+        "sources": {
+          "Mathlib strict convexity of the exponential, imported": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/Convex/SpecificFunctions/Basic.lean#L37",
+          "Mathlib's strictly ordered secant slopes, specialized to exponential arrival survival": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/Convex/Slope.lean#L290",
+          "Mathlib continuity of the derivative-extended secant at zero, imported": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/Calculus/DSlope.lean#L107",
+          "Mathlib intermediate value theorem, imported to establish existence": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Topology/Order/IntermediateValue.lean#L478"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "fr42-neutral-survival"
+        ],
+        "result": "NumPy and CPU JAX recovered eight constructed exponents from 0 to 1,000 within 2 × 10⁻¹⁴ absolute plus 2 × 10⁻¹³ relative tolerance. The largest absolute share error was 1.11 × 10⁻¹⁶. An empty-row control kept its stored shares. Seven cell-cohort observations in the compiled world agreed with the constant-rate integral within 2.78 × 10⁻¹⁷ fmol."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Independent gross arrivals, physical pool amounts at the two step endpoints, and survivor amounts for each labelled cohort under a common constant loss rate.",
+        "unit": "Amount per cohort and physical pool in a shared unit",
         "evidence": []
       }
     },
@@ -3954,7 +4227,7 @@
           "polymerisation-balances",
           "fr38-terminal-inventories"
         ],
-        "result": "Across 183 compiled rows the maximum pool residual was 5.80 × 10⁻¹⁹ fmol. Omitting one competing chain from the two-gene pool produced a 4.88 × 10⁻⁸ fmol discrepancy. A further 62 compiled rows with terminal holds closed within 1.55 × 10⁻²⁰ fmol. Applying the opposite policy to the initial hold misplaced 80 machines in either case."
+        "result": "Across 183 compiled observations the maximum pool residual was 5.80 × 10⁻¹⁹ fmol. Omitting one competing chain from the two-gene pool produced a 4.88 × 10⁻⁸ fmol discrepancy. On the neutral-label engine, 62 further observations across both terminal machine policies closed within 1.55 × 10⁻²⁰ fmol. Counting the initial hold under the opposite policy misplaced 80 machines in both cases."
       },
       "biology": {
         "status": "open",
@@ -4022,7 +4295,7 @@
           "polymerisation-balances",
           "fr38-terminal-inventories"
         ],
-        "result": "The largest residue residual across 183 rows was 3.39 × 10⁻²⁰ fmol. A one-stage chain retained zero residues in transit while releasing 6.55 × 10⁻⁵ fmol of residues alongside an eight-stage chain. The combined stage, hold and physical detachment balance closed within 8.94 × 10⁻²⁰ fmol across 62 compiled rows."
+        "result": "The largest residue residual across 183 observations was 3.39 × 10⁻²⁰ fmol. A one-stage chain retained zero residues in transit while releasing 6.55 × 10⁻⁵ fmol alongside an eight-stage chain. In the 62 neutral-label observations the combined stage, hold and detachment balance across both machine policies closed within 1.19 × 10⁻¹⁹ fmol."
       },
       "biology": {
         "status": "open",
@@ -4045,6 +4318,122 @@
       }
     },
     {
+      "id": "producer-replacement-rna",
+      "category": "molecular-assembly",
+      "title": "RNA keeps its producer label through export, cell replacement and return",
+      "statement": "For one producer label, combining the cell and outside-node balances cancels both directions of transport. Intracellular and extracellular degradation and the departure record each stay in the balance. The original producer’s stock in a new cell is at most cumulative gross return since replacement.",
+      "assumptions": [
+        "Each gross transfer carries the share of its source. A cell replacement books all departing intracellular stock and leaves the extracellular pool and its labels in place.",
+        "The new cell starts with zero of the old producer label. Its only source of that label after replacement is reverse transport. Gross amount returned and all other outflows are nonnegative and the source share is at most one.",
+        "The earlier no-export specialization assumes one producer per fate row over its lifetime. Generation counters use their birth offsets. Normalized shares split the departed material across labels."
+      ],
+      "uses": [
+        "release-window-survival",
+        "scheduled-cell-replacement"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.templated_polymerisation@1",
+          "cells.scheduled_cell_replacement@1",
+          "cells.neutral_arrival_labels@1"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.ProducerReplacement.at_birth": "lean/CellsProofs/Chemistry/ProducerReplacement.lean",
+          "CellsProofs.Chemistry.ProducerReplacement.generation_totals": "lean/CellsProofs/Chemistry/ProducerReplacement.lean",
+          "CellsProofs.Chemistry.ProducerReplacement.generation_balance": "lean/CellsProofs/Chemistry/ProducerReplacement.lean",
+          "CellsProofs.Chemistry.ProducerReplacement.disjoint_removals": "lean/CellsProofs/Chemistry/ProducerReplacement.lean",
+          "CellsProofs.Chemistry.ProducerReplacement.removal_total": "lean/CellsProofs/Chemistry/ProducerReplacement.lean",
+          "CellsProofs.Chemistry.ProducerReplacement.absent_at_removal": "lean/CellsProofs/Chemistry/ProducerReplacement.lean",
+          "CellsProofs.Chemistry.ProducerReplacement.cell_node_balance": "lean/CellsProofs/Chemistry/ProducerReplacement.lean",
+          "CellsProofs.Chemistry.ProducerReplacement.old_stock_le_returned": "lean/CellsProofs/Chemistry/ProducerReplacement.lean"
+        },
+        "sources": {
+          "Mathlib finite telescoping sum, specialized to generation counter increments": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Group/Finset/Basic.lean#L859-L864",
+          "Mathlib sum over a disjoint union, specialized to each label’s removal": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Group/Finset/Basic.lean#L113-L116",
+          "Mathlib multiplication distributed over a finite sum": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Ring/Finset.lean#L48-L52",
+          "Cells replacement and birth-counter definitions": "https://github.com/Eidosoma/Cells/blob/0a1c1b0dc8145c9c313c02a4ed57cfe5433b2efe/docs/TEMPLATED_POLYMERISATION_LAWS.md#L1483-L1515",
+          "Mathlib interchange of finite sums for summing removals across labels": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Group/Finset/Sigma.lean#L116-L119",
+          "Mathlib finite-sum induction for the cumulative return bound": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Group/Finset/Basic.lean#L501-L505"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "fr38-producer-export",
+          "fr38-producer-checkpoint",
+          "fr38-producer-public-admission"
+        ],
+        "result": "All 14 verdicts passed on public Cells at fd2bb88c. At the checkpoint, 1.0534 × 10⁻²⁶ fmol of founder RNA was inside the new cell after 1.1173 × 10⁻²⁶ fmol had returned. The combined durable RNA inventory closed within 6.01 × 10⁻²³ fmol. Exchanging two outside labels kept total RNA identical and misplaced 8.114 × 10⁻⁹ fmol. The reader detected it. The three standard retention outputs had finite bounds. Sparse-grid behavior is recorded separately."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Source-specific RNA measured before and after a change of producer, distinguishing removal from degradation and any RNA remaining outside the cell.",
+        "unit": "fmol or copy-equivalents by producer in Cells. Human plasma detection counts and donor miRNA copies per recipient cell in the studies.",
+        "finding": "Placental RNA can persist in plasma after delivery. In a separate cell preparation with donor cells absent, recipient cells genetically unable to produce the assayed RNA carried donor-derived molecules. The gross return rate across a cell replacement remains open.",
+        "evidence": [
+          {
+            "dataset_id": "ng-2003-postpartum-hpl",
+            "manifest": "lean/checks/data/ng2003_postpartum_rna.json",
+            "citation": "Ng et al. (2003), PNAS 100, 4748–4753",
+            "doi": "10.1073/pnas.0637450100",
+            "locator": "Figure 4C for two hours and Figure 4A for the separate 24-hour group, with the accompanying Results.",
+            "context": "Paired maternal plasma samples at term, one before delivery and one afterwards. The two-hour group had a median 24,499 hPL mRNA copies/mL before delivery.",
+            "role": "descriptive",
+            "uncertainty": "The Wilson 95% interval for the two-hour detection fraction, calculated from the published counts, is 12.7–57.6%. In the four detectable pairs, concentrations declined by approximately 66–97% from their own baselines.",
+            "assessment": "At two hours 4 of 13 women had detectable hPL RNA. A separate group had 0 of 8 detectable at 24 hours. The assay measures a source-specific population signal. A quantitative comparison needs matched transfer and clearance measurements.",
+            "report": "lean/PROGRESS.md#fr38-producer-replacement"
+          },
+          {
+            "dataset_id": "alexander-2015-donor-mir146a",
+            "manifest": "lean/checks/data/alexander2015_donor_rna.json",
+            "citation": "Alexander et al. (2015), Nature Communications 6, 7321",
+            "doi": "10.1038/ncomms8321",
+            "locator": "Figures 3c–l and 4i. Figure 3l gives the copy count.",
+            "context": "Native mouse miR-146a in recipient dendritic cell lysates 24 h after exposure to donor-derived extracellular vesicles. Donor cells were absent. Recipient cells lacked the assayed RNA gene. Vesicles from donor-null cells served as a control.",
+            "role": "descriptive",
+            "uncertainty": "Three replicates, with SD plotted. The numerical SD was not extracted. The copy count may include RNA bound to the cell surface.",
+            "assessment": "Recipients averaged about 370 donor copies per cell. A reporter supported functional intracellular access. The endpoint supports donor attribution and leaves the uptake rate and post-wash persistence unresolved.",
+            "report": "lean/PROGRESS.md#fr38-extracellular-producer"
+          }
+        ]
+      }
+    },
+    {
+      "id": "retention-grid-resolution",
+      "category": "molecular-assembly",
+      "title": "A retention estimate needs sampling during the export interval",
+      "statement": "Two equal positive pulses within an unsampled export interval give different retained amounts under positive first-order loss even when the cumulative export at both endpoints is identical.",
+      "assumptions": [
+        "Constant positive first-order loss, positive pulse amount and the observation after both possible pulse times. The synthetic reader control uses the same cumulative export series up to replacement on both grids."
+      ],
+      "uses": [
+        "producer-replacement-rna"
+      ],
+      "formal": {
+        "status": "proved",
+        "theorems": {
+          "CellsProofs.Chemistry.ProducerReplacement.earlier_pulse_retains_less": "lean/CellsProofs/Chemistry/ProducerReplacement.lean"
+        },
+        "sources": {
+          "Mathlib strict increase of the real exponential, applied to the two pulse times": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Data/Complex/Exponential.lean#L304"
+        }
+      },
+      "numerical": {
+        "status": "failed",
+        "comparisons": [
+          "fr38-retention-resolution"
+        ],
+        "result": "Public fd2bb88c handles the original sparse grid correctly. Adding only 3,300 and 3,600 s after the 3,000 s replacement produces a zero grid-error estimate at 4,800 s. The native reader then accepts a matching 1.707738-copy value with a 4.85 × 10⁻¹⁴-copy bound despite having no interior export sample. The regular 600 s fixture has several interior export samples."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Time-resolved export throughout the founder’s lifetime and measured loss in the receiving pool.",
+        "unit": "copy-equivalents at observation",
+        "evidence": []
+      }
+    },
+    {
       "id": "release-fate-export",
       "category": "molecular-assembly",
       "title": "A lossless release fate gains all its detached RNA",
@@ -4064,15 +4453,16 @@
         },
         "sources": {
           "Cells release updates, specialized locally as the exact single-fate balance": "https://github.com/Eidosoma/Cells/blob/fc07c545836b155928aeca3e9ba74528d6e3b66d/src/cells/operators/templated_polymerisation.py#L1331-L1353",
-          "Public reader’s required loss series": "https://github.com/Eidosoma/Cells/blob/fc07c545836b155928aeca3e9ba74528d6e3b66d/validation/gene_regulation/cohort.py#L289-L306"
+          "Public reader’s required loss series": "https://github.com/Eidosoma/Cells/blob/fc07c545836b155928aeca3e9ba74528d6e3b66d/validation/gene_regulation/cohort.py#L289-L306",
+          "Public zero-loss export for individual release fates": "https://github.com/Eidosoma/Cells/blob/947ff262c7fba53b53b32a7c44394e84be3fa897/validation/gene_regulation/engine_run.py#L284"
         }
       },
       "numerical": {
-        "status": "failed",
+        "status": "checked",
         "comparisons": [
           "fr38-lossless-fate-export"
         ],
-        "result": "Both fates gained 1.2776562362330652 × 10⁻¹⁰ fmol in each compiled world. The reader recovered three of four fate records. Omitting the short-lived fate’s degradation route removed int_D_R_s from the export. The reader refused the fourth record. Every physical amount balance closed."
+        "result": "The original compiled comparison recorded three readable fates out of four. After the public exporter repair, the reader recovered all four in the two labelled worlds. Each row gained 1.27765623623 × 10⁻¹⁰ fmol over ten seconds, including 7.66593665955 × 10⁻¹¹ fmol marked during [2, 8) s. The largest physical balance residual was below 3.44 × 10⁻²⁷ fmol."
       },
       "biology": {
         "status": "open",
@@ -5754,15 +6144,15 @@
         },
         "sources": {
           "Mathlib div_le_iff₀, specialized to the positive hazard": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/Order/GroupWithZero/Unbundled/Basic.lean#L1072",
-          "Cells inclusive threshold crossing": "https://github.com/Eidosoma/Cells/blob/f51a3b07d302fb177b166b1568155084ffb8e1c1/src/cells/models/assembly_lineages_v2/pore_clock.py#L5"
+          "Cells inclusive threshold crossing": "https://github.com/Eidosoma/Cells/blob/0a1c1b0dc8145c9c313c02a4ed57cfe5433b2efe/src/cells/models/assembly_lineages_v2/pore_clock.py#L82-L105"
         }
       },
       "numerical": {
-        "status": "failed",
+        "status": "checked",
         "comparisons": [
           "fr31-pore-hold-replay"
         ],
-        "result": "Both runners recorded rupture at 1.4042194113471334 s. The crossing falls 2.42288 × 10⁻¹⁷ s later for the same binary inputs. Both neighboring cutoffs and the exactly sufficient exposure control agree. Both ledgers close. The replay exits nonzero on the middle cut."
+        "result": "The original reproducer passed at all three adjacent cutoffs in both runners. At 1.4042194113471334 s the exact crossing is 2.42288 × 10⁻¹⁷ s later. Both runners kept the founder alive at that cutoff and the previous one, then recorded rupture at the following cutoff. The independent equality control ruptured at exactly sufficient exposure. Both ledgers closed. The recorded earlier failure is linked from the retest."
       },
       "biology": {
         "status": "open",
@@ -7531,6 +7921,89 @@
       }},
       "numerical": {"status": "checked", "comparisons": ["proton-leak"], "result": "Twelve compiled CPU cases agreed with the 70-digit flux reference within 1.55 × 10⁻²⁰ fmol/s. In a buffered tissue cell, using free H⁺ gave the observed inward rate of 3.31 × 10⁻⁶ fmol/s. Substituting total intracellular proton equivalents reversed the predicted direction."},
       "biology": {"status": "open", "observable": "Reversal voltage of an open H⁺ path across measured pH gradients at known temperature. Predicting the signed flux magnitude also requires permeability, area and opening.", "finding": "In Jurkat T cells the proton-current reversal shifted −47 mV per pH unit, versus an ideal −58 mV per pH unit. The fitted slope uncertainty and intracellular pH limit a quantitative verdict. [Schilling et al., Fig. 2E](https://doi.org/10.1113/jphysiol.2002.028878)", "unit": "mV at reversal, fmol/s for signed proton flux", "evidence": []}
+    },
+    {
+      "id": "buffered-proton-reversal",
+      "category": "membrane-transport",
+      "title": "The local free proton concentration at each buffered endpoint sets leak reversal",
+      "statement": "The general binding closure determines a unique free proton read at either endpoint when its equilibrium exists. At zero voltage and on the regular branch, the open leak reverses at (RT/F) times the outside-minus-inside difference in free log proton concentration. At fixed inside concentration and voltage, raising outside free H⁺ increases inward flux.",
+      "assumptions": [
+        "Positive absolute temperature and route scale, valence +1, inside-minus-outside voltage and a common concentration standard. Binder totals are nonnegative. Held ligand totals and unheld free ligands agree when comparing solutions at one endpoint.",
+        "The Bernoulli evaluator agrees with the analytic reversal at zero and for |FV/(RT)| ≥ 10⁻⁴. At small nonzero voltage the earlier two-branch proof gives the evaluator’s own reversal ratio.",
+        "For the mitoplast comparison, the solution pH is used as the free-proton activity proxy. The reference temperature is the 24 °C specified for the authors’ Nernst line."
+      ],
+      "uses": [
+        "proton-leak",
+        "binding-equilibrium-unique"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.proton_constant_field_leak@2"
+        ],
+        "theorems": {
+          "CellsProofs.Transport.BufferedProtonLeak.endpoint_read_unique": "lean/CellsProofs/Transport/BufferedProtonLeak.lean",
+          "CellsProofs.Transport.BufferedProtonLeak.reversal_from_free_logs": "lean/CellsProofs/Transport/BufferedProtonLeak.lean",
+          "CellsProofs.Transport.ProtonLeak.outside_change": "lean/CellsProofs/Transport/ProtonLeak.lean",
+          "CellsProofs.Transport.ProtonLeak.strictMono_outside": "lean/CellsProofs/Transport/ProtonLeak.lean"
+        },
+        "sources": {
+          "Cells held-ligand equilibrium uniqueness, specialized at the proton row": "lean/CellsProofs/Chemistry/BindingEquilibrium.lean#L96",
+          "Cells constant-field reversal, specialized with the two free logs": "lean/CellsProofs/Transport/ProtonLeak.lean#L112",
+          "Mathlib logarithm of the real exponential, imported": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/SpecialFunctions/Log/Basic.lean#L70"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "buffered-proton-reversal"
+        ],
+        "result": "Across three matrix/bath pH pairs and outside buffers of 1 and 100 mM, all six clamped reversals agreed with the independent Nernst calculation within 10⁻⁶ mV. The sign changed across every root. Substituting stored total proton equivalents gave nonzero flux at each free-proton reversal."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Measured voltage at zero proton current at controlled pH on each side, with a separate comparison for current magnitude under a buffer change.",
+        "unit": "mV, matrix minus bath",
+        "finding": "The three mitochondrial mean reversal voltages have the predicted directions. All three model values lie within the descriptive 95% Student t intervals for the corresponding means. The endpoint comparison leaves intact mitochondrial compartment pH and absolute leak current open.",
+        "evidence": [
+          {
+            "dataset_id": "bertholet-2019-proton-reversal",
+            "manifest": "lean/checks/data/bertholet2019_proton_reversal.json",
+            "citation": "Bertholet et al. (2019), Nature 571, 515–520",
+            "doi": "10.1038/s41586-019-1400-3",
+            "locator": "Extended Data Figure 3d and its source workbook.",
+            "context": "Fatty-acid-activated proton current in mouse skeletal muscle mitoplasts. Three matrix/bath pH pairs, 13 individual voltages. The group means are −62.23, −91.13 and +28.82 mV.",
+            "role": "descriptive",
+            "uncertainty": "Calculated sample SEMs are 1.92, 1.82 and 6.70 mV (n = 6, 3 and 4). The workbook gives individual readings and sample SD. Group intervals use the 95% Student t interval for independent observations. The figure specifies 24 °C for the Nernst reference.",
+            "assessment": "The unfitted Cells roots were −58.96, −88.44 and +29.48 mV. Each lies within its group interval. This retrospective check concerns reversal of the observed proton current. It supplies no absolute permeability calibration.",
+            "report": "lean/PROGRESS.md#mt1b-buffered-reversal"
+          },
+          {
+            "dataset_id": "decoursey-1996-external-buffer",
+            "manifest": "lean/checks/data/decoursey1996_proton_buffer.json",
+            "citation": "DeCoursey and Cherny (1996), Biophysical Journal 71, 182–193",
+            "doi": "10.1016/S0006-3495(96)79215-9",
+            "locator": "Whole-cell external-buffer comparison in the abstract.",
+            "context": "Voltage-gated proton current in rat alveolar epithelial cells as external buffer fell from 100 to 1 mM.",
+            "role": "descriptive",
+            "uncertainty": "The authors give a typical range for the amplitude change. An uncertainty for the reversal difference was unavailable.",
+            "assessment": "Reversal was unchanged and current typically fell 10–30%. The fixed-free-pH Cells clamp holds its amplitude at the common probe voltage. Buffer supply and channel behavior limit amplitude comparison across these preparations.",
+            "report": "lean/PROGRESS.md#mt1b-buffered-reversal"
+          },
+          {
+            "dataset_id": "cortese-1992-ims-ph",
+            "manifest": "lean/checks/data/cortese1992_ims_ph.json",
+            "citation": "Cortese et al. (1992), Biochimica et Biophysica Acta",
+            "doi": "10.1016/0005-2728(92)90081-C",
+            "locator": "Abstract, intermembrane-space pH relative to the medium.",
+            "context": "Soluble FITC-dextran in isolated rat liver mitochondria across the reported external pH range 6.0–8.5.",
+            "role": "descriptive",
+            "uncertainty": "The reported ranges span preparation conditions. Replicate uncertainty and matched respiratory states were unavailable.",
+            "assessment": "Intermembrane-space pH was 0.4–0.5 units lower in the condensed configuration and 0–0.2 lower in the orthodox configuration. This tests the choice of local compartment. Flux and reversal were not measured.",
+            "report": "lean/PROGRESS.md#mt1b-buffered-reversal"
+          }
+        ]
+      }
     },
     {
       "id": "atp-cycle",
