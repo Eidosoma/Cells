@@ -1,0 +1,333 @@
+{
+ "execution": {
+  "backend": "cpu",
+  "capacity": 1,
+  "channel_capacity": 0,
+  "dt": 0.005,
+  "edge_capacity": 0,
+  "extracellular_capacity": 1,
+  "face_capacity": 1,
+  "field_solver": "capacitive_reduction_gauged_damped_newton@2",
+  "jit": true,
+  "material_balance_atol_fmol": {
+   "A": 1e-20,
+   "B": 1e-20,
+   "C": 1e-20,
+   "Cl": 1e-10,
+   "K": 1e-10,
+   "Na": 1e-10,
+   "S": 1e-20
+  },
+  "max_steps": 8008,
+  "max_trace_bytes": 2147483648,
+  "membrane_capacity": 1,
+  "precision": "float64",
+  "solver": "imex_ars222_face_electromigration@1"
+ },
+ "experiment": {
+  "calcium_pump_controls": [],
+  "channel_controls": [],
+  "end_time": 40.0,
+  "junction_controls": [],
+  "membrane_controls": [
+   {
+    "membrane_id": "wall_cell_0",
+    "schedule": [
+     {
+      "availability": 1.0,
+      "time": 0.0
+     }
+    ]
+   }
+  ],
+  "observation_times": [
+   0.0,
+   0.5,
+   1.0,
+   1.5,
+   2.0,
+   2.5,
+   3.0,
+   3.5,
+   4.0,
+   4.5,
+   5.0,
+   5.5,
+   6.0,
+   6.5,
+   7.0,
+   7.5,
+   8.0,
+   8.5,
+   9.0,
+   9.5,
+   10.0,
+   10.5,
+   11.0,
+   11.5,
+   12.0,
+   12.5,
+   13.0,
+   13.5,
+   14.0,
+   14.5,
+   15.0,
+   15.5,
+   16.0,
+   16.5,
+   17.0,
+   17.5,
+   18.0,
+   18.5,
+   19.0,
+   19.5,
+   20.0,
+   20.5,
+   21.0,
+   21.5,
+   22.0,
+   22.5,
+   23.0,
+   23.5,
+   24.0,
+   24.5,
+   25.0,
+   25.5,
+   26.0,
+   26.5,
+   27.0,
+   27.5,
+   28.0,
+   28.5,
+   29.0,
+   29.5,
+   30.0,
+   30.5,
+   31.0,
+   31.5,
+   32.0,
+   32.5,
+   33.0,
+   33.5,
+   34.0,
+   34.5,
+   35.0,
+   35.5,
+   36.0,
+   36.5,
+   37.0,
+   37.5,
+   38.0,
+   38.5,
+   39.0,
+   39.5,
+   40.0
+  ],
+  "pump_controls": [],
+  "reaction_controls": [
+   {
+    "reaction_id": "bind",
+    "schedule": [
+     {
+      "multiplier": 1.0,
+      "time": 0.0
+     }
+    ],
+    "site": null
+   }
+  ],
+  "water_controls": [
+   {
+    "membrane_id": "wall_cell_0",
+    "schedule": [
+     {
+      "availability": 1.0,
+      "time": 0.0
+     }
+    ]
+   }
+  ]
+ },
+ "model": {
+  "cells": [
+   {
+    "fixed_charge_equivalent_fmol": -0.0,
+    "id": "cell_0",
+    "initial_amount_fmol": {
+     "A": 20.0,
+     "B": 20.0,
+     "C": 1e-06,
+     "Cl": 150.0,
+     "K": 5.0,
+     "Na": 145.0,
+     "S": 0.001
+    },
+    "initial_charge_C": 0.0,
+    "volume_pL": 1.0
+   }
+  ],
+  "channels": [],
+  "closure": {
+   "gauge_reference": null,
+   "law": "resolved_capacitor_components_current_continuity@1"
+  },
+  "extracellular": [
+   {
+    "boundary_potential_V": 0.0,
+    "fixed_charge_equivalent_fmol": -0.0,
+    "id": "bath",
+    "initial_amount_fmol": {
+     "A": 1e-09,
+     "B": 1e-09,
+     "C": 1e-09,
+     "Cl": 60.0,
+     "K": 2.0,
+     "Na": 58.0,
+     "S": 1e-09
+    },
+    "initial_charge_C": 0.0,
+    "reservoir": true,
+    "volume_pL": 1.0
+   }
+  ],
+  "faces": [],
+  "id": "resolved_pump_composite@1",
+  "inner_model": "resolved_pump_tissue@3",
+  "junctions": [],
+  "membranes": [
+   {
+    "area_m2": 1e-10,
+    "calcium_pump": null,
+    "capacitance_F": 1e-12,
+    "id": "wall_cell_0",
+    "inside": "cell_0",
+    "law": "constant_field@1",
+    "outside": "bath",
+    "permeability_m_per_s": {
+     "A": 0.0,
+     "B": 0.0,
+     "C": 0.0,
+     "Cl": 0.0,
+     "K": 0.0,
+     "Na": 0.0,
+     "S": 0.0
+    },
+    "pump": null
+   }
+  ],
+  "operators": [
+   {
+    "baths": [
+     {
+      "compartment_id": "bath",
+      "hydrostatic_pressure_Pa": 0.0
+     }
+    ],
+    "compartments": [
+     {
+      "bulk_modulus_Pa": 0.0,
+      "compartment_id": "cell_0",
+      "impermeant_amount_fmol": 0.0,
+      "maximum_volume_pL": 3.0,
+      "minimum_volume_pL": 0.5,
+      "pressure_offset_Pa": 0.0,
+      "reference_volume_pL": 1.0
+     }
+    ],
+    "law": "ideal_osmosis_linear_compliance_water@1",
+    "membranes": [
+     {
+      "hydraulic_permeability_m_per_Pa_s": 3.505357186551799e-12,
+      "membrane_id": "wall_cell_0"
+     }
+    ]
+   },
+   {
+    "law": "local_species_reactions@1",
+    "reactions": [
+     {
+      "factors": [],
+      "forward_rate_per_s": 0.05,
+      "id": "bind",
+      "law": "ideal_detailed_balance_mass_action@1",
+      "products": {
+       "C": 1
+      },
+      "reactants": {
+       "A": 1,
+       "B": 1
+      },
+      "sites": {
+       "cells": [
+        "cell_0"
+       ]
+      }
+     }
+    ],
+    "species": [
+     {
+      "catalogue": null,
+      "evidence": null,
+      "id": "A",
+      "moieties": {
+       "a": 1
+      },
+      "standard_mu_RT": 0.0
+     },
+     {
+      "catalogue": null,
+      "evidence": null,
+      "id": "B",
+      "moieties": {
+       "b": 1
+      },
+      "standard_mu_RT": 0.0
+     },
+     {
+      "catalogue": null,
+      "evidence": null,
+      "id": "C",
+      "moieties": {
+       "a": 1,
+       "b": 1
+      },
+      "standard_mu_RT": -1.0
+     }
+    ],
+    "standard_concentration_mM": 1.0
+   }
+  ],
+  "species": [
+   {
+    "id": "Na",
+    "valence": 1
+   },
+   {
+    "id": "K",
+    "valence": 1
+   },
+   {
+    "id": "Cl",
+    "valence": -1
+   },
+   {
+    "id": "S",
+    "valence": 0
+   },
+   {
+    "id": "A",
+    "valence": 0
+   },
+   {
+    "id": "B",
+    "valence": 0
+   },
+   {
+    "id": "C",
+    "valence": 0
+   }
+  ],
+  "temperature_K": 310.0
+ },
+ "schema_version": 1
+}
