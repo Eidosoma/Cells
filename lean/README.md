@@ -6,7 +6,7 @@ Browse Cells engine laws by scientific topic. Each claim links its Lean proofs, 
 
 <!-- generated: claims-index -->
 
-Direct Lean claims cover [54 of 55 laws](COVERAGE.md#registered-laws) and [33 of 33 operators](COVERAGE.md#registered-operators).
+Direct Lean claims cover [55 of 55 laws](COVERAGE.md#registered-laws) and [33 of 33 operators](COVERAGE.md#registered-operators).
 
 | Category | Registered laws with proof | Claims with proof | Numerical checks | Claims with biological evidence |
 | --- | ---: | ---: | --- | ---: |
@@ -14,21 +14,23 @@ Direct Lean claims cover [54 of 55 laws](COVERAGE.md#registered-laws) and [33 of
 | [Ion channels and junctions](COVERAGE.md#category-channels-and-junctions) | 15 of 15 | 15 of 15 | 15 checked | 14 |
 | [Pumps and cotransport](COVERAGE.md#category-pumps-and-cotransport) | 13 of 13 | 8 of 8 | 8 checked | 8 |
 | [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 3 of 3 | 16 of 16 | 15 checked · 1 failed | 12 |
-| [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 15 of 16 | 36 of 36 | 34 checked · 2 failed | 23 |
+| [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 16 of 16 | 37 of 37 | 35 checked · 2 failed | 24 |
 | [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 2 of 2 | 27 of 27 | 27 checked | 20 |
 | [Cell physiology](COVERAGE.md#category-cell-physiology) | — | 3 of 3 | 3 checked | 3 |
 
 <!-- /generated -->
 
-Each category opens its detailed claim table on GitHub, including registered laws still awaiting a proof. A single claim can cover several laws. The last column counts claims with a recorded measurement or literature finding, including partial evidence. Each numerical result applies to the cases in its linked record. [All registered laws](COVERAGE.md#registered-laws) · [Design notes](ENGINE_LAW_VERIFICATION.md) · [Voltage pilot closeout](../reports/BIO003_PILOT_CLOSEOUT.md)
+Each category opens its detailed claim table on GitHub. A covered law or operator has at least one directly proved property, with its assumptions listed on the claim page. The last column counts claims with a recorded measurement or literature finding, including partial evidence. Each numerical result applies to the cases in its linked record. [All registered laws](COVERAGE.md#registered-laws) · [Design notes](ENGINE_LAW_VERIFICATION.md) · [Voltage pilot closeout](../reports/BIO003_PILOT_CLOSEOUT.md)
 
 The generated table tracks numerical failures. The original reversible GARD v1 law can refuse an extreme catalyst ratio, and the rapid-binding solver can misclassify a ligand inventory at the limit of binary64 precision. An FR-38 validation control also found that later samples can mask an unresolved export interval. The public pore-clock cutoff and all four lossless RNA fate records now pass their earlier controls. [Current failures](COVERAGE.md#failing-numerical-checks) · [Export-grid control](PROGRESS.md#fr38-pre-replacement-resolution) · [Pore-clock retest](PROGRESS.md#fr31-pore-endpoint-repair) · [Lossless RNA retest](claims/release-fate-export.md)
 
 FR-42’s neutral arrival-time labels now have a proof and a compiled comparison. With constant loss and arrivals, every positive final amount up to the available supply determines a unique loss exponent. The label amounts sum to the physical pool. Enabling labels preserved all 42 shared history fields and 76 shared observations bit for bit in the tested tissue. With quadratic loss, the new cohort held 0.24999987 fmol at one second, against the exact ¼ fmol. [Finite-step proof and checks](claims/fr42-survival-exponent.md) · [Quadratic cohort and blank](claims/fr42-cohort-shares.md)
 
-FR-38 follows a producer’s RNA from template release through cell replacement. Its label follows RNA into the extracellular compartment and back. Lean bounds the old producer’s RNA inside a replacement cell by cumulative return. The public fixture passed all 14 checks, and the independent reader detected a label swap that conserved total RNA. [Release windows](claims/release-window-survival.md) · [Producer balance, restart and resolution check](PROGRESS.md#fr38-extracellular-producer)
+FR-38 follows a producer’s RNA from template release through cell replacement. Lean bounds the old producer’s RNA inside a replacement cell by cumulative return. The public development fixture passed all 14 checks. The independent registered comparison **failed R1** and found **R2 inconclusive**. [Producer balance and restart](PROGRESS.md#fr38-extracellular-producer) · [Registered verdict D313](https://github.com/Eidosoma/Cells/blob/81a98ca025ee662a0846aa13868dfc93fa87ea22/docs/DECISIONS.md#L9867)
 
 ## Biological evidence
+
+Deterministic assembly reactions reverse direction across equilibrium and dissipate free energy. Two measured enzyme time courses show opposite net conversion from opposite starting sugars. In a separate rabbit-muscle preparation the kinetic inputs gave a Cells stall ratio of 0.32, compared with a measured F6P/G6P ratio of 0.30. [Reaction proof, compiled checks and measurement limits](claims/rate-equation-flux.md)
 
 Mobile carriers can move a ligand even at zero net binder flux. Rabbit heart cells show faster acid arrival with carbonic buffer, and myoglobin increased initial oxygen flux across a polymer film. The Cells comparison follows free and bound ligand separately to both ends of a face. [Measurements, proof and compiled tissue comparison](claims/forms-face-carriage.md)
 

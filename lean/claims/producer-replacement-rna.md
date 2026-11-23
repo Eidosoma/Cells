@@ -31,7 +31,7 @@ Uses [Marked RNA is accounted for in both release fates, including after label r
 
 ## Numerical comparison
 
-**Checked.** All 14 verdicts passed on public Cells at fd2bb88c. At the checkpoint, 1.0534 × 10⁻²⁶ fmol of founder RNA was inside the new cell after 1.1173 × 10⁻²⁶ fmol had returned. The combined durable RNA inventory closed within 6.01 × 10⁻²³ fmol. Exchanging two outside labels kept total RNA identical and misplaced 8.114 × 10⁻⁹ fmol. The reader detected it. The three standard retention outputs had finite bounds. Sparse-grid behavior is recorded separately.
+**Checked.** All 14 development-fixture checks passed on public Cells at fd2bb88c. The separate registered FR-38 comparison failed R1 and found R2 inconclusive (D313). At the checkpoint, 1.0534 × 10⁻²⁶ fmol of founder RNA was inside the new cell after 1.1173 × 10⁻²⁶ fmol had returned. The combined durable RNA inventory closed within 6.01 × 10⁻²³ fmol. Exchanging two outside labels kept total RNA identical and misplaced 8.114 × 10⁻⁹ fmol. The reader detected it. The three standard retention outputs had finite bounds. Sparse-grid behavior is recorded separately.
 
 **Engine** `resolved_pump_composite@1`, `resolved_pump_tissue@3`
 

@@ -47,7 +47,7 @@
     "cells.proton_constant_field_leak@2": "src/cells/laws/transport/proton_leak_v2.py#L40",
     "cells.proton_coupled_atp_synthesis_cycle@1": "src/cells/laws/cycles/proton_coupled_atp_synthesis_cycle.py#L58",
     "cells.rapid_binding@1": "src/cells/laws/reactions/rapid_binding.py#L672",
-    "cells.rate_equations@1": "src/cells/models/assembly_lineages_v2/rate_equations.py#L181",
+    "cells.rate_equations@1": "src/cells/models/assembly_lineages_v2/rate_equations.py#L183",
     "cells.regular_mixing@1": "src/cells/models/assembly_lineages_v2/regular_mixing.py#L164",
     "cells.reservoir_exchange@1": "src/cells/models/assembly_lineages/exchange.py#L76",
     "cells.shared_pool@1": "src/cells/models/assembly_lineages_v2/population.py#L127",
