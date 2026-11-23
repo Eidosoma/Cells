@@ -6,10 +6,12 @@ recorded runs cite it. The logic is the same (rewrapped to the checkout's line l
 record's kind no longer names a branch; and the planner's admission estimate is information (below).
 
   quick_20s  each of the queue's 9 compare-*.json (the 20 s quick parts against the earlier dry
-             runs): identical, and its differences; FR-5's start may differ in `.extract_sha256`
-             only
-  windowed   FR-5's two arms over 10 s with the injury window at 2-6 s from START, against the
-             rehearsal's windowed-F/before-ARM.json: the header and the records compared leaf by
+             runs, renewed for D307 where their max_global_charge_bound_ratio fell:
+             fr_landing_holder.sh's F4 and F5): identical, and its differences; FR-5's start may
+             differ in `.extract_sha256` only
+  windowed   FR-5's two arms over 10 s with the injury window at 2-6 s from START, against
+             BEFORE_DIR/before-ARM.json (fr_landing_set.sh's BEFORE: the rehearsal's windowed-F,
+             renewed for D307): the header and the records compared leaf by
              leaf with the judge's own helpers, run times apart
              (compartment_ph_judge.without_run_times, regulated_availability_judge.differences,
              imported from the gated SNAPSHOT); bitwise when neither differs; completed and steps

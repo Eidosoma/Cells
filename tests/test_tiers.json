@@ -349,7 +349,8 @@
   "/mnt/workspaces/Cells/kinds-hook-20261122/measure-32657ff7/measured.json",
   "/mnt/workspaces/Cells/gene-regulation-20261120/fr38/step4/timed-c90f1f5c/measure/measured.json",
   "/mnt/workspaces/Cells/gene-regulation-20261120/fr38/step5/lead/measure90/measured.json",
-  "/mnt/workspaces/Cells/ol6-20261122/tiers-b74ffb39/measure/measured.json"
+  "/mnt/workspaces/Cells/ol6-20261122/tiers-b74ffb39/measure/measured.json",
+  "/mnt/workspaces/Cells/global-charge-bound-20261122/tiers-measured-2a8b2bd9/measured.json"
  ],
  "measured_provenance": [
   {
@@ -2969,6 +2970,14 @@
    "root": "/mnt/workspaces/Cells/ol6-20261122/snapshot-b74ffb39",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-22T22:22:35+00:00"
+  },
+  {
+   "git_revision": "2a8b2bd99cec4c5d84a1914fa5ad5b069ec87be8",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/global-charge-bound-20261122/snapshots/head-2a8b2bd9",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-22T23:57:14+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -3778,10 +3787,10 @@
    },
    {
     "file": "tests/unit/test_component_net_charge.py",
-    "seconds": 2.62,
+    "seconds": 13.81,
     "exit_code": 0,
     "counts": {
-     "passed": 8
+     "passed": 11
     }
    },
    {

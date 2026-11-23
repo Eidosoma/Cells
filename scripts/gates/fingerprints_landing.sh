@@ -22,7 +22,7 @@ REPO=${REPO%/.git}
 PY=${PY:-/mnt/workspaces/Cells/venv-cpu/bin/python}
 T=$G/fingerprints.py
 MAP=${MAP:-$H/scripts/moves/move2.json}
-G1=${G1:-/mnt/workspaces/Cells/core-pass-at3-20261118/fix-a/c1-b59e025c/merged}  # C1 renewed for fix (A) (D273), as gate.sh's.
+G1=${G1:-/mnt/workspaces/Cells/global-charge-bound-20261122/c1-605331c2/merged}  # C1 renewed for D305's fix (D307), as gate.sh's.
 GATE_CACHE=${GATE_CACHE-/mnt/workspaces/Cells/gate-cache}
 export JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICES= PYTHONDONTWRITEBYTECODE=1 JAX_ENABLE_X64=1
 mkdir -p "$O"
