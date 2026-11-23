@@ -52,7 +52,8 @@ H(τ) = a0 τ and fires at τ* = (E - H)/a0 exactly; any other locates the cross
 monotone H to rounding (BISECTION_STEPS). The pools move to the crossing, the event fires, and the
 rest of the half-step runs at the new counts, up to EVENT_CAP events per half-step, in a fixed
 trip of EVENT_CAP + 1 segments (masked no-ops once a site is done, so a batch's worlds run in step
-on a GPU; the bisection's trip is fixed too): a site that would need more refuses the step (never
+on a GPU; a trip with no site running is skipped on the scalar path; the bisection's trip is fixed
+too): a site that would need more refuses the step (never
 truncated), and the definition refuses dt a0,max > 1 where a0,max is bounded
 (check_hazard_bound). The time of an event is the operator's compensated clock at
 the half-step's start (Neumaier's sum of its h's) plus the offset inside it. The splitting against
@@ -886,9 +887,16 @@ def _run_stage(state, length, offset, member, p, *, view):
         state.integer_trace_node_fmol, jnp.zeros(n_sites, dtype=jnp.int64),
         jnp.ones(n_sites, dtype=bool), jnp.asarray(0),
     )  # fmt: skip
+
     # A fixed trip, EVENT_CAP events and the segment that finishes the stage, so every world of a
     # batch runs in step (GPU lockstep under vmap): a site done, or not running, is an exact no-op.
-    end = jax.lax.fori_loop(0, EVENT_CAP + 1, lambda _, carry: segment(carry), start)
+    # A trip in which no site of the world runs is skipped by lax.cond, which under vmap becomes a
+    # select (the lanes stay in step) and on the scalar path skips the trips after the last event.
+    def trip(_, carry):
+        running = jnp.any(live & carry[16] & (carry[0] < length))
+        return jax.lax.cond(running, segment, lambda unchanged: unchanged, carry)
+
+    end = jax.lax.fori_loop(0, EVENT_CAP + 1, trip, start)
     (done, counts, hz, thr, k, chan, _, _, moved, heat, mag, tt, tc, tcell, tnode, _, ok,
      _) = end  # fmt: skip
     ok = ok & ~(live & (done < length))  # A site the loop could not finish: refused (the cap).

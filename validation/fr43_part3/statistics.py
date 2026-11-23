@@ -110,8 +110,8 @@ def split_batch(f):
             rates={"assembly": 0.0, "disassembly": 0.0}, f=f, at=0.02, end=0.03, seed=1000 + seed,
             trace=0,
         )  # fmt: skip
-        entries.append(WorldSpec(seed, parse_spec(raw)))
-    result = run_batch(BatchSpec(tuple(entries), SEEDS, 8, 2**33))
+        entries.append(WorldSpec(seed + 1, parse_spec(raw)))  # World IDs start at 1.
+    result = run_batch(BatchSpec(tuple(entries), SEEDS, 4096, 2**33))  # Padded: steps x worlds.
     firsts, one_each, records = [], True, True
     for world in result.worlds.values():
         counts = np.asarray(world.history.integer_counts)[-1]
