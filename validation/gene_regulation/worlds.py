@@ -630,6 +630,62 @@ def r1s(machine, *, dt=R1_DT, symbols=None, labelled=True):
     return with_share_labels(raw, window=(0.0, switch), chain="tx") if labelled else raw
 
 
+# ------------------------------------------------------------------ the export (§9.17, FR-38)
+
+SPACE, EXPORT_PATCH = "space_0", "patch_export"  # The finite node and the patch into it.
+EXPORT_RATE = math.log(2) / 7200.0  # s^-1: k_E, an export half-life of 2 h (a development value).
+OUTSIDE_RATE = math.log(2) / 14400.0  # s^-1: k_o, a retention half-life of 4 h (likewise).
+# One NTP to NMP and 2 Pi per molecule exported (R1's rows: the NTP lump N; §9.17.2's coupling).
+EXPORT_COUPLING = {"N": -1, "M": 1, "Pi": 2}
+
+
+def with_export(raw, *, node=SPACE, cell=CELL, row="R", volume=1.0, k_E=EXPORT_RATE,
+                k_o=OUTSIDE_RATE, ident=None):  # fmt: skip
+    """raw with amendment T's export (§9.17.2): a finite extracellular node `node` of `volume` pL
+    (K+ and Y- at the bath's 140 mM, the listed rows at the trace) behind its own patch from
+    `cell`, with no permeability, and the operator's export of `row` across it, driven by one NTP
+    to NMP and 2 Pi (EXPORT_COUPLING, K the transcription's K_N), with `row`'s loss at the node,
+    its outside degradation, deg_R's law and cited dG with its monomers at the node. k_E and k_o
+    are development values, not the requester's. ident names the export and the loss (default
+    the row's)."""
+    out = copy.deepcopy(raw)
+    m, e, x = out["model"], out["experiment"], out["execution"]
+    block = next(o for o in m["operators"] if o["law"] == POLYMERISATION)
+    listed = [s["id"] for s in block["species"]]
+    patch = f"{EXPORT_PATCH}_{node}"
+    if all(n["id"] != node for n in m["extracellular"]):
+        amounts = {"K": BACKGROUND_mM * volume, "Y": BACKGROUND_mM * volume}
+        amounts |= {r: TRACE_mM * volume for r in listed}
+        m["extracellular"].append(
+            dict(id=node, volume_pL=volume, initial_amount_fmol=amounts,
+                 fixed_charge_equivalent_fmol=0.0, initial_charge_C=0.0, reservoir=False,
+                 boundary_potential_V=0.0)
+        )  # fmt: skip
+        x["extracellular_capacity"] = len(m["extracellular"])
+    m["membranes"].append(
+        dict(id=patch, inside=cell, outside=node, area_m2=AREA_M2,
+             capacitance_F=CAPACITANCE_F_PER_M2 * AREA_M2,
+             permeability_m_per_s={"K": 0.0, "Y": 0.0, **dict.fromkeys(listed, 0.0)},
+             law="constant_field@1", pump=None, calcium_pump=None)
+    )  # fmt: skip
+    x["membrane_capacity"] = len(m["membranes"])
+    e["membrane_controls"].append(dict(membrane_id=patch, schedule=_schedule([(0, 1)], "availability")))
+    name = ident or row
+    deg = next(d for d in block["degradations"] if d["polymer"] == row and d["cell"] == cell)
+    block.setdefault("exports", []).append(
+        dict(id=f"export_{name}", row=row, patch=patch, coupling=dict(EXPORT_COUPLING),
+             saturation_mM={"N": _f(sheet.A1, "K_N_tx")})
+    )  # fmt: skip
+    block.setdefault("outside_degradations", []).append(
+        dict(id=f"deg_{name}_{node}", node=node, polymer=row, residues=deg["residues"],
+             monomers=dict(deg["monomers"]), standard_free_energy=dict(deg["standard_free_energy"]))
+    )  # fmt: skip
+    controls = e["polymerisation_controls"]
+    controls.append(dict(route_id=f"export_{name}", schedule=_schedule([(0.0, k_E)], "value")))
+    controls.append(dict(route_id=f"deg_{name}_{node}", schedule=_schedule([(0.0, k_o)], "value")))
+    return out
+
+
 def release_names():
     """R1's runs (§9.9): the four fractions with each machine option, the matched blanks, and the
     release-window cohort's route 1 at p = 0.75, labelled by shares, which needs no blank

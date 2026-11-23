@@ -64,6 +64,8 @@ def controls(raw, declaration, only=None):
             [rate[r.id] if r.durable_fraction is None else r.durable_fraction for r in releases]
         ),
         polymerisation_release_class=np.ones(len(releases)),  # One class (D296).
+        polymerisation_export_rate=values(declaration.exports),  # Amendment T (§9.17).
+        polymerisation_outside_degradation_rate=values(declaration.outside_degradations),
     )
 
 
