@@ -159,6 +159,9 @@ class World:
     population: dict | None = None  # OL2 milestone 3: the shared pool's slots and founders.
     sites: tuple | None = None  # FR-21: declared ((site, complex), ...) pairs, or None.
     hazard: tuple | None = None  # FR-31: a vesicle hazard, (law ID, parsed data), or None.
+    # OL6 S7: cells.size_threshold_division@1's declaration (size_division.py), or None. It is
+    # declared in the world's division block, by law, and kept apart from `division` (shear's).
+    size_division: dict | None = None
 
     @property
     def place_names(self):

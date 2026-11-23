@@ -272,9 +272,9 @@ class AssemblyHazard(Law):
 @dataclass(frozen=True)
 class AssemblyOperator(FamilyOperator):
     """cells.assembly_operator@1: an operator acting on the family's lineages at scheduled events
-    (OL3: shear fission). Its fields are what a run record states of it, as @1's lineage
-    operators' are: what it reads and writes, its energy role, its rules, its streams and its
-    contract in words."""
+    (OL3: shear fission) or at a state's trigger (OL6 S7: the size-threshold division). Its fields
+    are what a run record states of it, as @1's lineage operators' are: what it reads and writes,
+    its energy role, its rules, its streams and its contract in words."""
 
     reads: str
     writes: str

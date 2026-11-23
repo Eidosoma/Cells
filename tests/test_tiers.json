@@ -364,7 +364,8 @@
   "/mnt/workspaces/Cells/kinds-hook-20261122/measure-833feaae/measured.json",
   "/mnt/workspaces/Cells/ol6-20261122/tiers-05d50605/measure/measured.json",
   "/mnt/workspaces/Cells/gap-junction-20261123/landing-refs-7e210906/tiers/measured.json",
-  "/mnt/workspaces/Cells/fr30-benchmark-20261123/harness/measure-99951bef/measured.json"
+  "/mnt/workspaces/Cells/fr30-benchmark-20261123/harness/measure-99951bef/measured.json",
+  "/mnt/workspaces/Cells/ol6-20261122/tiers-3101d47a/measure/measured.json"
  ],
  "measured_provenance": [
   {
@@ -3103,6 +3104,14 @@
    "root": ".claude/worktrees/fr30-revilla-harness",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-23T13:56:51+00:00"
+  },
+  {
+   "git_revision": "3101d47a2030cb2974c4b7fc6081cfc12cb2106e",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/ol6-20261122/snapshot-3101d47a",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-23T11:53:41+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -7038,6 +7047,14 @@
     "exit_code": 0,
     "counts": {
      "passed": 34
+    }
+   },
+   {
+    "file": "tests/unit/test_assembly_lineages_v2_size_division.py",
+    "seconds": 71.03,
+    "exit_code": 0,
+    "counts": {
+     "passed": 12
     }
    },
    {

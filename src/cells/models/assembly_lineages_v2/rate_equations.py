@@ -100,6 +100,7 @@ from cells.models.assembly_lineages_v2 import (
     POPULATION,
     PORE_NUCLEATION,
     RATE_EQUATIONS,
+    SIZE_THRESHOLD_DIVISION,
     geometry,
     kernel,
     lumen,
@@ -382,6 +383,12 @@ def refusals(world, experiment, execution):
     from cells.models.assembly_lineages_v2 import spec as spec_rules
 
     spec_rules._mode_refusals(world, execution.mode)
+    if world.size_division is not None:  # OL6 S7
+        raise ConfigError(
+            f"{RATE_EQUATIONS}: {SIZE_THRESHOLD_DIVISION} is refused in version 1: its trigger is "
+            "a count reaching a size, and the GARD limit's scale, its first use, lies outside the "
+            "envelope (the note's §6.8)"
+        )
     if world.hazard is not None or experiment.tension_holds:
         _pore_refusals(world, experiment.tension_holds)
     if world.geometry is not None and world.geometry[0] != BILAYER_GEOMETRY:

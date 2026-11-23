@@ -57,6 +57,7 @@ from cells.models.assembly_lineages_v2 import (
     IDEAL_MIXING,
     MASS_ACTION,
     MEMBRANE_PERMEATION,
+    MODE,
     MODEL_ID,
     MODES,
     PHASE_EXCHANGE,
@@ -66,6 +67,7 @@ from cells.models.assembly_lineages_v2 import (
     RATE_FACTOR_INTERFACE,
     REACTION_INTERFACE,
     SHELL_PERMEATION,
+    SIZE_THRESHOLD_DIVISION,
     streams,
 )
 from cells.models.assembly_lineages_v2 import conventions as conventions_rules
@@ -257,7 +259,13 @@ def parse_world(raw):
         _convention_refusals(probe)
         _geometry_refusals(probe)
         _osmotic_refusals(probe)
-    if "division" in raw:  # OL3 milestone 1: shear fission (division.py).
+    if "division" in raw and _sized(raw["division"]):  # OL6 S7 (size_division.py), by law
+        from cells.models.assembly_lineages_v2 import size_division
+
+        world = dataclasses.replace(
+            world, size_division=size_division.parse_data(raw["division"], world)
+        )
+    elif "division" in raw:  # OL3 milestone 1: shear fission (division.py).
         from cells.models.assembly_lineages_v2 import division as division_rules
 
         world = dataclasses.replace(
@@ -270,6 +278,11 @@ def parse_world(raw):
         law = _law(block["law"], HAZARD_INTERFACE, "hazard")
         world = dataclasses.replace(world, hazard=(law.law_id, law.parse_data(block, world)))
     return world
+
+
+def _sized(block):
+    """Whether a division block names cells.size_threshold_division@1 (OL6 S7)."""
+    return isinstance(block, dict) and block.get("law") == SIZE_THRESHOLD_DIVISION
 
 
 def _osmotic_refusals(world):
@@ -536,6 +549,10 @@ def world_to_dict(world):
         from cells.models.assembly_lineages_v2 import division as division_rules
 
         out["division"] = division_rules.data_to_dict(world.division)
+    if world.size_division is not None:  # OL6 S7
+        from cells.models.assembly_lineages_v2 import size_division
+
+        out["division"] = size_division.data_to_dict(world.size_division)
     if world.population is not None:
         from cells.models.assembly_lineages_v2 import population as population_rules
 
@@ -681,6 +698,10 @@ def parse(data):
     _mode_refusals(model.world, execution.mode)
     experiment = parse_experiment(raw["experiment"], model.world)
     _capacity_refusals(model.world, experiment, execution)
+    if model.world.size_division is not None:  # OL6 S7: its experiment's and execution's checks
+        from cells.models.assembly_lineages_v2 import size_division
+
+        size_division.cross_checks(model.world, experiment, execution)
     if model.world.hazard is not None or experiment.tension_holds:  # FR-31: the cross-checks
         from cells.models.assembly_lineages_v2 import tension_hold
 
@@ -791,6 +812,11 @@ def _mode_refusals(world, mode):
             )
         if mode != POPULATION and continuation is None:
             raise ConfigError("world: division: a single lineage declares its continuation")
+    if world.size_division is not None and mode != MODE:  # OL6 S7
+        raise ConfigError(
+            f"world: division ({SIZE_THRESHOLD_DIVISION}): a single lineage in version 1 (a "
+            "population's comes when a consumer needs it)"
+        )
 
 
 def stream_identity(spec):
