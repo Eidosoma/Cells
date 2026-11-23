@@ -16,7 +16,70 @@ const green = color("#50c6b3"),
 const helper = new T.Object3D(),
   p = new T.Vector3(),
   q = new T.Quaternion();
-const headColors = [green, lilac, color("#e6bd6d"), color("#91bbdc")];
+const headColors = [green, lilac, color("#70a8d3"), color("#e58c3e")];
+const FLIGHT_SECONDS = 0.85, FLIGHT_CAP = 72;
+const smooth = (x) => x * x * (3 - 2 * x);
+const identity = new T.Quaternion();
+const lean = new T.Quaternion();
+const motion = new T.Vector3(), normal = new T.Vector3(), tip = new T.Vector3();
+const inkFor = (run, species) => headColors[run.palette.indexOf(species) % headColors.length];
+const patchSite = new T.Vector3();
+function siteOf(i, j) {
+  const x = (i - 7.5 + (j % 2) * 0.45) * 0.3 + 0.028 * Math.sin(i + 13 * j);
+  const z = (j - 3) * 0.31 + 0.025 * Math.cos(3 * i + j);
+  return patchSite.set(x, 0.12 * Math.cos(x * 1.3) + 0.05 * z + 0.035 * Math.sin(i * 7 + j), z);
+}
+
+// Bend the same two leaflets, cut rim, water and solutes into a neck. This is a display morph
+// in world coordinates. Neither its onset nor its profile is a sample of membrane mechanics.
+function shearMaterial(material, uniforms) {
+  material.onBeforeCompile = (shader) => {
+    Object.assign(shader.uniforms, uniforms);
+    shader.vertexShader = 'uniform float pinch, parentRadius, birthRatio;\n' + shader.vertexShader.replace(
+      '#include <project_vertex>',
+      `#include <project_vertex>
+      if (pinch > 0.0) {
+        vec4 local = vec4(transformed, 1.);
+        #ifdef USE_INSTANCING
+          local = instanceMatrix * local;
+        #endif
+        vec3 pos = (modelMatrix * local).xyz;
+        #ifdef USE_INSTANCING
+          vec3 centre = (modelMatrix * instanceMatrix * vec4(0., 0., 0., 1.)).xyz;
+          vec3 offset = pos - centre;
+          pos = centre;
+        #endif
+        float u = clamp(pos.x / parentRadius, -1., 1.);
+        float a = max(abs(u), .001);
+        float curve = 2. * sqrt(a / (1. + a));
+        float width = mix(1., birthRatio * curve, pinch);
+        float lengthX = mix(1., 2. * birthRatio, pinch);
+        float slope = pinch * birthRatio * sign(u) / (parentRadius * sqrt(a) * pow(1. + a, 1.5));
+        vec3 shaped = vec3(pos.x * lengthX, pos.yz * width);
+        #ifdef USE_INSTANCING
+          // Carry each packed molecule rigidly along the bending surface.
+          vec3 oldN = normalize(pos + vec3(0., 1.e-8, 0.));
+          vec3 newN = normalize(vec3((oldN.x - dot(oldN.yz, pos.yz) * slope / width) / lengthX, oldN.yz / width));
+          vec3 turn = cross(oldN, newN);
+          float divisor = max(.001, 1. + dot(oldN, newN));
+          shaped += offset + cross(turn, offset) + cross(turn, cross(turn, offset)) / divisor;
+        #endif
+        #ifndef FLAT_SHADED
+          vec3 n = inverseTransformDirection(transformedNormal, viewMatrix);
+          #ifdef USE_INSTANCING
+          n += cross(turn, n) + cross(turn, cross(turn, n)) / divisor;
+          #else
+          n.x = (n.x - dot(n.yz, pos.yz) * slope / width) / lengthX;
+          n.yz /= width;
+          #endif
+          vNormal = transformDirection(normalize(n), viewMatrix);
+        #endif
+        mvPosition = viewMatrix * vec4(shaped, 1.);
+        gl_Position = projectionMatrix * mvPosition;
+      }`,
+    );
+  };
+}
 
 function batch(parent, geometry, material, capacity) {
   const m = new T.InstancedMesh(geometry, material, capacity);
@@ -174,7 +237,16 @@ export class VesicleScene {
     this.solutes = batch(this.whole, sphere(8), body("white"), 100);
     this.marks = this.lipids(this.coat, 2200);
     this.section = this.lipids(this.patch, 380);
-    this.flights = batch(this.root, sphere(12), body("#f2b65a", { emissive: 0x352010 }), 18);
+    this.flights = new T.Group();
+    this.root.add(this.flights);
+    this.flights.userData.unpickable = true;
+    this.travelLipids = this.lipids(this.flights, FLIGHT_CAP);
+    this.travelSolutes = batch(this.flights, new T.IcosahedronGeometry(1, 0), body("white"), FLIGHT_CAP);
+    this.arrows = batch(this.flights, new T.ConeGeometry(1, 1, 8), body("white"), FLIGHT_CAP);
+    this.streaks = batch(this.flights, new T.CylinderGeometry(1, 1, 1, 7), body("white"), FLIGHT_CAP);
+    this.contacts = batch(this.flights, new T.TorusGeometry(1, 0.06, 5, 28).rotateX(Math.PI / 2), body("white"), FLIGHT_CAP);
+    this.guide = batch(this.flights, sphere(6), body("white"), 13);
+    this.trackedPosition = new T.Vector3();
     this.cloud = batch(this.population, sphere(24), body("white"), 1);
     this.trail = batch(this.release, sphere(10), body("white"), 180);
     // A threshold tear leaves two illustrated bilayer fragments. A pore is drawn as a local aperture.
@@ -193,7 +265,13 @@ export class VesicleScene {
     this.makeLipids(this.lipids(this.fragments, broken.length), broken);
     this.rim = mesh(this.release, new T.TorusGeometry(1, 0.1, 14, 72), body("#f0a342"));
     this.rim.quaternion.setFromUnitVectors(new T.Vector3(0, 0, 1), cut);
-    this.daughter = mesh(this.root, sphere(32), body("#83c7b9", { transparent: true, opacity: 0.65 }));
+    this.shearUniforms = { pinch: { value: 0 }, parentRadius: { value: 1 }, birthRatio: { value: 1 } };
+    this.whole.traverse((o) => { if (o.material) shearMaterial(o.material, this.shearUniforms); });
+    this.daughter = new T.Group();
+    this.root.add(this.daughter);
+    this.sisterFilm = mesh(this.daughter, sphere(40), body("#528e89", { transparent: true, opacity: 0.6, depthWrite: false }));
+    this.sisterLipids = this.lipids(this.daughter, 270);
+    for (const m of Object.values(this.sisterLipids)) m.material.transparent = true;
     this.daughter.visible = false;
     this.coat.userData.pick = "vesicle:membrane";
     this.patch.userData.pick = "vesicle:membrane";
@@ -213,14 +291,119 @@ export class VesicleScene {
   makeLipids(marks, items) {
     items.forEach(({ at, normal, size, length, tint, spin }, i) => {
       q.setFromUnitVectors(axis, normal);
-      q.multiply(new T.Quaternion().setFromAxisAngle(axis, spin));
+      q.multiply(lean.setFromAxisAngle(axis, spin));
       put(marks.heads, i, at, q, size, size * 0.81, size, tint);
       put(marks.tails, i, at, q, size * 2.05, length, size * 2.05);
     });
     finish(marks.heads, items.length);
     finish(marks.tails, items.length);
   }
-  draw(state, run, level, layer, time, slot) {
+  drawDivision(run, split, radius) {
+    this.whole.position.set(0, 0, 0);
+    this.daughter.visible = false;
+    this.shearUniforms.pinch.value = 0;
+    if (!split || radius <= 0) return;
+    const { event, after, part } = split;
+    const birth = run.at(event.time).sample;
+    if (!birth?.membrane_footprint_quanta) return;
+    const birthRadius = 2.25 * Math.sqrt(birth.membrane_footprint_quanta / run.maxFoot);
+    if (!after) {
+      this.shearUniforms.parentRadius.value = radius;
+      this.shearUniforms.birthRatio.value = birthRadius / radius;
+      this.shearUniforms.pinch.value = smooth(part);
+      return;
+    }
+    // Only the continuing daughter has a measured footprint. The sister is a schematic at
+    // the same starting display scale. Its membrane colours and label use its own partition.
+    const sister = event.daughters[1 - event.followed], key = run.file.id + "/" + event.time;
+    if (this.sisterKey !== key) {
+      this.sisterKey = key;
+      const counts = run.membrane.map((p) => sister.counts[p.index]), total = counts.reduce((a,b) => a+b, 0);
+      const items = [];
+      for (let i = 0; i < 260 && total > 0; i++) {
+        const d = direction(i, 260);
+        let quota = ((i * 0.61803398875) % 1) * total, j = 0;
+        while (j + 1 < counts.length && quota >= counts[j]) quota -= counts[j++];
+        items.push({ at: d, normal: d, size: 0.092, length: 0.12, spin: i * phi, tint: inkFor(run, run.membrane[j].species) });
+      }
+      this.makeLipids(this.sisterLipids, items);
+    }
+    this.whole.position.x = -birthRadius * (1 - smooth(part));
+    this.daughter.visible = true;
+    this.daughter.position.set(birthRadius * (1 + 1.25 * smooth(part)), 0.26 * part, -0.43 * part);
+    this.daughter.scale.setScalar(birthRadius);
+    const opacity = 1 - smooth(Math.max(0, (part - 0.58) / 0.42));
+    this.sisterFilm.material.opacity = 0.6 * opacity;
+    for (const m of Object.values(this.sisterLipids)) m.material.opacity = opacity;
+  }
+  drawTraffic(run, state, time, rad, patch, route, reducedMotion) {
+    const since = state.event?.outcome === "split" ? state.event.time : -Infinity;
+    const transfers = run.traffic(time, FLIGHT_SECONDS, state.slot, route, since);
+    let lipids = 0, solutes = 0, contacts = 0, n = 0;
+    let guide = 0;
+    for (const move of transfers.slice(-FLIGHT_CAP)) {
+      const age = (time - move.time) / FLIGHT_SECONDS, f = reducedMotion ? 0.5 : smooth(age);
+      const lipid = move.from.phase === "membrane" || move.to.phase === "membrane";
+      const tint = inkFor(run, move.from.species), i = move.index + 1;
+      const lane = ((i * 0.61803398875) % 1) * 2 - 1, depth = (i * 0.754877666) % 1;
+      const bend = (lipid ? 0.16 : 0.27) * Math.sin(i * 7.13), arc = 4 * f * (1 - f);
+      if (patch) {
+        const {x, y: surface, z} = siteOf(Math.min(15, Math.floor((lane + 1) * 8)), 6);
+        const y = { pool: surface + 1.83, membrane: surface + 0.48, lumen: surface - 1.74 };
+        const dy = y[move.to.phase] - y[move.from.phase];
+        p.set(x + bend * arc, y[move.from.phase] + dy * f, z + (lipid ? 0 : 0.28));
+        normal.set(0, 1, 0);
+        motion.set(4 * bend * (1 - 2 * f), dy, 0).normalize();
+        const face = p.y >= surface ? 0.48 : -0.48;
+        const proximity = 1 - Math.abs(p.y - surface - face) / 0.55;
+        if (proximity > 0) {
+          tip.set(x, surface + face + Math.sign(face) * 0.07, p.z);
+          put(this.contacts, contacts++, tip, identity, 0.17 + 0.11 * proximity, 0.15, 0.17 + 0.11 * proximity, tint);
+        }
+        if (move === transfers.at(-1) && (route || transfers.length <= 3)) {
+          this.trackedMove = move;
+          this.trackedPosition.copy(p);
+          for (let j = 0; route && j < this.guide.instanceMatrix.count; j++) {
+            const along = j / (this.guide.instanceMatrix.count - 1);
+            tip.set(x + 4 * bend * along * (1 - along), y[move.from.phase] + dy * along, p.z);
+            put(this.guide, guide++, tip, identity, 0.025, 0.025, 0.025, tint);
+          }
+        }
+      } else {
+        if (lipid) normal.set(lane, (depth - 0.5) * 1.85, 0.47 + depth * 0.32).normalize();
+        else normal.copy(cut).addScaledVector(axis, lane * 0.5).addScaledVector(tip.set(0,0,1), depth * 0.45).normalize();
+        const r = { pool: rad + 1.05, membrane: rad, lumen: rad * 0.40 }, dr = r[move.to.phase] - r[move.from.phase];
+        p.copy(normal).multiplyScalar(r[move.from.phase] + dr * f).add(this.whole.position);
+        const pinch = this.shearUniforms.pinch.value;
+        if (pinch > 0) {
+          const a = Math.max(0.001, Math.abs(normal.x)), ratio = this.shearUniforms.birthRatio.value;
+          p.x += normal.x * rad * pinch * (2 * ratio - 1);
+          const adjust = rad * pinch * (2 * ratio * Math.sqrt(a / (1 + a)) - 1);
+          p.y += normal.y * adjust;
+          p.z += normal.z * adjust;
+        }
+        p.y += bend * arc;
+        motion.copy(normal).multiplyScalar(dr); motion.y += 4 * bend * (1 - 2 * f); motion.normalize();
+      }
+      const size = patch ? 0.14 : 0.09;
+      if (lipid) {
+        q.setFromUnitVectors(axis, normal).multiply(lean.setFromAxisAngle(axis, i * phi));
+        const aspect = run.membrane.findIndex((place) => place.species === move.from.species) % 2 ? 1.35 : 1;
+        put(this.travelLipids.heads, lipids, p, q, size * aspect, size * 0.84, size / aspect, tint);
+        put(this.travelLipids.tails, lipids++, p, q, size * 1.45, size * 2.0, size * 1.45);
+      } else put(this.travelSolutes, solutes++, p, identity, size, size, size, tint);
+      q.setFromUnitVectors(axis, motion);
+      tip.copy(p).addScaledVector(motion, -size * 2.65);
+      put(this.streaks, n, tip, q, size * 0.13, size * 2.4, size * 0.13, tint);
+      tip.copy(p).addScaledVector(motion, -size * 1.39);
+      put(this.arrows, n++, tip, q, size * 0.48, size * 0.96, size * 0.48, tint);
+    }
+    finish(this.travelLipids.heads, lipids); finish(this.travelLipids.tails, lipids);
+    finish(this.travelSolutes, solutes); finish(this.arrows, n); finish(this.streaks, n);
+    finish(this.contacts, contacts);
+    finish(this.guide, guide);
+  }
+  draw(state, run, level, layer, time, slot, route = null, reducedMotion = false) {
     const sample = state.sample,
       e = state.event;
     const ended = e?.cause && (!run.pop || e.slot === slot) && !sample?.membrane_footprint_quanta;
@@ -230,8 +413,8 @@ export class VesicleScene {
     this.population.visible = population;
     this.patch.visible = level === "membrane";
     this.molecule.visible = level === "molecule";
-    this.daughter.visible = false;
-    this.flights.visible = this.whole.visible;
+    this.flights.visible = Boolean((this.whole.visible || this.patch.visible) && sample?.membrane_footprint_quanta && !ended);
+    this.trackedMove = null;
     const rad = 2.25 * Math.sqrt((sample?.membrane_footprint_quanta || 0) / (run.maxFoot || 1));
     const tension = state.hold?.sigma_N_per_m ?? sample?.tension_N_per_m ?? 0;
     const shade =
@@ -245,7 +428,7 @@ export class VesicleScene {
       let n = ((i * 0.61803398875) % 1) * total;
       for (let j = 0; j < composition.length; j++) {
         n -= composition[j];
-        if (n < 0) return headColors[j % headColors.length];
+        if (n < 0) return inkFor(run, run.membrane[j].species);
       }
       return green;
     };
@@ -284,11 +467,11 @@ export class VesicleScene {
         for (const [j, place] of run.lumen.entries()) {
           const count = state.counts[place.index] || 0;
           if (!count) continue;
-          for (let k = 0; k < Math.min(32, count); k++) {
-            const pos = direction(k + j * 32, 80).multiplyScalar(
+          for (let k = 0; k < Math.min(32, count) && dots < this.solutes.instanceMatrix.count; k++) {
+            const pos = direction(k, 32).applyAxisAngle(axis, j * phi).multiplyScalar(
               lumenScale * 0.82 * Math.cbrt((((k * 0.754877 + j * 0.21) % 1) + 0.02) / 1.02),
             );
-            put(this.solutes, dots++, pos, new T.Quaternion(), 0.031, 0.031, 0.031, headColors[(j + 1) % 4]);
+            put(this.solutes, dots++, pos, identity, 0.031, 0.031, 0.031, inkFor(run, place.species));
           }
         }
         finish(this.solutes, dots);
@@ -297,9 +480,7 @@ export class VesicleScene {
         const items = [];
         for (let j = 0; j < 7; j++)
           for (let i = 0; i < 16; i++) {
-            const x = (i - 7.5 + (j % 2) * 0.45) * 0.3 + 0.028 * Math.sin(i + 13 * j),
-              z = (j - 3) * 0.31 + 0.025 * Math.cos(3 * i + j),
-              y = 0.12 * Math.cos(x * 1.3) + 0.05 * z + 0.035 * Math.sin(i * 7 + j);
+            const {x, y, z} = siteOf(i, j);
             for (const sign of [-1, 1])
               items.push({
                 at: new T.Vector3(x, y + sign * 0.48, z),
@@ -316,26 +497,9 @@ export class VesicleScene {
       }
     }
     this.coat.scale.setScalar(rad);
-    if (this.whole.visible) {
-      let n = 0;
-      for (let j = state.n - 1; j >= 0 && time - run.file.trace.time[j] < 0.36 && n < 18; j--) {
-        const age = (time - run.file.trace.time[j]) / 0.36;
-        for (const transfer of run.movements(run.channels.get(run.file.trace.channel[j]))) {
-          if (n >= 18) break;
-          const rs = { pool: rad + 1.05, membrane: rad, lumen: rad * 0.45 };
-          const d = direction((j * 37) % 193, 193);
-          p.copy(d).multiplyScalar(rs[transfer.from.phase] * (1 - age) + rs[transfer.to.phase] * age);
-          put(this.flights, n++, p, new T.Quaternion(), 0.07);
-        }
-      }
-      finish(this.flights, n);
-      if (e?.outcome === "split" && time - e.time < 1.4) {
-        this.daughter.visible = true;
-        this.daughter.position.set(1.85 + (time - e.time) * 0.4, 0.3, -0.45);
-        // This daughter has counts but no separately sampled footprint or lumen.
-        this.daughter.scale.setScalar(0.42);
-      }
-    }
+    const split = this.whole.visible ? run.divisionAt(time) : null;
+    this.drawDivision(run, reducedMotion ? (split?.after ? { ...split, part: 0.38 } : null) : split, rad);
+    if (this.flights.visible) this.drawTraffic(run, state, time, rad, this.patch.visible, route, reducedMotion);
     if (this.release.visible) {
       this.fragments.visible = e.cause === "threshold";
       this.rim.visible = e.cause === "pore";

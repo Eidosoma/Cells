@@ -11,7 +11,7 @@ export function through(times, t) {
 }
 
 export class VesicleRun {
-  constructor(file) {
+  constructor(file, palette = null) {
     if (file?.format !== "cells.visualizer.assembly_run@2" || file.time?.unit !== "s" || !file.rows?.length)
       throw new Error("This vesicle replay needs saved rows and a clock in seconds.");
     this.file = file;
@@ -20,6 +20,28 @@ export class VesicleRun {
     this.places = file.places;
     this.membrane = this.places.filter((p) => p.phase === "membrane");
     this.lumen = this.places.filter((p) => p.phase === "lumen");
+    this.species = [...new Set([...this.membrane, ...this.lumen, ...this.places].map((p) => p.species))];
+    this.palette = palette || this.species;
+    this.transfers = [];
+    this.routes = new Map();
+    const trace = file.trace;
+    const moves = new Map(file.channels.map((ch) => [ch.event_channel, this.movements(ch)]));
+    trace.channel.forEach((code, index) => {
+      for (const movement of moves.get(code)) {
+        // In a population, group 0 belongs to the shared pool. Vesicle groups start at 1.
+        const slot = this.pop ? trace.group[index] - 1 : 0;
+        if (slot < 0) continue;
+        const { from, to } = movement;
+        const key = [slot, from.index, to.index].join("/");
+        if (!this.routes.has(key)) this.routes.set(key, { key, slot, from, to, times: [], count: 0 });
+        const route = this.routes.get(key);
+        route.times.push(trace.time[index]);
+        route.count += movement.n;
+        this.transfers.push({ ...movement, key, slot, index, time: trace.time[index] });
+      }
+    });
+    this.transferTimes = this.transfers.map((move) => move.time);
+    this.exchangedSpecies = [...new Set(this.transfers.map((m) => m.from.species))];
     this.rows = [];
     let slots = [];
     for (const row of file.rows) {
@@ -78,14 +100,34 @@ export class VesicleRun {
   survivors(t) {
     return this.founders - through(this.ruptureTimes, t);
   }
+  // Flight time and the shear window are display choices. The recorded instants and states never move.
+  traffic(t, duration, slot, route, since = -Infinity) {
+    const start = through(this.transferTimes, t - duration), end = through(this.transferTimes, t);
+    return this.transfers.slice(start, end).filter((m) => m.slot === slot && (!route || route === m.key) && m.time >= since);
+  }
+  divisionAt(t) {
+    if (this.pop) return null;
+    const i = through(this.eventTimes, t), last = this.events[i - 1], next = this.events[i];
+    if (last?.outcome === "split" && last.daughters.length === 2) {
+      const span = Math.min(1.8, ((next?.time ?? Infinity) - last.time) / 2);
+      if (span > 0 && t - last.time < span) return { event: last, after: true, part: (t - last.time) / span };
+    }
+    if (next?.outcome === "split" && next.daughters.length === 2) {
+      const span = Math.min(1.25, (next.time - (last?.time ?? this.start)) / 2);
+      if (span > 0 && t >= next.time - span) return { event: next, after: false, part: 1 - (next.time - t) / span };
+    }
+    return null;
+  }
   at(t, slot = 0, rowIndex = null) {
     const i = rowIndex ?? Math.max(0, through(this.rowTimes, t) - 1);
     const row = this.rows[i],
       sample = row.slots[slot];
     const trace = this.file.trace,
-      n = through(trace.time, t);
+      n = rowIndex === null ? through(trace.time, t) : row.event;
     const e = rowIndex === null ? this.events[this.eventsBy(t) - 1] || null : null;
     const hold = this.file.holds.find((h) => t >= h.start_s && t < h.end_s);
+    let lastIndex = n - 1;
+    if (this.pop) while (lastIndex >= 0 && trace.group[lastIndex] !== slot + 1) lastIndex--;
     const state = {
       row,
       sample,
@@ -94,7 +136,8 @@ export class VesicleRun {
       event: e,
       hold,
       counts: sample?.counts || [],
-      lastChannel: n ? this.channels.get(trace.channel[n - 1]) : null,
+      lastIndex,
+      lastChannel: lastIndex >= 0 ? this.channels.get(trace.channel[lastIndex]) : null,
     };
     if (sample && n > row.event) {
       state.counts = [...sample.counts];
@@ -109,16 +152,28 @@ export class VesicleRun {
     }
     return state;
   }
-  // Only transfers between two places of the same species are depicted as a moving molecule.
+  // A place can appear on both sides as a spectator. Only a conserved species with an
+  // unambiguous source and destination is evidence for a trajectory.
   movements(channel) {
     if (!channel) return [];
-    const out = [];
-    for (const [from, n] of channel.reactants)
-      for (const [to, m] of channel.products) {
-        const a = this.places[from],
-          b = this.places[to];
-        if (a.species === b.species && a.phase !== b.phase) out.push({ from: a, to: b, n: Math.min(n, m) });
+    const changes = new Map();
+    for (const [side, sign] of [[channel.reactants, -1], [channel.products, 1]]) {
+      for (const [index, amount] of side) {
+        const place = this.places[index];
+        if (!changes.has(place.species)) changes.set(place.species, new Map());
+        const net = changes.get(place.species);
+        net.set(place, (net.get(place) || 0) + sign * amount);
       }
+    }
+    const out = [];
+    for (const net of changes.values()) {
+      const sources = [...net].filter(([, n]) => n < 0), sinks = [...net].filter(([, n]) => n > 0);
+      if (!sources.length || !sinks.length || (sources.length > 1 && sinks.length > 1)) continue;
+      if ([...net.values()].reduce((a, b) => a + b, 0) !== 0) continue;
+      for (const [from, lost] of sources)
+        for (const [to, gained] of sinks)
+          if (from.phase !== to.phase) out.push({ from, to, n: Math.min(-lost, gained) });
+    }
     return out;
   }
 }

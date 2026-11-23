@@ -297,6 +297,11 @@ try {
       await evaluate(`${V}.shadowRoot.querySelector(".view-toggle").click()`);
     }
     await lookAt("life");
+    await evaluate(`${L}.seek(4.78)`);
+    check("the illustrated neck narrows before the recorded split while the parent keeps its contents",
+      await evaluate(`${L}.scene.shearUniforms.pinch.value > 0.7 && !${L}.scene.daughter.visible && ${L}.run.at(4.78).counts[2] > 400`));
+    await lookAt("neck");
+    await evaluate(`${L}.seek(0)`);
     await evaluate(`${L}.player.play()`);
     check("the clock advances in recorded seconds", await until(`0 < ${L}.player.time && ${L}.player.time < 2`, 12));
     await evaluate(`${L}.seek(0)`);
@@ -312,7 +317,21 @@ try {
       await evaluate(`${L}.player.time===5 && ${L}.eventRead.textContent.includes("continues") && ${L}.scene.daughter.visible`),
     );
     await lookAt("split");
-    await select("Replay", `${L}.entries.find(e=>e.run.file.releases.some(r=>r.cause==="threshold")).run.file.id`);
+    await evaluate(`${L}.seek(5.65)`);
+    check("both labelled daughters separate and the sister has a packed membrane", await evaluate(
+      `${L}.scene.daughter.position.x>0 && ${L}.scene.whole.position.x<0 && ${L}.scene.sisterLipids.heads.count>100 && ${L}.tags.shell.text.includes("continues")`));
+    if (PHONE) check("the phone frames both daughter silhouettes", await evaluate(`(() => {
+      const l=${L}, a=l.scene.whole.position.clone(), b=l.scene.daughter.position.clone();
+      a.x-=l.scene.coat.scale.x; b.x+=l.scene.daughter.scale.x;
+      return a.project(l.stage.camera).x>=-1 && b.project(l.stage.camera).x<=1;
+    })()`));
+    await lookAt("daughters");
+    await evaluate(`${L}.seek(15)`);
+    check("a refused shear retains one parent", await evaluate(`!${L}.scene.daughter.visible && ${L}.scene.shearUniforms.pinch.value===0`));
+    await evaluate(`[...${V}.shadowRoot.querySelectorAll(".v-boundary button")].find(b=>b.textContent.includes("at the membrane")).click()`);
+    check("the membrane shortcut opens the multispecies run at an actual inward solute transfer", await until(
+      `${L}.level==="membrane" && ${L}.scene.trackedMove?.to.phase==="lumen" && ${L}.scene.trackedMove.from.species==="G"`));
+    await evaluate(`${L}.goToScale("vesicle")`);
     await select("Colour by", '"tension"');
     await evaluate(`[...${V}.shadowRoot.querySelectorAll(".v-boundary button")].find(b=>b.textContent==="Last intact state").click()`);
     check(
@@ -339,6 +358,16 @@ try {
         `${L}.scene.patch.visible && ${L}.scene.section.heads.count>100 && ${L}.scene.section.tails.count===${L}.scene.section.heads.count`,
       ),
     );
+    check("the released vesicle has no ongoing crossings", await evaluate(`!${L}.scene.flights.visible`));
+    await select("Exchange route", `[...${L}.run.routes.values()].find(r=>r.from.phase==="pool" && r.to.phase==="lumen").key`);
+    check("selecting inward G jumps to its recorded event and draws a solute in the membrane section",
+      await evaluate(`${L}.routeTimes.includes(${L}.player.time) && ${L}.scene.travelSolutes.count===1 && ${L}.scene.travelLipids.heads.count===0`));
+    await evaluate(`${L}.seek(${L}.player.time+0.41)`);
+    await lookAt("permeation");
+    await select("Exchange route", `[...${L}.run.routes.values()].find(r=>r.to.species==="L2" && r.to.phase==="pool").key`);
+    check("the rare outward L2 event has a lipid head and tails and an outward arrow", await evaluate(
+      `${L}.scene.travelLipids.heads.count===1 && ${L}.scene.travelLipids.tails.count===1 && ${L}.scene.arrows.count===1 && ${L}.eventRead.textContent.includes("membrane → pool")`));
+    await evaluate(`${L}.seek(${L}.player.time+0.4)`);
     await lookAt("membrane");
     await evaluate(`${L}.goToScale("molecule")`);
     check(
@@ -346,6 +375,15 @@ try {
       await evaluate(`${L}.scene.molecule.visible && ${V}.shadowRoot.querySelector("#cells-view").textContent.includes("wwPDB")`),
     );
     await lookAt("molecule");
+    await evaluate(`${V}.shadowRoot.querySelector(".v-catalysis a").click()`);
+    check("the catalysis link opens GARD's separate assembly and recorded world", await until(
+      `${L}?.id==="origin" && ${L}.level==="assembly" && !${L}.mainRun.example && ${L}.sides[0].network.links.count>0`, 160));
+    await evaluate(`${L}.player.pause();${V}.shadowRoot.querySelector(".origin-strengths").open=true`);
+    check("the ranked links and the picked interior arrow give the same directed table coefficient", await until(
+      `(() => {const l=${L},n=l.sides[0].network,k=n.linkIds[0],v=n.drawn[0].links[0]?.v;return k && l.describe(k).facts.some(([name,x])=>name==="Recorded log₁₀ β"&&x===v.toFixed(2)) && l.networkRows.textContent.includes(v.toFixed(2));})()`));
+    await evaluate(`${L}.networkRows.querySelector("button").click()`);
+    check("choosing a strength opens its coefficient and holds the assembly clock", await until(
+      `${L}.selected?.startsWith("assembly:entry:") && !${L}.player.playing && ${V}.shadowRoot.querySelector("cells-panel")?.textContent.includes("Recorded log₁₀ β")`));
   } else if (CASE === "main" || CASE === "phone") {
     // ---------------------------------------------------------- the view in the first tab's place, playing the marked example
     check("entry=gard opens the origin-of-life view in the first tab's place", await open("entry=gard"));

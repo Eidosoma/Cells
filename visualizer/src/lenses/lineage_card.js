@@ -164,7 +164,7 @@ export function describe(lens, id) {
         eyebrow: "An entry of the table of catalysis",
         kind: "catalysis",
         plain: `How much a molecule of ${typeName(lens, j)} in the assembly speeds the joining and the leaving of ${typeName(lens, i)}.`,
-        facts: [["Factor", formatFactor(lens.mainEnvironment.catalysis(i, j))], ["Read as", `${lens.mainEnvironment.raw.catalysis.encoding}, from the run's environment`]],
+        facts: [["Factor", formatFactor(lens.mainEnvironment.catalysis(i, j))], ["Recorded log₁₀ β", lens.mainEnvironment.catalysis(i, j).toFixed(2)], ["Read as", `${lens.mainEnvironment.raw.catalysis.encoding}, from the run's environment`]],
       };
     }
     case "threshold": {
@@ -193,7 +193,7 @@ export function describe(lens, id) {
   }
 }
 
-function formatFactor(log10) {
+export function formatFactor(log10) {
   const value = 10 ** log10;
   if (value >= 100) return Math.round(value).toLocaleString("en-US");
   if (value >= 1) return value.toPrecision(3);

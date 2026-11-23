@@ -4,7 +4,7 @@ import { h, svg } from "../ui/dom.js";
 import { registerEntryView } from "../ui/entry_views.js";
 import { Water } from "./lipid_water.js";
 import { VesicleScene } from "./vesicle_scene.js";
-import { VesicleRun } from "./vesicle_run.js";
+import { VesicleRun, through } from "./vesicle_run.js";
 
 const levels = [
   ["vesicle", "Vesicle"],
@@ -112,12 +112,15 @@ function placeList(run, counts, phase) {
     .join(" · ");
 }
 export class VesicleLens {
-  constructor(stage, labels, entries, autoplay) {
+  constructor(stage, labels, entries, autoplay, catalysisEntry = null) {
     this.stage = stage;
     this.labels = labels;
+    this.catalysisEntry = catalysisEntry;
     this.id = "vesicle";
     this.wantsLeftRoom = true;
-    this.entries = entries.map((item) => ({ label: item.label, run: new VesicleRun(item.data) }));
+    const palette = [...new Set(["membrane", "lumen", "pool"].flatMap((phase) =>
+      entries.flatMap((item) => item.data.places.filter((p) => p.phase === phase).map((p) => p.species))))];
+    this.entries = entries.map((item) => ({ label: item.label, run: new VesicleRun(item.data, palette) }));
     if (!this.entries.length) throw Error("The vesicle view needs a saved development run.");
     this.scene = new VesicleScene();
     this.root = this.scene.root;
@@ -176,7 +179,7 @@ export class VesicleLens {
       mol = this.level === "molecule";
     this.stage.rig.setView({
       target: new T.Vector3(),
-      distance: (mol ? 10.9 : patch ? 9.5 : 9.3) * (narrow ? 1.48 : 1),
+      distance: mol || patch ? (mol ? 10.9 : 9.5) * (narrow ? 1.48 : 1) : narrow ? 20.5 : 11.2,
       azimuth: mol ? 0.02 : patch ? 0.51 : 0.26,
       polar: mol ? 1.3 : patch ? 1.22 : 1.23,
     });
@@ -192,15 +195,17 @@ export class VesicleLens {
     this.names();
     this.refresh();
   }
-  setRun(id) {
+  setRun(id, level = "vesicle") {
     const next = this.entries.find((e) => e.run.file.id === id)?.run;
     if (!next) return;
     const playing = this.player.playing;
     this.run = next;
     this.plot = null;
+    this.route = null;
+    this.inspectRow = null;
     this.slot = Math.max(0, next.rows[0].slots.findIndex(Boolean));
     this.player.load(next);
-    this.level = "vesicle";
+    this.level = level;
     this.fit();
     this.names();
     this.refresh();
@@ -231,6 +236,7 @@ export class VesicleLens {
       add("outer", "Pool-facing heads", 1.15, 0.68, 0.4);
       add("core", "Hydrocarbon core", -1.35, 0.03, 0.75);
       add("inner", "Lumen-facing heads", 0.75, -0.68, 0.8);
+      this.tags.traffic = this.labels.add({ text: "Transfer", anchor: new T.Vector3(), priority: 850, lift: 20 });
     } else if (!this.run.pop) {
       add("shell", "Membrane", 1.6, 0.45, 0.8);
       add("lumen", "Lumen", 0, -0.2, 1);
@@ -297,7 +303,7 @@ export class VesicleLens {
       entity.facts.push(["Reference", "POPC · LBN"], ["Representation", "Heavy atoms and bonds"]);
     }
     if (part === "daughter") {
-      entity.plain = "The marker identifies the daughter that leaves the lineage. Its separate footprint was not recorded.";
+      entity.plain = "The two partitions come from the shear record. Only the continuing daughter has a sampled footprint. The neck and the departing sister’s size and path are illustrations.";
       for (const [i, d] of (e?.daughters || []).entries())
         entity.facts.push([
           "Daughter " + (i + 1) + (i === e.followed ? " · continues" : " · leaves"),
@@ -311,6 +317,34 @@ export class VesicleLens {
       if (e?.cause) entity.facts.push(["Cause", e.cause], ...Object.entries(e.returned).map(([p, n]) => [p, fmt(n)]));
     }
     return entity;
+  }
+  trafficControls() {
+    const run = this.run, routes = [...run.routes.values()].filter((r) => r.slot === this.slot);
+    if (!routes.length || this.level === "molecule") {
+      this.moveButtons = null;
+      return null;
+    }
+    const allTimes = run.transfers.filter((m) => m.slot === this.slot).map((m) => m.time);
+    const label = (r) => r.from.species + " · " + arrow(r.from.phase, r.to.phase) + " · " + fmt(r.count);
+    const filter = choose("Exchange route", [["", "All recorded transfers"], ...routes.map((r) => [r.key, label(r)])], this.route || "", (key) => {
+      this.route = key || null;
+      this.routeTimes = key ? run.routes.get(key).times : allTimes;
+      if (key) this.seek(this.routeTimes[through(this.routeTimes, this.player.time)] ?? this.routeTimes[0]);
+      else this.sync();
+    });
+    this.routeTimes = this.route ? run.routes.get(this.route).times : allTimes;
+    const step = (forward) => {
+      const times = this.routeTimes, i = through(times, this.player.time);
+      let j = forward ? i : i - 1;
+      if (!forward) while (j >= 0 && times[j] === this.player.time) j--;
+      if (times[j] !== undefined) this.seek(times[j]);
+    };
+    this.moveButtons = [h("button", { type: "button", onclick: () => step(false) }, "Previous transfer"),
+      h("button", { type: "button", onclick: () => step(true) }, "Next transfer")];
+    return h("details", { class: "v-traffic", open: this.level === "membrane" || Boolean(this.route) },
+      h("summary", {}, "Molecule traffic"), filter,
+      h("div", { class: "v-boundary" }, this.moveButtons),
+      h("p", { class: "v-explain" }, "Totals count molecules over this replay. Arrows follow the recorded direction. Paths and travel times are illustrative."));
   }
   controls() {
     const run = this.run,
@@ -348,6 +382,8 @@ export class VesicleLens {
             String(this.slot),
             (v) => {
               this.slot = Number(v);
+                this.route = null;
+                this.inspectRow = null;
               this.refresh();
             },
           )
@@ -359,6 +395,24 @@ export class VesicleLens {
           if (v !== "") this.seek(run.events[Number(v)].time);
         })
       : null;
+    const divisions = file.shears.filter((e) => e.outcome === "split" && e.daughters.length === 2);
+    const replaySplit = divisions.length && this.level === "vesicle" && !run.pop ? h("button", {
+      type: "button", onclick: () => {
+        const now = this.player.time;
+        const split = run.divisionAt(now)?.event || divisions.find((e) => e.time >= now) || divisions[0];
+        if (this.stage.reducedMotion) this.seek(split.time);
+        else {
+          this.seek(Math.max(run.start, split.time - 1.25));
+          this.player.play();
+        }
+      },
+    }, this.stage.reducedMotion ? "Inspect shear division" : "Replay shear division") : null;
+    const varied = this.entries.find(({ run: other }) => other.exchangedSpecies.length > run.exchangedSpecies.length);
+    const seeTraffic = varied && this.level !== "molecule" ? h("button", { type: "button", onclick: () => {
+      this.setRun(varied.run.file.id, "membrane");
+      const crossing = varied.run.transfers.find((m) => m.to.phase === "lumen");
+      if (crossing) this.seek(crossing.time);
+    } }, "See " + varied.run.species.filter((s) => varied.run.exchangedSpecies.includes(s)).join(", ") + " at the membrane") : null;
     const burst = file.releases.find((e) => e.cause === "threshold");
     const intact = burst ? run.rows.findLastIndex((r) => r.t === burst.time && r.slots[this.slot]?.membrane_footprint_quanta > 0) : -1;
     const boundary =
@@ -387,7 +441,7 @@ export class VesicleLens {
           run.membrane.map((p) => p.species).join(" and ") +
           ". POPC is shown as a separate structural reference. Hydrogens are hidden."
         : this.level === "membrane"
-          ? "This structural close-up shows the two water-facing headgroup surfaces and the hydrocarbon tails between them. It remains available after release."
+          ? "Tailed markers join or leave the outer leaflet. Faceted solutes cross the bilayer. Select a route to follow a molecule along the cut face."
           : null;
     const read = h(
       "details",
@@ -415,6 +469,11 @@ export class VesicleLens {
       h("p", { class: "v-standing" }, stand.says),
       selections,
       geometry ? h("p", { class: "v-explain" }, geometry) : null,
+      replaySplit || seeTraffic ? h("div", { class: "v-boundary" }, replaySplit, seeTraffic) : null,
+      this.trafficControls(),
+      this.catalysisEntry ? h("div", { class: "v-catalysis" },
+        h("a", { href: "?" + new URLSearchParams({ entry: this.catalysisEntry.id, scale: "assembly" }) }, "Explore catalysis in " + this.catalysisEntry.label + " →"),
+        h("p", { class: "v-explain" }, "This vesicle replay supplies no catalytic strengths. The linked assembly records its own coefficients in a separate development run.")) : null,
       this.metrics,
       chart(this),
       this.eventRead,
@@ -432,6 +491,10 @@ export class VesicleLens {
       s = state.sample,
       e = state.event,
       rows = [];
+    if (this.moveButtons) {
+      this.moveButtons[0].disabled = t <= this.routeTimes[0];
+      this.moveButtons[1].disabled = t >= this.routeTimes.at(-1);
+    }
     if (run.pop) rows.push(["Surviving", run.survivors(t) + " / " + run.founders]);
     rows.push(
       ["Membrane", placeList(run, state.counts, "membrane") || "—"],
@@ -446,9 +509,9 @@ export class VesicleLens {
       this.metrics.replaceChildren(...rows.map(([k, v]) => h("div", {}, h("span", {}, k), h("strong", {}, v))));
     }
     const moves = run.movements(state.lastChannel);
-    let what = state.n
+    let what = state.lastChannel
       ? "Event " +
-        state.n +
+        (state.lastIndex + 1) +
         " · " +
         (moves.length
           ? moves.map((m) => m.from.species + " " + arrow(m.from.phase, m.to.phase)).join(", ")
@@ -490,7 +553,7 @@ export class VesicleLens {
             .join(". ") +
           ". Shear work " +
           fmt(e.shear_work_kT, "kT") +
-          ".";
+          ". The departing sister’s size is illustrative.";
       } else what = e.label + " at " + fmt(e.time, "s") + ". The parent carries on.";
     }
     if (this.inspectRow != null)
@@ -505,14 +568,36 @@ export class VesicleLens {
   sync() {
     const t = this.player.time,
       s = this.run.at(t, this.slot, this.inspectRow);
-    this.scene.draw(s, this.run, this.level, this.layer, t, this.slot);
+    this.scene.draw(s, this.run, this.level, this.layer, t, this.slot, this.route, this.stage.reducedMotion);
     this.updateReadout(s);
+    if (this.tags?.traffic) {
+      const mark = this.scene.trackedMove;
+      this.tags.traffic.hidden = !mark;
+      if (mark) {
+        this.tags.traffic.anchor.copy(this.scene.trackedPosition);
+        this.labels.setText(this.tags.traffic, mark.from.species + " · " + arrow(mark.from.phase, mark.to.phase));
+      }
+    }
     if (this.tags?.shell) {
       const rad = 2.25 * Math.sqrt((s.sample?.membrane_footprint_quanta || 0) / (this.run.maxFoot || 1));
-      this.tags.shell.anchor.set(rad * 0.77, rad * 0.32, rad * 0.41);
+      const shift = this.scene.whole.position.x;
+      const pinch = this.scene.shearUniforms.pinch.value;
+      if (pinch > 0) this.tags.shell.anchor.set(0, rad * 0.05, rad * 0.22);
+      else this.tags.shell.anchor.set(shift + rad * 0.77, rad * 0.32, rad * 0.41);
+      this.tags.lumen.anchor.x = shift - rad * pinch * this.scene.shearUniforms.birthRatio.value;
       this.tags.shell.hidden = !this.scene.whole.visible;
       this.tags.lumen.hidden = !this.scene.whole.visible || !this.scene.liquid.visible;
       this.tags.daughter.hidden = !this.scene.daughter.visible;
+      if (this.scene.daughter.visible) {
+        const name = this.stage.width < 700 ? "D" : "Daughter ";
+        this.tags.daughter.anchor.copy(this.scene.daughter.position);
+        this.tags.daughter.anchor.x -= 0.22 * this.scene.daughter.scale.x;
+        this.tags.daughter.anchor.y += 0.72 * this.scene.daughter.scale.x;
+        this.labels.setText(this.tags.daughter, name + (2 - s.event.followed) + " · leaves");
+        this.labels.setText(this.tags.shell, name + (s.event.followed + 1) + " · continues");
+      } else {
+        this.labels.setText(this.tags.shell, this.scene.shearUniforms.pinch.value > 0 ? "Illustrated neck · approaching shear" : "Membrane");
+      }
       this.tags.release.hidden = !this.scene.release.visible;
       if (!this.tags.release.hidden) this.labels.setText(this.tags.release, s.event.label);
     }
@@ -548,10 +633,11 @@ export class VesicleLens {
       items =
         this.level === "vesicle" && this.layer === "tension"
           ? [["0 N/m", "head"], ...(this.run.maxTension ? [[sci(this.run.maxTension, "N/m"), "high"]] : [])]
-          : this.run.membrane.map((p, i) => [p.species + " headgroup", "species-" + (i % 4)]);
+          : this.run.membrane.map((p) => [p.species + " headgroup", "species-" + (this.run.palette.indexOf(p.species) % 4)]);
+      items.push(...this.run.lumen.map((p) => [p.species + " · lumen solute", "species-" + (this.run.palette.indexOf(p.species) % 4)]));
       items.push(["Hydrocarbon tails", "tail"], ["Lumen water", "lumen"]);
       note =
-        "Shell area follows membrane footprint. The blue volume follows recorded litres. Lipid packing and molecular positions are illustrative.";
+        "Shell area follows recorded footprint. Blue volume follows recorded litres. Arrows mark transfers. Paths, packing and the shape of the dividing neck are illustrative.";
     }
     return {
       card: {
@@ -592,13 +678,17 @@ const styles = `
 .v-metrics>div{display:flex;justify-content:space-between;align-items:baseline;gap:6px}.v-metrics strong{text-align:right}.v-metrics span,.v-explain,.v-record{color:var(--muted)}
 .v-chart{margin:1px 0}.v-chart .v-choice{grid-template-columns:auto 1fr;align-items:center;gap:6px;margin-bottom:4px}.v-chart .run-select{font-size:11px}.v-chart svg{width:100%;height:38px;display:block}.v-chart>div{display:flex;justify-content:space-between;color:var(--muted);font-size:10px}
 .v-event,.v-record,.v-explain{margin:0;font-size:12px;line-height:1.4}.v-event{border-left:2px solid #459c90;padding-left:7px}.v-record-details{font-size:12px;overflow-wrap:anywhere}
-.view:has(.v-controls){max-height:calc(100% - 148px);overflow:auto}.swatch-ves-head,.swatch-ves-species-0{background:#50c6b3}.swatch-ves-species-1{background:#aa9bd6}.swatch-ves-species-2{background:#e6bd6d}.swatch-ves-species-3{background:#91bbdc}.swatch-ves-high{background:#e88b4c}.swatch-ves-carbon{background:#72a7a4}.swatch-ves-oxygen{background:#ed785f}.swatch-ves-nitrogen{background:#5476d4}.swatch-ves-phosphorus{background:#eeb64f}.swatch-ves-tail{background:#b89670}.swatch-ves-lumen{background:#489fbe}
+.v-traffic,.v-catalysis{font-size:12px}.v-traffic summary{cursor:pointer;font-weight:600}.v-traffic[open]>*{margin-bottom:5px}.v-catalysis{border-top:1px solid var(--line);padding-top:5px}.v-catalysis a{color:var(--fg);text-underline-offset:3px;font-weight:650}.v-catalysis p{margin-top:3px}.v-boundary button:disabled{opacity:.5}
+.view:has(.v-controls){max-height:calc(100% - 148px);overflow:auto}.swatch-ves-head,.swatch-ves-species-0{background:#50c6b3}.swatch-ves-species-1{background:#aa9bd6}.swatch-ves-species-2{background:#70a8d3}.swatch-ves-species-3{background:#e58c3e}.swatch-ves-high{background:#e88b4c}.swatch-ves-carbon{background:#72a7a4}.swatch-ves-oxygen{background:#ed785f}.swatch-ves-nitrogen{background:#5476d4}.swatch-ves-phosphorus{background:#eeb64f}.swatch-ves-tail{background:#b89670}.swatch-ves-lumen{background:#489fbe}
 .frame:has(.v-controls) .caveat{display:none}
 @media(max-width:759px){.frame:has(.v-controls) .caveat{display:block;left:50%;top:119px;bottom:auto;margin:0;width:min(330px,calc(100% - 38px));font-size:11px}.frame.view-open:has(.v-controls) .caveat{display:none}.card-folds.view-open .view:has(.v-controls){max-height:min(45%,360px);}.v-controls{gap:6px}.v-boundary button{min-height:42px}}
 `;
 registerEntryView("vesicle", {
   label: "Vesicle replay",
   short: "Vesicle",
-  make: (stage, model, labels, { runs, autoplay }) => new VesicleLens(stage, labels, runs, autoplay),
+  make: (stage, model, labels, { entry, runs, autoplay }) => {
+    const companion = model.raw.models.find((m) => m.id === entry.view.catalysis_entry && m.view.kind === "assembly" && m.runs?.some((r) => r.kind === "development"));
+    return new VesicleLens(stage, labels, runs, autoplay, companion);
+  },
   styles: { shadow: styles },
 });

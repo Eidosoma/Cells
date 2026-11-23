@@ -14,7 +14,7 @@
   "record": [{"path":"visualizer/schema/ASSEMBLY_RUN.md","where":"Vesicle replays in recorded seconds"}],
   "design": "docs/ORIGIN_OF_LIFE_ENGINE_DESIGN.md"
  },
- "view": {"kind":"vesicle"},
+ "view": {"kind":"vesicle","catalysis_entry":"gard"},
  "levels": [
   {"id":"vesicle","label":"Vesicle","shows":"A life and its recorded events in seconds."},
   {"id":"membrane","label":"Membrane","shows":"A cut through the two molecular leaflets."},

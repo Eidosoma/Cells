@@ -75,7 +75,6 @@ export class CatalyticNetwork {
   constructor(parent, { narrow = false } = {}) {
     this.top = narrow ? NETWORK.narrow : NETWORK.wide;
     this.group = new THREE.Group();
-    this.group.userData.unpickable = true;
     parent.add(this.group);
     const additive = (vertexShader, fragmentShader, uniforms) => {
       const material = new THREE.ShaderMaterial({ uniforms, vertexShader, fragmentShader, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false, fog: false });
@@ -95,7 +94,7 @@ export class CatalyticNetwork {
     );
     // A link: a thin tube from the type that speeds to the type it speeds, brightening toward the second.
     this.links = new THREE.InstancedMesh(
-      new THREE.CylinderGeometry(1, 1, 1, 6, 1, true).translate(0, 0.5, 0),
+      new THREE.LatheGeometry([[0, 0], [0.72, 0], [0.72, 0.65], [2.8, 0.65], [0, 0.96]].map(([x,y]) => new THREE.Vector2(x,y)), 8),
       additive(LINK_VERTEX, `uniform float strength; varying float vAlong; varying vec3 vTint;
         void main() { gl_FragColor = vec4(vTint * strength, 0.3 + 0.7 * vAlong);
         #include <colorspace_fragment>
@@ -107,9 +106,11 @@ export class CatalyticNetwork {
       mesh.frustumCulled = false;
       mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
       mesh.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(mesh.instanceMatrix.count * 3), 3).setUsage(THREE.DynamicDrawUsage);
-      mesh.userData.unpickable = true;
       this.group.add(mesh);
     }
+    this.nodes.userData.unpickable = true;
+    this.linkIds = [];
+    this.links.userData.pick = (hit) => this.linkIds[hit.instanceId] || null;
     this.key = "";
     this.drawn = [];
     this.m = new THREE.Matrix4();
@@ -126,7 +127,8 @@ export class CatalyticNetwork {
    * groups: [{ x (counts), centre [x, y, z], room (the inside's clear radius), fade (0 to 1) }]; drawn
    * again only when `key` changes. `light(type)` gives a type's light (a THREE.Color).
    */
-  draw(groups, environment, light, key) {
+  draw(groups, environment, light, key, selected = null) {
+    key = key + "/" + (selected || "");
     if (key === this.key) return;
     this.key = key;
     const { m, q, v, w, up, c } = this;
@@ -148,28 +150,32 @@ export class CatalyticNetwork {
         this.nodes.setColorAt(nodes, this.dark ? c.copy(light(type)).multiplyScalar(0.9 * keep) : c.copy(light(type)).lerp(this.pale, 1 - keep));
         nodes++;
       }
-      const most = chosen[0]?.v ?? 1;
       for (const link of chosen) {
         if (links >= LINK_CAP) break;
         const a = at.get(link.from), b = at.get(link.to);
         if (!a || !b) continue;
-        const t = most > NETWORK.least ? (link.v - NETWORK.least) / (most - NETWORK.least) : 1;
+        const t = Math.min(1, (link.v - NETWORK.least) / 3);
         v.set(b[0] - a[0], b[1] - a[1], b[2] - a[2]);
         const length = v.length();
         if (length < 1e-4) continue;
         q.setFromUnitVectors(up, v.normalize());
-        const width = 0.008 + 0.016 * t;
+        const id = `assembly:entry:${environment.id}:${link.to}:${link.from}`;
+        const width = (0.014 + 0.035 * t) * (id === selected ? 1.8 : 1);
         m.compose(w.set(...a), q, this.s.set(width, length, width));
         this.links.setMatrixAt(links, m);
         // Warm light in dark water; in pale water a deeper amber.
         if (this.dark) c.setRGB(1, 0.82, 0.55).multiplyScalar((0.35 + 0.65 * t) * keep);
         else c.setRGB(0.86, 0.47, 0.08).lerp(this.pale, 1 - (0.45 + 0.55 * t) * keep);
+        if (id === selected) c.set(this.dark ? "#ffe39d" : "#8c3910");
         this.links.setColorAt(links, c);
+        this.linkIds[links] = id;
         links++;
       }
     }
     this.nodes.count = nodes;
     this.links.count = links;
+    this.linkIds.length = links;
+    this.links.boundingSphere = null;
     for (const mesh of [this.nodes, this.links]) {
       mesh.instanceMatrix.needsUpdate = true;
       mesh.instanceColor.needsUpdate = true;
@@ -196,6 +202,7 @@ export class CatalyticNetwork {
     for (const mesh of [this.nodes, this.links]) {
       mesh.geometry.dispose();
       mesh.material.dispose();
+      mesh.dispose();
     }
   }
 }

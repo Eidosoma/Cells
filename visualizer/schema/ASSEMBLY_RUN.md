@@ -307,8 +307,17 @@ timestamp retain their original order. The last intact threshold row and the pos
 end row have the same time and are independently inspectable. Between rows, molecular
 counts can be read by replaying the recorded channel stoichiometry. Geometry samples hold
 until their next row. The diagram maps footprint to displayed area and lumen volume to
-displayed volume. The renderer supplies the shell, lipid packing, solute positions, directions
-of travel, daughter markers and release shapes.
+displayed volume. The signed channel determines each transfer's species, amount, source and destination.
+The renderer chooses its trajectory, its visible duration and its position on the close-up.
+Route totals sum the transferred molecules for the selected vesicle. A successful two-daughter
+shear anchors the illustrated neck and separation to the split time. Both count vectors and the
+continuation come from the event. Only the continuing daughter has a sampled footprint in these runs.
+The departing sister's silhouette is schematic. A refused shear has no split animation.
+
+The two included OL5 worlds declare no catalytic network. The viewer links to the separate GARD
+replay for its interior arrows. There the fixed matrix gives the directed coefficient from type
+`j` to type `i` at row `i`, column `j`. The recorded log₁₀ β is rounded to two decimals.
+As types enter and leave, the subset of visible links can change. The matrix supplies no event-level attribution.
 
 The optional molecular illustration uses the wwPDB LBN ideal conformer. The stored reference
 contains the coordinates in ångströms and bonds of the 52 heavy atoms. The run's species

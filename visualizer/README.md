@@ -762,6 +762,13 @@ buttons show two observations at the same recorded time. **Plot** switches betwe
 the illustrated bilayer and its molecular reference. The readout gives the run's own species, counts,
 footprint, volume and tension. Both replays carry their development standing.
 
+**Replay shear division** shows the membrane neck narrowing, the two daughters separating and
+the labelled daughter that carries on. On **Membrane**, **Molecule traffic** lists the recorded
+routes and their totals. Choose a route to jump to an event, then step through its arrivals or departures.
+In the lysis replay, L1 leaves the membrane, L2 joins and leaves, and G crosses both ways between
+pool and lumen. The link to the separate GARD replay opens a protocell with a recorded catalytic
+matrix. Pick an interior arrow or expand **Catalytic strengths** to read its direction and coefficient.
+
 GARD's assembly has a view of its own (`src/lenses/lineage.js`), on this page since 17
 November 2026: choosing "GARD assembly" under "Origin of life" in the switch, or
 `entry=gard` in the address, shows it in the first tab's place (`src/lenses/

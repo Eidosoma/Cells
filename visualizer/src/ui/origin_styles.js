@@ -52,4 +52,6 @@ export const originCss = `
 .label-wrap { white-space: normal; max-width: 156px; text-align: center; line-height: 1.25; }
 .label-own { white-space: normal; max-width: min(440px, 80vw); text-align: center; font-size: 11.5px; line-height: 1.3; padding: 3px 8px; border-radius: 6px; color: var(--fg); background: color-mix(in srgb, var(--bg) 82%, transparent); }
 .swatch-origin-ramp { width: 46px; background: linear-gradient(90deg, var(--origin-ramp-0), var(--origin-ramp-1), var(--origin-ramp-2), var(--origin-ramp-3), var(--origin-ramp-4), var(--origin-ramp-5)); }
+.origin-strengths{font-size:12px;line-height:1.45;font-variant-numeric:tabular-nums}.origin-strengths summary{cursor:pointer;font-weight:650}.origin-strengths strong{display:block;margin-top:6px}
+.origin-strengths button{display:block;width:100%;text-align:left;font:inherit;color:var(--fg);background:var(--bg-raised);border:1px solid var(--line);border-radius:5px;margin:3px 0;padding:5px;cursor:pointer}
 `;

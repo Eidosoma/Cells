@@ -42,6 +42,9 @@ and a view of its own.
 }
 ```
 
+For a vesicle replay, optional `view.catalysis_entry` names a separate assembly entry with a
+recorded development run. The molecular traffic and times in the vesicle replay remain those of its own world.
+
 ## Rules
 
 - **`id`** matches the file's name, and it is not a species' id.

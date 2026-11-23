@@ -17,6 +17,7 @@
 // picture is said to be the picture's. An example run keeps its mark on the picture while shown.
 
 import * as THREE from "../three.js";
+import { h } from "../ui/dom.js";
 import { roundedSlab } from "../core/materials.js";
 import { makeEnvironment, makeStudio } from "../core/environment.js";
 import { disposeTree } from "../core/stage.js";
@@ -32,7 +33,7 @@ import { SimilarityFence, SimilarityCarpet, COMPARE } from "./similarity_marks.j
 import { LineageSpine, CompositionMap } from "./lineage_marks.js";
 import { CatalysisTable } from "./catalysis_table.js";
 import { clockOf, fissionsPerSecond, FINE, MOLECULES_A_SECOND } from "./lineage_clock.js";
-import { describe as describePart, sections as listSections } from "./lineage_card.js";
+import { describe as describePart, sections as listSections, formatFactor } from "./lineage_card.js";
 
 /** The look this view asks of the stage: studio light on the lipids, and contact shade where the lineage's parts meet the plate. */
 export const ORIGIN_LOOK = { rich: true, filmic: true, exposure: 1.05, contact: true, reach: 0.5, shade: 0.5 };
@@ -393,6 +394,42 @@ export class LineageLens {
     return `The ${count} coloured types are the most common of the run's ${all}, summed over its parents${both}; the names are the run's own.`;
   }
 
+  networkReadout() {
+    this.networkRows = h("div");
+    this.networkDetails = h("details", { class: "origin-strengths", open: Boolean(this.networkOpen),
+      ontoggle: (event) => { this.networkOpen = event.currentTarget.open; this.readLinks(); } },
+      h("summary", {}, "Catalytic strengths"),
+      h("p", { class: "card-text" }, "Arrows point from catalyst to affected type. Thicker arrows have larger β. Choose a link to pause and inspect it. The list shows up to three links between distinct types present, with log₁₀ β of at least 0.50."),
+      this.networkRows);
+    this.networkSignature = null;
+    this.readLinks();
+    return [this.networkDetails];
+  }
+  readLinks() {
+    if (!this.networkDetails?.open) return;
+    const lists = [];
+    for (const side of this.sides) {
+      if (!side.group.visible || !side.network.group.visible) continue;
+      for (const [index, group] of side.network.drawn.entries()) {
+        const title = side.run.label + (side.network.drawn.length > 1 ? (index ? " · other daughter" : " · continuing daughter") : "");
+        lists.push([title, group.links.slice(0, 3)]);
+      }
+    }
+    const signature = JSON.stringify(lists);
+    if (signature === this.networkSignature) return;
+    this.networkSignature = signature;
+    const children = [];
+    for (const [title, links] of lists) {
+      children.push(h("strong", {}, title));
+      for (const { from, to, v } of links) {
+        const words = `${this.mainEnvironment.types[from]} → ${this.mainEnvironment.types[to]} · log₁₀ β ${v.toFixed(2)} · β ≈ ${formatFactor(v)}`;
+        const id = `${PREFIX}entry:${this.mainEnvironment.id}:${to}:${from}`;
+        children.push(h("button", { type: "button", onclick: () => this.onShown ? this.onShown(id) : this.setSelection(id) }, words));
+      }
+      if (!links.length) children.push(h("div", {}, "No links above the display threshold among the types present."));
+    }
+    this.networkRows.replaceChildren(...(children.length ? children : [h("div", {}, "Waiting for the assembly to gather.")]));
+  }
   chrome() {
     const example = this.mark;
     const types = this.mainEnvironment.types, others = this.mainEnvironment.count - this.leading.length;
@@ -400,6 +437,7 @@ export class LineageLens {
     return {
       card: {
         heading: this.set.model.label,
+        own: this.level === "assembly" && this.shape === "protocell" ? () => this.networkReadout() : null,
         modes: { label: "Packing (the picture's choice)", options: SHAPES.map((shape) => [shape, { protocell: "Protocell", micelle: "Micelle", cluster: "Cluster" }[shape]]), active: this.shape },
         marks: { label: "Composition", options: COMPOSITION, active: this.composition },
         compare: { label: "Similarity", options: COMPARE.map((item) => [item.id, item.label]), active: this.compare },
@@ -420,7 +458,7 @@ export class LineageLens {
           ...(this.level === "assembly" && this.shape === "protocell" ? [
             { label: this.streamWords(), swatch: "origin-halo" },
             { label: "free: the run's supply", swatch: "origin-free" },
-            { label: "lit links: the run's table", swatch: "origin-link" },
+            { label: "Catalytic arrows · pick for β", swatch: "origin-link" },
           ] : []),
           ...(this.level === "assembly" && this.shape !== "protocell" ? [
             { label: "tails: alike, turned in", swatch: "origin-tail" },
@@ -671,6 +709,10 @@ export class LineageLens {
   setSelection(id) {
     const next = id && this.has(id) ? id : null;
     this.selected = next;
+    if (this.level === "assembly" && next?.startsWith(PREFIX + "entry:")) {
+      this.autoplayed = true;
+      this.player.pause();
+    }
     // Choosing a fission takes the clock there: the picture then shows that fission.
     const fission = next && next.match(/^assembly:fission:([^:]+):(\d+)$/);
     if (fission) {
@@ -848,7 +890,7 @@ export class LineageLens {
       if (inside) {
         const room = (count) => Math.max(0.2, layout.radius(count) - PROTOCELL.thickness - 0.22);
         const nets = groups.map((group, i) => ({ x: group.x, centre: layout.centres[i] || [0, 0, 0], room: room(layout.counts[i] || 40), fade: group.fade }));
-        side.network.draw(nets, run.environment, (type) => this.lightOf(type), `${key}:${nets.map((net) => net.centre.map((v) => v.toFixed(2)).join(",")).join("|")}`);
+        side.network.draw(nets, run.environment, (type) => this.lightOf(type), `${key}:${nets.map((net) => net.centre.map((v) => v.toFixed(2)).join(",")).join("|")}`, this.selected);
       }
       if (side.glow.mesh.visible) side.glow.draw(groups.map((group, i) => ({ centre: layout.centres[i] || [0, 0, 0], outer: layout.radius(layout.counts[i] || 40) - 0.06, inner: layout.radius(layout.counts[i] || 40) - PROTOCELL.thickness + 0.06, fade: group.fade })));
       // While the founder gathers its composition waits for it: the ring and the strip stand once it has gathered.
@@ -864,6 +906,7 @@ export class LineageLens {
     });
     this.shade();
     const main = this.sides[0];
+    this.readLinks();
     this.tape.draw(main.done, this.colours.ramp);
     this.carpet.draw(main.done, this.colours.ramp);
     this.map.draw(main.done, this.mainRun.compositionAt(time), this.stage.camera);

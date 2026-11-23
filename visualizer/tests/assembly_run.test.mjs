@@ -169,6 +169,21 @@ test("the vesicle replay keeps the intact threshold sample and released state at
   assert.equal(intact.sample.tension_N_per_m, lysis.file.releases[0].tension_N_per_m);
   assert.equal(lysis.file.trace.time.length, 49);
   assert.equal(growth.file.trace.time.length, 922);
+  const routesOf = (run) => Object.fromEntries([...run.routes.values()].map((r) => [r.from.name + "→" + r.to.name, r.count]));
+  assert.deepEqual(routesOf(growth), { "L1@pool→L1@membrane": 800, "L1@membrane→L1@pool": 122 });
+  assert.deepEqual(routesOf(lysis), { "L1@membrane→L1@pool": 30, "L2@pool→L2@membrane": 3, "L2@membrane→L2@pool": 1,
+    "G@pool→G@lumen": 9, "G@lumen→G@pool": 6 });
+  const rare = [...lysis.routes.values()].find((r) => r.count === 1);
+  const time = rare.times[0];
+  assert.equal(lysis.traffic(time - 1e-6, 0.85, 0, rare.key).length, 0);
+  assert.deepEqual(lysis.traffic(time, 0.85, 0, rare.key).map((m) => m.time), [time]);
+  assert.equal(lysis.traffic(time + 1, 0.85, 0, rare.key).length, 0);
+  assert.deepEqual(lysis.movements({ reactants: [[3, 1], [7, 1]], products: [[7, 2]] }).map((m) => [m.from.name, m.to.name, m.n]), [["G@pool", "G@lumen", 1]]);
+  assert.deepEqual(lysis.movements({ reactants: [[3, 1], [7, 1]], products: [[3, 1], [7, 1]] }), []);
+  assert.equal(growth.divisionAt(4.8).after, false);
+  assert.equal(growth.divisionAt(5).after, true);
+  assert.equal(growth.divisionAt(14.9), null);
+  assert.equal(growth.divisionAt(15), null);
   assert.deepEqual(
     growth.events.map((e) => e.outcome),
     ["split", "split", "refused_floor", "split", "refused_floor"],
