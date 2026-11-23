@@ -157,6 +157,69 @@ def test_the_declaration_refuses(edit, words):
         parse_spec(raw)
 
 
+def _beside_a_compartment(*, export=True, degradation=True):
+    """R1 with its export node `space_0` declared as cell_0's compartment (FR-49, D327): with or
+    without the export into it, and with or without the outside degradation there."""
+    from validation.tissue import compartment_fixtures as cfx
+
+    raw = worlds.with_export(worlds.r1(0.75))
+    block = kernel.block(raw)
+    dropped = set()
+    if not degradation:
+        block.pop("outside_degradations")
+        dropped.add(f"deg_R_{worlds.SPACE}")
+    if not export:
+        block.pop("exports")
+        dropped.add("export_R")
+    controls = raw["experiment"]["polymerisation_controls"]
+    raw["experiment"]["polymerisation_controls"] = [
+        c for c in controls if c["route_id"] not in dropped
+    ]
+    patch = f"{worlds.EXPORT_PATCH}_{worlds.CELL}_{worlds.SPACE}"
+    return cfx.with_compartments(
+        raw, [cfx.compartment(cid="lumen_0", node=worlds.SPACE, patch=patch, owner=worlds.CELL)]
+    )
+
+
+# FR-49 (validation/fr49/REGISTRATION.md, Part H): (world, words of the refusal, or None where
+# the world is admitted). Each refusal names the compartment; routes in the owner only compose.
+BESIDE_A_COMPARTMENT = {
+    "routes in the owner only": (
+        lambda: _beside_a_compartment(export=False, degradation=False),
+        None,
+    ),
+    "an export into the compartment": (
+        lambda: _beside_a_compartment(degradation=False),
+        f"export export_R opens onto '{worlds.SPACE}', compartment 'lumen_0'",
+    ),
+    "an outside degradation at the compartment": (
+        _beside_a_compartment,
+        f"outside degradation deg_R_{worlds.SPACE} is at '{worlds.SPACE}', compartment 'lumen_0'",
+    ),
+}
+
+
+@pytest.mark.parametrize("name", sorted(BESIDE_A_COMPARTMENT))
+def test_beside_a_compartment(name):
+    """FR-49's expression entry: the compartments' list names templated_polymerisation@1, and the
+    operator's own check refuses an export into a compartment's node and an outside degradation
+    there, each with its reason. Host only: a parse, no compile."""
+    build, words = BESIDE_A_COMPARTMENT[name]
+    if words is None:
+        spec = parse_spec(build())
+        assert worlds.POLYMERISATION in [d.law for d in spec.model.operators]
+        return
+    with pytest.raises(ConfigError, match=words):
+        parse_spec(build())
+
+
+def test_beside_a_compartment_the_operators_check_is_the_only_wall(monkeypatch):
+    """The plant (Part H): without check_compartments, the export into the compartment parses, so
+    the refusal is the operator's own and nothing else stands behind it."""
+    monkeypatch.setattr(polymerisation, "check_compartments", lambda spec, declaration: None)
+    parse_spec(_beside_a_compartment(degradation=False))
+
+
 def test_the_cited_entries_reach_the_registry_which_refuses_a_perturbed_one():
     raw = worlds.a1(end=60.0)
     (block,) = [d for d in parse_spec(raw).model.operators if d.law == worlds.POLYMERISATION]

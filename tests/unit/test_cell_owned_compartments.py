@@ -1273,6 +1273,58 @@ def test_membrane_state_beside_a_compartment_only_with_trafficking(trafficking):
     assert {comp.STATE_LAW, "scheduled_membrane_trafficking@1"} <= set(ADMITTED_AT_IMPORT)
 
 
+# ------------------------------------------------------------------ FR-49: the labels beside it
+
+LABELS_REFUSAL = rf"{comp.LABELS_LAW} beside a compartment is qualified without {comp.STATE_LAW}"
+
+
+def labelled(raw, species=fx.SPECIES):
+    """raw with neutral_arrival_labels@1 on `species` (two labels, no arrivals), declared last."""
+    out = copy.deepcopy(raw)
+    out["model"]["operators"].append(
+        dict(law=comp.LABELS_LAW, species=[dict(id=species, labels=["base", "x"], initial=[])])
+    )
+    out["experiment"]["label_arrivals"] = []
+    return out
+
+
+LABELS_BESIDE = {
+    "a loaded compartment, S labelled": (lambda: labelled(w()), None),
+    "with turnover inside": (
+        lambda: labelled(cfx.loaded_compartment(end=END, turnover=True)),
+        None,
+    ),
+    "beside membrane state with no writer": (lambda: labelled(stateful()), LABELS_REFUSAL),
+    # The wall passes here (the producer writes units); the explicit check refuses first.
+    "beside membrane state and the unit producer": (
+        lambda: labelled(producing(), species=ufx.TEMPLATE),
+        LABELS_REFUSAL,
+    ),
+}
+
+
+@pytest.mark.parametrize("name", sorted(LABELS_BESIDE))
+def test_labels_beside_a_compartment(name):
+    """FR-49's labels entry (validation/fr49/REGISTRATION.md, Part H; ruling 4): the list names
+    neutral_arrival_labels@1, and a compartment world that also declares membrane state is refused
+    by name, before the membrane-state wall's own rule. Host only: a parse, no compile."""
+    build, words = LABELS_BESIDE[name]
+    if words is None:
+        spec = parse_spec(build())
+        assert comp.LABELS_LAW in [d.law for d in spec.model.operators]
+        return
+    with pytest.raises(ConfigError, match=words):
+        parse_spec(build())
+
+
+def test_labels_beside_membrane_state_the_explicit_check_names_the_reason(monkeypatch):
+    """The plant (Part H): without the explicit check, the same world is refused by the
+    membrane-state wall's rule instead, so the labels' reason comes from the check alone."""
+    monkeypatch.setattr(comp, "refuse_labels_beside_membrane_state", lambda entries: None)
+    with pytest.raises(ConfigError, match=rf"admits {comp.STATE_LAW} only together with"):
+        parse_spec(labelled(stateful()))
+
+
 # ------------------------------------------------------------------ FR-7's releasing compartment
 
 PRODUCER, EXCHANGE = "population_unit_turnover@1", "scheduled_species_exchange@1"
