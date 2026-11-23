@@ -87,10 +87,10 @@ only:
   rule (`agreement.py`):
   - `constant`: bit for bit (C6, C7, C10);
   - `derived`: two routes to one constant by different arithmetic, within a tolerance computed
-    from that arithmetic (C2, C3b, C3c, C4a, C4b, C5, C9).
+    from that arithmetic (C2b, C3b, C3c, C4a, C4b, C5, C9).
 - **No pair is `spread`:** nothing is drawn.
-- **The trajectory pairs carry the engine's integration error.** They are judged by C1's band, and
-  C3a's and C4c's derived from it. C8 shows the error's order.
+- **The trajectory pairs carry the engine's integration error.** They are judged by bands: C1's,
+  C3a's and C4c's derived from it, and C2a's at the horizon. C8 shows the error's order.
 - No class or pair changes after a run.
 
 ## 4. The worlds (SPEC.md §2 holds every input)
@@ -99,7 +99,7 @@ only:
 | --- | --- | --- |
 | W1 | One node-owned set, two ligands, from empty sites, in a 1 pL node | C1, C2a, C3, C5, C9, C10 |
 | W1eq | W1 started at its root | C2b |
-| W1p | W1 cut to 8 s | the plants P1–P3, P6, P8, P9 |
+| W1p | W1 cut to 6.4 s | the plants P1–P3, P6, P8, P9 |
 | W2 | Bind, wash and unbind in a 1 µL node: L1 bound at its own equilibrium, then half the liquid washed for a buffer holding the competitor L2, which displaces L1 | C1, C2a, C3, C4, C5, C6, C10 |
 | W3 | A three-ligand set and a one-population set sharing L2 at a node, and a two-ligand set on a patch's inside face in the cell | C1, C2a, C3, C5, C9, C10; W3p (cut to 2 s) for P7 |
 | W4 | Fixed concentrations in a 1 mL node, at three steps | C8 |
@@ -138,11 +138,26 @@ its root, and W1p, W3p, W4 and W5 are short by design.
   R. The probes are in /mnt/workspaces/Cells/fr44-45-design-20261123/probes/:
   - `competition_probe.py`: W1's fixed point, the fixed-concentration order and the heat sign;
   - `fr45_world_sizing.py`: each world's equilibrium, slowest rate and largest load.
-- **So W1's equilibrium, and the worlds' rates and loads, were seen.** No engine run of any world
-  exists.
-- **The bands come from the scheme's order, not from any result.** The probe's error at
-  dt·L ≈ 0.035 was 1.9·10⁻⁷ of S, so C1's 10⁻⁶ leaves a factor of five. C8 restates the scheme's
-  order (8 per halving; the probe found 8.75 and 8.37).
+- **The first sizing printed the equilibria of W1's and W2's earlier inputs,** and a probe printed
+  the scheme's errors at W4's earlier inputs.
+  - All three worlds' inputs were re-chosen the same day, sized on loads and slowest rates alone.
+    The registered inputs' equilibria and trajectories have not been seen.
+  - W3's and W6's printed sizing gave rates and loads only. W3's one equilibrium printed was at an
+    earlier L3 rate, since changed.
+- **The criteria were dry-run before registration** on neighbouring inputs, never the registered
+  ones (`fr45_criteria_dry_run.py`). An honest emulation of the scheme was pushed through every
+  formula, and only each criterion's statistic was printed. CRITERIA.md lists the margins.
+  - C2a's first, derived form failed that honest emulation, so it is a band.
+  - C8 was restricted to R and B.
+  - C1 moved to the node's scale.
+  - C3a's log term takes max(x, δ).
+  - W3's and W6's observation times were put on their grids.
+- **main (872dc2d2) admits dt = 0.1 and 0.05 s in a site world** (`coarse_step_check.py`, the wash
+  fixtures' well). So W5's refusal can come only from the stage condition.
+- **No engine run of any registered world exists.**
+- **The bands come from the scheme's order and the dry run, not from any engine result.** C1's
+  10⁻⁶ was met at 0.17 of itself, and C8's ratio rule restates third order: 8 per halving, against
+  8.35 and 8.17 in the dry run.
 - **The design note** is /mnt/workspaces/Cells/fr44-45-design-20261123/DESIGN.md (§9 to §17),
   approved in D327.
 

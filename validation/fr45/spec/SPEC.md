@@ -110,13 +110,13 @@ the named node.
 | Input | Value |
 | --- | --- |
 | Node `well` | V = 1.0 pL |
-| Free L1, L2 at `well` | 1.5e-3 fmol, 1.0e-3 fmol |
-| Set `matrix` (owner: node `well`) | N = 1204428.0 copies, ν = 1, α = 1.0 |
-| Population `matrix_L1` | L1; k_on 1.0e3; k_off 1.0; initial occupancy 0.0 |
-| Population `matrix_L2` | L2; k_on 4.0e2; k_off 0.1; initial occupancy 0.0 |
-| dt | 0.0125 s |
-| Observation times | 0.25, 0.5, 1.0, 2.0, 4.0, 8.0, 16.0, 32.0, 64.0, 80.0 s |
-| Horizon | 80.0 s |
+| Free L1, L2 at `well` | 1.6e-3 fmol, 0.9e-3 fmol |
+| Set `matrix` (owner: node `well`) | N = 1445314.0 copies, ν = 1, α = 1.0 |
+| Population `matrix_L1` | L1; k_on 1.2e3; k_off 0.9; initial occupancy 0.0 |
+| Population `matrix_L2` | L2; k_on 5.0e2; k_off 0.15; initial occupancy 0.0 |
+| dt | 0.008 s |
+| Observation times | 0.2, 0.4, 0.8, 1.6, 3.2, 6.4, 12.8, 25.6, 51.2 s |
+| Horizon | 51.2 s |
 
 ### W1eq: W1 started at its equilibrium
 
@@ -128,34 +128,35 @@ W1's totals placed at W1's R-eq root (§3.1). The references write the start:
 | Input | Value |
 | --- | --- |
 | Everything else | as in W1 |
-| Observation times | 1.0, 5.0, 10.0 s |
-| Horizon | 10.0 s |
+| Observation times | 0.8, 4.0, 8.0 s |
+| Horizon | 8.0 s |
 
-### W1p: W1 cut to 8 s, for the plants
+### W1p: W1 cut to 6.4 s, for the plants
 
 | Input | Value |
 | --- | --- |
 | Everything else | as in W1 |
-| Observation times | 0.25, 0.5, 1.0, 2.0, 4.0, 8.0 s |
-| Horizon | 8.0 s |
+| Observation times | 0.2, 0.4, 0.8, 1.6, 3.2, 6.4 s |
+| Horizon | 6.4 s |
 
 ### W2: bind, wash and unbind
 
 | Input | Value |
 | --- | --- |
 | Node `well` | V = 1.0e6 pL (1 µL) |
-| Free L1 at `well` | 60.0 fmol |
+| Free L1 at `well` | 50.0 fmol |
 | Free L2 at `well` | at its trace: 1.0e-6 fmol |
-| Set `matrix` (owner: node `well`) | N = 12044281520.0 copies, ν = 1, α = 1.0 |
-| Population `matrix_L1` | L1; k_on 1.0e4; k_off 0.6; initial occupancy 0.5 |
-| Population `matrix_L2` | L2; k_on 2.0e4; k_off 0.2; initial occupancy 0.0 |
-| The wash | t = 5.0 s, node `well`, f = 0.5; buffer L1 1.0e-12 mM, L2 2.0e-4 mM |
-| dt | 0.01 s |
-| Observation times | 2.5, 5.0, 5.01, 6.0, 8.0, 12.0, 20.0, 35.0, 50.0, 65.0 s |
-| Horizon | 65.0 s |
+| Set `matrix` (owner: node `well`) | N = 15055351900.0 copies, ν = 1, α = 1.0 |
+| Population `matrix_L1` | L1; k_on 1.2e4; k_off 0.6; initial occupancy 0.5 |
+| Population `matrix_L2` | L2; k_on 1.5e4; k_off 0.12; initial occupancy 0.0 |
+| The wash | t = 4.0 s, node `well`, f = 0.5; buffer L1 1.0e-12 mM, L2 1.6e-4 mM |
+| dt | 0.0125 s |
+| Observation times | 2.0, 4.0, 4.0125, 5.0, 7.5, 10.0, 20.0, 40.0, 60.0, 75.0 s |
+| Horizon | 75.0 s |
 
-The row at 5.0 s holds the state the wash acts on. The wash is applied at the start of the step
-leaving 5.0 s, so 5.01 s is the first row after it.
+- L1 starts at its own equilibrium: its free concentration is its K.
+- The row at 4.0 s holds the state the wash acts on. The wash is applied at the start of the step
+  leaving 4.0 s, so 4.0125 s is the first row after it.
 
 ### W3: a set with three ligands, a second set at the same node, and a set inside a cell
 
@@ -170,7 +171,7 @@ leaving 5.0 s, so 5.01 s is the first row after it.
 | Set `C` (owner: patch `specimen_face`, inside face, facing `specimen`) | N = 1500000.0, ν = 1, α = 1.0 |
 | Populations on `C` | `C_L4`: L4, k_on 1.0e3, k_off 1.0, occupancy 0.0. `C_L5`: L5, k_on 2.0e3, k_off 0.4, occupancy 0.0 |
 | dt | 0.004 s |
-| Observation times | 0.1, 0.25, 0.5, 1.0, 2.0, 4.0, 8.0, 16.0, 30.0 s |
+| Observation times | 0.1, 0.2, 0.5, 1.0, 2.0, 4.0, 8.0, 16.0, 30.0 s |
 | Horizon | 30.0 s |
 
 - L2 binds both A and B from one pool.
@@ -178,18 +179,18 @@ leaving 5.0 s, so 5.01 s is the first row after it.
 
 ### W3p: W3 cut to 2 s, for the plants
 
-W3's inputs, with observation times 0.1, 0.25, 0.5, 1.0 and 2.0 s and a horizon of 2.0 s. Its reference rows are W3's at those times, so it needs no file of its own.
+W3's inputs, with observation times 0.1, 0.2, 0.5, 1.0 and 2.0 s and a horizon of 2.0 s. Its reference rows are W3's at those times, so it needs no file of its own.
 
 ### W4: fixed concentrations, and the engine's order
 
 | Input | Value |
 | --- | --- |
-| Node `vat` | V = 1.0e9 pL (1 mL); free L1 1.0e6 fmol, L2 1.0e6 fmol |
-| Set `matrix` (owner: node `vat`) | N = 1204428.0, ν = 1, α = 1.0 |
-| Populations | `matrix_L1`: L1, k_on 1.0e3, k_off 1.0, occupancy 0.0. `matrix_L2`: L2, k_on 4.0e2, k_off 0.1, occupancy 0.0 |
-| dt | three runs: 0.1, 0.05 and 0.025 s |
-| Observation times | 0.5, 1.0, 1.5, 2.0 s |
-| Horizon | 2.0 s |
+| Node `vat` | V = 1.0e9 pL (1 mL); free L1 1.2e6 fmol, L2 0.8e6 fmol |
+| Set `matrix` (owner: node `vat`) | N = 1445314.0, ν = 1, α = 1.0 |
+| Populations | `matrix_L1`: L1, k_on 1.2e3, k_off 0.9, occupancy 0.0. `matrix_L2`: L2, k_on 5.0e2, k_off 0.15, occupancy 0.0 |
+| dt | three runs: 0.08, 0.04 and 0.02 s |
+| Observation times | 0.4, 0.8, 1.2, 1.6 s |
+| Horizon | 1.6 s |
 
 ### W5: the stage condition's edge
 
@@ -208,7 +209,7 @@ W3's inputs, with observation times 0.1, 0.25, 0.5, 1.0 and 2.0 s and a horizon 
 | Node `well` | V = 1.0 pL; free L1 1.5e-3, L2 1.0e-3 fmol |
 | Set `D` (owner: patch `specimen_face`, outside face, facing `well`) | N = 1204428.0, ν = 1, α = 0.8 |
 | Populations | `D_L1`: L1, k_on 1.5e3, k_off 0.75, occupancy 0.1. `D_L2`: L2, k_on 1.0e3, k_off 1.0, occupancy 0.05 |
-| dt | 0.0075 s |
+| dt | 0.00625 s |
 | Observation times | 0.25, 0.5, 1.0, 2.0, 4.0, 8.0, 16.0, 25.0 s |
 | Horizon | 25.0 s |
 
@@ -228,8 +229,8 @@ W3's inputs, with observation times 0.1, 0.25, 0.5, 1.0 and 2.0 s and a horizon 
     moiety.
 - **The totals:**
   - W1, W1eq, W3 and W6: the start's;
-  - W2: the post-wash totals, the pre-wash state through §1.4's map at 5.0 s. Because that state
-    comes from R-ode, R-eq of W2 rests on R-ode's state at 5.0 s.
+  - W2: the post-wash totals, the pre-wash state through §1.4's map at 4.0 s. Because that state
+    comes from R-ode, R-eq of W2 rests on R-ode's state at 4.0 s.
 - **Every root** to at least 15 significant digits, with its residual.
 - **For one set with two ligands** (W1, W1eq, W6; W2 after the wash), also the trigonometric root
   of the cubic in the free-site variable (Wang 1995). Its gap from the bracketed root is reported.
@@ -237,7 +238,7 @@ W3's inputs, with observation times 0.1, 0.25, 0.5, 1.0 and 2.0 s and a horizon 
 
 ### 3.2 R-ode: the trajectories and each ligand's balance
 
-- **Integrate §1.2** for W1, W1eq, W1p, W2 (with §1.4's map at 5.0 s), W3, W4 and W6, at two
+- **Integrate §1.2** for W1, W1eq, W1p, W2 (with §1.4's map at 4.0 s), W3, W4 and W6, at two
   tolerances (rtol 10⁻¹² and 10⁻¹³, absolute tolerance scaled to each amount).
 - **Report at every observation time:** every free amount, every R_s and every B_b, with the gap
   between the two tolerances. A gap above 10⁻¹⁰ of the observable's scale (CRITERIA.md) is
@@ -257,8 +258,10 @@ W3's inputs, with observation times 0.1, 0.25, 0.5, 1.0 and 2.0 s and a horizon 
 - **G** (§1.3) of R-ode's state at the start and at every observation time, per facing node: the
   node's pools plus the sets that face it.
 - **Every interval's heat** H = G(t_k) − G(t_{k+1}), between consecutive times from the start. In
-  W2 these are the intervals that do not contain 5.0 s; the interval across the wash is excluded.
-- **The heat bound B_H of each interval** (CRITERIA.md, C3).
+  W2 the interval across the wash (4.0 to 4.0125 s) is excluded.
+- **The heat bound B_H of each interval** (CRITERIA.md, C3a). Its log terms take max(x, δ_x) in
+  place of x, so an amount that starts at zero, such as an empty population, gives a finite
+  bound.
 - **The free-energy change at W2's wash** for the record, not judged: G just after §1.4's map minus
   G just before. The sets' part is zero.
 
@@ -271,6 +274,8 @@ W3's inputs, with observation times 0.1, 0.25, 0.5, 1.0 and 2.0 s and a horizon 
 - **No pair here is `spread`,** since nothing is drawn. Say so explicitly in the file.
 - **The trajectory pairs carry integration error.** They are not zero-uncertainty pairs: they are
   judged by C1's band, and their class is `band`.
+- **A `band` pair never reaches `agreement.judge`,** which raises on any class outside its own
+  three. The judge applies C1's band to it directly.
 
 ### 3.5 The plants' predicted effects, before any run
 

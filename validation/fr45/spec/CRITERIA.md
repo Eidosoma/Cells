@@ -25,10 +25,12 @@ heat in **pJ** (SPEC.md §0).
   - k_t = t/dt, the engine's steps to time t;
   - an amount's anchor a_x is its declared start value: B₀ = (occupancy)·S, R₀ = S − ΣB₀, and n₀
     the declared free amount.
-- **The scales s_y:**
-  - for an observable: its largest |reference value| over the start and the observation times;
-  - for a heat: its node's largest |G term| (each pool's RT·n·(ln c − 1) and each set's terms),
-    over the start and the times.
+- **The scales:**
+  - s_node, for an amount: the largest |reference value| of any amount at its facing node (that
+    node's pools and the sets facing it), over the start and the observation times. The engine's
+    error follows the subsystem's binding extents, not one amount's own size;
+  - S, for C8: the set's capacity;
+  - E, for a heat: its interval's G terms' magnitudes at both ends.
 
 ## The pair rule, classified from the reference before the run
 
@@ -45,21 +47,39 @@ No pair is excluded after the run, and no class changes after it.
 
 | | Compares | Class | Test |
 | --- | --- | --- | --- |
-| C1 | Every free amount, R_s and B_b at every observation time (W1, W2, W3, W6), against R-ode | band | \|y_e − y_ref\| ≤ 10⁻⁶·s_y |
-| C2a | The state at the horizon (W1, W2, W3, W6) against R-eq's root | derived | \|x_e(T) − x_eq\| ≤ r_T + 8ε·(\|a_x\| + \|x_eq\|), with r_T the reference's own distance at the horizon. The derivation: the scheme's fixed point is the equilibrium itself (§2.1 of the protocol), and an anchored amount resolves ε·(\|a\| + \|x\|) |
-| C2b | W1eq's state at every observation time against its start, the root | derived | \|x_e(t) − x_root\| ≤ 16ε·max(\|x_root\|, \|a_x\|). The derivation: the declared start rounds once, and the scheme adds increments of the order of that rounding's rates |
-| C3a | The engine's heat at each node over each interval between observation times (none across W2's wash), against R-dG | band | \|H_e − H_ref\| ≤ B_H, with B_H = 2·Σ_x (\|μ°_x\| + RT·(\|ln(x/x₀)\| + 1))·10⁻⁶·s_x, over the node's pools and sites at both ends (x₀ is V·1 mM for a pool and S for a site; μ° is 0 for pools and free sites), + 16ε·E. That is C1's band carried through G's derivatives, plus E, the interval's G terms' magnitudes |
+| C1 | Every free amount, R_s and B_b at every observation time (W1, W2, W3, W6), against R-ode | band | \|y_e − y_ref\| ≤ 10⁻⁶·s_node |
+| C2a | The state at the horizon (W1, W2, W3, W6) against R-eq's root | band | \|x_e(T) − x_eq\| ≤ 10⁻⁹·s_node. A band, not a derived pair: the engine relaxes to the equilibrium of its own totals, which carry C4a's and C5's rounding, and the trajectory's decayed error remains. C2b is the derived check of the fixed point |
+| C2b | W1eq's state at every observation time against its start, the root | derived | \|x_e(t) − x_root\| ≤ (2 + 3·k_t·h·L)·4ε·max(\|x_root\|, \|a_x\|), with h = dt/2 and L the largest load at the start. The derivation: the declared start rounds once (2). Each step's three stages evaluate rates whose rounding is a few ε of the largest one-way flux, so a step moves a pool by at most about 3·h·L·ε·x, with no credit for the contraction |
+| C3a | The engine's heat at each node over each interval between observation times (none across W2's wash), against R-dG | band | \|H_e − H_ref\| ≤ B_H, with B_H = 2·Σ_x (\|μ°_x\| + RT·(\|ln(max(x, δ)/x₀)\| + 1))·δ, + 16ε·E. The sum runs over the node's pools and sites at both ends, with δ = 10⁻⁶·s_node, C1's band. x₀ is V·1 mM for a pool and S for a site, and μ° is 0 for pools and free sites. max(x, δ) keeps the bound finite where an amount starts at zero. That is C1's band carried through G's derivatives |
 | C3b | The same heats, against −ΔG of the engine's own saved states (§1.3's formula, on the judge's side) | derived | ≤ 16ε·k·E, with k the interval's steps |
 | C3c | The sign: each node's cumulative heat never falls | derived | By more than 16ε·E between consecutive rows |
 | C4a | Each ligand's books in W2, at every row: free + bound + collected − supplied | derived | Against the declared total N_l, within 16ε·(k_t + 1)·M_l, with M_l the row's free + bound + collected + supplied |
 | C4b | W2's wash alone (its event map in NumPy and compiled, on the engine's saved state at 5.0 s): each free amount, and the sample and supply records | derived | Free amounts against (1 − f)·n + f·V·c_buf, within 4ε·(\|a_n\| + \|n\| + f·V·c_buf). Records against f·n and f·V·c_buf, within 2ε of each |
-| C4c | W2's removed and supplied amounts against the reference's | band | Removed within f·10⁻⁶·s_n; supplied as C4b |
+| C4c | W2's removed and supplied amounts against the reference's | band | Removed within f·10⁻⁶·s_node; supplied as C4b |
 | C5 | Every set's R_s + Σ B_b at every row (every world) | derived | Against S_s, within 16ε·(k_t + 1)·S_s |
 | C6 | W2's bound sites across the wash alone: every R_s and B_b before and after the event map, applied to the engine's saved state at 5.0 s, in NumPy and compiled | constant | `"unchanged"`: bit for bit. Saved rows are not used, since binding resumes within the step (D327) |
 | C7 | W5's first step | constant | Refused by the stage condition: the engine's step report gives h·max L above 1/2 |
-| C8 | W4's error e(dt), the largest \|y_e − y_ref\|/S over its observables and times, at dt = 0.1, 0.05 and 0.025 s | band | e(0.1)/e(0.05) ≥ 6 and e(0.05)/e(0.025) ≥ 6 (third order gives 8), and e(0.025) ≤ 10⁻⁶ |
+| C8 | W4's error e(dt), the largest \|y_e − y_ref\|/S over R and the B_b at its times, at dt = 0.08, 0.04 and 0.02 s | band | e(0.08)/e(0.04) ≥ 6 and e(0.04)/e(0.02) ≥ 6 (third order gives 8), and e(0.02) ≤ 10⁻⁶. The free amounts, near 10⁶ fmol, are left out: their binary64 spacing alone is about 10⁻⁷ of S |
 | C9 | The R3 quantity `site_occupied_fraction` of every population at every saved row (W1, W3, W6), from the engine's `quantities` on the saved state | derived | Against B_b/S_s of the same state, within \|R_s + ΣB − S_s\|/S_s + 4ε |
 | C10 | Every run of every world closes its own ledgers and passes its host checks on every row | constant | The run completes; the runner raises otherwise. W5 is the exception: its refusal is C7 |
+
+## Honest margins, checked before the registration
+
+A dry run of an honest emulation of the scheme, on neighbouring inputs (every constant and amount
+a few percent from the registered ones, never the registered inputs themselves; the protocol's
+§7), reached at most these fractions of each tolerance:
+
+| Criterion | Largest fraction of its tolerance |
+| --- | --- |
+| C1 | 0.17 |
+| C2a | 3.6·10⁻³ |
+| C2b | 0.10 |
+| C3a | 10⁻³ |
+| C5 | 2·10⁻³ |
+| C8 | ratios 8.35 and 8.17; e(0.02) is 2·10⁻⁷ of S |
+
+C2a's earlier derived form, 8ε at the horizon, failed the honest emulation at up to 141 times its
+tolerance, which is why it is a band.
 
 ## The plants
 
