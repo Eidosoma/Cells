@@ -53,6 +53,7 @@ and a general feature, never one built for one study (D144).
 | [FR-45](#fr-45--several-ligands-competing-for-one-shared-wash-retained-site-capacity) | Several ligands competing for one shared, wash-retained site capacity | **High** (logged by the user, 23 November 2026) | **Logged:** FR-28's node-owned sites bind one ligand per population, and sites modelled as dissolved species wash out with the fluid | A design note: competing ligands in one site pool, or immobile anchored species that a wash leaves in place |
 | [FR-46](#fr-46--binding-from-a-shells-inner-face-lumen-ligands-on-membrane-sites) | Binding from a shell's inner face: lumen ligands on membrane sites | **High** (logged by the user, 23 November 2026) | **Logged:** `cells.prescribed_shell@1` admits outer-face binding of a pool ligand and refuses the lumen's | A design note: reversible inner-face binding with detailed balance, and the occupied state usable in a gate rule |
 | [FR-47](#fr-47--shell-exchange-and-scheduled-washes-in-the-deterministic-representation) | Shell exchange and scheduled washes in the deterministic representation | **High** (logged by the user, 23 November 2026) | **Logged:** `cells.rate_equations@1` refuses prescribed-shell geometry and replacement or withdrawal schedules (OL6's refusal 1) | A design note and a registered qualification against an analytical mass balance and an exact-event ensemble |
+| [FR-48](#fr-48--a-lumen-standard-potential-a-reversible-free-energy-difference-across-a-prescribed-shell) | A lumen standard potential: a reversible free-energy difference for one neutral solute across a prescribed shell | Not stated (logged by the user, 23 November 2026) | **Logged:** `cells.assembly_lineages@2` gives the pool and the lumen one solution standard potential per species | A design note with FR-46 and FR-47 (the same files) |
 
 ## FR-1 — A closed internal compartment on the shared inventory
 
@@ -2036,3 +2037,42 @@ So large-count vesicle worlds with a shell and washes can run only as exact even
   checker.
 
 **Status (23 November):** logged. A design note comes first.
+
+## FR-48 — A lumen standard potential: a reversible free-energy difference across a prescribed shell
+
+**Logged 23 November 2026 by the user. Priority not stated.**
+
+**Why.** In `cells.assembly_lineages@2`, the pool and the lumen share one solution standard potential
+per species, because `place_arrays` takes μ° from the species and the place's phase alone. So a solute
+cannot hold a free-energy difference across `cells.prescribed_shell@1`, and its equilibrium is always
+equal concentrations at equal volumes.
+
+**The request:** a reversible free-energy difference for the same neutral solute across the shell, at
+fixed volumes.
+- At equal volumes, a lumen cost of ln 2 kT gives an equilibrium inside/outside concentration ratio of
+  0.5, and a zero cost gives 1.
+- The tracer is conserved, and detailed balance holds from either starting side.
+- Changing the permeability changes the equilibration time but preserves the ratio.
+
+**First reading (the lead, with the advisor).**
+- The layout already carries μ° per place.
+- The shell law's exit is derived from μ° (k⁻ = P_s exp(Σν μ°)). So a lumen offset Δ gives
+  c_in/c_out = e^−Δ with no change to the law's text.
+- The equilibration rate then depends on Δ as well as on P_s.
+- **For the design note to settle:**
+  - one authority for μ°: a lumen phase the species declares, or a per-species transfer term the shell
+    owns;
+  - every reader of a lumen μ°: F and the heat per crossing, a held pool's work, the gate, and FR-46's
+    inner-face binding;
+  - version 1's scope: neutral solutes, a prescribed shell, fixed volume. Osmotic lumens, lysis and
+    rupture returns, division, and `rate_equations@1` until FR-47 are refused by name;
+  - D148: statically absent unless declared.
+
+**Acceptance, in exact-event terms:**
+- at equal volumes the inside count is binomial, n_in ~ Binomial(N, 1/(1 + e^Δ)): one third at ln 2 and
+  one half at 0, as a closed form, with a planted flipped sign;
+- detailed balance on the kernel's identity, from both founders;
+- doubling P_s gives the same event sequence with every time exactly halved, under the same draws;
+- the tracer count is constant, and the ledger closes with Δ per crossing.
+
+**Status (23 November):** logged. A design note comes first, with FR-46 and FR-47.
