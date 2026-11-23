@@ -69,7 +69,9 @@ registered.
 - **D6:** its registered verdict, a fail, stands. It is rescored under this erratum only as a
   labelled, non-blind diagnostic, by this erratum's own rule, the top rung's exactness.
   - That set is not the checker's own set behind 2.293, which dropped the pairs exact at both rungs.
-  - It contains that set, so the diagnostic's largest z is at most 2.293.
+  - It contains that set. So if the checker's set came from the same bitwise test on the registered
+    values, the diagnostic's largest z is at most 2.293. That is this erratum's author's inference,
+    not the checker's.
 - **D1, D2, D4 and D7:** their passes stand, and they are not rescored.
   - The erratum only removes pairs from M's maximum, and leaves every other pair's excess bitwise as
     registered. So M's largest z can only fall.
@@ -87,7 +89,8 @@ code alone, before any run:
     (`rate_equations.enveloped`), and its join steps move every one of them.
   - It has no geometry, so no A, V or σ, and no held place, so no W_res.
 - **D5's observables** are L@pool, each slot's L@membrane, and each slot's A_m2, V_L and σ. I@lumen
-  and I@pool are not among them, because no step moves or reads I.
+  and I@pool are not among them: `enveloped` marks only a step's own places and, with a membrane
+  locus or a geometry, the membrane's places, and no step moves I.
 - **Deterministic by construction:** slot 1's V_L and σ (`slot1:V_L`, `slot1:sigma_N_per_m`; the
   floppy vesicle, x0 = 0.85), while it is floppy.
   - `lumen.log_volume` is the minimum of ln V_osm = ln N_L − ln(N_A c_ext) and ln V_sph(W). While
@@ -113,7 +116,7 @@ code alone, before any run:
   - If both are floppy, the pair is exact.
   - If a slot 1 turned tense, its V and σ follow its own W.
   - So §5's one-ulp exposure cannot arise at them. The checker's D6 finding is the same mechanism
-    in a single lineage.
+    in a single lineage, and §6 records the population layout run once on a made-up world.
 - **Every other D5 observable reads W or the pool's count,** which the exact process draws. That
   covers A_m2 = qW/2, slot 0's V_L (V_sph(W) while tense) and σ, and the counts. Slot 0's N_L need
   not stay exact in (d), because its Jacobian column is not zero; it is not an observable.
@@ -161,8 +164,8 @@ only (128 replicas, 8 times, generator seed 3). Every check passed:
   - at the counts, which B judges;
   - at a floppy vesicle's σ, exactly 0.0, which B does not judge (B reads counts only).
 - **It also holds, by rounding luck, at other values.** On made-up values from 10⁻²⁵ to 10² in the
-  observables' [M, 8] layout, 159 of 4,000 constant columns at M = 128 and 72 of 4,000 at M = 256
-  had SE exactly 0.
+  observables' [M, 8] layout, a single rung's constant column had SE exactly 0 in 159 of 4,000 cases
+  at M = 128 and 72 of 4,000 at M = 256. A zero combined SE needs it at both rungs.
 - **What M then does.** Replicas all at 1.0 against (d) at 2.0, at both rungs, give z = 0. So M does
   not judge a zero-SE pair. The lead has asked the checker to list every zero-SE, nonzero-error pair
   by name in each world's verdict.
@@ -179,6 +182,13 @@ only (128 replicas, 8 times, generator seed 3). Every check passed:
 - **This erratum's author** read none of the checker's outputs and ran no world of the protocol,
   exact or (d). Its probes and checks of the registered functions ran on made-up columns only.
 - **§4 is from the code alone.** No D3 or D5 run, exact or (d), was made or read for it.
+- **The population layout, run once on a made-up world.**
+  - The files are `/mnt/workspaces/Cells/ol6-20261122/dev/erratum3/slot_probe.py` and its `.log`.
+  - The world has two slots at 40 nm, with founders at x0 = 1.3 and 0.8. These are not D5's
+    diameters or founders. Only its founder state was used, and no time integration was run.
+  - The floppy slot's I@lumen has an all-zero Jacobian row and column. The tense slot's has an
+    all-zero row and a column of at most 2.0 × 10⁻².
+  - One Rodas4 step at h = 10⁻⁶, 10⁻³, 10⁻¹ and 1 s kept both slots' I@lumen to the bit.
 
 ## 7. What does not change
 
