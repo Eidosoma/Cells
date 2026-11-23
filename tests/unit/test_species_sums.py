@@ -1,9 +1,11 @@
 """The species-sum helper (cells/numerics/species_sums.py; operators/summation/SPEC.md §2, §5).
 
 SPEC §5's guard, with micro.py's M2 as the template: NumPy against the jit-compiled helper,
-bitwise, at 8, 16, 50 and 150 species and 1, 254 and 1151 columns. The cases are materialized
-terms, z x n formed inside the compiled function (|z| in {1, 2}, and z = ±3), and mu x dn formed
-inside.
+bitwise, at 8, 16, 17, 50, 150, 256 and 1,024 species and 1, 254 and 1151 columns. The cases are
+materialized terms, z x n formed inside the compiled function (|z| in {1, 2}, and z = ±3), and
+mu x dn formed inside. Above 16 terms the device fold is a lax.scan (the fold's gate, FR-43 /
+D315), so 17, 50, 150, 256 and 1,024 check it against the host's loop; the gate itself is checked
+on the program: no scan at 16 terms, one at 17.
 
 The guard is not vacuous: without the barrier, at least one 8-species inexact case differs
 between host and device, as test_species_cap asserts `differs > 0`.
@@ -14,10 +16,10 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from cells.numerics.species_sums import entity_sum, species_sum
+from cells.numerics.species_sums import UNROLLED_TERMS, entity_sum, species_sum
 
 SEED = 20261115  # micro.py's.
-COUNTS = (8, 16, 50, 150)
+COUNTS = (8, 16, 17, 50, 150, 256, 1024)
 COLUMNS = (1, 254, 1151)
 
 
@@ -57,6 +59,15 @@ def test_without_the_barrier_an_eight_species_inexact_case_differs():
         differs += int(not same(species_sum(z_three * n, xp=np), bare(z_three, n)))
         differs += int(not same(species_sum(mu * n, xp=np), bare(mu, n)))
     assert differs > 0, "the fold without the barrier never differed: the guard reaches nothing"
+
+
+def test_the_fold_unrolls_through_16_terms_and_scans_above():
+    """The gate is static on the fold's length: every world at 16 species or fewer keeps its
+    program (its folds have at most 16 terms), and a longer fold's program holds one scan."""
+    assert UNROLLED_TERMS == 16
+    for s, scans in ((16, False), (17, True)):
+        program = str(jax.make_jaxpr(lambda v: species_sum(v, xp=jnp))(np.zeros((s, 3))))
+        assert ("scan" in program) == scans, (s, program)
 
 
 def test_the_fold_is_serial_in_declared_order():

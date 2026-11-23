@@ -53,8 +53,8 @@ keeps exact half-steps around @3's RK4 step ("split").
 
 Refusals. At the definition: a charged species (charged turnover routes wait for a turnover@2,
 FR-15 S1: a charged source is a source reaction), a production route on an outside node, a route on
-a held bath, a negative rate, a schedule change off the dt grid, more than 16 species per world
-(FR-9 / D165; species_common), an occupant without its rates, a donor copy whose route values
+a held bath, a negative rate, a schedule change off the dt grid, more than 1,024 species per world
+(FR-43 / D315; species_common), an occupant without its rates, a donor copy whose route values
 differ from the slot's, and every provider or closer of the volumes and activity masks
 (CONFLICTS_VIEW: version 1 is transport on a static tissue, so water, the lumens, insertion and S5's
 partition and bridge are refused). At run time: non-finite values and any written amount that would

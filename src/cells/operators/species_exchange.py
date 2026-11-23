@@ -69,8 +69,8 @@ area is the declared area plus a zero increment: the declared area, bit for bit.
 kept (D191).
 
 Refusals. At the definition: a charged species, a patch on a held bath, an import with a flux law,
-a saturable export, a negative rate, K_M <= 0, a schedule change off the dt grid, more than 16
-species per world (FR-9 / D165), an occupant without its rates, a donor copy whose route values
+a saturable export, a negative rate, K_M <= 0, a schedule change off the dt grid, more than 1,024
+species per world (FR-43 / D315), an occupant without its rates, a donor copy whose route values
 differ from the slot's, a second patch joining a route's cell and outside node where a provider of
 the areas is composed (above), and every provider or closer of the volumes and the activity masks
 (CONFLICTS_VIEW: version 1 reads the declared volumes, so water, the lumens, insertion and S5's

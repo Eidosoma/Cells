@@ -34,7 +34,7 @@ species_common.parse_species, with a declared trace_mM (§4.3), and their identi
 against D150's and D152's declarations by this operator, in either order, with no shared change.
 
 Refused at the definition (§6.2), each with its reason: a charged, permeant or undeclared ligand; an
-identity that differs from D150's or D152's; more than 16 species; a declared concentration of a
+identity that differs from D150's or D152's; more than 1,024 species (FR-43 / D315); a declared concentration of a
 ligand below its declared trace, a replacement template's or a scheduled bath composition's
 included, or a trace above 1e-6 K_d of a population binding it (§4.3); an unknown patch or contact;
 an outward population on a patch facing a held bath; copies <= 0, sites per copy not a positive

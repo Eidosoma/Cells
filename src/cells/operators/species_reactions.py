@@ -59,6 +59,18 @@ dt L <= 1; with it every stage is positive (the SSP property). A failure, or any
 non-positive stage or result, refuses the step (refused, never repaired); stage_report diagnoses
 one on the host.
 
+The step a declared accuracy needs (FR-43 / D315; docs/FR43_SHARED_INVENTORIES_DESIGN.md §1.5). The
+half-step is third order (the chain's errors at dt = 10, 5 and 2.5 ms fell by 8.9 and 8.4), so at a
+fixed k dt the error is fixed, and accuracy, not the stage condition, sets the step for fast
+transfers. Measured on FR-43's chain (tests/species_cap_fixtures.chain_world; links at k_f = 20
+and 0.2 /s, L = 33 /s): at 16 to 1,024 species the error over the largest amount is 1.45e-4,
+1.63e-5 and 1.93e-6 at dt = 10, 5 and 2.5 ms (dt L = 0.33, 0.17, 0.08), the same at every size, so
+2e-5 needs dt of about 0.1 / k_f, six times below the stage condition's dt L <= 1 (30 ms here). At
+k_f = 400 /s, dt = 5 ms (dt L = 3.3) is refused at the first step, dt = 1 ms (dt L = 0.66) gives
+1.4e-3, and 2e-5 needs about 0.25 ms. So a run costs about 10 k_f steps per simulated second at
+that accuracy. A transfer fast against the step the rest of a world needs is stiff, and needs a
+separate law with a stiff integrator (D152 §7.3's door, deferred by D315), not a smaller check.
+
 Energy (§3.3). Per node, G = RT sum n (ln(n/V) - 1) + sum mu°' n with mu°' = RT (mu°/RT - ln c0):
 @3's chemical term on the touched rows plus the standard-potential term, which @3's term lacks and
 the operator owns as a declared free-energy term, not a flow (`reaction_standard_energy_pJ`).
@@ -88,8 +100,8 @@ piecewise-constant multiplier m >= 0 from time 0, changing on the clock's grid (
 horizon; on a passive reaction it scales both directions. A route takes its site's schedule, else
 its reaction's.
 
-Refusals at the definition (§2.5): the cases above; a held-bath site; more than 16 species per
-world (D150's cap, FR-9 / D165); an identity that differs from a D150 operator's; a turnover route
+Refusals at the definition (§2.5): the cases above; a held-bath site; more than 1,024 species
+per world (D150's cap: FR-43 / D315, 16 by FR-9 / D165); an identity that differs from a D150 operator's; a turnover route
 on a (species, node) a reaction writes (one local-kinetics writer per row, §1.1); a cell route on a
 slot that scheduled_cell_replacement@1 replaces (§2.1); RK4 (§4.6); and every provider or closer of
 the declared volumes, masks and outside anchors (CONFLICTS_VIEW: water, the lumens, replacement@2
@@ -1642,10 +1654,22 @@ class LocalSpeciesReactions(Operator):
         )
 
     def working_size(self, spec):
+        """Values per saved row (execution/resources.row_bytes): the accumulators at every slot and
+        the routes' extents, times a margin of 8."""
         x, s = spec.execution, len(spec.model.species_ids)
         (declaration,) = (d for op, d, _ in composite_spec.entries(spec) if op.LAW_ID == LAW_ID)
+        count = len(declaration.routes)
+        return 8 * ((4 * s + 8) * (x.capacity + x.extracellular_capacity) + count)
+
+    def fixed_working_size(self, spec):
+        """Values held once per resident copy (execution/resources.fixed_bytes): the bound network,
+        its dense [species rows, route] arrays and its per-route and per-factor values, times a
+        margin of 8. Before FR-43 (D315) working_size counted it on every saved row, about k times
+        the rows' own size for a chain of k species: 9.5 GiB for 256 species at 400 steps, against a
+        measured peak of 1.1 GiB (docs/FR43_SHARED_INVENTORIES_DESIGN.md §1.6)."""
+        (declaration,) = (d for op, d, _ in composite_spec.entries(spec) if op.LAW_ID == LAW_ID)
         k, count = len(declaration.species), len(declaration.routes)
-        return 8 * ((4 * s + 8) * (x.capacity + x.extracellular_capacity) + count * (6 * k + 16))
+        return 8 * count * (6 * k + 16)
 
     def summary(self, spec, declaration, schedule, history):
         identities = common.summary_identities(tuple(s.identity for s in declaration.species))
