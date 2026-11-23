@@ -66,7 +66,7 @@ from cells.execution.batch_windows import WindowedBatchResult
 from cells.execution.devices import execution_device
 from cells.execution.errors import NumericalError
 from cells.execution.grid import refinement_times
-from cells.execution.resources import fixed_bytes, row_bytes, trace_bytes
+from cells.execution.resources import fixed_bytes, row_bytes
 from cells.execution.runner import integration_steps, validate_checkpoint
 from cells.execution.schedule import control_values, event_index
 from cells.execution.state import Checkpoint, initialise
@@ -194,11 +194,12 @@ def cohort_limits(spec):
         upper[id(s)] = (
             max(1, math.ceil(nominal)) + len(s.experiment.changes) + len(refinement_times(s))
         )
-        storage[id(s)] = trace_bytes(s, 0, 0)
+        storage[id(s)] = (fixed_bytes(s), row_bytes(s, 0, 0))
     bound = len(worlds) * max(upper.values())
     if bound > reduced.max_padded_steps:
         raise ConfigError("Conservative padded work exceeds batch max_padded_steps")
-    required = 2 * sum(storage[id(w.simulation)] for w in worlds)
+    # Each world's layout once (FR-43), its two checkpoint copies' rows.
+    required = sum(storage[id(w.simulation)][0] + 2 * storage[id(w.simulation)][1] for w in worlds)
     if required > reduced.max_working_bytes:
         raise MemoryRefusal(
             "Checkpoint aggregate arrays exceed batch max_working_bytes",

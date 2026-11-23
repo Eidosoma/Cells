@@ -27,7 +27,7 @@ import numpy as np
 import pytest
 
 from cells.definitions.specs import ConfigError, parse_spec
-from cells.execution import resources
+from cells.execution import batch, batch_windows, resources, windows
 from cells.execution.runner import _trace_budget
 from cells.execution.state import initialise
 from cells.models import pump_composite as pc
@@ -81,6 +81,37 @@ def test_the_trace_estimate_counts_the_network_layout_once():
     assert resources.trace_bytes(spec, 0) - resources.row_bytes(spec, 0) == fixed  # Once a copy.
     _trace_budget(spec, steps)  # The runner's admission: no refusal.
     assert fixed * (steps + 1) > spec.execution.max_trace_bytes
+
+
+def test_the_windowed_and_batch_estimates_count_a_layout_once_per_world(monkeypatch):
+    """FR-43 / D315: where a path holds several copies of a world's rows (two adjacent results,
+    two checkpoints), each copy's rows are counted and its layout once: the estimate grows by
+    exactly one fixed_bytes per world, whatever it is."""
+    raw = chain_world(32, dt=0.005, end=2.0, every=0.25)
+    spec = parse_spec(raw)
+    two = batch.parse_batch(
+        dict(
+            schema_version=1,
+            kind="independent_worlds",
+            worlds=[dict(world_id=i, simulation=raw) for i in (1, 2)],
+            execution=dict(
+                mapping="lax_map", max_worlds=4, max_padded_steps=10**6, max_working_bytes=2**31
+            ),
+        )
+    )
+    policy = windows.WindowPolicy(256)
+
+    def estimates(value):
+        for module in (windows, batch, batch_windows):
+            monkeypatch.setattr(module, "fixed_bytes", lambda spec, value=value: value)
+        return (
+            windows.plan_windows(spec, policy).estimated_working_bytes,
+            batch.plan_batch(two).estimated_working_bytes,
+            batch_windows.plan_batch_windows(two, policy).estimated_working_bytes,
+        )
+
+    none, some = estimates(0), estimates(1000)
+    assert [b - a for a, b in zip(none, some, strict=True)] == [1000, 2000, 2000]
 
 
 def test_the_host_sum_order_differs_while_the_ledgers_explicit_sum_is_the_compiled_one(world):

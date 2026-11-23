@@ -23,7 +23,7 @@ from cells.execution.batch import (
 )
 from cells.execution.devices import execution_device
 from cells.execution.errors import NumericalError
-from cells.execution.resources import trace_bytes
+from cells.execution.resources import fixed_bytes, row_bytes
 from cells.execution.runner import (
     RunResult,
     _analyse_segment,
@@ -97,8 +97,10 @@ def _plan_batch_windows(spec, policy, checkpoints, record):
         bound = max(bound, fixed_slots)
     # Reserve padding for EVERY world at the shared window width, including
     # worlds with less work. Two adjacent rounds may coexist in a consuming loop.
-    estimate = 2 * sum(
-        trace_bytes(p.spec, width, p.max_observations + 1) + trace_bytes(p.spec, 0, 0)
+    # Each world's layout once (fixed_bytes, FR-43), its rows in both coexisting rounds.
+    estimate = sum(
+        fixed_bytes(p.spec)
+        + 2 * (row_bytes(p.spec, width, p.max_observations + 1) + row_bytes(p.spec, 0, 0))
         for p in plans
     )
     if estimate > spec.max_working_bytes:
