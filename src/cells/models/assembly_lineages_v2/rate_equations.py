@@ -61,8 +61,24 @@ at the located crossing). A step whose end state is below min_count/2 is rejecte
 the sinks), to the integrator's tolerance; every moiety to rounding; and the second law per step,
 −J_r ΔF_r ≥ 0, at every accepted state. A run whose books do not close is refused.
 
-**Slices:** S1 (OL1's laws) and S2 (vesicles: geometry, the osmotic lumen, lysis, the shared pool,
-shear fission, serial transfer). The pore clock and held tensions (S3) are refused here.
+**The pore clock** (§3.5, S3; cells.pore_nucleation@1 and cells.tension_hold@1). Each vesicle
+draws E_v = −ln u from domain 7 (its key, counter 0) when the run first holds it: a founder at the
+start, a daughter at its birth, with H_v = 0 then. H_v = ∫ k_v dt, k_v the law's rate at the
+vesicle's real area A = q·W/2 and tension: the hold's over [start_s, end_s) (whose edges are stops),
+or, with no hold, the osmotic lumen's σ(N_L, W) (σ from F; 0 while floppy). H is carried by each
+step's own stages (rosenbrock_dense.quadrature), never appended to y, so it stays out of step
+selection and a pore world takes exactly its pore-free twin's steps until its first opening; its
+embedded error estimate is monitored at every accepted step, and a run where it passes 1e-10 is
+refused. The opening is the crossing H_v = E_v (upward), located as every guard is; Phase A's
+outcome follows, the rupture through the release (cause `pore`), booked as two parts whose ΔF_open
+cancels: the opening q_open = −ΔF_open + w (under a hold w = σ_β/σ, paid by
+source:tension_hold/<i>, ΔF_open = 2σ_β/σ − ln(A·n_s); with σ from F w = 0 and
+ΔF_open = σ_β/σ − ln(A·n_s), the note's §2.1) and the release from the open state. The hazard and
+σ_max both stand: whichever crosses first acts. Under a hold, a step that changes a membrane
+place's count is refused (T2); with σ from F, σ_max ≤ σ_β/4 is required at parse.
+
+**Slices:** S1 (OL1's laws), S2 (vesicles: geometry, the osmotic lumen, lysis, the shared pool,
+shear fission, serial transfer) and S3 (the pore clock and held tensions).
 """
 
 import functools
@@ -80,13 +96,17 @@ from cells.models.assembly_lineages_v2 import (
     IDEAL_MIXING,
     MODE,
     MODEL_ID,
+    PORE_NUCLEATION,
     POPULATION,
     RATE_EQUATIONS,
     geometry,
     kernel,
     lumen,
     model,
+    pore_clock,
+    pore_nucleation,
     streams,
+    tension_hold,
 )
 from cells.models.assembly_lineages_v2 import world as world_rules
 from cells.models.assembly_lineages_v2.interfaces import AssemblyRepresentation
@@ -121,6 +141,7 @@ RTOL_RANGE = (1e-13, 1e-3)
 EPS = float(np.finfo(np.float64).eps)
 MAX_SLOTS = 64  # §6.9: a population's linear algebra is dense in version 1
 REFUSED_SCHEDULES = ("replacement", "withdrawal")  # §1.4: their means come later (0.5 agent-day)
+H_ERROR = 1e-10  # §3.5: the pore clock's embedded error estimate per accepted step, absolute
 
 FORMULAS = {
     "flux": "J_r = s_r(n) theta+_r(n) (1 - exp(dF_r)), dF_r = nu_r . mu(n) - w_r, mu = grad F_cont",
@@ -144,6 +165,15 @@ FORMULAS = {
     "F_cont(before)) + w_r",
     "fission": "the mean split: each daughter n/k of every vesicle place, the last the complement; "
     "shear work sum_j F_v(d_j) - F_v(parent), F_v with the closure cost",
+    "pores": "E_v = -ln u (domain 7, the vesicle's key, counter 0) at its founding or birth, H_v = 0 "
+    "then; dH_v/dt = k_v(A_v, sigma_v, T), A_v = q W_v / 2 real, sigma_v the hold's over [start_s, "
+    "end_s) or the osmotic lumen's sigma(N_L, W) (0 while floppy); H carried by the step's stages, "
+    "out of step selection; the opening at H_v = E_v, upward; q_open = -dF_open + w, then the "
+    "release from the open state, so dF_open cancels",
+}
+PORE_LIMIT = {  # the pore law in this representation: the same law at real counts (§1.4)
+    "rule": "the same closed form at the vesicle's real area A = q W / 2 and tension (the hold's, or "
+    "the osmotic lumen's sigma(N_L, W) at real N_L and W); its clock H integrated with the state",
 }
 
 REPRESENTATION = law_registry.BUILTIN.register(
@@ -349,14 +379,8 @@ def refusals(world, experiment, execution):
     from cells.models.assembly_lineages_v2 import spec as spec_rules
 
     spec_rules._mode_refusals(world, execution.mode)
-    later = (
-        ("hazard", world.hazard is not None, "the pore clock comes with S3"),
-        ("tension_holds", bool(experiment.tension_holds), "a held tension comes with S3"),
-    )
-    for name, declared, reason in later:
-        if declared:
-            raise ConfigError(f"{RATE_EQUATIONS}: the world's {name} is refused in this slice: "
-                              f"{reason}")  # fmt: skip
+    if world.hazard is not None or experiment.tension_holds:
+        _pore_refusals(world, experiment.tension_holds)
     if world.geometry is not None and world.geometry[0] != BILAYER_GEOMETRY:
         raise ConfigError(
             f"{RATE_EQUATIONS}: the geometry {world.geometry[0]} is refused in version 1 (FR-21's "
@@ -408,6 +432,44 @@ def refusals(world, experiment, execution):
                     "only where every count a rate reads is large (a place rising from 0 is "
                     "refused in version 1)"
                 )
+
+
+def _pore_refusals(world, holds):
+    """S3's rules for the pore law and held tensions (the note's §3.5; §4 items 6 and 7). The
+    tension is a hold's or the osmotic lumen's: tension_hold's cross-checks stand as they are when a
+    hold is declared (its reader, no osmotic lumen, σ ≤ σ_β/4), and under a hold a step that changes a
+    membrane place's count is refused (T2); with no hold, the lumen is osmotic (σ from F) and
+    σ_max ≤ σ_β/4, so the law's domain holds on every trajectory that has not lysed."""
+    if world.hazard is not None and world.hazard[0] != PORE_NUCLEATION:
+        raise ConfigError(f"{RATE_EQUATIONS}: the hazard {world.hazard[0]} is refused: this "
+                          f"representation carries {PORE_NUCLEATION}'s clock only")  # fmt: skip
+    if holds:
+        tension_hold.cross_checks(world, holds)
+        changed = pore_nucleation.membrane_changes(world)
+        if changed:
+            step, place = changed[0]
+            raise ConfigError(
+                f"{RATE_EQUATIONS}: step {step} changes {place}'s count under a held tension: the "
+                "hold would do sigma dA of work on every such step, which the laws sheet books only "
+                "at an opening, so area-changing steps are refused under a hold (T2, the note's "
+                "§2.3 and §6.7)"
+            )
+        return
+    if world.conventions.lumen_volume != "osmotic":
+        raise ConfigError(
+            f"{RATE_EQUATIONS}: {PORE_NUCLEATION} reads a tension: a held one (the experiment's "
+            "tension_holds) or the osmotic lumen's (sigma from F, under lumen_volume osmotic)"
+        )
+    _, gamma, _, _ = pore_nucleation.parameters(world)
+    beta = pore_nucleation.sigma_beta(gamma, world.units.temperature_K)
+    sigma_max = world.geometry[1]["sigma_max_N_per_m"][0]
+    if not sigma_max <= tension_hold.SIGMA_BETA_FRACTION * beta:
+        raise ConfigError(
+            f"{RATE_EQUATIONS}: with sigma from F the tension reaches sigma_max = {sigma_max:g} N/m, "
+            f"beyond sigma_beta/4 = {tension_hold.SIGMA_BETA_FRACTION * beta:.6g} N/m (sigma_beta = "
+            "pi Gamma^2/(k_B T)): the law needs sigma_beta >> sigma on every trajectory that has "
+            "not lysed (the note's §3.5)"
+        )
 
 
 def enveloped(world):
@@ -492,6 +554,12 @@ class Problem:
             self.lumen_mask = np.asarray(g[7], dtype=np.float64)
             self.lumen_c = np.asarray(g[8], dtype=np.float64)
             self.sigma_max, self.kT, self.q = float(g[9]), float(g[10]), float(g[11])
+        # S3: the pore law's constants; a hold's tension, or the osmotic lumen's (σ from F).
+        self.pores = world.hazard is not None and world.hazard[0] == PORE_NUCLEATION
+        self.held_tension = bool(spec.experiment.tension_holds)
+        if self.pores:
+            self.pore_parameters = pore_nucleation.parameters(world)
+            self.temperature = world.units.temperature_K
 
     # -- the terms and the forces
     def free_energy(self, n, xp=jnp, terms=None):
@@ -577,6 +645,21 @@ class Problem:
         n = np.asarray(n, dtype=np.float64)
         return float(np.exp(lumen.log_volume(n @ self.lumen_mask, n @ self.quanta, self.lumen_c,
                                              np)))  # fmt: skip
+
+    # -- the pore law (S3), at whole-world states of one vesicle [..., P]
+    def pore_tension(self, n, sigma_hold, xp=jnp):
+        """σ (N/m): the hold's (`sigma_hold`, 0 outside a hold) or, with no hold, the lumen's."""
+        if self.held_tension:
+            return xp.broadcast_to(sigma_hold, n.shape[:-1])
+        return lumen.tension(n @ self.lumen_mask, n @ self.quanta, self.kT, self.q, self.lumen_c,
+                             xp)  # fmt: skip
+
+    def pore_rate(self, n, sigma_hold, xp=jnp):
+        """k_v (1/s) of one vesicle's whole-world state: the law at A = q·W(n)/2 and its σ."""
+        log_nu, gamma, e_a, _ = self.pore_parameters
+        area = self.q * (n @ self.quanta) / 2.0
+        return pore_nucleation.rate_at(area, self.pore_tension(n, sigma_hold, xp),
+                                       self.temperature, log_nu, gamma, e_a, xp)  # fmt: skip
 
 
 # ------------------------------------------------------------------ the limit's check
@@ -873,6 +956,15 @@ class Shape:
         alive = np.arange(self.K) < len(founders)
         return np.concatenate((n, slots.reshape(-1), np.zeros(p.P), np.zeros(2))), alive
 
+    def pore_rates(self, y, alive, sigma_hold):
+        """[K] each slot's k_v (S3; 0 in an empty slot), traceable: the quantity H's stages carry."""
+        p = self.problem
+        pool, slots = self.split(y)[:2]
+        if not self.population:
+            return jnp.where(alive, p.pore_rate(pool[None, :], sigma_hold), 0.0)
+        full = jnp.where(alive[:, None], self.full(pool, slots), jnp.asarray(self.safe)[None, :])
+        return jnp.where(alive, p.pore_rate(full, sigma_hold), 0.0)
+
     def weight(self):
         """The step control's weights: the finite counts, Q and W; not the supplies."""
         p = self.problem
@@ -912,7 +1004,9 @@ GUARDS = {  # name: (direction, the handler's kind)
     "floor": ("down", "stop"),
     "lysis": ("up", "lysis"),
     "kink": ("either", "restart"),
+    "pore": ("up", "rupture"),  # S3: H_v − E_v, the opening (then the rupture)
 }
+EVENTS = ("lysis", "rupture")  # the handlers that are events (FR-20's rule refuses their ties)
 THETAS = np.linspace(0.0, 1.0, 10)  # a step's ends and 8 interior points
 RESTEPS = 4
 
@@ -923,6 +1017,14 @@ def _crosses(direction, a, b):
     if direction == "up":
         return a <= 0 < b
     return (a > 0) != (b > 0)
+
+
+def _dense_clock(start, carried, thetas):
+    """[T, K] the carried clock's dense output (rosenbrock_dense.dense_carried) at θs, on the host."""
+    theta = np.asarray(thetas, dtype=np.float64)[:, None]
+    end = start + carried["increment"]
+    return (1.0 - theta) * start + theta * (end + (1.0 - theta) * (carried["k1"]
+                                                                   + theta * carried["k2"]))
 
 
 def _locate(guard_at, theta_low, theta_high, g_low, g_high, tolerance=1e-13):
@@ -1011,6 +1113,17 @@ def _program(spec):
 
         draw = vesicle_draw(problem) if problem.bilayer else None
         own = limit_check(problem, np.random.default_rng(CHECK_SEED), draw=draw)
+        carry = None
+        if problem.pores:
+
+            def carry(y, h, stages, alive, sigma_hold):
+                def rate(z):
+                    return shape.pore_rates(z, alive, sigma_hold)
+
+                return rd.quadrature(rate, jax.jacrev(rate), y, h, stages)
+
+            carry = jax.jit(carry)
+            own = {**own, "pore": _pore_check(spec, problem)}
         _PROGRAMS[key] = {
             "problem": problem,
             "shape": shape,
@@ -1019,9 +1132,41 @@ def _program(spec):
             "dense": jax.jit(jax.vmap(rd.dense, in_axes=(None, None, 0))),
             "free_energy": jax.jit(problem.free_energy),
             "dissipation": jax.jit(dissipation),
+            "carry": carry,
             "check": own,
         }
     return _PROGRAMS[key]
+
+
+def _pore_check(spec, problem):
+    """The pore law's traced rate against its host form (pore_nucleation.log_rate) at each
+    founder's area and tension (the hold's; with σ from F the lumen's where tense, σ_max/2 and
+    σ_max): equal to 1e-12 in ln k_v, or the world is refused."""
+    world = spec.model.world
+    log_nu, gamma, e_a, _ = problem.pore_parameters
+    founders = [np.asarray(world.founder, dtype=np.float64)]
+    if world.population is not None:
+        founders = [founders[0] + np.asarray(v, dtype=np.float64)
+                    for v in world.population["founders"]]  # fmt: skip
+    sigmas = [h.sigma for h in spec.experiment.tension_holds]
+    worst, points = 0.0, 0
+    for counts in founders:
+        n = np.zeros(problem.P)
+        n[: len(world.places)] = counts
+        tensions = sigmas or [float(problem.tension(n)), problem.sigma_max / 2, problem.sigma_max]
+        for sigma in tensions:
+            if not sigma > 0:
+                continue
+            area = problem.q * float(n @ problem.quanta) / 2.0
+            host = pore_nucleation.log_rate(area, sigma, problem.temperature, log_nu, gamma, e_a)
+            traced = float(np.log(pore_nucleation.rate_at(
+                jnp.asarray(area), jnp.asarray(sigma), problem.temperature, log_nu, gamma, e_a,
+                jnp)))  # fmt: skip
+            worst, points = max(worst, abs(traced - host) / max(1.0, abs(host))), points + 1
+    if worst > 1e-12:
+        raise ConfigError(f"{RATE_EQUATIONS}: the pore law's traced rate is not its host form "
+                          f"(largest relative gap {worst:.3g} in ln k_v)")  # fmt: skip
+    return {"largest_relative_gap": worst, "points": points}
 
 
 class _Run:
@@ -1055,17 +1200,43 @@ class _Run:
         self.h = None
         self.just = set()  # guards crossed at the current time (no immediate re-crossing)
         self.tied = []  # crossings at the located one's instant
+        # S3: each slot's pore clock (H, its threshold E; inf in an empty slot), the holds' work by
+        # index, the tension of the segment in progress, and the clock's largest error estimate.
+        self.holds = tuple(self.e.tension_holds)
+        self.booked["hold"] = {h.index: 0.0 for h in self.holds}
+        self.H = np.zeros(self.shape.K)
+        self.E = np.full(self.shape.K, np.inf)
+        self.draws = []  # (key, counter, u, E, time drawn)
+        self.sigma_hold = 0.0
+        self.clock_error = 0.0
+        self.carried = None  # the accepted step's carried clock (a crossing's dense H)
+        if self.p.pores:
+            for slot in np.flatnonzero(self.alive):
+                self.draw_threshold(int(slot))
+
+    def draw_threshold(self, slot):
+        """A vesicle's pore threshold E = −ln u (domain 7, its key, counter 0) when the run first
+        holds it (a founder at the start, a daughter at its birth), with H = 0 then (§3.5)."""
+        key = int(self.keys[slot])
+        u, energy = pore_clock.threshold(self.base_key, key, 0)
+        self.H[slot], self.E[slot] = 0.0, energy
+        self.draws.append((key, 0, u, energy, self.t))
+
+    def drop_clock(self, slot):
+        self.H[slot], self.E[slot] = 0.0, np.inf
 
     # -- rows and books
     def row(self, kind):
+        extra = {"H": self.H.copy(), "hold": [self.booked["hold"][h.index] for h in self.holds]}
         self.rows.append((kind, self.t, np.asarray(self.y, dtype=np.float64).copy(),
                           self.alive.copy(), self.keys.copy(), self._booked_total(),
-                          self.moiety_out.copy()))  # fmt: skip
+                          self.moiety_out.copy(), extra))  # fmt: skip
 
     def _booked_total(self):
+        """(event heat, reservoir work at events, shear, transfer, sink, the holds' work)."""
         b = self.booked
         return (b["heat"], b["reservoir"], math.fsum(b["shear"].values()),
-                math.fsum(b["transfer"].values()), b["sink"])  # fmt: skip
+                math.fsum(b["transfer"].values()), b["sink"], math.fsum(b["hold"].values()))  # fmt: skip
 
     def world_f(self, y=None, alive=None):
         y = self.y if y is None else y
@@ -1081,8 +1252,9 @@ class _Run:
         return float(f(with_vesicle)) - float(f(pool_only)) + self.p.closure
 
     # -- guards
-    def guards(self, states):
-        """{name: [T, C] values} of every guard at whole-world states [T, ...] of y."""
+    def guards(self, states, clocks=None):
+        """{name: [T, C] values} of every guard at whole-world states [T, ...] of y; `clocks` [T, K]
+        holds the pore clocks H at the same points (S3)."""
         T = states.shape[0]
         shape, p = self.shape, self.p
         out = {}
@@ -1116,23 +1288,56 @@ class _Run:
             if p.osmotic:
                 out["lysis"] = (p.tension(full) - p.sigma_max, slots_of)
                 out["kink"] = (p.kink(full), slots_of)
+            if clocks is not None:
+                out["pore"] = (clocks[:, slots_of] - self.E[slots_of][None, :], slots_of)
         return out
 
-    def tolerance(self, name):
+    def tolerance(self, name, slot=0):
         """A guard's tolerance at the re-stepped state (§3.2 step 4): ten times the step control's
         own tolerance on the guard's scale (counts for the envelope and the floor, σ_max for
-        lysis, 1 for the kink's logarithm)."""
+        lysis, 1 for the kink's logarithm; for the pore clock its threshold E, with the clock's
+        own bound H_ERROR as its absolute part)."""
         p, x = self.p, self.x
+        if name == "pore":
+            return 10.0 * (H_ERROR + x.rtol * max(1.0, float(self.E[slot])))
         scale = {"envelope": x.min_count, "floor": getattr(p, "floor", 1.0),
                  "lysis": getattr(p, "sigma_max", 1.0), "kink": 1.0}[name]  # fmt: skip
         absolute = x.atol_count if name in ("envelope", "floor") else 0.0
         return 10.0 * (absolute + x.rtol * scale)
 
+    def carry(self, y, hh, result):
+        """The pore clocks' step over the step from y (its stages), as host arrays, or None."""
+        if self.prog["carry"] is None:
+            return None
+        c = self.prog["carry"](y, hh, result.stages, jnp.asarray(self.alive), self.sigma_hold)
+        return {name: np.asarray(getattr(c, name), dtype=np.float64)
+                for name in ("increment", "error", "k1", "k2")}  # fmt: skip
+
+    def advance_clock(self, carried):
+        """H += the accepted step's increment; its error estimate monitored (§3.5): a run where it
+        passes H_ERROR is refused, never silently inaccurate."""
+        if carried is None:
+            return
+        error = float(np.max(np.abs(np.where(self.alive, carried["error"], 0.0)), initial=0.0))
+        self.clock_error = max(self.clock_error, error)
+        if error > H_ERROR:
+            raise ConfigError(
+                f"{RATE_EQUATIONS}: the pore clock's error estimate, {error:.3g}, passes "
+                f"{H_ERROR:g} at t = {self.t!r} s: the run is refused, never silently inaccurate "
+                "(the note's §3.5); smaller tolerances (rtol and atol_count together) are the remedy"
+            )
+        self.H = np.where(self.alive, self.H + carried["increment"], self.H)
+
     def crossing(self, y, result, hh, landing, stop):
         """The earliest crossing within an accepted step, or None (§3.2 steps 1 and 2)."""
         states = np.array(self.prog["dense"](y, result, jnp.asarray(THETAS)))
         states[0], states[-1] = np.asarray(y), np.asarray(result.y)
-        values = self.guards(states)
+        carried = self.carried
+        clocks = None
+        if carried is not None:
+            clocks = _dense_clock(self.H, carried, THETAS)
+            clocks[0], clocks[-1] = self.H, self.H + carried["increment"]
+        values = self.guards(states, clocks)
         found = []
         for name, (g, slots) in values.items():
             direction = GUARDS[name][0]
@@ -1152,7 +1357,8 @@ class _Run:
 
             def at(theta, name=name, c=c):
                 state = np.asarray(self.prog["dense"](y, result, jnp.asarray([theta])))
-                return float(self.guards(state)[name][0][0, c])
+                clock = None if carried is None else _dense_clock(self.H, carried, [theta])
+                return float(self.guards(state, clock)[name][0][0, c])
 
             ga, gb = values[name][0][i, c], values[name][0][i + 1, c]
             theta = THETAS[i + 1] if gb == 0 else _locate(at, THETAS[i], THETAS[i + 1], ga, gb)
@@ -1160,7 +1366,7 @@ class _Run:
         located.sort(key=lambda c: (c.time, c.guard, c.slot))
         first = located[0]
         tied = [c for c in located if same_instant(c.time, first.time)]
-        events = [c for c in tied if GUARDS[c.guard][1] == "lysis"]
+        events = [c for c in tied if GUARDS[c.guard][1] in EVENTS]
         if len(events) > 1:
             raise ConfigError(
                 f"{RATE_EQUATIONS}: two lyses at one instant (slots {events[0].slot} and "
@@ -1176,17 +1382,20 @@ class _Run:
         return first
 
     def restep(self, y, hh, crossing):
-        """The step re-taken from its start to the root (§3.2 steps 3 and 4): (state, θ) with the
-        guard within its tolerance, or None (the run stops stalled)."""
+        """The step re-taken from its start to the root (§3.2 steps 3 and 4): (state, θ, the pore
+        clocks' carried step) with the guard within its tolerance, or None (the run stops
+        stalled)."""
         name, slot = crossing.guard, crossing.slot
-        tolerance = self.tolerance(name)
+        tolerance = self.tolerance(name, slot)
         theta, previous = crossing.theta, None
         for _ in range(RESTEPS + 1):
             again = self.prog["step"](y, theta * hh, jnp.asarray(self.alive))
-            values = self.guards(np.asarray(again.y)[None, :])[name]
+            carried = self.carry(y, theta * hh, again)
+            clocks = None if carried is None else (self.H + carried["increment"])[None, :]
+            values = self.guards(np.asarray(again.y)[None, :], clocks)[name]
             g = float(values[0][0, values[1].index(slot)])
             if abs(g) <= tolerance and bool(again.finite):
-                return again.y, theta
+                return again.y, theta, carried
             if previous is not None and g != previous[1]:
                 theta, previous = theta - g * (theta - previous[0]) / (g - previous[1]), (theta, g)
             else:
@@ -1218,6 +1427,7 @@ class _Run:
                 if self.h <= 16 * EPS * max(abs(self.t), self.horizon):
                     self.status = "stalled"
                 continue
+            self.carried = self.carry(self.y, hh, result)
             crossing = self.crossing(self.y, result, hh, landing, stop)
             self.h = rd.next_step(hh, err, False)
             if crossing is not None:
@@ -1225,12 +1435,14 @@ class _Run:
                 if located is None:
                     self.status = "stalled"
                     break
-                self.y, theta = located
+                self.y, theta, carried = located
+                self.advance_clock(carried)
                 self.t = self.t + theta * hh
                 self.accepted += 1
                 self.located += 1
                 self.handle(crossing)
                 continue
+            self.advance_clock(self.carried)
             self.t = stop if landing else self.t + hh
             self.y = result.y
             self.just = set()
@@ -1256,6 +1468,8 @@ class _Run:
         for c in tied:
             if GUARDS[c.guard][1] == "lysis":
                 self.lyse(c.slot, "threshold")
+            elif GUARDS[c.guard][1] == "rupture":
+                self.rupture(c.slot)
         stops = [c for c in tied if GUARDS[c.guard][1] == "stop"]
         if stops and self.status is None:
             self.row("outside_envelope")
@@ -1297,28 +1511,67 @@ class _Run:
         self.y = jnp.asarray(y)
         return returned, work
 
-    def lyse(self, slot, cause, *, at_birth=False):
-        """§3.3: the release, booked as one row, q = −(F_cont(after) − F_cont(before)) + w_r."""
+    def lyse(self, slot, cause, *, at_birth=False, opening=None):
+        """§3.3: the release, booked as one row, q = −(F_cont(after) − F_cont(before)) + w_r; after
+        a pore's opening (`opening`, S3) the release is from the open state, F(open) = F(n) + ΔF, and
+        the opening's own heat and work are booked with it, so ΔF cancels in the event's total."""
         before = self.world_f()
         sigma = None
         for s, n in self.shape.assemblies(self.y, self.alive):
             if s == slot:
-                sigma = float(self.p.tension(n))
+                sigma = float(self.p.tension(n)) if self.p.osmotic else None
         returned, w = self.release(slot)
         self.alive = self.alive.copy()
         self.alive[slot] = False
-        q = -(self.world_f() - before) + w
-        self.booked["heat"] += q
+        record = {"kind": "lysis", "time_s": self.t, "slot": int(slot), "key": int(self.keys[slot]),
+                  "cause": cause, "at_birth": at_birth}  # fmt: skip
+        if opening is None:
+            q = -(self.world_f() - before) + w
+            self.booked["heat"] += q
+            record |= {"sigma_N_per_m": sigma, "sigma_max_N_per_m": getattr(self.p, "sigma_max",
+                                                                             None)}  # fmt: skip
+        else:
+            q = -(self.world_f() - (before + opening["delta_F_kT"])) + w
+            self.booked["heat"] += opening["opening_heat_kT"] + q
+            if opening["hold"] is not None:
+                self.booked["hold"][opening["hold"]] += opening["work_kT"]
+            record |= opening
         self.booked["reservoir"] += w
-        self.events.append({"kind": "lysis", "time_s": self.t, "slot": int(slot),
-                            "key": int(self.keys[slot]), "cause": cause, "at_birth": at_birth,
-                            "sigma_N_per_m": sigma, "sigma_max_N_per_m": self.p.sigma_max,
-                            "returned": returned, "release_heat_kT": q,
-                            "release_reservoir_work_kT": w})  # fmt: skip
+        record |= {"returned": returned, "release_heat_kT": q, "release_reservoir_work_kT": w}
+        self.events.append(record)
         self.keys[slot] = -1
+        self.drop_clock(slot)
         self.row("lysis")
         if not self.shape.population:
             self.status = "lysed"
+
+    def rupture(self, slot):
+        """§3.5: the opening at H = E, then Phase A's outcome, the rupture through the release
+        (cause `pore`): q_open = −ΔF_open + w, under a hold w = σ_β/σ paid by the hold
+        (pore_clock.opening), with σ from F w = 0 (pore_clock.opening_from_f)."""
+        p = self.p
+        (n,) = [n for s, n in self.shape.assemblies(self.y, self.alive) if s == slot]
+        area = p.q * float(n @ p.quanta) / 2.0
+        hold = self.hold_in_force()
+        if p.held_tension:
+            sigma = hold.sigma
+            work, heat, delta_f = pore_clock.opening(self.world, area, sigma)
+        else:
+            sigma = float(p.tension(n))
+            work, heat, delta_f = pore_clock.opening_from_f(self.world, area, sigma)
+        rate = float(p.pore_rate(jnp.asarray(n), self.sigma_hold))
+        self.lyse(slot, "pore", opening={
+            "hold": None if hold is None else hold.index, "sigma_N_per_m": sigma, "area_m2": area,
+            "rate_per_s": rate, "threshold_E": float(self.E[slot]), "counter": 0,
+            "clock_H": float(self.H[slot]), "work_kT": work, "opening_heat_kT": heat,
+            "delta_F_kT": delta_f})  # fmt: skip
+
+    def hold_in_force(self):
+        """The hold whose interval [start_s, end_s) holds the segment in progress, or None."""
+        for hold in self.holds:
+            if hold.start <= self.t < hold.end:
+                return hold
+        return None
 
     def stop_events(self, events):
         """A stop's scheduled events, in schedule-index order (§3.1), on the assemblies alive at
@@ -1393,6 +1646,8 @@ class _Run:
                 self.keys[0] = keys[followed]
                 self.next_key += k
                 homes = [0]
+                if p.pores:  # the followed daughter's own clock (§3.5); the parent's ends here
+                    self.draw_threshold(0)
             else:
                 sub = int(self.lineage[slot])
                 self.count[sub] += k
@@ -1407,6 +1662,8 @@ class _Run:
                         self.lineage[home] = self.next_sub
                         self.count[self.next_sub] = 0
                         self.next_sub += 1
+                    if p.pores:  # each daughter's own clock (§3.5); the parent's ends here
+                        self.draw_threshold(home)
                 y[p.P : p.P + shape.blocks] = block.reshape(-1)
                 self.y = jnp.asarray(y)
             self.booked["shear"][index] = self.booked["shear"].get(index, 0.0) + work
@@ -1469,6 +1726,7 @@ class _Run:
         for s in removed:
             block[s] = 0.0
             self.alive[s], self.keys[s], self.lineage[s] = False, -1, -1
+            self.drop_clock(s)
         y[p.P : p.P + shape.blocks] = block.reshape(-1)
         self.y = jnp.asarray(y)
         work = float(self.prog["free_energy"](np.where(shape.pool_place, new_pool, 0.0)))
@@ -1494,10 +1752,13 @@ def run(spec):
     plan, draws = runner._plan(spec, state.base_key)  # domain 6's draws, as exact
     horizon = state.horizon
     observed = sorted({float(t) for t in spec.experiment.observation_times_s if 0.0 < t <= horizon})
-    times = sorted({t for t, _ in plan} | set(observed) | {horizon})
+    edges = {float(t) for h in state.holds for t in (h.start, h.end) if 0.0 < t < horizon}
+    times = sorted({t for t, _ in plan} | set(observed) | {horizon} | edges)  # S3: hold edges
     scheduled = dict(plan)
     state.row("start")
     for stop in times:
+        hold = state.hold_in_force()  # the segment's tension: k_v jumps only at its edges
+        state.sigma_hold = 0.0 if hold is None else float(hold.sigma)
         state.integrate(stop)
         if state.status is not None:
             break
@@ -1523,7 +1784,10 @@ def run(spec):
                     "restarts": state.restarts, "crossings": state.located,
                     "method": state.x.method,
                     "rtol": state.x.rtol, "atol_count": state.x.atol_count, "end_time_s": state.t,
-                    "stop_reason": state.stop_reason, "schedule_draws": [list(d) for d in draws]},
+                    "stop_reason": state.stop_reason, "schedule_draws": [list(d) for d in draws],
+                    **({"pores": {"draws": [list(d) for d in state.draws],
+                                  "largest_clock_error": state.clock_error,
+                                  "clock_error_bound": H_ERROR}} if state.p.pores else {})},
         ledger=ledger,
         moieties=moiety,
         dissipation={"smallest_margin": state.dissipation, "tolerance": -64 * EPS,
@@ -1543,7 +1807,7 @@ def _arrays(state):
     the bookings at events, and the sinks."""
     p, shape = state.p, state.shape
     places = len(p.world.places)
-    kinds, times, ys, alive, keys, booked, _ = zip(*state.rows, strict=True)
+    kinds, times, ys, alive, keys, booked, _, extras = zip(*state.rows, strict=True)
     ys = np.stack(ys)
     booked = np.asarray(booked, dtype=np.float64)
     out = {
@@ -1551,7 +1815,8 @@ def _arrays(state):
         "row_time_s": np.asarray(times),
         "supplied": ys[:, shape.supply_at : shape.supply_at + places],
         "heat_kT": ys[:, shape.heat_at] + booked[:, 0],
-        "work_kT": ys[:, shape.heat_at + 1] + booked[:, 1] + booked[:, 2] + booked[:, 3],
+        "work_kT": ys[:, shape.heat_at + 1] + booked[:, 1] + booked[:, 2] + booked[:, 3]
+        + booked[:, 5],
         "continuous_heat_kT": ys[:, shape.heat_at],
         "reservoir_work_kT": ys[:, shape.heat_at + 1] + booked[:, 1],
         "shear_work_kT": booked[:, 2],
@@ -1560,6 +1825,10 @@ def _arrays(state):
         "alive": np.stack(alive),
         "keys": np.stack(keys),
     }
+    if p.pores:  # S3: each slot's pore clock H (0 in an empty slot)
+        out["pore_clock_H"] = np.stack([e["H"] for e in extras])
+    if state.holds:  # the holds' work, cumulative, by hold (source:tension_hold/<index>)
+        out["tension_hold_work_kT"] = np.asarray([e["hold"] for e in extras], dtype=np.float64)
     if shape.population:
         out["pool_counts"] = ys[:, :places]
         block = ys[:, p.P : p.P + shape.blocks].reshape((len(ys), shape.K, shape.V))
@@ -1574,12 +1843,12 @@ def _arrays(state):
 def _books(state):
     """The closure (§2.2) and the moieties (§2.4) at every row."""
     p, shape, x = state.p, state.shape, state.x
-    f = np.asarray([shape.free_energy(y, alive, state.prog["free_energy"])
-                    for _, _, y, alive, _, _, _ in state.rows])  # fmt: skip
+    f = np.asarray([shape.free_energy(r[2], r[3], state.prog["free_energy"])
+                    for r in state.rows])  # fmt: skip
     ys = np.stack([r[2] for r in state.rows])
     booked = np.asarray([r[5] for r in state.rows], dtype=np.float64)
     heat = ys[:, shape.heat_at] + booked[:, 0]
-    work = ys[:, shape.heat_at + 1] + booked[:, 1] + booked[:, 2] + booked[:, 3]
+    work = ys[:, shape.heat_at + 1] + booked[:, 1] + booked[:, 2] + booked[:, 3] + booked[:, 5]
     sink = booked[:, 4]
     residual = (f - f[0]) - (work - heat - sink)
     scale = np.abs(ys[:, shape.heat_at]) + np.abs(ys[:, shape.heat_at + 1])
@@ -1588,7 +1857,7 @@ def _books(state):
         np.abs(f) + abs(f[0]) + events
     )
     totals = []
-    for _, _, y, alive, _, _, out in state.rows:
+    for _, _, y, alive, _, _, out, _ in state.rows:
         pool, slots, supplied = shape.split(y)[:3]
         total = p.moieties @ pool - p.moieties @ supplied + out
         if shape.population:
@@ -1632,6 +1901,7 @@ def simulation_spec(model_spec, experiment, execution):
 RUN_FORMAT = "cells.rate_equations_run@1"
 NO_LIMIT_HOOK = {  # the representation's rule for what declares no limit kernel (§1.4)
     BILAYER_GEOMETRY: {"rule": FORMULAS["geometry"]},
+    PORE_NUCLEATION: PORE_LIMIT,
 }
 
 
@@ -1683,6 +1953,21 @@ def write_run(directory, run, *, provenance=None):
         "timings": run.timings,
         "provenance": provenance,
     }  # fmt: skip
+    if world.hazard is not None:  # S3: the pore law's block, as an exact run's (pore_clock.block)
+        ruptures = [e for e in run.events if e.get("cause") == "pore"]
+        causes = {}
+        for e in run.events:
+            if e["kind"] == "lysis":
+                causes[e["cause"]] = causes.get(e["cause"], 0) + 1
+        record["pores"] = pore_clock.block(spec, ruptures, causes)
+        record["pores"]["reads"] = (
+            "this representation's ruptures are its lysis events with cause pore: each one's heat "
+            "is opening_heat_kT + release_heat_kT, its work work_kT (the hold's column; 0 with "
+            "sigma from F) + release_reservoir_work_kT; the opening's delta_F_kT cancels across the "
+            "two; clock_H is H at the located crossing, threshold_E its E"
+        )
+    if spec.experiment.tension_holds:
+        record["tension_hold"] = pore_clock.holds_block(spec)
     text = json.dumps(record, indent=1, sort_keys=True, default=float)
     (out / "run.json").write_text(text + "\n")
     np.savez(out / "rows.npz", **{k: np.asarray(v) for k, v in run.rows.items()})

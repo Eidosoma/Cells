@@ -28,6 +28,17 @@ caller supplies an exact Jacobian (forward differentiation of its own f).
 **Determinism.** Every sum over stages is a fixed, unrolled order, and the error norm is a fixed
 reduction, so a given program gives the same bits on every run. The caller drives steps and stops;
 this module holds no state.
+
+**A quantity carried by the stages** (`quadrature`; OL6 S3, the design note's §3.5). A quantity
+Z' = k(y) that the system never reads (its Jacobian column is 0) is the augmented system's last
+component, and the method's own stage equation for that row needs no new solve:
+
+    U^Z_i = γh (k(Y_i) + ∇k(y)·U_i + Σ_(j<i) (C_ij/h) U^Z_j),
+
+with Y_i and U_i the step's own stages (`Step.stages`). So Z is integrated by the same method, of
+order 4 with its own embedded estimate U^Z_6 and dense output, while the step's arithmetic on y is
+untouched: a system with such a quantity takes exactly the steps of its twin without it (an
+appended row would enter the LU's pivoting).
 """
 
 import math
@@ -87,13 +98,15 @@ SOURCE = (
 
 class Step(NamedTuple):
     """One step's outputs: the new state, the embedded error estimate, the dense output's two
-    coefficient vectors and whether every stage was finite."""
+    coefficient vectors, whether every stage was finite, and the stages U_i [STAGES, size] (for a
+    quantity they carry, `quadrature`)."""
 
     y: object
     error: object
     k1: object
     k2: object
     finite: object
+    stages: object
 
 
 def _combine(weights, vectors, start=None):
@@ -125,12 +138,46 @@ def step(rhs, jacobian, y, h):
     y_new = _combine(B, stages, start=y)
     k1 = _combine(H[0], stages)
     k2 = _combine(H[1], stages)
-    return Step(y_new, stages[-1], k1, k2, finite)
+    return Step(y_new, stages[-1], k1, k2, finite, jnp.stack(stages))
 
 
 def dense(y, result, theta):
     """The dense output at θ in [0, 1] of a step from y (order 3)."""
     return (1.0 - theta) * y + theta * (result.y + (1.0 - theta) * (result.k1 + theta * result.k2))
+
+
+class Carried(NamedTuple):
+    """A carried quantity's step (`quadrature`): its increment, its embedded error estimate and its
+    dense output's two coefficients, each of the quantity's shape."""
+
+    increment: object
+    error: object
+    k1: object
+    k2: object
+
+
+def quadrature(rate, gradient, y, h, stages):
+    """Z' = rate(y), carried by the stages of the step from y with step h (the module docstring):
+    rate(y) and gradient(y) = ∂rate/∂y (shape [..., size]) are traceable; the stages are
+    Step.stages. The quantity's start value never enters: Z_new = Z + increment."""
+    grad = gradient(y)
+    units = [stages[i] for i in range(STAGES)]
+    carried = []
+    for i in range(STAGES):
+        point = y if i == 0 else _combine(A[i, :i], units, start=y)
+        right = rate(point) + grad @ units[i]
+        coupling = _combine(C[i, :i] / 1.0, carried) if i > 0 else None
+        if coupling is not None:
+            right = right + coupling / h
+        carried.append(GAMMA * h * right)
+    return Carried(_combine(B, carried), carried[-1], _combine(H[0], carried),
+                   _combine(H[1], carried))  # fmt: skip
+
+
+def dense_carried(start, carried, theta):
+    """A carried quantity's dense output at θ in [0, 1], from its value at the step's start."""
+    end = start + carried.increment
+    return (1.0 - theta) * start + theta * (end + (1.0 - theta) * (carried.k1 + theta * carried.k2))
 
 
 def error_norm(error, y, y_new, rtol, atol, weight):

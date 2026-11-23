@@ -61,6 +61,7 @@ from cells.models.assembly_lineages_v2 import (
     MODES,
     PHASE_EXCHANGE,
     POPULATION,
+    PORE_NUCLEATION,
     PRESCRIBED_SHELL,
     RATE_FACTOR_INTERFACE,
     REACTION_INTERFACE,
@@ -669,6 +670,10 @@ def parse(data):
         experiment = parse_experiment(raw["experiment"], model.world)
         rate_equations.refusals(model.world, experiment, execution)
         return SimulationSpec(model, experiment, execution)
+    if model.world.hazard is not None and model.world.hazard[0] == PORE_NUCLEATION:
+        from cells.models.assembly_lineages_v2 import pore_nucleation  # FR-31 Phase A (OL6 S3)
+
+        pore_nucleation.phase_a_refusals(model.world)  # exact events: areas fixed under the clock
     execution = parse_execution(raw["execution"], model)
     _mode_refusals(model.world, execution.mode)
     experiment = parse_experiment(raw["experiment"], model.world)

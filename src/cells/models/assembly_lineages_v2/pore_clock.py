@@ -120,6 +120,18 @@ def opening(world, area, sigma):
     return work, -delta_f + work, delta_f
 
 
+def opening_from_f(world, area, sigma):
+    """(w, q_open, ΔF) of a pore's opening where σ comes from F, each in k_BT (OL6 S3; the sheet's
+    §7): no hold does work, w = 0, and the pore's area relief is inside ΔF to leading order in
+    r_c/R_v, ΔF = 2σ_β/σ − σ_β/σ − ln(A·n_s) = σ_β/σ − ln(A·n_s); so q_open = −ΔF = ln(k_v/P), as
+    under a hold."""
+    log_nu, gamma, e_a, eta = pore_nucleation.parameters(world)
+    beta = pore_nucleation.sigma_beta(gamma, world.units.temperature_K)
+    log_sites = math.log(area) + pore_nucleation.log_site_density(log_nu, gamma, e_a, eta)
+    delta_f = beta / sigma - log_sites
+    return 0.0, -delta_f, delta_f
+
+
 def release(world, layout, counts):
     """A rupture's release of the vesicle in `counts` (its places; any pool places are not read):
     (added [P] to the pool's finite places, took [P] from each held reservoir's net supply,
