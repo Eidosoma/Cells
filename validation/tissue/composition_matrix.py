@@ -924,6 +924,13 @@ _COMPARTMENTS_FIRST = tuple(
     for pair in _TRAFFICKING_OFF
     if pair not in _TRAFFICKING_FIRST and PRODUCER not in pair and WASH not in pair
 )
+# The laws those pairs name beside trafficking, in the matrix's order: the rule's text names them.
+_OFF_BOTH_LISTS = tuple(
+    sorted(
+        {law for pair in _COMPARTMENTS_FIRST for law in pair if law != TRAFFICKING},
+        key=LAWS.index,
+    )
+)
 # The compartment wash is off both lists too; its pairs with trafficking are refused there first.
 _WASH_FIRST = tuple(pair for pair in _TRAFFICKING_OFF if WASH in pair)
 
@@ -1299,16 +1306,17 @@ RULES = (
     ),
     dict(
         rule="beside scheduled_membrane_trafficking@1, the compartments' admitted list refuses "
-        "site occupancy first",
-        laws=(TRAFFICKING, SITES),
+        "first each law that is on neither admitted list: " + ", ".join(_OFF_BOTH_LISTS),
+        laws=(TRAFFICKING, *_OFF_BOTH_LISTS),
         level="law",
         check=OPS + "compartments.py::check_definition",
         test=TESTS + "test_membrane_trafficking.py::test_each_refusal_fires_with_its_reason",
         tag=REAL,
-        why="Trafficking requires the compartments, whose check runs first, and site_occupancy@1 "
-        "is not on their admitted list: the case 'site occupancy beside it' asserts that "
-        "message. Trafficking's own reason, that sites move with their membrane only from "
-        "version 1.1, is a second wall this composition never reaches",
+        why="Trafficking requires the compartments, whose check runs first, and each law named "
+        "is on neither admitted list, so the compartments' message is the one given: the case "
+        "'site occupancy beside it' asserts it for site_occupancy@1. Trafficking's own reasons "
+        "(for sites, that they move with their membrane only from version 1.1) are a second wall "
+        "these compositions never reach",
         marks=_COMPARTMENTS_FIRST,
     ),
     dict(

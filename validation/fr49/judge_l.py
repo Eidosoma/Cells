@@ -165,11 +165,61 @@ def restart(spec, result, *, plant=False):
     return dict(fields_differing=differ, passed=not differ)
 
 
-def order(engine, reference, times):
-    """L4 and L5: {q: e(dt), ratio, judged, passed} against the reference at the sample times."""
+QUANTITIES = ("n_O", "n_C", "x_O", "x_C")
+TIME_KEYS = ("sample_times_s", "times_s", "t_s", "times", "t")
+
+
+def _find(doc, key):
+    """The first value under `key` in `doc`, searching its nested objects breadth-first (lists are
+    leaves), or None."""
+    queue = [doc]
+    while queue:
+        node = queue.pop(0)
+        if isinstance(node, dict):
+            if key in node:
+                return node[key]
+            queue.extend(v for v in node.values() if isinstance(v, dict))
+    return None
+
+
+def read_reference(path, times):
+    """{q: values at `times`} for q in QUANTITIES, from a references file in the results layout
+    (the registered spec's cases.json, requested_outputs "L"). Structure only is checked here:
+    - the sample times are found, under one of TIME_KEYS, and each of `times` is among them;
+    - each quantity is found and numeric (decimal strings or numbers), one value per sample time.
+    Raises ValueError naming what is missing. This is the reader D308 requires to exist at a tag
+    before it reads the references: --check-reader runs it on a format sample, values unread."""
+    doc = json.loads(Path(path).read_text())
+    if not isinstance(doc, dict):
+        raise ValueError("the references file is not a JSON object")
+    found = next((v for k in TIME_KEYS if (v := _find(doc, k)) is not None), None)
+    if found is None:
+        raise ValueError(f"no sample times under any of {TIME_KEYS}; top-level keys {sorted(doc)}")
+    t = np.asarray([float(x) for x in found], dtype=float)
+    index = []
+    for target in times:
+        hit = np.flatnonzero(np.abs(t - target) <= 1e-9 * max(1.0, abs(target)))
+        if not hit.size:
+            raise ValueError(f"the sample time {target} s is not among the file's {t.size} times")
+        index.append(int(hit[0]))
     out = {}
-    for q in ("n_O", "n_C", "x_O", "x_C"):
-        ref = np.asarray([float(v) for v in reference[q]], dtype=float)
+    for q in QUANTITIES:
+        values = _find(doc, q)
+        if values is None:
+            raise ValueError(f"{q} is missing; top-level keys {sorted(doc)}")
+        array = np.asarray([float(x) for x in values], dtype=float)
+        if array.shape != t.shape:
+            raise ValueError(f"{q} has {array.size} values for {t.size} sample times")
+        out[q] = array[index]
+    return out
+
+
+def order(engine, reference, times):
+    """L4 and L5: {q: e(dt), ratio, judged, passed} against the reference (read_reference's
+    values at the sample times)."""
+    out = {}
+    for q in QUANTITIES:
+        ref = np.asarray(reference[q], dtype=float)
         e = {dt: float(np.max(np.abs(engine[dt][q] - ref)) / np.max(np.abs(ref))) for dt in engine}
         coarse, fine = e[DTS[0]], e[DTS[1]]
         judged = coarse >= FLOOR
@@ -261,12 +311,28 @@ def main(argv=None):
     parser.add_argument("--references", type=Path, default=None, help="the tagged results/L.json")
     parser.add_argument("--plants", action="store_true", help="run plants (a) to (c), each alone")
     parser.add_argument("--plant", choices=sorted(PLANTS), default=None, help=argparse.SUPPRESS)
+    parser.add_argument(
+        "--check-reader",
+        type=Path,
+        default=None,
+        help="parse a references format sample with read_reference, structure only, and stop",
+    )
     args = parser.parse_args(argv)
     args.out.mkdir(parents=True, exist_ok=True)
     v = worlds.declared("L")
     end = float(v["horizon_s"]) if args.end is None else args.end
     every = 60.0
     times = [every * i for i in range(int(round(end / every)) + 1)]
+    if args.check_reader is not None:  # D308: the reader on a format sample, values unread.
+        try:
+            parsed = read_reference(args.check_reader, times)
+            report = dict(parsed=True, quantities={q: len(v) for q, v in parsed.items()},
+                          times=len(times))  # fmt: skip
+        except ValueError as error:
+            report = dict(parsed=False, why=str(error))
+        (args.out / "reader_check.json").write_text(json.dumps(report, indent=1))
+        print(json.dumps(report))
+        return
     if args.plant is not None:  # One plant, in this fresh process.
         NODE_INDEX["node"] = worlds.rows(parse_spec(worlds.world_l(dt=DTS[0], end=end)))[2]
         planted, entry = {}, {}
@@ -277,7 +343,7 @@ def main(argv=None):
                 if dt == DTS[0]:
                     entry["L3"] = base_before_the_pulse(spec, result)
         if args.references is not None:
-            entry["L4_L5"] = order(planted, json.loads(args.references.read_text()), times)
+            entry["L4_L5"] = order(planted, read_reference(args.references, times), times)
         (args.out / f"plant_{args.plant}.json").write_text(
             json.dumps(entry, indent=1, default=float)
         )
@@ -303,8 +369,7 @@ def main(argv=None):
     saved = {f"{q}@{dt:g}": engine[dt][q] for dt in engine for q in engine[dt]}
     np.savez(args.out / "engine_quantities.npz", **saved)
     if args.references is not None:
-        reference = json.loads(args.references.read_text())
-        verdict["L4_L5"] = order(engine, reference, times)
+        verdict["L4_L5"] = order(engine, read_reference(args.references, times), times)
     if args.plants:
         verdict["plants"] = {}
         for name in PLANTS:  # Each in a fresh process, so no compiled program is shared.
