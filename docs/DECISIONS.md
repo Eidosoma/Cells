@@ -10057,3 +10057,23 @@ code and values for it, so it is no longer a blind judge for FR-38. The D313 ver
 - **Scope 2 is running.**
 - **The user's decision (23 November): re-register Protocol D after FR-43.** M is repaired, the seeds are fresh,
   and the fail and its diagnosis stay on record meanwhile.
+
+## D319: FR-43 part 3's registered comparison passes
+
+2026-11-23, about 17:26 UTC. The builder ran the integer-unit population operator, option B (D315), at 52935908 from a
+clean frozen snapshot. It was judged under the criteria tagged fr43-part3-criteria-2026-11-23, which were fixed before the
+references returned, against the code-blind references tagged fr43-part3-references-2026-11-23. The verdict is in
+/mnt/workspaces/Cells/fr43-part3-20261123/evidence-52935908/compare/verdict.json (sha256 548b7928b04c6a4d...).
+- **W1, W2 and W4 agree with the references at rounding,** at 20 and 5 ms: event times within 1.8e-14 s and amounts within
+  6.4e-15 fmol, against bounds of 1e-9. The events, channels and counts are the same. W4 is the first use of the
+  node-side read.
+- **W3, the two-way coupling, converges at order 1.96** under step halving from 20 to 1.25 ms, inside [1.7, 2.3]. Its
+  RMS/dt^2 varies by a factor of 1.82, against a bound of 4. The RMS at 1.25 ms is 1.47e-7 s, against a bound of 1e-6.
+- **C3.3:** at 16,384 sites with feedback off, the fraction with no active unit falls inside its band at all ten times
+  (z = 3.89). The k_a +10% plant misses at all ten.
+- **C3.5:** at f = 1/2 exactly (64 seeds x 128 sites), exactly one recipient receives each draw. The frequency is 0.4954,
+  inside 0.5 +- 0.0182. The f = 0.55 plant falls outside.
+- **The plants are data per world,** so the cached-rollout hazard cannot reach them.
+- **Disclosed:** the builder chose W3's window and phase band after its own engine and development runs. That is
+  recorded in the registration's section 5.
+- **It lands after FR-43 part 1,** gated against main.
