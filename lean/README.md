@@ -13,7 +13,7 @@ Direct Lean claims cover [55 of 55 laws](COVERAGE.md#registered-laws) and [34 of
 | [Membrane transport and osmosis](COVERAGE.md#category-membrane-transport) | 6 of 6 | 11 of 11 | 11 checked | 10 |
 | [Ion channels and junctions](COVERAGE.md#category-channels-and-junctions) | 15 of 15 | 15 of 15 | 15 checked | 14 |
 | [Pumps and cotransport](COVERAGE.md#category-pumps-and-cotransport) | 13 of 13 | 9 of 9 | 8 checked · 1 open | 9 |
-| [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 3 of 3 | 16 of 16 | 15 checked · 1 failed | 12 |
+| [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 3 of 3 | 17 of 17 | 16 checked · 1 failed | 13 |
 | [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 16 of 16 | 42 of 42 | 40 checked · 1 failed · 1 open | 27 |
 | [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 2 of 2 | 27 of 27 | 27 checked | 20 |
 | [Cell physiology](COVERAGE.md#category-cell-physiology) | — | 3 of 3 | 3 checked | 3 |
@@ -29,6 +29,8 @@ FR-42’s neutral arrival-time labels now have a proof and a compiled comparison
 FR-38 follows a producer’s RNA from template release through cell replacement. Lean bounds the old producer’s RNA inside a replacement cell by cumulative return. The public development fixture passed all 14 checks. The independent registered comparison **failed R1** and found **R2 inconclusive**. The follow-up traced route 1 to a gross-versus-net loss comparison. [Producer balance and restart](PROGRESS.md#fr38-extracellular-producer) · [Registered verdict D313](https://github.com/Eidosoma/Cells/blob/81a98ca025ee662a0846aa13868dfc93fa87ea22/docs/DECISIONS.md#L9867) · [Route-1 diagnosis D316](https://github.com/Eidosoma/Cells/blob/a8f9810c791986a25a38f8ecb718cbfdf7479fec/docs/DECISIONS.md#L9972)
 
 ## Biological evidence
+
+In a measured nucleotide pool, upstream depletion and downstream product predicted 0.822 mM UTP at seven hours, compared with 0.955 ± 0.350 mM measured (SD). The FR-43 development replay checks how much each of two writers contributed and which volume each used. [Shared-pool proof, native runs and measurements](claims/fr43-shared-writers.md)
 
 Deterministic assembly reactions reverse direction across equilibrium and dissipate free energy. Two measured enzyme time courses show opposite net conversion from opposite starting sugars. In a separate rabbit-muscle preparation the kinetic inputs gave a Cells stall ratio of 0.32, compared with a measured F6P/G6P ratio of 0.30. [Reaction proof, compiled checks and measurement limits](claims/rate-equation-flux.md)
 
