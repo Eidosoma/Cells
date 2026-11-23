@@ -23,6 +23,7 @@ different routes.
 
 Every routine is deterministic. Run it with one BLAS thread (the generator pins it).
 """
+
 from __future__ import annotations
 
 import math
@@ -38,12 +39,13 @@ N_A = 6.02214076e23
 M = 128
 ODE_RTOL = 1e-13
 HIER_RTOL = 1e-12
-HIER_ATOL = 1e-14   # absolute, per scaled moment; tails below it carry no measurable moment
+HIER_ATOL = 1e-14  # absolute, per scaled moment; tails below it carry no measurable moment
 
 
 # --------------------------------------------------------------------------------------------
 # Inputs, parsed independently
 # --------------------------------------------------------------------------------------------
+
 
 def num(text):
     if isinstance(text, int):
@@ -62,7 +64,7 @@ def num(text):
 
 def world_f64(raw):
     w = dict(raw)
-    w["Vout"] = num(raw["V_out_L"]) * 1e-3            # m^3
+    w["Vout"] = num(raw["V_out_L"]) * 1e-3  # m^3
     w["Vin"] = num(raw["V_in_L"]) * 1e-3
     w["A"] = num(raw["A_sh_m2"])
     w["P"] = num(raw["P_s_m_per_s"])
@@ -74,8 +76,10 @@ def world_f64(raw):
     w["k_out"] = w["k_out_bare"] * math.exp(w["mu_l"] - w["mu_s"])
     w["obs_t"] = [num(t) for t in raw["observation_times_s"]]
     w["T_end"] = num(raw["horizon_s"])
-    w["stops_t"] = [(num(s["time_s"]), s["kind"], num(s["f"]) if s["kind"] == "withdrawal" else 1.0)
-                    for s in raw.get("stops", [])]
+    w["stops_t"] = [
+        (num(s["time_s"]), s["kind"], num(s["f"]) if s["kind"] == "withdrawal" else 1.0)
+        for s in raw.get("stops", [])
+    ]
     fo = raw["founder_molecules"]
     w["nP"], w["nL"] = fo["S@pool"], fo["S@lumen"]
     return w
@@ -84,6 +88,7 @@ def world_f64(raw):
 # --------------------------------------------------------------------------------------------
 # Shell worlds
 # --------------------------------------------------------------------------------------------
+
 
 def _events(w):
     ev = [(t, "obs", None) for t in w["obs_t"]] + list(w["stops_t"])
@@ -148,7 +153,7 @@ def pmf_moments(groups):
     mean = float(np.dot(k, pmf) / total)
     dev = k - mean
     var = float(np.dot(dev * dev, pmf) / total)
-    mu4 = float(np.dot(dev ** 4, pmf) / total)
+    mu4 = float(np.dot(dev**4, pmf) / total)
     return mean, var, mu4
 
 
@@ -158,6 +163,7 @@ def _rate_equations(k_in, k_out, frozen):
             return [0.0, 0.0]
         j = k_in * n[0] - k_out * n[1]
         return [-j, j]
+
     return rhs
 
 
@@ -169,8 +175,14 @@ def d_trajectory(w, k_out, *, keep=None, lumen="none", freeze=False):
     start = (0.0, n.copy())
     for t, kind, f in _events(w):
         if t > t_prev and not frozen:
-            sol = solve_ivp(_rate_equations(w["k_in"], k_out, frozen), (t_prev, t), n,
-                            method="DOP853", rtol=ODE_RTOL, atol=1e-12)
+            sol = solve_ivp(
+                _rate_equations(w["k_in"], k_out, frozen),
+                (t_prev, t),
+                n,
+                method="DOP853",
+                rtol=ODE_RTOL,
+                atol=1e-12,
+            )
             n = sol.y[:, -1].copy()
         t_prev = t
         if kind == "obs":
@@ -207,7 +219,10 @@ def d_trajectory(w, k_out, *, keep=None, lumen="none", freeze=False):
 
 def f_cont64(n_pool, n_lumen, w, zero_as_one=False):
     total = 0.0
-    for n, mu, v_l in ((n_pool, w["mu_s"], num(w["V_out_L"])), (n_lumen, w["mu_l"], num(w["V_in_L"]))):
+    for n, mu, v_l in (
+        (n_pool, w["mu_s"], num(w["V_out_L"])),
+        (n_lumen, w["mu_l"], num(w["V_in_L"])),
+    ):
         lnx = math.log(N_A * v_l * 1.0)
         if n == 0.0:
             if zero_as_one:
@@ -224,22 +239,29 @@ def shell_numeric(raw):
     res = {"pairs": {}, "stops": {}, "d_pairs": {}, "d_stops": {}, "intervals": [], "plants": {}}
     for obs, i in (("S@pool", 0), ("S@lumen", 1)):
         for t in w["obs_t"]:
-            res["pairs"][(obs, t)] = pmf_moments([(w["nP"], law["pool"]["obs"][t][i]),
-                                                  (w["nL"], law["lumen"]["obs"][t][i])])
+            res["pairs"][(obs, t)] = pmf_moments(
+                [(w["nP"], law["pool"]["obs"][t][i]), (w["nL"], law["lumen"]["obs"][t][i])]
+            )
     for t, kind, f in w["stops_t"]:
-        rem = pmf_moments([(w["nP"], law["pool"]["stops"][t][0]), (w["nL"], law["lumen"]["stops"][t][0])])
+        rem = pmf_moments(
+            [(w["nP"], law["pool"]["stops"][t][0]), (w["nL"], law["lumen"]["stops"][t][0])]
+        )
         heat = None
         if kind == "withdrawal":
             c = -math.log1p(-f)
-            km = pmf_moments([(w["nP"], law["pool"]["stops"][t][1]), (w["nL"], law["lumen"]["stops"][t][1])])
-            heat = (c * km[0], c * c * km[1], c ** 4 * km[2])
+            km = pmf_moments(
+                [(w["nP"], law["pool"]["stops"][t][1]), (w["nL"], law["lumen"]["stops"][t][1])]
+            )
+            heat = (c * km[0], c * c * km[1], c**4 * km[2])
         res["stops"][t] = (rem, heat)
     d = d_trajectory(w, w["k_out"])
     for t in w["obs_t"]:
         res["d_pairs"][("S@pool", t)] = d["obs"][t][0]
         res["d_pairs"][("S@lumen", t)] = d["obs"][t][1]
     res["d_stops"] = dict(d["stops"])
-    res["intervals"] = [(t0, t1, -(f_cont64(*n1, w) - f_cont64(*n0, w))) for t0, n0, t1, n1 in d["bounds"]]
+    res["intervals"] = [
+        (t0, t1, -(f_cont64(*n1, w) - f_cont64(*n0, w))) for t0, n0, t1, n1 in d["bounds"]
+    ]
     res["plants"] = shell_plants64(raw, w, law, d, res)
     return res
 
@@ -274,7 +296,11 @@ def shell_plants64(raw, w, law, d, res):
                 continue
             q[("removed", t)] = (d["stops"][t][0], planted["stops"][t][0], 1e-5 * rem_scale)
             if kind == "withdrawal":
-                q[("mixing_heat", t)] = (d["stops"][t][1], planted["stops"][t][1], 1e-5 * heat_scale)
+                q[("mixing_heat", t)] = (
+                    d["stops"][t][1],
+                    planted["stops"][t][1],
+                    1e-5 * heat_scale,
+                )
         return q
 
     for plant in raw.get("plants", []):
@@ -298,7 +324,7 @@ def shell_plants64(raw, w, law, d, res):
             out[("P4", "C4")] = c4(planted, only=t4)
         elif plant == "P6":
             total = float(w["nP"] + w["nL"])
-            bound = 16 * 2.0 ** -52 * (1e4 + len(w["stops_t"])) * 2 * total
+            bound = 16 * 2.0**-52 * (1e4 + len(w["stops_t"])) * 2 * total
             q = {}
             for t in w["obs_t"]:
                 q[("tracer_moiety", t)] = (total, float(d["obs"][t].sum()), bound)
@@ -310,7 +336,12 @@ def shell_plants64(raw, w, law, d, res):
             q = {}
             for obs, i in (("S@pool", 0), ("S@lumen", 1)):
                 for t in w["obs_t"]:
-                    pm = pmf_moments([(w["nP"], law7["pool"]["obs"][t][i]), (w["nL"], law7["lumen"]["obs"][t][i])])
+                    pm = pmf_moments(
+                        [
+                            (w["nP"], law7["pool"]["obs"][t][i]),
+                            (w["nL"], law7["lumen"]["obs"][t][i]),
+                        ]
+                    )
                     hm = res["pairs"][(obs, t)]
                     q[(obs, t)] = (hm[0], pm[0], 6 * math.sqrt(hm[1] / M))
             out[("P7", "C2")] = q
@@ -318,12 +349,22 @@ def shell_plants64(raw, w, law, d, res):
             law8 = molecule_law(w, w["k_out"], removal=lambda f: f * f)
             q = {}
             for t, kind, f in w["stops_t"]:
-                pr = pmf_moments([(w["nP"], law8["pool"]["stops"][t][0]), (w["nL"], law8["lumen"]["stops"][t][0])])
+                pr = pmf_moments(
+                    [
+                        (w["nP"], law8["pool"]["stops"][t][0]),
+                        (w["nL"], law8["lumen"]["stops"][t][0]),
+                    ]
+                )
                 hr = res["stops"][t][0]
                 q[("removed", t)] = (hr[0], pr[0], 6 * math.sqrt(hr[1] / M))
                 if kind == "withdrawal":
                     c = -math.log1p(-f)
-                    pk = pmf_moments([(w["nP"], law8["pool"]["stops"][t][1]), (w["nL"], law8["lumen"]["stops"][t][1])])
+                    pk = pmf_moments(
+                        [
+                            (w["nP"], law8["pool"]["stops"][t][1]),
+                            (w["nL"], law8["lumen"]["stops"][t][1]),
+                        ]
+                    )
                     hh = res["stops"][t][1]
                     q[("mixing_heat", t)] = (hh[0], c * pk[0], 6 * math.sqrt(hh[1] / M))
             out[("P8", "C4")] = q
@@ -331,7 +372,7 @@ def shell_plants64(raw, w, law, d, res):
             heats = res["intervals"]
             scale = max(abs(x[2]) for x in heats)
             q = {}
-            for (t0, n0, t1, n1), (_a, _b, h) in zip(d["bounds"], heats):
+            for (t0, n0, t1, n1), (_a, _b, h) in zip(d["bounds"], heats, strict=True):
                 p = -(f_cont64(*n1, w, True) - f_cont64(*n0, w, True))
                 q[("heat", t0, t1)] = (h, p, 1e-5 * scale)
             out[("P9", "C9")] = q
@@ -341,6 +382,7 @@ def shell_plants64(raw, w, law, d, res):
 # --------------------------------------------------------------------------------------------
 # Gated worlds
 # --------------------------------------------------------------------------------------------
+
 
 def gate_f64(raw):
     w = world_f64(raw)
@@ -389,7 +431,7 @@ class _Hierarchy:
         pos = np.arange(ks.size)
         gk = (ks * w["ea"] + (ng - ks) * w["eb"]) / ng
         size = 5 * ks.size
-        parts = []          # (matrix index, rows, cols, values)
+        parts = []  # (matrix index, rows, cols, values)
 
         def idx(p, j):
             return p * 5 + j
@@ -402,12 +444,14 @@ class _Hierarchy:
             parts.append((0, idx(pos[1:], j), idx(pos[:-1], j), b * (ng - ks[:-1])))
         ones = np.ones(ks.size)
         for j in range(1, 5):
-            for l in range(j):
-                sigma = (-1) ** (j - l) * k_out - k_in
-                base = gk * math.comb(j, l) * h ** (j - l - 1)
-                parts.append((0, idx(pos, j), idx(pos, l), base * s0 ** (l - j) * k_in))
-                parts.append((1, idx(pos, j), idx(pos, l), base * s0 ** (l - j) * sigma))
-                parts.append((0, idx(pos, j), idx(pos, l + 1), base * s0 ** (l + 1 - j) * sigma))
+            for ell in range(j):
+                sigma = (-1) ** (j - ell) * k_out - k_in
+                base = gk * math.comb(j, ell) * h ** (j - ell - 1)
+                parts.append((0, idx(pos, j), idx(pos, ell), base * s0 ** (ell - j) * k_in))
+                parts.append((1, idx(pos, j), idx(pos, ell), base * s0 ** (ell - j) * sigma))
+                parts.append(
+                    (0, idx(pos, j), idx(pos, ell + 1), base * s0 ** (ell + 1 - j) * sigma)
+                )
             parts.append((2, idx(pos, j), idx(pos, j - 1), ones * (-j / s0 * k_in)))
             parts.append((3, idx(pos, j), idx(pos, j - 1), ones * (j / s0 * lam)))
         keys = np.concatenate([r.astype(np.int64) * size + c for _m, r, c, _v in parts])
@@ -426,8 +470,10 @@ class _Hierarchy:
         return d[0] + c * d[1] + g * d[2] + (g * c) * d[3]
 
     def matrix(self, c, g):
-        return scipy.sparse.csr_matrix((self.values(c, g), self.indices.copy(), self.indptr.copy()),
-                                       shape=(self.size, self.size))
+        return scipy.sparse.csr_matrix(
+            (self.values(c, g), self.indices.copy(), self.indptr.copy()),
+            shape=(self.size, self.size),
+        )
 
     def apply(self, c, g, y):
         self._scratch.data[:] = self.values(c, g)
@@ -499,19 +545,24 @@ def gate_hierarchy(w):
             raise RuntimeError(f"the gate window is too narrow: edge mass {edge}")
         s = z.sum(axis=0)
         d1 = s[1]
-        var_x = s0 ** 2 * (s[2] - d1 * d1)
-        mu4_x = s0 ** 4 * (s[4] - 4 * d1 * s[3] + 6 * d1 * d1 * s[2] - 3 * d1 ** 4)
+        var_x = s0**2 * (s[2] - d1 * d1)
+        mu4_x = s0**4 * (s[4] - 4 * d1 * s[3] + 6 * d1 * d1 * s[2] - 3 * d1**4)
         mean_l = n_tr * (c(t) + s0 * d1)
         pk = z[:, 0]
         ks = np.arange(k_lo, k_hi + 1, dtype=float)
         mk = float(np.dot(ks, pk))
         dev = ks - mk
         vk = float(np.dot(dev * dev, pk))
-        m4k = float(np.dot(dev ** 4, pk))
-        out[t] = {"S@lumen": (mean_l, n_tr ** 2 * var_x, n_tr ** 4 * mu4_x),
-                  "S@pool": (n_tr - mean_l, n_tr ** 2 * var_x, n_tr ** 4 * mu4_x),
-                  "G@wall": (mk, vk, m4k), "H@wall": (ng - mk, vk, m4k), "mass": float(s[0]),
-                  "edge_mass": edge, "window": window}
+        m4k = float(np.dot(dev**4, pk))
+        out[t] = {
+            "S@lumen": (mean_l, n_tr**2 * var_x, n_tr**4 * mu4_x),
+            "S@pool": (n_tr - mean_l, n_tr**2 * var_x, n_tr**4 * mu4_x),
+            "G@wall": (mk, vk, m4k),
+            "H@wall": (ng - mk, vk, m4k),
+            "mass": float(s[0]),
+            "edge_mass": edge,
+            "window": window,
+        }
     return out
 
 
@@ -546,8 +597,16 @@ def gate_numeric(raw):
     w = gate_f64(raw)
     exact = gate_hierarchy(w)
     mf = gate_mean_field64(w)
-    res = {"pairs": {}, "d_pairs": {}, "gap": {}, "plants": {}, "mass": {}, "edge_mass": {},
-           "window": list(gate_window(w)), "Ng": w["Ng"]}
+    res = {
+        "pairs": {},
+        "d_pairs": {},
+        "gap": {},
+        "plants": {},
+        "mass": {},
+        "edge_mass": {},
+        "window": list(gate_window(w)),
+        "Ng": w["Ng"],
+    }
     for t in w["obs_t"]:
         res["mass"][t] = exact[t]["mass"]
         res["edge_mass"][t] = exact[t]["edge_mass"]

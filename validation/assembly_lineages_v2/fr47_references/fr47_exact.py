@@ -39,6 +39,7 @@ path only through Phi(t) = int_0^t g(K(s)) ds:
   with Q the copy's generator over (G, H) and x the copy's founder form. This is SPEC.md section
   3.3's closed linear system for E[n^j 1{K = k}], j <= 4, solved in closed form.
 """
+
 from __future__ import annotations
 
 from decimal import Decimal, getcontext, localcontext
@@ -46,18 +47,18 @@ from fractions import Fraction
 
 DEFAULT_PREC = 60
 
-N_A_PER_MOL = "6.02214076e23"      # SPEC.md section 0, exact (SI 2019)
-C0_MOL_PER_L = "1"                 # the standard concentration
+N_A_PER_MOL = "6.02214076e23"  # SPEC.md section 0, exact (SI 2019)
+C0_MOL_PER_L = "1"  # the standard concentration
 L_TO_M3 = "1e-3"
-M_REPLICAS = 128                   # replicas per world (protocol section 5)
-FAIL_BAND = 6                      # statistical plants: distance in 6 SD/sqrt(M) (CRITERIA)
-C1_RELATIVE = "1e-5"               # C1's bound, 1e-5 s_y
-C5_STEP_CAP = 10 ** 4              # C5's bound at the step guard's cap, A = 1e4 (CRITERIA)
-C5_TRACER_PLACES = 2               # P_t: S@pool and S@lumen (AMENDMENT section 7)
+M_REPLICAS = 128  # replicas per world (protocol section 5)
+FAIL_BAND = 6  # statistical plants: distance in 6 SD/sqrt(M) (CRITERIA)
+C1_RELATIVE = "1e-5"  # C1's bound, 1e-5 s_y
+C5_STEP_CAP = 10**4  # C5's bound at the step guard's cap, A = 1e4 (CRITERIA)
+C5_TRACER_PLACES = 2  # P_t: S@pool and S@lumen (AMENDMENT section 7)
 
 SHELL_OBSERVABLES = ("S@pool", "S@lumen", "B@wall")
 GATE_OBSERVABLES = ("S@pool", "S@lumen", "G@wall", "H@wall", "B@wall")
-GAP_OBSERVABLES = ("S@pool", "S@lumen", "G@wall", "H@wall")   # C8's order (AMENDMENT section 8)
+GAP_OBSERVABLES = ("S@pool", "S@lumen", "G@wall", "H@wall")  # C8's order (AMENDMENT section 8)
 
 STIRLING2 = {  # S(j, i): n^j = sum_i S(j, i) n(n - 1)...(n - i + 1)
     0: {0: 1},
@@ -71,6 +72,7 @@ STIRLING2 = {  # S(j, i): n^j = sum_i S(j, i) n(n - 1)...(n - i + 1)
 # --------------------------------------------------------------------------------------------
 # Inputs
 # --------------------------------------------------------------------------------------------
+
 
 def number(text):
     """The exact value of an input: an integer, or a string holding a decimal literal, p/q, ln(x),
@@ -129,7 +131,7 @@ def parse_world(raw):
     w["founder"] = dict(founder)
     w["obs"] = [number(t) for t in raw["observation_times_s"]]
     w["horizon"] = number(raw["horizon_s"])
-    if any(b <= a for a, b in zip(w["obs"], w["obs"][1:])) or not w["obs"]:
+    if any(b <= a for a, b in zip(w["obs"], w["obs"][1:], strict=False)) or not w["obs"]:
         raise ValueError("observation times must be strictly increasing")
     if w["obs"][0] <= 0 or w["obs"][-1] > w["horizon"]:
         raise ValueError("observation times must lie in (0, horizon]")
@@ -148,7 +150,7 @@ def parse_world(raw):
                 raise ValueError(f"unknown stop kind {stop['kind']!r}")
             w["stops"].append((t, stop["kind"], f))
         times = [s[0] for s in w["stops"]]
-        if any(b <= a for a, b in zip(times, times[1:])):
+        if any(b <= a for a, b in zip(times, times[1:], strict=False)):
             raise ValueError("stops must be strictly increasing in time")
         if times and (times[0] <= 0 or times[-1] >= w["horizon"]):
             raise ValueError("stops must lie in (0, horizon)")
@@ -194,6 +196,7 @@ def ln_capacity(volume_l):
 # Sums of independent indicators
 # --------------------------------------------------------------------------------------------
 
+
 def _guard_probability(p):
     """A probability strictly inside (0, 1) must be far from the ends at this precision, so that
     an exact 0 or 1 is always structural, never rounding."""
@@ -230,8 +233,12 @@ def indicator_sum(groups):
 
 def scaled(moments, c):
     """Moments of c X from those of X (the mixing heat is c times the kept count)."""
-    return {"constant": moments["constant"], "mean": c * moments["mean"],
-            "var": c * c * moments["var"], "mu4": c ** 4 * moments["mu4"]}
+    return {
+        "constant": moments["constant"],
+        "mean": c * moments["mean"],
+        "var": c * c * moments["var"],
+        "mu4": c**4 * moments["mu4"],
+    }
 
 
 def entry(moments, *, count):
@@ -246,8 +253,12 @@ def entry(moments, *, count):
         return {"constant": True, "value": value}
     if moments["var"] <= 0:
         raise ArithmeticError("a spread entry without a positive variance")
-    return {"constant": False, "mean": moments["mean"], "var": moments["var"],
-            "mu4": moments["mu4"]}
+    return {
+        "constant": False,
+        "mean": moments["mean"],
+        "var": moments["var"],
+        "mu4": moments["mu4"],
+    }
 
 
 def entry_mean(e):
@@ -257,6 +268,7 @@ def entry_mean(e):
 # --------------------------------------------------------------------------------------------
 # Shell worlds: the single-molecule law through the timeline
 # --------------------------------------------------------------------------------------------
+
 
 def timeline(w):
     """Observation times, stops and the horizon in time order: (t, kind, f)."""
@@ -322,8 +334,12 @@ def shell_law(w, k_in, k_out, *, removal=None, lumen_mapped=None, freeze_after_r
                     p_lumen = Decimal(0)
                 if freeze_after_replacement:
                     frozen = True
-            rec["stops"][t] = {"pre": pre, "removed": removed, "kept": kept,
-                               "post": (p_pool, p_lumen)}
+            rec["stops"][t] = {
+                "pre": pre,
+                "removed": removed,
+                "kept": kept,
+                "post": (p_pool, p_lumen),
+            }
         rec["end"] = (p_pool, p_lumen)
         out[origin] = rec
     return out
@@ -331,7 +347,10 @@ def shell_law(w, k_in, k_out, *, removal=None, lumen_mapped=None, freeze_after_r
 
 def _groups(w, law, pick):
     """[(founder count, probability)] for the pool-born and lumen-born molecules."""
-    return [(w["founder"]["S@pool"], pick(law["pool"])), (w["founder"]["S@lumen"], pick(law["lumen"]))]
+    return [
+        (w["founder"]["S@pool"], pick(law["pool"])),
+        (w["founder"]["S@lumen"], pick(law["lumen"])),
+    ]
 
 
 def _mean(w, law, pick):
@@ -348,8 +367,10 @@ def f_cont(n_pool, n_lumen, w, *, zero_as_one=False):
 
     ``zero_as_one`` is plant P9: a place at zero takes one molecule's term."""
     total = Decimal(0)
-    for n, mu, volume in ((n_pool, w["mu_solution"], w["V_out_L"]),
-                          (n_lumen, w["mu_lumen"], w["V_in_L"])):
+    for n, mu, volume in (
+        (n_pool, w["mu_solution"], w["V_out_L"]),
+        (n_lumen, w["mu_lumen"], w["V_in_L"]),
+    ):
         lnx = ln_capacity(volume)
         if n == 0:
             if zero_as_one:
@@ -367,23 +388,23 @@ def shell_d(w, law):
     founder = w["founder"]
     d = {"pairs": {}, "stops": {}, "bounds": []}
     for t in w["obs"]:
-        d["pairs"][("S@pool", t)] = _mean(w, law, lambda r: r["obs"][t][0])
-        d["pairs"][("S@lumen", t)] = _mean(w, law, lambda r: r["obs"][t][1])
+        d["pairs"][("S@pool", t)] = _mean(w, law, lambda r, t=t: r["obs"][t][0])
+        d["pairs"][("S@lumen", t)] = _mean(w, law, lambda r, t=t: r["obs"][t][1])
         d["pairs"][("B@wall", t)] = Decimal(founder["B@wall"])
     for t, kind, f in w["stops"]:
-        removed = _mean(w, law, lambda r: r["stops"][t]["removed"])
+        removed = _mean(w, law, lambda r, t=t: r["stops"][t]["removed"])
         heat = None
         if kind == "withdrawal":
-            heat = mixing_coefficient(f) * _mean(w, law, lambda r: r["stops"][t]["kept"])
+            heat = mixing_coefficient(f) * _mean(w, law, lambda r, t=t: r["stops"][t]["kept"])
         d["stops"][t] = (removed, heat)
     # interval boundaries: (start time, start counts, end time, end counts)
     start_t = Decimal(0)
     start_n = (Decimal(founder["S@pool"]), Decimal(founder["S@lumen"]))
     for t, _kind, _f in w["stops"]:
-        pre = tuple(_mean(w, law, lambda r, i=i: r["stops"][t]["pre"][i]) for i in (0, 1))
+        pre = tuple(_mean(w, law, lambda r, i=i, t=t: r["stops"][t]["pre"][i]) for i in (0, 1))
         d["bounds"].append((start_t, start_n, t, pre))
         start_t = t
-        start_n = tuple(_mean(w, law, lambda r, i=i: r["stops"][t]["post"][i]) for i in (0, 1))
+        start_n = tuple(_mean(w, law, lambda r, i=i, t=t: r["stops"][t]["post"][i]) for i in (0, 1))
     end_n = tuple(_mean(w, law, lambda r, i=i: r["end"][i]) for i in (0, 1))
     d["bounds"].append((start_t, start_n, w["horizon"], end_n))
     return d
@@ -403,7 +424,7 @@ def shell_exact_pairs(w, law):
     pairs = []
     for obs, index in (("S@pool", 0), ("S@lumen", 1)):
         for t in w["obs"]:
-            m = indicator_sum(_groups(w, law, lambda r: r["obs"][t][index]))
+            m = indicator_sum(_groups(w, law, lambda r, t=t, index=index: r["obs"][t][index]))
             pairs.append((obs, t, entry(m, count=True)))
     for t in w["obs"]:
         # the wall's subunit B: no step moves it (SPEC.md section 1)
@@ -415,10 +436,10 @@ def shell_exact_stops(w, law):
     """Each stop's removed count and each withdrawal's mixing heat, exact moments."""
     stops = []
     for t, kind, f in w["stops"]:
-        removed = indicator_sum(_groups(w, law, lambda r: r["stops"][t]["removed"]))
+        removed = indicator_sum(_groups(w, law, lambda r, t=t: r["stops"][t]["removed"]))
         heat = None
         if kind == "withdrawal":
-            kept = indicator_sum(_groups(w, law, lambda r: r["stops"][t]["kept"]))
+            kept = indicator_sum(_groups(w, law, lambda r, t=t: r["stops"][t]["kept"]))
             heat = entry(scaled(kept, mixing_coefficient(f)), count=False)
         stops.append((t, kind, f, entry(removed, count=True), heat))
     return stops
@@ -427,6 +448,7 @@ def shell_exact_stops(w, law):
 # --------------------------------------------------------------------------------------------
 # Shell worlds: the plants' predicted effects (SPEC.md 3.4; CRITERIA.md; AMENDMENT 2-7)
 # --------------------------------------------------------------------------------------------
+
 
 def _largest(candidates):
     """The candidate of largest distance; ties go to the first in the listed order."""
@@ -460,12 +482,26 @@ def _det_candidates_c1(w, honest, planted):
     for obs in SHELL_OBSERVABLES:
         for t in w["obs"]:
             h, p = honest["pairs"][(obs, t)], planted["pairs"][(obs, t)]
-            out.append({"observable": obs, "time_s": t, "honest": h, "planted": p,
-                        "distance": abs(p - h) / (rel * scale[obs])})
+            out.append(
+                {
+                    "observable": obs,
+                    "time_s": t,
+                    "honest": h,
+                    "planted": p,
+                    "distance": abs(p - h) / (rel * scale[obs]),
+                }
+            )
     for t, _kind, _f in w["stops"]:
         h, p = honest["stops"][t][0], planted["stops"][t][0]
-        out.append({"observable": "removed", "time_s": t, "honest": h, "planted": p,
-                    "distance": abs(p - h) / (rel * removed_scale)})
+        out.append(
+            {
+                "observable": "removed",
+                "time_s": t,
+                "honest": h,
+                "planted": p,
+                "distance": abs(p - h) / (rel * removed_scale),
+            }
+        )
     return out
 
 
@@ -478,12 +514,26 @@ def _det_candidates_c4(w, honest, planted, only_time=None):
         if only_time is not None and t != only_time:
             continue
         h, p = honest["stops"][t][0], planted["stops"][t][0]
-        out.append({"observable": "removed", "time_s": t, "honest": h, "planted": p,
-                    "distance": abs(p - h) / (rel * removed_scale)})
+        out.append(
+            {
+                "observable": "removed",
+                "time_s": t,
+                "honest": h,
+                "planted": p,
+                "distance": abs(p - h) / (rel * removed_scale),
+            }
+        )
         if kind == "withdrawal":
             h, p = honest["stops"][t][1], planted["stops"][t][1]
-            out.append({"observable": "mixing_heat", "time_s": t, "honest": h, "planted": p,
-                        "distance": abs(p - h) / (rel * heat_scale)})
+            out.append(
+                {
+                    "observable": "mixing_heat",
+                    "time_s": t,
+                    "honest": h,
+                    "planted": p,
+                    "distance": abs(p - h) / (rel * heat_scale),
+                }
+            )
     return out
 
 
@@ -507,8 +557,9 @@ def first_withdrawal_after_replacement(w):
     raise ValueError("no withdrawal after a full wash")
 
 
-def shell_plants(w, k_in, k_out, honest_law, honest_d, honest_pairs, honest_stops, *,
-                 p3_variant="every_stop"):
+def shell_plants(
+    w, k_in, k_out, honest_law, honest_d, honest_pairs, honest_stops, *, p3_variant="every_stop"
+):
     """One entry per (plant, criterion): the compared quantity of largest distance, named."""
     entries = []
     rel = Decimal(C1_RELATIVE)
@@ -542,40 +593,75 @@ def shell_plants(w, k_in, k_out, honest_law, honest_d, honest_pairs, honest_stop
                 else:
                     present = sum(_mean(w, honest_law, lambda r, i=i: r["end"][i]) for i in (0, 1))
                 # the removed tracer is left unbooked: present + 0 against the founder's
-                cands.append({"observable": "tracer_moiety", "time_s": t, "honest": total,
-                              "planted": present, "distance": abs(present - total) / bound})
+                cands.append(
+                    {
+                        "observable": "tracer_moiety",
+                        "time_s": t,
+                        "honest": total,
+                        "planted": present,
+                        "distance": abs(present - total) / bound,
+                    }
+                )
             entries.append(("P6", "C5", _largest(cands)))
         elif plant == "P7":
             _k, k_out_bare = shell_rates(w, exit_potential=False)
             law = shell_law(w, k_in, k_out_bare)
             planted_pairs = shell_exact_pairs(w, law)
             cands = []
-            for (obs, t, hm), (_o, _t, pm) in zip(honest_pairs, planted_pairs):
+            for (obs, t, hm), (_o, _t, pm) in zip(honest_pairs, planted_pairs, strict=True):
                 pmean = entry_mean(pm)
-                cands.append({"observable": obs, "time_s": t, "honest": entry_mean(hm),
-                              "planted": pmean, "distance": _stat_distance(pmean, hm)})
+                cands.append(
+                    {
+                        "observable": obs,
+                        "time_s": t,
+                        "honest": entry_mean(hm),
+                        "planted": pmean,
+                        "distance": _stat_distance(pmean, hm),
+                    }
+                )
             entries.append(("P7", "C2", _largest(cands)))
         elif plant == "P8":
             law = shell_law(w, k_in, k_out, removal=lambda f: f * f)
             planted_stops = shell_exact_stops(w, law)
             cands = []
-            for (t, kind, _f, hr, hh), (_t, _k, _f2, pr, ph) in zip(honest_stops, planted_stops):
-                cands.append({"observable": "removed", "time_s": t, "honest": entry_mean(hr),
-                              "planted": entry_mean(pr),
-                              "distance": _stat_distance(entry_mean(pr), hr)})
+            pairs_of_stops = zip(honest_stops, planted_stops, strict=True)
+            for (t, kind, _f, hr, hh), (_t, _k, _f2, pr, ph) in pairs_of_stops:
+                cands.append(
+                    {
+                        "observable": "removed",
+                        "time_s": t,
+                        "honest": entry_mean(hr),
+                        "planted": entry_mean(pr),
+                        "distance": _stat_distance(entry_mean(pr), hr),
+                    }
+                )
                 if kind == "withdrawal":
-                    cands.append({"observable": "mixing_heat", "time_s": t,
-                                  "honest": entry_mean(hh), "planted": entry_mean(ph),
-                                  "distance": _stat_distance(entry_mean(ph), hh)})
+                    cands.append(
+                        {
+                            "observable": "mixing_heat",
+                            "time_s": t,
+                            "honest": entry_mean(hh),
+                            "planted": entry_mean(ph),
+                            "distance": _stat_distance(entry_mean(ph), hh),
+                        }
+                    )
             entries.append(("P8", "C4", _largest(cands)))
         elif plant == "P9":
             honest_heats = interval_heats(w, honest_d)
             planted_heats = interval_heats(w, honest_d, zero_as_one=True)
             scale = max(abs(q) for _a, _b, q in honest_heats)
             cands = []
-            for (t0, t1, h), (_a, _b, p) in zip(honest_heats, planted_heats):
-                cands.append({"observable": "heat", "start_s": t0, "end_s": t1, "honest": h,
-                              "planted": p, "distance": abs(p - h) / (rel * scale)})
+            for (t0, t1, h), (_a, _b, p) in zip(honest_heats, planted_heats, strict=True):
+                cands.append(
+                    {
+                        "observable": "heat",
+                        "start_s": t0,
+                        "end_s": t1,
+                        "honest": h,
+                        "planted": p,
+                        "distance": abs(p - h) / (rel * scale),
+                    }
+                )
             entries.append(("P9", "C9", _largest(cands)))
         else:
             raise ValueError(f"plant {plant} is not a shell-world plant")
@@ -591,13 +677,20 @@ def shell_reference(w, *, p3_variant="every_stop"):
     d = shell_d(w, law)
     heats = interval_heats(w, d)
     plants = shell_plants(w, k_in, k_out, law, d, pairs, stops, p3_variant=p3_variant)
-    return {"rates": (k_in, k_out), "pairs": pairs, "stops": stops, "d": d, "intervals": heats,
-            "plants": plants}
+    return {
+        "rates": (k_in, k_out),
+        "pairs": pairs,
+        "stops": stops,
+        "d": d,
+        "intervals": heats,
+        "plants": plants,
+    }
 
 
 # --------------------------------------------------------------------------------------------
 # Gated worlds
 # --------------------------------------------------------------------------------------------
+
 
 def _poly_mul(a, b):
     out = [Decimal(0)] * (len(a) + len(b) - 1)
@@ -630,7 +723,7 @@ def _binomial_raw_moment_polys(n, u, v, jmax=4):
         for i, s in STIRLING2[j].items():
             falling = 1
             for r in range(i):
-                falling *= (n - r)
+                falling *= n - r
             if falling == 0:
                 continue
             poly = _poly_add(poly, [Decimal(s * falling) * c for c in p_powers[i]])
@@ -645,9 +738,9 @@ def _sum_raw_moment_polys(parts, jmax=4):
         new = []
         for j in range(jmax + 1):
             poly = [Decimal(0)]
-            for l in range(j + 1):
-                term = _poly_mul(total[l], part[j - l])
-                poly = _poly_add(poly, [Decimal(_binomial(j, l)) * c for c in term])
+            for ell in range(j + 1):
+                term = _poly_mul(total[ell], part[j - ell])
+                poly = _poly_add(poly, [Decimal(_binomial(j, ell)) * c for c in term])
             new.append(poly)
         total = new
     return total
@@ -656,7 +749,7 @@ def _sum_raw_moment_polys(parts, jmax=4):
 def _central_from_raw(raw):
     e1, e2, e3, e4 = raw[1], raw[2], raw[3], raw[4]
     var = e2 - e1 * e1
-    mu4 = e4 - 4 * e1 * e3 + 6 * e1 * e1 * e2 - 3 * e1 ** 4
+    mu4 = e4 - 4 * e1 * e3 + 6 * e1 * e1 * e2 - 3 * e1**4
     return e1, var, mu4
 
 
@@ -682,7 +775,7 @@ def gate_parameters(w):
     p = {"k_in": k_in, "k_out": k_out, "lam": k_in + k_out}
     p["pi1"], p["pi0"] = k_in / p["lam"], k_out / p["lam"]
     p["ea"], p["eb"] = w["a"].exp(), w["b"].exp()
-    p["alpha"] = w["k_GH"]                                # G -> H per copy
+    p["alpha"] = w["k_GH"]  # G -> H per copy
     p["beta"] = w["k_GH"] * (w["mu_H"] - w["mu_G"]).exp()  # H -> G per copy
     p["G0"], p["H0"], p["B0"] = f["G@wall"], f["H@wall"], f["B@wall"]
     p["Ng"] = p["G0"] + p["H0"]
@@ -729,15 +822,16 @@ def gate_exact_pairs(w, p):
         for obs, pool in (("S@pool", True), ("S@lumen", False)):
             mean, var, mu4 = _tracer_moments(p, ey, pool)
             if not crossing:
-                by_obs[obs].append((obs, t, {"constant": True,
-                                             "value": p["NP"] if pool else p["NL"]}))
+                by_obs[obs].append(
+                    (obs, t, {"constant": True, "value": p["NP"] if pool else p["NL"]})
+                )
                 continue
             if var <= 0:
                 raise ArithmeticError("a spread pair without a positive variance")
             by_obs[obs].append((obs, t, {"constant": False, "mean": mean, "var": var, "mu4": mu4}))
         e = (-p["gam"] * t).exp()
-        p_gg, p_hg = p["piG"] + p["piH"] * e, p["piG"] * (1 - e)   # open at t | G or H at 0
-        q_gg, q_hg = p["piH"] * (1 - e), p["piH"] + p["piG"] * e   # closed at t | G or H at 0
+        p_gg, p_hg = p["piG"] + p["piH"] * e, p["piG"] * (1 - e)  # open at t | G or H at 0
+        q_gg, q_hg = p["piH"] * (1 - e), p["piH"] + p["piG"] * e  # closed at t | G or H at 0
         g_m = indicator_sum([(p["G0"], p_gg), (p["H0"], p_hg)])
         h_m = indicator_sum([(p["G0"], q_gg), (p["H0"], q_hg)])
         if not switching and not (g_m["constant"] and h_m["constant"]):
@@ -756,7 +850,7 @@ def gate_mean_field(w, p, *, entry_only=False):
     fac = Decimal(p["Nw"] + 1) / Decimal(p["Nw"])
     gam_w = p["gam"] * fac
     g_eq, h_eq = p["Ng"] * p["piG"], p["Ng"] * p["piH"]
-    a0 = p["eb"] + p["c1"] * g_eq          # g(t) = a0 + a1 exp(-gam_w t)
+    a0 = p["eb"] + p["c1"] * g_eq  # g(t) = a0 + a1 exp(-gam_w t)
     a1 = p["c1"] * (p["G0"] - g_eq)
     out = {}
     for t in w["obs"]:
@@ -795,7 +889,9 @@ def _entry_only_lumen(p, a0, a1, gam_w, t):
     total, term_coef, m = Decimal(0), Decimal(1), 0
     tiny = Decimal(10) ** (-(getcontext().prec + 5))
     while True:
-        piece = term_coef * (a0 * _expint(b0 - m * gam_w, t) + a1 * _expint(b0 - (m + 1) * gam_w, t))
+        piece = term_coef * (
+            a0 * _expint(b0 - m * gam_w, t) + a1 * _expint(b0 - (m + 1) * gam_w, t)
+        )
         total += piece
         m += 1
         term_coef = term_coef * r / m
@@ -834,8 +930,15 @@ def gate_reference(w):
             scale = max([abs(Decimal(w["founder"][obs]))] + [abs(mf[(obs, t)]) for t in w["obs"]])
             for t in w["obs"]:
                 h, q = mf[(obs, t)], planted[(obs, t)]
-                cands.append({"observable": obs, "time_s": t, "honest": h, "planted": q,
-                              "distance": abs(q - h) / (rel * scale)})
+                cands.append(
+                    {
+                        "observable": obs,
+                        "time_s": t,
+                        "honest": h,
+                        "planted": q,
+                        "distance": abs(q - h) / (rel * scale),
+                    }
+                )
         plants.append(("P5", "C7", _largest(cands)))
     return {"params": p, "pairs": pairs, "d": mf, "gap": gap, "plants": plants}
 

@@ -14,6 +14,7 @@
    floats against a higher precision. Where the package is a clean commit, the committed invented
    files must equal what it writes.
 """
+
 from __future__ import annotations
 
 import os
@@ -39,24 +40,43 @@ import fr47_numeric  # noqa: E402
 import fr47_writer  # noqa: E402
 
 TINY_SHELL = {
-    "name": "tiny_shell", "type": "shell_washes", "spec": "self-check",
-    "V_out_L": "1e-18", "V_in_L": "2e-19", "A_sh_m2": "2e-15", "P_s_m_per_s": "1e-7",
+    "name": "tiny_shell",
+    "type": "shell_washes",
+    "spec": "self-check",
+    "V_out_L": "1e-18",
+    "V_in_L": "2e-19",
+    "A_sh_m2": "2e-15",
+    "P_s_m_per_s": "1e-7",
     "tracer_potentials_kBT": {"solution": "0.2", "lumen": "0.2 + ln(3)"},
     "founder_molecules": {"S@pool": 3, "S@lumen": 2, "B@wall": 5},
-    "stops": [{"time_s": "0.7", "kind": "withdrawal", "f": "3/8"},
-              {"time_s": "1.3", "kind": "replacement"},
-              {"time_s": "2.2", "kind": "withdrawal", "f": "1/2"}],
+    "stops": [
+        {"time_s": "0.7", "kind": "withdrawal", "f": "3/8"},
+        {"time_s": "1.3", "kind": "replacement"},
+        {"time_s": "2.2", "kind": "withdrawal", "f": "1/2"},
+    ],
     "observation_times_s": ["0.4", "1.0", "1.9", "2.9"],
     "horizon_s": "3.0",
     "plants": [],
 }
 
 TINY_GATE = {
-    "name": "tiny_gate", "type": "gated_shell", "spec": "self-check",
-    "V_out_L": "1e-18", "V_in_L": "2e-19", "A_sh_m2": "2e-15", "P_s_m_per_s": "1e-7",
+    "name": "tiny_gate",
+    "type": "gated_shell",
+    "spec": "self-check",
+    "V_out_L": "1e-18",
+    "V_in_L": "2e-19",
+    "A_sh_m2": "2e-15",
+    "P_s_m_per_s": "1e-7",
     "tracer_potentials_kBT": {"solution": "0.1", "lumen": "-0.2"},
-    "gate": {"open_form": "G", "closed_form": "H", "a_open_kBT": "1.2", "b_closed_kBT": "-0.7",
-             "mu0_G_kBT": "-0.4", "mu0_H_kBT": "-1.1", "k_GH_per_s": "1.7"},
+    "gate": {
+        "open_form": "G",
+        "closed_form": "H",
+        "a_open_kBT": "1.2",
+        "b_closed_kBT": "-0.7",
+        "mu0_G_kBT": "-0.4",
+        "mu0_H_kBT": "-1.1",
+        "k_GH_per_s": "1.7",
+    },
     "founder_molecules": {"S@pool": 3, "S@lumen": 1, "B@wall": 7, "G@wall": 2, "H@wall": 1},
     "observation_times_s": ["0.3", "1.1", "2.5"],
     "horizon_s": "2.5",
@@ -72,7 +92,7 @@ def _moments(pmf):
     k = np.arange(pmf.size, dtype=float)
     mean = float(np.dot(k, pmf))
     dev = k - mean
-    return mean, float(np.dot(dev ** 2, pmf)), float(np.dot(dev ** 4, pmf))
+    return mean, float(np.dot(dev**2, pmf)), float(np.dot(dev**4, pmf))
 
 
 def shell_master_equation(raw):
@@ -89,10 +109,10 @@ def shell_master_equation(raw):
     index = {s: i for i, s in enumerate(states)}
     gen = np.zeros((len(states), len(states)))
     for (a, b), i in index.items():
-        if a > 0:                       # a pool molecule enters the lumen
+        if a > 0:  # a pool molecule enters the lumen
             gen[i, index[(a - 1, b + 1)]] += k_in * a
             gen[i, i] -= k_in * a
-        if b > 0:                       # a lumen molecule leaves
+        if b > 0:  # a lumen molecule leaves
             gen[i, index[(a + 1, b - 1)]] += k_out * b
             gen[i, i] -= k_out * b
     prob = np.zeros(len(states))
@@ -119,7 +139,7 @@ def shell_master_equation(raw):
         for (a, b), i in index.items():
             if prob[i] == 0.0:
                 continue
-            for r in range(a + 1):     # r of the a pool molecules removed
+            for r in range(a + 1):  # r of the a pool molecules removed
                 w = scipy.stats.binom.pmf(r, a, f) if kind == "withdrawal" else float(r == a)
                 if w == 0.0:
                     continue
@@ -152,8 +172,12 @@ def gate_master_equation(raw):
     gen = np.zeros((len(states), len(states)))
     for (k, n), i in index.items():
         g = (k * math.exp(a) + (n_g - k) * math.exp(b)) / n_g
-        moves = [((k - 1, n), k_gh * k), ((k + 1, n), k_hg * (n_g - k)),
-                 ((k, n + 1), g * k_in * (n_tot - n)), ((k, n - 1), g * k_out * n)]
+        moves = [
+            ((k - 1, n), k_gh * k),
+            ((k + 1, n), k_hg * (n_g - k)),
+            ((k, n + 1), g * k_in * (n_tot - n)),
+            ((k, n - 1), g * k_out * n),
+        ]
         for target, rate in moves:
             if rate > 0:
                 gen[i, index[target]] += rate
@@ -192,21 +216,21 @@ def test_shell_tiny_master_equation():
         want = me["pairs"][(obs, float(t))]
         got = (float(m["mean"]), float(m["var"]), float(m["mu4"]))
         alt = num["pairs"][(obs, float(t))]
-        for x, y, z in zip(got, want, alt):
+        for x, y, z in zip(got, want, alt, strict=True):
             assert _close(x, y), (obs, t, got, want)
             assert _close(z, y), (obs, t, alt, want)
             checked += 1
-    for t, kind, f, removed, heat in ref["stops"]:
+    for t, kind, _f, removed, heat in ref["stops"]:
         rem_me, kept_me, f_me = me["stops"][float(t)]
         got = (float(removed["mean"]), float(removed["var"]), float(removed["mu4"]))
-        for x, y in zip(got, rem_me):
+        for x, y in zip(got, rem_me, strict=True):
             assert _close(x, y), (t, got, rem_me)
             checked += 1
         if kind == "withdrawal":
             c = -math.log1p(-f_me)
-            want = (c * kept_me[0], c * c * kept_me[1], c ** 4 * kept_me[2])
+            want = (c * kept_me[0], c * c * kept_me[1], c**4 * kept_me[2])
             got = (float(heat["mean"]), float(heat["var"]), float(heat["mu4"]))
-            for x, y in zip(got, want):
+            for x, y in zip(got, want, strict=True):
                 assert _close(x, y), (t, got, want)
                 checked += 1
         else:
@@ -230,7 +254,7 @@ def test_gate_tiny_master_equation():
         want = me[(obs, float(t))]
         got = (float(m["mean"]), float(m["var"]), float(m["mu4"]))
         alt = num["pairs"][(obs, float(t))]
-        for x, y, z in zip(got, want, alt):
+        for x, y, z in zip(got, want, alt, strict=True):
             assert _close(x, y), (obs, t, got, want)
             assert _close(z, y, rel=1e-9), (obs, t, alt, want)
             checked += 1
@@ -250,20 +274,28 @@ def _invented():
 
 
 def _check_document(doc, raw):
-    assert list(doc) == (["world", "units", "pairs", "stops", "d"]
-                         + (["gap"] if raw["type"] == "gated_shell" else []) + ["plants", "provenance"])
+    assert list(doc) == (
+        ["world", "units", "pairs", "stops", "d"]
+        + (["gap"] if raw["type"] == "gated_shell" else [])
+        + ["plants", "provenance"]
+    )
     assert doc["world"]["name"] == raw["name"]
     times = [float(t) for t in raw["observation_times_s"]]
-    observables = (fr47_exact.SHELL_OBSERVABLES if raw["type"] == "shell_washes"
-                   else fr47_exact.GATE_OBSERVABLES)
-    assert [(e["observable"], e["time_s"]) for e in doc["pairs"]] == [(o, t) for o in observables for t in times]
+    observables = (
+        fr47_exact.SHELL_OBSERVABLES
+        if raw["type"] == "shell_washes"
+        else fr47_exact.GATE_OBSERVABLES
+    )
+    assert [(e["observable"], e["time_s"]) for e in doc["pairs"]] == [
+        (o, t) for o in observables for t in times
+    ]
     for e in doc["pairs"]:
         if e["observable"] == "B@wall":
             assert e["class"] == "constant" and e["value"] == raw["founder_molecules"]["B@wall"]
             assert isinstance(e["value"], int)
         else:
             assert e["class"] == "spread" and e["var"] > 0 and e["mu4"] > 0
-    for s, stop in zip(doc["stops"], raw.get("stops", [])):
+    for s, stop in zip(doc["stops"], raw.get("stops", []), strict=True):
         assert s["time_s"] == float(stop["time_s"]) and s["kind"] == stop["kind"]
         assert s["removed"]["class"] in ("constant", "spread")
         if stop["kind"] == "replacement":
@@ -275,7 +307,8 @@ def _check_document(doc, raw):
         assert len(doc["d"]["intervals"]) == len(raw["stops"]) + 1
     else:
         assert [(g["observable"], g["time_s"]) for g in doc["gap"]] == [
-            (o, t) for o in fr47_exact.GAP_OBSERVABLES for t in times]
+            (o, t) for o in fr47_exact.GAP_OBSERVABLES for t in times
+        ]
         assert all(g["resolution"] >= 0 for g in doc["gap"])
     assert doc["plants"] and all(p["distance_in_bounds"] > 0 for p in doc["plants"])
     for key in ("counts", "pairs", "stops.mixing_heat", "d.intervals.heat", "gap.resolution"):
@@ -283,9 +316,12 @@ def _check_document(doc, raw):
 
 
 def test_writer_invented_inputs():
-    prov = {"references_revision": "self-check", "references_clean": False,
-            "writer_version": fr47_writer.WRITER_VERSION,
-            "regeneration_hash_seeds": fr47_writer.REGENERATION_HASH_SEEDS}
+    prov = {
+        "references_revision": "self-check",
+        "references_clean": False,
+        "writer_version": fr47_writer.WRITER_VERSION,
+        "regeneration_hash_seeds": fr47_writer.REGENERATION_HASH_SEEDS,
+    }
     with tempfile.TemporaryDirectory() as tmp:
         for name, raw in _invented().items():
             path = os.path.join(tmp, f"reference_{name}.json")
@@ -298,7 +334,7 @@ def test_writer_invented_inputs():
             higher = fr47_writer.dumps(fr47_writer.build_document(raw, prov, prec=90))
             assert higher == data, "the floats change at 90 digits"
             reread = json.loads(data)
-            assert reread == doc and fr47_writer.dumps(reread) == data   # repr round trip
+            assert reread == doc and fr47_writer.dumps(reread) == data  # repr round trip
             _check_document(reread, raw)
 
 
@@ -324,10 +360,15 @@ def test_no_engine_import():
 
 if __name__ == "__main__":
     import time
+
     t0 = time.time()
-    for fn in (test_shell_tiny_master_equation, test_gate_tiny_master_equation,
-               test_writer_invented_inputs, test_committed_invented_files_match,
-               test_no_engine_import):
+    for fn in (
+        test_shell_tiny_master_equation,
+        test_gate_tiny_master_equation,
+        test_writer_invented_inputs,
+        test_committed_invented_files_match,
+        test_no_engine_import,
+    ):
         t1 = time.time()
         fn()
         print(f"{fn.__name__}: ok ({time.time() - t1:.2f} s)")

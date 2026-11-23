@@ -16,12 +16,18 @@ Writes, into ``references/`` (or ``--out``):
 BLAS is pinned to one thread before numpy loads. Every output is deterministic: no timestamps,
 host names, paths or process seeds are written.
 """
+
 from __future__ import annotations
 
 import os
 
-for _var in ("OPENBLAS_NUM_THREADS", "OMP_NUM_THREADS", "MKL_NUM_THREADS",
-             "NUMEXPR_NUM_THREADS", "VECLIB_MAXIMUM_THREADS"):
+for _var in (
+    "OPENBLAS_NUM_THREADS",
+    "OMP_NUM_THREADS",
+    "MKL_NUM_THREADS",
+    "NUMEXPR_NUM_THREADS",
+    "VECLIB_MAXIMUM_THREADS",
+):
     os.environ[_var] = "1"
 
 import argparse  # noqa: E402
@@ -41,8 +47,10 @@ def _world_names():
     """Every input world, in sorted order: the registered ones, then the invented ones (whose
     names start with ``invented_``). A resized W2 is a data edit in ``inputs/``."""
     names = sorted(f[:-5] for f in os.listdir(os.path.join(HERE, "inputs")) if f.endswith(".json"))
-    return ([n for n in names if not n.startswith("invented_")],
-            [n for n in names if n.startswith("invented_")])
+    return (
+        [n for n in names if not n.startswith("invented_")],
+        [n for n in names if n.startswith("invented_")],
+    )
 
 
 REGISTERED, INVENTED = _world_names()
@@ -62,12 +70,14 @@ def _blas_threads():
     except ImportError:
         return None
     import numpy  # noqa: F401
+
     return sorted({info["num_threads"] for info in threadpool_info()})
 
 
 # --------------------------------------------------------------------------------------------
 # Accuracy: method 1 (the file) against method 2, in CRITERIA's normalisation
 # --------------------------------------------------------------------------------------------
+
 
 def _spread_v(var, mu4):
     return mu4 - var * var * (M - 3) / (M - 1)
@@ -80,7 +90,7 @@ class Worst:
         self.items = {}
 
     def add(self, figure, value, where):
-        value = float(value)      # numpy scalars become plain floats for the JSON file
+        value = float(value)  # numpy scalars become plain floats for the JSON file
         cur = self.items.get(figure)
         if cur is None or value > cur[0]:
             self.items[figure] = (value, where)
@@ -118,6 +128,7 @@ def _scale_pairs(doc):
 
 def accuracy_world(name, doc, raw):
     import fr47_numeric
+
     num = fr47_numeric.numeric(raw)
     worst = Worst()
     flags = {}
@@ -126,8 +137,9 @@ def accuracy_world(name, doc, raw):
         where = f"{e['observable']} at {e['time_s']} s"
         if e["class"] == "constant":
             founder = raw["founder_molecules"][e["observable"]]
-            flags["constants_equal_founder"] = bool(flags.get("constants_equal_founder", True)
-                                                    and e["value"] == founder)
+            flags["constants_equal_founder"] = bool(
+                flags.get("constants_equal_founder", True) and e["value"] == founder
+            )
             continue
         _moment_figures(worst, "pairs", e, num["pairs"][key], where)
     scale = _scale_pairs(doc)
@@ -135,37 +147,64 @@ def accuracy_world(name, doc, raw):
         key = (e["observable"], e["time_s"])
         if key not in num["d_pairs"]:
             continue
-        worst.add("d.pairs.bounds", abs(num["d_pairs"][key] - e["value"]) / (1e-5 * scale[e["observable"]]),
-                  f"{e['observable']} at {e['time_s']} s")
+        worst.add(
+            "d.pairs.bounds",
+            abs(num["d_pairs"][key] - e["value"]) / (1e-5 * scale[e["observable"]]),
+            f"{e['observable']} at {e['time_s']} s",
+        )
     if raw["type"] == "shell_washes":
         rem_scale = max(abs(s["removed"]) for s in doc["d"]["stops"])
-        heat_scale = max(abs(s["mixing_heat"]) for s in doc["d"]["stops"] if s["mixing_heat"] is not None)
-        for s, ds in zip(doc["stops"], doc["d"]["stops"]):
+        heat_scale = max(
+            abs(s["mixing_heat"]) for s in doc["d"]["stops"] if s["mixing_heat"] is not None
+        )
+        for s, ds in zip(doc["stops"], doc["d"]["stops"], strict=True):
             t = s["time_s"]
             n_rem, n_heat = num["stops"][t]
             _moment_figures(worst, "stops.removed", s["removed"], n_rem, f"removed at {t} s")
             if s["mixing_heat"] is not None:
-                _moment_figures(worst, "stops.mixing_heat", s["mixing_heat"], n_heat, f"mixing heat at {t} s")
+                _moment_figures(
+                    worst, "stops.mixing_heat", s["mixing_heat"], n_heat, f"mixing heat at {t} s"
+                )
             d_rem, d_heat = num["d_stops"][t]
-            worst.add("d.stops.removed_bounds", abs(d_rem - ds["removed"]) / (1e-5 * rem_scale), f"removed at {t} s")
+            worst.add(
+                "d.stops.removed_bounds",
+                abs(d_rem - ds["removed"]) / (1e-5 * rem_scale),
+                f"removed at {t} s",
+            )
             if ds["mixing_heat"] is not None:
-                worst.add("d.stops.mixing_heat_bounds", abs(d_heat - ds["mixing_heat"]) / (1e-5 * heat_scale),
-                          f"mixing heat at {t} s")
+                worst.add(
+                    "d.stops.mixing_heat_bounds",
+                    abs(d_heat - ds["mixing_heat"]) / (1e-5 * heat_scale),
+                    f"mixing heat at {t} s",
+                )
         heat_scale = max(abs(i["heat"]) for i in doc["d"]["intervals"])
-        for i, (t0, t1, q) in zip(doc["d"]["intervals"], num["intervals"]):
-            worst.add("d.intervals.bounds", abs(q - i["heat"]) / (1e-5 * heat_scale),
-                      f"interval {i['start_s']}-{i['end_s']} s")
+        for i, (_t0, _t1, q) in zip(doc["d"]["intervals"], num["intervals"], strict=True):
+            worst.add(
+                "d.intervals.bounds",
+                abs(q - i["heat"]) / (1e-5 * heat_scale),
+                f"interval {i['start_s']}-{i['end_s']} s",
+            )
     else:
-        sd = {(e["observable"], e["time_s"]): math.sqrt(e["var"]) for e in doc["pairs"] if e["class"] == "spread"}
+        sd = {
+            (e["observable"], e["time_s"]): math.sqrt(e["var"])
+            for e in doc["pairs"]
+            if e["class"] == "spread"
+        }
         for g in doc["gap"]:
             key = (g["observable"], g["time_s"])
             ng, nres = num["gap"][key]
             where = f"{g['observable']} at {g['time_s']} s"
             worst.add("gap.z", abs(ng - g["gap"]) / (sd[key] / math.sqrt(M)), where)
             worst.add("gap.resolution_absolute", abs(nres - g["resolution"]), where)
-        worst.add("hierarchy.mass_minus_one", max(abs(v - 1.0) for v in num["mass"].values()), "all times")
+        worst.add(
+            "hierarchy.mass_minus_one", max(abs(v - 1.0) for v in num["mass"].values()), "all times"
+        )
         worst.add("hierarchy.cut_edge_mass", max(num["edge_mass"].values()), "all times")
-        flags["hierarchy_window"] = {"k_lo": num["window"][0], "k_hi": num["window"][1], "N_g": num["Ng"]}
+        flags["hierarchy_window"] = {
+            "k_lo": num["window"][0],
+            "k_hi": num["window"][1],
+            "N_g": num["Ng"],
+        }
     for p in doc["plants"]:
         cands = num["plants"][(p["plant"], p["criterion"])]
         if "time_s" in p:
@@ -176,18 +215,24 @@ def accuracy_world(name, doc, raw):
         dist = abs(planted - honest) / unit
         top = max(abs(c[1] - c[0]) / c[2] for c in cands.values())
         # method 2 names the same quantity, or one tied with it to rounding (P6 after the last stop)
-        flags["plants_same_quantity"] = bool(flags.get("plants_same_quantity", True)
-                                             and dist >= top * (1 - 1e-9))
+        flags["plants_same_quantity"] = bool(
+            flags.get("plants_same_quantity", True) and dist >= top * (1 - 1e-9)
+        )
         tag = f"{p['plant']}/{p['criterion']} {key}"
         worst.add("plants.planted_in_bounds", abs(planted - p["planted"]) / unit, tag)
         worst.add("plants.honest_in_bounds", abs(honest - p["honest"]) / unit, tag)
-        worst.add("plants.distance_relative", abs(dist - p["distance_in_bounds"]) / p["distance_in_bounds"], tag)
+        worst.add(
+            "plants.distance_relative",
+            abs(dist - p["distance_in_bounds"]) / p["distance_in_bounds"],
+            tag,
+        )
     return worst, flags
 
 
 # --------------------------------------------------------------------------------------------
 # Identities on the written floats, in ulps
 # --------------------------------------------------------------------------------------------
+
 
 def _ulps(x, target):
     return abs(x - target) / math.ulp(target) if target != 0 else abs(x) / math.ulp(1.0)
@@ -198,24 +243,36 @@ def identities_world(doc):
     raw = doc["world"]
     if raw["type"] == "shell_washes":
         total = raw["founder_molecules"]["S@pool"] + raw["founder_molecules"]["S@lumen"]
-        mean = {(e["observable"], e["time_s"]): (e["value"] if e["class"] == "constant" else e["mean"])
-                for e in doc["pairs"]}
+        mean = {
+            (e["observable"], e["time_s"]): (e["value"] if e["class"] == "constant" else e["mean"])
+            for e in doc["pairs"]
+        }
         dval = {(e["observable"], e["time_s"]): e["value"] for e in doc["d"]["pairs"]}
         times = sorted({e["time_s"] for e in doc["pairs"]})
         worst_exact = worst_d = 0.0
         for t in times:
-            removed = [s["removed"]["mean"] if s["removed"]["class"] == "spread" else s["removed"]["value"]
-                       for s in doc["stops"] if s["time_s"] < t]
+            removed = [
+                s["removed"]["mean"] if s["removed"]["class"] == "spread" else s["removed"]["value"]
+                for s in doc["stops"]
+                if s["time_s"] < t
+            ]
             d_removed = [s["removed"] for s in doc["d"]["stops"] if s["time_s"] < t]
-            worst_exact = max(worst_exact, _ulps(math.fsum([mean[("S@pool", t)], mean[("S@lumen", t)]] + removed), total))
-            worst_d = max(worst_d, _ulps(math.fsum([dval[("S@pool", t)], dval[("S@lumen", t)]] + d_removed), total))
+            worst_exact = max(
+                worst_exact,
+                _ulps(math.fsum([mean[("S@pool", t)], mean[("S@lumen", t)]] + removed), total),
+            )
+            worst_d = max(
+                worst_d,
+                _ulps(math.fsum([dval[("S@pool", t)], dval[("S@lumen", t)]] + d_removed), total),
+            )
         out["moiety_present_plus_removed_ulps_of_founder"] = worst_exact
         out["d_moiety_present_plus_removed_ulps_of_founder"] = worst_d
         out["d_pairs_equal_exact_means_bitwise"] = all(dval[k] == mean[k] for k in dval)
         out["d_stops_equal_exact_means_bitwise"] = all(
             ds["removed"] == s["removed"].get("mean", s["removed"].get("value"))
             and (ds["mixing_heat"] is None or ds["mixing_heat"] == s["mixing_heat"].get("mean"))
-            for s, ds in zip(doc["stops"], doc["d"]["stops"]))
+            for s, ds in zip(doc["stops"], doc["d"]["stops"], strict=True)
+        )
     else:
         founder = raw["founder_molecules"]
         n_tr = founder["S@pool"] + founder["S@lumen"]
@@ -224,26 +281,53 @@ def identities_world(doc):
         dval = {(e["observable"], e["time_s"]): e["value"] for e in doc["d"]["pairs"]}
         gap = {(g["observable"], g["time_s"]): g for g in doc["gap"]}
         times = sorted({e["time_s"] for e in doc["pairs"]})
-        acc = {k: 0.0 for k in ("pool_plus_lumen_mean_ulps", "G_plus_H_mean_ulps", "var_pool_vs_lumen_ulps",
-                                "mu4_pool_vs_lumen_ulps", "var_G_vs_H_ulps", "mu4_G_vs_H_ulps",
-                                "d_pool_plus_lumen_ulps", "d_G_plus_H_ulps", "gap_pool_plus_lumen_ulps",
-                                "resolution_pool_vs_lumen_ulps")}
+        acc = {
+            k: 0.0
+            for k in (
+                "pool_plus_lumen_mean_ulps",
+                "G_plus_H_mean_ulps",
+                "var_pool_vs_lumen_ulps",
+                "mu4_pool_vs_lumen_ulps",
+                "var_G_vs_H_ulps",
+                "mu4_G_vs_H_ulps",
+                "d_pool_plus_lumen_ulps",
+                "d_G_plus_H_ulps",
+                "gap_pool_plus_lumen_ulps",
+                "resolution_pool_vs_lumen_ulps",
+            )
+        }
         for t in times:
-            p, l = pairs[("S@pool", t)], pairs[("S@lumen", t)]
+            p, lum = pairs[("S@pool", t)], pairs[("S@lumen", t)]
             g, h = pairs[("G@wall", t)], pairs[("H@wall", t)]
-            acc["pool_plus_lumen_mean_ulps"] = max(acc["pool_plus_lumen_mean_ulps"], _ulps(math.fsum([p["mean"], l["mean"]]), n_tr))
-            acc["G_plus_H_mean_ulps"] = max(acc["G_plus_H_mean_ulps"], _ulps(math.fsum([g["mean"], h["mean"]]), n_g))
-            acc["var_pool_vs_lumen_ulps"] = max(acc["var_pool_vs_lumen_ulps"], _ulps(p["var"], l["var"]))
-            acc["mu4_pool_vs_lumen_ulps"] = max(acc["mu4_pool_vs_lumen_ulps"], _ulps(p["mu4"], l["mu4"]))
+            acc["pool_plus_lumen_mean_ulps"] = max(
+                acc["pool_plus_lumen_mean_ulps"], _ulps(math.fsum([p["mean"], lum["mean"]]), n_tr)
+            )
+            acc["G_plus_H_mean_ulps"] = max(
+                acc["G_plus_H_mean_ulps"], _ulps(math.fsum([g["mean"], h["mean"]]), n_g)
+            )
+            acc["var_pool_vs_lumen_ulps"] = max(
+                acc["var_pool_vs_lumen_ulps"], _ulps(p["var"], lum["var"])
+            )
+            acc["mu4_pool_vs_lumen_ulps"] = max(
+                acc["mu4_pool_vs_lumen_ulps"], _ulps(p["mu4"], lum["mu4"])
+            )
             acc["var_G_vs_H_ulps"] = max(acc["var_G_vs_H_ulps"], _ulps(g["var"], h["var"]))
             acc["mu4_G_vs_H_ulps"] = max(acc["mu4_G_vs_H_ulps"], _ulps(g["mu4"], h["mu4"]))
-            acc["d_pool_plus_lumen_ulps"] = max(acc["d_pool_plus_lumen_ulps"],
-                                                _ulps(math.fsum([dval[("S@pool", t)], dval[("S@lumen", t)]]), n_tr))
-            acc["d_G_plus_H_ulps"] = max(acc["d_G_plus_H_ulps"], _ulps(math.fsum([dval[("G@wall", t)], dval[("H@wall", t)]]), n_g))
+            acc["d_pool_plus_lumen_ulps"] = max(
+                acc["d_pool_plus_lumen_ulps"],
+                _ulps(math.fsum([dval[("S@pool", t)], dval[("S@lumen", t)]]), n_tr),
+            )
+            acc["d_G_plus_H_ulps"] = max(
+                acc["d_G_plus_H_ulps"],
+                _ulps(math.fsum([dval[("G@wall", t)], dval[("H@wall", t)]]), n_g),
+            )
             gp, gl = gap[("S@pool", t)], gap[("S@lumen", t)]
-            acc["gap_pool_plus_lumen_ulps"] = max(acc["gap_pool_plus_lumen_ulps"], _ulps(-gp["gap"], gl["gap"]))
-            acc["resolution_pool_vs_lumen_ulps"] = max(acc["resolution_pool_vs_lumen_ulps"],
-                                                       _ulps(gp["resolution"], gl["resolution"]))
+            acc["gap_pool_plus_lumen_ulps"] = max(
+                acc["gap_pool_plus_lumen_ulps"], _ulps(-gp["gap"], gl["gap"])
+            )
+            acc["resolution_pool_vs_lumen_ulps"] = max(
+                acc["resolution_pool_vs_lumen_ulps"], _ulps(gp["resolution"], gl["resolution"])
+            )
         out.update(acc)
     return out
 
@@ -252,52 +336,86 @@ def identities_world(doc):
 # C8's resolution table
 # --------------------------------------------------------------------------------------------
 
+
 def c8_table(docs):
     rows = []
     gated = [n for n in REGISTERED if docs[n]["world"]["type"] == "gated_shell"]
-    gated.sort(key=lambda n: docs[n]["world"]["founder_molecules"]["G@wall"]
-               + docs[n]["world"]["founder_molecules"]["H@wall"])
+    gated.sort(
+        key=lambda n: (
+            docs[n]["world"]["founder_molecules"]["G@wall"]
+            + docs[n]["world"]["founder_molecules"]["H@wall"]
+        )
+    )
     for name in gated:
         doc = docs[name]
         founder = doc["world"]["founder_molecules"]
-        sd = {(e["observable"], e["time_s"]): math.sqrt(e["var"]) for e in doc["pairs"] if e["class"] == "spread"}
+        sd = {
+            (e["observable"], e["time_s"]): math.sqrt(e["var"])
+            for e in doc["pairs"]
+            if e["class"] == "spread"
+        }
         largest = None
         best_res = None
-        for g in doc["gap"]:          # ordered S@pool, S@lumen, G@wall, H@wall, then by time
+        for g in doc["gap"]:  # ordered S@pool, S@lumen, G@wall, H@wall, then by time
             if largest is None or abs(g["gap"]) > abs(largest["gap"]):
                 largest = g
             if best_res is None or g["resolution"] > best_res["resolution"]:
                 best_res = g
-        rows.append({"world": name, "N_g": founder["G@wall"] + founder["H@wall"],
-                     "N_w": founder["B@wall"] + founder["G@wall"] + founder["H@wall"],
-                     "largest_pair": {"observable": largest["observable"], "time_s": largest["time_s"],
-                                      "gap": largest["gap"], "sd": sd[(largest["observable"], largest["time_s"])],
-                                      "resolution": largest["resolution"],
-                                      "qualifies": largest["resolution"] >= RESOLUTION_FLOOR,
-                                      # sizing only: replicas at which this pair would reach 4.5
-                                      "replicas_for_resolution_4.5": M * (RESOLUTION_FLOOR / largest["resolution"]) ** 2},
-                     "most_resolved_pair": {"observable": best_res["observable"], "time_s": best_res["time_s"],
-                                            "resolution": best_res["resolution"]}})
+        rows.append(
+            {
+                "world": name,
+                "N_g": founder["G@wall"] + founder["H@wall"],
+                "N_w": founder["B@wall"] + founder["G@wall"] + founder["H@wall"],
+                "largest_pair": {
+                    "observable": largest["observable"],
+                    "time_s": largest["time_s"],
+                    "gap": largest["gap"],
+                    "sd": sd[(largest["observable"], largest["time_s"])],
+                    "resolution": largest["resolution"],
+                    "qualifies": largest["resolution"] >= RESOLUTION_FLOOR,
+                    # sizing only: replicas at which this pair would reach 4.5
+                    "replicas_for_resolution_4.5": M
+                    * (RESOLUTION_FLOOR / largest["resolution"]) ** 2,
+                },
+                "most_resolved_pair": {
+                    "observable": best_res["observable"],
+                    "time_s": best_res["time_s"],
+                    "resolution": best_res["resolution"],
+                },
+            }
+        )
     qualifying = [r for r in rows if r["largest_pair"]["qualifies"]]
     xs = [math.log(r["N_g"]) for r in rows]
     se = None
     if len(rows) >= 2:
         xbar = sum(xs) / len(xs)
         sxx = sum((x - xbar) ** 2 for x in xs)
-        se = math.sqrt(sum((x - xbar) ** 2 / r["largest_pair"]["resolution"] ** 2
-                           for x, r in zip(xs, rows))) / sxx
-    return {"rule": "CRITERIA C8 and AMENDMENT section 8: the largest |gap| over S@pool, S@lumen, G@wall "
-                    "and H@wall at the observation times (ties to the first in that order, then the "
-                    "earliest time); resolution = |gap| / (SD / sqrt(128)); a rung qualifies at 4.5",
-            "M": M, "rungs": rows, "qualifying_rungs": len(qualifying),
-            "slope_claimable_as_measured": len(qualifying) >= 3,
-            "slope_se_linearised_all_rungs": se,
-            "slope_se_note": "the standard error of a least-squares slope of ln|gap| on ln N_g over all "
-                             "rungs if each rung's ln|gap| were measured with SD 1/resolution "
-                             "(linearised; meaningless where a resolution is below about 3)"}
+        se = (
+            math.sqrt(
+                sum(
+                    (x - xbar) ** 2 / r["largest_pair"]["resolution"] ** 2
+                    for x, r in zip(xs, rows, strict=True)
+                )
+            )
+            / sxx
+        )
+    return {
+        "rule": "CRITERIA C8 and AMENDMENT section 8: the largest |gap| over S@pool, S@lumen, "
+        "G@wall and H@wall at the observation times (ties to the first in that order, then the "
+        "earliest time); resolution = |gap| / (SD / sqrt(128)); a rung qualifies at 4.5",
+        "M": M,
+        "rungs": rows,
+        "qualifying_rungs": len(qualifying),
+        "slope_claimable_as_measured": len(qualifying) >= 3,
+        "slope_se_linearised_all_rungs": se,
+        "slope_se_note": "the standard error of a least-squares slope of ln|gap| on ln N_g over "
+        "all rungs if each rung's ln|gap| were measured with SD 1/resolution "
+        "(linearised; meaningless where a resolution is below about 3)",
+    }
 
 
 # --------------------------------------------------------------------------------------------
+
 
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
@@ -321,25 +439,35 @@ def main(argv=None):
         check = fr47_writer.dumps(fr47_writer.build_document(raw, prov, prec=CHECK_PREC))
         precision["files"][name] = check == data
         docs[name], raws[name] = doc, raw
-        print(f"wrote reference_{name}.json ({len(data)} bytes); {CHECK_PREC}-digit floats identical: {check == data}",
-              flush=True)
+        print(
+            f"wrote reference_{name}.json ({len(data)} bytes); "
+            f"{CHECK_PREC}-digit floats identical: {check == data}",
+            flush=True,
+        )
     precision["all_identical"] = all(precision["files"].values())
-    accuracy = {"provenance": prov,
-                "method_1": "closed forms in decimal arithmetic at 60 digits (fr47_exact.py): the written values",
-                "method_2": "independent float64 numerics (fr47_numeric.py): expm and pmf enumeration, DOP853 "
-                            "for the rate equations, and Radau on the moment hierarchy over every gate state",
-                "normalisation": {
-                    "mean_z": "|m2 - m1| / sqrt(var / 128): CRITERIA's mean z per unit difference",
-                    "var_spread_z": "|v2 - v1| / sqrt((mu4 - var^2 (M-3)/(M-1)) / 128): the spread z",
-                    "mu4_spread_z_relative": "|q2 - q1| / (2 (mu4 - var^2 (M-3)/(M-1))): the spread z's "
-                                             "relative change, so |dz| = |z| times this",
-                    "bounds": "|y2 - y1| / (1e-5 s_y): C1's bound, with CRITERIA's scales",
-                    "gap.z": "|gap2 - gap1| / (SD / sqrt(128))",
-                    "plants": "planted and honest in the criterion's own bound; distance relative"},
-                "precision_check": precision, "worlds": {}, "identities": {}}
+    accuracy = {
+        "provenance": prov,
+        "method_1": "closed forms in decimal arithmetic at 60 digits (fr47_exact.py): "
+        "the written values",
+        "method_2": "independent float64 numerics (fr47_numeric.py): expm and pmf enumeration, "
+        "DOP853 for the rate equations, and Radau on the moment hierarchy over every gate state",
+        "normalisation": {
+            "mean_z": "|m2 - m1| / sqrt(var / 128): CRITERIA's mean z per unit difference",
+            "var_spread_z": "|v2 - v1| / sqrt((mu4 - var^2 (M-3)/(M-1)) / 128): the spread z",
+            "mu4_spread_z_relative": "|q2 - q1| / (2 (mu4 - var^2 (M-3)/(M-1))): the spread z's "
+            "relative change, so |dz| = |z| times this",
+            "bounds": "|y2 - y1| / (1e-5 s_y): C1's bound, with CRITERIA's scales",
+            "gap.z": "|gap2 - gap1| / (SD / sqrt(128))",
+            "plants": "planted and honest in the criterion's own bound; distance relative",
+        },
+        "precision_check": precision,
+        "worlds": {},
+        "identities": {},
+    }
     overall = Worst()
     if not args.skip_numeric:
         import time
+
         for name in REGISTERED + INVENTED:
             started = time.monotonic()
             worst, flags = accuracy_world(name, docs[name], raws[name])
