@@ -33,10 +33,15 @@ OL6 (D304); the design is docs/OL6_DETERMINISTIC_REPRESENTATION_DESIGN.md (tag
   σ_max ≤ σ_β/4). Under a hold, a step that changes a membrane place's count is refused (T2); with
   σ from F such steps are admitted, which exact events refuse until the clock moves onto the
   device (OL6 S4).
-- **The clock's bound.** Each accepted step's embedded estimate of H's error is at most 1e-10, or
-  the run is refused. H is out of step selection, so a world whose rate is very sensitive to its
-  state (σ from F near the lumen's kink) needs tight tolerances: rtol 1e-12 with atol_count 1e-9 in
-  the slice's own test world.
+- **The clock's bound** (D309, which replaced the absolute 1e-10 of the note's §3.5). Each
+  accepted step's embedded estimate U^H of a vesicle's clock error is at most 1e-10 + 2e-3 |ΔH|,
+  ΔH that step's own increment of the vesicle's clock H, or the run is refused. The absolute part
+  governs the steps before the clock is live (ΔH near 0). By the estimate, the relative part
+  bounds a crossing time's relative error by about 2e-3 while the clock's rate rises (D309; S3
+  measured the estimate overstating the actual error about 200-fold). H is out of step
+  selection, so a world whose rate is very sensitive to its state (σ from F near the lumen's
+  kink) still needs tight tolerances: rtol 1e-12 with atol_count 1e-9 in the slice's own test
+  world and in Protocol D's vesicle worlds.
 
 ## run.json (`cells.rate_equations_run@1`)
 
@@ -59,7 +64,10 @@ OL6 (D304); the design is docs/OL6_DETERMINISTIC_REPRESENTATION_DESIGN.md (tag
 
 In `representation.statistics`, a pore world adds `pores`: each threshold draw (key, counter, u, E,
 the time drawn: a founder at 0, a daughter at its birth), the largest embedded estimate of the
-clock's error, and its bound. The world's own check adds `pore`: the traced rate against the law's
+clock's error (`largest_clock_error`), the largest fraction of its bound used
+(`largest_clock_error_fraction`, |U^H|/(1e-10 + 2e-3 |ΔH|), at most 1 in a run that was not
+refused), and the bound's two parts (`clock_error_bound`, 1e-10, and `clock_error_relative`,
+2e-3). The world's own check adds `pore`: the traced rate against the law's
 host form at the founders' areas and tensions.
 
 ## rows.npz
