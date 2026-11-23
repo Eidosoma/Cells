@@ -235,7 +235,7 @@ def working_size(spec):
     forms = 0
     if getattr(spec.model, "forms_faces", ()):  # Each mover's transfer and each face's heat.
         faces = len(spec.model.forms_faces)
-        forms = faces * (forms_law.mover_count(spec.model) + 1)
+        forms = faces * (forms_law.mover_count(spec.model, forms_of_binders(spec.model)) + 1)
     return (
         second.working_size(projection(spec))
         + 2 * (2 + 2 * s) * x.channel_capacity
@@ -389,6 +389,20 @@ def forms_return_paths(model):
         yield
 
 
+def forms_of_binders(model):
+    """{binder row: its forms, base first ((form ID, ((ligand, n), ...), mu°/RT), ...)} from the
+    species registry (species_registry.forms_of), for each binder some forms face moves as its
+    forms; {} without one. The law module takes them as data (laws/ import the registry only
+    through cells.modules)."""
+    rows = forms_law.form_binders(model)
+    if not rows:
+        return {}
+    from cells.registry import species_registry  # Host side; the registry imports this module.
+
+    spec = SimpleNamespace(model=model)
+    return {row: species_registry.forms_of(spec, row) for row in rows}
+
+
 def forms_faces_declared(structure):
     """Whether the structure declares forms faces (InnerStructure.forms_faces; static)."""
     return structure is not None and bool(structure.forms_faces)
@@ -414,7 +428,7 @@ def forms_initial_values(spec, layout):
             np.asarray(layout["binding_present"]),
             np.asarray(layout["binding_held"]).shape[0],
         )
-    table = forms_law.movers(m, network)
+    table = forms_law.movers(m, network, forms_of_binders(m))
     charge = np.asarray(table.stoichiometry) @ np.asarray(m.valence, dtype=float)
     if not np.array_equal(charge, np.asarray(table.valence, dtype=float)):  # Exact: integers.
         bad = table.names[int(np.flatnonzero(charge != np.asarray(table.valence))[0])]
@@ -2235,6 +2249,20 @@ def label_errors(p, rows, *, structure=None, solver=None, model=None):
                 if np.any(moved):
                     errors.append(f"{FR42_REFUSAL}: row {r} is moved by a pump")
                     break
+        # A forms face moves row r where a mover it carries (a positive factor on an active face)
+        # changes the row: as itself, as a binder's form, or as a ligand a form carries. FR-42's
+        # face term assumes one face factor per row, so version 1 refuses it (the build plan's
+        # item 1; the face builder's line, landing after FR-42's hook).
+        if _has_forms(p):
+            changes = np.asarray(p.forms_face_stoichiometry)[:, r] != 0  # [mover]
+            carried = (np.asarray(p.forms_face_factor) > 0) & np.asarray(
+                p.forms_face_active, dtype=bool
+            )[None, :]
+            if np.any(changes[:, None] & carried):
+                errors.append(
+                    f"{FR42_REFUSAL}: row {r} is moved by a forms face ({forms_law.LAW_ID}), "
+                    "whose one-way term is not built (version 1)"
+                )
     return errors
 
 
@@ -2373,6 +2401,10 @@ def imex_step(state, dt, control, p, *, xp=jnp, membrane_process=None, structure
     hook["structure"] = structure
     processes = []
     kinds = _kinds(structure)
+    if labels is not None and forms_faces_declared(structure):  # Version 1 (label_errors' line).
+        raise ConfigError(
+            f"{FR42_REFUSAL}: {forms_law.LAW_ID}'s faces have no one-way term (version 1)"
+        )
     if labels is not None:  # FR-42 (static, D303 item 6): a kind's moves need its refusals.
         for kind in kinds:
             if kind.rates is not None and kind.label_refusals is None:
@@ -4785,7 +4817,9 @@ def moved_rows(model):
     no fuel row; a species absent from the mapping is moved by nothing in the step.
     """
     movers = {s: [] for s in model.species_ids}
-    forms_moved = forms_law.moved_rows_of(model) if getattr(model, "forms_faces", ()) else {}
+    forms_moved = {}
+    if getattr(model, "forms_faces", ()):  # Each forms face's rows, its forms' ligands included.
+        forms_moved = forms_law.moved_rows_of(model, forms_of_binders(model))
 
     def add(species, kind, law, entities):
         if entities:
@@ -5100,7 +5134,8 @@ def structured_batch_signature(model):
     forms = getattr(model, "forms_faces", ())
     shapes = ()
     if forms:  # The forms faces' static shapes: no mixed batch.
-        shapes = ((("forms_faces", len(forms)), ("face_mover", forms_law.mover_count(model))),)
+        count = forms_law.mover_count(model, forms_of_binders(model))
+        shapes = ((("forms_faces", len(forms)), ("face_mover", count)),)
     return (
         *batch_signature(model),
         structure(model),

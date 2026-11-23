@@ -16,16 +16,22 @@ to each of its movers:
 - a binder row that the closure holds at one end only is refused in version 1 (its forms have no
   concentration at the other end).
 
-The movers' table is built here (movers, face_factors), from the definition; the kernels are
-numerics/surface_transport.forms_face_transport and numerics/surface_imex's forms twins, which take
-the movers' end concentrations, valences, factors and row stoichiometry and know nothing of the
-closure. Forms faces are their own entity set in resolved_pump_tissue@3 (models/surface_pump_v3),
-statically absent unless declared, so no plain face, layout or program of a world without one
-changes (D148 case 2). Version 1 runs on the plain IMEX tableaux only: RK4, N2, the projective mode
-and the composite families refuse it.
+The movers' table is built here (movers, face_factors), from the definition and the binders'
+forms, which the caller gives as data (the species registry's forms_of: a law imports Cells only
+through cells.modules); the kernels are numerics/surface_transport.forms_face_transport and
+numerics/surface_imex's forms twins, which take the movers' end concentrations, valences, factors
+and row stoichiometry and know nothing of the closure.
+
+Provenance: parity with logmean_electrodiffusion@1, whose expression it applies to each mover; a
+face whose rows are all their own form steps as today's face, bitwise, which its test checks with
+a planted error. The forms, their valences and their classes' diffusivities are the definition's.
+
+Forms faces are their own entity set in resolved_pump_tissue@3 (models/surface_pump_v3), statically
+absent unless declared, so no plain face, layout or program of a world without one changes (D148
+case 2). Version 1 runs on the plain IMEX tableaux only: RK4, N2, the projective mode and the
+composite families refuse it, and so does FR-42 for a labelled row a forms face moves.
 """
 
-from types import SimpleNamespace
 from typing import NamedTuple
 
 import numpy as np
@@ -42,6 +48,11 @@ LAW = RouteLaw(
     "concentration, a binder's bound forms carrying their ligands (docs/MITOCHONDRIA_DESIGN.md, "
     "MT-1b's outer membrane, a design, not a reproduction of a paper)",
     host="cells.resolved_pump_tissue@3",
+    provenance="parity",  # logmean_electrodiffusion@1's expression per mover (module docstring).
+    test=(
+        "tests/unit/test_rapid_binding_world.py::"
+        "test_a_forms_face_of_rows_as_themselves_steps_as_todays_face"
+    ),
 )
 
 
@@ -112,27 +123,27 @@ def form_binders(model):
     return sorted({row for (_, row), how in carriage(model)[0].items() if how == "forms"})
 
 
-def moved_rows_of(model):
+def moved_rows_of(model, forms):
     """{forms face ID: (species, ...)}: the rows each forms face moves in the step: each row it
-    carries as itself, and each binder row it carries as forms with its forms' ligand rows."""
-    spec = SimpleNamespace(model=model)
+    carries as itself, and each binder row it carries as forms with its forms' ligand rows. forms:
+    {binder row: its forms, base first ((form ID, ((ligand, n), ...), mu°/RT), ...)}, the species
+    registry's, for every binder some face moves as its forms."""
     out = {}
     for (face, row), how in carriage(model)[0].items():
         rows = out.setdefault(face, set())
         rows.add(row)
         if how == "forms":
-            from cells.registry import species_registry  # Host side, at the definition.
-
-            for _, counts, _ in species_registry.forms_of(spec, row):
+            for _, counts, _ in forms[row]:
                 rows.update(ligand for ligand, n in counts if n)
     return {face: tuple(sorted(rows)) for face, rows in out.items()}
 
 
-def movers(model, network=None):
+def movers(model, network=None, forms=None):
     """The movers' table: every species row as its own form (row order), then, for each binder row
     a forms face moves as its forms, each of that binder's forms, base first, in the closure's
     binder order. network: the general closure's layout arrays (binding_rows, binding_counts,
-    binding_present, and its ligand count), needed only where a binder moves as its forms."""
+    binding_present, and its ligand count), and forms: the binders' forms as moved_rows_of takes
+    them, both needed only where a binder moves as its forms."""
     species = len(model.species_ids)
     names = list(model.species_ids)
     row = list(range(species))
@@ -141,15 +152,16 @@ def movers(model, network=None):
     stoichiometry = [np.eye(species)[r] for r in range(species)]
     carried = form_binders(model)
     if carried:
-        if network is None:
-            raise ValueError("A binder that moves as its forms needs the general closure's arrays")
+        if network is None or forms is None:
+            raise ValueError(
+                "A binder that moves as its forms needs the general closure's arrays and its forms"
+            )
         rows, counts, present, ligands = network
-        spec = SimpleNamespace(model=model)
         for b, species_row in enumerate(rows[ligands:]):
             name = model.species_ids[int(species_row)]
             if name not in carried:
                 continue
-            ids = [fid for fid, _, _ in _forms(spec, name)]
+            ids = [fid for fid, _, _ in forms[name]]
             for k in np.flatnonzero(present[b]):
                 vector = np.eye(species)[int(species_row)].copy()
                 charge = float(model.valence[int(species_row)])
@@ -175,17 +187,11 @@ def movers(model, network=None):
     )
 
 
-def mover_count(model):
-    """The movers' number, from the definition alone (movers' table without the closure's arrays):
-    every species row, and each form of each binder some forms face moves as its forms."""
-    spec = SimpleNamespace(model=model)
-    return len(model.species_ids) + sum(len(_forms(spec, row)) for row in form_binders(model))
-
-
-def _forms(spec, row):
-    from cells.registry import species_registry  # Host side, at the definition.
-
-    return species_registry.forms_of(spec, row)
+def mover_count(model, forms):
+    """The movers' number, from the definition and the binders' forms (as moved_rows_of takes
+    them), without the closure's arrays: every species row, and each form of each binder some
+    forms face moves as its forms."""
+    return len(model.species_ids) + sum(len(forms[row]) for row in form_binders(model))
 
 
 def face_factors(model, table):

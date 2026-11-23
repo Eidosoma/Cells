@@ -631,6 +631,7 @@ def test_the_forms_entity_set_is_absent_unless_declared_and_binds_its_return_pat
         ("run view", "No view declarations for logmean_electrodiffusion_forms@1"),
         ("exact booking", "books today's faces' neutral rows"),
         ("closure", "beside another stage read"),
+        ("labels", "is moved by a forms face"),
     ],
 )
 def test_version_1_refuses_a_forms_face_where_its_paths_are_not_built(case, message):
@@ -638,8 +639,9 @@ def test_version_1_refuses_a_forms_face_where_its_paths_are_not_built(case, mess
     (the plain IMEX tableaux only), the projective mode, a caller without @3's structure, the
     composite's adapter, the stationary analysis, the run view, the faces' exact booking, and a
     world with another stage read than the general closure's (version 1's rapid_proton_buffer@1
-    here). The control: the same forms world parses and steps
-    (test_a_forms_face_of_rows_as_themselves_steps_as_todays_face)."""
+    here), and FR-42's labels on a row a forms face moves (label_errors, and the step itself), while
+    a row it does not move gives no such reason. The control: the same forms world parses and
+    steps (test_a_forms_face_of_rows_as_themselves_steps_as_todays_face)."""
     from cells.analysis import stationary
     from cells.models import pump_composite_adapter as adapter
     from cells.models import surface_pump_v3 as inner
@@ -655,7 +657,18 @@ def test_version_1_refuses_a_forms_face_where_its_paths_are_not_built(case, mess
             parse_spec(raw)
         return
     spec = parse_spec(face_world(FORMS))
-    impl, state, p, _ = host(spec)
+    impl, state, p, control = host(spec)
+    if case == "labels":
+        ids = list(spec.model.species_ids)
+        reasons = inner.label_errors(p, [ids.index("K")], structure=impl.structure,
+                                     model=spec.model)  # fmt: skip
+        assert any(message in r for r in reasons), reasons
+        unmoved = inner.label_errors(p, [ids.index("ATP")], structure=impl.structure,
+                                     model=spec.model)  # fmt: skip
+        assert not any(message in r for r in unmoved)
+        with pytest.raises(ConfigError, match="have no one-way term"):
+            impl.imex_step(state, spec.execution.dt, control, p, xp=np, labels=[ids.index("K")])
+        return
     with pytest.raises((ConfigError, ValueError, run_view.ViewRefused), match=message):
         if case == "projective":
             inner.check_steps(replace(spec, projective=object()), [spec.execution.dt], None)
@@ -752,8 +765,9 @@ def test_a_forms_face_moves_a_binder_as_its_forms_and_every_ledger_closes():
 
     spec, impl, states = host_steps(forms_world(protons=0.5), 4)
     p = impl.initial_values(spec)[1]
-    names = forms_law.movers(spec.model, (np.asarray(p.binding_rows), np.asarray(p.binding_counts),
-                                          np.asarray(p.binding_present), 1)).names  # fmt: skip
+    network = (np.asarray(p.binding_rows), np.asarray(p.binding_counts),
+               np.asarray(p.binding_present), 1)  # fmt: skip
+    names = forms_law.movers(spec.model, network, inner.forms_of_binders(spec.model)).names
     assert names[-2:] == ("B_L:B_L", "B_L:HB_L") and list(p.forms_face_form_movers) == [9, 10]
     moved = states[-1].forms_face_transferred[:, 0]
     assert moved[5] == 0 and moved[10] > 1e-2 * moved[9] > 0  # B_L as its forms, HB_L carried.
@@ -773,8 +787,8 @@ def test_a_forms_face_moves_a_binder_as_its_forms_and_every_ledger_closes():
     assert abs(float(forms.current_A[0])) <= 1e-9 * CHARGE_PER_FMOL * terms  # G5: no net current.
     real = forms_law.movers
 
-    def unligated(model, network=None):
-        table = real(model, network)
+    def unligated(model, network=None, forms=None):
+        table = real(model, network, forms)
         stoichiometry = np.array(table.stoichiometry)
         stoichiometry[np.asarray(table.binder) >= 0, list(model.species_ids).index("H")] = 0.0
         return table._replace(stoichiometry=stoichiometry)
