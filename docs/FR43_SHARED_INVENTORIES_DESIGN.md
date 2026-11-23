@@ -76,7 +76,9 @@ chain), with `scheduled_species_turnover@1` (the charged world) and with
 - **D165, amended,** makes each raise a D148 change with a guard world at the new size and a cost
   measurement, and says D172's explicit fold removes the need for a new order probe. That holds for
   the sums the fold covers. The shared modules keep their own sums (`numerics/species_sums.py`'s
-  docstring), so this note reran the probe (§1.3).
+  docstring), so this note reran W4's parts above 16: its order and host-ledger parts (P3, P5;
+  §1.3), its idleness, restart and batch parts (P4, P6, P7; §1.2), and every operator that
+  reads the cap at 32 rows (§1.7).
 
 ### 1.2 The probe: the chain world at 16, 32, 256 and 1,024 rows (S)
 
@@ -106,7 +108,8 @@ dt = 5 ms gives 1.63 × 10⁻⁵ there, so the declaration sits 25% above the co
 The planted error is 9–14 times the declared accuracy at every size.
 
 **Results** (`out/v2/run-*.json`, the unrolled fold, today's; every record status complete; the peak
-RSS is the process's, set by the run):
+RSS is the process's, set by the run). Each is a single run: the 16-row world compiled in 16.2 s in
+the first queue and 20.4 s in this one, so compile times carry about 25% of run-to-run spread:
 
 | Rows (ions + chain) | Routes | Parse s | Compile s | Execute ms/step | s per simulated s | Host checks s | Peak RSS MiB | Error / largest | Planted / largest | Energy residual (relative) |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -272,9 +275,10 @@ changes no program.
 
 **Recommendation: a per-entry layout, after the raise.** The network's arrays become [R, K] entries
 (K = 6, the molecularity cap on each side), each route's entries in row order, the rates folded over
-K and scattered to [rows, node] in route order. The nonzero terms and their order are then the dense
-form's, so physical fields are bitwise by construction in every reaction world, and the change is a
-D148 case-2 change (G1's reaction worlds, crossrev's renewal, the derivative programs), not a new ID.
+K and scattered to [rows, node] in route order. The aim is that the nonzero terms and their order
+stay the dense form's, so physical fields stay bitwise. That is shown here only for the chain's rate
+kernel (the table above); for every reaction world it is the change's D148 case-2 obligation (G1's
+reaction worlds, crossrev's renewal, the derivative programs), not a new ID.
 It also makes the trace estimate per-entry and is the sparsity a stiff per-node solve would need
 (§1.5). Est. 2–3 agent-days plus the G1 run. It is speed, not correctness: the raise does not wait
 for it.
@@ -347,10 +351,24 @@ cell; a world with many nodes adds @3's per-species work (INNER_MODEL_V4_DESIGN 
    books its own moves;
 4. the declared operator order is the split's palindrome, as today.
 
+**What refuses next, lifted in process** (S, `probe/part2_parse.py`, `out/part2_parse.json`; host-only
+parses of `polymerase_limited(10)` with a D152 first-order sink of N, the source untouched):
+- as is, `check_writers`' D152 branch refuses ("a local_species_reactions@1 reaction writes 'N'");
+- with that branch skipped, its author branch refuses ("local_species_reactions@1 also declares
+  'N'"): the network is an identity author of the rows it lists, so the rule must admit it in both
+  branches;
+- with both skipped, the pair parses, and a 10-step run (0.5 s steps) passes every host check
+  (material 4 × 10⁻¹⁹ fmol, energy 2 × 10⁻¹⁶ relative, the gene unit's machine and residue ledgers
+  at 5 × 10⁻²³);
+- **the potential gap is real:** with the registry's potential of N in place, the network's N
+  declared 0.1 RT off is refused by `check_potentials`; with the registry's potential removed, the
+  same 0.1 RT disagreement between the two writers is admitted.
+
 **What changes in code** (est. 1–1.5 agent-days, the gene-regulation lane's files and one registry
 function):
-- the gene unit's `check_writers` admits a D152 reaction on a listed row under items 2–3, and keeps
-  refusing other authors and in-step movers;
+- the gene unit's `check_writers` admits a D152 network that writes or declares a listed row (both
+  of its branches) under items 2–3, and keeps refusing other authors (turnover, exchange) and
+  in-step movers;
 - the registry gains the shared-row rule of item 3, one function that every operator with writers
   calls, so no pairwise check is added (D176);
 - D152's `check_turnover_rows` is untouched (turnover beside a reaction stays refused unless a
@@ -393,6 +411,9 @@ reactions differ in reading the volume for their rates as well as their bookings
   today's, bit for bit. So every existing world keeps its program (D148 by construction; crossrev
   identical), and the law ID stays, as composition option A ruled;
 - `active`, `outside_active` and the outside anchors stay in `CONFLICTS_VIEW`: closers stay refused.
+- **Lifted in process** (`out/part2_parse.json`): with the two fields moved to current reads, the
+  water fixture's pair (a heredity cell, water, and a D152 source of S) parses with no further
+  refusal. What remains is the program: the half-step taking the view, which no probe exercised.
 
 **Which volume each half-step reads.** The current one at its own stage (the composition note's §6):
 a first-half reader sees earlier split changers after their first half; the second halves see the
@@ -501,10 +522,28 @@ error.
   counts and every stream counter at an accepted step, and restarts bit for bit (OL6 §6.10's later
   option, about 0.5 agent-day). Refusal 3 opens for the exact scope's events: their trace and
   uniforms are recorded.
+- **What the representation must state per scope** (none of it exists today):
+  - **count arithmetic and F:** exact places keep the exact kernel's falling factorials and ln k!,
+    continuous places Kurtz's limit and Stirling's form (OL6 §1.3). That is separable only where a
+    phase's free energy is: per place in a dilute phase, but not in the membrane, whose mixing term
+    normalises by every membrane place's count (x = n/(N − c)). Version 1 would admit exact places in
+    dilute phases, or a membrane whose places are all exact, and refuse a mixed membrane;
+  - **the envelope and the zero-fed refusal** (OL6 §1.5, refusal 2) apply to the continuous scope
+    only: the active count reads 0 or 1 by design;
+  - **the ledger:** event heats as the exact kernel books them (ln a⁺ − ln a⁻), continuous heats as
+    the rate equations' quadratures, both into one F;
+  - **checkpoints:** FR-22's rung P serves population worlds; a single lineage's checkpoint (rung S)
+    is refused today (`checkpoints.py`), so C3.6 runs in a population world (`cells.shared_pool@1`)
+    or a third refusal lifts.
+- **Unverified:** that the C3.1 world parses in @2's exact events with the family's laws, the
+  active unit a catalyst place. In the membrane a place on both sides of a step takes the factor
+  (N − c − r* + 1)/ff(N − c, r) with r* < r, singular at N = r under c = 1
+  (`stochastic_mass_action@1`'s docstring), so the world's phases need checking before the build.
 - **Owners and timing:** the assembly family's files are the OL6 builder's until S7 lands; the build
   starts after it.
-- **Price (est.):** the hybrid loop and its scope declaration 2–3 agent-days, the checkpoint 0.5–1,
-  the split token 0.5–1 (§3.5, beside S7), the records 0.5; about 4–6 in all, plus the references.
+- **Price (est.):** the hybrid loop and its scope declaration 2–3 agent-days, the per-scope
+  arithmetic, F and ledger 1–1.5, the checkpoint 0.5–1, the split token 0.5–1 (§3.5, beside S7), the
+  records 0.5; about 4.5–7 in all, plus the references.
 
 ### 3.3 Option B: an integer-population operator in the composite
 
@@ -539,7 +578,8 @@ error.
 | Refusals lifted | OL6's 9 and 11, for this representation only (the OL6 builder's files) | None of OL6's; new infrastructure in the composite (the core owner's files) |
 | The pools' chemistry | The family's laws: dilute and membrane mass action, permeation, the osmotic lumen | Every composite process: reactions, water, transport, the gene unit, part 2's two writers |
 | Consumers | Protocells with low-count channels; FR-39's pores beside them | Cells with few channels or machines (FR-13, FR-40) beside shared pools |
-| Price (est.) | 4–6 agent-days | 5–8 agent-days |
+| Count arithmetic | Per scope: discrete for the exact places, Stirling's for the continuous ones; a mixed membrane refused | The units carry no free energy (declared, as the gene unit's machines); the pools keep @3's terms |
+| Price (est.) | 4.5–7 agent-days | 5–8 agent-days |
 
 ### 3.5 The split of one unit: a declared token
 
@@ -554,6 +594,9 @@ single unit, which needs its own rule. The proposal, in either host:
   each way, and the recipients' counts sum to the parent's exactly, in integers.
 - **The alternative,** `rounded_fraction`: floor(f N) plus one more with probability f N − floor(f N).
   It also gives ½ at N = 1, with the least variance, but it is not a physical segregation model.
+- **What it governs:** the exact scope's integer places, unit by unit. The continuous places split by
+  the division's rule for them, the mean split f·n (the rate equations' shear fission), so the
+  recipients' inventories sum to the parent's: exactly for the units, to rounding for the pools.
 - **S7's `exact_fraction` and Protocol G's contract stay untouched:** the new rule is another token of
   the same declaration, and a world that declares none keeps S7's.
 
@@ -573,8 +616,10 @@ single unit, which needs its own rule. The proposal, in either host:
   crossing under a declared bound and reuses the family's streams, keys, division and exact-event
   conventions; B gives event times only to the split's order and makes the composite stochastic for
   the first time.
-- A's two lifted refusals are confined to one new representation, so `cells.rate_equations@1` and
-  exact events keep their programs and their protocols (D and G) stand.
+- A's lifted refusals are confined to one new representation, so `cells.rate_equations@1` and
+  exact events keep their programs and their protocols (D and G) stand. Its open questions are
+  stated (§3.2: per-scope arithmetic, a mixed membrane, rung S, the world's parse), and its price
+  carries them.
 - B is the door when a cell-scale world needs a low-count population beside part 2's shared pools.
   Its stream and event-location pieces would then be designed against A's clock, which is the same
   algorithm.
@@ -644,6 +689,9 @@ agent; they sit in the tests with their plants.
   (§1.6). Its records are kept in `out/`.
 - **Source:** every run used the frozen snapshot `snapshot-92e18df4` (guards scope, clean patch).
 - **Blindness:** this note's author read nothing under `validation/ool/references/`, no held-out value
-  and nothing of the OL6 checker's. Two recursive filename searches traversed those folders while
-  looking for other names (a function name in the checkout, a lock's name under
-  `/mnt/workspaces/Cells/`); neither displayed any content from them.
+  and nothing of the OL6 checker's. Three recursive content searches traversed those folders while
+  looking for other text: two over the checkout's root (a function's name, `def polymerase_limited`,
+  and the GPU flag's name, `gpu.reserved`), which pass through `validation/ool/references/`, and one
+  over `/mnt/workspaces/Cells/*/` (the timed lock's name), which passes through the OL6 checker's
+  folder; and one recursive file-name search over the checkout (`SITES.md`). None displayed any
+  content or name from those folders: every line shown came from other paths.
