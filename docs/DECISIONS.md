@@ -9863,3 +9863,48 @@ validation/xenopus_bioelectric/xc0_compare.py, as D308 requires. Nothing has bee
 - **The engine gap stays queued for the kinds lane** (D310's list): a declared zeta on every edge of
   `cells.na2_anion_symport_diagram@1`. Until it lands, version 2's charge-placement rows are "not run on
   main".
+
+## D313: FR-38's registered comparison failed: R1 failed, R2 inconclusive
+
+2026-11-23, about 13:32 UTC. The independent judge's verdict under the rule (tag fr38-rule-registered-2026-11-23)
+and its erratum 1 (tag fr38-rule-erratum-1-registered-2026-11-23, 57ff66b0).
+- **Provenance:**
+  - the runs came fresh from a clean frozen snapshot of 3f485ee9;
+  - the table and the verdict came from a clean frozen snapshot of the erratum's tag;
+  - the record is /mnt/workspaces/Cells/fr38-judged-20261123/verdict.json, sha256
+    f4e868de1c72520cee5d88b8d2db33027bd0990237059ea098d5ba4beeb3da3a, with verdict_notes.json beside it.
+- **Per run:**
+  - passed: R1 at p = 0.25 and p = 0.75, for both machine options;
+  - failed:
+    - R1 at p = 0 (survivors_R) and at p = 1 (survivors_R_s);
+    - R1's blank (G_minus_G0);
+    - R1L at p = 0.75 (label_R_cohort and label_R_s_cohort);
+  - inconclusive: R2, on C_tx_3's observed order. The first triple gave 3.94. The one retry, at 1, 0.5 and
+    0.25 s, gave 3.69 and 3.67, still above the 3.5 cap, although all 69 readouts of each run were within
+    tolerance at 0.25 s.
+- **The failures, by clause:**
+  - **Zero-rate survivors, four runs.** The engine's |n_F - blank| is at most 5.3e-24 fmol, against a floor
+    of 1e-21. They fail only on the lead's sixth ruling, which required the reference to be exactly 0. It is
+    not 0: it matches the engine's value to within 5e-27 fmol. **That ruling was wrong.** Without it these
+    four runs fail on nothing else, but R1 still fails.
+  - **The blank's G_minus_G0, two runs.** The gap is 1.51e-16 pJ, against a floor of 9.98e-17 pJ (1e-9 of
+    the row's own 1e-7 pJ scale). The absolute gap is 1.1 to 1.8e-16 pJ in all twelve R1 runs; the others
+    pass because their scales are 4 to 7e-3 pJ.
+  - **Route 1, two runs (R1L).** The gaps are 3.56e-9 and 5.78e-9 of their scales, against the 1e-9 floor.
+- **The judge's hypotheses about the causes. None is verified.**
+  - **Route 1:** erratum F's gross-versus-net difference. The engine's cohort leaves at the gross loss rate,
+    while the references' route1_blank (row minus blank) loses at the net rate. Its closed form reproduces
+    the short-lived gap (5.78e-9), but predicts 1.72e-9 for the durable readout against 3.56e-9 observed.
+    So route 1 is not explained.
+  - **The blank's G:** rounding of G's large terms, about one ulp of M times its potential.
+  - **The zero-rate survivors:** both sides compute the same coupling through M.
+- **The verdict stands as registered.**
+  - FR-38's functional acceptance (D306) is unchanged; the judged comparison failed.
+  - Re-scoring this table under any corrected rule would be a labelled, non-blind diagnostic beside the
+    failed verdict, never a replacement. R2's retry is spent.
+- **What follows is the user's decision.** The options, put to the user on 23 November:
+  1. record and stop: FR-38 stays development-only, with no validation claim;
+  2. record, diagnose route 1, then decide. The diagnosis covers the engine-side gap per time, and the
+     references' author stating in words what route1_blank is defined to be;
+  3. a new registered comparison on fresh worlds, with the rule fixed before new references exist. This is
+     the only route to a pass.
