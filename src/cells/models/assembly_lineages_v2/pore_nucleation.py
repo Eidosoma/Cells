@@ -26,10 +26,12 @@ composition (D287). ν_A is in m⁻²·s⁻¹·(N/m)^(−1/2)·K^(3/2), Γ in N,
 T is the world's temperature. Refused with it (Phase A; the lead's rulings of 22 November 2026):
 - a world without cells.bilayer_geometry@1, so with no geometry or with FR-21's prescribed shell:
   the vesicle's area is the bilayer's, A = q·W/2;
-- in exact events, any step that changes a membrane place's count (its net change, not the
-  membrane's total): the area then stays fixed, so each vesicle's rate is constant through a hold
-  (`phase_a_refusals`, which spec.parse's exact branch calls; cells.rate_equations@1 admits such
-  steps, except under a hold, OL6 S3);
+- under a hold, any step that changes a membrane place's count (its net change, not the
+  membrane's total): the area then stays fixed, so each vesicle's rate is constant through the
+  hold (`phase_a_refusals`, which spec.parse's exact branch calls under a hold, and
+  cells.rate_equations@1's T2). With no hold the tension comes from F and such steps are admitted
+  in both representations (OL6 S3 and S4; exact events carry the clock on the device,
+  pore_device.py);
 - a membrane or lumen species without a pool place to return to at a rupture (as §0.2c rule 8
   refuses it in a world that can lyse).
 The experiment's hold and the cross-checks with it are tension_hold.py's (spec.parse).

@@ -36,6 +36,7 @@ from cells.models.assembly_lineages_v2 import (
     ledger,
     model,
     pore_clock,
+    pore_device,
     runner,
 )
 from cells.models.assembly_lineages_v2 import spec as world_spec
@@ -401,7 +402,8 @@ def _ssa(run):
     out = kernel.SSA_CONVENTION if run.division is None else {**kernel.SSA_CONVENTION,
                                                                "draw": SCHEDULED_DRAW}  # fmt: skip
     if run.pores is not None:  # FR-31: the clock's rule beside the draw's
-        out = {**out, "pore_clock": pore_clock.CLOCK}
+        clock = pore_device.CLOCK if pore_device.clocked(run.spec) else pore_clock.CLOCK  # OL6 S4
+        out = {**out, "pore_clock": clock}
     return out
 
 
@@ -449,8 +451,9 @@ POPULATION_RECORDS = {
 
 def _lifecycle(run):
     out = _mode_lifecycle(run)
-    if run.pores is not None:  # FR-31: the clock's statuses and order
-        out = pore_clock.lifecycle(out, population=run.population is not None)
+    if run.pores is not None:  # FR-31: the clock's statuses and order (OL6 S4: the device's)
+        rule = pore_device.lifecycle if pore_device.clocked(run.spec) else pore_clock.lifecycle
+        out = rule(out, population=run.population is not None)
     return out
 
 
@@ -596,7 +599,8 @@ def population_tables(directory, run):
         if life.key not in ruptured
         else rel.Event(life.end_event, life.end_time, "lysis", PORE_NUCLEATION, scheduled=False,
                        step=-1, at=life.id,
-                       source=f"source:tension_hold/{ruptured[life.key]['hold']}")
+                       source="" if ruptured[life.key]["hold"] is None  # OL6 S4: σ from F
+                       else f"source:tension_hold/{ruptured[life.key]['hold']}")
         for life in lives
         if life.end_reason == "lysed"
     ]  # fmt: skip
@@ -647,7 +651,7 @@ def population_tables(directory, run):
         ]  # fmt: skip
         records = rel.records_in(directory, [ARRAYS], {"schedule_work_kT": "cumulative"},
                                  times="row_time")  # fmt: skip
-    if run.pores is not None:  # FR-31: each hold pays its column
+    if run.pores is not None and run.spec.experiment.tension_holds:  # FR-31: each hold's column
         sources += [rel.Source(h["payer"], "schedule", "energy", TENSION_HOLD,
                                payer_of="tension_hold_work_kT")
                     for h in pore_clock.holds_block(run.spec)]  # fmt: skip

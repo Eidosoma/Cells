@@ -11,7 +11,9 @@ the micropipette (Kwok and Evans 1981, Eq. 2; Evans and Smith 2011, §2.3 and Ap
   holds and ramps can come later without reshaping the record.
 - **The cross-checks** run once the world and the experiment are both parsed (spec.parse):
   - the world declares the pore law (pore_nucleation.py), the hold's only reader in Phase A, and
-    a world that declares the pore law declares a hold;
+    a world that declares the pore law declares a hold, unless its lumen is osmotic: its tension
+    then comes from F, with σ_max ≤ σ_β/4, and the clock is on the device (OL6 S4,
+    pore_device.py);
   - a world with a hold refuses `lumen_volume: osmotic`, so the hazard reads σ_hold and nothing
     else (the sheet's §3);
   - σ ≤ σ_β/4, with σ_β = πΓ²/(k_B·T) from the world's line tension and temperature (the sheet's
@@ -90,6 +92,9 @@ def cross_checks(world, holds):
     from cells.models.assembly_lineages_v2 import pore_nucleation
 
     pores = world.hazard is not None and world.hazard[0] == PORE_NUCLEATION
+    if pores and not holds and world.conventions.lumen_volume == "osmotic":
+        sigma_from_f(world)  # OL6 S4: σ from F, the clock on the device (pore_device.py)
+        return
     if pores and not holds:
         raise ConfigError(
             f"world: hazard: {PORE_NUCLEATION} reads a held tension, and in Phase A the only "
@@ -117,6 +122,24 @@ def cross_checks(world, holds):
                 "world's line tension and temperature): the law needs sigma_beta >> sigma (the "
                 "sheet's §2)"
             )
+
+
+def sigma_from_f(world):
+    """OL6 S4: a pore world with no hold takes its tension from F, the osmotic lumen's, which
+    reaches σ_max before the vesicle lyses: σ_max ≤ σ_β/4 keeps the law in its domain on every
+    trajectory that has not lysed (the sheet's §2; the OL6 design note's §3.5)."""
+    from cells.models.assembly_lineages_v2 import pore_nucleation
+
+    _, gamma, _, _ = pore_nucleation.parameters(world)
+    beta = pore_nucleation.sigma_beta(gamma, world.units.temperature_K)
+    sigma_max = world.geometry[1]["sigma_max_N_per_m"][0]
+    if not sigma_max <= SIGMA_BETA_FRACTION * beta:
+        raise ConfigError(
+            f"world: hazard: with sigma from F the tension reaches sigma_max = {sigma_max:g} N/m, "
+            f"beyond sigma_beta/4 = {SIGMA_BETA_FRACTION * beta:.6g} N/m (sigma_beta = pi Gamma^2/"
+            "(k_B T) at the world's line tension and temperature): the law needs sigma_beta >> "
+            "sigma (the sheet's §2)"
+        )
 
 
 def payer(hold):

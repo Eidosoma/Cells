@@ -14,7 +14,8 @@ registered before any such reading):
   lineage and in a population;
 - the slice's refusals: an area-changing step under a hold (T2), σ_max beyond σ_β/4 with σ from F,
   a pore law with no tension, a hold with an osmotic lumen (tension_hold's own words), the clock's
-  error bound; exact events still refuse the σ-from-F world, with Phase A's words.
+  error bound (exact events admit the σ-from-F world since OL6 S4: test_assembly_lineages_v2_
+  pores_device.py).
 A new file for the slice (D224): the S2 files are at 39 and 47 s of tier 2's 90; four worlds
 compiled here (a held vesicle, a σ-from-F vesicle and its twin, the daughters' two), about 60 s
 on a shared light CPU, most of it the limit's generic verdict and the twin pair at rtol 1e-12.
@@ -142,8 +143,8 @@ def test_a_held_vesicle_ruptures_at_start_plus_e_over_its_rate(held_run, tmp_pat
     assert h_rows[1] == 0.0 and h_rows[2] == pytest.approx(rate * 0.5, rel=1e-12)
     # Phase A's opening, paid by the hold: w = σ_β/σ, q_open = −ΔF_open + w.
     work, heat, delta_f = pore_clock.opening(world, area, SIGMA)
-    assert (event["work_kT"], event["opening_heat_kT"], event["delta_F_kT"]) == (work, heat,
-                                                                                 delta_f)  # fmt: skip
+    recorded = (event["work_kT"], event["opening_heat_kT"], event["delta_F_kT"])
+    assert recorded == (work, heat, delta_f)
     assert run.rows["tension_hold_work_kT"][-1, 0] == work and run.rows["work_kT"][-1] >= work
     assert run.ledger["closes"] and run.moieties["closes"]
     assert run.statistics["pores"]["largest_clock_error"] <= rate_equations.H_ERROR
@@ -238,14 +239,6 @@ def _hold_on_tense(d):
     return d
 
 
-def _exact(d):
-    out = copy.deepcopy(d)
-    x = out["execution"]
-    del x["representation"]
-    x["molecule_capacity"], x["chunk_events"] = 2**17, 16
-    return out
-
-
 def _wide(d):
     d["model"]["world"]["hazard"] = hazard(2e-12, 30.0, Q * K_L * 12000 / 2.0)
     return d
@@ -259,10 +252,8 @@ def _wide(d):
         (lambda: _no_hold(held_definition()), "reads a tension: a held one"),
         (lambda: _hold_on_tense(as_representation(definition(tense_world()))),
          "refuses lumen_volume osmotic"),
-        (lambda: _exact(as_representation(definition(tense_world()))),
-         "step join changes L@membrane's count. Phase A holds each vesicle's area fixed"),
     ],
-    ids=["T2", "sigma_max", "no tension", "hold and osmotic", "exact events"],
+    ids=["T2", "sigma_max", "no tension", "hold and osmotic"],
 )  # fmt: skip
 def test_the_clock_s_refusals(build, words):
     with pytest.raises(ConfigError, match=words):
