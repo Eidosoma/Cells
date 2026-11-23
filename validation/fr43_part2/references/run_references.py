@@ -41,8 +41,13 @@ OUT = os.path.join(HERE, "out")
 PRIMARY = {"method": "Radau", "rtol": 1e-11}
 STIFF_SECOND = [{"method": "Radau", "rtol": 1e-12}, {"method": "BDF", "rtol": 1e-12}]
 NONSTIFF_SECOND = [{"method": "DOP853", "rtol": 1e-13}, {"method": "Radau", "rtol": 1e-12}]
+# C2.8 samples every second while recharging and the stage exits, each near 3e-3 fmol/s, cancel to
+# about 1e-7 in the gene unit's net rate; that judged rate then carries Radau 1e-11's state error
+# amplified about 1e4-fold (1.5e-10). Its primary is therefore Radau at 1e-13 (README.md).
+C28_PRIMARY = {"method": "Radau", "rtol": 1e-13}
+C28_SECOND = [{"method": "Radau", "rtol": 1e-12}, {"method": "BDF", "rtol": 1e-13}]
 
-# case -> (the world files it serves, the network's rate-constant factor, second methods);
+# case -> (the world files it serves, the network's rate-constant factor, second methods[, primary]);
 # the files of one kind differ only in the engine's step, which this calculation does not use.
 CASES = {
     "C2.3-sink": (["C2.3-sink-dt0p5.json", "C2.3-sink-dt0p25.json"], 1.0, STIFF_SECOND),
@@ -53,7 +58,8 @@ CASES = {
     "C2.6-swelling-cell": (["C2.6-swelling-cell-dt0p01.json", "C2.6-swelling-cell-dt0p005.json"],
                            1.0, NONSTIFF_SECOND),
     "C2.8-swelling-pair-sink": (["C2.8-swelling-pair-sink-dt0p01.json",
-                                 "C2.8-swelling-pair-sink-dt0p005.json"], 1.0, STIFF_SECOND),
+                                 "C2.8-swelling-pair-sink-dt0p005.json"], 1.0, C28_SECOND,
+                                C28_PRIMARY),
 }
 
 INTEGRATOR_NAMES = {
@@ -87,7 +93,8 @@ def _method_record(spec, info, wall):
 
 
 def run_case(name: str) -> dict:
-    files, k_factor, seconds = CASES[name]
+    files, k_factor, seconds, *rest = CASES[name]
+    primary = rest[0] if rest else PRIMARY
     worlds = [World(os.path.join(WORLDS, f), network_k_factor=k_factor) for f in files]
     world = worlds[0]
     for other in worlds[1:]:  # one calculation serves every file of the kind
@@ -95,8 +102,8 @@ def run_case(name: str) -> dict:
             raise ValueError(f"{files} differ in more than the engine's step")
     times = world.observation_times
     t0 = time.time()
-    Y, info = integrate(world, times, **PRIMARY)
-    method = {"primary": _method_record(PRIMARY, info, time.time() - t0)}
+    Y, info = integrate(world, times, **primary)
+    method = {"primary": _method_record(primary, info, time.time() - t0)}
     method["primary"]["sampling"] = ("integrated segment by segment between the reported times "
                                      "(and recharging's sign changes), so every reported value "
                                      "is a step end; no dense output")
