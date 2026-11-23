@@ -33,7 +33,7 @@
         "initial_sink_approximation_first_two_points": {"fit": 9.42e-6, "reported_plus_minus": 2.17e-6}
       },
       "readout": "Each fluorescence image was normalized to its total signal. At sampling, the investigators separated donor and receiver droplets and measured each side's LC-MS peak area.",
-      "limits": "Both permeability estimates use the observations in the paper. Later sampling may have cooled the droplets. The planar membrane and ionizable dye provide a comparison for finite-volume exchange. There was no vesicle wash."
+      "limits": "Both permeability estimates use the observations in the paper. Later sampling may have cooled the droplets. The planar interface and the charge of rhodamine 6G limit comparison with a neutral vesicle tracer. The experiment used no wash."
     }
   ]
 }

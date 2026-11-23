@@ -6,7 +6,7 @@ Browse Cells engine laws by scientific topic. Each claim links its Lean proofs, 
 
 <!-- generated: claims-index -->
 
-Direct Lean claims cover [55 of 55 laws](COVERAGE.md#registered-laws) and [34 of 34 operators](COVERAGE.md#registered-operators).
+Direct Lean claims cover [55 of 55 laws](COVERAGE.md#registered-laws) and [35 of 35 operators](COVERAGE.md#registered-operators).
 
 | Category | Registered laws with proof | Claims with proof | Numerical checks | Claims with biological evidence |
 | --- | ---: | ---: | --- | ---: |
