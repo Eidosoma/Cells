@@ -49,6 +49,11 @@ FLOOR_LAYOUT_TYPE = NamedTuple(
     "SurfacePumpFloorLayout",
     [(k, object) for k in (*kinetic.FLOOR_LAYOUT_TYPE._fields, *IMEX_FIELDS)],
 )
+# Declared field solver surface_field.SPARSE_SOLVER_ID: the sparse field's layout (no n x n matrix).
+SPARSE_LAYOUT_TYPE = NamedTuple(
+    "SurfacePumpSparseLayout",
+    [(k, object) for k in (*kinetic.SPARSE_LAYOUT_TYPE._fields, *IMEX_FIELDS)],
+)
 # Energy residual allowed relative to the integrated work and dissipation flows.
 # RK4 keeps the family's absolute bound alone. A first/second-order step does
 # not integrate the energy identity exactly: measured residuals were 4e-4/2e-6
@@ -137,6 +142,7 @@ def initial_values(spec):
     kinds = {
         kinetic.FACTORED_LAYOUT_TYPE: LAYOUT_TYPE,
         kinetic.FLOOR_LAYOUT_TYPE: FLOOR_LAYOUT_TYPE,
+        kinetic.SPARSE_LAYOUT_TYPE: SPARSE_LAYOUT_TYPE,
     }
     if type(layout) not in kinds:
         raise ConfigError("Resolved pump tissue requires the factored field layout")
@@ -297,8 +303,9 @@ def imex_step(state, dt, control, p, *, xp=jnp):
     valid &= xp.all(xp.isfinite(predicted) & (predicted > 0))
     weight, _ = imex.face_weights(xp.where(predicted > 0, predicted, 1.0), s, xp=xp)
     operator, ok = imex.factor_operator(
-        implicit_matrix[-1, -1] * dt, imex.face_laplacian(weight, s, xp=xp), p.boundary_V, f, xp=xp
-    )
+        implicit_matrix[-1, -1] * dt, imex.operator_laplacian(weight, s, f, xp=xp), p.boundary_V, f,
+        xp=xp,
+    )  # fmt: skip
     valid &= ok
     rates, ok = explicit_rates(state, start, control, p, xp=xp)
     explicit, implicit, valid = [rates], [None], valid & ok
@@ -312,7 +319,9 @@ def imex_step(state, dt, control, p, *, xp=jnp):
         )
         charge = node_charge(known, p, xp=xp)
         potential, residual = imex.solve_operator(charge, operator, xp=xp)
-        scale = xp.maximum(xp.abs(charge), xp.abs(operator.matrix @ potential))
+        scale = xp.maximum(  # Today's order of evaluation (crossrev compares the program text).
+            xp.abs(charge), xp.abs(imex.operator_product(operator, potential, xp=xp))
+        )
         valid &= xp.all(xp.isfinite(potential))
         valid &= xp.all(xp.abs(residual) <= field.CHARGE_ATOL_C + field.CHARGE_RTOL * scale)
         drift = implicit_rates(weight, potential, state, p, xp=xp)

@@ -98,6 +98,18 @@ FLOOR_LAYOUT_TYPE = NamedTuple(
     "SurfaceKineticFloorLayout",
     [(k, object) for k in (*FACTORED_LAYOUT_TYPE._fields, "field_current_floor")],
 )
+# The sparse field (surface_field.SPARSE_SOLVER_ID): the base's sparse layout and this family's own
+# fields, in LAYOUT_TYPE's order; channel catalogs excluded, as for the factored field.
+SPARSE_LAYOUT_TYPE = NamedTuple(
+    "SurfaceKineticSparseLayout",
+    [
+        (k, object)
+        for k in (
+            *base.SPARSE_LAYOUT_TYPE._fields,
+            *LAYOUT_TYPE._fields[len(base.LAYOUT_TYPE._fields) :],
+        )
+    ],
+)
 CHANNEL_LAYOUT_TYPE = NamedTuple(
     "SurfaceChannelLayout", [(k, object) for k in (*LAYOUT_TYPE._fields, "channel_laws")]
 )
@@ -317,6 +329,10 @@ def initial_values(spec):
         if layout_type is not LAYOUT_TYPE:
             raise ConfigError("The factored resolved field excludes channel catalogs")
         layout_type = FLOOR_LAYOUT_TYPE if "field_current_floor" in v else FACTORED_LAYOUT_TYPE
+    elif "field_capacitor_values" in v:
+        if layout_type is not LAYOUT_TYPE:
+            raise ConfigError("The sparse resolved field excludes channel catalogs")
+        layout_type = SPARSE_LAYOUT_TYPE
     transfer_shape = (len(m.species_ids), nc) if multi_ion else (nc,)
     return (
         STATE_TYPE(
@@ -468,7 +484,9 @@ def readouts(state, control, p, *, xp=jnp):
     qdot = CHARGE_PER_FMOL * xp.sum(p.valence * xp.concatenate((cell, outside), axis=1), axis=0)
     dphi = field._capacitor_solve(qdot, xp.zeros_like(qdot), base.field_layout(p), xp=xp)
     dvm = xp.where(p.membrane_active, dphi[p.membrane_cell] - dphi[n + p.membrane_outside], 0.0)
-    electrode = xp.where(p.reservoir, (p.field_capacitor_matrix @ dphi)[n:], 0.0)
+    electrode = xp.where(
+        p.reservoir, field.capacitor_product(base.field_layout(p), dphi, xp=xp)[n:], 0.0
+    )
     chemical = 1e-3 * R * p.temperature * (xp.sum(xp.log(ci) * cell) + xp.sum(xp.log(co) * outside))
     capacitor = 1e12 * xp.sum(p.membrane_capacitance * r.membrane_voltage_V * dvm)
     mu = R * p.temperature * xp.log(co) + p.valence * F * v.potential_V[n:]

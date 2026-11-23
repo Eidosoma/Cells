@@ -59,7 +59,8 @@ def tissue_balances(state, membrane_total, p):
     boundary = jnp.concatenate((jnp.zeros(n), p.boundary_V))
     base = field._capacitor_solve(initial_q, boundary, tissue.field_layout(p), xp=jnp)
     required = p.field_active & ~jnp.concatenate((jnp.zeros(n, dtype=bool), p.reservoir))
-    charge = jnp.where(required, p.field_capacitor_matrix @ base - initial_q + cap - q, 0.0)
+    image = field.capacitor_product(tissue.field_layout(p), base, xp=jnp)
+    charge = jnp.where(required, image - initial_q + cap - q, 0.0)
     electrode = state.electrode_charge_transferred_C - jnp.where(p.reservoir, cap[n:], 0.0)
     supply_charge = CHARGE_PER_FMOL * jnp.sum(p.valence * state.reservoir_supplied)
     global_charge = jnp.sum(state.electrode_charge_transferred_C) + supply_charge
