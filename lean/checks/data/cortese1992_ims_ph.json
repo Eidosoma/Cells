@@ -1,0 +1,15 @@
+{
+  "dataset_id": "cortese1992_ims_ph",
+  "doi": "10.1016/0005-2728(92)90081-C",
+  "source": "https://pubmed.ncbi.nlm.nih.gov/1610874/",
+  "locator": "Abstract",
+  "preparation": "Isolated intact rat liver mitochondria. A soluble FITC-dextran probe sampled the intermembrane space (IMS).",
+  "observable": "IMS pH minus external medium pH",
+  "bulk_pH_range": [6.0, 8.5],
+  "offset_pH": {
+    "condensed": [-0.5, -0.4],
+    "orthodox": [-0.2, 0.0]
+  },
+  "uncertainty": "Reported ranges across conditions. Replicate-level errors and the respiratory state at each reading remain unverified.",
+  "scope": "The preparation distinguishes the two compartments. A paired time course under the MT-1b uncoupling conditions and simultaneous leak-flux measurements remain open."
+}

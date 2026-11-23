@@ -1,0 +1,30 @@
+{
+  "spitzer2002_acid_arrival": {
+    "doi": "10.1113/jphysiol.2001.013268",
+    "locator": "Results, Diffusion delay and carbonic anhydrase inhibition, Figures 1 and 2",
+    "preparation": "Isolated rabbit ventricular myocytes. The HEPES comparison is from the companion cohort.",
+    "observable": "Delay between the same rise in free intracellular H⁺ at two downstream regions",
+    "threshold_nM": 20,
+    "region_separation_approx_um": 40,
+    "bath_pH": 7.4,
+    "temperature_C": 36,
+    "temperature_tolerance_C": 0.3,
+    "delay_s": {
+      "HEPES": {"mean": 25.1, "SEM": 5.1, "cells": 10},
+      "carbonic_buffer": {"mean": 5.93, "SEM": 2.96, "cells": 7},
+      "carbonic_buffer_with_acetazolamide": {"mean": 15.53, "SEM": 2.65, "cells": 8}
+    },
+    "scope": "Separate groups. Free proton arrival depends on buffering kinetics and geometry. The effective diffusivities were inferred from the delay."
+  },
+  "figueiredo2014_oxygen_flux": {
+    "doi": "10.1590/0104-6632.20140313s00002307",
+    "locator": "Results, oxygen flux in Figure 6 and unloading in Figure 7",
+    "preparation": "Dissolved oxygen crossing a poly(vinyl alcohol) film with or without horse myoglobin",
+    "temperature_C": 25,
+    "replicates": 3,
+    "unmodified_flux_kg_m2_h": 3e-7,
+    "initial_flux_ratio_uncrosslinked_myoglobin_approx": 3,
+    "uncertainty": "Reported deviation below 10 percent. Its definition and a pointwise interval for the fold change are unspecified.",
+    "scope": "Myoglobin leached during transfer. Crosslinking also affected oxygen unloading and the film. The dissolved oxygen readout integrates all routes."
+  }
+}
