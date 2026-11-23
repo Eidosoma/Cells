@@ -23,6 +23,7 @@ import json
 import math
 from pathlib import Path
 from types import MappingProxyType
+from typing import NamedTuple
 
 import jax.numpy as jnp
 import numpy as np
@@ -110,20 +111,67 @@ def test_the_heat_is_minus_the_free_energy_change(nc, no, vc, vo, lam, tau):
 
 
 @pytest.mark.parametrize(
-    "counts, f, uniform, first",
+    "counts, f, uniform, first, volume",
     [
-        ([0, 1], 0.5, [0.49, 0.9], [0, 1]),  # One active unit: below f, the first.
-        ([0, 1], 0.5, [0.51, 0.1], [0, 0]),  # Above f: the second.
-        ([2, 1], 0.5, [0.1, 0.9, 0.2, 0.0], [1, 1]),  # Free units first, then the active one.
-        ([3, 0], 1e-300, [0.5, 0.5, 0.5], [0, 0]),  # f near 0: every unit to the second.
-        ([3, 0], 1.0, [1 - 2**-53, 0.5, 0.25], [3, 0]),  # f = 1: u < 1 always, all to the first.
+        ([0, 1], 0.5, [0.49, 0.9], [0, 1], 0.5),  # One active unit: below f, the first.
+        ([0, 1], 0.5, [0.51, 0.1], [0, 0], 0.5),  # Above f: the second.
+        ([2, 1], 0.5, [0.1, 0.9, 0.2, 0.0], [1, 1], 0.5),  # Free units first, then the active one.
+        ([3, 0], 1e-300, [0.5, 0.5, 0.5], [0, 0], 1e-300),  # f near 0: every unit to the second.
+        ([3, 0], 1.0, [1 - 2**-53, 0.5, 0.25], [3, 0], 1.0),  # f = 1: u < 1, all to the first.
+        # The Lean replay's three mutants (lean/claims/fr43-integer-segregation.md):
+        pytest.param([0, 1], 0.75, [0.5], [0, 1], 0.25, id="the-area-share-not-the-volume-share"),
+        pytest.param([0, 1], 0.5, [0.5], [0, 0], 0.5, id="a-tie-goes-to-the-second-daughter"),
+        pytest.param([2, 1], 0.5, [0.1, 0.2, 0.9], [2, 0], 0.5, id="the-declared-state-order"),
     ],
 )
-def test_segregation_is_exact_and_in_unit_order(counts, f, uniform, first):
+def test_segregation_is_exact_and_in_unit_order(counts, f, uniform, first, volume, monkeypatch):
+    """independent_segregation on the given draws, through segregate and through divide (the
+    composite's lifecycle maps: the patch's area share f beside a volume share, and the draws
+    injected in place of the parent's partition stream)."""
     held = np.asarray([counts], dtype=np.int64)
     got_first, got_second = iup.segregate(held, np.asarray([f]), np.asarray([uniform]), xp=np)
     assert got_first.tolist() == [first]
     assert (got_first + got_second).tolist() == [counts] and (got_second >= 0).all()
+    k = len(counts)
+    state = _Division(
+        integer_counts=np.asarray([counts, [0] * k, [0] * k], dtype=np.int64),
+        integer_divided_units=np.zeros((3, k), dtype=np.int64),
+    )
+    p = _DivisionLayout(
+        integer_map_parent=np.asarray([0]),
+        integer_map_daughters=np.asarray([[1, 2]]),
+        integer_site_patch=np.asarray([0, 1, 2]),
+        integer_partition_key=np.zeros((3, 2), dtype=np.int64),
+        integer_block=np.zeros(len(uniform)),
+    )
+    one = (np.asarray([0]), np.asarray([[1, 2]]), None, np.asarray([True]))
+    maps = {
+        "membrane_slot": (one[0], one[1], np.asarray([f]), one[3]),
+        "cell_slot": (one[0], one[1], np.asarray([volume]), one[3]),
+    }
+    monkeypatch.setattr(
+        iup.streams,
+        "site_uniforms",
+        lambda words, counters, count: np.asarray([uniform])[:, :count],
+    )
+    new, valid = iup.divide(state, maps, p, xp=np)
+    assert valid
+    second = [n - a for n, a in zip(counts, first, strict=True)]
+    assert new.integer_counts.tolist() == [[0] * k, first, second]
+    assert new.integer_divided_units.tolist() == [[-n for n in counts], first, second]
+
+
+class _Division(NamedTuple):
+    integer_counts: object
+    integer_divided_units: object
+
+
+class _DivisionLayout(NamedTuple):
+    integer_map_parent: object
+    integer_map_daughters: object
+    integer_site_patch: object
+    integer_partition_key: object
+    integer_block: object
 
 
 def _block(raw):

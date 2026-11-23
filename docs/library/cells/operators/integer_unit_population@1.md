@@ -121,6 +121,24 @@ $$J = \Big(\sum_k g_k n_k\Big)\left(\frac{n_\text{c}}{V_\text{c}} - \frac{n_\tex
     - the signed record books $-n_k$ at the parent, $+a_k$ and $+b_k$ at the daughters.
   - **The invariant:** $a_k + b_k = n_k$ for every $k$ and every draw, exactly in integers, so the
     subunits $\sum_k w_k n_k$ are kept across the two daughters.
+- **Scope of the segregation rule.**
+  - **Its assumption.** Independence is the rule's assumption, not a result: each unit is
+    allocated on its own draw, with one common first-daughter probability, the patch-area share.
+  - **One study indicates it can fail for units that are not independent.** Coelho et al. (2014),
+    PLoS Biology, doi:10.1371/journal.pbio.1001886, Figure 2E, counted fission-yeast Hsp104
+    cytoplasmic aggregates. The figures are approximate plot readings:
+    - four foci at division, 32 divisions: a mean absolute sister difference of about 1.0
+      (SEM about 0.18), against 1.5, independence's minimum at any common probability, about
+      2.8 SEM below it;
+    - two foci, 33 divisions: about 0.97 against 1.
+  - **The direction:** the daughters were more even than independence allows.
+  - **Why it may not transfer.** Aggregates fuse and move under constraint, so the comparison
+    does not transfer to membrane units, and one study is an indication only. Flag those
+    conditions when the rule is applied to aggregates or to units that cluster.
+  - **It is not a test of membrane-bound units.** A direct test needs parent and daughter counts
+    paired with the daughters' membrane-area shares from the same divisions, and none exists yet.
+  - **Source:** the Lean lane's claim `lean/claims/fr43-integer-segregation.md` (at aae46bde),
+    which takes every figure above from that paper.
 - **Refused, never repaired:**
   - a charged moved species;
   - a site on a held bath;
