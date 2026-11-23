@@ -65,7 +65,7 @@ HEAD_S=${HEAD_S:-$O3/snapshot-head-bf4e47e0}
 BASE_S=${BASE_S:-$O3/snapshot-base-e4f84d4a}
 GATE_RUN=${GATE_RUN-$O3/gate-bf4e47e0/laneA/tiers-1+2}
 TIERS_JSON=${TIERS_JSON:-tests/test_tiers.json}  # relative: each tree's own record
-C1=${C1:-/mnt/workspaces/Cells/core-pass-at3-20261118/fix-a/c1-b59e025c/merged}  # Renewed for fix (A) (D273), as gate.sh's.
+C1=${C1:-/mnt/workspaces/Cells/global-charge-bound-20261122/c1-605331c2/merged}  # Renewed for D305's fix (D307), as gate.sh's.
 BASELINE=${BASELINE:-$D172/acceptance/baseline-44227075}
 REC=${REC:-$W/core-fixes-20261116/record-cda5dc82}
 CROSSREV_SETS=${CROSSREV_SETS:-}
@@ -77,9 +77,10 @@ PLANTED_REF=${PLANTED_REF:-$T3/g3/c1/merged}
 C2P_ORIGIN=${C2P_ORIGIN:-$T3/g3/c2prime-origin}
 C2P_REF=${C2P_REF:-$T3/g3/c2prime-part}
 FR=$D172/fr45
-F4=${F4:-$FR/pipeline/dt-3c10b833-dry/quick} F5=${F5:-$FR/pipeline/dt5-7c8bfa47-dry}
+FRR=/mnt/workspaces/Cells/global-charge-bound-20261122/fr-baselines-605331c2  # FR's baselines renewed for D307, as fr_landing_holder.sh's.
+F4=${F4:-$FRR/fr4-quick} F5=${F5:-$FRR/fr5}
 FR_START=${FR_START:-$FR/rehearsal-20261117/run-e79b4232/fr5/start/start.json}
-FR_BEFORE=${FR_BEFORE:-$FR/rehearsal-20261117/windowed-F}
+FR_BEFORE=${FR_BEFORE:-$FRR/windowed}
 FR_SET=${FR_SET:-full}
 TIER3_FILES=${TIER3_FILES:-"tests/unit/test_integrated_ensemble.py tests/unit/test_vector_windows_bitwise.py
 tests/betse_physiology/integration/test_physiology_loop_checkpoint.py

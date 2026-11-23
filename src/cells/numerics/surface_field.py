@@ -61,6 +61,9 @@ NEWTON_TARGET = 0.01
 # stayed within 1e-26 C; the single-node gauge component reached 5.7e-25 C,
 # 1.6 eps x the world's increments, about 1e4x inside the allowance; the fixed
 # bound alone refuses that world within 5 s (3.6 s on the runner's grid).
+# A component that holds a reservoir has no representative: its held node fixes
+# its potential, so its net charge is carried by its electrodes instead, and the
+# global charge ledger allows it the same rounding (grounded_tolerance).
 COMPONENT_STEP_ROUNDING = 2.5
 MAX_NODES = 256
 FACTORED_MAX_NODES = 2048
@@ -245,6 +248,35 @@ def charge_tolerance(charge_C, increment_C, steps, p, *, xp=np):
     summed = xp.where(xp.asarray(p.offset_free), basis.T @ increment_C, xp.sum(increment_C))
     rounding = COMPONENT_STEP_ROUNDING * np.finfo(float).eps * steps * (basis @ summed)
     return bound + xp.where(representatives(p, xp=xp), rounding, 0.0)
+
+
+def grounded_nodes(p, *, xp=np):
+    """Node mask of the components grounded through a held node: their active, non-held nodes.
+
+    bind gives a capacitor component that holds a reservoir no floating-basis column. Its held
+    node fixes its potential, so no representative carries its net charge and every other node
+    is solved; its electrodes carry that net charge (grounded_tolerance).
+    """
+    n = p.surface.cell_active.size
+    held = xp.concatenate((xp.zeros(n, dtype=bool), xp.asarray(p.surface.reservoir)))
+    floating = xp.any(xp.asarray(p.floating_basis) != 0, axis=1)
+    return xp.asarray(p.active) & ~held & ~floating
+
+
+def grounded_tolerance(increment_C, steps, p, *, xp=np):
+    """The component rule's allowance for the components grounded through a held node (C).
+
+    increment_C is each node's summed |z F dn| of stored increments and steps the accepted steps
+    at that state. A held node's electrode charge is its plate-charge change: the IMEX step books
+    it from the step's start and end charge states (surface_pump.electrode_increment), RK4
+    integrates it from the same node rates. A component's capacitor rows sum to zero, so that
+    plate charge is minus the net charge of the component's non-held nodes. The electrodes thus
+    carry the grounded components' net charge, a conservation quantity that rounds as a floating
+    component's does (charge_tolerance): by at most COMPONENT_STEP_ROUNDING eps x steps x the
+    summed |z F dn| of those nodes' stored increments. 0 in a world with no such component.
+    """
+    summed = xp.sum(xp.where(grounded_nodes(p, xp=xp), increment_C, 0.0))
+    return COMPONENT_STEP_ROUNDING * np.finfo(float).eps * steps * summed
 
 
 def check_neutral_components(charge_C, potential_V, p):
