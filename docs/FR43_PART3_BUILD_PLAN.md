@@ -268,3 +268,36 @@ The estimate is about 5–6 agent-days, inside the design's 5–8:
 - tests, the validation drivers and the spec 1–1.5.
 
 Gate wall time and the references come on top.
+
+## 11. As built, and the lead's rulings (23 November 2026)
+
+**The lead's rulings on §9:**
+1. The closed-form clock is accepted for version 1: the linear transfer, and a read of order 0 or 1.
+2. Many sites in one world, plus a seed batch, are accepted.
+3. Turnover and exchange are the co-writers of version 1, **as a stage**. The user chose B so that
+   the existing operators share the pools, so part 3 stays open until two things can co-write a
+   moved row, after part 2 lands:
+   - D152 reactions;
+   - the gene unit.
+4. f is the patch's area fraction. The equal-probability split is tested where f is exactly ½.
+
+**Departures from this plan:**
+- **Sites sharing a pool run in stages, instead of being refused.**
+  - After a division both daughter patches face the parent's outside node, so two live sites share
+    the node row. Refusing that would have refused every division of a site with a transfer.
+  - Sites whose rows meet get different stages, where one of them moves the row and both can be
+    live. Rows both only read do not meet, and neither do a parent and its daughters, whose lives
+    are disjoint.
+  - One stage runs the half-step as the exact flow, so the single-site worlds stay exact at every
+    step.
+  - With more, a half-step is a palindrome of exact stages (h/2 forward, the last over h, h/2
+    back), as exchange's routes are. Coupled sites are therefore split at O(dt²), as with any other
+    co-writer.
+- **Mask providers are refused, as closers are.** Insertion@1 provides the masks without closing
+  them, so the refusal covers any operator that opens or closes slots without dividing them
+  through the lifecycle.
+- **The pass criteria were fixed before the references returned,** in
+  `validation/fr43_part3/REGISTRATION.md`.
+  - The W3 study showed that each event's splitting error is C dt² φ(1 − φ), with φ the event's
+    phase in its step.
+  - So the order is judged by a fit over five halvings, with a phase band, not by pairwise ratios.
