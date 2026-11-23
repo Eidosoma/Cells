@@ -1,11 +1,12 @@
 # FR-43: shared inventories: sparse networks above 16 species, one pool with two writers, and a low-count population on continuous chemistry (design)
 
-**Status: proposed, 23 November 2026, for the lead.** Docs only: no engine code until the lead
-rules, and part 3's host is the user's decision (D142; the user sees options first). Branch
-`fr43-design` from main 92e18df4. **S** marks this note's own derivation or probe. "From memory"
-marks standard theory cited without being read for this note; it is read and cited properly when the
-piece is built. Evidence: `/mnt/workspaces/Cells/fr43-20261123/` (`probe/` holds the scripts, `out/`
-and `out/v2/` the records; `out/NOTES.log` lists every edit to the scripts between runs).
+**Status: proposed, 23 November 2026, for the user's review and then the lead's rulings.** Docs
+only: no engine code until then, and part 3's host is the user's decision (D142; the user sees
+options first). Branch `fr43-design` from main 92e18df4. **S** marks this note's own derivation or
+probe. "From memory" marks standard theory cited without being read for this note; it is read and
+cited properly when the piece is built. Evidence: `/mnt/workspaces/Cells/fr43-20261123/` (`probe/`
+holds the scripts; `out/`, `out/v2/`, `out/v3/`, `out/v4/`, `out/w4rest/` and `out/ops1024/` the
+records; `out/NOTES.log` lists every edit to the scripts between runs).
 
 ## In short, for the user's review
 
@@ -20,10 +21,13 @@ ran FR-43's chain (a reversible chain of neutral species in one cell, with fast 
 - every size reached the same accuracy (2 × 10⁻⁵ of the largest amount at a 5 ms step), with
   material, charge and energy books closed to rounding, and the booked heat matched the exact
   free-energy drop;
-- the order of sums does not bind: the sums the books rest on agree bit for bit on the host and the
-  device at every size, and the others add exact zeros or meet a ledger only within its tolerance;
-- idleness, restart and batches stay bit for bit above 16, and every operator that shares the cap
-  ran at 32 species with every check passing;
+- the order of sums does not bind: the sums the books rest on agree bit for bit between the host
+  and the compiled CPU program at every size, and the others add exact zeros or meet a ledger only
+  within its tolerance;
+- idleness, restart and batches stay bit for bit above 16 (checked at 32 and 256); every operator
+  that shares the cap ran beside idle padding rows at 32 species, and at 1,024 in eight of nine
+  worlds (the ninth's long horizon met the runner's storage budget), with every check passing. Only
+  the reactions acted on every row; the others' own rows stayed at 1 to 8;
 - cost on one CPU core at 1,024 species: 3.5 min to compile (42 s with a looped sum), 0.44 s per
   step, about 87 s per simulated second, 4 GB of memory;
 - fast steps are limited by accuracy, not stability: the step is about 0.1/k_fast. Much faster,
@@ -48,8 +52,10 @@ calculation, and each process alone.
 - **A (recommended):** a declared hybrid representation in the assembly family. The units run as
   exact events and the pools as continuous equations. It reuses the family's exact events, random
   streams, integrator and pore clock, so event times are located to a declared tolerance. Est.
-  4.5–7 agent-days; it lifts two of OL6's version-1 refusals for this representation only, after
-  OL6's slice S7.
+  4.5–7 agent-days, after OL6's slice S7. It lifts two of OL6's version-1 refusals for this
+  representation only (mixed representations, and checkpoints), and a third (a single lineage's
+  checkpoint) unless FR-43's world is a population. Open before the build: a membrane holding both
+  kinds of place is refused, and whether FR-43's world parses with the family's laws is unchecked.
 - **B:** a new integer-population operator in the cell composite, where part 2's pools live. Event
   times are only as accurate as the step, and the composite needs its first random streams and owned
   state through division. Est. 5–8 agent-days.
@@ -99,8 +105,8 @@ chain), with `scheduled_species_turnover@1` (the charged world) and with
 
 | # | Question | Recommendation | Who | § |
 | --- | --- | --- | --- | --- |
-| 1 | How far the cap rises | **To 1,024,** the largest size probed: every size matched the closed form at one accuracy with ledgers at rounding, and the cost is measured (1,024 rows: 42 s to compile with the gated fold, 0.43 s per step, 1.7 GiB). The cap is in no traced program, so every world keeps its programs | Lead | 1.7 |
-| 2 | Sum order above 16 (limit (a)) | No new order rule. Every sum whose order a ledger, guard or promise rests on is already the explicit fold, bitwise host and device to 1,024. The shared modules' own sums either add exact zeros on the added rows or meet a ledger only at its tolerance. One stated limit: many charged rows (§1.3) | Lead | 1.3 |
+| 1 | How far the cap rises | **To 1,024,** the largest size the request asks for: every size matched the closed form at one accuracy with ledgers at rounding; W4's idleness, restart and batch parts held bitwise at 32 and 256; every cap-sharing operator ran at 32, and at 1,024 in eight of nine worlds; and the cost is measured (1,024 rows: 42 s to compile with the gated fold, 0.43 s per step, 1.7 GiB). The cap is in no traced program, so every world keeps its programs | Lead | 1.7 |
+| 2 | Sum order above 16 (limit (a)) | No new order rule. Every sum whose order a ledger, guard or promise rests on is already the explicit fold, bitwise between the host and the compiled CPU program to 1,024. The shared modules' own sums either add exact zeros on the added rows or meet a ledger only at its tolerance. One stated limit: many charged rows (§1.3) | Lead | 1.3 |
 | 3 | Compile time (limit (b)) | The unrolled fold costs compile and memory above 256 (1,024 rows: 214 s and 4.0 GiB, against 42 s and 1.7 GiB for a `lax.scan` fold, saves bitwise equal). **A static gate:** the unrolled fold up to 16 terms, the scan above, so every world at 16 or fewer keeps its program text and crossrev is the proof. One fold everywhere waits for the next D148 round of reaction programs | Lead | 1.4 |
 | 4 | The step (limit (c)) | A reported dt limit, no new integrator in FR-43: the declared accuracy sets dt ≈ 0.1/k_fast in the probe's chain, below the stage condition's refusal at dt·L > 1. A stiff integrator stays D152's door, a separate law | Lead | 1.5 |
 | 5 | Dense against per-entry arrays | The dense [rows, route] arrays set the step's cost above 256 (0.43 s per step at 1,024; the rate kernel alone 45 times the per-entry form's). **A per-entry [R, K] layout,** entries in row order so physical fields stay bitwise, as a D148 case-2 change after the raise; not needed for correctness. Meanwhile the trace estimate, which counts the dense layout per step, is corrected (host-side admission only) | Lead | 1.6 |
@@ -280,9 +286,13 @@ seconds in all).
 call site folds more than 16 terms in a world at 16 or fewer species, whatever axis it folds. Tracing
 crossrev's eleven world sets (tracing only) with `species_sum` wrapped to record each call's
 leading-axis length reached 54 call sites; the longest fold had 10 terms, and none had more than 16.
-So the gate leaves those worlds' programs as they are, and crossrev at landing is the proof. The gene
-unit's folds are over its own listed rows, at most the world's species, by reading; its worlds are
-not in crossrev's sets. Two code paths in one helper is the price; folding them into one belongs to the
+So the gate leaves those worlds' programs as they are, and crossrev at landing is the proof. G1's 113
+worlds hold at most 7 species (their saved definitions, counted). The gene unit's folds are over its
+own listed rows, at most the world's species, by reading; its worlds are not in crossrev's sets.
+**One gap:** @3 alone and the kinds carry no cap, so a recorded world above 16 species can exist
+today outside both sets (the mitochondria worlds were not counted here). Under a gate at 16 its
+programs would change. At landing, the registered and recorded worlds' species are counted: the
+threshold is set above the largest, or each larger world is named as changed under D148. Two code paths in one helper is the price; folding them into one belongs to the
 next D148 round that re-proves every reaction program anyway, the per-entry layout's (§1.6), with
 G1, crossrev's renewal and the derivative programs.
 
@@ -354,7 +364,9 @@ dense layout. At 256 rows it estimates 9.5 GiB for 400 steps, refused under the 
 budget, against a measured peak of 1.1 GiB; at 1,024 rows it estimates 153 GiB, against a measured
 4.0 GiB. The probe raised the definition's `max_trace_bytes` and recorded the estimate. The estimate
 is host-side admission, not a program, so correcting it (the layout counted once, not per step)
-changes no program.
+changes no program. The vector-window batches read the same per-world estimate when they plan their
+memory (`execution/vector_windows.py`), so the correction also changes which batches are admitted
+under a `max_working_bytes`.
 
 **Recommendation: a per-entry layout, after the raise.** The network's arrays become [R, K] entries
 (K = 6, the molecularity cap on each side), each route's entries in row order, the rates folded over
@@ -402,9 +414,16 @@ their horizons:
 | Gene unit, polymerase-limited at 10 copies, 20 steps | 8 | 21 | 5.2e-26 | 8.8e-15 |
 
 The 10⁻⁵ energy residuals are the moving-ion worlds' own IMEX accuracy, inside their bounds as every
-row passed. At 1,024 rows: **[filled from out/ops1024 if it ran]**.
+row passed. **At 1,024 rows** (`probe/ops_rows.py`, `out/ops1024/`; the scan fold, on gate lane A),
+eight of the nine ran to their horizons with every host check on every row and the same residuals as
+at 32 (the added rows are idle). The ninth, FR-3's class switch (20,001 steps), was refused at its
+definition by the runner's trace budget, whose estimate grows with species times saved steps: long
+horizons at this size need the windowed runners or a raised budget, a definition's choice. Site
+occupancy itself ran at 1,024 in q5 inward.
 
-**What the raise does not claim.** Worlds above 16 stay outside D150's and MG0c's judged scope until a
+**What the raise does not claim.** The operator runs padded each world with idle rows: each operator
+acted on its own 1 to 8 rows only. Only the reactions acted on every row (the chain), and the charged
+world ran in the unrolled fold only. Worlds above 16 stay outside D150's and MG0c's judged scope until a
 protocol covers them, and integration grants no acceptance. The cost at 1,024 is one chain in one
 cell; a world with many nodes adds @3's per-species work (INNER_MODEL_V4_DESIGN §10.6's P6: about
 1 s per step for 160 species on the 825-node world).
@@ -462,7 +481,7 @@ parses of `polymerase_limited(10)` with a D152 first-order sink of N, the source
   branches;
 - with both skipped, the pair parses, and a 10-step run (0.5 s steps) passes every host check
   (material 4 × 10⁻¹⁹ fmol, energy 2 × 10⁻¹⁶ relative, the gene unit's machine and residue ledgers
-  at 5 × 10⁻²³);
+  at 5 × 10⁻²³ and 5 × 10⁻²²);
 - **the potential gap is real:** with the registry's potential of N in place, the network's N
   declared 0.1 RT off is refused by `check_potentials`; with the registry's potential removed, the
   same 0.1 RT disagreement between the two writers is admitted.
@@ -797,4 +816,6 @@ agent; they sit in the tests with their plants.
   and the GPU flag's name, `gpu.reserved`), which pass through `validation/ool/references/`, and one
   over `/mnt/workspaces/Cells/*/` (the timed lock's name), which passes through the OL6 checker's
   folder; and one recursive file-name search over the checkout (`SITES.md`). None displayed any
-  content or name from those folders: every line shown came from other paths.
+  content from those folders. One process listing, taken to see which jobs loaded the light CPUs,
+  displayed the command lines of two running OL6 checker processes (their driver scripts' paths
+  under the checker's folder); no output of theirs was read.
