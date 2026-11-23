@@ -815,12 +815,16 @@ def q6_signature(name, context):
 # judged run at 1b838d75) admits site occupancy beside the bath schedule through door S's scoped
 # reads, so its view conflict no longer exists and its planted world is refused only by the bath
 # schedule's step rule, another check. Q6's registered results stay reproducible at their tags.
+# The class species_cap is retired (the lead's ruling, 23 November 2026): FR-43 (D315, after the
+# judged run) raised the species cap from 16 to 1,024, so its 17-species world is admitted; the cap
+# is an engine limit with its own tests (tests/unit/test_species_cap*.py). The label "species cap"
+# stays, its phrase now the cap's message at any value (the old "at most 16 species" named nothing).
 CHECKS = (
     ("ligand charged", "neutral species only"),
     ("ligand undeclared", "does not declare"),
     ("ligand permeant", "zero membrane, junction"),
     ("identity", "another identity"),
-    ("species cap", "at most 16 species"),
+    ("species cap", "species per world"),
     ("trace: node below", "below its declared trace"),
     ("trace: above 1e-6 K_d", "exceeds 1e-06 K_d"),
     ("unknown patch", "unknown patch"),
@@ -902,17 +906,6 @@ def _schedule(edit):
     return apply
 
 
-def _cap(raw):
-    for k in range(13):  # 4 + 13 = 17 species.
-        name = f"N{k}"
-        raw["model"]["species"].append(dict(id=name, valence=0))
-        for node in (*raw["model"]["cells"], *raw["model"]["extracellular"]):
-            node["initial_amount_fmol"][name] = 1e-3 * node["volume_pL"]
-        for patch in raw["model"]["membranes"]:
-            patch["permeability_m_per_s"][name] = 0.0
-        raw["execution"]["material_balance_atol_fmol"][name] = 1e-10
-
-
 def _identity(agree):
     """W beside D150's exchange declaring S with a catalogue identity: the sites declare S
     without it (refused) or with it (agree: admitted)."""
@@ -990,7 +983,6 @@ def refusal_classes():
         "ligand_undeclared": ("definition", ligand(species="X"), same),
         "ligand_permeant": ("definition", lambda: _engine_edit(W, _permeant), same),
         "identity": ("definition", lambda: _identity(False), lambda: _identity(True)),
-        "species_cap": ("definition", lambda: _engine_edit(W, _cap), same),
         "trace_node_below": ("definition", ligand(trace_mM=2e-4), same),
         "trace_above_limit": ("definition", lambda: af.build(_w(
             lambda w: w.update(trace_mM=1.01e-9) or w["nodes"]["cell_0"].update(L_mM=1.01e-9))),
@@ -1042,7 +1034,7 @@ def refusal_classes():
 # The check each class must name (its label in CHECKS), by class.
 EXPECTED_CHECKS = {
     "ligand_charged": "ligand charged", "ligand_undeclared": "ligand undeclared",
-    "ligand_permeant": "ligand permeant", "identity": "identity", "species_cap": "species cap",
+    "ligand_permeant": "ligand permeant", "identity": "identity",
     "trace_node_below": "trace: node below", "trace_above_limit": "trace: above 1e-6 K_d",
     "unknown_patch": "unknown patch", "unknown_contact": "unknown contact",
     "held_bath": "held bath", "copies": "copies", "sites_per_copy": "sites per copy",
