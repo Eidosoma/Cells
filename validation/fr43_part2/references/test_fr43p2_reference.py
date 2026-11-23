@@ -132,8 +132,8 @@ def test_water_alone_follows_its_closed_form():
 
 def test_recharging_split_adds_up():
     world = _world("C2.3-sink-dt0p5.json")
-    times = [0.0, 0.05, 0.2]  # recharging runs backward at first, then forward
-    Y, info = integrate(world, times, rtol=1e-6, atol=np.full(len(world.names), 1e-14))
+    times = [0.0, 30.0, 45.0]  # recharging runs backward until about 36 s, then forward
+    Y, info = integrate(world, times, rtol=1e-6, atol=np.full(len(world.names), 1e-20))
     assert len(info["recharge_sign_changes_s"]) == 1
     prod, cons = info["rc_produced"], info["rc_consumed"]
     for k, y in enumerate(Y):

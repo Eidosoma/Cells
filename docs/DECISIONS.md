@@ -10030,3 +10030,89 @@ code and values for it, so it is no longer a blind judge for FR-38. The D313 ver
   reading, with every number masked, the Lean lane's line that a polarity-symmetric gate misses one fitted curve
   at 80 mV. The ruling follows the law as declared, junction_series_gates@1 being symmetric in |V_j|. It does not
   tune toward a pass.
+
+## D318: OL6 Protocol D fails as registered, on D6's M alone; everything else passes
+
+2026-11-23, about 17:05 UTC. The independent checker's verdict on D0–D7 under errata 1–3. The record is
+/mnt/workspaces/Cells/ol6-checker-20261123/ol6-protocol-d-3e50d48d/verdict_protocol_d_D0_D7.json, with 30 disclosures.
+- **The protocol fails as registered on D6's criterion M alone** (10.47, against the fail threshold of 6). It is
+  the arithmetic artifact of D317: all 128 exact replicas equal (d) bitwise at three pre-shear times.
+  - Under erratum 3's rule, D6's labelled, non-blind diagnostic is 2.293, and D6's other criteria pass.
+  - D5 passes under erratum 3 (M 1.66, with 16 exact pairs excluded). Over every pair, the registered value
+    would be 10.98, the same artifact.
+- **Every other world passes:**
+  - D0 is refused at parse at min_count 10, as registered;
+  - D1, D2 and D3 pass, with P slopes of -0.498, -0.500 and -0.496, M at 2.9 or below, and B's c_r at 2.08 or
+    below;
+  - D4 passes, with E's mean_z at 0.49;
+  - D7 passes under D309's bound: E's mean_z is 1.01, and all 384 of 384 are paired by the pore.
+- **Every plant is caught.** P-D1, under erratum 2, needs c_r 15.94 against 5. P-D2 through P-D7 are caught as
+  registered.
+- **Other results:**
+  - n_min: none, since M fails at the ladder.
+  - Zero-SE pairs with a nonzero error: none.
+  - N: passes.
+- **Protocol G scope 1 still passes.** The checker corrected its physical-measure note: paired on the same seeds,
+  the measure is -1.80% against section 7's predicted -1.75%.
+- **Scope 2 is running.**
+- **The user's decision (23 November): re-register Protocol D after FR-43.** M is repaired, the seeds are fresh,
+  and the fail and its diagnosis stay on record meanwhile.
+
+## D319: FR-43 part 3's registered comparison passes
+
+2026-11-23, about 17:26 UTC. The builder ran the integer-unit population operator, option B (D315), at 52935908 from a
+clean frozen snapshot. It was judged under the criteria tagged fr43-part3-criteria-2026-11-23, which were fixed before the
+references returned, against the code-blind references tagged fr43-part3-references-2026-11-23. The verdict is in
+/mnt/workspaces/Cells/fr43-part3-20261123/evidence-52935908/compare/verdict.json (sha256 548b7928b04c6a4d...).
+- **W1, W2 and W4 agree with the references at rounding,** at 20 and 5 ms: event times within 1.8e-14 s and amounts within
+  6.4e-15 fmol, against bounds of 1e-9. The events, channels and counts are the same. W4 is the first use of the
+  node-side read.
+- **W3, the two-way coupling, converges at order 1.96** under step halving from 20 to 1.25 ms, inside [1.7, 2.3]. Its
+  RMS/dt^2 varies by a factor of 1.82, against a bound of 4. The RMS at 1.25 ms is 1.47e-7 s, against a bound of 1e-6.
+- **C3.3:** at 16,384 sites with feedback off, the fraction with no active unit falls inside its band at all ten times
+  (z = 3.89). The k_a +10% plant misses at all ten.
+- **C3.5:** at f = 1/2 exactly (64 seeds x 128 sites), exactly one recipient receives each draw. The frequency is 0.4954,
+  inside 0.5 +- 0.0182. The f = 0.55 plant falls outside.
+- **The plants are data per world,** so the cached-rollout hazard cannot reach them.
+- **Disclosed:** the builder chose W3's window and phase band after its own engine and development runs. That is
+  recorded in the registration's section 5.
+- **It lands after FR-43 part 1,** gated against main.
+
+## D320: FR-30's registered benchmark on Revilla 1999 fails: 4 of 6 comparisons, both misses at -80 mV
+
+2026-11-23, about 17:44 UTC. The independent checker's score, under section 13's rule 4 and D311.
+- **Provenance:**
+  - the registration is tag fr30-revilla1999-registered-2026-11-23, and the reader erratum is tag
+    fr30-revilla1999-reader-erratum-1-2026-11-23, which changes resolve's container step only;
+  - the score ran from a clean snapshot of 00bc183e;
+  - the inputs are predictions.json 20ca2a4a... and held_out.json e8368083..., both unchanged;
+  - the verdict is /mnt/workspaces/Cells/fr30-benchmark-20261123/verdict/checker_verdict.json (af9f402d...), with
+    the scorer's own verdict.json (c28010d5...);
+  - the checker recomputed all six comparisons without the scorer, and they agree.
+- **The six comparisons:**
+  - **-80 mV:** tau_fast passes (1.51 against 1.75 s, within 2 SEM). tau_slow fails (19.40 against 13.39 s, ln ratio
+    0.370, outside 2 SEM). G_ss/G_0 fails (0.397 against 0.478, off by 0.081, beyond 2 SEM's 0.053).
+  - **+80 mV:** tau_fast passes, through 2 SEM only (1.51 against 2.17 s). tau_slow passes (19.40 against 16.45 s).
+    G_ss/G_0 passes (0.397 against 0.384).
+- **Rule 4 as written also fails,** so the verdict does not rest on D311's "both" reading:
+  - G_ss fails at one voltage of two;
+  - tau_slow passes at one of two, not more than half;
+  - the 75% clause holds, at 3 of 4.
+- **What the fail does and does not show** (corrected 23 November; the first reading here overstated it):
+  - **The +-80 mV acceptance windows overlap for every observable:** tau_fast 0.47-3.77 s, tau_slow 12.1-16.8 s and
+    G_ss/G_0 0.4245-0.4339. So one |V_j|-symmetric prediction could have passed all six.
+  - **The fail shows that this fit missed, not that symmetry fails.** Its tau_slow (19.40 s) lies above both
+    polarities' observations.
+  - **The polarity difference is one study's indication:** G_ss/G_0 differs between -80 and +80 mV by about 2.6
+    combined SEM, tau_slow by 1.1 and tau_fast by 0.3. The in-sample fit's G_ss residuals at +-60 and +-100 mV
+    point the same way, from the same paper. One wet-lab experiment is never fully trusted (the user, 23 November).
+- **Disclosed:**
+  - the checker wrote the reader erratum from value-free structure logs before reading any held-out value;
+  - the lead ruled one parameter set after reading, masked, the Lean lane's line on polarity-symmetric gates
+    (D317).
+- **FR-30's law stays development-only** (D262).
+- **The user's decision (23 November): a polarity-aware gate within FR-16, with a fresh blind benchmark on
+  Ek-Vitorin 2016, extractor first.**
+  - The FR-16 design starts by checking polarity dependence in independent sources, including whether the
+    benchmark's junction is homotypic. It does not open Ek-Vitorin 2016, which stays sealed for the benchmark.
+  - The law's form changes only if independent sources support it.

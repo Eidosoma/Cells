@@ -111,6 +111,9 @@ GUARDS = (
     "tests/unit/test_judge_imports.py",
     "tests/unit/test_law_modules.py",
     "tests/unit/test_source_profile_boundary.py",
+    # The modules surface (built-in kinds import engine code only through cells.modules): about 3 s,
+    # added 23 November 2026 after FR-15 F2's gate met its refusal only at tiers, about 50 minutes in.
+    "tests/unit/test_modules_surface.py",
 )
 NEW_TIER = "9"  # The subset's key for test files the head's record has no row for.
 EMPTY_PATCH = hashlib.sha256(b"").hexdigest()

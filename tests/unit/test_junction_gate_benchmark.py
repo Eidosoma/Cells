@@ -1,10 +1,10 @@
 """FR-30's harness for Revilla, Castro and Barrio (1999) at its tag (D308): the prediction, the
 readout and the scorer (validation/junction_gate_benchmark/revilla1999.py and revilla1999_score.py;
-docs/JUNCTION_TWO_RELAXATION_DESIGN.md §13.5).
+docs/JUNCTION_TWO_RELAXATION_DESIGN.md §13.5), with the scorer's reader erratum 1 (§13.6).
 
 Synthetic inputs only: invented gate parameters, invented decays and invented held-out documents in
-the extractor's fit.json structure. No training or held-out value is used, and nothing is fitted to
-data. Each claim with the planted error it must catch:
+the extractor's fit.json structure and in held_out.json's flat list. No training or held-out value
+is used, and nothing is fitted to data. Each claim with the planted error it must catch:
 - H1, the readout: an off-grid two-exponential decay's times, amplitudes and offset are recovered
   from the fixed grid's start, and G_ss/G_0 is the end-of-step sample, not the offset C (planted:
   a readout left on the grid would miss the off-grid times);
@@ -22,7 +22,12 @@ data. Each claim with the planted error it must catch:
   polarity); the command line withholds an error's text; the scorer imports the standard library
   only;
 - H7, verify recomputes predictions.json from its one parameter block (planted: a time moved by
-  1e-5 relative; a per-voltage parameter block).
+  1e-5 relative; a per-voltage parameter block);
+- H8, reader erratum 1 (§13.6): held_out.json's one flat list of entries resolves to the same
+  entries, at paths observables[i], and scores to the same comparisons as fit.json's object of
+  named lists (planted: the tagged reader, which refused the flat list); in the flat list a
+  malformed entry is refused by its path, and an "observables" of neither shape is refused, saying
+  that the key is present.
 
 Cost: about 5 s on one CPU (host arithmetic in NumPy and SciPy, no world compiled), most of it
 importing the engine and seven readouts of 30,001-sample traces. Reason: the harness is registered
@@ -114,6 +119,13 @@ def held_out(sem_time=0.01, sem_steady=0.005):
             "steady_state_fig3C": steady,
         }
     }
+
+
+def flat(doc):
+    """The same document in held_out.json's structure (reader erratum 1): one flat list of entries
+    under "observables", the named lists' entries in name order."""
+    lists = doc["observables"]
+    return {**doc, "observables": [e for name in sorted(lists) for e in lists[name]]}
 
 
 def predictions(times=TIMES, steady=STEADY, degenerate=None):
@@ -330,6 +342,17 @@ def _dispersion_units(doc):
     return doc
 
 
+def _flat_sd(doc):  # held_out.json's flat list (erratum 1), its first entry with an SD.
+    doc = flat(doc)
+    doc["observables"][0]["value"] = PLANTED
+    doc["observables"][0]["dispersion"]["type"] = "SD"
+    return doc
+
+
+def _observables_text(doc):  # The key is present, but its value has neither shape.
+    return {**doc, "observables": str(PLANTED)}
+
+
 @pytest.mark.parametrize(
     "plant, named",
     [
@@ -342,12 +365,37 @@ def _dispersion_units(doc):
         (_units, "observables.time_constants_fig3B[0].units"),
         (_polarity, "observables.time_constants_fig3B[0].polarity"),
         (_dispersion_units, "observables.time_constants_fig3B[0].dispersion.units"),
+        (_flat_sd, "observables[0].dispersion.type"),
+        (_observables_text, "observables: present, but neither an object of lists nor a list"),
     ],
 )
 def test_the_reader_fails_closed_naming_key_paths_only(plant, named):
     with pytest.raises(scorer.Refusal) as refused:
         scorer.score(predictions(), plant(copy.deepcopy(held_out())))
     assert named in str(refused.value) and str(PLANTED) not in str(refused.value)
+
+
+def test_the_reader_takes_held_out_jsons_flat_list():
+    grouped, listed = held_out(), flat(held_out())
+    by_list = scorer.resolve(listed)
+    assert sorted(e["path"] for e in by_list["entries"].values()) == [
+        f"observables[{i}]" for i in range(6)
+    ]
+    assert (by_list["skipped"], by_list["outside"]) == (["observables[6]"], [])  # The ratio.
+
+    def entries(resolved):
+        return {
+            k: {f: x for f, x in e.items() if f != "path"} for k, e in resolved["entries"].items()
+        }
+
+    assert len(entries(by_list)) == 6 and entries(by_list) == entries(scorer.resolve(grouped))
+    by_groups, by_flat = (scorer.score(predictions(), doc) for doc in (grouped, listed))
+    assert (by_flat["verdict"], by_flat["passed"], by_flat["compared"]) == ("pass", 6, 6)
+
+    def comparisons(result):
+        return [{k: x for k, x in c.items() if k != "held_out_path"} for c in result["comparisons"]]
+
+    assert comparisons(by_flat) == comparisons(by_groups)
 
 
 def test_the_command_line_withholds_values(tmp_path, capsys, monkeypatch):

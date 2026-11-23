@@ -5,14 +5,19 @@ Standard library only. The scorer never imports the engine, so no verdict depend
 validation/junction_gate_benchmark/revilla1999.py makes the predictions, and its `verify` stage
 recomputes them from their one stated parameter block before a judged score.
 
-**The reader** (`resolve`) was written from the extractor's fit.json, the registration's train.json,
-which the extractor built the same way as the held-out file; the held-out file itself was never
-opened by its author. It reads every list under "observables" and matches each entry by its
-(vj_mV, maps_to_registered_observable) pair; an entry without that mapping is skipped (fit.json's
-amplitude ratio). It needs exactly one entry per held-out voltage and judged observable, and it
-fails closed: a missing or duplicated entry, a missing key, a value that is not a finite number, a
-sign against its polarity, unknown units or a dispersion other than an SEM is refused, and a
-refusal names key paths only, never a value.
+**The reader** (`resolve`) was written from the extractor's fit.json, the registration's train.json;
+the held-out file itself was never opened by its author. It reads every entry under "observables"
+and matches each by its (vj_mV, maps_to_registered_observable) pair; an entry without that mapping
+is skipped (fit.json's amplitude ratio). It needs exactly one entry per held-out voltage and judged
+observable, and it fails closed: a missing or duplicated entry, a missing key, a value that is not a
+finite number, a sign against its polarity, unknown units or a dispersion other than an SEM is
+refused, and a refusal names key paths only, never a value.
+
+**Reader erratum 1** (§13.6). The extractor built the two files' entries the same way, but not
+their containers. fit.json's "observables" is an object of named lists of entries (paths
+observables.NAME[i]); held_out.json's is one flat list of entries (paths observables[i]). The reader
+takes either, and every entry goes through the same checks. The erratum was written from the two
+files' keys and shapes only, never their values; it changes no tolerance, rule or pass logic.
 
 **The comparisons** (§13.5, from section 13's rule 4 with D311):
 - a time passes if |ln(pred/obs)| <= ln 1.25 or |pred - obs| <= 2 SEM. Both outcomes are recorded,
@@ -136,24 +141,37 @@ def _entry(entry, where, observable):
     }
 
 
+def _entry_lists(doc):
+    """The lists of entries under "observables", each with its key path's stem (reader erratum 1,
+    §13.6): fit.json's object of named lists, in name order, or held_out.json's one flat list."""
+    if not isinstance(doc, dict):
+        raise Refusal("the top level is not an object")
+    if "observables" not in doc:
+        keys = sorted(str(k) for k in doc)
+        raise Refusal(f"no 'observables' key at the top level (top-level keys: {keys})")
+    groups = doc["observables"]
+    if isinstance(groups, list):
+        return [("observables", groups)]
+    if isinstance(groups, dict):
+        return [(f"observables.{name}", groups[name]) for name in sorted(groups, key=str)]
+    raise Refusal("observables: present, but neither an object of lists nor a list of entries")
+
+
 def resolve(doc, voltages=HELD_OUT_MV, observables=JUDGED):
     """Every judged entry of a held-out file (or of fit.json) at the given voltages, by key.
 
-    Returns {"entries": {(vj_mV, observable): {...}}, "skipped": [path], "outside": [path]}: the
-    skipped entries carry no judged mapping, the outside ones lie at other voltages. It refuses
-    (Refusal), naming key paths only, anything it cannot resolve."""
+    "observables" is an object of named lists of entries (fit.json's) or one flat list of entries
+    (held_out.json's; reader erratum 1, §13.6), and every entry is read the same way. Returns
+    {"entries": {(vj_mV, observable): {...}}, "skipped": [path], "outside": [path]}: the skipped
+    entries carry no judged mapping, the outside ones lie at other voltages. It refuses (Refusal),
+    naming key paths only, anything it cannot resolve."""
     voltages, observables = tuple(voltages), tuple(observables)
-    if not isinstance(doc, dict) or not isinstance(doc.get("observables"), dict):
-        keys = sorted(str(k) for k in doc) if isinstance(doc, dict) else []
-        raise Refusal(f"no 'observables' object at the top level (top-level keys: {keys})")
-    groups = doc["observables"]
     found, skipped, outside = {}, [], []
-    for name in sorted(groups, key=str):
-        group = groups[name]
+    for stem, group in _entry_lists(doc):
         if not isinstance(group, list):
-            raise Refusal(f"observables.{name}: not a list")
+            raise Refusal(f"{stem}: not a list")
         for i, entry in enumerate(group):
-            where = f"observables.{name}[{i}]"
+            where = f"{stem}[{i}]"
             if not isinstance(entry, dict):
                 raise Refusal(f"{where}: not an object")
             mapped = entry.get(MAPPING)

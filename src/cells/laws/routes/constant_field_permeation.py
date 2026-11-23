@@ -28,9 +28,12 @@ its sign in an interval of relative width about 1e-33 around reversal), so the b
 RAW_SUM_FACTOR*eps floors, not an exact sign. The neutral law's exact divided-difference booking
 does not apply: the potentials move within the step.
 
-Hosts: membrane patches, where its flux joins the patch's membrane current. Junction hosts wait for
-the @3 owner's answer (whether the field solve's floating-component residual must hold a kind's
-cell-to-cell current, and whether KindRates gains a junction_flux).
+Hosts: membrane patches, where its flux joins the patch's membrane current, and junctions (D310),
+between two cells at the junction voltage V = phi_sender - phi_receiver. The hosting kind takes 2G
+at each cell on a junction (G this law's conductance_S), and refuses, in version 1, a junction that
+joins two capacitor components where one floats: such a component's offset is set by the field
+solve's current balance, which holds @3's own currents, not a kind's (the lead's rulings on the @3
+owner's two questions, D310).
 
 Inert (docs/CORE_SEAMS_DESIGN.md §8.2): the module declares its one law as LAW and registers
 nothing at import; its registration on the passive routes kind is the kinds owner's.
@@ -140,7 +143,7 @@ def material_slope_per_s(
 # named from memory, not read (CORE_SEAMS §15).
 LAW = RouteLaw(
     LAW_ID,
-    ("membrane",),
+    ("membrane", "junction"),
     "the Goldman-Hodgkin-Katz constant-field flux of a charged species at its valence, read from "
     "its amounts at both ends (laws/routes/constant_field_permeation.py)",
     stage_term="conductance_S",  # Its max-side slope in the stage rule: CORE_SEAMS §18.
