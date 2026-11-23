@@ -1212,14 +1212,14 @@ RULES = (
         why="Identity is a declaration of the species, not of an operator",
     ),
     dict(
-        rule="at most 16 species per world",
+        rule="at most 1,024 species per world",
         laws=(TURNOVER, EXCHANGE, REACTIONS, COUPLING, COUPLING_2),
         level="data",
         check=OPS + "species_common.py::check_species_cap",
         test=TESTS
-        + "test_secreted_species.py::test_more_than_sixteen_species_are_refused_with_the_reason",
+        + "test_species_cap.py::test_the_cap_refuses_1025_species_with_the_reason_and_admits_1024",
         tag=REAL,
-        why="Probed to 16 (FR-9 / D165); above it, another probe",
+        why="Probed to 1,024 (FR-43 / D315; 16 by FR-9 / D165); above it, another probe",
     ),
     dict(
         rule="beside water@1 every bath step is isosmotic",

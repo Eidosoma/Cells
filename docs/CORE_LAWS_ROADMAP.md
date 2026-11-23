@@ -274,7 +274,7 @@ departures, on which the user rules (CORE_SEAMS §16).
 - `scheduled_bath_composition@1` (FR-10), judged (31 of 31). Steps are admitted only inside measured
   regions.
 - **The species registry** is the one authority for standard potentials, with seam E's checks.
-- **The cap:** 16 rows wherever a species operator is declared (FR-9; `species_common.MAX_SPECIES`).
+- **The cap:** 1,024 rows wherever a species operator is declared (FR-43 / D315, 16 by FR-9; `species_common.MAX_SPECIES`).
 - **Legacy:** `network_reactions@1` and the calcium-energy family's networks.
 
 **On a branch.** FR-15 P2: a charged constant-field route law, `passive_constant_field_permeation@1`,
@@ -865,7 +865,7 @@ Read in the code at 7f357cfb and in git's log.
 | **The §2 question: can a cell-owned compartment carry its own voltage?** | Yes, in the field. At a face-free node with one patch, V_b = −q/C_b exactly (FR-1 §3.1). FR-4's judged world carries a charged lumen. Refusal 5 admits charged restarts. Host P (the matrix as a @3 cell, the IMS as a finite node) parses (probe P0; nothing stepped). | The step at real fluxes. On 17 November P1 admitted host C up to dt·ΣG/C = 0.02 and host P up to 0.01. Refusals then came from the step-validity flag, partly the predictor gap since fixed for the general closure, and from the explicit-rate and face bounds (caps of 0.289 and 0.108). P1 has not been rerun since the fix. So branch E (explicit steps suffice) or branch I (an implicit cycle block) is open. |
 | **Finite fuel and the ATP pools** | `finite_fuel_rows@1` on the population axis under the neutral ATP-driven law, with stored energy booked. Seam A's references compare a finite-fuel world state by state (`ff_neutral_n1`). D152's regeneration, with the potentials check. | The first finite-fuel acceptance (`finite-fuel-v1`) has no world and no protocol. @3's Na/K and Ca pumps run on maintained pools, so a cell's ATP economy cannot close across them. D175's fields are refused at registration. |
 | **The protocol's steps** (MITOCHONDRIA_DESIGN §7) | FR-10's `scheduled_bath_composition@1` acts on held baths, and is judged. | The ADP step from 0 mM is "a dose from nothing", which the bath schedule refuses, and ADP has no measured region. The inhibitor step sets a population's availability to 0, which needs the schedules (on a branch). The uncoupler step could use a second leak route on its own patch, with that patch's availability scheduled: to check. Whether the bath schedule composes with declared kinds is still to check. |
-| **Rows and the species cap** | The cap is 16 where a species operator is declared (`species_common.MAX_SPECIES`). No cap was found in @3's spec. | Host P needs about 14–16 rows (MITOCHONDRIA_DESIGN §2.2). The builder counts rows and checks which declared operator applies the cap. No parse probe was run for this note. |
+| **Rows and the species cap** | The cap is 1,024 where a species operator is declared (`species_common.MAX_SPECIES`; 16 until FR-43 / D315). No cap was found in @3's spec. | Host P needs about 14–16 rows (MITOCHONDRIA_DESIGN §2.2). The builder counts rows and checks which declared operator applies the cap. No parse probe was run for this note. |
 
 ## 2.3 What is still missing, by owner
 

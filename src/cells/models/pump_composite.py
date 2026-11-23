@@ -1461,6 +1461,15 @@ class Composition:
             op.working_size(spec) for op in self.operators
         )
 
+    def fixed_working_size(self, spec):
+        """Values held once per resident copy, never per saved row (execution/resources.fixed_bytes;
+        FR-43, D315): the operators' bound layouts, where an operator declares one."""
+        return sum(
+            op.fixed_working_size(spec)
+            for op in self.operators
+            if hasattr(op, "fixed_working_size")
+        )
+
     def initial_values(self, spec):
         state, p = self.inner.initial_values(projection(spec))
         values, layout = state._asdict(), p._asdict()

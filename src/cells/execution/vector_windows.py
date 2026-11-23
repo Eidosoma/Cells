@@ -66,7 +66,7 @@ from cells.execution.batch_windows import WindowedBatchResult
 from cells.execution.devices import execution_device
 from cells.execution.errors import NumericalError
 from cells.execution.grid import refinement_times
-from cells.execution.resources import trace_bytes
+from cells.execution.resources import fixed_bytes, row_bytes, trace_bytes
 from cells.execution.runner import integration_steps, validate_checkpoint
 from cells.execution.schedule import control_values, event_index
 from cells.execution.state import Checkpoint, initialise
@@ -279,12 +279,13 @@ def _plan_vector_windows(spec, policy, checkpoints, record):
             groups.append([])
         groups[position[id(local)]].append(i)
     # Resident rows per world: start, carry, candidate and endpoint states, the
-    # stored observation rows and held controls (trace_bytes rows include the
-    # model's margin). Model temporaries such as dense field matrices are
-    # measured from the compiled executable and admitted before it runs.
+    # stored observation rows and held controls (row_bytes rows include the
+    # model's margin), and the world's one parameter copy (fixed_bytes: its bound
+    # layout, counted once, FR-43). Model temporaries such as dense field matrices
+    # are measured from the compiled executable and admitted before it runs.
     rows = 4 + observation_rows + control_rows
     estimate = sum(
-        rows * trace_bytes(p.spec, 0, 0) * len(g)
+        (rows * row_bytes(p.spec, 0, 0) + fixed_bytes(p.spec)) * len(g)
         for p, g in zip((plans[g[0]] for g in groups), groups, strict=True)
     )
     if estimate > spec.max_working_bytes:

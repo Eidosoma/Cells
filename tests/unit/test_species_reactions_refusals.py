@@ -377,8 +377,10 @@ def test_rk4_is_refused_with_its_reasons():
     assert "no consumer needs it" in str(error.value)
 
 
-def test_more_than_sixteen_species_are_refused_with_the_reason():
-    """FR-9 / D165: D150's cap, now 16, every species counted (it was 7)."""
+def test_more_species_than_the_cap_are_refused(monkeypatch):
+    """D150's cap counts every species (FR-43 / D315: 1,024, test_species_cap.py); set to 16 here,
+    so the world stays small: the reactions read it at their definition check."""
+    monkeypatch.setattr(common, "MAX_SPECIES", 16)
     raw = rfx.enzyme_network()  # 3 ions and S, E, C, P: 7.
     for i in range(9):  # Nine more: 16, admitted.
         raw = add_inventory_species(

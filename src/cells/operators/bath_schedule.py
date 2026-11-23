@@ -42,8 +42,8 @@ over the schedule (inner_check_spec): the explicit-rate bound's slope term grows
 Refusals. At the definition: a target that is not a held bath; a formula unit with a count that is
 not a positive int, an unknown species, or a nonzero integer charge; an event at or before 0, at or
 beyond the end, off the dt grid, out of time order for a bath, naming an unscheduled bath or an
-undeclared unit, or leaving a species of a bath non-positive; more than 16 species (the shared
-cap, D165); an anisosmotic step beside water@1, whose bath water potential is bound at the
+undeclared unit, or leaving a species of a bath non-positive; more than 1,024 species (the shared
+cap, FR-43 / D315); an anisosmotic step beside water@1, whose bath water potential is bound at the
 definition (the design's door W); and (milestone 2, the design's §8) a step outside the measured
 region: a step is admitted only if a measured passing point of its key (neutral species by class,
 ions by species ID) and direction dominates its ratio and level, under ARS(2,2,2) at dt <= 1 ms or
