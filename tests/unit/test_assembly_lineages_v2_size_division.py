@@ -53,7 +53,7 @@ KB = (1.0, 1.5, 0.8)  # leave rates (1/s); a join's k_f is K kb
 RHO = (4.0, 4.0, 2.0)  # held pool concentrations (mM, c0 = 1 mM): sum K rho = 18, near the size
 BETA = ((0.5, 3.0, 0.2), (1.0, 0.1, 4.0), (2.0, 0.3, 0.7))  # catalyst j on the join of i
 FOUNDER = (3, 2, 3)
-SIZE = 16
+SIZE = 15  # odd, so floor(f N) differs from its ceiling; not a power of two, so streams.block cuts
 MOLECULES = 64
 MEASURES = {
     "exact": {"condensed_measure": "multinomial_less_one", "last_molecule": "extinct"},
@@ -92,8 +92,8 @@ def definition(w, *, chunk=4096, seed=1, events=300, uniforms=True, diagnostic=N
     out = {
         "schema_version": 1,
         "model": {"id": MODEL_ID, "world": copy.deepcopy(w)},
-        "experiment": {"time_horizon_s": 100.0, "event_limit": events, "row_every_events": 1000,
-                       "observation_times_s": [], "trace": True, "uniforms": uniforms},
+        "experiment": {"time_horizon_s": 100.0, "event_limit": events, "row_every_events": 7,
+                       "observation_times_s": [0.1, 0.3], "trace": True, "uniforms": uniforms},
         "execution": {"backend": "cpu", "precision": "float64", "mode": "single_lineage",
                       "stream": {"seed": seed, "environment": 0, "lineage": 0, "branch": 0},
                       "molecule_capacity": MOLECULES, "place_capacity": 8, "step_capacity": 4,
@@ -176,6 +176,10 @@ def test_each_division_keeps_protocol_g_s_contract(exact_run):
     assert np.array_equal(rows["row_event"][at], f["fission_event"])
     assert np.array_equal(rows["place_count"][at][:, membrane],
                           f["fission_daughter_counts"][:, 0][:, membrane])  # fmt: skip
+    # Periodic and observed rows beside the division rows, the books closed at every one.
+    kinds = rows["row_kind"].tolist()
+    assert kinds.count(runner.OBSERVED) == 2 and kinds.count(runner.PERIODIC) >= 10
+    assert np.all(np.abs(rows["ledger_residual_kT"]) <= 1e-9)
     # The books: the division's work and the sink, F_m(first) + F_m(second) - F_m(parent).
     assert rows["division_work_kT"][-1] == pytest.approx(f["fission_work_kT"].sum(), abs=1e-9)
     assert rows["discarded_free_energy_kT"][-1] == pytest.approx(
@@ -195,7 +199,7 @@ def test_chunk_size_and_lane_batch_change_no_value(exact_run):
     assert not np.array_equal(batch[1].trace["event_channel"], run.trace["event_channel"])
 
 
-def test_a_trigger_at_the_event_guard_divides_then_ends_event_limit(exact_run):
+def test_a_trigger_at_the_event_guard_divides_then_ends_event_limit(exact_run, tmp_path):
     _, run = exact_run
     f = run.size_division["fissions"]
     first = int(f["fission_event"][0])
@@ -209,6 +213,14 @@ def test_a_trigger_at_the_event_guard_divides_then_ends_event_limit(exact_run):
     censored = [life["key"] for life in cut.size_division["lives"]
                 if life["end_reason"] == "censored"]  # fmt: skip
     assert censored == [f["fission_daughters"][0][0]]
+    # One event earlier, no division: empty fission arrays and the founder's one life, written.
+    none = runner.run(parse_spec(definition(world(), events=first - 1)))
+    assert none.status == "event_limit" and none.closure["holds"]
+    assert none.size_division["fissions"]["fission_time"].shape == (0,)
+    assert none.size_division["fissions"]["partition_uniforms"].shape == (0, SIZE)
+    assert [life["end_reason"] for life in none.size_division["lives"]] == ["censored"]
+    records.write_run(tmp_path / "none", none)
+    assert json.loads((tmp_path / "none" / "run.json").read_text())["division"]["fissions"] == 0
 
 
 def test_the_physical_measure_closes_its_books_and_writes_its_bundle(tmp_path):
@@ -255,7 +267,7 @@ def _set(path, value):
         (_geometry, "refused with a geometry"),
         (_two_molecules, "changes the membrane's count by 2"),
         (_set(("model", "world", "division", "size"), 8), "at or above the size 8"),
-        (_set(("model", "world", "division", "partition", "fraction"), 0.05), "holds no molecule"),
+        (_set(("model", "world", "division", "partition", "fraction"), 0.06), "holds no molecule"),
         (_set(("model", "world", "division", "size"), 80), "above molecule_capacity 64"),
         (_set(("model", "world", "division", "continuation"), "uniform"), "continuation is first"),
         (_set(("experiment", "diagnostic"), True), "the diagnostic record is refused"),
