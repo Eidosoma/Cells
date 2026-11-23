@@ -1113,7 +1113,7 @@ def check_definition(spec):
             )
         if route.law == CHARGED_LAW_ID and route.host_kind == "junction":
             if crossing is None:
-                from cells.models.surface_pump_v3 import crossing_junctions
+                from cells.modules import crossing_junctions  # @3's, through the surface.
 
                 crossing = set(crossing_junctions(m))
             if route.host in crossing:
