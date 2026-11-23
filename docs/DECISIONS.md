@@ -9668,3 +9668,28 @@ never from the builders' numbers. That is disclosed.
    cohort is the molecules released from their template, marked on the chain's own label schedule.
    Route 2 runs at the gross one-way rate. The rule follows it before its tag.
 
+## D308: FR-38's rule was tagged without its reader; a rule erratum supplies it before any judged run
+
+2026-11-23, about 06:03 UTC. The independent judge of FR-38's registered comparison (tag
+fr38-rule-registered-2026-11-23) stopped before any run.
+- **The gap:** the rule names "the comparison's reader" and a name mapping "that the comparison's reader
+  states at the tag", and none exists. G4/FR-25's compare.py reads only G2's files, and FR-25's
+  registration.py cannot judge this rule's quantities (route 1's labels, the hold's class, survivors,
+  route 2). The lead tagged the rule without checking that its reader existed.
+- **The fix:** rule erratum 1, tagged before any judged run.
+  - The judge writes the reader from the interface files' keys and array shapes only, never their
+    values, and states the name mapping per world.
+  - The erratum also states:
+    - the route agreement's bound, section 9.8's (route 2's grid error plus route 1's split), reported
+      with the verdicts and changing no verdict;
+    - route 2's error and scale per sample time;
+    - the retry's support runs (the matched blanks at the retry steps, and R1L's unlabelled twin),
+      not judged themselves;
+    - FR-25's precedence. Within a run, an out-of-window order makes it inconclusive. Overall, any
+      failed run makes the comparison failed, else any inconclusive makes it inconclusive.
+- **Disclosed:** the judge saw reference figures printed in the references' tag messages (679fe885,
+  05725b23) before any run. No tolerance is the judge's, so the exposure cannot move one, and it is
+  recorded in the verdict's not_blind.
+- **For later rules:** a registration names a reader that exists at its tag, or the rule is not
+  tagged.
+
