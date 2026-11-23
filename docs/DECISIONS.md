@@ -9819,7 +9819,7 @@ e83680830219a58ab6b47d268518543b90e63c52d6b7d7694ee8a8e45c7a7285. All 12 entries
 - **The law's design predates the exposure.** The FR-30 design note read lean/claims/junction-gate.md on
   20 November (d0245ebc, 22:14 UTC), before Revilla's section landed there (21 November, 14:12 UTC). Any
   later reading by the law's developer is not recorded.
-- **The lead stayed blind.** He read those files only as lines with every non-voltage number masked, plus
+- **The lead stayed blind.** The lead read those files only as lines with every non-voltage number masked, plus
   the data file's keys and its comparison voltage. He did not open the held-out file, Revilla's
   extraction notes or Shibayama's record.
 
