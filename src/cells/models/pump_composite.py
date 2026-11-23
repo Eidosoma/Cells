@@ -46,7 +46,7 @@ model's exactly.
 
 from collections.abc import Mapping
 from dataclasses import make_dataclass, replace
-from functools import cache
+from functools import cache, partial
 from typing import NamedTuple
 
 import jax
@@ -944,6 +944,14 @@ def lifecycle_errors(inner, operators):
     if not any(op.RETIRES for op in operators):
         return []
     errors = []
+    if any(op.DIVIDES_OWNED for op in operators):  # FR-43 part 3 (D315): owned state divides.
+        for op in operators:
+            if op.RETIRES and not op.TAKES_LIFECYCLE:
+                errors.append(
+                    f"{op.LAW_ID} retires slots beside operators whose owned state divides "
+                    "(DIVIDES_OWNED), but its event map takes no lifecycle=, so their state "
+                    "would not divide (fails closed)"
+                )
     for kind in getattr(inner, "BOUND_KINDS", ()):
         reason = pump3.kind_lifecycle_errors(kind)
         if reason and reason[0] in ("roles", "axes"):  # Refused by the structure check anyway.
@@ -1331,6 +1339,10 @@ class Composition:
         # checks read the adjusted row. Without either, nothing here changes a program.
         self.closers = tuple(op for op in operators if op.CLOSES)
         self.retiring = tuple(op for op in operators if op.RETIRES)
+        # FR-43 part 3 (D315): operators whose owned state divides at a retiring operator's
+        # division (contract.DIVIDES_OWNED), in declared order. None in a composition admitted
+        # before, so the lifecycle's condition and callable stay as they were (static).
+        self.owned_dividers = tuple(op for op in operators if op.DIVIDES_OWNED)
         self.owns_view_energy = bool(self.closers)
         self.COMPOSITE_LAYOUT_FIELDS = (
             ("view_energy_reference_pJ", "view_plate_reference_C") if self.owns_view_energy else ()
@@ -1640,9 +1652,13 @@ class Composition:
                 keywords = self._inner_keyword(op)  # Static: an operator that uses the inner.
                 if self._passes_view(op):  # Static: S5's partition; door S's current readers.
                     keywords["view"] = self._view_for(op, p, xp=xp)
-                lifecycle = op.RETIRES and bool(self.kind_lifecycle)  # Static: Q6 (b).
+                lifecycle = op.RETIRES and (  # Static: Q6 (b), and FR-43's owned dividers.
+                    bool(self.kind_lifecycle) or bool(self.owned_dividers)
+                )
                 if lifecycle:
-                    keywords["lifecycle"] = self._lifecycle
+                    keywords["lifecycle"] = (
+                        partial(self._owned_lifecycle, p) if self.owned_dividers else self._lifecycle
+                    )
                 before = current
                 if op in self.label_events:  # Static (D296; erratum E): what it replaced.
                     rows = self.label_owner.rows(p)
@@ -2110,6 +2126,18 @@ class Composition:
             m: getattr(state, m) + (retired[k] - values[k]) for k, m in self.KIND_MOVED.items()
         }
         return state._replace(**retired, **kept, **moved), valid
+
+    def _owned_lifecycle(self, p, state, maps, masks, *, xp):
+        """(state, valid): the kinds' lifecycle where their table is non-empty (_lifecycle), then
+        each owned divider's divide_owned in declared order (FR-43 part 3, D315; static: passed in
+        place of _lifecycle only where an owned divider is composed)."""
+        valid = None
+        if self.kind_lifecycle:
+            state, valid = self._lifecycle(state, maps, masks, xp=xp)
+        for op in self.owned_dividers:
+            state, ok = op.divide_owned(state, maps, masks, p, xp=xp)
+            valid = _and(valid, ok)
+        return state, xp.asarray(True) if valid is None else valid
 
     def _history_kept(self, before, after, *, xp):
         """Whether every kind history field plus its record is unchanged across a retiring event,
