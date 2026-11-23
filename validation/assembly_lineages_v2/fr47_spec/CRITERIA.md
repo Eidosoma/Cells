@@ -35,7 +35,7 @@ No pair is excluded after the run, and no class changes after it.
 | C5 | The books | Every run of either representation closes its ledger (its own check). The tracer moiety balances: present + removed = the founder's, exactly in exact events and as a `derived` pair in (d) |
 | C6 | W2's exact ensemble against the gate-conditioned exact mean, variance and fourth moment, per rung | The pair rule (C2 and C3's tests) |
 | C7 | W2's (d) against the mean-field reference, per rung | C1's bound |
-| C8 | W2's representation gap, the mean-field minus the exact mean | Claimed as **measured** only at the pairs where the reference's own resolution (the gap over the exact mean's SD/√128) is at least 4.5, and there the exact ensemble's mean gap from (d) must match the reference's gap by the pair rule's z. Elsewhere it is **reported** from the reference alone |
+| C8 | W2's representation gap, the mean-field minus the exact mean, and its slope in ln N_g (−1 expected) | Each rung's gap is taken at its largest pair. **The slope is claimed as measured** only over the rungs where the reference's own resolution there (the gap over the exact mean's SD/√128) is at least 4.5, and only when three rungs or more qualify. There, the ensemble's gap ((d) minus the exact replicas' mean) matches the reference's gap by the pair rule's z at each qualifying rung, and the slope is fitted on those rungs. **Otherwise the slope is reported** from the reference alone, as a prediction, and nothing is claimed as measured |
 | C9 | (d)'s continuous heat over each interval between stops (W1, W1Δ) | Against the reference's −ΔF_cont of its mean counts, to C1's bound. It tests F_cont at a zero start, where (d) books the heat by closure |
 
 ## The plants
