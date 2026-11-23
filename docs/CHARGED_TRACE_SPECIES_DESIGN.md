@@ -74,9 +74,10 @@ which of its needs this build meets.
 items lie outside this build: the transporter's material term, and charged ligands in site
 occupancy. The microRNA world adds two rows (X and D) under the 16-row cap.
 
-**Run, host side only:** S1 and P2 compose at parse today. `rfx.charge_neutral_source()` (a trace
-X⁻ made with K⁺ by `local_species_reactions@1`), given the charged law for X on its patch
-`contact_0`, is admitted by `parse_spec` (probe and output in
+**Run, host side only:** S1 and P2 compose at parse today.
+`validation/tissue/species_reactions_fixtures.charge_neutral_source()` (a trace X⁻ made with K⁺ by
+`local_species_reactions@1`), given the charged law for X on its patch `contact_0`, is admitted by
+`parse_spec` (probe and output in
 `/mnt/workspaces/Cells/fr15-f2-junctions-20261123/probes/parse_s1_p2.*`). No step has run with both;
 §8's row 3 is the first.
 
@@ -261,9 +262,10 @@ counts under `explicit_only`. RK4 refuses kinds.
 
 ## 8. The checks
 
-Rows in `tests/unit/test_passive_routes_kind.py` (D224: rows, not a new file), built on its
-fixtures: two cells facing one held bath, joined by one junction whose @3 permeability is zero for
-X.
+Rows in `tests/unit/test_passive_routes_kind.py` (D224: rows, not a new file). Its closed pair has
+no junction, so the rows build a two-cell world in the gap-junction worlds' form
+(`validation/gap_junction_tissue/worlds.py`): two cells facing one held bath, joined by one
+junction whose @3 permeability is zero for X.
 
 1. **The junction's closed form (constant-field Nernst–Planck).**
    - Setup: a trace anion X (z = −1) at a held junction voltage of about 50 mV, set by the
