@@ -20,7 +20,9 @@
 #                                reclaimable); checked every 60 s inside the unit
 #               --jax-cache      a development unit sharing this VM's CPU compilation cache
 #                                (scripts/jax_cache.py env: the machine's folder, every compile
-#                                written, the CPU only). Refused with a visible GPU
+#                                written, the CPU only). Refused with a visible GPU. Until the
+#                                configure_caches() fix lands (D321), run no `cells ensemble` in
+#                                such a unit: its GPU workers would inherit the cache
 #               --dry-run        print the systemd-run command, one argument per line; start nothing
 #
 # JAX's persistent compilation cache (D321): every unit started without --jax-cache runs with it

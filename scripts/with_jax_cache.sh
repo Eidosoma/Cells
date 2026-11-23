@@ -7,8 +7,10 @@
 #
 # Refused when a GPU is visible (CUDA_VISIBLE_DEVICES set, or JAX_PLATFORMS other than cpu): the
 # L4's recorded bitwise failure (8 November 2026) was executables crossing processes through this
-# cache. The command runs with JAX_PLATFORMS=cpu, so an engine run that asks for a GPU is refused by
-# the engine rather than quietly cached.
+# cache. The command runs with JAX_PLATFORMS=cpu, so an engine run that asks for a GPU is refused.
+# One exception until the routine fix to configure_caches() lands (D321, branch
+# speedup-r4-configure-caches): `cells ensemble`'s GPU workers set their own device visibility and
+# would inherit this cache. Run no `cells ensemble` under this wrapper before that fix is on main.
 #
 # Usage: scripts/with_jax_cache.sh COMMAND [ARGS...]
 set -euo pipefail
