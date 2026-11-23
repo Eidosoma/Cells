@@ -8,7 +8,7 @@ Identities and closed forms in exact events only (no comparison with the rate eq
 - it shares every chemistry draw with its pore-free twin until then: the traces are identical bit
   for bit up to t_c, and the twin's next event lies beyond it (the crossing draw was discarded);
 - the opening books pore_clock.opening_from_f (w = 0), the books close, and the bundle has no hold
-  column; the draw names its t*;
+  column; the draw names its t*; the bundle states the device's clock rule and lifecycle order;
 - the parse: σ from F is admitted in exact events, with σ_max ≤ σ_β/4 (tension_hold.sigma_from_f's
   refusal beyond it); Phase A's hold worlds keep their refusals (tests/unit/
   test_assembly_lineages_v2_pores.py, unchanged).
@@ -20,13 +20,14 @@ test_assembly_lineages_v2_pores_device_population.py.
 
 import copy
 import functools
+import json
 
 import jax
 import numpy as np
 import pytest
 
 from cells.definitions.specs import ConfigError, parse_spec
-from cells.models.assembly_lineages_v2 import model, pore_clock, pore_device, runner
+from cells.models.assembly_lineages_v2 import model, pore_clock, pore_device, records, runner
 from tests.assembly_lineage_v2_fixtures import definition
 from tests.unit.test_assembly_lineages_v2_rate_equations_pores import hazard, tense_world
 from tests.unit.test_assembly_lineages_v2_rate_equations_vesicles import K_L, Q, vesicle_world
@@ -46,7 +47,7 @@ def runs():
     return spec, runner.run(spec), runner.run(parse_spec(exact(vesicle_world())))
 
 
-def test_the_pore_fires_where_h_from_the_trace_reaches_e():
+def test_the_pore_fires_where_h_from_the_trace_reaches_e(tmp_path):
     spec, run, _ = runs()
     assert run.status == "lysed" and run.pores["causes"] == {"pore": 1}
     (event,) = run.pores["events"]
@@ -73,6 +74,11 @@ def test_the_pore_fires_where_h_from_the_trace_reaches_e():
     assert run.closure["holds"] and "tension_hold_work_kT" not in run.rows
     assert run.pores["draws"] == [(0, 0, *pore_clock.threshold(model.layout(spec).base_key, 0, 0),
                                    event["time_s"])]  # fmt: skip
+    records.write_run(tmp_path / "bundle", run)
+    record = json.loads((tmp_path / "bundle" / "run.json").read_text())
+    assert record["ssa"]["pore_clock"] == pore_device.CLOCK and record["tension_hold"] == []
+    assert "candidate opening" in record["lifecycle"]["order"]
+    assert record["pores"]["causes"] == {"pore": 1, "threshold": 0}
 
 
 def test_it_shares_every_draw_with_its_pore_free_twin_until_the_opening():

@@ -3,7 +3,8 @@
 Identities in exact events only (no comparison with the rate equations, D304): two deflating
 vesicles on one small pool, their tension from F, each rupture at its own t_c, where H reaches its
 own E (domain 7, its key, counter 0); the run shares every draw with its pore-free twin until the
-first opening; each slot frees at its rupture and the books close; a checkpoint between the
+first opening; each slot frees at its rupture and the books close, the bundle (with its relations)
+written; a checkpoint between the
 ruptures carries the clocks in its host document, and its restart resumes bit for bit (planted: a
 changed threshold, refused).
 A new file for the population's device clock (D224): one population world and its twin compiled,
@@ -13,13 +14,14 @@ about 80 s on a shared light CPU, most of it the osmotic and pore verdicts and t
 import copy
 import dataclasses
 import functools
+import json
 
 import jax
 import numpy as np
 import pytest
 
 from cells.definitions.specs import ConfigError, digest, parse_spec
-from cells.models.assembly_lineages_v2 import checkpoints, pore_clock, runner
+from cells.models.assembly_lineages_v2 import checkpoints, pore_clock, pore_device, records, runner
 from tests.unit.test_assembly_lineages_v2_rate_equations_pores import hazard
 from tests.unit.test_assembly_lineages_v2_rate_equations_vesicles import (
     K_L,
@@ -55,7 +57,7 @@ def runs():
     return spec, runner.run(spec), runner.run(parse_spec(exact(twin)))
 
 
-def test_each_slot_ruptures_at_its_own_t_c_and_the_books_close():
+def test_each_slot_ruptures_at_its_own_t_c_and_the_books_close(tmp_path):
     spec, run, _ = runs()
     events = run.pores["events"]
     assert run.pores["causes"]["pore"] == 2 and sorted(e["slot"] for e in events) == [0, 1]
@@ -66,6 +68,9 @@ def test_each_slot_ruptures_at_its_own_t_c_and_the_books_close():
         assert e["clock_H"] == pytest.approx(energy, rel=1e-12)
     assert [d[0] for d in run.pores["draws"]] == [0, 1 << 32]
     assert run.closure["holds"] and not np.asarray(run.final["alive"]).any()
+    records.write_run(tmp_path / "bundle", run)
+    record = json.loads((tmp_path / "bundle" / "run.json").read_text())
+    assert record["ssa"]["pore_clock"] == pore_device.CLOCK and record["tension_hold"] == []
 
 
 def test_the_population_shares_every_draw_with_its_twin_until_the_first_opening():
