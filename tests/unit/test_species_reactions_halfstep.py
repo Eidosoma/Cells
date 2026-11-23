@@ -516,8 +516,10 @@ def test_hill_factors_match_their_closed_forms_from_the_trace_to_large_values():
 
 def test_every_unused_branch_and_padded_entry_stays_finite_on_the_host():
     """The lead's ruling Q11 (a): every law and both factor kinds, padded cell and outside slots
-    and padded factor slots, with NumPy raising on divide, invalid and overflow; and a planted zero
-    padding (a padded factor's K) raises, so the check bites."""
+    and padded factor slots, with NumPy raising on divide, invalid and overflow. The operator
+    evaluates its declared factors only (one branch each), so a planted zero in the padding (a
+    padded factor's K) is never read: the terms are unchanged, bit for bit; planted at the
+    declared factors it raises, so the check bites."""
     raw = rfx.two_factor_network(c0=0.5)
     raw["execution"]["capacity"] += 1
     raw["execution"]["extracellular_capacity"] += 1
@@ -533,14 +535,20 @@ def test_every_unused_branch_and_padded_entry_stays_finite_on_the_host():
     for name, value in new._asdict().items():
         assert np.all(np.isfinite(np.asarray(value, dtype=float))), name
     kind = np.asarray(p.reaction_factor_kind)
-    planted = p._replace(
-        reaction_factor_half_saturation_mM=np.where(
-            kind == 0, 0.0, p.reaction_factor_half_saturation_mM
-        )
-    )
+    assert (kind == 0).any() and (kind > 0).any()
+
+    def planted(where):
+        k = np.where(where, 0.0, p.reaction_factor_half_saturation_mM)
+        return p._replace(reaction_factor_half_saturation_mM=k)
+
+    with np.errstate(divide="raise", invalid="raise", over="raise"):
+        padded = sr.half_step_terms(state, m, 1e-3, planted(kind == 0), xp=np)
+    for name in sr.Step._fields:
+        a, b = (np.asarray(getattr(t, name), dtype=float) for t in (terms, padded))
+        assert a.tobytes() == b.tobytes(), name
     with np.errstate(divide="raise", invalid="raise", over="raise"):
         with pytest.raises(FloatingPointError):
-            sr.half_step_terms(state, m, 1e-3, planted, xp=np)
+            sr.half_step_terms(state, m, 1e-3, planted(kind > 0), xp=np)
 
 
 def test_the_observed_rates_and_affinities():
