@@ -108,14 +108,16 @@ $$J = \Big(\sum_k g_k n_k\Big)\left(\frac{n_\text{c}}{V_\text{c}} - \frac{n_\tex
       $0 < f < 1$;
     - the block size $W$, the largest declared subunit total of any site, so $U \le W$.
   - **The draws:** the uniforms $u_0, \dots, u_{W-1} \in (0, 1)$, draw 0 of the parent site's
-    partition stream (domain 2). The units $i \ge U$ draw but use none.
+    partition stream (domain 2). The uniforms $u_i$ with $i \ge U$ are drawn and not used.
   - **The unit order:** unit $i$, $0 \le i < U$, is of state $k$ exactly when
     $\sum_{k' < k} n_{k'} \le i < \sum_{k' \le k} n_{k'}$: state order, then index.
-  - **The rule:** unit $i$ goes to the first daughter site if $u_i < f$, and otherwise to the second.
+  - **The rule:** unit $i$ goes to the first daughter site if $u_i < f$, compared in binary64,
+    and otherwise to the second.
   - **What each recipient receives:**
     - the first takes $a_k = \#\{i \text{ of state } k : u_i < f\}$ and the second
       $b_k = n_k - a_k$;
-    - both must hold no units before (refused otherwise), and the parent is set to 0;
+    - both must hold no units before, and $U \le W$ must hold (each refused otherwise, as the whole
+      step); the parent is set to 0;
     - the signed record books $-n_k$ at the parent, $+a_k$ and $+b_k$ at the daughters.
   - **The invariant:** $a_k + b_k = n_k$ for every $k$ and every draw, exactly in integers, so the
     subunits $\sum_k w_k n_k$ are kept across the two daughters.
