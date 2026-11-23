@@ -255,8 +255,12 @@ A value agrees when it lies within half a unit of its last printed digit:
 1. **The run:** from a clean execution snapshot of the tag, on one CPU:
    `python -B validation/gap_junction_tissue/run.py OUT figure3 figure5 figure8 control aswritten`.
    - From the development timings (dev-04 ran dt and dt/2 in 46 minutes) and the triple's extra
-     cost, this is about 2 hours.
-   - Its memory is at most the runner's 2 GB trace budget.
+     cost, this is about 2 CPU-hours. On a light CPU shared with other jobs it is several hours.
+   - Each arm's trace stays within the runner's 2 GB budget. The process's peak was 3.5 GB in the
+     20 s smoke, which compiled every arm's world in one process, so run it under an 8 GB cap.
+   - The smoke's unit reached its 90-minute cap during the last chain's triple, a limit of the
+     harness. Its table read all 47 arms and 12 chains; 45 and 11 were complete, and the as-written
+     chain path ran for n = 1 to 5.
    - The judged run takes the registered 600 s horizon. `--end` shortens it for smoke runs only.
 2. **The table**, from the engine alone, before any reference is read:
    `python -m validation.gap_junction_tissue.linear_judge table OUT --out table.json`.
