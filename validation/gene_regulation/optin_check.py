@@ -192,6 +192,19 @@ RELEASE_FIELDS = dict(
 EMPTY = hashlib.sha256(b"").hexdigest()
 
 
+def added_fields():
+    """{kind: names}: the opt-in fields a definition without them holds empty, the release's (§9)
+    and the replacement's (amendment S, §9.16: every poly_rep_ field and the due count)."""
+    from cells.operators import templated_polymerisation as tp
+
+    replacement = dict(
+        state=tp.REPLACEMENT_STATE,
+        layout=tuple(f for f in tp.LAYOUT_FIELDS if f.startswith("poly_rep_")),
+        control=(tp.REPLACEMENTS_DUE,),
+    )
+    return {kind: (*names, *replacement[kind]) for kind, names in RELEASE_FIELDS.items()}
+
+
 def _empty(kind):
     """Whether a jaxpr type such as f64[2,0] has an empty dimension."""
     return "[" in kind and "0" in kind[kind.index("[") + 1 : -1].split(",")
@@ -239,6 +252,7 @@ def verdict(before, after):
     """The opt-in's verdict (module docstring), written to after/verdict.json."""
     before, after = Path(before), Path(after)
     bad, notes = [], dict(added_state=set(), added_bindings=set(), programs_differing=0)
+    allowed = added_fields()
     load = {k: (json.loads((before / k).read_text()), json.loads((after / k).read_text()))
             for k in FILES}  # fmt: skip
     one, two = load["definitions.json"]
@@ -254,13 +268,13 @@ def verdict(before, after):
             for field, digest in later.items():
                 if field not in fields:
                     notes["added_state"].add(field)
-                    if field not in RELEASE_FIELDS["state"] or digest != EMPTY:
+                    if field not in allowed["state"] or digest != EMPTY:
                         bad.append(f"runs: {key} at step {step}: {field} added, not empty")
                 elif fields[field] != digest:
                     bad.append(f"runs: {key} at step {step}: {field} differs")
             bad += [f"runs: {key} at step {step}: {f} gone" for f in fields if f not in later]
     one, two = load["programs.json"]
-    release = {f"{kind}.{name}" for kind, names in RELEASE_FIELDS.items() for name in names}
+    release = {f"{kind}.{name}" for kind, names in allowed.items() for name in names}
     for key in sorted(set(one) | set(two)):
         a, b = one.get(key, {}), two.get(key, {})
         for entry in sorted(set(a) | set(b)):

@@ -903,19 +903,6 @@ _COMPARTMENTS_FIRST = tuple(
 # The compartment wash is off both lists too; its pairs with trafficking are refused there first.
 _WASH_FIRST = tuple(pair for pair in _TRAFFICKING_OFF if WASH in pair)
 
-# templated_polymerisation@1 refuses every composition that holds a cell replacement, @1 or @2, in
-# either order (templated_polymerisation.check_replacement; D301, until FR-38's step 4), and so
-# site_occupant_replacement@1 too, whose closure holds @1.
-POLYMERISATION = "templated_polymerisation@1"
-_REPLACING = tuple(
-    law
-    for law in LAWS
-    if law != POLYMERISATION and any(x.startswith(family(REPLACEMENT_1)) for x in closure(law))
-)
-_POLYMERISATION_PAIRS = tuple(
-    pair for law in _REPLACING for pair in ((POLYMERISATION, law), (law, POLYMERISATION))
-)
-
 # population_unit_turnover@1 refuses every other writer of population units, in either order
 # (population_unit_turnover.check_writers).
 _UNIT_WRITERS = tuple(
@@ -1107,19 +1094,20 @@ RULES = (
         "multiplier for no route its newcomers take",
     ),
     dict(
-        rule="templated_polymerisation@1 refuses replacement@1 and @2 until FR-38's step 4",
-        laws=(POLYMERISATION, REPLACEMENT_1, REPLACEMENT_2, OCCUPANT),
-        level="law",
-        check=OPS + "templated_polymerisation.py::check_replacement",
+        rule="a slot of templated_polymerisation@1 that replacement@1 replaces takes each "
+        "newcomer's values from the operator's templates, and no donor copy enters or leaves one",
+        laws=("templated_polymerisation@1", REPLACEMENT_1, REPLACEMENT_2),
+        level="data",
+        check=OPS + "templated_polymerisation.py::check_occupants",
         test=TESTS + "test_templated_polymerisation.py::test_the_release_refuses",
         tag=REAL,
-        why="A replacement swaps a slot's rows at its event, but nothing yet defines the replaced "
-        "slot's chains in progress, hold, machines or counters (D301, temporary). FR-38's step 4, "
-        "replacement accounting in the operator (D296), defines them. It marks the pairs the "
-        "declarations admit (@1, and site_occupant_replacement@1, which requires @1) and stands "
-        "behind their refusals of @2 (water provides the volumes it reads as declared)",
-        marks=tuple(pair for pair in _POLYMERISATION_PAIRS if not errors(sequence(*pair))),
-        behind=tuple(pair for pair in _POLYMERISATION_PAIRS if errors(sequence(*pair))),
+        why="The sheet's §9.16 (amendment S, FR-38's step 4): the departing occupant's chains "
+        "and holds leave with it, and a newcomer's rates are its own (D244's occupant rule). "
+        "Refused: a newcomer without its template's value, a template that is not a replacement "
+        "template, a value for no schedule its newcomers take, a founder's change at or after "
+        "its death, a donor copy into or from a slot of the operator (version 1.1), and any "
+        "replacement version but @1 (@2 behind the declarations' refusal: water provides the "
+        "volumes it reads as declared)",
     ),
     dict(
         rule="no coupling target or regulatory state on a replaced slot",
@@ -1410,9 +1398,12 @@ RULES = (
         "test_a_labelled_definition_is_refused_where_labels_cannot_follow_it",
         tag=REAL,
         why="Where the inner step takes labels= it reports its uncharged faces' and its routes' "
-        "one-way transfers (FR-42's stage 2); a charged face, a channel, a pump, a kind or an "
+        "one-way transfers (FR-42's stage 2), and its declared kinds' through their hook "
+        "(D303 item 6); a charged face, a channel, a pump, a kind without the hook or an "
         "in-step process (species_registry.moved_in_step) is refused, and so is RK4 beside a "
-        "followed mover",
+        "followed mover. Each kind refuses what it cannot carry (its label_refusals), a kind "
+        "with a rates hook and none is refused while any row is labelled, and a row a closure "
+        "holds (a kind's stage read) is refused",
     ),
 )
 

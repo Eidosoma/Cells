@@ -207,6 +207,21 @@
    "entity_sum(xp.abs(nf.counts) * (xp.abs(ln_c[None, None]) + 1.0), axis=2, xp=xp)"
   ],
   [
+   "kinds/transporter.py",
+   "label_transfers",
+   "entity_sum(xp.where(at_n[:, None], p.cycle_nu[None], 0.0), axis=2, xp=xp)"
+  ],
+  [
+   "kinds/transporter.py",
+   "label_transfers",
+   "entity_sum(leaves * forward[None] + enters * backward[None], axis=1, xp=xp)"
+  ],
+  [
+   "kinds/transporter.py",
+   "label_transfers",
+   "entity_sum(enters * forward[None] + leaves * backward[None], axis=1, xp=xp)"
+  ],
+  [
    "operators/bath_schedule.py",
    "check_isosmotic",
    "entity_sum(species_sum(declared, xp=np), axis=None, xp=np)"
@@ -1230,6 +1245,31 @@
    "operators/templated_polymerisation.py",
    "one_way_moves",
    "entity_sum(label, axis=1, xp=xp)"
+  ],
+  [
+   "operators/templated_polymerisation.py",
+   "_hold_removed",
+   "entity_sum(removed, axis=1, xp=xp)"
+  ],
+  [
+   "operators/templated_polymerisation.py",
+   "hold_report",
+   "entity_sum(state.poly_hold_fmol, axis=1, xp=xp)"
+  ],
+  [
+   "operators/templated_polymerisation.py",
+   "poly_event",
+   "entity_sum(complexes, axis=1, xp=xp)"
+  ],
+  [
+   "operators/templated_polymerisation.py",
+   "poly_event",
+   "entity_sum(held * complexes, axis=1, xp=xp)"
+  ],
+  [
+   "operators/templated_polymerisation.py",
+   "poly_event",
+   "entity_sum(hold, axis=1, xp=xp)"
   ]
  ]
 }
