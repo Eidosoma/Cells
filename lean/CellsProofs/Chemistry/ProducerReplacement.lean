@@ -1,6 +1,7 @@
 import Mathlib.Algebra.BigOperators.Group.Finset.Sigma
 import Mathlib.Algebra.BigOperators.Ring.Finset
 import Mathlib.Data.Real.Basic
+import Mathlib.Analysis.SpecialFunctions.Exp
 import Mathlib.Tactic.Linarith
 
 /-! # RNA attributed to one producer across an occupant replacement (FR-38)
@@ -68,5 +69,40 @@ theorem absent_at_removal {P L : Type*} (pools : Finset P) (stock : P → ℝ)
   apply sum_eq_zero
   intro p hp
   rw [absent p hp, mul_zero]
+
+/-- One producer label on both sides of a reversible export. Each gross leg moves the
+same labelled amount out of its source and into its destination. Extracellular loss
+and material booked at replacement remain separate in the combined balance. -/
+theorem cell_node_balance {inside outside inside' outside' made removed lostIn lostOut
+    forward backward inShare outShare : ℝ}
+    (cell : inside' = inside + made - removed - lostIn - forward * inShare + backward * outShare)
+    (node : outside' = outside + forward * inShare - backward * outShare - lostOut) :
+    inside' + outside' + removed + lostIn + lostOut = inside + outside + made := by
+  linarith only [cell, node]
+
+/-- The new occupant starts with none of the old label. Its only input of that
+label is the corresponding share of each gross backward transfer. Loss and
+re-export can only reduce the amount still inside. -/
+theorem old_stock_le_returned (stock back share outflow : ℕ → ℝ) (birth : stock 0 = 0)
+    (step : ∀ k, stock (k + 1) = stock k + back k * share k - outflow k)
+    (gross : ∀ k, 0 ≤ back k) (fraction : ∀ k, share k ≤ 1)
+    (leaves : ∀ k, 0 ≤ outflow k) (n : ℕ) :
+    stock n ≤ ∑ k ∈ range n, back k := by
+  induction n with
+  | zero => simp [birth]
+  | succ n ih =>
+    rw [step n, sum_range_succ]
+    have single : back n * share n ≤ back n := by
+      simpa using mul_le_mul_of_nonneg_left (fraction n) (gross n)
+    linarith [leaves n]
+
+/-- Two equal pulses within the same unsampled export interval give the same total
+export, but give distinct outside stocks at a later observation under first-order loss. -/
+theorem earlier_pulse_retains_less {q k first last observed : ℝ} (quantity : 0 < q)
+    (decay : 0 < k) (order : first < last) :
+    q * Real.exp (-k * (observed - first)) < q * Real.exp (-k * (observed - last)) := by
+  apply mul_lt_mul_of_pos_left _ quantity
+  apply Real.exp_lt_exp.mpr
+  linarith only [mul_pos decay (sub_pos.mpr order)]
 
 end CellsProofs.Chemistry.ProducerReplacement

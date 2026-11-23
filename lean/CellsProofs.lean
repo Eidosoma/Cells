@@ -67,6 +67,7 @@ import CellsProofs.Transport.NeutralPermeation
 import CellsProofs.Transport.OsmoticWater
 import CellsProofs.Transport.PotassiumAnionSymport
 import CellsProofs.Transport.ProtonLeak
+import CellsProofs.Transport.BufferedProtonLeak
 import CellsProofs.Transport.RegulatedAvailability
 import CellsProofs.Transport.SodiumAnionSymport
 import CellsProofs.Transport.SodiumAnionDiagram

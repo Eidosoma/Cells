@@ -1,8 +1,46 @@
 # Cells proof comparisons
 
+<a id="fr38-extracellular-producer"></a>
+
+## 23 November 2026 · A producer’s RNA inside and outside after replacement
+
+For one producer label, each gross export carries the cell’s source share and each return carries the outside source share. Lean proves that adding the two balances cancels both transfers. Degradation on either side and material removed with the departing cell remain in the account. A second proof bounds the original producer’s RNA in the new cell by cumulative gross return after replacement, provided the new cell starts with zero of that label and has no other input of it. This holds for any number of steps. [Formal balances](CellsProofs/Chemistry/ProducerReplacement.lean)
+
+On public Cells `fd2bb88c`, the FR-38 fixture ran `resolved_pump_composite@1` and `resolved_pump_tissue@3` with templated polymerisation, scheduled replacement and neutral labels. The producer left at 3,000 s. All 14 native checks passed, including disk restart at 3,600 s. The independent reader recovered all 15 removed label amounts and nine counter offsets from the checkpoint. The combined durable RNA balance closed within 6.01 × 10⁻²³ fmol. The new cell contained 1.0534 × 10⁻²⁶ fmol of founder RNA after 1.1173 × 10⁻²⁶ fmol had returned. Swapping two extracellular labels moved 8.114 × 10⁻⁹ fmol to the wrong producer and preserved total RNA. The comparison detected it. [Checkpoint reader](checks/producer_replacement.py) · [Native fixture and its labelled outputs](https://github.com/Eidosoma/Cells/blob/fd2bb88ce444b48344236024a2a18844f59041a4/validation/gene_regulation/replace_restart.py)
+
+At 4,800 s the labelled stock gave 11.02171 founder copy-equivalents outside. The reconstruction from export and outside degradation gave 11.00904, within the 0.02739-copy bound. All three post-replacement outputs had finite bounds. At the deliberately sparse output times 0, 3,000 and 4,800 s, the earlier reader accepted 100 against 1.7077 with an infinite bound. The fixed reader reports insufficient resolution and a null bound. An additional observation at 1,500 s exposes the disagreement. The earlier nine-verdict intracellular fixture also passed the updated Lean-side reader. The evidence run `lean-export-retention-leak-20261123` contains the public engine snapshot, native checkpoint and output in `restart/`, and the independent results in `producer.json` and `producer-legacy.json`. [Regression cases](https://github.com/Eidosoma/Cells/blob/fd2bb88ce444b48344236024a2a18844f59041a4/tests/unit/test_fr38_replace_restart.py)
+
+Alexander et al. measured about 370 donor miR-146a copies per recipient cell in lysates at 24 h. The recipient mouse dendritic cells lacked the assayed RNA gene, the donor cells were absent during exposure, and the study included a donor-null control. The count includes surface-associated RNA. A recipient reporter supported intracellular access for some RNA. This provides a source attribution and a single endpoint. Estimating gross return or post-wash persistence requires a time course measuring both compartments. [Figure 3](https://www.nature.com/articles/ncomms8321/figures/3) · [Figure 4i](https://www.nature.com/articles/ncomms8321/figures/4) · [Measurement record](checks/data/alexander2015_donor_rna.json)
+
+<a id="fr38-pre-replacement-resolution"></a>
+
+### Output times used to estimate the export-grid error
+
+Two positive equal-size pulses can give the same cumulative export at both ends of an unsampled interval. With positive first-order degradation the earlier pulse leaves strictly less RNA at observation, as Lean proves. Cells estimates the grid error by dropping alternate output times. The known-rate integration ends at replacement, but its resolution check looks for a removed sample all the way to the later observation. On `fd2bb88c` using output times 0, 3,000 and 4,800 s correctly yielded insufficient resolution. Adding only 3,300 and 3,600 s gave an estimate of zero grid error at 4,800 s and accepted a matching 1.707738-copy readout with a 4.85 × 10⁻¹⁴-copy bound. Both grids sampled exactly the same two points during the founder’s lifetime. Adding a sample at 1,500 s instead gave a usable comparison and rejected the deliberately wrong 100-copy readout. The standard 600 s fixture samples the export interval. The independent reader requires an interior observation there. [Native estimator](https://github.com/Eidosoma/Cells/blob/fd2bb88ce444b48344236024a2a18844f59041a4/validation/gene_regulation/cohort.py#L187-L199) · [Three-grid control, run with `--resolution`](checks/producer_replacement.py)
+
+<a id="mt1b-buffered-reversal"></a>
+
+## 23 November 2026 · Mitochondrial proton-current reversal at three pH gradients
+
+The version-2 leak reads free protons on each side of the membrane from the general binding closure. Lean specializes the held-ligand uniqueness proof to the proton at an endpoint, then the constant-field reversal proof to the two free log concentrations. At zero voltage and on the regular Bernoulli branch the inside-minus-outside reversal voltage is (RT/F)(log h_out − log h_in). The earlier series result gives the reversal ratio on the small nonzero polynomial branch. [Buffered proof](CellsProofs/Transport/BufferedProtonLeak.lean) · [Bernoulli result](CellsProofs/Transport/ProtonLeak.lean)
+
+The `resolved_pump_tissue@3` comparison on `fd2bb88c` prepared two buffered compartments at each published pH pair. It changed outside buffer capacity between 1 and 100 mM at fixed free pH, kept the initial charge anchors balanced and found the root of the actual clamped flux. All six reversals agreed with the independent Nernst calculation within 10⁻⁶ mV. Current changed direction on opposite sides of every root. Substituting stored proton equivalents gave a nonzero current there. [Driver](checks/ims_proton_leak.py) · [Version-2 route](https://github.com/Eidosoma/Cells/blob/fd2bb88ce444b48344236024a2a18844f59041a4/src/cells/laws/transport/proton_leak_v2.py)
+
+| Matrix / bath pH | Mitoplasts | Measured reversal, mean ± SEM (mV) | Cells (mV) | Cells minus mean (mV) |
+| --- | ---: | ---: | ---: | ---: |
+| 6 / 7 | 6 | −62.23 ± 1.92 | −58.96 | +3.27 |
+| 6 / 7.5 | 3 | −91.13 ± 1.82 | −88.44 | +2.69 |
+| 6.5 / 6 | 4 | +28.82 ± 6.70 | +29.48 | +0.66 |
+
+Bertholet et al. measured fatty-acid-activated currents in mouse skeletal-muscle mitoplasts. The worksheet supplies all 13 individual voltages. The driver calculates SEM from the sample SD and uses the figure’s 24 °C Nernst reference. Each prediction falls inside its group’s descriptive two-sided 95% Student t interval for the mean. The comparison was retrospective and used no fitted parameter. A separate measured bath temperature and an absolute permeability calibration remain unresolved. Full numerical outputs and both capacity controls are in `lean-export-retention-leak-20261123/proton.json`. [Extended Data Fig. 3d](https://www.nature.com/articles/s41586-019-1400-3/figures/8) · [Source workbook and cell ranges](checks/data/bertholet2019_proton_reversal.json)
+
+In voltage-clamped rat alveolar epithelial cells, reducing external buffer from 100 to 1 mM preserved the measured reversal potential and typically lowered current by 10–30%. The Cells clamp fixes local free pH and gives the same zero-voltage flux at both buffer capacities within its numerical tolerance. This study constrains the interpretation of current magnitude in a different preparation. Cortese et al. independently measured differences between mitochondrial intermembrane-space and external-medium pH. [DeCoursey and Cherny](https://pubmed.ncbi.nlm.nih.gov/8804602/) · [Cortese measurements and compartment definitions](checks/data/cortese1992_ims_ph.json)
+
 <a id="fr38-producer-replacement"></a>
 
 ## 22 November 2026 · RNA by producer across replacement and restart
+
+The observations below document the earlier intracellular fixture. [Public extracellular replay and repaired resolution check](#fr38-extracellular-producer)
 
 For a producer identified by cell, generation and chain, Lean combines the hold balance with the balance of each fate. At replacement, RNA still attached and RNA still in either fate enter the departing occupant’s removal records. RNA degraded during that lifetime is a separate term. Each newcomer’s cumulative counter starts at zero relative to its birth value. Mathlib’s telescoping sum proves that any number of completed lifetimes plus the current one recover the whole counter increment. For each label the disjoint row and hold reports add. Normalized shares recover the physical amount, and a newcomer with zero pre-event share receives zero of the outgoing RNA. The calculation assumes one producer per fate row and no other flow. [Lean proof](CellsProofs/Chemistry/ProducerReplacement.lean) · [Published replacement balance, §9.16](https://github.com/Eidosoma/Cells/blob/0a1c1b0dc8145c9c313c02a4ed57cfe5433b2efe/docs/TEMPLATED_POLYMERISATION_LAWS.md#L1483-L1515) · [Per-label event records, §9.18](https://github.com/Eidosoma/Cells/blob/0a1c1b0dc8145c9c313c02a4ed57cfe5433b2efe/docs/TEMPLATED_POLYMERISATION_LAWS.md#L1773-L1787)
 
