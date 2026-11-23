@@ -45,6 +45,21 @@ theorem binary_inventory {S : Type*} [DecidableEq S]
       VesiclePopulation.daughterCount species side false s = VesiclePopulation.parentCount species s := by
   simpa [Fintype.sum_bool] using VesiclePopulation.split_inventory species side s
 
+/-- At an exact-fraction division, both daughters start below the trigger. The ranked
+places also determine the two counts whose sum recovers the parent for each species. -/
+theorem ranked_division {S : Type*} [DecidableEq S]
+    (rank : Fin n ≃ Fin n) (species : Fin n → S) (hk : 0 < k) (hlt : k < n) :
+    let kept := rankedFirst rank hlt.le
+    kept.card = k ∧ keptᶜ.card = n - k ∧
+      (0 < kept.card ∧ kept.card < n) ∧ (0 < keptᶜ.card ∧ keptᶜ.card < n) ∧
+      ∀ s, let side := fun i => decide (i ∈ kept)
+           VesiclePopulation.daughterCount species side true s +
+             VesiclePopulation.daughterCount species side false s =
+               VesiclePopulation.parentCount species s := by
+  obtain ⟨first, second⟩ := ranked_sizes rank hlt.le
+  dsimp only
+  exact ⟨first, second, by omega, by omega, fun s => binary_inventory species _ s⟩
+
 /-- Under equiprobable size-k subsets, these are the numerator and denominator
 for the probability that a named daughter receives zero marked molecules. -/
 theorem fixed_quota_no_marker (marked : Finset (Fin n)) (k : ℕ) :

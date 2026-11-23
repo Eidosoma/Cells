@@ -377,7 +377,9 @@ def cohorts(checks, runs, machine):
             route1 = cohort1[i]
             route2 = cohort.known_rate(t, Q, k, t1, t2, ts)
             error = cohort.known_rate_error(t, Q, k, t1, t2, ts)
-            route2, error = route2 / COPY_FMOL, (math.inf if error is None else error / COPY_FMOL)
+            # An unavailable grid error is insufficient resolution and fails the check (fail-closed,
+            # as replace_restart.agreement); it is never read as an infinite bound.
+            route2, error = route2 / COPY_FMOL, (None if error is None else error / COPY_FMOL)
             exact = window_cohort(0.75, f, t1, t2, ts)
             checks.add(
                 f"R1L p=0.75 {machine}: route 1's {f} cohort at {ts:g} s, the closed form",
@@ -388,7 +390,7 @@ def cohorts(checks, runs, machine):
             )
             checks.add(
                 f"R1 p=0.75 {machine}: the two routes' {f} cohort at {ts:g} s",
-                abs(route1 - route2) <= error + bound * abs(route1),
+                error is not None and abs(route1 - route2) <= error + bound * abs(route1),
                 route1=route1,
                 route2=route2,
                 grid_error=error,
@@ -445,7 +447,14 @@ def survival(checks, name, path, row, fate):
     if None in errors or None in net_errors:
         checks.add(what, False, status="insufficient resolution", **detail)
         return
-    bound = (errors[1] + expected * errors[0]) / alive
+    # The ratio's own rounding, beside the counts' grid errors (the Lean lane's turnover_roundoff
+    # control: at constant turnover the known-rate form is exact on any grid, its grid error exactly
+    # zero, and the ratio one ulp above 1/4 failed a zero bound). Each count sums the window's m
+    # non-negative terms, each within 4 eps (its exp, its spread and two products), the sum adding at
+    # most (m - 1) eps; the division adds eps and the closed form's exp eps: (2 m + 8) eps relative.
+    m = sum(1 for x in t if t1 <= x < t2)
+    rounding = (2 * m + 8) * sys.float_info.epsilon * expected
+    bound = (errors[1] + expected * errors[0]) / alive + rounding
     ok = abs(counted["ratio"] - expected) <= bound
     gaps = [
         abs(counted[f"alive_at_{e}"] - net[f"alive_at_{e}"])
