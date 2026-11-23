@@ -366,7 +366,9 @@
   "/mnt/workspaces/Cells/gap-junction-20261123/landing-refs-7e210906/tiers/measured.json",
   "/mnt/workspaces/Cells/fr30-benchmark-20261123/harness/measure-99951bef/measured.json",
   "/mnt/workspaces/Cells/ol6-20261122/tiers-3101d47a/measure/measured.json",
-  "/mnt/workspaces/Cells/fr15-f2-a1-20261123/landing-dec9f0f8/tiers-measured/measured.json"
+  "/mnt/workspaces/Cells/fr15-f2-a1-20261123/landing-dec9f0f8/tiers-measured/measured.json",
+  "/mnt/workspaces/Cells/fr43-20261123/part1/tiers/run2/measured.json",
+  "/mnt/workspaces/Cells/fr43-20261123/part1/tiers/run3/measured.json"
  ],
  "measured_provenance": [
   {
@@ -3121,6 +3123,22 @@
    "root": "/mnt/workspaces/Cells/fr15-f2-a1-20261123/snapshot-head-dec9f0f8",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-23T15:11:14+00:00"
+  },
+  {
+   "git_revision": "2ca39d0b131798fb2064760aef2b2081ec18b0f5",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/fr43-20261123/part1/snap-head-2ca39d0b",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-23T15:19:06+00:00"
+  },
+  {
+   "git_revision": "764d685a561b73b4af0f557b31d0a121375fe30a",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/fr43-20261123/part1/snap-head-764d685a",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-23T15:47:23+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -3954,7 +3972,7 @@
    },
    {
     "file": "tests/unit/test_composition_matrix.py",
-    "seconds": 2.82,
+    "seconds": 4.93,
     "exit_code": 0,
     "counts": {
      "passed": 6
@@ -5927,7 +5945,7 @@
    },
    {
     "file": "tests/unit/test_secreted_species.py",
-    "seconds": 5.38,
+    "seconds": 5.18,
     "exit_code": 0,
     "counts": {
      "passed": 20
@@ -6136,10 +6154,10 @@
    },
    {
     "file": "tests/unit/test_species_cap.py",
-    "seconds": 2.47,
+    "seconds": 4.48,
     "exit_code": 0,
     "counts": {
-     "passed": 2
+     "passed": 5
     }
    },
    {
@@ -6184,7 +6202,7 @@
    },
    {
     "file": "tests/unit/test_species_reactions_refusals.py",
-    "seconds": 6.03,
+    "seconds": 5.93,
     "exit_code": 0,
     "counts": {
      "passed": 87
@@ -6272,10 +6290,10 @@
    },
    {
     "file": "tests/unit/test_species_sums.py",
-    "seconds": 7.9,
+    "seconds": 9.46,
     "exit_code": 0,
     "counts": {
-     "passed": 6
+     "passed": 10
     }
    },
    {
@@ -8043,10 +8061,10 @@
    },
    {
     "file": "tests/unit/test_species_cap_runs.py",
-    "seconds": 23.69,
+    "seconds": 40.53,
     "exit_code": 0,
     "counts": {
-     "passed": 1
+     "passed": 2
     }
    },
    {
@@ -9204,6 +9222,12 @@
    {
     "file": "tests/unit/test_spatial_calcium.py",
     "seconds": 90.18,
+    "exit_code": null,
+    "counts": {}
+   },
+   {
+    "file": "tests/unit/test_species_cap_large.py",
+    "seconds": 90.1,
     "exit_code": null,
     "counts": {}
    },

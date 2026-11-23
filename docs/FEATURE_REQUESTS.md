@@ -728,6 +728,10 @@ cross-world bitwise identity.
 The tier-1 guard is host-side (`tests/unit/test_species_cap.py`). The runner world `cell_charged_9`
 is in tier 2 (`tests/unit/test_species_cap_runs.py`), since compilation alone takes about 15 s.
 
+**Raised again by FR-43 (D315, 23 November 2026):** `MAX_SPECIES` is 1,024, on FR-43's probe, with
+the species sums folding by `lax.scan` above 16 terms so that every world at 16 or fewer keeps its
+program (FR-43's part 1; D150 §14).
+
 **The lead's decision (D165): accepted, and queued now.** The requester is the consumer that
 PROGRESS's "when a consumer needs it" waited for.
 - **The change:** `MAX_SPECIES` from 7 to 16 in `species_common`, as a D148 in-place change, with

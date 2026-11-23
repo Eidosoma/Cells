@@ -6,9 +6,9 @@ docs/SHARED_INVENTORY_REACTIONS_DESIGN.md §1.1, §1.3, §1.4, §2.1, §2.2, §2
   (molecularity, coefficients, closure, sources and sinks, Michaelis-Menten's one substrate and its
   read-only catalyst, factors on driven laws only, every parameter's domain), the sites (a held
   bath, undeclared nodes) and the schedule (the dt grid, the horizon, time 0, coverage);
-* the composition: RK4; more than 16 species (D150's cap, FR-9 / D165); an identity that differs
-  from a D150 operator's, in either order; a turnover route on a row the network writes (a
-  catalyst's row is admitted); a cell route on a slot that replacement@1 replaces (outside routes
+* the composition: RK4; more than the species cap (D150's, 1,024 since FR-43 / D315); an identity
+  that differs from a D150 operator's, in either order; a turnover route on a row the network writes
+  (a catalyst's row is admitted); a cell route on a slot that replacement@1 replaces (outside routes
   compose); and every provider or closer of the declared volumes, masks and outside anchors, with
   the operators version 1 composes with admitted (the contract's structure check, and one refusal
   through the parser).
@@ -377,8 +377,10 @@ def test_rk4_is_refused_with_its_reasons():
     assert "no consumer needs it" in str(error.value)
 
 
-def test_more_than_sixteen_species_are_refused_with_the_reason():
-    """FR-9 / D165: D150's cap, now 16, every species counted (it was 7)."""
+def test_more_species_than_the_cap_are_refused(monkeypatch):
+    """D150's cap counts every species (FR-43 / D315: 1,024, test_species_cap.py); set to 16 here,
+    so the world stays small: the reactions read it at their definition check."""
+    monkeypatch.setattr(common, "MAX_SPECIES", 16)
     raw = rfx.enzyme_network()  # 3 ions and S, E, C, P: 7.
     for i in range(9):  # Nine more: 16, admitted.
         raw = add_inventory_species(

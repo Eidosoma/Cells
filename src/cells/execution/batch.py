@@ -30,7 +30,7 @@ from cells.execution import blas_threads, phases
 from cells.execution.devices import execution_device
 from cells.execution.errors import NumericalError
 from cells.execution.grid import applied_definition, refinement_times
-from cells.execution.resources import trace_bytes
+from cells.execution.resources import fixed_bytes, row_bytes, trace_bytes
 from cells.execution.runner import (
     RunResult,
     branch_checkpoint,
@@ -204,8 +204,11 @@ def plan_batch(spec: BatchSpec) -> BatchPlan:
     padded = steps * len(spec.worlds)
     if padded > spec.max_padded_steps:
         raise ConfigError("Conservative padded work exceeds batch max_padded_steps")
-    working = 2 * sum(
-        trace_bytes(w.simulation, steps) + trace_bytes(w.simulation, 0, 0) for w in spec.worlds
+    # Each world's layout once (fixed_bytes, FR-43), its rows in both coexisting copies.
+    working = sum(
+        fixed_bytes(w.simulation)
+        + 2 * (row_bytes(w.simulation, steps) + row_bytes(w.simulation, 0, 0))
+        for w in spec.worlds
     )
     if working > spec.max_working_bytes:
         raise MemoryRefusal(
@@ -260,7 +263,9 @@ def checkpoint_batch_limits(spec):
     bound = len(spec.worlds) * max(upper)
     if bound > spec.max_padded_steps:
         raise ConfigError("Conservative padded work exceeds batch max_padded_steps")
-    storage = 2 * sum(trace_bytes(w.simulation, 0, 0) for w in spec.worlds)
+    storage = sum(
+        fixed_bytes(w.simulation) + 2 * row_bytes(w.simulation, 0, 0) for w in spec.worlds
+    )
     if storage > spec.max_working_bytes:
         raise MemoryRefusal(
             "Checkpoint aggregate arrays exceed batch max_working_bytes",

@@ -23,7 +23,7 @@ from cells.definitions import pump_composite_spec as cs
 from cells.definitions.specs import ConfigError, parse_spec
 from cells.models import pump_composite
 from cells.models import pump_composite_adapter as adapter
-from cells.operators import OPERATORS
+from cells.operators import OPERATORS, species_common
 from cells.operators import species_regulated_availability as sra
 from cells.operators.contract import Read, check_declarations
 from cells.registry.inventory_species import add_inventory_species
@@ -753,8 +753,10 @@ def test_version_2_routes_an_element_in_a_replaced_cell_from_a_species_source():
 
 
 @pytest.mark.parametrize("case", sorted(REFUSALS))
-def test_refusals(case):
+def test_refusals(case, monkeypatch):
     make, message = REFUSALS[case]
+    if case == "species cap":  # Its call to the cap (1,024 since FR-43 / D315), set to 16 here.
+        monkeypatch.setattr(species_common, "MAX_SPECIES", 16)
     with pytest.raises(ConfigError, match=None) as error:
         parse_spec(make())
     assert message in str(error.value), str(error.value)

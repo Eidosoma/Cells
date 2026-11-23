@@ -2324,7 +2324,7 @@ a prerequisite of FR-4's note.
 ### 10.6 The species cap: one sum order, and the cost of more species (A7)
 
 **The rule** (D165, amended by the user: "so we should increase that limit as we need!"). The cap
-(`species_common.MAX_SPECIES`, 16 today) is raised whenever a consumer needs more species. Each
+(`species_common.MAX_SPECIES`, 1,024 since FR-43 / D315) is raised whenever a consumer needs more species. Each
 raise is a D148 change, with a guard world at the new size and a measurement of memory and step
 cost.
 
