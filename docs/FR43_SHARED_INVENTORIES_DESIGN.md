@@ -34,6 +34,10 @@ ran FR-43's chain (a reversible chain of neutral species in one cell, with fast 
   the reactions acted on every row; the others' own rows stayed at 1 to 8;
 - cost on one CPU core at 1,024 species: 3.5 min to compile (42 s with a looped sum), 0.44 s per
   step, about 87 s per simulated second, 3.9 GiB of memory;
+- on the L4 card the answers are the same at every size, to rounding. With the looped sum, 1,024
+  species step 4.1 times faster than on one CPU core (0.10 s), but the unrolled sum's run at 1,024
+  species was killed at the block's 16 GiB memory cap, most likely while compiling. Compiling
+  takes 2.4 to 9 times longer on the card (§1.8);
 - fast steps are limited by accuracy, not stability: the step is about 0.1/k_fast. Much faster,
   stiff chemistry would need a new integrator, which is not proposed now.
 
@@ -113,7 +117,7 @@ chain), with `scheduled_species_turnover@1` (the charged world) and with
 | --- | --- | --- | --- | --- |
 | 1 | How far the cap rises | **To 1,024,** the largest size the request asks for: every size matched the closed form at one accuracy with ledgers at rounding; W4's idleness, restart and batch parts held bitwise at 32 and 256; every cap-sharing operator ran at 32, and at 1,024 in eight of nine worlds; and the cost is measured (1,024 rows: 42 s to compile with the gated fold, 0.43 s per step, 1.7 GiB). The cap is in no traced program, so every world keeps its programs | Lead | 1.7 |
 | 2 | Sum order above 16 (limit (a)) | No new order rule. Every sum whose order a ledger, guard or promise rests on is already the explicit fold, bitwise between the host and the compiled CPU program to 1,024. The shared modules' own sums either add exact zeros on the added rows or meet a ledger only at its tolerance. One stated limit: many charged rows (§1.3) | Lead | 1.3 |
-| 3 | Compile time (limit (b)) | The unrolled fold costs compile and memory above 256 (1,024 rows: 214 s and 3.9 GiB, against 42 s and 1.7 GiB for a `lax.scan` fold, saves bitwise equal). **A static gate:** the unrolled fold up to 16 terms, the scan above, so every world at 16 or fewer keeps its program text and crossrev is the proof. One fold everywhere waits for the next D148 round of reaction programs | Lead | 1.4 |
+| 3 | Compile time (limit (b)) | The unrolled fold costs compile and memory above 256 (1,024 rows: 214 s and 3.9 GiB, against 42 s and 1.7 GiB for a `lax.scan` fold, saves bitwise equal; on the L4 card the unrolled fold's 1,024-row run was killed at 16 GiB of host memory, most likely compiling, and the scan's ran, §1.8). **A static gate:** the unrolled fold up to 16 terms, the scan above, so every world at 16 or fewer keeps its program text and crossrev is the proof. One fold everywhere waits for the next D148 round of reaction programs | Lead | 1.4 |
 | 4 | The step (limit (c)) | A reported dt limit, no new integrator in FR-43: the declared accuracy sets dt ≈ 0.1/k_fast in the probe's chain, below the stage condition's refusal at dt·L > 1. A stiff integrator stays D152's door, a separate law | Lead | 1.5 |
 | 5 | Dense against per-entry arrays | The dense [rows, route] arrays set the step's cost above 256 (0.43 s per step at 1,024; the rate kernel alone 45 times the per-entry form's). **A per-entry [R, K] layout,** entries in row order so physical fields stay bitwise, as a D148 case-2 change after the raise; not needed for correctness. Meanwhile the trace estimate, which counts the dense layout per step, is corrected (host-side admission only) | Lead | 1.6 |
 | 6 | Two writers at fixed volume | Extend the 19 November two-writer rule (exact half-steps, own books, own ΔG, declared order) to the gene unit beside a D152 reaction: SSP half-steps of order three admitted beside exact ones; a registry potential required on the shared row (today's check compares none where the registry gives none); labelled and exported rows keep one writer | Lead | 2.2 |
@@ -433,6 +437,64 @@ world ran in the unrolled fold only. Worlds above 16 stay outside D150's and MG0
 protocol covers them, and integration grants no acceptance. The cost at 1,024 is one chain in one
 cell; a world with many nodes adds @3's per-species work (INNER_MODEL_V4_DESIGN §10.6's P6: about
 1 s per step for 160 species on the 825-node world).
+
+### 1.8 The L4 column (S)
+
+**How it ran.** One detached block (`probe/gpu_block.sh`, unit `cells-fr43-gpu`, 16 GiB of host
+memory, 90 min, the first 30 of them a wait before the block began; the lead launched it at
+13:36:47).
+It set the `gpu.reserved` flag at 14:06:47, held `gpu.lock` exclusively, and removed the flag at
+14:48:22. It ran the same frozen snapshot (92e18df4, `MAX_SPECIES` raised in process) in float64 on
+the NVIDIA L4 (`cuda:0`, JAX 0.11.1), one process per run as on the CPU: 400 steps of 5 ms, every
+host check on every row (`out/gpu/`, `out/gpu/l4_column.json`). The host thread ran on CPU 6, which
+other agents' jobs shared (45 processes on CPUs 6 and 22 at the start, `out/gpu/cpu6_at_start.txt`),
+so compile and host times are contended. The CPU's values (in parentheses) are §1.2's and §1.4's,
+uncontended.
+
+| Rows, fold | Outcome | Compile s | ms per step | s per simulated s | Host peak RSS MiB | Card peak MiB | Error / largest | Saves against the CPU's |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 16, unrolled | complete | 49.7 (20.4) | 1.29 (0.26) | 0.26 | 1,091 | 80 | 1.63e-5 | 29 of 37 fields bitwise, the other 8 within 4 × 10⁻¹⁶ relative |
+| 256, unrolled | complete | 352 (39.1) | 5.6 (17.3) | 1.12 | 2,865 | 100 | 1.63e-5 | 29 of 37 bitwise, the other 8 within 1.3 × 10⁻¹⁵ |
+| 256, scan | complete | 98.2 (23.1) | 24.0 (16.4) | 4.81 | 1,408 | 100 | 1.63e-5 | the same; and the scan's saves equal the unrolled's on the card bitwise (37 of 37) |
+| 1,024, unrolled | **killed by the out-of-memory killer at the unit's 16 GiB cap**, 14 min 19 s into the run (exit 137; the unit's cgroup: one OOM kill, peak 16.00 GiB); no record | – | – | – | – | – | – | – |
+| 1,024, scan | complete | 377 (42.2) | 105 (431) | 20.9 | 2,848 | 125 | 1.63e-5 | 29 of 37 bitwise, the other 8 within 1.3 × 10⁻¹⁵ |
+| 4,096, scan | not run: the block ran it only if 1,024 rows' scan stepped in under 50 ms on the card | – | – | – | – | – | – | – |
+
+- **The answers are the card's too.** The error is 1.63 × 10⁻⁵ of the largest species at every size,
+  agreeing with the CPU's to 11 digits, and the planted link is seen at every size. The material
+  ledgers close to 2.1 × 10⁻¹⁸ fmol and energy to 3.4–4.6 × 10⁻¹⁵ relative.
+- **The card's saves are not the CPU's bit for bit.** The 8 fields that differ are the chain's
+  amounts and their increments, and the reactions' accumulators and energies, all within
+  1.3 × 10⁻¹⁵ relative. Their terms come through the rate kernel's exponentials and logarithms,
+  whose device implementations are not the host's. The fold's host-equals-device property (D182) is
+  for bitwise-equal terms, and every ledger closes on the card.
+- **The unrolled fold's 1,024-row run did not fit in 16 GiB of host memory on the card,** against
+  a 3.9 GiB peak on the CPU. Its record was never written, so the phase is not recorded. A run holds
+  little else on the host (the scan's 1,024-row run peaked at 2.8 GiB there and 125 MiB on the
+  card), so the compile is the likely cause. The scan's compile took 377 s. So the gate above 16
+  terms is also what lets the large worlds run on the card.
+- **The scan is slower per step on the card at 256 rows:** 24.0 ms against the unrolled form's 5.6
+  (on the CPU, 16.4 against 17.3). It compiles 3.6 times faster (98 s against 352). Above 256 the
+  unrolled form's compile is the limit. The scan's `unroll` (8) changes the compiled loop but never
+  the additions, so a larger unroll on the card is a measured option, not this build's.
+- **Per step, 1,024 rows on the card cost 105 ms,** 4.1 times faster than one CPU core, or 21 s per
+  simulated second at the declared accuracy.
+
+**The rate kernel on the card** (`out/gpu/rates.json`; as §1.6's, every array placed on the device
+once, values bitwise equal between the forms at every size):
+
+| Rows | Dense: µs per call / temporaries | Per entry: µs per call / temporaries | Ratio | Dense compile s |
+| --- | --- | --- | --- | --- |
+| 16 | 181 / 2.8 kB | 271 / 1.6 kB | 0.67 | 0.4 |
+| 32 | 197 / 13 kB | 183 / 3.1 kB | 1.08 | 0.4 |
+| 256 | 462 / 1.0 MB | 405 / 25 kB | 1.14 | 3.8 |
+| 1,024 | 227 / 16.7 MB | 233 / 98 kB | 0.97 | 28.9 |
+| 4,096 | 3,560 / 268 MB | 333 / 0.39 MB | 10.7 | 527 |
+
+Up to 1,024 rows a call costs 0.2–0.5 ms on the card whatever the layout: the launch, not the
+arithmetic. The dense layout's square shows only above that. The per-entry form's compile stays
+under 0.7 s at every size. So §1.6's recommendation stands, and on the card it matters above
+1,024 rows.
 
 ## 2. Part 2: one pool, two processes
 
@@ -859,4 +921,12 @@ changes the pool read by the integer clock and the integer state changes the sub
   folder; and one recursive file-name search over the checkout (`SITES.md`). None displayed any
   content from those folders. One process listing, taken to see which jobs loaded the light CPUs,
   displayed the command lines of two running OL6 checker processes (their driver scripts' paths
-  under the checker's folder); no output of theirs was read.
+  under the checker's folder); no output of theirs was read. On 23 November at about 14:31,
+  after the user's review, two more searches: a recursive content search for `probes2` over
+  `scripts/`, `validation/` and `tools/` (file names listed, paths containing `references` filtered
+  from the display), which traversed `validation/ool/references/`; and a file-name search over `/` for
+  `proofs.sh`, stopped after about 2 min before it displayed anything. Neither displayed any name or
+  content from those folders. Searches since then use `git grep` with a pathspec that excludes the
+  blind folder.
+- **The L4 block** (§1.8): `probe/gpu_block.sh`, launched by the lead as the unit `cells-fr43-gpu`
+  after the visualizer's notice; its scripts are copied beside its records in `out/gpu/`.
