@@ -1,0 +1,23 @@
+{
+  "observable": "Yeast vacuole ATP-dependent difference current, cytosol minus lumen voltage",
+  "cytosol_pH": 7.5,
+  "lumen_pH": 3.1,
+  "journal": {
+    "doi": "10.1016/S0006-3495(03)74789-4",
+    "locator": "Figure 2B and Table 2",
+    "ramp_duration_s": 5,
+    "displayed_interval_mV": [-80, 40],
+    "reversal_lower_bound_mV": 40,
+    "trials": 3
+  },
+  "workshop": {
+    "source": "https://www.beilstein-institut.de/download/736/kettner_1.pdf",
+    "locator": "Proceedings of the 2002 workshop, published 2003, Figure 7B and Table 1",
+    "ramp_duration_s": 2.5,
+    "table_estimate_mV": 50,
+    "table_SE_mV": 8,
+    "trials": null,
+    "displayed_low_pH_trace_holding_voltage_mV": 0
+  },
+  "limits": "The workshop table and journal bound come from the same group. The workshop's low-pH figure shows a time trace at a single voltage. Independence of the recordings and a matched resolved crossing are unestablished."
+}
