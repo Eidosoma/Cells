@@ -24,7 +24,7 @@ data. Each claim with the planted error it must catch:
 - H7, verify recomputes predictions.json from its one parameter block (planted: a time moved by
   1e-5 relative; a per-voltage parameter block).
 
-Cost: about 4 s on one CPU (host arithmetic in NumPy and SciPy, no world compiled), most of it
+Cost: about 5 s on one CPU (host arithmetic in NumPy and SciPy, no world compiled), most of it
 importing the engine and seven readouts of 30,001-sample traces. Reason: the harness is registered
 code (D308), and these are its claims.
 """
