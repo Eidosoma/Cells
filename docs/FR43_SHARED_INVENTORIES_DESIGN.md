@@ -1,8 +1,12 @@
 # FR-43: shared inventories: sparse networks above 16 species, one pool with two writers, and a low-count population on continuous chemistry (design)
 
-**Status, 23 November 2026.** The user selected the composite host (B) for part 3 after reviewing
-both options under D142. The five implementation rulings in §5 are with the lead. This note records
-the design and the user's answers. Branch `fr43-design` from main 92e18df4. **S** marks this note's own derivation or
+**Status: decided by the user, 23 November 2026 (D315).** Part 3's host is B (the composite). The cap
+rises to 1,024 species, with today's sum through 16 terms and the scan fold above; the trace budget
+is fixed now and the per-entry layout staged after. The accuracy-limited step is reported and a
+stiff integrator deferred. One row may have two writers under one registry potential, each with its
+own accounts, and both writers read the current volume within FR-43, with a test of both while the
+volume changes. §5 records the user's answers in full. Parts 1 and 2 are built on `fr43-part1` and
+`fr43-part2`, part 3 by a separate builder. Branch `fr43-design` from main 92e18df4. **S** marks this note's own derivation or
 probe. "From memory" marks standard theory cited without being read for this note; it is read and
 cited properly when the piece is built. Evidence: `/mnt/workspaces/Cells/fr43-20261123/` (`probe/`
 holds the scripts; `out/`, `out/v2/`, `out/v3/`, `out/v4/`, `out/w4rest/` and `out/ops1024/` the
@@ -29,7 +33,7 @@ ran FR-43's chain (a reversible chain of neutral species in one cell, with fast 
   worlds (the ninth's long horizon met the runner's storage budget), with every check passing. Only
   the reactions acted on every row; the others' own rows stayed at 1 to 8;
 - cost on one CPU core at 1,024 species: 3.5 min to compile (42 s with a looped sum), 0.44 s per
-  step, about 87 s per simulated second, 4 GB of memory;
+  step, about 87 s per simulated second, 3.9 GiB of memory;
 - fast steps are limited by accuracy, not stability: the step is about 0.1/k_fast. Much faster,
   stiff chemistry would need a new integrator, which is not proposed now.
 
@@ -109,7 +113,7 @@ chain), with `scheduled_species_turnover@1` (the charged world) and with
 | --- | --- | --- | --- | --- |
 | 1 | How far the cap rises | **To 1,024,** the largest size the request asks for: every size matched the closed form at one accuracy with ledgers at rounding; W4's idleness, restart and batch parts held bitwise at 32 and 256; every cap-sharing operator ran at 32, and at 1,024 in eight of nine worlds; and the cost is measured (1,024 rows: 42 s to compile with the gated fold, 0.43 s per step, 1.7 GiB). The cap is in no traced program, so every world keeps its programs | Lead | 1.7 |
 | 2 | Sum order above 16 (limit (a)) | No new order rule. Every sum whose order a ledger, guard or promise rests on is already the explicit fold, bitwise between the host and the compiled CPU program to 1,024. The shared modules' own sums either add exact zeros on the added rows or meet a ledger only at its tolerance. One stated limit: many charged rows (§1.3) | Lead | 1.3 |
-| 3 | Compile time (limit (b)) | The unrolled fold costs compile and memory above 256 (1,024 rows: 214 s and 4.0 GiB, against 42 s and 1.7 GiB for a `lax.scan` fold, saves bitwise equal). **A static gate:** the unrolled fold up to 16 terms, the scan above, so every world at 16 or fewer keeps its program text and crossrev is the proof. One fold everywhere waits for the next D148 round of reaction programs | Lead | 1.4 |
+| 3 | Compile time (limit (b)) | The unrolled fold costs compile and memory above 256 (1,024 rows: 214 s and 3.9 GiB, against 42 s and 1.7 GiB for a `lax.scan` fold, saves bitwise equal). **A static gate:** the unrolled fold up to 16 terms, the scan above, so every world at 16 or fewer keeps its program text and crossrev is the proof. One fold everywhere waits for the next D148 round of reaction programs | Lead | 1.4 |
 | 4 | The step (limit (c)) | A reported dt limit, no new integrator in FR-43: the declared accuracy sets dt ≈ 0.1/k_fast in the probe's chain, below the stage condition's refusal at dt·L > 1. A stiff integrator stays D152's door, a separate law | Lead | 1.5 |
 | 5 | Dense against per-entry arrays | The dense [rows, route] arrays set the step's cost above 256 (0.43 s per step at 1,024; the rate kernel alone 45 times the per-entry form's). **A per-entry [R, K] layout,** entries in row order so physical fields stay bitwise, as a D148 case-2 change after the raise; not needed for correctness. Meanwhile the trace estimate, which counts the dense layout per step, is corrected (host-side admission only) | Lead | 1.6 |
 | 6 | Two writers at fixed volume | Extend the 19 November two-writer rule (exact half-steps, own books, own ΔG, declared order) to the gene unit beside a D152 reaction: SSP half-steps of order three admitted beside exact ones; a registry potential required on the shared row (today's check compares none where the registry gives none); labelled and exported rows keep one writer | Lead | 2.2 |
@@ -364,7 +368,7 @@ is what grows.
 counts the reactions' `working_size` per saved step, and that includes count × (6k + 16) words, the
 dense layout. At 256 rows it estimates 9.5 GiB for 400 steps, refused under the fixtures' 2 GiB
 budget, against a measured peak of 1.1 GiB; at 1,024 rows it estimates 153 GiB, against a measured
-4.0 GiB. The probe raised the definition's `max_trace_bytes` and recorded the estimate. The estimate
+3.9 GiB. The probe raised the definition's `max_trace_bytes` and recorded the estimate. The estimate
 is host-side admission, not a program, so correcting it (the layout counted once, not per step)
 changes no program. The vector-window batches read the same per-world estimate when they plan their
 memory (`execution/vector_windows.py`), so the correction also changes which batches are admitted
