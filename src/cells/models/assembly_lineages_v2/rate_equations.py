@@ -68,10 +68,11 @@ vesicle's real area A = q·W/2 and tension: the hold's over [start_s, end_s) (wh
 or, with no hold, the osmotic lumen's σ(N_L, W) (σ from F; 0 while floppy). H is carried by each
 step's own stages (rosenbrock_dense.quadrature), never appended to y, so it stays out of step
 selection and a pore world takes exactly its pore-free twin's steps until its first opening; its
-embedded error estimate is monitored at every accepted step, and a run where it passes 1e-10 is
-refused. The opening is the crossing H_v = E_v (upward), located as every guard is; Phase A's
-outcome follows, the rupture through the release (cause `pore`), booked as two parts whose ΔF_open
-cancels: the opening q_open = −ΔF_open + w (under a hold w = σ_β/σ, paid by
+embedded error estimate U^H is monitored at every accepted step, per vesicle, and a run where
+|U^H| passes 1e-10 + 2e-3·|ΔH| (ΔH the step's own clock increment; D309, which replaced the
+absolute 1e-10) is refused. The opening is the crossing H_v = E_v (upward), located as every
+guard is; Phase A's outcome follows, the rupture through the release (cause `pore`), booked as two
+parts whose ΔF_open cancels: the opening q_open = −ΔF_open + w (under a hold w = σ_β/σ, paid by
 source:tension_hold/<i>, ΔF_open = 2σ_β/σ − ln(A·n_s); with σ from F w = 0 and
 ΔF_open = σ_β/σ − ln(A·n_s), the note's §2.1) and the release from the open state. The hazard and
 σ_max both stand: whichever crosses first acts. Under a hold, a step that changes a membrane
@@ -142,7 +143,8 @@ RTOL_RANGE = (1e-13, 1e-3)
 EPS = float(np.finfo(np.float64).eps)
 MAX_SLOTS = 64  # §6.9: a population's linear algebra is dense in version 1
 REFUSED_SCHEDULES = ("replacement", "withdrawal")  # §1.4: their means come later (0.5 agent-day)
-H_ERROR = 1e-10  # §3.5: the pore clock's embedded error estimate per accepted step, absolute
+H_ERROR = 1e-10  # §3.5: the pore clock's bound per accepted step, its absolute part
+H_RELATIVE = 2e-3  # D309: its relative part, |U^H| <= H_ERROR + H_RELATIVE |dH| per vesicle
 
 FORMULAS = {
     "flux": "J_r = s_r(n) theta+_r(n) (1 - exp(dF_r)), dF_r = nu_r . mu(n) - w_r, mu = grad F_cont",
@@ -1218,6 +1220,7 @@ class _Run:
         self.draws = []  # (key, counter, u, E, time drawn)
         self.sigma_hold = 0.0
         self.clock_error = 0.0
+        self.clock_fraction = 0.0  # the largest |U^H| / (H_ERROR + H_RELATIVE |dH|), D309
         self.carried = None  # the accepted step's carried clock (a crossing's dense H)
         if self.p.pores:
             for slot in np.flatnonzero(self.alive):
@@ -1324,18 +1327,24 @@ class _Run:
                 for name in ("increment", "error", "k1", "k2")}  # fmt: skip
 
     def advance_clock(self, carried):
-        """H += the accepted step's increment; its error estimate monitored (§3.5): a run where it
-        passes H_ERROR is refused, never silently inaccurate."""
+        """H += the accepted step's increment; its error estimate monitored per vesicle (§3.5,
+        D309): a run where |U^H_v| passes H_ERROR + H_RELATIVE |dH_v|, dH_v the step's own
+        increment of that vesicle's clock, is refused, never silently inaccurate."""
         if carried is None:
             return
-        error = float(np.max(np.abs(np.where(self.alive, carried["error"], 0.0)), initial=0.0))
-        self.clock_error = max(self.clock_error, error)
-        if error > H_ERROR:
+        error = np.abs(np.where(self.alive, carried["error"], 0.0))
+        increment = np.abs(np.where(self.alive, carried["increment"], 0.0))
+        bound = H_ERROR + H_RELATIVE * increment
+        self.clock_error = max(self.clock_error, float(np.max(error, initial=0.0)))
+        self.clock_fraction = max(self.clock_fraction, float(np.max(error / bound, initial=0.0)))
+        if np.any(error > bound):
+            slot = int(np.argmax(error - bound))
             raise ConfigError(
-                f"{RATE_EQUATIONS}: the pore clock's error estimate, {error:.3g}, passes "
-                f"{H_ERROR:g} at t = {self.t!r} s: the run is refused, never silently inaccurate "
-                "(the note's §3.5); smaller tolerances (rtol and atol_count together) are the "
-                "remedy"
+                f"{RATE_EQUATIONS}: the pore clock's error estimate, {error[slot]:.3g}, passes "
+                f"its bound {H_ERROR:g} + {H_RELATIVE:g} |dH| = {bound[slot]:.3g} (dH = "
+                f"{increment[slot]:.3g}, slot {slot}; D309) at t = {self.t!r} s: the run is "
+                "refused, never silently inaccurate (the note's §3.5); smaller tolerances (rtol "
+                "and atol_count together) are the remedy"
             )
         self.H = np.where(self.alive, self.H + carried["increment"], self.H)
 
@@ -1799,7 +1808,9 @@ def run(spec):
                     "stop_reason": state.stop_reason, "schedule_draws": [list(d) for d in draws],
                     **({"pores": {"draws": [list(d) for d in state.draws],
                                   "largest_clock_error": state.clock_error,
-                                  "clock_error_bound": H_ERROR}} if state.p.pores else {})},
+                                  "largest_clock_error_fraction": state.clock_fraction,
+                                  "clock_error_bound": H_ERROR,
+                                  "clock_error_relative": H_RELATIVE}} if state.p.pores else {})},
         ledger=ledger,
         moieties=moiety,
         dissipation={"smallest_margin": state.dissipation, "tolerance": -64 * EPS,

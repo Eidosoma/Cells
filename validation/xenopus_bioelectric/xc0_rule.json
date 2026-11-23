@@ -1,0 +1,444 @@
+{
+ "kind": "cells.xenopus_bioelectric.xc0_rule@1",
+ "status": "For the lead's tag, before any engine run is compared (D308). It names the reader that exists at the tag (validation/xenopus_bioelectric/xc0_compare.py) and the engine readings it judges (xc0_engine.py, on the worlds of xc0_worlds.py). No engine run has been compared; the builder never opened either designs file (the lead's ruling, 23 November 2026, after the refused listing).",
+ "references": {
+  "tag": "xc0-references-landed-2026-11-22",
+  "registration": "branch xenopus-xc0-references: 16727134 (15:16 UTC) and 676f9545 (15:44 UTC, 19 November 2026, the dated registration line), amended once (ef04ddb1, after DESIGN's erratum of 15:46 UTC, before any engine output)",
+  "files": [
+   "validation/xenopus_bioelectric/references/designs/xc0_reference_values.json",
+   "validation/xenopus_bioelectric/references/designs/xc0_interface_bands.json"
+  ],
+  "interface": "validation/xenopus_bioelectric/references/REFERENCES_USAGE.md, the only document the reader was written from",
+  "read_by": "xc0_compare.py alone, in its keys and judge stages, after this rule's tag; never by the builder",
+  "inputs": "validation/xenopus_bioelectric/references/reference_inputs.json (the frozen declared_inputs.json of 13:35 UTC, which REFERENCES_USAGE names as the engine's input). The workspace copy's erratum keys (errata, c0_restated, c8b_end_state, tolerances_changed, accepted_scenarios, delta_g0_standard_state) change no input value, as checked key by key"
+ },
+ "engine": {
+  "models": [
+   "resolved_pump_tissue@3",
+   "constant_field@1 (patches and junction)",
+   "clleak_always_open@1 (GlyR F99A, D228 item 3)",
+   "cells.passive_routes@1 with inward_rectifier_linear_driving_force@1 (Kir4.1, D228 item 2)",
+   "cells.transporter@1 with cells.na_anion_symport_factored@1 (SLC5A8, D228 item 1) and cells.na2_anion_symport_diagram@1 (version 2's thermodynamic rows only)",
+   "nak_atp_mass_action_positive@1",
+   "junction_voltage_relaxation@1 (inert: minimum_open_fraction 1, initial_gate 1)",
+   "logmean_electrodiffusion@1 (P1LB's face)",
+   "resolved_capacitor_components_current_continuity@1",
+   "imex_ars222_face_electromigration@1",
+   "capacitive_reduction_gauged_damped_newton@2, @3 for P1LB (D147)",
+   "step_doubled_energy@1 (X2) on every run"
+  ],
+  "revision": "the tagged tree (main with this rule's branch landed), from a clean frozen snapshot: scripts/gates/freeze_snapshot.py <worktree> <out> --scope full --require-clean; the table's run_record names it",
+  "runs": "every judged value is fresh, from that snapshot, through xc0_engine.py's table stage under scripts/run_detached.sh on CPUs 6, 7, 22 and 23; no development run is judged"
+ },
+ "worlds": {
+  "module": "validation/xenopus_bioelectric/xc0_worlds.py",
+  "preparations": "P1 (one cell, the held bath), P1L (one cell, the local node, gauged), P1LB (P1L with the face access to the held bath), P2 (two cells, the inert junction): DESIGN §1's, at the 36 registered states (ion set x exterior x temperature)",
+  "declared_deviations": [
+   "GlyR F99A is a clleak_always_open@1 population on m_glycine (P_GlyR, abundance 1, its availability the arm's), not DESIGN's Cl-only patch: the brief's law, which moves what that patch moves (its own test); m_glycine's own permeabilities are zero and its membrane control scales nothing (checked). Its domain is @3's channel domain, -120 to 60 mV, wherever it is declared",
+   "a declared zero amount (the baths' A and B, the local node's B, the cell's inert cation) is a 1e-9 mM trace: @3 refuses a zero amount; each such row is impermeant at its node or moves only through the face",
+   "the host's material tolerance is 1e-10 fmol, @3's cap, below the declared 1e-9",
+   "P1L gauges its one outside node (@3's rule for a world with no held bath)",
+   "an outside node in a capacitor component with no held bath (P1L, P1LB) holds minus its cells' capacitor charge: @3 refuses a component whose charges do not sum to zero, so the declared rule's 0 cannot be used there",
+   "P1LB declares the floor field solver capacitive_reduction_gauged_damped_newton@3 (D147: its floating component is a free field offset); @2 refuses it at parse",
+   "version 2's charge: the law fixes zeta = 0 on b_P, b_N, na2_N, na1_N, so DESIGN §3.4's q on e3, e5, e6, e7 (+0.2 in all) is lumped onto the loaded crossing (q 0.6); the total stays 1.0, so J-/J+ and the stall are DESIGN's, and no kinetic row runs (not_run)"
+  ]
+ },
+ "readings": {
+  "at_a_state": "@3's readouts (impl.readouts, the observation path's evaluation) at a parsed world whose cells sit at V through the charge anchor alone (never a concentration). The anchor of a parsed definition is replaced in place; a full re-parse is bitwise the same (checked on invented inputs, and re-checked at every root: each table row records reparsed_equal for the roots it read; a false one is reported, not refused, since the two paths could differ only in rounding). Read: dV/dt (membrane_voltage_rate_V_s at m_main), an ion's outward flux through a patch (membrane_flux_fmol_s, the patch's total), its current (CHARGE_PER_FMOL z J), the transporter kind's probe at the state's read and field potentials (x, S, J, J+, J-), the pump's derivatives",
+  "single_ion_conductors": "K+ m_kleak; Na+ m_main's Na flux; Cl- GlyR on m_glycine at P_REF 1e-8 m/s and availability 1; the route its own K flux on m_kir at g (G_REF 1 S/m2 where only a zero or sign is read). DESIGN C1's single-ion patches",
+  "roots": "scipy brentq (xtol 1e-16 V, rtol 4 eps) in the bracket a 24-point scan finds across the domain (-0.20 to 0.15 V; -0.12 to 0.06 V where GlyR is declared); a scan with no sign change, or more than one, refuses the row. Concentration roots (the Cl- threshold, the equilibrium ratio) in the logarithm, each point a parsed world",
+  "slopes": "central differences of the engine's dV/dt or current, step 1e-5 V",
+  "two_cells": "the 2D root of the engine's (dV1/dt, dV2/dt) by scipy's hybrid method, then at most 12 Newton steps with the central-difference Jacobian until a step is below the roots' resolution; modes are -1/eigenvalue of that Jacobian at the steady state, the common one the eigenvector nearer (1, 1)",
+  "runs": "cells.execution.runner.run with X2, every accepted step observed (C3, C7) or every 100 steps (C8b); a value between two accepted steps is the log-linear interpolation of the deviation (at_time). C3 and C7 run to 8.25 tau_lin of the engine at its zero-current voltage; C8b to 60 s, eight times DESIGN's slowest bare node-and-face estimate V_loc L/(D A) (Na, 7.5 s)",
+  "step_check": "every run row is also run at half the step; it is inconclusive when |y(h) - y(h/2)| exceeds the claim's DESIGN tolerance (abs + rel |y(h/2)|: C3 2 % of tau, carried to ratio_t as 0.02 k/4; charge identities 1e-14 C; C5 3 %; C8 5 %), decided before any value is read",
+  "measures": {
+   "v_zero": "C0/C2 V_ghk_area, C4 V_zero_*: dV/dt's root at the state, the leaks open, with GlyR at\n(P, a) and/or the route at (g, a) where the params name them.",
+   "e_zero": "C0 E_<ion>, C1 zero_<ion>, the route's zero: the ion's zero through its conductor.",
+   "ion_current": "C1 sign_I: the ion's outward current through its conductor at its own zero + offset (A).",
+   "dvdt_offset": "C2's signs: the engine's dV/dt at the zero-current voltage + offset (V/s).",
+   "effect_sign": "C0's effect signs (+1 depolarises): the sign of the voltage change the ion's single-ion\nconductor makes at the resting voltage, -sign(its outward current there).",
+   "cl_bound": "C0's Cl- bound: |E_Cl - V_rest| from the engine's two roots.",
+   "cl_threshold": "C0's Cl_i threshold (mM): the root over the cell's Cl- of GlyR's Cl flux at the resting\nvoltage of the declared state (each Cl_i a parsed world, its charge anchor at that voltage).",
+   "shift": "C4's shifts: V_zero at availability a minus V_zero at availability 0 (the same world).",
+   "monotone": "C4's monotone flags: V_zero over availability 0, 0.25, 0.5, 0.75, 1 moves toward the ion's\nzero at every step, or by less than the roots' resolution (ROOT_XTOL + 4 eps |V|).",
+   "exact_zero": "C4's exact zeros: the element's outward flux at availability 0, at the resting voltage.",
+   "kir_current": "The route's outward current (A) at the route's zero + offset (V), g from the params.",
+   "kir_slope": "The route's slope dI/dV (S) at its zero + offset: the central difference of its current.",
+   "tau_lin": "C3's tau_lin at a scenario world: -1 / d(dV/dt)/dV at its zero-current voltage.",
+   "tau_fit": "C3's tau_fit: t / ln(delta / (V(t) - V_inf)) at t = tau_lin (the engine's own), V(t) the\nrun's, interpolated log-linearly between its two accepted steps.",
+   "ratio_t": "C3's ratio_t: (V(t) - V_inf) / delta at t = k tau_lin / 4, as m_tau_fit reads V(t).",
+   "charge_identity": "C3's Q - C V: the largest |Q(t) - C_total V(t)| over the run's accepted steps, Q from the\nrecorded amounts and the cell's fixed background (C).",
+   "sym_stall": "C6 v1 stall: the root over V of the population's J at the key's state.",
+   "sym_x": "C6 v1: the transporter kind's probe's x at the key's state and voltage (|V, |off from the engine's stall, or |Vrest_<exterior>).",
+   "sym_s": "C6 v1: the transporter kind's probe's s at the key's state and voltage (|V, |off from the engine's stall, or |Vrest_<exterior>).",
+   "sym_j": "C6 v1: the transporter kind's probe's j at the key's state and voltage (|V, |off from the engine's stall, or |Vrest_<exterior>).",
+   "sym_eq_ratio": "C6 v1 equilibrium ratio: the root over B_in/B_out of J at the key's voltage.",
+   "sym_capacity_ratio": "C6 v1 capacity: J at capacity f k over J at k (k the declared base), at the key's voltage.",
+   "diag_ratio": "C6 v2 (thermodynamic): J-/J+ of the diagram population at the key's state and voltage.",
+   "diag_stall": "C6 v2 (thermodynamic): the root over V of the diagram population's J.",
+   "c5_v1": "C5: the engine's two-cell steady voltages (v1, v2) and its relaxation modes: tau = -1 /\neigenvalue of the central-difference Jacobian of (dV1/dt, dV2/dt) at the steady state, the\ncommon mode the eigenvector nearer (1, 1).",
+   "c5_v2": "C5: the engine's two-cell steady voltages (v1, v2) and its relaxation modes: tau = -1 /\neigenvalue of the central-difference Jacobian of (dV1/dt, dV2/dt) at the steady state, the\ncommon mode the eigenvector nearer (1, 1).",
+   "c5_tau_common": "C5: the engine's two-cell steady voltages (v1, v2) and its relaxation modes: tau = -1 /\neigenvalue of the central-difference Jacobian of (dV1/dt, dV2/dt) at the steady state, the\ncommon mode the eigenvector nearer (1, 1).",
+   "c5_tau_diff": "C5: the engine's two-cell steady voltages (v1, v2) and its relaxation modes: tau = -1 /\neigenvalue of the central-difference Jacobian of (dV1/dt, dV2/dt) at the steady state, the\ncommon mode the eigenvector nearer (1, 1).",
+   "pump_counts_Na": "C7 pump, per cycle at the state's readouts (P1, primary, bath, 291.15 K, V0 = -0.04 V,\nthe leaks closed so that m_main's flux is the pump's): its counts (the patch's outward\nflux of Na and K over the cycle rate), the cell's charge per fmol of cycles (C), the\nchemical drive (J/mol: -1e3 metabolic power / cycle rate) and the heat (J/mol: 1e3 pump\ndissipation / cycle rate), each the engine's readout over its cycle rate.",
+   "pump_counts_K": "C7 pump, per cycle at the state's readouts (P1, primary, bath, 291.15 K, V0 = -0.04 V,\nthe leaks closed so that m_main's flux is the pump's): its counts (the patch's outward\nflux of Na and K over the cycle rate), the cell's charge per fmol of cycles (C), the\nchemical drive (J/mol: -1e3 metabolic power / cycle rate) and the heat (J/mol: 1e3 pump\ndissipation / cycle rate), each the engine's readout over its cycle rate.",
+   "pump_cell_charge_per_fmol": "C7 pump, per cycle at the state's readouts (P1, primary, bath, 291.15 K, V0 = -0.04 V,\nthe leaks closed so that m_main's flux is the pump's): its counts (the patch's outward\nflux of Na and K over the cycle rate), the cell's charge per fmol of cycles (C), the\nchemical drive (J/mol: -1e3 metabolic power / cycle rate) and the heat (J/mol: 1e3 pump\ndissipation / cycle rate), each the engine's readout over its cycle rate.",
+   "pump_dG_atp": "C7 pump, per cycle at the state's readouts (P1, primary, bath, 291.15 K, V0 = -0.04 V,\nthe leaks closed so that m_main's flux is the pump's): its counts (the patch's outward\nflux of Na and K over the cycle rate), the cell's charge per fmol of cycles (C), the\nchemical drive (J/mol: -1e3 metabolic power / cycle rate) and the heat (J/mol: 1e3 pump\ndissipation / cycle rate), each the engine's readout over its cycle rate.",
+   "pump_heat": "C7 pump, per cycle at the state's readouts (P1, primary, bath, 291.15 K, V0 = -0.04 V,\nthe leaks closed so that m_main's flux is the pump's): its counts (the patch's outward\nflux of Na and K over the cycle rate), the cell's charge per fmol of cycles (C), the\nchemical drive (J/mol: -1e3 metabolic power / cycle rate) and the heat (J/mol: 1e3 pump\ndissipation / cycle rate), each the engine's readout over its cycle rate.",
+   "pump_heat_nonneg": "C7 pump, per cycle at the state's readouts (P1, primary, bath, 291.15 K, V0 = -0.04 V,\nthe leaks closed so that m_main's flux is the pump's): its counts (the patch's outward\nflux of Na and K over the cycle rate), the cell's charge per fmol of cycles (C), the\nchemical drive (J/mol: -1e3 metabolic power / cycle rate) and the heat (J/mol: 1e3 pump\ndissipation / cycle rate), each the engine's readout over its cycle rate.",
+   "c8a_v_zero": "C8 (a): the engine's local-node value minus its bath value, the same ion set and T.",
+   "c8a_e_K": "C8 (a): the engine's local-node value minus its bath value, the same ion set and T.",
+   "c8a_e_Cl": "C8 (a): the engine's local-node value minus its bath value, the same ion set and T.",
+   "c8a_e_Na": "C8 (a): the engine's local-node value minus its bath value, the same ion set and T.",
+   "c7_charge_identity": "C7: the largest |Q(t) - C_total V(t)| over the run's accepted steps (C).",
+   "c7_charge_balance": "C7: the largest |(Q(t) - Q(0)) + e sum_s z_s sum_m T_sm(t)| over the run's accepted steps,\nT the cumulative outward transfer through each patch (the engine's membrane_transferred): the\ncell's ionic charge change against the integrated membrane current (C).",
+   "c7_dQ": "C7: the cell's charge change Q(t) - Q(0) from its recorded amounts (C), at t = k tau_lin / 4\n(params k) or t (params t, an accepted step), interpolated as at_time reads.",
+   "c8b_final": "C8 (b) at the `reading` (coupled or bare): the local node's concentration of `species`\n(mM) or potential (V, the bath held at 0) at C8_END_S (`final`) or at t (`at`); or a\nspecies' 1/e time (`t_e`, s): the first time its distance from its C8_END_S value falls\nto 1/e of its initial distance, interpolated linearly between two observations.",
+   "c8b_at": "C8 (b) at the `reading` (coupled or bare): the local node's concentration of `species`\n(mM) or potential (V, the bath held at 0) at C8_END_S (`final`) or at t (`at`); or a\nspecies' 1/e time (`t_e`, s): the first time its distance from its C8_END_S value falls\nto 1/e of its initial distance, interpolated linearly between two observations.",
+   "c8b_t_e": "C8 (b) at the `reading` (coupled or bare): the local node's concentration of `species`\n(mM) or potential (V, the bath held at 0) at C8_END_S (`final`) or at t (`at`); or a\nspecies' 1/e time (`t_e`, s): the first time its distance from its C8_END_S value falls\nto 1/e of its initial distance, interpolated linearly between two observations.",
+   "c8b_psi_final": "C8 (b) at the `reading` (coupled or bare): the local node's concentration of `species`\n(mM) or potential (V, the bath held at 0) at C8_END_S (`final`) or at t (`at`); or a\nspecies' 1/e time (`t_e`, s): the first time its distance from its C8_END_S value falls\nto 1/e of its initial distance, interpolated linearly between two observations.",
+   "c8b_psi_at": "C8 (b) at the `reading` (coupled or bare): the local node's concentration of `species`\n(mM) or potential (V, the bath held at 0) at C8_END_S (`final`) or at t (`at`); or a\nspecies' 1/e time (`t_e`, s): the first time its distance from its C8_END_S value falls\nto 1/e of its initial distance, interpolated linearly between two observations.",
+   "t2_shift": "T2's engine reading: the GlyR arm's voltage change, V_zero with GlyR at (P, 1) minus V_zero\nwith it at (P, 0), at a state (negative: a hyperpolarisation). Scored against the published\n19.4 mV outside the reference verdict.",
+   "t1_kleak_availability": "T1's engine reading: the m_kleak availability at which the zero-current voltage lies the\npublished shift (params shift_V, +0.011 for a depolarisation of 11 mV) above its value at\navailability 1, at a state; refused where none in [0, 1] does."
+  }
+ },
+ "mapping": {
+  "rules": [
+   {
+    "family": "^C0\\.E_(K|Na|Cl)$",
+    "measure": "e_zero",
+    "needs": [
+     "ion_set",
+     "exterior",
+     "T"
+    ]
+   },
+   {
+    "family": "^C0\\.V_ghk_area$",
+    "measure": "v_zero",
+    "needs": [
+     "ion_set",
+     "exterior",
+     "T"
+    ]
+   },
+   {
+    "family": "^C0\\.k_effect_sign",
+    "measure": "effect_sign",
+    "needs": [
+     "ion_set",
+     "exterior",
+     "T"
+    ]
+   },
+   {
+    "family": "^C0\\.cl_effect_sign",
+    "measure": "effect_sign",
+    "needs": [
+     "ion_set",
+     "exterior",
+     "T"
+    ]
+   },
+   {
+    "family": "^C0\\.cl_bound",
+    "measure": "cl_bound",
+    "needs": [
+     "ion_set",
+     "exterior",
+     "T"
+    ]
+   },
+   {
+    "family": "^C1\\.zero_(K|Cl)$",
+    "measure": "e_zero",
+    "needs": [
+     "ion_set",
+     "exterior",
+     "T"
+    ]
+   },
+   {
+    "family": "^C2\\.V_ghk_area$",
+    "measure": "v_zero",
+    "needs": [
+     "ion_set",
+     "exterior",
+     "T"
+    ]
+   },
+   {
+    "family": "^C3\\.tau_lin$",
+    "measure": "tau_lin",
+    "needs": [
+     "word"
+    ]
+   },
+   {
+    "family": "^C3\\.tau_fit$",
+    "measure": "tau_fit",
+    "needs": [
+     "word",
+     "d"
+    ]
+   },
+   {
+    "family": "^C3\\.ratio_t$",
+    "measure": "ratio_t",
+    "needs": [
+     "word",
+     "d",
+     "k"
+    ]
+   },
+   {
+    "family": "^C3\\.Q_over_CV_error$",
+    "measure": "charge_identity",
+    "needs": [
+     "word",
+     "d"
+    ]
+   },
+   {
+    "family": "^C4\\.V_zero_glycine$",
+    "measure": "v_zero",
+    "needs": [
+     "ion_set",
+     "exterior",
+     "T",
+     "P",
+     "a"
+    ]
+   },
+   {
+    "family": "^C4\\.V_zero_kir$",
+    "measure": "v_zero",
+    "needs": [
+     "ion_set",
+     "exterior",
+     "T",
+     "g",
+     "a"
+    ]
+   },
+   {
+    "family": "^C4\\.V_zero_both$",
+    "measure": "v_zero",
+    "needs": [
+     "ion_set",
+     "exterior",
+     "T",
+     "P",
+     "g",
+     "a"
+    ]
+   },
+   {
+    "family": "^C4\\.shift_glycine$",
+    "measure": "shift",
+    "needs": [
+     "ion_set",
+     "exterior",
+     "T",
+     "P",
+     "a"
+    ]
+   },
+   {
+    "family": "^C4\\.shift_kir$",
+    "measure": "shift",
+    "needs": [
+     "ion_set",
+     "exterior",
+     "T",
+     "g",
+     "a"
+    ]
+   },
+   {
+    "family": "^C5\\.tau_common$",
+    "measure": "c5_tau_common",
+    "needs": []
+   },
+   {
+    "family": "^C5\\.tau_diff$",
+    "measure": "c5_tau_diff",
+    "needs": []
+   },
+   {
+    "family": "^C6\\.v1_V_stall$",
+    "measure": "sym_stall",
+    "needs": [
+     "n",
+     "Nain",
+     "Naout",
+     "BP",
+     "rB",
+     "T"
+    ]
+   },
+   {
+    "family": "^C6\\.v1_x_offset$",
+    "measure": "sym_x",
+    "needs": [
+     "n",
+     "Nain",
+     "Naout",
+     "BP",
+     "rB",
+     "T",
+     "off"
+    ]
+   },
+   {
+    "family": "^C6\\.v1_eq_ratio$",
+    "measure": "sym_eq_ratio",
+    "needs": [
+     "n",
+     "Nain",
+     "Naout"
+    ]
+   },
+   {
+    "family": "^C6\\.v1_capacity_ratio$",
+    "measure": "sym_capacity_ratio",
+    "needs": [
+     "n",
+     "Nain",
+     "Naout",
+     "BP",
+     "f"
+    ]
+   },
+   {
+    "family": "^C6\\.v2_ratio_Jm_Jp$",
+    "measure": "diag_ratio",
+    "needs": [
+     "NaP",
+     "BP",
+     "BN",
+     "V",
+     "NaN"
+    ]
+   },
+   {
+    "family": "^C7\\.pump_cell_charge_per_fmol$",
+    "measure": "pump_cell_charge_per_fmol",
+    "needs": []
+   },
+   {
+    "family": "^C7\\.pump_dG_atp$",
+    "measure": "pump_dG_atp",
+    "needs": []
+   },
+   {
+    "family": "^C7\\.pump_heat$",
+    "measure": "pump_heat",
+    "needs": []
+   },
+   {
+    "family": "^C7\\.pump_heat_nonneg$",
+    "measure": "pump_heat_nonneg",
+    "needs": []
+   },
+   {
+    "family": "^C8\\.a_dV_ghk_area$",
+    "measure": "c8a_v_zero",
+    "needs": [
+     "ion_set",
+     "T"
+    ]
+   },
+   {
+    "family": "^C8\\.a_dE_(K|Na|Cl)$",
+    "measure": "c8a_e_<ion>",
+    "needs": [
+     "ion_set",
+     "T"
+    ]
+   }
+  ],
+  "not_run": [
+   {
+    "family": "^C6\\.v2_early",
+    "reason": "not run on main: cells.na2_anion_symport_diagram@1 fixes zeta at 0 on e3/e5/e6/e7 (b_P, b_N, na2_N, na1_N), so DESIGN §3.4's charge placement cannot be declared and the early-uptake ratio, which depends on it, is not the design's (the lead, 23 November 2026; a declared zeta on every edge is queued with the kinds lane as a general feature)"
+   },
+   {
+    "family": "^C6\\.v2_(J|KA|king|ka)",
+    "reason": "not run on main: the King-Altman J depends on the charge placement (as above)"
+   }
+  ],
+  "keys": "each key is parsed by REFERENCES_USAGE.md's grammar into numbers and words and met by number (relative 1e-9), not by string",
+  "unmapped": "a compared family no rule maps, or a key lacking a rule's parameters, is refused before any value is read, its family name and key printed; a disclosed erratum maps it"
+ },
+ "comparison": {
+  "order": "every compared row is resolved to one table row with the values file unopened; then the values file is loaded and every compared key (and a sign row's aux) found in it; only then is any value read. A refusal at either step prints family names and keys only",
+  "band": "an abs row's band is recomputed by REFERENCES_USAGE.md's rule, max(tol_abs + tol_rel |reference|, 10 floor), from its stored floor and tolerances (a row's own tol_abs first), and a stored band that disagrees by more than 1e-12 relative refuses; a sign row's stored band decides its power (REFERENCES_USAGE does not say what 'reference' is in a sign row's band, so it is not recomputed); exact_zero and flag rows use no band",
+  "kinds": "abs: |engine - reference| <= band; sign: the engine's sign equals the reference's where |aux| > band, else no power; exact_zero: the engine's value is exactly 0; flag: equal strings; info: not compared"
+ },
+ "verdicts": [
+  "a row passes, fails, has no power, is info, is not run (with its reason), or is engine_refused (after the retry only)",
+  "a family fails if any row fails; else it is not testable if any row is engine_refused; else it passes if any row passes; else it is neutral (no power, info or not run), and a neutral family neither passes nor blocks its claim (the references list sign families without power at most states)",
+  "a claim (C0-C8) fails if any family fails; else it is not testable if any family is; else it passes if any family passes; else (nothing in it had power) it is not testable",
+  "XC0 fails if any claim fails; else it is not testable if any claim is; else it passes",
+  "T1 and T2 are reported outside this verdict (calibrations)"
+ ],
+ "retry": {
+  "fires_on": "only table-side conditions decided before any value is read: a refused or errored row, or a run row's failed step check; never a failed row",
+  "once": true,
+  "manifest": "xc0_compare retry-manifest TABLE OUT: the first table's inconclusive rows, with their measures, parameters and step tolerances",
+  "static_rows": "re-measured with the scan doubled (48 points)",
+  "run_rows": "judged at h/2 against h/4",
+  "judged": "xc0_compare judge TABLE VALUES BANDS OUT --retry RETRY_TABLE: each retry row replaces the first table's inconclusive row of the same family, measure and key (a retry row replacing anything else is refused); both tables' sha256 are recorded; a row still inconclusive is engine_refused, its family not testable"
+ },
+ "x2": {
+  "check": "step_doubled_energy@1",
+  "integration_error_cap": 0.002,
+  "source": "borrowed: FR-8 rung 1's registered cap (validation/long_duration/rung1_20261119.json); XC0's DESIGN names X2 as the opt-in for registered runs but gives no cap"
+ },
+ "calibrations": {
+  "status": "outside the reference verdict; their engine readings are in the table (families T1.kleak_availability and T2.shift); DESIGN §4.3 gives no numeric plausible range, so no verdict is registered here (questions_for_the_lead)",
+  "T2": "Chernet and Levin 2013, Results: GlyR F99A in the 70 mM Cl- bath, a 19.4 mV hyperpolarisation (n = 5). Engine: V_zero with GlyR at (P, 1) minus at (P, 0), per ion set, temperature, cation option and P_GlyR of the declared grid",
+  "T1": "same source: Xrel3 cells about 11 mV depolarised against unperturbed (n = 5). Engine: the m_kleak availability whose zero-current voltage lies 11 mV above availability 1's, per ion set and temperature in 0.1x MMR",
+  "T3": "not run: DESIGN §4.3 makes it an inverse check with no pass or fail in XC0"
+ },
+ "procedure": [
+  "this rule, its reader and its engine readings are tagged before any engine run is compared",
+  "the lead chooses how the table's manifest is formed (questions_for_the_lead 1): (A) the documented grammar now (xc0_compare grammar: the 36 states' C0, C1, C2 zeros and C4's grids, 1,116 rows, with T1 and T2's 54), then a judge that will refuse the compared families the grammar does not reach, printing names and keys only, then a disclosed erratum that maps them; or (B, recommended) the tagged reader's keys stage first (family names, kinds, units and row keys; with the lead's leave, each family's claim and quantity strings), then the manifest, then the erratum for unmapped families, before the table",
+  "the table is built from a clean frozen snapshot of the tagged tree (xc0_engine table MANIFEST OUT --x2-cap 0.002) under scripts/run_detached.sh, and its sha256 is recorded in the run folder before the judge runs",
+  "the judge (xc0_compare judge TABLE VALUES BANDS OUT) resolves every compared row before reading a value; on a refusal nothing is read",
+  "the retry, once, re-measures the inconclusive rows (xc0_compare retry-manifest, then xc0_engine table --retry from the same snapshot), hashed the same way, and the judge runs with --retry",
+  "the verdict record lists overall, claim, family and row outcomes, the table's digest, T1 and T2's readings, and not_blind"
+ ],
+ "readings_to_confirm": [
+  "C3: V_inf and tau_lin are the engine's own (its dV/dt root and slope); tau_fit is t / ln(delta / (V(t) - V_inf)) at t = tau_lin; ratio_t is (V(t) - V_inf) / delta at t = k tau_lin / 4, off the step grid by log-linear interpolation; Q_over_CV_error is the largest |Q - C_total V| over the accepted steps. Only S1_leaks_bath and S9_leaks_bath_T287 have declared worlds (the primary set in the bath, the leaks open, the pump off, at 291.15 and 287.15 K); S2-S8's worlds are in the family notes, which the builder does not read",
+  "C0: an effect sign is -sign(the ion's outward current through its single-ion conductor at the resting voltage), +1 depolarising; cl_bound is |E_Cl - V_rest| of the engine's two roots. The Cl_i threshold and the 19.4 mV feasibility flag are not mapped: their family names are undocumented (the measure cl_threshold exists: GlyR's Cl flux root over Cl_i at the resting voltage); the flag's definition is asked",
+  "C1: the sign_I_* rows' names and offset encoding are undocumented (the measure ion_current, at the engine's own zero plus an offset, exists); the route's zero, shape, slope and sqrt(K_o) rows likewise (e_zero with ion Kir, kir_current, kir_slope exist)",
+  "C2: the dV/dt sign rows' offsets are undocumented (dvdt_offset exists)",
+  "C4: V_zero_both's key is read as <state>|P<P>|g<g>|a<a>; a shift is against the same world at availability 0; a monotone flag (over 0, 0.25, 0.5, 0.75, 1 toward the element's own zero, within the roots' resolution) and an exact zero (the element's flux at availability 0, at the resting voltage) are measured but their family names are undocumented",
+  "C5: two primary cells in the bath at 291.15 K (P2), the junction at the key's multiple, cell_2 carrying the scenario's element open (kir_g<g>: the route; x_gly<P>: GlyR; sym: none); steady voltages and the two modes from the engine's Jacobian (tau_common, tau_diff mapped); the tau_fit_*, steady-voltage, large-g_J, weighted-average and junction_charge_sum families' names and semantics are undocumented",
+  "C6: an |off<dV> is from the engine's own stall; Vrest_<exterior> is the engine's zero-current voltage of the primary set there at the key's temperature (291.15 K if none); version 2's keys (NaP, BP, BN, V) carry no Na_N or temperature, so they are mapped only with a NaN token; the Hill product, n = 1 and second-constant-set families are undocumented (sym_s exists)",
+  "C7: the relaxation from V0 = -0.04 V (the primary set in the bath at 291.15 K, the leaks open, the pump off) runs to 8.25 tau_lin; relax_dQ is Q(t) - Q(0) from the recorded amounts at t = k tau_lin / 4 or t; relax_charge_identity is the largest |Q - C_total V|; the balance identity is |dQ + e sum z T| over the steps. The pump per cycle at the state's readouts with the leaks closed: counts inward-positive (Na, K), the cell's charge per fmol of cycles (C), dG_atp (-1e3 metabolic power over cycle rate, J/mol), heat (J/mol), heat >= 0. pump_cycle_counts' key encoding and the symporter's per-cycle partition families are undocumented",
+  "C8: (a) a paired difference is the engine's local value minus its bath value at one ion set and temperature, keys read as ionset|T<K> (dV_ghk_area, dE_<ion>); (b) coupled is the cell's leaks open, the pump off; bare is every patch closed; t_e is the first time a species' distance from its 60 s value falls to 1/e of its initial distance; the C8.b_* and C8.bc_* family names and keys are undocumented"
+ ],
+ "questions_for_the_lead": [
+  "1. The manifest. An erratum that maps the undocumented families is certain under either option: C7's relaxation rows, C8 (b), C4's exact zeros and monotone flags, C1's and C2's sign offsets, C0's threshold and flag, C3's S2-S8 and C5's fits are measured but cannot be mapped from REFERENCES_USAGE.md alone. The builder recommends option B with the claim and quantity text: the tagged reader's keys stage first (family names, kinds, units, row keys, and each family's claim and quantity strings; no value, aux, floor, band, tolerance or note), so the keys and the families' meaning arrive in one pass, the erratum is written once, and the table is built once. Option A builds the grammar's 1,170 rows now and meets the same erratum through a names-and-keys refusal round.",
+  "2. The semantics in readings_to_confirm, and C3's S2-S8 worlds, stated by someone who may read the family notes (semantics only, no value), or corrected in an erratum",
+  "3. T1 and T2's plausible ranges (P_GlyR's and the m_kleak availability's), or confirmation that both stay unscored calibrations in XC0"
+ ],
+ "checked_before_the_tag": [
+  "on an invented input set (other ion sets, baths, leaks; after the slip below, other pump constants too), with no engine value read at a registered state: every preparation parses and binds at its anchor; GlyR conducts alike at m_glycine control 0 and 1; the route conducts at availability 1 and is exactly 0 at 0; a replaced anchor reads bitwise what a re-parse reads (4 worlds x 3 voltages); each static reading returns a root at the float64 floor of the engine's output, its sign flipping across it, re-parse equal; the symporter's stall, x, equilibrium ratio (J at it ~1e-18) and capacity ratio; the diagram's stall equal to version 1's; the two-cell steady state and modes; C3's runs (ratio at t = tau 0.367, Q - CV 1.6e-22 C); C7's run (Q - CV 1.6e-22 C, the balance identity 2.2e-22 C); both C8b readings run to a shortened 6 s horizon (t_e, final, psi and a value at t read); T1 and T2's rows; every root's re-parse equal",
+  "cost, on one CPU of this machine (invented inputs): a static row about 0.5 s (option A's whole grammar manifest, 1,170 rows over the 36 states with T1 and T2, in 623 s: every row a number, no refusal, every root's re-parse bitwise equal); a C3 or C7 run about 1 to 2 minutes with its compile; a P1LB step about 5 ms (the floor solver, the face, X2), so each C8b reading's 60 s horizon is about 50 minutes at h and 100 at h/2, about five CPU-hours for both readings with their companions",
+  "the real path, from a clean frozen snapshot of this branch (c3d7d3cb, 5,343 files, scripts/gates/freeze_snapshot.py --scope full --require-clean): xc0_engine table computed three static rows at registered states (C0.E_Na, C4.V_zero_kir, C1.zero_Cl; each a number, its root re-parse checked) into a table the builder did not open, and printed its sha256; the judge CLI ran check_rule and check_table (a clean snapshot, the cap 0.002), then refused at resolution against the invented interface, printing family names and keys only. Nothing was compared (/mnt/workspaces/Cells/xenopus-lane-20261119/xc0-run/dryrun/)",
+  "after the last edits: the tree-scanning guards (test_engine_betse_boundary, test_d147_drivers, test_continuity_bypass, test_j2_bright_line, test_source_profile_boundary, test_species_registry: 71 passed) and xc0_compare selfcheck passed",
+  "the reader's end-to-end check on an invented interface and table (xc0_compare selfcheck, from the tagged tree): pass, fail, sign with and without power, exact numbers met across formatting, flag, info, not run; refusals before any value read for a missing row, a refused row, a step-unconverged row, an unmapped family and a poisoned value set; a disagreeing stored band refused; after the retry, an inconclusive row engine_refused and its family and claim not testable; a family whose rows all lack power not testable"
+ ],
+ "not_blind": [
+  "the builder's listing of both designs files' top-level keys (a script that would print no value) was refused by the permission check; nothing ran and nothing was read; the lead then ruled the reader is written from REFERENCES_USAGE.md alone and never retried it (23 November 2026)",
+  "read as the brief's required reading, with reference figures printed in them: DESIGN.md's erratum and declared_inputs.json's errata keys (V_GHK -47.09 and -6.33 mV; the Donnan end state Na 37.875, K 0.7651, Cl 2.640 mM at -33.66 mV; K's 1/e time 4.79 s; the 7.35 and 15.77 mV bounds; the ratio 1.45 at rest; the pump's about -65.8 kJ/mol); the references README (every section but 'Findings'), whose amendment and plants table print 1.45, E_K -78.1 and -153.3 mV and Na 37.9 mM. No tolerance is the builder's, so none can move; the C8 horizon is set from DESIGN's own node-and-face estimate",
+  "a development slip: the first invented input set kept the declared pump metabolism and temperature, so the engine's pump_dG_atp at the declared pump conditions printed (-65851.51300246065 J/mol), with the declared counts -3 and +2 and the charge per fmol -CHARGE_PER_FMOL; logged at once and the invented set changed",
+  "P1LB's parse refusal was diagnosed at the declared inputs: the field solve's residuals printed (charge 4e-28 C, face current 2.8e-25 A, normalised 0.028 against @2's target), no observable",
+  "the dry run above wrote three engine values at registered states to a table file the builder never opened; its log printed row types, timings and the file's digest only",
+  "the builder read no reference value, aux, floor, band, note, code, test or the README's Findings, and no engine value at a registered state other than the slip above"
+ ]
+}

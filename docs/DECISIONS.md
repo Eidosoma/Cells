@@ -9713,3 +9713,153 @@ proposal (tag ol6-protocol-d-registered-2026-11-23).
   gated, and Protocol D's erratum 1, which makes D7 runnable under it. Protocol D's other worlds (D0-D6)
   and Protocol G's scope 1 can run now.
 
+
+## D310: FR-15 F2, charged trace species on junctions: option A, with the lead's rulings
+
+2026-11-23, about 11:45 UTC. The lead rules on docs/CHARGED_TRACE_SPECIES_DESIGN.md (7f3f6ccd, tag
+fr15-f2-design-landed-2026-11-23), under the user's go on the cancer lanes and the FRs (23 November).
+- **C1: option A.** `passive_constant_field_permeation@1` is hosted on junctions. This keeps the 19
+  November ruling and needs no per-stage material bound inside @3.
+- **C2: refused in version 1.** A junction that crosses a floating capacitor component is refused
+  explicitly. The refusal lands in the same change that lifts today's junction refusal, because fix (A)
+  (b8e786d4) relied on that refusal. No consumer has such a junction, so A2 waits for one.
+- **C3: the two-end sum** for a junction route's material term. It is the neutral law's form, and its
+  limit at zero voltage.
+- **C4: widen @1 in place.** The precedents are S1 and FR-19:
+  - no world declares the law;
+  - P2's header reserved junction hosting under @1;
+  - unchanged worlds stay bitwise (D148 case 2), and pre-alpha needs no second ID.
+- **C5 goes to the gap-junction replication's owner.** The microRNA's decay can be written now as the
+  closed conversion miR- -> D-. turnover@2 is needed only for exact exponential clearance.
+- **The @3 owner's two questions,** ruled by the lead as the note proposes:
+  1. a kind's cell-to-cell current enters the floating-component residual only on junctions that cross
+     a floating component; version 1 refuses those, so the residual is unchanged;
+  2. KindRates gets no `junction_flux` in version 1.
+- **The 19 November note is corrected:** the kind's charge term on a junction takes 2G at each cell.
+- **Sanctioned test change:** the junction-host refusal row in `tests/unit/test_passive_routes_kind.py`
+  becomes the crossing-junction refusal.
+- **P2's patch material term becomes the two-end sum where a patch faces a finite node,** in the same
+  build. The term is each end's own slope, so it can admit up to twice the stable step there. No
+  registered world declares the law, so nothing registered changes.
+- **Recorded for other lanes:**
+  - **FR-16:** F4's per-species floor must reach a kind's junction route, as a per-route floor.
+  - **The kinds lane:**
+    - the transporter's material term skips charged rows that cross, so a trace charged row moved by a
+      carrier (butyrate on the symporter) has no material bound;
+    - `site_occupancy@1` refuses a charged ligand (HDAC binding);
+    - from the Xenopus lane: `cells.na2_anion_symport_diagram@1` fixes zeta at 0 on four of its edges,
+      where XC0's version-2 design moves charge.
+- **The build** is A1, about 2.25 to 2.75 agent-days with its gates. It starts at the next free agent
+  slot.
+
+## D311: FR-30's benchmark is Revilla, Castro and Barrio (1999), held out at -80 and +80 mV; the trace criterion is a dated amendment (the user)
+
+2026-11-23, about 12:08 UTC. The user chose (a), "Sounds good", on the lead's description and blind to every
+value, after the advisor endorsed it with a precedent check, which came back clean. The section 13.4
+extraction is in /mnt/workspaces/Cells/fr30-candidates4-extraction/ (README.md, LOG.txt).
+
+**The verdicts in the registered order.**
+1. **Shibayama et al. 2006:** undetermined. Both times are given at +100 mV only.
+2. **Elenes et al. 2001:** undetermined. The times are on an unsigned axis at three magnitudes, which
+   leaves one held-out voltage.
+3. **Revilla, Castro and Barrio 1999** (homotypic wild-type rat Cx43, Xenopus oocyte pairs): qualifies.
+   - Fig. 3B gives tau1 and tau2 at -100, -80, -60, +60, +80 and +100 mV, each the mean +- SEM of six pairs.
+   - Rule 1 holds out 80 mV at both polarities.
+   - The judged observables are tau_fast, tau_slow and G_ss/G_0, each at -80 and +80 mV. Amplitudes are not
+     reported per voltage, so they are not judged (section 13.2).
+4. **Ek-Vitorin et al. 2016:** not opened.
+
+The held-out file is revilla1999/extraction/held_out.json, sha256
+e83680830219a58ab6b47d268518543b90e63c52d6b7d7694ee8a8e45c7a7285. All 12 entries of its SHA256SUMS verify.
+
+**The lead's ruling: -80 and +80 mV are two held-out voltages.**
+- Rule 1's data unit is a signed step, and rule 2 judges "each held-out V_j". Section 13.1 point 2 keeps
+  section 13's rule where each polarity is reported.
+- This agrees with D291, which ranked by magnitude (Ek-Vitorin 2018 had one magnitude), and with Elenes,
+  whose unsigned axis gives one unit.
+- With two voltages, "more than half" means both, so every judged time and both G_ss must pass.
+- The claim is one interpolated magnitude, 80 between 60 and 100 mV, at both polarities. It is not two
+  independent tests.
+- D292's search asked for "four or more voltages". Revilla has three magnitudes per polarity, six signed
+  voltages in all.
+
+**The amendment: superimposed or single sample records are not refitted.**
+- **The change.**
+  - Rule 1 admits traces "digitized, then fitted by the extractor", while rule 5 says the extractor "does
+    not fit".
+  - The amendment resolves that tension toward rule 5: only decays the paper itself analysed count.
+  - It applies to the paper that prompted it and binds every later candidate, fallbacks 5 to 9 included.
+- **What had been seen when it was written.**
+  - The extractor had read all of Shibayama and nothing of Elenes or Revilla.
+  - It fixed and hashed the criterion (4d5b1df8...) before Elenes was opened and before any value was
+    digitized.
+- **Precedent.** No earlier FR-30 extraction refitted a sample record:
+  - Desplantez 2004's extractor declined its Fig. 2B traces on 21 November: "a tau from a trace needs
+    fitting, which is barred";
+  - Lin 2003's extractor did not fit its Fig. 5A traces.
+- **Under the unamended text** the outcome is unknown: Shibayama's ten superimposed 30-s records (Fig. 1A)
+  would have been tried first, then Elenes's Fig. 3A records.
+  - The extractor states that refitting was the only way Shibayama could qualify.
+  - Shibayama's wild-type arm is the same preparation from the same laboratory (Barrio is an author of
+    both), and its printed per-polarity Boltzmann parameters match Revilla's Table 1. So its records are
+    probably the same experiments, read more noisily.
+  - Elenes's Fig. 3A records are partly in HeLa cells, which carry another connexin.
+
+**Exposures, disclosed. The fitter never opens lean/.**
+- `lean/checks/data/revilla1999_cx43.json` holds Revilla's Table 1, each polarity's Boltzmann fit. It has
+  been on main since 21 November (0ec0ac28, 760d9f0c).
+- Its comparison voltage is 80 mV. lean/PROGRESS.md and lean/claims/junction-gate.md print the fitted
+  conductance at -80 and +80 mV, so the held-out steady state is printed in the repo, not merely
+  derivable.
+- lean/claims/junction-series-amplitudes.md and lean/COVERAGE.md print the -100 mV times and the amplitude
+  ratio, which are training values.
+- **Section 13.4's line is corrected.** It said "Nobody on this project has read these papers' results",
+  which was wrong for Revilla. The Lean lane, an independent agent, had read it and put its Table 1 on main
+  the day before.
+- **The law's design predates the exposure.** The FR-30 design note read lean/claims/junction-gate.md on
+  20 November (d0245ebc, 22:14 UTC), before Revilla's section landed there (21 November, 14:12 UTC). Any
+  later reading by the law's developer is not recorded.
+- **The lead stayed blind.** The lead read those files only as lines with every non-voltage number masked, plus
+  the data file's keys and its comparison voltage. He did not open the held-out file, Revilla's
+  extraction notes or Shibayama's record.
+
+**Next, before the tag.**
+- Section 13.5 pins the prediction and readout conventions: the 30-s step; G_0 at the +10 mV prepulse;
+  G_ss as the end-of-step value; the fit window, form and start values; degenerate fits; and the tolerance
+  combining ln 1.25 with 2 SEM.
+- The scoring code must exist at the tag (D308).
+- Then the fitter starts, working from fit.json and protocol.json only. Its exclusions are all of lean/,
+  the four papers, and everything else under fr30-candidates4-extraction/.
+- The lead's draft is /mnt/workspaces/Cells/fr30-benchmark-20261123/RULING_DRAFT.md.
+
+## D312: XC0's comparison rule is registered; the lead's answers to its three questions
+
+2026-11-23, about 12:15 UTC. The Xenopus lane's XC0 rule is tagged on its branch head,
+xc0-rule-registered-2026-11-23 (98351456), and merged at 1030280a. It names its reader,
+validation/xenopus_bioelectric/xc0_compare.py, as D308 requires. Nothing has been compared.
+1. **The manifest: option B, without the text.**
+   - The tagged reader's keys stage runs first. It prints family names, kinds, units and row keys only.
+   - The claim and quantity strings are not printed, because they can carry numbers. The families'
+     meaning comes from the confirmer (answer 2).
+   - The erratum that maps the undocumented families is then written once and tagged before the table is
+     built, and the table is built once.
+2. **The semantics come from a confirmer who is code-blind and value-silent.**
+   - An agent that may read the references' values and notes, but never Cells' engine code or outputs,
+     writes one file. It covers the nine readings to confirm (each "matches" or "differs"), the families
+     REFERENCES_USAGE.md does not map, and C3's worlds S2 to S8.
+   - It states no value, band, floor or tolerance, and no word that gives away an outcome. A mechanical
+     check confirms that every number in it is a key token, a unit, a declared input or a number already
+     in REFERENCES_USAGE.md.
+   - The builder reads only that file.
+3. **T1 and T2 stay unscored calibrations in XC0.**
+   - DESIGN gives no plausibility range for P_GlyR or the m_kleak availability, and a range set now would
+     be the lead's guess.
+   - The calibrated values are reported with the verdict, which states that they are unconstrained.
+- **Disclosed in the rule's not_blind:**
+  - the builder's refused listing of the designs files, of which nothing was read;
+  - the reference figures printed in DESIGN's erratum, declared_inputs.json and the references' README;
+  - one engine value at a registered state, pump_dG_atp at the declared pump conditions, printed by a
+    first invented input set and then replaced.
+- **The engine gap stays queued for the kinds lane** (D310's list): a declared zeta on every edge of
+  `cells.na2_anion_symport_diagram@1`. Until it lands, version 2's charge-placement rows are "not run on
+  main".

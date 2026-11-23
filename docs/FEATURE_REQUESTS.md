@@ -20,7 +20,7 @@ and a general feature, never one built for one study (D144).
 | [FR-12](#fr-12--the-declarations-manifest-readable-by-the-viewer-d185) | The declarations manifest, readable by the viewer (D185) | Not stated (proposed by the visualizer session, 16 November 2026; logged 17 November) | **Landed:** `python -m cells declarations` writes the manifest (0154604f; merge 515ac020, seam F, D195). `cells.declarations@2` (merge 3891b802, D203) is the format in the engine (`FORMAT` in `registry/declarations.py`) and is read by the viewer (merge d8c56ea2) | None for the manifest; the command's help text still names @1 (a stale string, not fixed here) |
 | [FR-13](#fr-13--molecular-machines-individually-and-in-aggregate) | Molecular machines, individually and in aggregate, at a level of detail set by what is looked at | Not stated (the user's request, 17 November 2026; D204) | No machine model of FR-13's own yet (D209). **M0 done:** the viewer's catalogue (40317ef7, illustration). M1's ATP synthase: the mitochondria lane's inner-membrane laws on the cycle kind include a synthase (64565faa, development, not judged), and that lane is paused (D268) | M1's build plan ([the design note](MOLECULAR_MACHINES_DESIGN.md) §10) when the mitochondria lane resumes; U4 and U6 open (D209) |
 | [FR-14](#fr-14--declared-extension-of-laws-operators-and-models) | Declared extension of laws, operators and models (object-oriented) | Not stated (the user's request, 17 November 2026; D205) | Requested; not scoped. No declared extends link, inherited checks or version rule on main (a search of `src/cells/registry`, unverified beyond that); D205's check stands | Covered by FR-13's design note (U6 open, D209): options for a declared extends link, inherited checks and version rules |
-| [FR-15](#fr-15--junction-crossing-and-charged-species-in-the-species-operators) | Junction-crossing and charged species in the species operators | Not stated (found by the gap-junction replication, D207; 17 November 2026) | **Landed in two parts.** S1, charged species in `local_species_reactions@1` (merge ddb52790, tag `fr15-s1-landed-2026-11-19`, D148). P2, `passive_constant_field_permeation@1` on the passive-routes kind, on patches (merge ce39c904, tag `fr15-p2-landed-2026-11-20`). The first step (why `check_impermeant` refuses) was done earlier | Junction hosting of the charged route, waiting on the @3 owner's two answers (the law module's header: the floating-component residual, a junction_flux in KindRates); charged turnover routes (`scheduled_species_turnover@2`) when a consumer needs them; charged kind routes on junctions crossing floating components are refused in version 1 of fix (A), and included (+1 day) when FR-15 needs them (D276) |
+| [FR-15](#fr-15--junction-crossing-and-charged-species-in-the-species-operators) | Junction-crossing and charged species in the species operators | Not stated (found by the gap-junction replication, D207; 17 November 2026) | **Landed in two parts; F2 designed.** S1, charged species in `local_species_reactions@1` (merge ddb52790, tag `fr15-s1-landed-2026-11-19`, D148). P2, `passive_constant_field_permeation@1` on the passive-routes kind, on patches (merge ce39c904, tag `fr15-p2-landed-2026-11-20`). F2, charged trace species on junctions: design note landed (7f3f6ccd, [note](CHARGED_TRACE_SPECIES_DESIGN.md)) and ruled in D310: option A, the charged law hosted on junctions; junctions crossing a floating component refused in version 1; the two-end material term; @1 widened in place | F2's build, A1 (about 2.25 to 2.75 agent-days, gated), at the next free agent slot; charged turnover routes (`scheduled_species_turnover@2`) when a consumer needs them; crossing junctions (A2, +1 to 1.5 days) when one does |
 | [FR-16](#fr-16--junction-gating-and-availability) | Junction gating and availability: a two-state voltage gate, per-species floors, two-sided combination rules | Not stated (the same) | Requested; awaits the user's go (D219: not started). **F3 partly met through FR-30:** the series gates (merge 12c18db1: threshold_relaxation and boltzmann_eyring) landed. F4 (a per-species floor) and F5 (min and mean combination): not found on main (unverified) | F4 and F5 unscheduled; F3's held-out voltage test is FR-30's. A short design before any build |
 | [FR-17](#fr-17--field-solves-beyond-2048-nodes) | Field solves beyond 2048 nodes | Not stated (the same) | Requested; awaits the user's go (D219: not started). The cap stands: `FACTORED_MAX_NODES` is 2048 in `numerics/surface_field.py` (21 November) | The preprint's 3D table, and mitochondria (D210) unless condensing compartment nodes serves them |
 | [FR-18](#fr-18--the-composites-energy-check-at-moderate-step-sizes) | The composite's energy check at moderate step sizes (a finding for the core) | Not stated (the same) | **X2 landed** (merge fd894b91, `step_doubled_energy@1`, D224): an opt-in step-doubled energy check; criterion X registered (570df4fd). The default check is not loosened for one experiment; any review of its default tolerance: unverified | None unless the core reviews the default tolerance or the step-size advice (unverified) |
@@ -36,18 +36,19 @@ and a general feature, never one built for one study (D144).
 | [FR-28](#fr-28--binding-sites-owned-by-a-compartments-surface) | Binding sites owned by a compartment's own surface, such as a vessel wall, with no cell | Normal (D245) | **Landed** (72274a53, tag fr28-node-sites-landed-2026-11-22): a node owner `{"node": N}`, counts as for every population, checker-accepted on the merged head; the wash-timing docs clarified (6b28ec55) | None |
 | [FR-29](#fr-29--an-optional-proton-return-mode-for-atp-driven-proton-pumps) | An optional proton-return mode for ATP-driven proton pumps, tested on the yeast vacuolar pump | Normal, started first of D248's four (D248) | **Investigated, no build (D268).** The return mode failed its registered test, and no form tested fits Fig. 3's curves and the pH 3.1 bound together (D258) | Reopens on a difference current at vacuolar pH 3.1 to 3.5 under Fig. 3's protocol |
 | [FR-30](#fr-30--homotypic-cx43-junctions-with-two-relaxation-times) | Homotypic Cx43 junctions with two relaxation times | **High,** inherited from FR-16's connexin catalogue (D225, D249) | The series gates' functions **landed** (merge 12c18db1, tag `fr30-series-gates-landed-2026-11-21`; kind `threshold_relaxation` or `boltzmann_eyring`); not registered. No openly licensed homotypic Cx43 voltage series found | All four registered papers are undetermined (D276, section 13.2); a metadata-only search for a source with two-exponential step decays at four or more voltages is running (D280). Development-only until a benchmark passes |
-| [FR-31](#fr-31--vesicle-rupture-during-a-steady-tension-hold) | Vesicle rupture during a steady tension hold: an optional rupture event competing in time | **High** (user, 22 November 2026; D286; was Low, D230, D248) | **Blind test passed (D298):** set 1, 5 of 5 two-sided (3 in range, 2 extrapolated); set 2, 5 of 5 one-sided (weak); wide tolerance, in-sample misfit disclosed | Phase A's engine lands after its gate; then OL6, then FR-39 |
+| [FR-31](#fr-31--vesicle-rupture-during-a-steady-tension-hold) | Vesicle rupture during a steady tension hold: an optional rupture event competing in time | **High** (user, 22 November 2026; D286; was Low, D230, D248) | **Blind test passed (D298):** set 1, 5 of 5 two-sided (3 in range, 2 extrapolated); set 2, 5 of 5 one-sided (weak); wide tolerance, in-sample misfit disclosed. **Phase A landed** (a9a67d06) | FR-39 (pores that open and reseal), now that OL6's deterministic representation and its pore clock have landed (S3, S4; D309) |
 | [FR-32](#fr-32--a-dopc-swelling-validation-record-for-the-water-operator) | A DOPC swelling validation record for the water operator | Low (D248) | Requested | Folded into the next water-operator landing |
 | [FR-33](#fr-33--regional-labelled-protein-readouts-redistribution-against-degradation) | Regional labelled-protein readouts: inside a measured region, outside it and across the whole cell | High (D228, D248) | **Two-way tracing landed** through D1, label families in the species registry (3c30082e), checker-accepted: redistribution keeps the labelled total and degradation lowers it by exactly the clearance, to rounding; charged log-mean faces refused. Regional readouts and the one-way tracer (ce2a3d9c) with D265's fixes (d48d40dd) | **The requester's first test landed** (7d70d63b, checker-accepted): two named regions joined by one face, with transfer and local-loss control. The in-cell compartment path stays priced (1.5 to 2 days), if a later test needs it |
 | [FR-34](#fr-34--channel-population-readouts-count-availability-and-signed-current) | Channel population readouts: surface count, availability and signed current at a declared voltage, with units and sign convention | **High** (user, 20 November 2026; D251) | **Landed, composites included:** opt-in flux and current readouts with fixed-voltage evaluation (81a29442); a composite's own clamped_channel_flux and clamped_kind at the step's control and layout views (07022ddf, D265 finding 1, checker-confirmed) | None |
 | [FR-35](#fr-35--timed-partial-withdrawal-of-an-assembly-populations-exterior-pool) | Timed partial withdrawal of an assembly population's well-mixed exterior pool: each molecule withdrawn independently, a declared buffer supplied, sites and particles kept | **High** (user, 21 November 2026) | **Landed** (merge b521a11c, tag `fr35-withdrawal-landed-2026-11-21`): `cells.pool_withdrawal@1` (D261) | None. Landed (b521a11c, with D263's fixes); the independent acceptance and a 4,000-stream ensemble passed |
 | [FR-36](#fr-36--age--and-region-selective-loss-within-a-species-row) | Age- and region-selective loss within a species row | FR-25's reviewer (21 November 2026) | **Deferred (D273).** Today's tools cover completion-time cohorts in one well-mixed pool with age-independent loss (cohort.py) and FR-33's regional export and one-way tracer | Reopens on a requester's readout needing age-dependent loss: D1 (label families) and D2 (an ageing operator), 2.5 to 4 days |
 | [FR-37](#fr-37--sampling-a-liquid-whose-dye-is-unevenly-distributed) | Sampling a liquid whose dye is unevenly distributed: a draw from chosen parts of an unevenly mixed liquid | **High** (user, 21 November 2026; D274) | **Shown with existing operators** (2bba6043, validation/sampling/uneven_draw.py): per-region wash events; the three cases match, with all 10 fmol accounted for; checker-accepted. Mixing is declared, not simulated (D246), and the sample is a host-side sum | Predicting the per-region split from the port, flow and timing needs an advection operator on faces, with the wash's face refusal lifted (about 3 to 5 days): built only if the requester asks |
-| [FR-38](#fr-38--rna-release-from-its-template-into-two-pools-with-different-lifetimes) | RNA release from its template into two pools with different lifetimes, with per-producer accounting, a release-window cohort and explicit measurement denominators | A user (22 November 2026) | **Engine core landed as development** (6926491d): hold, two fates, machine option, constant or scheduled p, counters, ledgers and restart; checker-accepted; reader landed (b99d6315) | On FR-42 stage 1: shares replace the class rows; producer identity (cell, generation, chain) across replacement, per the requester's clarification; routed p; then the registered comparison |
+| [FR-38](#fr-38--rna-release-from-its-template-into-two-pools-with-different-lifetimes) | RNA release from its template into two pools with different lifetimes, with per-producer accounting, a release-window cohort and explicit measurement denominators | A user (22 November 2026) | **Accepted (D306)** with its steps 4 and 5: replacement and restart with derived producer labels (amendments S and G, erratum E); export and retention at the node (amendment T, erratum H; merge 487ab941); the retention check fails closed where the grid error cannot be estimated (fd2bb88c). The comparison's rule and reader are registered (erratum 1, tag `fr38-rule-erratum-1-registered-2026-11-23`, D308) | The judged comparison against the code-blind references is running: R1's 12 runs and R2's 2, each at 2, 1 and 0.5 s |
 | [FR-39](#fr-39--a-vesicle-that-survives-transient-pores) | A vesicle that survives transient pores: repeated opening and resealing with partial cargo loss | **High** (user, via the Lean lane, 22 November 2026; D286) | **Requested.** Cells ends a lineage at terminal lysis | A design note shared with FR-31: tension-driven pore opening that either reseals after leaking or ruptures |
 | [FR-40](#fr-40--a-single-ribosome-translation-timing-benchmark) | A single-ribosome translation timing benchmark: 406 s from first detectable nascent chain to release | **High** (user, via the Lean lane, 22 November 2026; D286) | **Desk note landed** (022a5d2a). With only the paper's own speeds, which conflict, a comparison is a calibration, not a validation | A metadata-only search for a matched-condition speed or a multi-length reporter series; the spread test needs no speed |
 | [FR-41](#fr-41--vesicle-shrinkage-validation-records) | Vesicle shrinkage validation records for the osmotic lumen law | **High** (user, via the Lean lane, 22 November 2026; D286) | **One agreement, retention open:** shrinkage matches (24.56% against about 25%). The data-only retention check is undetermined for all three sources; the one point estimate (gel-phase LUVs) suggests partial release | Parked until a study with paired, tabulated volume and small-solute retention appears |
-| [FR-42](#fr-42--neutral-arrival-time-labels-that-leave-the-dynamics-unchanged) | Neutral arrival-time labels that leave the dynamics unchanged: loss computed once per physical population and shared by label | **High** (a user, 22 November 2026) | **Building, option A (D289):** labels as share vectors on the physical row, in three stages (desk note fa4b9d9e) | Stage 1 (pools) by the kinds owner, with the gene regulation lane's one-way reports; FR-38's class rows move onto shares before its registered comparison |
+| [FR-42](#fr-42--neutral-arrival-time-labels-that-leave-the-dynamics-unchanged) | Neutral arrival-time labels that leave the dynamics unchanged: loss computed once per physical population and shared by label | **High** (a user, 22 November 2026) | **Landed and accepted (D306):** labels as share vectors on the physical row (option A, D289; the label owner, D296), across kinds, pools and sources, with the kinds hook (`label_refusals`, `label_transfers`) | Done for its consumers; FR-38's comparison reads its shares |
+| [FR-43](#fr-43--shared-inventories-larger-networks-shared-pools-and-low-count-populations) | Shared inventories: larger sparse reaction networks; one pool spent and replenished by separate processes, at fixed and changing volume; a low-count integer population coupled to continuous chemistry | **Very high** (logged by the user, 23 November 2026) | **Design in progress:** one note for all three parts, with part 1's probe and timings | The lead's ruling on parts 1 and 2; part 3's host, a new system, goes to the user with options before any build |
 
 ## FR-1 — A closed internal compartment on the shared inventory
 
@@ -1875,3 +1876,66 @@ analysis rule fixed before any value was read (rule.md sha256 9ae86b40…; resul
 - **The first step:** a desk assessment. It covers share-based labels inside physical populations across
   families, turnover, templated polymerisation and faces; what moves in registered worlds; and how FR-38's
   cohort would use it.
+
+## FR-43 — Shared inventories: larger networks, shared pools and low-count populations
+
+**Logged 23 November 2026 by the user, priority very high.** The baseline is db54d0f5. The acceptance
+cases below are the request's own, condensed.
+
+**Why.** Cells refuses three things real cells do:
+- **Run reaction networks larger than 16 rows.** The cap counts every species, ions included (FR-9,
+  D165).
+- **Let separate processes spend and replenish one finite pool,** such as the nucleotides that
+  expression consumes and metabolism restores. The gene unit is the one writer of its listed rows, and
+  local reactions are refused beside the water operator, which changes volume.
+- **Couple a functional unit present in a few copies to continuous chemistry,** where the unit
+  assembles and disassembles stochastically. The assembly runner chooses one representation for a whole
+  world (OL6's refusal 11).
+
+**1. Larger sparse reaction networks.**
+- **The world:** one compartment and a reversible chain of neutral species, with unequal initial amounts
+  and both fast and slow transfers.
+- **The sizes:** 16 rows is the control; then 32 and 256 rows, and 1,024 profiled if practical. The
+  background ions are counted in each size.
+- **The checks:**
+  - the amount histories against the independent matrix-exponential solution;
+  - material, charge and energy accounting;
+  - at the same declared accuracy: compile time, time per simulated second after compilation, and peak
+    memory, with the device and precision.
+
+**2. One pool, two processes.**
+- **At fixed volume:** one operator replenishes a pool from a finite reserve while another spends it.
+  The amount and its standard chemical potential have one authority.
+  - At each saved time the shared amount equals the initial stock plus receipts minus spending.
+  - Both rates and the amount agree with an independent coupled calculation.
+  - Disabling either process recovers the other's standalone result.
+- **At changing volume:** this is D301's composition M3, with reactions in place of turnover.
+  - An impermeant tracer with its reactions off keeps its amount and halves its concentration when the
+    volume doubles.
+  - A concentration-dependent reaction agrees with a reference evaluated at the evolving volume.
+  - The energy balance includes the work of changing volume.
+
+**3. A low-count population coupled to continuous chemistry.**
+- **The world:** two free subunits form one active unit, which transfers material between two finite
+  pools. Disassembly returns both subunits.
+- **Conservation:** free subunits plus twice the active count stay constant, and the two pools conserve
+  their total.
+- **Event timing:**
+  - with feedback off and constant rates, the probability of no active unit agrees with the exact
+    two-state solution;
+  - with feedback on, where the event rate reads the current pool, the event times agree with
+    independently integrated rates under the same random draws.
+- **Division:** at an equal-probability split of a single active unit, exactly one recipient receives it
+  on every draw, and the recipients' inventories sum to the original.
+  - The split frequencies are checked across seeds.
+  - A same-seed checkpoint and restart reproduces the event trace and the balances.
+
+**Status (23 November).**
+- **The design:** one note for all three parts is being written (`docs/FR43_SHARED_INVENTORIES_DESIGN.md`),
+  with part 1's probe and timings.
+- **Part 3 is a new system.** Its host goes to the user with options before any build: a per-scope
+  representation in the assembly model, or an integer-population operator in the composite.
+- **The references:**
+  - the matrix exponential is a closed form, inside the test;
+  - part 2's coupled calculation and part 3's same-draws integration come from a code-blind references
+    agent, started at the design ruling.
