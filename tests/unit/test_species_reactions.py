@@ -69,13 +69,8 @@ def test_the_operator_is_registered_with_its_declarations():
         "reaction_outside_dissipated_energy_pJ",
     )
     assert op.WORK_FIELDS == ("reaction_work_pJ", "reaction_outside_work_pJ")
-    assert op.CONFLICTS_VIEW == (
-        "volume",
-        "extracellular_volume",
-        "active",
-        "outside_active",
-        "extracellular_amount_reference",
-    )
+    assert op.CONFLICTS_VIEW == ("active", "outside_active", "extracellular_amount_reference")
+    assert op.VIEW_READS == ("volume", "extracellular_volume")  # Read current (FR-43 / D315).
     assert dict(op.ENTITY_WRITES) == {
         "amount_increment": ("reaction_produced_fmol", "reaction_consumed_fmol"),
         "extracellular_amount_increment": (
