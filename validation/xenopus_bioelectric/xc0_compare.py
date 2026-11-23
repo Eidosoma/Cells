@@ -18,8 +18,9 @@ The interface, as REFERENCES_USAGE.md states it:
 - the band rule: band = max(tol_abs + tol_rel |reference|, 10 floor).
 
 Stages (each a command):
-- `keys BANDS OUT`: the bands file's family names, kinds, units and row keys, written to OUT, never a
-  value, aux, floor, band, tolerance, claim, quantity or note. With the MAPPING, the table's manifest.
+- `keys BANDS OUT [--with-text]`: the bands file's family names, kinds, units and row keys (with
+  --with-text, at the lead's leave, each family's claim and quantity strings), written to OUT; never
+  a value, aux, floor, band, tolerance or note. With the MAPPING, the table's manifest.
 - `manifest KEYS OUT`: each compared row's engine reading (MAPPING) as xc0_engine's manifest; rows no
   mapping covers are listed apart (names and keys only).
 - `judge TABLE VALUES BANDS OUT [--retry RETRY_TABLE]`: first resolves every compared row to one table
@@ -289,13 +290,16 @@ def check_table(table, rule):
 # ------------------------------------------------------------------ stages
 
 
-def keys(bands_path):
+def keys(bands_path, *, with_text=False):
     """{family: {"kind", "unit", "keys": [...]}} from the bands file: names, kinds, units and row
-    keys only."""
+    keys only; with_text (the lead's leave) adds each family's claim and quantity strings. Never a
+    value, aux, floor, band, tolerance or note."""
     bands = json.loads(Path(bands_path).read_text())
     out = {}
     for family, entry in bands["families"].items():
         out[family] = dict(kind=entry["kind"], unit=entry["unit"], keys=sorted(entry["rows"]))
+        if with_text:
+            out[family] |= dict(claim=entry["claim"], quantity=entry["quantity"])
     return out
 
 
@@ -755,6 +759,7 @@ def main(argv=None):
     k = sub.add_parser("keys")
     k.add_argument("bands")
     k.add_argument("out")
+    k.add_argument("--with-text", action="store_true", help="each family's claim and quantity")
     m = sub.add_parser("manifest")
     m.add_argument("keys")
     m.add_argument("out")
@@ -775,7 +780,7 @@ def main(argv=None):
     c.add_argument("out")
     args = a.parse_args(argv)
     if args.command == "keys":
-        data = json.dumps(keys(args.bands), indent=1, sort_keys=True)
+        data = json.dumps(keys(args.bands, with_text=args.with_text), indent=1, sort_keys=True)
         Path(args.out).write_text(data)
         print(hashlib.sha256(data.encode()).hexdigest())
     elif args.command == "manifest":
