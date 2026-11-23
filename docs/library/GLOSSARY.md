@@ -623,7 +623,7 @@ as osmotic water flow. A definition lists the operators it uses, in order.
 
 <!-- generated: used-by operator -->
 
-- **Used by:** [`cells.ideal_osmosis_linear_compliance_water@1`](cells/operators/ideal_osmosis_linear_compliance_water@1.md).
+- **Used by:** [`cells.ideal_osmosis_linear_compliance_water@1`](cells/operators/ideal_osmosis_linear_compliance_water@1.md) and [`cells.integer_unit_population@1`](cells/operators/integer_unit_population@1.md).
 
 <!-- /generated -->
 

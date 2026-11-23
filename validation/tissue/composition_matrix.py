@@ -66,6 +66,7 @@ SITES = "site_occupancy@1"
 OCCUPANT = "site_occupant_replacement@1"  # FR-26's W.
 TRAFFICKING = trafficking_operator.LAW_ID
 PRODUCER = "population_unit_turnover@1"
+INTEGER = "integer_unit_population@1"  # FR-43 part 3 (D315).
 LABELS = labels_operator.LAW_ID
 
 OPS = "src/cells/operators/"
@@ -880,6 +881,29 @@ def _tags():
             "nominal)",
             (),
         )
+    # integer_unit_population@1 (FR-43 part 3, D315): its transfers and clock read the declared
+    # volumes (version 1), and its split part reads the patch masks and node anchors current.
+    volumes = (
+        "Its transfers and event clock read the declared volumes (version 1; a current-volume "
+        "read waits for FR-43 part 2's, D315)"
+    )
+    for name in ("volume", "extracellular_volume"):
+        tags[("reads", INTEGER, WATER, name)] = (REAL, volumes, ())
+    for lumen in (LUMEN_1, LUMEN_2):
+        tags[("reads", INTEGER, lumen, "extracellular_volume")] = (
+            REAL,
+            volumes + "; a lumen changes its node's volume",
+            (),
+        )
+    for insertion in (INSERTION_1, INSERTION_2):
+        for name in ("membrane_active", "extracellular_amount_reference"):
+            tags[("order", INTEGER, insertion, name)] = (
+                REAL,
+                "Its split part reads the patch masks and node anchors current, and insertion "
+                "changes them at its own split part after it, a read lagged by half a step (C2's "
+                "order rule); its definition refuses insertion too (check_writers)",
+                (),
+            )
     return tags
 
 
@@ -929,6 +953,16 @@ _UNIT_WRITERS = tuple(
     if law != PRODUCER and "population_abundance_increment" in OPERATORS[law].ENTITY_WRITES
 )
 _UNIT_PAIRS = tuple(pair for law in _UNIT_WRITERS for pair in ((PRODUCER, law), (law, PRODUCER)))
+# integer_unit_population@1 refuses replacement, the mask changers that do not divide through the
+# composite's lifecycle, and the label owner, in either order and with what requires them
+# (integer_unit_population.check_writers).
+_INTEGER_REFUSED = (REPLACEMENT_1, REPLACEMENT_2, INSERTION_1, INSERTION_2, LABELS)
+_INTEGER_PAIRS = tuple(
+    pair
+    for law in LAWS
+    if law != INTEGER and set(closure(law)) & set(_INTEGER_REFUSED)
+    for pair in ((INTEGER, law), (law, INTEGER))
+)
 
 
 def _labels_refuse(law):
@@ -1368,6 +1402,21 @@ RULES = (
         tag=REAL,
         why="Version 1's bookings are exact and checked at rounding under IMEX; D150's RK4 "
         "worlds stay the transport's sharp reference, and no consumer needs it (D152 §4.6)",
+    ),
+    dict(
+        rule="integer_unit_population@1 refuses replacement, the mask changers that do not divide "
+        "through the lifecycle, and the label owner",
+        laws=(INTEGER, *sorted({law for pair in _INTEGER_PAIRS for law in pair} - {INTEGER})),
+        level="law",
+        check=OPS + "integer_unit_population.py::check_writers",
+        test=TESTS + "test_integer_unit_population.py::test_each_refused_neighbour",
+        tag=REAL,
+        why="A replaced slot's units and clock have no rule (D301's finding for the gene unit); a "
+        "slot opened or closed other than by a division through the composite's lifecycle would "
+        "gain or keep units with no rule; and it reports no one-way moves to a label owner. It "
+        "divides only through the lifecycle hook (DIVIDES_OWNED, FR-43 part 3)",
+        marks=tuple(pair for pair in _INTEGER_PAIRS if not errors(sequence(*pair))),
+        behind=tuple(pair for pair in _INTEGER_PAIRS if errors(sequence(*pair))),
     ),
     dict(
         rule="population_unit_turnover@1 refuses every other writer of population units",

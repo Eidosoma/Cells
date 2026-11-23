@@ -3,6 +3,7 @@
 import argparse
 import json
 import math
+from bisect import bisect_left
 from decimal import Decimal, localcontext
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -25,6 +26,7 @@ def compare(path, name, fate):
     rate = EXPECTED[fate]
     residual = abs(later - rate * close)
     allowance = None
+    intervals = ratio_rounding = ratio_bound = None
     ratio_ok = net_ok = None
     endpoints = ("window_end", "sample")
     errors = [read[f"grid_error_at_{end}"] for read in (counts, net) for end in endpoints]
@@ -36,7 +38,10 @@ def compare(path, name, fate):
     else:
         allowance = e_later + rate * e_close
         assert math.isfinite(allowance)
-        ratio_ok = abs(counts["ratio"] - rate) <= allowance / close
+        intervals = bisect_left(times, HOUR_S) - bisect_left(times, 0)
+        ratio_rounding = (2 * intervals + 8) * math.ulp(1.0) * rate
+        ratio_bound = allowance / close + ratio_rounding
+        ratio_ok = abs(counts["ratio"] - rate) <= ratio_bound
         net_ok = all(
             abs(counts[f"alive_at_{end}"] - net[f"alive_at_{end}"]) <=
             counts[f"grid_error_at_{end}"] + net[f"grid_error_at_{end}"] +
@@ -62,8 +67,8 @@ def compare(path, name, fate):
             reported_bound = bound if math.isfinite(bound) else "nonfinite"
         correct_bound = (
             bound is None
-            if allowance is None
-            else (bound is not None and math.isclose(bound, allowance / close, rel_tol=1e-14))
+            if ratio_bound is None
+            else (bound is not None and math.isclose(bound, ratio_bound, rel_tol=1e-14))
         )
         agrees = (reported == reference and result["ok"] == (reference == "pass")
                   and result.get("net_agrees") == net_ok and correct_bound)
@@ -76,6 +81,9 @@ def compare(path, name, fate):
         net_agrees=net_ok,
         count_residual_fmol=residual,
         count_allowance_fmol=allowance,
+        window_intervals=intervals,
+        ratio_rounding=ratio_rounding,
+        reference_ratio_bound=ratio_bound,
         reference=reference,
         checker=reported,
         checker_ratio_bound=reported_bound,
@@ -98,7 +106,9 @@ def controls(directory):
         raw = worlds.r1(0.75)
         row = release_check.FATE_ROWS["short_lived"]
         if name == "different_gross_rate":
-            (operator,) = [o for o in raw["model"]["operators"] if o["law"] == worlds.POLYMERISATION]
+            (operator,) = [
+                o for o in raw["model"]["operators"] if o["law"] == worlds.POLYMERISATION
+            ]
             routes = {d["id"] for d in operator["degradations"]
                       if d["polymer"] == row and d["cell"] == "cell_0"}
             for control in raw["experiment"]["polymerisation_controls"]:
