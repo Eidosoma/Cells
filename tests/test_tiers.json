@@ -359,7 +359,8 @@
   "/mnt/workspaces/Cells/ol6-20261122/tiers-24f0887c/measure/measured.json",
   "/mnt/workspaces/Cells/ol6-20261122/tiers-ef7dae2f/measure/measured.json",
   "/mnt/workspaces/Cells/ol6-20261122/tiers-d4afedc3/measure/measured.json",
-  "/mnt/workspaces/Cells/ol6-20261122/tiers-8df9b012/measure/measured.json"
+  "/mnt/workspaces/Cells/ol6-20261122/tiers-8df9b012/measure/measured.json",
+  "/mnt/workspaces/Cells/gene-regulation-20261120/fr38/export/timed-9e17faf8/measured.json"
  ],
  "measured_provenance": [
   {
@@ -3059,6 +3060,14 @@
    "root": "/mnt/workspaces/Cells/ol6-20261122/snapshot-8df9b012",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-23T04:18:31+00:00"
+  },
+  {
+   "git_revision": "9e17faf89f358b0f6b42556d393b200f1e1757cc",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/gene-regulation-20261120/fr38/export/snapshot-head-9e17faf8",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-23T05:49:23+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -4600,7 +4609,7 @@
    },
    {
     "file": "tests/unit/test_gene_regulation_compare.py",
-    "seconds": 16.76,
+    "seconds": 17.22,
     "exit_code": 0,
     "counts": {
      "passed": 45
@@ -6433,14 +6442,6 @@
     }
    },
    {
-    "file": "tests/unit/test_templated_polymerisation.py",
-    "seconds": 8.94,
-    "exit_code": 0,
-    "counts": {
-     "passed": 43
-    }
-   },
-   {
     "file": "tests/unit/test_tier3_record.py",
     "seconds": 0.57,
     "exit_code": 0,
@@ -7581,7 +7582,7 @@
    },
    {
     "file": "tests/unit/test_neutral_labels_events.py",
-    "seconds": 20.62,
+    "seconds": 22.18,
     "exit_code": 0,
     "counts": {
      "passed": 4
@@ -8187,6 +8188,14 @@
     "counts": {
      "passed": 33,
      "skipped": 1
+    }
+   },
+   {
+    "file": "tests/unit/test_templated_polymerisation.py",
+    "seconds": 25.49,
+    "exit_code": 0,
+    "counts": {
+     "passed": 53
     }
    },
    {

@@ -45,7 +45,28 @@ amount times the label's share, keyed by the species' and label's IDs; and each 
 the labels of its durable fate row, label_H_<release>_<label>, the hold times its share in the
 label owner's pool (D296). In R1L label_R_cohort and label_R_s_cohort are §9.8's route 1 on shares
 (errata C and F), the window's releases still present, marked on transcription's own label
-schedule, with no blank. A label never changes a physical readout.
+schedule, with no blank. A label never changes a physical readout. The labels are the owner's
+derived list, so producer labels (amendment G, §9.20) are exported with the declared ones.
+
+**The export** (amendment T, the sheet's §9.17; erratum H, §9.21). Where the exported cell's own
+exports carry a row out, the export also reads each node they feed, keyed by the node's ID:
+- each row the operator writes there (the exported rows, and its outside degradations' polymers
+  and monomers), n_<row>_<node>, and with FR-42's labels label_<row>_<label>_<node>, the row times
+  its share at the node;
+- each export's one-way parts, int_E_<export>_forward (cell to node, with the cell's shares) and
+  int_E_<export>_backward (node to cell); each outside degradation's int_D_route_<route>, and
+  their sum per polymer and node, int_D_<polymer>_<node>;
+- the heat classes H_exp, the exports' heat (each export's whole heat, which the operator books
+  at its cell), and H_odeg, the outside degradations' (booked at their node), each route's as
+  H_route_<route>.
+
+Then G_minus_G0 extends over the rows written at the nodes (§9.17.2), and H_total, the routes' sum
+and the energy magnitude include the nodes' heat and bookings, so G's identity closes over the
+cell and its nodes. An exported row is no lossless product (D265): it leaves its cell by export.
+The checks name the nodes (exported_nodes). A node that another cell's export also feeds is
+refused, since that export's heat is booked at its own cell, so G over this cell and its nodes
+would not close against their heat: a shared node's cells are not exported (version 1). Without
+an export from the exported cell nothing here is read, and the record is unchanged.
 """
 
 import argparse
@@ -64,7 +85,7 @@ import numpy as np
 
 from cells.definitions.specs import parse_spec
 from cells.execution.windows import WindowPolicy, iter_windows
-from cells.operators import OPERATORS
+from cells.operators import OPERATORS, species_labels
 from cells.operators import templated_polymerisation as polymerisation
 from cells.registry.models import get_model
 from validation.gene_regulation import sheet_check as sheet
@@ -208,6 +229,8 @@ def classes(block):
             out["H_deg_R" if d.polymer in gene_made else "H_deg_P"].append(("degradation", i))
     for i, _ in enumerate(block.transfers):
         out["H_rc"].append(("transfer", i))
+    out["H_exp"] = [("export", i) for i, _ in enumerate(block.exports)]  # Amendment T (§9.17).
+    out["H_odeg"] = [("outside", i) for i, _ in enumerate(block.outside_degradations)]
     return {k: v for k, v in out.items() if v}
 
 
@@ -243,12 +266,40 @@ def exported_cell(spec, block, cell=None):
     return cell
 
 
+def export_nodes(block, cell):
+    """The nodes the exported cell's exports feed (amendment T, §9.17), in their order; [] without
+    one. Refused where another cell's export feeds one too (module docstring)."""
+    nodes = list(dict.fromkeys(e.node for e in block.exports if e.cell == cell))
+    shared = sorted(
+        (e.node, e.cell, e.id) for e in block.exports if e.node in nodes and e.cell != cell
+    )
+    if shared:
+        node, other, export = shared[0]
+        raise ValueError(
+            f"node {node} also takes {other}'s export {export}, whose heat is booked at {other}: "
+            f"G over {cell} and its nodes would not close; a shared node's cells are not exported "
+            "(version 1)"
+        )
+    return nodes
+
+
+def node_rows(block, node):
+    """The listed rows the operator writes at an exported node (§9.17.2), in listed order: its
+    exports' rows there, and its outside degradations' polymers and monomers there."""
+    written = {e.row for e in block.exports if e.node == node}
+    for d in block.outside_degradations:
+        if d.node == node:
+            written |= {d.polymer, *(row for row, _ in d.monomers)}
+    return [s.id for s in block.species if s.id in written]
+
+
 def labelled(spec):
-    """((species, its labels), ...) that FR-42's label owner declares, in its order; () where the
+    """((species, its labels), ...) of FR-42's label owner, in its order, each species' labels the
+    owner's derived list (its declared labels, then its producers', amendment G); () where the
     world declares none."""
     for d in spec.model.operators:
         if d.law == LABELS:
-            return tuple((s.id, s.labels) for s in d.species)
+            return tuple((s.id, s.labels) for s in species_labels.derived(spec, d)[0].species)
     return ()
 
 
@@ -263,6 +314,8 @@ def readouts(spec, states, cell=None):
     (block,) = [d for d in spec.model.operators if d.law == worlds.POLYMERISATION]
     cell = exported_cell(spec, block, cell)
     at = [c.id for c in spec.model.cells].index(cell)
+    nodes = export_nodes(block, cell)  # Amendment T (§9.17): [] without an export from the cell.
+    axis = polymerisation.exported_nodes(block)  # The operator's own node axis (its fields').
     rows = [s.id for s in block.species] + (["X"] if "X" in species else [])
     mu = dict(zip([s.id for s in block.species], block.mu_RT, strict=True))
     volume = float(next(c.volume_pL for c in spec.model.cells if c.id == cell))
@@ -275,6 +328,8 @@ def readouts(spec, states, cell=None):
         pool=[i for i, q in enumerate(block.pools) if q.cell == cell],
         degradation=[i for i, d in enumerate(block.degradations) if d.cell == cell],
         transfer=[i for i, x in enumerate(block.transfers) if x.cell == cell],
+        export=[i for i, e in enumerate(block.exports) if e.cell == cell],
+        outside=[i for i, d in enumerate(block.outside_degradations) if d.node in nodes],
     )
     membership = {
         name: [(kind, i) for kind, i in members if i in here[kind]]
@@ -295,7 +350,8 @@ def readouts(spec, states, cell=None):
     ]
     made = {block.chains[i].product for i in here["chain"]}
     made |= {row for _, _, r in releases for row in r.rows()}
-    zero_loss = sorted(made - lost - others)
+    exported = {block.exports[i].row for i in here["export"]}  # It leaves by export (§9.17).
+    zero_loss = sorted(made - lost - others - exported)
     times = [float(t) for t in spec.experiment.observation_times]
     out = {}
 
@@ -356,22 +412,32 @@ def readouts(spec, states, cell=None):
             x = block.transfers[i]
             name = "int_J_C" if len(here["transfer"]) == 1 else f"int_J_C_{x.id}"
             put(name, np.asarray(s.poly_transferred_fmol)[i])
+        if nodes:  # Amendment T (§9.17): the nodes' rows, labels and counters, and their G.
+            g_nodes = _node_readouts(put, s, spec, block, nodes, here, p, shared, mu, residue_mu)
         heats = {
             "chain": np.asarray(s.poly_chain_heat_pJ),
             "degradation": np.asarray(s.poly_degradation_heat_pJ),
             "transfer": np.asarray(s.poly_transfer_heat_pJ),
+            "export": np.asarray(s.poly_export_heat_pJ),
+            "outside": np.asarray(s.poly_outside_degradation_heat_pJ),
         }
         routes = {
             "chain": block.chains,
             "degradation": block.degradations,
             "transfer": block.transfers,
+            "export": block.exports,
+            "outside": block.outside_degradations,
         }
         for kind, items in routes.items():
             for i in here[kind]:
                 put(f"H_route_{items[i].id}", heats[kind][i])
         for name, members in membership.items():
             put(name, sum(float(heats[kind][i]) for kind, i in members))
-        put("H_total", float(np.asarray(s.poly_dissipated_energy_pJ)[at]))
+        booked = float(np.asarray(s.poly_dissipated_energy_pJ)[at])
+        if nodes:  # Amendment T: the heat booked at each node, its outside degradations'.
+            node_heat = np.asarray(s.poly_outside_dissipated_energy_pJ)
+            booked = math.fsum([booked, *(float(node_heat[axis.index(o)]) for o in nodes)])
+        put("H_total", booked)
         release_heat = _release_readouts(put, s, releases, amounts)
         put(
             "H_routes_sum",
@@ -384,6 +450,10 @@ def readouts(spec, states, cell=None):
         g = free_energy(
             {row: amounts[row] for row in mu}, residues, mu, residue_mu, volume, block.c0_mM
         )
+        if nodes:  # §9.17.2: G extends over the nodes the operator writes.
+            with localcontext() as ctx:
+                ctx.prec = DIGITS
+                g = g + g_nodes
         g0 = g if g0 is None else g0
         put("G_minus_G0", g - g0)
     ribosome = any(c.template_species for c in block.chains)
@@ -400,7 +470,11 @@ def readouts(spec, states, cell=None):
     scale = max(abs(v) for v in out["H_total"]) or 1.0
     identity = [g + h for g, h in zip(out["G_minus_G0"], out["H_total"], strict=True)]
     split = [a - b for a, b in zip(out["H_routes_sum"], out["H_total"], strict=True)]
-    magnitude = float(np.asarray(states[max(states)].poly_energy_magnitude_pJ)[at])
+    last = states[max(states)]
+    magnitude = float(np.asarray(last.poly_energy_magnitude_pJ)[at])
+    if nodes:  # Amendment T: the bookings at the nodes.
+        node_magnitude = np.asarray(last.poly_outside_energy_magnitude_pJ)
+        magnitude = math.fsum([magnitude, *(float(node_magnitude[axis.index(o)]) for o in nodes)])
     checks = dict(
         G_identity_largest_pJ=max(abs(x) for x in identity),
         G_identity_over_sum_H_at_end=max(abs(x) for x in identity) / scale,
@@ -413,8 +487,54 @@ def readouts(spec, states, cell=None):
             for name in [*membership, *(k for k in out if k.startswith("H_rel_"))]
         },
         exported_cell=cell,
+        **({"exported_nodes": nodes} if nodes else {}),
     )
     return times, out, checks
+
+
+def _node_readouts(put, s, spec, block, nodes, here, p, shared, mu, residue_mu):
+    """Amendment T's readouts at one output (module docstring), keyed by the nodes' and routes'
+    IDs: each node's written rows (node_rows) and their labels, the exports' one-way parts and
+    the outside degradations' counters. Returns the nodes' G over those rows (§3.4, as
+    free_energy, with no transit), as a Decimal. The node amounts and their shares are on the
+    model's extracellular slots, the bath's among them, so each node is found there by its ID."""
+    species = list(spec.model.species_ids)
+    slots = [c.id for c in spec.model.extracellular]
+    reference = np.asarray(p.extracellular_amount_reference)
+    increment = np.asarray(s.extracellular_amount_increment)
+    labels = dict(shared)
+    position = {row: j for j, (row, _) in enumerate(shared)}
+    share = np.asarray(s.label_outside_share) if shared else None  # [labelled, label, slot]
+    with localcontext() as ctx:
+        ctx.prec = DIGITS
+        g = Decimal(0)
+        for node in nodes:
+            k = slots.index(node)
+            amounts = {
+                row: float(reference[species.index(row), k] + increment[species.index(row), k])
+                for row in node_rows(block, node)
+            }
+            for row, n in amounts.items():
+                put(f"n_{row}_{node}", n)
+            for row, n in amounts.items():
+                for j, name in enumerate(labels.get(row, ())):
+                    put(f"label_{row}_{name}_{node}", n * float(share[position[row], j, k]))
+            volume = float(spec.model.extracellular[k].volume_pL)
+            g += free_energy(amounts, {}, mu, residue_mu, volume, block.c0_mM)
+    forward = np.asarray(s.poly_export_forward_fmol)
+    backward = np.asarray(s.poly_export_backward_fmol)
+    for i in here["export"]:
+        put(f"int_E_{block.exports[i].id}_forward", forward[i])
+        put(f"int_E_{block.exports[i].id}_backward", backward[i])
+    degraded = np.asarray(s.poly_outside_degraded_fmol)
+    outside = [(i, block.outside_degradations[i]) for i in here["outside"]]
+    for node in nodes:
+        for polymer in sorted({d.polymer for _, d in outside if d.node == node}):
+            mine = [i for i, d in outside if d.node == node and d.polymer == polymer]
+            put(f"int_D_{polymer}_{node}", math.fsum(float(degraded[i]) for i in mine))
+    for i, d in outside:
+        put(f"int_D_route_{d.id}", degraded[i])
+    return g
 
 
 def _held(s, releases):

@@ -39,7 +39,9 @@ chain's: for the mRNA R in A1, transcription's (tx), not translation's (tl). A c
 does not make the product is refused, and so is a product that no chain or several chains make,
 unless one of them is named. The A1 export's CSV holds tx (making R) and tl (making P). With a
 release (the sheet's §9, FR-38), a fate row's inflow is the release's into it, not the chain's
-completions, which join the hold (`producers`): this is §9.8's route 2, per fate pool.
+completions, which join the hold (`producers`): this is §9.8's route 2, per fate pool. A row its
+cell exports (amendment T, §9.17) is refused: it leaves by export as well as by its loss, so one
+pool's reading does not apply, and `series` reads the cohort through the export.
 
 **The check.** FR-25's turnover control: 100 copies at steady state, a one-hour half-life and
 production of 100 ln 2 copies per hour. Of the 69.31 copies completed in the first hour, 50 remain
@@ -54,6 +56,8 @@ import csv
 import json
 import math
 from pathlib import Path
+
+import numpy as np
 
 # D283: the window edges' predicate is the clock's one same-instant predicate (it was a seam here,
 # equal times, until D283 landed), as templated_polymerisation.grid_time reads on_grid.
@@ -212,6 +216,52 @@ def known_survival(t, Q, k, t1, t2, ts):
     )
 
 
+def series(t, Q, k_f, forward, n_c, backward, n_o, k_o, t1, t2, ts):
+    """FR-38's release-marked cohort through an export (the sheet's §9.17.5, second readout, as
+    erratum H, §9.21, item 2, reads it): (in the fate row, at the node) at ts, two pools in series
+    on the output grid. The window's releases (Q, released during [t1, t2), spread evenly over
+    each interval) join the row; its members leave the row at the fate's gross k_f and by the
+    export's forward part, and return by its backward part; at the node they leave at the outside
+    loss's gross k_o and by the backward part. Each interval's per-molecule export rates are its
+    forward and backward counters' increments over the integral of the row and of the node (the
+    trapezoid), held constant over it, and each interval's linear system is solved exactly (the
+    matrix exponential of its augmented form). Exact for constant rates in well-mixed pools, up to
+    its grid error (series_error)."""
+    from scipy.linalg import expm
+
+    check_counters(t, Q=Q)
+    i1, i2, i3 = _window(t, t1, t2, ts)
+    state = np.zeros(2)
+    for i in range(i1, i3):
+        h = t[i + 1] - t[i]
+        held_c = _integral(t, n_c, i, i + 1)
+        held_o = _integral(t, n_o, i, i + 1)
+        r_e = (forward[i + 1] - forward[i]) / held_c if held_c > 0 else 0.0
+        r_b = (backward[i + 1] - backward[i]) / held_o if held_o > 0 else 0.0
+        made = (Q[i + 1] - Q[i]) / h if i < i2 else 0.0
+        system = np.array([
+            [-(k_f + r_e), r_b, made],
+            [r_e, -(k_o + r_b), 0.0],
+            [0.0, 0.0, 0.0],
+        ])  # fmt: skip
+        state = (expm(system * h) @ np.array([state[0], state[1], 1.0]))[:2]
+    return float(state[0]), float(state[1])
+
+
+def series_error(t, Q, k_f, forward, n_c, backward, n_o, k_o, t1, t2, ts):
+    """|series on every output - series on every second output| at the node: the series form's
+    error on the coarser grid, an upper estimate on the given one (grid_error's form); None where
+    the window holds no output to drop."""
+    i1, i2, i3 = _window(t, t1, t2, ts)
+    keep = [i for i in range(len(t)) if i % 2 == 0 or i in (i1, i2, i3)]
+    if all(i in keep for i in range(i1, i3 + 1)):
+        return None
+    fine = series(t, Q, k_f, forward, n_c, backward, n_o, k_o, t1, t2, ts)[1]
+    pick = [[seq[i] for i in keep] for seq in (t, Q, forward, n_c, backward, n_o)]
+    coarse = series(pick[0], pick[1], k_f, pick[2], pick[3], pick[4], pick[5], k_o, t1, t2, ts)[1]
+    return abs(fine - coarse)
+
+
 def grid_error(t, n, Q, D, t1, t2, ts=None):
     """|survivors on every output - survivors on every second output|: the calculation's error on
     the coarser grid, an upper estimate of its error on the given one. None where the window holds
@@ -346,6 +396,15 @@ def read(path, product="P", chain=None):
         r = json.loads(path.read_text())
         (block,) = [o for o in r["definition"]["model"]["operators"] if o["law"] == POLYMERISATION]
         cell = exported_cell(r, block)
+        inside = {m["id"]: m["inside"] for m in r["definition"]["model"].get("membranes", ())}
+        exports = [e["id"] for e in block.get("exports", ())
+                   if e["row"] == product and inside.get(e["patch"]) == cell]  # fmt: skip
+        if exports:
+            raise ValueError(
+                f"{product} at {cell} leaves by export {exports[0]} as well as by its loss "
+                "(amendment T, §9.17), so one pool's reading does not apply; the cohort through "
+                "an export is series'"
+            )
         pool_cell = {q["id"]: q["cell"] for q in block["pools"]}
         here = [c for c in block["chains"] if pool_cell[c["pool"]] == cell]
         local, counters = producers(here)

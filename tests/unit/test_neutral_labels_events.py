@@ -94,22 +94,20 @@ def chase(kind):
     from cells.operators import species_labels as labels
     from validation.gene_regulation import replace_restart as rr
 
-    raw = rr.chase_world()
+    raw = rr.chase_world()  # It declares its producers (amendment G; the gene lane's Work 3).
     owner = next(o for o in raw["model"]["operators"] if o["law"] == labels.LAW_ID)
-    arrivals = raw["experiment"]["label_arrivals"]
     g0, g1 = rr.G0, rr.G1
     if kind == "derived":
-        window = {"label": "cohort", "from": 0.0, "to": rr.W}
-        for entry in owner["species"]:
-            entry.update(labels=["base"], producers=[dict(source=rr.CHAIN, windows=[window])])
-        raw["experiment"]["label_arrivals"] = [e for e in arrivals if "source" not in e]
         return raw
     for entry in owner["species"]:
+        entry.pop("producers")
         entry["labels"] = ["base", g0, f"{g0}-cohort", g1, f"{g1}-cohort"]
-    (own,) = (e for e in arrivals if e.get("source") == rr.CHAIN)
-    own["schedule"] = [
+    schedule = [
         dict(time=0.0, label=f"{g0}-cohort"), dict(time=rr.W, label=g0), dict(time=rr.T_E, label=g1)
     ]  # fmt: skip
+    raw["experiment"]["label_arrivals"].append(
+        dict(species=rr.ROWS[0], source=rr.CHAIN, schedule=schedule)
+    )
     return raw
 
 
