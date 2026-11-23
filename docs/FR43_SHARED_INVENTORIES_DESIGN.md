@@ -630,12 +630,12 @@ error.
   declared to one scope: **exact** (the population's places and steps, fired by the clock) or
   **continuous** (the pools, integrated by Rodas4). D301's contract holds per scope: one
   representation per scope, chosen at definition, refused when a place is declared in both.
-- **The couplings are reads, through laws the family has.** The transfer X_in + A → X_out + A is a
-  continuous step with A as a catalyst place (its net change is zero), so its flux reads the integer
-  count; the assembly 2S (+ X) → A (+ X) is an exact step whose rate reads a continuous place as a
-  catalyst or a declared factor (the feedback). A step that changes places of both scopes is refused
-  in version 1. With a vesicle world, the two finite pools are its lumen and its pool, and the active
-  unit a channel in the membrane.
+- **The couplings are reads.** The transfer is a continuous step (S's entry from the pool to the
+  lumen) whose rate the active unit sets as a catalyst through the transition-state factor, which
+  parses today; the assembly 2S → A is an exact step whose rate reads the pool (the feedback), which
+  needs a new factor (below). A step that changes places of both scopes is refused in version 1. In a
+  vesicle world the two finite pools are its lumen and its pool, and the active unit a channel in
+  the membrane.
 - **What it reuses.** `cells.rate_equations@1`'s host loop, stops and crossings (Illinois, re-stepped
   to the root), Rodas4 with its dense output, S3's carried clock and D309's bound, the exact kernel's
   draw and channel conventions, the family's streams, keys and domains, and FR-22's checkpoint format
