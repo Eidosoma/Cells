@@ -149,6 +149,7 @@ The `checks` in each file report this identity's residual. They also report:
 ## Method and accuracy
 
 - **The primary method.** scipy's `solve_ivp` with Radau (implicit Radau IIA, order 5) at rtol 1e-11.
+  C2.8 is the exception, at rtol 1e-13, for the reason below.
   - atol is 1e-30 fmol (or pL) for the states and extents, so that the relative tolerance governs
     even the trace rows.
   - For the heats and works atol is 1e-20 pJ, because an integrand J ΔG starting at exactly 0 has
@@ -236,6 +237,6 @@ Every file's `method.second[...].difference_from_primary` gives e per quantity, 
 - The driven route's work changes sign with its ΔG. It is negative while N is plentiful, and
   slightly positive once N is spent, ending at −1.1105e-2 pJ. Its heat is 0.
 
-**Reproducibility.** Each case was re-run in a fresh process under another hash seed and on another
-core, and reproduced its file's arrays and checks bitwise: C2.3-sink, C2.3-source-planted, C2.6 and
-C2.8.
+**Reproducibility.** Four of the six cases were re-run, each in a fresh process under another hash
+seed and on another core: C2.3-sink, C2.3-source-planted, C2.6 and C2.8. Each reproduced its file's
+arrays and checks bitwise.
