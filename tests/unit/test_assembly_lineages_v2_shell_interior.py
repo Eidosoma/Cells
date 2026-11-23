@@ -16,6 +16,7 @@ import pytest
 
 from cells.definitions.specs import ConfigError, parse_spec
 from cells.models.assembly_lineages_v2 import (
+    GATE_FACTOR,
     IDEAL_MIXING,
     MASS_ACTION,
     PRESCRIBED_SHELL,
@@ -256,3 +257,33 @@ def test_a_shell_closed_to_the_ligand_keeps_its_lumen_empty():
     fired = {ids[abs(int(k)) - 1] for k in np.asarray(run.trace["event_channel"])}
     assert "bind_inner" not in fired and {"bind", "wall_0"} <= fired
     assert run.closure["holds"]
+
+
+
+def test_the_occupied_inner_site_takes_part_in_a_gate_rule():
+    """FR-46's request: the occupied wall state can take part in a declared gate rule. A gate whose
+    forms are the site R and its inner complex XRi gates the shell's entry, so the entry follows the
+    inner face's occupancy: g = (n_R e^1 + n_XRi e^-1)/(n_R + n_XRi), on both directions, the
+    gate's own forms only. Host rates against that closed form, and the pair identity."""
+    w = face_world("separate", x_lumen=3)
+    w["rate_factor"] = {"law": GATE_FACTOR, "forms": ["R", "XRi"],
+                        "entries": [{"form": "R", "step": "entry", "ddG_kT": 1.0},
+                                    {"form": "XRi", "step": "entry", "ddG_kT": -1.0}]}  # fmt: skip
+    s = spec_of(w)
+    structure, layout = model.structure(s), model.layout(s)
+    at = {p.name: i for i, p in enumerate(s.model.world.places)}
+    r = [st.id for st in s.model.world.steps].index("entry")
+    base = None
+    for n_r, n_xri in ((4, 0), (2, 2), (1, 3)):
+        c = np.asarray(model.founder(s)).copy()
+        c[[at["R@membrane"], at["XRi@membrane"]]] = (n_r, n_xri)
+        totals = kernel.totals_of(c, layout, np)
+        f, t = kernel.states(c, totals, layout, structure, np)
+        a = kernel.rates(c, totals, f, t, layout, structure, np)
+        g = (n_r * math.e + n_xri / math.e) / (n_r + n_xri)
+        if base is None:
+            base = (float(a[r]) / g, float(a[structure.steps + r]) / g)
+        assert float(a[r]) / g == pytest.approx(base[0], rel=1e-13, abs=0)
+        assert float(a[structure.steps + r]) / g == pytest.approx(base[1], rel=1e-13, abs=0)
+    found = balance.deviations(s, np.random.default_rng(5), states=200)
+    assert found.size > 200 and np.max(np.abs(found)) <= balance.ATOL

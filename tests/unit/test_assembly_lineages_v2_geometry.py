@@ -362,6 +362,8 @@ def test_ol1_worlds_carry_no_geometry():
 
 
 REFUSALS = {
+    "an inner pair outside a shell": (  # FR-46 (R6): refused by name, even with no inner step
+        lambda w: _inner_pair(site_binding(w)), "admits in a cells.prescribed_shell@1 world only"),
     "exchange_encounter without a geometry": (
         lambda w: (w.pop("geometry"), w["steps"].pop(0)), "declared only by a world that declares"),
     "a geometry without exchange_encounter": (
@@ -443,6 +445,12 @@ def _two_ligands(w):
     w["founder"]["X2R@membrane"] = 0
     w["sites"] = [{"site": "R", "complex": "X2R"}]
     _bind_step(w).update(reactants={"X@pool": 2, "R@membrane": 1}, products={"X2R@membrane": 1})
+    return w
+
+
+def _inner_pair(w):
+    """FR-46: the fixture's declared pair on the inner face, in a bilayer world."""
+    w["sites"][0]["face"] = "inner"
     return w
 
 

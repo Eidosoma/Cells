@@ -248,6 +248,11 @@ def parse_world(raw):
         law = _law(block["law"], GEOMETRY_INTERFACE, "geometry")
         world = dataclasses.replace(world, geometry=(law.law_id, law.parse_data(block, world)))
     _lumen_potential_refusals(world)  # FR-48: absent unless a species declares one
+    if world.inner_sites and (world.geometry is None or world.geometry[0] != PRESCRIBED_SHELL):
+        raise ConfigError(  # FR-46 (R6): even when no step binds from the lumen
+            f"world: sites: an inner pair is declared, which version 1 admits in a "
+            f"{PRESCRIBED_SHELL} world only (FR-46)"
+        )
     founders = (world.founder,)
     if "population" in raw:  # OL2 milestone 3: K slots on one pool (population.py).
         from cells.models.assembly_lineages_v2 import population as population_rules
