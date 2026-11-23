@@ -139,6 +139,9 @@ $$J = \Big(\sum_k g_k n_k\Big)\left(\frac{n_\text{c}}{V_\text{c}} - \frac{n_\tex
     paired with the daughters' membrane-area shares from the same divisions, and none exists yet.
   - **Source:** the Lean lane's claim `lean/claims/fr43-integer-segregation.md` (at aae46bde),
     which takes every figure above from that paper.
+- **Refused beside a wash.** `scheduled_compartment_wash@1` reads no path of this operator's
+  transfers across a washed surface, so the wash refuses it (fail-closed, version 1). Lifting that
+  is its own qualified extension.
 - **Refused, never repaired:**
   - a charged moved species;
   - a site on a held bath;
