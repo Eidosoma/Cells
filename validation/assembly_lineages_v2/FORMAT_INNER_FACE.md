@@ -29,8 +29,15 @@ describe: no key below appears in it.
   - Every step wholly in the membrane joins, per moiety, each reactant that holds the moiety with
     each product that holds it. A wall state with no binding pair of its own therefore carries the
     face on.
+- **Every step joins, binding and release steps included.** Per moiety, each membrane reactant that
+  holds the moiety is joined to each membrane product that holds it. So a ligand already bound to a
+  site carries its face on when a co-ligand binds that site from the other face.
 - **A component that holds both faces is refused by name, listing its wall states.** It would let
   the ligand pass from the pool to the lumen through the wall, a carrier.
+- **A limitation of version 1** (accepted, D323): stepwise binding of one ligand from both faces on
+  one site is refused too. For example, X binds R from the pool, and a second X binds XR from the
+  lumen. Such a site carries no net flux, but the moieties cannot tell which molecule is which, so
+  the rule refuses it conservatively.
 
 ## Version 1's refusals, each by name
 

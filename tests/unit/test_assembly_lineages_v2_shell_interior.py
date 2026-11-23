@@ -311,3 +311,53 @@ def test_the_occupied_inner_site_takes_part_in_a_gate_rule():
         assert float(a[structure.steps + r]) / g == pytest.approx(base[1], rel=1e-13, abs=0)
     found = balance.deviations(s, np.random.default_rng(5), states=200)
     assert found.size > 200 and np.max(np.abs(found)) <= balance.ATOL
+
+
+def sealed_shell(*, y_binding=True):
+    """A reviewer's carrier across a sealed shell (D323, relayed by the user): one X outside, one Y
+    inside, one free wall site R, and no permeation of X. The four steps, each conserving X, Y and
+    the scaffold r, with positive rates: X_out + R -> A (the outer pair (R, A)); Y_in + A -> C (the
+    inner pair (A, C): Y binds A, which already holds X); C -> D (a wall step); and D -> B + X_in,
+    the release of the inner pair (B, D), declared as its binding X_in + B -> D. So X can end up
+    inside. Without the Y-binding step the shell is sealed: the control."""
+    w = shell_world()  # its units, conventions and the shell geometry, with their provenance
+    w["species"] = [species("X", {"x": 1}, solution=0.0), species("Y", {"y": 1}, solution=0.0),
+                    species("R", {"r": 1}, bilayer=-2.0),
+                    species("A", {"x": 1, "r": 1}, bilayer=-4.0),
+                    species("C", {"x": 1, "r": 1, "y": 1}, bilayer=-5.0),
+                    species("D", {"x": 1, "r": 1, "y": 1}, bilayer=-5.5),
+                    species("B", {"r": 1, "y": 1}, bilayer=-3.0),
+                    species("W", {"w": 1}, bilayer=-3.0)]  # fmt: skip
+    w["phases"] = {"pool": {"volume_L": 1e-21, "species": [{"id": "X", "kind": "finite"}]},
+                   "membrane": {"species": ["R", "A", "C", "D", "B", "W"]},
+                   "lumen": {"volume_L": 1e-22, "species": ["X", "Y"]}}  # fmt: skip
+
+    def bind(name, ligand, site, complex_):
+        return {"id": name, "locus": "membrane", "reactants": {ligand: 1, f"{site}@membrane": 1},
+                "products": {f"{complex_}@membrane": 1}, "law": MASS_ACTION,
+                "forward_rate_per_s": 50.0}  # fmt: skip
+
+    w["steps"] = [bind("x_out_binds_R", "X@pool", "R", "A")]
+    if y_binding:
+        w["steps"].append(bind("y_in_binds_A", "Y@lumen", "A", "C"))
+    w["steps"] += [{"id": "c_to_d", "phase": "membrane", "reactants": {"C": 1},
+                    "products": {"D": 1}, "law": MASS_ACTION, "forward_rate_per_s": 20.0},
+                   bind("x_in_binds_B", "X@lumen", "B", "D")]  # fmt: skip
+    w["sites"] = [{"site": "R", "complex": "A"}, {"site": "A", "complex": "C", "face": "inner"},
+                  {"site": "B", "complex": "D", "face": "inner"}]  # fmt: skip
+    w["founder"] = {"X@pool": 1, "X@lumen": 0, "Y@lumen": 1, "R@membrane": 1, "A@membrane": 0,
+                    "C@membrane": 0, "D@membrane": 0, "B@membrane": 0, "W@membrane": 3}
+    w.pop("rate_factor")
+    return w
+
+
+def test_a_reviewers_sealed_shell_carrier_is_refused_and_its_sealed_control_admitted():
+    """D323, the user's relay of a reviewer's case: the transfer hides where Y binds A, which
+    already holds X. The face rule joins each step's membrane reactant and product per ligand
+    moiety, binding and release steps included, so A, C and D share moiety x, seeded outer at A and
+    inner at D: a carrier, refused by name. Without the Y-binding step, nothing joins A to C, and
+    the same shell is admitted."""
+    with pytest.raises(ConfigError, match=r"the ligand moiety x can pass through the wall's states "
+                                          r"\['A', 'C', 'D'\]"):
+        spec_of(sealed_shell())
+    spec_of(sealed_shell(y_binding=False))
