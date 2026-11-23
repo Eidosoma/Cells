@@ -601,6 +601,8 @@ def inner_state(state):
 
 
 def layout_kind(p):
+    if hasattr(p, "field_capacitor_values"):  # The sparse field (SPARSE_SOLVER_ID).
+        return SPARSE_LAYOUT_TYPE
     return FLOOR_LAYOUT_TYPE if hasattr(p, "field_current_floor") else LAYOUT_TYPE
 
 
