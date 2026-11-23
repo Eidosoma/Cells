@@ -3771,7 +3771,7 @@
           "Mathlib exponential convexity and strict convexity, imported for survival": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/Convex/SpecificFunctions/Basic.lean#L37-L60",
           "Mathlib finite Jensen inequality and its strict form, specialized to initial cohort weights": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/Convex/Jensen.lean#L63-L100",
           "D293 records a separate area allowance across preparations for the registered blind test": "https://github.com/Eidosoma/Cells/blob/562cc9b4ec5225089feee26cab3ad2ef42405e02/docs/DECISIONS.md#d293-the-rupture-blind-tests-stage-1-rulings-made-before-any-prediction-or-held-out-value",
-        "Cells tagged FR-31 law sheet, area scaling and survival": "https://github.com/Eidosoma/Cells/blob/57cf9a4ed0b68454232a3c531c14e1b725853955/docs/VESICLE_PORES_LAWS.md#5-the-area-and-the-clock"
+          "Cells tagged FR-31 law sheet, area scaling and survival": "https://github.com/Eidosoma/Cells/blob/57cf9a4ed0b68454232a3c531c14e1b725853955/docs/VESICLE_PORES_LAWS.md#5-the-area-and-the-clock"
         }
       },
       "numerical": {
@@ -3786,6 +3786,76 @@
         "status": "open",
         "observable": "Initial vesicle areas from the same at-risk population, held tension, and time to first rupture or censoring per vesicle. Linked observations would quantify the mean-area approximation.",
         "unit": "Surviving fraction at a stated exposure",
+        "evidence": [
+          {
+            "dataset_id": "shibly2016_dopc_rupture_traces@1",
+            "manifest": "lean/checks/data/shibly2016_swelling.json",
+            "citation": "Shibly et al. (2016), Biophysical Journal",
+            "doi": "10.1016/j.bpj.2016.09.043",
+            "locator": "Figure 4A, with Figure 4B as the pre-equilibrium comparison",
+            "context": "Neutral DOPC vesicles at 25 ± 1 °C, held at 4 mN/m aspiration after a 3 mM osmotic difference.",
+            "role": "descriptive",
+            "uncertainty": "The paper gives 0.0086 ± 0.0002 for fractional plateau radius change (17 vesicles), without identifying the statistic here. The mean area modulus is 218 ± 26 mN/m (SD).",
+            "assessment": "Relative radius and rupture are paired on displayed traces. Individual absolute areas and complete event or censor times are still missing.",
+            "report": "lean/PROGRESS.md#fr31-osmotic-rupture"
+          },
+          {
+            "dataset_id": "saha2020_charged_vesicle_rupture@1",
+            "manifest": "lean/checks/data/saha2020_osmotic_rupture.json",
+            "citation": "Saha, Shibly and Yamazaki (2020), Journal of Physical Chemistry B",
+            "doi": "10.1021/acs.jpcb.0c03681",
+            "locator": "Figure 1B and Table 1 for rupture, Figure 2 and Table 3 for swelling",
+            "context": "DOPG/DOPC 40:60 vesicles in 150 mM NaCl at 25 ± 1 °C. The rupture group used 12 mOsm/L and the closest swelling group used 13 ± 5 mOsm/L.",
+            "role": "descriptive",
+            "uncertainty": "Rates are means and SDs of 4–5 repeats, each with 20–25 vesicles. Geometry-based osmotic tension at 13 mOsm/L was 3.0 ± 0.1 mN/m. The ±5 mOsm/L is estimated osmolarity error.",
+            "assessment": "Rupture rate rose 6.52-fold over the applied 3.5–4.5 mN/m range. The independent swelling estimate comes from a different cohort. Rate-matched tension uses the rupture data themselves.",
+            "report": "lean/PROGRESS.md#fr31-osmotic-rupture"
+          }
+        ],
+        "finding": "Shibly et al. link relative swelling and rupture in selected neutral-DOPC traces. Saha et al. compare charged-vesicle rupture and swelling in separate cohorts. Neither supplies absolute starting areas with outcomes across the full at-risk cohort."
+      }
+    },
+    {
+      "id": "release-survival-readout",
+      "category": "molecular-assembly",
+      "title": "A finite error bound for survival after an RNA release window",
+      "statement": "For a positive measured count at window close, a proposed survival fraction can be checked against the two counts. The change in the later count contributes its absolute error and the uncertainty in the close count contributes that error times the proposed fraction.",
+      "assumptions": [
+        "The same cohort is followed through the chase, with common nonnegative survival factors and no new members. Their product is the expected ratio.",
+        "Both count uncertainties bound absolute errors in the same amount unit. The engine estimates these from a coarser grid. A missing estimate leaves the numerical comparison unresolved, and an empty cohort has no survival ratio."
+      ],
+      "uses": [
+        "release-window-survival"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.templated_polymerisation@1"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.ArrivalWindow.count_residual_le": "lean/CellsProofs/Chemistry/ArrivalWindow.lean",
+          "CellsProofs.Chemistry.ArrivalWindow.ratio_residual_iff": "lean/CellsProofs/Chemistry/ArrivalWindow.lean",
+          "CellsProofs.Chemistry.ArrivalWindow.chase_ratio_error": "lean/CellsProofs/Chemistry/ArrivalWindow.lean"
+        },
+        "sources": {
+          "Mathlib triangle inequality specialized to the two count errors": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/Order/Group/Abs.lean#L73-L78",
+          "Mathlib absolute value of a quotient": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/Order/Field/Basic.lean#L648-L652",
+          "Mathlib nonnegative product of chase factors": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/Order/BigOperators/Ring/Finset.lean#L30-L34",
+          "Cells count and ratio definitions": "https://github.com/Eidosoma/Cells/blob/57c3cb909db5ebe9a24b90f3d78d7c6a182fd72b/validation/gene_regulation/cohort.py#L200-L216"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "fr38-survival-repair",
+          "fr38-survival-original"
+        ],
+        "result": "The repaired checker gave the expected four control verdicts. Three samples yielded insufficient resolution, a resolved ratio of 1 failed against ¼, an empty cohort was identified, and the turnover control passed. All eight R1/R2 ratios reread from compiled exports passed with finite estimated error. The previous checker gave a false pass and raised on the empty cohort."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "The same release-marked molecules counted at the end of the window and again after the chase, with uncertainties on both counts.",
+        "unit": "Surviving fraction (0–1)",
         "evidence": []
       }
     },
@@ -4601,6 +4671,7 @@
       "numerical": {
         "status": "checked",
         "comparisons": [
+          "fr38-lossless-fate-repair",
           "fr38-lossless-fate-export"
         ],
         "result": "The original compiled comparison recorded three readable fates out of four. After the public exporter repair, the reader recovered all four in the two labelled worlds. Each row gained 1.27765623623 × 10⁻¹⁰ fmol over ten seconds, including 7.66593665955 × 10⁻¹¹ fmol marked during [2, 8) s. The largest physical balance residual was below 3.44 × 10⁻²⁷ fmol."

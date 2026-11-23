@@ -45,6 +45,28 @@ Proof sources [Mathlib exponential convexity and strict convexity, imported for 
 
 **Open.** Initial vesicle areas from the same at-risk population, held tension, and time to first rupture or censoring per vesicle. Linked observations would quantify the mean-area approximation.
 
+Shibly et al. link relative swelling and rupture in selected neutral-DOPC traces. Saha et al. compare charged-vesicle rupture and swelling in separate cohorts. Neither supplies absolute starting areas with outcomes across the full at-risk cohort.
+
 **Unit** Surviving fraction at a stated exposure
+
+### shibly2016_dopc_rupture_traces@1
+
+Neutral DOPC vesicles at 25 ± 1 °C, held at 4 mN/m aspiration after a 3 mM osmotic difference. Figure 4A, with Figure 4B as the pre-equilibrium comparison [Shibly et al. (2016), Biophysical Journal](https://doi.org/10.1016/j.bpj.2016.09.043)
+
+- **Evidence role** descriptive
+
+The paper gives 0.0086 ± 0.0002 for fractional plateau radius change (17 vesicles), without identifying the statistic here. The mean area modulus is 218 ± 26 mN/m (SD).
+
+Relative radius and rupture are paired on displayed traces. Individual absolute areas and complete event or censor times are still missing. [Dataset manifest](../checks/data/shibly2016_swelling.json) · [Comparison verdict](../PROGRESS.md#fr31-osmotic-rupture)
+
+### saha2020_charged_vesicle_rupture@1
+
+DOPG/DOPC 40:60 vesicles in 150 mM NaCl at 25 ± 1 °C. The rupture group used 12 mOsm/L and the closest swelling group used 13 ± 5 mOsm/L. Figure 1B and Table 1 for rupture, Figure 2 and Table 3 for swelling [Saha, Shibly and Yamazaki (2020), Journal of Physical Chemistry B](https://doi.org/10.1021/acs.jpcb.0c03681)
+
+- **Evidence role** descriptive
+
+Rates are means and SDs of 4–5 repeats, each with 20–25 vesicles. Geometry-based osmotic tension at 13 mOsm/L was 3.0 ± 0.1 mN/m. The ±5 mOsm/L is estimated osmolarity error.
+
+Rupture rate rose 6.52-fold over the applied 3.5–4.5 mN/m range. The independent swelling estimate comes from a different cohort. Rate-matched tension uses the rupture data themselves. [Dataset manifest](../checks/data/saha2020_osmotic_rupture.json) · [Comparison verdict](../PROGRESS.md#fr31-osmotic-rupture)
 
 [Claim index](../README.md#proof-index) · [Editable register](../claims.json)

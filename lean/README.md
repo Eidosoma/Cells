@@ -520,6 +520,7 @@ For FR-31, run the four synthetic cohort-size checks. The FR-38 commands compare
 
 ```bash
 "$cells_python" -B checks/vesicle_area.py
+"$cells_python" -B checks/vesicle_area.py --osmotic-evidence
 "$cells_python" -B checks/arrival_windows.py --reference-only
 "$cells_python" -B checks/arrival_windows.py
 JAX_PLATFORMS=cpu "$cells_python" -B checks/arrival_survival.py

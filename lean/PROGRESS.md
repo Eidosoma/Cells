@@ -130,7 +130,7 @@ Harden et al. observed purified *E. coli* polymerase remaining on DNA more than 
 
 <a id="fr38-lossless-fate"></a>
 
-## 22 November 2026 · Missing zero-loss counter for a release fate
+## 22 November 2026 · Original missing zero-loss counter for a release fate
 
 This section records the failure on `fc07c545`. The later labelled replay recovered all four fate records. [Public repair and replay](#fr38-marked-fates)
 

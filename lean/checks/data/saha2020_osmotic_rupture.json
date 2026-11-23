@@ -1,0 +1,62 @@
+{
+  "dataset_id": "saha2020_charged_vesicle_rupture@1",
+  "doi": "10.1021/acs.jpcb.0c03681",
+  "source": "https://doi.org/10.1021/acs.jpcb.0c03681",
+  "preparation": "Giant vesicles of 40 mol% DOPG and 60 mol% DOPC in buffer with 150 mM NaCl.",
+  "temperature_C": 25,
+  "temperature_reported_plus_minus_C": 1,
+  "rupture": {
+    "locator": "Figure 1B and Table 1",
+    "initial_osmolarity_difference_mOsm_L": 12,
+    "external_tension_mN_m": [
+      3.5,
+      4,
+      4.5
+    ],
+    "rate_per_s": [
+      0.0046,
+      0.015,
+      0.03
+    ],
+    "rate_sd_per_s": [
+      0.0005,
+      0.002,
+      0.003
+    ],
+    "uncertainty": "Mean and SD across 4–5 independent experiments, with 20–25 giant vesicles per experiment.",
+    "rate_matched_osmotic_tension_mN_m": 2.6,
+    "rate_matched_sd_mN_m": 0.2,
+    "inference": "This tension shift was estimated from the rupture rates themselves. An independent rate test requires a separate tension estimate."
+  },
+  "swelling": {
+    "locator": "Figure 2 and Table 3",
+    "initial_osmolarity_difference_mOsm_L": [
+      13,
+      18
+    ],
+    "reported_osmolarity_error_mOsm_L": 5,
+    "osmolarity_error_kind": "Estimated measurement error",
+    "vesicles": [
+      21,
+      18
+    ],
+    "mean_fractional_radius_change": [
+      0.011,
+      0.014
+    ],
+    "radius_change_reported_plus_minus": [
+      0.001,
+      0.001
+    ],
+    "geometry_osmotic_tension_mN_m": [
+      3,
+      3.9
+    ],
+    "geometry_sd_mN_m": [
+      0.1,
+      0.3
+    ],
+    "uncertainty": "Figure 2B reports mean and SD for the experimental tension. The estimate uses observed swelling and a bilayer area modulus."
+  },
+  "pairing": "The swelling and rupture groups share the lipid composition and temperature. The groups were observed separately and at different nominal osmolarity differences. The publication does not link calibrated absolute area, tension and rupture or censoring time for each vesicle."
+}

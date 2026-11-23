@@ -8,6 +8,23 @@
   "temperature_spread_C": 1,
   "initial_sucrose_mM": 98,
   "baseline": "No significant volume change in the 98 mM glucose control over 20 minutes.",
+  "rupture_traces": {
+    "locator": "Figure 4A and accompanying Results; equation 6 and Figure S2 for the modulus.",
+    "initial_osmotic_difference_mM": 3,
+    "external_tension_mN_m": 4,
+    "vesicles": 17,
+    "plateau_fractional_radius_change": 0.0086,
+    "radius_change_reported_plus_minus": 0.0002,
+    "reported_osmotic_tension_mN_m": 4.1,
+    "tension_reported_plus_minus_mN_m": 0.1,
+    "reported_total_tension_mN_m": 8.1,
+    "area_modulus_mN_m": 218,
+    "area_modulus_sd_mN_m": 26,
+    "modulus_vesicles": 16,
+    "uncertainty": "The ± statistic beside the Figure 4A plateau and tension is unspecified. The independently measured area modulus is mean and SD.",
+    "pairing": "Selected neutral-DOPC vesicles have relative radius histories up to rupture during an equilibrated aspiration hold. The figure provides neither a linked absolute starting radius for each trace nor event and censor times for the full at-risk cohort.",
+    "higher_load": "At 4.0 mM and an applied 5.0 mN/m, most Figure 4B vesicles ruptured while still swelling."
+  },
   "fit": {"bath_glucose_mM": 96, "mean_swelling_percent": 1.7, "reported_plus_minus_percent_points": 0.1, "n": 14},
   "evaluation": {"bath_glucose_mM": 95, "mean_swelling_percent": 2.6, "reported_plus_minus_percent_points": 0.1, "n": 17},
   "rupture_rate_tension": {
