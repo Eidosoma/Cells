@@ -1,5 +1,19 @@
 # Cells proof comparisons
 
+<a id="fr38-survival-gross-net"></a>
+
+## 23 November 2026 · Gross RNA survival and the net-counter check
+
+FR-38 erratum F evaluates survival at the declared one-way loss rate. The checker uses the gross survivor counts for the ratio bound and separately compares gross and net counts at window close and at chase. The earlier Lean reader compared the reported bound to the net estimate alone. Its frozen result is retained. The updated reader reproduced all six public control verdicts and all eight readouts from the saved development exports on `275b508f`. The registered R1 failure and inconclusive R2 verdict still stand. [Current reader](checks/release_survival.py) · [Public survival test](https://github.com/Eidosoma/Cells/blob/275b508f30ae32552bfcf154ca8849765c23672b/validation/gene_regulation/release_check.py#L413) · [Registered verdict](#fr38-extracellular-producer)
+
+Five synthetic controls met their mathematical expectations. One valid constant-turnover control was refused. The 75-digit calculation of the one-hour survival ratio from the declared binary64 rate rounds to 0.25. The quotient of the two computed counts is 0.25000000000000006, one binary64 step higher. Coarsening the grid changes neither computed count, so the reported ratio allowance is zero. Gross and net counts agree at both endpoints. A separate control halves the declared rate and correctly refuses the resulting ratio of 0.5. The run `lean-reconcile-division-20261123` preserves both the superseded reader output and the current six-control comparison. [Count and ratio identities](CellsProofs/Chemistry/ArrivalWindow.lean) · [Native bound](https://github.com/Eidosoma/Cells/blob/275b508f30ae32552bfcf154ca8849765c23672b/validation/gene_regulation/release_check.py#L448)
+
+<a id="fr38-retention-window-repair"></a>
+
+### Sampling during the founder’s lifetime
+
+The earlier retention-grid failure is repaired on `275b508f`. With outputs at 0, 3000 and 4800 s, adding only 3300 and 3600 s still leaves the pre-replacement export unresolved. Both the matching 1.707738-copy reading and the deliberately wrong 100-copy reading now receive `insufficient resolution` and a null bound. Adding 1500 s inside the export interval distinguishes agreement from disagreement. The three grids exercised six readouts. In the two ordinary disk-restart controls all 65 current state fields matched byte for byte at four subsequent times under each return policy. The earlier replay recorded 40 fields. [Three-grid replay](checks/producer_replacement.py) · [Disk restart](checks/release_restart.py) · [Cells repair](https://github.com/Eidosoma/Cells/commit/275b508f30ae32552bfcf154ca8849765c23672b)
+
 <a id="size-threshold-division"></a>
 
 ## 23 November 2026 · The two daughter records at a size-triggered division
