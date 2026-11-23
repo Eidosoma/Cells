@@ -49,6 +49,8 @@ and a general feature, never one built for one study (D144).
 | [FR-41](#fr-41--vesicle-shrinkage-validation-records) | Vesicle shrinkage validation records for the osmotic lumen law | **High** (user, via the Lean lane, 22 November 2026; D286) | **One agreement, retention open:** shrinkage matches (24.56% against about 25%). The data-only retention check is undetermined for all three sources; the one point estimate (gel-phase LUVs) suggests partial release | Parked until a study with paired, tabulated volume and small-solute retention appears |
 | [FR-42](#fr-42--neutral-arrival-time-labels-that-leave-the-dynamics-unchanged) | Neutral arrival-time labels that leave the dynamics unchanged: loss computed once per physical population and shared by label | **High** (a user, 22 November 2026) | **Landed and accepted (D306):** labels as share vectors on the physical row (option A, D289; the label owner, D296), across kinds, pools and sources, with the kinds hook (`label_refusals`, `label_transfers`) | Done for its consumers; FR-38's comparison reads its shares |
 | [FR-43](#fr-43--shared-inventories-larger-networks-shared-pools-and-low-count-populations) | Shared inventories: larger sparse reaction networks; one pool spent and replenished by separate processes, at fixed and changing volume; a low-count integer population coupled to continuous chemistry | **Very high** (logged by the user, 23 November 2026) | **Design decided (D315):** the cap to 1,024 with the scan fold above 16 and the trace budget fixed; a reported dt limit; two writers with one registry potential; current-volume reads for both writers; part 3 as an integer-population operator in the composite (B), split by independent_segregation | The build, with code-blind references for parts 2 and 3; the sparse layout after the raise |
+| [FR-44](#fr-44--labels-across-a-wash-arrival-time-labels-through-scheduled-compartment-washes) | Labels across a wash: neutral arrival-time labels through scheduled compartment washes | **High** (logged by the user, 23 November 2026) | **Logged:** `neutral_arrival_labels@1` (FR-42) and `scheduled_compartment_wash@1` (FR-27) refuse each other at parse | A design note: the wash dilutes each washed node's label shares exactly with unlabelled buffer |
+| [FR-45](#fr-45--several-ligands-competing-for-one-shared-wash-retained-site-capacity) | Several ligands competing for one shared, wash-retained site capacity | **High** (logged by the user, 23 November 2026) | **Logged:** FR-28's node-owned sites bind one ligand per population, and sites modelled as dissolved species wash out with the fluid | A design note: competing ligands in one site pool, or immobile anchored species that a wash leaves in place |
 
 ## FR-1 — A closed internal compartment on the shared inventory
 
@@ -1939,3 +1941,53 @@ cases below are the request's own, condensed.
   - the matrix exponential is a closed form, inside the test;
   - part 2's coupled calculation and part 3's same-draws integration come from a code-blind references
     agent, started at the design ruling.
+
+## FR-44 — Labels across a wash: arrival-time labels through scheduled compartment washes
+
+**Logged 23 November 2026 by the user, priority high.**
+
+**Why.** Labelled-cohort experiments often mark newly made molecules for a while, wash the
+extracellular compartment, and expose the cells again. Following the labelled cohort through a wash
+needs the label owner (FR-42) and the wash (FR-27) in one world. Today they refuse each other at
+parse (`operators/wash_schedule.py`, `operators/species_labels.py`).
+- **A related constraint:** the wash's `buffer_mM` must name every neutral species in the world,
+  including trace rows that stay in the cells. So a wash also touches those rows' extracellular
+  increments.
+
+**The proposed path.** The wash accepts labels.
+- At a washed node, each label's share is diluted exactly by the unlabelled buffer:
+  n_after × share_after = (1 − f) × n_before × share_before, and the buffer carries the base label.
+- Label shares inside cells are untouched, and every label's books close.
+
+**Acceptance cases:**
+- a labelled cohort at a washed node scales by (1 − f), and the base label takes the buffer's amount;
+- the cells' shares are unchanged;
+- labels leave the physical rows bitwise unchanged through a wash (FR-42's promise);
+- a restart through a wash reproduces the run.
+
+**Status (23 November):** logged. A design note comes first.
+
+## FR-45 — Several ligands competing for one shared, wash-retained site capacity
+
+**Logged 23 November 2026 by the user, priority high.**
+
+**Why.** Extracellular matrix and surface sites are often shared by more than one ligand, and the
+sites stay in place when the fluid is washed.
+- FR-28's owner `{"node": N}` gives `site_occupancy@1` wash-retained sites, but each population
+  binds one ligand with its own capacity, so two ligands cannot compete for one pool.
+- Sites modelled instead as dissolved species in `local_species_reactions@1` are removed with the
+  fluid: a wash of half the volume removes half the sites.
+
+**The proposed paths:**
+- (a) `site_occupancy@1` populations admit several ligands, each with its own binding constants,
+  competing for one pool of copies × sites per copy;
+- (b) immobile anchored species, which `scheduled_compartment_wash@1` leaves in place (wash fraction
+  0 for anchored moieties) while conserving moieties.
+
+**Acceptance cases:**
+- a wash removes only the fluid's ligand, and the shared capacity is conserved across it;
+- the competition at equilibrium matches an independent closed form for two ligands and one site
+  pool;
+- the books close through bind, wash and unbind.
+
+**Status (23 November):** logged. A design note comes first, weighing (a) and (b).
