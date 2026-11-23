@@ -24,8 +24,9 @@ registered.
   axis 0 rounds, so:
   - e is a residue r of a few ulp (the checker found about 7 ulp at 100 nm);
   - every replica then deviates from the computed mean by the same −r, so SE = |r|/√(M − 1);
-  - M's excess at the pair is √(M − 1) (|r_K| − |r_(K−1)|/2)/(r_K² + r_(K−1)²/4)^½. That is up to
-    √127 = 11.3 at M = 128, and it measures rounding alone.
+  - at a pair exact at both rungs, with r_(K−1) the lower rung's residue, M's excess is
+    √(M − 1) (|r_K| − |r_(K−1)|/2)/(r_K² + r_(K−1)²/4)^½. That is up to √127 = 11.3 at M = 128,
+    and it measures rounding alone.
 - **At a count the registered arithmetic is already exact.** An exact count pair's value is an
   integer, and a sum of integers below 2^53 rounds nothing. So e and SE are exactly 0, and
   `criterion_m` takes a zero combined SE as an excess of 0. The defect is in A, V, σ and W_res.
@@ -87,7 +88,11 @@ only (128 replicas, 8 times, generator seed 3). Every check passed:
 3. **Genuinely different columns** are unchanged: z = 0.565, bitwise.
 4. **A pair exact at K − 1 only** is computed as registered: z = 0.441, bitwise.
 5. **A NaN replica, or a NaN (d) value,** makes its pair not exact.
-6. **(d) alone 1 ulp off,** with every replica equal, is computed as registered: z = 0, bitwise.
+6. **(d) alone 1 ulp off,** with every replica equal and K − 1 exact, is computed as registered,
+   bitwise, in both directions.
+   - One ulp up gives z = 0, because the offset cancels the mean's rounding residue there
+     (e = 0, SE > 0).
+   - One ulp down gives z = 22.5, a fail.
 7. **0.0 against −0.0** is not exact.
 8. **Every pair exact at K:** none is judged, the largest z is −∞, and M passes.
 9. **The reported errors** are (0, 0) at the exact pairs and bitwise registered elsewhere.
@@ -96,15 +101,19 @@ only (128 replicas, 8 times, generator seed 3). Every check passed:
 
 **What the registered arithmetic gives at pairs this erratum leaves as registered.** These come from
 `information`, on made-up values. They are disclosed, and not changed, since nothing else changes
-(§6):
-- **One replica 1 ulp off,** with K − 1 exact, over 200 values from 0.1 to 10.
-  - z ran from −11.2 to 11.3, with a median of 5.05.
-  - 129 were beyond 4.5 and 82 beyond 6.
-  - So rounding alone can put such a pair in the retry band, or fail it.
-- **A zero combined SE is taken as no limit.** This happens where the replicas are all equal at
-  both rungs and their sum rounds nothing.
-  - Replicas all at 1.0 against (d) at 2.0 give z = 0, and that is why check 6 gives 0.
-  - For counts, B judges such a pair.
+(§6). Each pair has K − 1 exact, over 200 values from 0.1 to 10:
+- **One replica 1 ulp off:** z ran from −11.2 to 11.3, with a median of 5.05. 129 were beyond 4.5
+  and 82 beyond 6.
+- **(d) alone 1 ulp up,** every replica equal: z ran from −8.0 to 33.8, with a median of 7.5. 116
+  were beyond 4.5 and 102 beyond 6.
+- **(d) alone 1 ulp down:** z ran from −9.4 to 33.8, with a median of 5.6. 107 were beyond 4.5 and
+  97 beyond 6.
+- **So rounding alone** can put a pair that agrees to within one ulp in the retry band, or fail it.
+
+**A zero combined SE is taken as no limit.**
+- This happens where the replicas are all equal at both rungs and their sums round nothing.
+- Replicas all at 1.0 against (d) at 2.0, at both rungs, give z = 0.
+- For counts, B judges such a pair.
 
 ## 5. What had been seen (disclosed, added to §12)
 

@@ -169,15 +169,20 @@ def check():
         "exact_V": np.flatnonzero(got["V"]).tolist(), "exact_W": np.flatnonzero(got["W"]).tolist(),
         "ok": not got["V"][1] and not got["W"][2] and got["V"][0] and got["W"][0]}  # fmt: skip
 
-    # (vi) every replica the same, (d) alone 1 ulp off: not exact, computed as registered
+    # (vi) every replica the same, (d) alone 1 ulp off either way: not exact, computed as
+    # registered (upward, the offset cancels the mean's rounding residue here: e = 0, SE > 0)
     a = np.tile(d_top, (REPLICAS, 1))
-    d_off = d_top.copy()
-    d_off[0] = np.nextafter(d_top[0], np.inf)
-    m = criterion_m({"V": a[:, :1]}, {"V": d_off[:1]}, {"V": b[:, :1]}, {"V": d_below[:1]})
-    z = _registered_z({"V": a[:, :1]}, {"V": d_off[:1]}, {"V": b[:, :1]}, {"V": d_below[:1]})
+    result = {}
+    for name, step in (("up", np.inf), ("down", -np.inf)):
+        d_off = d_top.copy()
+        d_off[0] = np.nextafter(d_top[0], step)
+        m = criterion_m({"V": a[:, :1]}, {"V": d_off[:1]}, {"V": b[:, :1]}, {"V": d_below[:1]})
+        z = _registered_z({"V": a[:, :1]}, {"V": d_off[:1]}, {"V": b[:, :1]}, {"V": d_below[:1]})
+        result[name] = {"exact": m["exact"], "z": m["largest_z"], "z_registered": z,
+                        "passes": m["passes"],
+                        "ok": m["exact"] == {} and _same(m["largest_z"], z)}  # fmt: skip
     out["(vi) (d) alone 1 ulp off is computed as registered"] = {
-        "exact": m["exact"], "z": m["largest_z"], "z_registered": z, "passes": m["passes"],
-        "ok": m["exact"] == {} and _same(m["largest_z"], z)}  # fmt: skip
+        **result, "ok": all(r["ok"] for r in result.values())}
 
     # (vii) +0.0 against -0.0: not exact (bits)
     got = exact_pairs({"S": np.zeros((REPLICAS, 1))}, {"S": np.array([-0.0])})
@@ -209,26 +214,37 @@ def check():
     return out
 
 
+def _spread(zs):
+    zs = np.asarray(zs)
+    return {"z_min": float(zs.min()), "z_median": float(np.median(zs)), "z_max": float(zs.max()),
+            "beyond_4.5": int(np.sum(zs > lq.Z_STAR)), "beyond_6": int(np.sum(zs > lq.Z_FAIL))}
+
+
 def information():
-    """What the registered arithmetic gives at two kinds of pair the erratum leaves as registered
-    (made-up values; the erratum's §4, disclosed and not changed): one replica 1 ulp from (d), with
-    the lower rung bitwise exact, over 200 values; and replicas all equal at both rungs with (d)
-    off, where the combined SE is 0."""
-    zs = []
-    for v in np.linspace(0.1, 10.0, 200):
+    """What the registered arithmetic gives at pairs the erratum leaves as registered (made-up
+    values; the erratum's §4, disclosed and not changed), each with the lower rung bitwise exact,
+    over 200 values from 0.1 to 10: one replica 1 ulp from (d); (d) alone 1 ulp off, up and down.
+    And replicas all equal at both rungs with (d) off, where the combined SE is 0."""
+    values = np.linspace(0.1, 10.0, 200)
+
+    def z_at(top_replicas, d_top, v):
+        w = 0.83 * v
+        return _registered_z({"V": top_replicas}, {"V": np.array([d_top])},
+                             {"V": np.full((REPLICAS, 1), w)}, {"V": np.array([w])})
+
+    one_off = []
+    for v in values:
         a = np.full((REPLICAS, 1), v)
         a[0, 0] = np.nextafter(v, np.inf)
-        w = 0.83 * v
-        zs.append(_registered_z({"V": a}, {"V": np.array([v])},
-                                {"V": np.full((REPLICAS, 1), w)}, {"V": np.array([w])}))
-    zs = np.asarray(zs)
+        one_off.append(z_at(a, v, v))
+    out = {"one replica 1 ulp off": _spread(one_off)}
+    for name, step in (("up", np.inf), ("down", -np.inf)):
+        out[f"(d) alone 1 ulp {name}"] = _spread(
+            [z_at(np.full((REPLICAS, 1), v), np.nextafter(v, step), v) for v in values])
     flat = {"V": np.full((REPLICAS, 1), 1.0)}
-    zero = _registered_z(flat, {"V": np.array([2.0])}, flat, {"V": np.array([2.0])})
-    return {"one replica 1 ulp off, the lower rung exact, 200 values from 0.1 to 10":
-            {"z_min": float(zs.min()), "z_median": float(np.median(zs)),
-             "z_max": float(zs.max()), "beyond_4.5": int(np.sum(zs > lq.Z_STAR)),
-             "beyond_6": int(np.sum(zs > lq.Z_FAIL))},
-            "replicas all 1.0 at both rungs, (d) 2.0": {"z": zero}}  # fmt: skip
+    out["replicas all 1.0 at both rungs, (d) 2.0"] = {
+        "z": _registered_z(flat, {"V": np.array([2.0])}, flat, {"V": np.array([2.0])})}
+    return out
 
 
 def _printable(value):
