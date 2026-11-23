@@ -15,7 +15,7 @@ that carries meaning is a list, so the canonical JSON that names a world fixes i
      "rate_factor": {"law": "cells.transition_state_factor@1", ...},        optional
      "founder": {"A@membrane": 10, ...},                      every finite place, explicitly
      "world_role": "probe",                                    optional (§0.2b rule 8)
-     "sites": [{"site": "R", "complex": "XR"}, ...],           optional (FR-21; §0.2f)
+     "sites": [{"site": "R", "complex": "XR"}, ...],           optional (FR-21; §0.2f; FR-46's face)
      "hazard": {"law": "cells.pore_nucleation@1", ...}}        optional (FR-31; pore_nucleation.py)
 
 **Species** take D152's species form (SHARED_INVENTORY_REACTIONS_DESIGN §2.1): `moieties` (positive
@@ -52,6 +52,11 @@ membrane species as a binding site and another as its complex, the site with one
 In a world with a geometry, rule 3 admits one interfacial step for a declared pair, exactly
 X@pool + site@membrane -> complex@membrane under cells.stochastic_mass_action@1 with count_on_m
 (spec._geometry_refusals); an undeclared pair stays refused. On a bilayer both take area.
+
+**A pair's face** (FR-46; D323): `"face": "outer"` (the default, never written) or `"inner"`. An
+inner pair binds from the lumen, X@lumen + site@membrane -> complex@membrane, in a prescribed shell
+only (version 1). One face per complex: the faces propagate by ligand moiety over every wall state,
+and a wall that joins the two faces is a carrier, refused by name (spec._face_rule).
 """
 
 import math
@@ -168,6 +173,9 @@ class World:
     division: dict | None = None  # OL3: the shear fission's declaration (division.py), or None.
     population: dict | None = None  # OL2 milestone 3: the shared pool's slots and founders.
     sites: tuple | None = None  # FR-21: declared ((site, complex), ...) pairs, or None.
+    # FR-46: the declared pairs whose face is the lumen's, ((site, complex), ...), or None (every
+    # declared pair binds from the pool, as FR-21's do).
+    inner_sites: tuple | None = None
     hazard: tuple | None = None  # FR-31: a vesicle hazard, (law ID, parsed data), or None.
     # OL6 S7: cells.size_threshold_division@1's declaration (size_division.py), or None. It is
     # declared in the world's division block, by law, and kept apart from `division` (shear's).
@@ -507,15 +515,24 @@ def _rate_key(raw, laws, encounter):
     return key[encounter]
 
 
+FACES = ("outer", "inner")  # FR-46: the pool's face and the lumen's
+
+
 def parse_sites(raw, places):
-    """FR-21's declared pairs, [{"site", "complex"}, ...] -> ((site, complex), ...): both membrane
-    species, distinct, each complex the complex of one site (§0.2f)."""
+    """FR-21's declared pairs, [{"site", "complex"}, ...] -> (((site, complex), ...), inner): both
+    membrane species, distinct, each complex the complex of one site (§0.2f). FR-46: a pair may
+    declare its face, outer (the default) or inner; `inner` is the inner pairs, or None."""
     if type(raw) is not list or not raw:
         raise ConfigError("world: sites is a non-empty list of {site, complex} pairs")
     membrane = {p.species for p in places if p.phase == MEMBRANE}
-    out, complexes = [], set()
+    out, complexes, inner = [], set(), []
     for entry in raw:
-        require_fields(entry, {"site", "complex"}, "world: sites: a pair")
+        keys = {"site", "complex"} | ({"face"} if isinstance(entry, dict) and "face" in entry
+                                      else set())  # fmt: skip
+        require_fields(entry, keys, "world: sites: a pair")
+        face = entry.get("face", "outer")
+        if face not in FACES:
+            raise ConfigError(f"world: sites: a pair's face is outer or inner, not {face!r}")
         site, complex_ = identifier(entry["site"]), identifier(entry["complex"])
         for role, name in (("site", site), ("complex", complex_)):
             if name not in membrane:
@@ -528,11 +545,17 @@ def parse_sites(raw, places):
             )
         complexes.add(complex_)
         out.append((site, complex_))
-    return tuple(out)
+        if face == "inner":
+            inner.append((site, complex_))
+    return tuple(out), (tuple(inner) or None)
 
 
-def sites_to_dict(sites):
-    return [{"site": site, "complex": complex_} for site, complex_ in sites]
+def sites_to_dict(sites, inner=None):
+    """The sites block; FR-46's face is written only for an inner pair (D148)."""
+    inner = set(inner or ())
+    return [{"site": site, "complex": complex_, **({"face": "inner"} if (site, complex_) in inner
+                                                    else {})}
+            for site, complex_ in sites]  # fmt: skip
 
 
 def parse_founder(raw, places):

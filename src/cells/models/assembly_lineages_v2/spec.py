@@ -237,8 +237,9 @@ def parse_world(raw):
     world = world_rules.World(
         units, conventions, species, volumes, places, steps, terms, rate_factor, founder, role
     )
-    if "sites" in raw:  # FR-21: declared binding sites and their complexes (§0.2f).
-        world = dataclasses.replace(world, sites=world_rules.parse_sites(raw["sites"], places))
+    if "sites" in raw:  # FR-21: declared binding sites and their complexes (§0.2f); FR-46's face.
+        pairs, inner = world_rules.parse_sites(raw["sites"], places)
+        world = dataclasses.replace(world, sites=pairs, inner_sites=inner)
     _convention_refusals(world, founder="population" not in raw)  # a population's: per founder
     if "geometry" in raw:
         block = raw["geometry"]
@@ -408,10 +409,18 @@ def _declares_shell(raw):
 
 
 def _declared_binding(step, world, by_name):
-    """FR-21 (§0.2f): exactly one pool molecule and one declared site forming the site's declared
-    complex, X@pool + site@membrane -> complex@membrane, declared in that direction, under
-    cells.stochastic_mass_action@1 with count_on_m. Its encounter is the site count: the law's
-    membrane factor cancels to n_site, so a+ = k_f theta+ n_site (mass_action.py)."""
+    """FR-21 (§0.2f) and FR-46 (D323): exactly one dilute molecule and one declared site forming
+    the site's declared complex, declared in that direction, under cells.stochastic_mass_action@1
+    with count_on_m, on the pair's own face: X@pool + site@membrane -> complex@membrane for an outer
+    pair, and, in a prescribed shell, X@lumen + site@membrane -> complex@membrane for an inner pair.
+    Its encounter is the site count: the law's membrane factor cancels to n_site, so
+    a+ = k_f theta+ n_site (mass_action.py), theta+ the ligand's own phase's activity."""
+    return _binding_face(step, world, by_name) is not None
+
+
+def _binding_face(step, world, by_name):
+    """(face, ligand species, complex species) of an admitted binding step, or None. The reactants
+    are listed in place order (pool, membrane, lumen), so the ligand is found by its phase."""
     if (
         world.sites is None
         or step.law != MASS_ACTION
@@ -419,15 +428,50 @@ def _declared_binding(step, world, by_name):
         or len(step.reactants) != 2
         or len(step.products) != 1
     ):
-        return False
-    (ligand, a), (site, b) = step.reactants
+        return None
+    dilute = [(n, k) for n, k in step.reactants if by_name[n].phase in world_rules.DILUTE]
+    wall = [(n, k) for n, k in step.reactants if by_name[n].phase == world_rules.MEMBRANE]
+    if len(dilute) != 1 or len(wall) != 1:
+        return None
+    (ligand, a), (site, b) = dilute[0], wall[0]
     (complex_, c) = step.products[0]
-    shape = (a, b, c) == (1, 1, 1) and (by_name[ligand].phase, by_name[site].phase,
-                                         by_name[complex_].phase) == (
-        world_rules.POOL, world_rules.MEMBRANE, world_rules.MEMBRANE
-    )  # fmt: skip
+    if (a, b, c) != (1, 1, 1) or by_name[complex_].phase != world_rules.MEMBRANE:
+        return None
     pair = (by_name[site].species, by_name[complex_].species)
-    return shape and pair in world.sites
+    if pair not in world.sites:
+        return None
+    face = "outer" if by_name[ligand].phase == world_rules.POOL else "inner"
+    if face == "inner" and (world.geometry is None or world.geometry[0] != PRESCRIBED_SHELL):
+        return None  # R6: inner-face binding in a prescribed shell only, in version 1
+    if (face == "inner") != (pair in (world.inner_sites or ())):
+        return None  # a pair binds on its own face only
+    return face, by_name[ligand].species, by_name[complex_].species
+
+
+def _face_rule(world, by_name):
+    """FR-46 (D323): one face per complex. A wall step converting a complex of one face into a
+    complex of the other, holding a ligand moiety on both sides, makes a carrier: refused."""
+    faces = {}
+    for step in world.steps:
+        found = _binding_face(step, world, by_name)
+        if found is not None:
+            faces[found[2]] = found[0]
+    if "inner" not in faces.values():
+        return
+    moieties = {s.id: set(s.moiety_counts()) for s in world.species}
+    for step in world.steps:
+        names = [n for n, _ in (*step.reactants, *step.products)]
+        if any(by_name[n].phase != world_rules.MEMBRANE for n in names):
+            continue
+        left = [by_name[n].species for n, _ in step.reactants if by_name[n].species in faces]
+        right = [by_name[n].species for n, _ in step.products if by_name[n].species in faces]
+        for a in left:
+            for b in right:
+                if faces[a] != faces[b] and moieties[a] & moieties[b]:
+                    raise ConfigError(
+                        f"world: step {step.id} turns the {faces[a]} complex {a} into the "
+                        f"{faces[b]} complex {b}: a carrier across the wall (FR-46's face rule)"
+                    )
 
 
 def _geometry_refusals(world):
@@ -450,17 +494,21 @@ def _geometry_refusals(world):
         if not geometric:
             if step.locus == world_rules.MEMBRANE and len(phases) > 1:
                 if _declared_binding(step, world, by_name):
-                    continue  # FR-21: rule 3's one admitted interfacial shape (§0.2f).
+                    continue  # FR-21 and FR-46: rule 3's admitted interfacial shapes.
                 raise ConfigError(
                     f"world: step {step.id} crosses phases at the membrane; in a world with a "
                     "geometry a cross-phase step takes a geometric encounter law (phase exchange "
                     "for a join, permeation for an entry), and other interfaces are refused until "
-                    "one is declared (§0.2c rule 3). One shape is admitted (§0.2f): a pool "
-                    "molecule binding a declared site to form its declared complex, X@pool + "
-                    "site@membrane -> complex@membrane, under mass action with count_on_m"
+                    "one is declared (§0.2c rule 3). Two shapes are admitted, each for a declared "
+                    "pair on its own face, under mass action with count_on_m: a pool molecule "
+                    "binding an outer site, X@pool + site@membrane -> complex@membrane (§0.2f), "
+                    "and, in a prescribed shell, a lumen molecule binding an inner site, X@lumen + "
+                    "site@membrane -> complex@membrane (FR-46)"
                 )
             continue
         _geometric_shape(step, law, by_name)
+    if world.sites is not None:
+        _face_rule(world, by_name)  # FR-46: one face per complex
     if world.geometry is None:
         return
     if world.conventions.last_molecule != "kept":
@@ -587,7 +635,7 @@ def world_to_dict(world):
 
         out["population"] = population_rules.data_to_dict(world.population)
     if world.sites is not None:
-        out["sites"] = world_rules.sites_to_dict(world.sites)
+        out["sites"] = world_rules.sites_to_dict(world.sites, world.inner_sites)
     if world.hazard is not None:
         law_id, data = world.hazard
         out["hazard"] = registry.lookup(law_id).data_to_dict(data)
