@@ -27,7 +27,11 @@ second output as well and differencing (`grid_error`).
 spread evenly over each output interval, through expm1 and with its zero-rate limit (everything
 survives), so small and zero rates hold. On the engine's A1 export (revision f96a9606), minutes
 60–90 and sampled at minute 90, both reproduce the reviewer's figures: 2.01673e-5 fmol completed
-and 1.32977e-5 fmol surviving, while the pool grew by 2.70386e-6 fmol.
+and 1.32977e-5 fmol surviving, while the pool grew by 2.70386e-6 fmol. Its grid error is stated as
+grid_error's is (`known_rate_error`). FR-38's cohort is this form at each fate's gross one-way loss
+(the sheet's erratum F, §9.19): its members leave at the declared k, while the booked net loss,
+k (1 - e^y), also counts re-synthesis, which returns molecules that are not members. The two agree
+only where e^y << 1. `known_survival` is FR-38's survival readout in this form.
 
 **Which chain completes the product** (`producing_chain`; the review's finding 2). An engine_run.py
 record's own definition names the chain that makes each product row, so the completions are that
@@ -174,6 +178,38 @@ def known_rate(t, Q, k, t1, t2, ts=None):
         h = t[i + 1] - t[i]
         out += (Q[i + 1] - Q[i]) * math.exp(-k * (ts - t[i + 1])) * _spread(k * h)
     return out
+
+
+def known_rate_error(t, Q, k, t1, t2, ts=None):
+    """|known_rate on every output - known_rate on every second output|: the known-rate form's
+    error on the coarser grid, an upper estimate of its error on the given one, as grid_error's.
+    None where the window holds no output to drop: the time resolution is then insufficient to
+    estimate it, which is never reported as a zero error."""
+    ts = t2 if ts is None else ts
+    check_counters(t, Q=Q)
+    i1, i2, i3 = _window(t, t1, t2, ts)
+    keep = [i for i in range(len(t)) if i % 2 == 0 or i in (i1, i2, i3)]
+    if all(i in keep for i in range(i1, i3 + 1)):
+        return None
+    fine = known_rate(t, Q, k, t1, t2, ts)
+    return abs(fine - known_rate([t[i] for i in keep], [Q[i] for i in keep], k, t1, t2, ts))
+
+
+def known_survival(t, Q, k, t1, t2, ts):
+    """FR-38's survival readout at a known constant per-molecule rate k >= 0 (erratum F, §9.19: a
+    member leaves its fate row at the loss's gross one-way rate, whatever re-synthesis returns to
+    the row): of the releases during [t1, t2), the members alive at t2, the same molecules alive at
+    ts >= t2, and their ratio, None at a zero denominator; each count with its grid error
+    (known_rate_error, None where it cannot be estimated). The ratio is e^(-k (ts - t2)) by
+    construction, so the counts are the readout, not the ratio."""
+    alive, later = known_rate(t, Q, k, t1, t2, t2), known_rate(t, Q, k, t1, t2, ts)
+    return dict(
+        alive_at_window_end=alive,
+        alive_at_sample=later,
+        ratio=None if alive == 0 else later / alive,
+        grid_error_at_window_end=known_rate_error(t, Q, k, t1, t2, t2),
+        grid_error_at_sample=known_rate_error(t, Q, k, t1, t2, ts),
+    )
 
 
 def grid_error(t, n, Q, D, t1, t2, ts=None):

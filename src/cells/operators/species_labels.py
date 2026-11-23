@@ -15,6 +15,17 @@ starting shares, each fraction in [0, 1] and their sum 1 within SUM_ULPS ulps (e
 listed starts at the base). A species is labelled once. Shares replaced D1's label families, rows
 of their own with their own potentials, which D300 retired.
 
+Producers (amendment G, TEMPLATED_POLYMERISATION_LAWS §9.20, option (a); D307): a species' entry may
+name chain sources, `producers: [{source, windows: [{label, from, to}, ...]}]`, whose labels and
+schedules the owner derives at the definition, host side (`derived`), from replacement@1's occupants
+keyed by cell ID: for each generation k of the chain's cell, `<cell>-g<k>-<chain>` and
+`<cell>-g<k>-<chain>-<window>` for each window, after the species' own labels and within
+MAX_LABELS; and the source's schedule, the generation's label from its birth, its window's inside
+each window, the next generation's from the next event's step. These are the controls a correct
+hand-written schedule gives, so the programs are unchanged; a hand-written schedule for a producer
+source is refused (one authority). The definition keeps `producers`, not the labels, so a restart
+and a reordering of the cells derive the same.
+
 Schedule `label_arrivals`: [{species, schedule: [{time, label}, ...]}], at most one per species: the
 label that each step's arrivals join, piecewise constant from its first change (the base before it
 and for a species with no schedule). A change is a point of the clock's grid (D283's on_grid:
@@ -73,7 +84,7 @@ key. RK4 on the coupled path needs no refusal: a coupled RK4 composition refuses
 part, so no reporter runs there.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 import jax.numpy as jnp
 import numpy as np
@@ -130,6 +141,9 @@ class Labelled:
     id: str
     labels: tuple  # Label IDs, the base first.
     initial: tuple  # ((node id, ((label, fraction), ...)), ...), in declared order.
+    # Amendment G (TEMPLATED_POLYMERISATION_LAWS §9.20, option (a)): chain sources whose producer
+    # labels and schedules the owner derives, ((source, ((window, from, to), ...)), ...).
+    producers: tuple = ()
 
 
 @dataclass(frozen=True)
@@ -158,7 +172,8 @@ def parse_labels(raw, base):
     outside = {c.id: c for c in m.extracellular}
     out = []
     for entry in raw["species"]:
-        _fields(entry, {"id", "labels", "initial"}, f"{LAW_ID} species")
+        keys = {"id", "labels", "initial"} | ({"producers"} if "producers" in entry else set())
+        _fields(entry, keys, f"{LAW_ID} species")
         name = identifier(entry["id"])
         if name not in m.species_ids:
             raise ConfigError(f"{LAW_ID} labels a species the model does not declare: {name!r}")
@@ -197,10 +212,131 @@ def parse_labels(raw, base):
             if abs(sum(v for _, v in values) - 1.0) > SUM_ULPS * label_shares.EPS:
                 raise ConfigError(f"{LAW_ID}: {name}'s shares at {node} sum to 1")
             initial.append((node, values))
-        out.append(Labelled(name, labels, tuple(initial)))
+        producers = _producers(entry.get("producers", []), name, base)
+        out.append(Labelled(name, labels, tuple(initial), producers))
     if len({s.id for s in out}) != len(out):
         raise ConfigError(f"{LAW_ID} labels a species twice")
     return Labels(LAW_ID, tuple(out))
+
+
+def _producers(raw, name, base):
+    """A species' producers (amendment G): ((source, ((window, from, to), ...)), ...), each a chain
+    source whose producer labels the owner derives, its windows [from, to) on the clock's grid
+    inside the horizon, increasing and disjoint, crossed with each generation."""
+    if type(raw) is not list:
+        raise ConfigError(f"{LAW_ID}: species {name}'s producers are a list")
+    dt, end = base.execution.dt, base.experiment.end_time
+    out, seen = [], set()
+    for item in raw:
+        _fields(item, {"source", "windows"}, f"{LAW_ID} producer")
+        source = identifier(item["source"])
+        if source in seen:
+            raise ConfigError(f"{LAW_ID}: species {name} names producer {source} twice")
+        seen.add(source)
+        if type(item["windows"]) is not list:
+            raise ConfigError(f"{LAW_ID}: producer {source}'s windows are a list")
+        windows, last = [], 0.0
+        for window in item["windows"]:
+            _fields(window, {"label", "from", "to"}, f"{LAW_ID} producer window")
+            label = identifier(window["label"])
+            times = [window[k] for k in ("from", "to")]
+            if any(type(t) not in (int, float) or not np.isfinite(t) for t in times):
+                raise ConfigError(f"{LAW_ID}: producer {source}'s window {label} has finite times")
+            lo, hi = map(float, times)
+            if any(on_grid(t, dt) is None for t in (lo, hi)):
+                raise ConfigError(
+                    f"{LAW_ID}: producer {source}'s window {label} is {ON_THE_GRID} at both ends"
+                )
+            if not last <= lo < hi <= end or label in {w for w, _, _ in windows}:
+                raise ConfigError(
+                    f"{LAW_ID}: producer {source}'s windows are distinct, inside the horizon, "
+                    "increasing and disjoint"
+                )
+            windows.append((label, lo, hi))
+            last = hi
+        out.append((source, tuple(windows)))
+    return tuple(out)
+
+
+class Unbatched:
+    """A batch signature's part equal to nothing, itself included (amendment G's batch limit);
+    a fresh one per signature."""
+
+    def __eq__(self, other):
+        return False
+
+    def __hash__(self):
+        return 0
+
+    def __repr__(self):
+        return "Unbatched()"
+
+
+def producer_label(cell, generation, source, window=None):
+    """Amendment G's producer label: <cell>-g<k>-<chain>, and <cell>-g<k>-<chain>-<window> inside
+    a declared window (a contract convention: the requester's triple, cell, generation, chain)."""
+    name = f"{cell}-g{generation}-{source}"
+    return name if window is None else f"{name}-{window}"
+
+
+def _producer_changes(cell, source, births, windows, end):
+    """One producer source's schedule: each generation's label from its birth (an event's step),
+    its window label inside each window, and the next generation's from the next birth."""
+    points = sorted({0.0, *births, *(t for _, lo, hi in windows for t in (lo, hi) if t <= end)})
+    changes = []
+    for time in points:
+        generation = max(k for k, birth in enumerate(births) if birth <= time)
+        window = next((w for w, lo, hi in windows if lo <= time < hi), None)
+        label = producer_label(cell, generation, source, window)
+        if not changes or changes[-1][1] != label:
+            changes.append((time, label))
+    return tuple(changes)
+
+
+def derived(spec, declaration):
+    """Amendment G (TEMPLATED_POLYMERISATION_LAWS §9.20, option (a); D307), host side, at the
+    definition: (the declaration with each species' producer labels after its own labels, the
+    producer sources' schedules (((species, source), changes), ...)); the declaration itself and ()
+    where no species names a producer. For each producer source, its chain's cell (a source
+    reporter's label_sources) and that cell's occupants (replacement@1's events through
+    species_common.occupants, keyed by cell ID: the founder is generation 0, then each newcomer in
+    event order). Its labels: each generation's, then its windows', in declared order, so they
+    depend on neither the cells' order nor a restart. Its schedule, for the species the source's
+    own new material joins: the generation's label from its birth, its window label inside each
+    window, the next generation's from the next event's step."""
+    if not any(s.producers for s in declaration.species):
+        return declaration, ()
+    from cells.operators.species_common import occupants
+
+    sources = reporters(spec, "LABEL_SOURCES")
+    declared = [entry for op, d in sources for entry in op.label_sources(d)]
+    cells = {source: cell for source, _, cell in declared}
+    own = {(name, source) for source, name, _ in declared}
+    lives, end = occupants(spec), spec.experiment.end_time
+    species, schedules = [], []
+    for s in declaration.species:
+        labels = list(s.labels)
+        for source, windows in s.producers:
+            cell = cells.get(source)
+            if cell not in lives:
+                raise ConfigError(
+                    f"{LAW_ID}: {s.id}'s producer {source} is no source reporter's chain at a cell "
+                    "(label_sources)"
+                )
+            births = [life.birth for life in lives[cell]]
+            for generation in range(len(births)):
+                labels.append(producer_label(cell, generation, source))
+                labels += [producer_label(cell, generation, source, w) for w, _, _ in windows]
+            if (s.id, source) in own:
+                changes = _producer_changes(cell, source, births, windows, end)
+                schedules.append(((s.id, source), changes))
+        if len(labels) > MAX_LABELS or len(set(labels)) != len(labels):
+            raise ConfigError(
+                f"{LAW_ID}: {s.id}'s labels with its producers' are at most {MAX_LABELS} and "
+                f"distinct ({len(labels)}): generations times (windows + 1), plus its own"
+            )
+        species.append(replace(s, labels=tuple(labels)))
+    return replace(declaration, species=tuple(species)), tuple(sorted(schedules))
 
 
 def labels_to_dict(declaration):
@@ -213,6 +349,21 @@ def labels_to_dict(declaration):
                 id=s.id,
                 labels=list(s.labels),
                 initial=[dict(node=node, shares=dict(values)) for node, values in s.initial],
+                **(
+                    dict(
+                        producers=[
+                            dict(
+                                source=source,
+                                windows=[
+                                    {"label": w, "from": lo, "to": hi} for w, lo, hi in windows
+                                ],
+                            )
+                            for source, windows in s.producers
+                        ]
+                    )
+                    if s.producers
+                    else {}
+                ),
             )
             for s in declaration.species
         ],
@@ -228,6 +379,7 @@ def parse_arrivals(raw, base, declaration):
         raise ConfigError(f"{SCHEDULE_KEY} requires an explicit list")
     by_id = {s.id: s for s in declaration.species}
     dt, end = base.execution.dt, base.experiment.end_time
+    producers = {source for s in declaration.species for source, _ in s.producers}
     schedules = {}
     for entry in raw:
         keys = {"species", "source", "schedule"} if "source" in entry else {"species", "schedule"}
@@ -236,6 +388,12 @@ def parse_arrivals(raw, base, declaration):
         if species is None:
             raise ConfigError(f"{SCHEDULE_KEY} names a species not labelled: {entry['species']!r}")
         source = identifier(entry["source"]) if "source" in entry else ""
+        if source in producers:  # Amendment G: one authority, the replacement events.
+            raise ConfigError(
+                f"{LAW_ID}: {SCHEDULE_KEY} gives source {source}'s schedule by hand, and {source} "
+                "is a producer source, whose schedule the owner derives from replacement@1's "
+                "occupants (amendment G)"
+            )
         if (species.id, source) in schedules:
             raise ConfigError(
                 f"{LAW_ID}: one arrival schedule per species and source ({species.id} {source})"
@@ -440,6 +598,7 @@ def check_labels(spec, declaration, model=None):
     """The definition's refusals (module docstring); model: the composition (its inner step's
     reporting decides stage 2's admission)."""
     reports = bool(getattr(model, "inner_reports_labels", False))
+    derived(spec, declaration)  # Amendment G's refusals: an unknown producer, MAX_LABELS.
     errors = in_step_errors(spec, declaration, reports) + operator_errors(spec)
     errors += source_errors(spec, schedule_of(spec))
     if errors:
@@ -490,6 +649,7 @@ def replacing(spec):
 
 
 def bind(spec, declaration):
+    declaration = derived(spec, declaration)[0]  # Amendment G: the producers' labels too.
     m, x = spec.model, spec.execution
     species = list(m.species_ids)
     cells = [c.id for c in m.cells]
@@ -803,7 +963,9 @@ class NeutralArrivalLabels(Operator):
         species' labels in declared order, the base first; padding past its own); the pool
         reporters; their pool positions (each reporter's label_pools in order); and the records'
         first axes, the labelled species and the pool reporters again where a replacing event is
-        declared, empty elsewhere (erratum E)."""
+        declared, empty elsewhere (erratum E). A species' labels include its producers' (amendment
+        G)."""
+        declaration = derived(spec, declaration)[0]
         width = max(len(s.labels) for s in declaration.species)
         owners = reporters(spec, "LABEL_POOLS")
         pools = {op.LAW_ID: [entry[0] for entry in op.label_pools(d)] for op, d in owners}
@@ -849,8 +1011,9 @@ class NeutralArrivalLabels(Operator):
 
     def view_events(self, spec, declaration, schedule):
         """Each label switch, at its labelled species (the entry at time 0 sets the start), with
-        its source where it names one. It decides no cell's life, so there are no births or
-        retirements."""
+        its source where it names one, a producer source's derived schedule included (amendment
+        G). It decides no cell's life, so there are no births or retirements."""
+        schedule = (*schedule, *derived(spec, declaration)[1])
         layer = self.VIEW_LAYERS[0]["id"]
         events = [
             dict(
@@ -901,20 +1064,30 @@ class NeutralArrivalLabels(Operator):
         return tuple(out)
 
     def control_values(self, spec, declaration, schedule, records, indices, times):
+        """The arrival controls, with amendment G's producer labels and their sources' derived
+        schedules beside the declared ones (the same forms as a correct hand-written schedule)."""
+        declaration, producers = derived(spec, declaration)
         return (
             arrival_controls(declaration, schedule, times),
-            source_controls(spec, declaration, schedule, times),
+            source_controls(spec, declaration, (*schedule, *producers), times),
         )
 
     def check_definition(self, spec, declaration, schedule, model):
         check_labels(spec, declaration, model)
 
     def batch_signature(self, declaration):
-        """The labelled species and their label counts; IDs, shares and schedules are data."""
-        return (LAW_ID, tuple((s.id, len(s.labels)) for s in declaration.species))
+        """The labelled species and their label counts; IDs, shares and schedules are data. Where
+        a species declares producers (amendment G) its label count follows its cells' replacement
+        events, which a declaration does not hold, so version 1 batches such a definition with no
+        other world: its signature holds a fresh part equal to nothing (Unbatched; a container's
+        comparison checks identity first, so a shared one would match itself), which the batch's
+        own check refuses ("matching model array axes"). Fail-closed: a batch of one runs."""
+        parts = (LAW_ID, tuple((s.id, len(s.labels)) for s in declaration.species))
+        return parts + ((Unbatched(),) if any(s.producers for s in declaration.species) else ())
 
     def working_size(self, spec):
         (declaration,) = (d for op, d, _ in composite_spec.entries(spec) if op.LAW_ID == LAW_ID)
+        declaration = derived(spec, declaration)[0]  # Amendment G: the producers' labels too.
         x = spec.execution
         width = max(len(s.labels) for s in declaration.species)
         nodes = x.capacity + x.extracellular_capacity
@@ -923,6 +1096,8 @@ class NeutralArrivalLabels(Operator):
         return 8 * 6 * len(declaration.species) * width * nodes
 
     def summary(self, spec, declaration, schedule, history):
+        declaration, producers = derived(spec, declaration)  # Amendment G's labels, schedules.
+        schedule = (*schedule, *producers)
         return {
             "label_law": LAW_ID,
             "labelled_species": {

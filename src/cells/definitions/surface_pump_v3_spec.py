@@ -55,16 +55,19 @@ import copy
 from bisect import bisect_right
 from collections.abc import Mapping
 from dataclasses import asdict, dataclass, field, fields, replace
+from typing import ClassVar
 
 import numpy as np
 
 from cells.definitions import surface_kinetic_spec as kinetic
 from cells.definitions import surface_pump_spec as first
 from cells.definitions import surface_pump_v2_spec as second
+from cells.definitions import surface_tissue_spec as tissue
 from cells.definitions.spec_values import fraction, identifier
-from cells.definitions.specs import ConfigError, _fields, _integer, _number
+from cells.definitions.specs import ConfigError, ExtracellularFaceSpec, _fields, _integer, _number
 from cells.laws.junctions import junction_gate
 from cells.laws.junctions import junction_series_gates as series_gates
+from cells.laws.routes import logmean_electrodiffusion_forms as forms_law
 from cells.numerics import surface_imex as imex
 from cells.registry import kind_registry
 from cells.registry import species_registry as registry
@@ -167,7 +170,14 @@ CHANNEL_FIELDS = set(kinetic.ChannelPopulation.__dataclass_fields__)
 CHANNEL_FACTORS = "factors"
 _NONE = object()  # A channel entry without factors.
 # The model fields @3's parse sets itself; the others are the @2 base's.
-OWN_FIELDS = ("channels", "junction_heat_booking", "species_registry", "kinds", "heat_bookings")
+OWN_FIELDS = (
+    "channels",
+    "junction_heat_booking",
+    "species_registry",
+    "kinds",
+    "heat_bookings",
+    "forms_faces",
+)
 HEAT_BOOKINGS_KEY = "heat_bookings"  # Seam D's model key (module docstring).
 Control = second.Control  # The channel field is filled; absent slots stay zero.
 
@@ -197,6 +207,26 @@ class SurfacePumpChannelModel:
     # class, the tableau never listed; () for every definition of today's, and then to_dict
     # writes nothing. Held by the structure (InnerStructure.heat_bookings), never by the layout.
     heat_bookings: tuple = ()
+    # The faces of logmean_electrodiffusion_forms@1 (FormsFace), in declared order: their own
+    # entity set, never in `faces` or its arrays; () for every definition of today's, and then
+    # to_dict writes nothing, so fingerprints are unchanged.
+    forms_faces: tuple = ()
+
+
+@dataclass(frozen=True)
+class FormsFace(ExtracellularFaceSpec):
+    """A face of logmean_electrodiffusion_forms@1 (laws/routes/logmean_electrodiffusion_forms):
+    today's face fields, one diffusivity per species. The base families parse and check it as its
+    degenerate plain face (surface_tissue_spec.admitting_faces); @3 holds it in forms_faces."""
+
+    LAW: ClassVar[str] = forms_law.LAW_ID
+
+
+FORMS_FACE_SOLVERS = (imex.EULER_ID, imex.ARS222_ID)
+FORMS_FACE_SOLVER_REFUSAL = (
+    f"{forms_law.LAW_ID} runs on the plain IMEX tableaux in version 1 "
+    f"({', '.join(FORMS_FACE_SOLVERS)}): RK4 and N2 refuse it"
+)
 
 
 @dataclass(frozen=True)
@@ -357,6 +387,14 @@ def to_dict(spec):
         raise ConfigError("Resolved pump tissue @3 requires its own model and experiment")
     raw = second.to_dict(projection(spec))
     raw["model"]["id"] = MODEL_ID
+    if m.forms_faces:  # Their own entity set, written after today's faces with their law.
+        for face in m.forms_faces:
+            row = asdict(face)
+            row["diffusivity_m2_per_s"] = dict(
+                zip(m.species_ids, face.diffusivity_m2_per_s, strict=True)
+            )
+            row["law"] = forms_law.LAW_ID
+            raw["model"]["faces"].append(row)
     raw["model"]["channels"] = [channel_to_dict(p) for p in m.channels]
     if m.junction_heat_booking != DEFAULT_JUNCTION_HEAT:
         raw["model"]["junction_heat_booking"] = m.junction_heat_booking
@@ -584,10 +622,36 @@ def parse(data):
     solver = x.get("solver")
     if solver in imex.IMPLICIT_CONDUCTANCE_IDS:
         x["solver"] = imex.ARS222_ID
+    # The forms law (logmean_electrodiffusion_forms@1): @3 alone admits it on faces. The base
+    # families parse and check each forms face as its degenerate plain face, so the declared
+    # face_capacity, which counts today's faces, is widened for their parse alone; the forms faces
+    # then leave `faces` for their own entity set (forms_faces).
+    declared_faces = x.get("face_capacity")
+    faces = m.get("faces")  # A malformed list is the base parse's to refuse.
+    forms_count = sum(
+        1
+        for f in (faces if isinstance(faces, list) else ())
+        if isinstance(f, dict) and f.get("law") == forms_law.LAW_ID
+    )
+    if forms_count and type(declared_faces) is int:
+        x["face_capacity"] = declared_faces + forms_count
     # FR-30 (D262): @3 alone admits junction_series_gates@1; @1's and @2's parses refuse it.
     with first.admitting({SERIES_GATE_LAW_ID: parse_series_gate}):
-        base = second.parse(raw)
+        with tissue.admitting_faces({forms_law.LAW_ID: FormsFace}):
+            base = second.parse(raw)
     series_junction_errors(base.model)
+    forms_faces = tuple(f for f in base.model.faces if type(f) is FormsFace)
+    if forms_faces:
+        plain = tuple(f for f in base.model.faces if type(f) is not FormsFace)
+        if declared_faces < len(plain):
+            raise ConfigError("face_capacity must hold every face of logmean_electrodiffusion@1")
+        if solver not in FORMS_FACE_SOLVERS:
+            raise ConfigError(FORMS_FACE_SOLVER_REFUSAL)
+        base = replace(
+            base,
+            model=replace(base.model, faces=plain),
+            execution=replace(base.execution, face_capacity=declared_faces),
+        )
     ids, z = base.model.species_ids, base.model.valence
     parsed = tuple(parse_channel(c, ids, z, {p.id for p in base.model.membranes}) for c in channels)
     parsed = tuple(
@@ -603,6 +667,7 @@ def parse(data):
             *model.membranes,
             *model.junctions,
             *model.faces,
+            *forms_faces,
             *(p.pump for p in model.membranes if p.pump is not None),
             *(p.calcium_pump for p in model.membranes if p.calcium_pump is not None),
             *parsed,
@@ -622,6 +687,7 @@ def parse(data):
         channels=parsed,
         junction_heat_booking=booking,
         heat_bookings=heat_bookings,
+        forms_faces=forms_faces,
         species_registry=declared,
         kinds=tuple(
             sorted(
@@ -651,6 +717,15 @@ def parse(data):
     spec = replace(base, model=model, experiment=experiment, execution=execution)
     from cells.models.surface_pump_v3 import check_definition, structure
 
+    if forms_faces and any(
+        kind_registry.active().lookup(kind_id).stage_read is not None
+        and getattr(declaration, "read_id", None) != forms_law.CLOSURE_READ_ID
+        for kind_id, declaration in model.kinds
+    ):  # Ahead of the registry's closure checks: the forms read is the general closure's.
+        raise ConfigError(
+            f"{forms_law.LAW_ID} faces read the general closure ({forms_law.CLOSURE_READ_ID}) "
+            "alone: beside another stage read they are refused (version 1)"
+        )
     registry.check_definition(spec)  # Ahead of @3's own checks, so its refusals come first.
     try:
         # A definition that declares kinds is checked by its structure's own functions (§7.4 (k)),
@@ -662,6 +737,7 @@ def parse(data):
             or any(c.kinetic_law not in LAW_CODES for c in spec.model.channels)
             or spec.model.heat_bookings  # Seam D: the structure holds the picks.
             or any(isinstance(j, kinetic.SeriesJunction) for j in spec.model.junctions)  # FR-30.
+            or spec.model.forms_faces  # The forms law: their own entity set (the structure's).
         )
         check_definition(spec, structure=structure(spec.model) if declared else None)
     except (ArithmeticError, ValueError) as error:

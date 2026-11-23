@@ -1884,3 +1884,38 @@ names become a contract convention, which a requester reads as the triple.
   schedule (erratum F) are unchanged. A window of (a) is that schedule's window, crossed with each
   generation.
 - MAX_LABELS still bounds the labels: generations times (windows + 1), plus the species' own.
+
+### 9.21 Erratum H: route 2 at the node runs at the gross loss (§9.17.5)
+
+*23 November 2026, the lead's ruling, docs only, tagged before amendment T's code. Item 3 is proposed
+with it for the lead's choice at the tag.*
+
+1. **Route 2 at node o runs at o's gross one-way loss,** by erratum F's reasoning (§9.19). This
+   replaces §9.17.5's "∫D_o over n_o".
+   - A producer's molecule at o leaves at o's outside degradation's declared first-order rate k_o,
+     whatever re-synthesis returns to o's row.
+   - A molecule re-synthesised at o from its monomers takes the species' label in force at o, never
+     a producer's. So it is no producer's RNA and no member of a release window's cohort.
+   - The booked net loss, ∫D_o/n_o = k_o (1 − e^(y_o)), counts re-synthesis too. The two readings
+     agree only where e^(y_o) ≪ 1.
+2. **The readouts' route 2** (§9.17.5), each exact for constant rates in a well-mixed row or node,
+   up to its grid error (cohort.py's known-rate form):
+   - **extracellular RNA by producer:** each producer's exports, its chain's export counter over each
+     generation's life, carried at k_o;
+   - **the release-marked cohort at o:** two pools in series. In the fate row the window's members
+     leave at the fate's gross k_f and by export; their exports then leave o at k_o;
+   - **RNA at o from a generation replaced later:** the first readout's route 2 over that
+     generation's life.
+3. **The export's label report** (§9.17.4), proposed:
+   - **(a), recommended:** two one-way transfers per export, as FR-42 reads every two-sided move
+     and as this operator already reports a degradation's re-synthesis apart from its loss:
+     - the forward part, k_E n_F,c φ_E, from c to o with c's shares;
+     - the backward part, k_E n_F,c φ_E e^(x_E), from o to c with o's shares (the same molecules
+       returning).
+
+     Their difference is J_E, so the physics is unchanged. A forward and a backward export counter
+     (zero-size without an export) let the cohort's series in item 2 carry its members by both
+     parts.
+   - **(b), as tagged:** one transfer of the net J_E with c's shares. It is exact only where
+     e^(x_E) ≪ 1. A driven export far inside its domain meets that, but the domain's own bound,
+     x_E ≤ X_DOM = −1, admits e^(x_E) up to e^(−1).

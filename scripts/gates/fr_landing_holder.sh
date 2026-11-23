@@ -14,7 +14,9 @@
 # - the queue is scripts/gates/fr_landing_queue.sh;
 # - the snapshot is frozen by scripts/gates/freeze_snapshot.py --scope guards, the old freeze
 #   helper's scope;
-# - the baselines are FR's frozen quick dry runs.
+# - the baselines are FR's frozen quick dry runs, renewed for D305's fix (D307): the parts whose
+#   max_global_charge_bound_ratio fell, from FR's set at 605331c2; the rest linked to the dry runs
+#   (RENEWAL.json beside them).
 #
 # Steps:
 #   1. freeze the snapshot from the clean worktree, then remove the worktree;
@@ -31,8 +33,8 @@ RD=$G/../run_detached.sh
 Q=$G/fr_landing_queue.sh
 PY=${PY:-/mnt/workspaces/Cells/venv-cpu/bin/python}
 LOCK=${LANE_LOCK:-/mnt/workspaces/Cells/locks/gate-cores-8-11.lock}
-P=/mnt/workspaces/Cells/d172-restructure-20261115-01/fr45/pipeline
-F4=$P/dt-3c10b833-dry/quick F5=$P/dt5-7c8bfa47-dry
+P=/mnt/workspaces/Cells/global-charge-bound-20261122/fr-baselines-605331c2
+F4=$P/fr4-quick F5=$P/fr5
 log() { echo "$(date -u +%FT%TZ) holder $*" >> "$O/run.log"; }
 log "the lock is held"
 REPO=$(git -C "$WT" rev-parse --path-format=absolute --git-common-dir 2>/dev/null)

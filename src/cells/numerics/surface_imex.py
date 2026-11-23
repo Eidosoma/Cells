@@ -139,6 +139,40 @@ def face_laplacian(weight, s, *, xp=jnp):
     )
 
 
+def forms_face_weights(left, right, forms, *, xp=jnp):
+    """face_weights for the forms faces (surface_transport.FormsFaces): W [mover, forms face] and
+    ln(a/b), from each mover's concentration at the faces' senders and receivers."""
+    left = xp.where(forms.active, left, 1.0)
+    right = xp.where(forms.active, right, 1.0)
+    mean, _ = logmean(left, right, xp=xp)
+    weight = xp.where(forms.active, forms.factor * mean / MOL_PER_FMOL, 0.0)
+    return weight, xp.where(forms.active, xp.log(left) - xp.log(right), 0.0)
+
+
+def forms_drift_flux(weight, outside_potential, temperature, forms, *, xp=jnp):
+    """drift_flux for the forms faces: each mover at its own valence."""
+    dv = xp.where(
+        forms.active, outside_potential[forms.sender] - outside_potential[forms.receiver], 0.0
+    )
+    return weight * (forms.valence * F / (R * temperature)) * dv
+
+
+def forms_face_laplacian(weight, temperature, size, offset, forms, *, xp=jnp):
+    """face_laplacian for the forms faces: each face's conductance sum_f z_f^2 W_f (S) between its
+    two outside nodes, in the node space of `size` nodes whose outside nodes start at `offset`."""
+    conductance = (
+        CHARGE_PER_FMOL * F / (R * temperature) * xp.sum(forms.valence**2 * weight, axis=0)
+    )
+    a, b = offset + forms.sender, offset + forms.receiver
+    zero = xp.zeros((size, size), dtype=weight.dtype)
+    return (
+        scatter(conductance, zero, (a, a), xp=xp)
+        + scatter(conductance, zero, (b, b), xp=xp)
+        - scatter(conductance, zero, (a, b), xp=xp)
+        - scatter(conductance, zero, (b, a), xp=xp)
+    )
+
+
 def factor_operator(coefficient, laplacian, boundary_V, p, *, xp=jnp):
     """Factor (C + coefficient L) on free nodes; clamps are reservoirs or the gauge."""
     s = p.surface
