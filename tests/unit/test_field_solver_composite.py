@@ -54,6 +54,8 @@ def test_a_free_offset_composite_declares_version_3_and_is_admitted(name):
     assert choice.declare(built, "3") == auto
     assert with_solver(auto, FACTORED_SOLVER_ID) == built  # Nothing else differs.
     assert type(initialise(parse_spec(auto)).layout).__name__.endswith("FloorLayout")
+    with pytest.raises(ValueError, match="no floor variant"):  # FR-17 stage 1: refused by name.
+        choice.declare(with_solver(built, SPARSE_SOLVER_ID))
 
 
 def held_bath_composites():
