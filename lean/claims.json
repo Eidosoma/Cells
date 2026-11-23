@@ -24,6 +24,107 @@
     "cells.rate_equations@1": "molecular-assembly"
   },
   "comparisons": {
+    "fr43-shared-writers": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [],
+      "operators": [
+        "cells.local_species_reactions@1",
+        "cells.templated_polymerisation@1",
+        "cells.ideal_osmosis_linear_compliance_water@1"
+      ],
+      "engine_revision": "211a9c17441ae6c17b00d3d239b5baa05a261d9f",
+      "record_revision": "6831a0113ffed609f060d495b205e119235d4768",
+      "sources": {
+        "Fixed-volume pair and finite reserve": "validation/tissue/shared_inventory_fixtures.py#L104",
+        "Both writers in the swelling cell": "validation/tissue/shared_inventory_fixtures.py#L182",
+        "Current volumes passed to split operators": "src/cells/models/pump_composite.py#L1628",
+        "Shared standard potential": "src/cells/registry/species_registry.py#L679",
+        "Gene initiation and substrate concentrations": "src/cells/operators/templated_polymerisation.py#L2193",
+        "Reaction step and volume read": "src/cells/operators/species_reactions.py#L1767",
+        "Water volume and work accounts": "src/cells/operators/osmotic_water.py",
+        "Gene-unit fixture with finite stocks": "validation/gene_regulation/worlds.py#L429",
+        "Native checkpoint and run entry point": "src/cells/execution/runner.py#L362",
+        "Native saved arrays and snapshots": "src/cells/records/io.py#L254",
+        "Native changing-volume energy and tracer controls": "tests/unit/test_shared_inventory_volume.py",
+        "Shared-row admission and potential checks": "tests/unit/test_shared_inventory_writers.py"
+      },
+      "record_inputs": {
+        "Balance, volume and energy identities": "lean/CellsProofs/Chemistry/SharedWriter.lean",
+        "Measured UTP and four companion pools": "lean/checks/data/fr43_uridine_pool.json",
+        "Independent UTP reconstruction": "lean/checks/shared_uridine_pool.py",
+        "Pinned proof dependency": "lean/lake-manifest.json"
+      },
+      "driver": "lean/checks/shared_writers.py",
+      "record": "lean/PROGRESS.md#fr43-two-writers"
+    },
+    "fr38-survival-rounding-repair": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [],
+      "operators": [
+        "cells.templated_polymerisation@1"
+      ],
+      "engine_revision": "4944314d4d8b77c6a42ce1441503ac3e51de9dcb",
+      "record_revision": "a4f8c8276421e20668781f71536fb356c0abb679",
+      "sources": {
+        "Gross survivor counts and their grid errors": "validation/gene_regulation/cohort.py#L204",
+        "Net-count comparison from booked counters": "validation/gene_regulation/cohort.py#L298",
+        "Gross loss rate from the exported definition": "validation/gene_regulation/release_check.py#L148",
+        "Public ratio and gross/net verdict": "validation/gene_regulation/release_check.py#L411",
+        "Declared half-lives": "validation/gene_regulation/sheet_check.py",
+        "Development world for the controls": "validation/gene_regulation/worlds.py",
+        "Ratio-rounding allowance over the release intervals": "validation/gene_regulation/release_check.py#L449",
+        "Native false-refusal regression": "tests/unit/test_gene_regulation_compare.py#L395",
+        "Saved development export names": "validation/gene_regulation/engine_run.py"
+      },
+      "record_inputs": {
+        "Count-bound and ratio identities": "lean/CellsProofs/Chemistry/ArrivalWindow.lean"
+      },
+      "driver": "lean/checks/release_survival.py",
+      "record": "lean/PROGRESS.md#fr38-survival-rounding"
+    },
+    "rosenbrock-inventory": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@2"
+      ],
+      "laws": [
+        "cells.rate_equations@1",
+        "cells.ideal_mixing@1",
+        "cells.stochastic_mass_action@1"
+      ],
+      "operators": [],
+      "engine_revision": "4944314d4d8b77c6a42ce1441503ac3e51de9dcb",
+      "record_revision": "a4f8c8276421e20668781f71536fb356c0abb679",
+      "sources": {
+        "Shifted stage equations and dense polynomial": "src/cells/numerics/rosenbrock_dense.py#L123",
+        "Reaction field and finite material accounts": "src/cells/models/assembly_lineages_v2/rate_equations.py#L927",
+        "Compiled step with the forward-mode Jacobian": "src/cells/models/assembly_lineages_v2/rate_equations.py#L1105",
+        "Accepted steps and observation stops": "src/cells/models/assembly_lineages_v2/rate_equations.py#L1428",
+        "Saved material-inventory check": "src/cells/models/assembly_lineages_v2/rate_equations.py#L1866",
+        "Public assembly run dispatch": "src/cells/models/assembly_lineages_v2/runner.py#L602",
+        "Native record writer": "src/cells/models/assembly_lineages_v2/records.py#L874",
+        "Finite single-pool world": "tests/unit/test_assembly_lineages_v2_rate_equations.py#L50",
+        "Native reaction and experiment definitions": "tests/assembly_lineage_v2_fixtures.py#L80",
+        "Registered mass-action rate limit": "src/cells/models/assembly_lineages_v2/mass_action.py"
+      },
+      "record_inputs": {
+        "Linear inventories through the stage equations": "lean/CellsProofs/Chemistry/RosenbrockInventory.lean",
+        "Reversible sugar-pair world": "lean/checks/rate_equation_flux.py#L35",
+        "Rabbit-muscle PGI concentration recovery": "lean/checks/data/kahana1960_pgi_recovery.json",
+        "Extract concentrations and independent kinetic ratio": "lean/checks/data/pgi_flux_direction.json",
+        "Pinned Mathlib dependency": "lean/lake-manifest.json"
+      },
+      "driver": "lean/checks/rosenbrock_inventory.py",
+      "record": "lean/PROGRESS.md#rosenbrock-reaction-inventory"
+    },
     "fr38-survival-gross-net": {
       "kind": "engine",
       "models": [
@@ -4064,6 +4165,137 @@
   },
   "claims": [
     {
+      "id": "fr43-shared-writers",
+      "category": "reactions-and-binding",
+      "title": "Two processes spending and replenishing one finite pool",
+      "statement": "The change in a shared stock equals the sum of the two writers’ signed bookings over any interval, including a tail after restart. An independently measured reserve with known stoichiometry can distinguish their contributions. A common standard potential assigns a single standard-energy change to the stock.",
+      "assumptions": [
+        "Each writer books exactly its own signed amount change. Both use the same amount units, preserve the cumulative counters at restart and account for every source or sink in this interval. The reserve used to infer one writer’s contribution has no other active route.",
+        "For the two rate probes, the numerator is nonzero at held amounts and controls and volume is positive. The stale-volume energy identity applies to positive amounts in an ideal mixture and compares the same change in amount at two volumes."
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.local_species_reactions@1",
+          "cells.templated_polymerisation@1"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.SharedWriter.split_balance": "lean/CellsProofs/Chemistry/SharedWriter.lean",
+          "CellsProofs.Chemistry.SharedWriter.window_balance": "lean/CellsProofs/Chemistry/SharedWriter.lean",
+          "CellsProofs.Chemistry.SharedWriter.separate_writers": "lean/CellsProofs/Chemistry/SharedWriter.lean",
+          "CellsProofs.Chemistry.SharedWriter.shared_standard_energy": "lean/CellsProofs/Chemistry/SharedWriter.lean",
+          "CellsProofs.Chemistry.SharedWriter.volume_rate_distinguishes": "lean/CellsProofs/Chemistry/SharedWriter.lean",
+          "CellsProofs.Chemistry.SharedWriter.stale_volume_energy": "lean/CellsProofs/Chemistry/SharedWriter.lean"
+        },
+        "sources": {
+          "Imported Mathlib telescoping sum specialized to a saved interval": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Group/Finset/Basic.lean#L862-L865",
+          "Imported Mathlib logarithm of a quotient for the ideal-energy correction": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/SpecialFunctions/Log/Basic.lean#L129",
+          "Cells locally proves the two-writer split and volume specializations": "lean/CellsProofs/Chemistry/SharedWriter.lean"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "fr43-shared-writers"
+        ],
+        "result": "On the FR-43 part 2B development revision 211a9c17, the fixed-volume network added 0.004997501 fmol and the gene unit spent a net 0.000664664 fmol. The 5 s disk restart reproduced all 78 state fields. Shifting 1% of a writer’s booking to its partner preserved the total and failed the independent reserve check. In a swelling cell both rate probes agreed at 2 and 3 s within 2.54 × 10⁻⁶ relative error. Supplying the initial volume to one writer at a time identified that writer in each control. These checks cover the saved-state rates and accounts. The FR-43 qualification compares the coupled trajectory separately."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "A finite nucleotide pool, its upstream reserve and its consumption product measured together. For a changing-volume amount balance, each concentration also needs a matched volume.",
+        "unit": "mM UTP",
+        "finding": "Under a common-volume assumption, the five archived metabolite means allow a check of net UTP supply and spending. Measurement independence, uncertainty of the full residual and gross reaction rates remain open.",
+        "evidence": [
+          {
+            "dataset_id": "huber2026_shared_UTP",
+            "manifest": "lean/checks/data/fr43_uridine_pool.json",
+            "citation": "Huber et al. (2026), Fig. 8",
+            "doi": "10.1016/j.mec.2026.e00287",
+            "locator": "Figure 8 validation batch, 40_TO7h mean and SD tables. The archived samples span 0 to 24 h.",
+            "context": "The reconstruction assumes a common volume and that all uridine remains in the five measured pools. It uses upstream depletion, product accumulation and the initial UTP, with no fitted rates. The Figure 8 code reads processed means. The public files do not document the conversion from chromatographic peaks to those means. [Figure 8 data reader](https://github.com/klamt-lab/MoRSel_UDP-GalNAc_Paper/blob/3a6ae20eb9c33bf667f4af9c1942cc4f4fce2963/process_optimization/visualize_selected_predictions.py#L19-L123)",
+            "role": "held_out_from_fitting",
+            "evaluation": [
+              "All nine UTP means from 0.5 to 24 h, with the 7 h measurement reported below"
+            ],
+            "observed": 0.954545,
+            "predicted": 0.822089,
+            "uncertainty": "Reported UTP SD at 7 h is 0.350096 mM. The three archived replicate pairs contain baseline uridine and 7 h product. The other contributors to the residual have marginal SDs, leaving the uncertainty of the full balance unresolved. [Paired measurements](https://github.com/klamt-lab/MoRSel_UDP-GalNAc_Paper/blob/3a6ae20eb9c33bf667f4af9c1942cc4f4fce2963/process_optimization/exp_val_data/UDP-GalNAc40_TO7h_biol_repl_data.txt)",
+            "assessment": "At 7 h the upstream pools supplied a net 38.101943 mM and product accumulation spent 37.279854 mM. Predicted minus observed UTP ranged from −0.284381 to +0.276418 mM across the nine samples. At 24 h the reconstruction gave 0.697341 mM against 0.525149 mM observed with a UTP SD of 0.021942 mM. This SD covers only the measured UTP channel.",
+            "report": "lean/PROGRESS.md#fr43-two-writers"
+          }
+        ]
+      }
+    },
+    {
+      "id": "rosenbrock-inventory",
+      "category": "molecular-assembly",
+      "title": "Rosenbrock reaction steps preserve closed material inventories",
+      "statement": "A weighted sum of species amounts that balances each reaction is preserved by every exact Rosenbrock stage solve, by the accepted endpoint and throughout the Rodas4 dense polynomial used to locate crossings.",
+      "assumptions": [
+        "The field is differentiable near the starting state. The inventory is linear and each stoichiometric change balances it at every stage. The fixed Jacobian is the derivative of that field, the scalar shift is nonzero and the stage equations are solved exactly.",
+        "The inventory covers a closed reaction interval. Reservoir transfers, boundary events and changes of representation require their own bookkeeping."
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.rate_equations@1"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.RosenbrockInventory.weighted_sum_zero": "lean/CellsProofs/Chemistry/RosenbrockInventory.lean",
+          "CellsProofs.Chemistry.RosenbrockInventory.jacobian_zero": "lean/CellsProofs/Chemistry/RosenbrockInventory.lean",
+          "CellsProofs.Chemistry.RosenbrockInventory.stages_zero": "lean/CellsProofs/Chemistry/RosenbrockInventory.lean",
+          "CellsProofs.Chemistry.RosenbrockInventory.step_inventory": "lean/CellsProofs/Chemistry/RosenbrockInventory.lean",
+          "CellsProofs.Chemistry.RosenbrockInventory.dense_inventory": "lean/CellsProofs/Chemistry/RosenbrockInventory.lean"
+        },
+        "sources": {
+          "Imported Mathlib chain rule for Fréchet derivatives": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/Calculus/FDeriv/Comp.lean#L86",
+          "Imported Mathlib derivative of a continuous linear map": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/Calculus/FDeriv/Linear.lean#L57",
+          "Imported Mathlib uniqueness of the derivative": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/Calculus/FDeriv/Basic.lean#L491"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "rosenbrock-inventory"
+        ],
+        "result": "In a closed A + B ⇌ C run, A+C and B+C started at 11,000 and 3,000 molecule units. The first accepted endpoint matched the first saved row bit for bit. All six stages and five dense samples preserved both totals within float64 rounding. Across 64 accepted steps the four saved observations had a maximum relative drift of 9.10 × 10⁻¹⁶ against the native 10⁻¹² tolerance. The unweighted molecule count changed by 653.29."
+      },
+      "biology": {
+        "status": "not_assessable",
+        "observable": "Total soluble glucose-6-phosphate and fructose-6-phosphate during their reversible interconversion.",
+        "unit": "mM",
+        "finding": "A partially purified enzyme preparation recovered approximately the starting total. One cell-extract time course lost 22.29% of the measured pair. Recovery uncertainty and the disposition of material outside the pair are unresolved.",
+        "evidence": [
+          {
+            "dataset_id": "kahana1960_pgi_recovery",
+            "manifest": "lean/checks/data/kahana1960_pgi_recovery.json",
+            "citation": "Kahana et al. (1960), Table II, experiment B",
+            "doi": "10.1016/S0021-9258(18)64594-6",
+            "locator": "Table II, experiment B, 0, 15 and 30 minutes. Figure 3 describes the assay conditions.",
+            "context": "Partially purified rabbit-muscle PGI at 30 °C and pH 8.0. Cells starts at the positive 15-minute pair and advances 900 s. Its conserved total is independent of the kinetic parameters.",
+            "role": "descriptive",
+            "observed": 2.505,
+            "predicted": 2.5,
+            "uncertainty": "The concentrations share a sequential absorbance assay. The paper reports rounded concentrations without a replicate uncertainty for their sum.",
+            "assessment": "The measured totals were 2.500, 2.500 and 2.505 mM. The final value exceeds the closed-pair prediction by 0.005 mM (0.2%).",
+            "report": "lean/PROGRESS.md#rosenbrock-reaction-inventory"
+          },
+          {
+            "dataset_id": "eicher2012_pgi_direction",
+            "manifest": "lean/checks/data/pgi_flux_direction.json",
+            "citation": "Eicher et al. (2012), Fig. 5 and PGI worksheet",
+            "doi": "10.3390/metabo2040818",
+            "locator": "Unsmoothed PGI worksheet, F4:H4 to F33:H33 and K4:M4 to K29:M29.",
+            "context": "The same two E. coli K-12 extract courses at 25 °C and pH 7.2 also supply the reaction-direction comparison. Here the observable is the sum of both sugars.",
+            "role": "descriptive",
+            "uncertainty": "The workbook gives no pointwise uncertainty or covariance. Neither course measures material outside the soluble pair.",
+            "assessment": "Dataset 2 fell from 6.8872 to 5.3523 mM (−22.29%). Dataset 3 rose from 9.5845 to 9.6838 mM (+1.04%). Conservation of the two measured sugars in the extract is unresolved.",
+            "report": "lean/PROGRESS.md#rosenbrock-reaction-inventory"
+          }
+        ]
+      }
+    },
+    {
       "id": "size-threshold-division",
       "category": "molecular-assembly",
       "title": "A size-triggered division preserves each membrane species across both daughter records",
@@ -4404,13 +4636,14 @@
         }
       },
       "numerical": {
-        "status": "failed",
+        "status": "checked",
         "comparisons": [
+          "fr38-survival-rounding-repair",
           "fr38-survival-gross-net",
           "fr38-survival-repair",
           "fr38-survival-original"
         ],
-        "result": "The erratum F reader reproduced all 6 control verdicts and the 8 saved development comparisons. Five controls met their mathematical expectations. One valid constant-rate turnover control gives a gross ratio of 0.25000000000000006 against a correctly rounded 0.25. The public checker refuses it with a zero grid bound even though both endpoint gross/net counts agree. A changed-rate control at 0.5 is correctly refused. The independent registered FR-38 verdict remains R1 failed and R2 inconclusive."
+        "result": "All six controls met their expected verdicts and the independent reader reproduced all eight saved development readouts on Cells 4944314d. At zero count-grid error the valid 0.25000000000000006 turnover ratio passes with a ratio-rounding allowance of 7.105427357601002 × 10⁻¹⁵. The changed-rate control at 0.5 still fails. The earlier false refusal and its record remain linked. The registered FR-38 outcome remains R1 failed and R2 inconclusive."
       },
       "biology": {
         "status": "open",
@@ -8897,6 +9130,18 @@
           "uncertainty": "At cytosolic pH 7.5, the two measured reversal voltages were −25.6 ± 1 and −38.6 ± 9 mV (SE, four and three trials). The proton equilibrium and hydrolysis voltages are calculated quantities.",
           "assessment": "Changing vacuolar pH from 4.1 to 6.0 shifted the ATP-dependent current reversal by −13.0 mV. Any fixed tightly coupled pump at the same fuel drive predicts the full proton-equilibrium shift, −112.5 mV using the paper's values. At pH 8.5/5.0 the two-proton prediction was −86.5 mV versus −17.5 ± 5 mV measured. The suggested pump-associated proton shunt remains one candidate mechanism.",
           "report": "lean/PROGRESS.md#biological-model-review"
+        },
+        {
+          "dataset_id": "kettner_workshop_low_ph",
+          "manifest": "lean/checks/data/kettner_low_ph_reversal.json",
+          "citation": "Kettner, 2002 workshop proceedings (2003), Fig. 7B and Table 1",
+          "url": "https://www.beilstein-institut.de/download/736/kettner_1.pdf#page=14",
+          "locator": "Table 1 at cytosolic pH 7.5 and lumen pH 3.1. Figure 7B shows a low-pH trace at 0 mV.",
+          "context": "The same research group reported the journal reversal bound above +40 mV. Workshop voltage ramps lasted 2.5 s and journal ramps lasted 5 s.",
+          "role": "descriptive",
+          "uncertainty": "The table gives +50 ± 8 mV (SE) without a replicate count or a matched low-pH sweep resolving the crossing. Independence from the journal recordings is unknown.",
+          "assessment": "The earlier estimate is compatible with the journal’s lower bound. The low-pH measurement required to reopen FR-29 remains outstanding.",
+          "report": "lean/PROGRESS.md#fr29-low-ph-current"
         }]
       }
     },

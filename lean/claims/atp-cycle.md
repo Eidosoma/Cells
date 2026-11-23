@@ -59,4 +59,14 @@ At cytosolic pH 7.5, the two measured reversal voltages were −25.6 ± 1 and �
 
 Changing vacuolar pH from 4.1 to 6.0 shifted the ATP-dependent current reversal by −13.0 mV. Any fixed tightly coupled pump at the same fuel drive predicts the full proton-equilibrium shift, −112.5 mV using the paper's values. At pH 8.5/5.0 the two-proton prediction was −86.5 mV versus −17.5 ± 5 mV measured. The suggested pump-associated proton shunt remains one candidate mechanism. [Dataset manifest](../checks/data/kettner2003_vacuole.json) · [Comparison verdict](../PROGRESS.md#biological-model-review)
 
+### kettner_workshop_low_ph
+
+The same research group reported the journal reversal bound above +40 mV. Workshop voltage ramps lasted 2.5 s and journal ramps lasted 5 s. Table 1 at cytosolic pH 7.5 and lumen pH 3.1. Figure 7B shows a low-pH trace at 0 mV. [Kettner, 2002 workshop proceedings (2003), Fig. 7B and Table 1](https://www.beilstein-institut.de/download/736/kettner_1.pdf#page=14)
+
+- **Evidence role** descriptive
+
+The table gives +50 ± 8 mV (SE) without a replicate count or a matched low-pH sweep resolving the crossing. Independence from the journal recordings is unknown.
+
+The earlier estimate is compatible with the journal’s lower bound. The low-pH measurement required to reopen FR-29 remains outstanding. [Dataset manifest](../checks/data/kettner_low_ph_reversal.json) · [Comparison verdict](../PROGRESS.md#fr29-low-ph-current)
+
 [Claim index](../README.md#proof-index) · [Editable register](../claims.json)

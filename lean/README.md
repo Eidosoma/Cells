@@ -13,8 +13,8 @@ Direct Lean claims cover [55 of 55 laws](COVERAGE.md#registered-laws) and [34 of
 | [Membrane transport and osmosis](COVERAGE.md#category-membrane-transport) | 6 of 6 | 11 of 11 | 11 checked | 10 |
 | [Ion channels and junctions](COVERAGE.md#category-channels-and-junctions) | 15 of 15 | 15 of 15 | 15 checked | 14 |
 | [Pumps and cotransport](COVERAGE.md#category-pumps-and-cotransport) | 13 of 13 | 9 of 9 | 8 checked · 1 open | 9 |
-| [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 3 of 3 | 16 of 16 | 15 checked · 1 failed | 12 |
-| [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 16 of 16 | 41 of 41 | 38 checked · 2 failed · 1 open | 26 |
+| [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 3 of 3 | 17 of 17 | 16 checked · 1 failed | 13 |
+| [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 16 of 16 | 42 of 42 | 40 checked · 1 failed · 1 open | 27 |
 | [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 2 of 2 | 27 of 27 | 27 checked | 20 |
 | [Cell physiology](COVERAGE.md#category-cell-physiology) | — | 3 of 3 | 3 checked | 3 |
 
@@ -22,7 +22,7 @@ Direct Lean claims cover [55 of 55 laws](COVERAGE.md#registered-laws) and [34 of
 
 Each category opens its detailed claim table on GitHub. A covered law or operator has at least one directly proved property, with its assumptions listed on the claim page. The last column counts claims with a recorded measurement or literature finding, including partial evidence. Each numerical result applies to the cases in its linked record. [All registered laws](COVERAGE.md#registered-laws) · [Design notes](ENGINE_LAW_VERIFICATION.md) · [Voltage pilot closeout](../reports/BIO003_PILOT_CLOSEOUT.md)
 
-The generated table tracks numerical failures. The original reversible GARD v1 law can refuse an extreme catalyst ratio, and the rapid-binding solver can misclassify a ligand inventory at the limit of binary64 precision. An FR-38 validation control also found that later samples can mask an unresolved export interval. The public pore-clock cutoff and all four lossless RNA fate records now pass their earlier controls. [Current failures](COVERAGE.md#failing-numerical-checks) · [Export-grid control](PROGRESS.md#fr38-pre-replacement-resolution) · [Pore-clock retest](PROGRESS.md#fr31-pore-endpoint-repair) · [Lossless RNA retest](claims/release-fate-export.md)
+The original reversible GARD v1 law can refuse an extreme catalyst ratio, and the rapid-binding solver can misclassify a ligand inventory at the limit of binary64 precision. The repaired FR-38 retention check detects an unresolved export interval. Its separate survival check now accepts the one-step rounding discrepancy and still rejects a changed loss rate. The public pore-clock cutoff and all four lossless RNA fate records also pass their earlier controls. [Current failures](COVERAGE.md#failing-numerical-checks) · [Retention repair](PROGRESS.md#fr38-retention-window-repair) · [Survival repair](PROGRESS.md#fr38-survival-rounding) · [Pore-clock retest](PROGRESS.md#fr31-pore-endpoint-repair) · [Lossless RNA retest](claims/release-fate-export.md)
 
 FR-42’s neutral arrival-time labels now have a proof and a compiled comparison. With constant loss and arrivals, every positive final amount up to the available supply determines a unique loss exponent. The label amounts sum to the physical pool. Enabling labels preserved all 42 shared history fields and 76 shared observations bit for bit in the tested tissue. With quadratic loss, the new cohort held 0.24999987 fmol at one second, against the exact ¼ fmol. [Finite-step proof and checks](claims/fr42-survival-exponent.md) · [Quadratic cohort and blank](claims/fr42-cohort-shares.md)
 
@@ -30,7 +30,11 @@ FR-38 follows a producer’s RNA from template release through cell replacement.
 
 ## Biological evidence
 
+In a measured nucleotide pool, upstream depletion and downstream product predicted 0.822 mM UTP at seven hours, compared with 0.955 ± 0.350 mM measured (SD). The FR-43 development replay checks how much each of two writers contributed and which volume each used. [Shared-pool proof, native runs and measurements](claims/fr43-shared-writers.md)
+
 Deterministic assembly reactions reverse direction across equilibrium and dissipate free energy. Two measured enzyme time courses show opposite net conversion from opposite starting sugars. In a separate rabbit-muscle preparation the kinetic inputs gave a Cells stall ratio of 0.32, compared with a measured F6P/G6P ratio of 0.30. [Reaction proof, compiled checks and measurement limits](claims/rate-equation-flux.md)
+
+The reaction integrator preserves closed material inventories through its stages and dense output in exact arithmetic. A partially purified enzyme assay recovered 100.2% of the initial G6P + F6P at 30 minutes. In one cell-extract course the measured pair fell by 22.29%, limiting which experiments can test the closed-pool assumption. [Conservation proof, native replay and both assays](claims/rosenbrock-inventory.md)
 
 Mobile carriers can move a ligand even at zero net binder flux. Rabbit heart cells show faster acid arrival with carbonic buffer, and myoglobin increased initial oxygen flux across a polymer film. The Cells comparison follows free and bound ligand separately to both ends of a face. [Measurements, proof and compiled tissue comparison](claims/forms-face-carriage.md)
 
