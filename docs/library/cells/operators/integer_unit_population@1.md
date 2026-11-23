@@ -100,8 +100,25 @@ $$J = \Big(\sum_k g_k n_k\Big)\left(\frac{n_\text{c}}{V_\text{c}} - \frac{n_\tex
 - **The heat** of a move $m$ from the cell to the node is
   $RT\,[\,m \ln(c_\text{c}'/c_\text{o}') + n_\text{c}\varphi(-m/n_\text{c}) + n_\text{o}\varphi(m/n_\text{o})\,]$,
   with $\varphi(x) = x - \ln(1 + x)$. Every term is $\ge 0$.
-- **At a division** each unit goes to the first daughter with probability $f$, the patch's area
-  fraction.
+- **At a division**, `independent_segregation` applies this contract:
+  - **Inputs:**
+    - the parent site's counts $n_k \ge 0$ (integers), $k = 0, \dots, K-1$ in declared state
+      order, with $U = \sum_k n_k$ units;
+    - $f$, the partition's area fraction of the parent's patch for its first daughter patch,
+      $0 < f < 1$;
+    - the block size $W$, the largest declared subunit total of any site, so $U \le W$.
+  - **The draws:** the uniforms $u_0, \dots, u_{W-1} \in (0, 1)$, draw 0 of the parent site's
+    partition stream (domain 2). The units $i \ge U$ draw but use none.
+  - **The unit order:** unit $i$, $0 \le i < U$, is of state $k$ exactly when
+    $\sum_{k' < k} n_{k'} \le i < \sum_{k' \le k} n_{k'}$: state order, then index.
+  - **The rule:** unit $i$ goes to the first daughter site if $u_i < f$, and otherwise to the second.
+  - **What each recipient receives:**
+    - the first takes $a_k = \#\{i \text{ of state } k : u_i < f\}$ and the second
+      $b_k = n_k - a_k$;
+    - both must hold no units before (refused otherwise), and the parent is set to 0;
+    - the signed record books $-n_k$ at the parent, $+a_k$ and $+b_k$ at the daughters.
+  - **The invariant:** $a_k + b_k = n_k$ for every $k$ and every draw, exactly in integers, so the
+    subunits $\sum_k w_k n_k$ are kept across the two daughters.
 - **Refused, never repaired:**
   - a charged moved species;
   - a site on a held bath;
