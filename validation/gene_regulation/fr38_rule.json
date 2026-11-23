@@ -1,6 +1,6 @@
 {
  "kind": "cells.gene_regulation.fr38_rule@1",
- "status": "DRAFT for the lead, revised for D289 (FR-42, option A), erratum C (§9.14) and erratum F (§9.19, D306 item 3; D307 item 3): route 1 is judged on shares, R1L's fate rows labelled by FR-42's label owner on transcription's own label schedule, so re-synthesised molecules are not members, at p = 2 (the share update's split, erratum C); route 2 is cohort.py's known-rate form at each fate's gross one-way loss, in R1 and R2. worlds.r1's labelled path and release_check's route 2 follow erratum F at fr38-erratum-f-code (development, not judged). To be tagged after routed p's round, when the engine revision below moves to that round's landed head, and before the judged runs launch. No run was compared with the references, and the builder has not read them",
+ "status": "For the lead's tag, which registers it before the judged runs launch. Revised for D289 (FR-42, option A), erratum C (§9.14) and erratum F (§9.19, D306 item 3; D307 item 3): route 1 is judged on shares, R1L's fate rows labelled by FR-42's label owner on transcription's own label schedule, so re-synthesised molecules are not members, at p = 2 (the share update's split, erratum C); route 2 is cohort.py's known-rate form at each fate's gross one-way loss, in R1 and R2. worlds.r1's labelled path and release_check's route 2 follow erratum F: Work 1, erratum F's code (fr38-erratum-f-code 2b09985a), landed at main 8ca9893c (tag fr38-erratum-f-code-landed-2026-11-23), development, not judged. The routed-p round (Work 4, fr38-routed-p 91da47b3) landed at main 3f485ee9 (tag fr38-routed-p-landed-2026-11-23), the engine revision below. No run was compared with the references, and the builder has not read them",
  "sheet": {
   "law": "docs/TEMPLATED_POLYMERISATION_LAWS.md §9, the release (FR-38, D284)",
   "tags": [
@@ -16,11 +16,12 @@
    "gr1-sheet-fr38-amendment-t-2026-11-22",
    "gr1-sheet-fr38-erratum-e-2026-11-22",
    "gr1-sheet-fr38-erratum-f-2026-11-23",
-   "gr1-sheet-fr38-amendment-g-2026-11-23"
+   "gr1-sheet-fr38-amendment-g-2026-11-23",
+   "gr1-sheet-fr38-erratum-h-2026-11-23"
   ]
  },
  "references": "FR-38's code-blind references, tag gr-refs-fr38-2026-11-22, read through their interface by the comparison's reader, never by the builder",
- "engine": "templated_polymerisation@1 with §9's release, at FR-38's landed head; every judged run is fresh, through validation/gene_regulation/engine_run.py, never a development run",
+ "engine": "templated_polymerisation@1 with §9's release at main 3f485ee9ec65eacf4c0253f6504c7ada0b534cc3 (tag fr38-routed-p-landed-2026-11-23), FR-38's landed head after the routed-p round; every judged run is fresh, through validation/gene_regulation/engine_run.py, never a development run",
  "set": "test instance",
  "set_reason": "§9.9 runs R1 at the numeric test instance and R2 as A1 (§5.1); the sheet names no other potential set for §9",
  "worlds": {
@@ -258,7 +259,8 @@
   "the observation reader of src/cells/assays",
   "each move's dG and A1's u(t), not exported (as FR-25)",
   "every potential set but the test instance",
-  "amendment G's derived producer labels (§9.20, D307 item 2): no world of this rule declares a replacement or a producer"
+  "amendment G's derived producer labels (§9.20, D307 item 2): no world of this rule declares a replacement or a producer",
+  "amendment T's export with erratum H (§9.17, §9.21): no world of this rule declares an export, and the engine revision holds none"
  ],
  "not_blind": [
   "the builder read FR-38's development runs before this rule: R1's development sets and acceptance set at dt 2 s (da21173d), R2 and R2A at dt 0.5 s (da21173d), R1S at dt 2 s (6e639426) and R1's restart at dt 0.5 s; each world at one step only",
