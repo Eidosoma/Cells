@@ -9831,3 +9831,35 @@ e83680830219a58ab6b47d268518543b90e63c52d6b7d7694ee8a8e45c7a7285. All 12 entries
 - Then the fitter starts, working from fit.json and protocol.json only. Its exclusions are all of lean/,
   the four papers, and everything else under fr30-candidates4-extraction/.
 - The lead's draft is /mnt/workspaces/Cells/fr30-benchmark-20261123/RULING_DRAFT.md.
+
+## D312: XC0's comparison rule is registered; the lead's answers to its three questions
+
+2026-11-23, about 13:30 UTC. The Xenopus lane's XC0 rule is tagged on its branch head,
+xc0-rule-registered-2026-11-23 (98351456), and merged at 1030280a. It names its reader,
+validation/xenopus_bioelectric/xc0_compare.py, as D308 requires. Nothing has been compared.
+1. **The manifest: option B, without the text.**
+   - The tagged reader's keys stage runs first. It prints family names, kinds, units and row keys only.
+   - The claim and quantity strings are not printed, because they can carry numbers. The families'
+     meaning comes from the confirmer (answer 2).
+   - The erratum that maps the undocumented families is then written once and tagged before the table is
+     built, and the table is built once.
+2. **The semantics come from a confirmer who is code-blind and value-silent.**
+   - An agent that may read the references' values and notes, but never Cells' engine code or outputs,
+     writes one file. It covers the nine readings to confirm (each "matches" or "differs"), the families
+     REFERENCES_USAGE.md does not map, and C3's worlds S2 to S8.
+   - It states no value, band, floor or tolerance, and no word that gives away an outcome. A mechanical
+     check confirms that every number in it is a key token, a unit, a declared input or a number already
+     in REFERENCES_USAGE.md.
+   - The builder reads only that file.
+3. **T1 and T2 stay unscored calibrations in XC0.**
+   - DESIGN gives no plausibility range for P_GlyR or the m_kleak availability, and a range set now would
+     be the lead's guess.
+   - The calibrated values are reported with the verdict, which states that they are unconstrained.
+- **Disclosed in the rule's not_blind:**
+  - the builder's refused listing of the designs files, of which nothing was read;
+  - the reference figures printed in DESIGN's erratum, declared_inputs.json and the references' README;
+  - one engine value at a registered state, pump_dG_atp at the declared pump conditions, printed by a
+    first invented input set and then replaced.
+- **The engine gap stays queued for the kinds lane** (D310's list): a declared zeta on every edge of
+  `cells.na2_anion_symport_diagram@1`. Until it lands, version 2's charge-placement rows are "not run on
+  main".
