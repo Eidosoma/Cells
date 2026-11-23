@@ -10245,3 +10245,59 @@ section 9. The user agreed with the recommendations and relayed a reviewer's com
   - FR-47's protocol and reference spec come next, and its build follows FR-48.
   - Gates wait for FR-43's lanes.
   - FR-47's exact ensemble, about 3 CPU-hours, runs after Protocol D's re-registration or on other CPUs.
+
+## D324: FR-43 part 2's registered comparisons pass: C2.3, C2.6/C2.7 and C2.8
+
+2026-11-23, about 19:24 UTC.
+- **The judgements:** the builder's, run against the code-blind references tagged fr43-part2-references-2026-11-23
+  (0172e1b9, under the spec's amendments 1 and 2) by CRITERIA.md, with a floor of 1e-8 and a band of [3.6, 4.4].
+  Each ran once, from a clean frozen snapshot.
+- **The records:** /mnt/workspaces/Cells/fr43-20261123/part2/registered-20261123/.
+- **C2.3, two writers on one shared stock at fixed volume (2A at 205dbaa5): passes in the sink and in the source.**
+  - The gene unit's books are judged, at ratios 4.004 (sink) and 4.009 (source).
+  - The other quantities fall below the floor at both steps. In the source, the network's books and route rate
+    agree at rounding, since X -> N does not read N.
+  - The planted 1%-fast network fails in n_N and in the network's books, at ratio 1.000.
+- **C2.6 and C2.7, the swelling cell (2B at ea813fae): pass, with every ratio judged.**
+  - amounts 3.930 and V 3.999;
+  - the engine's endpoint energy identity 4.006;
+  - F against the reference 4.017;
+  - water's heat 4.000, the bath's water work 3.999 and the network's heat 3.986.
+  - The plant that reads V0 is refused by the energy ledger.
+- **C2.8, the swelling pair (2B): passes.**
+  - n_W, the network's books and the network's rate are judged, at 4.000, 4.000 and 3.999.
+  - The rest fall below the floor.
+  - The two plants that read V0 (the gene unit and the network) fail in amounts by factors of 1.7e5 to 1.3e8,
+    at ratio 1.000.
+- **On record:**
+  - c23-judge-a8444119, as failed evidence. Its stage-1 reference read machines = 100 as fmol, the spec's
+    unstated unit, which amendment 2 fixed.
+  - c26-judge-3455afd2, as development evidence.
+  - The superseded reference tags fr43-part2-references-c23-2026-11-23 and fr43-part2-references-c26-c27-2026-11-23.
+- **2A and 2B land after their gates.**
+
+## D325: the gap-junction replication's GJ-L1 comparison passes
+
+2026-11-23, about 19:24 UTC. The GJ owner's registered engine run and judgement are in
+/mnt/workspaces/Cells/gap-junction-20261123/judged/.
+- **The verdict:** 57 of 57 real entries pass, 45 arms and 12 chains.
+  - The two plants, each scaling every junction permeability by 1.01 in the definition, are caught, with margins
+    of 2.0e9 and 1.0e3. They are the only failures, as required.
+  - No entry is inconclusive, so no retry is owed.
+  - The largest real margin, gap against tolerance, is 0.333 on the as-written arms. That is the registration's
+    expectation: the dt/4 error is about a third of its estimate, since the tolerance is three times the
+    estimate.
+- **The engine run:**
+  - one registered invocation (figure3, figure5, figure8, control and aswritten, at the 600 s horizon);
+  - from the clean snapshot of main 23593267, equal to the tag in src/ and validation/ except unrelated files;
+  - on CPU 8, under lane B's lock, paused by the holder's yields and never stopped;
+  - the table was built from the engine alone before any reference was read. Its sha256 is
+    672373c7a747c6c4791d14fe70ee9853bd7a30a2682de00185c19ed335c601df.
+- **The judgement:**
+  - from a clean snapshot of main 9eb9890a, with the judge unchanged since its tag;
+  - the interface is byte-identical to gj-linear-references-2026-11-23's;
+  - the verdict's sha256 is b3e9c1cc4185462341b81f72c38777a00004791153b660c13690969723f1a94f.
+- **The plants' isolation:** each plant's definition fingerprint differs from its reference arm's at every step taken
+  (plants-isolation.json), so a program cached per model computed the planted values.
+- **Next:** GJ-N1's 1D line runs now, about 8 CPU-hours. The 2D field waits for the sparse solver (FR-17's stage 1)
+  and a GJ-N1 amendment that names it.
