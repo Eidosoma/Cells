@@ -41,9 +41,9 @@ OUT = os.path.join(HERE, "out")
 PRIMARY = {"method": "Radau", "rtol": 1e-11}
 STIFF_SECOND = [{"method": "Radau", "rtol": 1e-12}, {"method": "BDF", "rtol": 1e-12}]
 NONSTIFF_SECOND = [{"method": "DOP853", "rtol": 1e-13}, {"method": "Radau", "rtol": 1e-12}]
-# C2.8 samples every second while recharging and the stage exits, each near 3e-3 fmol/s, cancel to
-# about 1e-7 in the gene unit's net rate; that judged rate then carries Radau 1e-11's state error
-# amplified about 1e4-fold (1.5e-10). Its primary is therefore Radau at 1e-13 (README.md).
+# C2.8 samples every second while recharging and the stage exits (up to 3e-3 fmol/s each) cancel
+# to 3e-7 to 3e-10 fmol/s in the gene unit's judged net rate, whose absolute error is therefore the
+# fluxes'. At rtol 1e-11 its e was 1.5e-10, so C2.8's primary is Radau at 1e-13 (README.md).
 C28_PRIMARY = {"method": "Radau", "rtol": 1e-13}
 C28_SECOND = [{"method": "Radau", "rtol": 1e-12}, {"method": "BDF", "rtol": 1e-13}]
 
