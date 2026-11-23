@@ -10332,3 +10332,80 @@ section 9. The user agreed with the recommendations and relayed a reviewer's com
     were window timing, host and trace checks, the bit check and the D148 guard dumps;
   - no criterion was computed and no state was printed in either. The short field states saved in
     probes/field-profile-01 and gj-fieldpath-20261123/d148 were never read.
+
+## D327: FR-44, FR-45, FR-49, FR-50 and FR-51: the user's approval of the designs, with two reviewers' qualification details; build order and file ownership
+
+2026-11-23, about 22:36 UTC. These rule on the design notes /mnt/workspaces/Cells/fr44-45-design-20261123/DESIGN.md and
+/mnt/workspaces/Cells/fr49-51-design-20261123/DESIGN.md. The user approved the designers' recommendations, with two
+reviewers' additions. Names follow the notes.
+- **The fail-open fix comes first** (FR-44 note section 5.2).
+  - Today a wash is admitted at a node that templated_polymerisation@1 exports into, or degrades outside at.
+  - The fix refuses both by name, each with its own row, plus a passing control where the wash is at a different
+    node.
+  - Before it lands, it lists every existing and registered world the refusal would catch, and discloses any judged
+    run that used one.
+  - It lands after FR-43 part 3, before anything widens wash admission.
+- **FR-44, labels across a wash:**
+  - **The core ships first.** The wash reports a typed LiquidExchange, read from each wash event's own
+    wash_last_sample_fmol and wash_last_supply_fmol, not from cumulative deltas.
+  - The incoming buffer carries the base label, even during an active label window.
+  - Labelled ions at a washed node are admitted: their amount is kept and their shares are diluted.
+  - label_outside_removed_fmol joins same_physics's exact extra-field set.
+  - The regression for a full wash that follows an earlier wash is kept.
+  - **Admission by species** (the written_species hook, about 0.5 agent-day) comes as step 3, after FR-44 and FR-45
+    land. Sites as label reporters, and crossings at a washed node, stay priced follow-ups.
+- **FR-45, competing ligands:**
+  - Shared site_sets inside site_occupancy@1, widened in place under D148 with crossrev renewed.
+  - Internalisation and the occupant-replacement operator are refused beside site_sets in version 1.
+  - The coupling operator @2 is admitted, reading a shared set's theta_b.
+  - **Before renewing the baseline:**
+    - show D148 compatibility on FR-3's existing worlds, their derivative programs included, and check whether FR-3's
+      judges take derivative programs;
+    - write the full new crossrev record first, so the renewal is against one clean baseline.
+  - **A registered protocol** (R-eq, R-ode and R-dG, with code-blind references) covers the finite-volume
+    equilibrium, the per-ligand balances and the shared-site heat.
+  - **Bound-site retention** is tested on the wash operator alone: bound arrays bitwise before and after. Saved rows
+    are not used, because binding resumes within the same step.
+- **FR-49, compartment compositions:**
+  - Its rulings 1-9 are as recommended, with the registered protocol fr49-compartment-compositions-v1 over World L
+    and World B.
+  - **Checks for combinations two changes create.** Whichever change lands second carries a check, or a refusal by
+    name, in that same landing for:
+    - a compartment with labels and a wash at a separate node;
+    - competing ligands sharing sites at a compartment;
+    - the inherited composition (cell_owned_compartments@1, neutral_arrival_labels@1, scheduled_compartment_wash@1 at
+      an external node), and its four-way form with unlabelled site_occupancy@1 once Admission by species lands.
+  - Each combination is enabled only once its check passes. The second builder lists what newly parses at its merged
+    head.
+- **FR-50, one-way records:**
+  - Its rulings 1-8 are as recommended. Phase 1, then phase 2 after FR-51, with the registered protocol
+    fr50-one-way-records-v1 and one_way_gap_relative.
+  - The gap is measured before any correction.
+  - The channel split is built from channel_rates' own factors, so opening, availability and block are shared by
+    construction.
+  - **The planted fault** leaves FR-51's block out of both directions. At zero net current that doubles both records
+    while the net, ratio and gap all pass.
+  - Each direction is checked against an independent absolute value from the reference. Transporters get the same
+    absolute equilibrium check, and the gap is defined when both directions are zero.
+- **FR-51, two blocking modes:**
+  - Its rulings 1-6 and 8-9 are as recommended. These are Option A, a constant blocker in version 1, s = +1 from
+    outside and -1 from inside, N2 refused beside a blocked population, blocked_channels and block_modes, the readout
+    channel_unblocked_fraction, and the registered protocol fr51-channel-block-v1.
+  - **Ruling 7:** each mode declares exactly one of electrical_distance (delta in [0, 1], giving s z_B delta) or
+    effective_valence (> 0, signed by s sgn(z_B), with blocker.valence nonzero kept for the charge's sign). A check
+    and a plant row cover that branch.
+    - The slope-bound probe is rerun at the steepest admitted value.
+    - The step bound must see u's dependence on E under V - E.
+  - **The unblocked fraction u and the slope term's (1 - theta) must be right at both ends:** exactly 1 at zero
+    blocker, and relatively accurate at strong block. A single mode with c/K = 1e18 must give about 1e-18, not 0,
+    which the literal 1 - sum(w theta) cannot do in binary64. Both ends are proved on the compiled program.
+  - At reversal the fraction is checked directly. The current ratio is used only away from reversal.
+  - The coupled-ion steepness case (polyamine block of an inward rectifier) rests on one study, recalled from memory.
+    Its source is checked before it enters the repo, and it is worded as an indication.
+- **Order and file ownership** (one owner per file at a time; each builder merges main just before hand-off,
+  regenerates the composition table with --write, and lands serially):
+  - **the wash files:** FR-43 part 3, then the fail-open fix, then FR-44, then FR-49's wash narrowing;
+  - **site_occupancy.py:** FR-45, then FR-49's site-occupancy pairing;
+  - **surface_pump_v3.py:** FR-51, then FR-50;
+  - **FR-49's other pieces** proceed in parallel.
+  - Each registered protocol and its spec are tagged before its engine build. Gates wait for FR-43 2B's landing.
