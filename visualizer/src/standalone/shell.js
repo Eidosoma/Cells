@@ -81,12 +81,22 @@ export function mountView({ make, styles = "" }) {
       this.frame = h("div", { class: "frame" }, this.canvas, this.labelBox, this.bar, this.legendBox, this.timeline, this.panel);
       root.append(h("style", {}, css + styles + STYLE), this.frame);
       this.stage = new Stage({ canvas: this.canvas, host: this });
-      this.labels = new LabelLayer(this.labelBox, this.stage, (id) => this.select(id));
+      this.labels = new LabelLayer(this.labelBox, this.stage);
       this.stage.afterRender.add(() => this.labels.layout());
       this.lens = make(this.stage, this.model, this.labels);
       this.stage.onTick((dt, time, real) => this.lens.update?.(dt, time, real));
       this.stage.onPalette((palette) => this.lens.applyPalette?.(palette));
       this.lens.onChrome = () => this.renderChrome();
+      if (this.lens.address) this.lens.onAddress = () => {
+        try {
+          const url = new URL(location.href);
+          for (const [key, value] of Object.entries(this.lens.address())) {
+            if (value) url.searchParams.set(key, value);
+            else url.searchParams.delete(key);
+          }
+          history.replaceState(null, "", url);
+        } catch {} // A preview frame may keep its address read-only.
+      };
       this.lens.activate();
       this.lens.restore?.(new URLSearchParams(location.search));
       this.canvas.setAttribute("aria-label", this.lens.chrome?.().card?.heading || "The view");
@@ -153,10 +163,20 @@ export function mountView({ make, styles = "" }) {
       const chrome = () => this.lens.chrome?.() || {};
       let down = null;
       this.canvas.addEventListener("pointerdown", (event) => (down = { x: event.clientX, y: event.clientY }));
+      this.labelBox.addEventListener("pointerdown", (event) => {
+        const label = event.target.closest("[data-label]");
+        if (!label || event.button > 0) return;
+        down = { x: event.clientX, y: event.clientY, label: label.dataset.label };
+        this.stage.rig.down(event);
+        event.preventDefault();
+      });
+      this.labelBox.addEventListener("wheel", (event) => this.stage.rig.wheel(event), { passive: false });
       this.canvas.addEventListener("pointerup", (event) => {
-        if (!down || Math.hypot(event.clientX - down.x, event.clientY - down.y) > 5) return;
-        const hit = this.stage.pick(event.clientX, event.clientY, this.lens.pickRoots);
-        if (!this.lens.openOnMap?.(hit?.id)) this.select(hit?.id || null);
+        const start = down;
+        down = null;
+        if (!start || event.button > 0 || this.stage.rig.dragged || Math.hypot(event.clientX - start.x, event.clientY - start.y) > 5) return;
+        const id = start.label || this.stage.pick(event.clientX, event.clientY, this.lens.pickRoots)?.id;
+        if (!this.lens.openOnMap?.(id)) this.select(id || null);
       });
       this.canvas.addEventListener("pointermove", (event) => this.lens.setHover?.(this.stage.pick(event.clientX, event.clientY, this.lens.pickRoots)?.id || null));
       // As the viewer gives keys to a view (src/ui/viewer.js): ] or Page Down to the next part, [ or Page Up to the one before; the arrows turn the camera.

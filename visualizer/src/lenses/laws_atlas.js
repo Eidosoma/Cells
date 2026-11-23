@@ -135,13 +135,16 @@ export class LawsAtlasLens {
   dispose() {
     this.drawing.dispose();
   }
+  drawScene(d) {
+    if (this.mode === "wiring") drawWiring(d, this, this.colours);
+    else if (this.mode === "compare") drawComparison(d, this, this.colours);
+    else drawAtlas(d, this, this.colours);
+  }
   rebuild() {
     if (!this.active) return;
     const d = this.drawing;
     d.reset();
-    if (this.mode === "wiring") drawWiring(d, this, this.colours);
-    else if (this.mode === "compare") drawComparison(d, this, this.colours);
-    else drawAtlas(d, this, this.colours);
+    this.drawScene(d);
     d.finish();
     this.labels.clear();
     this.hoverLabel = null;
@@ -154,7 +157,7 @@ export class LawsAtlasLens {
     }
     this.stage.invalidate();
   }
-  fit(fly = true, box = this.drawing.bounds) {
+  framedView(box, orientation = null) {
     const { stage } = this,
       { left = 0, right = 0, bottom = 0 } = stage.insets || {};
     const width = Math.max(160, stage.width - left - right),
@@ -171,10 +174,15 @@ export class LawsAtlasLens {
       polar,
       margin: this.mode === "atlas" ? 0.15 : 0.2,
       points: whole ? this.drawing.extent : null,
+      ...orientation,
     });
     if (whole && this.mode === "atlas") this.overviewDistance = view.distance;
-    if (fly) stage.rig.flyTo(view, 470);
-    else stage.rig.setView(view);
+    return view;
+  }
+  fit(fly = true, box = this.drawing.bounds) {
+    const view = this.framedView(box);
+    if (fly) this.stage.rig.flyTo(view, 470);
+    else this.stage.rig.setView(view);
   }
   isPortrait() {
     const { width, height, insets = {} } = this.stage;

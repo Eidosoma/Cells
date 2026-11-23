@@ -45,7 +45,7 @@ export class OrbitRig {
   }
 
   /** Animate to a view. With reduced motion, or when asked to be instant, the camera jumps there. */
-  flyTo(view, milliseconds = 900) {
+  flyTo(view, milliseconds = 900, path = null) {
     if (this.instant || matchMedia("(prefers-reduced-motion: reduce)").matches || milliseconds <= 0) {
       this.setView(view);
       return;
@@ -63,6 +63,12 @@ export class OrbitRig {
     if (turn < -Math.PI) turn += TWO_PI;
     to.azimuth = from.azimuth + turn;
     this.flight = { from, to, elapsed: 0, duration: milliseconds };
+    if (path) {
+      // The camera can be framed off-centre at either end of a drawn route.
+      this.flight.path = path;
+      this.flight.startOffset = from.target.clone().sub(path.getPoint(0));
+      this.flight.endOffset = to.target.clone().sub(path.getPoint(1));
+    }
     this.velocity.azimuth = this.velocity.polar = 0;
     this.onChange();
   }
@@ -74,7 +80,10 @@ export class OrbitRig {
       const flight = this.flight;
       flight.elapsed += dt;
       const t = ease(Math.max(0, Math.min(1, flight.elapsed / flight.duration)));
-      this.target.lerpVectors(flight.from.target, flight.to.target, t);
+      if (flight.path) {
+        flight.path.getPoint(t, this.target).addScaledVector(flight.startOffset, 1 - t).addScaledVector(flight.endOffset, t);
+        flight.progress = t;
+      } else this.target.lerpVectors(flight.from.target, flight.to.target, t);
       this.distance = Math.exp(Math.log(flight.from.distance) * (1 - t) + Math.log(flight.to.distance) * t);
       this.azimuth = flight.from.azimuth + (flight.to.azimuth - flight.from.azimuth) * t;
       this.polar = flight.from.polar + (flight.to.polar - flight.from.polar) * t;

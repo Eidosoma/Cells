@@ -70,9 +70,9 @@ export class AtlasDrawing {
     dummy.updateMatrix();
     this.batches.get(key).items.push({ matrix: dummy.matrix.clone(), colour, id });
   }
-  anchor(id, point, text, priority, kind = "part") {
+  anchor(id, point, text, priority, kind = "part", lift = 7) {
     if (id) this.anchors.set(id, point);
-    if (text) this.labels.push({ id, anchor: point, text, priority, kind, lift: 7 });
+    if (text) this.labels.push({ id, anchor: point, text, priority, kind, lift });
     this.include(point);
   }
   include(point) {

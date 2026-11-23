@@ -20,7 +20,7 @@ import { CellLens, defaultSpecies, MODELLED } from "../lenses/cell.js";
 import { ProteinLens, defaultAtlas, inSpecies } from "../lenses/proteins.js";
 import { loadBeside } from "../lenses/protein_shelves.js";
 import { ReplayLens } from "../lenses/replay.js";
-import { makeLawsView } from "../lenses/laws_atlas.js";
+import { makeLawsView } from "../lenses/laws_star.js";
 import { doorsFor as lawsDoors, textSections as lawsSections, textDescribe as lawsDescribe } from "../lenses/laws_card.js";
 import { LAWS_CSS } from "../lenses/laws_styles.js";
 import { MachinesLens } from "../lenses/machines.js";
@@ -784,7 +784,7 @@ class CellsViewer extends HTMLElement {
         url.hash = lens;
       }
       if (views) for (const key of ["run", "part", "example", "time", "record", "layers", "strength", "play"]) url.searchParams.delete(key);
-      if (lens && lens !== "laws") for (const key of ["lawModel", "lawFamily", "lawOrigin", "lawWhere", "trace", "compare"]) url.searchParams.delete(key);
+      if (lens && lens !== "laws") for (const key of ["lawModel", "lawFamily", "lawOrigin", "lawWhere", "lawRelation", "lawTrail", "trace", "compare"]) url.searchParams.delete(key);
       if (laws) {
         if (["declared", "design", "all"].includes(url.searchParams.get("show"))) url.searchParams.delete("show");
         for (const [key, value] of Object.entries(laws)) {

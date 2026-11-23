@@ -15,6 +15,8 @@ import { plaquesOf, longDate } from "../src/lenses/laws_marks.js";
 import { PER_BAND, layoutOf } from "../src/lenses/laws_layout.js";
 import { LawConnections, bridgeKey, fieldKey } from "../src/lenses/laws_connections.js";
 import { AtlasDrawing, atlasColours, drawAtlas } from "../src/lenses/laws_atlas_scene.js";
+import { drawStars, starLayout } from "../src/lenses/laws_star_scene.js";
+import { StarLight } from "../src/lenses/laws_starlight.js";
 import { LAWS_CSS } from "../src/lenses/laws_styles.js";
 import { sections as listSections } from "../src/lenses/laws_card.js";
 import { LAW_PORT_FORMAT, PORT_PHRASES, phraseOf, portLines, portTable } from "../src/lenses/law_port.js";
@@ -582,7 +584,7 @@ test("tracing follows the declaration, and a field links to another operator onl
   assert.deepEqual(graph.neighbours(library.pieces.find((p) => !p.declared)), []);
 });
 
-test("atlas islands keep their positions and draw budget when the catalogue grows to a thousand entries", () => {
+test("the two atlas layouts keep their landmarks and draw budget as the catalogue grows to a thousand entries", () => {
   const enlarged = structuredClone(raw),
     frame = enlarged.models.find((m) => m.id === "cells.assembly_lineages@2");
   const row = frame.declared.rows.find((r) => r.piece === "law"),
@@ -604,7 +606,28 @@ test("atlas islands keep their positions and draw budget when the catalogue grow
     view.dispose();
     return result;
   };
-  assert.deepEqual(draw(new Library(enlarged)), draw(library));
+  // Ordering can change when a registry adds an earlier name.
+  enlarged.pieces.reverse();
+  const larger = new Library(enlarged);
+  assert.deepEqual(draw(larger), draw(library));
+  const sky = (catalogue) => {
+    const drawing = new AtlasDrawing(), light = new StarLight(), map = starLayout(catalogue);
+    drawStars(drawing, { library: catalogue, graph: new LawConnections(catalogue), mode: "atlas",
+      filter: {}, matches: () => true, family: original.family, light, map });
+    drawing.finish();
+    assert.equal(map.stars.size, catalogue.pieces.length);
+    for (const [id, point] of map.stars) assert.equal(drawing.anchors.get("laws:" + id), point);
+    // Dense families remain completely pickable while the number of text labels stays bounded.
+    assert.ok(drawing.labels.filter(label => label.kind === "star-piece").length <= 14);
+    const draws = drawing.root.children.length + light.root.children.length;
+    drawing.dispose();
+    light.dispose();
+    return { map, draws };
+  };
+  const smallSky = sky(library), largeSky = sky(larger);
+  assert.equal(largeSky.draws, smallSky.draws);
+  assert.deepEqual(smallSky.map.families, largeSky.map.families);
+  for (const [id, point] of smallSky.map.stars) assert.deepEqual(largeSky.map.stars.get(id), point, id);
 });
 
 test("the wall holds every piece of the list, a bar for each in its family's column", () => {

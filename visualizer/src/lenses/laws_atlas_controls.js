@@ -3,7 +3,7 @@ import { engineId } from "./laws_data.js";
 import { displayName, modelName, relationLabel } from "./laws_connections.js";
 import { NEIGHBOURS_PER_LAYER } from "./laws_atlas_scene.js";
 
-function control(label, key, options, active, change) {
+export function control(label, key, options, active, change) {
   const select = h(
     "select",
     {
@@ -22,7 +22,7 @@ function control(label, key, options, active, change) {
   );
   return h("label", { class: "laws-control" }, h("span", {}, label), select);
 }
-const action = (label, key, click, main = false) =>
+export const action = (label, key, click, main = false) =>
   h(
     "button",
     { type: "button", class: main ? "laws-action laws-primary" : "laws-action", dataset: { atlasAction: key }, onclick: click },
@@ -32,7 +32,7 @@ const note = (s) => h("p", { class: "laws-guide" }, s);
 const tally = (s) => h("p", { class: "laws-tally", "aria-live": "polite" }, s);
 const nameRow = (m) => [m.id, modelName(m)];
 
-function search(view, pieces) {
+export function search(view, pieces) {
   const input = h("input", {
     class: "run-select",
     type: "search",

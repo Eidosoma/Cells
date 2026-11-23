@@ -2,7 +2,10 @@
 // Checks the Laws library on the map's page (schema/LAWS_LIBRARY.md) with real pointer and key
 // input, through the DevTools protocol, in the manner of tools/check_machine.mjs:
 //
-//   main     lens=laws opens the view, its room clear of the cards on the left, the model
+//   stars, stars-phone    Fly a recorded dependency to its field, restore the shared path,
+//            highlight model membership and open the matrix on a desktop or phone.
+//   atlas, atlas-phone    Check the earlier model-and-family bridge layout.
+//   main     The shelf layout opens, its room clear of the cards on the left, the model
 //            families with no rows standing as cases; a real press on a piece's bar chooses it,
 //            and the panel says where the engine declares it and that no level is stated; ]
 //            steps to the next piece and Escape lets go; a press on a case chooses that model,
@@ -36,9 +39,8 @@
 //
 //   node tools/check_laws.mjs [OUT_DIR]
 //
-// Set by the environment: CASE (main, address or phone; main unless set), THEME (dark), NAME
-// (what the pictures are called in OUT_DIR). One browser at a time: it takes the lock in
-// tools/lib/browser_lock.mjs.
+// CASE defaults to stars. THEME and NAME control the palette and screenshot filenames.
+// Each software-rendered browser takes an assigned CPU slot in tools/lib/browser_lock.mjs.
 
 import { spawn } from "node:child_process";
 import { readFile, writeFile, mkdir } from "node:fs/promises";
@@ -51,9 +53,10 @@ import { unitLaws } from "../src/lenses/laws_card.js";
 
 const outDir = process.argv[2] ? path.resolve(process.argv[2]) : null;
 if (outDir) await mkdir(outDir, { recursive: true });
-const CASE = process.env.CASE || "atlas";
+const CASE = process.env.CASE || "stars";
 const ATLAS = CASE === "atlas" || CASE === "atlas-phone";
-const PHONE = CASE === "phone" || CASE === "atlas-phone";
+const STARS = CASE === "stars" || CASE === "stars-phone";
+const PHONE = CASE === "phone" || CASE === "atlas-phone" || CASE === "stars-phone";
 const WIDTH = Number(process.env.WIDTH || (PHONE ? 360 : 1440)), HEIGHT = Number(process.env.HEIGHT || (PHONE ? 780 : 900));
 const NAME = process.env.NAME || `laws-${CASE}`;
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -185,7 +188,7 @@ try {
     note(`wrote ${path.join(outDir, `${name}.png`)}`);
   };
   const open = async (query) => {
-    await page("Page.navigate", { url: `${process.env.CHECK_BASE || base}?${ATLAS ? "" : "lawLayout=shelves&"}${query}` });
+    await page("Page.navigate", { url: `${process.env.CHECK_BASE || base}?${STARS ? "" : ATLAS ? "lawLayout=atlas&" : "lawLayout=shelves&"}${query}` });
     const up = await until(CASE === "text" ? `Boolean(${V}?.model)` : `Boolean(${V}?.current)`, 240);
     await sleep(1500);
     return up;
@@ -203,7 +206,74 @@ try {
   const barAt = (id) =>
     evaluate(`(() => { const v = ${V}, p = v.current.barPoint(${JSON.stringify(id)}).clone(); const q = v.stage.project(p, p.clone()); const r = v.canvas.getBoundingClientRect(); return { x: r.left + q.x, y: r.top + q.y }; })()`);
 
-  if (ATLAS) {
+  if (STARS) {
+    const root = V + ".shadowRoot";
+    const press = async (selector) => {
+      const point = await placeOf("root.querySelector("+JSON.stringify(selector)+")");
+      if (!point) throw new Error("The control is covered or missing: "+selector);
+      await click(point.x, point.y, 80);
+    };
+    const choose = (key,value) => evaluate(`(()=>{const el=${root}.querySelector('[data-atlas-control="${key}"]'); el.value=${JSON.stringify(value)};el.dispatchEvent(new Event("change",{bubbles:true}));})()`);
+    const settled = () => until("!"+V+".stage.rig.flight");
+    await open("lens=laws");
+    check("every catalogue piece has a star at its own address", await evaluate(`${L}.map.stars.size===${L}.library.pieces.length && ${L}.light.root.parent===${V}.stage.scene`));
+    await shot(NAME+"-overview");
+    const position = await state();
+    await choose("model","resolved_pump_composite@1");
+    check("model membership lights the catalogue in place", await evaluate(`${L}.overviewCount().pieces===${L}.graph.members.get(${L}.primary).size`) &&
+      JSON.stringify((await state()).target)===JSON.stringify(position.target));
+    await shot(NAME+"-model");
+    await choose("family","operator"); await settled();
+    check("a family outside the model has no membership link", await evaluate(`!${root}.querySelector('[data-atlas-action="memberships"]') && ${L}.overviewCount().pieces===0`));
+    await choose("family","channel"); await settled();
+    await evaluate(`${root}.querySelector('[data-atlas-action="memberships"]').click()`);
+    check("the selected family opens its recorded model memberships", await evaluate(`${L}.graph.bundles.get(${L}.selected)?.family==="channel" && ${L}.overviewCount().pieces===${L}.graph.bundles.get(${L}.selected).entries.length`));
+    await choose("family",""); await settled();
+    await press('[data-atlas-action="example"]'); await settled();
+    check("the example shows the two real requirements",await evaluate(`${L}.relation==="requires" && ${L}.links.size===2`));
+    await shot(NAME+"-requires");
+    const destination="laws:scheduled_cell_replacement@1";
+    const targetSelector='.label-star-target[data-label="'+destination+'"]:not(.is-off)';
+    const target=await placeOf("root.querySelector("+JSON.stringify(targetSelector)+")");
+    if (target) await click(target.x,target.y,30);
+    else {
+      if (PHONE && !(await evaluate(V+".state.viewOpen"))) await press(".view-toggle");
+      await press('[data-atlas-action="follow"]');
+      if (PHONE && (await evaluate(V+".state.viewOpen"))) await press(".view-toggle");
+    }
+    check("Follow takes the camera along the drawn curve",await evaluate(`${L}.path[0]?.edge.id===${JSON.stringify(destination)} && ${V}.stage.rig.flight?.path===${L}.path[0].curve`));
+    await settled();
+    await choose("relation","reads");await settled();
+    check("the next stop has the three recorded read fields",await evaluate(`Array.from(${L}.links.values()).map(e=>e.edge.name).join(",")==="volume,extracellular_volume,membrane_area"`));
+    await shot(NAME+"-reads");
+    const fieldSelector='.label-star-target[data-label*="membrane_area"]:not(.is-off)';
+    const field=await placeOf("root.querySelector("+JSON.stringify(fieldSelector)+")");
+    if (field) await click(field.x,field.y,20);
+    else {
+      if (PHONE && !(await evaluate(V+".state.viewOpen"))) await press(".view-toggle");
+      await press('.star-destinations button:last-child');
+      if (PHONE && (await evaluate(V+".state.viewOpen"))) await press(".view-toggle");
+    }
+    await settled();
+    check("the endpoint and both travelled links stay visible",await evaluate(`${L}.terminal && ${L}.path.length===2 && ${L}.path[1].edge.name==="membrane_area" && ${root}.querySelectorAll("[data-star-stop]").length===3`));
+    const query=await evaluate("location.search.slice(1)");
+    await open(query);
+    check("a shared flight restores the endpoint and its path",await evaluate(`${L}.terminal && ${L}.path.at(-1).edge.name==="membrane_area" && ${L}.path.length===2`));
+    await evaluate(`${root}.querySelector('[data-star-stop="0"]').click()`);
+    check("a breadcrumb returns to that piece and relation",await evaluate(`${L}.trace==="site_occupant_replacement@1" && ${L}.relation==="requires" && !${L}.path.length`));
+    await press('[data-atlas-action="overview"]');
+    await press('[data-atlas-action="open-matrix"]');
+    check("the matrix compares actual memberships",await evaluate(`${L}.mode==="compare" && ${root}.querySelectorAll(".star-matrix tbody tr").length>0 && ${root}.querySelector(".star-matrix [data-star-group='1']").textContent.includes(String(${L}.graph.compare(${L}.primary,${L}.other)[1].length))`));
+    await press('.star-matrix [data-star-group="1"]');
+    await shot(NAME+"-matrix");
+    await press('[data-atlas-action="close-matrix"]');
+    await page("Emulation.setEmulatedMedia",{features:[{name:"prefers-reduced-motion",value:"reduce"}]});
+    await press('[data-atlas-action="example"]');
+    await evaluate(`${L}.follow(${JSON.stringify(destination)})`);
+    check("reduced motion lands immediately without a pulse",await evaluate(`!${V}.stage.rig.flight && !${L}.light.pulse.visible && ${L}.trace==="scheduled_cell_replacement@1"`));
+    await evaluate(`${V}.setLens("engine",true)`);
+    check("leaving the atlas releases its sky and controls",await evaluate(`!${root}.querySelector(".laws-space,.star-overlay") && !${V}.stage.scene.children.includes(${V}.lenses.get("laws").light.root)`));
+  } else if (ATLAS) {
     await open("lens=laws&still=1");
     const root = V + ".shadowRoot";
     const choose = (name, value) =>
