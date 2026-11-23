@@ -21,7 +21,11 @@ from pathlib import Path
 
 import numpy as np
 
-EXACT_WORLDS = ("W1_two_subunits_feedback", "W2_four_subunits_feedback", "W4_four_subunits_node_read")
+EXACT_WORLDS = (
+    "W1_two_subunits_feedback",
+    "W2_four_subunits_feedback",
+    "W4_four_subunits_node_read",
+)
 EXACT_STEPS = (0.02, 0.005)
 ORDER_WORLD = "W3_two_way_turnover"
 ORDER_STEPS = (0.02, 0.01, 0.005, 0.0025, 0.00125)
@@ -208,7 +212,9 @@ def judge_order(out, references):
 def judge(out, references):
     verdicts = [judge_exact(out, references, w) for w in EXACT_WORLDS]
     verdicts.append(judge_order(out, references))
-    doc = dict(kind="cells.fr43_part3_comparison@1", registration="REGISTRATION.md", worlds=verdicts)
+    doc = dict(
+        kind="cells.fr43_part3_comparison@1", registration="REGISTRATION.md", worlds=verdicts
+    )
     Path(out, "verdict.json").write_text(json.dumps(doc, indent=1) + "\n")
     for v in verdicts:
         print(v["world"], v["result"])

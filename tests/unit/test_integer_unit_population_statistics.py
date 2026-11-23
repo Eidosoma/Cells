@@ -25,10 +25,10 @@ import numpy as np
 import pytest
 
 from cells.definitions.specs import parse_spec
-from cells.execution.batch import BatchSpec, WorldSpec, run_batch
 from cells.execution.windows import WindowPolicy, iter_windows
 from cells.numerics import counter_streams as streams
 from cells.registry.models import get_model
+from validation.fr43_part3 import statistics as st
 from validation.fr43_part3 import worlds
 
 W1 = "W1_two_subunits_feedback"
@@ -48,124 +48,47 @@ def _final_rows(spec, every_step=False):
     return rows
 
 
-# ------------------------------------------------------------------ C3.3
-
-SITES, KA, KD, DT = 16384, 0.5, 1.0, 0.05
-TIMES = tuple(0.25 * m for m in range(1, 11))
-Z = 3.89  # Bonferroni for 10 comparisons at an overall alpha of 0.001 (two-sided).
-
-
-def p0(t, ka=KA, kd=KD):
-    on, off = 2 * ka, kd  # ff(2, 2) = 2 ordered pairs.
-    rest = off / (on + off)
-    return rest + (1 - rest) * math.exp(-(on + off) * t)
-
-
-def _two_state(ka):
-    raw = worlds.many_sites(
-        W1, SITES, dt=DT, end=TIMES[-1], every=0.25, seed=777, trace=12,
-        rates={"assembly": ka, "disassembly": KD},
-    )  # fmt: skip
-    return parse_spec(raw)
+# ------------------------------------------------------------------ C3.3 and C3.5 (§4, §3)
 
 
 @pytest.fixture(scope="module")
 def two_state():
-    return {ka: _final_rows(_two_state(ka)) for ka in (KA, 1.1 * KA)}
-
-
-def _misses(rows):
-    out = []
-    for t in TIMES:
-        free = rows[round(t, 9)].integer_counts[:, 1] == 0
-        p, n = p0(t), SITES
-        out.append(abs(free.mean() - p) > Z * math.sqrt(p * (1 - p) / n))
-    return out
+    return {ka: st.two_state_rows(ka) for ka in (st.KA, 1.1 * st.KA)}
 
 
 def test_feedback_off_matches_the_two_state_solution(two_state):
-    assert not any(_misses(two_state[KA]))
+    checks = st.two_state(two_state[st.KA])
+    assert not any(c["miss"] for c in checks), checks
 
 
 def test_an_assembly_rate_ten_percent_high_fails(two_state):
-    assert any(_misses(two_state[1.1 * KA]))
+    assert any(c["miss"] for c in st.two_state(two_state[1.1 * st.KA]))
 
 
 def test_the_trace_is_the_exact_kernels(two_state):
     """Feedback off and constant rates: t_k = t_{k-1} + E_k / a0, the channel by u2 against the
     partial sums, for the same uniforms (pathwise, to rounding)."""
-    last = two_state[KA][round(TIMES[-1], 9)]
-    for s in range(16):
-        words = jnp.asarray([streams.key_data(777, s, "events")])
-        t, counts, k = 0.0, [2, 0], 0
-        recorded = int(min(last.integer_events[s], last.integer_trace_time_s.shape[1]))
-        while k < recorded:
-            u1, u2 = (float(x) for x in streams.site_uniforms(words, jnp.asarray([k]), 2)[0])
-            rates = [KA * counts[0] * (counts[0] - 1), KD * counts[1]]
-            a0 = rates[0] + rates[1]
-            t += -math.log(u1) / a0
-            channel = 0 if rates[0] > min(u2 * a0, math.nextafter(a0, 0.0)) else 1
-            counts = [0, 1] if channel == 0 else [2, 0]
-            assert abs(last.integer_trace_time_s[s, k] - t) <= 1e-11, (s, k)
-            assert last.integer_trace_channel[s, k] == channel, (s, k)
-            k += 1
-        assert last.integer_counts[s].tolist() == counts or recorded < last.integer_events[s]
-
-
-# ------------------------------------------------------------------ C3.5
-
-SEEDS, PER_WORLD = 64, 128
-BAND = 3.29  # Two-sided 99.9%.
-
-
-def _split_batch(f):
-    worlds_ = []
-    for seed in range(SEEDS):
-        raw = worlds.divided(
-            sites=PER_WORLD, transfer=False, counts={"free": 0, "active": 1},
-            rates={"assembly": 0.0, "disassembly": 0.0}, f=f, at=0.02, end=0.03, seed=1000 + seed,
-            trace=0,
-        )  # fmt: skip
-        worlds_.append(WorldSpec(seed, parse_spec(raw)))
-    spec = BatchSpec(tuple(worlds_), SEEDS, 8, 2**33)
-    return run_batch(spec)
+    worst, mismatches, compared = st.pathwise(two_state[st.KA])
+    assert compared > st.PATHWISE_SITES and mismatches == 0
+    assert worst <= st.PATHWISE_BOUND_S, worst
 
 
 @pytest.fixture(scope="module")
 def splits():
-    out = {}
-    for f in (0.5, 0.55):
-        result = _split_batch(f)
-        firsts, totals = [], []
-        for world in result.worlds.values():
-            counts = np.asarray(world.history.integer_counts)[-1]  # The last accepted row.
-            parents = counts[:PER_WORLD]
-            kids = counts[PER_WORLD:].reshape(PER_WORLD, 2, -1)
-            assert np.all(parents == 0)
-            active = kids[:, :, 1]
-            assert np.all(np.sort(active, axis=1) == [0, 1])  # Exactly one recipient per draw.
-            assert np.all(kids[:, :, 0] == 0)
-            firsts.append(active[:, 0])
-            totals.append(np.asarray(world.history.integer_divided_units)[-1])
-        out[f] = (np.concatenate(firsts), totals)
-    return out
+    return {f: st.splits(f) for f in (0.5, 0.55)}
 
 
 def test_an_equal_split_gives_one_recipient_per_draw_at_one_half(splits):
-    first, totals = splits[0.5]
-    n = first.size
-    assert n == SEEDS * PER_WORLD
-    assert abs(first.mean() - 0.5) <= BAND * math.sqrt(0.25 / n)
-    for record in totals:  # The signed record: each division's moves sum to zero, exactly.
-        parents, kids = record[:PER_WORLD], record[PER_WORLD:].reshape(PER_WORLD, 2, -1)
-        assert np.all(parents + kids.sum(axis=1) == 0)
+    half = splits[0.5]
+    assert half["draws"] == st.SEEDS * st.PER_WORLD
+    assert half["exactly_one_recipient"] and half["records_exact"]
+    assert abs(half["frequency"] - 0.5) <= half["band_at_half"], half
 
 
 def test_the_plant_at_055_leaves_the_half_band_and_keeps_its_own(splits):
-    first, _ = splits[0.55]
-    n = first.size
-    assert abs(first.mean() - 0.5) > BAND * math.sqrt(0.25 / n)
-    assert abs(first.mean() - 0.55) <= BAND * math.sqrt(0.55 * 0.45 / n)
+    plant = splits[0.55]
+    assert abs(plant["frequency"] - 0.5) > plant["band_at_half"], plant
+    assert abs(plant["frequency"] - 0.55) <= plant["band_at_own"], plant
 
 
 def test_a_dividing_site_with_its_transfer_keeps_every_inventory():
@@ -232,10 +155,16 @@ def test_the_integer_state_switches_the_flux_the_node_sees(two_way):
     clearance = worlds.spec_worlds()[W3]["turnover"]["clearance_node_per_s"]
     times = sorted(rows)
     filled = 0
-    for a, b in zip(times, times[1:]):
+    for a, b in zip(times, times[1:], strict=False):
         ra, rb = rows[a], rows[b]
-        na = float(np.asarray(p.extracellular_amount_reference)[s, 1] + ra.extracellular_amount_increment[s, 1])
-        nb = float(np.asarray(p.extracellular_amount_reference)[s, 1] + rb.extracellular_amount_increment[s, 1])
+        na = float(
+            np.asarray(p.extracellular_amount_reference)[s, 1]
+            + ra.extracellular_amount_increment[s, 1]
+        )
+        nb = float(
+            np.asarray(p.extracellular_amount_reference)[s, 1]
+            + rb.extracellular_amount_increment[s, 1]
+        )
         inactive = int(ra.integer_counts[0, 1]) == 0 and int(rb.integer_counts[0, 1]) == 0
         if inactive and int(ra.integer_events[0]) == int(rb.integer_events[0]):
             assert abs(nb - na * math.exp(-clearance * (b - a))) <= 1e-13 * na, a  # Clearance only.

@@ -87,10 +87,11 @@ reactant order above MAX_ORDER; more than MAX_SUBUNITS subunits at a site; two s
 row, or a site reading a row another site moves; a moved row that a D152 reaction or the gene unit
 writes, or that an in-step process moves; replacement and every event that replaces amounts; a
 provider or closer of the activity masks that does not divide through the composite's lifecycle
-(insertion@1 and @2 among them), and a composite without the hook; a label owner; units at a site whose cell is born later; a dividing patch whose sites lack site maps,
-maps that do not follow the partition's patch maps, a dividing population without its token; dt
-a0,max > 1 where bounded; more than the species cap. At run time: non-finite values, a pool that
-would not stay positive, the event cap, and a division whose daughters disagree with the maps.
+(insertion@1 and @2 among them), and a composite without the hook; a label owner; units at a site
+whose cell is born later; a dividing patch whose sites lack site maps, maps that do not follow the
+partition's patch maps, a dividing population without its token; dt a0,max > 1 where bounded; more
+than the species cap. At run time: non-finite values, a pool that would not stay positive, the
+event cap, and a division whose daughters disagree with the maps.
 
 **Idle:** no site, statically idle. A world without the operator traces nothing of it (D148).
 """
@@ -383,7 +384,9 @@ def parse_population(raw, base, moved, readable):
                 "scope)"
             )
         sites.append(Site(sid, patch.id, patch.inside, patch.outside, counts))
-    return Population(name, tuple(states), tuple(channels), tuple(transfers), division, tuple(sites))
+    return Population(
+        name, tuple(states), tuple(channels), tuple(transfers), division, tuple(sites)
+    )
 
 
 def parse_declaration(raw, base):
@@ -436,7 +439,9 @@ def parse_declaration(raw, base):
     parents = [m.parent for m in maps]
     children = [d for m in maps for d in m.daughters]
     if len(set(parents)) != len(parents) or len(set(children)) != len(children):
-        raise ConfigError(f"{LAW_ID}: a site is the parent of one map at most and a daughter of one")
+        raise ConfigError(
+            f"{LAW_ID}: a site is the parent of one map at most and a daughter of one"
+        )
     return IntegerUnitPopulation(
         LAW_ID, species, read_species, seed, trace, populations, tuple(maps)
     )
@@ -466,8 +471,7 @@ def declaration_to_dict(declaration):
             ],
             division=p.division,
             sites=[
-                dict(id=s.id, patch=s.patch, initial_counts=dict(s.initial_counts))
-                for s in p.sites
+                dict(id=s.id, patch=s.patch, initial_counts=dict(s.initial_counts)) for s in p.sites
             ],
         )
 
@@ -478,7 +482,9 @@ def declaration_to_dict(declaration):
         seed=declaration.seed,
         trace_events=declaration.trace_events,
         populations=[population(p) for p in declaration.populations],
-        divisions=[dict(parent=m.parent, daughters=list(m.daughters)) for m in declaration.divisions],
+        divisions=[
+            dict(parent=m.parent, daughters=list(m.daughters)) for m in declaration.divisions
+        ],
     )
 
 
@@ -518,7 +524,10 @@ def stages(declaration, lives=None):
 
     def interval(site):
         birth, retirement = lives.get(site.cell, (None, None))
-        return (-math.inf if birth is None else birth, math.inf if retirement is None else retirement)
+        return (
+            -math.inf if birth is None else birth,
+            math.inf if retirement is None else retirement,
+        )
 
     spans = [interval(s) for _, s in pairs]
     out = []
@@ -541,8 +550,10 @@ def dimensions(declaration):
     k = max(len(p.unit_states) for p in declaration.populations)
     j = max(len(p.channels) for p in declaration.populations)
     r = max(1, max(len(p.transfers) for p in declaration.populations))  # A padded route at least.
-    w = max(sum(s.subunits * n for s, (_, n) in zip(p.unit_states, site.initial_counts, strict=True))
-            for p, site in pairs)  # fmt: skip
+    w = max(
+        sum(u.subunits * n for u, (_, n) in zip(p.unit_states, site.initial_counts, strict=True))
+        for p, site in pairs
+    )
     return len(pairs), k, j, r, declaration.trace_events, max(w, 1)
 
 
@@ -848,12 +859,8 @@ def _run_stage(state, length, offset, member, p, *, view):
             rows = jnp.arange(n_sites)
             tt = tt.at[rows, slot].set(jnp.where(record, t0 + done + tau, tt[rows, slot]))
             tc = tc.at[rows, slot].set(jnp.where(record, chosen, tc[rows, slot]))
-            tcell = tcell.at[rows, slot].set(
-                jnp.where(record[:, None], nc_new, tcell[rows, slot])
-            )
-            tnode = tnode.at[rows, slot].set(
-                jnp.where(record[:, None], no_new, tnode[rows, slot])
-            )
+            tcell = tcell.at[rows, slot].set(jnp.where(record[:, None], nc_new, tcell[rows, slot]))
+            tnode = tnode.at[rows, slot].set(jnp.where(record[:, None], no_new, tnode[rows, slot]))
         hot = jax.nn.one_hot(chosen, chan.shape[1], dtype=jnp.int64)
         chan = jnp.where(event[:, None], chan + hot, chan)
         positive = (nc_new > 0) & (no_new > 0)
@@ -939,7 +946,8 @@ def half_step(state, h, p, *, view=None):
 
 
 def own_valid(state, p, *, xp):
-    """Its own fields: finite, counts and event numbers >= 0, 0 <= H < E, heat and magnitude >= 0."""
+    """Its own fields: finite; counts and event numbers >= 0; 0 <= H and 0 < E; heat and
+    magnitude >= 0."""
     valid = xp.all(state.integer_counts >= 0) & xp.all(state.integer_events >= 0)
     valid &= xp.all(state.integer_channel_events >= 0)
     hz, thr = state.integer_hazard, state.integer_threshold
@@ -1054,7 +1062,8 @@ def check_writers(spec, declaration, model):
         if op.LAW_ID in REPLACEMENT_LAWS or "amount_increment" in op.EVENT_REPLACES:
             raise ConfigError(
                 f"{LAW_ID}: {op.LAW_ID} replaces a slot's amounts at an event, and a replaced "
-                "slot's units and clock have no rule here (refused, as D301 found for the gene unit)"
+                "slot's units and clock have no rule here (refused, as D301 found for the gene "
+                "unit)"
             )
         if op.LABEL_OWNER:
             raise ConfigError(
@@ -1072,7 +1081,7 @@ def check_writers(spec, declaration, model):
             from cells.operators import species_reactions
 
             written = {(s, n) for s, n in species_reactions.written(other)}
-            for species, kind, node in sorted(rows):
+            for species, _, node in sorted(rows):
                 if (species, node) in written:
                     raise ConfigError(
                         f"{LAW_ID}: a {REACTIONS_LAW} reaction writes {species} at {node}, a row "
@@ -1092,7 +1101,7 @@ def check_writers(spec, declaration, model):
                 "through its lifecycle (DIVIDES_OWNED), so a dividing site's units would be lost"
             )
     movers = species_registry.moved_in_step(spec)
-    for species, kind, node in sorted(rows):
+    for species, kind, _ in sorted(rows):
         found = movers.get(species, {}).get(kind, ())
         if found:
             raise ConfigError(
@@ -1127,7 +1136,7 @@ def check_lives(spec, declaration):
     cell_lives, maps = lives(spec), patch_maps(spec)
     by_id = {site.id: site for _, site in sites_of(declaration)}
     parents = {m.parent: m for m in declaration.divisions}
-    for population, site in sites_of(declaration):
+    for _, site in sites_of(declaration):
         birth, retirement = cell_lives.get(site.cell, (None, None))
         if birth is not None and any(n for _, n in site.initial_counts):
             raise ConfigError(
@@ -1165,9 +1174,7 @@ def check_hazard_bound(spec, declaration):
     for s in moved:
         i = species.index(s)
         total = math.fsum(c.initial_amount_fmol[i] for c in m.cells)
-        total += math.fsum(
-            c.initial_amount_fmol[i] for c in m.extracellular if not c.reservoir
-        )
+        total += math.fsum(c.initial_amount_fmol[i] for c in m.extracellular if not c.reservoir)
         material[s] = total
     horizon = spec.experiment.end_time if hasattr(spec.experiment, "end_time") else None
     for op, block, schedules in _entries(spec):
@@ -1287,9 +1294,10 @@ class IntegerUnitPopulationOperator(Operator):
         pairs = sites_of(declaration)
         first = declaration.populations[0]
         n, k, j, r, t, _ = dimensions(declaration)
-        pad = lambda ids, size, word: tuple(ids) + tuple(  # noqa: E731
-            f"{word}_{i}" for i in range(len(ids), size)
-        )
+
+        def pad(ids, size, word):
+            return tuple(ids) + tuple(f"{word}_{i}" for i in range(len(ids), size))
+
         return {
             "integer_site": {
                 "id": "integer_site",

@@ -72,7 +72,9 @@ def test_q_is_its_series(x):
 @pytest.mark.parametrize("x", [-0.9, -0.3, -0.2499, -1e-9, 0.0, 1e-9, 0.2499, 0.3, 4.0])
 def test_phi_is_its_series(x):
     want = (
-        math.fsum((-1) ** n * x**n / n for n in range(2, 400)) if abs(x) < 0.5 else x - math.log1p(x)
+        math.fsum((-1) ** n * x**n / n for n in range(2, 400))
+        if abs(x) < 0.5
+        else x - math.log1p(x)
     )
     got = float(iup.phi_of(jnp.asarray(x)))
     assert got >= 0 and abs(got - want) <= 4e-15 * want
@@ -116,9 +118,7 @@ def test_the_heat_is_minus_the_free_energy_change(nc, no, vc, vo, lam, tau):
 )
 def test_segregation_is_exact_and_in_unit_order(counts, f, uniform, first):
     held = np.asarray([counts], dtype=np.int64)
-    got_first, got_second = iup.segregate(
-        held, np.asarray([f]), np.asarray([uniform]), xp=np
-    )
+    got_first, got_second = iup.segregate(held, np.asarray([f]), np.asarray([uniform]), xp=np)
     assert got_first.tolist() == [first]
     assert (got_first + got_second).tolist() == [counts] and (got_second >= 0).all()
 
@@ -152,7 +152,9 @@ def test_the_stages():
 
 REFUSALS = {
     "a charged species": (
-        lambda raw: _block(raw)["species"].__setitem__(0, dict(id="Na", catalogue=None, evidence=None)),
+        lambda raw: _block(raw)["species"].__setitem__(
+            0, dict(id="Na", catalogue=None, evidence=None)
+        ),
         "neutral species only",
     ),
     "a site on a held bath": (
@@ -261,7 +263,7 @@ def test_each_refused_neighbour(law, monkeypatch):
         iup.check_writers(spec, declaration, None)
 
 
-# ------------------------------------------------------------------ the division hook's declarations
+# ------------------------------------------------------------------ the division hook
 
 
 class _Divider(Operator):

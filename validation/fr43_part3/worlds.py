@@ -1,9 +1,9 @@
 """FR-43 part 3's worlds for integer_unit_population@1, built from the references' spec.
 
-Each world of references/spec/part3.json becomes a composite definition: one quiescent cell and its
-finite outside node joined by a contact patch (validation/tissue/secreted_species_fixtures.face_free:
-no face, zero ion and species permeability, so nothing but the operator moves S), the cell's wall on
-a held bath, and the operator with one site on the contact patch. The declared values are the
+Each world of references/spec/part3.json becomes a composite definition: one quiescent cell and
+its finite outside node joined by a contact patch (validation/tissue/secreted_species_fixtures:
+no face, zero ion and species permeability, so nothing but the operator moves S), the cell's wall
+on a held bath, and the operator with one site on the contact patch. The declared values are the
 spec's, read from the one file, so the engine's worlds and the references' are one declaration.
 
 * spec_world(world_id, dt=..., end=..., every=...): a spec world as a raw definition;
@@ -43,7 +43,9 @@ def population(world, *, sites, division=None, name="units"):
                 rate_per_s=c["rate_constant_per_s"],
                 read=None
                 if read is None
-                else dict(species=read["species"], at="cell" if read["at"] == "cell" else "outside"),
+                else dict(
+                    species=read["species"], at="cell" if read["at"] == "cell" else "outside"
+                ),
             )
         )
     transfer = world["transfer"]
@@ -195,7 +197,5 @@ def divided(
         dict(law=PARTITION, divisions=[division]),
         block([units], seed=seed, trace=trace, divisions=maps),
     ]
-    raw["experiment"]["partition_events"] = [
-        dict(division="first", time=at, carriers=["c1", "c2"])
-    ]
+    raw["experiment"]["partition_events"] = [dict(division="first", time=at, carriers=["c1", "c2"])]
     return raw

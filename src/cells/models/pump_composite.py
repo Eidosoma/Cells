@@ -1656,8 +1656,9 @@ class Composition:
                     bool(self.kind_lifecycle) or bool(self.owned_dividers)
                 )
                 if lifecycle:
+                    owned = self.owned_dividers
                     keywords["lifecycle"] = (
-                        partial(self._owned_lifecycle, p) if self.owned_dividers else self._lifecycle
+                        partial(self._owned_lifecycle, p) if owned else self._lifecycle
                     )
                 before = current
                 if op in self.label_events:  # Static (D296; erratum E): what it replaced.
