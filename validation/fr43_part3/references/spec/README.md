@@ -74,12 +74,18 @@ unit at a division) is not needed here.
 **The premise check.** Before integrating, regenerate the draws with your own code from this
 written rule. Then compare them with `draws.json` bit for bit, as `float.hex`.
 
+**The rule depends on JAX's word layout.** `jax.random.bits` under the partitionable Threefry
+gives each output word from the key and the word's position. The written rule names that layout,
+so a regeneration outside JAX must reproduce it, and JAX's legacy layout gives other words.
+(Added after the references returned, at their author's note; nothing above changed.)
+
 ## What to produce
 
 Produce `part3.json`'s `requested_outputs` for each world, as one JSON each:
 - **events:** for every event up to the horizon, its time, its channel, the counts after it, the
   pools at it and the cumulative transferred amount, plus the turnover totals for W3;
-- **samples** at the listed times;
+- **samples** at the listed times. A sample that coincides with an event takes the counts after
+  it (added after the references returned, at their author's note);
 - **the method and its accuracy.**
 
 The accuracy target is event times to 1e-10 s and amounts to 1e-12 relative. A suggested method is

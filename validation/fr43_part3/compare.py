@@ -111,12 +111,23 @@ def _reference(references, world_id):
     return doc, events
 
 
+def reported_accuracy(doc):
+    """The reference's largest reported event-time difference between its methods (s): the
+    maximum of every cross-check's max_event_time_diff_s in its accuracy record; None when it
+    reports none (then the comparison is inconclusive)."""
+    found = [
+        float(v["max_event_time_diff_s"])
+        for v in doc.get("accuracy", {}).values()
+        if isinstance(v, dict) and "max_event_time_diff_s" in v
+    ]
+    return max(found) if found else None
+
+
 def judge_exact(out, references, world_id):
     doc, ref = _reference(references, world_id)
     verdict = dict(world=world_id, criterion="REGISTRATION.md §1", steps={})
-    accuracy = doc.get("accuracy", {})
-    reported = accuracy.get("event_time_s", accuracy.get("max_event_time_difference_s"))
-    inconclusive = reported is not None and float(reported) > REFERENCE_ACCURACY_S
+    reported = reported_accuracy(doc)
+    inconclusive = reported is None or reported > REFERENCE_ACCURACY_S
     passed = True
     traces = {}
     for dt in EXACT_STEPS:
