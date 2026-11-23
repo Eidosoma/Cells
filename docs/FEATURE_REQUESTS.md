@@ -51,6 +51,8 @@ and a general feature, never one built for one study (D144).
 | [FR-43](#fr-43--shared-inventories-larger-networks-shared-pools-and-low-count-populations) | Shared inventories: larger sparse reaction networks; one pool spent and replenished by separate processes, at fixed and changing volume; a low-count integer population coupled to continuous chemistry | **Very high** (logged by the user, 23 November 2026) | **Design decided (D315):** the cap to 1,024 with the scan fold above 16 and the trace budget fixed; a reported dt limit; two writers with one registry potential; current-volume reads for both writers; part 3 as an integer-population operator in the composite (B), split by independent_segregation | The build, with code-blind references for parts 2 and 3; the sparse layout after the raise |
 | [FR-44](#fr-44--labels-across-a-wash-arrival-time-labels-through-scheduled-compartment-washes) | Labels across a wash: neutral arrival-time labels through scheduled compartment washes | **High** (logged by the user, 23 November 2026) | **Logged:** `neutral_arrival_labels@1` (FR-42) and `scheduled_compartment_wash@1` (FR-27) refuse each other at parse | A design note: the wash dilutes each washed node's label shares exactly with unlabelled buffer |
 | [FR-45](#fr-45--several-ligands-competing-for-one-shared-wash-retained-site-capacity) | Several ligands competing for one shared, wash-retained site capacity | **High** (logged by the user, 23 November 2026) | **Logged:** FR-28's node-owned sites bind one ligand per population, and sites modelled as dissolved species wash out with the fluid | A design note: competing ligands in one site pool, or immobile anchored species that a wash leaves in place |
+| [FR-46](#fr-46--binding-from-a-shells-inner-face-lumen-ligands-on-membrane-sites) | Binding from a shell's inner face: lumen ligands on membrane sites | **High** (logged by the user, 23 November 2026) | **Logged:** `cells.prescribed_shell@1` admits outer-face binding of a pool ligand and refuses the lumen's | A design note: reversible inner-face binding with detailed balance, and the occupied state usable in a gate rule |
+| [FR-47](#fr-47--shell-exchange-and-scheduled-washes-in-the-deterministic-representation) | Shell exchange and scheduled washes in the deterministic representation | **High** (logged by the user, 23 November 2026) | **Logged:** `cells.rate_equations@1` refuses prescribed-shell geometry and replacement or withdrawal schedules (OL6's refusal 1) | A design note and a registered qualification against an analytical mass balance and an exact-event ensemble |
 
 ## FR-1 — A closed internal compartment on the shared inventory
 
@@ -1991,3 +1993,46 @@ sites stay in place when the fluid is washed.
 - the books close through bind, wash and unbind.
 
 **Status (23 November):** logged. A design note comes first, weighing (a) and (b).
+
+## FR-46 — Binding from a shell's inner face: lumen ligands on membrane sites
+
+**Logged 23 November 2026 by the user, priority high.**
+
+**Why.** Compartments bind ligands from the inside as well as the outside. `cells.prescribed_shell@1`
+(FR-21) admits a pool ligand binding a declared membrane site from the outer face. It refuses a ligand
+in the lumen binding the same site, with the site and the complex on the membrane.
+
+**The request:** reversible binding from the inner face.
+- Association reads the lumen's concentration, and dissociation returns the ligand to the lumen.
+- Ligand and site counts are conserved.
+- The occupied wall state can take part in a declared gate rule.
+- The new reaction pair has detailed-balance coverage (the event-pair rule).
+- The outer-face case is kept as a regression.
+- It is verified on a synthetic neutral ligand.
+
+**Status (23 November):** logged. A design note comes first.
+
+## FR-47 — Shell exchange and scheduled washes in the deterministic representation
+
+**Logged 23 November 2026 by the user, priority high.**
+
+**Why.** `cells.rate_equations@1`, OL6's deterministic representation (D304), refuses some worlds by its
+refusal 1:
+- prescribed-shell geometry: FR-21's shell, its permeation and its gate;
+- replacement and withdrawal schedules: FR-20 and FR-35 (`rate_equations.REFUSED_SCHEDULES`).
+
+So large-count vesicle worlds with a shell and washes can run only as exact events.
+
+**The request:**
+- Qualify passive shell exchange, and scheduled full and fractional washes, in a finite two-compartment
+  example.
+- Compare concentrations and removed amounts with an analytical mass balance and with a large-count
+  exact-event ensemble.
+- Qualify switching gates separately.
+
+**Notes.**
+- OL6's design priced the replacement and withdrawal means at about half an agent-day.
+- The qualification follows Protocol D's pattern: registered before reading, with an independent
+  checker.
+
+**Status (23 November):** logged. A design note comes first.
