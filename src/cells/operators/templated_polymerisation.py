@@ -1341,6 +1341,64 @@ def value_at(changes, time):
 # ------------------------------------------------------------------ definition checks
 
 
+UNIT_PRODUCER = "population_unit_turnover@1"  # FR-43: the unit producer, a precursor's consumer.
+WATER = "ideal_osmosis_linear_compliance_water@1"
+
+
+def largest_volumes(spec):
+    """{cell id: the largest volume it can take}: its declared volume, or where water changes the
+    volumes its water compartment's declared maximum."""
+    out = {c.id: c.volume_pL for c in spec.model.cells}
+    for op, water, _ in composite_spec.entries(spec):
+        if op.LAW_ID == WATER:
+            for c in water.compartments:
+                if c.compartment_id in out:
+                    out[c.compartment_id] = max(out[c.compartment_id], c.maximum_volume_pL)
+    return out
+
+
+def production_bound(spec, declaration, schedule):
+    """{(species, cell): the largest rate (fmol/s) at which this operator can make the row}, from
+    its laws (docs/TEMPLATED_POLYMERISATION_LAWS.md §4; FR-43 / D315), for a consumer's bounds
+    (the unit producer's R5, population_unit_turnover.supply_bound):
+    - a chain's release, J = kappa C phi with phi <= 1 and C at most its pool's machines, is at
+      most kappa M_pool, kappa = v stages / residues;
+    - a transfer's, V V_C times its saturations and its affinity factor (each at most 1), at most
+      nu V_C V for each row it makes, V the cell's largest volume (largest_volumes);
+    - a row it makes in a cell otherwise (a degradation's monomers, a release's fates, an
+      export's coupling) has no such static bound: math.inf, so a consumer refuses it."""
+    top = {s.route_id: max(v for _, v in s.changes) for s in schedule}
+    for _, values in declaration.templates:  # A newcomer's values (§9.16, item 6).
+        for name, value in values:
+            top[name] = max(top.get(name, 0.0), value)
+    machines = {pool.id: pool.machines * COPY_FMOL for pool in declaration.pools}
+    volumes = largest_volumes(spec)
+    out = {}
+
+    def add(row, cell, rate):
+        out[(row, cell)] = out.get((row, cell), 0.0) + rate
+
+    for c in declaration.chains:
+        if isinstance(c, ReleasingChain):
+            for durable, short in c.release.fates:
+                add(durable, c.cell, math.inf)
+                add(short, c.cell, math.inf)
+        else:
+            add(c.product, c.cell, c.speed_per_s * c.stages / c.residues * machines[c.pool])
+    for t in declaration.transfers:
+        for row, nu in t.stoichiometry:
+            if nu > 0:
+                add(row, t.cell, nu * top.get(t.id, 0.0) * volumes[t.cell])
+    for d in declaration.degradations:
+        for row, _ in d.monomers:
+            add(row, d.cell, math.inf)
+    for e in declaration.exports:
+        for row, nu in e.coupling:
+            if nu > 0:
+                add(row, e.cell, math.inf)
+    return out
+
+
 def single_writer_rows(spec, declaration):
     """The listed rows that keep this operator as their one writer beside a D152 network (FR-43 /
     D315): its exported rows and its outside degradations' monomers (amendment T, §9.17), whose
@@ -1359,12 +1417,13 @@ def single_writer_rows(spec, declaration):
 def check_writers(spec, declaration):
     """Refuse another writer of a listed row (one writer: the sheet's §4.5 and the design's §7.5):
     another author's declaration of it and an in-step mover. A D152 network may write or declare a
-    listed row (FR-43 / D315: the two-writer rule of 19 November 2026, extended): both writers are
-    split parts whose half-steps, SSP of order three, run in declared order and book their own
-    moved amounts and the exact dG of their own moves from the state they receive, so the
-    composition is Strang's, second order; the row's standard potential has the species registry
-    as its one authority (species_registry.check_shared_rows). A labelled or exported row keeps
-    this operator as its one writer (single_writer_rows)."""
+    listed row, and the unit producer (population_unit_turnover@1) may consume one as its
+    precursor (FR-43 / D315: the two-writer rule of 19 November 2026, extended): each writer is a
+    split part whose half-steps (SSP of order three here and in D152, exact in the producer) run in
+    declared order and book their own moved amounts and the exact dG of their own moves from the
+    state they receive, so the composition is Strang's, second order; the row's standard potential
+    has the species registry as its one authority (species_registry.check_shared_rows). A labelled
+    or exported row keeps this operator as its one writer (single_writer_rows)."""
     listed = {s.id for s in declaration.species}
     single = single_writer_rows(spec, declaration)
     for op, other, _ in composite_spec.entries(spec):
@@ -1381,7 +1440,14 @@ def check_writers(spec, declaration):
                 )
         elif op.IDENTITY_ROLE == "author":
             shared = sorted(listed & {s.id for s in op.species_identities(other)})
-            if shared:
+            if shared and op.LAW_ID == UNIT_PRODUCER:
+                kept = sorted(set(shared) & single)
+                if kept:
+                    raise ConfigError(
+                        f"{LAW_ID}: {op.LAW_ID} consumes {kept[0]!r}, a labelled or exported row, "
+                        "which keeps this operator as its one writer (FR-43 / D315)"
+                    )
+            elif shared:
                 raise ConfigError(
                     f"{LAW_ID}: {op.LAW_ID} also declares {shared[0]!r}; this operator is the one "
                     "writer of its listed rows"
@@ -3100,6 +3166,12 @@ class TemplatedPolymerisation(Operator):
         """Its listed rows, whose writer its half-steps are (check_writers): the registry's
         shared-row rule reads them (species_registry.check_shared_rows; FR-43 / D315)."""
         return tuple(s.id for s in declaration.species)
+
+    def production_bound(self, spec, declaration):
+        """{(species, cell): fmol/s}: the largest rate at which it makes each row (module function
+        production_bound; FR-43 / D315), its own schedule's largest rates."""
+        (schedule,) = (s for op, d, s in composite_spec.entries(spec) if d is declaration)
+        return production_bound(spec, declaration, schedule)
 
     def species_potentials(self, declaration):
         """Its declared mu°/RT of each listed species at its c0 (check_potentials: the registry's,
