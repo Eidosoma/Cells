@@ -34,6 +34,7 @@ import CellsProofs.Chemistry.PopulationUnits
 import CellsProofs.Chemistry.PrescribedShell
 import CellsProofs.Chemistry.ShellEquilibrium
 import CellsProofs.Chemistry.ShellLigandFaces
+import CellsProofs.Chemistry.ShellWashRecovery
 import CellsProofs.Chemistry.ReservoirExchange
 import CellsProofs.Chemistry.SharedPool
 import CellsProofs.Chemistry.SingleSiteBinding
