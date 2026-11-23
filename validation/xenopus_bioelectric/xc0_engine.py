@@ -1073,6 +1073,8 @@ def build_table(manifest, *, x2_cap, d=None, log=print, retry=False):
         started = time.perf_counter()
         row = dict(family=entry["family"], key=entry["key"], measure=entry["measure"],
                    params=entry["params"])  # fmt: skip
+        if entry.get("step_tolerance") is not None:
+            row["step_tolerance"] = entry["step_tolerance"]
         if entry["measure"] in RUN_MEASURES:
             first, second = (0.5, 0.25) if retry else (1.0, 0.5)
             value = evaluate(entry, d=d, x2_cap=x2_cap, cache=cache, factor=first)

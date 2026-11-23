@@ -372,22 +372,24 @@
   "unmapped": "a compared family no rule maps, or a key lacking a rule's parameters, is refused before any value is read, its family name and key printed; a disclosed erratum maps it"
  },
  "comparison": {
-  "band": "each row's band is recomputed by REFERENCES_USAGE.md's rule, max(tol_abs + tol_rel |reference|, 10 floor), from the stored floor and tolerances (a row's own tol_abs first); a stored band that disagrees by more than 1e-12 relative refuses",
+  "order": "every compared row is resolved to one table row with the values file unopened; then the values file is loaded and every compared key (and a sign row's aux) found in it; only then is any value read. A refusal at either step prints family names and keys only",
+  "band": "an abs row's band is recomputed by REFERENCES_USAGE.md's rule, max(tol_abs + tol_rel |reference|, 10 floor), from its stored floor and tolerances (a row's own tol_abs first), and a stored band that disagrees by more than 1e-12 relative refuses; a sign row's stored band decides its power (REFERENCES_USAGE does not say what 'reference' is in a sign row's band, so it is not recomputed); exact_zero and flag rows use no band",
   "kinds": "abs: |engine - reference| <= band; sign: the engine's sign equals the reference's where |aux| > band, else no power; exact_zero: the engine's value is exactly 0; flag: equal strings; info: not compared"
  },
  "verdicts": [
   "a row passes, fails, has no power, is info, is not run (with its reason), or is engine_refused (after the retry only)",
-  "a family fails if any row fails; else it is not testable if any row is engine_refused or none passes; else it passes",
-  "a claim (C0-C8) fails if any family fails; else it is not testable if any family is; else it passes if one family passes",
+  "a family fails if any row fails; else it is not testable if any row is engine_refused; else it passes if any row passes; else it is neutral (no power, info or not run), and a neutral family neither passes nor blocks its claim (the references list sign families without power at most states)",
+  "a claim (C0-C8) fails if any family fails; else it is not testable if any family is; else it passes if any family passes; else (nothing in it had power) it is not testable",
   "XC0 fails if any claim fails; else it is not testable if any claim is; else it passes",
   "T1 and T2 are reported outside this verdict (calibrations)"
  ],
  "retry": {
   "fires_on": "only table-side conditions decided before any value is read: a refused or errored row, or a run row's failed step check; never a failed row",
   "once": true,
+  "manifest": "xc0_compare retry-manifest TABLE OUT: the first table's inconclusive rows, with their measures, parameters and step tolerances",
   "static_rows": "re-measured with the scan doubled (48 points)",
   "run_rows": "judged at h/2 against h/4",
-  "after": "a row still inconclusive is engine_refused, its family not testable; the judge runs with --after-retry"
+  "judged": "xc0_compare judge TABLE VALUES BANDS OUT --retry RETRY_TABLE: each retry row replaces the first table's inconclusive row of the same family, measure and key (a retry row replacing anything else is refused); both tables' sha256 are recorded; a row still inconclusive is engine_refused, its family not testable"
  },
  "x2": {
   "check": "step_doubled_energy@1",
@@ -405,7 +407,7 @@
   "the lead chooses how the table's manifest is formed (questions_for_the_lead 1): (A) the documented grammar now (xc0_compare grammar: the 36 states' C0, C1, C2 zeros and C4's grids, 1,116 rows, with T1 and T2's 54), then a judge that will refuse the compared families the grammar does not reach, printing names and keys only, then a disclosed erratum that maps them; or (B) the tagged reader's keys stage first (family names, kinds, units and row keys only), then the manifest, then any erratum for unmapped families, before the table",
   "the table is built from a clean frozen snapshot of the tagged tree (xc0_engine table MANIFEST OUT --x2-cap 0.002) under scripts/run_detached.sh, and its sha256 is recorded in the run folder before the judge runs",
   "the judge (xc0_compare judge TABLE VALUES BANDS OUT) resolves every compared row before reading a value; on a refusal nothing is read",
-  "the retry, once, re-measures the inconclusive rows (xc0_engine table --retry), hashed the same way, and the judge runs with --after-retry",
+  "the retry, once, re-measures the inconclusive rows (xc0_compare retry-manifest, then xc0_engine table --retry from the same snapshot), hashed the same way, and the judge runs with --retry",
   "the verdict record lists overall, claim, family and row outcomes, the table's digest, T1 and T2's readings, and not_blind"
  ],
  "readings_to_confirm": [

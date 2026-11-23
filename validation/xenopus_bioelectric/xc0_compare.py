@@ -22,21 +22,26 @@ Stages (each a command):
   value, aux, floor, band, tolerance, claim, quantity or note. With the MAPPING, the table's manifest.
 - `manifest KEYS OUT`: each compared row's engine reading (MAPPING) as xc0_engine's manifest; rows no
   mapping covers are listed apart (names and keys only).
-- `judge TABLE VALUES BANDS OUT`: first resolves every compared row to one table row, reading no value
-  (a refusal prints family names and keys only); then reads values, aux and bands, recomputes each
-  band by the rule from the stored floor and tolerances (a stored band that disagrees refuses), and
-  gives the verdicts.
+- `judge TABLE VALUES BANDS OUT [--retry RETRY_TABLE]`: first resolves every compared row to one table
+  row, with the values file unopened (a refusal prints family names and keys only); then loads the
+  values file, finds every compared key in it, and only then reads values, aux and bands, recomputes
+  each abs row's band by the rule from its stored floor and tolerances (a stored band that disagrees
+  refuses; a sign row's stored band decides its power), and gives the verdicts. With --retry, the
+  retry table's rows replace the first table's inconclusive rows and the judgement is after-retry.
+- `retry-manifest TABLE OUT`: the retry's manifest, the table's inconclusive rows.
 - `synthetic OUT`: an invented interface and table (no engine, no reference), for the end-to-end check.
 - `structure FILE`: the key layout of an interface-shaped file, no value (for the invented one).
 - `selfcheck OUT`: the end-to-end check on the invented interface (the rule's pre-tag check).
 
 Verdicts (the rule's): a row passes, fails, has no power (a sign row whose |aux| <= band), is info,
-or is not run (the rule's not-run list, with its reason). A family fails if any row fails; it passes
-if every compared row passes and at least one has power; it is not testable if none has power. A
-claim (C0-C8) fails if any family fails; passes if every family passes or is info or not run and at
-least one passes; else it is not testable. XC0 fails if any claim fails, else it is not testable if
-any claim is, else it passes. The table's refused or errored rows are inconclusive and stop the
-judgement before any value is read (the rule's retry).
+is not run (the rule's not-run list, with its reason) or, after the retry, is engine_refused. A
+family fails if any row fails; else it is not testable if any row is engine_refused; else it passes
+if any row passes; else it is neutral (info, not run, or no power: it neither passes nor blocks its
+claim). A claim (C0-C8) fails if any family fails; else it is not testable if any family is; else it
+passes if any family passes; else (nothing had power) it is not testable. XC0 fails if any claim
+fails, else it is not testable if any claim is, else it passes. A table's refused, errored or
+step-unconverged rows are inconclusive: they stop the judgement before any value is read, and the
+retry (once) re-measures them into a second table that the judge merges row by row (`--retry`).
 """
 
 import argparse
@@ -418,8 +423,40 @@ def engine_text(row):
     return row["value"]
 
 
+def merge(first, retry):
+    """The first table with the retry's rows in place of its rows of the same family, measure and
+    key (met by number); the retry re-measures only the first table's inconclusive rows, and
+    a retry row with no such row in the first table is refused."""
+    replaced = []
+    rows = [dict(r) for r in first["rows"]]
+    for new in retry["rows"]:
+        hits = [i for i, r in enumerate(rows) if r["family"] == new["family"]
+                and r["measure"] == new["measure"]
+                and same_params(parse_key(r["key"]), parse_key(new["key"]))]  # fmt: skip
+        if len(hits) != 1 or not inconclusive(rows[hits[0]]):
+            raise SystemExit(f"refused: the retry's row {new['family']} | {new['key']} does not "
+                             "replace one inconclusive row of the first table")  # fmt: skip
+        rows[hits[0]] = dict(new, retried=True)
+        replaced.append((new["family"], new["key"]))
+    return dict(first, rows=rows, retried=replaced)
+
+
+def retry_manifest(table):
+    """The retry's manifest: the table's inconclusive rows, with their measures and parameters."""
+    entries = []
+    for r in table["rows"]:
+        if inconclusive(r):
+            entry = dict(family=r["family"], key=r["key"], measure=r["measure"], params=r["params"])
+            if r.get("step_tolerance") is not None:
+                entry["step_tolerance"] = r["step_tolerance"]
+            entries.append(entry)
+    return dict(entries=entries, unmapped=[], not_run=[])
+
+
 def judge(table, values, bands, *, after_retry=False):
-    """The verdicts. Refuses (raises) before reading any value if a compared row is unresolved."""
+    """The verdicts. `values` is the values file's content, or a function that loads it: it is
+    loaded only after every compared row resolves to a table row (a refusal reads no value), and
+    then only after every compared key is found in it."""
     key_list = {f: dict(kind=e["kind"], unit=e["unit"], keys=sorted(e["rows"]))
                 for f, e in bands["families"].items()}  # fmt: skip
     for family, entry in key_list.items():
@@ -428,6 +465,13 @@ def judge(table, values, bands, *, after_retry=False):
     resolved, problems = resolve(table, key_list, after_retry=after_retry)
     if problems:
         lines = [f"{why}: {family} | {key}" for why, family, key in problems]
+        raise SystemExit("refused before any value was read:\n" + "\n".join(lines))
+    values = values() if callable(values) else values
+    missing = [(f, k) for (f, k), (what, _) in sorted(resolved.items()) if what == "row" and (
+        k not in values["families"].get(f, {}).get("values", {})
+        or (key_list[f]["kind"] == "sign" and k not in values["families"][f].get("aux", {})))]
+    if missing:
+        lines = [f"no reference: {f} | {k}" for f, k in missing]
         raise SystemExit("refused before any value was read:\n" + "\n".join(lines))
     # Only now are values, aux, floors and bands read.
     rows, decimal.getcontext().prec = [], 60
@@ -442,22 +486,23 @@ def judge(table, values, bands, *, after_retry=False):
         row = entry["rows"][key]
         kind = entry["kind"]
         ref_text = values["families"][family]["values"][key]
-        if kind == "flag":
-            reference, band = ref_text, None
-        else:
-            reference = number(ref_text)
+        reference, band = (ref_text, None) if kind == "flag" else (number(ref_text), None)
+        if kind == "abs":  # The band rule is checked where REFERENCES_USAGE.md defines its terms.
             band = band_of(entry, row, reference)
             stored = number(str(row["band"]))
             if abs(stored - band) > decimal.Decimal("1e-12") * max(abs(band), decimal.Decimal(
                     "1e-300")):  # fmt: skip
                 raise SystemExit(f"refused: {family} | {key}: stored band disagrees with the rule")
+        elif kind == "sign":  # The stored band decides power (|aux| > band).
+            band = number(str(row["band"]))
         aux = None
         if kind == "sign":
             aux = number(values["families"][family]["aux"][key])
         outcome = compare(kind, engine_text(item), reference, band, aux)
         rows.append(dict(family=family, key=key, kind=kind, outcome=outcome, engine=item["value"],
                          reference=ref_text, band=None if band is None else str(band),
-                         aux=None if aux is None else str(aux)))  # fmt: skip
+                         aux=None if aux is None else str(aux),
+                         retried=bool(item.get("retried"))))  # fmt: skip
     for family, entry in bands["families"].items():
         if entry["kind"] == "info":
             rows.extend(dict(family=family, key=k, outcome="info") for k in entry["rows"])
@@ -465,6 +510,8 @@ def judge(table, values, bands, *, after_retry=False):
 
 
 def verdicts(rows):
+    """Families, claims and XC0 (the rule's verdicts). A family whose rows all lack power (or are
+    info or not run) is neutral, as info is: it neither passes nor blocks its claim."""
     families = {}
     for r in rows:
         families.setdefault(r["family"], []).append(r["outcome"])
@@ -472,15 +519,15 @@ def verdicts(rows):
     def family_verdict(outcomes):
         if "fail" in outcomes:
             return "fail"
-        if all(o == "info" for o in outcomes):
-            return "info"
-        if all(o == "not_run" for o in outcomes):
-            return "not_run"
         if "engine_refused" in outcomes:
             return "not_testable"
         if "pass" in outcomes:
             return "pass"
-        return "not_testable"
+        if all(o == "info" for o in outcomes):
+            return "info"
+        if all(o == "not_run" for o in outcomes):
+            return "not_run"
+        return "no_power"
 
     fam = {f: family_verdict(o) for f, o in families.items()}
     claims = {}
@@ -494,7 +541,7 @@ def verdicts(rows):
             return "not_testable"
         if "pass" in vs:
             return "pass"
-        return "not_testable"
+        return "not_testable"  # Nothing in the claim had power.
 
     claim = {c: claim_verdict(v) for c, v in claims.items()}
     overall = ("fail" if "fail" in claim.values()
@@ -600,6 +647,8 @@ def synthetic(out):
         dict(family="C7.pump_heat_nonneg", key="", measure="pump_heat_nonneg", type="flag",
              value="true"),
     ])  # fmt: skip
+    for row in table["rows"]:  # As the engine's table holds them: the measure's parameters.
+        row["params"] = mapped(row["family"], row["key"])[1]
     for name, data in ((VALUES, values), (BANDS, bands), ("engine_table.json", table)):
         (out / name).write_text(json.dumps(data, indent=1))
     return out
@@ -658,15 +707,36 @@ def selfcheck(out):
     band = copy.deepcopy(bands)
     band["families"]["C2.V_ghk_area"]["rows"]["primary|bath|T291.15"]["band"] = "2e-6"
     refuses("a disagreeing stored band", table, values, band)
-    t = copy.deepcopy(table)
-    t["rows"][0] |= dict(step_check=dict(converged=False))
-    after = judge(t, values, bands, after_retry=True)
+    first = copy.deepcopy(table)
+    first["rows"][0] |= dict(type="refused", reason="invented")
+    manifest_rows = retry_manifest(first)["entries"]
+    expect("the retry's manifest holds the inconclusive row alone",
+           [(e["family"], e["key"]) for e in manifest_rows] == [("C2.V_ghk_area", table["rows"][0]["key"])])
+    fixed = dict(rows=[dict(table["rows"][0], key="primary|bath|T291.150")])  # Met by number.
+    merged = judge(merge(first, fixed), values, bands, after_retry=True)
+    expect("a retried row judged in the merged table", merged["families"]["C2.V_ghk_area"] == "pass")
+    still = dict(rows=[dict(table["rows"][0], type="refused", reason="again")])
+    after = judge(merge(first, still), values, bands, after_retry=True)
     expect("after the retry: engine_refused, not testable",
-           after["families"]["C2.V_ghk_area"] == "not_testable")
+           after["families"]["C2.V_ghk_area"] == "not_testable" and after["overall"] != "pass")
+    try:
+        merge(table, fixed)
+        failures.append("a retry row over a judged row: not refused")
+    except SystemExit:
+        pass
     weak = copy.deepcopy(values)
     weak["families"]["C0.k_effect_sign_patch"]["aux"]["primary|bath|T291.15"] = "1e-12"
-    expect("no power anywhere: not testable",
-           judge(table, weak, bands)["families"]["C0.k_effect_sign_patch"] == "not_testable")
+    w = judge(table, weak, bands)
+    expect("a powerless family is neutral; its claim, with nothing else passing, not testable",
+           w["families"]["C0.k_effect_sign_patch"] == "no_power" and w["claims"]["C0"] == "not_testable")
+    lazy = judge(copy.deepcopy(table), lambda: values, bands)
+    expect("values loaded lazily give the same verdicts", lazy["families"] == r["families"])
+    try:
+        judge(missing, lambda: (_ for _ in ()).throw(AssertionError("values opened")), bands)
+    except SystemExit:
+        pass
+    except AssertionError:
+        failures.append("the values file opened before resolution")
     return failures
 
 
@@ -691,7 +761,10 @@ def main(argv=None):
     j = sub.add_parser("judge")
     for name in ("table", "values", "bands", "out"):
         j.add_argument(name)
-    j.add_argument("--after-retry", action="store_true")
+    j.add_argument("--retry", help="the retry's table, merged over the first (after-retry)")
+    rm = sub.add_parser("retry-manifest")
+    rm.add_argument("table")
+    rm.add_argument("out")
     s = sub.add_parser("synthetic")
     s.add_argument("out")
     st = sub.add_parser("structure")
@@ -716,10 +789,18 @@ def main(argv=None):
         rule = check_rule()
         table = json.loads(Path(args.table).read_text())
         check_table(table, rule)
-        digest = hashlib.sha256(Path(args.table).read_bytes()).hexdigest()
-        result = judge(table, json.loads(Path(args.values).read_text()),
-                       json.loads(Path(args.bands).read_text()), after_retry=args.after_retry)  # fmt: skip
-        result["engine_table_sha256"] = digest
+        digests = dict(engine_table_sha256=hashlib.sha256(Path(args.table).read_bytes()).hexdigest())
+        if args.retry:
+            retry = json.loads(Path(args.retry).read_text())
+            check_table(retry, rule)
+            if not retry["record"].get("retry"):
+                raise SystemExit("refused: the retry table was not built with --retry")
+            digests["retry_table_sha256"] = hashlib.sha256(Path(args.retry).read_bytes()).hexdigest()
+            table = merge(table, retry)
+        bands = json.loads(Path(args.bands).read_text())
+        result = judge(table, lambda: json.loads(Path(args.values).read_text()), bands,
+                       after_retry=bool(args.retry))  # fmt: skip
+        result |= digests
         Path(args.out).write_text(json.dumps(result, indent=1))
         print(json.dumps(dict(overall=result["overall"], claims=result["claims"],
                               counts=result["counts"]), indent=1))  # fmt: skip
@@ -727,6 +808,10 @@ def main(argv=None):
         print(synthetic(args.out))
     elif args.command == "structure":
         structure(args.file)
+    elif args.command == "retry-manifest":
+        result = retry_manifest(json.loads(Path(args.table).read_text()))
+        Path(args.out).write_text(json.dumps(result, indent=1))
+        print(f"{len(result['entries'])} rows to retry")
     elif args.command == "selfcheck":
         failures = selfcheck(args.out)
         print("selfcheck: " + ("passed" if not failures else "FAILED: " + "; ".join(failures)))
