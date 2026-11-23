@@ -10055,5 +10055,5 @@ code and values for it, so it is no longer a blind judge for FR-38. The D313 ver
 - **Protocol G scope 1 still passes.** The checker corrected its physical-measure note: paired on the same seeds,
   the measure is -1.80% against section 7's predicted -1.75%.
 - **Scope 2 is running.**
-- **What follows is the user's decision** (asked 23 November): record the fail with its diagnosis, or
-  re-register Protocol D with M repaired and fresh seeds.
+- **The user's decision (23 November): re-register Protocol D after FR-43.** M is repaired, the seeds are fresh,
+  and the fail and its diagnosis stay on record meanwhile.
