@@ -241,6 +241,7 @@ LAYOUT_FIELDS = (
     "reaction_factor_species",  # [route, factor] int64: the factor's species (row).
     "reaction_factor_half_saturation_mM",  # [route, factor]: K (1 where none).
     "reaction_factor_coefficient",  # [route, factor]: n (1 where none).
+    "reaction_factor_slots",  # [declared factor] int64: its slot route x width + i, route-major.
     "reaction_standard_mu_RT",  # [species rows]: mu°/RT at c0.
     "reaction_standard_concentration_mM",  # []: c0.
 )
@@ -867,6 +868,7 @@ def bind(spec, declaration):
         reaction_factor_species=factor_species,
         reaction_factor_half_saturation_mM=factor_k,
         reaction_factor_coefficient=factor_n,
+        reaction_factor_slots=np.flatnonzero(factor_kind).astype(np.int64),
         reaction_standard_mu_RT=np.asarray([s.standard_mu_RT for s in declaration.species]),
         reaction_standard_concentration_mM=np.asarray(declaration.standard_concentration_mM),
     )
@@ -982,6 +984,16 @@ def _to_nodes(values, node, size, *, xp):
     return out
 
 
+def _placed(values, slots, shape, *, xp):
+    """values [k] at the flat slots [k] of an array of `shape`, zero elsewhere (exact placement)."""
+    size = int(np.prod(shape))
+    if xp is jnp:
+        return jnp.zeros(size, dtype=values.dtype).at[slots].set(values).reshape(shape)
+    out = np.zeros(size)
+    out[np.asarray(slots)] = values
+    return out.reshape(shape)
+
+
 def _node_sum(values, node, size, *, xp):
     """[route] values summed onto [node]."""
     if xp is jnp:
@@ -1083,13 +1095,18 @@ def route_rates(amounts, net, p, *, xp, one_way=False):
         species_sum(xp.moveaxis(net.beta * log_a, -2, 0), xp=xp) + net.delta_mu_RT
     )
     # Driven: m F k V prod c^alpha (mass action), m F k V c_E c_S / (K_M + c_S) (Michaelis-Menten,
-    # with or without its catalyst), the factors in log space.
-    x = xp.take_along_axis(log_c.T, p.reaction_factor_species, axis=1)  # [route, factor] ln x.
-    z = p.reaction_factor_coefficient * (x - xp.log(p.reaction_factor_half_saturation_mM))
-    kind = p.reaction_factor_kind
-    log_f = xp.where(
-        kind == 1, -xp.logaddexp(0.0, -z), xp.where(kind == 2, -xp.logaddexp(0.0, z), 0.0)
+    # with or without its catalyst), the factors in log space, evaluated at the declared factors'
+    # slots only (the padding's ln f is 0, placed). One branch each: ln f = -logaddexp(0, s z)
+    # with s = -1 on an activation and +1 on an inhibition, and s z is -z or z exactly, so every
+    # ln f is bit for bit the two-branch form's, and the sum over the factor axis is unchanged.
+    kind, slots = p.reaction_factor_kind, p.reaction_factor_slots
+    route = slots // max(kind.shape[1], 1)
+    x = log_c[p.reaction_factor_species.reshape(-1)[slots], route]  # [declared factor] ln x.
+    z = p.reaction_factor_coefficient.reshape(-1)[slots] * (
+        x - xp.log(p.reaction_factor_half_saturation_mM.reshape(-1)[slots])
     )
+    sign = xp.where(kind.reshape(-1)[slots] == 1, -1.0, 1.0)
+    log_f = _placed(-xp.logaddexp(0.0, sign * z), slots, kind.shape, xp=xp)
     factor = xp.exp(entity_sum(log_f, axis=1, xp=xp))
     substrate = xp.take_along_axis(held, p.reaction_route_substrate[None, :], axis=0)[0]
     c_s = substrate / net.route_volume
