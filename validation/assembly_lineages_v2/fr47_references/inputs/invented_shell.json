@@ -1,0 +1,19 @@
+{
+ "name": "invented_shell",
+ "type": "shell_washes",
+ "spec": "invented inputs for the writer's own test (SPEC.md section 5): not a protocol world",
+ "V_out_L": "3.2e-18",
+ "V_in_L": "4e-19",
+ "A_sh_m2": "9e-16",
+ "P_s_m_per_s": "2.5e-7",
+ "tracer_potentials_kBT": {"solution": "0.25", "lumen": "-0.15"},
+ "founder_molecules": {"S@pool": 4000, "S@lumen": 600, "B@wall": 37},
+ "stops": [
+  {"time_s": "1.5", "kind": "withdrawal", "f": "3/8"},
+  {"time_s": "2.75", "kind": "replacement"},
+  {"time_s": "4.25", "kind": "withdrawal", "f": "1/8"}
+ ],
+ "observation_times_s": ["0.6", "2.0", "3.1", "5.5"],
+ "horizon_s": "6.5",
+ "plants": ["P1", "P2", "P3", "P4", "P6", "P7", "P8", "P9"]
+}
