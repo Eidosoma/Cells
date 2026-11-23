@@ -42,8 +42,10 @@ from cells.models.assembly_lineages_v2 import (
     POPULATION_INTERFACE,
     PORE_NUCLEATION,
     PRESCRIBED_SHELL,
+    RATE_EQUATIONS,
     RATE_FACTOR_INTERFACE,
     REACTION_INTERFACE,
+    REPRESENTATION_INTERFACE,
     REGULAR_MIXING,
     SHARED_POOL,
     SHEAR_FISSION,
@@ -62,6 +64,7 @@ from cells.models.assembly_lineages_v2 import (
     population,
     pore_nucleation,
     prescribed_shell,
+    rate_equations,
     regular_mixing,
     replacement,
     shell_permeation,
@@ -103,6 +106,9 @@ HOMES = {
     # FR-31's Phase A (D287).
     PORE_NUCLEATION: (pore_nucleation, interfaces.AssemblyHazard, HAZARD_INTERFACE,
                       "10.1088/1367-2630/13/9/095010"),
+    # OL6 (D304): the deterministic representation, a level of detail.
+    RATE_EQUATIONS: (rate_equations, interfaces.AssemblyRepresentation, REPRESENTATION_INTERFACE,
+                     "10.1063/1.1678692"),
 }  # fmt: skip
 OPERATORS = {  # OL3 milestone 1, then OL2 milestone 3
     SHEAR_FISSION: (division, interfaces.AssemblyOperator, OPERATOR_INTERFACE),

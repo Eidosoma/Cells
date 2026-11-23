@@ -141,6 +141,17 @@ def delta(state, term_layout, view, change, xp):
     return f(s_after, after) - f(s + xp.zeros_like(moved), total)
 
 
+def limit_value(counts, tables, term_layout, xp):
+    """OL6: F_reg = (1/(2N)) n·χn at real counts, 0 at N = 0; traceable (its gradient is the
+    excess μ)."""
+    (chi,) = term_layout
+    n = counts.astype(np.float64)
+    total = xp.sum(xp.where(tables.membrane, n, 0.0))
+    quadratic = n @ (chi @ n)
+    safe = xp.where(total > 0, total, 1.0)
+    return xp.where(total > 0, quadratic / (2.0 * safe), 0.0)
+
+
 FORMULAS = {
     "F_reg": "(1/(2N)) sum_ij chi_ij n_i n_j over the membrane's species; 0 at N = 0",
     "chi": "symmetric (Maxwell), zero diagonal, finite, k_BT; unlisted pairs 0",
@@ -181,6 +192,8 @@ TERM = law_registry.BUILTIN.register(
         value=value,
         delta=delta,
         formulas=FORMULAS,
+        limit=limit_value,
+        limit_formulas={"F_reg": "(1/(2N)) sum_ij chi_ij n_i n_j at real counts (the same form)"},
     )
 )
 assert TERM.law_id == REGULAR_MIXING

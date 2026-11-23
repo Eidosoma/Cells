@@ -97,6 +97,28 @@ def delta(state, term_layout, view, change, xp):
     return entry_sum(terms, xp) - size
 
 
+def _x_log_x(n, xp):
+    """n ln n − n, with 0 at n = 0 and a guarded logarithm (finite derivatives)."""
+    positive = n > 0
+    return xp.where(positive, n * xp.log(xp.where(positive, n, 1.0)) - n, 0.0)
+
+
+def limit_value(counts, tables, term_layout, xp):
+    """OL6: F_id in Stirling's form at real counts (the design note's §1.3): every ln k! by
+    k ln k − k, the membrane's measure as −[(N − c) ln(N − c) − (N − c)]. Traceable, so its
+    gradient is μ by differentiation."""
+    n = counts.astype(np.float64)
+    finite = tables.finite
+    membrane = tables.membrane
+    per_place = xp.where(
+        finite,
+        n * (tables.mu0 - xp.where(membrane, 0.0, tables.log_X)) + _x_log_x(n, xp),
+        0.0,
+    )
+    size = xp.sum(xp.where(membrane, n, 0.0)) - tables.offset
+    return xp.sum(per_place) - _x_log_x(size, xp)
+
+
 FORMULAS = {
     "F_id": "sum_dilute sum_s [n_s (mu°_s,sol - ln X) + ln n_s!] + sum_i n_i mu°_i,bil "
     "- ln (N - c)! + sum_i ln n_i!, X = N_A V c0; held species: no term",
@@ -134,6 +156,12 @@ TERM = law_registry.BUILTIN.register(
         value=value,
         delta=delta,
         formulas=FORMULAS,
+        limit=limit_value,
+        limit_formulas={
+            "F_id": "sum_dilute [n (mu° - ln X) + n ln n - n] + sum_i [n_i mu°_bil + n_i ln n_i "
+            "- n_i] - [(N - c) ln(N - c) - (N - c)] (Stirling's form of the declared F_id)",
+            "mu": "the gradient: mu° + ln(n/X) (dilute), mu° + ln(n_i/(N - c)) (membrane)",
+        },
     )
 )
 assert TERM.law_id == IDEAL_MIXING

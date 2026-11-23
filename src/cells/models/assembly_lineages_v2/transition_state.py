@@ -260,6 +260,11 @@ LAW = law_registry.BUILTIN.register(
         update=update,
         log_factor=log_factor,
         formulas=FORMULAS,
+        limit=log_factor,  # OL6: on a continuous view (consumed 0), the factor is g(n)
+        limit_formulas={
+            "g(n)": "1 + sum_j beta_rj x_j(n), x_j = n_j / N (the cached form), or the "
+            "count-weighted mean where the data take it; the common state m -> n",
+        },
     )
 )
 assert LAW.law_id == TRANSITION_STATE
