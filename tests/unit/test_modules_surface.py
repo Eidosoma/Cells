@@ -90,6 +90,7 @@ HOMES = {  # Each name's own module: where it is defined.
         "declared_hosts",
         "host_index",
         "moved_nodes",
+        "crossing_junctions",
     ),
     "cells.kinds.proton_buffer": ("free_log_sensitivity",),
 }

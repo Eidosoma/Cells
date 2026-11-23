@@ -14,6 +14,9 @@ them. One passive route on the contact patch carries S at k = 1e15 P A (1/V_a + 
   refused by the step checks.
 - FR-34's readouts: a route that asks reads out the step's own flux and its share of the patch's
   current, for each of the four laws, and a world that does not ask keeps today's world.
+- FR-15 F2's junction hosting (D310): the charged law refuses a junction that crosses a floating
+  capacitor component, in the row that refused every junction host before; its junction rows are
+  test_passive_routes_junctions.py's, so this file keeps its tier-2 cost (D224).
 """
 
 import copy
@@ -322,23 +325,31 @@ def charged_pair(
     return raw
 
 
+def crossing_junction_pair():
+    """FR-15 F2's junction pair (test_passive_routes_junctions.py) with cell_b's component floating,
+    so its junction crosses a floating capacitor component (D310)."""
+    from tests.unit import test_passive_routes_junctions as junctions
+
+    return junctions.junction_pair(crossing=True)
+
+
 @pytest.mark.parametrize(
     "change, message",
     [
         (lambda raw: raw["model"][passive_routes.MODEL_KEY][0].update(species=fx.SPECIES),
          "carries a charged row, not the neutral S"),
-        (lambda raw: raw["model"][passive_routes.MODEL_KEY][0].update(
-            {"junction": "contact_0"}) or raw["model"][passive_routes.MODEL_KEY][0].pop("patch"),
-         "sits on a membrane patch (a junction host waits"),
+        (lambda raw: raw.clear() or raw.update(crossing_junction_pair()),
+         "on junction j_ab, which joins two capacitor components where one floats"),
         (lambda raw: raw["model"]["membranes"][1]["permeability_m_per_s"].update(X=1e-9),
          "has its own permeability for X"),
     ],
-    ids=["neutral row", "junction host", "host's own permeability"],
+    ids=["neutral row", "crossing junction", "host's own permeability"],
 )  # fmt: skip
 def test_the_charged_law_refuses_a_neutral_row_a_junction_and_a_second_law(change, message):
-    """FR-15 P2's admission (host side): a charged row only; patches only, a junction host waiting
-    for the @3 owner's ruling on a kind's cell-to-cell current; and one law per species and
-    route."""
+    """FR-15 P2's admission (host side): a charged row only, on a patch or a junction; on a
+    junction, only one that joins no floating capacitor component (version 1, D310: the row that
+    refused every junction host became the crossing junction's, as the lead sanctioned); and one
+    law per species and route."""
     raw = charged_pair()
     change(raw)
     with pytest.raises(ConfigError, match=re.escape(message)):

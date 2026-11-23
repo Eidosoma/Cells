@@ -1,14 +1,15 @@
 """FR-43 / D315: a world at the species cap, 1,024 species, through the runner (tier 3).
 
 FR-43's chain at 1,024 species (3 ions and a 1,021-species chain; tests/species_cap_fixtures
-.chain_world) for 20 steps of 5 ms, every host check on every row (the material, charge and energy
-books): every saved amount within the declared accuracy of the closed form expm(K t) n0, the
-reference with the middle link 0.1% fast seen, and the booked heat the engine's own free-energy
-drop at rounding; then a 1,025th species refused at the parse. Its reason and cost: the size the
-cap admits, where the species sums take the fold's scan above 16 terms (FR-43's probe on one CPU
-core: 42 s of compile and 0.43 s per step at this size), plus building the 1,024-species definition;
-about 1.5 min, so tier 3, run deliberately. The 256- and 1,024-species records of the design note
-(docs/FR43_SHARED_INVENTORIES_DESIGN.md §1.2) stay a detached benchmark, rerun at each later raise.
+.chain_world) over the design note's full horizon, 400 steps of 5 ms (2 s), every host check on
+every row (the material, charge and energy books): every saved amount within the declared accuracy
+of the closed form expm(K t) n0, the reference with the middle link 0.1% fast seen, and the booked
+heat the engine's own free-energy drop at rounding; then a 1,025th species refused at the parse.
+Its reason and cost: the size the cap admits, where the species sums take the fold's scan above
+16 terms, over the horizon of the design note's record (docs/FR43_SHARED_INVENTORIES_DESIGN.md
+§1.2: error 1.63e-5, the planted link at 2.7e-4). On one CPU core: about 25 s to build the
+1,024-species definition, 42 s of compile and 0.43 s per step, so about 4 min, tier 3, run
+deliberately (20 steps took 70 s, which would have been every gate's tier-2 cost).
 """
 
 import jax
@@ -16,6 +17,7 @@ import numpy as np
 import pytest
 
 from cells.definitions.specs import ConfigError, parse_spec
+from cells.execution import batch, batch_windows, windows
 from cells.execution.runner import run
 from cells.registry.inventory_species import add_inventory_species
 from tests.species_cap_fixtures import (
@@ -36,7 +38,7 @@ def x64():
 
 @pytest.fixture(scope="module")
 def raw():
-    return chain_world(1024, dt=0.005, end=0.1, every=0.005)
+    return chain_world(1024, dt=0.005, end=2.0, every=0.25)
 
 
 def test_a_1024_species_chain_meets_its_closed_form_and_books_its_free_energy_drop(raw):
@@ -69,3 +71,23 @@ def test_a_1025th_species_is_refused_at_the_parse(raw):
     )
     with pytest.raises(ConfigError, match="admits at most 1024 species per world"):
         parse_spec(more)
+
+
+def test_its_windowed_run_and_a_two_world_batch_are_admitted_under_2_gib(raw):
+    """The layout counted once per world (FR-43 / D315): at 1,024 species it is 0.37 GiB, and
+    counted with every copy of the rows a two-world batch of this world was refused under 2 GiB."""
+    spec = parse_spec(raw)
+    two = batch.parse_batch(
+        dict(
+            schema_version=1,
+            kind="independent_worlds",
+            worlds=[dict(world_id=i, simulation=raw) for i in (1, 2)],
+            execution=dict(
+                mapping="lax_map", max_worlds=4, max_padded_steps=10**6, max_working_bytes=2**31
+            ),
+        )
+    )
+    policy = windows.WindowPolicy(256)
+    assert windows.plan_windows(spec, policy).estimated_working_bytes <= 2**31
+    assert batch.plan_batch(two).estimated_working_bytes <= 2**31
+    assert batch_windows.plan_batch_windows(two, policy).estimated_working_bytes <= 2**31

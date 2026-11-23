@@ -54,7 +54,7 @@ import numpy as np
 from cells.definitions.specs import ConfigError, parse_spec
 from cells.definitions.surface_pump_v3_spec import control_values
 from cells.kinds import transporter
-from cells.laws.electrochemistry import CHARGE_PER_FMOL
+from cells.laws.electrochemistry import CHARGE_PER_FMOL, R
 from cells.registry.models import get_model
 from validation.xenopus_bioelectric import xc0_worlds as W
 
@@ -64,6 +64,9 @@ ROOT_XTOL = 1e-16  # V: brentq's absolute tolerance on a voltage root (rtol 4 ep
 SCAN = 24  # Bracket scan points across a root's domain.
 V_DOMAIN = (-0.20, 0.15)  # V: the scan for a root with no channel population declared.
 CHANNEL_DOMAIN = (-0.12, 0.06)  # V: @3's channel domain, wherever GlyR is declared.
+# V: a symporter world's scan (erratum 1): no channel is declared there, and with the keys' B ratios
+# (to 1e-5) a stall can lie far beyond V_DOMAIN; points outside the law's domain (|x| > 80) are skipped.
+SYM_DOMAIN = (-1.0, 1.0)
 SLOPE_STEP_V = 1e-5  # V: the central difference of dV/dt (or a current) for a slope.
 NEWTON_STEPS = 12  # The two-cell steady state's polishing steps at most.
 RUN_TAUS = 8.25  # C3's and C7's runs last this many tau_lin (k <= 33 at t = k tau_lin / 4).
@@ -179,8 +182,12 @@ class World:
 
     def cycle_modes(self, b):
         """The transporter kind's probe at the state's read and field potentials."""
+        return self.cycle_modes_full(b).modes
+
+    def cycle_modes_full(self, b):
+        """The whole probe (modes, rows, populations) at the state's read and field potentials."""
         potentials = np.asarray(b.values.field.potential_V)
-        return transporter.probe(b.state, potentials, b.control, b.p, xp=np).modes
+        return transporter.probe(b.state, potentials, b.control, b.p, xp=np)
 
 
 # ------------------------------------------------------------------ roots
@@ -306,7 +313,9 @@ def symport_world(n, na_in, na_out, b_out, r_b, temperature, *, capacity=None, d
         kw["symport"] = {"cell_1": (k, int(n))}
     else:
         kw["diagram"] = {"cell_1": k}
-    return World(d, **kw)
+    world = World(d, **kw)
+    world.domain = SYM_DOMAIN
+    return world
 
 
 def mode_value(world, v, field):
@@ -333,40 +342,76 @@ def eq_ratio(n, na_in, na_out, b_out, temperature, v, *, d=None, version=1):
 # ------------------------------------------------------------------ runs
 
 
-def trajectory(world_kw, end_time, *, d=None, x2_cap, dt=None):
-    """A run of the world (xc0_worlds keywords), every accepted step observed, with X2 on."""
-    from cells.execution.runner import run
+WINDOW_STEPS = 10000  # Accepted steps per window of the scalar window path.
+KEEP = ("times", "membrane_voltage_V", "amount", "extracellular_amount", "membrane_transferred",
+        "extracellular_potential_V", "channel_transferred", "passive_transferred",
+        "pump_cycles")  # fmt: skip  # The last three where the world's model records them.
 
+
+def windowed(spec, checkpoint=None, keep=KEEP):
+    """A run of a parsed definition through the engine's scalar window path (cells.execution.
+    windows.iter_windows, which runs X2 where the definition selects it), from its start or from a
+    checkpoint, keeping the named observation fields; the windows' diagnostics are merged by their
+    maxima; a field the model does not record is left out. Returns (fields, diagnostics, final
+    checkpoint)."""
+    from cells.execution.windows import WindowPolicy, iter_windows
+
+    policy = WindowPolicy(window_steps=WINDOW_STEPS, recording="observations")
+    parts, diagnostics, final = {f: [] for f in keep}, {}, None
+    for window in iter_windows(spec, policy, checkpoint):
+        for f in keep:
+            if hasattr(window.observations, f):
+                parts[f].append(np.asarray(getattr(window.observations, f)))
+        for k, v in window.diagnostics.items():
+            if isinstance(v, (int, float, np.floating, np.integer)) and np.isfinite(v):
+                diagnostics[k] = max(diagnostics.get(k, -math.inf), float(v))
+        final = window.final
+    return {f: np.concatenate(v) for f, v in parts.items() if v}, diagnostics, final
+
+
+def trajectory(world_kw, end_time, *, d=None, x2_cap, dt=None, every=1):
+    """A run of the world (xc0_worlds keywords) at the step factor, observed every `every`
+    accepted steps, with X2 at the cap."""
     d = W.inputs() if d is None else d
     dt = float(d["execution"]["dt_s"]) * STEP["factor"] if dt is None else float(dt)
     steps = int(round(end_time / dt))
-    times = [k * dt for k in range(steps + 1)]
+    times = [k * dt for k in range(0, steps + 1, every)]
+    if times[-1] != steps * dt:
+        times.append(steps * dt)
     raw = W.world(d=d, dt=dt, end_time=steps * dt, observation_times=times,
                   energy_check_cap=x2_cap, **world_kw)  # fmt: skip
     started = time.perf_counter()
-    result = run(parse_spec(raw))
-    o = result.observations
-    spec = result.spec
+    spec = parse_spec(raw)
+    o, diagnostics, _ = windowed(spec)
     membranes = [m.id for m in spec.model.membranes]
     cells = [c.id for c in spec.model.cells]
-    voltage = np.asarray(o.membrane_voltage_V)
-    out = dict(
-        t=np.asarray(o.times, dtype=float),
+    voltage = o["membrane_voltage_V"]
+    inside = {m.id: m.inside for m in spec.model.membranes}
+    routes = dict(spec.model.kinds).get("cells.passive_routes@1", ())
+    return dict(
+        t=np.asarray(o["times"], dtype=float),
         V={c: voltage[:, membranes.index(f"m_main_{c}")] for c in cells},
-        amount=np.asarray(o.amount),  # [t, species, cell]
-        outside=np.asarray(o.extracellular_amount),  # [t, species, outside node]
+        amount=o["amount"],  # [t, species, cell]
+        outside=o["extracellular_amount"],  # [t, species, outside node]
+        transferred=o["membrane_transferred"],  # [t, species, membrane], cumulative outward
+        membranes=membranes,
+        membrane_cell=[m.inside for m in spec.model.membranes],
+        # A channel population's and a route's transfers are their own records, not the patch's:
+        # [t, species, channel] cumulative outward; [t, species, route] cumulative inward.
+        channel_transferred=o.get("channel_transferred"),
+        channel_cell=[inside[c.membrane_id] for c in spec.model.channels],
+        route_transferred=o.get("passive_transferred"),
+        route_cell=[r.inside for r in routes],
+        pump_cycles=o.get("pump_cycles"),
         species=list(spec.model.species_ids),
         cells=cells,
         outside_ids=[x.id for x in spec.model.extracellular],
         valence=np.asarray(spec.model.valence, dtype=float),
         fixed={c.id: c.fixed_charge_equivalent_fmol for c in spec.model.cells},
         c_total=W.total_capacitance(d) * world_kw.get("scale_capacitance", 1.0),
-        diagnostics={k: float(v) for k, v in result.diagnostics.items()},
+        diagnostics=diagnostics,
         seconds=time.perf_counter() - started,
-        observations=o,
-        spec=spec,
     )
-    return out
 
 
 def at_time(t, y, when):
@@ -382,6 +427,18 @@ def at_time(t, y, when):
     if a * b > 0:
         return float(math.copysign(math.exp((1 - w) * math.log(abs(a)) + w * math.log(abs(b))), a))
     return float((1 - w) * a + w * b)
+
+
+def linear_at(t, y, when):
+    """y at time `when`, interpolated linearly between the two accepted steps around it (for a
+    residual, which may change sign); the step's own value where `when` is one."""
+    i = int(np.searchsorted(t, when))
+    if i < len(t) and t[i] == when:
+        return float(y[i])
+    if i == 0 or i >= len(t):
+        raise Refused(f"time {when} outside the run")
+    w = (when - t[i - 1]) / (t[i] - t[i - 1])
+    return float((1 - w) * y[i - 1] + w * y[i])
 
 
 def cell_charge(traj, cell):
@@ -466,7 +523,10 @@ def m_cl_threshold(params, *, d, cache, **_):
     """C0's Cl_i threshold (mM): the root over the cell's Cl- of GlyR's Cl flux at the resting
     voltage of the declared state (each Cl_i a parsed world, its charge anchor at that voltage)."""
     state = state_of(params)
-    rest = m_v_zero({k: params[k] for k in ("ion_set", "exterior", "T")}, d=d, cache=cache)
+    if "V" in params:  # Erratum 1: C0.cl_i_threshold_V<V> holds V fixed at the family's value.
+        rest = float(params["V"])
+    else:
+        rest = m_v_zero({k: params[k] for k in ("ion_set", "exterior", "T")}, d=d, cache=cache)
     ion_set, exterior_name, temperature = state
 
     def flux(cl):
@@ -527,9 +587,26 @@ def m_kir_slope(params, *, d, cache, **_):
 
 def m_tau_lin(params, *, d, cache, **_):
     """C3's tau_lin at a scenario world: -1 / d(dV/dt)/dV at its zero-current voltage."""
-    world = scenario_world(params, d)
-    v = cached(cache, ("scenario_zero", scenario_key(params)), lambda: v_zero(world))[0]
-    return tau_lin(world, v)
+    return scenario_zero(params, d, cache)[1]
+
+
+def m_c3_v_inf(params, *, d, cache, **_):
+    """C3's V_inf (erratum 1): the scenario world's zero-current voltage (dV/dt's root)."""
+    return scenario_zero(params, d, cache)[0]
+
+
+def m_c3_g(params, *, d, cache, **_):
+    """C3's g (erratum 1): the membrane's slope conductance at V_inf, C_total / tau_lin, i.e.
+    -C_total d(dV/dt)/dV, the engine's slope with the declared total capacitance (S)."""
+    return W.total_capacitance(W.inputs() if d is None else d) / scenario_zero(params, d, cache)[1]
+
+
+def m_c3_tau_doubling(params, *, d, cache, **_):
+    """C3's tau_doubling (erratum 1): tau_lin of the scenario world with every patch's capacitance
+    doubled over tau_lin with the declared ones, each at its own zero (the same voltage)."""
+    v, tau = scenario_zero(params, d, cache)
+    doubled = scenario_world(params, d, scale_capacitance=2.0)
+    return tau_lin(doubled, v_zero(doubled)[0]) / tau
 
 
 # ------------------------------------------------------------------ scenarios (runs)
@@ -537,10 +614,21 @@ def m_tau_lin(params, *, d, cache, **_):
 # C3's scenarios that DESIGN §4 and the interface's documented names define. The rest of the
 # references' S2-S8 are not documented outside their family notes: each joins this table by a
 # dated erratum that states its world (the rule's readings_to_confirm), never by a guess.
-SCENARIOS = {
+SCENARIOS = {  # Erratum 1: the confirmer's SEMANTICS.md, section 3 (S2-S8 as stated there).
     "S1_leaks_bath": dict(state=("primary", "bath", 291.15)),
+    "S2_glycine1e-8_bath": dict(state=("primary", "bath", 291.15),
+                                extra=dict(glycine={"cell_1": (1e-8, 1.0)})),
+    "S3_glycine3e-8_bath": dict(state=("primary", "bath", 291.15),
+                                extra=dict(glycine={"cell_1": (3e-8, 1.0)})),
+    "S4_glycine1e-8_bath70Na": dict(state=("primary", "bath70_Na", 291.15),
+                                    extra=dict(glycine={"cell_1": (1e-8, 1.0)})),
+    "S5_glycine1e-8_bath70inert": dict(state=("primary", "bath70_inert", 291.15),
+                                       extra=dict(glycine={"cell_1": (1e-8, 1.0)})),
+    "S6_kir3_bath": dict(state=("primary", "bath", 291.15), extra=dict(kir={"cell_1": (3.0, 1.0)})),
+    "S7_leaks_bath_Clhigh": dict(state=("bracket_Cl_high", "bath", 291.15)),
+    "S8_leaks_bath_secondhand": dict(state=("bracket_second_hand_table", "bath", 291.15)),
     "S9_leaks_bath_T287": dict(state=("primary", "bath", 287.15)),
-}
+}  # fmt: skip
 
 
 def scenario_key(params):
@@ -548,11 +636,33 @@ def scenario_key(params):
                       sort_keys=True, default=str)  # fmt: skip
 
 
-def scenario_world(params, d):
+def scenario_world(params, d, **more):
     s = SCENARIOS.get(params.get("scenario"))
     if s is None:
         raise Refused(f"scenario {params.get('scenario')!r} has no declared world")
-    return leaks_world(s["state"], d, **s.get("extra", {}))
+    return leaks_world(s["state"], d, **s.get("extra", {}), **more)
+
+
+def scenario_run_kw(name, v0):
+    """A scenario's world as the run's keywords, its cell anchored at v0."""
+    s = SCENARIOS[name]
+    ion_set, exterior_name, temperature = s["state"]
+    return dict(cells=(("cell_1", ion_set),), exterior_name=exterior_name,
+                temperature_K=temperature, v0=v0, **s.get("extra", {}))  # fmt: skip
+
+
+def scenario_zero(params, d, cache):
+    """(V_inf, tau_lin) of a scenario's world: the engine's zero-current voltage and its linear
+    time constant there."""
+
+    def make():
+        world = scenario_world(params, d)
+        v = v_zero(world)
+        return v[0], tau_lin(world, v[0]), v[1]
+
+    v, tau, equal = cached(cache, ("scenario_zero", params["scenario"]), make)
+    REPARSED.append(bool(equal))
+    return v, tau
 
 
 def relaxation(params, *, d, x2_cap, cache):
@@ -561,14 +671,8 @@ def relaxation(params, *, d, x2_cap, cache):
     key = ("relax", scenario_key(params), float(params["delta"]), STEP["factor"])
 
     def make():
-        world = scenario_world(params, d)
-        v_inf = cached(cache, ("scenario_zero", scenario_key(params)), lambda: v_zero(world))[0]
-        tau = tau_lin(world, v_inf)
-        s = SCENARIOS[params["scenario"]]
-        ion_set, exterior_name, temperature = s["state"]
-        kw = dict(cells=(("cell_1", ion_set),), exterior_name=exterior_name,
-                  temperature_K=temperature, v0=v_inf + float(params["delta"]),
-                  **s.get("extra", {}))  # fmt: skip
+        v_inf, tau = scenario_zero(params, d, cache)
+        kw = scenario_run_kw(params["scenario"], v_inf + float(params["delta"]))
         traj = trajectory(kw, RUN_TAUS * tau, d=d, x2_cap=x2_cap)
         return dict(v_inf=v_inf, tau_lin=tau, traj=traj)
 
@@ -594,11 +698,22 @@ def m_ratio_t(params, *, d, x2_cap, cache, **_):
 
 def m_charge_identity(params, *, d, x2_cap, cache, **_):
     """C3's Q - C V: the largest |Q(t) - C_total V(t)| over the run's accepted steps, Q from the
-    recorded amounts and the cell's fixed background (C)."""
+    recorded amounts and the cell's fixed background (C). Superseded for the rows by
+    m_c3_q_minus_cv (erratum 1)."""
     r = relaxation(params, d=d, x2_cap=x2_cap, cache=cache)
     traj = r["traj"]
     q = cell_charge(traj, "cell_1")
     return float(np.max(np.abs(q - traj["c_total"] * traj["V"]["cell_1"])))
+
+
+def m_c3_q_minus_cv(params, *, d, x2_cap, cache, **_):
+    """C3's Q_over_CV_error (erratum 1): Q(t_k) - C_total V(t_k) at t_k = k tau_lin / 4 of the
+    run, Q the cell's charge from its recorded amounts and fixed background, the residual read
+    linearly between the two accepted steps around t_k (C)."""
+    r = relaxation(params, d=d, x2_cap=x2_cap, cache=cache)
+    traj = r["traj"]
+    residual = cell_charge(traj, "cell_1") - traj["c_total"] * traj["V"]["cell_1"]
+    return linear_at(traj["t"], residual, int(params["k"]) * r["tau_lin"] / 4.0)
 
 
 # ------------------------------------------------------------------ the symporter's readings (C6)
@@ -854,7 +969,7 @@ def m_c7_dQ(params, *, d, x2_cap, cache, **_):
 
 # ------------------------------------------------------------------ C8 (b): the local node (runs)
 
-C8_END_S = 60.0  # s: the P1LB runs' horizon (about twelve 1/e times of the slowest species).
+C8_END_S = 64.0  # s: the P1LB runs' horizon (erratum 1: the reference's runs end at 64 s).
 C8_EVERY = 100  # Accepted steps between observations in the P1LB runs (10 ms at the declared dt).
 
 
@@ -947,6 +1062,501 @@ def m_t1_availability(params, *, d, cache, **_):
 
 STATE_KEYS = ("ion_set", "exterior", "T")
 
+# ================================================================== erratum 1 (23 November 2026)
+# The readings the confirmer's SEMANTICS.md (sha256 56b5fd5c...) defines, each from the engine's own
+# outputs; the reader's erratum mapping names which family reads which.
+
+
+def m_feasible_19p4(params, *, d, cache, **_):
+    """C0.feasible_19p4_area: V_rest - E_Cl >= 19.4 mV (T2's published magnitude), from the engine's
+    zero-current voltage and its Cl- zero at the state."""
+    rest = m_v_zero({k: params[k] for k in STATE_KEYS}, d=d, cache=cache)
+    e_cl = m_e_zero(dict({k: params[k] for k in STATE_KEYS}, ion="Cl"), d=d, cache=cache)
+    return bool(rest - e_cl >= 0.0194)
+
+
+def route_at_ek(params, d, cache, offset):
+    """The route's outward current (A) at the state's E_K + offset, g_ref 1 S/m2 and availability 1,
+    E_K the engine's K+ zero through m_kleak (the constant-field K leak), not the route's own."""
+    state = {k: params[k] for k in STATE_KEYS}
+    e_k = m_e_zero(dict(state, ion="K"), d=d, cache=cache)
+    world = ion_world(state_of(params), "Kir", d, G_REF)
+    return world, e_k + offset
+
+
+def m_kir_current_ek(params, *, d, cache, **_):
+    """C1.kir_zero_at_EK (u 0) and C1.kir_I_u<u>: the route's current at E_K + u (A)."""
+    world, v = route_at_ek(params, d, cache, float(params.get("u", 0.0)))
+    return ion_current_at(world, "Kir", v)
+
+
+def m_kir_slope_ek(params, *, d, cache, **_):
+    """C1.kir_slope_u<u>: the route's slope dI/dV at E_K + u, the central difference of its
+    current (S)."""
+    world, v = route_at_ek(params, d, cache, float(params["u"]))
+    return slope(lambda x: ion_current_at(world, "Kir", x), v)
+
+
+def m_kir_sqrtko_ratio(params, *, d, cache, **_):
+    """C1.kir_sqrtKo_ratio: the route's current at E_K + 0.02 V with the local exterior over the
+    same with the bath, the ion set and T of the key, each at its own E_K."""
+    out = []
+    for exterior_name in ("local", "bath"):
+        state = dict(ion_set=params["ion_set"], exterior=exterior_name, T=float(params["T"]))
+        world, v = route_at_ek(state, d, cache, 0.02)
+        out.append(ion_current_at(world, "Kir", v))
+    return out[0] / out[1]
+
+
+def m_c4_flux_at_a0(params, *, d, cache, **_):
+    """C4.flux_at_a0: the route's current (declared at g_ref 3 S/m2) plus GlyR's Cl current
+    (declared at P_GlyR 3e-8 m/s), both at availability 0, at the key's voltage (A)."""
+    world = leaks_world(state_of(params), d, kir={"cell_1": (3.0, 0.0)},
+                        glycine={"cell_1": (3e-8, 0.0)})  # fmt: skip
+    b = world.at(float(params["V"]))
+    return world.current(b, "K", "m_kir") + world.current(b, "Cl", "m_glycine")
+
+
+LEVELS = (0.0, 0.25, 0.5, 0.75, 1.0)
+P_GRID = (1e-9, 3e-9, 1e-8, 3e-8)
+G_GRID = (0.1, 0.3, 1.0, 3.0)
+
+
+def m_c4_monotone_kir(params, *, d, cache, **_):
+    """C4.monotone_kir: for every g_ref of the grid, V_zero over the availabilities 0 to 1 falls
+    at every step (strictly) and never lies below E_K (the engine's K+ zero): exact comparisons
+    on the engine's roots, as the reference's."""
+    state = {k: params[k] for k in STATE_KEYS}
+    e_k = m_e_zero(dict(state, ion="K"), d=d, cache=cache)
+    for g in G_GRID:
+        zs = [m_v_zero(dict(state, g=g, a=a), d=d, cache=cache) for a in LEVELS]
+        if any(b - a >= 0 for a, b in zip(zs, zs[1:], strict=False)) or any(z < e_k for z in zs):
+            return False
+    return True
+
+
+def m_c4_monotone_glycine(params, *, d, cache, **_):
+    """C4.monotone_glycine: for every P_GlyR of the grid, with sigma = sign(E_Cl - V_zero(0)),
+    every step of V_zero over the availabilities 0 to 1 has the sign sigma and every level has
+    (V_zero - E_Cl) sigma <= 0: exact comparisons on the engine's roots, as the reference's."""
+    state = {k: params[k] for k in STATE_KEYS}
+    e_cl = m_e_zero(dict(state, ion="Cl"), d=d, cache=cache)
+    for p in P_GRID:
+        zs = [m_v_zero(dict(state, P=p, a=a), d=d, cache=cache) for a in LEVELS]
+        sigma = np.sign(e_cl - zs[0])
+        if any(np.sign(b - a) != sigma for a, b in zip(zs, zs[1:], strict=False)):
+            return False
+        if any((z - e_cl) * sigma > 0 for z in zs):
+            return False
+    return True
+
+
+def m_c5_v_limit(params, *, d, cache, **_):
+    """C5.V_limit: the root over V of dV1/dt + dV2/dt with both cells at V (the junction then
+    carries nothing), the scenario's two cells."""
+    world = two_cell_world(dict(params, x=1.0), d)
+    v = root(lambda x: world.dvdt(world.at(x), "cell_1") + world.dvdt(world.at(x), "cell_2"),
+             *world.domain)  # fmt: skip
+    return v
+
+
+def junction_current(world, b):
+    """The junction's current from its sender to its receiver (A): CHARGE_PER_FMOL sum z J, J the
+    engine's junction flux readout."""
+    flux = np.asarray(b.values.field.rates.junction_flux_fmol_s)[:, 0]
+    return CHARGE_PER_FMOL * float(np.sum(np.asarray(world.spec.model.valence) * flux))
+
+
+def m_c5_g_j(params, *, d, cache, **_):
+    """C5.g_J: the declared junction's slope conductance at V1 = V2 (S): the central difference of
+    its current over V1 - V2, both cells about the declared anchor V0, the junction at x1."""
+    world = two_cell_world(dict(params, x=1.0), d)
+    h = SLOPE_STEP_V
+
+    def current(dv):
+        return junction_current(world, world.at({"cell_1": W.V0 + dv / 2, "cell_2": W.V0 - dv / 2}))
+
+    return (current(h) - current(-h)) / (2 * h)
+
+
+def m_c5_g_m(params, *, d, cache, **_):
+    """C5.g_m: a cell's membrane slope conductance at its own uncoupled zero-current voltage (S):
+    cell1 the leaks alone, cell2 the leaks and the scenario's element; C_total / tau_lin."""
+    extra = {}
+    if params.get("cell") == "cell2":
+        if "kir_g" in params:
+            extra["kir"] = {"cell_1": (float(params["kir_g"]), 1.0)}
+        if "x_gly" in params:
+            extra["glycine"] = {"cell_1": (float(params["x_gly"]), 1.0)}
+    world = leaks_world(("primary", "bath", 291.15), d, **extra)
+    v = v_zero(world)[0]
+    return W.total_capacitance(W.inputs() if d is None else d) / tau_lin(world, v)
+
+
+def c5_modes(params, d, cache):
+    """The scenario's steady voltages at x1 and its two modes: (V_ss, [(lambda, v) slow, fast])."""
+
+    def make():
+        world = two_cell_world(dict(params, x=1.0), d)
+        v1, v2 = two_cell_steady(world)
+        values, vectors = np.linalg.eig(two_cell_jacobian(world, v1, v2))
+        values, vectors = np.real(values), np.real(vectors)
+        order = np.argsort(-values)  # The slower mode (lambda nearer 0) first.
+        modes = []
+        for i in order:
+            v = vectors[:, i] / np.linalg.norm(vectors[:, i])
+            modes.append((float(values[i]), v if v[0] > 0 else -v))
+        return np.array([v1, v2]), modes
+
+    return cached(cache, ("c5_modes", json.dumps(params, sort_keys=True, default=str)), make)
+
+
+def m_c5_tau_fit(mode):
+    def reading(params, *, d, x2_cap, cache, **_):
+        v_ss, modes = c5_modes(params, d, cache)
+        lam, v = modes[0 if mode == "common" else 1]
+        tau = -1.0 / lam
+        start = v_ss + v * (0.002 / np.max(np.abs(v)))
+        key = ("c5_fit", mode, json.dumps(params, sort_keys=True, default=str), STEP["factor"])
+
+        def make():
+            kw = dict(two_cell_world(dict(params, x=1.0), d).kw,
+                      v0={"cell_1": float(start[0]), "cell_2": float(start[1])})  # fmt: skip
+            return trajectory(kw, 1.25 * tau, d=d, x2_cap=x2_cap)
+
+        traj = cached(cache, key, make)
+        a = v[0] * (traj["V"]["cell_1"] - v_ss[0]) + v[1] * (traj["V"]["cell_2"] - v_ss[1])
+        return -tau / math.log(at_time(traj["t"], a, tau) / a[0])
+
+    reading.__doc__ = (f"C5.tau_fit_{mode} (erratum 1): from the engine's steady voltages at x1 plus "
+                       "0.002 V along the mode's eigenvector of the engine's Jacobian (its largest "
+                       "component), the run to tau_m = -1/lambda of that mode; a(t) = v . (V(t) - "
+                       "V_ss); tau_fit = -tau_m / ln(a(tau_m) / a(0)), a(tau_m) read as at_time does.")
+    return reading
+
+
+def own_outward_charge(traj, cell):
+    """The charge (C) that has left the cell through its own patches, channel populations and
+    routes by each observation: e sum_s z_s of the engine's cumulative records (membrane_ and
+    channel_transferred outward, passive_transferred inward). Refused where a pump has cycled,
+    whose transfers these records do not carry."""
+    if traj["pump_cycles"] is not None and np.any(np.asarray(traj["pump_cycles"]) != 0):
+        raise Refused("a pump cycled: its transfers are not booked here")
+    z = traj["valence"][None, :, None]
+    moved = np.zeros(len(traj["t"]))
+    for record, owners, sign in (("transferred", traj["membrane_cell"], 1.0),
+                                 ("channel_transferred", traj["channel_cell"], 1.0),
+                                 ("route_transferred", traj["route_cell"], -1.0)):  # fmt: skip
+        own = [i for i, c in enumerate(owners) if c == cell]
+        if own:
+            moved += sign * np.sum(z * np.asarray(traj[record])[:, :, own], axis=(1, 2))
+    return CHARGE_PER_FMOL * moved
+
+
+def m_c5_junction_charge_sum(params, *, d, x2_cap, cache, **_):
+    """C5.junction_charge_sum: the run of the scenario's two cells at x1 from the declared anchor
+    V0 = -0.04 V (both) to 4 tau_common, every 10 accepted steps observed; at each observation,
+    the junction's charge into each cell is its charge change from its recorded amounts plus the
+    charge that has left through its own patches, channel populations and routes
+    (own_outward_charge); the reading is the largest |sum over the two cells| (C), the junction's
+    own conservation through the engine's records."""
+    key = ("c5_charge", json.dumps(params, sort_keys=True, default=str), STEP["factor"])
+
+    def make():
+        _, modes = c5_modes(params, d, cache)
+        kw = dict(two_cell_world(dict(params, x=1.0), d).kw, v0=W.V0)
+        return trajectory(kw, 4 * (-1.0 / modes[0][0]), d=d, x2_cap=x2_cap, every=10)
+
+    traj = cached(cache, key, make)
+    total = np.zeros(len(traj["t"]))
+    for cell in traj["cells"]:
+        q = cell_charge(traj, cell)
+        total += (q - q[0]) + own_outward_charge(traj, cell)
+    return float(np.max(np.abs(total)))
+
+
+def m_sym_dj_dv(params, *, d, cache, **_):
+    """C6.v1_dJdV_at_stall: the transporter probe's dJ/dV (the engine's own derivative,
+    fmol/s/V) at the key's voltage (the engine's stall with off 0)."""
+    world = sym_world(params, d)
+    return mode_value(world, sym_voltage(params, d, cache), "d_j_d_v")
+
+
+def m_sym_ratio(params, *, d, cache, **_):
+    """C6.v1_ratio_Jm_Jp: J-/J+ of the transporter probe at the key's voltage."""
+    world = sym_world(params, d)
+    v = sym_voltage(params, d, cache)
+    return mode_value(world, v, "j_minus") / mode_value(world, v, "j_plus")
+
+
+def m_sym_eq_x(params, *, d, cache, **_):
+    """C6.v1_eq_x: x = dG_cyc/RT of the probe at B_in = the engine's equilibrium ratio times
+    B_out, at the key's voltage."""
+    n, na_in, na_out, b_out, _, temperature = sym_params(dict(params, rB=1.0))
+    v = sym_voltage(params, d, cache)
+    ratio = eq_ratio(n, na_in, na_out, b_out, temperature, v, d=d)
+    return mode_value(symport_world(n, na_in, na_out, b_out, ratio, temperature, d=d), v, "x")
+
+
+def m_sym_s_at(params, *, d, cache, **_):
+    """C6.S_hill: the probe's saturation S at the P end's Na (NaP) and B (BP); the factored form's
+    S reads the P end alone (the N end and V of the world: the primary set, -0.04 V)."""
+    world = symport_world(2, 21.0, float(params["NaP"]), float(params["BP"]), 1.0, 291.15, d=d)
+    return mode_value(world, W.V0, "s")
+
+
+def pump_world(params, d):
+    """P1 (bath) or P1L (local) at the primary set, 291.15 K, the pump at availability 1."""
+    return World(d, cells=(("cell_1", "primary"),), exterior_name=params["exterior"],
+                 temperature_K=float(params.get("T", 291.15)), pump={"cell_1": 1.0})  # fmt: skip
+
+
+def pump_voltage(params, d, cache):
+    if params.get("word") == "Vghk":
+        return m_v_zero(dict(ion_set="primary", exterior=params["exterior"],
+                             T=float(params.get("T", 291.15))), d=d, cache=cache)  # fmt: skip
+    return float(params["V"])
+
+
+def m_pump_at(field):
+    def reading(params, *, d, cache, **_):
+        world = pump_world(params, d)
+        k = world.patch("m_main")
+
+        def total(v):
+            return float(np.asarray(world.at(v).values.pump_affinity_J_mol)[k])
+
+        v = pump_voltage(params, d, cache)
+        b = world.at(v)
+        cycles = float(np.asarray(b.values.derivative.pump_cycles)[k])
+        dg_atp = -1e3 * float(np.asarray(b.values.derivative.metabolic_work_pJ)[k]) / cycles
+        if field == "dG_atp":
+            return dg_atp
+        at_v, at_0 = total(v), total(0.0)
+        if field == "dG_chem":
+            return at_0 - dg_atp
+        if field == "dU_cap":
+            return at_v - at_0
+        if field == "heat":
+            return -at_v
+        return bool(-at_v >= 0.0)
+
+    reading.__doc__ = (f"C7.pump_{field} (erratum 1), per cycle at the key's state and voltage "
+                       "(-0.04 V or Vghk, the engine's zero-current voltage there): dG_atp = -1e3 "
+                       "metabolic power / cycle rate; the cycle's free energy G(V) is the engine's "
+                       "pump affinity; dG_chem = G(0) - dG_atp; dU_cap = G(V) - G(0); heat = -G(V); "
+                       "heat_nonneg heat >= 0 (J/mol).")
+    return reading
+
+
+def m_pump_outward_charge(params, *, d, cache, **_):
+    """C7.pump_cycle_counts outward_charge: the net charge leaving the cell per cycle (e), from
+    the pump's patch flux over its cycle rate (the leaks closed)."""
+    return -m_pump("cell_charge_per_fmol")(params, d=d, cache=cache) / CHARGE_PER_FMOL
+
+
+def m_sym_partition(field):
+    def reading(params, *, d, cache, **_):
+        world = sym_world(params, d)
+        v = sym_voltage(params, d, cache)
+        rt = R * float(params.get("T", 291.15))
+        x_v, x_0 = mode_value(world, v, "x"), mode_value(world, 0.0, "x")
+        if field == "dG_chem":
+            return rt * x_0
+        if field == "dU_cap":
+            return rt * (x_v - x_0)
+        if field == "heat_per_cycle":
+            return -rt * x_v
+        heat = float(np.asarray(world.cycle_modes_full(world.at(v)).populations.heat_pJ_s)[0])
+        return 1e3 * heat if field == "heat_power" else bool(heat >= 0.0)
+
+    reading.__doc__ = (f"C7.sym_{field} (erratum 1) at the C6 offset key's state and voltage: "
+                       "dG_chem = R T x(0) (the probe's x with the electrical term at V = 0); dU_cap "
+                       "= R T (x(V) - x(0)); heat_per_cycle = -R T x(V) (J/mol); heat_power = the "
+                       "kind's booked heat rate (heat_pJ_s, in fW); heat_nonneg: that rate >= 0.")
+    return reading
+
+
+SYM_COUNT_STATE = dict(Nain=21.0, Naout=9.9, BP=10.0, rB=1.0, T=291.15, V=-0.0899)
+
+
+def m_sym_counts(params, *, d, cache, **_):
+    """C7.sym_cycle_counts: per cycle, from the transporter probe's row rates over its J at one
+    state (the primary cell's Na 21 mM, Na_P 9.9, B 10 mM both sides, -0.0899 V): the cell's Na
+    and B gain (dNa_in, dB_in), the outside's (dNa_out, dB_out), and the charge carried inward
+    (charge_inward, e)."""
+    world = sym_world(dict(SYM_COUNT_STATE, n=int(params["n"])), d)
+    probe = world.cycle_modes_full(world.at(SYM_COUNT_STATE["V"]))
+    j = float(np.asarray(probe.modes.j)[0, 0])
+    rows = probe.rows
+    species = world.species
+    out = {}
+    for k in range(int(np.sum(np.asarray(rows.present)[:, 0]))):
+        name = species[int(np.asarray(rows.species)[k, 0])]
+        end = "in" if bool(np.asarray(rows.at_n)[k, 0]) else "out"
+        out[f"d{name}_{end}"] = float(np.asarray(rows.rate)[k, 0]) / j
+    out["charge_inward"] = out["dNa_in"] - out["dB_in"]  # Na+ at +1, B- at -1.
+    return out[params["word"]]
+
+
+# ------------------------------------------------------------------ C7's relaxations (erratum 1)
+
+
+def c7_scenario_relaxation(name, *, d, x2_cap, cache):
+    """C7 (erratum 1): the scenario's world (S1, S2 or S4) from the declared anchor V0 = -0.04 V,
+    its amounts evolving, to RUN_TAUS tau_lin of that scenario (k <= 24 needs 6), every accepted
+    step observed."""
+
+    def make():
+        _, tau = scenario_zero(dict(scenario=name), d, cache)
+        traj = trajectory(scenario_run_kw(name, W.V0), RUN_TAUS * tau, d=d, x2_cap=x2_cap)
+        return dict(tau_lin=tau, traj=traj)
+
+    return cached(cache, ("c7_relax", name, STEP["factor"]), make)
+
+
+def m_c7_relax(field):
+    def reading(params, *, d, x2_cap, cache, **_):
+        r = c7_scenario_relaxation(params["scenario"], d=d, x2_cap=x2_cap, cache=cache)
+        traj = r["traj"]
+        when = int(params["k"]) * r["tau_lin"] / 4.0
+        dq_v = traj["c_total"] * (traj["V"]["cell_1"] - W.V0)
+        if field == "dQ":
+            return at_time(traj["t"], dq_v, when)
+        species = traj["species"]
+        k = traj["cells"].index("cell_1")
+        ionic = CHARGE_PER_FMOL * sum(
+            traj["valence"][species.index(s)] * (traj["amount"][:, species.index(s), k]
+                                                 - traj["amount"][0, species.index(s), k])
+            for s in ("Na", "K", "Cl"))  # fmt: skip
+        return linear_at(traj["t"], dq_v - ionic, when)
+
+    reading.__doc__ = (f"C7.relax_{'dQ' if field == 'dQ' else 'charge_identity'} (erratum 1), at "
+                       "t_k = k tau_lin / 4 of the scenario's run: dQ = C_total (V(t_k) - V0); the "
+                       "identity C_total (V(t_k) - V0) - CHARGE_PER_FMOL sum z dn(t_k) over Na, K "
+                       "and Cl (C).")
+    return reading
+
+
+# ------------------------------------------------------------------ C8 (b): saved runs (erratum 1)
+
+C8_RUNS = {"dir": None}  # The folder of the saved P1LB runs (xc0_engine c8b-run), set by `table`.
+
+
+def c8b_definition(reading, factor, until, *, d, x2_cap, v0):
+    """P1LB at the primary set, 291.15 K: `coupled`, the cell's leaks open (no pump, route or
+    GlyR), starting at v0, the engine's zero-current voltage of the primary set against the local
+    node (SEMANTICS.md); `bare`, every patch closed (v0 the same). Observed every C8_EVERY steps
+    of the declared step (the same times at every step factor), to `until`."""
+    dd = W.inputs() if d is None else d
+    dt = float(dd["execution"]["dt_s"]) * factor
+    steps = int(round(C8_END_S / dt))
+    every = int(round(C8_EVERY / factor))
+    times = [k * dt for k in range(0, steps + 1, every) if k * dt <= until + 1e-12]
+    leaks = None if reading == "coupled" else {"cell_1": {"m_main": 0.0, "m_kleak": 0.0}}
+    return W.world(d=dd, cells=(("cell_1", "primary"),), exterior_name="local", face=True,
+                   leaks=leaks, v0=v0, dt=dt, end_time=times[-1], observation_times=times,
+                   energy_check_cap=x2_cap)  # fmt: skip
+
+
+def c8b_segment(reading, factor, until, out, *, x2_cap, resume=None, d=None):
+    """One segment of a saved P1LB run, from its start or from the previous segment's snapshot
+    (`resume`), to `until` (s): its observations (the local node's concentrations and potential),
+    its snapshot for the next segment, and its record (the source, the cap, the diagnostics)."""
+    from cells.records.io import load_snapshot, write_snapshot
+
+    out = Path(out)
+    out.mkdir(parents=True, exist_ok=False)
+    v0 = m_v_zero(dict(ion_set="primary", exterior="local", T=291.15), d=d, cache={})
+    if resume is not None:
+        prior = json.loads((Path(resume) / "record.json").read_text())
+        if prior["v0"] != v0 or prior["reading"] != reading or prior["factor"] != factor:
+            raise SystemExit("refused: the segment does not continue its predecessor")
+    started = time.perf_counter()
+    spec = parse_spec(c8b_definition(reading, factor, until, d=d, x2_cap=x2_cap, v0=v0))
+    checkpoint = None if resume is None else load_snapshot(Path(resume) / "snapshot").checkpoint
+    fields, diagnostics, final = windowed(
+        spec, checkpoint, keep=("times", "extracellular_amount", "extracellular_potential_V"))
+    outside = [x.id for x in spec.model.extracellular]
+    k = outside.index("outside_local")
+    volume = spec.model.extracellular[k].volume_pL
+    np.savez(out / "trajectory.npz", t=np.asarray(fields["times"], dtype=float),
+             c=fields["extracellular_amount"][:, :, k] / volume,
+             psi=fields["extracellular_potential_V"][:, k])  # fmt: skip
+    write_snapshot(out / "snapshot", spec, final)
+    record = dict(reading=reading, factor=factor, until=until, v0=v0, resume=resume,
+                  species=list(spec.model.species_ids), source=provenance(), x2_cap=x2_cap,
+                  diagnostics=diagnostics, seconds=round(time.perf_counter() - started, 1),
+                  trajectory_sha256=hashlib.sha256((out / "trajectory.npz").read_bytes()).hexdigest())
+    (out / "record.json").write_text(json.dumps(record, indent=1))
+    return record
+
+
+def c8b_loaded(reading, *, x2_cap):
+    """The saved run of a reading at the current step factor: its segments in order, checked
+    against the table's source and cap, joined (a time shared by two segments read once)."""
+    folder = Path(C8_RUNS["dir"] or "") / f"{reading}-{STEP['factor']:g}"
+    if C8_RUNS["dir"] is None or not folder.is_dir():
+        raise Refused(f"no saved P1LB run {folder.name}")
+    source = provenance()
+    ts, cs, psis, species = [], [], [], None
+    segments = sorted(folder.iterdir(), key=lambda f: json.loads((f / "record.json").read_text())["until"])
+    for seg in segments:
+        record = json.loads((seg / "record.json").read_text())
+        data = (seg / "trajectory.npz").read_bytes()
+        if hashlib.sha256(data).hexdigest() != record["trajectory_sha256"]:
+            raise Refused(f"{seg.name}: its trajectory is not its record's")
+        if record["source"].get("engine_revision") != source.get("engine_revision") or record[
+                "source"].get("snapshot_patch_sha256") != source.get("snapshot_patch_sha256"):  # fmt: skip
+            raise Refused(f"{seg.name}: run from another source than the table's")
+        if record["x2_cap"] != x2_cap:
+            raise Refused(f"{seg.name}: run at another X2 cap than the table's")
+        z = np.load(seg / "trajectory.npz")
+        keep = np.asarray(z["t"]) > (ts[-1][-1] if ts else -1.0)
+        ts.append(np.asarray(z["t"])[keep])
+        cs.append(np.asarray(z["c"])[keep])
+        psis.append(np.asarray(z["psi"])[keep])
+        species = record["species"]
+    t = np.concatenate(ts)
+    if abs(t[-1] - C8_END_S) > 1e-9:
+        raise Refused(f"{folder.name} ends at {t[-1]} s, not {C8_END_S} s")
+    return dict(t=t, c=np.concatenate(cs), psi=np.concatenate(psis), species=species)
+
+
+def m_c8b_saved(field):
+    def reading(params, *, d, x2_cap, cache, **_):
+        if field in ("final", "psi_final"):
+            r = cached(cache, ("c8b_saved", "bare", STEP["factor"]),
+                       lambda: c8b_loaded("bare", x2_cap=x2_cap))  # fmt: skip
+            if field == "psi_final":
+                return float(r["psi"][-1])
+            return float(r["c"][-1, r["species"].index(params["species"])])
+        r = cached(cache, ("c8b_saved", "coupled", STEP["factor"]),
+                   lambda: c8b_loaded("coupled", x2_cap=x2_cap))  # fmt: skip
+        if field == "psi_at":
+            return at_time(r["t"], r["psi"], float(params["t"]))
+        y = r["c"][:, r["species"].index(params["species"])]
+        if field == "at":
+            return at_time(r["t"], y, float(params["t"]))
+        bare = cached(cache, ("c8b_saved", "bare", STEP["factor"]),
+                      lambda: c8b_loaded("bare", x2_cap=x2_cap))  # fmt: skip
+        c_f = float(bare["c"][-1, bare["species"].index(params["species"])])
+        frac = (y - c_f) / (y[0] - c_f)
+        target = 1.0 / math.e
+        i = int(np.argmax(frac <= target))
+        if i == 0:
+            raise Refused("the species does not reach 1/e within the run")
+        w = (frac[i - 1] - target) / (frac[i - 1] - frac[i])
+        return float(r["t"][i - 1] + w * (r["t"][i] - r["t"][i - 1]))
+
+    reading.__doc__ = (f"C8 (b) (erratum 1), from the saved P1LB runs: final (the bare run's node "
+                       "concentration at 64 s), psi_final (its node potential), at and psi_at (the "
+                       "coupled run's at t), t_e (the coupled run's first time (c(t) - c_f)/(c(0) - "
+                       "c_f) falls to 1/e, c_f the bare run's 64 s value, linear between two "
+                       f"observations). This one: {field}.")
+    return reading
+
+
 
 MEASURES = {
     "v_zero": m_v_zero,
@@ -997,6 +1607,47 @@ MEASURES = {
     "c8b_psi_at": m_c8b("psi_at"),
     "t2_shift": m_t2_shift,
     "t1_kleak_availability": m_t1_availability,
+    # Erratum 1 (the confirmer's SEMANTICS.md).
+    "feasible_19p4": m_feasible_19p4,
+    "kir_current_ek": m_kir_current_ek,
+    "kir_slope_ek": m_kir_slope_ek,
+    "kir_sqrtko_ratio": m_kir_sqrtko_ratio,
+    "c3_v_inf": m_c3_v_inf,
+    "c3_g": m_c3_g,
+    "c3_tau_doubling": m_c3_tau_doubling,
+    "c3_q_minus_cv": m_c3_q_minus_cv,
+    "c4_flux_at_a0": m_c4_flux_at_a0,
+    "c4_monotone_kir": m_c4_monotone_kir,
+    "c4_monotone_glycine": m_c4_monotone_glycine,
+    "c5_v_limit": m_c5_v_limit,
+    "c5_g_j": m_c5_g_j,
+    "c5_g_m": m_c5_g_m,
+    "c5_tau_fit_common": m_c5_tau_fit("common"),
+    "c5_tau_fit_diff": m_c5_tau_fit("diff"),
+    "c5_junction_charge_sum": m_c5_junction_charge_sum,
+    "sym_dj_dv": m_sym_dj_dv,
+    "sym_ratio": m_sym_ratio,
+    "sym_eq_x": m_sym_eq_x,
+    "sym_s_at": m_sym_s_at,
+    "pump_dG_atp_at": m_pump_at("dG_atp"),
+    "pump_dG_chem_at": m_pump_at("dG_chem"),
+    "pump_dU_cap_at": m_pump_at("dU_cap"),
+    "pump_heat_at": m_pump_at("heat"),
+    "pump_heat_nonneg_at": m_pump_at("heat_nonneg"),
+    "pump_outward_charge": m_pump_outward_charge,
+    "sym_dG_chem": m_sym_partition("dG_chem"),
+    "sym_dU_cap": m_sym_partition("dU_cap"),
+    "sym_heat_per_cycle": m_sym_partition("heat_per_cycle"),
+    "sym_heat_power": m_sym_partition("heat_power"),
+    "sym_heat_nonneg": m_sym_partition("heat_nonneg"),
+    "sym_counts": m_sym_counts,
+    "c7_relax_dQ": m_c7_relax("dQ"),
+    "c7_relax_identity": m_c7_relax("identity"),
+    "c8b_final_saved": m_c8b_saved("final"),
+    "c8b_psi_final_saved": m_c8b_saved("psi_final"),
+    "c8b_at_saved": m_c8b_saved("at"),
+    "c8b_psi_at_saved": m_c8b_saved("psi_at"),
+    "c8b_t_e_saved": m_c8b_saved("t_e"),
 }
 
 
@@ -1033,6 +1684,10 @@ def encode(value):
 RUN_MEASURES = frozenset({
     "tau_fit", "ratio_t", "charge_identity", "c7_charge_identity", "c7_charge_balance", "c7_dQ",
     "c8b_final", "c8b_at", "c8b_t_e", "c8b_psi_final", "c8b_psi_at",
+    # Erratum 1.
+    "c3_q_minus_cv", "c5_tau_fit_common", "c5_tau_fit_diff", "c5_junction_charge_sum",
+    "c7_relax_dQ", "c7_relax_identity", "c8b_final_saved", "c8b_psi_final_saved", "c8b_at_saved",
+    "c8b_psi_at_saved", "c8b_t_e_saved",
 })  # fmt: skip
 
 
@@ -1100,16 +1755,36 @@ def main(argv=None):
     t.add_argument("out")
     t.add_argument("--x2-cap", type=float, required=True)
     t.add_argument("--retry", action="store_true", help="the rule's retry (once)")
+    t.add_argument("--c8b", help="the folder of the saved P1LB runs (xc0_engine c8b-run)")
+    c = sub.add_parser("c8b-run", help="one segment of a saved P1LB run (erratum 1)")
+    c.add_argument("reading", choices=("bare", "coupled"))
+    c.add_argument("factor", type=float, help="the step factor: 1, 0.5 (the companion) or 0.25")
+    c.add_argument("until", type=float, help="the segment's end (s); the run's is C8_END_S")
+    c.add_argument("out", help="the segment's folder: <runs>/<reading>-<factor>/<segment>")
+    c.add_argument("--x2-cap", type=float, required=True)
+    c.add_argument("--resume", help="the previous segment's folder")
     args = a.parse_args(argv)
+    if args.command == "c8b-run":
+        record = c8b_segment(args.reading, args.factor, args.until, args.out, x2_cap=args.x2_cap,
+                             resume=args.resume)  # fmt: skip
+        print(json.dumps({k: record[k] for k in ("reading", "factor", "until", "seconds",
+                                                 "trajectory_sha256")}))  # fmt: skip
+        return 0
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=False)
     manifest = json.loads(Path(args.manifest).read_text())
     started = datetime.now(UTC).isoformat()
+    C8_RUNS["dir"] = args.c8b
+    c8b_records = {}
+    if args.c8b:  # Each saved segment's record, by its digest, in the table's record.
+        for record in sorted(Path(args.c8b).glob("*/*/record.json")):
+            c8b_records[str(record.relative_to(args.c8b))] = hashlib.sha256(
+                record.read_bytes()).hexdigest()
     record = dict(schema=SCHEMA, started_utc=started, source=provenance(),
                   manifest=str(Path(args.manifest).resolve()),
                   manifest_sha256=hashlib.sha256(Path(args.manifest).read_bytes()).hexdigest(),
                   x2_cap=args.x2_cap, retry=args.retry, python=platform.python_version(),
-                  argv=sys.argv)  # fmt: skip
+                  argv=sys.argv, c8b_runs=args.c8b, c8b_records=c8b_records)  # fmt: skip
     (out / "run_record.json").write_text(json.dumps(record, indent=1))
     rows = build_table(manifest["entries"], x2_cap=args.x2_cap, retry=args.retry)
     table = dict(schema=SCHEMA, record=record, finished_utc=datetime.now(UTC).isoformat(), rows=rows)

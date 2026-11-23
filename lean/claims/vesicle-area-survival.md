@@ -37,14 +37,42 @@ Proof sources [Mathlib exponential convexity and strict convexity, imported for 
 
 **Operators** `cells.tension_hold@1`
 
-[Pore rate and temperature slope](https://github.com/Eidosoma/Cells/blob/f51a3b07d302fb177b166b1568155084ffb8e1c1/src/cells/models/assembly_lineages_v2/pore_nucleation.py#L58) · [Tension domain and hold payer](https://github.com/Eidosoma/Cells/blob/f51a3b07d302fb177b166b1568155084ffb8e1c1/src/cells/models/assembly_lineages_v2/tension_hold.py#L88) · [Clock, opening and release](https://github.com/Eidosoma/Cells/blob/f51a3b07d302fb177b166b1568155084ffb8e1c1/src/cells/models/assembly_lineages_v2/pore_clock.py#L69) · [Single-lineage pore event](https://github.com/Eidosoma/Cells/blob/f51a3b07d302fb177b166b1568155084ffb8e1c1/src/cells/models/assembly_lineages_v2/runner.py#L363) · [Population pore event](https://github.com/Eidosoma/Cells/blob/f51a3b07d302fb177b166b1568155084ffb8e1c1/src/cells/models/assembly_lineages_v2/population.py#L670) · [Per-founder random stream and threshold inputs](https://github.com/Eidosoma/Cells/blob/f51a3b07d302fb177b166b1568155084ffb8e1c1/src/cells/models/assembly_lineages_v2/streams.py) · [Geometry and area in both runners](https://github.com/Eidosoma/Cells/blob/f51a3b07d302fb177b166b1568155084ffb8e1c1/src/cells/models/assembly_lineages_v2/geometry.py) · [Closed-form work oracle, founder worlds and both public run modes](https://github.com/Eidosoma/Cells/blob/f51a3b07d302fb177b166b1568155084ffb8e1c1/tests/unit/test_assembly_lineages_v2_pores.py) · [Base assembly run definition](https://github.com/Eidosoma/Cells/blob/f51a3b07d302fb177b166b1568155084ffb8e1c1/tests/assembly_lineage_v2_fixtures.py) · [Exact rate, heat and recorded cutoff proof](https://github.com/Eidosoma/Cells/blob/870c9353c92b7e614f25a768f2dabecf7b81d49c/lean/CellsProofs/Chemistry/VesiclePore.lean) · [Common-exposure survival bounds](https://github.com/Eidosoma/Cells/blob/870c9353c92b7e614f25a768f2dabecf7b81d49c/lean/CellsProofs/Chemistry/VesicleArea.lean) · [Measured pore observables](https://github.com/Eidosoma/Cells/blob/870c9353c92b7e614f25a768f2dabecf7b81d49c/lean/checks/data/dopc_pore_observables.json) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/870c9353c92b7e614f25a768f2dabecf7b81d49c/lean/checks/vesicle_pore.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/870c9353c92b7e614f25a768f2dabecf7b81d49c/lean/PROGRESS.md#fr31-pore-rate-heat)
+[Pore rate and temperature slope](https://github.com/Eidosoma/Cells/blob/0a1c1b0dc8145c9c313c02a4ed57cfe5433b2efe/src/cells/models/assembly_lineages_v2/pore_nucleation.py#L58) · [Tension domain and hold payer](https://github.com/Eidosoma/Cells/blob/0a1c1b0dc8145c9c313c02a4ed57cfe5433b2efe/src/cells/models/assembly_lineages_v2/tension_hold.py#L88) · [Clock, opening and release](https://github.com/Eidosoma/Cells/blob/0a1c1b0dc8145c9c313c02a4ed57cfe5433b2efe/src/cells/models/assembly_lineages_v2/pore_clock.py#L82) · [Single-lineage pore event](https://github.com/Eidosoma/Cells/blob/0a1c1b0dc8145c9c313c02a4ed57cfe5433b2efe/src/cells/models/assembly_lineages_v2/runner.py#L363) · [Population pore event](https://github.com/Eidosoma/Cells/blob/0a1c1b0dc8145c9c313c02a4ed57cfe5433b2efe/src/cells/models/assembly_lineages_v2/population.py#L665) · [Per-founder random stream and threshold inputs](https://github.com/Eidosoma/Cells/blob/0a1c1b0dc8145c9c313c02a4ed57cfe5433b2efe/src/cells/models/assembly_lineages_v2/streams.py) · [Geometry and area in both runners](https://github.com/Eidosoma/Cells/blob/0a1c1b0dc8145c9c313c02a4ed57cfe5433b2efe/src/cells/models/assembly_lineages_v2/geometry.py) · [Closed-form work oracle, founder worlds and both public run modes](https://github.com/Eidosoma/Cells/blob/0a1c1b0dc8145c9c313c02a4ed57cfe5433b2efe/tests/unit/test_assembly_lineages_v2_pores.py) · [Base assembly run definition](https://github.com/Eidosoma/Cells/blob/0a1c1b0dc8145c9c313c02a4ed57cfe5433b2efe/tests/assembly_lineage_v2_fixtures.py) · [Exact rate, heat and recorded cutoff proof](https://github.com/Eidosoma/Cells/blob/1c3c422d32a6723d650b2f6d2bc5b531d4a3ff87/lean/CellsProofs/Chemistry/VesiclePore.lean) · [Common-exposure survival bounds](https://github.com/Eidosoma/Cells/blob/1c3c422d32a6723d650b2f6d2bc5b531d4a3ff87/lean/CellsProofs/Chemistry/VesicleArea.lean) · [Measured pore observables](https://github.com/Eidosoma/Cells/blob/1c3c422d32a6723d650b2f6d2bc5b531d4a3ff87/lean/checks/data/dopc_pore_observables.json) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/1c3c422d32a6723d650b2f6d2bc5b531d4a3ff87/lean/checks/vesicle_pore.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/1c3c422d32a6723d650b2f6d2bc5b531d4a3ff87/lean/PROGRESS.md#fr31-pore-endpoint-repair)
 
-[Tested engine f51a3b07d302](https://github.com/Eidosoma/Cells/commit/f51a3b07d302fb177b166b1568155084ffb8e1c1) · [Evidence checkpoint 870c9353c92b](https://github.com/Eidosoma/Cells/commit/870c9353c92b7e614f25a768f2dabecf7b81d49c)
+[Tested engine 0a1c1b0dc814](https://github.com/Eidosoma/Cells/commit/0a1c1b0dc8145c9c313c02a4ed57cfe5433b2efe) · [Evidence checkpoint 1c3c422d32a6](https://github.com/Eidosoma/Cells/commit/1c3c422d32a6723d650b2f6d2bc5b531d4a3ff87)
+
+**Reference calculation**
+
+[Area scaling and survival at a fixed tension](https://github.com/Eidosoma/Cells/blob/cecbe3627a7a9a0bc37ae7a4b3d2b5f29f828c78/docs/VESICLE_PORES_LAWS.md#5-the-area-and-the-clock) · [Published verdict of the separate registered blind test](https://github.com/Eidosoma/Cells/blob/cecbe3627a7a9a0bc37ae7a4b3d2b5f29f828c78/docs/DECISIONS.md#d298-the-vesicle-rupture-blind-test-passes-set-1-five-of-five-set-2-five-of-five-one-sided-weak) · [Neutral DOPC plateau and linked ruptures](https://github.com/Eidosoma/Cells/blob/cecbe3627a7a9a0bc37ae7a4b3d2b5f29f828c78/lean/checks/data/shibly2016_swelling.json) · [Charged vesicle rupture and independent swelling groups](https://github.com/Eidosoma/Cells/blob/cecbe3627a7a9a0bc37ae7a4b3d2b5f29f828c78/lean/checks/data/saha2020_osmotic_rupture.json) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/cecbe3627a7a9a0bc37ae7a4b3d2b5f29f828c78/lean/checks/vesicle_area.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/cecbe3627a7a9a0bc37ae7a4b3d2b5f29f828c78/lean/PROGRESS.md#fr31-osmotic-rupture)
+
+[Evidence checkpoint cecbe3627a7a](https://github.com/Eidosoma/Cells/commit/cecbe3627a7a9a0bc37ae7a4b3d2b5f29f828c78)
 
 ## Biological evidence
 
 **Open.** Initial vesicle areas from the same at-risk population, held tension, and time to first rupture or censoring per vesicle. Linked observations would quantify the mean-area approximation.
 
+Shibly et al. link relative swelling and rupture in selected neutral-DOPC traces. Saha et al. compare charged-vesicle rupture and swelling in separate cohorts. Neither supplies absolute starting areas with outcomes across the full at-risk cohort.
+
 **Unit** Surviving fraction at a stated exposure
+
+### shibly2016_dopc_rupture_traces@1
+
+Neutral DOPC vesicles at 25 ± 1 °C, held at 4 mN/m aspiration after a 3 mM osmotic difference. Figure 4A, with Figure 4B as the pre-equilibrium comparison [Shibly et al. (2016), Biophysical Journal](https://doi.org/10.1016/j.bpj.2016.09.043)
+
+- **Evidence role** descriptive
+
+The paper gives 0.0086 ± 0.0002 for fractional plateau radius change (17 vesicles), without identifying the statistic here. The mean area modulus is 218 ± 26 mN/m (SD).
+
+Relative radius and rupture are paired on displayed traces. Individual absolute areas and complete event or censor times are still missing. [Dataset manifest](../checks/data/shibly2016_swelling.json) · [Comparison verdict](../PROGRESS.md#fr31-osmotic-rupture)
+
+### saha2020_charged_vesicle_rupture@1
+
+DOPG/DOPC 40:60 vesicles in 150 mM NaCl at 25 ± 1 °C. The rupture group used 12 mOsm/L and the closest swelling group used 13 ± 5 mOsm/L. Figure 1B and Table 1 for rupture, Figure 2 and Table 3 for swelling [Saha, Shibly and Yamazaki (2020), Journal of Physical Chemistry B](https://doi.org/10.1021/acs.jpcb.0c03681)
+
+- **Evidence role** descriptive
+
+Rates are means and SDs of 4–5 repeats, each with 20–25 vesicles. Geometry-based osmotic tension at 13 mOsm/L was 3.0 ± 0.1 mN/m. The ±5 mOsm/L is estimated osmolarity error.
+
+Rupture rate rose 6.52-fold over the applied 3.5–4.5 mN/m range. The independent swelling estimate comes from a different cohort. Rate-matched tension uses the rupture data themselves. [Dataset manifest](../checks/data/saha2020_osmotic_rupture.json) · [Comparison verdict](../PROGRESS.md#fr31-osmotic-rupture)
 
 [Claim index](../README.md#proof-index) · [Editable register](../claims.json)
