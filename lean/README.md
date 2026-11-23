@@ -6,7 +6,7 @@ Browse Cells engine laws by scientific topic. Each claim links its Lean proofs, 
 
 <!-- generated: claims-index -->
 
-Direct Lean claims cover [53 of 55 laws](COVERAGE.md#registered-laws) and [33 of 33 operators](COVERAGE.md#registered-operators).
+Direct Lean claims cover [54 of 55 laws](COVERAGE.md#registered-laws) and [33 of 33 operators](COVERAGE.md#registered-operators).
 
 | Category | Registered laws with proof | Claims with proof | Numerical checks | Claims with biological evidence |
 | --- | ---: | ---: | --- | ---: |
@@ -15,7 +15,7 @@ Direct Lean claims cover [53 of 55 laws](COVERAGE.md#registered-laws) and [33 of
 | [Pumps and cotransport](COVERAGE.md#category-pumps-and-cotransport) | 13 of 13 | 8 of 8 | 8 checked | 8 |
 | [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 3 of 3 | 16 of 16 | 15 checked · 1 failed | 12 |
 | [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 15 of 16 | 36 of 36 | 34 checked · 2 failed | 23 |
-| [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 1 of 2 | 26 of 26 | 26 checked | 19 |
+| [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 2 of 2 | 27 of 27 | 27 checked | 20 |
 | [Cell physiology](COVERAGE.md#category-cell-physiology) | — | 3 of 3 | 3 checked | 3 |
 
 <!-- /generated -->
@@ -29,6 +29,8 @@ FR-42’s neutral arrival-time labels now have a proof and a compiled comparison
 FR-38 follows a producer’s RNA from template release through cell replacement. Its label follows RNA into the extracellular compartment and back. Lean bounds the old producer’s RNA inside a replacement cell by cumulative return. The public fixture passed all 14 checks, and the independent reader detected a label swap that conserved total RNA. [Release windows](claims/release-window-survival.md) · [Producer balance, restart and resolution check](PROGRESS.md#fr38-extracellular-producer)
 
 ## Biological evidence
+
+Mobile carriers can move a ligand even at zero net binder flux. Rabbit heart cells show faster acid arrival with carbonic buffer, and myoglobin increased initial oxygen flux across a polymer film. The Cells comparison follows free and bound ligand separately to both ends of a face. [Measurements, proof and compiled tissue comparison](claims/forms-face-carriage.md)
 
 How long does released RNA survive? A purified bacterial assay measured the fraction detached, a human ACTB time course gave a 3.35 min chromatin-association half-time, and yeast ASH1 counts declined with a reported half-life of 6.1 ± 2.8 min in 21 cells. Each measurement answers a different part of the question. The Cells chase fraction still needs a cohort marked at detachment and counted again after its marking window closes. [Three measurements, denominators and sources](claims/release-window-survival.md#biological-evidence)
 
