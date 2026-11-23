@@ -10030,3 +10030,30 @@ code and values for it, so it is no longer a blind judge for FR-38. The D313 ver
   reading, with every number masked, the Lean lane's line that a polarity-symmetric gate misses one fitted curve
   at 80 mV. The ruling follows the law as declared, junction_series_gates@1 being symmetric in |V_j|. It does not
   tune toward a pass.
+
+## D318: OL6 Protocol D fails as registered, on D6's M alone; everything else passes
+
+2026-11-23, about 17:05 UTC. The independent checker's verdict on D0–D7 under errata 1–3. The record is
+/mnt/workspaces/Cells/ol6-checker-20261123/ol6-protocol-d-3e50d48d/verdict_protocol_d_D0_D7.json, with 30 disclosures.
+- **The protocol fails as registered on D6's criterion M alone** (10.47, against the fail threshold of 6). It is
+  the arithmetic artifact of D317: all 128 exact replicas equal (d) bitwise at three pre-shear times.
+  - Under erratum 3's rule, D6's labelled, non-blind diagnostic is 2.293, and D6's other criteria pass.
+  - D5 passes under erratum 3 (M 1.66, with 16 exact pairs excluded). Over every pair, the registered value
+    would be 10.98, the same artifact.
+- **Every other world passes:**
+  - D0 is refused at parse at min_count 10, as registered;
+  - D1, D2 and D3 pass, with P slopes of -0.498, -0.500 and -0.496, M at 2.9 or below, and B's c_r at 2.08 or
+    below;
+  - D4 passes, with E's mean_z at 0.49;
+  - D7 passes under D309's bound: E's mean_z is 1.01, and all 384 of 384 are paired by the pore.
+- **Every plant is caught.** P-D1, under erratum 2, needs c_r 15.94 against 5. P-D2 through P-D7 are caught as
+  registered.
+- **Other results:**
+  - n_min: none, since M fails at the ladder.
+  - Zero-SE pairs with a nonzero error: none.
+  - N: passes.
+- **Protocol G scope 1 still passes.** The checker corrected its physical-measure note: paired on the same seeds,
+  the measure is -1.80% against section 7's predicted -1.75%.
+- **Scope 2 is running.**
+- **What follows is the user's decision** (asked 23 November): record the fail with its diagnosis, or
+  re-register Protocol D with M repaired and fresh seeds.
