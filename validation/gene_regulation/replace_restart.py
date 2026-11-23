@@ -234,6 +234,17 @@ def identities(spec, obs):
     )
 
 
+def agreement(one, two, error, backward):
+    """One output time's verdict for the retention readout: "agree", "disagree", or "insufficient
+    resolution" where route 2's grid error cannot be estimated from the outputs (too few of them).
+    An unavailable error estimate never passes (fail-closed); it is never read as an infinite bound.
+    Returns (status, bound_fmol), the bound None when the error is unavailable."""
+    if error is None or not np.isfinite(error):
+        return "insufficient resolution", None
+    bound = error + backward * two + 128 * EPS * one
+    return ("agree" if abs(one - two) <= bound else "disagree"), bound
+
+
 def retention(spec, obs, rows):
     """§9.17.5's third readout (erratum H): g0's RNA at the node at each output after T_E, by
     route 1 (the readouts' g0_at_node) and route 2 (g0's net exports over its life [0, T_E),
@@ -258,12 +269,13 @@ def retention(spec, obs, rows):
         one = rows[ts]["g0_at_node_fmol"]
         two = cohort.known_rate(times, net, k_o, 0.0, T_E, ts)
         error = cohort.known_rate_error(times, net, k_o, 0.0, T_E, ts)
-        bound = (np.inf if error is None else error) + backward * two + 128 * EPS * one
+        status, bound = agreement(one, two, error, backward)
         out[ts] = dict(
             route1_copies=one / COPY_FMOL,
             route2_copies=two / COPY_FMOL,
-            bound_copies=bound / COPY_FMOL,
-            agree=bool(abs(one - two) <= bound),
+            bound_copies=None if bound is None else bound / COPY_FMOL,
+            status=status,
+            agree=status == "agree",
         )
     return out
 
