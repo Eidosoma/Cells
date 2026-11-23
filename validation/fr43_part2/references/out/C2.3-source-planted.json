@@ -771,7 +771,7 @@
    "atol": "1e-30 fmol (amounts, machines, complexes, extents) and pL (volume); 1e-20 pJ (heats and works)",
    "steps": 11050,
    "rhs_evaluations": 159751,
-   "wall_s": 60.1,
+   "wall_s": 29.8,
    "recharge_sign_changes_s": [
     0.04797767002754429
    ],
@@ -784,7 +784,7 @@
     "atol": "1e-30 fmol (amounts, machines, complexes, extents) and pL (volume); 1e-20 pJ (heats and works)",
     "steps": 18626,
     "rhs_evaluations": 266023,
-    "wall_s": 86.1,
+    "wall_s": 42.1,
     "recharge_sign_changes_s": [
      0.04797767002754964
     ],
@@ -957,7 +957,7 @@
     "atol": "1e-30 fmol (amounts, machines, complexes, extents) and pL (volume); 1e-20 pJ (heats and works)",
     "steps": 6826,
     "rhs_evaluations": 30586,
-    "wall_s": 16.2,
+    "wall_s": 7.6,
     "recharge_sign_changes_s": [
      0.0479776700275534
     ],
@@ -1175,7 +1175,7 @@
  },
  "provenance": {
   "git": {
-   "revision": "ee58994fdea05fed4113fc274f6ce81a93641e15",
+   "revision": "6d1f76f575aab56a55a3c37bca701d37b9e243f9",
    "dirty_code_and_input_paths": []
   },
   "python": "3.13.5",

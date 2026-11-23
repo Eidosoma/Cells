@@ -173,70 +173,69 @@ The `checks` in each file report this identity's residual. They also report:
   - In CRITERIA.md's normalisation, by the rate's largest value of 8.07e-5 fmol/s at t = 0, its e
     at rtol 1e-11 was 1.5e-10 against Radau at 1e-13. Every other quantity was within 7e-14.
   - C2.3's samples come 30 s apart, when these fluxes are small, and there the same rate agrees to
-    9.1e-12 at rtol 1e-11.
+    8.1e-12 at rtol 1e-11.
 - **The accuracy measure** is e = max_i |q_second(t_i) − q_primary(t_i)| / max_i |q_primary(t_i)|,
   CRITERIA.md's normalisation.
 
 ## Results
 
 Every file's `method.second[...].difference_from_primary` gives e per quantity, and
-`method.largest_difference_e` gives the largest over the second methods. The table gives, per case:
+`method.largest_difference_e` gives the largest over the second methods. The table comes from
+`run_references.py --summary`. It gives, per case:
 - the primary method's steps;
 - each second method's largest e, and the quantity it falls on;
 - the largest identity residuals.
 
 | Case | Primary steps | Second method: largest e (quantity) | Identities: largest residual |
 | --- | --- | --- | --- |
-| C2.3-sink | 10995 | Radau 1e-12: 9.1e-12 (`gene_rate_N_fmol_per_s`); BDF 1e-12: 3.1e-11 (`gene_state.releases.tx`) | books, machines, residues, products, moieties 5.8e-13 fmol; energy 2.2e-15 of scale |
-| C2.3-sink-planted | 10973 | Radau 1e-12: 8.0e-12 (`gene_rate_N_fmol_per_s`); BDF 1e-12: 3.1e-11 (`gene_state.releases.tx`) | books, machines, residues, products, moieties 4.0e-13 fmol; energy 5.4e-15 of scale |
+| C2.3-sink | 10979 | Radau 1e-12: 8.1e-12 (`gene_rate_N_fmol_per_s`); BDF 1e-12: 3.1e-11 (`gene_state.releases.tx`) | books, machines, residues, products, moieties 1.2e-12 fmol; energy 2.4e-15 of scale |
+| C2.3-sink-planted | 10972 | Radau 1e-12: 2.2e-13 (`gene_rate_N_fmol_per_s`); BDF 1e-12: 3.1e-11 (`gene_state.releases.tx`) | books, machines, residues, products, moieties 4.5e-13 fmol; energy 5.1e-15 of scale |
 | C2.3-source | 11055 | Radau 1e-12: 3.5e-14 (`gene_rate_N_fmol_per_s`); BDF 1e-12: 3.0e-11 (`gene_state.releases.tx`) | books, machines, residues, products, moieties 5.8e-13 fmol; energy 1.3e-14 of scale |
 | C2.3-source-planted | 11050 | Radau 1e-12: 6.9e-14 (`gene_state.releases.tx`); BDF 1e-12: 3.0e-11 (`gene_state.releases.tx`) | books, machines, residues, products, moieties 4.3e-13 fmol; energy 8.6e-15 of scale |
+| C2.6-swelling-cell | 2675 | DOP853 1e-13: 2.6e-14 (`network_heat_pJ`); Radau 1e-12: 1.5e-14 (`water_heat_pJ`) | energy 2.2e-15 of scale |
+| C2.8-swelling-pair-sink | 20366 | Radau 1e-12: 7.6e-12 (`gene_rate_N_fmol_per_s`); BDF 1e-13: 4.5e-12 (`gene_state.complexes.tx.stage_8`) | books, machines, residues, products, moieties 4.4e-13 fmol; energy 1.3e-14 of scale |
 
 **C2.3's stated accuracy: e ≤ 3.1e-11 for every quantity.**
-- For CRITERIA.md's judged quantities, the largest e over both second methods is:
+- For CRITERIA.md's judged quantities, the largest e over both second methods and all four cases is:
   - n_N: 1e-20;
-  - the gene unit's books: 2.0e-12;
+  - the gene unit's books: 1.9e-12;
   - the network's books: 1.4e-12;
   - the route rate: 2.3e-14.
 - The worst differences fall on the releases and the stage-8 complexes, whose values are the
   smallest of the gene unit's state (about 1e-13 fmol). They come from BDF, the lower-order method.
-- Radau at 1e-12 agrees with the primary to 9.1e-12 or better.
+- Radau at 1e-12 agrees with the primary to 8.1e-12 or better.
 - One sign change of J_C is found in each case: at t = 0.047963 s in the sink and 0.047978 s in the
-  source. The three methods place it within 4.1e-14 s of each other.
+  source. The three methods place it within 4e-14 s of each other.
 
-| Case | Primary steps | Second method: largest e (quantity) | Identities: largest residual |
-| --- | --- | --- | --- |
-| C2.6-swelling-cell | 2675 | DOP853 1e-13: 2.0e-14 (`water_heat_pJ`); Radau 1e-12: 1.9e-14 (`bath_water_work_pJ`) | energy 7.7e-15 of scale |
-
-**C2.6 and C2.7's stated accuracy: e ≤ 2.0e-14 for every quantity.**
+**C2.6 and C2.7's stated accuracy: e ≤ 2.6e-14 for every quantity.**
 - The figures:
-  - n_A, n_B: 2.8e-15;
-  - n_C: 5.4e-15;
-  - V: 9.4e-15;
-  - F: 2.4e-15;
-  - water's heat: 2.0e-14;
-  - the bath's work: 1.9e-14;
-  - the network's heat: 1.7e-14.
+  - n_A, n_B: 3.1e-15;
+  - n_C: 2.8e-15;
+  - V: 9.0e-15;
+  - F: 2.2e-15;
+  - water's heat: 1.5e-14;
+  - the bath's work: 9.4e-15;
+  - the network's heat: 2.6e-14.
 - This problem is not stiff, so the explicit DOP853 at 1e-13 is an independent check.
-- C2.7's endpoint identity, F + U − F₀ − U₀ = work − heat, closes to 1.4e-11 pJ on every row. That
-  is 7.7e-15 of the energy scale, 1865 pJ.
+- C2.7's endpoint identity, F + U − F₀ − U₀ = work − heat, closes to 4.1e-12 pJ on every row. That
+  is 2.2e-15 of the energy scale, 1865 pJ.
 - V grows from 1 to 2.504 pL.
 - The passive route reverses between t = 16 and 16.5 s: the dilution shifts A + B ⇌ C back towards
   A and B.
 
-| Case | Primary steps | Second method: largest e (quantity) | Identities: largest residual |
-| --- | --- | --- | --- |
-| C2.8-swelling-pair-sink | 20399 | Radau 1e-12: 8.8e-12 (`gene_rate_N_fmol_per_s`); BDF 1e-13: 4.5e-12 (`gene_state.complexes.tx.stage_8`) | books, machines, residues, products, moieties 4.8e-13 fmol; energy 3.3e-15 of scale |
-
-**C2.8's stated accuracy: e ≤ 8.8e-12 for every quantity.**
+**C2.8's stated accuracy: e ≤ 7.6e-12 for every quantity.**
 - For the judged quantities, the largest e over both second methods is:
-  - n_N 1.1e-20, n_X 3.8e-14, n_W 2.1e-13 and V 9.5e-14;
-  - the gene unit's books 9.3e-14, and the network's 2.1e-13;
-  - the gene unit's rate 8.8e-12, and the network's 1.0e-20;
-  - F 3.8e-14.
+  - n_N 9.3e-21, n_X 2.0e-14, n_W 2.0e-13 and V 9.3e-14;
+  - the gene unit's books 1.4e-13, and the network's 2.0e-13;
+  - the gene unit's rate 7.6e-12, and the network's 7.8e-21;
+  - F 3.6e-14.
 - The gene unit's rate is the largest only against Radau at 1e-12, whose own error it is. BDF at
-  1e-13 agrees with the primary on that rate to 4.5e-12.
+  1e-13 agrees with the primary on that rate to 4.3e-12.
 - Recharging runs backward until t = 0.048029 s.
 - V grows from 1 to 2.5024 pL.
 - The driven route's work changes sign with its ΔG. It is negative while N is plentiful, and
   slightly positive once N is spent, ending at −1.1105e-2 pJ. Its heat is 0.
+
+**Reproducibility.** Each case was re-run in a fresh process under another hash seed and on another
+core, and reproduced its file's arrays and checks bitwise: C2.3-sink, C2.3-source-planted, C2.6 and
+C2.8.

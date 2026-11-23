@@ -58,6 +58,10 @@ Every reading below that the amendment of 23 November 2026 settled is marked (am
 8. **Heat and work** (amended): a driven route books work ∫ J ΔG_r and no heat; a passive route books
    heat −∫ J ΔG_r and no work. ΔG_r takes the network's potentials at its c0 of 1 mM and the
    current volume.
+   - In C2.8, spend_N's ΔG_r is about −17 RT at first. Once N is spent it is positive (uphill).
+   - So the network's work falls, then rises slightly: it is not monotone.
+   - `gene_heat_pJ` is H_tx + H_deg,R + H_rc. It is non-decreasing, since every move of the gene
+     unit is thermodynamically consistent.
 9. **R** (amended) is the double-precision product N_A k_B = 8.31446261815324 J/(mol K).
 10. **The cited standard free energies** (amended) are not read. Every rate and heat uses the species
     potentials, and the agreement is recorded below.
@@ -72,8 +76,8 @@ Every reading below that the amendment of 23 November 2026 settled is marked (am
 12. **`network_route_rate_fmol_per_s` in C2.6**: the passive route's net rate J. READOUTS.md's
     m k V Π c^α is the driven route's form. J changes sign between t = 16 and 16.5 s. The
     network's heat, −∫ J ΔG, is non-decreasing through the reversal.
-13. **The volume bounds** (0.5 and 3.0 pL) are never reached. In C2.6, V stays within
-    [1, 2.504] pL.
+13. **The volume bounds** (0.5 and 3.0 pL) are never reached. V stays within [1, 2.504] pL in
+    C2.6 and within [1, 2.5024] pL in C2.8.
 14. **Trial states.** A stiff solver's Newton iterate can try a non-positive amount. The logarithm
     then returns NaN, and the solver rejects and shortens the step. No accepted step has a
     non-positive amount.
