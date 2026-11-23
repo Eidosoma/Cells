@@ -10098,12 +10098,21 @@ references returned, against the code-blind references tagged fr43-part3-referen
   - G_ss fails at one voltage of two;
   - tau_slow passes at one of two, not more than half;
   - the 75% clause holds, at 3 of 4.
-- **The likely cause, a reading rather than a finding:** junction_series_gates@1 is symmetric in |V_j|, so one
-  parameter set predicts the same values at both polarities (D311's ruling, the law as declared). The data's
-  steady state differs between polarities. The in-sample fit already missed G_ss at -100 and -60 mV against +60 and
-  +100.
+- **What the fail does and does not show** (corrected 23 November; the first reading here overstated it):
+  - **The +-80 mV acceptance windows overlap for every observable:** tau_fast 0.47-3.77 s, tau_slow 12.1-16.8 s and
+    G_ss/G_0 0.4245-0.4339. So one |V_j|-symmetric prediction could have passed all six.
+  - **The fail shows that this fit missed, not that symmetry fails.** Its tau_slow (19.40 s) lies above both
+    polarities' observations.
+  - **The polarity difference is one study's indication:** G_ss/G_0 differs between -80 and +80 mV by about 2.6
+    combined SEM, tau_slow by 1.1 and tau_fast by 0.3. The in-sample fit's G_ss residuals at +-60 and +-100 mV
+    point the same way, from the same paper. One wet-lab experiment is never fully trusted (the user, 23 November).
 - **Disclosed:**
   - the checker wrote the reader erratum from value-free structure logs before reading any held-out value;
   - the lead ruled one parameter set after reading, masked, the Lean lane's line on polarity-symmetric gates
     (D317).
-- **FR-30's law stays development-only** (D262). What follows is the user's decision.
+- **FR-30's law stays development-only** (D262).
+- **The user's decision (23 November): a polarity-aware gate within FR-16, with a fresh blind benchmark on
+  Ek-Vitorin 2016, extractor first.**
+  - The FR-16 design starts by checking polarity dependence in independent sources, including whether the
+    benchmark's junction is homotypic. It does not open Ek-Vitorin 2016, which stays sealed for the benchmark.
+  - The law's form changes only if independent sources support it.
