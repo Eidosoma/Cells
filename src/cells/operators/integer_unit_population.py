@@ -728,7 +728,9 @@ def _gather(p, state, view):
 def _flow(nc, no, counts, vc, vo, p):
     """(λ, u0, scale) per route [S, R] at counts: the closed-form relaxation's rate, the initial
     concentration difference and V_c V_o / (V_c + V_o)."""
-    g = jnp.sum(p.integer_conductance_pL_per_s * counts[:, None, :].astype(jnp.float64), axis=2)
+    g = entity_sum(
+        p.integer_conductance_pL_per_s * counts[:, None, :].astype(jnp.float64), axis=2, xp=jnp
+    )
     lam = g * (1.0 / vc + 1.0 / vo)[:, None]
     u0 = nc / vc[:, None] - no / vo[:, None]
     scale = (vc * vo / (vc + vo))[:, None]
@@ -875,9 +877,11 @@ def _run_stage(state, length, offset, member, p, *, view):
         ok = ok & jnp.all(jnp.where(running[:, None] & p.integer_route_present, positive, True), 1)
         ok = ok & jnp.all(counts_new >= 0, axis=1)
         done = jnp.where(event, done + tau, jnp.where(running, full, done))
+        heat = heat + entity_sum(q_heat, axis=1, xp=jnp)
+        mag = mag + entity_sum(q_mag, axis=1, xp=jnp)
         return (done, counts_new, hz_new, thr_new, jnp.where(event, k + 1, k), chan, nc_new,
-                no_new, moved + step, heat + jnp.sum(q_heat, axis=1), mag + jnp.sum(q_mag, axis=1),
-                tt, tc, tcell, tnode, fired + event, ok, count + 1)  # fmt: skip
+                no_new, moved + step, heat, mag, tt, tc, tcell, tnode, fired + event, ok,
+                count + 1)  # fmt: skip
 
     start = (
         jnp.zeros(n_sites), state.integer_counts, state.integer_hazard, state.integer_threshold,
@@ -980,7 +984,7 @@ def own_valid(state, p, *, xp):
 
 def subunits(counts, p, *, xp):
     """Σ_k w_k n_k per site [S], int64."""
-    return xp.sum(p.integer_weights * counts, axis=-1)
+    return entity_sum(p.integer_weights * counts, axis=-1, xp=xp)
 
 
 # ------------------------------------------------------------------ division
@@ -994,7 +998,8 @@ def segregate(counts, f, uniform, *, xp):
     starts = ends - counts
     position = xp.arange(uniform.shape[1])[None, :, None]
     inside = (position >= starts[:, None, :]) & (position < ends[:, None, :])  # [M, W, K]
-    first = xp.sum(inside & (uniform[:, :, None] < f[:, None, None]), axis=1).astype(np.int64)
+    below = inside & (uniform[:, :, None] < f[:, None, None])
+    first = entity_sum(below, axis=1, xp=xp).astype(np.int64)
     return first, counts - first
 
 
@@ -1009,10 +1014,10 @@ def divide(state, maps, p, *, xp):
     patch = p.integer_site_patch
     hit = (parent_rows[None, :] == patch[parent][:, None]) & due[None, :]  # [map, patch row]
     divides = xp.any(hit, axis=1)
-    f = xp.sum(xp.where(hit, fraction[None, :], 0.0), axis=1)
-    first_patch = xp.sum(xp.where(hit, daughter_rows[None, :, 0], 0), axis=1)
-    second_patch = xp.sum(xp.where(hit, daughter_rows[None, :, 1], 0), axis=1)
-    valid = xp.all(xp.sum(hit, axis=1) <= 1)
+    f = entity_sum(xp.where(hit, fraction[None, :], 0.0), axis=1, xp=xp)
+    first_patch = entity_sum(xp.where(hit, daughter_rows[None, :, 0], 0), axis=1, xp=xp)
+    second_patch = entity_sum(xp.where(hit, daughter_rows[None, :, 1], 0), axis=1, xp=xp)
+    valid = xp.all(entity_sum(hit, axis=1, xp=xp) <= 1)
     valid &= xp.all(
         xp.where(
             divides,
@@ -1030,7 +1035,7 @@ def divide(state, maps, p, *, xp):
     if xp is np:
         uniform = np.asarray(uniform)
     first, second = segregate(held, f, uniform, xp=xp)
-    valid &= xp.all(xp.where(divides, xp.sum(held, axis=1) <= block, True))
+    valid &= xp.all(xp.where(divides, entity_sum(held, axis=1, xp=xp) <= block, True))
     empty = (counts[kids[:, 0]] == 0) & (counts[kids[:, 1]] == 0)
     valid &= xp.all(xp.where(divides[:, None], empty, True))
     on = divides[:, None]
@@ -1482,10 +1487,12 @@ class IntegerUnitPopulationOperator(Operator):
         """integer_subunits: Σ_k w_k (n_k - n_k(0) - divided_k) per site, exactly 0."""
         weights = p.integer_weights
         held = row.integer_counts - p.integer_initial_counts - row.integer_divided_units
-        return dict(integer_subunits=xp.sum(weights * held, axis=-1).astype(np.float64))
+        total = entity_sum(weights * held, axis=-1, xp=xp)
+        return dict(integer_subunits=total.astype(np.float64))
 
     def own_magnitudes(self, row, p, *, xp):
-        return (xp.sum(p.integer_weights * xp.abs(row.integer_counts), axis=-1).astype(np.float64),)
+        total = entity_sum(p.integer_weights * xp.abs(row.integer_counts), axis=-1, xp=xp)
+        return (total.astype(np.float64),)
 
     def own_bounds(self, magnitudes, steps):
         return tuple(LEDGER_FLOOR_UNITS + 0.0 * m for m in magnitudes)

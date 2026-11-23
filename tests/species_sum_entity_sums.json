@@ -342,6 +342,76 @@
    "entity_sum(species_sum(xp.abs(p.valence) * moved, xp=xp), axis=None, xp=xp)"
   ],
   [
+   "operators/integer_unit_population.py",
+   "_flow",
+   "entity_sum(p.integer_conductance_pL_per_s * counts[:, None, :].astype(jnp.float64), axis=2, xp=jnp)"
+  ],
+  [
+   "operators/integer_unit_population.py",
+   "divide",
+   "entity_sum(held, axis=1, xp=xp)"
+  ],
+  [
+   "operators/integer_unit_population.py",
+   "divide",
+   "entity_sum(hit, axis=1, xp=xp)"
+  ],
+  [
+   "operators/integer_unit_population.py",
+   "divide",
+   "entity_sum(xp.where(hit, daughter_rows[None, :, 0], 0), axis=1, xp=xp)"
+  ],
+  [
+   "operators/integer_unit_population.py",
+   "divide",
+   "entity_sum(xp.where(hit, daughter_rows[None, :, 1], 0), axis=1, xp=xp)"
+  ],
+  [
+   "operators/integer_unit_population.py",
+   "divide",
+   "entity_sum(xp.where(hit, fraction[None, :], 0.0), axis=1, xp=xp)"
+  ],
+  [
+   "operators/integer_unit_population.py",
+   "ledger_terms",
+   "entity_sum(row.integer_transfer_dissipated_energy_pJ, axis=None, xp=xp)"
+  ],
+  [
+   "operators/integer_unit_population.py",
+   "magnitude_terms",
+   "entity_sum(row.integer_energy_magnitude_pJ, axis=None, xp=xp)"
+  ],
+  [
+   "operators/integer_unit_population.py",
+   "own_ledgers",
+   "entity_sum(weights * held, axis=-1, xp=xp)"
+  ],
+  [
+   "operators/integer_unit_population.py",
+   "own_magnitudes",
+   "entity_sum(p.integer_weights * xp.abs(row.integer_counts), axis=-1, xp=xp)"
+  ],
+  [
+   "operators/integer_unit_population.py",
+   "segment",
+   "entity_sum(q_heat, axis=1, xp=jnp)"
+  ],
+  [
+   "operators/integer_unit_population.py",
+   "segment",
+   "entity_sum(q_mag, axis=1, xp=jnp)"
+  ],
+  [
+   "operators/integer_unit_population.py",
+   "segregate",
+   "entity_sum(below, axis=1, xp=xp)"
+  ],
+  [
+   "operators/integer_unit_population.py",
+   "subunits",
+   "entity_sum(p.integer_weights * counts, axis=-1, xp=xp)"
+  ],
+  [
    "operators/k_anion_symport.py",
    "ledger_terms",
    "entity_sum(row.symport_dissipated_energy_pJ, axis=None, xp=xp)"
