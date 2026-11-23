@@ -848,6 +848,67 @@ if tau_s is above 300 s.
   in-sample fit report.
 - A separate checker runs the tagged scorer against held_out.json. Disagreements go to the lead.
 
+### 13.6 Entry of 16:02 UTC on 23 November 2026: reader erratum 1, the held-out file's container, before any comparison
+
+Written by FR-30's checker at the lead's direction, on D308's precedent: a registered reader that
+cannot read its registered file is corrected by an erratum tagged before any judged run. Until now
+the checker had built nothing in FR-30. This erratum is its only part in the harness, and its
+verdict will say so. The lead tags the commit carrying it before the judged score.
+
+**The obstacle.**
+- The checker ran section 13.5 point 6's order from a clean full snapshot of main at ddcf32c1.
+  `verify` passed. `resolve` on held_out.json refused it (exit 2) at its first check. `score`, which
+  calls the same reader, was not run. The record is
+  /mnt/workspaces/Cells/fr30-benchmark-20261123/verdict/checker_record.json.
+- The tagged reader takes "observables" only as an object of named lists of entries, which is
+  fit.json's shape. In held_out.json, "observables" is one flat list of six entries, one per judged
+  pair.
+- So point 6's "built the same way as held_out.json" holds for the entries, not for their
+  container. Each entry carries the keys, labels and JSON types that the reader's entry checks
+  expect.
+- The refusal's text misled as well. It said there was "no 'observables' object" while listing
+  `observables` among the top-level keys. The key exists, and its value is a list.
+
+**The change** (`revilla1999_score.py`'s `resolve` only).
+- "observables" may be fit.json's object of named lists, with paths `observables.NAME[i]` as before,
+  or held_out.json's one flat list, with paths `observables[i]`.
+- Every entry goes through the same checks as before, by the unchanged `_entry`: its (vj_mV,
+  maps_to_registered_observable) pair, its polarity, its units, its dispersion's type and units, and
+  its value.
+- The refusals now say whether the key is absent, or present with neither shape.
+- Nothing else changes: no tolerance, rule, pass logic or mapping of quantities.
+  - `RULE`, which predictions.json carries as its conventions, is unchanged, so `verify` reads the
+    registered predictions as before.
+  - The scorer's output therefore still names section 13.5, and the checker's verdict names this
+    entry's tag.
+
+**How it was written.**
+- From the two files' keys and shapes only, through the checker's structure logs:
+  /mnt/workspaces/Cells/fr30-benchmark-20261123/verdict/logs/06-structure-held_out.txt and
+  07-structure-fit.txt.
+  - They print key names, JSON types, list lengths and step voltages, with the reader's labels
+    (the mapping, units and polarity, and whether a dispersion is an SEM).
+  - They print no value.
+- Its tests use invented values. The new reader has not been run on held_out.json, and it meets the
+  file only after the tag.
+
+**No comparison has been computed.** No predicted value has been compared with a held-out value, and
+the checker has seen no held-out value. The inputs are unchanged:
+- predictions.json, sha256 20ca2a4a4e53fe04fe3a335a824f1148df1df436676e69d07064ec75f2252401, which
+  `verify` passed;
+- held_out.json, sha256 e83680830219a58ab6b47d268518543b90e63c52d6b7d7694ee8a8e45c7a7285 (D311).
+
+**Tests** (`tests/unit/test_junction_gate_benchmark.py`, H8).
+- **The passing path:** a synthetic document in held_out.json's flat list resolves to the same
+  entries as in fit.json's structure, at paths `observables[i]`, and scores to the same comparisons.
+  The tagged reader refused it, and that refusal is the plant.
+- **Two refusal rows:** an SD at the flat list's first entry, refused by its path; and an
+  "observables" of neither shape, refused with a message saying that the key is present.
+- **Cost:** three test IDs, and well under a second.
+
+**What follows.** After the tag, the checker freezes a clean snapshot that holds the erratum. It then
+runs `verify`, `resolve` and `score` as section 13.5 point 6 states, with the same `--expect-sha256`.
+
 ## Sources
 
 - **Read:**
