@@ -351,3 +351,27 @@ took about 11 s. Row 3 is one composite compile, about 30–60 s.
   - or `passive_constant_field_permeation@2`, the user's alternative under D148.
 - **C5** (for the replication's owner, not this build): the microRNA's decay as the closed
   conversion, or turnover@2.
+
+## 11. As built (A1, under D310)
+
+- **Where:** `kinds/passive_routes.py` and the law module. @3, the kind contract and
+  `species_common.py` are unchanged.
+- **Three departures from §3 and §7, each a smaller change:**
+  - **No junction marker in the structure entry.** The charged law's own field (`passive_charged`,
+    present only where the law is declared) gates every change. D310 changes P2's patch worlds'
+    material term anyway, so a marker had nothing left to keep bitwise. Every world without the
+    charged law keeps its programs.
+  - **`passive_current_A` stays each route's share of `membrane_current_A`:** 0 on a junction
+    route, as the view's text says. A junction route's current is e z times its flux. Reporting it
+    in that column (§3 item 5) would have changed the view's text for every passive-routes world.
+  - **The rows have their own file,** `tests/unit/test_passive_routes_junctions.py`. In the kind
+    file they would take it past the tier runner's 90 s measuring cap, into tier 3. The kind file
+    keeps only the sanctioned row.
+- **A finding, not fixed here.** The charged law books its heat by the tableau. From a trace end
+  the tableau samples the log-singular start and books at first order in dt.
+  - In a species-only world the energy check refuses it: X at 2 µM against 1e-9 mM leaves 2.0% of
+    the route's heat at dt 25 µs and 0.86% at 12.5 µs. From a resolved start (2 and 1 µM) the
+    residual is second order: 7.2e-5 and 1.8e-5.
+  - The reactions operator has the same limit (its §3.3 (a)). Worlds with ion flows are blind to
+    it at trace levels.
+  - It is P2's limit on patches too, and the test rows start resolved.
