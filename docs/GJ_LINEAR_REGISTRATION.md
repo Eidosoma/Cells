@@ -28,7 +28,7 @@ The proposed tag is `gj-linear-registered-2026-11-23`.
   the networks and the interface, with no run's value (`linear_judge.py spec`);
 - `validation/gap_junction_tissue/run.py` and `worlds.py`, the driver that makes the judged run;
 - `tests/unit/test_gap_junction_linear_judge.py`, the reader and every reader-level plant on
-  synthetic inputs (1.3 s, no world compiled).
+  synthetic inputs (1.7 s, no world compiled).
 
 **Engine models (AGENTS.md).**
 - **The Norton form:** `resolved_pump_tissue@3`, with `constant_field@1` membranes and junctions for
@@ -173,8 +173,9 @@ and over 100 times any as-written tolerance the development runs suggest.
 - **A chain** takes the same verdicts over G and the intercept.
 - **The comparison** (FR-25's precedence, D308): any failed arm or chain makes it failed; else any
   inconclusive one makes it inconclusive; else it is passed.
-- **The plants:** both engine plants (P-N1, P-W1) must fail. A plant that passes makes the verdict
-  "instrument not validated", whatever the other arms show.
+- **The plants:** both engine plants (P-N1, P-W1) must fail by their gap: each must run, and its gap
+  must exceed its tolerance. A plant that passes, is missing, is refused or is inconclusive makes
+  the verdict "instrument not validated", whatever the other arms show.
 - **The retry, once, inconclusive as-written arms only:** a finer triple, dt/2, dt/4 and dt/8,
   judged at dt/8 under the same rule. Nothing else is retried.
   - A run that the harness stops (memory, runtime limit, machine fault) is rerun once from the same
@@ -252,6 +253,7 @@ A value agrees when it lies within half a unit of its last printed digit:
    - From the development timings (dev-04 ran dt and dt/2 in 46 minutes) and the triple's extra
      cost, this is about 2 hours.
    - Its memory is at most the runner's 2 GB trace budget.
+   - The judged run takes the registered 600 s horizon. `--end` shortens it for smoke runs only.
 2. **The table**, from the engine alone, before any reference is read:
    `python -m validation.gap_junction_tissue.linear_judge table OUT --out table.json`.
 3. **The judgement**, once the references' tag exists:
@@ -272,3 +274,9 @@ A value agrees when it lies within half a unit of its last printed digit:
   preprint itself implies: equation 2, Figure 5's 50/7 and the chain's golden-ratio limit.
 - **What the references read holds no run's value.** The test checks this for the development
   values.
+- **A smoke of the registered code paths, at a 20 s horizon.**
+  - The run was `run.py ... --end 20` from this branch (`probes/smoke-registered-01`): every
+    registered arm, the triple, the windowed Figure 5a at 10 G_eq with its record, and the table
+    built from its output.
+  - At 20 s no arm is steady: its slowest mode has decayed by e⁻¹ only. The smoke shows nothing of
+    a steady state, and no verdict is drawn from it.

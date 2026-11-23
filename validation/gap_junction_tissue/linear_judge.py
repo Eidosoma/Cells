@@ -322,8 +322,9 @@ def rule():
         verdicts=dict(
             arm="inconclusive if an order falls outside the window; else failed if any judged "
             "quantity exceeds its tolerance or the engine refused the run; else passed",
-            plants="each planted control must fail; a plant that passes makes the comparison "
-            "'instrument not validated', whatever the other arms show",
+            plants="each planted control must fail by its gap (it ran, and its gap exceeds its "
+            "tolerance); a plant that passes, is missing, refused or inconclusive makes the "
+            "comparison 'instrument not validated', whatever the other arms show",
             overall="any failed arm makes the comparison failed; else any inconclusive arm makes "
             "it inconclusive; else passed (FR-25's precedence, D308)",
         ),
@@ -462,9 +463,9 @@ def interface_schema():
             format=REFERENCE_FORMAT,
             registration="the tag the references read",
             networks="{network id: {declaration, concentrations, accuracy_rel, method}} for "
-            "every id in the rule's `networks`; declaration echoes the rule's (cells, "
-            "junctions, probes) as read; concentrations is {cell id: steady concentration} in the "
-            "preprint's [mR] units",
+            "every network id listed under `networks`; declaration echoes that listing's "
+            "{cells, junctions, probes} exactly as read; concentrations is {cell id: steady "
+            "concentration} in the preprint's [mR] units",
             chains="{n: {g_eq_ratio, intercept, accuracy_rel, method}} for n in 1, 2, 3, 4, 5, "
             "10: the Norton conductance of a straight chain of n cells at G_GJ = G_eq,1 in units "
             "of G_eq,1, sealed at its far end and seen from cell n, and its open-circuit "
@@ -762,16 +763,27 @@ def judge(table_data, interface, retry=None):
         else "inconclusive" if "inconclusive" in statuses
         else "passed"
     )  # fmt: skip
-    uncaught = sorted(k for k, v in plants.items() if v["status"] != "failed")
+    caught = sorted(k for k, v in plants.items() if caught_by_gap(v))
+    uncaught = sorted(k for k in plants if k not in caught)
     if uncaught:
         overall = "instrument not validated"
     return dict(
         format="gap_junction_tissue.linear_verdict@1",
         verdict=overall,
-        plants_caught=sorted(k for k, v in plants.items() if v["status"] == "failed"),
+        plants_caught=caught,
         plants_uncaught=uncaught,
         arms=verdicts,
         reported=publication_targets(interface),
+    )
+
+
+def caught_by_gap(verdict):
+    """A plant is caught only when it ran and its gap exceeds its tolerance: a plant that is
+    missing, refused or inconclusive is not caught."""
+    return (
+        verdict["status"] == "failed"
+        and verdict.get("reason") is None
+        and verdict.get("margin", 0.0) > 1.0
     )
 
 

@@ -44,7 +44,7 @@ upper end, at about five days. The line needs about 8 CPU-hours.
 - `validation/gap_junction_tissue/bitsey_run.py` and `bitsey_log.py`: the pinned BITSEY runner and
   the reader of BITSEY's logs;
 - `tests/unit/test_gap_junction_neither_judge.py`: the field's geometry and criterion, the reader
-  and every plant, on synthetic inputs (0.4 s, no world compiled).
+  and every plant, on synthetic inputs (0.6 s, no world compiled).
 
 **Engine models (AGENTS.md).**
 - `resolved_pump_composite@1` over `resolved_pump_tissue@3`, in the species-only world of the
@@ -153,7 +153,8 @@ Each geometry is judged by three conditions:
 - **passed:** otherwise.
 
 **Overall** (D308's precedence): any failed geometry makes the comparison failed; else any
-inconclusive geometry makes it inconclusive; else it is passed.
+inconclusive geometry makes it inconclusive; else any geometry not assessable makes it not
+assessable; else it is passed.
 
 **No ratio alone judges (D219).** The ratio of thresholds is reported.
 
@@ -200,7 +201,10 @@ logs.
 - bracket ends other than required;
 - ends that change at the tighter tolerance.
 
-**BITSEY: reported with every verdict, never judged.** There are two sources.
+**BITSEY: reported with every verdict, never judged. This is proposed, for the lead's ruling
+before the tag.** D219 calls a pinned run "an additional reference". This registration reports it
+beside the verdict and does not judge by it, for the reason given below. If the lead rules that it
+is judged, the band must be set here before the tag. There are two sources.
 - **The historical logs**, saved at b2cb370 in `cancer_GJ_sims/results_miRNA/`. Their sha256 is in
   the rule.
   - `tumor_isolate_1D_V1M`: bracket [7.171630859375e-15, 7.177734375e-15] at full precision.
@@ -243,7 +247,8 @@ logs.
 **The cost probe** `/mnt/workspaces/Cells/gap-junction-20261123/probes/field-cost-01` ran on one CPU
 on today's engine:
 - **The field:** 0.16-0.19 s a step, with or without routes. It used 32- and 16-step windows (64
-  exceeds the runner's 2 GB trace budget) and 1.3 GB.
+  exceeds the runner's 2 GB trace budget) and 1.3 GB. The driver's field windows are 32 steps
+  (`FIELD_WINDOW_STEPS`).
 - **The line:** 3.4 ms a step.
 - **The first window's compile:** 72-77 s.
 
@@ -282,5 +287,16 @@ amendment tagged before it runs. Options for the lead:
 - the cost probe `field-cost-01`: D = 1e-13 for 1.5 s and D = 0 for 16 s. Every tumor cell was still
   mesenchymal and every healthy cell epithelial (589 of 625), which cannot show a threshold.
 
-**The pinned BITSEY field run** starts after this registration is committed. Its result is
-reported, never judged.
+**Smokes of the registered code paths**, from this branch (`probes/smoke-registered-01`), at
+horizons too short to show anything:
+- one field point, D = 1e-13 for 0.25 s;
+- a field search and a line search at 0.25 s and 2 s, which stop at their upper ends because nothing
+  normalizes that soon.
+
+They show the field's windows (32 steps), the search's stage 1 and its stop rule.
+
+**The pinned BITSEY field run** started after this registration's first commit (b3f20a26). Its
+result is reported, never judged.
+- Before the final commit, its first five outcomes were seen: D = 0 not normalized, and 1e-13,
+  5e-14, 2.5e-14 and 1.25e-14 normalized, as in the historical log.
+- Nothing in this registration was set from them.

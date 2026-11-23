@@ -325,7 +325,8 @@ def interface_schema():
         keys=dict(
             format=REFERENCE_FORMAT,
             registration="the tag the references read",
-            model="the registered constants and seeds echoed as read (MODEL's constants and seeds)",
+            model="{constants: {every key of model.constants, each value as read}, seeds: "
+            "{tumor: {u, m, z}, healthy: {u, m, z}} as read from model.seeds}",
             stage1="{tumor: {u, m, z}, healthy: {u, m, z}} after 500 s uncoupled",
             geometries="{line, field}: {bracket: [lo, hi], points: [{d, normalized, "
             "epithelial_cells, min_margin, max_row_spread}], tighter: {factor, lo_normalized, "
@@ -359,6 +360,15 @@ def read_interface(directory=INTERFACE):
             for a, b in zip(values, others, strict=True)
         ):
             raise ComparisonError(f"The echoed constant {key} is {other!r}, registered {value!r}")
+    seeds = (data.get("model") or {}).get("seeds") or {}
+    for kind in ("tumor", "healthy"):
+        for species in ("u", "m", "z"):
+            value = MODEL["seeds"][kind][species]
+            other = (seeds.get(kind) or {}).get(species)
+            if not isinstance(other, (int, float)) or abs(other - value) > CONSTANT_MATCH * max(
+                1.0, abs(value)
+            ):
+                raise ComparisonError(f"The echoed seed {kind} {species} is {other!r}")
     for name, entry in (data.get("geometries") or {}).items():
         if name not in GEOMETRIES:
             raise ComparisonError(f"Unknown geometry {name!r}")

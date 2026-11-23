@@ -66,7 +66,7 @@ packages (OUTDIR/viewer/<arm id>/) with a recording subset; viewer/index.json li
 2 MB per layer. A refused view is recorded and the run written without one.
 
 Usage (from a snapshot root, PYTHONPATH=src:. JAX_ENABLE_X64=1 JAX_PLATFORMS=cpu):
-    python -B validation/gap_junction_tissue/run.py OUTDIR [part ...] [--no-dt-study]
+    python -B validation/gap_junction_tissue/run.py OUTDIR [part ...] [--no-dt-study] [--end S]
 results.json is rewritten after every arm. --no-dt-study runs the as-written arms at the step
 rule's dt only, for a rerun that writes their records (with views) and nothing more.
 """  # noqa: E501
@@ -190,6 +190,9 @@ SUMMARY_KINDS = (NORTON,)
 # it out, for a rerun that only writes the as-written records.
 DT_STUDY = True
 DT_STUDY_FRACTIONS = (0.5, 0.25)
+# Every arm's horizon: worlds.END_S, the registered 600 s. `--end S` shortens it for a smoke run of
+# the code paths, whose arms are not steady and carry no verdict.
+HORIZON_S = worlds.END_S
 # Arms whose full trace exceeds the runner's 2 GB budget run through the windowed execution
 # (cells.execution.windows) and its record writer (cells.records.window_io), at every step of
 # their dt study: Figure 5a at 10 G_eq as written (2.6 GB at its step, 1/128 s; dev-04 refused it).
@@ -721,7 +724,7 @@ def run_network(
     *,
     kind=NORTON,
     junction_scale=1.0,
-    end=worlds.END_S,
+    end=None,
     dt=None,
     arm_id=None,
     label="",
@@ -736,6 +739,7 @@ def run_network(
     trace, reading the concentrations from its observed rows; its record, when one is written,
     comes from the windowed writer (write_windowed_record)."""
     cells_, probes = network.cells, network.probes
+    end = HORIZON_S if end is None else end
     if kind == NORTON:
         raw = worlds.linear_network(
             cells_, network.edges, probes, junction_scale=junction_scale, end=end, dt=dt
@@ -938,7 +942,7 @@ def _arm_id(kind, base):
     return base if kind == NORTON else f"aw-{base}"
 
 
-def _figure3(out, save, kind, *, gs=FIGURE3_G, end=worlds.END_S, prefix=""):
+def _figure3(out, save, kind, *, gs=FIGURE3_G, end=None, prefix=""):
     rep = paper.REPORTED["figure3b"]
     out.setdefault("figure3", [])
     for g in gs:
@@ -1215,6 +1219,11 @@ def main(argv):
     if "--no-dt-study" in argv:
         argv = [a for a in argv if a != "--no-dt-study"]
         DT_STUDY = False
+    global HORIZON_S
+    if "--end" in argv:  # A smoke run's short horizon: its arms are not steady (no verdict).
+        k = argv.index("--end")
+        HORIZON_S = float(argv[k + 1])
+        argv = argv[:k] + argv[k + 2 :]
     out_dir = Path(argv[1])
     parts = argv[2:] or list(DEFAULT_PARTS)
     unknown = set(parts) - set(PARTS)
@@ -1241,7 +1250,8 @@ def main(argv):
             radius_m=worlds.R_CELL_M,
             k_dec_per_s=worlds.K_DEC_PER_S,
             g_eq1_m3_s=worlds.G_EQ1_M3_S,
-            end_s=worlds.END_S,
+            end_s=HORIZON_S,
+            registered_end_s=worlds.END_S,
             settle_s=worlds.SETTLE_S,
             observe_every_s=worlds.OBSERVE_EVERY_S,
             base_dt_s=worlds.BASE_DT_S,

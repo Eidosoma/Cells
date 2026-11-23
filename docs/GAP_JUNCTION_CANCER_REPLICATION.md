@@ -987,3 +987,40 @@ names a reader that exists at its tag (D308).
     was ruled on.
   - Both historical logs print the result line of 04225e4 (20 May 2026), not b2cb370's: their
     producing revision is earlier.
+  - **The pinned 1D run reproduces the historical 1D log's first search** (`runs/1d-01`,
+    unit `cells-gj-bitsey-1d-01`). All 16 points have the same D at full precision, the same
+    outcomes and identical end-state dumps, and the printed bracket is the same (7.172e-15,
+    7.178e-15). So b2cb370 produces that log's numbers, whatever revision printed it. This is a
+    finding about the reference, not about Cells.
+
+**What each comparison needs from FR-15, FR-16 and FR-17** (from FEATURE_REQUESTS.md's rows of
+23 November and `run.py refusals` rerun on this branch; this updates §5's table).
+- **GJ-L1 and GJ-N1's line and field need none of them.** Both run on today's engine. The field
+  (626 nodes) is within the 2,048-node solve; it waits on compute, not on a feature.
+- **Not registered, for §6 (c), the tables:**
+  - **Table 1's printed "neither" value (3D):** FR-17 alone, since 15,626 nodes exceed 2,048, and
+    compute beyond the field's.
+  - **Every depolarized-tumor column** (Table 1's depol and both, Table 2, Table 3's depol and
+    neighbor-depol) needs FR-15's F2 on junctions: the miRNA's valence −1 drift with its charge in
+    the closure.
+    - On main: S1 (charged species in `local_species_reactions@1`) and P2
+      (`passive_constant_field_permeation@1`, on patches only).
+    - Junction hosting waits on the @3 owner's two answers.
+    - BITSEY gives the miRNA drift but no charge weight. Cells would count the charge, so the
+      comparison would differ there by design.
+  - **The same columns need FR-16's F3 and F4**, a Chen-Izu two-state gate and per-species closed
+    floors (miRNA 0, ions 0.06).
+    - FR-30's `junction_series_gates@1` is on main, with a Boltzmann gate in |V| and per-route
+      residuals that a tracer may set to 0.
+    - It is development-only: no registered or judged result may use it until a voltage series
+      qualifies it.
+    - A single |V| Boltzmann is not Chen-Izu's two-exponential form, which is smooth through
+      dV = 0.
+  - **Underexpression** (Table 1's underexp and both, Table 2) needs FR-16's F5 minimum docking.
+    `species_regulated_availability@1` combines a junction's two sides by product only.
+  - **Table 3** needs F5's mean docking, (1 + P)/2 at the border, and availability above the base
+    conductance.
+    - Its hypol column needs F5 alone. Every cell shares one voltage, so the drift vanishes as in
+      "neither", and BITSEY's always-on Cx45 gate (`metas_algos` sets `do_gate=True`) sits at its
+      dV = 0 value: a constant factor on every junction.
+    - Its neighbor-depol column also needs F8, a mechanism the preprint does not give.

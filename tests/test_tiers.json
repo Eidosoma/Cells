@@ -4522,15 +4522,15 @@
    },
    {
     "file": "tests/unit/test_gap_junction_linear_judge.py",
-    "seconds": 1.25,
+    "seconds": 1.67,
     "exit_code": 0,
     "counts": {
-     "passed": 6
+     "passed": 7
     }
    },
    {
     "file": "tests/unit/test_gap_junction_neither_judge.py",
-    "seconds": 0.34,
+    "seconds": 0.61,
     "exit_code": 0,
     "counts": {
      "passed": 6

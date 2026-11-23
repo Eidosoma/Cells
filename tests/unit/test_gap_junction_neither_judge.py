@@ -53,7 +53,12 @@ def test_the_references_spec_is_what_spec_writes_and_holds_no_seen_value():
 
 
 def test_the_committed_rule_is_what_rule_writes():
-    assert json.loads(nj.RULE_FILE.read_text()) == json.loads(json.dumps(nj.rule()))
+    committed, written = json.loads(nj.RULE_FILE.read_text()), json.loads(json.dumps(nj.rule()))
+    if not nj.SAVED_LOGS.is_dir():  # The saved logs' hashes are read from them where present.
+        for data in (committed, written):
+            for log in data["reported"]["logs"].values():
+                log.pop("sha256", None)
+    assert committed == written
 
 
 def search(tmp_path, name, *, threshold=THRESHOLD, refused=(), flip=(), half_flip=False):
@@ -88,9 +93,11 @@ def interface(lo, hi, *, constants=None):
               dict(d=lo, normalized=False), dict(d=hi, normalized=True)]  # fmt: skip
     geometry = dict(bracket=[lo, hi], points=points, method="synthetic",
                     tighter=dict(factor=10.0, lo_normalized=False, hi_normalized=True))  # fmt: skip
+    model = dict(constants=constants or copy.deepcopy(nj.MODEL["constants"]))
+    model["seeds"] = {k: dict(v) for k, v in nj.MODEL["seeds"].items() if k != "note"}
     return dict(
         format=nj.REFERENCE_FORMAT,
-        model=dict(constants=constants or copy.deepcopy(nj.MODEL["constants"])),
+        model=model,
         geometries=dict(line=geometry, field=copy.deepcopy(geometry)),
     )
 
@@ -137,6 +144,10 @@ def test_refused_interfaces(tmp_path):
     constants["g_u"] = 4.0
     with pytest.raises(nj.ComparisonError, match="g_u"):
         read(tmp_path, interface(lo, hi, constants=constants))
+    zero = interface(lo, hi)  # A seed echoed as BITSEY's 0 rather than the registered 1e-6.
+    zero["model"]["seeds"]["tumor"]["u"] = 0.0
+    with pytest.raises(nj.ComparisonError, match="seed tumor u"):
+        read(tmp_path, zero)
 
 
 @pytest.mark.skipif(not nj.SAVED_LOGS.is_dir(), reason="BITSEY's saved logs are not on this host")

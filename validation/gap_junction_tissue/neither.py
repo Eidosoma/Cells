@@ -1,7 +1,10 @@
-"""The "neither" comparison (decision (b)): development work, not a judged comparison (D138).
+"""The "neither" comparison (decision (b)): the driver of its development runs and of GJ-N1's
+judged searches (docs/GJ_NEITHER_REGISTRATION.md, judged by neither_judge.py).
 
 A comparison with BITSEY's log at b2cb370 (D208), not with the preprint. Its two conditions are
-written in docs/GAP_JUNCTION_CANCER_REPLICATION.md section 7 before the search:
+written in docs/GAP_JUNCTION_CANCER_REPLICATION.md section 7 before the search; the judged
+comparison (both geometries, the line and BITSEY's 25 x 25 field) is GJ-N1's, judged by
+neither_judge.py (docs/GJ_NEITHER_REGISTRATION.md):
 1. In BITSEY's "no tricks" run every junction's dV is 0, so the miRNA's valence -1 drift vanishes
    and its junction transport is Fick's: a neutral miRNA is the same model there.
 2. The world, criterion, bracket and tolerance are BITSEY's (cancer_GJ_sims/zombie.py at b2cb370):
@@ -9,7 +12,9 @@ written in docs/GAP_JUNCTION_CANCER_REPLICATION.md section 7 before the search:
    (tumor) and 100/0/0 (healthy, scaled coordinates); 500 time units uncoupled, then 20,000
    coupled; normalized when every cell ends with miR200 > Zeb mRNA + 2; the junction diffusion
    constant D searched in [0, 1e-13] m^2/s until x2 <= 1.001 x0, reporting x2; G_GJ = D x 4 pi
-   (5 um)^2 / 100 nm. Agreement is called if Cells' x2 / 7.18e-15 lies in [0.95, 1.05].
+   (5 um)^2 / 100 nm. In development (neither-01, -02) agreement was called if Cells' x2 / 7.18e-15
+   lay in [0.95, 1.05]; GJ-N1 replaces that band with its verdict (R, C and A), and the search
+   reports its threshold alone. The field adds BITSEY's row-spread condition.
 
 The protocol has BITSEY's two stages (find_min_Kd_tumorFix): the uncoupled 500 s are run once,
 from the seeds, in a world of one tumor cell and one healthy cell with no junctions (every tumor
@@ -73,8 +78,6 @@ COUPLED_S = 20000.0
 BRACKET = (0.0, 1e-13)
 RTOL = 1e-3
 MARGIN_UNITS = 2.0
-BITSEY_LOGGED = 7.18e-15  # results_miRNA/tumor_isolate_1D_V1M at b2cb370: the 1D no-tricks value.
-AGREEMENT = (0.95, 1.05)
 OBSERVE_EVERY_S = 1000.0
 WINDOW_STEPS = 1024
 STEP_BOUND_MARGIN = 0.04  # dt x @3's explicit rate, the driver's rule (worlds.STEP_BOUND_MARGIN).
@@ -515,8 +518,9 @@ TUMOR_CELLS_OF = {shape: [c for c, kind in tissue(shape)[0] if kind == "tumor"] 
 # A window's working storage scales with the world: the sheet's 81 cells and 144 junctions fit
 # 256 steps a window. Windows cut the execution, not the step grid.
 # The field's 625 cells and 1,200 junctions: FIELD_WINDOW_STEPS, sized by the cost probe
-# (docs/GJ_NEITHER_REGISTRATION.md, the compute budget).
-FIELD_WINDOW_STEPS = 64
+# (docs/GJ_NEITHER_REGISTRATION.md, the compute budget): 64 steps exceed the runner's 2 GB trace
+# budget (the window planner refuses them); 32 ran at 0.16 s a step, 16 at 0.19 s.
+FIELD_WINDOW_STEPS = 32
 WINDOW_STEPS_OF = dict(line=WINDOW_STEPS, sheet=256, field=FIELD_WINDOW_STEPS)
 EXPERIMENT_OF = dict(line=EXPERIMENT, sheet=SHEET_EXPERIMENT, field=FIELD_EXPERIMENT)
 REPRESENTS_OF = dict(line=REPRESENTS, sheet=SHEET_REPRESENTS, field=FIELD_REPRESENTS)
@@ -1048,8 +1052,6 @@ def search(out_dir, cpus, end, shape="line"):
         first_points=first,
         bracket=BRACKET,
         rtol=RTOL,
-        bitsey_logged=BITSEY_LOGGED,
-        agreement=AGREEMENT,
         started_utc=_utc(),
         events=[],
     )
@@ -1127,12 +1129,8 @@ def search(out_dir, cpus, end, shape="line"):
         lo, hi, monotone, failed = bracket(evaluated)
         converged = lo is not None and hi is not None and hi <= (1.0 + RTOL) * lo
         if converged and "stopped" not in state:
-            ratio = hi / BITSEY_LOGGED
-            state.update(
-                threshold=hi,
-                ratio_to_bitsey_log=ratio,
-                agreement_called=AGREEMENT[0] <= ratio <= AGREEMENT[1],
-            )
+            # The threshold alone: its comparisons are GJ-N1's judge's (neither_judge.py).
+            state.update(threshold=hi)
             save()
             if halves is None:
                 halves = submit_halves(lo, hi)
@@ -1186,8 +1184,6 @@ def main():
         bracket=BRACKET,
         rtol=RTOL,
         margin_units=MARGIN_UNITS,
-        bitsey_logged=BITSEY_LOGGED,
-        agreement=AGREEMENT,
         step_bound_margin=STEP_BOUND_MARGIN,
         window_steps=WINDOW_STEPS,
         constants=dict(
@@ -1244,7 +1240,7 @@ def main():
         return 0
     cpus = [int(c) for c in args.cpus.split(",") if c]
     state = search(out_dir, cpus, args.end, args.shape)
-    keys = ("lo", "hi", "threshold", "ratio_to_bitsey_log", "agreement_called", "stopped")
+    keys = ("lo", "hi", "threshold", "stopped")
     print(json.dumps({k: state.get(k) for k in keys}), flush=True)
     return 0 if "threshold" in state else 1
 

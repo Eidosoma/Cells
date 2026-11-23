@@ -215,6 +215,16 @@ def test_order_plants_and_the_retry(tmp_path, rule, table):
     assert verdict["verdict"] == "passed"
 
 
+def test_a_plant_that_did_not_run_is_not_caught(tmp_path, rule, table):
+    interface = lj.read_interface(write(tmp_path, synthetic_interface(rule)), rule)
+    for arm in ("control-planted", "aw-control-planted"):
+        rows = dict(table["arms"])
+        rows[arm] = dict(rows[arm], status="refused", refusals=["the planted run was refused"])
+        verdict = lj.judge(dict(table, arms=rows), interface)
+        assert verdict["verdict"] == "instrument not validated"
+        assert verdict["plants_uncaught"] == [arm]
+
+
 def test_the_derived_floors_cover_their_terms(rule):
     nets = lj.networks()
     for arm in rule["arms"]:

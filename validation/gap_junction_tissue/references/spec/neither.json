@@ -101,7 +101,7 @@
   "keys": {
    "format": "gap_junction_tissue.neither_references@1",
    "registration": "the tag the references read",
-   "model": "the registered constants and seeds echoed as read (MODEL's constants and seeds)",
+   "model": "{constants: {every key of model.constants, each value as read}, seeds: {tumor: {u, m, z}, healthy: {u, m, z}} as read from model.seeds}",
    "stage1": "{tumor: {u, m, z}, healthy: {u, m, z}} after 500 s uncoupled",
    "geometries": "{line, field}: {bracket: [lo, hi], points: [{d, normalized, epithelial_cells, min_margin, max_row_spread}], tighter: {factor, lo_normalized, hi_normalized}, method}; a geometry the references did not compute is absent and is then not assessable"
   },
