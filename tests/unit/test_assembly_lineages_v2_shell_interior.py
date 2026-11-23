@@ -154,7 +154,11 @@ def face_world(kind="separate", *, x_pool=5, x_lumen=0, P=2e-7, k_bind=3.0, k_wa
     from the pool and an inner pair (R, XRi) bound from the lumen, and wall steps per `kind`:
     "separate" (none), "zero" (XR -> XRi), "one" (XR -> Y1 -> XRi, Y1 a ligand-bearing wall state
     with no pair of its own: the reviewer's counterexample), "two" (XR -> Y1 -> Y2 -> XRi), and
-    "same face" (XR -> Y1 -> XR2, XR2 a second outer complex, bound from the pool too)."""
+    "same face" (XR -> Y1 -> XR2, XR2 a second outer complex, bound from the pool too),
+    "co-ligand" (a carrier through a binding step: a co-ligand Z binds the outer complex XR from the
+    lumen, XR + Z@lumen -> XRZ on an inner pair (XR, XRZ), and a wall step XRZ -> XRi + Zm hands X
+    to the inner complex XRi, which releases it into the lumen), and "pool on inner" (the inner
+    pair (R, XRi) bound from the pool, against its own face)."""
     w = shell_world(XR=0, P=P)
     w["phases"]["lumen"]["species"] = ["S", "X"]
     w["founder"].update({"X@pool": x_pool, "X@lumen": x_lumen})
@@ -173,9 +177,25 @@ def face_world(kind="separate", *, x_pool=5, x_lumen=0, P=2e-7, k_bind=3.0, k_wa
 
     wall_state("XRi")
     w["sites"].append({"site": "R", "complex": "XRi", "face": "inner"})
-    binding("bind_inner", "X@lumen", "XRi")
+    binding("bind_inner", "X@pool" if kind == "pool on inner" else "X@lumen", "XRi")
+    if kind == "co-ligand":
+        w["species"] += [species("Z", {"z": 1}, solution=0.0),
+                         species("XRZ", {"x": 1, "r": 1, "z": 1}, bilayer=-7.0),
+                         species("Zm", {"z": 1}, bilayer=-1.0)]  # fmt: skip
+        w["phases"]["lumen"]["species"].append("Z")
+        w["phases"]["membrane"]["species"] += ["XRZ", "Zm"]
+        w["founder"].update({"Z@lumen": 4, "XRZ@membrane": 0, "Zm@membrane": 0})
+        w["sites"].append({"site": "XR", "complex": "XRZ", "face": "inner"})
+        w["steps"] += [{"id": "bind_co", "locus": "membrane",
+                        "reactants": {"Z@lumen": 1, "XR@membrane": 1},
+                        "products": {"XRZ@membrane": 1}, "law": MASS_ACTION,
+                        "forward_rate_per_s": k_bind},
+                       {"id": "hand_over", "phase": "membrane", "reactants": {"XRZ": 1},
+                        "products": {"XRi": 1, "Zm": 1}, "law": MASS_ACTION,
+                        "forward_rate_per_s": k_wall}]  # fmt: skip
     chain = {"separate": [], "zero": ["XR", "XRi"], "one": ["XR", "Y1", "XRi"],
-             "two": ["XR", "Y1", "Y2", "XRi"], "same face": ["XR", "Y1", "XR2"]}[kind]  # fmt: skip
+             "two": ["XR", "Y1", "Y2", "XRi"], "same face": ["XR", "Y1", "XR2"],
+             "co-ligand": [], "pool on inner": []}[kind]  # fmt: skip
     for name in chain:
         if name not in ("XR", "XRi"):
             wall_state(name)
@@ -193,12 +213,23 @@ FACE_RULE = {
         "one", "a carrier across the wall"),
     "a carrier with no intermediate": ("zero", "a carrier across the wall"),
     "a carrier through two wall states with no pair": ("two", "a carrier across the wall"),
+    "a carrier through a binding step, a co-ligand bound from the lumen onto the outer complex": (
+        "co-ligand", "a carrier across the wall"),
+    "a pool step on an inner pair, against its own face": (
+        "pool on inner", "crosses phases at the membrane"),
     "a same-face isomerization": ("same face", None),
     "an outer and an inner pair kept apart": ("separate", None),
 }  # fmt: skip
 
 
-@pytest.mark.parametrize("case", sorted(FACE_RULE))
+_MISSED = pytest.mark.xfail(strict=True, reason="the face rule joins wall states across steps "
+                            "wholly in the membrane only, so a binding step whose site already "
+                            "holds the ligand carries it on unseen")
+
+
+@pytest.mark.parametrize("case", [
+    pytest.param(c, marks=_MISSED) if FACE_RULE[c][0] == "co-ligand" else c
+    for c in sorted(FACE_RULE)])  # fmt: skip
 def test_the_face_rule_refuses_every_carrier_and_admits_one_face(case):
     """FR-46 (D323): one face per complex. A ligand moiety that can pass through the wall's states
     from an outer complex to an inner one is a carrier across the wall, refused by name, whether the
