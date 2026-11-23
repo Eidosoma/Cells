@@ -377,7 +377,9 @@ def cohorts(checks, runs, machine):
             route1 = cohort1[i]
             route2 = cohort.known_rate(t, Q, k, t1, t2, ts)
             error = cohort.known_rate_error(t, Q, k, t1, t2, ts)
-            route2, error = route2 / COPY_FMOL, (math.inf if error is None else error / COPY_FMOL)
+            # An unavailable grid error is insufficient resolution and fails the check (fail-closed,
+            # as replace_restart.agreement); it is never read as an infinite bound.
+            route2, error = route2 / COPY_FMOL, (None if error is None else error / COPY_FMOL)
             exact = window_cohort(0.75, f, t1, t2, ts)
             checks.add(
                 f"R1L p=0.75 {machine}: route 1's {f} cohort at {ts:g} s, the closed form",
@@ -388,7 +390,7 @@ def cohorts(checks, runs, machine):
             )
             checks.add(
                 f"R1 p=0.75 {machine}: the two routes' {f} cohort at {ts:g} s",
-                abs(route1 - route2) <= error + bound * abs(route1),
+                error is not None and abs(route1 - route2) <= error + bound * abs(route1),
                 route1=route1,
                 route2=route2,
                 grid_error=error,
