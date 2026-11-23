@@ -369,7 +369,8 @@
   "/mnt/workspaces/Cells/fr15-f2-a1-20261123/landing-dec9f0f8/tiers-measured/measured.json",
   "/mnt/workspaces/Cells/fr43-20261123/part1/tiers/run2/measured.json",
   "/mnt/workspaces/Cells/fr43-20261123/part1/tiers/run3/measured.json",
-  "/mnt/workspaces/Cells/fr43-part3-20261123/tiers-90a60049/measured.json"
+  "/mnt/workspaces/Cells/fr43-part3-20261123/tiers-90a60049/measured.json",
+  "/mnt/workspaces/Cells/fr43-part3-20261123/tiers-312f9581/measured.json"
  ],
  "measured_provenance": [
   {
@@ -3148,6 +3149,14 @@
    "root": "/mnt/workspaces/Cells/fr43-part3-20261123/snap-90a60049",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-23T16:52:01+00:00"
+  },
+  {
+   "git_revision": "312f9581e05502614d65be5a4227520ef37cb850",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/fr43-part3-20261123/snap2-312f9581",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-23T19:08:46+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -3836,10 +3845,10 @@
    },
    {
     "file": "tests/unit/test_cell_owned_compartments.py",
-    "seconds": 10.09,
+    "seconds": 11.59,
     "exit_code": 0,
     "counts": {
-     "passed": 218
+     "passed": 220
     }
    },
    {
@@ -4721,10 +4730,10 @@
    },
    {
     "file": "tests/unit/test_gene_regulation_compare.py",
-    "seconds": 17.22,
+    "seconds": 19.37,
     "exit_code": 0,
     "counts": {
-     "passed": 45
+     "passed": 51
     }
    },
    {
@@ -4959,10 +4968,10 @@
    },
    {
     "file": "tests/unit/test_junction_gate_benchmark.py",
-    "seconds": 4.43,
+    "seconds": 2.57,
     "exit_code": 0,
     "counts": {
-     "passed": 23
+     "passed": 26
     }
    },
    {
@@ -5746,10 +5755,10 @@
    },
    {
     "file": "tests/unit/test_pump_composite_contract.py",
-    "seconds": 13.3,
+    "seconds": 14.55,
     "exit_code": 0,
     "counts": {
-     "passed": 33
+     "passed": 34
     }
    },
    {
@@ -7518,10 +7527,10 @@
    },
    {
     "file": "tests/unit/test_integer_unit_population.py",
-    "seconds": 32.14,
+    "seconds": 35.51,
     "exit_code": 0,
     "counts": {
-     "passed": 59
+     "passed": 62
     }
    },
    {
