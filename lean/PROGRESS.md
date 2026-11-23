@@ -12,6 +12,8 @@ At 4,800 s the labelled stock gave 11.02171 founder copy-equivalents outside. Th
 
 Alexander et al. measured about 370 donor miR-146a copies per recipient cell in lysates at 24 h. The recipient mouse dendritic cells lacked the assayed RNA gene, the donor cells were absent during exposure, and the study included a donor-null control. The count includes surface-associated RNA. A recipient reporter supported intracellular access for some RNA. This provides a source attribution and a single endpoint. Estimating gross return or post-wash persistence requires a time course measuring both compartments. [Figure 3](https://www.nature.com/articles/ncomms8321/figures/3) · [Figure 4i](https://www.nature.com/articles/ncomms8321/figures/4) · [Measurement record](checks/data/alexander2015_donor_rna.json)
 
+The checkpoint records extracellular degradation as a physical total. Individual producer amounts are checked using the saved shares and the retention reconstruction. The reader rejected four altered copies of the report. They contained a label swap at fixed total, an infinite bound, a missing bound or an insufficient-resolution status attached to a nominal pass. These control outcomes are in `reader-controls.json`. [Public fixture](https://github.com/Eidosoma/Cells/blob/fd2bb88ce444b48344236024a2a18844f59041a4/validation/gene_regulation/replace_restart.py)
+
 <a id="fr38-pre-replacement-resolution"></a>
 
 ### Output times used to estimate the export-grid error

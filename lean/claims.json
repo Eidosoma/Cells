@@ -19,7 +19,9 @@
     "cells.osmotic_lumen@1": "membrane-transport",
     "cells.passive_neutral_permeation@1": "membrane-transport",
     "cells.phase_exchange@1": "molecular-assembly",
-    "cells.shared_pool@1": "molecular-assembly"
+    "cells.shared_pool@1": "molecular-assembly",
+    "cells.logmean_electrodiffusion_forms@1": "tissue-and-conservation",
+    "cells.rate_equations@1": "molecular-assembly"
   },
   "comparisons": {
     "fr38-producer-checkpoint": {
@@ -3526,6 +3528,81 @@
         "cells.scheduled_compartment_wash@1",
         "cells.site_occupancy@1"
       ]
+    },
+    "fr38-producer-export": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [],
+      "operators": [
+        "templated_polymerisation@1",
+        "scheduled_cell_replacement@1",
+        "neutral_arrival_labels@1"
+      ],
+      "engine_revision": "fd2bb88ce444b48344236024a2a18844f59041a4",
+      "record_revision": "d2258d4f81a5a6e4a04277b51df0217e0b044289",
+      "sources": {
+        "Native replacement and restart fixture": "validation/gene_regulation/replace_restart.py#L283",
+        "Known-rate reconstruction": "validation/gene_regulation/cohort.py#L170",
+        "Gross export counters and loss at the outside node": "src/cells/operators/templated_polymerisation.py#L2470",
+        "Derived producer labels": "src/cells/operators/species_labels.py#L296",
+        "Two producers at one node": "tests/unit/test_templated_polymerisation.py#L715"
+      },
+      "record_inputs": {
+        "Per-label conservation and cumulative return bound": "lean/CellsProofs/Chemistry/ProducerReplacement.lean"
+      },
+      "driver": "lean/checks/producer_replacement.py",
+      "record": "lean/PROGRESS.md#fr38-extracellular-producer"
+    },
+    "fr38-retention-resolution": {
+      "kind": "engine",
+      "models": [],
+      "laws": [],
+      "operators": [],
+      "engine_revision": "fd2bb88ce444b48344236024a2a18844f59041a4",
+      "record_revision": "d2258d4f81a5a6e4a04277b51df0217e0b044289",
+      "sources": {
+        "Error estimate for known-rate survival": "validation/gene_regulation/cohort.py#L187",
+        "Retention verdict by output": "validation/gene_regulation/replace_restart.py#L237",
+        "Sparse and finite native controls": "tests/unit/test_fr38_replace_restart.py#L49"
+      },
+      "record_inputs": {
+        "Pulse-timing proof": "lean/CellsProofs/Chemistry/ProducerReplacement.lean"
+      },
+      "driver": "lean/checks/producer_replacement.py",
+      "record": "lean/PROGRESS.md#fr38-pre-replacement-resolution"
+    },
+    "buffered-proton-reversal": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_tissue@3",
+        "resolved_pump_composite@1"
+      ],
+      "laws": [
+        "proton_constant_field_leak@2",
+        "proton_constant_field_leak@1"
+      ],
+      "operators": [],
+      "engine_revision": "fd2bb88ce444b48344236024a2a18844f59041a4",
+      "record_revision": "d2258d4f81a5a6e4a04277b51df0217e0b044289",
+      "sources": {
+        "Version-2 route and stage read": "src/cells/laws/transport/proton_leak_v2.py",
+        "Inward flux": "src/cells/laws/transport/proton_leak.py#L31",
+        "Clamped route flux": "src/cells/kinds/passive_routes.py#L778",
+        "General binding read": "src/cells/kinds/proton_buffer.py#L752",
+        "Buffered model and admission controls": "tests/unit/test_rapid_binding_world.py#L839",
+        "One-site starting inventory": "validation/compartment_ph_engine/parameters.py#L98"
+      },
+      "record_inputs": {
+        "Reversal and closure proof": "lean/CellsProofs/Transport/BufferedProtonLeak.lean",
+        "Reference flux helper": "lean/checks/proton_leak.py",
+        "Individual reversal voltages": "lean/checks/data/bertholet2019_proton_reversal.json",
+        "Compartment pH measurements": "lean/checks/data/cortese1992_ims_ph.json"
+      },
+      "driver": "lean/checks/ims_proton_leak.py",
+      "record": "lean/PROGRESS.md#mt1b-buffered-reversal"
     }
   },
   "claims": [
@@ -4243,12 +4320,12 @@
     {
       "id": "producer-replacement-rna",
       "category": "molecular-assembly",
-      "title": "RNA removed at replacement is accounted for under its departing producer",
-      "statement": "For one cell, generation and chain, the initial hold and fate stocks plus completions equal the final hold and fate stocks plus degradation. At replacement each departing stock keeps its pre-event label, including any material supplied with the base label. The newcomer’s production counters measure increments since its own birth.",
+      "title": "RNA keeps its producer label through export, cell replacement and return",
+      "statement": "For one producer label, combining the cell and outside-node balances cancels both directions of transport. Intracellular and extracellular degradation and the departure record each stay in the balance. The original producer’s stock in a new cell is at most cumulative gross return since replacement.",
       "assumptions": [
-        "One producer supplies the two fate rows during its lifetime. Every detachment and degradation is included. The intracellular balance assumes no external mover.",
-        "Replacement removes the whole hold and the two fate rows. The holds and rows have disjoint owners. Each occupied pool’s label shares sum to one, and a newcomer has no share of previously labelled material.",
-        "A generation’s counter is the difference of the cumulative values at observation and birth. The live state holds the latest departed total. Reading each departure directly requires a saved observation before that record is overwritten."
+        "Each gross transfer carries the share of its source. A cell replacement books all departing intracellular stock and leaves the extracellular pool and its labels in place.",
+        "The new cell starts with zero of the old producer label. Its only source of that label after replacement is reverse transport. Gross amount returned and all other outflows are nonnegative and the source share is at most one.",
+        "The earlier no-export specialization assumes one producer per fate row over its lifetime. Generation counters use their birth offsets. Normalized shares split the departed material across labels."
       ],
       "uses": [
         "release-window-survival",
@@ -4267,29 +4344,33 @@
           "CellsProofs.Chemistry.ProducerReplacement.generation_balance": "lean/CellsProofs/Chemistry/ProducerReplacement.lean",
           "CellsProofs.Chemistry.ProducerReplacement.disjoint_removals": "lean/CellsProofs/Chemistry/ProducerReplacement.lean",
           "CellsProofs.Chemistry.ProducerReplacement.removal_total": "lean/CellsProofs/Chemistry/ProducerReplacement.lean",
-          "CellsProofs.Chemistry.ProducerReplacement.absent_at_removal": "lean/CellsProofs/Chemistry/ProducerReplacement.lean"
+          "CellsProofs.Chemistry.ProducerReplacement.absent_at_removal": "lean/CellsProofs/Chemistry/ProducerReplacement.lean",
+          "CellsProofs.Chemistry.ProducerReplacement.cell_node_balance": "lean/CellsProofs/Chemistry/ProducerReplacement.lean",
+          "CellsProofs.Chemistry.ProducerReplacement.old_stock_le_returned": "lean/CellsProofs/Chemistry/ProducerReplacement.lean"
         },
         "sources": {
           "Mathlib finite telescoping sum, specialized to generation counter increments": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Group/Finset/Basic.lean#L859-L864",
           "Mathlib sum over a disjoint union, specialized to each label’s removal": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Group/Finset/Basic.lean#L113-L116",
           "Mathlib multiplication distributed over a finite sum": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Ring/Finset.lean#L48-L52",
           "Cells replacement and birth-counter definitions": "https://github.com/Eidosoma/Cells/blob/0a1c1b0dc8145c9c313c02a4ed57cfe5433b2efe/docs/TEMPLATED_POLYMERISATION_LAWS.md#L1483-L1515",
-          "Mathlib interchange of finite sums for summing removals across labels": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Group/Finset/Sigma.lean#L116-L119"
+          "Mathlib interchange of finite sums for summing removals across labels": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Group/Finset/Sigma.lean#L116-L119",
+          "Mathlib finite-sum induction for the cumulative return bound": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Group/Finset/Basic.lean#L501-L505"
         }
       },
       "numerical": {
-        "status": "open",
+        "status": "checked",
         "comparisons": [
+          "fr38-producer-export",
           "fr38-producer-checkpoint",
           "fr38-producer-public-admission"
         ],
-        "result": "Public main at 1e72a71b correctly refused this composition. On development revision 4099775c, the native JSON recorded nine passing verdicts and the checkpoint restart reproduced the step histories bit for bit. The independent replay checked seven birth offsets and twelve departing amounts by label. The largest hold or fate balance residual was 1.02 × 10⁻²¹ fmol. Swapping the founder’s marked durable RNA into the newcomer’s label preserved total mass while misassigning 4.11 × 10⁻⁸ fmol. The repaired report writer preserved all 217 checkpoint arrays byte for byte relative to the first development replay. The positive comparison on public main and extracellular RNA retention remain open."
+        "result": "All 14 verdicts passed on public Cells at fd2bb88c. At the checkpoint, 1.0534 × 10⁻²⁶ fmol of founder RNA was inside the new cell after 1.1173 × 10⁻²⁶ fmol had returned. The combined durable RNA inventory closed within 6.01 × 10⁻²³ fmol. Exchanging two outside labels kept total RNA identical and misplaced 8.114 × 10⁻⁹ fmol. The reader detected it. The three standard retention outputs had finite bounds. Sparse-grid behavior is recorded separately."
       },
       "biology": {
         "status": "open",
         "observable": "Source-specific RNA measured before and after a change of producer, distinguishing removal from degradation and any RNA remaining outside the cell.",
-        "unit": "RNA in fmol by producer in Cells. The plasma study reports copies per mL and the number of women with detectable RNA.",
-        "finding": "Placental lactogen RNA remained detectable in some maternal plasma samples after delivery. The time and source tissue are identifiable. The age of each molecule, its cell of origin and the contributions of release near delivery remain unresolved.",
+        "unit": "fmol or copy-equivalents by producer in Cells. Human plasma detection counts and donor miRNA copies per recipient cell in the studies.",
+        "finding": "Placental RNA can persist in plasma after delivery. In a separate cell preparation with donor cells absent, recipient cells genetically unable to produce the assayed RNA carried donor-derived molecules. The gross return rate across a cell replacement remains open.",
         "evidence": [
           {
             "dataset_id": "ng-2003-postpartum-hpl",
@@ -4300,10 +4381,56 @@
             "context": "Paired maternal plasma samples at term, one before delivery and one afterwards. The two-hour group had a median 24,499 hPL mRNA copies/mL before delivery.",
             "role": "descriptive",
             "uncertainty": "The Wilson 95% interval for the two-hour detection fraction, calculated from the published counts, is 12.7–57.6%. In the four detectable pairs, concentrations declined by approximately 66–97% from their own baselines.",
-            "assessment": "At two hours 4 of 13 women had detectable hPL RNA. A separate group had 0 of 8 detectable at 24 hours. These observations constrain how long a source-specific signal can remain detectable in plasma. Connecting them to the engine requires an extracellular compartment with measured transfer and clearance.",
+            "assessment": "At two hours 4 of 13 women had detectable hPL RNA. A separate group had 0 of 8 detectable at 24 hours. The assay measures a source-specific population signal. A quantitative comparison needs matched transfer and clearance measurements.",
             "report": "lean/PROGRESS.md#fr38-producer-replacement"
+          },
+          {
+            "dataset_id": "alexander-2015-donor-mir146a",
+            "manifest": "lean/checks/data/alexander2015_donor_rna.json",
+            "citation": "Alexander et al. (2015), Nature Communications 6, 7321",
+            "doi": "10.1038/ncomms8321",
+            "locator": "Figures 3c–l and 4i. Figure 3l gives the copy count.",
+            "context": "Native mouse miR-146a in recipient dendritic cell lysates 24 h after exposure to donor-derived extracellular vesicles. Donor cells were absent. Recipient cells lacked the assayed RNA gene. Vesicles from donor-null cells served as a control.",
+            "role": "descriptive",
+            "uncertainty": "Three replicates, with SD plotted. The numerical SD was not extracted. The copy count may include RNA bound to the cell surface.",
+            "assessment": "Recipients averaged about 370 donor copies per cell. A reporter supported functional intracellular access. The endpoint supports donor attribution and leaves the uptake rate and post-wash persistence unresolved.",
+            "report": "lean/PROGRESS.md#fr38-extracellular-producer"
           }
         ]
+      }
+    },
+    {
+      "id": "retention-grid-resolution",
+      "category": "molecular-assembly",
+      "title": "A retention estimate needs sampling during the export interval",
+      "statement": "Two equal positive pulses within an unsampled export interval give different retained amounts under positive first-order loss even when the cumulative export at both endpoints is identical.",
+      "assumptions": [
+        "Constant positive first-order loss, positive pulse amount and the observation after both possible pulse times. The synthetic reader control uses the same cumulative export series up to replacement on both grids."
+      ],
+      "uses": [
+        "producer-replacement-rna"
+      ],
+      "formal": {
+        "status": "proved",
+        "theorems": {
+          "CellsProofs.Chemistry.ProducerReplacement.earlier_pulse_retains_less": "lean/CellsProofs/Chemistry/ProducerReplacement.lean"
+        },
+        "sources": {
+          "Mathlib strict increase of the real exponential, applied to the two pulse times": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Data/Complex/Exponential.lean#L304"
+        }
+      },
+      "numerical": {
+        "status": "failed",
+        "comparisons": [
+          "fr38-retention-resolution"
+        ],
+        "result": "Public fd2bb88c handles the original sparse grid correctly. Adding only 3,300 and 3,600 s after the 3,000 s replacement produces a zero grid-error estimate at 4,800 s. The native reader then accepts a matching 1.707738-copy value with a 4.85 × 10⁻¹⁴-copy bound despite having no interior export sample. The regular 600 s fixture has several interior export samples."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Time-resolved export throughout the founder’s lifetime and measured loss in the receiving pool.",
+        "unit": "copy-equivalents at observation",
+        "evidence": []
       }
     },
     {
@@ -7794,6 +7921,89 @@
       }},
       "numerical": {"status": "checked", "comparisons": ["proton-leak"], "result": "Twelve compiled CPU cases agreed with the 70-digit flux reference within 1.55 × 10⁻²⁰ fmol/s. In a buffered tissue cell, using free H⁺ gave the observed inward rate of 3.31 × 10⁻⁶ fmol/s. Substituting total intracellular proton equivalents reversed the predicted direction."},
       "biology": {"status": "open", "observable": "Reversal voltage of an open H⁺ path across measured pH gradients at known temperature. Predicting the signed flux magnitude also requires permeability, area and opening.", "finding": "In Jurkat T cells the proton-current reversal shifted −47 mV per pH unit, versus an ideal −58 mV per pH unit. The fitted slope uncertainty and intracellular pH limit a quantitative verdict. [Schilling et al., Fig. 2E](https://doi.org/10.1113/jphysiol.2002.028878)", "unit": "mV at reversal, fmol/s for signed proton flux", "evidence": []}
+    },
+    {
+      "id": "buffered-proton-reversal",
+      "category": "membrane-transport",
+      "title": "The local free proton concentration at each buffered endpoint sets leak reversal",
+      "statement": "The general binding closure determines a unique free proton read at either endpoint when its equilibrium exists. At zero voltage and on the regular branch, the open leak reverses at (RT/F) times the outside-minus-inside difference in free log proton concentration. At fixed inside concentration and voltage, raising outside free H⁺ increases inward flux.",
+      "assumptions": [
+        "Positive absolute temperature and route scale, valence +1, inside-minus-outside voltage and a common concentration standard. Binder totals are nonnegative. Held ligand totals and unheld free ligands agree when comparing solutions at one endpoint.",
+        "The Bernoulli evaluator agrees with the analytic reversal at zero and for |FV/(RT)| ≥ 10⁻⁴. At small nonzero voltage the earlier two-branch proof gives the evaluator’s own reversal ratio.",
+        "For the mitoplast comparison, the solution pH is used as the free-proton activity proxy. The reference temperature is the 24 °C specified for the authors’ Nernst line."
+      ],
+      "uses": [
+        "proton-leak",
+        "binding-equilibrium-unique"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.proton_constant_field_leak@2"
+        ],
+        "theorems": {
+          "CellsProofs.Transport.BufferedProtonLeak.endpoint_read_unique": "lean/CellsProofs/Transport/BufferedProtonLeak.lean",
+          "CellsProofs.Transport.BufferedProtonLeak.reversal_from_free_logs": "lean/CellsProofs/Transport/BufferedProtonLeak.lean",
+          "CellsProofs.Transport.ProtonLeak.outside_change": "lean/CellsProofs/Transport/ProtonLeak.lean",
+          "CellsProofs.Transport.ProtonLeak.strictMono_outside": "lean/CellsProofs/Transport/ProtonLeak.lean"
+        },
+        "sources": {
+          "Cells held-ligand equilibrium uniqueness, specialized at the proton row": "lean/CellsProofs/Chemistry/BindingEquilibrium.lean#L96",
+          "Cells constant-field reversal, specialized with the two free logs": "lean/CellsProofs/Transport/ProtonLeak.lean#L112",
+          "Mathlib logarithm of the real exponential, imported": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/SpecialFunctions/Log/Basic.lean#L70"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "buffered-proton-reversal"
+        ],
+        "result": "Across three matrix/bath pH pairs and outside buffers of 1 and 100 mM, all six clamped reversals agreed with the independent Nernst calculation within 10⁻⁶ mV. The sign changed across every root. Substituting stored total proton equivalents gave nonzero flux at each free-proton reversal."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Measured voltage at zero proton current at controlled pH on each side, with a separate comparison for current magnitude under a buffer change.",
+        "unit": "mV, matrix minus bath",
+        "finding": "The three mitochondrial mean reversal voltages have the predicted directions. All three model values lie within the descriptive 95% Student t intervals for the corresponding means. The endpoint comparison leaves intact mitochondrial compartment pH and absolute leak current open.",
+        "evidence": [
+          {
+            "dataset_id": "bertholet-2019-proton-reversal",
+            "manifest": "lean/checks/data/bertholet2019_proton_reversal.json",
+            "citation": "Bertholet et al. (2019), Nature 571, 515–520",
+            "doi": "10.1038/s41586-019-1400-3",
+            "locator": "Extended Data Figure 3d and its source workbook.",
+            "context": "Fatty-acid-activated proton current in mouse skeletal muscle mitoplasts. Three matrix/bath pH pairs, 13 individual voltages. The group means are −62.23, −91.13 and +28.82 mV.",
+            "role": "descriptive",
+            "uncertainty": "Calculated sample SEMs are 1.92, 1.82 and 6.70 mV (n = 6, 3 and 4). The workbook gives individual readings and sample SD. Group intervals use the 95% Student t interval for independent observations. The figure specifies 24 °C for the Nernst reference.",
+            "assessment": "The unfitted Cells roots were −58.96, −88.44 and +29.48 mV. Each lies within its group interval. This retrospective check concerns reversal of the observed proton current. It supplies no absolute permeability calibration.",
+            "report": "lean/PROGRESS.md#mt1b-buffered-reversal"
+          },
+          {
+            "dataset_id": "decoursey-1996-external-buffer",
+            "manifest": "lean/checks/data/decoursey1996_proton_buffer.json",
+            "citation": "DeCoursey and Cherny (1996), Biophysical Journal 71, 182–193",
+            "doi": "10.1016/S0006-3495(96)79215-9",
+            "locator": "Whole-cell external-buffer comparison in the abstract.",
+            "context": "Voltage-gated proton current in rat alveolar epithelial cells as external buffer fell from 100 to 1 mM.",
+            "role": "descriptive",
+            "uncertainty": "The authors give a typical range for the amplitude change. An uncertainty for the reversal difference was unavailable.",
+            "assessment": "Reversal was unchanged and current typically fell 10–30%. The fixed-free-pH Cells clamp holds its amplitude at the common probe voltage. Buffer supply and channel behavior limit amplitude comparison across these preparations.",
+            "report": "lean/PROGRESS.md#mt1b-buffered-reversal"
+          },
+          {
+            "dataset_id": "cortese-1992-ims-ph",
+            "manifest": "lean/checks/data/cortese1992_ims_ph.json",
+            "citation": "Cortese et al. (1992), Biochimica et Biophysica Acta",
+            "doi": "10.1016/0005-2728(92)90081-C",
+            "locator": "Abstract, intermembrane-space pH relative to the medium.",
+            "context": "Soluble FITC-dextran in isolated rat liver mitochondria across the reported external pH range 6.0–8.5.",
+            "role": "descriptive",
+            "uncertainty": "The reported ranges span preparation conditions. Replicate uncertainty and matched respiratory states were unavailable.",
+            "assessment": "Intermembrane-space pH was 0.4–0.5 units lower in the condensed configuration and 0–0.2 lower in the orthodox configuration. This tests the choice of local compartment. Flux and reversal were not measured.",
+            "report": "lean/PROGRESS.md#mt1b-buffered-reversal"
+          }
+        ]
+      }
     },
     {
       "id": "atp-cycle",
