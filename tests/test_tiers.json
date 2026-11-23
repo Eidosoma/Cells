@@ -350,7 +350,8 @@
   "/mnt/workspaces/Cells/gene-regulation-20261120/fr38/step4/timed-c90f1f5c/measure/measured.json",
   "/mnt/workspaces/Cells/gene-regulation-20261120/fr38/step5/lead/measure90/measured.json",
   "/mnt/workspaces/Cells/ol6-20261122/tiers-b74ffb39/measure/measured.json",
-  "/mnt/workspaces/Cells/ol6-20261122/tiers-24f0887c/measure/measured.json"
+  "/mnt/workspaces/Cells/ol6-20261122/tiers-24f0887c/measure/measured.json",
+  "/mnt/workspaces/Cells/ol6-20261122/tiers-ef7dae2f/measure/measured.json"
  ],
  "measured_provenance": [
   {
@@ -2978,6 +2979,14 @@
    "root": "/mnt/workspaces/Cells/ol6-20261122/snapshot-24f0887c",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-22T23:54:24+00:00"
+  },
+  {
+   "git_revision": "ef7dae2f94c00fb6b7534b2bffdd8582a4c7798e",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/ol6-20261122/snapshot-ef7dae2f",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-23T03:08:05+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -5704,10 +5713,10 @@
    },
    {
     "file": "tests/unit/test_rosenbrock_dense.py",
-    "seconds": 4.79,
+    "seconds": 6.94,
     "exit_code": 0,
     "counts": {
-     "passed": 4
+     "passed": 5
     }
    },
    {
@@ -6837,7 +6846,7 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_v2_rate_equations.py",
-    "seconds": 40.26,
+    "seconds": 37.9,
     "exit_code": 0,
     "counts": {
      "passed": 12
@@ -6845,15 +6854,23 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_v2_rate_equations_population.py",
-    "seconds": 47.29,
+    "seconds": 43.01,
     "exit_code": 0,
     "counts": {
      "passed": 2
     }
    },
    {
+    "file": "tests/unit/test_assembly_lineages_v2_rate_equations_pores.py",
+    "seconds": 48.63,
+    "exit_code": 0,
+    "counts": {
+     "passed": 10
+    }
+   },
+   {
     "file": "tests/unit/test_assembly_lineages_v2_rate_equations_vesicles.py",
-    "seconds": 39.4,
+    "seconds": 38.85,
     "exit_code": 0,
     "counts": {
      "passed": 6
