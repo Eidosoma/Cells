@@ -162,7 +162,11 @@ class World:
         if pool["cell"] != self.cell_id:
             raise ValueError("pool not in the cell")
         self.pool_id = pool["id"]
-        self.machines_total = float(pool["machines"])
+        # A pool's `machines` is a count of molecules in its cell, like a chain's template copies
+        # (LAWS.md, amendment 2): M_q = machines x 1e15/N_A fmol. F_q, the complexes and every
+        # flux stay in fmol.
+        self.machines_copies = float(pool["machines"])
+        self.machines_total = self.machines_copies * 1e15 / N_AVOGADRO
         (ch,) = op["chains"]
         L, m = int(ch["residues"]), int(ch["stages"])
         if L % m:
