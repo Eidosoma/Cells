@@ -9640,3 +9640,31 @@ never from the builders' numbers. That is disclosed.
    base label (erratum E), and is booked to the departing generation through the counters only. Under
    completion-marking it carries its labels.
 
+## D307: The global charge's grounded allowance takes the larger of the two terms; producer labels are derived (amendment G, option a)
+
+2026-11-23, about 02:22 UTC. The lead's rulings within the user's decisions. The user can overrule either.
+1. **The global charge (D305, the user's "extend the rule"): option (M).**
+   - The bound is 3e-25 + 256 eps × moved + max(2.5 eps n × moved, 2.5 eps n × the grounded
+     component's summed |z F dn|).
+   - It solves the gap: MT-1b's Step 0 world runs to 131,072 steps (2.1 s) under today's check, its
+     global charge at most 9.2e-5 of the bound after 1 s.
+   - It is bit for bit unchanged wherever the moved charge's term dominates. It is within twice the
+     strict sum (S), and stays the tighter of the two; a planted supply leak at twice the bound is still
+     refused. (Z), the allowance only where nothing has crossed, would bring the refusal back with any
+     tiny leak.
+   - It moves only the diagnostic `max_global_charge_bound_ratio`, always lower: in 26 of G1's 113
+     worlds, and in FR's set. Both frozen baselines are renewed in the same landing, each with a
+     renewal record, as fix (A) renewed G1's (D273). Frozen evidence that stores the ratio stays as
+     recorded, and MG0b's ≤ 1 still holds.
+2. **FR-38's producer identity (D306 item 4): amendment G's option (a).** The label owner derives each
+   producer label, <cell>-g<k>-<chain>, and its source's schedule from replacement@1's occupants.
+   - A hand-written schedule for a producer source is refused.
+   - The derived schedules equal a correct hand-written one, so programs stay bitwise.
+   - Restart and cell reordering leave the labels unchanged.
+   - Option (b), refusing an inconsistent schedule, is cheaper but leaves the burden on every
+     definition.
+   - Price: the kinds owner 0.75–1 day, the gene-regulation lane 0.25–0.5.
+3. **Erratum F** (tag gr1-sheet-fr38-erratum-f-2026-11-23, main f802d0ea) settles D306 item 3. FR-38's
+   cohort is the molecules released from their template, marked on the chain's own label schedule.
+   Route 2 runs at the gross one-way rate. The rule follows it before its tag.
+
