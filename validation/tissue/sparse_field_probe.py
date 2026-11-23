@@ -19,8 +19,16 @@ sit beside them: version 2's own host against its device (dense_host_vs_device),
 charge residual against the engine's acceptance bound (CHARGE_ATOL_C + CHARGE_RTOL x the row's
 charge scale; a stage solve is refused above 1), for both IDs on the device.
 
+jaxprs (§8.5 item 1, D147's guard 1 in counts): the checked step, the right-hand side and the
+device row checks of each world, traced as composite_crossrev traces them
+(validation/tissue/field_floor_guard._traced) under version 2 and under the sparse ID, and every
+equation counted by primitive, nested jaxprs included. A count by primitive, not a structural
+identity: the report lists the primitives whose counts differ, so it shows whether anything but
+the node-space algebra changed.
+
 Usage (PYTHONPATH at the source under test, JAX_ENABLE_X64=1 JAX_PLATFORMS=cpu):
   python -m validation.tissue.sparse_field_probe OUT.json [WORLD ...]
+  python -m validation.tissue.sparse_field_probe jaxprs OUT.json [WORLD ...]
 Worlds: gj_field, gj_line, sheet254, W1_P4, G2_W7, S825 (default: all).
 """
 
@@ -183,10 +191,42 @@ def probe(name):
     return out
 
 
+def jaxprs(names, out_path):
+    """Primitive counts of the traced programs under both IDs (module docstring)."""
+    import copy
+
+    from cells.numerics import surface_field as field
+    from validation.tissue import field_floor_guard as floor
+
+    report = {}
+    for name in names:
+        raw = world(name)
+        counts = {}
+        for label, solver in (("dense", field.FACTORED_SOLVER_ID),
+                              ("sparse", field.SPARSE_SOLVER_ID)):  # fmt: skip
+            declared = copy.deepcopy(raw)
+            declared["execution"]["field_solver"] = solver
+            traced, _, _ = floor._traced(declared)
+            counts[label] = {k: dict(floor.primitive_counts(j)) for k, j in traced.items()}
+        entry = {}
+        for function in counts["dense"]:
+            a, b = counts["dense"][function], counts["sparse"][function]
+            changed = {k: [a.get(k, 0), b.get(k, 0)] for k in sorted(set(a) | set(b))
+                       if a.get(k, 0) != b.get(k, 0)}  # fmt: skip
+            entry[function] = dict(dense_equations=sum(a.values()),
+                                   sparse_equations=sum(b.values()), changed=changed)  # fmt: skip
+        report[name] = entry
+        print(name, json.dumps({f: e["changed"] for f, e in entry.items()}), flush=True)
+        with open(out_path, "w") as handle:
+            json.dump(report, handle, indent=1)
+
+
 def main(argv):
     import jax
 
     jax.config.update("jax_enable_x64", True)
+    if argv[0] == "jaxprs":
+        return jaxprs(argv[2:] or list(WORLDS), argv[1])
     out_path, names = argv[0], argv[1:] or list(WORLDS)
     report = {}
     for name in names:
