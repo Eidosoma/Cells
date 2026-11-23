@@ -20,7 +20,7 @@ consumers:
    or machines whose individual on and off states drive a continuous flux, and whose assembly reads
    the flux's pools (FR-13's machines "individually and in aggregate"; FR-40's single ribosome).
 
-**FR-43's acceptance cases** are REQUEST.md's numbered checks, in its order:
+**FR-43's acceptance cases** are REQUEST.md's checks, numbered here in its order:
 
 | Case | The check |
 | --- | --- |
@@ -119,9 +119,12 @@ RSS is the process's, set by the run):
   transient, and falls to rounding by 0.6 s. The planted link is seen at every size.
 - **C1.3:** the material ledgers close to 2.1 × 10⁻¹⁸ fmol at most, and the chain's total drifts by
   at most 1.1 × 10⁻¹⁴ of itself (at 1,024 rows; 4 × 10⁻¹⁶ at 16). Charge is exactly zero, since no
-  charged row moves. Energy closes to 3–5 × 10⁻¹⁵ relative. That closure is by construction for a passive-only network (H = −ΔG,
-  D152 §3.3), so it checks the bookings' arithmetic, not their physics; the guard of record for the
-  physics stays D152's face-free world and its NumPy ΔG test.
+  charged row moves. Energy closes to 3–5 × 10⁻¹⁵ relative, but that is by construction for a
+  passive-only network (H = −ΔG, D152 §3.3), so the probe also compares the booked heat with the
+  closed form's free-energy drop, F(n₀) − F(n_ref(t)) with F = Σ RT n (ln(n/V) − 1) + μ°′n, at every
+  saved step (`probe/heat_check.py`, `out/v2/heat_check.json`). They agree to 2.0 × 10⁻⁵ of the
+  drop's scale at every size, worst at 0.01 s in the fast transient, as the amounts do, and to
+  1–4 × 10⁻¹² at 2 s; against the engine's own states the heat is the drop to 2 × 10⁻¹³.
 - **C1.4:** compile, execute and memory columns above. The 16-row control's error and cost are
   today's engine's; above 16 nothing but the cap changed.
 
@@ -286,9 +289,9 @@ reach, so it lands after that build or with its owner's leave):
 3. The trace estimate: `species_reactions.working_size` counts the dense layout once, not per saved
    step (host-side admission, no program; today it refuses 256 rows at 400 steps under a 2 GiB
    budget that 1.1 GiB fits).
-4. **Tests** (D224's costs stated at landing): the 32-row chain against its closed form with the
-   planted link, as one row of the existing `test_species_cap_runs.py` (about 20 s, nearly all
-   compile; tier 2); the refusal test at 1,025 rows (parse only, about 2 s); the 1,024-row world for
+4. **Tests** (D224's costs stated at landing): the 32-row chain against its closed form, amounts
+   and booked heat, with the planted link, as one row of the existing `test_species_cap_runs.py`
+   (about 20 s, nearly all compile; tier 2); the refusal test at 1,025 rows (parse only, about 2 s); the 1,024-row world for
    20 steps as a tier-3 guard (about 1 min with the gate). The 256 and 1,024 records above stay a
    detached benchmark, rerun at each later raise, never tier tests.
 5. **Docs:** D150 §2.6 and §11.5, D152 §7.2 and its refusal lists, the operators' docstrings and
@@ -372,7 +375,9 @@ beside the reactions', which pins the order the split uses.
 
 **This is composition M3 (D301) with reactions in place of turnover,** and D152's door "Volume (water,
 the lumen): `VIEW_READS` with D150's fallback; bookings at the view through water's endpoint free
-energy".
+energy". D301's inventory (`/mnt/workspaces/Cells/arch-inventories-20261122/INVENTORIES.md`, part A,
+row 2) prices M3 for turnover at 2–2.5 agent-days of declared reads only, class (i), with no new state;
+reactions differ in reading the volume for their rates as well as their bookings.
 
 **Today** `local_species_reactions@1` lists `volume` and `extracellular_volume` in `CONFLICTS_VIEW`
 (`species_reactions.py`:1433), so water (`VIEW_FIELDS`) is refused at parse
