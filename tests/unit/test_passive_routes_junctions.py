@@ -17,7 +17,8 @@ gate is pinned open, on which passive_constant_field_permeation@1 carries the an
   capacitor component in a composite beside local_species_reactions@1. The plain @3 crossing row is
   the kind file's (test_passive_routes_kind.py), where the blanket junction refusal's row was
   (D310's sanctioned change).
-The kind file keeps its tier-2 cost (D224); these rows hold their own: two compiles, about 60 s.
+The kind file keeps its tier-2 cost (D224); these rows hold their own: two compiles, 61 s on the
+timed lane (CPU 4 under its lock, at b82856ad), the kind file 70 s.
 """
 
 import copy
@@ -155,7 +156,7 @@ def test_the_charged_laws_rate_and_step_terms_on_each_host_are_their_closed_form
     bath; its stage term is G = F^2/RT z^2 P A max(c) at a patch's two ends and 2G at each of a
     junction's cells. On the junction, each convention planted on the law's kernel fails the
     rate: the valence's sign, the voltage's orientation and the two ends' concentrations swapped.
-    Parses only, about 2 s each."""
+    Parses only: under 1 s each on the timed lane."""
     raw = host_worlds()[host]
     spec, _, state, p, control, phi = start_of(raw)
     s, i, o, z, x, k_in, k_out = closed_slopes(spec, p, phi)
@@ -205,7 +206,7 @@ def test_a_junction_route_refuses_the_step_its_term_bounds_and_a_planted_half_ad
     honest rate the step is refused: membrane_rate's charge rule over the 2G term, with X at 2 and
     1 uM (its charge mode is the fastest), and material_rate's rule over the two-end sum, at
     V = 0. With the term planted at half (G at each cell; each end's own slope, half the sum
-    between equal cells at V = 0) the same step is admitted. About 3 s each."""
+    between equal cells at V = 0) the same step is admitted. 0.1 s each on the timed lane."""
     if term == "charge":
         raw = junction_pair(a_mM=2e-3, b_mM=1e-3, voltage_fmol=VOLT)
     else:
@@ -275,7 +276,7 @@ def test_a_charged_row_drifts_across_a_junction_to_its_closed_form(row):
     2 uM against 1e-9 mM: 2.0% of the route's heat at this dt and 0.86% at half of it, refused),
     as the reactions operator's known limit (its §3.3 (a)); from 1 uM, 7.2e-5 and 1.8e-5, second
     order. Both rows share one compile (only data differ); dt = 25 us keeps dt x rate at most
-    about 0.02 (FR-18's step advice). About 15 s for both."""
+    about 0.02 (FR-18's step advice). On the timed lane, 23 s with the compile and then 3 s."""
     if row == "trace":
         raw = junction_pair(voltage_fmol=VOLT)
     else:
@@ -315,7 +316,7 @@ def test_a_reacting_charged_trace_row_on_a_junction_reaches_its_linear_steady_st
     the energy guard is the own-charge row's, not this one's). Measured at this dt, 2.4e-4 and
     2.8e-4 from it: the operator's Strang split moves the scheme's fixed point by O(dt^2) (7.8e-5
     and 9.4e-5 at half the dt), beside the 2 uV junction voltage that K's counter-current needs;
-    5e-4 holds. One composite compile, about 40 s."""
+    5e-4 holds. One composite compile: 31 s on the timed lane."""
     k0, k_dec, end, dt = 1e-6, 10.0, 1.5, 1e-3
     raw = junction_pair(a_mM=1e-9, b_mM=1e-9, end=end, dt=dt, composite=True)
     raw = add_inventory_species(
