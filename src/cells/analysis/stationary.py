@@ -645,8 +645,17 @@ def _carries(p, control, k, m):
     return False
 
 
+FORMS_FACE_REFUSAL = (
+    "logmean_electrodiffusion_forms@1's faces join outside nodes outside the faces' arrays, and "
+    "their movers carry several rows: the structural laws read neither (version 1)"
+)
+
+
 def _components(p, control, species):
-    """Connected node sets (cell + outside numbering) under routes carrying `species`."""
+    """Connected node sets (cell + outside numbering) under routes carrying `species`. A layout
+    with forms faces (their own entity set) is refused, statically, by its type."""
+    if "forms_face_active" in type(p)._fields:
+        raise ValueError(FORMS_FACE_REFUSAL)
     n, o = np.asarray(p.active).size, np.asarray(p.outside_active).size
     union = _Union(n + o)
     for m in np.flatnonzero(np.asarray(p.membrane_active)):

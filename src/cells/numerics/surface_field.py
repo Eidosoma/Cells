@@ -6,6 +6,8 @@ the floating offsets. Reservoirs impose absolute outside voltages and expose
 their electrode charge/current/work instead of hiding electrical sources.
 """
 
+import contextvars
+from contextlib import contextmanager
 from typing import NamedTuple
 
 import jax
@@ -99,6 +101,18 @@ FloorLayout = NamedTuple(
 )
 
 
+class FormsField(NamedTuple):
+    """The forms faces at one stage, for solve's offset balance: their entity set
+    (surface_transport.FormsFaces), each mover's concentration (mM) at each face's sender and
+    receiver [mover, forms face], and each face's incidence on the floating offsets [component,
+    forms face] (basis[sender] - basis[receiver], as bind's face_incidence)."""
+
+    faces: object
+    left: object
+    right: object
+    incidence: object
+
+
 class Values(NamedTuple):
     potential_V: object
     membrane_charge_C: object
@@ -123,12 +137,33 @@ class Values(NamedTuple):
     converged: object
 
 
+# The forms faces' return paths (logmean_electrodiffusion_forms@1; models/surface_pump_v3): each a
+# charged path between two outside nodes (index pairs) that the layout's faces do not hold, since
+# forms faces are their own entity set. bind's connectivity check counts them, so a floating
+# component whose only path to a clamp is a forms face is admitted. Empty outside return_paths,
+# which resolved_pump_tissue@3's initial_values enters and leaves around its one base binding, so
+# every other binding is today's. bind is its only reader.
+_RETURN_PATHS = contextvars.ContextVar("forms_face_return_paths", default=())
+
+
+@contextmanager
+def return_paths(pairs):
+    """Within the block, bind counts these (sender, receiver) outside-node index pairs as charged
+    return paths (the forms faces')."""
+    token = _RETURN_PATHS.set(tuple((int(a), int(b)) for a, b in pairs))
+    try:
+        yield
+    finally:
+        _RETURN_PATHS.reset(token)
+
+
 def bind(layout, gauge_mask, *, solver=SOLVER_ID):
     """Host-only capacitance topology, fixed gauge and fail-closed connectivity.
 
     A reservoir is both a concentration bath and a voltage clamp in this law.
     Closed graphs require exactly one outside gauge. All floating components
-    need a charged outside-face path to a clamp/gauge even if junctions close.
+    need a charged outside-face path to a clamp/gauge even if junctions close:
+    a face of the layout, or a forms face's return path (return_paths).
     The factored solver returns a FactoredLayout with the same reduction, and
     the floor solver a FloorLayout.
     """
@@ -188,6 +223,8 @@ def bind(layout, gauge_mask, *, solver=SOLVER_ID):
     conductive = np.any((p.valence != 0) & (p.face_factor > 0), axis=0)
     for k in np.flatnonzero(p.face_active & conductive):
         edges.append((root(n + int(p.face_sender[k])), root(n + int(p.face_receiver[k]))))
+    for a, b in _RETURN_PATHS.get():  # The forms faces' (empty outside return_paths).
+        edges.append((root(n + a), root(n + b)))
     for _ in groups:
         for i, j in edges:
             if i in reached or j in reached:
@@ -355,6 +392,7 @@ def solve(
     xp=jnp,
     max_iterations=16,
     max_backtracks=12,
+    forms=None,
 ):
     """Recompute one world's field and transport from same-stage state/controls.
 
@@ -366,6 +404,12 @@ def solve(
     capacitor-ledger check (charge_tolerance). Invalid/incompatible states or
     exhausted roots return converged=False; with a FloorLayout, a root within
     the attainable current floor (FLOOR_SOLVER_ID) counts as found.
+
+    forms (static; None for every world without forms faces, whose program is
+    then today's): a FormsField, the forms faces' movers at their ends and
+    each face's incidence on the floating offsets. Their conductance joins the
+    offset matrix and their currents the Kirchhoff residual, as the faces'
+    do; their rates are the caller's (surface_transport.forms_face_transport).
     """
     if type(max_iterations) is not int or max_iterations < 0:
         raise ValueError("Require a nonnegative Newton bound")
@@ -397,7 +441,22 @@ def solve(
     dv = base[n + s.face_sender] - base[n + s.face_receiver]
     face0 = F * xp.sum(z * weight * log, axis=0) + conductance * dv
     matrix = (p.face_incidence * conductance) @ p.face_incidence.T
-    initial_offset = _offset_solve(matrix, -p.face_incidence @ face0, p, xp=xp)
+    if forms is None:
+        initial_offset = _offset_solve(matrix, -p.face_incidence @ face0, p, xp=xp)
+    else:  # The forms faces' conductance and start currents, as the faces' (static).
+        ff = forms.faces
+        left_f = xp.where(ff.active, forms.left, 1.0)
+        right_f = xp.where(ff.active, forms.right, 1.0)
+        mean_f, log_f = logmean(left_f, right_f, xp=xp)
+        weight_f = ff.factor * mean_f
+        zf = ff.valence
+        conductance_f = F**2 / rt * xp.sum(zf * zf * weight_f, axis=0)
+        dv_f = base[n + ff.sender] - base[n + ff.receiver]
+        face0_f = F * xp.sum(zf * weight_f * log_f, axis=0) + conductance_f * dv_f
+        matrix = matrix + (forms.incidence * conductance_f) @ forms.incidence.T
+        initial_offset = _offset_solve(
+            matrix, -(p.face_incidence @ face0 + forms.incidence @ face0_f), p, xp=xp
+        )
 
     def evaluate(offset):
         phi = base + p.floating_basis @ offset
@@ -410,6 +469,16 @@ def solve(
             xp.max(xp.abs(rates.face_current_A), initial=0.0),
             xp.max(xp.abs(rates.junction_current_A), initial=0.0),
         )
+        forms_ok = True
+        if forms is not None:  # The forms faces' currents join each floating component's balance.
+            ff = forms.faces
+            fr = surface.forms_face_transport(
+                forms.left, forms.right, phi[n + ff.sender] - phi[n + ff.receiver],
+                s.temperature, ff, xp=xp,
+            )  # fmt: skip
+            residual = residual + forms.incidence @ fr.current_A
+            scale = xp.maximum(scale, xp.max(xp.abs(fr.current_A), initial=0.0))
+            forms_ok = fr.valid
         norm = xp.max(xp.abs(residual), initial=0.0) / (CURRENT_ATOL_A + CURRENT_RTOL * scale)
         x = z * F * rates.junction_voltage_V / rt
         a, b = ci[:, s.junction_sender], ci[:, s.junction_receiver]
@@ -429,6 +498,8 @@ def solve(
         slope = xp.where(s.junction_active, slope, 0.0)
         valid = domain & rates.valid & xp.isfinite(norm) & xp.all(xp.isfinite(phi))
         valid &= xp.all(xp.isfinite(slope) & (slope >= 0))
+        if forms is not None:
+            valid &= forms_ok
         return phi, rates, residual, norm, slope, valid
 
     def keep_going(state):
@@ -481,6 +552,10 @@ def solve(
         ) + xp.abs(p.junction_incidence) @ (
             slope * (size[s.junction_sender] + size[s.junction_receiver])
         )
+        if forms is not None:  # The forms faces' currents round as the faces' do.
+            incident = incident + xp.abs(forms.incidence) @ (
+                conductance_f * (size[n + forms.faces.sender] + size[n + forms.faces.receiver])
+            )
         floor = p.current_floor * np.finfo(float).eps * incident
         rooted |= xp.all(xp.abs(current_residual) <= floor)
     patch_charge = s.membrane_capacitance * rates.membrane_voltage_V
