@@ -1,0 +1,13 @@
+# Starts cells-jax-cache-sweep.service at 02:00 UTC, before the nightly tiers (02:30), which run cold
+# and so neither read nor write the cache. Persistent: a night missed while the machine was off
+# sweeps at boot.
+[Unit]
+Description=Cells JAX compilation cache sweep at 02:00 UTC
+
+[Timer]
+OnCalendar=*-*-* 02:00:00 UTC
+Persistent=true
+Unit=cells-jax-cache-sweep.service
+
+[Install]
+WantedBy=timers.target

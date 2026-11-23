@@ -72,6 +72,15 @@ Host only: no world runs here.
   environment, then only what each test sets. A landing gate runs this file with its own
   ADDITIONS_FROM, LANE and the rest (T66, 20 November): planted in this process's environment, they
   reach neither a test's gate nor its stack, and the list covers every variable the tools read.
+- **Cold by construction** (D321 R1 and R2; JAX's persistent compilation cache):
+  - a caller's cache settings reach none of a gate's processes, and the cold check runs after the
+    pre-lock tests, crossrev, the tiers and G1;
+  - a cache entry planted under the gate's outputs at each stage refuses the gate there, as its own
+    fault (not bisected);
+  - every gate script disables the cache, and the check finds entries by their names only;
+  - on the real tier runner, a caller's settings reach no test process, measure marks its record
+    cold, and only run --jax-cache FOLDER runs warm, its record naming the folder;
+  - the nightly logs the cache disabled and its cold check.
 """
 
 import fcntl
@@ -605,6 +614,12 @@ def note(text):
 if args[:2] == ["-I", "-c"]:  # The interpreter's identity.
     print("0.0.1 0.0.1 0.0.1"); sys.exit(0)
 a = [x for x in args if x not in ("-B", "-u")]
+if os.environ.get("JAX_ENABLE_COMPILATION_CACHE") != "false" or "JAX_COMPILATION_CACHE_DIR" in os.environ:
+    note("warm " + " ".join(a[:2]))  # A process that would use a compilation cache (D321 R2).
+PLANT = (cwd / "jax_entry.txt").read_text().strip() if (cwd / "jax_entry.txt").exists() else ""
+def plant(folder):  # The entry a process that turned the cache back on would leave.
+    folder.mkdir(parents=True, exist_ok=True)
+    (folder / ("jit_f-" + "0" * 64 + "-cache")).write_bytes(b"x")
 if a[:2] == ["-m", "pytest"]:
     note("collect " + cwd.name)
     ids = [l for l in (cwd / "ids.txt").read_text().splitlines() if "::" in l]
@@ -629,6 +644,8 @@ if a[:2] == ["scripts/test_tiers.py", "run"]:
             if bad:
                 changed.append({"file": row["file"], "why": ["failed"], "now": [1, counts]})
     out = Path(a[a.index("--out") + 1]); out.mkdir(parents=True, exist_ok=True)
+    if (PLANT == "prelock" and "9" in tiers) or (PLANT == "tiers" and tiers == ["1", "2"]):
+        plant(out / "outputs" / "x" / "Cells" / "cache" / "jax")
     (out / "run.json").write_text(json.dumps({"files": files}))
     (out / "summary.json").write_text(json.dumps({"changed_vs_record": changed}))
     note("tiers " + " ".join(tiers) + " " + cwd.name)
@@ -650,6 +667,8 @@ if a[:2] == ["validation/results_baseline.py", "save"]:
     worlds = a[a.index("--worlds") + 1:a.index("--from")]
     note("save " + set_name + " " + cwd.name)
     (part / set_name).mkdir(parents=True, exist_ok=True)
+    if PLANT == "save":  # Beside the parts: a part's own folders are its sets, which G1 merges.
+        plant(part.parent.parent / ("jax-" + part.name))
     manifest = {"worlds": {}}
     planted = (cwd / "g1.txt").read_text().split() if (cwd / "g1.txt").exists() else []
     for w in worlds:
@@ -719,6 +738,33 @@ def test_prelock_only_stops_before_queueing(gate):
     code, calls, log = run_gate(gate, out, PRELOCK_ONLY="1")
     assert code == 0 and "prelock passed" in log and "not queued" in log
     assert "waiting for" not in log and not any(c.startswith("crossrev") for c in calls)
+
+
+def test_the_gate_runs_every_process_cold_whatever_its_callers_environment(gate):
+    """D321 R2: a caller's cache settings (an opted-in shell) reach none of a gate's processes, and
+    the cold check runs after every stage."""
+    code, calls, log = run_gate(gate, gate["tmp"] / "out", JAX_ENABLE_COMPILATION_CACHE="true",
+                                JAX_COMPILATION_CACHE_DIR=str(gate["tmp"] / "shared"))
+    assert code == 0, log
+    assert not [c for c in calls if c.startswith("warm")], calls
+    assert "persistent compilation cache disabled in every process" in log
+    for stage in ("the pre-lock tests", "crossrev", "the tiers", "G1"):
+        assert f"cold check after {stage}: " in log, stage
+
+
+@pytest.mark.parametrize("plant, stage", [
+    ("prelock", "the pre-lock tests"), ("tiers", "the tiers"), ("save", "G1")])
+def test_a_cache_entry_under_the_gates_outputs_refuses_it(gate, plant, stage):
+    """An entry means something turned the cache back on: the gate stops there, and the stop is the
+    gate's own fault, not a head's, so a stack does not bisect it."""
+    (gate["head"] / "jax_entry.txt").write_text(plant)
+    out = gate["tmp"] / "out"
+    code, calls, log = run_gate(gate, out)
+    assert code == 1, log
+    assert f"JAX compilation cache entries appeared after {stage} (the cold check)" in log
+    assert ("lock held" in log) == (plant != "prelock")
+    assert any(c.startswith("save") for c in calls) == (plant == "save")
+    assert steps.stack_failure(out)["stage"] is None
 
 
 def test_a_prelock_refusal_never_takes_the_lock(gate):
@@ -884,8 +930,9 @@ H1 = {"tests/unit/test_h1.py": "def test_h1():\n    pass\n",
 def test_a_passing_stack_gates_its_trial_merges_once_as_they_land(stack):
     h1, h3 = add_head(stack, "h1", H1), add_head(stack, "h3", {"docs/h3.md": "three\n"})
     measured = stack["tmp"] / "h1-measured.json"
-    measured.write_text(json.dumps({"provenance": {"by": "test"}, "files": [
-        {"file": "tests/unit/test_h1.py", "seconds": 0.4, "exit_code": 0, "counts": {"passed": 1}}]}))
+    measured.write_text(json.dumps({"provenance": {"by": "test"}, "jax_compilation_cache": "disabled",
+                                    "files": [{"file": "tests/unit/test_h1.py", "seconds": 0.4,
+                                               "exit_code": 0, "counts": {"passed": 1}}]}))
     message = "Merge h1 at its head\n\nCo-Authored-By: Someone <someone@example.invalid>"
     code, calls, out, doc = run_stack(stack, [
         {"name": "h1", "rev": h1, "additions_from": ["tests/unit/test_h1.py"],
@@ -1267,6 +1314,7 @@ def test_the_nightly_takes_a_free_lane_and_publishes_or_stops_selection(tmp_path
                                str(out)], env=env, capture_output=True, text=True, timeout=300)
     log = (out / "nightly.log").read_text()
     assert "lane B, lock held" in log and done.returncode == int(fail), log
+    assert "compilation cache disabled in every process" in log and "cold check after the tiers: " in log
     published = json.loads((cache / "scope-map.json").read_text())
     if fail:
         assert (cache / "selection-stopped").is_file() and published["kind"] == "the last passing map"
@@ -1339,3 +1387,70 @@ def test_every_variable_the_tools_read_is_dropped_from_the_tests():
         read |= set(py.findall((GATES / name).read_text()))
     assert {"ADDITIONS_FROM", "LANE", "TIERS", "BASE_S", "PRE_CPU", "CELLS_SCOPE_LOG"} <= read
     assert read - LOCALS <= TOOL_ENV, sorted(read - LOCALS - TOOL_ENV)
+
+
+# --------------------------------------------------------------- cold by construction (D321)
+
+@pytest.mark.parametrize("script, guard, checks", [
+    ("gate.sh", "export JAX_ENABLE_COMPILATION_CACHE=false", True),
+    ("stack.sh", "export JAX_ENABLE_COMPILATION_CACHE=false", True),
+    ("nightly_tiers.sh", "export JAX_ENABLE_COMPILATION_CACHE=false", True),
+    ("fr_landing_set.sh", "export JAX_ENABLE_COMPILATION_CACHE=false", True),
+    ("fr_landing_holder.sh", "--env JAX_ENABLE_COMPILATION_CACHE=false", False),  # Its queue units.
+])
+def test_every_gate_script_disables_the_compilation_cache(script, guard, checks):
+    """R2: each gate disables the cache for all it starts, drops any folder it was given, and runs
+    the cold check (the holder's units are checked by fr_landing_set.sh)."""
+    text = (GATES / script).read_text()
+    assert guard in text
+    assert ("unset JAX_COMPILATION_CACHE_DIR" in text) == guard.startswith("export")
+    assert ("jax-entries" in text) == checks
+
+
+def test_the_cold_check_finds_cache_entries_by_their_names(tmp_path):
+    key = "0123456789abcdef" * 4
+    names = [f"a/b/jit_f-{key}-cache", f"jit__window_rollout-{key}-cache", "x-cache",
+             f"jit_f-{key[:-1]}-cache", f"jit_f-{key}-cache.txt", "ids-820bc1ea2a8a-d034178668872798"]
+    for name in names:
+        (tmp_path / name).parent.mkdir(parents=True, exist_ok=True)
+        (tmp_path / name).write_text("")
+    found = [Path(p).relative_to(tmp_path).as_posix() for p in steps.jax_entries([tmp_path])]
+    assert found == names[:2]
+    assert steps.main(["jax-entries", str(tmp_path / "a")]) == 1
+    assert steps.main(["jax-entries", str(tmp_path / "missing")]) == 0
+
+
+ENV_TEST = ("import os\n\n\ndef test_env():\n"
+            "    assert os.environ['JAX_ENABLE_COMPILATION_CACHE'] == os.environ['EXPECT_ENABLED']\n"
+            "    assert os.environ.get('JAX_COMPILATION_CACHE_DIR', '') == os.environ['EXPECT_DIR']\n")
+
+
+def test_the_tier_runner_is_cold_unless_a_run_names_a_cache(tmp_path):
+    """R1, on the real tier runner (about 3 s, no JAX): a caller's cache settings never reach a test
+    process; measure runs cold and marks its record so; only run --jax-cache FOLDER runs warm, with
+    the qualified settings, and its record names the folder."""
+    snap = scope_snapshot(tmp_path / "snap", {"tests/unit/test_env.py": ENV_TEST})
+    only = tmp_path / "only.json"
+    only.write_text(json.dumps({"tiers": {"1": [{"file": "tests/unit/test_env.py", "seconds": 1.0,
+                                                 "exit_code": 0, "counts": {"passed": 1}}]}}))
+    shared, mine = tmp_path / "shared", (tmp_path / "mine").resolve()
+    caller = clean_env(PYTHONPATH=str(snap / "src"), JAX_ENABLE_COMPILATION_CACHE="true",
+                       JAX_COMPILATION_CACHE_DIR=str(shared))
+    cpu = str(sorted(os.sched_getaffinity(0))[0])
+
+    def tool(*args, enabled, folder=""):
+        done = subprocess.run([sys.executable, "-B", "scripts/test_tiers.py", *args, "--cpus", cpu],
+                              cwd=snap, capture_output=True, text=True, timeout=120,
+                              env=dict(caller, EXPECT_ENABLED=enabled, EXPECT_DIR=folder))
+        assert done.returncode == 0, done.stdout + done.stderr
+
+    tool("run", "--tiers", str(only), "--out", str(tmp_path / "cold"), enabled="false")
+    tool("run", "--tiers", str(only), "--out", str(tmp_path / "warm"), "--jax-cache", str(mine),
+         enabled="true", folder=str(mine))
+    tool("measure", "--only", str(only), "--out", str(tmp_path / "m"), enabled="false")
+    cold, warm = (json.loads((tmp_path / d / "run.json").read_text()) for d in ("cold", "warm"))
+    measured = json.loads((tmp_path / "m" / "measured.json").read_text())
+    assert cold["jax_compilation_cache"] == measured["jax_compilation_cache"] == "disabled"
+    assert warm["jax_compilation_cache"] == str(mine)
+    assert [r["exit_code"] for r in cold["files"] + warm["files"] + measured["files"]] == [0, 0, 0]
+    assert not shared.exists()
