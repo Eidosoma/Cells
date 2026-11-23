@@ -4,7 +4,8 @@ These are code-blind reference solutions for FR-43 part 2: two processes writing
 at fixed volume (C2.3) and at changing volume (C2.6/C2.7 and C2.8). Each is computed from the
 equations alone:
 - `docs/TEMPLATED_POLYMERISATION_LAWS.md` §0–§2, §3.1, §3.2, §3.4 and §4.1–§4.8;
-- the specification's LAWS.md and READOUTS.md, as amended on 23 November 2026;
+- the specification's LAWS.md and READOUTS.md, as amended on 23 November 2026 (amendments 1 and
+  2);
 - the declared worlds.
 
 The code uses numpy, scipy and the standard library. Nothing here imports, runs or reads the engine,
@@ -32,7 +33,7 @@ From the repository root:
 
 - `--cases C2.3-sink C2.6-swelling-cell ...` regenerates only those cases.
 - `--summary` prints the results table below from `out/`.
-- Each case takes 1–3 minutes on one core.
+- Each case takes about a minute or less on one core.
 - The runner pins BLAS to one thread before numpy loads. So a regeneration on the same platform and
   library versions reproduces the files bitwise. A threaded OpenBLAS changes the step sequence in
   its last bits, and the results by about 1e-13 relative.
@@ -73,6 +74,9 @@ J/mol, in Pa m³/mol (the water law) and, times 10⁻³, in pJ/fmol.
 Potentials, per molecule, over RT (§0), with c° = 1000 mM, the operator's standard concentration:
 
     μ_s/RT = μ°_s/RT + ln(c_s / c°)           μ°_res = μ°_R / L_R  (§3.1, no concentration term)
+
+The pool's declared `machines` is a count of molecules (amendment 2). So the machines total, and the
+free machines' initial amount, is M_q = machines × 10¹⁵/N_A fmol: 1.6605e-7 fmol for 100 copies.
 
 Rates (§4.1–§4.5), with r = L/m residues per stage:
 - initiation: J_I = k_I T c₁ F_pol, with c₁ = 10¹⁵/(N_A V) mM. There is no factor, so u = 1, and
@@ -148,7 +152,8 @@ The `checks` in each file report this identity's residual. They also report:
 
 ## Method and accuracy
 
-- **The primary method.** scipy's `solve_ivp` with Radau (implicit Radau IIA, order 5) at rtol 1e-11.
+- **The primary method,** for every case: scipy's `solve_ivp` with Radau (implicit Radau IIA, order
+  5) at rtol 1e-11.
   - atol is 1e-30 fmol (or pL) for the states and extents, so that the relative tolerance governs
     even the trace rows.
   - For the heats and works atol is 1e-20 pJ, because an integrand J ΔG starting at exactly 0 has
@@ -157,38 +162,81 @@ The `checks` in each file report this identity's residual. They also report:
 - **Sampling.** Each reported time is a step end: the run restarts at every reported time, and no
   dense output is used.
 - **The recharging split.** A first pass locates J_C's sign changes as events, and a second pass adds
-  them as step ends (see NOTES.md, reading 3).
-- **The second methods.**
-  - C2.3 and C2.8, which are stiff: Radau at rtol 1e-12, and BDF at rtol 1e-12, a different method
-    family.
-  - C2.6, which is not stiff: DOP853 at rtol 1e-13, an explicit Runge–Kutta method of order 8, and
-    Radau at rtol 1e-12.
+  them as step ends (see NOTES.md, reading 4).
+- **The second methods,** for every case:
+  - DOP853 at rtol 1e-13, an explicit Runge–Kutta method of order 8 and an independent method
+    family. No world is stiff once the pools' machines are counts, so it applies throughout.
+  - Radau at rtol 1e-12.
+- **The tolerance was checked.** Against Radau at rtol 1e-13, the primary (rtol 1e-11) was within
+  3.5e-13 on every quantity in C2.3's sink and source and in C2.8, the gene unit's net rate
+  included. No world needs a tighter rtol. The earlier, stiffer reading of the machines did need one
+  for C2.8; NOTES.md, "Superseded outputs", gives that history.
 - **The accuracy measure** is e = max_i |q_second(t_i) − q_primary(t_i)| / max_i |q_primary(t_i)|,
   CRITERIA.md's normalisation.
 
 ## Results
 
 Every file's `method.second[...].difference_from_primary` gives e per quantity, and
-`method.largest_difference_e` gives the largest over the second methods. The table gives, per case:
+`method.largest_difference_e` gives the largest over the second methods. The table comes from
+`run_references.py --summary`. It gives, per case:
 - the primary method's steps;
 - each second method's largest e, and the quantity it falls on;
 - the largest identity residuals.
 
 | Case | Primary steps | Second method: largest e (quantity) | Identities: largest residual |
 | --- | --- | --- | --- |
-| C2.3-sink | 10995 | Radau 1e-12: 9.1e-12 (`gene_rate_N_fmol_per_s`); BDF 1e-12: 3.1e-11 (`gene_state.releases.tx`) | books, machines, residues, products, moieties 5.8e-13 fmol; energy 2.2e-15 of scale |
-| C2.3-sink-planted | 10973 | Radau 1e-12: 8.0e-12 (`gene_rate_N_fmol_per_s`); BDF 1e-12: 3.1e-11 (`gene_state.releases.tx`) | books, machines, residues, products, moieties 4.0e-13 fmol; energy 5.4e-15 of scale |
-| C2.3-source | 11055 | Radau 1e-12: 3.5e-14 (`gene_rate_N_fmol_per_s`); BDF 1e-12: 3.0e-11 (`gene_state.releases.tx`) | books, machines, residues, products, moieties 5.8e-13 fmol; energy 1.3e-14 of scale |
-| C2.3-source-planted | 11050 | Radau 1e-12: 6.9e-14 (`gene_state.releases.tx`); BDF 1e-12: 3.0e-11 (`gene_state.releases.tx`) | books, machines, residues, products, moieties 4.3e-13 fmol; energy 8.6e-15 of scale |
+| C2.3-sink | 6151 | DOP853 1e-13: 1.3e-12 (`gene_state.complexes.tx.stage_4`); Radau 1e-12: 1.8e-13 (`gene_consumed_N_fmol`) | books, machines, residues, products, moieties 9.9e-14 fmol; energy 4.0e-14 of scale |
+| C2.3-sink-planted | 6152 | DOP853 1e-13: 4.7e-13 (`gene_state.complexes.tx.stage_3`); Radau 1e-12: 1.5e-13 (`gene_rate_N_fmol_per_s`) | books, machines, residues, products, moieties 1.5e-13 fmol; energy 8.5e-14 of scale |
+| C2.3-source | 6015 | DOP853 1e-13: 2.6e-12 (`gene_state.complexes.tx.stage_6`); Radau 1e-12: 2.7e-13 (`gene_state.turnovers.recharge`) | books, machines, residues, products, moieties 3.6e-14 fmol; energy 3.4e-12 of scale |
+| C2.3-source-planted | 6017 | DOP853 1e-13: 2.9e-12 (`gene_state.complexes.tx.stage_6`); Radau 1e-12: 1.5e-13 (`gene_rate_N_fmol_per_s`) | books, machines, residues, products, moieties 1.8e-13 fmol; energy 7.2e-12 of scale |
+| C2.6-swelling-cell | 2675 | DOP853 1e-13: 2.6e-14 (`network_heat_pJ`); Radau 1e-12: 1.5e-14 (`water_heat_pJ`) | energy 2.2e-15 of scale |
+| C2.8-swelling-pair-sink | 5252 | DOP853 1e-13: 3.1e-13 (`gene_state.turnovers.recharge`); Radau 1e-12: 3.8e-13 (`gene_rate_N_fmol_per_s`) | books, machines, residues, products, moieties 1.2e-13 fmol; energy 3.2e-15 of scale |
 
-**C2.3's stated accuracy: e ≤ 3.1e-11 for every quantity.**
-- For CRITERIA.md's judged quantities, the largest e over both second methods is:
-  - n_N: 1e-20;
-  - the gene unit's books: 2.0e-12;
-  - the network's books: 1.4e-12;
-  - the route rate: 2.3e-14.
-- The worst differences fall on the releases and the stage-8 complexes, whose values are the
-  smallest of the gene unit's state (about 1e-13 fmol). They come from BDF, the lower-order method.
-- Radau at 1e-12 agrees with the primary to 9.1e-12 or better.
-- One sign change of J_C is found in each case: at t = 0.047963 s in the sink and 0.047978 s in the
-  source. The three methods place it within 4.1e-14 s of each other.
+**C2.3's stated accuracy: e ≤ 2.9e-12 for every quantity.**
+- For CRITERIA.md's judged quantities, the largest e over both second methods and all four cases is:
+  - n_N: 6.0e-15;
+  - the gene unit's books: 1.8e-13;
+  - the network's books: 7.8e-15;
+  - the route rate: 9.6e-15.
+- The worst differences are DOP853's, on the middle stages' complexes, which hold 1e-8 fmol or
+  less.
+- Recharging changes sign once in the sink: at t = 36.43630 s, and at 36.26698 s in its planted twin.
+  The three methods place it within 2e-11 s of each other. In the source it runs backward
+  throughout.
+- The energy identity's relative residual is larger in the source (3.4e-12, and 7.2e-12 in its twin)
+  only because the source's energy scale is small, about 0.4 pJ. In absolute terms it is 1.3e-12 pJ
+  (2.8e-12 pJ in the twin), which is F's roundoff against |F| of about 3e3 pJ.
+
+**C2.6 and C2.7's stated accuracy: e ≤ 2.6e-14 for every quantity.**
+- The figures:
+  - n_A, n_B: 3.1e-15;
+  - n_C: 2.8e-15;
+  - V: 9.0e-15;
+  - F: 2.2e-15;
+  - water's heat: 1.5e-14;
+  - the bath's work: 9.4e-15;
+  - the network's heat: 2.6e-14.
+- C2.6 has no gene unit, so amendment 2 leaves its arrays and checks bitwise unchanged. Only its
+  run times and provenance differ.
+- C2.7's endpoint identity, F + U − F₀ − U₀ = work − heat, closes to 4.1e-12 pJ on every row. That
+  is 2.2e-15 of the energy scale, 1865 pJ.
+- V grows from 1 to 2.5039 pL.
+- The passive route reverses between t = 16 and 16.5 s: the dilution shifts A + B ⇌ C back towards
+  A and B.
+
+**C2.8's stated accuracy: e ≤ 3.8e-13 for every quantity.**
+- For the judged quantities, the largest e over both second methods is:
+  - n_N 4.8e-15, n_X 4.3e-15, n_W 4.4e-15 and V 2.2e-15;
+  - the gene unit's books 2.9e-13, and the network's 4.4e-15;
+  - the gene unit's rate 3.8e-13, and the network's 4.3e-15;
+  - F 1.0e-15.
+- Recharging runs backward throughout the 40 s.
+- V grows from 1 to 2.4677 pL.
+- F falls from 3078.41 to 2377.51 pJ.
+- The driven route's work falls monotonically to −0.84868 pJ, since N stays near 5 fmol and the
+  route's ΔG stays negative. Its heat is 0.
+
+**Reproducibility.**
+- All six files are generated from d65d7a5f, with no dirty code or inputs.
+- Three cases were re-run in a fresh process under another hash seed and on another core: C2.3-sink,
+  C2.3-source-planted and C2.8. Each reproduced its file's arrays and checks bitwise.

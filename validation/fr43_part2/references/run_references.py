@@ -39,26 +39,25 @@ WORLDS = os.path.join(HERE, "worlds")
 OUT = os.path.join(HERE, "out")
 
 PRIMARY = {"method": "Radau", "rtol": 1e-11}
-STIFF_SECOND = [{"method": "Radau", "rtol": 1e-12}, {"method": "BDF", "rtol": 1e-12}]
-NONSTIFF_SECOND = [{"method": "DOP853", "rtol": 1e-13}, {"method": "Radau", "rtol": 1e-12}]
+# No world is stiff once the pools' machines are counts (amendment 2), so the explicit DOP853 is
+# usable everywhere as an independent method family, beside Radau at a tighter tolerance.
+SECOND = [{"method": "DOP853", "rtol": 1e-13}, {"method": "Radau", "rtol": 1e-12}]
 
-# case -> (the world files it serves, the network's rate-constant factor, second methods);
-# the files of one kind differ only in the engine's step, which this calculation does not use.
+# case -> (the world files it serves, the network's rate-constant factor); the files of one kind
+# differ only in the engine's step, which this calculation does not use.
 CASES = {
-    "C2.3-sink": (["C2.3-sink-dt0p5.json", "C2.3-sink-dt0p25.json"], 1.0, STIFF_SECOND),
-    "C2.3-sink-planted": (["C2.3-sink-dt0p5.json", "C2.3-sink-dt0p25.json"], 1.01, STIFF_SECOND),
-    "C2.3-source": (["C2.3-source-dt0p5.json", "C2.3-source-dt0p25.json"], 1.0, STIFF_SECOND),
-    "C2.3-source-planted": (["C2.3-source-dt0p5.json", "C2.3-source-dt0p25.json"], 1.01,
-                            STIFF_SECOND),
+    "C2.3-sink": (["C2.3-sink-dt0p5.json", "C2.3-sink-dt0p25.json"], 1.0),
+    "C2.3-sink-planted": (["C2.3-sink-dt0p5.json", "C2.3-sink-dt0p25.json"], 1.01),
+    "C2.3-source": (["C2.3-source-dt0p5.json", "C2.3-source-dt0p25.json"], 1.0),
+    "C2.3-source-planted": (["C2.3-source-dt0p5.json", "C2.3-source-dt0p25.json"], 1.01),
     "C2.6-swelling-cell": (["C2.6-swelling-cell-dt0p01.json", "C2.6-swelling-cell-dt0p005.json"],
-                           1.0, NONSTIFF_SECOND),
+                           1.0),
     "C2.8-swelling-pair-sink": (["C2.8-swelling-pair-sink-dt0p01.json",
-                                 "C2.8-swelling-pair-sink-dt0p005.json"], 1.0, STIFF_SECOND),
+                                 "C2.8-swelling-pair-sink-dt0p005.json"], 1.0),
 }
 
 INTEGRATOR_NAMES = {
     "Radau": "scipy.integrate.solve_ivp Radau (implicit Radau IIA, order 5)",
-    "BDF": "scipy.integrate.solve_ivp BDF (variable-order BDF/NDF, orders 1-5)",
     "DOP853": "scipy.integrate.solve_ivp DOP853 (explicit Runge-Kutta, order 8)",
 }
 ATOL_TEXT = (f"{ATOL_AMOUNT:g} fmol (amounts, machines, complexes, extents) and pL (volume); "
@@ -87,7 +86,8 @@ def _method_record(spec, info, wall):
 
 
 def run_case(name: str) -> dict:
-    files, k_factor, seconds = CASES[name]
+    files, k_factor = CASES[name]
+    primary, seconds = PRIMARY, SECOND
     worlds = [World(os.path.join(WORLDS, f), network_k_factor=k_factor) for f in files]
     world = worlds[0]
     for other in worlds[1:]:  # one calculation serves every file of the kind
@@ -95,8 +95,8 @@ def run_case(name: str) -> dict:
             raise ValueError(f"{files} differ in more than the engine's step")
     times = world.observation_times
     t0 = time.time()
-    Y, info = integrate(world, times, **PRIMARY)
-    method = {"primary": _method_record(PRIMARY, info, time.time() - t0)}
+    Y, info = integrate(world, times, **primary)
+    method = {"primary": _method_record(primary, info, time.time() - t0)}
     method["primary"]["sampling"] = ("integrated segment by segment between the reported times "
                                      "(and recharging's sign changes), so every reported value "
                                      "is a step end; no dense output")

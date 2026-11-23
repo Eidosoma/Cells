@@ -162,7 +162,11 @@ class World:
         if pool["cell"] != self.cell_id:
             raise ValueError("pool not in the cell")
         self.pool_id = pool["id"]
-        self.machines_total = float(pool["machines"])
+        # A pool's `machines` is a count of molecules in its cell, like a chain's template copies
+        # (LAWS.md, amendment 2): M_q = machines x 1e15/N_A fmol. F_q, the complexes and every
+        # flux stay in fmol.
+        self.machines_copies = float(pool["machines"])
+        self.machines_total = self.machines_copies * 1e15 / N_AVOGADRO
         (ch,) = op["chains"]
         L, m = int(ch["residues"]), int(ch["stages"])
         if L % m:
@@ -218,7 +222,9 @@ class World:
                           reactants={s: float(v) for s, v in r["reactants"].items()},
                           products={s: float(v) for s, v in r["products"].items()},
                           k=k * k_factor, multiplier=mult[r["id"]])
-            for s in set(rx.reactants) | set(rx.products):
+            # the declared order (reactants, then products): a set's order would follow Python's
+            # per-process string hashing, and with it the summation order of dG_r's last bits
+            for s in list(rx.reactants) + [p for p in rx.products if p not in rx.reactants]:
                 rx.nu[s] = rx.products.get(s, 0.0) - rx.reactants.get(s, 0.0)
             if "N" in rx.nu and rx.law != DRIVEN:
                 raise ValueError("N's network books are defined for a one-way (driven) route")
