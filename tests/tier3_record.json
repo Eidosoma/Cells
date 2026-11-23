@@ -38,10 +38,12 @@
   "/mnt/workspaces/Cells/d172-restructure-20261115-01/endgame/c1-3c10b833/tiers-3-attrib/c1-50",
   "/mnt/workspaces/Cells/d172-restructure-20261115-01/endgame/c1-3c10b833/tiers-3-attrib/c1-52",
   "/mnt/workspaces/Cells/d172-restructure-20261115-01/endgame/c1-3c10b833/tiers-3-attrib/c1-54",
-  "/mnt/workspaces/Cells/d172-restructure-20261115-01/endgame/c1-3c10b833/tiers-3-attrib/c1-57"
+  "/mnt/workspaces/Cells/d172-restructure-20261115-01/endgame/c1-3c10b833/tiers-3-attrib/c1-57",
+  "/mnt/workspaces/Cells/fr43-20261123/part1/tiers/tier3-run3"
  ],
  "collected": [
-  "/mnt/workspaces/Cells/test-audit-20261116-01/collect/c1-3c10b833.json"
+  "/mnt/workspaces/Cells/test-audit-20261116-01/collect/c1-3c10b833.json",
+  "/mnt/workspaces/Cells/fr43-20261123/part1/tiers/tier3-run3/collected.json"
  ],
  "time": "file wall seconds only: the -q logs carry no per-test times",
  "outcomes": [
@@ -101,6 +103,17 @@
     "tests/unit/test_stable_seed_partition_advance_refinement.py": "a D189-held tier 1 row (it needs an external bundle); it tests a pinning law this batch retires",
     "tests/unit/test_stable_seed_partition_trajectory.py": "a D189-held tier 1 row (it needs an external bundle); it tests a pinning law this batch retires"
    }
+  }
+ ],
+ "added": [
+  {
+   "decision": "D315",
+   "tag": "fr43-part1-merged-2026-11-23",
+   "files": [
+    "tests/unit/test_species_cap_large.py"
+   ],
+   "note": "FR-43 part 1's tier-3 guard, measured over its full horizon at 764d685a (238.48 s, 3 passed), added after part 1's landing, which folded only its tier 1 and 2 rows",
+   "evidence": "/mnt/workspaces/Cells/fr43-20261123/part1/tiers/tier3-run3/"
   }
  ],
  "files": {
@@ -4384,6 +4397,11 @@
    ["test_ensemble_planning_preserves_calcium_and_world_identity", "passed"],
    ["test_assembly_ensemble_calcium_aggregation", "passed"],
    ["test_cpu_gpu_agreement", "skipped"]
+  ]},
+  "tests/unit/test_species_cap_large.py": {"run": "/mnt/workspaces/Cells/fr43-20261123/part1/tiers/tier3-run3", "log": "/mnt/workspaces/Cells/fr43-20261123/part1/tiers/tier3-run3/logs/tests__unit__test_species_cap_large.py.log", "status": "pass", "exit_code": 0, "timed_out": false, "counts": {"passed": 3}, "seconds": 238.48, "collected": 3, "reached": 3, "aligned": true, "tests": [
+   ["test_a_1024_species_chain_meets_its_closed_form_and_books_its_free_energy_drop", "passed"],
+   ["test_a_1025th_species_is_refused_at_the_parse", "passed"],
+   ["test_its_windowed_run_and_a_two_world_batch_are_admitted_under_2_gib", "passed"]
   ]},
   "tests/unit/test_species_reactions_accuracy.py": {"run": "/mnt/workspaces/Cells/d172-restructure-20261115-01/endgame/c1-3c10b833/tiers-3-resume1", "log": "/mnt/workspaces/Cells/d172-restructure-20261115-01/endgame/c1-3c10b833/tiers-3-resume1/logs/tests__unit__test_species_reactions_accuracy.py.log", "status": "pass", "exit_code": 0, "timed_out": false, "counts": {"passed": 10}, "seconds": 69.3, "collected": 10, "reached": 10, "aligned": true, "tests": [
    ["test_the_share_onsets_accuracy_beside_probe_2d[1e-12]", "passed"],

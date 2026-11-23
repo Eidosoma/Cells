@@ -37,7 +37,7 @@
   "imex_ars222_face_electromigration@1 (the solver; RK4 is refused, §4.6)",
   "the IDs the judged definitions print are recorded by the generator in every engine part and checked against this list before registration"
  ],
- "scope": "Version 1's face-free first acceptance (§8.3): one neutral, impermeant ligand; patch populations, outward on a cell's contact patch to its node and inward on its wall patch; site-conserving internalisation into the patch's cell; a static accessible fraction; scheduled binding and internalisation multipliers; ARS(2,2,2) at the declared 1 ms, on the references' ladder 1, 0.5 and 0.25 ms for q1_fast. Every world is the references' own registered world, synthetic (D152 §2.4's rule): K_d = 1 uM, k_on = 1e3 /(mM s), k_int = 0.1 /s, 1e5 copies, q1_fast 100 times faster. Not claimed: contact populations in a run (milestone 1's stage A checks their layout only); composition with D150's or D152's operators in a run; faces (the later composition item, second order against transport, A.6); RK4 (refused); site occupancy beside a bath schedule (out of scope: the lead's ruling; refused at registration by the operator's view conflicts, admitted in development since FR-23 (D244, e7a54539), so Q6's view_conflict_bath_schedule class was retired on 22 November 2026); the doors of §9; any biological comparison",
+ "scope": "Version 1's face-free first acceptance (§8.3): one neutral, impermeant ligand; patch populations, outward on a cell's contact patch to its node and inward on its wall patch; site-conserving internalisation into the patch's cell; a static accessible fraction; scheduled binding and internalisation multipliers; ARS(2,2,2) at the declared 1 ms, on the references' ladder 1, 0.5 and 0.25 ms for q1_fast. Every world is the references' own registered world, synthetic (D152 §2.4's rule): K_d = 1 uM, k_on = 1e3 /(mM s), k_int = 0.1 /s, 1e5 copies, q1_fast 100 times faster. Not claimed: contact populations in a run (milestone 1's stage A checks their layout only); composition with D150's or D152's operators in a run; faces (the later composition item, second order against transport, A.6); RK4 (refused); site occupancy beside a bath schedule (out of scope: the lead's ruling; refused at registration by the operator's view conflicts, admitted in development since FR-23 (D244, e7a54539), so Q6's view_conflict_bath_schedule class was retired on 22 November 2026); the species cap's refusal (FR-43 part 1, D315, raises the cap from 16 to 1,024 after the judged run, so Q6's species_cap class, a 17-species world, was retired on 23 November 2026: the lead's ruling; the cap is an engine limit with its own tests); the doors of §9; any biological comparison",
  "worlds": {
   "builders": "validation/tissue/site_occupancy_acceptance_fixtures.py: the engine-layout adapter. It builds every world from its physical description in validation/fr3/references/reference_inputs.json (the references' registered worlds, registered at 992ce385 and amended before any engine output), on secreted_species_fixtures' quiescent worlds with site_occupancy_fixtures' population and with_site_occupancy. Every cell node is a cell with its wall patch on the held bath (zero permeability, the electrical gauge only); every finite_outside node a finite node; an outward population sits on its cell's contact patch to its node (contact_<cell>_<node>, the only link: no face); an inward population on its cell's wall patch, facing inside. The ligand L is the engine's neutral species S, at its listed concentration at every node and at the world's trace in the bath; the world's trace_mM is the ligand's declared trace (form (a), §4.3). An internalisation multiplier listed for a population without the route is dropped (the engine refuses a schedule for an undeclared route; no law reads it). Records on the step grid at the registered record times. Admitted, every world, rung and control (parse and timeline), 18 November 2026, before any run",
   "Q1_internalisation": "q1_eps_1e-1, q1_eps_1e-2, q1_eps_1e-3 (eps = (S/V)/(K_M + c0) = 0.1, 0.01, 0.001: an outward population facing a closed 1 pL node at c0 = 1e-4 mM, binding and internalisation, occupancy pre-formed at its quasi-steady value; q1_eps_1e-1's receiving cell is 2 pL), q1_eps_1e-1_alpha_half (alpha = 1/2), 20 s each at 1 ms",
@@ -535,7 +535,6 @@
      "ligand_undeclared": "ligand undeclared",
      "ligand_permeant": "ligand permeant",
      "identity": "identity",
-     "species_cap": "species cap",
      "trace_node_below": "trace: node below",
      "trace_above_limit": "trace: above 1e-6 K_d",
      "unknown_patch": "unknown patch",
@@ -1181,7 +1180,6 @@
      "derived.Q6.refusals.ligand_undeclared",
      "derived.Q6.refusals.ligand_permeant",
      "derived.Q6.refusals.identity",
-     "derived.Q6.refusals.species_cap",
      "derived.Q6.refusals.trace_node_below",
      "derived.Q6.refusals.trace_above_limit",
      "derived.Q6.refusals.unknown_patch",
