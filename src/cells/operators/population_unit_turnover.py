@@ -378,14 +378,19 @@ def _population_cells(model):
     return {c.id: inside[c.membrane_id] for c in model.channels}
 
 
-TURNOVER_LAW = "scheduled_species_turnover@1"  # The one admitted second writer of a precursor.
+TURNOVER_LAW = "scheduled_species_turnover@1"  # An admitted second writer of a precursor.
+GENE_UNIT_LAW = "templated_polymerisation@1"  # The other (FR-43 / D315), a bounded producer.
 
 
 def check_writers(spec, declaration):
     """Refuse another writer of a population's units, a precursor row that a D152 reaction writes,
-    another author of a precursor other than D150's turnover, and an in-step mover of one (module
-    docstring): every unit here, declared ones included, is removed at k_r, and a precursor's
-    writers are this operator and, at most, turnover's supply."""
+    another author of a precursor other than D150's turnover and the gene unit, and an in-step
+    mover of one (module docstring): every unit here, declared ones included, is removed at k_r,
+    and a precursor's writers are this operator, turnover's supply and the gene unit
+    (templated_polymerisation@1, FR-43 / D315: the two-writer rule of 19 November 2026 extended,
+    with the shared row's potential from the species registry, species_registry
+    .check_shared_rows). R5 reads every producer's largest rate (supply_bound), so a precursor
+    the gene unit makes without a static bound (a degradation's monomers) is refused."""
     precursors = {r.precursor for r in declaration.routes}
     rows = {(r.precursor, r.cell) for r in declaration.routes}
     for op, other, _ in composite_spec.entries(spec):
@@ -407,13 +412,24 @@ def check_writers(spec, declaration):
                     f"{hit[0][1]}: one local-kinetics writer per reacting row, D152's rule "
                     "(declare the precursor's supply and use as the network's own reactions)"
                 )
-        elif op.IDENTITY_ROLE == "author" and op.LAW_ID != TURNOVER_LAW:
+        elif op.IDENTITY_ROLE == "author" and op.LAW_ID not in (TURNOVER_LAW, GENE_UNIT_LAW):
             shared = sorted(precursors & {s.id for s in op.species_identities(other)})
             if shared:
                 raise ConfigError(
                     f"{LAW_ID}: {op.LAW_ID} also declares the precursor {shared[0]!r}; besides "
                     f"this operator only {TURNOVER_LAW}'s supply is admitted as a writer of it"
                 )
+    for op, other, _ in composite_spec.entries(spec):
+        bound = getattr(op, "production_bound", None)  # A producer that declares its bound.
+        made = {} if bound is None else bound(spec, other)
+        for name, cell in sorted(rows):
+            if not math.isinf(made.get((name, cell), 0.0)):
+                continue
+            raise ConfigError(
+                f"{LAW_ID}: the precursor {name!r} in {cell} is made at a rate with no static "
+                "bound (by a degradation, a release's fates or an export's coupling), which R5's "
+                "largest units need (supply_bound; FR-43 / D315)"
+            )
     moved = species_registry.moved_in_step(spec)
     for name in sorted(precursors):
         movers = moved.get(name, {}).get("cell", ())
@@ -425,10 +441,17 @@ def check_writers(spec, declaration):
 
 
 def supply_bound(spec):
-    """{(species, cell): the largest total production rate (fmol/s)} of turnover's cell routes,
-    over every schedule of each route: an upper bound on the supply a cell's precursor gets."""
+    """{(species, cell): the largest total production rate (fmol/s)} of every producer: turnover's
+    cell routes, over every schedule of each route, and each operator that declares its own
+    production_bound (the gene unit's, FR-43 / D315; math.inf where it has none): an upper bound
+    on the supply a cell's precursor gets. A rate: check_spec_for multiplies it by the horizon."""
     out = {}
     for op, block, schedules in composite_spec.entries(spec):
+        bound = getattr(op, "production_bound", None)
+        if bound is not None:
+            for key, rate in bound(spec, block).items():
+                out[key] = out.get(key, 0.0) + rate
+            continue
         if op.LAW_ID != TURNOVER_LAW:
             continue
         kind = {r.id: r for r in block.routes}
@@ -867,6 +890,11 @@ class PopulationUnitTurnover(Operator):
         """B1′: each route's precursor at its population's cell (assembly consumes it)."""
         return tuple(dict.fromkeys((r.precursor, r.cell) for r in declaration.routes))
 
+    def written_species(self, declaration):
+        """Its precursors, which it consumes: the registry's shared-row rule reads them
+        (species_registry.check_shared_rows; FR-43 / D315)."""
+        return tuple(dict.fromkeys(r.precursor for r in declaration.routes))
+
     def species_identities(self, declaration):
         return declaration.species
 
@@ -874,6 +902,7 @@ class PopulationUnitTurnover(Operator):
         common.check_species_cap(spec, LAW_ID)
         common.check_identities(spec, LAW_ID, declaration.species)
         check_writers(spec, declaration)
+        species_registry.check_shared_rows(spec, LAW_ID)
         check_rate_bound(spec, declaration, schedule)
 
     def inner_check_spec(self, check_spec, spec, declaration, schedule):

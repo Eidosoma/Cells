@@ -207,3 +207,70 @@ def swelling_cell(*, network_multiplier=1.0, dt=0.01, end=40.0, every=0.5, **kwa
     reactions = [rfx.passive("bind", {"cells": ["cell_0"]}, {"A": 1, "B": 1}, {"C": 1}, K_BIND)]
     raw = rfx.with_reactions(raw, species, reactions, rfx.always(["bind"], network_multiplier))
     return with_water_first(raw, keep=(fx.SPECIES, "A", "B", "C"), **kwargs)
+
+
+# ------------------------------------------------------------------ beside the unit producer
+
+UNIT_PRODUCER = "population_unit_turnover@1"
+STATE = "membrane_entity_state@1"
+LEAK = "kleak_0"  # The producer's population: gate-free K units on the gene cell's patch.
+DENSITY = 1e13  # units/m^2: the population's reference density (validation/fr7's).
+MOLECULES_PER_UNIT = 4  # nu: P molecules per unit.
+K_ASSEMBLY, K_REMOVAL = 1e-3, 1e-3  # 1/s: the producer's assembly and removal rates.
+
+
+def unit_pair(*, n_R=10, dt=0.5, end=None, every=None, k_a=K_ASSEMBLY, k_r=K_REMOVAL):
+    """2A's second pair (FR-43 / D315): the gene unit's ribosome-limited world
+    (validation/gene_regulation/worlds.ribosome_limited: translation makes the neutral protein P
+    from the held mRNA, drawing A and ATP; P's degradation returns A) beside the unit producer
+    (population_unit_turnover@1), which consumes P as its precursor into the units of a gate-free K
+    population on the cell's patch (kleak_always_open@1 at zero permeability: its units carry no
+    current, so the membrane stays inert at the gene world's 0.5 s step whatever R5's largest
+    units are), every unit removed at k_r. The gene unit adds P and the
+    producer consumes it; P's registry potential is the shared row's one authority."""
+    raw = gw.ribosome_limited(n_R, dt=dt)
+    m, e, x = raw["model"], raw["experiment"], raw["execution"]
+    m["channels"] = [
+        dict(
+            id=LEAK,
+            membrane_id=gw.PATCH,
+            kinetic_law="kleak_always_open@1",
+            max_permeability_m_per_s=0.0,  # Its units carry no current (below).
+            abundance=1.0,
+            initial_gate=[],
+            permeant_ions=[dict(species_id="K", relative_permeability=1.0)],
+        )
+    ]
+    e["channel_controls"] = [dict(channel_id=LEAK, schedule=[dict(time=0.0, availability=1.0)])]
+    x["channel_capacity"] = 1
+    state = dict(
+        law=STATE,
+        populations=[
+            dict(
+                channel_id=LEAK,
+                functional_unit="kleak",
+                catalogue=None,
+                reference_density_per_m2=DENSITY,
+            )  # fmt: skip
+        ],
+    )
+    route = dict(
+        id="assemble",
+        population=LEAK,
+        precursor="P",
+        molecules_per_unit=MOLECULES_PER_UNIT,
+        maturation_pools=0,
+        maturation_time_s=None,
+        initial_pool_units=[],
+    )
+    producer = dict(
+        law=UNIT_PRODUCER, species=[dict(id="P", catalogue=None, evidence=None)], routes=[route]
+    )
+    m["operators"] = [*m["operators"], state, producer]
+    e["unit_turnover_controls"] = [
+        dict(
+            route_id="assemble",
+            schedule=[dict(time=0.0, assembly_rate_per_s=k_a, removal_rate_per_s=k_r)],
+        )
+    ]
+    return _horizon(raw, end, every)

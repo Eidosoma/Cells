@@ -22,7 +22,7 @@ and a general feature, never one built for one study (D144).
 | [FR-14](#fr-14--declared-extension-of-laws-operators-and-models) | Declared extension of laws, operators and models (object-oriented) | Not stated (the user's request, 17 November 2026; D205) | Requested; not scoped. No declared extends link, inherited checks or version rule on main (a search of `src/cells/registry`, unverified beyond that); D205's check stands | Covered by FR-13's design note (U6 open, D209): options for a declared extends link, inherited checks and version rules |
 | [FR-15](#fr-15--junction-crossing-and-charged-species-in-the-species-operators) | Junction-crossing and charged species in the species operators | Not stated (found by the gap-junction replication, D207; 17 November 2026) | **Landed in two parts; F2 designed.** S1, charged species in `local_species_reactions@1` (merge ddb52790, tag `fr15-s1-landed-2026-11-19`, D148). P2, `passive_constant_field_permeation@1` on the passive-routes kind, on patches (merge ce39c904, tag `fr15-p2-landed-2026-11-20`). F2, charged trace species on junctions: design note landed (7f3f6ccd, [note](CHARGED_TRACE_SPECIES_DESIGN.md)) and ruled in D310: option A, the charged law hosted on junctions; junctions crossing a floating component refused in version 1; the two-end material term; @1 widened in place | F2's build, A1 (about 2.25 to 2.75 agent-days, gated), at the next free agent slot; charged turnover routes (`scheduled_species_turnover@2`) when a consumer needs them; crossing junctions (A2, +1 to 1.5 days) when one does |
 | [FR-16](#fr-16--junction-gating-and-availability) | Junction gating and availability: a two-state voltage gate, per-species floors, two-sided combination rules | Not stated (the same) | Requested; awaits the user's go (D219: not started). **F3 partly met through FR-30:** the series gates (merge 12c18db1: threshold_relaxation and boltzmann_eyring) landed. F4 (a per-species floor) and F5 (min and mean combination): not found on main (unverified) | F4 and F5 unscheduled; F3's held-out voltage test is FR-30's. A short design before any build |
-| [FR-17](#fr-17--field-solves-beyond-2048-nodes) | Field solves beyond 2048 nodes | Not stated (the same) | Requested; awaits the user's go (D219: not started). The cap stands: `FACTORED_MAX_NODES` is 2048 in `numerics/surface_field.py` (21 November) | The preprint's 3D table, and mitochondria (D210) unless condensing compartment nodes serves them |
+| [FR-17](#fr-17--field-solves-beyond-2048-nodes) | Field solves beyond 2048 nodes | Not stated (the same) | Requested; awaits the user's go (D219: not started). The cap stands: `FACTORED_MAX_NODES` is 2048 in `numerics/surface_field.py` (21 November) | Stage 1, designed (D317; docs/FIELD_SOLVER_INTERFACE_DESIGN.md §8): `sparse_capacitive_reduction_gauged_damped_newton@1`, a level-scheduled sparse factorisation on a static pattern with its own minimum-degree ordering, qualified against the dense ID. It serves GJ-N1's 2D field and the no-tricks 25³ field; nested dissection for faced worlds follows |
 | [FR-18](#fr-18--the-composites-energy-check-at-moderate-step-sizes) | The composite's energy check at moderate step sizes (a finding for the core) | Not stated (the same) | **X2 landed** (merge fd894b91, `step_doubled_energy@1`, D224): an opt-in step-doubled energy check; criterion X registered (570df4fd). The default check is not loosened for one experiment; any review of its default tolerance: unverified | None unless the core reviews the default tolerance or the step-size advice (unverified) |
 | [FR-19](#fr-19--the-passive-routes-heat-share-sign-test-at-rounding-level) | The passive routes' heat-share sign test refuses rounding-level shares (a finding for the core) | Not stated (found by the gap-junction replication, D207; 17 November 2026) | **Fixed on main** (merge 49494e49): the raw-sum check's rounding floor; previously admitted steps bitwise unchanged. The band near 1 mM is closed too (merge a7122a43, 18 November) | None: closed |
 | [FR-20](#fr-20--a-pulse-and-washout-for-assembly-populations) | A pulse and washout: replace an assembly population's exterior at a declared time, with the material and energy exchanged recorded | **High** (user, 20 November 2026; D237) | **Landed** (merge 3af9ce38, tag `fr20-washout-landed-2026-11-20`): `cells.pool_replacement@1`, with Q3 as a declared version-1 limit. A Lean finding (21 November): a fresh count above `molecule_capacity` was accepted and booked with a clamped table (ln 32! for 33) | None. The capacity fix landed (e289dfd9); the D263 tracer-source fix landed (c6f8d60f) |
@@ -49,6 +49,10 @@ and a general feature, never one built for one study (D144).
 | [FR-41](#fr-41--vesicle-shrinkage-validation-records) | Vesicle shrinkage validation records for the osmotic lumen law | **High** (user, via the Lean lane, 22 November 2026; D286) | **One agreement, retention open:** shrinkage matches (24.56% against about 25%). The data-only retention check is undetermined for all three sources; the one point estimate (gel-phase LUVs) suggests partial release | Parked until a study with paired, tabulated volume and small-solute retention appears |
 | [FR-42](#fr-42--neutral-arrival-time-labels-that-leave-the-dynamics-unchanged) | Neutral arrival-time labels that leave the dynamics unchanged: loss computed once per physical population and shared by label | **High** (a user, 22 November 2026) | **Landed and accepted (D306):** labels as share vectors on the physical row (option A, D289; the label owner, D296), across kinds, pools and sources, with the kinds hook (`label_refusals`, `label_transfers`) | Done for its consumers; FR-38's comparison reads its shares |
 | [FR-43](#fr-43--shared-inventories-larger-networks-shared-pools-and-low-count-populations) | Shared inventories: larger sparse reaction networks; one pool spent and replenished by separate processes, at fixed and changing volume; a low-count integer population coupled to continuous chemistry | **Very high** (logged by the user, 23 November 2026) | **Design decided (D315):** the cap to 1,024 with the scan fold above 16 and the trace budget fixed; a reported dt limit; two writers with one registry potential; current-volume reads for both writers; part 3 as an integer-population operator in the composite (B), split by independent_segregation | The build, with code-blind references for parts 2 and 3; the sparse layout after the raise |
+| [FR-44](#fr-44--labels-across-a-wash-arrival-time-labels-through-scheduled-compartment-washes) | Labels across a wash: neutral arrival-time labels through scheduled compartment washes | **High** (logged by the user, 23 November 2026) | **Logged:** `neutral_arrival_labels@1` (FR-42) and `scheduled_compartment_wash@1` (FR-27) refuse each other at parse | A design note: the wash dilutes each washed node's label shares exactly with unlabelled buffer |
+| [FR-45](#fr-45--several-ligands-competing-for-one-shared-wash-retained-site-capacity) | Several ligands competing for one shared, wash-retained site capacity | **High** (logged by the user, 23 November 2026) | **Logged:** FR-28's node-owned sites bind one ligand per population, and sites modelled as dissolved species wash out with the fluid | A design note: competing ligands in one site pool, or immobile anchored species that a wash leaves in place |
+| [FR-46](#fr-46--binding-from-a-shells-inner-face-lumen-ligands-on-membrane-sites) | Binding from a shell's inner face: lumen ligands on membrane sites | **High** (logged by the user, 23 November 2026) | **Logged:** `cells.prescribed_shell@1` admits outer-face binding of a pool ligand and refuses the lumen's | A design note: reversible inner-face binding with detailed balance, and the occupied state usable in a gate rule |
+| [FR-47](#fr-47--shell-exchange-and-scheduled-washes-in-the-deterministic-representation) | Shell exchange and scheduled washes in the deterministic representation | **High** (logged by the user, 23 November 2026) | **Logged:** `cells.rate_equations@1` refuses prescribed-shell geometry and replacement or withdrawal schedules (OL6's refusal 1) | A design note and a registered qualification against an analytical mass balance and an exact-event ensemble |
 
 ## FR-1 — A closed internal compartment on the shared inventory
 
@@ -1943,3 +1947,96 @@ cases below are the request's own, condensed.
   - the matrix exponential is a closed form, inside the test;
   - part 2's coupled calculation and part 3's same-draws integration come from a code-blind references
     agent, started at the design ruling.
+
+## FR-44 — Labels across a wash: arrival-time labels through scheduled compartment washes
+
+**Logged 23 November 2026 by the user, priority high.**
+
+**Why.** Labelled-cohort experiments often mark newly made molecules for a while, wash the
+extracellular compartment, and expose the cells again. Following the labelled cohort through a wash
+needs the label owner (FR-42) and the wash (FR-27) in one world. Today they refuse each other at
+parse (`operators/wash_schedule.py`, `operators/species_labels.py`).
+- **A related constraint:** the wash's `buffer_mM` must name every neutral species in the world,
+  including trace rows that stay in the cells. So a wash also touches those rows' extracellular
+  increments.
+
+**The proposed path.** The wash accepts labels.
+- At a washed node, each label's share is diluted exactly by the unlabelled buffer:
+  n_after × share_after = (1 − f) × n_before × share_before, and the buffer carries the base label.
+- Label shares inside cells are untouched, and every label's books close.
+
+**Acceptance cases:**
+- a labelled cohort at a washed node scales by (1 − f), and the base label takes the buffer's amount;
+- the cells' shares are unchanged;
+- labels leave the physical rows bitwise unchanged through a wash (FR-42's promise);
+- a restart through a wash reproduces the run.
+
+**Status (23 November):** logged. A design note comes first.
+
+## FR-45 — Several ligands competing for one shared, wash-retained site capacity
+
+**Logged 23 November 2026 by the user, priority high.**
+
+**Why.** Extracellular matrix and surface sites are often shared by more than one ligand, and the
+sites stay in place when the fluid is washed.
+- FR-28's owner `{"node": N}` gives `site_occupancy@1` wash-retained sites, but each population
+  binds one ligand with its own capacity, so two ligands cannot compete for one pool.
+- Sites modelled instead as dissolved species in `local_species_reactions@1` are removed with the
+  fluid: a wash of half the volume removes half the sites.
+
+**The proposed paths:**
+- (a) `site_occupancy@1` populations admit several ligands, each with its own binding constants,
+  competing for one pool of copies × sites per copy;
+- (b) immobile anchored species, which `scheduled_compartment_wash@1` leaves in place (wash fraction
+  0 for anchored moieties) while conserving moieties.
+
+**Acceptance cases:**
+- a wash removes only the fluid's ligand, and the shared capacity is conserved across it;
+- the competition at equilibrium matches an independent closed form for two ligands and one site
+  pool;
+- the books close through bind, wash and unbind.
+
+**Status (23 November):** logged. A design note comes first, weighing (a) and (b).
+
+## FR-46 — Binding from a shell's inner face: lumen ligands on membrane sites
+
+**Logged 23 November 2026 by the user, priority high.**
+
+**Why.** Compartments bind ligands from the inside as well as the outside. `cells.prescribed_shell@1`
+(FR-21) admits a pool ligand binding a declared membrane site from the outer face. It refuses a ligand
+in the lumen binding the same site, with the site and the complex on the membrane.
+
+**The request:** reversible binding from the inner face.
+- Association reads the lumen's concentration, and dissociation returns the ligand to the lumen.
+- Ligand and site counts are conserved.
+- The occupied wall state can take part in a declared gate rule.
+- The new reaction pair has detailed-balance coverage (the event-pair rule).
+- The outer-face case is kept as a regression.
+- It is verified on a synthetic neutral ligand.
+
+**Status (23 November):** logged. A design note comes first.
+
+## FR-47 — Shell exchange and scheduled washes in the deterministic representation
+
+**Logged 23 November 2026 by the user, priority high.**
+
+**Why.** `cells.rate_equations@1`, OL6's deterministic representation (D304), refuses some worlds by its
+refusal 1:
+- prescribed-shell geometry: FR-21's shell, its permeation and its gate;
+- replacement and withdrawal schedules: FR-20 and FR-35 (`rate_equations.REFUSED_SCHEDULES`).
+
+So large-count vesicle worlds with a shell and washes can run only as exact events.
+
+**The request:**
+- Qualify passive shell exchange, and scheduled full and fractional washes, in a finite two-compartment
+  example.
+- Compare concentrations and removed amounts with an analytical mass balance and with a large-count
+  exact-event ensemble.
+- Qualify switching gates separately.
+
+**Notes.**
+- OL6's design priced the replacement and withdrawal means at about half an agent-day.
+- The qualification follows Protocol D's pattern: registered before reading, with an independent
+  checker.
+
+**Status (23 November):** logged. A design note comes first.
