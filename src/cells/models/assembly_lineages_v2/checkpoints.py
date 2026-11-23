@@ -149,7 +149,9 @@ def make(run):
     if run.pores is not None:  # FR-31: nor at a rupture's time, applied or pending
         time = float(lane["time"])
         ruptures = [e["time_s"] for e in run.pores["events"]]
-        ruptures += [clock["t_star"] for clock in run.resume["doc"]["pores"]]
+        if "pores" in run.resume["doc"]:  # Phase A's host clocks; OL6 S4's: their t_c
+            ruptures += [clock["t_star"] for clock in run.resume["doc"]["pores"]]
+        ruptures += [clock["t_c"] for clock in run.resume["doc"].get("pore_clocks", [])]
         if time in ruptures:
             raise ConfigError(
                 f"A cut at {time} s, a vesicle's rupture time, is refused: the resumed run's first "

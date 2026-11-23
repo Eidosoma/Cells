@@ -169,3 +169,29 @@ before its first event if either fails:
   at a lysing event is.
 - **Joining two segments.** Each segment's ruptures (`pores.events`) are its own. The threshold
   draws (`pore_draw_*`) are the first segment's, since a vesicle draws when the run first holds it.
+
+## The device clock: a tension from F (OL6 S4, L1)
+
+A pore world with no hold takes its tension from F: `lumen_volume: osmotic` is then required, with
+σ_max ≤ σ_β/4 (refused otherwise: "with sigma from F the tension reaches sigma_max"), and steps that
+change a membrane place's count are admitted (under a hold they stay refused, with Phase A's words:
+T2). Its clock is on the device (`pore_device.py`); Phase A's hold worlds keep the host clock above,
+and their records, unchanged.
+- **The clock.** Each vesicle draws E as above, a founder at the start and a daughter at its birth
+  (H = 0 then). Between events the state holds, so each committed event adds k_v(n)·τ to H, with
+  k_v at the state before it (σ from the lumen's exact (N_L, W), A = q·W/2). The candidate opening
+  t_c = t + max(0, E − H)/k_v bounds the device's horizon: the chemistry draw that would land past
+  it is not committed, and the pore fires at t_c (fate `discarded_at_pore`; a device that halted
+  inert is advanced to it). A t_c at a schedule stop's time, or two slots' at one time, is
+  refused (FR-20's rule).
+- **The booking.** The opening has no hold: w = 0 and ΔF = σ_β/σ − ln(A·n_s) (the sheet's §7, "where
+  σ comes from F"), so q_open = ln(A·n_s) − σ_β/σ as under a hold; then the release from the open
+  state, so ΔF cancels in the event's total.
+- **The records.** No `tension_hold_work_kT` column and no `tension_hold` holds. `pores.events` adds
+  `clock_H` (H at t_c) and `delta_F_kT`, with `hold` null, σ the lumen's at t_c and `work_kT` 0;
+  `pores.draws` (and the diagnostic's `pore_draw_*`) hold one row per vesicle drawn, founders then
+  daughters in birth order, its t* the rupture time or inf. relations@2 names no payer for such a
+  rupture (`source` empty). `ssa.pore_clock` states the device's rule.
+- **Checkpoints (a population).** The host document adds `pore_clocks`: each living slot's `{slot,
+  key, H, threshold_E, rate_per_s, t_c}` as the device left it; a restart takes them as they are,
+  and refuses a checkpoint whose living vesicle's key or threshold is not its definition's draw.

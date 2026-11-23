@@ -52,6 +52,7 @@ from cells.models.assembly_lineages_v2 import (
     division,
     kernel,
     pore_clock,
+    pore_device,
     streams,
 )
 from cells.models.assembly_lineages_v2.interfaces import PopulationStructure
@@ -369,6 +370,8 @@ class _Context:
         self.pore_events = []  # FR-31: each rupture's record (pore_clock.event), in order
         self.stop_kinds = []  # FR-31: each applied stop's kind, "schedule" or "pore", in order
         self.clocks, self.pore_draws, self.pore_check = {}, [], None  # FR-31 (run sets them)
+        self.device_clock = None  # OL6 S4: the slots' clocks on the device (pore_device.Clock)
+        self.pore_vesicles = []  # OL6 S4: each clocked vesicle (pore_device.Vesicle), in order
         self.lineage = np.where(state.alive, np.arange(self.K), -1)  # each slot's sub-lineage
         self.count = {i: 0 for i in range(founders)}  # each sub-lineage's last key count
         self.next_sub = founders
@@ -438,6 +441,13 @@ class _Context:
                "applied_stops": applied, "splits": splits, "lives": living}  # fmt: skip
         if self.holds:  # FR-31: each living vesicle's clock (pore_clock.clock_record)
             doc["pores"] = [pore_clock.clock_record(v) for _, v in sorted(self.clocks.items())]
+        if self.device_clock is not None:  # OL6 S4: each slot's clock as the device left it
+            h, e, k, t_c = (np.asarray(a, dtype=np.float64) for a in self.device_clock)
+            doc["pore_clocks"] = [
+                {"slot": int(s), "key": int(self.clock_keys[s]), "H": float(h[s]),
+                 "threshold_E": float(e[s]), "rate_per_s": float(k[s]), "t_c": float(t_c[s])}
+                for s in np.flatnonzero(np.isfinite(e))
+            ]  # fmt: skip
         return {"arrays": arrays, "doc": doc}
 
     def _born(self, slot, key, time, kind, parent, lineage, event, root=None, share=float("nan")):
@@ -548,7 +558,8 @@ def run(spec, *, start=None, stop=None):
     ctx.schedule_draws = list(schedule_draws)
     # FR-31: each living vesicle's pore clock, by slot, and its rupture a stop (pore_clock.py)
     clocks, pending = {}, []
-    if world.hazard is not None:
+    on_device = pore_device.clocked(spec)  # OL6 S4: σ from F, the clocks on the device
+    if world.hazard is not None and not on_device:
         clocks = {
             int(k): pore_clock.Vesicle(spec, layout.base_key, state.keys[k], state.slots[k], slot=k)
             for k in np.flatnonzero(state.alive)
@@ -566,6 +577,24 @@ def run(spec, *, start=None, stop=None):
         ctx.pore_check = {"probe": balance.pore_verdict(),
                           "world": balance.pore_world_report(spec, areas)}  # fmt: skip
     stack = functools.partial(jax.tree_util.tree_map, lambda x: np.asarray(x)[None])
+    vesicles, pores = {}, None
+    if on_device:  # OL6 S4: each living slot's clock beside the lane (pore_device.py)
+        pores = pore_device.constants(world)[None]
+        advance_c, rates_c = pore_device.population_program(structure)
+        k_slots = np.asarray(rates_c(state.slots[None], stack(layout), pores), dtype=np.float64)[0]
+        k_slots = np.where(state.alive, k_slots, 0.0)
+        empty = pore_device.Clock(*(np.zeros(len(state.alive)),) * 4)
+        if admitted is None:
+            ctx.device_clock, born = pore_device.carry_over(
+                empty, k_slots, np.full(len(state.alive), -2), state.keys, state.alive, 0.0, 0.0,
+                layout.base_key, [pore_clock.area_m2(world, c) for c in state.slots], vesicles)
+            ctx.pore_vesicles = born
+        else:  # the checkpoint's clocks, as the device left them; each threshold its key's draw
+            ctx.device_clock, vesicles = _restore_clocks(world, layout, state, admitted, k_slots)
+        ctx.clock_keys = state.keys.copy()
+        areas = [pore_clock.area_m2(world, f) for f in founders]
+        ctx.pore_check = {"probe": balance.pore_verdict(), "world": balance.pore_world_report(
+            spec, areas, sigmas=single._tensions(spec))}  # fmt: skip
     first = _next_stop(plan, pending, horizon)
     limit = layout.event_limit if stop is None else np.int64(min(int(layout.event_limit), stop))
     layouts = stack(layout._replace(horizon=np.float64(first), event_limit=limit))
@@ -580,7 +609,12 @@ def run(spec, *, start=None, stop=None):
     while True:
         status = int(np.asarray(lanes.status)[0])
         if status == kernel.RUNNING:
-            lanes, out = advance(lanes, layouts, ms)
+            if on_device:
+                device = stack(pore_device.Clock(*ctx.device_clock))
+                lanes, device, out = advance_c(lanes, device, layouts, pores, ms)
+                ctx.device_clock = pore_device.Clock(*(np.asarray(a)[0] for a in device))
+            else:
+                lanes, out = advance(lanes, layouts, ms)
             host = jax.tree_util.tree_map(lambda a: np.asarray(a)[:, 0], out)
             ran = ~np.isnan(host.uniforms[:, 0])
             draws.append((host.uniforms[ran], host.committed[ran]))
@@ -594,10 +628,31 @@ def run(spec, *, start=None, stop=None):
         if status == kernel.EVENT_LIMIT and stop is not None and int(host.events) >= stop:
             end_status = "stopped"  # the run's own stop, not the experiment's guard
             break
+        fired = None
+        if on_device and status in (kernel.COMPLETE, kernel.INERT):  # OL6 S4: an own t_c
+            fired = _fired_slot(ctx.device_clock, host.alive, layouts, plan)
         if status == SLOT_LYSED:
             state = _State(host.pool, host.slots, host.alive, state.keys, host.supplied)
+            keys_before = state.keys.copy()
             _lyse(world, layout, state, ctx, world_f, int(host.lysed_slot), float(host.time),
                   int(host.events))  # fmt: skip
+            if on_device:  # the lysed slot's clock ends with it
+                _carry_clocks(world, layout, state, ctx, vesicles, rates_c, keys_before,
+                              float(host.time), float(host.time))  # fmt: skip
+        elif fired is not None:  # OL6 S4: the earliest slot's pore at its own t_c
+            slot, stop_time = fired
+            state = _State(host.pool, host.slots, host.alive, state.keys, host.supplied)
+            keys_before = state.keys.copy()
+            last = float(host.time)
+            _rupture_device(spec, layout, state, ctx, world_f, vesicles[slot], stop_time, last,
+                            int(host.events))  # fmt: skip
+            _carry_clocks(world, layout, state, ctx, vesicles, rates_c, keys_before, last,
+                          stop_time)  # fmt: skip
+            ctx.stop_kinds.append("pore")
+            nxt = _next_stop(plan, pending, horizon)
+            layouts = layouts._replace(horizon=np.asarray([nxt]))
+            going = kernel.RUNNING if stop_time < horizon else status  # a stop at t_end holds
+            host = host._replace(time=np.float64(stop_time), status=np.int32(going))
         elif (
             status in (kernel.COMPLETE, kernel.INERT)
             and pending
@@ -615,8 +670,13 @@ def run(spec, *, start=None, stop=None):
             stop_time, stop_events = plan.pop(0)  # the draw that crossed it is discarded, counted
             applied += 1
             state = _State(host.pool, host.slots, host.alive, state.keys, host.supplied)
+            keys_before, last = state.keys.copy(), float(host.time)
             full = _shear_stop(spec, layout, state, ctx, world_f, vesicle_f, stop_time,
                                stop_events, int(host.events))  # fmt: skip
+            if on_device:  # OL6 S4: the clocks to the stop; the newborn draw their own
+                ctx.stop_kinds.append("schedule")
+                _carry_clocks(world, layout, state, ctx, vesicles, rates_c, keys_before, last,
+                              stop_time)  # fmt: skip
             if clocks:  # FR-31: a transfer's removed vesicles take their clocks with them
                 ctx.stop_kinds.append("schedule")
                 clocks = {k: v for k, v in clocks.items()
@@ -687,6 +747,103 @@ def _rupture(spec, layout, state, ctx, world_f, clock, n_events):
     state.keys[s] = -1
     ctx.lineage[s] = -1
     ctx.stops.append((n_events, pore_clock.PORE_ROW, time, state.copy(), ctx.extra.copy()))
+
+
+def _fired_slot(clock, alive, layouts, plan):
+    """OL6 S4: (slot, t_c) of the living slot whose own t_c comes first, when it lies within the
+    device's horizon, else None. Two slots' t_c at one time, or a t_c at a schedule stop's, are
+    refused (FR-20's rule, in pore_clock.refuse_same_time's words)."""
+    t_c = np.where(alive, np.asarray(clock.crossing, dtype=np.float64), np.inf)
+    slot = int(np.argmin(t_c))
+    time = float(t_c[slot])
+    if not time <= float(np.asarray(layouts.horizon)[0]):
+        return None
+    if int(np.sum(t_c == time)) > 1:
+        raise ConfigError(
+            f"Two vesicles' pores open at the same time, {time} s: relations have no order "
+            "between same-time events, so the run is refused"
+        )
+    if plan and time == plan[0][0]:
+        raise ConfigError(
+            f"A pore opens at {time} s, the time of a schedule stop: relations have no order "
+            "between same-time events, so the run is refused (FR-20's rule)"
+        )
+    return slot, time
+
+
+def _rupture_device(spec, layout, state, ctx, world_f, vesicle, time, last, n_events):
+    """OL6 S4: a slot's pore at its own t_c (pore_device.py), booked as _rupture books Phase A's,
+    with pore_clock.opening_from_f (no hold, no work); its slot frees and the world goes on."""
+    from cells.models.assembly_lineages_v2 import lumen
+
+    world = spec.model.world
+    s = vesicle.slot
+    h, _, k, _ = ctx.device_clock
+    vesicle.time, vesicle.due, vesicle.rate = time, True, float(k[s])
+    vesicle.area = pore_clock.area_m2(world, state.slots[s])
+    vesicle.sigma = lumen.host_tension(world, state.slots[s][: len(world.places)])
+    clock_h = float(h[s]) + vesicle.rate * (time - last)
+    before = world_f(state)
+    _, heat_open, delta_f = pore_clock.opening_from_f(world, vesicle.area, vesicle.sigma)
+    added, took, returned, work_return = pore_clock.release(world, layout, state.slots[s])
+    state.pool = state.pool + added
+    state.supplied = state.supplied + took
+    state.slots[s] = 0
+    state.alive[s] = False
+    q_release = -(world_f(state) - (before + delta_f)) + work_return
+    heat = heat_open + q_release
+    ctx.extra[[E_HEAT, E_HEAT_MAG, E_WORK, E_WORK_MAG]] += [
+        heat, abs(heat_open) + abs(q_release), work_return, abs(work_return)
+    ]  # fmt: skip
+    ctx.pore_events.append(pore_device.event_record(vesicle, heat_open, delta_f, q_release,
+                                                    returned, work_return, clock_h))  # fmt: skip
+    ctx.end(s, time, "lysed", f"event:lysis/{vesicle.key}")
+    state.keys[s] = -1
+    ctx.lineage[s] = -1
+    ctx.stops.append((n_events, pore_clock.PORE_ROW, time, state.copy(), ctx.extra.copy()))
+
+
+def _carry_clocks(world, layout, state, ctx, vesicles, rates_c, keys_before, time_from, time_to):
+    """OL6 S4: the slots' clocks across a host operator (pore_device.carry_over), each new
+    vesicle at its new counts' rate."""
+    one = jax.tree_util.tree_map(lambda x: np.asarray(x)[None], layout)
+    pores = pore_device.constants(world)[None]
+    rates = np.asarray(rates_c(state.slots[None], one, pores), dtype=np.float64)[0]
+    rates = np.where(state.alive, rates, 0.0)
+    areas = [pore_clock.area_m2(world, c) for c in state.slots]
+    ctx.device_clock, born = pore_device.carry_over(
+        ctx.device_clock, rates, keys_before, state.keys, state.alive, time_from, time_to,
+        layout.base_key, areas, vesicles)  # fmt: skip
+    ctx.pore_vesicles += born
+    ctx.clock_keys = state.keys.copy()
+
+
+def _restore_clocks(world, layout, state, admitted, rates):
+    """OL6 S4: a resumed run's clocks, as its checkpoint's host document holds them (each slot's H,
+    threshold, rate and t_c as the device left them, never recomputed), with each living vesicle's
+    key and threshold its definition's draw, or the run is refused."""
+    saved = {int(c["slot"]): c for c in admitted[2]["doc"].get("pore_clocks", [])}
+    K = len(state.alive)
+    h, e, k, t_c = np.zeros(K), np.full(K, np.inf), np.zeros(K), np.full(K, np.inf)
+    vesicles = {}
+    for s in np.flatnonzero(state.alive):
+        entry = saved.get(int(s))
+        vesicle = pore_device.Vesicle(layout.base_key, int(state.keys[s]),
+                                      pore_clock.area_m2(world, state.slots[s]))  # fmt: skip
+        if entry is None or entry["key"] != vesicle.key or entry["threshold_E"] != vesicle.energy:
+            raise ConfigError(
+                "The checkpoint's pore clocks are not its definition's: a living vesicle's key or "
+                "threshold differs, or its clock is missing"
+            )
+        vesicle.slot = int(s)
+        vesicles[int(s)] = vesicle
+        h[s], e[s] = entry["H"], entry["threshold_E"]
+        k[s], t_c[s] = entry["rate_per_s"], entry["t_c"]
+    if len(saved) != len(vesicles):
+        raise ConfigError("The checkpoint's pore clocks are not its definition's: an empty slot "
+                          "holds a clock")  # fmt: skip
+    del rates
+    return pore_device.Clock(h, e, k, t_c), vesicles
 
 
 def _lyse(world, layout, state, ctx, world_f, s, time, n_events, at_birth=False):
@@ -1138,7 +1295,9 @@ def _assemble(spec, structure, layout, m, verdict, start, state, ctx, events, dr
     timings = {"run_seconds": run_seconds, "events": int(len(codes)), "lanes": 1}
     pores = None
     if world.hazard is not None:  # FR-31: the clock's report (records.py's pores block)
-        pores = {"events": ctx.pore_events, "draws": ctx.pore_draws, "check": ctx.pore_check,
+        draws = (ctx.pore_draws if ctx.device_clock is None
+                 else [v.draw() for v in ctx.pore_vesicles])  # OL6 S4: in draw order  # fmt: skip
+        pores = {"events": ctx.pore_events, "draws": draws, "check": ctx.pore_check,
                  "causes": {"pore": len(ctx.pore_events), "threshold": len(ctx.lyses)}}  # fmt: skip
     record = None
     if diagnose:  # §0.2d item 10.5 (diagnostic.py)

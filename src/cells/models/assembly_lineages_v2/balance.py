@@ -798,16 +798,19 @@ def _pore_verdict():
     }
 
 
-def pore_world_report(spec, areas):
+def pore_world_report(spec, areas, sigmas=None):
     """The pair's identity at the world's own states: its parameters and temperature, each hold's
-    tension and each vesicle's area (A in m²); refused (ConfigError) if it fails."""
+    tension (or, OL6 S4, the given `sigmas` of a world whose σ comes from F) and each vesicle's area
+    (A in m²); refused (ConfigError) if it fails."""
     from cells.models.assembly_lineages_v2 import pore_nucleation as law
 
     world = spec.model.world
     log_nu, gamma, e_a, eta = law.parameters(world)
+    if sigmas is None:
+        sigmas = [hold.sigma for hold in spec.experiment.tension_holds]
     found = [
-        pore_deviation(log_nu, gamma, e_a, eta, hold.sigma, world.units.temperature_K, area)
-        for hold in spec.experiment.tension_holds
+        pore_deviation(log_nu, gamma, e_a, eta, sigma, world.units.temperature_K, area)
+        for sigma in sigmas
         for area in areas
     ]
     worst = max((abs(x) for x in found), default=0.0)

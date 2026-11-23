@@ -2,9 +2,10 @@
 of 22 November 2026; docs/VESICLE_PORES_LAWS.md §3, §5-§7, tagged
 pores-laws-sheet-registered-2026-11-22).
 
-**The clock** (the sheet's §5; Anderson 2007). A world that declares the pore law holds its
-tension: the experiment's hold (tension_hold.py) sets σ, and no step changes a membrane place's
+**The clock** (the sheet's §5; Anderson 2007). A world that declares the pore law with a hold holds
+its tension: the experiment's hold (tension_hold.py) sets σ, and no step changes a membrane place's
 count, so each vesicle's area A = q·W/2 is fixed and its rate k_v(σ) is constant through the hold.
+(A pore world with no hold takes σ from F, and its clock is on the device: pore_device.py, OL6 S4.)
 - Each vesicle draws its threshold once, when the run first holds it (a founder, at the start):
   E = −ln u, u from the pore stream (domain 7, carrier word the vesicle's key, counter 0: its pore
   draws).

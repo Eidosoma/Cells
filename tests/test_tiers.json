@@ -357,7 +357,9 @@
   "/mnt/workspaces/Cells/mt1b-face-20261122/measure-245f9cc1/measured.json",
   "/mnt/workspaces/Cells/gene-regulation-20261120/fr38/routedp/timed-91da47b3/measured.json",
   "/mnt/workspaces/Cells/ol6-20261122/tiers-24f0887c/measure/measured.json",
-  "/mnt/workspaces/Cells/ol6-20261122/tiers-ef7dae2f/measure/measured.json"
+  "/mnt/workspaces/Cells/ol6-20261122/tiers-ef7dae2f/measure/measured.json",
+  "/mnt/workspaces/Cells/ol6-20261122/tiers-d4afedc3/measure/measured.json",
+  "/mnt/workspaces/Cells/ol6-20261122/tiers-8df9b012/measure/measured.json"
  ],
  "measured_provenance": [
   {
@@ -3041,6 +3043,22 @@
    "root": "/mnt/workspaces/Cells/ol6-20261122/snapshot-ef7dae2f",
    "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
    "utc": "2026-11-23T03:08:05+00:00"
+  },
+  {
+   "git_revision": "d4afedc30ee63660479ed86b6a213b41927278a7",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/ol6-20261122/snapshot-d4afedc3",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-23T03:51:54+00:00"
+  },
+  {
+   "git_revision": "8df9b012b0828db928e779276ad94d57d2fbdb41",
+   "dirty": false,
+   "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "root": "/mnt/workspaces/Cells/ol6-20261122/snapshot-8df9b012",
+   "python": "/mnt/workspaces/Cells/venv-cpu/bin/python",
+   "utc": "2026-11-23T04:18:31+00:00"
   }
  ],
  "fast_seconds": 20.0,
@@ -6899,6 +6917,22 @@
     }
    },
    {
+    "file": "tests/unit/test_assembly_lineages_v2_pores_device.py",
+    "seconds": 45.81,
+    "exit_code": 0,
+    "counts": {
+     "passed": 3
+    }
+   },
+   {
+    "file": "tests/unit/test_assembly_lineages_v2_pores_device_population.py",
+    "seconds": 52.22,
+    "exit_code": 0,
+    "counts": {
+     "passed": 3
+    }
+   },
+   {
     "file": "tests/unit/test_assembly_lineages_v2_rate_equations.py",
     "seconds": 37.9,
     "exit_code": 0,
@@ -6916,10 +6950,10 @@
    },
    {
     "file": "tests/unit/test_assembly_lineages_v2_rate_equations_pores.py",
-    "seconds": 48.63,
+    "seconds": 48.13,
     "exit_code": 0,
     "counts": {
-     "passed": 10
+     "passed": 9
     }
    },
    {

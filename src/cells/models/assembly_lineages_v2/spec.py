@@ -670,10 +670,13 @@ def parse(data):
         experiment = parse_experiment(raw["experiment"], model.world)
         rate_equations.refusals(model.world, experiment, execution)
         return SimulationSpec(model, experiment, execution)
-    if model.world.hazard is not None and model.world.hazard[0] == PORE_NUCLEATION:
+    held = isinstance(raw["experiment"], dict) and "tension_holds" in raw["experiment"]
+    if model.world.hazard is not None and model.world.hazard[0] == PORE_NUCLEATION and held:
         from cells.models.assembly_lineages_v2 import pore_nucleation  # FR-31 Phase A (OL6 S3)
 
-        pore_nucleation.phase_a_refusals(model.world)  # exact events: areas fixed under the clock
+        # exact events under a hold: areas fixed under the host clock (T2; OL6 S4 lifts it with no
+        # hold, where σ comes from F and the clock is on the device)
+        pore_nucleation.phase_a_refusals(model.world)
     execution = parse_execution(raw["execution"], model)
     _mode_refusals(model.world, execution.mode)
     experiment = parse_experiment(raw["experiment"], model.world)
