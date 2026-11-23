@@ -9908,3 +9908,33 @@ and its erratum 1 (tag fr38-rule-erratum-1-registered-2026-11-23, 57ff66b0).
      references' author stating in words what route1_blank is defined to be;
   3. a new registered comparison on fresh worlds, with the rule fixed before new references exist. This is
      the only route to a pass.
+
+## D314: The user's three decisions of 23 November afternoon, and BITSEY's role
+
+2026-11-23, about 13:39 UTC. The user chose the lead's recommendation on each.
+1. **FR-38 (D313): diagnose route 1 before deciding.**
+   - The diagnosis gives the engine-side gap per sample time for R1L's two readouts, each tested against
+     erratum F's gross-versus-net closed form.
+   - The references' definition of route1_blank is stated in words.
+   - It is a non-blind diagnosis and replaces no verdict.
+2. **OL6 Protocol D: erratum 2 for P-D1, using its registered closed form.**
+   - P-D1's planted (d) run is refused by its own books (residual 7.26e-8 k_BT against 1.00e-8) before
+     criterion B can read it. Under section 8, a plant not caught makes the protocol fail.
+   - The erratum has B read P-D1's (d) side from the registered  (), so no
+     new number is introduced. P-D1 gets one attempt under it.
+   - It also records the lead's ruling on P-D2(ii): its process computes the engine's generic verdict
+     before entering its scope. That plant then reproduces the registered effect bit for bit
+     (0.20764924410295305).
+   - It is tagged after every plant has been attempted, which is now done, and before any honest
+     comparison is computed or opened. None has been.
+3. **GJ-N1's 2D field takes the faster path first.**
+   - GJ-N1 is registered as written (gj-neither-registered-2026-11-23), and the 1D line, about 8 CPU-hours,
+     runs now.
+   - The field would cost about 350 to 410 CPU-hours at 0.16 to 0.19 s per step. Before it runs, the
+     engine's per-cell cost is profiled and the GPU tried, as development timings only, with no outcome
+     read.
+- **BITSEY's role, the lead's ruling on D219's "an additional reference":** the pinned run is reported
+  beside the verdicts and never judged.
+  - BITSEY integrates by explicit adaptive Euler, which has no a priori error bound, so no band could be
+    set honestly.
+  - The judged reference is the code-blind integration with its stated accuracy (GJ-N1's check A).
