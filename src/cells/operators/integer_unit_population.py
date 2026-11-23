@@ -532,14 +532,19 @@ def stages(declaration, lives=None):
         )
 
     spans = [interval(s) for _, s in pairs]
+    movers, readers = {}, {}  # {row: earlier sites that move it, or read it}
     out = []
-    for i in range(len(pairs)):
-        taken = set()
-        for j in range(i):
-            overlap = spans[i][0] < spans[j][1] and spans[j][0] < spans[i][1]
-            if overlap and conflicts(rows[i], rows[j]):
-                taken.add(out[j])
-        out.append(next(c for c in range(len(pairs) + 1) if c not in taken))
+    for i, (moved, read) in enumerate(rows):
+        candidates = {j for row in moved for j in (*movers.get(row, ()), *readers.get(row, ()))}
+        candidates |= {j for row in read for j in movers.get(row, ())}
+        taken = {
+            out[j] for j in candidates if spans[i][0] < spans[j][1] and spans[j][0] < spans[i][1]
+        }
+        out.append(next(c for c in range(len(taken) + 1) if c not in taken))
+        for row in moved:
+            movers.setdefault(row, []).append(i)
+        for row in read:
+            readers.setdefault(row, []).append(i)
     return out
 
 
@@ -627,8 +632,8 @@ def bind(spec, declaration):
                 if name in routes:
                     layout["integer_read_route"][i, y] = routes[name]
                     layout["integer_linear"][i] = False
-        layout["integer_events_key"][i] = streams.key_data(declaration.seed, i, "events")
-        layout["integer_partition_key"][i] = streams.key_data(declaration.seed, i, "partition")
+    layout["integer_events_key"] = streams.sites_key_data(declaration.seed, n, "events")
+    layout["integer_partition_key"] = streams.sites_key_data(declaration.seed, n, "partition")
     counts = layout["integer_initial_counts"].copy()
     first = np.asarray(
         streams.site_uniforms(

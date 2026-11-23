@@ -112,6 +112,28 @@ def key_data(seed, site, domain):
     return np.asarray(jax.random.key_data(key), dtype=np.uint32).astype(np.int64)
 
 
+def sites_key_data(seed, count, domain):
+    """key_data for sites 0 .. count - 1 at once, [count, 2] int64 (host side, one vectorized
+    call: the same words as key_data per site)."""
+    import jax
+    import jax.numpy as jnp
+
+    _require_partitionable()
+    check_seed(seed)
+    if type(count) is not int or count < 0:
+        raise ValueError("A site count is a non-negative integer")
+    if count == 0:
+        return np.zeros((0, 2), dtype=np.int64)
+    base = jax.random.key(seed, impl=GENERATOR)
+
+    def one(site):
+        key = _fold64(base, site)
+        return jax.random.key_data(jax.random.fold_in(key, jnp.uint32(DOMAINS[domain])))
+
+    words = jax.vmap(one)(jnp.arange(count, dtype=jnp.int64))
+    return np.asarray(words, dtype=np.uint32).astype(np.int64)
+
+
 def uniforms(words, counter, count):
     """`count` open-interval float64 uniforms: draw `counter` (int64) of the stream whose key data
     are `words` (two int64 words, as key_data gives them). Traceable; map it over sites with

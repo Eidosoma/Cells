@@ -59,6 +59,9 @@ def test_the_streams_reproduce_the_spec_draws(world):
     got = np.asarray(streams.site_uniforms(jnp.asarray([words] * 4), counters, 2))
     for row, k in zip(got, (0, 1, 37, 255), strict=True):
         assert float(row[0]).hex() == table["u1"][k] and float(row[1]).hex() == table["u2"][k]
+    # The binding's vectorized derivation gives the same words for every site.
+    many = streams.sites_key_data(table["seed"], table["site_index"] + 3, "events")
+    assert (many[table["site_index"]] == words).all()
 
 
 @pytest.mark.parametrize("x", [0.0, 1e-12, 1e-6, 0.03, 0.4, 0.999999, 1.0, 1.000001, 3.0, 40.0])
