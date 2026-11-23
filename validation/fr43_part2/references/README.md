@@ -216,7 +216,8 @@ Every file's `method.second[...].difference_from_primary` gives e per quantity, 
   - water's heat: 1.5e-14;
   - the bath's work: 9.4e-15;
   - the network's heat: 2.6e-14.
-- C2.6 has no gene unit, so amendment 2 leaves its file bitwise unchanged.
+- C2.6 has no gene unit, so amendment 2 leaves its arrays and checks bitwise unchanged. Only its
+  run times and provenance differ.
 - C2.7's endpoint identity, F + U − F₀ − U₀ = work − heat, closes to 4.1e-12 pJ on every row. That
   is 2.2e-15 of the energy scale, 1865 pJ.
 - V grows from 1 to 2.5039 pL.

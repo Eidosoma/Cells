@@ -150,7 +150,8 @@ The tags `fr43-part2-references-c23-2026-11-23` (ae093457) and
    output, by about 1e-13.
 2. **Amendment 2** (d65d7a5f). The pools' machines are now counts, not fmol.
    - C2.3, its planted twins and C2.8 change at order 1.
-   - C2.6 has no pool: its file is bitwise the same as at 6d1f76f5.
+   - C2.6 has no pool: its arrays and checks are bitwise the same as at 6d1f76f5. Only its run
+     times and provenance differ.
 
 Every current file is generated from d65d7a5f, with no dirty code or inputs.
 
