@@ -10153,3 +10153,35 @@ references returned, against the code-blind references tagged fr43-part3-referen
     off on the GPU. That removes the path of the 8 November L4 bitwise failure.
   - **Deferred:** resolved_pump_composite@1 in cells ensemble, since no current run uses cells ensemble, and the
     assembly_lineages@2 ensemble adapter, which would gain no speed.
+
+## D322: OL6 Protocol G passes in both scopes
+
+2026-11-23, about 19:06 UTC. The independent checker's verdict under the tag ol6-protocol-g-registered-2026-11-23 is
+/mnt/workspaces/Cells/ol6-checker-20261123/verdict_protocol_g_both_scopes.json.
+- **The runs:**
+  - scope 1 ran at 3e50d48d;
+  - scope 2 (50 fissions) ran at 2263d11c, the first main head holding S7;
+  - both ran from clean frozen snapshots whose registered files are byte-identical to the tag.
+- **Tier 1 passes in both scopes:** 1,280 of 1,280 seeds.
+  - Scope 2 runs through the 50th trigger, 2,030-2,398 events.
+  - Every uniform, first daughter, trigger index and partition's uniforms are bitwise equal.
+  - There are no coincidences, and the largest time ratio is 0.167 against a threshold of 1.
+- **Tier 2 passes:** 180 statistics in scope 1 and 360 in scope 2. The largest |z| is 3.81 against a pass bound of
+  4.5. None is in the band, and none is censored.
+- **The plants are caught:**
+  - G-P1 in 64 of 64 seeds in every world, with counts equal to the registered power table;
+  - G-P2 in every world, with the smallest per-world largest |z| at 29.0 (scope 1) and 41.8 (scope 2). Its z
+    equals the registered power to 1e-15 and 5e-14.
+- **Independent checks:** the checker re-derived tier 1, tier 2 and the worlds with its own code, and spot-checked
+  the raw arrays outside the judge.
+- **Reported only (section 7):** paired on the same seeds, the physical measure moves the passage time by -1.80%
+  on average, negative in 20 of 20 worlds, against the predicted -1.75%.
+- **Not run:**
+  - @1 under pair_consistent@2, since "reported beside" has no procedure;
+  - a scope-2 physical arm.
+- **Disclosed:**
+  - the checker's event limit (8,192 events, 2.34 s), which the lead kept;
+  - a claim-and-skip change to the run driver;
+  - an I/O-only change to the judge after its first freeze, with its self-test identical;
+  - timing smokes on unregistered seeds 900001+.
+- **Protocol D's fail stands as D318.** It is to be re-registered after FR-43.
