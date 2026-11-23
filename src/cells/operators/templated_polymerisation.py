@@ -249,7 +249,13 @@ Refused at the definition
 - m not dividing L, and a draw without its K;
 - a transfer that is not a reaction (a sign missing), and a degradation whose polymer a chain makes
   at another length;
-- another writer of a listed row: an author, D152's reactions or an in-step mover;
+- another writer of a listed row: an author or an in-step mover. FR-43 / D315 admits a D152 network
+  writing or declaring one and the unit producer (population_unit_turnover@1) consuming one, the
+  two-writer rule of 19 November 2026 extended (check_writers): the row's potential from the species
+  registry, each writer's own books, and a labelled or exported row keeping this operator alone;
+- a volume changer other than water (the lumens, replacement@2 by its water): the volumes are
+  current reads at the split, the view's where water changes them, the declared ones otherwise
+  (C1's fallback; FR-43 / D315);
 - beside a replacement (check_occupants): a version other than replacement@1; a donor copy into or
   from a slot of this operator (version 1.1); a template that is not a replacement template; a
   newcomer whose template gives no value for a schedule of its slot; a template value for no such

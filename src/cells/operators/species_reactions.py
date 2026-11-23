@@ -104,9 +104,18 @@ Refusals at the definition (§2.5): the cases above; a held-bath site; more than
 world (D150's cap: FR-43 / D315, 16 by FR-9 / D165); an identity that differs from a D150
 operator's; a turnover route on a (species, node) a reaction writes (one local-kinetics writer per
 row, §1.1); a cell route on a slot that scheduled_cell_replacement@1 replaces (§2.1); RK4 (§4.6);
-and every provider or closer of the declared volumes, masks and outside anchors (CONFLICTS_VIEW:
-water, the lumens, replacement@2 by its water, insertion@1 and @2, the partition and the bridge).
-The stationary analysis refuses the composite by its own ID check (§4.6).
+every provider or closer of the masks and outside anchors (CONFLICTS_VIEW: insertion@1 and @2, the
+partition and the bridge); and a volume changer other than water (the lumens, replacement@2 by its
+water: check_volume_changers). The stationary analysis refuses the composite by its own ID check
+(§4.6).
+
+Volumes (FR-43 / D315; composition option A, D152 §7.3's volume door). The cell and outside volumes
+are current reads at the split (SCOPED_READS). Where water changes them, each half-step takes the
+view's volumes for its concentrations, rates, stage condition and bookings, held over the half-step,
+so a reacting row's dilution has its booked counterpart in water's dilution term and the energy
+ledger closes; the palindrome is second order for the coupled system. Water is declared before the
+network (C2's order rule). Where no operator changes the volumes, the part receives no view (C1's
+fallback) and its program is today's.
 
 Benign padding (the lead's ruling Q11 (a)): padded nodes hold an amount of 1 and a volume of 1,
 padded factor slots K = 1 and n = 1 with kind 0, other laws' K_M 1, so every unused law branch and
