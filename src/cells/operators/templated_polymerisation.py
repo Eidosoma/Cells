@@ -1406,11 +1406,15 @@ def check_labels(spec, declaration):
     """FR-42's labels on a release's fate rows (D296): the two fates are one chemistry, its chain's
     one source labels both (label_sources), and a hold marked at completion carries its labels into
     either. So where the label owner labels one fate row it labels the other, with the same labels
-    in the same order."""
+    in the same order, its producers' derived labels included (amendment G)."""
     owner = next((d for op, d, _ in composite_spec.entries(spec) if op.LABEL_OWNER), None)
     if owner is None:
         return
-    labels = {s.id: s.labels for s in owner.species}
+    from cells.operators import species_labels  # The label owner's derivation (amendment G).
+
+    # Amendment G (§9.20): a species' labels include its producers' derived labels, so the two fate
+    # rows' derived lists must agree, which holds where both declare the same producers.
+    labels = {s.id: s.labels for s in species_labels.derived(spec, owner)[0].species}
     for _, r in releases_of(declaration):
         durable, short = r.fates[0]
         if labels.get(durable) != labels.get(short):

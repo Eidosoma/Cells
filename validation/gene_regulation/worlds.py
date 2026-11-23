@@ -640,19 +640,19 @@ EXPORT_COUPLING = {"N": -1, "M": 1, "Pi": 2}
 
 
 def with_export(raw, *, node=SPACE, cell=CELL, row="R", volume=1.0, k_E=EXPORT_RATE,
-                k_o=OUTSIDE_RATE, ident=None):  # fmt: skip
+                k_o=OUTSIDE_RATE, ident=None, outside=True):  # fmt: skip
     """raw with amendment T's export (§9.17.2): a finite extracellular node `node` of `volume` pL
     (K+ and Y- at the bath's 140 mM, the listed rows at the trace) behind its own patch from
     `cell`, with no permeability, and the operator's export of `row` across it, driven by one NTP
     to NMP and 2 Pi (EXPORT_COUPLING, K the transcription's K_N), with `row`'s loss at the node,
     its outside degradation, deg_R's law and cited dG with its monomers at the node. k_E and k_o
     are development values, not the requester's. ident names the export and the loss (default
-    the row's)."""
+    the row's); outside False adds no loss route (a second producer into a node that has one)."""
     out = copy.deepcopy(raw)
     m, e, x = out["model"], out["experiment"], out["execution"]
     block = next(o for o in m["operators"] if o["law"] == POLYMERISATION)
     listed = [s["id"] for s in block["species"]]
-    patch = f"{EXPORT_PATCH}_{node}"
+    patch = f"{EXPORT_PATCH}_{cell}_{node}"
     if all(n["id"] != node for n in m["extracellular"]):
         amounts = {"K": BACKGROUND_mM * volume, "Y": BACKGROUND_mM * volume}
         amounts |= {r: TRACE_mM * volume for r in listed}
@@ -669,20 +669,26 @@ def with_export(raw, *, node=SPACE, cell=CELL, row="R", volume=1.0, k_E=EXPORT_R
              law="constant_field@1", pump=None, calcium_pump=None)
     )  # fmt: skip
     x["membrane_capacity"] = len(m["membranes"])
-    e["membrane_controls"].append(dict(membrane_id=patch, schedule=_schedule([(0, 1)], "availability")))
+    e["membrane_controls"].append(
+        dict(membrane_id=patch, schedule=_schedule([(0, 1)], "availability"))
+    )
     name = ident or row
     deg = next(d for d in block["degradations"] if d["polymer"] == row and d["cell"] == cell)
     block.setdefault("exports", []).append(
         dict(id=f"export_{name}", row=row, patch=patch, coupling=dict(EXPORT_COUPLING),
              saturation_mM={"N": _f(sheet.A1, "K_N_tx")})
     )  # fmt: skip
-    block.setdefault("outside_degradations", []).append(
-        dict(id=f"deg_{name}_{node}", node=node, polymer=row, residues=deg["residues"],
-             monomers=dict(deg["monomers"]), standard_free_energy=dict(deg["standard_free_energy"]))
-    )  # fmt: skip
     controls = e["polymerisation_controls"]
     controls.append(dict(route_id=f"export_{name}", schedule=_schedule([(0.0, k_E)], "value")))
-    controls.append(dict(route_id=f"deg_{name}_{node}", schedule=_schedule([(0.0, k_o)], "value")))
+    if outside:
+        block.setdefault("outside_degradations", []).append(
+            dict(id=f"deg_{name}_{node}", node=node, polymer=row, residues=deg["residues"],
+                 monomers=dict(deg["monomers"]),
+                 standard_free_energy=dict(deg["standard_free_energy"]))
+        )  # fmt: skip
+        controls.append(
+            dict(route_id=f"deg_{name}_{node}", schedule=_schedule([(0.0, k_o)], "value"))
+        )
     return out
 
 

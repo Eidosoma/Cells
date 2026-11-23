@@ -8,7 +8,8 @@ A world that declares FR-42's labels (neutral_arrival_labels@1, D289) is advance
 advances it: each half-step takes the step's arrival labels and its chains' source labels (D296),
 and the label owner advances the shares of the rows and the holds from its moves
 (species_labels.advance, the operator the only pool reporter), each step's labels resolved as the
-owner's controls resolve them (arrival_controls, source_controls).
+owner's controls resolve them (arrival_controls, source_controls), with the producers' derived
+labels and schedules (amendment G, species_labels.derived), as the composite reads them.
 """
 
 import copy
@@ -92,8 +93,11 @@ def run(raw, *, only=None, record=False):
     owner = label_owner(spec)
     if owner is not None:  # D296: the operator is a source and a pool reporter, the only one.
         times = [k * dt for k in range(steps)]
-        arrivals = species_labels.arrival_controls(owner[1], owner[2], times)
-        sources = species_labels.source_controls(spec, owner[1], owner[2], times)
+        # Amendment G: the owner's derived producer labels and schedules, as the composite reads.
+        declaration_l, producers = species_labels.derived(spec, owner[1])
+        schedule = (*owner[2], *producers)
+        arrivals = species_labels.arrival_controls(declaration_l, schedule, times)
+        sources = species_labels.source_controls(spec, declaration_l, schedule, times)
         (reporter,) = [op for op, _ in species_labels.reporters(spec, "LABEL_POOLS")]
         assert reporter is OP
     states, increments = {0: state}, []

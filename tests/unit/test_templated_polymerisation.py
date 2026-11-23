@@ -247,7 +247,25 @@ RELEASE_REFUSALS = [
         ),
         "at or after its founder's death",
     ),
+    # Amendment T's export (§9.17.6), on R1 with worlds.with_export's export of R into its node.
+    (lambda raw: _export(raw, patch=worlds.PATCH), "opens onto a held bath"),
+    (lambda raw: _export(raw, coupling={}), "passive form is refused"),
+    (lambda raw: _export(raw, row="N"), "is no fate row or product of a chain"),
+    (lambda raw: _export(raw, saturation_mM={}), "gives K"),
+    (lambda raw: _export(raw, k_E=1.0), "export_R has dt k"),
+    (
+        lambda raw: kernel.block(_export(raw))["outside_degradations"][0].update(polymer="R_s"),
+        "is carried into",
+    ),
 ]
+
+
+def _export(raw, k_E=None, **changes):
+    """raw, in place, with worlds.with_export's export of R into its finite node, the export's
+    declaration then edited by `changes` and its k_E set."""
+    raw.update(worlds.with_export(raw, **({} if k_E is None else dict(k_E=k_E))))
+    kernel.block(raw)["exports"][0].update(changes)
+    return raw
 
 
 @pytest.mark.parametrize(("edit", "words"), RELEASE_REFUSALS)
@@ -527,6 +545,162 @@ def test_the_label_marks_each_molecule(at):
     assert held > 0 and abs(held - fine) <= abs(fine - coarse) + release_check.SURVIVORS * fine
     assert shares[0, marked] > 0 and shares[1, marked] > 0  # Carried into both fate rows.
     assert at != "producer" or hold[1] == 0.0  # The window's cohort took no completion.
+
+
+def _node_G(state, p, spec):
+    """(G at the export's node from its rows alone, pJ, as a Decimal; its terms' magnitude)."""
+    (block,) = [d for d in spec.model.operators if d.law == worlds.POLYMERISATION]
+    species, slot = list(spec.model.species_ids), [c.id for c in spec.model.extracellular]
+    k = slot.index(worlds.SPACE)
+    volume = spec.model.extracellular[k].volume_pL
+    amounts = {
+        s.id: float(p.extracellular_amount_reference[species.index(s.id), k]
+                    + state.extracellular_amount_increment[species.index(s.id), k])
+        for s in block.species
+    }  # fmt: skip
+    mu = dict(zip([s.id for s in block.species], block.mu_RT, strict=True))
+    residue = {c.id: mu[c.product] / c.residues for c in block.chains}
+    g = engine_run.free_energy(amounts, dict.fromkeys(residue, 0.0), mu, residue, volume,
+                               block.c0_mM)  # fmt: skip
+    rt = 1e-3 * 8.314462618 * spec.model.temperature_K
+    size = sum(abs(n) * rt * (abs(mu[r]) + abs(np.log(n / volume / block.c0_mM)) + 1)
+               for r, n in amounts.items())  # fmt: skip
+    return g, size
+
+
+@pytest.mark.parametrize("labelled", [False, True])
+def test_the_export_books_both_sides_and_carries_its_labels(labelled):
+    """FR-38's amendment T (§9.17; erratum H, §9.21), NumPy, no world compiled, about 2 s a row: R1
+    at p = 0.75 with the export of R into a finite node (k_E = 1e-3 /s, driven by NTP) and R's loss
+    there, 600 s.
+    - The node's heat is booked at the node: its outside degradation's, every increment >= 0. The
+      export's whole heat is the cell's. Each side's routes sum to its booked heat.
+    - G's identity over the cell and the node within rounding (64 eps (size + bookings)): the
+      energy ledger, which books both sides' standard terms and heat against @3's chemical terms,
+      closes.
+    - The producer's identity with its net export, and the node's balance: n_o - n_o(0) = forward
+      - backward - its loss, within rounding.
+    - With labels: every physical field is the unlabelled run's bit for bit, and the cohort marked
+      on transcription's own schedule rides into the node, whose shares sum to 1."""
+    raw = worlds.with_export(kernel.truncated(worlds.r1(0.75), 600.0), k_E=1e-3)
+    if labelled:
+        raw = worlds.with_share_labels(raw, window=(0.0, 300.0), chain="tx")
+    spec, layout, states, increments = kernel.run(raw, record=True)
+    start, end = states[0], states[max(states)]
+    node_heat = float(end.poly_outside_dissipated_energy_pJ[0])
+    assert node_heat > 0 and node_heat == pytest.approx(
+        float(end.poly_outside_degradation_heat_pJ[0]), rel=1e-12
+    )
+    cell_heat = float(np.sum(end.poly_dissipated_energy_pJ))
+    routes = sum(float(np.sum(getattr(end, k))) for k in (
+        "poly_chain_heat_pJ", "poly_degradation_heat_pJ", "poly_release_heat_pJ",
+        "poly_export_heat_pJ"))  # fmt: skip
+    bookings = float(np.sum(end.poly_energy_magnitude_pJ)) + float(
+        np.sum(end.poly_outside_energy_magnitude_pJ)
+    )
+    assert abs(routes - cell_heat) <= 64 * EPS * bookings and float(end.poly_export_heat_pJ[0]) > 0
+    (g1, size1), (g0, size0) = _G(end, layout, spec), _G(start, layout, spec)
+    (o1, nsize1), (o0, nsize0) = _node_G(end, layout, spec), _node_G(start, layout, spec)
+    total = float((g1 - g0) + (o1 - o0)) + cell_heat + node_heat
+    assert abs(total) <= 64 * EPS * (size0 + size1 + nsize0 + nsize1 + bookings)
+    assert min(float(np.min(x)) for x in increments) >= 0.0
+    species, k = list(spec.model.species_ids), [c.id for c in spec.model.extracellular]
+    i, o = species.index("R"), k.index(worlds.SPACE)
+
+    def cell(s, row):
+        return float(layout.amount_reference[species.index(row), 0]
+                     + s.amount_increment[species.index(row), 0])  # fmt: skip
+
+    reference = float(layout.extracellular_amount_reference[i, o])
+    node = [reference + float(s.extracellular_amount_increment[i, o]) for s in (start, end)]
+    net = float(end.poly_export_forward_fmol[0] - end.poly_export_backward_fmol[0])
+    lost = float(end.poly_outside_degraded_fmol[0])
+    assert net > 0 and abs(node[1] - node[0] - net + lost) <= _identity_bound(*node, net, lost)
+    H0, H = float(start.poly_hold_fmol[0, 0]), float(end.poly_hold_fmol[0, 0])
+    A = float(end.poly_released_fmol[0])
+    kept = sum(cell(end, r) - cell(start, r) + float(end.poly_degraded_fmol[f])
+               for f, r in enumerate(("R", "R_s")))  # fmt: skip
+    assert abs(H0 + A - H - kept - net) <= _identity_bound(H0, A, H, kept, net)
+    if not labelled:
+        return
+    plain = kernel.run(worlds.with_export(kernel.truncated(worlds.r1(0.75), 600.0), k_E=1e-3))
+    plain = plain[2][max(plain[2])]
+    for name in type(plain)._fields:
+        assert np.array_equal(getattr(end, name), getattr(plain, name)), name
+    shares = end.label_outside_share[0, :, o]  # R's labels at the node: [base, cohort].
+    assert shares[1] > 0 and abs(float(np.sum(shares)) - 1.0) <= 128 * EPS
+
+
+def _two_producers(seconds=600.0):
+    """§9.17.5's two-producer row: R1 at p = 0.75 with A1's k_I in cell_0 and a copy of its gene
+    unit in cell_1 (tx_1, its release and its own fate rows R and R_s, one producer per fate row at
+    its cell), each exporting R into one finite node (worlds.with_export), where one outside
+    degradation acts; FR-42's labels on R and R_s, each chain declared their producer (amendment G),
+    so the owner derives cell_0-g0-tx and cell_1-g0-tx_1. Outputs every 20 s."""
+    raw = kernel.truncated(worlds.r1(0.75, initiation=K_I), seconds)
+    m, e, x = raw["model"], raw["experiment"], raw["execution"]
+    m["cells"].append(dict(copy.deepcopy(m["cells"][0]), id="cell_1"))
+    m["membranes"].append(dict(copy.deepcopy(m["membranes"][0]), id="patch_1", inside="cell_1"))
+    e["membrane_controls"].append(dict(e["membrane_controls"][0], membrane_id="patch_1"))
+    x.update(capacity=2, membrane_capacity=2)
+    block = kernel.block(raw)
+    block["pools"].append(dict(block["pools"][0], id="pol_1", cell="cell_1"))
+    chain = copy.deepcopy(block["chains"][0])
+    chain.update(id="tx_1", pool="pol_1")
+    chain["release"]["id"] = "tx_release_1"
+    block["chains"].append(chain)
+    block["degradations"] += [
+        dict(d, id=f"{d['id']}_1", cell="cell_1") for d in block["degradations"]
+    ]
+    controls = e["polymerisation_controls"]
+    controls += [dict(c, route_id=f"{c['route_id']}_1") for c in list(controls)]
+    raw = worlds.with_export(worlds.with_export(raw), cell="cell_1", ident="R_1", outside=False)
+    producers = [dict(source=c, windows=[]) for c in ("tx", "tx_1")]
+    raw["model"]["operators"].append(
+        dict(law=worlds.SHARE_LABELS, species=[
+            dict(id=r, labels=["base"], initial=[], producers=producers) for r in ("R", "R_s")
+        ])
+    )  # fmt: skip
+    raw["experiment"]["label_arrivals"] = [
+        dict(species=r, schedule=[dict(time=0.0, label="base")]) for r in ("R", "R_s")
+    ]  # The species' own; the producers' are derived.
+    raw["experiment"]["observation_times"] = [float(t) for t in range(0, int(seconds) + 1, 20)]
+    return raw
+
+
+def test_two_producers_share_one_node_row_by_label():
+    """§9.17.5's first readout with two producers into one node (the lead's review; amendment G's
+    derived labels; erratum H), NumPy, no world compiled, about 3 s: each producer's RNA at the
+    node by route 1, the node's R times the producer's share there, and by route 2, its net exports
+    carried at the outside degradation's gross k_o (cohort.known_rate on the outputs every 20 s).
+    Route 2 counts every exported molecule, the cell's starting trace at the base label among them,
+    so it may exceed route 1 by at most that trace's exports, k_E n_R(0) T, besides route 2's grid
+    error (every second output) and the node update's split, k_o h^2/(12 tau). The producers' and
+    the base's amounts sum to the node's row."""
+    raw = _two_producers()
+    spec, layout, states, _ = kernel.run(raw)
+    end, steps = states[max(states)], sorted(states)
+    t = [float(k) * spec.execution.dt for k in steps]
+    species, slots = list(spec.model.species_ids), [c.id for c in spec.model.extracellular]
+    i, o = species.index("R"), slots.index(worlds.SPACE)
+    n_o = float(
+        layout.extracellular_amount_reference[i, o] + end.extracellular_amount_increment[i, o]
+    )
+    shares = end.label_outside_share[0, :, o]  # [base, cell_0-g0-tx, cell_1-g0-tx_1]
+    assert abs(float(np.sum(shares)) - 1.0) <= 128 * EPS
+    (block,) = [d for d in spec.model.operators if d.law == worlds.POLYMERISATION]
+    k_o = worlds.OUTSIDE_RATE
+    trace = worlds.EXPORT_RATE * float(layout.amount_reference[i, 0]) * t[-1]
+    split = k_o * (spec.execution.dt / 2) ** 2 / (12.0 * float(worlds.sheet.RELEASE["tau"]))
+    for e, producer in enumerate(("cell_0-g0-tx", "cell_1-g0-tx_1")):
+        assert block.exports[e].cell == f"cell_{e}"
+        net = [float(states[k].poly_export_forward_fmol[e] - states[k].poly_export_backward_fmol[e])
+               for k in steps]  # fmt: skip
+        route1 = n_o * float(shares[1 + e])
+        route2 = cohort.known_rate(t, net, k_o, 0.0, t[-1], t[-1])
+        grid = abs(route2 - cohort.known_rate(t[::2], net[::2], k_o, 0.0, t[-1], t[-1]))
+        slack = grid + (split + 128 * EPS) * route2
+        assert route1 > 0 and -slack <= route2 - route1 <= trace + slack, (producer, route1, route2)
 
 
 # FR-42's one-way moves (D289, D296): (world, its labelled rows, the hold's marking, seconds).

@@ -48,7 +48,8 @@ At each output, per cell by ID, under G2's interface names:
     label schedule, so a molecule re-synthesised from monomers is not a member.
   - **Limits:** a labelled species carries at most the label owner's MAX_LABELS labels, so
     producer identity crossed with the window labels must fit within it. RNA that leaves its cell
-    cannot keep its label until FR-42's stage 2 moves labelled rows.
+    by the operator's export (amendment T, §9.17) keeps its label at the node: the export reports
+    its two one-way parts as transfers carrying their sources' shares (erratum H).
 
 **Not exported**, though G2 publishes them:
 - each move's ΔG, `dG_tx`, `dG_tl`, `dG_rel_R`, `dG_rel_P`, `dG_deg_R`, `dG_deg_P` and `dG_rc`;
@@ -125,19 +126,29 @@ must fall on a window's end.
 readout distinguishes the two generations' RNA, and a run restarted after the replacement
 reproduces the uninterrupted run's cohort counts. Development, not judged.
 - **The world:** R1 at p = 0.75 with A1's transcription. Its fate rows R and R_s are labelled by
-  FR-42's shares, with producer x window labels on transcription's own schedule: g0's cohort label
-  for releases in [0, 1,200 s), g0's after it, and g1's from the replacement at 3,000 s. A newcomer
-  from template T, the founder's state and values, takes the slot then. Restarted from snapshot
-  files at 3,600 s; ends at 4,800 s.
-- **The limit, stated plainly:** until amendment T's export (§9.17) is built, **only the
-  newcomer's material stays in the cell**. The departing occupant's rows, chains in progress and
-  hold leave with it, so **the departing g0 RNA is read from the removal record**
-  (`label_removed_fmol` for its rows, `label_pool_removed_fmol` for its hold, by label), never from
-  a row. g1's RNA is read from the rows by share.
-- **The checks:** labels change no physics; the resume reproduces every step and readout bit for
-  bit; no g1 share before the event and no g0 share in the cell after it; the removal records
-  equal replacement@1's removed rows and the operator's H_rem; and each generation's per-producer
-  identity holds at rounding.
+  FR-42's shares and both declare transcription as their producer with the window [0, 1,200 s)
+  (amendment G, §9.20, option (a)). The label owner derives the labels from replacement@1's
+  events, the species' own first, then per generation `cell_0-g<k>-tx` and `cell_0-g<k>-tx-cohort`,
+  and transcription's schedule: g0's cohort label for releases in [0, 1,200 s), g0's after it, and
+  g1's from the replacement at 3,000 s. No schedule is written by hand. A newcomer from template T,
+  the founder's state and values, takes the slot then. The cell exports R into a finite node,
+  driven by NTP, where R decays at its outside degradation's rate (amendment T, §9.17). Restarted
+  from snapshot files at 3,600 s; ends at 4,800 s.
+- **What stays where:** the departing occupant's rows, chains in progress and hold leave with it,
+  so g0's RNA in the cell at the replacement is read from the removal record (`label_removed_fmol`
+  for its rows, `label_pool_removed_fmol` for its hold, by label). The node is not replaced, so
+  **g0's exported RNA stays there with its label** (amendment T's retention). It is read by two
+  routes: the node's row times g0's shares, and g0's net exports over its life carried at the
+  outside degradation's gross rate k_o (erratum H, §9.21). g1's RNA is read from the rows by share.
+- **The checks:**
+  - labels change no physics;
+  - the resume reproduces every step and readout bit for bit;
+  - no g1 share before the event and no g0 share in the cell after it;
+  - the removal records equal replacement@1's removed rows and the operator's H_rem;
+  - each generation's per-producer identity, its net exports included, holds at rounding;
+  - g0's RNA is retained at the node, the node's label amounts sum to its row, and the two routes
+    agree;
+  - the producer labels are the owner's derivation.
 
 Run: `PYTHONPATH=src:. JAX_ENABLE_X64=1 python -m validation.gene_regulation.replace_restart --out
 DIR`. It writes `replace_restart.json` with the verdicts and readouts.
