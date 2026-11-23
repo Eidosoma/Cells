@@ -11,7 +11,7 @@ from cells.execution import blas_threads, row_checks
 from cells.execution import energy_check as energy
 from cells.execution.devices import execution_device
 from cells.execution.grid import EventGrid, applied_definition, checked_grid, require_scalar_path
-from cells.execution.resources import trace_bytes
+from cells.execution.resources import fixed_bytes, row_bytes
 from cells.execution.runner import (
     CheckedRunResult,
     _run_segment,
@@ -113,7 +113,8 @@ def _plan_windows_metadata(spec, policy=DEFAULT_POLICY, checkpoint=None, *, ener
         peak, previous = max(peak, count), bucket
     # Two adjacent results may overlap in a consuming for-loop. Reserve an
     # additional observation row for continuity and complete restart storage.
-    estimate = 2 * trace_bytes(spec, width, peak + 1) + 2 * trace_bytes(spec, 0, 0)
+    # The world's layout once (fixed_bytes, FR-43), its two results' and two restarts' rows each.
+    estimate = fixed_bytes(spec) + 2 * row_bytes(spec, width, peak + 1) + 2 * row_bytes(spec, 0, 0)
     estimate += 2 * energy.trace_bytes(spec, width)  # The energy check's own values (0 without it).
     if estimate > spec.execution.max_trace_bytes:
         raise ConfigError("Estimated window working storage exceeds max_trace_bytes")

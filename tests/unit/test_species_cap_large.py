@@ -17,6 +17,7 @@ import numpy as np
 import pytest
 
 from cells.definitions.specs import ConfigError, parse_spec
+from cells.execution import batch, batch_windows, windows
 from cells.execution.runner import run
 from cells.registry.inventory_species import add_inventory_species
 from tests.species_cap_fixtures import (
@@ -70,3 +71,23 @@ def test_a_1025th_species_is_refused_at_the_parse(raw):
     )
     with pytest.raises(ConfigError, match="admits at most 1024 species per world"):
         parse_spec(more)
+
+
+def test_its_windowed_run_and_a_two_world_batch_are_admitted_under_2_gib(raw):
+    """The layout counted once per world (FR-43 / D315): at 1,024 species it is 0.37 GiB, and
+    counted with every copy of the rows a two-world batch of this world was refused under 2 GiB."""
+    spec = parse_spec(raw)
+    two = batch.parse_batch(
+        dict(
+            schema_version=1,
+            kind="independent_worlds",
+            worlds=[dict(world_id=i, simulation=raw) for i in (1, 2)],
+            execution=dict(
+                mapping="lax_map", max_worlds=4, max_padded_steps=10**6, max_working_bytes=2**31
+            ),
+        )
+    )
+    policy = windows.WindowPolicy(256)
+    assert windows.plan_windows(spec, policy).estimated_working_bytes <= 2**31
+    assert batch.plan_batch(two).estimated_working_bytes <= 2**31
+    assert batch_windows.plan_batch_windows(two, policy).estimated_working_bytes <= 2**31
