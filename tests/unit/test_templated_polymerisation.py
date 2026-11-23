@@ -64,19 +64,26 @@ def _with_amount(raw, row, mM):
     return out
 
 
-# One route live: (world, its edit, the route, seconds).
+def _negative_mu():
+    """pol T=5 at a potential set with E_pd = +4 RT, so that the RNA's standard potential, mu°_R =
+    -L E_pd, is negative: the operator admits any finite mu° (a negative one is physical)."""
+    return worlds.polymerase_limited(5, symbols=dict(worlds.test_instance(), E_pd=Decimal(4)))
+
+
+# One route live: (world, or a builder of it; its edit, the route, seconds).
 ONE_ROUTE = [
     ("pol T=5", None, "tx", 20.0),
     ("pol T=5", ("R", 1e-4), "deg_R", 10.0),
     ("pol T=5", None, "recharge", 10.0),
     ("rib n_R=10", None, "tl", 20.0),
     ("rib n_R=10", ("P", 1e-4), "deg_P", 10.0),
+    pytest.param(_negative_mu, ("R", 1e-4), "deg_R", 10.0, id="pol T=5 mu_R below 0-deg_R"),
 ]
 
 
 @pytest.mark.parametrize(("world", "edit", "route", "seconds"), ONE_ROUTE)
 def test_one_live_route_books_the_whole_heat_and_it_is_minus_dG(world, edit, route, seconds):
-    raw = kernel.truncated(worlds.world(world), seconds)
+    raw = kernel.truncated(world() if callable(world) else worlds.world(world), seconds)
     if edit is not None:
         raw = _with_amount(raw, *edit)
     start, end, p, spec, _ = _ends(raw, only=route)
