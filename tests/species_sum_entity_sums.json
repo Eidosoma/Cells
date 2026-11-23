@@ -1270,6 +1270,41 @@
    "operators/templated_polymerisation.py",
    "poly_event",
    "entity_sum(hold, axis=1, xp=xp)"
+  ],
+  [
+   "operators/templated_polymerisation.py",
+   "_export_moves",
+   "entity_sum(hit, axis=0, xp=xp)"
+  ],
+  [
+   "operators/templated_polymerisation.py",
+   "_export_moves",
+   "entity_sum(xp.arange(hit.shape[0], dtype=float)[:, None] * hit, axis=0, xp=xp)"
+  ],
+  [
+   "operators/templated_polymerisation.py",
+   "ledger_terms",
+   "entity_sum(node, axis=1, xp=xp)"
+  ],
+  [
+   "operators/templated_polymerisation.py",
+   "ledger_terms",
+   "entity_sum(row.poly_outside_dissipated_energy_pJ, axis=None, xp=xp)"
+  ],
+  [
+   "operators/templated_polymerisation.py",
+   "ledger_terms",
+   "entity_sum(row.poly_outside_standard_energy_pJ, axis=None, xp=xp)"
+  ],
+  [
+   "operators/templated_polymerisation.py",
+   "magnitude_terms",
+   "entity_sum(node, axis=1, xp=xp)"
+  ],
+  [
+   "operators/templated_polymerisation.py",
+   "magnitude_terms",
+   "entity_sum(row.poly_outside_energy_magnitude_pJ, axis=None, xp=xp)"
   ]
  ]
 }

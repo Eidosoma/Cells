@@ -413,6 +413,9 @@ def equations(text):
         found[(right.split("[")[0].split()[0], types)] += 1
     for key in _identity_keys(text):  # IDENTITY_RULE (amendment T's node heat field).
         found[key] -= 1
+    negative = sorted((k for k, v in found.items() if v < 0), key=repr)
+    if negative:  # The two parsers disagree on an equation: never let a count hide it.
+        raise ValueError(f"IDENTITY_RULE set aside equations equations() did not count: {negative}")
     return +found
 
 

@@ -329,6 +329,11 @@ def check(out):
         "5 g0's identity": abs(ids["g0"]["residual_fmol"]) <= ids["g0"]["bound_fmol"],
         "5 g1's identity": abs(ids["g1"]["residual_fmol"]) <= ids["g1"]["bound_fmol"],
         "6 g0's exported RNA is retained at the node after T_E": whole[END]["g0_at_node_fmol"] > 0,
+        # Compiled: the node's outside degradation books its heat at the node, and the composite's
+        # energy ledger, which adds it with the node's standard term, held at every step.
+        "6 the node's heat is booked at the node": bool(
+            obs["poly_outside_dissipated_energy_pJ"][-1, 0] > 0
+        ),
         "6 the node's label amounts sum to its row": node_gap <= 128 * EPS,
         "6 g0's RNA at the node by both routes": bool(kept)
         and all(v["agree"] for v in kept.values()),
