@@ -20,7 +20,7 @@ The references read only two inputs:
 |---|---|
 | `linear_reference.py` | The generator. It uses the standard library only and imports nothing from the engine or from this package. It reads the spec with `git show <tag>:validation/gap_junction_tissue/references/spec/linear.json`, solves every requested quantity exactly in `fractions.Fraction`, checks each one exactly (see Derivations), rounds once to binary64, and writes the interface. |
 | `interface/linear.json` | The references, format `gap_junction_tissue.linear_references@1`, in the schema of the spec's `interface`. |
-| `../../../tests/unit/test_gap_junction_references.py` | The test. It is self-contained: it reads the spec and the interface as data, re-implements the exact solve, and recomputes every check below. Its checks take about 0.1 s; pytest reports 0.5 s for the file, collection included. |
+| `../../../tests/unit/test_gap_junction_references.py` | The test. It is self-contained: it reads the spec and the interface as data and re-implements the exact solve. It recomputes the schema, the declaration echoes, every network under all three readings (exact zero residuals, correct rounding, the declared bounds), the chains (the full balance under two port loads, the recursion and the closed form), the figure8 networks' Norton lines, the limits and the printed recursion. It does not repeat the tree reduction or eq. 2. Its checks take about 0.1 s; pytest reports 0.5 s for the file, collection included. |
 
 ### Regenerating
 
