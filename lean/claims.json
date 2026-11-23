@@ -24,6 +24,70 @@
     "cells.rate_equations@1": "molecular-assembly"
   },
   "comparisons": {
+    "fr38-survival-rounding-repair": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [],
+      "operators": [
+        "cells.templated_polymerisation@1"
+      ],
+      "engine_revision": "4944314d4d8b77c6a42ce1441503ac3e51de9dcb",
+      "record_revision": "a4f8c8276421e20668781f71536fb356c0abb679",
+      "sources": {
+        "Gross survivor counts and their grid errors": "validation/gene_regulation/cohort.py#L204",
+        "Net-count comparison from booked counters": "validation/gene_regulation/cohort.py#L298",
+        "Gross loss rate from the exported definition": "validation/gene_regulation/release_check.py#L148",
+        "Public ratio and gross/net verdict": "validation/gene_regulation/release_check.py#L411",
+        "Declared half-lives": "validation/gene_regulation/sheet_check.py",
+        "Development world for the controls": "validation/gene_regulation/worlds.py",
+        "Ratio-rounding allowance over the release intervals": "validation/gene_regulation/release_check.py#L449",
+        "Native false-refusal regression": "tests/unit/test_gene_regulation_compare.py#L395",
+        "Saved development export names": "validation/gene_regulation/engine_run.py"
+      },
+      "record_inputs": {
+        "Count-bound and ratio identities": "lean/CellsProofs/Chemistry/ArrivalWindow.lean"
+      },
+      "driver": "lean/checks/release_survival.py",
+      "record": "lean/PROGRESS.md#fr38-survival-rounding"
+    },
+    "rosenbrock-inventory": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@2"
+      ],
+      "laws": [
+        "cells.rate_equations@1",
+        "cells.ideal_mixing@1",
+        "cells.stochastic_mass_action@1"
+      ],
+      "operators": [],
+      "engine_revision": "4944314d4d8b77c6a42ce1441503ac3e51de9dcb",
+      "record_revision": "a4f8c8276421e20668781f71536fb356c0abb679",
+      "sources": {
+        "Shifted stage equations and dense polynomial": "src/cells/numerics/rosenbrock_dense.py#L123",
+        "Reaction field and finite material accounts": "src/cells/models/assembly_lineages_v2/rate_equations.py#L927",
+        "Compiled step with the forward-mode Jacobian": "src/cells/models/assembly_lineages_v2/rate_equations.py#L1105",
+        "Accepted steps and observation stops": "src/cells/models/assembly_lineages_v2/rate_equations.py#L1428",
+        "Saved material-inventory check": "src/cells/models/assembly_lineages_v2/rate_equations.py#L1866",
+        "Public assembly run dispatch": "src/cells/models/assembly_lineages_v2/runner.py#L602",
+        "Native record writer": "src/cells/models/assembly_lineages_v2/records.py#L874",
+        "Finite single-pool world": "tests/unit/test_assembly_lineages_v2_rate_equations.py#L50",
+        "Native reaction and experiment definitions": "tests/assembly_lineage_v2_fixtures.py#L80",
+        "Registered mass-action rate limit": "src/cells/models/assembly_lineages_v2/mass_action.py"
+      },
+      "record_inputs": {
+        "Linear inventories through the stage equations": "lean/CellsProofs/Chemistry/RosenbrockInventory.lean",
+        "Reversible sugar-pair world": "lean/checks/rate_equation_flux.py#L35",
+        "Rabbit-muscle PGI concentration recovery": "lean/checks/data/kahana1960_pgi_recovery.json",
+        "Extract concentrations and independent kinetic ratio": "lean/checks/data/pgi_flux_direction.json",
+        "Pinned Mathlib dependency": "lean/lake-manifest.json"
+      },
+      "driver": "lean/checks/rosenbrock_inventory.py",
+      "record": "lean/PROGRESS.md#rosenbrock-reaction-inventory"
+    },
     "fr38-survival-gross-net": {
       "kind": "engine",
       "models": [
@@ -4064,6 +4128,75 @@
   },
   "claims": [
     {
+      "id": "rosenbrock-inventory",
+      "category": "molecular-assembly",
+      "title": "Rosenbrock reaction steps preserve closed material inventories",
+      "statement": "A weighted sum of species amounts that balances each reaction is preserved by every exact Rosenbrock stage solve, by the accepted endpoint and throughout the Rodas4 dense polynomial used to locate crossings.",
+      "assumptions": [
+        "The field is differentiable near the starting state. The inventory is linear and each stoichiometric change balances it at every stage. The fixed Jacobian is the derivative of that field, the scalar shift is nonzero and the stage equations are solved exactly.",
+        "The inventory covers a closed reaction interval. Reservoir transfers, boundary events and changes of representation require their own bookkeeping."
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.rate_equations@1"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.RosenbrockInventory.weighted_sum_zero": "lean/CellsProofs/Chemistry/RosenbrockInventory.lean",
+          "CellsProofs.Chemistry.RosenbrockInventory.jacobian_zero": "lean/CellsProofs/Chemistry/RosenbrockInventory.lean",
+          "CellsProofs.Chemistry.RosenbrockInventory.stages_zero": "lean/CellsProofs/Chemistry/RosenbrockInventory.lean",
+          "CellsProofs.Chemistry.RosenbrockInventory.step_inventory": "lean/CellsProofs/Chemistry/RosenbrockInventory.lean",
+          "CellsProofs.Chemistry.RosenbrockInventory.dense_inventory": "lean/CellsProofs/Chemistry/RosenbrockInventory.lean"
+        },
+        "sources": {
+          "Imported Mathlib chain rule for Fréchet derivatives": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/Calculus/FDeriv/Comp.lean#L86",
+          "Imported Mathlib derivative of a continuous linear map": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/Calculus/FDeriv/Linear.lean#L57",
+          "Imported Mathlib uniqueness of the derivative": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/Calculus/FDeriv/Basic.lean#L491"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "rosenbrock-inventory"
+        ],
+        "result": "In a closed A + B ⇌ C run, A+C and B+C started at 11,000 and 3,000 molecule units. The first accepted endpoint matched the first saved row bit for bit. All six stages and five dense samples preserved both totals within float64 rounding. Across 64 accepted steps the four saved observations had a maximum relative drift of 9.10 × 10⁻¹⁶ against the native 10⁻¹² tolerance. The unweighted molecule count changed by 653.29."
+      },
+      "biology": {
+        "status": "not_assessable",
+        "observable": "Total soluble glucose-6-phosphate and fructose-6-phosphate during their reversible interconversion.",
+        "unit": "mM",
+        "finding": "A partially purified enzyme preparation recovered approximately the starting total. One cell-extract time course lost 22.29% of the measured pair. Recovery uncertainty and the disposition of material outside the pair are unresolved.",
+        "evidence": [
+          {
+            "dataset_id": "kahana1960_pgi_recovery",
+            "manifest": "lean/checks/data/kahana1960_pgi_recovery.json",
+            "citation": "Kahana et al. (1960), Table II, experiment B",
+            "doi": "10.1016/S0021-9258(18)64594-6",
+            "locator": "Table II, experiment B, 0, 15 and 30 minutes. Figure 3 describes the assay conditions.",
+            "context": "Partially purified rabbit-muscle PGI at 30 °C and pH 8.0. Cells starts at the positive 15-minute pair and advances 900 s. Its conserved total is independent of the kinetic parameters.",
+            "role": "descriptive",
+            "observed": 2.505,
+            "predicted": 2.5,
+            "uncertainty": "The concentrations share a sequential absorbance assay. The paper reports rounded concentrations without a replicate uncertainty for their sum.",
+            "assessment": "The measured totals were 2.500, 2.500 and 2.505 mM. The final value exceeds the closed-pair prediction by 0.005 mM (0.2%).",
+            "report": "lean/PROGRESS.md#rosenbrock-reaction-inventory"
+          },
+          {
+            "dataset_id": "eicher2012_pgi_direction",
+            "manifest": "lean/checks/data/pgi_flux_direction.json",
+            "citation": "Eicher et al. (2012), Fig. 5 and PGI worksheet",
+            "doi": "10.3390/metabo2040818",
+            "locator": "Unsmoothed PGI worksheet, F4:H4 to F33:H33 and K4:M4 to K29:M29.",
+            "context": "The same two E. coli K-12 extract courses at 25 °C and pH 7.2 also supply the reaction-direction comparison. Here the observable is the sum of both sugars.",
+            "role": "descriptive",
+            "uncertainty": "The workbook gives no pointwise uncertainty or covariance. Neither course measures material outside the soluble pair.",
+            "assessment": "Dataset 2 fell from 6.8872 to 5.3523 mM (−22.29%). Dataset 3 rose from 9.5845 to 9.6838 mM (+1.04%). Conservation of the two measured sugars in the extract is unresolved.",
+            "report": "lean/PROGRESS.md#rosenbrock-reaction-inventory"
+          }
+        ]
+      }
+    },
+    {
       "id": "size-threshold-division",
       "category": "molecular-assembly",
       "title": "A size-triggered division preserves each membrane species across both daughter records",
@@ -4404,13 +4537,14 @@
         }
       },
       "numerical": {
-        "status": "failed",
+        "status": "checked",
         "comparisons": [
+          "fr38-survival-rounding-repair",
           "fr38-survival-gross-net",
           "fr38-survival-repair",
           "fr38-survival-original"
         ],
-        "result": "The erratum F reader reproduced all 6 control verdicts and the 8 saved development comparisons. Five controls met their mathematical expectations. One valid constant-rate turnover control gives a gross ratio of 0.25000000000000006 against a correctly rounded 0.25. The public checker refuses it with a zero grid bound even though both endpoint gross/net counts agree. A changed-rate control at 0.5 is correctly refused. The independent registered FR-38 verdict remains R1 failed and R2 inconclusive."
+        "result": "All six controls met their expected verdicts and the independent reader reproduced all eight saved development readouts on Cells 4944314d. At zero count-grid error the valid 0.25000000000000006 turnover ratio passes with a ratio-rounding allowance of 7.105427357601002 × 10⁻¹⁵. The changed-rate control at 0.5 still fails. The earlier false refusal and its record remain linked. The registered FR-38 outcome remains R1 failed and R2 inconclusive."
       },
       "biology": {
         "status": "open",
