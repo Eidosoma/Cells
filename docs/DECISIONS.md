@@ -9938,3 +9938,33 @@ and its erratum 1 (tag fr38-rule-erratum-1-registered-2026-11-23, 57ff66b0).
   - BITSEY integrates by explicit adaptive Euler, which has no a priori error bound, so no band could be
     set honestly.
   - The judged reference is the code-blind integration with its stated accuracy (GJ-N1's check A).
+
+## D315: FR-43's design decided: part 3 in the composite (B); the cap to 1,024; two writers with one potential (the user)
+
+2026-11-23, about 14:13 UTC. The user reviewed docs/FR43_SHARED_INVENTORIES_DESIGN.md (branch fr43-design, 398a6e64)
+and gave the five rulings it asks of the lead, with part 3's host.
+1. **Part 1, networks above 16 species:**
+   - the cap rises to 1,024 species;
+   - the existing sum is kept through 16 terms and the scan fold is used above 16, so every world at 16 or
+     fewer keeps its program text;
+   - the trace budget's over-estimate is fixed now;
+   - the per-entry sparse layout is staged afterwards.
+2. **Part 1, the step:** the accuracy-limited timestep is reported, and the stiff integrator is deferred
+   (D152's door, a separate law).
+3. **Part 2, fixed volume:** two writers are allowed on one shared row, with one registry potential and
+   separate material and energy accounts for each writer.
+4. **Part 2, changing volume:**
+   - the reaction law keeps its ID;
+   - current-volume reads are delivered for both writers, the reactions and the gene unit, within FR-43;
+   - a test must run both writers active while the volume changes.
+5. **Part 3:** the host is option B, an integer-population operator in the composite. B requires no OL6
+   exemptions, so OL6's refusals 9 and 11 stay.
+   - The split is the new token independent_segregation (each unit to the first recipient with
+     probability f), and exact_fraction is preserved, with Protocol G's contract untouched.
+   - Event timing is verified under step halving, the partition at division is verified, and a same-seed
+     restart is verified.
+- **Next:**
+  - the build, on the extra cores that are the priority item's;
+  - the code-blind references for part 2's coupled calculation and part 3's same-draws integration, by a
+    separate agent;
+  - the GPU column folded into the note.
