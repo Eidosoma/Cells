@@ -6,29 +6,39 @@ Browse Cells engine laws by scientific topic. Each claim links its Lean proofs, 
 
 <!-- generated: claims-index -->
 
-Direct Lean claims cover [52 of 52 laws](COVERAGE.md#registered-laws) and [32 of 32 operators](COVERAGE.md#registered-operators).
+Direct Lean claims cover [54 of 55 laws](COVERAGE.md#registered-laws) and [33 of 33 operators](COVERAGE.md#registered-operators).
 
 | Category | Registered laws with proof | Claims with proof | Numerical checks | Claims with biological evidence |
 | --- | ---: | ---: | --- | ---: |
-| [Membrane transport and osmosis](COVERAGE.md#category-membrane-transport) | 5 of 5 | 10 of 10 | 10 checked | 9 |
+| [Membrane transport and osmosis](COVERAGE.md#category-membrane-transport) | 6 of 6 | 11 of 11 | 11 checked | 10 |
 | [Ion channels and junctions](COVERAGE.md#category-channels-and-junctions) | 15 of 15 | 15 of 15 | 15 checked | 14 |
 | [Pumps and cotransport](COVERAGE.md#category-pumps-and-cotransport) | 13 of 13 | 8 of 8 | 8 checked | 8 |
-| [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 3 of 3 | 15 of 15 | 12 checked · 1 failed · 2 open | 11 |
-| [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 15 of 15 | 34 of 34 | 31 checked · 3 failed | 22 |
-| [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 1 of 1 | 26 of 26 | 26 checked | 19 |
+| [Reactions and binding](COVERAGE.md#category-reactions-and-binding) | 3 of 3 | 16 of 16 | 15 checked · 1 failed | 12 |
+| [Molecular assembly and catalysis](COVERAGE.md#category-molecular-assembly) | 15 of 16 | 36 of 36 | 34 checked · 2 failed | 23 |
+| [Tissue transport and conservation](COVERAGE.md#category-tissue-and-conservation) | 2 of 2 | 27 of 27 | 27 checked | 20 |
 | [Cell physiology](COVERAGE.md#category-cell-physiology) | — | 3 of 3 | 3 checked | 3 |
 
 <!-- /generated -->
 
 Each category opens its detailed claim table on GitHub, including registered laws still awaiting a proof. A single claim can cover several laws. The last column counts claims with a recorded measurement or literature finding, including partial evidence. Each numerical result applies to the cases in its linked record. [All registered laws](COVERAGE.md#registered-laws) · [Design notes](ENGINE_LAW_VERIFICATION.md) · [Voltage pilot closeout](../reports/BIO003_PILOT_CLOSEOUT.md)
 
-The generated list tracks each failing numerical comparison. In the Phase A pore clock, a cutoff rounded to the first rupture time changes a founder’s fate in both runners. Earlier comparisons document a reversible GARD v1 refusal, a rapid-binding inventory margin with the wrong sign, and a missing RNA zero-loss record. GARD v2 passed all nine range and capacity checks. [Current failures](COVERAGE.md#failing-numerical-checks) · [Pore endpoint reproducer](PROGRESS.md#fr31-pore-endpoint) · [RNA export and control](PROGRESS.md#fr38-lossless-fate) · [GARD repair](PROGRESS.md#gard-v2-range-repair) · [Wash and clamp repairs](PROGRESS.md#d272-wash-clamp-retests)
+The generated table tracks numerical failures. The original reversible GARD v1 law can refuse an extreme catalyst ratio, and the rapid-binding solver can misclassify a ligand inventory at the limit of binary64 precision. An FR-38 validation control also found that later samples can mask an unresolved export interval. The public pore-clock cutoff and all four lossless RNA fate records now pass their earlier controls. [Current failures](COVERAGE.md#failing-numerical-checks) · [Export-grid control](PROGRESS.md#fr38-pre-replacement-resolution) · [Pore-clock retest](PROGRESS.md#fr31-pore-endpoint-repair) · [Lossless RNA retest](claims/release-fate-export.md)
 
-FR-42 has an exact design result for neutral arrival-time labels. Sharing the physical loss preserves the pooled inventory. With quadratic loss, the surviving new cohort is ¼ at time one, while subtraction of a separate blank gives 1/12. The compiled comparison will become possible when Cells implements the share-based labels. [Cohort proof and remaining checks](claims/fr42-cohort-shares.md)
+FR-42’s neutral arrival-time labels now have a proof and a compiled comparison. With constant loss and arrivals, every positive final amount up to the available supply determines a unique loss exponent. The label amounts sum to the physical pool. Enabling labels preserved all 42 shared history fields and 76 shared observations bit for bit in the tested tissue. With quadratic loss, the new cohort held 0.24999987 fmol at one second, against the exact ¼ fmol. [Finite-step proof and checks](claims/fr42-survival-exponent.md) · [Quadratic cohort and blank](claims/fr42-cohort-shares.md)
 
-FR-38’s development release operator now directs material from an existing template hold to the class active at detachment. The compiled fixture exercised two separate windows with the same label, for both RNA fates. Lean proves that a reused label carries its older survivors and that the chase denominator is the cohort alive at window close. Bellecourt et al. measured released and template-associated RNA separately. Measuring survival of that same released cohort remains open. [Release windows, compiled comparison and biological evidence](claims/release-window-survival.md)
+FR-38 follows a producer’s RNA from template release through cell replacement. Its label follows RNA into the extracellular compartment and back. Lean bounds the old producer’s RNA inside a replacement cell by cumulative return. The public fixture passed all 14 checks, and the independent reader detected a label swap that conserved total RNA. [Release windows](claims/release-window-survival.md) · [Producer balance, restart and resolution check](PROGRESS.md#fr38-extracellular-producer)
 
 ## Biological evidence
+
+Mobile carriers can move a ligand even at zero net binder flux. Rabbit heart cells show faster acid arrival with carbonic buffer, and myoglobin increased initial oxygen flux across a polymer film. The Cells comparison follows free and bound ligand separately to both ends of a face. [Measurements, proof and compiled tissue comparison](claims/forms-face-carriage.md)
+
+How long does released RNA survive? A purified bacterial assay measured the fraction detached, a human ACTB time course gave a 3.35 min chromatin-association half-time, and yeast ASH1 counts declined with a reported half-life of 6.1 ± 2.8 min in 21 cells. Each measurement answers a different part of the question. The Cells chase fraction still needs a cohort marked at detachment and counted again after its marking window closes. [Three measurements, denominators and sources](claims/release-window-survival.md#biological-evidence)
+
+After delivery, placental lactogen RNA remained detectable in maternal plasma in 4 of 13 women at two hours. In a separate mouse-cell study, recipients unable to make the assayed RNA carried about 370 donor copies per cell at 24 hours. These results test persistence of a source-specific signal and donor attribution. Gross return rates remain open. [RNA measurements and limits](claims/producer-replacement-rna.md#biological-evidence)
+
+Thirteen mitochondrial recordings provide three measured proton-current reversal voltages. Cells reverses in the measured direction at all three gradients. Each predicted voltage falls within its group’s descriptive 95% interval for the mean. Absolute leak current requires a separate calibration. [Measured voltages, uncertainty and proof](PROGRESS.md#mt1b-buffered-reversal)
+
+In two mock-treated mouse dendritic-cell replicates, heavy-labelled Actn1 accounted for 17.19% and 10.11% of the paired isotope signal at five hours. The two measurements show how to observe a cohort fraction. Amino-acid recycling limits how closely that fraction follows newly made protein. A common loss rate across cohorts remains open. [Measurements and source accessions](claims/fr42-cohort-shares.md#biological-evidence)
 
 Five held-out DOPC rupture rates passed the registered two-sided temperature test. Cells also predicts how the opening and release share the heat. An independent temperature series measured local rotational viscosity, and a nanoscale fluctuation experiment estimated surface viscosity at one temperature. The heat split and the temperature dependence of friction at a critical pore remain open. [Rupture rates and experimental limits](claims/vesicle-pore-rate.md#biological-evidence) · [Heat and viscosity evidence](claims/vesicle-pore-heat.md#biological-evidence)
 
@@ -504,12 +514,13 @@ For the original GARD laws, compare both directions of each transfer and each fo
 "$cells_python" -B checks/gard_catalysis.py --controls-only
 ```
 
-For FR-31, run the four synthetic cohort-size checks. For FR-42, run the point-release and interval-counter references, followed by the full comparison on the five-step FR-38 development fixture. [Area bounds](PROGRESS.md#fr31-area-bounds) · [Release windows and label reuse](PROGRESS.md#fr42-release-windows)
+For FR-31, run the four synthetic cohort-size checks. The FR-38 commands compare point releases and interval counters, then run three compiled RNA worlds with marks in [2, 4) and [6, 8) s. The replay saves half-second observations and compares reconstruction on half-second and two-second grids. The last command checks FR-42 in the labelled and unlabelled tissue, tests its finite-step math on NumPy and CPU JAX, and recalculates the paired Actn1 fractions. [Area bounds](PROGRESS.md#fr31-area-bounds) · [Marked RNA windows](PROGRESS.md#fr38-marked-fates) · [Neutral tissue labels](PROGRESS.md#fr42-neutral-survival)
 
 ```bash
 "$cells_python" -B checks/vesicle_area.py
 "$cells_python" -B checks/arrival_windows.py --reference-only
 "$cells_python" -B checks/arrival_windows.py
+JAX_PLATFORMS=cpu "$cells_python" -B checks/arrival_survival.py
 ```
 
 For the GARD v2 two-word cache, replay the reversible event, signed updates and precision guard. The separate range command checks an admitted finite-rate event, upper and lower exponent boundaries, and explicit capacity on both sides of 4,096. It exits with status 1 if any of its nine expectations fails. For templated polymerisation, check the two balances across every saved row of three compiled worlds, including two chains competing for one machine pool. [Cache precision](PROGRESS.md#gard-v2-cache) · [Repaired and historical range checks](PROGRESS.md#gard-v2-range-repair) · [Polymerisation balances and measurements](PROGRESS.md#polymerisation-balances)
@@ -520,12 +531,14 @@ For the GARD v2 two-word cache, replay the reversible event, signed updates and 
 "$cells_python" -B checks/polymerisation_balances.py
 ```
 
-For a chain with a terminal RNA hold, check both machine-return policies through a change of class and a change of fate fraction. The second command asks the public cohort reader for surviving RNA in both lossless fates. It exits with status 1 if a fate record is unreadable. [Machine and residue balances](PROGRESS.md#fr38-terminal-inventories) · [Lossless fate export](PROGRESS.md#fr38-lossless-fate)
+For a chain with a terminal RNA hold, check both machine-return policies as the completion-marking window closes and the durable fraction changes. The second command asks the public reader for both physical and marked RNA in two lossless controls. [Machine and residue balances](claims/polymerisation-machines.md) · [Four fate records](claims/release-fate-export.md)
 
 ```bash
 "$cells_python" -B checks/terminal_release.py
 "$cells_python" -B checks/terminal_release.py --lossless
 ```
+
+On a Cells revision with the replacement fixture, run `python -m validation.gene_regulation.replace_restart --out NEW_DIRECTORY`. In the same Cells environment, `python checks/producer_replacement.py NEW_DIRECTORY/replace_restart.json` checks the saved counters and labels. Keep the JSON beside the run’s `checkpoint/` directory. [Results and public admission status](PROGRESS.md#fr38-producer-replacement)
 
 For ideal and regular assembly mixing, one command checks the 592 registered probe states under both count measures and rebooks four compiled trajectories. It compares the activity curves with Shaw’s 25 DOPC measurements and Parker’s independent crystal-onset endpoint. [Driver](checks/assembly_mixing.py) · [Fit, assumptions and results](PROGRESS.md#19-november-2026--ideal-and-regular-assembly-mixing)
 

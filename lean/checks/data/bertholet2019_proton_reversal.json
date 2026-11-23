@@ -1,0 +1,14 @@
+{
+  "doi": "10.1038/s41586-019-1400-3",
+  "figure": "Extended Data Figure 3d",
+  "workbook": "https://static-content.springer.com/esm/art%3A10.1038%2Fs41586-019-1400-3/MediaObjects/41586_2019_1400_MOESM10_ESM.xlsx",
+  "worksheet": "Extended data figure 3",
+  "observable": "Fatty-acid-activated proton current reversal in mouse skeletal muscle mitoplasts. Voltage is matrix minus bath.",
+  "nernst_reference_temperature_C": 24,
+  "temperature_scope": "The figure specifies the temperature for the Nernst line. A separate measured recording temperature was unavailable.",
+  "groups": [
+    {"matrix_pH": 6.0, "bath_pH": 7.0, "cells": "F7:F12", "reversal_mV": [-60, -62, -68, -65, -64, -54.4]},
+    {"matrix_pH": 6.0, "bath_pH": 7.5, "cells": "J7:J9", "reversal_mV": [-90, -94.7, -88.7]},
+    {"matrix_pH": 6.5, "bath_pH": 6.0, "cells": "B7:B10", "reversal_mV": [14.45, 46.8, 26.01, 28.01]}
+  ]
+}
