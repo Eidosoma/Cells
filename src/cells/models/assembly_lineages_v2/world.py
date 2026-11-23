@@ -27,6 +27,13 @@ the solution potential. A species placed in a phase has that phase kind's potent
 table is the one authority for standard potentials until the registry has them per phase (R7): no
 step carries a ΔG° of its own.
 
+**A lumen potential** (FR-48; D323): `"lumen": μ°/RT at c0 in the lumen`, an absolute value beside
+the solution one, which it replaces at the species' lumen place alone. Undeclared, the lumen takes
+the solution potential, as before. Δ = μ°_lumen − μ°_solution is then a reversible free-energy
+difference across the shell, read by every step through the place's μ°; the shell law keeps all of
+it on the exit (shell_permeation.py). Version 1 admits it in a prescribed shell only, on a species
+with a lumen place and a solution potential (spec._lumen_potential_refusals).
+
 **Phases.** The membrane (condensed) is required; the pool and the lumen (dilute, each with its
 volume_L) are optional. A pool species is `finite` (a count in the state) or `held` (a concentration
 held_mM: no count, and its exchanges book reservoir work). A place is a species in a phase,
@@ -106,8 +113,11 @@ class Species:
     mu_bilayer: float | None  # μ°/RT at mole fraction 1 in the membrane.
     catalogue: tuple | None
     evidence: str | None
+    mu_lumen: float | None = None  # FR-48: μ°/RT at c0 in the lumen, or None: the solution's.
 
     def mu(self, phase):
+        if phase == LUMEN and self.mu_lumen is not None:
+            return self.mu_lumen
         return self.mu_bilayer if KIND_OF[phase] == "bilayer" else self.mu_solution
 
     def moiety_counts(self):
@@ -222,19 +232,21 @@ def _moieties(raw, name):
 
 
 def _potentials(raw, name):
-    """(solution, bilayer): D152's single number is the solution potential."""
+    """(solution, bilayer, lumen): D152's single number is the solution potential; `lumen` is
+    FR-48's, absolute, None when undeclared."""
     if isinstance(raw, dict):
-        if not raw or set(raw) - {"solution", "bilayer"}:
+        if not raw or set(raw) - {"solution", "bilayer", "lumen"}:
             raise ConfigError(
                 f"world: species {name}'s standard_mu_RT is a number (solution) or an object of "
-                "solution and bilayer potentials"
+                "solution, bilayer and lumen potentials"
             )
-        solution, bilayer = raw.get("solution"), raw.get("bilayer")
+        solution, bilayer, lumen = raw.get("solution"), raw.get("bilayer"), raw.get("lumen")
         return (
             None if solution is None else _signed(solution, f"species {name}: solution μ°/RT"),
             None if bilayer is None else _signed(bilayer, f"species {name}: bilayer μ°/RT"),
+            None if lumen is None else _signed(lumen, f"species {name}: lumen μ°/RT"),
         )
-    return _signed(raw, f"species {name}'s standard_mu_RT"), None
+    return _signed(raw, f"species {name}'s standard_mu_RT"), None, None
 
 
 def parse_species(raw):
@@ -251,7 +263,7 @@ def parse_species(raw):
         identity = species_registry.parse_identity(
             entry["catalogue"], entry["evidence"], f"world: species {name}"
         )
-        solution, bilayer = _potentials(entry["standard_mu_RT"], name)
+        solution, bilayer, lumen = _potentials(entry["standard_mu_RT"], name)
         out.append(
             Species(
                 name,
@@ -260,6 +272,7 @@ def parse_species(raw):
                 bilayer,
                 identity.catalogue,
                 identity.evidence,
+                mu_lumen=lumen,
             )
         )
     if len({s.id for s in out}) != len(out):
@@ -572,6 +585,8 @@ def species_to_dict(species):
             potentials["solution"] = s.mu_solution
         if s.mu_bilayer is not None:
             potentials["bilayer"] = s.mu_bilayer
+        if s.mu_lumen is not None:  # FR-48: written only when declared (D148)
+            potentials["lumen"] = s.mu_lumen
         out.append(
             {
                 "id": s.id,

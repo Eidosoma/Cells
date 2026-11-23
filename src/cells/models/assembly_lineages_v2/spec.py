@@ -246,6 +246,7 @@ def parse_world(raw):
             raise ConfigError("world: geometry names its law")
         law = _law(block["law"], GEOMETRY_INTERFACE, "geometry")
         world = dataclasses.replace(world, geometry=(law.law_id, law.parse_data(block, world)))
+    _lumen_potential_refusals(world)  # FR-48: absent unless a species declares one
     founders = (world.founder,)
     if "population" in raw:  # OL2 milestone 3: K slots on one pool (population.py).
         from cells.models.assembly_lineages_v2 import population as population_rules
@@ -278,6 +279,34 @@ def parse_world(raw):
         law = _law(block["law"], HAZARD_INTERFACE, "hazard")
         world = dataclasses.replace(world, hazard=(law.law_id, law.parse_data(block, world)))
     return world
+
+
+def _lumen_potential_refusals(world):
+    """FR-48 (D323): a species' lumen potential, version 1's scope. It is admitted in a world whose
+    geometry is a prescribed shell (a declared lumen at a fixed volume: no osmotic lumen, lysis
+    return or division reads it), on a species placed in the lumen, beside its solution potential
+    (the records report Δ = μ°_lumen − μ°_solution). Each other case is refused by name."""
+    declared = [s for s in world.species if s.mu_lumen is not None]
+    if not declared:
+        return
+    names = ", ".join(s.id for s in declared)
+    if world.geometry is None or world.geometry[0] != PRESCRIBED_SHELL:
+        raise ConfigError(
+            f"world: species {names} declare a lumen potential, which version 1 admits in a "
+            f"{PRESCRIBED_SHELL} world only (FR-48): a bilayer's osmotic lumen, its lysis returns "
+            "and its division would each read it"
+        )
+    in_lumen = {p.species for p in world.places if p.phase == world_rules.LUMEN}
+    for s in declared:
+        if s.id not in in_lumen:
+            raise ConfigError(
+                f"world: species {s.id} declares a lumen potential but has no lumen place (FR-48)"
+            )
+        if s.mu_solution is None:
+            raise ConfigError(
+                f"world: species {s.id} declares a lumen potential without a solution potential; "
+                "the records report Δ = μ°_lumen − μ°_solution (FR-48)"
+            )
 
 
 def _sized(block):

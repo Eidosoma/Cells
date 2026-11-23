@@ -365,18 +365,22 @@ def world_record(world):
 
 
 def places_table(world):
-    return [
-        {
+    out = []
+    for i, p in enumerate(world.places):
+        species = world.species_by_id(p.species)
+        row = {
             "index": i,
             "name": p.name,
             "species": p.species,
             "phase": p.phase,
             "kind": "held" if p.held else "finite",
             "held_mM": p.held_mM,
-            "standard_mu_RT": world.species_by_id(p.species).mu(p.phase),
+            "standard_mu_RT": species.mu(p.phase),
         }
-        for i, p in enumerate(world.places)
-    ]
+        if p.phase == "lumen" and species.mu_lumen is not None:  # FR-48, only when declared
+            row["lumen_offset_RT"] = species.mu_lumen - species.mu_solution
+        out.append(row)
+    return out
 
 
 def _law(law_id):

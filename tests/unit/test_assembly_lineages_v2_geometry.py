@@ -703,7 +703,26 @@ SHELL_REFUSALS = {
         lambda w: w["rate_factor"].update(forms=["G", "S"]), "not a membrane species"),
     "the shell's permeation on a bilayer": (
         lambda w: w.clear() or w.update(_bilayer_with_shell_entry()), "is a prescribed shell's"),
+    # FR-48 (D323): a lumen potential's version 1 scope, each refused by name
+    "a lumen potential on a species with no lumen place": (
+        lambda w: w["species"][1]["standard_mu_RT"].update(lumen=0.5), "has no lumen place"),
+    "a lumen potential without a solution potential": (
+        lambda w: (w["species"].append(species("Q", {"q": 1}, lumen=0.3)),
+                   w["phases"]["lumen"]["species"].append("Q"),
+                   w["founder"].update({"Q@lumen": 1})),
+        "without a solution potential"),
+    "a lumen potential on a bilayer": (
+        lambda w: w.clear() or w.update(_bilayer_with_lumen_potential()),
+        "admits in a cells.prescribed_shell@1 world only"),
 }  # fmt: skip
+
+
+def _bilayer_with_lumen_potential():
+    w = lipid_world(lumen=True)
+    for entry in w["species"]:
+        if entry["id"] == "S":
+            entry["standard_mu_RT"]["lumen"] = entry["standard_mu_RT"].get("solution", 0.0) + 0.5
+    return w
 
 
 def _bilayer_with_shell_entry():
@@ -728,3 +747,120 @@ def test_a_geometric_law_without_a_geometry_is_refused():
     w["conventions"].pop("exchange_encounter")
     with pytest.raises(ConfigError, match="takes its encounter from a geometry"):
         spec_of(w)
+
+
+def lumen_shell(*, solution=0.7, lumen=None, n_out=12, n_in=0, P=2e-7):
+    """FR-48: an entry-only shell at equal pool and lumen volumes, a tracer S with a nonzero
+    solution potential and, when declared, an absolute lumen potential; a wall of one subunit B."""
+    u = "unsourced; test"
+    mu = {"solution": solution} if lumen is None else {"solution": solution, "lumen": lumen}
+    return {
+        "units": {"time": "s", "temperature_K": 296.15, "standard_concentration_mM": C0_MM},
+        "conventions": {"free_energy_form": "discrete", "condensed_measure": "multinomial",
+                        "membrane_kinetics": "count_on_m", "lumen_volume": "declared",
+                        "empty_catalyst_phase": "uncatalysed", "last_molecule": "kept"},
+        "species": [species("S", {"s": 1}, **mu), species("B", {"b": 1}, bilayer=-3.0)],
+        "phases": {"pool": {"volume_L": 1e-21, "species": [{"id": "S", "kind": "finite"}]},
+                   "membrane": {"species": ["B"]}, "lumen": {"volume_L": 1e-21, "species": ["S"]}},
+        "steps": [{"id": "entry", "locus": "membrane", "reactants": {"S@pool": 1},
+                   "products": {"S@lumen": 1}, "law": SHELL_PERMEATION,
+                   "permeability_m_per_s": {"value": P, "provenance": u}}],
+        "free_energy": [{"law": IDEAL_MIXING}],
+        "founder": {"S@pool": n_out, "S@lumen": n_in, "B@membrane": 3},
+        "geometry": {"law": PRESCRIBED_SHELL, "area_m2": {"value": 1e-15, "provenance": u}},
+    }  # fmt: skip
+
+
+def _stationary_law(spec, total):
+    """The stationary law of n_in = 0..total along the entry's chain, from the kernel's own rates
+    (detailed balance: pi(n + 1) a-(n + 1) = pi(n) a+(n)), on the host."""
+    structure, layout = model.structure(spec), model.layout(spec)
+    at = {p.name: i for i, p in enumerate(spec.model.world.places)}
+    rates = []
+    for n_in in range(total + 1):
+        c = np.zeros(structure.places, dtype=np.int64)
+        c[[at["S@pool"], at["S@lumen"], at["B@membrane"]]] = (total - n_in, n_in, 3)
+        totals = kernel.totals_of(c, layout, np)
+        f, t = kernel.states(c, totals, layout, structure, np)
+        a = kernel.rates(c, totals, f, t, layout, structure, np)
+        rates.append((float(a[0]), float(a[structure.steps])))
+    log_pi = np.concatenate(([0.0], np.cumsum(
+        [math.log(rates[n][0]) - math.log(rates[n + 1][1]) for n in range(total)])))  # fmt: skip
+    pi = np.exp(log_pi - log_pi.max())
+    return pi / pi.sum()
+
+
+def _same_leaves(a, b):
+    """Bitwise equality of two layouts, leaf by leaf (they nest tuples of arrays)."""
+    if isinstance(a, (tuple, list)):
+        return len(a) == len(b) and all(_same_leaves(x, y) for x, y in zip(a, b, strict=True))
+    x, y = np.asarray(a), np.asarray(b)
+    return x.shape == y.shape and x.dtype == y.dtype and np.array_equal(x, y)
+
+
+def _binomial(total, p):
+    return np.asarray([math.comb(total, k) * p**k * (1.0 - p) ** (total - k)
+                       for k in range(total + 1)])  # fmt: skip
+
+
+def test_a_lumen_potential_sets_the_equilibrium_ratio_and_keeps_detailed_balance(monkeypatch):
+    """FR-48 (D323): a species' absolute lumen potential mu0_L = mu0_sol + D, with a nonzero
+    solution potential (0.7). What is claimed, from the kernel's own rates on the host: the
+    stationary inside count at equal volumes is Binomial(N, 1/(1 + e^D)), one third at D = ln 2
+    and one half at D = 0; and detailed balance, the pair identity at random states from both
+    founders, with a short run from each closing its ledger (D per crossing through F). The
+    relaxation time follows the law's convention (all of D on the exit) and is not claimed.
+    Planted: the lumen value read as an offset from the solution one moves the law. The undeclared
+    default is today's world: the solution potential in the lumen, no key in the world's dict, no
+    offset in the records, and the same arrays as an explicit D = 0. Refused in (d) by name."""
+    total, delta = 12, math.log(2.0)
+    declared = spec_of(lumen_shell(lumen=0.7 + delta))
+    assert np.max(np.abs(_stationary_law(declared, total) - _binomial(total, 1.0 / 3.0))) < 1e-12
+    equal = spec_of(lumen_shell(lumen=0.7))
+    assert np.max(np.abs(_stationary_law(equal, total) - _binomial(total, 0.5))) < 1e-12
+    # the undeclared default: the solution potential in the lumen, bitwise the explicit D = 0
+    default = spec_of(lumen_shell())
+    assert np.max(np.abs(_stationary_law(default, total) - _binomial(total, 0.5))) < 1e-12
+    w_default, w_equal = default.model.world, equal.model.world
+    assert "lumen" not in spec_rules.world_to_dict(w_default)["species"][0]["standard_mu_RT"]
+    assert spec_rules.world_to_dict(w_equal)["species"][0]["standard_mu_RT"]["lumen"] == 0.7
+    assert _same_leaves(model.layout(default), model.layout(equal))
+    rows = {r["name"]: r for r in records.places_table(declared.model.world)}
+    assert rows["S@lumen"]["standard_mu_RT"] == 0.7 + delta
+    assert rows["S@lumen"]["lumen_offset_RT"] == pytest.approx(delta, rel=0, abs=1e-15)
+    assert "lumen_offset_RT" not in rows["S@pool"]
+    assert all("lumen_offset_RT" not in r for r in records.places_table(w_default))
+    # detailed balance from both founders, and a short run from each closes its ledger
+    for n_out, n_in in ((total, 0), (0, total)):
+        s = spec_of(lumen_shell(lumen=0.7 + delta, n_out=n_out, n_in=n_in))
+        found = balance.deviations(s, np.random.default_rng(5), states=200)
+        assert found.size > 100 and np.max(np.abs(found)) <= balance.ATOL
+        run = runner.run(parse_spec(definition(lumen_shell(lumen=0.7 + delta, n_out=n_out,
+                                                           n_in=n_in), molecules=64,
+                                               horizon=1.0, event_limit=400))).check()  # fmt: skip
+        assert run.closure["holds"]
+    # planted: the lumen value read as an offset, mu0_L = mu0_sol + mu0_lumen (0.7 + 0.7 + ln 2)
+    from cells.models.assembly_lineages_v2 import world as world_rules
+
+    def as_offset(self, phase):
+        base = self.mu_bilayer if world_rules.KIND_OF[phase] == "bilayer" else self.mu_solution
+        if phase == world_rules.LUMEN and self.mu_lumen is not None:
+            return self.mu_solution + self.mu_lumen
+        return base
+
+    monkeypatch.setattr(world_rules.Species, "mu", as_offset)
+    planted = _stationary_law(spec_of(lumen_shell(lumen=0.7 + delta)), total)
+    assert np.max(np.abs(planted - _binomial(total, 1.0 / 3.0))) > 0.05
+    assert np.max(np.abs(planted - _binomial(total, 1.0 / (1.0 + math.exp(0.7 + delta))))) < 1e-12
+    monkeypatch.undo()
+    # refused in the deterministic representation by name, until FR-47's qualification
+    d = definition(lumen_shell(lumen=0.7 + delta), molecules=64)
+    d["execution"] = {"backend": "cpu", "precision": "float64", "mode": "single_lineage",
+                      "stream": {"seed": 1, "environment": 0, "lineage": 0, "branch": 0},
+                      "representation": {"id": "cells.rate_equations@1",
+                                         "envelope": {"min_count": 10.0, "provenance": "test"},
+                                         "integrator": {"id": "rosenbrock_rodas4_dense@1",
+                                                        "rtol": 1e-10, "atol_count": 1e-6,
+                                                        "step_limit": 100000}}}  # fmt: skip
+    with pytest.raises(ConfigError, match="a lumen standard potential"):
+        parse_spec(d)
