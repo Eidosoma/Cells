@@ -456,12 +456,15 @@ def _binding_face(step, world, by_name):
 def _face_rule(world, by_name):
     """FR-46 (D323): one face per complex, propagated by ligand moiety over every wall state.
 
-    Each admitted binding step seeds its complex with its face, for each moiety of its ligand. Every
-    step wholly in the membrane joins, per moiety, each reactant species that holds the moiety with
-    each product species that holds it: the stoichiometry decides, not the declared pairs, so a wall
-    state with no binding pair of its own carries the face on. A component that holds both faces
-    for one moiety lets that moiety pass through the wall from the pool to the lumen: a carrier,
-    refused by name with its wall states."""
+    Each admitted binding step seeds its complex with its face, for each moiety of its ligand.
+    Every step, binding steps included, joins per moiety each membrane reactant that holds the
+    moiety with each membrane product that holds it: the stoichiometry decides, not the declared
+    pairs, so a wall state with no binding pair of its own carries the face on, and so does a
+    binding step whose site already holds the ligand (a co-ligand bound from the other face). A
+    component that holds both faces for one moiety lets that moiety pass through the wall from the
+    pool to the lumen: a carrier, refused by name with its wall states. Stepwise binding of one
+    ligand from both faces on one site is refused with it, conservatively: the moieties cannot
+    tell which molecule is which."""
     moieties = {s.id: set(s.moiety_counts()) for s in world.species}
     seeds = []  # (moiety, wall species, face)
     for step in world.steps:
@@ -481,15 +484,13 @@ def _face_rule(world, by_name):
         return node
 
     ligand_moieties = sorted({m for m, _, _ in seeds})
+    wall = world_rules.MEMBRANE
     for step in world.steps:
-        names = [n for n, _ in (*step.reactants, *step.products)]
-        if any(by_name[n].phase != world_rules.MEMBRANE for n in names):
-            continue
         for m in ligand_moieties:
             left = [by_name[n].species for n, _ in step.reactants
-                    if m in moieties[by_name[n].species]]  # fmt: skip
+                    if by_name[n].phase == wall and m in moieties[by_name[n].species]]  # fmt: skip
             right = [by_name[n].species for n, _ in step.products
-                     if m in moieties[by_name[n].species]]  # fmt: skip
+                     if by_name[n].phase == wall and m in moieties[by_name[n].species]]  # fmt: skip
             for a in left:
                 for b in right:
                     parent[root((m, a))] = root((m, b))

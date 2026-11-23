@@ -222,14 +222,7 @@ FACE_RULE = {
 }  # fmt: skip
 
 
-_MISSED = pytest.mark.xfail(strict=True, reason="the face rule joins wall states across steps "
-                            "wholly in the membrane only, so a binding step whose site already "
-                            "holds the ligand carries it on unseen")
-
-
-@pytest.mark.parametrize("case", [
-    pytest.param(c, marks=_MISSED) if FACE_RULE[c][0] == "co-ligand" else c
-    for c in sorted(FACE_RULE)])  # fmt: skip
+@pytest.mark.parametrize("case", sorted(FACE_RULE))
 def test_the_face_rule_refuses_every_carrier_and_admits_one_face(case):
     """FR-46 (D323): one face per complex. A ligand moiety that can pass through the wall's states
     from an outer complex to an inner one is a carrier across the wall, refused by name, whether the
