@@ -14,6 +14,17 @@ These are fixed before any engine run (`docs/FR47_SHELL_EXCHANGE_PROTOCOL.md`; D
   inconclusive only through the step-count guard (C1). Such a result is rerun once at rtol 10⁻¹²
   with the same bound, and a second inconclusive result fails.
 
+**The two z formulas** (M = 128 replicas, ȳ their mean, s² their unbiased variance with divisor
+M − 1; m, σ² and μ₄ the reference's mean, variance and fourth central moment):
+- the mean's z = (ȳ − m)/√(σ²/M);
+- the spread's z = (s² − σ²)/√((μ₄ − σ⁴(M − 3)/(M − 1))/M).
+
+**The scales s_y:**
+- **for a pair:** its observable's largest |reference mean| over the founder and the times;
+- **for a stop's removed count:** the largest over the world's stops;
+- **for a mixing heat:** the largest over its withdrawals;
+- **for an interval heat:** the largest over its intervals.
+
 ## The pair rule, classified from the reference before the run
 
 | Class | The rule |
@@ -35,7 +46,7 @@ No pair is excluded after the run, and no class changes after it.
 | C5 | The books | Every run of either representation closes its ledger (its own check). The tracer moiety balances: present + removed = the founder's, exactly in exact events, and in (d) as a `derived` pair within 16 eps × (A + S) × P_t × T. Here A is the run's accepted steps and S its stops; P_t is the tracer's places and T the founder's tracer count. The derivation: each Rodas4 step updates each place by six stage terms, each place at most T, and each stop's map rounds each place once |
 | C6 | W2's exact ensemble against the gate-conditioned exact mean, variance and fourth moment, per rung | The pair rule (C2 and C3's tests) |
 | C7 | W2's (d) against the mean-field reference, per rung | C1's bound |
-| C8 | W2's representation gap, the mean-field minus the exact mean, and its slope in ln N_g (−1 expected; the gap carries the limit's O(1/N_w) switching factor and the gate's O(1/N_g) correlation, SPEC.md §3.3) | Each rung's gap is taken at its largest pair. **The slope is claimed as measured** only over the rungs where the reference's own resolution there (the gap over the exact mean's SD/√128) is at least 4.5, and only when three rungs or more qualify. There, the ensemble's gap ((d) minus the exact replicas' mean) matches the reference's gap by the pair rule's z at each qualifying rung, and the slope is fitted on those rungs. **Otherwise the slope is reported** from the reference alone, as a prediction, and nothing is claimed as measured |
+| C8 | W2's representation gap, the mean-field minus the exact mean, and its slope in ln N_g (−1 expected; the gap carries the limit's O(1/N_w) switching factor and the gate's O(1/N_g) correlation, SPEC.md §3.3) | Each rung's gap is taken at its largest pair: the largest \|gap\| over S@pool, S@lumen, G@wall and H@wall at the observation times. Ties go to the first in that order, then to the earliest time. The slope is fitted on ln\|gap\|. **The slope is claimed as measured** only over the rungs where the reference's own resolution there (the gap over the exact mean's SD/√128) is at least 4.5, and only when three rungs or more qualify. There, the ensemble's gap ((d) minus the exact replicas' mean) matches the reference's gap by the pair rule's z at each qualifying rung, and the slope is fitted on those rungs. **Otherwise the slope is reported** from the reference alone, as a prediction, and nothing is claimed as measured |
 | C9 | (d)'s continuous heat over each interval between stops (W1, W1Δ) | Against the reference's −ΔF_cont of its mean counts, to C1's bound. It tests F_cont at a zero start, where (d) books the heat by closure |
 
 ## The plants
@@ -46,14 +57,24 @@ No pair is excluded after the run, and no class changes after it.
 - **Scoring.** A plant is caught when its criterion fails, or when its run is refused by its own
   books or checks.
 - **Sizing.** Each plant's effect is sized by the references before any run (SPEC.md §3.4).
+  - **Statistical criteria:** the distance is |planted − honest| in units of the fail band,
+    6·SD_ref/√128, with SD_ref the honest reference's SD.
+  - **Deterministic criteria:** the distance is in units of that criterion's own bound. C5's is at
+    the step guard's cap, A = 10⁴.
+  - **Each (plant, criterion) entry** reports and names its compared quantity of largest distance.
+- **P2, P3 and P5,** as the amendment defines them (AMENDMENT-2026-11-23.md §3–§5):
+  - P2 keeps (1 − f)² of the pool and books the rest as removed, with −k·ln(1 − f) at the planted
+    k;
+  - P3 maps the lumen at every stop as the pool and books its loss as removed;
+  - P5 gates the entry alone.
 
 | Plant | Mechanism | World | Caught by |
 | --- | --- | --- | --- |
 | P1 | (d)'s shell exit without its e^(Σνμ°) | W1Δ | C1 |
 | P2 | (d)'s withdrawal keeps (1 − f)² of the pool | W1 | C1, C4 |
 | P3 | (d)'s wash applied to the lumen too | W1 | C1 |
-| P4 | (d)'s old factored flux at an E2 place: after the full wash the pool never refills | W1 | C1, and C4 at the 7.5 s withdrawal |
-| P5 | (d)'s gate factor on the forward direction only | W2, N_g = 256 | C7, or refused by the limit's check |
+| P4 | (d)'s old factored flux at an E2 place: after the full wash the pool never refills | W1 | C1, and C4 at the 9.0 s withdrawal, the first after the full wash (corrected 23 November: AMENDMENT-2026-11-23.md §2) |
+| P5 | (d)'s gate factor on the entry's forward direction only, pool → lumen (κ_in times g; the exit ungated) | W2, N_g = 256 | C7, or refused by the limit's check |
 | P6 | (d)'s removed tracer left unbooked | W1 | C5, or refused by its books |
 | P7 | The exact kernel's shell exit without its e^(Σνμ°) (scoped) | W1Δ | C2 |
 | P8 | The exact withdrawal sampling at f² | W1 | C4 |

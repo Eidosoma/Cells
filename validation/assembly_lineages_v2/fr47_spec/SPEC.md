@@ -122,6 +122,7 @@ inputs after reading that table and before the tag.
 - **The exact mean, variance and fourth central moment of S@pool, S@lumen, G@wall and H@wall** at
   the observation times. G and H are each a sum of independent copies, and they test the switching
   directly.
+- **B@wall,** which no step moves, is a `constant` pair, as in W1 (AMENDMENT-2026-11-23.md §10).
   - Given the open count K, the tracer's rates are linear in its counts. So the moments
     E[n^j·1{K = k}], j ≤ 4, obey a closed linear system.
 - **The class of every pair:** `constant` or `spread`.
@@ -161,7 +162,10 @@ criterion's bound.
   - `"world"`: this spec's inputs, echoed;
   - `"pairs"`: [{observable, time_s, class, mean, var, mu4}, ...], with `value` in place of
     mean, var and mu4 for a `constant`;
-  - `"stops"`: [{time_s, kind, f, removed: {mean, var, mu4}, mixing_heat: {mean, var, mu4}}, ...];
+  - `"stops"`: [{time_s, kind, f, removed: {class, mean, var, mu4}, mixing_heat: {class, mean,
+    var, mu4}}, ...]. A `constant` holds `value` in place of mean, var and mu4. The replacement has
+    f 1.0 and `mixing_heat` null, since exact events book no mixing heat there
+    (AMENDMENT-2026-11-23.md §10);
   - `"d"`: {pairs: [{observable, time_s, value}], stops: [{time_s, removed, mixing_heat}],
     intervals: [{start_s, end_s, heat}]};
   - for W2, `"gap"`: [{observable, time_s, gap, resolution}];
