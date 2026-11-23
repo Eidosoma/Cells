@@ -80,6 +80,7 @@ class Worst:
         self.items = {}
 
     def add(self, figure, value, where):
+        value = float(value)      # numpy scalars become plain floats for the JSON file
         cur = self.items.get(figure)
         if cur is None or value > cur[0]:
             self.items[figure] = (value, where)
@@ -125,8 +126,8 @@ def accuracy_world(name, doc, raw):
         where = f"{e['observable']} at {e['time_s']} s"
         if e["class"] == "constant":
             founder = raw["founder_molecules"][e["observable"]]
-            flags.setdefault("constants_equal_founder", True)
-            flags["constants_equal_founder"] &= (e["value"] == founder)
+            flags["constants_equal_founder"] = bool(flags.get("constants_equal_founder", True)
+                                                    and e["value"] == founder)
             continue
         _moment_figures(worst, "pairs", e, num["pairs"][key], where)
     scale = _scale_pairs(doc)
@@ -175,8 +176,8 @@ def accuracy_world(name, doc, raw):
         dist = abs(planted - honest) / unit
         top = max(abs(c[1] - c[0]) / c[2] for c in cands.values())
         # method 2 names the same quantity, or one tied with it to rounding (P6 after the last stop)
-        flags.setdefault("plants_same_quantity", True)
-        flags["plants_same_quantity"] &= dist >= top * (1 - 1e-9)
+        flags["plants_same_quantity"] = bool(flags.get("plants_same_quantity", True)
+                                             and dist >= top * (1 - 1e-9))
         tag = f"{p['plant']}/{p['criterion']} {key}"
         worst.add("plants.planted_in_bounds", abs(planted - p["planted"]) / unit, tag)
         worst.add("plants.honest_in_bounds", abs(honest - p["honest"]) / unit, tag)
