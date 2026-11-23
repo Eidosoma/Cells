@@ -71,13 +71,37 @@ its providers' layout view. So:
 - **The kinds' clamped evaluations** (`clamped_flux`, `clamped_rates`) take the same views through
   `model.clamped_kind(function, state, control, p, voltages_V)`.
 
-## Not covered here (engine work, in its owners' queues, D251, D252)
+## Not covered here
 
-- **@3's channel populations at a declared voltage:** the @3 owner (above).
-- **One record of the effective availability,** the held value times its routed factors: the @3 or
-  operators owner.
+Both items this section once listed as pending engine work (D251, D252) have landed:
+- **@3's channel populations at a declared voltage:** @3's `clamped_channel_flux` (merge
+  121aca27). In a composite, use the composition's own `model.clamped_channel_flux` and
+  `model.clamped_kind` (merge 07022ddf, D265; above). Tests:
+  - `tests/unit/test_surface_pump_v3_populations.py`:
+    `test_a_population_s_current_at_a_declared_voltage_with_the_halving_control`;
+  - `tests/unit/test_species_regulated_availability.py`:
+    `test_a_composites_clamped_current_runs_at_its_effective_availability` and
+    `test_a_composites_clamped_kinds_are_the_steps_own_rates`.
+- **One record of the effective availability:** `channel_effective_availability`, @3's observation
+  per channel slot (merge d0104950). It is the held availability times the population's
+  routing-door factors, the value its flux runs at.
+  - It is recorded only where a population declares `factors`. Elsewhere that value is
+    `channel_availability`, and the column does not exist.
+  - In a composite, `channel_availability` already holds the operators' factors, and this column
+    adds only the door's.
+  - Test: `tests/unit/test_surface_pump_v3_populations.py`:
+    `test_the_effective_availability_is_recorded_where_the_door_routes_into_channels`.
 
-The kinds' routes now have their per-route flux and current records, on request (81a29442).
+The kinds' routes have their per-route flux and current records, on request (81a29442).
+
+**What these readouts still do not give:**
+- **A current after the gates settle.** The clamped entry points keep the state's gates, so they
+  give the instantaneous current at the declared voltage, not a steady-state current-voltage curve.
+- **A one-way flux.** `channel_flux_fmol_s`, `passive_transferred` and `passive_flux_fmol_s` are
+  net, so equal and opposite one-way flows cancel.
+- **A recorded current column for @3's channel populations.** Derive it from
+  `channel_flux_fmol_s`, as in the table above, or with
+  `cells.models.surface_pump_v3.channel_current_A(flux, p)`.
 
 ## Run it
 
