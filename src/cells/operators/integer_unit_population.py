@@ -1372,9 +1372,19 @@ class IntegerUnitPopulationOperator(Operator):
         )
 
     def working_size(self, spec):
+        """Values per saved row (execution/resources.row_bytes): its owned fields, the trace
+        included, times a margin of 2."""
         (declaration,) = (d for op, d, _ in composite_spec.entries(spec) if op.LAW_ID == LAW_ID)
-        n, k, j, r, t, w = dimensions(declaration)
-        return 8 * n * (8 * j + 6 * r + 4 * k + w + 32)
+        n, k, j, r, t, _ = dimensions(declaration)
+        return 2 * n * ((2 * k + j + r + 7) + t * (2 + 2 * r))
+
+    def fixed_working_size(self, spec):
+        """Values held once per resident copy (execution/resources.fixed_bytes): its bound
+        layout, times a margin of 2."""
+        (declaration,) = (d for op, d, _ in composite_spec.entries(spec) if op.LAW_ID == LAW_ID)
+        n, k, j, r, _, w = dimensions(declaration)
+        maps = len(declaration.divisions)
+        return 2 * (n * (12 + 2 * k + 2 * j * k + 4 * j + 2 * r + r * k) + 3 * maps + w + n)
 
     def summary(self, spec, declaration, schedule, history):
         return {
