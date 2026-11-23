@@ -66,7 +66,7 @@ from cells.laws.cycles import na2_anion_symport_diagram as symport2
 from cells.laws.cycles import na_anion_symport_factored as symport
 from cells.laws.junctions import junction_series_gates
 from cells.laws.routes import passive_permeation
-from cells.laws.transport import proton_leak
+from cells.laws.transport import proton_leak, proton_leak_v2
 from cells.models import inner_laws, surface_pump_v3
 from cells.registry import declarations, laws
 from tests.unit.test_passive_routes_kind import closed_pair, route
@@ -175,7 +175,10 @@ def test_the_template_refuses_a_malformed_declaration():
         "its law_id is": dataclasses.replace(binding, law_id="Planted Binding"),
         "a gated law gives its kinetics and opening": dataclasses.replace(channel, opening=None),
         "its moves are": dataclasses.replace(cycle, moves=(("role", 1.5),)),
+        # A route law's reads (MT-1b's leak @2, face plan item 3): stage-read IDs, () by default.
+        "its reads are a tuple of stage-read IDs": dataclasses.replace(route_law, reads=("",)),
     }
+    assert route_law.reads == () and not route_law.errors()
     for reason, law in cases.items():
         with pytest.raises(ValueError, match=reason):
             registry.register(law)
@@ -214,6 +217,7 @@ def test_cycle_and_route_laws_name_their_step_terms():
         "basis",
         *laws.STEP_TERMS,
         "forms",
+        "reads",  # MT-1b's leak @2 (face plan item 3), defaulted to () last.
     ]
     _, cycle, route_law, _ = planted_laws()
     for law in (cycle, route_law):
@@ -226,6 +230,7 @@ def test_cycle_and_route_laws_name_their_step_terms():
             assert laws.LawRegistry().register(named) is named
     # The passive kind's two declarations, each a kernel of its law's own module.
     assert callable(getattr(proton_leak, passive_routes.LEAK.stage_term))
+    assert getattr(proton_leak_v2, passive_routes.LEAK_V2.stage_term) is proton_leak.conductance_S
     assert callable(getattr(passive_permeation, passive_routes.NEUTRAL.material_bound))
     declared = {
         (law.law_id, name): getattr(law, name)
@@ -236,6 +241,7 @@ def test_cycle_and_route_laws_name_their_step_terms():
     }
     assert declared == {
         (passive_routes.LEAK_LAW_ID, "stage_term"): "conductance_S",
+        (passive_routes.LEAK_V2_LAW_ID, "stage_term"): "conductance_S",  # @1's kernel (item 3).
         (passive_routes.LAW_ID, "material_bound"): "bound_rate_per_s",
         (passive_routes.RECTIFIER_LAW_ID, "stage_term"): "slope_conductance_S",
         (passive_routes.CHARGED_LAW_ID, "stage_term"): "conductance_S",  # FR-15 P2.
@@ -295,6 +301,7 @@ def test_kinds_and_the_inner_model_find_their_laws_by_interface_and_host():
         passive_routes.LEAK_LAW_ID: passive_routes.LEAK,
         passive_routes.RECTIFIER_LAW_ID: passive_routes.RECTIFIER,
         passive_routes.CHARGED_LAW_ID: passive_routes.CHARGED,  # FR-15 P2.
+        passive_routes.LEAK_V2_LAW_ID: passive_routes.LEAK_V2,  # MT-1b's face plan, item 3.
     }
     builtin = list(transporter.hosted_laws())  # Before the planted scope.
     planted = planted_laws()

@@ -829,3 +829,108 @@ def test_the_forms_law_is_admitted_at_closure_rows_where_todays_face_is_refused(
         return
     with pytest.raises(ConfigError, match=message):
         parse_spec(raw)
+
+
+# ------------------------------------------- the leak reading the closure (MT-1b's item 3)
+
+LEAK_V1, LEAK_V2 = "proton_constant_field_leak@1", "proton_constant_field_leak@2"
+
+
+def leak_general(law=LEAK_V2):
+    """lumen_general's world with FR-4's leak back on the bounding patch, between the cell and the
+    lumen, each a node of the general closure, under `law`."""
+    raw = lumen_general()
+    raw["model"]["passive_routes"] = [
+        dict(id="proton_leak_0", patch=fr.BOUNDING, law=law, permeability_m_per_s=6e-7)
+    ]
+    return raw
+
+
+def test_the_leak_at_version_2_reads_the_general_closures_free_h_and_closes_every_ledger():
+    """MT-1b's face plan, item 3 (MITOCHONDRIA_DESIGN §7): at the general closure's nodes @2 is
+    admitted (its declared read is the closure's, its row the closure's ligand H, crossing a
+    patch) and @1 refused (it declares no read). @2's flux is the constant-field flux of the
+    closure's free h at both ends, from the closure's own read: planted, the stored totals give
+    another. Four host steps keep every ledger closing with the closure's S_c (host side)."""
+    from cells.kinds import passive_routes
+    from cells.laws.electrochemistry import ghk_leak
+
+    with pytest.raises(ConfigError, match=r"proton_constant_field_leak@1, whose reads \[\] lack"):
+        parse_spec(leak_general(LEAK_V1))
+    spec = parse_spec(leak_general())
+    impl, state, p, control = host(spec)
+    read = proton_buffer.stage_read(state, p, xp=np)[0]
+    potentials = np.asarray(impl.readouts(state, control, p, xp=np).field.potential_V)
+    flux = passive_routes._flux(read, potentials, control, p, xp=np).flux
+    h = list(spec.model.species_ids).index("H")
+    inside, outside = int(p.passive_inside[0]), int(p.passive_outside[0])
+    volume = np.concatenate((p.volume, p.extracellular_volume))
+
+    def ends(s):
+        cells = p.amount_reference + s.amount_increment
+        nodes = p.extracellular_amount_reference + s.extracellular_amount_increment
+        amounts = np.concatenate((cells, nodes), axis=1)[h]
+        return amounts[inside] / volume[inside], amounts[outside] / volume[outside]
+
+    voltage = potentials[inside] - potentials[outside]
+    opening = control.membrane[int(p.passive_membrane[0])]
+    args = (voltage, 1, p.temperature, p.passive_area[0], 6e-7, opening)
+    free = ghk_leak(*ends(read), *args, xp=np)
+    assert flux[h, 0] == pytest.approx(float(free), rel=1e-14, abs=0) and flux[h, 0] != 0
+    assert abs(float(ghk_leak(*ends(state), *args, xp=np)) - flux[h, 0]) > 1e-3 * abs(flux[h, 0])
+    states = [state]
+    for _ in range(4):
+        state, valid = impl.imex_step(state, spec.execution.dt, control, p, xp=np)
+        assert bool(valid)
+        states.append(state)
+    history = impl.STATE_TYPE(*(np.stack(v) for v in zip(*states, strict=True)))
+    impl.check_values(history, spec, steps=np.arange(len(states)))  # Every ledger, S_c's too.
+
+
+def test_the_leak_at_version_2_is_version_1_without_a_closure_and_refused_at_b4s_nodes():
+    """With no closure @2 is @1, bit for bit over three host steps (one mask, one kernel, the same
+    read), on the passive routes' closed pair with an H row; at B4's buffered nodes, whose free h
+    @1 reads, @2 is refused (host side, parses and steps only)."""
+    from tests.unit import test_passive_routes_kind as pr
+
+    runs = []
+    for law in (LEAK_V1, LEAK_V2):
+        raw = pr.charged_pair(species="H", valence=1, voltage_fmol=-5.18e-5)
+        raw["model"]["passive_routes"][-1]["law"] = law
+        spec = parse_spec(raw)
+        impl, state, p, control = host(spec)
+        for _ in range(3):
+            state, valid = impl.imex_step(state, spec.execution.dt, control, p, xp=np)
+            assert bool(valid)
+        runs.append(state)
+    pairs = zip(*runs, strict=True)
+    assert all(np.asarray(a).tobytes() == np.asarray(b).tobytes() for a, b in pairs)
+    raw = fr.development_world(fr.fr4_world())
+    raw["model"]["passive_routes"][0]["law"] = LEAK_V2
+    with pytest.raises(ConfigError, match=r"is a buffered node of B4's version-1 closure"):
+        parse_spec(raw)
+
+
+def test_a_route_reading_the_closure_moves_a_ligand_across_two_ends_and_the_face_is_pinned():
+    """The route-law branch of the closure's admission (species_registry._route_mover_errors)
+    refuses a route law whose row is no ligand of the closure (a binder's row holds its forms') and
+    one on a host without two ends; the forms face's names in the registry are the forms law
+    module's own (the face review's tidy-up)."""
+    from types import SimpleNamespace
+
+    from cells.laws.routes import logmean_electrodiffusion_forms as forms_law
+    from cells.registry import species_registry
+
+    closure = SimpleNamespace(ligands=("H",))
+    assert species_registry._route_mover_errors(closure, LEAK_V2, "H") == ()
+    refused = species_registry._route_mover_errors(closure, LEAK_V2, "B_c")
+    assert "no ligand of the closure" in refused[0]
+    face = laws.RouteLaw(
+        "tests.face_route@1", ("face",), "a planted route on a face",
+        host="cells.passive_routes@1", reads=("rapid_binding@1",),
+    )  # fmt: skip
+    with laws.scope(laws.BUILTIN.extended(face)):
+        refused = species_registry._route_mover_errors(closure, face.law_id, "H")
+        assert "are not two-ended" in refused[0]
+    assert species_registry.FORMS_FACE_LAW == forms_law.LAW_ID
+    assert species_registry.FORMS_FACE_READ == forms_law.CLOSURE_READ_ID
