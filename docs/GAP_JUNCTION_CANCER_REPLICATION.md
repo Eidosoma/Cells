@@ -963,3 +963,27 @@ This section is the handoff; the evidence is under `/mnt/workspaces/Cells/gap-ju
   `tools/write_summary.py` and `tools/bitsey_log_points.py`.
 - BITSEY's code and logs, as read at b2cb370 and b007aab: `downloads/` (never committed).
 
+
+## 9. The judged comparisons, registered (23 November 2026)
+
+D219's two approved comparisons have registrations. Each is tagged before any judged run, and each
+names a reader that exists at its tag (D308).
+- **[GJ-L1, the linear model](GJ_LINEAR_REGISTRATION.md)** (`linear_judge.py`). Figures 3b, 5 and 8
+  in both forms, against code-blind references.
+  - The Norton form is judged at its floor: transient plus rounding.
+  - The form as written is judged at dt/4 from the triple dt, dt/2, dt/4, by FR-25's rule.
+  - Figure 5a at 10 G_eq as written runs through the windowed path.
+- **[GJ-N1, the "neither" threshold](GJ_NEITHER_REGISTRATION.md)** (`neither_judge.py`).
+  - The line is not blind (`neither-02`). The 25 × 25 field is a true pre-registration.
+  - The verdict is refinement (R), the half-step convergence condition (C), and agreement with an
+    independent integration (A).
+  - BITSEY's historical logs and a pinned run at b2cb370 are reported, never judged.
+- **The field's compute is open for the lead** (GJ_NEITHER_REGISTRATION.md §8): about 0.17 s a step
+  on today's engine, and about 400 CPU-hours for its search.
+- **The references read only** `validation/gap_junction_tissue/references/spec/` and the preprint.
+- **BITSEY runs unmodified** in `/mnt/workspaces/Cells/venv-bitsey`, from a clean checkout at
+  b2cb370, by `bitsey_run.py`. Its runs are under `/mnt/workspaces/Cells/bitsey-20261123/runs/`.
+  - The licence check found none, at b2cb370 or at the newest head (7e4fb45d), the situation D208
+    was ruled on.
+  - Both historical logs print the result line of 04225e4 (20 May 2026), not b2cb370's: their
+    producing revision is earlier.

@@ -118,17 +118,47 @@ def step(d, neighbours=2):
 # protocol on a square sheet with 4-neighbour junctions and a square tumor patch in the middle.
 SHEET_N = 9
 SHEET_TUMOR = 3
+# The field: BITSEY's 1x25x25 field, the "neither" comparison's 2D geometry (docs/
+# GJ_NEITHER_REGISTRATION.md). cancer_GJ_sims/zombie.py at b2cb370: coord_set_dimensions(1, 25,
+# 25), setup_GJ_3D(allow_diag=False), one junction per pair of cells one lattice step apart, and
+# set_corner_tumor(6), which puts the 6x6 tumor at y < 6 and z < 6. A cell's lattice place is
+# (y, z), its index y * FIELD_N + z (coord_xyz2idx with x = 0).
+FIELD_N = 25
+FIELD_TUMOR = 6
+# GRN_miRNA.py's healthy_snapped_rows, line 519: besides every cell's miR200 > Zeb mRNA + 2, every
+# row's Zeb mRNA spread (largest minus smallest) is at most this. A row is the set of cells with
+# one z, so its spread is taken over y (the min and max over the first two lattice axes, per
+# last-axis index). On the line each row is one cell, so the condition is empty there.
+ROW_SPREAD_UNITS = 2.0
+SHAPES = ("line", "sheet", "field")
 
 
 def tissue(shape):
     """(cells ((id, kind)), junctions ((id, a, b)), centres in um, neighbours) of a shape: 'line',
-    BITSEY's 1x1x25 field (the replication), or 'sheet', SHEET_N x SHEET_N cells with a
-    SHEET_TUMOR x SHEET_TUMOR tumor in the middle (an extension beyond it)."""
+    BITSEY's 1x1x25 field (the replication), 'field', BITSEY's 1x25x25 field (the replication's 2D
+    geometry), or 'sheet', SHEET_N x SHEET_N cells with a SHEET_TUMOR x SHEET_TUMOR tumor in the
+    middle (an extension beyond it)."""
     spacing = 2.0 * R_CELL_M * 1e6
     if shape == "line":
         cells = tuple((f"c{k}", "tumor" if k < TUMOR else "healthy") for k in range(N_CELLS))
         junctions = tuple((f"j{k}", f"c{k}", f"c{k + 1}") for k in range(N_CELLS - 1))
         return cells, junctions, [[k * spacing, 0.0] for k in range(N_CELLS)], 2
+    if shape == "field":
+        n, t = FIELD_N, FIELD_TUMOR
+        cells = tuple(
+            (f"c{y}_{z}", "tumor" if y < t and z < t else "healthy")
+            for y in range(n)
+            for z in range(n)
+        )
+        junctions = []
+        for y in range(n):  # BITSEY's allocation order: per cell, its z step, then its y step.
+            for z in range(n):
+                if z + 1 < n:
+                    junctions.append((f"jz{y}_{z}", f"c{y}_{z}", f"c{y}_{z + 1}"))
+                if y + 1 < n:
+                    junctions.append((f"jy{y}_{z}", f"c{y}_{z}", f"c{y + 1}_{z}"))
+        centres = [[z * spacing, y * spacing] for y in range(n) for z in range(n)]
+        return cells, tuple(junctions), centres, 4
     if shape == "sheet":
         n, lo = SHEET_N, (SHEET_N - SHEET_TUMOR) // 2
         inside = range(lo, lo + SHEET_TUMOR)
@@ -147,6 +177,34 @@ def tissue(shape):
         centres = [[c * spacing, r * spacing] for r in range(n) for c in range(n)]
         return cells, tuple(junctions), centres, 4
     raise ValueError(f"Unknown shape {shape!r}")
+
+
+def row_spreads(m, shape):
+    """Each row's Zeb mRNA spread (units), largest minus smallest over its cells, for the shapes
+    BITSEY's criterion covers: on the line every row is one cell (spread 0); on the field a row is
+    the cells of one z. None for the sheet, which has no BITSEY counterpart."""
+    if shape == "line":
+        return [0.0] * len(m)
+    if shape == "field":
+        n = FIELD_N
+        rows = [[m[y * n + z] for y in range(n)] for z in range(n)]
+        return [max(row) - min(row) for row in rows]
+    return None
+
+
+def criterion(u, m, shape="line"):
+    """BITSEY's healthy_snapped_rows on the end state: every cell's miR200 exceeds its Zeb mRNA by
+    more than MARGIN_UNITS, and every row's Zeb mRNA spread is at most ROW_SPREAD_UNITS."""
+    margins = [a - b - MARGIN_UNITS for a, b in zip(u, m, strict=True)]
+    spreads = row_spreads(m, shape)
+    spread_ok = spreads is None or all(s <= ROW_SPREAD_UNITS for s in spreads)
+    return dict(
+        normalized=all(x > 0.0 for x in margins) and spread_ok,
+        epithelial_cells=sum(x > 0.0 for x in margins),
+        min_margin_units=min(margins),
+        max_row_spread_units=None if spreads is None else max(spreads),
+        rows_over_spread=None if spreads is None else sum(s > ROW_SPREAD_UNITS for s in spreads),
+    )
 
 
 def switch_world(cells, start, *, junctions=(), d=0.0, end, dt, observe):
@@ -236,10 +294,11 @@ def switch_world(cells, start, *, junctions=(), d=0.0, end, dt, observe):
     return rfx.with_reactions(raw, [rfx.species(n) for n in NAMES], reactions, controls)
 
 
-def uncoupled_world(*, end=UNCOUPLED_S, dt=None):
+def uncoupled_world(*, end=UNCOUPLED_S, dt=None, neighbours=2):
     """Stage 1: one tumor cell and one healthy cell, no junctions, from BITSEY's seeds. Its dt is
-    the finest coupled step (the bracket's upper end), so stage 1 is never the coarser stage."""
-    dt = step(BRACKET[1]) if dt is None else dt
+    the finest coupled step (the bracket's upper end, with the shape's neighbours: 1/64 s on the
+    line, 1/128 s on the field), so stage 1 is never the coarser stage."""
+    dt = step(BRACKET[1], neighbours) if dt is None else dt
     observe = sorted(
         {0.0, *(k * 100.0 for k in range(int(end // 100.0) + 1) if k * 100.0 < end), end}
     )
@@ -259,20 +318,28 @@ def coupled_world(d, start, *, end=COUPLED_S, dt=None, shape="line"):
     return switch_world(cells, start, junctions=junctions, d=d, end=end, dt=dt, observe=observe)
 
 
-def execute(raw, n_cells):
+def execute(raw, n_cells, window_steps=WINDOW_STEPS):
     """Run a world windowed with device row checks; the end state in units per cell, the observed
-    rows of u and m, the steps, diagnostics and timings."""
+    rows of u and m, the steps, diagnostics and timings (the parse, and each window's wall time,
+    which includes the first window's compile)."""
     import numpy as np
 
     from cells.definitions.specs import parse_spec
     from cells.execution.windows import WindowPolicy, iter_windows
 
+    started = time.perf_counter()
     spec = parse_spec(raw)
+    parsed = time.perf_counter()
     ids = list(spec.model.species_ids)
     rows = {name: ids.index(name) for name in NAMES}
     last, diagnostics, observed = None, {}, dict(times=[], u=[], m=[])
-    policy = WindowPolicy(WINDOW_STEPS, "observations", "device")
+    policy = WindowPolicy(window_steps, "observations", "device")
+    timing = dict(parse_s=parsed - started, window_steps=window_steps, windows_s=[])
+    clock = parsed
     for window in iter_windows(spec, policy):
+        now = time.perf_counter()
+        timing["windows_s"].append(now - clock)
+        clock = now
         last = window.final
         for k, v in window.diagnostics.items():
             diagnostics[k] = max(diagnostics.get(k, 0.0), float(v))
@@ -299,15 +366,22 @@ def execute(raw, n_cells):
         final_units=final,
         observed=observed,
         diagnostics=diagnostics,
+        timing=timing,
     )
 
 
-def uncoupled():
-    """Stage 1, once: the tumor and healthy cells' state after UNCOUPLED_S."""
+# Stage 1's step follows the finest coupled step of the shape's search (uncoupled_world). The sheet
+# keeps the line's, as its records ran it (sheet-01).
+STAGE1_NEIGHBOURS = dict(line=2, sheet=2, field=4)
+
+
+def uncoupled(shape="line"):
+    """Stage 1, once: the tumor and healthy cells' state after UNCOUPLED_S, at the shape's finest
+    coupled step (uncoupled_world)."""
     started = time.perf_counter()
-    out = dict(stage="uncoupled", end_s=UNCOUPLED_S, seeds_units=SEEDS)
+    out = dict(stage="uncoupled", end_s=UNCOUPLED_S, seeds_units=SEEDS, shape=shape)
     try:
-        run = execute(uncoupled_world(), 2)
+        run = execute(uncoupled_world(neighbours=STAGE1_NEIGHBOURS[shape]), 2)
         start = {
             kind: {name: run["final_units"][name][k] for name in NAMES}
             for k, kind in enumerate(("tumor", "healthy"))
@@ -319,28 +393,24 @@ def uncoupled():
     return out
 
 
-def evaluate(d, start, *, end=COUPLED_S, dt=None):
-    """One point: the coupled stage at diffusion constant d (at step dt, default step(d)); the
-    criterion at its end."""
+def evaluate(d, start, *, end=COUPLED_S, dt=None, shape="line"):
+    """One point: the coupled stage at diffusion constant d (at step dt, default the shape's
+    step(d)); BITSEY's criterion at its end (criterion)."""
     started = time.perf_counter()
     out = dict(
         d=d,
         end_s=end,
+        shape=shape,
         g_gj_m3_s=conductance(d),
         pid=os.getpid(),
         cpus=sorted(os.sched_getaffinity(0)),
     )
     try:
-        run = execute(coupled_world(d, start, end=end, dt=dt), N_CELLS)
+        cells = tissue(shape)[0]
+        raw = coupled_world(d, start, end=end, dt=dt, shape=shape)
+        run = execute(raw, len(cells), WINDOW_STEPS_OF[shape])
         u, m = run["final_units"]["u"], run["final_units"]["m"]
-        margins = [a - b - MARGIN_UNITS for a, b in zip(u, m, strict=True)]
-        out.update(
-            status="done",
-            normalized=all(x > 0.0 for x in margins),
-            epithelial_cells=sum(x > 0.0 for x in margins),
-            min_margin_units=min(margins),
-            **run,
-        )
+        out.update(status="done", **criterion(u, m, shape), **run)
     except Exception as error:  # Recorded as evidence, never retried.
         out.update(status="failed", error=repr(error), traceback=traceback.format_exc())
     out.update(seconds=time.perf_counter() - started, max_rss_kib=_rss())
@@ -385,7 +455,16 @@ SHEET_REPRESENTS = (
     "tumor patch in the middle, at D values chosen around the 1D search's threshold (x2). The "
     "sheet's own threshold may differ. Development run of the engine, not judged (D138)."
 )
-ARM_PREFIX = dict(line="neither-d", sheet=f"sheet{SHEET_N}-d")
+FIELD_EXPERIMENT = "gap-junction-cancer-neither-2d"
+FIELD_REPRESENTS = (
+    "BITSEY's 2D no-tricks condition on its 1x25x25 field (docs/GJ_NEITHER_REGISTRATION.md): the "
+    "EMT switch in 25x25 cells with one junction per pair one lattice step apart, the 6x6 corner "
+    "block "
+    "tumor, coupled by miR200 alone on passive junction routes at junction diffusion constant D, "
+    "after an uncoupled 500 s computed once; normalized under BITSEY's healthy_snapped_rows (every "
+    "cell E and every row's Zeb mRNA spread at most 2)."
+)
+ARM_PREFIX = dict(line="neither-d", sheet=f"sheet{SHEET_N}-d", field="field-d")
 # The note's own words for the sheet (section 7.6), carried by its summary.
 SHEET_NOTE = (
     "The sheet is an extension beyond the replication, not part of it. Its coupled horizon is "
@@ -406,6 +485,8 @@ X2_SOURCE = dict(
     line="the 1D search's threshold x2 (docs/GAP_JUNCTION_CANCER_REPLICATION.md, section 7.5)",
     sheet="the line's threshold x2 (section 7.5); the sheet's own lies between x2/8 and x2/4 at "
     "2,000 s (section 7.6)",
+    field="the line's threshold x2 (section 7.5), for scale only: the field's own threshold is "
+    "its registered search's (docs/GJ_NEITHER_REGISTRATION.md)",
 )
 SPECIES_MAP = {"u": "miR200", "m": "Zeb mRNA", "z": "ZEB protein"}
 X2_FRACTIONS = {
@@ -430,17 +511,19 @@ def threshold_place(d, shape="line"):
     )
 
 
-TUMOR_CELLS_OF = {
-    shape: [c for c, kind in tissue(shape)[0] if kind == "tumor"] for shape in ("line", "sheet")
-}
+TUMOR_CELLS_OF = {shape: [c for c, kind in tissue(shape)[0] if kind == "tumor"] for shape in SHAPES}
 # A window's working storage scales with the world: the sheet's 81 cells and 144 junctions fit
 # 256 steps a window. Windows cut the execution, not the step grid.
-WINDOW_STEPS_OF = dict(line=WINDOW_STEPS, sheet=256)
-EXPERIMENT_OF = dict(line=EXPERIMENT, sheet=SHEET_EXPERIMENT)
-REPRESENTS_OF = dict(line=REPRESENTS, sheet=SHEET_REPRESENTS)
+# The field's 625 cells and 1,200 junctions: FIELD_WINDOW_STEPS, sized by the cost probe
+# (docs/GJ_NEITHER_REGISTRATION.md, the compute budget).
+FIELD_WINDOW_STEPS = 64
+WINDOW_STEPS_OF = dict(line=WINDOW_STEPS, sheet=256, field=FIELD_WINDOW_STEPS)
+EXPERIMENT_OF = dict(line=EXPERIMENT, sheet=SHEET_EXPERIMENT, field=FIELD_EXPERIMENT)
+REPRESENTS_OF = dict(line=REPRESENTS, sheet=SHEET_REPRESENTS, field=FIELD_REPRESENTS)
 LABEL_OF = dict(
     line="Neither condition, 1D",
     sheet=f"Neither condition on a {SHEET_N}x{SHEET_N} sheet (extension)",
+    field=f"Neither condition on BITSEY's {FIELD_N}x{FIELD_N} field",
 )
 GEOMETRY_SOURCE = dict(
     line="validation/gap_junction_tissue/neither.py: a line of 25 touching cells, the tumor the "
@@ -448,6 +531,9 @@ GEOMETRY_SOURCE = dict(
     sheet=f"validation/gap_junction_tissue/neither.py: a {SHEET_N}x{SHEET_N} sheet of touching "
     f"cells, the tumor the middle {SHEET_TUMOR}x{SHEET_TUMOR} (an extension beyond the "
     "replication)",
+    field=f"validation/gap_junction_tissue/neither.py: BITSEY's 1x{FIELD_N}x{FIELD_N} field of "
+    f"touching cells, the tumor the {FIELD_TUMOR}x{FIELD_TUMOR} block at the corner (y, z < "
+    f"{FIELD_TUMOR}); z along the first axis",
 )
 
 
@@ -846,7 +932,7 @@ def record_all(out_dir, ds, end, cpus, log_rows=0, shape="line"):
         with ProcessPoolExecutor(
             len(cpus), mp_context=ctx, initializer=_pin, initargs=(queue,)
         ) as pool:
-            stage1 = pool.submit(_uncoupled_work, None).result()
+            stage1 = pool.submit(_uncoupled_work, shape).result()
             (out_dir / "uncoupled.json").write_text(json.dumps(stage1, indent=1))
             if stage1["status"] != "done":
                 return 1
@@ -859,7 +945,7 @@ def record_all(out_dir, ds, end, cpus, log_rows=0, shape="line"):
             results = [future.result() for future in futures]
     else:
         _start_engine()
-        stage1 = uncoupled()
+        stage1 = uncoupled(shape)
         (out_dir / "uncoupled.json").write_text(json.dumps(stage1, indent=1))
         if stage1["status"] != "done":
             return 1
@@ -890,15 +976,29 @@ def _pin(queue):
     os.sched_setaffinity(0, {queue.get()})
 
 
-def _uncoupled_work(_):
+def _uncoupled_work(shape):
     _start_engine()
-    return uncoupled()
+    return uncoupled(shape or "line")
 
 
 def _work(args):
-    d, start, end, dt = args
+    d, start, end, dt, shape = args
     _start_engine()
-    return evaluate(d, start, end=end, dt=dt)
+    return evaluate(d, start, end=end, dt=dt, shape=shape)
+
+
+def first_points(workers, shape="line"):
+    """The search's first points: the bracket's two ends, then dyadic points BRACKET[1] / 2^k, one
+    per further worker. On the line, k = 1, 2, ... (neither-01 and -02). On the field, k starts at
+    the smallest k whose point runs at the base step, so that no first point but the upper end
+    runs at a reduced step (docs/GJ_NEITHER_REGISTRATION.md, the search)."""
+    k0 = 1
+    if shape == "field":
+        neighbours = tissue(shape)[3]
+        while step(BRACKET[1] / 2.0**k0, neighbours) < BASE_DT_S:
+            k0 += 1
+    ladder = [BRACKET[1] / 2.0**k for k in range(k0, k0 + max(0, workers - 2))]
+    return [BRACKET[0], BRACKET[1], *ladder][: max(2, workers)]
 
 
 def place(lo, hi, running, free):
@@ -926,12 +1026,13 @@ def bracket(evaluated):
     return lo, hi, outcomes == sorted(outcomes), failed
 
 
-def search(out_dir, cpus, end):
+def search(out_dir, cpus, end, shape="line"):
     """BITSEY's bisection, run in parallel: a worker that finishes takes a new point inside the
     current bracket at once (place), so the slow points near the bracket's upper end never hold
     the narrowing back. Stops submitting when converged (hi <= (1 + RTOL) lo) or when a stop
     condition holds; waits for the points still running (the upper end's result is required);
-    then reruns the final bracket's two ends at half their step (reported, not used)."""
+    then reruns the final bracket's two ends at half their step (the convergence condition of
+    docs/GJ_NEITHER_REGISTRATION.md; development runs reported it only)."""
     from concurrent.futures import FIRST_COMPLETED, ProcessPoolExecutor, wait
 
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -940,8 +1041,11 @@ def search(out_dir, cpus, end):
     for cpu in cpus:
         queue.put(cpu)
     workers = len(cpus)
-    first = [BRACKET[0], BRACKET[1], *(BRACKET[1] / 2.0**k for k in range(1, workers - 1))]
+    neighbours = tissue(shape)[3]
+    first = first_points(workers, shape)
     state = dict(
+        shape=shape,
+        first_points=first,
         bracket=BRACKET,
         rtol=RTOL,
         bitsey_logged=BITSEY_LOGGED,
@@ -954,7 +1058,7 @@ def search(out_dir, cpus, end):
         (out_dir / "search.json").write_text(json.dumps(state, indent=1))
 
     with ProcessPoolExecutor(workers, mp_context=ctx, initializer=_pin, initargs=(queue,)) as pool:
-        stage1 = pool.submit(_uncoupled_work, None).result()
+        stage1 = pool.submit(_uncoupled_work, shape).result()
         (out_dir / "uncoupled.json").write_text(json.dumps(stage1, indent=1))
         if stage1["status"] != "done":
             state.update(stopped="the uncoupled stage failed")
@@ -964,10 +1068,10 @@ def search(out_dir, cpus, end):
         evaluated, running = {}, {}
 
         def submit(d):
-            running[pool.submit(_work, (d, start, end, None))] = d
+            running[pool.submit(_work, (d, start, end, None, shape))] = d
             state["events"].append(dict(utc=_utc(), submitted=d))
 
-        for d in first[: max(2, workers)]:
+        for d in first:
             submit(d)
         save()
         submitting, halves = True, None
@@ -976,7 +1080,10 @@ def search(out_dir, cpus, end):
             """The final bracket's ends at half their step, once no search point runs inside it."""
             state["half_step_bracket"] = [lo, hi]
             state["events"].append(dict(utc=_utc(), half_step_submitted=[lo, hi]))
-            return {d: pool.submit(_work, (d, start, end, step(d) / 2.0)) for d in (lo, hi)}
+            return {
+                d: pool.submit(_work, (d, start, end, step(d, neighbours) / 2.0, shape))
+                for d in (lo, hi)
+            }
 
         while running:
             finished, _ = wait(running, return_when=FIRST_COMPLETED)
@@ -1060,7 +1167,7 @@ def main():
     parser.add_argument("--end", type=float, default=COUPLED_S)
     parser.add_argument("--record", default="")
     parser.add_argument("--record-log", type=int, default=0)
-    parser.add_argument("--shape", default="line", choices=("line", "sheet"))
+    parser.add_argument("--shape", default="line", choices=SHAPES)
     parser.add_argument("--sidecars", default="")
     args = parser.parse_args()
     out_dir = Path(args.out_dir)
@@ -1068,8 +1175,10 @@ def main():
     snapshot = Path("SNAPSHOT.json")
     plan = dict(
         module=__doc__,
+        shape=args.shape,
         n_cells=N_CELLS,
         tumor=TUMOR,
+        field=dict(n=FIELD_N, tumor=FIELD_TUMOR, row_spread_units=ROW_SPREAD_UNITS),
         seeds_units=SEEDS,
         trace_units=TRACE_UNITS,
         uncoupled_s=UNCOUPLED_S,
@@ -1108,14 +1217,14 @@ def main():
         return record_all(out_dir, ds, args.end, cpus, log_rows=args.record_log, shape=args.shape)
     if args.points:  # A probe: stage 1, then the given points in this process; no search.
         _start_engine()
-        stage1 = uncoupled()
+        stage1 = uncoupled(args.shape)
         (out_dir / "uncoupled.json").write_text(json.dumps(stage1, indent=1))
         keys = ("status", "dt_s", "steps", "seconds", "start_units", "error")
         print(json.dumps({k: stage1.get(k) for k in keys}), flush=True)
         if stage1["status"] != "done":
             return 1
         for d in (float(x) for x in args.points.split(",")):
-            result = evaluate(d, stage1["start_units"], end=args.end)
+            result = evaluate(d, stage1["start_units"], end=args.end, shape=args.shape)
             with (out_dir / "probe.jsonl").open("a") as stream:
                 stream.write(json.dumps(result) + "\n")
             keys = (
@@ -1126,6 +1235,7 @@ def main():
                 "normalized",
                 "epithelial_cells",
                 "min_margin_units",
+                "max_row_spread_units",
                 "seconds",
                 "max_rss_kib",
                 "error",
@@ -1133,7 +1243,7 @@ def main():
             print(json.dumps({k: result.get(k) for k in keys}), flush=True)
         return 0
     cpus = [int(c) for c in args.cpus.split(",") if c]
-    state = search(out_dir, cpus, args.end)
+    state = search(out_dir, cpus, args.end, args.shape)
     keys = ("lo", "hi", "threshold", "ratio_to_bitsey_log", "agreement_called", "stopped")
     print(json.dumps({k: state.get(k) for k in keys}), flush=True)
     return 0 if "threshold" in state else 1

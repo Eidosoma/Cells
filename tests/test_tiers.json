@@ -4529,6 +4529,14 @@
     }
    },
    {
+    "file": "tests/unit/test_gap_junction_neither_judge.py",
+    "seconds": 0.34,
+    "exit_code": 0,
+    "counts": {
+     "passed": 6
+    }
+   },
+   {
     "file": "tests/unit/test_gard_references_engine_layout.py",
     "seconds": 1.57,
     "exit_code": 0,

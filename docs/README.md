@@ -177,6 +177,10 @@ the [project README](../README.md) gives the short feature overview.
 - [GJ-L1, the linear model's registration](GJ_LINEAR_REGISTRATION.md) registers the linear model's
   judged comparison against code-blind references (D219): its arms, error terms, verdicts, retry
   and planted failures, with its reader (D308).
+- [GJ-N1, the "neither" threshold's registration](GJ_NEITHER_REGISTRATION.md) registers the
+  threshold comparison on BITSEY's line (not blind) and its 25x25 field (a true pre-registration):
+  refinement, the half-step convergence condition and agreement with an independent integration,
+  with its reader and the pinned BITSEY runner, whose runs are reported, never judged.
 - [Self-replicator selection replication](SELF_REPLICATOR_SELECTION_REPLICATION.md) specifies Liu
   et al.'s Darwinian selection of photocatalytic self-replicators (Nature Catalysis 2025) for the
   origin-of-life engine: the targets registered before any run, the mapping, the features the engine
