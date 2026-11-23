@@ -139,6 +139,7 @@ from cells.definitions import pump_composite_spec as composite_spec
 from cells.definitions.spec_values import identifier
 from cells.definitions.specs import ConfigError, _fields, _number
 from cells.laws.reactions import hill_factors
+from cells.numerics.clock_instants import ON_THE_GRID, on_grid  # D283's one predicate.
 from cells.numerics.species_sums import entity_sum
 from cells.operators import membrane_state
 from cells.operators import species_common as common
@@ -897,11 +898,11 @@ def slots(declaration):
 def _event_time(value, what, base, *, at_zero=False):
     """A switch change after time 0 (0 < t < end, the composite's rule for event times, §1.11), or
     a write (0 <= t < end: a write at 0 is applied at the first step start and is not a schedule
-    change time). An exact multiple of dt, refused here with its own message."""
+    change time). On the clock's grid (D283), refused here with its own message."""
     dt, end = base.execution.dt, base.experiment.end_time
     time = _number(value, f"{LAW_ID}: {what}")
-    if time != round(time / dt) * dt:
-        raise ConfigError(f"{LAW_ID}: {what} must be an exact multiple of dt (k * dt)")
+    if on_grid(time, dt) is None:
+        raise ConfigError(f"{LAW_ID}: {what} must be {ON_THE_GRID}")
     if not (0.0 <= time if at_zero else 0.0 < time) or not time < end:
         bound = "0 <= t < end" if at_zero else "0 < t < end"
         raise ConfigError(f"{LAW_ID}: {what} lies inside the horizon, {bound}")

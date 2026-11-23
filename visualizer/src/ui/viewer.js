@@ -18,8 +18,9 @@ import { LabelLayer } from "../core/labels.js";
 import { StackLens } from "../lenses/stack.js";
 import { CellLens, defaultSpecies, MODELLED } from "../lenses/cell.js";
 import { ProteinLens, defaultAtlas, inSpecies } from "../lenses/proteins.js";
+import { loadBeside } from "../lenses/protein_shelves.js";
 import { ReplayLens } from "../lenses/replay.js";
-import { LawsLens } from "../lenses/laws.js";
+import { makeLawsView } from "../lenses/laws_atlas.js";
 import { doorsFor as lawsDoors, textSections as lawsSections, textDescribe as lawsDescribe } from "../lenses/laws_card.js";
 import { LAWS_CSS } from "../lenses/laws_styles.js";
 import { MachinesLens } from "../lenses/machines.js";
@@ -57,7 +58,7 @@ const LENSES = [
   // The Laws library (schema/LAWS_LIBRARY.md). "owns": the ids it makes itself, so that an address or a link from
   // another view opens it; "doorsFor": the doors it offers on other views' parts; "textSections" and "textDescribe":
   // its list and panel where no 3D can be drawn; "styles": its legend's swatches.
-  { id: "laws", label: "Laws", short: "Laws", needs: (scene) => scene.laws?.pieces?.length, owns: (id) => id.startsWith("laws:"), doorsFor: lawsDoors, textSections: lawsSections, textDescribe: lawsDescribe, styles: LAWS_CSS, make: (stage, model, labels) => new LawsLens(stage, model, labels) },
+  { id: "laws", label: "Laws", short: "Laws", needs: (scene) => scene.laws?.pieces?.length, owns: (id) => id.startsWith("laws:"), doorsFor: lawsDoors, textSections: lawsSections, textDescribe: lawsDescribe, styles: LAWS_CSS, make: makeLawsView },
   // "hidden": a page exported without the Experiments view keeps its replays, since the cell view's flux reads a species' looping run from them.
   // It opens on its landing, a page of cards (src/ui/landing.js), whose styles it brings.
   { id: "experiments", label: "Experiments", short: "Runs", needs: (scene) => scene.replays?.runs?.length && !scene.replays.hidden, styles: LANDING_CSS, make: (stage, model, labels) => new ReplayLens(stage, model, labels) },
@@ -68,30 +69,45 @@ class CellsViewer extends HTMLElement {
     return ["lens"];
   }
 
-  constructor() {
-    super();
+  connectedCallback() {
+    if (this.connection) return;
+    this.connection = new AbortController();
+    const { signal } = this.connection;
     // "species" is the one species the page shows: the levels and the cell of the cell view and the
     // species' side of the protein atlas follow it. It stays while the page is open. "atlas" is
     // the same choice under its earlier name.
     // "stage" is the life stage the Scope view shows the species at, where its file gives stages (schema/SPECIES_STAGES.md).
     this.state = { lens: null, selected: null, isolate: null, legendOpen: false, indexOpen: false, railOpen: false, viewOpen: false, species: null, atlas: null, example: null, part: null, landing: false, stage: null };
     this.lenses = new Map();
+    this.navigation = 0;
     // What the page's host allows (src/core/host.js): the site's releases say so in a block of their own; without one, as on the artifact.
     this.host = readHost(this.ownerDocument);
-  }
-
-  connectedCallback() {
-    if (this.shadowRoot) return;
-    this.attachShadow({ mode: "open" });
+    if (!this.shadowRoot) this.attachShadow({ mode: "open" });
     this.buildChrome();
-    this.loadScene().then(
-      (scene) => this.start(scene),
-      (error) => this.fail(`The map's data could not be read (${error.message}).`)
+    this.loadScene(signal).then(
+      (scene) => { if (!signal.aborted) this.start(scene); },
+      (error) => { if (!signal.aborted) this.fail(`The map's data could not be read (${error.message}).`); }
     );
   }
 
   disconnectedCallback() {
+    if (!this.connection) return;
+    this.connection.abort();
+    this.closeSpecies({ focus: false });
+    this.about.closeLine({ keep: false });
+    this.current?.deactivate();
+    this.current = null;
+    for (const lens of this.lenses.values()) lens.dispose?.();
+    this.lenses.clear();
+    this.landingView?.dispose();
     this.stage?.dispose();
+    this.stage = this.model = this.labels = this.landingView = null;
+    this.panelEvidence = null;
+    this.atlasNav = this.speciesList = this.speciesVeil = this.speciesMenu = null;
+    this.scaleKey = this.widthSeen = this.centredWidth = this.narrowSeen = undefined;
+    this.openedCard = this.sweepPicked = this.pressedLabel = null;
+    this.shadowRoot.replaceChildren();
+    this.connection = null;
   }
 
   attributeChangedCallback(name, _old, value) {
@@ -100,13 +116,13 @@ class CellsViewer extends HTMLElement {
 
   // ------------------------------------------------------------ loading
 
-  async loadScene() {
+  async loadScene(signal) {
     if (this.scene) return this.scene;
     const inline = this.querySelector('script[type="application/json"]');
     if (inline) return JSON.parse(inline.textContent);
     const src = this.getAttribute("src");
     if (src) {
-      const response = await fetch(src);
+      const response = await fetch(src, { signal });
       if (!response.ok) throw new Error(`${src}: ${response.status}`);
       return response.json();
     }
@@ -134,7 +150,7 @@ class CellsViewer extends HTMLElement {
     this.viewCard = h("div", { class: "view card", id: "cells-view", hidden: true });
     // In every view the Experiments tab opens from its landing (a run, a part, a model system's view), one control in one
     // place, under the bar at the left, leads back to all experiments; the view's card stands under it (styles.js .has-back).
-    this.backButton = h("button", { class: "exp-back pill-button", type: "button", hidden: true, "aria-label": "All experiments", onclick: () => this.showLanding() }, h("span", { class: "exp-back-chevron", "aria-hidden": "true" }), h("span", {}, "All experiments"));
+    this.backButton = h("button", { class: "exp-back pill-button", type: "button", hidden: true, "aria-label": "All experiments", onclick: () => this.state.lens === "experiments" ? this.showLanding() : this.current?.back?.() }, h("span", { class: "exp-back-chevron", "aria-hidden": "true" }), h("span", {}, "All experiments"));
     // A sweep's chart, where the experiment shown has one: a card of its own at the right of a wide window (on a phone it stands in the experiment's card).
     this.sweepCard = h("section", { class: "sweep-card card", hidden: true, "aria-label": "Sweep" });
     // On a phone with a panel open the view's card folds behind this button under the bar, so that the picture keeps
@@ -170,25 +186,26 @@ class CellsViewer extends HTMLElement {
       this.fallback
     );
     root.append(h("style", {}, css + ABOUT_CSS + LENSES.map((lens) => lens.styles || "").join("")), this.frame);
-    root.addEventListener("cells-select", (event) => this.select(event.detail.id, event.detail));
-    root.addEventListener("cells-isolate", (event) => this.setIsolate(event.detail));
-    root.addEventListener("cells-together", (event) => this.current?.setTogether?.(event.detail));
-    root.addEventListener("cells-finding", (event) => this.current?.setFinding?.(event.detail));
-    root.addEventListener("cells-door", (event) => this.openDoor(event.detail));
+    const listen = (name, handler) => root.addEventListener(name, handler, { signal: this.connection.signal });
+    listen("cells-select", (event) => this.select(event.detail.id, event.detail));
+    listen("cells-isolate", (event) => this.setIsolate(event.detail));
+    listen("cells-together", (event) => this.current?.setTogether?.(event.detail));
+    listen("cells-finding", (event) => this.current?.setFinding?.(event.detail));
+    listen("cells-door", (event) => this.openDoor(event.detail));
     // A species' bench of the Machines catalogue read from beside the page: the list, the panel and the card read it again.
     globalThis.addEventListener?.("cells-bench", () => {
-      if (!this.isConnected) return;
+      if (!this.model) return;
       this.renderIndex();
       this.renderPanel();
       this.renderChrome();
-    });
+    }, { signal: this.connection.signal });
     // The protein atlas: what colour carries on a species' own proteins (its legend's "Colour").
-    root.addEventListener("cells-own-colour", (event) => this.current?.setOwnColour?.(event.detail));
+    listen("cells-own-colour", (event) => this.current?.setOwnColour?.(event.detail));
     // Quantity layers of a replay: which layer holds a channel, and how strongly the marks are drawn.
-    root.addEventListener("cells-layer", (event) => this.current?.setLayer?.(event.detail.id, event.detail.on));
-    root.addEventListener("cells-strength", (event) => this.current?.setStrength?.(event.detail));
-    root.addEventListener("cells-slow", (event) => this.current?.setSlow?.(event.detail));
-    root.addEventListener("cells-legend-toggle", () => {
+    listen("cells-layer", (event) => this.current?.setLayer?.(event.detail.id, event.detail.on));
+    listen("cells-strength", (event) => this.current?.setStrength?.(event.detail));
+    listen("cells-slow", (event) => this.current?.setSlow?.(event.detail));
+    listen("cells-legend-toggle", () => {
       this.state.legendOpen = !this.state.legendOpen;
       // On a phone the legend's sheet and a view's card never lie over each other: opening the one folds the other.
       if (this.state.legendOpen && this.clientWidth < 760 && this.state.viewOpen) this.toggleViewCard(false);
@@ -198,6 +215,12 @@ class CellsViewer extends HTMLElement {
   }
 
   start(scene) {
+    const { signal } = this.connection;
+    const observe = (target, handler) => {
+      const observer = new ResizeObserver(handler);
+      observer.observe(target);
+      signal.addEventListener("abort", () => observer.disconnect(), { once: true });
+    };
     try {
       this.model = new SceneModel(scene);
     } catch (error) {
@@ -242,7 +265,7 @@ class CellsViewer extends HTMLElement {
       });
       this.listen();
       // The species switch moves between the bar and the card as the window crosses a width.
-      new ResizeObserver(() => {
+      observe(this, () => {
         if (this.clientWidth !== this.widthSeen) {
           this.widthSeen = this.clientWidth;
           // A fold of a narrow window (the rail's, the card's) ends when the window is no longer narrow.
@@ -257,12 +280,12 @@ class CellsViewer extends HTMLElement {
           if (this.narrowSeen !== undefined && this.narrowSeen !== narrow) this.renderPanel();
           this.narrowSeen = narrow;
         } else this.fitCard();
-      }).observe(this);
+      });
       // On a phone the panel is a sheet along the bottom: what stands on its top edge follows its height.
-      new ResizeObserver(() => this.placeSheet()).observe(this.panel);
+      observe(this.panel, () => this.placeSheet());
       // And the rail's button stands under the bar, however many rows the bar takes (a longer first tab may wrap it).
-      new ResizeObserver(() => this.style.setProperty("--bar-height", `${this.bar.offsetHeight}px`)).observe(this.bar);
       document.fonts?.ready.then(() => {
+        if (signal.aborted) return;
         this.labels.measure();
         this.renderChrome(); // words are as wide as they will be only now: the species switch may fit the bar, or no longer
         this.stage.invalidate();
@@ -273,8 +296,8 @@ class CellsViewer extends HTMLElement {
       this.hint.hidden = true;
       this.state.indexOpen = true;
       // The Experiments tab's landing stands under the bar with no 3D stage too.
-      new ResizeObserver(() => this.style.setProperty("--bar-height", `${this.bar.offsetHeight}px`)).observe(this.bar);
     }
+    observe(this.bar, () => this.style.setProperty("--bar-height", `${this.bar.offsetHeight}px`));
     const query = new URLSearchParams(location.search);
     // "still" turns transitions off, so a screenshot shows the settled state.
     if (query.get("still")) {
@@ -292,7 +315,7 @@ class CellsViewer extends HTMLElement {
     if (this.stage && query.get("fps")) this.stage.look.trial = true;
     // "frames=1": a small readout at the foot of the picture of the frames the device really draws (core/stage.js).
     if (this.stage && query.get("frames")) this.stage.showFrames(this.frame);
-    const wanted = query.get("lens") || location.hash.slice(1) || this.getAttribute("lens") || this.views[0].id;
+    const wanted = this.addressLens() || this.getAttribute("lens") || this.views[0].id;
     // A model system's view in the Experiments tab's place, from its list (`example=gard`; showExample).
     if (this.replays.doors.some((door) => door.entry === query.get("example"))) this.state.example = query.get("example");
     else if (isPart(this.model.raw.replays, query.get("part"))) this.state.part = query.get("part"); // a part of an example (showPart)
@@ -306,12 +329,13 @@ class CellsViewer extends HTMLElement {
       else if (!own && !(wanted === "experiments" && select && !select.startsWith("tissue:"))) this.state.part = openingPart(this.model.raw.replays);
     }
     this.setLens(this.views.some((lens) => lens.id === wanted) ? wanted : this.views[0].id);
+    if (wanted === "laws") this.current?.restore?.(query);
     // A stage named and not drawn cannot be entered: its card opens, over the species at the stage it opens on.
     const named = query.get("stage") && this.lenses.get("cell") ? stageFromAddress(query.get("stage"), this.lenses.get("cell").file).open : null;
     if (named && this.state.lens === "cell") this.select(`stage:${this.lenses.get("cell").file.id}.${named}`);
     if (query.get("size")) this.current?.setSizeMode?.(query.get("size"));
     // The protein atlas: the units of Cells' law inventory ("units") or the species' own proteins ("own").
-    if (query.get("show")) this.current?.setMode?.(query.get("show"), { user: true });
+    if (query.get("show") && !(wanted === "laws" && this.current?.restore)) this.current?.setMode?.(query.get("show"), { user: true });
     if (query.get("colour")) this.current?.setColourBy?.(query.get("colour"));
     if (query.get("scale")) this.current?.goToScale?.(query.get("scale"), true);
     if (query.get("isolate")) this.setIsolate(query.get("isolate"));
@@ -319,13 +343,18 @@ class CellsViewer extends HTMLElement {
     if (query.get("finding")) this.current?.setFinding?.(query.get("finding"));
     // A replay: which run, where the playhead stands, which record colours the sheet.
     if (query.get("time")) this.current?.seek?.(Number(query.get("time")));
+    const navigation = this.navigation;
+    const stillOpening = () => !signal.aborted && this.navigation === navigation;
     const settle = () => {
+      if (!stillOpening()) return;
       if (query.get("record")) this.current?.setRecord?.(query.get("record"));
       // Quantity layers: "layers=junction-drops,-voltage-relief" switches the first on and the second off; "strength=bold".
       if (query.get("strength")) this.current?.setStrength?.(query.get("strength"));
       if (query.get("layers")) this.current?.setLayers?.(query.get("layers"));
       const choose = () => {
-        if (query.get("select")) {
+        const selection = query.get("select");
+        const conflictingLens = query.get("lens") && query.get("lens") !== wanted;
+        if (selection && (!conflictingLens || this.shows(selection))) {
           this.select(query.get("select"), { fly: true });
           // A part the address names is chosen as the page opens; what a view shows only at a visitor's own choice (flux in the Cell view) waits for one.
           this.current?.openedWith?.(this.state.selected);
@@ -341,6 +370,7 @@ class CellsViewer extends HTMLElement {
       const machine = query.get("machine") && this.current?.lookCloser ? this.current.lookCloser(query.get("machine"), { address: true, detail: query.get("detail") }) : null;
       if (machine?.then) {
         machine.then((shown) => {
+          if (!stillOpening()) return;
           if (shown && !query.get("select")) {
             this.select(`machine:${query.get("machine")}`);
             this.current?.openedWith?.(this.state.selected);
@@ -353,13 +383,13 @@ class CellsViewer extends HTMLElement {
     // (`run=`, or a run of the view chosen by `select=run:`) is the one shown and fetched, and not the view's opening run first.
     const chosen = query.get("select")?.startsWith("run:") && this.current?.has?.(query.get("select")) ? query.get("select").slice("run:".length) : null;
     const loading = query.get("run") || chosen ? this.current?.show?.(query.get("run") || chosen) : this.current?.ready;
-    if (loading?.then) loading.then(settle).then(() => query.get("play") && this.current?.player?.play());
+    if (loading?.then) loading.then(settle).then(() => stillOpening() && query.get("play") && this.current?.player?.play());
     else settle();
     if (query.get("index")) this.toggleIndex(true);
     window.addEventListener("hashchange", () => {
-      const name = location.hash.slice(1);
-      if (this.views.some((lens) => lens.id === name) && name !== this.state.lens) this.setLens(name);
-    });
+      const name = this.addressLens();
+      if (name && name !== this.state.lens) this.setLens(name);
+    }, { signal });
     this.about.start();
     this.dispatchEvent(new CustomEvent("cells-ready", { bubbles: true, composed: true }));
   }
@@ -377,9 +407,11 @@ class CellsViewer extends HTMLElement {
 
   // ------------------------------------------------------------ lenses
 
-  setLens(id, fromUser = false) {
+  setLens(id, fromUser = false, selection = null) {
     const spec = this.views?.find((lens) => lens.id === id);
     if (!spec || !this.model) return;
+    this.navigation++;
+    const changed = this.state.lens !== id;
     this.current?.deactivate();
     if (this.state.lens !== id && this.state.viewOpen) this.toggleViewCard(false); // a phone's folded card starts folded in the next view
     this.state.lens = id;
@@ -397,13 +429,20 @@ class CellsViewer extends HTMLElement {
       const part = !entry && id === "experiments" && this.state.part ? this.state.part : null;
       const key = entry ? `model:${entry.id}` : part ? `part:${part}` : id;
       if (!this.lenses.has(key)) {
-        const made = entry ? makeEntryLens(this.stage, this.model, this.labels, entry, { root: this.shadowRoot, autoplay: !this.frame.classList.contains("is-still") }) : null;
-        made?.ready?.then((view) => view && this.swapLens(key, view));
+        const made = entry ? makeEntryLens(this.stage, this.model, this.labels, entry, { root: this.shadowRoot, autoplay: !this.frame.classList.contains("is-still"), signal: this.connection.signal }) : null;
+        made?.ready?.then((view) => {
+          if (!view) return;
+          if (this.lenses.get(key) === made.lens) this.swapLens(key, view);
+          else view.dispose?.();
+        });
         // From a part, its networks: the whole's opening run, not whatever run the runs' view held last (another card's).
         const whole = part ? (this.model.raw.replays?.experiments || []).find((item) => item.id === part)?.part_of : null;
         const lens = made ? made.lens : part ? makeTissueLens(this.stage, this.model, this.labels, part, { root: this.shadowRoot, back: () => this.showExample(null, { run: whole ? this.replays.openingRun(whole) : null }), open: (id) => this.showPart(id) }) : spec.make(this.stage, this.model, this.labels);
         lens.onChrome = () => {
           if (this.current === lens) this.renderChrome();
+        };
+        if (lens.address && id === "laws") lens.onAddress = () => {
+          if (this.current === lens) this.writeAddress({ laws: lens.address(), select: lens.selected });
         };
         // A view whose parts change under an open panel (another run is loaded) asks for it again.
         lens.onPanel = () => {
@@ -446,20 +485,7 @@ class CellsViewer extends HTMLElement {
     if (!this.shows(this.state.selected)) this.state.selected = null;
     for (const button of this.switchBox.children) button.setAttribute("aria-pressed", String(button.dataset.lens === id));
     this.showPressedTab();
-    // Leaving the Experiments tab, a card's detail named in the address is left behind with it.
-    if (fromUser && id !== "experiments" && new URLSearchParams(location.search).get("select")?.startsWith(CARD)) this.writeAddress({ select: null });
-    if (fromUser && location.hash.slice(1) !== id) {
-      try {
-        // The page's own address with only its #name changed, as writeAddress and writeEntry write it: a bare "#name" would
-        // resolve against the page's base address, and under the site's root page (<base href="/r/<release>/">) it would
-        // move the visitor's address into the release's folder.
-        const url = new URL(location.href);
-        url.hash = id;
-        history.replaceState(null, "", url);
-      } catch {
-        location.hash = id;
-      }
-    }
+    if (fromUser) this.writeAddress({ lens: id, select: changed ? selection : undefined, laws: id === "laws" ? this.current?.address?.() : undefined });
     this.renderChrome();
     this.renderPanel();
     this.stage?.invalidate();
@@ -530,7 +556,8 @@ class CellsViewer extends HTMLElement {
         this.select(null);
         this.setLens(lens, true);
       }
-      Promise.resolve(this.current?.lookCloser?.(machine)).then((shown) => shown && this.select(`machine:${machine}`));
+      const view = this.current;
+      Promise.resolve(view?.lookCloser?.(machine)).then((shown) => shown && this.current === view && this.select(`machine:${machine}`));
       return;
     }
     if (look === "back") {
@@ -571,7 +598,7 @@ class CellsViewer extends HTMLElement {
     // An id a view makes itself (laws:…), named by an address or a link from another view: that view opens first.
     // The view shown keeps an id it holds itself (a machine's closer view in the Cell view keeps `machine:<id>`).
     const owner = id && !this.current?.has?.(id) && this.views?.find((view) => view.owns?.(id));
-    if (owner && owner.id !== this.state.lens) this.setLens(owner.id, true);
+    if (owner && owner.id !== this.state.lens) this.setLens(owner.id, true, id);
     // A view still reading what would name it (a species' bench of machines, for a part of one): the choice waits for it, once.
     const view = this.current, waiting = id && !waited ? view?.waitsFor?.(id) : null;
     if (waiting) {
@@ -585,7 +612,7 @@ class CellsViewer extends HTMLElement {
       const home = this.model.lensOf(this.model.get(id));
       if (home === this.state.lens || !this.views.some((lens) => lens.id === home)) return;
       this.state.selected = id;
-      this.setLens(home, true);
+      this.setLens(home, true, id);
       if (!this.shows(id)) this.state.selected = null;
     }
     const held = this.state.selected;
@@ -735,24 +762,42 @@ class CellsViewer extends HTMLElement {
     this.landingView?.returnTo(this.openedCard);
   }
 
+  /** Read both published forms. A recognised tab fragment is the most recent choice on older links that carry both. */
+  addressLens() {
+    const url = new URL(location.href);
+    return [url.hash.slice(1), url.searchParams.get("lens")].find((id) => this.views.some((view) => view.id === id));
+  }
+
   /**
    * The page's own address follows the landing's own state, as it follows the switch's entry (writeEntry): a card's detail
    * is `select=card:<id>`, written as it opens and taken away as it closes or the tab is left; going back to the landing,
    * or opening a view from a card, takes away what an address of a view left in it (run=, part=, example=, time=, …). The
-   * view's name stays the page's own (`lens=` as the visitor's address gave it, `#<view>` as a tab press writes it): the
-   * landing writes no `lens=`, which would outrank a later tab's #name. A view opened from a card writes no address of its
+   * tab writes its name as a fragment and retires an earlier lens query. A view opened from a card writes no address of its
    * own (a view changes what it shows by its own controls). In a frame that keeps its address (a published artifact's)
    * nothing is written and nothing breaks; there only the outer link's #name reaches the page, read as a view's id alone.
    */
-  writeAddress({ select = undefined, views = false } = {}) {
+  writeAddress({ lens, select = undefined, views = false, laws } = {}) {
     try {
       const url = new URL(location.href);
+      if (lens) {
+        url.searchParams.delete("lens");
+        url.hash = lens;
+      }
       if (views) for (const key of ["run", "part", "example", "time", "record", "layers", "strength", "play"]) url.searchParams.delete(key);
+      if (lens && lens !== "laws") for (const key of ["lawModel", "lawFamily", "lawOrigin", "lawWhere", "trace", "compare"]) url.searchParams.delete(key);
+      if (laws) {
+        if (["declared", "design", "all"].includes(url.searchParams.get("show"))) url.searchParams.delete("show");
+        for (const [key, value] of Object.entries(laws)) {
+          if (value) url.searchParams.set(key, value);
+          else url.searchParams.delete(key);
+        }
+      }
       if (select === null || (views && !select)) url.searchParams.delete("select");
       else if (select) url.searchParams.set("select", select);
       history.replaceState(null, "", url);
     } catch {
       // A frame that keeps its address: the choice holds while the page is open.
+      if (lens && location.hash.slice(1) !== lens) location.hash = lens;
     }
   }
 
@@ -927,7 +972,9 @@ class CellsViewer extends HTMLElement {
     this.renderSpecies(chrome);
     this.viewCard.hidden = !chrome.view && !chrome.card && !chrome.run;
     // The way back to all experiments, in every view the tab opens from its landing.
-    const back = this.state.lens === "experiments" && !this.state.landing;
+    const backLabel = this.state.lens === "experiments" && !this.state.landing ? "All experiments" : chrome.back;
+    const back = Boolean(backLabel);
+    if (back) { this.backButton.lastElementChild.textContent = backLabel; this.backButton.setAttribute("aria-label", backLabel); }
     this.backButton.hidden = !back;
     this.frame.classList.toggle("has-back", back);
     this.frame.classList.toggle("on-landing", this.state.lens === "experiments" && this.state.landing);
@@ -1896,8 +1943,22 @@ class CellsViewer extends HTMLElement {
   renderPanel() {
     // About stands in the panel's place over the part chosen (src/ui/about.js): closed, that part's panel is back.
     const open = Boolean(this.state.selected) || Boolean(this.state.about);
-    if (this.state.about) this.panel.showOwn(this.about.panel());
-    else this.panel.show({ model: this.model, entity: this.lookup(this.state.selected) });
+    const { lens, selected, species, about } = this.state;
+    const model = this.model;
+    const evidence = !about && (lens === "proteins" || lens === "machines")
+      ? model?.requestUnitEvidence(selected, species, (file) => loadBeside(file, { root: this.ownerDocument }))
+      : null;
+    if (this.panelEvidence !== evidence) {
+      this.panelEvidence = evidence;
+      if (evidence?.status === "loading") evidence.ready.then(() => {
+        if (this.model === model && this.panelEvidence === evidence) this.renderPanel();
+      });
+    }
+    if (about) this.panel.showOwn(this.about.panel());
+    else this.panel.show({ model, entity: this.lookup(selected), evidence, retry: () => {
+      model.unitEvidence.delete(species);
+      this.renderPanel();
+    } });
     for (const button of this.shadowRoot.querySelectorAll(".species-state")) button.setAttribute("aria-pressed", String(/^(species|model):[^:]+$/.test(this.state.selected || ""))); // a species' panel, or a model system's own
     const had = this.frame.classList.contains("has-panel");
     this.frame.classList.toggle("has-panel", open);
@@ -1938,7 +1999,7 @@ class CellsViewer extends HTMLElement {
       if (event.buttons || event.pointerType === "touch") return;
       pending = { x: event.clientX, y: event.clientY };
       requestAnimationFrame(() => {
-        if (!pending) return;
+        if (!pending || canvas !== this.canvas || !this.stage || !this.current) return;
         const hit = this.stage.pick(pending.x, pending.y, this.current.pickRoots);
         pending = null;
         this.current.setHover(hit?.id || null);
@@ -1953,10 +2014,11 @@ class CellsViewer extends HTMLElement {
       this.pressedLabel = null;
       if (this.stage.rig.dragged || event.button > 0) return;
       if (label) {
-        this.select(label);
+        if (!this.current.openOnMap?.(label)) this.select(label);
         return;
       }
       const hit = this.stage.pick(event.clientX, event.clientY, this.current.pickRoots);
+      if (this.current.openOnMap?.(hit?.id)) return;
       this.current.picked?.(hit); // where it was pressed: a foot that has a machine is looked at closer there
       this.select(hit?.id || null);
     });
@@ -2007,7 +2069,7 @@ class CellsViewer extends HTMLElement {
         else if (this.current?.back?.()) return;
         else if (this.state.indexOpen) this.toggleIndex(false);
       }
-    });
+    }, { signal: this.connection.signal });
   }
 }
 

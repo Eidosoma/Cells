@@ -1,7 +1,7 @@
 {
  "format": "cells.visualizer.fetch_budgets@1",
- "note": "What each address of the published page may fetch beside the page, loaded cold (tools/check_fetches.mjs, judged by tools/lib/fetch_budget.mjs). Each address lists the files it must fetch and the files it may fetch, by pattern (* is any run of characters but /), and a bound in bytes on what it fetches beside the page. Each row of experiments stands for that experiment at its opening run's address: its run's own file and the files of its parts, and no other run. Every experiment the page carries needs a row. The bounds were set on 18 November 2026 about a tenth above that day's measure of the exported page, with every experiment listed (tools/check_fetches.mjs, CASE=all); the landing's and the tissue's rows the same night, on the page as the landing's cards list it (the export publishes what they list, so the two cases became one); the landing's again on 19 November 2026, its later bands folded as it opens, and on 20 November 2026, with its thirtieth card and again when the cards were split into their faces and their details (with the row card-detail). The page's own bound was raised the same day to a tenth above its measure with the frog added (5,059,135 bytes, from 4,341,031): the frog's side of the Protein atlas stands inside the scene (718,104 bytes more).",
- "page_bytes": 5566000,
+ "note": "What each address of the published page may fetch beside the page, loaded cold (tools/check_fetches.mjs, judged by tools/lib/fetch_budget.mjs). Each address lists the files it must fetch and the files it may fetch, by pattern (* is any run of characters but /), and a bound in bytes on what it fetches beside the page. Each row of experiments stands for that experiment at its opening run's address: its run's own file and the files of its parts, and no other run. Every experiment the page carries needs a row. The bounds were set on 18 November 2026 about a tenth above that day's measure of the exported page, with every experiment listed (tools/check_fetches.mjs, CASE=all); the landing's and the tissue's rows the same night, on the page as the landing's cards list it (the export publishes what they list, so the two cases became one); the landing's again on 19 November 2026, its later bands folded as it opens, and on 20 November 2026, with its thirtieth card and again when the cards were split into their faces and their details (with the row card-detail). The page's own bound was raised the same day to a tenth above its measure with the frog added (5,059,135 bytes, from 4,341,031): the frog's side of the Protein atlas was then inline (718,104 bytes more). The 21 November V53 comparison with all 112 replays measured 3.78 MB after detailed unit evidence moved into species files. The page bound allows about ten percent above that measure.",
+ "page_bytes": 4160000,
  "addresses": [
   {
    "id": "scope",
@@ -10,6 +10,14 @@
    "must": ["runs/planarian-loop--*.json"],
    "allowed": ["runs/planarian-loop--*"],
    "bytes": 133000
+  },
+  {
+   "id": "protein-unit",
+   "says": "Opening a planarian unit reads that species' detailed evidence. Its shelves and machine catalogue supply the links in the panel.",
+   "query": "lens=proteins&species=planarian&show=units&select=unit.U01",
+   "must": ["proteins/planarian/unit-evidence.json"],
+   "allowed": ["proteins/planarian/unit-evidence.json", "proteins/planarian/shelves.json", "catalogue/planarian.json"],
+   "bytes": 1575000
   },
   {
    "id": "experiments",

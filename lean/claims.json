@@ -13,13 +13,811 @@
   "law_categories": {
     "cells.adenylate_kinase@1": "reactions-and-binding",
     "cells.bilayer_geometry@1": "molecular-assembly",
+    "cells.gard_catalysis_pair_consistent@2": "molecular-assembly",
     "cells.held_reductant_supply@1": "reactions-and-binding",
     "cells.membrane_permeation@1": "membrane-transport",
     "cells.osmotic_lumen@1": "membrane-transport",
+    "cells.passive_neutral_permeation@1": "membrane-transport",
     "cells.phase_exchange@1": "molecular-assembly",
     "cells.shared_pool@1": "molecular-assembly"
   },
   "comparisons": {
+    "fr38-terminal-inventories": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [],
+      "operators": [
+        "cells.templated_polymerisation@1"
+      ],
+      "engine_revision": "fc07c545836b155928aeca3e9ba74528d6e3b66d",
+      "record_revision": "f11bfae57c7d3db1ac632b313cdb05dd863063de",
+      "sources": {
+        "Compiled window execution": "src/cells/execution/windows.py",
+        "R1 and R1S development worlds": "validation/gene_regulation/worlds.py#L519-L591",
+        "Observation horizon and grid": "validation/gene_regulation/kernel.py#L23-L38",
+        "Compiled history collection": "validation/gene_regulation/engine_run.py#L169-L181",
+        "Class and fate fluxes": "src/cells/operators/templated_polymerisation.py#L1201-L1224",
+        "Machine and residue ledgers": "src/cells/operators/templated_polymerisation.py#L1992-L2012",
+        "Held and engaged machines and class-specific releases": "validation/gene_regulation/engine_run.py#L381-L411",
+        "Copy-to-fmol conversion": "validation/gene_regulation/sheet_check.py#L90-L97"
+      },
+      "record_inputs": {
+        "Exact stage inventory": "lean/CellsProofs/Chemistry/Polymerisation.lean",
+        "Exact hold and pool inventory": "lean/CellsProofs/Chemistry/TerminalRelease.lean",
+        "Polymerase retention and secondary transcription counts": "lean/checks/data/harden2020_polymerase_retention.json"
+      },
+      "driver": "lean/checks/terminal_release.py",
+      "record": "lean/PROGRESS.md#fr38-terminal-inventories"
+    },
+    "fr38-lossless-fate-export": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [],
+      "operators": [
+        "cells.templated_polymerisation@1"
+      ],
+      "engine_revision": "fc07c545836b155928aeca3e9ba74528d6e3b66d",
+      "record_revision": "f11bfae57c7d3db1ac632b313cdb05dd863063de",
+      "sources": {
+        "Compiled window execution": "src/cells/execution/windows.py",
+        "R1 and R1S development worlds": "validation/gene_regulation/worlds.py#L519-L591",
+        "Observation horizon and grid": "validation/gene_regulation/kernel.py#L23-L38",
+        "Compiled history collection": "validation/gene_regulation/engine_run.py#L169-L181",
+        "Release route and fate layout": "src/cells/operators/templated_polymerisation.py#L312-L345",
+        "Public export of zero losses": "validation/gene_regulation/engine_run.py#L262-L313",
+        "Detachment counters for each fate": "validation/gene_regulation/engine_run.py#L393-L411",
+        "Local producer resolution and loss-counter requirement": "validation/gene_regulation/cohort.py#L240-L308",
+        "Survivor calculation": "validation/gene_regulation/cohort.py#L142-L162"
+      },
+      "record_inputs": {
+        "Exact single-fate balance": "lean/CellsProofs/Chemistry/TerminalRelease.lean"
+      },
+      "driver": "lean/checks/terminal_release.py",
+      "record": "lean/PROGRESS.md#fr38-lossless-fate"
+    },
+    "fr31-area-reference": {
+      "kind": "reference",
+      "models": [],
+      "laws": [],
+      "record_revision": "e4b729acf7e784cd088a3a9f05da4de42d5e8dd2",
+      "sources": {
+        "Declared area scaling and fixed-tension survival": "docs/VESICLE_PORES_LAWS.md#5-the-area-and-the-clock",
+        "Finite-cohort survival bound and endpoint construction": "lean/CellsProofs/Chemistry/VesicleArea.lean"
+      },
+      "driver": "lean/checks/vesicle_area.py",
+      "record": "lean/PROGRESS.md#fr31-area-bounds"
+    },
+    "fr42-window-reference": {
+      "kind": "reference",
+      "models": [],
+      "laws": [],
+      "record_revision": "e4b729acf7e784cd088a3a9f05da4de42d5e8dd2",
+      "sources": {
+        "Half-open windows and within-run label reuse": "docs/FEATURE_REQUESTS.md#fr-42--neutral-arrival-time-labels-that-leave-the-dynamics-unchanged",
+        "FR-38 release-marking and chase denominator": "docs/FEATURE_REQUESTS.md#fr-38--rna-release-from-its-template-into-two-pools-with-different-lifetimes",
+        "Point-arrival recurrence and survival of the original cohort": "lean/CellsProofs/Chemistry/ArrivalWindow.lean",
+        "Host calculation for uniformly spread arrivals": "validation/gene_regulation/cohort.py#L123-L180"
+      },
+      "driver": "lean/checks/arrival_windows.py",
+      "record": "lean/PROGRESS.md#fr42-release-windows"
+    },
+    "fr38-release-class-window": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [],
+      "operators": [
+        "cells.templated_polymerisation@1"
+      ],
+      "engine_revision": "57cf9a4ed0b68454232a3c531c14e1b725853955",
+      "record_revision": "e4b729acf7e784cd088a3a9f05da4de42d5e8dd2",
+      "sources": {
+        "One-way release from the template hold into the scheduled class and fate": "src/cells/operators/templated_polymerisation.py#L1201-L1224",
+        "Template hold and release classes in the R1 world": "validation/gene_regulation/worlds.py#L519-L558",
+        "Schedule controls on the engine grid": "src/cells/definitions/pump_composite_spec.py#L258",
+        "Public windowed engine execution": "src/cells/execution/windows.py",
+        "Compiled collection and class-specific release counters": "validation/gene_regulation/engine_run.py#L393-L411",
+        "Observation horizon and grid of the starting fixture": "validation/gene_regulation/kernel.py#L28-L36",
+        "Fate export and release-counter selection": "validation/gene_regulation/cohort.py#L240-L310"
+      },
+      "record_inputs": {
+        "Exact release-window and chase identities": "lean/CellsProofs/Chemistry/ArrivalWindow.lean"
+      },
+      "driver": "lean/checks/arrival_windows.py",
+      "record": "lean/PROGRESS.md#fr42-release-windows"
+    },
+    "vesicle-birth-returns": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@2"
+      ],
+      "laws": [
+        "cells.phase_exchange@1",
+        "cells.membrane_permeation@1",
+        "cells.ideal_mixing@1",
+        "cells.osmotic_lumen@1",
+        "cells.bilayer_geometry@1"
+      ],
+      "operators": [
+        "cells.shear_fission@1"
+      ],
+      "engine_revision": "b99d63150e440e37fc3070d76053053c59b21973",
+      "record_revision": "1c0a315390b83b69f0c244c98a27eba0d8c7f9a0",
+      "sources": {
+        "Daughter partition, identity and rupture flags": "src/cells/models/assembly_lineages_v2/division.py#L410",
+        "Population split and daughter releases": "src/cells/models/assembly_lineages_v2/population.py#L625",
+        "Shear events and daughter keys in the population record": "src/cells/models/assembly_lineages_v2/diagnostic.py#L296",
+        "Run bundle writer and public row fields": "src/cells/models/assembly_lineages_v2/records.py",
+        "Single-lineage split and continuation": "src/cells/models/assembly_lineages_v2/runner.py#L290",
+        "Single-lineage shear diagnostic": "src/cells/models/assembly_lineages_v2/diagnostic.py#L166",
+        "R10 interpretation of both modes": "validation/assembly_lineages_v2/FORMAT_OL2.md#L570",
+        "Osmotic world fixture": "tests/unit/test_assembly_lineages_v2_lumen.py",
+        "Compiled run definition": "tests/assembly_lineage_v2_fixtures.py"
+      },
+      "record_inputs": {
+        "R9 molecule return proof": "lean/CellsProofs/Chemistry/VesicleRelease.lean",
+        "R10 reconstruction proof": "lean/CellsProofs/Chemistry/VesicleBirth.lean"
+      },
+      "driver": "lean/checks/vesicle_birth.py",
+      "record": "lean/PROGRESS.md#vesicle-birth-returns"
+    },
+    "vesicle-birth-ol5-record": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@2"
+      ],
+      "laws": [
+        "cells.phase_exchange@1",
+        "cells.ideal_mixing@1",
+        "cells.osmotic_lumen@1",
+        "cells.bilayer_geometry@1"
+      ],
+      "operators": [
+        "cells.shear_fission@1"
+      ],
+      "engine_revision": "e6571f88ead17ef235bd4fb2c1f26f387f7c1967",
+      "record_revision": "1c0a315390b83b69f0c244c98a27eba0d8c7f9a0",
+      "sources": {
+        "Daughter partition, identity and rupture flags": "src/cells/models/assembly_lineages_v2/division.py#L410",
+        "Population split and daughter releases": "src/cells/models/assembly_lineages_v2/population.py#L625",
+        "Shear events and daughter keys in the population record": "src/cells/models/assembly_lineages_v2/diagnostic.py#L296",
+        "Run bundle writer and public row fields": "src/cells/models/assembly_lineages_v2/records.py",
+        "Registered population probe writer": "validation/assembly_lineages_v2/probes2.py#L314"
+      },
+      "record_inputs": {
+        "R9 molecule return proof": "lean/CellsProofs/Chemistry/VesicleRelease.lean",
+        "R10 reconstruction proof": "lean/CellsProofs/Chemistry/VesicleBirth.lean"
+      },
+      "driver": "lean/checks/vesicle_birth.py",
+      "record": "lean/PROGRESS.md#vesicle-birth-returns"
+    },
+    "vesicle-lysis-returns": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@2"
+      ],
+      "laws": [
+        "cells.osmotic_lumen@1",
+        "cells.shared_pool@1",
+        "cells.phase_exchange@1",
+        "cells.bilayer_geometry@1",
+        "cells.ideal_mixing@1"
+      ],
+      "engine_revision": "87e81f56366b5d06bd2abd45ebd2bb45a70f8b25",
+      "record_revision": "7e126375842ef23f0eb29734847cfe1dffd5ac4c",
+      "sources": {
+        "Single-lineage material return": "src/cells/models/assembly_lineages_v2/runner.py#L492",
+        "Population material return": "src/cells/models/assembly_lineages_v2/population.py#L700",
+        "Diagnostic event counts": "src/cells/models/assembly_lineages_v2/diagnostic.py",
+        "Published place table and bundle writer": "src/cells/models/assembly_lineages_v2/records.py",
+        "Tension at the triggering step": "src/cells/models/assembly_lineages_v2/lumen.py",
+        "R9 record definition": "validation/assembly_lineages_v2/FORMAT_OL2.md#L545",
+        "Osmotic world fixture": "tests/unit/test_assembly_lineages_v2_lumen.py",
+        "World and execution definition": "tests/assembly_lineage_v2_fixtures.py"
+      },
+      "record_inputs": {
+        "Release ledger proof": "lean/CellsProofs/Chemistry/VesicleRelease.lean"
+      },
+      "driver": "lean/checks/vesicle_release.py",
+      "record": "lean/PROGRESS.md#vesicle-lysis-returns"
+    },
+    "intact-vesicle-deflation": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@2"
+      ],
+      "laws": [
+        "cells.osmotic_lumen@1",
+        "cells.bilayer_geometry@1"
+      ],
+      "engine_revision": "87e81f56366b5d06bd2abd45ebd2bb45a70f8b25",
+      "record_revision": "7e126375842ef23f0eb29734847cfe1dffd5ac4c",
+      "sources": {
+        "Osmotic equilibrium volume": "src/cells/models/assembly_lineages_v2/lumen.py",
+        "Physical membrane area": "src/cells/models/assembly_lineages_v2/geometry.py",
+        "Compiled single-lineage runner": "src/cells/models/assembly_lineages_v2/runner.py",
+        "Fixed-osmole world fixture": "tests/unit/test_assembly_lineages_v2_lumen.py",
+        "World and execution definition": "tests/assembly_lineage_v2_fixtures.py"
+      },
+      "record_inputs": {
+        "Two-bath 64-osmole comparison": "lean/checks/vesicle.py",
+        "Study inputs and tracer measurements": "lean/checks/data/fujiwara2014_vesicle.json"
+      },
+      "driver": "lean/checks/vesicle_events.py",
+      "record": "lean/PROGRESS.md#intact-vesicle-deflation"
+    },
+    "ol5-event-energy": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@2"
+      ],
+      "laws": [
+        "cells.osmotic_lumen@1",
+        "cells.bilayer_geometry@1"
+      ],
+      "engine_revision": "329e9e395ac117998657a21eb827192d34314107",
+      "record_revision": "ad1f96418722d25876b38b5a5f38996512d6a32c",
+      "sources": {
+        "Native step, regular energy change and boundary fallback": "src/cells/models/assembly_lineages_v2/lumen.py#L193-L242",
+        "Spherical area and radius": "src/cells/models/assembly_lineages_v2/geometry.py",
+        "Public compiled lineage": "src/cells/models/assembly_lineages_v2/runner.py",
+        "Registered event and term execution": "src/cells/models/assembly_lineages_v2/kernel.py",
+        "Moving bilayer fixture": "tests/unit/test_assembly_lineages_v2_lumen.py",
+        "World and execution definition": "tests/assembly_lineage_v2_fixtures.py"
+      },
+      "record_inputs": {
+        "Vesicle event proof": "lean/CellsProofs/Chemistry/VesicleEvent.lean",
+        "Equilibrium energy and volume": "lean/CellsProofs/Chemistry/Vesicle.lean",
+        "Public trajectory, physical constants and independent volume calculation": "lean/checks/vesicle.py"
+      },
+      "driver": "lean/checks/vesicle_events.py",
+      "record": "lean/PROGRESS.md#ol5-event-energy"
+    },
+    "ol5-short-draws": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@2"
+      ],
+      "laws": [
+        "cells.stochastic_mass_action@1",
+        "cells.phase_exchange@1"
+      ],
+      "engine_revision": "329e9e395ac117998657a21eb827192d34314107",
+      "record_revision": "ad1f96418722d25876b38b5a5f38996512d6a32c",
+      "sources": {
+        "Three-term log product and mass-action direction": "src/cells/models/assembly_lineages_v2/mass_action.py#L76-L136",
+        "Phase-exchange direction": "src/cells/models/assembly_lineages_v2/exchange.py#L39-L61",
+        "Arity limit of three on either side": "src/cells/models/assembly_lineages_v2/world.py",
+        "Host log-factorial table used by the earlier engine": "src/cells/models/assembly_lineages/ledger.py#L77-L80"
+      },
+      "record_inputs": {
+        "Log of the descending factorial and finite masked sum": "lean/CellsProofs/Chemistry/AssemblyKinetics.lean"
+      },
+      "driver": "lean/checks/vesicle_events.py",
+      "record": "lean/PROGRESS.md#ol5-short-draws"
+    },
+    "bhatia-vesicle-deflation": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@2"
+      ],
+      "laws": [
+        "cells.osmotic_lumen@1",
+        "cells.bilayer_geometry@1"
+      ],
+      "engine_revision": "329e9e395ac117998657a21eb827192d34314107",
+      "record_revision": "ad1f96418722d25876b38b5a5f38996512d6a32c",
+      "sources": {
+        "Osmotic equilibrium volume": "src/cells/models/assembly_lineages_v2/lumen.py",
+        "Membrane geometry": "src/cells/models/assembly_lineages_v2/geometry.py",
+        "Compiled lineage runner": "src/cells/models/assembly_lineages_v2/runner.py",
+        "Pinned vesicle fixture, geometry, concentrations": "tests/unit/test_assembly_lineages_v2_lumen.py",
+        "World and execution definition": "tests/assembly_lineage_v2_fixtures.py"
+      },
+      "record_inputs": {
+        "Bhatia single-vesicle geometry and bath": "lean/checks/data/bhatia2020_vesicle_deflation.json",
+        "64-osmole compiled comparison at a specified cap density": "lean/checks/vesicle.py",
+        "Geometric outer-volume bound": "lean/CellsProofs/Chemistry/Vesicle.lean"
+      },
+      "driver": "lean/checks/vesicle_events.py",
+      "record": "lean/PROGRESS.md#bhatia-vesicle-deflation"
+    },
+    "fr31-pore-hold-replay": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@2"
+      ],
+      "laws": [
+        "cells.pore_nucleation@1"
+      ],
+      "operators": [
+        "cells.tension_hold@1"
+      ],
+      "engine_revision": "f51a3b07d302fb177b166b1568155084ffb8e1c1",
+      "record_revision": "870c9353c92b7e614f25a768f2dabecf7b81d49c",
+      "sources": {
+        "Pore rate and temperature slope": "src/cells/models/assembly_lineages_v2/pore_nucleation.py#L58",
+        "Tension domain and hold payer": "src/cells/models/assembly_lineages_v2/tension_hold.py#L88",
+        "Clock, opening and release": "src/cells/models/assembly_lineages_v2/pore_clock.py#L69",
+        "Single-lineage pore event": "src/cells/models/assembly_lineages_v2/runner.py#L363",
+        "Population pore event": "src/cells/models/assembly_lineages_v2/population.py#L670",
+        "Per-founder random stream and threshold inputs": "src/cells/models/assembly_lineages_v2/streams.py",
+        "Geometry and area in both runners": "src/cells/models/assembly_lineages_v2/geometry.py",
+        "Closed-form work oracle, founder worlds and both public run modes": "tests/unit/test_assembly_lineages_v2_pores.py",
+        "Base assembly run definition": "tests/assembly_lineage_v2_fixtures.py"
+      },
+      "record_inputs": {
+        "Exact rate, heat and recorded cutoff proof": "lean/CellsProofs/Chemistry/VesiclePore.lean",
+        "Common-exposure survival bounds": "lean/CellsProofs/Chemistry/VesicleArea.lean",
+        "Measured pore observables": "lean/checks/data/dopc_pore_observables.json"
+      },
+      "driver": "lean/checks/vesicle_pore.py",
+      "record": "lean/PROGRESS.md#fr31-pore-rate-heat"
+    },
+    "ol5-replay-assembly-kinetics": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@2"
+      ],
+      "laws": [
+        "cells.stochastic_mass_action@1",
+        "cells.transition_state_factor@1",
+        "cells.ideal_mixing@1",
+        "cells.regular_mixing@1"
+      ],
+      "engine_revision": "329e9e395ac117998657a21eb827192d34314107",
+      "record_revision": "ad1f96418722d25876b38b5a5f38996512d6a32c",
+      "sources": {
+        "Ordered draws and cancelled membrane denominator": "src/cells/models/assembly_lineages_v2/mass_action.py",
+        "Rate factor on the common state": "src/cells/models/assembly_lineages_v2/transition_state.py",
+        "Forward and reverse rate assembly": "src/cells/models/assembly_lineages_v2/kernel.py",
+        "World balance probe": "src/cells/models/assembly_lineages_v2/balance.py",
+        "Independent rational draw and factor": "validation/ool/references/laws.py",
+        "Independent rate tolerance": "validation/ool/references/detailed_balance.py",
+        "Registered boundary world": "validation/ool/references/designs/ol1_boundary.world.json",
+        "assembly lineage v2 fixtures": "tests/assembly_lineage_v2_fixtures.py",
+        "probes": "validation/assembly_lineages_v2/probes.py",
+        "ol1 wa.world": "validation/ool/references/designs/ol1_wa.world.json",
+        "ol1 kernel probe states": "validation/ool/references/designs/ol1_kernel_probe_states.json",
+        "ol1 boundary probe states": "validation/ool/references/designs/ol1_boundary_probe_states.json"
+      },
+      "record_inputs": {
+        "assembly mixing": "lean/checks/assembly_mixing.py"
+      },
+      "driver": "lean/checks/assembly_kinetics.py",
+      "record": "lean/PROGRESS.md#ol5-six-replays"
+    },
+    "ol5-replay-confined-binding": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@2"
+      ],
+      "laws": [
+        "cells.stochastic_mass_action@1",
+        "cells.ideal_mixing@1"
+      ],
+      "engine_revision": "329e9e395ac117998657a21eb827192d34314107",
+      "record_revision": "ad1f96418722d25876b38b5a5f38996512d6a32c",
+      "sources": {
+        "Pool encounters": "src/cells/models/assembly_lineages_v2/mass_action.py",
+        "Concentration extent": "src/cells/models/assembly_lineages_v2/model.py",
+        "Pool standard potential and factorial": "src/cells/models/assembly_lineages_v2/ideal_mixing.py",
+        "assembly lineage v2 fixtures": "tests/assembly_lineage_v2_fixtures.py",
+        "probes": "validation/assembly_lineages_v2/probes.py"
+      },
+      "record_inputs": {
+        "shon2012 confined binding": "lean/checks/data/shon2012_confined_binding.json"
+      },
+      "driver": "lean/checks/confined_binding.py",
+      "record": "lean/PROGRESS.md#ol5-six-replays"
+    },
+    "ol5-replay-pool-replacement": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@2"
+      ],
+      "laws": [
+        "cells.shared_pool@1",
+        "cells.ideal_mixing@1"
+      ],
+      "engine_revision": "329e9e395ac117998657a21eb827192d34314107",
+      "record_revision": "ad1f96418722d25876b38b5a5f38996512d6a32c",
+      "sources": {
+        "Declared per-count capacity": "src/cells/models/assembly_lineages_v2/spec.py",
+        "Fresh replacement composition": "src/cells/models/assembly_lineages_v2/replacement.py",
+        "Serial transfer and shared fresh-pool step": "src/cells/models/assembly_lineages_v2/transfer.py",
+        "Transfer and replacement work": "src/cells/models/assembly_lineages_v2/population.py",
+        "Discrete ideal free energy": "src/cells/models/assembly_lineages_v2/ideal_mixing.py",
+        "Clipped log-factorial access": "src/cells/models/assembly_lineages_v2/mass_action.py",
+        "Three-phase world and pool ordering": "tests/unit/test_assembly_lineages_v2_replacement.py"
+      },
+      "record_inputs": {
+        "Independent discrete ideal-bath energy": "lean/checks/vesicle_population.py"
+      },
+      "driver": "lean/checks/pool_replacement.py",
+      "record": "lean/PROGRESS.md#ol5-six-replays"
+    },
+    "ol5-replay-shared-pool": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@2"
+      ],
+      "laws": [
+        "cells.shared_pool@1",
+        "cells.phase_exchange@1",
+        "cells.membrane_permeation@1",
+        "cells.bilayer_geometry@1",
+        "cells.ideal_mixing@1"
+      ],
+      "engine_revision": "329e9e395ac117998657a21eb827192d34314107",
+      "record_revision": "ad1f96418722d25876b38b5a5f38996512d6a32c",
+      "sources": {
+        "Shared-pool output assembly": "src/cells/models/assembly_lineages_v2/population.py",
+        "Osmotic volume parameters": "src/cells/models/assembly_lineages_v2/lumen.py",
+        "Dispatch by execution mode": "src/cells/models/assembly_lineages_v2/runner.py",
+        "assembly lineage v2 fixtures": "tests/assembly_lineage_v2_fixtures.py",
+        "test assembly lineages v2 geometry": "tests/unit/test_assembly_lineages_v2_geometry.py"
+      },
+      "record_inputs": {
+        "vesicle exchange measurements": "lean/checks/data/vesicle_exchange_measurements.json"
+      },
+      "driver": "lean/checks/shared_pool.py",
+      "record": "lean/PROGRESS.md#ol5-six-replays"
+    },
+    "ol5-replay-vesicle": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@2"
+      ],
+      "laws": [
+        "cells.bilayer_geometry@1",
+        "cells.osmotic_lumen@1",
+        "cells.ideal_mixing@1",
+        "cells.phase_exchange@1",
+        "cells.membrane_permeation@1"
+      ],
+      "engine_revision": "329e9e395ac117998657a21eb827192d34314107",
+      "record_revision": "ad1f96418722d25876b38b5a5f38996512d6a32c",
+      "sources": {
+        "Repaired tension at the cap": "src/cells/models/assembly_lineages_v2/lumen.py",
+        "Tension test at each event": "src/cells/models/assembly_lineages_v2/kernel.py",
+        "Volume and tension in the run record": "src/cells/models/assembly_lineages_v2/runner.py",
+        "assembly lineage v2 fixtures": "tests/assembly_lineage_v2_fixtures.py",
+        "test assembly lineages v2 lumen": "tests/unit/test_assembly_lineages_v2_lumen.py"
+      },
+      "record_inputs": {
+        "kucerka2011 popc": "lean/checks/data/kucerka2011_popc.json",
+        "wolfisberg2025 vesicle": "lean/checks/data/wolfisberg2025_vesicle.json",
+        "shibly2016 swelling": "lean/checks/data/shibly2016_swelling.json",
+        "vesicle rupture holds": "lean/checks/data/vesicle_rupture_holds.json"
+      },
+      "driver": "lean/checks/vesicle.py",
+      "record": "lean/PROGRESS.md#ol5-six-replays"
+    },
+    "ol5-replay-vesicle-exchange": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@2"
+      ],
+      "laws": [
+        "cells.phase_exchange@1",
+        "cells.membrane_permeation@1",
+        "cells.bilayer_geometry@1",
+        "cells.ideal_mixing@1"
+      ],
+      "engine_revision": "329e9e395ac117998657a21eb827192d34314107",
+      "record_revision": "ad1f96418722d25876b38b5a5f38996512d6a32c",
+      "sources": {
+        "Directional activities and geometric factor": "src/cells/models/assembly_lineages_v2/exchange.py",
+        "Area or radius on the common footprint": "src/cells/models/assembly_lineages_v2/kernel.py",
+        "assembly lineage v2 fixtures": "tests/assembly_lineage_v2_fixtures.py",
+        "test assembly lineages v2 geometry": "tests/unit/test_assembly_lineages_v2_geometry.py"
+      },
+      "record_inputs": {
+        "vesicle exchange measurements": "lean/checks/data/vesicle_exchange_measurements.json"
+      },
+      "driver": "lean/checks/vesicle_exchange.py",
+      "record": "lean/PROGRESS.md#ol5-six-replays"
+    },
+    "gard-cache-repair": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@1"
+      ],
+      "laws": [
+        "cells.reservoir_exchange@1",
+        "cells.gard_catalysis_pair_consistent@2"
+      ],
+      "engine_revision": "184fc81cdfc0ea1b04eded5152c6cbbd2d5ea956",
+      "record_revision": "76418bab8488f24e041b511701b2376811358db8",
+      "sources": {
+        "TwoSum, founder fold, event update and reverse factor": "src/cells/models/assembly_lineages/gard.py#L298-L371",
+        "Public engine model and execution parser": "src/cells/models/assembly_lineages/spec.py",
+        "Compiled propensities and event handling": "src/cells/models/assembly_lineages/kernel.py",
+        "Public lineage runner and closure": "src/cells/models/assembly_lineages/runner.py",
+        "Compiled rate table probe": "validation/assembly_lineages/probes.py#L210",
+        "Declared two-type worlds": "tests/assembly_lineage_fixtures.py",
+        "Original regression with a dropped low word": "tests/unit/test_assembly_lineages_kernel.py#L139-L172",
+        "Row precision, upper exponent and least-tick guards": "src/cells/models/assembly_lineages/gard.py#L398-L428",
+        "Explicit molecule capacity at parse": "src/cells/models/assembly_lineages/spec.py#L360-L375",
+        "Parser regression for precision, exponent and capacity": "tests/unit/test_assembly_lineages_spec.py"
+      },
+      "record_inputs": {
+        "Precision proof and numerical-domain witnesses": "lean/CellsProofs/Chemistry/GardCache.lean",
+        "Stress-world construction and comparison": "lean/checks/gard_catalysis.py",
+        "Upper margin and least nonzero grid tick": "lean/CellsProofs/Chemistry/GardRange.lean"
+      },
+      "driver": "lean/checks/gard_cache.py",
+      "record": "lean/PROGRESS.md#gard-v2-range-repair"
+    },
+    "gard-cache-reversibility": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@1"
+      ],
+      "laws": [
+        "cells.reservoir_exchange@1",
+        "cells.gard_catalysis_pair_consistent@2"
+      ],
+      "engine_revision": "6b28ec55368011de79dce85e6172b5844b77a287",
+      "record_revision": "d6db91d64f5c90d8e4857873052f4e667eba7469",
+      "sources": {
+        "TwoSum, founder fold, event update and reverse factor": "src/cells/models/assembly_lineages/gard.py#L291-L357",
+        "Row precision and count guards": "src/cells/models/assembly_lineages/gard.py#L359-L396",
+        "Public engine model and execution parser": "src/cells/models/assembly_lineages/spec.py",
+        "Compiled propensities and event handling": "src/cells/models/assembly_lineages/kernel.py",
+        "Public lineage runner and closure": "src/cells/models/assembly_lineages/runner.py",
+        "Compiled rate table probe": "validation/assembly_lineages/probes.py#L210",
+        "Declared two-type worlds": "tests/assembly_lineage_fixtures.py",
+        "Original regression with a dropped low word": "tests/unit/test_assembly_lineages_kernel.py#L139-L172"
+      },
+      "record_inputs": {
+        "Precision proof and numerical-domain witnesses": "lean/CellsProofs/Chemistry/GardCache.lean",
+        "Stress-world construction and comparison": "lean/checks/gard_catalysis.py"
+      },
+      "driver": "lean/checks/gard_cache.py",
+      "record": "lean/PROGRESS.md#gard-v2-cache"
+    },
+    "gard-range-repair": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@1"
+      ],
+      "laws": [
+        "cells.reservoir_exchange@1",
+        "cells.gard_catalysis_pair_consistent@2"
+      ],
+      "engine_revision": "184fc81cdfc0ea1b04eded5152c6cbbd2d5ea956",
+      "record_revision": "76418bab8488f24e041b511701b2376811358db8",
+      "sources": {
+        "Finite-input check and exact fold": "src/cells/models/assembly_lineages/gard.py",
+        "Type bucket sizes": "src/cells/models/assembly_lineages/family.py#L28-L54",
+        "Independent declared fission-size limit": "src/cells/models/assembly_lineages/fission.py#L94-L102",
+        "Stalled event branch": "src/cells/models/assembly_lineages/kernel.py#L338-L352",
+        "Lineage result and energy ledger": "src/cells/models/assembly_lineages/runner.py",
+        "Independent rational join and leave propensities": "validation/gard/references/kernels.py#L233-L304",
+        "Two-type world and explicit execution capacity": "tests/assembly_lineage_fixtures.py",
+        "Row precision, upper exponent and least-tick guards": "src/cells/models/assembly_lineages/gard.py#L398-L428",
+        "Explicit molecule capacity at parse": "src/cells/models/assembly_lineages/spec.py#L360-L375",
+        "Finite check in the public event runner": "src/cells/models/assembly_lineages/runner.py#L381",
+        "Parser regression for precision, exponent and capacity": "tests/unit/test_assembly_lineages_spec.py"
+      },
+      "record_inputs": {
+        "Precision proof and numerical-domain witnesses": "lean/CellsProofs/Chemistry/GardCache.lean",
+        "Stress-world construction and comparison": "lean/checks/gard_catalysis.py",
+        "Upper margin and least nonzero grid tick": "lean/CellsProofs/Chemistry/GardRange.lean"
+      },
+      "driver": "lean/checks/gard_cache.py",
+      "record": "lean/PROGRESS.md#gard-v2-range-repair"
+    },
+    "gard-cache-domain": {
+      "kind": "engine",
+      "models": [
+        "cells.assembly_lineages@1"
+      ],
+      "laws": [
+        "cells.reservoir_exchange@1",
+        "cells.gard_catalysis_pair_consistent@2"
+      ],
+      "engine_revision": "6b28ec55368011de79dce85e6172b5844b77a287",
+      "record_revision": "d6db91d64f5c90d8e4857873052f4e667eba7469",
+      "sources": {
+        "Finite-input check and exact fold": "src/cells/models/assembly_lineages/gard.py",
+        "Molecule capacity and default bucket": "src/cells/models/assembly_lineages/spec.py#L358-L371",
+        "Type bucket sizes": "src/cells/models/assembly_lineages/family.py#L28-L54",
+        "Independent declared fission-size limit": "src/cells/models/assembly_lineages/fission.py#L94-L102",
+        "Stalled event branch": "src/cells/models/assembly_lineages/kernel.py#L338-L352",
+        "Lineage result and energy ledger": "src/cells/models/assembly_lineages/runner.py",
+        "Independent rational join and leave propensities": "validation/gard/references/kernels.py#L233-L304",
+        "Two-type world and explicit execution capacity": "tests/assembly_lineage_fixtures.py"
+      },
+      "record_inputs": {
+        "Precision proof and numerical-domain witnesses": "lean/CellsProofs/Chemistry/GardCache.lean",
+        "Stress-world construction and comparison": "lean/checks/gard_catalysis.py"
+      },
+      "driver": "lean/checks/gard_cache.py",
+      "record": "lean/PROGRESS.md#gard-v2-range"
+    },
+    "polymerisation-balances": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [],
+      "operators": [
+        "cells.templated_polymerisation@1"
+      ],
+      "engine_revision": "6b28ec55368011de79dce85e6172b5844b77a287",
+      "record_revision": "d6db91d64f5c90d8e4857873052f4e667eba7469",
+      "sources": {
+        "Stage layout, active stages and bound residue counts": "src/cells/operators/templated_polymerisation.py#L700-L742",
+        "Half-step changes, cumulative counters and ledgers": "src/cells/operators/templated_polymerisation.py#L862-L1004",
+        "Public windowed simulation": "src/cells/execution/windows.py",
+        "A1 and the competing two-chain world": "validation/gene_regulation/worlds.py#L299-L416",
+        "Compiled histories and per-chain readouts": "validation/gene_regulation/engine_run.py#L162-L175",
+        "Stage, pool and product output fields": "validation/gene_regulation/engine_run.py#L267-L289",
+        "Truncating the original worlds": "validation/gene_regulation/kernel.py#L22-L36",
+        "Independent copy-to-fmol conversion": "validation/gene_regulation/sheet_check.py#L90-L97",
+        "Existing polymerisation regressions": "tests/unit/test_templated_polymerisation.py#L91-L100"
+      },
+      "record_inputs": {
+        "Stage and pool proofs": "lean/CellsProofs/Chemistry/Polymerisation.lean",
+        "Ribosome occupancy and pulse-label measurements": "lean/checks/data/polymerisation_pool_measurements.json"
+      },
+      "driver": "lean/checks/polymerisation_balances.py",
+      "record": "lean/PROGRESS.md#polymerisation-balances"
+    },
+    "wall-wash-stand-in": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [],
+      "operators": [
+        "cells.scheduled_compartment_wash@1",
+        "cells.site_occupancy@1"
+      ],
+      "engine_revision": "587ba7873ac7c3112c00639687d7d86ee186c6fd",
+      "record_revision": "a86c914fa3e0021c8b5c6335f8c402cf264c80ba",
+      "sources": {
+        "Stand-in geometry and initial stocks": "validation/tissue/wash_schedule_fixtures.py#L55-L88",
+        "Gross collection and refill": "src/cells/operators/wash_schedule.py#L420-L501",
+        "Binding and release rates on main": "src/cells/operators/site_occupancy.py#L901-L906",
+        "Scheduled controls at the event": "src/cells/definitions/pump_composite_spec.py#L258-L280",
+        "Accepted history and checkpoint": "src/cells/execution/runner.py",
+        "Main well regression": "tests/unit/test_wash_schedule_runs.py#L26-L59"
+      },
+      "record_inputs": {
+        "Wash retention and rate identities": "lean/CellsProofs/Tissue/WallWash.lean"
+      },
+      "driver": "lean/checks/wall_wash.py",
+      "record": "lean/PROGRESS.md#fr28-main-stand-in"
+    },
+    "label-mixing-power": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [
+        "logmean_electrodiffusion@1"
+      ],
+      "engine_revision": "ee0b8106406eb26e57ab1b0c34e16ed6c3f83a2b",
+      "record_revision": "a710e377ea87a865af46a1e6b2d7cf3574ff5aa3",
+      "sources": {
+        "Neutral face and instantaneous power": "src/cells/numerics/surface_transport.py#L283-L302",
+        "Logarithmic mean and series threshold": "src/cells/numerics/extracellular_field.py#L48-L69",
+        "Predicted face conductances": "src/cells/numerics/surface_imex.py#L109-L135",
+        "Applied flux and cumulative heat": "src/cells/models/surface_pump_v3.py#L2111-L2134",
+        "Diffusion rate, two nodes and explicit labels": "validation/regions/example.py#L45-L105",
+        "Accepted-step histories": "validation/regions/readouts.py#L269-L290",
+        "Pointwise surface comparison inputs": "validation/tissue/surface_fixtures.py",
+        "Baseline concentration for inactive species": "validation/tissue/secreted_species_fixtures.py#L29-L33"
+      },
+      "record_inputs": {
+        "Mixing power and accepted-step proofs": "lean/CellsProofs/Transport/LabelMixingPower.lean",
+        "Neutral face reduction": "lean/CellsProofs/Transport/LabelDiffusion.lean",
+        "Optional Mathlib relative-entropy equivalence": "lean/checks/mixing/KLFun.lean"
+      },
+      "driver": "lean/checks/label_mixing_power.py",
+      "record": "lean/PROGRESS.md#fr33-label-energy"
+    },
+    "wall-wash-retention": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [],
+      "operators": [
+        "cells.scheduled_compartment_wash@1",
+        "cells.site_occupancy@1"
+      ],
+      "engine_revision": "9917e3d9567993e1019c8caafa89f8653ee6ea9b",
+      "record_revision": "a86c914fa3e0021c8b5c6335f8c402cf264c80ba",
+      "sources": {
+        "Liquid sample, refill and ledgers": "src/cells/operators/wash_schedule.py#L420-L501",
+        "Surface binding rate and sign convention": "src/cells/operators/site_occupancy.py#L927-L932",
+        "Scheduled controls at the event": "src/cells/definitions/pump_composite_spec.py#L258-L280",
+        "Accepted history and checkpoint": "src/cells/execution/runner.py",
+        "Node and stand-in well fixtures": "validation/tissue/wash_schedule_fixtures.py#L56-L115",
+        "Well geometry and initial free tracer": "validation/tissue/secreted_species_fixtures.py",
+        "Node versus stand-in regression": "tests/unit/test_wash_schedule_runs.py#L61-L93"
+      },
+      "record_inputs": {
+        "Retention and subsequent release": "lean/CellsProofs/Tissue/WallWash.lean",
+        "Finite-pool wash identity": "lean/CellsProofs/Tissue/CompartmentWash.lean",
+        "Albumin rinse and residual measurements": "lean/checks/data/robinson2014_wall_wash.json"
+      },
+      "driver": "lean/checks/wall_wash.py",
+      "record": "lean/PROGRESS.md#fr28-wall-wash"
+    },
+    "neutral-label-diffusion": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [
+        "logmean_electrodiffusion@1"
+      ],
+      "engine_revision": "1295a7d794feb508bdf565ca2244aff3380b27d6",
+      "record_revision": "9a39ed6f20c95e17809b594a9800a41633d8c552",
+      "sources": {
+        "Face flux and electric driving force": "src/cells/numerics/surface_transport.py#L281-L296",
+        "Logarithmic mean and series threshold": "src/cells/numerics/extracellular_field.py",
+        "Implicit face weights": "src/cells/numerics/surface_imex.py#L109-L135",
+        "Two finite nodes and explicit label rows": "validation/regions/example.py#L73-L102",
+        "Per-node history and amount reconstruction": "validation/regions/readouts.py#L269-L315",
+        "Surface component inputs": "validation/tissue/surface_fixtures.py",
+        "Regression for exchange hidden in net records": "tests/unit/test_region_readouts.py#L138-L152"
+      },
+      "record_inputs": {
+        "Label proofs": "lean/CellsProofs/Transport/LabelDiffusion.lean",
+        "Cells face law": "lean/CellsProofs/Transport/LogMeanFace.lean",
+        "Neutral permeation proof": "lean/CellsProofs/Transport/NeutralPermeation.lean",
+        "Imaging measurement record": "lean/checks/data/regional_tracer_measurements.json"
+      },
+      "driver": "lean/checks/label_diffusion.py",
+      "record": "lean/PROGRESS.md#fr33-label-diffusion"
+    },
+    "two-region-sampling": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [],
+      "operators": [
+        "cells.scheduled_compartment_wash@1"
+      ],
+      "engine_revision": "ee0b8106406eb26e57ab1b0c34e16ed6c3f83a2b",
+      "record_revision": "9a39ed6f20c95e17809b594a9800a41633d8c552",
+      "sources": {
+        "Pre-refill sample, refill and amount update": "src/cells/operators/wash_schedule.py#L415-L494",
+        "FR-37 two-region worlds and public runner": "validation/sampling/uneven_draw.py",
+        "Well-mixed wash fixture": "validation/tissue/wash_schedule_fixtures.py#L30-L37",
+        "Finite-node tissue fixture": "validation/tissue/secreted_species_fixtures.py#L92",
+        "Regional collection and remainder regression": "tests/unit/test_wash_schedule.py#L527"
+      },
+      "record_inputs": {
+        "Regional sampling proof": "lean/CellsProofs/Tissue/RegionalSampling.lean",
+        "Single-region inventory proof": "lean/CellsProofs/Tissue/CompartmentWash.lean",
+        "Two-outlet dye measurement": "lean/checks/data/johnson2006_branch_dye.json"
+      },
+      "driver": "lean/checks/regional_sampling.py",
+      "record": "lean/PROGRESS.md#fr37-regional-sampling"
+    },
     "regional-pulse-balance": {
       "kind": "engine",
       "models": [
@@ -2644,6 +3442,868 @@
   },
   "claims": [
     {
+      "id": "vesicle-area-survival",
+      "category": "molecular-assembly",
+      "title": "Vesicle area variation bounds survival during a tension hold",
+      "statement": "Under a common hazard per unit area, survival evaluated at the initial mean area bounds the cohort’s survival from below. The linear interpolation of the two endpoint survivals at that mean bounds it from above. An endpoint mixture attains the upper bound.",
+      "assumptions": [
+        "Every vesicle has fixed area during observation, the same integrated hazard per unit area and single-vesicle survival exp(−qA). The initial finite cohort weights are nonnegative and sum to one.",
+        "For the upper bound, L and U are actual limits on the same initial cohort’s areas and L < U. If L = U the common single-area result is exact. Positive exposure and unequal areas with positive weights give a strict lower bound.",
+        "For spherical vesicles the required mean area is 4π times the mean of squared radii. Inferring area from a mean radius alone requires further information. D293’s set-2 allowance addresses area differences across preparations. The bound here concerns the survival curve within one cohort."
+      ],
+      "formal": {
+        "status": "proved",
+        "theorems": {
+          "CellsProofs.Chemistry.VesicleArea.at_mean_le": "lean/CellsProofs/Chemistry/VesicleArea.lean",
+          "CellsProofs.Chemistry.VesicleArea.at_mean_lt": "lean/CellsProofs/Chemistry/VesicleArea.lean",
+          "CellsProofs.Chemistry.VesicleArea.endpoint_mixture": "lean/CellsProofs/Chemistry/VesicleArea.lean",
+          "CellsProofs.Chemistry.VesicleArea.le_chord": "lean/CellsProofs/Chemistry/VesicleArea.lean",
+          "CellsProofs.Chemistry.VesicleArea.population_le_chord": "lean/CellsProofs/Chemistry/VesicleArea.lean",
+          "CellsProofs.Chemistry.VesicleArea.one_area": "lean/CellsProofs/Chemistry/VesicleArea.lean"
+        },
+        "sources": {
+          "Mathlib exponential convexity and strict convexity, imported for survival": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/Convex/SpecificFunctions/Basic.lean#L37-L60",
+          "Mathlib finite Jensen inequality and its strict form, specialized to initial cohort weights": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/Convex/Jensen.lean#L63-L100",
+          "D293 records a separate area allowance across preparations for the registered blind test": "https://github.com/Eidosoma/Cells/blob/562cc9b4ec5225089feee26cab3ad2ef42405e02/docs/DECISIONS.md#d293-the-rupture-blind-tests-stage-1-rulings-made-before-any-prediction-or-held-out-value",
+        "Cells tagged FR-31 law sheet, area scaling and survival": "https://github.com/Eidosoma/Cells/blob/57cf9a4ed0b68454232a3c531c14e1b725853955/docs/VESICLE_PORES_LAWS.md#5-the-area-and-the-clock"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "fr31-area-reference",
+          "fr31-pore-hold-replay"
+        ],
+        "result": "Four synthetic checks cover distinct and identical areas and zero exposure. At one second, two equally weighted founders in the compiled shared-pool runner give 0.3577327717421851 from their recorded hazards. The mean-area lower bound is 0.3561630590540235 and the upper chord is 0.3577327717421859. The calculation uses rate-implied probabilities."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Initial vesicle areas from the same at-risk population, held tension, and time to first rupture or censoring per vesicle. Linked observations would quantify the mean-area approximation.",
+        "unit": "Surviving fraction at a stated exposure",
+        "evidence": []
+      }
+    },
+    {
+      "id": "release-window-survival",
+      "category": "reactions-and-binding",
+      "title": "A reused release-time label carries forward its older survivors",
+      "statement": "Half-open arrival windows assign releases at a shared boundary exactly once. In a well-mixed pool with common survival factors, the surviving amount after label reuse is the sum of the two separately followed release histories. The chase fraction uses the original cohort alive at window close.",
+      "assumptions": [
+        "Time is indexed by step boundaries. In the exact event example a molecule is marked on detachment and experiences the following interval’s survival factor. Sampling is before any new releases at that sample boundary.",
+        "Every member of the same physical pool experiences the same survival factor in each interval. For a physical chase each factor is in [0,1]. A reused label receives new material from nonoverlapping windows.",
+        "A zero denominator gives an undefined chase fraction. A host readout with only interval totals assumes a within-interval arrival profile. The synthetic counter comparison uses uniform arrivals and constant per-molecule loss."
+      ],
+      "uses": [
+        "fr42-cohort-shares"
+      ],
+      "formal": {
+        "status": "proved",
+        "theorems": {
+          "CellsProofs.Chemistry.ArrivalWindow.at_start": "lean/CellsProofs/Chemistry/ArrivalWindow.lean",
+          "CellsProofs.Chemistry.ArrivalWindow.at_end": "lean/CellsProofs/Chemistry/ArrivalWindow.lean",
+          "CellsProofs.Chemistry.ArrivalWindow.adjacent": "lean/CellsProofs/Chemistry/ArrivalWindow.lean",
+          "CellsProofs.Chemistry.ArrivalWindow.add_histories": "lean/CellsProofs/Chemistry/ArrivalWindow.lean",
+          "CellsProofs.Chemistry.ArrivalWindow.reuse": "lean/CellsProofs/Chemistry/ArrivalWindow.lean",
+          "CellsProofs.Chemistry.ArrivalWindow.chase_only": "lean/CellsProofs/Chemistry/ArrivalWindow.lean",
+          "CellsProofs.Chemistry.ArrivalWindow.chase_fraction": "lean/CellsProofs/Chemistry/ArrivalWindow.lean",
+          "CellsProofs.Chemistry.ArrivalWindow.empty_fraction": "lean/CellsProofs/Chemistry/ArrivalWindow.lean",
+          "CellsProofs.Chemistry.ArrivalWindow.release_example": "lean/CellsProofs/Chemistry/ArrivalWindow.lean"
+        },
+        "sources": {
+          "Mathlib product over the successor range, imported for survival across a chase": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Group/Finset/Basic.lean#L503",
+          "FR-42 boundary and reuse requirements": "https://github.com/Eidosoma/Cells/blob/57cf9a4ed0b68454232a3c531c14e1b725853955/docs/FEATURE_REQUESTS.md#fr-42--neutral-arrival-time-labels-that-leave-the-dynamics-unchanged",
+          "FR-38 clarification of release, survivors and the chase denominator": "https://github.com/Eidosoma/Cells/blob/57cf9a4ed0b68454232a3c531c14e1b725853955/docs/FEATURE_REQUESTS.md#fr-38--rna-release-from-its-template-into-two-pools-with-different-lifetimes"
+        }
+      },
+      "numerical": {
+        "status": "open",
+        "comparisons": [
+          "fr42-window-reference",
+          "fr38-release-class-window"
+        ],
+        "result": "For 10 releases, 8 remain at close and 6 later, giving 6/8. The reused label ends with 3 old plus 1 new. The compiled FR-38 development fixture routed all five steps to the expected classes in both fates with zero new chain completions. Its host reconstruction added both surviving histories within 2 × 10⁻¹⁴ relative tolerance. The FR-42 share-based engine and label-neutral energy comparison remain open."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Cohort membership requires the time of release from the template and survival of the same molecules to a later sample.",
+        "unit": "Fraction (0–1)",
+        "finding": "Bellecourt et al. measured detachment separately from synthesis. Their released-RNA fraction has a different denominator from survival of a release-marked cohort.",
+        "evidence": [
+          {
+            "dataset_id": "bellecourt-2019-hisl-release",
+            "manifest": "lean/checks/data/bellecourt2019_rna_release.json",
+            "citation": "Bellecourt et al. (2019), Journal of Molecular Biology 431, 696–713",
+            "doi": "10.1016/j.jmb.2019.01.003",
+            "locator": "Figure 5A and accompanying Results, with the time course in Figure S5",
+            "context": "In vitro bacterial transcription. The assay distinguished released terminator-length RNA and template-associated terminator-length RNA. The chase followed labelling of nascent RNA.",
+            "role": "descriptive",
+            "observed": 0.94,
+            "uncertainty": "The study reports ±0.02 for the wild-type release fraction under reducing conditions. Figure 5A pools the 120, 240 and 480 s samples.",
+            "assessment": "This measures population detachment. Individual completion-to-release delays and later survival of the same released cohort remain unmeasured.",
+            "report": "lean/PROGRESS.md#fr42-release-windows"
+          }
+        ]
+      }
+    },
+    {
+      "id": "fr42-cohort-shares",
+      "category": "reactions-and-binding",
+      "title": "Neutral arrival-time cohorts share one physical loss rate",
+      "statement": "Allocating one well-mixed population’s loss among cohorts in proportion to their amounts preserves the total loss, the total after one step, and readouts evaluated on those pooled totals. For quadratic loss, a tracked cohort and the difference from an independently evolved blank can give different answers.",
+      "assumptions": [
+        "The finite inventory includes the unlabelled remainder. The physical rate J(N) is computed once on the total N, with J(0) = 0. A cohort of size n receives J(N)·n/N for an occupied pool and zero for an empty pool.",
+        "The step identity uses a common step size. Applying the readout identity to energy or heat requires the engine to evaluate these quantities from the physical pool.",
+        "The exact example starts with two old units and one new unit, with no further arrivals, and uses N′ = −N². The comparison blank begins with only the two old units."
+      ],
+      "formal": {
+        "status": "proved",
+        "theorems": {
+          "CellsProofs.Chemistry.ArrivalCohort.empty_label": "lean/CellsProofs/Chemistry/ArrivalCohort.lean",
+          "CellsProofs.Chemistry.ArrivalCohort.sum_shares": "lean/CellsProofs/Chemistry/ArrivalCohort.lean",
+          "CellsProofs.Chemistry.ArrivalCohort.step_total": "lean/CellsProofs/Chemistry/ArrivalCohort.lean",
+          "CellsProofs.Chemistry.ArrivalCohort.pooled_readout": "lean/CellsProofs/Chemistry/ArrivalCohort.lean",
+          "CellsProofs.Chemistry.ArrivalCohort.quadratic_share": "lean/CellsProofs/Chemistry/ArrivalCohort.lean",
+          "CellsProofs.Chemistry.ArrivalCohort.remaining_initial": "lean/CellsProofs/Chemistry/ArrivalCohort.lean",
+          "CellsProofs.Chemistry.ArrivalCohort.remaining_derivative": "lean/CellsProofs/Chemistry/ArrivalCohort.lean",
+          "CellsProofs.Chemistry.ArrivalCohort.quadratic_example": "lean/CellsProofs/Chemistry/ArrivalCohort.lean"
+        },
+        "sources": {
+          "FR-42 design requirement": "https://github.com/Eidosoma/Cells/blob/184fc81cdfc0ea1b04eded5152c6cbbd2d5ea956/docs/FEATURE_REQUESTS.md#fr-42--neutral-arrival-time-labels-that-leave-the-dynamics-unchanged",
+          "D289 adopts share vectors on the physical population": "https://github.com/Eidosoma/Cells/blob/4e944a5634adafe1944235e540c6a7f0e564a144/docs/DECISIONS.md#d289-fr-42-is-built-as-option-a-labels-as-share-vectors-on-the-physical-row",
+        "FR-38 erratum B on class rows and the blank": "https://github.com/Eidosoma/Cells/blob/184fc81cdfc0ea1b04eded5152c6cbbd2d5ea956/docs/TEMPLATED_POLYMERISATION_LAWS.md#913-erratum-b-the-label-rows-are-not-neutral-labels",
+          "Mathlib division of a finite sum, imported for the cohort balance": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Field.lean#L22",
+          "Mathlib quotient derivative, imported for the survivor curve": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/Calculus/Deriv/Inv.lean#L143"
+        }
+      },
+      "numerical": {
+        "status": "open",
+        "comparisons": [],
+        "result": "At time one the new cohort contains 1/4 unit, one third of the 3/4-unit pool. Blank subtraction gives 1/12 unit. An FR-42 engine replay is pending, including window endpoints, cohort reuse and physical energy accounting. FR-38 registration waits for the share-based labels under D288."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "The surviving amount from an identified arrival cohort together with the physical pool total under the same loss conditions.",
+        "unit": "Amount per cohort and total pool amount",
+        "evidence": []
+      }
+    },
+    {
+      "id": "vesicle-birth-returns",
+      "category": "molecular-assembly",
+      "title": "Daughter rupture at birth can be reconstructed from the shear records",
+      "statement": "Each retained daughter that ruptures returns its contents once. A single-lineage shear records the pool before the followed daughter releases. A population shear records the pool after all releases at that stop. Subtracting the finite receipts and adding back the signed reservoir debits recovers the starting balances.",
+      "assumptions": [
+        "Each daughter and each of its source places appears once with a nonnegative count. Its key identifies it across the stop, including when siblings from different parents occupy the same slot in succession. The recorded rupture and continuation flags determine which daughters release.",
+        "Every source place has one pool destination for its species. Its finite or held status stays fixed. Division itself leaves the pool unchanged, and the earlier and later records bound the same shear event.",
+        "Only retained daughters that rupture credit the modeled pool. An unfollowed daughter leaves the single-lineage system through its sink."
+      ],
+      "uses": [
+        "vesicle-lysis-returns",
+        "vesicle-shear-fission"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.shear_fission@1",
+          "cells.osmotic_lumen@1",
+          "cells.shared_pool@1"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.VesicleRelease.birth_receipts": "lean/CellsProofs/Chemistry/VesicleBirth.lean",
+          "CellsProofs.Chemistry.VesicleRelease.birth_pool_reconstruction": "lean/CellsProofs/Chemistry/VesicleBirth.lean"
+        },
+        "sources": {
+          "The Cells R9 release theorem supplies the accounting at a single destination": "https://github.com/Eidosoma/Cells/blob/7e126375842ef23f0eb29734847cfe1dffd5ac4c/lean/CellsProofs/Chemistry/VesicleRelease.lean#L29",
+          "Mathlib List.sum_append adds the receipts of consecutive daughters": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Group/List/Basic.lean#L43",
+          "Lean List.map_append preserves the source order within each daughter": "https://github.com/leanprover/lean4/blob/v4.19.0/src/Init/Data/List/Lemmas.lean#L1805"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "vesicle-birth-returns",
+          "vesicle-birth-ol5-record"
+        ],
+        "result": "Six compiled runs checked finite and held returns, an unfollowed rupture, consecutive daughters in a reused slot and two releases from one three-way split. An archived OL5 population shear independently supplied seven release rows. The finite lipid pool rose from 270 to 2,359, the solute pool from 0 to 55,631, and signed held lipid supply fell by 356."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Tracer in the parent, each daughter and the surrounding liquid at an identified division with one ruptured daughter.",
+        "unit": "tracer amount per compartment",
+        "finding": "Deshpande et al. observed one daughter surviving as its sibling ruptured at a microfluidic Y-junction. The paper also reports paired sibling signals in successful divisions and external dye spreading averaged across events. The amount released to the bath by the identified daughter remains unmeasured in this comparison. [Sibling fates, Fig. 1d](https://ceesdekkerlab.nl/wp-content/uploads/2019/08/Mechanical-division-of-cell-sized-liposomes.pdf#page=2) · [Sibling signals, Fig. 3b](https://ceesdekkerlab.nl/wp-content/uploads/2019/08/Mechanical-division-of-cell-sized-liposomes.pdf#page=5) · [External dye, Fig. 4](https://ceesdekkerlab.nl/wp-content/uploads/2019/08/Mechanical-division-of-cell-sized-liposomes.pdf#page=6)",
+        "evidence": []
+      }
+    },
+    {
+      "id": "vesicle-lysis-returns",
+      "category": "molecular-assembly",
+      "title": "Terminal rupture accounts once for every molecule returned to its destination",
+      "statement": "Starting at the triggering step’s own pool, each finite pool gains the molecules returned to it. Each held pool keeps its count and its signed reservoir supply decreases by the receipt. Summing the receipts over destinations accounts for the entire contents of the ruptured vesicle.",
+      "assumptions": [
+        "The source list is the membrane and lumen places of the ruptured vesicle. Each appears once with its nonnegative count after the triggering step. Each has exactly one destination pool for its species.",
+        "The pool state used as the starting point already includes the triggering step. A destination has a fixed finite or held status during release. Counts lie in the engine’s admitted integer domain.",
+        "The four comparisons use step-triggered lysis. A population lysis row belongs to the affected slot at that event. The held tracer in these fixtures has no other route for exchange."
+      ],
+      "uses": [
+        "vesicle-lysis-threshold",
+        "shared-pool-inventory"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.osmotic_lumen@1",
+          "cells.shared_pool@1"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.VesicleRelease.release_ledger": "lean/CellsProofs/Chemistry/VesicleRelease.lean",
+          "CellsProofs.Chemistry.VesicleRelease.total_returned": "lean/CellsProofs/Chemistry/VesicleRelease.lean"
+        },
+        "sources": {
+          "Mathlib Finset.sum_ite_eq sums a receipt at its unique destination": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Group/Finset/Piecewise.lean#L142",
+          "Mathlib Finset.sum_add_distrib separates a source contribution from the remaining receipts": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Group/Finset/Basic.lean#L268"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "vesicle-lysis-returns"
+        ],
+        "result": "Four saved CPU runs reconciled by destination in single-lineage and population modes. Four membrane lipids and two lumen lipids returned to a pool holding one lipid, giving seven. Two impermeant tracers returned to a finite pool or reduced held supply by two with 9.210340371976182 kT of return work."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Paired counts in a vesicle and each recipient immediately across complete rupture, including the material recovered outside.",
+        "unit": "molecules per destination",
+        "evidence": []
+      }
+    },
+    {
+      "id": "vesicle-event-energy",
+      "category": "membrane-transport",
+      "title": "The osmotic energy of a vesicle event is independent of its path",
+      "statement": "The incremental change equals the difference between the final and initial equilibrium energies for both membrane regimes and both crossing directions. A forward event followed by its exact reverse has zero net osmotic energy.",
+      "assumptions": [
+        "The lumen count, membrane footprint, bath density, molecular standard and footprint-to-volume coefficient are positive. Bath and standard remain fixed during the event. Fractional footprint powers and logarithms use exact reals.",
+        "The volume is the smaller of the osmotic volume and the membrane's spherical cap. At equality the numerical law selects the slack branch. The empty or membraneless fallback has separate numerical cases."
+      ],
+      "uses": [
+        "osmotic-vesicle-volume"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.osmotic_lumen@1"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.VesicleEvent.cap_eq_sqrt": "lean/CellsProofs/Chemistry/VesicleEvent.lean",
+          "CellsProofs.Chemistry.VesicleEvent.slack_change_eq": "lean/CellsProofs/Chemistry/VesicleEvent.lean",
+          "CellsProofs.Chemistry.VesicleEvent.taut_change_eq": "lean/CellsProofs/Chemistry/VesicleEvent.lean",
+          "CellsProofs.Chemistry.VesicleEvent.gap_eq": "lean/CellsProofs/Chemistry/VesicleEvent.lean",
+          "CellsProofs.Chemistry.VesicleEvent.gap_nonneg": "lean/CellsProofs/Chemistry/VesicleEvent.lean",
+          "CellsProofs.Chemistry.VesicleEvent.gap_at_boundary": "lean/CellsProofs/Chemistry/VesicleEvent.lean",
+          "CellsProofs.Chemistry.VesicleEvent.log_select": "lean/CellsProofs/Chemistry/VesicleEvent.lean",
+          "CellsProofs.Chemistry.VesicleEvent.change_eq": "lean/CellsProofs/Chemistry/VesicleEvent.lean",
+          "CellsProofs.Chemistry.VesicleEvent.round_trip": "lean/CellsProofs/Chemistry/VesicleEvent.lean"
+        },
+        "sources": {
+          "Mathlib log_rpow, specialized to the three-halves footprint exponent": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/SpecialFunctions/Pow/Real.lean#L469",
+          "Mathlib log_le_sub_one_of_pos bounds the branch correction": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/SpecialFunctions/Log/Basic.lean#L288",
+          "Incremental energy in the Cells candidate": "https://github.com/Eidosoma/Cells/blob/329e9e395ac117998657a21eb827192d34314107/src/cells/models/assembly_lineages_v2/lumen.py#L193-L242"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "ol5-event-energy"
+        ],
+        "result": "On 169 directed pairs including 26 regime crossings, the maximum compiled CPU error was 1.07 × 10⁻¹⁴ kT compared with 1.70 × 10⁻¹⁰ on the earlier engine. Maximum disagreement around the eighteen four-event cycles was 5.33 × 10⁻¹⁵ kT."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Reversible osmotic work across a specified change in internal solute and membrane area, with a measured bath and starting and ending states.",
+        "unit": "kT per event",
+        "evidence": []
+      }
+    },
+    {
+      "id": "three-log-draws",
+      "category": "molecular-assembly",
+      "title": "A short sum of logarithms prices ordered reaction draws",
+      "statement": "For a feasible number of ordered draws, summing one logarithm per draw gives the logarithm of the falling factorial. The engine's three-term mask therefore equals the log-factorial difference for every admitted reaction order.",
+      "assumptions": [
+        "Counts and arities are natural numbers with 0 ≤ k ≤ 3 and k ≤ n. The exact-real sum excludes every inactive term. The numerical controls also exercise infeasible sides masked by the callers.",
+        "The isolated dilute reactant has unit concentration scale and encounter extent. The earlier catalog covers the additional membrane normalization and excess free energy."
+      ],
+      "uses": [
+        "assembly-stochastic-encounter"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.stochastic_mass_action@1",
+          "cells.phase_exchange@1"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.AssemblyKinetics.sum_log_draws": "lean/CellsProofs/Chemistry/AssemblyKinetics.lean",
+          "CellsProofs.Chemistry.AssemblyKinetics.three_log_draws": "lean/CellsProofs/Chemistry/AssemblyKinetics.lean"
+        },
+        "sources": {
+          "Mathlib descending-factorial recursion, imported": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Data/Nat/Factorial/Basic.lean#L316",
+          "Existing Cells log-draw identity": "lean/CellsProofs/Chemistry/AssemblyKinetics.lean#L33",
+          "Three-term calculation and feasible-side mask": "https://github.com/Eidosoma/Cells/blob/329e9e395ac117998657a21eb827192d34314107/src/cells/models/assembly_lineages_v2/mass_action.py#L76-L136"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "ol5-short-draws"
+        ],
+        "result": "Across 46 feasible count–arity pairs through 2²⁰ molecules, both backends and both direction kernels agreed with the log of the integer product to 3.55 × 10⁻¹⁵. All six infeasible pairs returned a masked direction. The earlier maximum log error was 1.20 × 10⁻⁹."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Counts and occupancy for a finite number of accessible reaction partners. Measured examples are recorded with the parent encounter claim.",
+        "unit": "Log of a dimensionless count product",
+        "evidence": []
+      }
+    },
+    {
+      "id": "vesicle-deflation-geometry",
+      "category": "membrane-transport",
+      "title": "An inward membrane tube reduces the lumen inside a vesicle’s outer contour",
+      "statement": "Subtracting a nonnegative volume of bath-origin liquid inside an inward tube puts the lumen volume fraction at or below the outer-contour fraction. Geometry measured on the same vesicle can bound a fixed-area osmotic comparison.",
+      "assumptions": [
+        "The initial vesicle has positive volume and no inward tube. At the endpoint the tube occupies a nonnegative volume within the outer contour. The upper bound is independent of its shape.",
+        "The numerical osmometer assumes initial osmotic balance at 66 mM, conserved internal solute and fixed area across the 72 mM challenge. The optional straight-cylinder estimate uses approximate reported dimensions."
+      ],
+      "uses": [
+        "osmotic-vesicle-volume"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.osmotic_lumen@1",
+          "cells.bilayer_geometry@1"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.Vesicle.invagination_bounds": "lean/CellsProofs/Chemistry/Vesicle.lean"
+        },
+        "sources": {
+          "Cells outer-volume bound and fixed-area equilibrium": "lean/CellsProofs/Chemistry/Vesicle.lean",
+          "Figure 2 geometry and compartment definitions": "https://doi.org/10.1039/D0SM00155D"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "bhatia-vesicle-deflation"
+        ],
+        "result": "A compiled 64-osmole world matched to the measured dimensionless loading predicts 4,125 µm³ at the specimen scale. The central outer-volume bound is 0.756 of the measured starting volume. A straight-cylinder estimate gives 0.705."
+      },
+      "biology": {
+        "status": "not_assessable",
+        "observable": "Volume and total membrane area of the same vesicle before and after an identified osmotic bath change, including the liquid inside its inward tube.",
+        "unit": "µm³ for volume and µm² for area",
+        "evidence": [
+          {
+            "dataset_id": "bhatia2020_single_vesicle_deflation@1",
+            "manifest": "lean/checks/data/bhatia2020_vesicle_deflation.json",
+            "citation": "Bhatia, Robinson and Dimova (2020), Soft Matter",
+            "doi": "10.1039/D0SM00155D",
+            "locator": "Figure 2, p. 7363. The Movie S1 caption in the publisher supplement, pp. 2–3, identifies the 66 to 72 mM transfer.",
+            "context": "The same vesicle initially enclosed about 4,500 µm³. Its final outer contour enclosed 3,400.9 ± 1,000 µm³ and contained an inward tube about 18 µm long and 4 µm across.",
+            "role": "held_out_from_fitting",
+            "evaluation": [
+              "Outer volume as an upper bound on the final lumen",
+              "Straight circular tube as a stated geometric approximation"
+            ],
+            "excluded": [
+              "The separate Figure 4 transfer and its inferred internal concentration",
+              "Independent retention of internal osmoles"
+            ],
+            "uncertainty": "The reported errors are about 25% for reconstructed area and 33% for volume. No statistical interpretation for the printed ± or independent tube-dimension errors is given.",
+            "assessment": "The central tube-corrected lumen is about 950 µm³ below the 4,125 µm³ prediction. The reported outer-volume uncertainty alone spans that difference. The internal solute inventory was inferred.",
+            "report": "lean/PROGRESS.md#bhatia-vesicle-deflation"
+          }
+        ]
+      }
+    },
+    {
+      "id": "gard-cache-reversibility",
+      "category": "molecular-assembly",
+      "title": "GARD v2 preserves the smaller catalyst on a reverse event within the precision bound",
+      "statement": "On a row’s integer grid, every signed update within the 106-bit bound produces the canonical high and low words for the new sum. Refolding the same counts recovers the same cache, and removing the moving molecule restores the parent’s rounded numerator.",
+      "assumptions": [
+        "The catalyst coefficients are nonnegative multiples of each row’s least tick. The parser bounds the largest coefficient times the fission size to fewer than 2¹⁰⁶ ticks. Count products use at most 2²⁰ molecules and each coefficient part has at most 33 significant bits.",
+        "Rounding selects a nearest 53-bit word. TwoSum returns that rounded sum and its exact error. Hardware also needs finite intermediates and preservation of low words. The companion range comparison records the new guards and the earlier counterexamples."
+      ],
+      "uses": [
+        "gard-pair-heat"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.gard_catalysis_pair_consistent@2"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.GardCache.grid_model_exists": "lean/CellsProofs/Chemistry/GardCache.lean",
+          "CellsProofs.Chemistry.GardCache.round_word": "lean/CellsProofs/Chemistry/GardCache.lean",
+          "CellsProofs.Chemistry.GardCache.high_error": "lean/CellsProofs/Chemistry/GardCache.lean",
+          "CellsProofs.Chemistry.GardCache.row_in_budget": "lean/CellsProofs/Chemistry/GardCache.lean",
+          "CellsProofs.Chemistry.GardCache.add_exact": "lean/CellsProofs/Chemistry/GardCache.lean",
+          "CellsProofs.Chemistry.GardCache.fold_exact": "lean/CellsProofs/Chemistry/GardCache.lean",
+          "CellsProofs.Chemistry.GardCache.reverse_high": "lean/CellsProofs/Chemistry/GardCache.lean",
+          "CellsProofs.Chemistry.GardCache.split_product_word": "lean/CellsProofs/Chemistry/GardCache.lean",
+          "CellsProofs.Chemistry.GardCache.stress_reverse": "lean/CellsProofs/Chemistry/GardCache.lean"
+        },
+        "sources": {
+          "Mathlib finite-sum inequality, used to bound each weighted composition": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/Order/BigOperators/Group/Finset.lean#L102-L113",
+          "Mathlib least-witness principle, used to construct the nearest-word grid model": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Data/Nat/Find.lean#L56-L74",
+          "Ogita, Rump and Oishi, Theorem 3.4. The published TwoSum interface is an explicit assumption of the Cells specialization": "https://doi.org/10.1137/030601818"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "gard-cache-repair",
+          "gard-cache-reversibility"
+        ],
+        "result": "The 2⁵⁴ stress event returned factors 2 and 2 and zero heat. All 22 signed updates matched the exact row and a fresh compiled fold. A 106-bit row passed and a 107-bit row was refused. The largest count was checked at the cache-function entry point. The repaired engine reproduced the complete earlier passing report byte for byte."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "The underlying composition-dependent entry and exit rates can be measured. The numerical precision of the two-word representation is checked against exact arithmetic.",
+        "unit": "Dimensionless multiplier and kT per event",
+        "evidence": []
+      }
+    },
+    {
+      "id": "gard-cache-domain",
+      "category": "molecular-assembly",
+      "title": "GARD v2 guards the cache exponent range and honors explicit molecule capacity",
+      "statement": "The 106-bit width condition alone admits overflow. With the repaired upper and lower exponent guards, an exact intermediate of magnitude at most six times the row bound fits below the binary64 maximum, and any nonzero exact integer multiple of the row tick is at least one normal tick in magnitude. The parser resolves the tested explicit molecule capacities on either side of the default bucket limit.",
+      "assumptions": [
+        "The row bound is its largest coefficient times the fission size. Lean assumes the six-times bound on an intermediate and integer-grid membership. It proves their arithmetic consequences. The original one-tick and overflow witnesses explain the extra guards.",
+        "The range replay uses a two-type world at fission size eight for the exponent cases. It exercises the parser, NumPy and the compiled CPU kernel. The explicit capacity cases use matched fission sizes of 4,096 and 4,097."
+      ],
+      "uses": [
+        "gard-cache-reversibility"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.gard_catalysis_pair_consistent@2"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.GardCache.one_tick": "lean/CellsProofs/Chemistry/GardCache.lean",
+          "CellsProofs.Chemistry.GardCache.exponent_counterexample": "lean/CellsProofs/Chemistry/GardCache.lean",
+          "CellsProofs.Chemistry.GardRange.upper_margin": "lean/CellsProofs/Chemistry/GardRange.lean",
+          "CellsProofs.Chemistry.GardRange.grid_floor": "lean/CellsProofs/Chemistry/GardRange.lean"
+        },
+        "sources": {
+          "Cells exact upper and lower parser guards": "https://github.com/Eidosoma/Cells/blob/184fc81cdfc0ea1b04eded5152c6cbbd2d5ea956/src/cells/models/assembly_lineages/gard.py#L398-L428",
+          "Mathlib integer absolute-value lower bound, used for the positive grid tick": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/Order/Group/Unbundled/Int.lean#L83",
+          "Original width-only guard for the historical witnesses": "https://github.com/Eidosoma/Cells/blob/6b28ec55368011de79dce85e6172b5844b77a287/src/cells/models/assembly_lineages/gard.py#L359-L396"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "gard-range-repair",
+          "gard-cache-domain"
+        ],
+        "result": "The repaired engine passed all nine cases. At size eight, 2¹⁰¹⁶ ran one event with a closed ledger. The upper boundary and two larger powers were refused. NumPy and compiled CPU preserved 2⁻¹⁰²², and the parser refused both inputs with subnormal low bits. Explicit capacities 4,096 and 4,097 resolved as requested. Six expectations differ on the earlier engine, where the original overflowing row stalled at a finite positive exact-reference rate."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "The examples test numerical domain handling and parser reachability. No organism-specific catalyst range is assigned.",
+        "unit": "Binary exponent, row bits and molecule count",
+        "evidence": []
+      }
+    },
+    {
+      "id": "polymerisation-machines",
+      "category": "molecular-assembly",
+      "title": "Free and engaged polymerases or ribosomes sum to their machine pool",
+      "statement": "For chains sharing a machine pool, each update preserves free machines plus stage occupancies and the terminal holds that still engage a machine. A chain frees a machine at completion under the returned policy and at detachment under the held policy.",
+      "assumptions": [
+        "The same signed extents update the stages, free machines and cumulative counters in each accepted half-step. Each chain has m ≥ 1 stages and length L = m r. Padded stages are inactive.",
+        "Each chain draws from one declared machine pool. All chains using that pool enter its balance, including chains already in progress.",
+        "Each chain’s policy stays fixed through the update. The same physical detachment extent leaves the terminal hold and frees its machine under the held policy."
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.templated_polymerisation@1"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.Polymerisation.engaged_change": "lean/CellsProofs/Chemistry/Polymerisation.lean",
+          "CellsProofs.Chemistry.Polymerisation.pool_step": "lean/CellsProofs/Chemistry/Polymerisation.lean",
+          "CellsProofs.Chemistry.TerminalRelease.pool_step": "lean/CellsProofs/Chemistry/TerminalRelease.lean"
+        },
+        "sources": {
+          "Mathlib sum_range_succ, used to telescope stage movements": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Group/Finset/Basic.lean#L498-L505",
+          "Cells stage layout, cumulative exits and residue ledger": "https://github.com/Eidosoma/Cells/blob/6b28ec55368011de79dce85e6172b5844b77a287/src/cells/operators/templated_polymerisation.py#L1378-L1387",
+          "Mathlib Finset.sum_add_distrib, imported for sums of machine occupancies": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Group/Finset/Basic.lean#L267-L269",
+          "Cells machine and terminal-hold ledgers": "https://github.com/Eidosoma/Cells/blob/fc07c545836b155928aeca3e9ba74528d6e3b66d/src/cells/operators/templated_polymerisation.py#L1992-L2012"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "polymerisation-balances",
+          "fr38-terminal-inventories"
+        ],
+        "result": "Across 183 compiled rows the maximum pool residual was 5.80 × 10⁻¹⁹ fmol. Omitting one competing chain from the two-gene pool produced a 4.88 × 10⁻⁸ fmol discrepancy. A further 62 compiled rows with terminal holds closed within 1.55 × 10⁻²⁰ fmol. Applying the opposite policy to the initial hold misplaced 80 machines in either case."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Machine occupancy with a stated pool boundary, and separately measured RNA departure, polymerase persistence on DNA and new transcription.",
+        "unit": "Fractions of the stated experimental population, seconds for event timing and fmol of machines in Cells",
+        "evidence": [
+          {
+            "dataset_id": "li2018_ribosome_engagement",
+            "manifest": "lean/checks/data/polymerisation_pool_measurements.json",
+            "citation": "Li et al. (2018), Nature Microbiology",
+            "doi": "10.1038/s41564-018-0199-2",
+            "locator": "Figure 1e, Table 1 and supplementary Table S1.",
+            "context": "At a common growth rate of 0.09 per hour, mRNA-bound E. coli ribosomes accounted for 31 ± 3%, 51 ± 3% and 65 ± 4% of the pool under carbon, nitrogen and phosphorus limitation, respectively.",
+            "role": "descriptive",
+            "uncertainty": "Mean ± SEM across three biological replicates. Free subunits and free assembled ribosomes both enter the unbound pool. Bound particles can include stalled or initiating ribosomes.",
+            "assessment": "The paired occupancy measurements establish condition dependence at matched growth. Both fractions share a denominator. An independent conservation test requires absolute counts and defined pool boundaries.",
+            "report": "lean/PROGRESS.md#polymerisation-balances"
+          },
+          {
+            "dataset_id": "harden2020_polymerase_retention",
+            "manifest": "lean/checks/data/harden2020_polymerase_retention.json",
+            "citation": "Harden et al. (2020), Nature Communications 11, 448",
+            "doi": "10.1038/s41467-019-14208-9",
+            "locator": "Figures 1c–e and 3a,c and accompanying Results.",
+            "context": "Purified E. coli polymerase remained at the DNA spot more than four seconds after sense RNA departure in 87 of 100 selected traces. A separate experiment detected antisense RNA in 78/114 traces with reverse motion and 5/257 without it.",
+            "role": "descriptive",
+            "uncertainty": "The 100 traces came from two experiments. The four-second threshold reflects frame timing. The secondary transcription counts have separate motion-selected denominators.",
+            "assessment": "These experiments distinguish RNA release, DNA retention and productive reuse. Return to a well-mixed free pool was unobserved.",
+            "report": "lean/PROGRESS.md#fr38-terminal-inventories"
+          }
+        ]
+      }
+    },
+    {
+      "id": "polymerisation-residues",
+      "category": "molecular-assembly",
+      "title": "Stage exits account for residues in unfinished, terminally held and detached chains",
+      "statement": "Per chain, residues supplied at stage exits equal the increase in residues in unfinished chains and terminally held RNA plus the residues carried by physical detachments. The update allows nonempty initial stages and holds.",
+      "assumptions": [
+        "The same signed extents update the stages, free machines and cumulative counters in each accepted half-step. Each chain has m ≥ 1 stages and length L = m r. Padded stages are inactive.",
+        "Stage j carries j r residues per occupied complex. Each completion moves L residues into a declared terminal hold. Each physical detachment moves L residues into its product fate. Cumulative detached RNA includes products subsequently degraded."
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.templated_polymerisation@1"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.Polymerisation.transit_change": "lean/CellsProofs/Chemistry/Polymerisation.lean",
+          "CellsProofs.Chemistry.Polymerisation.residue_step": "lean/CellsProofs/Chemistry/Polymerisation.lean",
+          "CellsProofs.Chemistry.TerminalRelease.hold_step": "lean/CellsProofs/Chemistry/TerminalRelease.lean",
+          "CellsProofs.Chemistry.TerminalRelease.fate_sum": "lean/CellsProofs/Chemistry/TerminalRelease.lean",
+          "CellsProofs.Chemistry.TerminalRelease.residue_step": "lean/CellsProofs/Chemistry/TerminalRelease.lean"
+        },
+        "sources": {
+          "Mathlib sum_range_succ, used to telescope stage movements": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Group/Finset/Basic.lean#L498-L505",
+          "Cells stage layout, cumulative exits and residue ledger": "https://github.com/Eidosoma/Cells/blob/6b28ec55368011de79dce85e6172b5844b77a287/src/cells/operators/templated_polymerisation.py#L1378-L1387",
+          "Mathlib Finset.sum_add_distrib, used to sum complementary fate fractions": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Group/Finset/Basic.lean#L267-L269",
+          "Cells per-chain and per-release residue ledgers": "https://github.com/Eidosoma/Cells/blob/fc07c545836b155928aeca3e9ba74528d6e3b66d/src/cells/operators/templated_polymerisation.py#L1992-L2012"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "polymerisation-balances",
+          "fr38-terminal-inventories"
+        ],
+        "result": "The largest residue residual across 183 rows was 3.39 × 10⁻²⁰ fmol. A one-stage chain retained zero residues in transit while releasing 6.55 × 10⁻⁵ fmol of residues alongside an eight-stage chain. The combined stage, hold and physical detachment balance closed within 8.94 × 10⁻²⁰ fmol across 62 compiled rows."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Incorporated tracer partitioned between nascent chains and released protein in a matched preparation.",
+        "unit": "Counts per minute per unit of polysome OD₂₆₀ and seconds in the tracer study, fmol of residues in Cells",
+        "evidence": [
+          {
+            "dataset_id": "stanners1968_nascent_released_label",
+            "manifest": "lean/checks/data/polymerisation_pool_measurements.json",
+            "citation": "Stanners (1968), Biophysical Journal",
+            "doi": "10.1016/S0006-3495(68)86487-2",
+            "locator": "Figure 4 and Table II, experiments 1–4.",
+            "context": "The radiolabelled valine signals in soluble completed protein and polysome-associated nascent chains crossed at 34, 32, 40 and 32.5 s in four hamster-cell experiments.",
+            "role": "descriptive",
+            "uncertainty": "Signals share a polysome optical-density normalization and include a correction for label attached outside nascent chains. The paper’s 23 ± 2 s transit time is a model-derived estimate.",
+            "assessment": "The study resolves the two measured tracer pools. Relating its timing to the simulation requires matching the label pulse, precursor activity and sampling definitions.",
+            "report": "lean/PROGRESS.md#polymerisation-balances"
+          }
+        ]
+      }
+    },
+    {
+      "id": "release-fate-export",
+      "category": "molecular-assembly",
+      "title": "A lossless release fate gains all its detached RNA",
+      "statement": "For a fate row filled by a single release, amount gain equals cumulative detachment less loss. With established zero loss the gain equals the amount detached. The host comparison checks whether the exported fields let the cohort reader recover that surviving amount.",
+      "assumptions": [
+        "One local release feeds the named row. The initial amount is known, the counters start at zero, and all changes to the row are included.",
+        "Zero cumulative loss must be established for that cell and fate. The public reader requires an explicit loss time series."
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.templated_polymerisation@1"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.TerminalRelease.fate_balance_step": "lean/CellsProofs/Chemistry/TerminalRelease.lean",
+          "CellsProofs.Chemistry.TerminalRelease.lossless_gain": "lean/CellsProofs/Chemistry/TerminalRelease.lean"
+        },
+        "sources": {
+          "Cells release updates, specialized locally as the exact single-fate balance": "https://github.com/Eidosoma/Cells/blob/fc07c545836b155928aeca3e9ba74528d6e3b66d/src/cells/operators/templated_polymerisation.py#L1331-L1353",
+          "Public reader’s required loss series": "https://github.com/Eidosoma/Cells/blob/fc07c545836b155928aeca3e9ba74528d6e3b66d/validation/gene_regulation/cohort.py#L289-L306"
+        }
+      },
+      "numerical": {
+        "status": "failed",
+        "comparisons": [
+          "fr38-lossless-fate-export"
+        ],
+        "result": "Both fates gained 1.2776562362330652 × 10⁻¹⁰ fmol in each compiled world. The reader recovered three of four fate records. Omitting the short-lived fate’s degradation route removed int_D_R_s from the export. The reader refused the fourth record. Every physical amount balance closed."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Absolute gain of a separately tracked RNA fate, with an independent count of its detachments and losses over the same interval.",
+        "unit": "fmol of released RNA",
+        "evidence": []
+      }
+    },
+    {
+      "id": "label-mixing-power",
+      "category": "tissue-and-conservation",
+      "title": "Resolving neutral labels can increase the heat booked for diffusion",
+      "statement": "At a neutral Fick face, the sum of label powers exceeds or equals the parent power. Equality holds exactly when the label fractions agree at both ends. An accepted-step face booking with positive weights is zero exactly when every applied flux is zero.",
+      "assumptions": [
+        "The two end concentrations, all normalized label fractions and the common mobility and temperature factor are strictly positive. The exact Cells face reduction uses its logarithmic quotient or equal-concentration branch on every row and the parent.",
+        "The timestep booking uses the applied mean flux and its predicted weight. The two-row square identity combines the two weights by addition. A separately simulated parent uses the weight predicted for its own concentration.",
+        "The trajectory comparison runs a closed, two-node neutral system with the same physical concentrations in both representations."
+      ],
+      "uses": [
+        "neutral-label-diffusion",
+        "extracellular-face-dissipation"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.logmean_electrodiffusion@1"
+        ],
+        "theorems": {
+          "CellsProofs.Transport.LabelMixingPower.neutral_face_power": "lean/CellsProofs/Transport/LabelMixingPower.lean",
+          "CellsProofs.Transport.LabelMixingPower.power_difference": "lean/CellsProofs/Transport/LabelMixingPower.lean",
+          "CellsProofs.Transport.LabelMixingPower.power_order_and_equality": "lean/CellsProofs/Transport/LabelMixingPower.lean",
+          "CellsProofs.Transport.LabelMixingPower.booking_zero_iff": "lean/CellsProofs/Transport/LabelMixingPower.lean",
+          "CellsProofs.Transport.LabelMixingPower.booking_difference_two": "lean/CellsProofs/Transport/LabelMixingPower.lean"
+        },
+        "sources": {
+          "Mathlib strict logarithmic inequality for the equality condition": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/SpecialFunctions/Log/Basic.lean#L242-L246",
+          "Mathlib non-strict logarithmic bound for each term": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/SpecialFunctions/Log/Basic.lean#L288-L292",
+          "Mathlib relative-entropy function, identified in the optional check": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/InformationTheory/KullbackLeibler/KLFun.lean#L45-L51"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "label-mixing-power"
+        ],
+        "result": "Across 800 accepted steps the largest reconstruction error was 3.68 × 10⁻¹⁶ pJ. Opposing labels booked 1.47315444 pJ in 1 s and the parent booked zero. With the same label fractions both booked 0.33000851 pJ."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Heat of mixing for independently characterized neutral tracers with equal mobility. Interpreting the extra booking for labels used solely to track provenance remains open.",
+        "unit": "pJ of heat over a specified interval",
+        "evidence": []
+      }
+    },
+    {
+      "id": "wall-wash-retention",
+      "category": "tissue-and-conservation",
+      "title": "A wash collects free tracer while surface-bound tracer can release later",
+      "statement": "A finite-volume wash collects the draw fraction of the free stock and preserves each bound stock at the event. At a previously equilibrated surface, dilution initiates net release. Free, bound, collected and supplied tracer satisfy one inventory through subsequent exchange.",
+      "assumptions": [
+        "A well-mixed compartment is refilled to its original volume. Only free tracer is accessible to the instantaneous draw. The wall and specimen each hold a separately tracked bound stock.",
+        "For the strict release sign, the wash fraction, association rate and vacant site amount are positive, the buffer is more dilute than the free tracer, and the pre-wash surface is in binding equilibrium. The numerical well has unit binding multiplier and no internalisation."
+      ],
+      "uses": [
+        "compartment-wash",
+        "site-occupancy-stages"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.scheduled_compartment_wash@1",
+          "cells.site_occupancy@1"
+        ],
+        "theorems": {
+          "CellsProofs.Tissue.WallWash.event_retention": "lean/CellsProofs/Tissue/WallWash.lean",
+          "CellsProofs.Tissue.WallWash.inventory": "lean/CellsProofs/Tissue/WallWash.lean",
+          "CellsProofs.Tissue.WallWash.whole_stock_bias": "lean/CellsProofs/Tissue/WallWash.lean",
+          "CellsProofs.Tissue.WallWash.rate_after_draw": "lean/CellsProofs/Tissue/WallWash.lean",
+          "CellsProofs.Tissue.WallWash.release_after_dilution": "lean/CellsProofs/Tissue/WallWash.lean"
+        },
+        "sources": {
+          "Finite compartment draw and refill": "lean/CellsProofs/Tissue/CompartmentWash.lean"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "wall-wash-retention",
+          "wall-wash-stand-in"
+        ],
+        "result": "Main’s stand-in and both FR-28 wall owners collected 30 fmol from 60 free. The wall held 10 fmol at the event and 9.97015402 fmol 10 ms later. Both candidate owners yielded identical traces. A matched buffer gave zero wall rate."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Tracer recovered in each wash and on the surface, with the time between dilution and measurement.",
+        "unit": "µg in pooled liquid and ng/cm² on the disk in the experiment, fmol and fmol/s in Cells",
+        "evidence": [
+          {
+            "dataset_id": "robinson2014_albumin_wall_wash",
+            "manifest": "lean/checks/data/robinson2014_wall_wash.json",
+            "citation": "Robinson et al. (2014), Clinica Chimica Acta",
+            "doi": "10.1016/j.cca.2014.01.035",
+            "locator": "Supplementary Figure S3 and Tables S2 and S4, material 7.",
+            "context": "The authors counted labelled albumin in six successive rinses and on the final disk. A separate pH 5 endpoint yielded 8.759 µg in pooled liquid and 22.96 ng/cm² on polyethylene terephthalate (0.22%, four replicates).",
+            "role": "descriptive",
+            "uncertainty": "The rinse series has no per-rinse dwell time or error bars. The tabulated endpoint pools the starting sample, rinses and pipette tip and has no condition-specific uncertainty.",
+            "assessment": "Independent recovery of tracer in liquid and on the surface is measured. The instantaneous bound fraction and the synthetic release constant remain open.",
+            "report": "lean/PROGRESS.md#fr28-wall-wash"
+          }
+        ]
+      }
+    },
+    {
+      "id": "neutral-label-diffusion",
+      "category": "tissue-and-conservation",
+      "title": "Neutral label fluxes add and labels can exchange across a face with zero parent flux",
+      "statement": "For any finite partition of a neutral tracer, the sum of its label fluxes equals the parent flux under a common linear diffusion coefficient. With opposing 90:10 label fractions, a charged Cells face at fixed nonzero voltage instead gives a row sum (8/5)/ln(9) times the unsplit flux.",
+      "assumptions": [
+        "Labels partition the material, share transport coefficients and experience the same voltage. Concentrations at both ends of each active logarithmic-mean face are positive and RT is positive.",
+        "The ideal Fick and neutral constant-field statements are exact over the reals. On the Cells face the exact neutral reduction uses equal concentrations or |(a−b)/(a+b)| ≥ 10⁻⁴ on every label and the parent. The small nonzero-gradient polynomial has a compiled comparison.",
+        "The charged example holds voltage fixed and changes only the representation of the tracer. Its ratio applies when the unsplit flux is nonzero."
+      ],
+      "uses": [
+        "extracellular-face-direction",
+        "neutral-permeation"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.logmean_electrodiffusion@1",
+          "cells.passive_neutral_permeation@1"
+        ],
+        "theorems": {
+          "CellsProofs.Transport.LabelDiffusion.fick_sum": "lean/CellsProofs/Transport/LabelDiffusion.lean",
+          "CellsProofs.Transport.LabelDiffusion.opposing_labels": "lean/CellsProofs/Transport/LabelDiffusion.lean",
+          "CellsProofs.Transport.LabelDiffusion.neutral_permeation_sum": "lean/CellsProofs/Transport/LabelDiffusion.lean",
+          "CellsProofs.Transport.LabelDiffusion.neutral_face_eq_fick": "lean/CellsProofs/Transport/LabelDiffusion.lean",
+          "CellsProofs.Transport.LabelDiffusion.neutral_face_sum": "lean/CellsProofs/Transport/LabelDiffusion.lean",
+          "CellsProofs.Transport.LabelDiffusion.charged_opposing_ratio": "lean/CellsProofs/Transport/LabelDiffusion.lean",
+          "CellsProofs.Transport.LabelDiffusion.charged_ratio_bounds": "lean/CellsProofs/Transport/LabelDiffusion.lean"
+        },
+        "sources": {
+          "Mathlib finite-sum distributivity, imported for common Fick mobility": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/BigOperators/Ring/Finset.lean#L50-L52",
+          "Mathlib lower bound for log(1+x), specialized to x = 8": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/SpecialFunctions/Log/Deriv.lean#L333-L337",
+          "Cells logarithmic-mean face, specialized to separate label rows": "lean/CellsProofs/Transport/LogMeanFace.lean"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "neutral-label-diffusion"
+        ],
+        "result": "Both nodes’ explicit labels summed to the parent at all 101 times. The right label reached 0.299998884 fmol at 1 s against 0.3 analytically. The compiled +1, +10 mV face gave a split-to-parent flux ratio of 0.7281913813014701."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Redistribution of a labelled molecular species, with matched diffusion coefficients and independently measured parent and label fluxes.",
+        "unit": "Relative fluorescence in the experiment and fmol in the simulation",
+        "evidence": [
+          {
+            "dataset_id": "gray2006_psd95_exchange",
+            "manifest": "lean/checks/data/regional_tracer_measurements.json",
+            "citation": "Gray et al. (2006), PLOS Biology",
+            "doi": "10.1371/journal.pbio.0040370",
+            "locator": "Figure 4A.",
+            "context": "Photoactivated PSD-95 in one dendritic spine fell while green fluorescence increased in two nearby spines.",
+            "role": "descriptive",
+            "uncertainty": "Green fluorescence was normalized to red fluorescence. The panel supplies no calibrated amount or common diffusion coefficient for the label and its complement.",
+            "assessment": "Label redistribution is observed. Equal mobility, the parent flux and the charged-face ratio remain unmeasured in this preparation.",
+            "report": "lean/PROGRESS.md#fr33-label-diffusion"
+          }
+        ]
+      }
+    },
+    {
+      "id": "two-region-sampling",
+      "category": "tissue-and-conservation",
+      "title": "A two-region sample represents the chamber under proportional withdrawal or equal concentrations",
+      "statement": "A finite draw has the chamber’s mean concentration exactly when the starting concentrations match or each region contributes the same fraction of its own volume. If region A is richer, drawing a larger fraction of A enriches the sample. Collected tracer and the dye left in each region account for the initial inventories and refill.",
+      "assumptions": [
+        "There are two internally well-mixed regions of positive volume, and the total drawn volume is positive. Each local draw lies between zero and its available volume. A zero local draw has no event.",
+        "Each draw uses the pre-refill concentration, with no concurrent transport. The amount-above-background example uses a common background for the two initial regions and the refill. The local draw volumes and initial mixing are declared."
+      ],
+      "uses": [
+        "compartment-wash"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.scheduled_compartment_wash@1"
+        ],
+        "theorems": {
+          "CellsProofs.Tissue.RegionalSampling.inventory": "lean/CellsProofs/Tissue/RegionalSampling.lean",
+          "CellsProofs.Tissue.RegionalSampling.excess_and_refill": "lean/CellsProofs/Tissue/RegionalSampling.lean",
+          "CellsProofs.Tissue.RegionalSampling.concentration_bias": "lean/CellsProofs/Tissue/RegionalSampling.lean",
+          "CellsProofs.Tissue.RegionalSampling.representative_iff": "lean/CellsProofs/Tissue/RegionalSampling.lean",
+          "CellsProofs.Tissue.RegionalSampling.enrichment_iff": "lean/CellsProofs/Tissue/RegionalSampling.lean"
+        },
+        "sources": {
+          "Cells single-region wash inventory, summed across a finite set": "lean/CellsProofs/Tissue/CompartmentWash.lean#L16",
+          "Mathlib fraction equality for nonzero denominators, imported for the two-region criterion": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/GroupWithZero/Units/Basic.lean#L426-L427"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "two-region-sampling"
+        ],
+        "result": "The three compiled 100 pL draws collected 8, 5 and 6.5 fmol above background. The corresponding regional remainders were (0, 2), (2.5, 2.5) and (2, 1.5) fmol within rounding. The compiled local inventories closed at all three recorded times in every case."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Collected dye and both post-draw regional amounts in a finite vessel with measured source concentrations and draw volumes.",
+        "unit": "Fraction of stock dye concentration",
+        "evidence": [
+          {
+            "dataset_id": "johnson2006_branch_dye",
+            "manifest": "lean/checks/data/johnson2006_branch_dye.json",
+            "citation": "Johnson, Brown and Stockman (2006), Journal of Geophysical Research",
+            "doi": "10.1029/2005JB004087",
+            "locator": "Methods paragraph 19 and continuous flow test 1, paragraph 33 and Figure 5a.",
+            "context": "Equal rates of 1 g/L Rhodamine dye solution and distilled water fed a rough-walled glass fracture replica. The researchers measured each outlet flow and dye concentration.",
+            "role": "descriptive",
+            "uncertainty": "The authors give rounded values for the half-flow case. Those values carry no reported concentration error bar.",
+            "assessment": "At equal outlet flow the two branches measured about 75% and 25% of stock concentration. This supports enrichment in a physical flow system. The regional remainders after a finite draw remain unmeasured.",
+            "report": "lean/PROGRESS.md#fr37-regional-sampling"
+          }
+        ]
+      }
+    },
+    {
       "id": "regional-pulse-balance",
       "category": "tissue-and-conservation",
       "title": "Label remaining in a closed cell and clearance since the pulse account for the original cohort",
@@ -3026,6 +4686,7 @@
       "numerical": {
         "status": "checked",
         "comparisons": [
+          "ol5-replay-pool-replacement",
           "fresh-pool-capacity-nov21",
           "fresh-pool-capacity"
         ],
@@ -4002,6 +5663,194 @@
       }
     },
     {
+      "id": "vesicle-pore-rate",
+      "category": "molecular-assembly",
+      "title": "Vesicle pore rates scale with area and increase on warming",
+      "statement": "At fixed temperature and tension, the rate of first pore opening is area times a common per-area rate. At fixed area and tension, the logarithmic sensitivity to temperature exceeds 5/2 everywhere the Phase A hold is admitted. Warming between two admitted temperatures therefore increases the rate.",
+      "assumptions": [
+        "The area, tension σ, absolute temperature T, line tension Γ, prefactor and activation energy E_A are positive. The material parameters are fixed as temperature changes. The SI rate uses E_A/R and the tension scale πΓ²/k_B.",
+        "The guard is σ ≤ πΓ²/(4k_BT). Testing it at the hotter endpoint suffices over the interval. Single-vesicle survival assumes a constant hazard up to the observation time."
+      ],
+      "uses": [
+        "vesicle-area-survival"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.pore_nucleation@1"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.VesiclePore.rate_eq_area_mul": "lean/CellsProofs/Chemistry/VesiclePore.lean",
+          "CellsProofs.Chemistry.VesiclePore.hold_survival": "lean/CellsProofs/Chemistry/VesiclePore.lean",
+          "CellsProofs.Chemistry.VesiclePore.logRate_hasDerivAt": "lean/CellsProofs/Chemistry/VesiclePore.lean",
+          "CellsProofs.Chemistry.VesiclePore.temperature_slope_gt": "lean/CellsProofs/Chemistry/VesiclePore.lean",
+          "CellsProofs.Chemistry.VesiclePore.warming_increases_rate": "lean/CellsProofs/Chemistry/VesiclePore.lean"
+        },
+        "sources": {
+          "Mathlib exp_log, imported for area scaling": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/SpecialFunctions/Log/Basic.lean#L54",
+          "Mathlib hasDerivAt_log, imported for the implemented temperature derivative": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/SpecialFunctions/Log/Deriv.lean#L47",
+          "Mathlib strictMonoOn_of_deriv_pos, specialized to the admitted temperatures": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/Calculus/Deriv/MeanValue.lean#L370",
+          "Cells pore law and its physical assumptions": "https://github.com/Eidosoma/Cells/blob/f51a3b07d302fb177b166b1568155084ffb8e1c1/docs/VESICLE_PORES_LAWS.md#2-the-rupture-law"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "fr31-pore-hold-replay"
+        ],
+        "result": "At 300 K, three held tensions including the domain limit gave a doubling ratio of 2.0000000000000036. The scaled slopes ranged from 13.3245 to 33.7982 and agreed with one-sided finite differences. The single founder and both shared-pool founders had the same rate per area within 10⁻¹³ relative tolerance."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "First-rupture rate at known temperature, tension and initial vesicle area. Separately resolving an opening that reseals would test the assumed equivalence of first opening and terminal rupture.",
+        "unit": "first ruptures per intact vesicle per second",
+        "evidence": [
+          {
+            "dataset_id": "karal2015_dopc_rate_temperatures",
+            "manifest": "validation/vesicle_pores/predictions_registered.json",
+            "measurements": "lean/checks/data/karal2015_rupture_rates.json",
+            "citation": "Karal and Yamazaki (2015), Figure 2a",
+            "doi": "10.1063/1.4930108",
+            "locator": "Figure 2a, pure DOPC giant vesicles under constant aspiration tension.",
+            "context": "The endpoint was complete aspiration. The linked six-row measurement table contains the fit inputs. The independent Cells checker recorded the held-out score in D298.",
+            "role": "held_out_from_fitting",
+            "fit": [
+              "Six read rates near 25 and 32 °C at 7.0, 7.5 and 8.0 mN/m"
+            ],
+            "evaluation": [
+              "D298 S1-1 through S1-5, two-sided"
+            ],
+            "excluded": [
+              "S1-6, a previously quoted condition at 12 °C"
+            ],
+            "uncertainty": "Three repeat experiments per setting. The registered typical tolerance was about 0.25 in log rate. The six fit rows had χ² = 98.6 on four degrees of freedom.",
+            "assessment": "Five of five held-out rates passed. Two were below the viscosity calibration range. Individual areas and reversible openings were unresolved.",
+            "report": "docs/DECISIONS.md#d298-the-vesicle-rupture-blind-test-passes-set-1-five-of-five-set-2-five-of-five-one-sided-weak"
+          }
+        ]
+      }
+    },
+    {
+      "id": "vesicle-pore-clock",
+      "category": "molecular-assembly",
+      "title": "Rupture by the hold endpoint requires enough accumulated exposure",
+      "statement": "For a constant positive rate k and threshold E, the rupture time is at or before the cutoff exactly when E ≤ k(cutoff − start). The recorded founder’s threshold strictly exceeds the available exposure at the middle of three adjacent binary64 cutoffs.",
+      "assumptions": [
+        "One fixed-area, constant-tension hold. The cutoff is the earlier of hold end and observation horizon. The founder is alive at hold start and E = −ln u for a draw strictly between zero and one.",
+        "The reference comparison treats the engine’s stored rate, threshold and times as their exact binary values. A crossing exactly at the cutoff belongs to the hold."
+      ],
+      "uses": [
+        "vesicle-pore-rate"
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.pore_nucleation@1",
+          "cells.tension_hold@1"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.VesiclePore.clock_by_cut": "lean/CellsProofs/Chemistry/VesiclePore.lean",
+          "CellsProofs.Chemistry.VesiclePore.recorded_cut_precedes_rupture": "lean/CellsProofs/Chemistry/VesiclePore.lean"
+        },
+        "sources": {
+          "Mathlib div_le_iff₀, specialized to the positive hazard": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Algebra/Order/GroupWithZero/Unbundled/Basic.lean#L1072",
+          "Cells inclusive threshold crossing": "https://github.com/Eidosoma/Cells/blob/f51a3b07d302fb177b166b1568155084ffb8e1c1/src/cells/models/assembly_lineages_v2/pore_clock.py#L5"
+        }
+      },
+      "numerical": {
+        "status": "failed",
+        "comparisons": [
+          "fr31-pore-hold-replay"
+        ],
+        "result": "Both runners recorded rupture at 1.4042194113471334 s. The crossing falls 2.42288 × 10⁻¹⁷ s later for the same binary inputs. Both neighboring cutoffs and the exactly sufficient exposure control agree. Both ledgers close. The replay exits nonzero on the middle cut."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "First opening and eventual rupture observed separately during the same constant-tension hold. A time-resolved opening or resealing measurement would test the model’s choice of biological endpoint.",
+        "unit": "time to first opening or rupture in seconds",
+        "evidence": [
+          {
+            "dataset_id": "portet2010_dopc_pore_closure",
+            "manifest": "lean/checks/data/dopc_pore_observables.json",
+            "citation": "Portet and Dimova (2010), Table 1",
+            "doi": "10.1016/j.bpj.2010.09.032",
+            "locator": "Table 1 and the pure-DOPC closure analysis.",
+            "context": "The authors imaged closure after electrical poration of free vesicles.",
+            "role": "descriptive",
+            "uncertainty": "Edge tension inferred from closure was 27.7 ± 2.5 pN (SE, 24 experiments).",
+            "assessment": "Pores can reseal in free DOPC vesicles after a pulse. The probability of reclosure under sustained aspiration remains open.",
+            "report": "lean/PROGRESS.md#fr31-pore-rate-heat"
+          }
+        ]
+      }
+    },
+    {
+      "id": "vesicle-pore-heat",
+      "category": "molecular-assembly",
+      "title": "Hold work and release close the pore’s heat balance",
+      "statement": "The work to open a critical pore is σπ(Γ/σ)². In units of k_BT the opening heat equals the log forward-to-reverse rate ratio. Scaling the declared reference viscosity by c moves ln c between opening heat and release heat, conserving their sum.",
+      "assumptions": [
+        "One externally held tension, a critical radius Γ/σ, positive surface viscosity and fixed rate-law parameters. The reverse collapse rate is evaluated at the critical pore. Phase A releases the vesicle immediately after opening.",
+        "The release starts from the open state. It includes the signed work of any held reservoir in addition to the work paid by the tension hold."
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.pore_nucleation@1",
+          "cells.tension_hold@1"
+        ],
+        "theorems": {
+          "CellsProofs.Chemistry.VesiclePore.hold_work": "lean/CellsProofs/Chemistry/VesiclePore.lean",
+          "CellsProofs.Chemistry.VesiclePore.opening_heat_eq_log_ratio": "lean/CellsProofs/Chemistry/VesiclePore.lean",
+          "CellsProofs.Chemistry.VesiclePore.event_heat": "lean/CellsProofs/Chemistry/VesiclePore.lean",
+          "CellsProofs.Chemistry.VesiclePore.viscosity_heat_split": "lean/CellsProofs/Chemistry/VesiclePore.lean"
+        },
+        "sources": {
+          "Mathlib logarithms of products and quotients, imported for the rate ratio": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/SpecialFunctions/Log/Basic.lean#L125-L132",
+          "Mathlib log_sqrt, imported for the collapse rate": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Analysis/SpecialFunctions/Log/Basic.lean#L284",
+          "Cells forward and reverse rate pair and hold work": "https://github.com/Eidosoma/Cells/blob/f51a3b07d302fb177b166b1568155084ffb8e1c1/docs/VESICLE_PORES_LAWS.md#7-the-event-pair-d287-opening-is-a-pair-no-second-exemption"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "fr31-pore-hold-replay"
+        ],
+        "result": "Tenfold reference viscosity shifted the opening and release entries by +2.30258509299405 and −2.30258509299405 k_BT. Final heat change was zero. Time and hold work were identical. The log rate-ratio and geometric work agreed in the single founder and both population founders."
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Opening heat and subsequent release heat measured separately from the same held DOPC vesicle. A molecular-scale surface shear viscosity series across temperatures would also test the declared damping law.",
+        "unit": "heat per event in k_BT",
+        "evidence": [
+          {
+            "dataset_id": "chwastek2020_dopc_rotor",
+            "manifest": "lean/checks/data/dopc_pore_observables.json",
+            "citation": "Chwastek et al. (2020), Figure 4 and Table 1",
+            "doi": "10.1002/cbic.201900510",
+            "context": "A fluorescent molecular rotor measured its immediate environment in DOPC membranes.",
+            "locator": "Figure 4 and Table 1.",
+            "role": "descriptive",
+            "uncertainty": "At 25 °C the local viscosity was 41 ± 10 mPa·s. The fitted activation energy was 54 ± 9 kJ/mol.",
+            "assessment": "Local rotational microviscosity has a measured temperature dependence. Transferring it to in-plane pore friction requires an independent relation.",
+            "report": "lean/PROGRESS.md#fr31-pore-rate-heat"
+          },
+          {
+            "dataset_id": "chakraborty2020_dopc_fluctuations",
+            "manifest": "lean/checks/data/dopc_pore_observables.json",
+            "citation": "Chakraborty et al. (2020), Figure 5B and SI Table S4",
+            "doi": "10.1073/pnas.2004807117",
+            "context": "Nanoscale thickness fluctuations were measured in 100 nm tail-deuterated DOPC vesicles, at zero added cholesterol.",
+            "locator": "Figure 5B, Eq. 2 and SI Table S4.",
+            "role": "descriptive",
+            "uncertainty": "The fluctuation fit gave 16.7 ± 1.1 nPa·s·m at 25 °C.",
+            "assessment": "The estimate supplies one temperature for a different dissipation measurement. Its temperature slope and the separate pore heats remain open.",
+            "report": "lean/PROGRESS.md#fr31-pore-rate-heat"
+          }
+        ]
+      }
+    },
+    {
       "id": "vesicle-serial-transfer",
       "category": "molecular-assembly",
       "title": "Serial transfer accounts for the spent bath and the vesicles removed",
@@ -4145,6 +5994,7 @@
       "numerical": {
         "status": "checked",
         "comparisons": [
+          "ol5-replay-vesicle-exchange",
           "vesicle-exchange-rates"
         ],
         "result": "Doubling radius gave 4× area-limited insertion and 2× diffusion-limited capture. Across both transport steps, eight compiled configurations tested finite and held baths and both counting measures. All 40 blocked directions had zero rate. Across 64 active pairs the largest free-energy residual was 1.43 × 10⁻¹⁴ k_BT."
@@ -4213,6 +6063,7 @@
       "numerical": {
         "status": "checked",
         "comparisons": [
+          "ol5-replay-vesicle-exchange",
           "vesicle-exchange-rates",
           "vesicle-permeation-size"
         ],
@@ -4289,6 +6140,7 @@
       "numerical": {
         "status": "checked",
         "comparisons": [
+          "ol5-replay-shared-pool",
           "shared-pool-record-repair",
           "shared-pool-report-recheck",
           "shared-pool-inventory",
@@ -4408,15 +6260,58 @@
       "numerical": {
         "status": "checked",
         "comparisons": [
-          "osmotic-vesicle-volume"
+          "ol5-replay-vesicle",
+          "osmotic-vesicle-volume",
+          "intact-vesicle-deflation",
+          "bhatia-vesicle-deflation"
         ],
         "result": "Two compiled trajectories each crossed between 34 slack and 64 tense records. Across both runs the relative volume error stayed below 1.07 × 10⁻¹⁴, tension error below 2.24 × 10⁻¹⁷ N/m, and osmotic energy error below 2.54 × 10⁻¹⁴ k_BT against a 70-digit reference. Separate 64-osmole worlds reproduce the macroscopic reduced-volume and tension-per-radius predictions at matched density."
       },
       "biology": {
-        "status": "disagrees",
+        "status": "mixed",
         "observable": "Equilibrium volume after a bath osmolarity change, measured relative to the same vesicle’s spherical capacity or its initial volume, as specified for each study.",
         "unit": "volume ratio",
         "evidence": [
+          {
+            "dataset_id": "fujiwara2014_vesicle_deflation@1",
+            "manifest": "lean/checks/data/fujiwara2014_vesicle.json",
+            "citation": "Fujiwara and Yanagisawa (2014), ACS Synthetic Biology",
+            "doi": "10.1021/sb4001917",
+            "locator": "Figures 2–3 and supplementary Figures S2–S3.",
+            "context": "The five tracked liposomes started at 70 mOsm/L internally and shrank in a 285 mOsm/L bath. Final over initial volume is the reciprocal of the approximately fourfold inverse-volume plateau. A separate paired series follows GFP concentration and volume within the same liposome.",
+            "role": "held_out_from_fitting",
+            "evaluation": [
+              "Plateau volume ratio using the prepared osmolarities, with no fitted parameter"
+            ],
+            "excluded": [
+              "The time taken to shrink",
+              "An independent inventory of smaller osmoles"
+            ],
+            "observed": 0.25,
+            "predicted": 0.2456,
+            "uncertainty": "The plateau is approximate and has no stated standard error. Volumes were estimated from diameters. Individual ten-minute inverse volume ratios in Figure S2 span about 3.3–4.9.",
+            "assessment": "The intact-liposome plateau agrees at the reported precision. The paired GFP measurement supports retention of the protein during shrinkage.",
+            "report": "lean/PROGRESS.md#intact-vesicle-deflation"
+          },
+          {
+            "dataset_id": "bhatia2020_single_vesicle_deflation@1",
+            "manifest": "lean/checks/data/bhatia2020_vesicle_deflation.json",
+            "citation": "Bhatia, Robinson and Dimova (2020), Soft Matter",
+            "doi": "10.1039/D0SM00155D",
+            "locator": "Figure 2 and the Movie S1 caption in the supplement.",
+            "context": "The same trapped vesicle was imaged across a 66 to 72 mM bath change. Bath-origin liquid in an inward tube contributes to the outer contour volume. The ratio here divides final lumen by the measured starting volume.",
+            "role": "held_out_from_fitting",
+            "evaluation": [
+              "Outer-contour upper bound and a straight-cylinder estimate for the inward tube"
+            ],
+            "excluded": [
+              "The separate Figure 4 bath change",
+              "A direct measure of small-solute retention"
+            ],
+            "uncertainty": "The final outer volume alone carries a stated uncertainty of about 1,000 µm³. The tube dimensions have no pointwise uncertainty.",
+            "assessment": "Inconclusive. The central outer-contour bound is 0.756. A cylindrical tube gives 0.705, versus a retained-osmole prediction of 0.917. The reported volume uncertainty spans the difference.",
+            "report": "lean/PROGRESS.md#bhatia-vesicle-deflation"
+          },
           {
             "dataset_id": "wolfisberg2025_deflation@1",
             "manifest": "lean/checks/data/wolfisberg2025_vesicle.json",
@@ -4501,6 +6396,7 @@
       "numerical": {
         "status": "checked",
         "comparisons": [
+          "ol5-replay-vesicle",
           "vesicle-lysis-repair",
           "vesicle-lysis-hold-recheck",
           "vesicle-lysis-threshold"
@@ -4510,8 +6406,21 @@
       "biology": {
         "status": "open",
         "observable": "Intact fraction of a vesicle cohort over time at known tension. The numerical area-unit invariance is tested on identical physical states in the engine.",
-        "unit": "mN/m, seconds and fraction intact",
+        "unit": "mN/m, seconds, fraction intact and inverse seconds",
+        "finding": "Under strong hypotonic swelling, three pores resealed successively in the same vesicle, each within one second. This measures a surviving-vesicle outcome relevant to FR-39. The assembly rule books terminal lysis once per lineage. [Oglęcka et al., Figure 5](https://elifesciences.org/articles/03695/figures#fig5)",
         "evidence": [
+          {
+            "dataset_id": "karal2015_dopc_tension_series@1",
+            "manifest": "lean/checks/data/karal2015_rupture_rates.json",
+            "citation": "Karal and Yamazaki (2015), Fig. 2a",
+            "doi": "10.1063/1.4930108",
+            "locator": "Figure 2a, journal page 081103-3.",
+            "context": "Survival during constant aspiration tension was fitted in pure DOPC vesicles. Two temperature columns have fitted first-rupture rates at 7.0, 7.5 and 8.0 mN/m.",
+            "role": "descriptive",
+            "uncertainty": "Three independent experiments per setting, each with 20 vesicles. The plotted bars are standard errors across experiments. The linked data contain the digitized log rates and bar caps.",
+            "assessment": "At about 25 °C the three rates were 0.00263, 0.00556 and 0.0153 s⁻¹. At about 32 °C they were 0.00423, 0.00813 and 0.0230 s⁻¹. These are targets for the proposed FR-31 time-dependent rupture law.",
+            "report": "lean/PROGRESS.md#vesicle-and-translation-evidence"
+          },
           {
             "dataset_id": "karal2015_dopc_hold@1",
             "manifest": "lean/checks/data/vesicle_rupture_holds.json",
@@ -6383,7 +8292,7 @@
       },
       "numerical": {
         "status": "checked",
-        "comparisons": ["assembly-kinetics", "confined-binding"],
+        "comparisons": ["ol5-replay-assembly-kinetics", "ol5-replay-confined-binding", "assembly-kinetics", "confined-binding"],
         "result": "The reference and engine agreed on ordinary rates and zero and singular patterns across 594 compositions under both count measures. Three boundary conventions were checked on six additional states. The pool kernel reproduced the two-state occupancy formula at one, two and three partners."
       },
       "biology": {
@@ -6441,6 +8350,7 @@
       "numerical": {
         "status": "checked",
         "comparisons": [
+          "ol5-replay-assembly-kinetics",
           "transition-state-factor-repair",
           "assembly-transition-state-factor-nov20",
           "assembly-kinetics"

@@ -1,12 +1,16 @@
 // The scene file, indexed for the viewer. Read-only: lenses and panels ask it questions.
 
 export const SCENE_FORMAT = "cells.visualizer.scene@1";
+export const UNIT_EVIDENCE_FORMAT = "cells.visualizer.unit_evidence@1";
 
 export class SceneModel {
   constructor(scene) {
     const problems = validate(scene);
     if (problems.length) throw new Error(`Scene file is not valid: ${problems.slice(0, 3).join("; ")}`);
-    this.raw = scene;
+    this.unitEvidence = new Map();
+    this.raw = scene.proteins?.evidence_files
+      ? { ...scene, proteins: { ...scene.proteins, unitEvidence: this.unitEvidence } }
+      : scene;
     this.meta = scene.meta || {};
     this.entities = scene.entities;
     this.relations = scene.relations;
@@ -25,6 +29,25 @@ export class SceneModel {
 
   get(id) {
     return this.byId.get(id);
+  }
+
+  /** One in-flight request per species, shared by every view of this scene. Older scenes carry the evidence inline. */
+  requestUnitEvidence(id, species, read) {
+    const record = this.get(id)?.species?.[species];
+    const file = this.raw.proteins?.evidence_files?.[species];
+    if (!record || !file || Array.isArray(record.items)) return null;
+    if (this.unitEvidence.has(species)) return this.unitEvidence.get(species);
+    const entry = { status: "loading" };
+    this.unitEvidence.set(species, entry);
+    entry.ready = Promise.resolve().then(() => read(file)).then((data) => {
+      if (data?.format !== UNIT_EVIDENCE_FORMAT || data.species !== species ||
+          !this.entities.every((unit) => !unit.species?.[species] || Array.isArray(unit.species[species].items) || Array.isArray(data.units?.[unit.id]?.items))) {
+        throw new Error("Invalid unit evidence for " + species);
+      }
+      entry.units = data.units;
+      entry.status = "ready";
+    }).catch(() => { entry.status = "error"; });
+    return entry;
   }
 
   /** The lens that shows this part: each group of the scene belongs to one lens. */

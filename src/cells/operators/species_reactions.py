@@ -84,7 +84,7 @@ species-only world, where this operator is the only energy flow, judged at round
 test per law are the guards of record.
 
 Schedule `reaction_controls` (§2.1): per reaction (site null) and optionally per site, a
-piecewise-constant multiplier m >= 0 from time 0, changing at exact multiples of dt inside the
+piecewise-constant multiplier m >= 0 from time 0, changing on the clock's grid (D283) inside the
 horizon; on a passive reaction it scales both directions. A route takes its site's schedule, else
 its reaction's.
 
@@ -105,6 +105,14 @@ Idle (§4.5): no route, statically idle; every multiplier zero in a step, the st
 Within a step, each (species, node) entry is written only where a route with a positive multiplier
 changes it, and each node's fields only where such a route acts: a catalyst's or factor's row is
 read, never offset, and an idle node beside an active one keeps every field bit for bit.
+
+Labels (FR-42, D289; operators/species_labels.py): a reporter. Given labels (rows, arrival), the
+half-step also returns its one-way moves for the labelled rows (one_way_moves): each route's
+forward and reverse extents, the SSPRK(3,3) combination of its stages' one-way rates (a driven
+route's are its extent and 0; a passive route's its two unidirectional fluxes, FR-42's stage 3),
+times its consumed coefficients as out and its produced ones, at the arrival label, as into. The
+physics is unchanged: the labelled call's state is bit for bit the unlabelled one's, and without
+labels nothing of it is traced.
 """
 
 import math
@@ -121,6 +129,7 @@ from cells.definitions.specs import ConfigError, _fields
 from cells.laws.electrochemistry import R
 from cells.laws.reactions.mass_action import reversible_flux
 from cells.models import pump_composite_adapter as adapter
+from cells.numerics.clock_instants import ON_THE_GRID, on_grid  # D283's one predicate.
 from cells.numerics.species_sums import entity_sum, species_sum
 from cells.operators import species_common as common
 from cells.operators.contract import Operator, Read
@@ -721,10 +730,8 @@ def _changes(raw, base, what):
     for change in raw:
         _fields(change, {"time", "multiplier"}, f"{CONTROLS_KEY} change")
         time = _number(change["time"], f"a change time of {what}")
-        if time != round(time / dt) * dt:
-            raise ConfigError(
-                f"{LAW_ID}: a schedule change must be an exact multiple of dt (k * dt)"
-            )
+        if on_grid(time, dt) is None:
+            raise ConfigError(f"{LAW_ID}: a schedule change must be {ON_THE_GRID}")
         if not 0.0 <= time <= end:
             raise ConfigError(f"{LAW_ID}: a schedule change lies outside the horizon")
         changes.append((time, _number(change["multiplier"], f"a multiplier of {what}", low=0)))
@@ -1059,8 +1066,9 @@ class Rates(NamedTuple):
     consumption: object  # [rows, route] fmol/s: what each route's fluxes consume of each row.
 
 
-def route_rates(amounts, net, p, *, xp):
-    """Each route's rate at the node amounts [rows, node] (§2.2, Appendix A)."""
+def route_rates(amounts, net, p, *, xp, one_way=False):
+    """Each route's rate at the node amounts [rows, node] (§2.2, Appendix A); with one_way (FR-42,
+    static) (Rates, its one-way rates: ([route] forward, [route] reverse) fmol/s)."""
     held = amounts[:, net.node]  # [rows, route]
     log_c = xp.log(held) - xp.log(net.route_volume)[None, :]
     # Passive: the kernel's net rate and affinity, unchanged; its unidirectional fluxes from the
@@ -1094,15 +1102,21 @@ def route_rates(amounts, net, p, *, xp):
     consumption = xp.where(
         net.passive[None, :], consumed * forward + produced * reverse, consumed * driven
     )
-    return Rates(rate, affinity, consumption)
+    if not one_way:
+        return Rates(rate, affinity, consumption)
+    # FR-42 (static): each route's one-way rates, a passive route's two, a driven route's own.
+    gross = (xp.where(net.passive, forward, driven), xp.where(net.passive, reverse, 0.0))
+    return Rates(rate, affinity, consumption), gross
 
 
-def stage_rates(amounts, net, p, h, *, xp):
-    """(Rates, the stage condition h max L <= 1/2 at these amounts, max h L)."""
-    rates = route_rates(amounts, net, p, xp=xp)
+def stage_rates(amounts, net, p, h, *, xp, one_way=False):
+    """(Rates, the stage condition h max L <= 1/2 at these amounts, max h L); with one_way
+    (FR-42, static) the stage's one-way rates last."""
+    rates = route_rates(amounts, net, p, xp=xp, one_way=one_way)
+    rates, *gross = rates if one_way else (rates,)
     load = _to_nodes(rates.consumption, net.node, net.size, xp=xp) / amounts
     hl = xp.where(net.mask[None, :], h * load, 0.0)
-    return rates, xp.all(hl <= THETA), xp.max(hl, initial=0.0)
+    return (rates, xp.all(hl <= THETA), xp.max(hl, initial=0.0), *gross)
 
 
 def _change(values, net, *, xp):
@@ -1146,15 +1160,16 @@ class Step(NamedTuple):
     valid: object
 
 
-def half_step_terms(state, multiplier, h, p, *, xp):
-    """SSPRK(3,3) over h on the network (§4.2, Appendix A) and the bookings (§3.3): a Step."""
+def half_step_terms(state, multiplier, h, p, *, xp, one_way=False):
+    """SSPRK(3,3) over h on the network (§4.2, Appendix A) and the bookings (§3.3): a Step; with
+    one_way (FR-42, static) (Step, each stage's one-way rates)."""
     net = network(p, multiplier, xp=xp)
     n = node_amounts(state, p, xp=xp)
-    s1, ok1, l1 = stage_rates(n, net, p, h, xp=xp)
+    s1, ok1, l1, *g1 = stage_rates(n, net, p, h, xp=xp, one_way=one_way)
     y2 = n + h * _change(s1.rate, net, xp=xp)
-    s2, ok2, l2 = stage_rates(y2, net, p, h, xp=xp)
+    s2, ok2, l2, *g2 = stage_rates(y2, net, p, h, xp=xp, one_way=one_way)
     y3 = n + h * _change(0.25 * (s1.rate + s2.rate), net, xp=xp)
-    s3, ok3, l3 = stage_rates(y3, net, p, h, xp=xp)
+    s3, ok3, l3, *g3 = stage_rates(y3, net, p, h, xp=xp, one_way=one_way)
     extent = h * (s1.rate + s2.rate + 4.0 * s3.rate) / 6.0
     dn = _change(extent, net, xp=xp)
     end = n + dn
@@ -1218,7 +1233,7 @@ def half_step_terms(state, multiplier, h, p, *, xp):
     for value in (free_energy, heat, work, magnitude):
         valid &= xp.all(xp.where(net.mask, xp.isfinite(value), True))
     max_hl = xp.maximum(xp.maximum(l1, l2), l3)
-    return Step(
+    step = Step(
         dn,
         extent,
         written,
@@ -1239,6 +1254,7 @@ def half_step_terms(state, multiplier, h, p, *, xp):
         max_hl,
         valid,
     )
+    return (step, (*g1, *g2, *g3)) if one_way else step
 
 
 def _own_valid(state, p, *, xp):
@@ -1278,11 +1294,15 @@ def _split(values, n):
     return values[..., :n], values[..., n:]
 
 
-def reactions_half_step(state, multiplier, h, p, *, xp=jnp):
+def reactions_half_step(state, multiplier, h, p, *, xp=jnp, labels=None):
     """(state after h of the network, validity): the network's rows and the operator's own fields,
     each entry selected where a route with a positive multiplier writes it, else its start value
-    (never offset by a computed zero, §4.5)."""
-    step = half_step_terms(state, multiplier, h, p, xp=xp)
+    (never offset by a computed zero, §4.5). With labels (FR-42, D289; static), also its one-way
+    moves (one_way_moves)."""
+    if labels is None:
+        step = half_step_terms(state, multiplier, h, p, xp=xp)
+    else:
+        step, gross = half_step_terms(state, multiplier, h, p, xp=xp, one_way=True)
     rows = p.reaction_rows
     n = p.active.shape[0]
     cell_rows, outside_rows = _split(step.written, n)
@@ -1339,7 +1359,35 @@ def reactions_half_step(state, multiplier, h, p, *, xp=jnp):
             state.reaction_outside_energy_magnitude_pJ, outside_on, magnitude[1]
         ),
     )
-    return new, step.valid & _own_valid(new, p, xp=xp)
+    valid = step.valid & _own_valid(new, p, xp=xp)
+    if labels is None:
+        return new, valid
+    return new, valid, one_way_moves(gross, multiplier, h, p, labels, xp=xp)
+
+
+def one_way_moves(gross, multiplier, h, p, labels, *, xp=jnp):
+    """(out [m, node], into [m, label, node], ()) of the labelled rows over a half-step h (FR-42's
+    interface, operators/contract.py; the network's node axis, cells then outside nodes). Each
+    route's one-way extents, forward and reverse, are the SSPRK(3,3) combination of its stages'
+    one-way rates, as its extent is of its net rates (a driven route's forward extent is its
+    extent, its reverse 0; FR-42's stage 3 adds a passive route's two). The forward extent
+    consumes max(-nu, 0) and makes max(nu, 0), the reverse the opposite, so a species on both
+    sides of a route counts its net in each direction. Out is what they consume, into what they
+    make, at the arrival label. Into minus out is each row's booked move, at rounding."""
+    net = network(p, multiplier, xp=xp)
+    (f1, r1), (f2, r2), (f3, r3) = gross
+    forward = h * (f1 + f2 + 4.0 * f3) / 6.0
+    reverse = h * (r1 + r2 + 4.0 * r3) / 6.0
+    consumed, produced = xp.maximum(-net.nu, 0.0), xp.maximum(net.nu, 0.0)
+    taken = consumed * forward[None, :] + produced * reverse[None, :]
+    made = produced * forward[None, :] + consumed * reverse[None, :]
+    taken = _to_nodes(taken, net.node, net.size, xp=xp)
+    made = _to_nodes(made, net.node, net.size, xp=xp)
+    label_rows, arrival = labels
+    match = p.reaction_rows[None, :] == xp.asarray(label_rows)[:, None]  # [m, network rows]
+    own, at = xp.any(match, axis=1)[:, None], xp.argmax(match, axis=1)
+    out = xp.where(own, taken[at], 0.0)
+    return out, arrival[:, :, None] * xp.where(own, made[at], 0.0)[:, None, :], ()
 
 
 def stage_report(state, control, p, dt):
@@ -1641,8 +1689,12 @@ class LocalSpeciesReactions(Operator):
     def statically_idle(self, p):
         return p.reaction_route_node.shape[0] == 0
 
-    def half_step(self, state, h, control, p, *, xp):
-        return reactions_half_step(state, control.reaction_multiplier, h, p, xp=xp)
+    def half_step(self, state, h, control, p, *, xp, labels=None):
+        """labels (FR-42, D289; static): (rows, arrival); the call then also returns its one-way
+        moves. Without it, today's call."""
+        if labels is None:
+            return reactions_half_step(state, control.reaction_multiplier, h, p, xp=xp)
+        return reactions_half_step(state, control.reaction_multiplier, h, p, xp=xp, labels=labels)
 
     def control_valid(self, control, p, *, xp):
         m = control.reaction_multiplier

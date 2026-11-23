@@ -1,8 +1,9 @@
 """Operator templated_polymerisation@1: templated polymerisation, its products' degradation and its
 monomers' recharging, on the shared species inventory (gene regulation's option A, D235; FR-25).
 
-The declared equations are docs/TEMPLATED_POLYMERISATION_LAWS.md (tag gr1-sheet-2026-11-20b); the
-design is docs/GENE_REGULATION_DESIGN.md §7. Development, not judged: A's protocol (G6) judges it
+The declared equations are docs/TEMPLATED_POLYMERISATION_LAWS.md (tag gr1-sheet-2026-11-20b; its
+§9, the release, to tag gr1-sheet-fr38-erratum-a2-2026-11-22); the design is
+docs/GENE_REGULATION_DESIGN.md §7. Development, not judged: A's protocol (G6) judges it
 against the code-blind references of validation/gene_regulation/references/.
 
 Declaration
@@ -34,13 +35,32 @@ Declaration
 
 Every key is explicit, every route ID is distinct, and every row a route names is a listed species.
 
+A chain may add `release` (the sheet's §9, FR-38, D284), a hold between its completion and its fate
+rows: {id, dwell_s, machine, durable_fraction, fates, label, initial_copies}.
+- dwell_s: tau > 0, the hold's mean dwell.
+- machine: "returned" (the machine leaves at completion, §4.3's physics) or "held" (it stays engaged
+  through the hold and returns at release).
+- durable_fraction: p in [0, 1], or "scheduled": p from the schedule under the release's ID.
+- fates: a list of one {durable, short_lived} pair of listed rows, each of the product's
+  chemistry: its declared mu° equal to the product's. The chain's own product may be one of them;
+  a row that another chain writes (its product, draws, releases or fates), or that this chain
+  draws, releases or templates from, may not. FR-38's class rows (several pairs) were replaced by
+  FR-42's shares (D288, D296; the sheet's errata B and C): they were not neutral labels.
+- label: where FR-42's labels mark the molecules: null or {"at": "release"} at the release (a fate
+  row's arrival; the requester's cohort), or {"at": "completion"}, the hold then carrying its
+  labels into the fate rows (Labels, below). It changes no physics.
+- initial_copies: [H(0)], the hold's start in copies, unlabelled (at the base). With "held",
+  every pool's free machines start at M - sum H(0) of its held chains, which must be >= 0.
+A chain without the key is today's Chain, so its definition, signature and fingerprint are today's.
+
 Schedule `polymerisation_controls`
 ----------------------------------
-Per route, by ID, a piecewise-constant value from time 0, changing at exact multiples of dt inside
-the horizon:
+Per schedule, by ID, a piecewise-constant value from time 0, changing at the clock's instants inside
+the horizon (grid_time):
 - a chain's initiation rate constant k_I, in mM^-1 s^-1;
 - a degradation's first-order rate, in s^-1;
-- a transfer's capacity, in mM/s.
+- a transfer's capacity, in mM/s;
+- a scheduled release's durable fraction p, in [0, 1], by the release's ID.
 
 The initiation rate is routable (B1′): a rate route's factor u in [b, 1] multiplies it at the start
 of each half-step, so the scheduled k_I is the maximum.
@@ -98,6 +118,70 @@ its dn (divided_potential).
   exact.
 - They are diagnostics, outside HEAT_FIELDS: the composite's dissipation check holds the total.
 
+The release (the sheet's §9)
+----------------------------
+- **The hold.** H [release, class] (fmol) holds a chain's completed molecules, L residues each, with
+  no concentration term. The class axis has one class: the control polymerisation_release_class
+  (always 1) and the axis stay so that every program keeps its inputs (D296).
+- **The law:** Q^d = p H/tau and Q^s = (1 - p) H/tau into the durable and short-lived rows, with no
+  affinity factor. At p = 0 or 1 one of them is zero and books nothing.
+- **The machine:** "returned" frees it at completion; "held" counts the hold among the engaged and
+  frees it at release.
+- **Energy:** G gains the hold's standard term L mu°_res H, booked with the transit term. A
+  completion books the chain's moves with L mu°_res per molecule into the hold, and a release into
+  fate row F books mu-bar_F - L mu°_res, its heat class poly_release_heat_pJ [release, class, fate]
+  (H_rel). No work, no new energy field.
+- **Domain:** c_F <= c° at every fate row a positive release feeds, never repaired; the product's
+  bound does not apply to a chain with a release, which puts no product in use at completion.
+- **Counters and identities:** ∫Q (poly_released_fmol) counts arrivals, poly_hold_released_fmol
+  [release, class, fate] each fate row's releases. The residue ledger adds, per release, L (H(0) +
+  ∫Q - H - sum ∫Q^f); the machine ledger counts a held hold among the engaged.
+- **Static:** without a release block the release arrays are empty and no release computation is
+  traced, so every such definition's physical fields are bitwise today's (D148; the lead's ruling of
+  22 November 2026: the programs differ by the empty fields only).
+
+Labels (FR-42, D289, D296)
+--------------------------
+The physics stays on each row's physical total; the operator reports amounts and never reads a
+share. It is a label source and a label pool reporter (LABEL_SOURCES, LABEL_POOLS; static, so
+without a label owner every call is today's):
+- **Sources** (label_sources): one per chain, the row its new material is labelled as (its
+  product, or its durable fate row, whose labels its short-lived row shares: check_labels). The
+  owner's schedule may name a chain (a producer's label: its cell, generation and chain crossed
+  with the window); a chain without its own takes its row's window label.
+- **Pools** (label_pools): one per release, its hold, carrying the durable fate row's labels.
+- **The moves** (one_way_moves), from the same SSPRK(3,3) combination as the booked move: out
+  (draws, forward degradation's polymer, re-synthesis's monomers, each transfer direction's
+  consumed side); into at the row's window label (monomer releases, forward degradation's
+  monomers, re-synthesis's polymer, each transfer direction's produced side) or at the chain's
+  source label (its products, and fate releases marked at release); and each hold's part: its
+  amounts, its completions (at the source label where marked at completion, else the base), its
+  releases it does not carry, and carried, each release marked at completion into a labelled fate
+  row, keeping the hold's labels.
+- **Marked at release** (FR-38's cohort, the requester's answer to (e)): labels on the fate rows
+  give §9.8's route 1 on shares (erratum C) with no blank.
+- **A limit:** a labelled species carries at most neutral_arrival_labels@1's MAX_LABELS labels, so
+  producer identity crossed with the window labels must fit within it.
+
+Replacement (the sheet's §9.16, amendment S; FR-38's step 4)
+--------------------------------------------------------------
+Beside scheduled_cell_replacement@1, an event part acts at the start of the step leaving each event
+time on every replaced slot (a cell that an event replaces and where this operator has a pool,
+chain, degradation or transfer), reading only its own state and its control, the replacements due
+per replaced slot (replacement@1's own count), so its place among the events does not matter:
+- its chains in progress leave (complexes to 0), counted in poly_rep_chains_removed_fmol and their
+  residues in poly_rep_residues_removed_fmol (W^rem); its holds leave (H to 0), counted in
+  poly_rep_hold_removed_fmol (H^rem); the standard free energy leaving with them, mu°_res (W + L H),
+  in poly_rep_removed_energy_pJ, never as heat; its pools' machines are all free (F to M);
+- every cumulative counter stays cumulative; its value at the event becomes the newcomer's birth
+  value (poly_rep_*_birth_fmol), and the departed generation's own totals are recorded
+  (poly_rep_*_departed_fmol), so the newcomer's counters start at zero;
+- the residue ledger counts W^rem and the hold's counts H^rem; the rows are replacement@1's.
+The occupant rule: an optional `templates` key, [{template_id, rates: {schedule ID: value}}], gives
+each newcomer's k_I, k, capacity and scheduled p, constant through its life (control_values).
+Without an event on a slot of this operator every such field is zero-size and the event returns its
+state with no validity term, so the programs are today's (D148 case 2).
+
 Refused at the definition
 -------------------------
 - a charged, permeable or unlisted row;
@@ -106,7 +190,14 @@ Refused at the definition
 - a transfer that is not a reaction (a sign missing), and a degradation whose polymer a chain makes
   at another length;
 - another writer of a listed row: an author, D152's reactions or an in-step mover;
-- dt kappa > 1, dt k_D > 1, and dt k_I c_T F/F > 1 for a gene's template;
+- beside a replacement (check_occupants): a version other than replacement@1; a donor copy into or
+  from a slot of this operator (version 1.1); a template that is not a replacement template; a
+  newcomer whose template gives no value for a schedule of its slot; a template value for no such
+  schedule; a schedule change of a replaced slot at or after its founder's death;
+- dt kappa > 1, dt k_D > 1, dt k_I c_T F/F > 1 for a gene's template, and dt/tau > 1, newcomers'
+  values included;
+- a release's fate rows that break the rules above, more than one pair of them, fate rows
+  labelled unalike by FR-42's owner, and a held hold that the pool cannot staff;
 - more than the species cap.
 
 At run time: a non-finite or non-positive amount, a negative pool or complex, a broken stage
@@ -117,7 +208,7 @@ so zero rates are bitwise idle.
 """
 
 import math
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from types import MappingProxyType
 
 import jax.numpy as jnp
@@ -129,6 +220,7 @@ from cells.definitions.specs import ConfigError, _fields, _number
 from cells.laws.electrochemistry import R
 from cells.models import pump_composite_adapter as adapter
 from cells.models import surface_pump as first
+from cells.numerics.clock_instants import ON_THE_GRID, on_grid  # D283's one predicate.
 from cells.numerics.species_sums import entity_sum, species_sum
 from cells.operators import species_common as common
 from cells.operators import species_reactions
@@ -148,9 +240,30 @@ FLOOR_FMOL = 1e-22  # The own ledgers' floor.
 SERIES_BELOW = 1e-6  # |x| below which mu-bar's ratio (1 + x) log1p(x) / x is a series (D152's).
 POOL_AXIS, CHAIN_AXIS, STAGE_AXIS = "poly_pool", "poly_chain", "poly_stage"
 DEGRADATION_AXIS, TRANSFER_AXIS = "poly_degradation", "poly_transfer"
+RELEASE_AXIS, CLASS_AXIS, FATE_AXIS = "poly_release", "poly_class", "poly_fate"
+FATES = ("durable", "short_lived")  # The fate axis, in order (the sheet's d and s).
+# Amendment S (§9.16): the replaced slots and their entities, zero-size without a replacement.
+REPLACED_SLOT_AXIS, REPLACED_CHAIN_AXIS = "poly_replaced_slot", "poly_replaced_chain"
+REPLACED_RELEASE_AXIS = "poly_replaced_release"
+REPLACED_DEGRADATION_AXIS, REPLACED_TRANSFER_AXIS = (
+    "poly_replaced_degradation",
+    "poly_replaced_transfer",
+)
+COUNTER_AXIS = "poly_chain_counter"
+CHAIN_COUNTERS = ("poly_initiated_fmol", "poly_stage_exits_fmol", "poly_released_fmol")
+REPLACEMENT_LAW = common.REPLACEMENT_LAW  # scheduled_cell_replacement@1, the one admitted.
+REPLACEMENT_FAMILY = "scheduled_cell_replacement"  # Its other versions are refused.
+MACHINE_OPTIONS = ("returned", "held")
+LABEL_TRANSITIONS = ("completion", "release")
+SCHEDULED = "scheduled"  # A release's durable fraction read from its schedule.
 INITIATION = "polymerisation_initiation_rate"
 DEGRADATION = "polymerisation_degradation_rate"
 TRANSFER = "polymerisation_transfer_capacity"
+RELEASE_FRACTION = "polymerisation_release_fraction"  # [release] p.
+RELEASE_CLASS = "polymerisation_release_class"  # [release] psi, 1 without a label.
+REPLACEMENTS_DUE = "polymerisation_replacements_due"  # [replaced slot] events due by now (§9.16).
+# The half-step's controls, in its order; the event reads REPLACEMENTS_DUE alone.
+HALF_STEP_CONTROLS = (INITIATION, DEGRADATION, TRANSFER, RELEASE_FRACTION, RELEASE_CLASS)
 
 STATE_AXES = {
     "poly_free_machines_fmol": [POOL_AXIS],
@@ -168,7 +281,26 @@ STATE_AXES = {
     "poly_transfer_heat_pJ": [TRANSFER_AXIS],
     "poly_standard_energy_pJ": ["cell_slot"],  # The owned standard term, transit included.
     "poly_energy_magnitude_pJ": ["cell_slot"],  # The bookings' absolute terms (rounding).
+    # The release (the sheet's §9), sized by the declaration: empty without a release block.
+    "poly_hold_fmol": [RELEASE_AXIS, CLASS_AXIS],  # The hold H.
+    "poly_hold_released_fmol": [RELEASE_AXIS, CLASS_AXIS, FATE_AXIS],  # Cumulative ∫Q^f.
+    "poly_release_heat_pJ": [RELEASE_AXIS, CLASS_AXIS, FATE_AXIS],  # H_rel per fate row.
+    # Amendment S (§9.16), sized by the replaced slots and their entities: empty without one.
+    "poly_rep_applied": [REPLACED_SLOT_AXIS],  # int64: the replacements applied per slot.
+    "poly_rep_chains_removed_fmol": [REPLACED_CHAIN_AXIS],  # Chains in progress removed.
+    "poly_rep_residues_removed_fmol": [REPLACED_CHAIN_AXIS],  # W^rem.
+    "poly_rep_removed_energy_pJ": [REPLACED_CHAIN_AXIS],  # mu°_res (W + L H) leaving.
+    "poly_rep_hold_removed_fmol": [REPLACED_RELEASE_AXIS, CLASS_AXIS],  # H^rem.
+    "poly_rep_chain_birth_fmol": [REPLACED_CHAIN_AXIS, COUNTER_AXIS],  # At the occupant's birth.
+    "poly_rep_chain_departed_fmol": [REPLACED_CHAIN_AXIS, COUNTER_AXIS],  # The last departed's.
+    "poly_rep_release_birth_fmol": [REPLACED_RELEASE_AXIS, CLASS_AXIS, FATE_AXIS],
+    "poly_rep_release_departed_fmol": [REPLACED_RELEASE_AXIS, CLASS_AXIS, FATE_AXIS],
+    "poly_rep_degradation_birth_fmol": [REPLACED_DEGRADATION_AXIS],
+    "poly_rep_degradation_departed_fmol": [REPLACED_DEGRADATION_AXIS],
+    "poly_rep_transfer_birth_fmol": [REPLACED_TRANSFER_AXIS],  # Signed, as the extent is.
+    "poly_rep_transfer_departed_fmol": [REPLACED_TRANSFER_AXIS],
 }
+REPLACEMENT_STATE = tuple(k for k in STATE_AXES if k.startswith("poly_rep_"))
 LAYOUT_FIELDS = (
     "poly_rows",  # [k] int64: the listed species' rows, in declared order.
     "poly_mu_RT",  # [k] mu°/RT at c0.
@@ -200,6 +332,24 @@ LAYOUT_FIELDS = (
     "poly_tr_saturates",  # [transfer, k] bool: a consumed row.
     "poly_tr_K_mM",  # [transfer, k] (1 where not consumed).
     "poly_tr_share",  # [transfer] n.
+    "poly_rel_chain",  # [release, chain] one-hot: its chain.
+    "poly_rel_rate",  # [release] 1/tau, 1/s.
+    "poly_rel_held",  # [release] 1 where the machine is held through the hold.
+    "poly_rel_at_release",  # [release] 1 where FR-42's labels mark the release, 0 at completion.
+    "poly_rel_classes",  # [release, class] bool: one class (D296; the axis keeps the programs).
+    "poly_rel_fate",  # [release, class, fate, k] one-hot: each fate row.
+    "poly_rel_hold0_fmol",  # [release, class] H(0).
+    # Amendment S (§9.16): one-hot maps of the replaced entities, zero-size without a replacement.
+    "poly_rep_slot_cell",  # [replaced slot] int64: its cell.
+    "poly_rep_chain_hot",  # [replaced chain, chain].
+    "poly_rep_chain_slot_hot",  # [replaced chain, replaced slot].
+    "poly_rep_release_hot",  # [replaced release, release].
+    "poly_rep_release_slot_hot",  # [replaced release, replaced slot].
+    "poly_rep_release_chain_hot",  # [replaced release, replaced chain].
+    "poly_rep_degradation_hot",  # [replaced degradation, degradation].
+    "poly_rep_degradation_slot_hot",  # [replaced degradation, replaced slot].
+    "poly_rep_transfer_hot",  # [replaced transfer, transfer].
+    "poly_rep_transfer_slot_hot",  # [replaced transfer, replaced slot].
 )
 LEDGERS = ("poly_machines", "poly_residues")
 LEDGER_DIAGNOSTICS = ("poly_machines_balance_error", "poly_residues_balance_error")
@@ -230,6 +380,51 @@ class Chain:
     draws: tuple  # ((row, count), ...)
     releases: tuple
     saturation_mM: tuple  # ((row, K), ...)
+
+
+@dataclass(frozen=True)
+class Label:
+    """The transition at which FR-42's labels mark a release's molecules (the sheet's §9.1, as
+    erratum C reads it; D296): "release" (FR-42's arrival into a fate row, the default) or
+    "completion" (the hold carries its labels into the fate rows)."""
+
+    at: str
+
+
+@dataclass(frozen=True)
+class Release:
+    """A chain's release step (the sheet's §9): the hold's mean dwell tau (s), its machine option,
+    its durable fraction p (None: scheduled under the release's ID), its fate rows ((durable,
+    short-lived),), its label (None: FR-42's labels mark the release) and the hold's initial
+    copies ((H0,)). One class: FR-42's shares replaced the class rows (D288, D296)."""
+
+    id: str
+    dwell_s: float
+    machine: str
+    durable_fraction: float | None
+    fates: tuple
+    label: Label | None
+    initial_copies: tuple
+
+    def rows(self):
+        return tuple(row for pair in self.fates for row in pair)
+
+
+@dataclass(frozen=True)
+class ReleasingChain(Chain):
+    """A chain that declares the sheet's §9 (its `release` block). Every other chain stays a
+    Chain, so its form, its signature and its definition's fingerprint are today's."""
+
+    release: Release
+
+
+def releases_of_chains(chains):
+    """((chain, release), ...) of the chains that declare a release, in chain order."""
+    return tuple((c, c.release) for c in chains if isinstance(c, ReleasingChain))
+
+
+def releases_of(declaration):
+    return releases_of_chains(declaration.chains)
 
 
 @dataclass(frozen=True)
@@ -274,9 +469,18 @@ class Polymerisation:
     chains: tuple
     degradations: tuple
     transfers: tuple
+    # Amendment S (§9.16, item 6), the occupant rule: ((template ID, ((schedule ID, value), ...)),
+    # ...), a replaced slot's newcomers' values; empty without the key.
+    templates: tuple = ()
 
     def route_ids(self):
         return tuple(r.id for r in (*self.chains, *self.degradations, *self.transfers))
+
+    def schedule_ids(self):
+        """Every schedule's ID in polymerisation_controls, in control order: the routes', then
+        each scheduled durable fraction's (its release's ID)."""
+        releases = [r for _, r in releases_of(self)]
+        return (*self.route_ids(), *(r.id for r in releases if r.durable_fraction is None))
 
 
 @dataclass(frozen=True)
@@ -352,10 +556,140 @@ def _cited_to_dict(cited):
     return dict(dG_kJ_mol=cited.dG_kJ_mol, basis=cited.basis, dG_RT_offset=cited.offset_RT)
 
 
+RELEASE_KEYS = {"id", "dwell_s", "machine", "durable_fraction", "fates", "label", "initial_copies"}
+
+
+def _release(raw, chain, listed):
+    """A chain's release block (the sheet's §9), on its own: parse_declaration checks its rows
+    against the other routes' (_check_fates, _check_release_routes)."""
+    what = f"chain {chain}'s release"
+    _fields(raw, RELEASE_KEYS, f"{LAW_ID} {what}")
+    name = identifier(raw["id"])
+    dwell = _positive(raw["dwell_s"], f"{what}'s dwell_s")
+    if raw["machine"] not in MACHINE_OPTIONS:
+        raise ConfigError(f"{LAW_ID}: {what}'s machine is one of {', '.join(MACHINE_OPTIONS)}")
+    fraction = raw["durable_fraction"]
+    if fraction == SCHEDULED:
+        fraction = None
+    elif _finite(fraction) and 0.0 <= fraction <= 1.0:
+        fraction = float(fraction)
+    else:
+        raise ConfigError(
+            f"{LAW_ID}: {what}'s durable_fraction is a number in [0, 1] or {SCHEDULED!r}"
+        )
+    if type(raw["fates"]) is not list or not raw["fates"]:
+        raise ConfigError(f"{LAW_ID}: {what}'s fates are a list of one {{durable, short_lived}}")
+    if len(raw["fates"]) > 1:
+        raise ConfigError(
+            f"{LAW_ID}: {what} has one {{durable, short_lived}} pair: FR-38's class rows are "
+            "replaced by FR-42's shares (D288, D296); label the fate rows with "
+            "neutral_arrival_labels@1"
+        )
+    pairs = []
+    for entry in raw["fates"]:
+        _fields(entry, set(FATES), f"{LAW_ID} {what}'s fate rows")
+        for fate in FATES:
+            if entry[fate] not in listed:
+                raise ConfigError(
+                    f"{LAW_ID}: {what}'s {fate} row {entry[fate]!r} is not a listed species"
+                )
+        pairs.append(tuple(entry[fate] for fate in FATES))
+    rows = [row for pair in pairs for row in pair]
+    if len(set(rows)) != len(rows):
+        raise ConfigError(f"{LAW_ID}: {what}'s fate rows are distinct")
+    label = raw["label"]
+    if label is not None:  # FR-42's labels: which transition marks the molecules (D296).
+        _fields(label, {"at"}, f"{LAW_ID} {what}'s label")
+        if label["at"] not in LABEL_TRANSITIONS:
+            raise ConfigError(
+                f"{LAW_ID}: {what}'s label is at one of {', '.join(LABEL_TRANSITIONS)}"
+            )
+        label = Label(label["at"])
+    copies = raw["initial_copies"]
+    if type(copies) is not list or len(copies) != 1:
+        raise ConfigError(f"{LAW_ID}: {what}'s initial_copies list its hold's one entry")
+    if not all(_finite(v) and v >= 0 for v in copies):
+        raise ConfigError(f"{LAW_ID}: {what}'s initial copies are finite and >= 0")
+    return Release(
+        name, dwell, raw["machine"], fraction, tuple(pairs), label, tuple(float(v) for v in copies)
+    )
+
+
+def _release_to_dict(r):
+    return dict(
+        id=r.id,
+        dwell_s=r.dwell_s,
+        machine=r.machine,
+        durable_fraction=SCHEDULED if r.durable_fraction is None else r.durable_fraction,
+        fates=[dict(zip(FATES, pair, strict=True)) for pair in r.fates],
+        label=None if r.label is None else dict(at=r.label.at),
+        initial_copies=list(r.initial_copies),
+    )
+
+
+def _written(chain):
+    """The rows a chain writes: its draws and releases, and its product or, with a release, its
+    fate rows."""
+    rows = {*dict(chain.draws), *dict(chain.releases)}
+    if isinstance(chain, ReleasingChain):
+        return rows | set(chain.release.rows())
+    return rows | {chain.product}
+
+
+def _check_fates(chains, mu):
+    """Refuse a fate row this chain draws, releases or templates from, one another chain writes
+    (one producer per fate row, version 1; the sheet's §9.1, question d), and one whose declared
+    mu° is not its product's (one chemistry, so the release's dG is RT ln(c_F/c°))."""
+    for c, release in releases_of_chains(chains):
+        fates = set(release.rows())
+        own = {*dict(c.draws), *dict(c.releases)} | ({c.template_species} - {None})
+        if fates & own:
+            raise ConfigError(
+                f"{LAW_ID}: chain {c.id}'s fate rows are none of its draws, releases or template"
+            )
+        for other in chains:
+            hit = sorted(fates & _written(other)) if other is not c else []
+            if hit:
+                raise ConfigError(
+                    f"{LAW_ID}: chain {other.id} writes {hit[0]!r}, a fate row of chain {c.id} "
+                    "(one producer per fate row)"
+                )
+        for row in sorted(fates):
+            if mu[row] != mu[c.product]:
+                raise ConfigError(
+                    f"{LAW_ID}: chain {c.id}'s fate row {row!r} has another standard_mu_RT than "
+                    f"its product {c.product!r} (one chemistry)"
+                )
+
+
+def _check_release_routes(declaration):
+    """Refuse a fate row that a degradation makes or a transfer moves (one producer), and a pool
+    whose machines cannot staff its held holds at t = 0: F(0) = M - sum H(0) >= 0 (§9.3)."""
+    fates = {row: c.id for c, r in releases_of(declaration) for row in r.rows()}
+    for d in declaration.degradations:
+        hit = sorted(set(dict(d.monomers)) & set(fates))
+        if hit:
+            raise ConfigError(f"{LAW_ID}: degradation {d.id} makes {hit[0]!r}, a fate row")
+    for t in declaration.transfers:
+        hit = sorted(set(dict(t.stoichiometry)) & set(fates))
+        if hit:
+            raise ConfigError(f"{LAW_ID}: transfer {t.id} moves {hit[0]!r}, a fate row")
+    held = {}
+    for c, r in releases_of(declaration):
+        if r.machine == "held":
+            held[c.pool] = held.get(c.pool, 0.0) + math.fsum(r.initial_copies)
+    for pool in declaration.pools:
+        if held.get(pool.id, 0.0) > pool.machines:
+            raise ConfigError(
+                f"{LAW_ID}: pool {pool.id}'s {pool.machines:g} machines cannot hold its held "
+                f"chains' {held[pool.id]:g} initial copies (F(0) = M - sum H(0) >= 0)"
+            )
+
+
 def parse_declaration(raw, base):
     keys = {"law", "standard_concentration_mM", "species", "pools", "chains", "degradations",
             "transfers"}  # fmt: skip
-    _fields(raw, keys, "templated polymerisation")
+    _fields(raw, keys | ({"templates"} & set(raw)), "templated polymerisation")
     if raw["law"] != LAW_ID:
         raise ConfigError("Templated polymerisation requires law " + LAW_ID)
     c0 = _positive(raw["standard_concentration_mM"], "standard_concentration_mM")
@@ -397,7 +731,8 @@ def parse_declaration(raw, base):
     chain_keys = {"id", "pool", "template", "product", "residues", "stages", "speed_per_s",
                   "draws", "releases", "saturation_mM"}  # fmt: skip
     for item in lists["chains"]:
-        _fields(item, chain_keys, f"{LAW_ID} chain")
+        releasing = isinstance(item, dict) and "release" in item
+        _fields(item, chain_keys | ({"release"} if releasing else set()), f"{LAW_ID} chain")
         name = identifier(item["id"])
         if item["pool"] not in pool_cells:
             raise ConfigError(f"{LAW_ID}: chain {name} names an unknown pool")
@@ -429,23 +764,27 @@ def parse_declaration(raw, base):
             *dict(releases),
         }:
             raise ConfigError(f"{LAW_ID}: chain {name} draws, releases and makes distinct rows")
-        chains.append(
-            Chain(
-                name,
-                item["pool"],
-                pool_cells[item["pool"]],
-                copies,
-                species,
-                item["product"],
-                residues,
-                stages,
-                _positive(item["speed_per_s"], f"chain {name}'s speed"),
-                draws,
-                releases,
-                _saturations(item["saturation_mM"], drawn, f"chain {name}'s saturation_mM"),
-            )
+        fields = (
+            name,
+            item["pool"],
+            pool_cells[item["pool"]],
+            copies,
+            species,
+            item["product"],
+            residues,
+            stages,
+            _positive(item["speed_per_s"], f"chain {name}'s speed"),
+            draws,
+            releases,
+            _saturations(item["saturation_mM"], drawn, f"chain {name}'s saturation_mM"),
         )
+        if releasing:
+            chains.append(ReleasingChain(*fields, _release(item["release"], name, listed)))
+        else:
+            chains.append(Chain(*fields))
+    _check_fates(chains, dict(zip(listed, mu, strict=True)))
     made = {c.product: c.residues for c in chains}
+    made |= {row: c.residues for c, r in releases_of_chains(chains) for row in r.rows()}
     degradations = []
     for item in lists["degradations"]:
         _fields(item, {"id", "cell", "polymer", "residues", "monomers", "standard_free_energy"},
@@ -492,22 +831,59 @@ def parse_declaration(raw, base):
         tuple(transfers),
     )  # fmt: skip
     ids = [p.id for p in pools] + list(declaration.route_ids())
+    ids += [r.id for _, r in releases_of(declaration)]
     if len(set(ids)) != len(ids):
-        raise ConfigError(f"{LAW_ID}: every pool and route ID is distinct")
+        raise ConfigError(f"{LAW_ID}: every pool, route and release ID is distinct")
     used = {p for p in (c.pool for c in chains)}
     if used != set(pool_cells):
         raise ConfigError(f"{LAW_ID}: every pool serves a chain")
+    _check_release_routes(declaration)
     named = set()
     for c in chains:
         named |= {c.product, *dict(c.draws), *dict(c.releases)}
         named |= {c.template_species} - {None}
+        if isinstance(c, ReleasingChain):
+            named |= set(c.release.rows())
     for d in degradations:
         named |= {d.polymer, *dict(d.monomers)}
     for t in transfers:
         named |= set(dict(t.stoichiometry))
     if set(listed) - named:
         raise ConfigError(f"{LAW_ID}: listed species {sorted(set(listed) - named)} are unused")
+    if "templates" in raw:
+        declaration = replace(declaration, templates=_templates(raw["templates"], declaration))
     return declaration
+
+
+def _templates(raw, declaration):
+    """Amendment S's templates (§9.16, item 6): [{template_id, rates: {schedule ID: value}}], each
+    a schedule of this declaration's (a route's, or a scheduled release's p) with its newcomers'
+    value; check_occupants holds them to the replacement's events."""
+    if type(raw) is not list or not raw:
+        raise ConfigError(f"{LAW_ID}: templates is a non-empty list")
+    known, releases = declaration.schedule_ids(), {r.id for _, r in releases_of(declaration)}
+    out = []
+    for entry in raw:
+        _fields(entry, {"template_id", "rates"}, f"{LAW_ID} template")
+        tid = identifier(entry["template_id"])
+        rates = entry["rates"]
+        if type(rates) is not dict or not rates:
+            raise ConfigError(f"{LAW_ID}: template {tid}'s rates are a non-empty object")
+        values = []
+        for name, value in rates.items():
+            if name not in known:
+                raise ConfigError(f"{LAW_ID}: template {tid} names {name!r}, not a schedule here")
+            v = _number(value, f"{LAW_ID}: template {tid}'s value for {name}")
+            if not (math.isfinite(v) and v >= 0 and (name not in releases or v <= 1)):
+                raise ConfigError(
+                    f"{LAW_ID}: template {tid}'s value for {name} is finite and >= 0 (a durable "
+                    "fraction in [0, 1])"
+                )
+            values.append((name, float(v)))
+        out.append((tid, tuple(values)))
+    if len({t for t, _ in out}) != len(out):
+        raise ConfigError(f"{LAW_ID}: each template is declared once")
+    return tuple(out)
 
 
 def declaration_to_dict(d):
@@ -535,6 +911,12 @@ def declaration_to_dict(d):
                 draws=dict(c.draws),
                 releases=dict(c.releases),
                 saturation_mM=dict(c.saturation_mM),
+                # The sheet's §9, written only where declared (a chain without one is today's).
+                **(
+                    {"release": _release_to_dict(c.release)}
+                    if isinstance(c, ReleasingChain)
+                    else {}
+                ),
             )
             for c in d.chains
         ],
@@ -560,7 +942,38 @@ def declaration_to_dict(d):
             )
             for t in d.transfers
         ],  # fmt: skip
+    ) | (
+        {"templates": [dict(template_id=t, rates=dict(rates)) for t, rates in d.templates]}
+        if d.templates
+        else {}
     )
+
+
+def grid_time(time, dt):
+    """The clock's instant that `time` names on steps of dt, or None where it names none: the
+    predicate this operator's schedules read for their change times, a release's durable fraction
+    and class switches among them: D283's clock predicate (cells.numerics.clock_instants.on_grid),
+    as the host-side cohort's window edges read its same_instant."""
+    return on_grid(time, dt)  # D283: the clock's one predicate, the same-instant tolerance.
+
+
+def _schedule_kinds(declaration):
+    """{schedule ID: what its values are}: "rate" for a route's, "fraction" for a scheduled
+    durable fraction's."""
+    kinds = dict.fromkeys(declaration.route_ids(), "rate")
+    for _, r in releases_of(declaration):
+        if r.durable_fraction is None:
+            kinds[r.id] = "fraction"
+    return kinds
+
+
+def _scheduled_value(value, kind, name):
+    if kind == "rate":
+        if not math.isfinite(value) or value < 0:
+            raise ConfigError(f"{LAW_ID}: route {name}'s value is finite and >= 0")
+    elif not math.isfinite(value) or not 0.0 <= value <= 1.0:
+        raise ConfigError(f"{LAW_ID}: release {name}'s durable fraction is in [0, 1]")
+    return float(value)
 
 
 def parse_schedule(raw, base, declaration):
@@ -568,7 +981,8 @@ def parse_schedule(raw, base, declaration):
     if type(rows) is not list:
         raise ConfigError(f"{LAW_ID}: {EXPERIMENT_KEY} is an explicit list")
     dt, end = base.execution.dt, base.experiment.end_time
-    known = list(declaration.route_ids())
+    known = list(declaration.schedule_ids())
+    kinds = _schedule_kinds(declaration)
     schedules = {}
     for row in rows:
         _fields(row, {"route_id", "schedule"}, f"{LAW_ID} control")
@@ -584,14 +998,12 @@ def parse_schedule(raw, base, declaration):
             time = _number(change["time"], f"{LAW_ID}: a schedule time")
             if index == 0 and time != 0.0:
                 raise ConfigError(f"{LAW_ID}: route {name}'s schedule starts at 0")
-            if time != round(time / dt) * dt:
-                raise ConfigError(f"{LAW_ID}: a schedule change is an exact multiple of dt")
+            if grid_time(time, dt) is None:
+                raise ConfigError(f"{LAW_ID}: a schedule change must be {ON_THE_GRID}")
             if index > 0 and not 0.0 < time < end:
                 raise ConfigError(f"{LAW_ID}: a schedule change lies inside 0 < t < end")
             value = _number(change["value"], f"{LAW_ID}: route {name}'s value")
-            if not math.isfinite(value) or value < 0:
-                raise ConfigError(f"{LAW_ID}: route {name}'s value is finite and >= 0")
-            parsed.append((time, float(value)))
+            parsed.append((time, _scheduled_value(value, kinds[name], name)))
         times = [t for t, _ in parsed]
         if any(b <= a for a, b in zip(times, times[1:], strict=False)):
             raise ConfigError(f"{LAW_ID}: route {name}'s schedule times increase strictly")
@@ -654,12 +1066,73 @@ def check_writers(spec, declaration):
             )
 
 
+def check_occupants(spec, declaration, schedule):
+    """Amendment S's refusals at the definition (§9.16, items 1 and 6): a replacement law other
+    than replacement@1; a donor copy into or from a slot of this operator (version 1.1, as D152's);
+    templates that are not replacement templates; a newcomer whose template gives no value for a
+    schedule of its slot; a template value that applies to no schedule of a slot its newcomers
+    fill; and a schedule change of a replaced slot at or after its founder's death (a newcomer's
+    values are its template's, constant through its life)."""
+    for op, _, _ in composite_spec.entries(spec):
+        if op.LAW_ID.startswith(REPLACEMENT_FAMILY) and op.LAW_ID != REPLACEMENT_LAW:
+            raise ConfigError(
+                f"{LAW_ID} composes with {REPLACEMENT_LAW} only, not {op.LAW_ID} (the sheet's "
+                "§9.16)"
+            )
+    replacement, events = common.replacement_of(spec)
+    known = set() if replacement is None else {t.id for t in replacement.templates}
+    rates = {t: dict(r) for t, r in declaration.templates}
+    for tid in rates:
+        if tid not in known:
+            raise ConfigError(f"{LAW_ID} declares values for {tid}, not a replacement template")
+    ours = {e.cell for e in (*declaration.pools, *declaration.chains, *declaration.degradations,
+                             *declaration.transfers)}  # fmt: skip
+    routes = slot_routes(declaration)
+    used, death = set(), {}
+    for v in sorted(events, key=lambda v: v.time):
+        if v.newcomer != "isolated_template" and (v.slot in ours or v.donor in ours):
+            raise ConfigError(
+                f"{LAW_ID}: a donor copy into or from {v.slot if v.slot in ours else v.donor}, a "
+                "slot of this operator, is version 1.1 (the sheet's §9.16)"
+            )
+        if v.slot not in ours:
+            continue
+        death.setdefault(v.slot, v.time)
+        for name in routes.get(v.slot, ()):
+            if name not in rates.get(v.template, {}):
+                raise ConfigError(
+                    f"{LAW_ID}: a newcomer from template {v.template} at {v.slot} takes its "
+                    f"values from the template: declare {v.template} in templates with a value "
+                    f"for {name} (its occupant rule, §9.16)"
+                )
+            used.add((v.template, name))
+    changes = {s.route_id: s.changes for s in schedule}
+    for slot, t_death in death.items():
+        for name in routes.get(slot, ()):
+            late = [t for t, _ in changes[name] if t >= t_death]
+            if late:
+                raise ConfigError(
+                    f"{LAW_ID}: schedule {name} changes at {late[0]} s, at or after its founder's "
+                    f"death at {t_death} s; a newcomer's values are its template's (§9.16)"
+                )
+    for tid, values in rates.items():
+        unused = sorted(set(values) - {n for t, n in used if t == tid})
+        if unused:
+            raise ConfigError(
+                f"{LAW_ID}: template {tid}'s value for {unused[0]} applies to no schedule of a "
+                "slot its newcomers fill"
+            )
+
+
 def check_rate_bound(spec, declaration, schedule):
     """Refuse dt times a route's largest static rate above RATE_BOUND: a chain's kappa, a
     degradation's k, and a gene-templated chain's initiation k_I c_T (the run-time stage
     condition covers the rest)."""
     dt = spec.execution.dt
     top = {s.route_id: max(v for _, v in s.changes) for s in schedule}
+    for _, values in declaration.templates:  # A newcomer's values (§9.16, item 6).
+        for name, value in values:
+            top[name] = max(top[name], value)
     volumes = {c.id: c.volume_pL for c in spec.model.cells}
     for c in declaration.chains:
         kappa = c.speed_per_s * c.stages / c.residues
@@ -674,6 +1147,27 @@ def check_rate_bound(spec, declaration, schedule):
     for d in declaration.degradations:
         if dt * top[d.id] > RATE_BOUND:
             raise ConfigError(f"{LAW_ID}: degradation {d.id} has dt k = {dt * top[d.id]:.3g} > 1")
+    for _, r in releases_of(declaration):
+        if dt / r.dwell_s > RATE_BOUND:
+            raise ConfigError(f"{LAW_ID}: release {r.id} has dt/tau = {dt / r.dwell_s:.3g} > 1")
+
+
+def check_labels(spec, declaration):
+    """FR-42's labels on a release's fate rows (D296): the two fates are one chemistry, its chain's
+    one source labels both (label_sources), and a hold marked at completion carries its labels into
+    either. So where the label owner labels one fate row it labels the other, with the same labels
+    in the same order."""
+    owner = next((d for op, d, _ in composite_spec.entries(spec) if op.LABEL_OWNER), None)
+    if owner is None:
+        return
+    labels = {s.id: s.labels for s in owner.species}
+    for _, r in releases_of(declaration):
+        durable, short = r.fates[0]
+        if labels.get(durable) != labels.get(short):
+            raise ConfigError(
+                f"{LAW_ID}: release {r.id}'s fate rows {durable!r} and {short!r} carry FR-42's "
+                "labels alike or not at all (its chain's one source labels both)"
+            )
 
 
 # ------------------------------------------------------------------ binding
@@ -788,7 +1282,297 @@ def bind(spec, declaration):
         poly_standard_energy_pJ=np.zeros(c),
         poly_energy_magnitude_pJ=np.zeros(c),
     )
+    layout_r, state_r = _bind_releases(declaration, layout, listed, chains)
+    layout |= layout_r
+    state |= state_r
+    layout_s, state_s = _bind_replacement(spec, declaration, layout_r)
+    layout |= layout_s
+    state |= state_s
     return state, layout
+
+
+def replaced_slots(spec, declaration):
+    """The cells, in the model's order, that a replacement@1 event replaces and where this
+    operator has a pool, chain, degradation or transfer (§9.16, item 1); () without one."""
+    _, events = common.replacement_of(spec)
+    ours = {e.cell for e in (*declaration.pools, *declaration.chains, *declaration.degradations,
+                             *declaration.transfers)}  # fmt: skip
+    hit = {v.slot for v in events} & ours
+    return tuple(c.id for c in spec.model.cells if c.id in hit)
+
+
+def _bind_replacement(spec, declaration, release_layout):
+    """Amendment S's layout and state (§9.16): one-hot maps of the replaced slots' chains,
+    releases, degradations and transfers, and their counters, all zero-size without a
+    replacement."""
+    slots = replaced_slots(spec, declaration)
+    cells = [c.id for c in spec.model.cells]
+    at = {cell: i for i, cell in enumerate(slots)}
+    chains, releases = declaration.chains, releases_of(declaration)
+
+    def pick(entities, cell_of):
+        index = [i for i, e in enumerate(entities) if cell_of(e) in at]
+        return index, [at[cell_of(entities[i])] for i in index]
+
+    rc, rc_slot = pick(chains, lambda c: c.cell)
+    rr, rr_slot = pick(releases, lambda pair: pair[0].cell)
+    rd, rd_slot = pick(declaration.degradations, lambda d: d.cell)
+    rt, rt_slot = pick(declaration.transfers, lambda t: t.cell)
+    chain_of = {c.id: k for k, c in enumerate(chains)}
+    rr_chain = [rc.index(chain_of[releases[i][0].id]) for i in rr]
+    classes = release_layout["poly_rel_classes"].shape[1]
+    n = len(slots)
+    layout = dict(
+        poly_rep_slot_cell=np.asarray([cells.index(c) for c in slots], dtype=np.int64),
+        poly_rep_chain_hot=_one_hot(rc, len(chains)),
+        poly_rep_chain_slot_hot=_one_hot(rc_slot, n),
+        poly_rep_release_hot=_one_hot(rr, len(releases)),
+        poly_rep_release_slot_hot=_one_hot(rr_slot, n),
+        poly_rep_release_chain_hot=_one_hot(rr_chain, len(rc)),
+        poly_rep_degradation_hot=_one_hot(rd, len(declaration.degradations)),
+        poly_rep_degradation_slot_hot=_one_hot(rd_slot, n),
+        poly_rep_transfer_hot=_one_hot(rt, len(declaration.transfers)),
+        poly_rep_transfer_slot_hot=_one_hot(rt_slot, n),
+    )
+    counters = (len(rc), len(CHAIN_COUNTERS))
+    state = dict(
+        poly_rep_applied=np.zeros(n, dtype=np.int64),
+        poly_rep_chains_removed_fmol=np.zeros(len(rc)),
+        poly_rep_residues_removed_fmol=np.zeros(len(rc)),
+        poly_rep_removed_energy_pJ=np.zeros(len(rc)),
+        poly_rep_hold_removed_fmol=np.zeros((len(rr), classes)),
+        poly_rep_chain_birth_fmol=np.zeros(counters),
+        poly_rep_chain_departed_fmol=np.zeros(counters),
+        poly_rep_release_birth_fmol=np.zeros((len(rr), classes, len(FATES))),
+        poly_rep_release_departed_fmol=np.zeros((len(rr), classes, len(FATES))),
+        poly_rep_degradation_birth_fmol=np.zeros(len(rd)),
+        poly_rep_degradation_departed_fmol=np.zeros(len(rd)),
+        poly_rep_transfer_birth_fmol=np.zeros(len(rt)),
+        poly_rep_transfer_departed_fmol=np.zeros(len(rt)),
+    )
+    return layout, state
+
+
+def _replaced_sets(spec, declaration):
+    """The run view's sets of the replaced entities' axes (§9.16), empty without a replacement."""
+    slots = replaced_slots(spec, declaration)
+    on = set(slots)
+
+    def axis(name, holds, entities, cell_of):
+        picked = [e for e in entities if cell_of(e) in on]
+        return {
+            "id": name,
+            "ids": tuple((e[1] if isinstance(e, tuple) else e).id for e in picked),
+            "holds": holds,
+            "at": tuple({"cell": cell_of(e)} for e in picked),
+        }
+
+    return {
+        REPLACED_SLOT_AXIS: {
+            "id": REPLACED_SLOT_AXIS,
+            "ids": slots,
+            "holds": "replaced slot",
+            "at": tuple({"cell": c} for c in slots),
+        },
+        REPLACED_CHAIN_AXIS: axis(
+            REPLACED_CHAIN_AXIS, "replaced chain", declaration.chains, lambda c: c.cell
+        ),
+        REPLACED_RELEASE_AXIS: axis(
+            REPLACED_RELEASE_AXIS, "replaced release", releases_of(declaration), lambda e: e[0].cell
+        ),
+        REPLACED_DEGRADATION_AXIS: axis(
+            REPLACED_DEGRADATION_AXIS,
+            "replaced degradation",
+            declaration.degradations,
+            lambda d: d.cell,
+        ),  # fmt: skip
+        REPLACED_TRANSFER_AXIS: axis(
+            REPLACED_TRANSFER_AXIS, "replaced transfer", declaration.transfers, lambda t: t.cell
+        ),
+        COUNTER_AXIS: {
+            "id": COUNTER_AXIS,
+            "ids": ("initiated", "stage_exits", "released"),
+            "holds": "chain counter",
+        },
+    }
+
+
+def slot_routes(declaration):
+    """{cell: (schedule ID, ...)}: each cell's routes' and scheduled releases' schedules."""
+    out = {}
+    for r in (*declaration.chains, *declaration.degradations, *declaration.transfers):
+        out.setdefault(r.cell, []).append(r.id)
+    for c, r in releases_of(declaration):
+        if r.durable_fraction is None:
+            out.setdefault(c.cell, []).append(r.id)
+    return {cell: tuple(ids) for cell, ids in out.items()}
+
+
+def occupant_controls(spec, declaration, values, column, times):
+    """[time, replaced slot] the replacements due by each time (replacement@1's own count, its
+    events at or before the time), and, in place in `values` [time, schedule], the occupant rule
+    (§9.16, item 6): from each newcomer's birth its template's value for every schedule of its
+    slot, constant through its life. Empty without a replacement."""
+    slots = replaced_slots(spec, declaration)
+    times = np.asarray(times, dtype=np.float64)
+    due = np.zeros((times.size, len(slots)))
+    if not slots:
+        return due
+    _, events = common.replacement_of(spec)
+    rates = {t: dict(r) for t, r in declaration.templates}
+    routes = slot_routes(declaration)
+    for j, slot in enumerate(slots):
+        lives = sorted((v for v in events if v.slot == slot), key=lambda v: v.time)
+        at = np.asarray([v.time for v in lives])
+        due[:, j] = np.searchsorted(at, times, side="right")
+        for k, v in enumerate(lives):
+            end = lives[k + 1].time if k + 1 < len(lives) else math.inf
+            live = (times >= v.time) & (times < end)
+            for name in routes.get(slot, ()):  # A missing value: check_occupants refuses it.
+                if name in rates.get(v.template, {}):
+                    values[live, column[name]] = rates[v.template][name]
+    return due
+
+
+def replacing(p):
+    """Whether a replacement@1 event replaces a slot of this operator (static, by its layout's
+    shape): without one no replacement computation is traced (§9.16, item 9)."""
+    return p.poly_rep_slot_cell.shape[0] > 0
+
+
+def _gather(hot, values, *, xp):
+    """values' rows that the one-hot map `hot` picks, [picked, ...]: exact (one product by 1)."""
+    width = math.prod(values.shape[1:])
+    flat = values.reshape(values.shape[0], width)
+    return (hot @ flat).reshape((hot.shape[0], *values.shape[1:]))
+
+
+def _spread(hot, mask, *, xp):
+    """[entity] bool: the entities that `hot` picks where mask (over the picked) holds."""
+    return (xp.where(mask, 1.0, 0.0) @ hot) > 0
+
+
+def hold_report(state, release_due, p, *, xp):
+    """[release] the holds the event empties, H summed over the class axis from the state before
+    it where the release's slot is due, 0 elsewhere: its label_pools' entries, in order (FR-42's
+    pool reporter's report; erratum E, §9.18)."""
+    return xp.where(release_due, entity_sum(state.poly_hold_fmol, axis=1, xp=xp), 0.0)
+
+
+def poly_event(state, control, p, *, xp=jnp):
+    """Amendment S's event (§9.16, item 2), at the start of the step leaving an event time: on each
+    replaced slot whose next replacement is due, its chains in progress and its holds leave
+    (counted, with the standard free energy leaving with them, never as heat), its pools' machines
+    are all free, and each counter's value becomes the newcomer's birth value, the departed
+    generation's totals recorded. It reads only its own state and its control, so its place among
+    the events does not matter. Returns (state, valid, removed): removed the holds it emptied
+    (hold_report). (state, None, None) statically without a replacement; nothing due: the
+    start state, bitwise."""
+    if not replacing(p):
+        return state, None, None
+    applied = state.poly_rep_applied
+    count = getattr(control, REPLACEMENTS_DUE)
+    due = count == applied + 1  # [replaced slot]
+    valid = xp.all(due | (count == applied))  # A stale count refuses the step.
+    due_f = xp.where(due, 1.0, 0.0)
+    rc = (p.poly_rep_chain_slot_hot @ due_f) > 0  # [replaced chain]
+    rr = (p.poly_rep_release_slot_hot @ due_f) > 0
+    rd = (p.poly_rep_degradation_slot_hot @ due_f) > 0
+    rt = (p.poly_rep_transfer_slot_hot @ due_f) > 0
+    chain_due = _spread(p.poly_rep_chain_hot, rc, xp=xp)  # [chain]
+    complexes = _gather(p.poly_rep_chain_hot, state.poly_complexes_fmol, xp=xp)  # [rc, stage]
+    held = _gather(p.poly_rep_chain_hot, p.poly_chain_held, xp=xp)
+    chains_out = entity_sum(complexes, axis=1, xp=xp)
+    residues_out = entity_sum(held * complexes, axis=1, xp=xp)
+    hold = _gather(p.poly_rep_release_hot, state.poly_hold_fmol, xp=xp)  # [rr, class]
+    length = p.poly_rep_chain_hot @ p.poly_chain_length  # [rc]
+    hold_residues = p.poly_rep_release_chain_hot.T @ entity_sum(hold, axis=1, xp=xp)  # [rc]
+    rt_pJ = 1e-3 * R * p.temperature
+    mu_res = p.poly_rep_chain_hot @ p.poly_chain_residue_mu_RT
+    energy_out = rt_pJ * mu_res * (residues_out + length * hold_residues)
+    counters = xp.stack(
+        [p.poly_rep_chain_hot @ getattr(state, name) for name in CHAIN_COUNTERS], axis=1
+    )  # [rc, counter]
+    releases = _gather(p.poly_rep_release_hot, state.poly_hold_released_fmol, xp=xp)
+    degraded = p.poly_rep_degradation_hot @ state.poly_degraded_fmol
+    transferred = p.poly_rep_transfer_hot @ state.poly_transferred_fmol
+
+    def add(name, mask, term):
+        value = getattr(state, name)
+        return xp.where(mask.reshape(mask.shape + (1,) * (value.ndim - 1)), value + term, value)
+
+    def born(birth, departed, mask, now):
+        b, d = getattr(state, birth), getattr(state, departed)
+        m = mask.reshape(mask.shape + (1,) * (b.ndim - 1))
+        return {birth: xp.where(m, now, b), departed: xp.where(m, now - b, d)}
+
+    pool_due = _spread(p.poly_chain_pool, chain_due, xp=xp)  # [pool]
+    release_due = _spread(p.poly_rep_release_hot, rr, xp=xp)  # [release]
+    new = state._replace(
+        poly_complexes_fmol=xp.where(chain_due[:, None], 0.0, state.poly_complexes_fmol),
+        poly_free_machines_fmol=xp.where(
+            pool_due, p.poly_pool_total_fmol, state.poly_free_machines_fmol
+        ),
+        poly_hold_fmol=xp.where(release_due[:, None], 0.0, state.poly_hold_fmol),
+        poly_rep_applied=xp.where(due, applied + 1, applied),
+        poly_rep_chains_removed_fmol=add("poly_rep_chains_removed_fmol", rc, chains_out),
+        poly_rep_residues_removed_fmol=add("poly_rep_residues_removed_fmol", rc, residues_out),
+        poly_rep_removed_energy_pJ=add("poly_rep_removed_energy_pJ", rc, energy_out),
+        poly_rep_hold_removed_fmol=add("poly_rep_hold_removed_fmol", rr, hold),
+        **born("poly_rep_chain_birth_fmol", "poly_rep_chain_departed_fmol", rc, counters),
+        **born("poly_rep_release_birth_fmol", "poly_rep_release_departed_fmol", rr, releases),
+        **born(
+            "poly_rep_degradation_birth_fmol", "poly_rep_degradation_departed_fmol", rd, degraded
+        ),  # fmt: skip
+        **born(
+            "poly_rep_transfer_birth_fmol", "poly_rep_transfer_departed_fmol", rt, transferred
+        ),  # fmt: skip
+    )
+    valid &= xp.all(xp.isfinite(energy_out))
+    flowing = xp.any(due)  # Nothing due: the start state, bitwise.
+    selected = type(state)(*(xp.where(flowing, a, b) for a, b in zip(new, state, strict=True)))
+    return selected, valid, hold_report(state, release_due, p, xp=xp)
+
+
+def _bind_releases(declaration, layout, listed, chains):
+    """The release's layout and state (the sheet's §9), empty without a release block; with a held
+    hold, its pool's free machines start at M - sum H(0)."""
+    releases = releases_of(declaration)
+    k, fates = len(listed), len(FATES)
+    classes = max((len(r.fates) for _, r in releases), default=0)
+    chain_index = {c.id: i for i, c in enumerate(chains)}
+    present = np.zeros((len(releases), classes), dtype=bool)
+    fate = np.zeros((len(releases), classes, fates, k))
+    hold0 = np.zeros((len(releases), classes))
+    for i, (_, r) in enumerate(releases):
+        present[i, : len(r.fates)] = True
+        for j, pair in enumerate(r.fates):
+            for f, row in enumerate(pair):
+                fate[i, j, f, listed.index(row)] = 1.0
+        hold0[i, : len(r.initial_copies)] = np.asarray(r.initial_copies) * COPY_FMOL
+    out = dict(
+        poly_rel_chain=_one_hot([chain_index[c.id] for c, _ in releases], len(chains)),
+        poly_rel_rate=np.asarray([1.0 / r.dwell_s for _, r in releases], dtype=float),
+        poly_rel_held=np.asarray([float(r.machine == "held") for _, r in releases], dtype=float),
+        # 1 where FR-42's labels mark the release (the default), 0 where the hold carries them.
+        poly_rel_at_release=np.asarray(
+            [float(r.label is None or r.label.at == "release") for _, r in releases],
+            dtype=float,
+        ),
+        poly_rel_classes=present,
+        poly_rel_fate=fate,
+        poly_rel_hold0_fmol=hold0,
+    )
+    state = dict(
+        poly_hold_fmol=hold0.copy(),
+        poly_hold_released_fmol=np.zeros((len(releases), classes, fates)),
+        poly_release_heat_pJ=np.zeros((len(releases), classes, fates)),
+    )
+    if releases:
+        held = out["poly_rel_held"] * entity_sum(hold0, axis=1, xp=np)  # [release]
+        engaged = (held @ out["poly_rel_chain"]) @ layout["poly_chain_pool"]  # [pool]
+        state["poly_free_machines_fmol"] = layout["poly_pool_total_fmol"] - engaged
+    return out, state
 
 
 # ------------------------------------------------------------------ the law
@@ -799,11 +1583,56 @@ def _product(values, mask, *, xp):
     return xp.prod(xp.where(mask, values, 1.0), axis=-1)
 
 
-def fluxes(n, free, complexes, controls, p, volume, *, xp):
+def releasing(p):
+    """Whether the definition declares a release (static, by its layout's shape): without one no
+    release computation is traced."""
+    return p.poly_rel_rate.shape[0] > 0
+
+
+def _with_release(p, *, xp):
+    """[chain] 1 where the chain declares a release, else 0."""
+    return entity_sum(p.poly_rel_chain, axis=0, xp=xp)
+
+
+def _product_ok(product, p, *, xp):
+    """A chain's product at or below c° (its domain where the chain is in use). A chain with a
+    release puts no product row in use at completion (the sheet's §9.6), so it is exempt."""
+    ok = product <= STANDARD_MM
+    if releasing(p):
+        ok = ok | (_with_release(p, xp=xp) > 0)
+    return ok
+
+
+def class_weights(label, p, *, xp):
+    """(psi, first) [release, class]: the one-hot of each release's class psi(t), and of class 1."""
+    index = xp.arange(1, p.poly_rel_classes.shape[1] + 1, dtype=float)
+    psi = xp.where(p.poly_rel_classes & (index[None, :] == label[:, None]), 1.0, 0.0)
+    first = xp.where(p.poly_rel_classes & (index[None, :] == 1.0), 1.0, 0.0)
+    return psi, first
+
+
+def release_flux(c, hold, fraction, label, p, *, xp):
+    """Q^f [release, class, fate] (fmol/s) into each class's fate rows: the hold's first-order exit
+    at 1/tau split p, 1 - p (the sheet's §9.2), with no affinity factor. Hold class k feeds class
+    k's rows; with the label at release the hold's one class feeds class psi(t)'s. With its domain
+    (§9.6): c_F <= c° at every fate row a positive flux feeds."""
+    psi, _ = class_weights(label, p, xp=xp)
+    whole = entity_sum(hold, axis=1, xp=xp)  # [release] the hold, every class.
+    source = xp.where(p.poly_rel_at_release[:, None] > 0, psi * whole[:, None], hold)
+    split = xp.stack([fraction, 1.0 - fraction], axis=-1)  # [release, fate]
+    flux = (p.poly_rel_rate[:, None] * source)[:, :, None] * split[:, None, :]
+    c_release = p.poly_rel_chain @ (p.poly_chain_cell @ c.T)  # [release, k] at its chain's cell
+    c_fate = xp.transpose(
+        species_sum(xp.transpose(p.poly_rel_fate * c_release[:, None, None, :]), xp=xp)
+    )  # [release, class, fate]
+    return flux, xp.all(xp.where(flux > 0, c_fate <= STANDARD_MM, True))
+
+
+def fluxes(n, free, complexes, controls, p, volume, *, xp, hold=None, one_way=False):
     """Every route's flux at amounts n [k, cell] (fmol), free machines [pool] and complexes
-    [chain, stage]; with the affinities its domain reads and the unidirectional rates its stage
-    condition reads."""
-    init_rate, deg_rate, tr_cap = controls
+    [chain, stage], and with a release its hold [release, class]; with the affinities its domain
+    reads and the unidirectional rates its stage condition reads."""
+    init_rate, deg_rate, tr_cap = controls[:3]
     c = n / volume[None, :]  # mM.
     ln_rel = xp.log(c / p.poly_c0_mM)  # ln(c/c0)
     mu = p.poly_mu_RT[:, None] + ln_rel  # [k, cell] mu/RT.
@@ -841,7 +1670,7 @@ def fluxes(n, free, complexes, controls, p, volume, *, xp):
     backward = forward * xp.exp(x_tr / p.poly_tr_share)
     # The one-sided domains, at the routes in use.
     in_use = (entity_sum(complexes, axis=1, xp=xp) > 0) | (j_init > 0)
-    ok = xp.all(xp.where(in_use, (x_chain <= X_DOM) & (product <= STANDARD_MM), True))
+    ok = xp.all(xp.where(in_use, (x_chain <= X_DOM) & _product_ok(product, p, xp=xp), True))
     ok &= xp.all(xp.where((deg_rate > 0) & (polymer > 0), y <= X_DOM, True))
     # Unidirectional consumption per (row, cell), the stage condition's rates.
     s_total = entity_sum(j_stage, axis=1, xp=xp)  # [chain] every stage's exits.
@@ -851,22 +1680,36 @@ def fluxes(n, free, complexes, controls, p, volume, *, xp):
         xp.where(p.poly_tr_nu < 0, -p.poly_tr_nu, 0.0) * forward[:, None]
         + xp.where(p.poly_tr_nu > 0, p.poly_tr_nu, 0.0) * backward[:, None]
     ).T @ p.poly_tr_cell
-    return (j_init, j_stage, j_deg, j_tr), dict(
-        ok=ok,
-        stage=stage,
-        lam_pool=p.poly_chain_pool.T @ lam,
-        used=used,
-    )
+    routes = (j_init, j_stage, j_deg, j_tr)
+    info = dict(ok=ok, stage=stage, lam_pool=p.poly_chain_pool.T @ lam, used=used)
+    if one_way:  # Static (FR-42): the two-sided routes' one-way parts, for labelled rows.
+        info |= dict(deg_forward=deg_rate * polymer, tr_forward=forward, tr_backward=backward)
+        info["deg_backward"] = info["deg_forward"] * xp.exp(y)
+    if releasing(p):
+        j_rel, release_ok = release_flux(c, hold, controls[3], controls[4], p, xp=xp)
+        routes += (j_rel,)
+        info["ok"] = ok & release_ok
+    return routes, info
 
 
-def changes(j_init, j_stage, j_deg, j_tr, p, *, xp):
-    """(dn [k, cell], d free [pool], d complexes [chain, stage], produced, consumed) of fluxes or
-    their extents: A J, every move's stoichiometry (the sheet's §4.7)."""
+def _completed_rows(p, *, xp):
+    """The rows a completion joins: its product's, or none for a chain with a release, whose
+    completions join its hold (the sheet's §9.7)."""
+    if not releasing(p):
+        return p.poly_chain_product
+    return p.poly_chain_product * (1.0 - _with_release(p, xp=xp))[:, None]
+
+
+def changes(j_init, j_stage, j_deg, j_tr, p, *, xp, j_rel=None, weights=None):
+    """(dn [k, cell], d free [pool], d complexes [chain, stage], produced, consumed), and with a
+    release d hold [release, class], of fluxes or their extents: A J, every move's stoichiometry
+    (the sheet's §4.7 and §9.7). weights: (arrival, first) [release, class], the one-hots of each
+    release's arrival class and of class 1 (class_weights)."""
     s_total = entity_sum(j_stage, axis=1, xp=xp)
     released = entity_sum(xp.where(p.poly_chain_last, j_stage, 0.0), axis=1, xp=xp)
     r = p.poly_chain_r[:, None]
     chain_made = r * s_total[:, None] * p.poly_chain_releases + released[:, None] * (
-        p.poly_chain_product
+        _completed_rows(p, xp=xp)
     )
     chain_used = r * s_total[:, None] * p.poly_chain_draws
     deg_made = (p.poly_deg_length * j_deg)[:, None] * p.poly_deg_monomers
@@ -882,10 +1725,26 @@ def changes(j_init, j_stage, j_deg, j_tr, p, *, xp):
         + deg_used.T @ p.poly_deg_cell
         + xp.where(tr < 0, -tr, 0.0).T @ p.poly_tr_cell
     )
-    d_free = (released - j_init) @ p.poly_chain_pool
+    if j_rel is None:
+        d_free = (released - j_init) @ p.poly_chain_pool
+    else:  # A held machine returns at release, not at completion (the sheet's §9.3).
+        held = p.poly_rel_held @ p.poly_rel_chain  # [chain]
+        out = entity_sum(j_rel, axis=(1, 2), xp=xp)  # [release] every release
+        freed = released * (1.0 - held) + (p.poly_rel_held * out) @ p.poly_rel_chain
+        d_free = (freed - j_init) @ p.poly_chain_pool
     upstream = xp.concatenate([j_init[:, None], j_stage[:, :-1]], axis=1)
     d_complexes = xp.where(p.poly_chain_present, upstream - j_stage, 0.0)
-    return produced - consumed, d_free, d_complexes, produced, consumed
+    if j_rel is None:
+        return produced - consumed, d_free, d_complexes, produced, consumed
+    # The release (the sheet's §9.7): arrivals join the hold's class; releases leave it into each
+    # class's fate rows, all from class 1 where the label marks the release.
+    arrival, first = weights
+    made = entity_sum(j_rel[..., None] * p.poly_rel_fate, axis=(1, 2), xp=xp)  # [release, k]
+    produced = produced + made.T @ (p.poly_rel_chain @ p.poly_chain_cell)
+    into = entity_sum(j_rel, axis=2, xp=xp)  # [release, class]
+    leave = xp.where(p.poly_rel_at_release[:, None] > 0, first * out[:, None], into)
+    d_hold = (p.poly_rel_chain @ released)[:, None] * arrival - leave
+    return produced - consumed, d_free, d_complexes, produced, consumed, d_hold
 
 
 def divided_potential(n, dn, volume, p, rt, *, xp):
@@ -901,10 +1760,21 @@ def divided_potential(n, dn, volume, p, rt, *, xp):
     return rt * (xp.log(n / volume[None, :]) + ratio - 1.0 + standard)
 
 
+def _completion_term(released, mu_chain, rt, p, *, xp):
+    """A completion's move, pJ: the product joining its row at mu-bar, or with a release the hold,
+    at L mu°_res per molecule (the sheet's §9.5)."""
+    term = released * species_sum((p.poly_chain_product * mu_chain).T, xp=xp)
+    if releasing(p):
+        hold = released * rt * p.poly_chain_length * p.poly_chain_residue_mu_RT
+        term = xp.where(_with_release(p, xp=xp) > 0, hold, term)
+    return term
+
+
 def route_heats(n0, dn, d_transit, extents, volume, active, p, rt, *, xp):
     """Each route's heat over the half-step (module docstring, Energy), pJ: (chain [chain],
-    degradation [deg], transfer [transfer]), zero at an inactive cell."""
-    j_init, j_stage, j_deg, j_tr = extents
+    degradation [deg], transfer [transfer]), and with a release each fate row's release [release,
+    class, fate] (H_rel: -(mu-bar_F - L mu°_res) per molecule), zero at an inactive cell."""
+    j_init, j_stage, j_deg, j_tr = extents[:4]
     mu_bar = divided_potential(n0, dn, volume, p, rt, xp=xp)  # [k, cell]
     on = xp.where(active, 1.0, 0.0)
     s_total = entity_sum(j_stage, axis=1, xp=xp)
@@ -912,7 +1782,7 @@ def route_heats(n0, dn, d_transit, extents, volume, active, p, rt, *, xp):
     mu_chain = p.poly_chain_cell @ mu_bar.T  # [chain, k]
     chain = -(
         p.poly_chain_r * s_total * species_sum((p.poly_chain_net * mu_chain).T, xp=xp)
-        + released * species_sum((p.poly_chain_product * mu_chain).T, xp=xp)
+        + _completion_term(released, mu_chain, rt, p, xp=xp)
         + rt * p.poly_chain_residue_mu_RT * d_transit
     )
     mu_deg = p.poly_deg_cell @ mu_bar.T
@@ -921,21 +1791,43 @@ def route_heats(n0, dn, d_transit, extents, volume, active, p, rt, *, xp):
         - species_sum((p.poly_deg_polymer * mu_deg).T, xp=xp)
     )
     transfer = -j_tr * species_sum((p.poly_tr_nu * (p.poly_tr_cell @ mu_bar.T)).T, xp=xp)
-    return (
+    heats = (
         xp.where(p.poly_chain_cell @ on > 0, chain, 0.0),
         xp.where(p.poly_deg_cell @ on > 0, degradation, 0.0),
         xp.where(p.poly_tr_cell @ on > 0, transfer, 0.0),
     )
+    if len(extents) == 4:
+        return heats
+    mu_release = p.poly_rel_chain @ mu_chain  # [release, k] at its chain's cell
+    mu_fate = xp.transpose(
+        species_sum(xp.transpose(p.poly_rel_fate * mu_release[:, None, None, :]), xp=xp)
+    )  # [release, class, fate]
+    held = rt * (p.poly_rel_chain @ (p.poly_chain_length * p.poly_chain_residue_mu_RT))
+    release = -extents[4] * (mu_fate - held[:, None, None])
+    on_release = (p.poly_rel_chain @ p.poly_chain_cell) @ on > 0
+    return (*heats, xp.where(on_release[:, None, None], release, 0.0))
 
 
-def poly_half_step(state, controls, h, p, *, xp=jnp):
-    """(state after h, valid): SSPRK(3,3) on the operator's variables, every move booked."""
+def poly_half_step(state, controls, h, p, *, xp=jnp, labels=None):
+    """(state after h, valid): SSPRK(3,3) on the operator's variables, every move booked. With
+    labels (FR-42, D289; static), (state, valid, moves): moves (one_way_moves) from the same
+    combination of the stages' one-way fluxes as the booked move."""
     rows, active = p.poly_rows, p.active
     volume = xp.where(active, p.volume, 1.0)
     n0 = xp.where(active[None, :], p.amount_reference[rows] + state.amount_increment[rows], 1.0)
     f0, c0 = state.poly_free_machines_fmol, state.poly_complexes_fmol
+    rel = releasing(p)  # Static: the release's variables only where a release is declared.
+    hold0 = state.poly_hold_fmol if rel else None
+    if rel:
+        psi, first = class_weights(controls[4], p, xp=xp)
+        weights = (xp.where(p.poly_rel_at_release[:, None] > 0, first, psi), first)
 
-    def stage_valid(n, free, complexes, info):
+    def move(routes):
+        if rel:
+            return changes(*routes[:4], p, xp=xp, j_rel=routes[4], weights=weights)
+        return changes(*routes, p, xp=xp)
+
+    def stage_valid(n, free, complexes, info, hold=None):
         valid = info["ok"]
         valid &= xp.all(xp.where(active[None, :], xp.isfinite(n) & (n > 0), True))
         valid &= xp.all(xp.isfinite(free) & (free >= 0))
@@ -943,21 +1835,27 @@ def poly_half_step(state, controls, h, p, *, xp=jnp):
         valid &= xp.all(h * info["stage"] <= THETA)
         valid &= xp.all(h * info["lam_pool"] <= THETA)
         valid &= xp.all(xp.where(active[None, :], h * info["used"] <= THETA * n, True))
+        if hold is not None:  # The hold, and its exit's stage condition h/tau <= THETA.
+            valid &= xp.all(xp.isfinite(hold) & (hold >= 0))
+            valid &= xp.all(h * p.poly_rel_rate <= THETA)
         return valid
 
-    j1, i1 = fluxes(n0, f0, c0, controls, p, volume, xp=xp)
-    d1 = changes(*j1, p, xp=xp)
+    one_way = labels is not None
+    j1, i1 = fluxes(n0, f0, c0, controls, p, volume, xp=xp, hold=hold0, one_way=one_way)
+    d1 = move(j1)
     y2 = (n0 + h * d1[0], f0 + h * d1[1], c0 + h * d1[2])
-    j2, i2 = fluxes(*y2, controls, p, volume, xp=xp)
-    d2 = changes(*j2, p, xp=xp)
+    hold2 = hold0 + h * d1[5] if rel else None
+    j2, i2 = fluxes(*y2, controls, p, volume, xp=xp, hold=hold2, one_way=one_way)
+    d2 = move(j2)
     y3 = (
         n0 + h * (d1[0] + d2[0]) / 4,
         f0 + h * (d1[1] + d2[1]) / 4,
         c0 + h * (d1[2] + d2[2]) / 4,
     )
-    j3, i3 = fluxes(*y3, controls, p, volume, xp=xp)
+    hold3 = hold0 + h * (d1[5] + d2[5]) / 4 if rel else None
+    j3, i3 = fluxes(*y3, controls, p, volume, xp=xp, hold=hold3, one_way=one_way)
     extents = tuple(h * (a + b + 4 * c) / 6 for a, b, c in zip(j1, j2, j3, strict=True))
-    dn, d_free, d_complexes, produced, consumed = changes(*extents, p, xp=xp)
+    dn, d_free, d_complexes, produced, consumed, *d_hold = move(extents)
     dn = xp.where(active[None, :], dn, 0.0)
     produced = xp.where(active[None, :], produced, 0.0)
     consumed = xp.where(active[None, :], consumed, 0.0)
@@ -974,6 +1872,12 @@ def poly_half_step(state, controls, h, p, *, xp=jnp):
     )  # dW: j r residues per complex.
     transit = (rt * p.poly_chain_residue_mu_RT * d_transit) @ p.poly_chain_cell
     standard = species_sum(std_terms, xp=xp) + transit
+    if rel:  # The hold's standard term, L mu°_res per molecule held (the sheet's §9.5).
+        (d_hold,) = d_hold
+        on_cell = p.poly_rel_chain @ p.poly_chain_cell  # [release, cell]
+        per_held = rt * (p.poly_rel_chain @ (p.poly_chain_length * p.poly_chain_residue_mu_RT))
+        held_terms = per_held * entity_sum(d_hold, axis=1, xp=xp)  # [release] pJ
+        standard = standard + held_terms @ on_cell
     heat = -(chem + standard)
     magnitude = (
         species_sum(
@@ -983,11 +1887,12 @@ def poly_half_step(state, controls, h, p, *, xp=jnp):
         + species_sum(xp.abs(std_terms), xp=xp)
         + xp.abs(rt * p.poly_chain_residue_mu_RT * d_transit) @ p.poly_chain_cell
     )
-    chain_heat, deg_heat, tr_heat = route_heats(
-        n0, dn, d_transit, extents, volume, active, p, rt, xp=xp
-    )
+    if rel:
+        magnitude = magnitude + xp.abs(held_terms) @ on_cell
+    heats = route_heats(n0, dn, d_transit, extents, volume, active, p, rt, xp=xp)
+    chain_heat, deg_heat, tr_heat = heats[:3]
     full = state.amount_increment.shape[0]
-    j_init, j_stage, j_deg, j_tr = extents
+    j_init, j_stage, j_deg, j_tr = extents[:4]
     new = state._replace(
         amount_increment=_set_rows(state.amount_increment, rows,
                                    state.amount_increment[rows] + dn, xp=xp),
@@ -1010,13 +1915,121 @@ def poly_half_step(state, controls, h, p, *, xp=jnp):
         + xp.where(active, magnitude, 0.0),
     )  # fmt: skip
     flowing = xp.any(j_init > 0) | xp.any(j_stage > 0) | xp.any(j_deg > 0) | xp.any(j_tr != 0)
+    if rel:
+        hold1 = hold0 + d_hold
+        new = new._replace(
+            poly_hold_fmol=hold1,
+            poly_hold_released_fmol=state.poly_hold_released_fmol + extents[4],
+            poly_release_heat_pJ=state.poly_release_heat_pJ + heats[3],
+        )
+        flowing = flowing | xp.any(extents[4] > 0)
     selected = type(state)(*(xp.where(flowing, a, b) for a, b in zip(new, state, strict=True)))
-    valid = stage_valid(n0, f0, c0, i1) & stage_valid(*y2, i2) & stage_valid(*y3, i3)
+    valid = stage_valid(n0, f0, c0, i1, hold0) & stage_valid(*y2, i2, hold2)
+    valid &= stage_valid(*y3, i3, hold3)
     valid &= xp.all(xp.where(active[None, :], xp.isfinite(n1) & (n1 > 0), True))
     valid &= xp.all(xp.isfinite(free1) & (free1 >= 0))
     valid &= xp.all(xp.isfinite(complexes1) & (complexes1 >= 0))
+    if rel:
+        valid &= xp.all(xp.isfinite(hold1) & (hold1 >= 0))
     valid &= own_valid(selected, xp=xp)
-    return selected, valid
+    if not one_way:
+        return selected, valid
+    parts = {k: h * (i1[k] + i2[k] + 4 * i3[k]) / 6 for k in ONE_WAY_PARTS}
+    holds = (hold0, selected.poly_hold_fmol) if rel else None
+    out, into, pools = one_way_moves(extents, parts, labels, p, xp=xp, holds=holds)
+    on = active[None, :] & flowing  # Nothing moves where the start state is kept.
+    out, into = xp.where(on, out, 0.0), xp.where(on[:, None, :], into, 0.0)
+    n0p, n1p, intop, outp, (amount, source, destination) = pools
+    pools = (n0p, n1p, xp.where(flowing, intop, 0.0), xp.where(flowing, outp, 0.0),
+             (xp.where(flowing, amount, 0.0), source, destination))  # fmt: skip
+    return selected, valid, (out, into, (), pools)
+
+
+ONE_WAY_PARTS = ("deg_forward", "deg_backward", "tr_forward", "tr_backward")
+
+
+def _by_label(weight, label, node, *, xp):
+    """[m, label, node]: over entities c, weight [m, c] at c's label [c, label] and c's node
+    [c, node] (one-hot)."""
+    labelled = weight[:, :, None] * label[None, :, :]  # [m, c, label]
+    return xp.matmul(xp.transpose(labelled, (0, 2, 1)), node)
+
+
+def one_way_moves(extents, parts, labels, p, *, xp, holds=None):
+    """(out [m, cell], into [m, label, cell], pools) of the labelled rows over a half-step (FR-42's
+    interface, D289, with D296's sources and pools): each row's one-way consumption, which the share
+    owner splits by the row's shares, and its one-way production by label. labels is (rows [m],
+    the composite's species indices; arrival [m, label], one-hot, each row's window label; source
+    [S, label], one-hot, each chain's label this step, the first chains' rows mine: label_sources).
+    - Out: chain draws, forward degradation's polymer (k n), re-synthesis's monomers (k n e^y),
+      and each transfer direction's consumed side.
+    - Into at the row's window label: chain releases of monomers, forward degradation's monomers,
+      re-synthesis's polymer and each transfer direction's produced side. Into at the chain's
+      source label: its products, and a release's fate releases where FR-42's labels mark the
+      release.
+    - Pools, one entry per release (its hold; label_pools): the hold at the half-step's start and
+      end; its completions, at the chain's source label where its labels mark the completion and
+      at the base otherwise; its losses, the releases it does not carry; and carried, each release
+      marked at completion into a labelled fate row, from the hold's site (M N + release) to the
+      row's site at the chain's cell (j N + k), keeping the hold's labels. Never also in into.
+    Each row's and each hold's change is its into minus out, plus carried in minus carried out,
+    at rounding."""
+    rows, arrival, source = labels
+    j_init, j_stage, j_deg, j_tr = extents[:4]
+    s_total = entity_sum(j_stage, axis=1, xp=xp)
+    completed = entity_sum(xp.where(p.poly_chain_last, j_stage, 0.0), axis=1, xp=xp)
+    r = p.poly_chain_r[:, None]
+    chain_in = r * s_total[:, None] * p.poly_chain_releases
+    chain_out = r * s_total[:, None] * p.poly_chain_draws
+    length = p.poly_deg_length[:, None]
+    fwd, bwd = parts["deg_forward"][:, None], parts["deg_backward"][:, None]
+    deg_out = fwd * p.poly_deg_polymer + length * bwd * p.poly_deg_monomers
+    deg_in = length * fwd * p.poly_deg_monomers + bwd * p.poly_deg_polymer
+    made = xp.where(p.poly_tr_nu > 0, p.poly_tr_nu, 0.0)
+    taken = xp.where(p.poly_tr_nu < 0, -p.poly_tr_nu, 0.0)
+    forward, backward = parts["tr_forward"][:, None], parts["tr_backward"][:, None]
+    tr_out, tr_in = forward * taken + backward * made, forward * made + backward * taken
+    out = chain_out.T @ p.poly_chain_cell + deg_out.T @ p.poly_deg_cell + tr_out.T @ p.poly_tr_cell
+    window = chain_in.T @ p.poly_chain_cell + deg_in.T @ p.poly_deg_cell + tr_in.T @ p.poly_tr_cell
+    pick = xp.where(p.poly_rows[None, :] == xp.asarray(rows)[:, None], 1.0, 0.0)  # [m, k]
+    into = arrival[:, :, None] * (pick @ window)[:, None, :]
+    width = arrival.shape[1]
+    tag = source[: p.poly_chain_kappa.shape[0]]  # [chain, label]: each chain's label this step.
+    products = (pick @ _completed_rows(p, xp=xp).T) * completed[None, :]  # [m, chain]
+    into = into + _by_label(products, tag, p.poly_chain_cell, xp=xp)
+    if not releasing(p):
+        none = xp.zeros(0)
+        empty = (none, xp.zeros(0, dtype=xp.int64), xp.zeros(0, dtype=xp.int64))
+        return pick @ out, into, (none, none, xp.zeros((0, width)), none, empty)
+    # The release (one class): each fate f's releases [release, fate] and where they go.
+    hold0, hold1 = holds
+    released = extents[4][:, 0, :]  # [release, fate]
+    cell = p.poly_rel_chain @ p.poly_chain_cell  # [release, cell]
+    label = p.poly_rel_chain @ tag  # [release, label]: its chain's label this step.
+    marked = p.poly_rel_at_release  # [release]: 1 marked at release, 0 at completion.
+    fate = p.poly_rel_fate[:, 0]  # [release, fate, k]
+    hit = xp.stack([pick @ fate[:, f, :].T for f in range(len(FATES))], axis=-1)  # [m, r, fate]
+    at_release = hit[:, :, 0] * (released[:, 0] * marked)[None, :]
+    at_release = at_release + hit[:, :, 1] * (released[:, 1] * marked)[None, :]  # [m, release]
+    into = into + _by_label(at_release, label, cell, xp=xp)
+    # Marked at completion: the hold carries its labels into each labelled fate row.
+    labelled = entity_sum(hit, axis=0, xp=xp)  # [release, fate]: 1 where the row is labelled.
+    carries = labelled * (1.0 - marked)[:, None]  # [release, fate]
+    m, nodes = hit.shape[0], p.active.shape[0] + p.outside_active.shape[0]
+    position = entity_sum(xp.arange(m, dtype=float)[:, None, None] * hit, axis=0, xp=xp)
+    at = cell @ xp.arange(cell.shape[1], dtype=float)  # [release] its cell's index.
+    count = released.shape[0]
+    destination = xp.reshape(position * nodes + at[:, None], (-1,)).astype(xp.int64)
+    origin = xp.repeat(m * nodes + xp.arange(count, dtype=float), len(FATES)).astype(xp.int64)
+    amount = xp.reshape(released * carries, (-1,))
+    lost = released[:, 0] * (1.0 - carries[:, 0]) + released[:, 1] * (1.0 - carries[:, 1])
+    # Its completions: at the chain's label where they are marked, else at the base.
+    base = xp.where(xp.arange(width) == 0, 1.0, 0.0)[None, :]
+    known = entity_sum(label, axis=1, xp=xp)[:, None] > 0  # The chain's row is labelled.
+    entering = (1.0 - marked)[:, None] * xp.where(known, label, base) + marked[:, None] * base
+    arrivals = (p.poly_rel_chain @ completed)[:, None] * entering  # [release, label]
+    pools = (hold0[:, 0], hold1[:, 0], arrivals, lost, (amount, origin, destination))
+    return pick @ out, into, pools
 
 
 def _on_species(full, rows, values, *, xp):
@@ -1035,6 +2048,30 @@ def _set_rows(full, rows, values, *, xp):
     out = np.array(full, copy=True)
     out[rows] = values
     return out
+
+
+def _held(hold, p, *, xp):
+    """[pool] the machines a held hold engages."""
+    return ((p.poly_rel_held * entity_sum(hold, axis=1, xp=xp)) @ p.poly_rel_chain) @ (
+        p.poly_chain_pool
+    )
+
+
+def _hold_terms(row, p, *, xp, magnitude=False):
+    """([release] ∫Q of its chain, the hold H, the releases sum ∫Q^f), their absolute values with
+    magnitude."""
+    size = xp.abs if magnitude else (lambda v: v)
+    completed = p.poly_rel_chain @ size(row.poly_released_fmol)
+    held = entity_sum(size(row.poly_hold_fmol), axis=1, xp=xp)
+    released = entity_sum(size(row.poly_hold_released_fmol), axis=(1, 2), xp=xp)
+    return completed, held, released
+
+
+def _hold_removed(row, p, *, xp, magnitude=False):
+    """[release] the holds removed at replacements, H^rem (§9.16), absolute with magnitude."""
+    removed = row.poly_rep_hold_removed_fmol
+    removed = xp.abs(removed) if magnitude else removed
+    return p.poly_rep_release_hot.T @ entity_sum(removed, axis=1, xp=xp)
 
 
 def own_valid(state, *, xp):
@@ -1061,6 +2098,18 @@ def own_valid(state, *, xp):
         "poly_standard_energy_pJ",
     ):
         valid &= xp.all(xp.isfinite(getattr(state, name)))
+    if state.poly_hold_fmol.shape[0]:  # Static: a release is declared.
+        for name in ("poly_hold_fmol", "poly_hold_released_fmol"):
+            value = getattr(state, name)
+            valid &= xp.all(xp.isfinite(value)) & xp.all(value >= 0)
+        valid &= xp.all(xp.isfinite(state.poly_release_heat_pJ))
+    if state.poly_rep_applied.shape[0]:  # Static: a replacement replaces a slot (§9.16).
+        valid &= xp.all(state.poly_rep_applied >= 0)
+        for name in REPLACEMENT_STATE:
+            value = getattr(state, name)
+            valid &= xp.all(xp.isfinite(value))
+            if "transfer" not in name and "energy" not in name:  # Signed: extent, mu°_res.
+                valid &= xp.all(value >= 0)
     return valid
 
 
@@ -1069,6 +2118,8 @@ def poly_domain_valid(state, p, *, xp):
     valid = own_valid(state, xp=xp)
     if p.poly_chain_present.shape[1]:
         valid &= xp.all(xp.where(p.poly_chain_present, True, state.poly_complexes_fmol == 0))
+    if releasing(p):
+        valid &= xp.all(xp.where(p.poly_rel_classes, True, state.poly_hold_fmol == 0))
     rows = p.poly_rows
     amounts = p.amount_reference[rows] + state.amount_increment[rows]
     valid &= xp.all(xp.where(p.active[None, :], xp.isfinite(amounts) & (amounts > 0), True))
@@ -1081,13 +2132,20 @@ def poly_domain_valid(state, p, *, xp):
 class TemplatedPolymerisation(Operator):
     LAW_ID = LAW_ID
     IDENTITY_ROLE = "author"  # Species registry (D176): it declares the rows it writes.
+    # FR-42 (D296): its chains are label sources, and its holds label pools (static, by class).
+    LABEL_SOURCES = True
+    LABEL_POOLS = True
     STEP_ID = STEP_ID
+    # Amendment S (§9.16): an event map at replacement@1's events, statically absent (its state
+    # unchanged, no validity term) where no event replaces a slot of this operator.
+    EVENT = True
     SPLIT = True
     RK4 = "split"
     STATE_AXES = STATE_AXES
+    STATE_DTYPES = MappingProxyType({"poly_rep_applied": np.int64})
     HEAT_FIELDS = ("poly_dissipated_energy_pJ",)
     LAYOUT_FIELDS = LAYOUT_FIELDS
-    CONTROL_FIELDS = (INITIATION, DEGRADATION, TRANSFER)
+    CONTROL_FIELDS = (*HALF_STEP_CONTROLS, REPLACEMENTS_DUE)
     # B1′: a chain's initiation rate constant, which a rate route may multiply in the half-steps
     # (the scheduled rate is the maximum).
     ROUTABLE_CONTROLS = MappingProxyType({INITIATION: "rate"})
@@ -1119,11 +2177,31 @@ class TemplatedPolymerisation(Operator):
         "poly_transfer_heat_pJ": "cumulative",
         "poly_standard_energy_pJ": "cumulative",
         "poly_energy_magnitude_pJ": "cumulative",
+        "poly_hold_fmol": "amount",
+        "poly_hold_released_fmol": "cumulative",
+        "poly_release_heat_pJ": "cumulative",
+        "poly_rep_applied": "cumulative",
+        "poly_rep_chains_removed_fmol": "cumulative",
+        "poly_rep_residues_removed_fmol": "cumulative",
+        "poly_rep_removed_energy_pJ": "cumulative",
+        "poly_rep_hold_removed_fmol": "cumulative",
+        "poly_rep_chain_birth_fmol": "level",
+        "poly_rep_chain_departed_fmol": "level",
+        "poly_rep_release_birth_fmol": "level",
+        "poly_rep_release_departed_fmol": "level",
+        "poly_rep_degradation_birth_fmol": "level",
+        "poly_rep_degradation_departed_fmol": "level",
+        "poly_rep_transfer_birth_fmol": "level",
+        "poly_rep_transfer_departed_fmol": "level",
     }
+    UNITS = MappingProxyType({"poly_rep_applied": "1"})
 
     def view_sets(self, spec, declaration):
-        """The run view's sets of its axes: pools, chains, stages, degradations and transfers."""
+        """The run view's sets of its axes: pools, chains, stages, degradations and transfers, and
+        the releases, their classes and the two fates."""
         depth = max((c.stages for c in declaration.chains), default=0)
+        releases = releases_of(declaration)
+        classes = max((len(r.fates) for _, r in releases), default=0)
         return {
             POOL_AXIS: {
                 "id": POOL_AXIS,
@@ -1156,6 +2234,20 @@ class TemplatedPolymerisation(Operator):
                 "holds": "transfer",
                 "at": tuple({"cell": t.cell} for t in declaration.transfers),
             },
+            RELEASE_AXIS: {
+                "id": RELEASE_AXIS,
+                "ids": tuple(r.id for _, r in releases),
+                "holds": "release hold",
+                "carries": tuple(c.product for c, _ in releases),
+                "at": tuple({"cell": c.cell} for c, _ in releases),
+            },
+            CLASS_AXIS: {
+                "id": CLASS_AXIS,
+                "ids": tuple(f"class_{k + 1}" for k in range(classes)),
+                "holds": "release class",
+            },
+            FATE_AXIS: {"id": FATE_AXIS, "ids": FATES, "holds": "release fate"},
+            **_replaced_sets(spec, declaration),
         }
 
     def view_events(self, spec, declaration, schedule):
@@ -1164,6 +2256,8 @@ class TemplatedPolymerisation(Operator):
         layer = self.VIEW_LAYERS[0]["id"]
         cell = {r.id: r.cell for r in (*declaration.chains, *declaration.degradations,
                                        *declaration.transfers)}  # fmt: skip
+        for c, r in releases_of(declaration):
+            cell |= {r.id: c.cell}
         events = [
             dict(
                 time=float(t),
@@ -1174,6 +2268,19 @@ class TemplatedPolymerisation(Operator):
             )
             for s in schedule
             for t, v in s.changes
+        ]
+        slots = set(replaced_slots(spec, declaration))
+        _, replacements = common.replacement_of(spec)
+        events += [
+            dict(
+                time=float(v.time),
+                kind="producer departure",
+                layer=layer,
+                at={"cell": v.slot},
+                label=f"{v.slot}: chains in progress and holds leave; newcomer from {v.template}",
+            )
+            for v in replacements
+            if v.slot in slots
         ]
         return tuple(sorted(events, key=lambda e: (e["time"], e["label"])))
 
@@ -1198,17 +2305,68 @@ class TemplatedPolymerisation(Operator):
         return tuple(value_at(s.changes, time) for s in schedule)
 
     def control_values(self, spec, declaration, schedule, records, indices, times):
+        """The routes' scheduled values, then each release's durable fraction (its constant, or
+        its schedule) and its class, 1: one class since FR-42's shares replaced the class rows
+        (D296); the control stays, so that every program keeps its inputs."""
         values = np.array(records, dtype=float).reshape(len(records), -1)[indices]
         nc, nd = len(declaration.chains), len(declaration.degradations)
-        return values[:, :nc], values[:, nc : nc + nd], values[:, nc + nd :]
+        nt = len(declaration.transfers)
+        column = {s.route_id: i for i, s in enumerate(schedule)}
+        due = occupant_controls(spec, declaration, values, column, times)
+        releases = releases_of(declaration)
+        fraction = np.ones((len(values), len(releases)))
+        label = np.ones((len(values), len(releases)))
+        for i, (_, r) in enumerate(releases):
+            if r.durable_fraction is None:
+                fraction[:, i] = values[:, column[r.id]]
+            else:
+                fraction[:, i] = r.durable_fraction
+        return (
+            values[:, :nc],
+            values[:, nc : nc + nd],
+            values[:, nc + nd : nc + nd + nt],
+            fraction,
+            label,
+            due,
+        )
 
     def routable_elements(self, declaration, field):
         """B1′: the initiation rate's elements are the chains, by chain ID, each at its pool's
         cell, in control order."""
         return tuple((c.id, c.cell) for c in declaration.chains)
 
+    def half_step_rows(self, declaration):
+        """((species, cell), ...): every row its own half-steps move, at the cell of the route
+        that moves it (B1′, the target side; pump_composite.self_moved_targets): a chain's draws,
+        releases and product, or with a release its fate rows; a degradation's polymer and
+        monomers; a transfer's rows. A template is read, not moved. A rate route on k_I whose
+        source is one of them is evaluated at the half-step's midpoint, second order: before this
+        hook such a route was a left-endpoint rule, first order, and silently so."""
+        moved = []
+        for c in declaration.chains:
+            moved += [(row, c.cell) for row in sorted(_written(c))]
+        for d in declaration.degradations:
+            moved += [(row, d.cell) for row in (d.polymer, *dict(d.monomers))]
+        for t in declaration.transfers:
+            moved += [(row, t.cell) for row, _ in t.stoichiometry]
+        return tuple(dict.fromkeys(moved))
+
     def species_identities(self, declaration):
         return declaration.species
+
+    def label_sources(self, declaration):
+        """FR-42's sources (D296), one per chain in chain order: (chain ID, the row whose labels
+        its new material takes, its cell). The row is its product, or with a release its durable
+        fate row, whose labels its short-lived row shares (check_labels)."""
+        return tuple(
+            (c.id, c.release.fates[0][0] if isinstance(c, ReleasingChain) else c.product, c.cell)
+            for c in declaration.chains
+        )
+
+    def label_pools(self, declaration):
+        """FR-42's pools (D296), one per release in release order: (release ID, its durable fate
+        row, whose labels the hold carries, its cell)."""
+        return tuple((r.id, r.fates[0][0], c.cell) for c, r in releases_of(declaration))
 
     def species_potentials(self, declaration):
         """Its declared mu°/RT of each listed species at its c0 (check_potentials: the registry's,
@@ -1253,8 +2411,9 @@ class TemplatedPolymerisation(Operator):
 
     def species_moieties(self, declaration):
         """Each route's net row change per unit (G3's hook; the sheet's §1.4): a finished product
-        of a chain (L draws and releases per residue, one product), a polymer molecule degraded,
-        a transfer turnover."""
+        of a chain (L draws and releases per residue, one product), or with a release one such
+        move into each fate row (the hold is no row: a molecule's move ends at its fate), a
+        polymer molecule degraded, a transfer turnover."""
         moves = []
         for c in declaration.chains:
             nu = {}
@@ -1262,6 +2421,13 @@ class TemplatedPolymerisation(Operator):
                 nu[row] = nu.get(row, 0) - count * c.residues
             for row, count in c.releases:
                 nu[row] = nu.get(row, 0) + count * c.residues
+            if isinstance(c, ReleasingChain):
+                for fate in c.release.rows():
+                    into = nu | {fate: nu.get(fate, 0) + 1}
+                    moves.append(
+                        (f"chain {c.id} into {fate}", tuple((s, v) for s, v in into.items() if v))
+                    )
+                continue
             nu[c.product] = nu.get(c.product, 0) + 1
             moves.append((f"chain {c.id}", tuple((s, v) for s, v in nu.items() if v)))
         for d in declaration.degradations:
@@ -1277,7 +2443,9 @@ class TemplatedPolymerisation(Operator):
         common.check_species_cap(spec, LAW_ID)
         common.check_identities(spec, LAW_ID, declaration.species)
         check_writers(spec, declaration)
+        check_occupants(spec, declaration, schedule)
         check_rate_bound(spec, declaration, schedule)
+        check_labels(spec, declaration)
 
     def batch_signature(self, declaration):
         """The static structure; identities, potentials and every rate are not part of it."""
@@ -1287,6 +2455,7 @@ class TemplatedPolymerisation(Operator):
             tuple(p.cell for p in declaration.pools),
             tuple(
                 (c.pool, c.template_copies is None, c.product, c.stages, c.draws, c.releases)
+                + ((("release", c.release.fates),) if isinstance(c, ReleasingChain) else ())
                 for c in declaration.chains
             ),
             tuple((d.cell, d.polymer, d.monomers) for d in declaration.degradations),
@@ -1302,10 +2471,39 @@ class TemplatedPolymerisation(Operator):
         k, depth = len(d.species), max((c.stages for c in d.chains), default=0)
         routes = len(d.chains) * (depth + 5) + len(d.pools) + 2 * len(d.degradations)
         routes += 2 * len(d.transfers)
+        routes += sum([2 * len(r.fates) + 1 for _, r in releases_of(d)])  # Its fate rows and hold.
+        if replaced_slots(spec, d):  # §9.16's maps and counters, at most a dozen per entity.
+            routes += 12 * (len(d.chains) + len(d.degradations) + len(d.transfers)) + 4
         return (6 * s + 8) * x.capacity + routes * (6 * k + 16)
 
     def summary(self, spec, declaration, schedule, history):
+        releases = {
+            r.id: dict(
+                chain=c.id,
+                machine=r.machine,
+                durable_fraction=(
+                    f"scheduled under {r.id}" if r.durable_fraction is None
+                    else f"constant {r.durable_fraction!r}"
+                ),
+                label="FR-42's labels mark the "
+                + ("release" if r.label is None else r.label.at),
+            )
+            for c, r in releases_of(declaration)
+        }  # fmt: skip
         return {
+            **({"polymerisation_releases": releases} if releases else {}),
+            **(
+                {
+                    "polymerisation_replacement": dict(
+                        slots=replaced_slots(spec, declaration),
+                        templates={t: dict(r) for t, r in declaration.templates},
+                        rule="the sheet's §9.16: departing chains and holds removed, counted apart "
+                        "from degradation; the newcomer's counters from zero",
+                    )
+                }
+                if replaced_slots(spec, declaration)
+                else {}
+            ),
             "polymerisation_law": LAW_ID,
             "polymerisation_step": STEP_ID,
             "polymerisation_species": common.summary_identities(declaration.species),
@@ -1330,16 +2528,38 @@ class TemplatedPolymerisation(Operator):
             p.poly_chain_kappa.shape[0] + p.poly_deg_length.shape[0] + p.poly_tr_share.shape[0]
         ) == 0
 
-    def half_step(self, state, h, control, p, *, xp):
-        controls = (getattr(control, INITIATION), getattr(control, DEGRADATION),
-                    getattr(control, TRANSFER))  # fmt: skip
-        return poly_half_step(state, controls, h, p, xp=xp)
+    def event(self, state, control, p, *, xp, labels=None):
+        """Amendment S's event (poly_event). labels (FR-42's pool reporter, erratum E; static):
+        the call then also returns removed [release], the holds it emptied (hold_report), zeros
+        without a replacement."""
+        state, valid, removed = poly_event(state, control, p, xp=xp)
+        if labels is None:
+            return state, valid
+        if removed is None:  # Statically no replacement: it empties no hold.
+            removed = xp.zeros(p.poly_rel_rate.shape[0])
+        return state, valid, removed
+
+    def half_step(self, state, h, control, p, *, xp, labels=None):
+        """labels (FR-42, D289, D296; static): (rows, arrival, source); the call then returns
+        (state, valid, (out, into, (), pools)), one_way_moves's. Without it, today's call."""
+        controls = tuple(getattr(control, name) for name in HALF_STEP_CONTROLS)
+        if labels is None:
+            return poly_half_step(state, controls, h, p, xp=xp)
+        return poly_half_step(state, controls, h, p, xp=xp, labels=labels)
 
     def control_valid(self, control, p, *, xp):
         valid = xp.asarray(True)
         for name in (INITIATION, DEGRADATION, TRANSFER):
             value = getattr(control, name)
             valid &= xp.all(xp.isfinite(value) & (value >= 0))
+        if releasing(p):  # p in [0, 1]; psi an integer class of the release.
+            fraction, label = getattr(control, RELEASE_FRACTION), getattr(control, RELEASE_CLASS)
+            valid &= xp.all(xp.isfinite(fraction) & (fraction >= 0) & (fraction <= 1))
+            count = entity_sum(xp.where(p.poly_rel_classes, 1.0, 0.0), axis=1, xp=xp)
+            valid &= xp.all((label >= 1) & (label <= count) & (label == xp.floor(label)))
+        if replacing(p):  # §9.16: a count of the replacements due.
+            due = getattr(control, REPLACEMENTS_DUE)
+            valid &= xp.all(xp.isfinite(due) & (due >= 0) & (due == xp.floor(due)))
         return valid
 
     def rates(self, state, control, p, view, *, xp):
@@ -1376,25 +2596,54 @@ class TemplatedPolymerisation(Operator):
         return magnitudes
 
     def own_ledgers(self, row, p, *, xp):
-        """The machines per pool (F + engaged - M) and the residues per chain (r ∫S - W - L ∫Q)."""
+        """The machines per pool (F + engaged - M, a held hold among the engaged) and the
+        residues: per chain r ∫S - W - L ∫Q, and after them per release L (H(0) + ∫Q - H -
+        sum ∫Q^f), its completed residues held or released (the sheet's §9.7)."""
         engaged = entity_sum(row.poly_complexes_fmol, axis=1, xp=xp) @ p.poly_chain_pool
         transit = entity_sum(p.poly_chain_held * row.poly_complexes_fmol, axis=1, xp=xp)
-        return dict(
-            poly_machines=row.poly_free_machines_fmol + engaged - p.poly_pool_total_fmol,
-            poly_residues=p.poly_chain_r * row.poly_stage_exits_fmol
+        if releasing(p):
+            engaged = engaged + _held(row.poly_hold_fmol, p, xp=xp)
+        machines = row.poly_free_machines_fmol + engaged - p.poly_pool_total_fmol
+        residues = (
+            p.poly_chain_r * row.poly_stage_exits_fmol
             - transit
-            - p.poly_chain_length * row.poly_released_fmol,
+            - p.poly_chain_length * row.poly_released_fmol
         )
+        if replacing(p):  # §9.16: the residues that left with departed chains, W^rem.
+            residues = residues - p.poly_rep_chain_hot.T @ row.poly_rep_residues_removed_fmol
+        if releasing(p):
+            completed, held, released = _hold_terms(row, p, xp=xp)
+            length = p.poly_rel_chain @ p.poly_chain_length
+            initial = entity_sum(p.poly_rel_hold0_fmol, axis=1, xp=xp)
+            if replacing(p):  # §9.16: the holds that left with departed occupants, H^rem.
+                released = released + _hold_removed(row, p, xp=xp)
+            hold = length * (initial + completed - held - released)
+            residues = xp.concatenate([residues, hold])
+        return dict(poly_machines=machines, poly_residues=residues)
 
     def own_magnitudes(self, row, p, *, xp):
         engaged = entity_sum(xp.abs(row.poly_complexes_fmol), axis=1, xp=xp) @ p.poly_chain_pool
         transit = entity_sum(p.poly_chain_held * xp.abs(row.poly_complexes_fmol), axis=1, xp=xp)
-        return (
-            xp.abs(row.poly_free_machines_fmol) + engaged + p.poly_pool_total_fmol,
+        if releasing(p):
+            engaged = engaged + _held(xp.abs(row.poly_hold_fmol), p, xp=xp)
+        machines = xp.abs(row.poly_free_machines_fmol) + engaged + p.poly_pool_total_fmol
+        residues = (
             p.poly_chain_r * xp.abs(row.poly_stage_exits_fmol)
             + transit
-            + p.poly_chain_length * xp.abs(row.poly_released_fmol),
+            + p.poly_chain_length * xp.abs(row.poly_released_fmol)
         )
+        if replacing(p):
+            residues = residues + p.poly_rep_chain_hot.T @ xp.abs(
+                row.poly_rep_residues_removed_fmol
+            )
+        if releasing(p):
+            completed, held, released = _hold_terms(row, p, xp=xp, magnitude=True)
+            if replacing(p):
+                released = released + _hold_removed(row, p, xp=xp, magnitude=True)
+            length = p.poly_rel_chain @ p.poly_chain_length
+            initial = entity_sum(p.poly_rel_hold0_fmol, axis=1, xp=xp)
+            residues = xp.concatenate([residues, length * (initial + completed + held + released)])
+        return machines, residues
 
     def own_bounds(self, magnitudes, steps):
         rounding = first.LEDGER_STEP_ROUNDING * np.finfo(float).eps * steps

@@ -9106,3 +9106,537 @@ priority". The evidence branch was merged unedited at 81916b5d.
 - **sigma_max stays** as registered in every world. In worlds with pores it carries its own cause label
   and count.
 
+## D288: The user's decisions on FR-38's labels, FR-41, MT-1b and the optional re-tests
+
+2026-11-22, about 14:43 UTC.
+1. **FR-38's labels are rebuilt under FR-42.**
+   - FR-38's engine core lands as development once its gate passes, with its class rows (K > 1) marked
+     not neutral.
+   - FR-42's share-based labels replace those rows, and FR-38's registered comparison waits for that.
+   - Erratum B (81fc3ebb) retracts erratum A's "physical" for a neutral label's departure and marks
+     route 1 provisional. Route 2, the counters through cohort.py, stands: it reads the run's own
+     per-molecule loss.
+2. **FR-41: Akui et al. 2021, with Ahumada et al. 2015 downloaded by the user.**
+   - Akui is a sealed extraction and a disclosed, weak test. Its licence (CC BY-NC-ND) allows analysis
+     only, so only bare cited numbers are used, never committed material. Its volumes come from other
+     experiments.
+   - Ahumada is evaluated when it arrives.
+3. **MT-1b: the outer-membrane face that reads the IMS closure is built, and the judged run keeps 180 mV**
+   with a larger CPU budget rather than scaled activities. The mitochondria lane resumes with a free
+   agent (D277).
+4. **No optional re-tests now.** FR-25's A1 stays inconclusive (D282) and OL5 stays at 9 of 10 (D285).
+
+## D289: FR-42 is built as option A, labels as share vectors on the physical row
+
+2026-11-22, about 14:54 UTC. The user chose option A of docs/NEUTRAL_LABELS_DESIGN.md (fa4b9d9e).
+- **The design:** one physical population per row; labels are shares of it.
+  - Every law, the energy terms and the heat bookings read the physical population.
+  - Each one-way flux is split by its source's shares.
+  - A new cohort starts at exactly zero as a share.
+  - Windows resolve to step indices.
+- **The stages, 7–10 agent-days in all:**
+  1. pools: registry labels, @3's share state, and one-way reports from turnover and templated
+     polymerisation;
+  2. transport: faces and routes report one-way flows, and FR-33's first test is rebuilt on shares;
+  3. exchange, reactions and kinds, each by its own owner.
+- **Owners:** the kinds owner leads. The gene regulation lane adds templated polymerisation's one-way
+  reports, then replaces FR-38's class rows with shares before FR-38's registered comparison (D288).
+- **Bitwise and records:**
+  - worlds without labels keep their programs, and no registered world moves;
+  - labelled worlds get a new checkpoint field;
+  - D1's and FR-33's examples keep their material and transfer records, while their booked face heat
+    moves to the physical value.
+- **Scoring:** an independent checker writes FR-42's acceptance from the requester's words, including
+  its reference case dN/dt = −N², built with the engine's own second-order mass action.
+
+## D290: MT-1b keeps 180 mV and the source's activities, through an implicit cycle block
+
+2026-11-22, about 15:10 UTC. The robustness agent priced D288's choice.
+- **Explicit cycles cannot run it.** At 180 mV with the source's activities, the cycle kind's explicit
+  bound is 27 ns. 300 s of protocol is then about 1.1e10 steps: about 19,400 CPU-hours on the device
+  step alone, which is years of wall time, since one trajectory runs on one core.
+- **The user chose to build the implicit cycle block** (D235's branch I, which MT-2 needs anyway): the
+  cycles' slope conductances in N2's implicit operator, with a design note first. The outer-membrane face
+  (18 µs bound) then limits the step: about 1–4 days per world on a lane, provided the runner path's
+  per-step overhead comes down from 168 ms towards the device step's 6.3 ms. That overhead is being
+  examined.
+- **The order:**
+  1. the face's design note, then the cycle block's;
+  2. the face build and gate, then the cycle block's;
+  3. MT-1b's worlds and the pre-registration checks;
+  4. registration, then the judged run.
+  R2's code-blind references start once the face note fixes the declared equations.
+
+## D291: FR-30's section 13.3 candidates are all undetermined
+
+2026-11-22, about 15:10 UTC. The lead's rulings, made blind to every value.
+- **Lin et al. 2010** (J Mol Cell Cardiol 48:238) is undetermined on two separate grounds.
+  - The Xu 2013 ruling (the strict reading) extends to it. It reports closing rates
+    k_on = (1 − P_open)/tau from fitted exponentials, without P_open per voltage, so the law's relaxation
+    times cannot be mapped without inference.
+  - Its only kinetic data are neonatal atrial myocytes, with similar Cx40 and Cx43. That is neither
+    ventricular nor Cx43-dominated, so it falls outside section 13.3's native admission.
+- **Ek-Vitorín et al. 2018** (IJMS 19:1659) is undetermined under rule 1. Its decays come from ±80 mV
+  pulses only, which is one magnitude, and wild-type Cx43 has a steady state only.
+- With Xu 2013 also undetermined, section 13.3's registered candidates are exhausted. The extractor's
+  files are under /mnt/workspaces/Cells/fr30-lin2010-benchmark/ and fr30-ekvitorin2018-benchmark/, with
+  the held-out files sealed empty.
+- **What follows is the user's decision.** FR-30 can stay development-only, with its gating law built and
+  unjudged, or another metadata-only search round can look for two-exponential step decays at four or
+  more voltages.
+
+## D292: FR-30 gets one more metadata-only search; FR-41 gets a data-only retention check
+
+2026-11-22, about 15:11 UTC. The user's choices.
+- **FR-30:** one more metadata-only search, with values unread, broadened to any Cx43 preparation with
+  two-exponential voltage-step decays at four or more voltages. A registration (a section 13.4 entry)
+  comes before any extraction. If nothing qualifies, FR-30 stays development-only.
+- **FR-41: a data-only check of whether calcein is retained during shrinkage,** in Akui 2021 and Ahumada
+  2015/2017.
+  - The analysis was fixed by the lead, blind to every value, before any reading:
+    /mnt/workspaces/Cells/fr41-retention-20261122/rule.md, sha256
+    9ae86b4028451d91663a40cdae1c8821a64b8dfcf4f121f1cc7922e3a6292d0f.
+  - It is evidence for Cells' retention assumption, not a validation of Cells: no Cells prediction is
+    scored.
+  - The Sonnet extractor reads the values, since the Opus extractor was stopped by a safeguard false
+    positive on Akui's methods; the user moved that task to Sonnet.
+
+## D293: The rupture blind test's stage-1 rulings, made before any prediction or held-out value
+
+2026-11-22, about 15:36 UTC. The sealed extractor's stage 1 (conditions only; stage1_conditions.json sha256
+9c02be36…) found:
+- set 1: six held-out points in five new temperature columns of Karal and Yamazaki's Fig. 2a, at about
+  38, 35, 30, 18, 18 and 12 °C;
+- set 2: Shibly et al. 2016's tables hold six osmotic rows and no control rows, and give no standard
+  errors.
+The lead's rulings, which are made blind to every held-out value and extend VESICLE_PORES_LAWS §8:
+1. **Temperatures.**
+   - Set 1 uses each column's plotted position, T = 10⁶/x, exactly as the six fit points did.
+   - Set 2 uses T = 298.15 K with δT = 1 K (the paper's 25 ± 1 °C).
+2. **Set 1's S1-6 (12 °C, 8.0 mN/m) is reported, not scored.** FR-31's entry, which the builders have read,
+   already quotes 12 °C survival under a held tension from the same paper.
+3. **Set 2's controls: a stage-1b pass.**
+   - The extractor reads the control points' tensions from Fig. 1C, x only, with n where stated, and these
+     become control conditions.
+   - Their rates are read at stage 2, with the digitising error s_dig = 0.03 in ln k declared now.
+   - The controls are scored two-sided, and the osmotic rows one-sided (§8).
+4. **The vesicle area across preparations.**
+   - In stage 1b the extractor reads Karal's method reference (Levadny et al. 2013) for the GUV radii,
+     conditions only.
+   - Set 2's per-vesicle predictions scale by (r_Shibly/r_Karal)², with r_Karal the midpoint of the stated
+     range.
+   - A declared term s_area, half the width of ln r² over that range, enters set 2's tolerance only. Set 1
+     is unaffected, since its area cancels.
+5. **Set 2's standard errors** are read from Fig. 1C's error bars at stage 2, with the declared s_dig. A
+   point with no readable bar is reported, not scored.
+6. **The quoted survival count.** At stage 2 the extractor matches it against Fig. 1B's curves among the
+   2.8 mM cohorts. The matched point is reported, not scored. If the match is ambiguous, every candidate
+   is unscored.
+7. **Stage 2's reading of set 1:**
+   - vector coordinates, with the centre at the midpoint of the bar caps;
+   - the six fit points re-read as a check against the data file;
+   - s_dig stays 0.03.
+8. **Minor:**
+   - the 1.9 mM series takes the stated 3 × 18–22 as its n;
+   - Shibly's ± on r₀ is used as stated, for s_area;
+   - the PMC HTML page is set 2's source of record.
+   - The reader scripts stay with the run's evidence.
+- **The exposures are disclosed:** lean/PROGRESS.md's intact fractions for Karal's Fig. 1(a) were seen by
+  the extractor, and they concern S1-6, which is unscored. The extractor's other exposures carry no held-out
+  value.
+
+## D294: The rupture blind test's stage-1b rulings
+
+2026-11-22, about 15:53 UTC. The extractor's stage 1b (stage1b_conditions.json sha256 0feca192…) found:
+- set 2's three control points (Shibly's Fig. 1C, open squares) at 7.0, 7.5 and 8.0 mN/m, reprinted from
+  Levadny et al. 2013, with n, temperature and solutions not stated;
+- that Levadny et al. 2013 could not be obtained.
+The lead's rulings, made blind to every held-out value:
+1. **The controls are reported, not scored.** They sit at the fit points' tensions and come from the
+   method paper of the fit data's laboratory, so they may overlap the fit data. Without a copy, their
+   independence cannot be shown. This replaces D293's two-sided scoring of the controls. A prediction at
+   6.5 mN/m with ΔC₀ = 0 is also recorded, reported only, in case stage 2 finds a control there.
+2. **Set 2's scored content is the osmotic rows, one-sided** (D287, D293), less the point the quoted
+   count matches.
+3. **Karal's vesicle radius,** for the osmotic rows' area ratio (D293 item 4). In a stage 1c, the
+   extractor reads only the methods of Karal et al. 2015 (Phys Rev E 92:012708, the Shizuoka repository's
+   free copy), a paper from the same laboratory using the same micropipette method, for the GUV radius
+   range. Karal, Levadnyy and Yamazaki 2016 stays unopened, since it may reanalyse the temperature series.
+4. **The controls' temperature** is reported at 298.15 K with δT = 1 K, as for Shibly's own rows.
+5. **Fig. 1C's digitising error.**
+   - It is s_dig = max(0.03, the ln k span of 2 pixels on the panel's y-axis).
+   - The pixel scale comes from the axis calibration at stage 2. That is axis metadata, read before any
+     data mark.
+   - It applies to the error bars read there.
+
+## D295: The vesicle area for set 2's osmotic rows: a declared premise
+
+2026-11-22, about 15:55 UTC. Stage 1c (stage1c_conditions.json sha256 7f99f680…): Karal et al. 2015 PRE's methods
+state no GUV size, and Levadny et al. 2013 is unobtainable. The lead's ruling, made blind to every held-out
+value:
+- **The area ratio for set 2's osmotic rows is 1,** under a declared premise. Shibly et al.'s vesicles
+  and the fit data's come from one laboratory, by one micropipette method in the same period, so their
+  size distributions are taken as equal.
+- **s_area** is the propagation of Shibly's stated ±0.2 µm on its mean r0 of about 13.5 µm:
+  2 × 0.2/13.5, about 0.03 in ln k.
+- **The premise is stated beside each set-2 verdict,** as the identity "first rupture is first opening"
+  is. A set-2 failure may come from a size difference between preparations rather than from the law.
+- **Set 1 is unaffected,** since its area cancels.
+
+## D296: FR-42's label state lives in the label owner (option b); FR-38's replacement accounting in the operator
+
+2026-11-22, about 16:09 UTC. The user: "lets go as you suggest regarding the label".
+- **Label state lives in the label owner** (`neutral_arrival_labels@1`), through a contract addition:
+  - reporters declare the pools they own, such as the release hold;
+  - the owner holds those pools' label shares;
+  - moves carry a pools part;
+  - arrivals can be keyed by source, so that a chain's products join its producer label (cell, generation,
+    chain).
+
+  So every unlabelled program stays unchanged (D289). The kinds owner designs it and prices it beside
+  stage 2. If it proves too costly, the fallback is operator-held shares as a D148 case 2, which goes back
+  to the user.
+- **FR-38's replacement accounting** (per-producer removal counters, per-generation counter starts, the
+  operator's EVENT part) is the gene unit's own physical bookkeeping, not label state. It may add
+  zero-size fields when no replacement is declared, as a D148 case 2 like FR-38's release fields. The proof
+  is the programs check and optin_check before and after, with every physical field bitwise.
+
+## D297: The rupture blind test's stage 2 is sealed; set 2 reads from Shibly et al.'s corrected Fig. 1C
+
+2026-11-22, about 16:27 UTC. Recorded before any scoring; the lead has seen no held-out value.
+- **The sealed file:** /mnt/workspaces/Cells/pores-extraction-20261122/held_out.json, sha256
+  20a0c4a534a28ab2748d96f0c5de0cf81d38e2a47283c4f2aea94b0c9647468b. Stage 2 began at 16:04:16 UTC, after
+  the predictions' tag (6d718ae2, 16:03:26). The extractor did not open the predictions.
+- **Set 2 uses the corrected Fig. 1C.** Its SEs and control readings come from the figure in the
+  journal's correction (Biophys J 112:1290, 2017, doi:10.1016/j.bpj.2017.03.001, PMC5376104), which
+  replaced the original panel.
+  - The corrected figure reproduces all six tabulated osmotic rates within 0.005 in ln k.
+  - Its control tensions match stage 1b's, so the registered conditions and predictions are unaffected.
+  - Disclosed: the extractor first read the original panel and found it inconsistent with the tables. Those
+    readings are sealed separately (superseded_original_fig1c.json, sha256 d27cb33b…) and are not for
+    scoring.
+- **The quoted count matches S2-6** (4.3 mN/m, ΔC₀ = 2.8 mM) unambiguously. S2-6 is reported, not scored
+  (D293 item 6).
+- **Set 2's controls:** three, reported only. None lies at 6.5 mN/m.
+- **The tables print two significant figures,** a rounding of up to about 0.05 in ln k. The registered
+  s_dig = 0 for tabulated rates stands unchanged, since the corrected figure agrees with the printed values
+  within 0.005.
+- **Set 1:** read from the vector coordinates, with centres at the cap midpoints. The six fit points
+  re-read within 0.0005 of the data file. S1-6 is reported only.
+
+## D298: The vesicle-rupture blind test passes: set 1 five of five, set 2 five of five (one-sided, weak)
+
+2026-11-22, about 16:39 UTC. The independent checker scored the registered predictions
+(pores-predictions-registered-2026-11-22, sha256 8f72193b…) against the sealed held-out values
+(held_out.json 20a0c4a5…) under VESICLE_PORES_LAWS §8, D293–D295 and D297. The score file is
+/mnt/workspaces/Cells/review-check-20261121/pores/score.json, sha256 a4b452d6…. A planted failure fails.
+
+**Set 1, Karal and Yamazaki's other temperature columns, two-sided: 5 of 5 pass.**
+- **In range:** S1-1 (38 °C, 7.5 mN/m) has residual −0.200 against τ 0.252, the closest at 0.79 τ. S1-2
+  (35 °C, 7.0) is −0.009 against 0.263, and S1-3 (30 °C, 7.0) is +0.032 against 0.257.
+- **Extrapolated below the viscosity data:** S1-4 (18 °C, 7.5) is −0.035 against 0.231, and S1-5
+  (18 °C, 8.0) is +0.173 against 0.241.
+- **Reported only:** S1-6 (12 °C, 8.0) is +0.287 against 0.264. It would fail by 0.023. It was
+  unscored because FR-31's entry had quoted that condition.
+
+**Set 2, Shibly et al.'s osmotic rows, one-sided: 5 of 5 pass.** These are weak tests: the read rates lie
+5.6 to 15.4 in ln k above the law at the external tension, as any added osmotic tension allows. The law
+implies total tensions of 7.1 to 8.2 mN/m, an osmotic tension of about 2.6 to 3.9 mN/m (reported, not
+scored). S2-6 (the quoted count) and the three controls are reported only. The controls would pass
+two-sided.
+
+**What this does and does not show.**
+- The line-tension law, with the membrane viscosity's temperature dependence (E_A = 27 kJ/mol) and a
+  constant line tension, fitted on the six read points, predicts first-rupture rates at three other
+  temperatures within the registered tolerance, including two below the viscosity data's range.
+- The tolerance is wide: t(0.975, 2) = 4.303 on three experiments per setting, so τ is about 0.25 in
+  ln k, or about 28% in rate.
+- The in-sample misfit stands as disclosed: the law over-predicts the 7.5 mN/m points by 14% to 28%,
+  with χ² = 98.6 on 4 degrees of freedom.
+- **Both declared premises go with every verdict:**
+  - a pipette-held vesicle's first rupture is its first opening, though pores under suction can reclose;
+  - for set 2, equal vesicle sizes across the two papers.
+- The Lean lane had viewed the figure before the test (D287).
+
+## D299: An external review's four architecture items, adopted into the queue
+
+2026-11-22, about 16:57 UTC. An external reviewer, relayed by the user, asked the next architecture work
+to focus on four items. The user: "lets go on 2. as you suggest put it on our backlog / 3. as you guys
+suggest / 4. lets go on this as you see fit in the queue".
+1. **Finish FR-42's neutral-label separation** (in progress, D289 and D296):
+   - one physical population, with labels as passive shares;
+   - FR-38's and FR-33's consumers moved onto it;
+   - verified across label count, nonlinear loss, transport and restart.
+
+   What remains is one independent acceptance on the stacked head: transport with face heat (F2 on),
+   restart mid-transfer and with pools, replacement, and a reused label. D1's own-potential family rows
+   stay as they are until the user decides their future.
+2. **One small evolving-cell integration case, on the backlog.**
+   - A read-only inventory ranks the composition matrix's refused volume and lifecycle combinations by
+     the approved items they block, preferring a missing declared read or accounting term over a new law.
+   - The lead chooses from it.
+   - It uses the declared-read and ownership contracts, and unsupported combinations stay explicitly
+     refused. It may extend to a lifecycle event, such as FR-38's replace-and-restart.
+3. **Affordable realistic-duration runs,** judged by end-to-end cost per simulated biological duration at
+   a stated accuracy, fixed before timing with the registered step-error estimate. Ensemble throughput,
+   interacting-tissue size and biological duration are reported separately.
+   - The dt ladder names the limit that binds the step, and whether the implicit cycle block relaxes it.
+     The block's go returns to the user with those numbers (D290's premise was about 115 times too stiff).
+   - Also in this item: the runner overhead (the bit-identical closure reuse), the step-cost growth with
+     run length, and device row checks proven against the host checks.
+   - Ensemble throughput is measured first on the existing batch and vector CPU paths. The GPU planner
+     stays held until those numbers are in.
+4. **One executable static level-of-detail pair, queued by the lead.**
+   - The first pair is chosen from the read-only inventory: both versions through one physical interface,
+     a validity measure, declared conserved quantities, supported readouts, a validity range and error
+     limits.
+   - The reduced version is opt-in, the choice is made at definition and never at run time, out-of-range
+     use is refused, and the one-writer rule prevents double counting.
+   - The general level-of-detail contract follows from it.
+
+## D300: D1's own-potential label families are retired; no backwards compatibility before alpha
+
+2026-11-22, about 16:59 UTC. The user: "retire them as soon as possible, we don't want old backwards
+compatibility - we're still in heavy dev not even at alpha".
+- **D1's families are removed,** with their checks, sums and D1-only paths, in the kinds owner's stacked
+  FR-42 landing.
+  - Their consumers (FR-33's first test and tracer, and FR-38's labelled cohort) are on FR-42's neutral
+    shares.
+  - D1-only tests are removed in one batch, with a removal list (D224).
+  - Crossrev and G1 must stay identical, since no registered world uses D1 families.
+- **The general rule before alpha:** a superseded mechanism is retired as soon as its replacement lands,
+  with no compatibility path or opt-in for the old behaviour. Registered and judged results stay
+  reproducible through their tags, frozen snapshots and records (D148), not by keeping old code.
+- **Also recorded:** the Lean lane found FR-38's release_check accepting a survival ratio of 1.00 where 0.25
+  is predicted, on a 0, 1 and 2 h grid. A grid error that could not be estimated became an infinite
+  tolerance, and an empty cohort raised ZeroDivisionError. The fix fails closed, with "insufficient
+  resolution" and "empty cohort". All eight saved R1/R2 survival comparisons passed with finite bounds,
+  so no saved result moves.
+
+## D301: The architecture items' first cases: FR-38's replace-and-restart, then M3; the site/sink level-of-detail pair
+
+2026-11-22, about 17:22 UTC. The lead chooses under D299 ("as you suggest", "as you see fit in the queue"),
+from the checker's read-only inventories (/mnt/workspaces/Cells/arch-inventories-20261122/INVENTORIES.md).
+- **The evolving-cell case:**
+  - **First:** FR-38's producer across replacement and restart, the gene unit beside
+    scheduled_cell_replacement@1 with labels. It needs an accounting term and a definition-time occupant
+    rule, priced at 1–2 agent-days once the label branches land (FR-38 step 4).
+  - **A finding:** main admits the gene unit beside replacement but defines nothing for a replaced slot's
+    chains, hold, machines or counters. A temporary refusal closes that now, until step 4 defines it.
+  - **Next on the backlog:** composition M3, turnover beside water and beside partition or insertion,
+    reading the current volume and masks. It is the cheapest case with a changing volume: declared reads
+    only, 2–2.5 agent-days plus references.
+- **The first static level-of-detail pair: site binding against exchange's saturable sink.**
+  - The pair shares a ligand and the same node-to-cell ends, both run in the engine, and each is judged
+    (FR-3, FR-1). Its validity measure is ε, with an error of order ε.
+  - With it comes the general contract: one representation per scope, chosen at definition, refused when
+    both are declared; out-of-range use and unsupported readouts refused; an automated comparison. The
+    detailed form is the default and the reduced form is opt-in.
+  - About 4.5–6.5 agent-days in all. Queued after FR-42 and FR-38 land.
+  - **D214's finite fuel** remains named as a level-of-detail consumer, to follow on the same contract.
+  - **R2 against A1** is the in-lane alternative after FR-38's comparison, with its default reversed so the
+    detailed form leads.
+
+## D302: The implicit cycle block is dropped; the half-step energy check is now the cost driver
+
+2026-11-22, about 19:37 UTC. The user chose "Drop the block", on the robustness agent's measurements.
+- **The measurements** (MT-1b's state-4 world, explicit cycles, today's solver, windowed runner, device
+  row checks):
+  - 16 µs passes every check through the protocol's inhibitor event, at more than 100 times inside the
+    declared bands by FR-25's step-error form;
+  - X2's order condition binds between 16 and 18.25 µs;
+  - the block would buy at most about 1.14 times, or 1.3–1.5 times with the face present.
+  D290's premise of 5e6 /s was about 115 times too stiff; the cycles' ΣG/C is 4.35e4 /s, about 98%
+  of it from the synthase. MT-2 has the same stiffness. MT-1b runs explicitly at about 16 µs.
+- **The cost now:**
+  - X2, the half-step energy check, costs about 57 ms per step against 7.3 ms for the device step alone.
+    At 16 µs that is about 300 CPU-h per 300 s world, against 38 without X2.
+  - X2's per-step cost also grows with run length (39.6 to 53.7 ms per step from 512 to 2,560 steps).
+    One candidate is the record's per-window concatenation.
+  - The next item-3 target (D299) is a cheaper X2 with the same guarantee, profiled at length and designed
+    before code.
+- **Findings recorded for the backlog:**
+  - **At a replacement swap,** neither replacement@1 nor templated_polymerisation@1 books the rows'
+    standard term Σμ°Δn, and D152's reactions share the gap. The energy ledger still closes, because the
+    owned terms are accumulators, but replacement_free_energy_pJ understates what leaves and arrives. This
+    is a desk reading.
+  - **FR-38's extracellular retention** of the producer ID is not admitted in version 1. The one-writer rule
+    refuses any other mover of a gene-unit row, so no fate row can leave its cell. It needs a designed
+    door.
+
+## D303: Corrections to D302, FR-38's extracellular retention restored, the face plan re-priced, and the evening's repairs
+
+2026-11-22, about 20:22 UTC.
+1. **D302's basis, qualified.** The 16 µs result, and the question put to the user, covered state 4
+   over at most 2,560 steps, not every MT-1b world.
+   - State 3 was refused at 16 µs (dissipation) and at 8 µs (X2's cap at its first step). The cause is not
+     established; the inference is the faceless IMS not being at steady state.
+   - A long run at the source's activities was refused under head 2's per-species ledger floors, and was
+     rerun with development floors.
+   - X2's cost at length measured about 19 ms per step, not 57. The CPU-h figure in D302 is corrected
+     when the timing table is in.
+   - The block stays dropped unless state 3 or the floors reopen it. Both tests are raised in priority. A
+     300 s world that fits under no admissible floor goes to the user, since floors are a tolerance.
+2. **FR-38's extracellular retention is restored to FR-38's scope.** D302 filed it for the backlog, and
+   amendment S marked it not admitted in version 1. That was wrong: the requester's clarification asks
+   that RNA retained in an extracellular compartment keeps its original producer ID, and D284 is full
+   scope. The one-writer rule refuses any other mover of a gene-unit row, so the door is designed as a
+   sheet amendment, tagged before code, with options and a recommendation. Amendment S's sentence is
+   superseded when that amendment is tagged.
+3. **MT-1b's face build plan** (bafe39ef) is re-priced from the 2–4 agent-days quoted at D288 to about
+   6.5–9, for four items:
+   - the forms law and face, 3–5 days, by a separate face builder under the @3 owner's leave;
+   - the held buffer, about 1 day;
+   - the leak @2, 1.5–2 days for the kinds owner plus about half a day in the binding owner's admission;
+   - the forms-aware lag drive, about 1.5 days.
+   The capacitor/held-bath parse change is not needed. Dropping the implicit block (D302) saved 4.5–5.5
+   days. The user has been told. The engine's builders stay blind to R2's code and outputs, and every
+   exposure is recorded for the comparison's registration.
+4. **FR-3's Q6 classifier repaired** (1adbb39e). replaced_slot's phrase is matched to today's message.
+   view_conflict_bath_schedule is retired: FR-23 (D244) admitted that pair through door S's scoped
+   reads. The repair is disclosed beside CHECKS, and the judged run stays reproducible at its tag.
+5. **FR-42's stacked acceptance** at core-pass-kinds-26 3f760925 passed every check buildable from the
+   public declarations, and all three planted failures were caught:
+   - transport by a face with F2 on, by contact patches and by junctions, order 2.00;
+   - exchange and reversible reactions; restart mid-transfer; replacement's rows; a reused label;
+   - D1's families refused.
+   Templated polymerisation's pools and sources come with the gene-regulation branch, so a second
+   acceptance runs on that head. Kinds' routes are refused until the kinds hook.
+6. **FR-42's kinds hook.** This is a separate optional kind hook, traced only with labels: it computes
+   the trapezoid and the gap at the step's start and end states, with per-kind `label_refusals` in place
+   of the blanket refusal. Passive routes and the transporter's flux-force forms report one-way moves;
+   the rectifier and net-flow modes are refused. The kinds owner takes 1–1.5 days and @3 half a day,
+   once the signature is agreed.
+7. **The kinds owner's queue** follows D277's order, FRs first: FR-42's kinds hook, then the replacement
+   event report FR-38's step 5 needs, then the leak @2, which is still ready before the face's item 1.
+8. **OL6 has a new owner,** from the Phase A builder's handover. Its design note comes before code.
+
+## D304: OL6 at full scope, and the GARD limit judged pathwise to rounding (the user)
+
+2026-11-22, about 21:32 UTC. The user answered two questions on OL6's design note
+(docs/OL6_DETERMINISTIC_REPRESENTATION_DESIGN.md, tag ol6-design-note-2026-11-22).
+1. **"Full scope", priced at 7.25–10 agent-days.** It covers:
+   - the deterministic representation, chosen in execution.representation over the same world id;
+   - Kurtz's limit for the continuous counts;
+   - each law's limit as a hook on its own declaration;
+   - a Rosenbrock integrator with dense output and a strict envelope;
+   - Protocol D against exact events;
+   - the hazard clock in both representations, with Phase A's count-change refusal lifted in exact
+     events as its own slice;
+   - a size-threshold division for version 2;
+   - Protocol G, the GARD limit.
+   OL6's original 3–5 days predate OL2's third milestone and OL3, whose populations, divisions and lysis
+   crossings the representation must carry. Version 1 still refuses: area-changing steps under a held
+   tension, checkpoints in the deterministic representation, and `free_energy_form: continuum`, which
+   OL1's registered conventions refuse.
+2. **"Pathwise to rounding"** replaces section 7.3's "bitwise" tier. Probe P1 shows that the two GARD
+   kernels' rates agree within 3.1e-15 but only about 13% are bitwise equal. The tier asks for identical
+   channel sequences, with coincidences near a decision boundary counted and reported. Distributional
+   agreement at registered tolerances stays the second tier, and a planted change to one β entry must
+   fail.
+- The lead's rulings on the note's other recommendations: accepted as written. The names
+  `cells.rate_equations@1`, `cells.assembly_representation@1`, `rosenbrock_rodas4_dense@1` and
+  `cells.size_threshold_division@1` are accepted. Each protocol is run at its tag by an independent
+  checker, not the builder. The representation's contract is written so that it can serve as the
+  first instance of the general level-of-detail contract (D299 item 4).
+
+## D305: D302's cost corrected, and MT-1b's long runs refused by a fixed global-charge bound (an engine gap)
+
+2026-11-22, about 22:19 UTC. The robustness agent's successor reconciled D302 and D303 on Step 0's
+world: state 4, a steady start, faceless and event-free, at 16 µs. Evidence:
+`/mnt/workspaces/Cells/mito-step0-20261122/RECONCILE.md` and `reconcile/`.
+1. **X2 costs about 20 ms per step at length, not 57.**
+   - Today's check alone costs 7.3–8.0 ms per step, so X2 costs about 2.6 times as much, not 8.
+   - A 300 s world at 16 µs (1.875e7 steps) takes about 100–110 core-hours with X2, against 38–42
+     without. D302's 300 is withdrawn, and so is the lead's later statement that the timing table
+     confirmed it.
+   - **The cause:** D302's 57 ms and the table's 59 and 68 ms each included a one-time recompile of
+     78–100 s. `energy_check.doubled_step` caches the doubled step under the whole definition's
+     digest, which includes the end time and max_steps, so each new run length recompiles X2's rollout.
+     Keying that cache on what the step reads is a small engine fix, on the backlog.
+   - **Four measurements agree:**
+     - 19.7 ms per step, the median over 251 windows of a 64,756-step replay;
+     - 20.2 ms, the marginal between warm runs;
+     - 19.4 ms over the long run's fast windows;
+     - 19.6 ms from growth_x2's 1,280→2,560 marginal.
+   - **Two side findings:**
+     - D302's "growth with length" was the same artefact.
+     - A window with any ledger above half its bound is re-checked on the host, at about 180 ms per
+       step.
+   - **Caveats:**
+     - No run has passed 64,756 steps, 0.35% of a 300 s world.
+     - x2/breakdown.json's 52 ms for the doubled step is unexplained, so a cheaper X2 is not designed
+       from it until it is.
+2. **The long run was refused by the global charge ledger at step 64,756 (1.04 s)**, with every material
+   floor at the parse cap.
+   - **The mechanism:** MT-1b's bath is a held reservoir behind host P's closed plasma patch, so no
+     charge crosses the boundary. The global charge residual is then the bath electrode's charge, which
+     carries the zero-mean rounding fluctuation of the matrix and IMS net ionic charge, up to 2.8e-25 C.
+   - **The bound:** 3e-25 C plus an allowance on the charge moved through the boundary. That charge is
+     the residual itself, so the bound never rises.
+   - **It refuses whatever X2 or the floors do.** Today's check takes the bit-identical trajectory. Long
+     runs of any world with a held bath behind a closed patch meet the same fixed bound.
+   - **This is an engine gap:** surface_field's component rule of 9 November gives a floating component
+     a rounding allowance, under which this residual stays at most 0.1% of it. A component grounded
+     through a held bath was never given the same allowance.
+   - The bound is a tolerance, so the fix is the user's decision (asked now).
+3. **The material floors fit a 300 s world at the parse cap of 1e-10 fmol.**
+   - The per-row residual maxima grow as n^0.67–n^0.83, reaching 7.2e-15 fmol at 6.4e4 steps. They
+     extrapolate to about 1e-12 fmol at 300 s, at most 1% of the cap; the cap fails only for growth of
+     n^1.68 or faster.
+   - Head 2's floors (1e-16 fmol for H) refuse at step 28,438, very probably H where its magnitude
+     dips. That was very probably the first long run's refusal.
+   - A 1e6-step check under today's check (about 2 h) follows once item 2 is fixed.
+4. **D303's item 1 is settled:**
+   - "about 19 ms" is confirmed;
+   - the floors do not reopen the implicit block, since they fit at the cap;
+   - the global charge refuses whichever block runs (an inference).
+
+## D306: FR-42's kinds, pools and sources and FR-38's steps 4 and 5 accepted; FR-38's cohort follows the requester's words
+
+2026-11-23, about 02:13 UTC. An independent checker, blind to the builders' tests and drivers, ran an
+acceptance written from the requesters' words, on main 529a8bd9. Its evidence is in
+`/mnt/workspaces/Cells/review-check-20261123/`. Its criteria were set after the results, from order
+arguments (a dt-halving ratio near 4, and exact zeros and bit patterns where the design says exact),
+never from the builders' numbers. That is disclosed.
+1. **Passed:**
+   - **FR-42 through kinds:** routes and the transporter, each labelled against unlabelled bit for
+     bit. The one-way splits match closed forms at second order, where a net-only split would be 0.03
+     off in share. Shares are a partition to 3.3e-16, and the rectifier is refused.
+   - **FR-42's pools and sources:** R1's 80 chains, survival 0.7071 and 0.2500, and a restart mid-hold
+     bit for bit.
+   - **FR-38's replacement (step 4):** removal by label exactly the pre-event row times its shares, the
+     counters at birth and death bit for bit, and per-producer identities closing to 1e-15.
+   - **FR-38's replace-then-restart (step 5):** restarts through snapshots bit for bit.
+   - **Planted failures:** all six were caught (shifted one-way amounts on a route and on the
+     transporter, an ulp per step, a skipped relabel, a skipped removal record, completion marks at
+     the base).
+2. **Unmet, in the requester's words:** RNA retained in an extracellular compartment keeping its
+   producer ID. Amendment T's export is tagged and not built. It is next.
+3. **The lead's ruling on a split the checker found.** Near the degradation's domain edge (e^y_f about
+   0.34), RNA re-synthesised from monomers takes the label in force, and a cohort decays at the gross
+   one-way rate.
+   - **The finding:** a cohort windowed on the species' own arrivals then counts re-synthesised
+     molecules, 18% more at 240 s. A cohort windowed on the chain's source schedule, which marks at
+     release from the template, matches the requester's words: "detaches from its template" and "the
+     same molecules".
+   - **The ruling:** FR-38's cohort is defined on the chain's source schedule, and re-synthesised
+     molecules are not members.
+   - **An erratum F to the sheet's section 9.8** is tagged before FR-38's rule. It states:
+     - the definition;
+     - that route 2 uses the gross one-way loss, not the net;
+     - that the species-window and source-schedule readings agree only where e^y_f << 1.
+
+     At the sheet's own state the two differ by 4e-9.
+   - The rule (fr38-rule, untagged) is not yet registered, so no registered result moves.
+4. **A risk, to be closed by design: producer identity is a declared name.**
+   - A producer label schedule that does not switch at the replacement event is admitted, and so is
+     one that switches early. The newcomer's copies then sit under the founder's label.
+   - The requester defines a producer as cell, occupant generation and expression chain, preserved
+     across restart and cell reordering.
+   - So the producer label is to be derived by the engine from the replacement events, or an
+     inconsistent schedule refused. This is a sheet amendment first, with options.
+5. **Stated, not changed:** under release-marking, a hold emptied at a replacement is recorded at the
+   base label (erratum E), and is booked to the departing generation through the counters only. Under
+   completion-marking it carries its labels.
+

@@ -171,6 +171,15 @@ species. The view switches between them; the units drawn do not change.
   a unit's work. Each product's panel gives its `found_by` as its tag, then a line on what
   it is a candidate for, then a line on its record.
 
+The web export keeps each unit's finding and search terms in the initial scene.
+`proteins.evidence_files` maps each species with separate evidence to
+`proteins/<species>/unit-evidence.json`. This file has format
+`cells.visualizer.unit_evidence@1`, a `species` ID and a `units` object keyed by
+scene unit ID. Each entry holds the original `items` and `note`. Opening a unit
+in Proteins or Machines reads that species' file once per viewer. Standalone
+exports carry the same files in embedded JSON blocks. The source scene and
+older scenes with inline unit evidence use the full records.
+
 ## A unit left out of the picture
 
 A unit of the inventory may be left out of the picture for now, by a flag on it in the

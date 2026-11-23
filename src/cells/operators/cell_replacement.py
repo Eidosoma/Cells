@@ -775,8 +775,13 @@ class ScheduledReplacement(Operator):
     def control_factors(self, state, p, *, xp):
         return dict(junction=abundance(state))
 
-    def event(self, state, control, p, *, xp):
-        return apply_events(state, control, p, xp=xp)
+    def event(self, state, control, p, *, xp, labels=None):
+        """labels (FR-42, D296; static): the call also returns the slots it replaced [cell], whose
+        labelled material the label owner then gives the newcomer label (contract)."""
+        if labels is None:
+            return apply_events(state, control, p, xp=xp)
+        new, ok = apply_events(state, control, p, xp=xp)
+        return new, ok, p.active & (control.generation == state.generation + 1)
 
     def half_step(self, state, h, control, p, *, xp):
         lag, deficit = formation.advance(

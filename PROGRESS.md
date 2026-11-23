@@ -1,6 +1,6 @@
 # Progress
 
-Last updated: 2026-11-21 UTC.
+Last updated: 2026-11-22 UTC.
 
 This is the source of current implementation status. Milestone definitions live
 in [Roadmap](docs/ROADMAP.md), scientific updates in
@@ -9,22 +9,31 @@ in [Roadmap](docs/ROADMAP.md), scientific updates in
 2026, with every earlier run summary and its evidence links, is preserved in
 [the archived progress file](docs/history/PROGRESS_BEFORE_2026-11-08.md).
 
-## Open FR and core work (22 November 2026, 12:18 UTC)
+## Open FR and core work (22 November 2026, 21:00 UTC)
 
-- **Landed since the 21 November count:**
-  - G4, with FR-25's reader fixes;
-  - FR-25's registered comparison (final verdict D282: inconclusive, 30 of 32 pass, none failed);
-  - FR-28, the binding guard, D1 for FR-33, the floating-junction fix (A), F2 (an opt-in exact face
-    heat), FR-37's example, and FR-33's first test (two named regions joined by one face; 7d70d63b).
-- **Landing next:**
-  - the OL5 precision fix, then GARD @2's range fixes;
-- **Building:** FR-38 at full scope (D284); the near-event snap (D283), which lands first.
-- **High priority, new (D286):** FR-31 (data in hand), FR-39, FR-40 and FR-41, from the Lean lane's findings.
-- **Waiting on downloads:** FR-30's benchmark.
+- **Landed today, each gated:**
+  - FR-25's final verdict (D282: inconclusive, 30 of 32 pass, none failed);
+  - F2, an opt-in exact face heat; FR-33's first test; the OL5 precision fix and GARD @2's range fixes;
+  - FR-38's sheet and its errata, its references, the reader, the engine core and its follow-ups,
+    and amendment S (step 4's sheet, tagged before code);
+  - the near-event snap, stages 1 and 2 (D283);
+  - FR-42's first stage and @3's transport side (D289);
+  - FR-31's rupture Phase A (D287), after its blind test passed (D298);
+  - MT-1b's world declaration with errata 1-3, its independent reference R2, and the runner fix;
+  - the Lean lane's and the visualizer's merges.
+- **Gating:** FR-42's stack (the kinds side, D296's label state and D1's retirement, D300) with its
+  independent acceptance, then the gene unit's labels; the temporary refusal of the gene unit beside
+  replacement (D301).
+- **Building:** OL6, then FR-39's pore episodes (D287); FR-38's step 4 under amendment S, after FR-42's
+  stack; FR-42's kinds hook; MT-1b's face (D288); a cheaper half-step energy check (D302).
+- **Decided:** the implicit cycle block is dropped (D302).
+- **High priority (D286):** FR-39, FR-40, FR-41 (data-only check undetermined).
+- **Architecture (D299):** one evolving-cell integration case (after the inventory); one static
+  level-of-detail pair and its contract (after FR-42 and FR-38).
+- **Waiting on downloads:** FR-30's next candidates (section 13.4).
 - **Open, unscheduled:** FR-1, FR-2, FR-3, FR-6, FR-11, FR-13, FR-14, FR-15, FR-16, FR-17, FR-8's rung
   2, F1 (after an MG0c rerun), crossrev renewal, and the Phase 0 runner's review.
 - **Deferred:** FR-26's L, FR-36.
-- **Paused lanes:** they resume with free agents (D277).
 
 ## Current position
 
@@ -124,6 +133,38 @@ starts, and production design is deferred until parity is established.
 
 Per-run summaries for this plan are added here, newest first, each linking its
 machine-readable inputs, results, checks and failures.
+
+- **FR-31's rupture Phase A landed (22 November 2026).** Merge a9a67d06, tag
+  `pores-phase-a-landed-2026-11-22`. `cells.pore_nucleation@1` under `cells.assembly_hazard@1`, and a
+  held membrane tension as a declared work source (`cells.tension_hold@1`). The rupture clock runs on
+  the host; the device kernel is untouched. The blind test on the registered predictions passed
+  (D298; [score](/mnt/workspaces/Cells/review-check-20261121/pores/score.json)). Gate: crossrev 11 of
+  11, tiers 634/0, G1 113 of 113, FR's set
+  ([gate](/mnt/workspaces/Cells/pores-phase-a-20261122/gate-a94d6eaf/)).
+
+- **MT-1b's code-blind reference R2 landed (22 November 2026).** Merge ca6fcf2c, tag
+  `mito-r2-reference-landed-2026-11-22`, under the world declaration and its errata 1-3 (5ef76150).
+  The trace check passes. Every plant is caught; P-b's 2.28 bands on the collapse rows alone and P-a's
+  3.45 at plateau ends are recorded as weaknesses
+  ([run of record and re-score](/mnt/workspaces/Cells/mito-refs-r2-20261122/)). The engine comparison
+  is registered after the face build.
+
+- **The dt ladder and the runner fix (22 November 2026).** 16 µs passes every check on MT-1b's world
+  with explicit cycles, so the implicit block is dropped (D302;
+  [evidence](/mnt/workspaces/Cells/mito-step0-20261122/)). The host path's closure re-solve is removed,
+  bit-identical (b6da1b60, tag `binding-ledger-reuse-landed-2026-11-22`; 182.5 to 143.6 ms per host
+  step). The half-step energy check is now the cost driver: about 300 CPU-h per 300 s world.
+
+- **The near-event snap landed (22 November 2026).** Stage 1 (the clock, D283) and stage 2 (5337db54,
+  tag `d283-snap-stage2-landed-2026-11-22`): every operator's grid check asks the clock's one predicate,
+  within 4 ulps of k*dt, and the applied copy declares the time there. Gate: crossrev 11 of 11, tiers
+  633/0, G1 113 of 113, FR's set
+  ([gate](/mnt/workspaces/Cells/core-pass-at3-20261118/c-snap2/gate/)).
+
+- **FR-42's transport side landed (22 November 2026).** Merge 48d09332, tag
+  `fr42-at3-transport-landed-2026-11-22`: faces' and routes' one-way flows for labelled rows, with
+  forward minus backward equal to the booked net at rounding. Gate: crossrev 11 of 11, tiers 633/0, G1
+  113 of 113, FR's set ([gate](/mnt/workspaces/Cells/core-pass-at3-20261118/fr42/)).
 
 - **The FR-24, FR-27 and FR-26 stack landed (21 November 2026).** Merges 260e2ed5 (FR-24, a site
   population's quantity as a rate source through the contract's R3), 5fc1364f (FR-27,

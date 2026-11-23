@@ -16,12 +16,12 @@ A molecular encounter draws from the available counts without replacement. For a
 
 - [CellsProofs.Chemistry.AssemblyKinetics.repeated_pair](../CellsProofs/Chemistry/AssemblyKinetics.lean#L18)
 - [CellsProofs.Chemistry.AssemblyKinetics.log_draw](../CellsProofs/Chemistry/AssemblyKinetics.lean#L33)
-- [CellsProofs.Chemistry.AssemblyKinetics.encounter_energy](../CellsProofs/Chemistry/AssemblyKinetics.lean#L76)
-- [CellsProofs.Chemistry.AssemblyKinetics.pair_heat](../CellsProofs/Chemistry/AssemblyKinetics.lean#L170)
-- [CellsProofs.Chemistry.AssemblyKinetics.membrane_cancel](../CellsProofs/Chemistry/AssemblyKinetics.lean#L186)
-- [CellsProofs.Chemistry.AssemblyKinetics.last_draw](../CellsProofs/Chemistry/AssemblyKinetics.lean#L194)
-- [CellsProofs.Chemistry.AssemblyKinetics.boundary_encounter_energy](../CellsProofs/Chemistry/AssemblyKinetics.lean#L202)
-- [CellsProofs.Chemistry.AssemblyKinetics.singular_draw](../CellsProofs/Chemistry/AssemblyKinetics.lean#L215)
+- [CellsProofs.Chemistry.AssemblyKinetics.encounter_energy](../CellsProofs/Chemistry/AssemblyKinetics.lean#L100)
+- [CellsProofs.Chemistry.AssemblyKinetics.pair_heat](../CellsProofs/Chemistry/AssemblyKinetics.lean#L194)
+- [CellsProofs.Chemistry.AssemblyKinetics.membrane_cancel](../CellsProofs/Chemistry/AssemblyKinetics.lean#L210)
+- [CellsProofs.Chemistry.AssemblyKinetics.last_draw](../CellsProofs/Chemistry/AssemblyKinetics.lean#L218)
+- [CellsProofs.Chemistry.AssemblyKinetics.boundary_encounter_energy](../CellsProofs/Chemistry/AssemblyKinetics.lean#L226)
+- [CellsProofs.Chemistry.AssemblyKinetics.singular_draw](../CellsProofs/Chemistry/AssemblyKinetics.lean#L239)
 - [CellsProofs.Chemistry.AssemblyKinetics.occupancy_by_count](../CellsProofs/Chemistry/AssemblyKinetics.lean#L24)
 
 Direct proof subject `cells.stochastic_mass_action@1`
@@ -33,6 +33,18 @@ Uses [Whole-molecule counts set the ideal mixing cost of membrane entry](assembl
 ## Numerical comparison
 
 **Checked.** The reference and engine agreed on ordinary rates and zero and singular patterns across 594 compositions under both count measures. Three boundary conventions were checked on six additional states. The pool kernel reproduced the two-state occupancy formula at one, two and three partners.
+
+**Engine** `cells.assembly_lineages@2`, `cells.stochastic_mass_action@1`, `cells.transition_state_factor@1`, `cells.ideal_mixing@1`, `cells.regular_mixing@1`
+
+[Ordered draws and cancelled membrane denominator](https://github.com/Eidosoma/Cells/blob/329e9e395ac117998657a21eb827192d34314107/src/cells/models/assembly_lineages_v2/mass_action.py) · [Rate factor on the common state](https://github.com/Eidosoma/Cells/blob/329e9e395ac117998657a21eb827192d34314107/src/cells/models/assembly_lineages_v2/transition_state.py) · [Forward and reverse rate assembly](https://github.com/Eidosoma/Cells/blob/329e9e395ac117998657a21eb827192d34314107/src/cells/models/assembly_lineages_v2/kernel.py) · [World balance probe](https://github.com/Eidosoma/Cells/blob/329e9e395ac117998657a21eb827192d34314107/src/cells/models/assembly_lineages_v2/balance.py) · [Independent rational draw and factor](https://github.com/Eidosoma/Cells/blob/329e9e395ac117998657a21eb827192d34314107/validation/ool/references/laws.py) · [Independent rate tolerance](https://github.com/Eidosoma/Cells/blob/329e9e395ac117998657a21eb827192d34314107/validation/ool/references/detailed_balance.py) · [Registered boundary world](https://github.com/Eidosoma/Cells/blob/329e9e395ac117998657a21eb827192d34314107/validation/ool/references/designs/ol1_boundary.world.json) · [assembly lineage v2 fixtures](https://github.com/Eidosoma/Cells/blob/329e9e395ac117998657a21eb827192d34314107/tests/assembly_lineage_v2_fixtures.py) · [probes](https://github.com/Eidosoma/Cells/blob/329e9e395ac117998657a21eb827192d34314107/validation/assembly_lineages_v2/probes.py) · [ol1 wa.world](https://github.com/Eidosoma/Cells/blob/329e9e395ac117998657a21eb827192d34314107/validation/ool/references/designs/ol1_wa.world.json) · [ol1 kernel probe states](https://github.com/Eidosoma/Cells/blob/329e9e395ac117998657a21eb827192d34314107/validation/ool/references/designs/ol1_kernel_probe_states.json) · [ol1 boundary probe states](https://github.com/Eidosoma/Cells/blob/329e9e395ac117998657a21eb827192d34314107/validation/ool/references/designs/ol1_boundary_probe_states.json) · [assembly mixing](https://github.com/Eidosoma/Cells/blob/ad1f96418722d25876b38b5a5f38996512d6a32c/lean/checks/assembly_mixing.py) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/ad1f96418722d25876b38b5a5f38996512d6a32c/lean/checks/assembly_kinetics.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/ad1f96418722d25876b38b5a5f38996512d6a32c/lean/PROGRESS.md#ol5-six-replays)
+
+[Tested engine 329e9e395ac1](https://github.com/Eidosoma/Cells/commit/329e9e395ac117998657a21eb827192d34314107) · [Evidence checkpoint ad1f96418722](https://github.com/Eidosoma/Cells/commit/ad1f96418722d25876b38b5a5f38996512d6a32c)
+
+**Engine** `cells.assembly_lineages@2`, `cells.stochastic_mass_action@1`, `cells.ideal_mixing@1`
+
+[Pool encounters](https://github.com/Eidosoma/Cells/blob/329e9e395ac117998657a21eb827192d34314107/src/cells/models/assembly_lineages_v2/mass_action.py) · [Concentration extent](https://github.com/Eidosoma/Cells/blob/329e9e395ac117998657a21eb827192d34314107/src/cells/models/assembly_lineages_v2/model.py) · [Pool standard potential and factorial](https://github.com/Eidosoma/Cells/blob/329e9e395ac117998657a21eb827192d34314107/src/cells/models/assembly_lineages_v2/ideal_mixing.py) · [assembly lineage v2 fixtures](https://github.com/Eidosoma/Cells/blob/329e9e395ac117998657a21eb827192d34314107/tests/assembly_lineage_v2_fixtures.py) · [probes](https://github.com/Eidosoma/Cells/blob/329e9e395ac117998657a21eb827192d34314107/validation/assembly_lineages_v2/probes.py) · [shon2012 confined binding](https://github.com/Eidosoma/Cells/blob/ad1f96418722d25876b38b5a5f38996512d6a32c/lean/checks/data/shon2012_confined_binding.json) · [Comparison driver](https://github.com/Eidosoma/Cells/blob/ad1f96418722d25876b38b5a5f38996512d6a32c/lean/checks/confined_binding.py) · [Recorded result](https://github.com/Eidosoma/Cells/blob/ad1f96418722d25876b38b5a5f38996512d6a32c/lean/PROGRESS.md#ol5-six-replays)
+
+[Tested engine 329e9e395ac1](https://github.com/Eidosoma/Cells/commit/329e9e395ac117998657a21eb827192d34314107) · [Evidence checkpoint ad1f96418722](https://github.com/Eidosoma/Cells/commit/ad1f96418722d25876b38b5a5f38996512d6a32c)
 
 **Engine** `cells.assembly_lineages@2`, `cells.stochastic_mass_action@1`, `cells.transition_state_factor@1`, `cells.ideal_mixing@1`, `cells.regular_mixing@1`
 

@@ -37,6 +37,8 @@ from cells.operators import OPERATORS
 from cells.operators import compartments as compartments_operator
 from cells.operators import membrane_trafficking as trafficking_operator
 from cells.operators import partition as partition_operator
+from cells.operators import species_labels as labels_operator
+from cells.operators.contract import reports_labels, takes_labels
 
 ROOT = Path(__file__).resolve().parents[2]
 DOC = ROOT / "docs" / "PUMP_COMPOSITE.md"
@@ -64,6 +66,7 @@ SITES = "site_occupancy@1"
 OCCUPANT = "site_occupant_replacement@1"  # FR-26's W.
 TRAFFICKING = trafficking_operator.LAW_ID
 PRODUCER = "population_unit_turnover@1"
+LABELS = labels_operator.LAW_ID
 
 OPS = "src/cells/operators/"
 TESTS = "tests/unit/"
@@ -909,6 +912,32 @@ _UNIT_WRITERS = tuple(
 )
 _UNIT_PAIRS = tuple(pair for law in _UNIT_WRITERS for pair in ((PRODUCER, law), (law, PRODUCER)))
 
+
+def _labels_refuse(law):
+    """Whether FR-42 stage 1's label owner refuses `law` whatever the definition
+    (species_labels.operator_errors): a closer or retirer, a provider of the amount references, an
+    event that writes species amounts without reporting what it replaced, or a split part that
+    writes them without reporting."""
+    op = OPERATORS[law]
+    replaces = set(labels_operator.AMOUNT_FIELDS) & {*op.EVENT_REPLACES, *op.STATE_RESETS}
+    writes = set(labels_operator.AMOUNT_FIELDS) & set(op.ENTITY_WRITES) - replaces
+    return bool(
+        op.RETIRES
+        or op.CLOSES
+        or set(labels_operator.AMOUNT_VIEWS) & set(op.VIEW_FIELDS)
+        or (replaces and not (op.EVENT and takes_labels(op.event)))
+        or (writes and op.EVENT and not op.SPLIT)
+        or (writes and op.SPLIT and not reports_labels(op))
+    )
+
+
+_LABEL_PAIRS = tuple(
+    pair
+    for law in LAWS
+    if law != LABELS and _labels_refuse(law)
+    for pair in ((LABELS, law), (law, LABELS))
+)
+
 RULES = (
     dict(
         rule="insertion@2 precedes every retiring operator",
@@ -1063,6 +1092,22 @@ RULES = (
         "newcomer without its template's multiplier, a donor copy there (version 1.1), a "
         "founder's change after its death, a template that is not a replacement template, and a "
         "multiplier for no route its newcomers take",
+    ),
+    dict(
+        rule="a slot of templated_polymerisation@1 that replacement@1 replaces takes each "
+        "newcomer's values from the operator's templates, and no donor copy enters or leaves one",
+        laws=("templated_polymerisation@1", REPLACEMENT_1, REPLACEMENT_2),
+        level="data",
+        check=OPS + "templated_polymerisation.py::check_occupants",
+        test=TESTS + "test_templated_polymerisation.py::test_the_release_refuses",
+        tag=REAL,
+        why="The sheet's §9.16 (amendment S, FR-38's step 4): the departing occupant's chains "
+        "and holds leave with it, and a newcomer's rates are its own (D244's occupant rule). "
+        "Refused: a newcomer without its template's value, a template that is not a replacement "
+        "template, a value for no schedule its newcomers take, a founder's change at or after "
+        "its death, a donor copy into or from a slot of the operator (version 1.1), and any "
+        "replacement version but @1 (@2 behind the declarations' refusal: water provides the "
+        "volumes it reads as declared)",
     ),
     dict(
         rule="no coupling target or regulatory state on a replaced slot",
@@ -1325,6 +1370,40 @@ RULES = (
         "declares the precursor (species_exchange@1 among them) and an in-step mover of it: the "
         "inner model's movers and any operator's in-step process (species_registry."
         "moved_in_step)",
+    ),
+    dict(
+        rule="FR-42's labels refuse closers, retirers, amount-view providers, events that write "
+        "species amounts without reporting, and split writers of them that do not report",
+        laws=(LABELS, *sorted({law for pair in _LABEL_PAIRS for law in pair} - {LABELS})),
+        level="law",
+        check=OPS + "species_labels.py::operator_errors",
+        test=TESTS + "test_neutral_arrival_labels.py::"
+        "test_a_labelled_definition_is_refused_where_labels_cannot_follow_it",
+        tag=REAL,
+        why="The shares follow only one-way moves that a reporter states (operators/contract.py), "
+        "so a part that changes amounts without them is refused, naming the FR-42 stage that "
+        "lifts it; templated polymerisation joins the reporters with the gene regulation lane's "
+        "side. It marks the pairs the declarations admit and stands behind their refusals of the "
+        "rest",
+        marks=tuple(pair for pair in _LABEL_PAIRS if not errors(sequence(*pair))),
+        behind=tuple(pair for pair in _LABEL_PAIRS if errors(sequence(*pair))),
+    ),
+    dict(
+        rule="FR-42's labels refuse a labelled species moved in the step by what the inner step "
+        "does not report",
+        laws=(LABELS,),
+        level="data",
+        check=OPS + "species_labels.py::in_step_errors",
+        test=TESTS + "test_neutral_arrival_labels.py::"
+        "test_a_labelled_definition_is_refused_where_labels_cannot_follow_it",
+        tag=REAL,
+        why="Where the inner step takes labels= it reports its uncharged faces' and its routes' "
+        "one-way transfers (FR-42's stage 2), and its declared kinds' through their hook "
+        "(D303 item 6); a charged face, a channel, a pump, a kind without the hook or an "
+        "in-step process (species_registry.moved_in_step) is refused, and so is RK4 beside a "
+        "followed mover. Each kind refuses what it cannot carry (its label_refusals), a kind "
+        "with a rates hook and none is refused while any row is labelled, and a row a closure "
+        "holds (a kind's stage read) is refused",
     ),
 )
 

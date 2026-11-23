@@ -216,7 +216,7 @@ close (`active`, `outside_active`, `membrane_active`, `face_active`, `junction_a
   - mismatch carriers {species: transference number}, used only when some a_k ≠ f.
 - **Schedule (experiment):** `partition_events`, each with a division id, a time and the two
   daughters' carrier IDs (like replacement's `carrier_id`).
-  - Times are exact multiples of dt inside the horizon.
+  - Times lie on the clock's grid (D283) inside the horizon.
   - The structure (slot maps) is static and enters the batch signature. Times and fractions are
     per-world data.
 - **Own state:**

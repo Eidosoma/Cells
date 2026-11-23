@@ -11,7 +11,7 @@
 import http from "node:http";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
-import { buildPage, proteinFiles, machineFiles, modelFiles, shapeFiles, benchFiles, landingFiles, wrap, contentSecurityPolicy, ROOT, THREE_CDN, THREE_LOCAL, DEFAULT_SCENE, DEFAULT_RUNS, DEFAULT_PROTEINS, DEFAULT_MEMBERS, DEFAULT_MACHINES, DEFAULT_CARDS } from "./lib/build_page.mjs";
+import { buildPage, splitUnitEvidence, proteinFiles, machineFiles, modelFiles, shapeFiles, benchFiles, landingFiles, wrap, contentSecurityPolicy, ROOT, THREE_CDN, THREE_LOCAL, DEFAULT_SCENE, DEFAULT_RUNS, DEFAULT_PROTEINS, DEFAULT_MEMBERS, DEFAULT_MACHINES, DEFAULT_CARDS } from "./lib/build_page.mjs";
 
 // Reports script errors and blocked loads back to this server, in previews only.
 const REPORTER = `<script>
@@ -30,7 +30,7 @@ const REPORTER = `<script>
  */
 export function createServer({ scene = DEFAULT_SCENE, runs = DEFAULT_RUNS, offline = false, log = console.log, proteins = DEFAULT_PROTEINS, members = DEFAULT_MEMBERS, machines = DEFAULT_MACHINES, cards = DEFAULT_CARDS } = {}) {
   // The files beside the page, by the address the page fetches them at. Listed again with each page, so a rebuilt scene is followed.
-  let beside = new Map(), machined = new Map();
+  let beside = new Map(), machined = new Map(), evidence;
   const list = async () => {
     const data = JSON.parse(await readFile(scene, "utf8"));
     // A machine's file (schema/MACHINES.md), as it is published beside the page.
@@ -38,10 +38,12 @@ export function createServer({ scene = DEFAULT_SCENE, runs = DEFAULT_RUNS, offli
     for (const problem of made.problems) log(`[server] machines: ${problem}`);
     // And a model system's run files (schema/MODEL_SYSTEMS.md), beside the page in the same way.
     machined = new Map([...made.files, ...(await modelFiles(data)).files, ...(await shapeFiles()).files, ...(await benchFiles()).files].map((file) => [`/${file.path}`, file.source]));
-    if (!proteins) return;
-    const found = await proteinFiles(data, { proteinsDir: proteins, membersDir: members });
+    const found = proteins ? await proteinFiles(data, { proteinsDir: proteins, membersDir: members }) : { files: [], problems: [] };
     for (const problem of found.problems) log(`[server] proteins: ${problem}`);
     beside = new Map(found.files.map((file) => [`/${file.path}`, file.source]));
+    const prepared = splitUnitEvidence(data);
+    evidence = new Map(prepared.files.map((file) => [`/${file.path}`, file.text]));
+    return prepared;
   };
   return http.createServer(async (request, response) => {
     const url = new URL(request.url, "http://localhost");
@@ -87,16 +89,16 @@ export function createServer({ scene = DEFAULT_SCENE, runs = DEFAULT_RUNS, offli
       }
       // The species' own proteins are served beside the page too, as they are published.
       if (url.pathname.startsWith("/proteins/")) {
-        if (!beside.size) await list();
+        if (!evidence) await list();
         const source = beside.get(url.pathname);
-        const file = source ? await readFile(source).catch(() => null) : null;
+        const file = evidence.get(url.pathname) ?? (source ? await readFile(source).catch(() => null) : null);
         if (!file) response.writeHead(404).end("not found");
         else response.writeHead(200, { "content-type": "application/json", "cache-control": "no-store" }).end(file);
         return;
       }
       if (url.pathname === "/") {
-        await list();
-        const content = await buildPage({ scenePath: scene, runsDir: runs, three: offline ? THREE_LOCAL : THREE_CDN });
+        const preparedScene = await list();
+        const content = await buildPage({ preparedScene, runsDir: runs, three: offline ? THREE_LOCAL : THREE_CDN });
         const html = wrap(content, { theme: url.searchParams.get("theme"), head: REPORTER });
         response.writeHead(200, {
           "content-type": "text/html; charset=utf-8",

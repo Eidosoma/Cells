@@ -1,0 +1,45 @@
+{
+ "kind": "cells.mito_r2_run_receipt@1",
+ "status": "complete",
+ "command": [
+  "/mnt/workspaces/Cells/venv-cpu/bin/python",
+  "-m",
+  "validation.mitochondria.references_r2.run",
+  "--out",
+  "/mnt/workspaces/Cells/mito-refs-r2-20261122/run-989959fe5012"
+ ],
+ "provenance": {
+  "kind": "snapshot",
+  "snapshot": "/mnt/workspaces/Cells/mito-refs-r2-20261122/snapshot-989959fe5012",
+  "git_revision": "989959fe5012066140cf2c37a96370feef550864",
+  "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "clean": true,
+  "files": [
+   "tests/unit/test_mito_r2_identities.py",
+   "validation/mitochondria/references_r2/README.md",
+   "validation/mitochondria/references_r2/__init__.py",
+   "validation/mitochondria/references_r2/constants.py",
+   "validation/mitochondria/references_r2/declaration.json",
+   "validation/mitochondria/references_r2/model.py",
+   "validation/mitochondria/references_r2/protocol.py",
+   "validation/mitochondria/references_r2/run.py",
+   "validation/mitochondria/references_r2/steady.py"
+  ]
+ },
+ "started_utc": "2026-11-22T18:30:39.805190+00:00",
+ "finished_utc": "2026-11-22T18:53:13.110660+00:00",
+ "wall_s": 1353.3054692745209,
+ "cpu_s": 1352.943565689,
+ "host": "eidosoma-us-prod-1",
+ "cpu_affinity": [
+  7
+ ],
+ "python": "3.13.5 (main, Aug 10 2026, 12:06:59) [GCC 14.2.0]",
+ "numpy": "2.5.3",
+ "scipy": "1.18.1",
+ "platform": "Linux-6.12.117+deb13-cloud-amd64-x86_64-with-glibc2.41",
+ "outputs": {
+  "full.npz": "cc5b0949a5bd4db7f0a255ff80e3e4516c369ddeb4c68bbe23267672987ac060",
+  "interface.json": "5cd70f474a46e678abd571d8515b18750dcb2432fa6e963c29e6f9ae98323847"
+ }
+}

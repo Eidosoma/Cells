@@ -82,7 +82,7 @@ const STAGING_OWN = /^upload-\d+\.json$/;
 // What the export publishes beside the page (tools/export_page.mjs and lib/build_page.mjs), by the path it stands at.
 const PUBLISHED = [
   /^runs\/[a-z0-9][a-z0-9._-]*\.json$/,
-  /^proteins\/[a-z0-9][a-z0-9_-]*\/(?:shelves|names|members-\d+)\.json$/,
+  /^proteins\/[a-z0-9][a-z0-9_-]*\/(?:shelves|names|members-\d+|unit-evidence)\.json$/,
   /^machines\/[a-z0-9][a-z0-9_-]*\.[a-z0-9][a-z0-9_-]*\.json$/,
   /^shapes\/[a-z0-9][a-z0-9_-]*\.[a-z0-9][a-z0-9_-]*\.json$/,
   /^catalogue\/[a-z0-9][a-z0-9_-]*\.json$/,

@@ -4,7 +4,8 @@ the snapshot files (records/io.py). Development, not judged.
 
 The checkpoint is the composite's whole state (execution/state.Checkpoint), so it carries
 templated_polymerisation@1's own fields: free machines, complexes per stage, the cumulative
-initiations, stage exits, releases, degradations and transfers, and every heat. A route's rate is
+initiations, stage exits, releases, degradations and transfers, every heat, and with a release
+(FR-38) its hold, the releases into each fate row and their heats. A route's rate is
 piecewise constant from each change's time (the operator's value_at), so a change at the join
 belongs to the interval that starts there: the first run's last step runs at the old rate, and the
 resumed run's first step at the new one.
@@ -133,6 +134,9 @@ def example(world, route, join, factor, window_steps, out):
                 "poly_degraded_fmol",
                 "poly_transferred_fmol",
                 "poly_dissipated_energy_pJ",
+                "poly_hold_fmol",  # The release's (the sheet's §9.7), empty without one.
+                "poly_hold_released_fmol",
+                "poly_release_heat_pJ",
             )
         },
     )

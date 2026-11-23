@@ -46,6 +46,8 @@ keeps its start, and the definition keeps its form.
   patch's presence and each entity's patch slot are structural. They are read on the host only, so
   no program changes; a kind beside a closer stays refused until the core gates its rates by its
   host's activity (B1's third step).
+- **FR-42's labels** (D303 item 6): `label_refusals` gives none, since it moves no species row, so
+  labels are admitted beside it; it has no label_transfers.
 """
 
 from types import MappingProxyType
@@ -321,6 +323,13 @@ def domain(state, p, *, xp):
     return valid & xp.all(xp.where(p.patch_damage_present, True, d == 0))
 
 
+def label_refusals(declaration, species):
+    """FR-42 (D303 item 6): none. Its rates hook moves no species row (it has no moved_rows), so
+    no labelled species is moved by it and it reports no transfers."""
+    del declaration, species
+    return []
+
+
 # ---------------------------------------------------------------------------- the routing door
 
 
@@ -366,5 +375,6 @@ PATCH_DAMAGE = BUILTIN.register(
         partition_roles=PARTITION_ROLES,
         field_axes=FIELD_AXES,
         axis_hosts=AXIS_HOSTS,
+        label_refusals=label_refusals,  # FR-42 (D303 item 6): it moves no row.
     )
 )

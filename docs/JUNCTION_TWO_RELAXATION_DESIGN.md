@@ -623,6 +623,52 @@ papers.
   the narrower claim keeps the benchmark honest. Excluding native pairs would leave one candidate
   that is probably undetermined, so the search would most likely end with no test at all.
 
+### 13.4 Entry of 15:30 UTC on 22 November 2026: a fourth candidate list, in order, before any is read
+
+Written by the lead, after section 13.3's candidates all came out undetermined (D291) and the user chose one
+more metadata-only search (D292). Nobody on this project has read these papers' results. The search
+read titles, abstracts, query matches and stated conditions only, and its full-text checks were
+blocked by PMC's browser check. This entry is tagged `fr30-candidates4-registered-2026-11-22` before
+any extraction.
+
+**The order.** Each paper is extracted only if the one before it is undetermined. Section 13's split
+rule, judged observables and pass rule apply unchanged, with section 13.1's fixes, section 13.2's
+missing-amplitude rule, the Xu ruling (D291: on-rates without P_open are undetermined) and section
+13.3's native admission. The search's own suggested reading of the held-out voltage count is not part
+of the rule.
+1. **Shibayama et al. (2006)**, Biophys J 91:4054, doi:10.1529/biophysj.106.085787, PMC1635665. The
+   wild-type Cx43 arm only; the His-142 mutants are not used.
+2. **Elenes et al. (2001)**, Biophys J 81:1406, doi:10.1016/S0006-3495(01)75796-7, PMC1301620. The
+   homotypic Cx43 arm only.
+3. **Revilla, Castro and Barrio (1999)**, Biophys J 77:1374, doi:10.1016/S0006-3495(99)76986-9,
+   PMC1300426. Xenopus oocyte pairs.
+4. **Ek-Vitorín, Pontifex and Burt (2016)**, Biophys J 110:127, doi:10.1016/j.bpj.2015.10.054,
+   PMC4805864. Wild-type Cx43 only.
+5. **Bukauskas et al. (2001)**, Biophys J 81:137, doi:10.1016/S0006-3495(01)75687-1, PMC1301499.
+6. **Rackauskas et al. (2007)**, Biophys J 92:1952, doi:10.1529/biophysj.106.099358, PMC1861779.
+7. **Wang et al. (1992)**, Biophys J 63:139, doi:10.1016/S0006-3495(92)81573-4, PMC1262131. Native
+   neonatal myocyte pairs, under section 13.3's native admission and its narrower claim, and only if
+   they are ventricular.
+8. **Moreno et al. (1994)**, Biophys J 67:113, doi:10.1016/S0006-3495(94)80460-6, PMC1225340.
+9. **Lin, Xu and Veenstra (2014)**, Channels 8:433, doi:10.4161/19336950.2014.949188, PMC4594514.
+
+Papers 1 to 4 matched a full-text query for two-exponential wording with Cx43 and transjunctional
+voltage. A match is not a reading: it may come from another connexin or from a hemichannel passage.
+
+**Excluded, from the search's reading of text and conditions:**
+- Lin et al. 2008: on-rates without P_open per voltage (the Xu ruling).
+- Hoang, Qian and Ripps 2010: two exponentials at one voltage only.
+- Desplantez et al. 2011: the fast constant only. Its untagged wild-type Cx43 panels are also replotted
+  from the excluded Desplantez 2004, and must not be read by the extractor or the fitter.
+- Lübkemeier et al. 2013: a mutant, measured with ramps.
+- Banach and Weingart 1996 and 2000; Valiunas et al. 2000; Xu et al. 2012; Vogel and Weingart 1998;
+  Desplantez 2017.
+- Maciunas 2023, which the FR-7 agent has already fetched.
+
+**What has been read (disclosure).** Only the search's metadata. It recorded no time constant, rate,
+amplitude, P_open or conductance value for any candidate. The search's file is
+/mnt/workspaces/Cells/fr30-search-20261122/candidates.md, and the fitter does not open it.
+
 ## Sources
 
 - **Read:**

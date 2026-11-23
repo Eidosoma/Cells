@@ -28,7 +28,7 @@ from pathlib import Path
 import pytest
 
 from cells.definitions.specs import parse_spec
-from validation.gene_regulation import cohort, compare, engine_run, kernel, worlds
+from validation.gene_regulation import cohort, compare, engine_run, kernel, release_check, worlds
 from validation.gene_regulation import sheet_check as sheet
 
 REFERENCES = compare.References()
@@ -193,6 +193,14 @@ def test_the_producing_chain_is_resolved_from_the_product():
     ):
         with pytest.raises(ValueError, match=words):
             cohort.producing_chain(chain_map, product, chain)
+    # FR-38: with a release, a fate row's inflow is the release's (§9.8's route 2), never the
+    # chain's completions, which join its hold, though the durable fate is the chain's product.
+    fates = [dict(durable="R", short_lived="R_s")]
+    tx = dict(id="tx", product="R", release=dict(id="rel", fates=fates))
+    makes, counters = cohort.producers([tx, dict(id="tl", product="P")])
+    assert makes == {"rel_durable": "R", "rel_short_lived": "R_s", "tl": "P"}
+    assert cohort.producing_chain(makes, "R") == "rel_durable"
+    assert counters["rel_short_lived"] == "int_Q_rel_short_lived" and "tx" not in counters
 
 
 @pytest.mark.skipif(not (SAVED_JSON.exists() and SAVED_CSV.exists()),
@@ -367,6 +375,52 @@ def _fast_turnover(times, n0=100.0, k=1.0, P=1.0):
     return list(times), n, Q, [q + n0 - m for q, m in zip(Q, n, strict=True)]
 
 
+K_SHORT = math.log(2) / 1800.0  # R1's short-lived loss (1/s).
+# The route-2 survival check fails closed (the Lean lane's finding at a6acbc27): (case, outputs
+# every s, release rate in copies/s during R1's window, first-order loss 1/s, ok, status).
+SURVIVAL = [
+    ("sparse", 3600, 1 / 360, 0.0, False, "insufficient resolution"),
+    ("resolved lossless", 60, 1 / 360, 0.0, False, "compared"),
+    ("empty cohort", 60, 0.0, K_SHORT, False, "empty cohort"),
+    ("resolved first-order", 60, 1 / 360, K_SHORT, True, "compared"),
+]
+
+
+@pytest.mark.parametrize(("case", "every", "inflow", "loss", "ok", "status"), SURVIVAL,
+                         ids=[c[0] for c in SURVIVAL])  # fmt: skip
+def test_the_survival_check_fails_closed(case, every, inflow, loss, ok, status, tmp_path):
+    """release_check.survival on synthetic counters of R1's short-lived fate R_s (a trace of 10
+    copies, the window's releases at `inflow`, first-order loss), against e^(-k_s 3600 s) = 1/4,
+    no world compiled. Outputs too far apart for a grid error are insufficient resolution, not a
+    pass (a lossless ratio of 1 passed before); an empty cohort is reported, not raised (it was a
+    ZeroDivisionError); a resolved lossless cohort fails as compared; a first-order one passes."""
+    from cells.operators.templated_polymerisation import COPY_FMOL
+
+    t1, t2 = worlds.R1_WINDOW
+    t = [float(x) for x in range(0, int(2 * t2) + 1, every)]
+    n0 = 10.0
+
+    def alive(s):
+        made = inflow * min(s, t2)
+        if loss == 0.0:
+            return n0 + made
+        inside = n0 * math.exp(-loss * min(s, t2)) - inflow / loss * math.expm1(-loss * min(s, t2))
+        return inside * math.exp(-loss * max(s - t2, 0.0))
+
+    n = [alive(s) * COPY_FMOL for s in t]
+    Q = [inflow * min(s, t2) * COPY_FMOL for s in t]
+    D = [0.0 if loss == 0.0 else n0 * COPY_FMOL + q - x for q, x in zip(Q, n, strict=True)]
+    readouts = {"n_R_s": n, "int_Q_tx_release_short_lived": Q, "int_D_R_s": D}
+    path = tmp_path / "record.json"
+    path.write_text(json.dumps(dict(definition=worlds.r1(0.75), cell="cell_0", t=t,
+                                    readouts=readouts)))  # fmt: skip
+    checks = release_check.Checks()
+    release_check.survival(checks, case, path, "R_s", "short_lived")
+    (row,) = checks.rows
+    assert (row["ok"], row["status"]) == (ok, status), row
+    assert row["closed_form_ratio"] == pytest.approx(0.25, rel=1e-12)
+
+
 def test_survivors_are_bounded_by_the_pool_and_coarse_grids_are_flagged(tmp_path, capsys):
     """D264, finding 5: from two exact observations, 0 and 8 s, the reader gave 3.32347 fmol
     labelled where 1.03321 fmol remained (exact 0.99966) and a zero grid error."""
@@ -383,6 +437,16 @@ def test_survivors_are_bounded_by_the_pool_and_coarse_grids_are_flagged(tmp_path
     t, n, Q, D = _fast_turnover([k * 0.1 for k in range(81)])  # Resolved: within its grid error.
     _, labelled, _ = cohort.survivors(t, n, Q, D, 0.0, 8.0)
     assert abs(labelled - -math.expm1(-8.0)) <= cohort.grid_error(t, n, Q, D, 0.0, 8.0)
+    # FR-38's survival readout (the requester's answer): FR-25's turnover control, 100 copies with
+    # a one-hour half-life, the first hour's completions alive at 1 h and 2 h, and their ratio, a
+    # half; None where nothing was completed.
+    hour, k = 3600.0, math.log(2) / 3600.0
+    t = [i * 60.0 for i in range(121)]
+    n, made = [100.0] * len(t), [100 * k * s for s in t]
+    counted = cohort.survival(t, n, made, made, 0.0, hour, 2 * hour)
+    assert counted["alive_at_window_end"] == pytest.approx(50.0, rel=1e-4)
+    assert counted["ratio"] == pytest.approx(0.5, rel=1e-12)
+    assert cohort.survival(t, n, [0.0] * len(t), made, 0.0, hour, 2 * hour)["ratio"] is None
 
 
 # (case, the counters' edit, t1, t2, ts, the refusal's words).
@@ -516,20 +580,53 @@ def _record(raw, tmp_path, cell=None):
     return path, values
 
 
-def test_a_lossless_product_reads_a_zero_loss_series(tmp_path):
+def _release_world():
+    """R1 at p = 0.5 to 60 s, its short-lived fate R_s with no loss route (deg_R_s dropped)."""
+    raw = kernel.truncated(worlds.r1(0.5), 60.0)
+    block = kernel.block(raw)
+    block["degradations"] = [d for d in block["degradations"] if d["polymer"] != "R_s"]
+    raw["experiment"]["polymerisation_controls"] = [
+        c for c in raw["experiment"]["polymerisation_controls"] if c["route_id"] != "deg_R_s"
+    ]
+    return raw
+
+
+# (case, the lossless world, its lossless row, a world whose row's loss route is declared, it).
+LOSSLESS = [
+    ("protein", lambda: _protein_world(lossless=True), "P", _protein_world, "P"),
+    # The Lean lane's finding (22 November 2026): a release's fate row without a loss route
+    # read as a product's does, its zero series exported.
+    ("release fate", _release_world, "R_s", _release_world, "R"),
+    # And with FR-42's labels on the fate rows: the label owner moves nothing (about 1 s).
+    (
+        "labelled fate",
+        lambda: worlds.with_share_labels(_release_world(), window=(0.0, 30.0)),
+        "R_s",
+        _release_world,
+        "R",
+    ),
+]
+
+
+@pytest.mark.parametrize(("case", "lossless", "row", "lossy", "declared"), LOSSLESS,
+                         ids=[c[0] for c in LOSSLESS])  # fmt: skip
+def test_a_lossless_product_reads_a_zero_loss_series(
+    case, lossless, row, lossy, declared, tmp_path
+):
     """D265, finding 7: with the protein's degradation route removed the export omitted int_D_P,
-    and the reader raised KeyError; a declared loss route's missing counter is still refused."""
-    path, values = _record(_protein_world(lossless=True), tmp_path)
-    assert values["int_D_P"] == [0.0] * len(values["n_P"])
-    t, n, Q, D = cohort.read(path, "P")
+    and the reader raised KeyError; likewise a release's fate row (int_D_R_s); a declared loss
+    route's missing counter is still refused."""
+    path, values = _record(lossless(), tmp_path)
+    assert values[f"int_D_{row}"] == [0.0] * len(values[f"n_{row}"])
+    t, n, Q, D = cohort.read(path, row)
     completed, surviving, _ = cohort.survivors(t, n, Q, D, 0.0, 60.0)
-    assert surviving == completed > 0  # Nothing is lost.
-    lossy, _ = _record(_protein_world(), tmp_path)
+    assert completed > 0 and surviving == pytest.approx(completed, rel=1e-12)  # Nothing is lost.
+    lossy, _ = _record(lossy(), tmp_path)
     record = json.loads(lossy.read_text())
-    del record["readouts"]["int_D_P"]
+    del record["readouts"][f"int_D_{declared}"]
     lossy.write_text(json.dumps(record))
-    with pytest.raises(ValueError, match="deg_P"):
-        cohort.read(lossy, "P")
+    with pytest.raises(ValueError, match=f"deg_{declared}"):
+        cohort.read(lossy, declared)
 
 
 def test_the_reader_resolves_the_chain_at_the_exported_cell(tmp_path):

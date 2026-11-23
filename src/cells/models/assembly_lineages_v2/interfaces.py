@@ -30,6 +30,7 @@ from typing import Callable, ClassVar
 from cells.models.assembly_lineages_v2 import (
     FREE_ENERGY_INTERFACE,
     GEOMETRY_INTERFACE,
+    HAZARD_INTERFACE,
     MODEL_ID,
     OPERATOR_INTERFACE,
     POPULATION_INTERFACE,
@@ -198,6 +199,47 @@ class FreeEnergyTerm(Law):
             out.append(f"its part is one of {', '.join(PARTS)}")
         if not self.phases:
             out.append("it names the phases it reads")
+        return out
+
+
+HAZARD_STREAMS = ("pore",)  # FR-31: the stream domain a hazard's clock draws on (streams.py)
+HAZARD_OUTCOMES = ("lysis",)  # FR-31 Phase A: rupture only, through the existing release
+HAZARD_READS = ("tension", "area", "temperature")
+
+
+@dataclass(frozen=True)
+class AssemblyHazard(Law):
+    """cells.assembly_hazard@1: a vesicle's hazard on a clock (FR-31, Phase A;
+    docs/VESICLE_PORES_DESIGN.md §3.1, docs/VESICLE_PORES_LAWS.md §5).
+
+    It reads the vesicle's state (its tension, its area and the world's temperature), gives a rate
+    per vesicle, and names its stream and its outcome. The hazard is passive: its event pair keeps
+    ln a⁺ − ln a⁻ = −ΔF + w, w being the work of a declared source (the tension's hold), never its
+    own, so U2's guard applies to it as to the family's other laws."""
+
+    energy_role: str
+    energy_source: object
+    reads: tuple  # what the rate reads, among HAZARD_READS
+    stream: str  # its clock's stream domain, one of HAZARD_STREAMS
+    outcome: str  # what a firing does, one of HAZARD_OUTCOMES
+    data: tuple  # The keys of its world block beside `law`.
+    parse_data: Callable  # (raw block, world) -> parsed data; ConfigError on refusal.
+    data_to_dict: Callable
+    formulas: dict
+
+    interface: ClassVar[str] = HAZARD_INTERFACE
+
+    def errors(self):
+        out = super().errors() + _host_and_role(self)
+        out += _callables(self, ("parse_data", "data_to_dict"))
+        if not self.reads or set(self.reads) - set(HAZARD_READS):
+            out.append(f"it reads among {', '.join(HAZARD_READS)}")
+        if self.stream not in HAZARD_STREAMS:
+            out.append(f"its stream is one of {', '.join(HAZARD_STREAMS)}")
+        if self.outcome not in HAZARD_OUTCOMES:
+            out.append(f"its outcome is one of {', '.join(HAZARD_OUTCOMES)}")
+        if not isinstance(self.formulas, dict) or not self.formulas:
+            out.append("its formulas state its rate in words and symbols")
         return out
 
 

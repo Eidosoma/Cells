@@ -258,14 +258,16 @@ def test_version_1_form_keeps_todays_entry_fields_and_hooks():
     assert bound.control_fields == transporter.CONTROL_FIELDS
     assert bound.readout_columns == transporter.READOUT_COLUMNS
     assert bound.material_term is None and bound.view_sets is None  # Today's hooks, exactly,
-    # with role_species, §5.2's admission's reading, which both layouts carry (host-side), and the
+    # with role_species, §5.2's admission's reading, which both layouts carry (host-side), the
     # schedule's two definition-time hooks (D228 item 5): parse_schedule returns None without its
-    # key and refuses it on version 1's layout, so its programs and change records are today's.
+    # key and refuses it on version 1's layout, so its programs and change records are today's;
+    # and FR-42's two (D303 item 6), traced only where rows are labelled.
     hooks = [f.name for f in dataclasses.fields(bound) if callable(getattr(bound, f.name))]
     assert sorted(hooks) == sorted(
         ["parse", "to_dict", "structure_entry", "initial", "control_values", "rates",
          "stage_term", "bound_rate", "held_rows", "ledger_terms", "domain", "readouts",
-         "moved_rows", "check_definition", "role_species", "parse_schedule", "schedule_to_dict"]
+         "moved_rows", "check_definition", "role_species", "parse_schedule", "schedule_to_dict",
+         "label_refusals", "label_transfers"]
     )  # fmt: skip
     # Planted: an entry that keeps the axis's hooks gives version 1 a material_term.
     def keeps(entry):

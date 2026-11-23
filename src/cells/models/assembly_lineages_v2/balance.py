@@ -23,6 +23,7 @@ The check's draws come from its own NumPy generator (PROBE_SEED), never from a s
 
 import copy
 import functools
+import math
 
 import numpy as np
 
@@ -731,3 +732,88 @@ def _osmotic_verdict():
             "max_abs_deviation_ln": worst,
         },
     }
+
+
+# ------------------------------------------------------------------ FR-31: the pore's event pair
+
+PORE_STATES = 240  # the generic probe's states (parameters, tension, temperature and area)
+
+
+def pore_deviation(log_nu, gamma, e_a, eta, sigma, temperature, area):
+    """ln k_v − ln P + (ΔF − w)/k_BT at one state, from three separate statements of the sheet
+    (§2, §7): k_v the law's rate, P its reverse (the critical pore's collapse, damped by η_m(T)),
+    and ΔF and w from the pore's energy, ΔF = 2πr_cΓ − k_BT·ln(A·n_s) with n_s's closed form at
+    298.15 K and w = σ·πr_c², r_c = Γ/σ. It is 0 to rounding where the three agree."""
+    from cells.models.assembly_lineages_v2 import pore_nucleation as law
+
+    kt = law.K_B * temperature
+    r_c = gamma / sigma
+    log_sites = math.log(area) + law.log_site_density(log_nu, gamma, e_a, eta)
+    delta_f = 2.0 * math.pi * r_c * gamma / kt - log_sites
+    work = sigma * math.pi * r_c * r_c / kt
+    log_k = law.log_rate(area, sigma, temperature, log_nu, gamma, e_a)
+    log_p = math.log(law.collapse_rate(sigma, temperature, gamma, e_a, eta))
+    return log_k - log_p + (delta_f - work)
+
+
+def pore_verdict():
+    """_pore_verdict()'s result, a fresh copy for each caller (D263)."""
+    return copy.deepcopy(_pore_verdict())
+
+
+@functools.cache
+def _pore_verdict():
+    """The pair's identity on the check's own generic states (its parameters, tension, temperature
+    and area drawn from PROBE_SEED + 7, with T away from 298.15 K, where η_m's factors are 1):
+    refuses (ConfigError) if any state fails it. Cached: a property of the family's code."""
+    from cells.models.assembly_lineages_v2 import pore_nucleation as law
+
+    rng = np.random.default_rng(PROBE_SEED + 7)
+    worst = 0.0
+    for _ in range(PORE_STATES):
+        gamma = float(rng.uniform(3e-12, 30e-12))
+        temperature = float(rng.uniform(260.0, 380.0))
+        sigma = float(rng.uniform(0.02, 0.25)) * law.sigma_beta(gamma, temperature)
+        found = pore_deviation(
+            float(rng.uniform(10.0, 60.0)), gamma, float(rng.uniform(5e3, 80e3)),
+            float(np.exp(rng.uniform(np.log(1e-11), np.log(1e-8)))), sigma, temperature,
+            float(np.exp(rng.uniform(np.log(1e-18), np.log(1e-6)))),
+        )  # fmt: skip
+        worst = max(worst, abs(found))
+    if not worst <= ATOL:
+        raise ConfigError(
+            f"{MODEL_ID}: the pore's pair fails ln k_v - ln P = -(dF - w) on the check's probe: "
+            f"the largest deviation is {worst:.3g} > {ATOL:g}. Refused"
+        )
+    return {
+        "identity": "ln k_v - ln P + (dF - w)/k_BT = 0, dF = 2 pi r_c Gamma - k_BT ln(A n_s), "
+        "w = sigma pi r_c^2 (the sheet's §7)",
+        "holds": True,
+        "probe": {
+            "states": PORE_STATES,
+            "seed": PROBE_SEED + 7,
+            "tolerance_ln": ATOL,
+            "max_abs_deviation_ln": worst,
+        },  # fmt: skip
+    }
+
+
+def pore_world_report(spec, areas):
+    """The pair's identity at the world's own states: its parameters and temperature, each hold's
+    tension and each vesicle's area (A in m²); refused (ConfigError) if it fails."""
+    from cells.models.assembly_lineages_v2 import pore_nucleation as law
+
+    world = spec.model.world
+    log_nu, gamma, e_a, eta = law.parameters(world)
+    found = [
+        pore_deviation(log_nu, gamma, e_a, eta, hold.sigma, world.units.temperature_K, area)
+        for hold in spec.experiment.tension_holds
+        for area in areas
+    ]
+    worst = max((abs(x) for x in found), default=0.0)
+    if not found or not worst <= ATOL:
+        raise ConfigError(
+            f"{MODEL_ID}: on this world's data the pore's pair fails its identity by {worst:.3g} "
+            f"> {ATOL:g} (or was checked at no state): refused"
+        )
+    return {"states": len(found), "max_abs_deviation_ln": worst, "tolerance_ln": ATOL}

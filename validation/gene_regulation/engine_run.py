@@ -32,7 +32,20 @@ The heat classes are assigned by route: a chain templated by a gene's copies is 
 polymer is made by transcription or translation; a transfer is recharging (rc).
 
 Run: PYTHONPATH=src:. JAX_ENABLE_X64=1 python -m validation.gene_regulation.engine_run
-[--worlds NAME ...] [--sets LABEL ...] [--dt S] [--end S] --out DIR
+[--worlds NAME ... | all | release | release2] [--sets LABEL ...] [--dt S] [--end S] --out DIR.
+"release" is R1's runs (worlds.release_names(), FR-38), at dt worlds.R1_DT; "release2" is R2's,
+its development check's and A1, at A1's 0.5 s; "switch" is R1S's (worlds.r1s) and its unlabelled twin R1SU's, at R1's dt. All
+export the release's readouts: the
+hold H_<release>, its releases int_Q_<release>_<fate>, each fate's class total n_<release>_<fate>
+and its heat class H_rel_<release>_<fate>, and the hold's term in G_minus_G0 (the sheet's §9).
+
+A world that declares FR-42's labels (neutral_arrival_labels@1, D289) also exports each labelled
+row's amount carrying each of its labels at the exported cell, label_<row>_<label>: the row's
+amount times the label's share, keyed by the species' and label's IDs; and each release's hold by
+the labels of its durable fate row, label_H_<release>_<label>, the hold times its share in the
+label owner's pool (D296). In R1L label_R_cohort and label_R_s_cohort are §9.8's route 1 on shares
+(erratum C), the window's releases still present, with no blank. A label never changes a physical
+readout.
 """
 
 import argparse
@@ -52,12 +65,15 @@ import numpy as np
 from cells.definitions.specs import parse_spec
 from cells.execution.windows import WindowPolicy, iter_windows
 from cells.operators import OPERATORS
+from cells.operators import templated_polymerisation as polymerisation
 from cells.registry.models import get_model
 from validation.gene_regulation import sheet_check as sheet
 from validation.gene_regulation import worlds
 
 ROOT = Path(__file__).resolve().parents[2]
 SHEET_TAG = "gr1-sheet-2026-11-20b"
+RELEASE_SHEET_TAG = "gr1-sheet-fr38-erratum-c-2026-11-22"  # The sheet's §9, as amended (FR-38).
+LABELS = "neutral_arrival_labels@1"  # FR-42's label owner (D289).
 POLICY = WindowPolicy(window_steps=10000, recording="observations")
 DIGITS = 60
 
@@ -175,11 +191,21 @@ def collect(spec):
 def classes(block):
     """{class: [(kind, route index), ...]}: the sheet's five heat classes (module docstring)."""
     gene_made = {c.product for c in block.chains if c.template_copies is not None}
+    # A gene's release (§9.12, reading 5): a fate row that is not its product has its own class.
+    fates = {
+        row
+        for c, r in polymerisation.releases_of(block)
+        if c.template_copies is not None
+        for row in r.rows()
+    } - gene_made
     out = {"H_tx": [], "H_tl": [], "H_deg_R": [], "H_deg_P": [], "H_rc": []}
     for i, c in enumerate(block.chains):
         out["H_tx" if c.template_copies is not None else "H_tl"].append(("chain", i))
     for i, d in enumerate(block.degradations):
-        out["H_deg_R" if d.polymer in gene_made else "H_deg_P"].append(("degradation", i))
+        if d.polymer in fates:
+            out.setdefault(f"H_deg_{d.polymer}", []).append(("degradation", i))
+        else:
+            out["H_deg_R" if d.polymer in gene_made else "H_deg_P"].append(("degradation", i))
     for i, _ in enumerate(block.transfers):
         out["H_rc"].append(("transfer", i))
     return {k: v for k, v in out.items() if v}
@@ -217,6 +243,15 @@ def exported_cell(spec, block, cell=None):
     return cell
 
 
+def labelled(spec):
+    """((species, its labels), ...) that FR-42's label owner declares, in its order; () where the
+    world declares none."""
+    for d in spec.model.operators:
+        if d.law == LABELS:
+            return tuple((s.id, s.labels) for s in d.species)
+    return ()
+
+
 def readouts(spec, states, cell=None):
     """(times, {readout: [value per output]}, checks) of one run, at the exported cell
     (exported_cell), which checks names as exported_cell."""
@@ -247,17 +282,27 @@ def readouts(spec, states, cell=None):
     }
     membership = {name: members for name, members in membership.items() if members}
     # D265, finding 7: a product of the cell's chains with no loss route there, and named by no
-    # other operator, is established as lossless, and exported with a zero loss series.
+    # other operator, is established as lossless, and exported with a zero loss series. A
+    # release's fate rows (FR-38, the sheet's §9; every class's) are filled by its chain as a
+    # product is, so the rule covers them too (the Lean lane's finding, 22 November 2026). FR-42's
+    # label owner names species but moves no material, so it is no other mover.
     lost = {block.degradations[i].polymer for i in here["degradation"]}
-    others = {getattr(x, "id", x) for op in spec.model.operators if op.law != worlds.POLYMERISATION
+    others = {getattr(x, "id", x) for op in spec.model.operators
+              if op.law not in (worlds.POLYMERISATION, LABELS)
               for x in getattr(op, "species", ())}  # fmt: skip
-    zero_loss = sorted({block.chains[i].product for i in here["chain"]} - lost - others)
+    releases = [
+        (i, c, r) for i, (c, r) in enumerate(polymerisation.releases_of(block)) if c.cell == cell
+    ]
+    made = {block.chains[i].product for i in here["chain"]}
+    made |= {row for _, _, r in releases for row in r.rows()}
+    zero_loss = sorted(made - lost - others)
     times = [float(t) for t in spec.experiment.observation_times]
     out = {}
 
     def put(name, value):
         out.setdefault(name, []).append(float(value))
 
+    shared = labelled(spec)
     g0 = None
     for t in times:
         s = states[int(round(t / dt))]
@@ -268,17 +313,32 @@ def readouts(spec, states, cell=None):
         }
         for row in rows:
             put(f"n_{row}", amounts[row])
+        if shared:  # FR-42 (D289): each labelled row's amount by label, the row times its share.
+            share = np.asarray(s.label_share)  # [labelled species, label, cell]
+            for j, (row, names) in enumerate(shared):
+                n = float(reference[species.index(row), at] + increment[species.index(row), at])
+                for k, name in enumerate(names):
+                    put(f"label_{row}_{name}", n * float(share[j, k, at]))
+            # D296: each hold at the exported cell by its durable fate row's labels, the hold
+            # times its share (the operator the only pool reporter; its pools, its releases).
+            pooled = np.asarray(s.label_pool_share)[0]  # [label, pool]
+            hold = np.asarray(s.poly_hold_fmol)
+            for i, _, r in releases:
+                names = dict(shared).get(r.fates[0][0], ())
+                for k, name in enumerate(names):
+                    put(f"label_H_{r.id}_{name}", float(hold[i, 0]) * float(pooled[k, i]))
         free = np.asarray(s.poly_free_machines_fmol)
         for i in here["pool"]:
             put(f"F_{block.pools[i].id}", free[i])
         complexes = np.asarray(s.poly_complexes_fmol)
         transit = {}
+        held = _held(s, releases)
         for i in here["chain"]:
             c = block.chains[i]
             r = c.residues // c.stages
             for j in range(c.stages):
                 put(f"C_{c.id}_{j + 1}", complexes[i, j])
-            put(f"E_{c.id}", float(np.sum(complexes[i, : c.stages])))
+            put(f"E_{c.id}", float(np.sum(complexes[i, : c.stages])) + held.get(c.id, 0.0))
             transit[c.id] = float(r * sum(j * complexes[i, j] for j in range(c.stages)))
             put(f"W_{c.id}", transit[c.id])
             put(f"int_J_I_{c.id}", np.asarray(s.poly_initiated_fmol)[i])
@@ -312,9 +372,17 @@ def readouts(spec, states, cell=None):
         for name, members in membership.items():
             put(name, sum(float(heats[kind][i]) for kind, i in members))
         put("H_total", float(np.asarray(s.poly_dissipated_energy_pJ)[at]))
-        put("H_routes_sum", sum(float(heats[kind][i]) for kind in heats for i in here[kind]))
+        release_heat = _release_readouts(put, s, releases, amounts)
+        put(
+            "H_routes_sum",
+            sum(float(heats[kind][i]) for kind in heats for i in here[kind]) + release_heat,
+        )
+        residues = dict(transit)  # G's residue term: in transit, and held complete (§9.5).
+        hold = np.asarray(s.poly_hold_fmol)
+        for i, c, _ in releases:
+            residues[c.id] = residues[c.id] + c.residues * float(np.sum(hold[i]))
         g = free_energy(
-            {row: amounts[row] for row in mu}, transit, mu, residue_mu, volume, block.c0_mM
+            {row: amounts[row] for row in mu}, residues, mu, residue_mu, volume, block.c0_mM
         )
         g0 = g if g0 is None else g0
         put("G_minus_G0", g - g0)
@@ -342,11 +410,45 @@ def readouts(spec, states, cell=None):
         energy_magnitude_at_end_pJ=magnitude,
         smallest_class_increment={
             name: min(b - a for a, b in zip(out[name], out[name][1:], strict=False))
-            for name in membership
+            for name in [*membership, *(k for k in out if k.startswith("H_rel_"))]
         },
         exported_cell=cell,
     )
     return times, out, checks
+
+
+def _held(s, releases):
+    """{chain: the machines its hold engages}: H where the machine is held (§9.3, §9.12 reading
+    6: E = sum C + sum H under held), none under returned."""
+    hold = np.asarray(s.poly_hold_fmol)
+    return {
+        c.id: math.fsum(float(v) for v in hold[i]) for i, c, r in releases if r.machine == "held"
+    }
+
+
+def _release_readouts(put, s, releases, amounts):
+    """The release's readouts at one output (the sheet's §9.7), each per release and fate, the
+    classes summed (a class's own where K > 1): the hold H_<release>, the releases
+    int_Q_<release>_<fate>, each fate's rows n_<release>_<fate> (the class totals, so total RNA
+    per fate reads without the labels) and the heat class H_rel_<release>_<fate>. Returns the
+    release heats' sum, for H_routes_sum."""
+    hold = np.asarray(s.poly_hold_fmol)
+    released = np.asarray(s.poly_hold_released_fmol)
+    heat = np.asarray(s.poly_release_heat_pJ)
+    total = 0.0
+    for i, _, r in releases:
+        K = len(r.fates)
+        put(f"H_{r.id}", math.fsum(float(v) for v in hold[i]))
+        for k in range(K if K > 1 else 0):
+            put(f"H_{r.id}_{k + 1}", hold[i, k])
+        for f, fate in enumerate(polymerisation.FATES):
+            put(f"int_Q_{r.id}_{fate}", math.fsum(float(v) for v in released[i, :, f]))
+            put(f"n_{r.id}_{fate}", math.fsum(amounts[pair[f]] for pair in r.fates))
+            put(f"H_rel_{r.id}_{fate}", math.fsum(float(v) for v in heat[i, :, f]))
+            total += math.fsum(float(v) for v in heat[i, :, f])
+            for k in range(K if K > 1 else 0):
+                put(f"int_Q_{r.id}_{fate}_{k + 1}", released[i, k, f])
+    return total
 
 
 def sheet_c0():
@@ -405,10 +507,20 @@ def main(argv=None):
         (out / "checkout.patch").write_text(patch)
     everything = sheet.potential_sets(interior=any(s.startswith("interior") for s in args.sets))
     sets = {label: everything[label] for label in args.sets}
-    names = worlds.names() if args.worlds == ["all"] else args.worlds
+    names = dict(
+        all=worlds.names(),
+        release=worlds.release_names(),
+        release2=[*worlds.r2_names(), *worlds.r2_check_names(), "A1"],
+        switch=["R1S returned", "R1S held", "R1SU returned", "R1SU held"],
+    ).get(args.worlds[0] if len(args.worlds) == 1 else None, args.worlds)
     record = dict(
         what="The engine's development runs of option A (G4). Development, not judged.",
         sheet_tag=SHEET_TAG,
+        **(
+            {"release_sheet_tag": RELEASE_SHEET_TAG}
+            if any(n.startswith(("R1", "R2")) for n in names)  # R1, R1L, R1S, R2 and R2A.
+            else {}
+        ),
         **source,
         python=platform.python_version(),
         dt_s=args.dt,

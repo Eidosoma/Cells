@@ -315,6 +315,6 @@ test("what the panel says of a piece of scenery: that it is scenery, the file's 
   // The door is followed by the viewer, which opens the atlas's own drawing and picks the set.
   const viewer = readFileSync(path.join(ROOT, "src/ui/viewer.js"), "utf8"), panel = readFileSync(path.join(ROOT, "src/ui/panel.js"), "utf8");
   assert.match(panel, /emit\(this, "cells-door", door\)/);
-  assert.match(viewer, /addEventListener\("cells-door", \(event\) => this\.openDoor\(event\.detail\)\)/);
+  assert.match(viewer, /"cells-door", \(event\) => this\.openDoor\(event\.detail\)/);
   assert.match(viewer, /view\.setMode\(show, \{ user: true \}\)[^]*view\.setMark\?\.\(mark\)[^]*view\.setFinding\?\.\(String\(value\)\)/);
 });

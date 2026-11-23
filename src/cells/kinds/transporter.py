@@ -57,6 +57,12 @@ columns and its records (the lead's ruling (b), 20 November 2026). The N-to-P fl
 counts' own orientation: a positive cycle_count changes each row by its per_cycle (the population
 set's) from the N end towards the P end.
 
+**FR-42's labels** (D303 item 6; docs/NEUTRAL_LABELS_DESIGN.md §11), in both layouts: a crossing
+row's one-way moves are its counts times each mode's one-way cycle rates, J+ = k a S and
+J- = J+ e^x, over the step with the gap to the booked cycles (label_transfers). label_refusals
+refuses a labelled species that a net-flow form changes, that a law changes at one end only or on
+a held row, or whose counts at the two ends differ. Neither hook is traced without labels.
+
 Version 1's layout:
 
 docs/INNER_MODEL_V4_DESIGN.md §7.4 (g) 2 and (k); docs/COMPARTMENT_PH_TRANSFER_DESIGN.md §5–6
@@ -2486,6 +2492,15 @@ def probe(read, potentials, control, p, *, xp=np):
     return CycleProbe(modes, edges, occupancy, rows, populations)
 
 
+def _version_1_log_s(c_in, fuel, p, *, xp):
+    """[membrane] ln S of version 1's two laws, which share its form: the role's saturation at the
+    patch's cell and ATP's, at those concentrations (fuel [3, membrane]); padded slots read 1 mM."""
+    n, present = p.transporter_stoichiometry, p.transporter_present
+    role = xp.log(p.transporter_km_role_mM) - xp.log(xp.where(present, c_in, 1.0))
+    atp = xp.log(p.transporter_km_atp_mM) - xp.log(xp.where(present, fuel[0], 1.0))
+    return -xp.logaddexp(0.0, n * role) - xp.logaddexp(0.0, atp)
+
+
 def _version_1_probe(read, potentials, control, p, *, xp):
     """The probe on version 1's layout (one mode per patch, rows role@N, role@P and the fuel at N):
     J, x, heat and work from version 1's own kinetics, J+ = k a S from the law's saturation (both of
@@ -2499,8 +2514,7 @@ def _version_1_probe(read, potentials, control, p, *, xp):
     c_in, c_out, fuel = gather(read, p, xp=xp)
     n = p.transporter_stoichiometry
     present = p.transporter_present
-    log_s = -xp.logaddexp(0.0, n * (xp.log(p.transporter_km_role_mM) - xp.log(xp.where(present, c_in, 1.0))))
-    log_s = log_s - xp.logaddexp(0.0, xp.log(p.transporter_km_atp_mM) - xp.log(xp.where(present, fuel[0], 1.0)))
+    log_s = _version_1_log_s(c_in, fuel, p, xp=xp)
     k = p.transporter_capacity_fmol_s
     on = present & (k > 0) & (a > 0)
     log_plus = xp.log(xp.where(on, k, 1.0)) + xp.log(xp.where(on, a, 1.0)) + log_s
@@ -2544,6 +2558,147 @@ def _version_1_probe(read, potentials, control, p, *, xp):
         guard=guard, allowance=forms.UNIT_ROUNDOFF * (j_plus + j_minus) * coefficient, valid=valid,
     )  # fmt: skip
     return CycleProbe(modes, None, None, rows, populations)
+
+
+# ============================================================================ FR-42's labels
+# The kinds hook (D303 item 6; docs/NEUTRAL_LABELS_DESIGN.md §11; the contract in
+# kind_registry.Kind), in both layouts and traced only where rows are labelled. Every flux-force
+# form runs J = J+ (1 - e^x), so a mode's one-way cycle rates are J+ and J- = J+ e^x (Hill's one-way
+# cycle fluxes: each completion one way moves its rows' counts that way). A crossing row moves
+# |nu| J+ from the end where it is consumed to the end where it is made, and |nu| J- back.
+
+
+def _version_1_one_way(view, p, *, xp):
+    """(J+, J-) [membrane], fmol cycles/s, at one end of a step (a LabelView): J+ = k a S and J- =
+    J+ e^x, x = dG_cyc/RT, the form version 1's two laws share (their kernels' J = J+ (1 - e^x), as
+    the probe reads it); 0 where no population runs."""
+    a = view.control.transporter_availability
+    _, energy, _, _ = kinetics(view.read, view.potentials, a, p, xp=xp)
+    c_in, _, fuel = gather(view.read, p, xp=xp)
+    present, k = p.transporter_present, p.transporter_capacity_fmol_s
+    on = present & (k > 0) & (a > 0)
+    log_plus = xp.log(xp.where(on, k, 1.0)) + xp.log(xp.where(on, a, 1.0))
+    log_plus = log_plus + _version_1_log_s(c_in, fuel, p, xp=xp)
+    x = xp.where(present, energy / (R * p.temperature), 0.0)
+    return xp.where(on, xp.exp(log_plus), 0.0), xp.where(on, xp.exp(log_plus + x), 0.0)
+
+
+def _population_one_way(view, p, *, xp):
+    """(J+, J-) [mode, population], fmol cycles/s, at one end of a step, from the axis's one
+    evaluation; 0 for a net-flow mode, which has no one-way form (label_refusals refuses a
+    labelled row one changes), selected before any arithmetic reads its NaN."""
+    e = _evaluate(view.read, view.potentials, view.control, p, xp=xp)
+    flow = p.cycle_form[None, :] == FORM_CODES["net_flow"]
+    return xp.where(flow, 0.0, e.j_plus), xp.where(flow, 0.0, e.j_minus)
+
+
+def _population_ends(p, *, xp):
+    """(N node, P node) [population] on the combined node axis (cells, then outside nodes)."""
+    from cells.modules import host_table
+
+    table = host_table(p, xp=xp)
+    a_node, b_node = table.end_a[p.cycle_host], table.end_b[p.cycle_host]
+    return xp.where(p.cycle_n_at_b, b_node, a_node), xp.where(p.cycle_n_at_b, a_node, b_node)
+
+
+def label_transfers(start, end, p, dt, rows, *, weight=None, xp):
+    """FR-42's kinds hook (D303 item 6): the labelled rows' one-way amounts over one step, fmol,
+    each >= 0, ends on the combined node axis. Each mode's forward and backward cycles are the
+    trapezoid of its J+ and J- at the step's two ends (under the Euler IMEX, `weight` times the
+    start's), plus the gap to its booked net (transporter_cycles or cycle_count, end less start) on
+    the side its sign gives; a row's amounts are its |nu| times them, summed over the modes.
+    - Version 1: (the role [m, membrane], from the patch's cell to its outside node) for forward
+      cycles, n per cycle, and back for backward ones.
+    - The population axis: (N to P [m, population]) and (P to N): a row consumed at N per forward
+      cycle (nu at N < 0) moves its forward cycles N to P and its backward ones P to N; a row made
+      at N moves the other way. label_refusals admits only rows that cross so, with equal and
+      opposite counts at the two ends, by a flux-force form, on moved rows."""
+    axis = MARK in type(p)._fields  # Static: the population axis's layout.
+    one_way = _population_one_way if axis else _version_1_one_way
+    forward, backward = one_way(start, p, xp=xp)
+    if weight is None:
+        at_end = one_way(end, p, xp=xp)
+        forward, backward = 0.5 * dt * (forward + at_end[0]), 0.5 * dt * (backward + at_end[1])
+    else:
+        forward, backward = weight * forward, weight * backward
+    booked = "cycle_count" if axis else "transporter_cycles"
+    gap = getattr(end.state, booked) - getattr(start.state, booked) - (forward - backward)
+    forward, backward = forward + xp.maximum(gap, 0.0), backward + xp.maximum(-gap, 0.0)
+    idx = xp.asarray(rows)
+    if not axis:
+        role = (p.transporter_role[None, :] == idx[:, None]) & p.transporter_present[None, :]
+        n = p.transporter_stoichiometry[None, :]
+        cell, outside = p.membrane_cell, p.active.size + p.membrane_outside
+        return (
+            (xp.where(role, n * forward[None, :], 0.0), cell, outside),
+            (xp.where(role, n * backward[None, :], 0.0), outside, cell),
+        )
+    at_n = (p.cycle_row_species[None] == idx[:, None, None]) & p.cycle_row_at_n[None]
+    at_n = at_n & (p.cycle_row_present & ~p.cycle_row_held)[None]  # [m, K, P]: moved, at N.
+    nu = entity_sum(xp.where(at_n[:, None], p.cycle_nu[None], 0.0), axis=2, xp=xp)  # [m, M, P]
+    leaves, enters = xp.maximum(-nu, 0.0), xp.maximum(nu, 0.0)  # N's per forward cycle.
+    to_p = entity_sum(leaves * forward[None] + enters * backward[None], axis=1, xp=xp)
+    to_n = entity_sum(enters * forward[None] + leaves * backward[None], axis=1, xp=xp)
+    n_node, p_node = _population_ends(p, xp=xp)
+    return ((to_p, n_node, p_node), (to_n, p_node, n_node))
+
+
+def label_refusals(declaration, species):
+    """FR-42 (D303 item 6): why the populations cannot carry the labelled species (IDs, in the
+    label rows' order), or []. A species a population's law changes, on its moved or held rows
+    (moved_rows, held_rows), is carried only where it crosses: changed at its N and P ends by equal
+    and opposite counts in every mode, on moved rows, by a flux-force form. Each population is read
+    through its general form (version 1's through the one-to-one map, as role_species reads it).
+    Refused: a net-flow form (no one-way cycle rates); a species changed at one end only (chemistry
+    there); a held row the law changes (held fuel: its maintenance's new material is not
+    reported); unequal counts at the two ends. A species a population only reads is not moved."""
+    if isinstance(declaration, PopulationAxis):
+        populations = tuple(declaration)
+    else:
+        populations = tuple(_mapped(t) for t in declaration)
+    out = []
+    for t in populations:
+        form, roles = cycle_form(t.law), dict(t.roles)
+        counts = _counts(form, dict(t.parameters))  # [mode, row]
+        for name in species:
+            changed = [
+                k
+                for k, (role, _) in enumerate(form.rows)
+                if roles[role] == name and np.any(counts[:, k] != 0)
+            ]
+            if not changed:
+                continue
+            if form.kinetics == "net_flow":
+                out.append(
+                    f"{t.id} runs {t.law}, a net-flow form with no one-way cycle rates, and "
+                    f"changes the labelled {name}"
+                )
+                continue
+            held = [form.rows[k][1] for k in changed if tuple(form.rows[k]) in t.held_rows]
+            if held:
+                out.append(
+                    f"{t.id}'s law changes the labelled {name} at its {held[0]} end, a held row "
+                    "(its maintenance's new material is not reported)"
+                )
+                continue
+            for m, (mode, _) in enumerate(form.modes):
+                ends = {"N": 0.0, "P": 0.0}
+                for k in changed:
+                    ends[form.rows[k][1]] += float(counts[m, k])
+                if ends["N"] == ends["P"] == 0.0:
+                    continue
+                if ends["N"] == 0.0 or ends["P"] == 0.0:
+                    side = "N" if ends["N"] else "P"
+                    out.append(
+                        f"{t.id}'s mode {mode} changes the labelled {name} at its {side} end only "
+                        "(chemistry there, not a crossing)"
+                    )
+                elif ends["N"] + ends["P"] != 0.0:
+                    out.append(
+                        f"{t.id}'s mode {mode} changes the labelled {name} by {ends['N']:g} at N "
+                        f"and {ends['P']:g} at P, unequal counts at the two ends"
+                    )
+    return out
 
 
 def view_sets(spec, declaration):
@@ -2970,5 +3125,8 @@ TRANSPORTER = BUILTIN.register(
         # Seam D (K2): the core's trapezoid books this kind's heat fields where a definition picks
         # it ({"cells.transporter@1": "trapezoid_nonnegative@1"} under heat_bookings).
         heat_bookings=(TRAPEZOID_BOOKING,),
+        # FR-42's hook (D303 item 6), both layouts: traced only where rows are labelled.
+        label_refusals=label_refusals,
+        label_transfers=label_transfers,
     )
 )

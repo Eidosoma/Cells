@@ -1,0 +1,38 @@
+{
+  "scope": "Measurements adjacent to the FR-31 model for a protein-free DOPC bilayer. The three assays measure different observables.",
+  "studies": [
+    {
+      "dataset_id": "chwastek2020_dopc_rotor",
+      "doi": "10.1002/cbic.201900510",
+      "locator": "Figure 4, Table 1 and the pure-DOPC results",
+      "observable": "Local rotational microviscosity from solvent-calibrated DCVJ fluorescence brightness in DOPC vesicles.",
+      "temperature_C": 25,
+      "microviscosity_mPa_s": 41,
+      "reported_plus_minus_mPa_s": 10,
+      "arrhenius_energy_kJ_per_mol": 54,
+      "reported_plus_minus_kJ_per_mol": 9,
+      "limit": "Probe rotation senses its local surroundings. The conversion to the in-plane shear viscosity used for pore friction is unresolved."
+    },
+    {
+      "dataset_id": "chakraborty2020_dopc_fluctuations",
+      "doi": "10.1073/pnas.2004807117",
+      "locator": "Figure 5B, Eq. 2, SI Table S4 and the neutron spin echo methods",
+      "observable": "In-plane viscosity inferred from nanoscale thickness fluctuations of tail-deuterated DOPC vesicles in D₂O at zero cholesterol.",
+      "temperature_C": 25,
+      "vesicle_diameter_nm": 100,
+      "surface_viscosity_nPa_s_m": 16.7,
+      "reported_plus_minus_nPa_s_m": 1.1,
+      "limit": "One temperature and a fitted fluctuation model. Transferring this viscosity to the friction of a critical pore requires a physical assumption."
+    },
+    {
+      "dataset_id": "portet2010_dopc_pore_closure",
+      "doi": "10.1016/j.bpj.2010.09.032",
+      "locator": "Table 1 and the pure-DOPC pore-closure results",
+      "observable": "Shrinkage and closure after an electrical pulse in free DOPC vesicles. Edge tension was inferred from the shrinking pore.",
+      "experiments": 24,
+      "edge_tension_pN": 27.7,
+      "standard_error_pN": 2.5,
+      "limit": "Tension can relax after the pulse. This assay supplies neither the probability of reclosure during a constant-tension hold nor separate opening and release heats."
+    }
+  ]
+}

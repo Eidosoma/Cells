@@ -33,8 +33,8 @@ INTERFACES = {
 FAULTS = ("unknown-key", "missing-record", "tail-events", "nan-similarity", "bad-channel", "wrong-axes")
 
 
-def npy(values, descr, shape):
-    header = repr({"descr": descr, "fortran_order": False, "shape": tuple(shape)}).encode("latin1")
+def npy(values, descr, shape, fortran=False):
+    header = repr({"descr": descr, "fortran_order": fortran, "shape": tuple(shape)}).encode("latin1")
     pad = 64 - (10 + len(header) + 1) % 64
     header += b" " * pad + b"\n"
     code = {"<i8": "q", "<i4": "i", "<f8": "d", "|i1": "b"}[descr]
@@ -241,3 +241,93 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+def pore_fixture(folder, fault=None):
+    """Two invented slots and two recorded ruptures; the viewer never serves this fixture."""
+    import hashlib
+    from pathlib import Path
+    from zipfile import ZipFile
+
+    folder = Path(folder)
+    folder.mkdir(parents=True, exist_ok=True)
+    # Record the released state at each stop; the last row repeats the second pore row.
+    table = {}
+    with ZipFile(folder / "records.npz", "w") as z:
+
+        def col(name, axes, unit, shape, values, dtype="<i8", fortran=False):
+            axes = axes.split()
+            table[name] = dict(file="records.npz", array=name, axes=axes, base=axes[0], unit=unit)
+            z.writestr(name + ".npy", npy(values, dtype, shape, fortran))
+
+        col("row_time", "row", "s", (4,), [0, 2, 7, 7], "<f8")
+        col("row_kind", "row", "1", (4,), [0, 9, 9, 2])
+        table["row_kind"]["legend"] = {"0": "start", "9": "pore", "2": "end"}
+        col("row_event", "row", "events", (4,), [0] * 4)
+        for name, unit, dtype in [
+            ("event_time", "s", "<f8"),
+            ("event_channel", "1", "<i8"),
+            ("event_group", "1", "<i8"),
+        ]:
+            col(name, "event", unit, (0,), [], dtype)
+        col("slot_count", "row slot place", "molecules", (4, 2, 2), [0, 4, 0, 8, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+        col("pool_count", "row place", "molecules", (4, 2), [0, 0, 8, 0, 12, 0, 12, 0])
+        col("slot_key", "row slot", "carrier key", (4, 2), [0, 4294967296, 0, -1, -1, -1, -1, -1])
+        # In column-major order each slot has its own four-row sequence.
+        col("membrane_footprint_quanta", "row slot", "quanta", (4, 2), [4, 4, 0, 0, 8, 0, 0, 0], fortran=True)
+    hold = {"index": 0, "start_s": 0, "end_s": 8, "sigma_N_per_m": 0.001}
+
+    def pore(t, i, n):
+        return {
+            "time_s": t,
+            "cause": "pore",
+            "slot": i,
+            "key": i * 4294967296,
+            "hold": 0,
+            "sigma_N_per_m": 0.001,
+            "area_m2": n * 1e-19,
+            "release": {"returned": {"L@pool": n}},
+        }
+
+    pores = [pore(2, 1, 8), pore(7, 0, 4)]
+    if fault == "key":
+        pores[0]["key"] = 42
+    if fault == "hold":
+        pores[0]["sigma_N_per_m"] = 0.002
+    if fault == "duplicate":
+        pores.insert(1, pores[0].copy())
+    if fault == "record":
+        del table["membrane_footprint_quanta"]
+    places = [
+        {"index": i, "name": "L@" + phase, "phase": phase, "species": "L", "kind": "finite", "held_mM": None}
+        for i, phase in enumerate(["pool", "membrane"])
+    ]
+    run = {
+        "format": "cells.assembly_lineages.run@2",
+        "model": "cells.assembly_lineages@2",
+        "run": {"qualifier": "0" * 64},
+        "world": "test-world",
+        "conventions": {"lumen_volume": "declared"},
+        "mode": "population",
+        "population": {"transfers": []},
+        "time": {"unit": "s"},
+        "places": places,
+        "channels": {"rows": []},
+        "records": table,
+        "source": {"revision": "a" * 40, "dirty": False},
+        "end": {"time": 7, "events": 0, "status": "inert"},
+        "tension_hold": [hold],
+        "pores": {"events": pores},
+    }
+    world = {
+        "format": "cells.assembly_lineages.world@2",
+        "id": "test-world",
+        "world": {"species": [{"id": "L", "catalogue": None}]},
+    }
+    for name, record in [("world.json", world), ("run.json", run)]:
+        (folder / name).write_text(json.dumps(record))
+    hashes = {
+        name: hashlib.sha256((folder / name).read_bytes()).hexdigest()
+        for name in ["world.json", "run.json", "records.npz"]
+    }
+    (folder / "manifest.json").write_text(json.dumps({"files_sha256": hashes}))

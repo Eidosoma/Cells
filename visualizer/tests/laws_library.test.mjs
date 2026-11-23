@@ -13,6 +13,8 @@ import { LAWS_FORMAT, Library, problemsOf, namespaced } from "../src/lenses/laws
 import { LawsLens, LAWS_LOOK, LAWS_BLOOM, LAWS_BLOOM_LIGHT, MARKS } from "../src/lenses/laws.js";
 import { plaquesOf, longDate } from "../src/lenses/laws_marks.js";
 import { PER_BAND, layoutOf } from "../src/lenses/laws_layout.js";
+import { LawConnections, bridgeKey, fieldKey } from "../src/lenses/laws_connections.js";
+import { AtlasDrawing, atlasColours, drawAtlas } from "../src/lenses/laws_atlas_scene.js";
 import { LAWS_CSS } from "../src/lenses/laws_styles.js";
 import { sections as listSections } from "../src/lenses/laws_card.js";
 import { LAW_PORT_FORMAT, PORT_PHRASES, phraseOf, portLines, portTable } from "../src/lenses/law_port.js";
@@ -539,6 +541,72 @@ const expectedSlots = (piece) => {
   return out;
 };
 
+test("atlas bridges and model comparisons preserve each declaration and each route through a model", () => {
+  const graph = new LawConnections(library);
+  for (const frame of library.frames) {
+    const members = library.piecesOf(frame.id);
+    const entries = [...graph.bundles.values()].filter((b) => b.model === frame.id).flatMap((b) => b.entries);
+    assert.equal(entries.length, members.size);
+    assert.deepEqual(new Set(entries.map((e) => e.piece.id)), members);
+    for (const e of entries) assert.ok(e.piece.declared_by.some((d) => d.frame === frame.id && d.how === e.how && d.via === e.via));
+    for (const other of library.frames) {
+      const [left, both, right] = graph.compare(frame.id, other.id);
+      const ids = (group) => new Set(group.map((p) => p.id));
+      assert.deepEqual(ids([...left, ...both]), members);
+      assert.deepEqual(ids([...both, ...right]), library.piecesOf(other.id));
+      assert.equal(ids([...left, ...both, ...right]).size, left.length + both.length + right.length);
+    }
+  }
+  const crossing = [...graph.bundles.values()].find((b) => b.entries.some((e) => e.how === "inner"));
+  assert.ok(graph.describe(bridgeKey(crossing.model, crossing.family)).opens.some((group) => group.title === "Via inner model" && group.count));
+});
+
+test("tracing follows the declaration, and a field links to another operator only with explicit same-revision Engine evidence", () => {
+  const scene = JSON.parse(readFileSync(path.join(ROOT, "data", "architecture", "architecture.scene.json"), "utf8"));
+  const graph = new LawConnections(library, scene),
+    p = library.piece("site_occupant_replacement@1"),
+    rows = graph.neighbours(p);
+  assert.deepEqual(
+    rows.filter((e) => e.verb === "requires").map((e) => e.id),
+    p.declared.requires.laws.map((id) => "laws:" + library.piece(id).id),
+  );
+  assert.deepEqual(
+    rows.filter((e) => e.verb === "writes").map((e) => e.name),
+    Object.keys(p.declared.writes),
+  );
+  const id = fieldKey(p.id, "writes", "site_bound_increment_fmol");
+  assert.ok(graph.describe(id).opens.some((g) => g.title.includes("Engine map") && g.items.some((e) => e.id === "laws:site_occupancy@1")));
+  const different = new LawConnections(library, { ...scene, meta: { revision: "00000000" } });
+  assert.equal(different.describe(id).opens.length, 1);
+  assert.equal(graph.describe(fieldKey(p.id, "writes", "unlisted")), null);
+  assert.deepEqual(graph.neighbours(library.pieces.find((p) => !p.declared)), []);
+});
+
+test("atlas islands keep their positions and draw budget when the catalogue grows to a thousand entries", () => {
+  const enlarged = structuredClone(raw),
+    frame = enlarged.models.find((m) => m.id === "cells.assembly_lineages@2");
+  const row = frame.declared.rows.find((r) => r.piece === "law"),
+    original = enlarged.pieces.find((p) => p.id === row.id);
+  while (enlarged.pieces.length < 1000) {
+    const id = "cells.size_example_" + enlarged.pieces.length + "@1";
+    enlarged.pieces.push({ ...original, id, declared: { ...original.declared, id, declared_id: id } });
+    frame.declared.rows.push({ ...row, id, declared_id: id });
+  }
+  const draw = (l) => {
+    const view = new AtlasDrawing();
+    drawAtlas(view, { library: l, graph: new LawConnections(l), primary: null, family: null, filter: {}, matches: () => true }, atlasColours({}));
+    view.finish();
+    const places = l.families.map((f) => {
+      const p = view.anchors.get("laws:family/" + f.id);
+      return [p.x, p.z];
+    });
+    const result = { places, draws: view.root.children.length, allFamilies: l.families.length };
+    view.dispose();
+    return result;
+  };
+  assert.deepEqual(draw(new Library(enlarged)), draw(library));
+});
+
 test("the wall holds every piece of the list, a bar for each in its family's column", () => {
   const { lens } = lensFor();
   const bars = lens.layout.bars.filter((bar) => bar.id);
@@ -698,7 +766,9 @@ test("a piece's panel says what the manifest states of it, links its files at th
       const form = entity.sections.find((section) => section.title === "Its general form");
       for (const said of form.items) assert.doesNotMatch(`${said.label} ${said.detail}`, /[{}[\]"]|null|undefined/, `${piece.id}: ${said.label}`);
       for (const [key, value] of Object.entries(d.fields.cycle)) if (value === null) assert.ok(!form.items.some((said) => said.label.includes(key)), `${piece.id}: ${key} is null and says nothing`);
-      assert.equal(entity.sections.find((section) => section.title === "Its general form: its parameters").items.length, d.fields.cycle.parameters.length, piece.id);
+      const parameters = entity.sections.find((section) => section.title === "Its general form: its parameters");
+      const names = d.fields.cycle.parameters.map((parameter) => parameter.name);
+      assert.deepEqual(parameters?.items.map((item) => item.label), names.length ? names : undefined, piece.id);
     }
   }
   const formOf = (id) => Object.fromEntries(lens.describe(`laws:${id}`).sections.find((section) => section.title === "Its general form").items.map((said) => [said.label, said.detail]));
@@ -1108,7 +1178,7 @@ test("on the map's page: the doors into the library open a declared piece, or sa
   // An Engine view operator the manifest declares opens that operator.
   for (const piece of library.pieces.filter((item) => item.declared?.piece === "operator")) {
     const doors = doorsFor({ id: `op.${piece.id}` }, withLaws);
-    assert.deepEqual(doors, [{ label: `Open ${piece.id} on the Laws library's wall`, lens: "laws", value: `laws:${piece.id}` }], piece.id);
+    assert.deepEqual(doors, [{ label: `Explore ${piece.id} in the Laws atlas`, lens: "laws", value: `laws:${piece.id}` }], piece.id);
   }
   // A unit of the Protein atlas: a door onto each of its laws that is declared; words, and no door, for each that is not:
   // a line for each mark the law-port inventory gives them, the laws of one mark gathered, and one line for the laws it has

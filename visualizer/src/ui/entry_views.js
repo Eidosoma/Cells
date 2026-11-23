@@ -146,7 +146,7 @@ function fitChrome(chrome, view, entry, registration) {
  * a promise of that view, fitted, once the run files are read (`ready`, null where there is none).
  * A run file that cannot be read leaves the card standing, saying why.
  */
-export function makeEntryLens(stage, model, labels, entry, { loader = loadBeside, root = null, document = globalThis.document, autoplay = true } = {}) {
+export function makeEntryLens(stage, model, labels, entry, { loader = loadBeside, root = null, document = globalThis.document, autoplay = true, signal } = {}) {
   const kind = entry?.view?.kind;
   const view = entryView(kind);
   const runs = entry?.runs || [];
@@ -154,6 +154,7 @@ export function makeEntryLens(stage, model, labels, entry, { loader = loadBeside
   const card = new EntryCardLens(stage, model, labels, entry, { waiting: runs.length ? `${runs.length === 1 ? "its run file is" : `its ${runs.length} run files are`} being read` : null });
   const ready = Promise.all(runs.map(async (run) => ({ ...run, data: await loader(run.path) })))
     .then((read) => {
+      if (signal?.aborted) return null;
       mountStyles(kind, view.styles, { root, document });
       return fitView(view.make(stage, model, labels, { entry, runs: read, autoplay }), entry, view);
     })

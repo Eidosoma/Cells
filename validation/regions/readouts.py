@@ -21,12 +21,13 @@ cell, so outside >= 0, within its stored amounts' rounding.
   (exchange_moved_fmol counts export positive, so an import's is negated);
 - and, beside them, the amount at each of the cell's nodes and the cumulative production there
   (turnover_produced_fmol, with a reaction's produced amount).
-- **A label family** (D1, the species registry's label_families): the export takes a family's ID
-  as its species and sums the family's rows, or one of its rows alone. Since the registry admits
-  a family's rows only under movers linear in each row, a family row's faces, junctions and patches
-  are admitted here, and their cumulative records are reported per host (host_transfer_fmol: a
-  face or junction from its sender to its receiver, a patch outward from its cell). The engine's
-  own laws move each row, so no tracer is needed: two-way transport is traced exactly.
+
+**A label's amounts** (label_nodes; FR-42's neutral labels, D289, which replaced D1's label
+families, retired by D300): where neutral_arrival_labels@1 labels the species, the label owner
+carries each label's shares across every mover the engine follows (faces and routes included), so a
+label's amount at a node is the species' amount there times the label's share, read from the
+state, at every node. The movers' cumulative records stay the species' own (region_rows), since
+shares record no per-label flow.
 
 **What each tool reads, and what it refuses at setup** (check_movers, fail closed). The export
 reads turnover, exchange and the reactions; the tracer reads turnover and exchange only. Each
@@ -212,6 +213,7 @@ SHOWN_INERT = {
     "species_regulated_availability@2": "scales other laws' availabilities and rates; its state "
     "is its own",
     "site_occupant_replacement@1": "resets site pools at replacement events; free amounts stay",
+    "neutral_arrival_labels@1": "holds labels' shares of species rows; it moves no amount (FR-42)",
 }
 # Every other registered law, with why it is refused (fail closed: a law in no list is refused
 # too, until it is classified here).
@@ -238,13 +240,10 @@ REFUSED = {
 }
 
 
-def check_movers(spec, species, reads, *, host_transport=False):
+def check_movers(spec, species, reads):
     """Refuse a world in which anything but the laws `reads` could move the species (module
     docstring; fail closed): a face's diffusivity, a junction's or a patch's permeability for it,
-    every operator law neither read nor shown inert (REFUSED says why), and every declared kind.
-    host_transport (the export of a label family's row, D1): its faces, junctions and patches are
-    admitted, since the registry's check_families admits only movers linear in each row, and the
-    export reads their records (host_transfer_fmol)."""
+    every operator law neither read nor shown inert (REFUSED says why), and every declared kind."""
     m = spec.model
     s = list(m.species_ids).index(species)
     found = []
@@ -254,13 +253,13 @@ def check_movers(spec, species, reads, *, host_transport=False):
             "it is charged, or its charge is not declared (its channel, pump and membrane fluxes "
             "are in-step laws neither tool reads)"
         )
-    for face in () if host_transport else getattr(m, "faces", ()):
+    for face in getattr(m, "faces", ()):
         if face.diffusivity_m2_per_s[s] != 0:
             found.append(f"face {face.id} diffuses it")
-    for junction in () if host_transport else getattr(m, "junctions", ()):
+    for junction in getattr(m, "junctions", ()):
         if junction.permeability_m_per_s[s] != 0:
             found.append(f"junction {junction.id} permeates it")
-    for patch in () if host_transport else getattr(m, "membranes", ()):
+    for patch in getattr(m, "membranes", ()):
         if patch.permeability_m_per_s[s] != 0:
             found.append(f"patch {patch.id} permeates it")
     for op in m.operators:
@@ -357,16 +356,9 @@ def region_rows(spec, times, states, species, region, *, samples=None):
     {times, inside_fmol, outside_fmol, whole_cell_fmol, node_fmol: {node: [...]},
     produced_fmol: {node: [...]}, loss_fmol: {node: [...]}, transfer_fmol: {route: [...]}, region,
     cell_nodes}."""
-    from cells.registry import species_registry
-
-    family = species_registry.family_rows(spec, species)
-    rows = list(family) if family is not None else [species]
-    labelled = family is not None or species_registry.family_of(spec, species) is not None
-    for row in rows:
-        check_movers(spec, row, EXPORT_READS, host_transport=labelled)
+    check_movers(spec, species, EXPORT_READS)
     _distinct(region)
-    wmaps = [world_map(spec, row) for row in rows]
-    wmap = wmaps[0]  # Nodes, owners and routes are the world's, one per row alike.
+    wmap = world_map(spec, species)
     _, layout = get_model(spec.model).initial_values(spec)
     owners = {wmap["owner"].get(n) for n in region if n not in wmap["cells"]}
     owners |= {n for n in region if n in wmap["cells"]}
@@ -383,31 +375,23 @@ def region_rows(spec, times, states, species, region, *, samples=None):
             raise ValueError("two samples name the same step")
         picked.sort()
     eps = np.finfo(float).eps
-    routes = list({r["id"]: r for w in wmaps for r in w["routes"]}.values())
-    hosts = _cell_hosts(spec, cell_nodes, rows) if labelled else []
+    routes = wmap["routes"]
     out = dict(times=[], inside_fmol=[], outside_fmol=[], whole_cell_fmol=[],
                node_fmol={n: [] for n in cell_nodes}, produced_fmol={n: [] for n in cell_nodes},
                loss_fmol={n: [] for n in cell_nodes},
                transfer_fmol={r["id"]: [] for r in routes},
-               region=list(region), cell_nodes=cell_nodes, rows=rows)  # fmt: skip
-    if labelled:
-        out["host_transfer_fmol"] = {h["id"]: [] for h in hosts}
+               region=list(region), cell_nodes=cell_nodes)  # fmt: skip
     if len(times) != len(states):
         raise ValueError("times and states differ in length")
     for k in picked:
         t, state = times[k], states[k]
-        records = [node_records(spec, layout, state, w) for w in wmaps]
-        amount = sum(r[0] for r in records)  # A family's rows summed (D1); one row as before.
-        made, lost = sum(r[1] for r in records), sum(r[2] for r in records)
-        moved = {}
-        for w, r in zip(wmaps, records, strict=True):
-            for route, value in zip(w["routes"], r[3], strict=True):
-                moved[route["id"]] = moved.get(route["id"], 0.0) + value
+        amount, made, lost, transfers = node_records(spec, layout, state, wmap)
+        moved = {route["id"]: value for route, value in zip(routes, transfers, strict=True)}
         inside = sum(amount[index[n]] for n in region)
         whole = sum(amount[index[n]] for n in cell_nodes)
         # The row's bounds (finding 5): 0 <= inside <= whole cell, so outside >= 0, within the
         # rounding of the cell's stored amounts.
-        stored = sum(stored_magnitudes(layout, state, w) for w in wmaps)
+        stored = stored_magnitudes(layout, state, wmap)
         tol = CLOSURE_ULPS * eps * sum(abs(amount[index[n]]) + stored[index[n]] for n in cell_nodes)
         if inside < -tol or whole - inside < -tol:
             raise ValueError(
@@ -424,34 +408,47 @@ def region_rows(spec, times, states, species, region, *, samples=None):
             out["loss_fmol"][n].append(float(lost[index[n]]))
         for r in routes:
             out["transfer_fmol"][r["id"]].append(float(moved.get(r["id"], 0.0)))
-        for h in hosts:
-            record = np.asarray(getattr(state, h["field"]))
-            value = sum(record[list(spec.model.species_ids).index(row), h["slot"]] for row in rows)
-            out["host_transfer_fmol"][h["id"]].append(float(value))
     return out
 
 
-def _cell_hosts(spec, cell_nodes, rows):
-    """The faces, junctions and patches that move a label family's rows at the cell's nodes (D1):
-    [{id, field, slot, from, to}], each with its cumulative record's orientation (the engine's: a
-    face or a junction from its sender to its receiver, a patch outward from its cell)."""
-    m = spec.model
-    ids = list(m.species_ids)
-    out = []
-    for field, kind, coefficient, ends in (
-        ("face_transferred", getattr(m, "faces", ()), "diffusivity_m2_per_s",
-         lambda e: (e.sender, e.receiver)),
-        ("junction_transferred", getattr(m, "junctions", ()), "permeability_m_per_s",
-         lambda e: (e.sender, e.receiver)),
-        ("membrane_transferred", getattr(m, "membranes", ()), "permeability_m_per_s",
-         lambda e: (e.inside, e.outside)),
-    ):  # fmt: skip
-        for slot, e in enumerate(kind):
-            if not any(getattr(e, coefficient)[ids.index(r)] for r in rows):
-                continue
-            a, b = ends(e)
-            if a in cell_nodes or b in cell_nodes:
-                out.append(dict(id=e.id, field=field, slot=slot, **{"from": a, "to": b}))
+def label_nodes(spec, times, states, species, label, *, samples=None):
+    """A label's amounts (module docstring) at the sampled times (every given time by default):
+    {times, node_fmol: {node: [...]}, nodes, species, label}, at every node (the cells, then the
+    outside nodes), each the species' amount there times the label's share, the shares read from
+    the states (neutral_arrival_labels@1's label_share and label_outside_share). A species or label
+    the world does not label is refused."""
+    owner = next(
+        (d for d in getattr(spec.model, "operators", ()) if d.law == "neutral_arrival_labels@1"),
+        None,
+    )
+    labelled = [] if owner is None else [s.id for s in owner.species]
+    if species not in labelled:
+        raise ValueError(f"{species} is not labelled (neutral_arrival_labels@1 names {labelled})")
+    entry = owner.species[labelled.index(species)]
+    if label not in entry.labels:
+        raise ValueError(f"{species} has no label {label!r} (its labels: {list(entry.labels)})")
+    j, position = labelled.index(species), entry.labels.index(label)
+    wmap = world_map(spec, species)
+    _, layout = get_model(spec.model).initial_values(spec)
+    nc, no = len(wmap["cells"]), len(wmap["outside"])
+    if samples is None:
+        picked = list(range(len(times)))
+    else:
+        picked = sorted(step_index(times, t, "the sample") for t in samples)
+    out = dict(times=[], node_fmol={n: [] for n in wmap["nodes"]}, nodes=list(wmap["nodes"]),
+               species=species, label=label)  # fmt: skip
+    for k in picked:
+        state = states[k]
+        amount = node_records(spec, layout, state, wmap)[0]
+        share = np.concatenate(
+            (
+                np.asarray(state.label_share)[j, position, :nc],
+                np.asarray(state.label_outside_share)[j, position, :no],
+            )
+        )
+        out["times"].append(float(times[k]))
+        for i, n in enumerate(wmap["nodes"]):
+            out["node_fmol"][n].append(float(amount[i]) * float(share[i]))
     return out
 
 

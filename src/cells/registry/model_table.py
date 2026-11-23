@@ -170,12 +170,14 @@ MODELS = MappingProxyType(
                 "cells.models.assembly_lineages_v2.prescribed_shell",  # FR-21 (D244, D246)
                 "cells.models.assembly_lineages_v2.shell_permeation",  # FR-21
                 "cells.models.assembly_lineages_v2.gate_factor",  # FR-21
+                "cells.models.assembly_lineages_v2.pore_nucleation",  # FR-31 (D287)
             ),
             operator_homes=(
                 "cells.models.assembly_lineages_v2.division",
                 "cells.models.assembly_lineages_v2.transfer",
                 "cells.models.assembly_lineages_v2.replacement",  # FR-20 (D240)
                 "cells.models.assembly_lineages_v2.withdrawal",  # FR-35 (D261)
+                "cells.models.assembly_lineages_v2.tension_hold",  # FR-31 (D287)
             ),
             interfaces=(
                 "cells.reaction_law@1",
@@ -184,6 +186,7 @@ MODELS = MappingProxyType(
                 "cells.assembly_geometry@1",
                 "cells.assembly_operator@1",
                 "cells.population_structure@1",
+                "cells.assembly_hazard@1",  # FR-31 (D287)
             ),
             runner="cells.models.assembly_lineages_v2.runner:run",
         ),
