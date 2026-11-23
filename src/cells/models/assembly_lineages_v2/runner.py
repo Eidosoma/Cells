@@ -50,6 +50,7 @@ from cells.models.assembly_lineages_v2 import (
     model,
     pore_clock,
     pore_device,
+    size_division,
     streams,
 )
 from cells.models.assembly_lineages_v2.spec import world_id
@@ -60,6 +61,10 @@ START, PERIODIC, END, OBSERVED = range(4)
 # its record's legend names it, so every other bundle's legend is unchanged.
 DIVISION_ROW_KINDS = (*ROW_KINDS, "shear")
 SHEAR = 4
+# OL6 S7: a row after each size-threshold division (size_division.py), written and named in the
+# legend only by a world that declares it.
+SIZE_DIVISION_ROW_KINDS = (*ROW_KINDS, "division")
+DIVISION = 4
 _COMPILED = {}
 HELD_TO_HORIZON = ("complete", "inert")
 HOLDS = ("complete", "inert", "extinct")  # The final state holds after the last event.
@@ -90,6 +95,7 @@ class WorldRun:
     start: object = "fresh"  # FR-22 rung P: "fresh", or a run from a checkpoint's start record
     resume: dict | None = None  # the host's state a checkpoint keeps, when the run `stopped`
     pores: dict | None = None  # FR-31: the pore clock's events, draws and causes (pore_clock.py)
+    size_division: dict | None = None  # OL6 S7: the fission table and the lives (size_division)
 
     def checkpoint(self):
         """The checkpoint of a population run stopped at an exact event count (checkpoints.py)."""
@@ -135,6 +141,23 @@ def _compiled_clock(structure, lanes, layout, clocks, pores):
         advance = advance.lower(shapes, clocks, layout, pores).compile()
         rates = rates.lower(founders, layout, pores).compile()
         _COMPILED[key] = (advance, rates, perf_counter() - started)
+    return _COMPILED[key]
+
+
+def _compiled_division(structure, lanes, layout):
+    """OL6 S7: (advance with the division flag, compile seconds) of one structure for `lanes` lanes
+    (size_division.program; every other world's program is kernel.program's, untouched)."""
+    import jax
+
+    key = ("size_division", structure, lanes)
+    if key not in _COMPILED:
+        started = perf_counter()
+        founders = jax.ShapeDtypeStruct((lanes, structure.places), np.int64)
+        shapes = jax.eval_shape(kernel.program(structure).initial, founders, layout)
+        due = jax.ShapeDtypeStruct((lanes,), np.bool_)
+        sizes = jax.ShapeDtypeStruct((lanes,), np.int64)
+        advance = size_division.program(structure).lower(shapes, due, layout, sizes).compile()
+        _COMPILED[key] = (advance, perf_counter() - started)
     return _COMPILED[key]
 
 
@@ -209,6 +232,7 @@ class _World:
         self.pores = None
         self.rupture = None
         self.pore_check = None  # the pore's pair check (balance.pore_verdict, pore_world_report)
+        self.divisions = []  # OL6 S7: each size-threshold division (size_division.Division)
 
     def extra(self):
         return (self.jump.copy(), self.shear, self.sink, self.magnitude)
@@ -374,6 +398,50 @@ def _shear(specs, host_layouts, holders, plans, lanes, layout, due, initial, dev
         )
     layout = layout._replace(horizon=jax.device_put(horizons, device))
     return jax.device_put(host, device), layout
+
+
+def _divide(specs, host_layouts, holders, lanes, due, layout, initial, device):
+    """OL6 S7: each flagged lane's division on the host (size_division.py), after the chunk whose
+    join brought its membrane to the size. The followed (first) daughter replaces the parent: its
+    key from the counter, generation + 1, age 0 and its own event stream. The time and the
+    lineage's cumulative books are as the trigger left them, and no draw is discarded. The lane's
+    totals, rates and states are rebuilt from the daughter's counts, as _shear's are. Returns the
+    lanes and the lowered flags."""
+    import jax
+
+    host = jax.tree_util.tree_map(np.array, lanes)
+    flags = np.asarray(due)
+    for i in np.flatnonzero(flags):
+        holder = holders[i]
+        d = size_division.divide(
+            specs[i].model.world, host_layouts[i].base_key, host.counts[i], int(host.occupant[i]),
+            int(host.generation[i]), int(host.next_carrier[i]), float(host.time[i]),
+            holder.events, holder.energy,
+        )  # fmt: skip
+        holder.divisions.append(d)
+        holder.jump += d.daughters[0] - host.counts[i]
+        holder.shear += d.work  # the extras' work column: the division's work here
+        holder.sink += d.sink
+        holder.magnitude += abs(d.work) + abs(d.sink)
+        holder.row(DIVISION, holder.events, d.time, holder.fired.copy(), *holder.booked)
+        host.counts[i] = d.daughters[0]
+        host.occupant[i], host.generation[i] = d.keys[0], d.generation + 1
+        host.next_carrier[i], host.age[i] = d.keys[1] + 1, 0
+        host.event_stream[i] = np.asarray(
+            streams.stream_key_data(host_layouts[i].base_key, d.keys[0], "events")
+        )
+    fresh = jax.tree_util.tree_map(np.asarray, initial(host.counts, layout))
+
+    def pick(new, old):
+        return np.where(flags.reshape((-1,) + (1,) * (old.ndim - 1)), new, old)
+
+    host = host._replace(
+        totals=pick(fresh.totals, host.totals),
+        rates=pick(fresh.rates, host.rates),
+        factor_state=jax.tree_util.tree_map(pick, fresh.factor_state, host.factor_state),
+        term_states=jax.tree_util.tree_map(pick, fresh.term_states, host.term_states),
+    )
+    return jax.device_put(host, device), jax.device_put(np.zeros_like(flags), device)
 
 
 PORE_STOP = "pore"  # FR-31: a lane's plan entry for its vesicle's rupture time (pore_clock.py)
@@ -608,6 +676,11 @@ def run_lanes(specs):
         raise ConfigError("Lanes share one pore clock: a hold's on the host, or the device's "
                           "(sigma from F)")  # fmt: skip
     (on_device,) = forms
+    sized = {s.model.world.size_division is not None for s in specs}  # OL6 S7
+    if len(sized) != 1:
+        raise ConfigError("Lanes share one program: a size-threshold division's flag rides beside "
+                          "every lane of a batch, or beside none")  # fmt: skip
+    (size_divides,) = sized
     # FR-31: each pore world's vesicle clock (its founder, key 0), its rupture time a stop; a world
     # that declares the pore law declares no division, so its plan holds that one stop at most.
     clocks = [
@@ -628,6 +701,13 @@ def run_lanes(specs):
     L, R = len(specs), structure.steps
     with jax.default_device(device):
         initial, advance, compile_seconds = _compiled(structure, L, layout)
+        due = sizes = None
+        if size_divides:  # OL6 S7: the division flags beside the lanes, and their program
+            advance, seconds = _compiled_division(structure, L, layout)
+            compile_seconds += seconds
+            sizes = jax.device_put(np.asarray([s.model.world.size_division["size"] for s in specs],
+                                              dtype=np.int64), device)  # fmt: skip
+            due = jax.device_put(np.zeros(L, dtype=bool), device)
         pore_constants = clock_state = rates_of = None
         if on_device:  # OL6 S4: the clocks beside the lanes, and their program
             pore_constants = jax.device_put(
@@ -650,14 +730,14 @@ def run_lanes(specs):
         lanes = initial(founders, layout)
         holders = [
             _World(_lane(lanes, i), s.experiment.row_every_events, s.experiment.observation_times_s,
-                   s.model.world.division is not None, s.experiment.diagnostic)
+                   s.model.world.division is not None or size_divides, s.experiment.diagnostic)
             for i, s in enumerate(specs)
         ]  # fmt: skip
         for holder, (_, draws) in zip(holders, planned, strict=True):
             if holder.diagnostic is not None:
                 holder.diagnostic["schedule_draws"] = draws
         for holder, spec, layout_i in zip(holders, specs, host_layouts, strict=True):
-            if spec.model.world.division is not None:
+            if spec.model.world.division is not None or size_divides:  # OL6 S7: F_m, no closure
                 holder.energy = _vesicle_energy(spec, layout_i)
         for holder, clock, spec_i in zip(holders, clocks, specs, strict=True):
             holder.pores = clock
@@ -702,6 +782,8 @@ def run_lanes(specs):
                 continue
             if on_device:
                 lanes, clock_state, out = advance(lanes, clock_state, layout, pore_constants)
+            elif size_divides:
+                lanes, due, out = advance(lanes, due, layout, sizes)
             else:
                 lanes, out = advance(lanes, layout)
             chunks += 1
@@ -722,6 +804,9 @@ def run_lanes(specs):
                         host.uniforms[mask, i] if structure.uniforms else None,
                         R,
                     )
+            if size_divides and np.asarray(due).any():  # OL6 S7: each flagged lane divides
+                lanes, due = _divide(specs, host_layouts, holders, lanes, due, layout, initial,
+                                     device)  # fmt: skip
         jax.block_until_ready(lanes)
         run_seconds = perf_counter() - started
     results = []
@@ -840,7 +925,8 @@ def _assemble(spec, structure, layout, verdict, report, holder, final, timings):
     fired = np.stack([r[3] for r in rows]).astype(np.int64)
     counts = start["counts"][None, :] + fired @ count_change
     divides = world.division is not None
-    if divides:  # OL3: each row's fission jump, shear work, sink and their magnitude, cumulative.
+    sized = world.size_division is not None  # OL6 S7: its jumps and books, kept as shear's are
+    if divides or sized:  # OL3: each row's fission jump, shear work, sink and their magnitude.
         extras = [(np.zeros_like(holder.jump), 0.0, 0.0, 0.0), *holder.extras, holder.extra()]
         counts = counts + np.stack([e[0] for e in extras])
         shear, sink, fission_mag = (
@@ -884,7 +970,7 @@ def _assemble(spec, structure, layout, verdict, report, holder, final, timings):
             if hold_work.shape[1]:  # OL6 S4: σ from F has no hold, and its opening no work
                 hold_work[r:, 0] = w
     booked, booked_mag = work, work_mag
-    if divides:  # The shear work is done on the lineage; the sink takes F_v (§0.2d item 7).
+    if divides or sized:  # The shear (S7: the division's) work on the lineage; the sink's F_v.
         booked, booked_mag = work + shear - sink, work_mag + fission_mag
     if hold_work is not None:  # FR-31: the hold's work is done on the vesicle (its payer's)
         booked, booked_mag = booked + hold_work.sum(axis=1), booked_mag + np.abs(hold_work).sum(1)
@@ -937,6 +1023,16 @@ def _assemble(spec, structure, layout, verdict, report, holder, final, timings):
             "lives": division.lives(
                 holder.attempts, world, status, lysis_time if status == "lysed" else end_time
             ),
+        }
+    size_report = None
+    if sized:  # OL6 S7: the division's work and the sink by row, the fission table and the lives
+        row_arrays["division_work_kT"] = shear
+        row_arrays["discarded_free_energy_kT"] = sink
+        size_report = {
+            "fissions": size_division.fission_arrays(
+                holder.divisions, places, world.size_division["size"], spec.experiment.uniforms
+            ),
+            "lives": size_division.lives(holder.divisions, world, status, end_time),
         }
     pores = None
     if hold_work is not None:  # FR-31: the hold's work column, and the clock's report
@@ -998,4 +1094,5 @@ def _assemble(spec, structure, layout, verdict, report, holder, final, timings):
         division=division_report,
         diagnostic=record,
         pores=pores,
+        size_division=size_report,
     )

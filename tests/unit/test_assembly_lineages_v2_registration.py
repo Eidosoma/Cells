@@ -50,6 +50,7 @@ from cells.models.assembly_lineages_v2 import (
     SHARED_POOL,
     SHEAR_FISSION,
     SHELL_PERMEATION,
+    SIZE_THRESHOLD_DIVISION,
     TENSION_HOLD,
     TRANSITION_STATE,
     division,
@@ -68,6 +69,7 @@ from cells.models.assembly_lineages_v2 import (
     regular_mixing,
     replacement,
     shell_permeation,
+    size_division,
     tension_hold,
     transfer,
     transition_state,
@@ -116,6 +118,8 @@ OPERATORS = {  # OL3 milestone 1, then OL2 milestone 3
     "cells.pool_replacement@1": (replacement, interfaces.AssemblyOperator, OPERATOR_INTERFACE),
     "cells.pool_withdrawal@1": (withdrawal, interfaces.AssemblyOperator, OPERATOR_INTERFACE),
     TENSION_HOLD: (tension_hold, interfaces.AssemblyOperator, OPERATOR_INTERFACE),  # FR-31
+    # OL6 S7 (D304): the size-threshold division.
+    SIZE_THRESHOLD_DIVISION: (size_division, interfaces.AssemblyOperator, OPERATOR_INTERFACE),
 }
 
 

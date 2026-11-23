@@ -41,6 +41,10 @@ PHASE_EXCHANGE = "cells.phase_exchange@1"
 MEMBRANE_PERMEATION = "cells.membrane_permeation@1"
 OSMOTIC_LUMEN = "cells.osmotic_lumen@1"  # OL2 milestone 2: lumen_volume osmotic.
 SHEAR_FISSION = "cells.shear_fission@1"  # OL3 milestone 1: division at shear events.
+# OL6 S7 (D304; the OL6 design note's §6.8, G2): division when a join brings the membrane to a
+# declared size, by Protocol G §3's contract (size_division.py). A world declares it in its
+# division block, by law; every other world is unchanged.
+SIZE_THRESHOLD_DIVISION = "cells.size_threshold_division@1"
 SHARED_POOL = "cells.shared_pool@1"  # OL2 milestone 3: K slots on one pool (population.py).
 
 # FR-21's shell (D244, D246; docs/ASSEMBLY_SHELL_DESIGN.md §4.2-§4.3): a prescribed wall with a

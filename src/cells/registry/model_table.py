@@ -183,6 +183,7 @@ MODELS = MappingProxyType(
                 "cells.models.assembly_lineages_v2.replacement",  # FR-20 (D240)
                 "cells.models.assembly_lineages_v2.withdrawal",  # FR-35 (D261)
                 "cells.models.assembly_lineages_v2.tension_hold",  # FR-31 (D287)
+                "cells.models.assembly_lineages_v2.size_division",  # OL6 S7 (D304)
             ),
             interfaces=(
                 "cells.reaction_law@1",
