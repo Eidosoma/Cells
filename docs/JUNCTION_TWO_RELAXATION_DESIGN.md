@@ -676,8 +676,9 @@ Written by FR-30's harness author, who becomes its fitter after the tag, at the 
 /mnt/workspaces/Cells/fr30-benchmark-20261123/RULING_DRAFT.md) and section 13's rule 4 with D311's
 consequences. It also names the code that applies them, which exists at this entry's tag (D308).
 The commit carrying it is to be tagged `fr30-revilla1999-registered-2026-11-23` before any fit. No
-fit has been made. The code has met no training or held-out value: its tests use invented inputs,
-and its one run on the training file read keys only (point 6).
+fit has been made, and the code has met no held-out value. Its tests and its end-to-end smoke use
+invented inputs. Its reader ran twice on the training file fit.json (point 6): it parsed and
+validated the training values in memory, and printed and compared none.
 
 **What I have read (disclosure).**
 - **Read:**
@@ -686,6 +687,9 @@ and its one run on the training file read keys only (point 6).
   - the training files `revilla1999/extraction/fit.json` and `protocol.json`, values included;
   - the law's code (`junction_series_gates.py`, `junction_voltage_relaxation.py`,
     `junction_gate.py`) and the header of its unit test.
+- **Other papers' values, seen through this note:** sections 13.1 and 13.2 print Moreno et al.
+  (2002)'s two times at 60 mV, and Sahu and Bera (2013)'s protocol and Table 2's two decay times at
+  -100 mV. Neither is this paper's.
 - **Seen by name only:** a search for this section's heading printed four headings of sections 2 to
   4 (2.1, 3, 4 and 4.1). I read none of their text and nothing else of sections 1 to 12.
 - **Not opened:**
@@ -796,8 +800,15 @@ if tau_s is above 300 s.
      e83680830219a58ab6b47d268518543b90e63c52d6b7d7694ee8a8e45c7a7285` (D311's digest). The
      verdict file records both files' digests, every value and the tolerance used; stdout carries
      verdicts only.
-- **Checked before the tag:** `resolve` on fit.json at -100, -60, +60 and +100 mV resolves all 12
-  entries from their keys, and prints no value.
+- **Checked before the tag:**
+  - `resolve` on fit.json at -100, -60, +60 and +100 mV resolves all 12 entries from their keys.
+    At the default -80 and +80 mV it refuses, since fit.json holds neither. Neither run printed a
+    value.
+  - An end-to-end smoke of the stages used an invented parameter block and synthetic held-out files
+    in fit.json's structure (/mnt/workspaces/Cells/fr30-benchmark-20261123/harness/smoke-c58714f8/).
+    `predict` ran at -80 and +80 mV with the invented parameters, which is not a fit. `verify`
+    passed, and `score` with each file's digest gave pass and fail where it should. A wrong digest
+    and a tampered prediction were refused (exit 2), and stdout carried no value.
 
 **7. Exposures and exclusions** (D311).
 - **The Lean lane's files:**
