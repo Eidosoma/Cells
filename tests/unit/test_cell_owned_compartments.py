@@ -739,6 +739,7 @@ def test_the_built_in_kinds_hold_the_step_terms_their_laws_declare():
         PROTON_PUMP: ("stage_term",),
         NEUTRAL_PUMP: (),
         LEAK: ("stage_term",),
+        "proton_constant_field_leak@2": ("stage_term",),  # MT-1b's leak reading the closure: @1's.
         NEUTRAL_ROUTE: ("material_bound",),
         "inward_rectifier_linear_driving_force@1": ("stage_term",),  # The rectifier (RECTIFIER).
         "passive_constant_field_permeation@1": ("stage_term", "material_term"),  # FR-15 P2.
