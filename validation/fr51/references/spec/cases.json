@@ -1,0 +1,105 @@
+{
+ "kind": "cells.fr51_reference_spec@1",
+ "purpose": "FR-51 (protocol fr51-channel-block-v1): code-blind closed forms for a channel population's constant-field permeation and its weighted-mode open-channel block, at declared states and voltages. Declared values and protocol only: no engine value is in this file.",
+ "readme": "README.md",
+ "laws": "LAWS.md",
+ "units": {
+  "voltage": "V (patch voltage V = phi_in - phi_out)",
+  "temperature": "K",
+  "concentration": "mM (1 mM = 1 mol/m^3 = 1 fmol/pL)",
+  "area": "m^2",
+  "permeability": "m/s",
+  "abundance": "dimensionless relative abundance (not a count)",
+  "units_count": "units: a count of molecules (case C2 only)",
+  "reference_density": "units/m^2 (case C2 only)",
+  "flux": "fmol/s, outward-positive",
+  "current": "A, outward-positive (I = 1e-15 F z J)",
+  "conductance_slope": "S (A/V)",
+  "concentration_slope": "fmol/s per mM",
+  "k0": "mM",
+  "electrical_distance": "dimensionless, in [0, 1]",
+  "effective_valence": "dimensionless, > 0",
+  "blocker_valence": "signed integer, not 0",
+  "weight": "dimensionless, in [0, 1]",
+  "unblocked_fraction": "dimensionless, in [0, 1]"
+ },
+ "constants": {
+  "F_C_per_mol": "6.02214076e23 * 1.602176634e-19",
+  "R_J_per_mol_K": "6.02214076e23 * 1.380649e-23",
+  "T_K": "310"
+ },
+ "voltage_grid_V": {
+  "rule": "V_j = start + j * step, j = 0 ... count - 1, formed in decimal arithmetic",
+  "start": "-0.120",
+  "step": "0.0005",
+  "count": 361
+ },
+ "extra_voltages": "for every case, also V = E_ion (the case's Nernst potential of its ion, LAWS.md section 2, to 50 digits) and V = E_ion - 0.0005 and E_ion + 0.0005",
+ "populations": {
+  "K": {"law": "kleak_always_open@1", "ion": "K", "valence": 1, "relative_permeability": "1", "area_m2": "1e-9", "permeability_m_per_s": "1e-8", "abundance": "1", "open_fraction": "1", "availability": "1"},
+  "Na": {"law": "naleak_always_open@1", "ion": "Na", "valence": 1, "relative_permeability": "1", "area_m2": "1e-9", "permeability_m_per_s": "1e-8", "abundance": "1", "open_fraction": "1", "availability": "1"},
+  "Cl": {"law": "clleak_always_open@1", "ion": "Cl", "valence": -1, "relative_permeability": "1", "area_m2": "1e-9", "permeability_m_per_s": "1e-8", "abundance": "1", "open_fraction": "1", "availability": "1"}
+ },
+ "blocks": {
+  "two_modes_inside": {"blocker": {"valence": 4, "side": "inside", "concentration_mM": "5e-3"}, "reference": {"reversal_of": "K"}, "modes": [
+   {"weight": "0.6", "k0_mM": "1e-3", "electrical_distance": "0.85"},
+   {"weight": "0.4", "k0_mM": "1e-1", "electrical_distance": "0.30"}]},
+  "zero_blocker_three_modes": {"blocker": {"valence": 4, "side": "inside", "concentration_mM": "0"}, "reference": {"reversal_of": "K"}, "modes": [
+   {"weight": "0.7", "k0_mM": "1e-3", "electrical_distance": "0.85"},
+   {"weight": "0.2", "k0_mM": "1e-1", "electrical_distance": "0.30"},
+   {"weight": "0.1", "k0_mM": "2", "electrical_distance": "0.10"}]},
+  "woodhull_one_mode_inside": {"blocker": {"valence": 2, "side": "inside", "concentration_mM": "1"}, "reference": "membrane_voltage", "modes": [
+   {"weight": "1", "k0_mM": "1", "electrical_distance": "0.5"}]},
+  "divalent_outside": {"blocker": {"valence": 2, "side": "outside", "concentration_mM": "1"}, "reference": "membrane_voltage", "modes": [
+   {"weight": "1", "k0_mM": "3.57", "electrical_distance": "0.8"}]},
+  "anion_outside_effective": {"blocker": {"valence": -1, "side": "outside", "concentration_mM": "1"}, "reference": "membrane_voltage", "modes": [
+   {"weight": "1", "k0_mM": "1", "effective_valence": "1.5"}]},
+  "effective_valence_5_inside": {"blocker": {"valence": 4, "side": "inside", "concentration_mM": "1e-3"}, "reference": {"reversal_of": "K"}, "modes": [
+   {"weight": "1", "k0_mM": "1e-3", "effective_valence": "5"}]},
+  "strong_one_mode": {"blocker": {"valence": 4, "side": "inside", "concentration_mM": "1000"}, "reference": "membrane_voltage", "modes": [
+   {"weight": "1", "k0_mM": "1e-15", "electrical_distance": "0"}]},
+  "strong_two_modes": {"blocker": {"valence": 4, "side": "inside", "concentration_mM": "1000"}, "reference": "membrane_voltage", "modes": [
+   {"weight": "0.6", "k0_mM": "1e-15", "electrical_distance": "0"},
+   {"weight": "0.4", "k0_mM": "1e-9", "electrical_distance": "0"}]},
+  "steep_K_inside_reversal": {"blocker": {"valence": 1, "side": "inside", "concentration_mM": "1"}, "reference": {"reversal_of": "K"}, "modes": [
+   {"weight": "1", "k0_mM": "2.025196e14", "effective_valence": "8"}]},
+  "steep_K_outside_voltage": {"blocker": {"valence": 1, "side": "outside", "concentration_mM": "1"}, "reference": "membrane_voltage", "modes": [
+   {"weight": "1", "k0_mM": "1.572072e-8", "effective_valence": "8"}]},
+  "steep_Na_outside_voltage": {"blocker": {"valence": 1, "side": "outside", "concentration_mM": "1"}, "reference": "membrane_voltage", "modes": [
+   {"weight": "1", "k0_mM": "2.025196e14", "effective_valence": "8"}]},
+  "steep_Na_inside_reversal": {"blocker": {"valence": 1, "side": "inside", "concentration_mM": "1"}, "reference": {"reversal_of": "Na"}, "modes": [
+   {"weight": "1", "k0_mM": "4.937793e-15", "effective_valence": "8"}]},
+  "steep_Cl_anion_outside_voltage": {"blocker": {"valence": -1, "side": "outside", "concentration_mM": "1"}, "reference": "membrane_voltage", "modes": [
+   {"weight": "1", "k0_mM": "6.361031e7", "effective_valence": "8"}]}
+ },
+ "cases": [
+  {"id": "P1_K_equal", "population": "K", "c_i_mM": "140", "c_o_mM": "140", "block": null},
+  {"id": "P2_K_unequal", "population": "K", "c_i_mM": "140", "c_o_mM": "5.4", "block": null},
+  {"id": "P3_Na_unequal", "population": "Na", "c_i_mM": "10", "c_o_mM": "145", "block": null},
+  {"id": "P4_Cl_unequal", "population": "Cl", "c_i_mM": "20", "c_o_mM": "120", "block": null},
+  {"id": "Z1_zero_blocker", "population": "K", "c_i_mM": "140", "c_o_mM": "5.4", "block": "zero_blocker_three_modes"},
+  {"id": "B1_two_modes_E1", "population": "K", "c_i_mM": "140", "c_o_mM": "5.4", "block": "two_modes_inside"},
+  {"id": "B1_two_modes_E2", "population": "K", "c_i_mM": "140", "c_o_mM": "10.8", "block": "two_modes_inside"},
+  {"id": "B2_woodhull_inside", "population": "K", "c_i_mM": "140", "c_o_mM": "5.4", "block": "woodhull_one_mode_inside"},
+  {"id": "B3_divalent_outside_E1", "population": "Na", "c_i_mM": "10", "c_o_mM": "145", "block": "divalent_outside"},
+  {"id": "B3_divalent_outside_E2", "population": "Na", "c_i_mM": "10", "c_o_mM": "72.5", "block": "divalent_outside"},
+  {"id": "B4_anion_effective", "population": "Cl", "c_i_mM": "20", "c_o_mM": "120", "block": "anion_outside_effective"},
+  {"id": "B5_effective_valence_5", "population": "K", "c_i_mM": "140", "c_o_mM": "5.4", "block": "effective_valence_5_inside"},
+  {"id": "S1_strong_one_mode", "population": "K", "c_i_mM": "140", "c_o_mM": "5.4", "block": "strong_one_mode"},
+  {"id": "S2_strong_two_modes", "population": "K", "c_i_mM": "140", "c_o_mM": "5.4", "block": "strong_two_modes"},
+  {"id": "G1_steep_K_inside_reversal", "population": "K", "c_i_mM": "140", "c_o_mM": "5.4", "block": "steep_K_inside_reversal"},
+  {"id": "G2_steep_K_outside_voltage", "population": "K", "c_i_mM": "140", "c_o_mM": "5.4", "block": "steep_K_outside_voltage"},
+  {"id": "G3_steep_Na_outside_voltage", "population": "Na", "c_i_mM": "10", "c_o_mM": "145", "block": "steep_Na_outside_voltage"},
+  {"id": "G4_steep_Na_inside_reversal", "population": "Na", "c_i_mM": "10", "c_o_mM": "145", "block": "steep_Na_inside_reversal"},
+  {"id": "G5_steep_Cl_anion_outside", "population": "Cl", "c_i_mM": "20", "c_o_mM": "120", "block": "steep_Cl_anion_outside_voltage"},
+  {"id": "C1_abundance_doubled", "population": "K", "c_i_mM": "140", "c_o_mM": "5.4", "block": "two_modes_inside", "abundance": "2"},
+  {"id": "C2_units_declared", "population": "K", "c_i_mM": "140", "c_o_mM": "5.4", "block": "two_modes_inside", "units": {"count": "1000", "reference_density_per_m2": "1e12"}},
+  {"id": "C2_units_doubled", "population": "K", "c_i_mM": "140", "c_o_mM": "5.4", "block": "two_modes_inside", "units": {"count": "2000", "reference_density_per_m2": "1e12"}}
+ ],
+ "requested_outputs": {
+  "per_case": ["E_ion_V (the case's ion; LAWS.md section 2)", "u_at_reversal (u at V = E_ion)", "the voltages actually used, as decimal strings"],
+  "per_voltage": ["V_ref_V", "J_free_fmol_s", "I_free_A", "dI_free_dV_S", "theta_k (per mode)", "one_minus_theta_k (per mode)", "u", "J_blocked_fmol_s", "I_blocked_A", "dI_blocked_dV_S", "dJ_blocked_dc_o_fmol_s_per_mM", "dJ_blocked_dc_i_fmol_s_per_mM"],
+  "unblocked_cases": "for a case with block null, report the free quantities only, and u = 1",
+  "format": "one JSON file per case, results/<case id>.json, every number as a decimal string of at least 20 significant digits, plus method and provenance (LAWS.md section 7)"
+ }
+}
