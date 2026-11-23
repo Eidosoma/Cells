@@ -1,0 +1,9 @@
+{
+  "doi": "10.1016/S0021-9258(18)64594-6",
+  "locator": "Table II, experiment B, 30 °C; Figure 3 assay conditions",
+  "preparation": "Partially purified rabbit-muscle phosphoglucose isomerase, pH 8.0",
+  "temperature_C": 30,
+  "columns": ["time_min", "G6P_mM", "F6P_mM"],
+  "measurements": [[0, 2.50, 0], [15, 1.92, 0.580], [30, 1.94, 0.565]],
+  "uncertainty": "Published concentrations are rounded. The sequential assay shares absorbance readings; the table supplies no replicate uncertainty for their sum."
+}

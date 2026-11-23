@@ -1,0 +1,26 @@
+{
+  "study_doi": "10.1371/journal.pbio.1001886",
+  "organism": "Schizosaccharomyces pombe",
+  "unit": "visible Hsp104-GFP foci",
+  "movie": {
+    "doi": "10.1371/journal.pbio.1001886.s007",
+    "field": "upper-left dividing cell in Movie S3",
+    "parent_time_min": 120,
+    "daughter_time_min": 130,
+    "parent_foci": 1,
+    "larger_daughter_foci": 1,
+    "smaller_daughter_foci": 0
+  },
+  "asymmetry": {
+    "doi": "10.1371/journal.pbio.1001886.g002",
+    "panel": "Figure 2E, green experimental series",
+    "observable": "Mean absolute difference between the two daughters' visible focus counts, grouped by their sum at division.",
+    "values": [
+      {"foci_at_division": 2, "divisions": 33, "mean_approx": 0.97, "sem_approx": 0.18},
+      {"foci_at_division": 4, "divisions": 32, "mean_approx": 1.0, "sem_approx": 0.18}
+    ],
+    "precision": "Means and SEMs read from the published graph. Cohort sizes are printed labels.",
+    "reference": "For n intact independent units and a common first-daughter probability p, the prediction is the binomial mean of |2k - n| over k."
+  },
+  "scope": "These cytoplasmic aggregates can fuse and their motion is spatially constrained. A visible focus can contain multiple proteins. Daughter membrane areas paired with these counts were unavailable."
+}

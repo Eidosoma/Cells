@@ -154,6 +154,12 @@ Declarations (class attributes):
     lifecycle_retire), and calls it with its maps and retirement masks at every division.
     Beside a kind with fields on its slot axes, a retiring operator without it is refused
     (fails closed: the kinds' history would be lost);
+  - ``DIVIDES_OWNED`` (FR-43 part 3, D315): an operator whose owned state divides at a retiring
+    operator's division. Its ``divide_owned(state, maps, masks, p, *, xp)`` gives (state, valid)
+    after the due divisions, from the same maps and retirement masks the kinds' lifecycle reads,
+    and the composite calls it, in declared order after the kinds' fields, inside the lifecycle
+    callable it passes the retiring event (TAKES_LIFECYCLE). Without such an operator nothing
+    changes: the lifecycle is passed and called as before;
   - ``BOOKS_AT_VIEW`` on an event map: the composite passes ``view``, a function of state
     giving its view, when a field input is provided.
 * Scoped composition, door S (docs/SCOPED_COMPOSITION_DESIGN.md), refining the view
@@ -433,6 +439,7 @@ class Operator:
     CLOSES = ()
     RETIRES = False
     TAKES_LIFECYCLE = False  # Its event map takes lifecycle= (module docstring).
+    DIVIDES_OWNED = False  # Its owned state divides at a division (divide_owned; FR-43, D315).
     # Its parts call the inner model's structure-bound functions (an event map's kinetics, the
     # field solve): the composite passes the inner implementation object as `inner=` to its
     # event, half_step and rates calls and to initial_values (static), and host methods reach
@@ -744,6 +751,12 @@ class Operator:
         takes view= at the control view (R2); a target's half-step passes none."""
         raise NotImplementedError
 
+    def divide_owned(self, state, maps, masks, p, *, xp):
+        """(state, valid) after a retiring operator's due divisions, for DIVIDES_OWNED: its owned
+        fields from maps ({slot axis: (parent rows, daughter rows, daughter 1's fraction, due
+        rows)}) and masks ({slot axis: retired}), the closer's own (module docstring)."""
+        raise NotImplementedError
+
     def closures(self, state, p, q, *, xp):
         """{mask field: open (bool array)} for CLOSES, from state (q: the running view)."""
         return {}
@@ -983,6 +996,14 @@ def check_declarations(operator):
         operator.TAKES_LIFECYCLE and not operator.RETIRES
     ):
         raise ValueError(f"{name}: TAKES_LIFECYCLE is a bool, true only for a retiring operator")
+    if not isinstance(operator.DIVIDES_OWNED, bool) or (
+        operator.DIVIDES_OWNED
+        and not (operator.STATE_AXES and _defined_below_operator(operator, "divide_owned"))
+    ):
+        raise ValueError(
+            f"{name}: DIVIDES_OWNED is a bool, true only for an operator with owned state that "
+            "defines divide_owned"
+        )
     if operator.EVENT_REPLACES and not operator.EVENT:
         raise ValueError(f"{name}: replaced fields need an event map")
     for field, accumulators in operator.EVENT_REPLACES.items():

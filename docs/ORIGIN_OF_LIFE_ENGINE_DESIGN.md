@@ -233,6 +233,9 @@ that refine it.
      a geometric encounter is declared for them.
    - **Amended 20 November 2026 (§0.2f):** one interfacial shape is admitted, a pool molecule
      binding a declared site to form its declared complex.
+   - **Amended 23 November 2026 (FR-46, D323; §0.2f item 6):** a second shape is admitted, in a
+     prescribed shell only. A lumen molecule binds a declared inner site. Each pair binds on its own
+     face, one face per complex, and a wall that joins the two faces is a carrier, refused.
 
    Worlds without a geometry keep `count_on_m` on every membrane-locus step. That covers OL1's
    worlds, the probes and the GARD limit.
@@ -543,7 +546,7 @@ are not the user's approval.
    - Still refused:
      - an undeclared pair;
      - a binding of two ligands;
-     - a ligand in the lumen;
+     - a ligand in the lumen, except on a declared inner pair in a prescribed shell (item 6, FR-46);
      - the step declared as the release;
      - every other interfacial step, as before.
    - **OL5's registered refusal worlds stay refused.** `refuse_count_on_m_cross_phase` has the
@@ -561,6 +564,30 @@ are not the user's approval.
    `tests/unit/test_assembly_lineages_v2_replacement.py`:
    - on the one-particle fixture, a bound ligand stays through FR-20's wash;
    - a released one rebinds.
+
+6. **The inner face** (FR-46; the user's rulings of 23 November 2026, D323):
+   - **A pair may declare its face,** `"face": "outer"` (the default, never written) or `"inner"`.
+   - **An inner pair** admits X@lumen + site@membrane -> complex@membrane, in a prescribed shell
+     only. It is under the same law with `count_on_m`; θ⁺ is the lumen's activity, and the reverse
+     returns X to the lumen.
+   - **A pair binds on its own face only.** An inner pair outside a prescribed shell is refused by
+     name.
+   - **One face per complex, by ligand moiety.** Each admitted binding seeds its complex with its
+     face, for each moiety of its ligand. Every step, binding and release steps included, joins per
+     moiety each membrane reactant that holds the moiety with each membrane product that holds it.
+     A component holding both faces is a carrier across the wall, refused by name with its wall
+     states.
+   - **The cases refused:**
+     - a direct conversion;
+     - conversions through ligand-bearing wall states with no pair of their own;
+     - a co-ligand bound from the other face onto a site that already holds the ligand (a
+       reviewer's case).
+   - **Accepted as a limitation of version 1:** stepwise binding of one ligand from both faces on
+     one site is refused too, since the moieties cannot tell which molecule is which.
+   - **In `cells.rate_equations@1`,** inner-face binding is refused by name.
+   - **Rule 3's refusal message** names both shapes. Its recorded string in probes2, for OL5's
+     `refuse_count_on_m_cross_phase`, is declared at the landing. All 22 registered refusals still
+     refuse.
 
 ### 0.2g The lead's rulings for FR-21's prescribed shell (20 November 2026; D244, D246)
 
