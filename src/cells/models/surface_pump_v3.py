@@ -4640,7 +4640,12 @@ def crossing_junctions(model):
     parent = {node.id: node.id for node in (*cells, *outside)}
 
     def root(node):
+        # Path halving: the same components and representatives as following the links, in
+        # near-constant time. Without it, a bath shared by every membrane makes the links one
+        # chain, and structure() (called by the windowed path's control and readout passes)
+        # cost O(n^2) per call: 0.14 s on GJ-N1's 625-cell field (D317 (d)).
         while parent[node] != node:
+            parent[node] = parent[parent[node]]
             node = parent[node]
         return node
 

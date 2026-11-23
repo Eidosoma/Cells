@@ -23,7 +23,15 @@ Parts and their programs:
   judge runs them: every window's observations and the final state);
 * pump: resolved_pump_tissue@1 and @2 worlds, RK4 and IMEX (scalar, device checks);
 * cohorts: Q6's cohorts, 2 W7 worlds and 8 C9 worlds (vmapped vector windows,
-  core/vector_windows; and the lax_map batch, core/batch).
+  core/vector_windows; and the lax_map batch, core/batch);
+* reactions, reactions-windowed: local_species_reactions@1's crossrev worlds
+  (validation/tissue/species_reactions_crossrev.reaction_worlds, the padded two-factor world among
+  them) and GJ-N1's EMT switch worlds with Hill factors on six slots (the uncoupled pair, the line
+  and the 25 x 25 field at D = 0 and at the bracket's upper end, a few steps each; validation/
+  gap_junction_tissue/neither), scalar with device checks and windowed;
+* reactions-cohort: the reactions worlds' value twins as cohorts of two (vector windows and batch).
+The reactions parts were added for the Hill factors' one-branch, declared-slots rewrite in
+route_rates (23 November 2026).
 
 Usage:
   python inplace_fix_guard.py dump PART[,PART...] --output DIR [--worlds NAME,...]
@@ -146,6 +154,33 @@ def _cohorts():
     return {"Q6_2_W7": lambda: w7, "Q6_8_C9": lambda: c9}
 
 
+def _reaction_worlds():
+    from validation.gap_junction_tissue import neither
+    from validation.tissue import species_reactions_crossrev as reactions
+
+    out = {k: (lambda v=v: v) for k, v in reactions.reaction_worlds().items()}
+    start = neither.STAGE1_END_UNITS
+    out["gj_uncoupled"] = lambda: neither.uncoupled_world(end=0.5)
+    for shape, steps in (("line", 64), ("field", 16)):
+        for d in (0.0, neither.BRACKET[1]):
+            dt = neither.step(d, neither.tissue(shape)[3])
+            name = f"gj_{shape}_d{d:g}".replace("-", "m")
+            out[name] = lambda d=d, shape=shape, end=steps * dt: neither.coupled_world(
+                d, start, end=end, shape=shape
+            )
+    return out
+
+
+def _reaction_cohorts():
+    from validation.tissue import species_reactions_crossrev as reactions
+
+    worlds = reactions.reaction_worlds()
+    return {
+        f"cohort_{twin}": (lambda a=worlds[original], b=worlds[twin]: [a, b])
+        for twin, original in reactions.TWINS.items()
+    }
+
+
 PARTS = {
     "dumps": (_dumps, "scalar", False),
     "base": (lambda: {k: (lambda v=v: v) for k, v in _crossrev().worlds().items()}, "scalar", True),
@@ -169,6 +204,9 @@ PARTS = {
     "w1": (_w1, "windowed", False),
     "pump": (_pump, "scalar", True),
     "cohorts": (_cohorts, "cohort", False),
+    "reactions": (_reaction_worlds, "scalar", True),
+    "reactions-windowed": (_reaction_worlds, "windowed", False),
+    "reactions-cohort": (_reaction_cohorts, "cohort", False),
 }
 
 
