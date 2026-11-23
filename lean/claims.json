@@ -24,6 +24,45 @@
     "cells.rate_equations@1": "molecular-assembly"
   },
   "comparisons": {
+    "fr43-integer-segregation": {
+      "kind": "engine",
+      "models": [
+        "resolved_pump_composite@1",
+        "resolved_pump_tissue@3"
+      ],
+      "laws": [],
+      "operators": [
+        "cells.integer_unit_population@1",
+        "cells.isopotential_partition@1",
+        "cells.membrane_entity_state@1"
+      ],
+      "engine_revision": "9663f28f36bc9d1595a5bafd08495a805b8dc650",
+      "record_revision": "8e0fb796849064735e44763cf0322e6fa55b041a",
+      "sources": {
+        "Division contract at the tested revision": "docs/library/cells/operators/integer_unit_population@1.md#L103",
+        "Mask over declared state ranges": "src/cells/operators/integer_unit_population.py#L993",
+        "Retirement and signed site entries": "src/cells/operators/integer_unit_population.py#L1006",
+        "Weighted per-site balance": "src/cells/operators/integer_unit_population.py#L1487",
+        "Entity-axis sum": "src/cells/numerics/species_sums.py#L83",
+        "Parent partition stream": "src/cells/numerics/counter_streams.py#L151",
+        "Lifecycle map at a scheduled division": "src/cells/operators/partition.py#L1038",
+        "Distinct patch and volume shares": "src/cells/definitions/partition_spec.py#L97",
+        "Native composite world and sites": "validation/fr43_part3/worlds.py#L91",
+        "Independent counter-stream draws": "validation/fr43_part3/references/stream_draws.py#L94",
+        "Declared integer states and weights": "validation/fr43_part3/references/spec/part3.json",
+        "Host unit order and exact counts": "tests/unit/test_integer_unit_population.py#L122",
+        "Compiled inventory at division": "tests/unit/test_integer_unit_population_statistics.py#L94",
+        "Native run and recorded arrays": "src/cells/records/io.py#L254"
+      },
+      "record_inputs": {
+        "Proof of counts, books and expected differences": "lean/CellsProofs/Tissue/IntegerSegregation.lean",
+        "Parent and daughter counts and plot readings": "lean/checks/data/coelho_2014_focus_segregation.json",
+        "Independent-trial expectation": "lean/CellsProofs/Chemistry/LineageFission.lean#L106",
+        "Pinned proof dependencies": "lean/lake-manifest.json"
+      },
+      "driver": "lean/checks/integer_segregation.py",
+      "record": "lean/PROGRESS.md#fr43-integer-segregation"
+    },
     "fr43-shared-writers": {
       "kind": "engine",
       "models": [
@@ -4164,6 +4203,86 @@
     }
   },
   "claims": [
+    {
+      "id": "fr43-integer-segregation",
+      "category": "tissue-and-conservation",
+      "title": "Integer units at membrane-patch division",
+      "statement": "At an accepted division, each occupied unit goes to exactly one daughter. The two counts recover the parent in every molecular state, the signed division entries balance, and the two daughters retain the parent's weighted subunit total.",
+      "assumptions": [
+        "State counts are nonnegative integers in declaration order. The draw block covers all occupied units. The mapped daughters are distinct and empty before the parent retires. The first daughter receives units with a binary64 draw strictly below its patch-area share.",
+        "Each state's subunit weight is fixed. The expected sister-count differences additionally assume intact units with independent draws and one common first-daughter probability within each division."
+      ],
+      "formal": {
+        "status": "proved",
+        "about": [
+          "cells.integer_unit_population@1"
+        ],
+        "theorems": {
+          "CellsProofs.Tissue.IntegerSegregation.block_mask": "lean/CellsProofs/Tissue/IntegerSegregation.lean",
+          "CellsProofs.Tissue.IntegerSegregation.second_membership": "lean/CellsProofs/Tissue/IntegerSegregation.lean",
+          "CellsProofs.Tissue.IntegerSegregation.state_counts": "lean/CellsProofs/Tissue/IntegerSegregation.lean",
+          "CellsProofs.Tissue.IntegerSegregation.weighted_inventory": "lean/CellsProofs/Tissue/IntegerSegregation.lean",
+          "CellsProofs.Tissue.IntegerSegregation.retirement_ledger": "lean/CellsProofs/Tissue/IntegerSegregation.lean",
+          "CellsProofs.Tissue.IntegerSegregation.two_unit_difference": "lean/CellsProofs/Tissue/IntegerSegregation.lean",
+          "CellsProofs.Tissue.IntegerSegregation.four_unit_difference": "lean/CellsProofs/Tissue/IntegerSegregation.lean"
+        },
+        "sources": {
+          "Imported Mathlib partition of a finite set by a predicate and its complement": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Data/Finset/Card.lean#L554",
+          "Imported Mathlib size of a natural half-open interval": "https://github.com/leanprover-community/mathlib4/blob/c44e0c8ee63ca166450922a373c7409c5d26b00b/Mathlib/Order/Interval/Finset/Nat.lean#L73",
+          "Cells specializes its existing independent-trial expectation at two and four units": "https://github.com/Eidosoma/Cells/blob/8e0fb796849064735e44763cf0322e6fa55b041a/lean/CellsProofs/Chemistry/LineageFission.lean#L106"
+        }
+      },
+      "numerical": {
+        "status": "checked",
+        "comparisons": [
+          "fr43-integer-segregation"
+        ],
+        "result": "On FR-43 development engine 9663f28f, the compiled division matched independently reconstructed counts and signed entries for four parent sites at all six saved times. The weighted daughter pairs were (4, 3), (6, 0), (3, 1) and (0, 0). Volume share, a tie sent to the first daughter and reversed state order gave 3, 1 and 2 incorrect first-daughter entries respectively, while each alternative still conserved total counts. The lead’s registered equal-share run at 52935908 gave 4,058 first-daughter assignments in 8,192 trials and passed its frequency check. [Cells decision D319](https://github.com/Eidosoma/Cells/blob/ac8d915ccefebd31d6357c5ddc0ff4dfc2b39f31/docs/DECISIONS.md#L10061)"
+      },
+      "biology": {
+        "status": "open",
+        "observable": "Intact units counted in the parent and both daughters at cleavage, with the membrane-patch area inherited by each daughter measured in the same division.",
+        "unit": "visible foci",
+        "finding": "One fission-yeast division preserves the visible focus count. The four-focus cohort split more evenly on average than the independent-allocation expectation for any common daughter probability. These cytoplasmic measurements leave membrane-area-dependent segregation open.",
+        "evidence": [
+          {
+            "dataset_id": "coelho2014_movieS3",
+            "manifest": "lean/checks/data/coelho_2014_focus_segregation.json",
+            "citation": "Coelho et al. (2014), Movie S3",
+            "doi": "10.1371/journal.pbio.1001886.s007",
+            "locator": "Upper-left dividing cell, movie labels 120 and 130 min.",
+            "context": "Hsp104-GFP marks visible cytoplasmic protein aggregates in fission yeast. The parent's one visible focus gives the predicted sum of daughter counts.",
+            "role": "descriptive",
+            "evaluation": [
+              "Visible count before and in both daughters after the same division"
+            ],
+            "observed": 1,
+            "predicted": 1,
+            "uncertainty": "One image pair. Subthreshold foci and individual protein copy numbers are unresolved.",
+            "assessment": "The larger daughter inherited one visible focus and the smaller daughter inherited zero. This observation supports count conservation in that division.",
+            "report": "lean/PROGRESS.md#fr43-integer-segregation"
+          },
+          {
+            "dataset_id": "coelho2014_figure2E",
+            "manifest": "lean/checks/data/coelho_2014_focus_segregation.json",
+            "citation": "Coelho et al. (2014), Figure 2E",
+            "doi": "10.1371/journal.pbio.1001886.g002",
+            "locator": "Green experimental series, groups with two and four visible foci at division.",
+            "context": "The observable is the mean absolute difference between the sisters' focus counts. For four intact units with independent allocation, 1.5 is the smallest expected difference over all common daughter probabilities. For two units the minimum is 1.",
+            "role": "descriptive",
+            "evaluation": [
+              "Two foci at division, 33 divisions",
+              "Four foci at division, 32 divisions, reported below"
+            ],
+            "observed": 1,
+            "predicted": 1.5,
+            "uncertainty": "Mean differences and SEMs are approximate readings from the plot. The SEM is about 0.18 visible foci in each group. Membrane area fractions paired with these counts were unavailable.",
+            "assessment": "Two foci gave about 0.97 against the equal-share expectation of 1. Four gave about 1.0 against the minimum expectation of 1.5. Aggregate fusion and spatial confinement limit transfer of this comparison to membrane units.",
+            "report": "lean/PROGRESS.md#fr43-integer-segregation"
+          }
+        ]
+      }
+    },
     {
       "id": "fr43-shared-writers",
       "category": "reactions-and-binding",
