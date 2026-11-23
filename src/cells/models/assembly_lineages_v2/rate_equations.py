@@ -391,6 +391,17 @@ def refusals(world, experiment, execution):
         )
     if world.hazard is not None or experiment.tension_holds:
         _pore_refusals(world, experiment.tension_holds)
+    if world.inner_sites:  # FR-46 (D323): binding from the lumen, until a qualification covers it
+        raise ConfigError(
+            f"{RATE_EQUATIONS}: inner-face site binding is refused in version 1 (FR-46): with a "
+            "finite lumen ligand it is bimolecular, and no qualification covers it yet"
+        )
+    lumen = [s.id for s in world.species if s.mu_lumen is not None]
+    if lumen:  # FR-48 (D323): until FR-47's qualification
+        raise ConfigError(
+            f"{RATE_EQUATIONS}: a lumen standard potential (species {', '.join(lumen)}) is "
+            "refused in version 1, until FR-47's qualification"
+        )
     if world.geometry is not None and world.geometry[0] != BILAYER_GEOMETRY:
         raise ConfigError(
             f"{RATE_EQUATIONS}: the geometry {world.geometry[0]} is refused in version 1 (FR-21's "
