@@ -39,7 +39,9 @@ chain's: for the mRNA R in A1, transcription's (tx), not translation's (tl). A c
 does not make the product is refused, and so is a product that no chain or several chains make,
 unless one of them is named. The A1 export's CSV holds tx (making R) and tl (making P). With a
 release (the sheet's §9, FR-38), a fate row's inflow is the release's into it, not the chain's
-completions, which join the hold (`producers`): this is §9.8's route 2, per fate pool.
+completions, which join the hold (`producers`): this is §9.8's route 2, per fate pool. A row its
+cell exports (amendment T, §9.17) is refused: it leaves by export as well as by its loss, so one
+pool's reading does not apply, and `series` reads the cohort through the export.
 
 **The check.** FR-25's turnover control: 100 copies at steady state, a one-hour half-life and
 production of 100 ln 2 copies per hour. Of the 69.31 copies completed in the first hour, 50 remain
@@ -394,6 +396,15 @@ def read(path, product="P", chain=None):
         r = json.loads(path.read_text())
         (block,) = [o for o in r["definition"]["model"]["operators"] if o["law"] == POLYMERISATION]
         cell = exported_cell(r, block)
+        inside = {m["id"]: m["inside"] for m in r["definition"]["model"].get("membranes", ())}
+        exports = [e["id"] for e in block.get("exports", ())
+                   if e["row"] == product and inside.get(e["patch"]) == cell]  # fmt: skip
+        if exports:
+            raise ValueError(
+                f"{product} at {cell} leaves by export {exports[0]} as well as by its loss "
+                "(amendment T, §9.17), so one pool's reading does not apply; the cohort through "
+                "an export is series'"
+            )
         pool_cell = {q["id"]: q["cell"] for q in block["pools"]}
         here = [c for c in block["chains"] if pool_cell[c["pool"]] == cell]
         local, counters = producers(here)

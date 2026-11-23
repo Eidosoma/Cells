@@ -13,6 +13,7 @@ validation/gene_regulation/worlds.py for a few seconds of model time.
 """
 
 import copy
+import json
 from decimal import Decimal
 
 import numpy as np
@@ -569,7 +570,7 @@ def _node_G(state, p, spec):
 
 
 @pytest.mark.parametrize("labelled", [False, True])
-def test_the_export_books_both_sides_and_carries_its_labels(labelled):
+def test_the_export_books_both_sides_and_carries_its_labels(labelled, tmp_path):
     """FR-38's amendment T (§9.17; erratum H, §9.21), NumPy, no world compiled, about 2 s a row: R1
     at p = 0.75 with the export of R into a finite node (k_E = 1e-3 /s, driven by NTP) and R's loss
     there, 600 s.
@@ -577,9 +578,11 @@ def test_the_export_books_both_sides_and_carries_its_labels(labelled):
       export's whole heat is the cell's. Each side's routes sum to its booked heat.
     - G's identity over the cell and the node within rounding (64 eps (size + bookings)): the
       energy ledger, which books both sides' standard terms and heat against @3's chemical terms,
-      closes.
+      closes. engine_run's export closes it too, its G over the cell and the node's written rows
+      and its heat over both. Planted, the cell's G and heat alone miss it by about 1e7 bounds.
     - The producer's identity with its net export, and the node's balance: n_o - n_o(0) = forward
-      - backward - its loss, within rounding.
+      - backward - its loss, within rounding; engine_run reads the node's row and counters by ID.
+      cohort.read refuses the exported row: one pool's reading omits its export.
     - With labels: every physical field is the unlabelled run's bit for bit, and the cohort marked
       on transcription's own schedule rides into the node, whose shares sum to 1. There route 1,
       the node's row times the cohort's share, meets route 2, two pools in series on the run's own
@@ -605,8 +608,14 @@ def test_the_export_books_both_sides_and_carries_its_labels(labelled):
     (g1, size1), (g0, size0) = _G(end, layout, spec), _G(start, layout, spec)
     (o1, nsize1), (o0, nsize0) = _node_G(end, layout, spec), _node_G(start, layout, spec)
     total = float((g1 - g0) + (o1 - o0)) + cell_heat + node_heat
-    assert abs(total) <= 64 * EPS * (size0 + size1 + nsize0 + nsize1 + bookings)
+    bound = 64 * EPS * (size0 + size1 + nsize0 + nsize1 + bookings)
+    assert abs(total) <= bound
     assert min(float(np.min(x)) for x in increments) >= 0.0
+    times, values, checks = engine_run.readouts(spec, states)  # Amendment T's export.
+    assert checks["exported_nodes"] == [worlds.SPACE] and checks["G_identity_largest_pJ"] <= bound
+    assert checks["routes_minus_total_largest_pJ"] <= 64 * EPS * bookings
+    assert min(checks["smallest_class_increment"][k] for k in ("H_exp", "H_odeg")) > 0
+    assert abs(float(g1 - g0) + cell_heat) > 1e3 * bound  # Planted: the node's terms omitted.
     species, k = list(spec.model.species_ids), [c.id for c in spec.model.extracellular]
     i, o = species.index("R"), k.index(worlds.SPACE)
 
@@ -619,6 +628,14 @@ def test_the_export_books_both_sides_and_carries_its_labels(labelled):
     net = float(end.poly_export_forward_fmol[0] - end.poly_export_backward_fmol[0])
     lost = float(end.poly_outside_degraded_fmol[0])
     assert net > 0 and abs(node[1] - node[0] - net + lost) <= _identity_bound(*node, net, lost)
+    at = worlds.SPACE
+    assert values[f"n_R_{at}"][-1] == node[1] and values[f"int_D_route_deg_R_{at}"][-1] == lost
+    assert values["int_E_export_R_forward"][-1] - values["int_E_export_R_backward"][-1] == net
+    path = tmp_path / "run.json"
+    record = dict(t=times, readouts=values, cell=checks["exported_cell"], definition=raw)
+    path.write_text(json.dumps(record))
+    with pytest.raises(ValueError, match="leaves by export export_R"):
+        cohort.read(path, "R")
     H0, H = float(start.poly_hold_fmol[0, 0]), float(end.poly_hold_fmol[0, 0])
     A = float(end.poly_released_fmol[0])
     kept = sum(cell(end, r) - cell(start, r) + float(end.poly_degraded_fmol[f])
@@ -632,6 +649,7 @@ def test_the_export_books_both_sides_and_carries_its_labels(labelled):
         assert np.array_equal(getattr(end, name), getattr(plain, name)), name
     shares = end.label_outside_share[0, :, o]  # R's labels at the node: [base, cohort].
     assert shares[1] > 0 and abs(float(np.sum(shares)) - 1.0) <= 128 * EPS
+    assert values[f"label_R_cohort_{at}"][-1] == node[1] * float(shares[1])  # engine_run's.
     # §9.17.5's second readout (erratum H, item 2): the cohort at the node by route 1, the node's
     # row times its share, and route 2, two pools in series from the run's own counters.
     steps = sorted(states)
@@ -701,9 +719,12 @@ def test_two_producers_share_one_node_row_by_label():
     Route 2 counts every exported molecule, the cell's starting trace at the base label among them,
     so it may exceed route 1 by at most that trace's exports, k_E n_R(0) T, besides route 2's grid
     error (every second output) and the node update's split, k_o h^2/(12 tau). The producers' and
-    the base's amounts sum to the node's row."""
+    the base's amounts sum to the node's row. engine_run refuses to export either cell: the node
+    takes the other's export too, so G over one cell and the node would not close."""
     raw = _two_producers()
     spec, layout, states, _ = kernel.run(raw)
+    with pytest.raises(ValueError, match="also takes cell_1's export export_R_1"):
+        engine_run.readouts(spec, states, "cell_0")
     end, steps = states[max(states)], sorted(states)
     t = [float(k) * spec.execution.dt for k in steps]
     species, slots = list(spec.model.species_ids), [c.id for c in spec.model.extracellular]

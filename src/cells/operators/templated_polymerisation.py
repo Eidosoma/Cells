@@ -2,7 +2,9 @@
 monomers' recharging, on the shared species inventory (gene regulation's option A, D235; FR-25).
 
 The declared equations are docs/TEMPLATED_POLYMERISATION_LAWS.md (tag gr1-sheet-2026-11-20b; its
-§9, the release, to tag gr1-sheet-fr38-erratum-a2-2026-11-22); the design is
+§9, the release, to tag gr1-sheet-fr38-erratum-a2-2026-11-22; §9.16, replacement, tag
+gr1-sheet-fr38-amendment-s-2026-11-22; §9.17, the export, tag gr1-sheet-fr38-amendment-t-2026-11-22,
+with erratum H, §9.21, tag gr1-sheet-fr38-erratum-h-2026-11-23); the design is
 docs/GENE_REGULATION_DESIGN.md §7. Development, not judged: A's protocol (G6) judges it
 against the code-blind references of validation/gene_regulation/references/.
 
@@ -32,6 +34,9 @@ Declaration
   FreeEnergyEntry's two forms: {"dG_RT"}, or {"dG_kJ_mol", "basis", "dG_RT_offset"} with a basis of
   kind_registry.DG_BASES. Each is declared to the species registry through standard_free_energies,
   whose check_free_energies holds it to the registry's potentials (seam E; the sheet's §3.3).
+- Optional: `templates`, the newcomers' values (Replacement, below), and `exports` with
+  `outside_degradations`, a row carried out of its cell into a finite node and its loss there
+  (The export, below).
 
 Every key is explicit, every route ID is distinct, and every row a route names is a listed species.
 
@@ -60,7 +65,8 @@ the horizon (grid_time):
 - a chain's initiation rate constant k_I, in mM^-1 s^-1;
 - a degradation's first-order rate, in s^-1;
 - a transfer's capacity, in mM/s;
-- a scheduled release's durable fraction p, in [0, 1], by the release's ID.
+- a scheduled release's durable fraction p, in [0, 1], by the release's ID;
+- an export's rate constant k_E and an outside degradation's first-order rate k_o, in s^-1.
 
 The initiation rate and a release's durable fraction are routable (B1′): a rate route's factor u in
 [b, 1] multiplies each at the start of each half-step, or at its midpoint where the half-step moves
@@ -87,7 +93,8 @@ above c° = 1 M at a chain in use, refuses the step (the sheet's §3.5). Transfe
 The half-step
 -------------
 SSPRK(3,3) in Butcher form, as D152's, on this operator's own variables: its listed rows at every
-cell, its pools' free machines, and its chains' complexes.
+cell, its pools' free machines, and its chains' complexes; with an export, also its listed rows
+at the exported nodes, under the same stage condition.
 - Y1 = y, Y2 = y + h A J(Y1), Y3 = y + h A (J(Y1) + J(Y2))/4.
 - d xi = h (J(Y1) + J(Y2) + 4 J(Y3))/6, and every move is applied as A d xi. So the material,
   machine and residue identities hold by construction.
@@ -104,7 +111,9 @@ the sum of:
 
 The standard part is held in poly_standard_energy_pJ, an owned free-energy term like D152's. The
 energy ledger gains standard + heat, which closes against @3's chemical term by construction.
-Machines and templates carry no free energy (declared).
+Machines and templates carry no free energy (declared). With an export, each exported node books
+its own in the same way: HEAT_FIELDS' second field, poly_outside_dissipated_energy_pJ, and
+poly_outside_standard_energy_pJ (The export, below).
 
 Each route's heat (the sheet's heat classes, per route: poly_chain_heat_pJ,
 poly_degradation_heat_pJ and poly_transfer_heat_pJ) is its extent times minus the
@@ -159,7 +168,8 @@ without a label owner every call is today's):
   source label (its products, and fate releases marked at release); and each hold's part: its
   amounts, its completions (at the source label where marked at completion, else the base), its
   releases it does not carry, and carried, each release marked at completion into a labelled fate
-  row, keeping the hold's labels.
+  row, keeping the hold's labels. With an export, the node columns follow the cells' (The export,
+  below).
 - **Marked at release** (FR-38's cohort, the requester's answer to (e)): labels on the fate rows
   give §9.8's route 1 on shares (erratum C) with no blank.
 - **A limit:** a labelled species carries at most neutral_arrival_labels@1's MAX_LABELS labels, so
@@ -180,9 +190,57 @@ per replaced slot (replacement@1's own count), so its place among the events doe
   (poly_rep_*_departed_fmol), so the newcomer's counters start at zero;
 - the residue ledger counts W^rem and the hold's counts H^rem; the rows are replacement@1's.
 The occupant rule: an optional `templates` key, [{template_id, rates: {schedule ID: value}}], gives
-each newcomer's k_I, k, capacity and scheduled p, constant through its life (control_values).
-Without an event on a slot of this operator every such field is zero-size and the event returns its
-state with no validity term, so the programs are today's (D148 case 2).
+each newcomer's k_I, k, capacity, scheduled p and export k_E, constant through its life
+(control_values). Without an event on a slot of this operator every such field is zero-size and the
+event returns its state with no validity term, so the programs are today's (D148 case 2).
+
+The export (the sheet's §9.17, amendment T; erratum H, §9.21)
+------------------------------------------------------------
+A fate row or product leaves its cell into a finite extracellular node and is retained there with
+its labels (FR-38, the requester's retention of the producer's ID). Two optional keys:
+- `exports`: each {id, row, patch, coupling, saturation_mM}. The patch's inside is the export's
+  cell c and its outside the node o. The row F is a fate row or the product of a chain at c. The
+  coupling, {row: nu} signed per molecule exported, gives the rows of c the move consumes and
+  releases; it is non-empty, since only a driven export is admitted in version 1. K is given for
+  each consumed row.
+- `outside_degradations`: each {id, node, polymer, residues, monomers, standard_free_energy},
+  §4.4's law at o on a row an export carries there, at its chain's length. Its monomers stay at o.
+
+The laws, with o's volume and rows:
+- **Export:** a forward part k_E n_F,c phi_E and a backward part forward e^(x_E), where
+  x_E = mu_F,o/RT - mu_F,c/RT + sum nu mu_c/RT and phi_E is the product over the consumed coupling
+  rows of c/(K + c). The net J_E = forward - backward = k_E n_F,c phi_E (1 - e^(x_E)) moves F from c
+  to o and runs the coupling at c.
+- **Outside degradation:** J_o = k_o n_F,o (1 - e^(y_o)), as at a cell.
+- Both are one-sided: x_E or y_o above X_DOM at a route in use refuses the step. The listed rows
+  at the exported nodes (the poly_outside_node axis) are among the half-step's variables.
+
+**Energy.** G extends over the nodes the operator writes. An export's heat, poly_export_heat_pJ, is
+-J_E (mu-bar_F,o - mu-bar_F,c + sum nu mu-bar_c) by the divided-difference potentials of both sides,
+and is booked whole at its cell: its node part J_E mu-bar_F,o moves from the node's exact dG to the
+cell's. So each node books only its outside degradations' heat (poly_outside_degradation_heat_pJ)
+in poly_outside_dissipated_energy_pJ, with its standard term in poly_outside_standard_energy_pJ.
+The totals are each side's exact dG, and no work is booked.
+
+**Counters and ledgers.**
+- poly_export_forward_fmol and poly_export_backward_fmol count the one-way parts (erratum H, item
+  3), and poly_outside_degraded_fmol counts ∫D_o.
+- The node amounts are this operator's own writes: extracellular_amount_increment among its
+  ENTITY_WRITES, booked by poly_outside_produced_fmol and poly_outside_consumed_fmol.
+- @3's ledgers gain them, and the energy ledger gains the nodes' standard term and heat.
+
+**Labels.** Each export reports two one-way transfers of its labelled row: forward from c to o with
+c's shares, and backward with o's (erratum H, item 3 (a)). Its coupling's rows move at c at the
+window label. An outside degradation moves its rows at o as a degradation does at its cell.
+
+**Replacement.** A replaced slot's export takes its newcomer's k_E from `templates`. Its two
+counters' birth and departed values (poly_rep_export_birth_fmol, poly_rep_export_departed_fmol)
+split them by generation. A node is never replaced, so the RNA exported from a departed generation
+stays at the node with its label.
+
+**Static.** Without the keys every export field is zero-size and no export computation is traced
+(exporting). The physical fields of every such definition are therefore bitwise today's (D148
+case 2).
 
 Refused at the definition
 -------------------------
@@ -196,14 +254,26 @@ Refused at the definition
   from a slot of this operator (version 1.1); a template that is not a replacement template; a
   newcomer whose template gives no value for a schedule of its slot; a template value for no such
   schedule; a schedule change of a replaced slot at or after its founder's death;
-- dt kappa > 1, dt k_D > 1, dt k_I c_T F/F > 1 for a gene's template, and dt/tau > 1, newcomers'
-  values included;
+- dt kappa > 1, dt k_D > 1, dt k_I c_T F/F > 1 for a gene's template, dt/tau > 1, dt k_E > 1 and
+  dt k_o > 1, newcomers' values included;
 - a release's fate rows that break the rules above, more than one pair of them, fate rows
   labelled unalike by FR-42's owner, and a held hold that the pool cannot staff;
+- the export's (§9.17.6):
+  - an exported row that is no fate row or product of a chain at its patch's inside cell;
+  - an unknown patch, a patch onto a held bath, or one onto no finite extracellular node;
+  - an empty coupling (the passive form, follow-on (ii));
+  - a coupling row that is not listed, the exported row among them, or a consumed one without
+    its K;
+  - an outside degradation of a row that no export carries into its node, or at another length,
+    or among its own monomers;
+  - an ID that another pool, route or release holds;
+  - another in-step mover, at its node, of an exported row or of an outside degradation's
+    monomer (check_writers; the monomers' is beyond §9.17.6's wording, and fails closed);
 - more than the species cap.
 
-At run time: a non-finite or non-positive amount, a negative pool or complex, a broken stage
-condition, and the one-sided domains.
+At run time: a non-finite or non-positive amount (at the cells, and at the exported nodes), a
+negative pool or complex, a broken stage condition, and the one-sided domains (x_E's and y_o's
+among them).
 
 Idle: with no route it is statically idle. With no flux in a half-step the start state is selected,
 so zero rates are bitwise idle.
