@@ -56,6 +56,7 @@ import CellsProofs.Transport.ChargedPermeation
 import CellsProofs.Transport.ConditionedVoltage
 import CellsProofs.Transport.ConstantField
 import CellsProofs.Transport.ElectrogenicPumps
+import CellsProofs.Transport.FormsFace
 import CellsProofs.Transport.InwardRectifier
 import CellsProofs.Transport.IonChannels
 import CellsProofs.Transport.JunctionGate
