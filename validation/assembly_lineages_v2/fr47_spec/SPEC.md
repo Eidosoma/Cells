@@ -60,15 +60,15 @@ This folder is for the code-blind references agent of FR-47's qualification
 
 | Input | Value |
 | --- | --- |
-| Pool volume V_out | 1 × 10⁻¹⁸ L |
-| Lumen volume V_in | 1 × 10⁻¹⁹ L |
-| Shell area A_sh | 1 × 10⁻¹⁵ m² |
-| Permeability P_s | 1 × 10⁻⁷ m/s |
+| Pool volume V_out | 2 × 10⁻¹⁸ L |
+| Lumen volume V_in | 2.5 × 10⁻¹⁹ L |
+| Shell area A_sh | 1.2 × 10⁻¹⁵ m² |
+| Permeability P_s | 1.5 × 10⁻⁷ m/s |
 | Tracer potentials | solution 0.0, no lumen potential (Δ = 0) |
-| Founder | S@pool 20,000 molecules; S@lumen 0 molecules; B@wall 100 molecules |
-| Stops | t = 2.0 s, a withdrawal at f = 1/2; t = 4.0 s, a withdrawal at f = 1/4; t = 6.0 s, a replacement; t = 7.5 s, a withdrawal at f = 1/2 |
-| Observation times | 1.0, 1.5, 3.0, 3.5, 5.0, 5.5, 7.0 and 8.5 s, none at a stop |
-| Horizon | 9.0 s |
+| Founder | S@pool 30,000 molecules; S@lumen 0 molecules; B@wall 120 molecules |
+| Stops | t = 2.5 s, a withdrawal at f = 1/2; t = 5.0 s, a withdrawal at f = 1/4; t = 7.0 s, a replacement; t = 9.0 s, a withdrawal at f = 1/2 |
+| Observation times | 1.25, 2.0, 3.5, 4.5, 6.0, 6.5, 8.0 and 10.5 s, none at a stop |
+| Horizon | 11.0 s |
 
 ### W1Δ: W1 with a lumen potential
 
@@ -86,6 +86,10 @@ as in W1.
 | Founder per rung | S@pool 20,000 molecules; S@lumen 0; B@wall 100; G@wall N_g/2; H@wall N_g/2 |
 | Observation times | 0.5, 1.0, 1.5, 2.0, 3.0, 4.0, 5.0 and 6.0 s |
 | Horizon | 6.0 s |
+
+**W2 is not yet sized.** Nothing so far shows that any rung resolves the representation gap at
+M = 128. The references' resolution table (§3.3) decides C8's claim, and the lead may resize W2's
+inputs after reading that table and before the tag.
 
 ## 3. What to compute (every quantity, no values here)
 
@@ -112,13 +116,21 @@ as in W1.
 
 ### 3.3 W2, per rung
 
-- **The exact mean, variance and fourth central moment of S@pool and S@lumen** at the observation
-  times.
+- **The exact mean, variance and fourth central moment of S@pool, S@lumen, G@wall and H@wall** at
+  the observation times. G and H are each a sum of independent copies, and they test the switching
+  directly.
   - Given the open count K, the tracer's rates are linear in its counts. So the moments
     E[n^j·1{K = k}], j ≤ 4, obey a closed linear system.
 - **The class of every pair:** `constant` or `spread`.
-- **The mean-field solution:** the rate equations of the means with g evaluated at the mean open
-  count.
+- **The mean-field solution, as the deterministic representation's registered limit gives it:**
+  - the rate equations of the means, with g evaluated at the mean open count;
+  - the gate's switching at k_GH·(N_w + 1)/N_w per G copy and k_GH·e^(μ°_H − μ°_G)·(N_w + 1)/N_w
+    per H copy;
+  - N_w is the wall's total count, B + G + H = 100 + N_g, a constant.
+  - The factor is the limit's membrane factor for a one-to-one wall step, (N − c + 1)/(N − c) with
+    c = 0. The exact process's factor cancels to 1 (§1).
+  - So the gap below carries an O(1/N_w) term from this factor, beside the O(1/N_g) term from the
+    gate's correlation with the tracer.
 - **The representation gap:** the mean-field minus the exact mean, per observable and time.
 - **The gap's resolution at M = 128:** the gap over the exact mean's SD/√128, per pair.
 

@@ -51,8 +51,10 @@ The proposed tag, once at the final head, after the references agent's work, is
   - The mean field differs from the exact mean by O(1/N_g).
 - **Probed before writing this spec** (host rates on made-up worlds of W1's and W2's shape, no run):
   - the engine's own κ_in = P_s·A_sh/V_out and κ_out = P_s·A_sh·e^Δ/V_in, to 10⁻¹⁵;
-  - the gate's per-copy switching rates, as SPEC.md states them;
-  - the gated crossings, carrying exactly g(K).
+  - the gate's per-copy switching rates in exact events, as SPEC.md states them;
+  - the gated crossings, carrying exactly g(K);
+  - (d)'s limit, which runs a one-to-one wall step at k·(N_w + 1)/N_w per copy (4.0244 against 4.0
+    at N_w = 164). SPEC.md §3.3 states W2's mean field with it, and C8's gap carries it.
 
 ## 3. The rule at zero uncertainty (D323)
 
@@ -68,9 +70,12 @@ The proposed tag, once at the final head, after the references agent's work, is
 
 ## 4. Seeds
 
-The seeds are fresh and disjoint from every probe and smoke seed used so far. The probes and smokes
-used 1, 3, 5, 7, 23 and 20261123; Protocol D used 1–256 and 100001–100256. Each exact replica runs
-at its seed, with environment 0, lineage 0 and branch 0.
+The seeds are fresh and disjoint from every probe and smoke seed used so far:
+- the probes' and smokes' stream seeds, 1 and 7;
+- Protocol D's, 1–256 and 100001–100256;
+- Protocol G's, 1–5256, and its matrix seeds 20261123–20261142.
+
+Each exact replica runs at its seed, with environment 0, lineage 0 and branch 0.
 
 | Worlds | First seeds | Retry seeds |
 | --- | --- | --- |
@@ -109,8 +114,20 @@ author, and not the references agent.
 - **The protocol** passes when every world passes and every plant is caught, and fails when a world
   fails or a plant is not caught.
 
-**The cost** (the design note's §9.5, from a measured W1-sized replica of 14,399 events in 7.4 s
-plus 6 s of compile): about 3 CPU-hours, and up to about 6 with the retry.
+**The run settings,** fixed now:
+- **(d):** `rosenbrock_rodas4_dense@1` at rtol 10⁻¹⁰, atol_count 10⁻⁶ and a step limit of 10⁶. The
+  envelope's `min_count` is 10, with the provenance "FR-47's qualification runs". It is a run
+  setting, not a qualified n_min.
+- **Exact events:** population mode with one slot, since the washes need a population; float64;
+  `molecule_capacity` the power of two above 4 × the founder's total; `chunk_events` 4096; no event
+  limit before the horizon.
+
+**What the tag still lacks, beyond the references:**
+- the engine-side definitions of W1, W1Δ and W2, written from SPEC.md, with these settings;
+- the judge.
+
+**The cost:** about 3 CPU-hours, and up to about 6 with the retry. This is from a measured one-slot
+shell replica with washes on made-up inputs: 14,399 events in 7.4 s, plus 6 s of compile.
 
 ## 6. FR-43 part 2's lessons, carried
 
@@ -126,11 +143,16 @@ plus 6 s of compile): about 3 CPU-hours, and up to about 6 with the retry.
   - (d) away from the envelope's run setting, except at E2's first-order places;
   - bimolecular site binding, inner-face binding, or gates driven by bound states in (d).
 - **Disclosed: what had been seen.**
-  - The design note (`/mnt/workspaces/Cells/fr46-48-design-20261123/DESIGN.md`) holds the author's
-    own numpy sketch of a W1-shaped reference, with made-up numbers and no engine import, used to
-    size the plants' teeth.
-  - It also holds made-up-world probes of the engine:
-    - the factored flux at zero;
-    - the derivative of exp(safe_log) at zero, which is 0;
-    - a one-slot shell with washes, which ran and closed its books.
-  - None of these is a protocol world, and the references agent does not read the note.
+  - **W1's inputs were re-chosen** on 23 November, before any reference existed. The author's
+    design note had used an earlier W1-shaped set for two things:
+    - a numpy sketch of its reference, used to size the plants' teeth;
+    - one exact smoke replica at stream seed 1.
+
+    Nothing has been computed or run on the registered inputs.
+  - **W2's inputs** were used only for host-rate checks: rates at fixed states, no moments and no
+    run.
+  - **Other probes, all on made-up worlds:**
+    - (d)'s factored flux and its derivative at zero (exp(safe_log) has derivative 0 there);
+    - (d)'s wall-step factor;
+    - a one-slot shell with washes in exact events, which ran and closed its books.
+  - The references agent reads only this document and the spec folder.

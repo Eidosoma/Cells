@@ -19,7 +19,7 @@ These are fixed before any engine run (`docs/FR47_SHELL_EXCHANGE_PROTOCOL.md`; D
 | Class | The rule |
 | --- | --- |
 | `constant` | Every exact replica equals the reference's value exactly, and one wrong replica fails (`agreement.judge_constant`). (d)'s value at the pair must equal it too |
-| `derived` | A constant reached by two routes of different arithmetic: within a bound derived from that arithmetic (`agreement.judge_derived`). In this protocol, only the tracer moiety's sum in (d) is derived: 8 eps × (the number of places summed) × the largest term |
+| `derived` | A constant reached by two routes of different arithmetic: within a bound derived from that arithmetic (`agreement.judge_derived`), as release_check's bounds are. In this protocol, only the tracer moiety's sum in (d) is derived (C5) |
 | `spread` | The mean's z with the reference's own SD, and the spread's z from the reference's fourth moment (`agreement.judge_spread`). Identical replicas face the spread test |
 
 No pair is excluded after the run, and no class changes after it.
@@ -32,10 +32,10 @@ No pair is excluded after the run, and no class changes after it.
 | C2 | The exact ensemble's means at every pair (W1, W1Δ) | The pair rule |
 | C3 | The exact ensemble's spread at every `spread` pair (W1, W1Δ) | The pair rule's spread z, with μ₄ from the reference |
 | C4 | Each stop's removed count, and each withdrawal's mixing heat −k·ln(1 − f), which is linear in the kept count k | Exact: the pair rule. (d): C1's bound |
-| C5 | The books | Every run of either representation closes its ledger (its own check). The tracer moiety balances: present + removed = the founder's, exactly in exact events and as a `derived` pair in (d) |
+| C5 | The books | Every run of either representation closes its ledger (its own check). The tracer moiety balances: present + removed = the founder's, exactly in exact events, and in (d) as a `derived` pair within 16 eps × (A + S) × P_t × T. Here A is the run's accepted steps and S its stops; P_t is the tracer's places and T the founder's tracer count. The derivation: each Rodas4 step updates each place by six stage terms, each place at most T, and each stop's map rounds each place once |
 | C6 | W2's exact ensemble against the gate-conditioned exact mean, variance and fourth moment, per rung | The pair rule (C2 and C3's tests) |
 | C7 | W2's (d) against the mean-field reference, per rung | C1's bound |
-| C8 | W2's representation gap, the mean-field minus the exact mean, and its slope in ln N_g (−1 expected) | Each rung's gap is taken at its largest pair. **The slope is claimed as measured** only over the rungs where the reference's own resolution there (the gap over the exact mean's SD/√128) is at least 4.5, and only when three rungs or more qualify. There, the ensemble's gap ((d) minus the exact replicas' mean) matches the reference's gap by the pair rule's z at each qualifying rung, and the slope is fitted on those rungs. **Otherwise the slope is reported** from the reference alone, as a prediction, and nothing is claimed as measured |
+| C8 | W2's representation gap, the mean-field minus the exact mean, and its slope in ln N_g (−1 expected; the gap carries the limit's O(1/N_w) switching factor and the gate's O(1/N_g) correlation, SPEC.md §3.3) | Each rung's gap is taken at its largest pair. **The slope is claimed as measured** only over the rungs where the reference's own resolution there (the gap over the exact mean's SD/√128) is at least 4.5, and only when three rungs or more qualify. There, the ensemble's gap ((d) minus the exact replicas' mean) matches the reference's gap by the pair rule's z at each qualifying rung, and the slope is fitted on those rungs. **Otherwise the slope is reported** from the reference alone, as a prediction, and nothing is claimed as measured |
 | C9 | (d)'s continuous heat over each interval between stops (W1, W1Δ) | Against the reference's −ΔF_cont of its mean counts, to C1's bound. It tests F_cont at a zero start, where (d) books the heat by closure |
 
 ## The plants
