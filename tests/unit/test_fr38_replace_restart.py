@@ -41,3 +41,31 @@ def test_a_replaced_producer_restarts_bit_for_bit_with_its_generations_apart(tmp
     assert end["g0_in_cell_copies"] < 1e-12 and end["g0_departed_copies"] > 0
     assert end["g0_at_node_copies"] > 0  # Retained with its label (amendment T).
     assert end["g1_in_cell_copies"] > 0
+
+
+import numpy as np  # noqa: E402
+import pytest  # noqa: E402
+
+
+@pytest.mark.parametrize(
+    "one, two, error, expected",
+    [
+        # The Lean lane's control (3e50d48d): outputs at 0, 3000 and 4800 s give route 2 no grid
+        # error; 100 copies against 1.7077 once passed on an infinite bound.
+        (100.0, 1.7077379790555396, None, "insufficient resolution"),
+        (100.0, 1.7077379790555396, float("nan"), "insufficient resolution"),
+        # With an output at 1500 s the error is finite and the same discrepancy is refused.
+        (100.0, 1.7077379790555394, 2.84e-12, "disagree"),
+        (1.7077379790555396, 1.7077379790555394, 2.84e-12, "agree"),
+    ],
+)
+def test_the_retention_check_never_passes_without_an_error_estimate(one, two, error, expected):
+    """Host only, no world compiled (the D224 row for a validation fix): an unavailable grid error
+    reads as insufficient resolution, which fails the check, never as an infinite bound."""
+    copy = rr.COPY_FMOL
+    status, bound = rr.agreement(one * copy, two * copy, error if error is None else error * copy,
+                                 0.0)  # fmt: skip
+    assert status == expected
+    assert (bound is None) == (expected == "insufficient resolution")
+    if bound is not None:
+        assert np.isfinite(bound)
